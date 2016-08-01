@@ -23,7 +23,7 @@ machine:
 checkout:
   post:
     - composer install --no-dev -d Source/craft/app
-    - composer dumpautoload -o
+    - composer dumpautoload -o -d Source/craft/app
     - php ./Utils/buildci.php
 
 ## Customize dependencies
