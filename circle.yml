@@ -72,3 +72,8 @@ checkout:
 #  webhooks:
     # A list of hashes representing hooks. Only the url field is supported.
 #    - url: https://someurl.com/hooks/circle
+
+general:
+  branches:
+    only:
+      - release/dev
