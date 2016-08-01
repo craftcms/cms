@@ -16,7 +16,7 @@ use yii\web\BadRequestHttpException;
 use yii\web\ForbiddenHttpException;
 
 /**
- * The BaseElementsController class provides some common methods for [[ElementsController]] and [[ElementIndexController]].
+ * The BaseElementsController class provides some common methods for [[ElementsController]] and [[ElementIndexesController]].
  *
  * Note that all actions in the controller require an authenticated Craft session via [[Controller::allowAnonymous]].
  *
