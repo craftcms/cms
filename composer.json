@@ -44,6 +44,11 @@
         "pclzip/pclzip": "2.8.2",
         "fxp/composer-asset-plugin": "1.2.0"
     },
+    "autoload": {
+        "psr-4": {
+            "craft\\app\\": "./"
+        }
+    },
     "extra": {
         "asset-installer-paths": {
             "npm-asset-library": "Source/craft/app/vendor/npm",
