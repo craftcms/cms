@@ -423,21 +423,21 @@ class EmailService extends BaseApplicationComponent
 				craft()->setLanguage($user->preferredLocale);
 			}
 
-			$email->Subject = craft()->templates->renderString($emailModel->subject, $variables);
+			$email->Subject = craft()->templates->renderString($emailModel->subject, $variables, true);
 
 			// If they populated an htmlBody, use it.
 			if ($emailModel->htmlBody)
 			{
-				$renderedHtmlBody = craft()->templates->renderString($emailModel->htmlBody, $variables);
+				$renderedHtmlBody = craft()->templates->renderString($emailModel->htmlBody, $variables, true);
 				$email->msgHTML($renderedHtmlBody);
-				$email->AltBody = craft()->templates->renderString($emailModel->body, $variables);
+				$email->AltBody = craft()->templates->renderString($emailModel->body, $variables, true);
 			}
 			else
 			{
 				// They didn't provide an htmlBody, so markdown the body.
-				$renderedHtmlBody = craft()->templates->renderString(StringHelper::parseMarkdown($emailModel->body), $variables);
+				$renderedHtmlBody = craft()->templates->renderString(StringHelper::parseMarkdown($emailModel->body), $variables, true);
 				$email->msgHTML($renderedHtmlBody);
-				$email->AltBody = craft()->templates->renderString($emailModel->body, $variables);
+				$email->AltBody = craft()->templates->renderString($emailModel->body, $variables, true);
 			}
 
 			craft()->setLanguage($oldLanguage);
