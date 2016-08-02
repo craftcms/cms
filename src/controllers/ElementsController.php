@@ -133,13 +133,13 @@ class ElementsController extends BaseElementsController
 
         // Now save it
         if ($element::saveElement($element, $params)) {
-            $response = $this->asJson([
+            $response = [
                 'success' => true,
                 'id' => $element->id,
                 'locale' => $element->locale,
                 'newTitle' => (string)$element,
                 'cpEditUrl' => $element->getCpEditUrl(),
-            ]);
+            ];
 
             // Should we be including table attributes too?
             $sourceKey = Craft::$app->getRequest()->getBodyParam('includeTableAttributesForSource');
@@ -155,7 +155,7 @@ class ElementsController extends BaseElementsController
                 }
             }
 
-            return $response;
+            return $this->asJson($response);
         }
 
         return $this->_getEditorHtmlResponse($element, false);
