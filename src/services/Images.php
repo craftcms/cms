@@ -33,13 +33,50 @@ use yii\base\Component;
  */
 class Images extends Component
 {
+    // Constants
+    // =========================================================================
+
+    const DRIVER_GD = 'gd';
+    const DRIVER_IMAGICK = 'imagick';
+    const MINIMUM_IMAGICK_VERSION = '6.2.9';
+
     // Properties
     // =========================================================================
 
-    private $_isGd = null;
+    /**
+     * Image driver.
+     *
+     * @var string
+     */
+    private $_driver = '';
+
+    /**
+     * Imagick version being used, if any.
+     *
+     * @var string
+     */
+    private $_imagickVersion = null;
 
     // Public Methods
     // =========================================================================
+
+    /**
+     * Decide on the image driver being used.
+     *
+     * @return void
+     */
+    public function init()
+    {
+        if (strtolower(Craft::$app->getConfig()->get('imageDriver')) == 'gd') {
+            $this->_driver = static::DRIVER_GD;
+        } else if ($this->getIsImagickAtLeast(static::MINIMUM_IMAGICK_VERSION)) {
+            $this->_driver = static::DRIVER_IMAGICK;
+        } else {
+            $this->_driver = static::DRIVER_GD;
+        }
+
+        parent::init();
+    }
 
     /**
      * Returns whether image manipulations will be performed using GD or not.
@@ -48,29 +85,9 @@ class Images extends Component
      */
     public function getIsGd()
     {
-        if ($this->_isGd === null) {
-            if (strtolower(Craft::$app->getConfig()->get('imageDriver')) == 'gd') {
-                $this->_isGd = true;
-            } else if (extension_loaded('imagick')) {
-                // Taken from Imagick\Imagine() constructor.
-                $imagick = new \Imagick();
-                $v = $imagick::getVersion();
-                /** @noinspection PhpUnusedLocalVariableInspection */
-                list($version, $year, $month, $day, $q, $website) = sscanf($v['versionString'], 'ImageMagick %s %04d-%02d-%02d %s %s');
-
-                // Update this if Imagine updates theirs.
-                if (version_compare('6.2.9', $version) <= 0) {
-                    $this->_isGd = false;
-                } else {
-                    $this->_isGd = true;
-                }
-            } else {
-                $this->_isGd = true;
-            }
-        }
-
-        return $this->_isGd;
+        return $this->_driver == static::DRIVER_GD;
     }
+
 
     /**
      * Returns whether image manipulations will be performed using Imagick or not.
@@ -79,7 +96,36 @@ class Images extends Component
      */
     public function getIsImagick()
     {
-        return !$this->getIsGd();
+        return $this->_driver == static::DRIVER_IMAGICK;
+    }
+
+    /**
+     * Returns whether Imagick is installed and meets version requirements
+     *
+     * @param string $requiredVersion version string
+     *
+     * @return bool
+     */
+    public function getIsImagickAtLeast($requiredVersion)
+    {
+        if (!extension_loaded('imagick'))
+        {
+            return false;
+        }
+
+        if (is_null($this->_imagickVersion))
+        {
+            // Taken from Imagick\Imagine() constructor.
+            // Imagick::getVersion() is static only since Imagick PECL extension 3.2.0b1, so instantiate it.
+            $imagick = new \Imagick();
+            $v = $imagick->getVersion();
+            /** @noinspection PhpUnusedLocalVariableInspection */
+            list($version, $year, $month, $day, $q, $website) = sscanf($v['versionString'], 'ImageMagick %s %04d-%02d-%02d %s %s');
+
+            $this->_imagickVersion = $version;
+        }
+
+        return version_compare($requiredVersion, $this->_imagickVersion) <= 0;
     }
 
     /**
