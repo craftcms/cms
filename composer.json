@@ -51,8 +51,8 @@
     },
     "extra": {
         "asset-installer-paths": {
-            "npm-asset-library": "Source/craft/app/vendor/npm",
-            "bower-asset-library": "Source/craft/app/vendor/bower"
+            "npm-asset-library": "vendor/npm",
+            "bower-asset-library": "vendor/bower"
         }
     }
 }
