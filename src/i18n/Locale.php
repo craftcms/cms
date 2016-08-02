@@ -836,6 +836,11 @@ class Locale extends Object
             $length = static::LENGTH_MEDIUM;
         }
 
+        if (is_string($length))
+        {
+            $length = constant('IntlDateFormatter::'.StringHelper::toUpperCase($length));
+        }
+
         if (Craft::$app->getI18n()->getIsIntlLoaded()) {
             $dateType = ($withDate ? $length : IntlDateFormatter::NONE);
             $timeType = ($withTime ? $length : IntlDateFormatter::NONE);
