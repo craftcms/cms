@@ -1096,8 +1096,21 @@ class Elements extends Component
 
                                         if ($element) {
                                             if (!empty($refTag['matches'][3]) && isset($element->{$refTag['matches'][3]})) {
-                                                $value = (string)$element->{$refTag['matches'][3]};
-                                                $replace[] = $this->parseRefs($value);
+                                                try {
+                                                    $value = $element->{$refTag['matches'][3]};
+
+                                                    if (is_object($value) && !method_exists($value, '__toString')) {
+                                                        throw new Exception('Object of class '.get_class($value).' could not be converted to string');
+                                                    }
+
+                                                    $replace[] = $this->parseRefs((string)$value);
+                                                } catch (\Exception $e) {
+                                                    // Log it
+                                                    Craft::error('An exception was thrown when parsing the ref tag "'.$refTag['matches'][0]."\":\n".$e->getMessage());
+
+                                                    // Replace the token with the original ref tag
+                                                    $replace[] = $refTag['matches'][0];
+                                                }
                                             } else {
                                                 // Default to the URL
                                                 $replace[] = $element->getUrl();

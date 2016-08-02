@@ -1037,7 +1037,11 @@ class UsersController extends Controller
                     'id' => $user->id
                 ]);
             } else {
-                Craft::$app->getSession()->setNotice(Craft::t('app', 'User saved.'));
+                if ($thisIsPublicRegistration) {
+                    Craft::$app->getSession()->setNotice(Craft::t('app', 'User registered.'));
+                } else {
+                    Craft::$app->getSession()->setNotice(Craft::t('app', 'User saved.'));
+                }
 
                 // Is this public registration, and is the user going to be activated automatically?
                 if ($publicActivation) {
