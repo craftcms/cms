@@ -234,7 +234,7 @@ class Volumes extends Component
     }
 
     /**
-     * Returns the total number of volumes
+     * Returns the total number of volumes.
      *
      * @return integer
      */
