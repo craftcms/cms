@@ -15,6 +15,7 @@ use craft\app\helpers\StringHelper;
 use DateTime;
 use IntlDateFormatter;
 use NumberFormatter;
+use yii\base\Exception;
 use yii\base\InvalidConfigException;
 use yii\base\InvalidParamException;
 use yii\base\Object;
@@ -836,12 +837,25 @@ class Locale extends Object
             $length = static::LENGTH_MEDIUM;
         }
 
-        if (is_string($length))
-        {
-            $length = constant('IntlDateFormatter::'.StringHelper::toUpperCase($length));
-        }
-
         if (Craft::$app->getI18n()->getIsIntlLoaded()) {
+            // Convert length to IntlDateFormatter constants
+            switch ($length) {
+                case self::LENGTH_FULL:
+                    $length = IntlDateFormatter::FULL;
+                    break;
+                case self::LENGTH_LONG:
+                    $length = IntlDateFormatter::LONG;
+                    break;
+                case self::LENGTH_MEDIUM:
+                    $length = IntlDateFormatter::MEDIUM;
+                    break;
+                case self::LENGTH_SHORT:
+                    $length = IntlDateFormatter::SHORT;
+                    break;
+                default:
+                    throw new Exception('Invalid date/time format length: '.$length);
+            }
+
             $dateType = ($withDate ? $length : IntlDateFormatter::NONE);
             $timeType = ($withTime ? $length : IntlDateFormatter::NONE);
             $formatter = new IntlDateFormatter($this->id, $dateType, $timeType);
