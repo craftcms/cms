@@ -987,7 +987,7 @@ trait ApplicationTrait
     }
 
     /**
-     * Returns the email service.
+     * Returns the current mailer.
      *
      * @return \craft\app\mail\Mailer The mailer component
      */
