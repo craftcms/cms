@@ -232,7 +232,7 @@ class ElementsService extends BaseApplicationComponent
 		}
 		else
 		{
-			return $this->populateElements($results, $criteria, $contentTable, $fieldColumns, $justIds);
+			return $this->populateElements($results, $criteria, $contentTable, $fieldColumns);
 		}
 	}
 
