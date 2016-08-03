@@ -307,7 +307,7 @@ class Entries extends Component
                     $section = $entry->getSection();
 
                     if ($section->type == Section::TYPE_STRUCTURE) {
-                        // First let's move the entry's children up a level, so this doesn't mess up the structure
+                        // First let's move the entry's children up a level, so this doesn't mess up the structure.
                         $children = $entry->getChildren()->status(null)->localeEnabled(false)->limit(null)->all();
 
                         foreach ($children as $child) {
