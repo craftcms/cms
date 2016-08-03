@@ -1355,6 +1355,7 @@ class Assets extends Component
             $stream = fopen($localPath, 'r');
 
             if (!$stream) {
+                Io::deleteFile($localPath);
                 throw new FileException(Craft::t('app',
                     'Could not open file for streaming at {path}',
                     ['path' => $asset->newFilePath]));
@@ -1366,6 +1367,8 @@ class Assets extends Component
             if (is_resource($stream)) {
                 fclose($stream);
             }
+
+            Io::deleteFile($localPath);
 
             // Nuke the transforms
             $assetTransforms->deleteAllTransformData($asset);
