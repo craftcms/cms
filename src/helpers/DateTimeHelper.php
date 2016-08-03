@@ -141,22 +141,22 @@ class DateTimeHelper
             $date = trim((string)$value);
 
             if (preg_match('/^
-				(?P<year>\d{4})                                  # YYYY (four digit year)
-				(?:
-					-(?P<mon>\d\d?)                              # -M or -MM (1 or 2 digit month)
-					(?:
-						-(?P<day>\d\d?)                          # -D or -DD (1 or 2 digit day)
-						(?:
-							[T\ ](?P<hour>\d\d?)\:(?P<min>\d\d)  # [T or space]hh:mm (1 or 2 digit hour and 2 digit minute)
-							(?:
-								\:(?P<sec>\d\d)                  # :ss (two digit second)
-								(?:\.\d+)?                       # .s (decimal fraction of a second -- not supported)
-							)?
-							(?:[ ]?(?P<ampm>(AM|PM|am|pm))?)?    # An optional space and AM or PM
-							(?P<tz>Z|(?P<tzd>[+\-]\d\d\:?\d\d))? # Z or [+ or -]hh(:)ss (UTC or a timezone offset)
-						)?
-					)?
-				)?$/x', $date, $m)) {
+                (?P<year>\d{4})                                  # YYYY (four digit year)
+                (?:
+                    -(?P<mon>\d\d?)                              # -M or -MM (1 or 2 digit month)
+                    (?:
+                        -(?P<day>\d\d?)                          # -D or -DD (1 or 2 digit day)
+                        (?:
+                            [T\ ](?P<hour>\d\d?)\:(?P<min>\d\d)  # [T or space]hh:mm (1 or 2 digit hour and 2 digit minute)
+                            (?:
+                                \:(?P<sec>\d\d)                  # :ss (two digit second)
+                                (?:\.\d+)?                       # .s (decimal fraction of a second -- not supported)
+                            )?
+                            (?:[ ]?(?P<ampm>(AM|PM|am|pm))?)?    # An optional space and AM or PM
+                            (?P<tz>Z|(?P<tzd>[+\-]\d\d\:?\d\d))? # Z or [+ or -]hh(:)ss (UTC or a timezone offset)
+                        )?
+                    )?
+                )?$/x', $date, $m)) {
                 $format = 'Y-m-d H:i:s';
 
                 $date = $m['year'].
