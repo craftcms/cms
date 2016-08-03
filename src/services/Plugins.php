@@ -591,12 +591,12 @@ class Plugins extends Component
      */
     public function getConfig($handle)
     {
-        // Make sure this plugin has a config.json file
+        // Make sure this plugin has a plugin.json file
         $basePath = Craft::$app->getPath()->getPluginsPath().'/'.$handle;
-        $configPath = $basePath.'/config.json';
+        $configPath = $basePath.'/plugin.json';
 
         if (($configPath = Io::fileExists($configPath)) === false) {
-            Craft::warning("Could not find a config.json file for the plugin '$handle'.");
+            Craft::warning("Could not find a plugin.json file for the plugin '$handle'.");
 
             return null;
         }
