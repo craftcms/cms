@@ -306,11 +306,11 @@ class Assets extends Component
      *
      * @param Asset   $assetToReplace
      * @param Asset   $assetToReplaceWith
-     * @param boolean $mergeAssets whether to replace content as well.
+     * @param boolean $mergeRelationships should the relations be merged for the conflicting Assets
      *
      * @return void
      */
-    public function replaceAsset(Asset $assetToReplace, Asset $assetToReplaceWith, $mergeAssets = false)
+    public function replaceAsset(Asset $assetToReplace, Asset $assetToReplaceWith, $mergeRelationships = false)
     {
         $targetVolume = $assetToReplace->getVolume();
 
@@ -321,33 +321,41 @@ class Assets extends Component
             Craft::$app->getAssetTransforms()->deleteAllTransformData($assetToReplace);
         }
 
-        // Handle things differently depending on whether that's an upload or an asset move.
-        if ($mergeAssets) {
+        // Handle things differently depending if the relationships should be merged
+        // for the Asset being replaced.
+        if ($mergeRelationships) {
+            // This deletes the $assetToReplace element and merges their relationships.
             Craft::$app->getElements()->mergeElementsByIds($assetToReplace->id,
                 $assetToReplaceWith->id);
 
-            // Replace the asset - delete the conflicting asset and move the asset in it's place.
+            // Replace the file - delete the conflicting file and move the new file in it's place.
             $targetVolume->deleteFile($assetToReplace->getUri());
-            $this->_moveAssetToFolder($assetToReplaceWith,
+            $this->_moveAssetFileToFolder($assetToReplaceWith,
                 $assetToReplace->getFolder());
 
+            // Update attribute on the Asset being merged into an existing one
+            // because the target Asset is nuked and the new one takes it's place.
             $assetToReplaceWith->folderId = $assetToReplace->folderId;
             $assetToReplaceWith->volumeId = $assetToReplace->volumeId;
             $assetToReplaceWith->filename = $assetToReplace->filename;
+
+            // At this point the Asset being moved effectively takes place of the target Asset.
             $this->saveAsset($assetToReplaceWith);
         } else {
-            // Update the attributes and save the Asset
+            // Update the file-related attributes on the target Asset based on the incoming Asset
             $assetToReplace->dateModified = $assetToReplaceWith->dateModified;
             $assetToReplace->size = $assetToReplaceWith->size;
             $assetToReplace->kind = $assetToReplaceWith->kind;
             $assetToReplace->width = $assetToReplaceWith->width;
             $assetToReplace->height = $assetToReplaceWith->height;
 
-            // Replace the asset - delete the conflicting asset and move the asset in it's place.
+            // Replace the file - delete the conflicting file and move the new file in it's place.
             $targetVolume->deleteFile($assetToReplace->getUri());
-            $this->_moveAssetToFolder($assetToReplaceWith,
+            $this->_moveAssetFileToFolder($assetToReplaceWith,
                 $assetToReplace->getFolder(), $assetToReplace->filename);
 
+            // At this point the existing Asset has it's properties changed and the Asset
+            // file itself is changed as well. Save the existing Asset and delete the other one.
             $this->saveAsset($assetToReplace);
             $this->deleteAssetsByIds($assetToReplaceWith->id, false);
         }
@@ -1068,7 +1076,7 @@ class Assets extends Component
                 'The destination folder does not exist'));
         }
 
-        $this->_moveAssetToFolder($asset, $targetFolder, $filename);
+        $this->_moveAssetFileToFolder($asset, $targetFolder, $filename);
 
         $asset->folderId = $folderId;
         $asset->volumeId = $targetFolder->volumeId;
@@ -1297,7 +1305,7 @@ class Assets extends Component
      * @throws FileException If there was a problem with the actual file.
      * @return void
      */
-    private function _moveAssetToFolder(Asset $asset, VolumeFolder $targetFolder, $newFilename = '')
+    private function _moveAssetFileToFolder(Asset $asset, VolumeFolder $targetFolder, $newFilename = '')
     {
         $filename = $newFilename ?: $asset->filename;
 
