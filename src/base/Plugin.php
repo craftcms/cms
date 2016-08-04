@@ -94,11 +94,6 @@ class Plugin extends Module implements PluginInterface
      */
     private $_basePath;
 
-    /**
-     * @var string|false The plugin’s icon path, or false if it doesn’t have one
-     */
-    private $_iconPath;
-
     // Public Methods
     // =========================================================================
 
