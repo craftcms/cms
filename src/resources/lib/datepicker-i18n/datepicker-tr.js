@@ -23,7 +23,7 @@
     <meta http-equiv="Content-Language" content="en">
     <meta name="viewport" content="width=device-width">
     
-    <title>jquery-ui/datepicker-it.js at master · jquery/jquery-ui</title>
+    <title>jquery-ui/datepicker-tr.js at master · jquery/jquery-ui</title>
     <link rel="search" type="application/opensearchdescription+xml" href="/opensearch.xml" title="GitHub">
     <link rel="fluid-icon" href="https://github.com/fluidicon.png" title="GitHub">
     <link rel="apple-touch-icon" href="/apple-touch-icon.png">
@@ -43,7 +43,7 @@
       <meta name="browser-stats-url" content="https://api.github.com/_private/browser/stats">
     <meta name="browser-errors-url" content="https://api.github.com/_private/browser/errors">
     <link rel="assets" href="https://assets-cdn.github.com/">
-    <link rel="web-socket" href="wss://live.github.com/_sockets/NjE4Njk6MDU2ZDZmMjMyMjM2Y2JiYTVkMWZiYTQzN2NlNTY3M2M6NDViYzhmYWZiYTM0YWIwYzVjNDNhYjRjNDYzMWMxMmZiYTE1Mjk1MWEwMGM0OGNjZTc0NGY2OTZhY2Y2NDFlMw==--d615e1dac8f23eeb9e9d9c738a7234f30d4b0964">
+    <link rel="web-socket" href="wss://live.github.com/_sockets/NjE4Njk6MDU2ZDZmMjMyMjM2Y2JiYTVkMWZiYTQzN2NlNTY3M2M6MWI0ODhiMzRhMDQzMmFjNzlkZGE4NjBjMjFmNmEwZTg1ZTdjNDhjMDgxYWNhZjJmZWNmYWFjNmExM2VmNjRmMQ==--4afa5a147ac391275c3b8a7e2668b74185255632">
     <meta name="pjax-timeout" content="1000">
     <link rel="sudo-modal" href="/sessions/sudo_modal">
 
@@ -55,7 +55,7 @@
 <meta name="google-site-verification" content="ZzhVyEFwb7w3e0-uOTltm8Jsck2F5StVihD0exw2fsA">
     <meta name="google-analytics" content="UA-3769691-2">
 
-<meta content="collector.githubapp.com" name="octolytics-host" /><meta content="github" name="octolytics-app-id" /><meta content="D06486D3:37EE:D865869:57A37A55" name="octolytics-dimension-request_id" /><meta content="61869" name="octolytics-actor-id" /><meta content="takobell" name="octolytics-actor-login" /><meta content="47c3f3f93f150b9263088bbe6ce50efd1b32e4fd4caf275d8ca427ea63c20d64" name="octolytics-actor-hash" />
+<meta content="collector.githubapp.com" name="octolytics-host" /><meta content="github" name="octolytics-app-id" /><meta content="D06486D3:37E7:7CC5D9A:57A37AB5" name="octolytics-dimension-request_id" /><meta content="61869" name="octolytics-actor-id" /><meta content="takobell" name="octolytics-actor-login" /><meta content="47c3f3f93f150b9263088bbe6ce50efd1b32e4fd4caf275d8ca427ea63c20d64" name="octolytics-actor-hash" />
 <meta content="/&lt;user-name&gt;/&lt;repo-name&gt;/blob/show" data-pjax-transient="true" name="analytics-location" />
 
 
@@ -68,7 +68,7 @@
     <meta name="user-login" content="takobell">
 
         <meta name="expected-hostname" content="github.com">
-      <meta name="js-proxy-site-detection-payload" content="MmI2NmJkZWQzNjg1ZTkyMDk1NDFmNDlmYTliZDEyMDFhOWIxYTQ0OWE1ZTVlZWU1YzA2MDU4ZWM4NzE3NTMzZnx7InJlbW90ZV9hZGRyZXNzIjoiMjA4LjEwMC4xMzQuMjExIiwicmVxdWVzdF9pZCI6IkQwNjQ4NkQzOjM3RUU6RDg2NTg2OTo1N0EzN0E1NSIsInRpbWVzdGFtcCI6MTQ3MDMzMTQ4Nn0=">
+      <meta name="js-proxy-site-detection-payload" content="YmU1ZWMzNWJkYzM5YThlMjQzMDc0MzhiODE0NjljOGUzYTQ0ZWExZjY0ODZlZDRjOTQ3YjI0ZGMyZWUxNWM0MHx7InJlbW90ZV9hZGRyZXNzIjoiMjA4LjEwMC4xMzQuMjExIiwicmVxdWVzdF9pZCI6IkQwNjQ4NkQzOjM3RTc6N0NDNUQ5QTo1N0EzN0FCNSIsInRpbWVzdGFtcCI6MTQ3MDMzMTU3M30=">
 
 
       <link rel="mask-icon" href="https://assets-cdn.github.com/pinned-octocat.svg" color="#4078c0">
@@ -88,7 +88,7 @@
   <link href="https://github.com/jquery/jquery-ui/commits/master.atom" rel="alternate" title="Recent Commits to jquery-ui:master" type="application/atom+xml">
 
 
-      <link rel="canonical" href="https://github.com/jquery/jquery-ui/blob/master/ui/i18n/datepicker-it.js" data-pjax-transient>
+      <link rel="canonical" href="https://github.com/jquery/jquery-ui/blob/master/ui/i18n/datepicker-tr.js" data-pjax-transient>
   </head>
 
 
@@ -221,7 +221,7 @@
           Settings
         </a>
 
-        <!-- </textarea> --><!-- '"` --><form accept-charset="UTF-8" action="/logout" class="logout-form" data-form-nonce="e59486a7de80c655e458eea656cf4ac086fd7205" method="post"><div style="margin:0;padding:0;display:inline"><input name="utf8" type="hidden" value="&#x2713;" /><input name="authenticity_token" type="hidden" value="QaSfyDAAxX8xOvP2MUezEkTuHpFuVp2ZLi8xAgDfEcqwQX5cIQ02qLWyg+2z4cBXOYKYEXqsTtZN8tOstw/ZqQ==" /></div>
+        <!-- </textarea> --><!-- '"` --><form accept-charset="UTF-8" action="/logout" class="logout-form" data-form-nonce="e59486a7de80c655e458eea656cf4ac086fd7205" method="post"><div style="margin:0;padding:0;display:inline"><input name="utf8" type="hidden" value="&#x2713;" /><input name="authenticity_token" type="hidden" value="qpnXAvGnezZRFZuCcsZHgv3Wv/YRZDe0BlelKFPb4fgnNmz2WdoSXbHdHh9C2EKP3LJqT7ni3d70Cs4AukDaAQ==" /></div>
           <button class="dropdown-item dropdown-signout" data-ga-click="Header, sign out, icon:logout">
             Sign out
           </button>
@@ -257,7 +257,7 @@
 <ul class="pagehead-actions">
 
   <li>
-        <!-- </textarea> --><!-- '"` --><form accept-charset="UTF-8" action="/notifications/subscribe" class="js-social-container" data-autosubmit="true" data-form-nonce="e59486a7de80c655e458eea656cf4ac086fd7205" data-remote="true" method="post"><div style="margin:0;padding:0;display:inline"><input name="utf8" type="hidden" value="&#x2713;" /><input name="authenticity_token" type="hidden" value="cjQRVTrjfbz7BZr/GLzaTuqauE6efKhvpR84DOH1qXb9nIpqdU3WvjmRwEzylcILIn5u1ZVO2hcS+DThl7KqFw==" /></div>      <input class="form-control" id="repository_id" name="repository_id" type="hidden" value="478996" />
+        <!-- </textarea> --><!-- '"` --><form accept-charset="UTF-8" action="/notifications/subscribe" class="js-social-container" data-autosubmit="true" data-form-nonce="e59486a7de80c655e458eea656cf4ac086fd7205" data-remote="true" method="post"><div style="margin:0;padding:0;display:inline"><input name="utf8" type="hidden" value="&#x2713;" /><input name="authenticity_token" type="hidden" value="wJl/Evs6LFSFSomR/oJvWk8fsXcuMZbKr3HVYeybgJjNLjk79ej9tE621suk0nf1NWADF7Ru8M8efihey7czUQ==" /></div>      <input class="form-control" id="repository_id" name="repository_id" type="hidden" value="478996" />
 
         <div class="select-menu js-menu-container js-select-menu">
           <a href="/jquery/jquery-ui/subscription"
@@ -332,7 +332,7 @@
     
   <div class="js-toggler-container js-social-container starring-container ">
 
-    <!-- </textarea> --><!-- '"` --><form accept-charset="UTF-8" action="/jquery/jquery-ui/unstar" class="starred" data-form-nonce="e59486a7de80c655e458eea656cf4ac086fd7205" data-remote="true" method="post"><div style="margin:0;padding:0;display:inline"><input name="utf8" type="hidden" value="&#x2713;" /><input name="authenticity_token" type="hidden" value="Y6mPMbtcGNNImzWezOK9+ciB0+kUJn77IEfTDtRKfn9A64Nbt/x8Upd1gbM5kA+WXeRSj4xQth5PnKaZ9QmVVA==" /></div>
+    <!-- </textarea> --><!-- '"` --><form accept-charset="UTF-8" action="/jquery/jquery-ui/unstar" class="starred" data-form-nonce="e59486a7de80c655e458eea656cf4ac086fd7205" data-remote="true" method="post"><div style="margin:0;padding:0;display:inline"><input name="utf8" type="hidden" value="&#x2713;" /><input name="authenticity_token" type="hidden" value="KHEBMxJa/VqZfAhehxK8SIUamfn0RCIgUZUwIV9uS+Zps8ZLEotYTCXtTcd95tizyRIrHnkYWeTETWxE0kWBhQ==" /></div>
       <button
         class="btn btn-sm btn-with-count js-toggler-target"
         aria-label="Unstar this repository" title="Unstar jquery/jquery-ui"
@@ -344,7 +344,7 @@
           9,618
         </a>
 </form>
-    <!-- </textarea> --><!-- '"` --><form accept-charset="UTF-8" action="/jquery/jquery-ui/star" class="unstarred" data-form-nonce="e59486a7de80c655e458eea656cf4ac086fd7205" data-remote="true" method="post"><div style="margin:0;padding:0;display:inline"><input name="utf8" type="hidden" value="&#x2713;" /><input name="authenticity_token" type="hidden" value="m8cxMK3E5TwupFJVgnu5hM5Kf/zmu7Mg+HVeUFpAJ7nDvd8nXRetpqSgaIY2gxOKobYEuV1mhifd5SiQcwJIoA==" /></div>
+    <!-- </textarea> --><!-- '"` --><form accept-charset="UTF-8" action="/jquery/jquery-ui/star" class="unstarred" data-form-nonce="e59486a7de80c655e458eea656cf4ac086fd7205" data-remote="true" method="post"><div style="margin:0;padding:0;display:inline"><input name="utf8" type="hidden" value="&#x2713;" /><input name="authenticity_token" type="hidden" value="r1ScJPNp2rckOzQYtrIg1saqF4gMXlmaZ7WF3iikfIx3/nqPzcEuhP+W8HfJMboQB14AST7ImRTgbjY3T1fCnQ==" /></div>
       <button
         class="btn btn-sm btn-with-count js-toggler-target"
         aria-label="Star this repository" title="Star jquery/jquery-ui"
@@ -438,9 +438,9 @@
 
     
 
-<a href="/jquery/jquery-ui/blob/3dd8a09b441d65445f2b6a7c73e72af65445d5da/ui/i18n/datepicker-it.js" class="hidden js-permalink-shortcut" data-hotkey="y">Permalink</a>
+<a href="/jquery/jquery-ui/blob/3dd8a09b441d65445f2b6a7c73e72af65445d5da/ui/i18n/datepicker-tr.js" class="hidden js-permalink-shortcut" data-hotkey="y">Permalink</a>
 
-<!-- blob contrib key: blob_contributors:v21:099233659c0a4fb1904795ee79b9950d -->
+<!-- blob contrib key: blob_contributors:v21:e8689ccd79b849552707eb121008ade0 -->
 
 <div class="file-navigation js-zeroclipboard-container">
   
@@ -482,7 +482,7 @@
 
 
             <a class="select-menu-item js-navigation-item js-navigation-open "
-               href="/jquery/jquery-ui/blob/1-8-stable/ui/i18n/datepicker-it.js"
+               href="/jquery/jquery-ui/blob/1-8-stable/ui/i18n/datepicker-tr.js"
                data-name="1-8-stable"
                data-skip-pjax="true"
                rel="nofollow">
@@ -492,7 +492,7 @@
               </span>
             </a>
             <a class="select-menu-item js-navigation-item js-navigation-open "
-               href="/jquery/jquery-ui/blob/1-9-stable/ui/i18n/datepicker-it.js"
+               href="/jquery/jquery-ui/blob/1-9-stable/ui/i18n/datepicker-tr.js"
                data-name="1-9-stable"
                data-skip-pjax="true"
                rel="nofollow">
@@ -502,7 +502,7 @@
               </span>
             </a>
             <a class="select-menu-item js-navigation-item js-navigation-open "
-               href="/jquery/jquery-ui/blob/1-10-stable/ui/i18n/datepicker-it.js"
+               href="/jquery/jquery-ui/blob/1-10-stable/ui/i18n/datepicker-tr.js"
                data-name="1-10-stable"
                data-skip-pjax="true"
                rel="nofollow">
@@ -512,7 +512,7 @@
               </span>
             </a>
             <a class="select-menu-item js-navigation-item js-navigation-open "
-               href="/jquery/jquery-ui/blob/1-11-stable/ui/i18n/datepicker-it.js"
+               href="/jquery/jquery-ui/blob/1-11-stable/ui/i18n/datepicker-tr.js"
                data-name="1-11-stable"
                data-skip-pjax="true"
                rel="nofollow">
@@ -522,7 +522,7 @@
               </span>
             </a>
             <a class="select-menu-item js-navigation-item js-navigation-open "
-               href="/jquery/jquery-ui/blob/datepicker-globalize-1.x/ui/i18n/datepicker-it.js"
+               href="/jquery/jquery-ui/blob/datepicker-globalize-1.x/ui/i18n/datepicker-tr.js"
                data-name="datepicker-globalize-1.x"
                data-skip-pjax="true"
                rel="nofollow">
@@ -532,7 +532,7 @@
               </span>
             </a>
             <a class="select-menu-item js-navigation-item js-navigation-open "
-               href="/jquery/jquery-ui/blob/datepicker/ui/i18n/datepicker-it.js"
+               href="/jquery/jquery-ui/blob/datepicker/ui/i18n/datepicker-tr.js"
                data-name="datepicker"
                data-skip-pjax="true"
                rel="nofollow">
@@ -542,7 +542,7 @@
               </span>
             </a>
             <a class="select-menu-item js-navigation-item js-navigation-open "
-               href="/jquery/jquery-ui/blob/interactions/ui/i18n/datepicker-it.js"
+               href="/jquery/jquery-ui/blob/interactions/ui/i18n/datepicker-tr.js"
                data-name="interactions"
                data-skip-pjax="true"
                rel="nofollow">
@@ -552,7 +552,7 @@
               </span>
             </a>
             <a class="select-menu-item js-navigation-item js-navigation-open selected"
-               href="/jquery/jquery-ui/blob/master/ui/i18n/datepicker-it.js"
+               href="/jquery/jquery-ui/blob/master/ui/i18n/datepicker-tr.js"
                data-name="master"
                data-skip-pjax="true"
                rel="nofollow">
@@ -562,7 +562,7 @@
               </span>
             </a>
             <a class="select-menu-item js-navigation-item js-navigation-open "
-               href="/jquery/jquery-ui/blob/selectmenu-native-menu/ui/i18n/datepicker-it.js"
+               href="/jquery/jquery-ui/blob/selectmenu-native-menu/ui/i18n/datepicker-tr.js"
                data-name="selectmenu-native-menu"
                data-skip-pjax="true"
                rel="nofollow">
@@ -572,7 +572,7 @@
               </span>
             </a>
             <a class="select-menu-item js-navigation-item js-navigation-open "
-               href="/jquery/jquery-ui/blob/spinner-globalize-1.x/ui/i18n/datepicker-it.js"
+               href="/jquery/jquery-ui/blob/spinner-globalize-1.x/ui/i18n/datepicker-tr.js"
                data-name="spinner-globalize-1.x"
                data-skip-pjax="true"
                rel="nofollow">
@@ -591,7 +591,7 @@
 
 
             <a class="select-menu-item js-navigation-item js-navigation-open "
-              href="/jquery/jquery-ui/tree/1.12.0/ui/i18n/datepicker-it.js"
+              href="/jquery/jquery-ui/tree/1.12.0/ui/i18n/datepicker-tr.js"
               data-name="1.12.0"
               data-skip-pjax="true"
               rel="nofollow">
@@ -601,7 +601,7 @@
               </span>
             </a>
             <a class="select-menu-item js-navigation-item js-navigation-open "
-              href="/jquery/jquery-ui/tree/1.12.0-rc.2/ui/i18n/datepicker-it.js"
+              href="/jquery/jquery-ui/tree/1.12.0-rc.2/ui/i18n/datepicker-tr.js"
               data-name="1.12.0-rc.2"
               data-skip-pjax="true"
               rel="nofollow">
@@ -611,7 +611,7 @@
               </span>
             </a>
             <a class="select-menu-item js-navigation-item js-navigation-open "
-              href="/jquery/jquery-ui/tree/1.12.0-rc.1/ui/i18n/datepicker-it.js"
+              href="/jquery/jquery-ui/tree/1.12.0-rc.1/ui/i18n/datepicker-tr.js"
               data-name="1.12.0-rc.1"
               data-skip-pjax="true"
               rel="nofollow">
@@ -621,7 +621,7 @@
               </span>
             </a>
             <a class="select-menu-item js-navigation-item js-navigation-open "
-              href="/jquery/jquery-ui/tree/1.12.0-beta.1/ui/i18n/datepicker-it.js"
+              href="/jquery/jquery-ui/tree/1.12.0-beta.1/ui/i18n/datepicker-tr.js"
               data-name="1.12.0-beta.1"
               data-skip-pjax="true"
               rel="nofollow">
@@ -631,7 +631,7 @@
               </span>
             </a>
             <a class="select-menu-item js-navigation-item js-navigation-open "
-              href="/jquery/jquery-ui/tree/1.11.4/ui/i18n/datepicker-it.js"
+              href="/jquery/jquery-ui/tree/1.11.4/ui/i18n/datepicker-tr.js"
               data-name="1.11.4"
               data-skip-pjax="true"
               rel="nofollow">
@@ -641,7 +641,7 @@
               </span>
             </a>
             <a class="select-menu-item js-navigation-item js-navigation-open "
-              href="/jquery/jquery-ui/tree/1.11.3/ui/i18n/datepicker-it.js"
+              href="/jquery/jquery-ui/tree/1.11.3/ui/i18n/datepicker-tr.js"
               data-name="1.11.3"
               data-skip-pjax="true"
               rel="nofollow">
@@ -651,7 +651,7 @@
               </span>
             </a>
             <a class="select-menu-item js-navigation-item js-navigation-open "
-              href="/jquery/jquery-ui/tree/1.11.2/ui/i18n/datepicker-it.js"
+              href="/jquery/jquery-ui/tree/1.11.2/ui/i18n/datepicker-tr.js"
               data-name="1.11.2"
               data-skip-pjax="true"
               rel="nofollow">
@@ -661,7 +661,7 @@
               </span>
             </a>
             <a class="select-menu-item js-navigation-item js-navigation-open "
-              href="/jquery/jquery-ui/tree/1.11.1/ui/i18n/datepicker-it.js"
+              href="/jquery/jquery-ui/tree/1.11.1/ui/i18n/datepicker-tr.js"
               data-name="1.11.1"
               data-skip-pjax="true"
               rel="nofollow">
@@ -671,7 +671,7 @@
               </span>
             </a>
             <a class="select-menu-item js-navigation-item js-navigation-open "
-              href="/jquery/jquery-ui/tree/1.11.0/ui/i18n/datepicker-it.js"
+              href="/jquery/jquery-ui/tree/1.11.0/ui/i18n/datepicker-tr.js"
               data-name="1.11.0"
               data-skip-pjax="true"
               rel="nofollow">
@@ -681,7 +681,7 @@
               </span>
             </a>
             <a class="select-menu-item js-navigation-item js-navigation-open "
-              href="/jquery/jquery-ui/tree/1.11.0-beta.2/ui/i18n/datepicker-it.js"
+              href="/jquery/jquery-ui/tree/1.11.0-beta.2/ui/i18n/datepicker-tr.js"
               data-name="1.11.0-beta.2"
               data-skip-pjax="true"
               rel="nofollow">
@@ -691,7 +691,7 @@
               </span>
             </a>
             <a class="select-menu-item js-navigation-item js-navigation-open "
-              href="/jquery/jquery-ui/tree/1.11.0-beta.1/ui/i18n/datepicker-it.js"
+              href="/jquery/jquery-ui/tree/1.11.0-beta.1/ui/i18n/datepicker-tr.js"
               data-name="1.11.0-beta.1"
               data-skip-pjax="true"
               rel="nofollow">
@@ -701,7 +701,7 @@
               </span>
             </a>
             <a class="select-menu-item js-navigation-item js-navigation-open "
-              href="/jquery/jquery-ui/tree/1.10.4/ui/i18n/datepicker-it.js"
+              href="/jquery/jquery-ui/tree/1.10.4/ui/i18n/datepicker-tr.js"
               data-name="1.10.4"
               data-skip-pjax="true"
               rel="nofollow">
@@ -711,7 +711,7 @@
               </span>
             </a>
             <a class="select-menu-item js-navigation-item js-navigation-open "
-              href="/jquery/jquery-ui/tree/1.10.3/ui/i18n/datepicker-it.js"
+              href="/jquery/jquery-ui/tree/1.10.3/ui/i18n/datepicker-tr.js"
               data-name="1.10.3"
               data-skip-pjax="true"
               rel="nofollow">
@@ -721,7 +721,7 @@
               </span>
             </a>
             <a class="select-menu-item js-navigation-item js-navigation-open "
-              href="/jquery/jquery-ui/tree/1.10.2/ui/i18n/datepicker-it.js"
+              href="/jquery/jquery-ui/tree/1.10.2/ui/i18n/datepicker-tr.js"
               data-name="1.10.2"
               data-skip-pjax="true"
               rel="nofollow">
@@ -731,7 +731,7 @@
               </span>
             </a>
             <a class="select-menu-item js-navigation-item js-navigation-open "
-              href="/jquery/jquery-ui/tree/1.10.1/ui/i18n/datepicker-it.js"
+              href="/jquery/jquery-ui/tree/1.10.1/ui/i18n/datepicker-tr.js"
               data-name="1.10.1"
               data-skip-pjax="true"
               rel="nofollow">
@@ -741,7 +741,7 @@
               </span>
             </a>
             <a class="select-menu-item js-navigation-item js-navigation-open "
-              href="/jquery/jquery-ui/tree/1.10.0/ui/i18n/datepicker-it.js"
+              href="/jquery/jquery-ui/tree/1.10.0/ui/i18n/datepicker-tr.js"
               data-name="1.10.0"
               data-skip-pjax="true"
               rel="nofollow">
@@ -751,7 +751,7 @@
               </span>
             </a>
             <a class="select-menu-item js-navigation-item js-navigation-open "
-              href="/jquery/jquery-ui/tree/1.10.0-rc.1/ui/i18n/datepicker-it.js"
+              href="/jquery/jquery-ui/tree/1.10.0-rc.1/ui/i18n/datepicker-tr.js"
               data-name="1.10.0-rc.1"
               data-skip-pjax="true"
               rel="nofollow">
@@ -761,7 +761,7 @@
               </span>
             </a>
             <a class="select-menu-item js-navigation-item js-navigation-open "
-              href="/jquery/jquery-ui/tree/1.10.0-beta.1/ui/i18n/datepicker-it.js"
+              href="/jquery/jquery-ui/tree/1.10.0-beta.1/ui/i18n/datepicker-tr.js"
               data-name="1.10.0-beta.1"
               data-skip-pjax="true"
               rel="nofollow">
@@ -771,7 +771,7 @@
               </span>
             </a>
             <a class="select-menu-item js-navigation-item js-navigation-open "
-              href="/jquery/jquery-ui/tree/1.9.2/ui/i18n/datepicker-it.js"
+              href="/jquery/jquery-ui/tree/1.9.2/ui/i18n/datepicker-tr.js"
               data-name="1.9.2"
               data-skip-pjax="true"
               rel="nofollow">
@@ -781,7 +781,7 @@
               </span>
             </a>
             <a class="select-menu-item js-navigation-item js-navigation-open "
-              href="/jquery/jquery-ui/tree/1.9.1/ui/i18n/datepicker-it.js"
+              href="/jquery/jquery-ui/tree/1.9.1/ui/i18n/datepicker-tr.js"
               data-name="1.9.1"
               data-skip-pjax="true"
               rel="nofollow">
@@ -791,7 +791,7 @@
               </span>
             </a>
             <a class="select-menu-item js-navigation-item js-navigation-open "
-              href="/jquery/jquery-ui/tree/1.9.0/ui/i18n/datepicker-it.js"
+              href="/jquery/jquery-ui/tree/1.9.0/ui/i18n/datepicker-tr.js"
               data-name="1.9.0"
               data-skip-pjax="true"
               rel="nofollow">
@@ -801,7 +801,7 @@
               </span>
             </a>
             <a class="select-menu-item js-navigation-item js-navigation-open "
-              href="/jquery/jquery-ui/tree/1.9.0m8/ui/i18n/datepicker-it.js"
+              href="/jquery/jquery-ui/tree/1.9.0m8/ui/i18n/datepicker-tr.js"
               data-name="1.9.0m8"
               data-skip-pjax="true"
               rel="nofollow">
@@ -811,7 +811,7 @@
               </span>
             </a>
             <a class="select-menu-item js-navigation-item js-navigation-open "
-              href="/jquery/jquery-ui/tree/1.9.0-rc.1/ui/i18n/datepicker-it.js"
+              href="/jquery/jquery-ui/tree/1.9.0-rc.1/ui/i18n/datepicker-tr.js"
               data-name="1.9.0-rc.1"
               data-skip-pjax="true"
               rel="nofollow">
@@ -821,7 +821,7 @@
               </span>
             </a>
             <a class="select-menu-item js-navigation-item js-navigation-open "
-              href="/jquery/jquery-ui/tree/1.9.0-beta.1/ui/i18n/datepicker-it.js"
+              href="/jquery/jquery-ui/tree/1.9.0-beta.1/ui/i18n/datepicker-tr.js"
               data-name="1.9.0-beta.1"
               data-skip-pjax="true"
               rel="nofollow">
@@ -831,7 +831,7 @@
               </span>
             </a>
             <a class="select-menu-item js-navigation-item js-navigation-open "
-              href="/jquery/jquery-ui/tree/1.9m7/ui/i18n/datepicker-it.js"
+              href="/jquery/jquery-ui/tree/1.9m7/ui/i18n/datepicker-tr.js"
               data-name="1.9m7"
               data-skip-pjax="true"
               rel="nofollow">
@@ -841,7 +841,7 @@
               </span>
             </a>
             <a class="select-menu-item js-navigation-item js-navigation-open "
-              href="/jquery/jquery-ui/tree/1.9m6/ui/i18n/datepicker-it.js"
+              href="/jquery/jquery-ui/tree/1.9m6/ui/i18n/datepicker-tr.js"
               data-name="1.9m6"
               data-skip-pjax="true"
               rel="nofollow">
@@ -851,7 +851,7 @@
               </span>
             </a>
             <a class="select-menu-item js-navigation-item js-navigation-open "
-              href="/jquery/jquery-ui/tree/1.9m5/ui/i18n/datepicker-it.js"
+              href="/jquery/jquery-ui/tree/1.9m5/ui/i18n/datepicker-tr.js"
               data-name="1.9m5"
               data-skip-pjax="true"
               rel="nofollow">
@@ -861,7 +861,7 @@
               </span>
             </a>
             <a class="select-menu-item js-navigation-item js-navigation-open "
-              href="/jquery/jquery-ui/tree/1.9m4/ui/i18n/datepicker-it.js"
+              href="/jquery/jquery-ui/tree/1.9m4/ui/i18n/datepicker-tr.js"
               data-name="1.9m4"
               data-skip-pjax="true"
               rel="nofollow">
@@ -871,7 +871,7 @@
               </span>
             </a>
             <a class="select-menu-item js-navigation-item js-navigation-open "
-              href="/jquery/jquery-ui/tree/1.9m3/ui/i18n/datepicker-it.js"
+              href="/jquery/jquery-ui/tree/1.9m3/ui/i18n/datepicker-tr.js"
               data-name="1.9m3"
               data-skip-pjax="true"
               rel="nofollow">
@@ -881,7 +881,7 @@
               </span>
             </a>
             <a class="select-menu-item js-navigation-item js-navigation-open "
-              href="/jquery/jquery-ui/tree/1.9m2/ui/i18n/datepicker-it.js"
+              href="/jquery/jquery-ui/tree/1.9m2/ui/i18n/datepicker-tr.js"
               data-name="1.9m2"
               data-skip-pjax="true"
               rel="nofollow">
@@ -891,7 +891,7 @@
               </span>
             </a>
             <a class="select-menu-item js-navigation-item js-navigation-open "
-              href="/jquery/jquery-ui/tree/1.9m1/ui/i18n/datepicker-it.js"
+              href="/jquery/jquery-ui/tree/1.9m1/ui/i18n/datepicker-tr.js"
               data-name="1.9m1"
               data-skip-pjax="true"
               rel="nofollow">
@@ -901,7 +901,7 @@
               </span>
             </a>
             <a class="select-menu-item js-navigation-item js-navigation-open "
-              href="/jquery/jquery-ui/tree/1.8.24/ui/i18n/datepicker-it.js"
+              href="/jquery/jquery-ui/tree/1.8.24/ui/i18n/datepicker-tr.js"
               data-name="1.8.24"
               data-skip-pjax="true"
               rel="nofollow">
@@ -911,7 +911,7 @@
               </span>
             </a>
             <a class="select-menu-item js-navigation-item js-navigation-open "
-              href="/jquery/jquery-ui/tree/1.8.23/ui/i18n/datepicker-it.js"
+              href="/jquery/jquery-ui/tree/1.8.23/ui/i18n/datepicker-tr.js"
               data-name="1.8.23"
               data-skip-pjax="true"
               rel="nofollow">
@@ -921,7 +921,7 @@
               </span>
             </a>
             <a class="select-menu-item js-navigation-item js-navigation-open "
-              href="/jquery/jquery-ui/tree/1.8.22/ui/i18n/datepicker-it.js"
+              href="/jquery/jquery-ui/tree/1.8.22/ui/i18n/datepicker-tr.js"
               data-name="1.8.22"
               data-skip-pjax="true"
               rel="nofollow">
@@ -931,7 +931,7 @@
               </span>
             </a>
             <a class="select-menu-item js-navigation-item js-navigation-open "
-              href="/jquery/jquery-ui/tree/1.8.21/ui/i18n/datepicker-it.js"
+              href="/jquery/jquery-ui/tree/1.8.21/ui/i18n/datepicker-tr.js"
               data-name="1.8.21"
               data-skip-pjax="true"
               rel="nofollow">
@@ -941,7 +941,7 @@
               </span>
             </a>
             <a class="select-menu-item js-navigation-item js-navigation-open "
-              href="/jquery/jquery-ui/tree/1.8.20/ui/i18n/datepicker-it.js"
+              href="/jquery/jquery-ui/tree/1.8.20/ui/i18n/datepicker-tr.js"
               data-name="1.8.20"
               data-skip-pjax="true"
               rel="nofollow">
@@ -951,7 +951,7 @@
               </span>
             </a>
             <a class="select-menu-item js-navigation-item js-navigation-open "
-              href="/jquery/jquery-ui/tree/1.8.19/ui/i18n/datepicker-it.js"
+              href="/jquery/jquery-ui/tree/1.8.19/ui/i18n/datepicker-tr.js"
               data-name="1.8.19"
               data-skip-pjax="true"
               rel="nofollow">
@@ -961,7 +961,7 @@
               </span>
             </a>
             <a class="select-menu-item js-navigation-item js-navigation-open "
-              href="/jquery/jquery-ui/tree/1.8.18/ui/i18n/datepicker-it.js"
+              href="/jquery/jquery-ui/tree/1.8.18/ui/i18n/datepicker-tr.js"
               data-name="1.8.18"
               data-skip-pjax="true"
               rel="nofollow">
@@ -971,7 +971,7 @@
               </span>
             </a>
             <a class="select-menu-item js-navigation-item js-navigation-open "
-              href="/jquery/jquery-ui/tree/1.8.17/ui/i18n/datepicker-it.js"
+              href="/jquery/jquery-ui/tree/1.8.17/ui/i18n/datepicker-tr.js"
               data-name="1.8.17"
               data-skip-pjax="true"
               rel="nofollow">
@@ -981,7 +981,7 @@
               </span>
             </a>
             <a class="select-menu-item js-navigation-item js-navigation-open "
-              href="/jquery/jquery-ui/tree/1.8.16/ui/i18n/datepicker-it.js"
+              href="/jquery/jquery-ui/tree/1.8.16/ui/i18n/datepicker-tr.js"
               data-name="1.8.16"
               data-skip-pjax="true"
               rel="nofollow">
@@ -991,7 +991,7 @@
               </span>
             </a>
             <a class="select-menu-item js-navigation-item js-navigation-open "
-              href="/jquery/jquery-ui/tree/1.8.15/ui/i18n/datepicker-it.js"
+              href="/jquery/jquery-ui/tree/1.8.15/ui/i18n/datepicker-tr.js"
               data-name="1.8.15"
               data-skip-pjax="true"
               rel="nofollow">
@@ -1001,7 +1001,7 @@
               </span>
             </a>
             <a class="select-menu-item js-navigation-item js-navigation-open "
-              href="/jquery/jquery-ui/tree/1.8.14/ui/i18n/datepicker-it.js"
+              href="/jquery/jquery-ui/tree/1.8.14/ui/i18n/datepicker-tr.js"
               data-name="1.8.14"
               data-skip-pjax="true"
               rel="nofollow">
@@ -1011,7 +1011,7 @@
               </span>
             </a>
             <a class="select-menu-item js-navigation-item js-navigation-open "
-              href="/jquery/jquery-ui/tree/1.8.13/ui/i18n/datepicker-it.js"
+              href="/jquery/jquery-ui/tree/1.8.13/ui/i18n/datepicker-tr.js"
               data-name="1.8.13"
               data-skip-pjax="true"
               rel="nofollow">
@@ -1021,7 +1021,7 @@
               </span>
             </a>
             <a class="select-menu-item js-navigation-item js-navigation-open "
-              href="/jquery/jquery-ui/tree/1.8.12/ui/i18n/datepicker-it.js"
+              href="/jquery/jquery-ui/tree/1.8.12/ui/i18n/datepicker-tr.js"
               data-name="1.8.12"
               data-skip-pjax="true"
               rel="nofollow">
@@ -1031,7 +1031,7 @@
               </span>
             </a>
             <a class="select-menu-item js-navigation-item js-navigation-open "
-              href="/jquery/jquery-ui/tree/1.8.11/ui/i18n/datepicker-it.js"
+              href="/jquery/jquery-ui/tree/1.8.11/ui/i18n/datepicker-tr.js"
               data-name="1.8.11"
               data-skip-pjax="true"
               rel="nofollow">
@@ -1041,7 +1041,7 @@
               </span>
             </a>
             <a class="select-menu-item js-navigation-item js-navigation-open "
-              href="/jquery/jquery-ui/tree/1.8.10/ui/i18n/datepicker-it.js"
+              href="/jquery/jquery-ui/tree/1.8.10/ui/i18n/datepicker-tr.js"
               data-name="1.8.10"
               data-skip-pjax="true"
               rel="nofollow">
@@ -1051,7 +1051,7 @@
               </span>
             </a>
             <a class="select-menu-item js-navigation-item js-navigation-open "
-              href="/jquery/jquery-ui/tree/1.8.9/ui/i18n/datepicker-it.js"
+              href="/jquery/jquery-ui/tree/1.8.9/ui/i18n/datepicker-tr.js"
               data-name="1.8.9"
               data-skip-pjax="true"
               rel="nofollow">
@@ -1061,7 +1061,7 @@
               </span>
             </a>
             <a class="select-menu-item js-navigation-item js-navigation-open "
-              href="/jquery/jquery-ui/tree/1.8.8/ui/i18n/datepicker-it.js"
+              href="/jquery/jquery-ui/tree/1.8.8/ui/i18n/datepicker-tr.js"
               data-name="1.8.8"
               data-skip-pjax="true"
               rel="nofollow">
@@ -1071,7 +1071,7 @@
               </span>
             </a>
             <a class="select-menu-item js-navigation-item js-navigation-open "
-              href="/jquery/jquery-ui/tree/1.8.7/ui/i18n/datepicker-it.js"
+              href="/jquery/jquery-ui/tree/1.8.7/ui/i18n/datepicker-tr.js"
               data-name="1.8.7"
               data-skip-pjax="true"
               rel="nofollow">
@@ -1081,7 +1081,7 @@
               </span>
             </a>
             <a class="select-menu-item js-navigation-item js-navigation-open "
-              href="/jquery/jquery-ui/tree/1.8.6/ui/i18n/datepicker-it.js"
+              href="/jquery/jquery-ui/tree/1.8.6/ui/i18n/datepicker-tr.js"
               data-name="1.8.6"
               data-skip-pjax="true"
               rel="nofollow">
@@ -1091,7 +1091,7 @@
               </span>
             </a>
             <a class="select-menu-item js-navigation-item js-navigation-open "
-              href="/jquery/jquery-ui/tree/1.8.5/ui/i18n/datepicker-it.js"
+              href="/jquery/jquery-ui/tree/1.8.5/ui/i18n/datepicker-tr.js"
               data-name="1.8.5"
               data-skip-pjax="true"
               rel="nofollow">
@@ -1101,7 +1101,7 @@
               </span>
             </a>
             <a class="select-menu-item js-navigation-item js-navigation-open "
-              href="/jquery/jquery-ui/tree/1.8.4/ui/i18n/datepicker-it.js"
+              href="/jquery/jquery-ui/tree/1.8.4/ui/i18n/datepicker-tr.js"
               data-name="1.8.4"
               data-skip-pjax="true"
               rel="nofollow">
@@ -1111,7 +1111,7 @@
               </span>
             </a>
             <a class="select-menu-item js-navigation-item js-navigation-open "
-              href="/jquery/jquery-ui/tree/1.8.3/ui/i18n/datepicker-it.js"
+              href="/jquery/jquery-ui/tree/1.8.3/ui/i18n/datepicker-tr.js"
               data-name="1.8.3"
               data-skip-pjax="true"
               rel="nofollow">
@@ -1121,7 +1121,7 @@
               </span>
             </a>
             <a class="select-menu-item js-navigation-item js-navigation-open "
-              href="/jquery/jquery-ui/tree/1.8.2/ui/i18n/datepicker-it.js"
+              href="/jquery/jquery-ui/tree/1.8.2/ui/i18n/datepicker-tr.js"
               data-name="1.8.2"
               data-skip-pjax="true"
               rel="nofollow">
@@ -1131,7 +1131,7 @@
               </span>
             </a>
             <a class="select-menu-item js-navigation-item js-navigation-open "
-              href="/jquery/jquery-ui/tree/1.8.1/ui/i18n/datepicker-it.js"
+              href="/jquery/jquery-ui/tree/1.8.1/ui/i18n/datepicker-tr.js"
               data-name="1.8.1"
               data-skip-pjax="true"
               rel="nofollow">
@@ -1141,7 +1141,7 @@
               </span>
             </a>
             <a class="select-menu-item js-navigation-item js-navigation-open "
-              href="/jquery/jquery-ui/tree/1.8/ui/i18n/datepicker-it.js"
+              href="/jquery/jquery-ui/tree/1.8/ui/i18n/datepicker-tr.js"
               data-name="1.8"
               data-skip-pjax="true"
               rel="nofollow">
@@ -1151,7 +1151,7 @@
               </span>
             </a>
             <a class="select-menu-item js-navigation-item js-navigation-open "
-              href="/jquery/jquery-ui/tree/1.8rc3/ui/i18n/datepicker-it.js"
+              href="/jquery/jquery-ui/tree/1.8rc3/ui/i18n/datepicker-tr.js"
               data-name="1.8rc3"
               data-skip-pjax="true"
               rel="nofollow">
@@ -1161,7 +1161,7 @@
               </span>
             </a>
             <a class="select-menu-item js-navigation-item js-navigation-open "
-              href="/jquery/jquery-ui/tree/1.8rc2/ui/i18n/datepicker-it.js"
+              href="/jquery/jquery-ui/tree/1.8rc2/ui/i18n/datepicker-tr.js"
               data-name="1.8rc2"
               data-skip-pjax="true"
               rel="nofollow">
@@ -1171,7 +1171,7 @@
               </span>
             </a>
             <a class="select-menu-item js-navigation-item js-navigation-open "
-              href="/jquery/jquery-ui/tree/1.8rc1/ui/i18n/datepicker-it.js"
+              href="/jquery/jquery-ui/tree/1.8rc1/ui/i18n/datepicker-tr.js"
               data-name="1.8rc1"
               data-skip-pjax="true"
               rel="nofollow">
@@ -1181,7 +1181,7 @@
               </span>
             </a>
             <a class="select-menu-item js-navigation-item js-navigation-open "
-              href="/jquery/jquery-ui/tree/1.8b1/ui/i18n/datepicker-it.js"
+              href="/jquery/jquery-ui/tree/1.8b1/ui/i18n/datepicker-tr.js"
               data-name="1.8b1"
               data-skip-pjax="true"
               rel="nofollow">
@@ -1191,7 +1191,7 @@
               </span>
             </a>
             <a class="select-menu-item js-navigation-item js-navigation-open "
-              href="/jquery/jquery-ui/tree/1.8a2/ui/i18n/datepicker-it.js"
+              href="/jquery/jquery-ui/tree/1.8a2/ui/i18n/datepicker-tr.js"
               data-name="1.8a2"
               data-skip-pjax="true"
               rel="nofollow">
@@ -1201,7 +1201,7 @@
               </span>
             </a>
             <a class="select-menu-item js-navigation-item js-navigation-open "
-              href="/jquery/jquery-ui/tree/1.8a1/ui/i18n/datepicker-it.js"
+              href="/jquery/jquery-ui/tree/1.8a1/ui/i18n/datepicker-tr.js"
               data-name="1.8a1"
               data-skip-pjax="true"
               rel="nofollow">
@@ -1211,7 +1211,7 @@
               </span>
             </a>
             <a class="select-menu-item js-navigation-item js-navigation-open "
-              href="/jquery/jquery-ui/tree/1.7/ui/i18n/datepicker-it.js"
+              href="/jquery/jquery-ui/tree/1.7/ui/i18n/datepicker-tr.js"
               data-name="1.7"
               data-skip-pjax="true"
               rel="nofollow">
@@ -1221,7 +1221,7 @@
               </span>
             </a>
             <a class="select-menu-item js-navigation-item js-navigation-open "
-              href="/jquery/jquery-ui/tree/1.6/ui/i18n/datepicker-it.js"
+              href="/jquery/jquery-ui/tree/1.6/ui/i18n/datepicker-tr.js"
               data-name="1.6"
               data-skip-pjax="true"
               rel="nofollow">
@@ -1231,7 +1231,7 @@
               </span>
             </a>
             <a class="select-menu-item js-navigation-item js-navigation-open "
-              href="/jquery/jquery-ui/tree/1.6rc6/ui/i18n/datepicker-it.js"
+              href="/jquery/jquery-ui/tree/1.6rc6/ui/i18n/datepicker-tr.js"
               data-name="1.6rc6"
               data-skip-pjax="true"
               rel="nofollow">
@@ -1241,7 +1241,7 @@
               </span>
             </a>
             <a class="select-menu-item js-navigation-item js-navigation-open "
-              href="/jquery/jquery-ui/tree/1.6rc5/ui/i18n/datepicker-it.js"
+              href="/jquery/jquery-ui/tree/1.6rc5/ui/i18n/datepicker-tr.js"
               data-name="1.6rc5"
               data-skip-pjax="true"
               rel="nofollow">
@@ -1251,7 +1251,7 @@
               </span>
             </a>
             <a class="select-menu-item js-navigation-item js-navigation-open "
-              href="/jquery/jquery-ui/tree/1.6rc3/ui/i18n/datepicker-it.js"
+              href="/jquery/jquery-ui/tree/1.6rc3/ui/i18n/datepicker-tr.js"
               data-name="1.6rc3"
               data-skip-pjax="true"
               rel="nofollow">
@@ -1261,7 +1261,7 @@
               </span>
             </a>
             <a class="select-menu-item js-navigation-item js-navigation-open "
-              href="/jquery/jquery-ui/tree/1.6rc2/ui/i18n/datepicker-it.js"
+              href="/jquery/jquery-ui/tree/1.6rc2/ui/i18n/datepicker-tr.js"
               data-name="1.6rc2"
               data-skip-pjax="true"
               rel="nofollow">
@@ -1271,7 +1271,7 @@
               </span>
             </a>
             <a class="select-menu-item js-navigation-item js-navigation-open "
-              href="/jquery/jquery-ui/tree/1.5.2/ui/i18n/datepicker-it.js"
+              href="/jquery/jquery-ui/tree/1.5.2/ui/i18n/datepicker-tr.js"
               data-name="1.5.2"
               data-skip-pjax="true"
               rel="nofollow">
@@ -1281,7 +1281,7 @@
               </span>
             </a>
             <a class="select-menu-item js-navigation-item js-navigation-open "
-              href="/jquery/jquery-ui/tree/1.5.1/ui/i18n/datepicker-it.js"
+              href="/jquery/jquery-ui/tree/1.5.1/ui/i18n/datepicker-tr.js"
               data-name="1.5.1"
               data-skip-pjax="true"
               rel="nofollow">
@@ -1309,7 +1309,7 @@
     <button aria-label="Copy file path to clipboard" class="js-zeroclipboard btn btn-sm zeroclipboard-button tooltipped tooltipped-s" data-copied-hint="Copied!" type="button">Copy path</button>
   </div>
   <div class="breadcrumb js-zeroclipboard-target">
-    <span class="repo-root js-repo-root"><span class="js-path-segment"><a href="/jquery/jquery-ui"><span>jquery-ui</span></a></span></span><span class="separator">/</span><span class="js-path-segment"><a href="/jquery/jquery-ui/tree/master/ui"><span>ui</span></a></span><span class="separator">/</span><span class="js-path-segment"><a href="/jquery/jquery-ui/tree/master/ui/i18n"><span>i18n</span></a></span><span class="separator">/</span><strong class="final-path">datepicker-it.js</strong>
+    <span class="repo-root js-repo-root"><span class="js-path-segment"><a href="/jquery/jquery-ui"><span>jquery-ui</span></a></span></span><span class="separator">/</span><span class="js-path-segment"><a href="/jquery/jquery-ui/tree/master/ui"><span>ui</span></a></span><span class="separator">/</span><span class="js-path-segment"><a href="/jquery/jquery-ui/tree/master/ui/i18n"><span>i18n</span></a></span><span class="separator">/</span><strong class="final-path">datepicker-tr.js</strong>
   </div>
 </div>
 
@@ -1334,8 +1334,8 @@ Ref #14246">Datepicker: Style updates</a>
         <strong>2</strong>
          contributors
       </button>
-          <a class="avatar-link tooltipped tooltipped-s" aria-label="rxaviers" href="/jquery/jquery-ui/commits/master/ui/i18n/datepicker-it.js?author=rxaviers"><img alt="@rxaviers" class="avatar" height="20" src="https://avatars0.githubusercontent.com/u/967155?v=3&amp;s=40" width="20" /> </a>
-    <a class="avatar-link tooltipped tooltipped-s" aria-label="arschmitz" href="/jquery/jquery-ui/commits/master/ui/i18n/datepicker-it.js?author=arschmitz"><img alt="@arschmitz" class="avatar" height="20" src="https://avatars1.githubusercontent.com/u/462993?v=3&amp;s=40" width="20" /> </a>
+          <a class="avatar-link tooltipped tooltipped-s" aria-label="rxaviers" href="/jquery/jquery-ui/commits/master/ui/i18n/datepicker-tr.js?author=rxaviers"><img alt="@rxaviers" class="avatar" height="20" src="https://avatars0.githubusercontent.com/u/967155?v=3&amp;s=40" width="20" /> </a>
+    <a class="avatar-link tooltipped tooltipped-s" aria-label="arschmitz" href="/jquery/jquery-ui/commits/master/ui/i18n/datepicker-tr.js?author=arschmitz"><img alt="@arschmitz" class="avatar" height="20" src="https://avatars1.githubusercontent.com/u/462993?v=3&amp;s=40" width="20" /> </a>
 
 
     </div>
@@ -1360,24 +1360,24 @@ Ref #14246">Datepicker: Style updates</a>
   <div class="file-actions">
 
     <div class="btn-group">
-      <a href="/jquery/jquery-ui/raw/master/ui/i18n/datepicker-it.js" class="btn btn-sm " id="raw-url">Raw</a>
-        <a href="/jquery/jquery-ui/blame/master/ui/i18n/datepicker-it.js" class="btn btn-sm js-update-url-with-hash">Blame</a>
-      <a href="/jquery/jquery-ui/commits/master/ui/i18n/datepicker-it.js" class="btn btn-sm " rel="nofollow">History</a>
+      <a href="/jquery/jquery-ui/raw/master/ui/i18n/datepicker-tr.js" class="btn btn-sm " id="raw-url">Raw</a>
+        <a href="/jquery/jquery-ui/blame/master/ui/i18n/datepicker-tr.js" class="btn btn-sm js-update-url-with-hash">Blame</a>
+      <a href="/jquery/jquery-ui/commits/master/ui/i18n/datepicker-tr.js" class="btn btn-sm " rel="nofollow">History</a>
     </div>
 
         <a class="btn-octicon tooltipped tooltipped-nw"
-           href="github-mac://openRepo/https://github.com/jquery/jquery-ui?branch=master&amp;filepath=ui%2Fi18n%2Fdatepicker-it.js"
+           href="github-mac://openRepo/https://github.com/jquery/jquery-ui?branch=master&amp;filepath=ui%2Fi18n%2Fdatepicker-tr.js"
            aria-label="Open this file in GitHub Desktop"
            data-ga-click="Repository, open with desktop, type:mac">
             <svg aria-hidden="true" class="octicon octicon-device-desktop" height="16" version="1.1" viewBox="0 0 16 16" width="16"><path d="M15 2H1c-.55 0-1 .45-1 1v9c0 .55.45 1 1 1h5.34c-.25.61-.86 1.39-2.34 2h8c-1.48-.61-2.09-1.39-2.34-2H15c.55 0 1-.45 1-1V3c0-.55-.45-1-1-1zm0 9H1V3h14v8z"></path></svg>
         </a>
 
-        <!-- </textarea> --><!-- '"` --><form accept-charset="UTF-8" action="/jquery/jquery-ui/edit/master/ui/i18n/datepicker-it.js" class="inline-form js-update-url-with-hash" data-form-nonce="e59486a7de80c655e458eea656cf4ac086fd7205" method="post"><div style="margin:0;padding:0;display:inline"><input name="utf8" type="hidden" value="&#x2713;" /><input name="authenticity_token" type="hidden" value="DMj0vaSVu2rUVhSWsVMCebOQqZCf+VEmqD1L4BeaTzKmXVjcm83+K6k56T3JS7kKM1h+duK6PXXlnt374b6k+g==" /></div>
+        <!-- </textarea> --><!-- '"` --><form accept-charset="UTF-8" action="/jquery/jquery-ui/edit/master/ui/i18n/datepicker-tr.js" class="inline-form js-update-url-with-hash" data-form-nonce="e59486a7de80c655e458eea656cf4ac086fd7205" method="post"><div style="margin:0;padding:0;display:inline"><input name="utf8" type="hidden" value="&#x2713;" /><input name="authenticity_token" type="hidden" value="5ImWmXu7elEIwTz57XtOsESeknJQd8JQBFa7E42UerdGaADO+wCWmoSvlrl7XlfUes4cTDXwm9RFvagleHYXJg==" /></div>
           <button class="btn-octicon tooltipped tooltipped-nw" type="submit"
             aria-label="Fork this project and edit the file" data-hotkey="e" data-disable-with>
             <svg aria-hidden="true" class="octicon octicon-pencil" height="16" version="1.1" viewBox="0 0 14 16" width="14"><path d="M0 12v3h3l8-8-3-3-8 8zm3 2H1v-2h1v1h1v1zm10.3-9.3L12 6 9 3l1.3-1.3a.996.996 0 0 1 1.41 0l1.59 1.59c.39.39.39 1.02 0 1.41z"></path></svg>
           </button>
-</form>        <!-- </textarea> --><!-- '"` --><form accept-charset="UTF-8" action="/jquery/jquery-ui/delete/master/ui/i18n/datepicker-it.js" class="inline-form" data-form-nonce="e59486a7de80c655e458eea656cf4ac086fd7205" method="post"><div style="margin:0;padding:0;display:inline"><input name="utf8" type="hidden" value="&#x2713;" /><input name="authenticity_token" type="hidden" value="IcFjcUuttk8zUUOPKxN68XdIGzoEe35NE/jJbNXft1tPyUyVPVcjOeoJmfxI0l9WapFihcumtcuXMfwWOncoJQ==" /></div>
+</form>        <!-- </textarea> --><!-- '"` --><form accept-charset="UTF-8" action="/jquery/jquery-ui/delete/master/ui/i18n/datepicker-tr.js" class="inline-form" data-form-nonce="e59486a7de80c655e458eea656cf4ac086fd7205" method="post"><div style="margin:0;padding:0;display:inline"><input name="utf8" type="hidden" value="&#x2713;" /><input name="authenticity_token" type="hidden" value="zRzJbIPqKyLYWJ4j/byxD1/Md3LbZKlFGfUcA5oD5yPkOKIvr2SVKMrrsWwbsv5EmN4oxmLdG7CnmOEH4YDeBQ==" /></div>
           <button class="btn-octicon btn-octicon-danger tooltipped tooltipped-nw" type="submit"
             aria-label="Fork this project and delete the file" data-disable-with>
             <svg aria-hidden="true" class="octicon octicon-trashcan" height="16" version="1.1" viewBox="0 0 12 16" width="12"><path d="M11 2H9c0-.55-.45-1-1-1H5c-.55 0-1 .45-1 1H2c-.55 0-1 .45-1 1v1c0 .55.45 1 1 1v9c0 .55.45 1 1 1h7c.55 0 1-.45 1-1V5c.55 0 1-.45 1-1V3c0-.55-.45-1-1-1zm-1 12H3V5h1v8h1V5h1v8h1V5h1v8h1V5h1v9zm1-10H2V3h9v1z"></path></svg>
@@ -1387,7 +1387,7 @@ Ref #14246">Datepicker: Style updates</a>
   <div class="file-info">
       38 lines (32 sloc)
       <span class="file-info-divider"></span>
-    1.15 KB
+    1.12 KB
   </div>
 </div>
 
@@ -1397,11 +1397,11 @@ Ref #14246">Datepicker: Style updates</a>
       <table class="highlight tab-size js-file-line-container" data-tab-size="8">
       <tr>
         <td id="L1" class="blob-num js-line-number" data-line-number="1"></td>
-        <td id="LC1" class="blob-code blob-code-inner js-file-line"><span class="pl-c">/* Italian initialisation for the jQuery UI date picker plugin. */</span></td>
+        <td id="LC1" class="blob-code blob-code-inner js-file-line"><span class="pl-c">/* Turkish initialisation for the jQuery UI date picker plugin. */</span></td>
       </tr>
       <tr>
         <td id="L2" class="blob-num js-line-number" data-line-number="2"></td>
-        <td id="LC2" class="blob-code blob-code-inner js-file-line"><span class="pl-c">/* Written by Antonello Pasella (antonello.pasella@gmail.com). */</span></td>
+        <td id="LC2" class="blob-code blob-code-inner js-file-line"><span class="pl-c">/* Written by Izzet Emre Erkan (kara@karalamalar.net). */</span></td>
       </tr>
       <tr>
         <td id="L3" class="blob-num js-line-number" data-line-number="3"></td>
@@ -1456,59 +1456,59 @@ Ref #14246">Datepicker: Style updates</a>
       </tr>
       <tr>
         <td id="L15" class="blob-num js-line-number" data-line-number="15"></td>
-        <td id="LC15" class="blob-code blob-code-inner js-file-line"><span class="pl-smi">datepicker</span>.<span class="pl-smi">regional</span>.<span class="pl-smi">it</span> <span class="pl-k">=</span> {</td>
+        <td id="LC15" class="blob-code blob-code-inner js-file-line"><span class="pl-smi">datepicker</span>.<span class="pl-smi">regional</span>.<span class="pl-smi">tr</span> <span class="pl-k">=</span> {</td>
       </tr>
       <tr>
         <td id="L16" class="blob-num js-line-number" data-line-number="16"></td>
-        <td id="LC16" class="blob-code blob-code-inner js-file-line">	closeText<span class="pl-k">:</span> <span class="pl-s"><span class="pl-pds">&quot;</span>Chiudi<span class="pl-pds">&quot;</span></span>,</td>
+        <td id="LC16" class="blob-code blob-code-inner js-file-line">	closeText<span class="pl-k">:</span> <span class="pl-s"><span class="pl-pds">&quot;</span>kapat<span class="pl-pds">&quot;</span></span>,</td>
       </tr>
       <tr>
         <td id="L17" class="blob-num js-line-number" data-line-number="17"></td>
-        <td id="LC17" class="blob-code blob-code-inner js-file-line">	prevText<span class="pl-k">:</span> <span class="pl-s"><span class="pl-pds">&quot;</span>&amp;#x3C;Prec<span class="pl-pds">&quot;</span></span>,</td>
+        <td id="LC17" class="blob-code blob-code-inner js-file-line">	prevText<span class="pl-k">:</span> <span class="pl-s"><span class="pl-pds">&quot;</span>&amp;#x3C;geri<span class="pl-pds">&quot;</span></span>,</td>
       </tr>
       <tr>
         <td id="L18" class="blob-num js-line-number" data-line-number="18"></td>
-        <td id="LC18" class="blob-code blob-code-inner js-file-line">	nextText<span class="pl-k">:</span> <span class="pl-s"><span class="pl-pds">&quot;</span>Succ&amp;#x3E;<span class="pl-pds">&quot;</span></span>,</td>
+        <td id="LC18" class="blob-code blob-code-inner js-file-line">	nextText<span class="pl-k">:</span> <span class="pl-s"><span class="pl-pds">&quot;</span>ileri&amp;#x3e<span class="pl-pds">&quot;</span></span>,</td>
       </tr>
       <tr>
         <td id="L19" class="blob-num js-line-number" data-line-number="19"></td>
-        <td id="LC19" class="blob-code blob-code-inner js-file-line">	currentText<span class="pl-k">:</span> <span class="pl-s"><span class="pl-pds">&quot;</span>Oggi<span class="pl-pds">&quot;</span></span>,</td>
+        <td id="LC19" class="blob-code blob-code-inner js-file-line">	currentText<span class="pl-k">:</span> <span class="pl-s"><span class="pl-pds">&quot;</span>bugün<span class="pl-pds">&quot;</span></span>,</td>
       </tr>
       <tr>
         <td id="L20" class="blob-num js-line-number" data-line-number="20"></td>
-        <td id="LC20" class="blob-code blob-code-inner js-file-line">	monthNames<span class="pl-k">:</span> [ <span class="pl-s"><span class="pl-pds">&quot;</span>Gennaio<span class="pl-pds">&quot;</span></span>,<span class="pl-s"><span class="pl-pds">&quot;</span>Febbraio<span class="pl-pds">&quot;</span></span>,<span class="pl-s"><span class="pl-pds">&quot;</span>Marzo<span class="pl-pds">&quot;</span></span>,<span class="pl-s"><span class="pl-pds">&quot;</span>Aprile<span class="pl-pds">&quot;</span></span>,<span class="pl-s"><span class="pl-pds">&quot;</span>Maggio<span class="pl-pds">&quot;</span></span>,<span class="pl-s"><span class="pl-pds">&quot;</span>Giugno<span class="pl-pds">&quot;</span></span>,</td>
+        <td id="LC20" class="blob-code blob-code-inner js-file-line">	monthNames<span class="pl-k">:</span> [ <span class="pl-s"><span class="pl-pds">&quot;</span>Ocak<span class="pl-pds">&quot;</span></span>,<span class="pl-s"><span class="pl-pds">&quot;</span>Şubat<span class="pl-pds">&quot;</span></span>,<span class="pl-s"><span class="pl-pds">&quot;</span>Mart<span class="pl-pds">&quot;</span></span>,<span class="pl-s"><span class="pl-pds">&quot;</span>Nisan<span class="pl-pds">&quot;</span></span>,<span class="pl-s"><span class="pl-pds">&quot;</span>Mayıs<span class="pl-pds">&quot;</span></span>,<span class="pl-s"><span class="pl-pds">&quot;</span>Haziran<span class="pl-pds">&quot;</span></span>,</td>
       </tr>
       <tr>
         <td id="L21" class="blob-num js-line-number" data-line-number="21"></td>
-        <td id="LC21" class="blob-code blob-code-inner js-file-line">		<span class="pl-s"><span class="pl-pds">&quot;</span>Luglio<span class="pl-pds">&quot;</span></span>,<span class="pl-s"><span class="pl-pds">&quot;</span>Agosto<span class="pl-pds">&quot;</span></span>,<span class="pl-s"><span class="pl-pds">&quot;</span>Settembre<span class="pl-pds">&quot;</span></span>,<span class="pl-s"><span class="pl-pds">&quot;</span>Ottobre<span class="pl-pds">&quot;</span></span>,<span class="pl-s"><span class="pl-pds">&quot;</span>Novembre<span class="pl-pds">&quot;</span></span>,<span class="pl-s"><span class="pl-pds">&quot;</span>Dicembre<span class="pl-pds">&quot;</span></span> ],</td>
+        <td id="LC21" class="blob-code blob-code-inner js-file-line">	<span class="pl-s"><span class="pl-pds">&quot;</span>Temmuz<span class="pl-pds">&quot;</span></span>,<span class="pl-s"><span class="pl-pds">&quot;</span>Ağustos<span class="pl-pds">&quot;</span></span>,<span class="pl-s"><span class="pl-pds">&quot;</span>Eylül<span class="pl-pds">&quot;</span></span>,<span class="pl-s"><span class="pl-pds">&quot;</span>Ekim<span class="pl-pds">&quot;</span></span>,<span class="pl-s"><span class="pl-pds">&quot;</span>Kasım<span class="pl-pds">&quot;</span></span>,<span class="pl-s"><span class="pl-pds">&quot;</span>Aralık<span class="pl-pds">&quot;</span></span> ],</td>
       </tr>
       <tr>
         <td id="L22" class="blob-num js-line-number" data-line-number="22"></td>
-        <td id="LC22" class="blob-code blob-code-inner js-file-line">	monthNamesShort<span class="pl-k">:</span> [ <span class="pl-s"><span class="pl-pds">&quot;</span>Gen<span class="pl-pds">&quot;</span></span>,<span class="pl-s"><span class="pl-pds">&quot;</span>Feb<span class="pl-pds">&quot;</span></span>,<span class="pl-s"><span class="pl-pds">&quot;</span>Mar<span class="pl-pds">&quot;</span></span>,<span class="pl-s"><span class="pl-pds">&quot;</span>Apr<span class="pl-pds">&quot;</span></span>,<span class="pl-s"><span class="pl-pds">&quot;</span>Mag<span class="pl-pds">&quot;</span></span>,<span class="pl-s"><span class="pl-pds">&quot;</span>Giu<span class="pl-pds">&quot;</span></span>,</td>
+        <td id="LC22" class="blob-code blob-code-inner js-file-line">	monthNamesShort<span class="pl-k">:</span> [ <span class="pl-s"><span class="pl-pds">&quot;</span>Oca<span class="pl-pds">&quot;</span></span>,<span class="pl-s"><span class="pl-pds">&quot;</span>Şub<span class="pl-pds">&quot;</span></span>,<span class="pl-s"><span class="pl-pds">&quot;</span>Mar<span class="pl-pds">&quot;</span></span>,<span class="pl-s"><span class="pl-pds">&quot;</span>Nis<span class="pl-pds">&quot;</span></span>,<span class="pl-s"><span class="pl-pds">&quot;</span>May<span class="pl-pds">&quot;</span></span>,<span class="pl-s"><span class="pl-pds">&quot;</span>Haz<span class="pl-pds">&quot;</span></span>,</td>
       </tr>
       <tr>
         <td id="L23" class="blob-num js-line-number" data-line-number="23"></td>
-        <td id="LC23" class="blob-code blob-code-inner js-file-line">		<span class="pl-s"><span class="pl-pds">&quot;</span>Lug<span class="pl-pds">&quot;</span></span>,<span class="pl-s"><span class="pl-pds">&quot;</span>Ago<span class="pl-pds">&quot;</span></span>,<span class="pl-s"><span class="pl-pds">&quot;</span>Set<span class="pl-pds">&quot;</span></span>,<span class="pl-s"><span class="pl-pds">&quot;</span>Ott<span class="pl-pds">&quot;</span></span>,<span class="pl-s"><span class="pl-pds">&quot;</span>Nov<span class="pl-pds">&quot;</span></span>,<span class="pl-s"><span class="pl-pds">&quot;</span>Dic<span class="pl-pds">&quot;</span></span> ],</td>
+        <td id="LC23" class="blob-code blob-code-inner js-file-line">	<span class="pl-s"><span class="pl-pds">&quot;</span>Tem<span class="pl-pds">&quot;</span></span>,<span class="pl-s"><span class="pl-pds">&quot;</span>Ağu<span class="pl-pds">&quot;</span></span>,<span class="pl-s"><span class="pl-pds">&quot;</span>Eyl<span class="pl-pds">&quot;</span></span>,<span class="pl-s"><span class="pl-pds">&quot;</span>Eki<span class="pl-pds">&quot;</span></span>,<span class="pl-s"><span class="pl-pds">&quot;</span>Kas<span class="pl-pds">&quot;</span></span>,<span class="pl-s"><span class="pl-pds">&quot;</span>Ara<span class="pl-pds">&quot;</span></span> ],</td>
       </tr>
       <tr>
         <td id="L24" class="blob-num js-line-number" data-line-number="24"></td>
-        <td id="LC24" class="blob-code blob-code-inner js-file-line">	dayNames<span class="pl-k">:</span> [ <span class="pl-s"><span class="pl-pds">&quot;</span>Domenica<span class="pl-pds">&quot;</span></span>,<span class="pl-s"><span class="pl-pds">&quot;</span>Lunedì<span class="pl-pds">&quot;</span></span>,<span class="pl-s"><span class="pl-pds">&quot;</span>Martedì<span class="pl-pds">&quot;</span></span>,<span class="pl-s"><span class="pl-pds">&quot;</span>Mercoledì<span class="pl-pds">&quot;</span></span>,<span class="pl-s"><span class="pl-pds">&quot;</span>Giovedì<span class="pl-pds">&quot;</span></span>,<span class="pl-s"><span class="pl-pds">&quot;</span>Venerdì<span class="pl-pds">&quot;</span></span>,<span class="pl-s"><span class="pl-pds">&quot;</span>Sabato<span class="pl-pds">&quot;</span></span> ],</td>
+        <td id="LC24" class="blob-code blob-code-inner js-file-line">	dayNames<span class="pl-k">:</span> [ <span class="pl-s"><span class="pl-pds">&quot;</span>Pazar<span class="pl-pds">&quot;</span></span>,<span class="pl-s"><span class="pl-pds">&quot;</span>Pazartesi<span class="pl-pds">&quot;</span></span>,<span class="pl-s"><span class="pl-pds">&quot;</span>Salı<span class="pl-pds">&quot;</span></span>,<span class="pl-s"><span class="pl-pds">&quot;</span>Çarşamba<span class="pl-pds">&quot;</span></span>,<span class="pl-s"><span class="pl-pds">&quot;</span>Perşembe<span class="pl-pds">&quot;</span></span>,<span class="pl-s"><span class="pl-pds">&quot;</span>Cuma<span class="pl-pds">&quot;</span></span>,<span class="pl-s"><span class="pl-pds">&quot;</span>Cumartesi<span class="pl-pds">&quot;</span></span> ],</td>
       </tr>
       <tr>
         <td id="L25" class="blob-num js-line-number" data-line-number="25"></td>
-        <td id="LC25" class="blob-code blob-code-inner js-file-line">	dayNamesShort<span class="pl-k">:</span> [ <span class="pl-s"><span class="pl-pds">&quot;</span>Dom<span class="pl-pds">&quot;</span></span>,<span class="pl-s"><span class="pl-pds">&quot;</span>Lun<span class="pl-pds">&quot;</span></span>,<span class="pl-s"><span class="pl-pds">&quot;</span>Mar<span class="pl-pds">&quot;</span></span>,<span class="pl-s"><span class="pl-pds">&quot;</span>Mer<span class="pl-pds">&quot;</span></span>,<span class="pl-s"><span class="pl-pds">&quot;</span>Gio<span class="pl-pds">&quot;</span></span>,<span class="pl-s"><span class="pl-pds">&quot;</span>Ven<span class="pl-pds">&quot;</span></span>,<span class="pl-s"><span class="pl-pds">&quot;</span>Sab<span class="pl-pds">&quot;</span></span> ],</td>
+        <td id="LC25" class="blob-code blob-code-inner js-file-line">	dayNamesShort<span class="pl-k">:</span> [ <span class="pl-s"><span class="pl-pds">&quot;</span>Pz<span class="pl-pds">&quot;</span></span>,<span class="pl-s"><span class="pl-pds">&quot;</span>Pt<span class="pl-pds">&quot;</span></span>,<span class="pl-s"><span class="pl-pds">&quot;</span>Sa<span class="pl-pds">&quot;</span></span>,<span class="pl-s"><span class="pl-pds">&quot;</span>Ça<span class="pl-pds">&quot;</span></span>,<span class="pl-s"><span class="pl-pds">&quot;</span>Pe<span class="pl-pds">&quot;</span></span>,<span class="pl-s"><span class="pl-pds">&quot;</span>Cu<span class="pl-pds">&quot;</span></span>,<span class="pl-s"><span class="pl-pds">&quot;</span>Ct<span class="pl-pds">&quot;</span></span> ],</td>
       </tr>
       <tr>
         <td id="L26" class="blob-num js-line-number" data-line-number="26"></td>
-        <td id="LC26" class="blob-code blob-code-inner js-file-line">	dayNamesMin<span class="pl-k">:</span> [ <span class="pl-s"><span class="pl-pds">&quot;</span>Do<span class="pl-pds">&quot;</span></span>,<span class="pl-s"><span class="pl-pds">&quot;</span>Lu<span class="pl-pds">&quot;</span></span>,<span class="pl-s"><span class="pl-pds">&quot;</span>Ma<span class="pl-pds">&quot;</span></span>,<span class="pl-s"><span class="pl-pds">&quot;</span>Me<span class="pl-pds">&quot;</span></span>,<span class="pl-s"><span class="pl-pds">&quot;</span>Gi<span class="pl-pds">&quot;</span></span>,<span class="pl-s"><span class="pl-pds">&quot;</span>Ve<span class="pl-pds">&quot;</span></span>,<span class="pl-s"><span class="pl-pds">&quot;</span>Sa<span class="pl-pds">&quot;</span></span> ],</td>
+        <td id="LC26" class="blob-code blob-code-inner js-file-line">	dayNamesMin<span class="pl-k">:</span> [ <span class="pl-s"><span class="pl-pds">&quot;</span>Pz<span class="pl-pds">&quot;</span></span>,<span class="pl-s"><span class="pl-pds">&quot;</span>Pt<span class="pl-pds">&quot;</span></span>,<span class="pl-s"><span class="pl-pds">&quot;</span>Sa<span class="pl-pds">&quot;</span></span>,<span class="pl-s"><span class="pl-pds">&quot;</span>Ça<span class="pl-pds">&quot;</span></span>,<span class="pl-s"><span class="pl-pds">&quot;</span>Pe<span class="pl-pds">&quot;</span></span>,<span class="pl-s"><span class="pl-pds">&quot;</span>Cu<span class="pl-pds">&quot;</span></span>,<span class="pl-s"><span class="pl-pds">&quot;</span>Ct<span class="pl-pds">&quot;</span></span> ],</td>
       </tr>
       <tr>
         <td id="L27" class="blob-num js-line-number" data-line-number="27"></td>
-        <td id="LC27" class="blob-code blob-code-inner js-file-line">	weekHeader<span class="pl-k">:</span> <span class="pl-s"><span class="pl-pds">&quot;</span>Sm<span class="pl-pds">&quot;</span></span>,</td>
+        <td id="LC27" class="blob-code blob-code-inner js-file-line">	weekHeader<span class="pl-k">:</span> <span class="pl-s"><span class="pl-pds">&quot;</span>Hf<span class="pl-pds">&quot;</span></span>,</td>
       </tr>
       <tr>
         <td id="L28" class="blob-num js-line-number" data-line-number="28"></td>
-        <td id="LC28" class="blob-code blob-code-inner js-file-line">	dateFormat<span class="pl-k">:</span> <span class="pl-s"><span class="pl-pds">&quot;</span>dd/mm/yy<span class="pl-pds">&quot;</span></span>,</td>
+        <td id="LC28" class="blob-code blob-code-inner js-file-line">	dateFormat<span class="pl-k">:</span> <span class="pl-s"><span class="pl-pds">&quot;</span>dd.mm.yy<span class="pl-pds">&quot;</span></span>,</td>
       </tr>
       <tr>
         <td id="L29" class="blob-num js-line-number" data-line-number="29"></td>
@@ -1528,7 +1528,7 @@ Ref #14246">Datepicker: Style updates</a>
       </tr>
       <tr>
         <td id="L33" class="blob-num js-line-number" data-line-number="33"></td>
-        <td id="LC33" class="blob-code blob-code-inner js-file-line"><span class="pl-smi">datepicker</span>.<span class="pl-en">setDefaults</span>( <span class="pl-smi">datepicker</span>.<span class="pl-smi">regional</span>.<span class="pl-smi">it</span> );</td>
+        <td id="LC33" class="blob-code blob-code-inner js-file-line"><span class="pl-smi">datepicker</span>.<span class="pl-en">setDefaults</span>( <span class="pl-smi">datepicker</span>.<span class="pl-smi">regional</span>.<span class="pl-smi">tr</span> );</td>
       </tr>
       <tr>
         <td id="L34" class="blob-num js-line-number" data-line-number="34"></td>
@@ -1537,7 +1537,7 @@ Ref #14246">Datepicker: Style updates</a>
       </tr>
       <tr>
         <td id="L35" class="blob-num js-line-number" data-line-number="35"></td>
-        <td id="LC35" class="blob-code blob-code-inner js-file-line"><span class="pl-k">return</span> <span class="pl-smi">datepicker</span>.<span class="pl-smi">regional</span>.<span class="pl-smi">it</span>;</td>
+        <td id="LC35" class="blob-code blob-code-inner js-file-line"><span class="pl-k">return</span> <span class="pl-smi">datepicker</span>.<span class="pl-smi">regional</span>.<span class="pl-smi">tr</span>;</td>
       </tr>
       <tr>
         <td id="L36" class="blob-num js-line-number" data-line-number="36"></td>
@@ -1587,7 +1587,7 @@ Ref #14246">Datepicker: Style updates</a>
       <svg aria-hidden="true" class="octicon octicon-mark-github" height="24" version="1.1" viewBox="0 0 16 16" width="24"><path d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.013 8.013 0 0 0 16 8c0-4.42-3.58-8-8-8z"></path></svg>
 </a>
     <ul class="site-footer-links">
-      <li>&copy; 2016 <span title="0.10367s from github-fe142-cp1-prd.iad.github.net">GitHub</span>, Inc.</li>
+      <li>&copy; 2016 <span title="0.10669s from github-fe126-cp1-prd.iad.github.net">GitHub</span>, Inc.</li>
         <li><a href="https://github.com/site/terms" data-ga-click="Footer, go to terms, text:terms">Terms</a></li>
         <li><a href="https://github.com/site/privacy" data-ga-click="Footer, go to privacy, text:privacy">Privacy</a></li>
         <li><a href="https://github.com/security" data-ga-click="Footer, go to security, text:security">Security</a></li>
