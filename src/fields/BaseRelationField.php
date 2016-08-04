@@ -410,7 +410,7 @@ abstract class BaseRelationField extends Field implements PreviewableFieldInterf
                     ['or', 'sourceLocale=:sourceLocale', 'sourceLocale is null']
                 ],
                 [
-                    ':fieldId' => $this->model->id,
+                    ':fieldId' => $this->id,
                     ':sourceLocale' => ($firstElement ? $firstElement->locale : null),
                 ])
             ->orderBy('sortOrder')
