@@ -274,7 +274,9 @@ class Images extends Component
             return false;
         }
 
-        $image = $this->loadImage($filePath)->rotate($degrees);
+        /** @var Raster $image */
+        $image = $this->loadImage($filePath);
+        $image->rotate($degrees);
 
         return $image->saveAs($filePath, true);
     }
@@ -282,7 +284,7 @@ class Images extends Component
     /**
      * Get EXIF metadata for a file by it's path.
      *
-     * @param $filePath
+     * @param string $filePath
      *
      * @return array
      */
@@ -300,7 +302,7 @@ class Images extends Component
     /**
      * Strip orientation from EXIF data for an image at a path.
      *
-     * @param $filePath
+     * @param string $filePath
      *
      * @return boolean
      */
