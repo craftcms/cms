@@ -380,9 +380,11 @@ class User extends \yii\web\User
      */
     protected function renewAuthStatus()
     {
-        // Only renew if the request meets our user agent and IP requirements
-        if ($this->_validateUserAgentAndIp()) {
-            parent::renewAuthStatus();
+        if (Craft::$app->getIsInstalled()) {
+            // Only renew if the request meets our user agent and IP requirements
+            if ($this->_validateUserAgentAndIp()) {
+                parent::renewAuthStatus();
+            }
         }
     }
 
