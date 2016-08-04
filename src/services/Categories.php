@@ -158,6 +158,7 @@ class Categories extends Component
     public function getAllGroups($indexBy = null)
     {
         if (!$this->_fetchedAllCategoryGroups) {
+            /** @var CategoryGroupRecord[] $groupRecords */
             $groupRecords = CategoryGroupRecord::find()
                 ->orderBy('name asc')
                 ->with('structure')
@@ -235,15 +236,14 @@ class Categories extends Component
      */
     public function getGroupById($groupId)
     {
-        if (!isset($this->_categoryGroupsById) || !array_key_exists($groupId,
-                $this->_categoryGroupsById)
-        ) {
+        if (!isset($this->_categoryGroupsById) || !array_key_exists($groupId, $this->_categoryGroupsById)) {
             $groupRecord = CategoryGroupRecord::find()
                 ->where(['id' => $groupId])
                 ->with('structure')
                 ->one();
 
             if ($groupRecord) {
+                /** @var CategoryGroupRecord $groupRecord */
                 $this->_categoryGroupsById[$groupId] = $this->_createCategoryGroupFromRecord($groupRecord);
             } else {
                 $this->_categoryGroupsById[$groupId] = null;
@@ -1022,6 +1022,7 @@ class Categories extends Component
         foreach ($categories as $category) {
             if ($deleteDescendants) {
                 // Delete the descendants in reverse order, so structures don't get wonky
+                /** @var Category[] $descendants */
                 $descendants = $category->getDescendants()->status(null)->localeEnabled(false)->orderBy('lft desc')->all();
                 $this->_deleteCategories($descendants, false);
             }
