@@ -9,6 +9,8 @@ namespace craft\app\db;
 
 use yii\db\ActiveQuery;
 
+/** @noinspection PhpUnnecessaryFullyQualifiedNameInspection */
+
 /**
  * Trait NestedSetsTrait.
  *
