@@ -9,7 +9,6 @@ namespace craft\app\web\twig\variables;
 
 use Craft;
 use craft\app\i18n\Locale;
-use yii\helpers\FormatConverter;
 
 /**
  * Localization functions.

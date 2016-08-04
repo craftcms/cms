@@ -199,6 +199,7 @@ class Tasks extends Component
      */
     public function rerunTaskById($taskId)
     {
+        /** @var Task|null $task */
         $task = $this->getTaskById($taskId);
 
         if ($task && $task->level == 0) {
@@ -559,6 +560,7 @@ class Tasks extends Component
                     ->one();
 
                 if ($taskRecord) {
+                    /** @var TaskRecord $taskRecord */
                     $this->_taskRecordsById[$taskRecord->id] = $taskRecord;
                     $this->_nextPendingTask = $this->createTask($taskRecord);
                 } else {

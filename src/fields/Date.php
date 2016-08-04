@@ -67,7 +67,7 @@ class Date extends Field implements PreviewableFieldInterface
             }
         }
 
-        return parent::populateModel($model, $config);
+        parent::populateModel($model, $config);
     }
 
     // Properties

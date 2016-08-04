@@ -118,6 +118,7 @@ class Images extends Component
             // Taken from Imagick\Imagine() constructor.
             // Imagick::getVersion() is static only since Imagick PECL extension 3.2.0b1, so instantiate it.
             $imagick = new \Imagick();
+            /** @noinspection PhpStaticAsDynamicMethodCallInspection */
             $v = $imagick->getVersion();
             /** @noinspection PhpUnusedLocalVariableInspection */
             list($version, $year, $month, $day, $q, $website) = sscanf($v['versionString'], 'ImageMagick %s %04d-%02d-%02d %s %s');
@@ -274,7 +275,9 @@ class Images extends Component
             return false;
         }
 
-        $image = $this->loadImage($filePath)->rotate($degrees);
+        /** @var Raster $image */
+        $image = $this->loadImage($filePath);
+        $image->rotate($degrees);
 
         return $image->saveAs($filePath, true);
     }
@@ -282,7 +285,7 @@ class Images extends Component
     /**
      * Get EXIF metadata for a file by it's path.
      *
-     * @param $filePath
+     * @param string $filePath
      *
      * @return array
      */
@@ -300,7 +303,7 @@ class Images extends Component
     /**
      * Strip orientation from EXIF data for an image at a path.
      *
-     * @param $filePath
+     * @param string $filePath
      *
      * @return boolean
      */

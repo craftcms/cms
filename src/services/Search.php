@@ -10,6 +10,7 @@ namespace craft\app\services;
 use Craft;
 use craft\app\base\Element;
 use craft\app\base\ElementInterface;
+use craft\app\base\Field;
 use craft\app\db\Query;
 use craft\app\enums\ColumnType;
 use craft\app\helpers\Db;
@@ -618,6 +619,7 @@ class Search extends Component
     private function _getFieldIdFromAttribute($attribute)
     {
         // Get field id from service
+        /** @var Field $field */
         $field = Craft::$app->getFields()->getFieldByHandle($attribute);
 
         // Fallback to 0

@@ -30,7 +30,7 @@
 					<tr data-name="{{ config.name }}">
 						<th data-title="{{ 'Name'|t('app') }}">
 							<div class="plugin-infos">
-								<div class="icon">{{ craft.app.plugins.getPluginIconSvg(classHandle)|raw }}</div>
+								<div class="icon">{{ craft.app.plugins.getPluginIconSvg(handle)|raw }}</div>
 								<div class="details">
 									<div class="name">
 										{{ config.name }}
@@ -69,7 +69,7 @@
 						</td>
 						<td>
 							{% if config.hasSettings %}
-								<a href="{{ url('settings/plugins/'~handle) }}" title="{{ "{name} Settings"|t('app', {name: plugin.name}) }}" data-icon="settings"></a>
+								<a href="{{ url('settings/plugins/'~handle) }}" title="{{ "{name} Settings"|t('app', {name: config.name}) }}" data-icon="settings"></a>
 							{% endif %}
 						</td>
 						<td class="thin rightalign nowrap">

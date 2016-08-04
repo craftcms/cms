@@ -7,11 +7,7 @@
 
 namespace craft\app\migrations;
 
-use Craft;
-use craft\app\elements\User;
 use craft\app\db\Migration;
-use craft\app\helpers\StringHelper;
-use craft\app\models\Info;
 
 /**
  * CreateMatrixContentTable Migration

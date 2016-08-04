@@ -94,11 +94,6 @@ class Plugin extends Module implements PluginInterface
      */
     private $_basePath;
 
-    /**
-     * @var string|false The plugin’s icon path, or false if it doesn’t have one
-     */
-    private $_iconPath;
-
     // Public Methods
     // =========================================================================
 
@@ -265,18 +260,6 @@ class Plugin extends Module implements PluginInterface
         return $this->_basePath;
     }
 
-    /**
-     * @inheritdoc
-     */
-    public function getIconPath()
-    {
-        if ($this->_iconPath === null) {
-            $this->_iconPath = $this->defineIconPath() ?: false;
-        }
-
-        return $this->_iconPath ?: null;
-    }
-
     // Component Registration
     // -------------------------------------------------------------------------
 
@@ -312,22 +295,6 @@ class Plugin extends Module implements PluginInterface
 
     // Protected Methods
     // =========================================================================
-
-    /**
-     * Defines the path to the plugin’s icon, if it has one.
-     *
-     * @return string|null The path to the plugin’s icon, or null if it doesn’t have one
-     */
-    protected function defineIconPath()
-    {
-        $iconPath = $this->getBasePath().'/resources/icon.svg';
-
-        if (Io::fileExists($iconPath)) {
-            return $iconPath;
-        }
-
-        return null;
-    }
 
     /**
      * Instantiates and returns the plugin’s installation migration, if it has one.

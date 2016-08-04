@@ -38,13 +38,6 @@ interface PluginInterface
     public function getHandle();
 
     /**
-     * Returns the path to the plugin’s icon, if it has one.
-     *
-     * @return string|null The path to the plugin’s icon, or null if it doesn’t have one
-     */
-    public function getIconPath();
-
-    /**
      * Installs the plugin.
      *
      * @return void|false Return `false` to indicate the installation failed.

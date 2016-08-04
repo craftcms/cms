@@ -19,6 +19,7 @@ use craft\app\elements\actions\RenameFile;
 use craft\app\elements\actions\ReplaceFile;
 use craft\app\elements\actions\View;
 use craft\app\elements\db\AssetQuery;
+use craft\app\fields\Assets;
 use craft\app\helpers\Html;
 use craft\app\helpers\Image;
 use craft\app\helpers\Io;
@@ -737,16 +738,17 @@ class Asset extends Element
      */
     public function getFieldLayout()
     {
-        $source = $this->getVolume();
+        $volume = $this->getVolume();
 
-        if ($source->id) {
-            return $source->getFieldLayout();
+        if ($volume->id) {
+            return $volume->getFieldLayout();
         }
 
         $folder = $this->getFolder();
 
         if (preg_match('/field_([0-9]+)/', $folder->name, $matches)) {
             $fieldId = $matches[1];
+            /** @var Assets $field */
             $field = Craft::$app->getFields()->getFieldById($fieldId);
             $settings = $field->settings;
 
@@ -756,10 +758,10 @@ class Asset extends Element
                 $sourceId = $settings['defaultUploadLocationSource'];
             }
 
-            $source = Craft::$app->getVolumes()->getVolumeById($sourceId);
+            $volume = Craft::$app->getVolumes()->getVolumeById($sourceId);
 
-            if ($source) {
-                return $source->getFieldLayout();
+            if ($volume) {
+                return $volume->getFieldLayout();
             }
         }
 

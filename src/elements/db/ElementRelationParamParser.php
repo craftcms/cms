@@ -256,6 +256,7 @@ class ElementRelationParamParser
                     continue;
                 }
 
+                /** @var Field $fieldModel */
                 // Is this a Matrix field?
                 if ($fieldModel->type == 'Matrix') {
                     $blockTypeFieldIds = [];

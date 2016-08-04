@@ -126,13 +126,6 @@ class UpgradePurchase extends Model
                 'max' => 2147483647,
                 'integerOnly' => true
             ],
-            [
-                ['expectedPrice'],
-                'number',
-                'min' => -2147483648,
-                'max' => 2147483647,
-                'integerOnly' => true
-            ],
             [['edition', 'expectedPrice', 'name', 'email'], 'required'],
             [
                 ['ccTokenId', 'edition', 'expectedPrice', 'success'],

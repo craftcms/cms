@@ -268,6 +268,7 @@ class Volumes extends Component
             $results = $this->_createVolumeQuery()->all();
 
             foreach ($results as $result) {
+                /** @var Volume $volume */
                 $volume = $this->createVolume($result);
                 $this->_volumesById[$volume->id] = $volume;
             }

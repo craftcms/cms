@@ -9,7 +9,7 @@
 
 #plugins .plugin-infos .icon a { display: block; line-height: 0; }
 
-#plugins .plugin-infos .icon img { width: 36px; }
+#plugins .plugin-infos .icon svg { width: 36px; height: 36px; }
 
 #plugins .plugin-infos .details { vertical-align: middle; }
 

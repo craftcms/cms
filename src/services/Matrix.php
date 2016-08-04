@@ -268,6 +268,7 @@ class Matrix extends Component
                     $oldFieldsById = [];
 
                     foreach ($oldBlockType->getFields() as $field) {
+                        /** @var Field $field */
                         $oldFieldsById[$field->id] = $field;
                     }
 
@@ -394,6 +395,7 @@ class Matrix extends Component
             $contentService = Craft::$app->getContent();
             $fieldsService = Craft::$app->getFields();
             $originalContentTable = $contentService->contentTable;
+            /** @var MatrixField $matrixField */
             $matrixField = $fieldsService->getFieldById($blockType->fieldId);
             $newContentTable = $this->getContentTableName($matrixField);
             $contentService->contentTable = $newContentTable;

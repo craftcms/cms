@@ -14,7 +14,6 @@ use craft\app\events\LocaleEvent;
 use craft\app\helpers\Io;
 use craft\app\tasks\ResaveAllElements;
 use ResourceBundle;
-use yii\base\InvalidParamException;
 
 /**
  * @inheritdoc

@@ -266,6 +266,7 @@ class Plugins extends Component
             return true;
         }
 
+        /** @var Plugin $plugin */
         $plugin = $this->createPlugin($handle);
 
         if ($plugin === null) {
@@ -591,12 +592,12 @@ class Plugins extends Component
      */
     public function getConfig($handle)
     {
-        // Make sure this plugin has a config.json file
+        // Make sure this plugin has a plugin.json file
         $basePath = Craft::$app->getPath()->getPluginsPath().'/'.$handle;
-        $configPath = $basePath.'/config.json';
+        $configPath = $basePath.'/plugin.json';
 
         if (($configPath = Io::fileExists($configPath)) === false) {
-            Craft::warning("Could not find a config.json file for the plugin '$handle'.");
+            Craft::warning("Could not find a plugin.json file for the plugin '$handle'.");
 
             return null;
         }
@@ -604,7 +605,9 @@ class Plugins extends Component
         try {
             $config = array_merge([
                 'developer' => null,
-                'developerUrl' => null
+                'developerUrl' => null,
+                'description' => null,
+                'documentationUrl' => null,
             ], Json::decode(Io::getFileContents($configPath)));
         } catch (InvalidParamException $e) {
             Craft::warning("Could not decode $configPath: ".$e->getMessage());
@@ -690,14 +693,13 @@ class Plugins extends Component
      */
     public function getPluginIconSvg($handle)
     {
-        $plugin = $this->getPlugin($handle);
-        $iconPath = $plugin->getIconPath();
+        $iconPath = Craft::$app->getPath()->getPluginsPath().'/'.$handle.'/resources/icon.svg';
 
-        if ($iconPath && Io::fileExists($iconPath) && FileHelper::getMimeType($iconPath) == 'image/svg+xml') {
-            return Io::getFileContents($iconPath);
+        if (!$iconPath || !Io::fileExists($iconPath) || FileHelper::getMimeType($iconPath) != 'image/svg+xml') {
+            $iconPath = Craft::$app->getPath()->getResourcesPath().'/images/default_plugin.svg';
         }
 
-        return Craft::$app->getPath()->getResourcesPath().'/images/default_plugin.svg';
+        return Io::getFileContents($iconPath);
     }
 
     /**

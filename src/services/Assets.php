@@ -202,6 +202,10 @@ class Assets extends Component
     {
         $isNew = empty($asset->id);
 
+        if ($isNew) {
+            $asset->folderPath = $asset->getFolder()->path;
+        }
+        
         if ($isNew && empty($asset->newFilePath) && empty($asset->indexInProgress)) {
             throw new AssetLogicException(Craft::t('app',
                 'A new Asset cannot be created without a file.'));

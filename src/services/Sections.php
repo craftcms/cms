@@ -513,6 +513,7 @@ class Sections extends Component
 
                     if (!$isNewSection) {
                         // Get the old section locales
+                        /** @var SectionLocaleRecord[] $oldSectionLocales */
                         $oldSectionLocales = SectionLocaleRecord::find()
                             ->where(['sectionId' => $section->id])
                             ->indexBy('locale')
