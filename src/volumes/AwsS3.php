@@ -293,7 +293,7 @@ class AwsS3 extends Volume
     {
         $config['credentials.cache'] = static::_getCredentialsCacheAdapter();
 
-        return S3Client::factory($config);
+        return new S3Client($config);
     }
 
     // Private Methods
@@ -322,7 +322,7 @@ class AwsS3 extends Volume
     {
         $config = $this->_getConfigArray();
 
-        return CloudFrontClient::factory($config);
+        return new CloudFrontClient($config);
     }
 
     /**

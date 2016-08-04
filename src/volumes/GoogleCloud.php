@@ -206,6 +206,6 @@ class GoogleCloud extends Volume
     {
         $config = array_merge(['key' => $keyId, 'secret' => $secret], $options);
 
-        return S3Client::factory($config);
+        return new S3Client($config);
     }
 }
