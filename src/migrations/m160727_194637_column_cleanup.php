@@ -2,10 +2,7 @@
 
 namespace craft\app\migrations;
 
-use Craft;
 use craft\app\db\Migration;
-use craft\app\helpers\Migration as MigrationHelper;
-use yii\db\Schema;
 
 /**
  * m160727_194637_column_cleanup migration.
