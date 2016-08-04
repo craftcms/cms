@@ -737,10 +737,10 @@ class Asset extends Element
      */
     public function getFieldLayout()
     {
-        $source = $this->getVolume();
+        $volume = $this->getVolume();
 
-        if ($source->id) {
-            return $source->getFieldLayout();
+        if ($volume->id) {
+            return $volume->getFieldLayout();
         }
 
         $folder = $this->getFolder();
@@ -756,10 +756,10 @@ class Asset extends Element
                 $sourceId = $settings['defaultUploadLocationSource'];
             }
 
-            $source = Craft::$app->getVolumes()->getVolumeById($sourceId);
+            $volume = Craft::$app->getVolumes()->getVolumeById($sourceId);
 
-            if ($source) {
-                return $source->getFieldLayout();
+            if ($volume) {
+                return $volume->getFieldLayout();
             }
         }
 
