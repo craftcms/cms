@@ -24,7 +24,7 @@
         }
     ],
     "require": {
-        "php": ">=5.3.0",
+        "php": ">=5.6.0",
         "yiisoft/yii2": "2.0.9",
         "yiisoft/yii2-debug": "dev-master",
         "yiisoft/yii2-authclient": "2.0.6",
