@@ -26,6 +26,7 @@ use craft\app\models\Password;
 use craft\app\elements\User;
 use craft\app\records\User as UserRecord;
 use yii\base\Component;
+use yii\db\Exception;
 
 /**
  * The Users service provides APIs for managing users.
@@ -463,13 +464,18 @@ class Users extends Component
      */
     public function getUserPreferences($userId)
     {
-        $preferences = (new Query())
-            ->select('preferences')
-            ->from('{{%userpreferences}}')
-            ->where(['userId' => $userId])
-            ->scalar();
+        // TODO: Remove try/catch after next breakpoint
+        try {
+            $preferences = (new Query())
+                ->select('preferences')
+                ->from('{{%userpreferences}}')
+                ->where(['userId' => $userId])
+                ->scalar();
 
-        return $preferences ? Json::decode($preferences) : [];
+            return $preferences ? Json::decode($preferences) : [];
+        } catch (Exception $e) {
+            return [];
+        }
     }
 
     /**
