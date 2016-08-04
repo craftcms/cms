@@ -714,6 +714,7 @@ class Updates extends Component
                 $plugin = Craft::$app->getPlugins()->getPlugin($handle);
 
                 if ($plugin) {
+                    /** @var Plugin $plugin */
                     Craft::info('The plugin, '.$plugin->name.' wants to update the database.', __METHOD__);
                     $updater->updateDatabase($plugin);
                     Craft::info('The plugin, '.$plugin->name.' is done updating the database.', __METHOD__);

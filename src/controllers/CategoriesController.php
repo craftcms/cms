@@ -9,6 +9,7 @@ namespace craft\app\controllers;
 
 use Craft;
 use craft\app\base\Element;
+use craft\app\base\Field;
 use craft\app\helpers\Json;
 use craft\app\helpers\Url;
 use craft\app\elements\Category;
@@ -628,6 +629,7 @@ class CategoriesController extends Controller
 
             if ($variables['category']->hasErrors()) {
                 foreach ($tab->getFields() as $field) {
+                    /** @var Field $field */
                     if ($variables['category']->getErrors($field->handle)) {
                         $hasErrors = true;
                         break;

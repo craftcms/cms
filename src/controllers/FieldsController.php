@@ -8,6 +8,7 @@
 namespace craft\app\controllers;
 
 use Craft;
+use craft\app\base\Field;
 use craft\app\base\FieldInterface;
 use craft\app\helpers\Url;
 use craft\app\models\FieldGroup;
@@ -126,6 +127,8 @@ class FieldsController extends Controller
         if ($field === null) {
             $field = Craft::$app->getFields()->createField('craft\app\fields\PlainText');
         }
+
+        /** @var Field $field */
 
         // Field types
         // ---------------------------------------------------------------------

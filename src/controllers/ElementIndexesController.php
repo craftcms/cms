@@ -8,6 +8,7 @@
 namespace craft\app\controllers;
 
 use Craft;
+use craft\app\base\Element;
 use craft\app\base\ElementAction;
 use craft\app\base\ElementActionInterface;
 use craft\app\elements\db\ElementQuery;
@@ -293,6 +294,7 @@ class ElementIndexesController extends BaseElementsController
         if ($collapsedElementIds) {
             // Get the actual elements
             $collapsedElementQuery = clone $query;
+            /** @var Element[] $collapsedElements */
             $collapsedElements = $collapsedElementQuery
                 ->id($collapsedElementIds)
                 ->offset(0)

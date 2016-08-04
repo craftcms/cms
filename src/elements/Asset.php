@@ -19,6 +19,7 @@ use craft\app\elements\actions\RenameFile;
 use craft\app\elements\actions\ReplaceFile;
 use craft\app\elements\actions\View;
 use craft\app\elements\db\AssetQuery;
+use craft\app\fields\Assets;
 use craft\app\helpers\Html;
 use craft\app\helpers\Image;
 use craft\app\helpers\Io;
@@ -747,6 +748,7 @@ class Asset extends Element
 
         if (preg_match('/field_([0-9]+)/', $folder->name, $matches)) {
             $fieldId = $matches[1];
+            /** @var Assets $field */
             $field = Craft::$app->getFields()->getFieldById($fieldId);
             $settings = $field->settings;
 

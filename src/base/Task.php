@@ -108,6 +108,7 @@ abstract class Task extends SavableComponent implements TaskInterface
             $task = $tasksService->createTask($task);
         }
 
+        /** @var Task $task */
         $task->parentId = $this->id;
 
         if ($tasksService->saveTask($task)) {

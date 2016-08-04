@@ -8,6 +8,7 @@
 namespace craft\app\services;
 
 use Craft;
+use craft\app\base\Plugin;
 use craft\app\models\RebrandEmail;
 use craft\app\records\EmailMessage as EmailMessageRecord;
 use yii\base\Component;
@@ -190,6 +191,7 @@ class EmailMessages extends Component
 
             // Give plugins a chance to add additional messages
             foreach (Craft::$app->getPlugins()->call('registerEmailMessages') as $pluginHandle => $pluginKeys) {
+                /** @var Plugin $plugin */
                 $plugin = Craft::$app->getPlugins()->getPlugin($pluginHandle);
 
                 foreach ($pluginKeys as $key) {

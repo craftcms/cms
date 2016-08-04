@@ -8,6 +8,7 @@
 namespace craft\app\models;
 
 use Craft;
+use craft\app\base\Field;
 use craft\app\helpers\ElementHelper;
 use craft\app\elements\Entry;
 use craft\app\elements\User;
@@ -44,6 +45,7 @@ class BaseEntryRevisionModel extends Entry
         $contentByFieldHandles = [];
 
         foreach ($content as $fieldId => $value) {
+            /** @var Field $field */
             $field = Craft::$app->getFields()->getFieldById($fieldId);
 
             if ($field) {

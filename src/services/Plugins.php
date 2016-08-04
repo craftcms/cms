@@ -266,6 +266,7 @@ class Plugins extends Component
             return true;
         }
 
+        /** @var Plugin $plugin */
         $plugin = $this->createPlugin($handle);
 
         if ($plugin === null) {

@@ -352,6 +352,7 @@ class Fields extends Component
                 ->all();
 
             foreach ($rows as $row) {
+                /** @var Field $field */
                 $field = $this->createField($row);
 
                 $this->_allFieldsInContext[$field->context][] = $field;
@@ -414,6 +415,7 @@ class Fields extends Component
                 ->one();
 
             if ($result) {
+                /** @var Field $field */
                 $field = $this->createField($result);
 
                 $this->_fieldsById[$fieldId] = $field;
@@ -451,6 +453,7 @@ class Fields extends Component
                     ->one();
 
                 if ($result) {
+                    /** @var Field $field */
                     $field = $this->createField($result);
                     $this->_fieldsById[$field->id] = $field;
                     $this->_fieldsByContextAndHandle[$context][$field->handle] = $field;

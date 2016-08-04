@@ -436,6 +436,7 @@ class Categories extends Component
 
                 if (!$isNewCategoryGroup) {
                     // Get the old category group locales
+                    /** @var CategoryGroupLocaleRecord[] $oldLocales */
                     $oldLocales = CategoryGroupLocaleRecord::find()
                         ->where(['groupId' => $group->id])
                         ->indexBy('locale')

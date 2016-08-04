@@ -8,6 +8,7 @@
 namespace craft\app\services;
 
 use Craft;
+use craft\app\base\Element;
 use craft\app\base\ElementInterface;
 use craft\app\dates\DateTime;
 use craft\app\db\Query;
@@ -441,7 +442,7 @@ class TemplateCaches extends Component
         $deleteQueryCaches = empty($this->_deletedCachesByElementType[$firstElement::className()]);
         $elementIds = [];
 
-        /** @var ElementInterface[] $elements */
+        /** @var Element[] $elements */
         foreach ($elements as $element) {
             $elementIds[] = $element->id;
         }

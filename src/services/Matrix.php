@@ -268,6 +268,7 @@ class Matrix extends Component
                     $oldFieldsById = [];
 
                     foreach ($oldBlockType->getFields() as $field) {
+                        /** @var Field $field */
                         $oldFieldsById[$field->id] = $field;
                     }
 

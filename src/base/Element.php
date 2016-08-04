@@ -366,6 +366,7 @@ abstract class Element extends Component implements ElementInterface
                     $field = Craft::$app->getFields()->getFieldById($fieldId);
 
                     if ($field) {
+                        /** @var Field $field */
                         if ($field instanceof PreviewableFieldInterface) {
                             // Was this field value eager-loaded?
                             if ($field instanceof EagerLoadingFieldInterface && $element->hasEagerLoadedElements($field->handle)) {
@@ -542,6 +543,7 @@ abstract class Element extends Component implements ElementInterface
             $field = Craft::$app->getFields()->getFieldById($fieldId);
 
             if ($field) {
+                /** @var Field $field */
                 if ($field instanceof EagerLoadingFieldInterface) {
                     $with = $elementQuery->with ?: [];
                     $with[] = $field->handle;

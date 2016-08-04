@@ -524,6 +524,8 @@ class UsersController extends Controller
             }
         }
 
+        /** @var User $user */
+
         $isNewAccount = !$user->id;
 
         // Make sure they have permission to edit this user
@@ -667,8 +669,7 @@ class UsersController extends Controller
             if ($user->getIsCurrent()) {
                 $title = Craft::t('app', 'My Account');
             } else {
-                $title = Craft::t('app', '{user}’s Account',
-                    ['user' => $user->name]);
+                $title = Craft::t('app', '{user}’s Account', ['user' => $user->getName()]);
             }
         } else {
             if ($isClientAccount) {

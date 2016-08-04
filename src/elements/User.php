@@ -34,6 +34,7 @@ use yii\web\IdentityInterface;
  * User represents a user element.
  *
  * @property boolean     $isCurrent       Whether this is the current logged-in user
+ * @property string      $name            The user's full name or username
  * @property string|null $preferredLocale The user’s preferred locale
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>

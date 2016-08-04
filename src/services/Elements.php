@@ -1259,6 +1259,7 @@ class Elements extends Component
                         );
                         /** @var Element $targetElementType */
                         $targetElementType = $map['elementType'];
+                        /** @var ElementQuery $query */
                         $query = $targetElementType::find()
                             ->configure($customParams);
                         $query->id = $uniqueTargetElementIds;
