@@ -103,7 +103,7 @@ abstract class Image extends Object
      * @param string  $targetPath
      * @param boolean $autoQuality
      *
-     * @return void
+     * @return boolean
      * @throws ImageException if the image cannot be saved.
      */
     abstract public function saveAs($targetPath, $autoQuality = false);
