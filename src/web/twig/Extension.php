@@ -528,10 +528,8 @@ class Extension extends \Twig_Extension
             new \Twig_SimpleFunction('beginBody', [$this->view, 'beginBody']),
             new \Twig_SimpleFunction('endBody', [$this->view, 'endBody']),
             // Deprecated functions
-            new \Twig_SimpleFunction('getHeadHtml', [$this, 'getHeadHtml'],
-                [true]),
-            new \Twig_SimpleFunction('getFootHtml', [$this, 'getFootHtml'],
-                [true]),
+            new \Twig_SimpleFunction('getHeadHtml', [$this, 'getHeadHtml']),
+            new \Twig_SimpleFunction('getFootHtml', [$this, 'getFootHtml']),
         ];
     }
 
