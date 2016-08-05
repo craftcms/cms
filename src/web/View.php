@@ -759,21 +759,6 @@ class View extends \yii\web\View
     }
 
     /**
-     * Returns the HTML for the CSRF hidden input token.  Used for when the config setting
-     * [enableCsrfValidation](http://craftcms.com/docs/config-settings#enableCsrfValidation) is set to true.
-     *
-     * @return string If 'enabledCsrfProtection' is enabled, the HTML for the hidden input, otherwise an empty string.
-     */
-    public function getCsrfInput()
-    {
-        if (Craft::$app->getConfig()->get('enableCsrfProtection') === true) {
-            return '<input type="hidden" name="'.Craft::$app->getConfig()->get('csrfTokenName').'" value="'.Craft::$app->getRequest()->getCsrfToken().'">';
-        }
-
-        return '';
-    }
-
-    /**
      * Prepares translations for inclusion in the template, to be used by the JS.
      *
      * @param string   $category The category the messages are in

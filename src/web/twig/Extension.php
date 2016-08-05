@@ -512,8 +512,8 @@ class Extension extends \Twig_Extension
             'actionUrl' => new \Twig_Function_Function('\\craft\\app\\helpers\\Url::getActionUrl'),
             'cpUrl' => new \Twig_Function_Function('\\craft\\app\\helpers\\Url::getCpUrl'),
             'ceil' => new \Twig_Function_Function('ceil'),
+            new \Twig_SimpleFunction('csrfInput', [$this, 'csrfInputFunction']),
             'floor' => new \Twig_Function_Function('floor'),
-            'getCsrfInput' => new \Twig_Function_Method($this, 'getCsrfInputFunction'),
             'getTranslations' => new \Twig_Function_Function('\Craft::$app->getView()->getTranslations'),
             'max' => new \Twig_Function_Function('max'),
             'min' => new \Twig_Function_Function('min'),
@@ -528,6 +528,7 @@ class Extension extends \Twig_Extension
             new \Twig_SimpleFunction('beginBody', [$this->view, 'beginBody']),
             new \Twig_SimpleFunction('endBody', [$this->view, 'endBody']),
             // Deprecated functions
+            new \Twig_SimpleFunction('getCsrfInput', [$this, 'getCsrfInput']),
             new \Twig_SimpleFunction('getHeadHtml', [$this, 'getHeadHtml']),
             new \Twig_SimpleFunction('getFootHtml', [$this, 'getFootHtml']),
         ];
@@ -536,13 +537,17 @@ class Extension extends \Twig_Extension
     /**
      * Returns getCsrfInput() wrapped in a \Twig_Markup object.
      *
-     * @return \Twig_Markup
+     * @return \Twig_Markup|null
      */
-    public function getCsrfInputFunction()
+    public function csrfInputFunction()
     {
-        $html = Craft::$app->getView()->getCsrfInput();
+        $config = Craft::$app->getConfig();
 
-        return Template::getRaw($html);
+        if ($config->get('enableCsrfProtection') === true) {
+            return Template::getRaw('<input type="hidden" name="'.$config->get('csrfTokenName').'" value="'.Craft::$app->getRequest()->getCsrfToken().'">');
+        }
+
+        return null;
     }
 
     /**
@@ -657,6 +662,17 @@ class Extension extends \Twig_Extension
 
     // Deprecated Methods
     // -------------------------------------------------------------------------
+
+    /**
+     * @deprecated in Craft 3.0. Use csrfInput() instead.
+     * @return \Twig_Markup|null
+     */
+    public function getCsrfInput()
+    {
+        Craft::$app->getDeprecator()->log('getCsrfInput', 'getCsrfInput() has been deprecated. Use csrfInput() instead.');
+
+        return $this->csrfInputFunction();
+    }
 
     /**
      * @deprecated in Craft 3.0. Use head() instead.
