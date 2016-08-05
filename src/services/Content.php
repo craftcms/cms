@@ -163,6 +163,8 @@ class Content extends Component
         $this->fieldColumnPrefix = $element->getFieldColumnPrefix();
         $this->fieldContext = $element->getFieldContext();
 
+        $success = false;
+
         if (!$validate || $this->validateContent($element)) {
 
             // Fire a 'beforeSaveCategory' event
@@ -171,6 +173,8 @@ class Content extends Component
             ]);
 
             $this->trigger(self::EVENT_BEFORE_SAVE_CONTENT, $event);
+
+
 
             // Is the event giving us the go-ahead?
             if ($event->isValid) {
@@ -216,11 +220,7 @@ class Content extends Component
                 }
 
                 $success = true;
-            } else {
-                $success = false;
             }
-        } else {
-            $success = false;
         }
 
         if ($success) {
