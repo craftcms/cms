@@ -108,4 +108,28 @@ class Security extends \yii\base\Security
 
         throw new Exception("Tried to write the validation key to {$validationKeyPath}, but could not.");
     }
+
+    /**
+     * @inheritdoc
+     */
+    public function hashData($data, $key = null, $rawHash = false)
+    {
+        if ($key === null) {
+            $key = $this->getValidationKey();
+        }
+
+        return parent::hashData($data, $key, $rawHash);
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function validateData($data, $key = null, $rawHash = false)
+    {
+        if ($key === null) {
+            $key = $this->getValidationKey();
+        }
+
+        return parent::validateData($data, $key, $rawHash);
+    }
 }
