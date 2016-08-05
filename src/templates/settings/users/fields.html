@@ -11,7 +11,7 @@
 	<form method="post" accept-charset="UTF-8" data-saveshortcut>
 		<input type="hidden" name="action" value="users/save-field-layout">
 		<input type="hidden" name="redirect" value="settings">
-		{{ getCsrfInput() }}
+		{{ csrfInput() }}
 
 		{% include "_includes/fieldlayoutdesigner" with {
 			fieldLayout: craft.app.fields.getLayoutByType('craft\\app\\elements\\User'),

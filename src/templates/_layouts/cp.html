@@ -258,7 +258,7 @@
 
 	{% if fullPageForm %}
 		<form id="container" method="post" accept-charset="UTF-8" data-saveshortcut{% if saveShortcutRedirect is defined %} data-saveshortcut-redirect="{{ saveShortcutRedirect }}"{% endif %} data-confirm-unload>
-			{{ getCsrfInput() }}
+			{{ csrfInput() }}
 	{% else %}
 		<div id="container">
 	{% endif %}

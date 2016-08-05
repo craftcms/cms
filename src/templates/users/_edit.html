@@ -53,7 +53,7 @@
 {% set requireEmailVerification = craft.app.systemSettings.getSettings('users').requireEmailVerification %}
 
 {% set hiddenInputs %}
-    {{ getCsrfInput() }}
+    {{ csrfInput() }}
     {% if not isNewAccount -%}
         <input type="hidden" name="userId" value="{{ account.id }}">
     {%- endif %}
