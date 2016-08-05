@@ -33,6 +33,8 @@ class Content extends Component
 
     /**
      * @event ElementEvent The event that is triggered before an element's content is saved.
+     *
+     * You may set [[ElementEvent::isValid]] to `false` to prevent the content from getting saved.
      */
     const EVENT_BEFORE_SAVE_CONTENT = 'beforeSaveContent';
 

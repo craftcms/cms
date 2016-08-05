@@ -45,6 +45,8 @@ class Entries extends Component
 
     /**
      * @event EntryEvent The event that is triggered before an entry is deleted.
+     *
+     * You may set [[EntryEvent::isValid]] to `false` to prevent the entry from being deleted.
      */
     const EVENT_BEFORE_DELETE_ENTRY = 'beforeDeleteEntry';
 

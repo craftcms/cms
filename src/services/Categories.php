@@ -60,6 +60,8 @@ class Categories extends Component
 
     /**
      * @event CategoryGroupEvent The event that is triggered before a category group is saved.
+     *
+     * You may set [[CategoryEvent::isValid]] to `false` to prevent the category group from getting saved.
      */
     const EVENT_BEFORE_SAVE_GROUP = 'beforeSaveGroup';
 
@@ -70,6 +72,8 @@ class Categories extends Component
 
     /**
      * @event CategoryGroupEvent The event that is triggered before a category group is deleted.
+     *
+     * You may set [[CategoryEvent::isValid]] to `false` to prevent the category group from getting saved.
      */
     const EVENT_BEFORE_DELETE_GROUP = 'beforeDeleteGroup';
 
