@@ -32,6 +32,11 @@ class Content extends Component
     // =========================================================================
 
     /**
+     * @event ElementEvent The event that is triggered before an element's content is saved.
+     */
+    const EVENT_BEFORE_SAVE_CONTENT = 'beforeSaveContent';
+
+    /**
      * @event ElementEvent The event that is triggered after an element's content is saved.
      */
     const EVENT_AFTER_SAVE_CONTENT = 'afterSaveContent';
@@ -159,55 +164,70 @@ class Content extends Component
         $this->fieldContext = $element->getFieldContext();
 
         if (!$validate || $this->validateContent($element)) {
-            // Prepare the data to be saved
-            $values = [
-                'elementId' => $element->id,
-                'locale' => $element->locale
-            ];
-            if ($element->hasTitles() && $element->title) {
-                $values['title'] = $element->title;
-            }
-            $fieldLayout = $element->getFieldLayout();
-            if ($fieldLayout) {
-                foreach ($fieldLayout->getFields() as $field) {
-                    /** @var Field $field */
-                    if ($field::hasContentColumn()) {
-                        $column = $this->fieldColumnPrefix.$field->handle;
-                        $values[$column] = $field->prepareValueForDb($element->getFieldValue($field->handle), $element);
+
+            // Fire a 'beforeSaveCategory' event
+            $event = new ElementEvent([
+                'element' => $element
+            ]);
+
+            $this->trigger(self::EVENT_BEFORE_SAVE_CONTENT, $event);
+
+            // Is the event giving us the go-ahead?
+            if ($event->isValid) {
+                // Prepare the data to be saved
+                $values = [
+                    'elementId' => $element->id,
+                    'locale' => $element->locale
+                ];
+                if ($element->hasTitles() && $element->title) {
+                    $values['title'] = $element->title;
+                }
+                $fieldLayout = $element->getFieldLayout();
+                if ($fieldLayout) {
+                    foreach ($fieldLayout->getFields() as $field) {
+                        /** @var Field $field */
+                        if ($field::hasContentColumn()) {
+                            $column = $this->fieldColumnPrefix.$field->handle;
+                            $values[$column] = $field->prepareValueForDb($element->getFieldValue($field->handle), $element);
+                        }
                     }
                 }
-            }
 
-            // Insert/update the DB row
-            if ($element->contentId) {
-                // Update the existing row
-                Craft::$app->getDb()->createCommand()
-                    ->update($this->contentTable, $values, ['id' => $element->contentId])
-                    ->execute();
+                // Insert/update the DB row
+                if ($element->contentId) {
+                    // Update the existing row
+                    Craft::$app->getDb()->createCommand()
+                        ->update($this->contentTable, $values, ['id' => $element->contentId])
+                        ->execute();
+                } else {
+                    // Insert a new row and store its ID on the element
+                    Craft::$app->getDb()->createCommand()
+                        ->insert($this->contentTable, $values)
+                        ->execute();
+                    $element->contentId = Craft::$app->getDb()->getLastInsertID();
+                }
+
+                if ($fieldLayout) {
+                    if ($updateOtherLocales && Craft::$app->getIsLocalized()) {
+                        $this->_duplicateNonTranslatableFieldValues($element, $values, $nonTranslatableFields, $otherContentModels);
+                    }
+
+                    $this->_updateSearchIndexes($element, $fieldLayout, $nonTranslatableFields, $otherContentModels);
+                }
+
+                $success = true;
             } else {
-                // Insert a new row and store its ID on the element
-                Craft::$app->getDb()->createCommand()
-                    ->insert($this->contentTable, $values)
-                    ->execute();
-                $element->contentId = Craft::$app->getDb()->getLastInsertID();
+                $success = false;
             }
+        } else {
+            $success = false;
+        }
 
+        if ($success) {
             // Fire an 'afterSaveContent' event
             $this->trigger(self::EVENT_AFTER_SAVE_CONTENT, new ElementEvent([
                 'element' => $element
             ]));
-
-            if ($fieldLayout) {
-                if ($updateOtherLocales && Craft::$app->getIsLocalized()) {
-                    $this->_duplicateNonTranslatableFieldValues($element, $values, $nonTranslatableFields, $otherContentModels);
-                }
-
-                $this->_updateSearchIndexes($element, $fieldLayout, $nonTranslatableFields, $otherContentModels);
-            }
-
-            $success = true;
-        } else {
-            $success = false;
         }
 
         $this->contentTable = $originalContentTable;
