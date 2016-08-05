@@ -194,7 +194,7 @@ class Extension extends \Twig_Extension
     public function getTests()
     {
         return [
-            new \Twig_SimpleTest('missing', function($obj) {
+            new \Twig_SimpleTest('missing', function ($obj) {
                 return $obj instanceof MissingComponentInterface;
             }),
         ];
