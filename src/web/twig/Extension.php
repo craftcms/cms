@@ -535,7 +535,7 @@ class Extension extends \Twig_Extension
     }
 
     /**
-     * Returns getCsrfInput() wrapped in a \Twig_Markup object.
+     * Returns a CSRF input wrapped in a \Twig_Markup object.
      *
      * @return \Twig_Markup|null
      */
