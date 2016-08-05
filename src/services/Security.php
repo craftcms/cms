@@ -77,7 +77,7 @@ class Security extends \yii\base\Security
     /**
      * Returns a validtion key unique to this Craft installation. Craft will initially check the 'validationKey'
      * config setting and return that if one has been explicitly set. If not, Craft will generate a cryptographically
-     * secure, random key and save it in `craft\storage\validation.key` and server that on future requests.
+     * secure, random key and save it in `craft\storage\validation.key` and serve that on future requests.
      *
      * Note that if this key ever changes, any data that was encrypted with it will not be accessible.
      *
