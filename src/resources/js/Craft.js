@@ -1,4 +1,4 @@
-/*! Craft 3.0.0 - 2016-08-03 */
+/*! Craft 3.0.0 - 2016-08-06 */
 (function($){
 
 // Set all the standard Craft.* stuff
@@ -10525,7 +10525,7 @@ Craft.DeleteUserModal = Garnish.Modal.extend(
 					Craft.getCsrfInput() +
 					'<input type="hidden" name="action" value="users/delete-user"/>' +
 					(!Garnish.isArray(this.userId) ? '<input type="hidden" name="userId" value="'+this.userId+'"/>' : '') +
-					'<input type="hidden" name="redirect" value="'+(Craft.edition == Craft.Pro ? 'users' : 'dashboard')+'"/>' +
+					(settings.redirect ? '<input type="hidden" name="redirect" value="'+settings.redirect+'"/>' : '') +
 				'</form>'
 			).appendTo(Garnish.$bod),
 			$body = $(
@@ -10662,7 +10662,8 @@ Craft.DeleteUserModal = Garnish.Modal.extend(
 },
 {
 	defaults: {
-		onSubmit: $.noop
+		onSubmit: $.noop,
+		redirect: null
 	}
 });
 
