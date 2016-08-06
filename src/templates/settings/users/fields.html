@@ -10,7 +10,7 @@
 {% block content %}
 	<form method="post" accept-charset="UTF-8" data-saveshortcut>
 		<input type="hidden" name="action" value="users/save-field-layout">
-		<input type="hidden" name="redirect" value="settings">
+		{{ redirectInput('settings') }}
 		{{ csrfInput() }}
 
 		{% include "_includes/fieldlayoutdesigner" with {

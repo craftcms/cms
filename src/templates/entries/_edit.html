@@ -28,7 +28,7 @@
 	{% if isDraft %}
 
 		<input type="hidden" name="action" value="entry-revisions/save-draft">
-		<input type="hidden" name="redirect" value="{{ baseCpEditUrl }}/drafts/{{ entry.draftId }}">
+		{{ redirectInput(baseCpEditUrl~'/drafts/'~entry.draftId) }}
 		<input type="hidden" name="draftId" value="{{ entry.draftId }}">
 
 		<div class="btngroup">
@@ -55,7 +55,7 @@
 						<ul>
 							<li><a class="formsubmit"
 								   data-action="entryRevisions/publishDraft"
-								   data-redirect="{{ entry.getCpEditUrl() }}">
+								   data-redirect="{{ entry.getCpEditUrl()|hash }}">
 									{{ "Publish draft"|t('app') }}
 								</a></li>
 						</ul>
@@ -70,7 +70,7 @@
 							<li><a class="formsubmit"
 								   data-action="entryRevisions/deleteDraft"
 								   data-confirm="{{ 'Are you sure you want to delete this draft?'|t('app') }}"
-								   data-redirect="{{ entry.getCpEditUrl() }}">
+								   data-redirect="{{ entry.getCpEditUrl()|hash }}">
 									{{ 'Delete draft'|t('app') }}
 								</a></li>
 						</ul>
@@ -88,7 +88,7 @@
 		%}
 
 			<input type="hidden" name="action" value="entry-revisions/revert-entry-to-version">
-			<input type="hidden" name="redirect" value="{{ entry.getCpEditUrl() }}">
+			{{ redirectInput(entry.getCpEditUrl()) }}
 			<input type="hidden" name="versionId" value="{{ entry.versionId }}">
 
 			<div class="secondary-buttons">
@@ -99,7 +99,7 @@
 	{% elseif canSave %}
 
 		<input type="hidden" name="action" value="entries/save-entry">
-		<input type="hidden" name="redirect" value="entries/{{ sectionHandle }}">
+		{{ redirectInput('entries/'~sectionHandle) }}
 
 		<div class="btngroup">
 			<input type="submit" class="btn submit" value="{{ 'Save'|t('app') }}">
@@ -107,7 +107,7 @@
 			<div class="btn submit menubtn"></div>
 			<div class="menu">
 				<ul>
-					<li><a class="formsubmit" data-redirect="{{ continueEditingUrl }}">
+					<li><a class="formsubmit" data-redirect="{{ continueEditingUrl|hash }}">
 							{{ "Save and continue editing"|t('app') }}
 							{{ forms.optionShortcutLabel('S') }}
 						</a></li>
@@ -121,13 +121,13 @@
 					{% endif %}
 
 					{% if not isSingle %}
-						<li><a class="formsubmit" data-redirect="entries/{{ sectionHandle }}/new{% if nextEntryParams %}?{{ nextEntryParams|join('&') }}{% endif %}">{{ "Save and add another"|t('app') }}</a></li>
+						<li><a class="formsubmit" data-redirect="{{ ('entries/'~sectionHandle~'/new'~(nextEntryParams ? '?'~nextEntryParams|join('&')))|hash }}">{{ "Save and add another"|t('app') }}</a></li>
 					{% endif %}
 
-					<li><a class="formsubmit" data-action="entryRevisions/saveDraft" data-redirect="{{ baseCpEditUrl }}/drafts/{draftId}">{{ 'Save as a draft'|t('app') }}</a></li>
+					<li><a class="formsubmit" data-action="entryRevisions/saveDraft" data-redirect="{{ (baseCpEditUrl~'/drafts/{draftId}')|hash }}">{{ 'Save as a draft'|t('app') }}</a></li>
 
 					{% if not isSingle and entry.id %}
-						<li><a class="formsubmit" data-param="entryId" data-value="" data-redirect="{{ continueEditingUrl }}">{{ "Save as a new entry"|t('app') }}</a></li>
+						<li><a class="formsubmit" data-param="entryId" data-value="" data-redirect="{{ continueEditingUrl|hash }}">{{ "Save as a new entry"|t('app') }}</a></li>
 					{% endif %}
 				</ul>
 			</div>
@@ -136,7 +136,7 @@
 	{% else %}
 
 		<input type="hidden" name="action" value="entry-revisions/save-draft">
-		<input type="hidden" name="redirect" value="{{ baseCpEditUrl }}/drafts/{draftId}">
+		{{ redirectInput(baseCpEditUrl~'/drafts/{draftId}') }}
 
 		<input type="submit" class="btn submit first" value="{{ 'Save as a draft'|t('app') }}">
 
@@ -285,7 +285,7 @@
 									<div class="right">
 										<input type="button" class="btn small formsubmit" value="{{ 'Delete'|t('app') }}" data-action="entries/delete-entry"
 											data-confirm="{{ 'Are you sure you want to delete this entry?'|t('app') }}"
-											data-redirect="entries">
+											data-redirect="{{ 'entries'|hash }}">
 									</div>
 								{% endif %}
 							{% endset %}

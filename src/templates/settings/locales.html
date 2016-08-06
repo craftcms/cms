@@ -35,7 +35,7 @@
 				<div class="content">
 					<form method="post" accept-charset="UTF-8">
 						<input type="hidden" name="action" value="language-settings/save">
-						<input type="hidden" name="redirect" value="settings">
+						{{ redirectInput('settings') }}
 						{{ csrfInput() }}
 
 						<h2>{{ "Which locales does your content target?"|t('app') }}</h2>

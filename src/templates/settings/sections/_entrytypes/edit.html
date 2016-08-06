@@ -8,9 +8,9 @@
 	<input type="hidden" name="action" value="sections/save-entry-type">
 
 	{% if section.type == 'single' %}
-		<input type="hidden" name="redirect" value="settings/sections">
+		{{ redirectInput('settings/sections') }}
 	{% else %}
-		<input type="hidden" name="redirect" value="settings/sections/{{ section.id }}/entrytypes">
+		{{ redirectInput('settings/sections/'~section.id~'/entrytypes') }}
 	{% endif %}
 	<input type="hidden" name="sectionId" value="{{ section.id }}">
 	{% if entryType.id %}<input type="hidden" name="entryTypeId" value="{{ entryType.id }}">{% endif %}

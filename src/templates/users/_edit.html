@@ -35,14 +35,11 @@
                 <div class="btn submit menubtn"></div>
                 <div class="menu">
                     <ul>
-                        <li><a class="formsubmit"
-                               data-redirect="{{ isNewAccount ? 'users/{id}' : account.getCpEditUrl() }}">
+                        <li><a class="formsubmit" data-redirect="{{ (isNewAccount ? 'users/{id}' : account.getCpEditUrl())|hash }}">
                                 {{ "Save and continue editing"|t('app') }}
                                 {{ forms.optionShortcutLabel('S') }}
                             </a></li>
-                        <li><a class="formsubmit"
-                               data-redirect="users/new">{{ "Save and add another"|t('app') }}</a>
-                        </li>
+                        <li><a class="formsubmit" data-redirect="{{ 'users/new'|hash }}">{{ "Save and add another"|t('app') }}</a></li>
                     </ul>
                 </div>
             </div>
@@ -63,10 +60,9 @@
 {% block main %}
     <div class="grid" data-max-cols="3">
         <div class="item" data-position="left" data-colspan="2">
-            <form id="userform" class="pane" method="post" accept-charset="UTF-8" data-saveshortcut data-saveshortcut-redirect="{{ account.getIsCurrent() ? 'myaccount' : (CraftEdition == CraftPro and currentUser.can('editUsers') ? 'users/{id}' : 'dashboard') }}">
+            <form id="userform" class="pane" method="post" accept-charset="UTF-8" data-saveshortcut data-saveshortcut-redirect="{{ (account.getIsCurrent() ? 'myaccount' : (CraftEdition == CraftPro and currentUser.can('editUsers') ? 'users/{id}' : 'dashboard'))|hash }}">
                 <input type="hidden" name="action" value="users/save-user">
-                <input type="hidden" name="redirect"
-                       value="{{ CraftEdition == CraftPro and currentUser.can('editUsers') ? 'users' : 'dashboard' }}">
+                {{ redirectInput(CraftEdition == CraftPro and currentUser.can('editUsers') ? 'users' : 'dashboard') }}
                 {{ hiddenInputs }}
 
                 {% include "_includes/tabs" %}

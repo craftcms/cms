@@ -8,7 +8,7 @@
 
 {% block content %}
 	<input type="hidden" name="action" value="globals/save-set">
-	<input type="hidden" name="redirect" value="settings/globals">
+	{{ redirectInput('settings/globals') }}
 
 	{% if globalSet.id %}<input type="hidden" name="setId" value="{{ globalSet.id }}">{% endif %}
 

@@ -32,7 +32,7 @@
 
 {% block content %}
 	<input type="hidden" name="action" value="user-settings/save-group">
-	<input type="hidden" name="redirect" value="settings/users">
+	{{ redirectInput('settings/users') }}
 
 	{% if not isNewGroup %}<input type="hidden" name="groupId" value="{{ group.id }}">{% endif %}
 

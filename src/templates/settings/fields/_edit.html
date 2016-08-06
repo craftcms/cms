@@ -6,7 +6,7 @@
 
 {% block content %}
 	<input type="hidden" name="action" value="fields/save-field">
-	<input type="hidden" name="redirect" value="settings/fields/{groupId}">
+	{{ redirectInput('settings/fields/{groupId}') }}
 	{% if fieldId is defined %}
 		<input type="hidden" name="fieldId" value="{{ fieldId }}">
 	{% endif %}

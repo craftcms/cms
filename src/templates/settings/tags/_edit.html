@@ -7,7 +7,7 @@
 
 {% block content %}
 	<input type="hidden" name="action" value="tags/save-tag-group">
-	<input type="hidden" name="redirect" value="settings/tags">
+	{{ redirectInput('settings/tags') }}
 
 	{% if tagGroup.id %}<input type="hidden" name="tagGroupId" value="{{ tagGroup.id }}">{% endif %}
 
