@@ -150,7 +150,7 @@ class Extension extends \Twig_Extension
         return [
             new \Twig_SimpleFilter('camel', [$this, 'camelFilter']),
             new \Twig_SimpleFilter('currency', '\Craft::$app->getFormatter()->asCurrency'),
-            new \Twig_SimpleFilter('date', [$this, 'dateFilter', 'needs_environment' => true]),
+            new \Twig_SimpleFilter('date', [$this, 'dateFilter'], ['needs_environment' => true]),
             new \Twig_SimpleFilter('datetime', '\Craft::$app->getFormatter()->asDateTime'),
             new \Twig_SimpleFilter('filesize', '\Craft::$app->getFormatter()->asShortSize'),
             new \Twig_SimpleFilter('filter', 'array_filter'),
