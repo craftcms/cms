@@ -742,7 +742,13 @@ class UsersController extends Controller
 
         Craft::$app->getView()->registerCssResource('css/account.css');
         Craft::$app->getView()->registerJsResource('js/AccountSettingsForm.js');
-        Craft::$app->getView()->registerJs('new Craft.AccountSettingsForm('.Json::encode($user->id).', '.($user->getIsCurrent() ? 'true' : 'false').');', View::POS_END);
+
+        $userIdJs = Json::encode($user->id);
+        $isCurrentJs = ($user->getIsCurrent() ? 'true' : 'false');
+        $settingsJs = Json::encode([
+            'deleteModalRedirect' => Craft::$app->getSecurity()->hashData(Craft::$app->getEdition() == Craft::Pro ? 'users' : 'dashboard'),
+        ]);
+        Craft::$app->getView()->registerJs('new Craft.AccountSettingsForm('.$userIdJs.', '.$isCurrentJs.', '.$settingsJs.');', View::POS_END);
 
         Craft::$app->getView()->registerTranslations('app', [
             'Please enter your current password.',
