@@ -601,6 +601,21 @@ class StringHelper extends \yii\helpers\StringHelper
             $validChars = 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890';
         }
 
+        return static::randomStringWithChars($validChars, $length);
+    }
+
+    /**
+     * Generates a random string of characters. Note that the generated string is *not* a
+     * cryptographically secure string. If you need a cryptographically secure string, see
+     * [[Craft::$app->security->randomString]].
+     *
+     * @param string  $validChars A string containing the valid characters
+     * @param integer $length     The length of the random string
+     *
+     * @return string The randomly generated string.
+     */
+    public static function randomStringWithChars($validChars, $length)
+    {
         $randomString = '';
 
         // count the number of chars in the valid chars string so we know how many choices we have
