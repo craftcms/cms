@@ -29,7 +29,7 @@
         "yiisoft/yii2-debug": "dev-master",
         "yiisoft/yii2-authclient": "2.0.6",
         "yiisoft/yii2-swiftmailer": "2.0.5",
-        "simplepie/simplepie": "1.4.2",
+        "simplepie/simplepie": "1.4.2.1",
         "guzzlehttp/guzzle": "6.2.1",
         "twig/twig": "1.24.1.1",
         "lsolesen/pel": "0.9.4.1",
