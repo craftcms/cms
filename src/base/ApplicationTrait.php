@@ -1545,11 +1545,14 @@ trait ApplicationTrait
     private function _getFallbackLanguage()
     {
         /** @var \craft\app\web\Application|\craft\app\console\Application $this */
-        // See if we have the CP translated in one of the user's browsers preferred language(s)
-        $language = $this->getTranslatedBrowserLanguage();
+        /** @noinspection PhpUnnecessaryFullyQualifiedNameInspection */
+        if ($this instanceof \craft\app\web\Application) {
+            // See if we have the CP translated in one of the user's browsers preferred language(s)
+            $language = $this->getTranslatedBrowserLanguage();
+        }
 
         // Default to the source language.
-        if (!$language) {
+        if (empty($language)) {
             $language = $this->sourceLanguage;
         }
 
