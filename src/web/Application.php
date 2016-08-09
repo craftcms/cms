@@ -332,10 +332,6 @@ class Application extends \yii\web\Application
      */
     public function getTranslatedBrowserLanguage()
     {
-        if ($this->getRequest()->getIsConsoleRequest()) {
-            return false;
-        }
-
         $browserLanguages = $this->getRequest()->getAcceptableLanguages();
 
         if ($browserLanguages) {
