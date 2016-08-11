@@ -515,7 +515,15 @@ class EmailService extends BaseApplicationComponent
 			$email->SMTPKeepAlive = true;
 		}
 
-		$email->SMTPSecure = $emailSettings['smtpSecureTransportType'] != 'none' ? $emailSettings['smtpSecureTransportType'] : null;
+		if ($emailSettings['smtpSecureTransportType'] == 'none')
+		{
+			// Clearly they don't want any encryption.
+			$email->SMTPAutoTLS = false;
+		}
+		else
+		{
+			$email->SMTPSecure = $emailSettings['smtpSecureTransportType'];
+		}
 
 		if (!isset($emailSettings['host']))
 		{
