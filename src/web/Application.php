@@ -552,9 +552,6 @@ class Application extends \yii\web\Application
             $appPath = $this->getPath()->getAppPath();
 
             if ($cachedAppPath === false || $cachedAppPath !== $appPath) {
-                // Flush the data cache, so we're not getting cached CP resource paths.
-                $this->getCache()->flush();
-
                 return $this->runAction('templates/requirements-check');
             }
         }

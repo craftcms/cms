@@ -16,6 +16,7 @@ use craft\app\helpers\StringHelper;
 use craft\app\helpers\Url;
 use Exception;
 use yii\base\Component;
+use yii\caching\AppPathDependency;
 use yii\helpers\FileHelper;
 use yii\web\ForbiddenHttpException;
 use yii\web\NotFoundHttpException;
@@ -74,7 +75,7 @@ class Resources extends Component
             $realPath = ':(';
         }
 
-        Craft::$app->getCache()->set('resourcePath:'.$path, $realPath);
+        Craft::$app->getCache()->set('resourcePath:'.$path, $realPath, null, new AppPathDependency());
     }
 
     /**
