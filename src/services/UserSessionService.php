@@ -1124,7 +1124,8 @@ class UserSessionService extends \CWebUser
 	/**
 	 * Returns how many seconds are left in the current elevated user session.
 	 *
-	 * @return int The number of seconds left in the current elevated user session
+	 * @return int|boolean The number of seconds left in the current elevated user session
+	 *                     or false if it has been disabled.
 	 */
 	public function getElevatedSessionTimeout()
 	{
@@ -1144,6 +1145,12 @@ class UserSessionService extends \CWebUser
 			}
 		}
 
+		// If it has been disabled, return false.
+		if (craft()->config->getElevatedSessionDuration() === false)
+		{
+			return false;
+		}
+
 		return 0;
 	}
 
@@ -1154,6 +1161,12 @@ class UserSessionService extends \CWebUser
 	 */
 	public function hasElevatedSession()
 	{
+		// If it's been disabled, just return true
+		if (craft()->config->getElevatedSessionDuration() === false)
+		{
+			return true;
+		}
+
 		return ($this->getElevatedSessionTimeout() != 0);
 	}
 
@@ -1180,8 +1193,14 @@ class UserSessionService extends \CWebUser
 
 		if ($passwordModel->validate() && craft()->users->validatePassword($user->password, $password))
 		{
-			// Set the elevated session expiration date
-			$this->setState(self::ELEVATED_SESSION_TIMEOUT_VAR, time() + craft()->config->getElevatedSessionDuration());
+			$elevatedSessionDuration = craft()->config->getElevatedSessionDuration();
+
+			// Make sure it hasn't been disabled.
+			if ($elevatedSessionDuration !== false)
+			{
+				// Set the elevated session expiration date
+				$this->setState(self::ELEVATED_SESSION_TIMEOUT_VAR, time() + $elevatedSessionDuration);
+			}
 
 			return true;
 		}

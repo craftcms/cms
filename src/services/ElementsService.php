@@ -211,6 +211,11 @@ class ElementsService extends BaseApplicationComponent
 			return array();
 		}
 
+		if ($justIds)
+		{
+			return $query->queryColumn();
+		}
+
 		$results = $query->queryAll();
 
 		if (!$results)
@@ -218,22 +223,7 @@ class ElementsService extends BaseApplicationComponent
 			return array();
 		}
 
-		// Do they just care about the IDs?
-		if ($justIds)
-		{
-			$ids = array();
-
-			foreach ($results as $result)
-			{
-				$ids[] = $result['id'];
-			}
-
-			return $ids;
-		}
-		else
-		{
-			return $this->populateElements($results, $criteria, $contentTable, $fieldColumns, $justIds);
-		}
+		return $this->populateElements($results, $criteria, $contentTable, $fieldColumns);
 	}
 
 	/**
@@ -2215,8 +2205,25 @@ class ElementsService extends BaseApplicationComponent
 										{
 											if (!empty($refTag['matches'][3]) && isset($element->{$refTag['matches'][3]}))
 											{
-												$value = (string) $element->{$refTag['matches'][3]};
-												$replace[] = $this->parseRefs($value);
+												try
+												{
+													$value = $element->{$refTag['matches'][3]};
+
+													if (is_object($value) && !method_exists($value, '__toString'))
+													{
+														throw new Exception('Object of class '.get_class($value).' could not be converted to string');
+													}
+
+													$replace[] = $this->parseRefs((string)$value);
+												}
+												catch (\Exception $e)
+												{
+													// Log it
+													Craft::log('An exception was thrown when parsing the ref tag "'.$refTag['matches'][0]."\":\n".$e->getMessage(), LogLevel::Error);
+
+													// Replace the token with the original ref tag
+													$replace[] = $refTag['matches'][0];
+												}
 											}
 											else
 											{
