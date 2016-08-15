@@ -62,6 +62,11 @@ class AssetTransforms extends Component
      */
     private $_eagerLoadedTransformIndexes;
 
+    /**
+     * @var AssetTransformIndex
+     */
+    private $_activeTransformIndex;
+
     // Public Methods
     // =========================================================================
 
@@ -1084,6 +1089,23 @@ class AssetTransforms extends Component
         return $transforms;
     }
 
+    /**
+     * @return AssetTransformIndex|null
+     */
+    public function getActiveTransformIndex()
+    {
+        return $this->_activeTransformIndex;
+    }
+
+    /**
+     * @param AssetTransformIndex $index
+     */
+    public function setActiveTransformIndex(AssetTransformIndex $index)
+    {
+        $this->_activeTransformIndex = $index;
+    }
+
+
     // Private Methods
     // =========================================================================
 
@@ -1208,6 +1230,9 @@ class AssetTransforms extends Component
         if ($image instanceof Raster) {
             $image->setQuality($quality);
         }
+
+        // Save this for Image to use if needed.
+        $this->setActiveTransformIndexModel($index);
 
         switch ($transform->mode) {
             case 'fit': {
