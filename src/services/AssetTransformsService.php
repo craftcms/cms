@@ -434,7 +434,6 @@ class AssetTransformsService extends BaseApplicationComponent
 					}
 					else
 					{
-						$index->dateUpdated = new DateTime();
 						$this->storeTransformIndexData($index);
 						break;
 					}
