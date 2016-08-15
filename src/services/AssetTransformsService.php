@@ -418,7 +418,7 @@ class AssetTransformsService extends BaseApplicationComponent
 			{
 				// Wait a second!
 				sleep(1);
-				ini_set('max_execution_time', 120);
+				craft()->config->maxPowerCaptain();
 
 				$index = $this->getTransformIndexModelById($index->id);
 
