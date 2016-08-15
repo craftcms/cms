@@ -223,9 +223,7 @@ class EntryRevisions extends Component
 
         if ($success) {
             // Fire an 'afterSaveDraft' event
-            $this->trigger(self::EVENT_AFTER_SAVE_DRAFT, new DraftEvent([
-                'draft' => $draft
-            ]));
+            $this->trigger(self::EVENT_AFTER_SAVE_DRAFT, $event);
         }
 
          return $success;
@@ -270,9 +268,7 @@ class EntryRevisions extends Component
 
         if ($success) {
             // Fire an 'afterPublishDraft' event
-            $this->trigger(self::EVENT_AFTER_PUBLISH_DRAFT, new DraftEvent([
-                'draft' => $draft
-            ]));
+            $this->trigger(self::EVENT_AFTER_PUBLISH_DRAFT, $event);
         }
 
         return $success;
@@ -319,9 +315,7 @@ class EntryRevisions extends Component
 
         if ($success) {
             // Fire an 'afterDeleteDraft' event
-            $this->trigger(self::EVENT_AFTER_DELETE_DRAFT, new DraftEvent([
-                'draft' => $draft
-            ]));
+            $this->trigger(self::EVENT_AFTER_DELETE_DRAFT, $event);
         }
 
         return $success;
