@@ -425,7 +425,7 @@ class AssetTransforms extends Component
             for ($safety = 0; $safety < 100; $safety++) {
                 // Wait a second!
                 sleep(1);
-                ini_set('max_execution_time', 120);
+                Craft::$app->getConfig()->maxPowerCaptain();
 
                 $index = $this->getTransformIndexModelById($index->id);
 
