@@ -192,6 +192,12 @@ class Image extends BaseImage
 			{
 				$croppedLayer = $layer->crop($startingPoint, $newSize);
 				$gif->layers()->add($croppedLayer);
+
+				// Let's update dateUpdated in case this is going to take awhile.
+				if ($index = craft()->assetTransforms->getActiveTransformIndexModel())
+				{
+					craft()->assetTransforms->storeTransformIndexData($index);
+				}
 			}
 
 			$this->_image = $gif;
@@ -248,7 +254,6 @@ class Image extends BaseImage
 			$factor = min($this->getWidth() / $targetWidth, $this->getHeight() / $targetHeight);
 			$newHeight = round($this->getHeight() / $factor);
 			$newWidth = round($this->getWidth() / $factor);
-
 
 			$this->resize($newWidth, $newHeight);
 
@@ -346,6 +351,12 @@ class Image extends BaseImage
 			{
 				$resizedLayer = $layer->resize($newSize, $this->_getResizeFilter());
 				$gif->layers()->add($resizedLayer);
+
+				// Let's update dateUpdated in case this is going to take awhile.
+				if ($index = craft()->assetTransforms->getActiveTransformIndexModel())
+				{
+					craft()->assetTransforms->storeTransformIndexData($index);
+				}
 			}
 
 			$this->_image = $gif;

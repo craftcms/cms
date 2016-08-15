@@ -37,6 +37,11 @@ class AssetTransformsService extends BaseApplicationComponent
 	 */
 	private $_eagerLoadedTransformIndexes;
 
+	/**
+	 * @var
+	 */
+	private $_activeTransformIndexModel;
+
 	// Public Methods
 	// =========================================================================
 
@@ -1093,6 +1098,22 @@ class AssetTransformsService extends BaseApplicationComponent
 		return AssetTransformIndexModel::populateModels($records);
 	}
 
+	/**
+	 * @return mixed
+	 */
+	public function getActiveTransformIndexModel()
+	{
+		return $this->_activeTransformIndexModel;
+	}
+
+	/**
+	 * @param AssetTransformIndexModel $index
+	 */
+	public function setActiveTransformIndexModel(AssetTransformIndexModel $index)
+	{
+		$this->_activeTransformIndexModel = $index;
+	}
+
 	// Private Methods
 	// =========================================================================
 
@@ -1207,6 +1228,9 @@ class AssetTransformsService extends BaseApplicationComponent
 		{
 			$image->setQuality($quality);
 		}
+
+		// Save this for Image to use if needed.
+		$this->setActiveTransformIndexModel($index);
 
 		switch ($transform->mode)
 		{
