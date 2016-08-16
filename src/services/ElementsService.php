@@ -211,6 +211,11 @@ class ElementsService extends BaseApplicationComponent
 			return array();
 		}
 
+		if ($justIds)
+		{
+			return $query->queryColumn();
+		}
+
 		$results = $query->queryAll();
 
 		if (!$results)
@@ -218,22 +223,7 @@ class ElementsService extends BaseApplicationComponent
 			return array();
 		}
 
-		// Do they just care about the IDs?
-		if ($justIds)
-		{
-			$ids = array();
-
-			foreach ($results as $result)
-			{
-				$ids[] = $result['id'];
-			}
-
-			return $ids;
-		}
-		else
-		{
-			return $this->populateElements($results, $criteria, $contentTable, $fieldColumns, $justIds);
-		}
+		return $this->populateElements($results, $criteria, $contentTable, $fieldColumns);
 	}
 
 	/**

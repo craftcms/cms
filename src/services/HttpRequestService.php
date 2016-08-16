@@ -825,11 +825,6 @@ class HttpRequestService extends \CHttpRequest
 			HeaderHelper::setHeader(array('Vary' => 'Accept-Encoding'));
 		}
 
-		if (!ob_get_length())
-		{
-			HeaderHelper::setLength($length);
-		}
-
 		$content = mb_substr($content, $contentStart, $length, '8bit');
 
 		if ($terminate)
