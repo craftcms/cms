@@ -267,7 +267,7 @@ class Content extends Component
                     $i18n = Craft::$app->getI18n();
                     $params = [
                         'attribute' => Craft::t('site', $field->name),
-                        'value' => is_array($value) ? 'array()' : $value
+                        'value' => is_array($value) ? 'array()' : (is_object($value) ? get_class($value) : $value),
                     ];
 
                     foreach ($errors as $error) {
