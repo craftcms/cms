@@ -130,7 +130,7 @@ class m160804_110002_userphotos_to_assets extends Migration
     {
         // Safety first!
         $handle = 'userPhotos';
-        $name = 'User photos';
+        $name = 'User Photos';
 
         $counter = 0;
         $existingVolume = (new Query())
@@ -141,7 +141,7 @@ class m160804_110002_userphotos_to_assets extends Migration
 
         while (!empty($existingVolume)) {
             $handle = 'userPhotos'.++$counter;
-            $name = 'User photos '.$counter;
+            $name = 'User Photos '.$counter;
             $existingVolume = (new Query())
                 ->select('id')
                 ->from('{{%volumes}}')
