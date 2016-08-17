@@ -1229,7 +1229,7 @@ class AssetTransforms extends Component
         }
 
         // Save this for Image to use if needed.
-        $this->setActiveTransformIndexModel($index);
+        $this->setActiveTransformIndex($index);
 
         switch ($transform->mode) {
             case 'fit': {
