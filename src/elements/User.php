@@ -991,7 +991,7 @@ class User extends Element implements IdentityInterface
      */
     public function getPhotoUrl($transform = null)
     {
-        $photo = $this->getUserPhoto();
+        $photo = $this->getPhoto();
 
         if ($photo) {
             return $photo->getUrl($transform);
@@ -1005,7 +1005,7 @@ class User extends Element implements IdentityInterface
      */
     public function getThumbUrl($size = 100)
     {
-        $photo = $this->getUserPhoto();
+        $photo = $this->getPhoto();
 
         if ($photo) {
             return Url::getResourceUrl(
@@ -1245,7 +1245,7 @@ class User extends Element implements IdentityInterface
      *
      * @return Asset|null
      */
-    public function getUserPhoto()
+    public function getPhoto()
     {
         if (!isset($this->_userPhoto) && $this->photoId) {
             $this->_userPhoto = Craft::$app->getAssets()->getAssetById($this->photoId);
