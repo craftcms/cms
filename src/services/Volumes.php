@@ -10,6 +10,7 @@ use craft\app\errors\MissingComponentException;
 use craft\app\events\VolumeEvent;
 use craft\app\helpers\Component as ComponentHelper;
 use craft\app\records\Volume as AssetVolumeRecord;
+use craft\app\records\VolumeFolder;
 use craft\app\volumes\AwsS3;
 use craft\app\volumes\GoogleCloud;
 use craft\app\volumes\MissingVolume;
@@ -442,7 +443,7 @@ class Volumes extends Component
                         }
                     }
 
-                    Craft::$app->getAssetIndexer()->ensureTopFolder($volume);
+                $this->ensureTopFolder($volume);
 
                     $transaction->commit();
 
@@ -527,6 +528,35 @@ class Volumes extends Component
     }
 
     /**
+     * Ensures a top level folder exists that matches the model.
+     *
+     * @param VolumeInterface $volume
+     *
+     * @return integer
+     */
+    public function ensureTopFolder(VolumeInterface $volume)
+    {
+        /** @var Volume $volume */
+        $folder = VolumeFolder::findOne(
+            [
+                'name' => $volume->name,
+                'volumeId' => $volume->id
+            ]
+        );
+
+        if (empty($folder)) {
+            $folder = new VolumeFolder();
+            $folder->volumeId = $volume->id;
+            $folder->parentId = null;
+            $folder->name = $volume->name;
+            $folder->path = '';
+            $folder->save();
+        }
+
+        return $folder->id;
+    }
+
+    /**
      * Deletes an asset volume by its ID.
      *
      * @param integer $volumeId
@@ -579,6 +609,7 @@ class Volumes extends Component
             $transaction->rollBack();
 
             throw $e;
+
         }
 
         if ($success) {

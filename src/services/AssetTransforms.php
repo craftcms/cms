@@ -816,10 +816,6 @@ class AssetTransforms extends Component
 
         if (!$volume::isLocal()) {
             if (!Io::fileExists($imageSourcePath) || Io::getFileSize($imageSourcePath) == 0) {
-                if ($volume::isLocal()) {
-                    throw new VolumeObjectNotFoundException(Craft::t('Image “{file}” cannot be found.',
-                        ['file' => $imageSourcePath]));
-                }
 
                 // Delete it just in case it's a 0-byter
                 Io::deleteFile($imageSourcePath, true);
@@ -869,6 +865,7 @@ class AssetTransforms extends Component
         if (!($this->getCachedCloudImageSize() > 0)) {
             $this->_sourcesToBeDeleted[] = $imageSource;
 
+            // TODO this method seems to be gone.
             if (count($this->_sourcesToBeDeleted) == 1) {
                 Craft::$app->on(Application::EVENT_AFTER_REQUEST,
                     [$this, 'deleteQueuedSourceFiles']);

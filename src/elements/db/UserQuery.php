@@ -292,7 +292,7 @@ class UserQuery extends ElementQuery
 
         $this->query->select([
             'users.username',
-            'users.photo',
+            'users.photoId',
             'users.firstName',
             'users.lastName',
             'users.email',

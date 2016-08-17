@@ -94,54 +94,6 @@ class Resources extends Component
         // Special resource routing
         if (isset($segs[0])) {
             switch ($segs[0]) {
-                case 'userphotos': {
-                    if (isset($segs[1]) && $segs[1] == 'temp') {
-                        if (!isset($segs[2])) {
-                            return false;
-                        }
-
-                        return Craft::$app->getPath()->getTempUploadsPath().'/userphotos/'.$segs[2].'/'.$segs[3];
-                    }
-
-                    if (!isset($segs[3])) {
-                        return false;
-                    }
-
-                    $size = AssetsHelper::prepareAssetName($segs[2], false);
-                    // Looking for either a numeric size or "original" keyword
-                    if (!is_numeric($size) && $size != "original") {
-                        return false;
-                    }
-
-                    $username = AssetsHelper::prepareAssetName($segs[1], false);
-                    $filename = AssetsHelper::prepareAssetName($segs[3], true, true);
-
-                    $userPhotosPath = Craft::$app->getPath()->getUserPhotosPath().'/'.$username;
-                    $sizedPhotoFolder = $userPhotosPath.'/'.$size;
-                    $sizedPhotoPath = $sizedPhotoFolder.'/'.$filename;
-
-                    // If the photo doesn't exist at this size, create it.
-                    if (!Io::fileExists($sizedPhotoPath)) {
-                        $originalPhotoPath = $userPhotosPath.'/original/'.$filename;
-
-                        if (!Io::fileExists($originalPhotoPath)) {
-                            return false;
-                        }
-
-                        Io::ensureFolderExists($sizedPhotoFolder);
-
-                        if (Io::isWritable($sizedPhotoFolder)) {
-                            Craft::$app->getImages()->loadImage($originalPhotoPath)
-                                ->resize($size)
-                                ->saveAs($sizedPhotoPath);
-                        } else {
-                            Craft::error('Tried to write to target folder and could not: '.$sizedPhotoFolder, __METHOD__);
-                        }
-                    }
-
-                    return $sizedPhotoPath;
-                }
-
                 case 'defaultuserphoto': {
                     return Craft::$app->getPath()->getResourcesPath().'/images/user.svg';
                 }

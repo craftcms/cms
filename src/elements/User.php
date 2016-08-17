@@ -425,6 +425,34 @@ class User extends Element implements IdentityInterface
         }
     }
 
+    /**
+     * @inheritdoc
+     */
+    public static function getEagerLoadingMap($sourceElements, $handle)
+    {
+        if ($handle == 'userPhoto') {
+            // Get the source element IDs
+            $sourceElementIds = [];
+
+            foreach ($sourceElements as $sourceElement) {
+                $sourceElementIds[] = $sourceElement->id;
+            }
+
+            $map = (new Query())
+                ->select('id as source, photoId as target')
+                ->from('{{%users}}')
+                ->where(['in', 'id', $sourceElementIds])
+                ->all();
+
+            return [
+                'elementType' => Asset::className(),
+                'map' => $map
+            ];
+        }
+
+        return parent::getEagerLoadingMap($sourceElements, $handle);
+    }
+
     // IdentityInterface Methods
     // -------------------------------------------------------------------------
 
@@ -492,9 +520,9 @@ class User extends Element implements IdentityInterface
     public $username;
 
     /**
-     * @var string Photo
+     * @var integer Photo asset id
      */
-    public $photo;
+    public $photoId;
 
     /**
      * @var string First name
@@ -597,6 +625,11 @@ class User extends Element implements IdentityInterface
     public $authError;
 
     /**
+     * @var Asset user photo
+     */
+    private $_userPhoto;
+
+    /**
      * @var array The cached list of groups the user belongs to. Set by [[getGroups()]].
      */
     private $_groups;
@@ -648,7 +681,7 @@ class User extends Element implements IdentityInterface
 
         $rules[] = [['lastLoginDate'], 'craft\\app\\validators\\DateTime'];
         $rules[] = [
-            ['invalidLoginCount'],
+            ['invalidLoginCount', 'photoId'],
             'number',
             'min' => -2147483648,
             'max' => 2147483647,
@@ -669,7 +702,7 @@ class User extends Element implements IdentityInterface
         ];
         $rules[] = [['email', 'unverifiedEmail'], 'email'];
         $rules[] = [['email', 'unverifiedEmail'], 'string', 'min' => 5];
-        $rules[] = [['username', 'photo'], 'string', 'max' => 100];
+        $rules[] = [['username'], 'string', 'max' => 100];
         $rules[] = [['email', 'unverifiedEmail'], 'string', 'max' => 255];
 
         return $rules;
@@ -952,16 +985,16 @@ class User extends Element implements IdentityInterface
     /**
      * Returns the URL to the user's photo.
      *
-     * @param integer $size
+     * @param string|array|null $transform The transform that should be applied, if any. Can either be the handle of a named transform, or an array that defines the transform settings.
      *
      * @return string|null
      */
-    public function getPhotoUrl($size = 100)
+    public function getPhotoUrl($transform = null)
     {
-        if ($this->photo) {
-            $username = Assets::prepareAssetName($this->username, false);
+        $photo = $this->getUserPhoto();
 
-            return Url::getResourceUrl('userphotos/'.$username.'/'.$size.'/'.$this->photo);
+        if ($photo) {
+            return $photo->getUrl($transform);
         }
 
         return null;
@@ -972,13 +1005,18 @@ class User extends Element implements IdentityInterface
      */
     public function getThumbUrl($size = 100)
     {
-        $url = $this->getPhotoUrl($size);
+        $photo = $this->getUserPhoto();
 
-        if (!$url) {
-            $url = Url::getResourceUrl('defaultuserphoto');
+        if ($photo) {
+            return Url::getResourceUrl(
+                'resized/'.$this->photoId.'/'.$size,
+                [
+                    Craft::$app->getResources()->dateParam => $photo->dateModified->getTimestamp()
+                ]
+            );
         }
 
-        return $url;
+        return $url = Url::getResourceUrl('defaultuserphoto');
     }
 
     /**
@@ -1187,6 +1225,43 @@ class User extends Element implements IdentityInterface
         $this->_preferences = array_merge($this->getPreferences(), $preferences);
 
         return $this->_preferences;
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function setEagerLoadedElements($handle, $elements)
+    {
+        if ($handle == 'userPhoto') {
+            $photo = isset($elements[0]) ? $elements[0] : null;
+            $this->setUserPhoto($photo);
+        } else {
+            parent::setEagerLoadedElements($handle, $elements);
+        }
+    }
+
+    /**
+     * Returns the user's photo.
+     *
+     * @return Asset|null
+     */
+    public function getUserPhoto()
+    {
+        if (!isset($this->_userPhoto) && $this->photoId) {
+            $this->_userPhoto = Craft::$app->getAssets()->getAssetById($this->photoId);
+        }
+
+        return $this->_userPhoto;
+    }
+
+    /**
+     * Sets the entry's author.
+     *
+     * @param Asset|null $userPhoto
+     */
+    public function setUserPhoto(Asset $userPhoto = null)
+    {
+        $this->_userPhoto = $userPhoto;
     }
 
     // Private Methods

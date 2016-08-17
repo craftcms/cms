@@ -11,17 +11,21 @@ use Craft;
 use craft\app\dates\DateInterval;
 use craft\app\dates\DateTime;
 use craft\app\db\Query;
+use craft\app\elements\Asset;
+use craft\app\errors\ImageException;
 use craft\app\errors\UserNotFoundException;
+use craft\app\errors\VolumeException;
 use craft\app\events\DeleteUserEvent;
 use craft\app\events\UserEvent;
 use craft\app\helpers\Assets as AssetsHelper;
 use craft\app\helpers\DateTimeHelper;
 use craft\app\helpers\Db;
 use craft\app\helpers\Io;
+use craft\app\helpers\Image;
 use craft\app\helpers\Json;
+use craft\app\helpers\StringHelper;
 use craft\app\helpers\Template;
 use craft\app\helpers\Url;
-use craft\app\base\Image;
 use craft\app\models\Password;
 use craft\app\elements\User;
 use craft\app\records\User as UserRecord;
@@ -346,7 +350,7 @@ class Users extends Component
         $userRecord->username = $user->username;
         $userRecord->firstName = $user->firstName;
         $userRecord->lastName = $user->lastName;
-        $userRecord->photo = $user->photo;
+        $userRecord->photoId = $user->photoId;
         $userRecord->email = $user->email;
         $userRecord->admin = $user->admin;
         $userRecord->client = $user->client;
@@ -623,38 +627,55 @@ class Users extends Component
     /**
      * Crops and saves a user’s photo.
      *
-     * @param string $filename The name of the file.
-     * @param Image  $image    The image.
-     * @param User   $user     The user.
+     * @param User $user the user.
+     * @param string $fileLocation the local image path on server
+     * @param string $filename name of the file to use, defaults to filename of $imagePath
      *
      * @return boolean Whether the photo was saved successfully.
+     * @throws ImageException if the file provided is not a manipulatable image
+     * @throws VolumeException if the user photo Volume is not provided or is invalid
      */
-    public function saveUserPhoto($filename, Image $image, User $user)
+    public function saveUserPhoto($fileLocation, User $user, $filename = "")
     {
-        $userName = AssetsHelper::prepareAssetName($user->username, false);
-        $userPhotoFolder = Craft::$app->getPath()->getUserPhotosPath().'/'.$userName;
-        $targetFolder = $userPhotoFolder.'/original';
+        $filenameToUse = AssetsHelper::prepareAssetName($filename ?: Io::getFilename($fileLocation, false), true, true);
 
-        Io::ensureFolderExists($userPhotoFolder);
-        Io::ensureFolderExists($targetFolder);
-
-        $filename = AssetsHelper::prepareAssetName($filename);
-        $targetPath = $targetFolder.'/'.$filename;
-
-        $result = $image->saveAs($targetPath);
-
-        if ($result) {
-            Io::changePermissions($targetPath, Craft::$app->getConfig()->get('defaultFilePermissions'));
-            $record = UserRecord::findOne($user->id);
-            $record->photo = $filename;
-            $record->save();
-
-            $user->photo = $filename;
-
-            return true;
+        if(!Image::isImageManipulatable(Io::getExtension($fileLocation))) {
+            throw new ImageException(Craft::t('app', 'User photo must be an image that Craft can manipulate.'));
         }
 
-        return false;
+        $volumes = Craft::$app->getVolumes();
+        $volumeId = Craft::$app->getSystemSettings()->getSetting('users', 'userphotoVolumeId');
+
+        if (!($volumeId && $volume = $volumes->getVolumeById($volumeId))) {
+            throw new VolumeException(Craft::t('app',
+                'The volume set for user photo storage is not valid.'));
+        }
+
+        $assets = Craft::$app->getAssets();
+
+        // If the photo exists, just replace the file.
+        if (!empty($user->photoId)) {
+            // No longer a new file.
+            $assets->replaceAssetFile($assets->getAssetById($user->photoId), $fileLocation, $filenameToUse);
+        } else {
+            $folderId = $volumes->ensureTopFolder($volumes->getVolumeById($volumeId));
+            $filenameToUse = $assets->getNameReplacementInFolder($filenameToUse, $folderId);
+
+            $userPhoto = new Asset();
+            $userPhoto->title = StringHelper::toTitleCase(Io::getFilename($filenameToUse, false));
+            $userPhoto->newFilePath = $fileLocation;
+            $userPhoto->filename = $filenameToUse;
+            $userPhoto->folderId = $folderId;
+            $userPhoto->volumeId = $volumeId;
+
+            // Save and delete the temporary file
+            $assets->saveAsset($userPhoto);
+
+            $user->photoId = $userPhoto->id;
+            Craft::$app->getUsers()->saveUser($user);
+        }
+
+        return true;
     }
 
     /**
@@ -666,17 +687,7 @@ class Users extends Component
      */
     public function deleteUserPhoto(User $user)
     {
-        $username = AssetsHelper::prepareAssetName($user->username, false);
-        $folder = Craft::$app->getPath()->getUserPhotosPath().'/'.$username;
-
-        if (Io::folderExists($folder)) {
-            Io::deleteFolder($folder);
-        }
-
-        $record = UserRecord::findOne($user->id);
-        $record->photo = null;
-        $user->photo = null;
-        $record->save();
+        Craft::$app->getAssets()->deleteAssetsByIds($user->photoId);
     }
 
     /**

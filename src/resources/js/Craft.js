@@ -1,4 +1,4 @@
-/*! Craft 3.0.0 - 2016-08-06 */
+/*! Craft 3.0.0 - 2016-08-17 */
 (function($){
 
 // Set all the standard Craft.* stuff
@@ -6640,7 +6640,7 @@ Craft.AssetIndex = Craft.BaseElementIndex.extend(
 		{
 			if (response.error)
 			{
-				alert(Craft.t('app', 'Upload failed for {filename}. The error message was: “{error}”', { filename: fileName, error: response.error }));
+				alert(Craft.t('app', 'Upload failed. The error message was: “{error}”', {error: response.error }));
 			}
 			else
 			{
@@ -8066,377 +8066,6 @@ Craft.AuthManager = Garnish.Base.extend(
 {
 	checkInterval: 60,
 	minSafeSessiotTime: 120
-});
-
-/**
- * Category index class
- */
-Craft.CategoryIndex = Craft.BaseElementIndex.extend(
-{
-	editableGroups: null,
-	$newCategoryBtnGroup: null,
-	$newCategoryBtn: null,
-
-	afterInit: function()
-	{
-		// Find which of the visible groups the user has permission to create new categories in
-		this.editableGroups = [];
-
-		for (var i = 0; i < Craft.editableCategoryGroups.length; i++)
-		{
-			var group = Craft.editableCategoryGroups[i];
-
-			if (this.getSourceByKey('group:'+group.id))
-			{
-				this.editableGroups.push(group);
-			}
-		}
-
-		this.base();
-	},
-
-	getDefaultSourceKey: function()
-	{
-		// Did they request a specific category group in the URL?
-		if (this.settings.context == 'index' && typeof defaultGroupHandle != typeof undefined)
-		{
-			for (var i = 0; i < this.$sources.length; i++)
-			{
-				var $source = $(this.$sources[i]);
-
-				if ($source.data('handle') == defaultGroupHandle)
-				{
-					return $source.data('key');
-				}
-			}
-		}
-
-		return this.base();
-	},
-
-	onSelectSource: function()
-	{
-		// Get the handle of the selected source
-		var selectedSourceHandle = this.$source.data('handle');
-
-		// Update the New Category button
-		// ---------------------------------------------------------------------
-
-		if (this.editableGroups.length)
-		{
-			// Remove the old button, if there is one
-			if (this.$newCategoryBtnGroup)
-			{
-				this.$newCategoryBtnGroup.remove();
-			}
-
-			// Determine if they are viewing a group that they have permission to create categories in
-			var selectedGroup;
-
-			if (selectedSourceHandle)
-			{
-				for (var i = 0; i < this.editableGroups.length; i++)
-				{
-					if (this.editableGroups[i].handle == selectedSourceHandle)
-					{
-						selectedGroup = this.editableGroups[i];
-						break;
-					}
-				}
-			}
-
-			this.$newCategoryBtnGroup = $('<div class="btngroup submit"/>');
-			var $menuBtn;
-
-			// If they are, show a primary "New category" button, and a dropdown of the other groups (if any).
-			// Otherwise only show a menu button
-			if (selectedGroup)
-			{
-				var href = this._getGroupTriggerHref(selectedGroup),
-					label = (this.settings.context == 'index' ? Craft.t('app', 'New category') : Craft.t('app', 'New {group} category', {group: selectedGroup.name}));
-				this.$newCategoryBtn = $('<a class="btn submit add icon" '+href+'>'+label+'</a>').appendTo(this.$newCategoryBtnGroup);
-
-				if (this.settings.context != 'index')
-				{
-					this.addListener(this.$newCategoryBtn, 'click', function(ev)
-					{
-						this._openCreateCategoryModal(ev.currentTarget.getAttribute('data-id'));
-					});
-				}
-
-				if (this.editableGroups.length > 1)
-				{
-					$menuBtn = $('<div class="btn submit menubtn"></div>').appendTo(this.$newCategoryBtnGroup);
-				}
-			}
-			else
-			{
-				this.$newCategoryBtn = $menuBtn = $('<div class="btn submit add icon menubtn">'+Craft.t('app', 'New category')+'</div>').appendTo(this.$newCategoryBtnGroup);
-			}
-
-			if ($menuBtn)
-			{
-				var menuHtml = '<div class="menu"><ul>';
-
-				for (var i = 0; i < this.editableGroups.length; i++)
-				{
-					var group = this.editableGroups[i];
-
-					if (this.settings.context == 'index' || group != selectedGroup)
-					{
-						var href = this._getGroupTriggerHref(group),
-							label = (this.settings.context == 'index' ? group.name : Craft.t('app', 'New {group} category', {group: group.name}));
-						menuHtml += '<li><a '+href+'">'+label+'</a></li>';
-					}
-				}
-
-				menuHtml += '</ul></div>';
-
-				var $menu = $(menuHtml).appendTo(this.$newCategoryBtnGroup),
-					menuBtn = new Garnish.MenuBtn($menuBtn);
-
-				if (this.settings.context != 'index')
-				{
-					menuBtn.on('optionSelect', $.proxy(function(ev)
-					{
-						this._openCreateCategoryModal(ev.option.getAttribute('data-id'));
-					}, this));
-				}
-			}
-
-			this.addButton(this.$newCategoryBtnGroup);
-		}
-
-		// Update the URL if we're on the Categories index
-		// ---------------------------------------------------------------------
-
-		if (this.settings.context == 'index' && typeof history != typeof undefined)
-		{
-			var uri = 'categories';
-
-			if (selectedSourceHandle)
-			{
-				uri += '/'+selectedSourceHandle;
-			}
-
-			history.replaceState({}, '', Craft.getUrl(uri));
-		}
-
-		this.base();
-	},
-
-	_getGroupTriggerHref: function(group)
-	{
-		if (this.settings.context == 'index')
-		{
-			return 'href="'+Craft.getUrl('categories/'+group.handle+'/new')+'"';
-		}
-		else
-		{
-			return 'data-id="'+group.id+'"';
-		}
-	},
-
-	_openCreateCategoryModal: function(groupId)
-	{
-		if (this.$newCategoryBtn.hasClass('loading'))
-		{
-			return;
-		}
-
-		// Find the group
-		var group;
-
-		for (var i = 0; i < this.editableGroups.length; i++)
-		{
-			if (this.editableGroups[i].id == groupId)
-			{
-				group = this.editableGroups[i];
-				break;
-			}
-		}
-
-		if (!group)
-		{
-			return;
-		}
-
-		this.$newCategoryBtn.addClass('inactive');
-		var newCategoryBtnText = this.$newCategoryBtn.text();
-		this.$newCategoryBtn.text(Craft.t('app', 'New {group} category', {group: group.name}));
-
-		new Craft.ElementEditor({
-			hudTrigger: this.$newCategoryBtnGroup,
-			elementType: 'Category',
-			locale: this.locale,
-			attributes: {
-				groupId: groupId
-			},
-			onBeginLoading: $.proxy(function()
-			{
-				this.$newCategoryBtn.addClass('loading');
-			}, this),
-			onEndLoading: $.proxy(function()
-			{
-				this.$newCategoryBtn.removeClass('loading');
-			}, this),
-			onHideHud: $.proxy(function()
-			{
-				this.$newCategoryBtn.removeClass('inactive').text(newCategoryBtnText);
-			}, this),
-			onSaveElement: $.proxy(function(response)
-			{
-				// Make sure the right group is selected
-				var groupSourceKey = 'group:'+groupId;
-
-				if (this.sourceKey != groupSourceKey)
-				{
-					this.selectSourceByKey(groupSourceKey);
-				}
-
-				this.selectElementAfterUpdate(response.id);
-				this.updateElements();
-			}, this)
-		});
-	}
-});
-
-// Register it!
-Craft.registerElementIndexClass('craft\\app\\elements\\Category', Craft.CategoryIndex);
-
-/**
- * Category Select input
- */
-Craft.CategorySelectInput = Craft.BaseElementSelectInput.extend(
-{
-	setSettings: function()
-	{
-		this.base.apply(this, arguments);
-		this.settings.sortable = false;
-	},
-
-	getModalSettings: function()
-	{
-		var settings = this.base();
-		settings.hideOnSelect = false;
-		return settings;
-	},
-
-	getElements: function()
-	{
-		return this.$elementsContainer.find('.element');
-	},
-
-	onModalSelect: function(elements)
-	{
-		// Disable the modal
-		this.modal.disable();
-		this.modal.disableCancelBtn();
-		this.modal.disableSelectBtn();
-		this.modal.showFooterSpinner();
-
-		// Get the new category HTML
-		var selectedCategoryIds = this.getSelectedElementIds();
-
-		for (var i = 0; i < elements.length; i++)
-		{
-			selectedCategoryIds.push(elements[i].id);
-		}
-
-		var data = {
-			categoryIds:    selectedCategoryIds,
-			locale:         elements[0].locale,
-			id:             this.settings.id,
-			name:           this.settings.name,
-			limit:          this.settings.limit,
-			selectionLabel: this.settings.selectionLabel
-		};
-
-		Craft.postActionRequest('elements/get-categories-input-html', data, $.proxy(function(response, textStatus)
-		{
-			this.modal.enable();
-			this.modal.enableCancelBtn();
-			this.modal.enableSelectBtn();
-			this.modal.hideFooterSpinner();
-
-			if (textStatus == 'success')
-			{
-				var $newInput = $(response.html),
-					$newElementsContainer = $newInput.children('.elements');
-
-				this.$elementsContainer.replaceWith($newElementsContainer);
-				this.$elementsContainer = $newElementsContainer;
-				this.resetElements();
-
-				for (var i = 0; i < elements.length; i++)
-				{
-					var element = elements[i],
-						$element = this.getElementById(element.id);
-
-					if ($element)
-					{
-						this.animateElementIntoPlace(element.$element, $element);
-					}
-				}
-
-				this.updateDisabledElementsInModal();
-				this.modal.hide();
-				this.onSelectElements();
-			}
-		}, this));
-	},
-
-	removeElement: function($element)
-	{
-		// Find any descendants this category might have
-		var $allCategories = $element.add($element.parent().siblings('ul').find('.element'));
-
-		// Remove our record of them all at once
-		this.removeElements($allCategories);
-
-		// Animate them away one at a time
-		for (var i = 0; i < $allCategories.length; i++)
-		{
-			this._animateCategoryAway($allCategories, i);
-		}
-	},
-
-	_animateCategoryAway: function($allCategories, i)
-	{
-		var callback;
-
-		// Is this the last one?
-		if (i == $allCategories.length - 1)
-		{
-			callback = $.proxy(function()
-			{
-				var $li = $allCategories.first().parent().parent(),
-					$ul = $li.parent();
-
-				if ($ul[0] == this.$elementsContainer[0] || $li.siblings().length)
-				{
-					$li.remove();
-				}
-				else
-				{
-					$ul.remove();
-				}
-			}, this);
-		}
-
-		var func = $.proxy(function() {
-			this.animateElementAway($allCategories.eq(i), callback);
-		}, this);
-
-		if (i == 0)
-		{
-			func();
-		}
-		else
-		{
-			setTimeout(func, 100 * i);
-		}
-	}
 });
 
 /**
@@ -9922,6 +9551,377 @@ TaskProgressHUD.Task = Garnish.Base.extend(
 
 		this.$container.remove();
 		this.base();
+	}
+});
+
+/**
+ * Category index class
+ */
+Craft.CategoryIndex = Craft.BaseElementIndex.extend(
+{
+	editableGroups: null,
+	$newCategoryBtnGroup: null,
+	$newCategoryBtn: null,
+
+	afterInit: function()
+	{
+		// Find which of the visible groups the user has permission to create new categories in
+		this.editableGroups = [];
+
+		for (var i = 0; i < Craft.editableCategoryGroups.length; i++)
+		{
+			var group = Craft.editableCategoryGroups[i];
+
+			if (this.getSourceByKey('group:'+group.id))
+			{
+				this.editableGroups.push(group);
+			}
+		}
+
+		this.base();
+	},
+
+	getDefaultSourceKey: function()
+	{
+		// Did they request a specific category group in the URL?
+		if (this.settings.context == 'index' && typeof defaultGroupHandle != typeof undefined)
+		{
+			for (var i = 0; i < this.$sources.length; i++)
+			{
+				var $source = $(this.$sources[i]);
+
+				if ($source.data('handle') == defaultGroupHandle)
+				{
+					return $source.data('key');
+				}
+			}
+		}
+
+		return this.base();
+	},
+
+	onSelectSource: function()
+	{
+		// Get the handle of the selected source
+		var selectedSourceHandle = this.$source.data('handle');
+
+		// Update the New Category button
+		// ---------------------------------------------------------------------
+
+		if (this.editableGroups.length)
+		{
+			// Remove the old button, if there is one
+			if (this.$newCategoryBtnGroup)
+			{
+				this.$newCategoryBtnGroup.remove();
+			}
+
+			// Determine if they are viewing a group that they have permission to create categories in
+			var selectedGroup;
+
+			if (selectedSourceHandle)
+			{
+				for (var i = 0; i < this.editableGroups.length; i++)
+				{
+					if (this.editableGroups[i].handle == selectedSourceHandle)
+					{
+						selectedGroup = this.editableGroups[i];
+						break;
+					}
+				}
+			}
+
+			this.$newCategoryBtnGroup = $('<div class="btngroup submit"/>');
+			var $menuBtn;
+
+			// If they are, show a primary "New category" button, and a dropdown of the other groups (if any).
+			// Otherwise only show a menu button
+			if (selectedGroup)
+			{
+				var href = this._getGroupTriggerHref(selectedGroup),
+					label = (this.settings.context == 'index' ? Craft.t('app', 'New category') : Craft.t('app', 'New {group} category', {group: selectedGroup.name}));
+				this.$newCategoryBtn = $('<a class="btn submit add icon" '+href+'>'+label+'</a>').appendTo(this.$newCategoryBtnGroup);
+
+				if (this.settings.context != 'index')
+				{
+					this.addListener(this.$newCategoryBtn, 'click', function(ev)
+					{
+						this._openCreateCategoryModal(ev.currentTarget.getAttribute('data-id'));
+					});
+				}
+
+				if (this.editableGroups.length > 1)
+				{
+					$menuBtn = $('<div class="btn submit menubtn"></div>').appendTo(this.$newCategoryBtnGroup);
+				}
+			}
+			else
+			{
+				this.$newCategoryBtn = $menuBtn = $('<div class="btn submit add icon menubtn">'+Craft.t('app', 'New category')+'</div>').appendTo(this.$newCategoryBtnGroup);
+			}
+
+			if ($menuBtn)
+			{
+				var menuHtml = '<div class="menu"><ul>';
+
+				for (var i = 0; i < this.editableGroups.length; i++)
+				{
+					var group = this.editableGroups[i];
+
+					if (this.settings.context == 'index' || group != selectedGroup)
+					{
+						var href = this._getGroupTriggerHref(group),
+							label = (this.settings.context == 'index' ? group.name : Craft.t('app', 'New {group} category', {group: group.name}));
+						menuHtml += '<li><a '+href+'">'+label+'</a></li>';
+					}
+				}
+
+				menuHtml += '</ul></div>';
+
+				var $menu = $(menuHtml).appendTo(this.$newCategoryBtnGroup),
+					menuBtn = new Garnish.MenuBtn($menuBtn);
+
+				if (this.settings.context != 'index')
+				{
+					menuBtn.on('optionSelect', $.proxy(function(ev)
+					{
+						this._openCreateCategoryModal(ev.option.getAttribute('data-id'));
+					}, this));
+				}
+			}
+
+			this.addButton(this.$newCategoryBtnGroup);
+		}
+
+		// Update the URL if we're on the Categories index
+		// ---------------------------------------------------------------------
+
+		if (this.settings.context == 'index' && typeof history != typeof undefined)
+		{
+			var uri = 'categories';
+
+			if (selectedSourceHandle)
+			{
+				uri += '/'+selectedSourceHandle;
+			}
+
+			history.replaceState({}, '', Craft.getUrl(uri));
+		}
+
+		this.base();
+	},
+
+	_getGroupTriggerHref: function(group)
+	{
+		if (this.settings.context == 'index')
+		{
+			return 'href="'+Craft.getUrl('categories/'+group.handle+'/new')+'"';
+		}
+		else
+		{
+			return 'data-id="'+group.id+'"';
+		}
+	},
+
+	_openCreateCategoryModal: function(groupId)
+	{
+		if (this.$newCategoryBtn.hasClass('loading'))
+		{
+			return;
+		}
+
+		// Find the group
+		var group;
+
+		for (var i = 0; i < this.editableGroups.length; i++)
+		{
+			if (this.editableGroups[i].id == groupId)
+			{
+				group = this.editableGroups[i];
+				break;
+			}
+		}
+
+		if (!group)
+		{
+			return;
+		}
+
+		this.$newCategoryBtn.addClass('inactive');
+		var newCategoryBtnText = this.$newCategoryBtn.text();
+		this.$newCategoryBtn.text(Craft.t('app', 'New {group} category', {group: group.name}));
+
+		new Craft.ElementEditor({
+			hudTrigger: this.$newCategoryBtnGroup,
+			elementType: 'Category',
+			locale: this.locale,
+			attributes: {
+				groupId: groupId
+			},
+			onBeginLoading: $.proxy(function()
+			{
+				this.$newCategoryBtn.addClass('loading');
+			}, this),
+			onEndLoading: $.proxy(function()
+			{
+				this.$newCategoryBtn.removeClass('loading');
+			}, this),
+			onHideHud: $.proxy(function()
+			{
+				this.$newCategoryBtn.removeClass('inactive').text(newCategoryBtnText);
+			}, this),
+			onSaveElement: $.proxy(function(response)
+			{
+				// Make sure the right group is selected
+				var groupSourceKey = 'group:'+groupId;
+
+				if (this.sourceKey != groupSourceKey)
+				{
+					this.selectSourceByKey(groupSourceKey);
+				}
+
+				this.selectElementAfterUpdate(response.id);
+				this.updateElements();
+			}, this)
+		});
+	}
+});
+
+// Register it!
+Craft.registerElementIndexClass('craft\\app\\elements\\Category', Craft.CategoryIndex);
+
+/**
+ * Category Select input
+ */
+Craft.CategorySelectInput = Craft.BaseElementSelectInput.extend(
+{
+	setSettings: function()
+	{
+		this.base.apply(this, arguments);
+		this.settings.sortable = false;
+	},
+
+	getModalSettings: function()
+	{
+		var settings = this.base();
+		settings.hideOnSelect = false;
+		return settings;
+	},
+
+	getElements: function()
+	{
+		return this.$elementsContainer.find('.element');
+	},
+
+	onModalSelect: function(elements)
+	{
+		// Disable the modal
+		this.modal.disable();
+		this.modal.disableCancelBtn();
+		this.modal.disableSelectBtn();
+		this.modal.showFooterSpinner();
+
+		// Get the new category HTML
+		var selectedCategoryIds = this.getSelectedElementIds();
+
+		for (var i = 0; i < elements.length; i++)
+		{
+			selectedCategoryIds.push(elements[i].id);
+		}
+
+		var data = {
+			categoryIds:    selectedCategoryIds,
+			locale:         elements[0].locale,
+			id:             this.settings.id,
+			name:           this.settings.name,
+			limit:          this.settings.limit,
+			selectionLabel: this.settings.selectionLabel
+		};
+
+		Craft.postActionRequest('elements/get-categories-input-html', data, $.proxy(function(response, textStatus)
+		{
+			this.modal.enable();
+			this.modal.enableCancelBtn();
+			this.modal.enableSelectBtn();
+			this.modal.hideFooterSpinner();
+
+			if (textStatus == 'success')
+			{
+				var $newInput = $(response.html),
+					$newElementsContainer = $newInput.children('.elements');
+
+				this.$elementsContainer.replaceWith($newElementsContainer);
+				this.$elementsContainer = $newElementsContainer;
+				this.resetElements();
+
+				for (var i = 0; i < elements.length; i++)
+				{
+					var element = elements[i],
+						$element = this.getElementById(element.id);
+
+					if ($element)
+					{
+						this.animateElementIntoPlace(element.$element, $element);
+					}
+				}
+
+				this.updateDisabledElementsInModal();
+				this.modal.hide();
+				this.onSelectElements();
+			}
+		}, this));
+	},
+
+	removeElement: function($element)
+	{
+		// Find any descendants this category might have
+		var $allCategories = $element.add($element.parent().siblings('ul').find('.element'));
+
+		// Remove our record of them all at once
+		this.removeElements($allCategories);
+
+		// Animate them away one at a time
+		for (var i = 0; i < $allCategories.length; i++)
+		{
+			this._animateCategoryAway($allCategories, i);
+		}
+	},
+
+	_animateCategoryAway: function($allCategories, i)
+	{
+		var callback;
+
+		// Is this the last one?
+		if (i == $allCategories.length - 1)
+		{
+			callback = $.proxy(function()
+			{
+				var $li = $allCategories.first().parent().parent(),
+					$ul = $li.parent();
+
+				if ($ul[0] == this.$elementsContainer[0] || $li.siblings().length)
+				{
+					$li.remove();
+				}
+				else
+				{
+					$ul.remove();
+				}
+			}, this);
+		}
+
+		var func = $.proxy(function() {
+			this.animateElementAway($allCategories.eq(i), callback);
+		}, this);
+
+		if (i == 0)
+		{
+			func();
+		}
+		else
+		{
+			setTimeout(func, 100 * i);
+		}
 	}
 });
 
@@ -13697,415 +13697,126 @@ Craft.HandleGenerator = Craft.BaseInputGenerator.extend(
 });
 
 /**
- * postParameters     - an object of POST data to pass along with each Ajax request
- * modalClass         - class to add to the modal window to allow customization
- * uploadButton       - jQuery object of the element that should open the file chooser
- * uploadAction       - upload to this location (in form of "controller/action")
- * deleteButton       - jQuery object of the element that starts the image deletion process
- * deleteMessage      - confirmation message presented to the user for image deletion
- * deleteAction       - delete image at this location (in form of "controller/action")
- * cropAction         - crop image at this (in form of "controller/action")
- * areaToolOptions    - object with some options for the area tool selector
- *   aspectRatio      - decimal aspect ratio of width/height
- *   initialRectangle - object with options for the initial rectangle
- *     mode           - if set to auto, then the part selected will be the maximum size in the middle of image
- *     x1             - top left x coordinate of th rectangle, if the mode is not set to auto
- *     x2             - bottom right x coordinate of th rectangle, if the mode is not set to auto
- *     y1             - top left y coordinate of th rectangle, if the mode is not set to auto
- *     y2             - bottom right y coordinate of th rectangle, if the mode is not set to auto
- *
- * onImageDelete     - callback to call when image is deleted. First parameter will contain response data.
- * onImageSave       - callback to call when an cropped image is saved. First parameter will contain response data.
- */
-
-
-/**
- * Image Upload tool.
+ * Image upload class for user photos, site icon and logo.
  */
 Craft.ImageUpload = Garnish.Base.extend(
+{
+	$container: null,
+	progressBar: null,
+	uploader: null,
+
+	init: function(settings)
 	{
-		_imageHandler: null,
+		this.setSettings(settings, Craft.ImageUpload.defaults);
+		this.initImageUpload();
+	},
 
-		init: function(settings)
+	initImageUpload: function (){
+		this.$container = $(this.settings.containerSelector);
+		this.progressBar = new Craft.ProgressBar($('<div class="progress-shade"></div>').appendTo(this.$container));
+
+		var options = {
+			url: Craft.getActionUrl(this.settings.uploadAction),
+			formData: this.settings.postParameters,
+			fileInput: this.$container.find(this.settings.fileInputSelector)
+		};
+
+		// If CSRF protection isn't enabled, these won't be defined.
+		if (typeof Craft.csrfTokenName !== 'undefined' && typeof Craft.csrfTokenValue !== 'undefined') {
+			// Add the CSRF token
+			options.formData[Craft.csrfTokenName] = Craft.csrfTokenValue;
+		}
+
+		options.events = {};
+		options.events.fileuploadstart = $.proxy(this, '_onUploadStart');
+		options.events.fileuploadprogressall = $.proxy(this, '_onUploadProgress');
+		options.events.fileuploaddone = $.proxy(this, '_onUploadComplete');
+
+		this.uploader = new Craft.Uploader(this.$container, options);
+
+		this.initButtons();
+	},
+
+	initButtons: function () {
+		this.$container.find(this.settings.uploadButtonSelector).on('click', $.proxy(function (ev)
 		{
-			this.setSettings(settings, Craft.ImageUpload.defaults);
-			this._imageHandler = new Craft.ImageHandler(settings);
-		},
+			this.$container.find(this.settings.fileInputSelector).click();
+		}, this));
 
-		destroy: function()
+		this.$container.find(this.settings.deleteButtonSelector).on('click', $.proxy(function(ev)
 		{
-			this._imageHandler.destroy();
-			delete this._imageHandler;
+			if (confirm(Craft.t('app', 'Are you sure you want to delete this image?'))) {
+				$(ev.currentTarget).parent().append('<div class="blocking-modal"></div>');
+				Craft.postActionRequest(this.settings.deleteAction, this.settings.postParameters, $.proxy(function (response, textStatus) {
+					if (textStatus == 'success') {
+						this.refreshImage(response);
+					}
+				}, this));
+			}
+		}, this));
 
-			this.base();
+	},
+
+	refreshImage: function (response) {
+		$(this.settings.containerSelector).replaceWith(response.html);
+		this.settings.onAfterRefreshImage(response);
+		this.initImageUpload();
+	},
+
+	/**
+	 * On upload start.
+	 */
+	_onUploadStart: function (event) {
+		this.progressBar.$progressBar.css({
+			top: Math.round(this.$container.outerHeight() / 2) - 6
+		});
+
+		this.$container.addClass('uploading');
+		this.progressBar.resetProgressBar();
+		this.progressBar.showProgressBar();
+	},
+
+	/**
+	 * On upload progress.
+	 */
+	_onUploadProgress: function (event, data) {
+		var progress = parseInt(data.loaded / data.total * 100, 10);
+		this.progressBar.setProgressPercentage(progress);
+	},
+
+	/**
+	 * On a file being uploaded.
+	 */
+	_onUploadComplete: function (event, data) {
+		if (data.result.error) {
+			alert(data.result.error);
+		} else {
+			var html = $(data.result.html);
+			this.refreshImage(data.result);
+		}
+
+		// Last file
+		if (this.uploader.isLastUpload()) {
+			this.progressBar.hideProgressBar();
+			this.$container.removeClass('uploading');
 		}
 	},
-	{
-		$modalContainerDiv: null,
-
-		defaults: {
-			postParameters: {},
-
-			modalClass: "",
-			uploadButton: {},
-			uploadAction: "",
-
-			deleteButton: {},
-			deleteMessage: "",
-			deleteAction: "",
-
-			cropAction:"",
-
-			constraint: 500,
-
-			areaToolOptions:
-			{
-				aspectRatio: "1",
-				initialRectangle: {
-					mode: "auto",
-					x1: 0,
-					x2: 0,
-					y1: 0,
-					y2: 0
-				}
-			},
-
-			onImageDelete: function(response)
-			{
-				location.reload();
-			},
-			onImageSave: function(response)
-			{
-				location.reload();
-			}
-		}
-	});
-
-
-Craft.ImageHandler = Garnish.Base.extend(
-	{
-		modal: null,
-		progressBar: null,
-		$container: null,
-
-		init: function(settings)
-		{
-			this.setSettings(settings);
-
-			var element = settings.uploadButton;
-			var $uploadInput = $('<input type="file" name="image-upload"/>').hide().insertBefore(element);
-
-			this.progressBar = new Craft.ProgressBar($('<div class="progress-shade"></div>').insertBefore(element));
-			this.progressBar.$progressBar.css({
-				top: Math.round(element.outerHeight() / 2) - 6
-			});
-
-			this.$container = element.parent();
-
-			var options = {
-				url: Craft.getActionUrl(this.settings.uploadAction),
-				fileInput: $uploadInput,
-
-				element:    this.settings.uploadButton[0],
-				action:     Craft.actionUrl + '/' + this.settings.uploadAction,
-				formData:   typeof this.settings.postParameters === 'object' ? this.settings.postParameters : {},
-				events:     {
-					fileuploadstart: $.proxy(function()
-					{
-						this.$container.addClass('uploading');
-						this.progressBar.resetProgressBar();
-						this.progressBar.showProgressBar();
-					}, this),
-					fileuploadprogressall: $.proxy(function(data)
-					{
-						var progress = parseInt(data.loaded / data.total * 100, 10);
-						this.progressBar.setProgressPercentage(progress);
-					}, this),
-					fileuploaddone: $.proxy(function(event, data)
-					{
-						this.progressBar.hideProgressBar();
-						this.$container.removeClass('uploading');
-
-						var response = data.result;
-
-						if (response.error)
-						{
-							alert(response.error);
-							return;
-						}
-
-						if (Craft.ImageUpload.$modalContainerDiv == null)
-						{
-							Craft.ImageUpload.$modalContainerDiv = $('<div class="modal fitted"></div>').addClass(settings.modalClass).appendTo(Garnish.$bod);
-						}
-
-						if (response.fileName)
-						{
-							this.source = response.fileName;
-						}
-
-						if (response.html)
-						{
-							Craft.ImageUpload.$modalContainerDiv.empty().append(response.html);
-
-							if (!this.modal)
-							{
-								this.modal = new Craft.ImageModal(Craft.ImageUpload.$modalContainerDiv, {
-									postParameters: settings.postParameters,
-									cropAction:     settings.cropAction
-								});
-
-								this.modal.imageHandler = this;
-							}
-							else
-							{
-								this.modal.show();
-							}
-
-							this.modal.bindButtons();
-							this.modal.addListener(this.modal.$saveBtn, 'click', 'saveImage');
-							this.modal.addListener(this.modal.$cancelBtn, 'click', 'cancel');
-
-							this.modal.removeListener(Garnish.Modal.$shade, 'click');
-
-							setTimeout($.proxy(function()
-							{
-								Craft.ImageUpload.$modalContainerDiv.find('img').load($.proxy(function()
-								{
-									var areaTool = new Craft.ImageAreaTool(settings.areaToolOptions, this.modal);
-									areaTool.showArea();
-									this.modal.cropAreaTool = areaTool;
-								}, this));
-							}, this), 1);
-						}
-					}, this)
-				},
-				acceptFileTypes: /(jpg|jpeg|gif|png)/
-			};
-
-			// If CSRF protection isn't enabled, these won't be defined.
-			if (typeof Craft.csrfTokenName !== 'undefined' && typeof Craft.csrfTokenValue !== 'undefined')
-			{
-				// Add the CSRF token
-				options.formData[Craft.csrfTokenName] = Craft.csrfTokenValue;
-			}
-
-			this.uploader = new Craft.Uploader(element, options);
-
-
-			this.addListener($(settings.deleteButton), 'click', function(ev)
-			{
-				if (confirm(settings.deleteMessage))
-				{
-					$(ev.currentTarget).parent().append('<div class="blocking-modal"></div>');
-					Craft.postActionRequest(settings.deleteAction, settings.postParameters, $.proxy(function(response, textStatus)
-					{
-						if (textStatus == 'success')
-						{
-							this.onImageDelete(response);
-						}
-
-					}, this));
-
-				}
-			});
-
-			this.addListener($(settings.uploadButton), 'click', function(ev)
-			{
-				$(ev.currentTarget).siblings('input[type=file]').click();
-			});
-
-		},
-
-		onImageSave: function(data)
-		{
-			this.settings.onImageSave.apply(this, [data]);
-		},
-
-		onImageDelete: function(data)
-		{
-			this.settings.onImageDelete.apply(this, [data]);
-		},
-
-		destroy: function()
-		{
-			this.progressBar.destroy();
-			delete this.progressBar;
-
-			if (this.modal)
-			{
-				this.modal.destroy();
-				delete this.modal;
-			}
-
-			if (this.uploader)
-			{
-				this.uploader.destroy();
-				delete this.uploader;
-			}
-
-			this.base();
-		}
-	});
-
-
-Craft.ImageModal = Garnish.Modal.extend(
-	{
-		$container: null,
-		$saveBtn: null,
-		$cancelBtn: null,
-
-		areaSelect: null,
-		source: null,
-		_postParameters: null,
-		_cropAction: "",
-		imageHandler: null,
-		cropAreaTool: null,
-
-
-		init: function($container, settings)
-		{
-			this.cropAreaTool = null;
-			this.base($container, settings);
-			this._postParameters = settings.postParameters;
-			this._cropAction = settings.cropAction;
-		},
-
-		bindButtons: function()
-		{
-			this.$saveBtn = this.$container.find('.submit:first');
-			this.$cancelBtn = this.$container.find('.cancel:first');
-		},
-
-		cancel: function()
-		{
-			this.hide();
-			this.$container.remove();
-			this.destroy();
-		},
-
-		saveImage: function()
-		{
-			var selection = this.areaSelect.tellSelect();
-
-			var params = {
-				x1: selection.x,
-				y1: selection.y,
-				x2: selection.x2,
-				y2: selection.y2,
-				source: this.source
-			};
-
-			params = $.extend(this._postParameters, params);
-
-			Craft.postActionRequest(this._cropAction, params, $.proxy(function(response, textStatus)
-			{
-				if (textStatus == 'success')
-				{
-					if (response.error)
-					{
-						Craft.cp.displayError(response.error);
-					}
-					else
-					{
-						this.imageHandler.onImageSave.apply(this.imageHandler, [response]);
-					}
-				}
-
-				this.hide();
-				this.$container.remove();
-				this.destroy();
-			}, this));
-
-			this.areaSelect.setOptions({disable: true});
-			this.removeListener(this.$saveBtn, 'click');
-			this.removeListener(this.$cancelBtn, 'click');
-
-			this.$container.find('.crop-image').fadeTo(50, 0.5);
-		}
-
-	});
-
-
-Craft.ImageAreaTool = Garnish.Base.extend(
-	{
-		api:             null,
-		$container:      null,
-		containingModal: null,
-
-		init: function(settings, containingModal)
-		{
-			this.$container = Craft.ImageUpload.$modalContainerDiv;
-			this.setSettings(settings);
-			this.containingModal = containingModal;
-		},
-
-		showArea: function()
-		{
-			var $target = this.$container.find('img');
-
-			var cropperOptions = {
-				aspectRatio: this.settings.aspectRatio,
-				maxSize: [$target.width(), $target.height()],
-				bgColor: 'none'
-			};
-
-
-			var initCropper = $.proxy(function (api)
-			{
-				this.api = api;
-
-				var x1 = this.settings.initialRectangle.x1;
-				var x2 = this.settings.initialRectangle.x2;
-				var y1 = this.settings.initialRectangle.y1;
-				var y2 = this.settings.initialRectangle.y2;
-
-				if (this.settings.initialRectangle.mode == "auto")
-				{
-					var rectangleWidth = 0;
-					var rectangleHeight = 0;
-
-					if (this.settings.aspectRatio == "")
-					{
-						rectangleWidth = $target.width();
-						rectangleHeight = $target.height();
-					}
-					else if (this.settings.aspectRatio > 1)
-					{
-						rectangleWidth = $target.width();
-						rectangleHeight = rectangleWidth / this.settings.aspectRatio;
-					}
-					else if (this.settings.aspectRatio < 1)
-					{
-						rectangleHeight = $target.height();
-						rectangleWidth = rectangleHeight * this.settings.aspectRatio;
-					}
-					else
-					{
-						rectangleHeight = rectangleWidth = Math.min($target.width(), $target.height());
-					}
-
-					x1 = Math.round(($target.width() - rectangleWidth) / 2);
-					y1 = Math.round(($target.height() - rectangleHeight) / 2);
-					x2 = x1 + rectangleWidth;
-					y2 = y1 + rectangleHeight;
-
-				}
-				this.api.setSelect([x1, y1, x2, y2]);
-
-				this.containingModal.areaSelect = this.api;
-				this.containingModal.source = $target.attr('src').split('/').pop();
-				this.containingModal.updateSizeAndPosition();
-
-			}, this);
-
-			$target.Jcrop(cropperOptions, function ()
-			{
-				initCropper(this);
-			});
-		}
-	});
-
+},
+{
+	defaults: {
+		postParameters: {},
+		uploadAction: "",
+		deleteAction: "",
+		fileInputSelector: "",
+
+		onAfterRefreshImage: $.noop,
+		containerSelector: null,
+
+		uploadButtonSelector: null,
+		deleteButtonSelector: null
+	}
+}
+);
 /**
  * Info icon class
  */
