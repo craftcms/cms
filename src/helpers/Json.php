@@ -28,10 +28,10 @@ class Json extends \yii\helpers\Json
      *
      * @return mixed The PHP data, or the given string if it wasn’t valid JSON.
      */
-    public static function encodeIfJson($str, $asArray = true)
+    public static function decodeIfJson($str, $asArray = true)
     {
         try {
-            return static::encode($str, $asArray);
+            return static::decode($str, $asArray);
         } catch (InvalidParamException $e) {
             // Wasn't JSON
             return $str;
