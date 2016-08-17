@@ -80,41 +80,43 @@ class m160804_110002_userphotos_to_assets extends Migration
         $affectedUsers = [];
         $subfolders = Io::getFolderContents($this->_basePath, false);
 
-        // Grab the users with photos
-        foreach ($subfolders as $subfolder) {
-            $usernameOrEmail = trim(StringHelper::replace($subfolder, $this->_basePath, ''), '/');
+        if ($subfolders) {
+            // Grab the users with photos
+            foreach ($subfolders as $subfolder) {
+                $usernameOrEmail = trim(StringHelper::replace($subfolder, $this->_basePath, ''), '/');
 
-            $user = (new Query())
-                ->select('id, photo')
-                ->from('{{%users}}')
-                ->where('username = :username', [':username' => $usernameOrEmail])
-                ->one();
+                $user = (new Query())
+                    ->select('id, photo')
+                    ->from('{{%users}}')
+                    ->where('username = :username', [':username' => $usernameOrEmail])
+                    ->one();
 
-            $sourcePath = $subfolder.'original/'.$user['photo'];
+                $sourcePath = $subfolder.'original/'.$user['photo'];
 
-            // If the file actually exists
-            if (Io::fileExists($sourcePath)) {
-                // Make sure that the filename is unique
-                $counter = 0;
+                // If the file actually exists
+                if (Io::fileExists($sourcePath)) {
+                    // Make sure that the filename is unique
+                    $counter = 0;
 
-                $baseFilename = Io::getFilename($user['photo'], false);
-                $extension = Io::getExtension($user['photo']);
-                $filename = $baseFilename.'.'.$extension;
+                    $baseFilename = Io::getFilename($user['photo'], false);
+                    $extension = Io::getExtension($user['photo']);
+                    $filename = $baseFilename.'.'.$extension;
 
-                while (Io::fileExists($this->_basePath.'/'.$filename)) {
-                    $filename = $baseFilename.'_'.++$counter.'.'.$extension;
+                    while (Io::fileExists($this->_basePath.'/'.$filename)) {
+                        $filename = $baseFilename.'_'.++$counter.'.'.$extension;
+                    }
+
+                    // In case the filename changed
+                    $user['photo'] = $filename;
+
+                    // Store for reference
+                    $affectedUsers[] = $user;
+
+                    $targetPath = $this->_basePath.'/'.$filename;
+
+                    // Move the file to the new location
+                    Io::move($sourcePath, $targetPath);
                 }
-
-                // In case the filename changed
-                $user['photo'] = $filename;
-
-                // Store for reference
-                $affectedUsers[] = $user;
-
-                $targetPath = $this->_basePath.'/'.$filename;
-
-                // Move the file to the new location
-                Io::move($sourcePath, $targetPath);
             }
         }
 
