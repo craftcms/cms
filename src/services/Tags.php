@@ -248,7 +248,7 @@ class Tags extends Component
             $this->trigger(self::EVENT_BEFORE_SAVE_GROUP, $event);
 
             // Make sure the event is giving us the go ahead
-            if (!$event->isValid) {
+            if ($event->isValid) {
                 $transaction = Craft::$app->getDb()->beginTransaction();
 
                 try {
@@ -330,7 +330,7 @@ class Tags extends Component
         $success = false;
 
         // Make sure the event is giving us the go ahead
-        if (!$event->isValid) {
+        if ($event->isValid) {
             $transaction = Craft::$app->getDb()->beginTransaction();
             try {
                 // Delete the field layout
