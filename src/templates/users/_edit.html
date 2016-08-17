@@ -20,7 +20,7 @@
 {% registercssresource "css/profile.css" %}
 
 {% set photoInput %}
-    {% include 'users/_userphoto' with {account: account} only %}
+    {% include 'users/_photo' with {account: account} only %}
 {% endset %}
 
 {% set saveUserButtons %}

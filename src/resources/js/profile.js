@@ -6,7 +6,7 @@
 		deleteAction: 'users/delete-user-photo',
 		uploadButtonSelector: '.btn.upload-photo',
 		deleteButtonSelector: '.btn.delete-photo',
-		fileInputSelector: 'input[name=userphoto]',
+		fileInputSelector: 'input[name=photo]',
 
 		onAfterRefreshImage: function (response) {
 			if (typeof response.html != "undefined") {

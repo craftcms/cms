@@ -59,10 +59,10 @@
 			{{ forms.selectField({
 				label: "User Photo Volume"|t('app'),
 				instructions: "Which volume do you want to use to store user photos?"|t('app'),
-				id: 'userphotoVolumeId',
-				name: 'userphotoVolumeId',
+				id: 'photoVolumeId',
+				name: 'photoVolumeId',
 				options: volumeList,
-				value: settings.userphotoVolumeId
+				value: settings.photoVolumeId
 			})}}
 		{% else %}
 			{{ forms.field({

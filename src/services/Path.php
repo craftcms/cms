@@ -198,19 +198,6 @@ class Path extends Component
     }
 
     /**
-     * Returns the path to the craft/storage/userphotos/ folder.
-     *
-     * @return string The path to the craft/storage/userphotos/ folder.
-     */
-    public function getUserPhotosPath()
-    {
-        $path = $this->getStoragePath().'/userphotos';
-        Io::ensureFolderExists($path);
-
-        return $path;
-    }
-
-    /**
      * Returns the path to the craft/storage/runtime/assets/ folder.
      *
      * @return string The path to the craft/storage/runtime/assets/ folder.

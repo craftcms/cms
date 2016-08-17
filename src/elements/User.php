@@ -430,7 +430,7 @@ class User extends Element implements IdentityInterface
      */
     public static function getEagerLoadingMap($sourceElements, $handle)
     {
-        if ($handle == 'userPhoto') {
+        if ($handle == 'photo') {
             // Get the source element IDs
             $sourceElementIds = [];
 
@@ -627,7 +627,7 @@ class User extends Element implements IdentityInterface
     /**
      * @var Asset user photo
      */
-    private $_userPhoto;
+    private $_photo;
 
     /**
      * @var array The cached list of groups the user belongs to. Set by [[getGroups()]].
@@ -1237,9 +1237,9 @@ class User extends Element implements IdentityInterface
      */
     public function setEagerLoadedElements($handle, $elements)
     {
-        if ($handle == 'userPhoto') {
+        if ($handle == 'photo') {
             $photo = isset($elements[0]) ? $elements[0] : null;
-            $this->setUserPhoto($photo);
+            $this->setPhoto($photo);
         } else {
             parent::setEagerLoadedElements($handle, $elements);
         }
@@ -1252,21 +1252,21 @@ class User extends Element implements IdentityInterface
      */
     public function getPhoto()
     {
-        if (!isset($this->_userPhoto) && $this->photoId) {
-            $this->_userPhoto = Craft::$app->getAssets()->getAssetById($this->photoId);
+        if (!isset($this->_photo) && $this->photoId) {
+            $this->_photo = Craft::$app->getAssets()->getAssetById($this->photoId);
         }
 
-        return $this->_userPhoto;
+        return $this->_photo;
     }
 
     /**
      * Sets the entry's author.
      *
-     * @param Asset|null $userPhoto
+     * @param Asset|null $photo
      */
-    public function setUserPhoto(Asset $userPhoto = null)
+    public function setPhoto(Asset $photo = null)
     {
-        $this->_userPhoto = $userPhoto;
+        $this->_photo = $photo;
     }
 
     // Private Methods

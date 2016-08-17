@@ -56,6 +56,7 @@ return [
                 'requireEmailVerification' => true,
                 'allowPublicRegistration' => false,
                 'defaultGroup' => null,
+                'photoVolumeId' => null
             ],
         ]
     ],

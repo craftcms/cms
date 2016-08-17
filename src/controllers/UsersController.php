@@ -960,11 +960,11 @@ class UsersController extends Controller
         // ---------------------------------------------------------------------
 
         $imageValidates = true;
-        $userPhoto = UploadedFile::getInstanceByName('userPhoto');
+        $photo = UploadedFile::getInstanceByName('photo');
 
-        if ($userPhoto && !Image::isImageManipulatable($userPhoto->getExtension())) {
+        if ($photo && !Image::isImageManipulatable($photo->getExtension())) {
             $imageValidates = false;
-            $user->addError('userPhoto', Craft::t('app', 'The user photo provided is not an image.'));
+            $user->addError('photo', Craft::t('app', 'The user photo provided is not an image.'));
         }
 
         if ($imageValidates && Craft::$app->getUsers()->saveUser($user)) {
@@ -1094,7 +1094,7 @@ class UsersController extends Controller
             $this->requirePermission('editUsers');
         }
 
-        $file = UploadedFile::getInstanceByName('userphoto');
+        $file = UploadedFile::getInstanceByName('photo');
 
         try {
             // Make sure a file was uploaded
@@ -1112,7 +1112,7 @@ class UsersController extends Controller
                 $users->saveUserPhoto($fileLocation, $user, $file->name);
                 Io::deleteFile($fileLocation);
 
-                $html = Craft::$app->getView()->renderTemplate('users/_userphoto', ['account' => $user]);
+                $html = Craft::$app->getView()->renderTemplate('users/_photo', ['account' => $user]);
                 return $this->asJson(['html' => $html]);
             }
         } catch (Exception $exception) {
@@ -1150,7 +1150,7 @@ class UsersController extends Controller
         $user->photoId = null;
         Craft::$app->getUsers()->saveUser($user);
 
-        $html = Craft::$app->getView()->renderTemplate('users/_userphoto',
+        $html = Craft::$app->getView()->renderTemplate('users/_photo',
             [
                 'account' => $user
             ]
@@ -1617,15 +1617,15 @@ class UsersController extends Controller
         // Delete their photo?
         $users = Craft::$app->getUsers();
 
-        if (Craft::$app->getRequest()->getBodyParam('deleteUserPhoto')) {
+        if (Craft::$app->getRequest()->getBodyParam('deletePhoto')) {
             $users->deleteUserPhoto($user);
         }
 
         // Did they upload a new one?
-        if ($userPhoto = UploadedFile::getInstanceByName('userPhoto')) {
-            $fileLocation = Assets::getTempFilePath($userPhoto->getExtension());
-            move_uploaded_file($userPhoto->tempName, $fileLocation);
-            $users->saveUserPhoto($fileLocation, $user, $userPhoto->name);
+        if ($photo = UploadedFile::getInstanceByName('photo')) {
+            $fileLocation = Assets::getTempFilePath($photo->getExtension());
+            move_uploaded_file($photo->tempName, $fileLocation);
+            $users->saveUserPhoto($fileLocation, $user, $photo->name);
             Io::deleteFile($fileLocation);
         }
     }
