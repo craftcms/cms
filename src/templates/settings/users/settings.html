@@ -57,7 +57,7 @@
 
 		{% if volumeList %}
 			{{ forms.selectField({
-				label: "User photo volume"|t('app'),
+				label: "User Photo Volume"|t('app'),
 				instructions: "Which volume do you want to use to store user photos?"|t('app'),
 				id: 'userphotoVolumeId',
 				name: 'userphotoVolumeId',
@@ -66,7 +66,7 @@
 			})}}
 		{% else %}
 			{{ forms.field({
-				label: "User photo volume"|t('app')
+				label: "User Photo Volume"|t('app')
 			}, '<p class="error">' ~ "No volumes exist yet."|t('app') ~ '</p>') }}
 		{% endif %}
 		<div class="buttons">
