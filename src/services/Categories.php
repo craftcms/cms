@@ -1024,7 +1024,7 @@ class Categories extends Component
             ->status(null)
             ->locale($category->locale)
             ->localeEnabled(null)
-            ->select('id')
+            ->select('elements.id')
             ->scalar();
 
         if ($category->newParentId != $oldParentId) {
