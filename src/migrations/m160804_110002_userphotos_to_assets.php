@@ -101,7 +101,7 @@ class m160804_110002_userphotos_to_assets extends Migration
                 $extension = Io::getExtension($user['photo']);
                 $filename = $baseFilename.'.'.$extension;
 
-                while(Io::fileExists($this->_basePath.'/'.$filename)) {
+                while (Io::fileExists($this->_basePath.'/'.$filename)) {
                     $filename = $baseFilename.'_'.++$counter.'.'.$extension;
                 }
 
@@ -130,7 +130,7 @@ class m160804_110002_userphotos_to_assets extends Migration
     {
         // Safety first!
         $handle = 'userPhotos';
-        $name  = 'User photos';
+        $name = 'User photos';
 
         $counter = 0;
         $existingVolume = (new Query())
@@ -239,8 +239,7 @@ class m160804_110002_userphotos_to_assets extends Migration
                 ->andWhere('filename = :filename', [':filename' => $user['photo']])
                 ->one();
 
-            if (!$assetExists && Io::fileExists($filePath))
-            {
+            if (!$assetExists && Io::fileExists($filePath)) {
                 $elementData = [
                     'type' => 'craft\app\elements\Asset',
                     'enabled' => 1,
@@ -300,19 +299,19 @@ class m160804_110002_userphotos_to_assets extends Migration
     /**
      * Set photo ID values for the user array passed in.
      *
-     * @param $userlist
+     * @param array $userlist userId => assetId
      *
      * @return void
      */
     private function _setPhotoIdValues($userlist)
     {
-        $db = Craft::$app->getDb();
-
-        foreach ($userlist as $userId => $assetId)
-        {
-            $db->createCommand()
-                ->update('{{%users}}', ['photoId' => $assetId], 'id = :userId', [':userId' => $userId])
-                ->execute();
+        if (is_array($userlist)) {
+            $db = Craft::$app->getDb();
+            foreach ($userlist as $userId => $assetId) {
+                $db->createCommand()
+                    ->update('{{%users}}', ['photoId' => $assetId], 'id = :userId', [':userId' => $userId])
+                    ->execute();
+            }
         }
     }
 
@@ -323,8 +322,10 @@ class m160804_110002_userphotos_to_assets extends Migration
     {
         $folders = Io::getFolders($this->_basePath.'/');
 
-        foreach ($folders as $folder) {
-            Io::deleteFolder($folder);
+        if (is_array($folders)) {
+            foreach ($folders as $folder) {
+                Io::deleteFolder($folder);
+            }
         }
     }
 }
