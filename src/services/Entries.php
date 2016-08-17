@@ -440,7 +440,7 @@ class Entries extends Component
             ->status(null)
             ->locale($entry->locale)
             ->localeEnabled(false)
-            ->select('id')
+            ->select('elements.id')
             ->scalar();
 
         if ($entry->newParentId != $oldParentId) {
