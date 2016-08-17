@@ -36,9 +36,16 @@ class Command extends \yii\db\Command
     {
         if ($includeAuditColumns) {
             $now = Db::prepareDateForDb(new \DateTime());
-            $columns['dateCreated'] = $now;
-            $columns['dateUpdated'] = $now;
-            $columns['uid'] = StringHelper::UUID();
+
+            if (empty($columns['dateCreated'])) {
+                $columns['dateCreated'] = $now;
+            }
+            if (empty($columns['dateUpdated'])) {
+                $columns['dateUpdated'] = $now;
+            }
+            if (empty($columns['uid'])) {
+                $columns['uid'] = StringHelper::UUID();
+            }
         }
 
         parent::insert($table, $columns);
