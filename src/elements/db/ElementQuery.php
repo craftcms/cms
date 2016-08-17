@@ -850,6 +850,7 @@ class ElementQuery extends Query implements ElementQueryInterface, Arrayable, Co
             ->andWhere($this->where)
             ->offset($this->offset)
             ->limit($this->limit)
+            ->addParams($this->params)
             ->addParams([':locale' => $this->locale]);
 
         if ($class::hasContent() && $this->contentTable) {
