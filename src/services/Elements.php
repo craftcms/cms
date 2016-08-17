@@ -472,7 +472,7 @@ class Elements extends Component
 
                         if ($element->hasContent()) {
                             if (!$isMainLocale) {
-                                $fieldValues = null;
+                                $fieldValues = false;
 
                                 if (!$isNewElement) {
                                     // Do we already have a content row for this locale?
@@ -483,7 +483,7 @@ class Elements extends Component
                                         if (isset($fieldValues['title'])) {
                                             $localizedElement->title = $fieldValues['title'];
                                         }
-                                        unset($fieldValues['id'], $fieldValues['elementId'], $fieldValues['locale'], $fieldValues['title']);
+                                        unset($fieldValues['id'], $fieldValues['elementId'], $fieldValues['locale'], $fieldValues['title'], $fieldValues['dateCreated'], $fieldValues['dateUpdated'], $fieldValues['uid']);
                                     }
                                 }
 
