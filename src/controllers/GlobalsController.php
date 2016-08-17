@@ -150,7 +150,7 @@ class GlobalsController extends Controller
 
         // Render the template!
         return $this->renderTemplate('globals/_edit', [
-            'globalSets' => $globalSets,
+            'globalSets' => $editableGlobalSets,
             'globalSet' => $globalSet
         ]);
     }
