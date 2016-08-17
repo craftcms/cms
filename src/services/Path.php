@@ -215,7 +215,7 @@ class Path extends Component
      *
      * @return string The path to the craft/storage/runtime/assets/tempuploads/ folder.
      */
-    public function getAssetsTempSourcePath()
+    public function getAssetsTempVolumePath()
     {
         $path = $this->getAssetsPath().'/tempuploads';
         Io::ensureFolderExists($path);

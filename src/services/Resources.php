@@ -106,7 +106,7 @@ class Resources extends Component
                 case 'tempassets': {
                     array_shift($segs);
 
-                    return Craft::$app->getPath()->getAssetsTempSourcePath().'/'.implode('/', $segs);
+                    return Craft::$app->getPath()->getAssetsTempVolumePath().'/'.implode('/', $segs);
                 }
 
                 case 'resized': {
