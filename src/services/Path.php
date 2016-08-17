@@ -211,6 +211,19 @@ class Path extends Component
     }
 
     /**
+     * Returns the path to the craft/storage/runtime/cache/assets/ folder.
+     *
+     * @return string The path to the craft/storage/runtime/cache/assets/ folder.
+     */
+    public function getAssetsCachePath()
+    {
+        $path = $this->getAssetsPath().'/cache';
+        Io::ensureFolderExists($path);
+
+        return $path;
+    }
+
+    /**
      * Returns the path to the craft/storage/runtime/assets/tempuploads/ folder.
      *
      * @return string The path to the craft/storage/runtime/assets/tempuploads/ folder.
@@ -230,7 +243,7 @@ class Path extends Component
      */
     public function getAssetsImageSourcePath()
     {
-        $path = $this->getAssetsPath().'/sources';
+        $path = $this->getAssetsCachePath().'/sources';
         Io::ensureFolderExists($path);
 
         return $path;
@@ -243,7 +256,7 @@ class Path extends Component
      */
     public function getResizedAssetsPath()
     {
-        $path = $this->getAssetsPath().'/resized';
+        $path = $this->getAssetsCachePath().'/resized';
         Io::ensureFolderExists($path);
 
         return $path;
@@ -256,7 +269,7 @@ class Path extends Component
      */
     public function getAssetsIconsPath()
     {
-        $path = $this->getAssetsPath().'/icons';
+        $path = $this->getAssetsCachePath().'/icons';
         Io::ensureFolderExists($path);
 
         return $path;
