@@ -7,6 +7,7 @@
 
 namespace craft\app\elements\db;
 
+use Craft;
 use craft\app\db\Query;
 use craft\app\db\QueryAbortedException;
 use craft\app\elements\User;
@@ -292,7 +293,8 @@ class UserQuery extends ElementQuery
 
         $this->query->select([
             'users.username',
-            'users.photoId',
+            // TODO: uncomment after next breakpoint
+            //'users.photoId',
             'users.firstName',
             'users.lastName',
             'users.email',
@@ -305,6 +307,11 @@ class UserQuery extends ElementQuery
             'users.lastLoginDate',
             'users.lockoutDate',
         ]);
+
+        // TODO: remove after next breakpoint
+        if (version_compare(Craft::$app->getInfo('version'), '3.0', '>=') && Craft::$app->getInfo('build') > 2910) {
+            $this->query->addSelect(['users.photoId']);
+        }
 
         if ($this->withPassword) {
             $this->query->addSelect('users.password');
