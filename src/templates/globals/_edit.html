@@ -20,7 +20,7 @@
 {% block sidebar %}
 	<nav>
 		<ul>
-			{% for theGlobalSet in globalSets %}
+			{% for theGlobalSet in editableGlobalSets %}
 				<li><a{% if theGlobalSet.handle == globalSet.handle %} class="sel"{% endif %} href="{{ theGlobalSet.getCpEditUrl() }}">{{ theGlobalSet.name|t('site') }}</a></li>
 			{% endfor %}
 		</ul>
