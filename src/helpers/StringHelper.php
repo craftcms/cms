@@ -821,7 +821,7 @@ class StringHelper extends \yii\helpers\StringHelper
      */
     public static function toTitleCase($str)
     {
-        return (string)Stringy::create($str)->toLowerCase();
+        return (string)Stringy::create($str)->toTitleCase();
     }
 
     /**
