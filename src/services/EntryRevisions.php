@@ -37,9 +37,23 @@ class EntryRevisions extends Component
     // =========================================================================
 
     /**
+     * @event DraftEvent The event that is triggered before a draft is saved.
+     *
+     * You may set [[DraftEvent::isValid]] to `false` to prevent the draft from getting saved.
+     */
+    const EVENT_BEFORE_SAVE_DRAFT = 'beforeSaveDraft';
+
+    /**
      * @event DraftEvent The event that is triggered after a draft is saved.
      */
     const EVENT_AFTER_SAVE_DRAFT = 'afterSaveDraft';
+
+    /**
+     * @event DraftEvent The event that is triggered before a draft is published.
+     *
+     * You may set [[DraftEvent::isValid]] to `false` to prevent the draft from getting published.
+     */
+    const EVENT_BEFORE_PUBLISH_DRAFT = 'beforePublishDraft';
 
     /**
      * @event DraftEvent The event that is triggered after a draft is published.
@@ -169,8 +183,6 @@ class EntryRevisions extends Component
      */
     public function saveDraft(EntryDraft $draft)
     {
-        $draftRecord = $this->_getDraftRecord($draft);
-
         if (!$draft->name && $draft->id) {
             // Get the total number of existing drafts for this entry/locale
             $totalDrafts = (new Query())
@@ -185,22 +197,38 @@ class EntryRevisions extends Component
                 ['num' => $totalDrafts + 1]);
         }
 
-        $draftRecord->name = $draft->name;
-        $draftRecord->notes = $draft->revisionNotes;
-        $draftRecord->data = $this->_getRevisionData($draft);
+        // Fire a 'beforeSaveDraft' event
+        $event = new DraftEvent([
+            'draft' => $draft
+        ]);
 
-        if ($draftRecord->save()) {
-            $draft->draftId = $draftRecord->id;
+        $this->trigger(self::EVENT_BEFORE_SAVE_DRAFT, $event);
 
+        $success = false;
+
+        // Is the event giving us the go-ahead?
+        if ($event->isValid) {
+
+            $draftRecord = $this->_getDraftRecord($draft);
+            $draftRecord->name = $draft->name;
+            $draftRecord->notes = $draft->revisionNotes;
+            $draftRecord->data = $this->_getRevisionData($draft);
+
+            if ($draftRecord->save()) {
+                $draft->draftId = $draftRecord->id;
+
+                $success = true;
+            }
+        }
+
+        if ($success) {
             // Fire an 'afterSaveDraft' event
             $this->trigger(self::EVENT_AFTER_SAVE_DRAFT, new DraftEvent([
                 'draft' => $draft
             ]));
-
-            return true;
         }
 
-        return false;
+         return $success;
     }
 
     /**
@@ -223,18 +251,31 @@ class EntryRevisions extends Component
                 ['name' => $draft->name]);
         }
 
-        if (Craft::$app->getEntries()->saveEntry($draft)) {
+        // Fire a 'beforePublishDraft' event
+        $event = new DraftEvent([
+            'draft' => $draft
+        ]);
+
+        $this->trigger(self::EVENT_BEFORE_PUBLISH_DRAFT, $event);
+
+        $success = false;
+
+        // Is the event giving us the go-ahead?
+        if ($event->isValid) {
+            if (Craft::$app->getEntries()->saveEntry($draft)) {
+                $success = true;
+                $this->deleteDraft($draft);
+            }
+        }
+
+        if ($success) {
             // Fire an 'afterPublishDraft' event
             $this->trigger(self::EVENT_AFTER_PUBLISH_DRAFT, new DraftEvent([
                 'draft' => $draft
             ]));
-
-            $this->deleteDraft($draft);
-
-            return true;
         }
 
-        return false;
+        return $success;
     }
 
     /**

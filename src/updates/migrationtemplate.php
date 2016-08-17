@@ -23,8 +23,6 @@ namespace <?= $namespace ?>;
 
 use Craft;
 use craft\app\db\Migration;
-use craft\app\helpers\MigrationHelper;
-use yii\db\Schema;
 
 /**
  * <?= $className ?> migration.

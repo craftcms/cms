@@ -1902,6 +1902,8 @@ body.rtl #global-sidebar { right: 0; }
 
 #global-sidebar .photo-container img { display: block; width: 32px; height: 32px; border-radius: 3px; }
 
+#global-sidebar #user-photo img { width: auto; max-width: 32px; margin: 0 auto; overflow: hidden; }
+
 #global-sidebar .light { color: #717983; }
 
 #global-sidebar .topbar > a { display: -webkit-box; display: -moz-box; display: -ms-flexbox; display: -webkit-flex; display: flex; -ms-flex-align: center; align-items: center; padding: 0 14px; }

@@ -60,6 +60,8 @@ class Categories extends Component
 
     /**
      * @event CategoryGroupEvent The event that is triggered before a category group is saved.
+     *
+     * You may set [[CategoryEvent::isValid]] to `false` to prevent the category group from getting saved.
      */
     const EVENT_BEFORE_SAVE_GROUP = 'beforeSaveGroup';
 
@@ -70,6 +72,8 @@ class Categories extends Component
 
     /**
      * @event CategoryGroupEvent The event that is triggered before a category group is deleted.
+     *
+     * You may set [[CategoryEvent::isValid]] to `false` to prevent the category group from getting saved.
      */
     const EVENT_BEFORE_DELETE_GROUP = 'beforeDeleteGroup';
 
@@ -707,7 +711,30 @@ class Categories extends Component
      */
     public function getCategoryById($categoryId, $localeId = null)
     {
-        return Craft::$app->getElements()->getElementById($categoryId, Category::className(), $localeId);
+        if (!$categoryId) {
+            return null;
+        }
+
+        // Get the structure ID
+        $structureId = (new Query())
+            ->select('categorygroups.structureId')
+            ->from('{{%categories}} categories')
+            ->innerJoin('{{%categorygroups}} categorygroups', 'categorygroups.id = categories.groupId')
+            ->where(['categories.id' => $categoryId])
+            ->scalar();
+
+        // All categories are part of a structure
+        if (!$structureId) {
+            return null;
+        }
+
+        return Category::find()
+            ->id($categoryId)
+            ->structureId($structureId)
+            ->locale($localeId)
+            ->status(null)
+            ->localeEnabled(false)
+            ->one();
     }
 
     /**
@@ -997,7 +1024,7 @@ class Categories extends Component
             ->status(null)
             ->locale($category->locale)
             ->localeEnabled(null)
-            ->select('id')
+            ->select('elements.id')
             ->scalar();
 
         if ($category->newParentId != $oldParentId) {

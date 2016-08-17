@@ -67,6 +67,8 @@ class Assets extends Component
 
     /**
      * @event AssetEvent The event that is triggered before an asset is saved.
+     *
+     * You may set [[AssetEvent::isValid]] to `false` to prevent the asset from getting saved.
      */
     const EVENT_BEFORE_SAVE_ASSET = 'beforeSaveAsset';
 
@@ -77,6 +79,8 @@ class Assets extends Component
 
     /**
      * @event AssetEvent The event that is triggered before an asset is replaced.
+     *
+     * You may set [[AssetEvent::isValid]] to `false` to prevent the asset from being replaced.
      */
     const EVENT_BEFORE_REPLACE_ASSET = 'beforeReplaceFile';
 
@@ -87,6 +91,8 @@ class Assets extends Component
 
     /**
      * @event AssetEvent The event that is triggered before an asset is deleted.
+     *
+     * You may set [[AssetEvent::isValid]] to `false` to prevent the asset from being deleted.
      */
     const EVENT_BEFORE_DELETE_ASSET = 'beforeDeleteAsset';
 
@@ -205,7 +211,7 @@ class Assets extends Component
         if ($isNew) {
             $asset->folderPath = $asset->getFolder()->path;
         }
-        
+
         if ($isNew && empty($asset->newFilePath) && empty($asset->indexInProgress)) {
             throw new AssetLogicException(Craft::t('app',
                 'A new Asset cannot be created without a file.'));

@@ -31,7 +31,7 @@ class PaginateNode extends \Twig_Node
             ->subcompile($this->getNode('paginateTarget'))
             ->raw(', ')
             ->subcompile($this->getNode('elementsTarget'))
-            ->raw(') = \craft\app\helpers\TemplateHelper::paginateCriteria(')
+            ->raw(') = \craft\app\helpers\Template::paginateCriteria(')
             ->subcompile($this->getNode('criteria'))
             ->raw(");\n");
     }

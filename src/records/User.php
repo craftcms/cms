@@ -81,7 +81,7 @@ class User extends ActiveRecord
                 'string',
                 'max' => 100
             ],
-            [['photo'], 'string', 'max' => 50],
+            [['photoId'], 'number'],
             [['email', 'password', 'unverifiedEmail'], 'string', 'max' => 255],
             [['lastLoginAttemptIp'], 'string', 'max' => 45],
         ];

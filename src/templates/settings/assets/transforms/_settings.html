@@ -25,7 +25,7 @@
 {% block content %}
 	{% registercssresource 'css/transforms.css' %}
 		<input type="hidden" name="action" value="asset-transforms/save-transform">
-		<input type="hidden" name="redirect" value="settings/assets/transforms">
+		{{ redirectInput('settings/assets/transforms') }}
 
 		{% if not isNewTransform %}<input type="hidden" name="transformId" value="{{ transform.id }}">{% endif %}
 

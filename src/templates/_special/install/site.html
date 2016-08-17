@@ -5,7 +5,7 @@
 	<h1>{{ "Setup your site"|t('app') }}</h1>
 
 	<form id="siteform" accept-charset="UTF-8">
-		{{ getCsrfInput() }}
+		{{ csrfInput() }}
 		{{ forms.textField({ label: "Site Name"|t('app'), id: 'siteName', value: defaultSiteName, maxlength: 255 }) }}
 		{{ forms.textField({ label: "Site URL"|t('app'), id: 'siteUrl', value: defaultSiteUrl, maxlength: 255 }) }}
 

@@ -13,11 +13,16 @@
 	{% set settings = craft.app.systemSettings.getSettings('users') %}
 {% endif %}
 
+{% set allVolumes = craft.app.volumes.getAllVolumes('id') %}
+{% set volumeList = [] %}
+{% for volume in allVolumes %}
+	{% set volumeList = volumeList|merge([{'value': volume.id, 'label': volume.name}]) %}
+{% endfor %}
 
 {% block content %}
 	<form id="settings-form" method="post" class="centered" accept-charset="UTF-8" data-saveshortcut>
 		<input type="hidden" name="action" value="user-settings/save-user-settings">
-		{{ getCsrfInput() }}
+		{{ csrfInput() }}
 
 		{{ forms.checkboxField({
 			first: true,
@@ -50,6 +55,20 @@
 			}) }}
 		</div>
 
+		{% if volumeList %}
+			{{ forms.selectField({
+				label: "User Photo Volume"|t('app'),
+				instructions: "Which volume do you want to use to store user photos?"|t('app'),
+				id: 'photoVolumeId',
+				name: 'photoVolumeId',
+				options: volumeList,
+				value: settings.photoVolumeId
+			})}}
+		{% else %}
+			{{ forms.field({
+				label: "User Photo Volume"|t('app')
+			}, '<p class="error">' ~ "No volumes exist yet."|t('app') ~ '</p>') }}
+		{% endif %}
 		<div class="buttons">
 			<input type="submit" class="btn submit" value="{{ 'Save'|t('app') }}">
 		</div>

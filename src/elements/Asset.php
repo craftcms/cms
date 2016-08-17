@@ -1008,6 +1008,19 @@ class Asset extends Element
     }
 
     /**
+     * Get a temporary copy of the actual file.
+     *
+     * @return string
+     */
+    public function getCopyOfFile()
+    {
+        $copyPath = Io::getTempFilePath($this->getExtension());
+        $this->getVolume()->saveFileLocally($this->getUri(), $copyPath);
+
+        return $copyPath;
+    }
+
+    /**
      * Return whether the Asset has a URL.
      *
      * @return bool

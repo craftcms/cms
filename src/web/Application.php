@@ -332,10 +332,6 @@ class Application extends \yii\web\Application
      */
     public function getTranslatedBrowserLanguage()
     {
-        if ($this->getRequest()->getIsConsoleRequest()) {
-            return false;
-        }
-
         $browserLanguages = $this->getRequest()->getAcceptableLanguages();
 
         if ($browserLanguages) {
@@ -556,9 +552,6 @@ class Application extends \yii\web\Application
             $appPath = $this->getPath()->getAppPath();
 
             if ($cachedAppPath === false || $cachedAppPath !== $appPath) {
-                // Flush the data cache, so we're not getting cached CP resource paths.
-                $this->getCache()->flush();
-
                 return $this->runAction('templates/requirements-check');
             }
         }

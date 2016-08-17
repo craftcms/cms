@@ -54,8 +54,9 @@ body { overflow-x: hidden; }
 #global-sidebar .photo-container { vertical-align: middle; width: 32px; height: 32px; }
 #global-sidebar .photo-container img { display: block; width: 32px; height: 32px; border-radius: $elementBorderRadius; }
 
-#global-sidebar .light { color: #717983; }
+#global-sidebar #user-photo img { width: auto; max-width: 32px; margin: 0 auto; overflow: hidden }
 
+#global-sidebar .light { color: #717983; }
 
 #global-sidebar .topbar > a { @include display-flex; @include align-items(center); padding: 0 14px; }
 #global-sidebar .topbar > a:focus { background: none; }

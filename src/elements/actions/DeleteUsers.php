@@ -56,6 +56,7 @@ class DeleteUsers extends ElementAction
     {
         $type = Json::encode(static::className());
         $undeletableIds = Json::encode($this->_getUndeletableUserIds());
+        $redirect = Json::encode(Craft::$app->getSecurity()->hashData(Craft::$app->getEdition() == Craft::Pro ? 'users' : 'dashboard'));
 
         $js = <<<EOT
 (function()
@@ -84,7 +85,8 @@ class DeleteUsers extends ElementAction
 					modal.hide();
 
 					return false;
-				}
+				},
+				redirect: {$redirect}
 			});
 		}
 	});

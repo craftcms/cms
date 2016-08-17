@@ -77,7 +77,7 @@ class Temp extends Local
      */
     public function __construct()
     {
-        $this->path = Craft::$app->getPath()->getAssetsTempSourcePath();
+        $this->path = Craft::$app->getPath()->getAssetsTempVolumePath();
         $this->url = rtrim(Url::getResourceUrl(), '/').'/tempassets/';
         $this->name = Craft::t('app', 'Temporary source');
 

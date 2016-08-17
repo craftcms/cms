@@ -68,7 +68,7 @@ class Message extends \yii\swiftmailer\Message
      */
     public function setTo($to)
     {
-        $to = $this->_normalizeEmails($to);
+        $to = $this->_normalizeEmails($to, true);
         parent::setTo($to);
 
         return $this;

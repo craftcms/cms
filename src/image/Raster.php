@@ -210,6 +210,11 @@ class Raster extends Image
             foreach ($this->_image->layers() as $layer) {
                 $croppedLayer = $layer->crop($startingPoint, $newSize);
                 $gif->layers()->add($croppedLayer);
+
+                // Let's update dateUpdated in case this is going to take awhile.
+                if ($index = Craft::$app->getAssetTransforms()->getActiveTransformIndex()) {
+                    Craft::$app->getAssetTransforms()->storeTransformIndexData($index);
+                }
             }
 
             $this->_image = $gif;
@@ -228,10 +233,8 @@ class Raster extends Image
         $this->normalizeDimensions($targetWidth, $targetHeight);
 
         if ($scaleIfSmaller || $this->getWidth() > $targetWidth || $this->getHeight() > $targetHeight) {
-            $factor = max($this->getWidth() / $targetWidth,
-                $this->getHeight() / $targetHeight);
-            $this->resize(round($this->getWidth() / $factor),
-                round($this->getHeight() / $factor));
+            $factor = max($this->getWidth() / $targetWidth, $this->getHeight() / $targetHeight);
+            $this->resize(round($this->getWidth() / $factor), round($this->getHeight() / $factor));
         }
 
         return $this;
@@ -244,16 +247,13 @@ class Raster extends Image
     {
         $this->normalizeDimensions($targetWidth, $targetHeight);
 
-        list($verticalPosition, $horizontalPosition) = explode("-",
-            $cropPositions);
+        list($verticalPosition, $horizontalPosition) = explode("-", $cropPositions);
 
         if ($scaleIfSmaller || $this->getWidth() > $targetWidth || $this->getHeight() > $targetHeight) {
             // Scale first.
-            $factor = min($this->getWidth() / $targetWidth,
-                $this->getHeight() / $targetHeight);
+            $factor = min($this->getWidth() / $targetWidth, $this->getHeight() / $targetHeight);
             $newHeight = round($this->getHeight() / $factor);
             $newWidth = round($this->getWidth() / $factor);
-
 
             $this->resize($newWidth, $newHeight);
 
@@ -328,9 +328,13 @@ class Raster extends Image
             $gif->layers()->remove(0);
 
             foreach ($this->_image->layers() as $layer) {
-                $resizedLayer = $layer->resize($newSize,
-                    $this->_getResizeFilter());
+                $resizedLayer = $layer->resize($newSize, $this->_getResizeFilter());
                 $gif->layers()->add($resizedLayer);
+
+                // Let's update dateUpdated in case this is going to take awhile.
+                if ($index = Craft::$app->getAssetTransforms()->getActiveTransformIndex()) {
+                    Craft::$app->getAssetTransforms()->storeTransformIndexData($index);
+                }
             }
 
             $this->_image = $gif;

@@ -8,12 +8,15 @@
 namespace craft\app\controllers;
 
 use Craft;
+use craft\app\elements\Asset;
 use craft\app\errors\SendEmailException;
+use craft\app\errors\UploadFailedException;
 use craft\app\events\UserEvent;
 use craft\app\helpers\Assets;
 use craft\app\helpers\Image;
 use craft\app\helpers\Io;
 use craft\app\helpers\Json;
+use craft\app\helpers\StringHelper;
 use craft\app\helpers\Url;
 use craft\app\elements\User;
 use craft\app\services\Users;
@@ -443,7 +446,7 @@ class UsersController extends Controller
      * Edit a user account.
      *
      * @param integer|string $userId The user’s ID, if any, or a string that indicates the user to be edited ('current' or 'client').
-     * @param User           $user   The user being edited, if there were any validation errors.
+     * @param User $user The user being edited, if there were any validation errors.
      *
      * @return string The rendering result
      * @throws NotFoundHttpException if the requested user cannot be found
@@ -730,8 +733,10 @@ class UsersController extends Controller
                 foreach ($errors as $attribute => $error) {
                     if (isset($tabs['account']) && in_array($attribute, $accountFields)) {
                         $tabs['account']['class'] = 'error';
-                    } else if (isset($tabs['profile'])) {
-                        $tabs['profile']['class'] = 'error';
+                    } else {
+                        if (isset($tabs['profile'])) {
+                            $tabs['profile']['class'] = 'error';
+                        }
                     }
                 }
             }
@@ -742,7 +747,13 @@ class UsersController extends Controller
 
         Craft::$app->getView()->registerCssResource('css/account.css');
         Craft::$app->getView()->registerJsResource('js/AccountSettingsForm.js');
-        Craft::$app->getView()->registerJs('new Craft.AccountSettingsForm('.Json::encode($user->id).', '.($user->getIsCurrent() ? 'true' : 'false').');', View::POS_END);
+
+        $userIdJs = Json::encode($user->id);
+        $isCurrentJs = ($user->getIsCurrent() ? 'true' : 'false');
+        $settingsJs = Json::encode([
+            'deleteModalRedirect' => Craft::$app->getSecurity()->hashData(Craft::$app->getEdition() == Craft::Pro ? 'users' : 'dashboard'),
+        ]);
+        Craft::$app->getView()->registerJs('new Craft.AccountSettingsForm('.$userIdJs.', '.$isCurrentJs.', '.$settingsJs.');', View::POS_END);
 
         Craft::$app->getView()->registerTranslations('app', [
             'Please enter your current password.',
@@ -949,11 +960,11 @@ class UsersController extends Controller
         // ---------------------------------------------------------------------
 
         $imageValidates = true;
-        $userPhoto = UploadedFile::getInstanceByName('userPhoto');
+        $photo = UploadedFile::getInstanceByName('photo');
 
-        if ($userPhoto && !Image::isImageManipulatable($userPhoto->getExtension())) {
+        if ($photo && !Image::isImageManipulatable($photo->getExtension())) {
             $imageValidates = false;
-            $user->addError('userPhoto', Craft::t('app', 'The user photo provided is not an image.'));
+            $user->addError('photo', Craft::t('app', 'The user photo provided is not an image.'));
         }
 
         if ($imageValidates && Craft::$app->getUsers()->saveUser($user)) {
@@ -1083,125 +1094,36 @@ class UsersController extends Controller
             $this->requirePermission('editUsers');
         }
 
-        // TODO stop accessing $_FILES array.
-        // Upload the file and drop it in the temporary folder
-        $file = UploadedFile::getInstanceByName('image-upload');
+        $file = UploadedFile::getInstanceByName('photo');
 
         try {
             // Make sure a file was uploaded
             if ($file) {
-                $filename = Assets::prepareAssetName($file->name, true, true);
-
-                if (!Image::isImageManipulatable($file->getExtension())) {
-                    throw new BadRequestHttpException('The uploaded file is not an image');
+                if ($file->hasError) {
+                    throw new UploadFailedException($file->error);
                 }
 
-                $user = Craft::$app->getUsers()->getUserById($userId);
-                $userName = Assets::prepareAssetName($user->username, false);
+                $users = Craft::$app->getUsers();
+                $user = $users->getUserById($userId);
 
-                $folderPath = Craft::$app->getPath()->getTempUploadsPath().'/userphotos/'.$userName;
+                // Move to our own temp location
+                $fileLocation = Assets::getTempFilePath($file->getExtension());
+                move_uploaded_file($file->tempName, $fileLocation);
+                $users->saveUserPhoto($fileLocation, $user, $file->name);
+                Io::deleteFile($fileLocation);
 
-                Io::clearFolder($folderPath, true);
-                Io::ensureFolderExists($folderPath);
-
-                move_uploaded_file($file->tempName, $folderPath.'/'.$filename);
-
-                // Test if we will be able to perform image actions on this image
-                if (!Craft::$app->getImages()->checkMemoryForImage($folderPath.'/'.$filename)) {
-                    Io::deleteFile($folderPath.'/'.$filename);
-
-                    return $this->asErrorJson(Craft::t('app',
-                        'The uploaded image is too large'));
-                }
-
-                Craft::$app->getImages()
-                    ->loadImage($folderPath.'/'.$filename)
-                    ->scaleToFit(500, 500, false)
-                    ->saveAs($folderPath.'/'.$filename);
-
-                list ($width, $height) = Image::getImageSize($folderPath.'/'.$filename);
-
-                // If the file is in the format badscript.php.gif perhaps.
-                if ($width && $height) {
-                    $html = Craft::$app->getView()->renderTemplate('_components/tools/cropper_modal',
-                        [
-                            'imageUrl' => Url::getResourceUrl('userphotos/temp/'.$userName.'/'.$filename),
-                            'width' => $width,
-                            'height' => $height,
-                        ]
-                    );
-
-                    return $this->asJson(['html' => $html]);
-                }
+                $html = Craft::$app->getView()->renderTemplate('users/_photo', ['account' => $user]);
+                return $this->asJson(['html' => $html]);
             }
         } catch (Exception $exception) {
-            Craft::error('There was an error uploading the photo: '.$exception->getMessage(), __METHOD__);
-        }
-
-        return $this->asErrorJson(Craft::t('app',
-            'There was an error uploading your photo.'));
-    }
-
-    /**
-     * Crop user photo.
-     *
-     * @return Response
-     */
-    public function actionCropUserPhoto()
-    {
-        $this->requireAjaxRequest();
-        $this->requireLogin();
-
-        $userId = Craft::$app->getRequest()->getRequiredBodyParam('userId');
-
-        if ($userId != Craft::$app->getUser()->getIdentity()->id) {
-            $this->requirePermission('editUsers');
-        }
-
-        try {
-            $x1 = Craft::$app->getRequest()->getRequiredBodyParam('x1');
-            $x2 = Craft::$app->getRequest()->getRequiredBodyParam('x2');
-            $y1 = Craft::$app->getRequest()->getRequiredBodyParam('y1');
-            $y2 = Craft::$app->getRequest()->getRequiredBodyParam('y2');
-            $source = Craft::$app->getRequest()->getRequiredBodyParam('source');
-
-            // Strip off any querystring info, if any.
-            $source = Url::stripQueryString($source);
-
-            $user = Craft::$app->getUsers()->getUserById($userId);
-            $userName = Assets::prepareAssetName($user->username, false);
-
-            // make sure that this is this user's file
-            $imagePath = Craft::$app->getPath()->getTempUploadsPath().'/userphotos/'.$userName.'/'.$source;
-
-            if (Io::fileExists($imagePath) && Craft::$app->getImages()->checkMemoryForImage($imagePath)) {
-                Craft::$app->getUsers()->deleteUserPhoto($user);
-
-                $image = Craft::$app->getImages()->loadImage($imagePath);
-                $image->crop($x1, $x2, $y1, $y2);
-
-                if (Craft::$app->getUsers()->saveUserPhoto(Io::getFilename($imagePath),
-                    $image, $user)
-                ) {
-                    Io::clearFolder(Craft::$app->getPath()->getTempUploadsPath().'/userphotos/'.$userName);
-
-                    $html = Craft::$app->getView()->renderTemplate('users/_userphoto',
-                        [
-                            'account' => $user
-                        ]
-                    );
-
-                    return $this->asJson(['html' => $html]);
-                }
+            if (isset($fileLocation)) {
+                Io::deleteFile($fileLocation);
             }
 
-            Io::clearFolder(Craft::$app->getPath()->getTempUploadsPath().'/userphotos/'.$userName);
-        } catch (Exception $exception) {
-            return $this->asErrorJson($exception->getMessage());
+            Craft::error('There was an error uploading the photo: '.$exception->getMessage());
+            return $this->asErrorJson(Craft::t('app',
+                'There was an error uploading your photo: {error}', ['error' => $exception->getMessage()]));
         }
-
-        return $this->asErrorJson(Craft::t('app',
-            'Something went wrong when processing the photo.'));
     }
 
     /**
@@ -1220,12 +1142,15 @@ class UsersController extends Controller
         }
 
         $user = Craft::$app->getUsers()->getUserById($userId);
-        Craft::$app->getUsers()->deleteUserPhoto($user);
 
-        $user->photo = null;
+        if ($user->photoId) {
+            Craft::$app->getAssets()->deleteAssetsByIds($user->photoId);
+        }
+
+        $user->photoId = null;
         Craft::$app->getUsers()->saveUser($user);
 
-        $html = Craft::$app->getView()->renderTemplate('users/_userphoto',
+        $html = Craft::$app->getView()->renderTemplate('users/_photo',
             [
                 'account' => $user
             ]
@@ -1482,7 +1407,7 @@ class UsersController extends Controller
      * Handles an invalid login attempt.
      *
      * @param string|null $authError
-     * @param User|null   $user
+     * @param User|null $user
      *
      * @return Response|null
      */
@@ -1612,7 +1537,7 @@ class UsersController extends Controller
     /**
      * Renders the Set Password template for a given user.
      *
-     * @param User  $user
+     * @param User $user
      * @param array $variables
      *
      * @return Response
@@ -1690,26 +1615,18 @@ class UsersController extends Controller
     private function _processUserPhoto($user)
     {
         // Delete their photo?
-        if (Craft::$app->getRequest()->getBodyParam('deleteUserPhoto')) {
-            Craft::$app->getUsers()->deleteUserPhoto($user);
+        $users = Craft::$app->getUsers();
+
+        if (Craft::$app->getRequest()->getBodyParam('deletePhoto')) {
+            $users->deleteUserPhoto($user);
         }
 
         // Did they upload a new one?
-        if ($userPhoto = UploadedFile::getInstanceByName('userPhoto')) {
-            Craft::$app->getUsers()->deleteUserPhoto($user);
-            $image = Craft::$app->getImages()->loadImage($userPhoto->tempName);
-            $imageWidth = $image->getWidth();
-            $imageHeight = $image->getHeight();
-
-            $dimension = min($imageWidth, $imageHeight);
-            $horizontalMargin = ($imageWidth - $dimension) / 2;
-            $verticalMargin = ($imageHeight - $dimension) / 2;
-            $image->crop($horizontalMargin, $imageWidth - $horizontalMargin,
-                $verticalMargin, $imageHeight - $verticalMargin);
-
-            Craft::$app->getUsers()->saveUserPhoto(Assets::prepareAssetName($userPhoto->name), $image, $user);
-
-            Io::deleteFile($userPhoto->tempName);
+        if ($photo = UploadedFile::getInstanceByName('photo')) {
+            $fileLocation = Assets::getTempFilePath($photo->getExtension());
+            move_uploaded_file($photo->tempName, $fileLocation);
+            $users->saveUserPhoto($fileLocation, $user, $photo->name);
+            Io::deleteFile($fileLocation);
         }
     }
 

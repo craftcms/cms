@@ -62,6 +62,11 @@ class AssetTransforms extends Component
      */
     private $_eagerLoadedTransformIndexes;
 
+    /**
+     * @var AssetTransformIndex
+     */
+    private $_activeTransformIndex;
+
     // Public Methods
     // =========================================================================
 
@@ -425,7 +430,7 @@ class AssetTransforms extends Component
             for ($safety = 0; $safety < 100; $safety++) {
                 // Wait a second!
                 sleep(1);
-                ini_set('max_execution_time', 120);
+                Craft::$app->getConfig()->maxPowerCaptain();
 
                 $index = $this->getTransformIndexModelById($index->id);
 
@@ -437,7 +442,6 @@ class AssetTransforms extends Component
                     if ($time->getTimestamp() - $index->dateUpdated->getTimestamp() < 30) {
                         continue;
                     } else {
-                        $index->dateUpdated = new DateTime();
                         $this->storeTransformIndexData($index);
                         break;
                     }
@@ -812,10 +816,6 @@ class AssetTransforms extends Component
 
         if (!$volume::isLocal()) {
             if (!Io::fileExists($imageSourcePath) || Io::getFileSize($imageSourcePath) == 0) {
-                if ($volume::isLocal()) {
-                    throw new VolumeObjectNotFoundException(Craft::t('Image “{file}” cannot be found.',
-                        ['file' => $imageSourcePath]));
-                }
 
                 // Delete it just in case it's a 0-byter
                 Io::deleteFile($imageSourcePath, true);
@@ -865,6 +865,7 @@ class AssetTransforms extends Component
         if (!($this->getCachedCloudImageSize() > 0)) {
             $this->_sourcesToBeDeleted[] = $imageSource;
 
+            // TODO this method seems to be gone.
             if (count($this->_sourcesToBeDeleted) == 1) {
                 Craft::$app->on(Application::EVENT_AFTER_REQUEST,
                     [$this, 'deleteQueuedSourceFiles']);
@@ -1085,6 +1086,23 @@ class AssetTransforms extends Component
         return $transforms;
     }
 
+    /**
+     * @return AssetTransformIndex|null
+     */
+    public function getActiveTransformIndex()
+    {
+        return $this->_activeTransformIndex;
+    }
+
+    /**
+     * @param AssetTransformIndex $index
+     */
+    public function setActiveTransformIndex(AssetTransformIndex $index)
+    {
+        $this->_activeTransformIndex = $index;
+    }
+
+
     // Private Methods
     // =========================================================================
 
@@ -1209,6 +1227,9 @@ class AssetTransforms extends Component
         if ($image instanceof Raster) {
             $image->setQuality($quality);
         }
+
+        // Save this for Image to use if needed.
+        $this->setActiveTransformIndex($index);
 
         switch ($transform->mode) {
             case 'fit': {

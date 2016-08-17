@@ -32,6 +32,13 @@ class Content extends Component
     // =========================================================================
 
     /**
+     * @event ElementEvent The event that is triggered before an element's content is saved.
+     *
+     * You may set [[ElementEvent::isValid]] to `false` to prevent the content from getting saved.
+     */
+    const EVENT_BEFORE_SAVE_CONTENT = 'beforeSaveContent';
+
+    /**
      * @event ElementEvent The event that is triggered after an element's content is saved.
      */
     const EVENT_AFTER_SAVE_CONTENT = 'afterSaveContent';
@@ -62,13 +69,13 @@ class Content extends Component
      *
      * @param ElementInterface $element The element whose content we're looking for.
      *
-     * @return array|null The element's content row values, or null if the row could not be found
+     * @return array|false The element's content row values, or false if the row could not be found
      */
     public function getContentRow(ElementInterface $element)
     {
         /** @var Element $element */
         if (!$element->id || !$element->locale) {
-            return null;
+            return false;
         }
 
         $originalContentTable = $this->contentTable;
@@ -158,56 +165,71 @@ class Content extends Component
         $this->fieldColumnPrefix = $element->getFieldColumnPrefix();
         $this->fieldContext = $element->getFieldContext();
 
+        $success = false;
+
         if (!$validate || $this->validateContent($element)) {
-            // Prepare the data to be saved
-            $values = [
-                'elementId' => $element->id,
-                'locale' => $element->locale
-            ];
-            if ($element->hasTitles() && $element->title) {
-                $values['title'] = $element->title;
-            }
-            $fieldLayout = $element->getFieldLayout();
-            if ($fieldLayout) {
-                foreach ($fieldLayout->getFields() as $field) {
-                    /** @var Field $field */
-                    if ($field::hasContentColumn()) {
-                        $column = $this->fieldColumnPrefix.$field->handle;
-                        $values[$column] = $field->prepareValueForDb($element->getFieldValue($field->handle), $element);
+
+            // Fire a 'beforeSaveCategory' event
+            $event = new ElementEvent([
+                'element' => $element
+            ]);
+
+            $this->trigger(self::EVENT_BEFORE_SAVE_CONTENT, $event);
+
+
+
+            // Is the event giving us the go-ahead?
+            if ($event->isValid) {
+                // Prepare the data to be saved
+                $values = [
+                    'elementId' => $element->id,
+                    'locale' => $element->locale
+                ];
+                if ($element->hasTitles() && $element->title) {
+                    $values['title'] = $element->title;
+                }
+                $fieldLayout = $element->getFieldLayout();
+                if ($fieldLayout) {
+                    foreach ($fieldLayout->getFields() as $field) {
+                        /** @var Field $field */
+                        if ($field::hasContentColumn()) {
+                            $column = $this->fieldColumnPrefix.$field->handle;
+                            $values[$column] = $field->prepareValueForDb($element->getFieldValue($field->handle), $element);
+                        }
                     }
                 }
-            }
 
-            // Insert/update the DB row
-            if ($element->contentId) {
-                // Update the existing row
-                Craft::$app->getDb()->createCommand()
-                    ->update($this->contentTable, $values, ['id' => $element->contentId])
-                    ->execute();
-            } else {
-                // Insert a new row and store its ID on the element
-                Craft::$app->getDb()->createCommand()
-                    ->insert($this->contentTable, $values)
-                    ->execute();
-                $element->contentId = Craft::$app->getDb()->getLastInsertID();
-            }
+                // Insert/update the DB row
+                if ($element->contentId) {
+                    // Update the existing row
+                    Craft::$app->getDb()->createCommand()
+                        ->update($this->contentTable, $values, ['id' => $element->contentId])
+                        ->execute();
+                } else {
+                    // Insert a new row and store its ID on the element
+                    Craft::$app->getDb()->createCommand()
+                        ->insert($this->contentTable, $values)
+                        ->execute();
+                    $element->contentId = Craft::$app->getDb()->getLastInsertID();
+                }
 
+                if ($fieldLayout) {
+                    if ($updateOtherLocales && Craft::$app->getIsLocalized()) {
+                        $this->_duplicateNonTranslatableFieldValues($element, $values, $nonTranslatableFields, $otherContentModels);
+                    }
+
+                    $this->_updateSearchIndexes($element, $fieldLayout, $nonTranslatableFields, $otherContentModels);
+                }
+
+                $success = true;
+            }
+        }
+
+        if ($success) {
             // Fire an 'afterSaveContent' event
             $this->trigger(self::EVENT_AFTER_SAVE_CONTENT, new ElementEvent([
                 'element' => $element
             ]));
-
-            if ($fieldLayout) {
-                if ($updateOtherLocales && Craft::$app->getIsLocalized()) {
-                    $this->_duplicateNonTranslatableFieldValues($element, $values, $nonTranslatableFields, $otherContentModels);
-                }
-
-                $this->_updateSearchIndexes($element, $fieldLayout, $nonTranslatableFields, $otherContentModels);
-            }
-
-            $success = true;
-        } else {
-            $success = false;
         }
 
         $this->contentTable = $originalContentTable;
@@ -245,7 +267,7 @@ class Content extends Component
                     $i18n = Craft::$app->getI18n();
                     $params = [
                         'attribute' => Craft::t('site', $field->name),
-                        'value' => is_array($value) ? 'array()' : $value
+                        'value' => is_array($value) ? 'array()' : (is_object($value) ? get_class($value) : $value),
                     ];
 
                     foreach ($errors as $error) {

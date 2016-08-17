@@ -77,7 +77,7 @@ class Security extends \yii\base\Security
     /**
      * Returns a validtion key unique to this Craft installation. Craft will initially check the 'validationKey'
      * config setting and return that if one has been explicitly set. If not, Craft will generate a cryptographically
-     * secure, random key and save it in `craft\storage\validation.key` and server that on future requests.
+     * secure, random key and save it in `craft\storage\validation.key` and serve that on future requests.
      *
      * Note that if this key ever changes, any data that was encrypted with it will not be accessible.
      *
@@ -107,5 +107,29 @@ class Security extends \yii\base\Security
         }
 
         throw new Exception("Tried to write the validation key to {$validationKeyPath}, but could not.");
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function hashData($data, $key = null, $rawHash = false)
+    {
+        if ($key === null) {
+            $key = $this->getValidationKey();
+        }
+
+        return parent::hashData($data, $key, $rawHash);
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function validateData($data, $key = null, $rawHash = false)
+    {
+        if ($key === null) {
+            $key = $this->getValidationKey();
+        }
+
+        return parent::validateData($data, $key, $rawHash);
     }
 }

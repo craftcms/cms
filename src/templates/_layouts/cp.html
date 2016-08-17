@@ -4,6 +4,7 @@
 	"(blank)",
 	"1 update available",
 	"Actions",
+	"Apply this to the {number} remaining conflicts?",
 	"An unknown error occurred.",
 	"Any changes will be lost if you leave this page.",
 	"Are you sure you want to delete “{name}”?",
@@ -257,8 +258,8 @@
 	</header>
 
 	{% if fullPageForm %}
-		<form id="container" method="post" accept-charset="UTF-8" data-saveshortcut{% if saveShortcutRedirect is defined %} data-saveshortcut-redirect="{{ saveShortcutRedirect }}"{% endif %} data-confirm-unload>
-			{{ getCsrfInput() }}
+		<form id="container" method="post" accept-charset="UTF-8" data-saveshortcut{% if saveShortcutRedirect is defined %} data-saveshortcut-redirect="{{ saveShortcutRedirect|hash }}"{% endif %} data-confirm-unload>
+			{{ csrfInput() }}
 	{% else %}
 		<div id="container">
 	{% endif %}

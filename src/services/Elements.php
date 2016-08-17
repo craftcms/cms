@@ -459,6 +459,7 @@ class Elements extends Component
                             // Copy the element for this locale
                             $localizedElement = $element->copy();
                             $localizedElement->locale = $localeId;
+                            $localizedElement->contentId = null;
 
                             if ($localeRecord->id) {
                                 // Keep the original slug
@@ -471,22 +472,22 @@ class Elements extends Component
 
                         if ($element->hasContent()) {
                             if (!$isMainLocale) {
-                                $fieldValues = null;
+                                $fieldValues = false;
 
                                 if (!$isNewElement) {
                                     // Do we already have a content row for this locale?
                                     $fieldValues = Craft::$app->getContent()->getContentRow($localizedElement);
 
-                                    if ($fieldValues) {
+                                    if ($fieldValues !== false) {
                                         $localizedElement->contentId = $fieldValues['id'];
                                         if (isset($fieldValues['title'])) {
                                             $localizedElement->title = $fieldValues['title'];
                                         }
-                                        unset($fieldValues['id'], $fieldValues['elementId'], $fieldValues['locale'], $fieldValues['title']);
+                                        unset($fieldValues['id'], $fieldValues['elementId'], $fieldValues['locale'], $fieldValues['title'], $fieldValues['dateCreated'], $fieldValues['dateUpdated'], $fieldValues['uid']);
                                     }
                                 }
 
-                                if (!$fieldValues) {
+                                if ($fieldValues === false) {
                                     // Just default to whatever's on the main element we're saving here
                                     $fieldValues = $element->getFieldValues();
                                 }

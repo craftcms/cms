@@ -126,6 +126,7 @@ class UserSettingsController extends Controller
         $settings['requireEmailVerification'] = (bool)Craft::$app->getRequest()->getBodyParam('requireEmailVerification');
         $settings['allowPublicRegistration'] = (bool)Craft::$app->getRequest()->getBodyParam('allowPublicRegistration');
         $settings['defaultGroup'] = Craft::$app->getRequest()->getBodyParam('defaultGroup');
+        $settings['photoVolumeId'] = Craft::$app->getRequest()->getBodyParam('photoVolumeId');
 
         if (Craft::$app->getSystemSettings()->saveSettings('users', $settings)
         ) {

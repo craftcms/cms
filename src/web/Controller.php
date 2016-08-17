@@ -223,10 +223,21 @@ abstract class Controller extends \yii\web\Controller
      *                        null, then the current request’s path will be used.
      *
      * @return YiiResponse
+     * @throws BadRequestHttpException if the redirect param was tampered with
      */
     public function redirectToPostedUrl($object = null, $default = null)
     {
+        $security = Craft::$app->getSecurity();
+
         $url = Craft::$app->getRequest()->getBodyParam('redirect');
+
+        if ($url !== null) {
+            $url = $security->validateData($url, $security->getValidationKey());
+
+            if ($url === false) {
+                throw new BadRequestHttpException('The redirect param was tampered with');
+            }
+        }
 
         if ($url === null) {
             if ($default !== null) {

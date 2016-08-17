@@ -19,7 +19,7 @@
 
 {% block content %}
 	<input type="hidden" name="action" value="system-settings/save-general-settings">
-	<input type="hidden" name="redirect" value="settings">
+	{{ redirectInput('settings') }}
 
 	{{ forms.lightswitchField({
 		first: true,

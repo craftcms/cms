@@ -8,6 +8,7 @@
 namespace craft\app\services;
 
 use Craft;
+use craft\app\db\Query;
 use craft\app\errors\EntryNotFoundException;
 use craft\app\errors\SectionNotFoundException;
 use craft\app\events\EntryEvent;
@@ -45,6 +46,8 @@ class Entries extends Component
 
     /**
      * @event EntryEvent The event that is triggered before an entry is deleted.
+     *
+     * You may set [[EntryEvent::isValid]] to `false` to prevent the entry from being deleted.
      */
     const EVENT_BEFORE_DELETE_ENTRY = 'beforeDeleteEntry';
 
@@ -71,7 +74,25 @@ class Entries extends Component
      */
     public function getEntryById($entryId, $localeId = null)
     {
-        return Craft::$app->getElements()->getElementById($entryId, Entry::className(), $localeId);
+        if (!$entryId) {
+            return null;
+        }
+
+        // Get the structure ID
+        $structureId = (new Query())
+            ->select('sections.structureId')
+            ->from('{{%entries}} entries')
+            ->innerJoin('{{%sections}} sections', 'sections.id = entries.sectionId')
+            ->where(['entries.id' => $entryId])
+            ->scalar();
+
+        return Entry::find()
+            ->id($entryId)
+            ->structureId($structureId)
+            ->locale($localeId)
+            ->status(null)
+            ->localeEnabled(false)
+            ->one();
     }
 
     /**
@@ -419,7 +440,7 @@ class Entries extends Component
             ->status(null)
             ->locale($entry->locale)
             ->localeEnabled(false)
-            ->select('id')
+            ->select('elements.id')
             ->scalar();
 
         if ($entry->newParentId != $oldParentId) {

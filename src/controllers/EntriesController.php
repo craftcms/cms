@@ -592,8 +592,8 @@ class EntriesController extends BaseEntriesController
 
         // Create the token and redirect to the entry URL with the token in place
         $token = Craft::$app->getTokens()->createToken([
-            'action' => 'entries/view-shared-entry',
-            'params' => $params
+            'entries/view-shared-entry',
+            $params
         ]);
         $url = Url::getUrlWithToken($entry->getUrl(), $token);
 

@@ -118,7 +118,7 @@ class AssetIndexer extends Component
             }
 
             $indexedFolderIds = [];
-            $indexedFolderIds[$this->ensureTopFolder($volume)] = true;
+            $indexedFolderIds[Craft::$app->getVolumes()->ensureTopFolder($volume)] = true;
 
             // Ensure folders are in the DB
             $assets = Craft::$app->getAssets();
@@ -218,35 +218,6 @@ class AssetIndexer extends Component
         }
 
         return ['result' => false];
-    }
-
-    /**
-     * Ensures a top level folder exists that matches the model.
-     *
-     * @param VolumeInterface $volume
-     *
-     * @return integer
-     */
-    public function ensureTopFolder(VolumeInterface $volume)
-    {
-        /** @var Volume $volume */
-        $folder = VolumeFolder::findOne(
-            [
-                'name' => $volume->name,
-                'volumeId' => $volume->id
-            ]
-        );
-
-        if (empty($folder)) {
-            $folder = new VolumeFolder();
-            $folder->volumeId = $volume->id;
-            $folder->parentId = null;
-            $folder->name = $volume->name;
-            $folder->path = '';
-            $folder->save();
-        }
-
-        return $folder->id;
     }
 
     /**

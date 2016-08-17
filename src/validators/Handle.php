@@ -19,23 +19,13 @@ use yii\validators\Validator;
  */
 class Handle extends Validator
 {
-    // Properties
+    // Static
     // =========================================================================
 
     /**
-     * @var string
-     */
-    public static $handlePattern = '[a-zA-Z][a-zA-Z0-9_]*';
-
-    /**
      * @var array
      */
-    public $reservedWords = [];
-
-    /**
-     * @var array
-     */
-    protected static $baseReservedWords = [
+    public static $baseReservedWords = [
         'id',
         'dateCreated',
         'dateUpdated',
@@ -60,6 +50,19 @@ class Handle extends Validator
         'rawContent',
         'section'
     ];
+
+    // Properties
+    // =========================================================================
+
+    /**
+     * @var string
+     */
+    public static $handlePattern = '[a-zA-Z][a-zA-Z0-9_]*';
+
+    /**
+     * @var array
+     */
+    public $reservedWords = [];
 
     // Protected Methods
     // =========================================================================

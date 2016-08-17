@@ -668,7 +668,7 @@ class Install extends Migration
         $this->createTable('{{%users}}', [
             'id' => $this->primaryKey(),
             'username' => $this->string(100)->notNull(),
-            'photo' => $this->string(100),
+            'photoId' => $this->integer(),
             'firstName' => $this->string(100),
             'lastName' => $this->string(100),
             'email' => $this->string()->notNull(),
@@ -957,6 +957,7 @@ class Install extends Migration
         $this->addForeignKey($this->db->getForeignKeyName('{{%userpermissions_users}}', 'userId'), '{{%userpermissions_users}}', 'userId', '{{%users}}', 'id', 'CASCADE', null);
         $this->addForeignKey($this->db->getForeignKeyName('{{%userpreferences}}', 'userId'), '{{%userpreferences}}', 'userId', '{{%users}}', 'id', 'CASCADE', null);
         $this->addForeignKey($this->db->getForeignKeyName('{{%users}}', 'id'), '{{%users}}', 'id', '{{%elements}}', 'id', 'CASCADE', null);
+        $this->addForeignKey($this->db->getForeignKeyName('{{%users}}', 'photoId'), '{{%users}}', 'photoId', '{{%assets}}', 'id', 'SET NULL', null);
         $this->addForeignKey($this->db->getForeignKeyName('{{%volumefolders}}', 'parentId'), '{{%volumefolders}}', 'parentId', '{{%volumefolders}}', 'id', 'CASCADE', null);
         $this->addForeignKey($this->db->getForeignKeyName('{{%volumefolders}}', 'volumeId'), '{{%volumefolders}}', 'volumeId', '{{%volumes}}', 'id', 'CASCADE', null);
         $this->addForeignKey($this->db->getForeignKeyName('{{%volumes}}', 'fieldLayoutId'), '{{%volumes}}', 'fieldLayoutId', '{{%fieldlayouts}}', 'id', 'SET NULL', null);

@@ -198,19 +198,6 @@ class Path extends Component
     }
 
     /**
-     * Returns the path to the craft/storage/userphotos/ folder.
-     *
-     * @return string The path to the craft/storage/userphotos/ folder.
-     */
-    public function getUserPhotosPath()
-    {
-        $path = $this->getStoragePath().'/userphotos';
-        Io::ensureFolderExists($path);
-
-        return $path;
-    }
-
-    /**
      * Returns the path to the craft/storage/runtime/assets/ folder.
      *
      * @return string The path to the craft/storage/runtime/assets/ folder.
@@ -224,11 +211,24 @@ class Path extends Component
     }
 
     /**
+     * Returns the path to the craft/storage/runtime/cache/assets/ folder.
+     *
+     * @return string The path to the craft/storage/runtime/cache/assets/ folder.
+     */
+    public function getAssetsCachePath()
+    {
+        $path = $this->getAssetsPath().'/cache';
+        Io::ensureFolderExists($path);
+
+        return $path;
+    }
+
+    /**
      * Returns the path to the craft/storage/runtime/assets/tempuploads/ folder.
      *
      * @return string The path to the craft/storage/runtime/assets/tempuploads/ folder.
      */
-    public function getAssetsTempSourcePath()
+    public function getAssetsTempVolumePath()
     {
         $path = $this->getAssetsPath().'/tempuploads';
         Io::ensureFolderExists($path);
@@ -243,7 +243,7 @@ class Path extends Component
      */
     public function getAssetsImageSourcePath()
     {
-        $path = $this->getAssetsPath().'/sources';
+        $path = $this->getAssetsCachePath().'/sources';
         Io::ensureFolderExists($path);
 
         return $path;
@@ -256,7 +256,7 @@ class Path extends Component
      */
     public function getResizedAssetsPath()
     {
-        $path = $this->getAssetsPath().'/resized';
+        $path = $this->getAssetsCachePath().'/resized';
         Io::ensureFolderExists($path);
 
         return $path;
@@ -269,7 +269,7 @@ class Path extends Component
      */
     public function getAssetsIconsPath()
     {
-        $path = $this->getAssetsPath().'/icons';
+        $path = $this->getAssetsCachePath().'/icons';
         Io::ensureFolderExists($path);
 
         return $path;

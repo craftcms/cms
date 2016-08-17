@@ -12,10 +12,12 @@ Craft.AccountSettingsForm = Garnish.Base.extend(
 	confirmDeleteModal: null,
 	$deleteBtn: null,
 
-	init: function(userId, isCurrent)
+	init: function(userId, isCurrent, settings)
 	{
 		this.userId = userId;
 		this.isCurrent = isCurrent;
+
+		this.setSettings(settings, Craft.AccountSettingsForm.defaults);
 
 		this.$copyPasswordResetUrlBtn = $('#copy-passwordreset-url');
 		this.$actionSpinner = $('#action-spinner');
@@ -58,12 +60,19 @@ Craft.AccountSettingsForm = Garnish.Base.extend(
 	{
 		if (!this.confirmDeleteModal)
 		{
-			this.confirmDeleteModal = new Craft.DeleteUserModal(this.userId);
+			this.confirmDeleteModal = new Craft.DeleteUserModal(this.userId, {
+				redirect: this.settings.deleteModalRedirect
+			});
 		}
 		else
 		{
 			this.confirmDeleteModal.show();
 		}
+	}
+},
+{
+	defaults: {
+		deleteModalRedirect: null
 	}
 });
 

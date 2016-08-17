@@ -575,10 +575,7 @@ class AssetsController extends Controller
 
         // All systems go, engage hyperdrive! (so PHP doesn't interrupt our stream)
         Craft::$app->getConfig()->maxPowerCaptain();
-        $localPath = Io::getTempFilePath($asset->getExtension());
-
-        // TODO no reason for this not to be a method on Asset itself.
-        $asset->getVolume()->saveFileLocally($asset->getUri(), $localPath);
+        $localPath = $asset->getCopyOfFile();
 
         Craft::$app->getResponse()->sendFile($localPath, $asset->filename, false);
         Io::deleteFile($localPath);

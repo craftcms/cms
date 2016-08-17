@@ -514,8 +514,8 @@ class CategoriesController extends Controller
 
         // Create the token and redirect to the category URL with the token in place
         $token = Craft::$app->getTokens()->createToken([
-            'action' => 'categories/view-shared-category',
-            'params' => [
+            'categories/view-shared-category',
+            [
                 'categoryId' => $categoryId,
                 'locale' => $category->locale
             ]

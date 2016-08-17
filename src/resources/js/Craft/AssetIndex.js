@@ -1012,7 +1012,7 @@ Craft.AssetIndex = Craft.BaseElementIndex.extend(
 		{
 			if (response.error)
 			{
-				alert(Craft.t('app', 'Upload failed for {filename}. The error message was: “{error}”', { filename: fileName, error: response.error }));
+				alert(Craft.t('app', 'Upload failed. The error message was: “{error}”', {error: response.error }));
 			}
 			else
 			{

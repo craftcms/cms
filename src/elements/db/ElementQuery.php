@@ -355,11 +355,13 @@ class ElementQuery extends Query implements ElementQueryInterface, Arrayable, Co
      */
     public function __set($name, $value)
     {
-        if ($name === 'order') {
-            Craft::$app->getDeprecator()->log('ElementQuery::order()', 'The “order” element parameter has been deprecated. Use “orderBy” instead.');
-            $this->orderBy = $value;
-        } else {
-            parent::__set($name, $value);
+        switch ($name) {
+            case 'order':
+                Craft::$app->getDeprecator()->log('ElementQuery::order()', 'The “order” element parameter has been deprecated. Use “orderBy” instead.');
+                $this->orderBy = $value;
+                break;
+            default:
+                parent::__set($name, $value);
         }
     }
 
@@ -846,7 +848,9 @@ class ElementQuery extends Query implements ElementQueryInterface, Arrayable, Co
             ->innerJoin('{{%elements_i18n}} elements_i18n', 'elements_i18n.elementId = elements.id')
             ->andWhere('elements_i18n.locale = :locale')
             ->andWhere($this->where)
+            ->offset($this->offset)
             ->limit($this->limit)
+            ->addParams($this->params)
             ->addParams([':locale' => $this->locale]);
 
         if ($class::hasContent() && $this->contentTable) {
