@@ -848,6 +848,7 @@ class ElementQuery extends Query implements ElementQueryInterface, Arrayable, Co
             ->innerJoin('{{%elements_i18n}} elements_i18n', 'elements_i18n.elementId = elements.id')
             ->andWhere('elements_i18n.locale = :locale')
             ->andWhere($this->where)
+            ->offset($this->offset)
             ->limit($this->limit)
             ->addParams([':locale' => $this->locale]);
 
