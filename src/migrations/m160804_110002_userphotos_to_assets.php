@@ -26,7 +26,7 @@ class m160804_110002_userphotos_to_assets extends Migration
      */
     public function safeUp()
     {
-        $this->_basePath = Craft::$app->getPath()->getUserPhotosPath();
+        $this->_basePath = Craft::$app->getPath()->getStoragePath().'/'.'userphotos';
         Craft::info('Removing __default__ folder');
         Io::deleteFolder($this->_basePath.'/__default__');
 
@@ -188,7 +188,7 @@ class m160804_110002_userphotos_to_assets extends Migration
     }
 
     /**
-     * Set the userphoto volume setting for users.
+     * Set the photo volume setting for users.
      *
      * @param integer $volumeId
      *
@@ -198,7 +198,7 @@ class m160804_110002_userphotos_to_assets extends Migration
     {
         $systemSettings = Craft::$app->getSystemSettings();
         $settings = $systemSettings->getSettings('users');
-        $settings['userphotoVolumeId'] = $volumeId;
+        $settings['photoVolumeId'] = $volumeId;
         $systemSettings->saveSettings('users', $settings);
     }
 

@@ -394,27 +394,6 @@ class Users extends Component
                 }
 
                 $userRecord->save(false);
-
-                if (!$isNewUser) {
-                    // Has the username changed?
-                    /** @noinspection PhpUndefinedVariableInspection */
-                    if ($user->username != $oldUsername) {
-                        // Rename the user's photo directory
-                        $cleanOldUsername = AssetsHelper::prepareAssetName($oldUsername, false);
-                        $cleanUsername = AssetsHelper::prepareAssetName($user->username, false);
-                        $userPhotosPath = Craft::$app->getPath()->getUserPhotosPath();
-                        $oldFolder = $userPhotosPath.'/'.$cleanOldUsername;
-                        $newFolder = $userPhotosPath.'/'.$cleanUsername;
-
-                        if (Io::folderExists($newFolder)) {
-                            Io::deleteFolder($newFolder);
-                        }
-
-                        if (Io::folderExists($oldFolder)) {
-                            Io::rename($oldFolder, $newFolder);
-                        }
-                    }
-                }
             } else {
                 $success = false;
             }
@@ -636,7 +615,7 @@ class Users extends Component
         }
 
         $volumes = Craft::$app->getVolumes();
-        $volumeId = Craft::$app->getSystemSettings()->getSetting('users', 'userphotoVolumeId');
+        $volumeId = Craft::$app->getSystemSettings()->getSetting('users', 'photoVolumeId');
 
         if (!($volumeId && $volume = $volumes->getVolumeById($volumeId))) {
             throw new VolumeException(Craft::t('app',
@@ -653,17 +632,17 @@ class Users extends Component
             $folderId = $volumes->ensureTopFolder($volumes->getVolumeById($volumeId));
             $filenameToUse = $assets->getNameReplacementInFolder($filenameToUse, $folderId);
 
-            $userPhoto = new Asset();
-            $userPhoto->title = StringHelper::toTitleCase(Io::getFilename($filenameToUse, false));
-            $userPhoto->newFilePath = $fileLocation;
-            $userPhoto->filename = $filenameToUse;
-            $userPhoto->folderId = $folderId;
-            $userPhoto->volumeId = $volumeId;
+            $photo = new Asset();
+            $photo->title = StringHelper::toTitleCase(Io::getFilename($filenameToUse, false));
+            $photo->newFilePath = $fileLocation;
+            $photo->filename = $filenameToUse;
+            $photo->folderId = $folderId;
+            $photo->volumeId = $volumeId;
 
             // Save and delete the temporary file
-            $assets->saveAsset($userPhoto);
+            $assets->saveAsset($photo);
 
-            $user->photoId = $userPhoto->id;
+            $user->photoId = $photo->id;
             Craft::$app->getUsers()->saveUser($user);
         }
 
@@ -832,20 +811,10 @@ class Users extends Component
     {
         if ($user->unverifiedEmail) {
             $userRecord = $this->_getUserRecordById($user->id);
-            $oldEmail = $userRecord->email;
             $userRecord->email = $user->unverifiedEmail;
 
             if (Craft::$app->getConfig()->get('useEmailAsUsername')) {
                 $userRecord->username = $user->unverifiedEmail;
-
-                $userPhotosPath = Craft::$app->getPath()->getUserPhotosPath();
-                $oldProfilePhotoPath = $userPhotosPath.'/'.AssetsHelper::prepareAssetName($oldEmail, false);
-                $newProfilePhotoPath = $userPhotosPath.'/'.AssetsHelper::prepareAssetName($user->unverifiedEmail, false);
-
-                // Update the user profile photo folder name, if it exists.
-                if (Io::folderExists($oldProfilePhotoPath)) {
-                    Io::rename($oldProfilePhotoPath, $newProfilePhotoPath);
-                }
             }
 
             $userRecord->unverifiedEmail = null;
