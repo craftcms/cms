@@ -8,15 +8,14 @@
 namespace craft\app\services;
 
 use Craft;
+use craft\app\cache\AppPathDependency;
 use craft\app\dates\DateTime;
-use craft\app\helpers\Assets as AssetsHelper;
 use craft\app\helpers\Io;
 use craft\app\helpers\Path as PathHelper;
 use craft\app\helpers\StringHelper;
 use craft\app\helpers\Url;
 use Exception;
 use yii\base\Component;
-use yii\caching\AppPathDependency;
 use yii\helpers\FileHelper;
 use yii\web\ForbiddenHttpException;
 use yii\web\NotFoundHttpException;

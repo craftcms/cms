@@ -5,10 +5,11 @@
  * @license   https://craftcms.com/license
  */
 
-namespace yii\caching;
+namespace craft\app\cache;
 
-use Yii;
-use yii\base\InvalidConfigException;
+use Craft;
+use yii\caching\Cache;
+use yii\caching\Dependency;
 
 /**
  * AppPathDependency is used to determine if the path to the `craft/app` folder has changed.
