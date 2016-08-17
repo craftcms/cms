@@ -173,18 +173,13 @@ class Users extends Component
      */
     public function getUserByUsernameOrEmail($usernameOrEmail)
     {
-        $userRecord = UserRecord::find()
+        return User::find()
             ->where(
                 ['or', 'username=:usernameOrEmail', 'email=:usernameOrEmail'],
                 [':usernameOrEmail' => $usernameOrEmail]
             )
+            ->withPassword()
             ->one();
-
-        if ($userRecord) {
-            return User::create($userRecord);
-        }
-
-        return null;
     }
 
     /**
@@ -200,13 +195,10 @@ class Users extends Component
      */
     public function getUserByEmail($email)
     {
-        $userRecord = UserRecord::findOne(['email' => $email]);
-
-        if ($userRecord) {
-            return User::create($userRecord);
-        }
-
-        return null;
+        return User::find()
+            ->email($email)
+            ->withPassword()
+            ->one();
     }
 
     /**
