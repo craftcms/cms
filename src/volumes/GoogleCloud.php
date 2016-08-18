@@ -162,22 +162,6 @@ class GoogleCloud extends Volume
         return rtrim(rtrim($this->url, '/').'/'.$this->subfolder, '/').'/';
     }
 
-    /**
-     * @inheritdoc
-     */
-    public function createFileByStream($path, $stream, $config = [])
-    {
-        if (!empty($this->expires) && DateTimeHelper::isValidIntervalString($this->expires)) {
-            $expires = new DateTime();
-            $now = new DateTime();
-            $expires->modify('+'.$this->expires);
-            $diff = $expires->format('U') - $now->format('U');
-            $config['CacheControl'] = 'max-age='.$diff.', must-revalidate';
-        }
-
-        return parent::createFileByStream($path, $stream, $config);
-    }
-
     // Protected Methods
     // =========================================================================
 
@@ -207,5 +191,21 @@ class GoogleCloud extends Volume
         $config = array_merge(['key' => $keyId, 'secret' => $secret], $options);
 
         return S3Client::factory($config);
+    }
+
+    /**
+     * @inheritdoc
+     */
+    protected function addFileMetadataToConfig($config)
+    {
+        if (!empty($this->expires) && DateTimeHelper::isValidIntervalString($this->expires)) {
+            $expires = new DateTime();
+            $now = new DateTime();
+            $expires->modify('+'.$this->expires);
+            $diff = $expires->format('U') - $now->format('U');
+            $config['CacheControl'] = 'max-age='.$diff.', must-revalidate';
+        }
+
+        return parent::addFileMetadataToConfig($config);
     }
 }
