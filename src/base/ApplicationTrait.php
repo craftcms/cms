@@ -66,6 +66,7 @@ use yii\web\ServerErrorHttpException;
  * @property \craft\app\services\Images          $images             The images service
  * @property boolean                             $sInMaintenanceMode Whether the system is in maintenance mode
  * @property boolean                             $isInstalled        Whether Craft is installed
+ * @property boolean                             $isUpdating         Whether Craft is in the middle of updating itself
  * @property boolean                             $isLocalized        Whether this site has multiple locales
  * @property boolean                             $isSystemOn         Whether the front end is accepting HTTP requests
  * @property \craft\app\i18n\Locale              $locale             The Locale object for the target language
@@ -300,6 +301,36 @@ trait ApplicationTrait
         /** @var \craft\app\web\Application|\craft\app\console\Application $this */
         // If you say so!
         $this->_isInstalled = true;
+    }
+
+    /**
+     * Returns whether Craft is in the middle of updating itself.
+     *
+     * @return boolean
+     */
+    public function getIsUpdating()
+    {
+        /** @var \craft\app\web\Application|\craft\app\console\Application $this */
+        if ($this->getUpdates()->getIsCraftDbMigrationNeeded()) {
+            return true;
+        }
+
+        $request = $this->getRequest();
+
+        if ($this->getIsInMaintenanceMode() && $request->getIsCpRequest()) {
+            return true;
+        }
+
+        $actionSegments = $request->getActionSegments();
+
+        if (
+            $actionSegments == ['update', 'cleanUp'] ||
+            $actionSegments == ['update', 'rollback']
+        ) {
+            return true;
+        }
+
+        return false;
     }
 
     /**
@@ -1422,7 +1453,7 @@ trait ApplicationTrait
                 $fileTarget->logFile = Craft::getAlias('@storage/logs/web.log');
 
                 // Only log errors and warnings, unless Craft is running in Dev Mode or it's being updated
-                if (!$configService->get('devMode') || !$this->_isCraftUpdating()) {
+                if (!$configService->get('devMode') || !$this->getIsUpdating()) {
                     $fileTarget->setLevels(Logger::LEVEL_ERROR | Logger::LEVEL_WARNING);
                 }
             }
@@ -1579,26 +1610,5 @@ trait ApplicationTrait
                 $this->setComponents(require $pathService->getAppPath().'/config/components/pro.php');
             }
         }
-    }
-
-    /**
-     * Returns whether Craft is in the middle of an update.
-     *
-     * @return boolean
-     */
-    private function _isCraftUpdating()
-    {
-        /** @var \craft\app\web\Application|\craft\app\console\Application $this */
-        $request = $this->getRequest();
-
-        if ($this->getUpdates()->getIsCraftDbMigrationNeeded() ||
-            ($this->getIsInMaintenanceMode() && $request->getIsCpRequest()) ||
-            $request->getActionSegments() == ['update', 'cleanUp'] ||
-            $request->getActionSegments() == ['update', 'rollback']
-        ) {
-            return true;
-        }
-
-        return false;
     }
 }
