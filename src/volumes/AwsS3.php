@@ -2,11 +2,13 @@
 namespace craft\app\volumes;
 
 use Aws\CloudFront\CloudFrontClient;
+use Aws\CloudFront\Exception\CloudFrontException;
 use Aws\S3\Exception\AccessDeniedException;
 use Craft;
 use craft\app\base\Volume;
 use craft\app\cache\adapters\GuzzleCacheAdapter;
 use craft\app\dates\DateTime;
+use craft\app\errors\VolumeException;
 use craft\app\helpers\Assets;
 use craft\app\helpers\DateTimeHelper;
 use craft\app\helpers\StringHelper;
@@ -208,30 +210,6 @@ class AwsS3 extends Volume
     }
 
     /**
-     * @inheritdoc
-     */
-    public function deleteFile($path)
-    {
-        if (parent::deleteFile($path) && !empty($this->cfDistributionId)) {
-            // If there's a CloudFront distribution ID set, invalidate the path.
-            $cfClient = $this->_getCloudFrontClient();
-
-            $cfClient->createInvalidation(
-                [
-                    'DistributionId' => $this->cfDistributionId,
-                    'Paths' =>
-                        [
-                            'Quantity' => 1,
-                            'Items' => ['/'.ltrim($path, '/')]
-                        ],
-                    'CallerReference' => 'Craft-'.StringHelper::randomString(24)
-                ]
-            );
-        }
-    }
-
-
-    /**
      * Return a list of available storage classes.
      *
      * @return array
@@ -294,6 +272,36 @@ class AwsS3 extends Volume
         }
 
         return parent::addFileMetadataToConfig($config);
+    }
+
+    /**
+     * @inheritdoc
+     */
+    protected function invalidateCdnPath($path)
+    {
+        if (!empty($this->cfDistributionId)) {
+            // If there's a CloudFront distribution ID set, invalidate the path.
+            $cfClient = $this->_getCloudFrontClient();
+
+            try {
+                $cfClient->createInvalidation(
+                    [
+                        'DistributionId' => $this->cfDistributionId,
+                        'Paths' =>
+                            [
+                                'Quantity' => 1,
+                                'Items' => ['/'.ltrim($path, '/')]
+                            ],
+                        'CallerReference' => 'Craft-'.StringHelper::randomString(24)
+                    ]
+                );
+            } catch (CloudFrontException $exception) {
+                Craft::warning($exception->getMessage());
+                throw new VolumeException('Failed to invalidate the CDN path for '.$path);
+            }
+        }
+
+        return true;
     }
 
     // Private Methods

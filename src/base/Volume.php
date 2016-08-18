@@ -205,13 +205,18 @@ abstract class Volume extends SavableComponent implements VolumeInterface
     public function deleteFile($path)
     {
         try {
-            return $this->getFilesystem()->delete($path);
+            $result = $this->getFilesystem()->delete($path);
         } catch (FileNotFoundException $exception) {
             // Make a note of it, but otherwise - mission accomplished!
             Craft::info($exception->getMessage());
-
-            return true;
+            $result = true;
         }
+
+        if ($result) {
+            $this->invalidateCdnPath($path);
+        }
+
+        return $result;
     }
 
     /**
@@ -373,6 +378,18 @@ abstract class Volume extends SavableComponent implements VolumeInterface
             ['visibility' => $this->getVisibilitySetting()]);
 
         return $config;
+    }
+
+    /**
+     * Invalidate a CDN path on the Volume.
+     *
+     * @param string $path the path to invalidate
+     *
+     * @return boolean
+     */
+    protected function invalidateCdnPath($path)
+    {
+        return true;
     }
 
     /**
