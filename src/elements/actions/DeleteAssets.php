@@ -10,6 +10,7 @@ namespace craft\app\elements\actions;
 use Craft;
 use craft\app\base\ElementAction;
 use craft\app\elements\db\ElementQueryInterface;
+use yii\base\Exception;
 
 /**
  * DeleteAssets represents a Delete Assets element action.
@@ -51,10 +52,14 @@ class DeleteAssets extends ElementAction
      */
     public function performAction(ElementQueryInterface $query)
     {
-        // TODO permission checks
-        Craft::$app->getAssets()->deleteAssetsByIds($query->ids());
 
-        $this->setMessage(Craft::t('app', 'Assets deleted.'));
+        try {
+            Craft::$app->getAssets()->deleteAssetsByIds($query->ids());
+            $this->setMessage(Craft::t('app', 'Assets deleted.'));
+        } catch (Exception $exception) {
+            $this->setMessage($exception->getMessage());
+            return false;
+        }
 
         return true;
     }
