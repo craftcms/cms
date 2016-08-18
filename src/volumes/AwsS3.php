@@ -210,26 +210,6 @@ class AwsS3 extends Volume
     /**
      * @inheritdoc
      */
-    public function createFileByStream($path, $stream, $config = [])
-    {
-        if (!empty($this->expires) && DateTimeHelper::isValidIntervalString($this->expires)) {
-            $expires = new DateTime();
-            $now = new DateTime();
-            $expires->modify('+'.$this->expires);
-            $diff = $expires->format('U') - $now->format('U');
-            $config['CacheControl'] = 'max-age='.$diff.', must-revalidate';
-        }
-
-        if (!empty($this->storageClass)) {
-            $config['StorageClass'] = $this->storageClass;
-        }
-
-        return parent::createFileByStream($path, $stream, $config);
-    }
-
-    /**
-     * {@inheritdoc}
-     */
     public function deleteFile($path)
     {
         if (parent::deleteFile($path) && !empty($this->cfDistributionId)) {
@@ -294,6 +274,26 @@ class AwsS3 extends Volume
         $config['credentials.cache'] = static::_getCredentialsCacheAdapter();
 
         return S3Client::factory($config);
+    }
+
+    /**
+     * @inheritdoc
+     */
+    protected function addFileMetadataToConfig($config)
+    {
+        if (!empty($this->expires) && DateTimeHelper::isValidIntervalString($this->expires)) {
+            $expires = new DateTime();
+            $now = new DateTime();
+            $expires->modify('+'.$this->expires);
+            $diff = $expires->format('U') - $now->format('U');
+            $config['CacheControl'] = 'max-age='.$diff.', must-revalidate';
+        }
+
+        if (!empty($this->storageClass)) {
+            $config['StorageClass'] = $this->storageClass;
+        }
+
+        return parent::addFileMetadataToConfig($config);
     }
 
     // Private Methods
