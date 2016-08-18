@@ -86,7 +86,7 @@ class AssetIndex extends Tool
 
             foreach ($sourceIds as $sourceId) {
                 // Get the indexing list
-                $indexList = Craft::$app->getVolumes()->prepareIndexList($sessionId, $sourceId);
+                $indexList = Craft::$app->getAssetIndexer()->prepareIndexList($sessionId, $sourceId);
 
                 if (!empty($indexList['error'])) {
                     return $indexList;
