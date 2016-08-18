@@ -161,9 +161,8 @@ abstract class Volume extends SavableComponent implements VolumeInterface
      */
     public function createFileByStream($path, $stream, $config = [])
     {
-        $config = array_merge($config,
-            ['visibility' => $this->getVisibilitySetting()]);
         try {
+            $config = $this->addFileMetadataToConfig($config);
             return $this->getFilesystem()->writeStream($path, $stream, $config);
         } catch (FileExistsException $exception) {
             throw new VolumeObjectExistsException($exception->getMessage());
@@ -175,9 +174,8 @@ abstract class Volume extends SavableComponent implements VolumeInterface
      */
     public function updateFileByStream($path, $stream, $config = [])
     {
-        $config = array_merge($config,
-            ['visibility' => $this->getVisibilitySetting()]);
         try {
+            $config = $this->addFileMetadataToConfig($config);
             return $this->getFilesystem()->updateStream($path, $stream, $config);
         } catch (FileNotFoundException $exception) {
             throw new VolumeObjectNotFoundException($exception->getMessage());
@@ -360,6 +358,21 @@ abstract class Volume extends SavableComponent implements VolumeInterface
         }
 
         return $this->_filesystem;
+    }
+
+    /**
+     * Adds file metadata to the config array.
+     *
+     * @param array $config
+     *
+     * @return array
+     */
+    protected function addFileMetadataToConfig($config)
+    {
+        $config = array_merge($config,
+            ['visibility' => $this->getVisibilitySetting()]);
+
+        return $config;
     }
 
     /**
