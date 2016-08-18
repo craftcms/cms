@@ -930,7 +930,6 @@ class Assets extends Component
      */
     public function getUrlForAsset(Asset $asset, $transform = null)
     {
-        //TODO Asset thumb cache bust?
         if (!$transform || !Image::isImageManipulatable(Io::getExtension($asset->filename))) {
             $volume = $asset->getVolume();
 
@@ -1108,7 +1107,6 @@ class Assets extends Component
     {
         try {
             $this->checkPermissionByFolderIds($folderId, $action);
-
             return true;
         } catch (\Exception $exception) {
             return false;

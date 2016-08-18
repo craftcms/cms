@@ -65,20 +65,19 @@ class Assets
     /**
      * Get appendix for an URL based on it's Source caching settings.
      *
-     * @param Volume $source
+     * @param Volume $volume
      * @param Asset  $file
      *
      * @return string
      */
-    public static function getUrlAppendix(Volume $source, Asset $file)
+    public static function getUrlAppendix(Volume $volume, Asset $file)
     {
         $appendix = '';
 
-        //@TODO add cache apendix here
-        /*if (!empty($source->getSettings()->expires) && DateTimeHelper::isValidIntervalString($source->getSettings()->expires))
+        if (!empty($volume->expires) && DateTimeHelper::isValidIntervalString($volume->expires))
         {
             $appendix = '?mtime='.$file->dateModified->format("YmdHis");
-        }*/
+        }
 
         return $appendix;
     }
