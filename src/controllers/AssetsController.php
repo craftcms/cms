@@ -60,7 +60,7 @@ class AssetsController extends Controller
 
         $uploadedFile = UploadedFile::getInstanceByName('assets-upload');
         $request = Craft::$app->getRequest();
-        $assetId = $request->getBodyParam('fileId');
+        $assetId = $request->getBodyParam('assetId');
         $folderId = $request->getBodyParam('folderId');
         $fieldId = $request->getBodyParam('fieldId');
         $elementId = $request->getBodyParam('elementId');
