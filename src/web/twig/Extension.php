@@ -486,13 +486,21 @@ class Extension extends \Twig_Extension
     /**
      * Parses text through Markdown.
      *
-     * @param string $str
+     * @param string  $markdown   The markdown text to parse
+     * @param string  $flavor     The markdown flavor to use. Can be 'original', 'gfm' (GitHub-Flavored Markdown),
+     *                            'gfm-comment' (GFM with newlines converted to `<br>`s),
+     *                            or 'extra' (Markdown Extra). Default is 'original'.
+     * @param boolean $inlineOnly Whether to only parse inline elements, omitting any `<p>` tags.
      *
      * @return \Twig_Markup
      */
-    public function markdownFilter($str)
+    public function markdownFilter($markdown, $flavor = null, $inlineOnly = false)
     {
-        $html = Markdown::process($str);
+        if ($inlineOnly) {
+            $html = Markdown::processParagraph($markdown, $flavor);
+        } else {
+            $html = Markdown::process($markdown, $flavor);
+        }
 
         return Template::getRaw($html);
     }
@@ -640,7 +648,7 @@ class Extension extends \Twig_Extension
         $globals['POS_READY'] = View::POS_READY;
         $globals['POS_LOAD'] = View::POS_LOAD;
 
-        if ($isInstalled && !Craft::$app->getUpdates()->getIsCraftDbMigrationNeeded()) {
+        if ($isInstalled && !Craft::$app->getIsUpdating()) {
             $globals['siteName'] = Craft::$app->getSiteName();
             $globals['siteUrl'] = Craft::$app->getSiteUrl();
 

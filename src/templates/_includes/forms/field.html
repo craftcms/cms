@@ -32,7 +32,7 @@
 		{{ input|raw }}
 	</div>
 	{% if warning %}
-		<p class="warning">{{ warning }}</p>
+		<p class="warning">{{ warning|md(inlineOnly=true)|replace('/&amp;(\\w+);/', '&$1;')|raw }}</p>
 	{% endif %}
 	{% include "_includes/forms/errorList" with { errors: errors } %}
 </div>
