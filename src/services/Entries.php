@@ -101,11 +101,10 @@ class Entries extends Component
      * ```php
      * $entry = new Entry();
      * $entry->sectionId = 10;
-     * $entry->typeId    = 1;
-     * $entry->authorId  = 5;
-     * $entry->enabled   = true;
-     *
-     * $entry->getContent()->title = "Hello World!";
+     * $entry->typeId = 1;
+     * $entry->authorId = 5;
+     * $entry->enabled = true;
+     * $entry->title = "Hello World!";
      *
      * $entry->setFieldValuesFromPost(
      *     [
