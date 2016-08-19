@@ -979,6 +979,15 @@ class SectionsService extends BaseApplicationComponent
 		{
 			$entryTypeRecord = new EntryTypeRecord();
 			$isNewEntryType = true;
+
+			// Get the next biggest sort order
+			$maxSortOrder = craft()->db->createCommand()
+				->select('max(sortOrder)')
+				->from('entrytypes')
+				->where('sectionId=:sectionId', array(':sectionId' => $entryType->sectionId))
+				->queryScalar();
+
+			$entryTypeRecord->sortOrder = $maxSortOrder ? $maxSortOrder + 1 : 1;
 		}
 
 		$entryTypeRecord->sectionId     = $entryType->sectionId;
