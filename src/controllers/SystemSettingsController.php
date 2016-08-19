@@ -123,7 +123,10 @@ class SystemSettingsController extends Controller
             $offsets[] = $offset;
             $timezoneIds[] = $timezoneId;
             $includedAbbrs[] = $abbr;
-            $timezoneOptions[$timezoneId] = 'UTC'.$format.($abbr != 'UTC' ? " ({$abbr})" : '').($timezoneId != 'UTC' ? ' - '.$timezoneId : '');
+            $timezoneOptions[] = [
+                'value' => $timezoneId,
+                'label' => 'UTC'.$format.($abbr != 'UTC' ? " ({$abbr})" : '').($timezoneId != 'UTC' ? ' – '.$timezoneId : '')
+            ];
         }
 
         array_multisort($offsets, $timezoneIds, $timezoneOptions);
