@@ -21,7 +21,7 @@ use craft\app\db\ActiveRecord;
  * @property boolean     $hasTitleField Has title field
  * @property string      $titleLabel    Title label
  * @property string      $titleFormat   Title format
- * @property string      $sortOrder     Sort order
+ * @property integer     $sortOrder     Sort order
  * @property Section     $section       Section
  * @property FieldLayout $fieldLayout   Field layout
  *
