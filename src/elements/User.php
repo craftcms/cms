@@ -18,7 +18,7 @@ use craft\app\elements\actions\SuspendUsers;
 use craft\app\elements\actions\UnsuspendUsers;
 use craft\app\elements\db\ElementQueryInterface;
 use craft\app\elements\db\UserQuery;
-use craft\app\helpers\Assets;
+use craft\app\events\UserEvent;
 use craft\app\helpers\DateTimeHelper;
 use craft\app\helpers\Html;
 use craft\app\helpers\Url;
@@ -63,6 +63,11 @@ class User extends Element implements IdentityInterface
     const AUTH_USERNAME_INVALID = 'username_invalid';
 
     const IMPERSONATE_KEY = 'Craft.UserSessionService.prevImpersonateUserId';
+
+    /**
+     * @event UserEvent The event that is triggered when a user fails to log in.
+     */
+    const EVENT_LOGIN_FAILURE = 'loginFailure';
 
     // Static
     // =========================================================================
@@ -756,20 +761,17 @@ class User extends Element implements IdentityInterface
         switch ($this->getStatus()) {
             case self::STATUS_ARCHIVED: {
                 $this->authError = self::AUTH_INVALID_CREDENTIALS;
-
-                return false;
+                break;
             }
 
             case self::STATUS_PENDING: {
                 $this->authError = self::AUTH_PENDING_VERIFICATION;
-
-                return false;
+                break;
             }
 
             case self::STATUS_SUSPENDED: {
                 $this->authError = self::AUTH_ACCOUNT_SUSPENDED;
-
-                return false;
+                break;
             }
 
             case self::STATUS_LOCKED: {
@@ -778,8 +780,7 @@ class User extends Element implements IdentityInterface
                 } else {
                     $this->authError = self::AUTH_ACCOUNT_LOCKED;
                 }
-
-                return false;
+                break;
             }
 
             case self::STATUS_ACTIVE: {
@@ -794,15 +795,13 @@ class User extends Element implements IdentityInterface
                     }
 
                     $this->authError = self::AUTH_INVALID_CREDENTIALS;
-
-                    return false;
+                    break;
                 }
 
                 // Is a password reset required?
                 if ($this->passwordResetRequired) {
                     $this->authError = self::AUTH_PASSWORD_RESET_REQUIRED;
-
-                    return false;
+                    break;
                 }
 
                 $request = Craft::$app->getRequest();
@@ -810,28 +809,34 @@ class User extends Element implements IdentityInterface
                 if (!$request->getIsConsoleRequest()) {
                     if ($request->getIsCpRequest()) {
                         if (!$this->can('accessCp')) {
-                            $this->authError = self::AUTH_NO_CP_ACCESS;
-
-                            return false;
+                            if (!$this->authError) {
+                                $this->authError = self::AUTH_NO_CP_ACCESS;
+                            }
                         }
 
                         if (!Craft::$app->getIsSystemOn() && !$this->can('accessCpWhenSystemIsOff')) {
-                            $this->authError = self::AUTH_NO_CP_OFFLINE_ACCESS;
-
-                            return false;
+                            if (!$this->authError) {
+                                $this->authError = self::AUTH_NO_CP_OFFLINE_ACCESS;
+                            }
                         }
                     } else {
                         if (!Craft::$app->getIsSystemOn() && !$this->can('accessSiteWhenSystemIsOff')) {
-                            $this->authError = self::AUTH_NO_SITE_OFFLINE_ACCESS;
-
-                            return false;
+                            if (!$this->authError) {
+                                $this->authError = self::AUTH_NO_SITE_OFFLINE_ACCESS;
+                            }
                         }
                     }
                 }
-
-                return true;
             }
         }
+
+        if (!$this->authError) {
+            return true;
+        }
+
+        $this->trigger(self::EVENT_LOGIN_FAILURE, new UserEvent([
+            'user' => $this,
+        ]));
 
         return false;
     }
