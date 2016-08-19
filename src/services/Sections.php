@@ -1000,6 +1000,15 @@ class Sections extends Component
         } else {
             $entryTypeRecord = new EntryTypeRecord();
             $isNewEntryType = true;
+
+            // Get the next biggest sort order
+            $maxSortOrder = (new Query())
+                ->select('max(sortOrder)')
+                ->from('{{%entrytypes}}')
+                ->where(['sectionId' => $entryType->sectionId])
+                ->scalar();
+
+            $entryTypeRecord->sortOrder = $maxSortOrder ? $maxSortOrder + 1 : 1;
         }
 
         $entryTypeRecord->sectionId = $entryType->sectionId;
