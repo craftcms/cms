@@ -493,6 +493,7 @@ class Assets extends Component
                 $event = new AssetEvent($this, [
                     'asset' => $asset
                 ]);
+
                 $this->trigger(self::EVENT_BEFORE_DELETE_ASSET, $event);
 
                 if ($event->isValid) {
@@ -502,6 +503,10 @@ class Assets extends Component
 
                     Craft::$app->getElements()->deleteElementById($assetId);
                     Craft::$app->getAssetTransforms()->deleteAllTransformData($asset);
+
+                    $event = new AssetEvent($this, [
+                        'asset' => $asset
+                    ]);
 
                     $this->trigger(self::EVENT_AFTER_DELETE_ASSET, $event);
                 }
@@ -1578,6 +1583,7 @@ class Assets extends Component
             $event = new AssetEvent([
                 'asset' => $asset
             ]);
+
             $this->trigger(self::EVENT_BEFORE_SAVE_ASSET, $event);
 
             // Is the event giving us the go-ahead?
@@ -1601,6 +1607,10 @@ class Assets extends Component
 
                 // Save the record
                 $assetRecord->save(false);
+
+                $event = new AssetEvent([
+                    'asset' => $asset
+                ]);
 
                 $this->trigger(self::EVENT_AFTER_SAVE_ASSET, $event);
             } else {

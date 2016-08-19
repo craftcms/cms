@@ -78,11 +78,10 @@ class Connection extends \yii\db\Connection
 
         if ($event->isValid) {
             if (($backupFile = $backup->run()) !== false) {
-                $event->filePath = $backupFile;
 
                 // Fire an 'afterCreateBackup' event
                 $this->trigger(self::EVENT_AFTER_CREATE_BACKUP,
-                    $event
+                    new DbBackupEvent(['filePath' => $backupFile])
                 );
 
                 return $backupFile;

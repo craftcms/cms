@@ -443,7 +443,7 @@ class Volumes extends Component
                         }
                     }
 
-                $this->ensureTopFolder($volume);
+                    $this->ensureTopFolder($volume);
 
                     $transaction->commit();
 
@@ -467,7 +467,7 @@ class Volumes extends Component
 
             if ($success) {
                 // Fire an 'afterSaveVolume' event
-                $this->trigger(self::EVENT_AFTER_SAVE_VOLUME, $event);
+                $this->trigger(self::EVENT_AFTER_SAVE_VOLUME, new VolumeEvent(['volume' => $volume]));
             }
         } else {
             $success = false;
@@ -614,7 +614,7 @@ class Volumes extends Component
 
         if ($success) {
             // Fire an 'afterDeleteVolume' event
-            $this->trigger(self::EVENT_AFTER_DELETE_VOLUME, $event);
+            $this->trigger(self::EVENT_AFTER_DELETE_VOLUME, new VolumeEvent(['volume' => $volume]));
         }
 
         return $success;
