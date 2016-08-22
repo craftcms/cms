@@ -13,6 +13,7 @@ use craft\app\elements\User;
 use craft\app\errors\UserGroupNotFoundException;
 use craft\app\events\AssignUserGroupsEvent;
 use craft\app\events\UserEvent;
+use craft\app\events\UserGroupEvent;
 use craft\app\models\UserGroup;
 use craft\app\records\UserGroup as UserGroupRecord;
 use yii\base\Component;
@@ -53,6 +54,30 @@ class UserGroups extends Component
      * @event UserEvent The event that is triggered after a user is assigned to the default user group.
      */
     const EVENT_AFTER_ASSIGN_USER_TO_DEFAULT_GROUP = 'afterAssignUserToDefaultGroup';
+
+    /**
+     * @event UserGroupEvent The event that is triggered before a user group is saved.
+     *
+     * You may set [[UserGroupEvent::isValid]] to `false` to prevent the user group from being saved.
+     */
+    const EVENT_BEFORE_SAVE_USER_GROUP = 'beforeSaveUserGroup';
+
+    /**
+     * @event UserGroupEvent The event that is triggered after a user group is saved.
+     */
+    const EVENT_AFTER_SAVE_USER_GROUP = 'afterSaveUserGroup';
+
+    /**
+     * @event UserGroupEvent The event that is triggered before a user group is deleted.
+     *
+     * You may set [[UserGroupEvent::isValid]] to `false` to prevent the user group from being deleted.
+     */
+    const EVENT_BEFORE_DELETE_USER_GROUP = 'beforeDeleteUserGroup';
+
+    /**
+     * @event UserGroupEvent The event that is triggered after a user group is saved.
+     */
+    const EVENT_AFTER_DELETE_USER_GROUP = 'afterDeleteUserGroup';
 
     // Public Methods
     // =========================================================================
@@ -150,23 +175,41 @@ class UserGroups extends Component
      */
     public function saveGroup(UserGroup $group)
     {
-        $groupRecord = $this->_getGroupRecordById($group->id);
+        $success = false;
 
-        $groupRecord->name = $group->name;
-        $groupRecord->handle = $group->handle;
+        // Fire a 'beforeSaveUserGroup' event
+        $event = new UserGroupEvent([
+            'userGroup' => $group,
+        ]);
 
-        if ($groupRecord->save()) {
-            // Now that we have a group ID, save it on the model
-            if (!$group->id) {
-                $group->id = $groupRecord->id;
+        $this->trigger(self::EVENT_BEFORE_SAVE_USER_GROUP, $event);
+
+        if ($event->isValid) {
+            $groupRecord = $this->_getGroupRecordById($group->id);
+
+            $groupRecord->name = $group->name;
+            $groupRecord->handle = $group->handle;
+
+            if ($groupRecord->save()) {
+                // Now that we have a group ID, save it on the model
+                if (!$group->id) {
+                    $group->id = $groupRecord->id;
+                }
+
+                $success = true;
+            } else {
+                $group->addErrors($groupRecord->getErrors());
             }
-
-            return true;
         }
 
-        $group->addErrors($groupRecord->getErrors());
+        if ($success) {
+            // Fire an 'afterSaveUserGroup' event
+            $this->trigger(self::EVENT_AFTER_SAVE_USER_GROUP, new UserGroupEvent([
+                'userGroup' => $group
+            ]));
+        }
 
-        return false;
+        return $success;
     }
 
     /**
@@ -277,11 +320,30 @@ class UserGroups extends Component
      */
     public function deleteGroupById($groupId)
     {
-        Craft::$app->getDb()->createCommand()
-            ->delete('{{%usergroups}}', ['id' => $groupId])
-            ->execute();
+        $group = $this->getGroupById($groupId);
 
-        return true;
+        // Fire a 'beforeDeleteUserGroup' event
+        $event = new UserGroupEvent([
+            'userGroup' => $group,
+        ]);
+
+        $this->trigger(self::EVENT_BEFORE_DELETE_USER_GROUP, $event);
+
+        if ($event->isValid) {
+            Craft::$app->getDb()->createCommand()
+                ->delete('{{%usergroups}}', ['id' => $groupId])
+                ->execute();
+
+            // Fire an 'afterDeleteUserGroup' event
+            $this->trigger(self::EVENT_AFTER_DELETE_USER_GROUP,
+                new UserGroupEvent([
+                    'userGroup' => $group
+                ]));
+
+            return true;
+        }
+
+        return false;
     }
 
     // Private Methods
