@@ -80,9 +80,6 @@ class Application extends \yii\web\Application
 
         $this->getLog();
 
-        // So we can try to translate Yii framework strings
-        //$this->coreMessages->attachEventHandler('onMissingTranslation', ['Craft\Localization', 'findMissingTranslation']);
-
         // If there is a custom appId set, apply it here.
         if ($appId = $this->getConfig()->get('appId')) {
             $this->id = $appId;
