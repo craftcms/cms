@@ -387,7 +387,7 @@ abstract class BaseElementFieldType extends BaseFieldType implements IPreviewabl
 	 */
 	public function getEagerLoadingMap($sourceElements)
 	{
-	    $firstElement = isset($sourceElements[0]) ? $sourceElements[0] : null;
+		$firstElement = isset($sourceElements[0]) ? $sourceElements[0] : null;
 
 		// Get the source element IDs
 		$sourceElementIds = array();
@@ -403,31 +403,31 @@ abstract class BaseElementFieldType extends BaseFieldType implements IPreviewabl
 			->from('relations')
 			->where(
 				array(
-				    'and',
-                    'fieldId=:fieldId',
-                    array('in', 'sourceId', $sourceElementIds),
-                    array('or', 'sourceLocale=:sourceLocale', 'sourceLocale is null')
-                ),
+					'and',
+					'fieldId=:fieldId',
+					array('in', 'sourceId', $sourceElementIds),
+					array('or', 'sourceLocale=:sourceLocale', 'sourceLocale is null')
+				),
 				array(
-				    ':fieldId' => $this->model->id,
-                    ':sourceLocale' => ($firstElement ? $firstElement->locale : null),
-                )
+					':fieldId' => $this->model->id,
+					':sourceLocale' => ($firstElement ? $firstElement->locale : null),
+				)
 			)
 			->order('sortOrder')
 			->queryAll();
 
-        // Figure out which target locale to use
-        $element = $this->element;
-        $this->element = $firstElement;
-        $targetLocale = $this->getTargetLocale();
-        $this->element = $element;
+		// Figure out which target locale to use
+		$element = $this->element;
+		$this->element = $firstElement;
+		$targetLocale = $this->getTargetLocale();
+		$this->element = $element;
 
 		return array(
 			'elementType' => $this->elementType,
 			'map' => $map,
-            'criteria' => [
-                'locale' => $targetLocale
-            ],
+			'criteria' => array(
+				'locale' => $targetLocale
+			),
 		);
 	}
 

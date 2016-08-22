@@ -630,7 +630,7 @@ class AssetsFieldType extends BaseElementFieldType
 					'parentId' => $currentFolder->id,
 					'name' => $folderName,
 					'sourceId' => $currentFolder->sourceId,
-					'path' => trim($currentFolder->path.'/'.$folderName, '/').'/'
+					'path' => ($currentFolder->parentId ? $currentFolder->path.$folderName : $folderName).'/'
 				)
 			);
 			$folderId = craft()->assets->storeFolder($newFolder);

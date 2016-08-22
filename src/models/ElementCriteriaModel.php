@@ -165,6 +165,12 @@ class ElementCriteriaModel extends BaseModel implements \Countable
 	 */
 	public function count()
 	{
+		// If the query has already been executed, just return a count of the results.
+		if (isset($this->_matchedElements))
+		{
+			return count($this->_matchedElements);
+		}
+
 		$total = $this->total();
 
 		if ($this->offset)
