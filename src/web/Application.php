@@ -48,6 +48,11 @@ class Application extends \yii\web\Application
     // =========================================================================
 
     /**
+     * @event EditionChangeEvent The event that is triggered after the application has been initialized
+     */
+    const EVENT_AFTER_INIT = 'afterInit';
+
+    /**
      * @event EditionChangeEvent The event that is triggered after the edition changes
      */
     const EVENT_AFTER_EDITION_CHANGE = 'afterEditionChange';
@@ -75,30 +80,7 @@ class Application extends \yii\web\Application
     {
         parent::init();
 
-        // NOTE: Nothing that triggers a database connection should be made here until *after* _processResourceRequest()
-        // in handleRequest() is called.
-
-        $this->getLog();
-
-        // So we can try to translate Yii framework strings
-        //$this->coreMessages->attachEventHandler('onMissingTranslation', ['Craft\Localization', 'findMissingTranslation']);
-
-        // If there is a custom appId set, apply it here.
-        if ($appId = $this->getConfig()->get('appId')) {
-            $this->id = $appId;
-        }
-
-        // Set the timezone
-        $this->_setTimeZone();
-
-        // Validate some basics on the database configuration file.
-        $this->validateDbConfigFile();
-
-        // Load the plugins
-        $this->getPlugins()->loadPlugins();
-
-        // Set the language
-        $this->_setLanguage();
+        $this->_init();
     }
 
     /**
@@ -170,9 +152,6 @@ class Application extends \yii\web\Application
                 throw new ServiceUnavailableHttpException();
             }
         }
-
-        // Set the edition components
-        $this->_setEditionComponents();
 
         // getIsCraftDbMigrationNeeded will return true if we're in the middle of a manual or auto-update for Craft itself.
         // If we're in maintenance mode and it's not a site request, show the manual update template.

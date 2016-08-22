@@ -50,36 +50,12 @@ class Application extends \yii\console\Application
      */
     public function init()
     {
+        parent::init();
+
         // Set default timezone to UTC
         date_default_timezone_set('UTC');
 
-        $this->getLog();
-
-        // So we can try to translate Yii framework strings
-        //$this->coreMessages->attachEventHandler('onMissingTranslation', ['Craft\Localization', 'findMissingTranslation']);
-
-        // If there is a custom appId set, apply it here.
-        if ($appId = $this->getConfig()->get('appId')) {
-            $this->id = $appId;
-        }
-
-        // Set the edition components
-        $this->_setEditionComponents();
-
-        // Set the timezone
-        $this->_setTimeZone();
-
-        // Set the language
-        $this->_setLanguage();
-
-        // Call parent::init() before the plugin console command logic so the command runner gets initialized
-        parent::init();
-
-        // Load the plugins
-        $this->getPlugins()->loadPlugins();
-
-        // Validate some basics on the database configuration file.
-        $this->validateDbConfigFile();
+        $this->_init();
     }
 
     /**
