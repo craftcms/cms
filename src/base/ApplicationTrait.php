@@ -1252,6 +1252,34 @@ trait ApplicationTrait
     // =========================================================================
 
     /**
+     * Initializes the application component
+     */
+    private function _init()
+    {
+        $this->getLog();
+
+        // If there is a custom appId set, apply it here.
+        if ($appId = $this->getConfig()->get('appId')) {
+            $this->id = $appId;
+        }
+
+        // Validate some basics on the database configuration file.
+        $this->validateDbConfigFile();
+
+        // Set the edition components
+        $this->_setEditionComponents();
+
+        // Set the timezone
+        $this->_setTimeZone();
+
+        // Set the language
+        $this->_setLanguage();
+
+        // Load the plugins
+        $this->getPlugins()->loadPlugins();
+    }
+
+    /**
      * Returns the definition for a given application component ID, in which we need to take special care on.
      *
      * @param string $id

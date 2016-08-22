@@ -75,27 +75,7 @@ class Application extends \yii\web\Application
     {
         parent::init();
 
-        // NOTE: Nothing that triggers a database connection should be made here until *after* _processResourceRequest()
-        // in handleRequest() is called.
-
-        $this->getLog();
-
-        // If there is a custom appId set, apply it here.
-        if ($appId = $this->getConfig()->get('appId')) {
-            $this->id = $appId;
-        }
-
-        // Set the timezone
-        $this->_setTimeZone();
-
-        // Validate some basics on the database configuration file.
-        $this->validateDbConfigFile();
-
-        // Load the plugins
-        $this->getPlugins()->loadPlugins();
-
-        // Set the language
-        $this->_setLanguage();
+        $this->_init();
     }
 
     /**
@@ -167,9 +147,6 @@ class Application extends \yii\web\Application
                 throw new ServiceUnavailableHttpException();
             }
         }
-
-        // Set the edition components
-        $this->_setEditionComponents();
 
         // getIsCraftDbMigrationNeeded will return true if we're in the middle of a manual or auto-update for Craft itself.
         // If we're in maintenance mode and it's not a site request, show the manual update template.
