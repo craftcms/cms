@@ -48,6 +48,11 @@ class Application extends \yii\web\Application
     // =========================================================================
 
     /**
+     * @event EditionChangeEvent The event that is triggered after the application has been initialized
+     */
+    const EVENT_AFTER_INIT = 'afterInit';
+
+    /**
      * @event EditionChangeEvent The event that is triggered after the edition changes
      */
     const EVENT_AFTER_EDITION_CHANGE = 'afterEditionChange';
