@@ -22,6 +22,7 @@ use craft\app\records\Category as CategoryRecord;
 use craft\app\records\CategoryGroup as CategoryGroupRecord;
 use craft\app\records\CategoryGroupLocale as CategoryGroupLocaleRecord;
 use yii\base\Component;
+use yii\base\Exception;
 
 /**
  * Class Categories service.
