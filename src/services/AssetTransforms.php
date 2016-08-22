@@ -12,6 +12,7 @@ use craft\app\db\Query;
 use craft\app\dates\DateTime;
 use craft\app\elements\Asset;
 use craft\app\errors\VolumeObjectExistsException;
+use craft\app\events\AssetTransformEvent;
 use craft\app\helpers\Assets as AssetsHelper;
 use craft\app\helpers\Db;
 use craft\app\helpers\Image;
@@ -39,6 +40,21 @@ use yii\base\Component;
  */
 class AssetTransforms extends Component
 {
+    // Constants
+    // =========================================================================
+
+    /**
+    * @event AssetTransformEvent The event that is triggered before an asset transform is saved.
+    *
+    * You may set [[AssetTransformEvent::isValid]] to `false` to prevent the asset transform from being saved.
+    */
+   const EVENT_BEFORE_SAVE_ASSET_TRANSFORM = 'beforeSaveAssetTransform';
+
+   /**
+    * @event AssetTransformEvent The event that is triggered after an asset transform is saved.
+    */
+   const EVENT_AFTER_SAVE_ASSET_TRANSFORM = 'afterSaveAssetTransform';
+
     // Properties
     // =========================================================================
 
@@ -185,25 +201,40 @@ class AssetTransforms extends Component
         $transformRecord->quality = $transform->quality;
         $transformRecord->format = $transform->format;
 
-        $recordValidates = $transformRecord->validate();
+        $transformRecord->validate();
+        $transform->addErrors($transformRecord->getErrors());
 
-        if ($recordValidates) {
-            $transformRecord->save(false);
-
-            // Now that we have a transform ID, save it on the model
-            if (!$transform->id) {
-                $transform->id = $transformRecord->id;
-            }
-
-            return true;
+        if ($transform->hasErrors()) {
+            return false;
         }
 
-        $transform->addErrors($transformRecord->getErrors());
-        $exception = new ValidationException(Craft::t('app',
-            'There were errors while saving the Asset Transform.'));
-        $exception->setModel($transform);
+        // Fire a 'beforeSaveAssetTransform' event
+        $event = new AssetTransformEvent([
+            'assetTransform' => $transform
+        ]);
 
-        throw $exception;
+        $this->trigger(self::EVENT_BEFORE_SAVE_ASSET_TRANSFORM, $event);
+
+        // Is the event giving us the go-ahead?
+        if ($event->isValid) {
+            if ($transformRecord->save()) {
+
+                // Now that we have a transform ID, save it on the model
+                if (!$transform->id) {
+                    $transform->id = $transformRecord->id;
+                }
+
+                // Fire an 'afterSaveAssetTransform' event
+                $this->trigger(self::EVENT_AFTER_SAVE_ASSET_TRANSFORM,
+                    new AssetTransformEvent([
+                        'assetTransform' => $transform
+                    ]));
+
+                return true;
+            }
+        }
+
+        return false;
     }
 
     /**
