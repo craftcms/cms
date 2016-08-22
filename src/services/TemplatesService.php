@@ -236,12 +236,14 @@ class TemplatesService extends BaseApplicationComponent
 	 *
 	 * @param mixed $template  The name of the template to load, or a StringTemplate object.
 	 * @param array $variables The variables that should be available to the template.
+	 * @param bool  $safeMode  Whether to limit what's available to in the Twig context
+	 *                         in the interest of security.
 	 *
 	 * @return string The rendered template.
 	 */
-	public function render($template, $variables = array())
+	public function render($template, $variables = array(), $safeMode = false)
 	{
-		$twig = $this->getTwig();
+		$twig = $this->getTwig(null, array('safe_mode' => $safeMode));
 
 		$lastRenderingTemplate = $this->_renderingTemplate;
 		$this->_renderingTemplate = $template;
@@ -277,17 +279,20 @@ class TemplatesService extends BaseApplicationComponent
 	 *
 	 * @param string $template  The source template string.
 	 * @param array  $variables Any variables that should be available to the template.
+	 * @param bool   $safeMode  Whether to limit what's available to in the Twig context
+	 *                          in the interest of security.
 	 *
 	 * @return string The rendered template.
 	 */
-	public function renderString($template, $variables = array())
+	public function renderString($template, $variables = array(), $safeMode = false)
 	{
 		$stringTemplate = new StringTemplate(md5($template), $template);
 
 		$lastRenderingTemplate = $this->_renderingTemplate;
 		$this->_renderingTemplate = 'string:'.$template;
-		$result = $this->render($stringTemplate, $variables);
+		$result = $this->render($stringTemplate, $variables, $safeMode);
 		$this->_renderingTemplate = $lastRenderingTemplate;
+
 		return $result;
 	}
 
@@ -316,7 +321,7 @@ class TemplatesService extends BaseApplicationComponent
 		$twig = $this->getTwig('Twig_Loader_String', array('safe_mode' => $safeMode));
 
 		// Have we already parsed this template?
-        $cacheKey = $template.':'.($safeMode ? 'safe' : 'unsafe');
+		$cacheKey = $template.':'.($safeMode ? 'safe' : 'unsafe');
 
 		if (!isset($this->_objectTemplates[$cacheKey]))
 		{

@@ -211,6 +211,11 @@ class ElementsService extends BaseApplicationComponent
 			return array();
 		}
 
+		if ($justIds)
+		{
+			return $query->queryColumn();
+		}
+
 		$results = $query->queryAll();
 
 		if (!$results)
@@ -218,22 +223,7 @@ class ElementsService extends BaseApplicationComponent
 			return array();
 		}
 
-		// Do they just care about the IDs?
-		if ($justIds)
-		{
-			$ids = array();
-
-			foreach ($results as $result)
-			{
-				$ids[] = $result['id'];
-			}
-
-			return $ids;
-		}
-		else
-		{
-			return $this->populateElements($results, $criteria, $contentTable, $fieldColumns, $justIds);
-		}
+		return $this->populateElements($results, $criteria, $contentTable, $fieldColumns);
 	}
 
 	/**
@@ -559,6 +549,7 @@ class ElementsService extends BaseApplicationComponent
 				->from('elements elements');
 
 			$elementsIdColumn = 'elements.id';
+			$elementsIdColumnAlias = 'elementsId';
 			$selectedColumns = $query->getSelect();
 
 			// Normalize with no quotes. setSelect later will properly add them back in.
@@ -570,17 +561,23 @@ class ElementsService extends BaseApplicationComponent
 				$selectedColumns = $elementsIdColumn.', '.$selectedColumns;
 			}
 
-			// Alias elements.id as elementsId
-			$selectedColumns = str_replace($elementsIdColumn, $elementsIdColumn.' AS elementsId', $selectedColumns);
+			// Replace all instances of elements.id with elementsId
+			$selectedColumns = str_replace($elementsIdColumn, $elementsIdColumnAlias, $selectedColumns);
+
+			// Find the position of the first occurrence of elementsId
+			$pos = strpos($selectedColumns, $elementsIdColumnAlias);
+
+			// Make the first occurrence of elementsId an alias for elements.id
+			if ($pos !== false)
+			{
+				$selectedColumns = substr_replace($selectedColumns, $elementsIdColumn.' AS '.$elementsIdColumnAlias, $pos, strlen($elementsIdColumnAlias));
+			}
 
 			$query->setSelect($selectedColumns);
-
 			$masterQuery = craft()->db->createCommand();
 			$masterQuery->params = $query->params;
-
 			$masterQuery->from(sprintf('(%s) derivedElementsTable', $query->getText()));
-
-			$count = $masterQuery->count('derivedElementsTable.elementsId');
+			$count = $masterQuery->count('derivedElementsTable.'.$elementsIdColumnAlias);
 
 			return $count;
 		}
@@ -2215,8 +2212,25 @@ class ElementsService extends BaseApplicationComponent
 										{
 											if (!empty($refTag['matches'][3]) && isset($element->{$refTag['matches'][3]}))
 											{
-												$value = (string) $element->{$refTag['matches'][3]};
-												$replace[] = $this->parseRefs($value);
+												try
+												{
+													$value = $element->{$refTag['matches'][3]};
+
+													if (is_object($value) && !method_exists($value, '__toString'))
+													{
+														throw new Exception('Object of class '.get_class($value).' could not be converted to string');
+													}
+
+													$replace[] = $this->parseRefs((string)$value);
+												}
+												catch (\Exception $e)
+												{
+													// Log it
+													Craft::log('An exception was thrown when parsing the ref tag "'.$refTag['matches'][0]."\":\n".$e->getMessage(), LogLevel::Error);
+
+													// Replace the token with the original ref tag
+													$replace[] = $refTag['matches'][0];
+												}
 											}
 											else
 											{

@@ -238,6 +238,7 @@ return array(
 
 	/**
 	 * The amount of time a user’s elevated session will last, which is required for some sensitive actions (e.g. user group/permission assignment).
+	 * Set to `false` to disable elevated session support.
 	 *
 	 * @see http://www.php.net/manual/en/dateinterval.construct.php
 	 */

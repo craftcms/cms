@@ -31,8 +31,8 @@ Craft.ElevatedSessionManager = Garnish.Base.extend(
 
 			if (textStatus == 'success')
 			{
-				// Is there still enough time left?
-				if (response.timeout >= Craft.ElevatedSessionManager.minSafeElevatedSessionTimeout)
+				// Is there still enough time left or has it been disabled?
+				if (response.timeout === false || response.timeout >= Craft.ElevatedSessionManager.minSafeElevatedSessionTimeout)
 				{
 					this.callback();
 				}

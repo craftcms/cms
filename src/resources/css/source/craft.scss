@@ -1029,6 +1029,14 @@ ul.tree,
 .meta > .field > .input > .datewrapper,
 .meta > .field > .input > .timewrapper { display: block; width: 100%; }
 
+.meta > .field > .input > .elementselect > .elements > .element { height: 18px; float: none; margin: 0; }
+.meta > .field > .input > .elementselect > .elements > .element + .element { margin-top: 7px; }
+.meta > .field > .input > .elementselect > .elements > .element:not(.hasstatus):not(.hasthumb) { width: calc(100% - 14px); }
+.meta > .field > .input > .elementselect > .elements > .element.hasstatus:not(.hasthumb) { width: calc(100% - 32px); }
+.meta > .field > .input > .elementselect > .elements > .element.hasthumb:not(.hasstatus) { width: calc(100% - 54px); }
+.meta > .field > .input > .elementselect > .elements > .element.hasstatus.hasthumb { width: calc(100% - 72px); }
+.meta > .field > .input > .elementselect > .elements > .element > .label { width: calc(100% - 20px); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+
 @media screen and (-webkit-min-device-pixel-ratio: 0)
 {
 	.meta > .field > .input .select { display: block; margin: -8px 0; width: 100%; border-radius: 0; @include box-shadow(none); background: none; }
@@ -1299,6 +1307,8 @@ body .redactor-editor,
 
 .selectize-text > .selectize-control > .selectize-input { line-height: 18px; }
 
+textarea.text.fullwidth { display: block; }
+
 .multitext .multitextrow .text { border-radius: 0; float: left; @include box-sizing(border-box); }
 .multitext .multitextrow .text.error { position: relative; z-index: 1; }
 .multitext .multitextrow .text:focus,
@@ -1443,7 +1453,7 @@ body .redactor-toolbar,
 body .redactor-box textarea { z-index: auto !important; }
 body .redactor-box { margin-bottom: 0; }
 body .redactor-box.redactor-box-fullscreen { z-index: 100 !important; }
-body .redactor-toolbar { top: 0 !important; background: none; @include box-shadow(none); }
+body .redactor-toolbar { top: 0; background: none; @include box-shadow(none); }
 body .redactor-toolbar.toolbar-fixed-box { @include pane; z-index: 1 !important; }
 body .redactor-toolbar.toolbar-fixed-box + .redactor-editor { padding-top: 32px; }
 body .redactor-toolbar li a { color: $textcolor; }

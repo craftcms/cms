@@ -56,7 +56,7 @@ class ResourcesService extends BaseApplicationComponent
 			$realPath = ':(';
 		}
 
-		craft()->cache->set('resourcePath:'.$path, $realPath);
+		craft()->cache->set('resourcePath:'.$path, $realPath, null, new AppPathCacheDependency());
 	}
 
 	/**
