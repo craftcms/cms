@@ -121,9 +121,7 @@ class AssetTransformsController extends Controller
             $transform->quality = null;
         }
 
-        if (!empty($transform->format) && !in_array($transform->format,
-                Image::getWebSafeFormats())
-        ) {
+        if (!empty($transform->format) && !in_array($transform->format, Image::getWebSafeFormats())) {
             $session->setError(Craft::t('app', 'That is not an allowed format.'));
             $errors = true;
         }
@@ -136,7 +134,7 @@ class AssetTransformsController extends Controller
                 return $this->redirectToPostedUrl($transform);
             }
 
-            $session->setError(Craft::t('app', 'Couldn’t save source.'));
+            $session->setError(Craft::t('app', 'Couldn’t save transform.'));
         }
 
         // Send the transform back to the template

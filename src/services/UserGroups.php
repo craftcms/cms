@@ -30,6 +30,9 @@ Craft::$app->requireEdition(Craft::Pro);
  */
 class UserGroups extends Component
 {
+    // Constants
+    // =========================================================================
+
     /**
      * @event AssignUserGroupEvent The event that is triggered before a user is assigned to some user groups.
      *
