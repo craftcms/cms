@@ -75,6 +75,18 @@ class Sections extends Component
      */
     const EVENT_AFTER_SAVE_ENTRY_TYPE = 'afterSaveEntryType';
 
+    /**
+     * @event DeleteEntryTypeEvent The event that is triggered before an entry type is deleted.
+     *
+     * You may set [[EntryTypeEvent::isValid]] to `false` to prevent the entry type from getting deleted.
+     */
+    const EVENT_BEFORE_DELETE_ENTRY_TYPE = 'beforeDeleteEntryType';
+
+    /**
+     * @event DeleteEntryTypeEvent The event that is triggered after an entry type is deleted.
+     */
+    const EVENT_AFTER_DELETE_ENTRY_TYPE = 'afterDeleteEntryType';
+
     // Properties
     // =========================================================================
 
@@ -1136,58 +1148,78 @@ class Sections extends Component
             return false;
         }
 
-        $transaction = Craft::$app->getDb()->beginTransaction();
-        try {
-            // Delete the field layout
-            $query = (new Query())
-                ->select('fieldLayoutId')
-                ->from('{{%entrytypes}}');
+        $success = false;
+        $entryType = $this->getEntryTypeById($entryTypeId);
 
-            if (is_array($entryTypeId)) {
-                $query->where(['in', 'id', $entryTypeId]);
-            } else {
-                $query->where(['id' => $entryTypeId]);
+        // Fire a 'beforeSaveEntryType' event
+        $event = new DeleteEntryTypeEvent([
+            'entryType' => $entryType,
+        ]);
+
+        $this->trigger(self::EVENT_BEFORE_DELETE_ENTRY_TYPE, $event);
+
+        // Is the event giving us the go-ahead?
+        if ($event->isValid) {
+            $transaction = Craft::$app->getDb()->beginTransaction();
+            try {
+                // Delete the field layout
+                $query = (new Query())
+                    ->select('fieldLayoutId')
+                    ->from('{{%entrytypes}}');
+
+                if (is_array($entryTypeId)) {
+                    $query->where(['in', 'id', $entryTypeId]);
+                } else {
+                    $query->where(['id' => $entryTypeId]);
+                }
+
+                $fieldLayoutIds = $query->column();
+
+                if ($fieldLayoutIds) {
+                    Craft::$app->getFields()->deleteLayoutById($fieldLayoutIds);
+                }
+
+                // Grab the entry IDs so we can clean the elements table.
+                $query = (new Query())
+                    ->select('id')
+                    ->from('{{%entries}}');
+
+                if (is_array($entryTypeId)) {
+                    $query->where(['in', 'typeId', $entryTypeId]);
+                } else {
+                    $query->where(['typeId' => $entryTypeId]);
+                }
+
+                $entryIds = $query->column();
+
+                Craft::$app->getElements()->deleteElementById($entryIds);
+
+                // Delete the entry type.
+                if (is_array($entryTypeId)) {
+                    $affectedRows = Craft::$app->getDb()->createCommand()
+                        ->delete('{{%entrytypes}}', ['in', 'id', $entryTypeId])
+                        ->execute();
+                } else {
+                    $affectedRows = Craft::$app->getDb()->createCommand()
+                        ->delete('{{%entrytypes}}', ['id' => $entryTypeId])
+                        ->execute();
+                }
+
+                $transaction->commit();
+                $success = true;
+            } catch (\Exception $e) {
+                $transaction->rollBack();
+
+                throw $e;
             }
+        }
 
-            $fieldLayoutIds = $query->column();
-
-            if ($fieldLayoutIds) {
-                Craft::$app->getFields()->deleteLayoutById($fieldLayoutIds);
-            }
-
-            // Grab the entry IDs so we can clean the elements table.
-            $query = (new Query())
-                ->select('id')
-                ->from('{{%entries}}');
-
-            if (is_array($entryTypeId)) {
-                $query->where(['in', 'typeId', $entryTypeId]);
-            } else {
-                $query->where(['typeId' => $entryTypeId]);
-            }
-
-            $entryIds = $query->column();
-
-            Craft::$app->getElements()->deleteElementById($entryIds);
-
-            // Delete the entry type.
-            if (is_array($entryTypeId)) {
-                $affectedRows = Craft::$app->getDb()->createCommand()
-                    ->delete('{{%entrytypes}}', ['in', 'id', $entryTypeId])
-                    ->execute();
-            } else {
-                $affectedRows = Craft::$app->getDb()->createCommand()
-                    ->delete('{{%entrytypes}}', ['id' => $entryTypeId])
-                    ->execute();
-            }
-
-            $transaction->commit();
-
-            return (bool)$affectedRows;
-        } catch (\Exception $e) {
-            $transaction->rollBack();
-
-            throw $e;
+        if ($success) {
+            // Fire an 'afterDeleteEntryType' event
+            $this->trigger(self::EVENT_AFTER_DELETE_ENTRY_TYPE,
+                new EntryTypeEvent([
+                    'entryType' => $entryType,
+                ]));
         }
     }
 
