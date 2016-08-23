@@ -24,4 +24,9 @@ class AssetEvent extends Event
      * @var Asset The asset model associated with the event.
      */
     public $asset;
+
+    /**
+     * @var boolean Whether the asset is brand new
+     */
+    public $isNew;
 }

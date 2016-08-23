@@ -90,14 +90,14 @@ class Assets extends Component
     const EVENT_AFTER_REPLACE_ASSET = 'afterReplaceFile';
 
     /**
-     * @event AssetEvent The event that is triggered before an asset is deleted.
+     * @event AssetEvent.php The event that is triggered before an asset is deleted.
      *
      * You may set [[AssetEvent::isValid]] to `false` to prevent the asset from being deleted.
      */
     const EVENT_BEFORE_DELETE_ASSET = 'beforeDeleteAsset';
 
     /**
-     * @event AssetEvent The event that is triggered after an asset is deleted.
+     * @event AssetEvent.php The event that is triggered after an asset is deleted.
      */
     const EVENT_AFTER_DELETE_ASSET = 'afterDeleteAsset';
 
@@ -264,9 +264,8 @@ class Assets extends Component
 
             $uriPath = $asset->getUri();
 
-            $event = new AssetEvent(['asset' => $asset]);
+            $event = new AssetEvent(['asset' => $asset, 'isNew' => $isNew]);
             $this->trigger(self::EVENT_BEFORE_UPLOAD_ASSET, $event);
-
 
             // Explicitly re-throw VolumeFileExistsException
             try {
@@ -490,7 +489,7 @@ class Assets extends Component
                 $volume = $asset->getVolume();
 
                 // Fire an 'onBeforeDeleteAsset' event
-                $event = new AssetEvent($this, [
+                $event = new DeleteAssetEvent($this, [
                     'asset' => $asset
                 ]);
 
@@ -504,7 +503,7 @@ class Assets extends Component
                     Craft::$app->getElements()->deleteElementById($assetId);
                     Craft::$app->getAssetTransforms()->deleteAllTransformData($asset);
 
-                    $event = new AssetEvent($this, [
+                    $event = new DeleteAssetEvent($this, [
                         'asset' => $asset
                     ]);
 
@@ -1581,7 +1580,8 @@ class Assets extends Component
 
         try {
             $event = new AssetEvent([
-                'asset' => $asset
+                'asset' => $asset,
+                'isNew' => $isNewAsset
             ]);
 
             $this->trigger(self::EVENT_BEFORE_SAVE_ASSET, $event);
@@ -1609,7 +1609,8 @@ class Assets extends Component
                 $assetRecord->save(false);
 
                 $event = new AssetEvent([
-                    'asset' => $asset
+                    'asset' => $asset,
+                    'isNew' => $isNewAsset
                 ]);
 
                 $this->trigger(self::EVENT_AFTER_SAVE_ASSET, $event);

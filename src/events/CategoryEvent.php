@@ -24,4 +24,9 @@ class CategoryEvent extends Event
      * @var Category The category model associated with the event.
      */
     public $category;
+
+    /**
+     * @var boolean Whether the category is brand new
+     */
+    public $isNew;
 }

@@ -204,7 +204,12 @@ class AssetTransforms extends Component
      */
     public function saveTransform(AssetTransform $transform)
     {
-        if ($transform->id) {
+        $isNew = !$transform->id;
+
+        if ($isNew) {
+            $transformRecord = new AssetTransformRecord();
+
+        } else {
             $transformRecord = AssetTransformRecord::findOne($transform->id);
 
             if (!$transformRecord) {
@@ -212,8 +217,6 @@ class AssetTransforms extends Component
                     'Can’t find the transform with ID “{id}”',
                     ['id' => $transform->id]));
             }
-        } else {
-            $transformRecord = new AssetTransformRecord();
         }
 
         $transformRecord->name = $transform->name;
@@ -243,7 +246,8 @@ class AssetTransforms extends Component
 
         // Fire a 'beforeSaveAssetTransform' event
         $event = new AssetTransformEvent([
-            'assetTransform' => $transform
+            'assetTransform' => $transform,
+            'isNew' => $isNew,
         ]);
 
         $this->trigger(self::EVENT_BEFORE_SAVE_ASSET_TRANSFORM, $event);
@@ -260,7 +264,8 @@ class AssetTransforms extends Component
                 // Fire an 'afterSaveAssetTransform' event
                 $this->trigger(self::EVENT_AFTER_SAVE_ASSET_TRANSFORM,
                     new AssetTransformEvent([
-                        'assetTransform' => $transform
+                        'assetTransform' => $transform,
+                        'isNew' => $transform,
                     ]));
 
                 return true;
@@ -282,7 +287,7 @@ class AssetTransforms extends Component
         $transform = $this->getTransformById($transformId);
 
         // Fire a 'beforeDeleteAssetTransform' event
-        $event = new AssetTransformEvent([
+        $event = new DeleteAssetTransformEvent([
             'assetTransform' => $transform
         ]);
 
@@ -298,7 +303,7 @@ class AssetTransforms extends Component
 
             // Fire an 'afterDeleteAssetTransform' event
             $this->trigger(self::EVENT_AFTER_DELETE_ASSET_TRANSFORM,
-                new AssetTransformEvent([
+                new DeleteAssetTransformEvent([
                     'assetTransform' => $transform
                 ]));
 

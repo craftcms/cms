@@ -314,20 +314,19 @@ class Categories extends Component
      */
     public function saveGroup(CategoryGroup $group)
     {
-        if ($group->id) {
+        $isNewCategoryGroup = !$group->id;
+
+        if (!$isNewCategoryGroup) {
             $groupRecord = CategoryGroupRecord::findOne($group->id);
 
             if (!$groupRecord) {
-
                 throw new CategoryGroupNotFoundException("No category group exists with the ID '{$group->id}'");
             }
 
             /** @var CategoryGroup $oldCategoryGroup */
             $oldCategoryGroup = CategoryGroup::create($groupRecord);
-            $isNewCategoryGroup = false;
         } else {
             $groupRecord = new CategoryGroupRecord();
-            $isNewCategoryGroup = true;
         }
 
         // If they've set maxLevels to 0 (don't ask why), then pretend like there are none.
@@ -379,7 +378,8 @@ class Categories extends Component
 
             // Fire a 'beforeSaveGroup' event
             $event = new CategoryGroupEvent([
-                'categoryGroup' => $group
+                'categoryGroup' => $group,
+                'isNew' => $isNewCategoryGroup,
             ]);
 
             $this->trigger(self::EVENT_BEFORE_SAVE_GROUP, $event);
@@ -585,7 +585,8 @@ class Categories extends Component
             // Fire an 'afterSaveGroup' event
             $this->trigger(self::EVENT_AFTER_SAVE_GROUP,
                 new CategoryGroupEvent([
-                    'categoryGroup' => $group
+                    'categoryGroup' => $group,
+                    'isNew' => $isNewCategoryGroup,
                 ]));
 
             return true;
@@ -615,7 +616,7 @@ class Categories extends Component
         }
 
         // Fire a 'beforeDeleteGroup' event
-        $event = new CategoryGroupEvent([
+        $event = new DeleteCategoryGroupEvent([
             'categoryGroup' => $group
         ]);
 
@@ -658,7 +659,7 @@ class Categories extends Component
 
             // Fire an 'afterDeleteGroup' event
             $this->trigger(self::EVENT_AFTER_DELETE_GROUP,
-                new CategoryGroupEvent([
+                new DeleteCategoryGroupEvent([
                     'categoryGroup' => $group
                 ]));
 
@@ -792,7 +793,8 @@ class Categories extends Component
         try {
             // Fire a 'beforeSaveCategory' event
             $event = new CategoryEvent([
-                'category' => $category
+                'category' => $category,
+                'isNew' => $isNewCategory
             ]);
 
             $this->trigger(self::EVENT_BEFORE_SAVE_CATEGORY, $event);
@@ -844,7 +846,8 @@ class Categories extends Component
             // Fire an 'afterSaveCategory' event
             $this->trigger(self::EVENT_AFTER_SAVE_CATEGORY,
                 new CategoryEvent([
-                    'category' => $category
+                    'category' => $category,
+                    'isNewCategory'
                 ]));
         }
 
@@ -884,7 +887,7 @@ class Categories extends Component
             foreach ($categories as $category) {
                 // Fire an 'afterDeleteCategory' event
                 $this->trigger(self::EVENT_AFTER_DELETE_CATEGORY,
-                    new CategoryEvent([
+                    new DeleteCategoryEvent([
                         'category' => $category
                     ]));
             }
@@ -1058,7 +1061,7 @@ class Categories extends Component
 
             // Fire a 'beforeDeleteCategory' event
             $this->trigger(self::EVENT_BEFORE_DELETE_CATEGORY,
-                new CategoryEvent([
+                new DeleteCategoryEvent([
                     'category' => $category
                 ]));
 

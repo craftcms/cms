@@ -7,26 +7,21 @@
 
 namespace craft\app\events;
 
-use craft\app\models\CategoryGroup;
+use craft\app\elements\Asset;
 
 /**
- * Category group event class.
+ * Delete asset event class.
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since  3.0
  */
-class CategoryGroupEvent extends Event
+class DeleteAssetEvent extends Event
 {
     // Properties
     // =========================================================================
 
     /**
-     * @var CategoryGroup The category group model associated with the event.
+     * @var Asset The asset model associated with the event.
      */
-    public $categoryGroup;
-
-    /**
-     * @var boolean Whether the category group is brand new
-     */
-    public $isNew;
+    public $asset;
 }
