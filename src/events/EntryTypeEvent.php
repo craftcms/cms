@@ -22,4 +22,9 @@ class EntryTypeEvent extends Event
      * @var \craft\app\models\EntryType The entry type model associated with the event.
      */
     public $entryType;
+
+    /**
+     * @var boolean Whether the category group is brand new
+     */
+    public $isNew;
 }

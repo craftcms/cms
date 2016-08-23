@@ -207,7 +207,8 @@ class Entries extends Component
         try {
             // Fire a 'beforeSaveEntry' event
             $event = new EntryEvent([
-                'entry' => $entry
+                'entry' => $entry,
+                'isNew' => $isNewEntry
             ]);
 
             $this->trigger(self::EVENT_BEFORE_SAVE_ENTRY, $event);
@@ -285,7 +286,8 @@ class Entries extends Component
         if ($success) {
             // Fire an 'afterSaveEntry' event
             $this->trigger(self::EVENT_AFTER_SAVE_ENTRY, new EntryEvent([
-                'entry' => $entry
+                'entry' => $entry,
+                'isNew' => $isNewEntry
             ]));
         }
 
@@ -317,7 +319,7 @@ class Entries extends Component
 
             foreach ($entries as $entry) {
                 // Fire a 'beforeDeleteEntry' event
-                $event = new EntryEvent([
+                $event = new DeleteEntryEvent([
                     'entry' => $entry
                 ]);
 
@@ -357,7 +359,7 @@ class Entries extends Component
             foreach ($entries as $entry) {
                 // Fire an 'afterDeleteEntry' event
                 $this->trigger(self::EVENT_AFTER_DELETE_ENTRY,
-                    new EntryEvent([
+                    new DeleteEntryEvent([
                         'entry' => $entry
                     ]));
             }

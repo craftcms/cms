@@ -8,12 +8,12 @@
 namespace craft\app\events;
 
 /**
- * Draft event class.
+ * Publish draft event class.
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since  3.0
  */
-class DraftEvent extends Event
+class PublishDraftEvent extends Event
 {
     // Properties
     // =========================================================================
@@ -22,9 +22,4 @@ class DraftEvent extends Event
      * @var \craft\app\models\EntryDraft The draft model associated with the event.
      */
     public $draft;
-
-    /**
-     * @var boolean Whether the category is brand new
-     */
-    public $isNew;
 }

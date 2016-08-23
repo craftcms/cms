@@ -988,6 +988,8 @@ class Sections extends Component
      */
     public function saveEntryType(EntryType $entryType)
     {
+        $isNewEntryType = !$entryType->id;
+
         if ($entryType->id) {
             $entryTypeRecord = EntryTypeRecord::findOne($entryType->id);
 
@@ -995,11 +997,9 @@ class Sections extends Component
                 throw new EntryTypeNotFoundException("No entry type exists with the ID '{$entryType->id}'");
             }
 
-            $isNewEntryType = false;
             $oldEntryType = EntryType::create($entryTypeRecord);
         } else {
             $entryTypeRecord = new EntryTypeRecord();
-            $isNewEntryType = true;
 
             // Get the next biggest sort order
             $maxSortOrder = (new Query())
@@ -1028,6 +1028,7 @@ class Sections extends Component
                 // Fire a 'beforeSaveEntryType' event
                 $event = new EntryTypeEvent([
                     'entryType' => $entryType,
+                    'isNew' => $isNewEntryType,
                 ]);
 
                 $this->trigger(self::EVENT_BEFORE_SAVE_ENTRY_TYPE, $event);
@@ -1084,7 +1085,8 @@ class Sections extends Component
             // Fire an 'afterSaveEntryType' event
             $this->trigger(self::EVENT_AFTER_SAVE_ENTRY_TYPE,
                 new EntryTypeEvent([
-                    'entryType' => $entryType
+                    'entryType' => $entryType,
+                    'isNew' => $isNewEntryType,
                 ]));
         }
 

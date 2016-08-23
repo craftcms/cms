@@ -169,8 +169,8 @@ class Content extends Component
 
         if (!$validate || $this->validateContent($element)) {
 
-            // Fire a 'beforeSaveCategory' event
-            $event = new ElementEvent([
+            // Fire a 'beforeSaveContent' event
+            $event = new ElementContentEvent([
                 'element' => $element
             ]);
 
@@ -225,7 +225,7 @@ class Content extends Component
 
         if ($success) {
             // Fire an 'afterSaveContent' event
-            $this->trigger(self::EVENT_AFTER_SAVE_CONTENT, new ElementEvent([
+            $this->trigger(self::EVENT_AFTER_SAVE_CONTENT, new ElementContentEvent([
                 'element' => $element
             ]));
         }

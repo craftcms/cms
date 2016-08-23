@@ -7,24 +7,21 @@
 
 namespace craft\app\events;
 
+use craft\app\base\ElementInterface;
+
 /**
- * Draft event class.
+ * Element content event class.
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since  3.0
  */
-class DraftEvent extends Event
+class ElementContentEvent extends Event
 {
     // Properties
     // =========================================================================
 
     /**
-     * @var \craft\app\models\EntryDraft The draft model associated with the event.
+     * @var ElementInterface The element model associated with the event.
      */
-    public $draft;
-
-    /**
-     * @var boolean Whether the category is brand new
-     */
-    public $isNew;
+    public $element;
 }

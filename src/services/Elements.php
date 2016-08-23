@@ -374,7 +374,8 @@ class Elements extends Component
         try {
             // Fire a 'beforeSaveElement' event
             $event = new ElementEvent([
-                'element' => $element
+                'element' => $element,
+                'isNew' => $isNewElement
             ]);
 
             $this->trigger(self::EVENT_BEFORE_SAVE_ELEMENT, $event);
@@ -593,7 +594,8 @@ class Elements extends Component
         if ($success) {
             // Fire an 'afterSaveElement' event
             $this->trigger(self::EVENT_AFTER_SAVE_ELEMENT, new ElementEvent([
-                'element' => $element
+                'element' => $element,
+                'isNew' => $isNewElement,
             ]));
         } else {
             if ($isNewElement) {

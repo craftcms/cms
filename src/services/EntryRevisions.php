@@ -11,8 +11,10 @@ use Craft;
 use craft\app\base\Field;
 use craft\app\db\Query;
 use craft\app\errors\EntryDraftNotFoundException;
+use craft\app\events\DeleteDraftEvent;
 use craft\app\events\DraftEvent;
 use craft\app\events\EntryEvent;
+use craft\app\events\PublishDraftEvent;
 use craft\app\helpers\ArrayHelper;
 use craft\app\helpers\Json;
 use craft\app\elements\Entry;
@@ -183,6 +185,8 @@ class EntryRevisions extends Component
      */
     public function saveDraft(EntryDraft $draft)
     {
+        $isNewDraft = !$draft->id;
+
         if (!$draft->name && $draft->id) {
             // Get the total number of existing drafts for this entry/locale
             $totalDrafts = (new Query())
@@ -199,7 +203,8 @@ class EntryRevisions extends Component
 
         // Fire a 'beforeSaveDraft' event
         $event = new DraftEvent([
-            'draft' => $draft
+            'draft' => $draft,
+            'isNew' => $isNewDraft,
         ]);
 
         $this->trigger(self::EVENT_BEFORE_SAVE_DRAFT, $event);
@@ -224,7 +229,8 @@ class EntryRevisions extends Component
         if ($success) {
             // Fire an 'afterSaveDraft' event
             $this->trigger(self::EVENT_AFTER_SAVE_DRAFT, new DraftEvent([
-                'draft' => $draft
+                'draft' => $draft,
+                'isNew' => $isNewDraft,
             ]));
         }
 
@@ -252,7 +258,7 @@ class EntryRevisions extends Component
         }
 
         // Fire a 'beforePublishDraft' event
-        $event = new DraftEvent([
+        $event = new PublishDraftEvent([
             'draft' => $draft
         ]);
 
@@ -270,7 +276,7 @@ class EntryRevisions extends Component
 
         if ($success) {
             // Fire an 'afterPublishDraft' event
-            $this->trigger(self::EVENT_AFTER_PUBLISH_DRAFT, new DraftEvent([
+            $this->trigger(self::EVENT_AFTER_PUBLISH_DRAFT, new PublishDraftEvent([
                 'draft' => $draft
             ]));
         }
@@ -292,7 +298,7 @@ class EntryRevisions extends Component
 
         try {
             // Fire a 'beforeDeleteDraft' event
-            $event = new DraftEvent([
+            $event = new DeleteDraftEvent([
                 'draft' => $draft
             ]);
 
@@ -319,7 +325,7 @@ class EntryRevisions extends Component
 
         if ($success) {
             // Fire an 'afterDeleteDraft' event
-            $this->trigger(self::EVENT_AFTER_DELETE_DRAFT, new DraftEvent([
+            $this->trigger(self::EVENT_AFTER_DELETE_DRAFT, new DeleteDraftEvent([
                 'draft' => $draft
             ]));
         }
@@ -439,7 +445,7 @@ class EntryRevisions extends Component
         if (Craft::$app->getEntries()->saveEntry($version)) {
             // Fire an 'afterRevertEntryToVersion' event
             $this->trigger(self::EVENT_AFTER_REVERT_ENTRY_TO_VERSION,
-                new EntryEvent([
+                new RevertEntryEvent([
                     'entry' => $version,
                 ]));
 

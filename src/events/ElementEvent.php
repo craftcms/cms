@@ -24,4 +24,9 @@ class ElementEvent extends Event
      * @var ElementInterface The element model associated with the event.
      */
     public $element;
+
+    /**
+     * @var boolean Whether the category group is brand new
+     */
+    public $isNew;
 }

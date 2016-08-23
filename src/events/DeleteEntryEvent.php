@@ -7,24 +7,21 @@
 
 namespace craft\app\events;
 
+use craft\app\elements\Entry;
+
 /**
- * Draft event class.
+ * Delete entry event class.
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since  3.0
  */
-class DraftEvent extends Event
+class DeleteEntryEvent extends Event
 {
     // Properties
     // =========================================================================
 
     /**
-     * @var \craft\app\models\EntryDraft The draft model associated with the event.
+     * @var Entry The entry model associated with the event.
      */
-    public $draft;
-
-    /**
-     * @var boolean Whether the category is brand new
-     */
-    public $isNew;
+    public $entry;
 }

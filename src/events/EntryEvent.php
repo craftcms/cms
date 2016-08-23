@@ -24,4 +24,9 @@ class EntryEvent extends Event
      * @var Entry The entry model associated with the event.
      */
     public $entry;
+
+    /**
+     * @var boolean Whether the category group is brand new
+     */
+    public $isNew;
 }
