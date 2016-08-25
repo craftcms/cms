@@ -7,24 +7,21 @@
 
 namespace craft\app\events;
 
+use craft\app\elements\User;
+
 /**
- * Section event class.
+ * User assign group event class.
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since  3.0
  */
-class SectionEvent extends Event
+class UserAssignGroupEvent extends Event
 {
     // Properties
     // =========================================================================
 
     /**
-     * @var \craft\app\models\Section The section model associated with the event.
+     * @var User The user model associated with this event
      */
-    public $section;
-
-    /**
-     * @var boolean Whether the section is brand new
-     */
-    public $isNew;
+    public $user;
 }

@@ -24,4 +24,9 @@ class UserEvent extends Event
      * @var User The user model associated with the event.
      */
     public $user;
+
+    /**
+     * @var boolean Whether the user is brand new
+     */
+    public $isNew;
 }

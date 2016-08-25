@@ -24,4 +24,9 @@ class TagEvent extends Event
      * @var Tag The tag model associated with the event.
      */
     public $tag;
+
+    /**
+     * @var boolean Whether the tag is brand new
+     */
+    public $isNew;
 }

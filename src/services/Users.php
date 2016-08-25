@@ -17,6 +17,7 @@ use craft\app\errors\UserNotFoundException;
 use craft\app\errors\VolumeException;
 use craft\app\events\DeleteUserEvent;
 use craft\app\events\UserEvent;
+use craft\app\events\UserGroupsAssignEvent;
 use craft\app\helpers\Assets as AssetsHelper;
 use craft\app\helpers\DateTimeHelper;
 use craft\app\helpers\Db;
@@ -58,19 +59,19 @@ class Users extends Component
     const EVENT_AFTER_SAVE_USER = 'afterSaveUser';
 
     /**
-     * @event UserEvent The event that is triggered before a user's email is verified.
+     * @event UserTokenEvent The event that is triggered before a user's email is verified.
      */
     const EVENT_BEFORE_VERIFY_EMAIL = 'beforeVerifyEmail';
 
     /**
-     * @event UserEvent The event that is triggered after a user's email is verified.
+     * @event UserTokenEvent The event that is triggered after a user's email is verified.
      */
     const EVENT_AFTER_VERIFY_EMAIL = 'afterVerifyEmail';
 
     /**
-     * @event UserEvent The event that is triggered before a user is activated.
+     * @event UserActivateEvent The event that is triggered before a user is activated.
      *
-     * You may set [[UserEvent::isValid]] to `false` to prevent the user from getting activated.
+     * You may set [[UserActivateEvent::isValid]] to `false` to prevent the user from getting activated.
      */
     const EVENT_BEFORE_ACTIVATE_USER = 'beforeActivateUser';
 
@@ -80,38 +81,38 @@ class Users extends Component
     const EVENT_AFTER_ACTIVATE_USER = 'afterActivateUser';
 
     /**
-     * @event UserEvent The event that is triggered before a user is unlocked.
+     * @event UserUnlockEvent The event that is triggered before a user is unlocked.
      *
-     * You may set [[UserEvent::isValid]] to `false` to prevent the user from getting unlocked.
+     * You may set [[UserUnlockEvent::isValid]] to `false` to prevent the user from getting unlocked.
      */
     const EVENT_BEFORE_UNLOCK_USER = 'beforeUnlockUser';
 
     /**
-     * @event UserEvent The event that is triggered after a user is unlocked.
+     * @event UserUnlockEvent The event that is triggered after a user is unlocked.
      */
     const EVENT_AFTER_UNLOCK_USER = 'afterUnlockUser';
 
     /**
-     * @event UserEvent The event that is triggered before a user is suspended.
+     * @event UserSuspendEvent The event that is triggered before a user is suspended.
      *
-     * You may set [[UserEvent::isValid]] to `false` to prevent the user from getting suspended.
+     * You may set [[UserSuspendEvent::isValid]] to `false` to prevent the user from getting suspended.
      */
     const EVENT_BEFORE_SUSPEND_USER = 'beforeSuspendUser';
 
     /**
-     * @event UserEvent The event that is triggered after a user is suspended.
+     * @event UserSuspendEvent The event that is triggered after a user is suspended.
      */
     const EVENT_AFTER_SUSPEND_USER = 'afterSuspendUser';
 
     /**
-     * @event UserEvent The event that is triggered before a user is unsuspended.
+     * @event UserUnsuspendEvent The event that is triggered before a user is unsuspended.
      *
-     * You may set [[UserEvent::isValid]] to `false` to prevent the user from getting unsuspended.
+     * You may set [[UserUnsuspendEvent::isValid]] to `false` to prevent the user from getting unsuspended.
      */
     const EVENT_BEFORE_UNSUSPEND_USER = 'beforeUnsuspendUser';
 
     /**
-     * @event UserEvent The event that is triggered after a user is unsuspended.
+     * @event UserUnsuspendEvent The event that is triggered after a user is unsuspended.
      */
     const EVENT_AFTER_UNSUSPEND_USER = 'afterUnsuspendUser';
 
@@ -140,6 +141,31 @@ class Users extends Component
      * @event UserEvent The event that is triggered after a user's password is set.
      */
     const EVENT_AFTER_SET_PASSWORD = 'afterSetPassword';
+
+    /**
+     * @event AssignUserGroupEvent The event that is triggered before a user is assigned to some user groups.
+     *
+     * You may set [[AssignUserGroupEvent::isValid]] to `false` to prevent the user from getting assigned to the groups.
+     */
+    const EVENT_BEFORE_ASSIGN_USER_TO_GROUPS = 'beforeAssignUserToGroups';
+
+    /**
+     * @event AssignUserGroupEvent The event that is triggered after a user is assigned to some user groups.
+     */
+    const EVENT_AFTER_ASSIGN_USER_TO_GROUPS = 'afterAssignUserToGroups';
+
+    /**
+     * @event UserAssignGroupEvent The event that is triggered before a user is assigned to the default user group.
+     *
+     * You may set [[UserAssignGroupEvent::isValid]] to `false` to prevent the user from getting assigned to the default
+     * user group.
+     */
+    const EVENT_BEFORE_ASSIGN_USER_TO_DEFAULT_GROUP = 'beforeAssignUserToDefaultGroup';
+
+    /**
+     * @event UserAssignGroupEvent The event that is triggered after a user is assigned to the default user group.
+     */
+    const EVENT_AFTER_ASSIGN_USER_TO_DEFAULT_GROUP = 'afterAssignUserToDefaultGroup';
 
     // Public Methods
     // =========================================================================
@@ -327,8 +353,6 @@ class Users extends Component
             if (!$userRecord) {
                 throw new UserNotFoundException("No user exists with the ID '{$user->id}'");
             }
-
-            $oldUsername = $userRecord->username;
         } else {
             $userRecord = new UserRecord();
             $userRecord->pending = true;
@@ -371,7 +395,8 @@ class Users extends Component
         try {
             // Fire a 'beforeSaveUser' event
             $event = new UserEvent([
-                'user' => $user
+                'user' => $user,
+                'isNew' => $isNewUser
             ]);
 
             $this->trigger(self::EVENT_BEFORE_SAVE_USER, $event);
@@ -410,7 +435,8 @@ class Users extends Component
         if ($success) {
             // Fire an 'afterSaveUser' event
             $this->trigger(self::EVENT_AFTER_SAVE_USER, new UserEvent([
-                'user' => $user
+                'user' => $user,
+                'isNew' => $isNewUser
             ]));
 
             // They got unsuspended
@@ -759,7 +785,7 @@ class Users extends Component
 
         try {
             // Fire a 'beforeActivateUser' event
-            $event = new UserEvent([
+            $event = new UserActivateEvent([
                 'user' => $user,
             ]);
 
@@ -793,7 +819,7 @@ class Users extends Component
 
         if ($success) {
             // Fire an 'afterActivateUser' event
-            $this->trigger(self::EVENT_AFTER_ACTIVATE_USER, new UserEvent([
+            $this->trigger(self::EVENT_AFTER_ACTIVATE_USER, new UserActivateEvent([
                 'user' => $user
             ]));
         }
@@ -841,7 +867,7 @@ class Users extends Component
 
         try {
             // Fire a 'beforeUnlockUser' event
-            $event = new UserEvent([
+            $event = new UserUnlockEvent([
                 'user' => $user,
             ]);
 
@@ -875,7 +901,7 @@ class Users extends Component
 
         if ($success) {
             // Fire an 'afterUnlockUser' event
-            $this->trigger(self::EVENT_AFTER_UNLOCK_USER, new UserEvent([
+            $this->trigger(self::EVENT_AFTER_UNLOCK_USER, new UserUnlockEvent([
                 'user' => $user
             ]));
         }
@@ -897,7 +923,7 @@ class Users extends Component
 
         try {
             // Fire a 'beforeSuspendUser' event
-            $event = new UserEvent([
+            $event = new UserSuspendEvent([
                 'user' => $user,
             ]);
 
@@ -927,7 +953,7 @@ class Users extends Component
 
         if ($success) {
             // Fire an 'afterSuspendUser' event
-            $this->trigger(self::EVENT_AFTER_SUSPEND_USER, new UserEvent([
+            $this->trigger(self::EVENT_AFTER_SUSPEND_USER, new UserSuspendEvent([
                 'user' => $user
             ]));
         }
@@ -949,7 +975,7 @@ class Users extends Component
 
         try {
             // Fire a 'beforeUnsuspendUser' event
-            $event = new UserEvent([
+            $event = new UserUnsuspendEvent([
                 'user' => $user,
             ]);
 
@@ -979,7 +1005,7 @@ class Users extends Component
 
         if ($success) {
             // Fire an 'afterUnsuspendUser' event
-            $this->trigger(self::EVENT_AFTER_UNSUSPEND_USER, new UserEvent([
+            $this->trigger(self::EVENT_AFTER_UNSUSPEND_USER, new UserUnsuspendEvent([
                 'user' => $user
             ]));
         }
@@ -1211,6 +1237,105 @@ class Users extends Component
         }
     }
 
+    /**
+     * Assigns a user to a given list of user groups.
+     *
+     * @param integer       $userId   The user’s ID.
+     * @param integer|array $groupIds The groups’ IDs.
+     *
+     * @return boolean Whether the users were successfully assigned to the groups.
+     */
+    public function assignUserToGroups($userId, $groupIds = null)
+    {
+        // Make sure $groupIds is an array
+        if (!is_array($groupIds)) {
+            $groupIds = $groupIds ? [$groupIds] : [];
+        }
+
+        // Fire a 'beforeAssignUserToGroups' event
+        $event = new UserGroupsAssignEvent([
+            'userId' => $userId,
+            'groupIds' => $groupIds
+        ]);
+
+        $this->trigger(self::EVENT_BEFORE_ASSIGN_USER_TO_GROUPS, $event);
+
+        if ($event->isValid) {
+            // Delete their existing groups
+            Craft::$app->getDb()->createCommand()
+                ->delete('{{%usergroups_users}}', ['userId' => $userId])
+                ->execute();
+
+            if ($groupIds) {
+                // Add the new ones
+                $values = [];
+                foreach ($groupIds as $groupId) {
+                    $values[] = [$groupId, $userId];
+                }
+
+                Craft::$app->getDb()->createCommand()
+                    ->batchInsert(
+                        '{{%usergroups_users}}',
+                        [
+                            'groupId',
+                            'userId'
+                        ],
+                        $values)
+                    ->execute();
+            }
+
+            // Fire an 'afterAssignUserToGroups' event
+            $this->trigger(self::EVENT_AFTER_ASSIGN_USER_TO_GROUPS, new UserGroupsAssignEvent([
+                'userId' => $userId,
+                'groupIds' => $groupIds
+            ]));
+
+            return true;
+        }
+
+        return false;
+    }
+
+    /**
+     * Assigns a user to the default user group.
+     *
+     * This method is called toward the end of a public registration request.
+     *
+     * @param User $user The user that was just registered.
+     *
+     * @return boolean Whether the user was assigned to the default group.
+     */
+    public function assignUserToDefaultGroup(User $user)
+    {
+        $defaultGroupId = Craft::$app->getSystemSettings()->getSetting('users', 'defaultGroup');
+
+        if ($defaultGroupId) {
+            // Fire a 'beforeAssignUserToDefaultGroup' event
+            $event = new UserAssignEvent([
+                'user' => $user
+            ]);
+
+            $this->trigger(self::EVENT_BEFORE_ASSIGN_USER_TO_DEFAULT_GROUP, $event);
+
+            // Is the event is giving us the go-ahead?
+            if ($event->isValid) {
+                $success = $this->assignUserToGroups($user->id, [$defaultGroupId]);
+
+                if ($success) {
+                    // Fire an 'afterAssignUserToDefaultGroup' event
+                    $this->trigger(self::EVENT_AFTER_ASSIGN_USER_TO_DEFAULT_GROUP,
+                        new UserAssignEvent([
+                            'user' => $user
+                        ]));
+
+                    return true;
+                }
+            }
+        }
+
+        return false;
+    }
+
     // Private Methods
     // =========================================================================
 
@@ -1286,16 +1411,15 @@ class Users extends Component
      */
     private function _setPasswordOnUserRecord(User $user, UserRecord $userRecord, $updatePasswordResetRequired = true, $forceDifferentPassword = false)
     {
+        $isNewUser = !$user->id;
+        $validates = false;
+
         // Validate the password first
         $passwordModel = new Password();
         $passwordModel->password = $user->newPassword;
 
-        $validates = false;
-
         // If it's a new user AND we allow public registration, set it on the 'password' field and not 'newpassword'.
-        if (!$user->id && Craft::$app->getSystemSettings()->getSetting('users',
-                'allowPublicRegistration')
-        ) {
+        if ($isNewUser && Craft::$app->getSystemSettings()->getSetting('users', 'allowPublicRegistration')) {
             $passwordErrorField = 'password';
         } else {
             $passwordErrorField = 'newPassword';
@@ -1311,14 +1435,13 @@ class Users extends Component
                 } else {
                     $validates = true;
                 }
-            } else {
-                $validates = true;
             }
 
             if ($validates) {
                 // Fire a 'beforeSetPassword' event
                 $event = new UserEvent([
-                    'user' => $user
+                    'user' => $user,
+                    'isNew' => $isNewUser,
                 ]);
 
                 $this->trigger(self::EVENT_BEFORE_SET_PASSWORD, $event);
@@ -1358,7 +1481,8 @@ class Users extends Component
         if ($success) {
             // Fire an 'afterSetPassword' event
             $this->trigger(self::EVENT_AFTER_SET_PASSWORD, new UserEvent([
-                'user' => $user
+                'user' => $user,
+                'isNew' => $isNewUser
             ]));
         }
 

@@ -65,7 +65,7 @@ class User extends Element implements IdentityInterface
     const IMPERSONATE_KEY = 'Craft.UserSessionService.prevImpersonateUserId';
 
     /**
-     * @event UserEvent The event that is triggered when a user fails to log in.
+     * @event UserLoginFailureEvent The event that is triggered when a user fails to log in.
      */
     const EVENT_LOGIN_FAILURE = 'loginFailure';
 
@@ -834,7 +834,7 @@ class User extends Element implements IdentityInterface
             return true;
         }
 
-        $this->trigger(self::EVENT_LOGIN_FAILURE, new UserEvent([
+        $this->trigger(self::EVENT_LOGIN_FAILURE, new UserLoginFailureEvent([
             'user' => $this,
         ]));
 

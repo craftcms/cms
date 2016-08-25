@@ -7,24 +7,21 @@
 
 namespace craft\app\events;
 
+use craft\app\elements\GlobalSet;
+
 /**
- * Section event class.
+ * Global Set content event class.
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since  3.0
  */
-class SectionEvent extends Event
+class GlobalSetContentEvent extends Event
 {
     // Properties
     // =========================================================================
 
     /**
-     * @var \craft\app\models\Section The section model associated with the event.
+     * @var GlobalSet The global set model associated with the event.
      */
-    public $section;
-
-    /**
-     * @var boolean Whether the section is brand new
-     */
-    public $isNew;
+    public $globalSet;
 }

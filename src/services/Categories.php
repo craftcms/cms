@@ -616,7 +616,7 @@ class Categories extends Component
         }
 
         // Fire a 'beforeDeleteGroup' event
-        $event = new DeleteCategoryGroupEvent([
+        $event = new CategoryGroupDeleteEvent([
             'categoryGroup' => $group
         ]);
 
@@ -659,7 +659,7 @@ class Categories extends Component
 
             // Fire an 'afterDeleteGroup' event
             $this->trigger(self::EVENT_AFTER_DELETE_GROUP,
-                new DeleteCategoryGroupEvent([
+                new CategoryGroupDeleteEvent([
                     'categoryGroup' => $group
                 ]));
 
@@ -887,7 +887,7 @@ class Categories extends Component
             foreach ($categories as $category) {
                 // Fire an 'afterDeleteCategory' event
                 $this->trigger(self::EVENT_AFTER_DELETE_CATEGORY,
-                    new DeleteCategoryEvent([
+                    new CategoryDeleteEvent([
                         'category' => $category
                     ]));
             }
@@ -1061,7 +1061,7 @@ class Categories extends Component
 
             // Fire a 'beforeDeleteCategory' event
             $this->trigger(self::EVENT_BEFORE_DELETE_CATEGORY,
-                new DeleteCategoryEvent([
+                new CategoryDeleteEvent([
                     'category' => $category
                 ]));
 

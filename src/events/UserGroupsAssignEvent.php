@@ -7,21 +7,24 @@
 
 namespace craft\app\events;
 
-use craft\app\models\AssetTransform;
-
 /**
- * Delete asset transform event class.
+ * User Groups assign event class.
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since  3.0
  */
-class DeleteAssetTransformEvent extends Event
+class UserGroupsAssignEvent extends Event
 {
     // Properties
     // =========================================================================
 
     /**
-     * @var AssetTransform The asset transform model associated with the event.
+     * @var integer The user ID associated with this event
      */
-    public $assetTransform;
+    public $userId;
+
+    /**
+     * @var integer[] The user group IDs being assigned to the user
+     */
+    public $groupIds;
 }

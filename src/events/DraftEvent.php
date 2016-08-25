@@ -24,7 +24,7 @@ class DraftEvent extends Event
     public $draft;
 
     /**
-     * @var boolean Whether the category is brand new
+     * @var boolean Whether the draft is brand new
      */
     public $isNew;
 }

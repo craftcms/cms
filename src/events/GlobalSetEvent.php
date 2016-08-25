@@ -24,4 +24,9 @@ class GlobalSetEvent extends Event
      * @var GlobalSet The global set model associated with the event.
      */
     public $globalSet;
+
+    /**
+     * @var boolean Whether the global set is brand new
+     */
+    public $isNew;
 }

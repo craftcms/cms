@@ -7,24 +7,21 @@
 
 namespace craft\app\events;
 
+use craft\app\models\AssetTransform;
+
 /**
- * Section event class.
+ * Asset transform delete event class.
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since  3.0
  */
-class SectionEvent extends Event
+class AssetTransformDeleteEvent extends Event
 {
     // Properties
     // =========================================================================
 
     /**
-     * @var \craft\app\models\Section The section model associated with the event.
+     * @var AssetTransform The asset transform model associated with the event.
      */
-    public $section;
-
-    /**
-     * @var boolean Whether the section is brand new
-     */
-    public $isNew;
+    public $assetTransform;
 }

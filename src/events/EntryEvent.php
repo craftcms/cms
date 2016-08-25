@@ -26,7 +26,7 @@ class EntryEvent extends Event
     public $entry;
 
     /**
-     * @var boolean Whether the category group is brand new
+     * @var boolean Whether the entry is brand new
      */
     public $isNew;
 }

@@ -24,4 +24,9 @@ class VolumeEvent extends Event
      * @var VolumeInterface The asset Volume associated with the event.
      */
     public $volume;
+
+    /**
+     * @var boolean Whether the Volume is brand new
+     */
+    public $isNew;
 }

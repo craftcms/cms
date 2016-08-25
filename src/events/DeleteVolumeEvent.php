@@ -7,19 +7,22 @@
 
 namespace craft\app\events;
 
+use craft\app\base\VolumeInterface;
+
 /**
- * Delete draft event class.
+ * Delete volume event class.
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since  3.0
  */
-class DeleteDraftEvent extends Event
+class DeleteVolumeEvent extends Event
 {
     // Properties
     // =========================================================================
 
     /**
-     * @var \craft\app\models\EntryDraft The draft model associated with the event.
+     * @var VolumeInterface The asset Volume associated with the event.
      */
-    public $draft;
+    public $volume;
+
 }

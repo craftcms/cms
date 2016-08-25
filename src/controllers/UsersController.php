@@ -1006,7 +1006,7 @@ class UsersController extends Controller
             // If this is public registration, assign the user to the default user group
             if ($thisIsPublicRegistration) {
                 // Assign them to the default user group
-                Craft::$app->getUserGroups()->assignUserToDefaultGroup($user);
+                Craft::$app->getUsers()->assignUserToDefaultGroup($user);
             } else {
                 // Assign user groups and permissions if the current user is allowed to do that
                 $this->_processUserGroupsPermissions($user);
@@ -1665,7 +1665,7 @@ class UsersController extends Controller
                         }
                     }
 
-                    Craft::$app->getUserGroups()->assignUserToGroups($user->id, $groupIds);
+                    Craft::$app->getUsers()->assignUserToGroups($user->id, $groupIds);
                 }
             }
 
@@ -1718,7 +1718,7 @@ class UsersController extends Controller
         if ($userToProcess) {
             // Fire a 'beforeVerifyUser' event
             Craft::$app->getUsers()->trigger(Users::EVENT_BEFORE_VERIFY_EMAIL,
-                new UserEvent([
+                new UserTokenEvent([
                     'user' => $userToProcess
                 ]));
 
@@ -1732,7 +1732,7 @@ class UsersController extends Controller
 
         // Fire an 'afterVerifyUser' event
         Craft::$app->getUsers()->trigger(Users::EVENT_AFTER_VERIFY_EMAIL,
-            new UserEvent([
+            new UserTokenEvent([
                 'user' => $userToProcess
             ]));
 

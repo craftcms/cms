@@ -7,24 +7,21 @@
 
 namespace craft\app\events;
 
+use craft\app\models\CategoryGroup;
+
 /**
- * Section event class.
+ * Category group delete event class.
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since  3.0
  */
-class SectionEvent extends Event
+class CategoryGroupDeleteEvent extends Event
 {
     // Properties
     // =========================================================================
 
     /**
-     * @var \craft\app\models\Section The section model associated with the event.
+     * @var CategoryGroup The category group model associated with the event.
      */
-    public $section;
-
-    /**
-     * @var boolean Whether the section is brand new
-     */
-    public $isNew;
+    public $categoryGroup;
 }

@@ -8,7 +8,7 @@
 namespace craft\app\events;
 
 /**
- * Event class.
+ * Field layout Event class.
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since  3.0

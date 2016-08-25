@@ -287,7 +287,7 @@ class AssetTransforms extends Component
         $transform = $this->getTransformById($transformId);
 
         // Fire a 'beforeDeleteAssetTransform' event
-        $event = new DeleteAssetTransformEvent([
+        $event = new AssetTransformDeleteEvent([
             'assetTransform' => $transform
         ]);
 
@@ -303,7 +303,7 @@ class AssetTransforms extends Component
 
             // Fire an 'afterDeleteAssetTransform' event
             $this->trigger(self::EVENT_AFTER_DELETE_ASSET_TRANSFORM,
-                new DeleteAssetTransformEvent([
+                new AssetTransformDeleteEvent([
                     'assetTransform' => $transform
                 ]));
 

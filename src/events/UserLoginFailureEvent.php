@@ -7,21 +7,21 @@
 
 namespace craft\app\events;
 
-use craft\app\models\CategoryGroup;
+use craft\app\elements\User;
 
 /**
- * Delete category group event class.
+ * User login failure event class.
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since  3.0
  */
-class DeleteCategoryGroupEvent extends Event
+class UserLoginFailureEvent extends Event
 {
     // Properties
     // =========================================================================
 
     /**
-     * @var CategoryGroup The category group model associated with the event.
+     * @var User The user model associated with the event.
      */
-    public $categoryGroup;
+    public $user;
 }

@@ -29,14 +29,14 @@ class Globals extends Component
     // =========================================================================
 
     /**
-     * @event GlobalSetEvent The event that is triggered before a global set's content is saved.
+     * @event GlobalSetContentEvent The event that is triggered before a global set's content is saved.
      *
      * You may set [[GlobalSetEvent::isValid]] to `false` to prevent the global set's content from getting saved.
      */
     const EVENT_BEFORE_SAVE_GLOBAL_CONTENT = 'beforeSaveGlobalContent';
 
     /**
-     * @event GlobalSetEvent The event that is triggered after a global set's content is saved.
+     * @event GlobalSetContentEvent The event that is triggered after a global set's content is saved.
      */
     const EVENT_AFTER_SAVE_GLOBAL_CONTENT = 'afterSaveGlobalContent';
 
@@ -53,14 +53,14 @@ class Globals extends Component
     const EVENT_AFTER_SAVE_GLOBAL_SET = 'afterSaveGlobalSet';
 
     /**
-     * @event GlobalSetEvent The event that is triggered before a global set is deleted.
+     * @event DeleteGlobalSetEvent The event that is triggered before a global set is deleted.
      *
      * You may set [[GlobalSetEvent::isValid]] to `false` to prevent the global set from being deleted.
      */
     const EVENT_BEFORE_DELETE_GLOBAL_SET = 'beforeDeleteGlobalSet';
 
     /**
-     * @event GlobalSetEvent The event that is triggered after a global set is deleted.
+     * @event DeleteGlobalSetEvent The event that is triggered after a global set is deleted.
      */
     const EVENT_AFTER_DELETE_GLOBAL_SET = 'afterDeleteGlobalSet';
 
@@ -307,7 +307,8 @@ class Globals extends Component
             try {
                 // Fire a 'beforeSaveGlobalSet' event
                 $event = new GlobalSetEvent([
-                    'globalSet' => $globalSet
+                    'globalSet' => $globalSet,
+                    'isNew' => $isNewSet
                 ]);
 
                 $this->trigger(self::EVENT_BEFORE_SAVE_GLOBAL_SET, $event);
@@ -357,7 +358,8 @@ class Globals extends Component
                 // Fire an 'afterSaveGlobalSet' event
                 $this->trigger(self::EVENT_AFTER_SAVE_GLOBAL_SET,
                     new GlobalSetEvent([
-                        'globalSet' => $globalSet
+                        'globalSet' => $globalSet,
+                        'isNew' => $isNewSet
                     ])
                 );
             }
@@ -387,7 +389,7 @@ class Globals extends Component
             $globalSet = $this->getSetById($setId);
 
             // Fire a 'beforeDeleteGlobalSet' event
-            $event = new GlobalSetEvent([
+            $event = new DeleteGlobalSetEvent([
                 'globalSet' => $globalSet
             ]);
 
@@ -421,7 +423,7 @@ class Globals extends Component
         if ($success) {
             // Fire an 'afterDeleteGlobalSet' event
             $this->trigger(self::EVENT_AFTER_DELETE_GLOBAL_SET,
-                new GlobalSetEvent([
+                new DeleteGlobalSetEvent([
                     'globalSet' => $globalSet
                 ])
             );
@@ -444,7 +446,7 @@ class Globals extends Component
 
         try {
             // Fire a 'beforeSaveGlobalContent' event
-            $event = new GlobalSetEvent([
+            $event = new GlobalSetContentEvent([
                 'globalSet' => $globalSet
             ]);
 
@@ -476,7 +478,7 @@ class Globals extends Component
         if ($success) {
             // Fire an 'afterSaveGlobalContent' event
             $this->trigger(self::EVENT_AFTER_SAVE_GLOBAL_CONTENT,
-                new GlobalSetEvent([
+                new GlobalSetContentEvent([
                     'globalSet' => $globalSet
                 ])
             );

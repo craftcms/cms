@@ -8,23 +8,18 @@
 namespace craft\app\events;
 
 /**
- * Assign User Groups event class.
+ * Delete section event class.
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since  3.0
  */
-class AssignUserGroupsEvent extends Event
+class DeleteSectionEvent extends Event
 {
     // Properties
     // =========================================================================
 
     /**
-     * @var integer The user ID associated with this event
+     * @var \craft\app\models\Section The section model associated with the event.
      */
-    public $userId;
-
-    /**
-     * @var integer[] The user group IDs being assigned to the user
-     */
-    public $groupIds;
+    public $section;
 }

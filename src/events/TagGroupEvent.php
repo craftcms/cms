@@ -24,4 +24,9 @@ class TagGroupEvent extends Event
      * @var TagGroup The tag group model associated with the event.
      */
     public $tagGroup;
+
+    /**
+     * @var boolean Whether the tag group is brand new
+     */
+    public $isNew;
 }

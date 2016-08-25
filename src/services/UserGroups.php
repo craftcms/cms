@@ -9,10 +9,7 @@ namespace craft\app\services;
 
 use Craft;
 use craft\app\db\Query;
-use craft\app\elements\User;
 use craft\app\errors\UserGroupNotFoundException;
-use craft\app\events\AssignUserGroupsEvent;
-use craft\app\events\UserEvent;
 use craft\app\events\UserGroupEvent;
 use craft\app\models\UserGroup;
 use craft\app\records\UserGroup as UserGroupRecord;
@@ -32,31 +29,6 @@ class UserGroups extends Component
 {
     // Constants
     // =========================================================================
-
-    /**
-     * @event AssignUserGroupEvent The event that is triggered before a user is assigned to some user groups.
-     *
-     * You may set [[AssignUserGroupEvent::isValid]] to `false` to prevent the user from getting assigned to the groups.
-     */
-    const EVENT_BEFORE_ASSIGN_USER_TO_GROUPS = 'beforeAssignUserToGroups';
-
-    /**
-     * @event AssignUserGroupEvent The event that is triggered after a user is assigned to some user groups.
-     */
-    const EVENT_AFTER_ASSIGN_USER_TO_GROUPS = 'afterAssignUserToGroups';
-
-    /**
-     * @event UserEvent The event that is triggered before a user is assigned to the default user group.
-     *
-     * You may set [[UserEvent::isValid]] to `false` to prevent the user from getting assigned to the default
-     * user group.
-     */
-    const EVENT_BEFORE_ASSIGN_USER_TO_DEFAULT_GROUP = 'beforeAssignUserToDefaultGroup';
-
-    /**
-     * @event UserEvent The event that is triggered after a user is assigned to the default user group.
-     */
-    const EVENT_AFTER_ASSIGN_USER_TO_DEFAULT_GROUP = 'afterAssignUserToDefaultGroup';
 
     /**
      * @event UserGroupEvent The event that is triggered before a user group is saved.
@@ -213,105 +185,6 @@ class UserGroups extends Component
         }
 
         return $success;
-    }
-
-    /**
-     * Assigns a user to a given list of user groups.
-     *
-     * @param integer       $userId   The user’s ID.
-     * @param integer|array $groupIds The groups’ IDs.
-     *
-     * @return boolean Whether the users were successfully assigned to the groups.
-     */
-    public function assignUserToGroups($userId, $groupIds = null)
-    {
-        // Make sure $groupIds is an array
-        if (!is_array($groupIds)) {
-            $groupIds = $groupIds ? [$groupIds] : [];
-        }
-
-        // Fire a 'beforeAssignUserToGroups' event
-        $event = new AssignUserGroupsEvent([
-            'userId' => $userId,
-            'groupIds' => $groupIds
-        ]);
-
-        $this->trigger(self::EVENT_BEFORE_ASSIGN_USER_TO_GROUPS, $event);
-
-        if ($event->isValid) {
-            // Delete their existing groups
-            Craft::$app->getDb()->createCommand()
-                ->delete('{{%usergroups_users}}', ['userId' => $userId])
-                ->execute();
-
-            if ($groupIds) {
-                // Add the new ones
-                $values = [];
-                foreach ($groupIds as $groupId) {
-                    $values[] = [$groupId, $userId];
-                }
-
-                Craft::$app->getDb()->createCommand()
-                    ->batchInsert(
-                        '{{%usergroups_users}}',
-                        [
-                            'groupId',
-                            'userId'
-                        ],
-                        $values)
-                    ->execute();
-            }
-
-            // Fire an 'afterAssignUserToGroups' event
-            $this->trigger(self::EVENT_AFTER_ASSIGN_USER_TO_GROUPS, new AssignUserGroupsEvent([
-                'userId' => $userId,
-                'groupIds' => $groupIds
-            ]));
-
-            return true;
-        }
-
-        return false;
-    }
-
-    /**
-     * Assigns a user to the default user group.
-     *
-     * This method is called toward the end of a public registration request.
-     *
-     * @param User $user The user that was just registered.
-     *
-     * @return boolean Whether the user was assigned to the default group.
-     */
-    public function assignUserToDefaultGroup(User $user)
-    {
-        $defaultGroupId = Craft::$app->getSystemSettings()->getSetting('users', 'defaultGroup');
-
-        if ($defaultGroupId) {
-            // Fire a 'beforeAssignUserToDefaultGroup' event
-            $event = new UserEvent([
-                'user' => $user
-            ]);
-
-            $this->trigger(self::EVENT_BEFORE_ASSIGN_USER_TO_DEFAULT_GROUP, $event);
-
-            // Is the event is giving us the go-ahead?
-            if ($event->isValid) {
-                $success = $this->assignUserToGroups($user->id, [$defaultGroupId]);
-
-                if ($success) {
-                    // Fire an 'afterAssignUserToDefaultGroup' event
-                    $this->trigger(self::EVENT_AFTER_ASSIGN_USER_TO_DEFAULT_GROUP,
-                        new UserEvent([
-                            'user' => $user
-                        ]));
-
-                    return true;
-                }
-            }
-        }
-
-        return false;
     }
 
     /**

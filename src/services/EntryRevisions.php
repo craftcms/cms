@@ -11,9 +11,8 @@ use Craft;
 use craft\app\base\Field;
 use craft\app\db\Query;
 use craft\app\errors\EntryDraftNotFoundException;
-use craft\app\events\DeleteDraftEvent;
+use craft\app\events\EntryDraftDeleteEvent;
 use craft\app\events\DraftEvent;
-use craft\app\events\EntryEvent;
 use craft\app\events\PublishDraftEvent;
 use craft\app\helpers\ArrayHelper;
 use craft\app\helpers\Json;
@@ -298,7 +297,7 @@ class EntryRevisions extends Component
 
         try {
             // Fire a 'beforeDeleteDraft' event
-            $event = new DeleteDraftEvent([
+            $event = new EntryDraftDeleteEvent([
                 'draft' => $draft
             ]);
 
@@ -325,7 +324,7 @@ class EntryRevisions extends Component
 
         if ($success) {
             // Fire an 'afterDeleteDraft' event
-            $this->trigger(self::EVENT_AFTER_DELETE_DRAFT, new DeleteDraftEvent([
+            $this->trigger(self::EVENT_AFTER_DELETE_DRAFT, new EntryDraftDeleteEvent([
                 'draft' => $draft
             ]));
         }

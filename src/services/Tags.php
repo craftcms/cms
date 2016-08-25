@@ -57,14 +57,14 @@ class Tags extends Component
     const EVENT_AFTER_SAVE_GROUP = 'afterSaveGroup';
 
     /**
-     * @event TagEvent The event that is triggered before a tag group is deleted.
+     * @event DeleteTagGroupEvent The event that is triggered before a tag group is deleted.
      *
      * You may set [[TagEvent::isValid]] to `false` to prevent the tag group from being deleted.
      */
     const EVENT_BEFORE_DELETE_GROUP = 'beforeDeleteGroup';
 
     /**
-     * @event TagEvent The event that is triggered after a tag group is deleted.
+     * @event DeleteTagGroupEvent The event that is triggered after a tag group is deleted.
      */
     const EVENT_AFTER_DELETE_GROUP = 'afterDeleteGroup';
 
@@ -242,7 +242,8 @@ class Tags extends Component
         if (!$tagGroup->hasErrors()) {
             // Fire a 'beforeSaveGroup' event
             $event = new TagGroupEvent([
-                'tagGroup' => $tagGroup
+                'tagGroup' => $tagGroup,
+                'isNew' => $isNewTagGroup
             ]);
 
             $this->trigger(self::EVENT_BEFORE_SAVE_GROUP, $event);
@@ -292,7 +293,8 @@ class Tags extends Component
             if ($success) {
                 // Fire an 'afterSaveGroup' event
                 $this->trigger(self::EVENT_AFTER_SAVE_GROUP, new TagGroupEvent([
-                    'tagGroup' => $tagGroup
+                    'tagGroup' => $tagGroup,
+                    'isNew' => $isNewTagGroup,
                 ]));
             }
         }
@@ -321,7 +323,7 @@ class Tags extends Component
         }
 
         // Fire a 'beforeDeleteGroup' event
-        $event = new TagGroupEvent([
+        $event = new DeleteTagGroupEvent([
             'tagGroup' => $tagGroup
         ]);
 
@@ -369,7 +371,7 @@ class Tags extends Component
 
         if ($success) {
             // Fire an 'afterSaveGroup' event
-            $this->trigger(self::EVENT_AFTER_DELETE_GROUP, new TagGroupEvent([
+            $this->trigger(self::EVENT_AFTER_DELETE_GROUP, new DeleteTagGroupEvent([
                 'tagGroup' => $tagGroup
             ]));
         }
@@ -431,7 +433,8 @@ class Tags extends Component
         try {
             // Fire a 'beforeSaveTag' event
             $event = new TagEvent([
-                'tag' => $tag
+                'tag' => $tag,
+                'isNew' => $isNewTag
             ]);
 
             $this->trigger(self::EVENT_BEFORE_SAVE_TAG, $event);
@@ -469,7 +472,8 @@ class Tags extends Component
         if ($success) {
             // Fire an 'afterSaveTag' event
             $this->trigger(self::EVENT_AFTER_SAVE_TAG, new TagEvent([
-                'tag' => $tag
+                'tag' => $tag,
+                'isNew' => $isNewTag
             ]));
         }
 

@@ -8,23 +8,18 @@
 namespace craft\app\events;
 
 /**
- * Section event class.
+ * Elements delete event class.
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since  3.0
  */
-class SectionEvent extends Event
+class ElementsDeleteEvent extends Event
 {
     // Properties
     // =========================================================================
 
     /**
-     * @var \craft\app\models\Section The section model associated with the event.
+     * @var array The element IDs associated with this event.
      */
-    public $section;
-
-    /**
-     * @var boolean Whether the section is brand new
-     */
-    public $isNew;
+    public $elementIds;
 }

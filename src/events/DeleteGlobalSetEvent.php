@@ -7,21 +7,21 @@
 
 namespace craft\app\events;
 
-use craft\app\elements\Category;
+use craft\app\elements\GlobalSet;
 
 /**
- * Delete category event class.
+ * Delete Global Set content event class.
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since  3.0
  */
-class DeleteCategoryEvent extends Event
+class DeleteGlobalSetEvent extends Event
 {
     // Properties
     // =========================================================================
 
     /**
-     * @var Category The category model associated with the event.
+     * @var GlobalSet The global set model associated with the event.
      */
-    public $category;
+    public $globalSet;
 }

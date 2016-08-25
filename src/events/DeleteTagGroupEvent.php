@@ -7,24 +7,21 @@
 
 namespace craft\app\events;
 
+use craft\app\models\TagGroup;
+
 /**
- * Section event class.
+ * Delete Tag group event class.
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since  3.0
  */
-class SectionEvent extends Event
+class DeleteTagGroupEvent extends Event
 {
     // Properties
     // =========================================================================
 
     /**
-     * @var \craft\app\models\Section The section model associated with the event.
+     * @var TagGroup The tag group model associated with the event.
      */
-    public $section;
-
-    /**
-     * @var boolean Whether the section is brand new
-     */
-    public $isNew;
+    public $tagGroup;
 }

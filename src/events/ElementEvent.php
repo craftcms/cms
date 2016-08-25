@@ -26,7 +26,7 @@ class ElementEvent extends Event
     public $element;
 
     /**
-     * @var boolean Whether the category group is brand new
+     * @var boolean Whether the element is brand new
      */
     public $isNew;
 }

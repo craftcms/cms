@@ -52,14 +52,14 @@ class Sections extends Component
     const EVENT_AFTER_SAVE_SECTION = 'afterSaveSection';
 
     /**
-     * @event SectionEvent The event that is triggered before a section is deleted.
+     * @event DeleteSectionEvent The event that is triggered before a section is deleted.
      *
      * You may set [[SectionEvent::isValid]] to `false` to prevent the section from getting deleted.
      */
     const EVENT_BEFORE_DELETE_SECTION = 'beforeDeleteSection';
 
     /**
-     * @event SectionEvent The event that is triggered after a section is deleted.
+     * @event DeleteSectionEvent The event that is triggered after a section is deleted.
      */
     const EVENT_AFTER_DELETE_SECTION = 'afterDeleteSection';
 
@@ -475,7 +475,8 @@ class Sections extends Component
             try {
                 // Fire a 'beforeSaveSection' event
                 $event = new SectionEvent([
-                    'section' => $section
+                    'section' => $section,
+                    'isNew' => $isNewSection
                 ]);
 
                 $this->trigger(self::EVENT_BEFORE_SAVE_SECTION, $event);
@@ -787,7 +788,8 @@ class Sections extends Component
         if ($success) {
             // Fire an 'afterSaveSection' event
             $this->trigger(self::EVENT_AFTER_SAVE_SECTION, new SectionEvent([
-                'section' => $section
+                'section' => $section,
+                'isNew' => $isNewSection
             ]));
         }
 
@@ -815,7 +817,7 @@ class Sections extends Component
         }
 
         // Fire a 'beforeDeleteSection' event
-        $event = new SectionEvent([
+        $event = new DeleteSectionEvent([
             'section' => $section
         ]);
 
@@ -876,7 +878,7 @@ class Sections extends Component
 
             // Fire an 'afterDeleteSection' event
             $this->trigger(self::EVENT_AFTER_DELETE_SECTION,
-                new SectionEvent([
+                new DeleteSectionEvent([
                     'section' => $section
                 ]));
 
@@ -1196,11 +1198,11 @@ class Sections extends Component
 
                 // Delete the entry type.
                 if (is_array($entryTypeId)) {
-                    $affectedRows = Craft::$app->getDb()->createCommand()
+                    Craft::$app->getDb()->createCommand()
                         ->delete('{{%entrytypes}}', ['in', 'id', $entryTypeId])
                         ->execute();
                 } else {
-                    $affectedRows = Craft::$app->getDb()->createCommand()
+                    Craft::$app->getDb()->createCommand()
                         ->delete('{{%entrytypes}}', ['id' => $entryTypeId])
                         ->execute();
                 }

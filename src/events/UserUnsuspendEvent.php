@@ -7,19 +7,21 @@
 
 namespace craft\app\events;
 
+use craft\app\elements\User;
+
 /**
- * Delete Elements event class.
+ * User unsuspend event class.
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since  3.0
  */
-class DeleteElementsEvent extends Event
+class UserUnsuspendEvent extends Event
 {
     // Properties
     // =========================================================================
 
     /**
-     * @var array The element IDs associated with this event.
+     * @var User The user model associated with the event.
      */
-    public $elementIds;
+    public $user;
 }
