@@ -1,3 +1,4 @@
+{%- set labelId = (labelId is defined ? labelId : (id is defined ? id~'-label' : null)) %}
 {%- set fieldId = (fieldId is defined ? fieldId : (id is defined ? id~'-field' : null)) %}
 {%- set label = (label is defined and label != '__blank__' ? label : null) %}
 {%- set locale = ((craft.isLocalized() and locale is defined) ? locale : null) %}
@@ -16,7 +17,7 @@
 	{% if label or instructions %}
 		<div class="heading">
 			{% if label %}
-				<label{% if required is defined and required %} class="required"{% endif %}{% if id is defined and id %} for="{{ id }}"{% endif %}>
+				<label {% if labelId %} id="{{ labelId }}"{% endif %}{% if required is defined and required %} class="required"{% endif %}{% if id is defined and id %} for="{{ id }}"{% endif %}>
 					{{- label|raw -}}
 					{%- if locale -%}
 						<span class="locale">{{ locale }}</span>
