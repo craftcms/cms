@@ -11,7 +11,7 @@ use Craft;
 use craft\app\db\Query;
 use craft\app\errors\EntryNotFoundException;
 use craft\app\errors\SectionNotFoundException;
-use craft\app\events\DeleteEntryEvent;
+use craft\app\events\EntryDeleteEvent;
 use craft\app\events\EntryEvent;
 use craft\app\helpers\DateTimeHelper;
 use craft\app\elements\Entry;
@@ -320,7 +320,7 @@ class Entries extends Component
 
             foreach ($entries as $entry) {
                 // Fire a 'beforeDeleteEntry' event
-                $event = new DeleteEntryEvent([
+                $event = new EntryDeleteEvent([
                     'entry' => $entry
                 ]);
 
@@ -360,7 +360,7 @@ class Entries extends Component
             foreach ($entries as $entry) {
                 // Fire an 'afterDeleteEntry' event
                 $this->trigger(self::EVENT_AFTER_DELETE_ENTRY,
-                    new DeleteEntryEvent([
+                    new EntryDeleteEvent([
                         'entry' => $entry
                     ]));
             }

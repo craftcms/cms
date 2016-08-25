@@ -8,18 +8,18 @@
 namespace craft\app\events;
 
 /**
- * Delete entry type event class.
+ * Locale delete event class.
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since  3.0
  */
-class DeleteEntryTypeEvent extends Event
+class LocaleDeleteEvent extends LocaleEvent
 {
     // Properties
     // =========================================================================
 
     /**
-     * @var \craft\app\models\EntryType The entry type model associated with the event.
+     * @var string|null The locale ID that the old locale's exclusive content should be transferred to.
      */
-    public $entryType;
+    public $transferContentTo;
 }

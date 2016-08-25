@@ -9,7 +9,7 @@ namespace craft\app\i18n;
 
 use Craft;
 use craft\app\db\Query;
-use craft\app\events\DeleteLocaleEvent;
+use craft\app\events\LocaleDeleteEvent;
 use craft\app\events\LocaleEvent;
 use craft\app\helpers\Io;
 use craft\app\tasks\ResaveAllElements;
@@ -32,14 +32,14 @@ class I18N extends \yii\i18n\I18N
     const EVENT_AFTER_ADD_LOCALE = 'afterAddLocale';
 
     /**
-     * @event DeleteLocaleEvent The event that is triggered before a locale is deleted.
+     * @event LocaleDeleteEvent The event that is triggered before a locale is deleted.
      *
-     * You may set [[DeleteLocaleEvent::isValid]] to `false` to prevent the locale from getting deleted.
+     * You may set [[LocaleDeleteEvent::isValid]] to `false` to prevent the locale from getting deleted.
      */
     const EVENT_BEFORE_DELETE_LOCALE = 'beforeDeleteLocale';
 
     /**
-     * @event DeleteLocaleEvent The event that is triggered after a locale is deleted.
+     * @event LocaleDeleteEvent The event that is triggered after a locale is deleted.
      */
     const EVENT_AFTER_DELETE_LOCALE = 'afterDeleteLocale';
 
@@ -452,7 +452,7 @@ class I18N extends \yii\i18n\I18N
 
         try {
             // Fire a 'beforeDeleteLocale' event
-            $event = new DeleteLocaleEvent([
+            $event = new LocaleDeleteEvent([
                 'localeId' => $localeId,
                 'transferContentTo' => $transferContentTo
             ]);
@@ -695,7 +695,7 @@ class I18N extends \yii\i18n\I18N
         if ($success) {
             // Fire an 'afterDeleteLocale' event
             $this->trigger(self::EVENT_AFTER_DELETE_LOCALE,
-                new DeleteLocaleEvent([
+                new LocaleDeleteEvent([
                     'localeId' => $localeId,
                     'transferContentTo' => $transferContentTo
                 ]));

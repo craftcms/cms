@@ -12,7 +12,7 @@ use craft\app\db\Query;
 use craft\app\elements\Entry;
 use craft\app\errors\EntryTypeNotFoundException;
 use craft\app\errors\SectionNotFoundException;
-use craft\app\events\DeleteEntryTypeEvent;
+use craft\app\events\EntryTypeDeleteEvent;
 use craft\app\events\DeleteSectionEvent;
 use craft\app\events\EntryTypeEvent;
 use craft\app\events\SectionEvent;
@@ -78,14 +78,14 @@ class Sections extends Component
     const EVENT_AFTER_SAVE_ENTRY_TYPE = 'afterSaveEntryType';
 
     /**
-     * @event DeleteEntryTypeEvent The event that is triggered before an entry type is deleted.
+     * @event EntryTypeDeleteEvent The event that is triggered before an entry type is deleted.
      *
-     * You may set [[EntryTypeEvent::isValid]] to `false` to prevent the entry type from getting deleted.
+     * You may set [[EntryTypeDeleteEvent::isValid]] to `false` to prevent the entry type from getting deleted.
      */
     const EVENT_BEFORE_DELETE_ENTRY_TYPE = 'beforeDeleteEntryType';
 
     /**
-     * @event DeleteEntryTypeEvent The event that is triggered after an entry type is deleted.
+     * @event EntryTypeDeleteEvent The event that is triggered after an entry type is deleted.
      */
     const EVENT_AFTER_DELETE_ENTRY_TYPE = 'afterDeleteEntryType';
 
@@ -1156,7 +1156,7 @@ class Sections extends Component
         $entryType = $this->getEntryTypeById($entryTypeId);
 
         // Fire a 'beforeSaveEntryType' event
-        $event = new DeleteEntryTypeEvent([
+        $event = new EntryTypeDeleteEvent([
             'entryType' => $entryType,
         ]);
 

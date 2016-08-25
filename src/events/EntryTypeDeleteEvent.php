@@ -7,21 +7,19 @@
 
 namespace craft\app\events;
 
-use craft\app\elements\Entry;
-
 /**
- * Delete entry event class.
+ * Entry type delete event class.
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since  3.0
  */
-class DeleteEntryEvent extends Event
+class EntryTypeDeleteEvent extends Event
 {
     // Properties
     // =========================================================================
 
     /**
-     * @var Entry The entry model associated with the event.
+     * @var \craft\app\models\EntryType The entry type model associated with the event.
      */
-    public $entry;
+    public $entryType;
 }
