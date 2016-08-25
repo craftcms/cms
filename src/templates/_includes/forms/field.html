@@ -16,7 +16,7 @@
 	{% if label or instructions %}
 		<div class="heading">
 			{% if label %}
-				<label{% if required is defined and required %} class="required"{% endif %}{% if id is defined and id %} for="{{ id }}"{% endif %}>
+				<label {% if labelId is defined %} id="{{ labelId }}"{% endif %}{% if required is defined and required %} class="required"{% endif %}{% if id is defined and id %} for="{{ id }}"{% endif %}>
 					{{- label|raw -}}
 					{%- if locale -%}
 						<span class="locale">{{ locale }}</span>
