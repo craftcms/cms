@@ -69,9 +69,13 @@ class LightswitchFieldType extends BaseFieldType implements IPreviewableFieldTyp
 			$value = $this->getSettings()->default;
 		}
 
+		$id = craft()->templates->formatInputId($name);
+
 		return craft()->templates->render('_includes/forms/lightswitch', array(
-			'name'  => $name,
-			'on'    => (bool) $value,
+			'id'      => $id,
+			'labelId' => $id.'-label',
+			'name'    => $name,
+			'on'      => (bool) $value,
 		));
 	}
 
