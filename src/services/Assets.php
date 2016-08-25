@@ -91,14 +91,14 @@ class Assets extends Component
     const EVENT_AFTER_REPLACE_ASSET = 'afterReplaceFile';
 
     /**
-     * @event AssetEvent.php The event that is triggered before an asset is deleted.
+     * @event AssetEvent The event that is triggered before an asset is deleted.
      *
      * You may set [[AssetEvent::isValid]] to `false` to prevent the asset from being deleted.
      */
     const EVENT_BEFORE_DELETE_ASSET = 'beforeDeleteAsset';
 
     /**
-     * @event AssetEvent.php The event that is triggered after an asset is deleted.
+     * @event AssetEvent The event that is triggered after an asset is deleted.
      */
     const EVENT_AFTER_DELETE_ASSET = 'afterDeleteAsset';
 
