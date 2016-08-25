@@ -20,5 +20,5 @@
 
 
 {% includejs %}
-	new Craft.Updater('{{ handle }}', {{ craft.request.getSegment(1) == 'manualupdate' ? 1 : 0 }});
+	new Craft.Updater('{{ handle|hash }}', {{ craft.request.getSegment(1) == 'manualupdate' ? 1|hash : 0|hash }});
 {% endincludejs %}
