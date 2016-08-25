@@ -74,7 +74,7 @@ class AppAsset extends AssetBundle
             'lib/fileupload/jquery.fileupload.js',
             'lib/picturefill'.($useCompressedJs ? '.min' : '').'.js',
             'lib/element-resize-detector'.($useCompressedJs ? '.min' : '').'.js',
-            'lib/garnish-0.1'.($useCompressedJs ? '.min' : '').'.js',
+            'lib/garnish-0.1.1'.($useCompressedJs ? '.min' : '').'.js',
             'js/'.($useCompressedJs ? 'compressed/' : '').'Craft.js',
         ]);
     }
