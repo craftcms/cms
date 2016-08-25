@@ -200,6 +200,9 @@
 
 
 {% macro lightswitchField(config) %}
+	{% if config.labelId is not defined or not config.labelId %}
+		{% set config = config|merge({ labelId: 'label'~random() }) %}
+	{% endif %}
 	{{ _self.field(config, _self.lightswitch(config)) }}
 {% endmacro %}
 

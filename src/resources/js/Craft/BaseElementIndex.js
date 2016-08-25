@@ -721,11 +721,13 @@ Craft.BaseElementIndex = Garnish.Base.extend(
 				{
 					this.$selectAllCheckbox.removeClass('indeterminate');
 					this.$selectAllCheckbox.addClass('checked');
+					this.$selectAllBtn.attr('aria-checked', 'true');
 				}
 				else
 				{
 					this.$selectAllCheckbox.addClass('indeterminate');
 					this.$selectAllCheckbox.removeClass('checked');
+					this.$selectAllBtn.attr('aria-checked', 'false');
 				}
 
 				this.showActionTriggers();
@@ -733,6 +735,7 @@ Craft.BaseElementIndex = Garnish.Base.extend(
 			else
 			{
 				this.$selectAllCheckbox.removeClass('indeterminate checked');
+				this.$selectAllBtn.attr('aria-checked', 'false');
 				this.hideActionTriggers();
 			}
 		}
@@ -1536,6 +1539,12 @@ Craft.BaseElementIndex = Garnish.Base.extend(
 				this.$selectAllBtn = $('<div class="btn"/>').appendTo(this.$selectAllContainer);
 				this.$selectAllCheckbox = $('<div class="checkbox"/>').appendTo(this.$selectAllBtn);
 
+				this.$selectAllBtn.attr({
+					'role': 'checkbox',
+					'tabindex': '0',
+					'aria-checked': 'false',
+				});
+
 				this.addListener(this.$selectAllBtn, 'click', function()
 				{
 					if (this.view.getSelectedElements().length == 0)
@@ -1547,11 +1556,23 @@ Craft.BaseElementIndex = Garnish.Base.extend(
 						this.view.deselectAllElements();
 					}
 				});
+
+				this.addListener(this.$selectAllBtn, 'keydown', function(ev)
+				{
+					if(ev.keyCode == Garnish.SPACE_KEY)
+					{
+						ev.preventDefault();
+
+						$(ev.currentTarget).trigger('click');
+					}
+				});
 			}
 			else
 			{
 				// Reset the select all button
 				this.$selectAllCheckbox.removeClass('indeterminate checked');
+
+				this.$selectAllBtn.attr('aria-checked', 'false');
 			}
 
 			// Place the select all button at the beginning of the toolbar
