@@ -274,13 +274,15 @@ abstract class Field extends SavableComponent implements FieldInterface
     public function modifyElementsQuery(ElementQueryInterface $query, $value)
     {
         if ($value !== null) {
-            if (static::hasContentColumn()) {
-                $handle = $this->handle;
-                /** @var ElementQuery $query */
-                $query->subQuery->andWhere(Db::parseParam('content.'.Craft::$app->getContent()->fieldColumnPrefix.$handle, $value, $query->subQuery->params));
+            // If the field type doesn't have a content column, it *must* override this method
+            // if it wants to support a custom query criteria attribute
+            if (!static::hasContentColumn()) {
+                return false;
             }
 
-            return false;
+            $handle = $this->handle;
+            /** @var ElementQuery $query */
+            $query->subQuery->andWhere(Db::parseParam('content.'.Craft::$app->getContent()->fieldColumnPrefix.$handle, $value, $query->subQuery->params));
         }
 
         return null;
