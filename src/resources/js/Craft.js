@@ -1,4 +1,4 @@
-/*! Craft 3.0.0 - 2016-08-20 */
+/*! Craft 3.0.0 - 2016-08-25 */
 (function($){
 
 // Set all the standard Craft.* stuff
@@ -2384,11 +2384,13 @@ Craft.BaseElementIndex = Garnish.Base.extend(
 				{
 					this.$selectAllCheckbox.removeClass('indeterminate');
 					this.$selectAllCheckbox.addClass('checked');
+					this.$selectAllBtn.attr('aria-checked', 'true');
 				}
 				else
 				{
 					this.$selectAllCheckbox.addClass('indeterminate');
 					this.$selectAllCheckbox.removeClass('checked');
+					this.$selectAllBtn.attr('aria-checked', 'false');
 				}
 
 				this.showActionTriggers();
@@ -2396,6 +2398,7 @@ Craft.BaseElementIndex = Garnish.Base.extend(
 			else
 			{
 				this.$selectAllCheckbox.removeClass('indeterminate checked');
+				this.$selectAllBtn.attr('aria-checked', 'false');
 				this.hideActionTriggers();
 			}
 		}
@@ -3199,6 +3202,12 @@ Craft.BaseElementIndex = Garnish.Base.extend(
 				this.$selectAllBtn = $('<div class="btn"/>').appendTo(this.$selectAllContainer);
 				this.$selectAllCheckbox = $('<div class="checkbox"/>').appendTo(this.$selectAllBtn);
 
+				this.$selectAllBtn.attr({
+					'role': 'checkbox',
+					'tabindex': '0',
+					'aria-checked': 'false',
+				});
+
 				this.addListener(this.$selectAllBtn, 'click', function()
 				{
 					if (this.view.getSelectedElements().length == 0)
@@ -3210,11 +3219,23 @@ Craft.BaseElementIndex = Garnish.Base.extend(
 						this.view.deselectAllElements();
 					}
 				});
+
+				this.addListener(this.$selectAllBtn, 'keydown', function(ev)
+				{
+					if(ev.keyCode == Garnish.SPACE_KEY)
+					{
+						ev.preventDefault();
+
+						$(ev.currentTarget).trigger('click');
+					}
+				});
 			}
 			else
 			{
 				// Reset the select all button
 				this.$selectAllCheckbox.removeClass('indeterminate checked');
+
+				this.$selectAllBtn.attr('aria-checked', 'false');
 			}
 
 			// Place the select all button at the beginning of the toolbar
@@ -13891,6 +13912,11 @@ Craft.LightSwitch = Garnish.Base.extend(
 
 		this.on = this.$outerContainer.hasClass('on');
 
+		this.$outerContainer.attr({
+			'role': 'checkbox',
+			'aria-checked': (this.on ? 'true' : 'false'),
+		});
+
 		this.addListener(this.$outerContainer, 'mousedown', '_onMouseDown');
 		this.addListener(this.$outerContainer, 'keydown', '_onKeyDown');
 
@@ -13913,6 +13939,7 @@ Craft.LightSwitch = Garnish.Base.extend(
 
 		this.$input.val(this.settings.value);
 		this.$outerContainer.addClass('on');
+		this.$outerContainer.attr('aria-checked', 'true');
 		this.on = true;
 		this.onChange();
 	},
@@ -13927,6 +13954,7 @@ Craft.LightSwitch = Garnish.Base.extend(
 
 		this.$input.val('');
 		this.$outerContainer.removeClass('on');
+		this.$outerContainer.attr('aria-checked', 'false');
 		this.on = false;
 		this.onChange();
 	},
