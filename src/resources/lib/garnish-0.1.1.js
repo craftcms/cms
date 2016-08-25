@@ -3,8 +3,8 @@
  *
  * @copyright 2013 Pixel & Tonic, Inc.. All rights reserved.
  * @author    Brandon Kelly <brandon@pixelandtonic.com>
- * @version   0.1
- * @license   THIS IS NO F.O.S.S!
+ * @version   0.1.1
+ * @license   MIT
  */
 (function($){
 
@@ -3541,213 +3541,6 @@ Garnish.HUD = Garnish.Base.extend({
 });
 
 /**
- * Light Switch
- */
-Garnish.LightSwitch = Garnish.Base.extend({
-
-	settings: null,
-	$outerContainer: null,
-	$innerContainer: null,
-	$input: null,
-	$toggleTarget: null,
-	on: null,
-	dragger: null,
-
-	dragStartMargin: null,
-
-	init: function(outerContainer, settings)
-	{
-		this.$outerContainer = $(outerContainer);
-
-		// Is this already a switch?
-		if (this.$outerContainer.data('lightswitch'))
-		{
-			Garnish.log('Double-instantiating a switch on an element');
-			this.$outerContainer.data('lightswitch').destroy();
-		}
-
-		this.$outerContainer.data('lightswitch', this);
-
-		this.setSettings(settings, Garnish.LightSwitch.defaults);
-
-		this.$innerContainer = this.$outerContainer.find('.container:first');
-		this.$input = this.$outerContainer.find('input:first');
-		this.$toggleTarget = $(this.$outerContainer.attr('data-toggle'));
-
-		this.on = this.$outerContainer.hasClass('on');
-
-		this.addListener(this.$outerContainer, 'mousedown', '_handleMouseDown');
-		this.addListener(this.$outerContainer, 'keydown', '_handleKeyDown');
-
-		this.dragger = new Garnish.BaseDrag(this.$outerContainer, {
-			axis:                 Garnish.X_AXIS,
-			ignoreHandleSelector: null,
-			onDragStart:          $.proxy(this, '_handleDragStart'),
-			onDrag:               $.proxy(this, '_handleDrag'),
-			onDragStop:           $.proxy(this, '_handleDragStop')
-		});
-	},
-
-	turnOn: function()
-	{
-		this.$innerContainer.velocity('stop').velocity({marginLeft: 0}, Garnish.FX_DURATION);
-		this.$input.val(Garnish.Y_AXIS);
-		this.on = true;
-		this.onChange();
-
-		this.$toggleTarget.show();
-		this.$toggleTarget.height('auto');
-		var height = this.$toggleTarget.height();
-		this.$toggleTarget.height(0);
-		this.$toggleTarget.velocity('stop').velocity({height: height}, Garnish.FX_DURATION, $.proxy(function() {
-			this.$toggleTarget.height('auto');
-		}, this));
-	},
-
-	turnOff: function()
-	{
-		this.$innerContainer.velocity('stop').velocity({marginLeft: Garnish.LightSwitch.offMargin}, Garnish.FX_DURATION);
-		this.$input.val('');
-		this.on = false;
-		this.onChange();
-
-		this.$toggleTarget.velocity('stop').velocity({height: 0}, Garnish.FX_DURATION);
-	},
-
-	toggle: function(ev)
-	{
-		if (!this.on)
-		{
-			this.turnOn();
-		}
-		else
-		{
-			this.turnOff();
-		}
-	},
-
-	onChange: function()
-	{
-		this.trigger('change');
-		this.settings.onChange();
-		this.$outerContainer.trigger('change');
-	},
-
-	_handleMouseDown: function()
-	{
-		this.addListener(Garnish.$doc, 'mouseup', '_handleMouseUp')
-	},
-
-	_handleMouseUp: function()
-	{
-		this.removeListener(Garnish.$doc, 'mouseup');
-
-		// Was this a click?
-		if (!this.dragger.dragging)
-			this.toggle();
-	},
-
-	_handleKeyDown: function(ev)
-	{
-		switch (ev.keyCode)
-		{
-			case Garnish.SPACE_KEY:
-			{
-				this.toggle();
-				ev.preventDefault();
-				break;
-			}
-
-			case Garnish.RIGHT_KEY:
-			{
-				if (Garnish.ltr)
-				{
-					this.turnOn();
-				}
-				else
-				{
-					this.turnOff();
-				}
-
-				ev.preventDefault();
-				break;
-			}
-
-			case Garnish.LEFT_KEY:
-			{
-				if (Garnish.ltr)
-				{
-					this.turnOff();
-				}
-				else
-				{
-					this.turnOn();
-				}
-
-				ev.preventDefault();
-				break;
-			}
-		}
-	},
-
-	_getMargin: function()
-	{
-		return parseInt(this.$innerContainer.css('marginLeft'))
-	},
-
-	_handleDragStart: function()
-	{
-		this.dragStartMargin = this._getMargin();
-	},
-
-	_handleDrag: function()
-	{
-		var margin = this.dragStartMargin + this.dragger.mouseDistX;
-
-		if (margin < Garnish.LightSwitch.offMargin)
-		{
-			margin = Garnish.LightSwitch.offMargin;
-		}
-		else if (margin > 0)
-		{
-			margin = 0;
-		}
-
-		this.$innerContainer.css('marginLeft', margin);
-	},
-
-	_handleDragStop: function()
-	{
-		var margin = this._getMargin();
-
-		if (margin > -16)
-		{
-			this.turnOn();
-		}
-		else
-		{
-			this.turnOff();
-		}
-	},
-
-	/**
-	 * Destroy
-	 */
-	destroy: function()
-	{
-		this.$outerContainer.removeData('lightswitch');
-		this.dragger.destroy();
-		this.base();
-	}
-},
-{
-	offMargin: -50,
-	defaults: {
-		onChange: $.noop
-	}
-});
-
-/**
  * Menu
  */
 Garnish.Menu = Garnish.Base.extend({
@@ -3757,6 +3550,8 @@ Garnish.Menu = Garnish.Base.extend({
 	$container: null,
 	$options: null,
 	$anchor: null,
+
+	menuId: null,
 
 	_windowWidth: null,
 	_windowHeight: null,
@@ -3780,8 +3575,18 @@ Garnish.Menu = Garnish.Base.extend({
 		this.setSettings(settings, Garnish.Menu.defaults);
 
 		this.$container = $(container);
+
 		this.$options = $();
 		this.addOptions(this.$container.find('a'));
+
+		// Menu List
+		this.menuId = 'menu' + this._namespace;
+		this.$menuList = $('ul', this.$container);
+		this.$menuList.attr({
+			'role': 'listbox',
+			'id': this.menuId,
+			'aria-hidden': 'true'
+		});
 
 		// Deprecated
 		if (this.settings.attachToElement)
@@ -3806,6 +3611,16 @@ Garnish.Menu = Garnish.Base.extend({
 	{
 		this.$options = this.$options.add($options);
 		$options.data('menu', this);
+
+		$options.each($.proxy(function(optionKey, option)
+		{
+			$(option).attr({
+				'role':'option',
+				'tabindex':'-1',
+				'id': this.menuId+'-option-'+optionKey
+			});
+		}, this));
+
 		this.addListener($options, 'click', 'selectOption');
 	},
 
@@ -3898,11 +3713,15 @@ Garnish.Menu = Garnish.Base.extend({
 			display: 'block'
 		});
 
+		this.$menuList.attr('aria-hidden', 'false');
+
 		Garnish.escManager.register(this, 'hide');
 	},
 
 	hide: function()
 	{
+		this.$menuList.attr('aria-hidden', 'true');
+
 		this.$container.velocity('fadeOut', { duration: Garnish.FX_DURATION }, $.proxy(function()
 		{
 			this.$container.detach();
@@ -3996,10 +3815,170 @@ Garnish.MenuBtn = Garnish.Base.extend({
 			onOptionSelect: $.proxy(this, 'onOptionSelect')
 		});
 
-		this.menu.on('hide', $.proxy(this, 'onMenuHide'));
+		this.$btn.attr({
+			'tabindex': 0,
+			'role': 'combobox',
+			'aria-owns': this.menu.menuId,
+			'aria-haspopup': 'true',
+			'aria-expanded': 'false',
+		});
 
+		this.menu.on('hide', $.proxy(this, 'onMenuHide'));
 		this.addListener(this.$btn, 'mousedown', 'onMouseDown');
+		this.addListener(this.$btn, 'keydown', 'onKeyDown');
+		this.addListener(this.$btn, 'blur', 'onBlur');
 		this.enable();
+	},
+
+	onBlur: function(ev)
+	{
+		if (this.showingMenu)
+		{
+			this.hideMenu();
+		}
+	},
+
+	onKeyDown: function(ev)
+	{
+		switch (ev.keyCode)
+		{
+			case Garnish.RETURN_KEY:
+			{
+				ev.preventDefault();
+
+				var $currentOption = this.menu.$options.filter('.hover');
+
+				if($currentOption.length > 0)
+				{
+					$currentOption.get(0).click();
+				}
+
+				break;
+			}
+
+			case Garnish.SPACE_KEY:
+			{
+				ev.preventDefault();
+
+				if(!this.showingMenu)
+				{
+					this.showMenu();
+					
+					var $option = this.menu.$options.filter('.sel:first');
+
+					if($option.length > 0)
+					{
+						$option;
+					}
+					else
+					{
+						$option = this.menu.$options.first();
+					}
+
+					this.focusOption($option);
+				}
+
+				break;
+			}
+
+			case Garnish.DOWN_KEY:
+			{
+				ev.preventDefault();
+
+				var $option;
+
+				if(this.showingMenu)
+				{
+					$.each(this.menu.$options, $.proxy(function(index, value)
+					{
+						if(!$option)
+						{
+							if($(value).hasClass('hover'))
+							{
+								if((index + 1) < this.menu.$options.length)
+								{
+									$option = $(this.menu.$options[(index + 1)]);
+								}
+							}
+						}
+					}, this));
+
+					if(!$option)
+					{
+						$option = $(this.menu.$options[0]);
+					}
+				}
+				else
+				{
+					this.showMenu();
+
+					$option = this.menu.$options.filter('.sel:first');
+
+					if($option.length == 0)
+					{
+						$option = this.menu.$options.first();
+					}
+				}
+
+				this.focusOption($option);
+
+				break;
+			}
+
+			case Garnish.UP_KEY:
+			{
+				ev.preventDefault();
+
+				var $option;
+
+				if(this.showingMenu)
+				{
+					$.each(this.menu.$options, $.proxy(function(index, value)
+					{
+						if(!$option)
+						{
+							if($(value).hasClass('hover'))
+							{
+								if((index - 1) >= 0)
+								{
+									$option = $(this.menu.$options[(index - 1)]);
+								}
+							}
+						}
+					}, this));
+
+					if(!$option)
+					{
+						$option = $(this.menu.$options[(this.menu.$options.length - 1)]);
+					}
+				}
+				else
+				{
+					this.showMenu();
+
+					$option = this.menu.$options.filter('.sel:first');
+
+					if($option.length == 0)
+					{
+						$option = this.menu.$options.last();
+					}
+				}
+
+				this.focusOption($option);
+
+				break;
+			}
+		}
+	},
+
+	focusOption: function($option)
+	{
+		this.menu.$options.removeClass('hover');
+
+		$option.addClass('hover');
+
+		this.menu.$menuList.attr('aria-activedescendant', $option.attr('id'));
+		this.$btn.attr('aria-activedescendant', $option.attr('id'));
 	},
 
 	onMouseDown: function(ev)
@@ -4030,6 +4009,9 @@ Garnish.MenuBtn = Garnish.Base.extend({
 
 		this.menu.show();
 		this.$btn.addClass('active');
+		this.$btn.trigger('focus');
+		this.$btn.attr('aria-expanded', 'true');
+
 		this.showingMenu = true;
 
 		setTimeout($.proxy(function() {
@@ -4040,6 +4022,7 @@ Garnish.MenuBtn = Garnish.Base.extend({
 	hideMenu: function()
 	{
 		this.menu.hide();
+		this.$btn.attr('aria-expanded', 'false');
 	},
 
 	onMenuHide: function()
@@ -5128,13 +5111,19 @@ Garnish.NiceText = Garnish.Base.extend({
 			val = val.replace(/</g, '&lt;');
 			val = val.replace(/>/g, '&gt;');
 
-			// Spaces
-			val = val.replace(/ /g, '&nbsp;');
+			// Multiple spaces
+			val = val.replace(/ {2,}/g, function(spaces) {
+				// TODO: replace with String.repeat() when more broadly available?
+				var replace = '';
+				for (var i = 0; i < spaces.length - 1; i++) {
+					replace += '&nbsp;';
+				}
+				return replace+' ';
+			});
 
 			// Line breaks
 			val = val.replace(/[\n\r]$/g, '');
 			val = val.replace(/[\n\r]/g, '<br/>');
-			val += '<br/>&nbsp;';
 		}
 
 		this.$stage.html(val);
@@ -5172,7 +5161,7 @@ Garnish.NiceText = Garnish.Base.extend({
 
 	updateHeightIfWidthChanged: function()
 	{
-		if (this.width !== (this.width = this.$input.width()) && this.width)
+		if (this.isVisible() && this.width !== (this.width = this.$input.width()) && this.width)
 		{
 			this.updateHeight();
 		}
