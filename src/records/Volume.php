@@ -77,7 +77,7 @@ class Volume extends ActiveRecord
     }
 
     /**
-     * Returns the asset source’s fieldLayout.
+     * Returns the asset volume’s fieldLayout.
      *
      * @return ActiveQueryInterface The relational query object.
      */

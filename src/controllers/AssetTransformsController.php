@@ -80,7 +80,7 @@ class AssetTransformsController extends Controller
     }
 
     /**
-     * Saves an asset source.
+     * Saves an asset transform.
      *
      * @return Response|null
      */

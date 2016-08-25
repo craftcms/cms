@@ -64,7 +64,7 @@ class SystemSettingsController extends Controller
     {
         $tools = [];
 
-        // Only include the Update Asset Indexes tool if there are any asset sources
+        // Only include the Update Asset Indexes tool if there are any asset volumes
         if (count(Craft::$app->getVolumes()->getAllVolumes()) !== 0) {
             $tools[] = new AssetIndex();
         }

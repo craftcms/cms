@@ -69,7 +69,7 @@ class Assets extends BaseRelationField
     public $useSingleFolder;
 
     /**
-     * @var integer The asset source ID that files should be uploaded to by default (only used if [[useSingleFolder]] is false)
+     * @var integer The asset volume ID that files should be uploaded to by default (only used if [[useSingleFolder]] is false)
      */
     public $defaultUploadLocationSource;
 
@@ -79,7 +79,7 @@ class Assets extends BaseRelationField
     public $defaultUploadLocationSubpath;
 
     /**
-     * @var integer The asset source ID that files should be restricted to (only used if [[useSingleFolder]] is true)
+     * @var integer The asset volume ID that files should be restricted to (only used if [[useSingleFolder]] is true)
      */
     public $singleUploadLocationSource;
 
