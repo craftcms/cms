@@ -3,7 +3,6 @@ namespace craft\app\services;
 
 use Craft;
 use craft\app\base\Volume;
-use craft\app\base\VolumeInterface;
 use craft\app\dates\DateTime;
 use craft\app\db\Query;
 use craft\app\elements\Asset;
@@ -14,7 +13,6 @@ use craft\app\helpers\Io;
 use craft\app\helpers\StringHelper;
 use craft\app\models\AssetIndexData;
 use craft\app\records\AssetIndexData as AssetIndexDataRecord;
-use craft\app\records\VolumeFolder;
 use yii\base\Component;
 
 /**

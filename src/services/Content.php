@@ -13,7 +13,7 @@ use craft\app\base\ElementInterface;
 use craft\app\base\Field;
 use craft\app\base\FieldInterface;
 use craft\app\db\Query;
-use craft\app\events\ElementEvent;
+use craft\app\events\ElementContentEvent;
 use craft\app\models\FieldLayout;
 use yii\base\Component;
 use yii\base\Exception;

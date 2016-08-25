@@ -18,7 +18,7 @@ use craft\app\elements\actions\SuspendUsers;
 use craft\app\elements\actions\UnsuspendUsers;
 use craft\app\elements\db\ElementQueryInterface;
 use craft\app\elements\db\UserQuery;
-use craft\app\events\UserEvent;
+use craft\app\events\UserLoginFailureEvent;
 use craft\app\helpers\DateTimeHelper;
 use craft\app\helpers\Html;
 use craft\app\helpers\Url;

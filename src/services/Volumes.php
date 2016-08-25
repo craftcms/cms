@@ -7,6 +7,7 @@ use craft\app\base\VolumeInterface;
 use craft\app\db\Query;
 use craft\app\errors\VolumeException;
 use craft\app\errors\MissingComponentException;
+use craft\app\events\DeleteVolumeEvent;
 use craft\app\events\VolumeEvent;
 use craft\app\helpers\Component as ComponentHelper;
 use craft\app\records\Volume as AssetVolumeRecord;

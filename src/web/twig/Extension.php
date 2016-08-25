@@ -558,6 +558,8 @@ class Extension extends \Twig_Extension
     /**
      * Returns a redirect input wrapped in a \Twig_Markup object.
      *
+     * @param string $url The URL to redirect to.
+     *
      * @return \Twig_Markup
      */
     public function redirectInputFunction($url)

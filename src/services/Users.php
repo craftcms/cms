@@ -16,8 +16,13 @@ use craft\app\errors\ImageException;
 use craft\app\errors\UserNotFoundException;
 use craft\app\errors\VolumeException;
 use craft\app\events\DeleteUserEvent;
+use craft\app\events\UserActivateEvent;
+use craft\app\events\UserAssignGroupEvent;
 use craft\app\events\UserEvent;
 use craft\app\events\UserGroupsAssignEvent;
+use craft\app\events\UserSuspendEvent;
+use craft\app\events\UserUnlockEvent;
+use craft\app\events\UserUnsuspendEvent;
 use craft\app\helpers\Assets as AssetsHelper;
 use craft\app\helpers\DateTimeHelper;
 use craft\app\helpers\Db;
@@ -1311,7 +1316,7 @@ class Users extends Component
 
         if ($defaultGroupId) {
             // Fire a 'beforeAssignUserToDefaultGroup' event
-            $event = new UserAssignEvent([
+            $event = new UserAssignGroupEvent([
                 'user' => $user
             ]);
 
@@ -1324,7 +1329,7 @@ class Users extends Component
                 if ($success) {
                     // Fire an 'afterAssignUserToDefaultGroup' event
                     $this->trigger(self::EVENT_AFTER_ASSIGN_USER_TO_DEFAULT_GROUP,
-                        new UserAssignEvent([
+                        new UserAssignGroupEvent([
                             'user' => $user
                         ]));
 

@@ -8,15 +8,13 @@
 namespace craft\app\controllers;
 
 use Craft;
-use craft\app\elements\Asset;
 use craft\app\errors\SendEmailException;
 use craft\app\errors\UploadFailedException;
-use craft\app\events\UserEvent;
+use craft\app\events\UserTokenEvent;
 use craft\app\helpers\Assets;
 use craft\app\helpers\Image;
 use craft\app\helpers\Io;
 use craft\app\helpers\Json;
-use craft\app\helpers\StringHelper;
 use craft\app\helpers\Url;
 use craft\app\elements\User;
 use craft\app\services\Users;
@@ -1081,7 +1079,7 @@ class UsersController extends Controller
     /**
      * Upload a user photo.
      *
-     * @return Response
+     * @return Response|null
      * @throws BadRequestHttpException if the uploaded file is not an image
      */
     public function actionUploadUserPhoto()
@@ -1124,6 +1122,8 @@ class UsersController extends Controller
             return $this->asErrorJson(Craft::t('app',
                 'There was an error uploading your photo: {error}', ['error' => $exception->getMessage()]));
         }
+
+        return null;
     }
 
     /**

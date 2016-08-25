@@ -10,6 +10,8 @@ namespace craft\app\services;
 use Craft;
 use craft\app\db\Query;
 use craft\app\errors\GlobalSetNotFoundException;
+use craft\app\events\DeleteGlobalSetEvent;
+use craft\app\events\GlobalSetContentEvent;
 use craft\app\events\GlobalSetEvent;
 use craft\app\elements\GlobalSet;
 use craft\app\records\GlobalSet as GlobalSetRecord;

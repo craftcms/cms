@@ -14,6 +14,7 @@ use craft\app\errors\EntryDraftNotFoundException;
 use craft\app\events\EntryDraftDeleteEvent;
 use craft\app\events\DraftEvent;
 use craft\app\events\PublishDraftEvent;
+use craft\app\events\RevertEntryEvent;
 use craft\app\helpers\ArrayHelper;
 use craft\app\helpers\Json;
 use craft\app\elements\Entry;

@@ -11,6 +11,7 @@ use Craft;
 use craft\app\db\Query;
 use craft\app\errors\TagGroupNotFoundException;
 use craft\app\errors\TagNotFoundException;
+use craft\app\events\DeleteTagGroupEvent;
 use craft\app\events\TagEvent;
 use craft\app\elements\Tag;
 use craft\app\events\TagGroupEvent;

@@ -12,6 +12,7 @@ use craft\app\db\Query;
 use craft\app\dates\DateTime;
 use craft\app\elements\Asset;
 use craft\app\errors\VolumeObjectExistsException;
+use craft\app\events\AssetTransformDeleteEvent;
 use craft\app\events\AssetTransformEvent;
 use craft\app\helpers\Assets as AssetsHelper;
 use craft\app\helpers\Db;

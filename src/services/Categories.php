@@ -11,8 +11,10 @@ use Craft;
 use craft\app\db\Query;
 use craft\app\errors\CategoryGroupNotFoundException;
 use craft\app\errors\CategoryNotFoundException;
+use craft\app\events\CategoryDeleteEvent;
 use craft\app\events\CategoryEvent;
 use craft\app\elements\Category;
+use craft\app\events\CategoryGroupDeleteEvent;
 use craft\app\events\CategoryGroupEvent;
 use craft\app\models\CategoryGroup;
 use craft\app\models\CategoryGroupLocale;
@@ -22,7 +24,6 @@ use craft\app\records\Category as CategoryRecord;
 use craft\app\records\CategoryGroup as CategoryGroupRecord;
 use craft\app\records\CategoryGroupLocale as CategoryGroupLocaleRecord;
 use yii\base\Component;
-use yii\base\Exception;
 
 /**
  * Class Categories service.

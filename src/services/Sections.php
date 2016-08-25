@@ -12,6 +12,8 @@ use craft\app\db\Query;
 use craft\app\elements\Entry;
 use craft\app\errors\EntryTypeNotFoundException;
 use craft\app\errors\SectionNotFoundException;
+use craft\app\events\DeleteEntryTypeEvent;
+use craft\app\events\DeleteSectionEvent;
 use craft\app\events\EntryTypeEvent;
 use craft\app\events\SectionEvent;
 use craft\app\helpers\ArrayHelper;
@@ -1223,6 +1225,8 @@ class Sections extends Component
                     'entryType' => $entryType,
                 ]));
         }
+
+        return $success;
     }
 
     // Helpers
