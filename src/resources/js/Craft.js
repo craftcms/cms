@@ -2390,7 +2390,7 @@ Craft.BaseElementIndex = Garnish.Base.extend(
 				{
 					this.$selectAllCheckbox.addClass('indeterminate');
 					this.$selectAllCheckbox.removeClass('checked');
-					this.$selectAllBtn.attr('aria-checked', 'false');
+					this.$selectAllBtn.attr('aria-checked', 'mixed');
 				}
 
 				this.showActionTriggers();
@@ -17491,7 +17491,7 @@ Craft.ui =
 
         var $field = $('<div/>', {
             'class': 'field',
-            id: (config.id ? config.id+'-field' : null)
+            'id': config.fieldId || (config.id ? config.id+'-field' : null)
         });
 
         if (config.first) $field.addClass('first');
@@ -17503,6 +17503,7 @@ Craft.ui =
             if (label)
             {
                 var $label = $('<label/>', {
+                    'id': config.labelId || (config.id ? config.id+'-label' : null),
                     'class': (config.required ? 'required' : null),
                     'for': config.id,
                     text: label
