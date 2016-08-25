@@ -76,8 +76,12 @@ class Lightswitch extends Field implements PreviewableFieldInterface
             $value = $this->default;
         }
 
+        $id = Craft::$app->getView()->formatInputId($this->handle);
+
         return Craft::$app->getView()->renderTemplate('_includes/forms/lightswitch',
             [
+                'id' => $id,
+                'labelId' => $id.'-label',
                 'name' => $this->handle,
                 'on' => (bool)$value,
             ]);

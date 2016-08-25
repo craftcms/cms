@@ -727,7 +727,7 @@ Craft.BaseElementIndex = Garnish.Base.extend(
 				{
 					this.$selectAllCheckbox.addClass('indeterminate');
 					this.$selectAllCheckbox.removeClass('checked');
-					this.$selectAllBtn.attr('aria-checked', 'false');
+					this.$selectAllBtn.attr('aria-checked', 'mixed');
 				}
 
 				this.showActionTriggers();
