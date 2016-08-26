@@ -80,6 +80,8 @@ Craft.EditableTable = Garnish.Base.extend(
 			rowHtml = this.getRowHtml(rowId, this.columns, this.baseName, {}),
 			$tr = $(rowHtml).appendTo(this.$tbody);
 
+		$tr.find('.lightswitch').lightswitch();
+
 		new Craft.EditableTable.Row(this, $tr);
 		this.sorter.addItems($tr);
 
@@ -175,6 +177,16 @@ Craft.EditableTable = Garnish.Base.extend(
 				{
 					rowHtml += '<input type="hidden" name="'+name+'">' +
 					           '<input type="checkbox" name="'+name+'" value="1"'+(value ? ' checked' : '')+'>';
+
+					break;
+				}
+
+				case 'lightswitch':
+				{
+					rowHtml += Craft.ui.createLightswitch({
+						name: name,
+						value: value
+					}).prop('outerHTML');
 
 					break;
 				}
