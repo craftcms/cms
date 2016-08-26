@@ -107,6 +107,7 @@ class Table extends Field
                     'multiline' => Craft::t('app', 'Multi-line text'),
                     'number' => Craft::t('app', 'Number'),
                     'checkbox' => Craft::t('app', 'Checkbox'),
+                    'lightswitch' => Craft::t('app', 'Lightswitch'),
                 ]
             ],
         ];
