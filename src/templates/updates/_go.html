@@ -18,7 +18,6 @@
 	<div id="status">{{ "Preparing to update…"|t }}</div>
 {% endblock %}
 
-
 {% includejs %}
-	new Craft.Updater('{{ handle|hash }}', {{ craft.request.getSegment(1) == 'manualupdate' ? 1|hash : 0|hash }});
+	new Craft.Updater('{{ handle|hash }}', {{ craft.request.getSegment(1) == 'manualupdate' ? 1 : 0 }});
 {% endincludejs %}
