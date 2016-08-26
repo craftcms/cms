@@ -1,4 +1,4 @@
-/*! Craft 3.0.0 - 2016-08-25 */
+/*! Craft 3.0.0 - 2016-08-26 */
 (function($){
 
 // Set all the standard Craft.* stuff
@@ -10770,6 +10770,8 @@ Craft.EditableTable = Garnish.Base.extend(
 			rowHtml = this.getRowHtml(rowId, this.columns, this.baseName, {}),
 			$tr = $(rowHtml).appendTo(this.$tbody);
 
+		$tr.find('.lightswitch').lightswitch();
+
 		new Craft.EditableTable.Row(this, $tr);
 		this.sorter.addItems($tr);
 
@@ -10865,6 +10867,16 @@ Craft.EditableTable = Garnish.Base.extend(
 				{
 					rowHtml += '<input type="hidden" name="'+name+'">' +
 					           '<input type="checkbox" name="'+name+'" value="1"'+(value ? ' checked' : '')+'>';
+
+					break;
+				}
+
+				case 'lightswitch':
+				{
+					rowHtml += Craft.ui.createLightswitch({
+						name: name,
+						value: value
+					}).prop('outerHTML');
 
 					break;
 				}
@@ -17482,6 +17494,61 @@ Craft.ui =
     createCheckboxSelectField: function(config)
     {
         return this.createField(this.createCheckboxSelect(config), config);
+    },
+
+    createLightswitch: function(config)
+    {
+        var value = config.value || '1';
+
+        var $container = $('<div/>', {
+            'class': 'lightswitch',
+            tabindex: '0',
+            'data-value': value,
+            id: config.id,
+            'aria-labelledby': config.labelId,
+            'data-target': config.toggle,
+            'data-reverse-target': config.reverseToggle
+        });
+
+        if (config.on) {
+            $container.addClass('on');
+        }
+
+        if (config.small) {
+            $container.addClass('small');
+        }
+
+        if (config.toggle || config.reverseToggle) {
+            $container.addClass('fieldtoggle');
+        }
+
+        if (config.disabled) {
+            $container.addClass('disabled');
+        }
+
+        $(
+            '<div class="lightswitch-container">' +
+                '<div class="label on"></div>' +
+                '<div class="handle"></div>' +
+                '<div class="label off"></div>' +
+            '</div>'
+        ).appendTo($container);
+
+        if (config.name) {
+            $('<input/>', {
+                type: 'hidden',
+                name: config.name,
+                value: (config.on ? value : ''),
+                disabled: config.disabled
+            }).appendTo($container);
+        }
+
+        return $container.lightswitch();
+    },
+
+    createLightswitchField: function(config)
+    {
+        return this.createField(this.createLightswitch(config), config);
     },
 
     createField: function(input, config)
