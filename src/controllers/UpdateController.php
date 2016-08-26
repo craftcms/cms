@@ -199,7 +199,7 @@ class UpdateController extends BaseController
 		}
 		else
 		{
-			$data['md5'] = $return['md5'];
+			$data['md5'] = craft()->security->hashData($return['md5']);
 			$this->returnJson(array('alive' => true, 'nextStatus' => Craft::t('Downloading update…'), 'nextAction' => 'update/processDownload', 'data' => $data));
 		}
 
@@ -209,6 +209,7 @@ class UpdateController extends BaseController
 	 * Called during an auto-update.
 	 *
 	 * @return null
+	 * @throws Exception
 	 */
 	public function actionProcessDownload()
 	{
@@ -226,8 +227,14 @@ class UpdateController extends BaseController
 		$data = craft()->request->getRequiredPost('data');
 		$handle = $this->_getFixedHandle($data);
 
+		if (!craft()->security->validateData($data['md5']))
+		{
+			throw new Exception('Could not validate MD5.');
+		}
+
 		$return = craft()->updates->processUpdateDownload($data['md5'], $handle);
 		$return['handle'] = $handle;
+		$return['uid'] = craft()->security->hashData($return['uid']);
 
 		if (!$return['success'])
 		{
@@ -260,6 +267,11 @@ class UpdateController extends BaseController
 		$data = craft()->request->getRequiredPost('data');
 		$handle = $this->_getFixedHandle($data);
 
+		if (!craft()->security->validateData($data['uid']))
+		{
+			throw new Exception('Could not validate UID');
+		}
+
 		$return = craft()->updates->backupFiles($data['uid'], $handle);
 		$return['handle'] = $handle;
 
@@ -291,6 +303,11 @@ class UpdateController extends BaseController
 
 		$data = craft()->request->getRequiredPost('data');
 		$handle = $this->_getFixedHandle($data);
+
+		if (!craft()->security->validateData($data['uid']))
+		{
+			throw new Exception('Could not validate UID');
+		}
 
 		$return = craft()->updates->updateFiles($data['uid'], $handle);
 		$return['handle'] = $handle;
@@ -333,7 +350,7 @@ class UpdateController extends BaseController
 
 				if (isset($return['dbBackupPath']))
 				{
-					$data['dbBackupPath'] = $return['dbBackupPath'];
+					$data['dbBackupPath'] = craft()->security->hashData($return['dbBackupPath']);
 				}
 			}
 		}
@@ -355,14 +372,7 @@ class UpdateController extends BaseController
 
 		$handle = $this->_getFixedHandle($data);
 
-		if (isset($data['dbBackupPath']))
-		{
-			$return = craft()->updates->updateDatabase($handle);
-		}
-		else
-		{
-			$return = craft()->updates->updateDatabase($handle);
-		}
+		$return = craft()->updates->updateDatabase($handle);
 
 		$return['handle'] = $handle;
 
@@ -394,6 +404,11 @@ class UpdateController extends BaseController
 		}
 		else
 		{
+			if (!craft()->security->validateData($data['uid']))
+			{
+				throw new Exception(('Could not validate UID'));
+			}
+
 			$uid = $data['uid'];
 		}
 
@@ -444,11 +459,21 @@ class UpdateController extends BaseController
 		}
 		else
 		{
+			if (!craft()->security->validateData($data['uid']))
+			{
+				throw new Exception(('Could not validate UID'));
+			}
+
 			$uid = $data['uid'];
 		}
 
 		if (isset($data['dbBackupPath']))
 		{
+			if (!craft()->security->validateData($data['dbBackupPath']))
+			{
+				throw new Exception('Could not validate database backup path.');
+			}
+
 			$return = craft()->updates->rollbackUpdate($uid, $handle, $data['dbBackupPath']);
 		}
 		else
@@ -472,9 +497,15 @@ class UpdateController extends BaseController
 	 * @param $data
 	 *
 	 * @return bool
+	 * @throws Exception
 	 */
 	private function _isManualUpdate($data)
 	{
+		if (isset($data['manualUpdate']) && !craft()->security->validateData('manualUpdate'))
+		{
+			throw new Exception('Could not validate manualUpdate check.');
+		}
+
 		if (isset($data['manualUpdate']) && $data['manualUpdate'] == 1)
 		{
 			return true;
@@ -487,6 +518,7 @@ class UpdateController extends BaseController
 	 * @param $data
 	 *
 	 * @return string
+	 * @throws Exception
 	 */
 	private function _getFixedHandle($data)
 	{
@@ -496,7 +528,12 @@ class UpdateController extends BaseController
 		}
 		else
 		{
-			return $data['handle'];
+			if (craft()->security->validateData($data['handle']))
+			{
+				return $data['handle'];
+			}
+
+			throw new Exception('Could not validate update handle.');
 		}
 	}
 }
