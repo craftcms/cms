@@ -57,6 +57,7 @@
 	{%- endif %}
 {% endset %}
 
+{% hook "cp.users.edit" %}
 
 {% block main %}
 	<div class="grid" data-max-cols="3">
@@ -309,9 +310,12 @@
 						</div>
 					{% endif %}
 				</form>
-			</div>
+
+				{# Give plugins a chance to add other panes here #}
+				{% hook "cp.users.edit.right-pane" %}
+			</div><!--/item-->
 		{% endif %}
-	</div>
+	</div><!--/grid-->
 {% endblock %}
 
 {% includejs %}

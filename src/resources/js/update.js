@@ -8,21 +8,18 @@ Craft.Updater = Garnish.Base.extend(
 	$errorDetails: null,
 	data: null,
 
-	init: function(handle, manualUpdate)
+	init: function(data)
 	{
 		this.$graphic = $('#graphic');
 		this.$status = $('#status');
 
-		if (!handle)
+		if (!data || !data.handle)
 		{
 			this.showError(Craft.t('Unable to determine what to update.'));
 			return;
 		}
 
-		this.data = {
-			handle: handle,
-			manualUpdate: manualUpdate
-		};
+		this.data = data;
 
 		this.postActionRequest('update/prepare');
 	},
