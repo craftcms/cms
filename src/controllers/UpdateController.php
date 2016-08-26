@@ -501,11 +501,6 @@ class UpdateController extends BaseController
 	 */
 	private function _isManualUpdate($data)
 	{
-		if (isset($data['manualUpdate']) && !craft()->security->validateData('manualUpdate'))
-		{
-			throw new Exception('Could not validate manualUpdate check.');
-		}
-
 		if (isset($data['manualUpdate']) && $data['manualUpdate'] == 1)
 		{
 			return true;
