@@ -173,6 +173,61 @@ Craft.ui =
         return this.createField(this.createCheckboxSelect(config), config);
     },
 
+    createLightswitch: function(config)
+    {
+        var value = config.value || '1';
+
+        var $container = $('<div/>', {
+            'class': 'lightswitch',
+            tabindex: '0',
+            'data-value': value,
+            id: config.id,
+            'aria-labelledby': config.labelId,
+            'data-target': config.toggle,
+            'data-reverse-target': config.reverseToggle
+        });
+
+        if (config.on) {
+            $container.addClass('on');
+        }
+
+        if (config.small) {
+            $container.addClass('small');
+        }
+
+        if (config.toggle || config.reverseToggle) {
+            $container.addClass('fieldtoggle');
+        }
+
+        if (config.disabled) {
+            $container.addClass('disabled');
+        }
+
+        $(
+            '<div class="lightswitch-container">' +
+                '<div class="label on"></div>' +
+                '<div class="handle"></div>' +
+                '<div class="label off"></div>' +
+            '</div>'
+        ).appendTo($container);
+
+        if (config.name) {
+            $('<input/>', {
+                type: 'hidden',
+                name: config.name,
+                value: (config.on ? value : ''),
+                disabled: config.disabled
+            }).appendTo($container);
+        }
+
+        return $container.lightswitch();
+    },
+
+    createLightswitchField: function(config)
+    {
+        return this.createField(this.createLightswitch(config), config);
+    },
+
     createField: function(input, config)
     {
         var label = (config.label && config.label != '__blank__' ? config.label : null),
