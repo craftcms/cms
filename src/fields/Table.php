@@ -89,12 +89,12 @@ class Table extends Field
             ],
             'handle' => [
                 'heading' => Craft::t('app', 'Handle'),
-                'class' => 'code',
+                'code' => true,
                 'type' => 'singleline'
             ],
             'width' => [
                 'heading' => Craft::t('app', 'Width'),
-                'class' => 'code',
+                'code' => true,
                 'type' => 'singleline',
                 'width' => 50
             ],
