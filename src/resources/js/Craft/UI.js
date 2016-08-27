@@ -10,7 +10,6 @@ Craft.ui =
             name: config.name,
             value: config.value,
             maxlength: config.maxlength,
-            'data-show-chars-left': config.showCharsLeft,
             autofocus: this.getAutofocusValue(config.autofocus),
             autocomplete: (typeof config.autocomplete === typeof undefined || !config.autocomplete ? 'off' : null),
             disabled: this.getDisabledValue(config.disabled),
@@ -27,7 +26,9 @@ Craft.ui =
 
         if (config.showCharsLeft && config.maxlength)
         {
-            $input.css('padding-'+(Craft.orientation == 'ltr' ? 'right' : 'left'), (7.2*config.maxlength.toString().length+14)+'px');
+        	$input
+				.attr('data-show-chars-left')
+            	.css('padding-'+(Craft.orientation == 'ltr' ? 'right' : 'left'), (7.2*config.maxlength.toString().length+14)+'px');
         }
 
         if (config.placeholder || config.showCharsLeft)
@@ -48,6 +49,99 @@ Craft.ui =
     createTextField: function(config)
     {
         return this.createField(this.createTextInput(config), config);
+    },
+
+    createTextarea: function(config)
+    {
+        var $textarea = $('<textarea/>', {
+            'class': 'text',
+            'rows': config.rows || 2,
+            'cols': config.cols || 50,
+            'id': config.id,
+            'name': config.name,
+            'maxlength': config.maxlength,
+            'autofocus': config.autofocus && !Garnish.isMobileBrowser(true),
+            'disabled': !!config.disabled,
+            'placeholder': config.placeholder,
+            'html': config.value
+        });
+
+		if (config.showCharsLeft) {
+			$textarea.attr('data-show-chars-left', '');
+		}
+
+        if (config.class) {
+            $textarea.addClass(config.class);
+        }
+
+        if (!config.size) {
+            $textarea.addClass('fullwidth');
+        }
+
+        return $textarea;
+    },
+
+    createTextareaField: function(config)
+    {
+        return this.createField(this.createTextarea(config), config);
+    },
+
+    createSelect: function(config)
+    {
+        var $container = $('<div/>', {
+            'class': 'select'
+        });
+
+        if (config.class) {
+            $container.addClass(config.class);
+        }
+
+        var $select = $('<select/>', {
+            'id': config.id,
+            'name': config.name,
+            'autofocus': config.autofocus && Garnish.isMobileBrowser(true),
+            'disabled': config.disabled,
+            'data-target-prefix': config.targetPrefix
+        }).appendTo($container);
+
+        if (config.toggle) {
+            $select.addClass('fieldtoggle');
+        }
+
+        var $optgroup;
+
+        for (var key in config.options) {
+            if (!config.options.hasOwnProperty(key)) {
+                continue;
+            }
+
+            var option = config.options[key];
+
+            // Starting a new <optgroup>?
+            if (typeof option.optgroup != typeof undefined) {
+                $optgroup = $('<optgroup/>', {
+                    'label': option.label
+                }).appendTo($select);
+            } else {
+                var optionLabel = (typeof option.label != typeof undefined ? option.label : option),
+                    optionValue = (typeof option.value != typeof undefined ? option.value : key),
+                    optionDisabled = (typeof option.disabled != typeof undefined ? option.disabled : false);
+
+                $('<option/>', {
+                    'value': optionValue,
+                    'selected': (optionValue == config.value),
+                    'disabled': optionDisabled,
+                    'html': optionLabel
+                }).appendTo($optgroup || $select);
+            }
+        }
+
+        return $container;
+    },
+
+    createSelectField: function(config)
+    {
+        return this.createField(this.createSelect(config), config);
     },
 
     createCheckbox: function(config)
