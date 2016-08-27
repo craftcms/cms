@@ -77,11 +77,9 @@ Craft.EditableTable = Garnish.Base.extend(
 	addRow: function()
 	{
 		var rowId = this.settings.rowIdPrefix+(this.biggestId+1),
-			rowHtml = this.getRowHtml(rowId, this.columns, this.baseName, {}),
-			$tr = $(rowHtml).appendTo(this.$tbody);
+			$tr = this.createRow(rowId, this.columns, this.baseName, {});
 
-		$tr.find('.lightswitch').lightswitch();
-
+		$tr.appendTo(this.$tbody);
 		new Craft.EditableTable.Row(this, $tr);
 		this.sorter.addItems($tr);
 
@@ -92,9 +90,9 @@ Craft.EditableTable = Garnish.Base.extend(
 		this.settings.onAddRow($tr);
 	},
 
-	getRowHtml: function(rowId, columns, baseName, values)
+	createRow: function(rowId, columns, baseName, values)
 	{
-		return Craft.EditableTable.getRowHtml(rowId, columns, baseName, values);
+		return Craft.EditableTable.createRow(rowId, columns, baseName, values);
 	}
 },
 {
@@ -105,9 +103,11 @@ Craft.EditableTable = Garnish.Base.extend(
 		onDeleteRow: $.noop
 	},
 
-	getRowHtml: function(rowId, columns, baseName, values)
+	createRow: function(rowId, columns, baseName, values)
 	{
-		var rowHtml = '<tr data-id="'+rowId+'">';
+		var $tr = $('<tr/>', {
+			'data-id': rowId
+		});
 
 		for (var colId in columns)
 		{
@@ -116,95 +116,88 @@ Craft.EditableTable = Garnish.Base.extend(
 			}
 
 			var col = columns[colId],
-				name = baseName+'['+rowId+']['+colId+']',
 				value = (typeof values[colId] != 'undefined' ? values[colId] : ''),
-				textual = Craft.inArray(col.type, Craft.EditableTable.textualColTypes);
+				$cell;
 
-			rowHtml += '<td class="'+(textual ? 'textual' : '')+' '+(typeof col['class'] != 'undefined' ? col['class'] : '')+'"' +
-			              (typeof col.width != 'undefined' ? ' width="'+col.width+'"' : '') +
-			              '>';
+			if (col.type == 'heading') {
+				$cell = $('<th/>', {
+					'scope': 'row',
+					'class': col['class'],
+					'html': value
+				});
+			} else {
+				var name = baseName+'['+rowId+']['+colId+']',
+					textual = Craft.inArray(col.type, Craft.EditableTable.textualColTypes);
 
-			switch (col.type)
-			{
-				case 'select':
-				{
-					rowHtml += '<div class="select small"><select name="'+name+'">';
+				$cell = $('<td/>', {
+					'class': col['class'],
+					'width': col.width
+				});
 
-					var hasOptgroups = false;
-
-					for (var key in col.options)
-					{
-						if (!col.options.hasOwnProperty(key)) {
-							continue;
-						}
-
-						var option = col.options[key];
-
-						if (typeof option.optgroup != 'undefined')
-						{
-							if (hasOptgroups)
-							{
-								rowHtml += '</optgroup>';
-							}
-							else
-							{
-								hasOptgroups = true;
-							}
-
-							rowHtml += '<optgroup label="'+option.optgroup+'">';
-						}
-						else
-						{
-							var optionLabel = (typeof option.label != 'undefined' ? option.label : option),
-								optionValue = (typeof option.value != 'undefined' ? option.value : key),
-								optionDisabled = (typeof option.disabled != 'undefined' ? option.disabled : false);
-
-							rowHtml += '<option value="'+optionValue+'"'+(optionValue == value ? ' selected' : '')+(optionDisabled ? ' disabled' : '')+'>'+optionLabel+'</option>';
-						}
-					}
-
-					if (hasOptgroups)
-					{
-						rowHtml += '</optgroup>';
-					}
-
-					rowHtml += '</select></div>';
-
-					break;
+				if (textual) {
+					$cell.addClass('textual');
 				}
 
-				case 'checkbox':
-				{
-					rowHtml += '<input type="hidden" name="'+name+'">' +
-					           '<input type="checkbox" name="'+name+'" value="1"'+(value ? ' checked' : '')+'>';
-
-					break;
+				if (col.code) {
+					$cell.addClass('code');
 				}
 
-				case 'lightswitch':
-				{
-					rowHtml += Craft.ui.createLightswitch({
-						name: name,
-						value: value
-					}).prop('outerHTML');
+				switch (col.type) {
+					case 'select':
+						Craft.ui.createSelect({
+							name: name,
+							options: col.options,
+							value: value,
+							'class': 'small'
+						}).appendTo($cell);
+						break;
 
-					break;
-				}
+					case 'checkbox':
+						Craft.ui.createCheckbox({
+							name: name,
+							value: col.value || '1',
+							checked: !!value
+						}).appendTo($cell);
+						break;
 
-				default:
-				{
-					rowHtml += '<textarea name="'+name+'" rows="1">'+value+'</textarea>';
+					case 'lightswitch':
+						Craft.ui.createLightswitch({
+							name: name,
+							value: value
+						}).appendTo($cell);
+						break;
+
+					default:
+						$('<textarea/>', {
+							'name': name,
+							'rows': 1,
+							'value': value
+						}).appendTo($cell);
 				}
 			}
 
-			rowHtml += '</td>';
+			$cell.appendTo($tr);
 		}
 
-		rowHtml += '<td class="thin action"><a class="move icon" title="'+Craft.t('app', 'Reorder')+'"></a></td>' +
-				'<td class="thin action"><a class="delete icon" title="'+Craft.t('app', 'Delete')+'"></a></td>' +
-			'</tr>';
+		$('<td/>', {
+			'class': 'thin action'
+		}).append(
+			$('<a/>', {
+				'class': 'move icon',
+				'title': Craft.t('app', 'Reorder')
+			})
+		).appendTo($tr);
 
-		return rowHtml;
+		$('<td/>', {
+			'class': 'thin action'
+		}).append(
+			$('<a/>', {
+				'class': 'delete icon',
+				'title': Craft.t('app', 'Delete')
+			})
+		).appendTo($tr);
+
+		return $tr;
 	}
 });
 
