@@ -19,7 +19,11 @@
 	<div id="status">{{ "Preparing to update…"|t('app') }}</div>
 {% endblock %}
 
+{% set data = {
+	handle: handle|hash,
+	manualUpdate: craft.request.getSegment(1) == 'manualupdate' ? 1 : 0
+} %}
 
 {% registerjs %}
-	new Craft.Updater('{{ handle }}', {{ craft.app.request.getSegment(1) == 'manualupdate' ? 1 : 0 }});
+	new Craft.Updater({{ data|json_encode|raw }});
 {% endregisterjs %}

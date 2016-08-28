@@ -11,6 +11,7 @@ use Craft;
 use craft\app\base\Plugin;
 use craft\app\enums\PluginUpdateStatus;
 use craft\app\errors\EtException;
+use craft\app\errors\UpdateValidationException;
 use craft\app\helpers\App;
 use craft\app\helpers\ArrayHelper;
 use craft\app\helpers\Update;
@@ -215,7 +216,7 @@ class UpdateController extends Controller
                 'data' => $data
             ]);
         } else {
-            $data['md5'] = $return['md5'];
+            $data['md5'] = Craft::$app->getSecurity()->hashData($return['md5']);
 
             return $this->asJson([
                 'alive' => true,
@@ -230,6 +231,7 @@ class UpdateController extends Controller
      * Called during an auto-update.
      *
      * @return Response
+     * @throws UpdateValidationException
      */
     public function actionProcessDownload()
     {
@@ -248,10 +250,17 @@ class UpdateController extends Controller
         }
 
         $data = Craft::$app->getRequest()->getRequiredBodyParam('data');
-
         $handle = $this->_getFixedHandle($data);
-        $return = Craft::$app->getUpdates()->processUpdateDownload($data['md5'], $handle);
-        $return['handle'] = $handle;
+
+        $md5 = Craft::$app->getSecurity()->validateData($data['md5']);
+
+        if (!$md5) {
+            throw new UpdateValidationException('Could not validate MD5.');
+        }
+
+        $return = Craft::$app->getUpdates()->processUpdateDownload($md5, $handle);
+        $return['handle'] = Craft::$app->getSecurity()->hashData($handle);
+        $return['uid'] = Craft::$app->getSecurity()->hashData($return['uid']);
 
         if (!$return['success']) {
             return $this->asJson([
@@ -275,6 +284,7 @@ class UpdateController extends Controller
      * Called during an auto-update.
      *
      * @return Response
+     * @throws UpdateValidationException
      */
     public function actionBackupFiles()
     {
@@ -295,8 +305,14 @@ class UpdateController extends Controller
         $data = Craft::$app->getRequest()->getRequiredBodyParam('data');
         $handle = $this->_getFixedHandle($data);
 
-        $return = Craft::$app->getUpdates()->backupFiles($data['uid'], $handle);
-        $return['handle'] = $handle;
+        $uid = Craft::$app->getSecurity()->validateData($data['uid']);
+
+        if (!$uid) {
+            throw new UpdateValidationException('Could not validate UID.');
+        }
+
+        $return = Craft::$app->getUpdates()->backupFiles($uid, $handle);
+        $return['handle'] = Craft::$app->getSecurity()->hashData($handle);
 
         if (!$return['success']) {
             return $this->asJson([
@@ -318,6 +334,7 @@ class UpdateController extends Controller
      * Called during an auto-update.
      *
      * @return Response
+     * @throws UpdateValidationException
      */
     public function actionUpdateFiles()
     {
@@ -338,8 +355,14 @@ class UpdateController extends Controller
         $data = Craft::$app->getRequest()->getRequiredBodyParam('data');
         $handle = $this->_getFixedHandle($data);
 
-        $return = Craft::$app->getUpdates()->updateFiles($data['uid'], $handle);
-        $return['handle'] = $handle;
+        $uid = Craft::$app->getSecurity()->validateData($data['uid']);
+
+        if (!$uid) {
+            throw new UpdateValidationException('Could not validate UID.');
+        }
+
+        $return = Craft::$app->getUpdates()->updateFiles($uid, $handle);
+        $return['handle'] = Craft::$app->getSecurity()->hashData($handle);
 
         if (!$return['success']) {
             return $this->asJson([
@@ -392,7 +415,7 @@ class UpdateController extends Controller
                 }
 
                 if (isset($return['dbBackupPath'])) {
-                    $data['dbBackupPath'] = $return['dbBackupPath'];
+                    $data['dbBackupPath'] = Craft::$app->getSecurity()->hashData($return['dbBackupPath']);
                 }
             }
         }
@@ -419,13 +442,8 @@ class UpdateController extends Controller
 
         $handle = $this->_getFixedHandle($data);
 
-        if (isset($data['dbBackupPath'])) {
-            $return = Craft::$app->getUpdates()->updateDatabase($handle);
-        } else {
-            $return = Craft::$app->getUpdates()->updateDatabase($handle);
-        }
-
-        $return['handle'] = $handle;
+        $return = Craft::$app->getUpdates()->updateDatabase($handle);
+        $return['handle'] = Craft::$app->getSecurity()->hashData($handle);
 
         if (!$return['success']) {
             return $this->asJson([
@@ -450,6 +468,7 @@ class UpdateController extends Controller
      * Called during both a manual and auto-update.
      *
      * @return Response
+     * @throws UpdateValidationException
      */
     public function actionCleanUp()
     {
@@ -461,7 +480,11 @@ class UpdateController extends Controller
         if ($this->_isManualUpdate($data)) {
             $uid = false;
         } else {
-            $uid = $data['uid'];
+            $uid = Craft::$app->getSecurity()->validateData($data['uid']);
+
+            if (!$uid) {
+                throw new UpdateValidationException('Could not validate UID.');
+            }
         }
 
         $handle = $this->_getFixedHandle($data);
@@ -496,6 +519,7 @@ class UpdateController extends Controller
      *
      * @return Response
      * @throws ServerErrorHttpException if reasons
+     * @throws UpdateValidationException
      */
     public function actionRollback()
     {
@@ -508,11 +532,21 @@ class UpdateController extends Controller
         if ($this->_isManualUpdate($data)) {
             $uid = false;
         } else {
-            $uid = $data['uid'];
+            $uid = Craft::$app->getSecurity()->validateData($data['uid']);
+
+            if (!$uid) {
+                throw new UpdateValidationException('Could not validate UID.');
+            }
         }
 
         if (isset($data['dbBackupPath'])) {
-            $return = Craft::$app->getUpdates()->rollbackUpdate($uid, $handle, $data['dbBackupPath']);
+            $dbBackupPath = Craft::$app->getSecurity()->validateData($data['dbBackupPath']);
+
+            if (!$dbBackupPath) {
+                throw new UpdateValidationException('Could not validate database backup path.');
+            }
+
+            $return = Craft::$app->getUpdates()->rollbackUpdate($uid, $handle, $dbBackupPath);
         } else {
             $return = Craft::$app->getUpdates()->rollbackUpdate($uid, $handle);
         }
@@ -550,13 +584,18 @@ class UpdateController extends Controller
      * @param $data
      *
      * @return string
+     * @throws UpdateValidationException
      */
     private function _getFixedHandle($data)
     {
         if (!isset($data['handle'])) {
             return 'craft';
+        } else {
+            if ($handle = Craft::$app->getSecurity()->validateData($data['handle'])) {
+                return $handle;
+            }
         }
 
-        return $data['handle'];
+        throw new UpdateValidationException('Could not validate the update handle.');
     }
 }

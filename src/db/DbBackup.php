@@ -132,22 +132,29 @@ class DbBackup
             throw new Exception("Could not find the SQL file to restore: {$filePath}");
         }
 
-        $this->_nukeDb();
-
         $sql = Io::getFileContents($filePath, true);
 
-        array_walk($sql, [$this, 'trimValue']);
-        $sql = array_filter($sql);
+        if ($sql) {
+            array_walk($sql, [$this, 'trimValue']);
+            $sql = array_filter($sql);
 
-        $statements = $this->_buildSQLStatements($sql);
+            $statements = $this->_buildSQLStatements($sql);
 
-        $db = Craft::$app->getDb();
+            if (!empty($statements)) {
+                $this->_nukeDb();
 
-        foreach ($statements as $key => $statement) {
-            Craft::info('Executing SQL statement: '.$statement);
-            $statement = $db->getMasterPdo()->prepare($statement);
-            $statement->execute();
+                $db = Craft::$app->getDb();
+
+                foreach ($statements as $key => $statement) {
+                    Craft::info('Executing SQL statement: '.$statement);
+                    $statement = $db->getMasterPdo()->prepare($statement);
+                    $statement->execute();
+                }
+            }
+
         }
+
+
     }
 
     /**
