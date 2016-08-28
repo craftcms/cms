@@ -1417,7 +1417,7 @@ class Users extends Component
     private function _setPasswordOnUserRecord(User $user, UserRecord $userRecord, $updatePasswordResetRequired = true, $forceDifferentPassword = false)
     {
         $isNewUser = !$user->id;
-        $validates = false;
+        $validates = true;
 
         // Validate the password first
         $passwordModel = new Password();
@@ -1437,8 +1437,8 @@ class Users extends Component
                     $user->addErrors([
                         $passwordErrorField => Craft::t('app', 'That password is the same as your old password. Please choose a new one.'),
                     ]);
-                } else {
-                    $validates = true;
+
+                    $validates = false;
                 }
             }
 
