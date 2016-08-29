@@ -1,14 +1,15 @@
 <?php
-namespace Craft;
+namespace craft\app\migrations;
 
 use Craft;
+use craft\app\db\Migration;
 use craft\app\db\Query;
 use craft\app\elements\Entry;
 
 /**
  * The class name is the UTC timestamp in the format of mYYMMDD_HHMMSS_migrationName
  */
-class m160829_000000_pending_user_content_cleanup extends BaseMigration
+class m160829_000000_pending_user_content_cleanup extends Migration
 {
     /**
      * Any migration code in here is wrapped inside of a transaction.

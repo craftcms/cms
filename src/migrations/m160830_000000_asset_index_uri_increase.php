@@ -1,13 +1,14 @@
 <?php
-namespace Craft;
+namespace craft\app\migrations;
 
 use Craft;
+use craft\app\db\Migration;
 use craft\app\enums\ColumnType;
 
 /**
  * The class name is the UTC timestamp in the format of mYYMMDD_HHMMSS_migrationName
  */
-class m160830_000000_asset_index_uri_increase extends BaseMigration
+class m160830_000000_asset_index_uri_increase extends Migration
 {
     /**
      * Any migration code in here is wrapped inside of a transaction.
