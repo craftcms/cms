@@ -49,7 +49,7 @@ return array(
 
 	/**
 	 * If this is set to true, then a tag name of "Proteines" will also match a tag name of "Protéines". Otherwise,
-	 * they are treated as the same tag. Note that this 
+	 * they are treated as the same tag. Note that this
 	 */
 	'allowSimilarTags' => false,
 
@@ -461,7 +461,8 @@ return array(
 
 	/**
 	 * The amount of time to wait before Craft purges pending users from the system that have not activated. Set to
-	 * false to disable this feature.
+	 * false to disable this feature. Note that if you set this to a time interval, then any content assigned to
+     * a pending user will be deleted as well when the given time interval passes.
 	 *
 	 * @see http://www.php.net/manual/en/dateinterval.construct.php
 	 */
@@ -638,8 +639,8 @@ return array(
 	 * Determines what protocol/schema Craft will use when generating tokenized URLs. If set to 'auto',
 	 * Craft will check the siteUrl and the protocol of the current request and if either of them are https
 	 * will use https in the tokenized URL. If not, will use http.
-	 * 
-	 * If set to `false`, the Craft will always use http. If set to `true`, then, Craft will always use `https`. 
+	 *
+	 * If set to `false`, the Craft will always use http. If set to `true`, then, Craft will always use `https`.
 	 */
 	'useSslOnTokenizedUrls' => 'auto',
 
