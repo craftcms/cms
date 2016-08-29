@@ -401,7 +401,8 @@ return [
     'privateTemplateTrigger' => '_',
     /**
      * The amount of time to wait before Craft purges pending users from the system that have not activated. Set to
-     * false to disable this feature.
+     * false to disable this feature.  Note that if you set this to a time interval, then any content assigned to
+     * a pending user will be deleted as well when the given time interval passes.
      *
      * @see http://www.php.net/manual/en/dateinterval.construct.php
      */
