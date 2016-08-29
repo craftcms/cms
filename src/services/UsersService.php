@@ -1296,7 +1296,7 @@ class UsersService extends BaseApplicationComponent
 
 			$userIds = craft()->db->createCommand()->select('id')
 				->from('users')
-				->where('pending=1 AND verificationCodeIssuedDate < :pastTime', [':pastTime' => $pastTime])
+				->where('pending=1 AND verificationCodeIssuedDate < :pastTime', array(':pastTime' => $pastTime))
 				->queryColumn();
 
 			if ($userIds)
