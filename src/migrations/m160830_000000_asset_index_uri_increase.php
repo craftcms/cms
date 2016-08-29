@@ -18,9 +18,18 @@ class m160830_000000_asset_index_uri_increase extends Migration
     public function safeUp()
     {
         Craft::info('Changing asset index data table uri column to text.');
-        $this->alterColumn('{{%assetindexdata}}', 'uri', ['column' => ColumnType::Text]);
+        $this->alterColumn('{{%assetindexdata}}', 'uri', 'text');
         Craft::info('Done changing asset index data table uri column to text.');
 
         return true;
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function safeDown()
+    {
+        echo 'm160830_000000_asset_index_uri_increase cannot be reverted.\n';
+        return false;
     }
 }

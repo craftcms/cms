@@ -42,4 +42,13 @@ class m160829_000000_pending_user_content_cleanup extends Migration
 
         return true;
     }
+
+    /**
+     * @inheritdoc
+     */
+    public function safeDown()
+    {
+        echo 'm160829_000000_pending_user_content_cleanup cannot be reverted.\n';
+        return false;
+    }
 }
