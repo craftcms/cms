@@ -67,7 +67,7 @@
 {%- set useCompressedJs = craft.config.useCompressedJs %}
 {%- includejsresource "js/cp.js" first -%}
 {%- includejsresource "js/craft.js" first -%}
-{%- includejsresource 'lib/garnish-0.1'~(useCompressedJs ? '.min')~'.js' first %}
+{%- includejsresource 'lib/garnish'~(useCompressedJs ? '.min')~'.js' first %}
 {%- includejsresource 'lib/element-resize-detector'~(useCompressedJs ? '.min')~'.js' first %}
 {%- includejsresource 'lib/picturefill'~(useCompressedJs ? '.min')~'.js' first %}
 {%- includejsresource 'lib/fileupload/jquery.fileupload.js' first %}

@@ -91,8 +91,17 @@ class UpdateHelper
 	public static function rollBackDatabaseChanges($backupPath)
 	{
 		$dbBackup = new DbBackup();
-		$fullBackupPath = craft()->path->getDbBackupPath().$backupPath.'.sql';
-		$dbBackup->restore($fullBackupPath);
+		$fileName = $backupPath.'.sql';
+		$fullBackupPath = craft()->path->getDbBackupPath().$fileName;
+
+		if (PathHelper::ensurePathIsContained($fileName))
+		{
+			$dbBackup->restore($fullBackupPath);
+		}
+		else
+		{
+			Craft::log('Someone tried to restore a database from outside of the Craft backups folder: '.$fullBackupPath, LogLevel::Warning);
+		}
 	}
 
 	/**

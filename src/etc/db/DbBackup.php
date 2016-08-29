@@ -128,20 +128,34 @@ class DbBackup
 			throw new Exception(Craft::t('Could not find the SQL file to restore: {filePath}', array('filePath' => $filePath)));
 		}
 
-		$this->_nukeDb();
-
 		$sql = IOHelper::getFileContents($filePath, true);
 
-		array_walk($sql, array($this, 'trimValue'));
-		$sql = array_filter($sql);
-
-		$statements = $this->_buildSQLStatements($sql);
-
-		foreach ($statements as $key => $statement)
+		if ($sql)
 		{
-			Craft::log('Executing SQL statement: '.$statement);
-			$statement = craft()->db->getPdoInstance()->prepare($statement);
-			$statement->execute();
+			array_walk($sql, [$this, 'trimValue']);
+			$sql = array_filter($sql);
+
+			$statements = $this->_buildSQLStatements($sql);
+
+			if (!empty($statements))
+			{
+				$this->_nukeDb();
+
+				foreach ($statements as $key => $statement)
+				{
+					Craft::log('Executing SQL statement: '.$statement, LogLevel::Info, true);
+					$statement = craft()->db->getPdoInstance()->prepare($statement);
+					$statement->execute();
+				}
+			}
+			else
+			{
+				Craft::log('Could not parse any SQL statements from the database backup file: '.$filePath, LogLevel::Info, true);
+			}
+		}
+		else
+		{
+			Craft::log('Tried to restore database from a backup, but the file is empty: '.$filePath, LogLevel::Info, true);
 		}
 
 		// Re-enable.

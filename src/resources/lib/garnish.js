@@ -3,8 +3,8 @@
  *
  * @copyright 2013 Pixel & Tonic, Inc.. All rights reserved.
  * @author    Brandon Kelly <brandon@pixelandtonic.com>
- * @version   0.1
- * @license   THIS IS NO F.O.S.S!
+ * @version   0.1.2
+ * @license   MIT
  */
 (function($){
 
@@ -3604,6 +3604,9 @@ Garnish.Menu = Garnish.Base.extend({
 		this.addListener(this.$container, 'mousedown', function(ev)
 		{
 			ev.stopPropagation();
+
+			// Prevent this from causing the menu button to blur
+			ev.preventDefault();
 		});
 	},
 
@@ -5161,7 +5164,7 @@ Garnish.NiceText = Garnish.Base.extend({
 
 	updateHeightIfWidthChanged: function()
 	{
-		if (this.width !== (this.width = this.$input.width()) && this.width)
+		if (this.isVisible() && this.width !== (this.width = this.$input.width()) && this.width)
 		{
 			this.updateHeight();
 		}

@@ -199,7 +199,7 @@ class UpdateController extends BaseController
 		}
 		else
 		{
-			$data['md5'] = $return['md5'];
+			$data['md5'] = craft()->security->hashData($return['md5']);
 			$this->returnJson(array('alive' => true, 'nextStatus' => Craft::t('Downloading update…'), 'nextAction' => 'update/processDownload', 'data' => $data));
 		}
 
@@ -209,6 +209,7 @@ class UpdateController extends BaseController
 	 * Called during an auto-update.
 	 *
 	 * @return null
+	 * @throws Exception
 	 */
 	public function actionProcessDownload()
 	{
@@ -226,8 +227,16 @@ class UpdateController extends BaseController
 		$data = craft()->request->getRequiredPost('data');
 		$handle = $this->_getFixedHandle($data);
 
-		$return = craft()->updates->processUpdateDownload($data['md5'], $handle);
-		$return['handle'] = $handle;
+		$md5 = craft()->security->validateData($data['md5']);
+
+		if (!$md5)
+		{
+			throw new Exception('Could not validate MD5.');
+		}
+
+		$return = craft()->updates->processUpdateDownload($md5, $handle);
+		$return['handle'] = craft()->security->hashData($handle);
+		$return['uid'] = craft()->security->hashData($return['uid']);
 
 		if (!$return['success'])
 		{
@@ -243,6 +252,7 @@ class UpdateController extends BaseController
 	 * Called during an auto-update.
 	 *
 	 * @return null
+	 * @throws Exception
 	 */
 	public function actionBackupFiles()
 	{
@@ -260,8 +270,15 @@ class UpdateController extends BaseController
 		$data = craft()->request->getRequiredPost('data');
 		$handle = $this->_getFixedHandle($data);
 
-		$return = craft()->updates->backupFiles($data['uid'], $handle);
-		$return['handle'] = $handle;
+		$uid = craft()->security->validateData($data['uid']);
+
+		if (!$uid)
+		{
+			throw new Exception('Could not validate UID');
+		}
+
+		$return = craft()->updates->backupFiles($uid, $handle);
+		$return['handle'] = craft()->security->hashData($handle);
 
 		if (!$return['success'])
 		{
@@ -275,6 +292,7 @@ class UpdateController extends BaseController
 	 * Called during an auto-update.
 	 *
 	 * @return null
+	 * @throws Exception
 	 */
 	public function actionUpdateFiles()
 	{
@@ -291,9 +309,15 @@ class UpdateController extends BaseController
 
 		$data = craft()->request->getRequiredPost('data');
 		$handle = $this->_getFixedHandle($data);
+		$uid = craft()->security->validateData($data['uid']);
 
-		$return = craft()->updates->updateFiles($data['uid'], $handle);
-		$return['handle'] = $handle;
+		if (!$uid)
+		{
+			throw new Exception('Could not validate UID');
+		}
+
+		$return = craft()->updates->updateFiles($uid, $handle);
+		$return['handle'] = craft()->security->hashData($handle);
 
 		if (!$return['success'])
 		{
@@ -333,7 +357,7 @@ class UpdateController extends BaseController
 
 				if (isset($return['dbBackupPath']))
 				{
-					$data['dbBackupPath'] = $return['dbBackupPath'];
+					$data['dbBackupPath'] = craft()->security->hashData($return['dbBackupPath']);
 				}
 			}
 		}
@@ -355,16 +379,9 @@ class UpdateController extends BaseController
 
 		$handle = $this->_getFixedHandle($data);
 
-		if (isset($data['dbBackupPath']))
-		{
-			$return = craft()->updates->updateDatabase($handle);
-		}
-		else
-		{
-			$return = craft()->updates->updateDatabase($handle);
-		}
+		$return = craft()->updates->updateDatabase($handle);
 
-		$return['handle'] = $handle;
+		$return['handle'] = craft()->security->hashData($handle);
 
 		if (!$return['success'])
 		{
@@ -380,6 +397,7 @@ class UpdateController extends BaseController
 	 * Called during both a manual and auto-update.
 	 *
 	 * @return null
+	 * @throws Exception
 	 */
 	public function actionCleanUp()
 	{
@@ -394,7 +412,12 @@ class UpdateController extends BaseController
 		}
 		else
 		{
-			$uid = $data['uid'];
+			$uid = craft()->security->validateData($data['uid']);
+
+			if (!$uid)
+			{
+				throw new Exception(('Could not validate UID'));
+			}
 		}
 
 		$handle = $this->_getFixedHandle($data);
@@ -444,12 +467,24 @@ class UpdateController extends BaseController
 		}
 		else
 		{
-			$uid = $data['uid'];
+			$uid = craft()->security->validateData($data['uid']);
+
+			if (!$uid)
+			{
+				throw new Exception(('Could not validate UID'));
+			}
 		}
 
 		if (isset($data['dbBackupPath']))
 		{
-			$return = craft()->updates->rollbackUpdate($uid, $handle, $data['dbBackupPath']);
+			$dbBackupPath = craft()->security->validateData($data['dbBackupPath']);
+
+			if (!$dbBackupPath)
+			{
+				throw new Exception('Could not validate database backup path.');
+			}
+
+			$return = craft()->updates->rollbackUpdate($uid, $handle, $dbBackupPath);
 		}
 		else
 		{
@@ -472,6 +507,7 @@ class UpdateController extends BaseController
 	 * @param $data
 	 *
 	 * @return bool
+	 * @throws Exception
 	 */
 	private function _isManualUpdate($data)
 	{
@@ -487,6 +523,7 @@ class UpdateController extends BaseController
 	 * @param $data
 	 *
 	 * @return string
+	 * @throws Exception
 	 */
 	private function _getFixedHandle($data)
 	{
@@ -496,7 +533,12 @@ class UpdateController extends BaseController
 		}
 		else
 		{
-			return $data['handle'];
+			if ($handle = craft()->security->validateData($data['handle']))
+			{
+				return $handle;
+			}
+
+			throw new Exception('Could not validate update handle.');
 		}
 	}
 }

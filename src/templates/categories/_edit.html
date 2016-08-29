@@ -7,6 +7,7 @@
 {% set groupHandle = group.handle %}
 {% set isNewCategory = category.id ? false : true %}
 
+{% hook "cp.categories.edit" %}
 
 {% block saveButton %}
 	<div class="btngroup">
@@ -158,6 +159,10 @@
 						</div>
 					</div>
 				{% endif %}
+
+				{# Give plugins a chance to add other panes here #}
+				{% hook "cp.categories.edit.right-pane" %}
+
 			</div><!--/item-->
 		</div><!--/grid-->
 	</form>
