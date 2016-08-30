@@ -10,6 +10,7 @@ namespace craft\app\web;
 use Craft;
 use craft\app\base\ApplicationTrait;
 use craft\app\helpers\Header;
+use craft\app\helpers\Io;
 use craft\app\helpers\Json;
 use craft\app\helpers\StringHelper;
 use craft\app\helpers\Url;
@@ -162,6 +163,9 @@ class Application extends \yii\web\Application
         // If there's a new version, but the schema hasn't changed, just update the info table
         if ($this->getUpdates()->getHasCraftBuildChanged()) {
             $this->getUpdates()->updateCraftVersionInfo();
+
+            // Clear the template caches in case they've been compiled since this release was cut.
+            Io::clearFolder($this->getPath()->getCompiledTemplatesPath());
         }
 
         // If the system is offline, make sure they have permission to be here
@@ -576,6 +580,9 @@ class Application extends \yii\web\Application
                         $this->getUser()->setReturnUrl($request->getPathInfo());
                     }
                 }
+
+                // Clear the template caches in case they've been compiled since this release was cut.
+                Io::clearFolder($this->getPath()->getCompiledTemplatesPath());
 
                 // Show the manual update notification template
                 return $this->runAction('templates/manual-update-notification');
