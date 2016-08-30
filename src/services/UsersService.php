@@ -1294,16 +1294,20 @@ class UsersService extends BaseApplicationComponent
 			$pastTimeStamp = $expire->sub($interval)->getTimestamp();
 			$pastTime = DateTimeHelper::formatTimeForDb($pastTimeStamp);
 
-			$ids = craft()->db->createCommand()->select('id')
+			$userIds = craft()->db->createCommand()->select('id')
 				->from('users')
 				->where('pending=1 AND verificationCodeIssuedDate < :pastTime', array(':pastTime' => $pastTime))
 				->queryColumn();
 
-			$affectedRows = craft()->db->createCommand()->delete('elements', array('in', 'id', $ids));
-
-			if ($affectedRows > 0)
+			if ($userIds)
 			{
-				Craft::log('Just deleted '.$affectedRows.' pending users from the users table, because the were more than '.$duration.' old', LogLevel::Info, true);
+				foreach ($userIds as $userId)
+				{
+					$user = $this->getUserById($userId);
+					$this->deleteUser($user);
+
+					Craft::log('Just deleted pending userId '.$userId.' ('.$user->username.'), because the were more than '.$duration.' old', LogLevel::Info, true);
+				}
 			}
 		}
 	}
