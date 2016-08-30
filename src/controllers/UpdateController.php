@@ -362,7 +362,7 @@ class UpdateController extends Controller
         }
 
         $return = Craft::$app->getUpdates()->updateFiles($uid, $handle);
-        $return['handle'] = Craft::$app->getSecurity()->hashData($handle);
+        $data['handle'] = Craft::$app->getSecurity()->hashData($handle);
 
         if (!$return['success']) {
             return $this->asJson([
