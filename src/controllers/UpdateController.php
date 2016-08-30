@@ -199,6 +199,7 @@ class UpdateController extends Controller
         }
 
         $return = Craft::$app->getUpdates()->prepareUpdate($manual, $handle);
+        $data['handle'] = Craft::$app->getSecurity()->hashData($handle);
 
         if (!$return['success']) {
             return $this->asJson([
@@ -312,7 +313,7 @@ class UpdateController extends Controller
         }
 
         $return = Craft::$app->getUpdates()->backupFiles($uid, $handle);
-        $return['handle'] = Craft::$app->getSecurity()->hashData($handle);
+        $data['handle'] = Craft::$app->getSecurity()->hashData($handle);
 
         if (!$return['success']) {
             return $this->asJson([
@@ -443,7 +444,7 @@ class UpdateController extends Controller
         $handle = $this->_getFixedHandle($data);
 
         $return = Craft::$app->getUpdates()->updateDatabase($handle);
-        $return['handle'] = Craft::$app->getSecurity()->hashData($handle);
+        $data['handle'] = Craft::$app->getSecurity()->hashData($handle);
 
         if (!$return['success']) {
             return $this->asJson([
