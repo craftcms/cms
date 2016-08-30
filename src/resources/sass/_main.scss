@@ -945,6 +945,8 @@ table.editable tbody tr th ~ td:not(:first-child) { @include border-left(1px sol
 table.editable tbody tr td:not(:first-child),
 table.editable tbody tr th ~ td:not(.hidden) ~ td { @include border-left(1px solid rgba(0,0,0,0.07)); }
 
+table.editable tbody tr td.disabled { position: relative; opacity: 1; }
+table.editable tbody tr td.disabled:after { content: '.'; font-size: 0; position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: hsla($hue, 10%, 96%, 0.75); @include user-select(none); }
 table.editable tbody tr th,
 table.editable tbody tr td.action { background: $bgcolor; }
 table.editable tbody tr td.action { padding: 4px 7px; }
