@@ -905,11 +905,15 @@ table.editable tbody tr td { vertical-align: middle; text-align: center; backgro
 
 table.editable tbody tr td.textual { vertical-align: top; }
 
-body.ltr table.editable tbody tr td:not(:first-child) { border-left: 1px solid rgba(0, 0, 0, 0.07); }
-body.rtl table.editable tbody tr td:not(:first-child) { border-right: 1px solid rgba(0, 0, 0, 0.07); }
+body.ltr table.editable tbody tr th ~ td:not(:first-child) { border-left: 1px solid #dbdddf; }
+body.rtl table.editable tbody tr th ~ td:not(:first-child) { border-right: 1px solid #dbdddf; }
 
-body.ltr table.editable tbody tr th + td:not(:first-child) { border-left: 1px solid #dbdddf; }
-body.rtl table.editable tbody tr th + td:not(:first-child) { border-right: 1px solid #dbdddf; }
+body.ltr table.editable tbody tr td:not(:first-child), body.ltr table.editable tbody tr th ~ td:not(.hidden) ~ td { border-left: 1px solid rgba(0, 0, 0, 0.07); }
+body.rtl table.editable tbody tr td:not(:first-child), body.rtl table.editable tbody tr th ~ td:not(.hidden) ~ td { border-right: 1px solid rgba(0, 0, 0, 0.07); }
+
+table.editable tbody tr td.disabled { position: relative; opacity: 1; }
+
+table.editable tbody tr td.disabled:after { content: '.'; font-size: 0; position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: rgba(244, 245, 246, 0.75); -webkit-user-select: none; -moz-user-select: none; -ms-user-select: none; }
 
 table.editable tbody tr th, table.editable tbody tr td.action { background: #ebedef; }
 
@@ -923,6 +927,18 @@ body.rtl table.editable tbody tr td.action + td.action { padding-right: 0; }
 table.editable tbody textarea { display: block; width: 100%; border: none; padding: 7px 10px; background: #fff; overflow: hidden; }
 
 table.editable tbody textarea:focus { border: 1px solid rgba(0, 0, 0, 0.15); padding: 6px 9px; outline: none; }
+
+table.editable tbody tr td.code textarea::-webkit-input-placeholder { font-family: HelveticaNeue, sans-serif; }
+
+table.editable tbody tr td.code textareainput:-ms-input-placeholder { font-family: HelveticaNeue, sans-serif; }
+
+table.editable tbody tr td.code textarea::-ms-input-placeholder { font-family: HelveticaNeue, sans-serif; }
+
+table.editable tbody tr td.code textarea:-moz-placeholder { font-family: HelveticaNeue, sans-serif; }
+
+table.editable tbody tr td.code textarea::-moz-placeholder { font-family: HelveticaNeue, sans-serif; }
+
+table.editable tbody tr td.code textarea::placeholder { font-family: HelveticaNeue, sans-serif; }
 
 table.editable + .btn.add { display: block; border-radius: 0 0 3px 3px; border: 1px dashed rgba(0, 0, 0, 0.2); border-top: none; background: none; -webkit-box-shadow: none; -moz-box-shadow: none; box-shadow: none; }
 
