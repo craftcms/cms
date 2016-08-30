@@ -35,7 +35,7 @@
         "lsolesen/pel": "0.9.4.1",
         "danielstjules/stringy": "2.3.2",
         "creocoder/yii2-nested-sets": "0.9.0",
-        "imagine/imagine": "0.6.13",
+        "imagine/imagine": "0.6.14",
         "league/flysystem": "1.0.26",
         "league/flysystem-aws-s3-v2": "1.0.3",
         "league/flysystem-rackspace": "1.0.5",
