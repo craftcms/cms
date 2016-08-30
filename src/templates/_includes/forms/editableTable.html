@@ -51,7 +51,7 @@
 										disabled: static
 									} only %}
 								{%- default -%}
-									<textarea name="{{ cellName }}" rows="1"{% if static %} disabled{% endif %}>{{ value }}</textarea>
+									<textarea name="{{ cellName }}" rows="1"{% if static %} disabled{% endif %}{% if col.placeholder is defined %} placeholder="{{ col.placeholder }}"{% endif %}>{{ value }}</textarea>
 							{%- endswitch -%}
 						</td>
 					{% endif %}

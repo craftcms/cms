@@ -23,7 +23,7 @@ html.noscroll body { overflow: hidden; }
 
 body { font-size: 13px; line-height: 18px; color: $textcolor; }
 body.rtl { direction: rtl; }
-body, input, select, textarea { font-family: HelveticaNeue, sans-serif; }
+body, input, select, textarea { @include sans-serif-font; }
 
 .first, h2:first-child, h3:first-child, h4:first-child, h5:first-child, h6:first-child, p:first-child, hr:first-child, .pane:first-child, .grid:first-child, .field:first-child, .toolbar:first-child, .buttons:first-child { margin-top: 0 !important; }
 .last,  h2:last-child,  h3:last-child,  h4:last-child,  h5:last-child,  h6:last-child,  p:last-child,                  .pane:last-child,  .grid:last-child,  .field:last-child,  .toolbar:last-child,  .buttons:last-child  { margin-bottom: 0 !important; }
@@ -944,6 +944,13 @@ table.editable tbody tr td.action { padding: 4px 7px; }
 table.editable tbody tr td.action + td.action { @include border-left(none); @include padding-left(0); }
 table.editable tbody textarea { display: block; width: 100%; border: none; padding: 7px 10px; background: #fff; overflow: hidden; }
 table.editable tbody textarea:focus { border: 1px solid rgba(0,0,0,0.15); padding: 6px 9px; outline: none; }
+
+table.editable tbody tr td.code textarea::-webkit-input-placeholder { @include sans-serif-font; }
+table.editable tbody tr td.code textareainput:-ms-input-placeholder { @include sans-serif-font; }
+table.editable tbody tr td.code textarea::-ms-input-placeholder { @include sans-serif-font; }
+table.editable tbody tr td.code textarea:-moz-placeholder { @include sans-serif-font; }
+table.editable tbody tr td.code textarea::-moz-placeholder { @include sans-serif-font; }
+table.editable tbody tr td.code textarea::placeholder { @include sans-serif-font; }
 
 table.editable + .btn.add { display: block; border-radius: 0 0 $btnBorderRadius $btnBorderRadius; border: 1px dashed rgba(0,0,0,0.2); border-top: none; background: none;
     @include box-shadow(none);
