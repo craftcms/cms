@@ -936,8 +936,15 @@ table.editable thead tr th { border-bottom: 1px solid rgba(0,0,0,0.15); }
 table.editable thead tr th span.info { margin-left: 5px; }
 table.editable tbody tr td { vertical-align: middle; text-align: center; background: #fff; }
 table.editable tbody tr td.textual { vertical-align: top; }
-table.editable tbody tr td:not(:first-child) { @include border-left(1px solid rgba(0,0,0,0.07)); }
-table.editable tbody tr th + td:not(:first-child) { @include border-left(1px solid #dbdddf); }
+
+// Set a dark border-left for the first <td> that follows a <th>, if there is one.
+// This is a ridiculous CSS hack since there's no operator/pseudo-class that mimics jQuery's next(selector) function.
+// If there was it could have been as simple as: th ??? td:not(.hidden) { dark left border }
+// kudos to Mark Huot for coming up with it!
+table.editable tbody tr th ~ td:not(:first-child) { @include border-left(1px solid #dbdddf); }
+table.editable tbody tr td:not(:first-child),
+table.editable tbody tr th ~ td:not(.hidden) ~ td { @include border-left(1px solid rgba(0,0,0,0.07)); }
+
 table.editable tbody tr th,
 table.editable tbody tr td.action { background: $bgcolor; }
 table.editable tbody tr td.action { padding: 4px 7px; }
