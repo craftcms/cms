@@ -67,7 +67,7 @@ class WebApp extends \CWebApplication
 	/**
 	 * The language that the application is written in. This mainly refers to the language that the messages and view
 	 * files are in.
-     *
+	 *
 	 * Setting it here even though CApplication already defaults to 'en_us', so it's clear and in case they change it
 	 * down the road.
 	 *
@@ -246,6 +246,9 @@ class WebApp extends \CWebApplication
 		if ($this->updates->hasCraftBuildChanged())
 		{
 			$this->updates->updateCraftVersionInfo();
+
+			// Clear the template caches in case they've been compiled since this release was cut.
+			IOHelper::clearFolder($this->path->getCompiledTemplatesPath());
 		}
 
 		// If the system is offline, make sure they have permission to be here
@@ -911,6 +914,9 @@ class WebApp extends \CWebApplication
 							$this->userSession->setReturnUrl($this->request->getPath());
 						}
 					}
+
+					// Clear the template caches in case they've been compiled since this release was cut.
+					IOHelper::clearFolder($this->path->getCompiledTemplatesPath());
 
 					// Show the manual update notification template
 					$this->runController('templates/manualUpdateNotification');
