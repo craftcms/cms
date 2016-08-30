@@ -1,4 +1,4 @@
-/*! Craft 3.0.0 - 2016-08-27 */
+/*! Craft 3.0.0 - 2016-08-30 */
 (function($){
 
 // Set all the standard Craft.* stuff
@@ -10861,7 +10861,8 @@ Craft.EditableTable = Garnish.Base.extend(
 						$('<textarea/>', {
 							'name': name,
 							'rows': 1,
-							'value': value
+							'value': value,
+							'placeholder': col.placeholder
 						}).appendTo($cell);
 				}
 			}
