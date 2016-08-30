@@ -15,6 +15,7 @@ use craft\app\elements\actions\CopyReferenceTag;
 use craft\app\elements\actions\DeleteAssets;
 use craft\app\elements\actions\DownloadAssetFile;
 use craft\app\elements\actions\Edit;
+use craft\app\elements\actions\EditImage;
 use craft\app\elements\actions\RenameFile;
 use craft\app\elements\actions\ReplaceFile;
 use craft\app\elements\actions\View;
@@ -137,6 +138,16 @@ class Asset extends Element
         $actions = [];
 
         if (preg_match('/^folder:(\d+)$/', $source, $matches)) {
+
+            // Edit Image
+            $actions[] = Craft::$app->getElements()->createAction(
+                [
+                    'type' => EditImage::className(),
+                    'label' => Craft::t('app', 'Edit image'),
+                ]
+            );
+
+
             $folderId = $matches[1];
 
             $folder = Craft::$app->getAssets()->getFolderById($folderId);

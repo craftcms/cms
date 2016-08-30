@@ -553,6 +553,18 @@ class AssetsController extends Controller
     }
 
     /**
+     * Return the image editor template.
+     *
+     * @return Response
+     */
+    public function actionImageEditor()
+    {
+        $html = Craft::$app->getView()->renderTemplate('_components/tools/image_editor');
+
+        return $this->asJson(['html' => $html]);
+    }
+
+    /**
      * Download a file.
      *
      * @return Response

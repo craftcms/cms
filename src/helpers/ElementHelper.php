@@ -11,6 +11,7 @@ use Craft;
 use craft\app\base\Element;
 use craft\app\base\ElementInterface;
 use craft\app\db\Query;
+use craft\app\elements\Asset;
 use craft\app\errors\OperationAbortedException;
 
 /**
@@ -214,6 +215,23 @@ class ElementHelper
         return false;
     }
 
+    /**
+     * Returns whether the given element is an Asset that is a manipulatable image.
+     *
+     * @param Element $element
+     *
+     * @return boolean
+     */
+    public static function isAssetWithThumb(Element $element)
+    {
+        if ($element->getType() == 'craft\app\elements\Asset') {
+            /**
+             * @var $element Asset
+             */
+            return $element->getHasThumb();
+        }
+        return false;
+    }
     /**
      * Returns the editable locale IDs for a given element, taking user locale permissions into account.
      *

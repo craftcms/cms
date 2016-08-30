@@ -1396,6 +1396,11 @@ class View extends \yii\web\View
             $html .= ' data-editable';
         }
 
+        $isAssetWithThumb = ElementHelper::isAssetWithThumb($element);
+
+        if ($isAssetWithThumb) {
+            $html .= ' data-image';
+        }
         $html .= '>';
 
         if ($context['context'] == 'field' && isset($context['name'])) {
