@@ -23,7 +23,7 @@
 		{% for rowId, row in rows %}
 			<tr data-id="{{ rowId }}">
 				{% for colId, col in cols %}
-					{% set value = row[colId].value ?? row[colId] ?? null %}
+					{% set value = row[colId] is defined ? (row[colId].value is defined ? row[colId].value : row[colId]) : null %}
 					{% if col.type == 'heading' %}
 						<th scope="row" {% if col.class is defined %}class="{{ col.class }}"{% endif %}>{{ value|raw }}</th>
 					{% else %}
