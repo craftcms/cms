@@ -59,7 +59,7 @@ class AppAsset extends AssetBundle
         }
 
         $this->js = [
-            'lib/xregexp-all'.($useCompressedJs ? '-min' : '').'.js',
+            'lib/xregexp-all.js',
             'lib/jquery-ui'.($useCompressedJs ? '.min' : '').'.js',
         ];
 
