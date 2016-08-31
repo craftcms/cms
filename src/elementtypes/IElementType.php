@@ -144,7 +144,7 @@ interface IElementType extends IComponentType
 	 * There is no need for this method to worry about the ‘title’ or ‘slug’ attributes, or custom field handles;
 	 * those are indexed automatically.
 	 *
-	 * @return array The
+	 * @return array The attributes that should be searchable
 	 */
 	public function defineSearchableAttributes();
 

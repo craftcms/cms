@@ -235,17 +235,18 @@ class UpdateController extends BaseController
 		}
 
 		$return = craft()->updates->processUpdateDownload($md5, $handle);
-		$return['handle'] = craft()->security->hashData($handle);
-		$return['uid'] = craft()->security->hashData($return['uid']);
 
 		if (!$return['success'])
 		{
 			$this->returnJson(array('alive' => true, 'errorDetails' => $return['message'], 'finished' => true));
 		}
 
-		unset($return['success']);
+		$data = array(
+			'handle' => craft()->security->hashData($handle),
+			'uid'    => craft()->security->hashData($return['uid']),
+		);
 
-		$this->returnJson(array('alive' => true, 'nextStatus' => Craft::t('Backing-up files…'), 'nextAction' => 'update/backupFiles', 'data' => $return));
+		$this->returnJson(array('alive' => true, 'nextStatus' => Craft::t('Backing-up files…'), 'nextAction' => 'update/backupFiles', 'data' => $data));
 	}
 
 	/**
@@ -278,7 +279,6 @@ class UpdateController extends BaseController
 		}
 
 		$return = craft()->updates->backupFiles($uid, $handle);
-		$return['handle'] = craft()->security->hashData($handle);
 
 		if (!$return['success'])
 		{
@@ -317,7 +317,6 @@ class UpdateController extends BaseController
 		}
 
 		$return = craft()->updates->updateFiles($uid, $handle);
-		$return['handle'] = craft()->security->hashData($handle);
 
 		if (!$return['success'])
 		{
@@ -380,8 +379,6 @@ class UpdateController extends BaseController
 		$handle = $this->_getFixedHandle($data);
 
 		$return = craft()->updates->updateDatabase($handle);
-
-		$return['handle'] = craft()->security->hashData($handle);
 
 		if (!$return['success'])
 		{
