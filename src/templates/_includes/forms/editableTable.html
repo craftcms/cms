@@ -23,13 +23,14 @@
 		{% for rowId, row in rows %}
 			<tr data-id="{{ rowId }}">
 				{% for colId, col in cols %}
-					{% set value = (row[colId] is defined ? row[colId] : null) %}
+					{% set value = row[colId].value ?? row[colId] ?? null %}
 					{% if col.type == 'heading' %}
 						<th scope="row" {% if col.class is defined %}class="{{ col.class }}"{% endif %}>{{ value|raw }}</th>
 					{% else %}
+						{% set hasError = row[colId].hasError ?? false %}
 						{% set cellName = name~'['~rowId~']['~colId~']' %}
 						{% set textual = (col.type in ['singleline','multiline','number']) %}
-						<td class="{% if textual %}textual{% endif %} {% if col.class is defined %}{{ col.class }}{% endif %} {% if col.code is defined %}code{% endif %}"{% if col.width is defined %} width="{{ col.width }}"{% endif %}>
+						<td class="{% if textual %}textual{% endif %} {% if col.class is defined %}{{ col.class }}{% endif %} {% if col.code is defined %}code{% endif %} {% if hasError %}error{% endif %}"{% if col.width is defined %} width="{{ col.width }}"{% endif %}>
 							{%- switch col.type -%}
 								{% case 'select' -%}
 									{% include "_includes/forms/select" with {
