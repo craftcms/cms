@@ -26,6 +26,7 @@ use craft\app\helpers\Db;
 use craft\app\helpers\Url;
 use craft\app\models\EntryType;
 use craft\app\models\Section;
+use yii\base\InvalidConfigException;
 
 /**
  * Entry represents an entry element.
@@ -443,15 +444,11 @@ class Entry extends Element
             }
 
             case 'section': {
-                $section = $element->getSection();
-
-                return ($section ? Craft::t('site', $section->name) : '');
+                return Craft::t('site', $element->getSection()->name);
             }
 
             case 'type': {
-                $entryType = $element->getType();
-
-                return ($entryType ? Craft::t('site', $entryType->name) : '');
+                return Craft::t('site', $element->getType()->name);
             }
 
             default: {
@@ -779,13 +776,7 @@ EOD;
      */
     public function getFieldLayout()
     {
-        $entryType = $this->getType();
-
-        if ($entryType) {
-            return $entryType->getFieldLayout();
-        }
-
-        return null;
+        return $this->getType()->getFieldLayout();
     }
 
     /**
@@ -809,7 +800,7 @@ EOD;
     {
         $section = $this->getSection();
 
-        if ($section && $section->hasUrls) {
+        if ($section->hasUrls) {
             $sectionLocales = $section->getLocales();
 
             if (isset($sectionLocales[$this->locale])) {
@@ -837,40 +828,39 @@ EOD;
     /**
      * Returns the entry's section.
      *
-     * @return Section|null
+     * @return Section
+     * @throws InvalidConfigException if [[sectionId]] is invalid
      */
     public function getSection()
     {
         if ($this->sectionId) {
-            return Craft::$app->getSections()->getSectionById($this->sectionId);
+            $section = Craft::$app->getSections()->getSectionById($this->sectionId);
+
+            if ($section) {
+                return $section;
+            }
         }
 
-        return null;
+        throw new InvalidConfigException('Invalid section ID: '.$this->sectionId);
     }
 
     /**
      * Returns the type of entry.
      *
-     * @return EntryType|null
+     * @return EntryType
+     * @throws InvalidConfigException if [[typeId]] is invalid
      */
     public function getType()
     {
-        $section = $this->getSection();
+        if ($this->typeId) {
+            $sectionEntryTypes = $this->getSection()->getEntryTypes('id');
 
-        if ($section) {
-            $sectionEntryTypes = $section->getEntryTypes('id');
-
-            if ($sectionEntryTypes) {
-                if ($this->typeId && isset($sectionEntryTypes[$this->typeId])) {
-                    return $sectionEntryTypes[$this->typeId];
-                }
-
-                // Just return the first one
-                return ArrayHelper::getFirstValue($sectionEntryTypes);
+            if (isset($sectionEntryTypes[$this->typeId])) {
+                return $sectionEntryTypes[$this->typeId];
             }
         }
 
-        return null;
+        throw new InvalidConfigException('Invalid entry type ID: '.$this->typeId);
     }
 
     /**
@@ -944,18 +934,14 @@ EOD;
     {
         $section = $this->getSection();
 
-        if ($section) {
-            // The slug *might* not be set if this is a Draft and they've deleted it for whatever reason
-            $url = Url::getCpUrl('entries/'.$section->handle.'/'.$this->id.($this->slug ? '-'.$this->slug : ''));
+        // The slug *might* not be set if this is a Draft and they've deleted it for whatever reason
+        $url = Url::getCpUrl('entries/'.$section->handle.'/'.$this->id.($this->slug ? '-'.$this->slug : ''));
 
-            if (Craft::$app->getIsLocalized() && $this->locale != Craft::$app->language) {
-                $url .= '/'.$this->locale;
-            }
-
-            return $url;
+        if (Craft::$app->getIsLocalized() && $this->locale != Craft::$app->language) {
+            $url .= '/'.$this->locale;
         }
 
-        return null;
+        return $url;
     }
 
     /**
