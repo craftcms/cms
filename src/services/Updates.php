@@ -612,8 +612,10 @@ class Updates extends Component
 
             return $result;
         } catch (UserException $e) {
+            Craft::error('Error processing the update download: '.$e->getMessage());
             return ['success' => false, 'message' => $e->getMessage()];
         } catch (\Exception $e) {
+            Craft::error('Error processing the update download: '.$e->getMessage());
             return [
                 'success' => false,
                 'message' => Craft::t('app', 'There was a problem during the update.')
