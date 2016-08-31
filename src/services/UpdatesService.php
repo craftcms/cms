@@ -623,6 +623,7 @@ class UpdatesService extends BaseApplicationComponent
 		}
 		catch (\Exception $e)
 		{
+			Craft::log('Error processing the update download: '.$e->getMessage(), LogLevel::Error);
 			return array('success' => false, 'message' => $e->getMessage());
 		}
 	}
