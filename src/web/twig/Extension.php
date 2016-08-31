@@ -179,6 +179,7 @@ class Extension extends \Twig_Extension
             new \Twig_SimpleFilter('t', [$this, 'translateFilter']),
             new \Twig_SimpleFilter('ucfirst', [$this, 'ucfirstFilter']),
             new \Twig_SimpleFilter('ucwords', 'ucwords'),
+            new \Twig_SimpleFilter('unique', 'array_unique'),
             new \Twig_SimpleFilter('values', 'array_values'),
             new \Twig_SimpleFilter('without', [$this, 'withoutFilter']),
         ];
