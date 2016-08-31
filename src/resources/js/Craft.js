@@ -1,4 +1,4 @@
-/*! Craft 3.0.0 - 2016-08-30 */
+/*! Craft 3.0.0 - 2016-08-31 */
 (function($){
 
 // Set all the standard Craft.* stuff
