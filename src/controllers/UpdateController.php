@@ -279,7 +279,6 @@ class UpdateController extends BaseController
 		}
 
 		$return = craft()->updates->backupFiles($uid, $handle);
-		$return['handle'] = craft()->security->hashData($handle);
 
 		if (!$return['success'])
 		{
@@ -318,7 +317,6 @@ class UpdateController extends BaseController
 		}
 
 		$return = craft()->updates->updateFiles($uid, $handle);
-		$return['handle'] = craft()->security->hashData($handle);
 
 		if (!$return['success'])
 		{
@@ -381,8 +379,6 @@ class UpdateController extends BaseController
 		$handle = $this->_getFixedHandle($data);
 
 		$return = craft()->updates->updateDatabase($handle);
-
-		$return['handle'] = craft()->security->hashData($handle);
 
 		if (!$return['success'])
 		{
