@@ -1,4 +1,4 @@
-/*! Craft 3.0.0 - 2016-08-30 */
+/*! Craft 3.0.0 - 2016-09-01 */
 (function($){
 
 // Set all the standard Craft.* stuff
@@ -5056,15 +5056,17 @@ Craft.AssetImageEditor = Garnish.Modal.extend(
 		 * Scale and center the image in the editor
 		 */
 		_scaleAndCenterImage: function () {
-			if (this.image.height > this.image.width) {
-				this.image.scaleToHeight(this.editorHeight + 1);
-			} else {
-				this.image.scaleToWidth(this.editorWidth + 1);
-			}
 
-			// Set the viewport height at the same size as the image
-			this.viewportHeight = Math.ceil(this.image.getScaledHeight());
-			this.viewportWidth = Math.ceil(this.image.getScaledWidth());
+			// Scale image and set viewport dimensions
+			if (this.image.height > this.image.width) {
+				this.image.scaleToHeight(this.editorHeight);
+				this.viewportHeight = this.editorHeight;
+				this.viewportWidth = Math.floor(this.image.getScaledWidth());
+			} else {
+				this.image.scaleToWidth(this.editorWidth);
+				this.viewportWidth = this.editorWidth;
+				this.viewportHeight = Math.floor(this.image.getScaledHeight());
+			}
 
 			this.image.set(this.image.getCenteredCoordinates());
 
@@ -5072,6 +5074,8 @@ Craft.AssetImageEditor = Garnish.Modal.extend(
 				width: this.editorWidth,
 				height: this.editorHeight
 			});
+
+			this._setImageZoomRatio();
 		},
 
 		/**
@@ -5131,6 +5135,8 @@ Craft.AssetImageEditor = Garnish.Modal.extend(
 						var cleanAngle = parseInt((this.viewport.getAngle() + 360) % 360, 10);
 						this.viewport.set({angle: cleanAngle});
 						this.animationInProgress = false;
+
+						this._setImageZoomRatio();
 					}, this)
 				});
 			}
@@ -5234,7 +5240,7 @@ Craft.AssetImageEditor = Garnish.Modal.extend(
 			var gridLines = [
 				new fabric.Line([0, 0, imageWidth, 0], strokeOptions),
 				new fabric.Line([0, imageHeight, 0, 0], strokeOptions),
-				new fabric.Line([imageWidth, 0, imageWidth , imageHeight], strokeOptions),
+				new fabric.Line([imageWidth, 0, imageWidth, imageHeight], strokeOptions),
 				new fabric.Line([imageWidth, imageHeight, 0, imageHeight], strokeOptions)
 			];
 
@@ -5244,7 +5250,7 @@ Craft.AssetImageEditor = Garnish.Modal.extend(
 			 */
 			var divideAndDraw = $.proxy(function (divisionLevel, dimensionToDivide, offset, lineLength, axis) {
 
-				var divisionPoint = dimensionToDivide / 2 - this.settings.gridLineThickness / 2 + offset;
+				var divisionPoint = Math.ceil(dimensionToDivide / 2 - this.settings.gridLineThickness / 2 + offset);
 
 				// Set the start/end points depending on the axis we're drawing along
 				if (axis == 'x') {
