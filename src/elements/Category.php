@@ -19,6 +19,7 @@ use craft\app\elements\actions\View;
 use craft\app\elements\db\CategoryQuery;
 use craft\app\helpers\Url;
 use craft\app\models\CategoryGroup;
+use yii\base\InvalidConfigException;
 
 /**
  * Category represents a category element.
@@ -430,13 +431,7 @@ class Category extends Element
      */
     public function getFieldLayout()
     {
-        $group = $this->getGroup();
-
-        if ($group) {
-            return $group->getFieldLayout();
-        }
-
-        return null;
+        return $this->getGroup()->getFieldLayout();
     }
 
     /**
@@ -476,32 +471,32 @@ class Category extends Element
     {
         $group = $this->getGroup();
 
-        if ($group) {
-            //return Url::getCpUrl('categories/'.$group->handle.'/'.$this->id.($this->slug ? '-'.$this->slug : ''));
-            $url = Url::getCpUrl('categories/'.$group->handle.'/'.$this->id.($this->slug ? '-'.$this->slug : ''));
+        $url = Url::getCpUrl('categories/'.$group->handle.'/'.$this->id.($this->slug ? '-'.$this->slug : ''));
 
-            if (Craft::$app->getIsLocalized() && $this->locale != Craft::$app->language) {
-                $url .= '/'.$this->locale;
-            }
-
-            return $url;
+        if (Craft::$app->getIsLocalized() && $this->locale != Craft::$app->language) {
+            $url .= '/'.$this->locale;
         }
 
-        return null;
+        return $url;
     }
 
     /**
      * Returns the category's group.
      *
-     * @return CategoryGroup|null
+     * @return CategoryGroup
+     * @throws InvalidConfigException if [[groupId]] is invalid
      */
     public function getGroup()
     {
         if ($this->groupId) {
-            return Craft::$app->getCategories()->getGroupById($this->groupId);
+            $group = Craft::$app->getCategories()->getGroupById($this->groupId);
+
+            if ($group) {
+                return $group;
+            }
         }
 
-        return null;
+        throw new InvalidConfigException('Invalid category group ID: '.$this->groupId);
     }
 
     // Protected Methods
