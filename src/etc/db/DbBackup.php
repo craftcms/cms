@@ -132,7 +132,7 @@ class DbBackup
 
 		if ($sql)
 		{
-			array_walk($sql, [$this, 'trimValue']);
+			array_walk($sql, array($this, 'trimValue'));
 			$sql = array_filter($sql);
 
 			$statements = $this->_buildSQLStatements($sql);
