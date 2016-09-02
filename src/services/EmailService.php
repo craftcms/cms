@@ -434,15 +434,18 @@ class EmailService extends BaseApplicationComponent
 				{
 					$renderedHtmlBody = craft()->templates->renderString($emailModel->htmlBody, $variables);
 					$email->msgHTML($renderedHtmlBody);
-					$email->AltBody = craft()->templates->renderString($emailModel->body, $variables);
 				}
 				else
 				{
 					// They didn't provide an htmlBody, so markdown the body.
 					$renderedHtmlBody = craft()->templates->renderString(StringHelper::parseMarkdown($emailModel->body), $variables);
 					$email->msgHTML($renderedHtmlBody);
-					$email->AltBody = craft()->templates->renderString($emailModel->body, $variables);
 				}
+
+				// Don't let Twig use the HTML escaping strategy on the plain text portion body of the email.
+				craft()->templates->getTwig()->getExtension('escaper')->setDefaultStrategy(false);
+				$email->AltBody = craft()->templates->renderString($emailModel->body, $variables);
+				craft()->templates->getTwig()->getExtension('escaper')->setDefaultStrategy('html');
 
 				craft()->setLanguage($oldLanguage);
 
