@@ -160,6 +160,8 @@ class TemplatesService extends BaseApplicationComponent
 			$loaderClass = __NAMESPACE__.'\\TemplateLoader';
 		}
 
+		$options = array_merge(array('safe_mode' => false), $options);
+
 		$cacheKey = $loaderClass.':'.md5(serialize($options));
 
 		if (!isset($this->_twigs[$cacheKey]))
