@@ -311,10 +311,10 @@ Craft.AssetImageEditor = Garnish.Modal.extend(
 
 			// draw Frame;
 			var gridLines = [
-				new fabric.Line([0, 0, imageWidth, 0], strokeOptions),
-				new fabric.Line([0, imageHeight, 0, 0], strokeOptions),
-				new fabric.Line([imageWidth, 0, imageWidth, imageHeight], strokeOptions),
-				new fabric.Line([imageWidth, imageHeight, 0, imageHeight], strokeOptions)
+				new fabric.Line([0, 0, imageWidth - 1, 0], strokeOptions),
+				new fabric.Line([0, imageHeight - 1, 0, 0], strokeOptions),
+				new fabric.Line([imageWidth - 1, 0, imageWidth - 1, imageHeight - 1], strokeOptions),
+				new fabric.Line([imageWidth, imageHeight - 1, 0, imageHeight - 1], strokeOptions)
 			];
 
 			/**
