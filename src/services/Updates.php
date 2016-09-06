@@ -328,13 +328,13 @@ class Updates extends Component
             $plugin = Craft::$app->getPlugins()->getPlugin($pluginUpdateModel->class);
 
             // Skip if the plugin doesn't have a feed URL
-            if ($plugin->releasesFeedUrl === null) {
+            if ($plugin->releaseFeedUrl === null) {
                 continue;
             }
 
             // Make sure it's HTTPS
-            if (strncmp($plugin->releasesFeedUrl, 'https://', 8) !== 0) {
-                Craft::warning('The “'.$plugin->name.'” plugin has a release feed URL, but it doesn’t begin with https://, so it’s getting skipped ('.$plugin->releasesFeedUrl.').');
+            if (strncmp($plugin->releaseFeedUrl, 'https://', 8) !== 0) {
+                Craft::warning('The “'.$plugin->name.'” plugin has a release feed URL, but it doesn’t begin with https://, so it’s getting skipped ('.$plugin->releaseFeedUrl.').');
                 continue;
             }
 
@@ -353,10 +353,10 @@ class Updates extends Component
                 // Potentially long-running request, so close session to prevent session blocking on subsequent requests.
                 Craft::$app->getSession()->close();
 
-                $response = $client->get($plugin->releasesFeedUrl, null);
+                $response = $client->get($plugin->releaseFeedUrl, null);
 
                 if ($response->getStatusCode() != 200) {
-                    Craft::warning('Error in calling '.$plugin->releasesFeedUrl.'. Response: '.$response->getBody());
+                    Craft::warning('Error in calling '.$plugin->releaseFeedUrl.'. Response: '.$response->getBody());
                     continue;
                 }
 
