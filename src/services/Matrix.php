@@ -1002,7 +1002,7 @@ class Matrix extends Component
         if ($applyNewTranslationSetting) {
             // Get all of the blocks for this field/owner that use the other locales, whose ownerLocale attribute is set
             // incorrectly
-            /** @var MatrixBlock[] $blocksInOtherLocales */
+            /** @var array $blocksInOtherLocales */
             $blocksInOtherLocales = [];
 
             $query = MatrixBlock::find()
