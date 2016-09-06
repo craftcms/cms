@@ -272,24 +272,15 @@ Craft.AssetImageEditor = Garnish.Modal.extend(
 		_setImageZoomRatio: function () {
 			this.imageStraightenAngle = parseFloat(this.$straighten.val());
 
-			// If we're rotated by 90 or 270 degrees, flip the width with height
-			if (this.viewportRotation % 180 == 0) {
-				viewportWidth = this.viewportWidth;
-				viewportHeight = this.viewportHeight;
-				imageHeight = this.image.height;
-				imageWidth = this.image.width;
-			} else {
-				viewportWidth = this.viewportHeight;
-				viewportHeight = this.viewportWidth;
-				imageHeight = this.image.width;
-				imageWidth = this.image.height;
-			}
+			// Convert the angle in radians
+			var angleInRadians = Math.abs(this.imageStraightenAngle) * (Math.PI / 180);
 
-			// Get the size of the largest proportional rectangle
-			var proportionalRectangle = this._calculateLargestProportionalRectangle(this.imageStraightenAngle, imageWidth, imageHeight);
+			// Calculate the dimensions of the scaled image using the magic of math
+			var scaledWidth = Math.sin(angleInRadians) * this.viewportHeight + Math.cos(angleInRadians) * this.viewportWidth;
+			var scaledHeight = Math.sin(angleInRadians) * this.viewportWidth + Math.cos(angleInRadians) * this.viewportHeight;
 
-			// Scale it
-			var zoomRatio = Math.max(viewportWidth / proportionalRectangle.w, viewportHeight / proportionalRectangle.h);
+			// Calculate the ratio
+			var zoomRatio = Math.max(scaledWidth /  this.viewportWidth, scaledHeight / this.viewportHeight);
 
 			this.image.scale(zoomRatio);
 		},
@@ -368,51 +359,6 @@ Craft.AssetImageEditor = Garnish.Modal.extend(
 		 */
 		hideGrid: function () {
 			this.grid.set({opacity: 0});
-		},
-
-		/**
-		 * Calculate the largest possible rectangle within a rotated rectangle.
-		 * Adapted from http://stackoverflow.com/a/18402507/2040791
-		 */
-		_calculateLargestProportionalRectangle: function (angle, origWidth, origHeight) {
-
-			var w0, h0;
-
-			if (origWidth <= origHeight) {
-				w0 = origWidth;
-				h0 = origHeight;
-			}
-			else {
-				w0 = origHeight;
-				h0 = origWidth;
-			}
-
-			// Angle normalization in range [-PI..PI)
-			if (angle > 180) {
-				angle = 180 - angle;
-			}
-			if (angle < 0) {
-				angle = angle + 180;
-			}
-			var ang = angle * (Math.PI / 180);
-
-			if (ang > Math.PI / 2) {
-				ang = Math.PI - ang;
-			}
-
-			var c = w0 / (h0 * Math.sin(ang) + w0 * Math.cos(ang)),
-				w, h;
-
-			if (origWidth <= origHeight) {
-				w = w0 * c;
-				h = h0 * c;
-			}
-			else {
-				w = h0 * c;
-				h = w0 * c;
-			}
-
-			return {w: w, h: h};
 		},
 
 		onFadeOut: function () {
