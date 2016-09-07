@@ -199,7 +199,7 @@ Craft.ui =
     createCheckboxField: function(config)
     {
         var $field = $('<div class="field checkboxfield"/>', {
-            id: (cofig.id ? config.id+'-field' : null)
+            id: (config.id ? config.id+'-field' : null)
         });
 
         if (config.first) $field.addClass('first');
