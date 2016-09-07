@@ -104,10 +104,6 @@ Craft.ui =
             'data-target-prefix': config.targetPrefix
         }).appendTo($container);
 
-        if (config.toggle) {
-            $select.addClass('fieldtoggle');
-        }
-
         var $optgroup;
 
         for (var key in config.options) {
@@ -134,6 +130,11 @@ Craft.ui =
                     'html': optionLabel
                 }).appendTo($optgroup || $select);
             }
+        }
+
+        if (config.toggle) {
+            $select.addClass('fieldtoggle');
+            new Craft.FieldToggle($select);
         }
 
         return $container;
@@ -289,10 +290,6 @@ Craft.ui =
             $container.addClass('small');
         }
 
-        if (config.toggle || config.reverseToggle) {
-            $container.addClass('fieldtoggle');
-        }
-
         if (config.disabled) {
             $container.addClass('disabled');
         }
@@ -312,6 +309,11 @@ Craft.ui =
                 value: (config.on ? value : ''),
                 disabled: config.disabled
             }).appendTo($container);
+        }
+
+        if (config.toggle || config.reverseToggle) {
+            $container.addClass('fieldtoggle');
+            new Craft.FieldToggle($container);
         }
 
         return $container.lightswitch();
