@@ -4995,7 +4995,7 @@ Craft.AssetImageEditor = Garnish.Modal.extend(
 			this.base($container, this.settings);
 
 			this.$buttons = $('<div class="buttons rightalign"/>').appendTo($footer);
-			this.$cancelBtn = $('<div class="btn">' + Craft.t('app', 'Cancel') + '</div>').appendTo(this.$buttons);
+			this.$cancelBtn = $('<div class="btn cancel">' + Craft.t('app', 'Cancel') + '</div>').appendTo(this.$buttons);
 			this.$replaceBtn = $('<div class="btn submit save replace">' + Craft.t('app', 'Replace Asset') + '</div>').appendTo(this.$buttons);
 			this.$saveBtn = $('<div class="btn submit save copy">' + Craft.t('app', 'Save as New Asset') + '</div>').appendTo(this.$buttons);
 
@@ -5130,27 +5130,11 @@ Craft.AssetImageEditor = Garnish.Modal.extend(
 				this.rotateViewport(90);
 			}, this));
 
-			$('.rotate.reset').on('click', $.proxy(function (ev) {
-				this.resetStraighten(ev);
-			}, this));
+			$('.rotate.reset').on('click', $.proxy(this, 'resetStraighten'));
+			$('.rotate.straighten').on('input change', $.proxy(this, 'straighten'));
 
-			$('.rotate.straighten').on('input change', $.proxy(function (ev) {
-				this.straighten(ev);
-			}, this));
-
-			$('.save.btn', this.$buttons).on('click', $.proxy(function (ev) {
-
-				var postData = {
-					assetId: this.assetId,
-					viewportRotation: this.viewportRotation,
-					imageRotation: this.imageStraightenAngle,
-					replace: $(ev.currentTarget).hasClass('replace') ? 1 : 0
-				};
-
-				Craft.postActionRequest('assets/edit-image', postData, function (data) {
-					alert('ok!');
-				});
-			}, this));
+			$('.btn.cancel', this.$buttons).on('click', $.proxy(this, 'hide'));
+			$('.btn.save', this.$buttons).on('click', $.proxy(this, 'saveImage'));
 		},
 
 		/**
@@ -5233,6 +5217,34 @@ Craft.AssetImageEditor = Garnish.Modal.extend(
 
 			this.$straighten.val(0);
 			this.straighten();
+		},
+
+		/**
+		 * Save the image.
+		 *
+		 * @param Event ev
+		 */
+		saveImage: function (ev) {
+
+			$button = $(ev.currentTarget);
+			if ($button.hasClass('disabled')) {
+				return false;
+			}
+
+			$('.btn', this.$buttons).addClass('disabled');
+			this.$buttons.append('<div class="spinner"></div>');
+
+			var postData = {
+				assetId: this.assetId,
+				viewportRotation: this.viewportRotation,
+				imageRotation: this.imageStraightenAngle,
+				replace: $button.hasClass('replace') ? 1 : 0
+			};
+
+			Craft.postActionRequest('assets/edit-image', postData, $.proxy(function (data) {
+				this.$buttons.find('.btn').removeClass('disabled').end().find('.spinner').remove();
+			}, this));
+
 		},
 
 		/**
