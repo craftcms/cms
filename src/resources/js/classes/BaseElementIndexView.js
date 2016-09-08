@@ -70,7 +70,7 @@ Craft.BaseElementIndexView = Garnish.Base.extend(
 		// Enable inline element editing if this is an index page
 		if (this.settings.context == 'index')
 		{
-			this.addListener(this.$elementContainer, 'dblclick', function(ev)
+			this._handleElementEditing = $.proxy(function(ev)
 			{
 				var $target = $(ev.target);
 
@@ -98,7 +98,10 @@ Craft.BaseElementIndexView = Garnish.Base.extend(
 				{
 					this.createElementEditor($element);
 				}
-			});
+			}, this);
+
+			this.addListener(this.$elementContainer, 'dblclick', this._handleElementEditing);
+			this.addListener(this.$elementContainer, 'taphold', this._handleElementEditing);
 		}
 
 		// Give sub-classes a chance to do post-initialization stuff here

@@ -232,10 +232,12 @@ Craft.BaseElementSelectInput = Garnish.Base.extend(
 
 		if (this.settings.editable)
 		{
-			this.addListener($elements, 'dblclick', function(ev)
-			{
+			this._handleShowElementEditor = $.proxy(function(ev) {
 				this.elementEditor = Craft.showElementEditor($(ev.currentTarget), this.settings.editorSettings);
-			});
+			}, this);
+
+			this.addListener($elements, 'dblclick', this._handleShowElementEditor);
+			this.addListener($elements, 'taphold', this._handleShowElementEditor);
 		}
 
 		$elements.find('.delete').on('click', $.proxy(function(ev)
