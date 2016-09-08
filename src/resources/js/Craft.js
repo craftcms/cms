@@ -1,4 +1,4 @@
-/*! Craft 3.0.0 - 2016-09-01 */
+/*! Craft 3.0.0 - 2016-09-08 */
 (function($){
 
 // Set all the standard Craft.* stuff
@@ -4965,7 +4965,8 @@ Craft.AssetImageEditor = Garnish.Modal.extend(
 		viewport: null,
 		$editorContainer: null,
 		$straighten: null,
-		url: "",
+		url: null,
+		assetId: null,
 
 		// Editor paramters
 		editorHeight: 0,
@@ -4983,8 +4984,7 @@ Craft.AssetImageEditor = Garnish.Modal.extend(
 		// Animation
 		animationInProgress: false,
 
-		init: function(url, settings)
-		{
+		init: function (url, assetId, settings) {
 			this.setSettings(settings, Craft.AssetImageEditor.defaults);
 
 			// Build the modal
@@ -4995,9 +4995,9 @@ Craft.AssetImageEditor = Garnish.Modal.extend(
 			this.base($container, this.settings);
 
 			this.$buttons = $('<div class="buttons rightalign"/>').appendTo($footer);
-			this.$cancelBtn = $('<div class="btn">'+Craft.t('app', 'Cancel')+'</div>').appendTo(this.$buttons);
-			this.$selectBtn = $('<div class="btn disabled submit">'+Craft.t('app', 'Replace Image')+'</div>').appendTo(this.$buttons);
-			this.$selectBtn = $('<div class="btn disabled submit">'+Craft.t('app', 'Save as New Image')+'</div>').appendTo(this.$buttons);
+			this.$cancelBtn = $('<div class="btn">' + Craft.t('app', 'Cancel') + '</div>').appendTo(this.$buttons);
+			this.$replaceBtn = $('<div class="btn submit save replace">' + Craft.t('app', 'Replace Asset') + '</div>').appendTo(this.$buttons);
+			this.$saveBtn = $('<div class="btn submit save copy">' + Craft.t('app', 'Save as New Asset') + '</div>').appendTo(this.$buttons);
 
 			this.$body = $body;
 
@@ -5005,12 +5005,12 @@ Craft.AssetImageEditor = Garnish.Modal.extend(
 			this.removeListener(this.$shade, 'click');
 
 			this.url = url;
+			this.assetId = assetId;
 
 			Craft.postActionRequest('assets/image-editor', $.proxy(this, 'loadEditor'));
 		},
 
-		loadEditor: function (data)
-		{
+		loadEditor: function (data) {
 			this.$body.html(data.html);
 
 			this.canvas = new fabric.StaticCanvas('image-manipulator', {backgroundColor: this.backgroundColor});
@@ -5019,8 +5019,8 @@ Craft.AssetImageEditor = Garnish.Modal.extend(
 			this.$editorContainer = $('#image-holder');
 			this.$straighten = $('.rotate.straighten');
 
-			this.editorHeight = this.$editorContainer.height();
-			this.editorWidth = this.$editorContainer.width();
+			this.editorHeight = this.$editorContainer.innerHeight();
+			this.editorWidth = this.$editorContainer.innerWidth();
 
 			// Load the image from URL
 			fabric.Image.fromURL(this.url, $.proxy(function (imageObject) {
@@ -5030,9 +5030,6 @@ Craft.AssetImageEditor = Garnish.Modal.extend(
 				this.originalHeight = this.image.getHeight();
 				this.originalWidth = this.image.getWidth();
 
-				// Set the bounding box so we know how to center the image
-				this.image.setBoundingBox(this.editorWidth - 1, this.editorHeight);
-
 				// Scale the image and center it on the canvas
 				this._scaleAndCenterImage();
 
@@ -5040,7 +5037,10 @@ Craft.AssetImageEditor = Garnish.Modal.extend(
 				var mask = this._createCroppingMask();
 
 				// Set up a cropping viewport
-				this.viewport = new fabric.Group([this.image, mask], {originX: 'center', originY: 'center'});
+				this.viewport = new fabric.Group([this.image, mask], {
+					originX: 'center',
+					originY: 'center'
+				});
 				this.canvas.add(this.viewport);
 
 				// Add listeners to buttons and draw the grid
@@ -5057,18 +5057,41 @@ Craft.AssetImageEditor = Garnish.Modal.extend(
 		 */
 		_scaleAndCenterImage: function () {
 
-			// Scale image and set viewport dimensions
+			// The width/height correction by a pixel might seem paranoid, but we really want
+			// to get rid of 0.5 pixels and also make sure that the image is within
+			// the editor or the final image might have a 1px sliver of background
 			if (this.image.height > this.image.width) {
-				this.image.scaleToHeight(this.editorHeight);
 				this.viewportHeight = this.editorHeight;
-				this.viewportWidth = Math.floor(this.image.getScaledWidth());
+				this.image.height = this.viewportHeight;
+
+				// Never scale to parts of a pixel
+				this.image.width = Math.round(this.originalWidth * (this.image.height / this.originalHeight));
+
+				// Correct for neat divisions
+				if (this.image.width % 2 == 1) {
+					this.image.width += (this.image.width < this.editorWidth ? 1 : -1);
+				}
+
+				this.viewportWidth = this.image.width;
 			} else {
-				this.image.scaleToWidth(this.editorWidth);
 				this.viewportWidth = this.editorWidth;
-				this.viewportHeight = Math.floor(this.image.getScaledHeight());
+				this.image.width = this.viewportWidth;
+
+				// Never scale to parts of a pixel
+				this.image.height = Math.round(this.originalHeight * (this.image.width / this.originalWidth));
+
+				// Correct for neat divisions
+				if (this.image.height % 2 == 1) {
+					this.image.height += (this.image.height < this.editorHeight ? 1 : -1);
+				}
+
+				this.viewportHeight = this.image.height;
 			}
 
-			this.image.set(this.image.getCenteredCoordinates());
+			this.image.set({
+				left: (this.editorWidth - this.image.width) / 2,
+				top: (this.editorHeight - this.image.height) / 2
+			});
 
 			this.canvas.setDimensions({
 				width: this.editorWidth,
@@ -5084,7 +5107,13 @@ Craft.AssetImageEditor = Garnish.Modal.extend(
 		 * @returns fabric.Rect
 		 */
 		_createCroppingMask: function () {
-			var mask = new fabric.Rect({width: this.viewportWidth, height: this.viewportHeight, fill: '#fff', left: this.image.left, top: this.image.top});
+			var mask = new fabric.Rect({
+				width: this.viewportWidth,
+				height: this.viewportHeight,
+				fill: '#fff',
+				left: this.image.left,
+				top: this.image.top
+			});
 			mask.globalCompositeOperation = 'destination-in';
 			return mask;
 		},
@@ -5107,6 +5136,20 @@ Craft.AssetImageEditor = Garnish.Modal.extend(
 
 			$('.rotate.straighten').on('input change', $.proxy(function (ev) {
 				this.straighten(ev);
+			}, this));
+
+			$('.save.btn', this.$buttons).on('click', $.proxy(function (ev) {
+
+				var postData = {
+					assetId: this.assetId,
+					viewportRotation: this.viewportRotation,
+					imageRotation: this.imageStraightenAngle,
+					replace: $(ev.currentTarget).hasClass('replace') ? 1 : 0
+				};
+
+				Craft.postActionRequest('assets/edit-image', postData, function (data) {
+					alert('ok!');
+				});
 			}, this));
 		},
 
@@ -5170,7 +5213,6 @@ Craft.AssetImageEditor = Garnish.Modal.extend(
 					top: 0
 				});
 
-				this.imageAngle = this.image.getAngle();
 				this._setImageZoomRatio();
 
 				this.canvas.renderAll();
@@ -5199,24 +5241,15 @@ Craft.AssetImageEditor = Garnish.Modal.extend(
 		_setImageZoomRatio: function () {
 			this.imageStraightenAngle = parseFloat(this.$straighten.val());
 
-			// If we're rotated by 90 or 270 degrees, flip the width with height
-			if (this.viewportRotation % 180 == 0) {
-				viewportWidth = this.viewportWidth;
-				viewportHeight = this.viewportHeight;
-				imageHeight = this.originalHeight;
-				imageWidth = this.originalWidth;
-			} else {
-				viewportWidth = this.viewportHeight;
-				viewportHeight = this.viewportWidth;
-				imageHeight = this.originalWidth;
-				imageWidth = this.originalHeight;
-			}
+			// Convert the angle to radians
+			var angleInRadians = Math.abs(this.imageStraightenAngle) * (Math.PI / 180);
 
-			// Get the size of the largest proportional rectangle
-			var proportionalRectangle = this._calculateLargestProportionalRectangle(this.imageStraightenAngle, imageWidth, imageHeight);
+			// Calculate the dimensions of the scaled image using the magic of math
+			var scaledWidth = Math.sin(angleInRadians) * this.viewportHeight + Math.cos(angleInRadians) * this.viewportWidth;
+			var scaledHeight = Math.sin(angleInRadians) * this.viewportWidth + Math.cos(angleInRadians) * this.viewportHeight;
 
-			// Scale it
-			var zoomRatio = Math.max(viewportWidth / proportionalRectangle.w, viewportHeight / proportionalRectangle.h);
+			// Calculate the ratio
+			var zoomRatio = Math.max(scaledWidth /  this.viewportWidth, scaledHeight / this.viewportHeight);
 
 			this.image.scale(zoomRatio);
 		},
@@ -5238,10 +5271,10 @@ Craft.AssetImageEditor = Garnish.Modal.extend(
 
 			// draw Frame;
 			var gridLines = [
-				new fabric.Line([0, 0, imageWidth, 0], strokeOptions),
-				new fabric.Line([0, imageHeight, 0, 0], strokeOptions),
-				new fabric.Line([imageWidth, 0, imageWidth, imageHeight], strokeOptions),
-				new fabric.Line([imageWidth, imageHeight, 0, imageHeight], strokeOptions)
+				new fabric.Line([0, 0, imageWidth - 1, 0], strokeOptions),
+				new fabric.Line([0, imageHeight - 1, 0, 0], strokeOptions),
+				new fabric.Line([imageWidth - 1, 0, imageWidth - 1, imageHeight - 1], strokeOptions),
+				new fabric.Line([imageWidth, imageHeight - 1, 0, imageHeight - 1], strokeOptions)
 			];
 
 			/**
@@ -5295,51 +5328,6 @@ Craft.AssetImageEditor = Garnish.Modal.extend(
 		 */
 		hideGrid: function () {
 			this.grid.set({opacity: 0});
-		},
-
-		/**
-		 * Calculate the largest possible rectangle within a rotated rectangle.
-		 * Adapted from http://stackoverflow.com/a/18402507/2040791
-		 */
-		_calculateLargestProportionalRectangle: function (angle, origWidth, origHeight) {
-
-			var w0, h0;
-
-			if (origWidth <= origHeight) {
-				w0 = origWidth;
-				h0 = origHeight;
-			}
-			else {
-				w0 = origHeight;
-				h0 = origWidth;
-			}
-
-			// Angle normalization in range [-PI..PI)
-			if (angle > 180) {
-				angle = 180 - angle;
-			}
-			if (angle < 0) {
-				angle = angle + 180;
-			}
-			var ang = angle * (Math.PI / 180);
-
-			if (ang > Math.PI / 2) {
-				ang = Math.PI - ang;
-			}
-
-			var c = w0 / (h0 * Math.sin(ang) + w0 * Math.cos(ang)),
-				w, h;
-
-			if (origWidth <= origHeight) {
-				w = w0 * c;
-				h = h0 * c;
-			}
-			else {
-				w = h0 * c;
-				h = w0 * c;
-			}
-
-			return {w: w, h: h};
 		},
 
 		onFadeOut: function () {
