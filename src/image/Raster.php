@@ -346,7 +346,7 @@ class Raster extends Image
                 $this->_image->resize(new Box($targetWidth,
                     $targetHeight), $this->_getResizeFilter());
             }
-            
+
             if (Craft::$app->getImages()->getIsImagick()) {
                 $this->_image->getImagick()->setImagePage(0, 0, 0, 0);
             }
