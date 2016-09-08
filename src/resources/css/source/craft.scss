@@ -431,7 +431,7 @@ body.rtl .btngroup .btn:not(:last-child) { border-top-left-radius: 0; border-bot
 .btn.big + .spinner { height: 36px; }
 
 /* submit buttons */
-.btn.submit { color: #fff; @include linear-gradient($submitcolor, #cc5643); }
+.btn.submit { color: #fff; @include linear-gradient($submitcolor, #cc5643); @include light-on-dark-text; }
 .btn.submit:not(.disabled):not(.inactive):hover,
 .btn.submit:not(.disabled):not(.inactive).hover { @include linear-gradient($submitHoverColor, #b34b3b); }
 .btn.submit:not(.disabled):not(.inactive):active,
