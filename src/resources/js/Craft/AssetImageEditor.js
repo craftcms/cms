@@ -10,7 +10,8 @@ Craft.AssetImageEditor = Garnish.Modal.extend(
 		viewport: null,
 		$editorContainer: null,
 		$straighten: null,
-		url: "",
+		url: null,
+		assetId: null,
 
 		// Editor paramters
 		editorHeight: 0,
@@ -28,7 +29,7 @@ Craft.AssetImageEditor = Garnish.Modal.extend(
 		// Animation
 		animationInProgress: false,
 
-		init: function (url, settings) {
+		init: function (url, assetId, settings) {
 			this.setSettings(settings, Craft.AssetImageEditor.defaults);
 
 			// Build the modal
@@ -40,9 +41,8 @@ Craft.AssetImageEditor = Garnish.Modal.extend(
 
 			this.$buttons = $('<div class="buttons rightalign"/>').appendTo($footer);
 			this.$cancelBtn = $('<div class="btn">' + Craft.t('app', 'Cancel') + '</div>').appendTo(this.$buttons);
-			this.$replaceBtn = $('<div class="btn disabled submit">' + Craft.t('app', 'Replace Asset') + '</div>').appendTo(this.$buttons);
-			this.$saveBtn = $('<div class="btn disabled submit">' + Craft.t('app', 'Save as New Asset') + '</div>').appendTo(this.$buttons);
-			this.$ExportBtn = $('<div class="btn submit export">' + Craft.t('app', 'Export') + '</div>').appendTo(this.$buttons);
+			this.$replaceBtn = $('<div class="btn submit save replace">' + Craft.t('app', 'Replace Asset') + '</div>').appendTo(this.$buttons);
+			this.$saveBtn = $('<div class="btn submit save copy">' + Craft.t('app', 'Save as New Asset') + '</div>').appendTo(this.$buttons);
 
 			this.$body = $body;
 
@@ -50,6 +50,7 @@ Craft.AssetImageEditor = Garnish.Modal.extend(
 			this.removeListener(this.$shade, 'click');
 
 			this.url = url;
+			this.assetId = assetId;
 
 			Craft.postActionRequest('assets/image-editor', $.proxy(this, 'loadEditor'));
 		},
@@ -181,6 +182,20 @@ Craft.AssetImageEditor = Garnish.Modal.extend(
 			$('.rotate.straighten').on('input change', $.proxy(function (ev) {
 				this.straighten(ev);
 			}, this));
+
+			$('.save.btn', this.$buttons).on('click', $.proxy(function (ev) {
+
+				var postData = {
+					assetId: this.assetId,
+					viewportRotation: this.viewportRotation,
+					imageRotation: this.imageStraightenAngle,
+					replace: $(ev.currentTarget).hasClass('replace') ? 1 : 0
+				};
+
+				Craft.postActionRequest('assets/edit-image', postData, function (data) {
+					alert('ok!');
+				});
+			}, this));
 		},
 
 		/**
@@ -243,7 +258,6 @@ Craft.AssetImageEditor = Garnish.Modal.extend(
 					top: 0
 				});
 
-				this.imageAngle = this.image.getAngle();
 				this._setImageZoomRatio();
 
 				this.canvas.renderAll();
@@ -272,7 +286,7 @@ Craft.AssetImageEditor = Garnish.Modal.extend(
 		_setImageZoomRatio: function () {
 			this.imageStraightenAngle = parseFloat(this.$straighten.val());
 
-			// Convert the angle in radians
+			// Convert the angle to radians
 			var angleInRadians = Math.abs(this.imageStraightenAngle) * (Math.PI / 180);
 
 			// Calculate the dimensions of the scaled image using the magic of math

@@ -14,9 +14,11 @@ use craft\app\errors\AssetException;
 use craft\app\errors\UploadFailedException;
 use craft\app\fields\Assets as AssetsField;
 use craft\app\helpers\Assets;
+use craft\app\helpers\Image;
 use craft\app\helpers\Io;
 use craft\app\elements\Asset;
 use craft\app\helpers\StringHelper;
+use craft\app\image\Raster;
 use craft\app\models\VolumeFolder;
 use craft\app\web\Controller;
 use craft\app\web\UploadedFile;
@@ -33,8 +35,6 @@ use yii\web\Response;
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since  3.0
  */
-// TODO: permission rework
-// TODO: All exceptions must be translatable.
 class AssetsController extends Controller
 {
     // Properties
@@ -374,11 +374,12 @@ class AssetsController extends Controller
 
         $assets = Craft::$app->getAssets();
         $asset = $assets->getAssetById($assetId);
-        $folder = $assets->getFolderById($folderId);
 
         if (empty($asset)) {
             throw new BadRequestHttpException('The Asset cannot be found');
         }
+
+        $folder = $assets->getFolderById($folderId);
 
         if (empty($folder)) {
             throw new BadRequestHttpException('The folder cannot be found');
@@ -565,9 +566,130 @@ class AssetsController extends Controller
     }
 
     /**
-     * Download a file.
+     * Edit an image according to posted parameters.
      *
      * @return Response
+     * @throws BadRequestHttpException if some parameters are missing.
+     * @throws \Exception if something went wrong saving the Asset.
+     */
+    public function actionEditImage() {
+        $this->requireLogin();
+        $this->requireAjaxRequest();
+
+        $assets = Craft::$app->getAssets();
+        $request = Craft::$app->getRequest();
+
+        $assetId = $request->getRequiredBodyParam('assetId');
+        $viewportRotation = $request->getRequiredBodyParam('viewportRotation');
+        $imageRotation = $request->getRequiredBodyParam('imageRotation');
+        $replace = $request->getRequiredBodyParam('replace');
+
+        $asset = $assets->getAssetById($assetId);
+
+        if (empty($asset)) {
+            throw new BadRequestHttpException('The Asset cannot be found');
+        }
+
+        $folder = $asset->getFolder();
+
+        if (empty($folder)) {
+            throw new BadRequestHttpException('The folder cannot be found');
+        }
+
+        // Check the permissions to save in the resolved folder.
+        $this->_requirePermissionByAsset('saveAssetInVolume', $asset);
+
+        // If replacing, check for permissions to replace existing Asset files.
+        if ($replace) {
+            $this->_requirePermissionByAsset('deleteFilesAndFolders', $asset);
+        }
+
+        if (!in_array($viewportRotation, [0, 90, 180, 270])) {
+            throw new BadRequestHttpException('Viewport rotation must be 0, 90, 180 or 270 degrees');
+        }
+
+        $imageCopy = $asset->getCopyOfFile();
+        $imageSize = Image::getImageSize($imageCopy);
+
+        /**
+         * @var Raster $image
+         */
+        $image = Craft::$app->getImages()->loadImage($imageCopy, true, max($imageSize));
+
+        // Deal with straighten rotation first.
+        if ($imageRotation) {
+
+            $image->rotate($imageRotation);
+
+            $imageWidth = $imageSize[0];
+            $imageHeight = $imageSize[1];
+
+            // Convert the angle to radians
+            $angleInRadians = abs(deg2rad($imageRotation));
+
+            // When the image is rotated and scaled up, it forms four right angled
+            // triangles on the viewport sides. The adjacency is in relation to the
+            // rotation angle.
+            $sideTriangleAdjacentLeg = cos($angleInRadians) * $imageHeight;
+            $sideTriangleOppositeLeg = sin($angleInRadians) * $imageHeight;
+            $bottomTriangleAdjacentLeg = cos($angleInRadians) * $imageWidth;
+            $bottomTriangleOppositeLeg = sin($angleInRadians) * $imageWidth;
+
+            // For the rotated image, the side and top/bottom edges are composed like this
+            $scaledHeight = $sideTriangleAdjacentLeg + $bottomTriangleOppositeLeg;
+            $scaledWidth = $bottomTriangleAdjacentLeg + $sideTriangleOppositeLeg;
+
+            // Now use that to calculate the zoom factor and zoom in.
+            $zoomFactor = max($scaledHeight / $imageHeight, $scaledWidth / $imageWidth);
+            $image->resize($image->getWidth() * $zoomFactor, $image->getHeight() * $zoomFactor);
+
+            // In all likelihood this part will change as we implement more cropping tools,
+            // but for now the cropping takes place in the center.
+            $leftOffset = ($image->getWidth() - $imageWidth) / 2;
+            $topOffset = ($image->getHeight() - $imageHeight) / 2;
+
+            $image->crop($leftOffset, $leftOffset + $imageWidth, $topOffset, $topOffset + $imageHeight);
+        }
+
+        // Now, rotate by viewport rotation degrees. We do this after so that the actual aspet ratio of the
+        // image changes as well, if it was not square.
+        $image->rotate($viewportRotation);
+        $image->saveAs($imageCopy);
+
+        if ($replace) {
+            $assets->replaceAssetFile($asset, $imageCopy, $asset->filename);
+            $asset->dateModified = Io::getLastTimeModified($imageCopy);
+            $assetToSave = $asset;
+        } else {
+            $newAsset = new Asset();
+            // Make sure there are no double spaces, if the filename had a space followed by a
+            // capital letter because of Yii's "word" logic.
+            $newAsset->title = str_replace('  ', ' ', StringHelper::toTitleCase(Io::getFilename($asset->filename, false)));
+
+            $newAsset->newFilePath = $imageCopy;
+            $newAsset->filename = $assets->getNameReplacementInFolder($asset->filename, $folder->id);
+            $newAsset->folderId = $folder->id;
+            $newAsset->volumeId = $folder->volumeId;
+
+            $assetToSave = $newAsset;
+        }
+
+        try {
+            $assets->saveAsset($assetToSave);
+            Io::deleteFile($imageCopy, true);
+        } // No matter what happened, delete the file on server.
+        catch (\Exception $exception) {
+            Io::deleteFile($imageCopy, true);
+            throw $exception;
+        }
+
+        return $this->asJson(['success' => true]);
+    }
+
+    /**
+     * Download a file.
+     *
+     * @return void
      * @throws BadRequestHttpException if the file to download cannot be found.
      */
     public function actionDownloadAsset()
