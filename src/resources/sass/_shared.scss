@@ -249,6 +249,14 @@ $elementBorderRadius: 3px;
 	background: url(../images/spinner.gif) no-repeat 50% 50%;
 }
 
+@mixin light-on-dark-text() {
+	// Make light on dark text sharp on Macs
+	// (sub-pixel antialiasing looks too bold/blurry with light text on dark background)
+	-moz-osx-font-smoothing: grayscale;
+	-webkit-font-smoothing: antialiased;
+	font-weight: 600;
+}
+
 /* RTL stuff */
 
 @mixin left($left) {

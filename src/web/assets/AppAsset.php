@@ -71,6 +71,7 @@ class AppAsset extends AssetBundle
             'lib/velocity'.($useCompressedJs ? '.min' : '').'.js',
             'lib/selectize/selectize'.($useCompressedJs ? '.min' : '').'.js',
             'lib/fileupload/jquery.ui.widget.js',
+            'lib/jquery.mobile-events'.($useCompressedJs ? '.min' : '').'.js',
             'lib/fileupload/jquery.fileupload.js',
             'lib/picturefill'.($useCompressedJs ? '.min' : '').'.js',
             'lib/element-resize-detector'.($useCompressedJs ? '.min' : '').'.js',
