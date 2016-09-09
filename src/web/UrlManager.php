@@ -285,7 +285,7 @@ class UrlManager extends \yii\web\UrlManager
             $this->_matchedElementRoute = false;
 
             if (Craft::$app->getIsInstalled() && Craft::$app->getRequest()->getIsSiteRequest()) {
-                $element = Craft::$app->getElements()->getElementByUri($path, Craft::$app->language, true);
+                $element = Craft::$app->getElements()->getElementByUri($path, Craft::$app->getSites()->currentSite->id, true);
 
                 if ($element) {
                     // Do any plugins want a say in this?

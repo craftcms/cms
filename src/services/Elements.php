@@ -1191,7 +1191,7 @@ class Elements extends Component
      * Returns a placeholder element by its ID and site ID.
      *
      * @param integer $id     The element’s ID
-     * @param string  $siteId The element’s site ID
+     * @param integer $siteId The element’s site ID
      *
      * @return ElementInterface|null The placeholder element if one exists, or null.
      * @see setPlaceholderElement()

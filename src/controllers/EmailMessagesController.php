@@ -74,7 +74,7 @@ class EmailMessagesController extends Controller
         if (Craft::$app->getIsMultiSite()) {
             $message->siteId = Craft::$app->getRequest()->getBodyParam('siteId');
         } else {
-            $message->siteId = Craft::$app->language;
+            $message->siteId = Craft::$app->getSites()->getPrimarySite()->id;
         }
 
         if (Craft::$app->getEmailMessages()->saveMessage($message)) {
