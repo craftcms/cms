@@ -127,7 +127,7 @@
                         {% set languageInput %}
                             <div class="select">
                                 <select id="preferred-language" name="preferred-language">
-                                    {% set allLanguages = craft.app.i18n.getSiteLocaleIds %}
+                                    {% set allSiteLanguages = craft.app.i18n.getSiteLocaleIds %}
                                     {% set userLanguage = account.getPreferredLanguage() ?: (account.getIsCurrent() ? craft.app.language : allSiteLanguages[0]) %}
 
                                     {% for language in allSiteLanguages %}
