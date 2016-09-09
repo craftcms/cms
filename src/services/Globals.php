@@ -246,11 +246,13 @@ class Globals extends Component
      */
     public function getSetByHandle($globalSetHandle, $siteId = null)
     {
+        $currentSiteId = Craft::$app->getSites()->currentSite->id;
+
         if (!$siteId) {
-            $siteId = Craft::$app->getSites()->currentSite->id;
+            $siteId = $currentSiteId;
         }
 
-        if ($siteId == Craft::$app->language) {
+        if ($siteId == $currentSiteId) {
             $globalSets = $this->getAllSets();
 
             foreach ($globalSets as $globalSet) {

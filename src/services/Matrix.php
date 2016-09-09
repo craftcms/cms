@@ -630,8 +630,7 @@ class Matrix extends Component
      * Returns a block by its ID.
      *
      * @param integer $blockId  The Matrix block’s ID.
-     * @param integer $siteId   The site ID to return.
-     *                          Defaults to [[\craft\app\web\Application::language `Craft::$app->language`]].
+     * @param integer $siteId   The site ID to return. Defaults to the current site.
      *
      * @return MatrixBlock|null The Matrix block, or `null` if it didn’t exist.
      */

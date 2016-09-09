@@ -142,8 +142,7 @@ class Config extends Component
      * - [setPasswordSuccessPath](http://craftcms.com/docs/config-settings#setPasswordSuccessPath)
      *
      * @param string $item       The name of the config setting.
-     * @param string $siteHandle The site handle to return. Defaults to
-     *                           [[\craft\app\web\Application::language `Craft::$app->language`]].
+     * @param string $siteHandle The site handle to return. Defaults to the current site.
      * @param string $category   The name of the config file (sans .php). Defaults to 'general'.
      *
      * @return mixed The value of the config setting, or `null` if a value could not be found.

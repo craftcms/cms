@@ -106,7 +106,7 @@ class EmailMessages extends Component
     public function getMessage($key, $siteId = null)
     {
         if (!$siteId) {
-            $siteId = Craft::$app->language;
+            $siteId = Craft::$app->getSites()->currentSite->id;
         }
 
         $message = new RebrandEmail();
