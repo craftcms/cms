@@ -1,4 +1,4 @@
-/*! Craft 3.0.0 - 2016-09-07 */
+/*! Craft 3.0.0 - 2016-09-09 */
 (function($){
 
 // Set all the standard Craft.* stuff
@@ -3490,7 +3490,7 @@ Craft.BaseElementIndexView = Garnish.Base.extend(
         // Enable inline element editing if this is an index page
         if (this.settings.context == 'index')
         {
-            this.addListener(this.$elementContainer, 'dblclick', function(ev)
+            this._handleElementEditing = $.proxy(function(ev)
             {
                 var $target = $(ev.target);
 
@@ -3520,7 +3520,10 @@ Craft.BaseElementIndexView = Garnish.Base.extend(
                 {
                     this.createElementEditor($element);
                 }
-            });
+            }, this);
+
+            this.addListener(this.$elementContainer, 'dblclick', this._handleElementEditing);
+            this.addListener(this.$elementContainer, 'taphold', this._handleElementEditing);
         }
 
         // Give sub-classes a chance to do post-initialization stuff here
@@ -4070,10 +4073,12 @@ Craft.BaseElementSelectInput = Garnish.Base.extend(
 
 		if (this.settings.editable)
 		{
-			this.addListener($elements, 'dblclick', function(ev)
-			{
+			this._handleShowElementEditor = $.proxy(function(ev) {
 				this.elementEditor = Craft.showElementEditor($(ev.currentTarget), this.settings.editorSettings);
-			});
+			}, this);
+
+			this.addListener($elements, 'dblclick', this._handleShowElementEditor);
+			this.addListener($elements, 'taphold', this._handleShowElementEditor);
 		}
 
 		$elements.find('.delete').on('click', $.proxy(function(ev)
@@ -4563,8 +4568,9 @@ Craft.BaseElementSelectorModal = Garnish.Modal.extend(
 					onSelectionChange:  $.proxy(this, 'onSelectionChange')
 				});
 
-				// Double-clicking should select the elements
+				// Double-clicking or double-tapping should select the elements
 				this.addListener(this.elementIndex.$elements, 'dblclick', 'selectElements');
+				this.addListener(this.elementIndex.$elements, 'doubletap', 'selectElements');
 			}
 
 		}, this));
