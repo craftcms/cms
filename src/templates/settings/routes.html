@@ -44,11 +44,11 @@
 
 	<div id="routes">
 		{% for route in routes %}
-			<div class="route" data-id="{{ route.id }}"{% if route.locale %} data-locale="{{ route.locale }}"{% endif %}>
+			<div class="route" data-id="{{ route.id }}"{% if route.siteId %} data-site-id="{{ route.siteId }}"{% endif %}>
 				<div class="url-container">
 					{%- spaceless %}
-						{% if craft.isLocalized() %}
-							<span class="locale">{{ route.locale ?: "Global"|t('app') }}</span>
+						{% if craft.app.getIsMultiSite() %}
+							<span class="site">{{ route.siteId ? craft.app.sites.getSiteById(route.siteId).name|t('site') : "Global"|t('app') }}</span>
 						{% endif %}
 						<span class="url">{{ route.urlDisplayHtml|raw }}</span>
 					{% endspaceless -%}
@@ -67,8 +67,4 @@
 			"{{ name|e('js') }}": "{{ pattern|e('js') }}"
 		{% endfor %}
 	};
-
-	{% if craft.isLocalized() %}
-		Craft.routes.locales = {{ craft.app.i18n.getSiteLocaleIds()|json_encode|raw }};
-	{% endif %}
 {% endregisterjs %}

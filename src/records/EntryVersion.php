@@ -17,13 +17,14 @@ use craft\app\db\ActiveRecord;
  * @property integer $entryId   Entry ID
  * @property integer $sectionId Section ID
  * @property integer $creatorId Creator ID
- * @property Locale  $locale    Locale
+ * @property integer $siteId    Site ID
  * @property integer $num       Num
  * @property string  $notes     Notes
  * @property array   $data      Data
  * @property Entry   $entry     Entry
  * @property Section $section   Section
  * @property User    $creator   Creator
+ * @property Site    $site      Site
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since  3.0
@@ -39,15 +40,9 @@ class EntryVersion extends ActiveRecord
     public function rules()
     {
         return [
-            [['locale'], 'craft\\app\\validators\\Locale'],
-            [
-                ['num'],
-                'number',
-                'min' => 0,
-                'max' => 65535,
-                'integerOnly' => true
-            ],
-            [['locale', 'num', 'data'], 'required'],
+            [['siteId'], 'craft\\app\\validators\\SiteId'],
+            [['num'], 'number', 'min' => 0, 'max' => 65535, 'integerOnly' => true],
+            [['siteId', 'num', 'data'], 'required'],
         ];
     }
 
@@ -92,12 +87,12 @@ class EntryVersion extends ActiveRecord
     }
 
     /**
-     * Returns the entry version’s locale.
+     * Returns the associated site.
      *
      * @return ActiveQueryInterface The relational query object.
      */
-    public function getLocale()
+    public function getSite()
     {
-        return $this->hasOne(Locale::className(), ['id' => 'locale']);
+        return $this->hasOne(Site::className(), ['id' => 'siteId']);
     }
 }

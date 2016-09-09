@@ -148,7 +148,7 @@
 		{% if not isVersion %}
 			<input type="hidden" name="sectionId" value="{{ section.id }}">
 			{% if entry.id %}<input type="hidden" name="entryId" value="{{ entry.id }}">{% endif %}
-			{% if craft.isLocalized() %}<input type="hidden" name="locale" value="{{ entry.locale }}">{% endif %}
+			{% if craft.app.getIsMultiSite() %}<input type="hidden" name="siteId" value="{{ entry.siteId }}">{% endif %}
 		{% else %}
 			<input type="hidden" name="versionId" value="{{ entry.versionId }}">
 		{% endif %}
@@ -169,27 +169,27 @@
 					{% include "_includes/previewbtns" %}
 				{% endif %}
 
-				{% if craft.isLocalized() and section.getLocales() | length > 1 %}
-					<ul id="locales" class="pane">
+				{% if craft.app.getIsMultiSite() and section.getSiteSettings() | length > 1 %}
+					<ul id="sites" class="pane">
 						{% set parentIdParam = craft.app.request.getParam('parentId.0') ?: craft.app.request.getParam('parentId') %}
-						{% for localeId in localeIds %}
-							{% set localeName = craft.app.i18n.getLocaleById(localeId).getDisplayName(craft.app.language) %}
-							<li{% if localeId == entry.locale %} class="sel"{% endif %}>
-								{%- if localeId == entry.locale -%}
-									{{ localeName }}
+						{% for siteId in siteIds %}
+							{% set site = craft.app.sites.getSiteById(siteId) %}
+							<li{% if siteId == entry.siteId %} class="sel"{% endif %}>
+								{%- if siteId == entry.siteId -%}
+									{{ site.name|t('site') }}
 									{{ forms.lightswitch({
-										name: 'localeEnabled',
-										on:   entry.localeEnabled,
+										name: 'enabledForSite',
+										on:   entry.enabledForSite,
 										small: true,
 										disabled: isVersion
 									}) }}
 								{%- else -%}
-									{% set localeUrl = url(
-										'entries/'~sectionHandle~'/'~craft.app.request.getSegment(3)~'/'~localeId,
+									{% set siteEntryUrl = url(
+										'entries/'~sectionHandle~'/'~craft.app.request.getSegment(3)~'/'~site.handle,
 										(parentIdParam ? { parentId: parentIdParam })
 									) -%}
-									<a href="{{ localeUrl }}">{{ localeName }}</a>
-									<div class="status {{ localeId in enabledLocales ? 'enabled' : 'disabled' }}"></div>
+									<a href="{{ siteEntryUrl }}">{{ site.name|t('site') }}</a>
+									<div class="status {{ siteId in enabledSiteIds ? 'enabled' : 'disabled' }}"></div>
 								{%- endif -%}
 							</li>
 						{% endfor %}
@@ -212,7 +212,7 @@
 
 							{{ forms.textField({
 								label: "Slug"|t('app'),
-								locale: entry.locale,
+								siteId: entry.siteId,
 								id: 'slug',
 								name: 'slug',
 								value: entry.slug,

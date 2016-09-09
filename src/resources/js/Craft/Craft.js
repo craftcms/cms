@@ -1257,7 +1257,7 @@ $.extend(Craft,
 	 */
 	getLocalStorage: function(key, defaultValue)
 	{
-		key = 'Craft-'+Craft.siteUid+'.'+key;
+		key = 'Craft-'+Craft.systemUid+'.'+key;
 
 		if (typeof localStorage != 'undefined' && typeof localStorage[key] != 'undefined')
 		{
@@ -1279,7 +1279,7 @@ $.extend(Craft,
 	{
 		if (typeof localStorage != 'undefined')
 		{
-			key = 'Craft-'+Craft.siteUid+'.'+key;
+			key = 'Craft-'+Craft.systemUid+'.'+key;
 
 			// localStorage might be filled all the way up.
 			// Especially likely if this is a private window in Safari 8+, where localStorage technically exists,
@@ -1309,7 +1309,7 @@ $.extend(Craft,
 
 		return {
 			id: $element.data('id'),
-			locale: $element.data('locale'),
+			siteId: $element.data('site-id'),
 			label: $element.data('label'),
 			status: $element.data('status'),
 			url: $element.data('url'),

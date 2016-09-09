@@ -8,6 +8,7 @@
 namespace craft\app\helpers;
 
 use Craft;
+use yii\base\Exception;
 
 /**
  * Class Url
@@ -215,31 +216,35 @@ class Url
      * @param string            $path
      * @param array|string|null $params
      * @param string|null       $protocol
-     * @param string|null       $localeId
+     * @param integer|null      $siteId
      *
      * @return string
+     * @throws Exception if $siteId is invalid
      */
-    public static function getSiteUrl($path = '', $params = null, $protocol = null, $localeId = null)
+    public static function getSiteUrl($path = '', $params = null, $protocol = null, $siteId = null)
     {
-        $useLocaleSiteUrl = (
-            $localeId !== null &&
-            ($localeId != Craft::$app->language) &&
-            ($localeSiteUrl = Craft::$app->getConfig()->getLocalized('siteUrl', $localeId))
-        );
+        // Does this URL point to a different site?
+        $sites = Craft::$app->getSites();
 
-        if ($useLocaleSiteUrl) {
-            // Temporarily set Craft to use this element's locale's site URL
-            $siteUrl = Craft::$app->getSiteUrl();
-            /** @noinspection PhpUndefinedVariableInspection */
-            Craft::$app->setSiteUrl($localeSiteUrl);
+        if ($siteId !== null && $siteId != $sites->currentSite->id) {
+            // Get the site
+            $site = $sites->getSiteById($siteId);
+
+            if (!$site) {
+                throw new Exception('Invalid site ID: '.$siteId);
+            }
+
+            // Swap the current site
+            $currentSite = $sites->currentSite;
+            $sites->currentSite = $site;
         }
 
         $path = trim($path, '/');
         $url = static::_getUrl($path, $params, $protocol, false, false);
 
-        if ($useLocaleSiteUrl) {
-            /** @noinspection PhpUndefinedVariableInspection */
-            Craft::$app->setSiteUrl($siteUrl);
+        if (isset($currentSite)) {
+            // Restore the original current site
+            $sites->currentSite = $currentSite;
         }
 
         return $url;
@@ -354,7 +359,7 @@ class Url
         // Let's auto-detect.
 
         // If the siteUrl is https or the current request is https, use it.
-        $scheme = parse_url(Craft::$app->getSiteUrl(), PHP_URL_SCHEME);
+        $scheme = parse_url(static::baseUrl(), PHP_URL_SCHEME);
 
         $request = Craft::$app->getRequest();
         if (($scheme && strtolower($scheme) == 'https') || (!$request->getIsConsoleRequest() && $request->getIsSecureConnection())) {
@@ -363,6 +368,27 @@ class Url
 
         // Lame ole' http.
         return 'http';
+    }
+
+    /**
+     * Returns the current site’s base URL (with a trailing slash).
+     *
+     * @return string
+     */
+    public static function baseUrl()
+    {
+        // Is there a current site, and does it have a base URL?
+        $currentSite = Craft::$app->getSites()->currentSite;
+
+        if ($currentSite && $currentSite->baseUrl) {
+            $baseUrl = $currentSite->baseUrl;
+        } else {
+            // Figure it out for ourselves, then
+            $request = Craft::$app->getRequest();
+            return $request->getHostInfo().$request->getBaseUrl();
+        }
+
+        return rtrim($baseUrl, '/').'/';
     }
 
     // Private Methods
@@ -425,7 +451,7 @@ class Url
                 }
             }
         } else {
-            $baseUrl = Craft::$app->getSiteUrl($protocol);
+            $baseUrl = static::baseUrl();
 
             // Should we be adding that script name in?
             if ($showScriptName) {

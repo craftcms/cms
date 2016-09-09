@@ -514,6 +514,7 @@ var Field = Garnish.Base.extend(
 	$handleInput: null,
 	$requiredCheckbox: null,
 	$typeSelect: null,
+	$translationSettingsContainer: null,
 	$typeSettingsContainer: null,
 	$deleteBtn: null,
 
@@ -539,13 +540,14 @@ var Field = Garnish.Base.extend(
 
 		if (isNew)
 		{
-			this.$fieldSettingsContainer = $(this.getDefaultFieldSettingsHtml()).appendTo(this.blockType.$fieldSettingsContainer);
+			this.$fieldSettingsContainer = this.getDefaultFieldSettings().appendTo(this.blockType.$fieldSettingsContainer);
 		}
 
-		this.$nameInput = this.$fieldSettingsContainer.find('input[name$="[name]"]:first');
-		this.$handleInput = this.$fieldSettingsContainer.find('input[name$="[handle]"]:first');
-		this.$requiredCheckbox = this.$fieldSettingsContainer.find('input[type="checkbox"][name$="[required]"]:first');
-		this.$typeSelect = this.$fieldSettingsContainer.find('select[name$="[type]"]:first');
+		this.$nameInput = $('#'+this.inputIdPrefix+'-name');
+		this.$handleInput = $('#'+this.inputIdPrefix+'-handle');
+		this.$requiredCheckbox = $('#'+this.inputIdPrefix+'-required');
+		this.$typeSelect = $('#'+this.inputIdPrefix+'-type');
+		this.$translationSettingsContainer = $('#'+this.inputIdPrefix+'-translation-settings');
 		this.$typeSettingsContainer = this.$fieldSettingsContainer.children('.fieldtype-settings:first');
 		this.$deleteBtn = this.$fieldSettingsContainer.children('a.delete:first');
 
@@ -637,6 +639,13 @@ var Field = Garnish.Base.extend(
 
 	setFieldType: function(type)
 	{
+		// Show or hide the translation settings depending on if this type has content
+		if ($.inArray(type, Craft.fieldTypesWithContent) != -1) {
+			this.$translationSettingsContainer.removeClass('hidden');
+		} else {
+			this.$translationSettingsContainer.addClass('hidden');
+		}
+
 		if (this.selectedFieldType)
 		{
 			this.initializedFieldTypeSettings[this.selectedFieldType].detach();
@@ -691,85 +700,107 @@ var Field = Garnish.Base.extend(
 		return html;
 	},
 
-	getDefaultFieldSettingsHtml: function()
+	getDefaultFieldSettings: function()
 	{
-		var html =
-			'<div data-id="'+this.id+'">' +
-				'<div class="field" id="'+this.inputIdPrefix+'-name-field">' +
-					'<div class="heading">' +
-						'<label for="'+this.inputIdPrefix+'-name">'+Craft.t('app', 'Name')+'</label>' +
-					'</div>' +
-					'<div class="input">' +
-						'<input class="text fullwidth" type="text" id="'+this.inputIdPrefix+'-name" name="'+this.inputNamePrefix+'[name]" autofocus="" autocomplete="off"/>' +
-					'</div>' +
-				'</div>' +
-				'<div class="field" id="'+this.inputIdPrefix+'-handle-field">' +
-					'<div class="heading">' +
-						'<label class="required" for="'+this.inputIdPrefix+'-handle">'+Craft.t('app', 'Handle')+'</label>' +
-					'</div>' +
-					'<div class="input">' +
-						'<input class="text fullwidth code" type="text" id="'+this.inputIdPrefix+'-handle" name="'+this.inputNamePrefix+'[handle]" autofocus="" autocomplete="off"/>' +
-					'</div>' +
-				'</div>' +
-				'<div class="field" id="'+this.inputIdPrefix+'-instructions-field">' +
-					'<div class="heading">' +
-						'<label for="'+this.inputIdPrefix+'-instructions">'+Craft.t('app', 'Instructions')+'</label>' +
-					'</div>' +
-					'<div class="input">' +
-						'<textarea class="text nicetext fullwidth" rows="2" cols="50" id="'+this.inputIdPrefix+'-instructions" name="'+this.inputNamePrefix+'[instructions]"></textarea>' +
-					'</div>' +
-				'</div>' +
-				'<div class="field checkboxfield">' +
-					'<label>' +
-						'<input type="hidden" name="'+this.inputNamePrefix+'[required]" value=""/>' +
-						'<input type="checkbox" value="1" name="'+this.inputNamePrefix+'[required]"/> ' +
-						Craft.t('app', 'This field is required') +
-					'</label>' +
-				'</div>';
+		var $container = $('<div/>', {
+			'data-id': this.id
+		});
 
-		if (Craft.isLocalized)
-		{
-			html +=
-				'<div class="field checkboxfield">' +
-					'<label>' +
-						'<input type="hidden" name="'+this.inputNamePrefix+'[translatable]" value=""/>' +
-						'<input type="checkbox" value="1" name="'+this.inputNamePrefix+'[translatable]"/> ' +
-						Craft.t('app', 'This field is translatable') +
-					'</label>' +
-				'</div>';
-		}
+		Craft.ui.createTextField({
+			label: Craft.t('app', 'Name'),
+			id: this.inputIdPrefix+'-name',
+			name: this.inputNamePrefix+'[name]'
+		}).appendTo($container);
 
-		html +=
-				'<hr/>' +
+		Craft.ui.createTextField({
+			label: Craft.t('app', 'Handle'),
+			id: this.inputIdPrefix+'-handle',
+			'class': 'code',
+			name: this.inputNamePrefix+'[handle]',
+			maxlength: 64,
+			required: true
+		}).appendTo($container);
 
-				'<div class="field" id="type-field">' +
-					'<div class="heading">' +
-						'<label for="type">'+Craft.t('app', 'Field Type')+'</label>' +
-					'</div>' +
-					'<div class="input">' +
-						'<div class="select">' +
-							'<select id="type" class="fieldtoggle" name="'+this.inputNamePrefix+'[type]">';
+		Craft.ui.createTextareaField({
+			label: Craft.t('app', 'Instructions'),
+			id: this.inputIdPrefix+'-instructions',
+			'class': 'nicetext',
+			name: this.inputNamePrefix+'[instructions]',
+			maxlength: 64,
+			required: true
+		}).appendTo($container);
+
+		Craft.ui.createCheckboxField({
+			label: Craft.t('app', 'This field is required'),
+			id: this.inputIdPrefix+'-required',
+			name: this.inputNamePrefix+'[required]'
+		}).appendTo($container);
+
+		var fieldTypeOptions = [];
 
 		for (var i = 0; i < this.configurator.fieldTypeInfo.length; i++)
 		{
-			var info = this.configurator.fieldTypeInfo[i],
-				selected = (info.type == 'craft\\app\\fields\\PlainText');
-
-			html +=
-								'<option value="'+info.type+'"'+(selected ? ' selected=""' : '')+'>'+info.name+'</option>';
+			fieldTypeOptions.push({
+				value: this.configurator.fieldTypeInfo[i].type,
+				label: this.configurator.fieldTypeInfo[i].name
+			});
 		}
 
-		html +=
-							'</select>' +
-						'</div>' +
-					'</div>' +
-				'</div>' +
-				'<div class="fieldtype-settings"/>' +
-				'<hr/>' +
-				'<a class="error delete">'+Craft.t('app', 'Delete')+'</a>' +
-			'</div>';
+		Craft.ui.createSelectField({
+			label: Craft.t('app', 'Field Type'),
+			id: this.inputIdPrefix+'-type',
+			name: this.inputNamePrefix+'[type]',
+			options: fieldTypeOptions,
+			value: 'craft\\app\\fields\\PlainText'
+		}).appendTo($container);
 
-		return html;
+		if (Craft.isMultiSite)
+		{
+			var $translationSettingsContainer = $('<div/>', {
+				id: this.inputIdPrefix+'-translation-settings'
+			}).appendTo($container);
+
+			Craft.ui.createSelectField({
+				label: Craft.t('app', 'Translation Method'),
+				id: this.inputIdPrefix+'-translation-method',
+				name: this.inputNamePrefix+'[translationMethod]',
+				options: [
+					{ value: 'none', label: Craft.t('app', 'Not translatable') },
+					{ value: 'language', label: Craft.t('app', 'Translate for each language') },
+					{ value: 'site', label: Craft.t('app', 'Translate for each site') },
+					{ value: 'custom', label: Craft.t('app', 'Custom…') }
+				],
+				value: 'none',
+				toggle: true,
+				targetPrefix: this.inputIdPrefix+'-translation-method-'
+			}).appendTo($translationSettingsContainer);
+
+			var $translationKeyFormatContainer = $('<div/>', {
+				id: this.inputIdPrefix+'-translation-method-custom',
+				'class': 'hidden'
+			}).appendTo($translationSettingsContainer);
+
+			Craft.ui.createTextField({
+				label: Craft.t('app', 'Translation Key Format'),
+				id: this.inputIdPrefix+'-translation-key-format',
+				name: this.inputNamePrefix+'[translationKeyFormat]'
+			}).appendTo($translationKeyFormatContainer);
+		}
+
+		$('<hr/>').appendTo($container);
+
+		$('<div/>', {
+			'class': 'fieldtype-settings'
+		}).appendTo($container);
+
+		$('<hr/>').appendTo($container);
+
+		$('<a/>', {
+			'class': 'error delete',
+			text: Craft.t('app', 'Delete')
+		}).appendTo($container);
+
+		return $container;
 	},
 
 	confirmDelete: function()

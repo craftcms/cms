@@ -13,7 +13,7 @@ use craft\app\helpers\Json;
 use craft\app\helpers\Url;
 use craft\app\models\EntryType;
 use craft\app\models\Section;
-use craft\app\models\SectionLocale;
+use craft\app\models\Section_SiteSettings;
 use craft\app\web\Controller;
 use yii\web\BadRequestHttpException;
 use yii\web\NotFoundHttpException;
@@ -117,11 +117,6 @@ class SectionsController extends Controller
         $variables['section'] = $section;
         $variables['typeOptions'] = $typeOptions;
 
-        $variables['canBeHomepage'] = (
-            ($section->id && $section->getIsHomepage()) ||
-            (!Craft::$app->getSections()->doesHomepageExist())
-        );
-
         $variables['crumbs'] = [
             [
                 'label' => Craft::t('app', 'Settings'),
@@ -140,55 +135,63 @@ class SectionsController extends Controller
      * Saves a section.
      *
      * @return Response|null
+     * @throws BadRequestHttpException if any invalid site IDs are specified in the request
      */
     public function actionSaveSection()
     {
         $this->requirePostRequest();
 
+        $request = Craft::$app->getRequest();
+
         $section = new Section();
 
-        // Shared attributes
-        $section->id = Craft::$app->getRequest()->getBodyParam('sectionId');
-        $section->name = Craft::$app->getRequest()->getBodyParam('name');
-        $section->handle = Craft::$app->getRequest()->getBodyParam('handle');
-        $section->type = Craft::$app->getRequest()->getBodyParam('type');
-        $section->enableVersioning = Craft::$app->getRequest()->getBodyParam('enableVersioning', true);
+        // Main section settings
+        $section->id = $request->getBodyParam('sectionId');
+        $section->name = $request->getBodyParam('name');
+        $section->handle = $request->getBodyParam('handle');
+        $section->type = $request->getBodyParam('type');
+        $section->enableVersioning = $request->getBodyParam('enableVersioning', true);
 
-        // Type-specific attributes
-        $section->hasUrls = (bool)Craft::$app->getRequest()->getBodyParam('types.'.$section->type.'.hasUrls', true);
-        $section->template = Craft::$app->getRequest()->getBodyParam('types.'.$section->type.'.template');
-        $section->maxLevels = Craft::$app->getRequest()->getBodyParam('types.'.$section->type.'.maxLevels');
-
-        // Locale-specific attributes
-        $locales = [];
-
-        if (Craft::$app->getIsLocalized()) {
-            $localeIds = Craft::$app->getRequest()->getBodyParam('locales', []);
-        } else {
-            $primaryLocaleId = Craft::$app->getI18n()->getPrimarySiteLocaleId();
-            $localeIds = [$primaryLocaleId];
+        if ($section->type == Section::TYPE_STRUCTURE) {
+            $section->maxLevels = $request->getBodyParam('maxLevels');
         }
 
-        $isHomepage = ($section->type == Section::TYPE_SINGLE && Craft::$app->getRequest()->getBodyParam('types.'.$section->type.'.homepage'));
+        // Site-specific settings
+        $allSiteSettings = [];
 
-        foreach ($localeIds as $localeId) {
-            if ($isHomepage) {
-                $urlFormat = '__home__';
-                $nestedUrlFormat = null;
-            } else {
-                $urlFormat = Craft::$app->getRequest()->getBodyParam('types.'.$section->type.'.urlFormat.'.$localeId);
-                $nestedUrlFormat = Craft::$app->getRequest()->getBodyParam('types.'.$section->type.'.nestedUrlFormat.'.$localeId);
+        foreach (Craft::$app->getSites()->getAllSites() as $site) {
+            $postedSettings = $request->getBodyParam('sites.'.$site->handle);
+
+            // Skip disabled sites if this is a multi-site install
+            if (Craft::$app->getIsMultiSite() && empty($postedSettings['enabled'])) {
+                continue;
             }
 
-            $locales[$localeId] = new SectionLocale([
-                'locale' => $localeId,
-                'enabledByDefault' => (bool)Craft::$app->getRequest()->getBodyParam('defaultLocaleStatuses.'.$localeId),
-                'urlFormat' => $urlFormat,
-                'nestedUrlFormat' => $nestedUrlFormat,
-            ]);
+            $siteSettings = new Section_SiteSettings();
+            $siteSettings->siteId = $site->id;
+
+            if ($section->type == Section::TYPE_SINGLE) {
+                $siteSettings->hasUrls = true;
+                $siteSettings->uriFormat = $postedSettings['singleUri'] ?: '__home__';
+                $siteSettings->template = $postedSettings['template'];
+            } else {
+                $siteSettings->hasUrls = !empty($postedSettings['uriFormat']);
+
+                if ($siteSettings->hasUrls) {
+                    $siteSettings->uriFormat = $postedSettings['uriFormat'];
+                    $siteSettings->template = $postedSettings['template'];
+                } else {
+                    $siteSettings->uriFormat = null;
+                    $siteSettings->template = null;
+                }
+
+                $siteSettings->enabledByDefault = (bool)$postedSettings['enabledByDefault'];
+            }
+
+            $allSiteSettings[$site->id] = $siteSettings;
         }
 
-        $section->setLocales($locales);
+        $section->setSiteSettings($allSiteSettings);
 
         // Save it
         if (Craft::$app->getSections()->saveSection($section)) {

@@ -77,8 +77,8 @@ var Route = Garnish.Base.extend(
 {
 	$container: null,
 	id: null,
-	locale: null,
-	$locale: null,
+	siteId: null,
+	$siteLabel: null,
 	$url: null,
 	$template: null,
 	modal: null,
@@ -87,8 +87,8 @@ var Route = Garnish.Base.extend(
 	{
 		this.$container = $(container);
 		this.id         = this.$container.data('id');
-		this.locale     = this.$container.data('locale');
-		this.$locale    = this.$container.find('.locale:first');
+		this.siteId     = this.$container.data('site-id');
+		this.$siteLabel = this.$container.find('.site:first');
 		this.$url       = this.$container.find('.url:first');
 		this.$template  = this.$container.find('.template:first');
 
@@ -109,15 +109,20 @@ var Route = Garnish.Base.extend(
 
 	updateHtmlFromModal: function()
 	{
-		if (Craft.routes.locales)
+		if (Craft.isMultiSite)
 		{
-			if (this.locale)
+			if (this.siteId)
 			{
-				this.$locale.text(this.locale);
+				for (var i = 0; i < Craft.sites.length; i++) {
+					if (Craft.sites[i].id == this.siteId) {
+						this.$siteLabel.text(Craft.sites[i].name);
+						break;
+					}
+				}
 			}
 			else
 			{
-				this.$locale.text(Craft.t('app', 'Global'));
+				this.$siteLabel.text(Craft.t('app', 'Global'));
 			}
 		}
 
@@ -184,7 +189,7 @@ var RouteSettingsModal = Garnish.Modal.extend(
 							'<label for="url">'+Craft.t('app', 'If the URI looks like this')+':</label>' +
 						'</div>';
 
-		if (Craft.routes.locales)
+		if (Craft.isMultiSite)
 		{
 			containerHtml +=
 						'<table class="inputs fullwidth">' +
@@ -194,19 +199,19 @@ var RouteSettingsModal = Garnish.Modal.extend(
 
 		containerHtml += '<div id="url" class="text url ltr"></div>';
 
-		if (Craft.routes.locales)
+		if (Craft.isMultiSite)
 		{
 			containerHtml +=
 								'</td>' +
 								'<td class="thin">' +
 									'<div class="select">' +
-										'<select class="locale">' +
+										'<select class="site">' +
 											'<option value="">'+Craft.t('app', 'Global')+'</option>';
 
-			for (var i = 0; i < Craft.routes.locales.length; i++)
+			for (var i = 0; i < Craft.sites.length; i++)
 			{
-				var locale = Craft.routes.locales[i];
-				containerHtml += '<option value="'+locale+'">'+locale+'</option>';
+				var siteInfo = Craft.sites[i];
+				containerHtml += '<option value="'+siteInfo.id+'">'+siteInfo.name+'</option>';
 			}
 
 			containerHtml +=
@@ -243,7 +248,7 @@ var RouteSettingsModal = Garnish.Modal.extend(
 
 		// Find the other elements
 		this.$heading       = $container.find('h1:first');
-		this.$localeInput   = $container.find('.locale:first');
+		this.$siteInput     = $container.find('.site:first');
 		this.$urlInput      = $container.find('.url:first');
 		this.$templateInput = $container.find('.template:first');
 		this.$saveBtn       = $container.find('.submit:first');
@@ -274,8 +279,8 @@ var RouteSettingsModal = Garnish.Modal.extend(
 
 		if (this.route)
 		{
-			// Set the locale
-			this.$localeInput.val(this.route.locale);
+			// Set the site
+			this.$siteInput.val(this.route.siteId);
 
 			// Set the initial URL value
 			var urlNodes = this.route.$url.prop('childNodes');
@@ -395,7 +400,7 @@ var RouteSettingsModal = Garnish.Modal.extend(
 		}
 
 		var data = {
-			locale: this.$localeInput.val()
+			siteId: this.$siteInput.val()
 		};
 
 		if (this.route)
@@ -438,12 +443,12 @@ var RouteSettingsModal = Garnish.Modal.extend(
 					if (!this.route)
 					{
 						var routeHtml =
-							'<div class="pane route" data-id="'+response.routeId+'"'+(response.locale ? ' data-locale="'+response.locale+'"' : '')+'>' +
+							'<div class="pane route" data-id="'+response.routeId+'"'+(response.siteId ? ' data-site-id="'+response.siteId+'"' : '')+'>' +
 								'<div class="url-container">';
 
-						if (Craft.routes.locales)
+						if (Craft.isMultiSite)
 						{
-							routeHtml += '<span class="locale"></span>';
+							routeHtml += '<span class="site"></span>';
 						}
 
 						routeHtml +=
@@ -468,7 +473,7 @@ var RouteSettingsModal = Garnish.Modal.extend(
 						}
 					}
 
-					this.route.locale = response.locale;
+					this.route.siteId = response.siteId;
 					this.route.updateHtmlFromModal();
 					this.hide();
 

@@ -9,6 +9,7 @@ namespace craft\app\web\twig\variables;
 
 use Craft;
 use craft\app\elements\GlobalSet;
+use yii\base\Exception;
 
 /**
  * Globals functions.
@@ -78,29 +79,55 @@ class Globals
      * Returns a global set by its ID.
      *
      * @param integer     $globalSetId
-     * @param string|null $localeId
+     * @param string|null $siteHandle
      *
      * @return GlobalSet|null
+     * @throws Exception if $siteHandle is invlaid
      */
-    public function getSetById($globalSetId, $localeId = null)
+    public function getSetById($globalSetId, $siteHandle = null)
     {
         Craft::$app->getDeprecator()->log('craft.globals.getSetById()', 'craft.globals.getSetById() has been deprecated. Use craft.app.globals.getSetById() instead.');
 
-        return Craft::$app->getGlobals()->getSetById($globalSetId, $localeId);
+        if ($siteHandle) {
+            $site = Craft::$app->getSites()->getSiteByHandle($siteHandle);
+
+            if (!$site) {
+                throw new Exception('Invalid site handle: '.$siteHandle);
+            }
+
+            $siteId = $site->id;
+        } else {
+            $siteId = null;
+        }
+
+        return Craft::$app->getGlobals()->getSetById($globalSetId, $siteId);
     }
 
     /**
      * Returns a global set by its handle.
      *
      * @param string      $globalSetHandle
-     * @param string|null $localeId
+     * @param string|null $siteHandle
      *
      * @return GlobalSet|null
+     * @throws Exception if $siteHandle is invalid
      */
-    public function getSetByHandle($globalSetHandle, $localeId = null)
+    public function getSetByHandle($globalSetHandle, $siteHandle = null)
     {
         Craft::$app->getDeprecator()->log('craft.globals.getSetByHandle()', 'craft.globals.getSetByHandle() has been deprecated. Use craft.app.globals.getSetByHandle() instead.');
 
-        return Craft::$app->getGlobals()->getSetByHandle($globalSetHandle, $localeId);
+        if ($siteHandle) {
+            $site = Craft::$app->getSites()->getSiteByHandle($siteHandle);
+
+            if (!$site) {
+                throw new Exception('Invalid site handle: '.$siteHandle);
+            }
+
+            $siteId = $site->id;
+        } else {
+            $siteId = null;
+        }
+
+        return Craft::$app->getGlobals()->getSetByHandle($globalSetHandle, $siteId);
     }
 }

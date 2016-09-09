@@ -35,12 +35,12 @@ class LocalizeRelations extends Task
     /**
      * @var
      */
-    private $_allLocales;
+    private $_allSiteIds;
 
     /**
      * @var
      */
-    private $_workingLocale;
+    private $_workingSiteId;
 
     // Public Methods
     // =========================================================================
@@ -51,13 +51,13 @@ class LocalizeRelations extends Task
     public function getTotalSteps()
     {
         $this->_relations = (new Query())
-            ->select('id, sourceId, sourceLocale, targetId, sortOrder')
+            ->select('id, sourceId, sourceSiteId, targetId, sortOrder')
             ->from('{{%relations}}')
-            ->where(['and', 'fieldId = :fieldId', 'sourceLocale is null'],
+            ->where(['and', 'fieldId = :fieldId', 'sourceSiteId is null'],
                 [':fieldId' => $this->fieldId])
             ->all();
 
-        $this->_allLocales = Craft::$app->getI18n()->getSiteLocaleIds();
+        $this->_allSiteIds = Craft::$app->getSites()->getAllSiteIds();
 
         return count($this->_relations);
     }
@@ -69,18 +69,18 @@ class LocalizeRelations extends Task
     {
         $db = Craft::$app->getDb();
         try {
-            $this->_workingLocale = $this->_allLocales[0];
+            $this->_workingSiteId = $this->_allSiteIds[0];
 
             // Update the existing one.
             $db->createCommand()
                 ->update(
                     '{{%relations}}',
-                    ['sourceLocale' => $this->_workingLocale],
+                    ['sourceSiteId' => $this->_workingSiteId],
                     ['id' => $this->_relations[$step]['id']])
                 ->execute();
 
-            for ($counter = 1; $counter < count($this->_allLocales); $counter++) {
-                $this->_workingLocale = $this->_allLocales[$counter];
+            for ($counter = 1; $counter < count($this->_allSiteIds); $counter++) {
+                $this->_workingSiteId = $this->_allSiteIds[$counter];
 
                 $db->createCommand()
                     ->insert(
@@ -88,7 +88,7 @@ class LocalizeRelations extends Task
                         [
                             'fieldid' => $this->fieldId,
                             'sourceId' => $this->_relations[$step]['sourceId'],
-                            'sourceLocale' => $this->_workingLocale,
+                            'sourceSiteId' => $this->_workingSiteId,
                             'targetId' => $this->_relations[$step]['targetId'],
                             'sortOrder' => $this->_relations[$step]['sortOrder'],
                         ])
@@ -97,7 +97,7 @@ class LocalizeRelations extends Task
 
             return true;
         } catch (\Exception $e) {
-            return 'An exception was thrown while trying to save relation for the field with Id '.$this->_relations[$step]['id'].' into the locale  “'.$this->_workingLocale.'”: '.$e->getMessage();
+            return 'An exception was thrown while trying to save relation for the field with Id '.$this->_relations[$step]['id'].' into the site  “'.$this->_workingSiteId.'”: '.$e->getMessage();
         }
     }
 

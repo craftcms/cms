@@ -630,14 +630,14 @@ class Matrix extends Component
      * Returns a block by its ID.
      *
      * @param integer $blockId  The Matrix block’s ID.
-     * @param string  $localeId The locale ID to return.
+     * @param integer $siteId   The site ID to return.
      *                          Defaults to [[\craft\app\web\Application::language `Craft::$app->language`]].
      *
      * @return MatrixBlock|null The Matrix block, or `null` if it didn’t exist.
      */
-    public function getBlockById($blockId, $localeId = null)
+    public function getBlockById($blockId, $siteId = null)
     {
-        return Craft::$app->getElements()->getElementById($blockId, MatrixBlock::className(), $localeId);
+        return Craft::$app->getElements()->getElementById($blockId, MatrixBlock::className(), $siteId);
     }
 
     /**
@@ -678,7 +678,7 @@ class Matrix extends Component
      * $block = new MatrixBlock();
      * $block->fieldId = 5;
      * $block->ownerId = 100;
-     * $block->ownerLocale = 'en_us';
+     * $block->ownerSiteId = 1;
      * $block->typeId = 2;
      * $block->sortOrder = 10;
      *
@@ -705,7 +705,7 @@ class Matrix extends Component
 
             $blockRecord->fieldId = $block->fieldId;
             $blockRecord->ownerId = $block->ownerId;
-            $blockRecord->ownerLocale = $block->ownerLocale;
+            $blockRecord->ownerSiteId = $block->ownerSiteId;
             $blockRecord->typeId = $block->typeId;
             $blockRecord->sortOrder = $block->sortOrder;
 
@@ -790,7 +790,7 @@ class Matrix extends Component
 
             foreach ($blocks as $block) {
                 $block->ownerId = $owner->id;
-                $block->ownerLocale = ($field->translatable ? $owner->locale : null);
+                $block->ownerSiteId = ($field->localizeBlocks ? $owner->siteId : null);
 
                 $this->saveBlock($block, false);
 
@@ -815,9 +815,9 @@ class Matrix extends Component
                 ':fieldId' => $field->id
             ];
 
-            if ($field->translatable) {
-                $deletedBlockConditions[] = 'ownerLocale  = :ownerLocale';
-                $deletedBlockParams[':ownerLocale'] = $owner->locale;
+            if ($field->localizeBlocks) {
+                $deletedBlockConditions[] = 'ownerSiteId  = :ownerSiteId';
+                $deletedBlockParams[':ownerSiteId'] = $owner->siteId;
             }
 
             $deletedBlockIds = (new Query())
@@ -978,7 +978,7 @@ class Matrix extends Component
      *
      * @param ElementInterface $owner
      * @param MatrixField      $field
-     * @param array            $blocks
+     * @param MatrixBlock[]    $blocks
      *
      * @return void
      */
@@ -990,8 +990,8 @@ class Matrix extends Component
 
         foreach ($blocks as $block) {
             if ($block->id && (
-                    ($field->translatable && !$block->ownerLocale) ||
-                    (!$field->translatable && $block->ownerLocale)
+                    ($field->localizeBlocks && !$block->ownerSiteId) ||
+                    (!$field->localizeBlocks && $block->ownerSiteId)
                 )
             ) {
                 $applyNewTranslationSetting = true;
@@ -1000,55 +1000,56 @@ class Matrix extends Component
         }
 
         if ($applyNewTranslationSetting) {
-            // Get all of the blocks for this field/owner that use the other locales, whose ownerLocale attribute is set
+            // Get all of the blocks for this field/owner that use the other sites, whose ownerSiteId attribute is set
             // incorrectly
-            /** @var array $blocksInOtherLocales */
-            $blocksInOtherLocales = [];
+            /** @var array $blocksInOtherSites */
+            $blocksInOtherSites = [];
 
             $query = MatrixBlock::find()
                 ->fieldId($field->id)
                 ->ownerId($owner->id)
                 ->status(null)
-                ->localeEnabled(false)
+                ->enabledForSite(false)
                 ->limit(null);
 
-            if ($field->translatable) {
-                $query->ownerLocale(':empty:');
+            if ($field->localizeBlocks) {
+                $query->ownerSiteId(':empty:');
             }
 
-            foreach (Craft::$app->getI18n()->getSiteLocaleIds() as $localeId) {
-                if ($localeId == $owner->locale) {
+            foreach (Craft::$app->getSites()->getAllSiteIds() as $siteId) {
+                if ($siteId == $owner->siteId) {
                     continue;
                 }
 
-                $query->locale($localeId);
+                $query->siteId($siteId);
 
-                if (!$field->translatable) {
-                    $query->ownerLocale($localeId);
+                if (!$field->localizeBlocks) {
+                    $query->ownerSiteId($siteId);
                 }
 
-                $blocksInOtherLocale = $query->all();
+                $blocksInOtherSite = $query->all();
 
-                if ($blocksInOtherLocale) {
-                    $blocksInOtherLocales[$localeId] = $blocksInOtherLocale;
+                if ($blocksInOtherSite) {
+                    $blocksInOtherSites[$siteId] = $blocksInOtherSite;
                 }
             }
 
-            if ($blocksInOtherLocales) {
-                if ($field->translatable) {
+            if ($blocksInOtherSites) {
+                if ($field->localizeBlocks) {
                     $newBlockIds = [];
 
-                    // Duplicate the other-locale blocks so each locale has their own unique set of blocks
-                    foreach ($blocksInOtherLocales as $localeId => $blocksInOtherLocale) {
-                        foreach ($blocksInOtherLocale as $blockInOtherLocale) {
-                            $originalBlockId = $blockInOtherLocale->id;
+                    // Duplicate the other-site blocks so each site has their own unique set of blocks
+                    foreach ($blocksInOtherSites as $siteId => $blocksInOtherSite) {
+                        foreach ($blocksInOtherSite as $blockInOtherSite) {
+                            /** @var MatrixBlock $blockInOtherSite */
+                            $originalBlockId = $blockInOtherSite->id;
 
-                            $blockInOtherLocale->id = null;
-                            $blockInOtherLocale->getContent()->id = null;
-                            $blockInOtherLocale->ownerLocale = $localeId;
-                            $this->saveBlock($blockInOtherLocale, false);
+                            $blockInOtherSite->id = null;
+                            $blockInOtherSite->contentId = null;
+                            $blockInOtherSite->ownerSiteId = $siteId;
+                            $this->saveBlock($blockInOtherSite, false);
 
-                            $newBlockIds[$originalBlockId][$localeId] = $blockInOtherLocale->id;
+                            $newBlockIds[$originalBlockId][$siteId] = $blockInOtherSite->id;
                         }
                     }
 
@@ -1058,7 +1059,7 @@ class Matrix extends Component
                         ->select([
                             'fieldId',
                             'sourceId',
-                            'sourceLocale',
+                            'sourceSiteId',
                             'targetId',
                             'sortOrder'
                         ])
@@ -1067,7 +1068,7 @@ class Matrix extends Component
                         ->all();
 
                     if ($relations) {
-                        // Now duplicate each one for the other locales' new blocks
+                        // Now duplicate each one for the other sites' new blocks
                         $rows = [];
 
                         foreach ($relations as $relation) {
@@ -1075,11 +1076,11 @@ class Matrix extends Component
 
                             // Just to be safe...
                             if (isset($newBlockIds[$originalBlockId])) {
-                                foreach ($newBlockIds[$originalBlockId] as $localeId => $newBlockId) {
+                                foreach ($newBlockIds[$originalBlockId] as $siteId => $newBlockId) {
                                     $rows[] = [
                                         $relation['fieldId'],
                                         $newBlockId,
-                                        $relation['sourceLocale'],
+                                        $relation['sourceSiteId'],
                                         $relation['targetId'],
                                         $relation['sortOrder']
                                     ];
@@ -1093,7 +1094,7 @@ class Matrix extends Component
                                 [
                                     'fieldId',
                                     'sourceId',
-                                    'sourceLocale',
+                                    'sourceSiteId',
                                     'targetId',
                                     'sortOrder'
                                 ],
@@ -1104,9 +1105,9 @@ class Matrix extends Component
                     // Delete all of these blocks
                     $blockIdsToDelete = [];
 
-                    foreach ($blocksInOtherLocales as $localeId => $blocksInOtherLocale) {
-                        foreach ($blocksInOtherLocale as $blockInOtherLocale) {
-                            $blockIdsToDelete[] = $blockInOtherLocale->id;
+                    foreach ($blocksInOtherSites as $blocksInOtherSite) {
+                        foreach ($blocksInOtherSite as $blockInOtherSite) {
+                            $blockIdsToDelete[] = $blockInOtherSite->id;
                         }
                     }
 

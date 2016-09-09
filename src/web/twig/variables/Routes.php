@@ -32,7 +32,7 @@ class Routes
         $routes = [];
 
         $results = (new Query())
-            ->select(['id', 'locale', 'urlParts', 'template'])
+            ->select(['id', 'siteId', 'urlParts', 'template'])
             ->from('{{%routes}}')
             ->orderBy('sortOrder')
             ->all();
@@ -55,7 +55,7 @@ class Routes
 
             $routes[] = [
                 'id' => $result['id'],
-                'locale' => $result['locale'],
+                'siteId' => $result['siteId'],
                 'urlDisplayHtml' => $urlDisplayHtml,
                 'template' => $result['template']
             ];

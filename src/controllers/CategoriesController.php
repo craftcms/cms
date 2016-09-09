@@ -14,7 +14,8 @@ use craft\app\helpers\Json;
 use craft\app\helpers\Url;
 use craft\app\elements\Category;
 use craft\app\models\CategoryGroup;
-use craft\app\models\CategoryGroupLocale;
+use craft\app\models\CategoryGroup_SiteSettings;
+use craft\app\models\Site;
 use craft\app\web\Controller;
 use yii\web\ForbiddenHttpException;
 use yii\web\NotFoundHttpException;
@@ -127,28 +128,38 @@ class CategoriesController extends Controller
         $this->requirePostRequest();
         $this->requireAdmin();
 
+        $request = Craft::$app->getRequest();
+
         $group = new CategoryGroup();
 
-        // Set the simple stuff
-        $group->id = Craft::$app->getRequest()->getBodyParam('groupId');
-        $group->name = Craft::$app->getRequest()->getBodyParam('name');
-        $group->handle = Craft::$app->getRequest()->getBodyParam('handle');
-        $group->hasUrls = (bool)Craft::$app->getRequest()->getBodyParam('hasUrls');
-        $group->template = Craft::$app->getRequest()->getBodyParam('template');
-        $group->maxLevels = Craft::$app->getRequest()->getBodyParam('maxLevels');
+        // Main group settings
+        $group->id = $request->getBodyParam('groupId');
+        $group->name = $request->getBodyParam('name');
+        $group->handle = $request->getBodyParam('handle');
+        $group->maxLevels = $request->getBodyParam('maxLevels');
 
-        // Locale-specific URL formats
-        $locales = [];
+        // Site-specific settings
+        $allSiteSettings = [];
 
-        foreach (Craft::$app->getI18n()->getSiteLocaleIds() as $localeId) {
-            $locales[$localeId] = new CategoryGroupLocale([
-                'locale' => $localeId,
-                'urlFormat' => Craft::$app->getRequest()->getBodyParam('urlFormat.'.$localeId),
-                'nestedUrlFormat' => Craft::$app->getRequest()->getBodyParam('nestedUrlFormat.'.$localeId),
-            ]);
+        foreach (Craft::$app->getSites()->getAllSites() as $site) {
+            $postedSettings = $request->getBodyParam('sites.'.$site->handle);
+
+            $siteSettings = new CategoryGroup_SiteSettings();
+            $siteSettings->siteId = $site->id;
+            $siteSettings->hasUrls = !empty($postedSettings['uriFormat']);
+
+            if ($siteSettings->hasUrls) {
+                $siteSettings->uriFormat = $postedSettings['uriFormat'];
+                $siteSettings->template = $postedSettings['template'];
+            } else {
+                $siteSettings->uriFormat = null;
+                $siteSettings->template = null;
+            }
+
+            $allSiteSettings[$site->id] = $siteSettings;
         }
 
-        $group->setLocales($locales);
+        $group->setSiteSettings($allSiteSettings);
 
         // Group the field layout
         $fieldLayout = Craft::$app->getFields()->assembleLayoutFromPost();
@@ -221,17 +232,28 @@ class CategoriesController extends Controller
      *
      * @param string   $groupHandle The category group’s handle.
      * @param integer  $categoryId  The category’s ID, if editing an existing category.
-     * @param integer  $localeId    The locale ID, if specified.
+     * @param string   $siteHandle  The site handle, if specified.
      * @param Category $category    The category being edited, if there were any validation errors.
      *
      * @return string The rendering result
+     * @throws NotFoundHttpException if the requested site handle is invalid
      */
-    public function actionEditCategory($groupHandle, $categoryId = null, $localeId = null, Category $category = null)
+    public function actionEditCategory($groupHandle, $categoryId = null, $siteHandle = null, Category $category = null)
     {
+        if ($siteHandle) {
+            $site = Craft::$app->getSites()->getSiteByHandle($siteHandle);
+
+            if (!$site) {
+                throw new NotFoundHttpException('Invalid site handle: '.$siteHandle);
+            }
+        } else {
+            $site = Craft::$app->getSites()->currentSite;
+        }
+
         $variables = [
             'groupHandle' => $groupHandle,
             'categoryId' => $categoryId,
-            'localeId' => $localeId,
+            'site' => $site,
             'category' => $category
         ];
 
@@ -250,10 +272,10 @@ class CategoriesController extends Controller
 
             // Define the parent options criteria
             $variables['parentOptionCriteria'] = [
-                'locale' => $variables['localeId'],
+                'siteId' => $site->id,
                 'groupId' => $variables['group']->id,
                 'status' => null,
-                'localeEnabled' => null,
+                'enabledForSite' => false,
             ];
 
             if ($variables['group']->maxLevels) {
@@ -265,7 +287,7 @@ class CategoriesController extends Controller
                 $excludeIds = Category::find()
                     ->descendantOf($category)
                     ->status(null)
-                    ->localeEnabled(false)
+                    ->enabledForSite(false)
                     ->ids();
 
                 $excludeIds[] = $category->id;
@@ -280,7 +302,7 @@ class CategoriesController extends Controller
             $parentId = Craft::$app->getRequest()->getParam('parentId');
 
             if ($parentId === null && $category->id) {
-                $parentIds = $category->getAncestors(1)->status(null)->localeEnabled(false)->ids();
+                $parentIds = $category->getAncestors(1)->status(null)->enabledForSite(false)->ids();
 
                 if ($parentIds) {
                     $parentId = $parentIds[0];
@@ -288,7 +310,7 @@ class CategoriesController extends Controller
             }
 
             if ($parentId) {
-                $variables['parent'] = Craft::$app->getCategories()->getCategoryById($parentId, $variables['localeId']);
+                $variables['parent'] = Craft::$app->getCategories()->getCategoryById($parentId, $site->id);
             }
         }
 
@@ -323,7 +345,7 @@ class CategoriesController extends Controller
         }
 
         // Enable Live Preview?
-        if (!Craft::$app->getRequest()->isMobileBrowser(true) && Craft::$app->getCategories()->isGroupTemplateValid($variables['group'])) {
+        if (!Craft::$app->getRequest()->isMobileBrowser(true) && Craft::$app->getCategories()->isGroupTemplateValid($variables['group'], $category->siteId)) {
             Craft::$app->getView()->registerJs('Craft.LivePreview.init('.Json::encode([
                     'fields' => '#title-field, #fields > div > div > .field',
                     'extraFields' => '#settings',
@@ -332,7 +354,7 @@ class CategoriesController extends Controller
                     'previewParams' => [
                         'groupId' => $variables['group']->id,
                         'categoryId' => $category->id,
-                        'locale' => $category->locale,
+                        'siteId' => $category->siteId,
                     ]
                 ]).');');
 
@@ -347,7 +369,7 @@ class CategoriesController extends Controller
                     $variables['shareUrl'] = Url::getActionUrl('categories/share-category',
                         [
                             'categoryId' => $category->id,
-                            'locale' => $category->locale
+                            'siteId' => $category->siteId
                         ]);
                 }
             }
@@ -359,8 +381,11 @@ class CategoriesController extends Controller
         $variables['baseCpEditUrl'] = 'categories/'.$variables['group']->handle.'/{id}-{slug}';
 
         // Set the "Continue Editing" URL
-        $variables['continueEditingUrl'] = $variables['baseCpEditUrl'].
-            (Craft::$app->getIsLocalized() && Craft::$app->language != $variables['localeId'] ? '/'.$variables['localeId'] : '');
+        $variables['continueEditingUrl'] = $variables['baseCpEditUrl'];
+
+        if (Craft::$app->getIsMultiSite() && Craft::$app->getSites()->currentSite->id != $site->id) {
+            $variables['continueEditingUrl'] .= '/'.$site->handle;
+        };
 
         // Render the template!
         Craft::$app->getView()->registerCssResource('css/category.css');
@@ -489,16 +514,16 @@ class CategoriesController extends Controller
     /**
      * Redirects the client to a URL for viewing a disabled category on the front end.
      *
-     * @param mixed $categoryId
-     * @param mixed $locale
+     * @param integer $categoryId
+     * @param integer $siteId
      *
      * @return Response
      * @throws NotFoundHttpException if the requested category cannot be found
      * @throws ServerErrorHttpException if the category group is not configured properly
      */
-    public function actionShareCategory($categoryId, $locale = null)
+    public function actionShareCategory($categoryId, $siteId = null)
     {
-        $category = Craft::$app->getCategories()->getCategoryById($categoryId, $locale);
+        $category = Craft::$app->getCategories()->getCategoryById($categoryId, $siteId);
 
         if (!$category) {
             throw new NotFoundHttpException('Category not found');
@@ -508,7 +533,7 @@ class CategoriesController extends Controller
         $this->_enforceEditCategoryPermissions($category);
 
         // Make sure the category actually can be viewed
-        if (!Craft::$app->getCategories()->isGroupTemplateValid($category->getGroup())) {
+        if (!Craft::$app->getCategories()->isGroupTemplateValid($category->getGroup(), $category->siteId)) {
             throw new ServerErrorHttpException('Category group not configured properly');
         }
 
@@ -517,7 +542,7 @@ class CategoriesController extends Controller
             'categories/view-shared-category',
             [
                 'categoryId' => $categoryId,
-                'locale' => $category->locale
+                'siteId' => $category->siteId
             ]
         ]);
 
@@ -529,17 +554,17 @@ class CategoriesController extends Controller
     /**
      * Shows an category/draft/version based on a token.
      *
-     * @param mixed $categoryId
-     * @param mixed $locale
+     * @param integer $categoryId
+     * @param integer $siteId
      *
      * @return string
      * @throws NotFoundHttpException if the requested category cannot be found
      */
-    public function actionViewSharedCategory($categoryId, $locale = null)
+    public function actionViewSharedCategory($categoryId, $siteId = null)
     {
         $this->requireToken();
 
-        $category = Craft::$app->getCategories()->getCategoryById($categoryId, $locale);
+        $category = Craft::$app->getCategories()->getCategoryById($categoryId, $siteId);
 
         if (!$category) {
             throw new NotFoundHttpException('Category not found');
@@ -558,7 +583,7 @@ class CategoriesController extends Controller
      *
      * @return void
      * @throws NotFoundHttpException if the requested category group or category cannot be found
-     * @throws ForbiddenHttpException if the user is not permitted to edit content in the requested locale
+     * @throws ForbiddenHttpException if the user is not permitted to edit content in the requested site
      */
     private function _prepEditCategoryVariables(&$variables)
     {
@@ -575,25 +600,29 @@ class CategoriesController extends Controller
             throw new NotFoundHttpException('Category group not found');
         }
 
-        // Get the locale
+        // Get the site
         // ---------------------------------------------------------------------
 
-        $variables['localeIds'] = Craft::$app->getI18n()->getEditableLocaleIds();
+        $variables['siteIds'] = Craft::$app->getSites()->getEditableSiteIds();
 
-        if (!$variables['localeIds']) {
-            throw new ForbiddenHttpException('User not permitted to edit content in any locales');
+        if (!$variables['siteIds']) {
+            throw new ForbiddenHttpException('User not permitted to edit content in any sites');
         }
 
-        if (empty($variables['localeId'])) {
-            $variables['localeId'] = Craft::$app->language;
+        if (empty($variables['site'])) {
+            $variables['site'] = Craft::$app->getSites()->currentSite;
 
-            if (!in_array($variables['localeId'], $variables['localeIds'])) {
-                $variables['localeId'] = $variables['localeIds'][0];
+            if (!in_array($variables['site']->id, $variables['siteIds'])) {
+                $variables['site'] = Craft::$app->getSites()->getSiteById($variables['siteIds'][0]);
             }
+
+            $site = $variables['site'];
         } else {
-            // Make sure they were requesting a valid locale
-            if (!in_array($variables['localeId'], $variables['localeIds'])) {
-                throw new ForbiddenHttpException('User not permitted to edit content in this locale');
+            // Make sure they were requesting a valid site
+            /** @var Site $site */
+            $site = $variables['site'];
+            if (!in_array($site->id, $variables['siteIds'])) {
+                throw new ForbiddenHttpException('User not permitted to edit content in this site');
             }
         }
 
@@ -602,7 +631,7 @@ class CategoriesController extends Controller
 
         if (empty($variables['category'])) {
             if (!empty($variables['categoryId'])) {
-                $variables['category'] = Craft::$app->getCategories()->getCategoryById($variables['categoryId'], $variables['localeId']);
+                $variables['category'] = Craft::$app->getCategories()->getCategoryById($variables['categoryId'], $site->id);
 
                 if (!$variables['category']) {
                     throw new NotFoundHttpException('Category not found');
@@ -611,10 +640,7 @@ class CategoriesController extends Controller
                 $variables['category'] = new Category();
                 $variables['category']->groupId = $variables['group']->id;
                 $variables['category']->enabled = true;
-
-                if (!empty($variables['localeId'])) {
-                    $variables['category']->locale = $variables['localeId'];
-                }
+                $variables['category']->siteId = $site->id;
             }
         }
 
@@ -654,10 +680,10 @@ class CategoriesController extends Controller
     private function _getCategoryModel()
     {
         $categoryId = Craft::$app->getRequest()->getBodyParam('categoryId');
-        $localeId = Craft::$app->getRequest()->getBodyParam('locale');
+        $siteId = Craft::$app->getRequest()->getBodyParam('siteId');
 
         if ($categoryId) {
-            $category = Craft::$app->getCategories()->getCategoryById($categoryId, $localeId);
+            $category = Craft::$app->getCategories()->getCategoryById($categoryId, $siteId);
 
             if (!$category) {
                 throw new NotFoundHttpException('Category not found');
@@ -666,8 +692,8 @@ class CategoriesController extends Controller
             $category = new Category();
             $category->groupId = Craft::$app->getRequest()->getRequiredBodyParam('groupId');
 
-            if ($localeId) {
-                $category->locale = $localeId;
+            if ($siteId) {
+                $category->siteId = $siteId;
             }
         }
 
@@ -683,9 +709,9 @@ class CategoriesController extends Controller
      */
     private function _enforceEditCategoryPermissions(Category $category)
     {
-        if (Craft::$app->getIsLocalized()) {
-            // Make sure they have access to this locale
-            $this->requirePermission('editLocale:'.$category->locale);
+        if (Craft::$app->getIsMultiSite()) {
+            // Make sure they have access to this site
+            $this->requirePermission('editSite:'.$category->siteId);
         }
 
         // Make sure the user is allowed to edit categories in this group
@@ -726,24 +752,30 @@ class CategoriesController extends Controller
      * @param Category $category
      *
      * @return string The rendering result
-     * @throws ServerErrorHttpException if the category is missing its category group
+     * @throws ServerErrorHttpException if the category doesn't have a URL for the site it's configured with, or if the category's site ID is invalid
      */
     private function _showCategory(Category $category)
     {
-        $group = $category->getGroup();
+        $categoryGroupSiteSettings = $category->getGroup()->getSiteSettings();
 
-        if (!$group) {
-            throw new ServerErrorHttpException('Category is missing its category group');
+        if (!isset($categoryGroupSiteSettings[$category->siteId]) || !$categoryGroupSiteSettings[$category->siteId]->hasUrls) {
+            throw new ServerErrorHttpException('The category '.$category->id.' doesn\'t have a URL for the site '.$category->siteId.'.');
         }
 
-        Craft::$app->language = $category->locale;
+        $site = Craft::$app->getSites()->getSiteById($category->siteId);
 
-        // Have this category override any freshly queried categories with the same ID/locale
+        if (!$site) {
+            throw new ServerErrorHttpException('Invalid site ID: '.$category->siteId);
+        }
+
+        Craft::$app->language = $site->language;
+
+        // Have this category override any freshly queried categories with the same ID/site
         Craft::$app->getElements()->setPlaceholderElement($category);
 
         Craft::$app->getView()->getTwig()->disableStrictVariables();
 
-        return $this->renderTemplate($group->template, [
+        return $this->renderTemplate($categoryGroupSiteSettings[$category->siteId]->template, [
             'category' => $category
         ]);
     }

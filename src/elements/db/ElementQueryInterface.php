@@ -8,6 +8,7 @@
 namespace craft\app\elements\db;
 
 use craft\app\base\ElementInterface;
+use craft\app\models\Site;
 use yii\db\Connection;
 use yii\db\QueryInterface;
 
@@ -103,22 +104,31 @@ interface ElementQueryInterface extends QueryInterface
     public function dateUpdated($value = true);
 
     /**
-     * Sets the [[locale]] property.
+     * Sets the [[siteId]] property based on a given site(s)’s handle(s).
      *
-     * @param string $value The property value
+     * @param string|string[]|Site $value The property value
      *
      * @return $this self reference
      */
-    public function locale($value);
+    public function site($value);
 
     /**
-     * Sets the [[localeEnabled]] property.
+     * Sets the [[siteId]] property.
+     *
+     * @param integer $value The property value
+     *
+     * @return $this self reference
+     */
+    public function siteId($value);
+
+    /**
+     * Sets the [[enabledForSite]] property.
      *
      * @param mixed $value The property value (defaults to true)
      *
      * @return $this self reference
      */
-    public function localeEnabled($value = true);
+    public function enabledForSite($value = true);
 
     /**
      * Sets the [[relatedTo]] property.

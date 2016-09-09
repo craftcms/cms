@@ -371,7 +371,7 @@ Craft.MatrixInput = Garnish.Base.extend(
 	}
 },
 {
-	collapsedBlockStorageKey: 'Craft-'+Craft.siteUid+'.MatrixInput.collapsedBlocks',
+	collapsedBlockStorageKey: 'Craft-'+Craft.systemUid+'.MatrixInput.collapsedBlocks',
 
 	getCollapsedBlockIds: function()
 	{

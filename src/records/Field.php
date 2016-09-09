@@ -14,16 +14,18 @@ use craft\app\db\ActiveRecord;
 /**
  * Class Field record.
  *
- * @property integer    $id           ID
- * @property integer    $groupId      Group ID
- * @property string     $name         Name
- * @property string     $handle       Handle
- * @property string     $context      Context
- * @property string     $instructions Instructions
- * @property boolean    $translatable Translatable
- * @property string     $type         Type
- * @property array      $settings     Settings
- * @property FieldGroup $group        Group
+ * @property integer    $id                   ID
+ * @property integer    $groupId              Group ID
+ * @property string     $name                 Name
+ * @property string     $handle               Handle
+ * @property string     $context              Context
+ * @property string     $instructions         Instructions
+ * @property boolean    $translatable         Translatable
+ * @property string     $translationMethod    Translation method
+ * @property string     $translationKeyFormat Translation key format
+ * @property string     $type                 Type
+ * @property array      $settings             Settings
+ * @property FieldGroup $group                Group
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since  3.0
@@ -50,8 +52,7 @@ class Field extends ActiveRecord
         'level',
         'lft',
         'link',
-        'locale',
-        'localeEnabled',
+        'enabledForSite',
         'name', // global set-specific
         'next',
         'next',
@@ -64,6 +65,7 @@ class Field extends ActiveRecord
         'root',
         'searchScore',
         'siblings',
+        'site',
         'slug',
         'sortOrder',
         'status',
@@ -102,9 +104,9 @@ class Field extends ActiveRecord
                     'enabled',
                     'id',
                     'link',
-                    'locale',
                     'parents',
                     'siblings',
+                    'site',
                     'uid',
                     'uri',
                     'url',

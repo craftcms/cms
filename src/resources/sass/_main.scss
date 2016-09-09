@@ -174,6 +174,7 @@ strong, b, i em { font-weight: bold; font-family: sans-serif; }
 .centeralign { text-align: center !important; }
 .nowrap { white-space: nowrap; }
 .light { color: $mediumtextcolor !important; font-weight: normal; }
+.extralight { color: $lighttextcolor !important; }
 .smalltext { font-size: 11px; }
 input.checkbox + label.smalltext { padding-top: 2px; }
 
@@ -1410,7 +1411,7 @@ textarea.text.fullwidth { display: block; }
 .field { position: relative; margin: 24px 0; }
 .field > .heading { margin-bottom: 4px; }
 .field > .heading > label { position: relative; font-weight: bold; color: $mediumdarktextcolor; }
-.field > .heading > label > .locale { display: inline-block; border-radius: $btnBorderRadius; @include margin-left(7px); padding: 0 4px; font-size: 11px; color: $mediumtextcolor; background: $bgcolor; }
+.field > .heading > label > .site { display: inline-block; border-radius: $btnBorderRadius; @include margin-left(7px); padding: 0 4px; font-size: 11px; color: $mediumtextcolor; background: $bgcolor; }
 .field > .heading > .instructions { margin-top: 4px; font-size: 11px; line-height: 1.4; color: $mediumtextcolor; }
 .field > .warning { margin: 4px 0 0; font-size: 11px; }
 .field > .warning:before { @include margin(-2px, 2px, 0, 0); @include icon; content: 'alert'; }

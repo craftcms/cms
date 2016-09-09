@@ -10,6 +10,7 @@ namespace craft\app\elements;
 use Craft;
 use craft\app\base\Element;
 use craft\app\base\ElementInterface;
+use craft\app\controllers\ElementIndexesController;
 use craft\app\db\Query;
 use craft\app\elements\actions\Delete;
 use craft\app\elements\actions\Edit;
@@ -131,12 +132,17 @@ class Category extends Element
             // Set Status
             $actions[] = SetStatus::className();
 
-            if ($group->hasUrls) {
-                // View
-                $actions[] = Craft::$app->getElements()->createAction([
-                    'type' => View::className(),
-                    'label' => Craft::t('app', 'View category'),
-                ]);
+            // View
+            // They are viewing a specific category group. See if it has URLs for the requested site
+            $controller = Craft::$app->controller;
+            if ($controller instanceof ElementIndexesController) {
+                $siteId = $controller->getElementQuery()->siteId ?: Craft::$app->getSites()->currentSite->id;
+                if (isset($group->siteSettings[$siteId]) && $group->siteSettings[$siteId]->hasUrls) {
+                    $actions[] = Craft::$app->getElements()->createAction([
+                        'type' => View::className(),
+                        'label' => Craft::t('app', 'View category'),
+                    ]);
+                }
             }
 
             // Edit
@@ -256,7 +262,7 @@ class Category extends Element
             [
                 [
                     'label' => Craft::t('app', 'Title'),
-                    'locale' => $element->locale,
+                    'siteId' => $element->siteId,
                     'id' => 'title',
                     'name' => 'title',
                     'value' => $element->title,
@@ -271,7 +277,7 @@ class Category extends Element
             [
                 [
                     'label' => Craft::t('app', 'Slug'),
-                    'locale' => $element->locale,
+                    'siteId' => $element->siteId,
                     'id' => 'slug',
                     'name' => 'slug',
                     'value' => $element->slug,
@@ -304,14 +310,15 @@ class Category extends Element
     public static function getElementRoute(ElementInterface $element)
     {
         /** @var Category $element */
-        $group = $element->getGroup();
+        // Make sure the category group is set to have URLs for this site
+        $siteId = Craft::$app->getSites()->currentSite->id;
+        $categoryGroupSiteSettings = $element->getGroup()->getSiteSettings();
 
-        // Make sure the group is set to have URLs
-        if ($group->hasUrls) {
+        if (isset($categoryGroupSiteSettings[$siteId]) && $categoryGroupSiteSettings[$siteId]->hasUrls) {
             return [
                 'templates/render',
                 [
-                    'template' => $group->template,
+                    'template' => $categoryGroupSiteSettings->template,
                     'variables' => [
                         'category' => $element
                     ]
@@ -339,7 +346,7 @@ class Category extends Element
             $ancestorIds = $element->getAncestors()->ids();
 
             $sources = (new Query())
-                ->select(['fieldId', 'sourceId', 'sourceLocale'])
+                ->select(['fieldId', 'sourceId', 'sourceSiteId'])
                 ->from('{{%relations}}')
                 ->where('targetId = :categoryId',
                     [':categoryId' => $element->id])
@@ -353,12 +360,12 @@ class Category extends Element
                         'and',
                         'fieldId = :fieldId',
                         'sourceId = :sourceId',
-                        'sourceLocale = :sourceLocale',
+                        'sourceSiteId = :sourceSiteId',
                         ['in', 'targetId', $ancestorIds]
                     ], [
                         ':fieldId' => $source['fieldId'],
                         ':sourceId' => $source['sourceId'],
-                        ':sourceLocale' => $source['sourceLocale']
+                        ':sourceSiteId' => $source['sourceSiteId']
                     ])
                     ->column();
 
@@ -368,7 +375,7 @@ class Category extends Element
                     $newRelationValues[] = [
                         $source['fieldId'],
                         $source['sourceId'],
-                        $source['sourceLocale'],
+                        $source['sourceSiteId'],
                         $categoryId
                     ];
                 }
@@ -378,7 +385,7 @@ class Category extends Element
                 Craft::$app->getDb()->createCommand()
                     ->batchInsert(
                         '{{%relations}}',
-                        ['fieldId', 'sourceId', 'sourceLocale', 'targetId'],
+                        ['fieldId', 'sourceId', 'sourceSiteId', 'targetId'],
                         $newRelationValues)
                     ->execute();
             }
@@ -437,23 +444,15 @@ class Category extends Element
     /**
      * @inheritdoc
      */
-    public function getUrlFormat()
+    public function getUriFormat()
     {
-        $group = $this->getGroup();
+        $categoryGroupSiteSettings = $this->getGroup()->getSiteSettings();
 
-        if ($group && $group->hasUrls) {
-            $groupLocales = $group->getLocales();
-
-            if (isset($groupLocales[$this->locale])) {
-                if ($this->level > 1) {
-                    return $groupLocales[$this->locale]->nestedUrlFormat;
-                }
-
-                return $groupLocales[$this->locale]->urlFormat;
-            }
+        if (!isset($categoryGroupSiteSettings[$this->siteId])) {
+            throw new InvalidConfigException('Category\'s group ('.$this->groupId.') is not enabled for site '.$this->siteId);
         }
 
-        return null;
+        return $categoryGroupSiteSettings[$this->siteId]->uriFormat;
     }
 
     /**
@@ -473,8 +472,8 @@ class Category extends Element
 
         $url = Url::getCpUrl('categories/'.$group->handle.'/'.$this->id.($this->slug ? '-'.$this->slug : ''));
 
-        if (Craft::$app->getIsLocalized() && $this->locale != Craft::$app->language) {
-            $url .= '/'.$this->locale;
+        if (Craft::$app->getIsMultiSite() && $this->siteId != Craft::$app->getSites()->currentSite->id) {
+            $url .= '/'.$this->getSite()->handle;
         }
 
         return $url;

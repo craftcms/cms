@@ -47,13 +47,13 @@ class RoutesController extends Controller
         $urlParts = Craft::$app->getRequest()->getRequiredBodyParam('url');
         $template = Craft::$app->getRequest()->getRequiredBodyParam('template');
         $routeId = Craft::$app->getRequest()->getBodyParam('routeId');
-        $locale = Craft::$app->getRequest()->getBodyParam('locale');
+        $siteId = Craft::$app->getRequest()->getBodyParam('siteId');
 
-        if ($locale === '') {
-            $locale = null;
+        if ($siteId === '') {
+            $siteId = null;
         }
 
-        $routeRecord = Craft::$app->getRoutes()->saveRoute($urlParts, $template, $routeId, $locale);
+        $routeRecord = Craft::$app->getRoutes()->saveRoute($urlParts, $template, $routeId, $siteId);
 
         if ($routeRecord->hasErrors()) {
             return $this->asJson(['errors' => $routeRecord->getErrors()]);
@@ -62,7 +62,7 @@ class RoutesController extends Controller
         return $this->asJson([
             'success' => true,
             'routeId' => $routeRecord->id,
-            'locale' => $routeRecord->locale
+            'siteId' => $routeRecord->siteId
         ]);
     }
 

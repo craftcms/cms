@@ -14,7 +14,7 @@
 {% if instructions or input %}
 	{% include "_includes/forms/field" with {
 		label: field.name|t('site')|e,
-		locale: field.translatable ? (locale is defined ? locale : (element ? element.locale : craft.app.language)),
+		siteId: field.translationMethod != 'none' ? (siteId is defined ? siteId : (element ? element.siteId : craft.app.sites.currentSite.id)),
 		required: (not static ? required : false),
 		instructions: instructions|e,
 		id: field.handle,

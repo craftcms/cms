@@ -22,17 +22,19 @@ use craft\app\helpers\Html;
 use craft\app\helpers\Template;
 use craft\app\helpers\Url;
 use craft\app\models\FieldLayout;
+use craft\app\models\Site;
 use craft\app\web\UploadedFile;
-use Exception;
+use yii\base\Exception;
 use yii\base\InvalidCallException;
+use yii\base\InvalidConfigException;
 use yii\base\UnknownPropertyException;
 
 /**
  * Element is the base class for classes representing elements in terms of objects.
  *
  * @property FieldLayout|null      $fieldLayout         The field layout used by this element
- * @property string[]              $locales             The locale IDs this element is available in
- * @property string|null           $urlFormat           The URL format used to generate this element’s URL
+ * @property integer[]             $supportedSiteIds    The site IDs this element is available in
+ * @property string|null           $uriFormat           The URI format used to generate this element’s URL
  * @property string|null           $url                 The element’s full URL
  * @property \Twig_Markup|null     $link                An anchor pre-filled with this element’s URL and title
  * @property string|null           $ref                 The reference string to this element
@@ -727,6 +729,11 @@ abstract class Element extends Component implements ElementInterface
      */
     public function __get($name)
     {
+        if ($name == 'locale') {
+            Craft::$app->getDeprecator()->log('Element::locale', 'The “locale” element property has been deprecated. Use “siteId” instead.');
+            return $this->getSite()->handle;
+        }
+
         // Is $name a set of eager-loaded elements?
         if ($this->hasEagerLoadedElements($name)) {
             return $this->getEagerLoadedElements($name);
@@ -759,8 +766,8 @@ abstract class Element extends Component implements ElementInterface
     {
         parent::init();
 
-        if (!$this->locale) {
-            $this->locale = Craft::$app->getI18n()->getPrimarySiteLocaleId();
+        if (!$this->siteId) {
+            $this->siteId = Craft::$app->getSites()->getPrimarySite()->id;
         }
     }
 
@@ -818,7 +825,7 @@ abstract class Element extends Component implements ElementInterface
                 'max' => 2147483647,
                 'integerOnly' => true
             ],
-            [['locale'], 'craft\\app\\validators\\Locale'],
+            [['siteId'], 'craft\\app\\validators\\SiteId'],
             [['dateCreated'], 'craft\\app\\validators\\DateTime'],
             [['dateUpdated'], 'craft\\app\\validators\\DateTime'],
             [
@@ -879,19 +886,19 @@ abstract class Element extends Component implements ElementInterface
     /**
      * @inheritdoc
      */
-    public function getLocales()
+    public function getSupportedSites()
     {
         if (static::isLocalized()) {
-            return Craft::$app->getI18n()->getSiteLocaleIds();
+            return Craft::$app->getSites()->getAllSiteIds();
         }
 
-        return [Craft::$app->getI18n()->getPrimarySiteLocaleId()];
+        return [Craft::$app->getSites()->getPrimarySite()->id];
     }
 
     /**
      * @inheritdoc
      */
-    public function getUrlFormat()
+    public function getUriFormat()
     {
     }
 
@@ -902,7 +909,7 @@ abstract class Element extends Component implements ElementInterface
     {
         if ($this->uri !== null) {
             $path = ($this->uri == '__home__') ? '' : $this->uri;
-            $url = Url::getSiteUrl($path, null, null, $this->locale);
+            $url = Url::getSiteUrl($path, null, null, $this->siteId);
 
             return $url;
         }
@@ -965,7 +972,7 @@ abstract class Element extends Component implements ElementInterface
             return self::STATUS_ARCHIVED;
         }
 
-        if (!$this->enabled || !$this->localeEnabled) {
+        if (!$this->enabled || !$this->enabledForSite) {
             return self::STATUS_DISABLED;
         }
 
@@ -1028,7 +1035,7 @@ abstract class Element extends Component implements ElementInterface
         if ($this->_parent === null) {
             $this->_parent = $this->getAncestors(1)
                 ->status(null)
-                ->localeEnabled(null)
+                ->enabledForSite(false)
                 ->one();
 
             if ($this->_parent === null) {
@@ -1091,7 +1098,7 @@ abstract class Element extends Component implements ElementInterface
         return static::find()
             ->structureId($this->getStructureId())
             ->ancestorOf($this)
-            ->locale($this->locale)
+            ->siteId($this->siteId)
             ->ancestorDist($dist);
     }
 
@@ -1110,7 +1117,7 @@ abstract class Element extends Component implements ElementInterface
         return static::find()
             ->structureId($this->getStructureId())
             ->descendantOf($this)
-            ->locale($this->locale)
+            ->siteId($this->siteId)
             ->descendantDist($dist);
     }
 
@@ -1139,7 +1146,7 @@ abstract class Element extends Component implements ElementInterface
         return static::find()
             ->structureId($this->getStructureId())
             ->siblingOf($this)
-            ->locale($this->locale);
+            ->siteId($this->siteId);
     }
 
     /**
@@ -1150,13 +1157,14 @@ abstract class Element extends Component implements ElementInterface
     public function getPrevSibling()
     {
         if ($this->_prevSibling === null) {
-            $this->_prevSibling = static::find()
-                ->structureId($this->getStructureId())
-                ->prevSiblingOf($this)
-                ->locale($this->locale)
-                ->status(null)
-                ->localeEnabled(false)
-                ->one();
+            /** @var ElementQuery $query */
+            $query = $this->_prevSibling = static::find();
+            $query->structureId = $this->getStructureId();
+            $query->prevSiblingOf = $this;
+            $query->siteId = $this->siteId;
+            $query->status = null;
+            $query->enabledForSite = false;
+            $this->_prevSibling = $query->one();
 
             if ($this->_prevSibling === null) {
                 $this->_prevSibling = false;
@@ -1174,13 +1182,14 @@ abstract class Element extends Component implements ElementInterface
     public function getNextSibling()
     {
         if ($this->_nextSibling === null) {
-            $this->_nextSibling = static::find()
-                ->structureId($this->getStructureId())
-                ->nextSiblingOf($this)
-                ->locale($this->locale)
-                ->status(null)
-                ->localeEnabled(false)
-                ->one();
+            /** @var ElementQuery $query */
+            $query = $this->_nextSibling = static::find();
+            $query->structureId = $this->getStructureId();
+            $query->nextSiblingOf = $this;
+            $query->siteId = $this->siteId;
+            $query->status = null;
+            $query->enabledForSite = false;
+            $this->_nextSibling = $query->one();
 
             if ($this->_nextSibling === null) {
                 $this->_nextSibling = false;
@@ -1620,6 +1629,25 @@ abstract class Element extends Component implements ElementInterface
     }
 
     /**
+     * Returns the site the element is associated with.
+     *
+     * @return Site
+     * @throws InvalidConfigException if [[siteId]] is invalid
+     */
+    public function getSite()
+    {
+        if ($this->siteId) {
+            $site = Craft::$app->getSites()->getSiteById($this->siteId);
+        }
+
+        if (empty($site)) {
+            throw new InvalidConfigException('Invalid site ID: '.$this->siteId);
+        }
+
+        return $site;
+    }
+
+    /**
      * Returns the ID of the structure that the element is inherently associated with, if any.
      *
      * @return integer|null
@@ -1672,17 +1700,18 @@ abstract class Element extends Component implements ElementInterface
                 $query = $criteria;
             } else {
                 $query = static::find()
-                    ->locale($this->locale)
+                    ->siteId($this->siteId)
                     ->configure($criteria);
             }
 
+            /** @var ElementQuery $query */
             $elementIds = $query->ids();
             $key = array_search($this->id, $elementIds);
 
             if ($key !== false && isset($elementIds[$key + $dir])) {
                 return static::find()
                     ->id($elementIds[$key + $dir])
-                    ->locale($query->locale)
+                    ->siteId($query->siteId)
                     ->one();
             }
         }

@@ -411,7 +411,7 @@ class DashboardController extends Controller
                 }
 
                 if ($zipFile) {
-                    $requestParams['File1_sFilename'] = 'SupportAttachment-'.Io::cleanFilename(Craft::$app->getSiteName()).'.zip';
+                    $requestParams['File1_sFilename'] = 'SupportAttachment-'.Io::cleanFilename(Craft::$app->getSites()->getPrimarySite()->name).'.zip';
                     $requestParams['File1_sFileMimeType'] = 'application/zip';
                     $requestParams['File1_bFileBody'] = base64_encode(Io::getFileContents($zipFile));
 

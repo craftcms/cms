@@ -29,9 +29,9 @@ class RebrandEmail extends Model
     public $key;
 
     /**
-     * @var string Locale
+     * @var integer Site ID
      */
-    public $locale;
+    public $siteId;
 
     /**
      * @var string Subject
@@ -62,9 +62,9 @@ class RebrandEmail extends Model
     public function rules()
     {
         return [
-            [['locale'], 'craft\\app\\validators\\Locale'],
+            [['siteId'], 'craft\\app\\validators\\SiteId'],
             [
-                ['key', 'locale', 'subject', 'body', 'htmlBody'],
+                ['key', 'siteId', 'subject', 'body', 'htmlBody'],
                 'safe',
                 'on' => 'search'
             ],

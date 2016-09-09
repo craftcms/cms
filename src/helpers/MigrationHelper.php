@@ -250,14 +250,14 @@ class MigrationHelper
      * @param string                  $tableName   The existing table name used to store records of this element.
      * @param string                  $elementType The element type handle (e.g. "Entry", "Asset", etc.).
      * @param boolean                 $hasContent  Whether this element type has content.
-     * @param boolean                 $isLocalized Whether this element type stores data in multiple locales.
-     * @param array|null              $locales     Which locales the elements should store content in. Defaults to the primary site
-     *                                             locale if the element type is not localized, otherwise all locales.
+     * @param boolean                 $isLocalized Whether this element type stores data in multiple sites.
+     * @param integer[]|null          $siteIds     Which site IDs the elements should store content in. Defaults to the primary site
+     *                                             if the element type is not localized, otherwise all sites.
      * @param \craft\app\db\Migration $migration   The migration instance that should handle the actual query executions.
      *
      * @return void
      */
-    public static function makeElemental($tableName, $elementType, $hasContent = false, $isLocalized = false, $locales = null, Migration $migration = null)
+    public static function makeElemental($tableName, $elementType, $hasContent = false, $isLocalized = false, $siteIds = null, Migration $migration = null)
     {
         $tableName = Craft::$app->getDb()->getSchema()->getRawTableName($tableName);
         $db = Craft::$app->getDb();
@@ -301,12 +301,12 @@ class MigrationHelper
             ->from($tableName)
             ->all($db);
 
-        // Figure out which locales we're going to be storing elements_i18n and content rows in.
-        if (!$locales || !is_array($locales)) {
+        // Figure out which sites we're going to be storing elements_i18n and content rows in.
+        if (!$siteIds || !is_array($siteIds)) {
             if ($isLocalized) {
-                $locales = Craft::$app->getI18n()->getSiteLocaleIds();
+                $siteIds = Craft::$app->getSites()->getAllSiteIds();
             } else {
-                $locales = [Craft::$app->getI18n()->getPrimarySiteLocaleId()];
+                $siteIds = [Craft::$app->getSites()->getPrimarySite()->id];
             }
         }
 
@@ -359,19 +359,19 @@ class MigrationHelper
             }
 
             // Queue up the elements_i18n and content values
-            foreach ($locales as $locale) {
-                $i18nValues[] = [$elementId, $locale, 1];
+            foreach ($siteIds as $siteId) {
+                $i18nValues[] = [$elementId, $siteId, 1];
             }
 
             if ($hasContent) {
-                foreach ($locales as $locale) {
-                    $contentValues[] = [$elementId, $locale];
+                foreach ($siteIds as $siteId) {
+                    $contentValues[] = [$elementId, $siteId];
                 }
             }
         }
 
         // Save the new elements_i18n and content rows
-        $columns = ['elementId', 'locale', 'enabled'];
+        $columns = ['elementId', 'siteId', 'enabled'];
 
         if ($migration !== null) {
             $migration->batchInsert('{{%elements_i18n}}', $columns, $i18nValues);
@@ -382,7 +382,7 @@ class MigrationHelper
         }
 
         if ($hasContent) {
-            $columns = ['elementId', 'locale'];
+            $columns = ['elementId', 'siteId'];
 
             if ($migration !== null) {
                 $migration->batchInsert('{{%content}}', $columns, $contentValues);

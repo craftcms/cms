@@ -300,6 +300,24 @@ class Fields extends Component
     }
 
     /**
+     * Returns all field types that have a column in the content table.
+     *
+     * @return FieldInterface[] The field type classes
+     */
+    public function getFieldTypesWithContent()
+    {
+        $fieldTypes = [];
+
+        foreach (static::getAllFieldTypes() as $fieldType) {
+            if ($fieldType::hasContentColumn()) {
+                $fieldTypes[] = $fieldType;
+            }
+        }
+
+        return $fieldTypes;
+    }
+
+    /**
      * Creates a field with a given config.
      *
      * @param mixed $config The field’s class name, or its config, with a `type` value and optionally a `settings` value
@@ -598,6 +616,11 @@ class Fields extends Component
                             ->addColumnBefore($contentTable, $newColumnName, $columnType, 'dateCreated')
                             ->execute();
                     }
+
+                    // Clear the translation key format if not using a custom translation method
+                    if ($field->translationMethod != Field::TRANSLATION_METHOD_CUSTOM) {
+                        $field->translationKeyFormat = null;
+                    }
                 } else {
                     // Did the old field have a column we need to remove?
                     if (!$isNewField) {
@@ -609,6 +632,10 @@ class Fields extends Component
                                 ->execute();
                         }
                     }
+
+                    // Fields without a content column don't get translated
+                    $field->translationMethod = Field::TRANSLATION_METHOD_NONE;
+                    $field->translationKeyFormat = null;
                 }
 
                 $fieldRecord->groupId = $field->groupId;
@@ -616,7 +643,8 @@ class Fields extends Component
                 $fieldRecord->handle = $field->handle;
                 $fieldRecord->context = $field->context;
                 $fieldRecord->instructions = $field->instructions;
-                $fieldRecord->translatable = $field->translatable;
+                $fieldRecord->translationMethod = $field->translationMethod;
+                $fieldRecord->translationKeyFormat= $field->translationKeyFormat;
                 $fieldRecord->type = $field->getType();
                 $fieldRecord->settings = $field->getSettings();
 
@@ -1059,7 +1087,8 @@ class Fields extends Component
                 'fields.handle',
                 'fields.context',
                 'fields.instructions',
-                'fields.translatable',
+                'fields.translationMethod',
+                'fields.translationKeyFormat',
                 'fields.type',
                 'fields.settings'
             ])

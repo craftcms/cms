@@ -248,7 +248,7 @@ class Users extends Component
         return User::find()
             ->uid($uid)
             ->status(null)
-            ->localeEnabled(false)
+            ->enabledForSite(false)
             ->one();
     }
 
@@ -590,8 +590,10 @@ class Users extends Component
                 'id' => $user->uid
             ];
             $protocol = Url::getProtocolForTokenizedUrl();
-            $locale = $user->preferredLocale ?: Craft::$app->getI18n()->getPrimarySiteLocaleId();
-            $url = Url::getSiteUrl($path, $params, $protocol, $locale);
+
+            // todo: should we factor in the user's preferred language (as we did in v2)?
+            $siteId = Craft::$app->getSites()->getPrimarySite()->id;
+            $url = Url::getSiteUrl($path, $params, $protocol, $siteId);
         }
 
         return $url;
@@ -621,9 +623,10 @@ class Users extends Component
             return Url::getCpUrl($path, $params, $protocol);
         }
 
-        $locale = $user->preferredLocale ?: Craft::$app->getI18n()->getPrimarySiteLocaleId();
+        // todo: should we factor in the user's preferred language (as we did in v2)?
+        $siteId = Craft::$app->getSites()->getPrimarySite()->id;
 
-        return Url::getSiteUrl($path, $params, $protocol, $locale);
+        return Url::getSiteUrl($path, $params, $protocol, $siteId);
     }
 
     /**

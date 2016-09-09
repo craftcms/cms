@@ -190,10 +190,13 @@ class CraftVariable extends ServiceLocator
      * Returns whether this site has multiple locales.
      *
      * @return boolean
+     * @deprecated in 3.0. Use craft.app.isMultiSite instead
      */
-    public function getIsLocalized()
+    public function isLocalized()
     {
-        return Craft::$app->getIsLocalized();
+        Craft::$app->getDeprecator()->log('craft.isLocalized', 'craft.isLocalized has been deprecated. Use craft.app.isMultiSite instead.');
+
+        return Craft::$app->getIsMultiSite();
     }
 
     // Element queries

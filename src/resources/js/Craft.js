@@ -1260,7 +1260,7 @@ $.extend(Craft,
 	 */
 	getLocalStorage: function(key, defaultValue)
 	{
-		key = 'Craft-'+Craft.siteUid+'.'+key;
+		key = 'Craft-'+Craft.systemUid+'.'+key;
 
 		if (typeof localStorage != 'undefined' && typeof localStorage[key] != 'undefined')
 		{
@@ -1282,7 +1282,7 @@ $.extend(Craft,
 	{
 		if (typeof localStorage != 'undefined')
 		{
-			key = 'Craft-'+Craft.siteUid+'.'+key;
+			key = 'Craft-'+Craft.systemUid+'.'+key;
 
 			// localStorage might be filled all the way up.
 			// Especially likely if this is a private window in Safari 8+, where localStorage technically exists,
@@ -1312,7 +1312,7 @@ $.extend(Craft,
 
 		return {
 			id: $element.data('id'),
-			locale: $element.data('locale'),
+			siteId: $element.data('site-id'),
 			label: $element.data('label'),
 			status: $element.data('status'),
 			url: $element.data('url'),
@@ -1706,9 +1706,9 @@ Craft.BaseElementIndex = Garnish.Base.extend(
 	statusMenu: null,
 	status: null,
 
-	$localeMenuBtn: null,
-	localeMenu: null,
-	locale: null,
+	$siteMenuBtn: null,
+	siteMenu: null,
+	siteId: null,
 
 	$sortMenuBtn: null,
 	sortMenu: null,
@@ -1771,7 +1771,7 @@ Craft.BaseElementIndex = Garnish.Base.extend(
 		this.$toolbar = this.$container.find('.toolbar:first');
 		this.$toolbarTableRow = this.$toolbar.children('table').children('tbody').children('tr');
 		this.$statusMenuBtn = this.$toolbarTableRow.find('.statusmenubtn:first');
-		this.$localeMenuBtn = this.$toolbarTableRow.find('.localemenubtn:first');
+		this.$siteMenuBtn = this.$toolbarTableRow.find('.sitemenubtn:first');
 		this.$sortMenuBtn = this.$toolbarTableRow.find('.sortmenubtn:first');
 		this.$search = this.$toolbarTableRow.find('.search:first input:first');
 		this.$clearSearchBtn = this.$toolbarTableRow.find('.search:first > .clear');
@@ -1824,55 +1824,55 @@ Craft.BaseElementIndex = Garnish.Base.extend(
 			this.statusMenu.on('optionselect', $.proxy(this, '_handleStatusChange'));
 		}
 
-		// Initialize the locale menu
+		// Initialize the site menu
 		// ---------------------------------------------------------------------
 
-		// Is there a locale menu?
-		if (this.$localeMenuBtn.length)
+		// Is there a site menu?
+		if (this.$siteMenuBtn.length)
 		{
-			this.localeMenu = this.$localeMenuBtn.menubtn().data('menubtn').menu;
+			this.siteMenu = this.$siteMenuBtn.menubtn().data('menubtn').menu;
 
-			// Figure out the initial locale
-			var $option = this.localeMenu.$options.filter('.sel:first');
+			// Figure out the initial site
+			var $option = this.siteMenu.$options.filter('.sel:first');
 
 			if (!$option.length)
 			{
-				$option = this.localeMenu.$options.first();
+				$option = this.siteMenu.$options.first();
 			}
 
 			if ($option.length)
 			{
-				this.locale = $option.data('locale');
+				this.siteId = $option.data('site-id');
 			}
 			else
 			{
-				// No locale options -- they must not have any locale permissions
+				// No site options -- they must not have any site permissions
 				this.settings.criteria = { id: '0' };
 			}
 
-			this.localeMenu.on('optionselect', $.proxy(this, '_handleLocaleChange'));
+			this.siteMenu.on('optionselect', $.proxy(this, '_handleSiteChange'));
 
-			if (this.locale)
+			if (this.site)
 			{
-				// Do we have a different locale stored in localStorage?
-				var storedLocale = Craft.getLocalStorage('BaseElementIndex.locale');
+				// Do we have a different site stored in localStorage?
+				var storedSiteId = Craft.getLocalStorage('BaseElementIndex.siteId');
 
-				if (storedLocale && storedLocale != this.locale)
+				if (storedSiteId && storedSiteId != this.siteId)
 				{
 					// Is that one available here?
-					var $storedLocaleOption = this.localeMenu.$options.filter('[data-locale="'+storedLocale+'"]:first');
+					var $storedSiteOption = this.siteMenu.$options.filter('[data-site-id="'+storedSiteId+'"]:first');
 
-					if ($storedLocaleOption.length)
+					if ($storedSiteOption.length)
 					{
-						// Todo: switch this to localeMenu.selectOption($storedLocaleOption) once Menu is updated to support that
-						$storedLocaleOption.trigger('click');
+						// Todo: switch this to siteMenu.selectOption($storedSiteOption) once Menu is updated to support that
+						$storedSiteOption.trigger('click');
 					}
 				}
 			}
 		}
-		else if (this.settings.criteria && this.settings.criteria.locale)
+		else if (this.settings.criteria && this.settings.criteria.siteId)
 		{
-			this.locale = this.settings.criteria.locale;
+			this.siteId = this.settings.criteria.siteId;
 		}
 
 		// Initialize the search input
@@ -2197,7 +2197,7 @@ Craft.BaseElementIndex = Garnish.Base.extend(
 	{
 		var criteria = $.extend({
 			status: this.status,
-			locale: this.locale,
+			siteId: this.siteId,
 			search: this.searchText,
 			limit: this.settings.batchSize
 		}, this.settings.criteria);
@@ -3041,18 +3041,18 @@ Craft.BaseElementIndex = Garnish.Base.extend(
 		this.updateElements();
 	},
 
-	_handleLocaleChange: function(ev)
+	_handleSiteChange: function(ev)
 	{
-		this.localeMenu.$options.removeClass('sel');
+		this.siteMenu.$options.removeClass('sel');
 		var $option = $(ev.selectedOption).addClass('sel');
-		this.$localeMenuBtn.html($option.html());
+		this.$siteMenuBtn.html($option.html());
 
-		this.locale = $option.data('locale');
+		this.siteId = $option.data('site-id');
 
 		if (this.initialized)
 		{
-			// Remember this locale for later
-			Craft.setLocalStorage('BaseElementIndex.locale', this.locale);
+			// Remember this site for later
+			Craft.setLocalStorage('BaseElementIndex.siteId', this.siteId);
 
 			// Update the elements
 			this.updateElements();
@@ -8295,7 +8295,7 @@ Craft.CategoryIndex = Craft.BaseElementIndex.extend(
 		new Craft.ElementEditor({
 			hudTrigger: this.$newCategoryBtnGroup,
 			elementType: 'Category',
-			locale: this.locale,
+			siteId: this.siteId,
 			attributes: {
 				groupId: groupId
 			},
@@ -8372,7 +8372,7 @@ Craft.CategorySelectInput = Craft.BaseElementSelectInput.extend(
 
 		var data = {
 			categoryIds:    selectedCategoryIds,
-			locale:         elements[0].locale,
+			siteId:         elements[0].siteId,
 			id:             this.settings.id,
 			name:           this.settings.name,
 			limit:          this.settings.limit,
@@ -11229,7 +11229,7 @@ Craft.ElementEditor = Garnish.Base.extend(
 {
 	$element: null,
 	elementId: null,
-	locale: null,
+	siteId: null,
 
 	$form: null,
 	$fieldsContainer: null,
@@ -11237,8 +11237,8 @@ Craft.ElementEditor = Garnish.Base.extend(
 	$saveBtn: null,
 	$spinner: null,
 
-	$localeSelect: null,
-	$localeSpinner: null,
+	$siteSelect: null,
+	$siteSpinner: null,
 
 	hud: null,
 
@@ -11272,11 +11272,11 @@ Craft.ElementEditor = Garnish.Base.extend(
 	getBaseData: function () {
 		var data = $.extend({}, this.settings.params);
 
-		if (this.settings.locale) {
-			data.locale = this.settings.locale;
+		if (this.settings.siteId) {
+			data.siteId = this.settings.siteId;
 		}
-		else if (this.$element && this.$element.data('locale')) {
-			data.locale = this.$element.data('locale');
+		else if (this.$element && this.$element.data('site-id')) {
+			data.siteId = this.$element.data('site-id');
 		}
 
 		if (this.settings.elementId) {
@@ -11300,7 +11300,7 @@ Craft.ElementEditor = Garnish.Base.extend(
 	loadHud: function () {
 		this.onBeginLoading();
 		var data = this.getBaseData();
-		data.includeLocales = this.settings.showLocaleSwitcher;
+		data.includeSites = this.settings.showSiteSwitcher;
 		Craft.postActionRequest('elements/get-editor-html', data, $.proxy(this, 'showHud'));
 	},
 
@@ -11310,19 +11310,19 @@ Craft.ElementEditor = Garnish.Base.extend(
 		if (textStatus == 'success') {
 			var $hudContents = $();
 
-			if (response.locales) {
+			if (response.sites) {
 				var $header = $('<div class="header"/>'),
-					$localeSelectContainer = $('<div class="select"/>').appendTo($header);
+					$siteSelectContainer = $('<div class="select"/>').appendTo($header);
 
-				this.$localeSelect = $('<select/>').appendTo($localeSelectContainer);
-				this.$localeSpinner = $('<div class="spinner hidden"/>').appendTo($header);
+				this.$siteSelect = $('<select/>').appendTo($siteSelectContainer);
+				this.$siteSpinner = $('<div class="spinner hidden"/>').appendTo($header);
 
-				for (var i = 0; i < response.locales.length; i++) {
-					var locale = response.locales[i];
-					$('<option value="' + locale.id + '"' + (locale.id == response.locale ? ' selected="selected"' : '') + '>' + locale.name + '</option>').appendTo(this.$localeSelect);
+				for (var i = 0; i < response.sites.length; i++) {
+					var siteInfo = response.sites[i];
+					$('<option value="' + siteInfo.id + '"' + (siteInfo.id == response.siteId ? ' selected="selected"' : '') + '>' + siteInfo.name + '</option>').appendTo(this.$siteSelect);
 				}
 
-				this.addListener(this.$localeSelect, 'change', 'switchLocale');
+				this.addListener(this.$siteSelect, 'change', 'switchSite');
 
 				$hudContents = $hudContents.add($header);
 			}
@@ -11373,33 +11373,33 @@ Craft.ElementEditor = Garnish.Base.extend(
 		}
 	},
 
-	switchLocale: function () {
-		var newLocale = this.$localeSelect.val();
+	switchSite: function () {
+		var newSiteId = this.$siteSelect.val();
 
-		if (newLocale == this.locale) {
+		if (newSiteId == this.siteId) {
 			return;
 		}
 
-		this.$localeSpinner.removeClass('hidden');
+		this.$siteSpinner.removeClass('hidden');
 
 
 		var data = this.getBaseData();
-		data.locale = newLocale;
+		data.siteId = newSiteId;
 
 		Craft.postActionRequest('elements/get-editor-html', data, $.proxy(function (response, textStatus) {
-			this.$localeSpinner.addClass('hidden');
+			this.$siteSpinner.addClass('hidden');
 
 			if (textStatus == 'success') {
 				this.updateForm(response);
 			}
 			else {
-				this.$localeSelect.val(this.locale);
+				this.$siteSelect.val(this.siteId);
 			}
 		}, this));
 	},
 
 	updateForm: function (response) {
-		this.locale = response.locale;
+		this.siteId = response.siteId;
 
 		this.$fieldsContainer.html(response.html);
 
@@ -11442,7 +11442,7 @@ Craft.ElementEditor = Garnish.Base.extend(
 
 			if (textStatus == 'success') {
 				if (textStatus == 'success' && response.success) {
-					if (this.$element && this.locale == this.$element.data('locale')) {
+					if (this.$element && this.siteId == this.$element.data('site-id')) {
 						// Update the label
 						var $title = this.$element.find('.title'),
 							$a = $title.find('a');
@@ -11522,10 +11522,10 @@ Craft.ElementEditor = Garnish.Base.extend(
 {
 	defaults: {
 		hudTrigger: null,
-		showLocaleSwitcher: true,
+		showSiteSwitcher: true,
 		elementId: null,
 		elementType: null,
-		locale: null,
+		siteId: null,
 		attributes: null,
 		params: null,
 
@@ -12020,7 +12020,7 @@ Craft.EntryIndex = Craft.BaseElementIndex.extend(
 		new Craft.ElementEditor({
 			hudTrigger: this.$newEntryBtnGroup,
 			elementType: 'Entry',
-			locale: this.locale,
+			siteId: this.siteId,
 			attributes: {
 				sectionId: sectionId
 			},
@@ -12055,40 +12055,6 @@ Craft.EntryIndex = Craft.BaseElementIndex.extend(
 
 // Register it!
 Craft.registerElementIndexClass('craft\\app\\elements\\Entry', Craft.EntryIndex);
-
-/**
- * Handle Generator
- */
-Craft.EntryUrlFormatGenerator = Craft.BaseInputGenerator.extend(
-{
-	generateTargetValue: function(sourceVal)
-	{
-		// Remove HTML tags
-		sourceVal = sourceVal.replace("/<(.*?)>/g", '');
-
-		// Make it lowercase
-		sourceVal = sourceVal.toLowerCase();
-
-		// Convert extended ASCII characters to basic ASCII
-		sourceVal = Craft.asciiString(sourceVal);
-
-		// Handle must start with a letter and end with a letter/number
-		sourceVal = sourceVal.replace(/^[^a-z]+/, '');
-		sourceVal = sourceVal.replace(/[^a-z0-9]+$/, '');
-
-		// Get the "words"
-		var words = Craft.filterArray(sourceVal.split(/[^a-z0-9]+/));
-
-		var urlFormat = words.join('-');
-
-		if (urlFormat && this.settings.suffix)
-		{
-			urlFormat += this.settings.suffix;
-		}
-
-		return urlFormat;
-	}
-});
 
 Craft.FieldLayoutDesigner = Garnish.Base.extend(
 {
@@ -15901,7 +15867,7 @@ Craft.StructureDrag = Garnish.Drag.extend(
 				var data = {
 					structureId: this.structure.id,
 					elementId:   $element.data('id'),
-					locale:      $element.data('locale'),
+					siteId:      $element.data('site-id'),
 					prevId:      this.$draggee.prev().children('.row').children('.element').data('id'),
 					parentId:    this.$draggee.parent('ul').parent('li').children('.row').children('.element').data('id')
 				};
@@ -16495,7 +16461,7 @@ Craft.StructureTableSorter = Garnish.DragSort.extend({
 		return {
 			structureId: this.structureId,
 			elementId:   $row.data('id'),
-			locale:      $row.find('.element:first').data('locale')
+			siteId:      $row.find('.element:first').data('site-id')
 		};
 	},
 
@@ -17650,7 +17616,7 @@ Craft.ui =
     createField: function(input, config)
     {
         var label = (config.label && config.label != '__blank__' ? config.label : null),
-            locale = (Craft.isLocalized && config.locale ? config.locale : null);
+            siteId = (Craft.isMultiSite && config.siteId ? config.siteId : null);
 
         var $field = $('<div/>', {
             'class': 'field',
@@ -17672,9 +17638,14 @@ Craft.ui =
                     text: label
                 }).appendTo($heading);
 
-                if (locale)
+                if (siteId)
                 {
-                    $('<span class="locale"/>').text(locale).appendTo($label);
+                    for (var i = 0; i < Craft.sites.length; i++) {
+                        if (Craft.sites[i].id == siteId) {
+                            $('<span class="site"/>').text(Craft.sites[i].name).appendTo($label);
+                            break;
+                        }
+                    }
                 }
             }
 
@@ -18619,6 +18590,40 @@ Craft.Uploader = Garnish.Base.extend(
 		allowedKinds: null,
 		events: {},
 		canAddMoreFiles: null
+	}
+});
+
+/**
+ * Handle Generator
+ */
+Craft.UriFormatGenerator = Craft.BaseInputGenerator.extend(
+{
+	generateTargetValue: function(sourceVal)
+	{
+		// Remove HTML tags
+		sourceVal = sourceVal.replace("/<(.*?)>/g", '');
+
+		// Make it lowercase
+		sourceVal = sourceVal.toLowerCase();
+
+		// Convert extended ASCII characters to basic ASCII
+		sourceVal = Craft.asciiString(sourceVal);
+
+		// Handle must start with a letter and end with a letter/number
+		sourceVal = sourceVal.replace(/^[^a-z]+/, '');
+		sourceVal = sourceVal.replace(/[^a-z0-9]+$/, '');
+
+		// Get the "words"
+		var words = Craft.filterArray(sourceVal.split(/[^a-z0-9]+/));
+
+		var uriFormat = words.join('-');
+
+		if (uriFormat && this.settings.suffix)
+		{
+			uriFormat += this.settings.suffix;
+		}
+
+		return uriFormat;
 	}
 });
 

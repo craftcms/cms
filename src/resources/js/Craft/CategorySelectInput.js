@@ -39,7 +39,7 @@ Craft.CategorySelectInput = Craft.BaseElementSelectInput.extend(
 
 		var data = {
 			categoryIds:    selectedCategoryIds,
-			locale:         elements[0].locale,
+			siteId:         elements[0].siteId,
 			id:             this.settings.id,
 			name:           this.settings.name,
 			limit:          this.settings.limit,

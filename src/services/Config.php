@@ -129,7 +129,7 @@ class Config extends Component
      * Returns a localized config setting value by its name.
      *
      * Internally, [[get()]] will be called to get the value of the config setting. If the value is an array,
-     * then only a single value in that array will be returned: the one that has a key matching the `$localeId` argument.
+     * then only a single value in that array will be returned: the one that has a key matching the `$siteId` argument.
      * If no matching key is found, the first element of the array will be returned instead.
      *
      * This function is used for Craft’s “localizable” config settings:
@@ -141,24 +141,24 @@ class Config extends Component
      * - [setPasswordPath](http://craftcms.com/docs/config-settings#setPasswordPath)
      * - [setPasswordSuccessPath](http://craftcms.com/docs/config-settings#setPasswordSuccessPath)
      *
-     * @param string $item     The name of the config setting.
-     * @param string $localeId The locale ID to return. Defaults to
-     *                         [[\craft\app\web\Application::language `Craft::$app->language`]].
-     * @param string $category The name of the config file (sans .php). Defaults to 'general'.
+     * @param string $item       The name of the config setting.
+     * @param string $siteHandle The site handle to return. Defaults to
+     *                           [[\craft\app\web\Application::language `Craft::$app->language`]].
+     * @param string $category   The name of the config file (sans .php). Defaults to 'general'.
      *
      * @return mixed The value of the config setting, or `null` if a value could not be found.
      */
-    public function getLocalized($item, $localeId = null, $category = ConfigCategory::General)
+    public function getLocalized($item, $siteHandle = null, $category = ConfigCategory::General)
     {
         $value = $this->get($item, $category);
 
         if (is_array($value)) {
-            if (!$localeId) {
-                $localeId = Craft::$app->language;
+            if (!$siteHandle) {
+                $siteHandle = Craft::$app->getSites()->currentSite->handle;
             }
 
-            if (isset($value[$localeId])) {
-                return $value[$localeId];
+            if (isset($value[$siteHandle])) {
+                return $value[$siteHandle];
             }
 
             if ($value) {

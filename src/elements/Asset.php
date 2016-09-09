@@ -379,7 +379,7 @@ class Asset extends Element
             [
                 [
                     'label' => Craft::t('app', 'Title'),
-                    'locale' => $element->locale,
+                    'siteId' => $element->siteId,
                     'id' => 'title',
                     'name' => 'title',
                     'value' => $element->title,

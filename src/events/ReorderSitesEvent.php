@@ -8,18 +8,18 @@
 namespace craft\app\events;
 
 /**
- * Locale event class.
+ * Reorder Sites event class.
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since  3.0
  */
-class LocaleEvent extends Event
+class ReorderSitesEvent extends Event
 {
     // Properties
     // =========================================================================
 
     /**
-     * @var string The locale ID
+     * @var integer[] The site IDs in their new order
      */
-    public $localeId;
+    public $siteIds;
 }

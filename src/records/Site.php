@@ -10,29 +10,23 @@ namespace craft\app\records;
 use craft\app\db\ActiveRecord;
 
 /**
- * Stores the locales.
+ * Class Site record.
  *
- * @property string $locale    Locale
- * @property string $sortOrder Sort order
+ * @property integer $id        ID
+ * @property string  $name      Name
+ * @property string  $handle    Handle
+ * @property string  $language  Language
+ * @property boolean $hasUrls   Has URLs
+ * @property boolean $baseUrl   Base URL
+ * @property integer $sortOrder Sort order
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since  3.0
  */
-class Locale extends ActiveRecord
+class Site extends ActiveRecord
 {
     // Public Methods
     // =========================================================================
-
-    /**
-     * @inheritdoc
-     */
-    public function rules()
-    {
-        return [
-            [['locale'], 'craft\\app\\validators\\Locale'],
-            [['locale'], 'required'],
-        ];
-    }
 
     /**
      * @inheritdoc
@@ -41,14 +35,6 @@ class Locale extends ActiveRecord
      */
     public static function tableName()
     {
-        return '{{%locales}}';
-    }
-
-    /**
-     * @return string
-     */
-    public static function primaryKey()
-    {
-        return ['locale'];
+        return '{{%sites}}';
     }
 }

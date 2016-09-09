@@ -149,8 +149,6 @@ class SystemSettingsController extends Controller
         $info = Craft::$app->getInfo();
 
         $info->on = (bool)Craft::$app->getRequest()->getBodyParam('on');
-        $info->siteName = Craft::$app->getRequest()->getBodyParam('siteName');
-        $info->siteUrl = Craft::$app->getRequest()->getBodyParam('siteUrl');
         $info->timezone = Craft::$app->getRequest()->getBodyParam('timezone');
 
         if (Craft::$app->saveInfo($info)) {

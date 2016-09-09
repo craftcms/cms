@@ -17,6 +17,7 @@ use craft\app\elements\Entry;
 use craft\app\models\EntryDraft;
 use craft\app\models\EntryVersion;
 use craft\app\models\Section;
+use craft\app\models\Site;
 use yii\web\ForbiddenHttpException;
 use yii\web\NotFoundHttpException;
 use yii\web\Response;
@@ -52,19 +53,30 @@ class EntriesController extends BaseEntriesController
      * @param integer $entryId       The entry’s ID, if editing an existing entry.
      * @param integer $draftId       The entry draft’s ID, if editing an existing draft.
      * @param integer $versionId     The entry version’s ID, if editing an existing version.
-     * @param integer $localeId      The locale ID, if specified.
+     * @param integer $siteHandle    The site handle, if specified.
      * @param Entry   $entry         The entry being edited, if there were any validation errors.
      *
      * @return string The rendering result
+     * @throws NotFoundHttpException if the requested site handle is invalid
      */
-    public function actionEditEntry($sectionHandle, $entryId = null, $draftId = null, $versionId = null, $localeId = null, Entry $entry = null)
+    public function actionEditEntry($sectionHandle, $entryId = null, $draftId = null, $versionId = null, $siteHandle = null, Entry $entry = null)
     {
+        if ($siteHandle) {
+            $site = Craft::$app->getSites()->getSiteByHandle($siteHandle);
+
+            if (!$site) {
+                throw new NotFoundHttpException('Invalid site handle: '.$siteHandle);
+            }
+        } else {
+            $site = Craft::$app->getSites()->currentSite;
+        }
+
         $variables = [
             'sectionHandle' => $sectionHandle,
             'entryId' => $entryId,
             'draftId' => $draftId,
             'versionId' => $versionId,
-            'localeId' => $localeId,
+            'site' => $site,
             'entry' => $entry
         ];
 
@@ -112,10 +124,10 @@ class EntriesController extends BaseEntriesController
             $variables['elementType'] = Entry::className();
 
             $variables['parentOptionCriteria'] = [
-                'locale' => $variables['localeId'],
+                'siteId' => $site->id,
                 'sectionId' => $section->id,
                 'status' => null,
-                'localeEnabled' => null,
+                'enabledForSite' => false,
             ];
 
             if ($section->maxLevels) {
@@ -127,7 +139,7 @@ class EntriesController extends BaseEntriesController
                 $excludeIds = Entry::find()
                     ->descendantOf($entry)
                     ->status(null)
-                    ->localeEnabled(false)
+                    ->enabledForSite(false)
                     ->ids();
 
                 $excludeIds[] = $entry->id;
@@ -146,7 +158,7 @@ class EntriesController extends BaseEntriesController
                 if ($entry->newParentId) {
                     $parentId = $entry->newParentId;
                 } else {
-                    $parentIds = $entry->getAncestors(1)->status(null)->localeEnabled(null)->ids();
+                    $parentIds = $entry->getAncestors(1)->status(null)->enabledForSite(false)->ids();
 
                     if ($parentIds) {
                         $parentId = $parentIds[0];
@@ -155,22 +167,23 @@ class EntriesController extends BaseEntriesController
             }
 
             if ($parentId) {
-                $variables['parent'] = Craft::$app->getEntries()->getEntryById($parentId, $variables['localeId']);
+                $variables['parent'] = Craft::$app->getEntries()->getEntryById($parentId, $site->id);
             }
         }
 
-        // Enabled locales
+        // Enabled sites
         // ---------------------------------------------------------------------
 
-        if (Craft::$app->getIsLocalized()) {
+        if (Craft::$app->getIsMultiSite()) {
             if ($entry->id) {
-                $variables['enabledLocales'] = Craft::$app->getElements()->getEnabledLocalesForElement($entry->id);
+                $variables['enabledSiteIds'] = Craft::$app->getElements()->getEnabledSiteIdsForElement($entry->id);
             } else {
-                $variables['enabledLocales'] = [];
+                // Set defaults based on the section settings
+                $variables['enabledSiteIds'] = [];
 
-                foreach ($section->getLocales() as $locale) {
-                    if ($locale->enabledByDefault) {
-                        $variables['enabledLocales'][] = $locale->locale;
+                foreach ($section->getSiteSettings() as $siteSettings) {
+                    if ($siteSettings->enabledByDefault) {
+                        $variables['enabledSiteIds'][] = $siteSettings->siteId;
                     }
                 }
             }
@@ -258,7 +271,7 @@ class EntriesController extends BaseEntriesController
         }
 
         // Enable Live Preview?
-        if (!Craft::$app->getRequest()->isMobileBrowser(true) && Craft::$app->getSections()->isSectionTemplateValid($section)) {
+        if (!Craft::$app->getRequest()->isMobileBrowser(true) && Craft::$app->getSections()->isSectionTemplateValid($section, $entry->siteId)) {
             Craft::$app->getView()->registerJs('Craft.LivePreview.init('.Json::encode([
                     'fields' => '#title-field, #fields > div > div > .field',
                     'extraFields' => '#settings',
@@ -267,7 +280,7 @@ class EntriesController extends BaseEntriesController
                     'previewParams' => [
                         'sectionId' => $section->id,
                         'entryId' => $entry->id,
-                        'locale' => $entry->locale,
+                        'siteId' => $entry->siteId,
                         'versionId' => ($entry::className() == EntryVersion::className() ? $entry->versionId : null),
                     ]
                 ]).');');
@@ -297,7 +310,7 @@ class EntriesController extends BaseEntriesController
                         default: {
                             $shareParams = [
                                 'entryId' => $entry->id,
-                                'locale' => $entry->locale
+                                'siteId' => $entry->siteId
                             ];
                             break;
                         }
@@ -312,13 +325,13 @@ class EntriesController extends BaseEntriesController
 
         // Set the base CP edit URL
 
-        // Can't just use the entry's getCpEditUrl() because that might include the locale ID when we don't want it
+        // Can't just use the entry's getCpEditUrl() because that might include the site handle when we don't want it
         $variables['baseCpEditUrl'] = 'entries/'.$section->handle.'/{id}-{slug}';
 
         // Set the "Continue Editing" URL
         $variables['continueEditingUrl'] = $variables['baseCpEditUrl'].
             (isset($variables['draftId']) ? '/drafts/'.$variables['draftId'] : '').
-            (Craft::$app->getIsLocalized() && Craft::$app->language != $variables['localeId'] ? '/'.$variables['localeId'] : '');
+            (Craft::$app->getIsMultiSite() && Craft::$app->getSites()->currentSite->id != $site->id ? '/'.$site->handle : '');
 
         // Can the user delete the entry?
         $variables['canDeleteEntry'] = $entry->id && (
@@ -399,7 +412,7 @@ class EntriesController extends BaseEntriesController
             $entry = $this->_getEntryModel();
             $this->enforceEditEntryPermissions($entry);
 
-            // Set the language to the user's preferred locale so DateFormatter returns the right format
+            // Set the language to the user's preferred language so DateFormatter returns the right format
             Craft::$app->language = Craft::$app->getTargetLanguage(true);
 
             $this->_populateEntryModel($entry);
@@ -500,8 +513,8 @@ class EntriesController extends BaseEntriesController
         $this->requirePostRequest();
 
         $entryId = Craft::$app->getRequest()->getRequiredBodyParam('entryId');
-        $localeId = Craft::$app->getRequest()->getBodyParam('locale');
-        $entry = Craft::$app->getEntries()->getEntryById($entryId, $localeId);
+        $siteId = Craft::$app->getRequest()->getBodyParam('siteId');
+        $entry = Craft::$app->getEntries()->getEntryById($entryId, $siteId);
 
         if (!$entry) {
             throw new NotFoundHttpException('Entry not found');
@@ -543,25 +556,25 @@ class EntriesController extends BaseEntriesController
     /**
      * Redirects the client to a URL for viewing an entry/draft/version on the front end.
      *
-     * @param mixed $entryId
-     * @param mixed $locale
-     * @param mixed $draftId
-     * @param mixed $versionId
+     * @param integer $entryId
+     * @param integer $siteId
+     * @param integer $draftId
+     * @param integer $versionId
      *
      * @return Response
      * @throws NotFoundHttpException if the requested entry/revision cannot be found
      * @throws ServerErrorHttpException if the section is not configured properly
      */
-    public function actionShareEntry($entryId = null, $locale = null, $draftId = null, $versionId = null)
+    public function actionShareEntry($entryId = null, $siteId = null, $draftId = null, $versionId = null)
     {
         if ($entryId) {
-            $entry = Craft::$app->getEntries()->getEntryById($entryId, $locale);
+            $entry = Craft::$app->getEntries()->getEntryById($entryId, $siteId);
 
             if (!$entry) {
                 throw new NotFoundHttpException('Entry not found');
             }
 
-            $params = ['entryId' => $entryId, 'locale' => $entry->locale];
+            $params = ['entryId' => $entryId, 'siteId' => $entry->siteId];
         } else if ($draftId) {
             $entry = Craft::$app->getEntryRevisions()->getDraftById($draftId);
 
@@ -586,7 +599,7 @@ class EntriesController extends BaseEntriesController
         $this->enforceEditEntryPermissions($entry);
 
         // Make sure the entry actually can be viewed
-        if (!Craft::$app->getSections()->isSectionTemplateValid($entry->getSection())) {
+        if (!Craft::$app->getSections()->isSectionTemplateValid($entry->getSection(), $entry->siteId)) {
             throw new ServerErrorHttpException('Section not configured properly');
         }
 
@@ -603,20 +616,20 @@ class EntriesController extends BaseEntriesController
     /**
      * Shows an entry/draft/version based on a token.
      *
-     * @param mixed $entryId
-     * @param mixed $locale
-     * @param mixed $draftId
-     * @param mixed $versionId
+     * @param integer $entryId
+     * @param integer $siteId
+     * @param integer $draftId
+     * @param integer $versionId
      *
      * @return Response
      * @throws NotFoundHttpException if the requested category cannot be found
      */
-    public function actionViewSharedEntry($entryId = null, $locale = null, $draftId = null, $versionId = null)
+    public function actionViewSharedEntry($entryId = null, $siteId = null, $draftId = null, $versionId = null)
     {
         $this->requireToken();
 
         if ($entryId) {
-            $entry = Craft::$app->getEntries()->getEntryById($entryId, $locale);
+            $entry = Craft::$app->getEntries()->getEntryById($entryId, $siteId);
         } else if ($draftId) {
             $entry = Craft::$app->getEntryRevisions()->getDraftById($draftId);
         } else if ($versionId) {
@@ -640,7 +653,7 @@ class EntriesController extends BaseEntriesController
      *
      * @return void
      * @throws NotFoundHttpException if the requested section or entry cannot be found
-     * @throws ForbiddenHttpException if the user is not permitted to edit content in the requested locale
+     * @throws ForbiddenHttpException if the user is not permitted to edit content in the requested site
      */
     private function _prepEditEntryVariables(&$variables)
     {
@@ -657,32 +670,36 @@ class EntriesController extends BaseEntriesController
             throw new NotFoundHttpException('Section not found');
         }
 
-        // Get the locale
+        // Get the site
         // ---------------------------------------------------------------------
 
-        if (Craft::$app->getIsLocalized()) {
-            // Only use the locales that the user has access to
-            $sectionLocaleIds = array_keys($variables['section']->getLocales());
-            $editableLocaleIds = Craft::$app->getI18n()->getEditableLocaleIds();
-            $variables['localeIds'] = array_merge(array_intersect($sectionLocaleIds, $editableLocaleIds));
+        if (Craft::$app->getIsMultiSite()) {
+            // Only use the sites that the user has access to
+            $sectionSiteIds = array_keys($variables['section']->getSiteSettings());
+            $editableSiteIds = Craft::$app->getSites()->getEditableSiteIds();
+            $variables['siteIds'] = array_merge(array_intersect($sectionSiteIds, $editableSiteIds));
         } else {
-            $variables['localeIds'] = [Craft::$app->getI18n()->getPrimarySiteLocaleId()];
+            $variables['siteIds'] = [Craft::$app->getSites()->getPrimarySite()->id];
         }
 
-        if (!$variables['localeIds']) {
-            throw new ForbiddenHttpException('User not permitted to edit content in any locales supported by this section');
+        if (!$variables['siteIds']) {
+            throw new ForbiddenHttpException('User not permitted to edit content in any sites supported by this section');
         }
 
-        if (empty($variables['localeId'])) {
-            $variables['localeId'] = Craft::$app->language;
+        if (empty($variables['site'])) {
+            $variables['site'] = Craft::$app->getSites()->currentSite;
 
-            if (!in_array($variables['localeId'], $variables['localeIds'])) {
-                $variables['localeId'] = $variables['localeIds'][0];
+            if (!in_array($variables['site']->id, $variables['siteIds'])) {
+                $variables['site'] = Craft::$app->getSites()->getSiteById($variables['siteIds'][0]);
             }
+
+            $site = $variables['site'];
         } else {
-            // Make sure they were requesting a valid locale
-            if (!in_array($variables['localeId'], $variables['localeIds'])) {
-                throw new ForbiddenHttpException('User not permitted to edit content in this locale');
+            // Make sure they were requesting a valid site
+            /** @var Site $site */
+            $site = $variables['site'];
+            if (!in_array($site->id, $variables['siteIds'])) {
+                throw new ForbiddenHttpException('User not permitted to edit content in this site');
             }
         }
 
@@ -696,10 +713,10 @@ class EntriesController extends BaseEntriesController
                 } else if (!empty($variables['versionId'])) {
                     $variables['entry'] = Craft::$app->getEntryRevisions()->getVersionById($variables['versionId']);
                 } else {
-                    $variables['entry'] = Craft::$app->getEntries()->getEntryById($variables['entryId'], $variables['localeId']);
+                    $variables['entry'] = Craft::$app->getEntries()->getEntryById($variables['entryId'], $site->id);
 
                     if ($variables['entry']) {
-                        $versions = Craft::$app->getEntryRevisions()->getVersionsByEntryId($variables['entryId'], $variables['localeId'], 1, true);
+                        $versions = Craft::$app->getEntryRevisions()->getVersionsByEntryId($variables['entryId'], $site->id, 1, true);
 
                         if (isset($versions[0])) {
                             $variables['entry']->revisionNotes = $versions[0]->revisionNotes;
@@ -715,23 +732,20 @@ class EntriesController extends BaseEntriesController
                 $variables['entry']->sectionId = $variables['section']->id;
                 $variables['entry']->authorId = Craft::$app->getUser()->getIdentity()->id;
                 $variables['entry']->enabled = true;
+                $variables['entry']->siteId = $site->id;
 
-                if (!empty($variables['localeId'])) {
-                    $variables['entry']->locale = $variables['localeId'];
-                }
-
-                if (Craft::$app->getIsLocalized()) {
-                    // Set the default locale status based on the section's settings
-                    foreach ($variables['section']->getLocales() as $locale) {
-                        if ($locale->locale == $variables['entry']->locale) {
-                            $variables['entry']->localeEnabled = $locale->enabledByDefault;
+                if (Craft::$app->getIsMultiSite()) {
+                    // Set the default site status based on the section's settings
+                    foreach ($variables['section']->getSiteSettings() as $siteSettings) {
+                        if ($siteSettings->siteId == $variables['entry']->siteId) {
+                            $variables['entry']->enabledForSite = $siteSettings->enabledByDefault;
                             break;
                         }
                     }
                 } else {
                     // Set the default entry status based on the section's settings
-                    foreach ($variables['section']->getLocales() as $locale) {
-                        if (!$locale->enabledByDefault) {
+                    foreach ($variables['section']->getSiteSettings() as $siteSettings) {
+                        if (!$siteSettings->enabledByDefault) {
                             $variables['entry']->enabled = false;
                         }
                         break;
@@ -787,10 +801,10 @@ class EntriesController extends BaseEntriesController
     private function _getEntryModel()
     {
         $entryId = Craft::$app->getRequest()->getBodyParam('entryId');
-        $localeId = Craft::$app->getRequest()->getBodyParam('locale');
+        $siteId = Craft::$app->getRequest()->getBodyParam('siteId');
 
         if ($entryId) {
-            $entry = Craft::$app->getEntries()->getEntryById($entryId, $localeId);
+            $entry = Craft::$app->getEntries()->getEntryById($entryId, $siteId);
 
             if (!$entry) {
                 throw new NotFoundHttpException('Entry not found');
@@ -799,8 +813,8 @@ class EntriesController extends BaseEntriesController
             $entry = new Entry();
             $entry->sectionId = Craft::$app->getRequest()->getRequiredBodyParam('sectionId');
 
-            if ($localeId) {
-                $entry->locale = $localeId;
+            if ($siteId) {
+                $entry->siteId = $siteId;
             }
         }
 
@@ -822,7 +836,7 @@ class EntriesController extends BaseEntriesController
         $entry->postDate = (($postDate = DateTimeHelper::toDateTime(Craft::$app->getRequest()->getBodyParam('postDate'))) !== false ? $postDate : $entry->postDate);
         $entry->expiryDate = (($expiryDate = DateTimeHelper::toDateTime(Craft::$app->getRequest()->getBodyParam('expiryDate'))) !== false ? $expiryDate : null);
         $entry->enabled = (bool)Craft::$app->getRequest()->getBodyParam('enabled', $entry->enabled);
-        $entry->localeEnabled = (bool)Craft::$app->getRequest()->getBodyParam('localeEnabled', $entry->localeEnabled);
+        $entry->enabledForSite = (bool)Craft::$app->getRequest()->getBodyParam('enabledForSite', $entry->enabledForSite);
 
         $entry->title = Craft::$app->getRequest()->getBodyParam('title', $entry->title);
 
@@ -857,23 +871,34 @@ class EntriesController extends BaseEntriesController
      * @param Entry $entry
      *
      * @return string The rendering result
+     * @throws ServerErrorHttpException if the entry doesn't have a URL for the site it's configured with, or if the entry's site ID is invalid
      */
     private function _showEntry(Entry $entry)
     {
-        $section = $entry->getSection();
+        $sectionSiteSettings = $entry->getSection()->getSiteSettings();
 
-        Craft::$app->language = $entry->locale;
+        if (!isset($sectionSiteSettings[$entry->siteId]) || !$sectionSiteSettings[$entry->siteId]->hasUrls) {
+            throw new ServerErrorHttpException('The entry '.$entry->id.' doesn\'t have a URL for the site '.$entry->siteId.'.');
+        }
+
+        $site = Craft::$app->getSites()->getSiteById($entry->siteId);
+
+        if (!$site) {
+            throw new ServerErrorHttpException('Invalid site ID: '.$entry->siteId);
+        }
+
+        Craft::$app->language = $site->language;
 
         if (!$entry->postDate) {
             $entry->postDate = new DateTime();
         }
 
-        // Have this entry override any freshly queried entries with the same ID/locale
+        // Have this entry override any freshly queried entries with the same ID/site ID
         Craft::$app->getElements()->setPlaceholderElement($entry);
 
         Craft::$app->getView()->getTwig()->disableStrictVariables();
 
-        return $this->renderTemplate($section->template, [
+        return $this->renderTemplate($sectionSiteSettings[$entry->siteId]->template, [
             'entry' => $entry
         ]);
     }

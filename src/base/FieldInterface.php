@@ -47,6 +47,15 @@ interface FieldInterface extends SavableComponentInterface
     public function getContentColumnType();
 
     /**
+     * Returns the field’s translation key, based on a given element.
+     *
+     * @param ElementInterface $element The element being saved
+     *
+     * @return string The translation key
+     */
+    public function getTranslationKey($element);
+
+    /**
      * Returns the field’s input HTML.
      *
      * An extremely simple implementation would be to directly return some HTML:

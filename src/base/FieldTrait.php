@@ -44,9 +44,14 @@ trait FieldTrait
     public $instructions;
 
     /**
-     * @var boolean Whether the field is translatable
+     * @var string The field’s translation method
      */
-    public $translatable = false;
+    public $translationMethod = Field::TRANSLATION_METHOD_NONE;
+
+    /**
+     * @var string The field’s translation key format, if [[translationMethod]] is "custom"
+     */
+    public $translationKeyFormat;
 
     /**
      * @var string The field’s previous handle

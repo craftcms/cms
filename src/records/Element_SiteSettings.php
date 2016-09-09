@@ -11,20 +11,21 @@ use yii\db\ActiveQueryInterface;
 use craft\app\db\ActiveRecord;
 
 /**
- * Element locale data record class.
+ * Element_SiteSettings record class.
  *
  * @property integer $id        ID
  * @property integer $elementId Element ID
- * @property Locale  $locale    Locale
+ * @property integer $siteId    Site ID
  * @property string  $slug      Slug
  * @property string  $uri       URI
  * @property boolean $enabled   Enabled
  * @property Element $element   Element
+ * @property Site    $site      Site
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since  3.0
  */
-class ElementLocale extends ActiveRecord
+class Element_SiteSettings extends ActiveRecord
 {
     // Public Methods
     // =========================================================================
@@ -35,14 +36,10 @@ class ElementLocale extends ActiveRecord
     public function rules()
     {
         return [
-            [['locale'], 'craft\\app\\validators\\Locale'],
-            [
-                ['elementId'],
-                'unique',
-                'targetAttribute' => ['elementId', 'locale']
-            ],
-            [['uri'], 'unique', 'targetAttribute' => ['uri', 'locale']],
-            [['locale'], 'required'],
+            [['siteId'], 'craft\\app\\validators\\SiteId'],
+            [['elementId'], 'unique', 'targetAttribute' => ['elementId', 'siteId']],
+            [['uri'], 'unique', 'targetAttribute' => ['uri', 'siteId']],
+            [['elementId', 'siteId'], 'required'],
             [['uri'], 'craft\\app\\validators\\Uri'],
         ];
     }
@@ -58,7 +55,7 @@ class ElementLocale extends ActiveRecord
     }
 
     /**
-     * Returns the element locale’s element.
+     * Returns the associated element.
      *
      * @return ActiveQueryInterface The relational query object.
      */
@@ -68,12 +65,12 @@ class ElementLocale extends ActiveRecord
     }
 
     /**
-     * Returns the element locale’s locale.
+     * Returns the associated site.
      *
      * @return ActiveQueryInterface The relational query object.
      */
-    public function getLocale()
+    public function getSite()
     {
-        return $this->hasOne(Locale::className(), ['id' => 'locale']);
+        return $this->hasOne(Site::className(), ['id' => 'siteId']);
     }
 }

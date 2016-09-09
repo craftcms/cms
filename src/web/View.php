@@ -456,9 +456,9 @@ class View extends \yii\web\View
      * (probably craft/templates/ if it’s a front-end site request, and craft/app/templates/ if it’s a Control
      * Panel request).
      *
-     * If this is a front-end site request, a folder named after the current locale ID will be checked first.
+     * If this is a front-end site request, a folder named after the current site handle will be checked first.
      *
-     * - craft/templates/LocaleID/...
+     * - craft/templates/SiteHandle/...
      * - craft/templates/...
      *
      * And finaly, if this is a Control Panel request _and_ the template name includes multiple segments _and_ the first
@@ -470,11 +470,11 @@ class View extends \yii\web\View
      *
      * - Front-end site requests:
      *
-     *     - craft/templates/LocaleID/foo/bar
-     *     - craft/templates/LocaleID/foo/bar.html
-     *     - craft/templates/LocaleID/foo/bar.twig
-     *     - craft/templates/LocaleID/foo/bar/index.html
-     *     - craft/templates/LocaleID/foo/bar/index.twig
+     *     - craft/templates/SiteHandle/foo/bar
+     *     - craft/templates/SiteHandle/foo/bar.html
+     *     - craft/templates/SiteHandle/foo/bar.twig
+     *     - craft/templates/SiteHandle/foo/bar/index.html
+     *     - craft/templates/SiteHandle/foo/bar/index.twig
      *     - craft/templates/foo/bar
      *     - craft/templates/foo/bar.html
      *     - craft/templates/foo/bar.twig
@@ -519,9 +519,9 @@ class View extends \yii\web\View
         // Should we be looking for a localized version of the template?
         $request = Craft::$app->getRequest();
         if (!$request->getIsConsoleRequest() && $request->getIsSiteRequest()) {
-            $localePath = $this->_templatesPath.'/'.Craft::$app->language;
-            if (Io::folderExists($localePath)) {
-                $basePaths[] = $localePath;
+            $sitePath = $this->_templatesPath.'/'.Craft::$app->getSites()->currentSite->handle;
+            if (Io::folderExists($sitePath)) {
+                $basePaths[] = $sitePath;
             }
         }
 
@@ -1386,7 +1386,7 @@ class View extends \yii\web\View
 
         $label = HtmlHelper::encode($element);
 
-        $html .= '" data-id="'.$element->id.'" data-locale="'.$element->locale.'" data-status="'.$element->getStatus().'" data-label="'.$label.'" data-url="'.$element->getUrl().'"';
+        $html .= '" data-id="'.$element->id.'" data-site-id="'.$element->siteId.'" data-status="'.$element->getStatus().'" data-label="'.$label.'" data-url="'.$element->getUrl().'"';
 
         if ($element->level) {
             $html .= ' data-level="'.$element->level.'"';

@@ -214,7 +214,7 @@ Craft.EntryIndex = Craft.BaseElementIndex.extend(
 		new Craft.ElementEditor({
 			hudTrigger: this.$newEntryBtnGroup,
 			elementType: 'Entry',
-			locale: this.locale,
+			siteId: this.siteId,
 			attributes: {
 				sectionId: sectionId
 			},

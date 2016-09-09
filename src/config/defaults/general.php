@@ -19,7 +19,7 @@ return [
      * The URI Craft should use upon successfully activating a user. Note that this only affects front-end site
      * requests.
      *
-     * This can be set to a string or an array with locale IDs used as the keys, if you want to set it on a per-locale
+     * This can be set to a string or an array with site handles used as the keys, if you want to set it on a per-site
      * basis.
      */
     'activateAccountSuccessPath' => '',
@@ -283,7 +283,7 @@ return [
      * The URI Craft should redirect to when user token validation fails. A token is used on things like setting and
      * resetting user account passwords.  Note that this only affects front-end site requests.
      *
-     * This can be set to a string or an array with locale IDs used as the keys, if you want to set it on a per-locale
+     * This can be set to a string or an array with site handles used as the keys, if you want to set it on a per-site
      * basis.
      */
     'invalidUserTokenPath' => '',
@@ -302,14 +302,14 @@ return [
     /**
      * The URI Craft should use for user login.  Note that this only affects front-end site requests.
      *
-     * This can be set to a string or an array with locale IDs used as the keys, if you want to set it on a per-locale
+     * This can be set to a string or an array with site handles used as the keys, if you want to set it on a per-site
      * basis.
      */
     'loginPath' => 'login',
     /**
      * The URI Craft should use for user logout.  Note that this only affects front-end site requests.
      *
-     * This can be set to a string or an array with locale IDs used as the keys, if you want to set it on a per-locale
+     * This can be set to a string or an array with site handles used as the keys, if you want to set it on a per-site
      * basis.
      */
     'logoutPath' => 'logout',
@@ -475,7 +475,7 @@ return [
     /**
      * The URI Craft should use for user password resetting. Note that this only affects front-end site requests.
      *
-     * This can be set to a string or an array with locale IDs used as the keys, if you want to set it on a per-locale
+     * This can be set to a string or an array with site handles used as the keys, if you want to set it on a per-site
      * basis.
      */
     'setPasswordPath' => 'setpassword',
@@ -483,7 +483,7 @@ return [
      * The URI Craft should use upon successfully setting a users’s password. Note that this only affects front-end site
      * requests.
      *
-     * This can be set to a string or an array with locale IDs used as the keys, if you want to set it on a per-locale
+     * This can be set to a string or an array with site handles used as the keys, if you want to set it on a per-site
      * basis.
      */
     'setPasswordSuccessPath' => '',
@@ -493,17 +493,9 @@ return [
      */
     'showBetaUpdates' => false,
     /**
-     * The name of the site. If set, it will take precedence over the Site Name setting in Settings → General.
+     * The base URL to the site(s). If set, it will take precedence over the Base URL settings in Settings → Sites → [Site Name].
      *
-     * This can be set to a string or an array with locale IDs used as the keys, if you want to set it on a per-locale
-     * basis.
-     */
-    'siteName' => null,
-    /**
-     * The base URL to the site. If set, it will take precedence over the Site URL setting in Settings → General.
-     *
-     * This can be set to a string or an array with locale IDs used as the keys, if you want to set it on a per-locale
-     * basis.
+     * This can be set to a string, which will override the primary site’s base URL only, or an array with site handles used as the keys.
      */
     'siteUrl' => null,
     /**

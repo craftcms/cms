@@ -22,9 +22,9 @@ class ResaveAllElements extends Task
     // =========================================================================
 
     /**
-     * @var string The locale ID to fetch the elements in
+     * @var integer The site ID to fetch the elements in
      */
-    public $locale;
+    public $siteId;
 
     /**
      * @var string Whether only localizable elements should be resaved
@@ -46,8 +46,8 @@ class ResaveAllElements extends Task
     {
         parent::init();
 
-        if ($this->locale === null) {
-            $this->locale = Craft::$app->language;
+        if ($this->siteId === null) {
+            $this->siteId = Craft::$app->getSites()->currentSite->id;
         }
     }
 
@@ -77,9 +77,9 @@ class ResaveAllElements extends Task
             'type' => ResaveElements::className(),
             'elementType' => $this->_elementType[$step],
             'criteria' => [
-                'locale' => $this->locale,
+                'siteId' => $this->siteId,
                 'status' => null,
-                'localeEnabled' => null
+                'enabledForSite' => false
             ]
         ]);
     }

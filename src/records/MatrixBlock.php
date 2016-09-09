@@ -15,14 +15,16 @@ use craft\app\db\ActiveRecord;
  *
  * @property integer         $id          ID
  * @property integer         $ownerId     Owner ID
- * @property Locale          $ownerLocale Owner locale
+ * @property integer         $ownerSiteId Owner site ID
  * @property integer         $fieldId     Field ID
  * @property integer         $typeId      Type ID
  * @property string          $sortOrder   Sort order
  * @property Element         $element     Element
  * @property Element         $owner       Owner
+ * @property Site            $ownerSite   Owner's site
  * @property Field           $field       Field
  * @property MatrixBlockType $type        Type
+ * @property Site            $site        Site
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since  3.0
@@ -38,7 +40,7 @@ class MatrixBlock extends ActiveRecord
     public function rules()
     {
         return [
-            [['ownerLocale'], 'craft\\app\\validators\\Locale'],
+            [['ownerSiteId'], 'craft\\app\\validators\\SiteId'],
         ];
     }
 
@@ -73,13 +75,13 @@ class MatrixBlock extends ActiveRecord
     }
 
     /**
-     * Returns the matrix block’s ownerLocale.
+     * Returns the matrix block’s owner's site.
      *
      * @return ActiveQueryInterface The relational query object.
      */
-    public function getOwnerLocale()
+    public function getOwnerSite()
     {
-        return $this->hasOne(Locale::className(), ['id' => 'ownerLocale']);
+        return $this->hasOne(Site::className(), ['id' => 'ownerSiteId']);
     }
 
     /**

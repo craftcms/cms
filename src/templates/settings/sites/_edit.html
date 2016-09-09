@@ -1,0 +1,86 @@
+{% extends "_layouts/cp" %}
+
+{% set fullPageForm = true %}
+
+{% import "_includes/forms" as forms %}
+
+
+{% block content %}
+	<input type="hidden" name="action" value="sites/save-site">
+	{{ redirectInput('settings/sites') }}
+
+	{% if site.id %}<input type="hidden" name="siteId" value="{{ site.id }}">{% endif %}
+
+	<div id="categorygroup-settings">
+		{{ forms.textField({
+			first: true,
+			label: "Name"|t('app'),
+			instructions: "What this site will be called in the CP."|t('app'),
+			id: 'name',
+			name: 'name',
+			value: site.name,
+			errors: site.getErrors('name'),
+			autofocus: true,
+			required: true,
+			translatable: true
+		}) }}
+
+		{{ forms.textField({
+			label: "Handle"|t('app'),
+			instructions: "How you’ll refer to this site in the templates."|t('app'),
+			id: 'handle',
+			class: 'code',
+			name: 'handle',
+			value: site.handle,
+			errors: site.getErrors('handle'),
+			required: true
+		}) }}
+
+		{% if not craft.app.i18n.getIsIntlLoaded() %}
+			{% set languageWarning = 'Enable the [Intl extension]({link1}) or install additional [locale data files]({link2}) for more language options.'|t('app', {
+				link1: 'http://php.net/manual/en/book.intl.php',
+				link2: 'https://github.com/pixelandtonic/CraftLocaleData'
+			}) %}
+		{% endif %}
+
+		{{ forms.selectField({
+			label: "Language"|t('app'),
+			instructions: "The language content in this site will use."|t('app'),
+			id: 'language',
+			name: 'language',
+			value: site.language,
+			options: languageOptions,
+			errors: site.getErrors('language'),
+			warning: languageWarning ?? null
+		}) }}
+
+		<hr>
+
+		{{ forms.checkboxField({
+			label: "This site has its own base URL"|t('app'),
+			id: 'has-urls',
+			name: 'hasUrls',
+			checked: site.hasUrls,
+			toggle: 'url-settings'
+		}) }}
+
+		<div id="url-settings" class="nested-fields{% if not site.hasUrls %} hidden{% endif %}">
+			{{ forms.textField({
+				label: "Base URL"|t('app'),
+				instructions: "The base URL for the site"|t('app'),
+				id: 'base-url',
+				class: 'ltr',
+				name: 'baseUrl',
+				value: site.originalBaseUrl ?: site.baseUrl,
+				errors: site.getErrors('baseUrl')
+			}) }}
+		</div>
+	</div>
+{% endblock %}
+
+
+{% if not site.handle %}
+	{% registerjs %}
+		new Craft.HandleGenerator('#name', '#handle');
+	{% endregisterjs %}
+{% endif %}

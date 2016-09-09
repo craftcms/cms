@@ -5,7 +5,7 @@ Craft.ElementEditor = Garnish.Base.extend(
 {
 	$element: null,
 	elementId: null,
-	locale: null,
+	siteId: null,
 
 	$form: null,
 	$fieldsContainer: null,
@@ -13,8 +13,8 @@ Craft.ElementEditor = Garnish.Base.extend(
 	$saveBtn: null,
 	$spinner: null,
 
-	$localeSelect: null,
-	$localeSpinner: null,
+	$siteSelect: null,
+	$siteSpinner: null,
 
 	hud: null,
 
@@ -48,11 +48,11 @@ Craft.ElementEditor = Garnish.Base.extend(
 	getBaseData: function () {
 		var data = $.extend({}, this.settings.params);
 
-		if (this.settings.locale) {
-			data.locale = this.settings.locale;
+		if (this.settings.siteId) {
+			data.siteId = this.settings.siteId;
 		}
-		else if (this.$element && this.$element.data('locale')) {
-			data.locale = this.$element.data('locale');
+		else if (this.$element && this.$element.data('site-id')) {
+			data.siteId = this.$element.data('site-id');
 		}
 
 		if (this.settings.elementId) {
@@ -76,7 +76,7 @@ Craft.ElementEditor = Garnish.Base.extend(
 	loadHud: function () {
 		this.onBeginLoading();
 		var data = this.getBaseData();
-		data.includeLocales = this.settings.showLocaleSwitcher;
+		data.includeSites = this.settings.showSiteSwitcher;
 		Craft.postActionRequest('elements/get-editor-html', data, $.proxy(this, 'showHud'));
 	},
 
@@ -86,19 +86,19 @@ Craft.ElementEditor = Garnish.Base.extend(
 		if (textStatus == 'success') {
 			var $hudContents = $();
 
-			if (response.locales) {
+			if (response.sites) {
 				var $header = $('<div class="header"/>'),
-					$localeSelectContainer = $('<div class="select"/>').appendTo($header);
+					$siteSelectContainer = $('<div class="select"/>').appendTo($header);
 
-				this.$localeSelect = $('<select/>').appendTo($localeSelectContainer);
-				this.$localeSpinner = $('<div class="spinner hidden"/>').appendTo($header);
+				this.$siteSelect = $('<select/>').appendTo($siteSelectContainer);
+				this.$siteSpinner = $('<div class="spinner hidden"/>').appendTo($header);
 
-				for (var i = 0; i < response.locales.length; i++) {
-					var locale = response.locales[i];
-					$('<option value="' + locale.id + '"' + (locale.id == response.locale ? ' selected="selected"' : '') + '>' + locale.name + '</option>').appendTo(this.$localeSelect);
+				for (var i = 0; i < response.sites.length; i++) {
+					var siteInfo = response.sites[i];
+					$('<option value="' + siteInfo.id + '"' + (siteInfo.id == response.siteId ? ' selected="selected"' : '') + '>' + siteInfo.name + '</option>').appendTo(this.$siteSelect);
 				}
 
-				this.addListener(this.$localeSelect, 'change', 'switchLocale');
+				this.addListener(this.$siteSelect, 'change', 'switchSite');
 
 				$hudContents = $hudContents.add($header);
 			}
@@ -149,33 +149,33 @@ Craft.ElementEditor = Garnish.Base.extend(
 		}
 	},
 
-	switchLocale: function () {
-		var newLocale = this.$localeSelect.val();
+	switchSite: function () {
+		var newSiteId = this.$siteSelect.val();
 
-		if (newLocale == this.locale) {
+		if (newSiteId == this.siteId) {
 			return;
 		}
 
-		this.$localeSpinner.removeClass('hidden');
+		this.$siteSpinner.removeClass('hidden');
 
 
 		var data = this.getBaseData();
-		data.locale = newLocale;
+		data.siteId = newSiteId;
 
 		Craft.postActionRequest('elements/get-editor-html', data, $.proxy(function (response, textStatus) {
-			this.$localeSpinner.addClass('hidden');
+			this.$siteSpinner.addClass('hidden');
 
 			if (textStatus == 'success') {
 				this.updateForm(response);
 			}
 			else {
-				this.$localeSelect.val(this.locale);
+				this.$siteSelect.val(this.siteId);
 			}
 		}, this));
 	},
 
 	updateForm: function (response) {
-		this.locale = response.locale;
+		this.siteId = response.siteId;
 
 		this.$fieldsContainer.html(response.html);
 
@@ -218,7 +218,7 @@ Craft.ElementEditor = Garnish.Base.extend(
 
 			if (textStatus == 'success') {
 				if (textStatus == 'success' && response.success) {
-					if (this.$element && this.locale == this.$element.data('locale')) {
+					if (this.$element && this.siteId == this.$element.data('site-id')) {
 						// Update the label
 						var $title = this.$element.find('.title'),
 							$a = $title.find('a');
@@ -298,10 +298,10 @@ Craft.ElementEditor = Garnish.Base.extend(
 {
 	defaults: {
 		hudTrigger: null,
-		showLocaleSwitcher: true,
+		showSiteSwitcher: true,
 		elementId: null,
 		elementType: null,
-		locale: null,
+		siteId: null,
 		attributes: null,
 		params: null,
 

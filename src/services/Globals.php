@@ -210,18 +210,18 @@ class Globals extends Component
     /**
      * Returns a global set by its ID.
      *
-     * @param integer     $globalSetId
-     * @param string|null $localeId
+     * @param integer      $globalSetId
+     * @param integer|null $siteId
      *
      * @return GlobalSet|null
      */
-    public function getSetById($globalSetId, $localeId = null)
+    public function getSetById($globalSetId, $siteId = null)
     {
-        if (!$localeId) {
-            $localeId = Craft::$app->language;
+        if (!$siteId) {
+            $siteId = Craft::$app->getSites()->currentSite->id;
         }
 
-        if ($localeId == Craft::$app->language) {
+        if ($siteId == Craft::$app->getSites()->currentSite->id) {
             if (!isset($this->_allGlobalSets)) {
                 $this->getAllSets();
             }
@@ -230,7 +230,7 @@ class Globals extends Component
                 return $this->_globalSetsById[$globalSetId];
             }
         } else {
-            return Craft::$app->getElements()->getElementById($globalSetId, GlobalSet::className(), $localeId);
+            return Craft::$app->getElements()->getElementById($globalSetId, GlobalSet::className(), $siteId);
         }
 
         return null;
@@ -239,18 +239,18 @@ class Globals extends Component
     /**
      * Returns a global set by its handle.
      *
-     * @param integer     $globalSetHandle
-     * @param string|null $localeId
+     * @param integer      $globalSetHandle
+     * @param integer|null $siteId
      *
      * @return GlobalSet|null
      */
-    public function getSetByHandle($globalSetHandle, $localeId = null)
+    public function getSetByHandle($globalSetHandle, $siteId = null)
     {
-        if (!$localeId) {
-            $localeId = Craft::$app->language;
+        if (!$siteId) {
+            $siteId = Craft::$app->getSites()->currentSite->id;
         }
 
-        if ($localeId == Craft::$app->language) {
+        if ($siteId == Craft::$app->language) {
             $globalSets = $this->getAllSets();
 
             foreach ($globalSets as $globalSet) {
@@ -260,7 +260,7 @@ class Globals extends Component
             }
         } else {
             return GlobalSet::find()
-                ->locale($localeId)
+                ->siteId($siteId)
                 ->handle($globalSetHandle)
                 ->one();
         }

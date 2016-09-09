@@ -1,93 +1,10 @@
 {% extends "_layouts/cp" %}
 
 {% set docsUrl = 'http://craftcms.com/docs/sections-and-entries#sections' %}
-
-{% import "_includes/forms" as forms %}
 {% set fullPageForm = true %}
 
-{% macro urlFormatText(sectionType, locale, section, name, value) %}
-	{% from "_includes/forms" import text, errorList %}
-	{% set errors = section.getErrors(name~'-'~locale.id) %}
+{% import "_includes/forms" as forms %}
 
-	<div class="input{% if errors %} errors{% endif %}">
-		{{ text({
-			id: sectionType~'-'~name~'-'~locale.id,
-			class: 'code ltr',
-			name: 'types['~sectionType~']['~name~']['~locale.id~']',
-			value: (value != '__home__' ? value : null),
-			errors: errors
-		}) }}
-	</div>
-
-	{{ errorList(errors) }}
-{% endmacro %}
-
-{% macro urlFormatInput(sectionType, brandNewSection, section) %}
-	{% if craft.isLocalized() or sectionType == 'structure' %}
-		<table class="data fullwidth">
-			{% if sectionType == 'structure' %}
-				<thead>
-					{% if craft.isLocalized() %}
-						<th></th>
-					{% endif %}
-					<th scope="col">{{ "Top-Level Entries"|t('app') }}</th>
-					<th scope="col">{{ "Nested Entries"|t('app') }}</th>
-				</thead>
-			{% endif %}
-			<tbody>
-				{% for locale in craft.app.i18n.getSiteLocales() %}
-					<tr class="for-locale-{{ locale.id }}{% if craft.isLocalized() and not brandNewSection and section.locales[locale.id] is not defined %} hidden{% endif %}">
-						{% if craft.isLocalized() %}
-							<th class="thin nowrap">{{ locale.id }}</th>
-						{% endif %}
-						<td class="topalign">
-							{% set value = ((section.type == sectionType or sectionType != 'single') and section.locales[locale.id] is defined ? section.locales[locale.id].urlFormat : null) %}
-							{{ _self.urlFormatText(sectionType, locale, section, 'urlFormat', value) }}
-						</td>
-						{% if sectionType == 'structure' %}
-							<td class="topalign">
-								{% set value = ((section.type == 'structure') and section.locales[locale.id] is defined ? section.locales[locale.id].nestedUrlFormat : '{parent.uri}/{slug}') %}
-								{{ _self.urlFormatText(sectionType, locale, section, 'nestedUrlFormat', value) }}
-							</td>
-						{% endif %}
-					</tr>
-				{% endfor %}
-			</tbody>
-		</table>
-	{% else %}
-		{% set locale = craft.app.i18n.getPrimarySiteLocale() %}
-		{% set value = ((section.type == sectionType or sectionType != 'single') and section.locales[locale.id] is defined ? section.locales[locale.id].urlFormat : null) %}
-		{{ _self.urlFormatText(sectionType, locale, section, 'urlFormat', value) }}
-	{% endif %}
-{% endmacro %}
-
-{% macro hasUrlsField(sectionType, section) %}
-	{% from "_includes/forms" import checkboxField %}
-
-	{{ checkboxField({
-		label: "Entries in this section have their own URLs"|t('app'),
-		id: sectionType~'-hasUrls',
-		name: 'types['~sectionType~'][hasUrls]',
-		checked: section.hasUrls,
-		toggle: sectionType~'-url-settings'
-	}) }}
-{% endmacro %}
-
-{% macro templateField(sectionType, section) %}
-	{% from "_includes/forms" import textField %}
-
-	{{ textField({
-		label: "Entry Template"|t('app'),
-		instructions: (sectionType == 'single' ? "The template to use when the entry’s URL is requested."|t('app') : "The template to use when an entry’s URL is requested."|t('app')),
-		id: sectionType~'-template',
-		class: 'ltr',
-		name: 'types['~sectionType~'][template]',
-		value: section.template,
-		errors: section.getErrors('template')
-	}) }}
-{% endmacro %}
-
-{% from _self import urlFormatInput, hasUrlsField, templateField %}
 
 {% block content %}
 	<input type="hidden" name="action" value="sections/save-section">
@@ -119,50 +36,12 @@
 		required: true
 	}) }}
 
-	{% if craft.isLocalized() %}
-		{% set localesInput %}
-			<table class="data" style="width: auto;">
-				<thead>
-					<tr>
-						<td></td>
-						<th scope="col">{{ "Locale"|t('app') }}</th>
-						<th scope="col">{{ "Default Entry Status"|t('app') }}</th>
-					</tr>
-				</thead>
-				<tbody>
-					{% for locale in craft.app.i18n.getSiteLocales() %}
-						{% set localeSelected = (brandNewSection or section.locales[locale.id] is defined) %}
-						<tr>
-							<td>
-								{{ forms.checkbox({
-									id: 'locale-'~locale.id,
-									name: 'locales[]',
-									value: locale.id,
-									checked: localeSelected,
-									toggle: '.for-locale-'~locale.id
-								}) }}
-							</td>
-							<td><label for="locale-{{ locale.id }}">{{ locale.getDisplayName(craft.app.language) }} ({{ locale.id }})</label></td>
-							<td class="centeralign">
-								<div class="for-locale-{{ locale.id }}{% if not localeSelected %} hidden{% endif %}">
-									{{ forms.lightswitch({
-										name: 'defaultLocaleStatuses['~locale.id~']',
-										on:   (brandNewSection or not section.locales[locale.id] is defined or section.locales[locale.id].enabledByDefault),
-										small: true
-									}) }}
-								</div>
-							</td>
-						</tr>
-					{% endfor %}
-				</tbody>
-			</table>
-		{% endset %}
-
-		{{ forms.field({
-			label: "Which locales should entries in this section target?"|t('app'),
-			errors: section.getErrors('localeErrors'),
-		}, localesInput) }}
-	{% endif %}
+	{{ forms.checkboxField({
+		label: "Enable versioning for entries in this section?"|t('app'),
+		id: 'enableVersioning',
+		name: 'enableVersioning',
+		checked: section.enableVersioning
+	}) }}
 
 	{{ forms.selectField({
 		label: "Section Type"|t('app'),
@@ -178,111 +57,127 @@
 
 	<hr>
 
-	<div class="type-single {% if section.type != 'single' %}hidden{% endif %}">
+	{% set siteRows = [] %}
+	{% set siteErrors = section.getErrors('siteSettings') %}
 
-	{% if canBeHomepage %}
-			{{ forms.checkboxField({
-				label: "This is for the homepage"|t('app'),
-				id: 'single-homepage',
-				name: 'types[single][homepage]',
-				checked: section.getIsHomepage(),
-				reverseToggle: 'single-uri-container'
-			}) }}
-		{% endif %}
+	{% for site in craft.app.sites.getAllSites() %}
+		{% set siteSettings = section.siteSettings[site.id] ?? null %}
+		{% set siteErrors = siteErrors|merge(siteSettings.getAllErrors() ?? []) %}
+		{% set siteRows = siteRows|merge({
+			(site.handle): {
+				heading: site.name|t('site'),
+				enabled: include('_includes/forms/lightswitch', {
+					name: 'sites['~site.handle~'][enabled]',
+					on: brandNewSection or siteSettings,
+					value: site.id,
+					small: true
+				}),
+				singleUri: {
+					value: (section.type == 'single' and siteSettings and siteSettings.uriFormat != '__home__') ? siteSettings.uriFormat,
+					hasErrors: (section.type == 'single' and siteSettings ? siteSettings.hasErrors('uriFormat'))
+				},
+				uriFormat: {
+					value: siteSettings ? siteSettings.uriFormat,
+					hasErrors: (section.type != 'single' and siteSettings ? siteSettings.hasErrors('uriFormat'))
+				},
+				template: {
+					value: siteSettings ? siteSettings.template,
+					hasErrors: siteSettings ? siteSettings.hasErrors('template'),
+				},
+				enabledByDefault: siteSettings ? siteSettings.enabledByDefault : true,
+			}
+		}) %}
+	{% endfor %}
 
-		<div id="single-uri-container"{% if section.getIsHomepage() %} class="hidden"{% endif %}>
-			{{ forms.field({
-				label: "URI"|t('app'),
-				instructions: "What the entry URI should be."|t('app'),
-				required: true,
-				errors: section.getErrors('urlFormat')
-			}, urlFormatInput('single', brandNewSection, section)) }}
-		</div>
-
-		{{ templateField('single', section) }}
-
-	</div>
-
-	{% set urlFormatParams = {
-		label: "Entry URL Format"|t('app'),
-		instructions: "What the entry URLs should look like. You can include tags that output entry properties, such as {ex1} or {ex2}."|t('app', { ex1: '<code>{slug}</code>', ex2: '<code>{postDate|date("Y")}</code>' }),
-		required: true,
-		errors: section.getErrors('urlFormat')
-	} %}
-
-	<div class="type-channel {% if section.type != 'channel' %}hidden{% endif %}">
-
-		{{ hasUrlsField('channel', section) }}
-
-		<div id="channel-url-settings" class="nested-fields{% if not section.hasUrls %} hidden{% endif %}">
-			{{ forms.field(urlFormatParams, urlFormatInput('channel', brandNewSection, section)) }}
-
-			{{ templateField('channel', section) }}
-		</div>
-
-	</div>
+	{{ forms.editableTableField({
+		label: "Site Settings"|t,
+		instructions: "Choose which sites this section should be available in, and configure the site-specific settings."|t,
+		id: 'sites',
+		name: 'sites',
+		cols: {
+			heading: {
+				type: 'heading',
+				heading: "Site"|t('app'),
+				class: 'thin'
+			},
+			enabled: {
+				type: 'heading',
+				class: 'thin'~(not craft.app.getIsMultiSite() ? ' hidden')
+			},
+			singleUri: {
+				type: 'singleline',
+				heading: "URI"|t('app'),
+				info: "What the entry URI should be."|t('app'),
+				placeholder: "Leave blank if this is the homepage"|t('app'),
+				code: true,
+				class: 'type-single'~(section.type != 'single' ? ' hidden')
+			},
+			uriFormat: {
+				type: 'singleline',
+				heading: "Entry URI Format"|t('app'),
+				info: "What entry URIs should look like for the site."|t('app'),
+				placeholder: "Leave blank if entries don’t have URLs"|t('app'),
+				code: true,
+				class: 'type-channel type-structure'~(section.type == 'single' ? ' hidden')
+			},
+			template: {
+				type: 'singleline',
+				heading: "Template"|t('app'),
+				info: "Which template should be loaded when an entry’s URL is requested."|t('app'),
+				code: true
+			},
+			enabledByDefault: {
+				type: 'lightswitch',
+				heading: "Default Status"|t('app'),
+				class: 'thin type-channel type-structure'~(section.type == 'single' ? ' hidden')
+			}
+		},
+		rows: siteRows,
+		staticRows: true,
+		errors: siteErrors|unique
+	}) }}
 
 	<div class="type-structure {% if section.type != 'structure' %}hidden{% endif %}">
-
-		{{ hasUrlsField('structure', section) }}
-
-		<div id="structure-url-settings" class="nested-fields{% if not section.hasUrls %} hidden{% endif %}">
-			{{ forms.field(urlFormatParams, urlFormatInput('structure', brandNewSection, section)) }}
-
-			{{ templateField('structure', section) }}
-		</div>
-
 		{{ forms.textField({
 			label: "Max Levels"|t('app'),
 			instructions: "The maximum number of levels this section can have. Leave blank if you don’t care."|t('app'),
-			id: 'structure-maxLevels',
-			name: 'types[structure][maxLevels]',
+			id: 'maxLevels',
+			name: 'maxLevels',
 			value: section.maxLevels,
 			size: 5,
 			errors: section.getErrors('maxLevels')
 		}) }}
-
 	</div>
-
-	<hr>
-
-	{% if not craft.isLocalized() %}
-		<div class="type-channel type-structure {% if section.type == 'single' %}hidden{% endif %}">
-			{% set locale = craft.app.i18n.getPrimarySiteLocale() %}
-			{% set value = (section.type != 'single' and section.locales[locale.id] is defined ? section.locales[locale.id].enabledByDefault : true) %}
-
-			{{ forms.lightswitchField({
-				label: "Default Entry Status"|t,
-				id: 'defaultEntryStatus',
-				name: 'defaultLocaleStatuses['~locale.id~']',
-				on: value
-			}) }}
-		</div>
-	{% endif %}
-
-	{{ forms.checkboxField({
-		label: "Enable versioning for entries in this section?"|t('app'),
-		id: 'enableVersioning',
-		name: 'enableVersioning',
-		checked: section.enableVersioning
-	}) }}
 {% endblock %}
 
 
 {% registerjs %}
-	{% if not section.handle %}new Craft.HandleGenerator('#name', '#handle');{% endif %}
+	var $siteRows = $('#sites').children('tbody').children(),
+		$lightswitches = $siteRows.children('th:nth-child(2)').children('.lightswitch');
 
-	{% for locale in craft.app.i18n.getSiteLocales() %}
-		{% if section.locales[locale.id] is not defined or not section.locales[locale.id].urlFormat %}
-			new Craft.EntryUrlFormatGenerator('#name', '#single-urlFormat-{{ locale.id }}');
-			new Craft.EntryUrlFormatGenerator('#name', '#channel-urlFormat-{{ locale.id }}',   { suffix: '/{slug}' });
-			new Craft.EntryUrlFormatGenerator('#name', '#structure-urlFormat-{{ locale.id }}', { suffix: '/{slug}' });
-		{% endif %}
-	{% endfor %}
+	function updateSites() {
+		$lightswitches.each(function() {
+			if ($(this).data('lightswitch').on) {
+				$(this).parent().nextAll('td').removeClass('disabled').find('textarea,div.lightswitch,input').attr('tabindex', '0');
+			} else {
+				$(this).parent().nextAll('td').addClass('disabled').find('textarea,div.lightswitch,input').attr('tabindex', '-1');
+			}
+		});
+	}
+
+	$lightswitches.on('change', updateSites);
+
+	Garnish.$doc.ready(function() {
+		updateSites();
+	});
 
 	{% if brandNewSection %}
-		new Craft.EntryUrlFormatGenerator('#name', '#single-template');
-		new Craft.EntryUrlFormatGenerator('#name', '#channel-template',   { suffix: '/_entry' });
-		new Craft.EntryUrlFormatGenerator('#name', '#structure-template', { suffix: '/_entry' });
+		new Craft.HandleGenerator('#name', '#handle');
+
+		{% for site in craft.app.sites.getAllSites() %}
+			new Craft.UriFormatGenerator('#name', '#sites tr[data-id="{{ site.handle }}"] textarea[name$="[singleUri]"]');
+			new Craft.UriFormatGenerator('#name', '#sites tr[data-id="{{ site.handle }}"] textarea[name$="[uriFormat]"]', { suffix: '/{slug}' });
+			new Craft.UriFormatGenerator('#name', '#sites tr[data-id="{{ site.handle }}"] textarea[name$="[template]"]', { suffix: '/_entry' });
+		{% endfor %}
 	{% endif %}
 {% endregisterjs %}

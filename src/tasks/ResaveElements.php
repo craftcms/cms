@@ -11,6 +11,7 @@ use Craft;
 use craft\app\base\Element;
 use craft\app\base\Task;
 use craft\app\base\ElementInterface;
+use craft\app\elements\db\ElementQuery;
 use craft\app\helpers\StringHelper;
 
 /**
@@ -35,9 +36,9 @@ class ResaveElements extends Task
     public $criteria;
 
     /**
-     * @var string
+     * @var integer
      */
-    private $_localeId;
+    private $_siteId;
 
     /**
      * @var integer[]
@@ -58,13 +59,14 @@ class ResaveElements extends Task
         Craft::$app->getTemplateCaches()->deleteCachesByElementType($class);
 
         // Now find the affected element IDs
+        /** @var ElementQuery $query */
         $query = $class::find()
             ->configure($this->criteria)
             ->offset(null)
             ->limit(null)
             ->orderBy(null);
 
-        $this->_localeId = $query->locale;
+        $this->_siteId = $query->siteId;
         $this->_elementIds = $query->ids();
 
         return count($this->_elementIds);
@@ -81,7 +83,7 @@ class ResaveElements extends Task
             /** @var Element $element */
             $element = $class::find()
                 ->id($this->_elementIds[$step])
-                ->locale($this->_localeId)
+                ->siteId($this->_siteId)
                 ->one();
 
             if (!$element || Craft::$app->getElements()->saveElement($element,

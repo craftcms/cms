@@ -12,6 +12,8 @@ use craft\app\elements\User;
 use craft\app\db\Migration;
 use craft\app\helpers\StringHelper;
 use craft\app\models\Info;
+use craft\app\models\Site;
+use craft\app\services\Sites;
 
 /**
  * Installation Migration
@@ -23,21 +25,6 @@ class Install extends Migration
 {
     // Properties
     // =========================================================================
-
-    /**
-     * @var string The site name
-     */
-    public $siteName;
-
-    /**
-     * @var string The site URL
-     */
-    public $siteUrl;
-
-    /**
-     * @var string The site locale
-     */
-    public $locale;
 
     /**
      * @var string The admin user’s username
@@ -53,6 +40,11 @@ class Install extends Migration
      * @var string The admin user’s email
      */
     public $email;
+
+    /**
+     * @var Site The default site
+     */
+    public $site;
 
     // Public Methods
     // =========================================================================
@@ -70,8 +62,8 @@ class Install extends Migration
         // Craft, you are installed now.
         Craft::$app->setIsInstalled();
 
-        // Set the language to the desired locale
-        Craft::$app->language = $this->locale;
+        // Set the app language
+        Craft::$app->language = $this->site->language;
 
         // Save the first user
         echo "    > save the first user ...";
@@ -93,11 +85,11 @@ class Install extends Migration
         echo "    > save the email settings ...";
         Craft::$app->getSystemSettings()->saveSettings('email', [
             'fromEmail' => $this->email,
-            'fromName' => $this->siteName,
+            'fromName' => $this->site->name,
             'transportType' => 'craft\app\mail\transportadaptors\Php'
         ]);
         Craft::$app->getSystemSettings()->saveSettings('mailer', [
-            'from' => [$this->email => $this->siteName],
+            'from' => [$this->email => $this->site->name],
             'transport' => [
                 'class' => 'craft\app\mail\transportadaptors\Php'
             ]
@@ -192,8 +184,6 @@ class Install extends Migration
             'fieldLayoutId' => $this->integer(),
             'name' => $this->string()->notNull(),
             'handle' => $this->string()->notNull(),
-            'hasUrls' => $this->boolean()->notNull()->defaultValue(1),
-            'template' => $this->string(500),
             'dateCreated' => $this->dateTime()->notNull(),
             'dateUpdated' => $this->dateTime()->notNull(),
             'uid' => $this->uid(),
@@ -201,9 +191,10 @@ class Install extends Migration
         $this->createTable('{{%categorygroups_i18n}}', [
             'id' => $this->primaryKey(),
             'groupId' => $this->integer()->notNull(),
-            'locale' => $this->char(12)->notNull(),
-            'urlFormat' => $this->text(),
-            'nestedUrlFormat' => $this->text(),
+            'siteId' => $this->integer()->notNull(),
+            'hasUrls' => $this->boolean()->notNull()->defaultValue(1),
+            'uriFormat' => $this->text(),
+            'template' => $this->string(500),
             'dateCreated' => $this->dateTime()->notNull(),
             'dateUpdated' => $this->dateTime()->notNull(),
             'uid' => $this->uid(),
@@ -211,7 +202,7 @@ class Install extends Migration
         $this->createTable('{{%content}}', [
             'id' => $this->primaryKey(),
             'elementId' => $this->integer()->notNull(),
-            'locale' => $this->char(12)->notNull(),
+            'siteId' => $this->integer()->notNull(),
             'title' => $this->string(),
             'dateCreated' => $this->dateTime()->notNull(),
             'dateUpdated' => $this->dateTime()->notNull(),
@@ -254,7 +245,7 @@ class Install extends Migration
         $this->createTable('{{%elements_i18n}}', [
             'id' => $this->primaryKey(),
             'elementId' => $this->integer()->notNull(),
-            'locale' => $this->char(12)->notNull(),
+            'siteId' => $this->integer()->notNull(),
             'slug' => $this->string(),
             'uri' => $this->string(),
             'enabled' => $this->boolean()->defaultValue(1),
@@ -264,8 +255,8 @@ class Install extends Migration
         ]);
         $this->createTable('{{%emailmessages}}', [
             'id' => $this->primaryKey(),
+            'siteId' => $this->integer()->notNull(),
             'key' => $this->string()->notNull(),
-            'locale' => $this->char(12)->notNull(),
             'subject' => $this->text()->notNull(),
             'body' => $this->text()->notNull(),
             'dateCreated' => $this->dateTime()->notNull(),
@@ -288,7 +279,7 @@ class Install extends Migration
             'entryId' => $this->integer()->notNull(),
             'sectionId' => $this->integer()->notNull(),
             'creatorId' => $this->integer()->notNull(),
-            'locale' => $this->char(12)->notNull(),
+            'siteId' => $this->integer()->notNull(),
             'name' => $this->string()->notNull(),
             'notes' => $this->text(),
             'data' => $this->mediumText()->notNull(),
@@ -315,7 +306,7 @@ class Install extends Migration
             'entryId' => $this->integer()->notNull(),
             'sectionId' => $this->integer()->notNull(),
             'creatorId' => $this->integer(),
-            'locale' => $this->char(12)->notNull(),
+            'siteId' => $this->integer()->notNull(),
             'num' => $this->smallInteger()->notNull()->unsigned(),
             'notes' => $this->text(),
             'data' => $this->mediumText()->notNull(),
@@ -364,7 +355,8 @@ class Install extends Migration
             'handle' => $this->string(64)->notNull(),
             'context' => $this->string()->notNull()->defaultValue('global'),
             'instructions' => $this->text(),
-            'translatable' => $this->boolean()->notNull()->defaultValue(0)->unsigned(),
+            'translationMethod' => $this->enum('translationMethod', ['none', 'language', 'site', 'custom'])->notNull()->defaultValue('none'),
+            'translationKeyFormat' => $this->text(),
             'type' => $this->string()->notNull(),
             'settings' => $this->text(),
             'dateCreated' => $this->dateTime()->notNull(),
@@ -387,8 +379,6 @@ class Install extends Migration
             'schemaVersion' => $this->string(15)->notNull(),
             'releaseDate' => $this->dateTime()->notNull(),
             'edition' => $this->boolean()->notNull()->defaultValue(0)->unsigned(),
-            'siteName' => $this->string(100)->notNull(),
-            'siteUrl' => $this->string()->notNull(),
             'timezone' => $this->string(30),
             'on' => $this->boolean()->notNull()->defaultValue(0)->unsigned(),
             'maintenance' => $this->boolean()->notNull()->defaultValue(0)->unsigned(),
@@ -398,18 +388,10 @@ class Install extends Migration
             'dateUpdated' => $this->dateTime()->notNull(),
             'uid' => $this->uid(),
         ]);
-        $this->createTable('{{%locales}}', [
-            'locale' => $this->char(12)->notNull(),
-            'sortOrder' => $this->smallInteger()->unsigned(),
-            'dateCreated' => $this->dateTime()->notNull(),
-            'dateUpdated' => $this->dateTime()->notNull(),
-            'uid' => $this->uid(),
-            'PRIMARY KEY(locale)'
-        ]);
         $this->createTable('{{%matrixblocks}}', [
             'id' => $this->primaryKey(),
             'ownerId' => $this->integer()->notNull(),
-            'ownerLocale' => $this->char(12),
+            'ownerSiteId' => $this->integer()->notNull(),
             'fieldId' => $this->integer()->notNull(),
             'typeId' => $this->integer(),
             'sortOrder' => $this->smallInteger()->unsigned(),
@@ -466,7 +448,7 @@ class Install extends Migration
             'id' => $this->primaryKey(),
             'fieldId' => $this->integer()->notNull(),
             'sourceId' => $this->integer()->notNull(),
-            'sourceLocale' => $this->char(12),
+            'sourceSiteId' => $this->integer(),
             'targetId' => $this->integer()->notNull(),
             'sortOrder' => $this->smallInteger()->unsigned(),
             'dateCreated' => $this->dateTime()->notNull(),
@@ -475,7 +457,7 @@ class Install extends Migration
         ]);
         $this->createTable('{{%routes}}', [
             'id' => $this->primaryKey(),
-            'locale' => $this->char(12),
+            'siteId' => $this->integer(),
             'urlParts' => $this->string()->notNull(),
             'urlPattern' => $this->string()->notNull(),
             'template' => $this->string(500)->notNull(),
@@ -488,9 +470,9 @@ class Install extends Migration
             'elementId' => $this->integer()->notNull(),
             'attribute' => $this->string(25)->notNull(),
             'fieldId' => $this->integer()->notNull(),
-            'locale' => $this->char(12)->notNull(),
+            'siteId' => $this->integer()->notNull(),
             'keywords' => $this->text()->notNull(),
-            'PRIMARY KEY(elementId, attribute, fieldId, locale)'
+            'PRIMARY KEY(elementId, attribute, fieldId, siteId)'
         ], 'ENGINE=MyISAM');
         $this->createTable('{{%sections}}', [
             'id' => $this->primaryKey(),
@@ -498,8 +480,6 @@ class Install extends Migration
             'name' => $this->string()->notNull(),
             'handle' => $this->string()->notNull(),
             'type' => $this->enum('type', ['single', 'channel', 'structure'])->notNull()->defaultValue('channel'),
-            'hasUrls' => $this->boolean()->notNull()->defaultValue(1)->unsigned(),
-            'template' => $this->string(500),
             'enableVersioning' => $this->boolean()->notNull()->defaultValue(0)->unsigned(),
             'dateCreated' => $this->dateTime()->notNull(),
             'dateUpdated' => $this->dateTime()->notNull(),
@@ -508,10 +488,11 @@ class Install extends Migration
         $this->createTable('{{%sections_i18n}}', [
             'id' => $this->primaryKey(),
             'sectionId' => $this->integer()->notNull(),
-            'locale' => $this->char(12)->notNull(),
+            'siteId' => $this->integer()->notNull(),
             'enabledByDefault' => $this->boolean()->defaultValue(1),
-            'urlFormat' => $this->text(),
-            'nestedUrlFormat' => $this->text(),
+            'hasUrls' => $this->boolean()->notNull()->defaultValue(1)->unsigned(),
+            'uriFormat' => $this->text(),
+            'template' => $this->string(500),
             'dateCreated' => $this->dateTime()->notNull(),
             'dateUpdated' => $this->dateTime()->notNull(),
             'uid' => $this->uid(),
@@ -529,6 +510,18 @@ class Install extends Migration
             'userId' => $this->integer()->notNull(),
             'message' => $this->string()->notNull(),
             'expiryDate' => $this->dateTime(),
+            'dateCreated' => $this->dateTime()->notNull(),
+            'dateUpdated' => $this->dateTime()->notNull(),
+            'uid' => $this->uid(),
+        ]);
+        $this->createTable('{{%sites}}', [
+            'id' => $this->primaryKey(),
+            'name' => $this->string()->notNull(),
+            'handle' => $this->string()->notNull(),
+            'language' => $this->string(12)->notNull(),
+            'hasUrls' => $this->boolean()->unsigned(),
+            'baseUrl' => $this->string(),
+            'sortOrder' => $this->smallInteger()->unsigned(),
             'dateCreated' => $this->dateTime()->notNull(),
             'dateUpdated' => $this->dateTime()->notNull(),
             'uid' => $this->uid(),
@@ -604,8 +597,8 @@ class Install extends Migration
         ]);
         $this->createTable('{{%templatecaches}}', [
             'id' => $this->primaryKey(),
+            'siteId' => $this->integer()->notNull(),
             'cacheKey' => $this->string()->notNull(),
-            'locale' => $this->char(12)->notNull(),
             'path' => $this->string(),
             'expiryDate' => $this->dateTime()->notNull(),
             'body' => $this->mediumText()->notNull(),
@@ -752,39 +745,39 @@ class Install extends Migration
         $this->createIndex($this->db->getIndexName('{{%categorygroups}}', 'handle', true), '{{%categorygroups}}', 'handle', true);
         $this->createIndex($this->db->getIndexName('{{%categorygroups}}', 'structureId', false), '{{%categorygroups}}', 'structureId', false);
         $this->createIndex($this->db->getIndexName('{{%categorygroups}}', 'fieldLayoutId', false), '{{%categorygroups}}', 'fieldLayoutId', false);
-        $this->createIndex($this->db->getIndexName('{{%categorygroups_i18n}}', 'groupId,locale', true), '{{%categorygroups_i18n}}', 'groupId,locale', true);
-        $this->createIndex($this->db->getIndexName('{{%categorygroups_i18n}}', 'locale', false), '{{%categorygroups_i18n}}', 'locale', false);
-        $this->createIndex($this->db->getIndexName('{{%content}}', 'elementId,locale', true), '{{%content}}', 'elementId,locale', true);
-        $this->createIndex($this->db->getIndexName('{{%content}}', 'locale', false), '{{%content}}', 'locale', false);
+        $this->createIndex($this->db->getIndexName('{{%categorygroups_i18n}}', 'groupId,siteId', true), '{{%categorygroups_i18n}}', 'groupId,siteId', true);
+        $this->createIndex($this->db->getIndexName('{{%categorygroups_i18n}}', 'siteId', false), '{{%categorygroups_i18n}}', 'siteId', false);
+        $this->createIndex($this->db->getIndexName('{{%content}}', 'elementId,siteId', true), '{{%content}}', 'elementId,siteId', true);
+        $this->createIndex($this->db->getIndexName('{{%content}}', 'siteId', false), '{{%content}}', 'siteId', false);
         $this->createIndex($this->db->getIndexName('{{%content}}', 'title', false), '{{%content}}', 'title', false);
         $this->createIndex($this->db->getIndexName('{{%deprecationerrors}}', 'key,fingerprint', true), '{{%deprecationerrors}}', 'key,fingerprint', true);
         $this->createIndex($this->db->getIndexName('{{%elementindexsettings}}', 'type', true), '{{%elementindexsettings}}', 'type', true);
         $this->createIndex($this->db->getIndexName('{{%elements}}', 'type', false), '{{%elements}}', 'type', false);
         $this->createIndex($this->db->getIndexName('{{%elements}}', 'enabled', false), '{{%elements}}', 'enabled', false);
         $this->createIndex($this->db->getIndexName('{{%elements}}', 'archived,dateCreated', false), '{{%elements}}', 'archived,dateCreated', false);
-        $this->createIndex($this->db->getIndexName('{{%elements_i18n}}', 'elementId,locale', true), '{{%elements_i18n}}', 'elementId,locale', true);
-        $this->createIndex($this->db->getIndexName('{{%elements_i18n}}', 'uri,locale', true), '{{%elements_i18n}}', 'uri,locale', true);
-        $this->createIndex($this->db->getIndexName('{{%elements_i18n}}', 'locale', false), '{{%elements_i18n}}', 'locale', false);
-        $this->createIndex($this->db->getIndexName('{{%elements_i18n}}', 'slug,locale', false), '{{%elements_i18n}}', 'slug,locale', false);
+        $this->createIndex($this->db->getIndexName('{{%elements_i18n}}', 'elementId,siteId', true), '{{%elements_i18n}}', 'elementId,siteId', true);
+        $this->createIndex($this->db->getIndexName('{{%elements_i18n}}', 'uri,siteId', true), '{{%elements_i18n}}', 'uri,siteId', true);
+        $this->createIndex($this->db->getIndexName('{{%elements_i18n}}', 'siteId', false), '{{%elements_i18n}}', 'siteId', false);
+        $this->createIndex($this->db->getIndexName('{{%elements_i18n}}', 'slug,siteId', false), '{{%elements_i18n}}', 'slug,siteId', false);
         $this->createIndex($this->db->getIndexName('{{%elements_i18n}}', 'enabled', false), '{{%elements_i18n}}', 'enabled', false);
-        $this->createIndex($this->db->getIndexName('{{%emailmessages}}', 'key,locale', true), '{{%emailmessages}}', 'key,locale', true);
-        $this->createIndex($this->db->getIndexName('{{%emailmessages}}', 'locale', false), '{{%emailmessages}}', 'locale', false);
+        $this->createIndex($this->db->getIndexName('{{%emailmessages}}', 'key,siteId', true), '{{%emailmessages}}', 'key,siteId', true);
+        $this->createIndex($this->db->getIndexName('{{%emailmessages}}', 'siteId', false), '{{%emailmessages}}', 'siteId', false);
         $this->createIndex($this->db->getIndexName('{{%entries}}', 'postDate', false), '{{%entries}}', 'postDate', false);
         $this->createIndex($this->db->getIndexName('{{%entries}}', 'expiryDate', false), '{{%entries}}', 'expiryDate', false);
         $this->createIndex($this->db->getIndexName('{{%entries}}', 'authorId', false), '{{%entries}}', 'authorId', false);
         $this->createIndex($this->db->getIndexName('{{%entries}}', 'sectionId', false), '{{%entries}}', 'sectionId', false);
         $this->createIndex($this->db->getIndexName('{{%entries}}', 'typeId', false), '{{%entries}}', 'typeId', false);
         $this->createIndex($this->db->getIndexName('{{%entrydrafts}}', 'sectionId', false), '{{%entrydrafts}}', 'sectionId', false);
-        $this->createIndex($this->db->getIndexName('{{%entrydrafts}}', 'entryId,locale', false), '{{%entrydrafts}}', 'entryId,locale', false);
-        $this->createIndex($this->db->getIndexName('{{%entrydrafts}}', 'locale', false), '{{%entrydrafts}}', 'locale', false);
+        $this->createIndex($this->db->getIndexName('{{%entrydrafts}}', 'entryId,siteId', false), '{{%entrydrafts}}', 'entryId,siteId', false);
+        $this->createIndex($this->db->getIndexName('{{%entrydrafts}}', 'siteId', false), '{{%entrydrafts}}', 'siteId', false);
         $this->createIndex($this->db->getIndexName('{{%entrydrafts}}', 'creatorId', false), '{{%entrydrafts}}', 'creatorId', false);
         $this->createIndex($this->db->getIndexName('{{%entrytypes}}', 'name,sectionId', true), '{{%entrytypes}}', 'name,sectionId', true);
         $this->createIndex($this->db->getIndexName('{{%entrytypes}}', 'handle,sectionId', true), '{{%entrytypes}}', 'handle,sectionId', true);
         $this->createIndex($this->db->getIndexName('{{%entrytypes}}', 'sectionId', false), '{{%entrytypes}}', 'sectionId', false);
         $this->createIndex($this->db->getIndexName('{{%entrytypes}}', 'fieldLayoutId', false), '{{%entrytypes}}', 'fieldLayoutId', false);
         $this->createIndex($this->db->getIndexName('{{%entryversions}}', 'sectionId', false), '{{%entryversions}}', 'sectionId', false);
-        $this->createIndex($this->db->getIndexName('{{%entryversions}}', 'entryId,locale', false), '{{%entryversions}}', 'entryId,locale', false);
-        $this->createIndex($this->db->getIndexName('{{%entryversions}}', 'locale', false), '{{%entryversions}}', 'locale', false);
+        $this->createIndex($this->db->getIndexName('{{%entryversions}}', 'entryId,siteId', false), '{{%entryversions}}', 'entryId,siteId', false);
+        $this->createIndex($this->db->getIndexName('{{%entryversions}}', 'siteId', false), '{{%entryversions}}', 'siteId', false);
         $this->createIndex($this->db->getIndexName('{{%entryversions}}', 'creatorId', false), '{{%entryversions}}', 'creatorId', false);
         $this->createIndex($this->db->getIndexName('{{%fieldgroups}}', 'name', true), '{{%fieldgroups}}', 'name', true);
         $this->createIndex($this->db->getIndexName('{{%fieldlayoutfields}}', 'layoutId,fieldId', true), '{{%fieldlayoutfields}}', 'layoutId,fieldId', true);
@@ -800,12 +793,11 @@ class Install extends Migration
         $this->createIndex($this->db->getIndexName('{{%globalsets}}', 'name', true), '{{%globalsets}}', 'name', true);
         $this->createIndex($this->db->getIndexName('{{%globalsets}}', 'handle', true), '{{%globalsets}}', 'handle', true);
         $this->createIndex($this->db->getIndexName('{{%globalsets}}', 'fieldLayoutId', false), '{{%globalsets}}', 'fieldLayoutId', false);
-        $this->createIndex($this->db->getIndexName('{{%locales}}', 'sortOrder', false), '{{%locales}}', 'sortOrder', false);
         $this->createIndex($this->db->getIndexName('{{%matrixblocks}}', 'ownerId', false), '{{%matrixblocks}}', 'ownerId', false);
         $this->createIndex($this->db->getIndexName('{{%matrixblocks}}', 'fieldId', false), '{{%matrixblocks}}', 'fieldId', false);
         $this->createIndex($this->db->getIndexName('{{%matrixblocks}}', 'typeId', false), '{{%matrixblocks}}', 'typeId', false);
         $this->createIndex($this->db->getIndexName('{{%matrixblocks}}', 'sortOrder', false), '{{%matrixblocks}}', 'sortOrder', false);
-        $this->createIndex($this->db->getIndexName('{{%matrixblocks}}', 'ownerLocale', false), '{{%matrixblocks}}', 'ownerLocale', false);
+        $this->createIndex($this->db->getIndexName('{{%matrixblocks}}', 'ownerSiteId', false), '{{%matrixblocks}}', 'ownerSiteId', false);
         $this->createIndex($this->db->getIndexName('{{%matrixblocktypes}}', 'name,fieldId', true), '{{%matrixblocktypes}}', 'name,fieldId', true);
         $this->createIndex($this->db->getIndexName('{{%matrixblocktypes}}', 'handle,fieldId', true), '{{%matrixblocktypes}}', 'handle,fieldId', true);
         $this->createIndex($this->db->getIndexName('{{%matrixblocktypes}}', 'fieldId', false), '{{%matrixblocktypes}}', 'fieldId', false);
@@ -814,22 +806,24 @@ class Install extends Migration
         $this->createIndex($this->db->getIndexName('{{%migrations}}', 'type,pluginId', false), '{{%migrations}}', 'type,pluginId', false);
         $this->createIndex($this->db->getIndexName('{{%plugins}}', 'handle', true), '{{%plugins}}', 'handle', true);
         $this->createIndex($this->db->getIndexName('{{%rackspaceaccess}}', 'connectionKey', true), '{{%rackspaceaccess}}', 'connectionKey', true);
-        $this->createIndex($this->db->getIndexName('{{%relations}}', 'fieldId,sourceId,sourceLocale,targetId', true), '{{%relations}}', 'fieldId,sourceId,sourceLocale,targetId', true);
+        $this->createIndex($this->db->getIndexName('{{%relations}}', 'fieldId,sourceId,sourceSiteId,targetId', true), '{{%relations}}', 'fieldId,sourceId,sourceSiteId,targetId', true);
         $this->createIndex($this->db->getIndexName('{{%relations}}', 'sourceId', false), '{{%relations}}', 'sourceId', false);
         $this->createIndex($this->db->getIndexName('{{%relations}}', 'targetId', false), '{{%relations}}', 'targetId', false);
-        $this->createIndex($this->db->getIndexName('{{%relations}}', 'sourceLocale', false), '{{%relations}}', 'sourceLocale', false);
+        $this->createIndex($this->db->getIndexName('{{%relations}}', 'sourceSiteId', false), '{{%relations}}', 'sourceSiteId', false);
         $this->createIndex($this->db->getIndexName('{{%routes}}', 'urlPattern', true), '{{%routes}}', 'urlPattern', true);
-        $this->createIndex($this->db->getIndexName('{{%routes}}', 'locale', false), '{{%routes}}', 'locale', false);
+        $this->createIndex($this->db->getIndexName('{{%routes}}', 'siteId', false), '{{%routes}}', 'siteId', false);
         $this->createIndex($this->db->getIndexName('{{%sections}}', 'handle', true), '{{%sections}}', 'handle', true);
         $this->createIndex($this->db->getIndexName('{{%sections}}', 'name', true), '{{%sections}}', 'name', true);
         $this->createIndex($this->db->getIndexName('{{%sections}}', 'structureId', false), '{{%sections}}', 'structureId', false);
-        $this->createIndex($this->db->getIndexName('{{%sections_i18n}}', 'sectionId,locale', true), '{{%sections_i18n}}', 'sectionId,locale', true);
-        $this->createIndex($this->db->getIndexName('{{%sections_i18n}}', 'locale', false), '{{%sections_i18n}}', 'locale', false);
+        $this->createIndex($this->db->getIndexName('{{%sections_i18n}}', 'sectionId,siteId', true), '{{%sections_i18n}}', 'sectionId,siteId', true);
+        $this->createIndex($this->db->getIndexName('{{%sections_i18n}}', 'siteId', false), '{{%sections_i18n}}', 'siteId', false);
         $this->createIndex($this->db->getIndexName('{{%sessions}}', 'uid', false), '{{%sessions}}', 'uid', false);
         $this->createIndex($this->db->getIndexName('{{%sessions}}', 'token', false), '{{%sessions}}', 'token', false);
         $this->createIndex($this->db->getIndexName('{{%sessions}}', 'dateUpdated', false), '{{%sessions}}', 'dateUpdated', false);
         $this->createIndex($this->db->getIndexName('{{%sessions}}', 'userId', false), '{{%sessions}}', 'userId', false);
         $this->createIndex($this->db->getIndexName('{{%shunnedmessages}}', 'userId,message', true), '{{%shunnedmessages}}', 'userId,message', true);
+        $this->createIndex($this->db->getIndexName('{{%sites}}', 'handle', true), '{{%sites}}', 'handle', true);
+        $this->createIndex($this->db->getIndexName('{{%sites}}', 'sortOrder', false), '{{%sites}}', 'sortOrder', false);
         $this->createIndex($this->db->getIndexName('{{%structureelements}}', 'structureId,elementId', true), '{{%structureelements}}', 'structureId,elementId', true);
         $this->createIndex($this->db->getIndexName('{{%structureelements}}', 'root', false), '{{%structureelements}}', 'root', false);
         $this->createIndex($this->db->getIndexName('{{%structureelements}}', 'lft', false), '{{%structureelements}}', 'lft', false);
@@ -848,8 +842,8 @@ class Install extends Migration
         $this->createIndex($this->db->getIndexName('{{%templatecacheelements}}', 'elementId', false), '{{%templatecacheelements}}', 'elementId', false);
         $this->createIndex($this->db->getIndexName('{{%templatecachequeries}}', 'cacheId', false), '{{%templatecachequeries}}', 'cacheId', false);
         $this->createIndex($this->db->getIndexName('{{%templatecachequeries}}', 'type', false), '{{%templatecachequeries}}', 'type', false);
-        $this->createIndex($this->db->getIndexName('{{%templatecaches}}', 'expiryDate,cacheKey,locale,path', false), '{{%templatecaches}}', 'expiryDate,cacheKey,locale,path', false);
-        $this->createIndex($this->db->getIndexName('{{%templatecaches}}', 'locale', false), '{{%templatecaches}}', 'locale', false);
+        $this->createIndex($this->db->getIndexName('{{%templatecaches}}', 'expiryDate,cacheKey,siteId,path', false), '{{%templatecaches}}', 'expiryDate,cacheKey,siteId,path', false);
+        $this->createIndex($this->db->getIndexName('{{%templatecaches}}', 'siteId', false), '{{%templatecaches}}', 'siteId', false);
         $this->createIndex($this->db->getIndexName('{{%tokens}}', 'token', true), '{{%tokens}}', 'token', true);
         $this->createIndex($this->db->getIndexName('{{%tokens}}', 'expiryDate', false), '{{%tokens}}', 'expiryDate', false);
         $this->createIndex($this->db->getIndexName('{{%usergroups_users}}', 'groupId,userId', true), '{{%usergroups_users}}', 'groupId,userId', true);
@@ -896,25 +890,25 @@ class Install extends Migration
         $this->addForeignKey($this->db->getForeignKeyName('{{%categorygroups}}', 'fieldLayoutId'), '{{%categorygroups}}', 'fieldLayoutId', '{{%fieldlayouts}}', 'id', 'SET NULL', null);
         $this->addForeignKey($this->db->getForeignKeyName('{{%categorygroups}}', 'structureId'), '{{%categorygroups}}', 'structureId', '{{%structures}}', 'id', 'CASCADE', null);
         $this->addForeignKey($this->db->getForeignKeyName('{{%categorygroups_i18n}}', 'groupId'), '{{%categorygroups_i18n}}', 'groupId', '{{%categorygroups}}', 'id', 'CASCADE', null);
-        $this->addForeignKey($this->db->getForeignKeyName('{{%categorygroups_i18n}}', 'locale'), '{{%categorygroups_i18n}}', 'locale', '{{%locales}}', 'locale', 'CASCADE', 'CASCADE');
+        $this->addForeignKey($this->db->getForeignKeyName('{{%categorygroups_i18n}}', 'siteId'), '{{%categorygroups_i18n}}', 'siteId', '{{%sites}}', 'id', 'CASCADE', 'CASCADE');
         $this->addForeignKey($this->db->getForeignKeyName('{{%content}}', 'elementId'), '{{%content}}', 'elementId', '{{%elements}}', 'id', 'CASCADE', null);
-        $this->addForeignKey($this->db->getForeignKeyName('{{%content}}', 'locale'), '{{%content}}', 'locale', '{{%locales}}', 'locale', 'CASCADE', 'CASCADE');
+        $this->addForeignKey($this->db->getForeignKeyName('{{%content}}', 'siteId'), '{{%content}}', 'siteId', '{{%sites}}', 'id', 'CASCADE', 'CASCADE');
         $this->addForeignKey($this->db->getForeignKeyName('{{%elements_i18n}}', 'elementId'), '{{%elements_i18n}}', 'elementId', '{{%elements}}', 'id', 'CASCADE', null);
-        $this->addForeignKey($this->db->getForeignKeyName('{{%elements_i18n}}', 'locale'), '{{%elements_i18n}}', 'locale', '{{%locales}}', 'locale', 'CASCADE', 'CASCADE');
-        $this->addForeignKey($this->db->getForeignKeyName('{{%emailmessages}}', 'locale'), '{{%emailmessages}}', 'locale', '{{%locales}}', 'locale', 'CASCADE', 'CASCADE');
+        $this->addForeignKey($this->db->getForeignKeyName('{{%elements_i18n}}', 'siteId'), '{{%elements_i18n}}', 'siteId', '{{%sites}}', 'id', 'CASCADE', 'CASCADE');
+        $this->addForeignKey($this->db->getForeignKeyName('{{%emailmessages}}', 'siteId'), '{{%emailmessages}}', 'siteId', '{{%sites}}', 'id', 'CASCADE', 'CASCADE');
         $this->addForeignKey($this->db->getForeignKeyName('{{%entries}}', 'authorId'), '{{%entries}}', 'authorId', '{{%users}}', 'id', 'CASCADE', null);
         $this->addForeignKey($this->db->getForeignKeyName('{{%entries}}', 'id'), '{{%entries}}', 'id', '{{%elements}}', 'id', 'CASCADE', null);
         $this->addForeignKey($this->db->getForeignKeyName('{{%entries}}', 'sectionId'), '{{%entries}}', 'sectionId', '{{%sections}}', 'id', 'CASCADE', null);
         $this->addForeignKey($this->db->getForeignKeyName('{{%entries}}', 'typeId'), '{{%entries}}', 'typeId', '{{%entrytypes}}', 'id', 'CASCADE', null);
         $this->addForeignKey($this->db->getForeignKeyName('{{%entrydrafts}}', 'creatorId'), '{{%entrydrafts}}', 'creatorId', '{{%users}}', 'id', 'CASCADE', null);
         $this->addForeignKey($this->db->getForeignKeyName('{{%entrydrafts}}', 'entryId'), '{{%entrydrafts}}', 'entryId', '{{%entries}}', 'id', 'CASCADE', null);
-        $this->addForeignKey($this->db->getForeignKeyName('{{%entrydrafts}}', 'locale'), '{{%entrydrafts}}', 'locale', '{{%locales}}', 'locale', 'CASCADE', 'CASCADE');
+        $this->addForeignKey($this->db->getForeignKeyName('{{%entrydrafts}}', 'siteId'), '{{%entrydrafts}}', 'siteId', '{{%sites}}', 'id', 'CASCADE', 'CASCADE');
         $this->addForeignKey($this->db->getForeignKeyName('{{%entrydrafts}}', 'sectionId'), '{{%entrydrafts}}', 'sectionId', '{{%sections}}', 'id', 'CASCADE', null);
         $this->addForeignKey($this->db->getForeignKeyName('{{%entrytypes}}', 'fieldLayoutId'), '{{%entrytypes}}', 'fieldLayoutId', '{{%fieldlayouts}}', 'id', 'SET NULL', null);
         $this->addForeignKey($this->db->getForeignKeyName('{{%entrytypes}}', 'sectionId'), '{{%entrytypes}}', 'sectionId', '{{%sections}}', 'id', 'CASCADE', null);
         $this->addForeignKey($this->db->getForeignKeyName('{{%entryversions}}', 'creatorId'), '{{%entryversions}}', 'creatorId', '{{%users}}', 'id', 'SET NULL', null);
         $this->addForeignKey($this->db->getForeignKeyName('{{%entryversions}}', 'entryId'), '{{%entryversions}}', 'entryId', '{{%entries}}', 'id', 'CASCADE', null);
-        $this->addForeignKey($this->db->getForeignKeyName('{{%entryversions}}', 'locale'), '{{%entryversions}}', 'locale', '{{%locales}}', 'locale', 'CASCADE', 'CASCADE');
+        $this->addForeignKey($this->db->getForeignKeyName('{{%entryversions}}', 'siteId'), '{{%entryversions}}', 'siteId', '{{%sites}}', 'id', 'CASCADE', 'CASCADE');
         $this->addForeignKey($this->db->getForeignKeyName('{{%entryversions}}', 'sectionId'), '{{%entryversions}}', 'sectionId', '{{%sections}}', 'id', 'CASCADE', null);
         $this->addForeignKey($this->db->getForeignKeyName('{{%fieldlayoutfields}}', 'fieldId'), '{{%fieldlayoutfields}}', 'fieldId', '{{%fields}}', 'id', 'CASCADE', null);
         $this->addForeignKey($this->db->getForeignKeyName('{{%fieldlayoutfields}}', 'layoutId'), '{{%fieldlayoutfields}}', 'layoutId', '{{%fieldlayouts}}', 'id', 'CASCADE', null);
@@ -926,18 +920,18 @@ class Install extends Migration
         $this->addForeignKey($this->db->getForeignKeyName('{{%matrixblocks}}', 'fieldId'), '{{%matrixblocks}}', 'fieldId', '{{%fields}}', 'id', 'CASCADE', null);
         $this->addForeignKey($this->db->getForeignKeyName('{{%matrixblocks}}', 'id'), '{{%matrixblocks}}', 'id', '{{%elements}}', 'id', 'CASCADE', null);
         $this->addForeignKey($this->db->getForeignKeyName('{{%matrixblocks}}', 'ownerId'), '{{%matrixblocks}}', 'ownerId', '{{%elements}}', 'id', 'CASCADE', null);
-        $this->addForeignKey($this->db->getForeignKeyName('{{%matrixblocks}}', 'ownerLocale'), '{{%matrixblocks}}', 'ownerLocale', '{{%locales}}', 'locale', 'CASCADE', 'CASCADE');
+        $this->addForeignKey($this->db->getForeignKeyName('{{%matrixblocks}}', 'ownerSiteId'), '{{%matrixblocks}}', 'ownerSiteId', '{{%sites}}', 'id', 'CASCADE', 'CASCADE');
         $this->addForeignKey($this->db->getForeignKeyName('{{%matrixblocks}}', 'typeId'), '{{%matrixblocks}}', 'typeId', '{{%matrixblocktypes}}', 'id', 'CASCADE', null);
         $this->addForeignKey($this->db->getForeignKeyName('{{%matrixblocktypes}}', 'fieldId'), '{{%matrixblocktypes}}', 'fieldId', '{{%fields}}', 'id', 'CASCADE', null);
         $this->addForeignKey($this->db->getForeignKeyName('{{%matrixblocktypes}}', 'fieldLayoutId'), '{{%matrixblocktypes}}', 'fieldLayoutId', '{{%fieldlayouts}}', 'id', 'SET NULL', null);
         $this->addForeignKey($this->db->getForeignKeyName('{{%migrations}}', 'pluginId'), '{{%migrations}}', 'pluginId', '{{%plugins}}', 'id', 'CASCADE', null);
         $this->addForeignKey($this->db->getForeignKeyName('{{%relations}}', 'fieldId'), '{{%relations}}', 'fieldId', '{{%fields}}', 'id', 'CASCADE', null);
         $this->addForeignKey($this->db->getForeignKeyName('{{%relations}}', 'sourceId'), '{{%relations}}', 'sourceId', '{{%elements}}', 'id', 'CASCADE', null);
-        $this->addForeignKey($this->db->getForeignKeyName('{{%relations}}', 'sourceLocale'), '{{%relations}}', 'sourceLocale', '{{%locales}}', 'locale', 'CASCADE', 'CASCADE');
+        $this->addForeignKey($this->db->getForeignKeyName('{{%relations}}', 'sourceSiteId'), '{{%relations}}', 'sourceSiteId', '{{%sites}}', 'id', 'CASCADE', 'CASCADE');
         $this->addForeignKey($this->db->getForeignKeyName('{{%relations}}', 'targetId'), '{{%relations}}', 'targetId', '{{%elements}}', 'id', 'CASCADE', null);
-        $this->addForeignKey($this->db->getForeignKeyName('{{%routes}}', 'locale'), '{{%routes}}', 'locale', '{{%locales}}', 'locale', 'CASCADE', 'CASCADE');
+        $this->addForeignKey($this->db->getForeignKeyName('{{%routes}}', 'siteId'), '{{%routes}}', 'siteId', '{{%sites}}', 'id', 'CASCADE', 'CASCADE');
         $this->addForeignKey($this->db->getForeignKeyName('{{%sections}}', 'structureId'), '{{%sections}}', 'structureId', '{{%structures}}', 'id', 'SET NULL', null);
-        $this->addForeignKey($this->db->getForeignKeyName('{{%sections_i18n}}', 'locale'), '{{%sections_i18n}}', 'locale', '{{%locales}}', 'locale', 'CASCADE', 'CASCADE');
+        $this->addForeignKey($this->db->getForeignKeyName('{{%sections_i18n}}', 'siteId'), '{{%sections_i18n}}', 'siteId', '{{%sites}}', 'id', 'CASCADE', 'CASCADE');
         $this->addForeignKey($this->db->getForeignKeyName('{{%sections_i18n}}', 'sectionId'), '{{%sections_i18n}}', 'sectionId', '{{%sections}}', 'id', 'CASCADE', null);
         $this->addForeignKey($this->db->getForeignKeyName('{{%sessions}}', 'userId'), '{{%sessions}}', 'userId', '{{%users}}', 'id', 'CASCADE', null);
         $this->addForeignKey($this->db->getForeignKeyName('{{%shunnedmessages}}', 'userId'), '{{%shunnedmessages}}', 'userId', '{{%users}}', 'id', 'CASCADE', null);
@@ -948,7 +942,7 @@ class Install extends Migration
         $this->addForeignKey($this->db->getForeignKeyName('{{%templatecacheelements}}', 'cacheId'), '{{%templatecacheelements}}', 'cacheId', '{{%templatecaches}}', 'id', 'CASCADE', null);
         $this->addForeignKey($this->db->getForeignKeyName('{{%templatecacheelements}}', 'elementId'), '{{%templatecacheelements}}', 'elementId', '{{%elements}}', 'id', 'CASCADE', null);
         $this->addForeignKey($this->db->getForeignKeyName('{{%templatecachequeries}}', 'cacheId'), '{{%templatecachequeries}}', 'cacheId', '{{%templatecaches}}', 'id', 'CASCADE', null);
-        $this->addForeignKey($this->db->getForeignKeyName('{{%templatecaches}}', 'locale'), '{{%templatecaches}}', 'locale', '{{%locales}}', 'locale', 'CASCADE', 'CASCADE');
+        $this->addForeignKey($this->db->getForeignKeyName('{{%templatecaches}}', 'siteId'), '{{%templatecaches}}', 'siteId', '{{%sites}}', 'id', 'CASCADE', 'CASCADE');
         $this->addForeignKey($this->db->getForeignKeyName('{{%usergroups_users}}', 'groupId'), '{{%usergroups_users}}', 'groupId', '{{%usergroups}}', 'id', 'CASCADE', null);
         $this->addForeignKey($this->db->getForeignKeyName('{{%usergroups_users}}', 'userId'), '{{%usergroups_users}}', 'userId', '{{%users}}', 'id', 'CASCADE', null);
         $this->addForeignKey($this->db->getForeignKeyName('{{%userpermissions_usergroups}}', 'groupId'), '{{%userpermissions_usergroups}}', 'groupId', '{{%usergroups}}', 'id', 'CASCADE', null);
@@ -971,15 +965,6 @@ class Install extends Migration
      */
     protected function insertDefaultData()
     {
-        // Add the site locale
-        $this->insert(
-            '{{%locales}}',
-            [
-                'locale' => $this->locale,
-                'sortOrder' => 1
-            ]
-        );
-
         // Populate the info table
         echo "    > populate the info table ...";
         Craft::$app->saveInfo(new Info([
@@ -988,13 +973,14 @@ class Install extends Migration
             'schemaVersion' => Craft::$app->schemaVersion,
             'releaseDate' => Craft::$app->releaseDate,
             'edition' => '0',
-            'siteName' => $this->siteName,
-            'siteUrl' => $this->siteUrl,
             'on' => '1',
             'maintenance' => '0',
             'track' => Craft::$app->track,
             'fieldVersion' => StringHelper::randomString(12),
         ]));
         echo " done\n";
+
+        // Add the default site
+        Craft::$app->getSites()->saveSite($this->site);
     }
 }

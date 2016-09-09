@@ -230,7 +230,8 @@ class FieldsController extends Controller
             'name' => $request->getBodyParam('name'),
             'handle' => $request->getBodyParam('handle'),
             'instructions' => $request->getBodyParam('instructions'),
-            'translatable' => (bool)$request->getBodyParam('translatable'),
+            'translationMethod' => $request->getBodyParam('translationMethod'),
+            'translationKeyFormat' => $request->getBodyParam('translationKeyFormat'),
             'settings' => $request->getBodyParam('types.'.$type),
         ]);
 

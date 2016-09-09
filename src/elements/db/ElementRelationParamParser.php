@@ -13,6 +13,7 @@ use craft\app\base\Field;
 use craft\app\db\Query;
 use craft\app\helpers\ArrayHelper;
 use craft\app\helpers\Db;
+use craft\app\models\Site;
 
 /**
  * Parses a relatedTo param on an ElementQuery.
@@ -50,7 +51,7 @@ class ElementRelationParamParser
     /**
      * @var int
      */
-    private $_sourceLocaleParamCount;
+    private $_sourceSiteParamCount;
 
     // Public Methods
     // =========================================================================
@@ -64,7 +65,7 @@ class ElementRelationParamParser
         $this->_joinTargetMatrixBlocksCount = 0;
         $this->_joinSourcesCount = 0;
         $this->_joinTargetsCount = 0;
-        $this->_sourceLocaleParamCount = 0;
+        $this->_sourceSiteParamCount = 0;
     }
 
     /**
@@ -165,6 +166,33 @@ class ElementRelationParamParser
      */
     private function _subparseRelationParam($relCriteria, Query $query)
     {
+        // Merge in default criteria params
+        $relCriteria = array_merge([
+            'field' => null,
+            'sourceSite' => null,
+        ], $relCriteria);
+
+        // Check for now-deprecated sourceLocale param
+        if (isset($relCriteria['sourceLocale'])) {
+            Craft::$app->getDeprecator()->log('relatedTo:sourceLocale', 'The sourceLocale criteria in relatedTo element query params has been deprecated. Use sourceSite instead.');
+            $relCriteria['sourceSite'] = $relCriteria['sourceLocale'];
+            unset($relCriteria['sourceLocale']);
+        }
+
+        // Normalize the sourceSite param (should be an ID)
+        if ($relCriteria['sourceSite'] && !is_numeric($relCriteria['sourceSite'])) {
+            if ($relCriteria['sourceSite'] instanceof Site) {
+                $relCriteria['sourceSite'] = $relCriteria['sourceSite']->id;
+            } else {
+                $site = Craft::$app->getSites()->getSiteByHandle($relCriteria['sourceSite']);
+                if (!$site) {
+                    // Invalid handle
+                    return false;
+                }
+                $relCriteria['sourceSite'] = $site->id;
+            }
+        }
+
         if (!is_array($relCriteria)) {
             $relCriteria = ['element' => $relCriteria];
         }
@@ -204,10 +232,6 @@ class ElementRelationParamParser
 
         // Going both ways?
         if (isset($relCriteria['element'])) {
-            if (!isset($relCriteria['field'])) {
-                $relCriteria['field'] = null;
-            }
-
             array_unshift($relElementIds, $glue);
 
             return $this->parseRelationParam([
@@ -221,9 +245,11 @@ class ElementRelationParamParser
                     'field' => $relCriteria['field']
                 ]
             ], $query);
-        } // Do we need to check for *all* of the element IDs?
-        else if ($glue == 'and') {
-            // Srpead it across multiple relation sub-params
+        }
+
+        // Do we need to check for *all* of the element IDs?
+        if ($glue == 'and') {
+            // Spread it across multiple relation sub-params
             $newRelatedToParam = ['and'];
 
             foreach ($relElementIds as $elementId) {
@@ -236,7 +262,7 @@ class ElementRelationParamParser
         $conditions = [];
         $normalFieldIds = [];
 
-        if (!empty($relCriteria['field'])) {
+        if ($relCriteria['field']) {
             // Loop through all of the fields in this rel criteria, create the Matrix-specific conditions right away
             // and save the normal field IDs for later
             $fields = ArrayHelper::toArray($relCriteria['field']);
@@ -295,16 +321,16 @@ class ElementRelationParamParser
                         ];
                         $relationsJoinParams = [];
 
-                        if (!empty($relCriteria['sourceLocale'])) {
-                            $this->_sourceLocaleParamCount++;
-                            $sourceLocaleParam = ':sourceLocale'.$this->_sourceLocaleParamCount;
+                        if ($relCriteria['sourceSite']) {
+                            $this->_sourceSiteParamCount++;
+                            $sourceSiteParam = ':sourceSiteId'.$this->_sourceSiteParamCount;
 
                             $relationsJoinConditions[] = [
                                 'or',
-                                $sourcesAlias.'.sourceLocale is null',
-                                $sourcesAlias.'.sourceLocale = '.$sourceLocaleParam
+                                $sourcesAlias.'.sourceSiteId is null',
+                                $sourcesAlias.'.sourceSiteId = '.$sourceSiteParam
                             ];
-                            $relationsJoinParams[$sourceLocaleParam] = $relCriteria['sourceLocale'];
+                            $relationsJoinParams[$sourceSiteParam] = $relCriteria['sourceSite'];
                         }
 
                         $query->leftJoin('{{%relations}} '.$sourcesAlias, $relationsJoinConditions, $relationsJoinParams);
@@ -330,16 +356,16 @@ class ElementRelationParamParser
                         ];
                         $relationsJoinParams = [];
 
-                        if (!empty($relCriteria['sourceLocale'])) {
-                            $this->_sourceLocaleParamCount++;
-                            $sourceLocaleParam = ':sourceLocale'.$this->_sourceLocaleParamCount;
+                        if ($relCriteria['sourceSite']) {
+                            $this->_sourceSiteParamCount++;
+                            $sourceSiteParam = ':sourceSiteId'.$this->_sourceSiteParamCount;
 
                             $relationsJoinConditions[] = [
                                 'or',
-                                $matrixBlockTargetsAlias.'.sourceLocale is null',
-                                $matrixBlockTargetsAlias.'.sourceLocale = '.$sourceLocaleParam
+                                $matrixBlockTargetsAlias.'.sourceSiteId is null',
+                                $matrixBlockTargetsAlias.'.sourceSiteId = '.$sourceSiteParam
                             ];
-                            $relationsJoinParams[$sourceLocaleParam] = $relCriteria['sourceLocale'];
+                            $relationsJoinParams[$sourceSiteParam] = $relCriteria['sourceSite'];
                         }
 
                         $query->leftJoin('{{%matrixblocks}} '.$sourceMatrixBlocksAlias, $sourceMatrixBlocksAlias.'.ownerId = elements.id');
@@ -365,7 +391,7 @@ class ElementRelationParamParser
 
         // If there were no fields, or there are some non-Matrix fields, add the normal relation condition. (Basically,
         // run this code if the rel criteria wasn't exclusively for Matrix.)
-        if (empty($relCriteria['field']) || $normalFieldIds) {
+        if ($relCriteria['field'] || $normalFieldIds) {
             if (isset($relCriteria['sourceElement'])) {
                 $this->_joinSourcesCount++;
                 $relTableAlias = 'sources'.$this->_joinSourcesCount;
@@ -385,16 +411,16 @@ class ElementRelationParamParser
             ];
             $relationsJoinParams = [];
 
-            if (!empty($relCriteria['sourceLocale'])) {
-                $this->_sourceLocaleParamCount++;
-                $sourceLocaleParam = ':sourceLocale'.$this->_sourceLocaleParamCount;
+            if ($relCriteria['sourceSite']) {
+                $this->_sourceSiteParamCount++;
+                $sourceSiteParam = ':sourceSiteId'.$this->_sourceSiteParamCount;
 
                 $relationsJoinConditions[] = [
                     'or',
-                    $relTableAlias.'.sourceLocale is null',
-                    $relTableAlias.'.sourceLocale = '.$sourceLocaleParam
+                    $relTableAlias.'.sourceSiteId is null',
+                    $relTableAlias.'.sourceSiteId = '.$sourceSiteParam
                 ];
-                $relationsJoinParams[$sourceLocaleParam] = $relCriteria['sourceLocale'];
+                $relationsJoinParams[$sourceSiteParam] = $relCriteria['sourceSite'];
             }
 
             $query->leftJoin('{{%relations}} '.$relTableAlias, $relationsJoinConditions, $relationsJoinParams);

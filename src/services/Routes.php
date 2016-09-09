@@ -41,17 +41,17 @@ class Routes extends Component
             $routes = require_once($path);
 
             if (is_array($routes)) {
-                // Check for any locale-specific routes
-                $locale = Craft::$app->language;
+                // Check for any site-specific routes
+                $siteHandle = Craft::$app->getSites()->currentSite->handle;
 
                 if (
-                    isset($routes[$locale]) &&
-                    is_array($routes[$locale]) &&
-                    !isset($routes[$locale]['route']) &&
-                    !isset($routes[$locale]['template'])
+                    isset($routes[$siteHandle]) &&
+                    is_array($routes[$siteHandle]) &&
+                    !isset($routes[$siteHandle]['route']) &&
+                    !isset($routes[$siteHandle]['template'])
                 ) {
-                    $localizedRoutes = $routes[$locale];
-                    unset($routes[$locale]);
+                    $localizedRoutes = $routes[$siteHandle];
+                    unset($routes[$siteHandle]);
 
                     // Merge them so that the localized routes come first
                     $routes = array_merge($localizedRoutes, $routes);
@@ -74,8 +74,8 @@ class Routes extends Component
         $results = (new Query())
             ->select(['urlPattern', 'template'])
             ->from('{{%routes}}')
-            ->where(['or', 'locale is null', 'locale = :locale'],
-                [':locale' => Craft::$app->language])
+            ->where(['or', 'siteId is null', 'siteId = :siteId'],
+                [':siteId' => Craft::$app->getSites()->currentSite->id])
             ->orderBy('sortOrder')
             ->all();
 
@@ -99,12 +99,12 @@ class Routes extends Component
      *                               string or an array containing the name of a subpattern and the subpattern.
      * @param string       $template The template to route matching URLs to.
      * @param integer|null $routeId  The route ID, if editing an existing route.
-     * @param string|null  $locale
+     * @param integer|null $siteId
      *
      * @return RouteRecord
      * @throws RouteNotFoundException if $routeId is invalid
      */
-    public function saveRoute($urlParts, $template, $routeId = null, $locale = null)
+    public function saveRoute($urlParts, $template, $routeId = null, $siteId = null)
     {
         if ($routeId !== null) {
             $routeRecord = RouteRecord::findOne($routeId);
@@ -156,7 +156,7 @@ class Routes extends Component
             }
         }
 
-        $routeRecord->locale = $locale;
+        $routeRecord->siteId = $siteId;
         $routeRecord->urlParts = Json::encode($urlParts);
         $routeRecord->urlPattern = $urlPattern;
         $routeRecord->template = $template;

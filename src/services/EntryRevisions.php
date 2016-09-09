@@ -101,7 +101,7 @@ class EntryRevisions extends Component
             // This is a little hacky, but fixes a bug where entries are getting the wrong URL when a draft is published
             // inside of a structured section since the selected URL Format depends on the entry's level, and there's no
             // reason to store the level along with the other draft data.
-            $entry = Craft::$app->getEntries()->getEntryById($draftRecord->entryId, $draftRecord->locale);
+            $entry = Craft::$app->getEntries()->getEntryById($draftRecord->entryId, $draftRecord->siteId);
 
             $draft->root = $entry->root;
             $draft->lft = $entry->lft;
@@ -118,14 +118,14 @@ class EntryRevisions extends Component
      * Returns drafts of a given entry.
      *
      * @param integer $entryId
-     * @param string  $localeId
+     * @param integer $siteId
      *
      * @return EntryDraft[]
      */
-    public function getDraftsByEntryId($entryId, $localeId = null)
+    public function getDraftsByEntryId($entryId, $siteId = null)
     {
-        if (!$localeId) {
-            $localeId = Craft::$app->getI18n()->getPrimarySiteLocale();
+        if (!$siteId) {
+            $siteId = Craft::$app->getSites()->getPrimarySite()->id;
         }
 
         $drafts = [];
@@ -133,8 +133,7 @@ class EntryRevisions extends Component
         $results = (new Query())
             ->select('*')
             ->from('{{%entrydrafts}}')
-            ->where(['and', 'entryId = :entryId', 'locale = :locale'],
-                [':entryId' => $entryId, ':locale' => $localeId])
+            ->where(['entryId' => $entryId, 'siteId' => $siteId])
             ->orderBy('name asc')
             ->all();
 
@@ -154,17 +153,17 @@ class EntryRevisions extends Component
      * Returns the drafts of a given entry that are editable by the current user.
      *
      * @param integer $entryId
-     * @param string  $localeId
+     * @param integer $siteId
      *
      * @return EntryDraft[]
      */
-    public function getEditableDraftsByEntryId($entryId, $localeId = null)
+    public function getEditableDraftsByEntryId($entryId, $siteId = null)
     {
         $editableDrafts = [];
         $user = Craft::$app->getUser()->getIdentity();
 
         if ($user) {
-            $allDrafts = $this->getDraftsByEntryId($entryId, $localeId);
+            $allDrafts = $this->getDraftsByEntryId($entryId, $siteId);
 
             foreach ($allDrafts as $draft) {
                 if ($draft->creatorId == $user->id || $user->can('editPeerEntryDrafts:'.$draft->sectionId)) {
@@ -188,13 +187,10 @@ class EntryRevisions extends Component
         $isNewDraft = !$draft->id;
 
         if (!$draft->name && $draft->id) {
-            // Get the total number of existing drafts for this entry/locale
+            // Get the total number of existing drafts for this entry/site
             $totalDrafts = (new Query())
                 ->from('{{%entrydrafts}}')
-                ->where(
-                    ['and', 'entryId = :entryId', 'locale = :locale'],
-                    [':entryId' => $draft->id, ':locale' => $draft->locale]
-                )
+                ->where(['entryId' => $draft->id, 'siteId' => $draft->siteId])
                 ->count('id');
 
             $draft->name = Craft::t('app', 'Draft {num}',
@@ -358,16 +354,16 @@ class EntryRevisions extends Component
      * Returns versions by an entry ID.
      *
      * @param integer      $entryId        The entry ID to search for.
-     * @param string       $localeId       The locale ID to search for.
+     * @param integer      $siteId         The site ID to search for.
      * @param integer|null $limit          The limit on the number of versions to retrieve.
      * @param boolean      $includeCurrent Whether to include the current "top" version of the entry.
      *
      * @return EntryVersion[]
      */
-    public function getVersionsByEntryId($entryId, $localeId, $limit = null, $includeCurrent = false)
+    public function getVersionsByEntryId($entryId, $siteId, $limit = null, $includeCurrent = false)
     {
-        if (!$localeId) {
-            $localeId = Craft::$app->getI18n()->getPrimarySiteLocale();
+        if (!$siteId) {
+            $siteId = Craft::$app->getSites()->getPrimarySite()->id;
         }
 
         $versions = [];
@@ -375,8 +371,7 @@ class EntryRevisions extends Component
         $results = (new Query())
             ->select('*')
             ->from('{{%entryversions}}')
-            ->where(['and', 'entryId = :entryId', 'locale = :locale'],
-                [':entryId' => $entryId, ':locale' => $localeId])
+            ->where(['entryId' => $entryId, 'siteId' => $siteId])
             ->orderBy('dateCreated desc')
             ->offset($includeCurrent ? 0 : 1)
             ->limit($limit)
@@ -403,20 +398,17 @@ class EntryRevisions extends Component
      */
     public function saveVersion(Entry $entry)
     {
-        // Get the total number of existing versions for this entry/locale
+        // Get the total number of existing versions for this entry/site
         $totalVersions = (new Query())
             ->from('{{%entryversions}}')
-            ->where(
-                ['and', 'entryId = :entryId', 'locale = :locale'],
-                [':entryId' => $entry->id, ':locale' => $entry->locale]
-            )
+            ->where(['entryId' => $entry->id, 'siteId' => $entry->siteId])
             ->count('id');
 
         $versionRecord = new EntryVersionRecord();
         $versionRecord->entryId = $entry->id;
         $versionRecord->sectionId = $entry->sectionId;
         $versionRecord->creatorId = Craft::$app->getUser()->getIdentity() ? Craft::$app->getUser()->getIdentity()->id : $entry->authorId;
-        $versionRecord->locale = $entry->locale;
+        $versionRecord->siteId = $entry->siteId;
         $versionRecord->num = $totalVersions + 1;
         $versionRecord->data = $this->_getRevisionData($entry);
         $versionRecord->notes = $entry->revisionNotes;
@@ -479,7 +471,7 @@ class EntryRevisions extends Component
             $draftRecord->entryId = $draft->id;
             $draftRecord->sectionId = $draft->sectionId;
             $draftRecord->creatorId = $draft->creatorId;
-            $draftRecord->locale = $draft->locale;
+            $draftRecord->siteId = $draft->siteId;
         }
 
         return $draftRecord;

@@ -68,7 +68,7 @@ var MessageSettingsModal = Garnish.Modal.extend(
 {
 	message: null,
 
-	$localeSelect: null,
+	$siteSelect: null,
 	$subjectInput: null,
 	$bodyInput: null,
 	$saveBtn: null,
@@ -88,11 +88,11 @@ var MessageSettingsModal = Garnish.Modal.extend(
 		this.loadContainer();
 	},
 
-	loadContainer: function(locale)
+	loadContainer: function(siteId)
 	{
 		var data = {
 			key:    this.message.key,
-			locale: locale
+			siteId: siteId
 		};
 
 		// If CSRF protection isn't enabled, these won't be defined.
@@ -117,14 +117,14 @@ var MessageSettingsModal = Garnish.Modal.extend(
 					this.$container.html(response);
 				}
 
-				this.$localeSelect = this.$container.find('.locale:first > select');
+				this.$siteSelect = this.$container.find('.site:first > select');
 				this.$subjectInput = this.$container.find('.message-subject:first');
 				this.$bodyInput = this.$container.find('.message-body:first');
 				this.$saveBtn = this.$container.find('.submit:first');
 				this.$cancelBtn = this.$container.find('.cancel:first');
 				this.$spinner = this.$container.find('.spinner:first');
 
-				this.addListener(this.$localeSelect, 'change', 'switchLocale');
+				this.addListener(this.$siteSelect, 'change', 'switchSite');
 				this.addListener(this.$container, 'submit', 'saveMessage');
 				this.addListener(this.$cancelBtn, 'click', 'cancel');
 
@@ -136,10 +136,9 @@ var MessageSettingsModal = Garnish.Modal.extend(
 		}, this));
 	},
 
-	switchLocale: function()
+	switchSite: function()
 	{
-		var locale = this.$localeSelect.val();
-		this.loadContainer(locale);
+		this.loadContainer(this.$siteSelect.val());
 	},
 
 	saveMessage: function(event)
@@ -153,7 +152,7 @@ var MessageSettingsModal = Garnish.Modal.extend(
 
 		var data = {
 			key:     this.message.key,
-			locale:  (this.$localeSelect.length ? this.$localeSelect.val() : Craft.language),
+			siteId:  (this.$siteSelect.length ? this.$siteSelect.val() : Craft.siteId),
 			subject: this.$subjectInput.val(),
 			body:    this.$bodyInput.val()
 		};
@@ -187,8 +186,8 @@ var MessageSettingsModal = Garnish.Modal.extend(
 			{
 				if (response.success)
 				{
-					// Only update the page if we're editing the app target locale
-					if (data.locale == Craft.language)
+					// Only update the page if we're editing the current site's message
+					if (data.siteId == Craft.siteId)
 					{
 						this.message.updateHtmlFromModal();
 					}

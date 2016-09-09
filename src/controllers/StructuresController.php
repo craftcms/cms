@@ -61,7 +61,7 @@ class StructuresController extends Controller
 
         $structureId = Craft::$app->getRequest()->getRequiredBodyParam('structureId');
         $elementId = Craft::$app->getRequest()->getRequiredBodyParam('elementId');
-        $localeId = Craft::$app->getRequest()->getRequiredBodyParam('locale');
+        $siteId = Craft::$app->getRequest()->getRequiredBodyParam('siteId');
 
         // Make sure they have permission to edit this structure
         $this->requireAuthorization('editStructure:'.$structureId);
@@ -72,7 +72,7 @@ class StructuresController extends Controller
             throw new NotFoundHttpException('Structure not found');
         }
 
-        $this->_element = Craft::$app->getElements()->getElementById($elementId, null, $localeId);
+        $this->_element = Craft::$app->getElements()->getElementById($elementId, null, $siteId);
 
         if (!$this->_element) {
             throw new NotFoundHttpException('Element not found');
@@ -104,10 +104,10 @@ class StructuresController extends Controller
         $prevElementId = Craft::$app->getRequest()->getBodyParam('prevId');
 
         if ($prevElementId) {
-            $prevElement = Craft::$app->getElements()->getElementById($prevElementId, null, $this->_element->locale);
+            $prevElement = Craft::$app->getElements()->getElementById($prevElementId, null, $this->_element->siteId);
             $success = Craft::$app->getStructures()->moveAfter($this->_structure->id, $this->_element, $prevElement, 'auto');
         } else if ($parentElementId) {
-            $parentElement = Craft::$app->getElements()->getElementById($parentElementId, null, $this->_element->locale);
+            $parentElement = Craft::$app->getElements()->getElementById($parentElementId, null, $this->_element->siteId);
             $success = Craft::$app->getStructures()->prepend($this->_structure->id, $this->_element, $parentElement, 'auto');
         } else {
             $success = Craft::$app->getStructures()->prependToRoot($this->_structure->id, $this->_element, 'auto');

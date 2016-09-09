@@ -31,7 +31,7 @@ class Message extends \yii\swiftmailer\Message
     public $variables;
 
     /**
-     * @var string The language that the email should be sent in, based on the first [[User]] model passed into [[setTo()]] with a preferred locale
+     * @var string The language that the email should be sent in, based on the first [[User]] model passed into [[setTo()]] with a preferred language
      */
     public $language;
 
@@ -144,7 +144,7 @@ class Message extends \yii\swiftmailer\Message
     {
         if ($email instanceof User) {
             if ($setLanguage && $this->language === null) {
-                $this->language = $email->getPreferredLocale();
+                $this->language = $email->getPreferredLanguage();
             }
 
             return [$email->email => $email->getName()];

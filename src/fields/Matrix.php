@@ -49,6 +49,10 @@ class Matrix extends Field implements EagerLoadingFieldInterface
      */
     public $maxBlocks;
 
+    /**
+     * @var integer Whether each site should get its own unique set of blocks
+     */
+    public $localizeBlocks = false;
 
     /**
      * @var MatrixBlockType[] The field’s block types
@@ -117,7 +121,8 @@ class Matrix extends Field implements EagerLoadingFieldInterface
                             'handle' => $fieldConfig['handle'],
                             'instructions' => $fieldConfig['instructions'],
                             'required' => !empty($fieldConfig['required']),
-                            'translatable' => !empty($fieldConfig['translatable']),
+                            'translationMethod' => $fieldConfig['translationMethod'],
+                            'translationKeyFormat' => $fieldConfig['translationKeyFormat'],
                             'settings' => (isset($fieldConfig['typesettings']) ? $fieldConfig['typesettings'] : null),
                         ]);
                     }
@@ -175,7 +180,12 @@ class Matrix extends Field implements EagerLoadingFieldInterface
             'Field Type',
             'How you’ll refer to this block type in the templates.',
             'This field is required',
-            'This field is translatable',
+            'Translation Method',
+            'Not translatable',
+            'Translate for each language',
+            'Translate for each site',
+            'Custom…',
+            'Translation Key Format',
             'What this block type will be called in the CP.',
         ]);
 
@@ -222,6 +232,7 @@ class Matrix extends Field implements EagerLoadingFieldInterface
      */
     public function prepareValue($value, $element)
     {
+        /** @var Element $element */
         $query = MatrixBlock::find();
 
         // Existing element?
@@ -233,14 +244,14 @@ class Matrix extends Field implements EagerLoadingFieldInterface
 
         $query
             ->fieldId($this->id)
-            ->locale($element->locale);
+            ->siteId($element->siteId);
 
         // Set the initially matched elements if $value is already set, which is the case if there was a validation
         // error or we're loading an entry revision.
         if (is_array($value) || $value === '') {
             $query->status = null;
-            $query->localeEnabled = false;
-            $query->localeEnabled = false;
+            $query->enabledForSite = false;
+            $query->enabledForSite = false;
             $query->limit = null;
             $query->setResult($this->_createBlocksFromPost($value, $element));
         }
@@ -310,7 +321,7 @@ class Matrix extends Field implements EagerLoadingFieldInterface
             $value
                 ->limit(null)
                 ->status(null)
-                ->localeEnabled(false);
+                ->enabledForSite(false);
         }
 
         return Craft::$app->getView()->renderTemplate('_components/fieldtypes/Matrix/input',
@@ -530,7 +541,7 @@ class Matrix extends Field implements EagerLoadingFieldInterface
 
             if ($element) {
                 $block->setOwner($element);
-                $block->locale = $element->locale;
+                $block->siteId = $element->siteId;
             }
 
             $fieldLayoutFields = $blockType->getFieldLayout()->getFields();
@@ -606,8 +617,8 @@ class Matrix extends Field implements EagerLoadingFieldInterface
                     ->id($ids)
                     ->limit(null)
                     ->status(null)
-                    ->localeEnabled(false)
-                    ->locale($element->locale)
+                    ->enabledForSite(false)
+                    ->siteId($element->siteId)
                     ->indexBy('id')
                     ->all();
             }
@@ -634,7 +645,7 @@ class Matrix extends Field implements EagerLoadingFieldInterface
                 $block->fieldId = $this->id;
                 $block->typeId = $blockType->id;
                 $block->ownerId = $ownerId;
-                $block->locale = $element->locale;
+                $block->siteId = $element->siteId;
 
                 // Preserve the collapsed state, which the browser can't remember on its own for new blocks
                 $block->collapsed = !empty($blockData['collapsed']);

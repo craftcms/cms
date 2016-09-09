@@ -9,16 +9,17 @@ namespace craft\app\models;
 
 use Craft;
 use craft\app\base\Model;
+use craft\app\validators\Handle;
+use craft\app\records\Section as SectionRecord;
+use craft\app\validators\Unique;
 
 /**
  * Section model class.
  *
- * @property boolean Whether this is the homepage section
- *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since  3.0
  *
- * @property string|null $urlFormat URL format
+ * @property Section_SiteSettings[] $siteSettings Site-specific settings
  */
 class Section extends Model
 {
@@ -58,16 +59,6 @@ class Section extends Model
     public $type;
 
     /**
-     * @var boolean Has URLs
-     */
-    public $hasUrls = true;
-
-    /**
-     * @var string Template
-     */
-    public $template;
-
-    /**
      * @var integer Max levels
      */
     public $maxLevels;
@@ -77,11 +68,10 @@ class Section extends Model
      */
     public $enableVersioning = true;
 
-
     /**
      * @var
      */
-    private $_locales;
+    private $_siteSettings;
 
     /**
      * @var
@@ -97,44 +87,31 @@ class Section extends Model
     public function rules()
     {
         return [
-            [
-                ['id'],
-                'number',
-                'min' => -2147483648,
-                'max' => 2147483647,
-                'integerOnly' => true
-            ],
-            [
-                ['structureId'],
-                'number',
-                'min' => -2147483648,
-                'max' => 2147483647,
-                'integerOnly' => true
-            ],
+            [['id', 'structureId', 'maxLevels'], 'number', 'integerOnly' => true],
+            [['handle'], Handle::className(), 'reservedWords' => ['id', 'dateCreated', 'dateUpdated', 'uid', 'title']],
             [['type'], 'in', 'range' => ['single', 'channel', 'structure']],
-            [
-                ['maxLevels'],
-                'number',
-                'min' => -2147483648,
-                'max' => 2147483647,
-                'integerOnly' => true
-            ],
-            [
-                [
-                    'id',
-                    'structureId',
-                    'name',
-                    'handle',
-                    'type',
-                    'hasUrls',
-                    'template',
-                    'maxLevels',
-                    'enableVersioning'
-                ],
-                'safe',
-                'on' => 'search'
-            ],
+            [['name', 'handle'], Unique::className(), 'targetClass' => SectionRecord::className()],
+            [['name', 'handle', 'type', 'siteSettings'], 'required'],
+            [['name', 'handle'], 'string', 'max' => 255],
         ];
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function validate($attributeNames = null, $clearErrors = true)
+    {
+        $validates = parent::validate($attributeNames, $clearErrors);
+
+        if ($attributeNames === null || in_array('siteSettings', $attributeNames)) {
+            foreach ($this->getSiteSettings() as $siteSettings) {
+                if (!$siteSettings->validate(null, $clearErrors)) {
+                    $validates = false;
+                }
+            }
+        }
+
+        return $validates;
     }
 
     /**
@@ -148,58 +125,55 @@ class Section extends Model
     }
 
     /**
-     * Returns whether this is the homepage section.
+     * Returns the section's site-specific settings.
      *
-     * @return boolean
+     * @return Section_SiteSettings[]
      */
-    public function getIsHomepage()
+    public function getSiteSettings()
     {
-        return ($this->type == self::TYPE_SINGLE && $this->getUrlFormat() == '__home__');
-    }
-
-    /**
-     * Returns the section's locale models
-     *
-     * @return SectionLocale[]
-     */
-    public function getLocales()
-    {
-        if (!isset($this->_locales)) {
+        if (!isset($this->_siteSettings)) {
             if ($this->id) {
-                $this->_locales = Craft::$app->getSections()->getSectionLocales($this->id, 'locale');
+                $siteSettings = Craft::$app->getSections()->getSectionSiteSettings($this->id, 'siteId');
             } else {
-                $this->_locales = [];
+                $siteSettings = [];
             }
+
+            // Set them with setSiteSettings() so setSection() gets called on them
+            $this->setSiteSettings($siteSettings);
         }
 
-        return $this->_locales;
+        return $this->_siteSettings;
     }
 
     /**
-     * Sets the section's locale models.
+     * Sets the section's site-specific settings.
      *
-     * @param array $locales
+     * @param Section_SiteSettings[] $siteSettings
      *
      * @return void
      */
-    public function setLocales($locales)
+    public function setSiteSettings($siteSettings)
     {
-        $this->_locales = $locales;
+        $this->_siteSettings = $siteSettings;
+
+        foreach ($this->_siteSettings as $settings) {
+            $settings->setSection($this);
+        }
     }
 
     /**
-     * Adds locale-specific errors to the model.
+     * Adds site-specific errors to the model.
      *
-     * @param array  $errors
-     * @param string $localeId
+     * @param array   $errors
+     * @param integer $siteId
      *
      * @return void
      */
-    public function addLocaleErrors($errors, $localeId)
+    public function addSiteSettingsErrors($errors, $siteId)
     {
-        foreach ($errors as $attribute => $localeErrors) {
-            $key = $attribute.'-'.$localeId;
-            foreach ($localeErrors as $error) {
+        foreach ($errors as $attribute => $siteErrors) {
+            $key = $attribute.'-'.$siteId;
+            foreach ($siteErrors as $error) {
                 $this->addError($key, $error);
             }
         }
@@ -233,30 +207,5 @@ class Section extends Model
         }
 
         return $entryTypes;
-    }
-
-    /**
-     * Returns the section's URL format (or URL) for the current locale.
-     *
-     * @return string|null
-     */
-    public function getUrlFormat()
-    {
-        $locales = $this->getLocales();
-
-        if ($locales) {
-            $localeIds = array_keys($locales);
-
-            // Does this section target the current locale?
-            if (in_array(Craft::$app->language, $localeIds)) {
-                $localeId = Craft::$app->language;
-            } else {
-                $localeId = $localeIds[0];
-            }
-
-            return $locales[$localeId]->urlFormat;
-        }
-
-        return null;
     }
 }

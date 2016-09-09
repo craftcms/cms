@@ -14,11 +14,12 @@ use craft\app\db\ActiveRecord;
  * Class Route record.
  *
  * @property integer $id         ID
- * @property Locale  $locale     Locale
+ * @property integer $siteId     Site ID
  * @property string  $urlParts   URL parts
  * @property string  $urlPattern URL pattern
  * @property string  $template   Template
  * @property string  $sortOrder  Sort order
+ * @property Site    $site       Site
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since  3.0
@@ -34,7 +35,7 @@ class Route extends ActiveRecord
     public function rules()
     {
         return [
-            [['locale'], 'craft\\app\\validators\\Locale'],
+            [['siteId'], 'craft\\app\\validators\\SiteId'],
             [['urlPattern'], 'unique'],
             [['urlParts', 'urlPattern', 'template'], 'required'],
         ];
@@ -51,12 +52,12 @@ class Route extends ActiveRecord
     }
 
     /**
-     * Returns the route’s locale.
+     * Returns the associated site.
      *
      * @return ActiveQueryInterface The relational query object.
      */
-    public function getLocale()
+    public function getSite()
     {
-        return $this->hasOne(Locale::className(), ['id' => 'locale']);
+        return $this->hasOne(Site::className(), ['id' => 'siteId']);
     }
 }

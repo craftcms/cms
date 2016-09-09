@@ -1,7 +1,7 @@
 /**
  * Handle Generator
  */
-Craft.EntryUrlFormatGenerator = Craft.BaseInputGenerator.extend(
+Craft.UriFormatGenerator = Craft.BaseInputGenerator.extend(
 {
 	generateTargetValue: function(sourceVal)
 	{
@@ -21,13 +21,13 @@ Craft.EntryUrlFormatGenerator = Craft.BaseInputGenerator.extend(
 		// Get the "words"
 		var words = Craft.filterArray(sourceVal.split(/[^a-z0-9]+/));
 
-		var urlFormat = words.join('-');
+		var uriFormat = words.join('-');
 
-		if (urlFormat && this.settings.suffix)
+		if (uriFormat && this.settings.suffix)
 		{
-			urlFormat += this.settings.suffix;
+			uriFormat += this.settings.suffix;
 		}
 
-		return urlFormat;
+		return uriFormat;
 	}
 });

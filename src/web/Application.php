@@ -309,7 +309,7 @@ class Application extends \yii\web\Application
     }
 
     /**
-     * Tries to find a match between the browser's preferred locales and the locales Craft has been translated into.
+     * Tries to find a match between the browser's preferred languages and the languages Craft has been translated into.
      *
      * @return string
      */
@@ -318,10 +318,10 @@ class Application extends \yii\web\Application
         $browserLanguages = $this->getRequest()->getAcceptableLanguages();
 
         if ($browserLanguages) {
-            $appLocaleIds = $this->getI18n()->getAppLocaleIds();
+            $appLanguages = $this->getI18n()->getAppLocaleIds();
 
             foreach ($browserLanguages as $language) {
-                if (in_array($language, $appLocaleIds)) {
+                if (in_array($language, $appLanguages)) {
                     return $language;
                 }
             }

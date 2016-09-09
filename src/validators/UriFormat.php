@@ -12,18 +12,18 @@ use craft\app\helpers\ElementHelper;
 use yii\validators\Validator;
 
 /**
- * Will validate that the given attribute is a valid URL format.
+ * Will validate that the given attribute is a valid URI format.
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since  3.0
  */
-class UrlFormat extends Validator
+class UriFormat extends Validator
 {
     // Properties
     // =========================================================================
 
     /**
-     * Whether we should ensure that "{slug}" is used within the URL format.
+     * Whether we should ensure that "{slug}" is used within the URI format.
      *
      * @var bool
      */
@@ -37,15 +37,15 @@ class UrlFormat extends Validator
      */
     public function validateAttribute($model, $attribute)
     {
-        $urlFormat = $model->$attribute;
+        $uriFormat = $model->$attribute;
 
-        if ($urlFormat) {
+        if ($uriFormat) {
             // Remove any leading or trailing slashes/spaces
-            $urlFormat = trim($urlFormat, '/ ');
-            $model->$attribute = $urlFormat;
+            $uriFormat = trim($uriFormat, '/ ');
+            $model->$attribute = $uriFormat;
 
             if ($this->requireSlug) {
-                if (!ElementHelper::doesUrlFormatHaveSlugTag($urlFormat)) {
+                if (!ElementHelper::doesUriFormatHaveSlugTag($uriFormat)) {
                     $this->addError($model, $attribute, Craft::t('app', '{attribute} must contain “{slug}”', ['attribute' => $model->$attribute]));
                 }
             }

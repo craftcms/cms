@@ -30,28 +30,6 @@
 		on: info.on
 	}) }}
 
-	{{ forms.textField({
-		label: "Site Name"|t,
-		warning: (craft.app.config.get('siteName') ? configWarning('siteName')),
-		id: 'siteName',
-		name: 'siteName',
-		value: info.siteName,
-		autofocus: true,
-		required: true,
-		errors: info.getErrors('siteName')
-	}) }}
-
-	{{ forms.textField({
-		label: "Site URL"|t,
-		warning: (craft.app.config.get('siteUrl') ? configWarning('siteUrl')),
-		id: 'siteUrl',
-		class: 'ltr',
-		name: 'siteUrl',
-		value: info.siteUrl,
-		required: true,
-		errors: info.getErrors('siteUrl')
-	}) }}
-
 	{{ forms.selectField({
 		label: "Timezone"|t,
 		warning: (craft.app.config.get('timezone') ? configWarning('timezone')),

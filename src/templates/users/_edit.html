@@ -123,26 +123,24 @@
 
                     {% endif %}
 
-                    {% if craft.isLocalized() %}
-                        {% set localeInput %}
+                    {% if craft.app.getIsMultiSite() %}
+                        {% set languageInput %}
                             <div class="select">
-                                <select id="preferredLocale"
-                                        name="preferredLocale">
-                                    {% set allSiteLocales = craft.app.i18n.getSiteLocales %}
-                                    {% set userLocale = account.getPreferredLocale() ?: (account.getIsCurrent() ? craft.app.language : allSiteLocales[0]) %}
+                                <select id="preferred-language" name="preferred-language">
+                                    {% set allLanguages = craft.app.i18n.getSiteLocaleIds %}
+                                    {% set userLanguage = account.getPreferredLanguage() ?: (account.getIsCurrent() ? craft.app.language : allSiteLanguages[0]) %}
 
-                                    {% for locale in allSiteLocales %}
-                                        <option value="{{ locale.id }}"
-                                                {% if locale.id == userLocale %}selected{% endif %}>{{ locale.getDisplayName(craft.app.language) }}</option>
+                                    {% for language in allSiteLanguages %}
+                                        <option value="{{ language }}" {% if language == userLanguage %}selected{% endif %}>{{ craft.app.i18n.getLocaleById(language).getDisplayName(craft.app.language) }}</option>
                                     {% endfor %}
                                 </select>
                             </div>
                         {% endset %}
 
                         {{ forms.field({
-                            id: 'preferredLocale',
-                            label: "Preferred Locale"|t('app')
-                        }, localeInput) }}
+                            id: 'preferred-language',
+                            label: "Preferred Language"|t('app')
+                        }, languageInput) }}
                     {% endif %}
 
                     {% if account.getIsCurrent() %}

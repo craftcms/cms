@@ -74,25 +74,25 @@ class Search extends Component
         foreach ($searchableAttributes as $attribute) {
             $value = $element->$attribute;
             $value = StringHelper::toString($value);
-            $this->_indexElementKeywords($element->id, $attribute, '0', $element->locale, $value);
+            $this->_indexElementKeywords($element->id, $attribute, '0', $element->siteId, $value);
         }
 
         return true;
     }
 
     /**
-     * Indexes the field values for a given element and locale.
+     * Indexes the field values for a given element and site.
      *
      * @param integer $elementId The ID of the element getting indexed.
-     * @param string  $localeId  The locale ID of the content getting indexed.
+     * @param string  $siteId    The site ID of the content getting indexed.
      * @param array   $fields    The field values, indexed by field ID.
      *
      * @return boolean  Whether the indexing was a success.
      */
-    public function indexElementFields($elementId, $localeId, $fields)
+    public function indexElementFields($elementId, $siteId, $fields)
     {
         foreach ($fields as $fieldId => $value) {
-            $this->_indexElementKeywords($elementId, 'field', (string)$fieldId, $localeId, $value);
+            $this->_indexElementKeywords($elementId, 'field', (string)$fieldId, $siteId, $value);
         }
 
         return true;
@@ -104,12 +104,12 @@ class Search extends Component
      * @param array   $elementIds   The list of element IDs to filter by the search query.
      * @param mixed   $query        The search query (either a string or a SearchQuery instance)
      * @param boolean $scoreResults Whether to order the results based on how closely they match the query.
-     * @param string  $localeId     The locale to filter by.
+     * @param integer $siteId       The site ID to filter by.
      * @param boolean $returnScores Whether the search scores should be included in the results. If true, results will be returned as `element ID => score`.
      *
      * @return array The filtered list of element IDs.
      */
-    public function filterElementIdsByQuery($elementIds, $query, $scoreResults = true, $localeId = null, $returnScores = false)
+    public function filterElementIdsByQuery($elementIds, $query, $scoreResults = true, $siteId = null, $returnScores = false)
     {
         if (is_string($query)) {
             $query = new SearchQuery($query, Craft::$app->getConfig()->get('defaultSearchTermOptions'));
@@ -136,14 +136,14 @@ class Search extends Component
         }
 
         // Get where clause from tokens, bail out if no valid query is there
-        $where = $this->_getWhereClause($localeId);
+        $where = $this->_getWhereClause($siteId);
 
         if (!$where) {
             return [];
         }
 
-        if ($localeId) {
-            $where .= sprintf(' AND %s = %s', Craft::$app->getDb()->quoteColumnName('locale'), Craft::$app->getDb()->quoteValue($localeId));
+        if ($siteId) {
+            $where .= sprintf(' AND %s = %s', Craft::$app->getDb()->quoteColumnName('siteId'), Craft::$app->getDb()->quoteValue($siteId));
         }
 
         // Begin creating SQL
@@ -203,20 +203,20 @@ class Search extends Component
     /**
      * Indexes keywords for a specific element attribute/field.
      *
-     * @param integer     $elementId
-     * @param string      $attribute
-     * @param string      $fieldId
-     * @param string|null $localeId
-     * @param string      $dirtyKeywords
+     * @param integer      $elementId
+     * @param string       $attribute
+     * @param string       $fieldId
+     * @param integer|null $siteId
+     * @param string       $dirtyKeywords
      *
      * @return void
      */
-    private function _indexElementKeywords($elementId, $attribute, $fieldId, $localeId, $dirtyKeywords)
+    private function _indexElementKeywords($elementId, $attribute, $fieldId, $siteId, $dirtyKeywords)
     {
         $attribute = StringHelper::toLowerCase($attribute);
 
-        if (!$localeId) {
-            $localeId = Craft::$app->getI18n()->getPrimarySiteLocaleId();
+        if (!$siteId) {
+            $siteId = Craft::$app->getSites()->getPrimarySite()->id;
         }
 
         // Clean 'em up
@@ -227,7 +227,7 @@ class Search extends Component
             'elementId' => $elementId,
             'attribute' => $attribute,
             'fieldId' => $fieldId,
-            'locale' => $localeId
+            'siteId' => $siteId
         ];
 
         if ($cleanKeywords !== null && $cleanKeywords !== false && $cleanKeywords !== '') {
@@ -310,10 +310,10 @@ class Search extends Component
      */
     private function _scoreTerm($term, $row, $weight = 1)
     {
-        // Skip these terms: locale and exact filtering is just that, no weighted search applies since all elements will
+        // Skip these terms: siteId and exact filtering is just that, no weighted search applies since all elements will
         // already apply for these filters.
         if (
-            $term->attribute == 'locale' ||
+            $term->attribute == 'site' ||
             $term->exact ||
             !($keywords = $this->_normalizeTerm($term->term))
         ) {
@@ -361,17 +361,17 @@ class Search extends Component
     /**
      * Get the complete where clause for current tokens
      *
-     * @param string|null $localeId The locale to search within
+     * @param string|null $siteId The site ID to search within
      *
      * @return string|false
      */
-    private function _getWhereClause($localeId = null)
+    private function _getWhereClause($siteId = null)
     {
         $where = [];
 
         // Add the regular terms to the WHERE clause
         if ($this->_terms) {
-            $condition = $this->_processTokens($this->_terms, true, $localeId);
+            $condition = $this->_processTokens($this->_terms, true, $siteId);
 
             if ($condition === false) {
                 return false;
@@ -382,7 +382,7 @@ class Search extends Component
 
         // Add each group to the where clause
         foreach ($this->_groups as $group) {
-            $condition = $this->_processTokens($group, false, $localeId);
+            $condition = $this->_processTokens($group, false, $siteId);
 
             if ($condition === false) {
                 return false;
@@ -398,13 +398,13 @@ class Search extends Component
     /**
      * Generates partial WHERE clause for search from given tokens
      *
-     * @param array       $tokens
-     * @param boolean     $inclusive
-     * @param string|null $localeId
+     * @param array        $tokens
+     * @param boolean      $inclusive
+     * @param integer|null $siteId
      *
      * @return string|false
      */
-    private function _processTokens($tokens = [], $inclusive = true, $localeId = null)
+    private function _processTokens($tokens = [], $inclusive = true, $siteId = null)
     {
         $andor = $inclusive ? ' AND ' : ' OR ';
         $where = [];
@@ -412,7 +412,7 @@ class Search extends Component
 
         foreach ($tokens as $obj) {
             // Get SQL and/or keywords
-            list($sql, $keywords) = $this->_getSqlFromTerm($obj, $localeId);
+            list($sql, $keywords) = $this->_getSqlFromTerm($obj, $siteId);
 
             if ($sql === false && $inclusive) {
                 return false;
@@ -459,22 +459,32 @@ class Search extends Component
      * or returns keywords to use in a MATCH AGAINST clause
      *
      * @param SearchQueryTerm $term
-     * @param string|null     $localeId
+     * @param integer|null    $siteId
      *
      * @return array
      */
-    private function _getSqlFromTerm(SearchQueryTerm $term, $localeId = null)
+    private function _getSqlFromTerm(SearchQueryTerm $term, $siteId = null)
     {
         // Initiate return value
         $sql = null;
         $keywords = null;
 
-        // Check for locale first
-        if ($term->attribute == 'locale') {
+        // Check for site first
+        if ($term->attribute == 'site') {
+            if (is_numeric($term->attribute)) {
+                $siteId = $term->attribute;
+            } else {
+                $site = Craft::$app->getSites()->getSiteByHandle($term->attribute);
+                if ($site) {
+                    $siteId = $site->id;
+                } else {
+                    $siteId = 0;
+                }
+            }
             $oper = $term->exclude ? '!=' : '=';
 
             return [
-                $this->_sqlWhere($term->attribute, $oper, $term->term),
+                $this->_sqlWhere($siteId, $oper, $term->term),
                 $keywords
             ];
         }
@@ -551,7 +561,7 @@ class Search extends Component
 
         // If we have a where clause in the subselect, add the keyword bit to it.
         if ($subSelect && $sql) {
-            $sql = $this->_sqlSubSelect($subSelect.' AND '.$sql, $localeId);
+            $sql = $this->_sqlSubSelect($subSelect.' AND '.$sql, $siteId);
 
             // We need to reset keywords even if the subselect ended up in no results.
             $keywords = null;
@@ -656,12 +666,12 @@ class Search extends Component
     /**
      * Get SQL bit for sub-selects.
      *
-     * @param string      $where
-     * @param string|null $localeId
+     * @param string       $where
+     * @param integer|null $siteId
      *
      * @return string|false
      */
-    private function _sqlSubSelect($where, $localeId = null)
+    private function _sqlSubSelect($where, $siteId = null)
     {
         // FULLTEXT indexes are not used in queries with subselects, so let's do this as its own query.
         $query = (new Query())
@@ -669,8 +679,8 @@ class Search extends Component
             ->from('{{%searchindex}}')
             ->where($where);
 
-        if ($localeId) {
-            $query->andWhere(['locale' => $localeId]);
+        if ($siteId) {
+            $query->andWhere(['siteId' => $siteId]);
         }
 
         $elementIds = $query->column();

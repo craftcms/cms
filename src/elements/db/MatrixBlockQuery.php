@@ -13,11 +13,14 @@ use craft\app\elements\MatrixBlock;
 use craft\app\fields\Matrix as MatrixField;
 use craft\app\helpers\Db;
 use craft\app\models\MatrixBlockType;
+use craft\app\models\Site;
+use yii\base\Exception;
 
 /**
  * MatrixBlockQuery represents a SELECT SQL statement for global sets in a way that is independent of DBMS.
  *
- * @property string|string[]|MatrixBlockType $type The handle(s) of the block type(s) that resulting Matrix blocks must have.
+ * @property string|string[]|Site            $ownerSite The handle(s) of the site(s) that the owner element should be in
+ * @property string|string[]|MatrixBlockType $type      The handle(s) of the block type(s) that resulting Matrix blocks must have
  *
  * @method MatrixBlock[]|array all($db = null)
  * @method MatrixBlock|array|null one($db = null)
@@ -50,9 +53,9 @@ class MatrixBlockQuery extends ElementQuery
     public $ownerId;
 
     /**
-     * @var string|string[] The locale(s) that the resulting Matrix blocks must have been defined in.
+     * @var integer|integer[] The locale(s) that the resulting Matrix blocks must have been defined in.
      */
-    public $ownerLocale;
+    public $ownerSiteId;
 
     /**
      * @var integer|integer[] The block type ID(s) that the resulting Matrix blocks must have.
@@ -68,8 +71,16 @@ class MatrixBlockQuery extends ElementQuery
     public function __set($name, $value)
     {
         switch ($name) {
+            case 'ownerSite':
+                $this->ownerSite($value);
+                break;
             case 'type': {
                 $this->type($value);
+                break;
+            }
+            case 'ownerLocale': {
+                Craft::$app->getDeprecator()->log('MatrixBlockQuery::ownerLocale()', 'The “ownerLocale” element parameter has been deprecated. Use “ownerSite” or “ownerSiteId” instead.');
+                $this->ownerSite($value);
                 break;
             }
             default: {
@@ -107,15 +118,56 @@ class MatrixBlockQuery extends ElementQuery
     }
 
     /**
+     * Sets the [[ownerSiteId]] property.
+     *
+     * @param integer|integer[] $value The property value
+     *
+     * @return $this self reference
+     */
+    public function ownerSiteId($value)
+    {
+        $this->ownerSiteId = $value;
+
+        return $this;
+    }
+
+    /**
+     * Sets the [[ownerSiteId]] property based on a given site(s)’s handle(s).
+     *
+     * @param string|string[]|Site $value The property value
+     *
+     * @return $this self reference
+     * @throws Exception if $value is an invalid site handle
+     */
+    public function ownerSite($value)
+    {
+        if ($value instanceof Site) {
+            $this->ownerSiteId = $value->id;
+        } else {
+            $site = Craft::$app->getSites()->getSiteByHandle($value);
+
+            if (!$site) {
+                throw new Exception('Invalid site hadle: '.$value);
+            }
+
+            $this->ownerSiteId = $site->id;
+        }
+
+        return $this;
+    }
+
+    /**
      * Sets the [[ownerLocale]] property.
      *
      * @param string|string[] $value The property value
      *
      * @return $this self reference
+     * @deprecated in 3.0. Use [[ownerSiteId()]] instead.
      */
     public function ownerLocale($value)
     {
-        $this->ownerLocale = $value;
+        Craft::$app->getDeprecator()->log('ElementQuery::locale()', 'The “locale” element parameter has been deprecated. Use “site” or “siteId” instead.');
+        $this->ownerSite($value);
 
         return $this;
     }
@@ -190,7 +242,7 @@ class MatrixBlockQuery extends ElementQuery
         $this->query->select([
             'matrixblocks.fieldId',
             'matrixblocks.ownerId',
-            'matrixblocks.ownerLocale',
+            'matrixblocks.ownerSiteId',
             'matrixblocks.typeId',
             'matrixblocks.sortOrder',
         ]);
@@ -203,8 +255,8 @@ class MatrixBlockQuery extends ElementQuery
             $this->subQuery->andWhere(Db::parseParam('matrixblocks.ownerId', $this->ownerId, $this->subQuery->params));
         }
 
-        if ($this->ownerLocale) {
-            $this->subQuery->andWhere(Db::parseParam('matrixblocks.ownerLocale', $this->ownerLocale, $this->subQuery->params));
+        if ($this->ownerSiteId) {
+            $this->subQuery->andWhere(Db::parseParam('matrixblocks.ownerSiteId', $this->ownerSiteId, $this->subQuery->params));
         }
 
         if ($this->typeId) {

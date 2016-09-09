@@ -37,7 +37,7 @@
 
 		<input type="hidden" name="groupId" value="{{ group.id }}">
 		{% if category.id %}<input type="hidden" name="categoryId" value="{{ category.id }}">{% endif %}
-		{% if craft.isLocalized() %}<input type="hidden" name="locale" value="{{ category.locale }}">{% endif %}
+		{% if craft.app.getIsMultiSite() %}<input type="hidden" name="siteId" value="{{ category.siteId }}">{% endif %}
 
 		<div class="grid first" data-max-cols="3">
 			<div class="item" data-position="left" data-colspan="2">
@@ -46,7 +46,7 @@
 
 					{{ forms.textField({
 						label: "Title"|t('app'),
-						locale: category.locale,
+						siteId: category.siteId,
 						id: 'title',
 						name: 'title',
 						value: category.title,
@@ -76,20 +76,20 @@
 					{% include "_includes/previewbtns" %}
 				{% endif %}
 
-				{% if craft.isLocalized() %}
-					<ul id="locales" class="pane">
+				{% if craft.app.getIsMultiSite() %}
+					<ul id="sites" class="pane">
 						{% set parentIdParam = craft.app.request.getParam('parentId.0') ?: craft.app.request.getParam('parentId') %}
-						{% for localeId in localeIds %}
-							{% set localeName = craft.app.i18n.getLocaleById(localeId).getDisplayName() %}
-							<li{% if localeId == category.locale %} class="sel"{% endif %}>
-								{%- if localeId == category.locale -%}
-									{{ localeName }}
+						{% for siteId in siteIds %}
+							{% set site = craft.app.sites.getSiteById(siteId) %}
+							<li{% if siteId == category.siteId %} class="sel"{% endif %}>
+								{%- if siteId == category.siteId -%}
+									{{ site.name|t('site') }}
 								{%- else -%}
-									{% set localeUrl = url(
-										'categories/'~groupHandle~'/'~craft.app.request.getSegment(3)~'/'~localeId,
+									{% set siteCategoryUrl = url(
+										'categories/'~groupHandle~'/'~craft.app.request.getSegment(3)~'/'~site.handle,
 										(parentIdParam ? { parentId: parentIdParam })
 									) -%}
-									<a href="{{ localeUrl }}">{{ localeName }}</a>
+									<a href="{{ siteCategoryUrl }}">{{ site.name|t('site') }}</a>
 								{%- endif -%}
 							</li>
 						{% endfor %}
@@ -100,7 +100,7 @@
 
 					{{ forms.textField({
 						label: "Slug"|t('app'),
-						locale: category.locale,
+						siteId: category.siteId,
 						id: 'slug',
 						name: 'slug',
 						value: category.slug,

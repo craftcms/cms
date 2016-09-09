@@ -362,7 +362,6 @@ class Tags extends Component
 
                 $transaction->commit();
                 $success = true;
-
             } catch (\Exception $e) {
                 $transaction->rollBack();
 
@@ -386,14 +385,14 @@ class Tags extends Component
     /**
      * Returns a tag by its ID.
      *
-     * @param integer     $tagId
-     * @param string|null $localeId
+     * @param integer      $tagId
+     * @param integer|null $siteId
      *
      * @return Tag|null
      */
-    public function getTagById($tagId, $localeId)
+    public function getTagById($tagId, $siteId)
     {
-        return Craft::$app->getElements()->getElementById($tagId, Tag::className(), $localeId);
+        return Craft::$app->getElements()->getElementById($tagId, Tag::className(), $siteId);
     }
 
     /**

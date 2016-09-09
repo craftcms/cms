@@ -49,6 +49,10 @@ return [
         'class' => 'craft\app\services\Resources',
         'dateParam' => 'd',
     ],
+    'sites' => [
+        'class' => 'craft\app\services\Sites',
+        'currentSite' => null,
+    ],
     'systemSettings' => [
         'class' => 'craft\app\services\SystemSettings',
         'defaults' => [

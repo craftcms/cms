@@ -381,7 +381,7 @@ Craft.StructureDrag = Garnish.Drag.extend(
 				var data = {
 					structureId: this.structure.id,
 					elementId:   $element.data('id'),
-					locale:      $element.data('locale'),
+					siteId:      $element.data('site-id'),
 					prevId:      this.$draggee.prev().children('.row').children('.element').data('id'),
 					parentId:    this.$draggee.parent('ul').parent('li').children('.row').children('.element').data('id')
 				};

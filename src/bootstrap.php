@@ -209,6 +209,17 @@ $config = ArrayHelper::merge(
     require $appPath.'/config/'.$appType.'.php'
 );
 
+// Set the current site
+if (defined('CRAFT_SITE') || defined('CRAFT_LOCALE')) {
+    $config = ArrayHelper::merge($config, [
+        'components' => [
+            'sites' => [
+                'currentSite' => defined('CRAFT_SITE') ? CRAFT_SITE : CRAFT_LOCALE,
+            ],
+        ],
+    ]);
+}
+
 // Allow sites to make custom changes to this
 if (file_exists($configPath.'/app.php')) {
     $config = ArrayHelper::merge($config, require $configPath.'/app.php');

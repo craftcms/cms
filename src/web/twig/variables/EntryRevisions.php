@@ -10,6 +10,7 @@ namespace craft\app\web\twig\variables;
 use Craft;
 use craft\app\models\EntryDraft;
 use craft\app\models\EntryVersion;
+use yii\base\Exception;
 
 /**
  * Class EntryRevisions variable.
@@ -30,30 +31,56 @@ class EntryRevisions
      * Returns entry drafts by an entry ID.
      *
      * @param integer $entryId
-     * @param string  $localeId
+     * @param string  $siteHandle
      *
      * @return array
+     * @throws Exception if $siteHandle is invalid
      */
-    public function getDraftsByEntryId($entryId, $localeId = null)
+    public function getDraftsByEntryId($entryId, $siteHandle = null)
     {
         Craft::$app->getDeprecator()->log('craft.entryRevisions.getDraftsByEntryId()', 'craft.entryRevisions.getDraftsByEntryId() has been deprecated. Use craft.app.entryRevisions.getDraftsByEntryId() instead.');
 
-        return Craft::$app->getEntryRevisions()->getDraftsByEntryId($entryId, $localeId);
+        if ($siteHandle) {
+            $site = Craft::$app->getSites()->getSiteByHandle($siteHandle);
+
+            if (!$site) {
+                throw new Exception('Invalid site handle: '.$siteHandle);
+            }
+
+            $siteId = $site->id;
+        } else {
+            $siteId = null;
+        }
+
+        return Craft::$app->getEntryRevisions()->getDraftsByEntryId($entryId, $siteId);
     }
 
     /**
      * Returns the drafts of a given entry that are editable by the current user.
      *
      * @param integer $entryId
-     * @param string  $localeId
+     * @param string  $siteHandle
      *
      * @return array
+     * @throws Exception if $siteHandle is invalid
      */
-    public function getEditableDraftsByEntryId($entryId, $localeId = null)
+    public function getEditableDraftsByEntryId($entryId, $siteHandle = null)
     {
         Craft::$app->getDeprecator()->log('craft.entryRevisions.getEditableDraftsByEntryId()', 'craft.entryRevisions.getEditableDraftsByEntryId() has been deprecated. Use craft.app.entryRevisions.getEditableDraftsByEntryId() instead.');
 
-        return Craft::$app->getEntryRevisions()->getEditableDraftsByEntryId($entryId, $localeId);
+        if ($siteHandle) {
+            $site = Craft::$app->getSites()->getSiteByHandle($siteHandle);
+
+            if (!$site) {
+                throw new Exception('Invalid site handle: '.$siteHandle);
+            }
+
+            $siteId = $site->id;
+        } else {
+            $siteId = null;
+        }
+
+        return Craft::$app->getEntryRevisions()->getEditableDraftsByEntryId($entryId, $siteId);
     }
 
     /**
@@ -77,15 +104,28 @@ class EntryRevisions
      * Returns entry versions by an entry ID.
      *
      * @param integer $entryId
-     * @param string  $localeId
+     * @param string  $siteHandle
      *
      * @return array
+     * @throws Exception if $siteHandle is invalid
      */
-    public function getVersionsByEntryId($entryId, $localeId)
+    public function getVersionsByEntryId($entryId, $siteHandle)
     {
         Craft::$app->getDeprecator()->log('craft.entryRevisions.getVersionsByEntryId()', 'craft.entryRevisions.getVersionsByEntryId() has been deprecated. Use craft.app.entryRevisions.getVersionsByEntryId() instead.');
 
-        return Craft::$app->getEntryRevisions()->getVersionsByEntryId($entryId, $localeId, 10);
+        if ($siteHandle) {
+            $site = Craft::$app->getSites()->getSiteByHandle($siteHandle);
+
+            if (!$site) {
+                throw new Exception('Invalid site handle: '.$siteHandle);
+            }
+
+            $siteId = $site->id;
+        } else {
+            $siteId = null;
+        }
+
+        return Craft::$app->getEntryRevisions()->getVersionsByEntryId($entryId, $siteId, 10);
     }
 
     /**

@@ -68,12 +68,11 @@ class Entries extends Component
      * ```
      *
      * @param integer $entryId  The entry’s ID.
-     * @param string  $localeId The locale to fetch the entry in.
-     *                          Defaults to [[Application::language `Craft::$app->language`]].
+     * @param integer $siteId   The site to fetch the entry in. Defaults to the current site.
      *
      * @return Entry|null The entry with the given ID, or `null` if an entry could not be found.
      */
-    public function getEntryById($entryId, $localeId = null)
+    public function getEntryById($entryId, $siteId = null)
     {
         if (!$entryId) {
             return null;
@@ -90,9 +89,9 @@ class Entries extends Component
         return Entry::find()
             ->id($entryId)
             ->structureId($structureId)
-            ->locale($localeId)
+            ->siteId($siteId)
             ->status(null)
-            ->localeEnabled(false)
+            ->enabledForSite(false)
             ->one();
     }
 
@@ -124,7 +123,7 @@ class Entries extends Component
      * @return boolean
      * @throws EntryNotFoundException if $entry->newParentId or $entry->id is invalid
      * @throws SectionNotFoundException if $entry->sectionId is invalid
-     * @throws Exception if $entry->locale is set to a locale that its section doesn’t support
+     * @throws Exception if $entry->siteId is set to a site that its section doesn’t support
      * @throws \Exception if reasons
      */
     public function saveEntry(Entry $entry)
@@ -135,7 +134,7 @@ class Entries extends Component
 
         if ($hasNewParent) {
             if ($entry->newParentId) {
-                $parentEntry = $this->getEntryById($entry->newParentId, $entry->locale);
+                $parentEntry = $this->getEntryById($entry->newParentId, $entry->siteId);
 
                 if (!$parentEntry) {
                     throw new EntryNotFoundException("No entry exists with the ID '{$entry->newParentId}'");
@@ -165,11 +164,11 @@ class Entries extends Component
             throw new SectionNotFoundException("No section exists with the ID '{$entry->sectionId}'");
         }
 
-        // Verify that the section is available in this locale
-        $sectionLocales = $section->getLocales();
+        // Verify that the section supports this site
+        $sectionSiteSettings = $section->getSiteSettings();
 
-        if (!isset($sectionLocales[$entry->locale])) {
-            throw new Exception("The section '{$section->name}' is not enabled for the locale '{$entry->locale}'");
+        if (!isset($sectionSiteSettings[$entry->siteId])) {
+            throw new Exception("The section '{$section->name}' is not enabled for the site '{$entry->siteId}'");
         }
 
         // Set the entry data
@@ -331,7 +330,7 @@ class Entries extends Component
 
                     if ($section->type == Section::TYPE_STRUCTURE) {
                         // First let's move the entry's children up a level, so this doesn't mess up the structure.
-                        $children = $entry->getChildren()->status(null)->localeEnabled(false)->limit(null)->all();
+                        $children = $entry->getChildren()->status(null)->enabledForSite(false)->limit(null)->all();
 
                         foreach ($children as $child) {
                             Craft::$app->getStructures()->moveBefore($section->structureId, $child, $entry, 'update');
@@ -388,7 +387,7 @@ class Entries extends Component
             ->id($entryId)
             ->limit(null)
             ->status(null)
-            ->localeEnabled(false)
+            ->enabledForSite(false)
             ->all();
 
         if ($entries) {
@@ -440,8 +439,8 @@ class Entries extends Component
             ->ancestorOf($entry)
             ->ancestorDist(1)
             ->status(null)
-            ->locale($entry->locale)
-            ->localeEnabled(false)
+            ->siteId($entry->siteId)
+            ->enabledForSite(false)
             ->select('elements.id')
             ->scalar();
 

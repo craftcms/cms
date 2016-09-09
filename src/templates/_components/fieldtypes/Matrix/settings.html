@@ -62,60 +62,84 @@
 						{% for field in blockType.getFields() %}
 							{% set fieldId = field.id %}
 							<div data-id="{{ fieldId }}" class="hidden">
-								{{ forms.textField({
-									label: "Name"|t('app'),
-									id: fieldId~'-name',
-									name: 'blockTypes['~blockType.id~'][fields]['~fieldId~'][name]',
-									value: (field.name != '__blank__' ? field.name),
-									errors: field.getErrors('name'),
-									autofocus: true
-								}) }}
-
-								{{ forms.textField({
-									label: "Handle"|t('app'),
-									id: fieldId~'-handle',
-									class: 'code',
-									name: 'blockTypes['~blockType.id~'][fields]['~fieldId~'][handle]',
-									maxlength: 64,
-									value: field.handle,
-									errors: field.getErrors('handle'),
-									required: true,
-								}) }}
-
-								{{ forms.textareaField({
-									label: "Instructions"|t('app'),
-									id: fieldId~'-instructions',
-									class: 'nicetext',
-									name: 'blockTypes['~blockType.id~'][fields]['~fieldId~'][instructions]',
-									value: field.instructions,
-									errors: field.getErrors('instructions'),
-								}) }}
-
-								{{ forms.checkboxField({
-									label: "This field is required"|t('app'),
-									name: 'blockTypes['~blockType.id~'][fields]['~fieldId~'][required]',
-									checked: field.required
-								}) }}
-
-								{% if craft.isLocalized() %}
-									{{ forms.checkboxField({
-										label: "This field is translatable"|t('app'),
-										name: 'blockTypes['~blockType.id~'][fields]['~fieldId~'][translatable]',
-										checked: field.translatable
+								{% namespace 'blockTypes['~blockType.id~'][fields]['~fieldId~']' %}
+									{{ forms.textField({
+										label: "Name"|t('app'),
+										id: 'name',
+										name: 'name',
+										value: (field.name != '__blank__' ? field.name),
+										errors: field.getErrors('name'),
+										autofocus: true
 									}) }}
-								{% endif %}
+
+									{{ forms.textField({
+										label: "Handle"|t('app'),
+										id: 'handle',
+										class: 'code',
+										name: 'handle',
+										maxlength: 64,
+										value: field.handle,
+										errors: field.getErrors('handle'),
+										required: true,
+									}) }}
+
+									{{ forms.textareaField({
+										label: "Instructions"|t('app'),
+										id: 'instructions',
+										class: 'nicetext',
+										name: 'instructions',
+										value: field.instructions,
+										errors: field.getErrors('instructions'),
+									}) }}
+
+									{{ forms.checkboxField({
+										label: "This field is required"|t('app'),
+										id: 'required',
+										name: 'required',
+										checked: field.required
+									}) }}
+
+									{{ forms.selectField({
+										label: "Field Type"|t('app'),
+										warning: (not field.getIsNew() ? "Changing this may result in data loss."|t('app')),
+										id: 'type',
+										name: 'type',
+										options: fieldTypes,
+										value: field.getType(),
+										errors: (field is missing ? ["The field type “{class}” could not be found."|t('app', { class: field.getType() })] : null),
+									}) }}
+
+									{% if craft.app.getIsMultiSite() %}
+										<div id="translation-settings" {% if not field.hasContentColumn() %}class="hidden"{% endif %}>
+											{{ forms.selectField({
+												label: "Translation Method"|t('app'),
+												id: 'translation-method',
+												name: 'translationMethod',
+												options: [
+													{ value: 'none', label: "Not translatable"|t('app') },
+													{ value: 'language', label: "Translate for each language"|t('app') },
+													{ value: 'site', label: "Translate for each site"|t('app') },
+													{ value: 'custom', label: "Custom…"|t('app') }
+												],
+												value: field.translationMethod,
+												toggle: true,
+												targetPrefix: 'translation-method-'
+											}) }}
+
+											<div id="translation-method-custom" {% if field.translationMethod != 'custom' %}class="hidden"{% endif %}>
+												{{ forms.textField({
+													label: "Translation Key Format"|t('app'),
+													id: 'translation-key-format',
+													name: 'translationKeyFormat',
+													value: field.translationKeyFormat,
+													errors: field.getErrors('translationKeyFormat')
+												}) }}
+											</div>
+										</div>
+									{% endif %}
+								{% endnamespace %}
 
 								<hr>
-
-								{{ forms.selectField({
-									label: "Field Type"|t('app'),
-									warning: (not field.getIsNew() ? "Changing this may result in data loss."|t('app')),
-									id: fieldId~'-type',
-									name: 'blockTypes['~blockType.id~'][fields]['~fieldId~'][type]',
-									options: fieldTypes,
-									value: field.getType(),
-									errors: (field is missing ? ["The field type “{class}” could not be found."|t('app', { class: field.getType() })] : null),
-								}) }}
 
 								<div class="fieldtype-settings">
 									<div>
@@ -144,6 +168,15 @@
 		name: 'config'
 	}, blockTypeInput) }}
 </div>
+
+{% if craft.app.getIsMultiSite() %}
+	{{ forms.checkboxField({
+		label: "Manage blocks on a per-site basis"|t('app'),
+		id: 'localize-blocks',
+		name: 'localizeBlocks',
+		checked: matrixField.localizeBlocks
+	}) }}
+{% endif %}
 
 {{ forms.textField({
 	label: "Max Blocks"|t('app'),

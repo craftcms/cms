@@ -111,16 +111,17 @@ class UserPermissions extends Component
             ];
         }
 
-        // Locales
+        // Sites
         // ---------------------------------------------------------------------
 
-        if (Craft::$app->getIsLocalized()) {
-            $label = Craft::t('app', 'Locales');
-            $locales = Craft::$app->getI18n()->getSiteLocales();
+        if (Craft::$app->getIsMultiSite()) {
+            $label = Craft::t('app', 'Sites');
+            $sites = Craft::$app->getSites()->getAllSites();
 
-            foreach ($locales as $locale) {
-                $permissions[$label]['editLocale:'.$locale->id] = [
-                    'label' => $locale->getDisplayName(Craft::$app->language)
+            foreach ($sites as $site) {
+                $permissions[$label]['editSite:'.$site->id] = [
+                    'label' => Craft::t('app', 'Edit “{title}”',
+                        ['title' => Craft::t('site', $site->name)])
                 ];
             }
         }

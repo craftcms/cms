@@ -25,7 +25,7 @@
 	{% registerjs at head %}
 		// Create the Craft object
 		window.Craft = {
-			siteUid:               "{{ craft.app.getSiteUid()|e('js') }}",
+			systemUid:             "{{ craft.app.getSystemUid()|e('js') }}",
 			baseUrl:               "{{ url()|e('js') }}",
 			baseCpUrl:             "{{ cpUrl()|e('js') }}",
 			baseSiteUrl:           "{{ siteUrl()|e('js') }}",
@@ -39,6 +39,7 @@
 			actionTrigger:         "{{ craft.app.config.get('actionTrigger')|e('js') }}",
 			path:                  "{{ craft.app.request.getPathInfo()|e('js') }}",
 			language:              "{{ craft.app.language|e('js') }}",
+			siteId:                {{ craft.app.sites.currentSite.id ?? 'null' }},
 			orientation:           "{{ orientation|e('js') }}",
 			left:                  "{{ orientation == 'ltr' ? 'left' : 'right' }}",
 			right:                 "{{ orientation == 'ltr' ? 'right' : 'left' }}",
@@ -48,7 +49,7 @@
 			Client:                {{ CraftClient }},
 			Pro:                   {{ CraftPro }},
 			edition:               {{ CraftEdition }},
-			isLocalized:           {{ craft.isLocalized() ? 'true' : 'false' }},
+			isMultiSite:           {{ craft.app.getIsMultiSite() ? 'true' : 'false' }},
 			translations:          {{ getTranslations()|raw }},
 			maxUploadSize:         {{ craft.io.getMaxUploadSize() }},
 			forceConfirmUnload:    {{ forceConfirmUnload is defined and forceConfirmUnload ? 'true' : 'false' }},
@@ -72,6 +73,11 @@
 				monthNames: {{ localeData.getMonthNames('full', true)|values|json_encode|raw }},
 				monthNamesShort: {{ localeData.getMonthNames('abbreviated', true)|values|json_encode|raw }}
 			},
+			sites: [
+				{% for site in craft.app.sites.getAllSites() %}
+					{id: {{ site.id }}, name: "{{ site.name|t('site')|e('js') }}"}{% if not loop.last %},{% endif %}
+				{% endfor %}
+			],
 			publishableSections: [
 				{% if isInstalled and currentUser is defined and currentUser %}
 					{% for section in craft.app.sections.getEditableSections() %}

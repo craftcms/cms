@@ -39,9 +39,9 @@ abstract class BaseEntriesController extends Controller
         $userSessionService = Craft::$app->getUser();
         $permissionSuffix = ':'.$entry->sectionId;
 
-        if (Craft::$app->getIsLocalized()) {
-            // Make sure they have access to this locale
-            $this->requirePermission('editLocale:'.$entry->locale);
+        if (Craft::$app->getIsMultiSite()) {
+            // Make sure they have access to this site
+            $this->requirePermission('editSite:'.$entry->siteId);
         }
 
         // Make sure the user is allowed to edit entries in this section

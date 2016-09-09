@@ -34,14 +34,14 @@ class UpdateElementSlugsAndUris extends Task
     public $elementType;
 
     /**
-     * @var string The locale of the elements to update.
+     * @var integer The site ID of the elements to update.
      */
-    public $locale;
+    public $siteId;
 
     /**
-     * @var boolean Whether the elements’ other locales should be updated as well.
+     * @var boolean Whether the elements’ other sites should be updated as well.
      */
-    public $updateOtherLocales = true;
+    public $updateOtherSites = true;
 
     /**
      * @var boolean Whether the elements’ descendants should be updated as well.
@@ -83,7 +83,7 @@ class UpdateElementSlugsAndUris extends Task
 
         $elementsService = Craft::$app->getElements();
         /** @var Element $element */
-        $element = $elementsService->getElementById($this->_elementIds[$step], $this->elementType, $this->locale);
+        $element = $elementsService->getElementById($this->_elementIds[$step], $this->elementType, $this->siteId);
 
         // Make sure they haven't deleted this element
         if (!$element) {
@@ -93,7 +93,7 @@ class UpdateElementSlugsAndUris extends Task
         $oldSlug = $element->slug;
         $oldUri = $element->uri;
 
-        $elementsService->updateElementSlugAndUri($element, $this->updateOtherLocales, false, false);
+        $elementsService->updateElementSlugAndUri($element, $this->updateOtherSites, false, false);
 
         // Only go deeper if something just changed
         if ($this->updateDescendants && ($element->slug !== $oldSlug || $element->uri !== $oldUri)) {
@@ -104,8 +104,8 @@ class UpdateElementSlugsAndUris extends Task
                 ->descendantOf($element)
                 ->descendantDist(1)
                 ->status(null)
-                ->localeEnabled(null)
-                ->locale($element->locale)
+                ->enabledForSite(false)
+                ->siteId($element->siteId)
                 ->ids();
 
             if ($childIds) {
@@ -114,8 +114,8 @@ class UpdateElementSlugsAndUris extends Task
                     'description' => Craft::t('app', 'Updating children'),
                     'elementId' => $childIds,
                     'elementType' => $this->elementType,
-                    'locale' => $this->locale,
-                    'updateOtherLocales' => $this->updateOtherLocales,
+                    'siteId' => $this->siteId,
+                    'updateOtherSites' => $this->updateOtherSites,
                     'updateDescendants' => true,
                 ]);
             }

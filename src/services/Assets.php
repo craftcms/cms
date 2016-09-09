@@ -132,15 +132,15 @@ class Assets extends Component
     /**
      * Returns a file by its ID.
      *
-     * @param             $assetId
-     * @param string|null $localeId
+     * @param integer      $assetId
+     * @param integer|null $siteId
      *
      * @return Asset|null
      */
-    public function getAssetById($assetId, $localeId = null)
+    public function getAssetById($assetId, $siteId = null)
     {
         return Craft::$app->getElements()->getElementById($assetId,
-            Asset::className(), $localeId);
+            Asset::className(), $siteId);
     }
 
     /**

@@ -67,8 +67,8 @@ use yii\web\ServerErrorHttpException;
  * @property \craft\app\services\Images          $images             The images service
  * @property boolean                             $sInMaintenanceMode Whether the system is in maintenance mode
  * @property boolean                             $isInstalled        Whether Craft is installed
+ * @property boolean                             $sMultiSite         Whether this site has multiple sites
  * @property boolean                             $isUpdating         Whether Craft is in the middle of updating itself
- * @property boolean                             $isLocalized        Whether this site has multiple locales
  * @property boolean                             $isSystemOn         Whether the front end is accepting HTTP requests
  * @property \craft\app\i18n\Locale              $locale             The Locale object for the target language
  * @property \craft\app\mail\Mailer              $mailer             The mailer component
@@ -82,6 +82,7 @@ use yii\web\ServerErrorHttpException;
  * @property \craft\app\services\Search          $search             The search service
  * @property Security                            $security           The security component
  * @property \craft\app\services\Sections        $sections           The sections service
+ * @property \craft\app\services\Sites           $sites              The sites service
  * @property \craft\app\services\Structures      $structures         The structures service
  * @property \craft\app\services\SystemSettings  $systemSettings     The system settings service
  * @property \craft\app\services\Tags            $tags               The tags service
@@ -118,7 +119,7 @@ trait ApplicationTrait
     /**
      * @var
      */
-    private $_isLocalized;
+    private $_isMultiSite;
 
     /**
      * @var
@@ -201,64 +202,66 @@ trait ApplicationTrait
     {
         /** @var \craft\app\web\Application|\craft\app\console\Application $this */
         if ($this->getIsInstalled()) {
-            // Will any locale validation be necessary here?
             $request = $this->getRequest();
+            $currentSite = $this->getSites()->currentSite;
 
-            if ($useUserLanguage || defined('CRAFT_LOCALE')) {
+            // Will any site validation be necessary here?
+            if ($useUserLanguage || $currentSite) {
                 if ($useUserLanguage) {
-                    $locale = 'auto';
+                    $language = 'auto';
                 } else {
-                    /** @noinspection PhpUndefinedConstantInspection */
-                    $locale = StringHelper::toLowerCase(CRAFT_LOCALE);
+                    $language = $currentSite->language;
                 }
 
-                // Get the list of actual site locale IDs
-                $siteLocaleIds = $this->getI18n()->getSiteLocaleIds();
+                // Get the list of actual site languages
+                $siteLanguages = $this->getI18n()->getSiteLocaleIds();
 
                 // Is it set to "auto"?
-                if ($locale == 'auto') {
+                if ($language == 'auto') {
                     // Place this within a try/catch in case userSession is being fussy.
                     try {
                         // If the user is logged in *and* has a primary language set, use that
                         $user = $this->getUser()->getIdentity();
 
-                        if ($user && ($preferredLocale = $user->getPreferredLocale()) !== null) {
-                            return $preferredLocale;
+                        if ($user && ($preferredLanguage = $user->getPreferredLanguage()) !== null) {
+                            return $preferredLanguage;
                         }
                     } catch (\Exception $e) {
-                        Craft::error('Tried to determine the user’s preferred locale, but got this exception: '.$e->getMessage(), __METHOD__);
+                        Craft::error('Tried to determine the user’s preferred language, but got this exception: '.$e->getMessage(), __METHOD__);
                     }
 
-                    // Is there a default CP languge?
+                    // Is there a default CP language?
                     if ($defaultCpLanguage = Craft::$app->getConfig()->get('defaultCpLanguage')) {
-                        // Make sure it's one of the site locales
+                        // Make sure it's one of the site languages
                         $defaultCpLanguage = StringHelper::toLowerCase($defaultCpLanguage);
 
-                        if (in_array($defaultCpLanguage, $siteLocaleIds)) {
+                        if (in_array($defaultCpLanguage, $siteLanguages)) {
                             return $defaultCpLanguage;
                         }
                     }
 
-                    // Otherwise check if the browser's preferred language matches any of the site locales
+                    // Otherwise check if the browser's preferred language matches any of the site languages
                     if (!$request->getIsConsoleRequest()) {
                         $browserLanguages = $request->getAcceptableLanguages();
 
                         if ($browserLanguages) {
-                            foreach ($browserLanguages as $language) {
-                                if (in_array($language, $siteLocaleIds)) {
-                                    return $language;
+                            foreach ($browserLanguages as $browserLanguage) {
+                                if (in_array($browserLanguage, $siteLanguages)) {
+                                    return $browserLanguage;
                                 }
                             }
                         }
                     }
-                } // Is it set to a valid site locale?
-                else if (in_array($locale, $siteLocaleIds)) {
-                    return $locale;
+                } // Is it set to a valid site language?
+                else if (in_array($language, $siteLanguages)) {
+                    return $language;
                 }
             }
 
-            // Use the primary site locale by default
-            return $this->getI18n()->getPrimarySiteLocaleId();
+            if (!$this->getIsUpdating()) {
+                // Use the primary site's language by default
+                return $this->getSites()->getPrimarySite()->language;
+            }
         }
 
         return $this->_getFallbackLanguage();
@@ -335,18 +338,18 @@ trait ApplicationTrait
     }
 
     /**
-     * Returns whether this site has multiple locales.
+     * Returns whether this Craft install has multiple sites.
      *
      * @return boolean
      */
-    public function getIsLocalized()
+    public function getIsMultiSite()
     {
         /** @var \craft\app\web\Application|\craft\app\console\Application $this */
-        if (!isset($this->_isLocalized)) {
-            $this->_isLocalized = ($this->getEdition() == Craft::Pro && count($this->getI18n()->getSiteLocales()) > 1);
+        if (!isset($this->_isMultiSite)) {
+            $this->_isMultiSite = (count($this->getSites()->getAllSites()) > 1);
         }
 
-        return $this->_isLocalized;
+        return $this->_isMultiSite;
     }
 
     /**
@@ -504,87 +507,11 @@ trait ApplicationTrait
     }
 
     /**
-     * Returns the site name.
+     * Returns the system's UID.
      *
      * @return string
      */
-    public function getSiteName()
-    {
-        /** @var \craft\app\web\Application|\craft\app\console\Application $this */
-        if (!isset($this->_siteName)) {
-            // Start by checking the config
-            $siteName = $this->getConfig()->getLocalized('siteName');
-
-            if (!$siteName) {
-                $siteName = $this->getInfo('siteName');
-
-                // Parse it for environment variables
-                $siteName = $this->getConfig()->parseEnvironmentString($siteName);
-            }
-
-            $this->_siteName = $siteName;
-        }
-
-        return $this->_siteName;
-    }
-
-    /**
-     * Returns the site URL (with a trailing slash).
-     *
-     * @param string|null $protocol The protocol to use (http or https). If none is specified, it will default to
-     *                              whatever's in the Site URL setting.
-     *
-     * @return string
-     */
-    public function getSiteUrl($protocol = null)
-    {
-        /** @var \craft\app\web\Application|\craft\app\console\Application $this */
-        if (!isset($this->_siteUrl)) {
-            // Start by checking the config
-            $siteUrl = $this->getConfig()->getLocalized('siteUrl');
-
-            if (!$siteUrl) {
-                if (defined('CRAFT_SITE_URL')) {
-                    $siteUrl = CRAFT_SITE_URL;
-                } else {
-                    $siteUrl = $this->getInfo('siteUrl');
-                }
-
-                if ($siteUrl) {
-                    // Parse it for environment variables
-                    $siteUrl = $this->getConfig()->parseEnvironmentString($siteUrl);
-                } else {
-                    // Figure it out for ourselves, then
-                    $request = $this->getRequest();
-                    $siteUrl = $request->getHostInfo().$request->getBaseUrl();
-                }
-            }
-
-            $this->setSiteUrl($siteUrl);
-        }
-
-        return Url::getUrlWithProtocol($this->_siteUrl, $protocol);
-    }
-
-    /**
-     * Sets the site URL, while ensuring that the given URL ends with a trailing slash.
-     *
-     * @param string $siteUrl
-     *
-     * @return void
-     */
-    public function setSiteUrl($siteUrl)
-    {
-        /** @var \craft\app\web\Application|\craft\app\console\Application $this */
-        $this->_siteUrl = rtrim($siteUrl, '/').'/';
-    }
-
-    /**
-     * Returns the site UID.
-     *
-     * @return string
-     */
-    public function getSiteUid()
+    public function getSystemUid()
     {
         /** @var \craft\app\web\Application|\craft\app\console\Application $this */
         return $this->getInfo('uid');
@@ -1126,6 +1053,17 @@ trait ApplicationTrait
     {
         /** @var \craft\app\web\Application|\craft\app\console\Application $this */
         return $this->get('sections');
+    }
+
+    /**
+     * Returns the sites service.
+     *
+     * @return \craft\app\services\Sites The sites service
+     */
+    public function getSites()
+    {
+        /** @var \craft\app\web\Application|\craft\app\console\Application $this */
+        return $this->get('sites');
     }
 
     /**

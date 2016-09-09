@@ -25,7 +25,6 @@
 				<th scope="col">{{ "Name"|t('app') }}</th>
 				<th scope="col">{{ "Handle"|t('app') }}</th>
 				<th scope="col">{{ "Type"|t('app') }}</th>
-				<th scope="col">{{ "URL Format"|t('app') }}</th>
 				<th scope="col">{{ "Entry Types"|t('app')}}</th>
 				<td class="thin"></td>
 			</thead>
@@ -35,13 +34,6 @@
 						<th scope="row" data-title="{{ 'Name'|t('app') }}"><a href="{{ url('settings/sections/' ~ section.id) }}">{{ section.name|t('site') }}</a></th>
 						<td data-title="{{ 'Handle'|t('app') }}"><code>{{ section.handle }}</code></td>
 						<td data-title="{{ 'Type'|t('app') }}">{{ section.type|title|t('app') }}</td>
-						<td data-title="{{ 'URL Format'|t('app') }}" dir="ltr">
-							{%- if section.getIsHomepage() -%}
-								<div data-icon="home" title="{{ 'Homepage'|t('app') }}"></div>
-							{%- else -%}
-								{{ section.getUrlFormat() }}
-							{%- endif -%}
-						</td>
 						<td data-title="{{ 'Entry Types'|t('app') }}">
 							{% if section.type == 'single' and section.getEntryTypes()|length == 1 %}
 								{% set entryType = section.getEntryTypes()[0] %}

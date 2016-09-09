@@ -43,9 +43,9 @@ Craft.BaseElementIndex = Garnish.Base.extend(
 	statusMenu: null,
 	status: null,
 
-	$localeMenuBtn: null,
-	localeMenu: null,
-	locale: null,
+	$siteMenuBtn: null,
+	siteMenu: null,
+	siteId: null,
 
 	$sortMenuBtn: null,
 	sortMenu: null,
@@ -108,7 +108,7 @@ Craft.BaseElementIndex = Garnish.Base.extend(
 		this.$toolbar = this.$container.find('.toolbar:first');
 		this.$toolbarTableRow = this.$toolbar.children('table').children('tbody').children('tr');
 		this.$statusMenuBtn = this.$toolbarTableRow.find('.statusmenubtn:first');
-		this.$localeMenuBtn = this.$toolbarTableRow.find('.localemenubtn:first');
+		this.$siteMenuBtn = this.$toolbarTableRow.find('.sitemenubtn:first');
 		this.$sortMenuBtn = this.$toolbarTableRow.find('.sortmenubtn:first');
 		this.$search = this.$toolbarTableRow.find('.search:first input:first');
 		this.$clearSearchBtn = this.$toolbarTableRow.find('.search:first > .clear');
@@ -161,55 +161,55 @@ Craft.BaseElementIndex = Garnish.Base.extend(
 			this.statusMenu.on('optionselect', $.proxy(this, '_handleStatusChange'));
 		}
 
-		// Initialize the locale menu
+		// Initialize the site menu
 		// ---------------------------------------------------------------------
 
-		// Is there a locale menu?
-		if (this.$localeMenuBtn.length)
+		// Is there a site menu?
+		if (this.$siteMenuBtn.length)
 		{
-			this.localeMenu = this.$localeMenuBtn.menubtn().data('menubtn').menu;
+			this.siteMenu = this.$siteMenuBtn.menubtn().data('menubtn').menu;
 
-			// Figure out the initial locale
-			var $option = this.localeMenu.$options.filter('.sel:first');
+			// Figure out the initial site
+			var $option = this.siteMenu.$options.filter('.sel:first');
 
 			if (!$option.length)
 			{
-				$option = this.localeMenu.$options.first();
+				$option = this.siteMenu.$options.first();
 			}
 
 			if ($option.length)
 			{
-				this.locale = $option.data('locale');
+				this.siteId = $option.data('site-id');
 			}
 			else
 			{
-				// No locale options -- they must not have any locale permissions
+				// No site options -- they must not have any site permissions
 				this.settings.criteria = { id: '0' };
 			}
 
-			this.localeMenu.on('optionselect', $.proxy(this, '_handleLocaleChange'));
+			this.siteMenu.on('optionselect', $.proxy(this, '_handleSiteChange'));
 
-			if (this.locale)
+			if (this.site)
 			{
-				// Do we have a different locale stored in localStorage?
-				var storedLocale = Craft.getLocalStorage('BaseElementIndex.locale');
+				// Do we have a different site stored in localStorage?
+				var storedSiteId = Craft.getLocalStorage('BaseElementIndex.siteId');
 
-				if (storedLocale && storedLocale != this.locale)
+				if (storedSiteId && storedSiteId != this.siteId)
 				{
 					// Is that one available here?
-					var $storedLocaleOption = this.localeMenu.$options.filter('[data-locale="'+storedLocale+'"]:first');
+					var $storedSiteOption = this.siteMenu.$options.filter('[data-site-id="'+storedSiteId+'"]:first');
 
-					if ($storedLocaleOption.length)
+					if ($storedSiteOption.length)
 					{
-						// Todo: switch this to localeMenu.selectOption($storedLocaleOption) once Menu is updated to support that
-						$storedLocaleOption.trigger('click');
+						// Todo: switch this to siteMenu.selectOption($storedSiteOption) once Menu is updated to support that
+						$storedSiteOption.trigger('click');
 					}
 				}
 			}
 		}
-		else if (this.settings.criteria && this.settings.criteria.locale)
+		else if (this.settings.criteria && this.settings.criteria.siteId)
 		{
-			this.locale = this.settings.criteria.locale;
+			this.siteId = this.settings.criteria.siteId;
 		}
 
 		// Initialize the search input
@@ -534,7 +534,7 @@ Craft.BaseElementIndex = Garnish.Base.extend(
 	{
 		var criteria = $.extend({
 			status: this.status,
-			locale: this.locale,
+			siteId: this.siteId,
 			search: this.searchText,
 			limit: this.settings.batchSize
 		}, this.settings.criteria);
@@ -1378,18 +1378,18 @@ Craft.BaseElementIndex = Garnish.Base.extend(
 		this.updateElements();
 	},
 
-	_handleLocaleChange: function(ev)
+	_handleSiteChange: function(ev)
 	{
-		this.localeMenu.$options.removeClass('sel');
+		this.siteMenu.$options.removeClass('sel');
 		var $option = $(ev.selectedOption).addClass('sel');
-		this.$localeMenuBtn.html($option.html());
+		this.$siteMenuBtn.html($option.html());
 
-		this.locale = $option.data('locale');
+		this.siteId = $option.data('site-id');
 
 		if (this.initialized)
 		{
-			// Remember this locale for later
-			Craft.setLocalStorage('BaseElementIndex.locale', this.locale);
+			// Remember this site for later
+			Craft.setLocalStorage('BaseElementIndex.siteId', this.siteId);
 
 			// Update the elements
 			this.updateElements();

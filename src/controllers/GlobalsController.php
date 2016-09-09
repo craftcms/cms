@@ -100,38 +100,49 @@ class GlobalsController extends Controller
      * Edits a global set's content.
      *
      * @param string    $globalSetHandle The global set’s handle.
-     * @param string    $localeId        The locale ID, if specified.
+     * @param string    $siteHandle      The site handle, if specified.
      * @param GlobalSet $globalSet       The global set being edited, if there were any validation errors.
      *
      * @return string The rendering result
      * @throws ForbiddenHttpException if the user is not permitted to edit the global set
+     * @throws NotFoundHttpException if the requested site handle is invalid
      */
-    public function actionEditContent($globalSetHandle, $localeId = null, GlobalSet $globalSet = null)
+    public function actionEditContent($globalSetHandle, $siteHandle = null, GlobalSet $globalSet = null)
     {
-        // Get the locales the user is allowed to edit
-        $editableLocaleIds = Craft::$app->getI18n()->getEditableLocaleIds();
+        // Get the sites the user is allowed to edit
+        $editableSiteIds = Craft::$app->getSites()->getEditableSiteIds();
 
-        // Editing a specific locale?
-        if ($localeId) {
-            // Make sure the user has permission to edit that locale
-            if (!in_array($localeId, $editableLocaleIds)) {
-                throw new ForbiddenHttpException('User not permitted to edit content in any locales');
+        if (!$editableSiteIds) {
+            throw new ForbiddenHttpException('User not permitted to edit content in any sites');
+        }
+
+        // Editing a specific site?
+        if ($siteHandle) {
+            $site = Craft::$app->getSites()->getSiteByHandle($siteHandle);
+
+            if (!$site) {
+                throw new NotFoundHttpException('Invalid site handle: '.$siteHandle);
+            }
+
+            // Make sure the user has permission to edit that site
+            if (!in_array($site->id, $editableSiteIds)) {
+                throw new ForbiddenHttpException('User not permitted to edit content in this site');
             }
         } else {
-            // Are they allowed to edit the current app locale?
-            if (in_array(Craft::$app->language, $editableLocaleIds)) {
-                $localeId = Craft::$app->language;
+            // Are they allowed to edit the current site?
+            if (in_array(Craft::$app->getSites()->currentSite->id, $editableSiteIds)) {
+                $site = Craft::$app->getSites()->currentSite;
             } else {
-                // Just use the first locale they are allowed to edit
-                $localeId = $editableLocaleIds[0];
+                // Just use the first site they are allowed to edit
+                $site = Craft::$app->getSites()->getSiteById($editableSiteIds[0]);
             }
         }
 
-        // Get the global sets the user is allowed to edit, in the requested locale
+        // Get the global sets the user is allowed to edit, in the requested site
         $editableGlobalSets = [];
 
         $globalSets = GlobalSet::find()
-            ->locale($localeId)
+            ->siteId($site->id)
             ->all();
 
         foreach ($globalSets as $thisGlobalSet) {
@@ -166,16 +177,16 @@ class GlobalsController extends Controller
         $this->requirePostRequest();
 
         $globalSetId = Craft::$app->getRequest()->getRequiredBodyParam('setId');
-        $localeId = Craft::$app->getRequest()->getBodyParam('locale', Craft::$app->getI18n()->getPrimarySiteLocaleId());
+        $siteId = Craft::$app->getRequest()->getBodyParam('siteId') ?: Craft::$app->getSites()->getPrimarySite()->id;
 
-        // Make sure the user is allowed to edit this global set and locale
+        // Make sure the user is allowed to edit this global set and site
         $this->requirePermission('editGlobalSet:'.$globalSetId);
 
-        if (Craft::$app->getIsLocalized()) {
-            $this->requirePermission('editLocale:'.$localeId);
+        if (Craft::$app->getIsMultiSite()) {
+            $this->requirePermission('editSite:'.$siteId);
         }
 
-        $globalSet = Craft::$app->getGlobals()->getSetById($globalSetId, $localeId);
+        $globalSet = Craft::$app->getGlobals()->getSetById($globalSetId, $siteId);
 
         if (!$globalSet) {
             throw new NotFoundHttpException('Global set not found');

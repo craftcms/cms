@@ -725,7 +725,7 @@ class UsersController extends Controller
                     'newPassword',
                     'currentPassword',
                     'passwordResetRequired',
-                    'preferredLocale'
+                    'preferredLanguage'
                 ];
 
                 foreach ($errors as $attribute => $error) {
@@ -968,7 +968,7 @@ class UsersController extends Controller
         if ($imageValidates && Craft::$app->getUsers()->saveUser($user)) {
             // Save their preferences too
             $preferences = [
-                'locale' => $request->getBodyParam('preferredLocale', $user->getPreference('locale')),
+                'language' => $request->getBodyParam('preferredLanguage', $user->getPreference('language')),
                 'weekStartDay' => $request->getBodyParam('weekStartDay', $user->getPreference('weekStartDay')),
             ];
 

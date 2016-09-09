@@ -652,8 +652,9 @@ class Extension extends \Twig_Extension
         $globals['POS_LOAD'] = View::POS_LOAD;
 
         if ($isInstalled && !Craft::$app->getIsUpdating()) {
-            $globals['siteName'] = Craft::$app->getSiteName();
-            $globals['siteUrl'] = Craft::$app->getSiteUrl();
+            $site = Craft::$app->getSites()->currentSite;
+            $globals['siteName'] = $site->name;
+            $globals['siteUrl'] = $site->baseUrl;
 
             if (!$request->getIsConsoleRequest() && $request->getIsSiteRequest()) {
                 foreach (Craft::$app->getGlobals()->getAllSets() as $globalSet) {

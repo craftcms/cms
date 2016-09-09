@@ -56,16 +56,6 @@
 		translatable: true
 	}) }}
 
-	{% if craft.isLocalized() %}
-		{{ forms.checkboxField({
-			label: "This field is translatable"|t('app'),
-			name: 'translatable',
-			checked: (field is not empty ? field.translatable : false)
-		}) }}
-	{% endif %}
-
-	<hr>
-
 	{{ forms.selectField({
 		label: "Field Type"|t('app'),
 		instructions: "What type of field is this?"|t('app'),
@@ -77,6 +67,39 @@
 		errors: (field is missing ? ["The field type “{type}” could not be found."|t('app', { type: field.getType() })] : null),
 		toggle: true
 	}) }}
+
+	{% if craft.app.getIsMultiSite() %}
+		<div id="translation-settings" {% if not field.hasContentColumn() %}class="hidden"{% endif %}>
+			{{ forms.selectField({
+				label: "Translation Method"|t('app'),
+				instructions: "How should this field’s values be translated?"|t('app'),
+				id: 'translation-method',
+				name: 'translationMethod',
+				options: [
+					{ value: 'none', label: "Not translatable"|t('app') },
+					{ value: 'language', label: "Translate for each language"|t('app') },
+					{ value: 'site', label: "Translate for each site"|t('app') },
+					{ value: 'custom', label: "Custom…"|t('app') }
+				],
+				value: field.translationMethod,
+				toggle: true,
+				targetPrefix: 'translation-method-'
+			}) }}
+
+			<div id="translation-method-custom" {% if field.translationMethod != 'custom' %}class="hidden"{% endif %}>
+				{{ forms.textField({
+					label: "Translation Key Format"|t('app'),
+					instructions: "Template that defines the field’s custom “translation key” format. Field values will be copied to all sites that produce the same key. For example, to make the field translatable based on the first two characters of the site handle, you could enter `{site.handle[:2]}`.",
+					id: 'translation-key-format',
+					name: 'translationKeyFormat',
+					value: field.translationKeyFormat,
+					errors: field.getErrors('translationKeyFormat')
+				}) }}
+			</div>
+		</div>
+	{% endif %}
+
+	<hr>
 
 	{% for type in allFieldTypes %}
 		{% set isCurrent = (type == field.getType()) %}
@@ -95,3 +118,19 @@
 		new Craft.HandleGenerator('#name', '#handle');
 	{% endregisterjs %}
 {% endif %}
+
+{% registerjs %}
+	Craft.fieldTypesWithContent = {{ craft.app.fields.getFieldTypesWithContent()|json_encode|raw }};
+
+	var $fieldTypeInput = $("#{{ 'type'|namespaceInputId|e('js') }}"),
+		$translationSettings = $("#{{ 'translation-settings'|namespaceInputId|e('js') }}");
+
+	$fieldTypeInput.change(function(e) {
+		// Show or hide the translation settings depending on if this type has content
+		if ($.inArray($(this).val(), Craft.fieldTypesWithContent) != -1) {
+			$translationSettings.removeClass('hidden');
+        } else {
+        	$translationSettings.addClass('hidden');
+		}
+    });
+{% endregisterjs %}

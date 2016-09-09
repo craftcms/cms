@@ -8,6 +8,7 @@
 namespace craft\app\fields;
 
 use Craft;
+use craft\app\base\Element;
 use craft\app\base\Field;
 use craft\app\base\Volume;
 use craft\app\fields\data\RichTextData;
@@ -19,6 +20,7 @@ use craft\app\helpers\Json;
 use craft\app\helpers\StringHelper;
 use craft\app\models\Section;
 use craft\app\validators\Handle;
+use yii\base\Exception;
 use yii\db\Schema;
 
 /**
@@ -164,26 +166,27 @@ class RichText extends Field
     public function getInputHtml($value, $element)
     {
         /** @var RichTextData|null $value */
+        /** @var Element $element */
         $configJs = $this->_getConfigJson();
         $this->_includeFieldResources($configJs);
 
         $view = Craft::$app->getView();
         $id = $view->formatInputId($this->handle);
-        $localeId = ($element ? $element->locale : Craft::$app->language);
+        $site = ($element ? $element->getSite() : Craft::$app->getSites()->currentSite);
 
         $settings = [
             'id' => $view->namespaceInputId($id),
-            'linkOptions' => $this->_getLinkOptions(),
+            'linkOptions' => $this->_getLinkOptions($element),
             'volumes' => $this->_getVolumes(),
             'transforms' => $this->_getTransforms(),
-            'elementLocale' => $localeId,
+            'elementSiteId' => $site->id,
             'redactorConfig' => Json::decode($configJs),
             'redactorLang' => static::$_redactorLang,
         ];
 
-        if ($this->translatable) {
+        if ($this->translationMethod != self::TRANSLATION_METHOD_NONE) {
             // Explicitly set the text direction
-            $locale = Craft::$app->getI18n()->getLocaleById($localeId);
+            $locale = Craft::$app->getI18n()->getLocaleById($site->language);
             $settings['direction'] = $locale->getOrientation();
         }
 
@@ -342,14 +345,16 @@ class RichText extends Field
      * - `criteria` (optional) – any specific element criteria parameters that should limit which elements the user can select
      * - `storageKey` (optional) – the localStorage key that should be used to store the element selector modal state (defaults to RichTextFieldType.LinkTo[ElementType])
      *
+     * @param Element|null $element The element the field is associated with, if there is one
+     *
      * @return array
      */
-    private function _getLinkOptions()
+    private function _getLinkOptions($element)
     {
         $linkOptions = [];
 
-        $sectionSources = $this->_getSectionSources();
-        $categorySources = $this->_getCategorySources();
+        $sectionSources = $this->_getSectionSources($element);
+        $categorySources = $this->_getCategorySources($element);
 
         if ($sectionSources) {
             $linkOptions[] = [
@@ -380,9 +385,11 @@ class RichText extends Field
     /**
      * Returns the available section sources.
      *
+     * @param Element|null $element The element the field is associated with, if there is one
+     *
      * @return array
      */
-    private function _getSectionSources()
+    private function _getSectionSources($element)
     {
         $sources = [];
         $sections = Craft::$app->getSections()->getAllSections();
@@ -391,8 +398,10 @@ class RichText extends Field
         foreach ($sections as $section) {
             if ($section->type == Section::TYPE_SINGLE) {
                 $showSingles = true;
-            } else {
-                if ($section->hasUrls) {
+            } else if ($element) {
+                // Does the section have URLs in the same site as the element we're editing?
+                $sectionSiteSettings = $section->getSiteSettings();
+                if (isset($sectionSiteSettings[$element->siteId]) && $sectionSiteSettings[$element->siteId]->hasUrls) {
                     $sources[] = 'section:'.$section->id;
                 }
             }
@@ -408,16 +417,23 @@ class RichText extends Field
     /**
      * Returns the available category sources.
      *
+     * @param Element|null $element The element the field is associated with, if there is one
+     *
      * @return array
      */
-    private function _getCategorySources()
+    private function _getCategorySources($element)
     {
         $sources = [];
-        $categoryGroups = Craft::$app->getCategories()->getAllGroups();
 
-        foreach ($categoryGroups as $categoryGroup) {
-            if ($categoryGroup->hasUrls) {
-                $sources[] = 'group:'.$categoryGroup->id;
+        if ($element) {
+            $categoryGroups = Craft::$app->getCategories()->getAllGroups();
+
+            foreach ($categoryGroups as $categoryGroup) {
+                // Does the category group have URLs in the same site as the element we're editing?
+                $categoryGroupSiteSettings = $categoryGroup->getSiteSettings();
+                if (isset($categoryGroupSiteSettings[$element->siteId]) && $categoryGroupSiteSettings[$element->siteId]->hasUrls) {
+                    $sources[] = 'group:'.$categoryGroup->id;
+                }
             }
         }
 
@@ -533,9 +549,9 @@ class RichText extends Field
 
         $view->registerJsResource('js/RichTextInput.js');
 
-        // Check to see if the Redactor has been translated into the current locale
+        // Check to see if the Redactor has been translated into the current site
         if (Craft::$app->language != Craft::$app->sourceLanguage) {
-            // First try to include the actual target locale
+            // First try to include the actual target language
             if (!$this->_includeRedactorLangFile(Craft::$app->language)) {
                 // Otherwise try to load the language (without the territory half)
                 $languageId = Craft::$app->getLocale()->getLanguageID();

@@ -11,43 +11,25 @@ use yii\db\ActiveQueryInterface;
 use craft\app\db\ActiveRecord;
 
 /**
- * Class SectionLocale record.
+ * Class Section_SiteSettings record.
  *
  * @property integer $id               ID
  * @property integer $sectionId        Section ID
- * @property Locale  $locale           Locale
+ * @property integer $siteId           Site ID
  * @property boolean $enabledByDefault Enabled by default
- * @property string  $urlFormat        URL format
- * @property string  $nestedUrlFormat  Nested URL format
+ * @property boolean $hasUrls          Has URLs
+ * @property string  $uriFormat        URI format
+ * @property string  $template         Template
  * @property Section $section          Section
+ * @property Site    $site             Site
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since  3.0
  */
-class SectionLocale extends ActiveRecord
+class Section_SiteSettings extends ActiveRecord
 {
     // Public Methods
     // =========================================================================
-
-    /**
-     * @inheritdoc
-     */
-    public function rules()
-    {
-        return [
-            [['locale'], 'craft\\app\\validators\\Locale'],
-            [
-                ['sectionId'],
-                'unique',
-                'targetAttribute' => ['sectionId', 'locale']
-            ],
-            [['locale'], 'required'],
-            [
-                ['urlFormat', 'nestedUrlFormat'],
-                'craft\\app\\validators\\UrlFormat'
-            ],
-        ];
-    }
 
     /**
      * @inheritdoc
@@ -60,7 +42,7 @@ class SectionLocale extends ActiveRecord
     }
 
     /**
-     * Returns the section locale’s section.
+     * Returns the associated section.
      *
      * @return ActiveQueryInterface The relational query object.
      */
@@ -70,12 +52,12 @@ class SectionLocale extends ActiveRecord
     }
 
     /**
-     * Returns the section locale’s locale.
+     * Returns the associated site.
      *
      * @return ActiveQueryInterface The relational query object.
      */
-    public function getLocale()
+    public function getSite()
     {
-        return $this->hasOne(Locale::className(), ['id' => 'locale']);
+        return $this->hasOne(Site::className(), ['id' => 'siteId']);
     }
 }

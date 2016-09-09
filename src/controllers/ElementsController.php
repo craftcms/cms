@@ -85,9 +85,9 @@ class ElementsController extends BaseElementsController
     public function actionGetEditorHtml()
     {
         /*$elementId = Craft::$app->getRequest()->getRequiredBodyParam('elementId');
-        $localeId = Craft::$app->getRequest()->getBodyParam('locale');
+        $siteId = Craft::$app->getRequest()->getBodyParam('siteId');
         $elementType = Craft::$app->getElements()->getElementTypeById($elementId);
-        $element = Craft::$app->getElements()->getElementById($elementId, $elementType, $localeId);
+        $element = Craft::$app->getElements()->getElementById($elementId, $elementType, $siteId);
 
         if (!$element) {
             throw new NotFoundHttpException('Element could not be found');
@@ -98,9 +98,9 @@ class ElementsController extends BaseElementsController
         }*/
 
         $element = $this->_getEditorElement();
-        $includeLocales = (bool)Craft::$app->getRequest()->getBodyParam('includeLocales', false);
+        $includeSites = (bool)Craft::$app->getRequest()->getBodyParam('includeSites', false);
 
-        return $this->_getEditorHtmlResponse($element, $includeLocales);
+        return $this->_getEditorHtmlResponse($element, $includeSites);
     }
 
     /**
@@ -136,7 +136,7 @@ class ElementsController extends BaseElementsController
             $response = [
                 'success' => true,
                 'id' => $element->id,
-                'locale' => $element->locale,
+                'siteId' => $element->siteId,
                 'newTitle' => (string)$element,
                 'cpEditUrl' => $element->getCpEditUrl(),
             ];
@@ -177,9 +177,9 @@ class ElementsController extends BaseElementsController
         if ($categoryIds) {
             $categories = Category::find()
                 ->id($categoryIds)
-                ->locale($request->getParam('locale'))
+                ->siteId($request->getParam('siteId'))
                 ->status(null)
-                ->localeEnabled(false)
+                ->enabledForSite(false)
                 ->limit($request->getParam('limit'))
                 ->all();
         } else {
@@ -215,7 +215,7 @@ class ElementsController extends BaseElementsController
         $elementsService = Craft::$app->getElements();
 
         $elementId = $request->getBodyParam('elementId');
-        $localeId = $request->getBodyParam('locale', Craft::$app->language);
+        $siteId = $request->getBodyParam('siteId') ?: Craft::$app->getSites()->currentSite->id;
 
         // Determine the element type
         $elementType = $request->getBodyParam('elementType');
@@ -240,7 +240,7 @@ class ElementsController extends BaseElementsController
 
         // Instantiate the element
         if ($elementId !== null) {
-            $element = $elementsService->getElementById($elementId, $elementType, $localeId);
+            $element = $elementsService->getElementById($elementId, $elementType, $siteId);
 
             if (!$element) {
                 throw new BadRequestHttpException('No element exists with the ID '.$elementId);
@@ -249,49 +249,50 @@ class ElementsController extends BaseElementsController
             $element = $elementType::create([]);
         }
 
-        // Make sure the user is allowed to edit this locale
+        /** @var Element $element */
+        // Make sure the user is allowed to edit this site
         $userService = Craft::$app->getUser();
-        if (Craft::$app->getIsLocalized() && $elementType->isLocalized() && !$userService->checkPermission('editLocale:'.$element->locale)) {
-            // Find the first locale the user does have permission to edit
-            $elementLocaleIds = [];
-            $newLocaleId = null;
+        if (Craft::$app->getIsMultiSite() && $elementType->isLocalized() && !$userService->checkPermission('editSite:'.$element->siteId)) {
+            // Find the first site the user does have permission to edit
+            $elementSiteIds = [];
+            $newSiteId = null;
 
-            foreach ($element->getLocales() as $key => $value) {
-                $elementLocaleIds[] = (is_numeric($key) && is_string($value)) ? $value : $key;
+            foreach (ElementHelper::getSupportedSitesForElement($element) as $siteInfo) {
+                $elementSiteIds[] = $siteInfo['siteId'];
             }
 
-            foreach (Craft::$app->getI18n()->getSiteLocaleIds() as $siteLocaleId) {
-                if (in_array($siteLocaleId, $elementLocaleIds) && $userService->checkPermission('editLocale:'.$siteLocaleId)) {
-                    $newLocaleId = $siteLocaleId;
+            foreach (Craft::$app->getSites()->getAllSiteIds() as $siteId) {
+                if (in_array($siteId, $elementSiteIds) && $userService->checkPermission('editSite:'.$siteId)) {
+                    $newSiteId = $siteId;
                     break;
                 }
             }
 
-            if ($newLocaleId === null) {
-                // Couldn't find an editable locale supported by the element
+            if ($newSiteId === null) {
+                // Couldn't find an editable site supported by the element
                 throw new ForbiddenHttpException('The user doesn’t have permission to edit this element');
             }
 
-            // Apply the new locale
-            $localeId = $newLocaleId;
+            // Apply the new site
+            $siteId = $newSiteId;
 
             if ($elementId !== null) {
-                $element = $elementsService->getElementById($elementId, $elementType, $localeId);
+                $element = $elementsService->getElementById($elementId, $elementType, $siteId);
             } else {
-                $element->locale = $localeId;
+                $element->siteId = $siteId;
             }
         }
 
         // Populate it with any posted attributes
         $attributes = $request->getBodyParam('attributes', []);
-        $attributes['locale'] = $localeId;
+        $attributes['siteId'] = $siteId;
 
         if ($attributes) {
             $element->setAttributes($attributes);
         }
 
         // Make sure it's editable
-        // (ElementHelper::isElementEditable() is overkill here since we've already verified the user can edit the element's locale)
+        // (ElementHelper::isElementEditable() is overkill here since we've already verified the user can edit the element's site)
         if (!$element->getIsEditable()) {
             throw new ForbiddenHttpException('The user doesn’t have permission to edit this element');
         }
@@ -303,38 +304,38 @@ class ElementsController extends BaseElementsController
      * Returns the editor HTML response for a given element.
      *
      * @param ElementInterface $element
-     * @param boolean          $includeLocales
+     * @param boolean          $includeSites
      *
      * @return Response
-     * @throws ForbiddenHttpException if the user is not permitted to edit content in any of the locales supported by this element
+     * @throws ForbiddenHttpException if the user is not permitted to edit content in any of the sites supported by this element
      */
-    private function _getEditorHtmlResponse(ElementInterface $element, $includeLocales)
+    private function _getEditorHtmlResponse(ElementInterface $element, $includeSites)
     {
         /** @var Element $element */
-        $localeIds = ElementHelper::getEditableLocaleIdsForElement($element);
+        $siteIds = ElementHelper::getEditableSiteIdsForElement($element);
 
-        if (!$localeIds) {
-            throw new ForbiddenHttpException('User not permitted to edit content in any of the locales supported by this element');
+        if (!$siteIds) {
+            throw new ForbiddenHttpException('User not permitted to edit content in any of the sites supported by this element');
         }
 
-        if ($includeLocales) {
-            if (count($localeIds) > 1) {
-                $response['locales'] = [];
+        if ($includeSites) {
+            if (count($siteIds) > 1) {
+                $response['siteIds'] = [];
 
-                foreach ($localeIds as $localeId) {
-                    $locale = Craft::$app->getI18n()->getLocaleById($localeId);
+                foreach ($siteIds as $siteId) {
+                    $site = Craft::$app->getSites()->getSiteById($siteId);
 
-                    $response['locales'][] = [
-                        'id' => $localeId,
-                        'name' => $locale->getDisplayName(Craft::$app->language)
+                    $response['sites'][] = [
+                        'id' => $siteId,
+                        'name' => Craft::t('site', $site->name),
                     ];
                 }
             } else {
-                $response['locales'] = null;
+                $response['sites'] = null;
             }
         }
 
-        $response['locale'] = $element->locale;
+        $response['siteId'] = $element->siteId;
 
         $namespace = 'editor_'.StringHelper::randomString(10);
         Craft::$app->getView()->setNamespace($namespace);
@@ -345,8 +346,8 @@ class ElementsController extends BaseElementsController
             $response['html'] .= '<input type="hidden" name="elementId" value="'.$element->id.'">';
         }
 
-        if ($element->locale) {
-            $response['html'] .= '<input type="hidden" name="locale" value="'.$element->locale.'">';
+        if ($element->siteId) {
+            $response['html'] .= '<input type="hidden" name="siteId" value="'.$element->siteId.'">';
         }
 
         $response['html'] .= '<div class="meta">'.

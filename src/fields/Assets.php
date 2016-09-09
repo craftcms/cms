@@ -167,7 +167,7 @@ class Assets extends BaseRelationField
                 'allowLimit' => $this->allowLimit,
                 'folderOptions' => $folderOptions,
                 'sourceOptions' => $sourceOptions,
-                'targetLocaleFieldHtml' => $this->getTargetLocaleFieldHtml(),
+                'targetSiteFieldHtml' => $this->getTargetSiteFieldHtml(),
                 'viewModeFieldHtml' => $this->getViewModeFieldHtml(),
                 'field' => $this,
                 'displayName' => static::displayName(),
@@ -442,7 +442,7 @@ class Assets extends BaseRelationField
             $class = static::elementType();
             /** @var ElementQuery $query */
             $query = $class::find()
-                ->locale($this->getTargetLocale($element));
+                ->siteId($this->getTargetSiteId($element));
 
             // $value might be an array of element IDs
             if (is_array($value)) {

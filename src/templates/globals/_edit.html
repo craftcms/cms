@@ -5,11 +5,11 @@
 {% block pageTitle %}
 	{{ parent() }}
 
-	{% if craft.isLocalized() %}
+	{% if craft.app.getIsMultiSite() %}
 		<div class="select">
-			<select onchange="document.location.href='{{ url('globals/{locale}/'~globalSet.handle) }}'.replace('{locale}', this.value);">
-				{% for locale in craft.app.i18n.getEditableLocales() %}
-					<option value="{{ locale.id }}"{% if locale.id == globalSet.locale %} selected{% endif %}>{{ locale.getDisplayName(craft.app.language) }}</option>
+			<select onchange="document.location.href='{{ url('globals/{site}/'~globalSet.handle) }}'.replace('{site}', this.value);">
+				{% for site in craft.app.sites.getEditableSites() %}
+					<option value="{{ site.id }}"{% if site.id == globalSet.siteId %} selected{% endif %}>{{ site.name|t('site') }}</option>
 				{% endfor %}
 			</select>
 		</div>
@@ -32,7 +32,7 @@
 	<form method="post" accept-charset="UTF-8" data-saveshortcut data-confirm-unload>
 		<input type="hidden" name="action" value="globals/save-content">
 		<input type="hidden" name="setId" value="{{ globalSet.id }}">
-		<input type="hidden" name="locale" value="{{ globalSet.locale }}">
+		<input type="hidden" name="siteId" value="{{ globalSet.siteId }}">
 		{{ csrfInput() }}
 
 		{% if globalSet.getFieldLayout().getFields() | length %}

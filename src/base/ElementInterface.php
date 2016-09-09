@@ -39,12 +39,12 @@ interface ElementInterface extends ComponentInterface
     public static function hasTitles();
 
     /**
-     * Returns whether elements of this type store data on a per-locale basis.
+     * Returns whether elements of this type store content on a per-site basis.
      *
-     * If this returns `true`, the element’s [[getLocales()]] method will
-     * be responsible for defining which locales its data should be stored in.
+     * If this returns `true`, the element’s [[getSupportedSites()]] method will
+     * be responsible for defining which sites its content should be stored in.
      *
-     * @return boolean Whether elements of this type store data on a per-locale basis.
+     * @return boolean Whether elements of this type store data on a per-site basis.
      */
     public static function isLocalized();
 
@@ -388,8 +388,8 @@ interface ElementInterface extends ComponentInterface
      * idea to let the parent method get called (as shown above). They are:
      *
      * - If the attribute name is ‘uri’, it will be linked to the front-end URL.
-     * - If the attribute name is ‘dateCreated’ or ‘dateUpdated’, the date will be formatted according to the active
-     *   locale.
+     * - If the attribute name is ‘dateCreated’ or ‘dateUpdated’, the date will be formatted according to the
+     *   current site’s language.
      *
      * @param ElementInterface $element   The element.
      * @param string           $attribute The attribute name.
@@ -521,18 +521,21 @@ interface ElementInterface extends ComponentInterface
     public function getFieldLayout();
 
     /**
-     * Returns the locale IDs this element is available in.
+     * Returns the sites this element is associated with.
      *
-     * @return string[]
+     * The function can either return an array of site IDs, or an array of sub-arrays,
+     * each with the keys 'siteId' (integer) and 'enabledByDefault' (boolean).
+     *
+     * @return integer[]|array
      */
-    public function getLocales();
+    public function getSupportedSites();
 
     /**
-     * Returns the URL format used to generate this element’s URL.
+     * Returns the URI format used to generate this element’s URI.
      *
      * @return string|null
      */
-    public function getUrlFormat();
+    public function getUriFormat();
 
     /**
      * Returns the element’s full URL.

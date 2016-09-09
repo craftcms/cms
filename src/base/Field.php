@@ -58,6 +58,11 @@ abstract class Field extends SavableComponent implements FieldInterface
      */
     const EVENT_AFTER_DELETE = 'afterDelete';
 
+    const TRANSLATION_METHOD_NONE = 'none';
+    const TRANSLATION_METHOD_LANGUAGE = 'language';
+    const TRANSLATION_METHOD_SITE = 'site';
+    const TRANSLATION_METHOD_CUSTOM = 'custom';
+
     // Static
     // =========================================================================
 
@@ -103,7 +108,7 @@ abstract class Field extends SavableComponent implements FieldInterface
     public function rules()
     {
         $rules = [
-            [['name', 'handle'], 'required'],
+            [['name', 'handle', 'translationMethod'], 'required'],
             [
                 ['groupId'],
                 'number',
@@ -111,6 +116,7 @@ abstract class Field extends SavableComponent implements FieldInterface
                 'max' => 2147483647,
                 'integerOnly' => true
             ],
+            [['translationMethod'], 'in', 'range' => [self::TRANSLATION_METHOD_NONE, self::TRANSLATION_METHOD_LANGUAGE, self::TRANSLATION_METHOD_SITE, self::TRANSLATION_METHOD_CUSTOM]],
         ];
 
         // Only validate the ID if it's not a new field
@@ -124,6 +130,10 @@ abstract class Field extends SavableComponent implements FieldInterface
             ];
         }
 
+        if ($this->translationMethod == self::TRANSLATION_METHOD_CUSTOM) {
+            $rules[] = [['translationKeyFormat'], 'required'];
+        }
+
         return $rules;
     }
 
@@ -133,6 +143,24 @@ abstract class Field extends SavableComponent implements FieldInterface
     public function getContentColumnType()
     {
         return Schema::TYPE_STRING;
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function getTranslationKey($element)
+    {
+        /** @var Element $element */
+        switch ($this->translationMethod) {
+            case self::TRANSLATION_METHOD_NONE:
+                return '1';
+            case self::TRANSLATION_METHOD_LANGUAGE:
+                return $element->getSite()->language;
+            case self::TRANSLATION_METHOD_SITE:
+                return (string)$element->siteId;
+            default:
+                return Craft::$app->getView()->renderObjectTemplate($this->translationKeyFormat, $element);
+        }
     }
 
     /**

@@ -74,7 +74,7 @@ class EntryVersion extends BaseEntryRevisionModel
                 'max' => 2147483647,
                 'integerOnly' => true
             ],
-            [['locale'], 'craft\\app\\validators\\Locale'],
+            [['siteId'], 'craft\\app\\validators\\SiteId'],
             [['dateCreated'], 'craft\\app\\validators\\DateTime'],
             [['dateUpdated'], 'craft\\app\\validators\\DateTime'],
             [
@@ -161,8 +161,8 @@ class EntryVersion extends BaseEntryRevisionModel
                     'id',
                     'enabled',
                     'archived',
-                    'locale',
-                    'localeEnabled',
+                    'siteId',
+                    'enabledForSite',
                     'slug',
                     'uri',
                     'dateCreated',

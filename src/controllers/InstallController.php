@@ -10,7 +10,7 @@ namespace craft\app\controllers;
 use Craft;
 use craft\app\migrations\Install;
 use craft\app\models\AccountSettings;
-use craft\app\models\SiteSettings;
+use craft\app\models\Site;
 use craft\app\web\Controller;
 use yii\base\Response;
 use yii\web\BadRequestHttpException;
@@ -107,15 +107,17 @@ class InstallController extends Controller
         $this->requirePostRequest();
         $this->requireAjaxRequest();
 
-        $siteSettings = new SiteSettings();
         $request = Craft::$app->getRequest();
-        $siteSettings->siteName = $request->getBodyParam('siteName');
-        $siteSettings->siteUrl = $request->getBodyParam('siteUrl');
+        $site = new Site();
+        $site->name = $request->getBodyParam('siteName');
+        $site->handle = 'default';
+        $site->baseUrl = $request->getBodyParam('siteUrl');
+        $site->language = $request->getBodyParam('siteLanguage');
 
-        if ($siteSettings->validate()) {
+        if ($site->validate()) {
             $return['validates'] = true;
         } else {
-            $return['errors'] = $siteSettings->getErrors();
+            $return['errors'] = $site->getErrors();
         }
 
         return $this->asJson($return);
@@ -138,13 +140,19 @@ class InstallController extends Controller
         $email = $request->getBodyParam('email');
         $username = $request->getBodyParam('username', $email);
 
+        $site = new Site([
+            'name' => $request->getBodyParam('siteName'),
+            'handle' => 'default',
+            'hasUrls' => true,
+            'baseUrl' => $request->getBodyParam('siteUrl'),
+            'language' => $request->getBodyParam('siteLanguage'),
+        ]);
+
         $migration = new Install([
-            'siteName' => $request->getBodyParam('siteName'),
-            'siteUrl' => $request->getBodyParam('siteUrl'),
-            'locale' => $request->getBodyParam('locale'),
             'username' => $username,
             'password' => $request->getBodyParam('password'),
             'email' => $email,
+            'site' => $site,
         ]);
 
         if ($migrator->migrateUp($migration) !== false) {

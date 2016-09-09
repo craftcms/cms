@@ -386,6 +386,7 @@ class ElementIndexesController extends BaseElementsController
             return null;
         }
 
+        /** @var Element $elementType */
         $elementType = $this->_elementType;
         $actions = $elementType::getAvailableActions($this->_sourceKey);
 

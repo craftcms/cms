@@ -8,18 +8,23 @@
 namespace craft\app\events;
 
 /**
- * Locale delete event class.
+ * Site event class.
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since  3.0
  */
-class LocaleDeleteEvent extends LocaleEvent
+class SiteEvent extends Event
 {
     // Properties
     // =========================================================================
 
     /**
-     * @var string|null The locale ID that the old locale's exclusive content should be transferred to.
+     * @var \craft\app\models\Site The site model associated with the event.
      */
-    public $transferContentTo;
+    public $site;
+
+    /**
+     * @var boolean Whether the site is brand new
+     */
+    public $isNew;
 }

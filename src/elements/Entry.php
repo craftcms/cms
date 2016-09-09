@@ -10,6 +10,7 @@ namespace craft\app\elements;
 use Craft;
 use craft\app\base\Element;
 use craft\app\base\ElementInterface;
+use craft\app\controllers\ElementIndexesController;
 use craft\app\db\Query;
 use craft\app\elements\actions\Delete;
 use craft\app\elements\actions\Edit;
@@ -229,6 +230,7 @@ class Entry extends Element
         // Now figure out what we can do with these
         $actions = [];
 
+        /** @var Section[] $sections */
         if (!empty($sections)) {
             $userSessionService = Craft::$app->getUser();
             $canSetStatus = true;
@@ -284,7 +286,21 @@ class Entry extends Element
                 ]);
             }
 
-            if ($source == '*' || $source == 'singles' || $sections[0]->hasUrls) {
+            // View
+            $showViewAction = ($source == '*' || $source == 'singles');
+
+            if (!$showViewAction) {
+                // They are viewing a specific section. See if it has URLs for the requested site
+                $controller = Craft::$app->controller;
+                if ($controller instanceof ElementIndexesController) {
+                    $siteId = $controller->getElementQuery()->siteId ?: Craft::$app->getSites()->currentSite->id;
+                    if (isset($sections[0]->siteSettings[$siteId]) && $sections[0]->siteSettings[$siteId]->hasUrls) {
+                        $showViewAction = true;
+                    }
+                }
+            }
+
+            if ($showViewAction) {
                 // View
                 $actions[] = Craft::$app->getElements()->createAction([
                     'type' => View::className(),
@@ -637,16 +653,15 @@ EOD;
         /** @var Entry $element */
         // Make sure that the entry is actually live
         if ($element->getStatus() == Entry::STATUS_LIVE) {
-            $section = $element->getSection();
+            // Make sure the section is set to have URLs for this site
+            $siteId = Craft::$app->getSites()->currentSite->id;
+            $sectionSiteSettings = $element->getSection()->getSiteSettings();
 
-            // Make sure the section is set to have URLs and is enabled for this locale
-            if ($section->hasUrls && array_key_exists(Craft::$app->language,
-                    $section->getLocales())
-            ) {
+            if (isset($sectionSiteSettings[$siteId]) && $sectionSiteSettings[$siteId]->hasUrls) {
                 return [
                     'templates/render',
                     [
-                        'template' => $section->template,
+                        'template' => $sectionSiteSettings[$siteId]->template,
                         'variables' => [
                             'entry' => $element
                         ]
@@ -782,37 +797,33 @@ EOD;
     /**
      * @inheritdoc
      */
-    public function getLocales()
+    public function getSupportedSites()
     {
-        $locales = [];
+        $sites = [];
 
-        foreach ($this->getSection()->getLocales() as $locale) {
-            $locales[$locale->locale] = ['enabledByDefault' => $locale->enabledByDefault];
+        foreach ($this->getSection()->getSiteSettings() as $siteSettings) {
+            $sites[] = [
+                'siteId' => $siteSettings->siteId,
+                'enabledByDefault' => $siteSettings->enabledByDefault
+            ];
         }
 
-        return $locales;
+        return $sites;
     }
 
     /**
      * @inheritdoc
+     * @throws InvalidConfigException if [[siteId]] is not set to a site ID that the entry's section is enabled for
      */
-    public function getUrlFormat()
+    public function getUriFormat()
     {
-        $section = $this->getSection();
+        $sectionSiteSettings = $this->getSection()->getSiteSettings();
 
-        if ($section->hasUrls) {
-            $sectionLocales = $section->getLocales();
-
-            if (isset($sectionLocales[$this->locale])) {
-                if ($this->level > 1) {
-                    return $sectionLocales[$this->locale]->nestedUrlFormat;
-                }
-
-                return $sectionLocales[$this->locale]->urlFormat;
-            }
+        if (!isset($sectionSiteSettings[$this->siteId])) {
+            throw new InvalidConfigException('Entry\'s section ('.$this->sectionId.') is not enabled for site '.$this->siteId);
         }
 
-        return null;
+        return $sectionSiteSettings[$this->siteId]->uriFormat;
     }
 
     /**
@@ -937,8 +948,8 @@ EOD;
         // The slug *might* not be set if this is a Draft and they've deleted it for whatever reason
         $url = Url::getCpUrl('entries/'.$section->handle.'/'.$this->id.($this->slug ? '-'.$this->slug : ''));
 
-        if (Craft::$app->getIsLocalized() && $this->locale != Craft::$app->language) {
-            $url .= '/'.$this->locale;
+        if (Craft::$app->getIsMultiSite() && $this->siteId != Craft::$app->getSites()->currentSite->id) {
+            $url .= '/'.$this->getSite()->handle;
         }
 
         return $url;

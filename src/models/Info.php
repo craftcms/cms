@@ -67,16 +67,6 @@ class Info extends Model
     public $releaseDate;
 
     /**
-     * @var string Site name
-     */
-    public $siteName;
-
-    /**
-     * @var string Site URL
-     */
-    public $siteUrl;
-
-    /**
      * @var string Timezone
      */
     public $timezone = 'America/Los_Angeles';
@@ -165,18 +155,10 @@ class Info extends Model
                     'schemaVersion',
                     'edition',
                     'releaseDate',
-                    'siteName',
-                    'siteUrl',
                     'track'
                 ],
                 'required'
             ],
-            [
-                ['siteUrl'],
-                'craft\\app\\validators\\Url',
-                'defaultScheme' => 'http'
-            ],
-            [['siteName', 'siteUrl'], 'string', 'max' => 255],
             [['timezone'], 'string', 'max' => 30],
             [['track'], 'string', 'max' => 40],
             [
@@ -187,8 +169,6 @@ class Info extends Model
                     'schemaVersion',
                     'edition',
                     'releaseDate',
-                    'siteName',
-                    'siteUrl',
                     'timezone',
                     'on',
                     'maintenance',

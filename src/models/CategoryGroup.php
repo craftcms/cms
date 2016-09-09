@@ -10,12 +10,17 @@ namespace craft\app\models;
 use Craft;
 use craft\app\base\Model;
 use craft\app\behaviors\FieldLayoutTrait;
+use craft\app\records\CategoryGroup as CategoryGroupRecord;
+use craft\app\validators\Handle;
+use craft\app\validators\Unique;
 
 /**
  * CategoryGroup model.
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since  3.0
+ *
+ * @property CategoryGroup_SiteSettings[] $siteSettings Site-specific settings
  */
 class CategoryGroup extends Model
 {
@@ -53,16 +58,6 @@ class CategoryGroup extends Model
     public $handle;
 
     /**
-     * @var boolean Has URLs
-     */
-    public $hasUrls = true;
-
-    /**
-     * @var string Template
-     */
-    public $template;
-
-    /**
      * @var integer Max levels
      */
     public $maxLevels;
@@ -70,7 +65,7 @@ class CategoryGroup extends Model
     /**
      * @var
      */
-    private $_locales;
+    private $_siteSettings;
 
     // Public Methods
     // =========================================================================
@@ -94,49 +89,30 @@ class CategoryGroup extends Model
     public function rules()
     {
         return [
-            [
-                ['id'],
-                'number',
-                'min' => -2147483648,
-                'max' => 2147483647,
-                'integerOnly' => true
-            ],
-            [
-                ['structureId'],
-                'number',
-                'min' => -2147483648,
-                'max' => 2147483647,
-                'integerOnly' => true
-            ],
-            [
-                ['fieldLayoutId'],
-                'number',
-                'min' => -2147483648,
-                'max' => 2147483647,
-                'integerOnly' => true
-            ],
-            [
-                ['maxLevels'],
-                'number',
-                'min' => -2147483648,
-                'max' => 2147483647,
-                'integerOnly' => true
-            ],
-            [
-                [
-                    'id',
-                    'structureId',
-                    'fieldLayoutId',
-                    'name',
-                    'handle',
-                    'hasUrls',
-                    'template',
-                    'maxLevels'
-                ],
-                'safe',
-                'on' => 'search'
-            ],
+            [['id', 'structureId', 'fieldLayoutId', 'maxLevels'], 'number', 'integerOnly' => true],
+            [['handle'], Handle::className(), 'reservedWords' => ['id', 'dateCreated', 'dateUpdated', 'uid', 'title']],
+            [['name', 'handle'], Unique::className(), 'targetClass' => CategoryGroupRecord::className()],
+            [['name', 'handle', 'siteSettings'], 'required'],
+            [['name', 'handle'], 'string', 'max' => 255],
         ];
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function validate($attributeNames = null, $clearErrors = true)
+    {
+        $validates = parent::validate($attributeNames, $clearErrors);
+
+        if ($attributeNames === null || in_array('siteSettings', $attributeNames)) {
+            foreach ($this->getSiteSettings() as $siteSettings) {
+                if (!$siteSettings->validate(null, $clearErrors)) {
+                    $validates = false;
+                }
+            }
+        }
+
+        return $validates;
     }
 
     /**
@@ -150,32 +126,39 @@ class CategoryGroup extends Model
     }
 
     /**
-     * Returns the category's locale models.
+     * Returns the group's site-specific settings.
      *
-     * @return CategoryGroupLocale[]
+     * @return CategoryGroup_SiteSettings[]
      */
-    public function getLocales()
+    public function getSiteSettings()
     {
-        if (!isset($this->_locales)) {
+        if (!isset($this->_siteSettings)) {
             if ($this->id) {
-                $this->_locales = Craft::$app->getCategories()->getGroupLocales($this->id, 'locale');
+                $siteSettings = Craft::$app->getCategories()->getGroupSiteSettings($this->id, 'siteId');
             } else {
-                $this->_locales = [];
+                $siteSettings = [];
             }
+
+            // Set them with setSiteSettings() so setGroup() gets called on them
+            $this->setSiteSettings($siteSettings);
         }
 
-        return $this->_locales;
+        return $this->_siteSettings;
     }
 
     /**
-     * Sets the section's locale models.
+     * Sets the group's site-specific settings.
      *
-     * @param array $locales
+     * @param CategoryGroup_SiteSettings[] $siteSettings
      *
      * @return void
      */
-    public function setLocales($locales)
+    public function setSiteSettings($siteSettings)
     {
-        $this->_locales = $locales;
+        $this->_siteSettings = $siteSettings;
+
+        foreach ($this->_siteSettings as $settings) {
+            $settings->setGroup($this);
+        }
     }
 }

@@ -14,6 +14,7 @@ use craft\app\base\Field;
 use craft\app\elements\db\ElementQueryInterface;
 use craft\app\elements\db\MatrixBlockQuery;
 use craft\app\fields\Matrix;
+use craft\app\helpers\ElementHelper;
 use craft\app\models\MatrixBlockType;
 
 /**
@@ -141,9 +142,9 @@ class MatrixBlock extends Element
     public $ownerId;
 
     /**
-     * @var string Owner locale
+     * @var integer Owner site ID
      */
-    public $ownerLocale;
+    public $ownerSiteId;
 
     /**
      * @var integer Type ID
@@ -194,7 +195,7 @@ class MatrixBlock extends Element
             'max' => 2147483647,
             'integerOnly' => true
         ];
-        $rules[] = [['ownerLocale'], 'craft\\app\\validators\\Locale'];
+        $rules[] = [['ownerSiteId'], 'craft\\app\\validators\\SiteId'];
         $rules[] = [
             ['typeId'],
             'number',
@@ -230,33 +231,29 @@ class MatrixBlock extends Element
     /**
      * @inheritdoc
      */
-    public function getLocales()
+    public function getSupportedSites()
     {
-        // If the Matrix field is translatable, than each individual block is tied to a single locale, and thus aren't
-        // translatable. Otherwise all blocks belong to all locales, and their content is translatable.
+        // If the Matrix field is translatable, than each individual block is tied to a single site, and thus aren't
+        // translatable. Otherwise all blocks belong to all sites, and their content is translatable.
 
-        if ($this->ownerLocale) {
-            return [$this->ownerLocale];
+        if ($this->ownerSiteId) {
+            return [$this->ownerSiteId];
         }
 
         $owner = $this->getOwner();
 
         if ($owner) {
-            // Just send back an array of locale IDs -- don't pass along enabledByDefault configs
-            $localeIds = [];
+            // Just send back an array of site IDs -- don't pass along enabledByDefault configs
+            $siteIds = [];
 
-            foreach ($owner->getLocales() as $localeId => $localeInfo) {
-                if (is_numeric($localeId) && is_string($localeInfo)) {
-                    $localeIds[] = $localeInfo;
-                } else {
-                    $localeIds[] = $localeId;
-                }
+            foreach (ElementHelper::getSupportedSitesForElement($owner) as $siteInfo) {
+                $siteIds[] = $siteInfo['siteId'];
             }
 
-            return $localeIds;
+            return $siteIds;
         }
 
-        return [Craft::$app->getI18n()->getPrimarySiteLocaleId()];
+        return [Craft::$app->getSites()->getPrimarySite()->id];
     }
 
     /**
@@ -281,7 +278,7 @@ class MatrixBlock extends Element
     public function getOwner()
     {
         if (!isset($this->_owner) && $this->ownerId) {
-            $this->_owner = Craft::$app->getElements()->getElementById($this->ownerId, null, $this->locale);
+            $this->_owner = Craft::$app->getElements()->getElementById($this->ownerId, null, $this->siteId);
 
             if (!$this->_owner) {
                 $this->_owner = false;

@@ -28,9 +28,11 @@ use craft\app\events\PopulateElementEvent;
 use craft\app\helpers\ArrayHelper;
 use craft\app\helpers\Db;
 use craft\app\helpers\StringHelper;
+use craft\app\models\Site;
 use IteratorAggregate;
 use yii\base\Arrayable;
 use yii\base\ArrayableTrait;
+use yii\base\Exception;
 use yii\base\NotSupportedException;
 
 /**
@@ -38,6 +40,8 @@ use yii\base\NotSupportedException;
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since  3.0
+ *
+ * @property string|Site $site The site or site handle that the elements should be returned in
  *
  * @method ElementInterface|array nth($n, $db = null)
  */
@@ -146,14 +150,14 @@ class ElementQuery extends Query implements ElementQueryInterface, Arrayable, Co
     public $dateUpdated;
 
     /**
-     * @var string The locale that the elements should be returned in.
+     * @var integer The site ID that the elements should be returned in.
      */
-    public $locale;
+    public $siteId;
 
     /**
-     * @var boolean Whether the elements must be enabled in the chosen locale.
+     * @var boolean Whether the elements must be enabled for the chosen site.
      */
-    public $localeEnabled = true;
+    public $enabledForSite = true;
 
     /**
      * @var integer|array|Element The element relation criteria.
@@ -341,13 +345,29 @@ class ElementQuery extends Query implements ElementQueryInterface, Arrayable, Co
      */
     public function __get($name)
     {
-        if ($name === 'order') {
-            Craft::$app->getDeprecator()->log('ElementQuery::order()', 'The “order” element parameter has been deprecated. Use “orderBy” instead.');
+        switch ($name) {
+            case 'locale': {
+                Craft::$app->getDeprecator()->log('ElementQuery::locale()', 'The “locale” element parameter has been deprecated. Use “site” or “siteId” instead.');
 
-            return $this->orderBy;
+                if ($this->siteId) {
+                    $site = Craft::$app->getSites()->getSiteById($this->siteId);
+
+                    if ($site) {
+                        return $site->handle;
+                    }
+                }
+
+                return null;
+            }
+            case 'order': {
+                Craft::$app->getDeprecator()->log('ElementQuery::order()', 'The “order” element parameter has been deprecated. Use “orderBy” instead.');
+
+                return $this->orderBy;
+            }
+            default: {
+                return parent::__get($name);
+            }
         }
-
-        return parent::__get($name);
     }
 
     /**
@@ -356,6 +376,17 @@ class ElementQuery extends Query implements ElementQueryInterface, Arrayable, Co
     public function __set($name, $value)
     {
         switch ($name) {
+            case 'site':
+                $this->site($value);
+                break;
+            case 'localeEnabled':
+                Craft::$app->getDeprecator()->log('ElementQuery::localeEnabled()', 'The “localeEnabled” element parameter has been deprecated. Use “enabledForSite” instead.');
+                $this->enabledForSite($value);
+                break;
+            case 'locale':
+                Craft::$app->getDeprecator()->log('ElementQuery::locale()', 'The “locale” element parameter has been deprecated. Use “site” or “siteId” instead.');
+                $this->site($value);
+                break;
             case 'order':
                 Craft::$app->getDeprecator()->log('ElementQuery::order()', 'The “order” element parameter has been deprecated. Use “orderBy” instead.');
                 $this->orderBy = $value;
@@ -581,10 +612,21 @@ class ElementQuery extends Query implements ElementQueryInterface, Arrayable, Co
 
     /**
      * @inheritdoc
+     * @throws Exception if $value is an invalid site handle
      */
-    public function locale($value)
+    public function site($value)
     {
-        $this->locale = $value;
+        if ($value instanceof Site) {
+            $this->siteId = $value->id;
+        } else {
+            $site = Craft::$app->getSites()->getSiteByHandle($value);
+
+            if (!$site) {
+                throw new Exception('Invalid site hadle: '.$value);
+            }
+
+            $this->ownerSiteId = $site->id;
+        }
 
         return $this;
     }
@@ -592,9 +634,51 @@ class ElementQuery extends Query implements ElementQueryInterface, Arrayable, Co
     /**
      * @inheritdoc
      */
+    public function siteId($value)
+    {
+        $this->siteId = $value;
+
+        return $this;
+    }
+
+    /**
+     * Sets the [[locale]] property.
+     *
+     * @param string $value The property value
+     *
+     * @return $this self reference
+     * @deprecated in 3.0. Use [[site]] or [[siteId]] instead.
+     */
+    public function locale($value)
+    {
+        Craft::$app->getDeprecator()->log('ElementQuery::locale()', 'The “locale” element parameter has been deprecated. Use “site” or “siteId” instead.');
+        $this->site($value);
+
+        return $this;
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function enabledForSite($value = true)
+    {
+        $this->enabledForSite = $value;
+
+        return $this;
+    }
+
+    /**
+     * Sets the [[enabledForSite]] property.
+     *
+     * @param mixed $value The property value (defaults to true)
+     *
+     * @return $this self reference
+     * @deprecated in 3.0. Use [[enabledForSite]] instead.
+     */
     public function localeEnabled($value = true)
     {
-        $this->localeEnabled = $value;
+        Craft::$app->getDeprecator()->log('ElementQuery::localeEnabled()', 'The “localeEnabled” element parameter has been deprecated. Use “enabledForSite” instead.');
+        $this->enabledForSite = $value;
 
         return $this;
     }
@@ -797,13 +881,13 @@ class ElementQuery extends Query implements ElementQueryInterface, Arrayable, Co
         /** @var Element $class */
         $class = $this->elementType;
 
-        // Make sure the locale param is set to a supported locale
+        // Make sure the siteId param is set
         if (!$class::isLocalized()) {
-            // The criteria *must* be set to the primary locale
-            $this->locale = Craft::$app->getI18n()->getPrimarySiteLocaleId();
-        } else if (!$this->locale) {
-            // Default to the current app locale
-            $this->locale = Craft::$app->language;
+            // The criteria *must* be set to the primary site ID
+            $this->siteId = Craft::$app->getSites()->getPrimarySite()->id;
+        } else if (!$this->siteId) {
+            // Default to the current site
+            $this->siteId = Craft::$app->getSites()->currentSite->id;
         }
 
         // Build the query
@@ -830,7 +914,7 @@ class ElementQuery extends Query implements ElementQueryInterface, Arrayable, Co
                 'elements.dateUpdated',
                 'elements_i18n.slug',
                 'elements_i18n.uri',
-                'localeEnabled' => 'elements_i18n.enabled',
+                'enabledForSite' => 'elements_i18n.enabled',
             ]);
         }
 
@@ -846,12 +930,12 @@ class ElementQuery extends Query implements ElementQueryInterface, Arrayable, Co
             ])
             ->from(['elements' => '{{%elements}}'])
             ->innerJoin('{{%elements_i18n}} elements_i18n', 'elements_i18n.elementId = elements.id')
-            ->andWhere('elements_i18n.locale = :locale')
+            ->andWhere('elements_i18n.siteId = :siteId')
             ->andWhere($this->where)
             ->offset($this->offset)
             ->limit($this->limit)
             ->addParams($this->params)
-            ->addParams([':locale' => $this->locale]);
+            ->addParams([':siteId' => $this->siteId]);
 
         if ($class::hasContent() && $this->contentTable) {
             $this->customFields = $class::getFieldsForElementsQuery($this);
@@ -895,7 +979,7 @@ class ElementQuery extends Query implements ElementQueryInterface, Arrayable, Co
             $this->subQuery->andWhere(Db::parseParam('elements_i18n.uri', $this->uri, $this->subQuery->params));
         }
 
-        if ($this->localeEnabled) {
+        if ($this->enabledForSite) {
             $this->subQuery->andWhere('elements_i18n.enabled = 1');
         }
 
@@ -1209,7 +1293,7 @@ class ElementQuery extends Query implements ElementQueryInterface, Arrayable, Co
         // Join in the content table on both queries
         $this->subQuery->innerJoin($this->contentTable.' content', 'content.elementId = elements.id');
         $this->subQuery->addSelect(['contentId' => 'content.id']);
-        $this->subQuery->andWhere('content.locale = :locale');
+        $this->subQuery->andWhere('content.siteId = :siteId');
 
         $this->query->innerJoin($this->contentTable.' content', 'content.id = subquery.contentId');
 
@@ -1560,7 +1644,7 @@ class ElementQuery extends Query implements ElementQueryInterface, Arrayable, Co
         if ($this->$property !== false && !$this->$property instanceof ElementInterface) {
             $this->$property = $class::find()
                 ->id($this->$property)
-                ->locale($this->locale)
+                ->siteId($this->siteId)
                 ->one();
 
             if ($this->$property === null) {
@@ -1593,7 +1677,7 @@ class ElementQuery extends Query implements ElementQueryInterface, Arrayable, Co
             $this->query->offset = null;
 
             $elementIds = $this->query->column('elements.id');
-            $searchResults = Craft::$app->getSearch()->filterElementIdsByQuery($elementIds, $this->search, true, $this->locale, true);
+            $searchResults = Craft::$app->getSearch()->filterElementIdsByQuery($elementIds, $this->search, true, $this->siteId, true);
 
             $this->query->limit = $limit;
             $this->query->offset = $offset;
@@ -1766,7 +1850,7 @@ class ElementQuery extends Query implements ElementQueryInterface, Arrayable, Co
     private function _createElement($row)
     {
         // Do we have a placeholder for this element?
-        $element = Craft::$app->getElements()->getPlaceholderElement($row['id'], $this->locale);
+        $element = Craft::$app->getElements()->getPlaceholderElement($row['id'], $this->siteId);
 
         if ($element !== null) {
             return $element;
@@ -1776,7 +1860,7 @@ class ElementQuery extends Query implements ElementQueryInterface, Arrayable, Co
         $class = $this->elementType;
 
         // Instantiate the element
-        $row['locale'] = $this->locale;
+        $row['siteId'] = $this->siteId;
 
         if ($this->structureId) {
             $row['structureId'] = $this->structureId;

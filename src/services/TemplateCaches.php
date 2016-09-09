@@ -130,13 +130,13 @@ class TemplateCaches extends Component
             'and',
             'expiryDate > :now',
             'cacheKey = :key',
-            'locale = :locale'
+            'siteId = :siteId'
         ];
 
         $params = [
             ':now' => Db::prepareDateForDb(new \DateTime()),
             ':key' => $key,
-            ':locale' => Craft::$app->language
+            ':siteId' => Craft::$app->getSites()->currentSite->id
         ];
 
         if (!$global) {
@@ -298,7 +298,7 @@ class TemplateCaches extends Component
                     static::$_templateCachesTable,
                     [
                         'cacheKey' => $key,
-                        'locale' => Craft::$app->language,
+                        'siteId' => Craft::$app->getSites()->currentSite->id,
                         'path' => ($global ? null : $this->_getPath()),
                         'expiryDate' => Db::prepareDateForDb($expiration),
                         'body' => $body

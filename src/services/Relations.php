@@ -60,13 +60,13 @@ class Relations extends Component
                 ':sourceId' => $source->id
             ];
 
-            if ($field->translatable) {
+            if ($field->localizeRelations) {
                 $oldRelationConditions[] = [
                     'or',
-                    'sourceLocale is null',
-                    'sourceLocale = :sourceLocale'
+                    'sourceSiteId is null',
+                    'sourceSiteId = :sourceSiteId'
                 ];
-                $oldRelationParams[':sourceLocale'] = $source->locale;
+                $oldRelationParams[':sourceSiteId'] = $source->siteId;
             }
 
             Craft::$app->getDb()->createCommand()
@@ -77,17 +77,17 @@ class Relations extends Component
             if ($targetIds) {
                 $values = [];
 
-                if ($field->translatable) {
-                    $sourceLocale = $source->locale;
+                if ($field->localizeRelations) {
+                    $sourceSiteId = $source->siteId;
                 } else {
-                    $sourceLocale = null;
+                    $sourceSiteId = null;
                 }
 
                 foreach ($targetIds as $sortOrder => $targetId) {
                     $values[] = [
                         $field->id,
                         $source->id,
-                        $sourceLocale,
+                        $sourceSiteId,
                         $targetId,
                         $sortOrder + 1
                     ];
@@ -96,7 +96,7 @@ class Relations extends Component
                 $columns = [
                     'fieldId',
                     'sourceId',
-                    'sourceLocale',
+                    'sourceSiteId',
                     'targetId',
                     'sortOrder'
                 ];

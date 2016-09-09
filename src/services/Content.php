@@ -74,7 +74,7 @@ class Content extends Component
     public function getContentRow(ElementInterface $element)
     {
         /** @var Element $element */
-        if (!$element->id || !$element->locale) {
+        if (!$element->id || !$element->siteId) {
             return false;
         }
 
@@ -90,7 +90,7 @@ class Content extends Component
             ->from($this->contentTable)
             ->where([
                 'elementId' => $element->id,
-                'locale' => $element->locale
+                'siteId' => $element->siteId
             ])
             ->one();
 
@@ -141,16 +141,14 @@ class Content extends Component
     /**
      * Saves an element's content.
      *
-     * @param ElementInterface $element                    The element whose content we're saving.
-     * @param boolean          $validate                   Whether the element's content should be validated first.
-     * @param boolean          $updateOtherLocales         Whether any non-translatable fields' values should be copied to the
-     *                                                     element's other locales.
+     * @param ElementInterface $element  The element whose content we're saving.
+     * @param boolean          $validate Whether the element's content should be validated first.
      *
      * @return boolean Whether the content was saved successfully. If it wasn't, any validation errors will be saved on the
-     *              element and its content model.
+     *                 element and its content model.
      * @throws Exception if $element has not been saved yet
      */
-    public function saveContent(ElementInterface $element, $validate = true, $updateOtherLocales = true)
+    public function saveContent(ElementInterface $element, $validate = true)
     {
         /** @var Element $element */
         if (!$element->id) {
@@ -181,7 +179,7 @@ class Content extends Component
                 // Prepare the data to be saved
                 $values = [
                     'elementId' => $element->id,
-                    'locale' => $element->locale
+                    'siteId' => $element->siteId
                 ];
                 if ($element->hasTitles() && $element->title) {
                     $values['title'] = $element->title;
@@ -212,11 +210,7 @@ class Content extends Component
                 }
 
                 if ($fieldLayout) {
-                    if ($updateOtherLocales && Craft::$app->getIsLocalized()) {
-                        $this->_duplicateNonTranslatableFieldValues($element, $values, $nonTranslatableFields, $otherContentModels);
-                    }
-
-                    $this->_updateSearchIndexes($element, $fieldLayout, $nonTranslatableFields, $otherContentModels);
+                    $this->_updateSearchIndexes($element, $fieldLayout);
                 }
 
                 $success = true;
@@ -285,88 +279,28 @@ class Content extends Component
     // =========================================================================
 
     /**
-     * Copies the new values of any non-translatable fields across the element's
-     * other locales.
-     *
-     * @param ElementInterface $element
-     * @param array            $sourceValues
-     * @param FieldInterface[] &$nonTranslatableFields
-     * @param array            &$otherContentRows
-     *
-     * @return void
-     */
-    private function _duplicateNonTranslatableFieldValues($element, $sourceValues, &$nonTranslatableFields, &$otherContentRows)
-    {
-        /** @var Element $element */
-        // Get all of the non-translatable fields
-        /** @var Field[] $nonTranslatableFields */
-        $nonTranslatableFields = [];
-        $fieldLayout = $element->getFieldLayout();
-        foreach ($fieldLayout->getFields() as $field) {
-            /** @var Field $field */
-            if (!$field->translatable && $field::hasContentColumn()) {
-                $nonTranslatableFields[] = $field;
-            }
-        }
-
-        if ($nonTranslatableFields) {
-            // Get the other locales' content rows
-            $otherContentRows = (new Query())
-                ->from($this->contentTable)
-                ->where(
-                    ['and', 'elementId = :elementId', 'locale != :locale'],
-                    [
-                        ':elementId' => $element->id,
-                        ':locale' => $element->locale
-                    ])
-                ->all();
-
-            // Copy the non-translatable fields' values over to them
-            foreach ($otherContentRows as $values) {
-                foreach ($nonTranslatableFields as $field) {
-                    $column = $this->fieldColumnPrefix.$field->handle;
-                    $values[$column] = $sourceValues[$column];
-                }
-
-                Craft::$app->getDb()->createCommand()
-                    ->update($this->contentTable, $values, ['id' => $values['id']])
-                    ->execute();
-            }
-        }
-    }
-
-    /**
      * Updates the search indexes based on the new content values.
      *
      * @param ElementInterface $element
      * @param FieldLayout      $fieldLayout
-     * @param array|null       &$nonTranslatableFields
-     * @param array|null       &$otherContentModels
      *
      * @return void
      */
-    private function _updateSearchIndexes(ElementInterface $element, FieldLayout $fieldLayout, &$nonTranslatableFields = null, &$otherContentModels = null)
+    private function _updateSearchIndexes(ElementInterface $element, FieldLayout $fieldLayout)
     {
         /** @var Element $element */
-        $searchKeywordsByLocale = [];
+        $searchKeywordsBySiteId = [];
 
         foreach ($fieldLayout->getFields() as $field) {
             /** @var Field $field */
-            // Set the keywords for the content's locale
+            // Set the keywords for the content's site
             $fieldValue = $element->getFieldValue($field->handle);
             $fieldSearchKeywords = $field->getSearchKeywords($fieldValue, $element);
-            $searchKeywordsByLocale[$element->locale][$field->id] = $fieldSearchKeywords;
-
-            // Should we queue up the other locales' new keywords too?
-            if (isset($nonTranslatableFields[$field->id])) {
-                foreach ($otherContentModels as $otherContentModel) {
-                    $searchKeywordsByLocale[$otherContentModel->locale][$field->id] = $fieldSearchKeywords;
-                }
-            }
+            $searchKeywordsBySiteId[$element->siteId][$field->id] = $fieldSearchKeywords;
         }
 
-        foreach ($searchKeywordsByLocale as $localeId => $keywords) {
-            Craft::$app->getSearch()->indexElementFields($element->id, $localeId, $keywords);
+        foreach ($searchKeywordsBySiteId as $siteId => $keywords) {
+            Craft::$app->getSearch()->indexElementFields($element->id, $siteId, $keywords);
         }
     }
 

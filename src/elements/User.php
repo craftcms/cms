@@ -33,9 +33,9 @@ use yii\web\IdentityInterface;
 /**
  * User represents a user element.
  *
- * @property boolean     $isCurrent       Whether this is the current logged-in user
- * @property string      $name            The user's full name or username
- * @property string|null $preferredLocale The user’s preferred locale
+ * @property boolean     $isCurrent         Whether this is the current logged-in user
+ * @property string      $name              The user's full name or username
+ * @property string|null $preferredLanguage The user’s preferred language
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since  3.0
@@ -269,8 +269,8 @@ class User extends Element implements IdentityInterface
         $attributes['firstName'] = ['label' => Craft::t('app', 'First Name')];
         $attributes['lastName'] = ['label' => Craft::t('app', 'Last Name')];
 
-        if (Craft::$app->getIsLocalized()) {
-            $attributes['preferredLocale'] = ['label' => Craft::t('app', 'Preferred Locale')];
+        if (Craft::$app->getIsMultiSite()) {
+            $attributes['preferredLanguage'] = ['label' => Craft::t('app', 'Preferred Language')];
         }
 
         $attributes['id'] = ['label' => Craft::t('app', 'ID')];
@@ -331,11 +331,11 @@ class User extends Element implements IdentityInterface
                 }
             }
 
-            case 'preferredLocale': {
-                $localeId = $element->preferredLocale;
+            case 'preferredLanguage': {
+                $language = $element->preferredLanguage;
 
-                if ($localeId) {
-                    $locale = new Locale($localeId);
+                if ($language) {
+                    $locale = new Locale($language);
 
                     return $locale->getDisplayName(Craft::$app->language);
                 }
@@ -1207,17 +1207,17 @@ class User extends Element implements IdentityInterface
     }
 
     /**
-     * Returns the user’s preferred locale, if they have one.
+     * Returns the user’s preferred language, if they have one.
      *
-     * @return string|null The preferred locale
+     * @return string|null The preferred language
      */
-    public function getPreferredLocale()
+    public function getPreferredLanguage()
     {
-        $locale = $this->getPreference('locale');
+        $language = $this->getPreference('language');
 
         // Make sure it's valid
-        if ($locale !== null && in_array($locale, Craft::$app->getI18n()->getSiteLocaleIds())) {
-            return $locale;
+        if ($language !== null && in_array($language, Craft::$app->getI18n()->getSiteLocaleIds())) {
+            return $language;
         }
 
         return null;
