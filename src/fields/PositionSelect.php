@@ -36,7 +36,7 @@ class PositionSelect extends Field
     public static function populateModel($model, $config)
     {
         if (isset($config['options'])) {
-            $config['options'] = array_filter($config['options']);
+            $config['options'] = array_values(array_filter($config['options']));
         }
 
         parent::populateModel($model, $config);
