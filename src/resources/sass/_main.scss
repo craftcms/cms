@@ -425,7 +425,7 @@ body.rtl .btngroup .btn:not(:last-child) { border-top-left-radius: 0; border-bot
 .btn.big[data-icon]:before,
 .livepreviewbtn:before,
 .sharebtn:before { @include margin-left(-2px); }
-.btngroup.big,.btn.submit { color: #fff; @include linear-gradient($submitcolor, #cc5643); }
+.btngroup.big,
 .btngroup.big input.btn,
 .btn.big,
 .btn.big + .spinner { height: 36px; }
