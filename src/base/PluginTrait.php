@@ -101,7 +101,7 @@ trait PluginTrait
      * - Release note lines can contain Markdown code, but not HTML.
      * - Releases can contain a `critical` attribute which can be set to `true` if the release is critical.
      */
-    public $releasesFeedUrl;
+    public $releaseFeedUrl;
 
     /**
      * @var string The language that the plugin’s messages were written in

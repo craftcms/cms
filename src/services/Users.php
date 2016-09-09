@@ -1222,7 +1222,7 @@ class Users extends Component
             $expire = DateTimeHelper::currentUTCDateTime();
             $pastTime = $expire->sub($interval);
 
-            $ids = (new Query())
+            $userIds = (new Query())
                 ->select('id')
                 ->from('{{%users}}')
                 ->where([
@@ -1232,12 +1232,13 @@ class Users extends Component
                 ], [':pastTime' => Db::prepareDateForDb($pastTime)])
                 ->column();
 
-            $affectedRows = Craft::$app->getDb()->createCommand()
-                ->delete('{{%elements}}', ['in', 'id', $ids])
-                ->execute();
+            if ($userIds) {
+                foreach ($userIds as $userId) {
+                    $user = $this->getUserById($userId);
+                    $this->deleteUser($user);
 
-            if ($affectedRows > 0) {
-                Craft::info('Just deleted '.$affectedRows.' pending users from the users table, because the were more than '.$duration.' old.', __METHOD__);
+                    Craft::info('Just deleted pending userId '.$userId.' ('.$user->username.'), because the were more than '.$duration.' old', __METHOD__);
+                }
             }
         }
     }

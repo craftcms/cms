@@ -170,6 +170,8 @@ class View extends \yii\web\View
             $loaderClass = 'craft\app\web\twig\TemplateLoader';
         }
 
+        $options = array_merge(['safe_mode' => false], $options);
+
         $cacheKey = $loaderClass.':'.md5(serialize($options));
 
         if (!isset($this->_twigs[$cacheKey])) {

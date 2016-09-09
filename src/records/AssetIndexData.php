@@ -73,7 +73,7 @@ class AssetIndexData extends ActiveRecord
             ],
             [['sessionId', 'volumeId', 'offset'], 'required'],
             [['sessionId'], 'string', 'length' => 36],
-            [['uri'], 'string', 'max' => 255],
+            [['uri'], 'string'],
         ];
     }
 

@@ -641,7 +641,6 @@ class EntriesController extends BaseEntriesController
      * @return void
      * @throws NotFoundHttpException if the requested section or entry cannot be found
      * @throws ForbiddenHttpException if the user is not permitted to edit content in the requested locale
-     * @throws ServerErrorHttpException if the entry is missing its entry types
      */
     private function _prepEditEntryVariables(&$variables)
     {
@@ -753,10 +752,6 @@ class EntriesController extends BaseEntriesController
 
         $variables['entryType'] = $variables['entry']->getType();
 
-        if (!$variables['entryType']) {
-            throw new ServerErrorHttpException('Entry is missing its entry types');
-        }
-
         // Define the content tabs
         // ---------------------------------------------------------------------
 
@@ -862,16 +857,10 @@ class EntriesController extends BaseEntriesController
      * @param Entry $entry
      *
      * @return string The rendering result
-     * @throws ServerErrorHttpException if the entry is missing its section or entry type
      */
     private function _showEntry(Entry $entry)
     {
         $section = $entry->getSection();
-        $type = $entry->getType();
-
-        if (!$section || !$type) {
-            throw new ServerErrorHttpException('Entry is missing its section or entry type');
-        }
 
         Craft::$app->language = $entry->locale;
 

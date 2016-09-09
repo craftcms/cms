@@ -128,7 +128,7 @@ class Install extends Migration
             'sessionId' => $this->string(36)->notNull()->defaultValue(''),
             'volumeId' => $this->integer()->notNull(),
             'offset' => $this->integer()->notNull(),
-            'uri' => $this->string(),
+            'uri' => $this->text(),
             'size' => $this->bigInteger()->unsigned(),
             'timestamp' => $this->dateTime(),
             'recordId' => $this->integer(),

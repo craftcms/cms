@@ -29,7 +29,7 @@ body { overflow-x: hidden; }
 .topbar { @include display-flex; @include align-items(stretch); }
 
 /* global sidebar */
-#global-sidebar { @include display-flex; @include flex-direction(column); position: fixed; top: 0; @include left(0); width: 220px; height: 100vh; background: $headerBgColor; z-index: 100; overflow: auto; }
+#global-sidebar { @include display-flex; @include flex-direction(column); position: fixed; top: 0; @include left(0); width: 220px; height: 100vh; @include light-on-dark-text; background: $headerBgColor; z-index: 100; overflow: auto; }
 
 #global-sidebar nav { @include flex-grow(1); -ms-flex-preferred-size: auto; }
 
@@ -184,6 +184,7 @@ body.mobile #container {
 #notifications-wrapper.fixed { position: fixed; top: 0; }
 #notifications { text-align: center; }
 #notifications .notification { display: inline-block; padding: 5px 10px; border-radius: 0 0 3px 3px; border-width: 0 1px 1px; color: #fff !important;
+	@include light-on-dark-text;
 	@include box-shadow(0 0 5px rgba(0,0,0,0.25));
 }
 #notifications .notification.notice { background: $noticecolor; }
@@ -458,7 +459,7 @@ $fldGuideColor: #f4f3fb;
 .sidebar nav li ul { display: none; }
 .sidebar nav li.expanded > ul { display: block; }
 
-.sidebar nav li a.sel { background: $darkselcolor; cursor: default; }
+.sidebar nav li a.sel { background: $darkselcolor; @include light-on-dark-text; cursor: default; }
 .sidebar nav li a.sel,
 .sidebar nav li a.sel + .toggle { color: #fff; }
 

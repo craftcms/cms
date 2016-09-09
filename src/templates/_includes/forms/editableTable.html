@@ -8,7 +8,7 @@
 		<tr>
 			{% for col in cols %}
 				<th scope="col" class="header {{ col.class ?? null }}">
-					{{- col.heading is defined and col.heading ? col.heading : '&nbsp;' }}
+					{%- if col.heading is defined and col.heading %}{{ col.heading }}{% else %}&nbsp;{% endif %}
 					{%- if col.info is defined -%}
 						<span class="info">{{ col.info|md|raw }}</span>
 					{%- endif -%}
@@ -23,13 +23,14 @@
 		{% for rowId, row in rows %}
 			<tr data-id="{{ rowId }}">
 				{% for colId, col in cols %}
-					{% set value = (row[colId] is defined ? row[colId] : null) %}
+					{% set value = row[colId] is defined ? (row[colId].value is defined ? row[colId].value : row[colId]) : null %}
 					{% if col.type == 'heading' %}
 						<th scope="row" {% if col.class is defined %}class="{{ col.class }}"{% endif %}>{{ value|raw }}</th>
 					{% else %}
+						{% set hasErrors = row[colId].hasErrors ?? false %}
 						{% set cellName = name~'['~rowId~']['~colId~']' %}
 						{% set textual = (col.type in ['singleline','multiline','number']) %}
-						<td class="{% if textual %}textual{% endif %} {% if col.class is defined %}{{ col.class }}{% endif %} {% if col.code is defined %}code{% endif %}"{% if col.width is defined %} width="{{ col.width }}"{% endif %}>
+						<td class="{% if textual %}textual{% endif %} {% if col.class is defined %}{{ col.class }}{% endif %} {% if col.code is defined %}code{% endif %} {% if hasErrors %}error{% endif %}"{% if col.width is defined %} width="{{ col.width }}"{% endif %}>
 							{%- switch col.type -%}
 								{% case 'select' -%}
 									{% include "_includes/forms/select" with {
@@ -51,7 +52,7 @@
 										disabled: static
 									} only %}
 								{%- default -%}
-									<textarea name="{{ cellName }}" rows="1"{% if static %} disabled{% endif %}>{{ value }}</textarea>
+									<textarea name="{{ cellName }}" rows="1"{% if static %} disabled{% endif %}{% if col.placeholder is defined %} placeholder="{{ col.placeholder }}"{% endif %}>{{ value }}</textarea>
 							{%- endswitch -%}
 						</td>
 					{% endif %}

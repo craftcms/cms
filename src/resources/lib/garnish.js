@@ -3,7 +3,7 @@
  *
  * @copyright 2013 Pixel & Tonic, Inc.. All rights reserved.
  * @author    Brandon Kelly <brandon@pixelandtonic.com>
- * @version   0.1.2
+ * @version   0.1.4
  * @license   MIT
  */
 (function($){
@@ -156,8 +156,8 @@ Base = Base.extend({
 	}
 });
 
-/*!
- * Garnish
+/**
+ * @namespace Garnish
  */
 
 // Bail if Garnish is already defined
@@ -3087,7 +3087,7 @@ Garnish.HUD = Garnish.Base.extend({
 		this.show();
 
 		this.addListener(this.$body, 'submit', '_handleSubmit');
-		this.addListener(this.$shade, 'click', 'hide');
+		this.addListener(this.$shade, 'tap', 'hide');
 
 		if (!this.$fixedTriggerParent && Garnish.$scrollContainer[0] != Garnish.$win[0])
 		{
@@ -5125,7 +5125,7 @@ Garnish.NiceText = Garnish.Base.extend({
 			});
 
 			// Line breaks
-			val = val.replace(/[\n\r]$/g, '');
+			val = val.replace(/[\n\r]$/g, '<br/>&nbps;');
 			val = val.replace(/[\n\r]/g, '<br/>');
 		}
 
