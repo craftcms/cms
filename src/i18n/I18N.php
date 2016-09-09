@@ -197,35 +197,19 @@ class I18N extends \yii\i18n\I18N
     // -------------------------------------------------------------------------
 
     /**
-     * Returns an array of the site locales. The list of locales is based on whatever was defined in Settings > Locales
-     * in the control panel.
+     * Returns an array of the site locales.
      *
      * @return Locale[] An array of [[Locale]] objects.
      */
     public function getSiteLocales()
     {
-        if ($this->_siteLocales === null) {
-            $query = (new Query())
-                ->select('locale')
-                ->from('{{%locales}}')
-                ->orderBy('sortOrder');
+        $locales = [];
 
-            if (Craft::$app->getEdition() != Craft::Pro) {
-                $query->limit(1);
-            }
-
-            $localeIds = $query->column();
-
-            foreach ($localeIds as $localeId) {
-                $this->_siteLocales[] = new Locale($localeId);
-            }
-
-            if (empty($this->_siteLocales)) {
-                $this->_siteLocales = [new Locale('en-US')];
-            }
+        foreach ($this->getSiteLocaleIds() as $localeId) {
+            $locales[] = new Locale($localeId);
         }
 
-        return $this->_siteLocales;
+        return $locales;
     }
 
     /**
@@ -253,20 +237,22 @@ class I18N extends \yii\i18n\I18N
     }
 
     /**
-     * Returns an array of the site locale IDs. The list of locales is based on whatever was defined in Settings > Locales
-     * in the control panel.
+     * Returns an array of the site locale IDs.
      *
      * @return array An array of locale IDs.
      */
     public function getSiteLocaleIds()
     {
-        $languages = [];
+        $localeIds = [];
 
         foreach (Craft::$app->getSites()->getAllSites() as $site) {
-            $languages[] = $site->language;
+            // Make sure it's unique
+            if (!in_array($site->language, $localeIds)) {
+                $localeIds[] = $site->language;
+            }
         }
 
-        return $languages;
+        return $localeIds;
     }
 
     /**
