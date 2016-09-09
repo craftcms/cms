@@ -84,7 +84,7 @@ class Search extends Component
      * Indexes the field values for a given element and site.
      *
      * @param integer $elementId The ID of the element getting indexed.
-     * @param string  $siteId    The site ID of the content getting indexed.
+     * @param integer $siteId    The site ID of the content getting indexed.
      * @param array   $fields    The field values, indexed by field ID.
      *
      * @return boolean  Whether the indexing was a success.
@@ -361,7 +361,7 @@ class Search extends Component
     /**
      * Get the complete where clause for current tokens
      *
-     * @param string|null $siteId The site ID to search within
+     * @param integer|null $siteId The site ID to search within
      *
      * @return string|false
      */

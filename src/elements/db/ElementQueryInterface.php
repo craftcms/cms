@@ -104,9 +104,9 @@ interface ElementQueryInterface extends QueryInterface
     public function dateUpdated($value = true);
 
     /**
-     * Sets the [[siteId]] property based on a given site(s)’s handle(s).
+     * Sets the [[siteId]] property based on a given site(s)’s handle.
      *
-     * @param string|string[]|Site $value The property value
+     * @param string|Site $value The property value
      *
      * @return $this self reference
      */
