@@ -9,6 +9,6 @@ Source/.idea/*
 *aspnet_client/*
 Build/*
 *.sass-cache
-node_modules/*
+node_modules/
 Source/craft/app/vendor/
 !Source/craft/app/vendor/helpspot/*
