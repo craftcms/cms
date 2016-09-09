@@ -30,8 +30,6 @@ class Connection extends \yii\db\Connection
 
     /**
      * @event Event The event that is triggered before the backup is created.
-     *
-     * You may set [[Event::isValid]] to `false` to prevent the backup from being created.
      */
     const EVENT_BEFORE_CREATE_BACKUP = 'beforeCreateBackup';
 
@@ -71,23 +69,19 @@ class Connection extends \yii\db\Connection
             $backup->setIgnoreDataTables($ignoreDataTables);
         }
 
-        $event = new DbBackupEvent();
         $this->trigger(self::EVENT_BEFORE_CREATE_BACKUP,
-            $event
+            new DbBackupEvent()
         );
 
-        if ($event->isValid) {
-            if (($backupFile = $backup->run()) !== false) {
+        if (($backupFile = $backup->run()) !== false) {
 
-                // Fire an 'afterCreateBackup' event
-                $this->trigger(self::EVENT_AFTER_CREATE_BACKUP,
-                    new DbBackupEvent(['filePath' => $backupFile])
-                );
+            // Fire an 'afterCreateBackup' event
+            $this->trigger(self::EVENT_AFTER_CREATE_BACKUP,
+                new DbBackupEvent(['filePath' => $backupFile])
+            );
 
-                return $backupFile;
-            }
+            return $backupFile;
         }
-
 
         return false;
     }
