@@ -435,8 +435,6 @@ class Sites extends Component
             $this->_sitesById[$site->id] = $site;
             $this->_sitesByHandle[$site->handle] = $site;
 
-            // Commit the transaction regardless of whether we saved the site, in case something changed
-            // in onBeforeSaveSite
             $transaction->commit();
         } catch (\Exception $e) {
             $transaction->rollBack();
@@ -480,13 +478,13 @@ class Sites extends Component
                     'localizableOnly' => true,
                 ]);
             }
-
-            // Fire an 'afterSaveSite' event
-            $this->trigger(self::EVENT_AFTER_SAVE_SITE, new SiteEvent([
-                'site' => $site,
-                'isNew' => $isNewSite,
-            ]));
         }
+
+        // Fire an 'afterSaveSite' event
+        $this->trigger(self::EVENT_AFTER_SAVE_SITE, new SiteEvent([
+            'site' => $site,
+            'isNew' => $isNewSite,
+        ]));
 
         return true;
     }
