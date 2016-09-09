@@ -1833,6 +1833,6 @@ class UsersController extends Controller
         $activateAccountSuccessPath = Craft::$app->getConfig()->getLocalized('activateAccountSuccessPath');
         $url = Url::getSiteUrl($activateAccountSuccessPath);
 
-        return $this->redirectToPostedUrl($url);
+        return $this->redirectToPostedUrl($user, $url);
     }
 }

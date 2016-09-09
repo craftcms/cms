@@ -68,7 +68,15 @@ class Message extends \yii\swiftmailer\Message
      */
     public function setTo($to)
     {
-        $to = $this->_normalizeEmails($to, true);
+        if ($to instanceof User) {
+            if ($this->language === null) {
+                $this->language = $to->getPreferredLanguage();
+            }
+
+            $this->variables['user'] = $to;
+        }
+
+        $to = $this->_normalizeEmails($to);
         parent::setTo($to);
 
         return $this;
@@ -115,20 +123,19 @@ class Message extends \yii\swiftmailer\Message
 
     /**
      * @param string|array|User|User[] $emails
-     * @param boolean                  $setLanguage
      *
      * @return string|array
      */
-    private function _normalizeEmails($emails, $setLanguage = false)
+    private function _normalizeEmails($emails)
     {
         if (is_array($emails)) {
             foreach ($emails as $key => $email) {
                 if (is_numeric($key)) {
-                    $emails[$key] = $this->_normalizeEmail($email, $setLanguage);
+                    $emails[$key] = $this->_normalizeEmail($email);
                 }
             }
         } else {
-            $emails = $this->_normalizeEmail($emails, $setLanguage);
+            $emails = $this->_normalizeEmail($emails);
         }
 
         return $emails;
@@ -136,17 +143,12 @@ class Message extends \yii\swiftmailer\Message
 
     /**
      * @param string|User $email
-     * @param boolean     $setLanguage
      *
      * @return string|array
      */
-    private function _normalizeEmail($email, $setLanguage)
+    private function _normalizeEmail($email)
     {
         if ($email instanceof User) {
-            if ($setLanguage && $this->language === null) {
-                $this->language = $email->getPreferredLanguage();
-            }
-
             return [$email->email => $email->getName()];
         }
 

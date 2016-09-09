@@ -332,7 +332,7 @@ class User extends Element implements IdentityInterface
             }
 
             case 'preferredLanguage': {
-                $language = $element->preferredLanguage;
+                $language = $element->getPreferredLanguage();
 
                 if ($language) {
                     $locale = new Locale($language);

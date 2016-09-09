@@ -84,28 +84,38 @@ class m160807_144858_sites extends Migration
             ->orderBy('sortOrder')
             ->column();
 
-        $siteIds = [];
+        $siteIdsByLocale = [];
         $this->caseSql = 'case';
+        $permissionsCaseSql = 'case';
 
         foreach ($locales as $i => $locale) {
+            $siteHandle = $this->locale2handle($locale);
+
             $this->insert('{{%sites}}', [
                 'name' => $siteInfo['siteName'],
-                'handle' => $this->locale2handle($locale),
+                'handle' => $siteHandle,
                 'language' => $this->locale2language($locale),
                 'hasUrls' => 1,
                 'baseUrl' => $siteInfo['siteUrl'],
                 'sortOrder' => $i + 1,
             ]);
 
-            $siteIds[$locale] = $this->db->getLastInsertID();
+            $siteId = $this->db->getLastInsertID();
+            $siteIdsByLocale[$locale] = $siteId;
 
-            // Define the CASE SQL for setting siteId column values
-            foreach ($siteIds as $locale => $siteId) {
-                $this->caseSql .= ' when % = '.$this->db->quoteValue($locale).' then '.$this->db->quoteValue($siteId);
-            }
+            $this->caseSql .= ' when % = '.$this->db->quoteValue($locale).' then '.$this->db->quoteValue($siteId);
+            $permissionsCaseSql .= ' when % = '.$this->db->quoteValue('editlocale:'.$locale).' then '.$this->db->quoteValue('editsite:'.$siteId);
         }
 
         $this->caseSql .= ' end';
+        $permissionsCaseSql .= ' end';
+
+        // Update the user permissions
+        // ---------------------------------------------------------------------
+
+        $this->update('{{%userpermissions}}', [
+            'name' => new Expression(str_replace('%', $this->db->quoteColumnName('name'), $permissionsCaseSql)),
+        ], '', [], false);
 
         // Create the FK columns
         // ---------------------------------------------------------------------
@@ -383,23 +393,20 @@ class m160807_144858_sites extends Migration
 
         $this->dropColumn('{{%fields}}', 'translatable');
 
-        // Matrix/relationship fields aren't really *translatable* anymore
+        // Update Matrix/relationship field settings
         // ---------------------------------------------------------------------
 
         $fields = (new Query())
-            ->select(['id', 'type', 'settings'])
+            ->select(['id', 'type', 'translationMethod', 'settings'])
             ->from('{{%fields}}')
-            ->where(['and',
-                ['translationMethod' => 'site'],
-                ['in', 'type', [
-                    'craft\app\fields\Matrix',
-                    'craft\app\fields\Assets',
-                    'craft\app\fields\Categories',
-                    'craft\app\fields\Entries',
-                    'craft\app\fields\Tags',
-                    'craft\app\fields\Users'
-                ]],
-            ])
+            ->where(['in', 'type', [
+                'craft\app\fields\Matrix',
+                'craft\app\fields\Assets',
+                'craft\app\fields\Categories',
+                'craft\app\fields\Entries',
+                'craft\app\fields\Tags',
+                'craft\app\fields\Users'
+            ]])
             ->all();
 
         foreach ($fields as $field) {
@@ -410,10 +417,18 @@ class m160807_144858_sites extends Migration
                 $settings = [];
             }
 
+            $localized = ($field['translationMethod'] == 'site');
+
             if ($field['type'] == 'craft\app\fields\Matrix') {
-                $settings['localizeBlocks'] = true;
+                $settings['localizeBlocks'] = $localized;
             } else {
-                $settings['localizeRelations'] = true;
+                $settings['localizeRelations'] = $localized;
+
+                // targetLocale => targetSiteId
+                if (!empty($settings['targetLocale'])) {
+                    $settings['targetSiteId'] = $siteIdsByLocale[$settings['targetLocale']];
+                }
+                unset($settings['targetLocale']);
             }
 
             $this->update(
