@@ -12,8 +12,10 @@ use craft\app\base\Plugin;
 use craft\app\base\PluginInterface;
 use craft\app\enums\PluginUpdateStatus;
 use craft\app\enums\VersionUpdateStatus;
-use craft\app\events\Event;
+use craft\app\events\UpdateBeginEvent;
+use craft\app\events\UpdateErrorEvent;
 use craft\app\events\UpdateEvent;
+use craft\app\events\UpdateFinishEvent;
 use craft\app\helpers\DateTimeHelper;
 use craft\app\helpers\Io;
 use craft\app\helpers\Json;
@@ -545,12 +547,13 @@ class Updates extends Component
     {
         Craft::info('Preparing to update '.$handle.'.', __METHOD__);
 
-        try {
-            // Fire a 'beforeUpdate' event and pass in the type
-            $this->trigger(self::EVENT_BEFORE_UPDATE, new UpdateEvent([
-                'type' => $manual ? 'manual' : 'auto'
-            ]));
+        // Fire a 'beforeUpdate' event and pass in the type
+        $this->trigger(self::EVENT_BEFORE_UPDATE, new UpdateBeginEvent([
+            'type' => $manual ? 'manual' : 'auto',
+            'handle' => $handle,
+        ]));
 
+        try {
             $updater = new Updater();
 
             // Make sure we still meet the existing requirements. This will throw an exception if the server doesn't meet Craft's current requirements.
@@ -752,7 +755,9 @@ class Updates extends Component
         }
 
         // Fire an 'afterUpdate' event
-        $this->trigger(self::EVENT_AFTER_UPDATE, new Event());
+        $this->trigger(self::EVENT_AFTER_UPDATE, new UpdateFinishEvent([
+            'handle' => $handle,
+        ]));
     }
 
     /**
@@ -766,7 +771,9 @@ class Updates extends Component
     {
         try {
             // Fire an 'afterUpdateFail' event
-            $this->trigger(self::EVENT_AFTER_UPDATE_FAIL, new Event());
+            $this->trigger(self::EVENT_AFTER_UPDATE_FAIL, new UpdateErrorEvent([
+                'handle' => $handle,
+            ]));
 
             Craft::$app->getConfig()->maxPowerCaptain();
 
