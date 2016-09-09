@@ -521,9 +521,7 @@ body.rtl .buttons.right .btn + .spinner { margin-left: -19px; }
 body.ltr .btn.big[data-icon]:before, body.ltr .livepreviewbtn:before, body.ltr .sharebtn:before { margin-left: -2px; }
 body.rtl .btn.big[data-icon]:before, body.rtl .livepreviewbtn:before, body.rtl .sharebtn:before { margin-right: -2px; }
 
-.btngroup.big, .btn.submit { color: #fff; background-image: -webkit-linear-gradient(#da5a47, #cc5643); background-image: -moz-linear-gradient(#da5a47, #cc5643); background-image: -ms-linear-gradient(#da5a47, #cc5643); background-image: -o-linear-gradient(#da5a47, #cc5643); background-image: linear-gradient(#da5a47, #cc5643); }
-
-.btngroup.big input.btn, .btn.big, .btn.big + .spinner { height: 36px; }
+.btngroup.big, .btngroup.big input.btn, .btn.big, .btn.big + .spinner { height: 36px; }
 
 /* submit buttons */
 .btn.submit { color: #fff; background-image: -webkit-linear-gradient(#da5a47, #cc5643); background-image: -moz-linear-gradient(#da5a47, #cc5643); background-image: -ms-linear-gradient(#da5a47, #cc5643); background-image: -o-linear-gradient(#da5a47, #cc5643); background-image: linear-gradient(#da5a47, #cc5643); -moz-osx-font-smoothing: grayscale; -webkit-font-smoothing: antialiased; font-weight: 600; }
