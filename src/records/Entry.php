@@ -35,17 +35,6 @@ class Entry extends ActiveRecord
 
     /**
      * @inheritdoc
-     */
-    public function rules()
-    {
-        return [
-            [['postDate'], 'craft\\app\\validators\\DateTime'],
-            [['expiryDate'], 'craft\\app\\validators\\DateTime'],
-        ];
-    }
-
-    /**
-     * @inheritdoc
      *
      * @return string
      */

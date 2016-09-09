@@ -35,8 +35,6 @@ class Entries extends Component
 
     /**
      * @event EntryEvent The event that is triggered before an entry is saved.
-     *
-     * You may set [[EntryEvent::isValid]] to `false` to prevent the entry from getting saved.
      */
     const EVENT_BEFORE_SAVE_ENTRY = 'beforeSaveEntry';
 
@@ -47,8 +45,6 @@ class Entries extends Component
 
     /**
      * @event EntryEvent The event that is triggered before an entry is deleted.
-     *
-     * You may set [[EntryEvent::isValid]] to `false` to prevent the entry from being deleted.
      */
     const EVENT_BEFORE_DELETE_ENTRY = 'beforeDeleteEntry';
 
@@ -118,16 +114,23 @@ class Entries extends Component
      * }
      * ```
      *
-     * @param Entry $entry The entry to be saved.
+     * @param Entry    $entry         The entry to be saved.
+     * @param boolean  $runValidation Whether the entry should be validated
      *
-     * @return boolean
+     * @return bool
      * @throws EntryNotFoundException if $entry->newParentId or $entry->id is invalid
-     * @throws SectionNotFoundException if $entry->sectionId is invalid
      * @throws Exception if $entry->siteId is set to a site that its section doesn’t support
+     * @throws SectionNotFoundException if $entry->sectionId is invalid
      * @throws \Exception if reasons
      */
-    public function saveEntry(Entry $entry)
+    public function saveEntry(Entry $entry, $runValidation = true)
     {
+        if ($runValidation && !$entry->validate()) {
+            Craft::info('Entry not saved due to validation error.', __METHOD__);
+
+           return false;
+        }
+
         $isNewEntry = !$entry->id;
 
         $hasNewParent = $this->_checkForNewParent($entry);
@@ -191,91 +194,71 @@ class Entries extends Component
             $entryRecord->postDate = $entry->postDate = DateTimeHelper::currentUTCDateTime();
         }
 
-        $entryRecord->validate();
-        $entry->addErrors($entryRecord->getErrors());
-
-        if ($entry->hasErrors()) {
-            return false;
-        }
-
         if (!$entryType->hasTitleField) {
             $entry->title = Craft::$app->getView()->renderObjectTemplate($entryType->titleFormat, $entry);
         }
 
+        // Fire a 'beforeSaveEntry' event
+        $this->trigger(self::EVENT_BEFORE_SAVE_ENTRY, new EntryEvent([
+            'entry' => $entry,
+            'isNew' => $isNewEntry
+        ]));
+
         $transaction = Craft::$app->getDb()->beginTransaction();
 
         try {
-            // Fire a 'beforeSaveEntry' event
-            $event = new EntryEvent([
-                'entry' => $entry,
-                'isNew' => $isNewEntry
-            ]);
+            // Save the element
+            if (!Craft::$app->getElements()->saveElement($entry)) {
 
-            $this->trigger(self::EVENT_BEFORE_SAVE_ENTRY, $event);
+                // If "title" has an error, check if they've defined a custom title label.
+                if ($entry->getFirstError('title')) {
+                    // Grab all of the original errors.
+                    $errors = $entry->getErrors();
 
-            // Is the event giving us the go-ahead?
-            if ($event->isValid) {
-                // Save the element
-                $success = Craft::$app->getElements()->saveElement($entry);
+                    // Grab just the title error message.
+                    $originalTitleError = $errors['title'];
 
-                // If it didn't work, rollback the transaction in case something changed in onBeforeSaveEntry
-                if (!$success) {
-                    $transaction->rollBack();
+                    // Clear the old.
+                    $entry->clearErrors();
 
-                    // If "title" has an error, check if they've defined a custom title label.
-                    if ($entry->getFirstError('title')) {
-                        // Grab all of the original errors.
-                        $errors = $entry->getErrors();
+                    // Create the new "title" error message.
+                    $errors['title'] = str_replace(Craft::t('app', 'Title'), $entryType->titleLabel, $originalTitleError);
 
-                        // Grab just the title error message.
-                        $originalTitleError = $errors['title'];
-
-                        // Clear the old.
-                        $entry->clearErrors();
-
-                        // Create the new "title" error message.
-                        $errors['title'] = str_replace(Craft::t('app', 'Title'), $entryType->titleLabel, $originalTitleError);
-
-                        // Add all of the errors back on the model.
-                        $entry->addErrors($errors);
-                    }
-
-                    return false;
+                    // Add all of the errors back on the model.
+                    $entry->addErrors($errors);
                 }
 
-                // Now that we have an element ID, save it on the other stuff
-                if ($isNewEntry) {
-                    $entryRecord->id = $entry->id;
-                }
-
-                // Save the actual entry row
-                $entryRecord->save(false);
-
-                if ($section->type == Section::TYPE_STRUCTURE) {
-                    // Has the parent changed?
-                    if ($hasNewParent) {
-                        if (!$entry->newParentId) {
-                            Craft::$app->getStructures()->appendToRoot($section->structureId, $entry);
-                        } else {
-                            /** @noinspection PhpUndefinedVariableInspection */
-                            Craft::$app->getStructures()->append($section->structureId, $entry, $parentEntry);
-                        }
-                    }
-
-                    // Update the entry's descendants, who may be using this entry's URI in their own URIs
-                    Craft::$app->getElements()->updateDescendantSlugsAndUris($entry, true, true);
-                }
-
-                // Save a new version
-                if ($section->enableVersioning) {
-                    Craft::$app->getEntryRevisions()->saveVersion($entry);
-                }
-            } else {
-                $success = false;
+                return false;
             }
 
-            // Commit the transaction regardless of whether we saved the entry, in case something changed
-            // in onBeforeSaveEntry
+            // Now that we have an element ID, save it on the other stuff
+            if ($isNewEntry) {
+                $entryRecord->id = $entry->id;
+            }
+
+            // Save the actual entry row
+            $entryRecord->save(false);
+
+            if ($section->type == Section::TYPE_STRUCTURE) {
+                // Has the parent changed?
+                if ($hasNewParent) {
+                    if (!$entry->newParentId) {
+                        Craft::$app->getStructures()->appendToRoot($section->structureId, $entry);
+                    } else {
+                        /** @noinspection PhpUndefinedVariableInspection */
+                        Craft::$app->getStructures()->append($section->structureId, $entry, $parentEntry);
+                    }
+                }
+
+                // Update the entry's descendants, who may be using this entry's URI in their own URIs
+                Craft::$app->getElements()->updateDescendantSlugsAndUris($entry, true, true);
+            }
+
+            // Save a new version
+            if ($section->enableVersioning) {
+                Craft::$app->getEntryRevisions()->saveVersion($entry);
+            }
+
             $transaction->commit();
         } catch (\Exception $e) {
             $transaction->rollBack();
@@ -283,15 +266,13 @@ class Entries extends Component
             throw $e;
         }
 
-        if ($success) {
-            // Fire an 'afterSaveEntry' event
-            $this->trigger(self::EVENT_AFTER_SAVE_ENTRY, new EntryEvent([
-                'entry' => $entry,
-                'isNew' => $isNewEntry
-            ]));
-        }
+        // Fire an 'afterSaveEntry' event
+        $this->trigger(self::EVENT_AFTER_SAVE_ENTRY, new EntryEvent([
+            'entry' => $entry,
+            'isNew' => $isNewEntry
+        ]));
 
-        return $success;
+        return true;
     }
 
     /**
@@ -308,45 +289,37 @@ class Entries extends Component
             return false;
         }
 
+        if (!is_array($entries)) {
+            $entries = [$entries];
+        }
+
+        // Fire a 'beforeDeleteEntry' event
+        $this->trigger(self::EVENT_BEFORE_DELETE_ENTRY, new EntryDeleteEvent([
+            'entries' => $entries
+        ]));
+
         $transaction = Craft::$app->getDb()->beginTransaction();
 
         try {
-            if (!is_array($entries)) {
-                $entries = [$entries];
-            }
-
             $entryIds = [];
 
             foreach ($entries as $entry) {
-                // Fire a 'beforeDeleteEntry' event
-                $event = new EntryDeleteEvent([
-                    'entry' => $entry
-                ]);
+                $section = $entry->getSection();
 
-                $this->trigger(self::EVENT_BEFORE_DELETE_ENTRY, $event);
+                if ($section->type == Section::TYPE_STRUCTURE) {
+                    // First let's move the entry's children up a level, so this doesn't mess up the structure.
+                    $children = $entry->getChildren()->status(null)->enabledForSite(false)->limit(null)->all();
 
-                if ($event->isValid) {
-                    $section = $entry->getSection();
-
-                    if ($section->type == Section::TYPE_STRUCTURE) {
-                        // First let's move the entry's children up a level, so this doesn't mess up the structure.
-                        $children = $entry->getChildren()->status(null)->enabledForSite(false)->limit(null)->all();
-
-                        foreach ($children as $child) {
-                            Craft::$app->getStructures()->moveBefore($section->structureId, $child, $entry, 'update');
-                        }
+                    foreach ($children as $child) {
+                        Craft::$app->getStructures()->moveBefore($section->structureId, $child, $entry, 'update');
                     }
-
-                    $entryIds[] = $entry->id;
                 }
+
+                $entryIds[] = $entry->id;
             }
 
-            if ($entryIds) {
-                // Delete 'em
-                $success = Craft::$app->getElements()->deleteElementById($entryIds);
-            } else {
-                $success = false;
-            }
+            // Delete 'em
+            Craft::$app->getElements()->deleteElementById($entryIds);
 
             $transaction->commit();
         } catch (\Exception $e) {
@@ -355,19 +328,12 @@ class Entries extends Component
             throw $e;
         }
 
-        if ($success) {
-            foreach ($entries as $entry) {
-                // Fire an 'afterDeleteEntry' event
-                $this->trigger(self::EVENT_AFTER_DELETE_ENTRY,
-                    new EntryDeleteEvent([
-                        'entry' => $entry
-                    ]));
-            }
+        // Fire an 'afterDeleteEntry' event
+        $this->trigger(self::EVENT_AFTER_DELETE_ENTRY, new EntryDeleteEvent([
+                'entries' => $entries
+        ]));
 
-            return true;
-        }
-
-        return false;
+        return true;
     }
 
     /**
