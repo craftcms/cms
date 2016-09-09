@@ -33,8 +33,6 @@ class Content extends Component
 
     /**
      * @event ElementEvent The event that is triggered before an element's content is saved.
-     *
-     * You may set [[ElementEvent::isValid]] to `false` to prevent the content from getting saved.
      */
     const EVENT_BEFORE_SAVE_CONTENT = 'beforeSaveContent';
 
@@ -141,18 +139,24 @@ class Content extends Component
     /**
      * Saves an element's content.
      *
-     * @param ElementInterface $element  The element whose content we're saving.
-     * @param boolean          $validate Whether the element's content should be validated first.
+     * @param ElementInterface $element       The element whose content we're saving.
+     * @param boolean          $runValidation Whether the element's content should be validated first.
      *
      * @return boolean Whether the content was saved successfully. If it wasn't, any validation errors will be saved on the
      *                 element and its content model.
      * @throws Exception if $element has not been saved yet
      */
-    public function saveContent(ElementInterface $element, $validate = true)
+    public function saveContent(ElementInterface $element, $runValidation = true)
     {
         /** @var Element $element */
         if (!$element->id) {
             throw new Exception('Cannot save the content of an unsaved element.');
+        }
+
+        if ($runValidation && $this->validateContent($element)) {
+             Craft::info('Content not saved due to validation error.', __METHOD__);
+
+             return false;
         }
 
         $originalContentTable = $this->contentTable;
@@ -163,72 +167,58 @@ class Content extends Component
         $this->fieldColumnPrefix = $element->getFieldColumnPrefix();
         $this->fieldContext = $element->getFieldContext();
 
-        $success = false;
+        // Fire a 'beforeSaveContent' event
+        $this->trigger(self::EVENT_BEFORE_SAVE_CONTENT, new ElementContentEvent([
+            'element' => $element
+        ]));
 
-        if (!$validate || $this->validateContent($element)) {
-
-            // Fire a 'beforeSaveContent' event
-            $event = new ElementContentEvent([
-                'element' => $element
-            ]);
-
-            $this->trigger(self::EVENT_BEFORE_SAVE_CONTENT, $event);
-
-            // Is the event giving us the go-ahead?
-            if ($event->isValid) {
-                // Prepare the data to be saved
-                $values = [
-                    'elementId' => $element->id,
-                    'siteId' => $element->siteId
-                ];
-                if ($element->hasTitles() && $element->title) {
-                    $values['title'] = $element->title;
+        // Prepare the data to be saved
+        $values = [
+            'elementId' => $element->id,
+            'siteId' => $element->siteId
+        ];
+        if ($element->hasTitles() && $element->title) {
+            $values['title'] = $element->title;
+        }
+        $fieldLayout = $element->getFieldLayout();
+        if ($fieldLayout) {
+            foreach ($fieldLayout->getFields() as $field) {
+                /** @var Field $field */
+                if ($field::hasContentColumn()) {
+                    $column = $this->fieldColumnPrefix.$field->handle;
+                    $values[$column] = $field->prepareValueForDb($element->getFieldValue($field->handle), $element);
                 }
-                $fieldLayout = $element->getFieldLayout();
-                if ($fieldLayout) {
-                    foreach ($fieldLayout->getFields() as $field) {
-                        /** @var Field $field */
-                        if ($field::hasContentColumn()) {
-                            $column = $this->fieldColumnPrefix.$field->handle;
-                            $values[$column] = $field->prepareValueForDb($element->getFieldValue($field->handle), $element);
-                        }
-                    }
-                }
-
-                // Insert/update the DB row
-                if ($element->contentId) {
-                    // Update the existing row
-                    Craft::$app->getDb()->createCommand()
-                        ->update($this->contentTable, $values, ['id' => $element->contentId])
-                        ->execute();
-                } else {
-                    // Insert a new row and store its ID on the element
-                    Craft::$app->getDb()->createCommand()
-                        ->insert($this->contentTable, $values)
-                        ->execute();
-                    $element->contentId = Craft::$app->getDb()->getLastInsertID();
-                }
-
-                if ($fieldLayout) {
-                    $this->_updateSearchIndexes($element, $fieldLayout);
-                }
-
-                $success = true;
             }
         }
 
-        if ($success) {
-            // Fire an 'afterSaveContent' event
-            $this->trigger(self::EVENT_AFTER_SAVE_CONTENT, new ElementContentEvent([
-                'element' => $element
-            ]));
+        // Insert/update the DB row
+        if ($element->contentId) {
+            // Update the existing row
+            Craft::$app->getDb()->createCommand()
+                ->update($this->contentTable, $values, ['id' => $element->contentId])
+                ->execute();
+        } else {
+            // Insert a new row and store its ID on the element
+            Craft::$app->getDb()->createCommand()
+                ->insert($this->contentTable, $values)
+                ->execute();
+            $element->contentId = Craft::$app->getDb()->getLastInsertID();
         }
+
+        if ($fieldLayout) {
+            $this->_updateSearchIndexes($element, $fieldLayout);
+        }
+
+        // Fire an 'afterSaveContent' event
+        $this->trigger(self::EVENT_AFTER_SAVE_CONTENT, new ElementContentEvent([
+            'element' => $element
+        ]));
 
         $this->contentTable = $originalContentTable;
         $this->fieldColumnPrefix = $originalFieldColumnPrefix;
         $this->fieldContext = $originalFieldContext;
 
-        return $success;
+        return true;
     }
 
     /**
