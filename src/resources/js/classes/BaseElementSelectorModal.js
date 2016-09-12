@@ -223,7 +223,6 @@ Craft.BaseElementSelectorModal = Garnish.Modal.extend(
 				});
 
 				// Double-clicking or double-tapping should select the elements
-				this.addListener(this.elementIndex.$elements, 'dblclick', 'selectElements');
 				this.addListener(this.elementIndex.$elements, 'doubletap', 'selectElements');
 			}
 
