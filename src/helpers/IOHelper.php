@@ -1109,7 +1109,7 @@ class IOHelper
 
 			foreach ($folderContents as $item)
 			{
-				$itemDest = $destination.str_replace($path, '', $item);
+				$itemDest = $destination.'/'.str_replace($path, '', $item);
 
 				$destFolder = static::getFolderName($itemDest, true, $suppressErrors);
 
@@ -1120,7 +1120,9 @@ class IOHelper
 
 				if (static::fileExists($item, false, $suppressErrors))
 				{
-					if ($suppressErrors ? @copy($item, $itemDest) : copy($item, $itemDest))
+					$result = $suppressErrors ? @copy($item, $itemDest) : copy($item, $itemDest);
+
+					if (!$result)
 					{
 						Craft::log('Could not copy file from '.$item.' to '.$itemDest.'.', LogLevel::Error);
 					}
