@@ -139,7 +139,7 @@ trait ApplicationTrait
     /**
      * @var bool
      */
-    private $_isDbConfigValid = false;
+    private $_isDbConfigValid;
 
     /**
      * @var bool
