@@ -81,15 +81,20 @@ class Site extends Model
      */
     public function rules()
     {
-        return [
+        $rules = [
             [['name', 'handle', 'language'], 'required'],
             [['id'], 'number', 'integerOnly' => true],
             [['name', 'handle', 'baseUrl'], 'string', 'max' => 255],
             [['language'], 'string', 'max' => 12],
             [['handle'], Handle::className(), 'reservedWords' => ['id', 'dateCreated', 'dateUpdated', 'uid', 'title']],
-            [['name', 'handle'], Unique::className(), 'targetClass' => SiteRecord::className()],
             [['baseUrl'], Url::className(), 'defaultScheme' => 'http'],
         ];
+
+        if (Craft::$app->getIsInstalled()) {
+            $rules[] = [['name', 'handle'], Unique::className(), 'targetClass' => SiteRecord::className()];
+        }
+
+        return $rules;
     }
 
     /**

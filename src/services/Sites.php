@@ -442,7 +442,7 @@ class Sites extends Component
             throw $e;
         }
 
-        if ($isNewSite) {
+        if (Craft::$app->getIsInstalled() && $isNewSite) {
             // TODO: Move this code into element/category modules
             // Create site settings for each of the category groups
             $allSiteSettings = (new Query())
@@ -804,27 +804,36 @@ class Sites extends Component
     private function _loadAllSites()
     {
         if (!$this->_fetchedAllSites) {
-            if (Craft::$app->getIsInstalled() && !Craft::$app->getIsUpdating()) {
-                $results = $this->_createSiteQuery()
-                    ->all();
-            } else {
-                $results = [];
-            }
-
             $this->_sitesById = [];
             $this->_sitesByHandle = [];
 
-            foreach ($results as $i => $result) {
-                $site = new Site($result);
-                $this->_sitesById[$site->id] = $site;
-                $this->_sitesByHandle[$site->handle] = $site;
+            try {
+                $results = $this->_createSiteQuery()->all();
 
-                if ($i == 0) {
-                    $this->_primarySite = $site;
+                // Check for results because during installation, then transaction
+                // hasn't been committed yet.
+                if ($results) {
+                    foreach ($results as $i => $result) {
+                        $site = new Site($result);
+                        $this->_sitesById[$site->id] = $site;
+                        $this->_sitesByHandle[$site->handle] = $site;
+
+                        if ($i == 0) {
+                            $this->_primarySite = $site;
+                        }
+                    }
+
+                    $this->_fetchedAllSites = true;
                 }
             }
-
-            $this->_fetchedAllSites = true;
+            catch (\yii\db\Exception $e) {
+                // TODO: Maybe MySQL specific?
+                // If the error code is 42S02, it's a missing table and Craft isn't installed yet,
+                // so we swallow the exception.
+                if (isset($e->errorInfo[0]) && $e->errorInfo[0] == '42S02') {
+                    return;
+                }
+            }
         }
     }
 
