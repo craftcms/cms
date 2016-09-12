@@ -11,6 +11,7 @@ use Craft;
 use craft\app\dates\DateTime;
 use craft\app\db\Connection;
 use craft\app\db\MigrationManager;
+use craft\app\db\mysql\Schema as MysqlSchema;
 use craft\app\db\Query;
 use craft\app\enums\ConfigCategory;
 use craft\app\errors\DbConnectException;
@@ -20,7 +21,6 @@ use craft\app\helpers\App;
 use craft\app\helpers\DateTimeHelper;
 use craft\app\helpers\Db;
 use craft\app\helpers\StringHelper;
-use craft\app\helpers\Url;
 use craft\app\i18n\Formatter;
 use craft\app\i18n\I18N;
 use craft\app\i18n\Locale;
@@ -144,7 +144,7 @@ trait ApplicationTrait
     /**
      * @var bool
      */
-    private $_isDbConnectionValid = false;
+    private $_isDbConnectionValid;
 
     /**
      * @var bool
@@ -719,6 +719,16 @@ trait ApplicationTrait
     public function getIsDbConnectionValid()
     {
         /** @var \craft\app\web\Application|\craft\app\console\Application $this */
+        if (!isset($this->_isDbConnectionValid)) {
+            try {
+                $this->getDb()->open();
+                $this->_isDbConnectionValid = true;
+
+            } catch (DbConnectException $e) {
+                $this->_isDbConnectionValid = false;
+            }
+        }
+
         return $this->_isDbConnectionValid;
     }
 
@@ -1222,59 +1232,50 @@ trait ApplicationTrait
     }
 
     /**
-     * Returns the definition for a given application component ID, in which we need to take special care on.
+     * Sets custom component definitions.
      *
-     * @param string $id
-     *
-     * @return mixed The component definition, or null if it's not known
+     * @return void
      */
-    private function _getComponentDefinition($id)
+    private function _setDynamicComponentDefinitions()
     {
         /** @var \craft\app\web\Application|\craft\app\console\Application $this */
-        switch ($id) {
-            case 'assetManager':
-                return $this->_getAssetManagerDefinition();
-            case 'cache':
-                return $this->_getCacheDefinition();
-            case 'db':
-                return $this->_getDbDefinition();
-            case 'mailer':
-                return $this->_getMailerDefinition();
-            case 'formatter':
-                return $this->getLocale()->getFormatter();
-            case 'locale':
-                return $this->_getLocaleDefinition();
-            case 'log':
-                return $this->_getLogDispatcherDefinition();
-        }
-
-        return null;
+        $this->setComponents([
+            'assetManager' => [$this, 'createAssetManager'],
+            'cache' => [$this, 'createCache'],
+            'db' => [$this, 'createDb'],
+            'mailer' => [$this, 'createMailer'],
+            'locale' => [$this, 'createLocale'],
+            'formatter' => [$this, 'createFormatter'],
+            'log' => [$this, 'createLogDispatcher'],
+        ]);
     }
 
     /**
-     * Returns the definition for the [[\yii\web\AssetManager]] object that will be available from Craft::$app->assetManager.
+     * Creates the [[\yii\web\AssetManager]] object that will be available from Craft::$app->assetManager.
      *
-     * @return array
+     * @return object
      */
-    private function _getAssetManagerDefinition()
+    public function createAssetManager()
     {
         /** @var \craft\app\web\Application|\craft\app\console\Application $this */
         $configService = Craft::$app->getConfig();
 
-        return [
+        $config = [
             'class' => 'craft\app\web\AssetManager',
             'basePath' => $configService->get('resourceBasePath'),
             'baseUrl' => $configService->get('resourceBaseUrl')
         ];
+
+        return Craft::createObject($config);
     }
 
     /**
-     * Returns the definition for the [[\yii\caching\Cache]] object that will be available from Craft::$app->cache.
+     * Creates the [[\yii\caching\Cache]] object that will be available from Craft::$app->cache.
      *
-     * @return string|array
+     * @return object
      * @throws InvalidConfigException
      */
-    private function _getCacheDefinition()
+    public function createCache()
     {
         /** @var \craft\app\web\Application|\craft\app\console\Application $this */
         $configService = Craft::$app->getConfig();
@@ -1282,132 +1283,134 @@ trait ApplicationTrait
 
         switch ($cacheMethod) {
             case 'apc': {
-                return [
+                $config = [
                     'class' => 'yii\caching\ApcCache',
                     'useApcu' => $configService->get('useApcu', ConfigCategory::ApcCache),
                 ];
+                break;
             }
 
             case 'db': {
-                return [
+                $config =[
                     'class' => 'yii\caching\DbCache',
                     'gcProbability' => $configService->get('gcProbability', ConfigCategory::DbCache),
                     'cacheTable' => $this->_getNormalizedTablePrefix().$configService->get('cacheTableName', ConfigCategory::DbCache),
                 ];
+                break;
             }
 
             case 'file': {
-                return [
+                $config = [
                     'class' => 'craft\app\cache\FileCache',
                     'cachePath' => $configService->get('cachePath', ConfigCategory::FileCache),
                     'gcProbability' => $configService->get('gcProbability', ConfigCategory::FileCache),
                 ];
+                break;
             }
 
             case 'memcache': {
-                return [
+                $config = [
                     'class' => 'yii\caching\MemCache',
                     'servers' => $configService->get('servers', ConfigCategory::Memcache),
                     'useMemcached' => $configService->get('useMemcached', ConfigCategory::Memcache),
                 ];
+                break;
             }
 
             case 'wincache': {
-                return 'yii\caching\WinCache';
+                $config = 'yii\caching\WinCache';
+                break;
             }
 
             case 'xcache': {
-                return 'yii\caching\XCache';
+                $config = 'yii\caching\XCache';
+                break;
             }
 
             case 'zenddata': {
-                return 'yii\caching\ZendDataCache';
+                $config = 'yii\caching\ZendDataCache';
+                break;
             }
 
             default: {
                 throw new InvalidConfigException('Unsupported cacheMethod config setting value: '.$cacheMethod);
             }
         }
+
+        return Craft::createObject($config);
     }
 
     /**
-     * Returns the definition for the [[Command]] object that will be available from Craft::$app->db.
+     * Creates the [[Connection]] object that will be available from Craft::$app->db.
      *
-     * @return Connection
-     * @throws DbConnectException
+     * @return object
      */
-    private function _getDbDefinition()
+    public function createDb()
     {
         /** @var \craft\app\web\Application|\craft\app\console\Application $this */
         $configService = $this->getConfig();
 
-        try {
-            $config = [
-                'class' => 'craft\app\db\Connection',
-                'dsn' => $this->_processConnectionString(),
-                'emulatePrepare' => true,
-                'username' => $configService->get('user', ConfigCategory::Db),
-                'password' => $configService->get('password', ConfigCategory::Db),
-                'charset' => $configService->get('charset', ConfigCategory::Db),
-                'tablePrefix' => $this->_getNormalizedTablePrefix(),
-                'schemaMap' => [
-                    'mysql' => '\\craft\\app\\db\\mysql\\Schema',
-                ],
-            ];
+        $config = [
+            'class' => Connection::className(),
+            'dsn' => $this->_processConnectionString(),
+            'emulatePrepare' => true,
+            'username' => $configService->get('user', ConfigCategory::Db),
+            'password' => $configService->get('password', ConfigCategory::Db),
+            'charset' => $configService->get('charset', ConfigCategory::Db),
+            'tablePrefix' => $this->_getNormalizedTablePrefix(),
+            'schemaMap' => [
+                'mysql' => MysqlSchema::className(),
+            ],
+        ];
 
-            $db = Craft::createObject($config);
-            $db->open();
-        } // Most likely missing PDO in general or the specific database PDO driver.
-        catch (Exception $e) {
-            Craft::error($e->getMessage(), __METHOD__);
-
-            // TODO: Multi-db driver check.
-            if (!extension_loaded('pdo')) {
-                throw new DbConnectException(Craft::t('app', 'Craft CMS requires the PDO extension to operate.'));
-            } else if (!extension_loaded('pdo_mysql')) {
-                throw new DbConnectException(Craft::t('app', 'Craft CMS requires the PDO_MYSQL driver to operate.'));
-            } else {
-                Craft::error($e->getMessage(), __METHOD__);
-                throw new DbConnectException(Craft::t('app', 'Craft CMS can’t connect to the database with the credentials in craft/config/db.php.'));
-            }
-        } catch (\Exception $e) {
-            Craft::error($e->getMessage(), __METHOD__);
-            throw new DbConnectException(Craft::t('app', 'Craft CMS can’t connect to the database with the credentials in craft/config/db.php.'));
-        }
-
-        $this->setIsDbConnectionValid(true);
-
-        return $db;
+        return Craft::createObject($config);
     }
 
     /**
-     * Returns the definition for the Mailer object that will be available from Craft::$app->getMailer().
+     * Creates the Mailer object that will be available from Craft::$app->getMailer().
      *
-     * @return Mailer
+     * @return object|null
      */
-    private function _getMailerDefinition()
+    public function createMailer()
     {
         /** @var \craft\app\web\Application|\craft\app\console\Application $this */
-        return $this->getSystemSettings()->getSettings('mailer');
+        $config = $this->getSystemSettings()->getSettings('mailer');
+
+        if (!$config) {
+            return null;
+        }
+
+        return Craft::createObject($config);
     }
 
     /**
-     * Returns the definition for the Locale object that will be available from Craft::$app->getLocale().
+     * Creates the Locale object that will be available from Craft::$app->getLocale().
      *
      * @return Locale
      */
-    private function _getLocaleDefinition()
+    public function createLocale()
     {
         /** @var \craft\app\web\Application|\craft\app\console\Application $this */
         return new Locale($this->language);
     }
 
     /**
-     * Returns the definition for the Dispatcher object that will be available from Craft::$app->getLog().
+     * Returns the definition for the Formatter object that will be available from Craft::$app->getFormatter().
      *
-     * @return array|null
+     * @return Formatter
      */
-    private function _getLogDispatcherDefinition()
+    public function createFormatter()
+    {
+        /** @var \craft\app\web\Application|\craft\app\console\Application $this */
+        return $this->getLocale()->getFormatter();
+    }
+
+    /**
+     * Creates the Dispatcher object that will be available from Craft::$app->getLog().
+     *
+     * @return object|null
+     */
+    public function createLogDispatcher()
     {
         /** @var \craft\app\web\Application|\craft\app\console\Application $this */
         $isConsoleRequest = $this->getRequest()->getIsConsoleRequest();
@@ -1431,15 +1434,17 @@ trait ApplicationTrait
             $fileTarget->fileMode = $configService->get('defaultFilePermissions');
             $fileTarget->dirMode = $configService->get('defaultFolderPermissions');
 
-            return [
+            $config = [
                 'class' => '\yii\log\Dispatcher',
                 'targets' => [
                     $fileTarget
                 ]
             ];
-        } else {
-            return null;
+
+            return Craft::createObject($config);
         }
+
+        return null;
     }
 
     /**

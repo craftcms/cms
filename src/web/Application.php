@@ -79,6 +79,9 @@ class Application extends \yii\web\Application
      */
     public function init()
     {
+        // Set the dynamic components
+        $this->_setDynamicComponentDefinitions();
+
         parent::init();
 
         $this->_init();
@@ -292,20 +295,6 @@ class Application extends \yii\web\Application
         Json::sendJsonHeaders();
         echo Json::encode($errorArr);
         $this->end();
-    }
-
-    /**
-     * @inheritdoc
-     */
-    public function get($id, $throwException = true)
-    {
-        if (!$this->has($id, true)) {
-            if (($definition = $this->_getComponentDefinition($id)) !== null) {
-                $this->set($id, $definition);
-            }
-        }
-
-        return parent::get($id, $throwException);
     }
 
     /**
