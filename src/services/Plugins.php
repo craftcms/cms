@@ -641,7 +641,7 @@ class Plugins extends Component
      *
      * @return array Info about all of the plugins saved in craft/plugins
      */
-    public function getPluginInfo()
+    public function getAllPluginInfo()
     {
         $this->loadPlugins();
 
