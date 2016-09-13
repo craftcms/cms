@@ -178,6 +178,7 @@ class Entries extends Component
         $entryType = $entry->getType();
 
         $entryRecord->sectionId = $entry->sectionId;
+        $entryRecord->typeId = $entryType->id;
 
         if ($section->type == Section::TYPE_SINGLE) {
             $entryRecord->authorId = $entry->authorId = null;
@@ -186,7 +187,6 @@ class Entries extends Component
             $entryRecord->authorId = $entry->authorId;
             $entryRecord->postDate = $entry->postDate;
             $entryRecord->expiryDate = $entry->expiryDate;
-            $entryRecord->typeId = $entryType->id;
         }
 
         if ($entry->enabled && !$entryRecord->postDate) {

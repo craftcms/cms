@@ -678,6 +678,30 @@ class Config extends Component
         return false;
     }
 
+
+    /**
+     * Returns the application’s configured DB table prefix.
+     *
+     * @return string
+     */
+    public function getDbTablePrefix()
+    {
+        // Table prefixes cannot be longer than 5 characters
+        $tablePrefix = rtrim($this->get('tablePrefix', ConfigCategory::Db), '_');
+
+        if ($tablePrefix) {
+            if (StringHelper::length($tablePrefix) > 5) {
+                $tablePrefix = substr($tablePrefix, 0, 5);
+            }
+
+            $tablePrefix .= '_';
+        } else {
+            $tablePrefix = '';
+        }
+
+        return $tablePrefix;
+    }
+
     // Private Methods
     // =========================================================================
 

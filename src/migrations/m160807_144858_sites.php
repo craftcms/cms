@@ -86,6 +86,7 @@ class m160807_144858_sites extends Migration
 
         $siteIdsByLocale = [];
         $this->caseSql = 'case';
+        $localePermissions = [];
         $permissionsCaseSql = 'case';
 
         foreach ($locales as $i => $locale) {
@@ -104,7 +105,11 @@ class m160807_144858_sites extends Migration
             $siteIdsByLocale[$locale] = $siteId;
 
             $this->caseSql .= ' when % = '.$this->db->quoteValue($locale).' then '.$this->db->quoteValue($siteId);
-            $permissionsCaseSql .= ' when % = '.$this->db->quoteValue('editlocale:'.$locale).' then '.$this->db->quoteValue('editsite:'.$siteId);
+
+            $localePermission = 'editlocale:'.$locale;
+            $sitePermission = 'editsite:'.$siteId;
+            $localePermissions[] = $localePermission;
+            $permissionsCaseSql .= ' when % = '.$this->db->quoteValue($localePermission).' then '.$this->db->quoteValue($sitePermission);
         }
 
         $this->caseSql .= ' end';
@@ -113,9 +118,14 @@ class m160807_144858_sites extends Migration
         // Update the user permissions
         // ---------------------------------------------------------------------
 
-        $this->update('{{%userpermissions}}', [
-            'name' => new Expression(str_replace('%', $this->db->quoteColumnName('name'), $permissionsCaseSql)),
-        ], '', [], false);
+        $this->update(
+            '{{%userpermissions}}',
+            [
+                'name' => new Expression(str_replace('%', $this->db->quoteColumnName('name'), $permissionsCaseSql)),
+            ],
+            ['in', 'name', $localePermissions],
+            [],
+            false);
 
         // Create the FK columns
         // ---------------------------------------------------------------------

@@ -295,20 +295,6 @@ class Application extends \yii\web\Application
     }
 
     /**
-     * @inheritdoc
-     */
-    public function get($id, $throwException = true)
-    {
-        if (!$this->has($id, true)) {
-            if (($definition = $this->_getComponentDefinition($id)) !== null) {
-                $this->set($id, $definition);
-            }
-        }
-
-        return parent::get($id, $throwException);
-    }
-
-    /**
      * Tries to find a match between the browser's preferred languages and the languages Craft has been translated into.
      *
      * @return string

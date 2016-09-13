@@ -598,14 +598,14 @@ class Elements extends Component
                                     ])
                                 ->execute();
                         }
-
-                        // Tell the element it was just saved
-                        $element->afterSave();
-
-                        // Finally, delete any caches involving this element. (Even do this for new elements, since they
-                        // might pop up in a cached criteria.)
-                        Craft::$app->getTemplateCaches()->deleteCachesByElement($element);
                     }
+
+                    // Tell the element it was just saved
+                    $element->afterSave();
+
+                    // Finally, delete any caches involving this element. (Even do this for new elements, since they
+                    // might pop up in a cached criteria.)
+                    Craft::$app->getTemplateCaches()->deleteCachesByElement($element);
                 }
             } else {
                 $success = false;

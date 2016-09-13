@@ -10,6 +10,7 @@ namespace craft\app\controllers;
 use Craft;
 use craft\app\dates\DateTime;
 use craft\app\elements\User;
+use craft\app\helpers\ArrayHelper;
 use craft\app\helpers\DateTimeHelper;
 use craft\app\helpers\Json;
 use craft\app\helpers\Url;
@@ -760,9 +761,12 @@ class EntriesController extends BaseEntriesController
         // Override the entry type?
         $typeId = Craft::$app->getRequest()->getParam('typeId');
 
-        if ($typeId) {
-            $variables['entry']->typeId = $typeId;
+        if (!$typeId) {
+            // Default to the section's first entry type
+            $typeId = ArrayHelper::getFirstKey($variables['section']->getEntryTypes('id'));
         }
+
+        $variables['entry']->typeId = $typeId;
 
         $variables['entryType'] = $variables['entry']->getType();
 

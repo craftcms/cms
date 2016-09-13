@@ -266,7 +266,7 @@ class Install extends Migration
         $this->createTable('{{%entries}}', [
             'id' => $this->primaryKey(),
             'sectionId' => $this->integer()->notNull(),
-            'typeId' => $this->integer(),
+            'typeId' => $this->integer()->notNull(),
             'authorId' => $this->integer(),
             'postDate' => $this->dateTime(),
             'expiryDate' => $this->dateTime(),
@@ -393,7 +393,7 @@ class Install extends Migration
             'ownerId' => $this->integer()->notNull(),
             'ownerSiteId' => $this->integer()->notNull(),
             'fieldId' => $this->integer()->notNull(),
-            'typeId' => $this->integer(),
+            'typeId' => $this->integer()->notNull(),
             'sortOrder' => $this->smallInteger()->unsigned(),
             'dateCreated' => $this->dateTime()->notNull(),
             'dateUpdated' => $this->dateTime()->notNull(),

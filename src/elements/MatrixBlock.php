@@ -16,6 +16,7 @@ use craft\app\elements\db\MatrixBlockQuery;
 use craft\app\fields\Matrix;
 use craft\app\helpers\ElementHelper;
 use craft\app\models\MatrixBlockType;
+use yii\base\InvalidConfigException;
 
 /**
  * MatrixBlock represents a matrix block element.
@@ -260,14 +261,21 @@ class MatrixBlock extends Element
      * Returns the block type.
      *
      * @return MatrixBlockType|null
+     * @throws InvalidConfigException if [[typeId]] is missing or invalid
      */
     public function getType()
     {
-        if ($this->typeId) {
-            return Craft::$app->getMatrix()->getBlockTypeById($this->typeId);
+        if (!$this->typeId) {
+            throw new InvalidConfigException('Matrix block is missing its type ID');
         }
 
-        return null;
+        $blockType = Craft::$app->getMatrix()->getBlockTypeById($this->typeId);
+
+        if (!$blockType) {
+            throw new InvalidConfigException('Invalid Matrix block ID: '.$this->typeId);
+        }
+
+        return $blockType;
     }
 
     /**

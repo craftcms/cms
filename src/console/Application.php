@@ -59,20 +59,6 @@ class Application extends \yii\console\Application
     }
 
     /**
-     * @inheritdoc
-     */
-    public function get($id, $throwException = true)
-    {
-        if (!$this->has($id, true)) {
-            if (($definition = $this->_getComponentDefinition($id)) !== null) {
-                $this->set($id, $definition);
-            }
-        }
-
-        return parent::get($id, $throwException);
-    }
-
-    /**
      * Returns the configuration of the built-in commands.
      *
      * @return array The configuration of the built-in commands.
