@@ -483,19 +483,21 @@ class Category extends Element
      * Returns the category's group.
      *
      * @return CategoryGroup
-     * @throws InvalidConfigException if [[groupId]] is invalid
+     * @throws InvalidConfigException if [[groupId]] is missing or invalid
      */
     public function getGroup()
     {
-        if ($this->groupId) {
-            $group = Craft::$app->getCategories()->getGroupById($this->groupId);
-
-            if ($group) {
-                return $group;
-            }
+        if (!$this->groupId) {
+            throw new InvalidConfigException('Category is missing its group ID');
         }
 
-        throw new InvalidConfigException('Invalid category group ID: '.$this->groupId);
+        $group = Craft::$app->getCategories()->getGroupById($this->groupId);
+
+        if (!$group) {
+            throw new InvalidConfigException('Invalid category group ID: '.$this->groupId);
+        }
+
+        return $group;
     }
 
     // Protected Methods

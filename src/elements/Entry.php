@@ -840,38 +840,42 @@ EOD;
      * Returns the entry's section.
      *
      * @return Section
-     * @throws InvalidConfigException if [[sectionId]] is invalid
+     * @throws InvalidConfigException if [[sectionId]] is missing or invalid
      */
     public function getSection()
     {
-        if ($this->sectionId) {
-            $section = Craft::$app->getSections()->getSectionById($this->sectionId);
-
-            if ($section) {
-                return $section;
-            }
+        if (!$this->sectionId) {
+            throw new InvalidConfigException('Entry is missing its section ID');
         }
 
-        throw new InvalidConfigException('Invalid section ID: '.$this->sectionId);
+        $section = Craft::$app->getSections()->getSectionById($this->sectionId);
+
+        if (!$section) {
+            throw new InvalidConfigException('Invalid section ID: '.$this->sectionId);
+        }
+
+        return $section;
     }
 
     /**
      * Returns the type of entry.
      *
      * @return EntryType
-     * @throws InvalidConfigException if [[typeId]] is invalid
+     * @throws InvalidConfigException if [[typeId]] is missing or invalid
      */
     public function getType()
     {
-        if ($this->typeId) {
-            $sectionEntryTypes = $this->getSection()->getEntryTypes('id');
-
-            if (isset($sectionEntryTypes[$this->typeId])) {
-                return $sectionEntryTypes[$this->typeId];
-            }
+        if (!$this->typeId) {
+            throw new InvalidConfigException('Entry is missing its type ID');
         }
 
-        throw new InvalidConfigException('Invalid entry type ID: '.$this->typeId);
+        $sectionEntryTypes = $this->getSection()->getEntryTypes('id');
+
+        if (!isset($sectionEntryTypes[$this->typeId])) {
+            throw new InvalidConfigException('Invalid entry type ID: '.$this->typeId);
+        }
+
+        return $sectionEntryTypes[$this->typeId];
     }
 
     /**
