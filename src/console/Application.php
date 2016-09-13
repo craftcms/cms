@@ -50,9 +50,6 @@ class Application extends \yii\console\Application
      */
     public function init()
     {
-        // Set the dynamic components
-        $this->_setDynamicComponentDefinitions();
-
         parent::init();
 
         // Set default timezone to UTC

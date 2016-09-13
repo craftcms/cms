@@ -79,9 +79,6 @@ class Application extends \yii\web\Application
      */
     public function init()
     {
-        // Set the dynamic components
-        $this->_setDynamicComponentDefinitions();
-
         parent::init();
 
         $this->_init();
