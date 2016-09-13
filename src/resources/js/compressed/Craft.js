@@ -1,4 +1,4 @@
-/*! Craft 3.0.0 - 2016-09-09 */
+/*! Craft 3.0.0 - 2016-09-13 */
 !function(a){
 // Set all the standard Craft.* stuff
 a.extend(Craft,{navHeight:48,/**
@@ -638,7 +638,7 @@ var b={context:"modal",elementType:this.elementType,sources:this.settings.source
 // Initialize the element index
 this.elementIndex=Craft.createElementIndex(this.elementType,this.$body,{context:"modal",storageKey:this.settings.storageKey,criteria:this.settings.criteria,disabledElementIds:this.settings.disabledElementIds,selectable:!0,multiSelect:this.settings.multiSelect,buttonContainer:this.$secondaryButtons,onSelectionChange:a.proxy(this,"onSelectionChange")}),
 // Double-clicking or double-tapping should select the elements
-this.addListener(this.elementIndex.$elements,"dblclick","selectElements"),this.addListener(this.elementIndex.$elements,"doubletap","selectElements"))},this))}},{defaults:{resizable:!0,storageKey:null,sources:null,criteria:null,multiSelect:!1,disabledElementIds:[],disableElementsOnSelect:!1,hideOnSelect:!0,onCancel:a.noop,onSelect:a.noop}}),/**
+this.addListener(this.elementIndex.$elements,"doubletap","selectElements"))},this))}},{defaults:{resizable:!0,storageKey:null,sources:null,criteria:null,multiSelect:!1,disabledElementIds:[],disableElementsOnSelect:!1,hideOnSelect:!0,onCancel:a.noop,onSelect:a.noop}}),/**
  * Input Generator
  */
 Craft.BaseInputGenerator=Garnish.Base.extend({$source:null,$target:null,$form:null,settings:null,listening:null,timeout:null,init:function(b,c,d){this.$source=a(b),this.$target=a(c),this.$form=this.$source.closest("form"),this.setSettings(d),this.startListening()},setNewSource:function(b){var c=this.listening;this.stopListening(),this.$source=a(b),c&&this.startListening()},startListening:function(){this.listening||(this.listening=!0,this.addListener(this.$source,"textchange","onTextChange"),this.addListener(this.$form,"submit","onFormSubmit"),this.addListener(this.$target,"focus",function(){this.addListener(this.$target,"textchange","stopListening"),this.addListener(this.$target,"blur",function(){this.removeListener(this.$target,"textchange,blur")})}))},stopListening:function(){this.listening&&(this.listening=!1,this.removeAllListeners(this.$source),this.removeAllListeners(this.$target),this.removeAllListeners(this.$form))},onTextChange:function(){this.timeout&&clearTimeout(this.timeout),this.timeout=setTimeout(a.proxy(this,"updateTarget"),250)},onFormSubmit:function(){this.timeout&&clearTimeout(this.timeout),this.updateTarget()},updateTarget:function(){var a=this.$source.val(),b=this.generateTargetValue(a);this.$target.val(b),this.$target.trigger("textchange")},generateTargetValue:function(a){return a}}),/**
