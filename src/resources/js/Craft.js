@@ -1,4 +1,4 @@
-/*! Craft 3.0.0 - 2016-09-09 */
+/*! Craft 3.0.0 - 2016-09-13 */
 (function($){
 
 // Set all the standard Craft.* stuff
@@ -4569,7 +4569,6 @@ Craft.BaseElementSelectorModal = Garnish.Modal.extend(
 				});
 
 				// Double-clicking or double-tapping should select the elements
-				this.addListener(this.elementIndex.$elements, 'dblclick', 'selectElements');
 				this.addListener(this.elementIndex.$elements, 'doubletap', 'selectElements');
 			}
 
