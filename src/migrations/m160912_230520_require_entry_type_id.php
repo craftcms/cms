@@ -35,23 +35,25 @@ class m160912_230520_require_entry_type_id extends Migration
             ->from('{{%sections}} s')
             ->all();
 
-        // Build the mapping case SQL
-        $caseSql = 'case';
+        if ($results) {
+            // Build the mapping case SQL
+            $caseSql = 'case';
 
-        foreach ($results as $result) {
-            $caseSql .= ' when % = '.$this->db->quoteValue($result['sectionId']).' then '.$this->db->quoteValue($result['typeId']);
+            foreach ($results as $result) {
+                $caseSql .= ' when % = '.$this->db->quoteValue($result['sectionId']).' then '.$this->db->quoteValue($result['typeId']);
+            }
+
+            $caseSql .= ' end';
+
+            // Update the entries without an entry type
+            $this->update('{{%entries}}',
+                [
+                    'typeId' => new Expression(str_replace('%', $this->db->quoteColumnName('sectionId'), $caseSql)),
+                ],
+                'typeId is null',
+                [],
+                false);
         }
-
-        $caseSql .= ' end';
-
-        // Update the entries without an entry type
-        $this->update('{{%entries}}',
-            [
-                'typeId' => new Expression(str_replace('%', $this->db->quoteColumnName('sectionId'), $caseSql)),
-            ],
-            'typeId is null',
-            [],
-            false);
 
         // Are there any entries that still don't have a type?
         $typelessEntryIds = (new Query())
