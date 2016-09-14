@@ -99,6 +99,16 @@ class Matrix extends Field implements EagerLoadingFieldInterface
     public function setBlockTypes($blockTypes)
     {
         $this->_blockTypes = [];
+        $defaultFieldConfig = [
+            'type' => null,
+            'name' => null,
+            'handle' => null,
+            'instructions' => null,
+            'required' => false,
+            'translationMethod' => Field::TRANSLATION_METHOD_NONE,
+            'translationKeyFormat' => null,
+            'typesettings' => null,
+        ];
 
         foreach ($blockTypes as $key => $config) {
             if ($config instanceof MatrixBlockType) {
@@ -114,16 +124,18 @@ class Matrix extends Field implements EagerLoadingFieldInterface
 
                 if (!empty($config['fields'])) {
                     foreach ($config['fields'] as $fieldId => $fieldConfig) {
+                        $fieldConfig = array_merge($defaultFieldConfig, $fieldConfig);
+
                         $fields[] = Craft::$app->getFields()->createField([
                             'type' => $fieldConfig['type'],
                             'id' => $fieldId,
                             'name' => $fieldConfig['name'],
                             'handle' => $fieldConfig['handle'],
                             'instructions' => $fieldConfig['instructions'],
-                            'required' => !empty($fieldConfig['required']),
+                            'required' => (bool)$fieldConfig['required'],
                             'translationMethod' => $fieldConfig['translationMethod'],
                             'translationKeyFormat' => $fieldConfig['translationKeyFormat'],
-                            'settings' => (isset($fieldConfig['typesettings']) ? $fieldConfig['typesettings'] : null),
+                            'settings' => $fieldConfig['typesettings'],
                         ]);
                     }
                 }
