@@ -743,7 +743,7 @@ class IOHelper
 			return new Folder($path);
 		}
 
-		Craft::log('Tried to create a folder at '.$path.', but the folder already exists.', LogLevel::Error);
+		Craft::log('Tried to create a folder at '.$path.', but the folder already exists.', LogLevel::Warning);
 		return false;
 	}
 
