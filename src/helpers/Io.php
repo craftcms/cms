@@ -693,7 +693,7 @@ class Io
             return new Folder($path);
         }
 
-        Craft::error('Tried to create a folder at '.$path.', but the folder already exists.', __METHOD__);
+        Craft::warning('Tried to create a folder at '.$path.', but the folder already exists.', __METHOD__);
 
         return false;
     }
