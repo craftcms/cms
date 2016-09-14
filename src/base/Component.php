@@ -7,8 +7,6 @@
 
 namespace craft\app\base;
 
-use yii\base\Arrayable;
-
 /**
  * Component is the base class for classes representing Craft components in terms of objects.
  *
@@ -17,7 +15,7 @@ use yii\base\Arrayable;
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since  3.0
  */
-abstract class Component extends Model implements ComponentInterface, Arrayable
+abstract class Component extends Model implements ComponentInterface
 {
     // Static
     // =========================================================================
