@@ -10,8 +10,8 @@
 // Make sure this is PHP 5.4 or later
 // -----------------------------------------------------------------------------
 
-if (!defined('PHP_VERSION_ID') || PHP_VERSION_ID < 50400) {
-    exit('Craft CMS requires PHP 5.4.0 or later, but you&rsquo;re running '.PHP_VERSION.'. Please talk to your host/IT department about upgrading PHP or your server.');
+if (!defined('PHP_VERSION_ID') || PHP_VERSION_ID < 50600) {
+    exit('Craft CMS requires PHP 5.6 or later, but you&rsquo;re running '.PHP_VERSION.'. Please talk to your host/IT department about upgrading PHP or your server.');
 }
 
 // Check for this early because Craft uses it before the requirements checker gets a chance to run.
