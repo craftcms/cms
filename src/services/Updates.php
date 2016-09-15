@@ -295,7 +295,7 @@ class Updates extends Component
 
         foreach ($plugins as $plugin) {
             $pluginUpdateModel = new PluginUpdate();
-            $pluginUpdateModel->class = $plugin::className();
+            $pluginUpdateModel->class = $plugin->getHandle();
             $pluginUpdateModel->localVersion = $plugin->version;
 
             $pluginUpdateModels[$plugin::className()] = $pluginUpdateModel;
@@ -568,19 +568,19 @@ class Updates extends Component
                 } else {
                     $latestVersion = null;
                     $localVersion = null;
-                    $class = null;
+                    $handle = null;
 
                     foreach ($updateModel->plugins as $pluginUpdateModel) {
                         if (strtolower($pluginUpdateModel->class) === $handle) {
                             $latestVersion = $pluginUpdateModel->latestVersion;
                             $localVersion = $pluginUpdateModel->localVersion;
-                            $class = $pluginUpdateModel->class;
+                            $handle = $pluginUpdateModel->class;
 
                             break;
                         }
                     }
 
-                    Craft::info('Updating plugin "'.$class.'" from '.$localVersion.' to '.$latestVersion.'.');
+                    Craft::info('Updating plugin "'.$handle.'" from '.$localVersion.' to '.$latestVersion.'.');
                 }
 
                 $result = $updater->getUpdateFileInfo($handle);
