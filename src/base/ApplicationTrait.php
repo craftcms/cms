@@ -319,13 +319,15 @@ trait ApplicationTrait
             return true;
         }
 
-        $actionSegments = $request->getActionSegments();
+        if (!$request->getIsConsoleRequest()) {
+            $actionSegments = $request->getActionSegments();
 
-        if (
-            $actionSegments == ['update', 'cleanUp'] ||
-            $actionSegments == ['update', 'rollback']
-        ) {
-            return true;
+            if (
+                $actionSegments == ['update', 'cleanUp'] ||
+                $actionSegments == ['update', 'rollback']
+            ) {
+                return true;
+            }
         }
 
         return false;
