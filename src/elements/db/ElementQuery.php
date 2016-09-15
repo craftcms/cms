@@ -1672,15 +1672,21 @@ class ElementQuery extends Query implements ElementQueryInterface, Arrayable, Co
             // Get the element IDs
             $limit = $this->query->limit;
             $offset = $this->query->offset;
+            $subLimit = $this->subQuery->limit;
+            $subOffset = $this->subQuery->offset;
 
             $this->query->limit = null;
             $this->query->offset = null;
+            $this->subQuery->limit = null;
+            $this->subQuery->offset = null;
 
             $elementIds = $this->query->column('elements.id');
             $searchResults = Craft::$app->getSearch()->filterElementIdsByQuery($elementIds, $this->search, true, $this->siteId, true);
 
             $this->query->limit = $limit;
             $this->query->offset = $offset;
+            $this->subQuery->limit = $subLimit;
+            $this->subQuery->offset = $subOffset;
 
             // No results?
             if (!$searchResults) {
@@ -1694,10 +1700,12 @@ class ElementQuery extends Query implements ElementQueryInterface, Arrayable, Co
                 $orderBy = [
                     new FixedOrderExpression('elements.id', $filteredElementIds, $db)
                 ];
+
                 $this->query->orderBy($orderBy);
+                $this->subQuery->orderBy($orderBy);
             }
 
-            $this->andWhere(['in', 'elements.id', $filteredElementIds]);
+            $this->subQuery->andWhere(['in', 'elements.id', $filteredElementIds]);
 
             $this->_searchScores = $searchResults;
         }
