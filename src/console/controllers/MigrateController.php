@@ -88,11 +88,13 @@ class MigrateController extends BaseMigrateController
     {
         if (parent::beforeAction($action)) {
             if (is_string($this->plugin)) {
-                $this->plugin = Craft::$app->getPlugins()->getPlugin($this->plugin);
+                $plugin = Craft::$app->getPlugins()->getPlugin($this->plugin);
 
-                if ($this->plugin === null) {
-                    throw new Exception("The 'plugin' option must be set to an installed and enabled plugin's handle.");
+                if ($plugin === null) {
+                    throw new Exception('Invalid plugin handle: '.$this->plugin);
                 }
+
+                $this->plugin = $plugin;
             }
 
             $this->migrationPath = $this->getMigrator()->migrationPath;
