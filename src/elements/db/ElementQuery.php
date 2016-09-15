@@ -1725,7 +1725,10 @@ class ElementQuery extends Query implements ElementQueryInterface, Arrayable, Co
 
             $orderBy = [new FixedOrderExpression('elements.id', $ids, $db)];
         } else if (!empty($this->orderBy) && $this->orderBy !== ['score' => SORT_ASC] && empty($this->query->orderBy)) {
-            $orderBy = $this->orderBy;
+            // In case $this->orderBy was set directly instead of via orderBy()
+            $orderBy = $this->normalizeOrderBy($this->orderBy);
+            $orderByColumns = array_keys($orderBy);
+
             $orderColumnMap = [];
 
             if (is_array($this->customFields)) {
@@ -1741,9 +1744,14 @@ class ElementQuery extends Query implements ElementQueryInterface, Arrayable, Co
             $orderColumnMap['id'] = 'elements.id';
 
             foreach ($orderColumnMap as $orderValue => $columnName) {
-                // Avoid matching fields named "asc" or "desc" in the string "column_name asc" or
-                // "column_name desc"
-                $orderBy = preg_replace('/(?<!\w\s|\.)\b'.$orderValue.'\b/', $columnName.'$1', $orderBy);
+                // Are we ordering by this column name?
+                $pos = array_search($orderValue, $orderByColumns);
+
+                if ($pos !== false) {
+                    // Swap it with the mapped column name
+                    $orderByColumns[$pos] = $columnName;
+                    $orderBy = array_combine($orderByColumns, $orderBy);
+                }
             }
         } else if ($this->structureId) {
             $orderBy = 'structureelements.lft';
