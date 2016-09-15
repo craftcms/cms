@@ -841,8 +841,12 @@ class EntriesController extends BaseEntriesController
         $entry->expiryDate = (($expiryDate = DateTimeHelper::toDateTime(Craft::$app->getRequest()->getBodyParam('expiryDate'))) !== false ? $expiryDate : null);
         $entry->enabled = (bool)Craft::$app->getRequest()->getBodyParam('enabled', $entry->enabled);
         $entry->enabledForSite = (bool)Craft::$app->getRequest()->getBodyParam('enabledForSite', $entry->enabledForSite);
-
         $entry->title = Craft::$app->getRequest()->getBodyParam('title', $entry->title);
+
+        if (!$entry->typeId) {
+            // Default to the section's first entry type
+            $entry->typeId = ArrayHelper::getFirstKey($entry->getSection()->getEntryTypes('id'));
+        }
 
         $fieldsLocation = Craft::$app->getRequest()->getParam('fieldsLocation', 'fields');
         $entry->setFieldValuesFromPost($fieldsLocation);

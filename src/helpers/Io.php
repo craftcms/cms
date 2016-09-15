@@ -693,7 +693,7 @@ class Io
             return new Folder($path);
         }
 
-        Craft::error('Tried to create a folder at '.$path.', but the folder already exists.', __METHOD__);
+        Craft::warning('Tried to create a folder at '.$path.', but the folder already exists.', __METHOD__);
 
         return false;
     }
@@ -1000,7 +1000,7 @@ class Io
             $folderContents = static::getFolderContents($path, true, null, true, $suppressErrors);
 
             foreach ($folderContents as $item) {
-                $itemDest = $destination.str_replace($path, '', $item);
+                $itemDest = $destination.'/'.str_replace($path, '', $item);
 
                 $destFolder = static::getFolderName($itemDest, true, $suppressErrors);
 
@@ -1009,7 +1009,9 @@ class Io
                 }
 
                 if (static::fileExists($item, false, $suppressErrors)) {
-                    if ($suppressErrors ? @copy($item, $itemDest) : copy($item, $itemDest)) {
+                    $result = $suppressErrors ? @copy($item, $itemDest) : copy($item, $itemDest);
+
+                    if ($result) {
                         Craft::error('Could not copy file from '.$item.' to '.$itemDest.'.', __METHOD__);
                     }
                 } else if (static::folderExists($item, false, $suppressErrors)) {

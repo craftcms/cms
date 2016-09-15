@@ -71,7 +71,6 @@ class MigrationManager extends Component
         }
 
         $this->migrationPath = Craft::getAlias($this->migrationPath);
-        Io::ensureFolderExists($this->migrationPath);
 
         $this->db = Instance::ensure($this->db, Connection::className());
     }

@@ -765,7 +765,7 @@ class Plugins extends Component
             ->update(
                 '{{%plugins}}',
                 ['licenseKey' => $normalizedLicenseKey],
-                ['class' => $pluginHandle])
+                ['handle' => $pluginHandle])
             ->execute();
 
         // Update our cache of it if the plugin is enabled
@@ -826,7 +826,7 @@ class Plugins extends Component
             ->update(
                 '{{%plugins}}',
                 ['licenseKeyStatus' => $licenseKeyStatus],
-                ['class' => $pluginHandle])
+                ['handle' => $pluginHandle])
             ->execute();
 
         // Update our cache of it if the plugin is enabled

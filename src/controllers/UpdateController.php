@@ -107,7 +107,7 @@ class UpdateController extends Controller
                 case 'all': {
                     // Craft first.
                     $return[] = [
-                        'handle' => 'Craft',
+                        'handle' => 'craft',
                         'name' => 'Craft',
                         'version' => $updateInfo->app->latestVersion.'.'.$updateInfo->app->latestBuild,
                         'critical' => $updateInfo->app->criticalUpdateAvailable,
