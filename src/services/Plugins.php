@@ -10,6 +10,7 @@ namespace craft\app\services;
 use Craft;
 use craft\app\base\Plugin;
 use craft\app\base\PluginInterface;
+use craft\app\db\MigrationManager;
 use craft\app\db\Query;
 use craft\app\enums\LicenseKeyStatus;
 use craft\app\errors\InvalidLicenseKeyException;
@@ -887,16 +888,14 @@ class Plugins extends Component
     private function _setPluginMigrator(PluginInterface $plugin, $handle, $id)
     {
         /** @var Plugin $plugin */
-        $plugin->setComponents([
-            'migrator' => [
-                'class' => 'craft\app\db\MigrationManager',
-                'migrationNamespace' => "craft\\plugins\\$handle\\migrations",
-                'migrationPath' => "@plugins/$handle/migrations",
-                'fixedColumnValues' => [
-                    'type' => 'plugin',
-                    'pluginId' => $id
-                ],
-            ]
+        $plugin->set('migrator', [
+            'class' => MigrationManager::className(),
+            'migrationNamespace' => "craft\\plugins\\$handle\\migrations",
+            'migrationPath' => "@plugins/$handle/migrations",
+            'fixedColumnValues' => [
+                'type' => 'plugin',
+                'pluginId' => $id
+            ],
         ]);
     }
 }
