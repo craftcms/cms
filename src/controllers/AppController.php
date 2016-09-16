@@ -262,11 +262,11 @@ class AppController extends Controller
                 'success' => true,
                 'edition' => $model->edition
             ]);
-        } else {
-            return $this->asJson([
-                'errors' => $model->getErrors()
-            ]);
         }
+
+        return $this->asJson([
+            'errors' => $model->getErrors()
+        ]);
     }
 
     /**
