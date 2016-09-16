@@ -390,34 +390,6 @@ class DateTimeHelper
     }
 
     /**
-     * Returns a formatted descriptive date string for given datetime string.
-     *
-     * If the given date is today, the returned string could be "Today, 6:54 pm". If the given date was yesterday, the
-     * returned string could be "Yesterday, 6:54 pm". If $dateString's year is the current year, the returned string
-     * does not include mention of the year.
-     *
-     * @param string $dateString Datetime string or Unix timestamp
-     *
-     * @return string Described, relative date string
-     */
-    public static function niceShort($dateString = null)
-    {
-        $date = ($dateString == null) ? time() : strtotime($dateString);
-
-        $y = (static::isThisYear($date)) ? '' : ' Y';
-
-        if (static::isToday($date)) {
-            $ret = sprintf('Today, %s', date("g:i a", $date));
-        } else if (static::wasYesterday($date)) {
-            $ret = sprintf('Yesterday, %s', date("g:i a", $date));
-        } else {
-            $ret = date("M jS{$y}, H:i", $date);
-        }
-
-        return $ret;
-    }
-
-    /**
      * Returns true if given date is today.
      *
      * @param mixed $date The timestamp to check
