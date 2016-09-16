@@ -206,7 +206,7 @@ class DateTime extends \DateTime
     public function localeDate()
     {
         Craft::$app->getDeprecator()->log('DateTime::localeDate()', 'DateTime::localeDate() has been deprecated. Use Craft::$app->formatter->asDate($dateTime, \'short\') instead.');
-        return Craft::$app->getFormatter()->asDate($this, 'short');
+        return Craft::$app->getFormatter()->asDate($this, Locale::LENGTH_SHORT);
     }
 
     /**
@@ -216,7 +216,7 @@ class DateTime extends \DateTime
     public function localeTime()
     {
         Craft::$app->getDeprecator()->log('DateTime::localeTime()', 'DateTime::localeTime() has been deprecated. Use Craft::$app->formatter->asTime($dateTime, \'short\') instead.');
-        return Craft::$app->getFormatter()->asTime($this, 'short');
+        return Craft::$app->getFormatter()->asTime($this, Locale::LENGTH_SHORT);
     }
 
     /**
