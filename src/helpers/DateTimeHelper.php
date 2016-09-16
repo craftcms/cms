@@ -106,13 +106,10 @@ class DateTimeHelper
                     $format = $altFormat;
                 }
             } else {
-                $date = '';
-                $format = '';
-
                 // Default to the current date
                 $current = new DateTime('now', new \DateTimeZone($timeZone));
-                $date .= $current->month().'/'.$current->day().'/'.$current->year();
-                $format .= 'n/j/Y';
+                $format = 'n/j/Y';
+                $date = $current->format($format);
             }
 
             if (!empty($dt['time'])) {
