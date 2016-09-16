@@ -159,7 +159,7 @@ class TagsController extends Controller
     public function actionDeleteTagGroup()
     {
         $this->requirePostRequest();
-        $this->requireAjaxRequest();
+        $this->requireAcceptsJson();
         $this->requireAdmin();
 
         $sectionId = Craft::$app->getRequest()->getRequiredBodyParam('id');
@@ -177,7 +177,7 @@ class TagsController extends Controller
     public function actionSearchForTags()
     {
         $this->requirePostRequest();
-        $this->requireAjaxRequest();
+        $this->requireAcceptsJson();
 
         $search = Craft::$app->getRequest()->getBodyParam('search');
         $tagGroupId = Craft::$app->getRequest()->getBodyParam('tagGroupId');
@@ -239,7 +239,7 @@ class TagsController extends Controller
     public function actionCreateTag()
     {
         $this->requireLogin();
-        $this->requireAjaxRequest();
+        $this->requireAcceptsJson();
 
         $tag = new Tag();
         $tag->groupId = Craft::$app->getRequest()->getRequiredBodyParam('groupId');

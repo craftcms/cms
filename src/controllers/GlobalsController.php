@@ -86,7 +86,7 @@ class GlobalsController extends Controller
     public function actionDeleteSet()
     {
         $this->requirePostRequest();
-        $this->requireAjaxRequest();
+        $this->requireAcceptsJson();
         $this->requireAdmin();
 
         $globalSetId = Craft::$app->getRequest()->getRequiredBodyParam('id');

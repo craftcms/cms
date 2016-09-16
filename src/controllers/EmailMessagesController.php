@@ -44,7 +44,7 @@ class EmailMessagesController extends Controller
      */
     public function actionGetMessageModal()
     {
-        $this->requireAjaxRequest();
+        $this->requireAcceptsJson();
 
         $request = Craft::$app->getRequest();
         $key = $request->getRequiredBodyParam('key');
@@ -64,7 +64,7 @@ class EmailMessagesController extends Controller
     public function actionSaveMessage()
     {
         $this->requirePostRequest();
-        $this->requireAjaxRequest();
+        $this->requireAcceptsJson();
 
         $message = new RebrandEmail();
         $message->key = Craft::$app->getRequest()->getRequiredBodyParam('key');

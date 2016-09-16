@@ -37,7 +37,7 @@ abstract class BaseElementsController extends Controller
     public function init()
     {
         // Element controllers only support JSON responses
-        $this->requireAjaxRequest();
+        $this->requireAcceptsJson();
 
         // Element controllers are only available to the Control Panel
         if (!Craft::$app->getRequest()->getIsCpRequest()) {

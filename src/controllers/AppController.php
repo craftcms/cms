@@ -58,7 +58,7 @@ class AppController extends Controller
      */
     public function actionGetCpAlerts()
     {
-        $this->requireAjaxRequest();
+        $this->requireAcceptsJson();
         $this->requirePermission('accessCp');
 
         $path = Craft::$app->getRequest()->getRequiredBodyParam('path');
@@ -76,7 +76,7 @@ class AppController extends Controller
      */
     public function actionShunCpAlert()
     {
-        $this->requireAjaxRequest();
+        $this->requireAcceptsJson();
         $this->requirePermission('accessCp');
 
         $message = Craft::$app->getRequest()->getRequiredBodyParam('message');
@@ -101,7 +101,7 @@ class AppController extends Controller
      */
     public function actionTransferLicenseToCurrentDomain()
     {
-        $this->requireAjaxRequest();
+        $this->requireAcceptsJson();
         $this->requirePostRequest();
         $this->requireAdmin();
 
@@ -123,7 +123,7 @@ class AppController extends Controller
      */
     public function actionGetUpgradeModal()
     {
-        $this->requireAjaxRequest();
+        $this->requireAcceptsJson();
 
         // Make it so Craft Client accounts can perform the upgrade.
         if (Craft::$app->getEdition() == Craft::Pro) {
@@ -192,7 +192,7 @@ class AppController extends Controller
     public function actionGetCouponPrice()
     {
         $this->requirePostRequest();
-        $this->requireAjaxRequest();
+        $this->requireAcceptsJson();
 
         // Make it so Craft Client accounts can perform the upgrade.
         if (Craft::$app->getEdition() == Craft::Pro) {
@@ -229,7 +229,7 @@ class AppController extends Controller
     public function actionPurchaseUpgrade()
     {
         $this->requirePostRequest();
-        $this->requireAjaxRequest();
+        $this->requireAcceptsJson();
 
         // Make it so Craft Client accounts can perform the upgrade.
         if (Craft::$app->getEdition() == Craft::Pro) {
@@ -278,7 +278,7 @@ class AppController extends Controller
     public function actionTestUpgrade()
     {
         $this->requirePostRequest();
-        $this->requireAjaxRequest();
+        $this->requireAcceptsJson();
         $this->requireAdmin();
 
         $edition = Craft::$app->getRequest()->getRequiredBodyParam('edition');
@@ -308,7 +308,7 @@ class AppController extends Controller
     public function actionSwitchToLicensedEdition()
     {
         $this->requirePostRequest();
-        $this->requireAjaxRequest();
+        $this->requireAcceptsJson();
 
         if (Craft::$app->getHasWrongEdition()) {
             $licensedEdition = Craft::$app->getLicensedEdition();

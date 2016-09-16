@@ -153,7 +153,7 @@ class AssetTransformsController extends Controller
     public function actionDeleteTransform()
     {
         $this->requirePostRequest();
-        $this->requireAjaxRequest();
+        $this->requireAcceptsJson();
 
         $transformId = Craft::$app->getRequest()->getRequiredBodyParam('id');
 

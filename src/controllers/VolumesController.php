@@ -206,7 +206,7 @@ class VolumesController extends Controller
     public function actionReorderVolumes()
     {
         $this->requirePostRequest();
-        $this->requireAjaxRequest();
+        $this->requireAcceptsJson();
 
         $volumeIds = Json::decode(Craft::$app->getRequest()->getRequiredBodyParam('ids'));
         Craft::$app->getVolumes()->reorderVolumes($volumeIds);
@@ -222,7 +222,7 @@ class VolumesController extends Controller
     public function actionDeleteVolume()
     {
         $this->requirePostRequest();
-        $this->requireAjaxRequest();
+        $this->requireAcceptsJson();
 
         $volumeId = Craft::$app->getRequest()->getRequiredBodyParam('id');
 
@@ -241,7 +241,7 @@ class VolumesController extends Controller
     public function actionLoadVolumeTypeData()
     {
         $this->requirePostRequest();
-        $this->requireAjaxRequest();
+        $this->requireAcceptsJson();
 
         $request = Craft::$app->getRequest();
         $volumeType = $request->getRequiredBodyParam('volumeType');

@@ -51,7 +51,7 @@ class FieldsController extends Controller
     public function actionSaveGroup()
     {
         $this->requirePostRequest();
-        $this->requireAjaxRequest();
+        $this->requireAcceptsJson();
 
         $group = new FieldGroup();
         $group->id = Craft::$app->getRequest()->getBodyParam('id');
@@ -83,7 +83,7 @@ class FieldsController extends Controller
     public function actionDeleteGroup()
     {
         $this->requirePostRequest();
-        $this->requireAjaxRequest();
+        $this->requireAcceptsJson();
 
         $groupId = Craft::$app->getRequest()->getRequiredBodyParam('id');
         $success = Craft::$app->getFields()->deleteGroupById($groupId);
@@ -259,7 +259,7 @@ class FieldsController extends Controller
     public function actionDeleteField()
     {
         $this->requirePostRequest();
-        $this->requireAjaxRequest();
+        $this->requireAcceptsJson();
 
         $fieldId = Craft::$app->getRequest()->getRequiredBodyParam('id');
         $success = Craft::$app->getFields()->deleteFieldById($fieldId);

@@ -363,7 +363,7 @@ class EntriesController extends BaseEntriesController
     public function actionSwitchEntryType()
     {
         $this->requirePostRequest();
-        $this->requireAjaxRequest();
+        $this->requireAcceptsJson();
 
         $entry = $this->_getEntryModel();
         $this->enforceEditEntryPermissions($entry);
@@ -465,7 +465,7 @@ class EntriesController extends BaseEntriesController
 
         // Save the entry (finally!)
         if (Craft::$app->getEntries()->saveEntry($entry)) {
-            if ($request->getIsAjax()) {
+            if ($request->getAcceptsJson()) {
                 $return['success'] = true;
                 $return['id'] = $entry->id;
                 $return['title'] = $entry->title;
@@ -487,7 +487,7 @@ class EntriesController extends BaseEntriesController
             return $this->redirectToPostedUrl($entry);
         }
 
-        if ($request->getIsAjax()) {
+        if ($request->getAcceptsJson()) {
             return $this->asJson([
                 'errors' => $entry->getErrors(),
             ]);
@@ -530,7 +530,7 @@ class EntriesController extends BaseEntriesController
         }
 
         if (Craft::$app->getEntries()->deleteEntry($entry)) {
-            if (Craft::$app->getRequest()->getIsAjax()) {
+            if (Craft::$app->getRequest()->getAcceptsJson()) {
                 return $this->asJson(['success' => true]);
             }
 
@@ -539,7 +539,7 @@ class EntriesController extends BaseEntriesController
             return $this->redirectToPostedUrl($entry);
         }
 
-        if (Craft::$app->getRequest()->getIsAjax()) {
+        if (Craft::$app->getRequest()->getAcceptsJson()) {
             return $this->asJson(['success' => false]);
         }
 

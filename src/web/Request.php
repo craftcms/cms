@@ -773,6 +773,16 @@ class Request extends \yii\web\Request
         $this->_csrfToken = $this->getCsrfToken(true);
     }
 
+    /**
+     * Returns whether the request will accept a JSON response.
+     */
+    public function getAcceptsJson()
+    {
+        $acceptableContentTypes = $this->getAcceptableContentTypes();
+
+        return array_key_exists('application/json', $acceptableContentTypes);
+    }
+
     // Protected Methods
     // =========================================================================
 

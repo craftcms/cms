@@ -91,7 +91,7 @@ class UpdateController extends Controller
     {
         $this->requirePermission('performUpdates');
 
-        $this->requireAjaxRequest();
+        $this->requireAcceptsJson();
 
         $handle = Craft::$app->getRequest()->getRequiredBodyParam('handle');
 
@@ -177,7 +177,7 @@ class UpdateController extends Controller
     public function actionPrepare()
     {
         $this->requirePostRequest();
-        $this->requireAjaxRequest();
+        $this->requireAcceptsJson();
 
         $data = Craft::$app->getRequest()->getRequiredBodyParam('data');
         $handle = $this->_getFixedHandle($data);
@@ -240,7 +240,7 @@ class UpdateController extends Controller
         $this->requirePermission('performUpdates');
 
         $this->requirePostRequest();
-        $this->requireAjaxRequest();
+        $this->requireAcceptsJson();
 
         if (!Craft::$app->getConfig()->allowAutoUpdates()) {
             return $this->asJson([
@@ -294,7 +294,7 @@ class UpdateController extends Controller
         $this->requirePermission('performUpdates');
 
         $this->requirePostRequest();
-        $this->requireAjaxRequest();
+        $this->requireAcceptsJson();
 
         if (!Craft::$app->getConfig()->allowAutoUpdates()) {
             return $this->asJson([
@@ -343,7 +343,7 @@ class UpdateController extends Controller
         $this->requirePermission('performUpdates');
 
         $this->requirePostRequest();
-        $this->requireAjaxRequest();
+        $this->requireAcceptsJson();
 
         if (!Craft::$app->getConfig()->allowAutoUpdates()) {
             return $this->asJson([
@@ -389,7 +389,7 @@ class UpdateController extends Controller
     public function actionBackupDatabase()
     {
         $this->requirePostRequest();
-        $this->requireAjaxRequest();
+        $this->requireAcceptsJson();
 
         $data = Craft::$app->getRequest()->getRequiredBodyParam('data');
 
@@ -436,7 +436,7 @@ class UpdateController extends Controller
     public function actionUpdateDatabase()
     {
         $this->requirePostRequest();
-        $this->requireAjaxRequest();
+        $this->requireAcceptsJson();
 
         $data = Craft::$app->getRequest()->getRequiredBodyParam('data');
 
@@ -472,7 +472,7 @@ class UpdateController extends Controller
     public function actionCleanUp()
     {
         $this->requirePostRequest();
-        $this->requireAjaxRequest();
+        $this->requireAcceptsJson();
 
         $data = Craft::$app->getRequest()->getRequiredBodyParam('data');
 
@@ -523,7 +523,7 @@ class UpdateController extends Controller
     public function actionRollback()
     {
         $this->requirePostRequest();
-        $this->requireAjaxRequest();
+        $this->requireAcceptsJson();
 
         $data = Craft::$app->getRequest()->getRequiredBodyParam('data');
         $handle = $this->_getFixedHandle($data);

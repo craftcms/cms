@@ -42,7 +42,7 @@ class RoutesController extends Controller
     public function actionSaveRoute()
     {
         $this->requirePostRequest();
-        $this->requireAjaxRequest();
+        $this->requireAcceptsJson();
 
         $urlParts = Craft::$app->getRequest()->getRequiredBodyParam('url');
         $template = Craft::$app->getRequest()->getRequiredBodyParam('template');
@@ -89,7 +89,7 @@ class RoutesController extends Controller
     public function actionUpdateRouteOrder()
     {
         $this->requirePostRequest();
-        $this->requireAjaxRequest();
+        $this->requireAcceptsJson();
 
         $routeIds = Craft::$app->getRequest()->getRequiredBodyParam('routeIds');
         Craft::$app->getRoutes()->updateRouteOrder($routeIds);

@@ -192,7 +192,7 @@ class CategoriesController extends Controller
     public function actionDeleteCategoryGroup()
     {
         $this->requirePostRequest();
-        $this->requireAjaxRequest();
+        $this->requireAcceptsJson();
         $this->requireAdmin();
 
         $groupId = Craft::$app->getRequest()->getRequiredBodyParam('id');
@@ -428,7 +428,7 @@ class CategoriesController extends Controller
 
         // Save the category
         if (Craft::$app->getCategories()->saveCategory($category)) {
-            if (Craft::$app->getRequest()->getIsAjax()) {
+            if (Craft::$app->getRequest()->getAcceptsJson()) {
                 $return['success'] = true;
                 $return['title'] = $category->title;
                 $return['cpEditUrl'] = $category->getCpEditUrl();
@@ -447,7 +447,7 @@ class CategoriesController extends Controller
                 return $this->redirectToPostedUrl($category);
             }
         } else {
-            if (Craft::$app->getRequest()->getIsAjax()) {
+            if (Craft::$app->getRequest()->getAcceptsJson()) {
                 return $this->asJson([
                     'success' => false,
                     'errors' => $category->getErrors(),
@@ -487,7 +487,7 @@ class CategoriesController extends Controller
 
         // Delete it
         if (Craft::$app->getCategories()->deleteCategory($category)) {
-            if (Craft::$app->getRequest()->getIsAjax()) {
+            if (Craft::$app->getRequest()->getAcceptsJson()) {
                 return $this->asJson(['success' => true]);
             }
 
@@ -496,7 +496,7 @@ class CategoriesController extends Controller
             return $this->redirectToPostedUrl($category);
         }
 
-        if (Craft::$app->getRequest()->getIsAjax()) {
+        if (Craft::$app->getRequest()->getAcceptsJson()) {
             return $this->asJson(['success' => false]);
         }
 

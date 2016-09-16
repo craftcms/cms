@@ -112,7 +112,7 @@ class EntryRevisionsController extends BaseEntriesController
     public function actionUpdateDraftMeta()
     {
         $this->requirePostRequest();
-        $this->requireAjaxRequest();
+        $this->requireAcceptsJson();
 
         $draftId = Craft::$app->getRequest()->getRequiredBodyParam('draftId');
         $name = Craft::$app->getRequest()->getRequiredBodyParam('name');

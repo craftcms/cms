@@ -80,7 +80,7 @@ class InstallController extends Controller
     public function actionValidateAccount()
     {
         $this->requirePostRequest();
-        $this->requireAjaxRequest();
+        $this->requireAcceptsJson();
 
         $accountSettings = new AccountSettings();
         $request = Craft::$app->getRequest();
@@ -105,7 +105,7 @@ class InstallController extends Controller
     public function actionValidateSite()
     {
         $this->requirePostRequest();
-        $this->requireAjaxRequest();
+        $this->requireAcceptsJson();
 
         $request = Craft::$app->getRequest();
         $site = new Site();
@@ -131,7 +131,7 @@ class InstallController extends Controller
     public function actionInstall()
     {
         $this->requirePostRequest();
-        $this->requireAjaxRequest();
+        $this->requireAcceptsJson();
 
         // Run the install migration
         $request = Craft::$app->getRequest();

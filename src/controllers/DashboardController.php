@@ -139,7 +139,7 @@ class DashboardController extends Controller
     public function actionCreateWidget()
     {
         $this->requirePostRequest();
-        $this->requireAjaxRequest();
+        $this->requireAcceptsJson();
 
         $request = Craft::$app->getRequest();
         $dashboardService = Craft::$app->getDashboard();
@@ -171,7 +171,7 @@ class DashboardController extends Controller
     public function actionSaveWidgetSettings()
     {
         $this->requirePostRequest();
-        $this->requireAjaxRequest();
+        $this->requireAcceptsJson();
 
         $request = Craft::$app->getRequest();
         $dashboardService = Craft::$app->getDashboard();
@@ -198,7 +198,7 @@ class DashboardController extends Controller
     public function actionDeleteUserWidget()
     {
         $this->requirePostRequest();
-        $this->requireAjaxRequest();
+        $this->requireAcceptsJson();
 
         $widgetId = Json::decode(Craft::$app->getRequest()->getRequiredBodyParam('id'));
         Craft::$app->getDashboard()->deleteWidgetById($widgetId);
@@ -214,7 +214,7 @@ class DashboardController extends Controller
     public function actionChangeWidgetColspan()
     {
         $this->requirePostRequest();
-        $this->requireAjaxRequest();
+        $this->requireAcceptsJson();
 
         $request = Craft::$app->getRequest();
         $widgetId = $request->getRequiredBodyParam('id');
@@ -233,7 +233,7 @@ class DashboardController extends Controller
     public function actionReorderUserWidgets()
     {
         $this->requirePostRequest();
-        $this->requireAjaxRequest();
+        $this->requireAcceptsJson();
 
         $widgetIds = Json::decode(Craft::$app->getRequest()->getRequiredBodyParam('ids'));
         Craft::$app->getDashboard()->reorderWidgets($widgetIds);
@@ -248,7 +248,7 @@ class DashboardController extends Controller
      */
     public function actionGetFeedItems()
     {
-        $this->requireAjaxRequest();
+        $this->requireAcceptsJson();
 
         $request = Craft::$app->getRequest();
         $url = $request->getRequiredParam('url');

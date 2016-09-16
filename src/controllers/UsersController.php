@@ -148,6 +148,8 @@ class UsersController extends Controller
      */
     public function actionGetRemainingSessionTime()
     {
+        $this->requireAcceptsJson();
+
         $return = ['timeout' => Craft::$app->getUser()->getRemainingSessionTime()];
 
         if (Craft::$app->getConfig()->get('enableCsrfProtection')) {
@@ -194,7 +196,7 @@ class UsersController extends Controller
         // Passing false here for reasons.
         Craft::$app->getUser()->logout(false);
 
-        if (Craft::$app->getRequest()->getIsAjax()) {
+        if (Craft::$app->getRequest()->getAcceptsJson()) {
             return $this->asJson([
                 'success' => true
             ]);
@@ -244,7 +246,7 @@ class UsersController extends Controller
 
         if (!empty($user)) {
             if (Craft::$app->getUsers()->sendPasswordResetEmail($user)) {
-                if (Craft::$app->getRequest()->getIsAjax()) {
+                if (Craft::$app->getRequest()->getAcceptsJson()) {
                     return $this->asJson(['success' => true]);
                 }
 
@@ -257,7 +259,7 @@ class UsersController extends Controller
                 'There was a problem sending the password reset email.');
         }
 
-        if (Craft::$app->getRequest()->getIsAjax()) {
+        if (Craft::$app->getRequest()->getAcceptsJson()) {
             return $this->asErrorJson($errors);
         }
 
@@ -1041,7 +1043,7 @@ class UsersController extends Controller
                 $this->_maybeLoginUserAfterAccountActivation($user);
             }
 
-            if ($request->getIsAjax()) {
+            if ($request->getAcceptsJson()) {
                 return $this->asJson([
                     'success' => true,
                     'id' => $user->id
@@ -1061,7 +1063,7 @@ class UsersController extends Controller
                 return $this->redirectToPostedUrl($user);
             }
         } else {
-            if ($request->getIsAjax()) {
+            if ($request->getAcceptsJson()) {
                 return $this->asErrorJson(Craft::t('app', 'Couldn’t save user.'));
             }
 
@@ -1084,7 +1086,7 @@ class UsersController extends Controller
      */
     public function actionUploadUserPhoto()
     {
-        $this->requireAjaxRequest();
+        $this->requireAcceptsJson();
         $this->requireLogin();
         $userId = Craft::$app->getRequest()->getRequiredBodyParam('userId');
 
@@ -1133,7 +1135,7 @@ class UsersController extends Controller
      */
     public function actionDeleteUserPhoto()
     {
-        $this->requireAjaxRequest();
+        $this->requireAcceptsJson();
         $this->requireLogin();
         $userId = Craft::$app->getRequest()->getRequiredBodyParam('userId');
 
@@ -1188,7 +1190,7 @@ class UsersController extends Controller
 
         Craft::$app->getUsers()->sendActivationEmail($user);
 
-        if (Craft::$app->getRequest()->getIsAjax()) {
+        if (Craft::$app->getRequest()->getAcceptsJson()) {
             return $this->asJson(['success' => true]);
         }
 
@@ -1391,7 +1393,7 @@ class UsersController extends Controller
      */
     public function actionVerifyPassword()
     {
-        $this->requireAjaxRequest();
+        $this->requireAcceptsJson();
 
         if ($this->_verifyExistingPassword()) {
             return $this->asJson(['success' => true]);
@@ -1469,7 +1471,7 @@ class UsersController extends Controller
             }
         }
 
-        if (Craft::$app->getRequest()->getIsAjax()) {
+        if (Craft::$app->getRequest()->getAcceptsJson()) {
             return $this->asJson([
                 'errorCode' => $authError,
                 'error' => $message
@@ -1519,7 +1521,7 @@ class UsersController extends Controller
         Craft::$app->getUser()->removeReturnUrl();
 
         // If this was an Ajax request, just return success:true
-        if (Craft::$app->getRequest()->getIsAjax()) {
+        if (Craft::$app->getRequest()->getAcceptsJson()) {
             return $this->asJson([
                 'success' => true,
                 'returnUrl' => $returnUrl
@@ -1790,7 +1792,7 @@ class UsersController extends Controller
     {
         $this->_maybeLoginUserAfterAccountActivation($user);
 
-        if (!Craft::$app->getRequest()->getIsAjax()) {
+        if (!Craft::$app->getRequest()->getAcceptsJson()) {
             return $this->_redirectUserAfterAccountActivation($user);
         }
 

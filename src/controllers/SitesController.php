@@ -166,7 +166,7 @@ class SitesController extends Controller
     public function actionReorderSites()
     {
         $this->requirePostRequest();
-        $this->requireAjaxRequest();
+        $this->requireAcceptsJson();
 
         $siteIds = Json::decode(Craft::$app->getRequest()->getRequiredBodyParam('ids'));
         Craft::$app->getSites()->reorderSites($siteIds);
@@ -182,7 +182,7 @@ class SitesController extends Controller
     public function actionDeleteSite()
     {
         $this->requirePostRequest();
-        $this->requireAjaxRequest();
+        $this->requireAcceptsJson();
 
         $request = Craft::$app->getRequest();
         $siteId = $request->getRequiredBodyParam('id');

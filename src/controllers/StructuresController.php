@@ -52,7 +52,7 @@ class StructuresController extends Controller
     public function init()
     {
         $this->requirePostRequest();
-        $this->requireAjaxRequest();
+        $this->requireAcceptsJson();
 
         // This controller is only available to the Control Panel
         if (!Craft::$app->getRequest()->getIsCpRequest()) {

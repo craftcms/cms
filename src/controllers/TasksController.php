@@ -70,7 +70,7 @@ class TasksController extends Controller
      */
     public function actionGetRunningTaskInfo()
     {
-        $this->requireAjaxRequest();
+        $this->requireAcceptsJson();
         $this->requirePermission('accessCp');
 
         $tasksService = Craft::$app->getTasks();
@@ -107,7 +107,7 @@ class TasksController extends Controller
      */
     public function actionRerunTask()
     {
-        $this->requireAjaxRequest();
+        $this->requireAcceptsJson();
         $this->requirePostRequest();
         $this->requirePermission('accessCp');
 
@@ -139,7 +139,7 @@ class TasksController extends Controller
      */
     public function actionDeleteTask()
     {
-        $this->requireAjaxRequest();
+        $this->requireAcceptsJson();
         $this->requirePostRequest();
         $this->requirePermission('accessCp');
 
@@ -158,7 +158,7 @@ class TasksController extends Controller
      */
     public function actionGetTaskInfo()
     {
-        $this->requireAjaxRequest();
+        $this->requireAcceptsJson();
         $this->requirePermission('accessCp');
 
         return $this->asJson([

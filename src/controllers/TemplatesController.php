@@ -110,7 +110,7 @@ class TemplatesController extends Controller
 
         if ($reqCheck->result['summary']['errors'] > 0) {
             // Coming from Updater.php
-            if (Craft::$app->getRequest()->getIsAjax()) {
+            if (Craft::$app->getRequest()->getAcceptsJson()) {
                 $message = '<br /><br />';
 
                 foreach ($reqCheck->getResult()['requirements'] as $req) {

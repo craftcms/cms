@@ -218,7 +218,7 @@ class SectionsController extends Controller
     public function actionDeleteSection()
     {
         $this->requirePostRequest();
-        $this->requireAjaxRequest();
+        $this->requireAcceptsJson();
 
         $sectionId = Craft::$app->getRequest()->getRequiredBodyParam('id');
 
@@ -403,7 +403,7 @@ class SectionsController extends Controller
     public function actionReorderEntryTypes()
     {
         $this->requirePostRequest();
-        $this->requireAjaxRequest();
+        $this->requireAcceptsJson();
 
         $entryTypeIds = Json::decode(Craft::$app->getRequest()->getRequiredBodyParam('ids'));
         Craft::$app->getSections()->reorderEntryTypes($entryTypeIds);
@@ -419,7 +419,7 @@ class SectionsController extends Controller
     public function actionDeleteEntryType()
     {
         $this->requirePostRequest();
-        $this->requireAjaxRequest();
+        $this->requireAcceptsJson();
 
         $entryTypeId = Craft::$app->getRequest()->getRequiredBodyParam('id');
 

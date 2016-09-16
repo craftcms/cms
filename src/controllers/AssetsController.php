@@ -56,7 +56,7 @@ class AssetsController extends Controller
      */
     public function actionSaveAsset()
     {
-        $this->requireAjaxRequest();
+        $this->requireAcceptsJson();
 
         $uploadedFile = UploadedFile::getInstanceByName('assets-upload');
         $request = Craft::$app->getRequest();
@@ -209,7 +209,7 @@ class AssetsController extends Controller
      */
     public function actionReplaceFile()
     {
-        $this->requireAjaxRequest();
+        $this->requireAcceptsJson();
         $assetId = Craft::$app->getRequest()->getBodyParam('fileId');
         $uploadedFile = UploadedFile::getInstanceByName('replaceFile');
 
@@ -253,7 +253,7 @@ class AssetsController extends Controller
     public function actionCreateFolder()
     {
         $this->requireLogin();
-        $this->requireAjaxRequest();
+        $this->requireAcceptsJson();
         $request = Craft::$app->getRequest();
         $parentId = $request->getRequiredBodyParam('parentId');
         $folderName = $request->getRequiredBodyParam('folderName');
@@ -298,7 +298,7 @@ class AssetsController extends Controller
     public function actionDeleteFolder()
     {
         $this->requireLogin();
-        $this->requireAjaxRequest();
+        $this->requireAcceptsJson();
         $folderId = Craft::$app->getRequest()->getRequiredBodyParam('folderId');
 
         $assets = Craft::$app->getAssets();
@@ -329,7 +329,7 @@ class AssetsController extends Controller
     public function actionRenameFolder()
     {
         $this->requireLogin();
-        $this->requireAjaxRequest();
+        $this->requireAcceptsJson();
 
         $request = Craft::$app->getRequest();
         $assets = Craft::$app->getAssets();
