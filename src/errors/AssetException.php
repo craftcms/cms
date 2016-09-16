@@ -7,7 +7,7 @@
 
 namespace craft\app\errors;
 
-use yii\base\Exception;
+use yii\base\UserException;
 
 /**
  * Class AssetException
@@ -19,6 +19,6 @@ use yii\base\Exception;
  * @package   craft.app.exceptions
  * @since     3.0
  */
-abstract class AssetException extends Exception
+abstract class AssetException extends UserException
 {
 }
