@@ -1594,8 +1594,7 @@ class Assets extends Component
                 if (!$success) {
                     $transaction->rollBack();
 
-                    throw new ElementSaveException(Craft::t('app',
-                        'Failed to save the Asset Element'));
+                    throw new ElementSaveException('Failed to save asset');
                 }
 
                 // Now that we have an element ID, save it on the other stuff

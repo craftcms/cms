@@ -1549,7 +1549,7 @@ abstract class Element extends Component implements ElementInterface
         $field = $this->getFieldByHandle($fieldHandle);
 
         if (!$field) {
-            throw new Exception(Craft::t('app', 'No field exists with the handle “{handle}”', ['handle' => $fieldHandle]));
+            throw new Exception('Invalid field handle: '.$fieldHandle);
         }
 
         $behavior = $this->getBehavior('customFields');

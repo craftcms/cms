@@ -130,7 +130,7 @@ class Rackspace extends Volume
     public static function loadContainerList($username, $apiKey, $region)
     {
         if (empty($username) || empty($apiKey) || empty($region)) {
-            throw new \InvalidArgumentException(Craft::t('app', 'You must specify a username, the API key and a region to get the container list.'));
+            throw new \InvalidArgumentException('You must specify a username, the API key and a region to get the container list.');
         }
 
         $client = static::getClient($username, $apiKey);

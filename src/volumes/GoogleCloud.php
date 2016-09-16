@@ -124,7 +124,7 @@ class GoogleCloud extends Volume
     public static function loadBucketList($keyId, $secret)
     {
         if (empty($keyId) || empty($secret)) {
-            throw new \InvalidArgumentException(Craft::t('app', 'You must specify secret key ID and the secret key to get the bucket list.'));
+            throw new \InvalidArgumentException('You must specify secret key ID and the secret key to get the bucket list.');
         }
 
         $client = static::getClient($keyId, $secret, ['base_url' => 'https://storage.googleapis.com']);
