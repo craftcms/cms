@@ -16,6 +16,7 @@ use craft\app\elements\User;
 use craft\app\errors\ActionCancelledException;
 use craft\app\errors\AssetConflictException;
 use craft\app\errors\AssetDisallowedExtensionException;
+use craft\app\errors\AssetException;
 use craft\app\errors\AssetLogicException;
 use craft\app\errors\AssetMissingException;
 use craft\app\errors\ImageException;
@@ -1125,7 +1126,7 @@ class Assets extends Component
      * @param $permission
      *
      * @return void
-     * @throws Exception if reasons
+     * @throws AssetException if reasons
      */
     public function checkPermissionByFolderIds($folderIds, $permission)
     {
@@ -1138,14 +1139,12 @@ class Assets extends Component
             $folderModel = $this->getFolderById($folderId);
 
             if (!$folderModel) {
-                // TODO: Replace with a meaningful exception class and translate the response message elsewhere
-                throw new Exception(Craft::t('app',
+                throw new AssetException(Craft::t('app',
                     'That folder does not seem to exist anymore. Re-index the Assets volume and try again.'));
             }
 
             if (!Craft::$app->user->checkPermission($permission.':'.$folderModel->volumeId)) {
-                // TODO: Replace with a meaningful exception class and translate the response message elsewhere
-                throw new Exception(Craft::t('app',
+                throw new AssetException(Craft::t('app',
                     'You don’t have the required permissions for this operation.'));
             }
         }
@@ -1158,7 +1157,7 @@ class Assets extends Component
      * @param $permission
      *
      * @return void
-     * @throws Exception if reasons
+     * @throws AssetException if reasons
      */
     public function checkPermissionByFileIds($fileIds, $permission)
     {
@@ -1171,14 +1170,12 @@ class Assets extends Component
             $file = $this->getAssetById($fileId);
 
             if (!$file) {
-                // TODO: Replace with a meaningful exception class and translate the response message elsewhere
-                throw new Exception(Craft::t('app',
+                throw new AssetException(Craft::t('app',
                     'That file does not seem to exist anymore. Re-index the Assets volume and try again.'));
             }
 
             if (!Craft::$app->user->checkPermission($permission.':'.$file->volumeId)) {
-                // TODO: Replace with a meaningful exception class and translate the response message elsewhere
-                throw new Exception(Craft::t('app',
+                throw new AssetException(Craft::t('app',
                     'You don’t have the required permissions for this operation.'));
             }
         }
