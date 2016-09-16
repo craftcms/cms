@@ -246,7 +246,7 @@ class DateTimeHelper
      * [DateTime::ISO8601](http://php.net/manual/en/class.datetime.php#datetime.constants.iso8601) (with or without
      * the colon between the hours and minutes of the timezone).
      *
-     * @param mixed $value The value
+     * @param mixed $value The timestamp to check
      *
      * @return boolean Whether the value is an ISO-8601 date string
      */
@@ -442,13 +442,13 @@ class DateTimeHelper
     /**
      * Returns true if given date is today.
      *
-     * @param string $date Unix timestamp
+     * @param mixed $date The timestamp to check
      *
      * @return boolean true if date is today, false otherwise.
      */
     public static function isToday($date)
     {
-        $date = new DateTime('@'.$date);
+        $date = self::toDateTime($date);
         $now = new DateTime();
 
         return $date->format('Y-m-d') == $now->format('Y-m-d');
@@ -457,13 +457,13 @@ class DateTimeHelper
     /**
      * Returns true if given date was yesterday
      *
-     * @param string $date Unix timestamp
+     * @param mixed $date The timestamp to check
      *
      * @return boolean true if date was yesterday, false otherwise.
      */
     public static function wasYesterday($date)
     {
-        $date = new DateTime('@'.$date);
+        $date = self::toDateTime($date);
         $yesterday = new DateTime('@'.strtotime('yesterday'));
 
         return $date->format('Y-m-d') == $yesterday->format('Y-m-d');
@@ -472,13 +472,13 @@ class DateTimeHelper
     /**
      * Returns true if given date is in this year
      *
-     * @param string $date Unix timestamp
+     * @param mixed $date The timestamp to check
      *
      * @return boolean true if date is in this year, false otherwise.
      */
     public static function isThisYear($date)
     {
-        $date = new DateTime('@'.$date);
+        $date = self::toDateTime($date);
         $now = new DateTime();
 
         return $date->format('Y') == $now->format('Y');
@@ -487,13 +487,13 @@ class DateTimeHelper
     /**
      * Returns true if given date is in this week
      *
-     * @param string $date Unix timestamp
+     * @param mixed $date The timestamp to check
      *
      * @return boolean true if date is in this week, false otherwise.
      */
     public static function isThisWeek($date)
     {
-        $date = new DateTime('@'.$date);
+        $date = self::toDateTime($date);
         $now = new DateTime();
 
         return $date->format('W Y') == $now->format('W Y');
@@ -502,13 +502,13 @@ class DateTimeHelper
     /**
      * Returns true if given date is in this month
      *
-     * @param string $date Unix timestamp
+     * @param mixed $date The timestamp to check
      *
      * @return boolean True if date is in this month, false otherwise.
      */
     public static function isThisMonth($date)
     {
-        $date = new DateTime('@'.$date);
+        $date = self::toDateTime($date);
         $now = new DateTime();
 
         return $date->format('m Y') == $now->format('m Y');
@@ -517,39 +517,43 @@ class DateTimeHelper
     /**
      * Returns true if specified datetime was within the interval specified, else false.
      *
-     * @param mixed   $timeInterval The numeric value with space then time type. Example of valid types: 6 hours, 2 days,
+     * @param mixed $timeInterval   The numeric value with space then time type. Example of valid types: 6 hours, 2 days,
      *                              1 minute.
-     * @param mixed   $dateString   The datestring or unix timestamp to compare
-     * @param integer $userOffset   User's offset from GMT (in hours)
+     * @param mixed $date           The timestamp to check
      *
      * @return boolean Whether the $dateString was within the specified $timeInterval.
      */
-    public static function wasWithinLast($timeInterval, $dateString, $userOffset = null)
+    public static function wasWithinLast($timeInterval, $date)
     {
         if (is_numeric($timeInterval)) {
             $timeInterval = $timeInterval.' days';
         }
 
-        $date = static::fromString($dateString, $userOffset);
-        $interval = static::fromString('-'.$timeInterval);
+        $date = self::toDateTime($date);
+        $timestamp = $date->getTimestamp();
 
-        if ($date >= $interval && $date <= time()) {
-            return true;
+        // Bail early if it's in the future
+        if ($timestamp > time()) {
+            return false;
         }
 
-        return false;
+        $earliestTimestamp = strtotime('-'.$timeInterval);
+
+        return ($timestamp >= $earliestTimestamp);
     }
 
     /**
      * Returns true if the specified date was in the past, otherwise false.
      *
-     * @param mixed $date The datestring (a valid strtotime) or unix timestamp to check.
+     * @param mixed $date The timestamp to check
      *
      * @return boolean true if the specified date was in the past, false otherwise.
      */
     public static function wasInThePast($date)
     {
-        return static::fromString($date) < time() ? true : false;
+        $date = self::toDateTime($date);
+
+        return $date->getTimestamp() < time();
     }
 
     /**
@@ -603,16 +607,17 @@ class DateTimeHelper
      * The returned string includes 'ago' or 'on' and assumes you'll properly add a word  like 'Posted ' before the
      * function output.
      *
-     * @param       $dateTime
+     * @param mixed $date    The timestamp to check
      * @param array $options Default format if timestamp is used in $dateString
      *
      * @return string The relative time string.
      */
-    public static function timeAgoInWords($dateTime, $options = [])
+    public static function timeAgoInWords($date, $options = [])
     {
         $now = time();
 
-        $inSeconds = strtotime($dateTime);
+        $date = self::toDateTime($date);
+        $inSeconds = $date->getTimestamp();
         $backwards = ($inSeconds > $now);
 
         $format = 'j/n/y';
