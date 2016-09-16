@@ -1,4 +1,4 @@
-/*! Craft 3.0.0 - 2016-09-13 */
+/*! Craft 3.0.0 - 2016-09-16 */
 (function($){
 
 // Set all the standard Craft.* stuff
@@ -518,6 +518,7 @@ $.extend(Craft,
 		var jqXHR = $.ajax($.extend({
 			url:      Craft.getActionUrl(action),
 			type:     'POST',
+			dataType: 'json',
 			data:     data,
 			success:  callback,
 			error:    function(jqXHR, textStatus, errorThrown)
@@ -4549,7 +4550,7 @@ Craft.BaseElementSelectorModal = Garnish.Modal.extend(
 		{
 			if (textStatus == 'success')
 			{
-				this.$body.html(response);
+				this.$body.html(response.html);
 
 				if (this.$body.has('.sidebar:not(.hidden)').length)
 				{
@@ -7675,6 +7676,7 @@ Craft.AuthManager = Garnish.Base.extend(
 		$.ajax({
 			url: Craft.getActionUrl('users/get-remaining-session-time', (extendSession ? null : 'dontExtendSession=1')),
 			type: 'GET',
+			dataType: 'json',
 			complete: $.proxy(function(jqXHR, textStatus)
 			{
 				if (textStatus == 'success')
@@ -7977,12 +7979,14 @@ Craft.AuthManager = Garnish.Base.extend(
 
 	logout: function()
 	{
-		var url = Craft.getActionUrl('users/logout');
-
-		$.get(url, $.proxy(function()
-		{
-			Craft.redirectTo('');
-		}, this));
+		$.get({
+			url: Craft.getActionUrl('users/logout'),
+			dataType: 'json',
+			success: $.proxy(function()
+			{
+				Craft.redirectTo('');
+			}, this)
+		});
 	},
 
 	renewSession: function(ev)
@@ -9279,22 +9283,25 @@ Craft.CP = Garnish.Base.extend(
 
 		this.trackTaskProgressTimeout = setTimeout($.proxy(function()
 		{
-			Craft.queueActionRequest('tasks/get-running-task-info', $.proxy(function(taskInfo, textStatus)
+			Craft.queueActionRequest('tasks/get-running-task-info', $.proxy(function(response, textStatus)
 			{
 				if (textStatus == 'success')
 				{
 					this.trackTaskProgressTimeout = null;
-					this.setRunningTaskInfo(taskInfo, true);
+					this.setRunningTaskInfo(response.task, true);
 
-					if (taskInfo.status == 'running')
+					if (response.task)
 					{
-						// Check again in one second
-						this.trackTaskProgress();
-					}
-					else if (taskInfo.status == 'pending')
-					{
-						// Check again in 30 seconds
-						this.trackTaskProgress(30000);
+						if (response.task.status == 'running')
+						{
+							// Check again in one second
+							this.trackTaskProgress();
+						}
+						else if (response.task.status == 'pending')
+						{
+							// Check again in 30 seconds
+							this.trackTaskProgress(30000);
+						}
 					}
 				}
 			}, this));
@@ -9682,11 +9689,11 @@ var TaskProgressHUD = Garnish.HUD.extend(
 	{
 		this.completed = false;
 
-		Craft.postActionRequest('tasks/get-task-info', $.proxy(function(taskInfo, textStatus)
+		Craft.postActionRequest('tasks/get-task-info', $.proxy(function(response, textStatus)
 		{
 			if (textStatus == 'success')
 			{
-				this.showTaskInfo(taskInfo);
+				this.showTaskInfo(response.tasks);
 			}
 		}, this));
 	},
@@ -9901,11 +9908,11 @@ TaskProgressHUD.Task = Garnish.Base.extend(
 		{
 			case 'rerun':
 			{
-				Craft.postActionRequest('tasks/rerun-task', { taskId: this.id }, $.proxy(function(taskInfo, textStatus)
+				Craft.postActionRequest('tasks/rerun-task', { taskId: this.id }, $.proxy(function(response, textStatus)
 				{
 					if (textStatus == 'success')
 					{
-						this.updateStatus(taskInfo);
+						this.updateStatus(response.task);
 
 						if (this.hud.completed)
 						{
@@ -9917,7 +9924,7 @@ TaskProgressHUD.Task = Garnish.Base.extend(
 			}
 			case 'cancel':
 			{
-				Craft.postActionRequest('tasks/delete-task', { taskId: this.id }, $.proxy(function(taskInfo, textStatus)
+				Craft.postActionRequest('tasks/delete-task', { taskId: this.id }, $.proxy(function(response, textStatus)
 				{
 					if (textStatus == 'success')
 					{
