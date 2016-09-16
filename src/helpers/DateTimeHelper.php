@@ -499,7 +499,7 @@ class DateTimeHelper
      *
      * @return boolean true if the specified date was in the past, false otherwise.
      */
-    public static function wasInThePast($date)
+    public static function isInThePast($date)
     {
         $date = self::toDateTime($date);
 
