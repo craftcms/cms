@@ -11,8 +11,8 @@ use Craft;
 use craft\app\helpers\Image;
 use craft\app\models\AssetTransform;
 use craft\app\web\Controller;
-use craft\app\web\Response;
 use yii\web\NotFoundHttpException;
+use yii\web\Response;
 
 /**
  * The AssetTransformsController class is a controller that handles various actions related to asset transformations,
@@ -147,6 +147,8 @@ class AssetTransformsController extends Controller
 
     /**
      * Deletes an asset transform.
+     *
+     * @return Response
      */
     public function actionDeleteTransform()
     {
