@@ -675,11 +675,6 @@ class TemplateCaches extends Component
             if (($pageNum = Craft::$app->getRequest()->getPageNum()) != 1) {
                 $this->_path .= '/'.Craft::$app->getConfig()->get('pageTrigger').$pageNum;
             }
-
-            // Get the querystring without the path param.
-            if ($queryString = Craft::$app->getRequest()->getQueryStringWithoutPath()) {
-                $this->_path .= '?'.$queryString;
-            }
         }
 
         return $this->_path;
