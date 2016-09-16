@@ -16,6 +16,7 @@ use craft\app\helpers\Header;
 use craft\app\helpers\StringHelper;
 use craft\app\helpers\Template;
 use craft\app\helpers\Url;
+use craft\app\i18n\Locale;
 use craft\app\web\twig\tokenparsers\CacheTokenParser;
 use craft\app\web\twig\tokenparsers\DeprecatedTagTokenParser;
 use craft\app\web\twig\tokenparsers\ExitTokenParser;
@@ -154,6 +155,7 @@ class Extension extends \Twig_Extension
             new \Twig_SimpleFilter('camel', [$this, 'camelFilter']),
             new \Twig_SimpleFilter('currency', [$formatter, 'asCurrency']),
             new \Twig_SimpleFilter('date', [$this, 'dateFilter'], ['needs_environment' => true]),
+            new \Twig_SimpleFilter('datetime', [$this, 'datetimeFilter'], ['needs_environment' => true]),
             new \Twig_SimpleFilter('datetime', [$formatter, 'asDateTime']),
             new \Twig_SimpleFilter('filesize', [$formatter, 'asShortSize']),
             new \Twig_SimpleFilter('filter', 'array_filter'),
@@ -178,6 +180,7 @@ class Extension extends \Twig_Extension
             new \Twig_SimpleFilter('percentage', [$formatter, 'asPercent']),
             new \Twig_SimpleFilter('replace', [$this, 'replaceFilter']),
             new \Twig_SimpleFilter('snake', [$this, 'snakeFilter']),
+            new \Twig_SimpleFilter('time', [$this, 'timeFilter'], ['needs_environment' => true]),
             new \Twig_SimpleFilter('timestamp', [$formatter, 'asTimestamp']),
             new \Twig_SimpleFilter('translate', [$this, 'translateFilter']),
             new \Twig_SimpleFilter('t', [$this, 'translateFilter']),
@@ -410,8 +413,69 @@ class Extension extends \Twig_Extension
      */
     public function dateFilter(\Twig_Environment $env, $date, $format = null, $timezone = null, $translate = true)
     {
-        // Let Twig do it's thing.
-        $value = \twig_date_format_filter($env, $date, $format, $timezone);
+        // Should we be using the app's formatter?
+        if (!($date instanceof \DateInterval) && ($format === null || in_array($format, [Locale::LENGTH_SHORT, Locale::LENGTH_MEDIUM, Locale::LENGTH_LONG, Locale::LENGTH_FULL]))) {
+            $date = \twig_date_converter($env, $date, $timezone);
+            $value = Craft::$app->getFormatter()->asDate($date, $format);
+        } else {
+            $value = \twig_date_format_filter($env, $date, $format, $timezone);
+        }
+
+        if ($translate) {
+            $value = DateTimeHelper::translateDate($value);
+        }
+
+        return $value;
+    }
+
+    /**
+     * Formats the value as a time.
+     *
+     * @param \Twig_Environment $env
+     * @param                   $date
+     * @param null              $format
+     * @param null              $timezone
+     * @param boolean           $translate Whether the formatted date string should be translated
+     *
+     * @return mixed|string
+     */
+    public function timeFilter(\Twig_Environment $env, $date, $format = null, $timezone = null, $translate = true)
+    {
+        // Is this a custom PHP date format?
+        if ($format !== null && !in_array($format, [Locale::LENGTH_SHORT, Locale::LENGTH_MEDIUM, Locale::LENGTH_LONG, Locale::LENGTH_FULL])) {
+            StringHelper::ensureStartsWith($format, 'php:');
+        }
+
+        $date = \twig_date_converter($env, $date, $timezone);
+        $value = Craft::$app->getFormatter()->asTime($date, $format);
+
+        if ($translate) {
+            $value = DateTimeHelper::translateDate($value);
+        }
+
+        return $value;
+    }
+
+    /**
+     * Formats the value as a date+time.
+     *
+     * @param \Twig_Environment $env
+     * @param                   $date
+     * @param null              $format
+     * @param null              $timezone
+     * @param boolean           $translate Whether the formatted date string should be translated
+     *
+     * @return mixed|string
+     */
+    public function datetimeFilter(\Twig_Environment $env, $date, $format = null, $timezone = null, $translate = true)
+    {
+        // Is this a custom PHP date format?
+        if ($format !== null && !in_array($format, [Locale::LENGTH_SHORT, Locale::LENGTH_MEDIUM, Locale::LENGTH_LONG, Locale::LENGTH_FULL])) {
+            StringHelper::ensureStartsWith($format, 'php:');
+        }
+
+        $date = \twig_date_converter($env, $date, $timezone);
+        $value = Craft::$app->getFormatter()->asDatetime($date, $format);
 
         if ($translate) {
             $value = DateTimeHelper::translateDate($value);
