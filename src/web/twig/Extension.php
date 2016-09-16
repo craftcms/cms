@@ -147,15 +147,18 @@ class Extension extends \Twig_Extension
      */
     public function getFilters()
     {
+        $formatter = Craft::$app->getFormatter();
+        $security = Craft::$app->getSecurity();
+
         return [
             new \Twig_SimpleFilter('camel', [$this, 'camelFilter']),
-            new \Twig_SimpleFilter('currency', '\Craft::$app->getFormatter()->asCurrency'),
+            new \Twig_SimpleFilter('currency', [$formatter, 'asCurrency']),
             new \Twig_SimpleFilter('date', [$this, 'dateFilter'], ['needs_environment' => true]),
-            new \Twig_SimpleFilter('datetime', '\Craft::$app->getFormatter()->asDateTime'),
-            new \Twig_SimpleFilter('filesize', '\Craft::$app->getFormatter()->asShortSize'),
+            new \Twig_SimpleFilter('datetime', [$formatter, 'asDateTime']),
+            new \Twig_SimpleFilter('filesize', [$formatter, 'asShortSize']),
             new \Twig_SimpleFilter('filter', 'array_filter'),
             new \Twig_SimpleFilter('group', [$this, 'groupFilter']),
-            new \Twig_SimpleFilter('hash', '\Craft::$app->getSecurity()->hashData'),
+            new \Twig_SimpleFilter('hash', [$security, 'hashData']),
             new \Twig_SimpleFilter('id', [$this->view, 'formatInputId']),
             new \Twig_SimpleFilter('indexOf', [$this, 'indexOfFilter']),
             new \Twig_SimpleFilter('intersect', 'array_intersect'),
@@ -169,10 +172,10 @@ class Extension extends \Twig_Extension
             new \Twig_SimpleFilter('ns', [$this->view, 'namespaceInputs']),
             new \Twig_SimpleFilter('namespaceInputName', [$this->view, 'namespaceInputName']),
             new \Twig_SimpleFilter('namespaceInputId', [$this->view, 'namespaceInputId']),
-            new \Twig_SimpleFilter('number', '\Craft::$app->getFormatter()->asDecimal'),
+            new \Twig_SimpleFilter('number', [$formatter, 'asDecimal']),
             new \Twig_SimpleFilter('parseRefs', [$this, 'parseRefsFilter']),
             new \Twig_SimpleFilter('pascal', [$this, 'pascalFilter']),
-            new \Twig_SimpleFilter('percentage', '\Craft::$app->getFormatter()->asPercent'),
+            new \Twig_SimpleFilter('percentage', [$formatter, 'asPercent']),
             new \Twig_SimpleFilter('replace', [$this, 'replaceFilter']),
             new \Twig_SimpleFilter('snake', [$this, 'snakeFilter']),
             new \Twig_SimpleFilter('translate', [$this, 'translateFilter']),
