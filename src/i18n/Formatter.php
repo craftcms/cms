@@ -192,7 +192,7 @@ class Formatter extends \yii\i18n\Formatter
         }
 
         // If it was yesterday, display 'Yesterday'
-        if (DateTimeHelper::wasYesterday($timestamp)) {
+        if (DateTimeHelper::isYesterday($timestamp)) {
             return Craft::t('app', 'Yesterday');
         }
 

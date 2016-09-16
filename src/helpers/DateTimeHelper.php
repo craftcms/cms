@@ -411,7 +411,7 @@ class DateTimeHelper
      *
      * @return boolean true if date was yesterday, false otherwise.
      */
-    public static function wasYesterday($date)
+    public static function isYesterday($date)
     {
         $date = self::toDateTime($date);
         $yesterday = new DateTime('@'.strtotime('yesterday'));
