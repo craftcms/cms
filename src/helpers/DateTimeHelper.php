@@ -557,39 +557,6 @@ class DateTimeHelper
     }
 
     /**
-     * Returns a UI-facing timestamp for a given [[DateTime]] object.
-     *
-     * - If the date/time is from today, only the time will be retuned in a localized format (e.g. “10:00 AM”).
-     * - If the date/time is from yesterday, “Yesterday” will be returned.
-     * - If the date/time is from the last 7 days, the name of the day will be returned (e.g. “Monday”).
-     * - Otherwise, the date will be returned in a localized format (e.g. “12/2/2014”).
-     *
-     * @param DateTime $dateTime The DateTime object to be formatted.
-     *
-     * @return string The timestamp.
-     */
-    public static function uiTimestamp(DateTime $dateTime)
-    {
-        // If it's today, just return the local time.
-        if (static::isToday($dateTime->getTimestamp())) {
-            return $dateTime->localeTime();
-        }
-
-        // If it was yesterday, display 'Yesterday'
-        if (static::wasYesterday($dateTime->getTimestamp())) {
-            return Craft::t('app', 'Yesterday');
-        }
-
-        // If it were up to 7 days ago, display the weekday name.
-        if (static::wasWithinLast('7 days', $dateTime->getTimestamp())) {
-            return Craft::t('app', $dateTime->format('l'));
-        }
-
-        // Otherwise, just return the local date.
-        return $dateTime->localeDate();
-    }
-
-    /**
      * Returns either a relative date or a formatted date depending on the difference between the current time and given
      * datetime. $datetime should be in a **strtotime**-parsable format, like MySQL's
      * datetime datatype.

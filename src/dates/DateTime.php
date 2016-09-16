@@ -287,6 +287,6 @@ class DateTime extends \DateTime
      */
     public function uiTimestamp()
     {
-        return DateTimeHelper::uiTimestamp($this);
+        return Craft::$app->getFormatter()->asTimestamp($this, Locale::LENGTH_SHORT);
     }
 }
