@@ -88,6 +88,7 @@ $craftPath = realpath(defined('CRAFT_BASE_PATH') ? CRAFT_BASE_PATH : $getArg('ba
 
 // By default the remaining folders will be in craft/
 $configPath = realpath(defined('CRAFT_CONFIG_PATH') ? CRAFT_CONFIG_PATH : $getArg('configPath') ?: $craftPath.'/config');
+$contentMigrationsPath = realpath(defined('CRAFT_CONTENT_MIGRATIONS_PATH') ? CRAFT_CONTENT_MIGRATIONS_PATH : $getArg('contentMigrationsPath') ?: $craftPath.'/migrations');
 $pluginsPath = realpath(defined('CRAFT_PLUGINS_PATH') ? CRAFT_PLUGINS_PATH : $getArg('pluginsPath') ?: $craftPath.'/plugins');
 $storagePath = realpath(defined('CRAFT_STORAGE_PATH') ? CRAFT_STORAGE_PATH : $getArg('storagePath') ?: $craftPath.'/storage');
 $templatesPath = realpath(defined('CRAFT_TEMPLATES_PATH') ? CRAFT_TEMPLATES_PATH : $getArg('templatesPath') ?: $craftPath.'/templates');
@@ -197,6 +198,7 @@ require $appPath.'/Craft.php';
 // Set aliases
 Craft::setAlias('@craft/app', $appPath);
 Craft::setAlias('@config', $configPath);
+Craft::setAlias('@contentMigrations', $contentMigrationsPath);
 Craft::setAlias('@plugins', $pluginsPath);
 Craft::setAlias('@storage', $storagePath);
 Craft::setAlias('@templates', $templatesPath);

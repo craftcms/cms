@@ -43,6 +43,7 @@ use yii\web\ServerErrorHttpException;
  * @property \craft\app\services\Categories      $categories         The categories service
  * @property \craft\app\services\Config          $config             The config service
  * @property \craft\app\services\Content         $content            The content service
+ * @property \craft\app\db\MigrationManager      $contentMigrator    The content migration manager
  * @property \craft\app\services\Dashboard       $dashboard          The dashboard service
  * @property Connection                          $db                 The database connection component
  * @property \craft\app\services\Deprecator      $deprecator         The deprecator service
@@ -806,6 +807,17 @@ trait ApplicationTrait
     {
         /** @var \craft\app\web\Application|\craft\app\console\Application $this */
         return $this->get('content');
+    }
+
+    /**
+     * Returns the content migration manager.
+     *
+     * @return MigrationManager The content migration manager
+     */
+    public function getContentMigrator()
+    {
+        /** @var \craft\app\web\Application|\craft\app\console\Application $this */
+        return $this->get('contentMigrator');
     }
 
     /**

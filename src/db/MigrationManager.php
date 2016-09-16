@@ -28,8 +28,22 @@ class MigrationManager extends Component
      */
     const BASE_MIGRATION = 'm000000_000000_base';
 
+    const TYPE_APP = 'app';
+    const TYPE_PLUGIN = 'plugin';
+    const TYPE_CONTENT = 'content';
+
     // Properties
     // =========================================================================
+
+    /**
+     * @var string The type of migrations we're dealing with here. Can be 'app', 'plugin', or 'content'.
+     */
+    public $type;
+
+    /**
+     * @var integer The plugin ID, if [[type]] is set to 'plugin'.
+     */
+    public $pluginId;
 
     /**
      * @var string The namespace that the migration classes are in
@@ -51,11 +65,6 @@ class MigrationManager extends Component
      */
     public $migrationTable = '{{%migrations}}';
 
-    /**
-     * @var array Values that should always be present when inserting and selecting data from the migrations table
-     */
-    public $fixedColumnValues = [];
-
     // Public Methods
     // =========================================================================
 
@@ -68,6 +77,10 @@ class MigrationManager extends Component
 
         if ($this->migrationPath === null) {
             throw new InvalidConfigException('The migration folder path has not been set.');
+        }
+
+        if (!in_array($this->type, [self::TYPE_APP, self::TYPE_PLUGIN, self::TYPE_CONTENT])) {
+            throw new InvalidConfigException('Invalid migration type: '.$this->type);
         }
 
         $this->migrationPath = Craft::getAlias($this->migrationPath);
@@ -324,10 +337,12 @@ class MigrationManager extends Component
         Craft::$app->getDb()->createCommand()
             ->insert(
                 $this->migrationTable,
-                array_merge($this->fixedColumnValues, [
+                [
+                    'type' => $this->type,
+                    'pluginId' => $this->pluginId,
                     'name' => $name,
                     'applyTime' => Db::prepareDateForDb(new \DateTime())
-                ]))
+                ])
             ->execute();
     }
 
@@ -341,9 +356,11 @@ class MigrationManager extends Component
         Craft::$app->getDb()->createCommand()
             ->delete(
                 $this->migrationTable,
-                array_merge($this->fixedColumnValues, [
+                [
+                    'type' => $this->type,
+                    'pluginId' => $this->pluginId,
                     'name' => $name
-                ]))
+                ])
             ->execute();
     }
 
@@ -426,20 +443,26 @@ class MigrationManager extends Component
         if (version_compare(Craft::$app->getInfo('version'), '3.0', '<')) {
             $nameColumn = 'version as name';
 
-            if ($this->fixedColumnValues === ['type' => 'app']) {
-                $condition = ['pluginId' => null];
+            if ($this->type === self::TYPE_PLUGIN) {
+                $condition = ['pluginId' => $this->pluginId];
             } else {
-                $condition = ['pluginId' => $this->fixedColumnValues['pluginId']];
+                $condition = ['pluginId' => null];
             }
         } else {
             $nameColumn = 'name';
-            $condition = $this->fixedColumnValues;
+            $condition = null;
         }
 
-        return (new Query())
+        $query = (new Query())
             ->select("$nameColumn, applyTime")
             ->from($this->migrationTable)
             ->orderBy('name desc')
-            ->where($condition);
+            ->where(['type' => $this->type]);
+
+        if ($condition) {
+            $query->andWhere($condition);
+        }
+
+        return $query;
     }
 }

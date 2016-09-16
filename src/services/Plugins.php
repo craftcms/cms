@@ -890,12 +890,10 @@ class Plugins extends Component
         /** @var Plugin $plugin */
         $plugin->set('migrator', [
             'class' => MigrationManager::className(),
+            'type' => MigrationManager::TYPE_PLUGIN,
+            'pluginId' => $id,
             'migrationNamespace' => "craft\\plugins\\$handle\\migrations",
             'migrationPath' => "@plugins/$handle/migrations",
-            'fixedColumnValues' => [
-                'type' => 'plugin',
-                'pluginId' => $id
-            ],
         ]);
     }
 }

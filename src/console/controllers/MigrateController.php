@@ -47,6 +47,13 @@ class MigrateController extends BaseMigrateController
     // =========================================================================
 
     /**
+     * @var string The type of migrations we're dealing with here. Can be 'app', 'plugin', or 'content'.
+     *
+     * If [[plugin]] is defined, this will automatically be set to 'plugin'. Otherwise defaults to 'app'.
+     */
+    public $type;
+
+    /**
      * @var string|Plugin The handle of the plugin to use during migration operations, or the plugin itself
      */
     public $plugin;
@@ -75,7 +82,7 @@ class MigrateController extends BaseMigrateController
     {
         return array_merge(
             parent::options($actionID),
-            ['plugin']
+            ['type', 'plugin']
         );
     }
 
@@ -86,24 +93,47 @@ class MigrateController extends BaseMigrateController
      */
     public function beforeAction($action)
     {
-        if (parent::beforeAction($action)) {
-            if (is_string($this->plugin)) {
-                $plugin = Craft::$app->getPlugins()->getPlugin($this->plugin);
-
-                if ($plugin === null) {
-                    throw new Exception('Invalid plugin handle: '.$this->plugin);
-                }
-
-                $this->plugin = $plugin;
-            }
-
-            $this->migrationPath = $this->getMigrator()->migrationPath;
-            Io::ensureFolderExists($this->migrationPath);
-
-            return true;
+        if (!parent::beforeAction($action)) {
+            return false;
         }
 
-        return false;
+        // Validate $type
+        if ($this->type) {
+            if (!in_array($this->type, [MigrationManager::TYPE_APP, MigrationManager::TYPE_PLUGIN, MigrationManager::TYPE_CONTENT])) {
+                throw new Exception('Invalid migration type: '.$this->type);
+            }
+        } else {
+            if ($this->plugin) {
+                $this->type = MigrationManager::TYPE_PLUGIN;
+            } else {
+                $this->type = MigrationManager::TYPE_APP;
+            }
+        }
+
+        switch ($this->type) {
+            case MigrationManager::TYPE_CONTENT:
+                // Verify that a content migrations folder exists
+                if (Craft::getAlias("@contentMigrations") == false) {
+                    throw new Exception('You must create a migrations/ folder within your craft/ folder before managing content migrations');
+                }
+                break;
+            case MigrationManager::TYPE_PLUGIN:
+                // Make sure $this->plugin in set to a plugin
+                if (is_string($this->plugin)) {
+                    $plugin = Craft::$app->getPlugins()->getPlugin($this->plugin);
+
+                    if ($plugin === null) {
+                        throw new Exception('Invalid plugin handle: '.$this->plugin);
+                    }
+
+                    $this->plugin = $plugin;
+                }
+        }
+
+        $this->migrationPath = $this->getMigrator()->migrationPath;
+        Io::ensureFolderExists($this->migrationPath);
+
+        return true;
     }
 
     /**
@@ -140,10 +170,16 @@ class MigrateController extends BaseMigrateController
     protected function getMigrator()
     {
         if ($this->_migrator === null) {
-            if ($this->plugin !== null) {
-                $this->_migrator = $this->plugin->getMigrator();
-            } else {
-                $this->_migrator = Craft::$app->getMigrator();
+            switch ($this->type) {
+                case MigrationManager::TYPE_APP:
+                    $this->_migrator = Craft::$app->getMigrator();
+                    break;
+                case MigrationManager::TYPE_CONTENT:
+                    $this->_migrator = Craft::$app->getContentMigrator();
+                    break;
+                case MigrationManager::TYPE_PLUGIN:
+                    $this->_migrator = $this->plugin->getMigrator();
+                    break;
             }
         }
 

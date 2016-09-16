@@ -2,6 +2,7 @@
 
 use craft\app\cache\FileCache;
 use craft\app\db\Connection;
+use craft\app\db\MigrationManager;
 use craft\app\db\mysql\Schema as MysqlSchema;
 use craft\app\enums\ConfigCategory;
 use craft\app\log\FileTarget;
@@ -60,11 +61,17 @@ return [
     // Configured components
     // -------------------------------------------------------------------------
 
+    'contentMigrator' => [
+        'class' => MigrationManager::className(),
+        'type' => MigrationManager::TYPE_CONTENT,
+        'migrationNamespace' => "craft\\contentmigrations",
+        'migrationPath' => "@contentMigrations",
+    ],
     'migrator' => [
-        'class' => 'craft\app\db\MigrationManager',
+        'class' => MigrationManager::className(),
+        'type' => MigrationManager::TYPE_APP,
         'migrationNamespace' => 'craft\app\migrations',
         'migrationPath' => '@app/migrations',
-        'fixedColumnValues' => ['type' => 'app'],
     ],
     'resources' => [
         'class' => 'craft\app\services\Resources',
