@@ -16,7 +16,7 @@ echo $this->render('../table', [
         ['Origin', $log->getOrigin()],
         [
             'Last Occurance',
-            $log->lastOccurrence->localeDate().' '.$log->lastOccurrence->localeTime()
+            Craft::$app->getFormatter()->asDatetime($log->lastOccurrence, 'short')
         ],
     ]
 ]);

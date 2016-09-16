@@ -20,6 +20,7 @@ use craft\app\helpers\DateTimeHelper;
 use craft\app\helpers\Io;
 use craft\app\helpers\Json;
 use craft\app\helpers\Update as UpdateHelper;
+use craft\app\i18n\Locale;
 use craft\app\models\AppUpdate;
 use craft\app\models\Et;
 use craft\app\models\PluginNewRelease;
@@ -477,7 +478,7 @@ class Updates extends Component
                     $releaseModel = new PluginNewRelease();
                     $releaseModel->version = $release['version'];
                     $releaseModel->date = $date;
-                    $releaseModel->localizedDate = $date->localeDate();
+                    $releaseModel->localizedDate = Craft::$app->getFormatter()->asDate($date, Locale::LENGTH_SHORT);
                     $releaseModel->notes = $notes;
                     $releaseModel->critical = $critical;
                     $releaseModel->manualDownloadEndpoint = $release['downloadUrl'];

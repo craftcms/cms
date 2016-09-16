@@ -19,7 +19,7 @@ $values = [
     ],
     [
         'Release Date',
-        (new DateTime('@'.$panel->data['craftReleaseDate']))->localeDate()
+        Craft::$app->getFormatter()->asDate($panel->data['craftReleaseDate'], 'short')
     ],
     [
         'Edition',
