@@ -765,37 +765,6 @@ class DateTimeHelper
     }
 
     /**
-     * Returns a UNIX timestamp, given either a UNIX timestamp or a valid strtotime() date string.
-     *
-     * @param string  $dateString Datetime string
-     * @param integer $userOffset User's offset from GMT (in hours)
-     *
-     * @return string The parsed timestamp.
-     */
-    public static function fromString($dateString, $userOffset = null)
-    {
-        if (empty($dateString)) {
-            return false;
-        }
-
-        if (is_integer($dateString) || is_numeric($dateString)) {
-            $date = intval($dateString);
-        } else {
-            $date = strtotime($dateString);
-        }
-
-        if ($userOffset !== null) {
-            //return $this->convert($date, $userOffset);
-        }
-
-        if ($date === -1) {
-            return false;
-        }
-
-        return $date;
-    }
-
-    /**
      * Takes a PHP time format string and converts it to seconds.
      * {@see http://www.php.net/manual/en/datetime.formats.time.php}
      *
