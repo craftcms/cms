@@ -390,28 +390,6 @@ class DateTimeHelper
     }
 
     /**
-     * Returns a nicely formatted date string for given Datetime string.
-     *
-     * @param string $dateString The date string.
-     *
-     * @return string Formatted date string
-     */
-    public static function nice($dateString = null)
-    {
-        if ($dateString == null) {
-            $date = time();
-        } else {
-            if (static::isValidTimeStamp($dateString)) {
-                $date = $dateString;
-            } else {
-                $date = strtotime($dateString);
-            }
-        }
-
-        return Craft::$app->getFormatter()->asDatetime($date);
-    }
-
-    /**
      * Returns a formatted descriptive date string for given datetime string.
      *
      * If the given date is today, the returned string could be "Today, 6:54 pm". If the given date was yesterday, the
