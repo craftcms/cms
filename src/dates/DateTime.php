@@ -19,15 +19,6 @@ use craft\app\i18n\Locale;
  */
 class DateTime extends \DateTime
 {
-    // Constants
-    // =========================================================================
-
-    const W3C_DATE = 'Y-m-d';
-    const MYSQL_DATETIME = 'Y-m-d H:i:s';
-    const UTC = 'UTC';
-    const DATEFIELD_24HOUR = 'Y-m-d H:i';
-    const DATEFIELD_12HOUR = 'Y-m-d h:i A';
-
     // Public Methods
     // =========================================================================
 
@@ -38,7 +29,7 @@ class DateTime extends \DateTime
     public function __toString()
     {
         Craft::$app->getDeprecator()->log('DateTime::__toString()', 'Converting a DateTime object to a string has been deprecated. Use format(\'Y-m-d\') instead.');
-        return $this->format(static::W3C_DATE);
+        return $this->format('Y-m-d');
     }
 
     /**
@@ -186,7 +177,7 @@ class DateTime extends \DateTime
     public function w3cDate()
     {
         Craft::$app->getDeprecator()->log('DateTime::w3cDate()', 'DateTime::w3cDate() has been deprecated. Use format(\'Y-m-d\') instead.');
-        return $this->format(static::W3C_DATE);
+        return $this->format('Y-m-d');
     }
 
     /**
@@ -196,7 +187,7 @@ class DateTime extends \DateTime
     public function mySqlDateTime()
     {
         Craft::$app->getDeprecator()->log('DateTime::mySqlDateTime()', 'DateTime::mySqlDateTime() has been deprecated. Use format(\'Y-m-d H:i:s\') instead.');
-        return $this->format(static::MYSQL_DATETIME);
+        return $this->format('Y-m-d H:i:s');
     }
 
     /**
