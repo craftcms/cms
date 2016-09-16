@@ -197,7 +197,7 @@ class Formatter extends \yii\i18n\Formatter
         }
 
         // If it were up to 7 days ago, display the weekday name.
-        if (DateTimeHelper::wasWithinLast('7 days', $timestamp)) {
+        if (DateTimeHelper::isWithinLast($timestamp, '7 days')) {
             $day = $timestamp->format('w') + 1;
             Craft::$app->getI18n()->getLocaleById($this->locale)->getWeekDayName($day);
         }

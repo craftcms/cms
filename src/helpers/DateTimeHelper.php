@@ -467,13 +467,13 @@ class DateTimeHelper
     /**
      * Returns true if specified datetime was within the interval specified, else false.
      *
+     * @param mixed $date           The timestamp to check
      * @param mixed $timeInterval   The numeric value with space then time type. Example of valid types: 6 hours, 2 days,
      *                              1 minute.
-     * @param mixed $date           The timestamp to check
      *
      * @return boolean Whether the $dateString was within the specified $timeInterval.
      */
-    public static function wasWithinLast($timeInterval, $date)
+    public static function isWithinLast($date, $timeInterval)
     {
         if (is_numeric($timeInterval)) {
             $timeInterval = $timeInterval.' days';
