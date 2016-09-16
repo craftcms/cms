@@ -387,7 +387,7 @@
 
 			<ul>
 				<li>Craft CMS {{ craft.app.version }}.{{ craft.app.build }}</li>
-				<li>{{ craft.app.releaseDate.localeDate }}</li>
+				<li>{{ craft.app.releaseDate|date('short') }}</li>
 				<li>© Pixel &amp; Tonic</li>
 				{% if currentUser.can('performUpdates') %}
 					<li><a id="footer-updates" href="{{ url('updates') }}">{{ craft.app.updates.getIsUpdateInfoCached() and totalUpdates is defined and totalUpdates ? updateText : "Check for updates"|t('app') }}</a></li>

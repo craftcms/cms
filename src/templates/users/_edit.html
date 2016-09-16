@@ -308,23 +308,23 @@
 
                     <div class="data">
                         <h5 class="heading">{{ "Registration Date"|t('app') }}</h5>
-                        <p class="value">{{ account.dateCreated.localeDate() }} {{ account.dateCreated.localeTime() }}</p>
+                        <p class="value">{{ account.dateCreated|datetime('short') }}</p>
                     </div>
 
                     {% if account.status != 'pending' %}
                         <div class="data">
                             <h5 class="heading">{{ "Last Login Date"|t('app') }}</h5>
-                            <p class="value">{% if account.lastLoginDate %}{{ account.lastLoginDate.localeDate() }} {{ account.lastLoginDate.localeTime() }}{% else %}{{ "Never"|t('app') }}{% endif %}</p>
+                            <p class="value">{% if account.lastLoginDate %}{{ account.lastLoginDate|datetime('short') }}{% else %}{{ "Never"|t('app') }}{% endif %}</p>
                         </div>
 
                         <div class="data">
                             <h5 class="heading">{{ "Last Invalid Login Date"|t('app') }}</h5>
-                            <p class="value">{% if account.lastInvalidLoginDate %}{{ account.lastInvalidLoginDate.localeDate() }} {{ account.lastInvalidLoginDate.localeTime() }}{% else %}{{ "Never"|t('app') }}{% endif %}</p>
+                            <p class="value">{% if account.lastInvalidLoginDate %}{{ account.lastInvalidLoginDate|datetime('short') }}{% else %}{{ "Never"|t('app') }}{% endif %}</p>
                         </div>
 
                         <div class="data">
                             <h5 class="heading">{{ "Last Password Change Date"|t('app') }}</h5>
-                            <p class="value">{% if account.lastPasswordChangeDate %}{{ account.lastPasswordChangeDate.localeDate() }} {{ account.lastPasswordChangeDate.localeTime() }}{% else %}{{ "Never"|t('app') }}{% endif %}</p>
+                            <p class="value">{% if account.lastPasswordChangeDate %}{{ account.lastPasswordChangeDate|datetime('short') }}{% else %}{{ "Never"|t('app') }}{% endif %}</p>
                         </div>
 
                         <div class="data">

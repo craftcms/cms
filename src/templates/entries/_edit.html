@@ -302,11 +302,11 @@
 						<div class="pane lightpane meta">
 							<div class="data">
 								<h5 class="heading">{{ "Date Created"|t('app') }}</h5>
-								<div class="value">{{ entry.dateCreated.localeDate() }} {{ entry.dateCreated.localeTime() }}</div>
+								<div class="value">{{ entry.dateCreated|datetime('short') }}</div>
 							</div>
 							<div class="data">
 								<h5 class="heading">{{ "Date Updated"|t('app') }}</h5>
-								<div class="value">{{ entry.dateUpdated.localeDate() }} {{ entry.dateUpdated.localeTime() }}</div>
+								<div class="value">{{ entry.dateUpdated|datetime('short') }}</div>
 							</div>
 							{% if entry.revisionNotes %}
 								<div class="data">

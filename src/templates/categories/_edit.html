@@ -151,11 +151,11 @@
 					<div class="pane lightpane meta">
 						<div class="data">
 							<h5 class="heading">{{ "Date Created"|t('app') }}</h5>
-							<div class="value">{{ category.dateCreated.localeDate() }} {{ category.dateCreated.localeTime() }}</div>
+							<div class="value">{{ category.dateCreated|datetime('short') }}</div>
 						</div>
 						<div class="data">
 							<h5 class="heading">{{ "Date Updated"|t('app') }}</h5>
-							<div class="value">{{ category.dateUpdated.localeDate() }} {{ category.dateUpdated.localeTime() }}</div>
+							<div class="value">{{ category.dateUpdated|datetime('short') }}</div>
 						</div>
 					</div>
 				{% endif %}
