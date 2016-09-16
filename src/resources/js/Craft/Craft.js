@@ -515,6 +515,7 @@ $.extend(Craft,
 		var jqXHR = $.ajax($.extend({
 			url:      Craft.getActionUrl(action),
 			type:     'POST',
+			dataType: 'json',
 			data:     data,
 			success:  callback,
 			error:    function(jqXHR, textStatus, errorThrown)

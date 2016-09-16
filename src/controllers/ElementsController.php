@@ -38,7 +38,7 @@ class ElementsController extends BaseElementsController
     /**
      * Renders and returns the body of an ElementSelectorModal.
      *
-     * @return string The rendering result
+     * @return Response
      */
     public function actionGetModalBody()
     {
@@ -67,11 +67,13 @@ class ElementsController extends BaseElementsController
             $showSidebar = !empty($sources);
         }
 
-        return $this->renderTemplate('_elements/modalbody', [
-            'context' => $context,
-            'elementType' => $elementType,
-            'sources' => $sources,
-            'showSidebar' => $showSidebar,
+        return $this->asJson([
+            'html' => $this->getView()->renderTemplate('_elements/modalbody', [
+                'context' => $context,
+                'elementType' => $elementType,
+                'sources' => $sources,
+                'showSidebar' => $showSidebar,
+            ])
         ]);
     }
 

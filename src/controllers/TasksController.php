@@ -66,7 +66,7 @@ class TasksController extends Controller
     /**
      * Returns the completion percentage for the running task.
      *
-     * @return Response|null
+     * @return Response
      */
     public function actionGetRunningTaskInfo()
     {
@@ -76,28 +76,34 @@ class TasksController extends Controller
         $tasksService = Craft::$app->getTasks();
 
         if ($task = $tasksService->getRunningTask()) {
-            return $this->asJson($task);
+            return $this->asJson([
+                'task' => $task
+            ]);
         }
 
         // No running tasks left? Check for a failed one
         if ($tasksService->getHaveTasksFailed()) {
-            return $this->asJson(['status' => 'error']);
+            return $this->asJson([
+                'task' => ['status' => 'error']
+            ]);
         }
 
         // Any pending tasks?
         if ($task = $tasksService->getNextPendingTask()) {
-            return $this->asJson($task);
+            return $this->asJson([
+                'task' => $task
+            ]);
         }
 
-        Craft::$app->end();
-
-        return null;
+        return $this->asJson([
+            'task' => null
+        ]);
     }
 
     /**
      * Re-runs a failed task.
      *
-     * @return Response|null
+     * @return Response
      */
     public function actionRerunTask()
     {
@@ -116,18 +122,20 @@ class TasksController extends Controller
 
             Craft::$app->getTasks()->runPendingTasks();
         } else {
-            return $this->asJson($task);
+            return $this->asJson([
+                'task' => $task
+            ]);
         }
 
-        Craft::$app->end();
-
-        return null;
+        return $this->asJson([
+            'task' => null
+        ]);
     }
 
     /**
      * Deletes a task.
      *
-     * @return void
+     * @return Response
      */
     public function actionDeleteTask()
     {
@@ -138,7 +146,9 @@ class TasksController extends Controller
         $taskId = Craft::$app->getRequest()->getRequiredBodyParam('taskId');
         Craft::$app->getTasks()->deleteTaskById($taskId);
 
-        Craft::$app->end();
+        return $this->asJson([
+            'success' => true
+        ]);
     }
 
     /**
@@ -151,6 +161,8 @@ class TasksController extends Controller
         $this->requireAjaxRequest();
         $this->requirePermission('accessCp');
 
-        return $this->asJson(Craft::$app->getTasks()->getAllTasks());
+        return $this->asJson([
+            'tasks' => Craft::$app->getTasks()->getAllTasks()
+        ]);
     }
 }

@@ -202,7 +202,7 @@ Craft.BaseElementSelectorModal = Garnish.Modal.extend(
 		{
 			if (textStatus == 'success')
 			{
-				this.$body.html(response);
+				this.$body.html(response.html);
 
 				if (this.$body.has('.sidebar:not(.hidden)').length)
 				{
