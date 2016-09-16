@@ -178,6 +178,7 @@ class Extension extends \Twig_Extension
             new \Twig_SimpleFilter('percentage', [$formatter, 'asPercent']),
             new \Twig_SimpleFilter('replace', [$this, 'replaceFilter']),
             new \Twig_SimpleFilter('snake', [$this, 'snakeFilter']),
+            new \Twig_SimpleFilter('timestamp', [$formatter, 'asTimestamp']),
             new \Twig_SimpleFilter('translate', [$this, 'translateFilter']),
             new \Twig_SimpleFilter('t', [$this, 'translateFilter']),
             new \Twig_SimpleFilter('ucfirst', [$this, 'ucfirstFilter']),
