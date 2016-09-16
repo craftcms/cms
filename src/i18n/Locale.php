@@ -561,7 +561,7 @@ class Locale extends Object
     /**
      * Returns a localized day of the week name.
      *
-     * @param integer $day        The day of the week to return (1-7), where 1 stands for Sunday.
+     * @param integer $day        The day of the week to return (0-6), where 0 stands for Sunday.
      * @param string  $length     The format length that should be returned. Values: Locale::LENGTH_ABBREVIATED, ::SHORT, ::MEDIUM, ::FULL
      * @param boolean $standAlone Whether to return the "stand alone" day of the week name.
      *
@@ -578,38 +578,47 @@ class Locale extends Object
 
             switch ($length) {
                 case static::LENGTH_ABBREVIATED:
+                    // T
                     $formatter->setPattern($standAlone ? 'ccccc' : 'eeeee');
-                    break;  // T
+                    break;
                 case static::LENGTH_SHORT:
+                    // Tu
                     $formatter->setPattern($standAlone ? 'cccccc' : 'eeeeee');
-                    break; // Tu
+                    break;
                 case static::LENGTH_MEDIUM:
+                    // Tue
                     $formatter->setPattern($standAlone ? 'ccc' : 'eee');
-                    break;    // Tue
+                    break;
                 default:
+                    // Tuesday
                     $formatter->setPattern($standAlone ? 'cccc' : 'eeee');
-                    break;   // Tuesday
+                    break;
             }
 
-            // Jan 1, 1970 was a Thursday
-            return $formatter->format(new DateTime('1970-01-'.sprintf("%02d",
-                    $day + 3)));
+            // 1970-01-04 => Sunday (0 + 4)
+            // 1970-01-05 => Monday (1 + 4)
+            // 1970-01-06 => Tuesday (2 + 4)
+            // 1970-01-07 => Wednesday (3 + 4)
+            // 1970-01-08 => Thursday (4 + 4)
+            // 1970-01-09 => Friday (5 + 4)
+            // 1970-01-10 => Saturday (6 + 4)
+            return $formatter->format(new DateTime('1970-01-'.sprintf("%02d", $day + 4)));
         } else {
             $which = $standAlone ? 'standAloneWeekDayNames' : 'weekDayNames';
 
             switch ($length) {
                 case static::LENGTH_ABBREVIATED:
-                    return $this->data[$which]['abbreviated'][$day - 1];
-                    break; // T
+                    // T
+                    return $this->data[$which]['abbreviated'][$day];
                 case static::LENGTH_SHORT:
-                    return $this->data[$which]['short'][$day - 1];
-                    break;       // Tu
+                    // Tu
+                    return $this->data[$which]['short'][$day];
                 case static::LENGTH_MEDIUM:
-                    return $this->data[$which]['medium'][$day - 1];
-                    break;      // Tue
+                    // Tue
+                    return $this->data[$which]['medium'][$day];
                 default:
-                    return $this->data[$which]['full'][$day - 1];
-                    break;        // Tuesday
+                    // Tuesday
+                    return $this->data[$which]['full'][$day];
             }
         }
     }
@@ -626,7 +635,7 @@ class Locale extends Object
     {
         $weekDayNames = [];
 
-        for ($day = 1; $day <= 7; $day++) {
+        for ($day = 0; $day <= 6; $day++) {
             $weekDayNames[] = $this->getWeekDayName($day, $length, $standAlone);
         }
 
