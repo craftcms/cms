@@ -19,6 +19,6 @@ use yii\base\UserException;
  * @package   craft.app.exceptions
  * @since     3.0
  */
-abstract class AssetException extends UserException
+class AssetException extends UserException
 {
 }
