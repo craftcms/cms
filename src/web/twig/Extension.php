@@ -592,7 +592,7 @@ class Extension extends \Twig_Extension
             new \Twig_SimpleFunction('min', 'min'),
             new \Twig_SimpleFunction('redirectInput', [$this, 'redirectInputFunction']),
             new \Twig_SimpleFunction('renderObjectTemplate', [$this, 'renderObjectTemplate']),
-            new \Twig_SimpleFunction('round', 'round'),
+            new \Twig_SimpleFunction('round', [$this, 'roundFunction']),
             new \Twig_SimpleFunction('resourceUrl', '\\craft\\app\\helpers\\Url::getResourceUrl'),
             new \Twig_SimpleFunction('shuffle', [$this, 'shuffleFunction']),
             new \Twig_SimpleFunction('siteUrl', '\\craft\\app\\helpers\\Url::getSiteUrl'),
@@ -634,6 +634,22 @@ class Extension extends \Twig_Extension
     public function redirectInputFunction($url)
     {
         return Template::getRaw('<input type="hidden" name="redirect" value="'.Craft::$app->getSecurity()->hashData($url).'">');
+    }
+
+    /**
+     * Rounds the given value.
+     *
+     * @param integer|float $value
+     * @param integer $precision
+     * @param integer $mode
+     *
+     * @return integer|float
+     * @deprecated in 3.0. Use Twig's |round filter instead.
+     */
+    public function roundFunction($value, $precision = 0, $mode = PHP_ROUND_HALF_UP)
+    {
+        Craft::$app->getDeprecator()->log('round()', 'The round() function has been deprecated. Use Twig’s |round filter instead.');
+        return round($value, $precision, $mode);
     }
 
     /**
