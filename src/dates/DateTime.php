@@ -33,9 +33,11 @@ class DateTime extends \DateTime
 
     /**
      * @return string
+     * @deprecated in 3.0. Use `format('Y-m-d')` instead.
      */
     public function __toString()
     {
+        Craft::$app->getDeprecator()->log('DateTime::__toString()', 'Converting a DateTime object to a string has been deprecated. Use format(\'Y-m-d\') instead.');
         return $this->format(static::W3C_DATE);
     }
 
@@ -69,145 +71,181 @@ class DateTime extends \DateTime
 
     /**
      * @return string
+     * @deprecated in 3.0. Use `format(DateTime::ATOM)` instead.
      */
     public function atom()
     {
+        Craft::$app->getDeprecator()->log('DateTime::atom()', 'DateTime::atom() has been deprecated. Use format(DateTime::ATOM) instead.');
         return $this->format(static::ATOM);
     }
 
     /**
      * @return string
+     * @deprecated in 3.0. Use `format(DateTime::COOKIE)` instead.
      */
     public function cookie()
     {
+        Craft::$app->getDeprecator()->log('DateTime::cookie()', 'DateTime::cookie() has been deprecated. Use format(DateTime::COOKIE) instead.');
         return $this->format(static::COOKIE);
     }
 
     /**
      * @return string
+     * @deprecated in 3.0. Use `format(DateTime::ISO8601)` instead.
      */
     public function iso8601()
     {
+        Craft::$app->getDeprecator()->log('DateTime::iso8601()', 'DateTime::iso8601() has been deprecated. Use format(DateTime::ISO8601) instead.');
         return $this->format(static::ISO8601);
     }
 
     /**
      * @return string
+     * @deprecated in 3.0. Use `format(DateTime::RFC822)` instead.
      */
     public function rfc822()
     {
+        Craft::$app->getDeprecator()->log('DateTime::rfc822()', 'DateTime::rfc822() has been deprecated. Use format(DateTime::RFC822) instead.');
         return $this->format(static::RFC822);
     }
 
     /**
      * @return string
+     * @deprecated in 3.0. Use `format(DateTime::RFC850)` instead.
      */
     public function rfc850()
     {
+        Craft::$app->getDeprecator()->log('DateTime::rfc850()', 'DateTime::rfc850() has been deprecated. Use format(DateTime::RFC850) instead.');
         return $this->format(static::RFC850);
     }
 
     /**
      * @return string
+     * @deprecated in 3.0. Use `format(DateTime::RFC1036)` instead.
      */
     public function rfc1036()
     {
+        Craft::$app->getDeprecator()->log('DateTime::rfc1036()', 'DateTime::rfc1036() has been deprecated. Use format(DateTime::RFC1036) instead.');
         return $this->format(static::RFC1036);
     }
 
     /**
      * @return string
+     * @deprecated in 3.0. Use `format(DateTime::RFC1123)` instead.
      */
     public function rfc1123()
     {
+        Craft::$app->getDeprecator()->log('DateTime::rfc1123()', 'DateTime::rfc1123() has been deprecated. Use format(DateTime::RFC1123) instead.');
         return $this->format(static::RFC1123);
     }
 
     /**
      * @return string
+     * @deprecated in 3.0. Use `format(DateTime::RFC2822)` instead.
      */
     public function rfc2822()
     {
+        Craft::$app->getDeprecator()->log('DateTime::rfc2822()', 'DateTime::rfc2822() has been deprecated. Use format(DateTime::RFC2822) instead.');
         return $this->format(static::RFC2822);
     }
 
     /**
      * @return string
+     * @deprecated in 3.0. Use `format(DateTime::RFC3339)` instead.
      */
     public function rfc3339()
     {
+        Craft::$app->getDeprecator()->log('DateTime::rfc3339()', 'DateTime::rfc3339() has been deprecated. Use format(DateTime::RFC3339) instead.');
         return $this->format(static::RFC3339);
     }
 
     /**
      * @return string
+     * @deprecated in 3.0. Use `format(DateTime::RSS)` instead.
      */
     public function rss()
     {
+        Craft::$app->getDeprecator()->log('DateTime::rss()', 'DateTime::rss() has been deprecated. Use format(DateTime::RSS) instead.');
         return $this->format(static::RSS);
     }
 
     /**
      * @return string
+     * @deprecated in 3.0. Use `format(DateTime::W3C)` instead.
      */
     public function w3c()
     {
+        Craft::$app->getDeprecator()->log('DateTime::w3c()', 'DateTime::w3c() has been deprecated. Use format(DateTime::W3C) instead.');
         return $this->format(static::W3C);
     }
 
     /**
      * @return string
+     * @deprecated in 3.0. Use `format('Y-m-d')` instead.
      */
     public function w3cDate()
     {
+        Craft::$app->getDeprecator()->log('DateTime::w3cDate()', 'DateTime::w3cDate() has been deprecated. Use format(\'Y-m-d\') instead.');
         return $this->format(static::W3C_DATE);
     }
 
     /**
      * @return string
+     * @deprecated in 3.0. Use `format('Y-m-d H:i:s')` instead.
      */
     public function mySqlDateTime()
     {
+        Craft::$app->getDeprecator()->log('DateTime::mySqlDateTime()', 'DateTime::mySqlDateTime() has been deprecated. Use format(\'Y-m-d H:i:s\') instead.');
         return $this->format(static::MYSQL_DATETIME);
     }
 
     /**
      * @return string
+     * @deprecated in 3.0. Use `Craft::$app->formatter->asDate($dateTime, 'short')` instead.
      */
     public function localeDate()
     {
-        return Craft::$app->getLocale()->getFormatter()->asDate($this, 'short');
+        Craft::$app->getDeprecator()->log('DateTime::localeDate()', 'DateTime::localeDate() has been deprecated. Use Craft::$app->formatter->asDate($dateTime, \'short\') instead.');
+        return Craft::$app->getFormatter()->asDate($this, 'short');
     }
 
     /**
      * @return string
+     * @deprecated in 3.0. Use `Craft::$app->formatter->asTime($dateTime, 'short')` instead.
      */
     public function localeTime()
     {
-        return Craft::$app->getLocale()->getFormatter()->asTime($this, 'short');
+        Craft::$app->getDeprecator()->log('DateTime::localeTime()', 'DateTime::localeTime() has been deprecated. Use Craft::$app->formatter->asTime($dateTime, \'short\') instead.');
+        return Craft::$app->getFormatter()->asTime($this, 'short');
     }
 
     /**
      * @return string
+     * @deprecated in 3.0. Use `format('Y')` instead.
      */
     public function year()
     {
+        Craft::$app->getDeprecator()->log('DateTime::year()', 'DateTime::year() has been deprecated. Use format(\'Y\') instead.');
         return $this->format('Y');
     }
 
     /**
      * @return string
+     * @deprecated in 3.0. Use `format('n')` instead.
      */
     public function month()
     {
+        Craft::$app->getDeprecator()->log('DateTime::month()', 'DateTime::month() has been deprecated. Use format(\'n\') instead.');
         return $this->format('n');
     }
 
     /**
      * @return string
+     * @deprecated in 3.0. Use `format('j')` instead.
      */
     public function day()
     {
+        Craft::$app->getDeprecator()->log('DateTime::day()', 'DateTime::day() has been deprecated. Use format(\'j\') instead.');
         return $this->format('j');
     }
 
@@ -270,10 +308,12 @@ class DateTime extends \DateTime
      * Returns a nicely formatted date string.
      *
      * @return string
+     * @deprecated in 3.0. Use `Craft::$app->formatter->asDatetime($dateTime)` instead.
      */
     public function nice()
     {
-        return DateTimeHelper::nice($this->getTimestamp());
+        Craft::$app->getDeprecator()->log('DateTime::nice()', 'DateTime::nice() has been deprecated. Use Craft::$app->formatter->asDatetime($dateTime) instead.');
+        return Craft::$app->getFormatter()->asDatetime($this);
     }
 
     /**
@@ -285,9 +325,11 @@ class DateTime extends \DateTime
      * - Otherwise, the date will be returned in a localized format (e.g. “12/2/2014”).
      *
      * @return string
+     * @deprecated in 3.0. Use `Craft::$app->formatter->asTimestamp($dateTime, 'short')` instead.
      */
     public function uiTimestamp()
     {
+        Craft::$app->getDeprecator()->log('DateTime::uiTimestamp()', 'DateTime::uiTimestamp() has been deprecated. Use Craft::$app->formatter->asTimestamp($dateTime, \'short\') instead.');
         return Craft::$app->getFormatter()->asTimestamp($this, Locale::LENGTH_SHORT);
     }
 }
