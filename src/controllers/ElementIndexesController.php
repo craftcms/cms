@@ -141,7 +141,6 @@ class ElementIndexesController extends BaseElementsController
     public function actionPerformAction()
     {
         $this->requirePostRequest();
-        $this->requireAjaxRequest();
 
         $requestService = Craft::$app->getRequest();
         $elementsService = Craft::$app->getElements();

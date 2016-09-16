@@ -77,7 +77,6 @@ class ElementIndexSettingsController extends BaseElementsController
      */
     public function actionSaveCustomizeSourcesModalSettings()
     {
-        $this->requireAjaxRequest();
         $this->requireAdmin();
 
         $elementType = $this->getElementType();
