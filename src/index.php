@@ -7,7 +7,7 @@
  * @license   https://craftcms.com/license
  */
 
-// Make sure this is PHP 5.4 or later
+// Make sure this is PHP 5.6 or later
 // -----------------------------------------------------------------------------
 
 if (!defined('PHP_VERSION_ID') || PHP_VERSION_ID < 50600) {
