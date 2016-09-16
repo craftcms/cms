@@ -159,7 +159,7 @@ class StringHelper extends \yii\helpers\StringHelper
      */
     public static function endsWith($str, $substring, $caseSensitive = true)
     {
-        return (string)Stringy::create($str)->endsWith($substring, $caseSensitive);
+        return Stringy::create($str)->endsWith($substring, $caseSensitive);
     }
 
     /**
@@ -732,7 +732,7 @@ class StringHelper extends \yii\helpers\StringHelper
      */
     public static function startsWith($str, $substring, $caseSensitive = true)
     {
-        return (string)Stringy::create($str)->startsWith($substring, $caseSensitive);
+        return Stringy::create($str)->startsWith($substring, $caseSensitive);
     }
 
     /**
