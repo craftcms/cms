@@ -21,6 +21,7 @@ use craft\app\helpers\ArrayHelper;
 use craft\app\helpers\Html;
 use craft\app\helpers\Template;
 use craft\app\helpers\Url;
+use craft\app\i18n\Locale;
 use craft\app\models\FieldLayout;
 use craft\app\models\Site;
 use craft\app\web\UploadedFile;
@@ -387,7 +388,9 @@ abstract class Element extends Component implements ElementInterface
                 $value = $element->$attribute;
 
                 if ($value instanceof DateTime) {
-                    return '<span title="'.$value->localeDate().' '.$value->localeTime().'">'.$value->uiTimestamp().'</span>';
+                    $formatter = Craft::$app->getFormatter();
+
+                    return '<span title="'.$formatter->asDatetime($value, Locale::LENGTH_SHORT).'">'.$formatter->asTimestamp($value, Locale::LENGTH_SHORT).'</span>';
                 }
 
                 return Html::encode($value);
@@ -731,6 +734,7 @@ abstract class Element extends Component implements ElementInterface
     {
         if ($name == 'locale') {
             Craft::$app->getDeprecator()->log('Element::locale', 'The “locale” element property has been deprecated. Use “siteId” instead.');
+
             return $this->getSite()->handle;
         }
 

@@ -15,6 +15,7 @@ use craft\app\elements\db\ElementQuery;
 use craft\app\elements\db\ElementQueryInterface;
 use craft\app\helpers\DateTimeHelper;
 use craft\app\helpers\Db;
+use craft\app\i18n\Locale;
 use yii\db\Schema;
 
 /**
@@ -200,8 +201,10 @@ class Date extends Field implements PreviewableFieldInterface
     public function getTableAttributeHtml($value, $element)
     {
         if ($value) {
+            $formatter = Craft::$app->getFormatter();
+
             /** @var DateTime $value */
-            return '<span title="'.$value->localeDate().' '.$value->localeTime().'">'.$value->uiTimestamp().'</span>';
+            return '<span title="'.$formatter->asDatetime($value, Locale::LENGTH_SHORT).'">'.$formatter->asTimestamp($value, Locale::LENGTH_SHORT).'</span>';
         }
 
         return '';

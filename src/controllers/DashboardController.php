@@ -15,6 +15,7 @@ use craft\app\dates\DateTime;
 use craft\app\helpers\Io;
 use craft\app\helpers\Json;
 use craft\app\helpers\StringHelper;
+use craft\app\i18n\Locale;
 use craft\app\io\Zip;
 use craft\app\models\GetHelp;
 use craft\app\web\Controller;
@@ -251,6 +252,8 @@ class DashboardController extends Controller
         $this->requireAcceptsJson();
 
         $request = Craft::$app->getRequest();
+        $formatter = Craft::$app->getFormatter();
+
         $url = $request->getRequiredParam('url');
         $limit = $request->getParam('limit');
 
@@ -260,7 +263,7 @@ class DashboardController extends Controller
             if (isset($item['date'])) {
                 /** @var DateTime $date */
                 $date = $item['date'];
-                $item['date'] = $date->uiTimestamp();
+                $item['date'] = $formatter->asTimestamp($date, Locale::LENGTH_SHORT);
             } else {
                 unset($item['date']);
             }
