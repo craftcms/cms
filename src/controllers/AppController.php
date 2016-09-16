@@ -187,7 +187,7 @@ class AppController extends Controller
     /**
      * Returns the price of an upgrade with a coupon applied to it.
      *
-     * @return void
+     * @return Response
      */
     public function actionGetCouponPrice()
     {
@@ -209,16 +209,16 @@ class AppController extends Controller
             $couponPrice = $etResponse->data['couponPrice'];
             $formattedCouponPrice = Craft::$app->getFormatter()->asCurrency($couponPrice, 'USD', [], [], true);
 
-            $this->asJson([
+            return $this->asJson([
                 'success' => true,
                 'couponPrice' => $couponPrice,
                 'formattedCouponPrice' => $formattedCouponPrice
             ]);
-        } else {
-            $this->asJson([
-                'success' => false
-            ]);
         }
+
+        return $this->asJson([
+            'success' => false
+        ]);
     }
 
     /**
