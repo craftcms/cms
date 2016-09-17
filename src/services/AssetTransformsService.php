@@ -1054,11 +1054,14 @@ class AssetTransformsService extends BaseApplicationComponent
 	{
 		$thumbFolders = IOHelper::getFolderContents(craft()->path->getAssetsThumbsPath());
 
-		foreach ($thumbFolders as $folder)
+		if ($thumbFolders)
 		{
-			if (is_dir($folder))
+			foreach ($thumbFolders as $folder)
 			{
-				IOHelper::deleteFile($folder.'/'.$file->id.'.'.$this->_getThumbExtension($file));
+				if (is_dir($folder))
+				{
+					IOHelper::deleteFile($folder.'/'.$file->id.'.'.$this->_getThumbExtension($file));
+				}
 			}
 		}
 	}

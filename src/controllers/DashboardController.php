@@ -331,12 +331,15 @@ class DashboardController extends BaseController
 						// Grab it all.
 						$logFolderContents = IOHelper::getFolderContents(craft()->path->getLogPath());
 
-						foreach ($logFolderContents as $file)
+						if ($logFolderContents)
 						{
-							// Make sure it's a file.
-							if (IOHelper::fileExists($file))
+							foreach ($logFolderContents as $file)
 							{
-								Zip::add($zipFile, $file, craft()->path->getStoragePath());
+								// Make sure it's a file.
+								if (IOHelper::fileExists($file))
+								{
+									Zip::add($zipFile, $file, craft()->path->getStoragePath());
+								}
 							}
 						}
 					}
@@ -397,15 +400,18 @@ class DashboardController extends BaseController
 						// Grab it all.
 						$templateFolderContents = IOHelper::getFolderContents(craft()->path->getSiteTemplatesPath());
 
-						foreach ($templateFolderContents as $file)
+						if ($templateFolderContents)
 						{
-							// Make sure it's a file.
-							if (IOHelper::fileExists($file))
+							foreach ($templateFolderContents as $file)
 							{
-								$templateFolderName = IOHelper::getFolderName(craft()->path->getSiteTemplatesPath(), false);
-								$siteTemplatePath = craft()->path->getSiteTemplatesPath();
-								$tempPath = substr($siteTemplatePath, 0, (strlen($siteTemplatePath) - strlen($templateFolderName)) - 1);
-								Zip::add($zipFile, $file, $tempPath);
+								// Make sure it's a file.
+								if (IOHelper::fileExists($file))
+								{
+									$templateFolderName = IOHelper::getFolderName(craft()->path->getSiteTemplatesPath(), false);
+									$siteTemplatePath = craft()->path->getSiteTemplatesPath();
+									$tempPath = substr($siteTemplatePath, 0, (strlen($siteTemplatePath) - strlen($templateFolderName)) - 1);
+									Zip::add($zipFile, $file, $tempPath);
+								}
 							}
 						}
 					}

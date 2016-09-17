@@ -1126,11 +1126,14 @@ abstract class BaseAssetSourceType extends BaseSavableComponentType
 	{
 		$thumbFolders = IOHelper::getFolderContents(craft()->path->getAssetsThumbsPath());
 
-		foreach ($thumbFolders as $folder)
+		if ($thumbFolders)
 		{
-			if (is_dir($folder))
+			foreach ($thumbFolders as $folder)
 			{
-				IOHelper::deleteFile($folder.'/'.$file->id.'.'.IOHelper::getExtension($file->filename));
+				if (is_dir($folder))
+				{
+					IOHelper::deleteFile($folder.'/'.$file->id.'.'.IOHelper::getExtension($file->filename));
+				}
 			}
 		}
 	}

@@ -168,12 +168,15 @@ class UtilsController extends BaseController
 			// Grab it all.
 			$logFolderContents = IOHelper::getFolderContents(craft()->path->getLogPath());
 
-			foreach ($logFolderContents as $logFolderContent)
+			if ($logFolderContents)
 			{
-				// Make sure it's a file.`
-				if (IOHelper::fileExists($logFolderContent))
+				foreach ($logFolderContents as $logFolderContent)
 				{
-					$logFileNames[] = IOHelper::getFileName($logFolderContent);
+					// Make sure it's a file.`
+					if (IOHelper::fileExists($logFolderContent))
+					{
+						$logFileNames[] = IOHelper::getFileName($logFolderContent);
+					}
 				}
 			}
 

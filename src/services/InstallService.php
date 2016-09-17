@@ -116,35 +116,38 @@ class InstallService extends BaseApplicationComponent
 		$recordsFolder = craft()->path->getAppPath().'records/';
 		$recordFiles = IOHelper::getFolderContents($recordsFolder, false, ".*Record\.php$");
 
-		foreach ($recordFiles as $file)
+		if ($recordFiles)
 		{
-			if (IOHelper::fileExists($file))
+			foreach ($recordFiles as $file)
 			{
-				$fileName = IOHelper::getFileName($file, false);
-				$class = __NAMESPACE__.'\\'.$fileName;
-
-				// Ignore abstract classes and interfaces
-				$ref = new \ReflectionClass($class);
-				if ($ref->isAbstract() || $ref->isInterface())
+				if (IOHelper::fileExists($file))
 				{
-					Craft::log("Skipping record {$file} because it’s abstract or an interface.", LogLevel::Warning);
-					continue;
-				}
+					$fileName = IOHelper::getFileName($file, false);
+					$class = __NAMESPACE__.'\\'.$fileName;
 
-				$obj = new $class('install');
+					// Ignore abstract classes and interfaces
+					$ref = new \ReflectionClass($class);
+					if ($ref->isAbstract() || $ref->isInterface())
+					{
+						Craft::log("Skipping record {$file} because it’s abstract or an interface.", LogLevel::Warning);
+						continue;
+					}
 
-				if (method_exists($obj, 'createTable'))
-				{
-					$records[] = $obj;
+					$obj = new $class('install');
+
+					if (method_exists($obj, 'createTable'))
+					{
+						$records[] = $obj;
+					}
+					else
+					{
+						Craft::log("Skipping record {$file} because it doesn’t have a createTable() method.", LogLevel::Warning);
+					}
 				}
 				else
 				{
-					Craft::log("Skipping record {$file} because it doesn’t have a createTable() method.", LogLevel::Warning);
+					Craft::log("Skipping record {$file} because it doesn’t exist.", LogLevel::Warning);
 				}
-			}
-			else
-			{
-				Craft::log("Skipping record {$file} because it doesn’t exist.", LogLevel::Warning);
 			}
 		}
 
