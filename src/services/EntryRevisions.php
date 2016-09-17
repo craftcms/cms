@@ -40,8 +40,6 @@ class EntryRevisions extends Component
 
     /**
      * @event DraftEvent The event that is triggered before a draft is saved.
-     *
-     * You may set [[DraftEvent::isValid]] to `false` to prevent the draft from getting saved.
      */
     const EVENT_BEFORE_SAVE_DRAFT = 'beforeSaveDraft';
 
