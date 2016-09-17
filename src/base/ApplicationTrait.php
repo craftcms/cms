@@ -435,6 +435,7 @@ trait ApplicationTrait
         $success = $this->saveInfo($info);
 
         if ($success === true && !$this->getRequest()->getIsConsoleRequest()) {
+            // Fire an 'afterEditionChange' event
             $this->trigger(WebApplication::EVENT_AFTER_EDITION_CHANGE,
                 new EditionChangeEvent([
                     'oldEdition' => $oldEdition,
@@ -1235,8 +1236,8 @@ trait ApplicationTrait
         // Load the plugins
         $this->getPlugins()->loadPlugins();
 
-        // Trigger an afterInit event
-        $this->trigger(WebApplication::EVENT_AFTER_INIT, new Event());
+        // Fire an 'afterInit' event
+        $this->trigger(WebApplication::EVENT_AFTER_INIT);
     }
 
     /**
