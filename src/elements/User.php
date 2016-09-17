@@ -25,6 +25,9 @@ use craft\app\helpers\Url;
 use craft\app\i18n\Locale;
 use craft\app\models\UserGroup;
 use craft\app\records\Session as SessionRecord;
+use craft\app\records\User as UserRecord;
+use craft\app\validators\DateTime as DateTimeValidator;
+use craft\app\validators\Unique as UniqueValidator;
 use Exception;
 use yii\base\ErrorHandler;
 use yii\base\NotSupportedException;
@@ -683,32 +686,14 @@ class User extends Element implements IdentityInterface
     public function rules()
     {
         $rules = parent::rules();
-
-        $rules[] = [['lastLoginDate'], 'craft\\app\\validators\\DateTime'];
-        $rules[] = [
-            ['invalidLoginCount', 'photoId'],
-            'number',
-            'min' => -2147483648,
-            'max' => 2147483647,
-            'integerOnly' => true
-        ];
-        $rules[] = [
-            ['lastInvalidLoginDate'],
-            'craft\\app\\validators\\DateTime'
-        ];
-        $rules[] = [['lockoutDate'], 'craft\\app\\validators\\DateTime'];
-        $rules[] = [
-            ['lastPasswordChangeDate'],
-            'craft\\app\\validators\\DateTime'
-        ];
-        $rules[] = [
-            ['verificationCodeIssuedDate'],
-            'craft\\app\\validators\\DateTime'
-        ];
+        $rules[] = [['lastLoginDate', 'lastInvalidLoginDate', 'lockoutDate', 'lastPasswordChangeDate', 'verificationCodeIssuedDate'], DateTimeValidator::className()];
+        $rules[] = [['invalidLoginCount', 'photoId'], 'number', 'integerOnly' => true];
         $rules[] = [['email', 'unverifiedEmail'], 'email'];
-        $rules[] = [['email', 'unverifiedEmail'], 'string', 'min' => 5];
-        $rules[] = [['username'], 'string', 'max' => 100];
-        $rules[] = [['email', 'unverifiedEmail'], 'string', 'max' => 255];
+        $rules[] = [['email', 'password', 'unverifiedEmail'], 'string', 'max' => 255];
+        $rules[] = [['username', 'firstName', 'lastName', 'verificationCode'], 'string', 'max' => 100];
+        $rules[] = [['username', 'email'], UniqueValidator::className(), 'targetClass' => UserRecord::className()];
+        $rules[] = [['username', 'email'], 'required'];
+        $rules[] = [['lastLoginAttemptIp'], 'string', 'max' => 45];
 
         return $rules;
     }

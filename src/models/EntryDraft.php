@@ -8,6 +8,8 @@
 namespace craft\app\models;
 
 use Craft;
+use craft\app\validators\DateTime;
+use craft\app\validators\SiteId;
 
 /**
  * Class EntryDraft model.
@@ -71,118 +73,10 @@ class EntryDraft extends BaseEntryRevisionModel
      */
     public function rules()
     {
-        return [
-            [
-                ['id'],
-                'number',
-                'min' => -2147483648,
-                'max' => 2147483647,
-                'integerOnly' => true
-            ],
-            [['siteId'], 'craft\\app\\validators\\SiteId'],
-            [['dateCreated'], 'craft\\app\\validators\\DateTime'],
-            [['dateUpdated'], 'craft\\app\\validators\\DateTime'],
-            [
-                ['root'],
-                'number',
-                'min' => -2147483648,
-                'max' => 2147483647,
-                'integerOnly' => true
-            ],
-            [
-                ['lft'],
-                'number',
-                'min' => -2147483648,
-                'max' => 2147483647,
-                'integerOnly' => true
-            ],
-            [
-                ['rgt'],
-                'number',
-                'min' => -2147483648,
-                'max' => 2147483647,
-                'integerOnly' => true
-            ],
-            [
-                ['level'],
-                'number',
-                'min' => -2147483648,
-                'max' => 2147483647,
-                'integerOnly' => true
-            ],
-            [
-                ['sectionId'],
-                'number',
-                'min' => -2147483648,
-                'max' => 2147483647,
-                'integerOnly' => true
-            ],
-            [
-                ['typeId'],
-                'number',
-                'min' => -2147483648,
-                'max' => 2147483647,
-                'integerOnly' => true
-            ],
-            [
-                ['authorId'],
-                'number',
-                'min' => -2147483648,
-                'max' => 2147483647,
-                'integerOnly' => true
-            ],
-            [['postDate'], 'craft\\app\\validators\\DateTime'],
-            [['expiryDate'], 'craft\\app\\validators\\DateTime'],
-            [
-                ['newParentId'],
-                'number',
-                'min' => -2147483648,
-                'max' => 2147483647,
-                'integerOnly' => true
-            ],
-            [
-                ['creatorId'],
-                'number',
-                'min' => -2147483648,
-                'max' => 2147483647,
-                'integerOnly' => true
-            ],
-            [
-                ['draftId'],
-                'number',
-                'min' => -2147483648,
-                'max' => 2147483647,
-                'integerOnly' => true
-            ],
-            [
-                [
-                    'id',
-                    'enabled',
-                    'archived',
-                    'siteId',
-                    'enabledForSite',
-                    'slug',
-                    'uri',
-                    'dateCreated',
-                    'dateUpdated',
-                    'root',
-                    'lft',
-                    'rgt',
-                    'level',
-                    'sectionId',
-                    'typeId',
-                    'authorId',
-                    'postDate',
-                    'expiryDate',
-                    'newParentId',
-                    'revisionNotes',
-                    'creatorId',
-                    'draftId',
-                    'name'
-                ],
-                'safe',
-                'on' => 'search'
-            ],
-        ];
+        $rules = parent::rules();
+        $rules[] = [['draftId'], 'number', 'integerOnly' => true];
+        $rules[] = [['name'], 'required'];
+
+        return $rules;
     }
 }

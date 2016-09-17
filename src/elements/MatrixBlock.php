@@ -16,6 +16,7 @@ use craft\app\elements\db\MatrixBlockQuery;
 use craft\app\fields\Matrix;
 use craft\app\helpers\ElementHelper;
 use craft\app\models\MatrixBlockType;
+use craft\app\validators\SiteId as SiteIdValidator;
 use yii\base\InvalidConfigException;
 
 /**
@@ -181,36 +182,8 @@ class MatrixBlock extends Element
     public function rules()
     {
         $rules = parent::rules();
-
-        $rules[] = [
-            ['fieldId'],
-            'number',
-            'min' => -2147483648,
-            'max' => 2147483647,
-            'integerOnly' => true
-        ];
-        $rules[] = [
-            ['ownerId'],
-            'number',
-            'min' => -2147483648,
-            'max' => 2147483647,
-            'integerOnly' => true
-        ];
-        $rules[] = [['ownerSiteId'], 'craft\\app\\validators\\SiteId'];
-        $rules[] = [
-            ['typeId'],
-            'number',
-            'min' => -2147483648,
-            'max' => 2147483647,
-            'integerOnly' => true
-        ];
-        $rules[] = [
-            ['sortOrder'],
-            'number',
-            'min' => -2147483648,
-            'max' => 2147483647,
-            'integerOnly' => true
-        ];
+        $rules[] = [['fieldId', 'ownerId', 'typeId', 'sortOrder'], 'number', 'integerOnly' => true];
+        $rules[] = [['ownerSiteId'], SiteIdValidator::className()];
 
         return $rules;
     }

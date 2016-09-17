@@ -137,14 +137,7 @@ class Tag extends Element
     public function rules()
     {
         $rules = parent::rules();
-
-        $rules[] = [
-            ['groupId'],
-            'number',
-            'min' => -2147483648,
-            'max' => 2147483647,
-            'integerOnly' => true
-        ];
+        $rules[] = [['groupId'], 'number', 'integerOnly' => true];
 
         return $rules;
     }

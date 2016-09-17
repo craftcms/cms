@@ -26,6 +26,9 @@ use craft\app\helpers\Io;
 use craft\app\helpers\Template;
 use craft\app\helpers\Url;
 use craft\app\models\VolumeFolder;
+use craft\app\records\Asset as AssetRecord;
+use craft\app\validators\DateTime as DateTimeValidator;
+use craft\app\validators\Unique as UniqueValidator;
 use Exception;
 use yii\base\ErrorHandler;
 use yii\base\InvalidCallException;
@@ -692,43 +695,11 @@ class Asset extends Element
     public function rules()
     {
         $rules = parent::rules();
-
-        $rules[] = [
-            ['volumeId'],
-            'number',
-            'min' => -2147483648,
-            'max' => 2147483647,
-            'integerOnly' => true
-        ];
-        $rules[] = [
-            ['folderId'],
-            'number',
-            'min' => -2147483648,
-            'max' => 2147483647,
-            'integerOnly' => true
-        ];
-        $rules[] = [
-            ['width'],
-            'number',
-            'min' => -2147483648,
-            'max' => 2147483647,
-            'integerOnly' => true
-        ];
-        $rules[] = [
-            ['height'],
-            'number',
-            'min' => -2147483648,
-            'max' => 2147483647,
-            'integerOnly' => true
-        ];
-        $rules[] = [
-            ['size'],
-            'number',
-            'min' => 0,
-            'max' => 18446744073709551615,
-            'integerOnly' => true
-        ];
-        $rules[] = [['dateModified'], 'craft\\app\\validators\\DateTime'];
+        $rules[] = [['volumeId', 'folderId', 'width', 'height', 'size'], 'number', 'integerOnly' => true];
+        $rules[] = [['dateModified'], DateTimeValidator::className()];
+        $rules[] = [['filename'], UniqueValidator::className(), 'targetClass' => AssetRecord::className(), 'targetAttribute' => ['filename', 'folderId']];
+        $rules[] = [['filename', 'kind'], 'required'];
+        $rules[] = [['kind'], 'string', 'max' => 50];
 
         return $rules;
     }

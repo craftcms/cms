@@ -21,12 +21,12 @@ use craft\app\elements\db\ElementQuery;
 use craft\app\elements\db\ElementQueryInterface;
 use craft\app\elements\db\EntryQuery;
 use craft\app\events\SetStatusEvent;
-use craft\app\helpers\ArrayHelper;
 use craft\app\helpers\DateTimeHelper;
 use craft\app\helpers\Db;
 use craft\app\helpers\Url;
 use craft\app\models\EntryType;
 use craft\app\models\Section;
+use craft\app\validators\DateTime as DateTimeValidator;
 use yii\base\InvalidConfigException;
 
 /**
@@ -751,37 +751,8 @@ EOD;
     public function rules()
     {
         $rules = parent::rules();
-
-        $rules[] = [
-            ['sectionId'],
-            'number',
-            'min' => -2147483648,
-            'max' => 2147483647,
-            'integerOnly' => true
-        ];
-        $rules[] = [
-            ['typeId'],
-            'number',
-            'min' => -2147483648,
-            'max' => 2147483647,
-            'integerOnly' => true
-        ];
-        $rules[] = [
-            ['authorId'],
-            'number',
-            'min' => -2147483648,
-            'max' => 2147483647,
-            'integerOnly' => true
-        ];
-        $rules[] = [['postDate'], 'craft\\app\\validators\\DateTime'];
-        $rules[] = [['expiryDate'], 'craft\\app\\validators\\DateTime'];
-        $rules[] = [
-            ['newParentId'],
-            'number',
-            'min' => -2147483648,
-            'max' => 2147483647,
-            'integerOnly' => true
-        ];
+        $rules[] = [['sectionId', 'typeId', 'authorId', 'newParentId'], 'number', 'integerOnly' => true];
+        $rules[] = [['postDate', 'expiryDate'], DateTimeValidator::className()];
 
         return $rules;
     }

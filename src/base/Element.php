@@ -24,6 +24,8 @@ use craft\app\helpers\Url;
 use craft\app\i18n\Locale;
 use craft\app\models\FieldLayout;
 use craft\app\models\Site;
+use craft\app\validators\DateTime as DateTimeValidator;
+use craft\app\validators\SiteId as SiteIdValidator;
 use craft\app\web\UploadedFile;
 use yii\base\Exception;
 use yii\base\InvalidCallException;
@@ -815,52 +817,12 @@ abstract class Element extends Component implements ElementInterface
     public function rules()
     {
         $rules = [
-            [
-                ['id'],
-                'number',
-                'min' => -2147483648,
-                'max' => 2147483647,
-                'integerOnly' => true
-            ],
-            [
-                ['contentId'],
-                'number',
-                'min' => -2147483648,
-                'max' => 2147483647,
-                'integerOnly' => true
-            ],
-            [['siteId'], 'craft\\app\\validators\\SiteId'],
-            [['dateCreated'], 'craft\\app\\validators\\DateTime'],
-            [['dateUpdated'], 'craft\\app\\validators\\DateTime'],
-            [
-                ['root'],
-                'number',
-                'min' => -2147483648,
-                'max' => 2147483647,
-                'integerOnly' => true
-            ],
-            [
-                ['lft'],
-                'number',
-                'min' => -2147483648,
-                'max' => 2147483647,
-                'integerOnly' => true
-            ],
-            [
-                ['rgt'],
-                'number',
-                'min' => -2147483648,
-                'max' => 2147483647,
-                'integerOnly' => true
-            ],
-            [
-                ['level'],
-                'number',
-                'min' => -2147483648,
-                'max' => 2147483647,
-                'integerOnly' => true
-            ],
+            [['id', 'contentId', 'root', 'lft', 'rgt', 'level'], 'number', 'integerOnly' => true],
+            [['siteId'], SiteIdValidator::className()],
+            [['dateCreated', 'dateUpdated'], DateTimeValidator::className()],
             [['title'], 'string', 'max' => 255],
+            [['type'], 'required'],
+            [['type'], 'string', 'max' => 150],
         ];
 
         // Require the title?

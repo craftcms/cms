@@ -33,6 +33,17 @@ class BaseEntryRevisionModel extends Entry
     // =========================================================================
 
     /**
+     * @inheritdoc
+     */
+    public function rules()
+    {
+        $rules = parent::rules();
+        $rules[] = [['creatorId'], 'number', 'integerOnly' => true];
+
+        return $rules;
+    }
+
+    /**
      * Sets the revision content.
      *
      * @param array $content
