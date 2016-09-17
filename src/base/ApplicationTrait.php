@@ -15,7 +15,6 @@ use craft\app\db\Query;
 use craft\app\enums\ConfigCategory;
 use craft\app\errors\DbConnectException;
 use craft\app\events\EditionChangeEvent;
-use craft\app\events\Event;
 use craft\app\helpers\App;
 use craft\app\helpers\DateTimeHelper;
 use craft\app\helpers\Db;

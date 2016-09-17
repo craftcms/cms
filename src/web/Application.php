@@ -9,13 +9,11 @@ namespace craft\app\web;
 
 use Craft;
 use craft\app\base\ApplicationTrait;
-use craft\app\events\EditionChangeEvent;
 use craft\app\helpers\Header;
 use craft\app\helpers\Io;
 use craft\app\helpers\Json;
 use craft\app\helpers\StringHelper;
 use craft\app\helpers\Url;
-use yii\base\Event;
 use yii\base\InvalidRouteException;
 use yii\web\ForbiddenHttpException;
 use yii\web\HttpException;
@@ -51,12 +49,12 @@ class Application extends \yii\web\Application
     // =========================================================================
 
     /**
-     * @event Event The event that is triggered after the application has been initialized
+     * @event \yii\base\Event The event that is triggered after the application has been initialized
      */
     const EVENT_AFTER_INIT = 'afterInit';
 
     /**
-     * @event EditionChangeEvent The event that is triggered after the edition changes
+     * @event \craft\app\events\EditionChangeEvent The event that is triggered after the edition changes
      */
     const EVENT_AFTER_EDITION_CHANGE = 'afterEditionChange';
 
