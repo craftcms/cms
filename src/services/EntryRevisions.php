@@ -184,7 +184,7 @@ class EntryRevisions extends Component
      */
     public function saveDraft(EntryDraft $draft)
     {
-        $isNewDraft = !$draft->id;
+        $isNewDraft = !$draft->draftId;
 
         if (!$draft->name && $draft->id) {
             // Get the total number of existing drafts for this entry/site
