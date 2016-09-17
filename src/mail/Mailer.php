@@ -155,28 +155,25 @@ class Mailer extends \yii\swiftmailer\Mailer
             $message->setFrom($this->from);
         }
 
-        $isSuccessful = null;
-
-        $event = new SendEmailErrorEvent([
-            'user' => $message->getTo(),
-            'email' => $message,
-            'variables' => $message->variables,
-            'error' => 'Unknown',
-        ]);
-
         try {
             $isSuccessful = parent::send($message);
+            $error = null;
         } catch (\Exception $e) {
-            $event->error = $e->getMessage();
             $isSuccessful = false;
+            $error = $e->getMessage();
         }
 
         // Either an exception was thrown or parent::send() returned false.
         if ($isSuccessful === false) {
-            // Fire a 'SendEmailErrorEvent' event
-            $this->trigger(self::EVENT_SEND_EMAIL_ERROR, $event);
+            // Fire a 'sendEmailError' event
+            $this->trigger(self::EVENT_SEND_EMAIL_ERROR, new SendEmailErrorEvent([
+                'user' => $message->getTo(),
+                'email' => $message,
+                'variables' => $message->variables,
+                'error' => $error,
+            ]));
 
-            throw new SendEmailException('Email error: '.$event->error);
+            throw new SendEmailException('Error sending email: '.($error ?: 'Unknown'));
         }
 
         return $isSuccessful;
