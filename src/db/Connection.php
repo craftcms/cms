@@ -31,7 +31,7 @@ class Connection extends \yii\db\Connection
     // =========================================================================
 
     /**
-     * @event Event The event that is triggered before the backup is created.
+     * @event \yii\base\Event The event that is triggered before the backup is created.
      */
     const EVENT_BEFORE_CREATE_BACKUP = 'beforeCreateBackup';
 
@@ -98,9 +98,8 @@ class Connection extends \yii\db\Connection
             $backup->setIgnoreDataTables($ignoreDataTables);
         }
 
-        $this->trigger(self::EVENT_BEFORE_CREATE_BACKUP,
-            new DbBackupEvent()
-        );
+        // Fire a 'beforeCreateBackup' event
+        $this->trigger(self::EVENT_BEFORE_CREATE_BACKUP);
 
         if (($backupFile = $backup->run()) !== false) {
 
