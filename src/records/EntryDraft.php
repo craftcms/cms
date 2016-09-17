@@ -36,17 +36,6 @@ class EntryDraft extends ActiveRecord
 
     /**
      * @inheritdoc
-     */
-    public function rules()
-    {
-        return [
-            [['siteId'], 'craft\\app\\validators\\SiteId'],
-            [['siteId', 'name', 'data'], 'required'],
-        ];
-    }
-
-    /**
-     * @inheritdoc
      *
      * @return string
      */

@@ -178,12 +178,19 @@ class EntryRevisions extends Component
     /**
      * Saves a draft.
      *
-     * @param EntryDraft $draft
+     * @param EntryDraft $draft         The draft to be saved
+     * @param boolean    $runValidation Whether to perform validation
      *
      * @return boolean
      */
-    public function saveDraft(EntryDraft $draft)
+    public function saveDraft(EntryDraft $draft, $runValidation = true)
     {
+        if ($runValidation && !$draft->validate()) {
+             Craft::info('Draft not saved due to validation error.', __METHOD__);
+
+             return false;
+         }
+
         $isNewDraft = !$draft->draftId;
 
         if (!$draft->name && $draft->id) {
@@ -198,39 +205,29 @@ class EntryRevisions extends Component
         }
 
         // Fire a 'beforeSaveDraft' event
-        $event = new DraftEvent([
+        $this->trigger(self::EVENT_BEFORE_SAVE_DRAFT, new DraftEvent([
             'draft' => $draft,
             'isNew' => $isNewDraft,
-        ]);
+        ]));
 
-        $this->trigger(self::EVENT_BEFORE_SAVE_DRAFT, $event);
+        $draftRecord = $this->_getDraftRecord($draft);
+        $draftRecord->name = $draft->name;
+        $draftRecord->notes = $draft->revisionNotes;
+        $draftRecord->data = $this->_getRevisionData($draft);
 
-        $success = false;
+        $draftRecord->save(false);
 
-        // Is the event giving us the go-ahead?
-        if ($event->isValid) {
-
-            $draftRecord = $this->_getDraftRecord($draft);
-            $draftRecord->name = $draft->name;
-            $draftRecord->notes = $draft->revisionNotes;
-            $draftRecord->data = $this->_getRevisionData($draft);
-
-            if ($draftRecord->save()) {
-                $draft->draftId = $draftRecord->id;
-
-                $success = true;
-            }
+        if ($isNewDraft) {
+            $draft->draftId = $draftRecord->id;
         }
 
-        if ($success) {
-            // Fire an 'afterSaveDraft' event
-            $this->trigger(self::EVENT_AFTER_SAVE_DRAFT, new DraftEvent([
-                'draft' => $draft,
-                'isNew' => $isNewDraft,
-            ]));
-        }
+        // Fire an 'afterSaveDraft' event
+        $this->trigger(self::EVENT_AFTER_SAVE_DRAFT, new DraftEvent([
+            'draft' => $draft,
+            'isNew' => $isNewDraft,
+        ]));
 
-         return $success;
+         return true;
     }
 
     /**
