@@ -12,10 +12,7 @@ use craft\app\base\Plugin;
 use craft\app\base\PluginInterface;
 use craft\app\enums\PluginUpdateStatus;
 use craft\app\enums\VersionUpdateStatus;
-use craft\app\events\UpdateBeginEvent;
-use craft\app\events\UpdateErrorEvent;
 use craft\app\events\UpdateEvent;
-use craft\app\events\UpdateFinishEvent;
 use craft\app\helpers\DateTimeHelper;
 use craft\app\helpers\Io;
 use craft\app\helpers\Json;
@@ -61,14 +58,14 @@ class Updates extends Component
     const EVENT_BEFORE_UPDATE = 'beforeUpdate';
 
     /**
-     * @event Event The event that is triggered after an update is installed.
+     * @event UpdateEvent The event that is triggered after an update is installed.
      */
     const EVENT_AFTER_UPDATE = 'afterUpdate';
 
     /**
-     * @event Event The event that is triggered after an update has failed to install.
+     * @event UpdateEvent The event that is triggered after an update has failed to install.
      */
-    const EVENT_AFTER_UPDATE_FAIL = 'afterUpdateFail';
+    const EVENT_UPDATE_FAILURE = 'updateFailure';
 
     // Properties
     // =========================================================================
@@ -548,8 +545,8 @@ class Updates extends Component
     {
         Craft::info('Preparing to update '.$handle.'.', __METHOD__);
 
-        // Fire a 'beforeUpdate' event and pass in the type
-        $this->trigger(self::EVENT_BEFORE_UPDATE, new UpdateBeginEvent([
+        // Fire a 'beforeUpdate' event
+        $this->trigger(self::EVENT_BEFORE_UPDATE, new UpdateEvent([
             'type' => $manual ? 'manual' : 'auto',
             'handle' => $handle,
         ]));
@@ -756,7 +753,7 @@ class Updates extends Component
         }
 
         // Fire an 'afterUpdate' event
-        $this->trigger(self::EVENT_AFTER_UPDATE, new UpdateFinishEvent([
+        $this->trigger(self::EVENT_AFTER_UPDATE, new UpdateEvent([
             'handle' => $handle,
         ]));
     }
@@ -771,8 +768,8 @@ class Updates extends Component
     public function rollbackUpdate($uid, $handle, $dbBackupPath = false)
     {
         try {
-            // Fire an 'afterUpdateFail' event
-            $this->trigger(self::EVENT_AFTER_UPDATE_FAIL, new UpdateErrorEvent([
+            // Fire an 'updateFailure' event
+            $this->trigger(self::EVENT_UPDATE_FAILURE, new UpdateEvent([
                 'handle' => $handle,
             ]));
 
