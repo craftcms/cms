@@ -628,6 +628,16 @@ class User extends Element implements IdentityInterface
     public $verificationCodeIssuedDate;
 
     /**
+     * @var string Verification code
+     */
+    public $verificationCode;
+
+    /**
+     * @var string Last login attempt IP address.
+     */
+    public $lastLoginAttemptIp;
+
+    /**
      * @var string Auth error
      */
     public $authError;
