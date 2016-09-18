@@ -210,6 +210,7 @@ class Users extends Component
                 [':usernameOrEmail' => $usernameOrEmail]
             )
             ->withPassword()
+            ->status(null)
             ->one();
     }
 
