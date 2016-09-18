@@ -760,11 +760,19 @@ class User extends Element implements IdentityInterface
             }
 
             case self::STATUS_LOCKED: {
-                if (Craft::$app->getConfig()->get('cooldownDuration')) {
-                    $this->authError = self::AUTH_ACCOUNT_COOLDOWN;
+                // If the account is locked, but they just entered a valid password
+                if (Craft::$app->getSecurity()->validatePassword($password, $this->password)) {
+                    // Let them know how much time they have to wait (if any) before their account is unlocked.
+                    if (Craft::$app->getConfig()->get('cooldownDuration')) {
+                        $this->authError = self::AUTH_ACCOUNT_COOLDOWN;
+                    } else {
+                        $this->authError = self::AUTH_ACCOUNT_LOCKED;
+                    }
                 } else {
-                    $this->authError = self::AUTH_ACCOUNT_LOCKED;
+                    // Otherwise, just give them the invalid username/password message to help prevent user enumeration.
+                    $this->authError = self::AUTH_INVALID_CREDENTIALS;
                 }
+
                 break;
             }
 

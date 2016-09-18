@@ -103,7 +103,11 @@ Craft.BaseElementIndexView = Garnish.Base.extend(
             }, this);
 
             this.addListener(this.$elementContainer, 'dblclick', this._handleElementEditing);
-            this.addListener(this.$elementContainer, 'taphold', this._handleElementEditing);
+
+            if($.isTouchCapable())
+            {
+                this.addListener(this.$elementContainer, 'taphold', this._handleElementEditing);
+            }
         }
 
         // Give sub-classes a chance to do post-initialization stuff here

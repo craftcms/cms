@@ -144,13 +144,16 @@ class PclZip implements ZipInterface
 
         $filesToAdd = [];
 
-        foreach ($folderContents as $itemToZip) {
-            if (Io::isReadable($itemToZip)) {
-                if ((Io::folderExists($itemToZip) && Io::isFolderEmpty($itemToZip)) || Io::fileExists($itemToZip)) {
-                    $filesToAdd[] = $itemToZip;
+        if ($folderContents) {
+            foreach ($folderContents as $itemToZip) {
+                if (Io::isReadable($itemToZip)) {
+                    if ((Io::folderExists($itemToZip) && Io::isFolderEmpty($itemToZip)) || Io::fileExists($itemToZip)) {
+                        $filesToAdd[] = $itemToZip;
+                    }
                 }
             }
         }
+
 
         if (!$pathPrefix) {
             $pathPrefix = '';

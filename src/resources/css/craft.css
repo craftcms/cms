@@ -47,9 +47,9 @@ body, input, select, textarea { font-family: HelveticaNeue, sans-serif; }
 
 body.rtl .ltr { text-align: left; direction: rtl; }
 
-body.rtl .input.ltr { text-align: right; direction: rtl; }
+body.rtl .input.ltr { text-align: left; direction: ltr; }
 
-body.ltr .input.rtl { text-align: left; direction: ltr; }
+body.ltr .input.rtl { text-align: right; direction: rtl; }
 
 body.rtl .text.ltr { text-align: right !important; direction: ltr !important; }
 

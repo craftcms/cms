@@ -400,6 +400,13 @@ return [
      */
     'privateTemplateTrigger' => '_',
     /**
+     * When set to `false` and you go through the "forgot password" workflow on the control panel login page, for example,
+     * you get distinct messages saying if the username/email didn't exist or the email was successfully sent and to check
+     * your email for further instructions. This can allow for username/email enumeration based on the response. If set
+     * `true`, you will always get a successful response even if there was an error making it difficult to enumerate users.
+     */
+    'preventUserEnumeration' => false,
+    /**
      * The amount of time to wait before Craft purges pending users from the system that have not activated. Set to
      * false to disable this feature.  Note that if you set this to a time interval, then any content assigned to
      * a pending user will be deleted as well when the given time interval passes.

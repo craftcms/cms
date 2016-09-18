@@ -847,11 +847,13 @@ class Io
             if ($success && static::folderExists($path, false, $suppressErrors) && $recursive) {
                 $contents = static::getFolderContents($path, true, null, false, $suppressErrors);
 
-                foreach ($contents as $path) {
-                    $path = static::normalizePathSeparators($path);
+                if ($contents) {
+                    foreach ($contents as $path) {
+                        $path = static::normalizePathSeparators($path);
 
-                    if ($suppressErrors ? !@chown($path, $owner) : chown($path, $owner)) {
-                        $success = false;
+                        if ($suppressErrors ? !@chown($path, $owner) : chown($path, $owner)) {
+                            $success = false;
+                        }
                     }
                 }
             }
@@ -897,11 +899,13 @@ class Io
             if ($success && static::folderExists($path, false, $suppressErrors) && $recursive) {
                 $contents = static::getFolderContents($path, true, null, false, $suppressErrors);
 
-                foreach ($contents as $path) {
-                    $path = static::normalizePathSeparators($path);
+                if ($contents) {
+                    foreach ($contents as $path) {
+                        $path = static::normalizePathSeparators($path);
 
-                    if ($suppressErrors ? !@chgrp($path, $group) : chgrp($path, $group)) {
-                        $success = false;
+                        if ($suppressErrors ? !@chgrp($path, $group) : chgrp($path, $group)) {
+                            $success = false;
+                        }
                     }
                 }
             }
@@ -999,24 +1003,26 @@ class Io
         if (static::folderExists($path, $suppressErrors)) {
             $folderContents = static::getFolderContents($path, true, null, true, $suppressErrors);
 
-            foreach ($folderContents as $item) {
-                $itemDest = $destination.'/'.str_replace($path, '', $item);
+            if ($folderContents) {
+                foreach ($folderContents as $item) {
+                    $itemDest = $destination.'/'.str_replace($path, '', $item);
 
-                $destFolder = static::getFolderName($itemDest, true, $suppressErrors);
+                    $destFolder = static::getFolderName($itemDest, true, $suppressErrors);
 
-                if (!static::folderExists($destFolder, false, $suppressErrors)) {
-                    static::createFolder($destFolder, Craft::$app->getConfig()->get('defaultFolderPermissions'), $suppressErrors);
-                }
-
-                if (static::fileExists($item, false, $suppressErrors)) {
-                    $result = $suppressErrors ? @copy($item, $itemDest) : copy($item, $itemDest);
-
-                    if ($result) {
-                        Craft::error('Could not copy file from '.$item.' to '.$itemDest.'.', __METHOD__);
+                    if (!static::folderExists($destFolder, false, $suppressErrors)) {
+                        static::createFolder($destFolder, Craft::$app->getConfig()->get('defaultFolderPermissions'), $suppressErrors);
                     }
-                } else if (static::folderExists($item, false, $suppressErrors)) {
-                    if (!static::createFolder($itemDest, $suppressErrors)) {
-                        Craft::error('Could not create destination folder '.$itemDest, __METHOD__);
+
+                    if (static::fileExists($item, false, $suppressErrors)) {
+                        $result = $suppressErrors ? @copy($item, $itemDest) : copy($item, $itemDest);
+
+                        if ($result) {
+                            Craft::error('Could not copy file from '.$item.' to '.$itemDest.'.', __METHOD__);
+                        }
+                    } else if (static::folderExists($item, false, $suppressErrors)) {
+                        if (!static::createFolder($itemDest, $suppressErrors)) {
+                            Craft::error('Could not create destination folder '.$itemDest, __METHOD__);
+                        }
                     }
                 }
             }
@@ -1585,7 +1591,9 @@ class Io
     {
         $size = 0;
 
-        foreach (static::getFolderContents($path, true, null, true, $suppressErrors) as $item) {
+        $folderContents = static::getFolderContents($path, true, null, true, $suppressErrors);
+
+        foreach ($folderContents as $item) {
             $item = static::normalizePathSeparators($item);
 
             if (static::fileExists($item, false, $suppressErrors)) {

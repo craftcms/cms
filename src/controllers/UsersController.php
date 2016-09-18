@@ -216,6 +216,7 @@ class UsersController extends Controller
         $this->requirePostRequest();
 
         $errors = [];
+        $existingUser = false;
 
         // If someone's logged in and they're allowed to edit other users, then see if a userId was submitted
         if (Craft::$app->getUser()->checkPermission('editUsers')) {
@@ -227,6 +228,8 @@ class UsersController extends Controller
                 if (!$user) {
                     throw new NotFoundHttpException('User not found');
                 }
+
+                $existingUser = true;
             }
         }
 
@@ -234,42 +237,38 @@ class UsersController extends Controller
             $loginName = Craft::$app->getRequest()->getBodyParam('loginName');
 
             if (!$loginName) {
+                // If they didn't even enter a username/email, just bail now.
                 $errors[] = Craft::t('app', 'Username or email is required.');
-            } else {
-                $user = Craft::$app->getUsers()->getUserByUsernameOrEmail($loginName);
+                return $this->_handleSendPasswordResetError($errors);
+            }
 
-                if (!$user) {
-                    $errors[] = Craft::t('app', 'Invalid username or email.');
-                }
+            $user = Craft::$app->getUsers()->getUserByUsernameOrEmail($loginName);
+
+            if (!$user) {
+                $errors[] = Craft::t('app', 'Invalid username or email.');
             }
         }
 
         if (!empty($user)) {
-            if (Craft::$app->getUsers()->sendPasswordResetEmail($user)) {
-                if (Craft::$app->getRequest()->getAcceptsJson()) {
-                    return $this->asJson(['success' => true]);
-                }
+            if (!Craft::$app->getUsers()->sendPasswordResetEmail($user)) {
+                $errors[] = Craft::t('app', 'There was a problem sending the password reset email.');
+            }
+        }
 
-                Craft::$app->getSession()->setNotice(Craft::t('app', 'Password reset email sent.'));
-
-                return $this->redirectToPostedUrl();
+        // If there haven't been any errors, or there were, and it's not one logged in user editing another
+        // // and we want to pretend like there wasn't any errors...
+        if (empty($errors) || (count($errors) > 0 && !$existingUser && Craft::$app->getConfig()->get('preventUserEnumeration'))) {
+            if (Craft::$app->getRequest()->getAcceptsJson()) {
+                return $this->asJson(['success' => true]);
             }
 
-            $errors[] = Craft::t('app',
-                'There was a problem sending the password reset email.');
+            Craft::$app->getSession()->setNotice(Craft::t('app', 'Password reset email sent.'));
+
+            return $this->redirectToPostedUrl();
         }
 
-        if (Craft::$app->getRequest()->getAcceptsJson()) {
-            return $this->asErrorJson($errors);
-        }
-
-        // Send the data back to the template
-        Craft::$app->getUrlManager()->setRouteParams([
-            'errors' => $errors,
-            'loginName' => isset($loginName) ? $loginName : null,
-        ]);
-
-        return null;
+        // Handle the errors.
+        return $this->_handleSendPasswordResetError($errors, $loginName);
     }
 
     /**
@@ -1836,5 +1835,26 @@ class UsersController extends Controller
         $url = Url::getSiteUrl($activateAccountSuccessPath);
 
         return $this->redirectToPostedUrl($user, $url);
+    }
+
+    /**
+     * @param string[]    $errors
+     * @param string|null $loginName
+     *
+     * @return null|Response
+     */
+    private function _handleSendPasswordResetError($errors, $loginName = null)
+    {
+        if (Craft::$app->getRequest()->getAcceptsJson()) {
+            return $this->asErrorJson($errors);
+        } else {
+            // Send the data back to the template
+            Craft::$app->getUrlManager()->setRouteParams([
+                'errors'    => $errors,
+                'loginName' => $loginName,
+            ]);
+        }
+
+        return null;
     }
 }

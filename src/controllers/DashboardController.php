@@ -347,12 +347,15 @@ class DashboardController extends Controller
                         // Grab it all.
                         $logFolderContents = Io::getFolderContents(Craft::$app->getPath()->getLogPath());
 
-                        foreach ($logFolderContents as $file) {
-                            // Make sure it's a file.
-                            if (Io::fileExists($file)) {
-                                Zip::add($zipFile, $file, Craft::$app->getPath()->getStoragePath());
+                        if ($logFolderContents) {
+                            foreach ($logFolderContents as $file) {
+                                // Make sure it's a file.
+                                if (Io::fileExists($file)) {
+                                    Zip::add($zipFile, $file, Craft::$app->getPath()->getStoragePath());
+                                }
                             }
                         }
+
                     }
 
                     if ($getHelpModel->attachDbBackup && Io::folderExists(Craft::$app->getPath()->getDbBackupPath())) {
@@ -401,15 +404,18 @@ class DashboardController extends Controller
                         // Grab it all.
                         $templateFolderContents = Io::getFolderContents(Craft::$app->getPath()->getSiteTemplatesPath());
 
-                        foreach ($templateFolderContents as $file) {
-                            // Make sure it's a file.
-                            if (Io::fileExists($file)) {
-                                $templateFolderName = Io::getFolderName(Craft::$app->getPath()->getSiteTemplatesPath(), false);
-                                $siteTemplatePath = Craft::$app->getPath()->getSiteTemplatesPath();
-                                $tempPath = substr($siteTemplatePath, 0, (StringHelper::length($siteTemplatePath) - StringHelper::length($templateFolderName)) - 1);
-                                Zip::add($zipFile, $file, $tempPath);
+                        if ($templateFolderContents) {
+                            foreach ($templateFolderContents as $file) {
+                                // Make sure it's a file.
+                                if (Io::fileExists($file)) {
+                                    $templateFolderName = Io::getFolderName(Craft::$app->getPath()->getSiteTemplatesPath(), false);
+                                    $siteTemplatePath = Craft::$app->getPath()->getSiteTemplatesPath();
+                                    $tempPath = substr($siteTemplatePath, 0, (StringHelper::length($siteTemplatePath) - StringHelper::length($templateFolderName)) - 1);
+                                    Zip::add($zipFile, $file, $tempPath);
+                                }
                             }
                         }
+
                     }
                 }
 

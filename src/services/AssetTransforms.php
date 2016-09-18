@@ -1130,12 +1130,15 @@ class AssetTransforms extends Component
     {
         $thumbFolders = Io::getFolderContents(Craft::$app->getPath()->getResizedAssetsPath());
 
-        foreach ($thumbFolders as $folder) {
-            if (is_dir($folder)) {
-                Io::deleteFile($folder.'/'.$asset->id.'.'.$this->_getThumbExtension($asset),
-                    true);
+        if ($thumbFolders) {
+            foreach ($thumbFolders as $folder) {
+                if (is_dir($folder)) {
+                    Io::deleteFile($folder.'/'.$asset->id.'.'.$this->_getThumbExtension($asset),
+                        true);
+                }
             }
         }
+
     }
 
     /**
