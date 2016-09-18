@@ -11,7 +11,6 @@ use Craft;
 use craft\app\base\Element;
 use craft\app\base\ElementInterface;
 use craft\app\base\Field;
-use craft\app\base\FieldInterface;
 use craft\app\db\Query;
 use craft\app\events\ElementContentEvent;
 use craft\app\models\FieldLayout;
@@ -32,12 +31,12 @@ class Content extends Component
     // =========================================================================
 
     /**
-     * @event ElementEvent The event that is triggered before an element's content is saved.
+     * @event ElementContentEvent The event that is triggered before an element's content is saved.
      */
     const EVENT_BEFORE_SAVE_CONTENT = 'beforeSaveContent';
 
     /**
-     * @event ElementEvent The event that is triggered after an element's content is saved.
+     * @event ElementContentEvent The event that is triggered after an element's content is saved.
      */
     const EVENT_AFTER_SAVE_CONTENT = 'afterSaveContent';
 

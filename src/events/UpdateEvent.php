@@ -8,18 +8,23 @@
 namespace craft\app\events;
 
 /**
- * Update finish event class.
+ * Update event class.
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since  3.0
  */
-class UpdateFinishEvent extends Event
+class UpdateEvent extends Event
 {
     // Properties
     // =========================================================================
 
     /**
-     * @var string The handle of whatever initiated the update (Craft or a plugin)
+     * @var string The type of update ("manual" or "auto")
+     */
+    public $type;
+
+    /**
+     * @var string The handle of whatever initiated the update ("craft" or a plugin’s handle)
      */
     public $handle;
 }
