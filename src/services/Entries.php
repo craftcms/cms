@@ -44,12 +44,12 @@ class Entries extends Component
     const EVENT_AFTER_SAVE_ENTRY = 'afterSaveEntry';
 
     /**
-     * @event EntryEvent The event that is triggered before an entry is deleted.
+     * @event EntryDeleteEvent The event that is triggered before an entry is deleted.
      */
     const EVENT_BEFORE_DELETE_ENTRY = 'beforeDeleteEntry';
 
     /**
-     * @event EntryEvent The event that is triggered after an entry is deleted.
+     * @event EntryDeleteEvent The event that is triggered after an entry is deleted.
      */
     const EVENT_AFTER_DELETE_ENTRY = 'afterDeleteEntry';
 
@@ -63,8 +63,8 @@ class Entries extends Component
      * $entry = Craft::$app->getEntries()->getEntryById($entryId);
      * ```
      *
-     * @param integer $entryId  The entry’s ID.
-     * @param integer $siteId   The site to fetch the entry in. Defaults to the current site.
+     * @param integer $entryId The entry’s ID.
+     * @param integer $siteId  The site to fetch the entry in. Defaults to the current site.
      *
      * @return Entry|null The entry with the given ID, or `null` if an entry could not be found.
      */
@@ -114,8 +114,8 @@ class Entries extends Component
      * }
      * ```
      *
-     * @param Entry    $entry         The entry to be saved.
-     * @param boolean  $runValidation Whether the entry should be validated
+     * @param Entry   $entry         The entry to be saved.
+     * @param boolean $runValidation Whether the entry should be validated
      *
      * @return bool
      * @throws EntryNotFoundException if $entry->newParentId or $entry->id is invalid
@@ -128,7 +128,7 @@ class Entries extends Component
         if ($runValidation && !$entry->validate()) {
             Craft::info('Entry not saved due to validation error.', __METHOD__);
 
-           return false;
+            return false;
         }
 
         $isNewEntry = !$entry->id;
@@ -330,7 +330,7 @@ class Entries extends Component
 
         // Fire an 'afterDeleteEntry' event
         $this->trigger(self::EVENT_AFTER_DELETE_ENTRY, new EntryDeleteEvent([
-                'entries' => $entries
+            'entries' => $entries
         ]));
 
         return true;
