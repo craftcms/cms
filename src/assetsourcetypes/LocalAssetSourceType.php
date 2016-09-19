@@ -368,10 +368,17 @@ class LocalAssetSourceType extends BaseAssetSourceType
 	{
 		$fileList = IOHelper::getFolderContents($this->getSourceFileSystemPath().$folder->path, false);
 
-		foreach ($fileList as &$file)
-		{
-			$file = IOHelper::getFileName($file);
-		}
+        if ($fileList)
+        {
+            foreach ($fileList as &$file)
+            {
+                $file = IOHelper::getFileName($file);
+            }
+        }
+        else
+        {
+            throw new Exception(Craft::t('The folder “{folder}” cannot be read.', array('folder' => $this->getSourceFileSystemPath().$folder->path)));
+        }
 
 		return AssetsHelper::getFilenameReplacement($fileList, $fileName);
 	}
