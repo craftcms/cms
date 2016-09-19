@@ -13,7 +13,6 @@ use craft\app\db\Query;
 use craft\app\errors\EntryDraftNotFoundException;
 use craft\app\events\EntryDraftDeleteEvent;
 use craft\app\events\DraftEvent;
-use craft\app\events\PublishDraftEvent;
 use craft\app\events\RevertEntryEvent;
 use craft\app\helpers\ArrayHelper;
 use craft\app\helpers\Json;
@@ -50,8 +49,6 @@ class EntryRevisions extends Component
 
     /**
      * @event DraftEvent The event that is triggered before a draft is published.
-     *
-     * You may set [[DraftEvent::isValid]] to `false` to prevent the draft from getting published.
      */
     const EVENT_BEFORE_PUBLISH_DRAFT = 'beforePublishDraft';
 
@@ -184,10 +181,10 @@ class EntryRevisions extends Component
     public function saveDraft(EntryDraft $draft, $runValidation = true)
     {
         if ($runValidation && !$draft->validate()) {
-             Craft::info('Draft not saved due to validation error.', __METHOD__);
+            Craft::info('Draft not saved due to validation error.', __METHOD__);
 
-             return false;
-         }
+            return false;
+        }
 
         $isNewDraft = !$draft->draftId;
 
@@ -225,21 +222,28 @@ class EntryRevisions extends Component
             'isNew' => $isNewDraft,
         ]));
 
-         return true;
+        return true;
     }
 
     /**
      * Publishes a draft.
      *
-     * @param EntryDraft $draft
+     * @param EntryDraft $draft         The draft to be published
+     * @param boolean    $runValidation Whether to perform validation
      *
      * @return boolean
      */
-    public function publishDraft(EntryDraft $draft)
+    public function publishDraft(EntryDraft $draft, $runValidation)
     {
         // If this is a single, we'll have to set the title manually
         if ($draft->getSection()->type == Section::TYPE_SINGLE) {
             $draft->title = $draft->getSection()->name;
+        }
+
+        if ($runValidation && !$draft->validate()) {
+            Craft::info('Draft not published due to validation error.', __METHOD__);
+
+            return false;
         }
 
         // Set the version notes
@@ -249,30 +253,23 @@ class EntryRevisions extends Component
         }
 
         // Fire a 'beforePublishDraft' event
-        $event = new PublishDraftEvent([
+        $this->trigger(self::EVENT_BEFORE_PUBLISH_DRAFT, new DraftEvent([
             'draft' => $draft
-        ]);
+        ]));
 
-        $this->trigger(self::EVENT_BEFORE_PUBLISH_DRAFT, $event);
+        // Save the entry without re-running validation on it
+        Craft::$app->getEntries()->saveEntry($draft, false);
 
+        // Delete the draft
         $success = false;
+        $this->deleteDraft($draft);
 
-        // Is the event giving us the go-ahead?
-        if ($event->isValid) {
-            if (Craft::$app->getEntries()->saveEntry($draft)) {
-                $success = true;
-                $this->deleteDraft($draft);
-            }
-        }
+        // Fire an 'afterPublishDraft' event
+        $this->trigger(self::EVENT_AFTER_PUBLISH_DRAFT, new DraftEvent([
+            'draft' => $draft
+        ]));
 
-        if ($success) {
-            // Fire an 'afterPublishDraft' event
-            $this->trigger(self::EVENT_AFTER_PUBLISH_DRAFT, new PublishDraftEvent([
-                'draft' => $draft
-            ]));
-        }
-
-        return $success;
+        return true;
     }
 
     /**
