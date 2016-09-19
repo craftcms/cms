@@ -12,7 +12,7 @@ use craft\app\base\Field;
 use craft\app\db\Query;
 use craft\app\errors\EntryDraftNotFoundException;
 use craft\app\events\DraftEvent;
-use craft\app\events\RevertEntryEvent;
+use craft\app\events\EntryEvent;
 use craft\app\helpers\ArrayHelper;
 use craft\app\helpers\Json;
 use craft\app\elements\Entry;
@@ -65,6 +65,11 @@ class EntryRevisions extends Component
      * @event DraftEvent The event that is triggered after a draft is deleted.
      */
     const EVENT_AFTER_DELETE_DRAFT = 'afterDeleteDraft';
+
+    /**
+     * @event EntryEvent The event that is triggered before an entry is reverted to an old version.
+     */
+    const EVENT_BEFORE_REVERT_ENTRY_TO_VERSION = 'beforeRevertEntryToVersion';
 
     /**
      * @event EntryEvent The event that is triggered after an entry is reverted to an old version.
@@ -385,31 +390,41 @@ class EntryRevisions extends Component
      * Reverts an entry to a version.
      *
      * @param EntryVersion $version
+     * @param boolean      $runValidation Whether to perform validation
      *
      * @return boolean
      */
-    public function revertEntryToVersion(EntryVersion $version)
+    public function revertEntryToVersion(EntryVersion $version, $runValidation)
     {
         // If this is a single, we'll have to set the title manually
         if ($version->getSection()->type == Section::TYPE_SINGLE) {
             $version->title = $version->getSection()->name;
         }
 
+        if ($runValidation && !$version->validate()) {
+            Craft::info('Entry not reverted due to validation error.', __METHOD__);
+
+            return false;
+        }
+
         // Set the version notes
         $version->revisionNotes = Craft::t('app', 'Reverted version {num}.',
             ['num' => $version->num]);
 
-        if (Craft::$app->getEntries()->saveEntry($version)) {
-            // Fire an 'afterRevertEntryToVersion' event
-            $this->trigger(self::EVENT_AFTER_REVERT_ENTRY_TO_VERSION,
-                new RevertEntryEvent([
-                    'entry' => $version,
-                ]));
+        // Fire a 'beforeRevertEntryToVersion' event
+        $this->trigger(self::EVENT_BEFORE_REVERT_ENTRY_TO_VERSION, new EntryEvent([
+            'entry' => $version,
+        ]));
 
-            return true;
-        }
+        // Revert the entry without re-running validation on it
+        Craft::$app->getEntries()->saveEntry($version, false);
 
-        return false;
+        // Fire an 'afterRevertEntryToVersion' event
+        $this->trigger(self::EVENT_AFTER_REVERT_ENTRY_TO_VERSION, new EntryEvent([
+            'entry' => $version,
+        ]));
+
+        return true;
     }
 
     // Private Methods
