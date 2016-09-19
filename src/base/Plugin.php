@@ -73,11 +73,6 @@ class Plugin extends Module implements PluginInterface
     // =========================================================================
 
     /**
-     * @var Plugin The plugin instance
-     */
-    public static $plugin;
-
-    /**
      * @inheritdoc
      */
     public static function hasCpSection()
@@ -101,17 +96,6 @@ class Plugin extends Module implements PluginInterface
 
     // Public Methods
     // =========================================================================
-
-    /**
-     * @inheritdoc
-     */
-    public function __construct($id, $parent = null, $config = [])
-    {
-        static::$plugin = $this;
-        static::setInstance($this);
-
-        parent::__construct($id, $parent, $config);
-    }
 
     /**
      * @inheritdoc
