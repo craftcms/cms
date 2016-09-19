@@ -449,6 +449,9 @@ class EmailService extends BaseApplicationComponent
 
 				craft()->setLanguage($oldLanguage);
 
+				// Explicitly hide the XMailer header.
+				$email->XMailer = ' ';
+
 				if (!$email->Send())
 				{
 					$errorMessage = $email->ErrorInfo;
