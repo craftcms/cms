@@ -143,8 +143,8 @@ class Raster extends Image
         $imageService = Craft::$app->getImages();
 
         if (!Io::fileExists($path)) {
-            throw new ImageException(Craft::t('app',
-                'No file exists at the path “{path}”', ['path' => $path]));
+            Craft::error('Tried to load an image at '.$path.', but the file does not exist.');
+            throw new ImageException(Craft::t('app', 'No file exists at the given path.'));
         }
 
         if (!$imageService->checkMemoryForImage($path)) {
@@ -156,15 +156,13 @@ class Raster extends Image
         $mimeType = FileHelper::getMimeType($path, null, false);
 
         if ($mimeType !== null && strncmp($mimeType, 'image/', 6) !== 0) {
-            throw new ImageException(Craft::t('app', 'The file “{path}” does not appear to be an image.', ['path' => $path]));
+            throw new ImageException(Craft::t('app', 'The file “{name}” does not appear to be an image.', ['name' => Io::getFilename($path)]));
         }
 
         try {
             $this->_image = $this->_instance->open($path);
         } catch (\Exception $exception) {
-            throw new ImageException(Craft::t('app',
-                'The file “{path}” does not appear to be an image.',
-                ['path' => $path]));
+            throw new ImageException(Craft::t('app', 'The file “{path}” does not appear to be an image.', ['path' => $path]));
         }
 
         // For Imagick, convert CMYK to RGB, save and re-open.
