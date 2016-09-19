@@ -11,7 +11,6 @@ use Craft;
 use craft\app\base\Field;
 use craft\app\db\Query;
 use craft\app\errors\EntryDraftNotFoundException;
-use craft\app\events\EntryDraftDeleteEvent;
 use craft\app\events\DraftEvent;
 use craft\app\events\RevertEntryEvent;
 use craft\app\helpers\ArrayHelper;
@@ -59,8 +58,6 @@ class EntryRevisions extends Component
 
     /**
      * @event DraftEvent The event that is triggered before a draft is deleted.
-     *
-     * You may set [[DraftEvent::isValid]] to `false` to prevent the draft from getting deleted.
      */
     const EVENT_BEFORE_DELETE_DRAFT = 'beforeDeleteDraft';
 
@@ -275,50 +272,26 @@ class EntryRevisions extends Component
     /**
      * Deletes a draft by it's model.
      *
-     * @param EntryDraft $draft
+     * @param EntryDraft $draft The draft to be deleted
      *
      * @return boolean Whether the draft was deleted successfully
-     * @throws \Exception if reasons
      */
     public function deleteDraft(EntryDraft $draft)
     {
-        $transaction = Craft::$app->getDb()->beginTransaction();
+        // Fire a 'beforeDeleteDraft' event
+        $this->trigger(self::EVENT_BEFORE_DELETE_DRAFT, new DraftEvent([
+            'draft' => $draft
+        ]));
 
-        try {
-            // Fire a 'beforeDeleteDraft' event
-            $event = new EntryDraftDeleteEvent([
-                'draft' => $draft
-            ]);
+        // Delete it
+        $this->_getDraftRecord($draft)->delete();
 
-            $this->trigger(self::EVENT_BEFORE_DELETE_DRAFT, $event);
+        // Fire an 'afterDeleteDraft' event
+        $this->trigger(self::EVENT_AFTER_DELETE_DRAFT, new DraftEvent([
+            'draft' => $draft
+        ]));
 
-            // Is the event giving us the go-ahead?
-            if ($event->isValid) {
-                $draftRecord = $this->_getDraftRecord($draft);
-                $draftRecord->delete();
-
-                $success = true;
-            } else {
-                $success = false;
-            }
-
-            // Commit the transaction regardless of whether we deleted the draft, in case something changed
-            // in onBeforeDeleteDraft
-            $transaction->commit();
-        } catch (\Exception $e) {
-            $transaction->rollBack();
-
-            throw $e;
-        }
-
-        if ($success) {
-            // Fire an 'afterDeleteDraft' event
-            $this->trigger(self::EVENT_AFTER_DELETE_DRAFT, new EntryDraftDeleteEvent([
-                'draft' => $draft
-            ]));
-        }
-
-        return $success;
+        return true;
     }
 
     /**
