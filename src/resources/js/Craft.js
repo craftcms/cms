@@ -1,4 +1,4 @@
-/*! Craft 3.0.0 - 2016-09-16 */
+/*! Craft 3.0.0 - 2016-09-19 */
 (function($){
 
 // Set all the standard Craft.* stuff
@@ -3524,7 +3524,11 @@ Craft.BaseElementIndexView = Garnish.Base.extend(
             }, this);
 
             this.addListener(this.$elementContainer, 'dblclick', this._handleElementEditing);
-            this.addListener(this.$elementContainer, 'taphold', this._handleElementEditing);
+
+            if($.isTouchCapable())
+            {
+                this.addListener(this.$elementContainer, 'taphold', this._handleElementEditing);
+            }
         }
 
         // Give sub-classes a chance to do post-initialization stuff here
@@ -4079,7 +4083,11 @@ Craft.BaseElementSelectInput = Garnish.Base.extend(
 			}, this);
 
 			this.addListener($elements, 'dblclick', this._handleShowElementEditor);
-			this.addListener($elements, 'taphold', this._handleShowElementEditor);
+
+			if($.isTouchCapable())
+			{
+				this.addListener($elements, 'taphold', this._handleShowElementEditor);
+			}
 		}
 
 		$elements.find('.delete').on('click', $.proxy(function(ev)
