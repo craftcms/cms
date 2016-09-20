@@ -392,7 +392,7 @@ class Install extends Migration
         $this->createTable('{{%matrixblocks}}', [
             'id' => $this->primaryKey(),
             'ownerId' => $this->integer()->notNull(),
-            'ownerSiteId' => $this->integer()->notNull(),
+            'ownerSiteId' => $this->integer(),
             'fieldId' => $this->integer()->notNull(),
             'typeId' => $this->integer()->notNull(),
             'sortOrder' => $this->smallInteger()->unsigned(),
