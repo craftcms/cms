@@ -807,7 +807,7 @@ class Categories extends Component
             $this->trigger(self::EVENT_AFTER_SAVE_CATEGORY,
                 new CategoryEvent([
                     'category' => $category,
-                    'isNewCategory'
+                    'isNew' => $isNewCategory,
                 ]));
         }
 
