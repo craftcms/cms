@@ -441,26 +441,28 @@ class MigrationManager extends Component
     {
         // TODO: Remove after next breakpoint
         if (version_compare(Craft::$app->getInfo('version'), '3.0', '<')) {
-            $nameColumn = 'version as name';
+            $query = (new Query())
+                ->select('version as name, applyTime')
+                ->from($this->migrationTable)
+                ->orderBy('name desc');
 
             if ($this->type === self::TYPE_PLUGIN) {
-                $condition = ['pluginId' => $this->pluginId];
+                $query->where(['pluginId' => $this->pluginId]);
             } else {
-                $condition = ['pluginId' => null];
+                $query->where(['pluginId' => null]);
             }
-        } else {
-            $nameColumn = 'name';
-            $condition = null;
+
+            return $query;
         }
 
         $query = (new Query())
-            ->select("$nameColumn, applyTime")
+            ->select('name, applyTime')
             ->from($this->migrationTable)
             ->orderBy('name desc')
             ->where(['type' => $this->type]);
 
-        if ($condition) {
-            $query->andWhere($condition);
+        if ($this->type === self::TYPE_PLUGIN) {
+            $query->andWhere(['pluginId' => $this->pluginId]);
         }
 
         return $query;
