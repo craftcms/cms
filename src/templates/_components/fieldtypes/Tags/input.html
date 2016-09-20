@@ -24,11 +24,14 @@
 	</div>
 </div>
 
+{% set jsSettings = {
+	id: id|namespaceInputId,
+	name: name|namespaceInputName,
+	tagGroupId: tagGroupId,
+	sourceElementId: sourceElementId ?: null,
+	targetSiteId: targetSiteId
+} %}
+
 {% registerjs %}
-	new Craft.TagSelectInput(
-		"{{ id   | namespaceInputId   | e('js') }}",
-		"{{ name | namespaceInputName | e('js') }}",
-		{{ tagGroupId }},
-		{{ sourceElementId ?: 'null' }}
-	);
+	new Craft.TagSelectInput({{ jsSettings|json_encode|raw }});
 {% endregisterjs %}
