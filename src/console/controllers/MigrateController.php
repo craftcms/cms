@@ -106,7 +106,7 @@ class MigrateController extends BaseMigrateController
             if ($this->plugin) {
                 $this->type = MigrationManager::TYPE_PLUGIN;
             } else {
-                $this->type = MigrationManager::TYPE_APP;
+                $this->type = MigrationManager::TYPE_CONTENT;
             }
         }
 
