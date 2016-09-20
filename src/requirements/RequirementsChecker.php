@@ -667,7 +667,7 @@ class RequirementsChecker
         $pathToTest = \Craft\app\helpers\Io::normalizePathSeparators($pathToTest);
 
         // Get the base path without the script name.
-        $subBasePath = \Craft\app\helpers\Io::normalizePathSeparators(mb_substr(Craft::$app->getRequest()->getScriptFile(), 0, -mb_strlen(Craft::$app->getRequest()->getScriptFilename())));
+        $subBasePath = \Craft\app\helpers\Io::normalizePathSeparators(mb_substr(Craft::$app->getRequest()->getScriptFile(), 0, -mb_strlen(Craft::$app->getRequest()->getScriptUrl())));
 
         if (mb_strpos($pathToTest, $subBasePath) !== false) {
             return true;

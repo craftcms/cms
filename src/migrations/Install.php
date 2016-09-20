@@ -847,6 +847,8 @@ class Install extends Migration
         $this->createIndex($this->db->getIndexName('{{%templatecaches}}', 'siteId', false), '{{%templatecaches}}', 'siteId', false);
         $this->createIndex($this->db->getIndexName('{{%tokens}}', 'token', true), '{{%tokens}}', 'token', true);
         $this->createIndex($this->db->getIndexName('{{%tokens}}', 'expiryDate', false), '{{%tokens}}', 'expiryDate', false);
+        $this->createIndex($this->db->getIndexName('{{%usergroups}}', 'handle', true), '{{%usergroups}}', 'handle', true);
+        $this->createIndex($this->db->getIndexName('{{%usergroups}}', 'name', true), '{{%usergroups}}', 'name', true);
         $this->createIndex($this->db->getIndexName('{{%usergroups_users}}', 'groupId,userId', true), '{{%usergroups_users}}', 'groupId,userId', true);
         $this->createIndex($this->db->getIndexName('{{%usergroups_users}}', 'userId', false), '{{%usergroups_users}}', 'userId', false);
         $this->createIndex($this->db->getIndexName('{{%userpermissions}}', 'name', true), '{{%userpermissions}}', 'name', true);
