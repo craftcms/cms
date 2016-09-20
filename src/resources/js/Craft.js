@@ -1,4 +1,4 @@
-/*! Craft 3.0.0 - 2016-09-19 */
+/*! Craft 3.0.0 - 2016-09-20 */
 (function($){
 
 // Set all the standard Craft.* stuff
@@ -737,7 +737,7 @@ $.extend(Craft,
 			// Compare each value
 			for (var i in obj1)
 			{
-				if (!obj.hasOwnProperty(i)) {
+				if (!obj1.hasOwnProperty(i)) {
 					continue;
 				}
 
