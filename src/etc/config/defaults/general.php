@@ -441,17 +441,20 @@ return array(
 	'postLoginRedirect' => '',
 
 	/**
-	 * Whether the X-Powered-By header should be sent on each request, helping clients identify that the site is powered by Craft.
-	 */
-	'sendPoweredByHeader' => true,
-
-	/**
 	 * Whether the embedded Image Color Profile (ICC) should be preserved when manipulating images.
 	 *
 	 * Setting this to false will reduce the image size a little bit, but on some Imagick versions can cause images to be saved with
 	 * an incorrect gamma value, which causes the images to become very dark. This will only have effect if Imagick is in use.
 	 */
 	'preserveImageColorProfiles' => true,
+
+	/**
+	 * When set to `false` and you go through the "forgot password" workflow on the control panel login page, for example,
+	 * you get distinct messages saying if the username/email didn't exist or the email was successfully sent and to check
+	 * your email for further instructions. This can allow for username/email enumeration based on the response. If set
+	 * `true`, you will always get a successful response even if there was an error making it difficult to enumerate users.
+	 */
+	'preventUserEnumeration' => false,
 
 	/**
 	 * The template path segment prefix that should be used to identify "private" templates -- templates that aren't
@@ -529,6 +532,11 @@ return array(
 	 * keyword index.
 	 */
 	'searchIgnoreWords' => array('the', 'and'),
+
+	/**
+	 * Whether the X-Powered-By header should be sent on each request, helping clients identify that the site is powered by Craft.
+	 */
+	'sendPoweredByHeader' => true,
 
 	/**
 	 * The URI Craft should use for user password resetting. Note that this only affects front-end site requests.

@@ -253,6 +253,11 @@ class Updater
 		// Get rid of all the .bak files/folders.
 		$filesToDelete = IOHelper::getFolderContents($path, true, ".*\.bak$");
 
+		if ($filesToDelete === false)
+		{
+			$filesToDelete = array();
+		}
+
 		// Now delete any files/folders that were marked for deletion in the manifest file.
 		$manifestData = UpdateHelper::getManifestData($unzipFolder, $handle);
 

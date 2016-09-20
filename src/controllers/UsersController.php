@@ -206,8 +206,8 @@ class UsersController extends BaseController
 	public function actionSendPasswordResetEmail()
 	{
 		$this->requirePostRequest();
-
 		$errors = array();
+		$existingUser = false;
 
 		// If someone's logged in and they're allowed to edit other users, then see if a userId was submitted
 		if (craft()->userSession->checkPermission('editUsers'))
@@ -222,6 +222,8 @@ class UsersController extends BaseController
 				{
 					throw new HttpException(404);
 				}
+
+				$existingUser = true;
 			}
 		}
 
@@ -231,49 +233,44 @@ class UsersController extends BaseController
 
 			if (!$loginName)
 			{
+				// If they didn't even enter a username/email, just bail now.
 				$errors[] = Craft::t('Username or email is required.');
+				$this->_handleSendPasswordResetError($errors);
 			}
-			else
-			{
-				$user = craft()->users->getUserByUsernameOrEmail($loginName);
 
-				if (!$user)
-				{
-					$errors[] = Craft::t('Invalid username or email.');
-				}
+			$user = craft()->users->getUserByUsernameOrEmail($loginName);
+
+			if (!$user)
+			{
+				$errors[] = Craft::t('Invalid username or email.');
 			}
 		}
 
 		if (!empty($user))
 		{
-			if (craft()->users->sendPasswordResetEmail($user))
+			if (!craft()->users->sendPasswordResetEmail($user))
 			{
-				if (craft()->request->isAjaxRequest())
-				{
-					$this->returnJson(array('success' => true));
-				}
-				else
-				{
-					craft()->userSession->setNotice(Craft::t('Password reset email sent.'));
-					$this->redirectToPostedUrl();
-				}
+				$errors[] = Craft::t('There was a problem sending the password reset email.');
 			}
-
-			$errors[] = Craft::t('There was a problem sending the password reset email.');
 		}
 
-		if (craft()->request->isAjaxRequest())
+		// If there haven't been any errors, or there were, and it's not one logged in user editing another
+		// // and we want to pretend like there wasn't any errors...
+		if (empty($errors) || (count($errors) > 0 && !$existingUser && craft()->config->get('preventUserEnumeration')))
 		{
-			$this->returnErrorJson($errors);
+			if (craft()->request->isAjaxRequest())
+			{
+				$this->returnJson(array('success' => true));
+			}
+			else
+			{
+				craft()->userSession->setNotice(Craft::t('Password reset email sent.'));
+				$this->redirectToPostedUrl();
+			}
 		}
-		else
-		{
-			// Send the data back to the template
-			craft()->urlManager->setRouteVariables(array(
-				'errors'    => $errors,
-				'loginName' => isset($loginName) ? $loginName : null,
-			));
-		}
+
+		// Handle the errors.
+		$this->_handleSendPasswordResetError($errors, $loginName);
 	}
 
 	/**
@@ -1929,5 +1926,27 @@ class UsersController extends BaseController
 			$url = UrlHelper::getSiteUrl($activateAccountSuccessPath);
 			$this->redirectToPostedUrl($user, $url);
 		}
+	}
+
+	/**
+	 * @param      $errors
+	 * @param null $loginName
+	 */
+	private function _handleSendPasswordResetError($errors, $loginName = null)
+	{
+		if (craft()->request->isAjaxRequest())
+		{
+			$this->returnErrorJson($errors);
+		}
+		else
+		{
+			// Send the data back to the template
+			craft()->urlManager->setRouteVariables(array(
+				'errors'    => $errors,
+				'loginName' => $loginName,
+			));
+		}
+
+		return;
 	}
 }

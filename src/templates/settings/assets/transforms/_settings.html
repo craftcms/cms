@@ -142,7 +142,7 @@
             label: "Image Format"|t,
             id: "format",
             name: "format",
-            instructions: 'The image format that transformed images should use.',
+            instructions: "The image format that transformed images should use."|t,
             value: (transform is defined ? transform.format : null),
             errors: (transform is defined ? transform.getErrors('format') : null),
             options: formatOptions,

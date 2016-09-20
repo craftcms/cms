@@ -113,7 +113,8 @@ class Image extends BaseImage
 	{
 		if (!IOHelper::fileExists($path))
 		{
-			throw new Exception(Craft::t('No file exists at the path “{path}”', array('path' => $path)));
+			Craft::log('Tried to load an image at '.$path.', but the file does not exist.', LogLevel::Error);
+			throw new Exception(Craft::t('No file exists at the given path.'));
 		}
 
 		if (!craft()->images->checkMemoryForImage($path))
@@ -126,7 +127,7 @@ class Image extends BaseImage
 
 		if ($mimeType !== null && strncmp($mimeType, 'image/', 6) !== 0)
 		{
-			throw new Exception(Craft::t('The file “{path}” does not appear to be an image.', array('path' => $path)));
+			throw new Exception(Craft::t('The file “{name}” does not appear to be an image.', array('name' => IOHelper::getFileName($path))));
 		}
 
 		try
@@ -135,7 +136,7 @@ class Image extends BaseImage
 		}
 		catch (\Exception $exception)
 		{
-			throw new Exception(Craft::t('The file “{path}” does not appear to be an image.', array('path' => $path)));
+			throw new Exception(Craft::t('The file “{name}” does not appear to be an image.', array('name' => IOHelper::getFileName($path))));
 		}
 
 		// If we're using Imagick _and_ one that supports it, convert CMYK to RGB, save and re-open.

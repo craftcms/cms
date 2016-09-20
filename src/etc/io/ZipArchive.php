@@ -133,34 +133,37 @@ class ZipArchive implements IZip
 			$folderContents = IOHelper::getFolderContents($pathToAdd, true);
 		}
 
-		foreach ($folderContents as $itemToZip)
+		if ($folderContents)
 		{
-			if (IOHelper::isReadable($itemToZip))
+			foreach ($folderContents as $itemToZip)
 			{
-				// Figure out the relative path we'll be adding to the zip.
-				$relFilePath = mb_substr($itemToZip, mb_strlen($basePath));
-
-				if ($pathPrefix)
+				if (IOHelper::isReadable($itemToZip))
 				{
-					$pathPrefix = IOHelper::normalizePathSeparators($pathPrefix);
-					$relFilePath = $pathPrefix.$relFilePath;
-				}
+					// Figure out the relative path we'll be adding to the zip.
+					$relFilePath = mb_substr($itemToZip, mb_strlen($basePath));
 
-				if (IOHelper::folderExists($itemToZip))
-				{
-					if (IOHelper::isFolderEmpty($itemToZip))
+					if ($pathPrefix)
 					{
-						$zip->addEmptyDir($relFilePath);
+						$pathPrefix = IOHelper::normalizePathSeparators($pathPrefix);
+						$relFilePath = $pathPrefix.$relFilePath;
 					}
-				}
-				elseif (IOHelper::fileExists($itemToZip))
-				{
-					// We can't use $zip->addFile() here but it's a terrible, horrible, POS method that's buggy on Windows.
-					$fileContents = IOHelper::getFileContents($itemToZip);
 
-					if (!$zip->addFromString($relFilePath, $fileContents))
+					if (IOHelper::folderExists($itemToZip))
 					{
-						Craft::log('There was an error adding the file '.$itemToZip.' to the zip: '.$itemToZip, LogLevel::Error);
+						if (IOHelper::isFolderEmpty($itemToZip))
+						{
+							$zip->addEmptyDir($relFilePath);
+						}
+					}
+					elseif (IOHelper::fileExists($itemToZip))
+					{
+						// We can't use $zip->addFile() here but it's a terrible, horrible, POS method that's buggy on Windows.
+						$fileContents = IOHelper::getFileContents($itemToZip);
+
+						if (!$zip->addFromString($relFilePath, $fileContents))
+						{
+							Craft::log('There was an error adding the file '.$itemToZip.' to the zip: '.$itemToZip, LogLevel::Error);
+						}
 					}
 				}
 			}

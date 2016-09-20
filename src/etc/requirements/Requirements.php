@@ -635,7 +635,7 @@ class WebRootExposedFolderRequirement extends Requirement
 		$pathToTest = IOHelper::normalizePathSeparators($pathToTest);
 
 		// Get the base path without the script name.
-		$subBasePath = IOHelper::normalizePathSeparators(mb_substr(craft()->request->getScriptFile(), 0, -mb_strlen(craft()->request->getScriptName())));
+		$subBasePath = IOHelper::normalizePathSeparators(mb_substr(craft()->request->getScriptFile(), 0, -mb_strlen(craft()->request->getScriptUrl())));
 
 		if (mb_strpos($pathToTest, $subBasePath) !== false)
 		{

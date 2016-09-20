@@ -726,6 +726,14 @@ class FieldsService extends BaseApplicationComponent
 				{
 					$field->getFieldType()->onAfterDelete();
 				}
+
+				$context = craft()->content->fieldContext;
+
+				// Nuke any memoized value.
+				if (isset($this->_fieldsByContextAndHandle[$context]) && isset($this->_fieldsByContextAndHandle[$context][$field->handle]))
+				{
+					unset($this->_fieldsByContextAndHandle[$context][$field->handle]);
+				}
 			}
 
 			if ($transaction !== null)

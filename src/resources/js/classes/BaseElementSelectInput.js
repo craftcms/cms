@@ -237,7 +237,11 @@ Craft.BaseElementSelectInput = Garnish.Base.extend(
 			}, this);
 
 			this.addListener($elements, 'dblclick', this._handleShowElementEditor);
-			this.addListener($elements, 'taphold', this._handleShowElementEditor);
+
+			if($.isTouchCapable())
+			{
+				this.addListener($elements, 'taphold', this._handleShowElementEditor);
+			}
 		}
 
 		$elements.find('.delete').on('click', $.proxy(function(ev)
