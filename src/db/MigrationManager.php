@@ -11,6 +11,7 @@ use Craft;
 use craft\app\helpers\Db;
 use craft\app\helpers\Io;
 use yii\base\Component;
+use yii\base\Exception;
 use yii\base\InvalidConfigException;
 use yii\db\MigrationInterface;
 use yii\di\Instance;
@@ -51,7 +52,7 @@ class MigrationManager extends Component
     public $migrationNamespace;
 
     /**
-     * @var string The path of the migrations folder
+     * @var string|false The path of the migrations folder, or false if it doesn't exist
      */
     public $migrationPath;
 
@@ -83,7 +84,14 @@ class MigrationManager extends Component
             throw new InvalidConfigException('Invalid migration type: '.$this->type);
         }
 
-        $this->migrationPath = Craft::getAlias($this->migrationPath);
+        $migrationPath = Craft::getAlias($this->migrationPath);
+
+        if (!$migrationPath || !Io::folderExists($migrationPath)) {
+            Craft::warning('Migration folder doesn\'t exist: '.$migrationPath);
+            $this->migrationPath = false;
+        } else {
+            $this->migrationPath = $migrationPath;
+        }
 
         $this->db = Instance::ensure($this->db, Connection::className());
     }
@@ -97,6 +105,10 @@ class MigrationManager extends Component
      */
     public function createMigration($name)
     {
+        if ($this->migrationPath === false) {
+            throw new Exception('Can\'t create new migrations because the migration folder doesn\'t exist');
+        }
+
         $file = $this->migrationPath."/$name.php";
         $class = $this->migrationNamespace."\\$name";
         require_once($file);
@@ -386,6 +398,12 @@ class MigrationManager extends Component
     public function getNewMigrations()
     {
         $migrations = [];
+
+        // Ignore if the migrations folder doesn't exist
+        if ($this->migrationPath === false) {
+            return $migrations;
+        }
+
         $history = $this->getMigrationHistory();
         $handle = opendir($this->migrationPath);
 
