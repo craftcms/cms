@@ -709,6 +709,9 @@ class View extends \yii\web\View
      */
     public function getHeadHtml($clear = true)
     {
+        // Register any asset bundles
+        $this->registerAllAssetFiles();
+
         $html = $this->renderHeadHtml();
 
         if ($clear === true) {
@@ -737,9 +740,7 @@ class View extends \yii\web\View
     public function getBodyHtml($clear = true)
     {
         // Register any asset bundles
-        foreach (array_keys($this->assetBundles) as $bundle) {
-            $this->registerAssetFiles($bundle);
-        }
+        $this->registerAllAssetFiles();
 
         // Get the rendered body begin+end HTML
         $html = $this->renderBodyBeginHtml().
@@ -758,6 +759,19 @@ class View extends \yii\web\View
         }
 
         return $html;
+    }
+
+    /**
+     * Registers all files provided by all registered asset bundles, including depending bundles files.
+     * Removes a bundle from [[assetBundles]] once files are registered.
+     *
+     * @return void
+     */
+    protected function registerAllAssetFiles()
+    {
+        foreach (array_keys($this->assetBundles) as $bundle) {
+            $this->registerAssetFiles($bundle);
+        }
     }
 
     /**
