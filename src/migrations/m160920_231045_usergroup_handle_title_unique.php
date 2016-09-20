@@ -67,7 +67,7 @@ class m160920_231045_usergroup_handle_title_unique extends Migration
                                 }
 
                                 $exists = (new Query())
-                                    ->from('usergroups')
+                                    ->from('{{%usergroups}}')
                                     ->where($type.'=:type', array('type' => $newString))
                                     ->exists();
 
@@ -77,16 +77,12 @@ class m160920_231045_usergroup_handle_title_unique extends Migration
                                 }
                             }
 
-                            echo '        > renaming '.$row[$type].' to '.$newString.' ... ';
-
                             // Let's update with a unique one.
                             $this->update(
                                 '{{%usergroups}}',
                                 [$type => $newString],
                                 ['id' => $row['id']]
                             );
-
-                            echo " done\n";
                         }
                     }
                 }
