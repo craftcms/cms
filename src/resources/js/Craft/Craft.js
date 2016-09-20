@@ -734,7 +734,7 @@ $.extend(Craft,
 			// Compare each value
 			for (var i in obj1)
 			{
-				if (!obj.hasOwnProperty(i)) {
+				if (!obj1.hasOwnProperty(i)) {
 					continue;
 				}
 
