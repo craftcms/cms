@@ -48,7 +48,6 @@ class ChartHelper
 		), $options);
 
 		$craftTimezone = new \DateTimeZone(craft()->timezone);
-		$utc = new \DateTimeZone(DateTime::UTC);
 
 		if ($options['intervalUnit'] && in_array($options['intervalUnit'], array('year', 'month', 'day', 'hour')))
 		{
@@ -113,7 +112,7 @@ class ChartHelper
 		while ($cursorDate->getTimestamp() < $endTimestamp)
 		{
 			// Do we have a record for this date?
-			$formattedCursorDate = $cursorDate->format($phpDateFormat, $utc);
+			$formattedCursorDate = $cursorDate->format($phpDateFormat, $craftTimezone);
 
 			if (isset($results[0]) && $results[0]['date'] == $formattedCursorDate)
 			{
