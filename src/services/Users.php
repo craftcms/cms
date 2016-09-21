@@ -1300,6 +1300,19 @@ class Users extends Component
                 'groupIds' => $groupIds
             ]));
 
+            // Need to invalidate the User element's cached values.
+            $user = $this->getUserById($userId);
+            $userGroups = [];
+
+            foreach ($groupIds as $groupId) {
+                $userGroup = Craft::$app->getUserGroups()->getGroupById($groupId);
+
+                if ($userGroup) {
+                    $userGroups[] = $userGroup;
+                }
+            }
+
+            $user->setGroups($userGroups);
             return true;
         }
 

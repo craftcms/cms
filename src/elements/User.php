@@ -885,6 +885,21 @@ class User extends Element implements IdentityInterface
     }
 
     /**
+      * Sets an array of User element objects on the user.
+      *
+      * @param array $groups An array of User element objects.
+      *
+      * @return void
+      */
+     public function setGroups($groups)
+     {
+        if (Craft::$app->getEdition() == Craft::Pro)
+        {
+            $this->_groups = $groups;
+        }
+     }
+
+    /**
      * Returns whether the user is in a specific group.
      *
      * @param mixed $group The user group model, its handle, or ID.
