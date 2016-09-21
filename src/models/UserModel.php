@@ -97,6 +97,21 @@ class UserModel extends BaseElementModel
 	}
 
 	/**
+	 * Sets an array of {@link UserGroupModel} objects on the user.
+	 *
+	 * @param $groups An array of {@link UserGroupModel} objects.
+	 *
+	 * @return null
+	 */
+	public function setGroups($groups)
+	{
+		if (craft()->getEdition() == Craft::Pro)
+		{
+			$this->_groups = $groups;
+		}
+	}
+
+	/**
 	 * Returns whether the user is in a specific group.
 	 *
 	 * @param mixed $group The user group model, its handle, or ID.
@@ -216,7 +231,7 @@ class UserModel extends BaseElementModel
 	{
 		$this->pending = false;
 		$this->archived = false;
-	}	
+	}
 
 	/**
 	 * Returns the URL to the user's photo.

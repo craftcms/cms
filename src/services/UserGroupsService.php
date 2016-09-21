@@ -164,6 +164,22 @@ class UserGroupsService extends BaseApplicationComponent
 				'groupIds' => $groupIds
 			)));
 
+			// Need to invalidate the UserModel's cached values.
+			$user = craft()->users->getUserById($userId);
+			$userGroups = array();
+
+			foreach ($groupIds as $groupId)
+			{
+				$userGroup = $this->getGroupById($groupId);
+
+				if ($userGroup)
+				{
+					$userGroups[] = $userGroup;
+				}
+			}
+
+			$user->setGroups($userGroups);
+
 			return true;
 		}
 
