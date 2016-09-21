@@ -54,15 +54,16 @@ class MigrationHelper
     /**
      * Drops a foreign key if it exists.
      *
-     * @param string    $tableName
-     * @param array     $columns
-     * @param Migration $migration
+     * @param string       $tableName
+     * @param string|array $columns
+     * @param Migration    $migration
      *
      * @return void
      */
     public static function dropForeignKeyIfExists($tableName, $columns, Migration $migration = null)
     {
         $tableName = Craft::$app->getDb()->getSchema()->getRawTableName($tableName);
+        $columns = ArrayHelper::toArray($columns);
         $table = static::getTable($tableName);
 
         foreach ($table->fks as $i => $fk) {
@@ -77,16 +78,17 @@ class MigrationHelper
     /**
      * Drops an index if it exists.
      *
-     * @param string    $tableName
-     * @param array     $columns
-     * @param boolean   $unique
-     * @param Migration $migration
+     * @param string       $tableName
+     * @param string|array $columns
+     * @param boolean      $unique
+     * @param Migration    $migration
      *
      * @return false
      */
     public static function dropIndexIfExists($tableName, $columns, $unique = false, Migration $migration = null)
     {
         $tableName = Craft::$app->getDb()->getSchema()->getRawTableName($tableName);
+        $columns = ArrayHelper::toArray($columns);
         $table = static::getTable($tableName);
 
         foreach ($table->indexes as $i => $index) {
