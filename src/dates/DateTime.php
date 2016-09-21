@@ -192,21 +192,21 @@ class DateTime extends \DateTime
 
     /**
      * @return string
-     * @deprecated in 3.0. Use `Craft::$app->formatter->asDate($dateTime, 'short')` instead.
+     * @deprecated in 3.0. Use `Craft::$app->formatter->asDate($date, 'short')` instead.
      */
     public function localeDate()
     {
-        Craft::$app->getDeprecator()->log('DateTime::localeDate()', 'DateTime::localeDate() has been deprecated. Use Craft::$app->formatter->asDate($dateTime, \'short\') instead.');
+        Craft::$app->getDeprecator()->log('DateTime::localeDate()', 'DateTime::localeDate() has been deprecated. Use Craft::$app->formatter->asDate($date, \'short\') instead.');
         return Craft::$app->getFormatter()->asDate($this, Locale::LENGTH_SHORT);
     }
 
     /**
      * @return string
-     * @deprecated in 3.0. Use `Craft::$app->formatter->asTime($dateTime, 'short')` instead.
+     * @deprecated in 3.0. Use `Craft::$app->formatter->asTime($date, 'short')` instead.
      */
     public function localeTime()
     {
-        Craft::$app->getDeprecator()->log('DateTime::localeTime()', 'DateTime::localeTime() has been deprecated. Use Craft::$app->formatter->asTime($dateTime, \'short\') instead.');
+        Craft::$app->getDeprecator()->log('DateTime::localeTime()', 'DateTime::localeTime() has been deprecated. Use Craft::$app->formatter->asTime($date, \'short\') instead.');
         return Craft::$app->getFormatter()->asTime($this, Locale::LENGTH_SHORT);
     }
 
@@ -299,11 +299,11 @@ class DateTime extends \DateTime
      * Returns a nicely formatted date string.
      *
      * @return string
-     * @deprecated in 3.0. Use `Craft::$app->formatter->asDatetime($dateTime)` instead.
+     * @deprecated in 3.0. Use `Craft::$app->formatter->asDatetime($date)` instead.
      */
     public function nice()
     {
-        Craft::$app->getDeprecator()->log('DateTime::nice()', 'DateTime::nice() has been deprecated. Use Craft::$app->formatter->asDatetime($dateTime) instead.');
+        Craft::$app->getDeprecator()->log('DateTime::nice()', 'DateTime::nice() has been deprecated. Use Craft::$app->formatter->asDatetime($date) instead.');
         return Craft::$app->getFormatter()->asDatetime($this);
     }
 
@@ -316,11 +316,11 @@ class DateTime extends \DateTime
      * - Otherwise, the date will be returned in a localized format (e.g. “12/2/2014”).
      *
      * @return string
-     * @deprecated in 3.0. Use `Craft::$app->formatter->asTimestamp($dateTime, 'short')` instead.
+     * @deprecated in 3.0. Use `Craft::$app->formatter->asTimestamp($date, 'short')` instead.
      */
     public function uiTimestamp()
     {
-        Craft::$app->getDeprecator()->log('DateTime::uiTimestamp()', 'DateTime::uiTimestamp() has been deprecated. Use Craft::$app->formatter->asTimestamp($dateTime, \'short\') instead.');
+        Craft::$app->getDeprecator()->log('DateTime::uiTimestamp()', 'DateTime::uiTimestamp() has been deprecated. Use Craft::$app->formatter->asTimestamp($date, \'short\') instead.');
         return Craft::$app->getFormatter()->asTimestamp($this, Locale::LENGTH_SHORT);
     }
 }
