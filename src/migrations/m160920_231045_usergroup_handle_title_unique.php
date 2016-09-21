@@ -5,6 +5,7 @@ namespace craft\app\migrations;
 use Craft;
 use craft\app\db\Migration;
 use craft\app\db\Query;
+use craft\app\helpers\MigrationHelper;
 
 /**
  * m160920_231045_usergroup_handle_title_unique migration.
@@ -19,8 +20,13 @@ class m160920_231045_usergroup_handle_title_unique extends Migration
         $this->_handleDupes('handle');
         $this->_handleDupes('name');
 
-        $this->createIndex($this->db->getIndexName('{{%usergroups}}', 'handle', true), '{{%usergroups}}', 'handle', true);
-        $this->createIndex($this->db->getIndexName('{{%usergroups}}', 'name', true), '{{%usergroups}}', 'name', true);
+        if (!MigrationHelper::doesIndexExist('{{%usergroups}}', 'handle', true)) {
+            $this->createIndex($this->db->getIndexName('{{%usergroups}}', 'handle', true), '{{%usergroups}}', 'handle', true);
+        }
+
+        if (!MigrationHelper::doesIndexExist('{{%usergroups}}', 'name', true)) {
+            $this->createIndex($this->db->getIndexName('{{%usergroups}}', 'name', true), '{{%usergroups}}', 'name', true);
+        }
     }
 
     /**
