@@ -83,7 +83,7 @@ class MigrationHelper
      * @param boolean      $unique
      * @param Migration    $migration
      *
-     * @return false
+     * @return void
      */
     public static function dropIndexIfExists($tableName, $columns, $unique = false, Migration $migration = null)
     {
@@ -107,7 +107,7 @@ class MigrationHelper
      * @param string    $newName
      * @param Migration $migration
      *
-     * @return false
+     * @return void
      */
     public static function renameTable($oldName, $newName, Migration $migration = null)
     {
