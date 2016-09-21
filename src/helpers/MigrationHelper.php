@@ -52,6 +52,29 @@ class MigrationHelper
     }
 
     /**
+     * Returns whether a foreign key exists.
+     *
+     * @param string       $tableName
+     * @param string|array $columns
+     *
+     * @return boolean
+     */
+    public static function doesForeignKeyExist($tableName, $columns)
+    {
+        $tableName = Craft::$app->getDb()->getSchema()->getRawTableName($tableName);
+        $columns = ArrayHelper::toArray($columns);
+        $table = static::getTable($tableName);
+
+        foreach ($table->fks as $i => $fk) {
+            if ($columns == $fk->columns) {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    /**
      * Drops a foreign key if it exists.
      *
      * @param string       $tableName
@@ -73,6 +96,30 @@ class MigrationHelper
                 break;
             }
         }
+    }
+
+    /**
+     * Returns whether an index exists.
+     *
+     * @param string       $tableName
+     * @param string|array $columns
+     * @param boolean      $unique
+     *
+     * @return boolean
+     */
+    public static function doesIndexExist($tableName, $columns, $unique = false)
+    {
+        $tableName = Craft::$app->getDb()->getSchema()->getRawTableName($tableName);
+        $columns = ArrayHelper::toArray($columns);
+        $table = static::getTable($tableName);
+
+        foreach ($table->indexes as $i => $index) {
+            if ($columns == $index->columns && $unique == $index->unique) {
+                return true;
+            }
+        }
+
+        return false;
     }
 
     /**
