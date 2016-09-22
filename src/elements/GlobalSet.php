@@ -119,10 +119,20 @@ class GlobalSet extends Element
     {
         $rules = parent::rules();
         $rules[] = [['fieldLayoutId'], 'number', 'integerOnly' => true];
-        $rules[] = [['handle'], HandleValidator::className(), 'reservedWords' => ['id', 'dateCreated', 'dateUpdated', 'uid', 'title']];
         $rules[] = [['name', 'handle'], 'string', 'max' => 255];
-        $rules[] = [['name', 'handle'], UniqueValidator::className(), 'targetClass' => GlobalSetRecord::className()];
         $rules[] = [['name', 'handle'], 'required'];
+
+        $rules[] = [
+            ['name', 'handle'],
+            UniqueValidator::className(),
+            'targetClass' => GlobalSetRecord::className()
+        ];
+
+        $rules[] = [
+            ['handle'],
+            HandleValidator::className(),
+            'reservedWords' => ['id', 'dateCreated', 'dateUpdated', 'uid', 'title']
+        ];
 
         return $rules;
     }

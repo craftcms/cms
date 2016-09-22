@@ -12,7 +12,6 @@ use craft\app\db\Query;
 use craft\app\elements\Entry;
 use craft\app\errors\EntryTypeNotFoundException;
 use craft\app\errors\SectionNotFoundException;
-use craft\app\events\EntryTypeDeleteEvent;
 use craft\app\events\EntryTypeEvent;
 use craft\app\events\SectionEvent;
 use craft\app\helpers\ArrayHelper;
@@ -63,8 +62,6 @@ class Sections extends Component
 
     /**
      * @event EntryTypeEvent The event that is triggered before an entry type is saved.
-     *
-     * You may set [[EntryTypeEvent::isValid]] to `false` to prevent the entry type from getting saved.
      */
     const EVENT_BEFORE_SAVE_ENTRY_TYPE = 'beforeSaveEntryType';
 
@@ -74,14 +71,12 @@ class Sections extends Component
     const EVENT_AFTER_SAVE_ENTRY_TYPE = 'afterSaveEntryType';
 
     /**
-     * @event EntryTypeDeleteEvent The event that is triggered before an entry type is deleted.
-     *
-     * You may set [[EntryTypeDeleteEvent::isValid]] to `false` to prevent the entry type from getting deleted.
+     * @event EntryTypeEvent The event that is triggered before an entry type is deleted.
      */
     const EVENT_BEFORE_DELETE_ENTRY_TYPE = 'beforeDeleteEntryType';
 
     /**
-     * @event EntryTypeDeleteEvent The event that is triggered after an entry type is deleted.
+     * @event EntryTypeEvent The event that is triggered after an entry type is deleted.
      */
     const EVENT_AFTER_DELETE_ENTRY_TYPE = 'afterDeleteEntryType';
 
@@ -872,15 +867,28 @@ class Sections extends Component
     /**
      * Saves an entry type.
      *
-     * @param EntryType $entryType
+     * @param EntryType $entryType     The entry type to be saved
+     * @param boolean   $runValidation Whether the section should be validated
      *
      * @return boolean Whether the entry type was saved successfully
      * @throws EntryTypeNotFoundException if $entryType->id is invalid
      * @throws \Exception if reasons
      */
-    public function saveEntryType(EntryType $entryType)
+    public function saveEntryType(EntryType $entryType, $runValidation = true)
     {
+        if ($runValidation && !$entryType->validate()) {
+            Craft::info('Entry type not saved due to validation error.', __METHOD__);
+
+            return false;
+        }
+
         $isNewEntryType = !$entryType->id;
+
+        // Fire a 'beforeSaveEntryType' event
+        $this->trigger(self::EVENT_BEFORE_SAVE_ENTRY_TYPE, new EntryTypeEvent([
+            'entryType' => $entryType,
+            'isNew' => $isNewEntryType,
+        ]));
 
         if ($entryType->id) {
             $entryTypeRecord = EntryTypeRecord::findOne($entryType->id);
@@ -910,79 +918,52 @@ class Sections extends Component
         $entryTypeRecord->titleLabel = ($entryType->hasTitleField ? $entryType->titleLabel : null);
         $entryTypeRecord->titleFormat = (!$entryType->hasTitleField ? $entryType->titleFormat : null);
 
-        $entryTypeRecord->validate();
-        $entryType->addErrors($entryTypeRecord->getErrors());
+        $transaction = Craft::$app->getDb()->beginTransaction();
 
-        if (!$entryType->hasErrors()) {
-            $transaction = Craft::$app->getDb()->beginTransaction();
+        try {
+            // Is there a new field layout?
+            $fieldLayout = $entryType->getFieldLayout();
 
-            try {
-                // Fire a 'beforeSaveEntryType' event
-                $event = new EntryTypeEvent([
-                    'entryType' => $entryType,
-                    'isNew' => $isNewEntryType,
-                ]);
-
-                $this->trigger(self::EVENT_BEFORE_SAVE_ENTRY_TYPE, $event);
-
-                // Is the event giving us the go-ahead?
-                if ($event->isValid) {
-                    // Is there a new field layout?
-                    $fieldLayout = $entryType->getFieldLayout();
-
-                    if (!$fieldLayout->id) {
-                        // Delete the old one
-                        /** @noinspection PhpUndefinedVariableInspection */
-                        if (!$isNewEntryType && $oldEntryType->fieldLayoutId) {
-                            Craft::$app->getFields()->deleteLayoutById($oldEntryType->fieldLayoutId);
-                        }
-
-                        // Save the new one
-                        Craft::$app->getFields()->saveLayout($fieldLayout);
-
-                        // Update the entry type record/model with the new layout ID
-                        $entryType->fieldLayoutId = $fieldLayout->id;
-                        $entryTypeRecord->fieldLayoutId = $fieldLayout->id;
-                    }
-
-                    // Save the entry type
-                    $entryTypeRecord->save(false);
-
-                    // Now that we have an entry type ID, save it on the model
-                    if (!$entryType->id) {
-                        $entryType->id = $entryTypeRecord->id;
-                    }
-
-                    // Might as well update our cache of the entry type while we have it.
-                    $this->_entryTypesById[$entryType->id] = $entryType;
-
-                    $success = true;
-                } else {
-                    $success = false;
+            if (!$fieldLayout->id) {
+                // Delete the old one
+                /** @noinspection PhpUndefinedVariableInspection */
+                if (!$isNewEntryType && $oldEntryType->fieldLayoutId) {
+                    Craft::$app->getFields()->deleteLayoutById($oldEntryType->fieldLayoutId);
                 }
 
-                // Commit the transaction regardless of whether we saved the user, in case something changed
-                // in onBeforeSaveEntryType
-                $transaction->commit();
-            } catch (\Exception $e) {
-                $transaction->rollBack();
+                // Save the new one
+                Craft::$app->getFields()->saveLayout($fieldLayout);
 
-                throw $e;
+                // Update the entry type record/model with the new layout ID
+                $entryType->fieldLayoutId = $fieldLayout->id;
+                $entryTypeRecord->fieldLayoutId = $fieldLayout->id;
             }
-        } else {
-            $success = false;
+
+            // Save the entry type
+            $entryTypeRecord->save(false);
+
+            // Now that we have an entry type ID, save it on the model
+            if (!$entryType->id) {
+                $entryType->id = $entryTypeRecord->id;
+            }
+
+            // Might as well update our cache of the entry type while we have it.
+            $this->_entryTypesById[$entryType->id] = $entryType;
+
+            $transaction->commit();
+        } catch (\Exception $e) {
+            $transaction->rollBack();
+
+            throw $e;
         }
 
-        if ($success) {
-            // Fire an 'afterSaveEntryType' event
-            $this->trigger(self::EVENT_AFTER_SAVE_ENTRY_TYPE,
-                new EntryTypeEvent([
-                    'entryType' => $entryType,
-                    'isNew' => $isNewEntryType,
-                ]));
-        }
+        // Fire an 'afterSaveEntryType' event
+        $this->trigger(self::EVENT_AFTER_SAVE_ENTRY_TYPE, new EntryTypeEvent([
+            'entryType' => $entryType,
+            'isNew' => $isNewEntryType,
+        ]));
 
-        return $success;
+        return true;
     }
 
     /**
@@ -1028,81 +1009,71 @@ class Sections extends Component
             return false;
         }
 
-        $success = false;
         $entryType = $this->getEntryTypeById($entryTypeId);
 
         // Fire a 'beforeSaveEntryType' event
-        $event = new EntryTypeDeleteEvent([
+        $this->trigger(self::EVENT_BEFORE_DELETE_ENTRY_TYPE, new EntryTypeEvent([
             'entryType' => $entryType,
-        ]);
+        ]));
 
-        $this->trigger(self::EVENT_BEFORE_DELETE_ENTRY_TYPE, $event);
+        $transaction = Craft::$app->getDb()->beginTransaction();
+        try {
+            // Delete the field layout
+            $query = (new Query())
+                ->select('fieldLayoutId')
+                ->from('{{%entrytypes}}');
 
-        // Is the event giving us the go-ahead?
-        if ($event->isValid) {
-            $transaction = Craft::$app->getDb()->beginTransaction();
-            try {
-                // Delete the field layout
-                $query = (new Query())
-                    ->select('fieldLayoutId')
-                    ->from('{{%entrytypes}}');
-
-                if (is_array($entryTypeId)) {
-                    $query->where(['in', 'id', $entryTypeId]);
-                } else {
-                    $query->where(['id' => $entryTypeId]);
-                }
-
-                $fieldLayoutIds = $query->column();
-
-                if ($fieldLayoutIds) {
-                    Craft::$app->getFields()->deleteLayoutById($fieldLayoutIds);
-                }
-
-                // Grab the entry IDs so we can clean the elements table.
-                $query = (new Query())
-                    ->select('id')
-                    ->from('{{%entries}}');
-
-                if (is_array($entryTypeId)) {
-                    $query->where(['in', 'typeId', $entryTypeId]);
-                } else {
-                    $query->where(['typeId' => $entryTypeId]);
-                }
-
-                $entryIds = $query->column();
-
-                Craft::$app->getElements()->deleteElementById($entryIds);
-
-                // Delete the entry type.
-                if (is_array($entryTypeId)) {
-                    Craft::$app->getDb()->createCommand()
-                        ->delete('{{%entrytypes}}', ['in', 'id', $entryTypeId])
-                        ->execute();
-                } else {
-                    Craft::$app->getDb()->createCommand()
-                        ->delete('{{%entrytypes}}', ['id' => $entryTypeId])
-                        ->execute();
-                }
-
-                $transaction->commit();
-                $success = true;
-            } catch (\Exception $e) {
-                $transaction->rollBack();
-
-                throw $e;
+            if (is_array($entryTypeId)) {
+                $query->where(['in', 'id', $entryTypeId]);
+            } else {
+                $query->where(['id' => $entryTypeId]);
             }
+
+            $fieldLayoutIds = $query->column();
+
+            if ($fieldLayoutIds) {
+                Craft::$app->getFields()->deleteLayoutById($fieldLayoutIds);
+            }
+
+            // Grab the entry IDs so we can clean the elements table.
+            $query = (new Query())
+                ->select('id')
+                ->from('{{%entries}}');
+
+            if (is_array($entryTypeId)) {
+                $query->where(['in', 'typeId', $entryTypeId]);
+            } else {
+                $query->where(['typeId' => $entryTypeId]);
+            }
+
+            $entryIds = $query->column();
+
+            Craft::$app->getElements()->deleteElementById($entryIds);
+
+            // Delete the entry type.
+            if (is_array($entryTypeId)) {
+                Craft::$app->getDb()->createCommand()
+                    ->delete('{{%entrytypes}}', ['in', 'id', $entryTypeId])
+                    ->execute();
+            } else {
+                Craft::$app->getDb()->createCommand()
+                    ->delete('{{%entrytypes}}', ['id' => $entryTypeId])
+                    ->execute();
+            }
+
+            $transaction->commit();
+        } catch (\Exception $e) {
+            $transaction->rollBack();
+
+            throw $e;
         }
 
-        if ($success) {
-            // Fire an 'afterDeleteEntryType' event
-            $this->trigger(self::EVENT_AFTER_DELETE_ENTRY_TYPE,
-                new EntryTypeEvent([
-                    'entryType' => $entryType,
-                ]));
-        }
+        // Fire an 'afterDeleteEntryType' event
+        $this->trigger(self::EVENT_AFTER_DELETE_ENTRY_TYPE, new EntryTypeEvent([
+            'entryType' => $entryType,
+        ]));
 
-        return $success;
+        return true;
     }
 
     // Private Methods

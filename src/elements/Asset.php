@@ -697,9 +697,16 @@ class Asset extends Element
         $rules = parent::rules();
         $rules[] = [['volumeId', 'folderId', 'width', 'height', 'size'], 'number', 'integerOnly' => true];
         $rules[] = [['dateModified'], DateTimeValidator::className()];
-        $rules[] = [['filename'], UniqueValidator::className(), 'targetClass' => AssetRecord::className(), 'targetAttribute' => ['filename', 'folderId']];
         $rules[] = [['filename', 'kind'], 'required'];
         $rules[] = [['kind'], 'string', 'max' => 50];
+
+        $rules[] = [
+            ['filename'],
+            UniqueValidator::className(),
+            'targetClass' => AssetRecord::className(),
+            'targetAttribute' => ['filename', 'folderId'],
+            'comboNotUnique' => Craft::t('yii', '{attribute} "{value}" has already been taken.'),
+        ];
 
         return $rules;
     }
