@@ -67,6 +67,16 @@ class Plugins extends Component
      */
     const EVENT_AFTER_DISABLE_PLUGIN = 'afterDisablePlugin';
 
+    /**
+     * @event PluginEvent The event that is triggered before a plugin is installed
+     */
+    const EVENT_BEFORE_INSTALL_PLUGIN = 'beforeInstallPlugin';
+
+    /**
+     * @event PluginEvent The event that is triggered before a plugin is installed
+     */
+    const EVENT_AFTER_INSTALL_PLUGIN = 'afterInstallPlugin';
+
     // Properties
     // =========================================================================
 
@@ -323,6 +333,11 @@ class Plugins extends Component
             $this->_noPluginExists($handle);
         }
 
+        // Fire a 'beforeInstallPlugin' event
+        $this->trigger(self::EVENT_BEFORE_INSTALL_PLUGIN, new PluginEvent([
+            'plugin' => $plugin
+        ]));
+
         $transaction = Craft::$app->getDb()->beginTransaction();
         try {
             $info = [
@@ -342,23 +357,28 @@ class Plugins extends Component
 
             $this->_setPluginMigrator($plugin, $handle, $info['id']);
 
-            if ($plugin->install() !== false) {
-                $transaction->commit();
+            if ($plugin->install() === false) {
+                $transaction->rollBack();
 
-                $this->_installedPluginInfo[$handle] = $info;
-                $this->_registerPlugin($handle, $plugin);
-
-                return true;
+                return false;
             }
 
-            $transaction->rollBack();
-
-            return false;
+            $transaction->commit();
         } catch (\Exception $e) {
             $transaction->rollBack();
 
             throw $e;
         }
+
+        $this->_installedPluginInfo[$handle] = $info;
+        $this->_registerPlugin($handle, $plugin);
+
+        // Fire an 'afterInstallPlugin' event
+        $this->trigger(self::EVENT_AFTER_INSTALL_PLUGIN, new PluginEvent([
+            'plugin' => $plugin
+        ]));
+
+        return true;
     }
 
     /**
