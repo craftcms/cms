@@ -32,8 +32,6 @@ class Structures extends Component
 
     /**
      * @event MoveElementEvent The event that is triggered before an element is moved.
-     *
-     * You may set [[MoveElementEvent::isValid]] to `false` to prevent the element from getting moved.
      */
     const EVENT_BEFORE_MOVE_ELEMENT = 'beforeMoveElement';
 
@@ -345,43 +343,30 @@ class Structures extends Component
             $mode = 'insert';
         }
 
+        if ($mode == 'update') {
+            // Fire a 'beforeMoveElement' event
+            $this->trigger(self::EVENT_BEFORE_MOVE_ELEMENT, new MoveElementEvent([
+                'structureId' => $structureId,
+                'element' => $element,
+            ]));
+        }
+
         $transaction = Craft::$app->getDb()->beginTransaction();
         try {
-            if ($mode == 'update') {
-                // Fire a 'beforeMoveElement' event
-                $event = new MoveElementEvent([
-                    'structureId' => $structureId,
-                    'element' => $element,
-                ]);
+            if (!$elementRecord->$action($targetElementRecord)) {
+                $transaction->rollBack();
 
-                $this->trigger(self::EVENT_BEFORE_MOVE_ELEMENT, $event);
+                return false;
             }
 
-            // Was there was no onBeforeMoveElement event, or is the event giving us the go-ahead?
-            if (!isset($event) || $event->isValid) {
-                // Really do it
-                $success = $elementRecord->$action($targetElementRecord);
+            $element->root = $elementRecord->root;
+            $element->lft = $elementRecord->lft;
+            $element->rgt = $elementRecord->rgt;
+            $element->level = $elementRecord->level;
 
-                // If it didn't work, rollback the transaction in case something changed in onBeforeMoveElement
-                if (!$success) {
-                    $transaction->rollBack();
+            // Tell the element type about it
+            $element::onAfterMoveElementInStructure($element, $structureId);
 
-                    return false;
-                }
-
-                $element->root = $elementRecord->root;
-                $element->lft = $elementRecord->lft;
-                $element->rgt = $elementRecord->rgt;
-                $element->level = $elementRecord->level;
-
-                // Tell the element type about it
-                $element::onAfterMoveElementInStructure($element, $structureId);
-            } else {
-                $success = false;
-            }
-
-            // Commit the transaction regardless of whether we moved the element, in case something changed
-            // in onBeforeMoveElement
             $transaction->commit();
         } catch (\Exception $e) {
             $transaction->rollBack();
@@ -389,15 +374,14 @@ class Structures extends Component
             throw $e;
         }
 
-        if ($success && $mode == 'update') {
+        if ($mode == 'update') {
             // Fire an 'afterMoveElement' event
-            $this->trigger(self::EVENT_AFTER_MOVE_ELEMENT,
-                new MoveElementEvent([
-                    'structureId' => $structureId,
-                    'element' => $element,
-                ]));
+            $this->trigger(self::EVENT_AFTER_MOVE_ELEMENT, new MoveElementEvent([
+                'structureId' => $structureId,
+                'element' => $element,
+            ]));
         }
 
-        return $success;
+        return true;
     }
 }
