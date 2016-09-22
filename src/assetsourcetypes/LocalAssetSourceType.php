@@ -368,7 +368,7 @@ class LocalAssetSourceType extends BaseAssetSourceType
 	{
 		$fileList = IOHelper::getFolderContents($this->getSourceFileSystemPath().$folder->path, false);
 
-        if ($fileList && is_array($fileList))
+        if (is_array($fileList))
         {
             foreach ($fileList as &$file)
             {
