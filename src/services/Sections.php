@@ -13,7 +13,6 @@ use craft\app\elements\Entry;
 use craft\app\errors\EntryTypeNotFoundException;
 use craft\app\errors\SectionNotFoundException;
 use craft\app\events\EntryTypeDeleteEvent;
-use craft\app\events\DeleteSectionEvent;
 use craft\app\events\EntryTypeEvent;
 use craft\app\events\SectionEvent;
 use craft\app\helpers\ArrayHelper;
@@ -53,14 +52,12 @@ class Sections extends Component
     const EVENT_AFTER_SAVE_SECTION = 'afterSaveSection';
 
     /**
-     * @event DeleteSectionEvent The event that is triggered before a section is deleted.
-     *
-     * You may set [[SectionEvent::isValid]] to `false` to prevent the section from getting deleted.
+     * @event SectionEvent The event that is triggered before a section is deleted.
      */
     const EVENT_BEFORE_DELETE_SECTION = 'beforeDeleteSection';
 
     /**
-     * @event DeleteSectionEvent The event that is triggered after a section is deleted.
+     * @event SectionEvent The event that is triggered after a section is deleted.
      */
     const EVENT_AFTER_DELETE_SECTION = 'afterDeleteSection';
 
@@ -703,16 +700,9 @@ class Sections extends Component
         }
 
         // Fire a 'beforeDeleteSection' event
-        $event = new DeleteSectionEvent([
+        $this->trigger(self::EVENT_BEFORE_DELETE_SECTION, new SectionEvent([
             'section' => $section
-        ]);
-
-        $this->trigger(self::EVENT_BEFORE_DELETE_SECTION, $event);
-
-        // Make sure the event is giving us the go ahead
-        if (!$event->isValid) {
-            return false;
-        }
+        ]));
 
         $transaction = Craft::$app->getDb()->beginTransaction();
         try {
@@ -761,19 +751,18 @@ class Sections extends Component
                 ->execute();
 
             $transaction->commit();
-
-            // Fire an 'afterDeleteSection' event
-            $this->trigger(self::EVENT_AFTER_DELETE_SECTION,
-                new DeleteSectionEvent([
-                    'section' => $section
-                ]));
-
-            return true;
         } catch (\Exception $e) {
             $transaction->rollBack();
 
             throw $e;
         }
+
+        // Fire an 'afterDeleteSection' event
+        $this->trigger(self::EVENT_AFTER_DELETE_SECTION, new SectionEvent([
+            'section' => $section
+        ]));
+
+        return true;
     }
 
     /**
