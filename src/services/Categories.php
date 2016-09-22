@@ -41,8 +41,6 @@ class Categories extends Component
 
     /**
      * @event CategoryEvent The event that is triggered before a category is saved.
-     *
-     * You may set [[CategoryEvent::isValid]] to `false` to prevent the category from getting saved.
      */
     const EVENT_BEFORE_SAVE_CATEGORY = 'beforeSaveCategory';
 
@@ -73,10 +71,10 @@ class Categories extends Component
 
     /**
      * @event CategoryGroupEvent The event that is triggered before a category group is deleted.
-     *
-     * You may set [[CategoryEvent::isValid]] to `false` to prevent the category group from getting saved.
      */
     const EVENT_BEFORE_DELETE_GROUP = 'beforeDeleteGroup';
+     *
+     * You may set [[CategoryEvent::isValid]] to `false` to prevent the category group from getting saved.
 
     /**
      * @event CategoryGroupEvent The event that is triggered after a category group is deleted.
@@ -703,14 +701,27 @@ class Categories extends Component
      * Saves a category.
      *
      * @param Category $category
+     * @param boolean $runValidation Whether the section should be validated
      *
      * @return boolean Whether the category was saved successfully
      * @throws CategoryNotFoundException if $category has an invalid $id or invalid $newParentID
      * @throws \Exception if reasons
      */
-    public function saveCategory(Category $category)
+    public function saveCategory(Category $category, $runValidation = true)
     {
+        if ($runValidation && !$category->validate()) {
+            Craft::info('Category not saved due to validation error.', __METHOD__);
+
+            return false;
+        }
+
         $isNewCategory = !$category->id;
+
+        // Fire a 'beforeSaveCategory' event
+        $this->trigger(self::EVENT_BEFORE_SAVE_CATEGORY, new CategoryEvent([
+            'category' => $category,
+            'isNew' => $isNewCategory
+        ]));
 
         $hasNewParent = $this->_checkForNewParent($category);
 
@@ -741,60 +752,38 @@ class Categories extends Component
 
         $categoryRecord->groupId = $category->groupId;
 
-        $categoryRecord->validate();
-        $category->addErrors($categoryRecord->getErrors());
-
-        if ($category->hasErrors()) {
-            return false;
-        }
-
         $transaction = Craft::$app->getDb()->beginTransaction();
 
         try {
-            // Fire a 'beforeSaveCategory' event
-            $event = new CategoryEvent([
-                'category' => $category,
-                'isNew' => $isNewCategory
-            ]);
+            $success = Craft::$app->getElements()->saveElement($category);
 
-            $this->trigger(self::EVENT_BEFORE_SAVE_CATEGORY, $event);
+            // If it didn't work, rollback the transaction in case something changed in onBeforeSaveCategory
+            if (!$success) {
+                $transaction->rollBack();
 
-            // Is the event giving us the go-ahead?
-            if ($event->isValid) {
-                $success = Craft::$app->getElements()->saveElement($category);
-
-                // If it didn't work, rollback the transaction in case something changed in onBeforeSaveCategory
-                if (!$success) {
-                    $transaction->rollBack();
-
-                    return false;
-                }
-
-                // Now that we have an element ID, save it on the other stuff
-                if ($isNewCategory) {
-                    $categoryRecord->id = $category->id;
-                }
-
-                $categoryRecord->save(false);
-
-                // Has the parent changed?
-                if ($hasNewParent) {
-                    if (!$category->newParentId) {
-                        Craft::$app->getStructures()->appendToRoot($category->getGroup()->structureId, $category);
-                    } else {
-                        /** @noinspection PhpUndefinedVariableInspection */
-                        Craft::$app->getStructures()->append($category->getGroup()->structureId, $category, $parentCategory);
-                    }
-                }
-
-                // Update the category's descendants, who may be using this category's URI in their own URIs
-                Craft::$app->getElements()->updateDescendantSlugsAndUris($category, true, true);
-            } else {
-                $success = false;
+                return false;
             }
 
-            // Commit the transaction regardless of whether we saved the category, in case something changed
-            // in onBeforeSaveCategory
+            // Now that we have an element ID, save it on the other stuff
+            if ($isNewCategory) {
+                $categoryRecord->id = $category->id;
+            }
+
+            $categoryRecord->save(false);
+
+            // Has the parent changed?
+            if ($hasNewParent) {
+                if (!$category->newParentId) {
+                    Craft::$app->getStructures()->appendToRoot($category->getGroup()->structureId, $category);
+                } else {
+                    /** @noinspection PhpUndefinedVariableInspection */
+                    Craft::$app->getStructures()->append($category->getGroup()->structureId, $category, $parentCategory);
+                }
+            }
+
+            // Update the category's descendants, who may be using this category's URI in their own URIs
+            Craft::$app->getElements()->updateDescendantSlugsAndUris($category, true, true);
+
             $transaction->commit();
         } catch (\Exception $e) {
             $transaction->rollBack();
@@ -802,16 +791,13 @@ class Categories extends Component
             throw $e;
         }
 
-        if ($success) {
-            // Fire an 'afterSaveCategory' event
-            $this->trigger(self::EVENT_AFTER_SAVE_CATEGORY,
-                new CategoryEvent([
-                    'category' => $category,
-                    'isNew' => $isNewCategory,
-                ]));
-        }
+        // Fire an 'afterSaveCategory' event
+        $this->trigger(self::EVENT_AFTER_SAVE_CATEGORY, new CategoryEvent([
+            'category' => $category,
+            'isNew' => $isNewCategory,
+        ]));
 
-        return $success;
+        return true;
     }
 
     /**
