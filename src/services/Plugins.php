@@ -87,6 +87,16 @@ class Plugins extends Component
      */
     const EVENT_AFTER_UNINSTALL_PLUGIN = 'afterUninstallPlugin';
 
+    /**
+     * @event PluginEvent The event that is triggered before a plugin's settings are saved
+     */
+    const EVENT_BEFORE_SAVE_PLUGIN_SETTINGS = 'beforeSavePluginSettings';
+
+    /**
+     * @event PluginEvent The event that is triggered before a plugin's settings are saved
+     */
+    const EVENT_AFTER_SAVE_PLUGIN_SETTINGS = 'afterSavePluginSettings';
+
     // Properties
     // =========================================================================
 
@@ -481,6 +491,11 @@ class Plugins extends Component
             return false;
         }
 
+        // Fire a 'beforeSavePluginSettings' event
+        $this->trigger(self::EVENT_BEFORE_SAVE_PLUGIN_SETTINGS, new PluginEvent([
+            'plugin' => $plugin
+        ]));
+
         // JSON-encode them and save the plugin row
         $settings = Json::encode($plugin->getSettings());
 
@@ -490,6 +505,11 @@ class Plugins extends Component
                 ['settings' => $settings],
                 ['handle' => $plugin->getHandle()])
             ->execute();
+
+        // Fire an 'afterSavePluginSettings' event
+        $this->trigger(self::EVENT_AFTER_SAVE_PLUGIN_SETTINGS, new PluginEvent([
+            'plugin' => $plugin
+        ]));
 
         return (bool)$affectedRows;
     }
