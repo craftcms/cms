@@ -37,7 +37,12 @@ class Plugins extends Component
     // =========================================================================
 
     /**
-     * @event Event The event that is triggered after all plugins have been loaded.
+     * @event \yii\base\Event The event that is triggered before any plugins have been loaded
+     */
+    const EVENT_BEFORE_LOAD_PLUGINS = 'beforeLoadPlugins';
+
+    /**
+     * @event \yii\base\Event The event that is triggered after all plugins have been loaded
      */
     const EVENT_AFTER_LOAD_PLUGINS = 'afterLoadPlugins';
 
@@ -86,6 +91,9 @@ class Plugins extends Component
 
         // Prevent this function from getting called twice.
         $this->_loadingPlugins = true;
+
+        // Fire a 'beforeLoadPlugins' event
+        $this->trigger(self::EVENT_BEFORE_LOAD_PLUGINS);
 
         // Find all of the installed plugins
         $this->_installedPluginInfo = (new Query())
