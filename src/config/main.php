@@ -12,7 +12,7 @@ $config = [
     'track' => '@@@track@@@',
     'basePath' => '@craft/app',          // Defines the @app alias
     'runtimePath' => '@storage/runtime', // Defines the @runtime alias
-    'controllerNamespace' => \craft\app\controllers::class,
+    'controllerNamespace' => 'craft\app\controllers',
 ];
 
 /* HIDE */

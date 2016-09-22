@@ -1,5 +1,5 @@
 <?php
 
 return [
-    'userGroups' => \craft\app\services\UserGroups::class,
+    'userGroups' => craft\app\services\UserGroups::class,
 ];
