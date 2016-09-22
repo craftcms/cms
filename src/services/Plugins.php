@@ -77,6 +77,16 @@ class Plugins extends Component
      */
     const EVENT_AFTER_INSTALL_PLUGIN = 'afterInstallPlugin';
 
+    /**
+     * @event PluginEvent The event that is triggered before a plugin is uninstalled
+     */
+    const EVENT_BEFORE_UNINSTALL_PLUGIN = 'beforeUninstallPlugin';
+
+    /**
+     * @event PluginEvent The event that is triggered before a plugin is uninstalled
+     */
+    const EVENT_AFTER_UNINSTALL_PLUGIN = 'afterUninstallPlugin';
+
     // Properties
     // =========================================================================
 
@@ -410,35 +420,47 @@ class Plugins extends Component
             $this->_noPluginExists($handle);
         }
 
+        // Fire a 'beforeUninstallPlugin' event
+        $this->trigger(self::EVENT_BEFORE_UNINSTALL_PLUGIN, new PluginEvent([
+            'plugin' => $plugin
+        ]));
+
         $transaction = Craft::$app->getDb()->beginTransaction();
         try {
-            if ($plugin->uninstall() !== false) {
-                // Clean up the plugins and migrations tables
-                $id = $this->_installedPluginInfo[$handle]['id'];
-                Craft::$app->getDb()->createCommand()
-                    ->delete('{{%plugins}}', ['id' => $id])
-                    ->execute();
-                Craft::$app->getDb()->createCommand()
-                    ->delete('{{%migrations}}', ['pluginId' => $id])
-                    ->execute();
+            // Let the plugin uninstall itself first
+            if ($plugin->uninstall() === false) {
+                $transaction->rollBack();
 
-                // Let's commit to this.
-                $transaction->commit();
-
-                $this->_unregisterPlugin($handle);
-                unset($this->_installedPluginInfo[$handle]);
-
-                return true;
+                return false;
             }
 
-            $transaction->rollBack();
+            // Clean up the plugins and migrations tables
+            $id = $this->_installedPluginInfo[$handle]['id'];
 
-            return false;
+            Craft::$app->getDb()->createCommand()
+                ->delete('{{%plugins}}', ['id' => $id])
+                ->execute();
+
+            Craft::$app->getDb()->createCommand()
+                ->delete('{{%migrations}}', ['pluginId' => $id])
+                ->execute();
+
+            $transaction->commit();
         } catch (\Exception $e) {
             $transaction->rollBack();
 
             throw $e;
         }
+
+        $this->_unregisterPlugin($handle);
+        unset($this->_installedPluginInfo[$handle]);
+
+        // Fire an 'afterUninstallPlugin' event
+        $this->trigger(self::EVENT_AFTER_UNINSTALL_PLUGIN, new PluginEvent([
+            'plugin' => $plugin
+        ]));
+
+        return true;
     }
 
     /**
