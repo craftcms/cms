@@ -14,6 +14,7 @@ use craft\app\db\MigrationManager;
 use craft\app\db\Query;
 use craft\app\enums\LicenseKeyStatus;
 use craft\app\errors\InvalidLicenseKeyException;
+use craft\app\events\PluginEvent;
 use craft\app\helpers\DateTimeHelper;
 use craft\app\helpers\Db;
 use craft\app\helpers\Io;
@@ -45,6 +46,16 @@ class Plugins extends Component
      * @event \yii\base\Event The event that is triggered after all plugins have been loaded
      */
     const EVENT_AFTER_LOAD_PLUGINS = 'afterLoadPlugins';
+
+    /**
+     * @event PluginEvent The event that is triggered before a plugin is enabled
+     */
+    const EVENT_BEFORE_ENABLE_PLUGIN = 'beforeEnablePlugin';
+
+    /**
+     * @event PluginEvent The event that is triggered before a plugin is enabled
+     */
+    const EVENT_AFTER_ENABLE_PLUGIN = 'afterEnablePlugin';
 
     // Properties
     // =========================================================================
@@ -204,6 +215,11 @@ class Plugins extends Component
             $this->_noPluginExists($handle);
         }
 
+        // Fire a 'beforeEnablePlugin' event
+        $this->trigger(self::EVENT_BEFORE_ENABLE_PLUGIN, new PluginEvent([
+            'plugin' => $plugin
+        ]));
+
         Craft::$app->getDb()->createCommand()
             ->update(
                 '{{%plugins}}',
@@ -213,6 +229,11 @@ class Plugins extends Component
 
         $this->_installedPluginInfo[$handle]['enabled'] = true;
         $this->_registerPlugin($handle, $plugin);
+
+        // Fire an 'afterEnablePlugin' event
+        $this->trigger(self::EVENT_AFTER_ENABLE_PLUGIN, new PluginEvent([
+            'plugin' => $plugin
+        ]));
 
         return true;
     }
