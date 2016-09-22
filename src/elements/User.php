@@ -701,9 +701,14 @@ class User extends Element implements IdentityInterface
         $rules[] = [['email', 'unverifiedEmail'], 'email'];
         $rules[] = [['email', 'password', 'unverifiedEmail'], 'string', 'max' => 255];
         $rules[] = [['username', 'firstName', 'lastName', 'verificationCode'], 'string', 'max' => 100];
-        $rules[] = [['username', 'email'], UniqueValidator::className(), 'targetClass' => UserRecord::className()];
         $rules[] = [['username', 'email'], 'required'];
         $rules[] = [['lastLoginAttemptIp'], 'string', 'max' => 45];
+
+        $rules[] = [
+            ['username', 'email'],
+            UniqueValidator::className(),
+            'targetClass' => UserRecord::className()
+        ];
 
         return $rules;
     }
