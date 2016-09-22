@@ -110,7 +110,7 @@ class Plugin extends Module implements PluginInterface
 
         if (!isset($i18n->translations[$handle]) && !isset($i18n->translations[$handle.'*'])) {
             $i18n->translations[$handle] = [
-                'class' => 'craft\app\i18n\PhpMessageSource',
+                'class' => \craft\app\i18n\PhpMessageSource::class,
                 'sourceLanguage' => $this->sourceLanguage,
                 'basePath' => "@plugins/$handle/translations",
                 'allowOverrides' => true,

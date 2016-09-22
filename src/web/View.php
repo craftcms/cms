@@ -167,7 +167,7 @@ class View extends \yii\web\View
     public function getTwig($loaderClass = null, $options = [])
     {
         if (!$loaderClass) {
-            $loaderClass = 'craft\app\web\twig\TemplateLoader';
+            $loaderClass = \craft\app\web\twig\TemplateLoader::class;
         }
 
         $options = array_merge(['safe_mode' => false], $options);
@@ -176,7 +176,7 @@ class View extends \yii\web\View
 
         if (!isset($this->_twigs[$cacheKey])) {
             /** @var $loader TemplateLoader */
-            if ($loaderClass === 'craft\app\web\twig\TemplateLoader') {
+            if ($loaderClass === \craft\app\web\twig\TemplateLoader::class) {
                 $loader = new $loaderClass($this);
             } else {
                 $loader = new $loaderClass();

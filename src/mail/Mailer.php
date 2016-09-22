@@ -38,7 +38,7 @@ class Mailer extends \yii\swiftmailer\Mailer
     /**
      * @var string The default message class name
      */
-    public $messageClass = 'craft\app\mail\Message';
+    public $messageClass = \craft\app\mail\Message::class;
 
     /**
      * @var string The email template that should be used

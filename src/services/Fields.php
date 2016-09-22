@@ -63,7 +63,7 @@ class Fields extends Component
     /**
      * @var string The field interface name
      */
-    const FIELD_INTERFACE = 'craft\app\base\FieldInterface';
+    const FIELD_INTERFACE = \craft\app\base\FieldInterface::class;
 
     /**
      * @event FieldLayoutEvent The event that is triggered after a field layout is saved.

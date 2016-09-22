@@ -236,7 +236,7 @@ class MigrationManager extends Component
         }
 
         /** @var \yii\db\Migration $migration */
-        $migration = Instance::ensure($migration, 'yii\db\MigrationInterface');
+        $migration = Instance::ensure($migration, \yii\db\MigrationInterface::class);
 
         Craft::info("Applying $migrationName");
 
@@ -286,7 +286,7 @@ class MigrationManager extends Component
         }
 
         /** @var \yii\db\Migration $migration */
-        $migration = Instance::ensure($migration, 'yii\db\MigrationInterface');
+        $migration = Instance::ensure($migration, \yii\db\MigrationInterface::class);
 
         Craft::info("Reverting $migrationName");
 

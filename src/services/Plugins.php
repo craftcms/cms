@@ -664,7 +664,7 @@ class Plugins extends Component
         $class = $config['class'];
 
         // Make sure the class exists and it implements PluginInterface
-        if (!is_subclass_of($class, 'craft\app\base\PluginInterface')) {
+        if (!is_subclass_of($class, \craft\app\base\PluginInterface::class)) {
             return null;
         }
 

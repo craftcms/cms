@@ -40,7 +40,7 @@ class Dashboard extends Component
     /**
      * @var string The widget interface name
      */
-    const WIDGET_INTERFACE = 'craft\app\base\WidgetInterface';
+    const WIDGET_INTERFACE = \craft\app\base\WidgetInterface::class;
 
     // Public Methods
     // =========================================================================

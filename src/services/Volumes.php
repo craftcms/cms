@@ -38,7 +38,7 @@ class Volumes extends Component
     /**
      * @var string The field interface name
      */
-    const VOLUME_INTERFACE = 'craft\app\base\VolumeInterface';
+    const VOLUME_INTERFACE = \craft\app\base\VolumeInterface::class;
 
     /**
      * @event VolumeEvent The event that is triggered before an Asset volume is saved.

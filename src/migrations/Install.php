@@ -86,10 +86,10 @@ class Install extends Migration
         Craft::$app->getSystemSettings()->saveSettings('email', [
             'fromEmail' => $this->email,
             'fromName' => $this->site->name,
-            'transportType' => 'craft\app\mail\transportadaptors\Php'
+            'transportType' => \craft\app\mail\transportadaptors\Php::class
         ]);
         Craft::$app->getSystemSettings()->saveSettings('mailer', [
-            'class' => 'craft\app\mail\Mailer',
+            'class' => \craft\app\mail\Mailer::class,
             'from' => [$this->email => $this->site->name],
             'transport' => [
                 'class' => 'Swift_MailTransport'

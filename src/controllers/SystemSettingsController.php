@@ -416,7 +416,7 @@ class SystemSettingsController extends Controller
                 $adapter = Component::createComponent([
                     'type' => $class,
                     'settings' => $settings
-                ], 'craft\app\mail\transportadaptors\TransportAdaptorInterface');
+                ], \craft\app\mail\transportadaptors\TransportAdaptorInterface::class);
 
                 return $adapter;
             } catch (MissingComponentException $e) {

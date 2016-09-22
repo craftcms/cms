@@ -39,7 +39,7 @@ class Tasks extends Component
     /**
      * @var string The task interface name
      */
-    const TASK_INTERFACE = 'craft\app\base\TaskInterface';
+    const TASK_INTERFACE = \craft\app\base\TaskInterface::class;
 
     // Properties
     // =========================================================================

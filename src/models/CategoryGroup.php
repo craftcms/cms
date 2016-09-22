@@ -77,8 +77,8 @@ class CategoryGroup extends Model
     {
         return [
             'fieldLayout' => [
-                'class' => 'craft\app\behaviors\FieldLayoutBehavior',
-                'elementType' => 'craft\app\elements\Category'
+                'class' => \craft\app\behaviors\FieldLayoutBehavior::class,
+                'elementType' => \craft\app\elements\Category::class
             ],
         ];
     }
