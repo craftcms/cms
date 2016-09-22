@@ -31,7 +31,7 @@
         "twig/twig": "v1.24.1.1",
         "simplepie/simplepie": "1.3.3",
         "phpmailer/phpmailer": "v5.2.15",
-        "imagine/imagine": "0.6.14",
+        "imagine/imagine": "0.6.14.1",
         "lsolesen/pel": "0.9.4.1",
         "pclzip/pclzip": "2.8.2"
     },
