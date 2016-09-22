@@ -131,7 +131,7 @@ class TagsController extends Controller
 
         // Set the field layout
         $fieldLayout = Craft::$app->getFields()->assembleLayoutFromPost();
-        $fieldLayout->type = Tag::className();
+        $fieldLayout->type = Tag::class;
         $tagGroup->setFieldLayout($fieldLayout);
 
         // Save it

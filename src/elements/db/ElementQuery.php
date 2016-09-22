@@ -510,7 +510,7 @@ class ElementQuery extends Query implements ElementQueryInterface, Arrayable, Co
     {
         /** @noinspection PhpUndefinedClassInspection */
         return [
-            'customFields' => ElementQueryBehavior::className(),
+            'customFields' => ElementQueryBehavior::class,
         ];
     }
 

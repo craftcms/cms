@@ -258,7 +258,7 @@ class Entry extends Element
             // Set Status
             if ($canSetStatus) {
                 /** @var SetStatus $setStatusAction */
-                $setStatusAction = Craft::$app->getElements()->createAction(SetStatus::className());
+                $setStatusAction = Craft::$app->getElements()->createAction(SetStatus::class);
                 $setStatusAction->on(SetStatus::EVENT_AFTER_SET_STATUS,
                     function (SetStatusEvent $event) {
                         if ($event->status == self::STATUS_ENABLED) {
@@ -281,7 +281,7 @@ class Entry extends Element
             // Edit
             if ($canEdit) {
                 $actions[] = Craft::$app->getElements()->createAction([
-                    'type' => Edit::className(),
+                    'type' => Edit::class,
                     'label' => Craft::t('app', 'Edit entry'),
                 ]);
             }
@@ -303,7 +303,7 @@ class Entry extends Element
             if ($showViewAction) {
                 // View
                 $actions[] = Craft::$app->getElements()->createAction([
-                    'type' => View::className(),
+                    'type' => View::class,
                     'label' => Craft::t('app', 'View entry'),
                 ]);
             }
@@ -321,7 +321,7 @@ class Entry extends Element
 
                     if ($structure) {
                         $actions[] = Craft::$app->getElements()->createAction([
-                            'type' => NewChild::className(),
+                            'type' => NewChild::class,
                             'label' => Craft::t('app', 'Create a new child entry'),
                             'maxLevels' => $structure->maxLevels,
                             'newChildUrl' => 'entries/'.$section->handle.'/new',
@@ -335,7 +335,7 @@ class Entry extends Element
                     $userSessionService->checkPermission('deletePeerEntries:'.$section->id)
                 ) {
                     $actions[] = Craft::$app->getElements()->createAction([
-                        'type' => Delete::className(),
+                        'type' => Delete::class,
                         'confirmationMessage' => Craft::t('app', 'Are you sure you want to delete the selected entries?'),
                         'successMessage' => Craft::t('app', 'Entries deleted.'),
                     ]);
@@ -538,7 +538,7 @@ class Entry extends Element
                 ->all();
 
             return [
-                'elementType' => User::className(),
+                'elementType' => User::class,
                 'map' => $map
             ];
         }
@@ -752,7 +752,7 @@ EOD;
     {
         $rules = parent::rules();
         $rules[] = [['sectionId', 'typeId', 'authorId', 'newParentId'], 'number', 'integerOnly' => true];
-        $rules[] = [['postDate', 'expiryDate'], DateTimeValidator::className()];
+        $rules[] = [['postDate', 'expiryDate'], DateTimeValidator::class];
 
         return $rules;
     }

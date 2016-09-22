@@ -75,7 +75,7 @@ class TagGroup extends ActiveRecord
      */
     public function getFieldLayout()
     {
-        return $this->hasOne(FieldLayout::className(),
+        return $this->hasOne(FieldLayout::class,
             ['id' => 'fieldLayoutId']);
     }
 
@@ -86,6 +86,6 @@ class TagGroup extends ActiveRecord
      */
     public function getTags()
     {
-        return $this->hasMany(Tag::className(), ['groupId' => 'id']);
+        return $this->hasMany(Tag::class, ['groupId' => 'id']);
     }
 }

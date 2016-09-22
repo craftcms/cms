@@ -54,7 +54,7 @@ class FieldLayout extends ActiveRecord
      */
     public function getTabs()
     {
-        return $this->hasMany(FieldLayoutTab::className(), ['layoutId' => 'id']);
+        return $this->hasMany(FieldLayoutTab::class, ['layoutId' => 'id']);
     }
 
     /**
@@ -64,6 +64,6 @@ class FieldLayout extends ActiveRecord
      */
     public function getFields()
     {
-        return $this->hasMany(FieldLayoutField::className(), ['layoutId' => 'id']);
+        return $this->hasMany(FieldLayoutField::class, ['layoutId' => 'id']);
     }
 }

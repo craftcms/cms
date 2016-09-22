@@ -48,7 +48,7 @@ class Section_SiteSettings extends ActiveRecord
      */
     public function getSection()
     {
-        return $this->hasOne(Section::className(), ['id' => 'sectionId']);
+        return $this->hasOne(Section::class, ['id' => 'sectionId']);
     }
 
     /**
@@ -58,6 +58,6 @@ class Section_SiteSettings extends ActiveRecord
      */
     public function getSite()
     {
-        return $this->hasOne(Site::className(), ['id' => 'siteId']);
+        return $this->hasOne(Site::class, ['id' => 'siteId']);
     }
 }

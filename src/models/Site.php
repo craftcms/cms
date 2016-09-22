@@ -86,12 +86,12 @@ class Site extends Model
             [['id'], 'number', 'integerOnly' => true],
             [['name', 'handle', 'baseUrl'], 'string', 'max' => 255],
             [['language'], 'string', 'max' => 12],
-            [['handle'], Handle::className(), 'reservedWords' => ['id', 'dateCreated', 'dateUpdated', 'uid', 'title']],
-            [['baseUrl'], Url::className(), 'defaultScheme' => 'http'],
+            [['handle'], Handle::class, 'reservedWords' => ['id', 'dateCreated', 'dateUpdated', 'uid', 'title']],
+            [['baseUrl'], Url::class, 'defaultScheme' => 'http'],
         ];
 
         if (Craft::$app->getIsInstalled()) {
-            $rules[] = [['name', 'handle'], Unique::className(), 'targetClass' => SiteRecord::className()];
+            $rules[] = [['name', 'handle'], Unique::class, 'targetClass' => SiteRecord::class];
         }
 
         return $rules;

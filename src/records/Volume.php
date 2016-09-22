@@ -83,6 +83,6 @@ class Volume extends ActiveRecord
      */
     public function getFieldLayout()
     {
-        return $this->hasOne(FieldLayout::className(), ['id' => 'fieldLayoutId']);
+        return $this->hasOne(FieldLayout::class, ['id' => 'fieldLayoutId']);
     }
 }

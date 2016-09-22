@@ -54,6 +54,6 @@ class FieldGroup extends ActiveRecord
      */
     public function getFields()
     {
-        return $this->hasMany(Field::className(), ['groupId' => 'id']);
+        return $this->hasMany(Field::class, ['groupId' => 'id']);
     }
 }

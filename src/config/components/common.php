@@ -62,13 +62,13 @@ return [
     // -------------------------------------------------------------------------
 
     'contentMigrator' => [
-        'class' => MigrationManager::className(),
+        'class' => MigrationManager::class,
         'type' => MigrationManager::TYPE_CONTENT,
         'migrationNamespace' => "craft\\contentmigrations",
         'migrationPath' => "@contentMigrations",
     ],
     'migrator' => [
-        'class' => MigrationManager::className(),
+        'class' => MigrationManager::class,
         'type' => MigrationManager::TYPE_APP,
         'migrationNamespace' => 'craft\app\migrations',
         'migrationPath' => '@app/migrations',
@@ -125,7 +125,7 @@ return [
         $configService = Craft::$app->getConfig();
 
         $config = [
-            'class' => AssetManager::className(),
+            'class' => AssetManager::class,
             'basePath' => $configService->get('resourceBasePath'),
             'baseUrl' => $configService->get('resourceBaseUrl')
         ];
@@ -140,39 +140,39 @@ return [
         switch ($cacheMethod) {
             case 'apc':
                 $config = [
-                    'class' => ApcCache::className(),
+                    'class' => ApcCache::class,
                     'useApcu' => $configService->get('useApcu', ConfigCategory::ApcCache),
                 ];
                 break;
             case 'db':
                 $config =[
-                    'class' => DbCache::className(),
+                    'class' => DbCache::class,
                     'gcProbability' => $configService->get('gcProbability', ConfigCategory::DbCache),
                     'cacheTable' => '{{%'.$configService->get('cacheTableName', ConfigCategory::DbCache).'}}',
                 ];
                 break;
             case 'file':
                 $config = [
-                    'class' => FileCache::className(),
+                    'class' => FileCache::class,
                     'cachePath' => $configService->get('cachePath', ConfigCategory::FileCache),
                     'gcProbability' => $configService->get('gcProbability', ConfigCategory::FileCache),
                 ];
                 break;
             case 'memcache':
                 $config = [
-                    'class' => MemCache::className(),
+                    'class' => MemCache::class,
                     'servers' => $configService->get('servers', ConfigCategory::Memcache),
                     'useMemcached' => $configService->get('useMemcached', ConfigCategory::Memcache),
                 ];
                 break;
             case 'wincache':
-                $config = WinCache::className();
+                $config = WinCache::class;
                 break;
             case 'xcache':
-                $config = XCache::className();
+                $config = XCache::class;
                 break;
             case 'zenddata':
-                $config = ZendDataCache::className();
+                $config = ZendDataCache::class;
                 break;
             default:
                 throw new InvalidConfigException('Unsupported cacheMethod config setting value: '.$cacheMethod);
@@ -199,7 +199,7 @@ return [
         }
 
         $config = [
-            'class' => Connection::className(),
+            'class' => Connection::class,
             'dsn' => $dsn,
             'emulatePrepare' => true,
             'username' => $configService->get('user', ConfigCategory::Db),
@@ -207,7 +207,7 @@ return [
             'charset' => $configService->get('charset', ConfigCategory::Db),
             'tablePrefix' => $configService->getDbTablePrefix(),
             'schemaMap' => [
-                'mysql' => MysqlSchema::className(),
+                'mysql' => MysqlSchema::class,
             ],
         ];
 
@@ -257,7 +257,7 @@ return [
         $fileTarget->dirMode = $configService->get('defaultFolderPermissions');
 
         $config = [
-            'class' => Dispatcher::className(),
+            'class' => Dispatcher::class,
             'targets' => [
                 $fileTarget
             ]

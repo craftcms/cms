@@ -230,7 +230,7 @@ class Globals extends Component
                 return $this->_globalSetsById[$globalSetId];
             }
         } else {
-            return Craft::$app->getElements()->getElementById($globalSetId, GlobalSet::className(), $siteId);
+            return Craft::$app->getElements()->getElementById($globalSetId, GlobalSet::class, $siteId);
         }
 
         return null;

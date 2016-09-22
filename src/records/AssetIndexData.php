@@ -94,6 +94,6 @@ class AssetIndexData extends ActiveRecord
      */
     public function getVolume()
     {
-        return $this->hasOne(Volume::className(), ['id' => 'volumeId']);
+        return $this->hasOne(Volume::class, ['id' => 'volumeId']);
     }
 }

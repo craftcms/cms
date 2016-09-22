@@ -50,7 +50,7 @@ class EntryType extends ActiveRecord
      */
     public function getSection()
     {
-        return $this->hasOne(Section::className(), ['id' => 'sectionId']);
+        return $this->hasOne(Section::class, ['id' => 'sectionId']);
     }
 
     /**
@@ -60,6 +60,6 @@ class EntryType extends ActiveRecord
      */
     public function getFieldLayout()
     {
-        return $this->hasOne(FieldLayout::className(), ['id' => 'fieldLayoutId']);
+        return $this->hasOne(FieldLayout::class, ['id' => 'fieldLayoutId']);
     }
 }

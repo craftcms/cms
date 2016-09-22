@@ -338,7 +338,7 @@ class Matrix extends Component
                 $fieldLayoutTab->setFields($fieldLayoutFields);
 
                 $fieldLayout = new FieldLayout();
-                $fieldLayout->type = MatrixBlock::className();
+                $fieldLayout->type = MatrixBlock::class;
                 $fieldLayout->setTabs([$fieldLayoutTab]);
                 $fieldLayout->setFields($fieldLayoutFields);
 
@@ -636,7 +636,7 @@ class Matrix extends Component
      */
     public function getBlockById($blockId, $siteId = null)
     {
-        return Craft::$app->getElements()->getElementById($blockId, MatrixBlock::className(), $siteId);
+        return Craft::$app->getElements()->getElementById($blockId, MatrixBlock::class, $siteId);
     }
 
     /**

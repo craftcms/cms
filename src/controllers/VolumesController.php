@@ -178,7 +178,7 @@ class VolumesController extends Controller
 
         // Set the field layout
         $fieldLayout = Craft::$app->getFields()->assembleLayoutFromPost();
-        $fieldLayout->type = Asset::className();
+        $fieldLayout->type = Asset::class;
         $volume->setFieldLayout($fieldLayout);
 
         $session = Craft::$app->getSession();

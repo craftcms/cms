@@ -1370,8 +1370,8 @@ class UsersController extends Controller
 
         // Set the field layout
         $fieldLayout = Craft::$app->getFields()->assembleLayoutFromPost();
-        $fieldLayout->type = User::className();
-        Craft::$app->getFields()->deleteLayoutsByType(User::className());
+        $fieldLayout->type = User::class;
+        Craft::$app->getFields()->deleteLayoutsByType(User::class);
 
         if (Craft::$app->getFields()->saveLayout($fieldLayout)) {
             Craft::$app->getSession()->setNotice(Craft::t('app',

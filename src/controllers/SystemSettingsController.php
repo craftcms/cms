@@ -440,7 +440,7 @@ class SystemSettingsController extends Controller
     private function _getMailerConfig($settings, $adaptor)
     {
         return [
-            'class' => Mailer::className(),
+            'class' => Mailer::class,
             'from' => [$settings->fromEmail => $settings->fromName],
             'template' => $settings->template,
             'transport' => $adaptor->getTransportConfig()

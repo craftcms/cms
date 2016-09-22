@@ -81,7 +81,7 @@ class MatrixBlockType extends ActiveRecord
      */
     public function getField()
     {
-        return $this->hasOne(Field::className(), ['id' => 'fieldId']);
+        return $this->hasOne(Field::class, ['id' => 'fieldId']);
     }
 
     /**
@@ -91,6 +91,6 @@ class MatrixBlockType extends ActiveRecord
      */
     public function getFieldLayout()
     {
-        return $this->hasOne(FieldLayout::className(), ['id' => 'fieldLayoutId']);
+        return $this->hasOne(FieldLayout::class, ['id' => 'fieldLayoutId']);
     }
 }

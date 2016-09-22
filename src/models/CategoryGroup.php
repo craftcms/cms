@@ -90,8 +90,8 @@ class CategoryGroup extends Model
     {
         return [
             [['id', 'structureId', 'fieldLayoutId', 'maxLevels'], 'number', 'integerOnly' => true],
-            [['handle'], Handle::className(), 'reservedWords' => ['id', 'dateCreated', 'dateUpdated', 'uid', 'title']],
-            [['name', 'handle'], Unique::className(), 'targetClass' => CategoryGroupRecord::className()],
+            [['handle'], Handle::class, 'reservedWords' => ['id', 'dateCreated', 'dateUpdated', 'uid', 'title']],
+            [['name', 'handle'], Unique::class, 'targetClass' => CategoryGroupRecord::class],
             [['name', 'handle', 'siteSettings'], 'required'],
             [['name', 'handle'], 'string', 'max' => 255],
         ];

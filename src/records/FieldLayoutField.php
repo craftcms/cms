@@ -62,7 +62,7 @@ class FieldLayoutField extends ActiveRecord
      */
     public function getLayout()
     {
-        return $this->hasOne(FieldLayout::className(), ['id' => 'layoutId']);
+        return $this->hasOne(FieldLayout::class, ['id' => 'layoutId']);
     }
 
     /**
@@ -72,7 +72,7 @@ class FieldLayoutField extends ActiveRecord
      */
     public function getTab()
     {
-        return $this->hasOne(FieldLayoutTab::className(), ['id' => 'tabId']);
+        return $this->hasOne(FieldLayoutTab::class, ['id' => 'tabId']);
     }
 
     /**
@@ -82,6 +82,6 @@ class FieldLayoutField extends ActiveRecord
      */
     public function getField()
     {
-        return $this->hasOne(Field::className(), ['id' => 'fieldId']);
+        return $this->hasOne(Field::class, ['id' => 'fieldId']);
     }
 }

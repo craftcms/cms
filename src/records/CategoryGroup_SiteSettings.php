@@ -47,7 +47,7 @@ class CategoryGroup_SiteSettings extends ActiveRecord
      */
     public function getGroup()
     {
-        return $this->hasOne(CategoryGroup::className(), ['id' => 'groupId']);
+        return $this->hasOne(CategoryGroup::class, ['id' => 'groupId']);
     }
 
     /**
@@ -57,6 +57,6 @@ class CategoryGroup_SiteSettings extends ActiveRecord
      */
     public function getSite()
     {
-        return $this->hasOne(Site::className(), ['id' => 'siteId']);
+        return $this->hasOne(Site::class, ['id' => 'siteId']);
     }
 }

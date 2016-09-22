@@ -61,7 +61,7 @@ class Element_SiteSettings extends ActiveRecord
      */
     public function getElement()
     {
-        return $this->hasOne(Element::className(), ['id' => 'elementId']);
+        return $this->hasOne(Element::class, ['id' => 'elementId']);
     }
 
     /**
@@ -71,6 +71,6 @@ class Element_SiteSettings extends ActiveRecord
      */
     public function getSite()
     {
-        return $this->hasOne(Site::className(), ['id' => 'siteId']);
+        return $this->hasOne(Site::class, ['id' => 'siteId']);
     }
 }

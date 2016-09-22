@@ -57,6 +57,6 @@ class Migration extends ActiveRecord
      */
     public function getPlugin()
     {
-        return $this->hasOne(Plugin::className(), ['id' => 'pluginId']);
+        return $this->hasOne(Plugin::class, ['id' => 'pluginId']);
     }
 }

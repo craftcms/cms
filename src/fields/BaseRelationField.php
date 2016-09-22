@@ -179,7 +179,7 @@ abstract class BaseRelationField extends Field implements PreviewableFieldInterf
     {
         if ($this->_makeExistingRelationsTranslatable) {
             Craft::$app->getTasks()->queueTask([
-                'type' => LocalizeRelations::className(),
+                'type' => LocalizeRelations::class,
                 'fieldId' => $this->id,
             ]);
         }

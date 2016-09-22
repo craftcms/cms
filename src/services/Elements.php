@@ -654,7 +654,7 @@ class Elements extends Component
         /** @var Element $element */
         if ($asTask) {
             Craft::$app->getTasks()->queueTask([
-                'type' => UpdateElementSlugsAndUris::className(),
+                'type' => UpdateElementSlugsAndUris::class,
                 'elementId' => $element->id,
                 'elementType' => $element::className(),
                 'siteId' => $element->siteId,
@@ -743,7 +743,7 @@ class Elements extends Component
 
             if ($childIds) {
                 Craft::$app->getTasks()->queueTask([
-                    'type' => UpdateElementSlugsAndUris::className(),
+                    'type' => UpdateElementSlugsAndUris::class,
                     'elementId' => $childIds,
                     'elementType' => $element::className(),
                     'siteId' => $element->siteId,
@@ -849,14 +849,14 @@ class Elements extends Component
                 $refTagPrefix = "{{$elementTypeHandle}:";
 
                 Craft::$app->getTasks()->queueTask([
-                    'type' => FindAndReplace::className(),
+                    'type' => FindAndReplace::class,
                     'description' => Craft::t('app', 'Updating element references'),
                     'find' => $refTagPrefix.$mergedElementId.':',
                     'replace' => $refTagPrefix.$prevailingElementId.':',
                 ]);
 
                 Craft::$app->getTasks()->queueTask([
-                    'type' => FindAndReplace::className(),
+                    'type' => FindAndReplace::class,
                     'description' => Craft::t('app', 'Updating element references'),
                     'find' => $refTagPrefix.$mergedElementId.'}',
                     'replace' => $refTagPrefix.$prevailingElementId.'}',
@@ -990,13 +990,13 @@ class Elements extends Component
     {
         // TODO: Come up with a way for plugins to add more element classes
         return [
-            Asset::className(),
-            Category::className(),
-            Entry::className(),
-            GlobalSet::className(),
-            MatrixBlock::className(),
-            Tag::className(),
-            User::className(),
+            Asset::class,
+            Category::class,
+            Entry::class,
+            GlobalSet::class,
+            MatrixBlock::class,
+            Tag::class,
+            User::class,
         ];
     }
 

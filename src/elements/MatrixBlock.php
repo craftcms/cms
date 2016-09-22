@@ -183,7 +183,7 @@ class MatrixBlock extends Element
     {
         $rules = parent::rules();
         $rules[] = [['fieldId', 'ownerId', 'typeId', 'sortOrder'], 'number', 'integerOnly' => true];
-        $rules[] = [['ownerSiteId'], SiteIdValidator::className()];
+        $rules[] = [['ownerSiteId'], SiteIdValidator::class];
 
         return $rules;
     }

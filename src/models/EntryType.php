@@ -98,20 +98,20 @@ class EntryType extends Model
             [['name', 'handle'], 'string', 'max' => 255],
             [
                 ['handle'],
-                HandleValidator::className(),
+                HandleValidator::class,
                 'reservedWords' => ['id', 'dateCreated', 'dateUpdated', 'uid', 'title']
             ],
             [
                 ['name'],
-                UniqueValidator::className(),
-                'targetClass' => EntryTypeRecord::className(),
+                UniqueValidator::class,
+                'targetClass' => EntryTypeRecord::class,
                 'targetAttribute' => ['name', 'sectionId'],
                 'comboNotUnique' => Craft::t('yii', '{attribute} "{value}" has already been taken.'),
             ],
             [
                 ['handle'],
-                UniqueValidator::className(),
-                'targetClass' => EntryTypeRecord::className(),
+                UniqueValidator::class,
+                'targetClass' => EntryTypeRecord::class,
                 'targetAttribute' => ['handle', 'sectionId'],
                 'comboNotUnique' => Craft::t('yii', '{attribute} "{value}" has already been taken.'),
             ],

@@ -61,7 +61,7 @@ class MatrixBlock extends ActiveRecord
      */
     public function getElement()
     {
-        return $this->hasOne(Element::className(), ['id' => 'id']);
+        return $this->hasOne(Element::class, ['id' => 'id']);
     }
 
     /**
@@ -71,7 +71,7 @@ class MatrixBlock extends ActiveRecord
      */
     public function getOwner()
     {
-        return $this->hasOne(Element::className(), ['id' => 'ownerId']);
+        return $this->hasOne(Element::class, ['id' => 'ownerId']);
     }
 
     /**
@@ -81,7 +81,7 @@ class MatrixBlock extends ActiveRecord
      */
     public function getOwnerSite()
     {
-        return $this->hasOne(Site::className(), ['id' => 'ownerSiteId']);
+        return $this->hasOne(Site::class, ['id' => 'ownerSiteId']);
     }
 
     /**
@@ -91,7 +91,7 @@ class MatrixBlock extends ActiveRecord
      */
     public function getField()
     {
-        return $this->hasOne(Field::className(), ['id' => 'fieldId']);
+        return $this->hasOne(Field::class, ['id' => 'fieldId']);
     }
 
     /**
@@ -101,6 +101,6 @@ class MatrixBlock extends ActiveRecord
      */
     public function getType()
     {
-        return $this->hasOne(MatrixBlockType::className(), ['id' => 'typeId']);
+        return $this->hasOne(MatrixBlockType::class, ['id' => 'typeId']);
     }
 }

@@ -141,7 +141,7 @@ class Assets extends Component
     public function getAssetById($assetId, $siteId = null)
     {
         return Craft::$app->getElements()->getElementById($assetId,
-            Asset::className(), $siteId);
+            Asset::class, $siteId);
     }
 
     /**

@@ -34,7 +34,7 @@ class Entries extends BaseRelationField
      */
     protected static function elementType()
     {
-        return Entry::className();
+        return Entry::class;
     }
 
     /**

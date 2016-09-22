@@ -53,7 +53,7 @@ abstract class BaseEntriesController extends Controller
             $this->requirePermission('createEntries'.$permissionSuffix);
         } else {
             switch ($entry::className()) {
-                case Entry::className(): {
+                case Entry::class: {
                     // If it's another user's entry (and it's not a Single), make sure they have permission to edit those
                     if (
                         $entry->authorId != $userSessionService->getIdentity()->id &&
@@ -65,7 +65,7 @@ abstract class BaseEntriesController extends Controller
                     break;
                 }
 
-                case EntryDraft::className(): {
+                case EntryDraft::class: {
                     // If it's another user's draft, make sure they have permission to edit those
                     /** @var EntryDraft $entry */
                     if ($entry->creatorId != $userSessionService->getIdentity()->id) {

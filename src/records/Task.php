@@ -113,7 +113,7 @@ class Task extends ActiveRecord
     public static function find()
     {
         /** @var TaskQuery $query */
-        $query = Craft::createObject(TaskQuery::className(), [get_called_class()]);
+        $query = Craft::createObject(TaskQuery::class, [get_called_class()]);
 
         return $query;
     }
@@ -125,7 +125,7 @@ class Task extends ActiveRecord
     {
         return [
             'tree' => [
-                'class' => NestedSetsBehavior::className(),
+                'class' => NestedSetsBehavior::class,
                 'treeAttribute' => 'root',
                 'leftAttribute' => 'lft',
                 'rightAttribute' => 'rgt',

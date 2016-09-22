@@ -88,9 +88,9 @@ class Section extends Model
     {
         return [
             [['id', 'structureId', 'maxLevels'], 'number', 'integerOnly' => true],
-            [['handle'], Handle::className(), 'reservedWords' => ['id', 'dateCreated', 'dateUpdated', 'uid', 'title']],
+            [['handle'], Handle::class, 'reservedWords' => ['id', 'dateCreated', 'dateUpdated', 'uid', 'title']],
             [['type'], 'in', 'range' => ['single', 'channel', 'structure']],
-            [['name', 'handle'], Unique::className(), 'targetClass' => SectionRecord::className()],
+            [['name', 'handle'], Unique::class, 'targetClass' => SectionRecord::class],
             [['name', 'handle', 'type', 'siteSettings'], 'required'],
             [['name', 'handle'], 'string', 'max' => 255],
         ];

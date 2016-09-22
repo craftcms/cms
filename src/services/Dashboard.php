@@ -53,11 +53,11 @@ class Dashboard extends Component
     public function getAllWidgetTypes()
     {
         $widgetTypes = [
-            FeedWidget::className(),
-            GetHelpWidget::className(),
-            QuickPostWidget::className(),
-            RecentEntriesWidget::className(),
-            UpdatesWidget::className(),
+            FeedWidget::class,
+            GetHelpWidget::class,
+            QuickPostWidget::class,
+            RecentEntriesWidget::class,
+            UpdatesWidget::class,
         ];
 
         foreach (Craft::$app->getPlugins()->call('getWidgetTypes', [], true) as $pluginWidgetTypes) {
@@ -270,21 +270,21 @@ class Dashboard extends Component
         $user = Craft::$app->getUser()->getIdentity();
 
         // Recent Entries widget
-        $this->saveWidget($this->createWidget(RecentEntriesWidget::className()));
+        $this->saveWidget($this->createWidget(RecentEntriesWidget::class));
 
         // Get Help widget
         if ($user->admin) {
-            $this->saveWidget($this->createWidget(GetHelpWidget::className()));
+            $this->saveWidget($this->createWidget(GetHelpWidget::class));
         }
 
         // Updates widget
         if ($user->can('performupdates')) {
-            $this->saveWidget($this->createWidget(UpdatesWidget::className()));
+            $this->saveWidget($this->createWidget(UpdatesWidget::class));
         }
 
         // Blog & Tonic feed widget
         $this->saveWidget($this->createWidget([
-            'type' => FeedWidget::className(),
+            'type' => FeedWidget::class,
             'url' => 'https://craftcms.com/news.rss',
             'title' => 'Craft News'
         ]));

@@ -58,6 +58,6 @@ class Route extends ActiveRecord
      */
     public function getSite()
     {
-        return $this->hasOne(Site::className(), ['id' => 'siteId']);
+        return $this->hasOne(Site::class, ['id' => 'siteId']);
     }
 }

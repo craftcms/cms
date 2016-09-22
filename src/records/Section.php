@@ -47,7 +47,7 @@ class Section extends ActiveRecord
      */
     public function getSiteSettings()
     {
-        return $this->hasMany(Section_SiteSettings::className(), ['sectionId' => 'id']);
+        return $this->hasMany(Section_SiteSettings::class, ['sectionId' => 'id']);
     }
 
     /**
@@ -57,6 +57,6 @@ class Section extends ActiveRecord
      */
     public function getStructure()
     {
-        return $this->hasOne(Structure::className(), ['id' => 'structureId']);
+        return $this->hasOne(Structure::class, ['id' => 'structureId']);
     }
 }

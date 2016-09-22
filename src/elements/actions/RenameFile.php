@@ -35,7 +35,7 @@ class RenameFile extends ElementAction
      */
     public function getTriggerHtml()
     {
-        $type = Json::encode(static::className());
+        $type = Json::encode(static::class);
         $prompt = Json::encode(Craft::t('app', 'Enter the new filename'));
 
         $js = <<<EOT

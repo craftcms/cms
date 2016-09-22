@@ -124,14 +124,14 @@ class Section_SiteSettings extends Model
     {
         $rules = [
             [['id', 'sectionId', 'siteId'], 'number', 'integerOnly' => true],
-            [['siteId'], SiteId::className()],
+            [['siteId'], SiteId::class],
             [['template'], 'string', 'max' => 500],
         ];
 
         if ($this->getSection()->type == Section::TYPE_SINGLE) {
-            $rules[] = ['uriFormat', SingleSectionUri::className()];
+            $rules[] = ['uriFormat', SingleSectionUri::class];
         } else {
-            $rules[] = ['uriFormat', UriFormat::className()];
+            $rules[] = ['uriFormat', UriFormat::class];
         }
 
         if ($this->hasUrls || $this->getSection()->type == Section::TYPE_SINGLE) {

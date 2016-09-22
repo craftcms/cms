@@ -74,7 +74,7 @@ class ResaveAllElements extends Task
     public function runStep($step)
     {
         return $this->runSubTask([
-            'type' => ResaveElements::className(),
+            'type' => ResaveElements::class,
             'elementType' => $this->_elementType[$step],
             'criteria' => [
                 'siteId' => $this->siteId,

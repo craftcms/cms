@@ -104,7 +104,7 @@ class User extends ActiveRecord
      */
     public function getElement()
     {
-        return $this->hasOne(Element::className(), ['id' => 'id']);
+        return $this->hasOne(Element::class, ['id' => 'id']);
     }
 
     /**
@@ -114,7 +114,7 @@ class User extends ActiveRecord
      */
     public function getSessions()
     {
-        return $this->hasMany(Session::className(), ['userId' => 'id']);
+        return $this->hasMany(Session::class, ['userId' => 'id']);
     }
 
     /**
@@ -124,7 +124,7 @@ class User extends ActiveRecord
      */
     public function getGroups()
     {
-        return $this->hasMany(UserGroup::className(), ['id' => 'groupId'])
+        return $this->hasMany(UserGroup::class, ['id' => 'groupId'])
             ->viaTable('{{%usergroups_users}}', ['userId' => 'id']);
     }
 

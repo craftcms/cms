@@ -59,6 +59,6 @@ class Plugin extends ActiveRecord
      */
     public function getMigrations()
     {
-        return $this->hasMany(Migration::className(), ['pluginId' => 'id']);
+        return $this->hasMany(Migration::class, ['pluginId' => 'id']);
     }
 }

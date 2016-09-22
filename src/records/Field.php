@@ -173,6 +173,6 @@ class Field extends ActiveRecord
      */
     public function getGroup()
     {
-        return $this->hasOne(FieldGroup::className(), ['id' => 'groupId']);
+        return $this->hasOne(FieldGroup::class, ['id' => 'groupId']);
     }
 }

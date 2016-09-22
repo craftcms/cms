@@ -58,6 +58,6 @@ class Widget extends ActiveRecord
      */
     public function getUser()
     {
-        return $this->hasOne(User::className(), ['id' => 'userId']);
+        return $this->hasOne(User::class, ['id' => 'userId']);
     }
 }

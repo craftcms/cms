@@ -35,7 +35,7 @@ class ReplaceFile extends ElementAction
      */
     public function getTriggerHtml()
     {
-        $type = Json::encode(static::className());
+        $type = Json::encode(static::class);
 
         $js = <<<EOT
 (function()

@@ -182,21 +182,21 @@ class User extends Element implements IdentityInterface
 
         // Edit
         $actions[] = Craft::$app->getElements()->createAction([
-            'type' => Edit::className(),
+            'type' => Edit::class,
             'label' => Craft::t('app', 'Edit user'),
         ]);
 
         if (Craft::$app->getUser()->checkPermission('administrateUsers')) {
             // Suspend
-            $actions[] = SuspendUsers::className();
+            $actions[] = SuspendUsers::class;
 
             // Unsuspend
-            $actions[] = UnsuspendUsers::className();
+            $actions[] = UnsuspendUsers::class;
         }
 
         if (Craft::$app->getUser()->checkPermission('deleteUsers')) {
             // Delete
-            $actions[] = DeleteUsers::className();
+            $actions[] = DeleteUsers::class;
         }
 
         // Allow plugins to add additional actions
@@ -453,7 +453,7 @@ class User extends Element implements IdentityInterface
                 ->all();
 
             return [
-                'elementType' => Asset::className(),
+                'elementType' => Asset::class,
                 'map' => $map
             ];
         }
@@ -696,7 +696,7 @@ class User extends Element implements IdentityInterface
     public function rules()
     {
         $rules = parent::rules();
-        $rules[] = [['lastLoginDate', 'lastInvalidLoginDate', 'lockoutDate', 'lastPasswordChangeDate', 'verificationCodeIssuedDate'], DateTimeValidator::className()];
+        $rules[] = [['lastLoginDate', 'lastInvalidLoginDate', 'lockoutDate', 'lastPasswordChangeDate', 'verificationCodeIssuedDate'], DateTimeValidator::class];
         $rules[] = [['invalidLoginCount', 'photoId'], 'number', 'integerOnly' => true];
         $rules[] = [['email', 'unverifiedEmail'], 'email'];
         $rules[] = [['email', 'password', 'unverifiedEmail'], 'string', 'max' => 255];
@@ -706,8 +706,8 @@ class User extends Element implements IdentityInterface
 
         $rules[] = [
             ['username', 'email'],
-            UniqueValidator::className(),
-            'targetClass' => UserRecord::className()
+            UniqueValidator::class,
+            'targetClass' => UserRecord::class
         ];
 
         return $rules;

@@ -741,7 +741,7 @@ class Plugins extends Component
                 $config['class'] = "\\craft\\plugins\\$handle\\Plugin";
             } else {
                 // Just use the base one
-                $config['class'] = Plugin::className();
+                $config['class'] = Plugin::class;
             }
         }
 
@@ -1001,7 +1001,7 @@ class Plugins extends Component
     {
         /** @var Plugin $plugin */
         $plugin->set('migrator', [
-            'class' => MigrationManager::className(),
+            'class' => MigrationManager::class,
             'type' => MigrationManager::TYPE_PLUGIN,
             'pluginId' => $id,
             'migrationNamespace' => "craft\\plugins\\$handle\\migrations",

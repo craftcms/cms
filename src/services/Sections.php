@@ -644,9 +644,9 @@ class Sections extends Component
 
                 if ($siteIds) {
                     Craft::$app->getTasks()->queueTask([
-                        'type' => ResaveElements::className(),
+                        'type' => ResaveElements::class,
                         'description' => Craft::t('app', 'Resaving {section} entries', ['section' => $section->name]),
-                        'elementType' => Entry::className(),
+                        'elementType' => Entry::class,
                         'criteria' => [
                             'siteId' => $siteIds[0],
                             'sectionId' => $section->id,

@@ -471,9 +471,9 @@ class Sites extends Component
             }
 
             // Re-save all of the localizable elements
-            if (!Craft::$app->getTasks()->areTasksPending(ResaveAllElements::className())) {
+            if (!Craft::$app->getTasks()->areTasksPending(ResaveAllElements::class)) {
                 Craft::$app->getTasks()->queueTask([
-                    'type' => ResaveAllElements::className(),
+                    'type' => ResaveAllElements::class,
                     'siteId' => $this->getPrimarySite()->id,
                     'localizableOnly' => true,
                 ]);

@@ -75,7 +75,7 @@ class GlobalSet extends ActiveRecord
      */
     public function getElement()
     {
-        return $this->hasOne(Element::className(), ['id' => 'id']);
+        return $this->hasOne(Element::class, ['id' => 'id']);
     }
 
     /**
@@ -85,7 +85,7 @@ class GlobalSet extends ActiveRecord
      */
     public function getFieldLayout()
     {
-        return $this->hasOne(FieldLayout::className(),
+        return $this->hasOne(FieldLayout::class,
             ['id' => 'fieldLayoutId']);
     }
 }

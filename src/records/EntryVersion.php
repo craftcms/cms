@@ -63,7 +63,7 @@ class EntryVersion extends ActiveRecord
      */
     public function getEntry()
     {
-        return $this->hasOne(Entry::className(), ['id' => 'entryId']);
+        return $this->hasOne(Entry::class, ['id' => 'entryId']);
     }
 
     /**
@@ -73,7 +73,7 @@ class EntryVersion extends ActiveRecord
      */
     public function getSection()
     {
-        return $this->hasOne(Section::className(), ['id' => 'sectionId']);
+        return $this->hasOne(Section::class, ['id' => 'sectionId']);
     }
 
     /**
@@ -83,7 +83,7 @@ class EntryVersion extends ActiveRecord
      */
     public function getCreator()
     {
-        return $this->hasOne(User::className(), ['id' => 'creatorId']);
+        return $this->hasOne(User::class, ['id' => 'creatorId']);
     }
 
     /**
@@ -93,6 +93,6 @@ class EntryVersion extends ActiveRecord
      */
     public function getSite()
     {
-        return $this->hasOne(Site::className(), ['id' => 'siteId']);
+        return $this->hasOne(Site::class, ['id' => 'siteId']);
     }
 }

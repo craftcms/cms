@@ -1258,7 +1258,7 @@ class View extends \yii\web\View
             }
         } else {
             // Wait around for plugins to actually be loaded, then do it for all Twig environments that have been created.
-            Event::on(Plugins::className(), Plugins::EVENT_AFTER_LOAD_PLUGINS,
+            Event::on(Plugins::class, Plugins::EVENT_AFTER_LOAD_PLUGINS,
                 [$this, 'onPluginsLoaded']);
         }
     }
@@ -1277,7 +1277,7 @@ class View extends \yii\web\View
 
         // Make AppAsset the default dependency
         $depends = (array)ArrayHelper::remove($options, 'depends', [
-            AppAsset::className()
+            AppAsset::class
         ]);
 
         $sourcePath = Craft::getAlias('@app/resources');

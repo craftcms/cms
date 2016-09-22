@@ -163,7 +163,7 @@ class CategoriesController extends Controller
 
         // Group the field layout
         $fieldLayout = Craft::$app->getFields()->assembleLayoutFromPost();
-        $fieldLayout->type = Category::className();
+        $fieldLayout->type = Category::class;
         $group->setFieldLayout($fieldLayout);
 
         // Save it
@@ -268,7 +268,7 @@ class CategoriesController extends Controller
         // ---------------------------------------------------------------------
 
         if ($variables['group']->maxLevels != 1) {
-            $variables['elementType'] = Category::className();
+            $variables['elementType'] = Category::class;
 
             // Define the parent options criteria
             $variables['parentOptionCriteria'] = [

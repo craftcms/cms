@@ -111,9 +111,9 @@ class CategoryGroup_SiteSettings extends Model
     {
         $rules = [
             [['id', 'groupId', 'siteId'], 'number', 'integerOnly' => true],
-            [['siteId'], SiteId::className()],
+            [['siteId'], SiteId::class],
             [['template'], 'string', 'max' => 500],
-            [['uriFormat'], UriFormat::className()]
+            [['uriFormat'], UriFormat::class]
         ];
 
         if ($this->hasUrls) {

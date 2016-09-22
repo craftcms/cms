@@ -100,7 +100,7 @@ class StructureElement extends ActiveRecord
     public static function find()
     {
         /** @var StructuredElementQuery $query */
-        $query = Craft::createObject(StructuredElementQuery::className(), [get_called_class()]);
+        $query = Craft::createObject(StructuredElementQuery::class, [get_called_class()]);
 
         return $query;
     }
@@ -112,7 +112,7 @@ class StructureElement extends ActiveRecord
      */
     public function getStructure()
     {
-        return $this->hasOne(Structure::className(), ['id' => 'structureId']);
+        return $this->hasOne(Structure::class, ['id' => 'structureId']);
     }
 
     /**
@@ -122,7 +122,7 @@ class StructureElement extends ActiveRecord
      */
     public function getElement()
     {
-        return $this->hasOne(Element::className(), ['id' => 'elementId']);
+        return $this->hasOne(Element::class, ['id' => 'elementId']);
     }
 
 
@@ -133,7 +133,7 @@ class StructureElement extends ActiveRecord
     {
         return [
             'tree' => [
-                'class' => NestedSetsBehavior::className(),
+                'class' => NestedSetsBehavior::class,
                 'treeAttribute' => 'root',
                 'leftAttribute' => 'lft',
                 'rightAttribute' => 'rgt',

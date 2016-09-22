@@ -116,14 +116,14 @@ class Volumes extends Component
     public function getAllVolumeTypes()
     {
         $volumeTypes = [
-            Local::className()
+            Local::class
         ];
 
         if (Craft::$app->getEdition() == Craft::Pro) {
             $volumeTypes = array_merge($volumeTypes, [
-                AwsS3::className(),
-                GoogleCloud::className(),
-                Rackspace::className(),
+                AwsS3::class,
+                GoogleCloud::class,
+                Rackspace::class,
             ]);
         }
 

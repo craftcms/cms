@@ -93,7 +93,7 @@ class MigrationManager extends Component
             $this->migrationPath = $migrationPath;
         }
 
-        $this->db = Instance::ensure($this->db, Connection::className());
+        $this->db = Instance::ensure($this->db, Connection::class);
     }
 
     /**

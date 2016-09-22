@@ -66,7 +66,7 @@ class UserGroup extends ActiveRecord
      */
     public function getUsers()
     {
-        return $this->hasMany(User::className(), ['id' => 'userId'])
+        return $this->hasMany(User::class, ['id' => 'userId'])
             ->viaTable('{{%usergroups_users}}', ['groupId' => 'id']);
     }
 }

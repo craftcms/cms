@@ -77,7 +77,7 @@ abstract class SavableComponent extends Component implements SavableComponentInt
         $names = [];
 
         foreach ($class->getProperties(\ReflectionProperty::IS_PUBLIC) as $property) {
-            if (!$property->isStatic() && $property->getDeclaringClass()->getName() === static::className()) {
+            if (!$property->isStatic() && $property->getDeclaringClass()->getName() === static::class) {
                 $names[] = $property->getName();
             }
         }

@@ -130,7 +130,7 @@ class Category extends Element
 
         if (!empty($group)) {
             // Set Status
-            $actions[] = SetStatus::className();
+            $actions[] = SetStatus::class;
 
             // View
             // They are viewing a specific category group. See if it has URLs for the requested site
@@ -139,7 +139,7 @@ class Category extends Element
                 $siteId = $controller->getElementQuery()->siteId ?: Craft::$app->getSites()->currentSite->id;
                 if (isset($group->siteSettings[$siteId]) && $group->siteSettings[$siteId]->hasUrls) {
                     $actions[] = Craft::$app->getElements()->createAction([
-                        'type' => View::className(),
+                        'type' => View::class,
                         'label' => Craft::t('app', 'View category'),
                     ]);
                 }
@@ -147,7 +147,7 @@ class Category extends Element
 
             // Edit
             $actions[] = Craft::$app->getElements()->createAction([
-                'type' => Edit::className(),
+                'type' => Edit::class,
                 'label' => Craft::t('app', 'Edit category'),
             ]);
 
@@ -156,7 +156,7 @@ class Category extends Element
 
             if ($structure) {
                 $actions[] = Craft::$app->getElements()->createAction([
-                    'type' => NewChild::className(),
+                    'type' => NewChild::class,
                     'label' => Craft::t('app', 'Create a new child category'),
                     'maxLevels' => $structure->maxLevels,
                     'newChildUrl' => 'categories/'.$group->handle.'/new',
@@ -165,7 +165,7 @@ class Category extends Element
 
             // Delete
             $actions[] = Craft::$app->getElements()->createAction([
-                'type' => Delete::className(),
+                'type' => Delete::class,
                 'confirmationMessage' => Craft::t('app', 'Are you sure you want to delete the selected categories?'),
                 'successMessage' => Craft::t('app', 'Categories deleted.'),
             ]);
