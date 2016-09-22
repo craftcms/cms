@@ -57,6 +57,16 @@ class Plugins extends Component
      */
     const EVENT_AFTER_ENABLE_PLUGIN = 'afterEnablePlugin';
 
+    /**
+     * @event PluginEvent The event that is triggered before a plugin is disabled
+     */
+    const EVENT_BEFORE_DISABLE_PLUGIN = 'beforeDisablePlugin';
+
+    /**
+     * @event PluginEvent The event that is triggered before a plugin is disabled
+     */
+    const EVENT_AFTER_DISABLE_PLUGIN = 'afterDisablePlugin';
+
     // Properties
     // =========================================================================
 
@@ -265,6 +275,11 @@ class Plugins extends Component
             $this->_noPluginExists($handle);
         }
 
+        // Fire a 'beforeDisablePlugin' event
+        $this->trigger(self::EVENT_BEFORE_DISABLE_PLUGIN, new PluginEvent([
+            'plugin' => $plugin
+        ]));
+
         Craft::$app->getDb()->createCommand()
             ->update(
                 '{{%plugins}}',
@@ -274,6 +289,11 @@ class Plugins extends Component
 
         $this->_installedPluginInfo[$handle]['enabled'] = false;
         $this->_unregisterPlugin($handle);
+
+        // Fire an 'afterDisablePlugin' event
+        $this->trigger(self::EVENT_AFTER_DISABLE_PLUGIN, new PluginEvent([
+            'plugin' => $plugin
+        ]));
 
         return true;
     }
