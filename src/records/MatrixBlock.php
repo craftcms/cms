@@ -9,6 +9,7 @@ namespace craft\app\records;
 
 use yii\db\ActiveQueryInterface;
 use craft\app\db\ActiveRecord;
+use craft\app\validators\SiteId as SiteIdValidator;
 
 /**
  * Class MatrixBlock record.
@@ -40,7 +41,7 @@ class MatrixBlock extends ActiveRecord
     public function rules()
     {
         return [
-            [['ownerSiteId'], 'craft\\app\\validators\\SiteId'],
+            [['ownerSiteId'], SiteIdValidator::class],
         ];
     }
 

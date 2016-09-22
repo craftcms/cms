@@ -8,6 +8,7 @@
 namespace craft\app\models;
 
 use craft\app\base\Model;
+use craft\app\validators\DateTime as DateTimeValidator;
 
 /**
  * Class AssetTransformIndex model.
@@ -140,9 +141,7 @@ class AssetTransformIndex extends Model
                 'max' => 2147483647,
                 'integerOnly' => true
             ],
-            [['dateIndexed'], 'craft\\app\\validators\\DateTime'],
-            [['dateUpdated'], 'craft\\app\\validators\\DateTime'],
-            [['dateCreated'], 'craft\\app\\validators\\DateTime'],
+            [['dateIndexed', 'dateUpdated', 'dateCreated'], DateTimeValidator::class],
             [
                 ['detectedFormat'],
                 'number',

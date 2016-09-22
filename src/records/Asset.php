@@ -9,6 +9,7 @@ namespace craft\app\records;
 
 use yii\db\ActiveQueryInterface;
 use craft\app\db\ActiveRecord;
+use craft\app\validators\DateTime as DateTimeValidator;
 
 /**
  * Class Asset record.
@@ -63,7 +64,7 @@ class Asset extends ActiveRecord
                 'max' => 18446744073709551615,
                 'integerOnly' => true
             ],
-            [['dateModified'], 'craft\\app\\validators\\DateTime'],
+            [['dateModified'], DateTimeValidator::class],
             [
                 ['filename'],
                 'unique',

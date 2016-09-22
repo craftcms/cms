@@ -9,6 +9,7 @@ namespace craft\app\records;
 
 use yii\db\ActiveQueryInterface;
 use craft\app\db\ActiveRecord;
+use craft\app\validators\Handle as HandleValidator;
 
 /**
  * Class Volume record.
@@ -42,7 +43,7 @@ class Volume extends ActiveRecord
         return [
             [
                 ['handle'],
-                'craft\\app\\validators\\Handle',
+                HandleValidator::class,
                 'reservedWords' => [
                     'id',
                     'dateCreated',

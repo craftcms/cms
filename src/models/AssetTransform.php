@@ -9,6 +9,8 @@ namespace craft\app\models;
 
 use Craft;
 use craft\app\base\Model;
+use craft\app\validators\DateTime as DateTimeValidator;
+use craft\app\validators\Handle as HandleValidator;
 
 /**
  * The AssetTransform model class.
@@ -91,7 +93,7 @@ class AssetTransform extends Model
             ],
             [
                 ['handle'],
-                'craft\\app\\validators\\Handle',
+                HandleValidator::class,
                 'reservedWords' => [
                     'id',
                     'dateCreated',
@@ -114,7 +116,7 @@ class AssetTransform extends Model
                 'max' => 2147483647,
                 'integerOnly' => true
             ],
-            [['dimensionChangeTime'], 'craft\\app\\validators\\DateTime'],
+            [['dimensionChangeTime'], DateTimeValidator::class],
             [
                 ['quality'],
                 'number',

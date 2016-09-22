@@ -8,6 +8,8 @@
 namespace craft\app\records;
 
 use craft\app\db\ActiveRecord;
+use craft\app\validators\Handle as HandleValidator;
+use craft\app\validators\DateTime as DateTimeValidator;
 
 /**
  * Class AssetTransform record.
@@ -39,7 +41,7 @@ class AssetTransform extends ActiveRecord
         return [
             [
                 ['handle'],
-                'craft\\app\\validators\\Handle',
+                HandleValidator::class,
                 'reservedWords' => [
                     'id',
                     'dateCreated',
@@ -85,7 +87,7 @@ class AssetTransform extends ActiveRecord
                 'max' => 2147483647,
                 'integerOnly' => true
             ],
-            [['dimensionChangeTime'], 'craft\\app\\validators\\DateTime'],
+            [['dimensionChangeTime'], DateTimeValidator::class],
             [['name', 'handle'], 'unique'],
             [['name', 'handle', 'mode', 'position'], 'required'],
             [['handle'], 'string', 'max' => 255],

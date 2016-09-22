@@ -11,6 +11,7 @@ use craft\app\base\Model;
 use craft\app\helpers\DateTimeHelper;
 use craft\app\helpers\Db;
 use craft\app\helpers\Json;
+use craft\app\validators\DateTime as DateTimeValidator;
 
 /**
  * Class Et model.
@@ -153,7 +154,7 @@ class Et extends Model
     {
         return [
             [['licensedEdition'], 'in', 'range' => [0, 1, 2]],
-            [['requestTime'], 'craft\\app\\validators\\DateTime'],
+            [['requestTime'], DateTimeValidator::class],
             [
                 ['localBuild'],
                 'number',

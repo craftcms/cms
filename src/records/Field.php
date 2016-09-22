@@ -10,6 +10,7 @@ namespace craft\app\records;
 use yii\db\ActiveQueryInterface;
 use Craft;
 use craft\app\db\ActiveRecord;
+use craft\app\validators\Handle as HandleValidator;
 
 /**
  * Class Field record.
@@ -95,7 +96,7 @@ class Field extends ActiveRecord
         return [
             [
                 ['handle'],
-                'craft\\app\\validators\\Handle',
+                HandleValidator::class,
                 'reservedWords' => [
                     'archived',
                     'children',

@@ -8,6 +8,7 @@
 namespace craft\app\models;
 
 use craft\app\base\Model;
+use craft\app\validators\DateTime as DateTimeValidator;
 
 /**
  * Stores the info for a plugin release.
@@ -70,7 +71,7 @@ class PluginNewRelease extends Model
     public function rules()
     {
         return [
-            [['date'], 'craft\\app\\validators\\DateTime'],
+            [['date'], DateTimeValidator::class],
             [
                 ['version', 'date', 'notes', 'critical'],
                 'safe',

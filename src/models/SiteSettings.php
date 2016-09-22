@@ -8,6 +8,7 @@
 namespace craft\app\models;
 
 use craft\app\base\Model;
+use craft\app\validators\Url as UrlValidator;
 
 /**
  * Validates the required Site attributes for the installer.
@@ -42,7 +43,7 @@ class SiteSettings extends Model
             [['siteName', 'siteUrl'], 'required'],
             [
                 ['siteUrl'],
-                'craft\\app\\validators\\Url',
+                UrlValidator::class,
                 'defaultScheme' => 'http'
             ],
             [['siteName', 'siteUrl'], 'string', 'max' => 255],

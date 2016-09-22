@@ -9,6 +9,7 @@ namespace craft\app\records;
 
 use yii\db\ActiveQueryInterface;
 use craft\app\db\ActiveRecord;
+use craft\app\validators\DateTime as DateTimeValidator;
 
 /**
  * Class Plugin record.
@@ -35,7 +36,7 @@ class Plugin extends ActiveRecord
     public function rules()
     {
         return [
-            [['installDate'], 'craft\\app\\validators\\DateTime'],
+            [['installDate'], DateTimeValidator::class],
             [['class', 'version', 'installDate'], 'required'],
             [['class'], 'string', 'max' => 150],
             [['version'], 'string', 'max' => 15],

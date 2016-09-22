@@ -8,6 +8,7 @@
 namespace craft\app\models;
 
 use craft\app\base\Model;
+use craft\app\validators\DateTime as DateTimeValidator;
 
 /**
  * Class LogEntry model.
@@ -79,7 +80,7 @@ class LogEntry extends Model
     public function rules()
     {
         return [
-            [['dateTime'], 'craft\\app\\validators\\DateTime'],
+            [['dateTime'], DateTimeValidator::class],
             [
                 ['category'],
                 'number',

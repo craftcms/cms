@@ -9,6 +9,7 @@ namespace craft\app\records;
 
 use yii\db\ActiveQueryInterface;
 use craft\app\db\ActiveRecord;
+use craft\app\validators\SiteId as SiteIdValidator;
 
 /**
  * Class Route record.
@@ -35,7 +36,7 @@ class Route extends ActiveRecord
     public function rules()
     {
         return [
-            [['siteId'], 'craft\\app\\validators\\SiteId'],
+            [['siteId'], SiteIdValidator::class],
             [['urlPattern'], 'unique'],
             [['urlParts', 'urlPattern', 'template'], 'required'],
         ];

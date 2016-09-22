@@ -9,6 +9,7 @@ namespace craft\app\records;
 
 use yii\db\ActiveQueryInterface;
 use craft\app\db\ActiveRecord;
+use craft\app\validators\SiteId as SiteIdValidator;
 
 /**
  * Class EntryVersion record.
@@ -40,7 +41,7 @@ class EntryVersion extends ActiveRecord
     public function rules()
     {
         return [
-            [['siteId'], 'craft\\app\\validators\\SiteId'],
+            [['siteId'], SiteIdValidator::class],
             [['num'], 'number', 'min' => 0, 'max' => 65535, 'integerOnly' => true],
             [['siteId', 'num', 'data'], 'required'],
         ];

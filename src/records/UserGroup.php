@@ -8,6 +8,7 @@
 namespace craft\app\records;
 
 use craft\app\db\ActiveRecord;
+use craft\app\validators\Handle as HandleValidator;
 use yii\db\ActiveQueryInterface;
 
 /**
@@ -34,7 +35,7 @@ class UserGroup extends ActiveRecord
         return [
             [
                 ['handle'],
-                'craft\\app\\validators\\Handle',
+                HandleValidator::class,
                 'reservedWords' => [
                     'id',
                     'dateCreated',

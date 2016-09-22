@@ -8,6 +8,7 @@
 namespace craft\app\models;
 
 use craft\app\base\Model;
+use craft\app\validators\DateTime as DateTimeValidator;
 
 /**
  * Class Info model.
@@ -147,7 +148,7 @@ class Info extends Model
                 'max' => 2147483647,
                 'integerOnly' => true
             ],
-            [['releaseDate'], 'craft\\app\\validators\\DateTime'],
+            [['releaseDate'], DateTimeValidator::class],
             [
                 [
                     'version',

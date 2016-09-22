@@ -8,6 +8,7 @@
 namespace craft\app\models;
 
 use craft\app\base\Model;
+use craft\app\validators\DateTime as DateTimeValidator;
 
 /**
  * Stores the available Craft update info.
@@ -145,8 +146,7 @@ class AppUpdate extends Model
     public function rules()
     {
         return [
-            [['latestDate'], 'craft\\app\\validators\\DateTime'],
-            [['realLatestDate'], 'craft\\app\\validators\\DateTime'],
+            [['latestDate', 'realLatestDate'], DateTimeValidator::class],
             [
                 [
                     'localBuild',

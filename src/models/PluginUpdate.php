@@ -8,6 +8,7 @@
 namespace craft\app\models;
 
 use craft\app\base\Model;
+use craft\app\validators\DateTime as DateTimeValidator;
 
 /**
  * Stores the available plugin update info.
@@ -117,7 +118,7 @@ class PluginUpdate extends Model
     public function rules()
     {
         return [
-            [['latestDate'], 'craft\\app\\validators\\DateTime'],
+            [['latestDate'], DateTimeValidator::class],
             [
                 ['status'],
                 'in',

@@ -9,6 +9,7 @@ namespace craft\app\records;
 
 use yii\db\ActiveQueryInterface;
 use craft\app\db\ActiveRecord;
+use craft\app\validators\DateTime as DateTimeValidator;
 
 /**
  * Class AssetIndexData record.
@@ -58,7 +59,7 @@ class AssetIndexData extends ActiveRecord
                 'max' => 18446744073709551615,
                 'integerOnly' => true
             ],
-            [['timestamp'], 'craft\\app\\validators\\DateTime'],
+            [['timestamp'], DateTimeValidator::class],
             [
                 ['recordId'],
                 'number',
