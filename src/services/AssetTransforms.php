@@ -12,7 +12,6 @@ use craft\app\db\Query;
 use craft\app\dates\DateTime;
 use craft\app\elements\Asset;
 use craft\app\errors\VolumeObjectExistsException;
-use craft\app\events\AssetTransformDeleteEvent;
 use craft\app\events\AssetTransformEvent;
 use craft\app\helpers\Assets as AssetsHelper;
 use craft\app\helpers\Db;
@@ -45,28 +44,24 @@ class AssetTransforms extends Component
     // =========================================================================
 
     /**
-    * @event AssetTransformEvent The event that is triggered before an asset transform is saved.
-    *
-    * You may set [[AssetTransformEvent::isValid]] to `false` to prevent the asset transform from being saved.
-    */
-   const EVENT_BEFORE_SAVE_ASSET_TRANSFORM = 'beforeSaveAssetTransform';
-
-   /**
-    * @event AssetTransformEvent The event that is triggered after an asset transform is saved.
-    */
-   const EVENT_AFTER_SAVE_ASSET_TRANSFORM = 'afterSaveAssetTransform';
+     * @event AssetTransformEvent The event that is triggered before an asset transform is saved
+     */
+    const EVENT_BEFORE_SAVE_ASSET_TRANSFORM = 'beforeSaveAssetTransform';
 
     /**
-    * @event AssetTransformEvent The event that is triggered before an asset transform is deleted.
-    *
-    * You may set [[AssetTransformEvent::isValid]] to `false` to prevent the asset transform from being deleted.
-    */
-   const EVENT_BEFORE_DELETE_ASSET_TRANSFORM = 'beforeDeleteAssetTransform';
+     * @event AssetTransformEvent The event that is triggered after an asset transform is saved
+     */
+    const EVENT_AFTER_SAVE_ASSET_TRANSFORM = 'afterSaveAssetTransform';
 
-   /**
-    * @event AssetTransformEvent The event that is triggered after an asset transform is deleted.
-    */
-   const EVENT_AFTER_DELETE_ASSET_TRANSFORM = 'afterDeleteAssetTransform';
+    /**
+     * @event AssetTransformEvent The event that is triggered before an asset transform is deleted
+     */
+    const EVENT_BEFORE_DELETE_ASSET_TRANSFORM = 'beforeDeleteAssetTransform';
+
+    /**
+     * @event AssetTransformEvent The event that is triggered after an asset transform is deleted
+     */
+    const EVENT_AFTER_DELETE_ASSET_TRANSFORM = 'afterDeleteAssetTransform';
 
     // Properties
     // =========================================================================
@@ -197,19 +192,31 @@ class AssetTransforms extends Component
     /**
      * Saves an asset transform.
      *
-     * @param AssetTransform $transform
+     * @param AssetTransform $transform     The transform to be saved
+     * @param boolean        $runValidation Whether the transform should be validated
      *
      * @throws AssetTransformException If attempting to update a non-existing transform.
      * @throws ValidationException     If the validation failed.
      * @return boolean
      */
-    public function saveTransform(AssetTransform $transform)
+    public function saveTransform(AssetTransform $transform, $runValidation = true)
     {
-        $isNew = !$transform->id;
+        if ($runValidation && !$transform->validate()) {
+            Craft::info('Asset transform not saved due to validation error.', __METHOD__);
 
-        if ($isNew) {
+            return false;
+        }
+
+        $isNewTransform = !$transform->id;
+
+        // Fire a 'beforeSaveAssetTransform' event
+        $this->trigger(self::EVENT_BEFORE_SAVE_ASSET_TRANSFORM, new AssetTransformEvent([
+            'assetTransform' => $transform,
+            'isNew' => $isNewTransform,
+        ]));
+
+        if ($isNewTransform) {
             $transformRecord = new AssetTransformRecord();
-
         } else {
             $transformRecord = AssetTransformRecord::findOne($transform->id);
 
@@ -238,42 +245,20 @@ class AssetTransforms extends Component
         $transformRecord->quality = $transform->quality;
         $transformRecord->format = $transform->format;
 
-        $transformRecord->validate();
-        $transform->addErrors($transformRecord->getErrors());
+        $transformRecord->save(false);
 
-        if ($transform->hasErrors()) {
-            return false;
+        // Now that we have a transform ID, save it on the model
+        if (!$transform->id) {
+            $transform->id = $transformRecord->id;
         }
 
-        // Fire a 'beforeSaveAssetTransform' event
-        $event = new AssetTransformEvent([
+        // Fire an 'afterSaveAssetTransform' event
+        $this->trigger(self::EVENT_AFTER_SAVE_ASSET_TRANSFORM, new AssetTransformEvent([
             'assetTransform' => $transform,
-            'isNew' => $isNew,
-        ]);
+            'isNew' => $transform,
+        ]));
 
-        $this->trigger(self::EVENT_BEFORE_SAVE_ASSET_TRANSFORM, $event);
-
-        // Is the event giving us the go-ahead?
-        if ($event->isValid) {
-            if ($transformRecord->save()) {
-
-                // Now that we have a transform ID, save it on the model
-                if (!$transform->id) {
-                    $transform->id = $transformRecord->id;
-                }
-
-                // Fire an 'afterSaveAssetTransform' event
-                $this->trigger(self::EVENT_AFTER_SAVE_ASSET_TRANSFORM,
-                    new AssetTransformEvent([
-                        'assetTransform' => $transform,
-                        'isNew' => $transform,
-                    ]));
-
-                return true;
-            }
-        }
-
-        return false;
+        return true;
     }
 
     /**
@@ -288,31 +273,22 @@ class AssetTransforms extends Component
         $transform = $this->getTransformById($transformId);
 
         // Fire a 'beforeDeleteAssetTransform' event
-        $event = new AssetTransformDeleteEvent([
+        $this->trigger(self::EVENT_BEFORE_DELETE_ASSET_TRANSFORM, new AssetTransformEvent([
             'assetTransform' => $transform
-        ]);
+        ]));
 
-        $this->trigger(self::EVENT_BEFORE_SAVE_ASSET_TRANSFORM, $event);
+        Craft::$app->getDb()->createCommand()
+            ->delete(
+                '{{%assettransforms}}',
+                ['id' => $transformId])
+            ->execute();
 
-        // Is the event giving us the go-ahead?
-        if ($event->isValid) {
-            Craft::$app->getDb()->createCommand()
-                ->delete(
-                    '{{%assettransforms}}',
-                    ['id' => $transformId])
-                ->execute();
+        // Fire an 'afterDeleteAssetTransform' event
+        $this->trigger(self::EVENT_AFTER_DELETE_ASSET_TRANSFORM, new AssetTransformEvent([
+            'assetTransform' => $transform
+        ]));
 
-            // Fire an 'afterDeleteAssetTransform' event
-            $this->trigger(self::EVENT_AFTER_DELETE_ASSET_TRANSFORM,
-                new AssetTransformDeleteEvent([
-                    'assetTransform' => $transform
-                ]));
-
-            return true;
-
-        }
-
-        return false;
+        return true;
     }
 
     /**
@@ -1138,7 +1114,6 @@ class AssetTransforms extends Component
                 }
             }
         }
-
     }
 
     /**
