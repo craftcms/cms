@@ -57,17 +57,13 @@ class User extends ActiveRecord
     public function rules()
     {
         return [
-            [['lastLoginDate', 'invalidLoginWindowStart', 'lastInvalidLoginDate', 'lockoutDate', 'lastPasswordChangeDate'], DateTimeValidator::class],
+            [['lastLoginDate', 'invalidLoginWindowStart', 'lastInvalidLoginDate', 'lockoutDate', 'lastPasswordChangeDate', 'verificationCodeIssuedDate'], DateTimeValidator::class],
             [
                 ['invalidLoginCount'],
                 'number',
                 'min' => 0,
                 'max' => 255,
                 'integerOnly' => true
-            ],
-            [
-                ['verificationCodeIssuedDate'],
-                'craft\\app\\validators\\DateTime'
             ],
             [['username', 'email'], 'unique'],
             [['username', 'email'], 'required'],
