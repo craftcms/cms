@@ -868,7 +868,7 @@ class Sections extends Component
      * Saves an entry type.
      *
      * @param EntryType $entryType     The entry type to be saved
-     * @param boolean   $runValidation Whether the section should be validated
+     * @param boolean   $runValidation Whether the entry type should be validated
      *
      * @return boolean Whether the entry type was saved successfully
      * @throws EntryTypeNotFoundException if $entryType->id is invalid

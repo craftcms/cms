@@ -370,7 +370,7 @@ class Sites extends Component
      * Saves a site.
      *
      * @param Site    $site          The site to be saved
-     * @param boolean $runValidation Whether the section should be validated
+     * @param boolean $runValidation Whether the site should be validated
      *
      * @return boolean
      * @throws SiteNotFoundException if $site->id is invalid

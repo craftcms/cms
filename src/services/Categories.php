@@ -689,7 +689,7 @@ class Categories extends Component
      * Saves a category.
      *
      * @param Category $category
-     * @param boolean $runValidation Whether the section should be validated
+     * @param boolean $runValidation Whether the category should be validated
      *
      * @return boolean Whether the category was saved successfully
      * @throws CategoryNotFoundException if $category has an invalid $id or invalid $newParentID
