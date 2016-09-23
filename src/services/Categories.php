@@ -72,8 +72,6 @@ class Categories extends Component
      * @event CategoryGroupEvent The event that is triggered before a category group is deleted.
      */
     const EVENT_BEFORE_DELETE_GROUP = 'beforeDeleteGroup';
-     *
-     * You may set [[CategoryEvent::isValid]] to `false` to prevent the category group from getting saved.
 
     /**
      * @event CategoryGroupEvent The event that is triggered after a category group is deleted.
@@ -318,7 +316,15 @@ class Categories extends Component
             return false;
         }
 
-        if ($group->id) {
+        $isNewCategoryGroup = !$group->id;
+
+        // Fire a 'beforeSaveGroup' event
+        $this->trigger(self::EVENT_BEFORE_SAVE_GROUP, new CategoryGroupEvent([
+            'categoryGroup' => $group,
+            'isNew' => $isNewCategoryGroup,
+        ]));
+
+        if (!$isNewCategoryGroup) {
             $groupRecord = CategoryGroupRecord::findOne($group->id);
 
             if (!$groupRecord) {
@@ -327,10 +333,8 @@ class Categories extends Component
 
             /** @var CategoryGroup $oldCategoryGroup */
             $oldCategoryGroup = CategoryGroup::create($groupRecord);
-            $isNewCategoryGroup = false;
         } else {
             $groupRecord = new CategoryGroupRecord();
-            $isNewCategoryGroup = true;
         }
 
         // If they've set maxLevels to 0 (don't ask why), then pretend like there are none.
@@ -350,12 +354,6 @@ class Categories extends Component
                 throw new Exception('Tried to save a category group that is missing site settings');
             }
         }
-
-        // Fire a 'beforeSaveGroup' event
-        $this->trigger(self::EVENT_BEFORE_SAVE_GROUP, new CategoryGroupEvent([
-            'categoryGroup' => $group,
-            'isNew' => $isNewCategoryGroup,
-        ]));
 
         $db = Craft::$app->getDb();
         $transaction = $db->beginTransaction();
