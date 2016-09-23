@@ -12,7 +12,7 @@ use craft\app\base\Model;
 use craft\app\behaviors\FieldLayoutTrait;
 use craft\app\helpers\Url;
 use craft\app\records\EntryType as EntryTypeRecord;
-use craft\app\validators\Handle as HandleValidator;
+use craft\app\validators\HandleValidator;
 use craft\app\validators\Unique as UniqueValidator;
 
 /**

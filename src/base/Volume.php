@@ -16,7 +16,7 @@ use Craft;
 use craft\app\behaviors\FieldLayoutTrait;
 use craft\app\errors\VolumeObjectExistsException;
 use craft\app\errors\VolumeObjectNotFoundException;
-use craft\app\validators\Handle as HandleValidator;
+use craft\app\validators\HandleValidator;
 use League\Flysystem\AdapterInterface;
 use League\Flysystem\FileExistsException;
 use League\Flysystem\FileNotFoundException;

@@ -11,7 +11,7 @@ use Craft;
 use craft\app\base\Model;
 use craft\app\behaviors\FieldLayoutTrait;
 use craft\app\records\CategoryGroup as CategoryGroupRecord;
-use craft\app\validators\Handle;
+use craft\app\validators\HandleValidator;
 use craft\app\validators\Unique;
 
 /**
@@ -90,7 +90,7 @@ class CategoryGroup extends Model
     {
         return [
             [['id', 'structureId', 'fieldLayoutId', 'maxLevels'], 'number', 'integerOnly' => true],
-            [['handle'], Handle::class, 'reservedWords' => ['id', 'dateCreated', 'dateUpdated', 'uid', 'title']],
+            [['handle'], HandleValidator::class, 'reservedWords' => ['id', 'dateCreated', 'dateUpdated', 'uid', 'title']],
             [['name', 'handle'], Unique::class, 'targetClass' => CategoryGroupRecord::class],
             [['name', 'handle', 'siteSettings'], 'required'],
             [['name', 'handle'], 'string', 'max' => 255],

@@ -9,7 +9,7 @@ namespace craft\app\models;
 
 use Craft;
 use craft\app\base\Model;
-use craft\app\validators\Handle;
+use craft\app\validators\HandleValidator;
 use craft\app\records\Section as SectionRecord;
 use craft\app\validators\Unique;
 
@@ -88,7 +88,7 @@ class Section extends Model
     {
         return [
             [['id', 'structureId', 'maxLevels'], 'number', 'integerOnly' => true],
-            [['handle'], Handle::class, 'reservedWords' => ['id', 'dateCreated', 'dateUpdated', 'uid', 'title']],
+            [['handle'], HandleValidator::class, 'reservedWords' => ['id', 'dateCreated', 'dateUpdated', 'uid', 'title']],
             [['type'], 'in', 'range' => ['single', 'channel', 'structure']],
             [['name', 'handle'], Unique::class, 'targetClass' => SectionRecord::class],
             [['name', 'handle', 'type', 'siteSettings'], 'required'],

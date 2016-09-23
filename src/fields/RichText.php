@@ -19,7 +19,7 @@ use craft\app\helpers\Io;
 use craft\app\helpers\Json;
 use craft\app\helpers\StringHelper;
 use craft\app\models\Section;
-use craft\app\validators\Handle;
+use craft\app\validators\HandleValidator;
 use yii\base\Exception;
 use yii\db\Schema;
 
@@ -198,7 +198,7 @@ class RichText extends Field
 
         if (StringHelper::contains($value, '{')) {
             // Preserve the ref tags with hashes {type:id:url} => {type:id:url}#type:id
-            $value = preg_replace_callback('/(href=|src=)([\'"])(\{(\w+\:\d+\:'.Handle::$handlePattern.')\})(#[^\'"#]+)?\2/',
+            $value = preg_replace_callback('/(href=|src=)([\'"])(\{(\w+\:\d+\:'.HandleValidator::$handlePattern.')\})(#[^\'"#]+)?\2/',
                 function ($matches) {
                     return $matches[1].$matches[2].$matches[3].(!empty($matches[5]) ? $matches[5] : '').'#'.$matches[4].$matches[2];
                 }, $value);
@@ -288,7 +288,7 @@ class RichText extends Field
 
         // Find any element URLs and swap them with ref tags
         $value = preg_replace_callback(
-            '/(href=|src=)([\'"])[^\'"#]+?(#[^\'"#]+)?(?:#|%23)(\w+):(\d+)(:'.Handle::$handlePattern.')?\2/',
+            '/(href=|src=)([\'"])[^\'"#]+?(#[^\'"#]+)?(?:#|%23)(\w+):(\d+)(:'.HandleValidator::$handlePattern.')?\2/',
             function ($matches) {
                 $refTag = '{'.$matches[4].':'.$matches[5].(!empty($matches[6]) ? $matches[6] : ':url').'}';
                 $hash = (!empty($matches[3]) ? $matches[3] : '');

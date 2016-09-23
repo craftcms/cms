@@ -8,7 +8,7 @@
 namespace craft\app\records;
 
 use craft\app\db\ActiveRecord;
-use craft\app\validators\Handle as HandleValidator;
+use craft\app\validators\HandleValidator;
 use craft\app\validators\DateTimeValidator;
 
 /**

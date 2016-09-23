@@ -10,7 +10,7 @@ namespace craft\app\records;
 use yii\db\ActiveQueryInterface;
 use Craft;
 use craft\app\db\ActiveRecord;
-use craft\app\validators\Handle as HandleValidator;
+use craft\app\validators\HandleValidator;
 
 /**
  * Class Field record.

@@ -10,7 +10,7 @@ namespace craft\app\models;
 use Craft;
 use craft\app\base\Model;
 use craft\app\validators\DateTimeValidator;
-use craft\app\validators\Handle as HandleValidator;
+use craft\app\validators\HandleValidator;
 
 /**
  * The AssetTransform model class.

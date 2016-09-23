@@ -14,7 +14,7 @@ use craft\app\behaviors\FieldLayoutTrait;
 use craft\app\elements\db\GlobalSetQuery;
 use craft\app\helpers\Url;
 use craft\app\records\GlobalSet as GlobalSetRecord;
-use craft\app\validators\Handle as HandleValidator;
+use craft\app\validators\HandleValidator;
 use craft\app\validators\Unique as UniqueValidator;
 
 /**

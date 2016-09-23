@@ -12,12 +12,12 @@ use craft\app\helpers\StringHelper;
 use yii\validators\Validator;
 
 /**
- * Class Handle validator.
+ * Class HandleValidator.
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since  3.0
  */
-class Handle extends Validator
+class HandleValidator extends Validator
 {
     // Static
     // =========================================================================
