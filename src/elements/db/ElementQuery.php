@@ -198,7 +198,7 @@ class ElementQuery extends Query implements ElementQueryInterface, Arrayable, Co
     /**
      * @inheritdoc
      */
-    public $orderBy = 'elements.dateCreated desc';
+    public $orderBy;
 
     // Structure parameters
     // -------------------------------------------------------------------------
@@ -1724,15 +1724,23 @@ class ElementQuery extends Query implements ElementQueryInterface, Arrayable, Co
             return;
         }
 
-        if ($this->fixedOrder) {
-            $ids = ArrayHelper::toArray($this->id);
+        if ($this->orderBy === null) {
+            if ($this->fixedOrder) {
+                $ids = ArrayHelper::toArray($this->id);
 
-            if (!$ids) {
-                throw new QueryAbortedException;
+                if (!$ids) {
+                    throw new QueryAbortedException;
+                }
+
+                $this->orderBy = [new FixedOrderExpression('elements.id', $ids, $db)];
+            } else if ($this->structureId) {
+                $this->orderBy = 'structureelements.lft';
+            } else {
+                $this->orderBy = 'elements.dateCreated desc';
             }
+        }
 
-            $orderBy = [new FixedOrderExpression('elements.id', $ids, $db)];
-        } else if (!empty($this->orderBy) && $this->orderBy !== ['score' => SORT_ASC] && empty($this->query->orderBy)) {
+        if (!empty($this->orderBy) && $this->orderBy !== ['score' => SORT_ASC] && empty($this->query->orderBy)) {
             // In case $this->orderBy was set directly instead of via orderBy()
             $orderBy = $this->normalizeOrderBy($this->orderBy);
             $orderByColumns = array_keys($orderBy);
@@ -1761,8 +1769,6 @@ class ElementQuery extends Query implements ElementQueryInterface, Arrayable, Co
                     $orderBy = array_combine($orderByColumns, $orderBy);
                 }
             }
-        } else if ($this->structureId) {
-            $orderBy = 'structureelements.lft';
         }
 
         if (!empty($orderBy)) {
