@@ -13,7 +13,6 @@ use craft\app\errors\CategoryGroupNotFoundException;
 use craft\app\errors\CategoryNotFoundException;
 use craft\app\events\CategoryEvent;
 use craft\app\elements\Category;
-use craft\app\events\CategoryGroupDeleteEvent;
 use craft\app\events\CategoryGroupEvent;
 use craft\app\models\CategoryGroup;
 use craft\app\models\CategoryGroup_SiteSettings;
@@ -568,16 +567,9 @@ class Categories extends Component
         }
 
         // Fire a 'beforeDeleteGroup' event
-        $event = new CategoryGroupDeleteEvent([
+        $this->trigger(self::EVENT_BEFORE_DELETE_GROUP, new CategoryGroupEvent([
             'categoryGroup' => $group
-        ]);
-
-        $this->trigger(self::EVENT_BEFORE_DELETE_GROUP, $event);
-
-        // Make sure the event is giving us the go ahead
-        if (!$event->isValid) {
-            return false;
-        }
+        ]));
 
         $transaction = Craft::$app->getDb()->beginTransaction();
         try {
@@ -608,19 +600,18 @@ class Categories extends Component
                 ->execute();
 
             $transaction->commit();
-
-            // Fire an 'afterDeleteGroup' event
-            $this->trigger(self::EVENT_AFTER_DELETE_GROUP,
-                new CategoryGroupDeleteEvent([
-                    'categoryGroup' => $group
-                ]));
-
-            return true;
         } catch (\Exception $e) {
             $transaction->rollBack();
 
             throw $e;
         }
+
+        // Fire an 'afterDeleteGroup' event
+        $this->trigger(self::EVENT_AFTER_DELETE_GROUP, new CategoryGroupEvent([
+            'categoryGroup' => $group
+        ]));
+
+        return true;
     }
 
     /**
