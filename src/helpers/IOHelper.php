@@ -450,6 +450,8 @@ class IOHelper
 	 */
 	public static function normalizePathSeparators($path)
 	{
+		$isUNC = false;
+
 		// Special case for normalizing UNC network share paths.
 		if (isset($path[0]) && isset($path[1]))
 		{
@@ -460,13 +462,17 @@ class IOHelper
 
 				// Add the share back in
 				$path = '\\\\'.$path;
+				$isUNC = true;
 			}
 		}
-		else
+
+		if (!$isUNC)
 		{
+			// Make everything forward slash.
 			$path = str_replace('\\', '/', $path);
 		}
 
+		// Replace any double forwards with singles.
 		$path = str_replace('//', '/', $path);
 
 		// Check if the path is just a slash.  If the server has openbase_dir restrictions in place calling is_dir on it
@@ -477,7 +483,7 @@ class IOHelper
 			// Always suppress errors here because of openbase_dir, too.
 			if (@is_dir($path))
 			{
-				$path = rtrim($path, '/').'/';
+				$path = rtrim($path, '\/').'/';
 			}
 		}
 
@@ -1108,6 +1114,7 @@ class IOHelper
 	public static function copyFolder($path, $destination, $validate = false, $suppressErrors = false)
 	{
 		$path = static::normalizePathSeparators($path);
+		$destination = static::normalizePathSeparators($destination);
 
 		if (static::folderExists($path, false, $suppressErrors))
 		{
@@ -1117,8 +1124,7 @@ class IOHelper
 			{
 				foreach ($folderContents as $item)
 				{
-					$itemDest = $destination.'/'.str_replace($path, '', $item);
-
+					$itemDest = IOHelper::normalizePathSeparators($destination.'/'.str_replace($path, '', $item));
 					$destFolder = static::getFolderName($itemDest, true, $suppressErrors);
 
 					if (!static::folderExists($destFolder, false, $suppressErrors))
