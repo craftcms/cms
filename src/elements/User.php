@@ -18,7 +18,6 @@ use craft\app\elements\actions\SuspendUsers;
 use craft\app\elements\actions\UnsuspendUsers;
 use craft\app\elements\db\ElementQueryInterface;
 use craft\app\elements\db\UserQuery;
-use craft\app\events\UserLoginFailureEvent;
 use craft\app\helpers\DateTimeHelper;
 use craft\app\helpers\Html;
 use craft\app\helpers\Url;
@@ -49,11 +48,6 @@ class User extends Element implements IdentityInterface
     // =========================================================================
 
     const IMPERSONATE_KEY = 'Craft.UserSessionService.prevImpersonateUserId';
-
-    /**
-     * @event UserLoginFailureEvent The event that is triggered when a user fails to log in.
-     */
-    const EVENT_LOGIN_FAILURE = 'loginFailure';
 
     // User statuses
     // -------------------------------------------------------------------------
@@ -847,10 +841,6 @@ class User extends Element implements IdentityInterface
         if (!$this->authError) {
             return true;
         }
-
-        $this->trigger(self::EVENT_LOGIN_FAILURE, new UserLoginFailureEvent([
-            'user' => $this,
-        ]));
 
         return false;
     }
