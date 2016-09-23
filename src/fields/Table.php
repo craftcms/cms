@@ -1,14 +1,13 @@
 <?php
 /**
- * @link      http://buildwithcraft.com/
- * @copyright Copyright (c) 2015 Pixel & Tonic, Inc.
- * @license   http://buildwithcraft.com/license
+ * @link      https://craftcms.com/
+ * @copyright Copyright (c) Pixel & Tonic, Inc.
+ * @license   https://craftcms.com/license
  */
 
 namespace craft\app\fields;
 
 use Craft;
-use craft\app\base\Element;
 use craft\app\base\ElementInterface;
 use craft\app\base\Field;
 use craft\app\helpers\Json;
@@ -90,12 +89,12 @@ class Table extends Field
             ],
             'handle' => [
                 'heading' => Craft::t('app', 'Handle'),
-                'class' => 'code',
+                'code' => true,
                 'type' => 'singleline'
             ],
             'width' => [
                 'heading' => Craft::t('app', 'Width'),
-                'class' => 'code',
+                'code' => true,
                 'type' => 'singleline',
                 'width' => 50
             ],
@@ -108,6 +107,7 @@ class Table extends Field
                     'multiline' => Craft::t('app', 'Multi-line text'),
                     'number' => Craft::t('app', 'Number'),
                     'checkbox' => Craft::t('app', 'Checkbox'),
+                    'lightswitch' => Craft::t('app', 'Lightswitch'),
                 ]
             ],
         ];
@@ -188,6 +188,8 @@ class Table extends Field
 
             return $value;
         }
+
+        return null;
     }
 
     /**
@@ -228,9 +230,9 @@ class Table extends Field
     /**
      * Returns the field's input HTML.
      *
-     * @param mixed                         $value
-     * @param ElementInterface|Element|null $element
-     * @param boolean                       $static
+     * @param mixed                 $value
+     * @param ElementInterface|null $element
+     * @param boolean               $static
      *
      * @return string
      */
@@ -242,7 +244,7 @@ class Table extends Field
             // Translate the column headings
             foreach ($columns as &$column) {
                 if (!empty($column['heading'])) {
-                    $column['heading'] = Craft::t('app', $column['heading']);
+                    $column['heading'] = Craft::t('site', $column['heading']);
                 }
             }
 
@@ -265,5 +267,7 @@ class Table extends Field
                     'static' => $static
                 ]);
         }
+
+        return null;
     }
 }

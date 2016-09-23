@@ -1,20 +1,20 @@
 <?php
 /**
- * @link      http://buildwithcraft.com/
- * @copyright Copyright (c) 2015 Pixel & Tonic, Inc.
- * @license   http://buildwithcraft.com/license
+ * @link      https://craftcms.com/
+ * @copyright Copyright (c) Pixel & Tonic, Inc.
+ * @license   https://craftcms.com/license
  */
 
 namespace craft\app\services;
 
 use Craft;
+use craft\app\base\Image;
 use craft\app\helpers\App;
 use craft\app\helpers\Image as ImageHelper;
 use craft\app\helpers\Io;
 use craft\app\helpers\StringHelper;
 use craft\app\image\Raster;
 use craft\app\image\Svg;
-use craft\app\base\Image;
 use lsolesen\pel\PelDataWindow;
 use lsolesen\pel\PelJpeg;
 use lsolesen\pel\PelTag;
@@ -25,86 +25,132 @@ use yii\base\Component;
  *
  * An instance of the Images service is globally accessible in Craft via [[Application::images `Craft::$app->getImages()`]].
  *
+ * @property boolean $isGd      Whether image manipulations will be performed using GD or not
+ * @property boolean $isImagick Whether image manipulations will be performed using Imagick or not
+ *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since  3.0
  */
 class Images extends Component
 {
+    // Constants
+    // =========================================================================
+
+    const DRIVER_GD = 'gd';
+    const DRIVER_IMAGICK = 'imagick';
+    const MINIMUM_IMAGICK_VERSION = '6.2.9';
+
     // Properties
     // =========================================================================
 
-    private $_isGd = null;
+    /**
+     * Image driver.
+     *
+     * @var string
+     */
+    private $_driver = '';
+
+    /**
+     * Imagick version being used, if any.
+     *
+     * @var string
+     */
+    private $_imagickVersion = null;
 
     // Public Methods
     // =========================================================================
+
+    /**
+     * Decide on the image driver being used.
+     *
+     * @return void
+     */
+    public function init()
+    {
+        if (strtolower(Craft::$app->getConfig()->get('imageDriver')) == 'gd') {
+            $this->_driver = static::DRIVER_GD;
+        } else if ($this->getIsImagickAtLeast(static::MINIMUM_IMAGICK_VERSION)) {
+            $this->_driver = static::DRIVER_IMAGICK;
+        } else {
+            $this->_driver = static::DRIVER_GD;
+        }
+
+        parent::init();
+    }
 
     /**
      * Returns whether image manipulations will be performed using GD or not.
      *
      * @return boolean|null
      */
-    public function isGd()
+    public function getIsGd()
     {
-        if ($this->_isGd === null) {
-            if (Craft::$app->getConfig()->get('imageDriver') == 'gd') {
-                $this->_isGd = true;
-            } else if (extension_loaded('imagick')) {
-                // Taken from Imagick\Imagine() constructor.
-                $imagick = new \Imagick();
-                $v = $imagick->getVersion();
-                list($version, $year, $month, $day, $q, $website) = sscanf($v['versionString'], 'ImageMagick %s %04d-%02d-%02d %s %s');
-
-                // Update this if Imagine updates theirs.
-                if (version_compare('6.2.9', $version) <= 0) {
-                    $this->_isGd = false;
-                } else {
-                    $this->_isGd = true;
-                }
-            } else {
-                $this->_isGd = true;
-            }
-        }
-
-        return $this->_isGd;
+        return $this->_driver == static::DRIVER_GD;
     }
+
 
     /**
      * Returns whether image manipulations will be performed using Imagick or not.
      *
      * @return boolean
      */
-    public function isImagick()
+    public function getIsImagick()
     {
-        return !$this->isGd();
+        return $this->_driver == static::DRIVER_IMAGICK;
+    }
+
+    /**
+     * Returns whether Imagick is installed and meets version requirements
+     *
+     * @param string $requiredVersion version string
+     *
+     * @return bool
+     */
+    public function getIsImagickAtLeast($requiredVersion)
+    {
+        if (!extension_loaded('imagick'))
+        {
+            return false;
+        }
+
+        if (is_null($this->_imagickVersion))
+        {
+            // Taken from Imagick\Imagine() constructor.
+            // Imagick::getVersion() is static only since Imagick PECL extension 3.2.0b1, so instantiate it.
+            $imagick = new \Imagick();
+            /** @noinspection PhpStaticAsDynamicMethodCallInspection */
+            $v = $imagick->getVersion();
+            /** @noinspection PhpUnusedLocalVariableInspection */
+            list($version, $year, $month, $day, $q, $website) = sscanf($v['versionString'], 'ImageMagick %s %04d-%02d-%02d %s %s');
+
+            $this->_imagickVersion = $version;
+        }
+
+        return version_compare($requiredVersion, $this->_imagickVersion) <= 0;
     }
 
     /**
      * Loads an image from a file system path.
      *
-     * @param string $path
-     * @param bool   $rasterize whether or not the image will be rasterized if it's an SVG
-     * @param int    $svgSize   The size SVG should be scaled up to, if rasterized
+     * @param string  $path
+     * @param boolean $rasterize Whether the image should be rasterized if it's an SVG
+     * @param integer $svgSize   The size SVG should be scaled up to, if rasterized
      *
-     * @throws \Exception
      * @return Image
      */
     public function loadImage($path, $rasterize = false, $svgSize = 1000)
     {
-        if (StringHelper::toLowerCase(Io::getExtension($path)) == 'svg')
-        {
+        if (StringHelper::toLowerCase(Io::getExtension($path)) == 'svg') {
             $image = new Svg();
             $image->loadImage($path);
 
-            if ($rasterize)
-            {
+            if ($rasterize) {
                 $image->scaleToFit($svgSize, $svgSize);
                 $svgString = $image->getSvgString();
                 $image = new Raster();
                 $image->loadFromSVG($svgString);
             }
-        }
-        else
-        {
+        } else {
             $image = new Raster();
             $image->loadImage($path);
         }
@@ -118,7 +164,7 @@ class Images extends Component
      *
      * The code was adapted from http://www.php.net/manual/en/function.imagecreatefromjpeg.php#64155. It will first
      * attempt to do it with available memory. If that fails, Craft will bump the memory to amount defined by the
-     * [phpMaxMemoryLimit](http://buildwithcraft.com/docs/config-settings#phpMaxMemoryLimit) config setting, then try again.
+     * [phpMaxMemoryLimit](http://craftcms.com/docs/config-settings#phpMaxMemoryLimit) config setting, then try again.
      *
      * @param string  $filePath The path to the image file.
      * @param boolean $toTheMax If set to true, will set the PHP memory to the config setting phpMaxMemoryLimit.
@@ -127,8 +173,7 @@ class Images extends Component
      */
     public function checkMemoryForImage($filePath, $toTheMax = false)
     {
-        if (StringHelper::toLowerCase(Io::getExtension($filePath)) == 'svg')
-        {
+        if (StringHelper::toLowerCase(Io::getExtension($filePath)) == 'svg') {
             return true;
         }
 
@@ -230,7 +275,9 @@ class Images extends Component
             return false;
         }
 
-        $image = $this->loadImage($filePath)->rotate($degrees);
+        /** @var Raster $image */
+        $image = $this->loadImage($filePath);
+        $image->rotate($degrees);
 
         return $image->saveAs($filePath, true);
     }
@@ -238,7 +285,7 @@ class Images extends Component
     /**
      * Get EXIF metadata for a file by it's path.
      *
-     * @param $filePath
+     * @param string $filePath
      *
      * @return array
      */
@@ -256,7 +303,7 @@ class Images extends Component
     /**
      * Strip orientation from EXIF data for an image at a path.
      *
-     * @param $filePath
+     * @param string $filePath
      *
      * @return boolean
      */
@@ -264,6 +311,15 @@ class Images extends Component
     {
         if (!ImageHelper::canHaveExifData($filePath)) {
             return null;
+        }
+
+        // Quick and dirty, if possible
+        if ($this->getIsImagick() && method_exists('Imagick', 'setImageProperty')) {
+            $image = new \Imagick($filePath);
+            $image->setImageOrientation(\Imagick::ORIENTATION_UNDEFINED);
+            $image->writeImages($filePath, true);
+
+            return true;
         }
 
         $data = new PelDataWindow(Io::getFileContents($filePath));
@@ -279,6 +335,7 @@ class Images extends Component
                 $ifd0 = $tiff->getIfd();
 
                 // Delete the Orientation entry and re-save the file
+                /** @noinspection PhpParamsInspection */
                 $ifd0->offsetUnset(PelTag::ORIENTATION);
                 $file->saveFile($filePath);
 

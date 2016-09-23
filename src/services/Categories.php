@@ -1,21 +1,25 @@
 <?php
 /**
- * @link      http://buildwithcraft.com/
- * @copyright Copyright (c) 2015 Pixel & Tonic, Inc.
- * @license   http://buildwithcraft.com/license
+ * @link      https://craftcms.com/
+ * @copyright Copyright (c) Pixel & Tonic, Inc.
+ * @license   https://craftcms.com/license
  */
 
 namespace craft\app\services;
 
 use Craft;
 use craft\app\db\Query;
-use craft\app\errors\Exception;
+use craft\app\errors\CategoryGroupNotFoundException;
+use craft\app\errors\CategoryNotFoundException;
+use craft\app\events\CategoryDeleteEvent;
 use craft\app\events\CategoryEvent;
 use craft\app\elements\Category;
+use craft\app\events\CategoryGroupDeleteEvent;
 use craft\app\events\CategoryGroupEvent;
 use craft\app\models\CategoryGroup;
-use craft\app\models\CategoryGroupLocale as CategoryGroupLocaleModel;
-use craft\app\models\Structure as StructureModel;
+use craft\app\models\CategoryGroupLocale;
+use craft\app\models\FieldLayout;
+use craft\app\models\Structure;
 use craft\app\records\Category as CategoryRecord;
 use craft\app\records\CategoryGroup as CategoryGroupRecord;
 use craft\app\records\CategoryGroupLocale as CategoryGroupLocaleRecord;
@@ -57,7 +61,21 @@ class Categories extends Component
     const EVENT_AFTER_DELETE_CATEGORY = 'afterDeleteCategory';
 
     /**
+     * @event CategoryGroupEvent The event that is triggered before a category group is saved.
+     *
+     * You may set [[CategoryEvent::isValid]] to `false` to prevent the category group from getting saved.
+     */
+    const EVENT_BEFORE_SAVE_GROUP = 'beforeSaveGroup';
+
+    /**
+     * @event CategoryGroupEvent The event that is triggered after a category group is saved.
+     */
+    const EVENT_AFTER_SAVE_GROUP = 'afterSaveGroup';
+
+    /**
      * @event CategoryGroupEvent The event that is triggered before a category group is deleted.
+     *
+     * You may set [[CategoryEvent::isValid]] to `false` to prevent the category group from getting saved.
      */
     const EVENT_BEFORE_DELETE_GROUP = 'beforeDeleteGroup';
 
@@ -146,6 +164,7 @@ class Categories extends Component
     public function getAllGroups($indexBy = null)
     {
         if (!$this->_fetchedAllCategoryGroups) {
+            /** @var CategoryGroupRecord[] $groupRecords */
             $groupRecords = CategoryGroupRecord::find()
                 ->orderBy('name asc')
                 ->with('structure')
@@ -164,17 +183,19 @@ class Categories extends Component
 
         if ($indexBy == 'id') {
             return $this->_categoryGroupsById;
-        } else if (!$indexBy) {
-            return array_values($this->_categoryGroupsById);
-        } else {
-            $groups = [];
-
-            foreach ($this->_categoryGroupsById as $group) {
-                $groups[$group->$indexBy] = $group;
-            }
-
-            return $groups;
         }
+
+        if (!$indexBy) {
+            return array_values($this->_categoryGroupsById);
+        }
+
+        $groups = [];
+
+        foreach ($this->_categoryGroupsById as $group) {
+            $groups[$group->$indexBy] = $group;
+        }
+
+        return $groups;
     }
 
     /**
@@ -221,15 +242,14 @@ class Categories extends Component
      */
     public function getGroupById($groupId)
     {
-        if (!isset($this->_categoryGroupsById) || !array_key_exists($groupId,
-                $this->_categoryGroupsById)
-        ) {
+        if (!isset($this->_categoryGroupsById) || !array_key_exists($groupId, $this->_categoryGroupsById)) {
             $groupRecord = CategoryGroupRecord::find()
                 ->where(['id' => $groupId])
                 ->with('structure')
                 ->one();
 
             if ($groupRecord) {
+                /** @var CategoryGroupRecord $groupRecord */
                 $this->_categoryGroupsById[$groupId] = $this->_createCategoryGroupFromRecord($groupRecord);
             } else {
                 $this->_categoryGroupsById[$groupId] = null;
@@ -258,6 +278,8 @@ class Categories extends Component
 
             return $group;
         }
+
+        return null;
     }
 
     /**
@@ -266,7 +288,7 @@ class Categories extends Component
      * @param integer     $groupId
      * @param string|null $indexBy
      *
-     * @return CategoryGroupLocaleModel[]
+     * @return CategoryGroupLocale[]
      */
     public function getGroupLocales($groupId, $indexBy = null)
     {
@@ -276,7 +298,7 @@ class Categories extends Component
             ->all();
 
         foreach ($groupLocales as $key => $value) {
-            $groupLocales[$key] = CategoryGroupLocaleModel::create($value);
+            $groupLocales[$key] = CategoryGroupLocale::create($value);
         }
 
         return $groupLocales;
@@ -287,29 +309,35 @@ class Categories extends Component
      *
      * @param CategoryGroup $group
      *
-     * @return boolean
-     * @throws Exception
-     * @throws \Exception
+     * @return boolean Whether the category group was saved successfully
+     * @throws CategoryGroupNotFoundException if $group has an invalid ID
+     * @throws \Exception if reasons
      */
     public function saveGroup(CategoryGroup $group)
     {
-        if ($group->id) {
+        $isNewCategoryGroup = !$group->id;
+
+        if (!$isNewCategoryGroup) {
             $groupRecord = CategoryGroupRecord::findOne($group->id);
 
             if (!$groupRecord) {
-                throw new Exception(Craft::t('app', 'No category group exists with the ID “{id}”.', ['id' => $group->id]));
+                throw new CategoryGroupNotFoundException("No category group exists with the ID '{$group->id}'");
             }
 
+            /** @var CategoryGroup $oldCategoryGroup */
             $oldCategoryGroup = CategoryGroup::create($groupRecord);
-            $isNewCategoryGroup = false;
         } else {
             $groupRecord = new CategoryGroupRecord();
-            $isNewCategoryGroup = true;
+        }
+
+        // If they've set maxLevels to 0 (don't ask why), then pretend like there are none.
+        if ($group->maxLevels == 0) {
+            $group->maxLevels = null;
         }
 
         $groupRecord->name = $group->name;
         $groupRecord->handle = $group->handle;
-        $groupRecord->hasUrls = (bool) $group->hasUrls;
+        $groupRecord->hasUrls = (bool)$group->hasUrls;
 
         if ($group->hasUrls) {
             $groupRecord->template = $group->template;
@@ -334,7 +362,7 @@ class Categories extends Component
 
                 foreach ($urlFormatAttributes as $attribute) {
                     if (!$groupLocale->validate([$attribute])) {
-                        $group->addError($attribute.'-'.$localeId, $groupLocale->getError($attribute));
+                        $group->addError($attribute.'-'.$localeId, $groupLocale->getFirstError($attribute));
                     }
                 }
             } else {
@@ -348,13 +376,29 @@ class Categories extends Component
         $group->addErrors($groupRecord->getErrors());
 
         if (!$group->hasErrors()) {
+
+            // Fire a 'beforeSaveGroup' event
+            $event = new CategoryGroupEvent([
+                'categoryGroup' => $group,
+                'isNew' => $isNewCategoryGroup,
+            ]);
+
+            $this->trigger(self::EVENT_BEFORE_SAVE_GROUP, $event);
+
+            // Make sure the event is giving us the go ahead
+            if (!$event->isValid) {
+                return false;
+            }
+
             $transaction = Craft::$app->getDb()->beginTransaction();
+
             try {
                 // Create/update the structure
 
                 if ($isNewCategoryGroup) {
-                    $structure = new StructureModel();
+                    $structure = new Structure();
                 } else {
+                    /** @noinspection PhpUndefinedVariableInspection */
                     $structure = Craft::$app->getStructures()->getStructureById($oldCategoryGroup->structureId);
                 }
 
@@ -363,16 +407,24 @@ class Categories extends Component
                 $groupRecord->structureId = $structure->id;
                 $group->structureId = $structure->id;
 
-                // Create and set the field layout
-
-                if (!$isNewCategoryGroup && $oldCategoryGroup->fieldLayoutId) {
-                    Craft::$app->getFields()->deleteLayoutById($oldCategoryGroup->fieldLayoutId);
-                }
-
+                // Is there a new field layout?
+                /** @var FieldLayout $fieldLayout */
                 $fieldLayout = $group->getFieldLayout();
-                Craft::$app->getFields()->saveLayout($fieldLayout);
-                $groupRecord->fieldLayoutId = $fieldLayout->id;
-                $group->fieldLayoutId = $fieldLayout->id;
+
+                if (!$fieldLayout->id) {
+                    // Delete the old one
+                    /** @noinspection PhpUndefinedVariableInspection */
+                    if (!$isNewCategoryGroup && $oldCategoryGroup->fieldLayoutId) {
+                        Craft::$app->getFields()->deleteLayoutById($oldCategoryGroup->fieldLayoutId);
+                    }
+
+                    // Save the new one
+                    Craft::$app->getFields()->saveLayout($fieldLayout);
+
+                    // Update the category group record/model with the new layout ID
+                    $groupRecord->fieldLayoutId = $fieldLayout->id;
+                    $group->fieldLayoutId = $fieldLayout->id;
+                }
 
                 // Save the category group
                 $groupRecord->save(false);
@@ -390,13 +442,14 @@ class Categories extends Component
 
                 if (!$isNewCategoryGroup) {
                     // Get the old category group locales
+                    /** @var CategoryGroupLocaleRecord[] $oldLocales */
                     $oldLocales = CategoryGroupLocaleRecord::find()
                         ->where(['groupId' => $group->id])
                         ->indexBy('locale')
                         ->all();
 
                     foreach ($oldLocales as $key => $value) {
-                        $oldLocales[$key] = CategoryGroupLocaleModel::create($value);
+                        $oldLocales[$key] = CategoryGroupLocale::create($value);
                     }
 
                     $changedLocaleIds = [];
@@ -409,13 +462,17 @@ class Categories extends Component
 
                         // Has the URL format changed?
                         if ($locale->urlFormat != $oldLocale->urlFormat || $locale->nestedUrlFormat != $oldLocale->nestedUrlFormat) {
-                            Craft::$app->getDb()->createCommand()->update('{{%categorygroups_i18n}}',
-                                [
-                                    'urlFormat' => $locale->urlFormat,
-                                    'nestedUrlFormat' => $locale->nestedUrlFormat
-                                ], [
-                                    'id' => $oldLocale->id
-                                ])->execute();
+                            Craft::$app->getDb()->createCommand()
+                                ->update(
+                                    '{{%categorygroups_i18n}}',
+                                    [
+                                        'urlFormat' => $locale->urlFormat,
+                                        'nestedUrlFormat' => $locale->nestedUrlFormat
+                                    ],
+                                    [
+                                        'id' => $oldLocale->id
+                                    ])
+                                ->execute();
 
                             $changedLocaleIds[] = $localeId;
                         }
@@ -430,20 +487,25 @@ class Categories extends Component
                 }
 
                 // Insert the new locales
-                Craft::$app->getDb()->createCommand()->batchInsert('{{%categorygroups_i18n}}',
-                    ['groupId', 'locale', 'urlFormat', 'nestedUrlFormat'],
-                    $newLocaleData
-                )->execute();
+                Craft::$app->getDb()->createCommand()
+                    ->batchInsert(
+                        '{{%categorygroups_i18n}}',
+                        ['groupId', 'locale', 'urlFormat', 'nestedUrlFormat'],
+                        $newLocaleData)
+                    ->execute();
 
                 if (!$isNewCategoryGroup) {
                     // Drop any locales that are no longer being used, as well as the associated category/element
                     // locale rows
-
+                    /** @noinspection PhpUndefinedVariableInspection */
                     $droppedLocaleIds = array_diff(array_keys($oldLocales), array_keys($groupLocales));
 
                     if ($droppedLocaleIds) {
-                        Craft::$app->getDb()->createCommand()->delete('{{%categorygroups_i18n}}',
-                            ['in', 'locale', $droppedLocaleIds])->execute();
+                        Craft::$app->getDb()->createCommand()
+                            ->delete(
+                                '{{%categorygroups_i18n}}',
+                                ['in', 'locale', $droppedLocaleIds])
+                            ->execute();
                     }
                 }
 
@@ -458,62 +520,80 @@ class Categories extends Component
                         ->ids();
 
                     // Should we be deleting
+                    /** @noinspection PhpUndefinedVariableInspection */
                     if ($categoryIds && $droppedLocaleIds) {
-                        Craft::$app->getDb()->createCommand()->delete('{{%elements_i18n}}',
-                            [
-                                'and',
-                                ['in', 'elementId', $categoryIds],
-                                ['in', 'locale', $droppedLocaleIds]
-                            ])->execute();
-                        Craft::$app->getDb()->createCommand()->delete('{{%content}}',
-                            [
-                                'and',
-                                ['in', 'elementId', $categoryIds],
-                                ['in', 'locale', $droppedLocaleIds]
-                            ])->execute();
+                        Craft::$app->getDb()->createCommand()
+                            ->delete(
+                                '{{%elements_i18n}}',
+                                [
+                                    'and',
+                                    ['in', 'elementId', $categoryIds],
+                                    ['in', 'locale', $droppedLocaleIds]
+                                ])
+                            ->execute();
+                        Craft::$app->getDb()->createCommand()
+                            ->delete(
+                                '{{%content}}',
+                                [
+                                    'and',
+                                    ['in', 'elementId', $categoryIds],
+                                    ['in', 'locale', $droppedLocaleIds]
+                                ])
+                            ->execute();
                     }
 
                     // Are there any locales left?
                     if ($groupLocales) {
                         // Drop the old category URIs if the group no longer has URLs
+                        /** @noinspection PhpUndefinedVariableInspection */
                         if (!$group->hasUrls && $oldCategoryGroup->hasUrls) {
-                            Craft::$app->getDb()->createCommand()->update('{{%elements_i18n}}',
-                                ['uri' => null],
-                                ['in', 'elementId', $categoryIds]
-                            )->execute();
-                        } else if ($changedLocaleIds) {
-                            foreach ($categoryIds as $categoryId) {
-                                Craft::$app->getConfig()->maxPowerCaptain();
+                            Craft::$app->getDb()->createCommand()
+                                ->update(
+                                    '{{%elements_i18n}}',
+                                    ['uri' => null],
+                                    ['in', 'elementId', $categoryIds])
+                                ->execute();
+                        } else /** @noinspection PhpUndefinedVariableInspection */
+                            if ($changedLocaleIds) {
+                                foreach ($categoryIds as $categoryId) {
+                                    Craft::$app->getConfig()->maxPowerCaptain();
 
-                                // Loop through each of the changed locales and update all of the categories’ slugs and
-                                // URIs
-                                foreach ($changedLocaleIds as $localeId) {
-                                    $category = Category::find()
-                                        ->id($categoryId)
-                                        ->locale($localeId)
-                                        ->status(null)
-                                        ->one();
+                                    // Loop through each of the changed locales and update all of the categories’ slugs and
+                                    // URIs
+                                    foreach ($changedLocaleIds as $localeId) {
+                                        $category = Category::find()
+                                            ->id($categoryId)
+                                            ->locale($localeId)
+                                            ->status(null)
+                                            ->one();
 
-                                    if ($category) {
-                                        Craft::$app->getElements()->updateElementSlugAndUri($category, false, false);
+                                        if ($category) {
+                                            Craft::$app->getElements()->updateElementSlugAndUri($category, false, false);
+                                        }
                                     }
                                 }
                             }
-                        }
                     }
                 }
 
                 $transaction->commit();
             } catch (\Exception $e) {
-                $transaction->rollback();
+                $transaction->rollBack();
 
                 throw $e;
             }
 
+            // Fire an 'afterSaveGroup' event
+            $this->trigger(self::EVENT_AFTER_SAVE_GROUP,
+                new CategoryGroupEvent([
+                    'categoryGroup' => $group,
+                    'isNew' => $isNewCategoryGroup,
+                ]));
+
             return true;
-        } else {
-            return false;
         }
+
+        return false;
     }
 
     /**
@@ -521,8 +601,8 @@ class Categories extends Component
      *
      * @param integer $groupId
      *
-     * @throws \Exception
-     * @return boolean
+     * @return boolean Whether the category group was deleted successfully
+     * @throws \Exception if reasons
      */
     public function deleteGroupById($groupId)
     {
@@ -537,11 +617,11 @@ class Categories extends Component
         }
 
         // Fire a 'beforeDeleteGroup' event
-        $event = new CategoryGroupEvent([
+        $event = new CategoryGroupDeleteEvent([
             'categoryGroup' => $group
         ]);
 
-        $this->trigger(static::EVENT_BEFORE_DELETE_GROUP, $event);
+        $this->trigger(self::EVENT_BEFORE_DELETE_GROUP, $event);
 
         // Make sure the event is giving us the go ahead
         if (!$event->isValid) {
@@ -570,20 +650,23 @@ class Categories extends Component
 
             Craft::$app->getElements()->deleteElementById($categoryIds);
 
-            Craft::$app->getDb()->createCommand()->delete('{{%categorygroups}}',
-                ['id' => $groupId])->execute();
+            Craft::$app->getDb()->createCommand()
+                ->delete(
+                    '{{%categorygroups}}',
+                    ['id' => $groupId])
+                ->execute();
 
             $transaction->commit();
 
             // Fire an 'afterDeleteGroup' event
-            $this->trigger(static::EVENT_AFTER_DELETE_GROUP,
-                new CategoryGroupEvent([
+            $this->trigger(self::EVENT_AFTER_DELETE_GROUP,
+                new CategoryGroupDeleteEvent([
                     'categoryGroup' => $group
                 ]));
 
             return true;
         } catch (\Exception $e) {
-            $transaction->rollback();
+            $transaction->rollBack();
 
             throw $e;
         }
@@ -599,15 +682,16 @@ class Categories extends Component
     public function isGroupTemplateValid(CategoryGroup $group)
     {
         if ($group->hasUrls) {
-            // Set Craft to the site template path
-            $oldTemplatesPath = Craft::$app->getPath()->getTemplatesPath();
-            Craft::$app->getPath()->setTemplatesPath(Craft::$app->getPath()->getSiteTemplatesPath());
+            // Set Craft to the site template mode
+            $view = Craft::$app->getView();
+            $oldTemplateMode = $view->getTemplateMode();
+            $view->setTemplateMode($view::TEMPLATE_MODE_SITE);
 
             // Does the template exist?
             $templateExists = Craft::$app->getView()->doesTemplateExist($group->template);
 
-            // Restore the original template path
-            Craft::$app->getPath()->setTemplatesPath($oldTemplatesPath);
+            // Restore the original template mode
+            $view->setTemplateMode($oldTemplateMode);
 
             if ($templateExists) {
                 return true;
@@ -630,7 +714,30 @@ class Categories extends Component
      */
     public function getCategoryById($categoryId, $localeId = null)
     {
-        return Craft::$app->getElements()->getElementById($categoryId, Category::className(), $localeId);
+        if (!$categoryId) {
+            return null;
+        }
+
+        // Get the structure ID
+        $structureId = (new Query())
+            ->select('categorygroups.structureId')
+            ->from('{{%categories}} categories')
+            ->innerJoin('{{%categorygroups}} categorygroups', 'categorygroups.id = categories.groupId')
+            ->where(['categories.id' => $categoryId])
+            ->scalar();
+
+        // All categories are part of a structure
+        if (!$structureId) {
+            return null;
+        }
+
+        return Category::find()
+            ->id($categoryId)
+            ->structureId($structureId)
+            ->locale($localeId)
+            ->status(null)
+            ->localeEnabled(false)
+            ->one();
     }
 
     /**
@@ -638,8 +745,9 @@ class Categories extends Component
      *
      * @param Category $category
      *
-     * @throws Exception|\Exception
-     * @return boolean
+     * @return boolean Whether the category was saved successfully
+     * @throws CategoryNotFoundException if $category has an invalid $id or invalid $newParentID
+     * @throws \Exception if reasons
      */
     public function saveCategory(Category $category)
     {
@@ -652,7 +760,7 @@ class Categories extends Component
                 $parentCategory = $this->getCategoryById($category->newParentId, $category->locale);
 
                 if (!$parentCategory) {
-                    throw new Exception(Craft::t('app', 'No category exists with the ID “{id}”.', ['id' => $category->newParentId]));
+                    throw new CategoryNotFoundException("No category exists with the ID '{$category->newParentId}'");
                 }
             } else {
                 $parentCategory = null;
@@ -666,7 +774,7 @@ class Categories extends Component
             $categoryRecord = CategoryRecord::findOne($category->id);
 
             if (!$categoryRecord) {
-                throw new Exception(Craft::t('app', 'No category exists with the ID “{id}”.', ['id' => $category->id]));
+                throw new CategoryNotFoundException("No category exists with the ID '{$category->id}'");
             }
         } else {
             $categoryRecord = new CategoryRecord();
@@ -686,10 +794,11 @@ class Categories extends Component
         try {
             // Fire a 'beforeSaveCategory' event
             $event = new CategoryEvent([
-                'category' => $category
+                'category' => $category,
+                'isNew' => $isNewCategory
             ]);
 
-            $this->trigger(static::EVENT_BEFORE_SAVE_CATEGORY, $event);
+            $this->trigger(self::EVENT_BEFORE_SAVE_CATEGORY, $event);
 
             // Is the event giving us the go-ahead?
             if ($event->isValid) {
@@ -697,7 +806,7 @@ class Categories extends Component
 
                 // If it didn't work, rollback the transaction in case something changed in onBeforeSaveCategory
                 if (!$success) {
-                    $transaction->rollback();
+                    $transaction->rollBack();
 
                     return false;
                 }
@@ -714,6 +823,7 @@ class Categories extends Component
                     if (!$category->newParentId) {
                         Craft::$app->getStructures()->appendToRoot($category->getGroup()->structureId, $category);
                     } else {
+                        /** @noinspection PhpUndefinedVariableInspection */
                         Craft::$app->getStructures()->append($category->getGroup()->structureId, $category, $parentCategory);
                     }
                 }
@@ -728,16 +838,17 @@ class Categories extends Component
             // in onBeforeSaveCategory
             $transaction->commit();
         } catch (\Exception $e) {
-            $transaction->rollback();
+            $transaction->rollBack();
 
             throw $e;
         }
 
         if ($success) {
             // Fire an 'afterSaveCategory' event
-            $this->trigger(static::EVENT_AFTER_SAVE_CATEGORY,
+            $this->trigger(self::EVENT_AFTER_SAVE_CATEGORY,
                 new CategoryEvent([
-                    'category' => $category
+                    'category' => $category,
+                    'isNewCategory'
                 ]));
         }
 
@@ -749,8 +860,8 @@ class Categories extends Component
      *
      * @param Category|Category[] $categories
      *
-     * @throws \Exception
-     * @return boolean
+     * @return boolean Whether the category was deleted successfully
+     * @throws \Exception if reasons
      */
     public function deleteCategory($categories)
     {
@@ -768,7 +879,7 @@ class Categories extends Component
 
             $transaction->commit();
         } catch (\Exception $e) {
-            $transaction->rollback();
+            $transaction->rollBack();
 
             throw $e;
         }
@@ -776,16 +887,16 @@ class Categories extends Component
         if ($success) {
             foreach ($categories as $category) {
                 // Fire an 'afterDeleteCategory' event
-                $this->trigger(static::EVENT_AFTER_DELETE_CATEGORY,
-                    new CategoryEvent([
+                $this->trigger(self::EVENT_AFTER_DELETE_CATEGORY,
+                    new CategoryDeleteEvent([
                         'category' => $category
                     ]));
             }
 
             return true;
-        } else {
-            return false;
         }
+
+        return false;
     }
 
     /**
@@ -810,9 +921,9 @@ class Categories extends Component
 
         if ($categories) {
             return $this->deleteCategory($categories);
-        } else {
-            return false;
         }
+
+        return false;
     }
 
     /**
@@ -916,8 +1027,9 @@ class Categories extends Component
             ->ancestorOf($category)
             ->ancestorDist(1)
             ->status(null)
+            ->locale($category->locale)
             ->localeEnabled(null)
-            ->select('id')
+            ->select('elements.id')
             ->scalar();
 
         if ($category->newParentId != $oldParentId) {
@@ -943,13 +1055,14 @@ class Categories extends Component
         foreach ($categories as $category) {
             if ($deleteDescendants) {
                 // Delete the descendants in reverse order, so structures don't get wonky
-                $descendants = $category->getDescendants()->status(null)->localeEnabled(false)->orderBy('lft desc')->find();
+                /** @var Category[] $descendants */
+                $descendants = $category->getDescendants()->status(null)->localeEnabled(false)->orderBy('lft desc')->all();
                 $this->_deleteCategories($descendants, false);
             }
 
             // Fire a 'beforeDeleteCategory' event
-            $this->trigger(static::EVENT_BEFORE_DELETE_CATEGORY,
-                new CategoryEvent([
+            $this->trigger(self::EVENT_BEFORE_DELETE_CATEGORY,
+                new CategoryDeleteEvent([
                     'category' => $category
                 ]));
 

@@ -1,8 +1,8 @@
 <?php
 /**
- * @link      http://buildwithcraft.com/
- * @copyright Copyright (c) 2015 Pixel & Tonic, Inc.
- * @license   http://buildwithcraft.com/license
+ * @link      https://craftcms.com/
+ * @copyright Copyright (c) Pixel & Tonic, Inc.
+ * @license   https://craftcms.com/license
  */
 
 namespace craft\app\controllers;
@@ -10,6 +10,7 @@ namespace craft\app\controllers;
 use Craft;
 use craft\app\helpers\Json;
 use craft\app\web\Controller;
+use yii\web\Response;
 
 /**
  * The TasksController class is a controller that handles various task related operations such as running, checking task
@@ -43,13 +44,15 @@ class TasksController extends Controller
         $tasksService = Craft::$app->getTasks();
 
         // Make sure tasks aren't already running
-        if (!$tasksService->isTaskRunning()) {
+        if (!$tasksService->getIsTaskRunning()) {
             $task = $tasksService->getNextPendingTask();
 
             if ($task) {
                 // Attempt to close the connection if this is an Ajax request
                 if (Craft::$app->getRequest()->getIsAjax()) {
-                    Craft::$app->getResponse()->sendAndClose();
+                    $response = Craft::$app->getResponse();
+                    $response->content = '1';
+                    $response->sendAndClose();
                 }
 
                 // Start running tasks
@@ -63,7 +66,7 @@ class TasksController extends Controller
     /**
      * Returns the completion percentage for the running task.
      *
-     * @return void
+     * @return Response|null
      */
     public function actionGetRunningTaskInfo()
     {
@@ -77,7 +80,7 @@ class TasksController extends Controller
         }
 
         // No running tasks left? Check for a failed one
-        if ($tasksService->haveTasksFailed()) {
+        if ($tasksService->getHaveTasksFailed()) {
             return $this->asJson(['status' => 'error']);
         }
 
@@ -87,12 +90,14 @@ class TasksController extends Controller
         }
 
         Craft::$app->end();
+
+        return null;
     }
 
     /**
      * Re-runs a failed task.
      *
-     * @return void
+     * @return Response|null
      */
     public function actionRerunTask()
     {
@@ -103,7 +108,7 @@ class TasksController extends Controller
         $taskId = Craft::$app->getRequest()->getRequiredBodyParam('taskId');
         $task = Craft::$app->getTasks()->rerunTaskById($taskId);
 
-        if (!Craft::$app->getTasks()->isTaskRunning()) {
+        if (!Craft::$app->getTasks()->getIsTaskRunning()) {
             Json::sendJsonHeaders();
             $response = Craft::$app->getResponse();
             $response->content = Json::encode($task);
@@ -115,6 +120,8 @@ class TasksController extends Controller
         }
 
         Craft::$app->end();
+
+        return null;
     }
 
     /**
@@ -137,7 +144,7 @@ class TasksController extends Controller
     /**
      * Returns info about all the tasks.
      *
-     * @return void
+     * @return Response
      */
     public function actionGetTaskInfo()
     {

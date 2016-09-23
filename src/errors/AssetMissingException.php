@@ -1,8 +1,8 @@
 <?php
 /**
- * @link      http://buildwithcraft.com/
- * @copyright Copyright (c) 2015 Pixel & Tonic, Inc.
- * @license   http://buildwithcraft.com/license
+ * @link      https://craftcms.com/
+ * @copyright Copyright (c) Pixel & Tonic, Inc.
+ * @license   https://craftcms.com/license
  */
 
 namespace craft\app\errors;
@@ -11,13 +11,12 @@ namespace craft\app\errors;
  * Class AssetMissingException
  *
  * @author    Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @copyright Copyright (c) 2014, Pixel & Tonic, Inc.
- * @license   http://buildwithcraft.com/license Craft License Agreement
- * @see       http://buildwithcraft.com
+ * @copyright Copyright (c) Pixel & Tonic, Inc.
+ * @license   https://craftcms.com/license Craft License Agreement
+ * @see       http://craftcms.com
  * @package   craft.app.exceptions
  * @since     3.0
  */
 class AssetMissingException extends AssetException
 {
-
 }

@@ -1,6 +1,3 @@
-(function($) {
-
-
 /**
  * AuthManager class
  */
@@ -165,8 +162,8 @@ Craft.AuthManager = Garnish.Base.extend(
 			var $form = $('<form id="logoutwarningmodal" class="modal alert fitted"/>'),
 				$body = $('<div class="body"/>').appendTo($form),
 				$buttons = $('<div class="buttons right"/>').appendTo($body),
-				$logoutBtn = $('<div class="btn">'+Craft.t('Log out now')+'</div>').appendTo($buttons),
-				$renewSessionBtn = $('<input type="submit" class="btn submit" value="'+Craft.t('Keep me logged in')+'" />').appendTo($buttons);
+				$logoutBtn = $('<div class="btn">'+Craft.t('app', 'Log out now')+'</div>').appendTo($buttons),
+				$renewSessionBtn = $('<input type="submit" class="btn submit" value="'+Craft.t('app', 'Keep me logged in')+'" />').appendTo($buttons);
 
 			this.$logoutWarningPara = $('<p/>').prependTo($body);
 
@@ -211,7 +208,7 @@ Craft.AuthManager = Garnish.Base.extend(
 	 */
 	updateLogoutWarningMessage: function()
 	{
-		this.$logoutWarningPara.text(Craft.t('Your session will expire in {time}.', {
+		this.$logoutWarningPara.text(Craft.t('app', 'Your session will expire in {time}.', {
 			time: Craft.secondsToHumanTimeDuration(this.remainingSessionTime)
 		}));
 
@@ -279,7 +276,7 @@ Craft.AuthManager = Garnish.Base.extend(
 		if (!this.loginModal)
 		{
 			var $form = $('<form id="loginmodal" class="modal alert fitted"/>'),
-				$body = $('<div class="body"><h2>'+Craft.t('Your session has ended.')+'</h2><p>'+Craft.t('Enter your password to log back in.')+'</p></div>').appendTo($form),
+				$body = $('<div class="body"><h2>'+Craft.t('app', 'Your session has ended.')+'</h2><p>'+Craft.t('app', 'Enter your password to log back in.')+'</p></div>').appendTo($form),
 				$inputContainer = $('<div class="inputcontainer">').appendTo($body),
 				$inputsTable = $('<table class="inputs fullwidth"/>').appendTo($inputContainer),
 				$inputsRow = $('<tr/>').appendTo($inputsTable),
@@ -287,9 +284,9 @@ Craft.AuthManager = Garnish.Base.extend(
 				$buttonCell = $('<td class="thin"/>').appendTo($inputsRow),
 				$passwordWrapper = $('<div class="passwordwrapper"/>').appendTo($passwordCell);
 
-			this.$passwordInput = $('<input type="password" class="text password fullwidth" placeholder="'+Craft.t('Password')+'"/>').appendTo($passwordWrapper);
+			this.$passwordInput = $('<input type="password" class="text password fullwidth" placeholder="'+Craft.t('app', 'Password')+'"/>').appendTo($passwordWrapper);
 			this.$passwordSpinner = $('<div class="spinner hidden"/>').appendTo($inputContainer);
-			this.$loginBtn = $('<input type="submit" class="btn submit disabled" value="'+Craft.t('Login')+'" />').appendTo($buttonCell);
+			this.$loginBtn = $('<input type="submit" class="btn submit disabled" value="'+Craft.t('app', 'Login')+'" />').appendTo($buttonCell);
 			this.$loginErrorPara = $('<p class="error"/>').appendTo($body);
 
 			this.loginModal = new Garnish.Modal($form, {
@@ -456,7 +453,7 @@ Craft.AuthManager = Garnish.Base.extend(
 	{
 		if (error === null || typeof error == 'undefined')
 		{
-			error = Craft.t('An unknown error occurred.');
+			error = Craft.t('app', 'An unknown error occurred.');
 		}
 
 		this.$loginErrorPara.text(error);
@@ -472,6 +469,3 @@ Craft.AuthManager = Garnish.Base.extend(
 	checkInterval: 60,
 	minSafeSessiotTime: 120
 });
-
-
-})(jQuery);

@@ -1,8 +1,8 @@
 <?php
 /**
- * @link      http://buildwithcraft.com/
- * @copyright Copyright (c) 2015 Pixel & Tonic, Inc.
- * @license   http://buildwithcraft.com/license
+ * @link      https://craftcms.com/
+ * @copyright Copyright (c) Pixel & Tonic, Inc.
+ * @license   https://craftcms.com/license
  */
 
 namespace craft\app\helpers;
@@ -49,6 +49,8 @@ class StringHelper extends \yii\helpers\StringHelper
 
     /**
      * Returns an array consisting of the characters in the string.
+     *
+     * @param string $str
      *
      * @return array An array of string chars
      */
@@ -97,7 +99,7 @@ class StringHelper extends \yii\helpers\StringHelper
      */
     public static function containsAny($haystack, $needles, $caseSensitive = true)
     {
-        return (string)Stringy::create($haystack)->containsAny($haystack, $needles, $caseSensitive);
+        return (string)Stringy::create($haystack)->containsAny($needles, $caseSensitive);
     }
 
     /**
@@ -112,7 +114,7 @@ class StringHelper extends \yii\helpers\StringHelper
      */
     public static function containsAll($haystack, $needles, $caseSensitive = true)
     {
-        return (string)Stringy::create($haystack)->containsAll($haystack, $needles, $caseSensitive);
+        return (string)Stringy::create($haystack)->containsAll($needles, $caseSensitive);
     }
 
     /**
@@ -240,11 +242,11 @@ class StringHelper extends \yii\helpers\StringHelper
      * Returns the index of the first occurrence of $needle in the string, and false if not found.
      * Accepts an optional offset from which to begin the search.
      *
-     * @param  string   $str    The string to check the index of.
-     * @param  string   $needle The substring to look for.
-     * @param  int      $offset The offset from which to search.
+     * @param  string $str    The string to check the index of.
+     * @param  string $needle The substring to look for.
+     * @param  int    $offset The offset from which to search.
      *
-    * @return int|bool The occurrence's index if found, otherwise false.
+     * @return int|bool The occurrence's index if found, otherwise false.
      */
     public static function indexOf($str, $needle, $offset = 0)
     {
@@ -256,11 +258,11 @@ class StringHelper extends \yii\helpers\StringHelper
      * Accepts an optional offset from which to begin the search. Offsets may be negative to count from
      * the last character in the string.
      *
-     * @param  string   $str    The string to check the last index of.
-     * @param  string   $needle The substring to look for.
-     * @param  int      $offset The offset from which to search.
+     * @param  string $str    The string to check the last index of.
+     * @param  string $needle The substring to look for.
+     * @param  int    $offset The offset from which to search.
      *
-    * @return int|bool The occurrence's last index if found, otherwise false.
+     * @return int|bool The occurrence's last index if found, otherwise false.
      */
     public static function indexOfLast($str, $needle, $offset = 0)
     {
@@ -395,11 +397,17 @@ class StringHelper extends \yii\helpers\StringHelper
      *
      * @param string $str The string to split.
      *
-     * @return array[] An array of strings.
+     * @return string[] An array of strings.
      */
     public static function lines($str)
     {
-        return (string)Stringy::create($str)->lines();
+        $lines = Stringy::create($str)->lines();
+
+        foreach ($lines as $i => $line) {
+            $lines[$i] = (string)$line;
+        }
+
+        return $lines;
     }
 
     /**
@@ -415,7 +423,7 @@ class StringHelper extends \yii\helpers\StringHelper
     }
 
     /**
-     * Kebab-cases a string.
+     * kebab-cases a string.
      *
      * @param string  $string            The string
      * @param string  $glue              The string used to glue the words together (default is a hyphen)
@@ -423,24 +431,83 @@ class StringHelper extends \yii\helpers\StringHelper
      * @param boolean $removePunctuation Whether punctuation marks should be removed (default is true)
      *
      * @return string The kebab-cased string
+     *
+     * @see toCamelCase()
+     * @see toPascalCase()
+     * @see toSnakeCase()
      */
     public static function toKebabCase($string, $glue = '-', $lower = true, $removePunctuation = true)
     {
-        if ($removePunctuation) {
-            $string = str_replace(['.', '_', '-'], ' ', $string);
-        }
-
-        // Remove inner-word punctuation.
-        $string = preg_replace('/[\'"‘’“”\[\]\(\)\{\}:]/u', '', $string);
-
-        // Split on the words and then glue it back together
-        $words = static::splitOnWords($string);
+        $words = self::_prepStringForCasing($string, $lower, $removePunctuation);
         $string = implode($glue, $words);
 
-        if ($lower) {
-            // Make it lowercase
-            $string = static::toLowerCase($string);
+        return $string;
+    }
+
+    /**
+     * camelCases a string.
+     *
+     * @param string $string The string
+     *
+     * @return string
+     *
+     * @see toKebabCase()
+     * @see toPascalCase()
+     * @see toSnakeCase()
+     */
+    public static function toCamelCase($string)
+    {
+        $words = self::_prepStringForCasing($string);
+
+        if (!$words) {
+            return '';
         }
+
+        $string = array_shift($words).implode('', array_map([
+                get_called_class(),
+                'uppercaseFirst'
+            ], $words));
+
+        return $string;
+    }
+
+    /**
+     * PascalCases a string.
+     *
+     * @param string $string The string
+     *
+     * @return string
+     *
+     * @see toKebabCase()
+     * @see toCamelCase()
+     * @see toSnakeCase()
+     */
+    public static function toPascalCase($string)
+    {
+        $words = self::_prepStringForCasing($string);
+        $string = implode('', array_map([
+            get_called_class(),
+            'uppercaseFirst'
+        ], $words));
+
+        return $string;
+    }
+
+    /**
+     * snake_cases a string.
+     *
+     * @param string $string The string
+     *
+     * @return string
+     *
+     * @see toKebabCase()
+     * @see toCamelCase()
+     * @see toPascalCase()
+     */
+    public static function toSnakeCase($string)
+    {
+        $words = self::_prepStringForCasing($string);
+        $string = implode('_', $words);
 
         return $string;
     }
@@ -455,7 +522,8 @@ class StringHelper extends \yii\helpers\StringHelper
     public static function splitOnWords($string)
     {
         // Split on anything that is not alphanumeric, or a period, underscore, or hyphen.
-        preg_match_all('/[\p{L}\p{N}\._-]+/u', $string, $matches);
+        // Reference: http://www.regular-expressions.info/unicode.html
+        preg_match_all('/[\p{L}\p{N}\p{M}\._-]+/u', $string, $matches);
 
         return ArrayHelper::filterEmptyStringsFromArray($matches[0]);
     }
@@ -463,7 +531,7 @@ class StringHelper extends \yii\helpers\StringHelper
     /**
      * Strips HTML tags out of a given string.
      *
-     * @param $str The string.
+     * @param string $str The string.
      *
      * @return string The string, sans-HTML
      */
@@ -533,6 +601,21 @@ class StringHelper extends \yii\helpers\StringHelper
             $validChars = 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890';
         }
 
+        return static::randomStringWithChars($validChars, $length);
+    }
+
+    /**
+     * Generates a random string of characters. Note that the generated string is *not* a
+     * cryptographically secure string. If you need a cryptographically secure string, see
+     * [[Craft::$app->security->randomString]].
+     *
+     * @param string  $validChars A string containing the valid characters
+     * @param integer $length     The length of the random string
+     *
+     * @return string The randomly generated string.
+     */
+    public static function randomStringWithChars($validChars, $length)
+    {
         $randomString = '';
 
         // count the number of chars in the valid chars string so we know how many choices we have
@@ -724,9 +807,9 @@ class StringHelper extends \yii\helpers\StringHelper
             }
 
             return implode($glue, $stringValues);
-        } else {
-            return (string)$object;
         }
+
+        return (string)$object;
     }
 
     /**
@@ -738,7 +821,7 @@ class StringHelper extends \yii\helpers\StringHelper
      */
     public static function toTitleCase($str)
     {
-        return (string)Stringy::create($str)->toLowerCase();
+        return (string)Stringy::create($str)->toTitleCase();
     }
 
     /**
@@ -856,7 +939,7 @@ class StringHelper extends \yii\helpers\StringHelper
 
         // Otherwise set HTMLPurifier to the actual string encoding
         $config = \HTMLPurifier_Config::createDefault();
-        $config->set('Core.Encoding', (string) static::getEncoding($string));
+        $config->set('Core.Encoding', (string)static::getEncoding($string));
 
         // Clean it
         $string = HtmlPurifier::cleanUtf8($string);
@@ -894,5 +977,68 @@ class StringHelper extends \yii\helpers\StringHelper
     public static function getEncoding($string)
     {
         return static::toLowerCase(mb_detect_encoding($string, mb_detect_order(), true));
+    }
+
+    /**
+     * HTML-encodes any 4-byte UTF-8 characters.
+     *
+     * @param string $string The string
+     *
+     * @return string The string with converted 4-byte UTF-8 characters
+     *
+     * @see http://stackoverflow.com/a/16496730/1688568
+     */
+    public static function encodeMb4($string)
+    {
+        // Does this string have any 4+ byte Unicode chars?
+        if (max(array_map('ord', str_split($string))) >= 240) {
+            $string = preg_replace_callback('/./u', function (array $match) {
+                if (strlen($match[0]) >= 4) {
+                    // (Logic pulled from WP's wp_encode_emoji() function)
+                    // UTF-32's hex encoding is the same as HTML's hex encoding.
+                    // So, by converting from UTF-8 to UTF-32, we magically
+                    // get the correct hex encoding.
+                    $unpacked = unpack('H*', mb_convert_encoding($match[0], 'UTF-32', 'UTF-8'));
+
+                    return isset($unpacked[1]) ? '&#x'.ltrim($unpacked[1], '0').';' : '';
+                }
+
+                return $match[0];
+            }, $string);
+        }
+
+        return $string;
+    }
+
+    /**
+     * Prepares a string for casing routines.
+     *
+     * @param string  $string            The string
+     * @param boolean $lower
+     * @param boolean $removePunctuation Whether punctuation marks should be removed (default is true)
+     *
+     * @return array The prepped words in the string
+     *
+     * @see toKebabCase()
+     * @see toCamelCase()
+     * @see toPascalCase()
+     * @see toSnakeCase()
+     */
+    private static function _prepStringForCasing($string, $lower = true, $removePunctuation = true)
+    {
+        if ($lower) {
+            // Make it lowercase
+            $string = static::toLowerCase($string);
+        }
+
+        if ($removePunctuation) {
+            $string = str_replace(['.', '_', '-'], ' ', $string);
+        }
+
+        // Remove inner-word punctuation.
+        $string = preg_replace('/[\'"‘’“”\[\]\(\)\{\}:]/u', '', $string);
+
+        // Split on the words and return
+        return static::splitOnWords($string);
     }
 }

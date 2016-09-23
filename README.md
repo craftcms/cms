@@ -1,6 +1,6 @@
 # Craft Source
 
-Craft is a CMS by Pixel & Tonic, built for people who like to take their time and do things right. You can read more about Craft at [buildwithcraft.com](http://buildwithcraft.com).
+Craft is a CMS by Pixel & Tonic, built for people who like to take their time and do things right. You can read more about Craft at [craftcms.com](https://craftcms.com).
 
 This repo contains the source code, resources, a custom build script and other utilities.
 
@@ -71,8 +71,7 @@ Craft has a custom build script that does the following:
 * Optionally runs any unit tests found in Source/craft/app/tests/
 * Copies all files from Source/ into a build directory
 * Deletes some unneeded files and folders from the build directory
-* Parses all Craft PHP files for a few tokens (e.g. “@@@version@@@”)
-* Creates a list of all Craft classes that should be autoload-able, and saves it in craft/app/classes.php
+* Parses all Craft PHP files for a few tokens (e.g. “@@@build@@@”)
 * Optionally copies the final craft/app/ folder to a destination of your choosing, and sets app/etc/console/yiic.php’s permissions to 777
 
 

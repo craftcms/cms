@@ -1,8 +1,8 @@
 <?php
 /**
- * @link      http://buildwithcraft.com/
- * @copyright Copyright (c) 2015 Pixel & Tonic, Inc.
- * @license   http://buildwithcraft.com/license
+ * @link      https://craftcms.com/
+ * @copyright Copyright (c) Pixel & Tonic, Inc.
+ * @license   https://craftcms.com/license
  */
 
 namespace craft\app\models;
@@ -44,8 +44,15 @@ class AccountSettings extends Model
      */
     public function rules()
     {
+        $requireUsername = !Craft::$app->getConfig()->get('useEmailAsUsername');
+        $requiredAttributes = [['email', 'password'], 'required'];
+
+        if ($requireUsername) {
+            $requiredAttributes[0][] = 'username';
+        }
+
         return [
-            [['username', 'email', 'password'], 'required'],
+            $requiredAttributes,
             [['email'], 'email'],
             [['email'], 'string', 'min' => 5],
             [['password'], 'string', 'min' => 6],

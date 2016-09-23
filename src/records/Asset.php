@@ -1,8 +1,8 @@
 <?php
 /**
- * @link      http://buildwithcraft.com/
- * @copyright Copyright (c) 2015 Pixel & Tonic, Inc.
- * @license   http://buildwithcraft.com/license
+ * @link      https://craftcms.com/
+ * @copyright Copyright (c) Pixel & Tonic, Inc.
+ * @license   https://craftcms.com/license
  */
 
 namespace craft\app\records;
@@ -15,18 +15,18 @@ use craft\app\db\ActiveRecord;
  *
  * @todo   Create save function which calls parent::save and then updates the meta data table (keywords, author, etc)
  *
- * @property integer              $id           ID
- * @property integer              $volumeId     Volume ID
- * @property integer              $folderId     Folder ID
- * @property string               $filename     Filename
- * @property string               $kind         Kind
- * @property integer              $width        Width
- * @property integer              $height       Height
- * @property integer              $size         Size
- * @property \DateTime            $dateModified Date modified
- * @property ActiveQueryInterface $element      Element
- * @property ActiveQueryInterface $source       Source
- * @property ActiveQueryInterface $folder       Folder
+ * @property integer      $id           ID
+ * @property integer      $volumeId     Volume ID
+ * @property integer      $folderId     Folder ID
+ * @property string       $filename     Filename
+ * @property string       $kind         Kind
+ * @property integer      $width        Width
+ * @property integer      $height       Height
+ * @property integer      $size         Size
+ * @property \DateTime    $dateModified Date modified
+ * @property Element      $element      Element
+ * @property Volume       $volume       Volume
+ * @property VolumeFolder $folder       Folder
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since  3.0
@@ -60,7 +60,7 @@ class Asset extends ActiveRecord
                 ['size'],
                 'number',
                 'min' => 0,
-                'max' => 4294967295,
+                'max' => 18446744073709551615,
                 'integerOnly' => true
             ],
             [['dateModified'], 'craft\\app\\validators\\DateTime'],
@@ -87,7 +87,7 @@ class Asset extends ActiveRecord
     /**
      * Returns the asset file’s element.
      *
-     * @return \yii\db\ActiveQueryInterface The relational query object.
+     * @return ActiveQueryInterface The relational query object.
      */
     public function getElement()
     {
@@ -95,11 +95,11 @@ class Asset extends ActiveRecord
     }
 
     /**
-     * Returns the asset file’s source.
+     * Returns the asset file’s volume.
      *
-     * @return \yii\db\ActiveQueryInterface The relational query object.
+     * @return ActiveQueryInterface The relational query object.
      */
-    public function getSource()
+    public function getVolume()
     {
         return $this->hasOne(Volume::className(), ['id' => 'volumeId']);
     }
@@ -107,7 +107,7 @@ class Asset extends ActiveRecord
     /**
      * Returns the asset file’s folder.
      *
-     * @return \yii\db\ActiveQueryInterface The relational query object.
+     * @return ActiveQueryInterface The relational query object.
      */
     public function getFolder()
     {

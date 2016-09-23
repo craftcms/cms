@@ -1,8 +1,8 @@
 <?php
 /**
- * @link      http://buildwithcraft.com/
- * @copyright Copyright (c) 2015 Pixel & Tonic, Inc.
- * @license   http://buildwithcraft.com/license
+ * @link      https://craftcms.com/
+ * @copyright Copyright (c) Pixel & Tonic, Inc.
+ * @license   https://craftcms.com/license
  */
 
 namespace craft\app\base;
@@ -24,6 +24,11 @@ trait ElementTrait
      * @var int The element’s ID
      */
     public $id;
+
+    /**
+     * @var string The element’s UID
+     */
+    public $uid;
 
     /**
      * @var int The element’s content row ID
@@ -94,6 +99,11 @@ trait ElementTrait
      * @var int The element’s level within its structure
      */
     public $level;
+
+    /**
+     * @var int The element’s search score, if the [[\craft\app\elements\db\ElementQuery::search]] parameter was used when querying for the element
+     */
+    public $searchScore;
 
     /**
      * @var boolean Whether the element is still awaiting its custom field values

@@ -1,8 +1,8 @@
 <?php
 /**
- * @link      http://buildwithcraft.com/
- * @copyright Copyright (c) 2015 Pixel & Tonic, Inc.
- * @license   http://buildwithcraft.com/license
+ * @link      https://craftcms.com/
+ * @copyright Copyright (c) Pixel & Tonic, Inc.
+ * @license   https://craftcms.com/license
  */
 
 namespace craft\app\web\assets;
@@ -32,6 +32,7 @@ class AppAsset extends AssetBundle
      */
     public $css = [
         'css/craft.css',
+        'lib/selectize/selectize.css',
     ];
 
     /**
@@ -58,20 +59,23 @@ class AppAsset extends AssetBundle
         }
 
         $this->js = [
-            'lib/xregexp-all'.($useCompressedJs ? '-min' : '').'.js',
+            'lib/xregexp-all.js',
             'lib/jquery-ui'.($useCompressedJs ? '.min' : '').'.js',
         ];
 
         if (isset($datepickerLanguage)) {
-            $this->js[] = "lib/datepicker-i18n/datepicker-$datepickerLanguage.js";
+            $this->js[] = "lib/datepicker-i18n/datepicker-{$datepickerLanguage}.js";
         }
 
         $this->js = array_merge($this->js, [
             'lib/velocity'.($useCompressedJs ? '.min' : '').'.js',
-            'lib/jquery.placeholder'.($useCompressedJs ? '.min' : '').'.js',
+            'lib/selectize/selectize'.($useCompressedJs ? '.min' : '').'.js',
             'lib/fileupload/jquery.ui.widget.js',
+            'lib/jquery.mobile-events'.($useCompressedJs ? '.min' : '').'.js',
             'lib/fileupload/jquery.fileupload.js',
-            'lib/garnish-0.1'.($useCompressedJs ? '.min' : '').'.js',
+            'lib/picturefill'.($useCompressedJs ? '.min' : '').'.js',
+            'lib/element-resize-detector'.($useCompressedJs ? '.min' : '').'.js',
+            'lib/garnish'.($useCompressedJs ? '.min' : '').'.js',
             'js/'.($useCompressedJs ? 'compressed/' : '').'Craft.js',
         ]);
     }

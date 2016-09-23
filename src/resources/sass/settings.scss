@@ -2,12 +2,12 @@
 @import "shared";
 
 
-.toolhud { width: 200px; }
-.toolhud form { display: block; position: relative; }
-.toolhud form .buttons { text-align: center; }
-.toolhud form .buttons .btn { float: none; display: inline-block; }
+.toolhud .main { width: 200px; }
+.toolhud .main .form { display: block; position: relative; }
+.toolhud .main .form .buttons { text-align: center; }
+.toolhud .main .form .buttons .btn { float: none; display: inline-block; }
 
-.toolhud .progressbar { position: absolute; @include left(230px); width: 132px; }
-.toolhud .alldone { position: absolute; @include left(230px); width: 140px; font-size: 40px; line-height: 50px; text-align: center; }
+.toolhud .main .progressbar { position: absolute; @include left(230px); width: 132px; }
+.toolhud .main .alldone { position: absolute; @include left(230px); width: 140px; font-size: 40px; line-height: 50px; text-align: center; }
 
 .confirmmodal .body { max-height: 200px; overflow: auto; }

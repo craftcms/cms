@@ -1,8 +1,8 @@
 <?php
 /**
- * @link      http://buildwithcraft.com/
- * @copyright Copyright (c) 2015 Pixel & Tonic, Inc.
- * @license   http://buildwithcraft.com/license
+ * @link      https://craftcms.com/
+ * @copyright Copyright (c) Pixel & Tonic, Inc.
+ * @license   https://craftcms.com/license
  */
 
 namespace craft\app\records;
@@ -107,13 +107,16 @@ class Task extends ActiveRecord
 
     /**
      * @inheritdoc
+     *
+     * @return TaskQuery
      */
     public static function find()
     {
-        return Craft::createObject(TaskQuery::className(),
-            [get_called_class()]);
-    }
+        /** @var TaskQuery $query */
+        $query = Craft::createObject(TaskQuery::className(), [get_called_class()]);
 
+        return $query;
+    }
 
     /**
      * @inheritdoc

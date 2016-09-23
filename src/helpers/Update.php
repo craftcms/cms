@@ -1,8 +1,8 @@
 <?php
 /**
- * @link      http://buildwithcraft.com/
- * @copyright Copyright (c) 2015 Pixel & Tonic, Inc.
- * @license   http://buildwithcraft.com/license
+ * @link      https://craftcms.com/
+ * @copyright Copyright (c) Pixel & Tonic, Inc.
+ * @license   https://craftcms.com/license
  */
 
 namespace craft\app\helpers;
@@ -10,10 +10,10 @@ namespace craft\app\helpers;
 use Craft;
 use craft\app\db\DbBackup;
 use craft\app\enums\PatchManifestFileAction;
-use craft\app\errors\Exception;
+use yii\base\Exception;
 
 /**
- * Class Update
+ * Update helper.
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since  3.0
@@ -32,11 +32,12 @@ class Update
     // =========================================================================
 
     /**
-     * @param $manifestData
+     * @param array  $manifestData
+     * @param string $handle
      *
      * @return void
      */
-    public static function rollBackFileChanges($manifestData)
+    public static function rollBackFileChanges($manifestData, $handle)
     {
         foreach ($manifestData as $row) {
             if (static::isManifestVersionInfoLine($row)) {
@@ -48,7 +49,14 @@ class Update
             }
 
             $rowData = explode(';', $row);
-            $file = Io::normalizePathSeparators(Craft::$app->getPath()->getAppPath().'/'.$rowData[0]);
+
+            if ($handle == 'craft') {
+                $directory = Craft::$app->getPath()->getAppPath();
+            } else {
+                $directory = Craft::$app->getPath()->getPluginsPath().'/'.$handle;
+            }
+
+            $file = Io::normalizePathSeparators($directory.'/'.$rowData[0]);
 
             // It's a folder
             if (static::isManifestLineAFolder($file)) {
@@ -79,18 +87,35 @@ class Update
     public static function rollBackDatabaseChanges($backupPath)
     {
         $dbBackup = new DbBackup();
-        $fullBackupPath = Craft::$app->getPath()->getDbBackupPath().'/'.$backupPath.'.sql';
-        $dbBackup->restore($fullBackupPath);
+
+        $fileName = $backupPath.'.sql';
+        $fullBackupPath = Craft::$app->getPath()->getDbBackupPath().$fileName;
+
+        // Make sure we're constrained to the backups folder.
+        if (Path::ensurePathIsContained($fileName)) {
+            $dbBackup->restore($fullBackupPath);
+        } else {
+            Craft::warning('Someone tried to restore a database from outside of the Craft backups folder: '.$fullBackupPath, __METHOD__);
+        }
     }
 
     /**
-     * @param $manifestData
-     * @param $sourceTempFolder
+     * @param array  $manifestData
+     * @param string $sourceTempFolder
+     * @param string $handle
      *
      * @return boolean
      */
-    public static function doFileUpdate($manifestData, $sourceTempFolder)
+    public static function doFileUpdate($manifestData, $sourceTempFolder, $handle)
     {
+        if ($handle == 'craft') {
+            $destDirectory = Craft::$app->getPath()->getAppPath();
+            $sourceFileDirectory = '/app';
+        } else {
+            $destDirectory = Craft::$app->getPath()->getPluginsPath().'/'.$handle;
+            $sourceFileDirectory = '';
+        }
+
         try {
             foreach ($manifestData as $row) {
                 if (static::isManifestVersionInfoLine($row)) {
@@ -107,8 +132,8 @@ class Update
                     $tempPath = $rowData[0];
                 }
 
-                $destFile = Io::normalizePathSeparators(Craft::$app->getPath()->getAppPath().'/'.$tempPath);
-                $sourceFile = Io::getRealPath(Io::normalizePathSeparators($sourceTempFolder.'/app/'.$tempPath));
+                $destFile = Io::normalizePathSeparators($destDirectory.'/'.$tempPath);
+                $sourceFile = Io::getRealPath(Io::normalizePathSeparators(rtrim($sourceTempFolder, '/').$sourceFileDirectory.'/'.$tempPath));
 
                 switch (trim($rowData[1])) {
                     // update the file
@@ -137,7 +162,7 @@ class Update
             }
         } catch (\Exception $e) {
             Craft::error('Error updating files: '.$e->getMessage(), __METHOD__);
-            Update::rollBackFileChanges($manifestData);
+            Update::rollBackFileChanges($manifestData, $handle);
 
             return false;
         }
@@ -218,20 +243,22 @@ class Update
     /**
      * Returns the relevant lines from the update manifest file starting with the current local version/build.
      *
-     * @param $manifestDataPath
+     * @param string $manifestDataPath
+     * @param string $handle
      *
-     * @throws Exception
      * @return array
+     * @throws Exception if there was a problem reading the update manifest data
      */
-    public static function getManifestData($manifestDataPath)
+    public static function getManifestData($manifestDataPath, $handle)
     {
         if (static::$_manifestData == null) {
-            if (Io::fileExists($manifestDataPath.'/craft_manifest')) {
+            $fullPath = rtrim($manifestDataPath, '/').'/'.$handle.'_manifest';
+            if (Io::fileExists($fullPath)) {
                 // get manifest file
-                $manifestFileData = Io::getFileContents($manifestDataPath.'/craft_manifest', true);
+                $manifestFileData = Io::getFileContents($fullPath, true);
 
                 if ($manifestFileData === false) {
-                    throw new Exception(Craft::t('app', 'There was a problem reading the update manifest data.'));
+                    throw new Exception('There was a problem reading the update manifest data');
                 }
 
                 // Remove any trailing empty newlines
@@ -242,9 +269,22 @@ class Update
                 $manifestData = array_map('trim', $manifestFileData);
                 $updateModel = Craft::$app->getUpdates()->getUpdates();
 
+                $localVersion = null;
+
+                if ($handle == 'craft') {
+                    $localVersion = $updateModel->app->localVersion.'.'.$updateModel->app->localBuild;
+                } else {
+                    foreach ($updateModel->plugins as $plugin) {
+                        if (strtolower($plugin->class) == $handle) {
+                            $localVersion = $plugin->localVersion;
+                            break;
+                        }
+                    }
+                }
+
                 // Only use the manifest data starting from the local version
                 for ($counter = 0; $counter < count($manifestData); $counter++) {
-                    if (StringHelper::contains($manifestData[$counter], '##'.$updateModel->app->localVersion.'.'.$updateModel->app->localBuild)) {
+                    if (StringHelper::contains($manifestData[$counter], '##'.$localVersion)) {
                         break;
                     }
                 }

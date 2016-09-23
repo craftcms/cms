@@ -1,15 +1,15 @@
 <?php
 /**
- * @link      http://buildwithcraft.com/
- * @copyright Copyright (c) 2015 Pixel & Tonic, Inc.
- * @license   http://buildwithcraft.com/license
+ * @link      https://craftcms.com/
+ * @copyright Copyright (c) Pixel & Tonic, Inc.
+ * @license   https://craftcms.com/license
  */
 
 namespace craft\app\controllers;
 
 use Craft;
-use craft\app\errors\HttpException;
 use craft\app\web\Controller;
+use yii\web\Response;
 
 /**
  * The RoutesController class is a controller that handles various route related tasks such as saving, deleting and
@@ -27,7 +27,6 @@ class RoutesController extends Controller
 
     /**
      * @inheritdoc
-     * @throws HttpException if the user isn’t an admin
      */
     public function init()
     {
@@ -38,7 +37,7 @@ class RoutesController extends Controller
     /**
      * Saves a new or existing route.
      *
-     * @return void
+     * @return Response
      */
     public function actionSaveRoute()
     {
@@ -58,19 +57,19 @@ class RoutesController extends Controller
 
         if ($routeRecord->hasErrors()) {
             return $this->asJson(['errors' => $routeRecord->getErrors()]);
-        } else {
-            return $this->asJson([
-                'success' => true,
-                'routeId' => $routeRecord->id,
-                'locale' => $routeRecord->locale
-            ]);
         }
+
+        return $this->asJson([
+            'success' => true,
+            'routeId' => $routeRecord->id,
+            'locale' => $routeRecord->locale
+        ]);
     }
 
     /**
      * Deletes a route.
      *
-     * @return void
+     * @return Response
      */
     public function actionDeleteRoute()
     {
@@ -85,7 +84,7 @@ class RoutesController extends Controller
     /**
      * Updates the route order.
      *
-     * @return void
+     * @return Response
      */
     public function actionUpdateRouteOrder()
     {

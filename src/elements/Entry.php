@@ -1,8 +1,8 @@
 <?php
 /**
- * @link      http://buildwithcraft.com/
- * @copyright Copyright (c) 2015 Pixel & Tonic, Inc.
- * @license   http://buildwithcraft.com/license
+ * @link      https://craftcms.com/
+ * @copyright Copyright (c) Pixel & Tonic, Inc.
+ * @license   https://craftcms.com/license
  */
 
 namespace craft\app\elements;
@@ -10,11 +10,13 @@ namespace craft\app\elements;
 use Craft;
 use craft\app\base\Element;
 use craft\app\base\ElementInterface;
+use craft\app\db\Query;
 use craft\app\elements\actions\Delete;
 use craft\app\elements\actions\Edit;
 use craft\app\elements\actions\NewChild;
 use craft\app\elements\actions\SetStatus;
 use craft\app\elements\actions\View;
+use craft\app\elements\db\ElementQuery;
 use craft\app\elements\db\ElementQueryInterface;
 use craft\app\elements\db\EntryQuery;
 use craft\app\events\SetStatusEvent;
@@ -24,6 +26,7 @@ use craft\app\helpers\Db;
 use craft\app\helpers\Url;
 use craft\app\models\EntryType;
 use craft\app\models\Section;
+use yii\base\InvalidConfigException;
 
 /**
  * Entry represents an entry element.
@@ -89,10 +92,10 @@ class Entry extends Element
     public static function getStatuses()
     {
         return [
-            static::STATUS_LIVE => Craft::t('app', 'Live'),
-            static::STATUS_PENDING => Craft::t('app', 'Pending'),
-            static::STATUS_EXPIRED => Craft::t('app', 'Expired'),
-            static::STATUS_DISABLED => Craft::t('app', 'Disabled')
+            self::STATUS_LIVE => Craft::t('app', 'Live'),
+            self::STATUS_PENDING => Craft::t('app', 'Pending'),
+            self::STATUS_EXPIRED => Craft::t('app', 'Expired'),
+            self::STATUS_DISABLED => Craft::t('app', 'Disabled')
         ];
     }
 
@@ -215,10 +218,10 @@ class Entry extends Element
             default: {
                 if (preg_match('/^section:(\d+)$/', $source, $matches)) {
                     $section = Craft::$app->getSections()->getSectionById($matches[1]);
-                }
 
-                if ($section) {
-                    $sections = [$section];
+                    if ($section) {
+                        $sections = [$section];
+                    }
                 }
             }
         }
@@ -256,17 +259,18 @@ class Entry extends Element
                 $setStatusAction = Craft::$app->getElements()->createAction(SetStatus::className());
                 $setStatusAction->on(SetStatus::EVENT_AFTER_SET_STATUS,
                     function (SetStatusEvent $event) {
-                        if ($event->status == static::STATUS_ENABLED) {
+                        if ($event->status == self::STATUS_ENABLED) {
                             // Set a Post Date as well
-                            Craft::$app->getDb()->createCommand()->update(
-                                '{{%entries}}',
-                                ['postDate' => Db::prepareDateForDb(new \DateTime())],
-                                [
-                                    'and',
-                                    ['in', 'id', $event->elementIds],
-                                    'postDate is null'
-                                ]
-                            )->execute();
+                            Craft::$app->getDb()->createCommand()
+                                ->update(
+                                    '{{%entries}}',
+                                    ['postDate' => Db::prepareDateForDb(new \DateTime())],
+                                    [
+                                        'and',
+                                        ['in', 'id', $event->elementIds],
+                                        'postDate is null'
+                                    ])
+                                ->execute();
                         }
                     });
                 $actions[] = $setStatusAction;
@@ -344,6 +348,8 @@ class Entry extends Element
             'uri' => Craft::t('app', 'URI'),
             'postDate' => Craft::t('app', 'Post Date'),
             'expiryDate' => Craft::t('app', 'Expiry Date'),
+            'elements.dateCreated' => Craft::t('app', 'Date Created'),
+            'elements.dateUpdated' => Craft::t('app', 'Date Updated'),
         ];
 
         // Allow plugins to modify the attributes
@@ -356,25 +362,56 @@ class Entry extends Element
     /**
      * @inheritdoc
      */
-    public static function defineTableAttributes($source = null)
+    public static function defineAvailableTableAttributes()
     {
         $attributes = [
-            'title' => Craft::t('app', 'Title'),
-            'uri' => Craft::t('app', 'URI'),
+            'title' => ['label' => Craft::t('app', 'Title')],
+            'section' => ['label' => Craft::t('app', 'Section')],
+            'type' => ['label' => Craft::t('app', 'Entry Type')],
+            'author' => ['label' => Craft::t('app', 'Author')],
+            'slug' => ['label' => Craft::t('app', 'Slug')],
+            'uri' => ['label' => Craft::t('app', 'URI')],
+            'postDate' => ['label' => Craft::t('app', 'Post Date')],
+            'expiryDate' => ['label' => Craft::t('app', 'Expiry Date')],
+            'link' => ['label' => Craft::t('app', 'Link'), 'icon' => 'world'],
+            'id' => ['label' => Craft::t('app', 'ID')],
+            'dateCreated' => ['label' => Craft::t('app', 'Date Created')],
+            'dateUpdated' => ['label' => Craft::t('app', 'Date Updated')],
         ];
 
-        if ($source == '*') {
-            $attributes['section'] = Craft::t('app', 'Section');
-        }
-
-        if ($source != 'singles') {
-            $attributes['postDate'] = Craft::t('app', 'Post Date');
-            $attributes['expiryDate'] = Craft::t('app', 'Expiry Date');
+        // Hide Author from Craft Personal/Client
+        if (Craft::$app->getEdition() != Craft::Pro) {
+            unset($attributes['author']);
         }
 
         // Allow plugins to modify the attributes
-        Craft::$app->getPlugins()->call('modifyEntryTableAttributes',
-            [&$attributes, $source]);
+        $pluginAttributes = Craft::$app->getPlugins()->call('defineAdditionalEntryTableAttributes', [], true);
+
+        foreach ($pluginAttributes as $thisPluginAttributes) {
+            $attributes = array_merge($attributes, $thisPluginAttributes);
+        }
+
+        return $attributes;
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public static function getDefaultTableAttributes($source = null)
+    {
+        $attributes = [];
+
+        if ($source == '*') {
+            $attributes[] = 'section';
+        }
+
+        if ($source != 'singles') {
+            $attributes[] = 'postDate';
+            $attributes[] = 'expiryDate';
+        }
+
+        $attributes[] = 'author';
+        $attributes[] = 'link';
 
         return $attributes;
     }
@@ -394,8 +431,24 @@ class Entry extends Element
         }
 
         switch ($attribute) {
+            case 'author': {
+                $author = $element->getAuthor();
+
+                if ($author) {
+                    return Craft::$app->getView()->renderTemplate('_elements/element', [
+                        'element' => $author
+                    ]);
+                } else {
+                    return '';
+                }
+            }
+
             case 'section': {
-                return Craft::t('app', $element->getSection()->name);
+                return Craft::t('site', $element->getSection()->name);
+            }
+
+            case 'type': {
+                return Craft::t('site', $element->getType()->name);
             }
 
             default: {
@@ -445,6 +498,51 @@ class Entry extends Element
                 ];
             }
         }
+
+        return null;
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public static function getEagerLoadingMap($sourceElements, $handle)
+    {
+        if ($handle == 'author') {
+            // Get the source element IDs
+            $sourceElementIds = [];
+
+            foreach ($sourceElements as $sourceElement) {
+                $sourceElementIds[] = $sourceElement->id;
+            }
+
+            $map = (new Query())
+                ->select('id as source, authorId as target')
+                ->from('{{%entries}}')
+                ->where(['in', 'id', $sourceElementIds])
+                ->all();
+
+            return [
+                'elementType' => User::className(),
+                'map' => $map
+            ];
+        }
+
+        return parent::getEagerLoadingMap($sourceElements, $handle);
+    }
+
+    /**
+     * @inheritdoc
+     */
+    protected static function prepElementQueryForTableAttribute(ElementQueryInterface $elementQuery, $attribute)
+    {
+        /** @var ElementQuery $elementQuery */
+        if ($attribute == 'author') {
+            $with = $elementQuery->with ?: [];
+            $with[] = 'author';
+            $elementQuery->with = $with;
+        } else {
+            parent::prepElementQueryForTableAttribute($elementQuery, $attribute);
+        }
     }
 
     /**
@@ -453,13 +551,52 @@ class Entry extends Element
     public static function getEditorHtml(ElementInterface $element)
     {
         /** @var Entry $element */
+        $html = '';
+        $view = Craft::$app->getView();
+
+        // Show the Entry Type field?
+        if (!$element->id) {
+            $entryTypes = $element->getSection()->getEntryTypes();
+
+            if (count($entryTypes) > 1) {
+                $entryTypeOptions = [];
+
+                foreach ($entryTypes as $entryType) {
+                    $entryTypeOptions[] = [
+                        'label' => Craft::t('site', $entryType->name),
+                        'value' => $entryType->id
+                    ];
+                }
+
+                $html .= Craft::$app->getView()->renderTemplateMacro('_includes/forms', 'selectField', [
+                    [
+                        'label' => Craft::t('app', 'Entry Type'),
+                        'id' => 'entryType',
+                        'value' => $element->typeId,
+                        'options' => $entryTypeOptions,
+                    ]
+                ]);
+
+                $typeInputId = $view->namespaceInputId('entryType');
+                $js = <<<EOD
+$('#{$typeInputId}').on('change', function(ev) {
+	var \$typeInput = $(this),
+		editor = \$typeInput.closest('.hud').data('elementEditor');
+	if (editor) {
+		editor.setElementAttribute('typeId', \$typeInput.val());
+		editor.loadHud();
+	}
+});
+EOD;
+                $view->registerJs($js);
+            }
+        }
+
         if ($element->getType()->hasTitleField) {
-            $html = Craft::$app->getView()->renderTemplate('entries/_titlefield',
+            $html .= $view->renderTemplate('entries/_titlefield',
                 [
                     'entry' => $element
                 ]);
-        } else {
-            $html = '';
         }
 
         $html .= parent::getEditorHtml($element);
@@ -475,6 +612,15 @@ class Entry extends Element
     public static function saveElement(ElementInterface $element, $params)
     {
         /** @var Entry $element */
+        // Make sure we have an author for this.
+        if (!$element->authorId) {
+            if (!empty($params['author'])) {
+                $element->authorId = $params['author'];
+            } else {
+                $element->authorId = Craft::$app->getUser()->getId();
+            }
+        }
+
         // Route this through \craft\app\services\Entries::saveEntry() so the proper entry events get fired.
         return Craft::$app->getEntries()->saveEntry($element);
     }
@@ -564,6 +710,11 @@ class Entry extends Element
      */
     public $revisionNotes;
 
+    /**
+     * @var User
+     */
+    private $_author;
+
     // Public Methods
     // =========================================================================
 
@@ -625,11 +776,7 @@ class Entry extends Element
      */
     public function getFieldLayout()
     {
-        $entryType = $this->getType();
-
-        if ($entryType) {
-            return $entryType->getFieldLayout();
-        }
+        return $this->getType()->getFieldLayout();
     }
 
     /**
@@ -653,17 +800,19 @@ class Entry extends Element
     {
         $section = $this->getSection();
 
-        if ($section && $section->hasUrls) {
+        if ($section->hasUrls) {
             $sectionLocales = $section->getLocales();
 
             if (isset($sectionLocales[$this->locale])) {
                 if ($this->level > 1) {
                     return $sectionLocales[$this->locale]->nestedUrlFormat;
-                } else {
-                    return $sectionLocales[$this->locale]->urlFormat;
                 }
+
+                return $sectionLocales[$this->locale]->urlFormat;
             }
         }
+
+        return null;
     }
 
     /**
@@ -679,36 +828,39 @@ class Entry extends Element
     /**
      * Returns the entry's section.
      *
-     * @return Section|null
+     * @return Section
+     * @throws InvalidConfigException if [[sectionId]] is invalid
      */
     public function getSection()
     {
         if ($this->sectionId) {
-            return Craft::$app->getSections()->getSectionById($this->sectionId);
+            $section = Craft::$app->getSections()->getSectionById($this->sectionId);
+
+            if ($section) {
+                return $section;
+            }
         }
+
+        throw new InvalidConfigException('Invalid section ID: '.$this->sectionId);
     }
 
     /**
      * Returns the type of entry.
      *
-     * @return EntryType|null
+     * @return EntryType
+     * @throws InvalidConfigException if [[typeId]] is invalid
      */
     public function getType()
     {
-        $section = $this->getSection();
+        if ($this->typeId) {
+            $sectionEntryTypes = $this->getSection()->getEntryTypes('id');
 
-        if ($section) {
-            $sectionEntryTypes = $section->getEntryTypes('id');
-
-            if ($sectionEntryTypes) {
-                if ($this->typeId && isset($sectionEntryTypes[$this->typeId])) {
-                    return $sectionEntryTypes[$this->typeId];
-                } else {
-                    // Just return the first one
-                    return ArrayHelper::getFirstValue($sectionEntryTypes);
-                }
+            if (isset($sectionEntryTypes[$this->typeId])) {
+                return $sectionEntryTypes[$this->typeId];
             }
         }
+
+        throw new InvalidConfigException('Invalid entry type ID: '.$this->typeId);
     }
 
     /**
@@ -718,9 +870,21 @@ class Entry extends Element
      */
     public function getAuthor()
     {
-        if ($this->authorId) {
-            return Craft::$app->getUsers()->getUserById($this->authorId);
+        if (!isset($this->_author) && $this->authorId) {
+            $this->_author = Craft::$app->getUsers()->getUserById($this->authorId);
         }
+
+        return $this->_author;
+    }
+
+    /**
+     * Sets the entry's author.
+     *
+     * @param User|null $author
+     */
+    public function setAuthor(User $author = null)
+    {
+        $this->_author = $author;
     }
 
     /**
@@ -737,11 +901,13 @@ class Entry extends Element
 
             if ($postDate <= $currentTime && (!$expiryDate || $expiryDate > $currentTime)) {
                 return self::STATUS_LIVE;
-            } else if ($postDate > $currentTime) {
-                return self::STATUS_PENDING;
-            } else {
-                return self::STATUS_EXPIRED;
             }
+
+            if ($postDate > $currentTime) {
+                return self::STATUS_PENDING;
+            }
+
+            return self::STATUS_EXPIRED;
         }
 
         return $status;
@@ -768,15 +934,26 @@ class Entry extends Element
     {
         $section = $this->getSection();
 
-        if ($section) {
-            // The slug *might* not be set if this is a Draft and they've deleted it for whatever reason
-            $url = Url::getCpUrl('entries/'.$section->handle.'/'.$this->id.($this->slug ? '-'.$this->slug : ''));
+        // The slug *might* not be set if this is a Draft and they've deleted it for whatever reason
+        $url = Url::getCpUrl('entries/'.$section->handle.'/'.$this->id.($this->slug ? '-'.$this->slug : ''));
 
-            if (Craft::$app->isLocalized() && $this->locale != Craft::$app->language) {
-                $url .= '/'.$this->locale;
-            }
+        if (Craft::$app->getIsLocalized() && $this->locale != Craft::$app->language) {
+            $url .= '/'.$this->locale;
+        }
 
-            return $url;
+        return $url;
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function setEagerLoadedElements($handle, $elements)
+    {
+        if ($handle == 'author') {
+            $author = isset($elements[0]) ? $elements[0] : null;
+            $this->setAuthor($author);
+        } else {
+            parent::setEagerLoadedElements($handle, $elements);
         }
     }
 

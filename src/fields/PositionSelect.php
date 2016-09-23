@@ -1,8 +1,8 @@
 <?php
 /**
- * @link      http://buildwithcraft.com/
- * @copyright Copyright (c) 2015 Pixel & Tonic, Inc.
- * @license   http://buildwithcraft.com/license
+ * @link      https://craftcms.com/
+ * @copyright Copyright (c) Pixel & Tonic, Inc.
+ * @license   https://craftcms.com/license
  */
 
 namespace craft\app\fields;
@@ -126,7 +126,7 @@ class PositionSelect extends Field
                 'name' => $this->handle,
                 'value' => $value,
                 'options' => $this->options,
-                'allOptions' => $this->_getOptions(),
+                'allOptions' => self::_getOptions(),
             ]);
     }
 }

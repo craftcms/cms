@@ -1,8 +1,8 @@
 <?php
 /**
- * @link      http://buildwithcraft.com/
- * @copyright Copyright (c) 2015 Pixel & Tonic, Inc.
- * @license   http://buildwithcraft.com/license
+ * @link      https://craftcms.com/
+ * @copyright Copyright (c) Pixel & Tonic, Inc.
+ * @license   https://craftcms.com/license
  */
 
 namespace craft\app\web\twig;
@@ -20,7 +20,14 @@ class Parser extends \Twig_Parser
     // Protected Methods
     // =========================================================================
 
-    protected function filterBodyNodes(\Twig_NodeInterface $node)
+    /**
+     * @param \Twig_NodeInterface $node
+     *
+     * @return \Twig_NodeInterface|void
+     */
+    protected function filterBodyNodes(
+        /** @noinspection PhpDeprecationInspection */ \Twig_NodeInterface $node
+    )
     {
         // Bypass "include" nodes as they "capture" the output
         if ($node instanceof RegisterResourceNode) {

@@ -1,14 +1,20 @@
 {% extends "_layouts/cp" %}
 {% set title = "Category Groups"|t('app') %}
 
+{% set extraPageHeaderHtml %}
+	<div class="buttons right">
+		<a href="{{ url('settings/categories/new') }}" class="btn submit add icon">{{ "New category group"|t('app') }}</a>
+	</div>
+{% endset %}
+
 {% set crumbs = [
 	{ label: "Settings"|t('app'), url: url('settings') }
 ] %}
 
-{% set docsUrl = 'http://buildwithcraft.com/docs/categories' %}
+{% set docsUrl = 'http://craftcms.com/docs/categories' %}
 
 
-{% set content %}
+{% block content %}
 	<div id="nocategorygroups"{% if categoryGroups|length %} class="hidden"{% endif %}>
 		<p>{{ "No category groups exist yet."|t('app') }}</p>
 	</div>
@@ -26,18 +32,14 @@
 					<tr data-id="{{ group.id }}" data-name="{{ group.name|t('site') }}">
 						<th scope="row" data-title="{{ 'Name'|t('app') }}"><a href="{{ url('settings/categories/' ~ group.id) }}">{{ group.name|t('site') }}</a></th>
 						<td data-title="{{ 'Handle'|t('app') }}"><code>{{ group.handle }}</code></td>
-						<td><a href="{{ url('categories/'~group.handle) }}">{{ "Edit Categories"|t('app') }}</a></td>
+						<td><a href="{{ url('categories/'~group.handle) }}">{{ "Manage categories"|t('app') }}</a></td>
 						<td class="thin"><a class="delete icon" title="{{ 'Delete'|t('app') }}" role="button"></a></td>
 					</tr>
 				{% endfor %}
 			</tbody>
 		</table>
 	{% endif %}
-
-	<div class="buttons">
-		<a href="{{ url('settings/categories/new') }}" class="btn submit add icon">{{ "New Category Group"|t('app') }}</a>
-	</div>
-{% endset %}
+{% endblock %}
 
 
 {% registerjs %}

@@ -1,17 +1,17 @@
 <?php
 /**
- * @link      http://buildwithcraft.com/
- * @copyright Copyright (c) 2015 Pixel & Tonic, Inc.
- * @license   http://buildwithcraft.com/license
+ * @link      https://craftcms.com/
+ * @copyright Copyright (c) Pixel & Tonic, Inc.
+ * @license   https://craftcms.com/license
  */
 
 namespace craft\app\web;
 
 use Craft;
 use craft\app\base\RequestTrait;
-use craft\app\errors\HttpException;
 use craft\app\helpers\StringHelper;
 use yii\base\InvalidConfigException;
+use yii\web\BadRequestHttpException;
 
 /**
  * @inheritdoc
@@ -27,7 +27,6 @@ use yii\base\InvalidConfigException;
  * @property boolean $isActionRequest        Whether a specific controller action was requested.
  * @property array   $actionSegments         The segments of the requested controller action path, if this is an [[getIsActionRequest() action request]].
  * @property boolean $isLivePreview          Whether this is a Live Preview request.
- * @property boolean $isMobileBrowser        Whether the request is coming from a mobile browser.
  * @property string  $hostName               The host name from the current request URL.
  * @property string  $queryStringWithoutPath The request’s query string, without the path parameter.
  *
@@ -262,16 +261,16 @@ class Request extends \yii\web\Request
     {
         if ($returnRealPathInfo) {
             return parent::getPathInfo();
-        } else {
-            return $this->_path;
         }
+
+        return $this->_path;
     }
 
     /**
      * Returns the segments of the requested path.
      *
-     * Note that the segments will not include the [CP trigger](http://buildwithcraft.com/docs/config-settings#cpTrigger)
-     * if it’s a CP request, or the [page trigger](http://buildwithcraft.com/docs/config-settings#pageTrigger) or page
+     * Note that the segments will not include the [CP trigger](http://craftcms.com/docs/config-settings#cpTrigger)
+     * if it’s a CP request, or the [page trigger](http://craftcms.com/docs/config-settings#pageTrigger) or page
      * number if it’s a paginated request.
      *
      * @return array The Craft path’s segments.
@@ -301,6 +300,8 @@ class Request extends \yii\web\Request
                 return $this->_segments[$totalSegs + $num];
             }
         }
+
+        return null;
     }
 
     /**
@@ -327,7 +328,7 @@ class Request extends \yii\web\Request
      * Returns whether the Control Panel was requested.
      *
      * The result depends on whether the first segment in the URI matches the
-     * [CP trigger](http://buildwithcraft.com/docs/config-settings#cpTrigger).
+     * [CP trigger](http://craftcms.com/docs/config-settings#cpTrigger).
      *
      * Note that even if this function returns `true`, the request will not necessarily route to the Control Panel.
      * It could instead route to a resource, for example.
@@ -355,7 +356,7 @@ class Request extends \yii\web\Request
      * Returns whether a resource was requested.
      *
      * The result depends on whether the first segment in the Craft path matches the
-     * [resource trigger](http://buildwithcraft.com/docs/config-settings#resourceTrigger).
+     * [resource trigger](http://craftcms.com/docs/config-settings#resourceTrigger).
      *
      * @return boolean Whether the current request should be routed to a resource.
      */
@@ -372,7 +373,7 @@ class Request extends \yii\web\Request
      * There are several ways that this method could return `true`:
      *
      * - If the first segment in the Craft path matches the
-     *   [action trigger](http://buildwithcraft.com/docs/config-settings#actionTrigger)
+     *   [action trigger](http://craftcms.com/docs/config-settings#actionTrigger)
      * - If there is an 'action' param in either the POST data or query string
      * - If the Craft path matches the Login path, the Logout path, or the Set Password path
      *
@@ -420,13 +421,17 @@ class Request extends \yii\web\Request
      *
      * @return boolean Whether the request is coming from a mobile browser.
      */
-    public function getIsMobileBrowser($detectTablets = false)
+    public function isMobileBrowser($detectTablets = false)
     {
-        $key = ($detectTablets ? '_isMobileOrTabletBrowser' : '_isMobileBrowser');
+        if ($detectTablets) {
+            $property = &$this->_isMobileOrTabletBrowser;
+        } else {
+            $property = &$this->_isMobileBrowser;
+        }
 
-        if (!isset($this->$key)) {
+        if (!isset($property)) {
             if ($this->getUserAgent()) {
-                $this->$key = (
+                $property = (
                     preg_match(
                         '/(android|bb\\d+|meego).+mobile|avantgo|bada\\/|blackberry|blazer|compal|elaine|fennec|hiptop|iemobile|ip(hone|od)|iris|kindle|lge |maemo|midp|mmp|mobile.+firefox|netfront|opera m(ob|in)i|palm( os)?|phone|p(ixi|re)\\/|plucker|pocket|psp|series(4|6)0|symbian|treo|up\\.(browser|link)|vodafone|wap|windows ce|xda|xiino'
                         .($detectTablets ? '|android|ipad|playbook|silk' : '').'/i',
@@ -438,11 +443,11 @@ class Request extends \yii\web\Request
                     )
                 );
             } else {
-                $this->$key = false;
+                $property = false;
             }
         }
 
-        return $this->$key;
+        return $property;
     }
 
     /**
@@ -509,7 +514,7 @@ class Request extends \yii\web\Request
      * @param string $name The parameter name.
      *
      * @return mixed The parameter value
-     * @throws HttpException
+     * @throws BadRequestHttpException if the request does not have the body param
      * @see getBodyParam()
      */
     public function getRequiredBodyParam($name)
@@ -520,8 +525,7 @@ class Request extends \yii\web\Request
             return $value;
         }
 
-        throw new HttpException(400, Craft::t('app', 'Body param “{name}” doesn’t exist.',
-            ['name' => $name]));
+        throw new BadRequestHttpException('Request missing required body param');
     }
 
     /**
@@ -569,7 +573,7 @@ class Request extends \yii\web\Request
      * @param string $name The GET parameter name.
      *
      * @return mixed The GET parameter value.
-     * @throws HttpException
+     * @throws BadRequestHttpException if the request does not have the query param
      * @see getQueryParam()
      */
     public function getRequiredQueryParam($name)
@@ -580,8 +584,7 @@ class Request extends \yii\web\Request
             return $value;
         }
 
-        throw new HttpException(400, Craft::t('app', 'GET param “{name}” doesn’t exist.',
-            ['name' => $name]));
+        throw new BadRequestHttpException('Request missing required query param');
     }
 
     /**
@@ -616,7 +619,7 @@ class Request extends \yii\web\Request
      * @param string $name The parameter name.
      *
      * @return mixed The parameter value.
-     * @throws HttpException
+     * @throws BadRequestHttpException if the request does not have the param
      * @see getQueryParam()
      * @see getBodyParam()
      */
@@ -628,8 +631,7 @@ class Request extends \yii\web\Request
             return $value;
         }
 
-        throw new HttpException(400, Craft::t('app', 'Param “{name}” doesn’t exist.',
-            ['name' => $name]));
+        throw new BadRequestHttpException('Request missing required param');
     }
 
     /**
@@ -639,20 +641,12 @@ class Request extends \yii\web\Request
      */
     public function getQueryStringWithoutPath()
     {
-        // Get the full query string.
-        $queryString = $this->getQueryString();
+        $queryParams = $this->getQueryParams();
+        $pathParam = Craft::$app->getConfig()->get('pathParam');
 
-        $parts = explode('&', $queryString);
-        $pathAssignment = Craft::$app->getConfig()->get('pathParam').'=';
+        unset($queryParams[$pathParam]);
 
-        foreach ($parts as $key => $part) {
-            if (StringHelper::startsWith($part, $pathAssignment)) {
-                unset($parts[$key]);
-                break;
-            }
-        }
-
-        return implode('&', $parts);
+        return http_build_query($queryParams);
     }
 
     /**
@@ -746,8 +740,10 @@ class Request extends \yii\web\Request
      * This token is a masked version of [[rawCsrfToken]] to prevent [BREACH attacks](http://breachattack.com/).
      * This token may be passed along via a hidden field of an HTML form or an HTTP header value
      * to support CSRF validation.
+     *
      * @param boolean $regenerate whether to regenerate CSRF token. When this parameter is true, each time
-     * this method is called, a new CSRF token will be generated and persisted (in session or cookie).
+     *                            this method is called, a new CSRF token will be generated and persisted (in session or cookie).
+     *
      * @return string the token used to perform CSRF validation.
      */
     public function getCsrfToken($regenerate = false)
@@ -763,7 +759,7 @@ class Request extends \yii\web\Request
             $chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789_-.';
             $mask = substr(str_shuffle(str_repeat($chars, 5)), 0, static::CSRF_MASK_LENGTH);
             // The + sign may be decoded as blank space later, which will fail the validation
-            $this->_csrfToken = str_replace('+', '.', base64_encode($mask . $this->_xorTokens($token, $mask)));
+            $this->_csrfToken = str_replace('+', '.', base64_encode($mask.$this->_xorTokens($token, $mask)));
         }
 
         return $this->_csrfToken;
@@ -782,6 +778,7 @@ class Request extends \yii\web\Request
 
     /**
      * Generates  an unmasked random token used to perform CSRF validation.
+     *
      * @return string the random token for CSRF validation.
      */
     protected function generateCsrfToken()
@@ -789,40 +786,31 @@ class Request extends \yii\web\Request
         $existingToken = $this->loadCsrfToken();
 
         // They have an existing CSRF token.
-        if ($existingToken)
-        {
+        if ($existingToken) {
             // It's a CSRF token that came from an authenticated request.
-            if (strpos($existingToken, '|') !== false)
-            {
+            if (strpos($existingToken, '|') !== false) {
                 // Grab the existing nonce.
                 $parts = explode('|', $existingToken);
                 $nonce = $parts[0];
-            }
-            else
-            {
+            } else {
                 // It's a CSRF token from an unauthenticated request.
                 $nonce = $existingToken;
             }
-        }
-        else
-        {
+        } else {
             // No previous CSRF token, generate a new nonce.
-             $nonce = Craft::$app->getSecurity()->generateRandomString(40);
+            $nonce = Craft::$app->getSecurity()->generateRandomString(40);
         }
 
         // Authenticated users
-        if (Craft::$app->get('user', false) && ($currentUser = Craft::$app->getUser()->getIdentity()))
-        {
+        if (Craft::$app->get('user', false) && ($currentUser = Craft::$app->getUser()->getIdentity())) {
             // We mix the password into the token so that it will become invalid when the user changes their password.
             // The salt on the blowfish hash will be different even if they change their password to the same thing.
             // Normally using the session ID would be a better choice, but PHP's bananas session handling makes that difficult.
             $passwordHash = $currentUser->password;
             $userId = $currentUser->id;
-            $hashable = implode('|', array($nonce, $userId, $passwordHash));
+            $hashable = implode('|', [$nonce, $userId, $passwordHash]);
             $token = $nonce.'|'.Craft::$app->getSecurity()->hashData($hashable, $this->cookieValidationKey);
-        }
-        else
-        {
+        } else {
             // Unauthenticated users.
             $token = $nonce;
         }
@@ -842,14 +830,13 @@ class Request extends \yii\web\Request
      *
      * @param $token
      *
-     * @return bool
-     * @throws \CException
+     * @return boolean
      */
     protected function csrfTokenValidForCurrentUser($token)
     {
         $currentUser = false;
 
-        if (Craft::$app->isInstalled() && Craft::$app->get('user', false)) {
+        if (Craft::$app->getIsInstalled() && Craft::$app->get('user', false)) {
             $currentUser = Craft::$app->getUser()->getIdentity();
         }
 
@@ -860,20 +847,20 @@ class Request extends \yii\web\Request
                 return false;
             }
 
+            /** @noinspection PhpUnusedLocalVariableInspection */
             list($nonce, $hashFromToken) = $splitToken;
 
             // Check that this token is for the current user
             $passwordHash = $currentUser->password;
             $userId = $currentUser->id;
-            $hashable = implode('|', array($nonce, $userId, $passwordHash));
+            $hashable = implode('|', [$nonce, $userId, $passwordHash]);
             $expectedToken = $nonce.'|'.Craft::$app->getSecurity()->hashData($hashable, $this->cookieValidationKey);
 
             return Craft::$app->getSecurity()->compareString($expectedToken, $token);
         }
-        else {
-            // If they're logged out, any token is fine
-            return true;
-        }
+
+        // If they're logged out, any token is fine
+        return true;
     }
 
     // Private Methods
@@ -940,7 +927,7 @@ class Request extends \yii\web\Request
                     /** @noinspection PhpUndefinedVariableInspection */
                     if ($triggerMatch) {
                         $this->_actionSegments = array_slice($this->_segments, 1);
-                    } else if ($actionParam) {
+                    } else if (!empty($actionParam)) {
                         $this->_actionSegments = array_filter(explode('/', $actionParam));
                     } else {
                         if ($this->_path == $loginPath) {

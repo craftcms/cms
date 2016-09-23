@@ -1,6 +1,6 @@
 <?php
 
-return array(
+return [
     '"{filename}" is not allowed in this field.' => 'Pro toto pole není "{filename}" povolen.',
     '$_SERVER does not have {messages}.' => '$_SERVER neobsahuje {messages}',
     '$_SERVER Variable' => '$_SERVER Variable',
@@ -276,7 +276,7 @@ Pokud nevíte, o co se jedná, klidně tuto zprávu ignorujte. ',
     'Craft Update' => 'Aktualizace Craftu',
     'Craft was unable to install this update :(' => 'Craftu se nepodařilo aktualizaci nainstalovat.',
     'Craft {edition} is required to perform this action.' => 'Craft {edition} je vyžadován pro tuto akci.',
-    'Craft’s <a href="http://buildwithcraft.com/license" target="_blank">Terms and Conditions</a> have changed.' => '<a href="http://buildwithcraft.com/license" target="_blank">Všeobecné podmínky</a> Craftu se změnily.',
+    'Craft’s <a href="http://craftcms.com/license" target="_blank">Terms and Conditions</a> have changed.' => '<a href="http://craftcms.com/license" target="_blank">Všeobecné podmínky</a> Craftu se změnily.',
     'Create' => 'Vytvořit',
     'Create a new asset source' => 'Přidat nový zdroj objektů',
     'Create a new category' => 'Vytvořit kategorii',
@@ -1206,7 +1206,7 @@ Pokud nevíte, o co se jedná, tuto zprávu  klidně ignorujte.',
     'You cannot access the CP while the system is offline with that account.' => 'S Vaším účtem nemůžete otevvřít CP, když je systém offline.',
     'You cannot access the CP with that account.' => 'Administrační rozhraní není s tímto účtem přístupné.',
     'You can’t add any more {type} sections.' => 'Nemůžete přidat další sekce typu {type}.',
-    'You don’t have any <a href="http://buildwithcraft.com/docs/rich-text-fields#redactor-configs" target="_blank">Redactor configs</a> yet.' => 'Zatím nemáte žádné <a href="http://buildwithcraft.com/docs/rich-text-fields#redactor-configs" target="_blank">nastavení Redactorus</a>.',
+    'You don’t have any <a href="http://craftcms.com/docs/rich-text-fields#redactor-configs" target="_blank">Redactor configs</a> yet.' => 'Zatím nemáte žádné <a href="http://craftcms.com/docs/rich-text-fields#redactor-configs" target="_blank">nastavení Redactorus</a>.',
     'You don’t have any widgets yet.' => 'Zatím nemáte žádné widgety',
     'You don’t have the proper credentials to access this page.' => 'Nemáte potřebné oprávnění pro přístup k této stránce.',
     'You don’t have the required permissions for this operation.' => 'Nemáte oprávnění potřebná pro provedení této operace.',
@@ -1256,4 +1256,4 @@ Pokud nevíte, o co se jedná, tuto zprávu  klidně ignorujte.',
     '“{plugin}” can’t be disabled because it isn’t installed yet.' => '"{plugin}" nelze deaktivovat, protože plugin zatím není nainstalován.',
     '“{plugin}” can’t be enabled because it isn’t installed yet.' => '"{plugin}" nelze aktivovat, neboť zatím není nainstalován.',
     '…Or use one of your field groups as a starting point:' => '... anebo pro začátek použijte jednu z Vašich skupin vstupních polí:',
-);
+];

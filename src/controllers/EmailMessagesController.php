@@ -1,16 +1,16 @@
 <?php
 /**
- * @link      http://buildwithcraft.com/
- * @copyright Copyright (c) 2015 Pixel & Tonic, Inc.
- * @license   http://buildwithcraft.com/license
+ * @link      https://craftcms.com/
+ * @copyright Copyright (c) Pixel & Tonic, Inc.
+ * @license   https://craftcms.com/license
  */
 
 namespace craft\app\controllers;
 
 use Craft;
-use craft\app\errors\HttpException;
-use craft\app\models\RebrandEmail as RebrandEmailModel;
+use craft\app\models\RebrandEmail;
 use craft\app\web\Controller;
+use yii\web\Response;
 
 Craft::$app->requireEdition(Craft::Client);
 
@@ -30,7 +30,6 @@ class EmailMessagesController extends Controller
 
     /**
      * @inheritdoc
-     * @throws HttpException if the user isn’t an admin
      */
     public function init()
     {
@@ -39,21 +38,40 @@ class EmailMessagesController extends Controller
     }
 
     /**
+     * Returns the HTML for an email message modal.
+     *
+     * @return Response
+     */
+    public function actionGetMessageModal()
+    {
+        $this->requireAjaxRequest();
+
+        $request = Craft::$app->getRequest();
+        $key = $request->getRequiredBodyParam('key');
+        $localeId = $request->getBodyParam('locale');
+        $message = Craft::$app->getEmailMessages()->getMessage($key, $localeId);
+
+        return $this->renderTemplate('settings/email/_message_modal', [
+            'message' => $message,
+        ]);
+    }
+
+    /**
      * Saves an email message.
      *
-     * @return void
+     * @return Response
      */
     public function actionSaveMessage()
     {
         $this->requirePostRequest();
         $this->requireAjaxRequest();
 
-        $message = new RebrandEmailModel();
+        $message = new RebrandEmail();
         $message->key = Craft::$app->getRequest()->getRequiredBodyParam('key');
         $message->subject = Craft::$app->getRequest()->getRequiredBodyParam('subject');
         $message->body = Craft::$app->getRequest()->getRequiredBodyParam('body');
 
-        if (Craft::$app->isLocalized()) {
+        if (Craft::$app->getIsLocalized()) {
             $message->locale = Craft::$app->getRequest()->getBodyParam('locale');
         } else {
             $message->locale = Craft::$app->language;
@@ -61,8 +79,8 @@ class EmailMessagesController extends Controller
 
         if (Craft::$app->getEmailMessages()->saveMessage($message)) {
             return $this->asJson(['success' => true]);
-        } else {
-            return $this->asErrorJson(Craft::t('app', 'There was a problem saving your message.'));
         }
+
+        return $this->asErrorJson(Craft::t('app', 'There was a problem saving your message.'));
     }
 }

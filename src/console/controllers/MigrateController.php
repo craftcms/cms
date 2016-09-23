@@ -1,15 +1,14 @@
 <?php
 /**
- * @link      http://buildwithcraft.com/
- * @copyright Copyright (c) 2015 Pixel & Tonic, Inc.
- * @license   http://buildwithcraft.com/license
+ * @link      https://craftcms.com/
+ * @copyright Copyright (c) Pixel & Tonic, Inc.
+ * @license   https://craftcms.com/license
  */
 
 namespace craft\app\console\controllers;
 
 use Craft;
 use craft\app\base\Plugin;
-use craft\app\base\PluginInterface;
 use craft\app\db\MigrationManager;
 use craft\app\helpers\Io;
 use yii\console\controllers\BaseMigrateController;
@@ -48,7 +47,7 @@ class MigrateController extends BaseMigrateController
     // =========================================================================
 
     /**
-     * @var string|PluginInterface|Plugin The handle of the plugin to use during migration operations, or the plugin itself
+     * @var string|Plugin The handle of the plugin to use during migration operations, or the plugin itself
      */
     public $plugin;
 
@@ -82,6 +81,7 @@ class MigrateController extends BaseMigrateController
 
     /**
      * @inheritdoc
+     *
      * @throws Exception if the 'plugin' option isn't valid
      */
     public function beforeAction($action)
@@ -98,9 +98,9 @@ class MigrateController extends BaseMigrateController
             $this->migrationPath = $this->getMigrator()->migrationPath;
 
             return true;
-        } else {
-            return false;
         }
+
+        return false;
     }
 
     /**

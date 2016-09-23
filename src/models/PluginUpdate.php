@@ -1,14 +1,13 @@
 <?php
 /**
- * @link      http://buildwithcraft.com/
- * @copyright Copyright (c) 2015 Pixel & Tonic, Inc.
- * @license   http://buildwithcraft.com/license
+ * @link      https://craftcms.com/
+ * @copyright Copyright (c) Pixel & Tonic, Inc.
+ * @license   https://craftcms.com/license
  */
 
 namespace craft\app\models;
 
 use craft\app\base\Model;
-use craft\app\models\PluginUpdate as PluginUpdateModel;
 
 /**
  * Stores the available plugin update info.
@@ -18,6 +17,14 @@ use craft\app\models\PluginUpdate as PluginUpdateModel;
  */
 class PluginUpdate extends Model
 {
+    // Constants
+    // =========================================================================
+
+    const STATUS_UP_TO_DATE = 'UpToDate';
+    const STATUS_UPDATE_AVAILABLE = 'UpdateAvailable';
+    const STATUS_DELETED = 'Deleted';
+    const STATUS_UNKNOWN = 'Unknown';
+
     // Static
     // =========================================================================
 
@@ -28,8 +35,8 @@ class PluginUpdate extends Model
     {
         if (isset($config['releases'])) {
             foreach ($config['releases'] as $key => $value) {
-                if (!$value instanceof PluginUpdateModel) {
-                    $config['releases'][$key] = PluginUpdateModel::create($value);
+                if (!$value instanceof PluginNewRelease) {
+                    $config['releases'][$key] = PluginNewRelease::create($value);
                 }
             }
         }
@@ -61,11 +68,6 @@ class PluginUpdate extends Model
     public $latestDate;
 
     /**
-     * @var boolean Status
-     */
-    public $status = false;
-
-    /**
      * @var string Display name
      */
     public $displayName;
@@ -76,9 +78,24 @@ class PluginUpdate extends Model
     public $criticalUpdateAvailable = false;
 
     /**
+     * @var boolean Manual update required
+     */
+    public $manualUpdateRequired = false;
+
+    /**
+     * @var string Manual download endpoint
+     */
+    public $manualDownloadEndpoint;
+
+    /**
      * @var PluginNewRelease[] Releases
      */
     public $releases;
+
+    /**
+     * @var string Status
+     */
+    public $status = self::STATUS_UNKNOWN;
 
     // Public Methods
     // =========================================================================
@@ -102,19 +119,15 @@ class PluginUpdate extends Model
         return [
             [['latestDate'], 'craft\\app\\validators\\DateTime'],
             [
-                [
-                    'class',
-                    'localVersion',
-                    'latestVersion',
-                    'latestDate',
-                    'status',
-                    'displayName',
-                    'criticalUpdateAvailable',
-                    'releases'
-                ],
-                'safe',
-                'on' => 'search'
-            ],
+                ['status'],
+                'in',
+                'range' => [
+                    self::STATUS_UP_TO_DATE,
+                    self::STATUS_UPDATE_AVAILABLE,
+                    self::STATUS_DELETED,
+                    self::STATUS_UNKNOWN
+                ]
+            ]
         ];
     }
 }

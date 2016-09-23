@@ -1,8 +1,8 @@
 <?php
 /**
- * @link      http://buildwithcraft.com/
- * @copyright Copyright (c) 2015 Pixel & Tonic, Inc.
- * @license   http://buildwithcraft.com/license
+ * @link      https://craftcms.com/
+ * @copyright Copyright (c) Pixel & Tonic, Inc.
+ * @license   https://craftcms.com/license
  */
 
 namespace craft\app\widgets;
@@ -52,9 +52,17 @@ class GetHelp extends Widget
     /**
      * @inheritdoc
      */
+    public function getIconPath()
+    {
+        return Craft::$app->getPath()->getResourcesPath().'/images/widgets/get-help.svg';
+    }
+
+    /**
+     * @inheritdoc
+     */
     public function getTitle()
     {
-        return Craft::t('app', 'Send a message to Craft Support');
+        return Craft::t('app', 'Send a message to Craft CMS Support');
     }
 
     /**
@@ -71,7 +79,10 @@ class GetHelp extends Widget
         Craft::$app->getView()->registerJs($js);
 
         Craft::$app->getView()->registerJsResource('js/GetHelpWidget.js');
-        Craft::$app->getView()->includeTranslations('Message sent successfully.', 'Couldn’t send support request.');
+        Craft::$app->getView()->registerTranslations('app', [
+            'Message sent successfully.',
+            'Couldn’t send support request.',
+        ]);
 
         return Craft::$app->getView()->renderTemplate('_components/widgets/GetHelp/body');
     }

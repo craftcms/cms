@@ -1,8 +1,8 @@
 <?php
 /**
- * @link      http://buildwithcraft.com/
- * @copyright Copyright (c) 2015 Pixel & Tonic, Inc.
- * @license   http://buildwithcraft.com/license
+ * @link      https://craftcms.com/
+ * @copyright Copyright (c) Pixel & Tonic, Inc.
+ * @license   https://craftcms.com/license
  */
 
 namespace craft\app\elements\actions;
@@ -81,7 +81,16 @@ class EditImage extends ElementAction
 		},
 		activate: function(\$selectedItems)
 		{
-			this._imageEditor = new Craft.AssetImageEditor(\$selectedItems.find('.element').data('id'));
+			var \$element = \$selectedItems.find('.element:first'),
+			    element = Craft.getElementInfo(\$element);
+
+            var settings = {
+                onSave: function () {
+                    alert('Ok, saving ' + element.id);
+                }
+            };
+            
+            new Craft.AssetImageEditor(element.url, element.id, settings);
 		}
 	});
 })();

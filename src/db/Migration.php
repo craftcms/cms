@@ -1,11 +1,13 @@
 <?php
 /**
- * @link      http://buildwithcraft.com/
- * @copyright Copyright (c) 2015 Pixel & Tonic, Inc.
- * @license   http://buildwithcraft.com/license
+ * @link      https://craftcms.com/
+ * @copyright Copyright (c) Pixel & Tonic, Inc.
+ * @license   https://craftcms.com/license
  */
 
 namespace craft\app\db;
+
+use yii\db\ColumnSchemaBuilder;
 
 /**
  * @inheritdoc
@@ -20,6 +22,85 @@ abstract class Migration extends \yii\db\Migration
     // Public Methods
     // =========================================================================
 
+    // Schema Builder Methods
+    // -------------------------------------------------------------------------
+
+    /**
+     * Creates a tinytext column for MySQL, or text column for others.
+     *
+     * @return ColumnSchemaBuilder the column instance which can be further customized.
+     */
+    public function tinyText()
+    {
+        if ($this->db->getDriverName() == 'mysql') {
+            return $this->db->getSchema()->createColumnSchemaBuilder('tinytext');
+        }
+
+        return $this->text();
+    }
+
+    /**
+     * Creates a mediumtext column for MySQL, or text column for others.
+     *
+     * @return ColumnSchemaBuilder the column instance which can be further customized.
+     */
+    public function mediumText()
+    {
+        if ($this->db->getDriverName() == 'mysql') {
+            return $this->db->getSchema()->createColumnSchemaBuilder('mediumtext');
+        }
+
+        return $this->text();
+    }
+
+    /**
+     * Creates a longtext column for MySQL, or text column for others.
+     *
+     * @return ColumnSchemaBuilder the column instance which can be further customized.
+     */
+    public function longText()
+    {
+        if ($this->db->getDriverName() == 'mysql') {
+            return $this->db->getSchema()->createColumnSchemaBuilder('longtext');
+        }
+
+        return $this->text();
+    }
+
+    /**
+     * Creates an enum column for MySQL, or a string column with a check constraint for others.
+     *
+     * @param string   $columnName The column name
+     * @param string[] $values     The allowed column values
+     *
+     * @return ColumnSchemaBuilder the column instance which can be further customized.
+     */
+    public function enum($columnName, $values)
+    {
+        // Quote the values
+        $schema = $this->db->getSchema();
+        $values = array_map([$schema, 'quoteValue'], $values);
+
+        if ($this->db->getDriverName() == 'mysql') {
+            return $this->db->getSchema()->createColumnSchemaBuilder('enum', $values);
+        }
+
+        return $this->string()->check($schema->quoteColumnName($columnName).' in ('.implode(',', $values).')');
+    }
+
+    /**
+     * Shortcut for creating a uid column
+     *
+     * @return ColumnSchemaBuilder the column instance which can be further customized.
+     */
+    public function uid()
+    {
+        return $this->char(36)->notNull()->defaultValue('0');
+    }
+
+    // CRUD Methods
+    // -------------------------------------------------------------------------
+
     /**
      * @inheritdoc
      *
@@ -32,7 +113,9 @@ abstract class Migration extends \yii\db\Migration
     {
         echo "    > insert into $table ...";
         $time = microtime(true);
-        $this->db->createCommand()->insert($table, $columns, $includeAuditColumns)->execute();
+        $this->db->createCommand()
+            ->insert($table, $columns, $includeAuditColumns)
+            ->execute();
         echo " done (time: ".sprintf('%.3f', microtime(true) - $time)."s)\n";
     }
 
@@ -48,7 +131,9 @@ abstract class Migration extends \yii\db\Migration
     {
         echo "    > batch insert into $table ...";
         $time = microtime(true);
-        $this->db->createCommand()->batchInsert($table, $columns, $rows, $includeAuditColumns)->execute();
+        $this->db->createCommand()
+            ->batchInsert($table, $columns, $rows, $includeAuditColumns)
+            ->execute();
         echo " done (time: ".sprintf('%.3f', microtime(true) - $time)."s)\n";
     }
 
@@ -67,7 +152,9 @@ abstract class Migration extends \yii\db\Migration
     {
         echo "    > insert or update into $table ...";
         $time = microtime(true);
-        $this->db->createCommand()->insertOrUpdate($table, $keyColumns, $updateColumns, $includeAuditColumns)->execute();
+        $this->db->createCommand()
+            ->insertOrUpdate($table, $keyColumns, $updateColumns, $includeAuditColumns)
+            ->execute();
         echo " done (time: ".sprintf('%.3f', microtime(true) - $time)."s)\n";
     }
 
@@ -85,7 +172,9 @@ abstract class Migration extends \yii\db\Migration
     {
         echo "    > update in $table ...";
         $time = microtime(true);
-        $this->db->createCommand()->update($table, $columns, $conditions, $params, $includeAuditColumns)->execute();
+        $this->db->createCommand()
+            ->update($table, $columns, $conditions, $params, $includeAuditColumns)
+            ->execute();
         echo " done (time: ".sprintf('%.3f', microtime(true) - $time)."s)\n";
     }
 
@@ -101,26 +190,14 @@ abstract class Migration extends \yii\db\Migration
     {
         echo "    > replace \"$find\" with \"$replace\" in $table.$column ...";
         $time = microtime(true);
-        $this->db->createCommand()->replace($table, $column, $find, $replace)->execute();
+        $this->db->createCommand()
+            ->replace($table, $column, $find, $replace)
+            ->execute();
         echo " done (time: ".sprintf('%.3f', microtime(true) - $time)."s)\n";
     }
 
-    /**
-     * @inheritdoc
-     *
-     * @param string  $table           The name of the table to be created. The name will be properly quoted by the method.
-     * @param array   $columns         The columns (name => definition) in the new table.
-     * @param null    $options         Additional SQL fragment that will be appended to the generated SQL.
-     * @param boolean $addIdColumn     Whether an `id` column should be added.
-     * @param boolean $addAuditColumns Whether `dateCreated` and `dateUpdated` columns should be added.
-     */
-    public function createTable($table, $columns, $options = null, $addIdColumn = true, $addAuditColumns = true)
-    {
-        echo "    > create table $table ...";
-        $time = microtime(true);
-        $this->db->createCommand()->createTable($table, $columns, $options, $addIdColumn, $addAuditColumns)->execute();
-        echo " done (time: ".sprintf('%.3f', microtime(true) - $time)."s)\n";
-    }
+    // Schema Manipulation Methods
+    // -------------------------------------------------------------------------
 
     /**
      * Creates and executes a SQL statement for dropping a DB table, if it exists.
@@ -131,7 +208,9 @@ abstract class Migration extends \yii\db\Migration
     {
         echo "    > dropping $table if it exists ...";
         $time = microtime(true);
-        $this->db->createCommand()->dropTableIfExists($table)->execute();
+        $this->db->createCommand()
+            ->dropTableIfExists($table)
+            ->execute();
         echo " done (time: ".sprintf('%.3f', microtime(true) - $time)."s)\n";
     }
 
@@ -148,7 +227,9 @@ abstract class Migration extends \yii\db\Migration
     {
         echo "    > add column $column $type to first position in table $table ...";
         $time = microtime(true);
-        $this->db->createCommand()->addColumnFirst($table, $column, $type)->execute();
+        $this->db->createCommand()
+            ->addColumnFirst($table, $column, $type)
+            ->execute();
         echo " done (time: ".sprintf('%.3f', microtime(true) - $time)."s)\n";
     }
 
@@ -166,7 +247,9 @@ abstract class Migration extends \yii\db\Migration
     {
         echo "    > add column $column $type before $before in table $table ...";
         $time = microtime(true);
-        $this->db->createCommand()->addColumnBefore($table, $column, $type, $before)->execute();
+        $this->db->createCommand()
+            ->addColumnBefore($table, $column, $type, $before)
+            ->execute();
         echo " done (time: ".sprintf('%.3f', microtime(true) - $time)."s)\n";
     }
 
@@ -184,7 +267,9 @@ abstract class Migration extends \yii\db\Migration
     {
         echo "    > add column $column $type after $after in $table ...";
         $time = microtime(true);
-        $this->db->createCommand()->addColumnAfter($table, $column, $type, $after)->execute();
+        $this->db->createCommand()
+            ->addColumnAfter($table, $column, $type, $after)
+            ->execute();
         echo " done (time: ".sprintf('%.3f', microtime(true) - $time)."s)\n";
     }
 
@@ -204,7 +289,9 @@ abstract class Migration extends \yii\db\Migration
     {
         echo "    > alter column $column $type in table $table ...";
         $time = microtime(true);
-        $this->db->createCommand()->alterColumn($table, $column, $type, $newName, $after)->execute();
+        $this->db->createCommand()
+            ->alterColumn($table, $column, $type, $newName, $after)
+            ->execute();
         echo " done (time: ".sprintf('%.3f', microtime(true) - $time)."s)\n";
     }
 }

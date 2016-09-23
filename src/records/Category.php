@@ -1,8 +1,8 @@
 <?php
 /**
- * @link      http://buildwithcraft.com/
- * @copyright Copyright (c) 2015 Pixel & Tonic, Inc.
- * @license   http://buildwithcraft.com/license
+ * @link      https://craftcms.com/
+ * @copyright Copyright (c) Pixel & Tonic, Inc.
+ * @license   https://craftcms.com/license
  */
 
 namespace craft\app\records;
@@ -13,10 +13,10 @@ use craft\app\db\ActiveRecord;
 /**
  * Category record.
  *
- * @property integer              $id      ID
- * @property integer              $groupId Group ID
- * @property ActiveQueryInterface $element Element
- * @property ActiveQueryInterface $group   Group
+ * @property integer       $id      ID
+ * @property integer       $groupId Group ID
+ * @property Element       $element Element
+ * @property CategoryGroup $group   Group
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since  3.0
@@ -39,7 +39,7 @@ class Category extends ActiveRecord
     /**
      * Returns the category’s element.
      *
-     * @return \yii\db\ActiveQueryInterface The relational query object.
+     * @return ActiveQueryInterface The relational query object.
      */
     public function getElement()
     {
@@ -49,7 +49,7 @@ class Category extends ActiveRecord
     /**
      * Returns the category’s group.
      *
-     * @return \yii\db\ActiveQueryInterface The relational query object.
+     * @return ActiveQueryInterface The relational query object.
      */
     public function getGroup()
     {

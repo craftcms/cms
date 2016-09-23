@@ -1,13 +1,12 @@
 <?php
 /**
- * @link      http://buildwithcraft.com/
- * @copyright Copyright (c) 2015 Pixel & Tonic, Inc.
- * @license   http://buildwithcraft.com/license
+ * @link      https://craftcms.com/
+ * @copyright Copyright (c) Pixel & Tonic, Inc.
+ * @license   https://craftcms.com/license
  */
 
 namespace craft\app\base;
 
-use craft\app\elements\db\ElementQuery;
 use craft\app\elements\db\ElementQueryInterface;
 
 /**
@@ -55,7 +54,7 @@ interface ElementActionInterface extends SavableComponentInterface
     /**
      * Performs the action on any elements that match the given criteria.
      *
-     * @param ElementQueryInterface|ElementQuery $query The element query defining which elements the action should affect.
+     * @param ElementQueryInterface $query The element query defining which elements the action should affect.
      *
      * @return boolean Whether the action was performed successfully.
      */

@@ -1,8 +1,8 @@
 <?php
 /**
- * @link      http://buildwithcraft.com/
- * @copyright Copyright (c) 2015 Pixel & Tonic, Inc.
- * @license   http://buildwithcraft.com/license
+ * @link      https://craftcms.com/
+ * @copyright Copyright (c) Pixel & Tonic, Inc.
+ * @license   https://craftcms.com/license
  */
 
 namespace craft\app\services;
@@ -78,9 +78,9 @@ class SystemSettings extends Component
 
         if ($record !== null) {
             return $record->dateUpdated;
-        } else {
-            return null;
         }
+
+        return null;
     }
 
     /**
@@ -98,6 +98,8 @@ class SystemSettings extends Component
         if (isset($settings[$key])) {
             return $settings[$key];
         }
+
+        return null;
     }
 
     /**
@@ -162,8 +164,8 @@ class SystemSettings extends Component
 
         if ($this->_settingsRecords[$category] !== false) {
             return $this->_settingsRecords[$category];
-        } else {
-            return null;
         }
+
+        return null;
     }
 }

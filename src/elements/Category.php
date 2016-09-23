@@ -1,8 +1,8 @@
 <?php
 /**
- * @link      http://buildwithcraft.com/
- * @copyright Copyright (c) 2015 Pixel & Tonic, Inc.
- * @license   http://buildwithcraft.com/license
+ * @link      https://craftcms.com/
+ * @copyright Copyright (c) Pixel & Tonic, Inc.
+ * @license   https://craftcms.com/license
  */
 
 namespace craft\app\elements;
@@ -19,6 +19,7 @@ use craft\app\elements\actions\View;
 use craft\app\elements\db\CategoryQuery;
 use craft\app\helpers\Url;
 use craft\app\models\CategoryGroup;
+use yii\base\InvalidConfigException;
 
 /**
  * Category represents a category element.
@@ -183,6 +184,8 @@ class Category extends Element
         $attributes = [
             'title' => Craft::t('app', 'Title'),
             'uri' => Craft::t('app', 'URI'),
+            'elements.dateCreated' => Craft::t('app', 'Date Created'),
+            'elements.dateUpdated' => Craft::t('app', 'Date Updated'),
         ];
 
         // Allow plugins to modify the attributes
@@ -195,16 +198,33 @@ class Category extends Element
     /**
      * @inheritdoc
      */
-    public static function defineTableAttributes($source = null)
+    public static function defineAvailableTableAttributes()
     {
         $attributes = [
-            'title' => Craft::t('app', 'Title'),
-            'uri' => Craft::t('app', 'URI'),
+            'title' => ['label' => Craft::t('app', 'Title')],
+            'uri' => ['label' => Craft::t('app', 'URI')],
+            'link' => ['label' => Craft::t('app', 'Link'), 'icon' => 'world'],
+            'id' => ['label' => Craft::t('app', 'ID')],
+            'dateCreated' => ['label' => Craft::t('app', 'Date Created')],
+            'dateUpdated' => ['label' => Craft::t('app', 'Date Updated')],
         ];
 
         // Allow plugins to modify the attributes
-        Craft::$app->getPlugins()->call('modifyCategoryTableAttributes',
-            [&$attributes, $source]);
+        $pluginAttributes = Craft::$app->getPlugins()->call('defineAdditionalCategoryTableAttributes', [], true);
+
+        foreach ($pluginAttributes as $thisPluginAttributes) {
+            $attributes = array_merge($attributes, $thisPluginAttributes);
+        }
+
+        return $attributes;
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public static function getDefaultTableAttributes($source = null)
+    {
+        $attributes = ['link'];
 
         return $attributes;
     }
@@ -355,9 +375,12 @@ class Category extends Element
             }
 
             if ($newRelationValues) {
-                Craft::$app->getDb()->createCommand()->batchInsert('{{%relations}}',
-                    ['fieldId', 'sourceId', 'sourceLocale', 'targetId'],
-                    $newRelationValues)->execute();
+                Craft::$app->getDb()->createCommand()
+                    ->batchInsert(
+                        '{{%relations}}',
+                        ['fieldId', 'sourceId', 'sourceLocale', 'targetId'],
+                        $newRelationValues)
+                    ->execute();
             }
         }
     }
@@ -408,11 +431,7 @@ class Category extends Element
      */
     public function getFieldLayout()
     {
-        $group = $this->getGroup();
-
-        if ($group) {
-            return $group->getFieldLayout();
-        }
+        return $this->getGroup()->getFieldLayout();
     }
 
     /**
@@ -428,11 +447,13 @@ class Category extends Element
             if (isset($groupLocales[$this->locale])) {
                 if ($this->level > 1) {
                     return $groupLocales[$this->locale]->nestedUrlFormat;
-                } else {
-                    return $groupLocales[$this->locale]->urlFormat;
                 }
+
+                return $groupLocales[$this->locale]->urlFormat;
             }
         }
+
+        return null;
     }
 
     /**
@@ -450,21 +471,32 @@ class Category extends Element
     {
         $group = $this->getGroup();
 
-        if ($group) {
-            return Url::getCpUrl('categories/'.$group->handle.'/'.$this->id.($this->slug ? '-'.$this->slug : ''));
+        $url = Url::getCpUrl('categories/'.$group->handle.'/'.$this->id.($this->slug ? '-'.$this->slug : ''));
+
+        if (Craft::$app->getIsLocalized() && $this->locale != Craft::$app->language) {
+            $url .= '/'.$this->locale;
         }
+
+        return $url;
     }
 
     /**
      * Returns the category's group.
      *
-     * @return CategoryGroup|null
+     * @return CategoryGroup
+     * @throws InvalidConfigException if [[groupId]] is invalid
      */
     public function getGroup()
     {
         if ($this->groupId) {
-            return Craft::$app->getCategories()->getGroupById($this->groupId);
+            $group = Craft::$app->getCategories()->getGroupById($this->groupId);
+
+            if ($group) {
+                return $group;
+            }
         }
+
+        throw new InvalidConfigException('Invalid category group ID: '.$this->groupId);
     }
 
     // Protected Methods

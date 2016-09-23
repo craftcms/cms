@@ -5,16 +5,16 @@
 	<h1>{{ "Setup your site"|t('app') }}</h1>
 
 	<form id="siteform" accept-charset="UTF-8">
-		{{ getCsrfInput() }}
+		{{ csrfInput() }}
 		{{ forms.textField({ label: "Site Name"|t('app'), id: 'siteName', value: defaultSiteName, maxlength: 255 }) }}
 		{{ forms.textField({ label: "Site URL"|t('app'), id: 'siteUrl', value: defaultSiteUrl, maxlength: 255 }) }}
 
 		{% set localeInput %}
 			<div class="select">
 				<select id="locale">
-					{% set language = craft.locale %}
-					{% for locale in craft.i18n.getAllLocales() %}
-						<option value="{{ locale.id }}"{% if locale.id == craft.locale %} selected{% endif %}>{{ locale.id }} ({{ locale.getDisplayName(language) }})</option>
+					{% set language = craft.app.language %}
+					{% for locale in craft.app.i18n.getAllLocales() %}
+						<option value="{{ locale.id }}"{% if locale.id == craft.app.language %} selected{% endif %}>{{ locale.id }} ({{ locale.getDisplayName(language) }})</option>
 					{% endfor %}
 				</select>
 			</div>

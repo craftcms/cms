@@ -1,19 +1,19 @@
 <?php
 /**
- * @link      http://buildwithcraft.com/
- * @copyright Copyright (c) 2015 Pixel & Tonic, Inc.
- * @license   http://buildwithcraft.com/license
+ * @link      https://craftcms.com/
+ * @copyright Copyright (c) Pixel & Tonic, Inc.
+ * @license   https://craftcms.com/license
  */
 
 namespace craft\app\controllers;
 
 use Craft;
-use craft\app\errors\HttpException;
 use craft\app\migrations\Install;
-use craft\app\models\AccountSettings as AccountSettingsModel;
-use craft\app\models\SiteSettings as SiteSettingsModel;
+use craft\app\models\AccountSettings;
+use craft\app\models\SiteSettings;
 use craft\app\web\Controller;
 use yii\base\Response;
+use yii\web\BadRequestHttpException;
 
 /**
  * The InstallController class is a controller that directs all installation related tasks such as creating the database
@@ -39,13 +39,14 @@ class InstallController extends Controller
 
     /**
      * @inheritdoc
-     * @throws HttpException if Craft is already installed
+     *
+     * @throws BadRequestHttpException if Craft is already installed
      */
     public function init()
     {
         // Return a 404 if Craft is already installed
-        if (!Craft::$app->getConfig()->get('devMode') && Craft::$app->isInstalled()) {
-            throw new HttpException(404);
+        if (!Craft::$app->getConfig()->get('devMode') && Craft::$app->getIsInstalled()) {
+            throw new BadRequestHttpException('Craft CMS is already installed');
         }
     }
 
@@ -53,7 +54,7 @@ class InstallController extends Controller
      * Index action.
      *
      * @return Response|string The requirements check response if the server doesn’t meet Craft’s requirements, or the rendering result
-     * @throws Exception if it's an Ajax request and the server doesn’t meet Craft’s requirements
+     * @throws \Exception if it's an Ajax request and the server doesn’t meet Craft’s requirements
      */
     public function actionIndex()
     {
@@ -74,14 +75,14 @@ class InstallController extends Controller
     /**
      * Validates the user account credentials.
      *
-     * @return void
+     * @return Response
      */
     public function actionValidateAccount()
     {
         $this->requirePostRequest();
         $this->requireAjaxRequest();
 
-        $accountSettings = new AccountSettingsModel();
+        $accountSettings = new AccountSettings();
         $request = Craft::$app->getRequest();
         $accountSettings->email = $request->getBodyParam('email');
         $accountSettings->username = $request->getBodyParam('username', $accountSettings->email);
@@ -99,14 +100,14 @@ class InstallController extends Controller
     /**
      * Validates the site settings.
      *
-     * @return void
+     * @return Response
      */
     public function actionValidateSite()
     {
         $this->requirePostRequest();
         $this->requireAjaxRequest();
 
-        $siteSettings = new SiteSettingsModel();
+        $siteSettings = new SiteSettings();
         $request = Craft::$app->getRequest();
         $siteSettings->siteName = $request->getBodyParam('siteName');
         $siteSettings->siteUrl = $request->getBodyParam('siteUrl');
@@ -123,7 +124,7 @@ class InstallController extends Controller
     /**
      * Install action.
      *
-     * @return void
+     * @return Response
      */
     public function actionInstall()
     {

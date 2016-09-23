@@ -1,8 +1,8 @@
 <?php
 /**
- * @link      http://buildwithcraft.com/
- * @copyright Copyright (c) 2015 Pixel & Tonic, Inc.
- * @license   http://buildwithcraft.com/license
+ * @link      https://craftcms.com/
+ * @copyright Copyright (c) Pixel & Tonic, Inc.
+ * @license   https://craftcms.com/license
  */
 
 namespace craft\app\fields;
@@ -32,7 +32,6 @@ class Categories extends BaseRelationField
 
     /**
      * @inheritdoc
-     * @return Category
      */
     protected static function elementType()
     {
@@ -88,7 +87,8 @@ class Categories extends BaseRelationField
     {
         // Make sure the field is set to a valid category group
         if ($this->source) {
-            $class = self::elementType();
+            /** @var Category $class */
+            $class = static::elementType();
             $source = $class::getSourceByKey($this->source, 'field');
         }
 

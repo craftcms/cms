@@ -5,10 +5,10 @@
 
 $requirements = array(
     array(
-        'name' => 'PHP 5.4+',
+        'name' => 'PHP 5.5+',
         'mandatory' => true,
-        'condition' => version_compare(PHP_VERSION, '5.4.0', '>='),
-        'memo' => 'PHP 5.4.0 or higher is required.',
+        'condition' => version_compare(PHP_VERSION, '5.5.0', '>='),
+        'memo' => 'PHP 5.5.0 or higher is required.',
     ),
 );
 
@@ -18,14 +18,24 @@ if ($this->checkDatabaseCreds() && extension_loaded('pdo') && extension_loaded('
         'name' => "MySQL {$this->requiredMySqlVersion}+",
         'mandatory' => true,
         'condition' => $this->checkMySqlServerVersion(),
-        'memo' => $this->dbConnectionError ? $this->dbConnectionError : 'MySQL '.$this->requiredMySqlVersion.' or higher is required to run Craft.',
+        'memo' => $this->dbConnectionError ? $this->dbConnectionError : 'MySQL '.$this->requiredMySqlVersion.' or higher is required to run Craft CMS.',
     );
 
     $requirements[] = array(
         'name' => 'MySQL InnoDB support',
         'mandatory' => true,
         'condition' => $this->isInnoDbSupported(),
-        'memo' => $this->dbConnectionError ? $this->dbConnectionError : 'Craft requires the MySQL InnoDB storage engine to run.',
+        'memo' => $this->dbConnectionError ? $this->dbConnectionError : 'Craft CMS requires the MySQL InnoDB storage engine to run.',
+    );
+}
+
+// Only run this requirement check if we're running in the context of Craft.
+if ($this->isCraftRunning()) {
+    $requirements[] = array(
+        'name' => 'Craft CMS folders in public web root',
+        'mandatory' => false,
+        'condition' => $this->checkWebRoot(),
+        'memo' => $this->webRootFolderMessage,
     );
 }
 
@@ -39,8 +49,7 @@ $requirements = array_merge($requirements, array(
     array(
         'name' => 'PCRE extension (with UTF-8 support)',
         'mandatory' => true,
-        'condition' => extension_loaded('pcre') && preg_match('/./u',
-                'Ü') === 1,
+        'condition' => extension_loaded('pcre') && preg_match('/./u', 'Ü') === 1,
         'memo' => 'The <a href="http://php.net/manual/en/book.pcre.php">PCRE</a> extension is required and it must be compiled to support UTF-8.',
     ),
     array(
@@ -65,7 +74,7 @@ $requirements = array_merge($requirements, array(
         'name' => 'Multibyte String extension (with Function Overloading disabled)',
         'mandatory' => true,
         'condition' => (extension_loaded('mbstring') && ini_get('mbstring.func_overload') == 0),
-        'memo' => 'Craft requires the <a href="http://www.php.net/manual/en/book.mbstring.php">Multibyte String</a> extension with <a href="http://php.net/manual/en/mbstring.overload.php">Function Overloading</a> disabled in order to run.'
+        'memo' => 'Craft CMS requires the <a href="http://www.php.net/manual/en/book.mbstring.php">Multibyte String</a> extension with <a href="http://php.net/manual/en/mbstring.overload.php">Function Overloading</a> disabled in order to run.'
     ),
     array(
         'name' => 'Mcrypt extension',
@@ -102,14 +111,14 @@ $requirements = array_merge($requirements, array(
         'mandatory' => false,
         'condition' => $this->checkPhpExtensionVersion('intl', '1.0.2', '>='),
         'memo' => 'The <a href="http://www.php.net/manual/en/book.intl.php">Intl</a> extension version 1.0.2 is highly '.
-            'recommended especially if you will be using any non-English locales for this Craft installation.'
+            'recommended especially if you will be using any non-English locales for this Craft CMS installation.'
     ),
     array(
         'name' => 'Fileinfo extension',
         'mandatory' => false,
         'condition' => extension_loaded('fileinfo'),
         'memo' => 'The <a href="http://php.net/manual/en/book.fileinfo.php">Fileinfo</a> extension is recommended for more accurate '.
-            'mime-type detection for uploaded files. If it is not available a Craft will fall back to determining the mime-type '.
+            'mime-type detection for uploaded files. If it is not available a Craft CMS will fall back to determining the mime-type '.
             'by the file extension.'
     ),
     array(

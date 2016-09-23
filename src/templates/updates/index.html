@@ -3,32 +3,35 @@
 {% extends "_layouts/cp" %}
 {% set title = "Updates"|t('app') %}
 
-{% includeTranslations
+{% do craft.app.view.registerTranslations('app', [
 	"You’ve got updates!",
 	"You’re all up-to-date!",
 	"build {build}",
 	"Critical",
 	"Update",
 	"Download",
-	"Craft’s <a href=\"http://buildwithcraft.com/license\" target=\"_blank\">Terms and Conditions</a> have changed.",
+	"Craft’s <a href=\"http://craftcms.com/license\" target=\"_blank\">Terms and Conditions</a> have changed.",
 	"I agree.",
 	"Seriously, download.",
 	"Seriously, update.",
 	"Install",
 	"{app} update required",
+	"Released on {date}",
+	"Show more",
 	"Added",
 	"Improved",
 	"Fixed",
-	"Download"
-%}
+	"Download",
+]) %}
+
+
+{% block pageHeader %}
+{% endblock %}
 
 
 {% block main %}
 	{% registercssresource "css/updates.css" %}
 	{% registerjsresource "js/updates.js" %}
-	{% registerjs %}
-		new Craft.UpdateInfo();
-	{% endregisterjs %}
 
 	<div id="graphic" class="spinner big"></div>
 	<div id="status">{{ "Checking for updates…"|t('app') }}</div>

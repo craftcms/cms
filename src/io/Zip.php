@@ -1,8 +1,8 @@
 <?php
 /**
- * @link      http://buildwithcraft.com/
- * @copyright Copyright (c) 2015 Pixel & Tonic, Inc.
- * @license   http://buildwithcraft.com/license
+ * @link      https://craftcms.com/
+ * @copyright Copyright (c) Pixel & Tonic, Inc.
+ * @license   https://craftcms.com/license
  */
 
 namespace craft\app\io;
@@ -46,7 +46,7 @@ class Zip
 
         Craft::$app->getConfig()->maxPowerCaptain();
 
-        $zip = static::_getZipInstance($destZip);
+        $zip = static::_getZipInstance();
 
         return $zip->zip(Io::getRealPath($source), Io::getRealPath($destZip));
     }
@@ -81,26 +81,26 @@ class Zip
                     }
                 }
 
-                $zip = static::_getZipInstance($srcZip);
+                $zip = static::_getZipInstance();
                 $result = $zip->unzip($srcZip, $destFolder);
 
                 if ($result === true) {
                     return $result;
-                } else {
-                    Craft::error('There was an error unzipping the file: '.$srcZip, __METHOD__);
-
-                    return false;
                 }
-            } else {
-                Craft::error($srcZip.' is not a zip file and cannot be unzipped.', __METHOD__);
+
+                Craft::error('There was an error unzipping the file: '.$srcZip, __METHOD__);
 
                 return false;
             }
-        } else {
-            Craft::error('Unzipping is only available for files.', __METHOD__);
+
+            Craft::error($srcZip.' is not a zip file and cannot be unzipped.', __METHOD__);
 
             return false;
         }
+
+        Craft::error('Unzipping is only available for files.', __METHOD__);
+
+        return false;
     }
 
     /**
@@ -125,7 +125,7 @@ class Zip
 
         Craft::$app->getConfig()->maxPowerCaptain();
 
-        $zip = static::_getZipInstance($sourceZip);
+        $zip = static::_getZipInstance();
 
         if ($zip->add($sourceZip, $pathToAdd, $basePath, $pathPrefix)) {
             return true;

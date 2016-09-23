@@ -1,8 +1,8 @@
 <?php
 /**
- * @link      http://buildwithcraft.com/
- * @copyright Copyright (c) 2015 Pixel & Tonic, Inc.
- * @license   http://buildwithcraft.com/license
+ * @link      https://craftcms.com/
+ * @copyright Copyright (c) Pixel & Tonic, Inc.
+ * @license   https://craftcms.com/license
  */
 
 namespace craft\app\helpers;
@@ -24,10 +24,10 @@ class Html extends \yii\helpers\Html
      *
      * @return string The HTML string with the encoded variable values swapped in.
      */
-    public static function encodeParams($html, $variables = array())
+    public static function encodeParams($html, $variables = [])
     {
         // Normalize the param keys
-        $normalizedVariables = array();
+        $normalizedVariables = [];
 
         if (is_array($variables)) {
             foreach ($variables as $key => $value) {

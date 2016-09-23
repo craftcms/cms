@@ -1,8 +1,8 @@
 <?php // v{VERSION} */
 /**
- * @link http://buildwithcraft.com/
- * @copyright Copyright (c) 2015 Pixel & Tonic, Inc.
- * @license http://buildwithcraft.com/license
+ * @link http://craftcms.com/
+ * @copyright Copyright (c) Pixel & Tonic, Inc.
+ * @license http://craftcms.com/license
  */
 
 namespace craft\app\behaviors;

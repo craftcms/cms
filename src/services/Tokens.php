@@ -1,8 +1,8 @@
 <?php
 /**
- * @link      http://buildwithcraft.com/
- * @copyright Copyright (c) 2015 Pixel & Tonic, Inc.
- * @license   http://buildwithcraft.com/license
+ * @link      https://craftcms.com/
+ * @copyright Copyright (c) Pixel & Tonic, Inc.
+ * @license   https://craftcms.com/license
  */
 
 namespace craft\app\services;
@@ -16,6 +16,7 @@ use craft\app\helpers\Db;
 use craft\app\helpers\Json;
 use craft\app\records\Token as TokenRecord;
 use yii\base\Component;
+use yii\db\Expression;
 
 /**
  * The Tokens service.
@@ -63,7 +64,7 @@ class Tokens extends Component
 
         if ($usageLimit) {
             $tokenRecord->usageCount = 0;
-            $usageLimit->usageLimit = $usageLimit;
+            $tokenRecord->usageLimit = $usageLimit;
         }
 
         $tokenRecord->expiryDate = $expiryDate;
@@ -71,9 +72,9 @@ class Tokens extends Component
 
         if ($success) {
             return $tokenRecord->token;
-        } else {
-            return false;
         }
+
+        return false;
     }
 
     /**
@@ -111,12 +112,12 @@ class Tokens extends Component
             $route = $result['route'];
 
             // Might be JSON, might not be
-            $route = Json::encodeIfJson($route);
+            $route = Json::decodeIfJson($route);
 
             return $route;
-        } else {
-            return false;
         }
+
+        return false;
     }
 
     /**
@@ -128,12 +129,16 @@ class Tokens extends Component
      */
     public function incrementTokenUsageCountById($tokenId)
     {
-        $affectedRows = Craft::$app->getDb()->createCommand()->update('{{%tokens}}',
-            [
-                'usageCount' => 'usageCount + 1'
-            ], [
-                'id' => $tokenId
-            ])->execute();
+        $affectedRows = Craft::$app->getDb()->createCommand()
+            ->update(
+                '{{%tokens}}',
+                [
+                    'usageCount' => new Expression('usageCount + 1')
+                ],
+                [
+                    'id' => $tokenId
+                ])
+            ->execute();
 
         return (bool)$affectedRows;
     }
@@ -147,9 +152,9 @@ class Tokens extends Component
      */
     public function deleteTokenById($tokenId)
     {
-        Craft::$app->getDb()->createCommand()->delete('{{%tokens}}', [
-            'id' => $tokenId
-        ])->execute();
+        Craft::$app->getDb()->createCommand()
+            ->delete('{{%tokens}}', ['id' => $tokenId])
+            ->execute();
     }
 
     /**
@@ -164,9 +169,12 @@ class Tokens extends Component
             return false;
         }
 
-        $affectedRows = Craft::$app->getDb()->createCommand()->delete('{{%tokens}}', 'expiryDate <= :now',
-            ['now' => Db::prepareDateForDb(new DateTime())]
-        )->execute();
+        $affectedRows = Craft::$app->getDb()->createCommand()
+            ->delete(
+                '{{%tokens}}',
+                'expiryDate <= :now',
+                ['now' => Db::prepareDateForDb(new DateTime())])
+            ->execute();
 
         $this->_deletedExpiredTokens = true;
 

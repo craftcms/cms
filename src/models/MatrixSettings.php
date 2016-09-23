@@ -1,8 +1,8 @@
 <?php
 /**
- * @link      http://buildwithcraft.com/
- * @copyright Copyright (c) 2015 Pixel & Tonic, Inc.
- * @license   http://buildwithcraft.com/license
+ * @link      https://craftcms.com/
+ * @copyright Copyright (c) Pixel & Tonic, Inc.
+ * @license   https://craftcms.com/license
  */
 
 namespace craft\app\models;
@@ -62,12 +62,12 @@ class MatrixSettings extends Model
      * Constructor
      *
      * @param Matrix|null $matrixField
-     *
-     * @return MatrixSettings
      */
     public function __construct(Matrix $matrixField = null)
     {
         $this->_matrixField = $matrixField;
+
+        parent::__construct();
     }
 
     /**
@@ -126,7 +126,7 @@ class MatrixSettings extends Model
         // Enforce $clearErrors without copying code if we don't have to
         $validates = parent::validate($attributes, $clearErrors);
 
-        if (!Craft::$app->getMatrix()->validateFieldSettings($this)) {
+        if (!Craft::$app->getMatrix()->validateFieldSettings($this->getField())) {
             $validates = false;
         }
 

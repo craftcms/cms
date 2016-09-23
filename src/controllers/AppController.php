@@ -1,8 +1,8 @@
 <?php
 /**
- * @link      http://buildwithcraft.com/
- * @copyright Copyright (c) 2015 Pixel & Tonic, Inc.
- * @license   http://buildwithcraft.com/license
+ * @link      https://craftcms.com/
+ * @copyright Copyright (c) Pixel & Tonic, Inc.
+ * @license   https://craftcms.com/license
  */
 
 namespace craft\app\controllers;
@@ -10,12 +10,14 @@ namespace craft\app\controllers;
 use Craft;
 use craft\app\dates\DateInterval;
 use craft\app\enums\LicenseKeyStatus;
-use craft\app\errors\Exception;
 use craft\app\helpers\App;
 use craft\app\helpers\Cp;
 use craft\app\helpers\DateTimeHelper;
-use craft\app\models\UpgradePurchase as UpgradePurchaseModel;
+use craft\app\models\UpgradeInfo;
+use craft\app\models\UpgradePurchase;
 use craft\app\web\Controller;
+use yii\web\BadRequestHttpException;
+use yii\web\Response;
 
 /**
  * The AppController class is a controller that handles various actions for Craft updates, control panel requests,
@@ -34,7 +36,7 @@ class AppController extends Controller
     /**
      * Returns update info.
      *
-     * @return void
+     * @return Response
      */
     public function actionCheckForUpdates()
     {
@@ -45,14 +47,14 @@ class AppController extends Controller
 
         return $this->asJson([
             'total' => Craft::$app->getUpdates()->getTotalAvailableUpdates(),
-            'critical' => Craft::$app->getUpdates()->isCriticalUpdateAvailable()
+            'critical' => Craft::$app->getUpdates()->getIsCriticalUpdateAvailable()
         ]);
     }
 
     /**
      * Loads any CP alerts.
      *
-     * @return void
+     * @return Response
      */
     public function actionGetCpAlerts()
     {
@@ -70,7 +72,7 @@ class AppController extends Controller
     /**
      * Shuns a CP alert for 24 hours.
      *
-     * @return void
+     * @return Response
      */
     public function actionShunCpAlert()
     {
@@ -95,7 +97,7 @@ class AppController extends Controller
     /**
      * Transfers the Craft license to the current domain.
      *
-     * @return void
+     * @return Response
      */
     public function actionTransferLicenseToCurrentDomain()
     {
@@ -117,14 +119,18 @@ class AppController extends Controller
     /**
      * Returns the edition upgrade modal.
      *
-     * @return void
+     * @return Response
      */
     public function actionGetUpgradeModal()
     {
         $this->requireAjaxRequest();
-        $this->requireAdmin();
 
-        $etResponse = Craft::$app->getEt()->fetchEditionInfo();
+        // Make it so Craft Client accounts can perform the upgrade.
+        if (Craft::$app->getEdition() == Craft::Pro) {
+            $this->requireAdmin();
+        }
+
+        $etResponse = Craft::$app->getEt()->fetchUpgradeInfo();
 
         if (!$etResponse) {
             return $this->asErrorJson(Craft::t('app', 'Craft is unable to fetch edition info at this time.'));
@@ -143,7 +149,10 @@ class AppController extends Controller
         $editions = [];
         $formatter = Craft::$app->getFormatter();
 
-        foreach ($etResponse->data as $edition => $info) {
+        /** @var UpgradeInfo $upgradeInfo */
+        $upgradeInfo = $etResponse->data;
+
+        foreach ($upgradeInfo->editions as $edition => $info) {
             $editions[$edition]['price'] = $info['price'];
             $editions[$edition]['formattedPrice'] = $formatter->asCurrency($info['price'], 'USD', [], [], true);
 
@@ -155,7 +164,7 @@ class AppController extends Controller
             }
         }
 
-        $canTestEditions = Craft::$app->canTestEditions();
+        $canTestEditions = Craft::$app->getCanTestEditions();
 
         $modalHtml = Craft::$app->getView()->renderTemplate('_upgrademodal', [
             'editions' => $editions,
@@ -168,25 +177,84 @@ class AppController extends Controller
             'editions' => $editions,
             'licensedEdition' => $etResponse->licensedEdition,
             'canTestEditions' => $canTestEditions,
-            'modalHtml' => $modalHtml
+            'modalHtml' => $modalHtml,
+            'stripePublicKey' => $upgradeInfo->stripePublicKey,
+            'countries' => $upgradeInfo->countries,
+            'states' => $upgradeInfo->states,
         ]);
+    }
+
+    /**
+     * Returns the price of an upgrade with a coupon applied to it.
+     *
+     * @return void
+     */
+    public function actionGetCouponPrice()
+    {
+        $this->requirePostRequest();
+        $this->requireAjaxRequest();
+
+        // Make it so Craft Client accounts can perform the upgrade.
+        if (Craft::$app->getEdition() == Craft::Pro) {
+            $this->requireAdmin();
+        }
+
+        $request = Craft::$app->getRequest();
+        $edition = $request->getRequiredBodyParam('edition');
+        $couponCode = $request->getRequiredBodyParam('couponCode');
+
+        $etResponse = Craft::$app->getEt()->fetchCouponPrice($edition, $couponCode);
+
+        if (!empty($etResponse->data['success'])) {
+            $couponPrice = $etResponse->data['couponPrice'];
+            $formattedCouponPrice = Craft::$app->getFormatter()->asCurrency($couponPrice, 'USD', [], [], true);
+
+            $this->asJson([
+                'success' => true,
+                'couponPrice' => $couponPrice,
+                'formattedCouponPrice' => $formattedCouponPrice
+            ]);
+        } else {
+            $this->asJson([
+                'success' => false
+            ]);
+        }
     }
 
     /**
      * Passes along a given CC token to Elliott to purchase a Craft edition.
      *
-     * @return void
+     * @return Response
      */
     public function actionPurchaseUpgrade()
     {
         $this->requirePostRequest();
         $this->requireAjaxRequest();
-        $this->requireAdmin();
 
-        $model = new UpgradePurchaseModel([
-            'ccTokenId' => Craft::$app->getRequest()->getRequiredBodyParam('ccTokenId'),
-            'edition' => Craft::$app->getRequest()->getRequiredBodyParam('edition'),
-            'expectedPrice' => Craft::$app->getRequest()->getRequiredBodyParam('expectedPrice'),
+        // Make it so Craft Client accounts can perform the upgrade.
+        if (Craft::$app->getEdition() == Craft::Pro) {
+            $this->requireAdmin();
+        }
+
+        $request = Craft::$app->getRequest();
+        $model = new UpgradePurchase([
+            'ccTokenId' => $request->getRequiredBodyParam('ccTokenId'),
+            'expMonth' => $request->getRequiredBodyParam('expMonth'),
+            'expYear' => $request->getRequiredBodyParam('expYear'),
+            'edition' => $request->getRequiredBodyParam('edition'),
+            'expectedPrice' => $request->getRequiredBodyParam('expectedPrice'),
+            'name' => $request->getRequiredBodyParam('name'),
+            'email' => $request->getRequiredBodyParam('email'),
+            'businessName' => $request->getBodyParam('businessName'),
+            'businessAddress1' => $request->getBodyParam('businessAddress1'),
+            'businessAddress2' => $request->getBodyParam('businessAddress2'),
+            'businessCity' => $request->getBodyParam('businessCity'),
+            'businessState' => $request->getBodyParam('businessState'),
+            'businessCountry' => $request->getBodyParam('businessCountry'),
+            'businessZip' => $request->getBodyParam('businessZip'),
+            'businessTaxId' => $request->getBodyParam('businessTaxId'),
+            'purchaseNotes' => $request->getBodyParam('purchaseNotes'),
+            'couponCode' => $request->getBodyParam('couponCode'),
         ]);
 
         if (Craft::$app->getEt()->purchaseUpgrade($model)) {
@@ -204,8 +272,8 @@ class AppController extends Controller
     /**
      * Tries a Craft edition on for size.
      *
-     * @throws Exception
-     * @return void
+     * @return Response
+     * @throws BadRequestHttpException if Craft isn’t allowed to test edition upgrades
      */
     public function actionTestUpgrade()
     {
@@ -213,11 +281,18 @@ class AppController extends Controller
         $this->requireAjaxRequest();
         $this->requireAdmin();
 
-        if (!Craft::$app->canTestEditions()) {
-            throw new Exception('Tried to test an edition, but Craft isn\'t allowed to do that.');
+        $edition = Craft::$app->getRequest()->getRequiredBodyParam('edition');
+        $licensedEdition = Craft::$app->getLicensedEdition();
+
+        if ($licensedEdition === null) {
+            $licensedEdition = 0;
         }
 
-        $edition = Craft::$app->getRequest()->getRequiredBodyParam('edition');
+        // If this is actually an upgrade, make sure that they are allowed to test edition upgrades
+        if ($edition > $licensedEdition && !Craft::$app->getCanTestEditions()) {
+            throw new BadRequestHttpException('Craft is not permitted to test edition upgrades from this server');
+        }
+
         Craft::$app->setEdition($edition);
 
         return $this->asJson([
@@ -228,14 +303,14 @@ class AppController extends Controller
     /**
      * Switches Craft to the edition it's licensed for.
      *
-     * @return void
+     * @return Response
      */
     public function actionSwitchToLicensedEdition()
     {
         $this->requirePostRequest();
         $this->requireAjaxRequest();
 
-        if (Craft::$app->hasWrongEdition()) {
+        if (Craft::$app->getHasWrongEdition()) {
             $licensedEdition = Craft::$app->getLicensedEdition();
             $success = Craft::$app->setEdition($licensedEdition);
         } else {

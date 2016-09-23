@@ -1,14 +1,13 @@
 <?php
 /**
- * @link      http://buildwithcraft.com/
- * @copyright Copyright (c) 2015 Pixel & Tonic, Inc.
- * @license   http://buildwithcraft.com/license
+ * @link      https://craftcms.com/
+ * @copyright Copyright (c) Pixel & Tonic, Inc.
+ * @license   https://craftcms.com/license
  */
 
 namespace craft\app\models;
 
 use craft\app\base\Model;
-use craft\app\models\AppNewRelease as AppNewReleaseModel;
 
 /**
  * Stores the available Craft update info.
@@ -28,8 +27,8 @@ class AppUpdate extends Model
     {
         if (isset($config['releases'])) {
             foreach ($config['releases'] as $key => $value) {
-                if (!$value instanceof AppNewReleaseModel) {
-                    $config['releases'][$key] = AppNewReleaseModel::create($value);
+                if (!$value instanceof AppNewRelease) {
+                    $config['releases'][$key] = AppNewRelease::create($value);
                 }
             }
         }

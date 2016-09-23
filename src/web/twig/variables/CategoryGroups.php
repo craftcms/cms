@@ -1,19 +1,21 @@
 <?php
 /**
- * @link      http://buildwithcraft.com/
- * @copyright Copyright (c) 2015 Pixel & Tonic, Inc.
- * @license   http://buildwithcraft.com/license
+ * @link      https://craftcms.com/
+ * @copyright Copyright (c) Pixel & Tonic, Inc.
+ * @license   https://craftcms.com/license
  */
 
 namespace craft\app\web\twig\variables;
 
+use Craft;
 use craft\app\models\CategoryGroup;
 
 /**
  * Class CategoryGroupsVariable
  *
- * @author    Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @since     3.0
+ * @author     Pixel & Tonic, Inc. <support@pixelandtonic.com>
+ * @since      3.0
+ * @deprecated in 3.0
  */
 class CategoryGroups
 {
@@ -27,7 +29,9 @@ class CategoryGroups
      */
     public function getAllGroupIds()
     {
-        return \Craft::$app->getCategories()->getAllGroupIds();
+        Craft::$app->getDeprecator()->log('craft.categoryGroups.getAllGroupIds()', 'craft.categoryGroups.getAllGroupIds() has been deprecated. Use craft.app.categories.allGroupIds instead.');
+
+        return Craft::$app->getCategories()->getAllGroupIds();
     }
 
     /**
@@ -37,7 +41,9 @@ class CategoryGroups
      */
     public function getEditableGroupIds()
     {
-        return \Craft::$app->getCategories()->getEditableGroupIds();
+        Craft::$app->getDeprecator()->log('craft.categoryGroups.getEditableGroupIds()', 'craft.categoryGroups.getEditableGroupIds() has been deprecated. Use craft.app.categories.editableGroupIds() instead.');
+
+        return Craft::$app->getCategories()->getEditableGroupIds();
     }
 
     /**
@@ -49,7 +55,9 @@ class CategoryGroups
      */
     public function getAllGroups($indexBy = null)
     {
-        return \Craft::$app->getCategories()->getAllGroups($indexBy);
+        Craft::$app->getDeprecator()->log('craft.categoryGroups.getAllGroups()', 'craft.categoryGroups.getAllGroups() has been deprecated. Use craft.app.categories.getAllGroups() instead.');
+
+        return Craft::$app->getCategories()->getAllGroups($indexBy);
     }
 
     /**
@@ -61,7 +69,9 @@ class CategoryGroups
      */
     public function getEditableGroups($indexBy = null)
     {
-        return \Craft::$app->getCategories()->getEditableGroups($indexBy);
+        Craft::$app->getDeprecator()->log('craft.categoryGroups.getEditableGroups()', 'craft.categoryGroups.getEditableGroups() has been deprecated. Use craft.app.categories.getEditableGroups() instead.');
+
+        return Craft::$app->getCategories()->getEditableGroups($indexBy);
     }
 
     /**
@@ -71,7 +81,9 @@ class CategoryGroups
      */
     public function getTotalGroups()
     {
-        return \Craft::$app->getCategories()->getTotalGroups();
+        Craft::$app->getDeprecator()->log('craft.categoryGroups.getTotalGroups()', 'craft.categoryGroups.getTotalGroups() has been deprecated. Use craft.app.categories.totalGroups instead.');
+
+        return Craft::$app->getCategories()->getTotalGroups();
     }
 
     /**
@@ -83,7 +95,9 @@ class CategoryGroups
      */
     public function getGroupById($groupId)
     {
-        return \Craft::$app->getCategories()->getGroupById($groupId);
+        Craft::$app->getDeprecator()->log('craft.categoryGroups.getGroupById()', 'craft.categoryGroups.getGroupById() has been deprecated. Use craft.app.categories.getGroupById() instead.');
+
+        return Craft::$app->getCategories()->getGroupById($groupId);
     }
 
     /**
@@ -95,6 +109,8 @@ class CategoryGroups
      */
     public function getGroupByHandle($groupHandle)
     {
-        return \Craft::$app->getCategories()->getGroupByHandle($groupHandle);
+        Craft::$app->getDeprecator()->log('craft.categoryGroups.getGroupByHandle()', 'craft.categoryGroups.getGroupByHandle() has been deprecated. Use craft.app.categories.getGroupByHandle() instead.');
+
+        return Craft::$app->getCategories()->getGroupByHandle($groupHandle);
     }
 }

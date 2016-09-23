@@ -1,8 +1,8 @@
 <?php
 /**
- * @link      http://buildwithcraft.com/
- * @copyright Copyright (c) 2015 Pixel & Tonic, Inc.
- * @license   http://buildwithcraft.com/license
+ * @link      https://craftcms.com/
+ * @copyright Copyright (c) Pixel & Tonic, Inc.
+ * @license   https://craftcms.com/license
  */
 
 namespace craft\app\services;
@@ -14,17 +14,22 @@ use craft\app\base\ElementActionInterface;
 use craft\app\elements\Asset;
 use craft\app\elements\Category;
 use craft\app\base\ElementInterface;
+use craft\app\elements\db\ElementQuery;
 use craft\app\elements\Entry;
 use craft\app\elements\GlobalSet;
+use craft\app\elements\MissingElement;
 use craft\app\elements\MatrixBlock;
 use craft\app\elements\Tag;
 use craft\app\elements\User;
-use craft\app\errors\Exception;
-use craft\app\events\DeleteElementsEvent;
+use craft\app\errors\ElementNotFoundException;
+use craft\app\errors\MissingComponentException;
+use craft\app\events\ElementsDeleteEvent;
 use craft\app\events\ElementEvent;
 use craft\app\events\MergeElementsEvent;
+use craft\app\helpers\ArrayHelper;
 use craft\app\helpers\Component as ComponentHelper;
-use craft\app\helpers\Element as ElementHelper;
+use craft\app\helpers\DateTimeHelper;
+use craft\app\helpers\ElementHelper;
 use craft\app\helpers\StringHelper;
 use craft\app\records\Element as ElementRecord;
 use craft\app\records\ElementLocale as ElementLocaleRecord;
@@ -32,6 +37,7 @@ use craft\app\records\StructureElement as StructureElementRecord;
 use craft\app\tasks\FindAndReplace;
 use craft\app\tasks\UpdateElementSlugsAndUris;
 use yii\base\Component;
+use yii\base\Exception;
 
 /**
  * The Elements service provides APIs for managing elements.
@@ -62,7 +68,7 @@ class Elements extends Component
     const EVENT_AFTER_MERGE_ELEMENTS = 'afterMergeElements';
 
     /**
-     * @event DeleteElementsEvent The event that is triggered before one or more elements are deleted.
+     * @event ElementsDeleteEvent The event that is triggered before one or more elements are deleted.
      */
     const EVENT_BEFORE_DELETE_ELEMENTS = 'beforeDeleteElements';
 
@@ -78,6 +84,18 @@ class Elements extends Component
      */
     const EVENT_AFTER_SAVE_ELEMENT = 'afterSaveElement';
 
+    /**
+     * @event ElementActionEvent The event that is triggered before an element action is performed.
+     *
+     * You may set [[ElementActionEvent::isValid]] to `false` to prevent the action from being performed.
+     */
+    const EVENT_BEFORE_PERFORM_ACTION = 'beforePerformAction';
+
+    /**
+     * @event ElementActionEvent The event that is triggered after an element action is performed.
+     */
+    const EVENT_AFTER_PERFORM_ACTION = 'afterPerformAction';
+
     // Properties
     // =========================================================================
 
@@ -89,6 +107,28 @@ class Elements extends Component
     // Public Methods
     // =========================================================================
 
+    /**
+     * Creates an element with a given config.
+     *
+     * @param mixed $config The field’s class name, or its config, with a `type` value and optionally a `settings` value
+     *
+     * @return ElementInterface The element
+     */
+    public function createElement($config)
+    {
+        if (is_string($config)) {
+            $config = ['type' => $config];
+        }
+
+        try {
+            return ComponentHelper::createComponent($config, self::ELEMENT_INTERFACE);
+        } catch (MissingComponentException $e) {
+            $config['errorMessage'] = $e->getMessage();
+
+            return MissingElement::create($config);
+        }
+    }
+
     // Finding Elements
     // -------------------------------------------------------------------------
 
@@ -98,14 +138,14 @@ class Elements extends Component
      * If no element type is provided, the method will first have to run a DB query to determine what type of element
      * the $elementId is, so you should definitely pass it if it’s known.
      *
-     * The element’s status will not be a factor when usisng this method.
+     * The element’s status will not be a factor when using this method.
      *
-     * @param integer $elementId   The element’s ID.
-     * @param null    $elementType The element class.
-     * @param string  $localeId    The locale to fetch the element in.
-     *                             Defaults to [[\craft\app\web\Application::language `Craft::$app->language`]].
+     * @param integer                      $elementId   The element’s ID.
+     * @param string|null|ElementInterface $elementType The element class.
+     * @param string|null                  $localeId    The locale to fetch the element in.
+     *                                                  Defaults to [[\craft\app\web\Application::language `Craft::$app->language`]].
      *
-     * @return ElementInterface|Element|null The matching element, or `null`.
+     * @return ElementInterface|null The matching element, or `null`.
      */
     public function getElementById($elementId, $elementType = null, $localeId = null)
     {
@@ -137,7 +177,7 @@ class Elements extends Component
      *                                 Defaults to [[\craft\app\web\Application::language `Craft::$app->language`]].
      * @param boolean     $enabledOnly Whether to only look for an enabled element. Defaults to `false`.
      *
-     * @return ElementInterface|Element|null The matching element, or `null`.
+     * @return ElementInterface|null The matching element, or `null`.
      */
     public function getElementByUri($uri, $localeId = null, $enabledOnly = false)
     {
@@ -179,6 +219,8 @@ class Elements extends Component
             // Return the actual element
             return $this->getElementById($result['id'], $result['type'], $localeId);
         }
+
+        return null;
     }
 
     /**
@@ -271,15 +313,18 @@ class Elements extends Component
      * saveElement() should be called only after the entry’s sectionId and typeId attributes had been validated to
      * ensure that they point to valid section and entry type IDs.
      *
-     * @param ElementInterface|Element $element         The element that is being saved
-     * @param boolean|null             $validateContent Whether the element's content should be validated. If left 'null', it
+     * @param ElementInterface $element                 The element that is being saved
+     * @param boolean|null     $validateContent         Whether the element's content should be validated. If left 'null', it
      *                                                  will depend on whether the element is enabled or not.
      *
-     * @throws Exception|\Exception
      * @return boolean
+     * @throws ElementNotFoundException if $element has an invalid $id
+     * @throws Exception if the $element doesn’t have any locales
+     * @throws \Exception if reasons
      */
     public function saveElement(ElementInterface $element, $validateContent = null)
     {
+        /** @var Element $element */
         $isNewElement = !$element->id;
 
         // Validation
@@ -313,7 +358,7 @@ class Elements extends Component
             ]);
 
             if (!$elementRecord) {
-                throw new Exception(Craft::t('app', 'No element exists with the ID “{id}”.', ['id' => $element->id]));
+                throw new ElementNotFoundException("No element exists with the ID '{$element->id}'");
             }
         } else {
             $elementRecord = new ElementRecord();
@@ -329,17 +374,22 @@ class Elements extends Component
         try {
             // Fire a 'beforeSaveElement' event
             $event = new ElementEvent([
-                'element' => $element
+                'element' => $element,
+                'isNew' => $isNewElement
             ]);
 
-            $this->trigger(static::EVENT_BEFORE_SAVE_ELEMENT, $event);
+            $this->trigger(self::EVENT_BEFORE_SAVE_ELEMENT, $event);
 
             // Is the event giving us the go-ahead?
             if ($event->isValid) {
-                // Save the element record first
+                // Save the element record
                 $success = $elementRecord->save(false);
 
                 if ($success) {
+                    // Save the new dateCreated and dateUpdated dates on the model
+                    $element->dateCreated = DateTimeHelper::toDateTime($elementRecord->dateCreated);
+                    $element->dateUpdated = DateTimeHelper::toDateTime($elementRecord->dateUpdated);
+
                     if ($isNewElement) {
                         // Save the element ID on the element model, in case {id} is in the URL format
                         $element->id = $elementRecord->id;
@@ -410,6 +460,7 @@ class Elements extends Component
                             // Copy the element for this locale
                             $localizedElement = $element->copy();
                             $localizedElement->locale = $localeId;
+                            $localizedElement->contentId = null;
 
                             if ($localeRecord->id) {
                                 // Keep the original slug
@@ -422,23 +473,22 @@ class Elements extends Component
 
                         if ($element->hasContent()) {
                             if (!$isMainLocale) {
-                                $fieldValues = null;
+                                $fieldValues = false;
 
                                 if (!$isNewElement) {
                                     // Do we already have a content row for this locale?
                                     $fieldValues = Craft::$app->getContent()->getContentRow($localizedElement);
 
-                                    if ($fieldValues) {
+                                    if ($fieldValues !== false) {
                                         $localizedElement->contentId = $fieldValues['id'];
                                         if (isset($fieldValues['title'])) {
                                             $localizedElement->title = $fieldValues['title'];
                                         }
-                                        unset($fieldValues['id'], $fieldValues['elementId'], $fieldValues['locale'], $fieldValues['title']);
+                                        unset($fieldValues['id'], $fieldValues['elementId'], $fieldValues['locale'], $fieldValues['title'], $fieldValues['dateCreated'], $fieldValues['dateUpdated'], $fieldValues['uid']);
                                     }
-
                                 }
 
-                                if (!$fieldValues) {
+                                if ($fieldValues === false) {
                                     // Just default to whatever's on the main element we're saving here
                                     $fieldValues = $element->getFieldValues();
                                 }
@@ -491,24 +541,32 @@ class Elements extends Component
                         if (!$isNewElement) {
                             // Delete the rows that don't need to be there anymore
 
-                            Craft::$app->getDb()->createCommand()->delete('{{%elements_i18n}}',
-                                [
-                                    'and',
-                                    'elementId = :elementId',
-                                    ['not in', 'locale', $localeIds]
-                                ], [
-                                    ':elementId' => $element->id
-                                ])->execute();
-
-                            if ($element::hasContent()) {
-                                Craft::$app->getDb()->createCommand()->delete($element->getContentTable(),
+                            Craft::$app->getDb()->createCommand()
+                                ->delete(
+                                    '{{%elements_i18n}}',
                                     [
                                         'and',
                                         'elementId = :elementId',
                                         ['not in', 'locale', $localeIds]
-                                    ], [
+                                    ],
+                                    [
                                         ':elementId' => $element->id
-                                    ])->execute();
+                                    ])
+                                ->execute();
+
+                            if ($element::hasContent()) {
+                                Craft::$app->getDb()->createCommand()
+                                    ->delete(
+                                        $element->getContentTable(),
+                                        [
+                                            'and',
+                                            'elementId = :elementId',
+                                            ['not in', 'locale', $localeIds]
+                                        ],
+                                        [
+                                            ':elementId' => $element->id
+                                        ])
+                                    ->execute();
                             }
                         }
 
@@ -517,7 +575,7 @@ class Elements extends Component
 
                         // Finally, delete any caches involving this element. (Even do this for new elements, since they
                         // might pop up in a cached criteria.)
-                        Craft::$app->getTemplateCache()->deleteCachesByElement($element);
+                        Craft::$app->getTemplateCaches()->deleteCachesByElement($element);
                     }
                 }
             } else {
@@ -528,15 +586,16 @@ class Elements extends Component
             // in onBeforeSaveElement
             $transaction->commit();
         } catch (\Exception $e) {
-            $transaction->rollback();
+            $transaction->rollBack();
 
             throw $e;
         }
 
         if ($success) {
             // Fire an 'afterSaveElement' event
-            $this->trigger(static::EVENT_AFTER_SAVE_ELEMENT, new ElementEvent([
-                'element' => $element
+            $this->trigger(self::EVENT_AFTER_SAVE_ELEMENT, new ElementEvent([
+                'element' => $element,
+                'isNew' => $isNewElement,
             ]));
         } else {
             if ($isNewElement) {
@@ -554,15 +613,16 @@ class Elements extends Component
     /**
      * Updates an element’s slug and URI, along with any descendants.
      *
-     * @param ElementInterface|Element $element            The element to update.
-     * @param boolean                  $updateOtherLocales Whether the element’s other locales should also be updated.
-     * @param boolean                  $updateDescendants  Whether the element’s descendants should also be updated.
-     * @param boolean                  $asTask             Whether the element’s slug and URI should be updated via a background task.
+     * @param ElementInterface $element            The element to update.
+     * @param boolean          $updateOtherLocales Whether the element’s other locales should also be updated.
+     * @param boolean          $updateDescendants  Whether the element’s descendants should also be updated.
+     * @param boolean          $asTask             Whether the element’s slug and URI should be updated via a background task.
      *
      * @return void
      */
     public function updateElementSlugAndUri(ElementInterface $element, $updateOtherLocales = true, $updateDescendants = true, $asTask = false)
     {
+        /** @var Element $element */
         if ($asTask) {
             Craft::$app->getTasks()->queueTask([
                 'type' => UpdateElementSlugsAndUris::className(),
@@ -578,16 +638,21 @@ class Elements extends Component
 
         ElementHelper::setUniqueUri($element);
 
-        Craft::$app->getDb()->createCommand()->update('{{%elements_i18n}}', [
-            'slug' => $element->slug,
-            'uri' => $element->uri
-        ], [
-            'elementId' => $element->id,
-            'locale' => $element->locale
-        ])->execute();
+        Craft::$app->getDb()->createCommand()
+            ->update(
+                '{{%elements_i18n}}',
+                [
+                    'slug' => $element->slug,
+                    'uri' => $element->uri
+                ],
+                [
+                    'elementId' => $element->id,
+                    'locale' => $element->locale
+                ])
+            ->execute();
 
         // Delete any caches involving this element
-        Craft::$app->getTemplateCache()->deleteCachesByElement($element);
+        Craft::$app->getTemplateCaches()->deleteCachesByElement($element);
 
         if ($updateOtherLocales) {
             $this->updateElementSlugAndUriInOtherLocales($element);
@@ -601,12 +666,13 @@ class Elements extends Component
     /**
      * Updates an element’s slug and URI, for any locales besides the given one.
      *
-     * @param ElementInterface|Element $element The element to update.
+     * @param ElementInterface $element The element to update.
      *
      * @return void
      */
     public function updateElementSlugAndUriInOtherLocales(ElementInterface $element)
     {
+        /** @var Element $element */
         foreach (Craft::$app->getI18n()->getSiteLocaleIds() as $localeId) {
             if ($localeId == $element->locale) {
                 continue;
@@ -626,14 +692,16 @@ class Elements extends Component
     /**
      * Updates an element’s descendants’ slugs and URIs.
      *
-     * @param ElementInterface|Element $element            The element whose descendants should be updated.
-     * @param boolean                  $updateOtherLocales Whether the element’s other locales should also be updated.
-     * @param boolean                  $asTask             Whether the descendants’ slugs and URIs should be updated via a background task.
+     * @param ElementInterface $element            The element whose descendants should be updated.
+     * @param boolean          $updateOtherLocales Whether the element’s other locales should also be updated.
+     * @param boolean          $asTask             Whether the descendants’ slugs and URIs should be updated via a background task.
      *
      * @return void
      */
     public function updateDescendantSlugsAndUris(ElementInterface $element, $updateOtherLocales = true, $asTask = false)
     {
+        /** @var Element $element */
+        /** @var ElementQuery $query */
         $query = $element::find()
             ->descendantOf($element)
             ->descendantDist(1)
@@ -675,8 +743,8 @@ class Elements extends Component
      * @param integer $mergedElementId     The ID of the element that is going away.
      * @param integer $prevailingElementId The ID of the element that is sticking around.
      *
-     * @throws \Exception
      * @return boolean Whether the elements were merged successfully.
+     * @throws \Exception if reasons
      */
     public function mergeElementsByIds($mergedElementId, $prevailingElementId)
     {
@@ -702,12 +770,16 @@ class Elements extends Component
                     ->exists();
 
                 if (!$persistingElementIsRelatedToo) {
-                    Craft::$app->getDb()->createCommand()->update('{{%relations}}',
-                        [
-                            'targetId' => $prevailingElementId
-                        ], [
-                            'id' => $relation['id']
-                        ])->execute();
+                    Craft::$app->getDb()->createCommand()
+                        ->update(
+                            '{{%relations}}',
+                            [
+                                'targetId' => $prevailingElementId
+                            ],
+                            [
+                                'id' => $relation['id']
+                            ])
+                        ->execute();
                 }
             }
 
@@ -729,12 +801,15 @@ class Elements extends Component
                     ->exists();
 
                 if (!$persistingElementIsInStructureToo) {
-                    Craft::$app->getDb()->createCommand()->update('{{%relations}}',
-                        [
-                            'elementId' => $prevailingElementId
-                        ], [
-                            'id' => $structureElement['id']
-                        ])->execute();
+                    Craft::$app->getDb()->createCommand()
+                        ->update('{{%relations}}',
+                            [
+                                'elementId' => $prevailingElementId
+                            ],
+                            [
+                                'id' => $structureElement['id']
+                            ])
+                        ->execute();
                 }
             }
 
@@ -760,7 +835,7 @@ class Elements extends Component
             }
 
             // Fire an 'afterMergeElements' event
-            $this->trigger(static::EVENT_AFTER_MERGE_ELEMENTS,
+            $this->trigger(self::EVENT_AFTER_MERGE_ELEMENTS,
                 new MergeElementsEvent([
                     'mergedElementId' => $mergedElementId,
                     'prevailingElementId' => $prevailingElementId
@@ -773,7 +848,7 @@ class Elements extends Component
 
             return $success;
         } catch (\Exception $e) {
-            $transaction->rollback();
+            $transaction->rollBack();
 
             throw $e;
         }
@@ -784,8 +859,8 @@ class Elements extends Component
      *
      * @param integer|array $elementIds The element’s ID, or an array of elements’ IDs.
      *
-     * @throws \Exception
      * @return boolean Whether the element(s) were deleted successfully.
+     * @throws \Exception
      */
     public function deleteElementById($elementIds)
     {
@@ -801,21 +876,22 @@ class Elements extends Component
 
         try {
             // Fire a 'beforeDeleteElements' event
-            $this->trigger(static::EVENT_BEFORE_DELETE_ELEMENTS,
-                new DeleteElementsEvent([
+            $this->trigger(self::EVENT_BEFORE_DELETE_ELEMENTS,
+                new ElementsDeleteEvent([
                     'elementIds' => $elementIds
                 ]));
 
             // First delete any structure nodes with these elements, so NestedSetBehavior can do its thing. We need to
             // go one-by-one in case one of theme deletes the record of another in the process.
             foreach ($elementIds as $elementId) {
-                /* @var StructureElementRecord[] $records */
+                /** @var StructureElementRecord[] $records */
                 $records = StructureElementRecord::findAll([
                     'elementId' => $elementId
                 ]);
 
                 foreach ($records as $record) {
                     // If this element still has any children, move them up before the one getting deleted.
+                    /** @var StructureElementRecord[] $children */
                     $children = $record->children()->all();
 
                     foreach ($children as $child) {
@@ -829,7 +905,7 @@ class Elements extends Component
 
             // Delete the caches before they drop their elementId relations (passing `false` because there's no chance
             // this element is suddenly going to show up in a new query)
-            Craft::$app->getTemplateCache()->deleteCachesByElementId($elementIds, false);
+            Craft::$app->getTemplateCaches()->deleteCachesByElementId($elementIds, false);
 
             // Now delete the rows in the elements table
             if (count($elementIds) == 1) {
@@ -854,16 +930,20 @@ class Elements extends Component
             }
 
             // Delete the elements table rows, which will cascade across all other InnoDB tables
-            $affectedRows = Craft::$app->getDb()->createCommand()->delete('{{%elements}}', $condition)->execute();
+            $affectedRows = Craft::$app->getDb()->createCommand()
+                ->delete('{{%elements}}', $condition)
+                ->execute();
 
             // The searchindex table is MyISAM, though
-            Craft::$app->getDb()->createCommand()->delete('{{%searchindex}}', $searchIndexCondition)->execute();
+            Craft::$app->getDb()->createCommand()
+                ->delete('{{%searchindex}}', $searchIndexCondition)
+                ->execute();
 
             $transaction->commit();
 
             return (bool)$affectedRows;
         } catch (\Exception $e) {
-            $transaction->rollback();
+            $transaction->rollBack();
 
             throw $e;
         }
@@ -899,7 +979,7 @@ class Elements extends Component
      *
      * @param mixed $config The element action’s class name, or its config, with a `type` value and optionally a `settings` value
      *
-     * @return ElementActionInterface|ElementAction The element action
+     * @return ElementActionInterface The element action
      */
     public function createAction($config)
     {
@@ -923,10 +1003,12 @@ class Elements extends Component
                 return $class;
             }
         }
+
+        return null;
     }
 
     /**
-     * Parses a string for element [reference tags](http://buildwithcraft.com/docs/reference-tags).
+     * Parses a string for element [reference tags](http://craftcms.com/docs/reference-tags).
      *
      * @param string $str The string to parse.
      *
@@ -942,7 +1024,14 @@ class Elements extends Component
                 function ($matches) {
                     global $refTagsByElementHandle;
 
-                    $elementTypeHandle = ucfirst($matches[1]);
+                    if (strpos($matches[1], '_') === false) {
+                        $elementTypeHandle = ucfirst($matches[1]);
+                    } else {
+                        $elementTypeHandle = preg_replace_callback('/^\w|_\w/', function ($matches) {
+                            return strtoupper($matches[0]);
+                        }, $matches[1]);
+                    }
+
                     $token = '{'.StringHelper::randomString(9).'}';
 
                     $refTagsByElementHandle[$elementTypeHandle][] = [
@@ -988,6 +1077,7 @@ class Elements extends Component
                             if ($refTagsByThing) {
                                 $elements = $elementType::find()
                                     ->status(null)
+                                    ->limit(null)
                                     ->$thing(array_keys($refTagsByThing))
                                     ->all();
 
@@ -1009,8 +1099,21 @@ class Elements extends Component
 
                                         if ($element) {
                                             if (!empty($refTag['matches'][3]) && isset($element->{$refTag['matches'][3]})) {
-                                                $value = (string)$element->{$refTag['matches'][3]};
-                                                $replace[] = $this->parseRefs($value);
+                                                try {
+                                                    $value = $element->{$refTag['matches'][3]};
+
+                                                    if (is_object($value) && !method_exists($value, '__toString')) {
+                                                        throw new Exception('Object of class '.get_class($value).' could not be converted to string');
+                                                    }
+
+                                                    $replace[] = $this->parseRefs((string)$value);
+                                                } catch (\Exception $e) {
+                                                    // Log it
+                                                    Craft::error('An exception was thrown when parsing the ref tag "'.$refTag['matches'][0]."\":\n".$e->getMessage());
+
+                                                    // Replace the token with the original ref tag
+                                                    $replace[] = $refTag['matches'][0];
+                                                }
                                             } else {
                                                 // Default to the URL
                                                 $replace[] = $element->getUrl();
@@ -1040,12 +1143,13 @@ class Elements extends Component
      *
      * This is used by Live Preview and Sharing features.
      *
-     * @param ElementInterface|Element $element The element currently being edited by Live Preview.
+     * @param ElementInterface $element The element currently being edited by Live Preview.
      *
      * @see getPlaceholderElement()
      */
     public function setPlaceholderElement(ElementInterface $element)
     {
+        /** @var Element $element */
         // Won't be able to do anything with this if it doesn't have an ID or locale
         if (!$element->id || !$element->locale) {
             return;
@@ -1060,15 +1164,162 @@ class Elements extends Component
      * @param integer $id     The element’s ID
      * @param string  $locale The element’s locale
      *
-     * @return ElementInterface|Element|null The placeholder element if one exists, or null.
+     * @return ElementInterface|null The placeholder element if one exists, or null.
      * @see setPlaceholderElement()
      */
     public function getPlaceholderElement($id, $locale)
     {
         if (isset($this->_placeholderElements[$id][$locale])) {
             return $this->_placeholderElements[$id][$locale];
-        } else {
-            return null;
+        }
+
+        return null;
+    }
+
+    /**
+     * Eager-loads additional elements onto a given set of elements.
+     *
+     * @param ElementInterface|string $elementType The root element type
+     * @param ElementInterface[]      $elements    The root element models that should be updated with the eager-loaded elements
+     * @param string|array            $with        Dot-delimited paths of the elements that should be eager-loaded into the root elements
+     *
+     * @return void
+     */
+    public function eagerLoadElements($elementType, $elements, $with)
+    {
+        // Bail if there aren't even any elements
+        if (!$elements) {
+            return;
+        }
+
+        // Normalize the paths and find any custom path criterias
+        $with = ArrayHelper::toArray($with);
+        $paths = [];
+        $pathCriterias = [];
+
+        foreach ($with as $path) {
+            // Using the array syntax?
+            // ['foo.bar'] or ['foo.bar', criteria]
+            if (is_array($path)) {
+                if (!empty($path[1])) {
+                    $pathCriterias['__root__.'.$path[0]] = $path[1];
+                }
+
+                $paths[] = $path[0];
+            } else {
+                $paths[] = $path;
+            }
+        }
+
+        // Load 'em up!
+        $elementsByPath = ['__root__' => $elements];
+        $elementTypesByPath = ['__root__' => $elementType::className()];
+
+        foreach ($paths as $path) {
+            $pathSegments = explode('.', $path);
+            $sourcePath = '__root__';
+
+            foreach ($pathSegments as $segment) {
+                $targetPath = $sourcePath.'.'.$segment;
+
+                // Figure out the path mapping wants a custom order
+                $useCustomOrder = !empty($pathCriterias[$targetPath]['order']);
+
+                // Make sure we haven't already eager-loaded this target path
+                if (!isset($elementsByPath[$targetPath])) {
+                    // Guilty until proven innocent
+                    $elementsByPath[$targetPath] = $targetElements = $targetElementsById = $targetElementIdsBySourceIds = false;
+
+                    // Get the eager-loading map from the source element type
+                    /** @var Element $sourceElementType */
+                    $sourceElementType = $elementTypesByPath[$sourcePath];
+                    $map = $sourceElementType::getEagerLoadingMap($elementsByPath[$sourcePath], $segment);
+
+                    if ($map && !empty($map['map'])) {
+                        // Remember the element type in case there are more segments after this
+                        $elementTypesByPath[$targetPath] = $map['elementType'];
+
+                        // Loop through the map to find:
+                        // - unique target element IDs
+                        // - target element IDs indexed by source element IDs
+                        $uniqueTargetElementIds = [];
+                        $targetElementIdsBySourceIds = [];
+
+                        foreach ($map['map'] as $mapping) {
+                            if (!in_array($mapping['target'], $uniqueTargetElementIds)) {
+                                $uniqueTargetElementIds[] = $mapping['target'];
+                            }
+
+                            $targetElementIdsBySourceIds[$mapping['source']][] = $mapping['target'];
+                        }
+
+                        // Get the target elements
+                        $customParams = array_merge(
+                        // Default to no order and limit, but allow the element type/path criteria to override
+                            ['orderBy' => null, 'limit' => null],
+                            (isset($map['criteria']) ? $map['criteria'] : []),
+                            (isset($pathCriterias[$targetPath]) ? $pathCriterias[$targetPath] : [])
+                        );
+                        /** @var Element $targetElementType */
+                        $targetElementType = $map['elementType'];
+                        /** @var ElementQuery $query */
+                        $query = $targetElementType::find()
+                            ->configure($customParams);
+                        $query->id = $uniqueTargetElementIds;
+                        /** @var Element[] $targetElements */
+                        $targetElements = $query->all();
+
+                        if ($targetElements) {
+                            // Success! Store those elements on $elementsByPath FFR
+                            $elementsByPath[$targetPath] = $targetElements;
+
+                            // Index the target elements by their IDs if we are using the map-defined order
+                            if (!$useCustomOrder) {
+                                $targetElementsById = [];
+
+                                foreach ($targetElements as $targetElement) {
+                                    $targetElementsById[$targetElement->id] = $targetElement;
+                                }
+                            }
+                        }
+                    }
+
+                    // Tell the source elements about their eager-loaded elements (or lack thereof, as the case may be)
+                    foreach ($elementsByPath[$sourcePath] as $sourceElement) {
+                        /** @var Element $sourceElement */
+                        $sourceElementId = $sourceElement->id;
+                        $targetElementsForSource = [];
+
+                        if (isset($targetElementIdsBySourceIds[$sourceElementId])) {
+                            if ($useCustomOrder) {
+                                // Assign the elements in the order they were returned from the query
+                                foreach ($targetElements as $targetElement) {
+                                    if (in_array($targetElement->id, $targetElementIdsBySourceIds[$sourceElementId])) {
+                                        $targetElementsForSource[] = $targetElement;
+                                    }
+                                }
+                            } else {
+                                // Assign the elements in the order defined by the map
+                                foreach ($targetElementIdsBySourceIds[$sourceElementId] as $targetElementId) {
+                                    if (isset($targetElementsById[$targetElementId])) {
+                                        $targetElementsForSource[] = $targetElementsById[$targetElementId];
+                                    }
+                                }
+                            }
+                        }
+
+                        $sourceElement->setEagerLoadedElements($segment, $targetElementsForSource);
+                    }
+                }
+
+                if (!$elementsByPath[$targetPath]) {
+                    // Dead end - stop wasting time on this path
+                    break;
+                }
+
+                // Update the source path
+                $sourcePath = $targetPath;
+            }
         }
     }
 }

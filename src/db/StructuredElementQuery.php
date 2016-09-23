@@ -1,13 +1,14 @@
 <?php
 /**
- * @link      http://buildwithcraft.com/
- * @copyright Copyright (c) 2015 Pixel & Tonic, Inc.
- * @license   http://buildwithcraft.com/license
+ * @link      https://craftcms.com/
+ * @copyright Copyright (c) Pixel & Tonic, Inc.
+ * @license   https://craftcms.com/license
  */
 
 namespace craft\app\db;
 
 use creocoder\nestedsets\NestedSetsQueryBehavior;
+use yii\db\ActiveQuery;
 
 /**
  * @inheritdoc
@@ -15,8 +16,16 @@ use creocoder\nestedsets\NestedSetsQueryBehavior;
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since  3.0
  */
-class StructuredElementQuery extends \yii\db\ActiveQuery
+class StructuredElementQuery extends ActiveQuery
 {
+    // Traits
+    // =========================================================================
+
+    use NestedSetsQueryTrait;
+
+    // Public Methods
+    // =========================================================================
+
     /**
      * @inheritdoc
      */

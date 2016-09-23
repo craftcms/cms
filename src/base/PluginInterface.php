@@ -1,8 +1,8 @@
 <?php
 /**
- * @link      http://buildwithcraft.com/
- * @copyright Copyright (c) 2015 Pixel & Tonic, Inc.
- * @license   http://buildwithcraft.com/license
+ * @link      https://craftcms.com/
+ * @copyright Copyright (c) Pixel & Tonic, Inc.
+ * @license   https://craftcms.com/license
  */
 
 namespace craft\app\base;
@@ -40,7 +40,7 @@ interface PluginInterface
     /**
      * Installs the plugin.
      *
-     * @return boolean|null Return `false` to indicate the installation failed.
+     * @return void|false Return `false` to indicate the installation failed.
      * All other return values mean the installation was successful.
      */
     public function install();
@@ -50,7 +50,7 @@ interface PluginInterface
      *
      * @param string $fromVersion The previously installed version of the plugin.
      *
-     * @return boolean|null Return `false` to indicate the update failed.
+     * @return void|false Return `false` to indicate the update failed.
      * All other return values mean the update was successful.
      */
     public function update($fromVersion);
@@ -58,7 +58,7 @@ interface PluginInterface
     /**
      * Uninstalls the plugin.
      *
-     * @return boolean|null Return `false` to indicate the uninstallation failed.
+     * @return void|false Return `false` to indicate the uninstallation failed.
      * All other return values mean the uninstallation was successful.
      */
     public function uninstall();
@@ -78,7 +78,7 @@ interface PluginInterface
     public function getSettingsResponse();
 
     /**
-     * Returns the component definition that should be registered on the [[\craft\app\web\twig\variables\Craft]] instance for this plugin’s handle.
+     * Returns the component definition that should be registered on the [[\craft\app\web\twig\variables\CraftVariable]] instance for this plugin’s handle.
      *
      * @return mixed|null The component definition to be registered.
      * It can be any of the formats supported by [[\yii\di\ServiceLocator::set()]].

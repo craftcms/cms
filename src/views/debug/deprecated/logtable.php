@@ -16,9 +16,7 @@ use craft\app\models\DeprecationError;
     <p>No deprecation errors were logged.</p>
 <?php else: ?>
     <div class="table-responsive">
-        <table
-            class="table table-condensed table-bordered table-striped table-hover"
-            style="table-layout: fixed;">
+        <table class="table table-condensed table-bordered table-striped table-hover" style="table-layout: fixed;">
             <thead>
             <tr>
                 <th style="nowrap">Error Message</th>
@@ -28,8 +26,8 @@ use craft\app\models\DeprecationError;
             <tbody>
             <?php foreach ($logs as $log): ?>
                 <tr>
-                    <td><?= $log->message ?></td>
-                    <td><?= $log->getOrigin() ?> – <a href="<?= $panel->getUrl().'&trace='.$log->id ?>">Stack Trace</a></td>
+                    <td><?= htmlentities($log->message, null, 'UTF-8') ?></td>
+                    <td><?= htmlentities($log->getOrigin(), null, 'UTF-8') ?> – <a href="<?= $panel->getUrl().'&trace='.$log->id ?>">StackTrace</a></td>
                 </tr>
             <?php endforeach; ?>
             </tbody>

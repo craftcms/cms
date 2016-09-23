@@ -1,24 +1,31 @@
 <?php
 /**
- * @link      http://buildwithcraft.com/
- * @copyright Copyright (c) 2015 Pixel & Tonic, Inc.
- * @license   http://buildwithcraft.com/license
+ * @link      https://craftcms.com/
+ * @copyright Copyright (c) Pixel & Tonic, Inc.
+ * @license   https://craftcms.com/license
  */
 
 namespace craft\app\models;
 
-use craft\app\base\Field;
 use craft\app\base\FieldInterface;
 use craft\app\base\Model;
+use craft\app\behaviors\FieldLayoutTrait;
 
 /**
  * MatrixBlockType model class.
+ *
+ * @property boolean $isNew Whether this is a new block type
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since  3.0
  */
 class MatrixBlockType extends Model
 {
+    // Traits
+    // =========================================================================
+
+    use FieldLayoutTrait;
+
     // Properties
     // =========================================================================
 
@@ -126,11 +133,11 @@ class MatrixBlockType extends Model
     }
 
     /**
-     * Returns whether this is a new component.
+     * Returns whether this is a new block type.
      *
      * @return boolean
      */
-    public function isNew()
+    public function getIsNew()
     {
         return (!$this->id || strncmp($this->id, 'new', 3) === 0);
     }
@@ -138,7 +145,7 @@ class MatrixBlockType extends Model
     /**
      * Returns the fields associated with this block type.
      *
-     * @return FieldInterface[]|Field[]
+     * @return FieldInterface[]
      */
     public function getFields()
     {
@@ -148,7 +155,7 @@ class MatrixBlockType extends Model
     /**
      * Sets the fields associated with this block type.
      *
-     * @param FieldInterface[]|Field[] $fields
+     * @param FieldInterface[] $fields
      *
      * @return void
      */

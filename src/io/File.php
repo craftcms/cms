@@ -1,8 +1,8 @@
 <?php
 /**
- * @link      http://buildwithcraft.com/
- * @copyright Copyright (c) 2015 Pixel & Tonic, Inc.
- * @license   http://buildwithcraft.com/license
+ * @link      https://craftcms.com/
+ * @copyright Copyright (c) Pixel & Tonic, Inc.
+ * @license   https://craftcms.com/license
  */
 
 namespace craft\app\io;
@@ -92,13 +92,13 @@ class File extends BaseIO
             }
 
             return $this->_filename;
-        } else {
-            if (!$this->_baseName) {
-                $this->_baseName = Io::getFilename($this->getRealPath(), $includeExtension);
-            }
-
-            return $this->_baseName;
         }
+
+        if (!$this->_baseName) {
+            $this->_baseName = Io::getFilename($this->getRealPath(), $includeExtension);
+        }
+
+        return $this->_baseName;
     }
 
     /**
@@ -162,13 +162,13 @@ class File extends BaseIO
             }
 
             return $this->_arrayContents;
-        } else {
-            if (!$this->_stringContents) {
-                $this->_stringContents = Io::getFileContents($this->getRealPath(), $array);
-            }
-
-            return $this->_stringContents;
         }
+
+        if (!$this->_stringContents) {
+            $this->_stringContents = Io::getFileContents($this->getRealPath(), $array);
+        }
+
+        return $this->_stringContents;
     }
 
     /**

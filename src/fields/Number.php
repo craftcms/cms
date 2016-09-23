@@ -1,14 +1,16 @@
 <?php
 /**
- * @link      http://buildwithcraft.com/
- * @copyright Copyright (c) 2015 Pixel & Tonic, Inc.
- * @license   http://buildwithcraft.com/license
+ * @link      https://craftcms.com/
+ * @copyright Copyright (c) Pixel & Tonic, Inc.
+ * @license   https://craftcms.com/license
  */
 
 namespace craft\app\fields;
 
 use Craft;
+use craft\app\base\Element;
 use craft\app\base\Field;
+use craft\app\base\PreviewableFieldInterface;
 use craft\app\helpers\Db;
 use craft\app\helpers\Localization;
 use craft\app\i18n\Locale;
@@ -19,7 +21,7 @@ use craft\app\i18n\Locale;
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since  3.0
  */
-class Number extends Field
+class Number extends Field implements PreviewableFieldInterface
 {
     // Static
     // =========================================================================
@@ -68,6 +70,10 @@ class Number extends Field
             'operator' => '>='
         ];
 
+        if (!$this->decimals) {
+            $rules[] = [['min', 'max'], 'integer'];
+        }
+
         return $rules;
     }
 
@@ -95,6 +101,7 @@ class Number extends Field
      */
     public function prepareValue($value, $element)
     {
+        /** @var Element $element */
         // Is this a post request?
         $request = Craft::$app->getRequest();
         if (!$request->getIsConsoleRequest() && $request->getIsPost()) {

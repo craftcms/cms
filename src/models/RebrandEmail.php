@@ -1,8 +1,8 @@
 <?php
 /**
- * @link      http://buildwithcraft.com/
- * @copyright Copyright (c) 2015 Pixel & Tonic, Inc.
- * @license   http://buildwithcraft.com/license
+ * @link      https://craftcms.com/
+ * @copyright Copyright (c) Pixel & Tonic, Inc.
+ * @license   https://craftcms.com/license
  */
 
 namespace craft\app\models;
@@ -47,6 +47,11 @@ class RebrandEmail extends Model
      * @var string Html body
      */
     public $htmlBody;
+
+    /**
+     * @var string Heading
+     */
+    public $heading;
 
     // Public Methods
     // =========================================================================

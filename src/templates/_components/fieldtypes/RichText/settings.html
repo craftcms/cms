@@ -11,7 +11,7 @@
 	{% endset %}
 {% else %}
 	{% set configInput %}
-		<p>{{ 'You don’t have any <a href="http://buildwithcraft.com/docs/rich-text-fields#redactor-configs" target="_blank">Redactor configs</a> yet.'|t('app')|raw }}</p>
+		<p>{{ 'You don’t have any <a href="http://craftcms.com/docs/rich-text-fields#redactor-configs" target="_blank">Redactor configs</a> yet.'|t('app')|raw }}</p>
 	{% endset %}
 {% endif %}
 
@@ -30,6 +30,26 @@
 	id: 'configFile'
 }, configInput) }}
 
+{{ forms.checkboxSelectField({
+	id: 'availableVolumes',
+	name: 'availableVolumes',
+	label: 'Available Volumes'|t,
+	instructions: 'The volumes that should be available when selecting assets (if the selected config has an Image or File buttin).'|t,
+	options: volumeOptions,
+	value: 1,
+	values: field.availableVolumes,
+}) }}
+
+{{ forms.checkboxSelectField({
+	id: 'availableTransforms',
+	name: 'availableTransforms',
+	label: 'Available Transforms'|t,
+	instructions: 'The Transforms that should be available for Image selection.'|t,
+	options: transformOptions,
+	value: 1,
+	values: field.availableTransforms,
+}) }}
+
 {{ forms.checkboxField({
 	label: "Clean up HTML?"|t('app'),
 	instructions: "Removes <code>&lt;span&gt;</code>’s, empty tags, and most <code>style</code> attributes on save."|t('app'),
@@ -41,6 +61,7 @@
 {{ forms.checkboxField({
 	label: "Purify HTML?"|t('app'),
 	instructions: 'Removes any potentially-malicious code on save, by running the submitted data through <a href="http://htmlpurifier.org/" target="_blank">HTML Purifier</a>.'|t('app'),
+	warning: 'Disable this at your own risk!'|t('app'),
 	id: 'purifyHtml',
 	name: 'purifyHtml',
 	checked: field.purifyHtml

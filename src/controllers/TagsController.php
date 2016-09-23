@@ -1,14 +1,13 @@
 <?php
 /**
- * @link      http://buildwithcraft.com/
- * @copyright Copyright (c) 2015 Pixel & Tonic, Inc.
- * @license   http://buildwithcraft.com/license
+ * @link      https://craftcms.com/
+ * @copyright Copyright (c) Pixel & Tonic, Inc.
+ * @license   https://craftcms.com/license
  */
 
 namespace craft\app\controllers;
 
 use Craft;
-use craft\app\errors\HttpException;
 use craft\app\helpers\Db;
 use craft\app\helpers\Search;
 use craft\app\helpers\StringHelper;
@@ -16,6 +15,8 @@ use craft\app\helpers\Url;
 use craft\app\elements\Tag;
 use craft\app\models\TagGroup;
 use craft\app\web\Controller;
+use yii\web\NotFoundHttpException;
+use yii\web\Response;
 
 /**
  * The TagsController class is a controller that handles various tag and tag group related tasks such as displaying,
@@ -54,7 +55,7 @@ class TagsController extends Controller
      * @param TagGroup $tagGroup   The tag group being edited, if there were any validation errors.
      *
      * @return string The rendering result
-     * @throws HttpException
+     * @throws NotFoundHttpException if the requested tag group cannot be found
      */
     public function actionEditTagGroup($tagGroupId = null, TagGroup $tagGroup = null)
     {
@@ -65,7 +66,7 @@ class TagsController extends Controller
                 $tagGroup = Craft::$app->getTags()->getTagGroupById($tagGroupId);
 
                 if (!$tagGroup) {
-                    throw new HttpException(404);
+                    throw new NotFoundHttpException('Tag group not found');
                 }
             }
 
@@ -114,7 +115,7 @@ class TagsController extends Controller
     /**
      * Save a tag group.
      *
-     * @return void
+     * @return Response|null
      */
     public function actionSaveTagGroup()
     {
@@ -138,20 +139,22 @@ class TagsController extends Controller
             Craft::$app->getSession()->setNotice(Craft::t('app', 'Tag group saved.'));
 
             return $this->redirectToPostedUrl($tagGroup);
-        } else {
-            Craft::$app->getSession()->setError(Craft::t('app', 'Couldn’t save the tag group.'));
         }
 
+        Craft::$app->getSession()->setError(Craft::t('app', 'Couldn’t save the tag group.'));
+
         // Send the tag group back to the template
-        Craft::$app->getUrlManager()->setRoute([
+        Craft::$app->getUrlManager()->setRouteParams([
             'tagGroup' => $tagGroup
         ]);
+
+        return null;
     }
 
     /**
      * Deletes a tag group.
      *
-     * @return void
+     * @return Response
      */
     public function actionDeleteTagGroup()
     {
@@ -169,7 +172,7 @@ class TagsController extends Controller
     /**
      * Searches for tags.
      *
-     * @return void
+     * @return Response
      */
     public function actionSearchForTags()
     {
@@ -179,6 +182,7 @@ class TagsController extends Controller
         $search = Craft::$app->getRequest()->getBodyParam('search');
         $tagGroupId = Craft::$app->getRequest()->getBodyParam('tagGroupId');
         $excludeIds = Craft::$app->getRequest()->getBodyParam('excludeIds', []);
+        $allowSimilarTags = Craft::$app->getConfig()->get('allowSimilarTags');
 
         $tags = Tag::find()
             ->groupId($tagGroupId)
@@ -191,7 +195,11 @@ class TagsController extends Controller
         $tagTitleLengths = [];
         $exactMatch = false;
 
-        $normalizedSearch = Search::normalizeKeywords($search);
+        if ($allowSimilarTags) {
+            $search = Search::normalizeKeywords($search, [], false);
+        } else {
+            $search = Search::normalizeKeywords($search);
+        }
 
         foreach ($tags as $tag) {
             $return[] = [
@@ -201,9 +209,13 @@ class TagsController extends Controller
 
             $tagTitleLengths[] = StringHelper::length($tag->title);
 
-            $normalizedTitle = Search::normalizeKeywords($tag->title);
+            if ($allowSimilarTags) {
+                $title = Search::normalizeKeywords($tag->title, [], false);
+            } else {
+                $title = Search::normalizeKeywords($tag->title);
+            }
 
-            if ($normalizedTitle == $normalizedSearch) {
+            if ($title == $search) {
                 $exactMatches[] = 1;
                 $exactMatch = true;
             } else {
@@ -222,7 +234,7 @@ class TagsController extends Controller
     /**
      * Creates a new tag.
      *
-     * @return void
+     * @return Response
      */
     public function actionCreateTag()
     {

@@ -1,18 +1,20 @@
 <?php
 /**
- * @link      http://buildwithcraft.com/
- * @copyright Copyright (c) 2015 Pixel & Tonic, Inc.
- * @license   http://buildwithcraft.com/license
+ * @link      https://craftcms.com/
+ * @copyright Copyright (c) Pixel & Tonic, Inc.
+ * @license   https://craftcms.com/license
  */
 
 namespace craft\app\web;
 
 use Craft;
-use craft\app\errors\HttpException;
 use craft\app\helpers\Header;
 use craft\app\helpers\Io;
 use craft\app\helpers\Url;
 use yii\base\InvalidParamException;
+use yii\web\BadRequestHttpException;
+use yii\web\ForbiddenHttpException;
+use yii\web\Response as YiiResponse;
 
 /**
  * Controller is a base class that all controllers in Craft extend.
@@ -62,9 +64,9 @@ abstract class Controller extends \yii\web\Controller
             }
 
             return true;
-        } else {
-            return false;
         }
+
+        return false;
     }
 
     /**
@@ -117,8 +119,8 @@ abstract class Controller extends \yii\web\Controller
     /**
      * Throws a 403 error if the current user is not an admin.
      *
-     * @throws HttpException
      * @return void
+     * @throws ForbiddenHttpException if the current user is not an admin
      */
     public function requireAdmin()
     {
@@ -127,7 +129,7 @@ abstract class Controller extends \yii\web\Controller
 
         // Make sure they're an admin
         if (!Craft::$app->getUser()->getIsAdmin()) {
-            throw new HttpException(403, Craft::t('app', 'This action may only be performed by admins.'));
+            throw new ForbiddenHttpException('User is not permitted to perform this action');
         }
     }
 
@@ -136,13 +138,13 @@ abstract class Controller extends \yii\web\Controller
      *
      * @param string $permissionName The name of the permission.
      *
-     * @throws HttpException
      * @return void
+     * @throws ForbiddenHttpException if the current user doesn’t have the required permission
      */
     public function requirePermission($permissionName)
     {
         if (!Craft::$app->getUser()->checkPermission($permissionName)) {
-            throw new HttpException(403);
+            throw new ForbiddenHttpException('User is not permitted to perform this action');
         }
     }
 
@@ -151,52 +153,65 @@ abstract class Controller extends \yii\web\Controller
      *
      * @param string $action The name of the action to check.
      *
-     * @throws HttpException
      * @return void
+     * @throws ForbiddenHttpException if the current user is not authorized
      */
     public function requireAuthorization($action)
     {
         if (!Craft::$app->getSession()->checkAuthorization($action)) {
-            throw new HttpException(403);
+            throw new ForbiddenHttpException('User is not authorized to perform this action');
+        }
+    }
+
+    /**
+     * Requires that the user has an elevated session.
+     *
+     * @return void
+     * @throws ForbiddenHttpException if the current user does not have an elevated session
+     */
+    public function requireElevatedSession()
+    {
+        if (!Craft::$app->getUser()->getHasElevatedSession()) {
+            throw new ForbiddenHttpException(403, Craft::t('app', 'This action may only be performed with an elevated session.'));
         }
     }
 
     /**
      * Throws a 400 error if this isn’t a POST request
      *
-     * @throws HttpException
      * @return void
+     * @throws BadRequestHttpException if the request is not a post request
      */
     public function requirePostRequest()
     {
         if (!Craft::$app->getRequest()->getIsPost()) {
-            throw new HttpException(400);
+            throw new BadRequestHttpException('Post request required');
         }
     }
 
     /**
      * Throws a 400 error if this isn’t an Ajax request.
      *
-     * @throws HttpException
      * @return void
+     * @throws BadRequestHttpException if the request is not an ajax request
      */
     public function requireAjaxRequest()
     {
         if (!Craft::$app->getRequest()->getIsAjax()) {
-            throw new HttpException(400);
+            throw new BadRequestHttpException('Ajax request required');
         }
     }
 
     /**
      * Throws a 400 error if the current request doesn’t have a valid token.
      *
-     * @throws HttpException
      * @return void
+     * @throws BadRequestHttpException if the request does not have a valid token
      */
     public function requireToken()
     {
         if (!Craft::$app->getRequest()->getQueryParam(Craft::$app->getConfig()->get('tokenParam'))) {
-            throw new HttpException(400);
+            throw new BadRequestHttpException('Valid token required');
         }
     }
 
@@ -207,11 +222,22 @@ abstract class Controller extends \yii\web\Controller
      * @param string $default The default URL to redirect them to, if no 'redirect' parameter exists. If this is left
      *                        null, then the current request’s path will be used.
      *
-     * @return Response
+     * @return YiiResponse
+     * @throws BadRequestHttpException if the redirect param was tampered with
      */
     public function redirectToPostedUrl($object = null, $default = null)
     {
+        $security = Craft::$app->getSecurity();
+
         $url = Craft::$app->getRequest()->getBodyParam('redirect');
+
+        if ($url !== null) {
+            $url = $security->validateData($url, $security->getValidationKey());
+
+            if ($url === false) {
+                throw new BadRequestHttpException('The redirect param was tampered with');
+            }
+        }
 
         if ($url === null) {
             if ($default !== null) {
@@ -222,7 +248,7 @@ abstract class Controller extends \yii\web\Controller
         }
 
         if ($object) {
-            $url = Craft::$app->getView()->renderObjectTemplate($url, $object);
+            $url = Craft::$app->getView()->renderObjectTemplate($url, $object, true);
         }
 
         return $this->redirect($url);
@@ -233,7 +259,7 @@ abstract class Controller extends \yii\web\Controller
      *
      * @param mixed $var The array that should be JSON-encoded.
      *
-     * @return Response The response object.
+     * @return YiiResponse The response object.
      */
     public function asJson($var = [])
     {
@@ -249,7 +275,7 @@ abstract class Controller extends \yii\web\Controller
      *
      * @param mixed $var The array that should be JSON-encoded.
      *
-     * @return Response The response object.
+     * @return YiiResponse The response object.
      */
     public function asJsonP($var = [])
     {
@@ -265,7 +291,7 @@ abstract class Controller extends \yii\web\Controller
      *
      * @param mixed $var The RAW array data.
      *
-     * @return Response The response object.
+     * @return YiiResponse The response object.
      */
     public function asRaw($var = [])
     {
@@ -281,7 +307,7 @@ abstract class Controller extends \yii\web\Controller
      *
      * @param mixed $var The array that should be XML-encoded.
      *
-     * @return Response The response object.
+     * @return YiiResponse The response object.
      */
     public function asXml($var = [])
     {
@@ -297,7 +323,7 @@ abstract class Controller extends \yii\web\Controller
      *
      * @param string $error The error message.
      *
-     * @return Response The response object.
+     * @return YiiResponse
      */
     public function asErrorJson($error)
     {
@@ -306,6 +332,8 @@ abstract class Controller extends \yii\web\Controller
 
     /**
      * @inheritdoc
+     *
+     * @return YiiResponse
      */
     public function redirect($url, $statusCode = 302)
     {
@@ -315,8 +343,8 @@ abstract class Controller extends \yii\web\Controller
 
         if ($url !== null) {
             return Craft::$app->getResponse()->redirect($url, $statusCode);
-        } else {
-            return $this->goHome();
         }
+
+        return $this->goHome();
     }
 }

@@ -1,8 +1,8 @@
 <?php
 /**
- * @link      http://buildwithcraft.com/
- * @copyright Copyright (c) 2015 Pixel & Tonic, Inc.
- * @license   http://buildwithcraft.com/license
+ * @link      https://craftcms.com/
+ * @copyright Copyright (c) Pixel & Tonic, Inc.
+ * @license   https://craftcms.com/license
  */
 
 namespace craft\app\models;
@@ -13,8 +13,12 @@ use craft\app\base\Model;
 /**
  * Section model class.
  *
+ * @property boolean Whether this is the homepage section
+ *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since  3.0
+ *
+ * @property string|null $urlFormat URL format
  */
 class Section extends Model
 {
@@ -148,15 +152,15 @@ class Section extends Model
      *
      * @return boolean
      */
-    public function isHomepage()
+    public function getIsHomepage()
     {
-        return ($this->type == self::TYPE_SINGLE && $this->urlFormat == '__home__');
+        return ($this->type == self::TYPE_SINGLE && $this->getUrlFormat() == '__home__');
     }
 
     /**
      * Returns the section's locale models
      *
-     * @return array
+     * @return SectionLocale[]
      */
     public function getLocales()
     {
@@ -220,15 +224,15 @@ class Section extends Model
 
         if (!$indexBy) {
             return $this->_entryTypes;
-        } else {
-            $entryTypes = [];
-
-            foreach ($this->_entryTypes as $entryType) {
-                $entryTypes[$entryType->$indexBy] = $entryType;
-            }
-
-            return $entryTypes;
         }
+
+        $entryTypes = [];
+
+        foreach ($this->_entryTypes as $entryType) {
+            $entryTypes[$entryType->$indexBy] = $entryType;
+        }
+
+        return $entryTypes;
     }
 
     /**
@@ -252,5 +256,7 @@ class Section extends Model
 
             return $locales[$localeId]->urlFormat;
         }
+
+        return null;
     }
 }

@@ -1,20 +1,23 @@
 <?php
 /**
- * @link      http://buildwithcraft.com/
- * @copyright Copyright (c) 2015 Pixel & Tonic, Inc.
- * @license   http://buildwithcraft.com/license
+ * @link      https://craftcms.com/
+ * @copyright Copyright (c) Pixel & Tonic, Inc.
+ * @license   https://craftcms.com/license
  */
 
 namespace craft\app\elements\db;
 
 use Craft;
 use craft\app\base\ElementInterface;
+use craft\app\base\Field;
 use craft\app\db\Query;
 use craft\app\helpers\ArrayHelper;
 use craft\app\helpers\Db;
 
 /**
  * Parses a relatedTo param on an ElementQuery.
+ *
+ * @param boolean $isRelationFieldQuery Whether the relatedTo value appears to be for selecting the targets of a single relation field
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since  3.0
@@ -78,7 +81,7 @@ class ElementRelationParamParser
         if (is_string($relatedTo)) {
             $relatedTo = ArrayHelper::toArray($relatedTo);
         } else if (!is_array($relatedTo)) {
-            $relatedTo = array($relatedTo);
+            $relatedTo = [$relatedTo];
         }
 
         if (isset($relatedTo['element']) || isset($relatedTo['sourceElement']) || isset($relatedTo['targetElement'])) {
@@ -124,14 +127,14 @@ class ElementRelationParamParser
         if ($conditions) {
             if (count($conditions) == 1) {
                 return $conditions[0];
-            } else {
-                array_unshift($conditions, $glue);
-
-                return $conditions;
             }
-        } else {
-            return false;
+
+            array_unshift($conditions, $glue);
+
+            return $conditions;
         }
+
+        return false;
     }
 
     /**
@@ -139,7 +142,7 @@ class ElementRelationParamParser
      *
      * @return boolean
      */
-    public function isRelationFieldQuery()
+    public function getIsRelationFieldQuery()
     {
         return (
             $this->_joinSourcesCount == 1 &&
@@ -168,14 +171,18 @@ class ElementRelationParamParser
 
         // Get the element IDs, wherever they are
         $relElementIds = [];
+        $glue = 'or';
 
-        foreach ([
-                     'element',
-                     'sourceElement',
-                     'targetElement'
-                 ] as $elementParam) {
+        $elementParams = ['element', 'sourceElement', 'targetElement'];
+        $elementParam = null;
+
+        foreach ($elementParams as $elementParam) {
             if (isset($relCriteria[$elementParam])) {
                 $elements = ArrayHelper::toArray($relCriteria[$elementParam]);
+
+                if (isset($elements[0]) && ($elements[0] == 'and' || $elements[0] == 'or')) {
+                    $glue = array_shift($elements);
+                }
 
                 foreach ($elements as $element) {
                     if (is_numeric($element)) {
@@ -201,6 +208,8 @@ class ElementRelationParamParser
                 $relCriteria['field'] = null;
             }
 
+            array_unshift($relElementIds, $glue);
+
             return $this->parseRelationParam([
                 'or',
                 [
@@ -212,6 +221,16 @@ class ElementRelationParamParser
                     'field' => $relCriteria['field']
                 ]
             ], $query);
+        } // Do we need to check for *all* of the element IDs?
+        else if ($glue == 'and') {
+            // Srpead it across multiple relation sub-params
+            $newRelatedToParam = ['and'];
+
+            foreach ($relElementIds as $elementId) {
+                $newRelatedToParam[] = [$elementParam => [$elementId]];
+            }
+
+            return $this->parseRelationParam($newRelatedToParam, $query);
         }
 
         $conditions = [];
@@ -237,6 +256,7 @@ class ElementRelationParamParser
                     continue;
                 }
 
+                /** @var Field $fieldModel */
                 // Is this a Matrix field?
                 if ($fieldModel->type == 'Matrix') {
                     $blockTypeFieldIds = [];
@@ -249,6 +269,7 @@ class ElementRelationParamParser
 
                         foreach ($blockTypes as $blockType) {
                             foreach ($blockType->getFields() as $blockTypeField) {
+                                /** @var Field $blockTypeField */
                                 if ($blockTypeField->handle == $fieldHandleParts[1]) {
                                     $blockTypeFieldIds[] = $blockTypeField->id;
                                     break;
@@ -350,7 +371,8 @@ class ElementRelationParamParser
                 $relTableAlias = 'sources'.$this->_joinSourcesCount;
                 $relConditionColumn = 'sourceId';
                 $relElementColumn = 'targetId';
-            } else if (isset($relCriteria['targetElement'])) {
+            } else {
+                // $relCriteria['targetElement'], then
                 $this->_joinTargetsCount++;
                 $relTableAlias = 'targets'.$this->_joinTargetsCount;
                 $relConditionColumn = 'targetId';
@@ -392,13 +414,13 @@ class ElementRelationParamParser
         if ($conditions) {
             if (count($conditions) == 1) {
                 return $conditions[0];
-            } else {
-                array_unshift($conditions, 'or');
-
-                return $conditions;
             }
-        } else {
-            return false;
+
+            array_unshift($conditions, 'or');
+
+            return $conditions;
         }
+
+        return false;
     }
 }

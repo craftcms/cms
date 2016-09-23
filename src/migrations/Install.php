@@ -1,15 +1,15 @@
 <?php
 /**
- * @link      http://buildwithcraft.com/
- * @copyright Copyright (c) 2015 Pixel & Tonic, Inc.
- * @license   http://buildwithcraft.com/license
+ * @link      https://craftcms.com/
+ * @copyright Copyright (c) Pixel & Tonic, Inc.
+ * @license   https://craftcms.com/license
  */
 
 namespace craft\app\migrations;
 
 use Craft;
 use craft\app\elements\User;
-use craft\app\db\InstallMigration;
+use craft\app\db\Migration;
 use craft\app\helpers\StringHelper;
 use craft\app\models\Info;
 
@@ -19,7 +19,7 @@ use craft\app\models\Info;
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since  3.0
  */
-class Install extends InstallMigration
+class Install extends Migration
 {
     // Properties
     // =========================================================================
@@ -62,42 +62,10 @@ class Install extends InstallMigration
      */
     public function safeUp()
     {
-        parent::safeUp();
-
-        // Add the FULLTEXT index on searchindex.keywords
-        // TODO: MySQL specific
-        $this->db->createCommand(
-            'CREATE FULLTEXT INDEX '.
-            $this->db->quoteTableName($this->db->getIndexName('{{%searchindex}}', 'keywords')).' ON '.
-            $this->db->quoteTableName('{{%searchindex}}').' '.
-            '('.$this->db->quoteColumnName('keywords').')'
-        )->execute();
-
-        // Add the site locale
-        $this->insert(
-            '{{%locales}}',
-            [
-                'locale' => $this->locale,
-                'sortOrder' => 1
-            ]
-        );
-
-        // Populate the info table
-        echo "    > populate the info table ...";
-        Craft::$app->saveInfo(new Info([
-            'version' => Craft::$app->version,
-            'build' => Craft::$app->build,
-            'schemaVersion' => Craft::$app->schemaVersion,
-            'releaseDate' => Craft::$app->releaseDate,
-            'edition' => '0',
-            'siteName' => $this->siteName,
-            'siteUrl' => $this->siteUrl,
-            'on' => '1',
-            'maintenance' => '0',
-            'track' => Craft::$app->track,
-            'fieldVersion' => StringHelper::randomString(12),
-        ]));
-        echo " done\n";
+        $this->createTables();
+        $this->createIndexes();
+        $this->addForeignKeys();
+        $this->insertDefaultData();
 
         // Craft, you are installed now.
         Craft::$app->setIsInstalled();
@@ -137,968 +105,896 @@ class Install extends InstallMigration
         echo " done\n";
     }
 
+    /**
+     * @inheritdoc
+     */
+    public function safeDown()
+    {
+        return false;
+    }
+
     // Protected Methods
     // =========================================================================
 
     /**
-     * @inheritdoc
+     * Creates the tables.
+     *
+     * @return void
      */
-    protected function defineSchema()
+    protected function createTables()
     {
-        return [
-            '{{%assetindexdata}}' => [
-                'columns' => [
-                    'sessionId' => 'string(36) COLLATE utf8_unicode_ci NOT NULL DEFAULT \'\'',
-                    'volumeId' => 'integer(10) NOT NULL',
-                    'offset' => 'integer(10) NOT NULL',
-                    'uri' => 'string(255) COLLATE utf8_unicode_ci DEFAULT NULL',
-                    'size' => 'integer(10) DEFAULT NULL',
-                    'timestamp' => 'datetime DEFAULT NULL',
-                    'recordId' => 'integer(10) DEFAULT NULL',
-                ],
-                'indexes' => [
-                    ['sessionId,volumeId,offset', true],
-                    ['volumeId', false],
-                ],
-                'foreignKeys' => [
-                    ['volumeId', '{{%volumes}}', 'id', 'CASCADE', null],
-                ],
-            ],
-            '{{%assets}}' => [
-                'columns' => [
-                    'volumeId' => 'integer(11) DEFAULT NULL',
-                    'folderId' => 'integer(11) NOT NULL',
-                    'filename' => 'string(255) COLLATE utf8_unicode_ci NOT NULL',
-                    'kind' => 'string(50) COLLATE utf8_unicode_ci NOT NULL DEFAULT \'unknown\'',
-                    'width' => 'smallint(6) unsigned DEFAULT NULL',
-                    'height' => 'smallint(6) unsigned DEFAULT NULL',
-                    'size' => 'integer(11) unsigned DEFAULT NULL',
-                    'dateModified' => 'datetime DEFAULT NULL',
-                ],
-                'indexes' => [
-                    ['filename,folderId', true],
-                    ['folderId', false],
-                    ['volumeId', false],
-                ],
-                'foreignKeys' => [
-                    ['volumeId', '{{%volumes}}', 'id', 'CASCADE', null],
-                    ['folderId', '{{%volumefolders}}', 'id', 'CASCADE', null],
-                    ['id', '{{%elements}}', 'id', 'CASCADE', null],
-                ],
-            ],
-            '{{%assettransformindex}}' => [
-                'columns' => [
-                    'fileId' => 'integer(11) NOT NULL',
-                    'filename' => 'string(255) COLLATE utf8_unicode_ci DEFAULT NULL',
-                    'format' => 'string(255) COLLATE utf8_unicode_ci DEFAULT NULL',
-                    'location' => 'string(255) COLLATE utf8_unicode_ci NOT NULL',
-                    'volumeId' => 'integer(11) DEFAULT NULL',
-                    'fileExists' => 'smallint(1) unsigned NOT NULL DEFAULT \'0\'',
-                    'inProgress' => 'smallint(1) unsigned NOT NULL DEFAULT \'0\'',
-                    'dateIndexed' => 'datetime DEFAULT NULL',
-                ],
-                'indexes' => [
-                    ['volumeId,fileId,location', false],
-                ],
-            ],
-            '{{%assettransforms}}' => [
-                'columns' => [
-                    'name' => 'string(255) COLLATE utf8_unicode_ci NOT NULL',
-                    'handle' => 'string(255) COLLATE utf8_unicode_ci NOT NULL',
-                    'mode' => 'enum(\'stretch\',\'fit\',\'crop\') COLLATE utf8_unicode_ci NOT NULL DEFAULT \'crop\'',
-                    'position' => 'enum(\'top-left\',\'top-center\',\'top-right\',\'center-left\',\'center-center\',\'center-right\',\'bottom-left\',\'bottom-center\',\'bottom-right\') COLLATE utf8_unicode_ci NOT NULL DEFAULT \'center-center\'',
-                    'height' => 'integer(10) DEFAULT NULL',
-                    'width' => 'integer(10) DEFAULT NULL',
-                    'format' => 'string(255) COLLATE utf8_unicode_ci DEFAULT NULL',
-                    'quality' => 'integer(11) DEFAULT NULL',
-                    'dimensionChangeTime' => 'datetime DEFAULT NULL',
-                ],
-                'indexes' => [
-                    ['name', true],
-                    ['handle', true],
-                ],
-            ],
-            '{{%categories}}' => [
-                'columns' => [
-                    'groupId' => 'integer(11) NOT NULL',
-                ],
-                'indexes' => [
-                    ['groupId', false],
-                ],
-                'foreignKeys' => [
-                    ['groupId', '{{%categorygroups}}', 'id', 'CASCADE', null],
-                    ['id', '{{%elements}}', 'id', 'CASCADE', null],
-                ],
-            ],
-            '{{%categorygroups}}' => [
-                'columns' => [
-                    'structureId' => 'integer(11) NOT NULL',
-                    'fieldLayoutId' => 'integer(11) DEFAULT NULL',
-                    'name' => 'string(255) COLLATE utf8_unicode_ci NOT NULL',
-                    'handle' => 'string(255) COLLATE utf8_unicode_ci NOT NULL',
-                    'hasUrls' => 'smallint(1) NOT NULL DEFAULT \'1\'',
-                    'template' => 'string(500) COLLATE utf8_unicode_ci DEFAULT NULL',
-                ],
-                'indexes' => [
-                    ['name', true],
-                    ['handle', true],
-                    ['structureId', false],
-                    ['fieldLayoutId', false],
-                ],
-                'foreignKeys' => [
-                    [
-                        'fieldLayoutId',
-                        '{{%fieldlayouts}}',
-                        'id',
-                        'SET NULL',
-                        null
-                    ],
-                    ['structureId', '{{%structures}}', 'id', 'CASCADE', null],
-                ],
-            ],
-            '{{%categorygroups_i18n}}' => [
-                'columns' => [
-                    'groupId' => 'integer(11) NOT NULL',
-                    'locale' => 'char(12) COLLATE utf8_unicode_ci NOT NULL',
-                    'urlFormat' => 'string(255) COLLATE utf8_unicode_ci DEFAULT NULL',
-                    'nestedUrlFormat' => 'string(255) COLLATE utf8_unicode_ci DEFAULT NULL',
-                ],
-                'indexes' => [
-                    ['groupId,locale', true],
-                    ['locale', false],
-                ],
-                'foreignKeys' => [
-                    ['locale', '{{%locales}}', 'locale', 'CASCADE', 'CASCADE'],
-                    ['groupId', '{{%categorygroups}}', 'id', 'CASCADE', null],
-                ],
-            ],
-            '{{%content}}' => [
-                'columns' => [
-                    'elementId' => 'integer(11) NOT NULL',
-                    'locale' => 'char(12) COLLATE utf8_unicode_ci NOT NULL',
-                    'title' => 'string(255) COLLATE utf8_unicode_ci DEFAULT NULL',
-                    'field_heading' => 'string(255) COLLATE utf8_unicode_ci DEFAULT NULL',
-                    'field_siteIntro' => 'text COLLATE utf8_unicode_ci',
-                    'field_body' => 'text COLLATE utf8_unicode_ci',
-                    'field_description' => 'text COLLATE utf8_unicode_ci',
-                    'field_metaDescription' => 'text COLLATE utf8_unicode_ci',
-                    'field_linkColor' => 'char(7) COLLATE utf8_unicode_ci DEFAULT NULL',
-                ],
-                'indexes' => [
-                    ['elementId,locale', true],
-                    ['locale', false],
-                    ['title', false],
-                ],
-                'foreignKeys' => [
-                    ['elementId', '{{%elements}}', 'id', 'CASCADE', null],
-                    ['locale', '{{%locales}}', 'locale', 'CASCADE', 'CASCADE'],
-                ],
-            ],
-            '{{%deprecationerrors}}' => [
-                'columns' => [
-                    'key' => 'string(255) COLLATE utf8_unicode_ci NOT NULL',
-                    'fingerprint' => 'string(255) COLLATE utf8_unicode_ci NOT NULL',
-                    'lastOccurrence' => 'datetime NOT NULL',
-                    'file' => 'string(255) COLLATE utf8_unicode_ci NOT NULL',
-                    'line' => 'smallint(6) unsigned NOT NULL',
-                    'class' => 'string(255) COLLATE utf8_unicode_ci DEFAULT NULL',
-                    'method' => 'string(255) COLLATE utf8_unicode_ci DEFAULT NULL',
-                    'template' => 'string(255) COLLATE utf8_unicode_ci DEFAULT NULL',
-                    'templateLine' => 'smallint(6) unsigned DEFAULT NULL',
-                    'message' => 'string(255) COLLATE utf8_unicode_ci DEFAULT NULL',
-                    'traces' => 'text COLLATE utf8_unicode_ci',
-                ],
-                'indexes' => [
-                    ['key,fingerprint', true],
-                ],
-            ],
-            '{{%elements}}' => [
-                'columns' => [
-                    'type' => 'string(255) COLLATE utf8_unicode_ci NOT NULL',
-                    'enabled' => 'smallint(1) unsigned NOT NULL DEFAULT \'1\'',
-                    'archived' => 'smallint(1) unsigned NOT NULL DEFAULT \'0\'',
-                ],
-                'indexes' => [
-                    ['type', false],
-                    ['enabled', false],
-                    ['archived,dateCreated', false],
-                ],
-            ],
-            '{{%elements_i18n}}' => [
-                'columns' => [
-                    'elementId' => 'integer(11) NOT NULL',
-                    'locale' => 'char(12) COLLATE utf8_unicode_ci NOT NULL',
-                    'slug' => 'string(255) COLLATE utf8_unicode_ci DEFAULT NULL',
-                    'uri' => 'string(255) COLLATE utf8_unicode_ci DEFAULT NULL',
-                    'enabled' => 'smallint(1) DEFAULT \'1\'',
-                ],
-                'indexes' => [
-                    ['elementId,locale', true],
-                    ['uri,locale', true],
-                    ['locale', false],
-                    ['slug,locale', false],
-                    ['enabled', false],
-                ],
-                'foreignKeys' => [
-                    ['elementId', '{{%elements}}', 'id', 'CASCADE', null],
-                    ['locale', '{{%locales}}', 'locale', 'CASCADE', 'CASCADE'],
-                ],
-            ],
-            '{{%emailmessages}}' => [
-                'columns' => [
-                    'key' => 'char(150) COLLATE utf8_unicode_ci NOT NULL',
-                    'locale' => 'char(12) COLLATE utf8_unicode_ci NOT NULL',
-                    'subject' => 'string(1000) COLLATE utf8_unicode_ci NOT NULL',
-                    'body' => 'text COLLATE utf8_unicode_ci NOT NULL',
-                ],
-                'indexes' => [
-                    ['key,locale', true],
-                    ['locale', false],
-                ],
-                'foreignKeys' => [
-                    ['locale', '{{%locales}}', 'locale', 'CASCADE', 'CASCADE'],
-                ],
-            ],
-            '{{%entries}}' => [
-                'columns' => [
-                    'sectionId' => 'integer(11) NOT NULL',
-                    'typeId' => 'integer(11) DEFAULT NULL',
-                    'authorId' => 'integer(11) DEFAULT NULL',
-                    'postDate' => 'datetime DEFAULT NULL',
-                    'expiryDate' => 'datetime DEFAULT NULL',
-                ],
-                'indexes' => [
-                    ['postDate', false],
-                    ['expiryDate', false],
-                    ['authorId', false],
-                    ['sectionId', false],
-                    ['typeId', false],
-                ],
-                'foreignKeys' => [
-                    ['authorId', '{{%users}}', 'id', 'CASCADE', null],
-                    ['id', '{{%elements}}', 'id', 'CASCADE', null],
-                    ['sectionId', '{{%sections}}', 'id', 'CASCADE', null],
-                    ['typeId', '{{%entrytypes}}', 'id', 'CASCADE', null],
-                ],
-            ],
-            '{{%entrydrafts}}' => [
-                'columns' => [
-                    'entryId' => 'integer(11) NOT NULL',
-                    'sectionId' => 'integer(11) NOT NULL',
-                    'creatorId' => 'integer(11) NOT NULL',
-                    'locale' => 'char(12) COLLATE utf8_unicode_ci NOT NULL',
-                    'name' => 'string(255) COLLATE utf8_unicode_ci NOT NULL',
-                    'notes' => 'text COLLATE utf8_unicode_ci',
-                    'data' => 'mediumtext COLLATE utf8_unicode_ci NOT NULL',
-                ],
-                'indexes' => [
-                    ['sectionId', false],
-                    ['entryId,locale', false],
-                    ['locale', false],
-                    ['creatorId', false],
-                ],
-                'foreignKeys' => [
-                    ['creatorId', '{{%users}}', 'id', 'CASCADE', null],
-                    ['entryId', '{{%entries}}', 'id', 'CASCADE', null],
-                    ['locale', '{{%locales}}', 'locale', 'CASCADE', 'CASCADE'],
-                    ['sectionId', '{{%sections}}', 'id', 'CASCADE', null],
-                ],
-            ],
-            '{{%entrytypes}}' => [
-                'columns' => [
-                    'sectionId' => 'integer(11) NOT NULL',
-                    'fieldLayoutId' => 'integer(11) DEFAULT NULL',
-                    'name' => 'string(255) COLLATE utf8_unicode_ci NOT NULL',
-                    'handle' => 'string(255) COLLATE utf8_unicode_ci NOT NULL',
-                    'hasTitleField' => 'smallint(1) NOT NULL DEFAULT \'1\'',
-                    'titleLabel' => 'string(255) COLLATE utf8_unicode_ci DEFAULT NULL',
-                    'titleFormat' => 'string(255) COLLATE utf8_unicode_ci DEFAULT NULL',
-                    'sortOrder' => 'smallint(4) DEFAULT NULL',
-                ],
-                'indexes' => [
-                    ['name,sectionId', true],
-                    ['handle,sectionId', true],
-                    ['sectionId', false],
-                    ['fieldLayoutId', false],
-                ],
-                'foreignKeys' => [
-                    [
-                        'fieldLayoutId',
-                        '{{%fieldlayouts}}',
-                        'id',
-                        'SET NULL',
-                        null
-                    ],
-                    ['sectionId', '{{%sections}}', 'id', 'CASCADE', null],
-                ],
-            ],
-            '{{%entryversions}}' => [
-                'columns' => [
-                    'entryId' => 'integer(11) NOT NULL',
-                    'sectionId' => 'integer(11) NOT NULL',
-                    'creatorId' => 'integer(11) DEFAULT NULL',
-                    'locale' => 'char(12) COLLATE utf8_unicode_ci NOT NULL',
-                    'num' => 'smallint(6) unsigned NOT NULL',
-                    'notes' => 'text COLLATE utf8_unicode_ci',
-                    'data' => 'mediumtext COLLATE utf8_unicode_ci NOT NULL',
-                ],
-                'indexes' => [
-                    ['sectionId', false],
-                    ['entryId,locale', false],
-                    ['locale', false],
-                    ['creatorId', false],
-                ],
-                'foreignKeys' => [
-                    ['creatorId', '{{%users}}', 'id', 'SET NULL', null],
-                    ['entryId', '{{%entries}}', 'id', 'CASCADE', null],
-                    ['locale', '{{%locales}}', 'locale', 'CASCADE', 'CASCADE'],
-                    ['sectionId', '{{%sections}}', 'id', 'CASCADE', null],
-                ],
-            ],
-            '{{%fieldgroups}}' => [
-                'columns' => [
-                    'name' => 'string(255) COLLATE utf8_unicode_ci NOT NULL',
-                ],
-                'indexes' => [
-                    ['name', true],
-                ],
-            ],
-            '{{%fieldlayoutfields}}' => [
-                'columns' => [
-                    'layoutId' => 'integer(11) NOT NULL',
-                    'tabId' => 'integer(11) NOT NULL',
-                    'fieldId' => 'integer(11) NOT NULL',
-                    'required' => 'smallint(1) unsigned NOT NULL DEFAULT \'0\'',
-                    'sortOrder' => 'smallint(4) DEFAULT NULL',
-                ],
-                'indexes' => [
-                    ['layoutId,fieldId', true],
-                    ['sortOrder', false],
-                    ['tabId', false],
-                    ['fieldId', false],
-                ],
-                'foreignKeys' => [
-                    ['tabId', '{{%fieldlayouttabs}}', 'id', 'CASCADE', null],
-                    ['fieldId', '{{%fields}}', 'id', 'CASCADE', null],
-                    ['layoutId', '{{%fieldlayouts}}', 'id', 'CASCADE', null],
-                ],
-            ],
-            '{{%fieldlayouts}}' => [
-                'columns' => [
-                    'type' => 'string(255) COLLATE utf8_unicode_ci NOT NULL',
-                ],
-                'indexes' => [
-                    ['type', false],
-                ],
-            ],
-            '{{%fieldlayouttabs}}' => [
-                'columns' => [
-                    'layoutId' => 'integer(11) NOT NULL',
-                    'name' => 'string(255) COLLATE utf8_unicode_ci NOT NULL',
-                    'sortOrder' => 'smallint(4) DEFAULT NULL',
-                ],
-                'indexes' => [
-                    ['sortOrder', false],
-                    ['layoutId', false],
-                ],
-                'foreignKeys' => [
-                    ['layoutId', '{{%fieldlayouts}}', 'id', 'CASCADE', null],
-                ],
-            ],
-            '{{%fields}}' => [
-                'columns' => [
-                    'groupId' => 'integer(11) DEFAULT NULL',
-                    'name' => 'string(255) COLLATE utf8_unicode_ci NOT NULL',
-                    'handle' => 'string(64) COLLATE utf8_unicode_ci NOT NULL',
-                    'context' => 'string(255) COLLATE utf8_unicode_ci NOT NULL DEFAULT \'global\'',
-                    'instructions' => 'text COLLATE utf8_unicode_ci',
-                    'translatable' => 'smallint(1) unsigned NOT NULL DEFAULT \'0\'',
-                    'type' => 'string(255) COLLATE utf8_unicode_ci NOT NULL',
-                    'settings' => 'text COLLATE utf8_unicode_ci',
-                ],
-                'indexes' => [
-                    ['handle,context', true],
-                    ['groupId', false],
-                    ['context', false],
-                ],
-                'foreignKeys' => [
-                    ['groupId', '{{%fieldgroups}}', 'id', 'CASCADE', null],
-                ],
-            ],
-            '{{%globalsets}}' => [
-                'columns' => [
-                    'name' => 'string(255) COLLATE utf8_unicode_ci NOT NULL',
-                    'handle' => 'string(255) COLLATE utf8_unicode_ci NOT NULL',
-                    'fieldLayoutId' => 'integer(10) DEFAULT NULL',
-                ],
-                'indexes' => [
-                    ['name', true],
-                    ['handle', true],
-                    ['fieldLayoutId', false],
-                ],
-                'foreignKeys' => [
-                    [
-                        'fieldLayoutId',
-                        '{{%fieldlayouts}}',
-                        'id',
-                        'SET NULL',
-                        null
-                    ],
-                    ['id', '{{%elements}}', 'id', 'CASCADE', null],
-                ],
-            ],
-            '{{%info}}' => [
-                'columns' => [
-                    'version' => 'string(15) COLLATE utf8_unicode_ci NOT NULL',
-                    'build' => 'integer(11) unsigned NOT NULL',
-                    'schemaVersion' => 'string(15) COLLATE utf8_unicode_ci NOT NULL',
-                    'releaseDate' => 'datetime NOT NULL',
-                    'edition' => 'smallint(1) unsigned NOT NULL DEFAULT \'0\'',
-                    'siteName' => 'string(100) COLLATE utf8_unicode_ci NOT NULL',
-                    'siteUrl' => 'string(255) COLLATE utf8_unicode_ci NOT NULL',
-                    'timezone' => 'string(30) COLLATE utf8_unicode_ci DEFAULT NULL',
-                    'on' => 'smallint(1) unsigned NOT NULL DEFAULT \'0\'',
-                    'maintenance' => 'smallint(1) unsigned NOT NULL DEFAULT \'0\'',
-                    'track' => 'string(40) COLLATE utf8_unicode_ci NOT NULL',
-                    'fieldVersion' => 'char(12) NOT NULL DEFAULT \'1\'',
-                ],
-            ],
-            '{{%locales}}' => [
-                'columns' => [
-                    'locale' => 'char(12) COLLATE utf8_unicode_ci NOT NULL',
-                    'sortOrder' => 'smallint(4) DEFAULT NULL',
-                ],
-                'addIdColumn' => false,
-                'primaryKey' => 'locale',
-                'indexes' => [
-                    ['sortOrder', false],
-                ],
-            ],
-            '{{%matrixblocks}}' => [
-                'columns' => [
-                    'ownerId' => 'integer(11) NOT NULL',
-                    'ownerLocale' => 'char(12) COLLATE utf8_unicode_ci DEFAULT NULL',
-                    'fieldId' => 'integer(11) NOT NULL',
-                    'typeId' => 'integer(11) DEFAULT NULL',
-                    'sortOrder' => 'smallint(4) DEFAULT NULL',
-                ],
-                'indexes' => [
-                    ['ownerId', false],
-                    ['fieldId', false],
-                    ['typeId', false],
-                    ['sortOrder', false],
-                    ['ownerLocale', false],
-                ],
-                'foreignKeys' => [
-                    [
-                        'ownerLocale',
-                        '{{%locales}}',
-                        'locale',
-                        'CASCADE',
-                        'CASCADE'
-                    ],
-                    ['fieldId', '{{%fields}}', 'id', 'CASCADE', null],
-                    ['id', '{{%elements}}', 'id', 'CASCADE', null],
-                    ['ownerId', '{{%elements}}', 'id', 'CASCADE', null],
-                    ['typeId', '{{%matrixblocktypes}}', 'id', 'CASCADE', null],
-                ],
-            ],
-            '{{%matrixblocktypes}}' => [
-                'columns' => [
-                    'fieldId' => 'integer(11) NOT NULL',
-                    'fieldLayoutId' => 'integer(11) DEFAULT NULL',
-                    'name' => 'string(255) COLLATE utf8_unicode_ci NOT NULL',
-                    'handle' => 'string(255) COLLATE utf8_unicode_ci NOT NULL',
-                    'sortOrder' => 'smallint(4) DEFAULT NULL',
-                ],
-                'indexes' => [
-                    ['name,fieldId', true],
-                    ['handle,fieldId', true],
-                    ['fieldId', false],
-                    ['fieldLayoutId', false],
-                ],
-                'foreignKeys' => [
-                    [
-                        'fieldLayoutId',
-                        '{{%fieldlayouts}}',
-                        'id',
-                        'SET NULL',
-                        null
-                    ],
-                    ['fieldId', '{{%fields}}', 'id', 'CASCADE', null],
-                ],
-            ],
-            '{{%migrations}}' => [
-                'columns' => [
-                    'pluginId' => 'integer(11) DEFAULT NULL',
-                    'type' => 'enum(\'app\',\'plugin\',\'content\') COLLATE utf8_unicode_ci NOT NULL DEFAULT \'app\'',
-                    'name' => 'string(255) COLLATE utf8_unicode_ci NOT NULL',
-                    'applyTime' => 'datetime NOT NULL',
-                ],
-                'indexes' => [
-                    ['pluginId', false],
-                    ['type,pluginId', false],
-                ],
-                'foreignKeys' => [
-                    ['pluginId', '{{%plugins}}', 'id', 'CASCADE', null],
-                ],
-            ],
-            '{{%plugins}}' => [
-                'columns' => [
-                    'handle' => 'string(150) COLLATE utf8_unicode_ci NOT NULL',
-                    'version' => 'char(15) COLLATE utf8_unicode_ci NOT NULL',
-                    'enabled' => 'smallint(1) unsigned NOT NULL DEFAULT \'0\'',
-                    'settings' => 'text COLLATE utf8_unicode_ci',
-                    'installDate' => 'datetime NOT NULL',
-                ],
-                'indexes' => [
-                    ['handle', true],
-                ],
-            ],
-            '{{%rackspaceaccess}}' => [
-                'columns' => [
-                    'connectionKey' => 'string(255) COLLATE utf8_unicode_ci NOT NULL',
-                    'token' => 'string(255) COLLATE utf8_unicode_ci NOT NULL',
-                    'storageUrl' => 'string(255) COLLATE utf8_unicode_ci NOT NULL',
-                    'cdnUrl' => 'string(255) COLLATE utf8_unicode_ci NOT NULL',
-                ],
-                'indexes' => [
-                    ['connectionKey', true],
-                ],
-            ],
-            '{{%relations}}' => [
-                'columns' => [
-                    'fieldId' => 'integer(11) NOT NULL',
-                    'sourceId' => 'integer(11) NOT NULL',
-                    'sourceLocale' => 'char(12) COLLATE utf8_unicode_ci DEFAULT NULL',
-                    'targetId' => 'integer(11) NOT NULL',
-                    'sortOrder' => 'smallint(6) DEFAULT NULL',
-                ],
-                'indexes' => [
-                    ['fieldId,sourceId,sourceLocale,targetId', true],
-                    ['sourceId', false],
-                    ['targetId', false],
-                    ['sourceLocale', false],
-                ],
-                'foreignKeys' => [
-                    ['fieldId', '{{%fields}}', 'id', 'CASCADE', null],
-                    ['sourceId', '{{%elements}}', 'id', 'CASCADE', null],
-                    [
-                        'sourceLocale',
-                        '{{%locales}}',
-                        'locale',
-                        'CASCADE',
-                        'CASCADE'
-                    ],
-                    ['targetId', '{{%elements}}', 'id', 'CASCADE', null],
-                ],
-            ],
-            '{{%routes}}' => [
-                'columns' => [
-                    'locale' => 'char(12) COLLATE utf8_unicode_ci DEFAULT NULL',
-                    'urlParts' => 'string(255) COLLATE utf8_unicode_ci NOT NULL',
-                    'urlPattern' => 'string(255) COLLATE utf8_unicode_ci NOT NULL',
-                    'template' => 'string(255) COLLATE utf8_unicode_ci NOT NULL',
-                    'sortOrder' => 'smallint(4) DEFAULT NULL',
-                ],
-                'indexes' => [
-                    ['urlPattern', true],
-                    ['locale', false],
-                ],
-                'foreignKeys' => [
-                    ['locale', '{{%locales}}', 'locale', 'CASCADE', 'CASCADE'],
-                ],
-            ],
-            '{{%searchindex}}' => [
-                'columns' => [
-                    'elementId' => 'integer(11) NOT NULL',
-                    'attribute' => 'string(25) COLLATE utf8_unicode_ci NOT NULL',
-                    'fieldId' => 'integer(11) NOT NULL',
-                    'locale' => 'char(12) COLLATE utf8_unicode_ci NOT NULL',
-                    'keywords' => 'text COLLATE utf8_unicode_ci NOT NULL',
-                ],
-                'addIdColumn' => false,
-                'addAuditColumns' => false,
-                'primaryKey' => 'elementId,attribute,fieldId,locale',
-                'options' => 'ENGINE=MyISAM',
-            ],
-            '{{%sections}}' => [
-                'columns' => [
-                    'structureId' => 'integer(11) DEFAULT NULL',
-                    'name' => 'string(255) COLLATE utf8_unicode_ci NOT NULL',
-                    'handle' => 'string(255) COLLATE utf8_unicode_ci NOT NULL',
-                    'type' => 'enum(\'single\',\'channel\',\'structure\') COLLATE utf8_unicode_ci NOT NULL DEFAULT \'channel\'',
-                    'hasUrls' => 'smallint(1) unsigned NOT NULL DEFAULT \'1\'',
-                    'template' => 'string(500) COLLATE utf8_unicode_ci DEFAULT NULL',
-                    'enableVersioning' => 'smallint(1) unsigned NOT NULL DEFAULT \'0\'',
-                ],
-                'indexes' => [
-                    ['handle', true],
-                    ['name', true],
-                    ['structureId', false],
-                ],
-                'foreignKeys' => [
-                    ['structureId', '{{%structures}}', 'id', 'SET NULL', null],
-                ],
-            ],
-            '{{%sections_i18n}}' => [
-                'columns' => [
-                    'sectionId' => 'integer(11) NOT NULL',
-                    'locale' => 'char(12) COLLATE utf8_unicode_ci NOT NULL',
-                    'enabledByDefault' => 'smallint(1) DEFAULT \'1\'',
-                    'urlFormat' => 'string(255) COLLATE utf8_unicode_ci DEFAULT NULL',
-                    'nestedUrlFormat' => 'string(255) COLLATE utf8_unicode_ci DEFAULT NULL',
-                ],
-                'indexes' => [
-                    ['sectionId,locale', true],
-                    ['locale', false],
-                ],
-                'foreignKeys' => [
-                    ['locale', '{{%locales}}', 'locale', 'CASCADE', 'CASCADE'],
-                    ['sectionId', '{{%sections}}', 'id', 'CASCADE', null],
-                ],
-            ],
-            '{{%sessions}}' => [
-                'columns' => [
-                    'userId' => 'integer(11) NOT NULL',
-                    'token' => 'char(100) COLLATE utf8_unicode_ci NOT NULL',
-                ],
-                'indexes' => [
-                    ['uid', false],
-                    ['token', false],
-                    ['dateUpdated', false],
-                    ['userId', false],
-                ],
-                'foreignKeys' => [
-                    ['userId', '{{%users}}', 'id', 'CASCADE', null],
-                ],
-            ],
-            '{{%shunnedmessages}}' => [
-                'columns' => [
-                    'userId' => 'integer(11) NOT NULL',
-                    'message' => 'string(255) COLLATE utf8_unicode_ci NOT NULL',
-                    'expiryDate' => 'datetime DEFAULT NULL',
-                ],
-                'indexes' => [
-                    ['userId,message', true],
-                ],
-                'foreignKeys' => [
-                    ['userId', '{{%users}}', 'id', 'CASCADE', null],
-                ],
-            ],
-            '{{%structureelements}}' => [
-                'columns' => [
-                    'structureId' => 'integer(11) NOT NULL',
-                    'elementId' => 'integer(11) DEFAULT NULL',
-                    'root' => 'integer(10) unsigned DEFAULT NULL',
-                    'lft' => 'integer(10) unsigned NOT NULL',
-                    'rgt' => 'integer(10) unsigned NOT NULL',
-                    'level' => 'smallint(6) unsigned NOT NULL',
-                ],
-                'indexes' => [
-                    ['structureId,elementId', true],
-                    ['root', false],
-                    ['lft', false],
-                    ['rgt', false],
-                    ['level', false],
-                    ['elementId', false],
-                ],
-                'foreignKeys' => [
-                    ['elementId', '{{%elements}}', 'id', 'CASCADE', null],
-                    ['structureId', '{{%structures}}', 'id', 'CASCADE', null],
-                ],
-            ],
-            '{{%structures}}' => [
-                'columns' => [
-                    'maxLevels' => 'smallint(6) unsigned DEFAULT NULL',
-                ],
-            ],
-            '{{%systemsettings}}' => [
-                'columns' => [
-                    'category' => 'string(15) COLLATE utf8_unicode_ci NOT NULL',
-                    'settings' => 'text COLLATE utf8_unicode_ci',
-                ],
-                'indexes' => [
-                    ['category', true],
-                ],
-            ],
-            '{{%taggroups}}' => [
-                'columns' => [
-                    'name' => 'string(255) COLLATE utf8_unicode_ci NOT NULL',
-                    'handle' => 'string(255) COLLATE utf8_unicode_ci NOT NULL',
-                    'fieldLayoutId' => 'integer(10) DEFAULT NULL',
-                ],
-                'indexes' => [
-                    ['name', true],
-                    ['handle', true],
-                ],
-            ],
-            '{{%tags}}' => [
-                'columns' => [
-                    'groupId' => 'integer(11) NOT NULL',
-                ],
-                'indexes' => [
-                    ['groupId', false],
-                ],
-                'foreignKeys' => [
-                    ['groupId', '{{%taggroups}}', 'id', 'CASCADE', null],
-                    ['id', '{{%elements}}', 'id', 'CASCADE', null],
-                ],
-            ],
-            '{{%tasks}}' => [
-                'columns' => [
-                    'root' => 'integer(11) unsigned DEFAULT NULL',
-                    'lft' => 'integer(11) unsigned NOT NULL',
-                    'rgt' => 'integer(11) unsigned NOT NULL',
-                    'level' => 'smallint(6) unsigned NOT NULL',
-                    'currentStep' => 'integer(11) unsigned DEFAULT NULL',
-                    'totalSteps' => 'integer(11) unsigned DEFAULT NULL',
-                    'status' => 'enum(\'pending\',\'error\',\'running\') COLLATE utf8_unicode_ci DEFAULT NULL',
-                    'type' => 'string(255) COLLATE utf8_unicode_ci NOT NULL',
-                    'description' => 'string(255) COLLATE utf8_unicode_ci DEFAULT NULL',
-                    'settings' => 'text COLLATE utf8_unicode_ci NOT NULL',
-                ],
-                'indexes' => [
-                    ['root', false],
-                    ['lft', false],
-                    ['rgt', false],
-                    ['level', false],
-                ],
-            ],
-            '{{%templatecacheelements}}' => [
-                'columns' => [
-                    'cacheId' => 'integer(11) NOT NULL',
-                    'elementId' => 'integer(11) NOT NULL',
-                ],
-                'addIdColumn' => false,
-                'addAuditColumns' => false,
-                'indexes' => [
-                    ['cacheId', false],
-                    ['elementId', false],
-                ],
-                'foreignKeys' => [
-                    ['elementId', '{{%elements}}', 'id', 'CASCADE', null],
-                    ['cacheId', '{{%templatecaches}}', 'id', 'CASCADE', null],
-                ],
-            ],
-            '{{%templatecachequeries}}' => [
-                'columns' => [
-                    'cacheId' => 'integer(11) NOT NULL',
-                    'type' => 'string(255) COLLATE utf8_unicode_ci NOT NULL',
-                    'query' => 'text COLLATE utf8_unicode_ci NOT NULL',
-                ],
-                'addAuditColumns' => false,
-                'indexes' => [
-                    ['cacheId', false],
-                    ['type', false],
-                ],
-                'foreignKeys' => [
-                    ['cacheId', '{{%templatecaches}}', 'id', 'CASCADE', null],
-                ],
-            ],
-            '{{%templatecaches}}' => [
-                'columns' => [
-                    'cacheKey' => 'string(255) COLLATE utf8_unicode_ci NOT NULL',
-                    'locale' => 'char(12) COLLATE utf8_unicode_ci NOT NULL',
-                    'path' => 'string(255) COLLATE utf8_unicode_ci DEFAULT NULL',
-                    'expiryDate' => 'datetime NOT NULL',
-                    'body' => 'mediumtext COLLATE utf8_unicode_ci NOT NULL',
-                ],
-                'addAuditColumns' => false,
-                'indexes' => [
-                    ['expiryDate,cacheKey,locale,path', false],
-                    ['locale', false],
-                ],
-                'foreignKeys' => [
-                    ['locale', '{{%locales}}', 'locale', 'CASCADE', 'CASCADE'],
-                ],
-            ],
-            '{{%tokens}}' => [
-                'columns' => [
-                    'token' => 'char(32) COLLATE utf8_unicode_ci NOT NULL',
-                    'route' => 'text COLLATE utf8_unicode_ci',
-                    'usageLimit' => 'smallint(3) unsigned DEFAULT NULL',
-                    'usageCount' => 'smallint(3) unsigned DEFAULT NULL',
-                    'expiryDate' => 'datetime NOT NULL',
-                ],
-                'indexes' => [
-                    ['token', true],
-                    ['expiryDate', false],
-                ],
-            ],
-            '{{%usergroups}}' => [
-                'columns' => [
-                    'name' => 'string(255) COLLATE utf8_unicode_ci NOT NULL',
-                    'handle' => 'string(255) COLLATE utf8_unicode_ci NOT NULL',
-                ],
-            ],
-            '{{%usergroups_users}}' => [
-                'columns' => [
-                    'groupId' => 'integer(11) NOT NULL',
-                    'userId' => 'integer(11) NOT NULL',
-                ],
-                'indexes' => [
-                    ['groupId,userId', true],
-                    ['userId', false],
-                ],
-                'foreignKeys' => [
-                    ['groupId', '{{%usergroups}}', 'id', 'CASCADE', null],
-                    ['userId', '{{%users}}', 'id', 'CASCADE', null],
-                ],
-            ],
-            '{{%userpermissions}}' => [
-                'columns' => [
-                    'name' => 'string(255) COLLATE utf8_unicode_ci NOT NULL',
-                ],
-                'indexes' => [
-                    ['name', true],
-                ],
-            ],
-            '{{%userpermissions_usergroups}}' => [
-                'columns' => [
-                    'permissionId' => 'integer(11) NOT NULL',
-                    'groupId' => 'integer(11) NOT NULL',
-                ],
-                'indexes' => [
-                    ['permissionId,groupId', true],
-                    ['groupId', false],
-                ],
-                'foreignKeys' => [
-                    ['groupId', '{{%usergroups}}', 'id', 'CASCADE', null],
-                    [
-                        'permissionId',
-                        '{{%userpermissions}}',
-                        'id',
-                        'CASCADE',
-                        null
-                    ],
-                ],
-            ],
-            '{{%userpermissions_users}}' => [
-                'columns' => [
-                    'permissionId' => 'integer(11) NOT NULL',
-                    'userId' => 'integer(11) NOT NULL',
-                ],
-                'indexes' => [
-                    ['permissionId,userId', true],
-                    ['userId', false],
-                ],
-                'foreignKeys' => [
-                    [
-                        'permissionId',
-                        '{{%userpermissions}}',
-                        'id',
-                        'CASCADE',
-                        null
-                    ],
-                    ['userId', '{{%users}}', 'id', 'CASCADE', null],
-                ],
-            ],
-            '{{%userpreferences}}' => [
-                'columns' => [
-                    'userId' => 'integer(11) NOT NULL DEFAULT \'0\'',
-                    'preferences' => 'text COLLATE utf8_unicode_ci',
-                ],
-                'addIdColumn' => false,
-                'addAuditColumns' => false,
-                'primaryKey' => 'userId',
-                'foreignKeys' => [
-                    ['userId', '{{%users}}', 'id', 'CASCADE', null],
-                ],
-            ],
-            '{{%users}}' => [
-                'columns' => [
-                    'username' => 'string(100) COLLATE utf8_unicode_ci NOT NULL',
-                    'photo' => 'string(100) COLLATE utf8_unicode_ci DEFAULT NULL',
-                    'firstName' => 'string(100) COLLATE utf8_unicode_ci DEFAULT NULL',
-                    'lastName' => 'string(100) COLLATE utf8_unicode_ci DEFAULT NULL',
-                    'email' => 'string(255) COLLATE utf8_unicode_ci NOT NULL',
-                    'password' => 'char(255) COLLATE utf8_unicode_ci DEFAULT NULL',
-                    'admin' => 'smallint(1) unsigned NOT NULL DEFAULT \'0\'',
-                    'client' => 'smallint(1) NOT NULL',
-                    'locked' => 'smallint(1) NOT NULL',
-                    'suspended' => 'smallint(1) NOT NULL',
-                    'pending' => 'smallint(1) NOT NULL',
-                    'archived' => 'smallint(1) NOT NULL',
-                    'lastLoginDate' => 'datetime DEFAULT NULL',
-                    'lastLoginAttemptIp' => 'string(45) COLLATE utf8_unicode_ci DEFAULT NULL',
-                    'invalidLoginWindowStart' => 'datetime DEFAULT NULL',
-                    'invalidLoginCount' => 'smallint(4) unsigned DEFAULT NULL',
-                    'lastInvalidLoginDate' => 'datetime DEFAULT NULL',
-                    'lockoutDate' => 'datetime DEFAULT NULL',
-                    'verificationCode' => 'char(100) COLLATE utf8_unicode_ci DEFAULT NULL',
-                    'verificationCodeIssuedDate' => 'datetime DEFAULT NULL',
-                    'unverifiedEmail' => 'string(255) COLLATE utf8_unicode_ci DEFAULT NULL',
-                    'passwordResetRequired' => 'smallint(1) unsigned NOT NULL DEFAULT \'0\'',
-                    'lastPasswordChangeDate' => 'datetime DEFAULT NULL',
-                ],
-                'indexes' => [
-                    ['username', true],
-                    ['email', true],
-                    ['uid', false],
-                    ['verificationCode', false],
-                ],
-                'foreignKeys' => [
-                    ['id', '{{%elements}}', 'id', 'CASCADE', null],
-                ],
-            ],
-            '{{%volumefolders}}' => [
-                'columns' => [
-                    'parentId' => 'integer(11) DEFAULT NULL',
-                    'volumeId' => 'integer(11) DEFAULT NULL',
-                    'name' => 'string(255) COLLATE utf8_unicode_ci NOT NULL',
-                    'path' => 'string(255) COLLATE utf8_unicode_ci DEFAULT NULL',
-                ],
-                'indexes' => [
-                    ['name,parentId,volumeId', true],
-                    ['parentId', false],
-                    ['volumeId', false],
-                ],
-                'foreignKeys' => [
-                    ['volumeId', '{{%volumes}}', 'id', 'CASCADE', null],
-                    ['parentId', '{{%volumefolders}}', 'id', 'CASCADE', null],
-                ],
-            ],
-            '{{%volumes}}' => [
-                'columns' => [
-                    'fieldLayoutId' => 'integer(11) DEFAULT NULL',
-                    'name' => 'string(255) COLLATE utf8_unicode_ci NOT NULL',
-                    'handle' => 'string(255) COLLATE utf8_unicode_ci NOT NULL',
-                    'type' => 'string(255) COLLATE utf8_unicode_ci NOT NULL',
-                    'url' => 'string(255) COLLATE utf8_unicode_ci DEFAULT NULL',
-                    'settings' => 'text COLLATE utf8_unicode_ci',
-                    'sortOrder' => 'smallint(4) DEFAULT NULL',
-                ],
-                'indexes' => [
-                    ['name', true],
-                    ['handle', true],
-                    ['fieldLayoutId', false],
-                ],
-                'foreignKeys' => [
-                    [
-                        'fieldLayoutId',
-                        '{{%fieldlayouts}}',
-                        'id',
-                        'SET NULL',
-                        null
-                    ],
-                ],
-            ],
-            '{{%widgets}}' => [
-                'columns' => [
-                    'userId' => 'integer(11) NOT NULL',
-                    'type' => 'string(255) COLLATE utf8_unicode_ci NOT NULL',
-                    'sortOrder' => 'smallint(4) DEFAULT NULL',
-                    'settings' => 'text COLLATE utf8_unicode_ci',
-                    'enabled' => 'smallint(1) DEFAULT \'1\'',
-                ],
-                'indexes' => [
-                    ['userId', false],
-                ],
-                'foreignKeys' => [
-                    ['userId', '{{%users}}', 'id', 'CASCADE', null],
-                ],
-            ],
-        ];
+        $this->createTable('{{%assetindexdata}}', [
+            'id' => $this->primaryKey(),
+            'sessionId' => $this->string(36)->notNull()->defaultValue(''),
+            'volumeId' => $this->integer()->notNull(),
+            'offset' => $this->integer()->notNull(),
+            'uri' => $this->text(),
+            'size' => $this->bigInteger()->unsigned(),
+            'timestamp' => $this->dateTime(),
+            'recordId' => $this->integer(),
+            'dateCreated' => $this->dateTime()->notNull(),
+            'dateUpdated' => $this->dateTime()->notNull(),
+            'uid' => $this->uid(),
+        ]);
+        $this->createTable('{{%assets}}', [
+            'id' => $this->primaryKey(),
+            'volumeId' => $this->integer(),
+            'folderId' => $this->integer()->notNull(),
+            'filename' => $this->string()->notNull(),
+            'kind' => $this->string(50)->notNull()->defaultValue('unknown'),
+            'width' => $this->integer()->unsigned(),
+            'height' => $this->integer()->unsigned(),
+            'size' => $this->bigInteger()->unsigned(),
+            'dateModified' => $this->dateTime(),
+            'dateCreated' => $this->dateTime()->notNull(),
+            'dateUpdated' => $this->dateTime()->notNull(),
+            'uid' => $this->uid(),
+        ]);
+        $this->createTable('{{%assettransformindex}}', [
+            'id' => $this->primaryKey(),
+            'assetId' => $this->integer()->notNull(),
+            'filename' => $this->string(),
+            'format' => $this->string(),
+            'location' => $this->string()->notNull(),
+            'volumeId' => $this->integer(),
+            'fileExists' => $this->boolean()->notNull()->defaultValue(0)->unsigned(),
+            'inProgress' => $this->boolean()->notNull()->defaultValue(0)->unsigned(),
+            'dateIndexed' => $this->dateTime(),
+            'dateCreated' => $this->dateTime()->notNull(),
+            'dateUpdated' => $this->dateTime()->notNull(),
+            'uid' => $this->uid(),
+        ]);
+        $this->createTable('{{%assettransforms}}', [
+            'id' => $this->primaryKey(),
+            'name' => $this->string()->notNull(),
+            'handle' => $this->string()->notNull(),
+            'mode' => $this->enum('mode', ['stretch', 'fit', 'crop'])->notNull()->defaultValue('crop'),
+            'position' => $this->enum('position', ['top-left', 'top-center', 'top-right', 'center-left', 'center-center', 'center-right', 'bottom-left', 'bottom-center', 'bottom-right'])->notNull()->defaultValue('center-center'),
+            'width' => $this->integer()->unsigned(),
+            'height' => $this->integer()->unsigned(),
+            'format' => $this->string(),
+            'quality' => $this->integer(),
+            'dimensionChangeTime' => $this->dateTime(),
+            'dateCreated' => $this->dateTime()->notNull(),
+            'dateUpdated' => $this->dateTime()->notNull(),
+            'uid' => $this->uid(),
+        ]);
+        $this->createTable('{{%categories}}', [
+            'id' => $this->primaryKey(),
+            'groupId' => $this->integer()->notNull(),
+            'dateCreated' => $this->dateTime()->notNull(),
+            'dateUpdated' => $this->dateTime()->notNull(),
+            'uid' => $this->uid(),
+        ]);
+        $this->createTable('{{%categorygroups}}', [
+            'id' => $this->primaryKey(),
+            'structureId' => $this->integer()->notNull(),
+            'fieldLayoutId' => $this->integer(),
+            'name' => $this->string()->notNull(),
+            'handle' => $this->string()->notNull(),
+            'hasUrls' => $this->boolean()->notNull()->defaultValue(1),
+            'template' => $this->string(500),
+            'dateCreated' => $this->dateTime()->notNull(),
+            'dateUpdated' => $this->dateTime()->notNull(),
+            'uid' => $this->uid(),
+        ]);
+        $this->createTable('{{%categorygroups_i18n}}', [
+            'id' => $this->primaryKey(),
+            'groupId' => $this->integer()->notNull(),
+            'locale' => $this->char(12)->notNull(),
+            'urlFormat' => $this->text(),
+            'nestedUrlFormat' => $this->text(),
+            'dateCreated' => $this->dateTime()->notNull(),
+            'dateUpdated' => $this->dateTime()->notNull(),
+            'uid' => $this->uid(),
+        ]);
+        $this->createTable('{{%content}}', [
+            'id' => $this->primaryKey(),
+            'elementId' => $this->integer()->notNull(),
+            'locale' => $this->char(12)->notNull(),
+            'title' => $this->string(),
+            'dateCreated' => $this->dateTime()->notNull(),
+            'dateUpdated' => $this->dateTime()->notNull(),
+            'uid' => $this->uid(),
+        ]);
+        $this->createTable('{{%deprecationerrors}}', [
+            'id' => $this->primaryKey(),
+            'key' => $this->string()->notNull(),
+            'fingerprint' => $this->string()->notNull(),
+            'lastOccurrence' => $this->dateTime()->notNull(),
+            'file' => $this->string()->notNull(),
+            'line' => $this->smallInteger()->notNull()->unsigned(),
+            'class' => $this->string(),
+            'method' => $this->string(),
+            'template' => $this->string(500),
+            'templateLine' => $this->smallInteger()->unsigned(),
+            'message' => $this->string(),
+            'traces' => $this->text(),
+            'dateCreated' => $this->dateTime()->notNull(),
+            'dateUpdated' => $this->dateTime()->notNull(),
+            'uid' => $this->uid(),
+        ]);
+        $this->createTable('{{%elementindexsettings}}', [
+            'id' => $this->primaryKey(),
+            'type' => $this->string()->notNull(),
+            'settings' => $this->text(),
+            'dateCreated' => $this->dateTime()->notNull(),
+            'dateUpdated' => $this->dateTime()->notNull(),
+            'uid' => $this->uid(),
+        ]);
+        $this->createTable('{{%elements}}', [
+            'id' => $this->primaryKey(),
+            'type' => $this->string()->notNull(),
+            'enabled' => $this->boolean()->notNull()->defaultValue(1)->unsigned(),
+            'archived' => $this->boolean()->notNull()->defaultValue(0)->unsigned(),
+            'dateCreated' => $this->dateTime()->notNull(),
+            'dateUpdated' => $this->dateTime()->notNull(),
+            'uid' => $this->uid(),
+        ]);
+        $this->createTable('{{%elements_i18n}}', [
+            'id' => $this->primaryKey(),
+            'elementId' => $this->integer()->notNull(),
+            'locale' => $this->char(12)->notNull(),
+            'slug' => $this->string(),
+            'uri' => $this->string(),
+            'enabled' => $this->boolean()->defaultValue(1),
+            'dateCreated' => $this->dateTime()->notNull(),
+            'dateUpdated' => $this->dateTime()->notNull(),
+            'uid' => $this->uid(),
+        ]);
+        $this->createTable('{{%emailmessages}}', [
+            'id' => $this->primaryKey(),
+            'key' => $this->string()->notNull(),
+            'locale' => $this->char(12)->notNull(),
+            'subject' => $this->text()->notNull(),
+            'body' => $this->text()->notNull(),
+            'dateCreated' => $this->dateTime()->notNull(),
+            'dateUpdated' => $this->dateTime()->notNull(),
+            'uid' => $this->uid(),
+        ]);
+        $this->createTable('{{%entries}}', [
+            'id' => $this->primaryKey(),
+            'sectionId' => $this->integer()->notNull(),
+            'typeId' => $this->integer(),
+            'authorId' => $this->integer(),
+            'postDate' => $this->dateTime(),
+            'expiryDate' => $this->dateTime(),
+            'dateCreated' => $this->dateTime()->notNull(),
+            'dateUpdated' => $this->dateTime()->notNull(),
+            'uid' => $this->uid(),
+        ]);
+        $this->createTable('{{%entrydrafts}}', [
+            'id' => $this->primaryKey(),
+            'entryId' => $this->integer()->notNull(),
+            'sectionId' => $this->integer()->notNull(),
+            'creatorId' => $this->integer()->notNull(),
+            'locale' => $this->char(12)->notNull(),
+            'name' => $this->string()->notNull(),
+            'notes' => $this->text(),
+            'data' => $this->mediumText()->notNull(),
+            'dateCreated' => $this->dateTime()->notNull(),
+            'dateUpdated' => $this->dateTime()->notNull(),
+            'uid' => $this->uid(),
+        ]);
+        $this->createTable('{{%entrytypes}}', [
+            'id' => $this->primaryKey(),
+            'sectionId' => $this->integer()->notNull(),
+            'fieldLayoutId' => $this->integer(),
+            'name' => $this->string()->notNull(),
+            'handle' => $this->string()->notNull(),
+            'hasTitleField' => $this->boolean()->notNull()->defaultValue(1),
+            'titleLabel' => $this->string(),
+            'titleFormat' => $this->string(),
+            'sortOrder' => $this->smallInteger()->unsigned(),
+            'dateCreated' => $this->dateTime()->notNull(),
+            'dateUpdated' => $this->dateTime()->notNull(),
+            'uid' => $this->uid(),
+        ]);
+        $this->createTable('{{%entryversions}}', [
+            'id' => $this->primaryKey(),
+            'entryId' => $this->integer()->notNull(),
+            'sectionId' => $this->integer()->notNull(),
+            'creatorId' => $this->integer(),
+            'locale' => $this->char(12)->notNull(),
+            'num' => $this->smallInteger()->notNull()->unsigned(),
+            'notes' => $this->text(),
+            'data' => $this->mediumText()->notNull(),
+            'dateCreated' => $this->dateTime()->notNull(),
+            'dateUpdated' => $this->dateTime()->notNull(),
+            'uid' => $this->uid(),
+        ]);
+        $this->createTable('{{%fieldgroups}}', [
+            'id' => $this->primaryKey(),
+            'name' => $this->string()->notNull(),
+            'dateCreated' => $this->dateTime()->notNull(),
+            'dateUpdated' => $this->dateTime()->notNull(),
+            'uid' => $this->uid(),
+        ]);
+        $this->createTable('{{%fieldlayoutfields}}', [
+            'id' => $this->primaryKey(),
+            'layoutId' => $this->integer()->notNull(),
+            'tabId' => $this->integer()->notNull(),
+            'fieldId' => $this->integer()->notNull(),
+            'required' => $this->boolean()->notNull()->defaultValue(0)->unsigned(),
+            'sortOrder' => $this->smallInteger()->unsigned(),
+            'dateCreated' => $this->dateTime()->notNull(),
+            'dateUpdated' => $this->dateTime()->notNull(),
+            'uid' => $this->uid(),
+        ]);
+        $this->createTable('{{%fieldlayouts}}', [
+            'id' => $this->primaryKey(),
+            'type' => $this->string()->notNull(),
+            'dateCreated' => $this->dateTime()->notNull(),
+            'dateUpdated' => $this->dateTime()->notNull(),
+            'uid' => $this->uid(),
+        ]);
+        $this->createTable('{{%fieldlayouttabs}}', [
+            'id' => $this->primaryKey(),
+            'layoutId' => $this->integer()->notNull(),
+            'name' => $this->string()->notNull(),
+            'sortOrder' => $this->smallInteger()->unsigned(),
+            'dateCreated' => $this->dateTime()->notNull(),
+            'dateUpdated' => $this->dateTime()->notNull(),
+            'uid' => $this->uid(),
+        ]);
+        $this->createTable('{{%fields}}', [
+            'id' => $this->primaryKey(),
+            'groupId' => $this->integer(),
+            'name' => $this->string()->notNull(),
+            'handle' => $this->string(64)->notNull(),
+            'context' => $this->string()->notNull()->defaultValue('global'),
+            'instructions' => $this->text(),
+            'translatable' => $this->boolean()->notNull()->defaultValue(0)->unsigned(),
+            'type' => $this->string()->notNull(),
+            'settings' => $this->text(),
+            'dateCreated' => $this->dateTime()->notNull(),
+            'dateUpdated' => $this->dateTime()->notNull(),
+            'uid' => $this->uid(),
+        ]);
+        $this->createTable('{{%globalsets}}', [
+            'id' => $this->primaryKey(),
+            'name' => $this->string()->notNull(),
+            'handle' => $this->string()->notNull(),
+            'fieldLayoutId' => $this->integer(),
+            'dateCreated' => $this->dateTime()->notNull(),
+            'dateUpdated' => $this->dateTime()->notNull(),
+            'uid' => $this->uid(),
+        ]);
+        $this->createTable('{{%info}}', [
+            'id' => $this->primaryKey(),
+            'version' => $this->string(15)->notNull(),
+            'build' => $this->integer()->notNull()->unsigned(),
+            'schemaVersion' => $this->string(15)->notNull(),
+            'releaseDate' => $this->dateTime()->notNull(),
+            'edition' => $this->boolean()->notNull()->defaultValue(0)->unsigned(),
+            'siteName' => $this->string(100)->notNull(),
+            'siteUrl' => $this->string()->notNull(),
+            'timezone' => $this->string(30),
+            'on' => $this->boolean()->notNull()->defaultValue(0)->unsigned(),
+            'maintenance' => $this->boolean()->notNull()->defaultValue(0)->unsigned(),
+            'track' => $this->string(40)->notNull(),
+            'fieldVersion' => $this->char(12)->notNull()->defaultValue('1'),
+            'dateCreated' => $this->dateTime()->notNull(),
+            'dateUpdated' => $this->dateTime()->notNull(),
+            'uid' => $this->uid(),
+        ]);
+        $this->createTable('{{%locales}}', [
+            'locale' => $this->char(12)->notNull(),
+            'sortOrder' => $this->smallInteger()->unsigned(),
+            'dateCreated' => $this->dateTime()->notNull(),
+            'dateUpdated' => $this->dateTime()->notNull(),
+            'uid' => $this->uid(),
+            'PRIMARY KEY(locale)'
+        ]);
+        $this->createTable('{{%matrixblocks}}', [
+            'id' => $this->primaryKey(),
+            'ownerId' => $this->integer()->notNull(),
+            'ownerLocale' => $this->char(12),
+            'fieldId' => $this->integer()->notNull(),
+            'typeId' => $this->integer(),
+            'sortOrder' => $this->smallInteger()->unsigned(),
+            'dateCreated' => $this->dateTime()->notNull(),
+            'dateUpdated' => $this->dateTime()->notNull(),
+            'uid' => $this->uid(),
+        ]);
+        $this->createTable('{{%matrixblocktypes}}', [
+            'id' => $this->primaryKey(),
+            'fieldId' => $this->integer()->notNull(),
+            'fieldLayoutId' => $this->integer(),
+            'name' => $this->string()->notNull(),
+            'handle' => $this->string()->notNull(),
+            'sortOrder' => $this->smallInteger()->unsigned(),
+            'dateCreated' => $this->dateTime()->notNull(),
+            'dateUpdated' => $this->dateTime()->notNull(),
+            'uid' => $this->uid(),
+        ]);
+        $this->createTable('{{%migrations}}', [
+            'id' => $this->primaryKey(),
+            'pluginId' => $this->integer(),
+            'type' => $this->enum('type', ['app', 'plugin', 'content'])->notNull()->defaultValue('app'),
+            'name' => $this->string()->notNull(),
+            'applyTime' => $this->dateTime()->notNull(),
+            'dateCreated' => $this->dateTime()->notNull(),
+            'dateUpdated' => $this->dateTime()->notNull(),
+            'uid' => $this->uid(),
+        ]);
+        $this->createTable('{{%plugins}}', [
+            'id' => $this->primaryKey(),
+            'handle' => $this->string(150)->notNull(),
+            'version' => $this->string(15)->notNull(),
+            'schemaVersion' => $this->string(15),
+            'licenseKey' => $this->char(24),
+            'licenseKeyStatus' => $this->enum('licenseKeyStatus', ['valid', 'invalid', 'mismatched', 'unknown'])->notNull()->defaultValue('unknown'),
+            'enabled' => $this->boolean()->notNull()->defaultValue(0)->unsigned(),
+            'settings' => $this->text(),
+            'installDate' => $this->dateTime()->notNull(),
+            'dateCreated' => $this->dateTime()->notNull(),
+            'dateUpdated' => $this->dateTime()->notNull(),
+            'uid' => $this->uid(),
+        ]);
+        $this->createTable('{{%rackspaceaccess}}', [
+            'id' => $this->primaryKey(),
+            'connectionKey' => $this->string()->notNull(),
+            'token' => $this->string()->notNull(),
+            'storageUrl' => $this->string()->notNull(),
+            'cdnUrl' => $this->string()->notNull(),
+            'dateCreated' => $this->dateTime()->notNull(),
+            'dateUpdated' => $this->dateTime()->notNull(),
+            'uid' => $this->uid(),
+        ]);
+        $this->createTable('{{%relations}}', [
+            'id' => $this->primaryKey(),
+            'fieldId' => $this->integer()->notNull(),
+            'sourceId' => $this->integer()->notNull(),
+            'sourceLocale' => $this->char(12),
+            'targetId' => $this->integer()->notNull(),
+            'sortOrder' => $this->smallInteger()->unsigned(),
+            'dateCreated' => $this->dateTime()->notNull(),
+            'dateUpdated' => $this->dateTime()->notNull(),
+            'uid' => $this->uid(),
+        ]);
+        $this->createTable('{{%routes}}', [
+            'id' => $this->primaryKey(),
+            'locale' => $this->char(12),
+            'urlParts' => $this->string()->notNull(),
+            'urlPattern' => $this->string()->notNull(),
+            'template' => $this->string(500)->notNull(),
+            'sortOrder' => $this->smallInteger()->unsigned(),
+            'dateCreated' => $this->dateTime()->notNull(),
+            'dateUpdated' => $this->dateTime()->notNull(),
+            'uid' => $this->uid(),
+        ]);
+        $this->createTable('{{%searchindex}}', [
+            'elementId' => $this->integer()->notNull(),
+            'attribute' => $this->string(25)->notNull(),
+            'fieldId' => $this->integer()->notNull(),
+            'locale' => $this->char(12)->notNull(),
+            'keywords' => $this->text()->notNull(),
+            'PRIMARY KEY(elementId, attribute, fieldId, locale)'
+        ], 'ENGINE=MyISAM');
+        $this->createTable('{{%sections}}', [
+            'id' => $this->primaryKey(),
+            'structureId' => $this->integer(),
+            'name' => $this->string()->notNull(),
+            'handle' => $this->string()->notNull(),
+            'type' => $this->enum('type', ['single', 'channel', 'structure'])->notNull()->defaultValue('channel'),
+            'hasUrls' => $this->boolean()->notNull()->defaultValue(1)->unsigned(),
+            'template' => $this->string(500),
+            'enableVersioning' => $this->boolean()->notNull()->defaultValue(0)->unsigned(),
+            'dateCreated' => $this->dateTime()->notNull(),
+            'dateUpdated' => $this->dateTime()->notNull(),
+            'uid' => $this->uid(),
+        ]);
+        $this->createTable('{{%sections_i18n}}', [
+            'id' => $this->primaryKey(),
+            'sectionId' => $this->integer()->notNull(),
+            'locale' => $this->char(12)->notNull(),
+            'enabledByDefault' => $this->boolean()->defaultValue(1),
+            'urlFormat' => $this->text(),
+            'nestedUrlFormat' => $this->text(),
+            'dateCreated' => $this->dateTime()->notNull(),
+            'dateUpdated' => $this->dateTime()->notNull(),
+            'uid' => $this->uid(),
+        ]);
+        $this->createTable('{{%sessions}}', [
+            'id' => $this->primaryKey(),
+            'userId' => $this->integer()->notNull(),
+            'token' => $this->char(100)->notNull(),
+            'dateCreated' => $this->dateTime()->notNull(),
+            'dateUpdated' => $this->dateTime()->notNull(),
+            'uid' => $this->uid(),
+        ]);
+        $this->createTable('{{%shunnedmessages}}', [
+            'id' => $this->primaryKey(),
+            'userId' => $this->integer()->notNull(),
+            'message' => $this->string()->notNull(),
+            'expiryDate' => $this->dateTime(),
+            'dateCreated' => $this->dateTime()->notNull(),
+            'dateUpdated' => $this->dateTime()->notNull(),
+            'uid' => $this->uid(),
+        ]);
+        $this->createTable('{{%structureelements}}', [
+            'id' => $this->primaryKey(),
+            'structureId' => $this->integer()->notNull(),
+            'elementId' => $this->integer(),
+            'root' => $this->integer()->unsigned(),
+            'lft' => $this->integer()->notNull()->unsigned(),
+            'rgt' => $this->integer()->notNull()->unsigned(),
+            'level' => $this->smallInteger()->notNull()->unsigned(),
+            'dateCreated' => $this->dateTime()->notNull(),
+            'dateUpdated' => $this->dateTime()->notNull(),
+            'uid' => $this->uid(),
+        ]);
+        $this->createTable('{{%structures}}', [
+            'id' => $this->primaryKey(),
+            'maxLevels' => $this->smallInteger()->unsigned(),
+            'dateCreated' => $this->dateTime()->notNull(),
+            'dateUpdated' => $this->dateTime()->notNull(),
+            'uid' => $this->uid(),
+        ]);
+        $this->createTable('{{%systemsettings}}', [
+            'id' => $this->primaryKey(),
+            'category' => $this->string(15)->notNull(),
+            'settings' => $this->text(),
+            'dateCreated' => $this->dateTime()->notNull(),
+            'dateUpdated' => $this->dateTime()->notNull(),
+            'uid' => $this->uid(),
+        ]);
+        $this->createTable('{{%taggroups}}', [
+            'id' => $this->primaryKey(),
+            'name' => $this->string()->notNull(),
+            'handle' => $this->string()->notNull(),
+            'fieldLayoutId' => $this->integer(),
+            'dateCreated' => $this->dateTime()->notNull(),
+            'dateUpdated' => $this->dateTime()->notNull(),
+            'uid' => $this->uid(),
+        ]);
+        $this->createTable('{{%tags}}', [
+            'id' => $this->primaryKey(),
+            'groupId' => $this->integer()->notNull(),
+            'dateCreated' => $this->dateTime()->notNull(),
+            'dateUpdated' => $this->dateTime()->notNull(),
+            'uid' => $this->uid(),
+        ]);
+        $this->createTable('{{%tasks}}', [
+            'id' => $this->primaryKey(),
+            'root' => $this->integer()->unsigned(),
+            'lft' => $this->integer()->notNull()->unsigned(),
+            'rgt' => $this->integer()->notNull()->unsigned(),
+            'level' => $this->smallInteger()->notNull()->unsigned(),
+            'currentStep' => $this->integer()->unsigned(),
+            'totalSteps' => $this->integer()->unsigned(),
+            'status' => $this->enum('status', ['pending', 'error', 'running']),
+            'type' => $this->string()->notNull(),
+            'description' => $this->string(),
+            'settings' => $this->mediumText()->notNull(),
+            'dateCreated' => $this->dateTime()->notNull(),
+            'dateUpdated' => $this->dateTime()->notNull(),
+            'uid' => $this->uid(),
+        ]);
+        $this->createTable('{{%templatecacheelements}}', [
+            'cacheId' => $this->integer()->notNull(),
+            'elementId' => $this->integer()->notNull(),
+        ]);
+        $this->createTable('{{%templatecachequeries}}', [
+            'id' => $this->primaryKey(),
+            'cacheId' => $this->integer()->notNull(),
+            'type' => $this->string()->notNull(),
+            'query' => $this->text()->notNull(),
+        ]);
+        $this->createTable('{{%templatecaches}}', [
+            'id' => $this->primaryKey(),
+            'cacheKey' => $this->string()->notNull(),
+            'locale' => $this->char(12)->notNull(),
+            'path' => $this->string(),
+            'expiryDate' => $this->dateTime()->notNull(),
+            'body' => $this->mediumText()->notNull(),
+        ]);
+        $this->createTable('{{%tokens}}', [
+            'id' => $this->primaryKey(),
+            'token' => $this->char(32)->notNull(),
+            'route' => $this->text(),
+            'usageLimit' => $this->smallInteger()->unsigned(),
+            'usageCount' => $this->smallInteger()->unsigned(),
+            'expiryDate' => $this->dateTime()->notNull(),
+            'dateCreated' => $this->dateTime()->notNull(),
+            'dateUpdated' => $this->dateTime()->notNull(),
+            'uid' => $this->uid(),
+        ]);
+        $this->createTable('{{%usergroups}}', [
+            'id' => $this->primaryKey(),
+            'name' => $this->string()->notNull(),
+            'handle' => $this->string()->notNull(),
+            'dateCreated' => $this->dateTime()->notNull(),
+            'dateUpdated' => $this->dateTime()->notNull(),
+            'uid' => $this->uid(),
+        ]);
+        $this->createTable('{{%usergroups_users}}', [
+            'id' => $this->primaryKey(),
+            'groupId' => $this->integer()->notNull(),
+            'userId' => $this->integer()->notNull(),
+            'dateCreated' => $this->dateTime()->notNull(),
+            'dateUpdated' => $this->dateTime()->notNull(),
+            'uid' => $this->uid(),
+        ]);
+        $this->createTable('{{%userpermissions}}', [
+            'id' => $this->primaryKey(),
+            'name' => $this->string()->notNull(),
+            'dateCreated' => $this->dateTime()->notNull(),
+            'dateUpdated' => $this->dateTime()->notNull(),
+            'uid' => $this->uid(),
+        ]);
+        $this->createTable('{{%userpermissions_usergroups}}', [
+            'id' => $this->primaryKey(),
+            'permissionId' => $this->integer()->notNull(),
+            'groupId' => $this->integer()->notNull(),
+            'dateCreated' => $this->dateTime()->notNull(),
+            'dateUpdated' => $this->dateTime()->notNull(),
+            'uid' => $this->uid(),
+        ]);
+        $this->createTable('{{%userpermissions_users}}', [
+            'id' => $this->primaryKey(),
+            'permissionId' => $this->integer()->notNull(),
+            'userId' => $this->integer()->notNull(),
+            'dateCreated' => $this->dateTime()->notNull(),
+            'dateUpdated' => $this->dateTime()->notNull(),
+            'uid' => $this->uid(),
+        ]);
+        $this->createTable('{{%userpreferences}}', [
+            'userId' => $this->integer()->notNull(),
+            'preferences' => $this->text(),
+            'PRIMARY KEY(userId)'
+        ]);
+        $this->createTable('{{%users}}', [
+            'id' => $this->primaryKey(),
+            'username' => $this->string(100)->notNull(),
+            'photoId' => $this->integer(),
+            'firstName' => $this->string(100),
+            'lastName' => $this->string(100),
+            'email' => $this->string()->notNull(),
+            'password' => $this->char(255),
+            'admin' => $this->boolean()->notNull()->defaultValue(0)->unsigned(),
+            'client' => $this->boolean()->notNull(),
+            'locked' => $this->boolean()->notNull(),
+            'suspended' => $this->boolean()->notNull(),
+            'pending' => $this->boolean()->notNull(),
+            'archived' => $this->boolean()->notNull(),
+            'lastLoginDate' => $this->dateTime(),
+            'lastLoginAttemptIp' => $this->string(45),
+            'invalidLoginWindowStart' => $this->dateTime(),
+            'invalidLoginCount' => $this->smallInteger()->unsigned(),
+            'lastInvalidLoginDate' => $this->dateTime(),
+            'lockoutDate' => $this->dateTime(),
+            'verificationCode' => $this->char(100),
+            'verificationCodeIssuedDate' => $this->dateTime(),
+            'unverifiedEmail' => $this->string(),
+            'passwordResetRequired' => $this->boolean()->notNull()->defaultValue(0)->unsigned(),
+            'lastPasswordChangeDate' => $this->dateTime(),
+            'dateCreated' => $this->dateTime()->notNull(),
+            'dateUpdated' => $this->dateTime()->notNull(),
+            'uid' => $this->uid(),
+        ]);
+        $this->createTable('{{%volumefolders}}', [
+            'id' => $this->primaryKey(),
+            'parentId' => $this->integer(),
+            'volumeId' => $this->integer(),
+            'name' => $this->string()->notNull(),
+            'path' => $this->string(),
+            'dateCreated' => $this->dateTime()->notNull(),
+            'dateUpdated' => $this->dateTime()->notNull(),
+            'uid' => $this->uid(),
+        ]);
+        $this->createTable('{{%volumes}}', [
+            'id' => $this->primaryKey(),
+            'fieldLayoutId' => $this->integer(),
+            'name' => $this->string()->notNull(),
+            'handle' => $this->string()->notNull(),
+            'type' => $this->string()->notNull(),
+            'hasUrls' => $this->boolean()->unsigned(),
+            'url' => $this->string(),
+            'settings' => $this->text(),
+            'sortOrder' => $this->smallInteger()->unsigned(),
+            'dateCreated' => $this->dateTime()->notNull(),
+            'dateUpdated' => $this->dateTime()->notNull(),
+            'uid' => $this->uid(),
+        ]);
+        $this->createTable('{{%widgets}}', [
+            'id' => $this->primaryKey(),
+            'userId' => $this->integer()->notNull(),
+            'type' => $this->string()->notNull(),
+            'sortOrder' => $this->smallInteger()->unsigned(),
+            'colspan' => $this->boolean()->unsigned(),
+            'settings' => $this->text(),
+            'enabled' => $this->boolean()->defaultValue(1),
+            'dateCreated' => $this->dateTime()->notNull(),
+            'dateUpdated' => $this->dateTime()->notNull(),
+            'uid' => $this->uid(),
+        ]);
+    }
+
+    /**
+     * Creates the indexes.
+     *
+     * @return void
+     */
+    protected function createIndexes()
+    {
+        $this->createIndex($this->db->getIndexName('{{%assetindexdata}}', 'sessionId,volumeId,offset', true), '{{%assetindexdata}}', 'sessionId,volumeId,offset', true);
+        $this->createIndex($this->db->getIndexName('{{%assetindexdata}}', 'volumeId', false), '{{%assetindexdata}}', 'volumeId', false);
+        $this->createIndex($this->db->getIndexName('{{%assets}}', 'filename,folderId', true), '{{%assets}}', 'filename,folderId', true);
+        $this->createIndex($this->db->getIndexName('{{%assets}}', 'folderId', false), '{{%assets}}', 'folderId', false);
+        $this->createIndex($this->db->getIndexName('{{%assets}}', 'volumeId', false), '{{%assets}}', 'volumeId', false);
+        $this->createIndex($this->db->getIndexName('{{%assettransformindex}}', 'volumeId,assetId,location', false), '{{%assettransformindex}}', 'volumeId,assetId,location', false);
+        $this->createIndex($this->db->getIndexName('{{%assettransforms}}', 'name', true), '{{%assettransforms}}', 'name', true);
+        $this->createIndex($this->db->getIndexName('{{%assettransforms}}', 'handle', true), '{{%assettransforms}}', 'handle', true);
+        $this->createIndex($this->db->getIndexName('{{%categories}}', 'groupId', false), '{{%categories}}', 'groupId', false);
+        $this->createIndex($this->db->getIndexName('{{%categorygroups}}', 'name', true), '{{%categorygroups}}', 'name', true);
+        $this->createIndex($this->db->getIndexName('{{%categorygroups}}', 'handle', true), '{{%categorygroups}}', 'handle', true);
+        $this->createIndex($this->db->getIndexName('{{%categorygroups}}', 'structureId', false), '{{%categorygroups}}', 'structureId', false);
+        $this->createIndex($this->db->getIndexName('{{%categorygroups}}', 'fieldLayoutId', false), '{{%categorygroups}}', 'fieldLayoutId', false);
+        $this->createIndex($this->db->getIndexName('{{%categorygroups_i18n}}', 'groupId,locale', true), '{{%categorygroups_i18n}}', 'groupId,locale', true);
+        $this->createIndex($this->db->getIndexName('{{%categorygroups_i18n}}', 'locale', false), '{{%categorygroups_i18n}}', 'locale', false);
+        $this->createIndex($this->db->getIndexName('{{%content}}', 'elementId,locale', true), '{{%content}}', 'elementId,locale', true);
+        $this->createIndex($this->db->getIndexName('{{%content}}', 'locale', false), '{{%content}}', 'locale', false);
+        $this->createIndex($this->db->getIndexName('{{%content}}', 'title', false), '{{%content}}', 'title', false);
+        $this->createIndex($this->db->getIndexName('{{%deprecationerrors}}', 'key,fingerprint', true), '{{%deprecationerrors}}', 'key,fingerprint', true);
+        $this->createIndex($this->db->getIndexName('{{%elementindexsettings}}', 'type', true), '{{%elementindexsettings}}', 'type', true);
+        $this->createIndex($this->db->getIndexName('{{%elements}}', 'type', false), '{{%elements}}', 'type', false);
+        $this->createIndex($this->db->getIndexName('{{%elements}}', 'enabled', false), '{{%elements}}', 'enabled', false);
+        $this->createIndex($this->db->getIndexName('{{%elements}}', 'archived,dateCreated', false), '{{%elements}}', 'archived,dateCreated', false);
+        $this->createIndex($this->db->getIndexName('{{%elements_i18n}}', 'elementId,locale', true), '{{%elements_i18n}}', 'elementId,locale', true);
+        $this->createIndex($this->db->getIndexName('{{%elements_i18n}}', 'uri,locale', true), '{{%elements_i18n}}', 'uri,locale', true);
+        $this->createIndex($this->db->getIndexName('{{%elements_i18n}}', 'locale', false), '{{%elements_i18n}}', 'locale', false);
+        $this->createIndex($this->db->getIndexName('{{%elements_i18n}}', 'slug,locale', false), '{{%elements_i18n}}', 'slug,locale', false);
+        $this->createIndex($this->db->getIndexName('{{%elements_i18n}}', 'enabled', false), '{{%elements_i18n}}', 'enabled', false);
+        $this->createIndex($this->db->getIndexName('{{%emailmessages}}', 'key,locale', true), '{{%emailmessages}}', 'key,locale', true);
+        $this->createIndex($this->db->getIndexName('{{%emailmessages}}', 'locale', false), '{{%emailmessages}}', 'locale', false);
+        $this->createIndex($this->db->getIndexName('{{%entries}}', 'postDate', false), '{{%entries}}', 'postDate', false);
+        $this->createIndex($this->db->getIndexName('{{%entries}}', 'expiryDate', false), '{{%entries}}', 'expiryDate', false);
+        $this->createIndex($this->db->getIndexName('{{%entries}}', 'authorId', false), '{{%entries}}', 'authorId', false);
+        $this->createIndex($this->db->getIndexName('{{%entries}}', 'sectionId', false), '{{%entries}}', 'sectionId', false);
+        $this->createIndex($this->db->getIndexName('{{%entries}}', 'typeId', false), '{{%entries}}', 'typeId', false);
+        $this->createIndex($this->db->getIndexName('{{%entrydrafts}}', 'sectionId', false), '{{%entrydrafts}}', 'sectionId', false);
+        $this->createIndex($this->db->getIndexName('{{%entrydrafts}}', 'entryId,locale', false), '{{%entrydrafts}}', 'entryId,locale', false);
+        $this->createIndex($this->db->getIndexName('{{%entrydrafts}}', 'locale', false), '{{%entrydrafts}}', 'locale', false);
+        $this->createIndex($this->db->getIndexName('{{%entrydrafts}}', 'creatorId', false), '{{%entrydrafts}}', 'creatorId', false);
+        $this->createIndex($this->db->getIndexName('{{%entrytypes}}', 'name,sectionId', true), '{{%entrytypes}}', 'name,sectionId', true);
+        $this->createIndex($this->db->getIndexName('{{%entrytypes}}', 'handle,sectionId', true), '{{%entrytypes}}', 'handle,sectionId', true);
+        $this->createIndex($this->db->getIndexName('{{%entrytypes}}', 'sectionId', false), '{{%entrytypes}}', 'sectionId', false);
+        $this->createIndex($this->db->getIndexName('{{%entrytypes}}', 'fieldLayoutId', false), '{{%entrytypes}}', 'fieldLayoutId', false);
+        $this->createIndex($this->db->getIndexName('{{%entryversions}}', 'sectionId', false), '{{%entryversions}}', 'sectionId', false);
+        $this->createIndex($this->db->getIndexName('{{%entryversions}}', 'entryId,locale', false), '{{%entryversions}}', 'entryId,locale', false);
+        $this->createIndex($this->db->getIndexName('{{%entryversions}}', 'locale', false), '{{%entryversions}}', 'locale', false);
+        $this->createIndex($this->db->getIndexName('{{%entryversions}}', 'creatorId', false), '{{%entryversions}}', 'creatorId', false);
+        $this->createIndex($this->db->getIndexName('{{%fieldgroups}}', 'name', true), '{{%fieldgroups}}', 'name', true);
+        $this->createIndex($this->db->getIndexName('{{%fieldlayoutfields}}', 'layoutId,fieldId', true), '{{%fieldlayoutfields}}', 'layoutId,fieldId', true);
+        $this->createIndex($this->db->getIndexName('{{%fieldlayoutfields}}', 'sortOrder', false), '{{%fieldlayoutfields}}', 'sortOrder', false);
+        $this->createIndex($this->db->getIndexName('{{%fieldlayoutfields}}', 'tabId', false), '{{%fieldlayoutfields}}', 'tabId', false);
+        $this->createIndex($this->db->getIndexName('{{%fieldlayoutfields}}', 'fieldId', false), '{{%fieldlayoutfields}}', 'fieldId', false);
+        $this->createIndex($this->db->getIndexName('{{%fieldlayouts}}', 'type', false), '{{%fieldlayouts}}', 'type', false);
+        $this->createIndex($this->db->getIndexName('{{%fieldlayouttabs}}', 'sortOrder', false), '{{%fieldlayouttabs}}', 'sortOrder', false);
+        $this->createIndex($this->db->getIndexName('{{%fieldlayouttabs}}', 'layoutId', false), '{{%fieldlayouttabs}}', 'layoutId', false);
+        $this->createIndex($this->db->getIndexName('{{%fields}}', 'handle,context', true), '{{%fields}}', 'handle,context', true);
+        $this->createIndex($this->db->getIndexName('{{%fields}}', 'groupId', false), '{{%fields}}', 'groupId', false);
+        $this->createIndex($this->db->getIndexName('{{%fields}}', 'context', false), '{{%fields}}', 'context', false);
+        $this->createIndex($this->db->getIndexName('{{%globalsets}}', 'name', true), '{{%globalsets}}', 'name', true);
+        $this->createIndex($this->db->getIndexName('{{%globalsets}}', 'handle', true), '{{%globalsets}}', 'handle', true);
+        $this->createIndex($this->db->getIndexName('{{%globalsets}}', 'fieldLayoutId', false), '{{%globalsets}}', 'fieldLayoutId', false);
+        $this->createIndex($this->db->getIndexName('{{%locales}}', 'sortOrder', false), '{{%locales}}', 'sortOrder', false);
+        $this->createIndex($this->db->getIndexName('{{%matrixblocks}}', 'ownerId', false), '{{%matrixblocks}}', 'ownerId', false);
+        $this->createIndex($this->db->getIndexName('{{%matrixblocks}}', 'fieldId', false), '{{%matrixblocks}}', 'fieldId', false);
+        $this->createIndex($this->db->getIndexName('{{%matrixblocks}}', 'typeId', false), '{{%matrixblocks}}', 'typeId', false);
+        $this->createIndex($this->db->getIndexName('{{%matrixblocks}}', 'sortOrder', false), '{{%matrixblocks}}', 'sortOrder', false);
+        $this->createIndex($this->db->getIndexName('{{%matrixblocks}}', 'ownerLocale', false), '{{%matrixblocks}}', 'ownerLocale', false);
+        $this->createIndex($this->db->getIndexName('{{%matrixblocktypes}}', 'name,fieldId', true), '{{%matrixblocktypes}}', 'name,fieldId', true);
+        $this->createIndex($this->db->getIndexName('{{%matrixblocktypes}}', 'handle,fieldId', true), '{{%matrixblocktypes}}', 'handle,fieldId', true);
+        $this->createIndex($this->db->getIndexName('{{%matrixblocktypes}}', 'fieldId', false), '{{%matrixblocktypes}}', 'fieldId', false);
+        $this->createIndex($this->db->getIndexName('{{%matrixblocktypes}}', 'fieldLayoutId', false), '{{%matrixblocktypes}}', 'fieldLayoutId', false);
+        $this->createIndex($this->db->getIndexName('{{%migrations}}', 'pluginId', false), '{{%migrations}}', 'pluginId', false);
+        $this->createIndex($this->db->getIndexName('{{%migrations}}', 'type,pluginId', false), '{{%migrations}}', 'type,pluginId', false);
+        $this->createIndex($this->db->getIndexName('{{%plugins}}', 'handle', true), '{{%plugins}}', 'handle', true);
+        $this->createIndex($this->db->getIndexName('{{%rackspaceaccess}}', 'connectionKey', true), '{{%rackspaceaccess}}', 'connectionKey', true);
+        $this->createIndex($this->db->getIndexName('{{%relations}}', 'fieldId,sourceId,sourceLocale,targetId', true), '{{%relations}}', 'fieldId,sourceId,sourceLocale,targetId', true);
+        $this->createIndex($this->db->getIndexName('{{%relations}}', 'sourceId', false), '{{%relations}}', 'sourceId', false);
+        $this->createIndex($this->db->getIndexName('{{%relations}}', 'targetId', false), '{{%relations}}', 'targetId', false);
+        $this->createIndex($this->db->getIndexName('{{%relations}}', 'sourceLocale', false), '{{%relations}}', 'sourceLocale', false);
+        $this->createIndex($this->db->getIndexName('{{%routes}}', 'urlPattern', true), '{{%routes}}', 'urlPattern', true);
+        $this->createIndex($this->db->getIndexName('{{%routes}}', 'locale', false), '{{%routes}}', 'locale', false);
+        $this->createIndex($this->db->getIndexName('{{%sections}}', 'handle', true), '{{%sections}}', 'handle', true);
+        $this->createIndex($this->db->getIndexName('{{%sections}}', 'name', true), '{{%sections}}', 'name', true);
+        $this->createIndex($this->db->getIndexName('{{%sections}}', 'structureId', false), '{{%sections}}', 'structureId', false);
+        $this->createIndex($this->db->getIndexName('{{%sections_i18n}}', 'sectionId,locale', true), '{{%sections_i18n}}', 'sectionId,locale', true);
+        $this->createIndex($this->db->getIndexName('{{%sections_i18n}}', 'locale', false), '{{%sections_i18n}}', 'locale', false);
+        $this->createIndex($this->db->getIndexName('{{%sessions}}', 'uid', false), '{{%sessions}}', 'uid', false);
+        $this->createIndex($this->db->getIndexName('{{%sessions}}', 'token', false), '{{%sessions}}', 'token', false);
+        $this->createIndex($this->db->getIndexName('{{%sessions}}', 'dateUpdated', false), '{{%sessions}}', 'dateUpdated', false);
+        $this->createIndex($this->db->getIndexName('{{%sessions}}', 'userId', false), '{{%sessions}}', 'userId', false);
+        $this->createIndex($this->db->getIndexName('{{%shunnedmessages}}', 'userId,message', true), '{{%shunnedmessages}}', 'userId,message', true);
+        $this->createIndex($this->db->getIndexName('{{%structureelements}}', 'structureId,elementId', true), '{{%structureelements}}', 'structureId,elementId', true);
+        $this->createIndex($this->db->getIndexName('{{%structureelements}}', 'root', false), '{{%structureelements}}', 'root', false);
+        $this->createIndex($this->db->getIndexName('{{%structureelements}}', 'lft', false), '{{%structureelements}}', 'lft', false);
+        $this->createIndex($this->db->getIndexName('{{%structureelements}}', 'rgt', false), '{{%structureelements}}', 'rgt', false);
+        $this->createIndex($this->db->getIndexName('{{%structureelements}}', 'level', false), '{{%structureelements}}', 'level', false);
+        $this->createIndex($this->db->getIndexName('{{%structureelements}}', 'elementId', false), '{{%structureelements}}', 'elementId', false);
+        $this->createIndex($this->db->getIndexName('{{%systemsettings}}', 'category', true), '{{%systemsettings}}', 'category', true);
+        $this->createIndex($this->db->getIndexName('{{%taggroups}}', 'name', true), '{{%taggroups}}', 'name', true);
+        $this->createIndex($this->db->getIndexName('{{%taggroups}}', 'handle', true), '{{%taggroups}}', 'handle', true);
+        $this->createIndex($this->db->getIndexName('{{%tags}}', 'groupId', false), '{{%tags}}', 'groupId', false);
+        $this->createIndex($this->db->getIndexName('{{%tasks}}', 'root', false), '{{%tasks}}', 'root', false);
+        $this->createIndex($this->db->getIndexName('{{%tasks}}', 'lft', false), '{{%tasks}}', 'lft', false);
+        $this->createIndex($this->db->getIndexName('{{%tasks}}', 'rgt', false), '{{%tasks}}', 'rgt', false);
+        $this->createIndex($this->db->getIndexName('{{%tasks}}', 'level', false), '{{%tasks}}', 'level', false);
+        $this->createIndex($this->db->getIndexName('{{%templatecacheelements}}', 'cacheId', false), '{{%templatecacheelements}}', 'cacheId', false);
+        $this->createIndex($this->db->getIndexName('{{%templatecacheelements}}', 'elementId', false), '{{%templatecacheelements}}', 'elementId', false);
+        $this->createIndex($this->db->getIndexName('{{%templatecachequeries}}', 'cacheId', false), '{{%templatecachequeries}}', 'cacheId', false);
+        $this->createIndex($this->db->getIndexName('{{%templatecachequeries}}', 'type', false), '{{%templatecachequeries}}', 'type', false);
+        $this->createIndex($this->db->getIndexName('{{%templatecaches}}', 'expiryDate,cacheKey,locale,path', false), '{{%templatecaches}}', 'expiryDate,cacheKey,locale,path', false);
+        $this->createIndex($this->db->getIndexName('{{%templatecaches}}', 'locale', false), '{{%templatecaches}}', 'locale', false);
+        $this->createIndex($this->db->getIndexName('{{%tokens}}', 'token', true), '{{%tokens}}', 'token', true);
+        $this->createIndex($this->db->getIndexName('{{%tokens}}', 'expiryDate', false), '{{%tokens}}', 'expiryDate', false);
+        $this->createIndex($this->db->getIndexName('{{%usergroups_users}}', 'groupId,userId', true), '{{%usergroups_users}}', 'groupId,userId', true);
+        $this->createIndex($this->db->getIndexName('{{%usergroups_users}}', 'userId', false), '{{%usergroups_users}}', 'userId', false);
+        $this->createIndex($this->db->getIndexName('{{%userpermissions}}', 'name', true), '{{%userpermissions}}', 'name', true);
+        $this->createIndex($this->db->getIndexName('{{%userpermissions_usergroups}}', 'permissionId,groupId', true), '{{%userpermissions_usergroups}}', 'permissionId,groupId', true);
+        $this->createIndex($this->db->getIndexName('{{%userpermissions_usergroups}}', 'groupId', false), '{{%userpermissions_usergroups}}', 'groupId', false);
+        $this->createIndex($this->db->getIndexName('{{%userpermissions_users}}', 'permissionId,userId', true), '{{%userpermissions_users}}', 'permissionId,userId', true);
+        $this->createIndex($this->db->getIndexName('{{%userpermissions_users}}', 'userId', false), '{{%userpermissions_users}}', 'userId', false);
+        $this->createIndex($this->db->getIndexName('{{%users}}', 'username', true), '{{%users}}', 'username', true);
+        $this->createIndex($this->db->getIndexName('{{%users}}', 'email', true), '{{%users}}', 'email', true);
+        $this->createIndex($this->db->getIndexName('{{%users}}', 'uid', false), '{{%users}}', 'uid', false);
+        $this->createIndex($this->db->getIndexName('{{%users}}', 'verificationCode', false), '{{%users}}', 'verificationCode', false);
+        $this->createIndex($this->db->getIndexName('{{%volumefolders}}', 'name,parentId,volumeId', true), '{{%volumefolders}}', 'name,parentId,volumeId', true);
+        $this->createIndex($this->db->getIndexName('{{%volumefolders}}', 'parentId', false), '{{%volumefolders}}', 'parentId', false);
+        $this->createIndex($this->db->getIndexName('{{%volumefolders}}', 'volumeId', false), '{{%volumefolders}}', 'volumeId', false);
+        $this->createIndex($this->db->getIndexName('{{%volumes}}', 'name', true), '{{%volumes}}', 'name', true);
+        $this->createIndex($this->db->getIndexName('{{%volumes}}', 'handle', true), '{{%volumes}}', 'handle', true);
+        $this->createIndex($this->db->getIndexName('{{%volumes}}', 'fieldLayoutId', false), '{{%volumes}}', 'fieldLayoutId', false);
+        $this->createIndex($this->db->getIndexName('{{%widgets}}', 'userId', false), '{{%widgets}}', 'userId', false);
+
+        // Add the FULLTEXT index on searchindex.keywords
+        // TODO: MySQL specific
+        $sql = 'CREATE FULLTEXT INDEX '.
+            $this->db->quoteTableName($this->db->getIndexName('{{%searchindex}}', 'keywords')).' ON '.
+            $this->db->quoteTableName('{{%searchindex}}').' '.
+            '('.$this->db->quoteColumnName('keywords').')';
+        $this->db->createCommand($sql)->execute();
+    }
+
+    /**
+     * Adds the foreign keys.
+     *
+     * @return void
+     */
+    protected function addForeignKeys()
+    {
+        $this->addForeignKey($this->db->getForeignKeyName('{{%assetindexdata}}', 'volumeId'), '{{%assetindexdata}}', 'volumeId', '{{%volumes}}', 'id', 'CASCADE', null);
+        $this->addForeignKey($this->db->getForeignKeyName('{{%assets}}', 'folderId'), '{{%assets}}', 'folderId', '{{%volumefolders}}', 'id', 'CASCADE', null);
+        $this->addForeignKey($this->db->getForeignKeyName('{{%assets}}', 'id'), '{{%assets}}', 'id', '{{%elements}}', 'id', 'CASCADE', null);
+        $this->addForeignKey($this->db->getForeignKeyName('{{%assets}}', 'volumeId'), '{{%assets}}', 'volumeId', '{{%volumes}}', 'id', 'CASCADE', null);
+        $this->addForeignKey($this->db->getForeignKeyName('{{%categories}}', 'groupId'), '{{%categories}}', 'groupId', '{{%categorygroups}}', 'id', 'CASCADE', null);
+        $this->addForeignKey($this->db->getForeignKeyName('{{%categories}}', 'id'), '{{%categories}}', 'id', '{{%elements}}', 'id', 'CASCADE', null);
+        $this->addForeignKey($this->db->getForeignKeyName('{{%categorygroups}}', 'fieldLayoutId'), '{{%categorygroups}}', 'fieldLayoutId', '{{%fieldlayouts}}', 'id', 'SET NULL', null);
+        $this->addForeignKey($this->db->getForeignKeyName('{{%categorygroups}}', 'structureId'), '{{%categorygroups}}', 'structureId', '{{%structures}}', 'id', 'CASCADE', null);
+        $this->addForeignKey($this->db->getForeignKeyName('{{%categorygroups_i18n}}', 'groupId'), '{{%categorygroups_i18n}}', 'groupId', '{{%categorygroups}}', 'id', 'CASCADE', null);
+        $this->addForeignKey($this->db->getForeignKeyName('{{%categorygroups_i18n}}', 'locale'), '{{%categorygroups_i18n}}', 'locale', '{{%locales}}', 'locale', 'CASCADE', 'CASCADE');
+        $this->addForeignKey($this->db->getForeignKeyName('{{%content}}', 'elementId'), '{{%content}}', 'elementId', '{{%elements}}', 'id', 'CASCADE', null);
+        $this->addForeignKey($this->db->getForeignKeyName('{{%content}}', 'locale'), '{{%content}}', 'locale', '{{%locales}}', 'locale', 'CASCADE', 'CASCADE');
+        $this->addForeignKey($this->db->getForeignKeyName('{{%elements_i18n}}', 'elementId'), '{{%elements_i18n}}', 'elementId', '{{%elements}}', 'id', 'CASCADE', null);
+        $this->addForeignKey($this->db->getForeignKeyName('{{%elements_i18n}}', 'locale'), '{{%elements_i18n}}', 'locale', '{{%locales}}', 'locale', 'CASCADE', 'CASCADE');
+        $this->addForeignKey($this->db->getForeignKeyName('{{%emailmessages}}', 'locale'), '{{%emailmessages}}', 'locale', '{{%locales}}', 'locale', 'CASCADE', 'CASCADE');
+        $this->addForeignKey($this->db->getForeignKeyName('{{%entries}}', 'authorId'), '{{%entries}}', 'authorId', '{{%users}}', 'id', 'CASCADE', null);
+        $this->addForeignKey($this->db->getForeignKeyName('{{%entries}}', 'id'), '{{%entries}}', 'id', '{{%elements}}', 'id', 'CASCADE', null);
+        $this->addForeignKey($this->db->getForeignKeyName('{{%entries}}', 'sectionId'), '{{%entries}}', 'sectionId', '{{%sections}}', 'id', 'CASCADE', null);
+        $this->addForeignKey($this->db->getForeignKeyName('{{%entries}}', 'typeId'), '{{%entries}}', 'typeId', '{{%entrytypes}}', 'id', 'CASCADE', null);
+        $this->addForeignKey($this->db->getForeignKeyName('{{%entrydrafts}}', 'creatorId'), '{{%entrydrafts}}', 'creatorId', '{{%users}}', 'id', 'CASCADE', null);
+        $this->addForeignKey($this->db->getForeignKeyName('{{%entrydrafts}}', 'entryId'), '{{%entrydrafts}}', 'entryId', '{{%entries}}', 'id', 'CASCADE', null);
+        $this->addForeignKey($this->db->getForeignKeyName('{{%entrydrafts}}', 'locale'), '{{%entrydrafts}}', 'locale', '{{%locales}}', 'locale', 'CASCADE', 'CASCADE');
+        $this->addForeignKey($this->db->getForeignKeyName('{{%entrydrafts}}', 'sectionId'), '{{%entrydrafts}}', 'sectionId', '{{%sections}}', 'id', 'CASCADE', null);
+        $this->addForeignKey($this->db->getForeignKeyName('{{%entrytypes}}', 'fieldLayoutId'), '{{%entrytypes}}', 'fieldLayoutId', '{{%fieldlayouts}}', 'id', 'SET NULL', null);
+        $this->addForeignKey($this->db->getForeignKeyName('{{%entrytypes}}', 'sectionId'), '{{%entrytypes}}', 'sectionId', '{{%sections}}', 'id', 'CASCADE', null);
+        $this->addForeignKey($this->db->getForeignKeyName('{{%entryversions}}', 'creatorId'), '{{%entryversions}}', 'creatorId', '{{%users}}', 'id', 'SET NULL', null);
+        $this->addForeignKey($this->db->getForeignKeyName('{{%entryversions}}', 'entryId'), '{{%entryversions}}', 'entryId', '{{%entries}}', 'id', 'CASCADE', null);
+        $this->addForeignKey($this->db->getForeignKeyName('{{%entryversions}}', 'locale'), '{{%entryversions}}', 'locale', '{{%locales}}', 'locale', 'CASCADE', 'CASCADE');
+        $this->addForeignKey($this->db->getForeignKeyName('{{%entryversions}}', 'sectionId'), '{{%entryversions}}', 'sectionId', '{{%sections}}', 'id', 'CASCADE', null);
+        $this->addForeignKey($this->db->getForeignKeyName('{{%fieldlayoutfields}}', 'fieldId'), '{{%fieldlayoutfields}}', 'fieldId', '{{%fields}}', 'id', 'CASCADE', null);
+        $this->addForeignKey($this->db->getForeignKeyName('{{%fieldlayoutfields}}', 'layoutId'), '{{%fieldlayoutfields}}', 'layoutId', '{{%fieldlayouts}}', 'id', 'CASCADE', null);
+        $this->addForeignKey($this->db->getForeignKeyName('{{%fieldlayoutfields}}', 'tabId'), '{{%fieldlayoutfields}}', 'tabId', '{{%fieldlayouttabs}}', 'id', 'CASCADE', null);
+        $this->addForeignKey($this->db->getForeignKeyName('{{%fieldlayouttabs}}', 'layoutId'), '{{%fieldlayouttabs}}', 'layoutId', '{{%fieldlayouts}}', 'id', 'CASCADE', null);
+        $this->addForeignKey($this->db->getForeignKeyName('{{%fields}}', 'groupId'), '{{%fields}}', 'groupId', '{{%fieldgroups}}', 'id', 'CASCADE', null);
+        $this->addForeignKey($this->db->getForeignKeyName('{{%globalsets}}', 'fieldLayoutId'), '{{%globalsets}}', 'fieldLayoutId', '{{%fieldlayouts}}', 'id', 'SET NULL', null);
+        $this->addForeignKey($this->db->getForeignKeyName('{{%globalsets}}', 'id'), '{{%globalsets}}', 'id', '{{%elements}}', 'id', 'CASCADE', null);
+        $this->addForeignKey($this->db->getForeignKeyName('{{%matrixblocks}}', 'fieldId'), '{{%matrixblocks}}', 'fieldId', '{{%fields}}', 'id', 'CASCADE', null);
+        $this->addForeignKey($this->db->getForeignKeyName('{{%matrixblocks}}', 'id'), '{{%matrixblocks}}', 'id', '{{%elements}}', 'id', 'CASCADE', null);
+        $this->addForeignKey($this->db->getForeignKeyName('{{%matrixblocks}}', 'ownerId'), '{{%matrixblocks}}', 'ownerId', '{{%elements}}', 'id', 'CASCADE', null);
+        $this->addForeignKey($this->db->getForeignKeyName('{{%matrixblocks}}', 'ownerLocale'), '{{%matrixblocks}}', 'ownerLocale', '{{%locales}}', 'locale', 'CASCADE', 'CASCADE');
+        $this->addForeignKey($this->db->getForeignKeyName('{{%matrixblocks}}', 'typeId'), '{{%matrixblocks}}', 'typeId', '{{%matrixblocktypes}}', 'id', 'CASCADE', null);
+        $this->addForeignKey($this->db->getForeignKeyName('{{%matrixblocktypes}}', 'fieldId'), '{{%matrixblocktypes}}', 'fieldId', '{{%fields}}', 'id', 'CASCADE', null);
+        $this->addForeignKey($this->db->getForeignKeyName('{{%matrixblocktypes}}', 'fieldLayoutId'), '{{%matrixblocktypes}}', 'fieldLayoutId', '{{%fieldlayouts}}', 'id', 'SET NULL', null);
+        $this->addForeignKey($this->db->getForeignKeyName('{{%migrations}}', 'pluginId'), '{{%migrations}}', 'pluginId', '{{%plugins}}', 'id', 'CASCADE', null);
+        $this->addForeignKey($this->db->getForeignKeyName('{{%relations}}', 'fieldId'), '{{%relations}}', 'fieldId', '{{%fields}}', 'id', 'CASCADE', null);
+        $this->addForeignKey($this->db->getForeignKeyName('{{%relations}}', 'sourceId'), '{{%relations}}', 'sourceId', '{{%elements}}', 'id', 'CASCADE', null);
+        $this->addForeignKey($this->db->getForeignKeyName('{{%relations}}', 'sourceLocale'), '{{%relations}}', 'sourceLocale', '{{%locales}}', 'locale', 'CASCADE', 'CASCADE');
+        $this->addForeignKey($this->db->getForeignKeyName('{{%relations}}', 'targetId'), '{{%relations}}', 'targetId', '{{%elements}}', 'id', 'CASCADE', null);
+        $this->addForeignKey($this->db->getForeignKeyName('{{%routes}}', 'locale'), '{{%routes}}', 'locale', '{{%locales}}', 'locale', 'CASCADE', 'CASCADE');
+        $this->addForeignKey($this->db->getForeignKeyName('{{%sections}}', 'structureId'), '{{%sections}}', 'structureId', '{{%structures}}', 'id', 'SET NULL', null);
+        $this->addForeignKey($this->db->getForeignKeyName('{{%sections_i18n}}', 'locale'), '{{%sections_i18n}}', 'locale', '{{%locales}}', 'locale', 'CASCADE', 'CASCADE');
+        $this->addForeignKey($this->db->getForeignKeyName('{{%sections_i18n}}', 'sectionId'), '{{%sections_i18n}}', 'sectionId', '{{%sections}}', 'id', 'CASCADE', null);
+        $this->addForeignKey($this->db->getForeignKeyName('{{%sessions}}', 'userId'), '{{%sessions}}', 'userId', '{{%users}}', 'id', 'CASCADE', null);
+        $this->addForeignKey($this->db->getForeignKeyName('{{%shunnedmessages}}', 'userId'), '{{%shunnedmessages}}', 'userId', '{{%users}}', 'id', 'CASCADE', null);
+        $this->addForeignKey($this->db->getForeignKeyName('{{%structureelements}}', 'elementId'), '{{%structureelements}}', 'elementId', '{{%elements}}', 'id', 'CASCADE', null);
+        $this->addForeignKey($this->db->getForeignKeyName('{{%structureelements}}', 'structureId'), '{{%structureelements}}', 'structureId', '{{%structures}}', 'id', 'CASCADE', null);
+        $this->addForeignKey($this->db->getForeignKeyName('{{%tags}}', 'groupId'), '{{%tags}}', 'groupId', '{{%taggroups}}', 'id', 'CASCADE', null);
+        $this->addForeignKey($this->db->getForeignKeyName('{{%tags}}', 'id'), '{{%tags}}', 'id', '{{%elements}}', 'id', 'CASCADE', null);
+        $this->addForeignKey($this->db->getForeignKeyName('{{%templatecacheelements}}', 'cacheId'), '{{%templatecacheelements}}', 'cacheId', '{{%templatecaches}}', 'id', 'CASCADE', null);
+        $this->addForeignKey($this->db->getForeignKeyName('{{%templatecacheelements}}', 'elementId'), '{{%templatecacheelements}}', 'elementId', '{{%elements}}', 'id', 'CASCADE', null);
+        $this->addForeignKey($this->db->getForeignKeyName('{{%templatecachequeries}}', 'cacheId'), '{{%templatecachequeries}}', 'cacheId', '{{%templatecaches}}', 'id', 'CASCADE', null);
+        $this->addForeignKey($this->db->getForeignKeyName('{{%templatecaches}}', 'locale'), '{{%templatecaches}}', 'locale', '{{%locales}}', 'locale', 'CASCADE', 'CASCADE');
+        $this->addForeignKey($this->db->getForeignKeyName('{{%usergroups_users}}', 'groupId'), '{{%usergroups_users}}', 'groupId', '{{%usergroups}}', 'id', 'CASCADE', null);
+        $this->addForeignKey($this->db->getForeignKeyName('{{%usergroups_users}}', 'userId'), '{{%usergroups_users}}', 'userId', '{{%users}}', 'id', 'CASCADE', null);
+        $this->addForeignKey($this->db->getForeignKeyName('{{%userpermissions_usergroups}}', 'groupId'), '{{%userpermissions_usergroups}}', 'groupId', '{{%usergroups}}', 'id', 'CASCADE', null);
+        $this->addForeignKey($this->db->getForeignKeyName('{{%userpermissions_usergroups}}', 'permissionId'), '{{%userpermissions_usergroups}}', 'permissionId', '{{%userpermissions}}', 'id', 'CASCADE', null);
+        $this->addForeignKey($this->db->getForeignKeyName('{{%userpermissions_users}}', 'permissionId'), '{{%userpermissions_users}}', 'permissionId', '{{%userpermissions}}', 'id', 'CASCADE', null);
+        $this->addForeignKey($this->db->getForeignKeyName('{{%userpermissions_users}}', 'userId'), '{{%userpermissions_users}}', 'userId', '{{%users}}', 'id', 'CASCADE', null);
+        $this->addForeignKey($this->db->getForeignKeyName('{{%userpreferences}}', 'userId'), '{{%userpreferences}}', 'userId', '{{%users}}', 'id', 'CASCADE', null);
+        $this->addForeignKey($this->db->getForeignKeyName('{{%users}}', 'id'), '{{%users}}', 'id', '{{%elements}}', 'id', 'CASCADE', null);
+        $this->addForeignKey($this->db->getForeignKeyName('{{%users}}', 'photoId'), '{{%users}}', 'photoId', '{{%assets}}', 'id', 'SET NULL', null);
+        $this->addForeignKey($this->db->getForeignKeyName('{{%volumefolders}}', 'parentId'), '{{%volumefolders}}', 'parentId', '{{%volumefolders}}', 'id', 'CASCADE', null);
+        $this->addForeignKey($this->db->getForeignKeyName('{{%volumefolders}}', 'volumeId'), '{{%volumefolders}}', 'volumeId', '{{%volumes}}', 'id', 'CASCADE', null);
+        $this->addForeignKey($this->db->getForeignKeyName('{{%volumes}}', 'fieldLayoutId'), '{{%volumes}}', 'fieldLayoutId', '{{%fieldlayouts}}', 'id', 'SET NULL', null);
+        $this->addForeignKey($this->db->getForeignKeyName('{{%widgets}}', 'userId'), '{{%widgets}}', 'userId', '{{%users}}', 'id', 'CASCADE', null);
+    }
+
+    /**
+     * Populates the DB with the default data.
+     *
+     * @return void
+     */
+    protected function insertDefaultData()
+    {
+        // Add the site locale
+        $this->insert(
+            '{{%locales}}',
+            [
+                'locale' => $this->locale,
+                'sortOrder' => 1
+            ]
+        );
+
+        // Populate the info table
+        echo "    > populate the info table ...";
+        Craft::$app->saveInfo(new Info([
+            'version' => Craft::$app->version,
+            'build' => Craft::$app->build,
+            'schemaVersion' => Craft::$app->schemaVersion,
+            'releaseDate' => Craft::$app->releaseDate,
+            'edition' => '0',
+            'siteName' => $this->siteName,
+            'siteUrl' => $this->siteUrl,
+            'on' => '1',
+            'maintenance' => '0',
+            'track' => Craft::$app->track,
+            'fieldVersion' => StringHelper::randomString(12),
+        ]));
+        echo " done\n";
     }
 }

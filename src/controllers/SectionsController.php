@@ -1,22 +1,23 @@
 <?php
 /**
- * @link      http://buildwithcraft.com/
- * @copyright Copyright (c) 2015 Pixel & Tonic, Inc.
- * @license   http://buildwithcraft.com/license
+ * @link      https://craftcms.com/
+ * @copyright Copyright (c) Pixel & Tonic, Inc.
+ * @license   https://craftcms.com/license
  */
 
 namespace craft\app\controllers;
 
 use Craft;
 use craft\app\elements\Entry;
-use craft\app\errors\Exception;
-use craft\app\errors\HttpException;
 use craft\app\helpers\Json;
 use craft\app\helpers\Url;
 use craft\app\models\EntryType;
 use craft\app\models\Section;
 use craft\app\models\SectionLocale;
 use craft\app\web\Controller;
+use yii\web\BadRequestHttpException;
+use yii\web\NotFoundHttpException;
+use yii\web\Response;
 
 /**
  * The SectionsController class is a controller that handles various section and entry type related tasks such as
@@ -34,7 +35,6 @@ class SectionsController extends Controller
 
     /**
      * @inheritdoc
-     * @throws HttpException if the user isn’t an admin
      */
     public function init()
     {
@@ -53,15 +53,6 @@ class SectionsController extends Controller
     {
         $variables['sections'] = Craft::$app->getSections()->getAllSections();
 
-        // Can new sections be added?
-        if (Craft::$app->getEdition() == Craft::Personal) {
-            $variables['maxSections'] = 0;
-
-            foreach (Craft::$app->getSections()->typeLimits as $limit) {
-                $variables['maxSections'] += $limit;
-            }
-        }
-
         return $this->renderTemplate('settings/sections/_index', $variables);
     }
 
@@ -72,7 +63,8 @@ class SectionsController extends Controller
      * @param Section $section   The section being edited, if there were any validation errors.
      *
      * @return string The rendering result
-     * @throws HttpException|Exception
+     * @throws NotFoundHttpException if the requested section cannot be found
+     * @throws BadRequestHttpException if attempting to do something not allowed by the current Craft edition
      */
     public function actionEditSection($sectionId = null, Section $section = null)
     {
@@ -86,7 +78,7 @@ class SectionsController extends Controller
                 $section = Craft::$app->getSections()->getSectionById($sectionId);
 
                 if (!$section) {
-                    throw new HttpException(404);
+                    throw new NotFoundHttpException('Section not found');
                 }
             }
 
@@ -111,32 +103,23 @@ class SectionsController extends Controller
         // Craft::t('app', 'Channel') Craft::t('app', 'Structure') Craft::t('app', 'Single')
 
         foreach ($types as $type) {
-            $allowed = (($section->id && $section->type == $type) || Craft::$app->getSections()->canHaveMore($type));
-            $variables['canBe'.ucfirst($type)] = $allowed;
-
-            if ($allowed) {
-                $typeOptions[$type] = Craft::t('app', ucfirst($type));
-            }
+            $typeOptions[$type] = Craft::t('app', ucfirst($type));
         }
 
         if (!$typeOptions) {
-            throw new Exception(Craft::t('app', 'Craft Client or Pro Edition is required to create any additional sections.'));
+            throw new BadRequestHttpException('Craft Client or Pro Edition is required to create any additional sections');
         }
 
         if (!$section->type) {
-            if ($variables['canBeChannel']) {
-                $section->type = Section::TYPE_CHANNEL;
-            } else {
-                $section->type = Section::TYPE_SINGLE;
-            }
+            $section->type = Section::TYPE_CHANNEL;
         }
 
         $variables['section'] = $section;
         $variables['typeOptions'] = $typeOptions;
 
         $variables['canBeHomepage'] = (
-            ($section->id && $section->isHomepage()) ||
-            ($variables['canBeSingle'] && !Craft::$app->getSections()->doesHomepageExist())
+            ($section->id && $section->getIsHomepage()) ||
+            (!Craft::$app->getSections()->doesHomepageExist())
         );
 
         $variables['crumbs'] = [
@@ -156,7 +139,7 @@ class SectionsController extends Controller
     /**
      * Saves a section.
      *
-     * @return void
+     * @return Response|null
      */
     public function actionSaveSection()
     {
@@ -179,7 +162,7 @@ class SectionsController extends Controller
         // Locale-specific attributes
         $locales = [];
 
-        if (Craft::$app->isLocalized()) {
+        if (Craft::$app->getIsLocalized()) {
             $localeIds = Craft::$app->getRequest()->getBodyParam('locales', []);
         } else {
             $primaryLocaleId = Craft::$app->getI18n()->getPrimarySiteLocaleId();
@@ -212,20 +195,22 @@ class SectionsController extends Controller
             Craft::$app->getSession()->setNotice(Craft::t('app', 'Section saved.'));
 
             return $this->redirectToPostedUrl($section);
-        } else {
-            Craft::$app->getSession()->setError(Craft::t('app', 'Couldn’t save section.'));
         }
+
+        Craft::$app->getSession()->setError(Craft::t('app', 'Couldn’t save section.'));
 
         // Send the section back to the template
         Craft::$app->getUrlManager()->setRouteParams([
             'section' => $section
         ]);
+
+        return null;
     }
 
     /**
      * Deletes a section.
      *
-     * @return void
+     * @return Response
      */
     public function actionDeleteSection()
     {
@@ -247,14 +232,14 @@ class SectionsController extends Controller
      * @param integer $sectionId The ID of the section whose entry types we’re listing
      *
      * @return string The rendering result
-     * @throws HttpException
+     * @throws NotFoundHttpException if the requested section cannot be found
      */
     public function actionEntryTypesIndex($sectionId)
     {
         $section = Craft::$app->getSections()->getSectionById($sectionId);
 
         if ($section === null) {
-            throw new HttpException(404, "No section exists with the ID '$sectionId'");
+            throw new NotFoundHttpException('Section not found');
         }
 
         $crumbs = [
@@ -291,22 +276,27 @@ class SectionsController extends Controller
      * @param EntryType $entryType   The entry type being edited, if there were any validation errors.
      *
      * @return string The rendering result
-     * @throws HttpException
+     * @throws NotFoundHttpException if the requested section/entry type cannot be found
+     * @throws BadRequestHttpException if the requested entry type does not belong to the requested section
      */
     public function actionEditEntryType($sectionId, $entryTypeId = null, EntryType $entryType = null)
     {
         $section = Craft::$app->getSections()->getSectionById($sectionId);
 
         if (!$section) {
-            throw new HttpException(404);
+            throw new NotFoundHttpException('Section not found');
         }
 
         if ($entryTypeId !== null) {
             if ($entryType === null) {
                 $entryType = Craft::$app->getSections()->getEntryTypeById($entryTypeId);
 
-                if (!$entryType || $entryType->sectionId != $section->id) {
-                    throw new HttpException(404);
+                if (!$entryType) {
+                    throw new NotFoundHttpException('Entry type not found');
+                }
+
+                if ($entryType->sectionId != $section->id) {
+                    throw new BadRequestHttpException('Entry type does not belong to the requested section');
                 }
             }
 
@@ -353,10 +343,8 @@ class SectionsController extends Controller
     /**
      * Saves an entry type.
      *
-     * @throws Exception
-     * @throws HttpException
-     * @throws \Exception
-     * @return void
+     * @return Response|null
+     * @throws NotFoundHttpException if the requested entry type cannot be found
      */
     public function actionSaveEntryType()
     {
@@ -368,14 +356,14 @@ class SectionsController extends Controller
             $entryType = Craft::$app->getSections()->getEntryTypeById($entryTypeId);
 
             if (!$entryType) {
-                throw new Exception(Craft::t('app', 'No entry type exists with the ID “{id}”.', ['id' => $entryTypeId]));
+                throw new NotFoundHttpException('Entry type not found');
             }
         } else {
             $entryType = new EntryType();
         }
 
         // Set the simple stuff
-        $entryType->sectionId = Craft::$app->getRequest()->getRequiredBodyParam('sectionId', $entryType->sectionId);
+        $entryType->sectionId = Craft::$app->getRequest()->getRequiredBodyParam('sectionId');
         $entryType->name = Craft::$app->getRequest()->getBodyParam('name', $entryType->name);
         $entryType->handle = Craft::$app->getRequest()->getBodyParam('handle', $entryType->handle);
         $entryType->hasTitleField = (bool)Craft::$app->getRequest()->getBodyParam('hasTitleField', $entryType->hasTitleField);
@@ -392,20 +380,22 @@ class SectionsController extends Controller
             Craft::$app->getSession()->setNotice(Craft::t('app', 'Entry type saved.'));
 
             return $this->redirectToPostedUrl($entryType);
-        } else {
-            Craft::$app->getSession()->setError(Craft::t('app', 'Couldn’t save entry type.'));
         }
+
+        Craft::$app->getSession()->setError(Craft::t('app', 'Couldn’t save entry type.'));
 
         // Send the entry type back to the template
         Craft::$app->getUrlManager()->setRouteParams([
             'entryType' => $entryType
         ]);
+
+        return null;
     }
 
     /**
      * Reorders entry types.
      *
-     * @return void
+     * @return Response
      */
     public function actionReorderEntryTypes()
     {
@@ -421,7 +411,7 @@ class SectionsController extends Controller
     /**
      * Deletes an entry type.
      *
-     * @return void
+     * @return Response
      */
     public function actionDeleteEntryType()
     {

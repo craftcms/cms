@@ -1,8 +1,8 @@
 <?php
 /**
- * @link      http://buildwithcraft.com/
- * @copyright Copyright (c) 2015 Pixel & Tonic, Inc.
- * @license   http://buildwithcraft.com/license
+ * @link      https://craftcms.com/
+ * @copyright Copyright (c) Pixel & Tonic, Inc.
+ * @license   https://craftcms.com/license
  */
 
 namespace craft\app\db;
@@ -18,6 +18,7 @@ use craft\app\helpers\StringHelper;
  *
  * @property QueryBuilder $queryBuilder The query builder for the current DB connection.
  * @method QueryBuilder getQueryBuilder() Returns the query builder for the current DB connection.
+ * @method Command createCommand($sql = null, $params = []) Creates a command for execution.
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since  3.0
@@ -28,30 +29,30 @@ class Connection extends \yii\db\Connection
     // =========================================================================
 
     /**
+     * @event Event The event that is triggered before the backup is created.
+     *
+     * You may set [[Event::isValid]] to `false` to prevent the backup from being created.
+     */
+    const EVENT_BEFORE_CREATE_BACKUP = 'beforeCreateBackup';
+
+    /**
      * @event DbBackupEvent The event that is triggered after the DB backup is created.
      */
     const EVENT_AFTER_CREATE_BACKUP = 'afterCreateBackup';
 
-    // Public Methods
+    // Properties
     // =========================================================================
 
     /**
-     * Creates a command for execution.
-     *
-     * @param string $sql    the SQL statement to be executed
-     * @param array  $params the parameters to be bound to the SQL statement
-     *
-     * @return Command the DB command
+     * @var string the class used to create new database [[Command]] objects. If you want to extend the [[Command]] class,
+     * you may configure this property to use your extended version of the class.
+     * @see   createCommand
+     * @since 2.0.7
      */
-    public function createCommand($sql = null, $params = [])
-    {
-        $command = new Command([
-            'db' => $this,
-            'sql' => $sql,
-        ]);
+    public $commandClass = 'craft\app\db\Command';
 
-        return $command->bindValues($params);
-    }
+    // Public Methods
+    // =========================================================================
 
     /**
      * Performs a database backup.
@@ -70,15 +71,23 @@ class Connection extends \yii\db\Connection
             $backup->setIgnoreDataTables($ignoreDataTables);
         }
 
-        if (($backupFile = $backup->run()) !== false) {
-            // Fire an 'afterCreateBackup' event
-            $this->trigger(static::EVENT_AFTER_CREATE_BACKUP,
-                new DbBackupEvent([
-                    'filePath' => $backupFile
-                ]));
+        $event = new DbBackupEvent();
+        $this->trigger(self::EVENT_BEFORE_CREATE_BACKUP,
+            $event
+        );
 
-            return $backupFile;
+        if ($event->isValid) {
+            if (($backupFile = $backup->run()) !== false) {
+
+                // Fire an 'afterCreateBackup' event
+                $this->trigger(self::EVENT_AFTER_CREATE_BACKUP,
+                    new DbBackupEvent(['filePath' => $backupFile])
+                );
+
+                return $backupFile;
+            }
         }
+
 
         return false;
     }
@@ -104,7 +113,7 @@ class Connection extends \yii\db\Connection
     public function tableExists($table, $refresh = null)
     {
         // Default to refreshing the tables if Craft isn't installed yet
-        if ($refresh || ($refresh === null && !Craft::$app->isInstalled())) {
+        if ($refresh || ($refresh === null && !Craft::$app->getIsInstalled())) {
             $this->getSchema()->refresh();
         }
 
@@ -125,7 +134,7 @@ class Connection extends \yii\db\Connection
     public function columnExists($table, $column, $refresh = null)
     {
         // Default to refreshing the tables if Craft isn't installed yet
-        if ($refresh || ($refresh === null && !Craft::$app->isInstalled())) {
+        if ($refresh || ($refresh === null && !Craft::$app->getIsInstalled())) {
             $this->getSchema()->refresh();
         }
 

@@ -1,8 +1,8 @@
 <?php
 /**
- * @link      http://buildwithcraft.com/
- * @copyright Copyright (c) 2015 Pixel & Tonic, Inc.
- * @license   http://buildwithcraft.com/license
+ * @link      https://craftcms.com/
+ * @copyright Copyright (c) Pixel & Tonic, Inc.
+ * @license   https://craftcms.com/license
  */
 
 namespace craft\app\base;
@@ -29,7 +29,12 @@ trait VolumeTrait
     public $handle;
 
     /**
-     * @var string The source’s URL
+     * @var boolean Whether the volume has a public URL
+     */
+    public $hasUrls;
+
+    /**
+     * @var string The volume’s URL
      */
     public $url;
 

@@ -1,19 +1,22 @@
 {% extends "_layouts/message" %}
-{% set title = "Update Craft"|t('app') %}
+{% set title = "Update Craft CMS"|t('app') %}
+
+{% set handle = 'craft' %}
+{% set name = 'Craft CMS' %}
+
+{% if not craft.app.updates.getIsCraftDbMigrationNeeded() %}
+	{% set plugin = craft.app.updates.getPluginsThatNeedDbUpdate()|first %}
+
+	{% if plugin %}
+		{% set handle = plugin.handle %}
+		{% set name = plugin.name %}
+	{% endif %}
+{% endif %}
+
 
 {% block message %}
-	{% set handle = craft.updates.getManualUpdateHandle() %}
-
-	{% if handle is null %}
-		{% set handle = 'Craft' %}
-		{% set name = 'Craft' %}
-	{% endif %}
-
-	{% set name = craft.updates.getManualUpdateDisplayName() %}
-
 	<p>{{ "To complete the {name} update, some changes must be made to your database."|t('app', { name: name }) }}</p>
 	<div class="buttons">
 		<a class="btn submit" href="{{ url('manualupdate/' ~ handle|lower) }}">{{ "Finish up"|t('app') }}</a>
 	</div>
-
 {% endblock %}

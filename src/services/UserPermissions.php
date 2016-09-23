@@ -1,20 +1,21 @@
 <?php
 
 /**
- * @link      http://buildwithcraft.com/
- * @copyright Copyright (c) 2015 Pixel & Tonic, Inc.
- * @license   http://buildwithcraft.com/license
+ * @link      https://craftcms.com/
+ * @copyright Copyright (c) Pixel & Tonic, Inc.
+ * @license   https://craftcms.com/license
  */
 
 namespace craft\app\services;
 
 use Craft;
+use craft\app\base\Plugin;
 use craft\app\db\Query;
 use craft\app\models\Section;
 use craft\app\records\UserPermission as UserPermissionRecord;
 use yii\base\Component;
 
-Craft::$app->requireEdition(Craft::Pro);
+Craft::$app->requireEdition(Craft::Client);
 
 /**
  * Class UserPermissions service.
@@ -63,17 +64,17 @@ class UserPermissions extends Component
                         'label' => Craft::t('app', 'Access the CP when the system is off')
                     ],
                     'performUpdates' => [
-                        'label' => Craft::t('app', 'Perform Craft and plugin updates')
+                        'label' => Craft::t('app', 'Perform Craft CMS and plugin updates')
                     ],
                 ]
             ],
         ];
 
         foreach (Craft::$app->getPlugins()->getAllPlugins() as $plugin) {
+            /** @var Plugin $plugin */
             if ($plugin::hasCpSection()) {
                 $general['accessCp']['nested']['accessPlugin-'.$plugin->getHandle()] = [
-                    'label' => Craft::t('app', 'Access {plugin}',
-                        ['plugin' => $plugin->name])
+                    'label' => Craft::t('app', 'Access {plugin}', ['plugin' => $plugin->name])
                 ];
             }
         }
@@ -83,35 +84,37 @@ class UserPermissions extends Component
         // Users
         // ---------------------------------------------------------------------
 
-        $permissions[Craft::t('app', 'Users')] = [
-            'editUsers' => [
-                'label' => Craft::t('app', 'Edit users'),
-                'nested' => [
-                    'registerUsers' => [
-                        'label' => Craft::t('app', 'Register users')
-                    ],
-                    'assignUserPermissions' => [
-                        'label' => Craft::t('app', 'Assign user groups and permissions')
-                    ],
-                    'administrateUsers' => [
-                        'label' => Craft::t('app', 'Administrate users'),
-                        'nested' => [
-                            'changeUserEmails' => [
-                                'label' => Craft::t('app', 'Change users’ emails')
+        if (Craft::$app->getEdition() == Craft::Pro) {
+            $permissions[Craft::t('app', 'Users')] = [
+                'editUsers' => [
+                    'label' => Craft::t('app', 'Edit users'),
+                    'nested' => [
+                        'registerUsers' => [
+                            'label' => Craft::t('app', 'Register users')
+                        ],
+                        'assignUserPermissions' => [
+                            'label' => Craft::t('app', 'Assign user groups and permissions')
+                        ],
+                        'administrateUsers' => [
+                            'label' => Craft::t('app', 'Administrate users'),
+                            'nested' => [
+                                'changeUserEmails' => [
+                                    'label' => Craft::t('app', 'Change users’ emails')
+                                ]
                             ]
                         ]
-                    ]
+                    ],
                 ],
-            ],
-            'deleteUsers' => [
-                'label' => Craft::t('app', 'Delete users')
-            ],
-        ];
+                'deleteUsers' => [
+                    'label' => Craft::t('app', 'Delete users')
+                ],
+            ];
+        }
 
         // Locales
         // ---------------------------------------------------------------------
 
-        if (Craft::$app->isLocalized()) {
+        if (Craft::$app->getIsLocalized()) {
             $label = Craft::t('app', 'Locales');
             $locales = Craft::$app->getI18n()->getSiteLocales();
 
@@ -156,7 +159,7 @@ class UserPermissions extends Component
             $permissions[Craft::t('app', 'Categories')] = $this->_getCategoryGroupPermissions($categoryGroups);
         }
 
-        // Asset sources
+        // Volumes
         // ---------------------------------------------------------------------
 
         $volumes = Craft::$app->getVolumes()->getAllVolumes();
@@ -246,8 +249,9 @@ class UserPermissions extends Component
     public function saveGroupPermissions($groupId, $permissions)
     {
         // Delete any existing group permissions
-        Craft::$app->getDb()->createCommand()->delete('{{%userpermissions_usergroups}}',
-            ['groupId' => $groupId])->execute();
+        Craft::$app->getDb()->createCommand()
+            ->delete('{{%userpermissions_usergroups}}', ['groupId' => $groupId])
+            ->execute();
 
         $permissions = $this->_filterOrphanedPermissions($permissions);
 
@@ -260,11 +264,12 @@ class UserPermissions extends Component
             }
 
             // Add the new group permissions
-            Craft::$app->getDb()->createCommand()->batchInsert(
-                '{{%userpermissions_usergroups}}',
-                ['permissionId', 'groupId'],
-                $groupPermissionVals
-            )->execute();
+            Craft::$app->getDb()->createCommand()
+                ->batchInsert(
+                    '{{%userpermissions_usergroups}}',
+                    ['permissionId', 'groupId'],
+                    $groupPermissionVals)
+                ->execute();
         }
 
         return true;
@@ -322,8 +327,9 @@ class UserPermissions extends Component
     public function saveUserPermissions($userId, $permissions)
     {
         // Delete any existing user permissions
-        Craft::$app->getDb()->createCommand()->delete('{{%userpermissions_users}}',
-            ['userId' => $userId])->execute();
+        Craft::$app->getDb()->createCommand()
+            ->delete('{{%userpermissions_users}}', ['userId' => $userId])
+            ->execute();
 
         // Filter out any orphaned permissions
         $groupPermissions = $this->getGroupPermissionsByUserId($userId);
@@ -338,11 +344,12 @@ class UserPermissions extends Component
             }
 
             // Add the new user permissions
-            Craft::$app->getDb()->createCommand()->batchInsert(
-                'userpermissions_users',
-                ['permissionId', 'userId'],
-                $userPermissionVals
-            )->execute();
+            Craft::$app->getDb()->createCommand()
+                ->batchInsert(
+                    '{{%userpermissions_users}}',
+                    ['permissionId', 'userId'],
+                    $userPermissionVals)
+                ->execute();
         }
 
         return true;
@@ -491,17 +498,17 @@ class UserPermissions extends Component
         $suffix = ':'.$sourceId;
 
         return [
-            "viewAssetSource{$suffix}" => [
+            "viewVolume{$suffix}" => [
                 'label' => Craft::t('app', 'View source'),
                 'nested' => [
-                    "uploadToAssetSource{$suffix}" => [
+                    "saveAssetInVolume{$suffix}" => [
                         'label' => Craft::t('app', 'Upload files'),
                     ],
-                    "createSubfoldersInAssetSource{$suffix}" => [
+                    "createFoldersInVolume{$suffix}" => [
                         'label' => Craft::t('app', 'Create subfolders'),
                     ],
-                    "removeFromAssetSource{$suffix}" => [
-                        'label' => Craft::t('app', 'Remove files'),
+                    "deleteFilesAndFoldersInVolume{$suffix}" => [
+                        'label' => Craft::t('app', 'Remove files and folders'),
                     ]
                 ]
             ]
@@ -515,7 +522,7 @@ class UserPermissions extends Component
      * @param array $groupPermissions  Permissions the user is already assigned to via their group, if we're saving a
      *                                 user's permissions.
      *
-     * @return array $filteredPermissions The permissions we'll actually let them save.
+     * @return array The permissions we'll actually let them save.
      */
     private function _filterOrphanedPermissions($postedPermissions, $groupPermissions = [])
     {

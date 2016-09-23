@@ -1,14 +1,13 @@
 <?php
 /**
- * @link      http://buildwithcraft.com/
- * @copyright Copyright (c) 2015 Pixel & Tonic, Inc.
- * @license   http://buildwithcraft.com/license
+ * @link      https://craftcms.com/
+ * @copyright Copyright (c) Pixel & Tonic, Inc.
+ * @license   https://craftcms.com/license
  */
 
 namespace craft\app\web;
 
 use Craft;
-use craft\app\helpers\StringHelper;
 
 /**
  * Extends \yii\web\Session to add support for setting the session folder and creating it if it doesn’t exist.
@@ -50,18 +49,6 @@ class Session extends \yii\web\Session
 
         // Set the default session cookie params
         $this->setCookieParams(Craft::getCookieConfig());
-
-        // Should we be overriding the save path?
-        $overridePhpSessionLocation = Craft::$app->getConfig()->get('overridePhpSessionLocation');
-
-        if (
-            $overridePhpSessionLocation === true ||
-            ($overridePhpSessionLocation === 'auto' && !StringHelper::contains($this->getSavePath(),
-                    'tcp://'))
-        ) {
-            $savePath = Craft::$app->getPath()->getSessionPath();
-            $this->setSavePath($savePath);
-        }
 
         parent::__construct($config);
     }

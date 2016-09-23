@@ -1,8 +1,8 @@
 <?php
 /**
- * @link      http://buildwithcraft.com/
- * @copyright Copyright (c) 2015 Pixel & Tonic, Inc.
- * @license   http://buildwithcraft.com/license
+ * @link      https://craftcms.com/
+ * @copyright Copyright (c) Pixel & Tonic, Inc.
+ * @license   https://craftcms.com/license
  */
 
 namespace craft\app\models;
@@ -79,8 +79,8 @@ class UserGroup extends Model
     {
         if ($this->id) {
             return Craft::$app->getUserPermissions()->doesGroupHavePermission($this->id, $permission);
-        } else {
-            return false;
         }
+
+        return false;
     }
 }

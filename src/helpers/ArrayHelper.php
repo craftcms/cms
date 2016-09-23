@@ -1,8 +1,8 @@
 <?php
 /**
- * @link      http://buildwithcraft.com/
- * @copyright Copyright (c) 2015 Pixel & Tonic, Inc.
- * @license   http://buildwithcraft.com/license
+ * @link      https://craftcms.com/
+ * @copyright Copyright (c) Pixel & Tonic, Inc.
+ * @license   https://craftcms.com/license
  */
 
 namespace craft\app\helpers;
@@ -61,7 +61,9 @@ class ArrayHelper extends \yii\helpers\ArrayHelper
     {
         if ($object === null) {
             return [];
-        } else if (is_string($object)) {
+        }
+
+        if (is_string($object)) {
             // Split it on the non-escaped commas
             $object = preg_split('/(?<!\\\),/', $object);
 
@@ -80,9 +82,9 @@ class ArrayHelper extends \yii\helpers\ArrayHelper
             $object = array_merge(array_filter($object));
 
             return $object;
-        } else {
-            return parent::toArray($object, $properties, $recursive);
         }
+
+        return parent::toArray($object, $properties, $recursive);
     }
 
     /**
@@ -116,6 +118,24 @@ class ArrayHelper extends \yii\helpers\ArrayHelper
     }
 
     /**
+     * Returns the first key in a given array.
+     *
+     * @param array $arr
+     *
+     * @return string|integer|null The first key, whether that is a number (if the array is numerically indexed) or a string, or null if $arr isn’t an array, or is empty.
+     */
+    public static function getFirstKey($arr)
+    {
+        if (is_array($arr)) {
+            foreach ($arr as $key => $value) {
+                return $key;
+            }
+        }
+
+        return null;
+    }
+
+    /**
      * Returns the first value in a given array.
      *
      * @param array $arr
@@ -124,15 +144,13 @@ class ArrayHelper extends \yii\helpers\ArrayHelper
      */
     public static function getFirstValue($arr)
     {
-        if (count($arr)) {
-            if (isset($arr[0])) {
-                return $arr[0];
-            } else {
-                $keys = array_keys($arr);
-
-                return $arr[$keys[0]];
+        if (is_array($arr)) {
+            foreach ($arr as $value) {
+                return $value;
             }
         }
+
+        return null;
     }
 
     // Private Methods

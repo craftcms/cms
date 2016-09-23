@@ -41,7 +41,12 @@ return [
     /**
      * A list of file extensions that Craft will allow when a user is uploading files.
      */
-    'allowedFileExtensions' => '7z,aiff,asf,avi,bmp,csv,doc,docx,fla,flv,gif,gz,gzip,htm,html,jpeg,jpg,js,mid,mov,mp3,mp4,m4a,m4v,mpc,mpeg,mpg,ods,odt,ogg,ogv,pdf,png,potx,pps,ppsm,ppsx,ppt,pptm,pptx,ppz,pxd,qt,ram,rar,rm,rmi,rmvb,rtf,sdc,sitd,svg,swf,sxc,sxw,tar,tgz,tif,tiff,txt,vsd,wav,webm,wma,wmv,xls,xlsx,zip',
+    'allowedFileExtensions' => '7z,aiff,asf,avi,bmp,csv,doc,docx,fla,flv,gif,gz,gzip,htm,html,jpeg,jpg,js,mid,mov,mp3,mp4,m4a,m4v,mpc,mpeg,mpg,ods,odt,ogg,ogv,pdf,png,potx,pps,ppsm,ppsx,ppt,pptm,pptx,ppz,pxd,qt,ram,rar,rm,rmi,rmvb,rtf,sdc,sitd,svg,swf,sxc,sxw,tar,tgz,tif,tiff,txt,vob,vsd,wav,webm,wma,wmv,xls,xlsx,zip',
+    /**
+     * If this is set to true, then a tag name of "Proteines" will also match a tag name of "Protéines". Otherwise,
+     * they are treated as the same tag. Note that this
+     */
+    'allowSimilarTags' => false,
     /**
      * Whether or not to allow uppercase letters in the slug. Defaults to false.
      */
@@ -134,7 +139,7 @@ return [
      * be used for the replacement and the value is an array of non-ASCII characters that the key maps to.
      *
      * For example:
-     *     'c'    => array('ç', 'ć', 'č', 'ĉ', 'ċ')
+     *     'c'    => ['ç', 'ć', 'č', 'ĉ', 'ċ']
      */
     'customAsciiCharMappings' => [],
     /**
@@ -160,7 +165,25 @@ return [
      * The quality level Craft will use when saving JPG and PNG files. Ranges from 0 (worst quality, smallest file) to
      * 100 (best quality, biggest file).
      */
-    'defaultImageQuality' => 75,
+    'defaultImageQuality' => 82,
+    /**
+     * The default options that should be applied to each search term.
+     *
+     * Options include:
+     *
+     * - `attribute` – The attribute that the term should apply to (e.g. 'title'), if any
+     * - `exact` – Whether the term must be an exact match (only applies if `attribute` is set)
+     * - `exclude` – Whether search results should *exclude* records with this term
+     * - `subLeft` – Whether to include keywords that contain the term, with additional characters before it
+     * - `subRight` – Whether to include keywords that contain the term, with additional characters after it
+     */
+    'defaultSearchTermOptions' => [
+        'attribute' => null,
+        'exact' => false,
+        'exclude' => false,
+        'subLeft' => false,
+        'subRight' => false,
+    ],
     /**
      * The template file extensions Craft will look for when matching a template path to a file on the front end.
      */
@@ -171,6 +194,20 @@ return [
      * @see http://www.php.net/manual/en/dateinterval.construct.php
      */
     'defaultTokenDuration' => 'P1D',
+    /**
+     * The default day that new users should have set as their “Week Start Day”.
+     *
+     * This should be set to an integer from `0` to `6` where:
+     *
+     * - `0` represents Sunday
+     * - `1` represents Monday
+     * - `2` represents Tuesday
+     * - `3` represents Wednesday
+     * - `4` represents Thursday
+     * - `5` represents Friday
+     * - `6` represents Saturday
+     */
+    'defaultWeekStartDay' => 0,
     /**
      * Determines whether the system is in Dev Mode or not.
      */
@@ -183,6 +220,13 @@ return [
      */
     'enableCsrfCookie' => true,
     /**
+     * The amount of time a user’s elevated session will last, which is required for some sensitive actions (e.g. user group/permission assignment).
+     * Set to `false` to disable elevated session support.
+     *
+     * @see http://www.php.net/manual/en/dateinterval.construct.php
+     */
+    'elevatedSessionDuration' => 'PT5M',
+    /**
      * Whether to enable CSRF protection via hidden form inputs for all forms submitted via Craft. Defaults to true.
      *
      * Also, see the 'csrfTokenName' config setting.
@@ -191,12 +235,12 @@ return [
     /**
      * Whether to enable Craft's template `{% cache %}` tag on a global basis.
      *
-     * @see http://buildwithcraft.com/docs/templating/cache
+     * @see http://craftcms.com/docs/templating/cache
      */
     'enableTemplateCaching' => true,
     /**
      * Any environment-specific variables that should be swapped out in URL and Path settings.
-     * See http://buildwithcraft.com/docs/multi-environment-configs#environment-specific-variables for a full explanation
+     * See http://craftcms.com/docs/multi-environment-configs#environment-specific-variables for a full explanation
      * of this setting.
      */
     'environmentVariables' => [],
@@ -304,17 +348,6 @@ return [
      */
     'omitScriptNameInUrls' => 'auto',
     /**
-     * Determines whether Craft should override PHP’s session storage location to your craft/storage/ folder.
-     *
-     * When set to true, Craft will override the location; false will tell Craft to leave the location alone and let PHP
-     * store the session where it was configured to.
-     *
-     * When set to 'auto', Craft will check the default session location to see if it contains “://”, indicating that it
-     * might be stored with memcache or the like. If it does, Craft will leave it alone; otherwise Craft will override
-     * it.
-     */
-    'overridePhpSessionLocation' => false,
-    /**
      * If set to true and Imagick is used, Craft will take advantage of Imagick's advanced options to reduce the final
      * image size without losing quality significantly.
      */
@@ -355,17 +388,25 @@ return [
      */
     'postLoginRedirect' => '',
     /**
+     * Whether the embedded Image Color Profile (ICC) should be preserved when manipulating images.
+     *
+     * Setting this to false will reduce the image size a little bit, but on some Imagick versions can cause images to be saved with
+     * an incorrect gamma value, which causes the images to become very dark. This will only have effect if Imagick is in use.
+     */
+    'preserveImageColorProfiles' => true,
+    /**
      * The template path segment prefix that should be used to identify "private" templates -- templates that aren't
      * directly accessible via a matching URL.
      */
     'privateTemplateTrigger' => '_',
     /**
      * The amount of time to wait before Craft purges pending users from the system that have not activated. Set to
-     * false to disable this feature.
+     * false to disable this feature.  Note that if you set this to a time interval, then any content assigned to
+     * a pending user will be deleted as well when the given time interval passes.
      *
      * @see http://www.php.net/manual/en/dateinterval.construct.php
      */
-    'purgePendingUsersDuration' => 'P3M',
+    'purgePendingUsersDuration' => false,
     /**
      * The amount of time Craft will remember a username and pre-populate it on the CP login page.
      *
@@ -470,6 +511,11 @@ return [
      */
     'slugWordSeparator' => '-',
     /**
+     * Controls whether or not to show or hide any Twig template runtime errors that occur on the site in the browser.
+     * If it is set to `true`, the errors will still be logged to Craft’s log files.
+     */
+    'suppressTemplateErrors' => false,
+    /**
      * Configures Craft to send all system emails to a single email address, or an array of email addresses for testing
      * purposes.
      */
@@ -517,6 +563,14 @@ return [
      */
     'useSecureCookies' => 'auto',
     /**
+     * Determines what protocol/schema Craft will use when generating tokenized URLs. If set to 'auto',
+     * Craft will check the siteUrl and the protocol of the current request and if either of them are https
+     * will use https in the tokenized URL. If not, will use http.
+     *
+     * If set to `false`, the Craft will always use http. If set to `true`, then, Craft will always use `https`.
+     */
+    'useSslOnTokenizedUrls' => 'auto',
+    /**
      * The amount of time a user stays logged in.
      *
      * Set to false if you want users to stay logged in as long as their browser is open rather than a predetermined
@@ -542,6 +596,15 @@ return [
      * Whether Craft should use XSendFile to serve files when possible.
      */
     'useXSendFile' => false,
+    /**
+     * If set, should be a private, random, cryptographically secure key that is used to generate HMAC
+     * in the SecurityService and is used for such things as verifying that cookies haven't been tampered with.
+     * If not set, a random one is generated for you. Ultimately saved in craft/storage/runtime/state/state.bin.
+     *
+     * If you're in a load-balanced web server environment and you're not utilizing sticky sessions, this value
+     * should be set to the same key across all web servers.
+     */
+    'validationKey' => null,
     /**
      * The amount of time a user verification code can be used before expiring.
      *

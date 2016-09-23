@@ -1,14 +1,16 @@
 <?php
 /**
- * @link      http://buildwithcraft.com/
- * @copyright Copyright (c) 2015 Pixel & Tonic, Inc.
- * @license   http://buildwithcraft.com/license
+ * @link      https://craftcms.com/
+ * @copyright Copyright (c) Pixel & Tonic, Inc.
+ * @license   https://craftcms.com/license
  */
 
 namespace craft\app\services;
 
 use Craft;
+use craft\app\base\Element;
 use craft\app\base\ElementInterface;
+use craft\app\base\Field;
 use craft\app\db\Query;
 use craft\app\enums\ColumnType;
 use craft\app\helpers\Db;
@@ -59,6 +61,7 @@ class Search extends Component
      */
     public function indexElementAttributes(ElementInterface $element)
     {
+        /** @var Element $element */
         // Does it have any searchable attributes?
         $searchableAttributes = $element::defineSearchableAttributes();
 
@@ -102,13 +105,20 @@ class Search extends Component
      * @param mixed   $query        The search query (either a string or a SearchQuery instance)
      * @param boolean $scoreResults Whether to order the results based on how closely they match the query.
      * @param string  $localeId     The locale to filter by.
+     * @param boolean $returnScores Whether the search scores should be included in the results. If true, results will be returned as `element ID => score`.
      *
      * @return array The filtered list of element IDs.
      */
-    public function filterElementIdsByQuery($elementIds, $query, $scoreResults = true, $localeId = null)
+    public function filterElementIdsByQuery($elementIds, $query, $scoreResults = true, $localeId = null, $returnScores = false)
     {
         if (is_string($query)) {
-            $query = new SearchQuery($query);
+            $query = new SearchQuery($query, Craft::$app->getConfig()->get('defaultSearchTermOptions'));
+        } else if (is_array($query)) {
+            $options = $query;
+            $query = $options['query'];
+            unset($options['query']);
+            $options = array_merge(Craft::$app->getConfig()->get('defaultSearchTermOptions'), $options);
+            $query = new SearchQuery($query, $options);
         }
 
         // Get tokens for query
@@ -126,7 +136,7 @@ class Search extends Component
         }
 
         // Get where clause from tokens, bail out if no valid query is there
-        $where = $this->_getWhereClause();
+        $where = $this->_getWhereClause($localeId);
 
         if (!$where) {
             return [];
@@ -169,21 +179,22 @@ class Search extends Component
             // Sort found elementIds by score
             arsort($scoresByElementId);
 
-            // Store entry ids in return value
-            $elementIds = array_keys($scoresByElementId);
-        } else {
-            // Don't apply score, just return the IDs
-            $elementIds = [];
-
-            foreach ($results as $row) {
-                $elementIds[] = $row['elementId'];
+            if ($returnScores) {
+                return $scoresByElementId;
             }
 
-            $elementIds = array_unique($elementIds);
+            // Just return the ordered element IDs
+            return array_keys($scoresByElementId);
         }
 
-        // Return elementIds
-        return $elementIds;
+        // Don't apply score, just return the IDs
+        $elementIds = [];
+
+        foreach ($results as $row) {
+            $elementIds[] = $row['elementId'];
+        }
+
+        return array_unique($elementIds);
     }
 
     // Private Methods
@@ -246,10 +257,15 @@ class Search extends Component
         }
 
         // Insert/update the row in searchindex
-        Craft::$app->getDb()->createCommand()->insertOrUpdate('{{%searchindex}}', $keyColumns,
-            [
-                'keywords' => $cleanKeywords
-            ], false)->execute();
+        Craft::$app->getDb()->createCommand()
+            ->insertOrUpdate(
+                '{{%searchindex}}',
+                $keyColumns,
+                [
+                    'keywords' => $cleanKeywords
+                ],
+                false)
+            ->execute();
     }
 
     /**
@@ -305,16 +321,16 @@ class Search extends Component
         }
 
         // Account for substrings
-        if ($term->subLeft) {
-            $keywords = $keywords.' ';
-        }
-
-        if ($term->subRight) {
+        if (!$term->subLeft) {
             $keywords = ' '.$keywords;
         }
 
+        if (!$term->subRight) {
+            $keywords = $keywords.' ';
+        }
+
         // Get haystack and safe word count
-        $haystack = $this->_removePadding($row['keywords'], true);
+        $haystack = $row['keywords'];
         $wordCount = count(array_filter(explode(' ', $haystack)));
 
         // Get number of matches
@@ -345,15 +361,17 @@ class Search extends Component
     /**
      * Get the complete where clause for current tokens
      *
+     * @param string|null $localeId The locale to search within
+     *
      * @return string|false
      */
-    private function _getWhereClause()
+    private function _getWhereClause($localeId = null)
     {
         $where = [];
 
         // Add the regular terms to the WHERE clause
         if ($this->_terms) {
-            $condition = $this->_processTokens($this->_terms);
+            $condition = $this->_processTokens($this->_terms, true, $localeId);
 
             if ($condition === false) {
                 return false;
@@ -364,7 +382,7 @@ class Search extends Component
 
         // Add each group to the where clause
         foreach ($this->_groups as $group) {
-            $condition = $this->_processTokens($group, false);
+            $condition = $this->_processTokens($group, false, $localeId);
 
             if ($condition === false) {
                 return false;
@@ -380,12 +398,13 @@ class Search extends Component
     /**
      * Generates partial WHERE clause for search from given tokens
      *
-     * @param array   $tokens
-     * @param boolean $inclusive
+     * @param array       $tokens
+     * @param boolean     $inclusive
+     * @param string|null $localeId
      *
      * @return string|false
      */
-    private function _processTokens($tokens = [], $inclusive = true)
+    private function _processTokens($tokens = [], $inclusive = true, $localeId = null)
     {
         $andor = $inclusive ? ' AND ' : ' OR ';
         $where = [];
@@ -393,7 +412,7 @@ class Search extends Component
 
         foreach ($tokens as $obj) {
             // Get SQL and/or keywords
-            list($sql, $keywords) = $this->_getSqlFromTerm($obj);
+            list($sql, $keywords) = $this->_getSqlFromTerm($obj, $localeId);
 
             if ($sql === false && $inclusive) {
                 return false;
@@ -439,11 +458,12 @@ class Search extends Component
      * Generates a piece of WHERE clause for fallback (LIKE) search from search term
      * or returns keywords to use in a MATCH AGAINST clause
      *
-     * @param  SearchQueryTerm $term
+     * @param SearchQueryTerm $term
+     * @param string|null     $localeId
      *
      * @return array
      */
-    private function _getSqlFromTerm(SearchQueryTerm $term)
+    private function _getSqlFromTerm(SearchQueryTerm $term, $localeId = null)
     {
         // Initiate return value
         $sql = null;
@@ -531,7 +551,7 @@ class Search extends Component
 
         // If we have a where clause in the subselect, add the keyword bit to it.
         if ($subSelect && $sql) {
-            $sql = $this->_sqlSubSelect($subSelect.' AND '.$sql);
+            $sql = $this->_sqlSubSelect($subSelect.' AND '.$sql, $localeId);
 
             // We need to reset keywords even if the subselect ended up in no results.
             $keywords = null;
@@ -556,18 +576,6 @@ class Search extends Component
         }
 
         return $terms[$term];
-    }
-
-    /**
-     * Remove padding from keywords. Might seem silly now, but padding might change.
-     *
-     * @param string $keywords
-     *
-     * @return string
-     */
-    private function _removePadding($keywords)
-    {
-        return trim($keywords);
     }
 
     /**
@@ -611,6 +619,7 @@ class Search extends Component
     private function _getFieldIdFromAttribute($attribute)
     {
         // Get field id from service
+        /** @var Field $field */
         $field = Craft::$app->getFields()->getFieldByHandle($attribute);
 
         // Fallback to 0
@@ -647,23 +656,29 @@ class Search extends Component
     /**
      * Get SQL bit for sub-selects.
      *
-     * @param string $where
+     * @param string      $where
+     * @param string|null $localeId
      *
      * @return string|false
      */
-    private function _sqlSubSelect($where)
+    private function _sqlSubSelect($where, $localeId = null)
     {
         // FULLTEXT indexes are not used in queries with subselects, so let's do this as its own query.
-        $elementIds = (new Query())
+        $query = (new Query())
             ->select('elementId')
             ->from('{{%searchindex}}')
-            ->where($where)
-            ->column();
+            ->where($where);
+
+        if ($localeId) {
+            $query->andWhere(['locale' => $localeId]);
+        }
+
+        $elementIds = $query->column();
 
         if ($elementIds) {
             return Craft::$app->getDb()->quoteColumnName('elementId').' IN ('.implode(', ', $elementIds).')';
-        } else {
-            return false;
         }
+
+        return false;
     }
 }

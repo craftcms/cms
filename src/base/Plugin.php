@@ -1,8 +1,8 @@
 <?php
 /**
- * @link      http://buildwithcraft.com/
- * @copyright Copyright (c) 2015 Pixel & Tonic, Inc.
- * @license   http://buildwithcraft.com/license
+ * @link      https://craftcms.com/
+ * @copyright Copyright (c) Pixel & Tonic, Inc.
+ * @license   https://craftcms.com/license
  */
 
 namespace craft\app\base;
@@ -12,6 +12,7 @@ use craft\app\db\Migration;
 use craft\app\db\MigrationManager;
 use craft\app\events\Event;
 use craft\app\helpers\Io;
+use craft\app\web\Controller;
 use yii\base\Module;
 
 /**
@@ -151,6 +152,8 @@ class Plugin extends Module implements PluginInterface
         }
 
         $this->afterInstall();
+
+        return null;
     }
 
     /**
@@ -167,6 +170,8 @@ class Plugin extends Module implements PluginInterface
         }
 
         $this->afterUpdate();
+
+        return null;
     }
 
     /**
@@ -187,6 +192,8 @@ class Plugin extends Module implements PluginInterface
         }
 
         $this->afterUninstall();
+
+        return null;
     }
 
     /**
@@ -200,9 +207,9 @@ class Plugin extends Module implements PluginInterface
 
         if ($this->_settingsModel !== false) {
             return $this->_settingsModel;
-        } else {
-            return null;
         }
+
+        return null;
     }
 
     /**
@@ -210,7 +217,10 @@ class Plugin extends Module implements PluginInterface
      */
     public function getSettingsResponse()
     {
-        return Craft::$app->controller->renderTemplate('settings/plugins/_settings',
+        /** @var Controller $controller */
+        $controller = Craft::$app->controller;
+
+        return $controller->renderTemplate('settings/plugins/_settings',
             [
                 'plugin' => $this,
                 'settingsHtml' => $this->getSettingsHtml()
@@ -256,7 +266,7 @@ class Plugin extends Module implements PluginInterface
     /**
      * Returns the plugin’s available field types.
      *
-     * @return FieldInterface[]|Field[]|null
+     * @return FieldInterface[]|null
      */
     public function getFieldTypes()
     {
@@ -266,7 +276,7 @@ class Plugin extends Module implements PluginInterface
     /**
      * Returns the plugin’s available widget types.
      *
-     * @return WidgetInterface[]|Widget[]|null
+     * @return WidgetInterface[]|null
      */
     public function getWidgetTypes()
     {
@@ -276,7 +286,7 @@ class Plugin extends Module implements PluginInterface
     /**
      * Returns the plugin’s available volume types.
      *
-     * @return VolumeInterface[]|Volume[]|null
+     * @return VolumeInterface[]|null
      */
     public function getVolumeTypes()
     {
@@ -303,9 +313,9 @@ class Plugin extends Module implements PluginInterface
             $class = $migrator->migrationNamespace.'\\Install';
 
             return new $class;
-        } else {
-            return null;
         }
+
+        return null;
     }
 
     /**
@@ -316,7 +326,7 @@ class Plugin extends Module implements PluginInterface
     protected function beforeInstall()
     {
         $event = new Event();
-        $this->trigger(static::EVENT_BEFORE_INSTALL, $event);
+        $this->trigger(self::EVENT_BEFORE_INSTALL, $event);
 
         return $event->isValid;
     }
@@ -326,7 +336,7 @@ class Plugin extends Module implements PluginInterface
      */
     protected function afterInstall()
     {
-        $this->trigger(static::EVENT_AFTER_INSTALL, new Event());
+        $this->trigger(self::EVENT_AFTER_INSTALL, new Event());
     }
 
     /**
@@ -337,7 +347,7 @@ class Plugin extends Module implements PluginInterface
     protected function beforeUpdate()
     {
         $event = new Event();
-        $this->trigger(static::EVENT_BEFORE_UPDATE, $event);
+        $this->trigger(self::EVENT_BEFORE_UPDATE, $event);
 
         return $event->isValid;
     }
@@ -347,7 +357,7 @@ class Plugin extends Module implements PluginInterface
      */
     protected function afterUpdate()
     {
-        $this->trigger(static::EVENT_AFTER_UPDATE, new Event());
+        $this->trigger(self::EVENT_AFTER_UPDATE, new Event());
     }
 
     /**
@@ -358,7 +368,7 @@ class Plugin extends Module implements PluginInterface
     protected function beforeUninstall()
     {
         $event = new Event();
-        $this->trigger(static::EVENT_BEFORE_UNINSTALL, $event);
+        $this->trigger(self::EVENT_BEFORE_UNINSTALL, $event);
 
         return $event->isValid;
     }
@@ -368,7 +378,7 @@ class Plugin extends Module implements PluginInterface
      */
     protected function afterUninstall()
     {
-        $this->trigger(static::EVENT_AFTER_UNINSTALL, new Event());
+        $this->trigger(self::EVENT_AFTER_UNINSTALL, new Event());
     }
 
     /**

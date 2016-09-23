@@ -1,22 +1,23 @@
 <?php
 /**
- * @link      http://buildwithcraft.com/
- * @copyright Copyright (c) 2015 Pixel & Tonic, Inc.
- * @license   http://buildwithcraft.com/license
+ * @link      https://craftcms.com/
+ * @copyright Copyright (c) Pixel & Tonic, Inc.
+ * @license   https://craftcms.com/license
  */
 
 namespace craft\app\web\twig\variables;
 
-use craft\app\base\Field;
+use Craft;
 use craft\app\base\FieldInterface;
-use craft\app\models\FieldGroup as FieldGroupModel;
-use craft\app\models\FieldLayout as FieldLayoutModel;
+use craft\app\models\FieldGroup;
+use craft\app\models\FieldLayout;
 
 /**
  * Fields provides an API for accessing information about fields. It is accessible from templates via `craft.fields`.
  *
- * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @since  3.0
+ * @author     Pixel & Tonic, Inc. <support@pixelandtonic.com>
+ * @since      3.0
+ * @deprecated in 3.0
  */
 class Fields
 {
@@ -31,11 +32,13 @@ class Fields
      *
      * @param string|null $indexBy The attribute to index the field groups by
      *
-     * @return FieldGroupModel[] The field groups
+     * @return FieldGroup[] The field groups
      */
     public function getAllGroups($indexBy = null)
     {
-        return \Craft::$app->getFields()->getAllGroups($indexBy);
+        Craft::$app->getDeprecator()->log('craft.fields.getAllGroups()', 'craft.fields.getAllGroups() has been deprecated. Use craft.app.fields.getAllGroups() instead.');
+
+        return Craft::$app->getFields()->getAllGroups($indexBy);
     }
 
     /**
@@ -43,11 +46,13 @@ class Fields
      *
      * @param integer $groupId The field group’s ID
      *
-     * @return FieldGroupModel|null The field group, or null if it doesn’t exist
+     * @return FieldGroup|null The field group, or null if it doesn’t exist
      */
     public function getGroupById($groupId)
     {
-        return \Craft::$app->getFields()->getGroupById($groupId);
+        Craft::$app->getDeprecator()->log('craft.fields.getGroupById()', 'craft.fields.getGroupById() has been deprecated. Use craft.app.fields.getGroupById() instead.');
+
+        return Craft::$app->getFields()->getGroupById($groupId);
     }
 
     // Fields
@@ -58,11 +63,13 @@ class Fields
      *
      * @param mixed $config The field’s class name, or its config, with a `type` value and optionally a `settings` value
      *
-     * @return FieldInterface|Field The field
+     * @return FieldInterface The field
      */
     public function createField($config)
     {
-        return \Craft::$app->getFields()->createField($config);
+        Craft::$app->getDeprecator()->log('craft.fields.createField()', 'craft.fields.createField() has been deprecated. Use craft.app.fields.createField() instead.');
+
+        return Craft::$app->getFields()->createField($config);
     }
 
     /**
@@ -70,11 +77,13 @@ class Fields
      *
      * @param integer $fieldId The field’s ID
      *
-     * @return FieldInterface|Field|null The field, or null if it doesn’t exist
+     * @return FieldInterface|null The field, or null if it doesn’t exist
      */
     public function getFieldById($fieldId)
     {
-        return \Craft::$app->getFields()->getFieldById($fieldId);
+        Craft::$app->getDeprecator()->log('craft.fields.getFieldById()', 'craft.fields.getFieldById() has been deprecated. Use craft.app.fields.getFieldById() instead.');
+
+        return Craft::$app->getFields()->getFieldById($fieldId);
     }
 
     /**
@@ -82,11 +91,13 @@ class Fields
      *
      * @param string $handle The field’s handle
      *
-     * @return FieldInterface|Field|null The field, or null if it doesn’t exist
+     * @return FieldInterface|null The field, or null if it doesn’t exist
      */
     public function getFieldByHandle($handle)
     {
-        return \Craft::$app->getFields()->getFieldByHandle($handle);
+        Craft::$app->getDeprecator()->log('craft.fields.getFieldByHandle()', 'craft.fields.getFieldByHandle() has been deprecated. Use craft.app.fields.getFieldByHandle() instead.');
+
+        return Craft::$app->getFields()->getFieldByHandle($handle);
     }
 
     /**
@@ -94,11 +105,13 @@ class Fields
      *
      * @param string|null $indexBy The attribute to index the fields by
      *
-     * @return FieldInterface[]|Field[] The fields
+     * @return FieldInterface[] The fields
      */
     public function getAllFields($indexBy = null)
     {
-        return \Craft::$app->getFields()->getAllFields($indexBy);
+        Craft::$app->getDeprecator()->log('craft.fields.getAllFields()', 'craft.fields.getAllFields() has been deprecated. Use craft.app.fields.getAllFields() instead.');
+
+        return Craft::$app->getFields()->getAllFields($indexBy);
     }
 
     /**
@@ -107,11 +120,13 @@ class Fields
      * @param integer     $groupId The field group’s ID
      * @param string|null $indexBy The attribute to index the fields by
      *
-     * @return FieldInterface[]|Field[] The fields
+     * @return FieldInterface[] The fields
      */
     public function getFieldsByGroupId($groupId, $indexBy = null)
     {
-        return \Craft::$app->getFields()->getFieldsByGroupId($groupId, $indexBy);
+        Craft::$app->getDeprecator()->log('craft.fields.getFieldsByGroupId()', 'craft.fields.getFieldsByGroupId() has been deprecated. Use craft.app.fields.getFieldsByGroupId() instead.');
+
+        return Craft::$app->getFields()->getFieldsByGroupId($groupId, $indexBy);
     }
 
     /**
@@ -119,11 +134,13 @@ class Fields
      *
      * @param integer $layoutId The field layout’s ID
      *
-     * @return FieldLayoutModel|null The field layout, or null if it doesn’t exist
+     * @return FieldLayout|null The field layout, or null if it doesn’t exist
      */
     public function getLayoutById($layoutId)
     {
-        return \Craft::$app->getFields()->getLayoutById($layoutId);
+        Craft::$app->getDeprecator()->log('craft.fields.getLayoutById()', 'craft.fields.getLayoutById() has been deprecated. Use craft.app.fields.getLayoutById() instead.');
+
+        return Craft::$app->getFields()->getLayoutById($layoutId);
     }
 
     /**
@@ -131,11 +148,13 @@ class Fields
      *
      * @param string $type The associated element type
      *
-     * @return FieldLayoutModel The field layout
+     * @return FieldLayout The field layout
      */
     public function getLayoutByType($type)
     {
-        return \Craft::$app->getFields()->getLayoutByType($type);
+        Craft::$app->getDeprecator()->log('craft.fields.getLayoutByType()', 'craft.fields.getLayoutByType() has been deprecated. Use craft.app.fields.getLayoutByType() instead.');
+
+        return Craft::$app->getFields()->getLayoutByType($type);
     }
 
     /**
@@ -145,18 +164,8 @@ class Fields
      */
     public function getAllFieldTypes()
     {
-        return \Craft::$app->getFields()->getAllFieldTypes();
-    }
+        Craft::$app->getDeprecator()->log('craft.fields.getAllFieldTypes()', 'craft.fields.getAllFieldTypes() has been deprecated. Use craft.app.fields.allFieldTypes instead.');
 
-    /**
-     * Returns info about a field type.
-     *
-     * @param string|FieldInterface|Field $field A field or field type
-     *
-     * @return ComponentInfo Info about the field type
-     */
-    public function getFieldTypeInfo($field)
-    {
-        return new ComponentInfo($field);
+        return Craft::$app->getFields()->getAllFieldTypes();
     }
 }

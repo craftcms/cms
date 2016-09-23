@@ -54,11 +54,11 @@ var Routes = Garnish.Base.extend(
 			{
 				if (response.success)
 				{
-					Craft.cp.displayNotice(Craft.t('New route order saved.'));
+					Craft.cp.displayNotice(Craft.t('app', 'New route order saved.'));
 				}
 				else
 				{
-					Craft.cp.displayError(Craft.t('Couldn’t save new route order.'));
+					Craft.cp.displayError(Craft.t('app', 'Couldn’t save new route order.'));
 				}
 			}
 
@@ -117,7 +117,7 @@ var Route = Garnish.Base.extend(
 			}
 			else
 			{
-				this.$locale.text(Craft.t('Global'));
+				this.$locale.text(Craft.t('app', 'Global'));
 			}
 		}
 
@@ -161,10 +161,14 @@ var RouteSettingsModal = Garnish.Modal.extend(
 	{
 		this.route = route;
 
-		var tokenHtml = '<h4>'+Craft.t('Add a token')+'</h4>';
+		var tokenHtml = '<h4>'+Craft.t('app', 'Add a token')+'</h4>';
 
 		for (var name in Craft.routes.tokens)
 		{
+			if (!Craft.routes.tokens.hasOwnProperty(name)) {
+				continue;
+			}
+
 			var pattern = Craft.routes.tokens[name];
 			tokenHtml += '<div class="token" data-name="'+name+'" data-value="'+pattern+'"><span>'+name+'</span></div>';
 		}
@@ -177,7 +181,7 @@ var RouteSettingsModal = Garnish.Modal.extend(
 				'<div class="body">' +
 					'<div class="field">' +
 						'<div class="heading">' +
-							'<label for="url">'+Craft.t('If the URI looks like this')+':</label>' +
+							'<label for="url">'+Craft.t('app', 'If the URI looks like this')+':</label>' +
 						'</div>';
 
 		if (Craft.routes.locales)
@@ -197,7 +201,7 @@ var RouteSettingsModal = Garnish.Modal.extend(
 								'<td class="thin">' +
 									'<div class="select">' +
 										'<select class="locale">' +
-											'<option value="">'+Craft.t('Global')+'</option>';
+											'<option value="">'+Craft.t('app', 'Global')+'</option>';
 
 			for (var i = 0; i < Craft.routes.locales.length; i++)
 			{
@@ -220,18 +224,18 @@ var RouteSettingsModal = Garnish.Modal.extend(
 				'</div>' +
 				'<div class="field">' +
 					'<div class="heading">' +
-						'<label for="template">'+Craft.t('Load this template')+':</label>' +
+						'<label for="template">'+Craft.t('app', 'Load this template')+':</label>' +
 					'</div>' +
 					'<input id="template" type="text" class="text fullwidth template ltr">' +
 				'</div>' +
 			'</div>' +
 			'<div class="footer">' +
 				'<div class="buttons right last">' +
-					'<input type="button" class="btn cancel" value="'+Craft.t('Cancel')+'">' +
-					'<input type="submit" class="btn submit" value="'+Craft.t('Save')+'"> ' +
+					'<input type="button" class="btn cancel" value="'+Craft.t('app', 'Cancel')+'">' +
+					'<input type="submit" class="btn submit" value="'+Craft.t('app', 'Save')+'"> ' +
 					'<div class="spinner" style="display: none;"></div>' +
 				'</div>' +
-				'<a class="delete">'+Craft.t('Delete')+'</a>' +
+				'<a class="delete">'+Craft.t('app', 'Delete')+'</a>' +
 			'</div>' +
 		'</form>';
 
@@ -261,11 +265,11 @@ var RouteSettingsModal = Garnish.Modal.extend(
 		// Set the heading
 		if (this.route)
 		{
-			this.$heading.html(Craft.t('Edit Route'));
+			this.$heading.html(Craft.t('app', 'Edit Route'));
 		}
 		else
 		{
-			this.$heading.html(Craft.t('Create a new route'));
+			this.$heading.html(Craft.t('app', 'Create a new route'));
 		}
 
 		if (this.route)
@@ -374,7 +378,7 @@ var RouteSettingsModal = Garnish.Modal.extend(
 	{
 		if (this.route)
 		{
-			this.$heading.html(Craft.t('Edit Route'));
+			this.$heading.html(Craft.t('app', 'Edit Route'));
 			this.$deleteBtn.show();
 		}
 
@@ -468,11 +472,11 @@ var RouteSettingsModal = Garnish.Modal.extend(
 					this.route.updateHtmlFromModal();
 					this.hide();
 
-					Craft.cp.displayNotice(Craft.t('Route saved.'));
+					Craft.cp.displayNotice(Craft.t('app', 'Route saved.'));
 				}
 				else
 				{
-					Craft.cp.displayError(Craft.t('Couldn’t save route.'));
+					Craft.cp.displayError(Craft.t('app', 'Couldn’t save route.'));
 				}
 			}
 
@@ -491,13 +495,13 @@ var RouteSettingsModal = Garnish.Modal.extend(
 
 	deleteRoute: function()
 	{
-		if (confirm(Craft.t(('Are you sure you want to delete this route?'))))
+		if (confirm(Craft.t('app', ('Are you sure you want to delete this route?'))))
 		{
 			Craft.postActionRequest('routes/delete-route', { routeId: this.route.id }, function(response, textStatus)
 			{
 				if (textStatus == 'success')
 				{
-					Craft.cp.displayNotice(Craft.t('Route deleted.'));
+					Craft.cp.displayNotice(Craft.t('app', 'Route deleted.'));
 				}
 			});
 

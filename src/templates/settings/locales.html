@@ -6,7 +6,7 @@
 
 {% import "_includes/forms" as forms %}
 
-{% includeTranslations
+{% do craft.app.view.registerTranslations('app', [
 	"Are you sure you want to delete “{name}” and all its associated content?",
 	"Name",
 	"Locale ID",
@@ -17,8 +17,8 @@
 	"What do you want to do with any content that is only available in {language}?",
 	"Transfer it to:",
 	"Delete it",
-	"Delete {language}"
-%}
+	"Delete {language}",
+]) %}
 
 {% set crumbs = [
 	{ label: "Settings"|t('app'), url: url('settings') }
@@ -34,23 +34,23 @@
 			<div class="pane">
 				<div class="content">
 					<form method="post" accept-charset="UTF-8">
-						<input type="hidden" name="action" value="languageSettings/save">
-						<input type="hidden" name="redirect" value="settings">
-						{{ getCsrfInput() }}
+						<input type="hidden" name="action" value="language-settings/save">
+						{{ redirectInput('settings') }}
+						{{ csrfInput() }}
 
 						<h2>{{ "Which locales does your content target?"|t('app') }}</h2>
 
 						<div class="field">
 							<table id="locales" class="data fullwidth collapsible">
 								<tbody>
-								{% for locale in craft.i18n.getSiteLocales() %}
-								<tr data-id="{{ locale.id }}" data-name="{{ locale.getDisplayName(craft.locale) }}">
-									<th scope="row" data-title="{{ 'Name'|t('app') }}" width="40%">{{ locale.getDisplayName(craft.locale) }}</th>
-									<td data-title="{{ 'Locale ID' }}">{{ locale.id }}</td>
-									<td class="thin"><a class="move icon" title="{{ 'Reorder'|t('app') }}" role="button"></a></td>
-									<td class="thin"><a class="delete icon" title="{{ 'Delete'|t('app') }}" role="button"></a></td>
-								</tr>
-								{% endfor %}
+									{% for locale in craft.app.i18n.getSiteLocales() %}
+										<tr data-id="{{ locale.id }}" data-name="{{ locale.getDisplayName(craft.app.language) }}">
+											<th scope="row" data-title="{{ 'Name'|t('app') }}" width="40%">{{ locale.getDisplayName(craft.app.language) }}</th>
+											<td data-title="{{ 'Locale ID' }}">{{ locale.id }}</td>
+											<td class="thin"><a class="move icon" title="{{ 'Reorder'|t('app') }}" role="button"></a></td>
+											<td class="thin"><a class="delete icon" title="{{ 'Delete'|t('app') }}" role="button"></a></td>
+										</tr>
+									{% endfor %}
 								</tbody>
 							</table>
 						</div>
@@ -65,11 +65,11 @@
 								<div class="spinner hidden"></div>
 							</div>
 						</div>
-					</div>
-				</form>
+					</form>
+				</div>
 			</div>
 		</div>
-		{% if not craft.i18n.getIsIntlLoaded() %}
+		{% if not craft.app.i18n.getIsIntlLoaded() %}
 			<div class="item" data-colspan="1">
 				<div class="pane">
 					<div class="content">
@@ -88,14 +88,14 @@
 {% registerjs %}
 	new Craft.Locales(
 	{
-		{%- for locale in craft.i18n.getAllLocales() %}
+		{%- for locale in craft.app.i18n.getAllLocales() %}
 			{%- if not loop.first %},{% endif -%}
-			'{{ locale.id }}': '{{ locale.getDisplayName(craft.locale) }}'
+			'{{ locale.id }}': '{{ locale.getDisplayName(craft.app.language) }}'
 		{%- endfor -%}
 
 	}, [
 
-		{%- for locale in craft.i18n.getSiteLocales() %}
+		{%- for locale in craft.app.i18n.getSiteLocales() %}
 			{%- if not loop.first %},{% endif -%}
 			'{{ locale.id }}'
 		{%- endfor -%}

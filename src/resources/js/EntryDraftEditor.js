@@ -5,7 +5,6 @@ Craft.EntryDraftEditor = Garnish.Base.extend(
 {
 	$revisionBtn: null,
 	$editBtn: null,
-	$form: null,
 	$nameInput: null,
 	$saveBtn: null,
 	$spinner: null,
@@ -32,24 +31,27 @@ Craft.EntryDraftEditor = Garnish.Base.extend(
 	{
 		if (!this.hud)
 		{
-			this.$form = $('<form method="post" accept-charset="UTF-8"/>');
+			var $hudBody = $('<div/>');
 
 			// Add the Name field
-			var $field = $('<div class="field"><div class="heading"><label for="draft-name">'+Craft.t('Draft Name')+'</label></div></div>').appendTo(this.$form),
+			var $field = $('<div class="field"><div class="heading"><label for="draft-name">'+Craft.t('app', 'Draft Name')+'</label></div></div>').appendTo($hudBody),
 				$inputContainer = $('<div class="input"/>').appendTo($field);
 			this.$nameInput = $('<input type="text" class="text fullwidth" id="draft-name"/>').appendTo($inputContainer).val(this.draftName);
 
 			// Add the Notes field
-			var $field = $('<div class="field"><div class="heading"><label for="draft-notes">'+Craft.t('Notes')+'</label></div></div>').appendTo(this.$form),
+			var $field = $('<div class="field"><div class="heading"><label for="draft-notes">'+Craft.t('app', 'Notes')+'</label></div></div>').appendTo($hudBody),
 				$inputContainer = $('<div class="input"/>').appendTo($field);
 			this.$notesInput = $('<textarea class="text fullwidth" id="draft-notes" rows="2"/>').appendTo($inputContainer).val(this.draftNotes);
 
 			// Add the button
-			var $buttonsContainer = $('<div class="buttons"/>').appendTo(this.$form);
-			this.$saveBtn = $('<input type="submit" class="btn submit disabled" value="'+Craft.t('Save')+'"/>').appendTo($buttonsContainer);
+			var $footer = $('<div class="hud-footer"/>').appendTo($hudBody),
+				$buttonsContainer = $('<div class="buttons right"/>').appendTo($footer);
+			this.$saveBtn = $('<input type="submit" class="btn submit disabled" value="'+Craft.t('app', 'Save')+'"/>').appendTo($buttonsContainer);
 			this.$spinner = $('<div class="spinner hidden"/>').appendTo($buttonsContainer);
 
-			this.hud = new Garnish.HUD(this.$editBtn, this.$form);
+			this.hud = new Garnish.HUD(this.$editBtn, $hudBody, {
+				onSubmit: $.proxy(this, 'save')
+			});
 
 			new Garnish.NiceText(this.$notesInput);
 
@@ -57,7 +59,6 @@ Craft.EntryDraftEditor = Garnish.Base.extend(
 
 			this.addListener(this.$nameInput, 'textchange', 'checkValues');
 			this.addListener(this.$notesInput, 'textchange', 'checkValues');
-			this.addListener(this.$form, 'submit', 'save');
 
 			this.hud.on('show', $.proxy(this, 'onHudShow'));
 			this.hud.on('hide', $.proxy(this, 'onHudHide'));
@@ -96,7 +97,7 @@ Craft.EntryDraftEditor = Garnish.Base.extend(
 		if (ev.keyCode == Garnish.RETURN_KEY)
 		{
 			ev.preventDefault();
-			this.$form.submit();
+			this.hud.submit();
 		}
 	},
 
@@ -119,10 +120,8 @@ Craft.EntryDraftEditor = Garnish.Base.extend(
 		}
 	},
 
-	save: function(ev)
+	save: function()
 	{
-		ev.preventDefault();
-
 		if (this.loading)
 		{
 			return;

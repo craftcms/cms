@@ -1,10 +1,10 @@
 {% extends "settings/assets/_layout" %}
-{% set selectedTab = 'volumes' %}
+{% set selectedNavItem = 'volumes' %}
 
-{% set docsUrl = 'http://buildwithcraft.com/docs/assets' %}
+{% set docsUrl = 'http://craftcms.com/docs/assets' %}
 
 
-{% set content %}
+{% block content %}
 	<p id="novolumes"{% if volumes|length %} class="hidden"{% endif %}>
 		{{ "No volumes exist yet."|t('app') }}
 	</p>
@@ -33,9 +33,9 @@
 	{% endif %}
 
 	<div class="buttons">
-		<a class="btn submit add icon" href="{{ url('settings/assets/volumes/new') }}">{{ "New Volume"|t('app') }}</a>
+		<a class="btn submit add icon" href="{{ url('settings/assets/volumes/new') }}">{{ "New volume"|t('app') }}</a>
 	</div>
-{% endset %}
+{% endblock %}
 
 
 {% registerjs %}

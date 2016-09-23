@@ -1,5 +1,5 @@
 <script type="text/javascript">
-	var widget = parent.Craft.widgets[{{ widgetId }}];
+	var widget = window.parent.Craft.GetHelpWidget.widgets[{{ widgetId }}];
 	var response = {
 		success: {{ success == true ? 1 : 0 }},
 		errors: {{ errors|raw }}

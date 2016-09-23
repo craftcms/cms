@@ -1,8 +1,8 @@
 <?php
 /**
- * @link      http://buildwithcraft.com/
- * @copyright Copyright (c) 2015 Pixel & Tonic, Inc.
- * @license   http://buildwithcraft.com/license
+ * @link      https://craftcms.com/
+ * @copyright Copyright (c) Pixel & Tonic, Inc.
+ * @license   https://craftcms.com/license
  */
 
 namespace craft\app\web\twig\nodes;
@@ -27,14 +27,12 @@ class PaginateNode extends \Twig_Node
             ->addDebugInfo($this)
             // the (array) cast bypasses a PHP 5.2.6 bug
             //->write("\$context['_parent'] = (array) \$context;\n")
-            ->write("list(\$context['paginate'], ")
+            ->write('list(')
+            ->subcompile($this->getNode('paginateTarget'))
+            ->raw(', ')
             ->subcompile($this->getNode('elementsTarget'))
-            ->raw(') = \craft\app\helpers\TemplateHelper::paginateCriteria(')
+            ->raw(') = \craft\app\helpers\Template::paginateCriteria(')
             ->subcompile($this->getNode('criteria'))
-            ->raw(");\n")
-            ->subcompile($this->getNode('body'), false)
-            ->write('unset($context[\'paginate\'], ')
-            ->subcompile($this->getNode('elementsTarget'))
             ->raw(");\n");
     }
 }

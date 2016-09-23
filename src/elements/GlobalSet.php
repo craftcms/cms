@@ -1,8 +1,8 @@
 <?php
 /**
- * @link      http://buildwithcraft.com/
- * @copyright Copyright (c) 2015 Pixel & Tonic, Inc.
- * @license   http://buildwithcraft.com/license
+ * @link      https://craftcms.com/
+ * @copyright Copyright (c) Pixel & Tonic, Inc.
+ * @license   https://craftcms.com/license
  */
 
 namespace craft\app\elements;
@@ -10,6 +10,7 @@ namespace craft\app\elements;
 use Craft;
 use craft\app\base\Element;
 use craft\app\behaviors\FieldLayoutBehavior;
+use craft\app\behaviors\FieldLayoutTrait;
 use craft\app\elements\db\GlobalSetQuery;
 use craft\app\helpers\Url;
 
@@ -21,6 +22,11 @@ use craft\app\helpers\Url;
  */
 class GlobalSet extends Element
 {
+    // Traits
+    // =========================================================================
+
+    use FieldLayoutTrait;
+
     // Static
     // =========================================================================
 
@@ -140,6 +146,7 @@ class GlobalSet extends Element
     {
         /** @var FieldLayoutBehavior $behavior */
         $behavior = $this->getBehavior('fieldLayout');
+
         return $behavior->getFieldLayout();
     }
 

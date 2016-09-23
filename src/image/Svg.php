@@ -1,33 +1,36 @@
 <?php
+/**
+ * @link      https://craftcms.com/
+ * @copyright Copyright (c) Pixel & Tonic, Inc.
+ * @license   https://craftcms.com/license
+ */
+
 namespace craft\app\image;
 
 use Craft;
 use craft\app\base\Image;
-use craft\app\errors\Exception;
+use craft\app\errors\ImageException;
 use craft\app\helpers\Image as ImageHelper;
 use craft\app\helpers\Io;
 
 /**
  * Svg class is used for SVG file manipulations.
  *
- * @author    Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @copyright Copyright (c) 2014, Pixel & Tonic, Inc.
- * @license   http://buildwithcraft.com/license Craft License Agreement
- * @see       http://buildwithcraft.com
- * @package   craft.app.etc.io
- * @since     3.0
+ * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
+ * @since  3.0
  */
 class Svg extends Image
 {
-
     // Constants
     // =========================================================================
 
-    const SVG_WIDTH_RE   = '/(<svg[^>]*\swidth=")([\d\.]+)([a-z]*)"/si';
-    const SVG_HEIGHT_RE  = '/(<svg[^>]*\sheight=")([\d\.]+)([a-z]*)"/si';
+    const SVG_WIDTH_RE = '/(<svg[^>]*\swidth=")([\d\.]+)([a-z]*)"/si';
+    const SVG_HEIGHT_RE = '/(<svg[^>]*\sheight=")([\d\.]+)([a-z]*)"/si';
     const SVG_VIEWBOX_RE = '/(<svg[^>]*\sviewBox=")(\d+(?:,|\s)\d+(?:,|\s)(\d+)(?:,|\s)(\d+))"/si';
-    const SVG_ASPECT_RE  = '/(<svg[^>]*\spreserveAspectRatio=")([a-z]+\s[a-z]+)"/si';
-    const SVG_TAG_RE     = '/<svg/si';
+    const SVG_ASPECT_RE = '/(<svg[^>]*\spreserveAspectRatio=")([a-z]+\s[a-z]+)"/si';
+    const SVG_TAG_RE = '/<svg/si';
+    const SVG_CLEANUP_WIDTH_RE = '/(<svg[^>]*\s)width="[\d\.]+%"/si';
+    const SVG_CLEANUP_HEIGHT_RE = '/(<svg[^>]*\s)height="[\d\.]+%"/si';
 
     // Properties
     // =========================================================================
@@ -38,12 +41,12 @@ class Svg extends Image
     private $_svgContent;
 
     /**
-     * @var int
+     * @var integer
      */
     private $_height;
 
     /**
-     * @var int
+     * @var integer
      */
     private $_width;
 
@@ -51,16 +54,15 @@ class Svg extends Image
     // =========================================================================
 
     /**
-     * @return int
+     * @inheritdoc
      */
     public function getWidth()
     {
         return $this->_width;
-
     }
 
     /**
-     * @return int
+     * @inheritdoc
      */
     public function getHeight()
     {
@@ -68,7 +70,7 @@ class Svg extends Image
     }
 
     /**
-     * @return string
+     * @inheritdoc
      */
     public function getExtension()
     {
@@ -76,18 +78,13 @@ class Svg extends Image
     }
 
     /**
-     * Loads an image from a file system path.
-     *
-     * @param string $path
-     *
-     * @throws Exception
-     * @return Image
+     * @inheritdoc
      */
     public function loadImage($path)
     {
         if (!Io::fileExists($path)) {
-            throw new Exception(Craft::t('app',
-                'No file exists at the path “{path}”', array('path' => $path)));
+            throw new ImageException(Craft::t('app',
+                'No file exists at the path “{path}”', ['path' => $path]));
         }
 
         list($width, $height) = ImageHelper::getImageSize($path);
@@ -111,14 +108,7 @@ class Svg extends Image
     }
 
     /**
-     * Crops the image to the specified coordinates.
-     *
-     * @param int $x1
-     * @param int $x2
-     * @param int $y1
-     * @param int $y2
-     *
-     * @return Image
+     * @inheritdoc
      */
     public function crop($x1, $x2, $y1, $y2)
     {
@@ -158,19 +148,10 @@ class Svg extends Image
     }
 
     /**
-     * Scale the image to fit within the specified size.
-     *
-     * @param int $targetWidth
-     * @param int|null $targetHeight
-     * @param bool $scaleIfSmaller
-     *
-     * @return Image
+     * @inheritdoc
      */
-    public function scaleToFit(
-        $targetWidth,
-        $targetHeight = null,
-        $scaleIfSmaller = true
-    ) {
+    public function scaleToFit($targetWidth, $targetHeight = null, $scaleIfSmaller = true)
+    {
         $this->normalizeDimensions($targetWidth, $targetHeight);
 
         if ($scaleIfSmaller || $this->getWidth() > $targetWidth || $this->getHeight() > $targetHeight) {
@@ -184,21 +165,10 @@ class Svg extends Image
     }
 
     /**
-     * Scale and crop image to exactly fit the specified size.
-     *
-     * @param int $targetWidth
-     * @param int|null $targetHeight
-     * @param bool $scaleIfSmaller
-     * @param string $cropPositions
-     *
-     * @return Image
+     * @inheritdoc
      */
-    public function scaleAndCrop(
-        $targetWidth,
-        $targetHeight = null,
-        $scaleIfSmaller = true,
-        $cropPositions = 'center-center'
-    ) {
+    public function scaleAndCrop($targetWidth, $targetHeight = null, $scaleIfSmaller = true, $cropPositions = 'center-center')
+    {
         $this->normalizeDimensions($targetWidth, $targetHeight);
 
         if ($scaleIfSmaller || $this->getWidth() > $targetWidth || $this->getHeight() > $targetHeight) {
@@ -209,14 +179,14 @@ class Svg extends Image
             $cropPositions = join("-",
                 array_reverse(explode("-", $cropPositions)));
 
-            $value = "x".strtr($cropPositions, array(
+            $value = "x".strtr($cropPositions, [
                     'left' => 'Min',
                     'center' => 'Mid',
                     'right' => 'Max',
                     'top' => 'Min',
                     'bottom' => 'Max',
                     '-' => 'Y'
-                ))." slice";
+                ])." slice";
 
             // Add/modify aspect ratio information
             if (preg_match(static::SVG_ASPECT_RE, $this->_svgContent)) {
@@ -233,29 +203,23 @@ class Svg extends Image
     }
 
     /**
-     * Re-sizes the image. If $height is not specified, it will default to $width, creating a square.
-     *
-     * @param int $targetWidth
-     * @param int|null $targetHeight
-     *
-     * @return Image
+     * @inheritdoc
      */
     public function resize($targetWidth, $targetHeight = null)
     {
         $this->normalizeDimensions($targetWidth, $targetHeight);
 
-        if (preg_match(static::SVG_WIDTH_RE,
-                $this->_svgContent) && preg_match(static::SVG_HEIGHT_RE,
-                $this->_svgContent)
+        if (preg_match(static::SVG_WIDTH_RE, $this->_svgContent) && preg_match(static::SVG_HEIGHT_RE, $this->_svgContent)
         ) {
-            $this->_svgContent = preg_replace(static::SVG_WIDTH_RE,
-                "\${1}{$targetWidth}px\"", $this->_svgContent);
-            $this->_svgContent = preg_replace(static::SVG_HEIGHT_RE,
-                "\${1}{$targetHeight}px\"", $this->_svgContent);
+            $this->_svgContent = preg_replace(static::SVG_WIDTH_RE, "\${1}{$targetWidth}px\"", $this->_svgContent);
+            $this->_svgContent = preg_replace(static::SVG_HEIGHT_RE, "\${1}{$targetHeight}px\"", $this->_svgContent);
         } else {
-            $this->_svgContent = preg_replace(static::SVG_TAG_RE,
-                "<svg width=\"{$targetWidth}px\" height=\"{$targetHeight}px\"",
-                $this->_svgContent);
+            // In case the root element has dimension attributes set with percentage,
+            // weed them out so we don't duplicate them.
+            $this->_svgContent = preg_replace(static::SVG_CLEANUP_WIDTH_RE, "\${1}", $this->_svgContent);
+            $this->_svgContent = preg_replace(static::SVG_CLEANUP_HEIGHT_RE, "\${1}", $this->_svgContent);
+
+            $this->_svgContent = preg_replace(static::SVG_TAG_RE, "<svg width=\"{$targetWidth}px\" height=\"{$targetHeight}px\"", $this->_svgContent);
         }
 
         $this->_width = $targetWidth;
@@ -265,28 +229,22 @@ class Svg extends Image
     }
 
     /**
-     * Saves the image to the target path.
-     *
-     * @param string $targetPath
-     * @param boolean $autoQuality
-     *
-     * @throws \Imagine\Exception\RuntimeException
-     * @return null
+     * @inheritdoc
      */
     public function saveAs($targetPath, $autoQuality = false)
     {
         if (Io::getExtension($targetPath) == 'svg') {
             Io::writeToFile($targetPath, $this->_svgContent);
         } else {
-            throw new Exception(Craft::t('app',
-                'Manipulated SVG image rasterizing is unreliable. Please see ImagesService::loadImage()'));
+            throw new ImageException(Craft::t('app',
+                'Manipulated SVG image rasterizing is unreliable. See \craft\app\services\Images::loadImage()'));
         }
 
         return true;
     }
 
     /**
-     * Get the SVG string.
+     * Returns the SVG string.
      *
      * @return string
      */
@@ -296,11 +254,9 @@ class Svg extends Image
     }
 
     /**
-     * Returns true if the image is transparent.
-     *
-     * @return bool
+     * @inheritdoc
      */
-    public function isTransparent()
+    public function getIsTransparent()
     {
         return true;
     }

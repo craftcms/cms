@@ -1,8 +1,8 @@
 <?php
 /**
- * @link      http://buildwithcraft.com/
- * @copyright Copyright (c) 2015 Pixel & Tonic, Inc.
- * @license   http://buildwithcraft.com/license
+ * @link      https://craftcms.com/
+ * @copyright Copyright (c) Pixel & Tonic, Inc.
+ * @license   https://craftcms.com/license
  */
 
 namespace craft\app\elements\db;
@@ -83,7 +83,7 @@ class MatrixBlockQuery extends ElementQuery
      *
      * @param integer|integer[] $value The property value
      *
-     * @return self The query object itself
+     * @return $this self reference
      */
     public function fieldId($value)
     {
@@ -97,7 +97,7 @@ class MatrixBlockQuery extends ElementQuery
      *
      * @param integer|integer[] $value The property value
      *
-     * @return self The query object itself
+     * @return $this self reference
      */
     public function ownerId($value)
     {
@@ -111,7 +111,7 @@ class MatrixBlockQuery extends ElementQuery
      *
      * @param string|string[] $value The property value
      *
-     * @return self The query object itself
+     * @return $this self reference
      */
     public function ownerLocale($value)
     {
@@ -125,7 +125,7 @@ class MatrixBlockQuery extends ElementQuery
      *
      * @param string|string[]|MatrixBlockType $value The property value
      *
-     * @return self The query object itself
+     * @return $this self reference
      */
     public function type($value)
     {
@@ -148,7 +148,7 @@ class MatrixBlockQuery extends ElementQuery
      *
      * @param integer|integer[] $value The property value
      *
-     * @return self The query object itself
+     * @return $this self reference
      */
     public function typeId($value)
     {

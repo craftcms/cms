@@ -1,53 +1,30 @@
 (function($) {
-
-	var ImageUpload = null;
-
 	var settings = {
-		modalClass: "logo-modal",
-
-		uploadAction: 'rebrand/upload-logo',
-
-		deleteMessage: Craft.t('Are you sure you want to delete the logo?'),
-		deleteAction: 'rebrand/delete-logo',
-
-		cropAction: 'rebrand/crop-logo',
-
-		areaToolOptions:
-		{
-			aspectRatio: "",
-			initialRectangle: {
-				mode: "auto"
-			}
-		},
-
-		onImageSave: function(response)
-		{
-			refreshImage(response);
-		},
-
-		onImageDelete: function(response)
-		{
-			refreshImage(response);
-		}
+		uploadAction: 'rebrand/upload-site-image',
+		deleteAction: 'rebrand/delete-site-image',
+		uploadButtonSelector: '.btn.upload',
+		deleteButtonSelector: '.btn.delete',
+		fileInputSelector: 'input[name=image]',
 
 	};
 
-	function refreshImage(response) {
-		if (typeof response.html != "undefined") {
-			$('.cp-logo').replaceWith(response.html);
-			initImageUpload();
+	var logoSettings = $.extend({}, settings, {
+		postParameters: {type: 'logo'},
+		containerSelector: '.cp-image-logo'
+	});
+
+	var iconSettings = $.extend({}, settings, {
+		postParameters: {type: 'icon'},
+		containerSelector: '.cp-image-icon',
+
+		onAfterRefreshImage: function (response) {
+			if (typeof response.html != "undefined") {
+				$('#site-icon').find('> img').attr('src', ($('.cp-image-icon .cp-current-image').data('url')));
+			}
+
 		}
+	});
 
-	}
-
-	function initImageUpload()
-	{
-		// These change dynamically after each HTML overwrite, so we can't have them in the initial settings array.
-		settings.uploadButton = $('.logo-controls .upload-logo');
-		settings.deleteButton = $('.logo-controls .delete-logo');
-		ImageUpload = new Craft.ImageUpload(settings);
-	}
-
-	initImageUpload();
-
+	new Craft.ImageUpload(iconSettings);
+	new Craft.ImageUpload(logoSettings);
 })(jQuery);

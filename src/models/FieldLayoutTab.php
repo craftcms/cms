@@ -1,8 +1,8 @@
 <?php
 /**
- * @link      http://buildwithcraft.com/
- * @copyright Copyright (c) 2015 Pixel & Tonic, Inc.
- * @license   http://buildwithcraft.com/license
+ * @link      https://craftcms.com/
+ * @copyright Copyright (c) Pixel & Tonic, Inc.
+ * @license   https://craftcms.com/license
  */
 
 namespace craft\app\models;
@@ -100,6 +100,8 @@ class FieldLayoutTab extends Model
         if ($this->_layout) {
             return $this->_layout;
         }
+
+        return null;
     }
 
     /**
@@ -117,7 +119,7 @@ class FieldLayoutTab extends Model
     /**
      * Returns the tab’s fields.
      *
-     * @return FieldInterface[]|Field[] The tab’s fields.
+     * @return FieldInterface[] The tab’s fields.
      */
     public function getFields()
     {
@@ -127,6 +129,7 @@ class FieldLayoutTab extends Model
             $layout = $this->getLayout();
 
             if ($layout) {
+                /** @var Field[] $fields */
                 $fields = $layout->getFields();
 
                 foreach ($fields as $field) {
@@ -143,7 +146,7 @@ class FieldLayoutTab extends Model
     /**
      * Sets the tab’s fields.
      *
-     * @param FieldInterface[]|Field[] $fields The tab’s fields.
+     * @param FieldInterface[] $fields The tab’s fields.
      *
      * @return void
      */

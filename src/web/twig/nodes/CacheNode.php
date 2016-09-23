@@ -1,8 +1,8 @@
 <?php
 /**
- * @link      http://buildwithcraft.com/
- * @copyright Copyright (c) 2015 Pixel & Tonic, Inc.
- * @license   http://buildwithcraft.com/license
+ * @link      https://craftcms.com/
+ * @copyright Copyright (c) Pixel & Tonic, Inc.
+ * @license   https://craftcms.com/license
  */
 
 namespace craft\app\web\twig\nodes;
@@ -45,7 +45,7 @@ class CacheNode extends \Twig_Node
 
         $compiler
             ->addDebugInfo($this)
-            ->write("\$cacheService = \\Craft::\$app->getTemplateCache();\n")
+            ->write("\$cacheService = \\Craft::\$app->getTemplateCaches();\n")
             ->write("\$request = \\Craft::\$app->getRequest();\n")
             ->write("\$ignoreCache{$n} = (\$request->getIsLivePreview() || \$request->getToken()");
 
@@ -75,14 +75,14 @@ class CacheNode extends \Twig_Node
 
         $compiler
             ->raw(";\n")
-            ->write("\$cacheBody{$n} = \$cacheService->getTemplateCache(\$cacheKey{$n}, {$global});\n")
+            ->write("\$cacheBody{$n} = \$cacheService->getTemplateCaches(\$cacheKey{$n}, {$global});\n")
             ->outdent()
             ->write("} else {\n")
             ->indent()
             ->write("\$cacheBody{$n} = null;\n")
             ->outdent()
             ->write("}\n")
-            ->write("if (empty(\$cacheBody{$n})) {\n")
+            ->write("if (\$cacheBody{$n} === null) {\n")
             ->indent()
             ->write("if (!\$ignoreCache{$n}) {\n")
             ->indent()

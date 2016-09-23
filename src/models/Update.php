@@ -1,14 +1,13 @@
 <?php
 /**
- * @link      http://buildwithcraft.com/
- * @copyright Copyright (c) 2015 Pixel & Tonic, Inc.
- * @license   http://buildwithcraft.com/license
+ * @link      https://craftcms.com/
+ * @copyright Copyright (c) Pixel & Tonic, Inc.
+ * @license   https://craftcms.com/license
  */
 
 namespace craft\app\models;
 
 use craft\app\base\Model;
-use craft\app\models\PluginUpdate as PluginUpdateModel;
 
 /**
  * Stores all of the available update info.
@@ -28,8 +27,8 @@ class Update extends Model
     {
         if (isset($config['plugins'])) {
             foreach ($config['plugins'] as $key => $value) {
-                if (!$value instanceof PluginUpdateModel) {
-                    $config['plugins'][$key] = PluginUpdateModel::create($value);
+                if (!$value instanceof PluginUpdate) {
+                    $config['plugins'][$key] = PluginUpdate::create($value);
                 }
             }
         }

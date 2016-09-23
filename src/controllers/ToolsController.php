@@ -1,18 +1,18 @@
 <?php
 /**
- * @link      http://buildwithcraft.com/
- * @copyright Copyright (c) 2015 Pixel & Tonic, Inc.
- * @license   http://buildwithcraft.com/license
+ * @link      https://craftcms.com/
+ * @copyright Copyright (c) Pixel & Tonic, Inc.
+ * @license   https://craftcms.com/license
  */
 
 namespace craft\app\controllers;
 
 use Craft;
 use craft\app\base\ToolInterface;
-use craft\app\errors\HttpException;
 use craft\app\helpers\Component;
 use craft\app\helpers\Io;
 use craft\app\web\Controller;
+use yii\web\Response;
 
 /**
  * The ToolsController class is a controller that handles various tools related tasks such as trigger tool actions.
@@ -29,7 +29,6 @@ class ToolsController extends Controller
 
     /**
      * @inheritdoc
-     * @throws HttpException if the user isn’t an admin
      */
     public function init()
     {
@@ -43,7 +42,7 @@ class ToolsController extends Controller
     /**
      * Performs a tool's action.
      *
-     * @return void
+     * @return Response
      */
     public function actionPerformAction()
     {
@@ -69,7 +68,7 @@ class ToolsController extends Controller
         $filename = Craft::$app->getRequest()->getRequiredQueryParam('filename');
 
         if (($filePath = Io::fileExists(Craft::$app->getPath()->getTempPath().'/'.$filename.'.zip')) == true) {
-            Craft::$app->getRequest()->sendFile(Io::getFilename($filePath), Io::getFileContents($filePath), ['forceDownload' => true]);
+            Craft::$app->getResponse()->sendFile(Io::getFilename($filePath), Io::getFileContents($filePath), ['forceDownload' => true]);
         }
     }
 }

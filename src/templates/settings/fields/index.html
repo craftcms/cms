@@ -3,23 +3,23 @@
 {% extends "_layouts/cp" %}
 {% set title = "Fields"|t('app') %}
 
-{% set docsUrl = 'http://buildwithcraft.com/docs/fields' %}
+{% set docsUrl = 'http://craftcms.com/docs/fields' %}
 
-{% includeTranslations
+{% do craft.app.view.registerTranslations('app', [
 	"What do you want to name your group?",
 	"Could not create the group:",
 	"Could not create the group:",
 	"Are you sure you want to delete this group and all its fields?",
 	"Could not delete the group.",
-	"Group renamed."
-%}
+	"Group renamed.",
+]) %}
 
 {% set crumbs = [
 	{ label: "Settings"|t('app'), url: url('settings') }
 ] %}
 
 
-{% set groups = craft.fields.getAllGroups('id') %}
+{% set groups = craft.app.fields.getAllGroups('id') %}
 
 {% if groupId is defined %}
 	{% if groups[groupId] is not defined %}
@@ -28,8 +28,18 @@
 
 	{% set fields = groups[groupId].getFields() %}
 {% else %}
-	{% set fields = craft.fields.getAllFields() %}
+	{% set fields = craft.app.fields.getAllFields() %}
 {% endif %}
+
+
+{% set extraPageHeaderHtml %}
+	{% if groups %}
+		<div class="buttons right">
+			{% set newFieldUrl = url('settings/fields/new', (groupId is defined ? { groupId: groupId } : null)) %}
+			<a href="{{ newFieldUrl }}" class="submit btn add icon">{{ "New field"|t('app') }}</a>
+		</div>
+	{% endif %}
+{% endset %}
 
 
 {% block sidebar %}
@@ -43,7 +53,7 @@
 	</nav>
 
 	<div class="buttons">
-		<div id="newgroupbtn" class="btn add icon">{{ "New Group"|t('app') }}</div>
+		<div id="newgroupbtn" class="btn add icon">{{ "New group"|t('app') }}</div>
 
 		{% if groupId is defined %}
 			<div id="groupsettingsbtn" class="btn settings icon menubtn" title="{{ 'Settings' }}"></div>
@@ -86,8 +96,11 @@
 						</th>
 						<td data-title="{{ 'Handle'|t('app') }}"><code>{{ field.handle }}</code></td>
 						<td data-title="{{ 'Type'|t('app') }}">
-							{% set fieldTypeInfo = craft.fields.getFieldTypeInfo(field) %}
-                            {{ fieldTypeInfo.getDisplayName() }}
+							{% if field is missing %}
+								<span class="error">{{ field.getType() }}</span>
+							{% else %}
+								{{ field.displayName() }}
+							{% endif %}
 						</td>
 						{% if groupId is not defined %}<td data-title="{{ 'Group'|t('app') }}">{{ field.group.name|t('site') }}</td>{% endif %}
 						<td class="thin"><a class="delete icon" title="{{ 'Delete'|t('app') }}" role="button"></a></td>
@@ -95,13 +108,6 @@
 				{% endfor %}
 			</tbody>
 		</table>
-	{% endif %}
-
-	{% if groups %}
-		<div class="buttons">
-			{% set newFieldUrl = url('settings/fields/new', (groupId is defined ? { groupId: groupId } : null)) %}
-			<a href="{{ newFieldUrl }}" class="submit btn add icon">{{ "New Field"|t('app') }}</a>
-		</div>
 	{% endif %}
 {% endblock %}
 

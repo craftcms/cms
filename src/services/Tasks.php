@@ -1,8 +1,8 @@
 <?php
 /**
- * @link      http://buildwithcraft.com/
- * @copyright Copyright (c) 2015 Pixel & Tonic, Inc.
- * @license   http://buildwithcraft.com/license
+ * @link      https://craftcms.com/
+ * @copyright Copyright (c) Pixel & Tonic, Inc.
+ * @license   https://craftcms.com/license
  */
 
 namespace craft\app\services;
@@ -11,13 +11,13 @@ use Craft;
 use craft\app\base\Task;
 use craft\app\base\TaskInterface;
 use craft\app\db\Query;
-use craft\app\errors\InvalidComponentException;
+use craft\app\errors\MissingComponentException;
 use craft\app\helpers\Component as ComponentHelper;
 use craft\app\helpers\Header;
 use craft\app\helpers\Json;
 use craft\app\helpers\Url;
 use craft\app\records\Task as TaskRecord;
-use craft\app\tasks\InvalidTask;
+use craft\app\tasks\MissingTask;
 use yii\base\Component;
 use yii\web\Response;
 
@@ -25,6 +25,8 @@ use yii\web\Response;
  * Class Tasks service.
  *
  * An instance of the Tasks service is globally accessible in Craft via [[Application::tasks `Craft::$app->getTasks()`]].
+ *
+ * @property boolean $isTaskRunning Whether there is a task that is currently running
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since  3.0
@@ -68,10 +70,10 @@ class Tasks extends Component
     /**
      * Saves a new task and queues it up to be run at the earliest opportunity.
      *
-     * @param TaskInterface|Task|array|string $task The task, the task’s class name, or its config, with a `type` value and optionally a `settings` value
+     * @param TaskInterface|array|string $task The task, the task’s class name, or its config, with a `type` value and optionally a `settings` value
      *
      * @throws \Exception
-     * @return TaskInterface|Task The task
+     * @return TaskInterface The task
      */
     public function queueTask($task)
     {
@@ -95,7 +97,7 @@ class Tasks extends Component
      *
      * @param mixed $config The task’s class name, or its config, with a `type` value and optionally a `settings` value
      *
-     * @return TaskInterface|Task The task
+     * @return TaskInterface The task
      */
     public function createTask($config)
     {
@@ -105,28 +107,29 @@ class Tasks extends Component
 
         try {
             return ComponentHelper::createComponent($config, self::TASK_INTERFACE);
-        } catch (InvalidComponentException $e) {
+        } catch (MissingComponentException $e) {
             $config['errorMessage'] = $e->getMessage();
 
-            return InvalidTask::create($config);
+            return MissingTask::create($config);
         }
     }
 
     /**
      * Saves a task.
      *
-     * @param TaskInterface|Task $task     The task to be saved
-     * @param boolean            $validate Whether the task should be validated first
+     * @param TaskInterface $task     The task to be saved
+     * @param boolean       $validate Whether the task should be validated first
      *
      * @return boolean Whether the task was saved successfully
      * @throws \Exception
      */
     public function saveTask(TaskInterface $task, $validate = true)
     {
+        /** @var Task $task */
         if (!$validate || $task->validate()) {
             $transaction = Craft::$app->getDb()->beginTransaction();
             try {
-                if ($task->isNew()) {
+                if ($task->getIsNew()) {
                     $taskRecord = new TaskRecord();
                 } else {
                     $taskRecord = $this->_getTaskRecordById($task->id);
@@ -139,7 +142,7 @@ class Tasks extends Component
                 $taskRecord->currentStep = $task->currentStep;
                 $taskRecord->settings = $task->getSettings();
 
-                if (!$task->isNew()) {
+                if (!$task->getIsNew()) {
                     $taskRecord->save(false);
                 } else if (!$task->parentId) {
                     $taskRecord->makeRoot(false);
@@ -148,7 +151,7 @@ class Tasks extends Component
                     $taskRecord->appendTo($parentTaskRecord, false);
                 }
 
-                if ($task->isNew()) {
+                if ($task->getIsNew()) {
                     $task->id = $taskRecord->id;
 
                     if ($task->parentId) {
@@ -161,7 +164,7 @@ class Tasks extends Component
 
                 return true;
             } catch (\Exception $e) {
-                $transaction->rollback();
+                $transaction->rollBack();
 
                 throw $e;
             }
@@ -178,7 +181,9 @@ class Tasks extends Component
         // Make sure nothing has been output to the browser yet
         if (!headers_sent()) {
             // Close the client connection
-            Craft::$app->getResponse()->sendAndClose();
+            $response = Craft::$app->getResponse();
+            $response->content = '1';
+            $response->sendAndClose();
 
             // Run any pending tasks
             $this->runPendingTasks();
@@ -190,10 +195,11 @@ class Tasks extends Component
      *
      * @param integer $taskId The task’s ID
      *
-     * @return TaskInterface|Task|null The task
+     * @return TaskInterface|null The task
      */
     public function rerunTaskById($taskId)
     {
+        /** @var Task|null $task */
         $task = $this->getTaskById($taskId);
 
         if ($task && $task->level == 0) {
@@ -204,6 +210,7 @@ class Tasks extends Component
 
             // Delete any of its subtasks
             $taskRecord = $this->_getTaskRecordById($taskId);
+            /** @var TaskRecord[] $subtaskRecords */
             $subtaskRecords = $taskRecord->children()->all();
 
             foreach ($subtaskRecords as $subtaskRecord) {
@@ -212,6 +219,8 @@ class Tasks extends Component
 
             return $task;
         }
+
+        return null;
     }
 
     /**
@@ -220,7 +229,7 @@ class Tasks extends Component
     public function runPendingTasks()
     {
         // If we're already processing tasks, let's give it a break.
-        if ($this->isTaskRunning()) {
+        if ($this->getIsTaskRunning()) {
             Craft::info('Tasks are already running.', __METHOD__);
 
             return;
@@ -240,16 +249,17 @@ class Tasks extends Component
     /**
      * Runs a given task.
      *
-     * @param TaskInterface|Task $task
+     * @param TaskInterface $task
      *
      * @return boolean
      */
     public function runTask(TaskInterface $task)
     {
+        /** @var Task $task */
         $taskRecord = $this->_getTaskRecordById($task->id);
         $error = null;
 
-        if ($task instanceof InvalidTask) {
+        if ($task instanceof MissingTask) {
             $error = $task->errorMessage;
         } else {
             try {
@@ -295,23 +305,24 @@ class Tasks extends Component
             $taskRecord->deleteWithChildren();
 
             return true;
-        } else {
-            $this->fail($task, $error);
-
-            return false;
         }
+
+        $this->fail($task, $error);
+
+        return false;
     }
 
     /**
      * Sets a task's status to "error" and logs it.
      *
-     * @param TaskInterface|Task $task  The task
-     * @param string|null        $error The error message
+     * @param TaskInterface $task  The task
+     * @param string|null   $error The error message
      *
      * @return void
      */
     public function fail(TaskInterface $task, $error = null)
     {
+        /** @var Task $task */
         $task->status = Task::STATUS_ERROR;
         $this->saveTask($task);
 
@@ -340,7 +351,7 @@ class Tasks extends Component
      *
      * @param integer $taskId The task’s ID
      *
-     * @return TaskInterface|Task|null The task, or null if it doesn’t exist
+     * @return TaskInterface|null The task, or null if it doesn’t exist
      */
     public function getTaskById($taskId)
     {
@@ -352,15 +363,15 @@ class Tasks extends Component
 
         if ($result !== false) {
             return $this->createTask($result);
-        } else {
-            return null;
         }
+
+        return null;
     }
 
     /**
      * Returns all the tasks.
      *
-     * @return TaskInterface[]|Task[] All the tasks
+     * @return TaskInterface[] All the tasks
      */
     public function getAllTasks()
     {
@@ -380,7 +391,7 @@ class Tasks extends Component
     /**
      * Returns the currently running task.
      *
-     * @return TaskInterface|Task|null The currently running task, or null if there isn’t one
+     * @return TaskInterface|null The currently running task, or null if there isn’t one
      */
     public function getRunningTask()
     {
@@ -411,9 +422,9 @@ class Tasks extends Component
 
         if ($this->_runningTask) {
             return $this->_runningTask;
-        } else {
-            return null;
         }
+
+        return null;
     }
 
     /**
@@ -421,7 +432,7 @@ class Tasks extends Component
      *
      * @return boolean Whether there is a task that is currently running
      */
-    public function isTaskRunning()
+    public function getIsTaskRunning()
     {
         // Remember that a root task could appear to be stagnant if it has sub-tasks.
         return (new Query())
@@ -465,7 +476,7 @@ class Tasks extends Component
      * @param string|null  $type  The task type to check for, if any
      * @param integer|null $limit The maximum number of tasks to return
      *
-     * @return TaskInterface[]|Task[] The pending tasks
+     * @return TaskInterface[] The pending tasks
      */
     public function getPendingTasks($type = null, $limit = null)
     {
@@ -499,7 +510,7 @@ class Tasks extends Component
      *
      * @return boolean Whether any tasks have failed
      */
-    public function haveTasksFailed()
+    public function getHaveTasksFailed()
     {
         return (new Query())
             ->from('{{%tasks}}')
@@ -529,7 +540,7 @@ class Tasks extends Component
      *
      * @param string|null $type The type of task to check for, if any
      *
-     * @return TaskInterface|Task|null The next pending task, if any
+     * @return TaskInterface|null The next pending task, if any
      */
     public function getNextPendingTask($type = null)
     {
@@ -549,6 +560,7 @@ class Tasks extends Component
                     ->one();
 
                 if ($taskRecord) {
+                    /** @var TaskRecord $taskRecord */
                     $this->_taskRecordsById[$taskRecord->id] = $taskRecord;
                     $this->_nextPendingTask = $this->createTask($taskRecord);
                 } else {
@@ -558,10 +570,12 @@ class Tasks extends Component
 
             if ($this->_nextPendingTask !== false) {
                 return $this->_nextPendingTask;
-            } else {
-                return null;
             }
+
+            return null;
         }
+
+        return null;
     }
 
     /**
@@ -591,26 +605,32 @@ class Tasks extends Component
      */
     public function handleResponse()
     {
-        Craft::$app->getResponse()->off(Response::EVENT_AFTER_PREPARE,
-            [$this, 'handleResponse']);
+        $request = Craft::$app->getRequest();
+        $response = Craft::$app->getResponse();
+
+        $response->off(Response::EVENT_AFTER_PREPARE, [
+            $this,
+            'handleResponse'
+        ]);
 
         // Ignore if tasks are already running
-        if ($this->isTaskRunning()) {
+        if ($this->getIsTaskRunning()) {
             return;
         }
-
-        $response = Craft::$app->getResponse();
 
         // Make sure nothing has been output to the browser yet, and there's no pending response body
         if (!headers_sent() && !ob_get_length() && $response->content === null) {
             $this->closeAndRun();
         }
-        // Is this a site request and are we responding with HTML or XHTML?
+        // Is this a non-AJAX site request and are we responding with HTML or XHTML?
         // (CP requests don't need to be told to run pending tasks)
         else if (
-            Craft::$app->getRequest()->getIsSiteRequest() &&
-            in_array(Header::getMimeType(),
-                ['text/html', 'application/xhtml+xml'])
+            $request->getIsSiteRequest() &&
+            !$request->getIsAjax() &&
+            in_array(Header::getMimeType(), [
+                'text/html',
+                'application/xhtml+xml'
+            ])
         ) {
             // Just output JS that tells the browser to fire an Ajax request to kick off task running
             $url = Json::encode(Url::getActionUrl('tasks/run-pending-tasks'));
@@ -675,8 +695,8 @@ EOT;
 
         if ($this->_taskRecordsById[$taskId] !== false) {
             return $this->_taskRecordsById[$taskId];
-        } else {
-            return null;
         }
+
+        return null;
     }
 }

@@ -198,10 +198,10 @@ var LoginForm = Garnish.Base.extend(
 	{
 		if (!error)
 		{
-			error = Craft.t('An unknown error occurred.');
+			error = Craft.t('app', 'An unknown error occurred.');
 		}
 
-		this.$error = $('<p class="error" style="display:none">'+error+'</p>').appendTo(this.$form);
+		this.$error = $('<p class="error" style="display:none">'+error+'</p>').insertAfter($('.buttons', this.$form));
 		this.$error.velocity('fadeIn');
 	},
 
@@ -226,8 +226,9 @@ var LoginForm = Garnish.Base.extend(
 		this.$form.velocity({marginTop: newFormTopMargin}, 'fast');
 		this.$loginFields.velocity({height: 0}, 'fast');
 
+		this.$form.addClass('reset-password');
 		this.$submitBtn.addClass('reset-password');
-		this.$submitBtn.attr('value', Craft.t('Reset Password'));
+		this.$submitBtn.attr('value', Craft.t('app', 'Reset Password'));
 		this.$submitBtn.enable();
 		this.$sslIcon.remove();
 
@@ -241,7 +242,7 @@ var MessageSentModal = Garnish.Modal.extend(
 {
 	init: function()
 	{
-		var $container = $('<div class="modal fitted email-sent"><div class="body">'+Craft.t('Check your email for instructions to reset your password.')+'</div></div>')
+		var $container = $('<div class="modal fitted email-sent"><div class="body">'+Craft.t('app', 'Check your email for instructions to reset your password.')+'</div></div>')
 			.appendTo(Garnish.$bod);
 
 		this.base($container);

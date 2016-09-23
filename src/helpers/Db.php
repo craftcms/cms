@@ -1,8 +1,8 @@
 <?php
 /**
- * @link      http://buildwithcraft.com/
- * @copyright Copyright (c) 2015 Pixel & Tonic, Inc.
- * @license   http://buildwithcraft.com/license
+ * @link      https://craftcms.com/
+ * @copyright Copyright (c) Pixel & Tonic, Inc.
+ * @license   https://craftcms.com/license
  */
 
 namespace craft\app\helpers;
@@ -10,6 +10,7 @@ namespace craft\app\helpers;
 use craft\app\base\Savable;
 use craft\app\dates\DateTime;
 use craft\app\enums\ColumnType;
+use yii\base\Exception;
 use yii\db\Schema;
 
 /**
@@ -96,9 +97,9 @@ class Db
             $date->setTimezone($timezone);
 
             return $formattedDate;
-        } else {
-            return null;
         }
+
+        return null;
     }
 
     /**
@@ -154,6 +155,7 @@ class Db
                 }
             }
 
+            /** @noinspection PhpUndefinedVariableInspection */
             $type .= "($length)";
         }
 
@@ -165,24 +167,13 @@ class Db
     }
 
     /**
-     * @return array
-     */
-    public static function getAuditColumnConfig()
-    {
-        return [
-            'dateCreated' => 'datetime not null',
-            'dateUpdated' => 'datetime not null',
-            'uid' => 'char(36) not null default \'0\'',
-        ];
-    }
-
-    /**
      * Returns the maximum number of bytes a given textual column type can hold for a given database.
      *
      * @param string $columnType The textual column type to check.
      * @param string $database   The type of database to use.
      *
      * @return integer The storage capacity of the column type in bytes.
+     * @throws Exception if given an unknown column type/database combination
      */
     public static function getTextualColumnStorageCapacity($columnType, $database = 'mysql')
     {
@@ -213,6 +204,8 @@ class Db
                 break;
             }
         }
+
+        throw new Exception('Unknown column type');
     }
 
     /**
@@ -225,16 +218,20 @@ class Db
     public static function getTextualColumnTypeByContentLength($contentLength)
     {
         if ($contentLength <= static::getTextualColumnStorageCapacity(ColumnType::TinyText)) {
-            return SCHEMA::TYPE_STRING;
-        } else if ($contentLength <= static::getTextualColumnStorageCapacity(ColumnType::Text)) {
-            return SCHEMA::TYPE_TEXT;
-        } else if ($contentLength <= static::getTextualColumnStorageCapacity(ColumnType::MediumText)) {
+            return Schema::TYPE_STRING;
+        }
+
+        if ($contentLength <= static::getTextualColumnStorageCapacity(ColumnType::Text)) {
+            return Schema::TYPE_TEXT;
+        }
+
+        if ($contentLength <= static::getTextualColumnStorageCapacity(ColumnType::MediumText)) {
             // Yii doesn't support 'mediumtext' so we use our own.
             return ColumnType::MediumText;
-        } else {
-            // Yii doesn't support 'longtext' so we use our own.
-            return ColumnType::LongText;
         }
+
+        // Yii doesn't support 'longtext' so we use our own.
+        return ColumnType::LongText;
     }
 
     /**
@@ -350,11 +347,11 @@ class Db
 
         if (count($conditions) == 1) {
             return $conditions[0];
-        } else {
-            array_unshift($conditions, $join);
-
-            return $conditions;
         }
+
+        array_unshift($conditions, $join);
+
+        return $conditions;
     }
 
     /**
@@ -444,9 +441,9 @@ class Db
 
                 if ($testOperator == 'not ') {
                     return '!=';
-                } else {
-                    return $testOperator;
                 }
+
+                return $testOperator;
             }
         }
 

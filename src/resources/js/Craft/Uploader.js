@@ -21,7 +21,7 @@ Craft.Uploader = Garnish.Base.extend(
 		this._totalFileCounter = 0;
 		this._validFileCounter = 0;
 
-		settings = $.extend({}, this.defaultSettings, settings);
+		settings = $.extend({}, Craft.Uploader.defaults, settings);
 
 		var events = settings.events;
 		delete settings.events;
@@ -39,9 +39,13 @@ Craft.Uploader = Garnish.Base.extend(
 
 		settings.autoUpload = false;
 
-		this.uploader = $element.fileupload(settings);
+		this.uploader = this.$element.fileupload(settings);
 		for (var event in events)
 		{
+			if (!events.hasOwnProperty(event)) {
+				continue;
+			}
+
 			this.uploader.on(event, events[event]);
 		}
 
@@ -95,19 +99,9 @@ Craft.Uploader = Garnish.Base.extend(
 		{
 			if (!this._extensionList)
 			{
-				this._extensionList = [];
-
-				for (var i = 0; i < this.allowedKinds.length; i++)
-				{
-					var allowedKind = this.allowedKinds[i];
-
-					for (var j = 0; j < Craft.fileKinds[allowedKind].length; j++)
-					{
-						var ext = Craft.fileKinds[allowedKind][j];
-						this._extensionList.push(ext);
-					}
-				}
+				this._createExtensionList();
 			}
+
 			validateExtension = true;
 		}
 
@@ -177,7 +171,7 @@ Craft.Uploader = Garnish.Base.extend(
 				str = "The files {files} could not be uploaded. The allowed file kinds are: {kinds}.";
 			}
 
-			str = Craft.t(str, {files: this._rejectedFiles.type.join(", "), kinds: this.allowedKinds.join(", ")});
+			str = Craft.t('app', str, {files: this._rejectedFiles.type.join(", "), kinds: this.allowedKinds.join(", ")});
 			this._rejectedFiles.type = [];
 			alert(str);
 		}
@@ -195,7 +189,7 @@ Craft.Uploader = Garnish.Base.extend(
 				str = "The files {files} could not be uploaded, because they exceeded the maximum upload size of {size}.";
 			}
 
-			str = Craft.t(str, {files: this._rejectedFiles.size.join(", "), size: this.humanFileSize(Craft.maxUploadSize)});
+			str = Craft.t('app', str, {files: this._rejectedFiles.size.join(", "), size: this.humanFileSize(Craft.maxUploadSize)});
 			this._rejectedFiles.size = [];
 			alert(str);
 		}
@@ -213,7 +207,7 @@ Craft.Uploader = Garnish.Base.extend(
 				str = "The files {files} could not be uploaded, because the field limit has been reached.";
 			}
 
-			str = Craft.t(str, {files: this._rejectedFiles.limit.join(", ")});
+			str = Craft.t('app', str, {files: this._rejectedFiles.limit.join(", ")});
 			this._rejectedFiles.limit = [];
 			alert(str);
 		}
@@ -242,7 +236,37 @@ Craft.Uploader = Garnish.Base.extend(
 		return bytes.toFixed(1)+' '+units[u];
 	},
 
-	defaultSettings: {
+	_createExtensionList: function()
+	{
+		this._extensionList = [];
+
+		for (var i = 0; i < this.allowedKinds.length; i++)
+		{
+			var allowedKind = this.allowedKinds[i];
+
+			if (typeof Craft.fileKinds[allowedKind] !== typeof undefined)
+			{
+				for (var j = 0; j < Craft.fileKinds[allowedKind].extensions.length; j++)
+				{
+					var ext = Craft.fileKinds[allowedKind].extensions[j];
+					this._extensionList.push(ext);
+				}
+			}
+		}
+	},
+
+	destroy: function ()
+	{
+		this.$element.fileupload('destroy');
+		this.base();
+	}
+},
+
+// Static Properties
+// =============================================================================
+
+{
+	defaults: {
 		dropZone: null,
 		pasteZone: null,
 		fileInput: null,

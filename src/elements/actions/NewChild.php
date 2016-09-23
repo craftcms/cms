@@ -1,8 +1,8 @@
 <?php
 /**
- * @link      http://buildwithcraft.com/
- * @copyright Copyright (c) 2015 Pixel & Tonic, Inc.
- * @license   http://buildwithcraft.com/license
+ * @link      https://craftcms.com/
+ * @copyright Copyright (c) Pixel & Tonic, Inc.
+ * @license   https://craftcms.com/license
  */
 
 namespace craft\app\elements\actions;
@@ -46,7 +46,7 @@ class NewChild extends ElementAction
     public function init()
     {
         if ($this->label === null) {
-            $this->label = Craft::t('app', 'New Child');
+            $this->label = Craft::t('app', 'New child');
         }
     }
 
@@ -83,9 +83,9 @@ class NewChild extends ElementAction
 		}
 	});
 
-	if (Craft.elementIndex.structureTableSort)
+	if (Craft.elementIndex.view.structureTableSort)
 	{
-		Craft.elementIndex.structureTableSort.on('positionChange', $.proxy(trigger, 'updateTrigger'));
+		Craft.elementIndex.view.structureTableSort.on('positionChange', $.proxy(trigger, 'updateTrigger'));
 	}
 })();
 EOT;

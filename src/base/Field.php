@@ -1,8 +1,8 @@
 <?php
 /**
- * @link      http://buildwithcraft.com/
- * @copyright Copyright (c) 2015 Pixel & Tonic, Inc.
- * @license   http://buildwithcraft.com/license
+ * @link      https://craftcms.com/
+ * @copyright Copyright (c) Pixel & Tonic, Inc.
+ * @license   https://craftcms.com/license
  */
 
 namespace craft\app\base;
@@ -10,7 +10,6 @@ namespace craft\app\base;
 use Craft;
 use craft\app\elements\db\ElementQuery;
 use craft\app\elements\db\ElementQueryInterface;
-use craft\app\elements\MatrixBlock;
 use craft\app\events\Event;
 use craft\app\helpers\Db;
 use craft\app\helpers\Html;
@@ -88,6 +87,7 @@ abstract class Field extends SavableComponent implements FieldInterface
      *
      * @return string
      */
+    /** @noinspection PhpInconsistentReturnPointsInspection */
     public function __toString()
     {
         try {
@@ -232,9 +232,9 @@ abstract class Field extends SavableComponent implements FieldInterface
     {
         if ($this->required && $this->isValueEmpty($value, $element)) {
             return [Craft::t('yii', '{attribute} cannot be blank.')];
-        } else {
-            return [];
         }
+
+        return [];
     }
 
     /**
@@ -243,6 +243,21 @@ abstract class Field extends SavableComponent implements FieldInterface
     public function getSearchKeywords($value, $element)
     {
         return StringHelper::toString($value, ' ');
+    }
+
+    /**
+     * Returns the HTML that should be shown for this field in Table View.
+     *
+     * @param mixed            $value   The field’s value
+     * @param ElementInterface $element The element the field is associated with
+     *
+     * @return string|null The HTML that should be shown for this field in Table View
+     */
+    public function getTableAttributeHtml($value, $element)
+    {
+        $value = (string)$value;
+
+        return StringHelper::stripHtml($value);
     }
 
     /**
@@ -259,14 +274,18 @@ abstract class Field extends SavableComponent implements FieldInterface
     public function modifyElementsQuery(ElementQueryInterface $query, $value)
     {
         if ($value !== null) {
-            if (self::hasContentColumn()) {
-                $handle = $this->handle;
-                /** @var ElementQuery $query */
-                $query->subQuery->andWhere(Db::parseParam('content.'.Craft::$app->getContent()->fieldColumnPrefix.$handle, $value, $query->subQuery->params));
-            } else {
+            // If the field type doesn't have a content column, it *must* override this method
+            // if it wants to support a custom query criteria attribute
+            if (!static::hasContentColumn()) {
                 return false;
             }
+
+            $handle = $this->handle;
+            /** @var ElementQuery $query */
+            $query->subQuery->andWhere(Db::parseParam('content.'.Craft::$app->getContent()->fieldColumnPrefix.$handle, $value, $query->subQuery->params));
         }
+
+        return null;
     }
 
     /**
@@ -291,8 +310,8 @@ abstract class Field extends SavableComponent implements FieldInterface
     /**
      * Returns whether the given value should be considered "empty" for required-field validation purposes.
      *
-     * @param mixed                    $value   The field’s value
-     * @param ElementInterface|Element $element The element the field is associated with, if there is one
+     * @param mixed            $value   The field’s value
+     * @param ElementInterface $element The element the field is associated with, if there is one
      *
      * @return boolean Whether the value should be considered "empty"
      */
@@ -304,7 +323,7 @@ abstract class Field extends SavableComponent implements FieldInterface
     /**
      * Returns the location in POST that this field's content was pulled from.
      *
-     * @param ElementInterface|Element $element The element this field is associated with
+     * @param ElementInterface $element The element this field is associated with
      *
      * @return string|null
      */
@@ -324,7 +343,7 @@ abstract class Field extends SavableComponent implements FieldInterface
     /**
      * Returns this field’s value on a given element.
      *
-     * @param ElementInterface|Element $element The element
+     * @param ElementInterface $element The element
      *
      * @return mixed The field’s value
      */
@@ -336,8 +355,8 @@ abstract class Field extends SavableComponent implements FieldInterface
     /**
      * Updates this field’s value on a given element.
      *
-     * @param ElementInterface|Element $element The element
-     * @param mixed                    $value   The field’s new value
+     * @param ElementInterface $element The element
+     * @param mixed            $value   The field’s new value
      */
     protected function setElementValue(ElementInterface $element, $value)
     {
@@ -347,19 +366,18 @@ abstract class Field extends SavableComponent implements FieldInterface
     /**
      * Returns whether this is the first time the element's content has been edited.
      *
-     * @param ElementInterface|Element|null $element
+     * @param ElementInterface|null $element
      *
      * @return boolean
      */
     protected function isFresh($element)
     {
         if (!isset($this->_isFresh)) {
-            // If this is for a Matrix block, we're more interested in its owner
-            if (isset($element) && $element instanceof MatrixBlock) {
-                $element = $element->getOwner();
+            if ($element) {
+                $this->_isFresh = $element->getHasFreshContent();
+            } else {
+                $this->_isFresh = true;
             }
-
-            $this->_isFresh = (!$element || (!$element->contentId && !$element->hasErrors()));
         }
 
         return $this->_isFresh;

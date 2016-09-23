@@ -1,14 +1,15 @@
 <?php
 /**
- * @link      http://buildwithcraft.com/
- * @copyright Copyright (c) 2015 Pixel & Tonic, Inc.
- * @license   http://buildwithcraft.com/license
+ * @link      https://craftcms.com/
+ * @copyright Copyright (c) Pixel & Tonic, Inc.
+ * @license   https://craftcms.com/license
  */
 
 namespace craft\app\models;
 
-use Craft;
 use craft\app\base\Model;
+use craft\app\helpers\DateTimeHelper;
+use craft\app\helpers\Db;
 use craft\app\helpers\Json;
 
 /**
@@ -48,7 +49,17 @@ class Et extends Model
     public $editionTestableDomain = false;
 
     /**
-     * @var array Data
+     * @var array The installed plugin license keys
+     */
+    public $pluginLicenseKeys;
+
+    /**
+     * @var array The plugins' license key statuses. Set by the server response.
+     */
+    public $pluginLicenseKeyStatuses;
+
+    /**
+     * @var array|string Data
      */
     public $data;
 
@@ -65,7 +76,7 @@ class Et extends Model
     /**
      * @var \DateTime Request time
      */
-    public $requestTime = '2015-03-03 22:09:04';
+    public $requestTime;
 
     /**
      * @var string Request port
@@ -112,8 +123,28 @@ class Et extends Model
      */
     public $serverInfo;
 
+    /**
+     * @var string The context of the request. Either 'craft' or a plugin handle.
+     */
+    public $handle = 'craft';
+
     // Public Methods
     // =========================================================================
+
+    /**
+     * Constructor.
+     *
+     * @param array $config
+     */
+    public function __construct($config = [])
+    {
+        if (!isset($config['requestTime'])) {
+            $date = DateTimeHelper::currentUTCDateTime();
+            $config['requestTime'] = Db::prepareDateForDb($date);
+        }
+
+        parent::__construct($config);
+    }
 
     /**
      * @inheritdoc
@@ -130,7 +161,8 @@ class Et extends Model
                 'max' => 2147483647,
                 'integerOnly' => true
             ],
-            [['localVersion', 'localBuild', 'localEdition'], 'required'],
+            [['localVersion', 'localBuild', 'localEdition', 'handle'], 'required'],
+            [['userEmail'], 'email'],
             [
                 [
                     'licenseKey',

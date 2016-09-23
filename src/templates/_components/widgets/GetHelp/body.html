@@ -1,11 +1,9 @@
 {% import "_includes/forms" as forms %}
 
 <form method="post" accept-charset="UTF-8" enctype="multipart/form-data">
-	{{ getCsrfInput() }}
-
 	{% set fromEmail = getHelp is defined ? getHelp.fromEmail : currentUser.email %}
 
-	{% if fromEmail == "support@pixelandtonic.com" or fromEmail == "support@buildwithcraft.com" %}
+	{% if fromEmail == "support@pixelandtonic.com" or fromEmail == "support@craftcms.com" %}
 		{% set fromEmail = "" %}
 	{% endif %}
 
@@ -39,7 +37,7 @@
 			label: "Attach a database backup?"|t('app'),
 			class: 'attachDbBackup',
 			name: 'attachDbBackup',
-			checked: craft.config.backupDbOnUpdate,
+			checked: craft.app.config.get('backupDbOnUpdate'),
 		}) }}
 
 		{{ forms.checkboxField({
@@ -61,6 +59,6 @@
 		<div class="spinner hidden"></div>
 	</div>
 
-	{% set email %}<a href="mailto:support@buildwithcraft.com">support@buildwithcraft.com</a>{% endset %}
+	{% set email %}<a href="mailto:support@craftcms.com">support@craftcms.com</a>{% endset %}
 	<p class="error hidden">{{ "Couldn’t send your message. Please email it to {email} instead."|t('app', { email: email })|raw }}</p>
 </form>

@@ -1,8 +1,8 @@
 <?php
 /**
- * @link      http://buildwithcraft.com/
- * @copyright Copyright (c) 2015 Pixel & Tonic, Inc.
- * @license   http://buildwithcraft.com/license
+ * @link      https://craftcms.com/
+ * @copyright Copyright (c) Pixel & Tonic, Inc.
+ * @license   https://craftcms.com/license
  */
 
 namespace craft\app\tasks;
@@ -105,30 +105,33 @@ class FindAndReplace extends Task
         // inadvertently nuke textual content in the database.
         if ($this->replace !== null) {
             if (isset($this->_textColumns[$step])) {
-                Craft::$app->getDb()->createCommand()->replace($this->_table, $this->_textColumns[$step], $this->find, $this->replace)->execute();
+                Craft::$app->getDb()->createCommand()
+                    ->replace($this->_table, $this->_textColumns[$step], $this->find, $this->replace)
+                    ->execute();
 
                 return true;
-            } else {
-                $step -= count($this->_textColumns);
+            }
 
-                if (isset($this->_matrixFieldIds[$step])) {
-                    $field = Craft::$app->getFields()->getFieldById($this->_matrixFieldIds[$step]);
+            $step -= count($this->_textColumns);
 
-                    if ($field) {
-                        return $this->runSubTask([
-                            'type' => FindAndReplace::className(),
-                            'description' => Craft::t('app', 'Working in Matrix field “{field}”', ['field' => $field->name]),
-                            'find' => $this->find,
-                            'replace' => $this->replace,
-                            'matrixFieldId' => $field->id
-                        ]);
-                    } else {
-                        // Oh what the hell.
-                        return true;
-                    }
+            if (isset($this->_matrixFieldIds[$step])) {
+                $field = Craft::$app->getFields()->getFieldById($this->_matrixFieldIds[$step]);
+
+                if ($field) {
+                    /** @var Field $field */
+                    return $this->runSubTask([
+                        'type' => FindAndReplace::className(),
+                        'description' => Craft::t('app', 'Working in Matrix field “{field}”', ['field' => $field->name]),
+                        'find' => $this->find,
+                        'replace' => $this->replace,
+                        'matrixFieldId' => $field->id
+                    ]);
                 } else {
-                    return false;
+                    // Oh what the hell.
+                    return true;
                 }
+            } else {
+                return false;
             }
         } else {
             Craft::error('Invalid "replace" in the Find and Replace task probably caused by invalid JSON in the database.', __METHOD__);
@@ -157,13 +160,14 @@ class FindAndReplace extends Task
     /**
      * Checks whether the given field is saving data into a textual column, and saves it accordingly.
      *
-     * @param FieldInterface|Field $field
-     * @param string               $fieldColumnPrefix
+     * @param FieldInterface $field
+     * @param string         $fieldColumnPrefix
      *
      * @return boolean
      */
     private function _checkField(FieldInterface $field, $fieldColumnPrefix)
     {
+        /** @var Field $field */
         if ($field instanceof Matrix) {
             $this->_matrixFieldIds[] = $field->id;
         } else if ($field::hasContentColumn()) {

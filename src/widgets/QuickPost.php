@@ -1,8 +1,8 @@
 <?php
 /**
- * @link      http://buildwithcraft.com/
- * @copyright Copyright (c) 2015 Pixel & Tonic, Inc.
- * @license   http://buildwithcraft.com/license
+ * @link      https://craftcms.com/
+ * @copyright Copyright (c) Pixel & Tonic, Inc.
+ * @license   https://craftcms.com/license
  */
 
 namespace craft\app\widgets;
@@ -12,7 +12,6 @@ use craft\app\base\Widget;
 use craft\app\helpers\ArrayHelper;
 use craft\app\helpers\Json;
 use craft\app\models\Section;
-use craft\app\web\View;
 
 /**
  * QuickPost represents a Quick Post dashboard widget.
@@ -117,18 +116,23 @@ class QuickPost extends Widget
     /**
      * @inheritdoc
      */
+    public function getIconPath()
+    {
+        return Craft::$app->getPath()->getResourcesPath().'/images/widgets/quick-post.svg';
+    }
+
+    /**
+     * @inheritdoc
+     */
     public function getTitle()
     {
-        if (Craft::$app->getEdition() >= Craft::Client) {
-            $section = $this->_getSection();
+        $section = $this->_getSection();
 
-            if ($section !== null) {
-                return Craft::t('app', 'Post a new {section} entry',
-                    ['section' => Craft::t('site', $section->name)]);
-            }
+        if ($section) {
+            return Craft::t('app', 'Post a new {section} entry', ['section' => Craft::t('site', $section->name)]);
         }
 
-        return self::displayName();
+        return static::displayName();
     }
 
     /**
@@ -136,7 +140,10 @@ class QuickPost extends Widget
      */
     public function getBodyHtml()
     {
-        Craft::$app->getView()->includeTranslations('Entry saved.', 'Couldn’t save entry.');
+        Craft::$app->getView()->registerTranslations('app', [
+            'Entry saved.',
+            'Couldn’t save entry.',
+        ]);
         Craft::$app->getView()->registerJsResource('js/QuickPostWidget.js');
 
         $section = $this->_getSection();
@@ -154,7 +161,7 @@ class QuickPost extends Widget
         if ($this->entryType && isset($entryTypes[$this->entryType])) {
             $entryTypeId = $this->entryType;
         } else {
-            $entryTypeId = ArrayHelper::getFirstValue(array_keys($entryTypes));
+            $entryTypeId = ArrayHelper::getFirstKey($entryTypes);
         }
 
         $entryType = $entryTypes[$entryTypeId];
@@ -173,22 +180,7 @@ class QuickPost extends Widget
                 'widget' => $this
             ]);
 
-        $lines = [];
         $fieldJs = Craft::$app->getView()->clearJsBuffer(false);
-
-        foreach ([
-                     View::POS_HEAD,
-                     View::POS_BEGIN,
-                     View::POS_END,
-                     View::POS_LOAD,
-                     View::POS_READY
-                 ] as $pos) {
-            if (!empty($fieldJs[$pos])) {
-                $lines[] = implode("\n", $fieldJs[$pos]);
-            }
-        }
-
-        $fieldJs = empty($lines) ? '' : implode("\n", $lines);
 
         Craft::$app->getView()->registerJs('new Craft.QuickPostWidget('.
             $this->id.', '.

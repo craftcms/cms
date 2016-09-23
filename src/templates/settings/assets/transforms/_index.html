@@ -1,12 +1,12 @@
 {% extends "settings/assets/_layout" %}
-{% set selectedTab = 'transforms' %}
+{% set selectedNavItem = 'transforms' %}
 
-{% set docsUrl = 'http://buildwithcraft.com/docs/image-transforms' %}
+{% set docsUrl = 'http://craftcms.com/docs/image-transforms' %}
 
 
-{% set content %}
+{% block content %}
 <p id="notransforms"{% if transforms|length %} class="hidden"{% endif %}>
-	{{ "No Asset transforms exist yet."|t('app') }}
+	{{ "No image transforms exist yet."|t('app') }}
 </p>
 
 {% if transforms|length %}
@@ -39,9 +39,9 @@
 {% endif %}
 
 <div class="buttons">
-	<a class="btn submit add icon" href="{{ url('settings/assets/transforms/new') }}">{{ "New Transform"|t('app') }}</a>
+	<a class="btn submit add icon" href="{{ url('settings/assets/transforms/new') }}">{{ "New image transform"|t('app') }}</a>
 </div>
-{% endset %}
+{% endblock %}
 
 {% registerjs %}
 	new Craft.AdminTable({

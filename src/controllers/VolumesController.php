@@ -1,8 +1,8 @@
 <?php
 /**
- * @link      http://buildwithcraft.com/
- * @copyright Copyright (c) 2015 Pixel & Tonic, Inc.
- * @license   http://buildwithcraft.com/license
+ * @link      https://craftcms.com/
+ * @copyright Copyright (c) Pixel & Tonic, Inc.
+ * @license   https://craftcms.com/license
  */
 
 namespace craft\app\controllers;
@@ -10,11 +10,12 @@ namespace craft\app\controllers;
 use Craft;
 use craft\app\base\Volume;
 use craft\app\elements\Asset;
-use craft\app\errors\HttpException;
 use craft\app\helpers\Json;
 use craft\app\helpers\Url;
 use craft\app\web\Controller;
-use craft\app\web\Response;
+use Exception;
+use yii\web\NotFoundHttpException;
+use yii\web\Response;
 
 /**
  * The VolumeController class is a controller that handles various actions related to asset volumes, such as
@@ -32,7 +33,6 @@ class VolumesController extends Controller
 
     /**
      * @inheritdoc
-     * @throws HttpException if the user isn’t an admin
      */
     public function init()
     {
@@ -59,32 +59,34 @@ class VolumesController extends Controller
      * @param Volume  $volume   The volume being edited, if there were any validation errors.
      *
      * @return string The rendering result
-     * @throws HttpException
+     * @throws NotFoundHttpException if the requested volume cannot be found
      */
     public function actionEditVolume($volumeId = null, Volume $volume = null)
     {
         $this->requireAdmin();
 
+        $volumes = Craft::$app->getVolumes();
         if ($volume === null) {
             if ($volumeId !== null) {
-                $volume = Craft::$app->getVolumes()->getVolumeById($volumeId);
+                $volume = $volumes->getVolumeById($volumeId);
 
                 if (!$volume) {
-                    throw new HttpException(404, "No volume exists with the ID '$volumeId'.");
+                    throw new NotFoundHttpException('Volume not found');
                 }
             } else {
-                $volume = Craft::$app->getVolumes()->createVolume('craft\app\volumes\Local');
+                $volume = $volumes->createVolume('craft\app\volumes\Local');
             }
         }
 
         if (Craft::$app->getEdition() == Craft::Pro) {
-            $allVolumeTypes = Craft::$app->getVolumes()->getAllVolumeTypes();
+            /** @var Volume[] $allVolumeTypes */
+            $allVolumeTypes = $volumes->getAllVolumeTypes();
             $volumeInstances = [];
             $volumeTypeOptions = [];
 
             foreach ($allVolumeTypes as $class) {
                 if ($class === $volume->getType() || $class::isSelectable()) {
-                    $volumeInstances[$class] = Craft::$app->getVolumes()->createVolume($class);
+                    $volumeInstances[$class] = $volumes->createVolume($class);
 
                     $volumeTypeOptions[] = [
                         'value' => $class,
@@ -155,7 +157,7 @@ class VolumesController extends Controller
         $this->requirePostRequest();
 
         $request = Craft::$app->getRequest();
-        $volumeService = Craft::$app->getVolumes();
+        $volumes = Craft::$app->getVolumes();
 
         if (Craft::$app->getEdition() == Craft::Pro) {
             $type = $request->getBodyParam('type');
@@ -163,11 +165,13 @@ class VolumesController extends Controller
             $type = 'craft\app\volumes\Local';
         }
 
-        $volume = $volumeService->createVolume([
+        /** @var Volume $volume */
+        $volume = $volumes->createVolume([
             'id' => $request->getBodyParam('volumeId'),
             'type' => $type,
             'name' => $request->getBodyParam('name'),
             'handle' => $request->getBodyParam('handle'),
+            'hasUrls' => $request->getBodyParam('hasUrls'),
             'url' => $request->getBodyParam('url'),
             'settings' => $request->getBodyParam('types.'.$type)
         ]);
@@ -177,18 +181,21 @@ class VolumesController extends Controller
         $fieldLayout->type = Asset::className();
         $volume->setFieldLayout($fieldLayout);
 
-        if (Craft::$app->getVolumes()->saveVolume($volume)) {
-            Craft::$app->getSession()->setNotice(Craft::t('app', 'Volume saved.'));
+        $session = Craft::$app->getSession();
+        if ($volumes->saveVolume($volume)) {
+            $session->setNotice(Craft::t('app', 'Volume saved.'));
 
             return $this->redirectToPostedUrl();
-        } else {
-            Craft::$app->getSession()->setError(Craft::t('app', 'Couldn’t save volume.'));
         }
+
+        $session->setError(Craft::t('app', 'Couldn’t save volume.'));
 
         // Send the volume back to the template
         Craft::$app->getUrlManager()->setRouteParams([
             'volume' => $volume
         ]);
+
+        return null;
     }
 
     /**
@@ -236,9 +243,10 @@ class VolumesController extends Controller
         $this->requirePostRequest();
         $this->requireAjaxRequest();
 
-        $volumeType = Craft::$app->getRequest()->getRequiredBodyParam('volumeType');
-        $dataType = Craft::$app->getRequest()->getRequiredBodyParam('dataType');
-        $params = Craft::$app->getRequest()->getBodyParam('params');
+        $request = Craft::$app->getRequest();
+        $volumeType = $request->getRequiredBodyParam('volumeType');
+        $dataType = $request->getRequiredBodyParam('dataType');
+        $params = $request->getBodyParam('params');
 
         $volumeType = 'craft\app\volumes\\'.$volumeType;
 
@@ -247,13 +255,15 @@ class VolumesController extends Controller
         }
 
         try {
-            $result = call_user_func_array(array(
-                $volumeType,
-                'load'.ucfirst($dataType)
-            ), $params);
+            $result = call_user_func_array(
+                [
+                    $volumeType,
+                    'load'.ucfirst($dataType)
+                ],
+                $params);
 
             return $this->asJson($result);
-        } catch (\Exception $exception) {
+        } catch (Exception $exception) {
             return $this->asErrorJson($exception->getMessage());
         }
     }

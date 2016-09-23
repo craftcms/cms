@@ -1,22 +1,22 @@
 <?php
 /**
- * @link      http://buildwithcraft.com/
- * @copyright Copyright (c) 2015 Pixel & Tonic, Inc.
- * @license   http://buildwithcraft.com/license
+ * @link      https://craftcms.com/
+ * @copyright Copyright (c) Pixel & Tonic, Inc.
+ * @license   https://craftcms.com/license
  */
 
 namespace craft\app\web\twig\variables;
 
-use craft\app\models\EntryDraft as EntryDraftModel;
-use craft\app\models\EntryVersion as EntryVersionModel;
-
-\Craft::$app->requireEdition(\Craft::Client);
+use Craft;
+use craft\app\models\EntryDraft;
+use craft\app\models\EntryVersion;
 
 /**
  * Class EntryRevisions variable.
  *
- * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @since  3.0
+ * @author     Pixel & Tonic, Inc. <support@pixelandtonic.com>
+ * @since      3.0
+ * @deprecated in 3.0
  */
 class EntryRevisions
 {
@@ -36,7 +36,9 @@ class EntryRevisions
      */
     public function getDraftsByEntryId($entryId, $localeId = null)
     {
-        return \Craft::$app->getEntryRevisions()->getDraftsByEntryId($entryId, $localeId);
+        Craft::$app->getDeprecator()->log('craft.entryRevisions.getDraftsByEntryId()', 'craft.entryRevisions.getDraftsByEntryId() has been deprecated. Use craft.app.entryRevisions.getDraftsByEntryId() instead.');
+
+        return Craft::$app->getEntryRevisions()->getDraftsByEntryId($entryId, $localeId);
     }
 
     /**
@@ -49,7 +51,9 @@ class EntryRevisions
      */
     public function getEditableDraftsByEntryId($entryId, $localeId = null)
     {
-        return \Craft::$app->getEntryRevisions()->getEditableDraftsByEntryId($entryId, $localeId);
+        Craft::$app->getDeprecator()->log('craft.entryRevisions.getEditableDraftsByEntryId()', 'craft.entryRevisions.getEditableDraftsByEntryId() has been deprecated. Use craft.app.entryRevisions.getEditableDraftsByEntryId() instead.');
+
+        return Craft::$app->getEntryRevisions()->getEditableDraftsByEntryId($entryId, $localeId);
     }
 
     /**
@@ -57,11 +61,13 @@ class EntryRevisions
      *
      * @param integer $draftId
      *
-     * @return EntryDraftModel|null
+     * @return EntryDraft|null
      */
     public function getDraftById($draftId)
     {
-        return \Craft::$app->getEntryRevisions()->getDraftById($draftId);
+        Craft::$app->getDeprecator()->log('craft.entryRevisions.getDraftById()', 'craft.entryRevisions.getDraftById() has been deprecated. Use craft.app.entryRevisions.getDraftById() instead.');
+
+        return Craft::$app->getEntryRevisions()->getDraftById($draftId);
     }
 
     // Versions
@@ -77,7 +83,9 @@ class EntryRevisions
      */
     public function getVersionsByEntryId($entryId, $localeId)
     {
-        return \Craft::$app->getEntryRevisions()->getVersionsByEntryId($entryId, $localeId, 10);
+        Craft::$app->getDeprecator()->log('craft.entryRevisions.getVersionsByEntryId()', 'craft.entryRevisions.getVersionsByEntryId() has been deprecated. Use craft.app.entryRevisions.getVersionsByEntryId() instead.');
+
+        return Craft::$app->getEntryRevisions()->getVersionsByEntryId($entryId, $localeId, 10);
     }
 
     /**
@@ -85,10 +93,12 @@ class EntryRevisions
      *
      * @param integer $versionId
      *
-     * @return EntryVersionModel|null
+     * @return EntryVersion|null
      */
     public function getVersionById($versionId)
     {
-        return \Craft::$app->getEntryRevisions()->getVersionById($versionId);
+        Craft::$app->getDeprecator()->log('craft.entryRevisions.getVersionById()', 'craft.entryRevisions.getVersionById() has been deprecated. Use craft.app.entryRevisions.getVersionById() instead.');
+
+        return Craft::$app->getEntryRevisions()->getVersionById($versionId);
     }
 }

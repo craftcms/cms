@@ -1,8 +1,8 @@
 <?php
 /**
- * @link      http://buildwithcraft.com/
- * @copyright Copyright (c) 2015 Pixel & Tonic, Inc.
- * @license   http://buildwithcraft.com/license
+ * @link      https://craftcms.com/
+ * @copyright Copyright (c) Pixel & Tonic, Inc.
+ * @license   https://craftcms.com/license
  */
 
 namespace craft\app\base;
@@ -28,7 +28,7 @@ abstract class Model extends \yii\base\Model
      *
      * @param mixed $config Attribute values to populate the model with (name => value).
      *
-     * @return Model The new model
+     * @return $this The new model
      */
     public static function create($config)
     {
@@ -43,6 +43,8 @@ abstract class Model extends \yii\base\Model
      *
      * @param Model $model  The model to be populated.
      * @param array $config Attribute values to populate the model with (name => value).
+     *
+     * @return void
      */
     public static function populateModel($model, $config)
     {
@@ -77,7 +79,7 @@ abstract class Model extends \yii\base\Model
      * @param string $name
      * @param array  $arguments
      *
-     * @return Model
+     * @return $this
      * @throws UnknownMethodException when calling an unknown method
      */
     public function __call($name, $arguments)
@@ -134,9 +136,9 @@ abstract class Model extends \yii\base\Model
             $fields[$attribute] = function ($model, $attribute) {
                 if (!empty($model->$attribute)) {
                     return DateTimeHelper::toIso8601($model->$attribute);
-                } else {
-                    return $model->$attribute;
                 }
+
+                return $model->$attribute;
             };
         }
 
@@ -162,7 +164,7 @@ abstract class Model extends \yii\base\Model
     /**
      * Returns a copy of this model.
      *
-     * @return Model
+     * @return $this
      */
     public function copy()
     {

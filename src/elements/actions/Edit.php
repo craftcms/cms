@@ -1,8 +1,8 @@
 <?php
 /**
- * @link      http://buildwithcraft.com/
- * @copyright Copyright (c) 2015 Pixel & Tonic, Inc.
- * @license   http://buildwithcraft.com/license
+ * @link      https://craftcms.com/
+ * @copyright Copyright (c) Pixel & Tonic, Inc.
+ * @license   https://craftcms.com/license
  */
 
 namespace craft\app\elements\actions;
@@ -67,7 +67,22 @@ class Edit extends ElementAction
 		},
 		activate: function(\$selectedItems)
 		{
-			new Craft.ElementEditor(\$selectedItems.find('.element'));
+			var \$element = \$selectedItems.find('.element:first');
+
+			if (Craft.elementIndex.viewMode == 'table') {
+				new Craft.ElementEditor(\$element, {
+					params: {
+						includeTableAttributesForSource: Craft.elementIndex.sourceKey
+					},
+					onSaveElement: $.proxy(function(response) {
+						if (response.tableAttributes) {
+							Craft.elementIndex.view._updateTableAttributes(\$element, response.tableAttributes);
+						}
+					}, this)
+				});
+			} else {
+				new Craft.ElementEditor(\$element);
+			}
 		}
 	});
 })();

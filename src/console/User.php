@@ -1,12 +1,13 @@
 <?php
 /**
- * @link      http://buildwithcraft.com/
- * @copyright Copyright (c) 2015 Pixel & Tonic, Inc.
- * @license   http://buildwithcraft.com/license
+ * @link      https://craftcms.com/
+ * @copyright Copyright (c) Pixel & Tonic, Inc.
+ * @license   https://craftcms.com/license
  */
 
 namespace craft\app\console;
 
+use craft\app\elements\User as UserElement;
 use yii\base\Component;
 use yii\base\InvalidValueException;
 use yii\web\IdentityInterface;
@@ -25,7 +26,7 @@ class User extends Component
     // =========================================================================
 
     /**
-     * @var bool
+     * @var UserElement|false
      */
     private $_identity = false;
 
@@ -40,18 +41,6 @@ class User extends Component
     public function getIsGuest()
     {
         return $this->getIdentity() === null;
-    }
-
-    /**
-     * Returns a value that uniquely represents the user.
-     *
-     * @return string|int The unique identifier for the user. If null, it means the user is a guest.
-     */
-    public function getId()
-    {
-        $identity = $this->getIdentity();
-
-        return $identity !== null ? $identity->getId() : null;
     }
 
     // Authorization
@@ -86,7 +75,7 @@ class User extends Component
     /**
      * Returns the current identity object.
      *
-     * @return boolean|string
+     * @return UserElement|false
      */
     public function getIdentity()
     {

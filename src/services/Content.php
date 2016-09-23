@@ -1,8 +1,8 @@
 <?php
 /**
- * @link      http://buildwithcraft.com/
- * @copyright Copyright (c) 2015 Pixel & Tonic, Inc.
- * @license   http://buildwithcraft.com/license
+ * @link      https://craftcms.com/
+ * @copyright Copyright (c) Pixel & Tonic, Inc.
+ * @license   https://craftcms.com/license
  */
 
 namespace craft\app\services;
@@ -13,10 +13,10 @@ use craft\app\base\ElementInterface;
 use craft\app\base\Field;
 use craft\app\base\FieldInterface;
 use craft\app\db\Query;
-use craft\app\errors\Exception;
-use craft\app\events\ElementEvent;
-use craft\app\models\FieldLayout as FieldLayoutModel;
+use craft\app\events\ElementContentEvent;
+use craft\app\models\FieldLayout;
 use yii\base\Component;
+use yii\base\Exception;
 
 /**
  * Class Content service.
@@ -30,6 +30,13 @@ class Content extends Component
 {
     // Constants
     // =========================================================================
+
+    /**
+     * @event ElementEvent The event that is triggered before an element's content is saved.
+     *
+     * You may set [[ElementEvent::isValid]] to `false` to prevent the content from getting saved.
+     */
+    const EVENT_BEFORE_SAVE_CONTENT = 'beforeSaveContent';
 
     /**
      * @event ElementEvent The event that is triggered after an element's content is saved.
@@ -60,14 +67,15 @@ class Content extends Component
     /**
      * Returns the content row for a given element, with field column prefixes removed from the keys.
      *
-     * @param ElementInterface|Element $element The element whose content we're looking for.
+     * @param ElementInterface $element The element whose content we're looking for.
      *
-     * @return array|null The element's content row values, or null if the row could not be found
+     * @return array|false The element's content row values, or false if the row could not be found
      */
     public function getContentRow(ElementInterface $element)
     {
+        /** @var Element $element */
         if (!$element->id || !$element->locale) {
-            return null;
+            return false;
         }
 
         $originalContentTable = $this->contentTable;
@@ -100,12 +108,13 @@ class Content extends Component
     /**
      * Populates a given element with its custom field values.
      *
-     * @param ElementInterface|Element $element The element for which we should create a new content model.
+     * @param ElementInterface $element The element for which we should create a new content model.
      *
      * @return void
      */
     public function populateElementContent(ElementInterface $element)
     {
+        /** @var Element $element */
         // Make sure the element has content
         if (!$element->hasContent()) {
             return;
@@ -120,7 +129,8 @@ class Content extends Component
             }
             if ($fieldLayout) {
                 foreach ($fieldLayout->getFields() as $field) {
-                    if ($field->hasContentColumn()) {
+                    /** @var Field $field */
+                    if ($field::hasContentColumn()) {
                         $element->setFieldValue($field->handle, $row[$field->handle]);
                     }
                 }
@@ -131,19 +141,20 @@ class Content extends Component
     /**
      * Saves an element's content.
      *
-     * @param ElementInterface|Element $element            The element whose content we're saving.
-     * @param boolean                  $validate           Whether the element's content should be validated first.
-     * @param boolean                  $updateOtherLocales Whether any non-translatable fields' values should be copied to the
+     * @param ElementInterface $element                    The element whose content we're saving.
+     * @param boolean          $validate                   Whether the element's content should be validated first.
+     * @param boolean          $updateOtherLocales         Whether any non-translatable fields' values should be copied to the
      *                                                     element's other locales.
      *
-     * @throws Exception
      * @return boolean Whether the content was saved successfully. If it wasn't, any validation errors will be saved on the
      *              element and its content model.
+     * @throws Exception if $element has not been saved yet
      */
     public function saveContent(ElementInterface $element, $validate = true, $updateOtherLocales = true)
     {
+        /** @var Element $element */
         if (!$element->id) {
-            throw new Exception(Craft::t('app', 'Cannot save the content of an unsaved element.'));
+            throw new Exception('Cannot save the content of an unsaved element.');
         }
 
         $originalContentTable = $this->contentTable;
@@ -154,52 +165,69 @@ class Content extends Component
         $this->fieldColumnPrefix = $element->getFieldColumnPrefix();
         $this->fieldContext = $element->getFieldContext();
 
+        $success = false;
+
         if (!$validate || $this->validateContent($element)) {
-            // Prepare the data to be saved
-            $values = [
-                'elementId' => $element->id,
-                'locale' => $element->locale
-            ];
-            if ($element->hasTitles() && $element->title) {
-                $values['title'] = $element->title;
-            }
-            $fieldLayout = $element->getFieldLayout();
-            if ($fieldLayout) {
-                foreach ($fieldLayout->getFields() as $field) {
-                    if ($field->hasContentColumn()) {
-                        $column = $this->fieldColumnPrefix.$field->handle;
-                        $values[$column] = $field->prepareValueForDb($element->getFieldValue($field->handle), $element);
+
+            // Fire a 'beforeSaveContent' event
+            $event = new ElementContentEvent([
+                'element' => $element
+            ]);
+
+            $this->trigger(self::EVENT_BEFORE_SAVE_CONTENT, $event);
+
+            // Is the event giving us the go-ahead?
+            if ($event->isValid) {
+                // Prepare the data to be saved
+                $values = [
+                    'elementId' => $element->id,
+                    'locale' => $element->locale
+                ];
+                if ($element->hasTitles() && $element->title) {
+                    $values['title'] = $element->title;
+                }
+                $fieldLayout = $element->getFieldLayout();
+                if ($fieldLayout) {
+                    foreach ($fieldLayout->getFields() as $field) {
+                        /** @var Field $field */
+                        if ($field::hasContentColumn()) {
+                            $column = $this->fieldColumnPrefix.$field->handle;
+                            $values[$column] = $field->prepareValueForDb($element->getFieldValue($field->handle), $element);
+                        }
                     }
                 }
-            }
 
-            // Insert/update the DB row
-            if ($element->contentId) {
-                // Update the existing row
-                Craft::$app->getDb()->createCommand()->update($this->contentTable, $values, ['id' => $element->contentId])->execute();
-            } else {
-                // Insert a new row and store its ID on the element
-                Craft::$app->getDb()->createCommand()->insert($this->contentTable, $values)->execute();
-                $element->contentId = Craft::$app->getDb()->getLastInsertID();
-            }
-
-            // Fire an 'afterSaveContent' event
-            $this->trigger(static::EVENT_AFTER_SAVE_CONTENT, new ElementEvent([
-                'element' => $element
-            ]));
-
-            if ($fieldLayout) {
-                if ($updateOtherLocales && Craft::$app->isLocalized()) {
-                    $this->_duplicateNonTranslatableFieldValues($element, $values, $nonTranslatableFields, $otherContentModels);
+                // Insert/update the DB row
+                if ($element->contentId) {
+                    // Update the existing row
+                    Craft::$app->getDb()->createCommand()
+                        ->update($this->contentTable, $values, ['id' => $element->contentId])
+                        ->execute();
+                } else {
+                    // Insert a new row and store its ID on the element
+                    Craft::$app->getDb()->createCommand()
+                        ->insert($this->contentTable, $values)
+                        ->execute();
+                    $element->contentId = Craft::$app->getDb()->getLastInsertID();
                 }
 
-                $this->_updateSearchIndexes($element, $fieldLayout, $nonTranslatableFields, $otherContentModels);
-            }
+                if ($fieldLayout) {
+                    if ($updateOtherLocales && Craft::$app->getIsLocalized()) {
+                        $this->_duplicateNonTranslatableFieldValues($element, $values, $nonTranslatableFields, $otherContentModels);
+                    }
 
-            $success = true;
-        } else {
-            $element->addErrors($values->getErrors());
-            $success = false;
+                    $this->_updateSearchIndexes($element, $fieldLayout, $nonTranslatableFields, $otherContentModels);
+                }
+
+                $success = true;
+            }
+        }
+
+        if ($success) {
+            // Fire an 'afterSaveContent' event
+            $this->trigger(self::EVENT_AFTER_SAVE_CONTENT, new ElementContentEvent([
+                'element' => $element
+            ]));
         }
 
         $this->contentTable = $originalContentTable;
@@ -212,17 +240,19 @@ class Content extends Component
     /**
      * Validates some content with a given field layout.
      *
-     * @param ElementInterface|Element $element The element whose content should be validated.
+     * @param ElementInterface $element The element whose content should be validated.
      *
      * @return boolean Whether the element's content validates.
      */
     public function validateContent(ElementInterface $element)
     {
+        /** @var Element $element */
         $validates = true;
         $fieldLayout = $element->getFieldLayout();
 
         if ($fieldLayout) {
             foreach ($fieldLayout->getFields() as $field) {
+                /** @var Field $field */
                 $value = $element->getFieldValue($field->handle);
                 $errors = $field->validateValue($value, $element);
 
@@ -235,7 +265,7 @@ class Content extends Component
                     $i18n = Craft::$app->getI18n();
                     $params = [
                         'attribute' => Craft::t('site', $field->name),
-                        'value' => is_array($value) ? 'array()' : $value
+                        'value' => is_array($value) ? 'array()' : (is_object($value) ? get_class($value) : $value),
                     ];
 
                     foreach ($errors as $error) {
@@ -258,21 +288,23 @@ class Content extends Component
      * Copies the new values of any non-translatable fields across the element's
      * other locales.
      *
-     * @param ElementInterface         $element
-     * @param array                    $sourceValues
-     * @param FieldInterface[]|Field[] &$nonTranslatableFields
-     * @param array                    &$otherContentRows
+     * @param ElementInterface $element
+     * @param array            $sourceValues
+     * @param FieldInterface[] &$nonTranslatableFields
+     * @param array            &$otherContentRows
      *
      * @return void
      */
     private function _duplicateNonTranslatableFieldValues($element, $sourceValues, &$nonTranslatableFields, &$otherContentRows)
     {
+        /** @var Element $element */
         // Get all of the non-translatable fields
-        /** @var Field[]|FieldInterface[] $nonTranslatableFields */
+        /** @var Field[] $nonTranslatableFields */
         $nonTranslatableFields = [];
         $fieldLayout = $element->getFieldLayout();
         foreach ($fieldLayout->getFields() as $field) {
-            if (!$field->translatable && $field->hasContentColumn()) {
+            /** @var Field $field */
+            if (!$field->translatable && $field::hasContentColumn()) {
                 $nonTranslatableFields[] = $field;
             }
         }
@@ -296,7 +328,9 @@ class Content extends Component
                     $values[$column] = $sourceValues[$column];
                 }
 
-                Craft::$app->getDb()->createCommand()->update($this->contentTable, $values, ['id' => $values['id']])->execute();
+                Craft::$app->getDb()->createCommand()
+                    ->update($this->contentTable, $values, ['id' => $values['id']])
+                    ->execute();
             }
         }
     }
@@ -305,17 +339,19 @@ class Content extends Component
      * Updates the search indexes based on the new content values.
      *
      * @param ElementInterface $element
-     * @param FieldLayoutModel $fieldLayout
+     * @param FieldLayout      $fieldLayout
      * @param array|null       &$nonTranslatableFields
      * @param array|null       &$otherContentModels
      *
      * @return void
      */
-    private function _updateSearchIndexes(ElementInterface $element, FieldLayoutModel $fieldLayout, &$nonTranslatableFields = null, &$otherContentModels = null)
+    private function _updateSearchIndexes(ElementInterface $element, FieldLayout $fieldLayout, &$nonTranslatableFields = null, &$otherContentModels = null)
     {
+        /** @var Element $element */
         $searchKeywordsByLocale = [];
 
         foreach ($fieldLayout->getFields() as $field) {
+            /** @var Field $field */
             // Set the keywords for the content's locale
             $fieldValue = $element->getFieldValue($field->handle);
             $fieldSearchKeywords = $field->getSearchKeywords($fieldValue, $element);

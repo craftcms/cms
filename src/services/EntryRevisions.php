@@ -1,17 +1,20 @@
 <?php
 /**
- * @link      http://buildwithcraft.com/
- * @copyright Copyright (c) 2015 Pixel & Tonic, Inc.
- * @license   http://buildwithcraft.com/license
+ * @link      https://craftcms.com/
+ * @copyright Copyright (c) Pixel & Tonic, Inc.
+ * @license   https://craftcms.com/license
  */
 
 namespace craft\app\services;
 
 use Craft;
+use craft\app\base\Field;
 use craft\app\db\Query;
-use craft\app\errors\Exception;
+use craft\app\errors\EntryDraftNotFoundException;
+use craft\app\events\EntryDraftDeleteEvent;
 use craft\app\events\DraftEvent;
-use craft\app\events\EntryEvent;
+use craft\app\events\PublishDraftEvent;
+use craft\app\events\RevertEntryEvent;
 use craft\app\helpers\ArrayHelper;
 use craft\app\helpers\Json;
 use craft\app\elements\Entry;
@@ -21,8 +24,6 @@ use craft\app\models\Section;
 use craft\app\records\EntryDraft as EntryDraftRecord;
 use craft\app\records\EntryVersion as EntryVersionRecord;
 use yii\base\Component;
-
-Craft::$app->requireEdition(Craft::Client);
 
 /**
  * Class EntryRevisions service.
@@ -38,9 +39,23 @@ class EntryRevisions extends Component
     // =========================================================================
 
     /**
+     * @event DraftEvent The event that is triggered before a draft is saved.
+     *
+     * You may set [[DraftEvent::isValid]] to `false` to prevent the draft from getting saved.
+     */
+    const EVENT_BEFORE_SAVE_DRAFT = 'beforeSaveDraft';
+
+    /**
      * @event DraftEvent The event that is triggered after a draft is saved.
      */
     const EVENT_AFTER_SAVE_DRAFT = 'afterSaveDraft';
+
+    /**
+     * @event DraftEvent The event that is triggered before a draft is published.
+     *
+     * You may set [[DraftEvent::isValid]] to `false` to prevent the draft from getting published.
+     */
+    const EVENT_BEFORE_PUBLISH_DRAFT = 'beforePublishDraft';
 
     /**
      * @event DraftEvent The event that is triggered after a draft is published.
@@ -95,6 +110,8 @@ class EntryRevisions extends Component
 
             return $draft;
         }
+
+        return null;
     }
 
     /**
@@ -168,7 +185,7 @@ class EntryRevisions extends Component
      */
     public function saveDraft(EntryDraft $draft)
     {
-        $draftRecord = $this->_getDraftRecord($draft);
+        $isNewDraft = !$draft->id;
 
         if (!$draft->name && $draft->id) {
             // Get the total number of existing drafts for this entry/locale
@@ -184,22 +201,40 @@ class EntryRevisions extends Component
                 ['num' => $totalDrafts + 1]);
         }
 
-        $draftRecord->name = $draft->name;
-        $draftRecord->notes = $draft->revisionNotes;
-        $draftRecord->data = $this->_getRevisionData($draft);
+        // Fire a 'beforeSaveDraft' event
+        $event = new DraftEvent([
+            'draft' => $draft,
+            'isNew' => $isNewDraft,
+        ]);
 
-        if ($draftRecord->save()) {
-            $draft->draftId = $draftRecord->id;
+        $this->trigger(self::EVENT_BEFORE_SAVE_DRAFT, $event);
 
-            // Fire an 'afterSaveDraft' event
-            $this->trigger(static::EVENT_AFTER_SAVE_DRAFT, new DraftEvent([
-                'draft' => $draft
-            ]));
+        $success = false;
 
-            return true;
-        } else {
-            return false;
+        // Is the event giving us the go-ahead?
+        if ($event->isValid) {
+
+            $draftRecord = $this->_getDraftRecord($draft);
+            $draftRecord->name = $draft->name;
+            $draftRecord->notes = $draft->revisionNotes;
+            $draftRecord->data = $this->_getRevisionData($draft);
+
+            if ($draftRecord->save()) {
+                $draft->draftId = $draftRecord->id;
+
+                $success = true;
+            }
         }
+
+        if ($success) {
+            // Fire an 'afterSaveDraft' event
+            $this->trigger(self::EVENT_AFTER_SAVE_DRAFT, new DraftEvent([
+                'draft' => $draft,
+                'isNew' => $isNewDraft,
+            ]));
+        }
+
+         return $success;
     }
 
     /**
@@ -222,18 +257,31 @@ class EntryRevisions extends Component
                 ['name' => $draft->name]);
         }
 
-        if (Craft::$app->getEntries()->saveEntry($draft)) {
+        // Fire a 'beforePublishDraft' event
+        $event = new PublishDraftEvent([
+            'draft' => $draft
+        ]);
+
+        $this->trigger(self::EVENT_BEFORE_PUBLISH_DRAFT, $event);
+
+        $success = false;
+
+        // Is the event giving us the go-ahead?
+        if ($event->isValid) {
+            if (Craft::$app->getEntries()->saveEntry($draft)) {
+                $success = true;
+                $this->deleteDraft($draft);
+            }
+        }
+
+        if ($success) {
             // Fire an 'afterPublishDraft' event
-            $this->trigger(static::EVENT_AFTER_PUBLISH_DRAFT, new DraftEvent([
+            $this->trigger(self::EVENT_AFTER_PUBLISH_DRAFT, new PublishDraftEvent([
                 'draft' => $draft
             ]));
-
-            $this->deleteDraft($draft);
-
-            return true;
-        } else {
-            return false;
         }
+
+        return $success;
     }
 
     /**
@@ -241,9 +289,8 @@ class EntryRevisions extends Component
      *
      * @param EntryDraft $draft
      *
-     * @return boolean
-     * @throws \Exception
-     * @throws \yii\db\Exception
+     * @return boolean Whether the draft was deleted successfully
+     * @throws \Exception if reasons
      */
     public function deleteDraft(EntryDraft $draft)
     {
@@ -251,11 +298,11 @@ class EntryRevisions extends Component
 
         try {
             // Fire a 'beforeDeleteDraft' event
-            $event = new DraftEvent([
+            $event = new EntryDraftDeleteEvent([
                 'draft' => $draft
             ]);
 
-            $this->trigger(static::EVENT_BEFORE_DELETE_DRAFT, $event);
+            $this->trigger(self::EVENT_BEFORE_DELETE_DRAFT, $event);
 
             // Is the event giving us the go-ahead?
             if ($event->isValid) {
@@ -271,14 +318,14 @@ class EntryRevisions extends Component
             // in onBeforeDeleteDraft
             $transaction->commit();
         } catch (\Exception $e) {
-            $transaction->rollback();
+            $transaction->rollBack();
 
             throw $e;
         }
 
         if ($success) {
             // Fire an 'afterDeleteDraft' event
-            $this->trigger(static::EVENT_AFTER_DELETE_DRAFT, new DraftEvent([
+            $this->trigger(self::EVENT_AFTER_DELETE_DRAFT, new EntryDraftDeleteEvent([
                 'draft' => $draft
             ]));
         }
@@ -300,8 +347,11 @@ class EntryRevisions extends Component
         if ($versionRecord) {
             $config = ArrayHelper::toArray($versionRecord, [], false);
             $config['data'] = Json::decode($config['data']);
+
             return EntryVersion::create($config);
         }
+
+        return null;
     }
 
     /**
@@ -394,15 +444,15 @@ class EntryRevisions extends Component
 
         if (Craft::$app->getEntries()->saveEntry($version)) {
             // Fire an 'afterRevertEntryToVersion' event
-            $this->trigger(static::EVENT_AFTER_REVERT_ENTRY_TO_VERSION,
-                new EntryEvent([
+            $this->trigger(self::EVENT_AFTER_REVERT_ENTRY_TO_VERSION,
+                new RevertEntryEvent([
                     'entry' => $version,
                 ]));
 
             return true;
-        } else {
-            return false;
         }
+
+        return false;
     }
 
     // Private Methods
@@ -413,8 +463,8 @@ class EntryRevisions extends Component
      *
      * @param EntryDraft $draft
      *
-     * @throws Exception
      * @return EntryDraftRecord
+     * @throws EntryDraftNotFoundException if $draft->draftId is invalid
      */
     private function _getDraftRecord(EntryDraft $draft)
     {
@@ -422,7 +472,7 @@ class EntryRevisions extends Component
             $draftRecord = EntryDraftRecord::findOne($draft->draftId);
 
             if (!$draftRecord) {
-                throw new Exception(Craft::t('app', 'No draft exists with the ID “{id}”.', ['id' => $draft->draftId]));
+                throw new EntryDraftNotFoundException("No draft exists with the ID '{$draft->draftId}'");
             }
         } else {
             $draftRecord = new EntryDraftRecord();
@@ -438,7 +488,7 @@ class EntryRevisions extends Component
     /**
      * Returns an array of all the revision data for a draft or version.
      *
-     * @param EntryDraft|EntryVersion $revision
+     * @param Entry $revision
      *
      * @return array
      */
@@ -452,12 +502,14 @@ class EntryRevisions extends Component
             'postDate' => ($revision->postDate ? $revision->postDate->getTimestamp() : null),
             'expiryDate' => ($revision->expiryDate ? $revision->expiryDate->getTimestamp() : null),
             'enabled' => $revision->enabled,
+            'newParentId' => $revision->newParentId,
             'fields' => [],
         ];
 
         $content = $revision->getContentFromPost();
 
         foreach (Craft::$app->getFields()->getAllFields() as $field) {
+            /** @var Field $field */
             if (isset($content[$field->handle]) && $content[$field->handle] !== null) {
                 $revisionData['fields'][$field->id] = $content[$field->handle];
             }

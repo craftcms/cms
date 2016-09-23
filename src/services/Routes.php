@@ -1,18 +1,17 @@
 <?php
 /**
- * @link      http://buildwithcraft.com/
- * @copyright Copyright (c) 2015 Pixel & Tonic, Inc.
- * @license   http://buildwithcraft.com/license
+ * @link      https://craftcms.com/
+ * @copyright Copyright (c) Pixel & Tonic, Inc.
+ * @license   https://craftcms.com/license
  */
 
 namespace craft\app\services;
 
 use Craft;
 use craft\app\db\Query;
-use craft\app\errors\Exception;
+use craft\app\errors\RouteNotFoundException;
 use craft\app\helpers\Io;
 use craft\app\helpers\Json;
-use craft\app\helpers\StringHelper;
 use craft\app\records\Route as RouteRecord;
 use yii\base\Component;
 
@@ -102,8 +101,8 @@ class Routes extends Component
      * @param integer|null $routeId  The route ID, if editing an existing route.
      * @param string|null  $locale
      *
-     * @throws Exception
      * @return RouteRecord
+     * @throws RouteNotFoundException if $routeId is invalid
      */
     public function saveRoute($urlParts, $template, $routeId = null, $locale = null)
     {
@@ -111,7 +110,7 @@ class Routes extends Component
             $routeRecord = RouteRecord::findOne($routeId);
 
             if (!$routeRecord) {
-                throw new Exception(Craft::t('app', 'No route exists with the ID “{id}”.', ['id' => $routeId]));
+                throw new RouteNotFoundException("No route exists with the ID '{$routeId}'");
             }
         } else {
             $routeRecord = new RouteRecord();
@@ -127,6 +126,7 @@ class Routes extends Component
         // Compile the URL parts into a regex pattern
         $urlPattern = '';
         $urlParts = array_filter($urlParts);
+        $subpatternNameCounts = [];
 
         foreach ($urlParts as $part) {
             if (is_string($part)) {
@@ -135,9 +135,20 @@ class Routes extends Component
             } else if (is_array($part)) {
                 // Is the name a valid handle?
                 if (preg_match('/^[a-zA-Z][a-zA-Z0-9_]*$/', $part[0])) {
+                    $subpatternName = $part[0];
+
+                    // Make sure it's unique
+                    if (isset($subpatternNameCounts[$subpatternName])) {
+                        $subpatternNameCounts[$subpatternName]++;
+
+                        // Append the count to the end of the name
+                        $subpatternName .= $subpatternNameCounts[$subpatternName];
+                    } else {
+                        $subpatternNameCounts[$subpatternName] = 1;
+                    }
+
                     // Add the var as a named subpattern
-                    $urlPattern .= '(?P<'.preg_quote($part[0],
-                            '/').'>'.$part[1].')';
+                    $urlPattern .= '(?P<'.preg_quote($subpatternName).'>'.$part[1].')';
                 } else {
                     // Just match it
                     $urlPattern .= '('.$part[1].')';
@@ -163,8 +174,9 @@ class Routes extends Component
      */
     public function deleteRouteById($routeId)
     {
-        Craft::$app->getDb()->createCommand()->delete('{{%routes}}',
-            ['id' => $routeId])->execute();
+        Craft::$app->getDb()->createCommand()
+            ->delete('{{%routes}}', ['id' => $routeId])
+            ->execute();
 
         return true;
     }
@@ -182,7 +194,9 @@ class Routes extends Component
             $data = ['sortOrder' => $order + 1];
             $condition = ['id' => $routeId];
 
-            Craft::$app->getDb()->createCommand()->update('{{%routes}}', $data, $condition)->execute();
+            Craft::$app->getDb()->createCommand()
+                ->update('{{%routes}}', $data, $condition)
+                ->execute();
         }
     }
 

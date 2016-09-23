@@ -1,8 +1,8 @@
 <?php
 /**
- * @link      http://buildwithcraft.com/
- * @copyright Copyright (c) 2015 Pixel & Tonic, Inc.
- * @license   http://buildwithcraft.com/license
+ * @link      https://craftcms.com/
+ * @copyright Copyright (c) Pixel & Tonic, Inc.
+ * @license   https://craftcms.com/license
  */
 
 namespace craft\app\elements\db;
@@ -15,8 +15,11 @@ use craft\app\base\Element;
 use craft\app\base\ElementInterface;
 use craft\app\base\Field;
 use craft\app\base\FieldInterface;
-use craft\app\behaviors\ElementQueryBehavior;
-use craft\app\behaviors\ElementQueryTrait;
+use /** @noinspection PhpUndefinedClassInspection */
+    craft\app\behaviors\ElementQueryBehavior;
+use /** @noinspection PhpUndefinedClassInspection */
+    craft\app\behaviors\ElementQueryTrait;
+use craft\app\db\Connection;
 use craft\app\db\FixedOrderExpression;
 use craft\app\db\Query;
 use craft\app\db\QueryAbortedException;
@@ -29,13 +32,14 @@ use IteratorAggregate;
 use yii\base\Arrayable;
 use yii\base\ArrayableTrait;
 use yii\base\NotSupportedException;
-use yii\db\Connection;
 
 /**
  * ElementQuery represents a SELECT SQL statement for elements in a way that is independent of DBMS.
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since  3.0
+ *
+ * @method ElementInterface|array nth($n, $db = null)
  */
 class ElementQuery extends Query implements ElementQueryInterface, Arrayable, Countable, IteratorAggregate, ArrayAccess
 {
@@ -43,7 +47,8 @@ class ElementQuery extends Query implements ElementQueryInterface, Arrayable, Co
     // =========================================================================
 
     use ArrayableTrait;
-    use ElementQueryTrait;
+    use /** @noinspection PhpUndefinedClassInspection */
+        ElementQueryTrait;
 
     // Constants
     // =========================================================================
@@ -109,6 +114,11 @@ class ElementQuery extends Query implements ElementQueryInterface, Arrayable, Co
      * @var mixed The element ID(s). Prefix IDs with "not " to exclude them.
      */
     public $id;
+
+    /**
+     * @var mixed The element UID(s). Prefix UIDs with "not " to exclude them.
+     */
+    public $uid;
 
     /**
      * @var boolean Whether results should be returned in the order specified by [[id]].
@@ -177,14 +187,14 @@ class ElementQuery extends Query implements ElementQueryInterface, Arrayable, Co
     public $ref;
 
     /**
-     * @inheritdoc
+     * @var mixed The eager-loading declaration
      */
-    public $orderBy = 'elements.dateCreated desc';
+    public $with;
 
     /**
      * @inheritdoc
      */
-    public $limit;
+    public $orderBy = 'elements.dateCreated desc';
 
     // Structure parameters
     // -------------------------------------------------------------------------
@@ -292,6 +302,11 @@ class ElementQuery extends Query implements ElementQueryInterface, Arrayable, Co
      */
     private $_resultCriteria;
 
+    /**
+     * @var array
+     */
+    private $_searchScores;
+
     // Public Methods
     // =========================================================================
 
@@ -316,9 +331,9 @@ class ElementQuery extends Query implements ElementQueryInterface, Arrayable, Co
             Craft::$app->getDeprecator()->log('ElementQuery::order()', 'The “order” element parameter has been deprecated. Use “orderBy” instead.');
 
             return isset($this->orderBy);
-        } else {
-            return parent::__isset($name);
         }
+
+        return parent::__isset($name);
     }
 
     /**
@@ -330,9 +345,9 @@ class ElementQuery extends Query implements ElementQueryInterface, Arrayable, Co
             Craft::$app->getDeprecator()->log('ElementQuery::order()', 'The “order” element parameter has been deprecated. Use “orderBy” instead.');
 
             return $this->orderBy;
-        } else {
-            return parent::__get($name);
         }
+
+        return parent::__get($name);
     }
 
     /**
@@ -340,11 +355,13 @@ class ElementQuery extends Query implements ElementQueryInterface, Arrayable, Co
      */
     public function __set($name, $value)
     {
-        if ($name === 'order') {
-            Craft::$app->getDeprecator()->log('ElementQuery::order()', 'The “order” element parameter has been deprecated. Use “orderBy” instead.');
-            $this->orderBy = $value;
-        } else {
-            parent::__set($name, $value);
+        switch ($name) {
+            case 'order':
+                Craft::$app->getDeprecator()->log('ElementQuery::order()', 'The “order” element parameter has been deprecated. Use “orderBy” instead.');
+                $this->orderBy = $value;
+                break;
+            default:
+                parent::__set($name, $value);
         }
     }
 
@@ -363,9 +380,9 @@ class ElementQuery extends Query implements ElementQueryInterface, Arrayable, Co
             }
 
             return $this;
-        } else {
-            return parent::__call($name, $params);
         }
+
+        return parent::__call($name, $params);
     }
 
     /**
@@ -400,9 +417,9 @@ class ElementQuery extends Query implements ElementQueryInterface, Arrayable, Co
             $this->limit = $limit;
 
             return $exists;
-        } else {
-            return $this->__isset($name);
         }
+
+        return $this->__isset($name);
     }
 
     /**
@@ -416,9 +433,9 @@ class ElementQuery extends Query implements ElementQueryInterface, Arrayable, Co
     {
         if (is_numeric($name)) {
             return $this->nth($name);
-        } else {
-            return $this->__get($name);
         }
+
+        return $this->__get($name);
     }
 
     /**
@@ -460,6 +477,7 @@ class ElementQuery extends Query implements ElementQueryInterface, Arrayable, Co
      */
     public function behaviors()
     {
+        /** @noinspection PhpUndefinedClassInspection */
         return [
             'customFields' => ElementQueryBehavior::className(),
         ];
@@ -497,6 +515,16 @@ class ElementQuery extends Query implements ElementQueryInterface, Arrayable, Co
     public function id($value)
     {
         $this->id = $value;
+
+        return $this;
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function uid($value)
+    {
+        $this->uid = $value;
 
         return $this;
     }
@@ -627,6 +655,16 @@ class ElementQuery extends Query implements ElementQueryInterface, Arrayable, Co
     public function ref($value)
     {
         $this->ref = $value;
+
+        return $this;
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function with($value)
+    {
+        $this->with = $value;
 
         return $this;
     }
@@ -784,6 +822,7 @@ class ElementQuery extends Query implements ElementQueryInterface, Arrayable, Co
         } else {
             $this->query->addSelect([
                 'elements.id',
+                'elements.uid',
                 'elements.type',
                 'elements.enabled',
                 'elements.archived',
@@ -809,7 +848,9 @@ class ElementQuery extends Query implements ElementQueryInterface, Arrayable, Co
             ->innerJoin('{{%elements_i18n}} elements_i18n', 'elements_i18n.elementId = elements.id')
             ->andWhere('elements_i18n.locale = :locale')
             ->andWhere($this->where)
+            ->offset($this->offset)
             ->limit($this->limit)
+            ->addParams($this->params)
             ->addParams([':locale' => $this->locale]);
 
         if ($class::hasContent() && $this->contentTable) {
@@ -821,6 +862,10 @@ class ElementQuery extends Query implements ElementQueryInterface, Arrayable, Co
 
         if ($this->id) {
             $this->subQuery->andWhere(Db::parseParam('elements.id', $this->id, $this->subQuery->params));
+        }
+
+        if ($this->uid) {
+            $this->subQuery->andWhere(Db::parseParam('elements.uid', $this->uid, $this->subQuery->params));
         }
 
         if ($this->archived) {
@@ -870,12 +915,22 @@ class ElementQuery extends Query implements ElementQueryInterface, Arrayable, Co
 
     /**
      * @inheritdoc
+     *
      * @return ElementInterface[]|array The resulting elements.
      */
     public function populate($rows)
     {
         if (empty($rows)) {
             return [];
+        }
+
+        // Should we set a search score on the elements?
+        if ($this->_searchScores !== null) {
+            foreach ($rows as $row) {
+                if (isset($this->_searchScores[$row['id']])) {
+                    $row['searchScore'] = $this->_searchScores[$row['id']];
+                }
+            }
         }
 
         $elements = $this->_createElements($rows);
@@ -928,17 +983,9 @@ class ElementQuery extends Query implements ElementQueryInterface, Arrayable, Co
 
         if ($row !== false) {
             return $this->_createElement($row) ?: null;
-        } else {
-            return null;
         }
-    }
 
-    /**
-     * @inheritdoc
-     */
-    public function nth($n, $db = null)
-    {
-        return parent::nth($n, $db);
+        return null;
     }
 
     /**
@@ -1009,7 +1056,7 @@ class ElementQuery extends Query implements ElementQueryInterface, Arrayable, Co
      *
      * @param string $value The property value
      *
-     * @return self The query object itself
+     * @return $this self reference
      * @deprecated in Craft 3.0. Use [[orderBy()]] instead.
      */
     public function order($value)
@@ -1179,7 +1226,7 @@ class ElementQuery extends Query implements ElementQueryInterface, Arrayable, Co
             $fieldAttributes = $this->getBehavior('customFields');
 
             foreach ($this->customFields as $field) {
-                /** @var FieldInterface $field */
+                /** @var Field $field */
                 if ($field->hasContentColumn()) {
                     $this->query->addSelect('content.'.$this->_getFieldContentColumnName($field));
                 }
@@ -1270,17 +1317,22 @@ class ElementQuery extends Query implements ElementQueryInterface, Arrayable, Co
         // parentOf(element) => relatedTo({ target: element })
 
         // TODO: Remove this code in Craft 4
+        /** @noinspection PhpDeprecationInspection */
         if (!$this->relatedTo && ($this->childOf || $this->parentOf)) {
             $this->relatedTo = ['and'];
 
+            /** @noinspection PhpDeprecationInspection */
             if ($this->childOf) {
+                /** @noinspection PhpDeprecationInspection */
                 $this->relatedTo[] = [
                     'sourceElement' => $this->childOf,
                     'field' => $this->childField
                 ];
             }
 
+            /** @noinspection PhpDeprecationInspection */
             if ($this->parentOf) {
+                /** @noinspection PhpDeprecationInspection */
                 $this->relatedTo[] = [
                     'targetElement' => $this->parentOf,
                     'field' => $this->parentField
@@ -1302,7 +1354,7 @@ class ElementQuery extends Query implements ElementQueryInterface, Arrayable, Co
 
             // If there's only one relation criteria and it's specifically for grabbing target elements, allow the query
             // to order by the relation sort order
-            if ($relationParamParser->isRelationFieldQuery()) {
+            if ($relationParamParser->getIsRelationFieldQuery()) {
                 $this->subQuery->addSelect('sources1.sortOrder');
             }
         }
@@ -1479,8 +1531,11 @@ class ElementQuery extends Query implements ElementQueryInterface, Arrayable, Co
             }
 
             // TODO: Remove this code in Craft 4
+            /** @noinspection PhpDeprecationInspection */
             if (!$this->level && $this->depth) {
+                /** @noinspection PhpDeprecationInspection */
                 $this->level = $this->depth;
+                /** @noinspection PhpDeprecationInspection */
                 $this->depth = null;
                 Craft::$app->getDeprecator()->log('element_depth_param', 'The ‘depth’ element param has been deprecated. Use ‘level’ instead.');
             }
@@ -1501,6 +1556,7 @@ class ElementQuery extends Query implements ElementQueryInterface, Arrayable, Co
      */
     private function _normalizeStructureParamValue($property, $class)
     {
+        /** @var Element $class */
         if ($this->$property !== false && !$this->$property instanceof ElementInterface) {
             $this->$property = $class::find()
                 ->id($this->$property)
@@ -1526,6 +1582,8 @@ class ElementQuery extends Query implements ElementQueryInterface, Arrayable, Co
      */
     private function _applySearchParam($db)
     {
+        $this->_searchScores = null;
+
         if ($this->search) {
             // Get the element IDs
             $limit = $this->query->limit;
@@ -1535,37 +1593,36 @@ class ElementQuery extends Query implements ElementQueryInterface, Arrayable, Co
             $this->query->offset = null;
 
             $elementIds = $this->query->column('elements.id');
-            $scoredSearchResults = ($this->orderBy === ['score' => SORT_ASC]);
-            $filteredElementIds = Craft::$app->getSearch()->filterElementIdsByQuery($elementIds, $this->search, $scoredSearchResults, $this->locale);
+            $searchResults = Craft::$app->getSearch()->filterElementIdsByQuery($elementIds, $this->search, true, $this->locale, true);
 
             $this->query->limit = $limit;
             $this->query->offset = $offset;
 
             // No results?
-            if (!$filteredElementIds) {
+            if (!$searchResults) {
                 throw new QueryAbortedException();
             }
 
-            $this->subQuery->andWhere([
-                'in',
-                'elements.id',
-                $filteredElementIds
-            ]);
+            $filteredElementIds = array_keys($searchResults);
 
-            if ($scoredSearchResults) {
+            if ($this->orderBy === ['score' => SORT_ASC]) {
                 // Order the elements in the exact order that the Search service returned them in
                 $orderBy = [
                     new FixedOrderExpression('elements.id', $filteredElementIds, $db)
                 ];
                 $this->query->orderBy($orderBy);
             }
+
+            $this->andWhere(['in', 'elements.id', $filteredElementIds]);
+
+            $this->_searchScores = $searchResults;
         }
     }
 
     /**
      * Applies the 'fixedOrder' and 'orderBy' params to the query being prepared.
      *
-     * @param \yii\db\Connection $db
+     * @param Connection $db
      *
      * @throws QueryAbortedException
      */
@@ -1585,16 +1642,24 @@ class ElementQuery extends Query implements ElementQueryInterface, Arrayable, Co
             $orderBy = [new FixedOrderExpression('elements.id', $ids, $db)];
         } else if (!empty($this->orderBy) && $this->orderBy !== ['score' => SORT_ASC] && empty($this->query->orderBy)) {
             $orderBy = $this->orderBy;
+            $orderColumnMap = [];
 
             if (is_array($this->customFields)) {
                 // Add the field column prefixes
                 foreach ($this->customFields as $field) {
-                    if ($field->hasContentColumn()) {
-                        // Avoid matching fields named "asc" or "desc" in the string "column_name asc" or
-                        // "column_name desc"
-                        $orderBy = preg_replace('/(?<!\w\s)\b'.$field->handle.'\b/', 'content.'.$this->_getFieldContentColumnName($field), $orderBy);
+                    if ($field::hasContentColumn()) {
+                        $orderColumnMap[$field->handle] = 'content.'.$this->_getFieldContentColumnName($field);
                     }
                 }
+            }
+
+            // Prevent “1052 Column 'id' in order clause is ambiguous” MySQL error
+            $orderColumnMap['id'] = 'elements.id';
+
+            foreach ($orderColumnMap as $orderValue => $columnName) {
+                // Avoid matching fields named "asc" or "desc" in the string "column_name asc" or
+                // "column_name desc"
+                $orderBy = preg_replace('/(?<!\w\s|\.)\b'.$orderValue.'\b/', $columnName.'$1', $orderBy);
             }
         } else if ($this->structureId) {
             $orderBy = 'structureelements.lft';
@@ -1609,12 +1674,13 @@ class ElementQuery extends Query implements ElementQueryInterface, Arrayable, Co
     /**
      * Returns a field’s corresponding content column name.
      *
-     * @param FieldInterface|Field $field
+     * @param FieldInterface $field
      *
      * @return string
      */
     private function _getFieldContentColumnName(FieldInterface $field)
     {
+        /** @var Field $field */
         return ($field->columnPrefix ?: 'field_').$field->handle;
     }
 
@@ -1644,6 +1710,7 @@ class ElementQuery extends Query implements ElementQueryInterface, Arrayable, Co
                 $elements[$key] = $row;
             }
         } else {
+            /** @var Element $lastElement */
             $lastElement = null;
 
             foreach ($rows as $row) {
@@ -1679,6 +1746,11 @@ class ElementQuery extends Query implements ElementQueryInterface, Arrayable, Co
             }
 
             $lastElement->setNext(false);
+
+            // Should we eager-load some elements onto these?
+            if ($this->with) {
+                Craft::$app->getElements()->eagerLoadElements($this->elementType, $elements, $this->with);
+            }
         }
 
         return $elements;
@@ -1689,7 +1761,7 @@ class ElementQuery extends Query implements ElementQueryInterface, Arrayable, Co
      *
      * @param array $row
      *
-     * @return Element|boolean
+     * @return ElementInterface|boolean
      */
     private function _createElement($row)
     {
@@ -1710,7 +1782,7 @@ class ElementQuery extends Query implements ElementQueryInterface, Arrayable, Co
             $row['structureId'] = $this->structureId;
         }
 
-        /** @var ElementInterface|Element $element */
+        /** @var Element $element */
         $element = $class::create($row);
 
         // Verify that an element was returned
@@ -1725,6 +1797,7 @@ class ElementQuery extends Query implements ElementQueryInterface, Arrayable, Co
 
             if ($this->customFields) {
                 foreach ($this->customFields as $field) {
+                    /** @var Field $field */
                     if ($field->hasContentColumn()) {
                         // Account for results where multiple fields have the same handle, but from
                         // different columns e.g. two Matrix block types that each have a field with the
@@ -1742,10 +1815,10 @@ class ElementQuery extends Query implements ElementQueryInterface, Arrayable, Co
         }
 
         // Fire an 'afterPopulateElement' event
-        $this->trigger(static::EVENT_AFTER_POPULATE_ELEMENT, new PopulateElementEvent([
-                'element' => $element,
-                'row' => $row
-            ]));
+        $this->trigger(self::EVENT_AFTER_POPULATE_ELEMENT, new PopulateElementEvent([
+            'element' => $element,
+            'row' => $row
+        ]));
 
         return $element;
     }
@@ -1768,8 +1841,8 @@ class ElementQuery extends Query implements ElementQueryInterface, Arrayable, Co
             }
 
             return true;
-        } else {
-            return false;
         }
+
+        return false;
     }
 }

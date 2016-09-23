@@ -2,9 +2,7 @@
 namespace craft\app\volumes;
 
 use Craft;
-use craft\app\base\Volume;
 use craft\app\helpers\Url;
-use craft\app\io\flysystemadapters\Local as LocalAdapter;
 
 /**
  * The temporary volume class. Handles the implementation of a temporary volume
@@ -12,8 +10,8 @@ use craft\app\io\flysystemadapters\Local as LocalAdapter;
  *
  * @author     Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @copyright  Copyright (c) 2014, Pixel & Tonic, Inc.
- * @license    http://buildwithcraft.com/license Craft License Agreement
- * @see        http://buildwithcraft.com
+ * @license    http://craftcms.com/license Craft License Agreement
+ * @see        http://craftcms.com
  * @package    craft.app.volumes
  * @since      3.0
  */
@@ -74,14 +72,18 @@ class Temp extends Local
     // Public Methods
     // =========================================================================
 
+    /**
+     * Constructor
+     */
     public function __construct()
     {
-        $this->path = Craft::$app->getPath()->getAssetsTempSourcePath();
+        $this->path = Craft::$app->getPath()->getAssetsTempVolumePath();
         $this->url = rtrim(Url::getResourceUrl(), '/').'/tempassets/';
         $this->name = Craft::t('app', 'Temporary source');
 
         parent::__construct();
     }
+
     /**
      * @inheritdoc
      */
@@ -104,10 +106,5 @@ class Temp extends Local
     public function getRootUrl()
     {
         return $this->url;
-    }
-
-    public function isSystem()
-    {
-        return true;
     }
 }

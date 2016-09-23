@@ -4,7 +4,7 @@ namespace craft\app\migrations;
 
 use Craft;
 use craft\app\db\Migration;
-use craft\app\helpers\IOHelper;
+use craft\app\helpers\Io;
 use yii\db\Expression;
 
 /**
@@ -25,6 +25,7 @@ class m150403_184729_type_columns extends Migration
             //'craft\app\volumes'  => ['{{%volumes}}'],
             'craft\app\elements' => [
                 '{{%elements}}',
+                '{{%elementindexsettings}}',
                 '{{%fieldlayouts}}',
                 '{{%templatecachecriteria}}'
             ],
@@ -35,11 +36,11 @@ class m150403_184729_type_columns extends Migration
 
         foreach ($map as $namespace => $tables) {
             $folderPath = Craft::getAlias('@app/'.substr($namespace, 10));
-            $files = IOHelper::getFolderContents($folderPath, false);
+            $files = Io::getFolderContents($folderPath, false);
             $classes = [];
 
             foreach ($files as $file) {
-                $class = IOHelper::getFilename($file, false);
+                $class = Io::getFilename($file, false);
                 if (strncmp($class, 'Base', 4) !== 0) {
                     $classes[] = $class;
                 }

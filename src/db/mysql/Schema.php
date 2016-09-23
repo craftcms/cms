@@ -1,8 +1,8 @@
 <?php
 /**
- * @link      http://buildwithcraft.com/
- * @copyright Copyright (c) 2015 Pixel & Tonic, Inc.
- * @license   http://buildwithcraft.com/license
+ * @link      https://craftcms.com/
+ * @copyright Copyright (c) Pixel & Tonic, Inc.
+ * @license   https://craftcms.com/license
  */
 
 namespace craft\app\db\mysql;
@@ -21,8 +21,9 @@ class Schema extends \yii\db\mysql\Schema
     // Constants
     // =========================================================================
 
-    const TYPE_CHAR = 'char';
+    const TYPE_TINYTEXT = 'tinytext';
     const TYPE_MEDIUMTEXT = 'mediumtext';
+    const TYPE_LONGTEXT = 'longtext';
     const TYPE_ENUM = 'enum';
 
     // Properties
@@ -43,8 +44,9 @@ class Schema extends \yii\db\mysql\Schema
     {
         parent::init();
 
-        $this->typeMap['char'] = self::TYPE_CHAR;
+        $this->typeMap['tinytext'] = self::TYPE_TINYTEXT;
         $this->typeMap['mediumtext'] = self::TYPE_MEDIUMTEXT;
+        $this->typeMap['longtext'] = self::TYPE_LONGTEXT;
         $this->typeMap['enum'] = self::TYPE_ENUM;
     }
 
@@ -82,13 +84,11 @@ class Schema extends \yii\db\mysql\Schema
     {
         try {
             parent::releaseSavepoint($name);
-        }
-        catch(Exception $e) {
+        } catch (Exception $e) {
             // Specifically look for a "SAVEPOINT does not exist" error.
             if ($e->getCode() == 42000 && isset($e->errorInfo[1]) && $e->errorInfo[1] == 1305) {
                 Craft::warning('Tried to release a savepoint, but it does not exist: '.$e->getMessage(), __METHOD__);
-            }
-            else {
+            } else {
                 throw $e;
             }
         }
@@ -105,16 +105,22 @@ class Schema extends \yii\db\mysql\Schema
     {
         try {
             parent::rollBackSavepoint($name);
-        }
-        catch(Exception $e) {
+        } catch (Exception $e) {
             // Specifically look for a "SAVEPOINT does not exist" error.
             if ($e->getCode() == 42000 && isset($e->errorInfo[1]) && $e->errorInfo[1] == 1305) {
                 Craft::warning('Tried to roll back a savepoint, but it does not exist: '.$e->getMessage(), __METHOD__);
-            }
-            else {
+            } else {
                 throw $e;
             }
         }
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function createColumnSchemaBuilder($type, $length = null)
+    {
+        return new ColumnSchemaBuilder($type, $length, $this->db);
     }
 
     // Protected Methods
@@ -133,8 +139,8 @@ class Schema extends \yii\db\mysql\Schema
             $likeSql = ($this->db->tablePrefix ? ' LIKE \''.$this->db->tablePrefix.'%\'' : '');
 
             return $this->db->createCommand('SHOW TABLES'.$likeSql)->queryColumn();
-        } else {
-            return parent::findTableNames();
         }
+
+        return parent::findTableNames();
     }
 }

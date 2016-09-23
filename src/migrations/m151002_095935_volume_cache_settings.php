@@ -6,7 +6,6 @@ use Craft;
 use craft\app\db\Migration;
 use craft\app\db\Query;
 use craft\app\helpers\Json;
-use craft\app\helpers\Migration as MigrationHelper;
 
 /**
  * m151002_095935_volume_cache_settings migration.
@@ -32,15 +31,15 @@ class m151002_095935_volume_cache_settings extends Migration
         foreach ($volumes as $volume) {
             $settings = Json::decode($volume['settings']);
 
-            if (!empty($settings['expires']) && preg_match('/([0-9]+)([a-z]+)/', $settings['expires'], $matches))
-            {
+            if (!empty($settings['expires']) && preg_match('/([0-9]+)([a-z]+)/', $settings['expires'], $matches)) {
                 $settings['expires'] = $matches[1].' '.$matches[2];
 
-                Craft::$app->getDb()->createCommand()->update(
-                    '{{%volumes}}',
-                    array('settings' => Json::encode($settings)),
-                    array('id' => $volume['id'])
-                )->execute();
+                Craft::$app->getDb()->createCommand()
+                    ->update(
+                        '{{%volumes}}',
+                        ['settings' => Json::encode($settings)],
+                        ['id' => $volume['id']])
+                    ->execute();
             }
         }
     }

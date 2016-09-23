@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<svg width="1000px" height="1000px" viewBox="0 0 100 100" version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" xmlns:sketch="http://www.bohemiancoding.com/sketch/ns">
+    <!-- Generator: Sketch 3.3.3 (12072) - http://www.bohemiancoding.com/sketch -->
+    <title>file</title>
+    <desc>Created with Sketch.</desc>
+    <defs></defs>
+    <g id="Page-1" stroke="none" stroke-width="1" fill="none" fill-rule="evenodd" sketch:type="MSPage">
+        <g id="file" sketch:type="MSArtboardGroup">
+            <rect id="Rectangle-3" fill="#FFFFFF" sketch:type="MSShapeGroup" x="0" y="0" width="100" height="100"></rect>
+            <rect id="Path-Copy" fill="#FFFFFF" sketch:type="MSShapeGroup" x="11" y="0" width="78.2762692" height="100"></rect>
+            <path d="M69,2 L13,2 L13,98 L87,98 L87,20 L89,20 L89,0 L69,0 L69,2 Z M11,0 L89,0 L89,100 L11,100 L11,0 Z" id="Rectangle-2" fill="#D5D8DD" sketch:type="MSShapeGroup"></path>
+            <path d="M67,0 L89,22 L67,22 L67,0 Z" id="Rectangle-4-Copy-2" fill="#D5D8DD" sketch:type="MSShapeGroup"></path>
+            <path d="M69,0 L89,20 L69,20 L69,0 Z" id="Rectangle-4" fill="#D5D8DD" sketch:type="MSShapeGroup"></path>
+            <!-- EXT -->
+        </g>
+    </g>
+</svg>

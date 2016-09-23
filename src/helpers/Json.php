@@ -1,8 +1,8 @@
 <?php
 /**
- * @link      http://buildwithcraft.com/
- * @copyright Copyright (c) 2015 Pixel & Tonic, Inc.
- * @license   http://buildwithcraft.com/license
+ * @link      https://craftcms.com/
+ * @copyright Copyright (c) Pixel & Tonic, Inc.
+ * @license   https://craftcms.com/license
  */
 
 namespace craft\app\helpers;
@@ -28,10 +28,10 @@ class Json extends \yii\helpers\Json
      *
      * @return mixed The PHP data, or the given string if it wasn’t valid JSON.
      */
-    public static function encodeIfJson($str, $asArray = true)
+    public static function decodeIfJson($str, $asArray = true)
     {
         try {
-            return static::encode($str, $asArray);
+            return static::decode($str, $asArray);
         } catch (InvalidParamException $e) {
             // Wasn't JSON
             return $str;
@@ -45,7 +45,37 @@ class Json extends \yii\helpers\Json
      */
     public static function sendJsonHeaders()
     {
+        static::setJsonContentTypeHeader();
         Header::setNoCache();
+    }
+
+    /**
+     * Sets the Content-Type header to 'application/json'.
+     *
+     * @return void
+     */
+    public static function setJsonContentTypeHeader()
+    {
         Header::setContentTypeByExtension('json');
+    }
+
+    /**
+     * Removes single-line, multi-line, //, /*, comments from JSON
+     * (since comments technically product invalid JSON).
+     *
+     * @param string $json
+     *
+     * @return string
+     */
+    public static function removeComments($json)
+    {
+        // Remove any comments from the JSON.
+        // Adapted from http://stackoverflow.com/a/31907095/684
+        $pattern = '/(?:(?:\/\*(?:[^*]|(?:\*+[^*\/]))*\*+\/)|(?:(?<!\:|\\\|\'|\")\/\/.*))/';
+
+        $json = preg_replace($pattern, '', $json);
+        $json = trim($json, PHP_EOL);
+
+        return $json;
     }
 }

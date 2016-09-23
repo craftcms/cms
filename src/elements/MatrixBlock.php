@@ -1,8 +1,8 @@
 <?php
 /**
- * @link      http://buildwithcraft.com/
- * @copyright Copyright (c) 2015 Pixel & Tonic, Inc.
- * @license   http://buildwithcraft.com/license
+ * @link      https://craftcms.com/
+ * @copyright Copyright (c) Pixel & Tonic, Inc.
+ * @license   https://craftcms.com/license
  */
 
 namespace craft\app\elements;
@@ -10,6 +10,7 @@ namespace craft\app\elements;
 use Craft;
 use craft\app\base\Element;
 use craft\app\base\ElementInterface;
+use craft\app\base\Field;
 use craft\app\elements\db\ElementQueryInterface;
 use craft\app\elements\db\MatrixBlockQuery;
 use craft\app\fields\Matrix;
@@ -65,6 +66,7 @@ class MatrixBlock extends Element
      */
     public static function getFieldsForElementsQuery(ElementQueryInterface $query)
     {
+        /** @var MatrixBlockQuery $query */
         $blockTypes = Craft::$app->getMatrix()->getBlockTypesByFieldId($query->fieldId);
 
         // Preload all of the fields up front to save ourselves some DB queries, and discard
@@ -79,12 +81,50 @@ class MatrixBlock extends Element
         foreach ($blockTypes as $blockType) {
             $fieldColumnPrefix = 'field_'.$blockType->handle.'_';
             foreach ($blockType->getFields() as $field) {
+                /** @var Field $field */
                 $field->columnPrefix = $fieldColumnPrefix;
                 $fields[] = $field;
             }
         }
 
         return $fields;
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public static function getEagerLoadingMap($sourceElements, $handle)
+    {
+        // $handle *must* be set as "blockTypeHandle:fieldHandle" so we know _which_ myRelationalField to resolve to
+        $handleParts = explode(':', $handle);
+
+        if (count($handleParts) != 2) {
+            return false;
+        }
+
+        list($blockTypeHandle, $fieldHandle) = $handleParts;
+
+        // Get the block type
+        $matrixFieldId = $sourceElements[0]->fieldId;
+        $blockTypes = Craft::$app->getMatrix()->getBlockTypesByFieldId($matrixFieldId, 'handle');
+
+        if (!isset($blockTypes[$blockTypeHandle])) {
+            // Not a valid block type handle (assuming all $sourceElements are blocks from the same Matrix field)
+            return false;
+        }
+
+        $blockType = $blockTypes[$blockTypeHandle];
+
+        // Set the field context
+        $contentService = Craft::$app->getContent();
+        $originalFieldContext = $contentService->fieldContext;
+        $contentService->fieldContext = 'matrixBlockType:'.$blockType->id;
+
+        $map = parent::getEagerLoadingMap($sourceElements, $fieldHandle);
+
+        $contentService->fieldContext = $originalFieldContext;
+
+        return $map;
     }
 
     // Properties
@@ -121,9 +161,14 @@ class MatrixBlock extends Element
     public $collapsed = false;
 
     /**
-     * @var ElementInterface|Element The owner element
+     * @var ElementInterface The owner element
      */
     private $_owner;
+
+    /**
+     * @var
+     */
+    private $_eagerLoadedBlockTypeElements;
 
     // Public Methods
     // =========================================================================
@@ -178,6 +223,8 @@ class MatrixBlock extends Element
         if ($blockType) {
             return $blockType->getFieldLayout();
         }
+
+        return null;
     }
 
     /**
@@ -190,26 +237,26 @@ class MatrixBlock extends Element
 
         if ($this->ownerLocale) {
             return [$this->ownerLocale];
-        } else {
-            $owner = $this->getOwner();
-
-            if ($owner) {
-                // Just send back an array of locale IDs -- don't pass along enabledByDefault configs
-                $localeIds = [];
-
-                foreach ($owner->getLocales() as $localeId => $localeInfo) {
-                    if (is_numeric($localeId) && is_string($localeInfo)) {
-                        $localeIds[] = $localeInfo;
-                    } else {
-                        $localeIds[] = $localeId;
-                    }
-                }
-
-                return $localeIds;
-            } else {
-                return [Craft::$app->getI18n()->getPrimarySiteLocaleId()];
-            }
         }
+
+        $owner = $this->getOwner();
+
+        if ($owner) {
+            // Just send back an array of locale IDs -- don't pass along enabledByDefault configs
+            $localeIds = [];
+
+            foreach ($owner->getLocales() as $localeId => $localeInfo) {
+                if (is_numeric($localeId) && is_string($localeInfo)) {
+                    $localeIds[] = $localeInfo;
+                } else {
+                    $localeIds[] = $localeId;
+                }
+            }
+
+            return $localeIds;
+        }
+
+        return [Craft::$app->getI18n()->getPrimarySiteLocaleId()];
     }
 
     /**
@@ -222,12 +269,14 @@ class MatrixBlock extends Element
         if ($this->typeId) {
             return Craft::$app->getMatrix()->getBlockTypeById($this->typeId);
         }
+
+        return null;
     }
 
     /**
      * Returns the owner.
      *
-     * @return ElementInterface|Element|null
+     * @return ElementInterface|null
      */
     public function getOwner()
     {
@@ -242,14 +291,16 @@ class MatrixBlock extends Element
         if ($this->_owner) {
             return $this->_owner;
         }
+
+        return null;
     }
 
     /**
      * Sets the owner
      *
-     * @param Element $owner
+     * @param ElementInterface $owner
      */
-    public function setOwner(Element $owner)
+    public function setOwner(ElementInterface $owner)
     {
         $this->_owner = $owner;
     }
@@ -278,6 +329,61 @@ class MatrixBlock extends Element
     public function getFieldContext()
     {
         return 'matrixBlockType:'.$this->typeId;
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function hasEagerLoadedElements($handle)
+    {
+        // See if we have this stored with a block type-specific handle
+        $blockTypeHandle = $this->getType()->handle.':'.$handle;
+
+        if (isset($this->_eagerLoadedBlockTypeElements[$blockTypeHandle])) {
+            return true;
+        }
+
+        return parent::hasEagerLoadedElements($handle);
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function getEagerLoadedElements($handle)
+    {
+        // See if we have this stored with a block type-specific handle
+        $blockTypeHandle = $this->getType()->handle.':'.$handle;
+
+        if (isset($this->_eagerLoadedBlockTypeElements[$blockTypeHandle])) {
+            return $this->_eagerLoadedBlockTypeElements[$blockTypeHandle];
+        }
+
+        return parent::getEagerLoadedElements($handle);
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function setEagerLoadedElements($handle, $elements)
+    {
+        // See if this was eager-loaded with a block type-specific handle
+        $blockTypeHandlePrefix = $this->getType()->handle.':';
+        if (strncmp($handle, $blockTypeHandlePrefix, strlen($blockTypeHandlePrefix)) === 0) {
+            $this->_eagerLoadedBlockTypeElements[$handle] = $elements;
+        } else {
+            parent::setEagerLoadedElements($handle, $elements);
+        }
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function getHasFreshContent()
+    {
+        // Defer to the owner element
+        $owner = $this->getOwner();
+
+        return $owner ? $owner->getHasFreshContent() : false;
     }
 
     // Private Methods

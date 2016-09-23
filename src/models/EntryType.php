@@ -1,17 +1,16 @@
 <?php
 /**
- * @link      http://buildwithcraft.com/
- * @copyright Copyright (c) 2015 Pixel & Tonic, Inc.
- * @license   http://buildwithcraft.com/license
+ * @link      https://craftcms.com/
+ * @copyright Copyright (c) Pixel & Tonic, Inc.
+ * @license   https://craftcms.com/license
  */
 
 namespace craft\app\models;
 
 use Craft;
-use craft\app\base\ElementInterface;
 use craft\app\base\Model;
+use craft\app\behaviors\FieldLayoutTrait;
 use craft\app\helpers\Url;
-use craft\app\models\Section as SectionModel;
 
 /**
  * EntryType model class.
@@ -21,6 +20,11 @@ use craft\app\models\Section as SectionModel;
  */
 class EntryType extends Model
 {
+    // Traits
+    // =========================================================================
+
+    use FieldLayoutTrait;
+
     // Properties
     // =========================================================================
 
@@ -147,12 +151,14 @@ class EntryType extends Model
     /**
      * Returns the entry type’s section.
      *
-     * @return SectionModel|null
+     * @return Section|null
      */
     public function getSection()
     {
         if ($this->sectionId) {
             return Craft::$app->getSections()->getSectionById($this->sectionId);
         }
+
+        return null;
     }
 }

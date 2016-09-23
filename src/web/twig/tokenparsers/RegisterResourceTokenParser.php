@@ -1,8 +1,8 @@
 <?php
 /**
- * @link      http://buildwithcraft.com/
- * @copyright Copyright (c) 2015 Pixel & Tonic, Inc.
- * @license   http://buildwithcraft.com/license
+ * @link      https://craftcms.com/
+ * @copyright Copyright (c) Pixel & Tonic, Inc.
+ * @license   https://craftcms.com/license
  */
 
 namespace craft\app\web\twig\tokenparsers;
@@ -177,6 +177,11 @@ class RegisterResourceTokenParser extends \Twig_TokenParser
         return $this->_tag;
     }
 
+    /**
+     * @param \Twig_Token $token
+     *
+     * @return boolean
+     */
     public function decideBlockEnd(\Twig_Token $token)
     {
         return $token->test('end'.strtolower($this->_tag));
@@ -241,8 +246,8 @@ class RegisterResourceTokenParser extends \Twig_TokenParser
             $stream->next();
 
             return true;
-        } else {
-            return false;
         }
+
+        return false;
     }
 }

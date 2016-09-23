@@ -1,8 +1,8 @@
 <?php
 /**
- * @link      http://buildwithcraft.com/
- * @copyright Copyright (c) 2015 Pixel & Tonic, Inc.
- * @license   http://buildwithcraft.com/license
+ * @link      https://craftcms.com/
+ * @copyright Copyright (c) Pixel & Tonic, Inc.
+ * @license   https://craftcms.com/license
  */
 
 namespace craft\app\events;
@@ -24,4 +24,9 @@ class ElementEvent extends Event
      * @var ElementInterface The element model associated with the event.
      */
     public $element;
+
+    /**
+     * @var boolean Whether the element is brand new
+     */
+    public $isNew;
 }

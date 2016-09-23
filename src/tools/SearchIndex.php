@@ -1,14 +1,15 @@
 <?php
 /**
- * @link      http://buildwithcraft.com/
- * @copyright Copyright (c) 2015 Pixel & Tonic, Inc.
- * @license   http://buildwithcraft.com/license
+ * @link      https://craftcms.com/
+ * @copyright Copyright (c) Pixel & Tonic, Inc.
+ * @license   https://craftcms.com/license
  */
 
 namespace craft\app\tools;
 
 use Craft;
 use craft\app\base\Element;
+use craft\app\base\Field;
 use craft\app\base\Tool;
 use craft\app\base\ElementInterface;
 use craft\app\db\Query;
@@ -50,7 +51,9 @@ class SearchIndex extends Tool
     {
         if (!empty($params['start'])) {
             // Truncate the searchindex table
-            Craft::$app->getDb()->createCommand()->truncateTable('{{%searchindex}}')->execute();
+            Craft::$app->getDb()->createCommand()
+                ->truncateTable('{{%searchindex}}')
+                ->execute();
 
             // Get all the element IDs ever
             $elements = (new Query())
@@ -95,6 +98,7 @@ class SearchIndex extends Tool
                         $keywords = [];
 
                         foreach ($fieldLayout->getFields() as $field) {
+                            /** @var Field $field */
                             // Set the keywords for the content's locale
                             $fieldValue = $element->getFieldValue($field->handle);
                             $fieldSearchKeywords = $field->getSearchKeywords($fieldValue, $element);
@@ -106,5 +110,7 @@ class SearchIndex extends Tool
                 }
             }
         }
+
+        return null;
     }
 }

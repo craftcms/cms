@@ -1,8 +1,8 @@
 <?php
 /**
- * @link      http://buildwithcraft.com/
- * @copyright Copyright (c) 2015 Pixel & Tonic, Inc.
- * @license   http://buildwithcraft.com/license
+ * @link      https://craftcms.com/
+ * @copyright Copyright (c) Pixel & Tonic, Inc.
+ * @license   https://craftcms.com/license
  */
 
 namespace craft\app\tasks;
@@ -55,7 +55,7 @@ class ResaveElements extends Task
         $class = $this->elementType;
 
         // Let's save ourselves some trouble and just clear all the caches for this element class
-        Craft::$app->getTemplateCache()->deleteCachesByElementType($class);
+        Craft::$app->getTemplateCaches()->deleteCachesByElementType($class);
 
         // Now find the affected element IDs
         $query = $class::find()
@@ -88,15 +88,15 @@ class ResaveElements extends Task
                     false)
             ) {
                 return true;
-            } else {
-                $error = 'Encountered the following validation errors when trying to save '.$element::className().' element "'.$element.'" with the ID "'.$element->id.'":';
-
-                foreach ($element->getAllErrors() as $attributeError) {
-                    $error .= "\n - {$attributeError}";
-                }
-
-                return $error;
             }
+
+            $error = 'Encountered the following validation errors when trying to save '.$element::className().' element "'.$element.'" with the ID "'.$element->id.'":';
+
+            foreach ($element->getAllErrors() as $attributeError) {
+                $error .= "\n - {$attributeError}";
+            }
+
+            return $error;
         } catch (\Exception $e) {
             return 'An exception was thrown while trying to save the '.StringHelper::toLowerCase($class::displayName()).' with the ID “'.$this->_elementIds[$step].'”: '.$e->getMessage();
         }

@@ -1,8 +1,8 @@
 <?php
 /**
- * @link      http://buildwithcraft.com/
- * @copyright Copyright (c) 2015 Pixel & Tonic, Inc.
- * @license   http://buildwithcraft.com/license
+ * @link      https://craftcms.com/
+ * @copyright Copyright (c) Pixel & Tonic, Inc.
+ * @license   https://craftcms.com/license
  */
 
 namespace craft\app\widgets;
@@ -79,19 +79,23 @@ class RecentEntries extends Widget
     /**
      * @inheritdoc
      */
+    public function getIconPath()
+    {
+        return Craft::$app->getPath()->getResourcesPath().'/images/widgets/recent-entries.svg';
+    }
+
+    /**
+     * @inheritdoc
+     */
     public function getTitle()
     {
-        if (Craft::$app->getEdition() >= Craft::Client) {
-            $sectionId = $this->section;
+        if (is_numeric($this->section)) {
+            $section = Craft::$app->getSections()->getSectionById($this->section);
 
-            if (is_numeric($sectionId)) {
-                $section = Craft::$app->getSections()->getSectionById($sectionId);
-
-                if ($section) {
-                    $title = Craft::t('app', 'Recent {section} Entries', [
-                        'section' => Craft::t('site', $section->name)
-                    ]);
-                }
+            if ($section) {
+                $title = Craft::t('app', 'Recent {section} Entries', [
+                    'section' => Craft::t('site', $section->name)
+                ]);
             }
         }
 
@@ -121,19 +125,17 @@ class RecentEntries extends Widget
     {
         $params = [];
 
-        if (Craft::$app->getEdition() >= Craft::Client) {
-            $sectionId = $this->section;
-
-            if (is_numeric($sectionId)) {
-                $params['sectionId'] = (int)$sectionId;
-            }
+        if (is_numeric($this->section)) {
+            $params['sectionId'] = (int)$this->section;
         }
 
         $js = 'new Craft.RecentEntriesWidget('.$this->id.', '.Json::encode($params).');';
 
         Craft::$app->getView()->registerJsResource('js/RecentEntriesWidget.js');
         Craft::$app->getView()->registerJs($js);
-        Craft::$app->getView()->includeTranslations('by {author}');
+        Craft::$app->getView()->registerTranslations('app', [
+            'by {author}',
+        ]);
 
         $entries = $this->_getEntries();
 
@@ -180,7 +182,7 @@ class RecentEntries extends Widget
             ->locale($targetLocale)
             ->sectionId($targetSectionId)
             ->editable(true)
-            ->limit($this->limit)
+            ->limit($this->limit ?: 100)
             ->orderBy('elements.dateCreated desc')
             ->all();
     }

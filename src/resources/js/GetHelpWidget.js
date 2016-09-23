@@ -22,6 +22,8 @@
 		{
 			this.widgetId = widgetId;
 
+			Craft.GetHelpWidget.widgets[this.widgetId] = this;
+
 			this.$widget = $('#widget'+widgetId);
 			this.$message = this.$widget.find('.message:first');
 			this.$fromEmail = this.$widget.find('.fromEmail:first');
@@ -33,15 +35,9 @@
 			this.$error = this.$widget.find('.error:first');
 			this.$form = this.$widget.find('form:first');
 			this.$form.prepend('<input type="hidden" name="widgetId" value="' + this.widgetId + '" />');
-
+			this.$form.prepend(Craft.getCsrfInput());
 
 			this.addListener(this.$sendBtn, 'activate', 'sendMessage');
-			if (typeof Craft.widgets == 'undefined')
-			{
-				Craft.widgets = {};
-			}
-
-			Craft.widgets[this.widgetId] = this;
 		},
 
 		sendMessage: function()
@@ -85,6 +81,10 @@
 
 				for (var attribute in response.errors)
 				{
+					if (!response.errors.hasOwnProperty(attribute)) {
+						continue;
+					}
+
 					for (var i = 0; i < response.errors[attribute].length; i++)
 					{
 						var error = response.errors[attribute][i];
@@ -95,13 +95,16 @@
 
 			if (response.success)
 			{
-				Craft.cp.displayNotice(Craft.t('Message sent successfully.'));
+				Craft.cp.displayNotice(Craft.t('app', 'Message sent successfully.'));
 				this.$message.val('');
 				this.$attachAdditionalFile.val('');
 			}
 
 			this.$iframe.html('');
 		}
+	},
+	{
+		widgets: {}
 	});
 
 

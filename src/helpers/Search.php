@@ -1,13 +1,11 @@
 <?php
 /**
- * @link      http://buildwithcraft.com/
- * @copyright Copyright (c) 2015 Pixel & Tonic, Inc.
- * @license   http://buildwithcraft.com/license
+ * @link      https://craftcms.com/
+ * @copyright Copyright (c) Pixel & Tonic, Inc.
+ * @license   https://craftcms.com/license
  */
 
 namespace craft\app\helpers;
-
-use Craft;
 
 /**
  * Search helper.
@@ -42,12 +40,13 @@ class Search
     /**
      * Normalizes search keywords.
      *
-     * @param string $str    The dirty keywords.
-     * @param array  $ignore Ignore words to strip out.
+     * @param string  $str            The dirty keywords
+     * @param array   $ignore         Ignore words to strip out
+     * @param boolean $processCharMap Whether to remove punctuation and diacritics (default is true)
      *
      * @return string The cleansed keywords.
      */
-    public static function normalizeKeywords($str, $ignore = [])
+    public static function normalizeKeywords($str, $ignore = [], $processCharMap = true)
     {
         // Flatten
         if (is_array($str)) {
@@ -61,13 +60,15 @@ class Search
         $str = str_replace(['&nbsp;', '&#160;', '&#xa0;'], ' ', $str);
 
         // Get rid of entities
-        $str = html_entity_decode($str, ENT_QUOTES, StringHelper::UTF8);
-
-        // Remove punctuation and diacritics
-        $str = strtr($str, static::_getCharMap());
+        $str = preg_replace("/&#?[a-z0-9]{2,8};/i", "", $str);
 
         // Normalize to lowercase
         $str = StringHelper::toLowerCase($str);
+
+        if ($processCharMap) {
+            // Remove punctuation and diacritics
+            $str = strtr($str, static::_getCharMap());
+        }
 
         // Remove ignore-words?
         if (is_array($ignore) && !empty($ignore)) {

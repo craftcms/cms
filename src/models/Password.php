@@ -1,12 +1,13 @@
 <?php
 /**
- * @link      http://buildwithcraft.com/
- * @copyright Copyright (c) 2015 Pixel & Tonic, Inc.
- * @license   http://buildwithcraft.com/license
+ * @link      https://craftcms.com/
+ * @copyright Copyright (c) Pixel & Tonic, Inc.
+ * @license   https://craftcms.com/license
  */
 
 namespace craft\app\models;
 
+use Craft;
 use craft\app\base\Model;
 
 /**
@@ -38,6 +39,16 @@ class Password extends Model
             [['password'], 'string', 'min' => 6],
             [['password'], 'string', 'max' => 160],
             [['password'], 'safe', 'on' => 'search'],
+        ];
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function attributeLabels()
+    {
+        return [
+            'password' => Craft::t('app', 'Password'),
         ];
     }
 }

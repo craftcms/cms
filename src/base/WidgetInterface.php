@@ -1,13 +1,11 @@
 <?php
 /**
- * @link      http://buildwithcraft.com/
- * @copyright Copyright (c) 2015 Pixel & Tonic, Inc.
- * @license   http://buildwithcraft.com/license
+ * @link      https://craftcms.com/
+ * @copyright Copyright (c) Pixel & Tonic, Inc.
+ * @license   https://craftcms.com/license
  */
 
 namespace craft\app\base;
-
-use craft\app\elements\User;
 
 /**
  * WidgetInterface defines the common interface to be implemented by dashboard widget classes.
@@ -42,24 +40,25 @@ interface WidgetInterface extends SavableComponentInterface
     public function getTitle();
 
     /**
-     * Returns the widget’s body HTML.
+     * Returns the path to the widget’s SVG icon.
+     *
+     * @return string|null The path to the widget’s SVG icon, if it has one
+     */
+    public function getIconPath();
+
+    /**
+     * Returns the widget's body HTML.
      *
      * @return string|false The widget’s body HTML, or `false` if the widget
-     *                      should not be visible.
+     *                      should not be visible. (If you don’t want the widget
+     *                      to be selectable in the first place, use {@link isSelectable()}.)
      */
     public function getBodyHtml();
 
     /**
-     * Returns the widget’s colspan.
+     * Returns the widget’s maximum colspan.
      *
-     * @return integer The widget’s colspan.
+     * @return integer|null The widget’s maximum colspan, if it has one
      */
-    public function getColspan();
-
-    /**
-     * Returns user that owns the widget
-     *
-     * @return User the user that owns the widget
-     */
-    public function getUser();
+    public function getMaxColspan();
 }

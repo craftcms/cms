@@ -1,8 +1,8 @@
 <?php
 /**
- * @link      http://buildwithcraft.com/
- * @copyright Copyright (c) 2015 Pixel & Tonic, Inc.
- * @license   http://buildwithcraft.com/license
+ * @link      https://craftcms.com/
+ * @copyright Copyright (c) Pixel & Tonic, Inc.
+ * @license   https://craftcms.com/license
  */
 
 namespace craft\app\i18n;
@@ -91,9 +91,9 @@ class Formatter extends \yii\i18n\Formatter
 
         if (Craft::$app->getI18n()->getIsIntlLoaded()) {
             return parent::asDate($value, $format);
-        } else {
-            return $this->_formatDateTimeValue($value, $format, 'date');
         }
+
+        return $this->_formatDateTimeValue($value, $format, 'date');
     }
 
     /**
@@ -118,9 +118,9 @@ class Formatter extends \yii\i18n\Formatter
 
         if (Craft::$app->getI18n()->getIsIntlLoaded()) {
             return parent::asTime($value, $format);
-        } else {
-            return $this->_formatDateTimeValue($value, $format, 'time');
         }
+
+        return $this->_formatDateTimeValue($value, $format, 'time');
     }
 
     /**
@@ -145,9 +145,9 @@ class Formatter extends \yii\i18n\Formatter
 
         if (Craft::$app->getI18n()->getIsIntlLoaded()) {
             return parent::asDatetime($value, $format);
-        } else {
-            return $this->_formatDateTimeValue($value, $format, 'datetime');
         }
+
+        return $this->_formatDateTimeValue($value, $format, 'datetime');
     }
 
     /**
@@ -178,31 +178,31 @@ class Formatter extends \yii\i18n\Formatter
             }
 
             return parent::asCurrency($value, $currency, $options, $textOptions);
-        } else {
-            // Code adapted from \yii\i18n\Formatter
-            if ($value === null) {
-                return $this->nullDisplay;
-            }
-
-            $value = $this->normalizeNumericValue($value);
-
-            if ($currency === null) {
-                if ($this->currencyCode === null) {
-                    throw new InvalidConfigException('The default currency code for the formatter is not defined.');
-                }
-
-                $currency = $this->currencyCode;
-            }
-
-            // Do we have a localized symbol for this currency?
-            if (isset($this->currencySymbols[$currency])) {
-                $currency = $this->currencySymbols[$currency];
-            }
-
-            $decimals = $omitDecimals ? 0 : 2;
-
-            return $currency.$this->asDecimal($value, $decimals, $options, $textOptions);
         }
+
+        // Code adapted from \yii\i18n\Formatter
+        if ($value === null) {
+            return $this->nullDisplay;
+        }
+
+        $value = $this->normalizeNumericValue($value);
+
+        if ($currency === null) {
+            if ($this->currencyCode === null) {
+                throw new InvalidConfigException('The default currency code for the formatter is not defined.');
+            }
+
+            $currency = $this->currencyCode;
+        }
+
+        // Do we have a localized symbol for this currency?
+        if (isset($this->currencySymbols[$currency])) {
+            $currency = $this->currencySymbols[$currency];
+        }
+
+        $decimals = $omitDecimals ? 0 : 2;
+
+        return $currency.$this->asDecimal($value, $decimals, $options, $textOptions);
     }
 
     // Private Methods
@@ -249,15 +249,11 @@ class Formatter extends \yii\i18n\Formatter
 
         if (strncmp($format, 'php:', 4) === 0) {
             $format = substr($format, 4);
-            $format = FormatConverter::convertDatePhpToIcu($format, $type, $this->locale);
+            $format = FormatConverter::convertDatePhpToIcu($format);
         }
 
         if ($timeZone != null) {
-            if ($timestamp instanceof \DateTimeImmutable) {
-                $timestamp = $timestamp->setTimezone(new DateTimeZone($timeZone));
-            } else {
-                $timestamp->setTimezone(new DateTimeZone($timeZone));
-            }
+            $timestamp->setTimezone(new DateTimeZone($timeZone));
         }
 
         // Parse things that we can translate before passing it off to DateTime::format()

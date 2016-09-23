@@ -1,14 +1,15 @@
 <?php
 /**
- * @link      http://buildwithcraft.com/
- * @copyright Copyright (c) 2015 Pixel & Tonic, Inc.
- * @license   http://buildwithcraft.com/license
+ * @link      https://craftcms.com/
+ * @copyright Copyright (c) Pixel & Tonic, Inc.
+ * @license   https://craftcms.com/license
  */
 
 namespace craft\app\helpers;
 
 use Craft;
 use craft\app\i18n\Locale;
+use yii\i18n\MissingTranslationEvent;
 
 /**
  * Class Localization
@@ -57,18 +58,49 @@ class Localization
     }
 
     /**
+     * Returns fallback data for a locale if the Intl extension isn't loaded.
+     *
+     * @param string $localeId
+     *
+     * @return array|null
+     */
+    public static function getLocaleData($localeId)
+    {
+        $data = null;
+
+        // Load the locale data
+        $appDataPath = Craft::$app->getPath()->getAppPath().'/config/locales/'.$localeId.'.php';
+        $customDataPath = Craft::$app->getPath()->getConfigPath().'/locales/'.$localeId.'.php';
+
+        if (Io::fileExists($appDataPath)) {
+            $data = require($appDataPath);
+        }
+
+        if (Io::fileExists($customDataPath)) {
+            if ($data !== null) {
+                $data = ArrayHelper::merge($data, require($customDataPath));
+            } else {
+                $data = require($customDataPath);
+            }
+        }
+
+        return $data;
+    }
+
+    /**
      * Looks for a missing translation string in Yii's core translations.
      *
-     * @param \CMissingTranslationEvent $event
+     * @param MissingTranslationEvent $event
      *
      * @return void
      */
-    public static function findMissingTranslation(\CMissingTranslationEvent $event)
+    public static function findMissingTranslation(MissingTranslationEvent $event)
     {
         // Look for translation file from most to least specific.  So nl_nl.php gets checked before nl.php, for example.
         $translationFiles = [];
         $parts = explode('_', $event->language);
         $totalParts = count($parts);
+        $loadedAlready = false;
 
         for ($i = 1; $i <= $totalParts; $i++) {
             $translationFiles[] = implode('_', array_slice($parts, 0, $i));
@@ -78,15 +110,28 @@ class Localization
 
         // First see if we have any cached info.
         foreach ($translationFiles as $translationFile) {
+            $loadedAlready = false;
+
             // We've loaded the translation file already, just check for the translation.
             if (isset(static::$_translations[$translationFile])) {
+                /** @noinspection PhpUnusedLocalVariableInspection */
+                $loadedAlready = true;
+
                 if (isset(static::$_translations[$translationFile][$event->message])) {
+                    // Found a match... grab it and go.
                     $event->message = static::$_translations[$translationFile][$event->message];
+
+                    return;
                 }
 
                 // No translation... just give up.
                 return;
             }
+        }
+
+        // We've checked through an already loaded message file and there was no match. Just give up.
+        if ($loadedAlready) {
+            return;
         }
 
         // No luck in cache, check the file system.
@@ -104,6 +149,8 @@ class Localization
 
                     return;
                 }
+            } else {
+                static::$_translations[$translationFile] = [];
             }
         }
     }

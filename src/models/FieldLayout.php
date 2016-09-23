@@ -1,8 +1,8 @@
 <?php
 /**
- * @link      http://buildwithcraft.com/
- * @copyright Copyright (c) 2015 Pixel & Tonic, Inc.
- * @license   http://buildwithcraft.com/license
+ * @link      https://craftcms.com/
+ * @copyright Copyright (c) Pixel & Tonic, Inc.
+ * @license   https://craftcms.com/license
  */
 
 namespace craft\app\models;
@@ -86,7 +86,7 @@ class FieldLayout extends Model
     /**
      * Returns the layout’s fields.
      *
-     * @return FieldInterface[]|Field[] The layout’s fields.
+     * @return FieldInterface[] The layout’s fields.
      */
     public function getFields()
     {
@@ -111,6 +111,7 @@ class FieldLayout extends Model
         $ids = [];
 
         foreach ($this->getFields() as $field) {
+            /** @var Field $field */
             $ids[] = $field->id;
         }
 
@@ -142,7 +143,7 @@ class FieldLayout extends Model
     /**
      * Sets the layout']”s fields.
      *
-     * @param FieldInterface[]|Field[] $fields An array of the layout’s fields, which can either be
+     * @param FieldInterface[] $fields         An array of the layout’s fields, which can either be
      *                                         FieldLayoutFieldModel objects or arrays defining the tab’s
      *                                         attributes.
      *

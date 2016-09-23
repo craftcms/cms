@@ -1,8 +1,8 @@
 <?php
 /**
- * @link      http://buildwithcraft.com/
- * @copyright Copyright (c) 2015 Pixel & Tonic, Inc.
- * @license   http://buildwithcraft.com/license
+ * @link      https://craftcms.com/
+ * @copyright Copyright (c) Pixel & Tonic, Inc.
+ * @license   https://craftcms.com/license
  */
 
 namespace craft\app\records;
@@ -17,15 +17,15 @@ use creocoder\nestedsets\NestedSetsBehavior;
 /**
  * Class StructureElement record.
  *
- * @property integer              $id          ID
- * @property integer              $structureId Structure ID
- * @property integer              $elementId   Element ID
- * @property integer              $root        Root
- * @property integer              $lft         Lft
- * @property integer              $rgt         Rgt
- * @property integer              $level       Level
- * @property ActiveQueryInterface $structure   Structure
- * @property ActiveQueryInterface $element     Element
+ * @property integer   $id          ID
+ * @property integer   $structureId Structure ID
+ * @property integer   $elementId   Element ID
+ * @property integer   $root        Root
+ * @property integer   $lft         Lft
+ * @property integer   $rgt         Rgt
+ * @property integer   $level       Level
+ * @property Structure $structure   Structure
+ * @property Element   $element     Element
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since  3.0
@@ -94,17 +94,21 @@ class StructureElement extends ActiveRecord
 
     /**
      * @inheritdoc
+     *
+     * @return StructuredElementQuery
      */
     public static function find()
     {
-        return Craft::createObject(StructuredElementQuery::className(),
-            [get_called_class()]);
+        /** @var StructuredElementQuery $query */
+        $query = Craft::createObject(StructuredElementQuery::className(), [get_called_class()]);
+
+        return $query;
     }
 
     /**
      * Returns the structure element’s structure.
      *
-     * @return \yii\db\ActiveQueryInterface The relational query object.
+     * @return ActiveQueryInterface The relational query object.
      */
     public function getStructure()
     {
@@ -114,7 +118,7 @@ class StructureElement extends ActiveRecord
     /**
      * Returns the structure element’s element.
      *
-     * @return \yii\db\ActiveQueryInterface The relational query object.
+     * @return ActiveQueryInterface The relational query object.
      */
     public function getElement()
     {

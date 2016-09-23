@@ -1,8 +1,8 @@
 <?php
 /**
- * @link      http://buildwithcraft.com/
- * @copyright Copyright (c) 2015 Pixel & Tonic, Inc.
- * @license   http://buildwithcraft.com/license
+ * @link      https://craftcms.com/
+ * @copyright Copyright (c) Pixel & Tonic, Inc.
+ * @license   https://craftcms.com/license
  */
 
 namespace craft\app\events;
@@ -24,4 +24,9 @@ class AssetEvent extends Event
      * @var Asset The asset model associated with the event.
      */
     public $asset;
+
+    /**
+     * @var boolean Whether the asset is brand new
+     */
+    public $isNew;
 }

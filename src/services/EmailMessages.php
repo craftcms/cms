@@ -1,14 +1,15 @@
 <?php
 /**
- * @link      http://buildwithcraft.com/
- * @copyright Copyright (c) 2015 Pixel & Tonic, Inc.
- * @license   http://buildwithcraft.com/license
+ * @link      https://craftcms.com/
+ * @copyright Copyright (c) Pixel & Tonic, Inc.
+ * @license   https://craftcms.com/license
  */
 
 namespace craft\app\services;
 
 use Craft;
-use craft\app\models\RebrandEmail as RebrandEmailModel;
+use craft\app\base\Plugin;
+use craft\app\models\RebrandEmail;
 use craft\app\records\EmailMessage as EmailMessageRecord;
 use yii\base\Component;
 
@@ -63,7 +64,7 @@ class EmailMessages extends Component
         $messages = [];
 
         foreach ($this->_getAllMessageKeys() as $key) {
-            $message = new RebrandEmailModel();
+            $message = new RebrandEmail();
             $message->key = $key;
             $message->locale = $localeId;
 
@@ -77,6 +78,9 @@ class EmailMessages extends Component
                 $message->body = $this->_translateMessageString($key, 'body', $localeId);
             }
 
+            // Not possible to customize the heading
+            $message->heading = $this->_translateMessageString($key, 'heading', $localeId);
+
             $messages[] = $message;
         }
 
@@ -89,7 +93,7 @@ class EmailMessages extends Component
      * @param string      $key
      * @param string|null $localeId
      *
-     * @return RebrandEmailModel
+     * @return RebrandEmail
      */
     public function getMessage($key, $localeId = null)
     {
@@ -97,7 +101,7 @@ class EmailMessages extends Component
             $localeId = Craft::$app->language;
         }
 
-        $message = new RebrandEmailModel();
+        $message = new RebrandEmail();
         $message->key = $key;
         $message->locale = $localeId;
 
@@ -112,11 +116,11 @@ class EmailMessages extends Component
     /**
      * Saves the localized content for a system email message.
      *
-     * @param RebrandEmailModel $message
+     * @param RebrandEmail $message
      *
      * @return boolean
      */
-    public function saveMessage(RebrandEmailModel $message)
+    public function saveMessage(RebrandEmail $message)
     {
         $record = $this->_getMessageRecord($message->key, $message->locale);
 
@@ -125,11 +129,11 @@ class EmailMessages extends Component
 
         if ($record->save()) {
             return true;
-        } else {
-            $message->addErrors($record->getErrors());
-
-            return false;
         }
+
+        $message->addErrors($record->getErrors());
+
+        return false;
     }
 
     // Private Methods
@@ -161,6 +165,8 @@ class EmailMessages extends Component
         if (isset($this->_messagesInfo[$key])) {
             return $this->_messagesInfo[$key];
         }
+
+        return null;
     }
 
     /**
@@ -185,6 +191,7 @@ class EmailMessages extends Component
 
             // Give plugins a chance to add additional messages
             foreach (Craft::$app->getPlugins()->call('registerEmailMessages') as $pluginHandle => $pluginKeys) {
+                /** @var Plugin $plugin */
                 $plugin = Craft::$app->getPlugins()->getPlugin($pluginHandle);
 
                 foreach ($pluginKeys as $key) {

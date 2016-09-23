@@ -1,8 +1,8 @@
 <?php
 /**
- * @link      http://buildwithcraft.com/
- * @copyright Copyright (c) 2015 Pixel & Tonic, Inc.
- * @license   http://buildwithcraft.com/license
+ * @link      https://craftcms.com/
+ * @copyright Copyright (c) Pixel & Tonic, Inc.
+ * @license   https://craftcms.com/license
  */
 
 namespace craft\app\helpers;
@@ -150,10 +150,12 @@ class Number
     {
         if (is_numeric($var)) {
             return $var;
-        } else if (is_object($var) && method_exists($var, '__toString')) {
-            return static::makeNumeric($var->__toString());
-        } else {
-            return (int)!empty($var);
         }
+
+        if (is_object($var) && method_exists($var, '__toString')) {
+            return static::makeNumeric($var->__toString());
+        }
+
+        return (int)!empty($var);
     }
 }

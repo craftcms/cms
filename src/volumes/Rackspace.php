@@ -4,6 +4,7 @@ namespace craft\app\volumes;
 use Craft;
 use craft\app\base\Volume;
 use League\Flysystem\Rackspace\RackspaceAdapter;
+use OpenCloud\Identity\Resource\Token;
 use \OpenCloud\OpenStack;
 use \OpenCloud\Rackspace as RackspaceClient;
 
@@ -14,8 +15,8 @@ use \OpenCloud\Rackspace as RackspaceClient;
  *
  * @author     Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @copyright  Copyright (c) 2014, Pixel & Tonic, Inc.
- * @license    http://buildwithcraft.com/license Craft License Agreement
- * @see        http://buildwithcraft.com
+ * @license    http://craftcms.com/license Craft License Agreement
+ * @see        http://craftcms.com
  * @package    craft.app.volumes
  * @since      3.0
  */
@@ -171,6 +172,7 @@ class Rackspace extends Volume
 
     /**
      * @inheritdoc
+     *
      * @return RackspaceAdapter
      */
     protected function createAdapter()
@@ -203,6 +205,7 @@ class Rackspace extends Volume
             $client->importCredentials(unserialize(Craft::$app->cache->get($tokenKey)));
         }
 
+        /** @var Token $token */
         $token = $client->getTokenObject();
 
         // If it's not a valid token, re-authenticate and store the token

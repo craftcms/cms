@@ -1,8 +1,8 @@
 <?php
 /**
- * @link      http://buildwithcraft.com/
- * @copyright Copyright (c) 2015 Pixel & Tonic, Inc.
- * @license   http://buildwithcraft.com/license
+ * @link      https://craftcms.com/
+ * @copyright Copyright (c) Pixel & Tonic, Inc.
+ * @license   https://craftcms.com/license
  */
 
 namespace craft\app\elements\actions;
@@ -71,7 +71,7 @@ EOT;
      */
     public function performAction(ElementQueryInterface $query)
     {
-        /** @var ElementQueryInterface|ElementQuery $query */
+        /** @var ElementQuery $query */
         // Get the users that aren't already suspended
         $query->status = [
             User::STATUS_ACTIVE,
@@ -83,7 +83,7 @@ EOT;
         $users = $query->all();
 
         foreach ($users as $user) {
-            if (!$user->isCurrent()) {
+            if (!$user->getIsCurrent()) {
                 Craft::$app->getUsers()->suspendUser($user);
             }
         }

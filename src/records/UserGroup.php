@@ -1,14 +1,14 @@
 <?php
 /**
- * @link      http://buildwithcraft.com/
- * @copyright Copyright (c) 2015 Pixel & Tonic, Inc.
- * @license   http://buildwithcraft.com/license
+ * @link      https://craftcms.com/
+ * @copyright Copyright (c) Pixel & Tonic, Inc.
+ * @license   https://craftcms.com/license
  */
 
 namespace craft\app\records;
 
-use Craft;
 use craft\app\db\ActiveRecord;
+use yii\db\ActiveQueryInterface;
 
 /**
  * Class UserGroup record.
@@ -16,6 +16,7 @@ use craft\app\db\ActiveRecord;
  * @property integer $id     ID
  * @property string  $name   Name
  * @property string  $handle Handle
+ * @property User[]  $users  Users
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since  3.0
@@ -31,7 +32,17 @@ class UserGroup extends ActiveRecord
     public function rules()
     {
         return [
-            [['handle'], 'craft\\app\\validators\\Handle', 'reservedWords' => ['id', 'dateCreated', 'dateUpdated', 'uid', 'title']],
+            [
+                ['handle'],
+                'craft\\app\\validators\\Handle',
+                'reservedWords' => [
+                    'id',
+                    'dateCreated',
+                    'dateUpdated',
+                    'uid',
+                    'title'
+                ]
+            ],
             [['name', 'handle'], 'required'],
             [['name', 'handle'], 'unique'],
             [['name', 'handle'], 'string', 'max' => 255],
@@ -51,7 +62,7 @@ class UserGroup extends ActiveRecord
     /**
      * Returns the group’s users.
      *
-     * @return \yii\db\ActiveQueryInterface
+     * @return ActiveQueryInterface
      */
     public function getUsers()
     {

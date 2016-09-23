@@ -1,8 +1,8 @@
 <?php
 /**
- * @link      http://buildwithcraft.com/
- * @copyright Copyright (c) 2015 Pixel & Tonic, Inc.
- * @license   http://buildwithcraft.com/license
+ * @link      https://craftcms.com/
+ * @copyright Copyright (c) Pixel & Tonic, Inc.
+ * @license   https://craftcms.com/license
  */
 
 namespace craft\app\services;
@@ -10,23 +10,39 @@ namespace craft\app\services;
 use Craft;
 use craft\app\base\Plugin;
 use craft\app\base\PluginInterface;
-use craft\app\enums\PluginVersionUpdateStatus;
+use craft\app\enums\PluginUpdateStatus;
 use craft\app\enums\VersionUpdateStatus;
-use craft\app\errors\Exception;
 use craft\app\events\Event;
 use craft\app\events\UpdateEvent;
+use craft\app\helpers\DateTimeHelper;
 use craft\app\helpers\Io;
-use craft\app\helpers\Update;
-use craft\app\models\AppUpdate as AppUpdateModel;
-use craft\app\models\PluginUpdate as PluginUpdateModel;
-use craft\app\models\Update as UpdateModel;
+use craft\app\helpers\Json;
+use craft\app\helpers\Update as UpdateHelper;
+use craft\app\models\AppUpdate;
+use craft\app\models\Et;
+use craft\app\models\PluginNewRelease;
+use craft\app\models\PluginUpdate;
+use craft\app\models\Update;
 use craft\app\updates\Updater;
+use GuzzleHttp\Client;
 use yii\base\Component;
+use yii\base\Exception;
+use yii\base\UserException;
+use yii\helpers\Markdown;
 
 /**
  * Class Updates service.
  *
  * An instance of the Updates service is globally accessible in Craft via [[Application::updates `Craft::$app->getUpdates()`]].
+ *
+ * @property boolean $hasCraftBuildChanged      Whether a different Craft build has been uploaded
+ * @property boolean $isBreakpointUpdateNeeded  Whether the build stored in craft_info is less than the minimum required build on the file system
+ * @property boolean $isCraftDbMigrationNeeded  Whether Craft needs to run any database migrations
+ * @property boolean $isCriticalUpdateAvailable Whether a critical update is available
+ * @property boolean $isManualUpdateRequired    Whether a manual update is required
+ * @property boolean $isPluginDbUpdateNeeded    Whether a plugin needs to run a database update
+ * @property boolean $isSchemaVersionCompatible Whether the uploaded DB schema is equal to or greater than the installed schema
+ * @property boolean $isUpdateInfoCached        Whether the update info is cached
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since  3.0
@@ -55,7 +71,7 @@ class Updates extends Component
     // =========================================================================
 
     /**
-     * @var UpdateModel
+     * @var Update
      */
     private $_updateModel;
 
@@ -91,7 +107,7 @@ class Updates extends Component
     public function criticalPluginUpdateAvailable($plugins)
     {
         foreach ($plugins as $plugin) {
-            if ($plugin->status == PluginVersionUpdateStatus::UpdateAvailable && count($plugin->releases) > 0) {
+            if ($plugin->status == PluginUpdateStatus::UpdateAvailable && count($plugin->releases) > 0) {
                 foreach ($plugin->releases as $release) {
                     if ($release->critical) {
                         return true;
@@ -104,9 +120,11 @@ class Updates extends Component
     }
 
     /**
+     * Returns whether the update info is cached.
+     *
      * @return boolean
      */
-    public function isUpdateInfoCached()
+    public function getIsUpdateInfoCached()
     {
         return (isset($this->_updateModel) || Craft::$app->getCache()->get('updateinfo') !== false);
     }
@@ -118,7 +136,7 @@ class Updates extends Component
     {
         $count = 0;
 
-        if ($this->isUpdateInfoCached()) {
+        if ($this->getIsUpdateInfoCached()) {
             $updateModel = $this->getUpdates();
 
             // Could be false!
@@ -133,7 +151,7 @@ class Updates extends Component
 
                 if (!empty($updateModel->plugins)) {
                     foreach ($updateModel->plugins as $plugin) {
-                        if ($plugin->status == PluginVersionUpdateStatus::UpdateAvailable) {
+                        if ($plugin->status == PluginUpdateStatus::UpdateAvailable) {
                             if (isset($plugin->releases) && count($plugin->releases) > 0) {
                                 $count++;
                             }
@@ -147,17 +165,31 @@ class Updates extends Component
     }
 
     /**
-     * @return mixed
+     * Returns whether a critical update is available.
+     *
+     * @return boolean
      */
-    public function isCriticalUpdateAvailable()
+    public function getIsCriticalUpdateAvailable()
     {
-        return (!empty($this->_updateModel->app->criticalUpdateAvailable));
+        if (!empty($this->_updateModel->app->criticalUpdateAvailable)) {
+            return true;
+        }
+
+        foreach ($this->_updateModel->plugins as $pluginUpdateModel) {
+            if ($pluginUpdateModel->criticalUpdateAvailable) {
+                return true;
+            }
+        }
+
+        return false;
     }
 
     /**
+     * Returns whether a manual update is required.
+     *
      * @return mixed
      */
-    public function isManualUpdateRequired()
+    public function getIsManualUpdateRequired()
     {
         return (!empty($this->_updateModel->app->manualUpdateRequired));
     }
@@ -165,7 +197,7 @@ class Updates extends Component
     /**
      * @param boolean $forceRefresh
      *
-     * @return UpdateModel|false
+     * @return Update|false
      */
     public function getUpdates($forceRefresh = false)
     {
@@ -182,11 +214,15 @@ class Updates extends Component
                 $etModel = $this->check();
 
                 if ($etModel == null) {
-                    $updateModel = new UpdateModel();
+                    $updateModel = new Update();
                     $errors[] = Craft::t('app', 'Craft is unable to determine if an update is available at this time.');
                     $updateModel->errors = $errors;
                 } else {
+                    /** @var Update $updateModel */
                     $updateModel = $etModel->data;
+
+                    // Search for any missing plugin updates based on their feeds
+                    $this->checkPluginReleaseFeeds($updateModel);
 
                     // cache it and set it to expire according to config
                     Craft::$app->getCache()->set('updateinfo', $updateModel);
@@ -216,40 +252,47 @@ class Updates extends Component
     }
 
     /**
-     * @param PluginInterface|Plugin $plugin
+     * @param PluginInterface $plugin
      *
      * @return boolean
      */
     public function setNewPluginInfo(PluginInterface $plugin)
     {
-        $affectedRows = Craft::$app->getDb()->createCommand()->update('{{%plugins}}',
-            [
-                'version' => $plugin->version
-            ], [
-                'handle' => $plugin->getHandle()
-            ])->execute();
+        /** @var Plugin $plugin */
+        $affectedRows = Craft::$app->getDb()->createCommand()
+            ->update(
+                '{{%plugins}}',
+                [
+                    'version' => $plugin->version,
+                    'schemaVersion' => $plugin->schemaVersion
+                ],
+                ['handle' => $plugin->getHandle()])
+            ->execute();
 
-        return (bool)$affectedRows;
+        $success = (bool)$affectedRows;
+
+        return $success;
     }
 
     /**
-     * @return UpdateModel
+     * @return Et
      */
     public function check()
     {
         Craft::$app->getConfig()->maxPowerCaptain();
 
-        $updateModel = new UpdateModel();
-        $updateModel->app = new AppUpdateModel();
+        $updateModel = new Update();
+        $updateModel->app = new AppUpdate();
         $updateModel->app->localVersion = Craft::$app->version;
         $updateModel->app->localBuild = Craft::$app->build;
 
+        /** @var Plugin[] $plugins */
         $plugins = Craft::$app->getPlugins()->getAllPlugins();
 
         $pluginUpdateModels = [];
 
         foreach ($plugins as $plugin) {
-            $pluginUpdateModel = new PluginUpdateModel();
+            $pluginUpdateModel = new PluginUpdate();
             $pluginUpdateModel->class = $plugin::className();
             $pluginUpdateModel->localVersion = $plugin->version;
 
@@ -261,6 +304,211 @@ class Updates extends Component
         $etModel = Craft::$app->getEt()->checkForUpdates($updateModel);
 
         return $etModel;
+    }
+
+    /**
+     * Check plugins’ release feeds and include any pending updates in the given Update
+     *
+     * @param Update $updateModel
+     *
+     * @return void
+     */
+    public function checkPluginReleaseFeeds(Update $updateModel)
+    {
+        $userAgent = 'Craft/'.Craft::$app->version.'.'.Craft::$app->build;
+
+        foreach ($updateModel->plugins as $pluginUpdateModel) {
+            // Only check plugins where the update status isn't already known from the ET response
+            if ($pluginUpdateModel->status != PluginUpdateStatus::Unknown) {
+                continue;
+            }
+
+            // Get the plugin and its feed URL
+            /** @var Plugin $plugin */
+            $plugin = Craft::$app->getPlugins()->getPlugin($pluginUpdateModel->class);
+
+            // Skip if the plugin doesn't have a feed URL
+            if ($plugin->releaseFeedUrl === null) {
+                continue;
+            }
+
+            // Make sure it's HTTPS
+            if (strncmp($plugin->releaseFeedUrl, 'https://', 8) !== 0) {
+                Craft::warning('The “'.$plugin->name.'” plugin has a release feed URL, but it doesn’t begin with https://, so it’s getting skipped ('.$plugin->releaseFeedUrl.').');
+                continue;
+            }
+
+            try {
+                // Fetch it
+                $client = new Client([
+                    'headers' => [
+                        'User-Agent' => $userAgent,
+                    ],
+                    'timeout' => 5,
+                    'connect_timeout' => 2,
+                    'allow_redirects' => true,
+                    'verify' => false
+                ]);
+
+                // Potentially long-running request, so close session to prevent session blocking on subsequent requests.
+                Craft::$app->getSession()->close();
+
+                $response = $client->get($plugin->releaseFeedUrl, null);
+
+                if ($response->getStatusCode() != 200) {
+                    Craft::warning('Error in calling '.$plugin->releaseFeedUrl.'. Response: '.$response->getBody());
+                    continue;
+                }
+
+                $responseBody = $response->getBody();
+                $releases = Json::decode($responseBody);
+
+                if (!$releases) {
+                    Craft::warning('The “'.$plugin->name."” plugin release feed didn’t come back as valid JSON:\n".$responseBody);
+                    continue;
+                }
+
+                $releaseModels = [];
+                $releaseTimestamps = [];
+
+                foreach ($releases as $release) {
+                    // Validate ite info
+                    $errors = [];
+
+                    // Any missing required attributes?
+                    $missingAttributes = [];
+
+                    foreach ([
+                                 'version',
+                                 'downloadUrl',
+                                 'date',
+                                 'notes'
+                             ] as $attribute) {
+                        if (empty($release[$attribute])) {
+                            $missingAttributes[] = $attribute;
+                        }
+                    }
+
+                    if ($missingAttributes) {
+                        $errors[] = 'Missing required attributes ('.implode(', ', $missingAttributes).')';
+                    }
+
+                    // downloadUrl could be missing.
+                    if (!empty($release['downloadUrl'])) {
+                        // Invalid URL?
+                        if (strncmp($release['downloadUrl'], 'https://', 8) !== 0) {
+                            $errors[] = 'Download URL doesn’t begin with https:// ('.$release['downloadUrl'].')';
+                        }
+                    }
+
+                    // release date could be missing.
+                    if (!empty($release['date'])) {
+                        // Invalid date?
+                        $date = DateTimeHelper::toDateTime($release['date']);
+                        if (!$date) {
+                            $errors[] = 'Invalid date ('.$release['date'].')';
+                        }
+                    }
+
+                    // Validation complete. Were there any errors?
+                    if ($errors) {
+                        Craft::warning('A “'.$plugin->name."” release was skipped because it is invalid:\n - ".implode("\n - ", $errors));
+                        continue;
+                    }
+
+                    // All good! Let's make sure it's a pending update
+                    if (!version_compare($release['version'], $plugin->version, '>')) {
+                        continue;
+                    }
+
+                    // Create the release note HTML
+                    if (!is_array($release['notes'])) {
+                        $release['notes'] = array_filter(preg_split('/[\r\n]+/', $release['notes']));
+                    }
+
+                    $notes = '';
+                    $inList = false;
+
+                    foreach ($release['notes'] as $line) {
+                        // Escape any HTML
+                        $line = htmlspecialchars($line, ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8');
+
+                        // Is this a heading?
+                        if (preg_match('/^#\s+(.+)/', $line, $match)) {
+                            if ($inList) {
+                                $notes .= "</ul>\n";
+                                $inList = false;
+                            }
+
+                            $notes .= '<h3>'.$match[1]."</h3>\n";
+                        } else {
+                            if (!$inList) {
+                                $notes .= "<ul>\n";
+                                $inList = true;
+                            }
+
+                            if (preg_match('/^\[(\w+)\]\s+(.+)/', $line, $match)) {
+                                $class = strtolower($match[1]);
+                                $line = $match[2];
+                            } else {
+                                $class = null;
+                            }
+
+                            // Parse Markdown code
+                            $line = Markdown::processParagraph($line);
+
+                            $notes .= '<li'.($class ? ' class="'.$class.'"' : '').'>'.$line."</li>\n";
+                        }
+                    }
+
+                    if ($inList) {
+                        $notes .= "</ul>\n";
+                    }
+
+                    $critical = !empty($release['critical']);
+
+                    if (!isset($date)) {
+                        $date = new \DateTime();
+                    }
+
+                    // Populate the release model
+                    $releaseModel = new PluginNewRelease();
+                    $releaseModel->version = $release['version'];
+                    $releaseModel->date = $date;
+                    $releaseModel->localizedDate = $date->localeDate();
+                    $releaseModel->notes = $notes;
+                    $releaseModel->critical = $critical;
+                    $releaseModel->manualDownloadEndpoint = $release['downloadUrl'];
+
+                    $releaseModels[] = $releaseModel;
+                    $releaseTimestamps[] = $date->getTimestamp();
+
+                    if ($critical) {
+                        $pluginUpdateModel->criticalUpdateAvailable = true;
+                    }
+                }
+
+                if ($releaseModels) {
+                    // Sort release models by timestamp
+                    array_multisort($releaseTimestamps, SORT_DESC, $releaseModels);
+                    $latestRelease = $releaseModels[0];
+
+                    $pluginUpdateModel->displayName = $plugin->name;
+                    $pluginUpdateModel->localVersion = $plugin->version;
+                    $pluginUpdateModel->latestDate = $latestRelease->date;
+                    $pluginUpdateModel->latestVersion = $latestRelease->version;
+                    $pluginUpdateModel->manualDownloadEndpoint = $latestRelease->manualDownloadEndpoint;
+                    $pluginUpdateModel->manualUpdateRequired = true;
+                    $pluginUpdateModel->releases = $releaseModels;
+                    $pluginUpdateModel->status = PluginUpdateStatus::UpdateAvailable;
+                } else {
+                    $pluginUpdateModel->status = PluginUpdateStatus::UpToDate;
+                }
+            } catch (\Exception $e) {
+                Craft::error('There was a problem getting the update feed for “'.$plugin->name.'”, so it was skipped: '.$e->getMessage());
+                continue;
+            }
+        }
     }
 
     /**
@@ -299,7 +547,7 @@ class Updates extends Component
 
         try {
             // Fire a 'beforeUpdate' event and pass in the type
-            $this->trigger(static::EVENT_BEFORE_UPDATE, new UpdateEvent([
+            $this->trigger(self::EVENT_BEFORE_UPDATE, new UpdateEvent([
                 'type' => $manual ? 'manual' : 'auto'
             ]));
 
@@ -311,8 +559,28 @@ class Updates extends Component
             // No need to get the latest update info if this is a manual update.
             if (!$manual) {
                 $updateModel = $this->getUpdates();
-                Craft::info('Updating from '.$updateModel->app->localVersion.'.'.$updateModel->app->localBuild.' to '.$updateModel->app->latestVersion.'.'.$updateModel->app->latestBuild.'.', __METHOD__);
-                $result = $updater->getUpdateFileInfo();
+
+                if ($handle == 'craft') {
+                    Craft::info('Updating from '.$updateModel->app->localVersion.'.'.$updateModel->app->localBuild.' to '.$updateModel->app->latestVersion.'.'.$updateModel->app->latestBuild.'.');
+                } else {
+                    $latestVersion = null;
+                    $localVersion = null;
+                    $class = null;
+
+                    foreach ($updateModel->plugins as $pluginUpdateModel) {
+                        if (strtolower($pluginUpdateModel->class) === $handle) {
+                            $latestVersion = $pluginUpdateModel->latestVersion;
+                            $localVersion = $pluginUpdateModel->localVersion;
+                            $class = $pluginUpdateModel->class;
+
+                            break;
+                        }
+                    }
+
+                    Craft::info('Updating plugin "'.$class.'" from '.$localVersion.' to '.$latestVersion.'.');
+                }
+
+                $result = $updater->getUpdateFileInfo($handle);
             }
 
             $result['success'] = true;
@@ -327,38 +595,47 @@ class Updates extends Component
 
     /**
      * @param string $md5
+     * @param string $handle
      *
      * @return array
      */
-    public function processUpdateDownload($md5)
+    public function processUpdateDownload($md5, $handle)
     {
         Craft::info('Starting to process the update download.', __METHOD__);
 
         try {
             $updater = new Updater();
-            $result = $updater->processDownload($md5);
+            $result = $updater->processDownload($md5, $handle);
             $result['success'] = true;
 
             Craft::info('Finished processing the update download.', __METHOD__);
 
             return $result;
-        } catch (\Exception $e) {
+        } catch (UserException $e) {
+            Craft::error('Error processing the update download: '.$e->getMessage());
             return ['success' => false, 'message' => $e->getMessage()];
+        } catch (\Exception $e) {
+            Craft::error('Error processing the update download: '.$e->getMessage());
+            return [
+                'success' => false,
+                'message' => Craft::t('app', 'There was a problem during the update.')
+            ];
         }
     }
 
     /**
      * @param string $uid
+     * @param string $handle
      *
      * @return array
      */
-    public function backupFiles($uid)
+    public function backupFiles($uid, $handle)
     {
         Craft::info('Starting to backup files that need to be updated.', __METHOD__);
 
         try {
             $updater = new Updater();
-            $updater->backupFiles($uid);
+            $updater->backupFiles($uid, $handle);
 
             Craft::info('Finished backing up files.');
 
@@ -370,16 +647,17 @@ class Updates extends Component
 
     /**
      * @param string $uid
+     * @param string $handle
      *
      * @return array
      */
-    public function updateFiles($uid)
+    public function updateFiles($uid, $handle)
     {
         Craft::info('Starting to update files.', __METHOD__);
 
         try {
             $updater = new Updater();
-            $updater->updateFiles($uid);
+            $updater->updateFiles($uid, $handle);
 
             Craft::info('Finished updating files.', __METHOD__);
 
@@ -404,11 +682,11 @@ class Updates extends Component
                 Craft::info('Did not backup database because there were no migrations to run.', __METHOD__);
 
                 return ['success' => true];
-            } else {
-                Craft::info('Finished backing up database.', __METHOD__);
-
-                return ['success' => true, 'dbBackupPath' => $result];
             }
+
+            Craft::info('Finished backing up database.', __METHOD__);
+
+            return ['success' => true, 'dbBackupPath' => $result];
         } catch (\Exception $e) {
             return ['success' => false, 'message' => $e->getMessage()];
         }
@@ -432,14 +710,19 @@ class Updates extends Component
                 $updater->updateDatabase();
                 Craft::info('Craft is done updating the database.', __METHOD__);
             } else {
+                // Make sure plugins are loaded.
+                Craft::$app->getPlugins()->loadPlugins();
+
                 $plugin = Craft::$app->getPlugins()->getPlugin($handle);
+
                 if ($plugin) {
+                    /** @var Plugin $plugin */
                     Craft::info('The plugin, '.$plugin->name.' wants to update the database.', __METHOD__);
                     $updater->updateDatabase($plugin);
                     Craft::info('The plugin, '.$plugin->name.' is done updating the database.', __METHOD__);
                 } else {
                     Craft::error('Cannot find a plugin with the handle '.$handle.' or it is not enabled, therefore it cannot update the database.', __METHOD__);
-                    throw new Exception(Craft::t('app', 'Cannot find an enabled plugin with the handle {handle}.', ['handle' => $handle]));
+                    throw new Exception("Cannot find an enabled plugin with the handle '{$handle}'");
                 }
             }
 
@@ -469,36 +752,37 @@ class Updates extends Component
         }
 
         // Fire an 'afterUpdate' event
-        $this->trigger(static::EVENT_AFTER_UPDATE, new Event());
+        $this->trigger(self::EVENT_AFTER_UPDATE, new Event());
     }
 
     /**
      * @param string  $uid
+     * @param string  $handle
      * @param boolean $dbBackupPath
      *
      * @return array
      */
-    public function rollbackUpdate($uid, $dbBackupPath = false)
+    public function rollbackUpdate($uid, $handle, $dbBackupPath = false)
     {
         try {
             // Fire an 'afterUpdateFail' event
-            $this->trigger(static::EVENT_AFTER_UPDATE_FAIL, new Event());
+            $this->trigger(self::EVENT_AFTER_UPDATE_FAIL, new Event());
 
             Craft::$app->getConfig()->maxPowerCaptain();
 
             if ($dbBackupPath && Craft::$app->getConfig()->get('backupDbOnUpdate') && Craft::$app->getConfig()->get('restoreDbOnUpdateFailure')) {
                 Craft::info('Rolling back any database changes.', __METHOD__);
-                Update::rollBackDatabaseChanges($dbBackupPath);
+                UpdateHelper::rollBackDatabaseChanges($dbBackupPath);
                 Craft::info('Done rolling back any database changes.', __METHOD__);
             }
 
             // If uid !== false, it's an auto-update.
             if ($uid !== false) {
                 Craft::info('Rolling back any file changes.', __METHOD__);
-                $manifestData = Update::getManifestData(Update::getUnzipFolderFromUID($uid));
+                $manifestData = UpdateHelper::getManifestData(UpdateHelper::getUnzipFolderFromUID($uid), $handle);
 
                 if ($manifestData) {
-                    Update::rollBackFileChanges($manifestData);
+                    UpdateHelper::rollBackFileChanges($manifestData, $handle);
                 }
 
                 Craft::info('Done rolling back any file changes.', __METHOD__);
@@ -516,11 +800,11 @@ class Updates extends Component
     }
 
     /**
-     * Returns if a plugin needs to run a database update or not.
+     * Returns whether a plugin needs to run a database update.
      *
      * @return boolean
      */
-    public function isPluginDbUpdateNeeded()
+    public function getIsPluginDbUpdateNeeded()
     {
         $plugins = Craft::$app->getPlugins()->getAllPlugins();
 
@@ -538,7 +822,7 @@ class Updates extends Component
      *
      * @return boolean
      */
-    public function hasCraftBuildChanged()
+    public function getHasCraftBuildChanged()
     {
         $storedBuild = Craft::$app->getInfo('build');
 
@@ -546,12 +830,13 @@ class Updates extends Component
     }
 
     /**
-     * Returns true is the build stored in craft_info is less than the minimum required build on the file system. This
-     * effectively makes sure that a user cannot manually update past a manual breakpoint.
+     * Returns whether the build stored in craft_info is less than the minimum required build on the file system.
+     *
+     * This effectively makes sure that a user cannot manually update past a manual breakpoint.
      *
      * @return boolean
      */
-    public function isBreakpointUpdateNeeded()
+    public function getIsBreakpointUpdateNeeded()
     {
         $storedBuild = Craft::$app->getInfo('build');
 
@@ -559,11 +844,11 @@ class Updates extends Component
     }
 
     /**
-     * Returns whether the uploaded DB schema is equal to or greater than the installed schema
+     * Returns whether the uploaded DB schema is equal to or greater than the installed schema.
      *
      * @return boolean
      */
-    public function isSchemaVersionCompatible()
+    public function getIsSchemaVersionCompatible()
     {
         $storedSchemaVersion = Craft::$app->getInfo('schemaVersion');
 
@@ -575,7 +860,7 @@ class Updates extends Component
      *
      * @return boolean
      */
-    public function isCraftDbMigrationNeeded()
+    public function getIsCraftDbMigrationNeeded()
     {
         if ($this->_isCraftDbMigrationNeeded === null) {
             $storedSchemaVersion = Craft::$app->getInfo('schemaVersion');
@@ -605,7 +890,7 @@ class Updates extends Component
     /**
      * Returns a list of plugins that are in need of a database update.
      *
-     * @return PluginInterface[]|Plugin[]|null
+     * @return PluginInterface[]|null
      */
     public function getPluginsThatNeedDbUpdate()
     {

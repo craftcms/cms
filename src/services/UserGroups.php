@@ -1,17 +1,17 @@
 <?php
 /**
- * @link      http://buildwithcraft.com/
- * @copyright Copyright (c) 2015 Pixel & Tonic, Inc.
- * @license   http://buildwithcraft.com/license
+ * @link      https://craftcms.com/
+ * @copyright Copyright (c) Pixel & Tonic, Inc.
+ * @license   https://craftcms.com/license
  */
 
 namespace craft\app\services;
 
 use Craft;
 use craft\app\db\Query;
-use craft\app\errors\Exception;
-use craft\app\elements\User;
-use craft\app\models\UserGroup as UserGroupModel;
+use craft\app\errors\UserGroupNotFoundException;
+use craft\app\events\UserGroupEvent;
+use craft\app\models\UserGroup;
 use craft\app\records\UserGroup as UserGroupRecord;
 use yii\base\Component;
 
@@ -27,18 +27,32 @@ Craft::$app->requireEdition(Craft::Pro);
  */
 class UserGroups extends Component
 {
-    /**
-     * @event UserEvent The event that is triggered before a user is assigned to the default user group.
-     *
-     * You may set [[UserEvent::isValid]] to `false` to prevent the user from getting assigned to the default
-     * user group.
-     */
-    const EVENT_BEFORE_ASSIGN_USER_TO_DEFAULT_GROUP = 'beforeAssignUserToDefaultGroup';
+    // Constants
+    // =========================================================================
 
     /**
-     * @event UserEvent The event that is triggered after a user is assigned to the default user group.
+     * @event UserGroupEvent The event that is triggered before a user group is saved.
+     *
+     * You may set [[UserGroupEvent::isValid]] to `false` to prevent the user group from being saved.
      */
-    const EVENT_AFTER_ASSIGN_USER_TO_DEFAULT_GROUP = 'afterAssignUserToDefaultGroup';
+    const EVENT_BEFORE_SAVE_USER_GROUP = 'beforeSaveUserGroup';
+
+    /**
+     * @event UserGroupEvent The event that is triggered after a user group is saved.
+     */
+    const EVENT_AFTER_SAVE_USER_GROUP = 'afterSaveUserGroup';
+
+    /**
+     * @event UserGroupEvent The event that is triggered before a user group is deleted.
+     *
+     * You may set [[UserGroupEvent::isValid]] to `false` to prevent the user group from being deleted.
+     */
+    const EVENT_BEFORE_DELETE_USER_GROUP = 'beforeDeleteUserGroup';
+
+    /**
+     * @event UserGroupEvent The event that is triggered after a user group is saved.
+     */
+    const EVENT_AFTER_DELETE_USER_GROUP = 'afterDeleteUserGroup';
 
     // Public Methods
     // =========================================================================
@@ -58,7 +72,7 @@ class UserGroups extends Component
             ->all();
 
         foreach ($groups as $key => $value) {
-            $groups[$key] = UserGroupModel::create($value);
+            $groups[$key] = UserGroup::create($value);
         }
 
         return $groups;
@@ -69,15 +83,17 @@ class UserGroups extends Component
      *
      * @param integer $groupId
      *
-     * @return UserGroupModel
+     * @return UserGroup
      */
     public function getGroupById($groupId)
     {
         $groupRecord = UserGroupRecord::findOne($groupId);
 
         if ($groupRecord) {
-            return UserGroupModel::create($groupRecord);
+            return UserGroup::create($groupRecord);
         }
+
+        return null;
     }
 
     /**
@@ -85,7 +101,7 @@ class UserGroups extends Component
      *
      * @param integer $groupHandle
      *
-     * @return UserGroupModel
+     * @return UserGroup
      */
     public function getGroupByHandle($groupHandle)
     {
@@ -94,8 +110,10 @@ class UserGroups extends Component
         ]);
 
         if ($groupRecord) {
-            return UserGroupModel::create($groupRecord);
+            return UserGroup::create($groupRecord);
         }
+
+        return null;
     }
 
     /**
@@ -117,7 +135,7 @@ class UserGroups extends Component
             ->all();
 
         foreach ($groups as $key => $value) {
-            $groups[$key] = UserGroupModel::create($value);
+            $groups[$key] = UserGroup::create($value);
         }
 
         return $groups;
@@ -126,99 +144,47 @@ class UserGroups extends Component
     /**
      * Saves a user group.
      *
-     * @param UserGroupModel $group
+     * @param UserGroup $group
      *
      * @return boolean
      */
-    public function saveGroup(UserGroupModel $group)
+    public function saveGroup(UserGroup $group)
     {
-        $groupRecord = $this->_getGroupRecordById($group->id);
+        $success = false;
 
-        $groupRecord->name = $group->name;
-        $groupRecord->handle = $group->handle;
+        // Fire a 'beforeSaveUserGroup' event
+        $event = new UserGroupEvent([
+            'userGroup' => $group,
+        ]);
 
-        if ($groupRecord->save()) {
-            // Now that we have a group ID, save it on the model
-            if (!$group->id) {
-                $group->id = $groupRecord->id;
-            }
+        $this->trigger(self::EVENT_BEFORE_SAVE_USER_GROUP, $event);
 
-            return true;
-        } else {
-            $group->addErrors($groupRecord->getErrors());
+        if ($event->isValid) {
+            $groupRecord = $this->_getGroupRecordById($group->id);
 
-            return false;
-        }
-    }
+            $groupRecord->name = $group->name;
+            $groupRecord->handle = $group->handle;
 
-    /**
-     * Assigns a user to a given list of user groups.
-     *
-     * @param integer       $userId   The user’s ID.
-     * @param integer|array $groupIds The groups’ IDs.
-     *
-     * @return boolean Whether the users were successfully assigned to the groups.
-     */
-    public function assignUserToGroups($userId, $groupIds = null)
-    {
-        Craft::$app->getDb()->createCommand()->delete('{{%usergroups_users}}',
-            ['userId' => $userId])->execute();
-
-        if ($groupIds) {
-            if (!is_array($groupIds)) {
-                $groupIds = [$groupIds];
-            }
-
-            foreach ($groupIds as $groupId) {
-                $values[] = [$groupId, $userId];
-            }
-
-            Craft::$app->getDb()->createCommand()->batchInsert('{{%usergroups_users}}',
-                ['groupId', 'userId'], $values)->execute();
-        }
-
-        return true;
-    }
-
-    /**
-     * Assigns a user to the default user group.
-     *
-     * This method is called toward the end of a public registration request.
-     *
-     * @param User $user The user that was just registered.
-     *
-     * @return boolean Whether the user was assigned to the default group.
-     */
-    public function assignUserToDefaultGroup(User $user)
-    {
-        $defaultGroupId = Craft::$app->getSystemSettings()->getSetting('users', 'defaultGroup');
-
-        if ($defaultGroupId) {
-            // Fire a 'beforeAssignUserToDefaultGroup' event
-            $event = new UserEvent([
-                'user' => $user
-            ]);
-
-            $this->trigger(static::EVENT_BEFORE_ASSIGN_USER_TO_DEFAULT_GROUP, $event);
-
-            // Is the event is giving us the go-ahead?
-            if ($event->performAction) {
-                $success = $this->assignUserToGroups($user->id,
-                    [$defaultGroupId]);
-
-                if ($success) {
-                    // Fire an 'afterAssignUserToDefaultGroup' event
-                    $this->trigger(static::EVENT_AFTER_ASSIGN_USER_TO_DEFAULT_GROUP,
-                        new UserEvent([
-                            'user' => $user
-                        ]));
-
-                    return true;
+            if ($groupRecord->save()) {
+                // Now that we have a group ID, save it on the model
+                if (!$group->id) {
+                    $group->id = $groupRecord->id;
                 }
+
+                $success = true;
+            } else {
+                $group->addErrors($groupRecord->getErrors());
             }
         }
 
-        return false;
+        if ($success) {
+            // Fire an 'afterSaveUserGroup' event
+            $this->trigger(self::EVENT_AFTER_SAVE_USER_GROUP, new UserGroupEvent([
+                'userGroup' => $group
+            ]));
+        }
+
+        return $success;
     }
 
     /**
@@ -230,10 +196,30 @@ class UserGroups extends Component
      */
     public function deleteGroupById($groupId)
     {
-        Craft::$app->getDb()->createCommand()->delete('{{%usergroups}}',
-            ['id' => $groupId])->execute();
+        $group = $this->getGroupById($groupId);
 
-        return true;
+        // Fire a 'beforeDeleteUserGroup' event
+        $event = new UserGroupEvent([
+            'userGroup' => $group,
+        ]);
+
+        $this->trigger(self::EVENT_BEFORE_DELETE_USER_GROUP, $event);
+
+        if ($event->isValid) {
+            Craft::$app->getDb()->createCommand()
+                ->delete('{{%usergroups}}', ['id' => $groupId])
+                ->execute();
+
+            // Fire an 'afterDeleteUserGroup' event
+            $this->trigger(self::EVENT_AFTER_DELETE_USER_GROUP,
+                new UserGroupEvent([
+                    'userGroup' => $group
+                ]));
+
+            return true;
+        }
+
+        return false;
     }
 
     // Private Methods
@@ -266,11 +252,11 @@ class UserGroups extends Component
      *
      * @param integer $groupId
      *
-     * @throws Exception
      * @return void
+     * @throws UserGroupNotFoundException
      */
     private function _noGroupExists($groupId)
     {
-        throw new Exception(Craft::t('app', 'No group exists with the ID “{id}”.', ['id' => $groupId]));
+        throw new UserGroupNotFoundException("No group exists with the ID '{$groupId}'");
     }
 }

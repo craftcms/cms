@@ -1,18 +1,19 @@
 <?php
 /**
- * @link      http://buildwithcraft.com/
- * @copyright Copyright (c) 2015 Pixel & Tonic, Inc.
- * @license   http://buildwithcraft.com/license
+ * @link      https://craftcms.com/
+ * @copyright Copyright (c) Pixel & Tonic, Inc.
+ * @license   https://craftcms.com/license
  */
 
 namespace craft\app\controllers;
 
 use Craft;
-use craft\app\base\ElementInterface;
-use craft\app\errors\Exception;
-use craft\app\errors\HttpException;
-use craft\app\models\Structure as StructureModel;
+use craft\app\base\Element;
+use craft\app\models\Structure;
 use craft\app\web\Controller;
+use yii\web\ForbiddenHttpException;
+use yii\web\NotFoundHttpException;
+use yii\web\Response;
 
 /**
  * The StructuresController class is a controller that handles structure related tasks such as moving an element within
@@ -29,12 +30,12 @@ class StructuresController extends Controller
     // =========================================================================
 
     /**
-     * @var StructureModel
+     * @var Structure
      */
     private $_structure;
 
     /**
-     * @var ElementInterface
+     * @var Element
      */
     private $_element;
 
@@ -44,7 +45,9 @@ class StructuresController extends Controller
     /**
      * Initializes the application component.
      *
-     * @throws HttpException
+     * @return void
+     * @throws ForbiddenHttpException if this is not a Control Panel request
+     * @throws NotFoundHttpException if the requested element cannot be found
      */
     public function init()
     {
@@ -53,7 +56,7 @@ class StructuresController extends Controller
 
         // This controller is only available to the Control Panel
         if (!Craft::$app->getRequest()->getIsCpRequest()) {
-            throw new HttpException(403);
+            throw new ForbiddenHttpException('Action only available from the Control Panel');
         }
 
         $structureId = Craft::$app->getRequest()->getRequiredBodyParam('structureId');
@@ -66,20 +69,20 @@ class StructuresController extends Controller
         $this->_structure = Craft::$app->getStructures()->getStructureById($structureId);
 
         if (!$this->_structure) {
-            throw new Exception(Craft::t('app', 'No structure exists with the ID “{id}”.', ['id' => $structureId]));
+            throw new NotFoundHttpException('Structure not found');
         }
 
         $this->_element = Craft::$app->getElements()->getElementById($elementId, null, $localeId);
 
         if (!$this->_element) {
-            throw new Exception(Craft::t('app', 'No element exists with the ID “{id}.”', ['id' => $elementId]));
+            throw new NotFoundHttpException('Element not found');
         }
     }
 
     /**
      * Returns the descendant level delta for a given element.
      *
-     * @return void
+     * @return Response
      */
     public function actionGetElementLevelDelta()
     {
@@ -93,7 +96,7 @@ class StructuresController extends Controller
     /**
      * Moves an element within a structure.
      *
-     * @return void
+     * @return Response
      */
     public function actionMoveElement()
     {
@@ -102,12 +105,12 @@ class StructuresController extends Controller
 
         if ($prevElementId) {
             $prevElement = Craft::$app->getElements()->getElementById($prevElementId, null, $this->_element->locale);
-            $success = Craft::$app->getStructures()->moveAfter($this->_structure->id, $this->_element, $prevElement, 'auto', true);
+            $success = Craft::$app->getStructures()->moveAfter($this->_structure->id, $this->_element, $prevElement, 'auto');
         } else if ($parentElementId) {
             $parentElement = Craft::$app->getElements()->getElementById($parentElementId, null, $this->_element->locale);
-            $success = Craft::$app->getStructures()->prepend($this->_structure->id, $this->_element, $parentElement, 'auto', true);
+            $success = Craft::$app->getStructures()->prepend($this->_structure->id, $this->_element, $parentElement, 'auto');
         } else {
-            $success = Craft::$app->getStructures()->prependToRoot($this->_structure->id, $this->_element, 'auto', true);
+            $success = Craft::$app->getStructures()->prependToRoot($this->_structure->id, $this->_element, 'auto');
         }
 
         return $this->asJson([

@@ -1,8 +1,8 @@
 <?php
 /**
- * @link      http://buildwithcraft.com/
- * @copyright Copyright (c) 2015 Pixel & Tonic, Inc.
- * @license   http://buildwithcraft.com/license
+ * @link      https://craftcms.com/
+ * @copyright Copyright (c) Pixel & Tonic, Inc.
+ * @license   https://craftcms.com/license
  */
 
 namespace craft\app\tasks;
@@ -94,8 +94,8 @@ class ResaveAllElements extends Task
     {
         if ($this->localizableOnly) {
             return Craft::t('app', 'Resaving all localizable elements');
-        } else {
-            return Craft::t('app', 'Resaving all elements');
         }
+
+        return Craft::t('app', 'Resaving all elements');
     }
 }

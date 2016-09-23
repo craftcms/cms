@@ -1,8 +1,8 @@
 <?php
 /**
- * @link      http://buildwithcraft.com/
- * @copyright Copyright (c) 2015 Pixel & Tonic, Inc.
- * @license   http://buildwithcraft.com/license
+ * @link      https://craftcms.com/
+ * @copyright Copyright (c) Pixel & Tonic, Inc.
+ * @license   https://craftcms.com/license
  */
 
 namespace craft\app\elements;
@@ -88,16 +88,6 @@ class Tag extends Element
     /**
      * @inheritdoc
      */
-    public static function defineTableAttributes($source = null)
-    {
-        return [
-            'title' => Craft::t('app', 'Title'),
-        ];
-    }
-
-    /**
-     * @inheritdoc
-     */
     public static function getEditorHtml(ElementInterface $element)
     {
         /** @var Tag $element */
@@ -177,6 +167,8 @@ class Tag extends Element
         if ($tagGroup) {
             return $tagGroup->getFieldLayout();
         }
+
+        return null;
     }
 
     /**
@@ -189,6 +181,8 @@ class Tag extends Element
         if ($this->groupId) {
             return Craft::$app->getTags()->getTagGroupById($this->groupId);
         }
+
+        return null;
     }
 
     // Deprecated Methods

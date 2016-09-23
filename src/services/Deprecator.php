@@ -1,8 +1,8 @@
 <?php
 /**
- * @link      http://buildwithcraft.com/
- * @copyright Copyright (c) 2015 Pixel & Tonic, Inc.
- * @license   http://buildwithcraft.com/license
+ * @link      https://craftcms.com/
+ * @copyright Copyright (c) Pixel & Tonic, Inc.
+ * @license   https://craftcms.com/license
  */
 
 namespace craft\app\services;
@@ -13,6 +13,7 @@ use craft\app\helpers\Db;
 use craft\app\helpers\Json;
 use craft\app\helpers\StringHelper;
 use craft\app\models\DeprecationError;
+use craft\app\web\twig\Template;
 use yii\base\Component;
 
 /**
@@ -56,7 +57,7 @@ class Deprecator extends Component
      */
     public function log($key, $message)
     {
-        if (!Craft::$app->isInstalled()) {
+        if (!Craft::$app->getIsInstalled()) {
             Craft::warning($message, 'deprecationlog');
 
             return false;
@@ -103,15 +104,22 @@ class Deprecator extends Component
                 ->scalar();
 
             if ($existingId === false) {
-                $db->createCommand()->insert(static::$_tableName,
-                    array_merge($values, [
-                        'key' => $log->key,
-                        'fingerprint' => $log->fingerprint
-                    ]))->execute();
+                $db->createCommand()
+                    ->insert(
+                        static::$_tableName,
+                        array_merge($values, [
+                            'key' => $log->key,
+                            'fingerprint' => $log->fingerprint
+                        ]))
+                    ->execute();
                 $log->id = $db->getLastInsertID();
             } else {
-                $db->createCommand()->update(static::$_tableName, $values,
-                    ['id' => $existingId])->execute();
+                $db->createCommand()
+                    ->update(
+                        static::$_tableName,
+                        $values,
+                        ['id' => $existingId])
+                    ->execute();
                 $log->id = $existingId;
             }
 
@@ -185,9 +193,9 @@ class Deprecator extends Component
 
         if ($log !== false) {
             return DeprecationError::create($log);
-        } else {
-            return null;
         }
+
+        return null;
     }
 
     /**
@@ -199,8 +207,9 @@ class Deprecator extends Component
      */
     public function deleteLogById($id)
     {
-        $affectedRows = Craft::$app->getDb()->createCommand()->delete(static::$_tableName,
-            ['id' => $id])->execute();
+        $affectedRows = Craft::$app->getDb()->createCommand()
+            ->delete(static::$_tableName, ['id' => $id])
+            ->execute();
 
         return (bool)$affectedRows;
     }
@@ -212,7 +221,9 @@ class Deprecator extends Component
      */
     public function deleteAllLogs()
     {
-        $affectedRows = Craft::$app->getDb()->createCommand()->delete(static::$_tableName)->execute();
+        $affectedRows = Craft::$app->getDb()->createCommand()
+            ->delete(static::$_tableName)
+            ->execute();
 
         return (bool)$affectedRows;
     }
@@ -239,12 +250,6 @@ class Deprecator extends Component
         $log->class = !empty($traces[1]['class']) ? $traces[1]['class'] : null;
         $log->method = !empty($traces[1]['function']) ? $traces[1]['function'] : null;
 
-        /* HIDE */
-        $foundPlugin = false;
-        $pluginsPath = realpath(Craft::$app->getPath()->getPluginsPath()).'/';
-        $pluginsPathLength = strlen($pluginsPath);
-        /* end HIDE */
-
         $request = Craft::$app->getRequest();
         $isTemplateRendering = (!$request->getIsConsoleRequest() && $request->getIsSiteRequest() && Craft::$app->getView()->getIsRenderingTemplate());
 
@@ -270,9 +275,8 @@ class Deprecator extends Component
             ];
 
             // Is this a template?
-            if (isset($trace['object']) && $trace['object'] instanceof \Twig_Template && 'Twig_Template' !== get_class($trace['object']) && isset($trace['file']) && StringHelper::contains($trace['file'],
-                    'compiled_templates')
-            ) {
+            if (isset($trace['object']) && $trace['object'] instanceof \Twig_Template && 'Twig_Template' !== get_class($trace['object']) && isset($trace['file']) && StringHelper::contains($trace['file'], 'compiled_templates')) {
+                /** @var Template $template */
                 $template = $trace['object'];
 
                 // Get the original (uncompiled) template name.
@@ -284,6 +288,7 @@ class Deprecator extends Component
                         $logTrace['templateLine'] = $templateLine;
 
                         // Save that to the main log info too?
+                        /** @noinspection PhpUndefinedVariableInspection */
                         if ($isTemplateRendering && !$foundTemplate) {
                             $log->templateLine = $templateLine;
                             $log->fingerprint .= ':'.$templateLine;
@@ -293,43 +298,7 @@ class Deprecator extends Component
                         break;
                     }
                 }
-
-                /* HIDE */
-                if ($isTemplateRendering && !$foundTemplate) {
-                    // Is this a plugin's template?
-                    $request = Craft::$app->getRequest();
-                    if (!$foundPlugin && !$request->getIsConsoleRequest() && $request->getIsCpRequest() && $logTrace['template']) {
-                        $firstSeg = array_shift(explode('/', $logTrace['template']));
-
-                        if (Craft::$app->getPlugins()->getPlugin($firstSeg)) {
-                            $log->plugin = $firstSeg;
-                            $foundPlugin = true;
-                        }
-                    }
-
-                    $foundTemplate = true;
-                }
-                /* end HIDE */
             }
-
-            /* HIDE */
-            // Is this a plugin's file?
-            else if (!$foundPlugin && $logTrace['file']) {
-                $filePath = realpath($logTrace['file']).'/';
-
-                if (strncmp($pluginsPath, $logTrace['file'],
-                        $pluginsPathLength) === 0
-                ) {
-                    $remainingFilePath = StringHelper::substr($filePath, $pluginsPathLength);
-                    $firstSeg = array_shift(explode('/', $remainingFilePath));
-
-                    if (Craft::$app->getPlugins()->getPlugin($firstSeg)) {
-                        $log->plugin = $firstSeg;
-                        $foundPlugin = true;
-                    }
-                }
-            }
-            /* end HIDE */
 
             $logTraces[] = $logTrace;
         }
@@ -358,7 +327,7 @@ class Deprecator extends Component
             $count++;
 
             if ($count == 5) {
-                $strValue = '...';
+                $strArgs[] = '...';
                 break;
             }
 
@@ -373,7 +342,7 @@ class Deprecator extends Component
                     $strValue = '"'.$value.'"';
                 }
             } else if (is_array($value)) {
-                $strValue = 'array('.$this->_argsToString($value).')';
+                $strValue = '['.$this->_argsToString($value).']';
             } else if ($value === null) {
                 $strValue = 'null';
             } else if (is_resource($value)) {

@@ -1,8 +1,8 @@
 <?php
 /**
- * @link      http://buildwithcraft.com/
- * @copyright Copyright (c) 2015 Pixel & Tonic, Inc.
- * @license   http://buildwithcraft.com/license
+ * @link      https://craftcms.com/
+ * @copyright Copyright (c) Pixel & Tonic, Inc.
+ * @license   https://craftcms.com/license
  */
 namespace craft\app\mail\transportadaptors;
 
@@ -91,10 +91,14 @@ class Smtp extends BaseTransportAdaptor
     {
         return [
             [['host', 'port', 'timeout'], 'required'],
-            [['username', 'password'], 'required', 'when' => function($model) {
-                /** @var self $model */
-                return ($model->useAuthentication == true);
-            }],
+            [
+                ['username', 'password'],
+                'required',
+                'when' => function ($model) {
+                    /** @var self $model */
+                    return ($model->useAuthentication == true);
+                }
+            ],
             [['encryptionMethod'], 'in', 'range' => ['tls', 'ssl']],
             [['timeout'], 'number', 'integerOnly' => true],
         ];

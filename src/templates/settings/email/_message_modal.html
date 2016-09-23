@@ -2,9 +2,6 @@
 {% requireAdmin %}
 
 {% import "_includes/forms" as forms %}
-{% set key = craft.request.getPost('key') %}
-{% set localeId = craft.request.getPost('locale') %}
-{% set message = craft.emailMessages.getMessage(key, localeId) %}
 
 
 <header class="header">
@@ -14,8 +11,8 @@
 		<ul class="right">
 			<li class="select locale">
 				<select>
-					{% for locale in craft.i18n.getSiteLocales() %}
-						<option value="{{ locale.id }}" {% if locale.id == message.locale %}selected{% endif %}>{{ locale.getDisplayName(craft.locale) }}</option>
+					{% for locale in craft.app.i18n.getSiteLocales() %}
+						<option value="{{ locale.id }}" {% if locale.id == message.locale %}selected{% endif %}>{{ locale.getDisplayName(craft.app.language) }}</option>
 					{% endfor %}
 				</select>
 			</li>

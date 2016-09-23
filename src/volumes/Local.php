@@ -16,8 +16,8 @@ use League\Flysystem\FileNotFoundException;
  *
  * @author     Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @copyright  Copyright (c) 2014, Pixel & Tonic, Inc.
- * @license    http://buildwithcraft.com/license Craft License Agreement
- * @see        http://buildwithcraft.com
+ * @license    http://craftcms.com/license Craft License Agreement
+ * @see        http://craftcms.com
  * @package    craft.app.volumes
  * @since      3.0
  */
@@ -110,14 +110,14 @@ class Local extends Volume
      */
     public function renameDir($path, $newName)
     {
-        $newPath = IO::getParentFolderPath($path).$newName;
+        $newPath = Io::getParentFolderPath($path).$newName;
 
         try {
             return $this->getFilesystem()->rename($path, $newPath);
         } catch (FileExistsException $exception) {
             throw new VolumeObjectExistsException($exception->getMessage());
         } catch (FileNotFoundException $exception) {
-            throw new VolumeObjectNotFoundException(Craft::t('app', 'Folder was not found while attempting to rename {path}!', array('path' => $path)));
+            throw new VolumeObjectNotFoundException(Craft::t('app', 'Folder was not found while attempting to rename {path}!', ['path' => $path]));
         }
     }
 
@@ -126,6 +126,7 @@ class Local extends Volume
 
     /**
      * @inheritdoc
+     *
      * @return LocalAdapter
      */
     protected function createAdapter()

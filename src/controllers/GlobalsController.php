@@ -1,17 +1,18 @@
 <?php
 /**
- * @link      http://buildwithcraft.com/
- * @copyright Copyright (c) 2015 Pixel & Tonic, Inc.
- * @license   http://buildwithcraft.com/license
+ * @link      https://craftcms.com/
+ * @copyright Copyright (c) Pixel & Tonic, Inc.
+ * @license   https://craftcms.com/license
  */
 
 namespace craft\app\controllers;
 
 use Craft;
-use craft\app\errors\Exception;
-use craft\app\errors\HttpException;
 use craft\app\elements\GlobalSet;
 use craft\app\web\Controller;
+use yii\web\ForbiddenHttpException;
+use yii\web\NotFoundHttpException;
+use yii\web\Response;
 
 /**
  * The GlobalsController class is a controller that handles various global and global set related tasks such as saving,
@@ -30,8 +31,9 @@ class GlobalsController extends Controller
     /**
      * Saves a global set.
      *
-     * @throws HttpException if this isn’t a post request or an admin isn’t logged in
-     * @throws Exception if the given ‘setId’ param is invalid
+     * @return Response|null
+     *
+     * @throws NotFoundHttpException if the requested global set cannot be found
      */
     public function actionSaveSet()
     {
@@ -44,7 +46,7 @@ class GlobalsController extends Controller
             $globalSet = Craft::$app->getGlobals()->getSetById($globalSetId);
 
             if (!$globalSet) {
-                throw new Exception(Craft::t('app', 'No global set exists with the ID “{id}”.', ['id' => $globalSetId]));
+                throw new NotFoundHttpException('Global set not found');
             }
         } else {
             $globalSet = new GlobalSet();
@@ -64,20 +66,22 @@ class GlobalsController extends Controller
             Craft::$app->getSession()->setNotice(Craft::t('app', 'Global set saved.'));
 
             return $this->redirectToPostedUrl($globalSet);
-        } else {
-            Craft::$app->getSession()->setError(Craft::t('app', 'Couldn’t save global set.'));
         }
+
+        Craft::$app->getSession()->setError(Craft::t('app', 'Couldn’t save global set.'));
 
         // Send the global set back to the template
         Craft::$app->getUrlManager()->setRouteParams([
             'globalSet' => $globalSet
         ]);
+
+        return null;
     }
 
     /**
      * Deletes a global set.
      *
-     * @return void
+     * @return Response
      */
     public function actionDeleteSet()
     {
@@ -100,7 +104,7 @@ class GlobalsController extends Controller
      * @param GlobalSet $globalSet       The global set being edited, if there were any validation errors.
      *
      * @return string The rendering result
-     * @throws HttpException
+     * @throws ForbiddenHttpException if the user is not permitted to edit the global set
      */
     public function actionEditContent($globalSetHandle, $localeId = null, GlobalSet $globalSet = null)
     {
@@ -111,7 +115,7 @@ class GlobalsController extends Controller
         if ($localeId) {
             // Make sure the user has permission to edit that locale
             if (!in_array($localeId, $editableLocaleIds)) {
-                throw new HttpException(404);
+                throw new ForbiddenHttpException('User not permitted to edit content in any locales');
             }
         } else {
             // Are they allowed to edit the current app locale?
@@ -137,7 +141,7 @@ class GlobalsController extends Controller
         }
 
         if (!$editableGlobalSets || !isset($editableGlobalSets[$globalSetHandle])) {
-            throw new HttpException(404);
+            throw new ForbiddenHttpException('User not permitted to edit global set');
         }
 
         if ($globalSet === null) {
@@ -146,9 +150,7 @@ class GlobalsController extends Controller
 
         // Render the template!
         return $this->renderTemplate('globals/_edit', [
-            'globalSetHandle' => $globalSetHandle,
-            'localeId' => $localeId,
-            'globalSets' => $globalSets,
+            'editableGlobalSets' => $editableGlobalSets,
             'globalSet' => $globalSet
         ]);
     }
@@ -156,8 +158,8 @@ class GlobalsController extends Controller
     /**
      * Saves a global set's content.
      *
-     * @throws Exception
-     * @return void
+     * @return Response|null
+     * @throws NotFoundHttpException if the requested global set cannot be found
      */
     public function actionSaveContent()
     {
@@ -169,14 +171,14 @@ class GlobalsController extends Controller
         // Make sure the user is allowed to edit this global set and locale
         $this->requirePermission('editGlobalSet:'.$globalSetId);
 
-        if (Craft::$app->isLocalized()) {
+        if (Craft::$app->getIsLocalized()) {
             $this->requirePermission('editLocale:'.$localeId);
         }
 
         $globalSet = Craft::$app->getGlobals()->getSetById($globalSetId, $localeId);
 
         if (!$globalSet) {
-            throw new Exception(Craft::t('app', 'No global set exists with the ID “{id}”.', ['id' => $globalSetId]));
+            throw new NotFoundHttpException('Global set not found');
         }
 
         $globalSet->setFieldValuesFromPost('fields');
@@ -185,13 +187,15 @@ class GlobalsController extends Controller
             Craft::$app->getSession()->setNotice(Craft::t('app', 'Globals saved.'));
 
             return $this->redirectToPostedUrl();
-        } else {
-            Craft::$app->getSession()->setError(Craft::t('app', 'Couldn’t save globals.'));
         }
+
+        Craft::$app->getSession()->setError(Craft::t('app', 'Couldn’t save globals.'));
 
         // Send the global set back to the template
         Craft::$app->getUrlManager()->setRouteParams([
             'globalSet' => $globalSet,
         ]);
+
+        return null;
     }
 }

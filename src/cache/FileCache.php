@@ -1,8 +1,8 @@
 <?php
 /**
- * @link      http://buildwithcraft.com/
- * @copyright Copyright (c) 2015 Pixel & Tonic, Inc.
- * @license   http://buildwithcraft.com/license
+ * @link      https://craftcms.com/
+ * @copyright Copyright (c) Pixel & Tonic, Inc.
+ * @license   https://craftcms.com/license
  */
 
 namespace craft\app\cache;
@@ -93,17 +93,17 @@ class FileCache extends \yii\caching\FileCache
                 Io::changePermissions($cacheFile, Craft::$app->getConfig()->get('defaultFilePermissions'));
 
                 return Io::touch($cacheFile, $expire);
-            } else {
-                return false;
             }
-        } else {
-            if (Io::writeToFile($cacheFile, $value) !== false) {
-                Io::changePermissions($cacheFile, Craft::$app->getConfig()->get('defaultFilePermissions'));
 
-                return Io::touch($cacheFile, $expire);
-            } else {
-                return false;
-            }
+            return false;
         }
+
+        if (Io::writeToFile($cacheFile, $value) !== false) {
+            Io::changePermissions($cacheFile, Craft::$app->getConfig()->get('defaultFilePermissions'));
+
+            return Io::touch($cacheFile, $expire);
+        }
+
+        return false;
     }
 }

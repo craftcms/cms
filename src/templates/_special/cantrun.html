@@ -1,11 +1,11 @@
 {% extends "_layouts/message" %}
-{% set title = "Can’t run Craft"|t('app') %}
+{% set title = "Can’t run Craft CMS"|t('app') %}
 
 {% block message %}
 	<h2>{{ title }} :(</h2>
 
 	{% if reqCheck.result['summary']['errors'] > 0 %}
-		<p>{{ "Your server doesn’t meet the following requirements to run Craft:"|t('app') }}</p>
+		<p>{{ "Your server doesn’t meet the following requirements to run Craft CMS:"|t('app') }}</p>
 
 		<ul class="bullets">
 			{% set results = reqCheck.getResult() %}

@@ -1,8 +1,8 @@
 <?php
 /**
- * @link      http://buildwithcraft.com/
- * @copyright Copyright (c) 2015 Pixel & Tonic, Inc.
- * @license   http://buildwithcraft.com/license
+ * @link      https://craftcms.com/
+ * @copyright Copyright (c) Pixel & Tonic, Inc.
+ * @license   https://craftcms.com/license
  */
 
 namespace craft\app\web;
@@ -65,9 +65,10 @@ class UrlRule extends \yii\web\UrlRule
                     $slugChars[] = $slugWordSeparator;
                 }
 
+                // Reference: http://www.regular-expressions.info/unicode.html
                 static::$_regexTokens = [
                     '{handle}' => '(?:[a-zA-Z][a-zA-Z0-9_]*)',
-                    '{slug}' => '(?:[\p{L}\p{N}'.preg_quote(implode($slugChars),
+                    '{slug}' => '(?:[\p{L}\p{N}\p{M}'.preg_quote(implode($slugChars),
                             '/').']+)',
                 ];
             }

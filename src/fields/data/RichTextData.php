@@ -1,8 +1,8 @@
 <?php
 /**
- * @link      http://buildwithcraft.com/
- * @copyright Copyright (c) 2015 Pixel & Tonic, Inc.
- * @license   http://buildwithcraft.com/license
+ * @link      https://craftcms.com/
+ * @copyright Copyright (c) Pixel & Tonic, Inc.
+ * @license   https://craftcms.com/license
  */
 
 namespace craft\app\fields\data;
@@ -62,6 +62,16 @@ class RichTextData extends \Twig_Markup
     }
 
     /**
+     * Returns the parsed content, with reference tags returned as HTML links.
+     *
+     * @return string
+     */
+    public function getParsedContent()
+    {
+        return $this->content;
+    }
+
+    /**
      * Returns an array of the individual page contents.
      *
      * @return array
@@ -94,6 +104,8 @@ class RichTextData extends \Twig_Markup
         if (isset($pages[$pageNumber - 1])) {
             return $pages[$pageNumber - 1];
         }
+
+        return null;
     }
 
     /**

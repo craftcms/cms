@@ -50,8 +50,8 @@ Craft.FieldLayoutDesigner = Garnish.Base.extend(
 				$menu = $('<div class="menu" data-align="center"/>').insertAfter($editBtn),
 				$ul = $('<ul/>').appendTo($menu);
 
-			$('<li><a data-action="rename">'+Craft.t('Rename')+'</a></li>').appendTo($ul);
-			$('<li><a data-action="delete">'+Craft.t('Delete')+'</a></li>').appendTo($ul);
+			$('<li><a data-action="rename">'+Craft.t('app', 'Rename')+'</a></li>').appendTo($ul);
+			$('<li><a data-action="delete">'+Craft.t('app', 'Delete')+'</a></li>').appendTo($ul);
 
 			new Garnish.MenuBtn($editBtn, {
 				onOptionSelect: $.proxy(this, 'onTabOptionSelect')
@@ -75,14 +75,14 @@ Craft.FieldLayoutDesigner = Garnish.Base.extend(
 
 		if ($field.hasClass('fld-required'))
 		{
-			$('<li><a data-action="toggle-required">'+Craft.t('Make not required')+'</a></li>').appendTo($ul);
+			$('<li><a data-action="toggle-required">'+Craft.t('app', 'Make not required')+'</a></li>').appendTo($ul);
 		}
 		else
 		{
-			$('<li><a data-action="toggle-required">'+Craft.t('Make required')+'</a></li>').appendTo($ul);
+			$('<li><a data-action="toggle-required">'+Craft.t('app', 'Make required')+'</a></li>').appendTo($ul);
 		}
 
-		$('<li><a data-action="remove">'+Craft.t('Remove')+'</a></li>').appendTo($ul);
+		$('<li><a data-action="remove">'+Craft.t('app', 'Remove')+'</a></li>').appendTo($ul);
 
 		new Garnish.MenuBtn($editBtn, {
 			onOptionSelect: $.proxy(this, 'onFieldOptionSelect')
@@ -97,7 +97,7 @@ Craft.FieldLayoutDesigner = Garnish.Base.extend(
 		}
 
 		var $option = $(option),
-			$tab = $option.data('menu').$trigger.parent().parent().parent(),
+			$tab = $option.data('menu').$anchor.parent().parent().parent(),
 			action = $option.data('action');
 
 		switch (action)
@@ -118,7 +118,7 @@ Craft.FieldLayoutDesigner = Garnish.Base.extend(
 	onFieldOptionSelect: function(option)
 	{
 		var $option = $(option),
-			$field = $option.data('menu').$trigger.parent(),
+			$field = $option.data('menu').$anchor.parent(),
 			action = $option.data('action');
 
 		switch (action)
@@ -145,7 +145,7 @@ Craft.FieldLayoutDesigner = Garnish.Base.extend(
 
 		var $labelSpan = $tab.find('.tabs .tab span'),
 			oldName = $labelSpan.text(),
-			newName = prompt(Craft.t('Give your tab a name.'), oldName);
+			newName = prompt(Craft.t('app', 'Give your tab a name.'), oldName);
 
 		if (newName && newName != oldName)
 		{
@@ -184,7 +184,7 @@ Craft.FieldLayoutDesigner = Garnish.Base.extend(
 			$field.find('.required-input').remove();
 
 			setTimeout(function() {
-				$option.text(Craft.t('Make required'));
+				$option.text(Craft.t('app', 'Make required'));
 			}, 500);
 		}
 		else
@@ -193,7 +193,7 @@ Craft.FieldLayoutDesigner = Garnish.Base.extend(
 			$('<input class="required-input" type="hidden" name="'+this.settings.requiredFieldInputName+'" value="'+$field.data('id')+'">').appendTo($field);
 
 			setTimeout(function() {
-				$option.text(Craft.t('Make not required'));
+				$option.text(Craft.t('app', 'Make not required'));
 			}, 500);
 		}
 	},
@@ -242,7 +242,7 @@ Craft.FieldLayoutDesigner = Garnish.Base.extend(
 						'<div class="tabs">' +
 							'<div class="tab sel draggable">' +
 								'<span>Tab '+(this.tabGrid.$items.length+1)+'</span>' +
-								'<a class="settings icon" title="'+Craft.t('Rename')+'"></a>' +
+								'<a class="settings icon" title="'+Craft.t('app', 'Rename')+'"></a>' +
 							'</div>' +
 						'</div>' +
 						'<div class="fld-tabcontent"></div>' +
@@ -583,14 +583,14 @@ Craft.FieldLayoutDesigner.TabDrag = Craft.FieldLayoutDesigner.BaseDrag.extend(
 			$tab.find('.fld-field').removeClass('unused');
 
 			// Add the edit button
-			$tab.find('.tabs .tab').append('<a class="settings icon" title="'+Craft.t('Edit')+'"></a>');
+			$tab.find('.tabs .tab').append('<a class="settings icon" title="'+Craft.t('app', 'Edit')+'"></a>');
 
 			// Remove any hidden fields
 			var $fields = $tab.find('.fld-field'),
 				$hiddenFields = $fields.filter('.hidden').remove();
 
 			$fields = $fields.not($hiddenFields);
-			$fields.prepend('<a class="settings icon" title="'+Craft.t('Edit')+'"></a>');
+			$fields.prepend('<a class="settings icon" title="'+Craft.t('app', 'Edit')+'"></a>');
 
 			for (var i = 0; i < $fields.length; i++)
 			{
@@ -669,7 +669,7 @@ Craft.FieldLayoutDesigner.FieldDrag = Craft.FieldLayoutDesigner.BaseDrag.extend(
 		{
 			// Create a new field based on that one
 			var $field = this.$draggee.clone().removeClass('unused');
-			$field.prepend('<a class="settings icon" title="'+Craft.t('Edit')+'"></a>');
+			$field.prepend('<a class="settings icon" title="'+Craft.t('app', 'Edit')+'"></a>');
 			this.designer.initField($field);
 
 			// Hide the unused field

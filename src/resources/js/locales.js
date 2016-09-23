@@ -22,6 +22,10 @@ Craft.Locales = Garnish.Base.extend(
 
 		for (var id in locales)
 		{
+			if (!locales.hasOwnProperty(id)) {
+				continue;
+			}
+
 			this.locales[id] = {
 				name: locales[id],
 				words: Craft.asciiString(id+' '+locales[id]).match(Craft.Locales.wordRegex)
@@ -150,6 +154,10 @@ Craft.Locales = Garnish.Base.extend(
 
 			for (var id in this.locales)
 			{
+				if (!this.locales.hasOwnProperty(id)) {
+					continue;
+				}
+
 				if (Craft.inArray(id, this.selectedLocales))
 				{
 					continue;
@@ -196,7 +204,7 @@ Craft.Locales = Garnish.Base.extend(
 		{
 			if (!this.$resultsSheet)
 			{
-				this.$resultsSheet = $('<div id="addlocaleresults" class="menu" style="position: relative; margin: 0 1px;"/>').appendTo(this.$addLocaleField);
+				this.$resultsSheet = $('<div id="addlocaleresults" class="menu" style="position: relative;"/>').appendTo(this.$addLocaleField);
 				this.$resultsList = $('<ul/>').appendTo(this.$resultsSheet);
 
 				this.addListener(this.$resultsList, 'mousedown', 'addSelectedLocale');
@@ -249,10 +257,10 @@ Craft.Locales = Garnish.Base.extend(
 				if (response.success)
 				{
 					var $tr = $('<tr data-id="'+id+'" data-name="'+this.locales[id].name+'">' +
-									'<th scope="row" data-title="'+Craft.t('Name')+'" width="40%">'+this.locales[id].name+'</th>' +
-									'<td data-title="'+Craft.t('Locale ID')+'">'+id+'</td>' +
-									'<td class="thin"><a class="move icon" title="'+Craft.t('Reorder')+'"></a></td>' +
-									'<td class="thin"><a class="delete icon" title="'+Craft.t('Delete')+'"></a></td>' +
+									'<th scope="row" data-title="'+Craft.t('app', 'Name')+'" width="40%">'+this.locales[id].name+'</th>' +
+									'<td data-title="'+Craft.t('app', 'Locale ID')+'">'+id+'</td>' +
+									'<td class="thin"><a class="move icon" title="'+Craft.t('app', 'Reorder')+'"></a></td>' +
+									'<td class="thin"><a class="delete icon" title="'+Craft.t('app', 'Delete')+'"></a></td>' +
 								'</tr>');
 
 					this.adminTable.addRow($tr);
@@ -261,14 +269,14 @@ Craft.Locales = Garnish.Base.extend(
 					this.$addLocaleInput.val('').prop('disabled', false).trigger('keydown');
 					this.checkInputVal();
 
-					Craft.cp.displayNotice(Craft.t('New locale added.'));
+					Craft.cp.displayNotice(Craft.t('app', 'New locale added.'));
 
 					// Now trigger the resave elements task
 					Craft.cp.runPendingTasks();
 				}
 				else
 				{
-					Craft.cp.displayError(Craft.t('Unable to add the new locale.'));
+					Craft.cp.displayError(Craft.t('app', 'Unable to add the new locale.'));
 				}
 			}
 		}, this));
@@ -411,24 +419,24 @@ var LocalesTable = Craft.AdminTable.extend(
 			).appendTo(Garnish.$bod),
 			$body = $(
 				'<div class="body">' +
-					'<p>'+Craft.t('What do you want to do with any content that is only available in {language}?', { language: name })+'</p>' +
+					'<p>'+Craft.t('app', 'What do you want to do with any content that is only available in {language}?', { language: name })+'</p>' +
 					'<div class="options">' +
-						'<label><input type="radio" name="contentAction" value="transfer"/> '+Craft.t('Transfer it to:')+'</label>' +
+						'<label><input type="radio" name="contentAction" value="transfer"/> '+Craft.t('app', 'Transfer it to:')+'</label>' +
 						'<div id="transferselect" class="select">' +
 							'<select/>' +
 						'</div>' +
 					'</div>' +
 					'<div>' +
-						'<label><input type="radio" name="contentAction" value="delete"/> '+Craft.t('Delete it')+'</label>' +
+						'<label><input type="radio" name="contentAction" value="delete"/> '+Craft.t('app', 'Delete it')+'</label>' +
 					'</div>' +
 				'</div>'
 			).appendTo($form),
 			$buttons = $('<div class="buttons right"/>').appendTo($body),
-			$cancelBtn = $('<div class="btn">'+Craft.t('Cancel')+'</div>').appendTo($buttons);
+			$cancelBtn = $('<div class="btn">'+Craft.t('app', 'Cancel')+'</div>').appendTo($buttons);
 
 		this.$deleteActionRadios = $body.find('input[type=radio]');
-		this.$transferSelect = $('#transferselect > select');
-		this.$deleteSubmitBtn = $('<input type="submit" class="btn submit disabled" value="'+Craft.t('Delete {language}', { language: name })+'" />').appendTo($buttons);
+		this.$transferSelect = $('#transferselect').find('> select');
+		this.$deleteSubmitBtn = $('<input type="submit" class="btn submit disabled" value="'+Craft.t('app', 'Delete {language}', { language: name })+'" />').appendTo($buttons);
 		this.$deleteSpinner = $('<div class="spinner hidden"/>').appendTo($buttons);
 
 		for (var i = 0; i < this.manager.selectedLocales.length; i++)

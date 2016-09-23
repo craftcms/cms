@@ -1,8 +1,8 @@
 <?php
 /**
- * @link      http://buildwithcraft.com/
- * @copyright Copyright (c) 2015 Pixel & Tonic, Inc.
- * @license   http://buildwithcraft.com/license
+ * @link      https://craftcms.com/
+ * @copyright Copyright (c) Pixel & Tonic, Inc.
+ * @license   https://craftcms.com/license
  */
 
 namespace craft\app\tasks;
@@ -29,7 +29,7 @@ class UpdateElementSlugsAndUris extends Task
     public $elementId;
 
     /**
-     * @var string|Element|ElementInterface The type of elements to update.
+     * @var string|ElementInterface The type of elements to update.
      */
     public $elementType;
 
@@ -82,6 +82,7 @@ class UpdateElementSlugsAndUris extends Task
         }
 
         $elementsService = Craft::$app->getElements();
+        /** @var Element $element */
         $element = $elementsService->getElementById($this->_elementIds[$step], $this->elementType, $this->locale);
 
         // Make sure they haven't deleted this element
@@ -96,7 +97,7 @@ class UpdateElementSlugsAndUris extends Task
 
         // Only go deeper if something just changed
         if ($this->updateDescendants && ($element->slug !== $oldSlug || $element->uri !== $oldUri)) {
-            /** @var Element|ElementInterface $elementType */
+            /** @var Element $elementType */
             $elementType = $this->elementType;
 
             $childIds = $elementType::find()
@@ -108,7 +109,8 @@ class UpdateElementSlugsAndUris extends Task
                 ->ids();
 
             if ($childIds) {
-                $this->runSubTask(self::className(), [
+                $this->runSubTask([
+                    'type' => static::className(),
                     'description' => Craft::t('app', 'Updating children'),
                     'elementId' => $childIds,
                     'elementType' => $this->elementType,

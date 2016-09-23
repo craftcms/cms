@@ -1,8 +1,8 @@
 <?php
 /**
- * @link      http://buildwithcraft.com/
- * @copyright Copyright (c) 2015 Pixel & Tonic, Inc.
- * @license   http://buildwithcraft.com/license
+ * @link      https://craftcms.com/
+ * @copyright Copyright (c) Pixel & Tonic, Inc.
+ * @license   https://craftcms.com/license
  */
 
 namespace craft\app\web\twig;
@@ -17,6 +17,8 @@ use craft\app\web\View;
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since  3.0
  */
+
+/** @noinspection PhpDeprecationInspection */
 class TemplateLoader implements \Twig_LoaderInterface, \Twig_ExistsLoaderInterface
 {
     // Properties
@@ -62,15 +64,15 @@ class TemplateLoader implements \Twig_LoaderInterface, \Twig_ExistsLoaderInterfa
     {
         if ($name instanceof StringTemplate) {
             return $name->template;
-        } else {
-            $template = $this->_resolveTemplate($name);
-
-            if (Io::isReadable($template)) {
-                return Io::getFileContents($template);
-            } else {
-                throw new TemplateLoaderException($name, Craft::t('app', 'Tried to read the template at {path}, but could not. Check the permissions.', ['path' => $template]));
-            }
         }
+
+        $template = $this->_resolveTemplate($name);
+
+        if (Io::isReadable($template)) {
+            return Io::getFileContents($template);
+        }
+
+        throw new TemplateLoaderException($name, Craft::t('app', 'Tried to read the template at {path}, but could not. Check the permissions.', ['path' => $template]));
     }
 
     /**
@@ -85,9 +87,9 @@ class TemplateLoader implements \Twig_LoaderInterface, \Twig_ExistsLoaderInterfa
     {
         if ($name instanceof StringTemplate) {
             return $name->cacheKey;
-        } else {
-            return $this->_resolveTemplate($name);
         }
+
+        return $this->_resolveTemplate($name);
     }
 
     /**
@@ -104,7 +106,7 @@ class TemplateLoader implements \Twig_LoaderInterface, \Twig_ExistsLoaderInterfa
         // If this is a CP request and a DB update is needed, force a recompile.
         $request = Craft::$app->getRequest();
 
-        if (!$request->getIsConsoleRequest() && $request->getIsCpRequest() && Craft::$app->getUpdates()->isCraftDbMigrationNeeded()) {
+        if (!$request->getIsConsoleRequest() && $request->getIsCpRequest() && Craft::$app->getIsUpdating()) {
             return false;
         }
 
@@ -112,9 +114,9 @@ class TemplateLoader implements \Twig_LoaderInterface, \Twig_ExistsLoaderInterfa
             $sourceModifiedTime = Io::getLastTimeModified($this->_resolveTemplate($name));
 
             return $sourceModifiedTime->getTimestamp() <= $time;
-        } else {
-            return false;
         }
+
+        return false;
     }
 
     // Private Methods
@@ -125,7 +127,7 @@ class TemplateLoader implements \Twig_LoaderInterface, \Twig_ExistsLoaderInterfa
      *
      * @param $name
      *
-     * @return string $name
+     * @return string
      * @throws TemplateLoaderException if the template doesn’t exist
      */
     private function _resolveTemplate($name)
@@ -134,8 +136,8 @@ class TemplateLoader implements \Twig_LoaderInterface, \Twig_ExistsLoaderInterfa
 
         if ($template !== false) {
             return $template;
-        } else {
-            throw new TemplateLoaderException($name, Craft::t('app', 'Unable to find the template “{template}”.', ['template' => $name]));
         }
+
+        throw new TemplateLoaderException($name, Craft::t('app', 'Unable to find the template “{template}”.', ['template' => $name]));
     }
 }

@@ -1,8 +1,8 @@
 <?php
 /**
- * @link      http://buildwithcraft.com/
- * @copyright Copyright (c) 2015 Pixel & Tonic, Inc.
- * @license   http://buildwithcraft.com/license
+ * @link      https://craftcms.com/
+ * @copyright Copyright (c) Pixel & Tonic, Inc.
+ * @license   https://craftcms.com/license
  */
 
 namespace craft\app\events;
@@ -22,4 +22,9 @@ class DraftEvent extends Event
      * @var \craft\app\models\EntryDraft The draft model associated with the event.
      */
     public $draft;
+
+    /**
+     * @var boolean Whether the draft is brand new
+     */
+    public $isNew;
 }

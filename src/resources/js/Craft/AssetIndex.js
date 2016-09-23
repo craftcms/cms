@@ -29,15 +29,15 @@ Craft.AssetIndex = Craft.BaseElementIndex.extend(
 	_fileConflictTemplate: {
 		message: "File “{file}” already exists at target location.",
 		choices: [
-			{value: 'keepBoth', title: Craft.t('Keep both')},
-			{value: 'replace', title: Craft.t('Replace it')}
+			{value: 'keepBoth', title: Craft.t('app', 'Keep both')},
+			{value: 'replace', title: Craft.t('app', 'Replace it')}
 		]
 	},
 	_folderConflictTemplate: {
 		message: "Folder “{folder}” already exists at target location",
 		choices: [
-			{value: 'replace', title: Craft.t('Replace the folder (all existing files will be deleted)')},
-			{value: 'merge', title: Craft.t('Merge the folder (any conflicting files will be replaced)')}
+			{value: 'replace', title: Craft.t('app', 'Replace the folder (all existing files will be deleted)')},
+			{value: 'merge', title: Craft.t('app', 'Merge the folder (any conflicting files will be replaced)')}
 		]
 	},
 
@@ -124,7 +124,7 @@ Craft.AssetIndex = Craft.BaseElementIndex.extend(
 
 			filter: $.proxy(function()
 			{
-				return this.elementSelect.getSelectedItems();
+				return this.view.getSelectedElements();
 			}, this),
 
 			helper: $.proxy(function($file)
@@ -280,8 +280,11 @@ Craft.AssetIndex = Craft.BaseElementIndex.extend(
 						// Push prompt into prompt array
 						if (response.prompt)
 						{
-							promptData = this._fileConflictTemplate;
-							promptData.message = Craft.t(promptData.message, {file: response.filename});
+							var promptData = {
+								message: this._fileConflictTemplate.message,
+								choices: this._fileConflictTemplate.choices
+							};
+							promptData.message = Craft.t('app', promptData.message, {file: response.filename});
 							response.prompt = promptData;
 
 							this.promptHandler.addPrompt(response);
@@ -311,7 +314,7 @@ Craft.AssetIndex = Craft.BaseElementIndex.extend(
 							$('[data-id=' + originalFileIds[i] + ']').remove();
 						}
 
-						this.elementSelect.deselectAll();
+						this.view.deselectAllElements();
 						this._collapseExtraExpandedFolders(targetFolderId);
 
 						if (reloadIndex)
@@ -500,6 +503,10 @@ Craft.AssetIndex = Craft.BaseElementIndex.extend(
 
 								for (var oldFolderId in data.changedIds)
 								{
+									if (!data.changedIds.hasOwnProperty(oldFolderId)) {
+										continue;
+									}
+
 									changedFolderIds[oldFolderId] = data.changedIds[oldFolderId];
 								}
 
@@ -510,8 +517,12 @@ Craft.AssetIndex = Craft.BaseElementIndex.extend(
 						// Push prompt into prompt array
 						if (data.prompt)
 						{
-							promptData = this._folderConflictTemplate;
-							promptData.message = Craft.t(promptData.message, {folder: data.foldername});
+							var promptData = {
+								message: this._folderConflictTemplate.message,
+								choices: this._folderConflictTemplate.choices
+							};
+
+							promptData.message = Craft.t('app', promptData.message, {folder: data.foldername});
 							data.prompt = promptData;
 
 							this.promptHandler.addPrompt(data);
@@ -640,6 +651,10 @@ Craft.AssetIndex = Craft.BaseElementIndex.extend(
 			// Change the folder ids
 			for (var previousFolderId in changedFolderIds)
 			{
+				if (!changedFolderIds.hasOwnProperty(previousFolderId)) {
+					continue;
+				}
+
 				folderToMove = this._getSourceByFolderId(previousFolderId);
 
 				// Change the id and select the containing element as the folder element.
@@ -744,7 +759,7 @@ Craft.AssetIndex = Craft.BaseElementIndex.extend(
 			this.responseArray = [];
 		}
 
-		Craft.postActionRequest('assets/move-file', parameterArray[parameterIndex], $.proxy(function(data, textStatus)
+		Craft.postActionRequest('assets/move-asset', parameterArray[parameterIndex], $.proxy(function(data, textStatus)
 		{
 			this.progressBar.incrementProcessedItemCount(1);
 			this.progressBar.updateProgressBar();
@@ -802,11 +817,11 @@ Craft.AssetIndex = Craft.BaseElementIndex.extend(
 	 *
 	 * @private
 	 */
-	onAfterHtmlInit: function()
+	afterInit: function()
 	{
 		if (!this.$uploadButton)
 		{
-			this.$uploadButton = $('<div class="btn submit" data-icon="upload" style="position: relative; overflow: hidden;" role="button">' + Craft.t('Upload files') + '</div>');
+			this.$uploadButton = $('<div class="btn submit" data-icon="upload" style="position: relative; overflow: hidden;" role="button">' + Craft.t('app', 'Upload files') + '</div>');
 			this.addButton(this.$uploadButton);
 
 			this.$uploadInput = $('<input type="file" multiple="multiple" name="assets-upload" />').hide().insertBefore(this.$uploadButton);
@@ -834,7 +849,7 @@ Craft.AssetIndex = Craft.BaseElementIndex.extend(
 
 		this._currentUploaderSettings = options;
 
-		this.uploader = new Craft.Uploader (this.$uploadButton, options);
+		this.uploader = new Craft.Uploader(this.$uploadButton, options);
 
 		this.$uploadButton.on('click', $.proxy(function()
 		{
@@ -870,7 +885,7 @@ Craft.AssetIndex = Craft.BaseElementIndex.extend(
 		return sourceKey.split(':')[1];
 	},
 
-	onStartSearching: function()
+	startSearching: function()
 	{
 		// Does this source have subfolders?
 		if (this.$source.siblings('ul').length)
@@ -882,7 +897,7 @@ Craft.AssetIndex = Craft.BaseElementIndex.extend(
 				this.$includeSubfoldersContainer = $('<div style="margin-bottom: -23px; opacity: 0;"/>').insertAfter(this.$search);
 				var $subContainer = $('<div style="padding-top: 5px;"/>').appendTo(this.$includeSubfoldersContainer);
 				this.$includeSubfoldersCheckbox = $('<input type="checkbox" id="'+id+'" class="checkbox"/>').appendTo($subContainer);
-				$('<label class="light smalltext" for="'+id+'"/>').text(' '+Craft.t('Search in subfolders')).appendTo($subContainer);
+				$('<label class="light smalltext" for="'+id+'"/>').text(' '+Craft.t('app', 'Search in subfolders')).appendTo($subContainer);
 
 				this.addListener(this.$includeSubfoldersCheckbox, 'change', function()
 				{
@@ -909,7 +924,7 @@ Craft.AssetIndex = Craft.BaseElementIndex.extend(
 		this.base();
 	},
 
-	onStopSearching: function()
+	stopSearching: function()
 	{
 		if (this.showingIncludeSubfoldersCheckbox)
 		{
@@ -926,7 +941,7 @@ Craft.AssetIndex = Craft.BaseElementIndex.extend(
 		this.base();
 	},
 
-	getControllerData: function()
+	getViewParams: function()
 	{
 		var data = this.base();
 
@@ -941,9 +956,9 @@ Craft.AssetIndex = Craft.BaseElementIndex.extend(
 	/**
 	 * React on upload submit.
 	 *
-	 * @param id
+	 * @param {object} event
 	 * @private
-	 */
+     */
 	_onUploadStart: function(event)
 	{
 		this.setIndexBusy();
@@ -983,8 +998,11 @@ Craft.AssetIndex = Craft.BaseElementIndex.extend(
 			// If there is a prompt, add it to the queue
 			if (response.prompt)
 			{
-				promptData = this._fileConflictTemplate;
-				promptData.message = Craft.t(promptData.message, {file: response.filename});
+				var promptData = {
+					message: this._fileConflictTemplate.message,
+					choices: this._fileConflictTemplate.choices
+				};
+				promptData.message = Craft.t('app', promptData.message, {file: response.filename});
 				response.prompt = promptData;
 
 				this.promptHandler.addPrompt(response);
@@ -994,11 +1012,11 @@ Craft.AssetIndex = Craft.BaseElementIndex.extend(
 		{
 			if (response.error)
 			{
-				alert(Craft.t('Upload failed for {filename}. The error message was: ”{error}“', { filename: filename, error: response.error }));
+				alert(Craft.t('app', 'Upload failed. The error message was: “{error}”', {error: response.error }));
 			}
 			else
 			{
-				alert(Craft.t('Upload failed for {filename}.', { filename: filename }));
+				alert(Craft.t('app', 'Upload failed for {filename}.', { filename: filename }));
 			}
 
 			doReload = false;
@@ -1049,7 +1067,7 @@ Craft.AssetIndex = Craft.BaseElementIndex.extend(
 		var doFollowup = $.proxy(function(parameterArray, parameterIndex, callback)
 		{
 			var postData = {
-				fileId:       parameterArray[parameterIndex].fileId,
+				assetId:       parameterArray[parameterIndex].assetId,
 				filename:     parameterArray[parameterIndex].filename,
 				userResponse: parameterArray[parameterIndex].choice
 			};
@@ -1084,7 +1102,17 @@ Craft.AssetIndex = Craft.BaseElementIndex.extend(
 	 * Perform actions after updating elements
 	 * @private
 	 */
-	onUpdateElements: function(append, $newElements)
+	onUpdateElements: function()
+	{
+		this._onUpdateElements(false, this.view.getAllElements());
+		this.view.on('appendElements', $.proxy(function(ev) {
+			this._onUpdateElements(true, ev.newElements);
+		}, this));
+
+		this.base();
+	},
+
+	_onUpdateElements: function(append, $newElements)
 	{
 		if (this.settings.context == 'index')
 		{
@@ -1099,18 +1127,11 @@ Craft.AssetIndex = Craft.BaseElementIndex.extend(
 		// See if we have freshly uploaded files to add to selection
 		if (this._uploadedFileIds.length)
 		{
-			var $item = null;
-			for (var i = 0; i < this._uploadedFileIds.length; i++)
+			if (this.view.settings.selectable)
 			{
-				$item = this.$main.find('.element[data-id=' + this._uploadedFileIds[i] + ']:first').parent();
-				if (this.getSelectedSourceState('mode') == 'table')
+				for (var i = 0; i < this._uploadedFileIds.length; i++)
 				{
-					$item = $item.parent();
-				}
-
-				if (this.elementSelect)
-				{
-					this.elementSelect.selectItem($item);
+					this.view.selectElementById(this._uploadedFileIds[i]);
 				}
 			}
 
@@ -1148,7 +1169,7 @@ Craft.AssetIndex = Craft.BaseElementIndex.extend(
 				$element.appendTo($tbody);
 
 				// Copy the column widths
-				this._$firstRowCells = this.$elementContainer.children('tr:first').children();
+				this._$firstRowCells = this.view.$table.children('tbody').children('tr:first').children();
 				var $helperCells = $element.children();
 
 				for (var i = 0; i < $helperCells.length; i++)
@@ -1157,7 +1178,7 @@ Craft.AssetIndex = Craft.BaseElementIndex.extend(
 					var $helperCell = $($helperCells[i]);
 
 					// Skip the checkbox cell
-					if (Garnish.hasAttr($helperCell, 'data-checkboxcell'))
+					if ($helperCell.hasClass('checkbox-cell'))
 					{
 						$helperCell.remove();
 						$outerContainer.css('margin-'+Craft.left, 19); // 26 - 7
@@ -1288,13 +1309,13 @@ Craft.AssetIndex = Craft.BaseElementIndex.extend(
 
 	_createFolderContextMenu: function($source)
 	{
-		var menuOptions = [{ label: Craft.t('New subfolder'), onClick: $.proxy(this, '_createSubfolder', $source) }];
+		var menuOptions = [{ label: Craft.t('app', 'New subfolder'), onClick: $.proxy(this, '_createSubfolder', $source) }];
 
 		// For all folders that are not top folders
 		if (this.settings.context == 'index' && this._getSourceLevel($source) > 1)
 		{
-			menuOptions.push({ label: Craft.t('Rename folder'), onClick: $.proxy(this, '_renameFolder', $source) });
-			menuOptions.push({ label: Craft.t('Delete folder'), onClick: $.proxy(this, '_deleteFolder', $source) });
+			menuOptions.push({ label: Craft.t('app', 'Rename folder'), onClick: $.proxy(this, '_renameFolder', $source) });
+			menuOptions.push({ label: Craft.t('app', 'Delete folder'), onClick: $.proxy(this, '_deleteFolder', $source) });
 		}
 
 		new Garnish.ContextMenu($source, menuOptions, {menuClass: 'menu'});
@@ -1302,7 +1323,7 @@ Craft.AssetIndex = Craft.BaseElementIndex.extend(
 
 	_createSubfolder: function($parentFolder)
 	{
-		var subfolderName = prompt(Craft.t('Enter the name of the folder'));
+		var subfolderName = prompt(Craft.t('app', 'Enter the name of the folder'));
 
 		if (subfolderName)
 		{
@@ -1347,7 +1368,7 @@ Craft.AssetIndex = Craft.BaseElementIndex.extend(
 
 	_deleteFolder: function($targetFolder)
 	{
-		if (confirm(Craft.t('Really delete folder “{folder}”?', {folder: $.trim($targetFolder.text())})))
+		if (confirm(Craft.t('app', 'Really delete folder “{folder}”?', {folder: $.trim($targetFolder.text())})))
 		{
 			var params = {
 				folderId: this._getFolderIdFromSourceKey($targetFolder.data('key'))
@@ -1368,8 +1389,6 @@ Craft.AssetIndex = Craft.BaseElementIndex.extend(
 
 					$targetFolder.parent().remove();
 					this._cleanUpTree($parentFolder);
-
-					this.$sidebar.trigger('resize');
 				}
 
 				if (textStatus == 'success' && data.error)
@@ -1386,7 +1405,7 @@ Craft.AssetIndex = Craft.BaseElementIndex.extend(
 	_renameFolder: function($targetFolder)
 	{
 		var oldName = $.trim($targetFolder.text()),
-			newName = prompt(Craft.t('Rename folder'), oldName);
+			newName = prompt(Craft.t('app', 'Rename folder'), oldName);
 
 		if (newName && newName != oldName)
 		{
@@ -1460,8 +1479,6 @@ Craft.AssetIndex = Craft.BaseElementIndex.extend(
 		{
 			$parentFolder.siblings('ul').append($subfolder);
 		}
-
-		this.$sidebar.trigger('resize');
 	},
 
 	_cleanUpTree: function($parentFolder)

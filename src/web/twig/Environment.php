@@ -1,8 +1,8 @@
 <?php
 /**
- * @link      http://buildwithcraft.com/
- * @copyright Copyright (c) 2015 Pixel & Tonic, Inc.
- * @license   http://buildwithcraft.com/license
+ * @link      https://craftcms.com/
+ * @copyright Copyright (c) Pixel & Tonic, Inc.
+ * @license   https://craftcms.com/license
  */
 
 namespace craft\app\web\twig;
@@ -17,6 +17,69 @@ use Craft;
  */
 class Environment extends \Twig_Environment
 {
+    // Properties
+    // =========================================================================
+
+    /**
+     * @var boolean
+     */
+    protected $safeMode;
+
+    // Public Methods
+    // =========================================================================
+
+    /**
+     * Constructor
+     *
+     * @param \Twig_LoaderInterface $loader
+     * @param array                 $options
+     */
+    public function __construct(\Twig_LoaderInterface $loader, array $options)
+    {
+        $options = array_merge([
+            'safe_mode' => false,
+        ], $options);
+
+        $this->safeMode = $options['safe_mode'];
+
+        parent::__construct($loader, $options);
+    }
+
+    /**
+     * @return mixed
+     */
+    public function isSafeMode()
+    {
+        return $this->safeMode;
+    }
+
+    /**
+     * @param $safeMode
+     */
+    public function setSafeMode($safeMode)
+    {
+        $this->safeMode = $safeMode;
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function loadTemplate($name, $index = null)
+    {
+        try {
+            return parent::loadTemplate($name, $index);
+        } catch (\Twig_Error $e) {
+            if (Craft::$app->getConfig()->get('suppressTemplateErrors')) {
+                // Just log it and return an empty template
+                Craft::$app->getErrorHandler()->logException($e);
+
+                return Craft::$app->getView()->renderString('');
+            }
+
+            throw $e;
+        }
+    }
+
     /**
      * @inheritdoc
      */

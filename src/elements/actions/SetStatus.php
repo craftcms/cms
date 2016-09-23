@@ -1,8 +1,8 @@
 <?php
 /**
- * @link      http://buildwithcraft.com/
- * @copyright Copyright (c) 2015 Pixel & Tonic, Inc.
- * @license   http://buildwithcraft.com/license
+ * @link      https://craftcms.com/
+ * @copyright Copyright (c) Pixel & Tonic, Inc.
+ * @license   https://craftcms.com/license
  */
 
 namespace craft\app\elements\actions;
@@ -48,6 +48,7 @@ class SetStatus extends ElementAction
     {
         return Craft::t('app', 'Set Status');
     }
+
     // Public Methods
     // =========================================================================
 
@@ -80,7 +81,7 @@ class SetStatus extends ElementAction
      */
     public function performAction(ElementQueryInterface $query)
     {
-        /** @var ElementQueryInterface|ElementQuery $query */
+        /** @var ElementQuery $query */
         // Figure out which element IDs we need to update
         if ($this->status == Element::STATUS_ENABLED) {
             $sqlNewStatus = '1';
@@ -91,27 +92,33 @@ class SetStatus extends ElementAction
         $elementIds = $query->ids();
 
         // Update their statuses
-        Craft::$app->getDb()->createCommand()->update(
-            '{{%elements}}',
-            ['enabled' => $sqlNewStatus],
-            ['in', 'id', $elementIds]
-        )->execute();
+        Craft::$app->getDb()->createCommand()
+            ->update(
+                '{{%elements}}',
+                ['enabled' => $sqlNewStatus],
+                ['in', 'id', $elementIds])
+            ->execute();
 
         if ($this->status == Element::STATUS_ENABLED) {
             // Enable their locale as well
-            Craft::$app->getDb()->createCommand()->update(
-                '{{%elements_i18n}}',
-                ['enabled' => $sqlNewStatus],
-                ['and', ['in', 'elementId', $elementIds], 'locale = :locale'],
-                [':locale' => $query->locale]
-            )->execute();
+            Craft::$app->getDb()->createCommand()
+                ->update(
+                    '{{%elements_i18n}}',
+                    ['enabled' => $sqlNewStatus],
+                    [
+                        'and',
+                        ['in', 'elementId', $elementIds],
+                        'locale = :locale'
+                    ],
+                    [':locale' => $query->locale])
+                ->execute();
         }
 
         // Clear their template caches
-        Craft::$app->getTemplateCache()->deleteCachesByElementId($elementIds);
+        Craft::$app->getTemplateCaches()->deleteCachesByElementId($elementIds);
 
         // Fire an 'afterSetStatus' event
-        $this->trigger(static::EVENT_AFTER_SET_STATUS, new SetStatusEvent([
+        $this->trigger(self::EVENT_AFTER_SET_STATUS, new SetStatusEvent([
             'elementQuery' => $query,
             'elementIds' => $elementIds,
             'status' => $this->status,

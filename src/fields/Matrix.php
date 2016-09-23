@@ -1,17 +1,21 @@
 <?php
 /**
- * @link      http://buildwithcraft.com/
- * @copyright Copyright (c) 2015 Pixel & Tonic, Inc.
- * @license   http://buildwithcraft.com/license
+ * @link      https://craftcms.com/
+ * @copyright Copyright (c) Pixel & Tonic, Inc.
+ * @license   https://craftcms.com/license
  */
 
 namespace craft\app\fields;
 
 use Craft;
+use craft\app\base\EagerLoadingFieldInterface;
 use craft\app\base\Element;
 use craft\app\base\ElementInterface;
 use craft\app\base\Field;
 use craft\app\base\FieldInterface;
+use craft\app\db\Query;
+use craft\app\elements\db\ElementQuery;
+use craft\app\elements\db\ElementQueryInterface;
 use craft\app\elements\db\MatrixBlockQuery;
 use craft\app\helpers\Json;
 use craft\app\helpers\StringHelper;
@@ -24,7 +28,7 @@ use craft\app\models\MatrixBlockType;
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since  3.0
  */
-class Matrix extends Field
+class Matrix extends Field implements EagerLoadingFieldInterface
 {
     // Static
     // =========================================================================
@@ -165,21 +169,21 @@ class Matrix extends Field
             ');'
         );
 
-        Craft::$app->getView()->includeTranslations(
-            'What this block type will be called in the CP.',
-            'How you’ll refer to this block type in the templates.',
+        Craft::$app->getView()->registerTranslations('app', [
             'Are you sure you want to delete this block type?',
+            'Are you sure you want to delete this field?',
+            'Field Type',
+            'How you’ll refer to this block type in the templates.',
             'This field is required',
             'This field is translatable',
-            'Field Type',
-            'Are you sure you want to delete this field?'
-        );
+            'What this block type will be called in the CP.',
+        ]);
 
         $fieldTypeOptions = [];
 
         foreach (Craft::$app->getFields()->getAllFieldTypes() as $class) {
             // No Matrix-Inception, sorry buddy.
-            if ($class !== self::className()) {
+            if ($class !== static::className()) {
                 $fieldTypeOptions[] = [
                     'value' => $class,
                     'label' => $class::displayName()
@@ -247,6 +251,32 @@ class Matrix extends Field
     /**
      * @inheritdoc
      */
+    public function modifyElementsQuery(ElementQueryInterface $query, $value)
+    {
+        /** @var ElementQuery $query */
+        if ($value == 'not :empty:') {
+            $value = ':notempty:';
+        }
+
+        if ($value == ':notempty:' || $value == ':empty:') {
+            $alias = 'matrixblocks_'.$this->handle;
+            $operator = ($value == ':notempty:' ? '!=' : '=');
+
+            $query->subQuery->andWhere(
+                "(select count({$alias}.id) from {{matrixblocks}} {$alias} where {$alias}.ownerId = elements.id and {$alias}.fieldId = :fieldId) {$operator} 0",
+                [':fieldId' => $this->id]
+            );
+        } else if ($value !== null) {
+            return false;
+        }
+
+        return null;
+    }
+
+
+    /**
+     * @inheritdoc
+     */
     public function getInputHtml($value, $element)
     {
         $id = Craft::$app->getView()->formatInputId($this->handle);
@@ -263,9 +293,20 @@ class Matrix extends Field
             ($this->maxBlocks ? $this->maxBlocks : 'null').
             ');');
 
-        Craft::$app->getView()->includeTranslations('Disabled', 'Actions', 'Collapse', 'Expand', 'Disable', 'Enable', 'Add {type} above', 'Add a block');
+        Craft::$app->getView()->registerTranslations('app', [
+            'Actions',
+            'Add a block',
+            'Add {type} above',
+            'Are you sure you want to delete the selected blocks?',
+            'Collapse',
+            'Disable',
+            'Disabled',
+            'Enable',
+            'Expand',
+        ]);
 
         if ($value instanceof MatrixBlockQuery) {
+            /** @var MatrixBlockQuery $value */
             $value
                 ->limit(null)
                 ->status(null)
@@ -335,6 +376,7 @@ class Matrix extends Field
             $contentService->fieldContext = $block->getFieldContext();
 
             foreach (Craft::$app->getFields()->getAllFields() as $field) {
+                /** @var Field $field */
                 $fieldValue = $block->getFieldValue($field->handle);
                 $keywords[] = $field->getSearchKeywords($fieldValue, $element);
             }
@@ -376,6 +418,39 @@ class Matrix extends Field
         }
     }
 
+    /**
+     * @inheritdoc
+     */
+    public function getEagerLoadingMap($sourceElements)
+    {
+        // Get the source element IDs
+        $sourceElementIds = [];
+
+        foreach ($sourceElements as $sourceElement) {
+            $sourceElementIds[] = $sourceElement->id;
+        }
+
+        // Return any relation data on these elements, defined with this field
+        $map = (new Query())
+            ->select('ownerId as source, id as target')
+            ->from('{{%matrixblocks}}')
+            ->where(
+                [
+                    'and',
+                    'fieldId=:fieldId',
+                    ['in', 'ownerId', $sourceElementIds]
+                ],
+                [':fieldId' => $this->id])
+            ->orderBy('sortOrder')
+            ->all();
+
+        return [
+            'elementType' => MatrixBlock::className(),
+            'map' => $map,
+            'criteria' => ['fieldId' => $this->id]
+        ];
+    }
+
     // Protected Methods
     // =========================================================================
 
@@ -407,7 +482,7 @@ class Matrix extends Field
 
         foreach (Craft::$app->getFields()->getAllFieldTypes() as $class) {
             // No Matrix-Inception, sorry buddy.
-            if ($class === self::className()) {
+            if ($class === static::className()) {
                 continue;
             }
 
@@ -431,14 +506,15 @@ class Matrix extends Field
     }
 
     /**
-     * Returns info about each field type for the configurator.
+     * Returns info about each block type and their field types for the Matrix field input.
      *
-     * @param ElementInterface|Element $element
+     * @param ElementInterface $element
      *
      * @return array
      */
     private function _getBlockTypeInfoForInput($element)
     {
+        /** @var Element $element */
         $blockTypes = [];
 
         // Set a temporary namespace for these
@@ -454,6 +530,7 @@ class Matrix extends Field
 
             if ($element) {
                 $block->setOwner($element);
+                $block->locale = $element->locale;
             }
 
             $fieldLayoutFields = $blockType->getFieldLayout()->getFields();
@@ -493,13 +570,14 @@ class Matrix extends Field
     /**
      * Creates an array of blocks based on the given post data
      *
-     * @param mixed                         $value   The raw field value
-     * @param ElementInterface|Element|null $element The element the field is associated with, if there is one
+     * @param mixed                 $value   The raw field value
+     * @param ElementInterface|null $element The element the field is associated with, if there is one
      *
      * @return MatrixBlock[]
      */
     private function _createBlocksFromPost($value, $element)
     {
+        /** @var Element $element */
         // Get the possible block types for this field
         $blockTypes = Craft::$app->getMatrix()->getBlockTypesByFieldId($this->id, 'handle');
 

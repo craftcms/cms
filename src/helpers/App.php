@@ -1,8 +1,8 @@
 <?php
 /**
- * @link      http://buildwithcraft.com/
- * @copyright Copyright (c) 2015 Pixel & Tonic, Inc.
- * @license   http://buildwithcraft.com/license
+ * @link      https://craftcms.com/
+ * @copyright Copyright (c) Pixel & Tonic, Inc.
+ * @license   https://craftcms.com/license
  */
 
 namespace craft\app\helpers;
@@ -72,15 +72,12 @@ class App
     public static function getEditionName($edition)
     {
         switch ($edition) {
-            case Craft::Client: {
+            case Craft::Client:
                 return 'Client';
-            }
-            case Craft::Pro: {
+            case Craft::Pro:
                 return 'Pro';
-            }
-            default: {
+            default:
                 return 'Personal';
-            }
         }
     }
 
@@ -130,10 +127,13 @@ class App
 
         // Multiply! Falling through here is intentional.
         switch (strtolower($matches[1])) {
+            /** @noinspection PhpMissingBreakStatementInspection */
             case 't':
                 $value *= 1024;
+            /** @noinspection PhpMissingBreakStatementInspection */
             case 'g':
                 $value *= 1024;
+            /** @noinspection PhpMissingBreakStatementInspection */
             case 'm':
                 $value *= 1024;
             case 'k':
@@ -141,6 +141,46 @@ class App
         }
 
         return $value;
+    }
+
+    /**
+     * Normalizes a version number based on the same logic as PHP’s [version_compare](http://php.net/manual/en/function.version-compare.php) uses internally.
+     *
+     * @param string $version The version number
+     *
+     * @return string The normalized version number
+     */
+    public static function normalizeVersionNumber($version)
+    {
+        // Periods before/after non-numeric sequences
+        $version = preg_replace('/[^0-9]+/', '.$0.', $version);
+
+        // Convert sequences of ./-/+'s into single periods
+        $version = preg_replace('/[\._\-\+]+/', '.', $version);
+
+        // Remove any leading/trailing periods
+        $version = trim($version, '.');
+
+        return $version;
+    }
+
+    /**
+     * Returns the major version from a given version number.
+     *
+     * @param string $version The full version number
+     *
+     * @return string|null The major version
+     */
+    public static function getMajorVersion($version)
+    {
+        $version = static::normalizeVersionNumber($version);
+        $parts = explode('.', $version, 2);
+
+        if (!empty($parts[0])) {
+            return $parts[0];
+        }
+
+        return null;
     }
 
     public static function checkForValidIconv()

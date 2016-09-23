@@ -1,8 +1,8 @@
 <?php
 /**
- * @link      http://buildwithcraft.com/
- * @copyright Copyright (c) 2015 Pixel & Tonic, Inc.
- * @license   http://buildwithcraft.com/license
+ * @link      https://craftcms.com/
+ * @copyright Copyright (c) Pixel & Tonic, Inc.
+ * @license   https://craftcms.com/license
  */
 
 namespace craft\app\records;
@@ -13,17 +13,17 @@ use craft\app\db\ActiveRecord;
 /**
  * Class EntryType record.
  *
- * @property integer              $id            ID
- * @property integer              $sectionId     Section ID
- * @property integer              $fieldLayoutId Field layout ID
- * @property string               $name          Name
- * @property string               $handle        Handle
- * @property boolean              $hasTitleField Has title field
- * @property string               $titleLabel    Title label
- * @property string               $titleFormat   Title format
- * @property string               $sortOrder     Sort order
- * @property ActiveQueryInterface $section       Section
- * @property ActiveQueryInterface $fieldLayout   Field layout
+ * @property integer     $id            ID
+ * @property integer     $sectionId     Section ID
+ * @property integer     $fieldLayoutId Field layout ID
+ * @property string      $name          Name
+ * @property string      $handle        Handle
+ * @property boolean     $hasTitleField Has title field
+ * @property string      $titleLabel    Title label
+ * @property string      $titleFormat   Title format
+ * @property integer     $sortOrder     Sort order
+ * @property Section     $section       Section
+ * @property FieldLayout $fieldLayout   Field layout
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since  3.0
@@ -74,7 +74,7 @@ class EntryType extends ActiveRecord
     /**
      * Returns the entry type’s section.
      *
-     * @return \yii\db\ActiveQueryInterface The relational query object.
+     * @return ActiveQueryInterface The relational query object.
      */
     public function getSection()
     {
@@ -84,11 +84,10 @@ class EntryType extends ActiveRecord
     /**
      * Returns the entry type’s fieldLayout.
      *
-     * @return \yii\db\ActiveQueryInterface The relational query object.
+     * @return ActiveQueryInterface The relational query object.
      */
     public function getFieldLayout()
     {
-        return $this->hasOne(FieldLayout::className(),
-            ['id' => 'fieldLayoutId']);
+        return $this->hasOne(FieldLayout::className(), ['id' => 'fieldLayoutId']);
     }
 }

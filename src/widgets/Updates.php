@@ -1,8 +1,8 @@
 <?php
 /**
- * @link      http://buildwithcraft.com/
- * @copyright Copyright (c) 2015 Pixel & Tonic, Inc.
- * @license   http://buildwithcraft.com/license
+ * @link      https://craftcms.com/
+ * @copyright Copyright (c) Pixel & Tonic, Inc.
+ * @license   https://craftcms.com/license
  */
 
 namespace craft\app\widgets;
@@ -52,6 +52,14 @@ class Updates extends Widget
     /**
      * @inheritdoc
      */
+    public function getIconPath()
+    {
+        return Craft::$app->getPath()->getResourcesPath().'/images/widgets/updates.svg';
+    }
+
+    /**
+     * @inheritdoc
+     */
     public function getBodyHtml()
     {
         // Make sure the user actually has permission to perform updates
@@ -59,19 +67,19 @@ class Updates extends Widget
             return false;
         }
 
-        $cached = Craft::$app->getUpdates()->isUpdateInfoCached();
+        $cached = Craft::$app->getUpdates()->getIsUpdateInfoCached();
 
         if (!$cached || !Craft::$app->getUpdates()->getTotalAvailableUpdates()) {
             Craft::$app->getView()->registerJsResource('js/UpdatesWidget.js');
             Craft::$app->getView()->registerJs('new Craft.UpdatesWidget('.$this->id.', '.($cached ? 'true' : 'false').');');
 
-            Craft::$app->getView()->includeTranslations(
+            Craft::$app->getView()->registerTranslations('app', [
                 'One update available!',
                 '{total} updates available!',
                 'Go to Updates',
                 'Congrats! You’re up-to-date.',
-                'Check again'
-            );
+                'Check again',
+            ]);
         }
 
         if ($cached) {

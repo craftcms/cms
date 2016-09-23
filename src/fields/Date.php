@@ -1,14 +1,16 @@
 <?php
 /**
- * @link      http://buildwithcraft.com/
- * @copyright Copyright (c) 2015 Pixel & Tonic, Inc.
- * @license   http://buildwithcraft.com/license
+ * @link      https://craftcms.com/
+ * @copyright Copyright (c) Pixel & Tonic, Inc.
+ * @license   https://craftcms.com/license
  */
 
 namespace craft\app\fields;
 
 use Craft;
 use craft\app\base\Field;
+use craft\app\base\PreviewableFieldInterface;
+use craft\app\dates\DateTime;
 use craft\app\elements\db\ElementQuery;
 use craft\app\elements\db\ElementQueryInterface;
 use craft\app\helpers\DateTimeHelper;
@@ -21,7 +23,7 @@ use yii\db\Schema;
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since  3.0
  */
-class Date extends Field
+class Date extends Field implements PreviewableFieldInterface
 {
     // Static
     // =========================================================================
@@ -65,7 +67,7 @@ class Date extends Field
             }
         }
 
-        return parent::populateModel($model, $config);
+        parent::populateModel($model, $config);
     }
 
     // Properties
@@ -136,6 +138,7 @@ class Date extends Field
         $options = [15, 30, 60];
         $options = array_combine($options, $options);
 
+        /** @noinspection PhpUndefinedVariableInspection */
         return Craft::$app->getView()->renderTemplate('_components/fieldtypes/Date/settings',
             [
                 'options' => [
@@ -172,6 +175,10 @@ class Date extends Field
 
         $input = '';
 
+        if ($this->showDate && $this->showTime) {
+            $input .= '<div class="datetimewrapper">';
+        }
+
         if ($this->showDate) {
             $input .= Craft::$app->getView()->renderTemplate('_includes/forms/date', $variables);
         }
@@ -180,7 +187,24 @@ class Date extends Field
             $input .= ' '.Craft::$app->getView()->renderTemplate('_includes/forms/time', $variables);
         }
 
+        if ($this->showDate && $this->showTime) {
+            $input .= '</div>';
+        }
+
         return $input;
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function getTableAttributeHtml($value, $element)
+    {
+        if ($value) {
+            /** @var DateTime $value */
+            return '<span title="'.$value->localeDate().' '.$value->localeTime().'">'.$value->uiTimestamp().'</span>';
+        }
+
+        return '';
     }
 
     /**
@@ -190,9 +214,9 @@ class Date extends Field
     {
         if ($value && ($date = DateTimeHelper::toDateTime($value)) !== false) {
             return $date;
-        } else {
-            return null;
         }
+
+        return null;
     }
 
     /**

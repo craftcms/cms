@@ -1,8 +1,8 @@
 <?php
 /**
- * @link      http://buildwithcraft.com/
- * @copyright Copyright (c) 2015 Pixel & Tonic, Inc.
- * @license   http://buildwithcraft.com/license
+ * @link      https://craftcms.com/
+ * @copyright Copyright (c) Pixel & Tonic, Inc.
+ * @license   https://craftcms.com/license
  */
 
 namespace craft\app\web\twig;
@@ -17,6 +17,8 @@ use yii\base\Object;
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since  3.0
+ *
+ * @method integer[] getDebugInfo()
  */
 abstract class Template extends \Twig_Template
 {
@@ -26,7 +28,7 @@ abstract class Template extends \Twig_Template
     /**
      * @inheritdoc
      */
-    public function display(array $context, array $blocks = array())
+    public function display(array $context, array $blocks = [])
     {
         $name = $this->getTemplateName();
         Craft::beginProfile($name, __METHOD__);
@@ -36,6 +38,29 @@ abstract class Template extends \Twig_Template
 
     // Protected Methods
     // =========================================================================
+
+    /**
+     * Displays the template.
+     *
+     * @param array $context
+     * @param array $blocks
+     *
+     * @throws \Twig_Error
+     * @throws \Twig_Error_Runtime
+     */
+    protected function displayWithErrorHandling(array $context, array $blocks = [])
+    {
+        try {
+            parent::displayWithErrorHandling($context, $blocks);
+        } catch (\Twig_Error_Runtime $e) {
+            if (Craft::$app->getConfig()->get('suppressTemplateErrors')) {
+                // Just log it and move on
+                Craft::$app->getErrorHandler()->logException($e);
+            } else {
+                throw $e;
+            }
+        }
+    }
 
     /**
      * Returns the attribute value for a given array/object.
@@ -73,18 +98,19 @@ abstract class Template extends \Twig_Template
     /**
      * Includes this element in any active template caches.
      *
-     * @param ElementInterface|Element $element
+     * @param ElementInterface $element
      *
      * @return void
      */
     private function _includeElementInTemplateCaches(ElementInterface $element)
     {
+        /** @var Element $element */
         $elementId = $element->id;
 
         if ($elementId) {
-            // Don't initialize the TemplateCache service if we don't have to
-            if (Craft::$app->has('templateCache', true)) {
-                Craft::$app->getTemplateCache()->includeElementInTemplateCaches($elementId);
+            // Don't initialize the TemplateCaches service if we don't have to
+            if (Craft::$app->has('templateCaches', true)) {
+                Craft::$app->getTemplateCaches()->includeElementInTemplateCaches($elementId);
             }
         }
     }

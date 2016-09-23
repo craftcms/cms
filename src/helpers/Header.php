@@ -1,8 +1,8 @@
 <?php
 /**
- * @link      http://buildwithcraft.com/
- * @copyright Copyright (c) 2015 Pixel & Tonic, Inc.
- * @license   http://buildwithcraft.com/license
+ * @link      https://craftcms.com/
+ * @copyright Copyright (c) Pixel & Tonic, Inc.
+ * @license   https://craftcms.com/license
  */
 
 namespace craft\app\helpers;
@@ -78,9 +78,9 @@ class Header
             static::$_mimeType = $mimeType;
 
             return true;
-        } else {
-            return false;
         }
+
+        return false;
     }
 
     /**
@@ -234,6 +234,8 @@ class Header
                 return $parts[1];
             }
         }
+
+        return null;
     }
 
     /**
@@ -241,7 +243,7 @@ class Header
      *
      * @param array $header Use key => value
      *
-     * @return void
+     * @return boolean
      */
     public static function setHeader($header)
     {

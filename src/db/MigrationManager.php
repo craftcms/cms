@@ -1,8 +1,8 @@
 <?php
 /**
- * @link      http://buildwithcraft.com/
- * @copyright Copyright (c) 2015 Pixel & Tonic, Inc.
- * @license   http://buildwithcraft.com/license
+ * @link      https://craftcms.com/
+ * @copyright Copyright (c) Pixel & Tonic, Inc.
+ * @license   https://craftcms.com/license
  */
 
 namespace craft\app\db;
@@ -42,7 +42,7 @@ class MigrationManager extends Component
     public $migrationPath;
 
     /**
-     * @var \yii\db\Connection|array|string The DB connection object or the application component ID of the DB connection
+     * @var Connection|array|string The DB connection object or the application component ID of the DB connection
      */
     public $db = 'db';
 
@@ -73,7 +73,7 @@ class MigrationManager extends Component
         $this->migrationPath = Craft::getAlias($this->migrationPath);
         Io::ensureFolderExists($this->migrationPath);
 
-        $this->db = Instance::ensure($this->db, \yii\db\Connection::className());
+        $this->db = Instance::ensure($this->db, Connection::className());
     }
 
     /**
@@ -211,7 +211,7 @@ class MigrationManager extends Component
             return true;
         }
 
-        /** @var MigrationInterface|\yii\db\Migration $migration */
+        /** @var \yii\db\Migration $migration */
         $migration = Instance::ensure($migration, 'yii\db\MigrationInterface');
 
         Craft::info("Applying $migrationName");
@@ -227,12 +227,10 @@ class MigrationManager extends Component
         $time = microtime(true) - $start;
 
         if ($success) {
-            Craft::info("Applied $migrationName (time: ".sprintf("%.3f",
-                    $time)."s)");
+            Craft::info("Applied $migrationName (time: ".sprintf("%.3f", $time)."s)");
             $this->addMigrationHistory($migrationName);
         } else {
-            Craft::error("Failed to apply $migrationName (time: ".sprintf("%.3f",
-                    $time)."s)");
+            Craft::error("Failed to apply $migrationName (time: ".sprintf("%.3f", $time)."s)");
         }
 
         if (!$isConsoleRequest) {
@@ -263,7 +261,7 @@ class MigrationManager extends Component
             return true;
         }
 
-        /** @var MigrationInterface|\yii\db\Migration $migration */
+        /** @var \yii\db\Migration $migration */
         $migration = Instance::ensure($migration, 'yii\db\MigrationInterface');
 
         Craft::info("Reverting $migrationName");
@@ -324,13 +322,14 @@ class MigrationManager extends Component
      */
     public function addMigrationHistory($name)
     {
-        Craft::$app->getDb()->createCommand()->insert(
-            $this->migrationTable,
-            array_merge($this->fixedColumnValues, [
-                'name' => $name,
-                'applyTime' => Db::prepareDateForDb(new \DateTime())
-            ])
-        )->execute();
+        Craft::$app->getDb()->createCommand()
+            ->insert(
+                $this->migrationTable,
+                array_merge($this->fixedColumnValues, [
+                    'name' => $name,
+                    'applyTime' => Db::prepareDateForDb(new \DateTime())
+                ]))
+            ->execute();
     }
 
     /**
@@ -340,12 +339,13 @@ class MigrationManager extends Component
      */
     public function removeMigrationHistory($name)
     {
-        Craft::$app->getDb()->createCommand()->delete(
-            $this->migrationTable,
-            array_merge($this->fixedColumnValues, [
-                'name' => $name
-            ])
-        )->execute();
+        Craft::$app->getDb()->createCommand()
+            ->delete(
+                $this->migrationTable,
+                array_merge($this->fixedColumnValues, [
+                    'name' => $name
+                ]))
+            ->execute();
     }
 
     /**

@@ -1,8 +1,8 @@
 <?php
 /**
- * @link      http://buildwithcraft.com/
- * @copyright Copyright (c) 2015 Pixel & Tonic, Inc.
- * @license   http://buildwithcraft.com/license
+ * @link      https://craftcms.com/
+ * @copyright Copyright (c) Pixel & Tonic, Inc.
+ * @license   https://craftcms.com/license
  */
 
 namespace craft\app\et;
@@ -10,13 +10,13 @@ namespace craft\app\et;
 use Craft;
 use craft\app\enums\LicenseKeyStatus;
 use craft\app\errors\EtException;
-use craft\app\errors\Exception;
 use craft\app\helpers\ArrayHelper;
 use craft\app\helpers\DateTimeHelper;
 use craft\app\helpers\Io;
 use craft\app\models\Et as EtModel;
 use GuzzleHttp\Client;
 use GuzzleHttp\Exception\RequestException;
+use yii\base\Exception;
 
 /**
  * Class Et
@@ -69,7 +69,7 @@ class Et
      *
      * @return Et
      */
-    public function __construct($endpoint, $timeout = 30, $connectTimeout = 2)
+    public function __construct($endpoint, $timeout = 30, $connectTimeout = 30)
     {
         $endpoint .= Craft::$app->getConfig()->get('endpointSuffix');
 
@@ -77,24 +77,30 @@ class Et
         $this->_timeout = $timeout;
         $this->_connectTimeout = $connectTimeout;
 
+        // There can be a race condition after an update from older Craft versions where they lose session
+        // and another call to elliott is made during cleanup.
+        $user = Craft::$app->getUser()->getIdentity();
+        $userEmail = $user ? $user->email : '';
+
         $this->_model = new EtModel([
             'licenseKey' => $this->_getLicenseKey(),
-            'requestUrl' => Craft::$app->getRequest()->getHostInfo().Craft::$app->getRequest()->getUrl(),
+            'pluginLicenseKeys' => $this->_getPluginLicenseKeys(),
+            'requestUrl' => Craft::$app->getRequest()->getAbsoluteUrl(),
             'requestIp' => Craft::$app->getRequest()->getUserIP(),
             'requestTime' => DateTimeHelper::currentTimeStamp(),
             'requestPort' => Craft::$app->getRequest()->getPort(),
             'localBuild' => Craft::$app->build,
             'localVersion' => Craft::$app->version,
             'localEdition' => Craft::$app->getEdition(),
-            'userEmail' => Craft::$app->getUser()->getIdentity()->email,
+            'userEmail' => $userEmail,
             'track' => Craft::$app->track,
             'showBeta' => Craft::$app->getConfig()->get('showBetaUpdates'),
-            'serverInfo' => array(
+            'serverInfo' => [
                 'extensions' => get_loaded_extensions(),
                 'phpVersion' => PHP_VERSION,
                 'mySqlVersion' => Craft::$app->schemaVersion,
                 'proc' => function_exists('proc_open') ? 1 : 0,
-            ),
+            ],
         ]);
 
         $this->_userAgent = 'Craft/'.Craft::$app->version.'.'.Craft::$app->build;
@@ -172,11 +178,25 @@ class Et
     }
 
     /**
+     * Sets the handle ("craft" or a plugin handle) that is the subject for the request.
+     *
+     * @param $handle
+     *
+     * @return void
+     */
+    public function setHandle($handle)
+    {
+        $this->_model->handle = $handle;
+    }
+
+    /**
      * @throws EtException|\Exception
      * @return EtModel|null
      */
     public function phoneHome()
     {
+        $cacheService = Craft::$app->getCache();
+
         try {
             $missingLicenseKey = empty($this->_model->licenseKey);
 
@@ -189,7 +209,7 @@ class Et
                 try {
                     $client = new Client([
                         'headers' => [
-                            'User-Agent' => $this->_userAgent.' '.Client::getDefaultUserAgent()
+                            'User-Agent' => $this->_userAgent.' '.\GuzzleHttp\default_user_agent()
                         ],
                         'timeout' => $this->getTimeout(),
                         'connect_timeout' => $this->getConnectTimeout(),
@@ -199,13 +219,12 @@ class Et
                     // Potentially long-running request, so close session to prevent session blocking on subsequent requests.
                     Craft::$app->getSession()->close();
 
-                    $response = $client->post($this->_endpoint,
-                        ['json' => ArrayHelper::toArray($this->_model)]);
+                    $response = $client->post($this->_endpoint, ['json' => ArrayHelper::toArray($this->_model)]);
 
                     if ($response->getStatusCode() == 200) {
                         // Clear the connection failure cached item if it exists.
-                        if (Craft::$app->getCache()->get('etConnectFailure')) {
-                            Craft::$app->getCache()->delete('etConnectFailure');
+                        if ($cacheService->get('etConnectFailure')) {
+                            $cacheService->delete('etConnectFailure');
                         }
 
                         if ($this->_destinationFilename) {
@@ -228,13 +247,21 @@ class Et
                                 $this->_setLicenseKey($etModel->licenseKey);
                             }
 
-                            // Cache the license key status and which edition it has
-                            Craft::$app->getCache()->set('licenseKeyStatus', $etModel->licenseKeyStatus);
-                            Craft::$app->getCache()->set('licensedEdition', $etModel->licensedEdition);
-                            Craft::$app->getCache()->set('editionTestableDomain@'.Craft::$app->getRequest()->getHostName(), $etModel->editionTestableDomain ? 1 : 0);
+                            // Cache the Craft/plugin license key statuses, and which edition Craft is licensed for
+                            $cacheService->set('licenseKeyStatus', $etModel->licenseKeyStatus);
+                            $cacheService->set('licensedEdition', $etModel->licensedEdition);
+                            $cacheService->set('editionTestableDomain@'.Craft::$app->getRequest()->getHostName(), $etModel->editionTestableDomain ? 1 : 0);
 
-                            if ($etModel->licenseKeyStatus == LicenseKeyStatus::MismatchedDomain) {
-                                Craft::$app->getCache()->set('licensedDomain', $etModel->licensedDomain);
+                            if ($etModel->licenseKeyStatus == LicenseKeyStatus::Mismatched) {
+                                $cacheService->set('licensedDomain', $etModel->licensedDomain);
+                            }
+
+                            if (is_array($etModel->pluginLicenseKeyStatuses)) {
+                                $pluginsService = Craft::$app->getPlugins();
+
+                                foreach ($etModel->pluginLicenseKeyStatuses as $pluginHandle => $licenseKeyStatus) {
+                                    $pluginsService->setPluginLicenseKeyStatus($pluginHandle, $licenseKeyStatus);
+                                }
                             }
 
                             return $etModel;
@@ -246,14 +273,14 @@ class Et
 
                     if (Craft::$app->getCache()->get('etConnectFailure')) {
                         // There was an error, but at least we connected.
-                        Craft::$app->getCache()->delete('etConnectFailure');
+                        $cacheService->delete('etConnectFailure');
                     }
                 } catch (RequestException $e) {
                     Craft::warning('Error in calling '.$this->_endpoint.' Reason: '.$e->getMessage(), __METHOD__);
 
                     if (Craft::$app->getCache()->get('etConnectFailure')) {
                         // There was an error, but at least we connected.
-                        Craft::$app->getCache()->delete('etConnectFailure');
+                        $cacheService->delete('etConnectFailure');
                     }
                 }
             }
@@ -261,9 +288,9 @@ class Et
         catch (EtException $e) {
             Craft::error('Error in '.__METHOD__.'. Message: '.$e->getMessage(), __METHOD__);
 
-            if (Craft::$app->getCache()->get('etConnectFailure')) {
+            if ($cacheService->get('etConnectFailure')) {
                 // There was an error, but at least we connected.
-                Craft::$app->getCache()->delete('etConnectFailure');
+                $cacheService->delete('etConnectFailure');
             }
 
             throw $e;
@@ -271,7 +298,7 @@ class Et
             Craft::error('Error in '.__METHOD__.'. Message: '.$e->getMessage(), __METHOD__);
 
             // Cache the failure for 5 minutes so we don't try again.
-            Craft::$app->getCache()->set('etConnectFailure', true, 300);
+            $cacheService->set('etConnectFailure', true, 300);
         }
 
         return null;
@@ -293,6 +320,22 @@ class Et
         }
 
         return null;
+    }
+
+    /**
+     * @return array
+     */
+    private function _getPluginLicenseKeys()
+    {
+        $pluginLicenseKeys = [];
+        $pluginsService = Craft::$app->getPlugins();
+
+        foreach ($pluginsService->getAllPlugins() as $plugin) {
+            $pluginHandle = $plugin->getHandle();
+            $pluginLicenseKeys[$pluginHandle] = $pluginsService->getPluginLicenseKey($pluginHandle);
+        }
+
+        return $pluginLicenseKeys;
     }
 
     /**
@@ -322,7 +365,7 @@ class Et
             throw new EtException('Craft needs to be able to write to your “craft/config” folder and it can’t.', 10001);
         }
 
-        throw new Exception(Craft::t('app', 'Cannot overwrite an existing valid license.key file.'));
+        throw new Exception('Cannot overwrite an existing valid license.key file.');
     }
 
     /**

@@ -107,16 +107,14 @@
 
 								<hr>
 
-                                {% set fieldTypeInfo = craft.fields.getFieldTypeInfo(field) %}
-
 								{{ forms.selectField({
 									label: "Field Type"|t('app'),
-									warning: (not field.isNew() ? "Changing this may result in data loss."|t('app')),
+									warning: (not field.getIsNew() ? "Changing this may result in data loss."|t('app')),
 									id: fieldId~'-type',
 									name: 'blockTypes['~blockType.id~'][fields]['~fieldId~'][type]',
 									options: fieldTypes,
-									value: fieldTypeInfo.getClassName(),
-									errors: (fieldTypeInfo.getIsInvalid() ? ["The field type “{class}” could not be found."|t('app', { class: field.type })] : null),
+									value: field.getType(),
+									errors: (field is missing ? ["The field type “{class}” could not be found."|t('app', { class: field.getType() })] : null),
 								}) }}
 
 								<div class="fieldtype-settings">

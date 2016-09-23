@@ -1,35 +1,36 @@
 <?php
 /**
- * @link      http://buildwithcraft.com/
- * @copyright Copyright (c) 2015 Pixel & Tonic, Inc.
- * @license   http://buildwithcraft.com/license
+ * @link      https://craftcms.com/
+ * @copyright Copyright (c) Pixel & Tonic, Inc.
+ * @license   https://craftcms.com/license
  */
 
 namespace craft\app\web;
 
 use Craft;
 use craft\app\base\ApplicationTrait;
-use craft\app\errors\HttpException;
 use craft\app\helpers\Header;
+use craft\app\helpers\Io;
 use craft\app\helpers\Json;
 use craft\app\helpers\StringHelper;
 use craft\app\helpers\Url;
 use yii\base\InvalidRouteException;
 use yii\web\ForbiddenHttpException;
+use yii\web\HttpException;
 use yii\web\NotFoundHttpException;
 use yii\web\Response;
 
 /**
  * Craft Web Application class
  *
- * @property Request                              $request          The request component
- * @property Response                             $response         The response component
- * @property Session                              $session          The session component
- * @property UrlManager                           $urlManager       The URL manager for this application
- * @property User                                 $user             The user component
+ * @property Request                 $request          The request component
+ * @property \craft\app\web\Response $response         The response component
+ * @property Session                 $session          The session component
+ * @property UrlManager              $urlManager       The URL manager for this application
+ * @property User                    $user             The user component
  *
  * @method Request                                getRequest()      Returns the request component.
- * @method Response                               getResponse()     Returns the response component.
+ * @method \craft\app\web\Response                getResponse()     Returns the response component.
  * @method Session                                getSession()      Returns the session component.
  * @method UrlManager                             getUrlManager()   Returns the URL manager for this application.
  * @method User                                   getUser()         Returns the user component.
@@ -46,6 +47,11 @@ class Application extends \yii\web\Application
 
     // Constants
     // =========================================================================
+
+    /**
+     * @event EditionChangeEvent The event that is triggered after the application has been initialized
+     */
+    const EVENT_AFTER_INIT = 'afterInit';
 
     /**
      * @event EditionChangeEvent The event that is triggered after the edition changes
@@ -75,30 +81,7 @@ class Application extends \yii\web\Application
     {
         parent::init();
 
-        // NOTE: Nothing that triggers a database connection should be made here until *after* _processResourceRequest()
-        // in handleRequest() is called.
-
-        $this->getLog();
-
-        // So we can try to translate Yii framework strings
-        //$this->coreMessages->attachEventHandler('onMissingTranslation', ['Craft\Localization', 'findMissingTranslation']);
-
-        // If there is a custom appId set, apply it here.
-        if ($appId = $this->getConfig()->get('appId')) {
-            $this->id = $appId;
-        }
-
-        // Set the timezone
-        $this->_setTimeZone();
-
-        // Validate some basics on the database configuration file.
-        $this->validateDbConfigFile();
-
-        // Load the plugins
-        $this->getPlugins()->loadPlugins();
-
-        // Set the language
-        $this->_setLanguage();
+        $this->_init();
     }
 
     /**
@@ -129,14 +112,14 @@ class Application extends \yii\web\Application
 
         // Send the X-Powered-By header?
         if ($this->getConfig()->get('sendPoweredByHeader')) {
-            Header::setHeader(['X-Powered-By' => 'Craft CMS']);
+            Header::setHeader(['X-Powered-By' => $this->name]);
         } else {
             // In case PHP is already setting one
             Header::removeHeader('X-Powered-By');
         }
 
         // If the system in is maintenance mode and it's a site request, throw a 503.
-        if ($this->isInMaintenanceMode() && $request->getIsSiteRequest()) {
+        if ($this->getIsInMaintenanceMode() && $request->getIsSiteRequest()) {
             $this->_unregisterDebugModule();
             throw new ServiceUnavailableHttpException();
         }
@@ -153,16 +136,16 @@ class Application extends \yii\web\Application
             return $response;
         }
 
-        // Makes sure that the uploaded files are compatible with the current DB schema
-        if (!$this->getUpdates()->isSchemaVersionCompatible()) {
+        // Makes sure that the uploaded files are compatible with the current database schema
+        if (!$this->getUpdates()->getIsSchemaVersionCompatible()) {
             $this->_unregisterDebugModule();
 
             if ($request->getIsCpRequest()) {
                 $version = $this->getInfo('version');
                 $build = $this->getInfo('build');
-                $url = "http://download.buildwithcraft.com/craft/{$version}/{$version}.{$build}/Craft-{$version}.{$build}.zip";
+                $url = "https://download.craftcdn.com/craft/{$version}/{$version}.{$build}/Craft-{$version}.{$build}.zip";
 
-                throw new HttpException(200, Craft::t('app', 'Craft does not support backtracking to this version. Please upload Craft {url} or later.',
+                throw new HttpException(200, Craft::t('app', 'Craft CMS does not support backtracking to this version. Please upload Craft CMS {url} or later.',
                     [
                         'url' => '['.$build.']('.$url.')',
                     ]));
@@ -171,25 +154,25 @@ class Application extends \yii\web\Application
             }
         }
 
-        // Set the edition components
-        $this->_setEditionComponents();
-
-        // isCraftDbMigrationNeeded will return true if we're in the middle of a manual or auto-update for Craft itself.
+        // getIsCraftDbMigrationNeeded will return true if we're in the middle of a manual or auto-update for Craft itself.
         // If we're in maintenance mode and it's not a site request, show the manual update template.
-        if ($this->_isCraftUpdating()) {
+        if ($this->getIsUpdating()) {
             return $this->_processUpdateLogic($request) ?: $this->getResponse();
         }
 
         // If there's a new version, but the schema hasn't changed, just update the info table
-        if ($this->getUpdates()->hasCraftBuildChanged()) {
+        if ($this->getUpdates()->getHasCraftBuildChanged()) {
             $this->getUpdates()->updateCraftVersionInfo();
+
+            // Clear the template caches in case they've been compiled since this release was cut.
+            Io::clearFolder($this->getPath()->getCompiledTemplatesPath());
         }
 
         // If the system is offline, make sure they have permission to be here
         $this->_enforceSystemStatusPermissions($request);
 
         // Check if a plugin needs to update the database.
-        if ($this->getUpdates()->isPluginDbUpdateNeeded()) {
+        if ($this->getUpdates()->getIsPluginDbUpdateNeeded()) {
             return $this->_processUpdateLogic($request) ?: $this->getResponse();
         }
 
@@ -332,10 +315,6 @@ class Application extends \yii\web\Application
      */
     public function getTranslatedBrowserLanguage()
     {
-        if ($this->getRequest()->getIsConsoleRequest()) {
-            return false;
-        }
-
         $browserLanguages = $this->getRequest()->getAcceptableLanguages();
 
         if ($browserLanguages) {
@@ -374,6 +353,7 @@ class Application extends \yii\web\Application
 
     /**
      * @inheritdoc
+     *
      * @return Response|null The result of the action, normalized into a Response object
      */
     public function runAction($route, $params = [])
@@ -383,12 +363,12 @@ class Application extends \yii\web\Application
         if ($result !== null) {
             if ($result instanceof Response) {
                 return $result;
-            } else {
-                $response = $this->getResponse();
-                $response->data = $result;
-
-                return $response;
             }
+
+            $response = $this->getResponse();
+            $response->data = $result;
+
+            return $response;
         }
 
         return null;
@@ -434,14 +414,15 @@ class Application extends \yii\web\Application
      *
      * @param Request $request
      *
-     * @return Response|null
+     * @return null|Response
      * @throws NotFoundHttpException
+     * @throws ServiceUnavailableHttpException
      * @throws \yii\base\ExitException
      */
     private function _processInstallRequest($request)
     {
         $isCpRequest = $request->getIsCpRequest();
-        $isInstalled = $this->isInstalled();
+        $isInstalled = $this->getIsInstalled();
 
         if (!$isInstalled) {
             $this->_unregisterDebugModule();
@@ -449,16 +430,20 @@ class Application extends \yii\web\Application
 
         // Are they requesting an installer template/action specifically?
         if ($isCpRequest && $request->getSegment(1) === 'install' && !$isInstalled) {
-            $action = $request->getSegment(2, 'index');
+            $action = $request->getSegment(2) ?: 'index';
 
             return $this->runAction('install/'.$action);
-        } else if ($isCpRequest && $request->getIsActionRequest() && ($request->getSegment(1) !== 'login')) {
+        }
+
+        if ($isCpRequest && $request->getIsActionRequest() && ($request->getSegment(1) !== 'login')) {
             $actionSegs = $request->getActionSegments();
             if (isset($actionSegs[0]) && $actionSegs[0] == 'install') {
                 return $this->_processActionRequest($request);
             }
-        } // Should they be?
-        else if (!$isInstalled) {
+        }
+
+        // Should they be?
+        if (!$isInstalled) {
             // Give it to them if accessing the CP
             if ($isCpRequest) {
                 $url = Url::getUrl('install');
@@ -550,9 +535,6 @@ class Application extends \yii\web\Application
             $appPath = $this->getPath()->getAppPath();
 
             if ($cachedAppPath === false || $cachedAppPath !== $appPath) {
-                // Flush the data cache, so we're not getting cached CP resource paths.
-                $this->getCache()->flush();
-
                 return $this->runAction('templates/requirements-check');
             }
         }
@@ -583,24 +565,27 @@ class Application extends \yii\web\Application
             // If this is a request to actually manually update Craft, do it
             if ($request->getSegment(1) == 'manualupdate') {
                 return $this->runAction('templates/manual-update');
-            } else {
-                if ($this->getUpdates()->isBreakpointUpdateNeeded()) {
-                    throw new HttpException(200, Craft::t('app', 'You need to be on at least Craft {url} before you can manually update to Craft {targetVersion} build {targetBuild}.',
-                        [
-                            'url' => '[build '.Craft::$app->minBuildRequired.']('.Craft::$app->minBuildUrl.')',
-                            'targetVersion' => Craft::$app->version,
-                            'targetBuild' => Craft::$app->build
-                        ]));
-                } else {
-                    if (!$request->getIsAjax()) {
-                        if ($request->getPathInfo() !== '') {
-                            $this->getUser()->setReturnUrl($request->getPathInfo());
-                        }
-                    }
+            }
 
-                    // Show the manual update notification template
-                    return $this->runAction('templates/manual-update-notification');
+            if ($this->getUpdates()->getIsBreakpointUpdateNeeded()) {
+                throw new HttpException(200, Craft::t('app', 'You need to be on at least Craft CMS {url} before you can manually update to Craft CMS {targetVersion} build {targetBuild}.',
+                    [
+                        'url' => '[build '.Craft::$app->minBuildRequired.']('.Craft::$app->minBuildUrl.')',
+                        'targetVersion' => Craft::$app->version,
+                        'targetBuild' => Craft::$app->build
+                    ]));
+            } else {
+                if (!$request->getIsAjax()) {
+                    if ($request->getPathInfo() !== '') {
+                        $this->getUser()->setReturnUrl($request->getPathInfo());
+                    }
                 }
+
+                // Clear the template caches in case they've been compiled since this release was cut.
+                Io::clearFolder($this->getPath()->getCompiledTemplatesPath());
+
+                // Show the manual update notification template
+                return $this->runAction('templates/manual-update-notification');
             }
         } // We'll also let action requests to UpdateController through as well.
         else if ($request->getIsActionRequest() && (($actionSegs = $request->getActionSegments()) !== null) && isset($actionSegs[0]) && $actionSegs[0] == 'update') {
@@ -608,11 +593,11 @@ class Application extends \yii\web\Application
             $action = isset($actionSegs[1]) ? $actionSegs[1] : 'index';
 
             return $this->runAction($controller.'/'.$action);
-        } else {
-            // If an exception gets throw during the rendering of the 503 template, let
-            // TemplatesController->actionRenderError() take care of it.
-            throw new ServiceUnavailableHttpException();
         }
+
+        // If an exception gets throw during the rendering of the 503 template, let
+        // TemplatesController->actionRenderError() take care of it.
+        throw new ServiceUnavailableHttpException();
     }
 
     /**
@@ -656,7 +641,7 @@ class Application extends \yii\web\Application
      */
     private function _checkSystemStatusPermissions()
     {
-        if ($this->isSystemOn()) {
+        if ($this->getIsSystemOn()) {
             return true;
         }
 
@@ -667,7 +652,10 @@ class Application extends \yii\web\Application
 
             // Special case because we hide the cpTrigger in emails.
             $request->getPathInfo() === $actionTrigger.'/users/set-password' ||
-            $request->getPathInfo() === $actionTrigger.'/users/verify-email'
+            $request->getPathInfo() === $actionTrigger.'/users/verify-email' ||
+            // Special case because this might be a request with a user that has "Access the site when the system is off"
+            // permissions and is in the process of logging in while the system is off.
+            $request->getActionSegments() == ['users', 'login']
         ) {
             if ($this->getUser()->checkPermission('accessCpWhenSystemIsOff')) {
                 return true;

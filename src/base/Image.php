@@ -1,130 +1,138 @@
 <?php
+/**
+ * @link      https://craftcms.com/
+ * @copyright Copyright (c) Pixel & Tonic, Inc.
+ * @license   https://craftcms.com/license
+ */
+
 namespace craft\app\base;
 
-use craft\app\errors\Exception;
+use craft\app\errors\ImageException;
 use craft\app\helpers\Image as ImageHelper;
+use yii\base\Object;
 
 /**
  * Base Image class.
  *
- * @author    Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @copyright Copyright (c) 2014, Pixel & Tonic, Inc.
- * @license   http://buildwithcraft.com/license Craft License Agreement
- * @see       http://buildwithcraft.com
- * @package   craft.app.etc.io
- * @since     1.0
+ * @property boolean $isTransparent Whether the image is transparent
+ *
+ * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
+ * @since  3.0
  */
-abstract class Image
+abstract class Image extends Object
 {
+    /**
+     * Returns the width of the image.
+     *
+     * @return integer
+     */
+    abstract public function getWidth();
 
-	/**
-	 * @return int
-	 */
-	abstract public function getWidth();
+    /**
+     * Returns the height of the image.
+     *
+     * @return integer
+     */
+    abstract public function getHeight();
 
-	/**
-	 * @return int
-	 */
-	abstract public function getHeight();
+    /**
+     * Returns the file extension.
+     *
+     * @return string
+     */
+    abstract public function getExtension();
 
-	/**
-	 * @return string
-	 */
-	abstract public function getExtension();
+    /**
+     * Loads an image from a file system path.
+     *
+     * @param string $path
+     *
+     * @return $this Self reference
+     * @throws ImageException if the file cannot be loaded
+     */
+    abstract public function loadImage($path);
 
-	/**
-	 * Loads an image from a file system path.
-	 *
-	 * @param string $path
-	 *
-	 * @throws Exception
-	 * @return Image
-	 */
-	abstract public function loadImage($path);
+    /**
+     * Crops the image to the specified coordinates.
+     *
+     * @param integer $x1
+     * @param integer $x2
+     * @param integer $y1
+     * @param integer $y2
+     *
+     * @return $this Self reference
+     */
+    abstract public function crop($x1, $x2, $y1, $y2);
 
-	/**
-	 * Crops the image to the specified coordinates.
-	 *
-	 * @param int $x1
-	 * @param int $x2
-	 * @param int $y1
-	 * @param int $y2
-	 *
-	 * @return Image
-	 */
-	abstract public function crop($x1, $x2, $y1, $y2);
+    /**
+     * Scale the image to fit within the specified size.
+     *
+     * @param integer      $targetWidth
+     * @param integer|null $targetHeight
+     * @param boolean      $scaleIfSmaller
+     *
+     * @return $this Self reference
+     */
+    abstract public function scaleToFit($targetWidth, $targetHeight = null, $scaleIfSmaller = true);
 
-	/**
-	 * Scale the image to fit within the specified size.
-	 *
-	 * @param int      $targetWidth
-	 * @param int|null $targetHeight
-	 * @param bool     $scaleIfSmaller
-	 *
-	 * @return Image
-	 */
-	abstract public function scaleToFit($targetWidth, $targetHeight = null, $scaleIfSmaller = true);
+    /**
+     * Scale and crop image to exactly fit the specified size.
+     *
+     * @param integer      $targetWidth
+     * @param integer|null $targetHeight
+     * @param boolean      $scaleIfSmaller
+     * @param string       $cropPositions
+     *
+     * @return $this Self reference
+     */
+    abstract public function scaleAndCrop($targetWidth, $targetHeight = null, $scaleIfSmaller = true, $cropPositions = 'center-center');
 
-	/**
-	 * Scale and crop image to exactly fit the specified size.
-	 *
-	 * @param int      $targetWidth
-	 * @param int|null $targetHeight
-	 * @param bool     $scaleIfSmaller
-	 * @param string   $cropPositions
-	 *
-	 * @return Image
-	 */
-	abstract public function scaleAndCrop($targetWidth, $targetHeight = null, $scaleIfSmaller = true, $cropPositions = 'center-center');
+    /**
+     * Resizes the image.
+     *
+     * @param integer      $targetWidth  The target width
+     * @param integer|null $targetHeight The target height. Defaults to $targetWidth if omitted, creating a square.
+     *
+     * @return $this Self reference
+     */
+    abstract public function resize($targetWidth, $targetHeight = null);
 
-	/**
-	 * Re-sizes the image. If $height is not specified, it will default to $width, creating a square.
-	 *
-	 * @param int      $targetWidth
-	 * @param int|null $targetHeight
-	 *
-	 * @return Image
-	 */
-	abstract public function resize($targetWidth, $targetHeight = null);
+    /**
+     * Saves the image to the target path.
+     *
+     * @param string  $targetPath
+     * @param boolean $autoQuality
+     *
+     * @return boolean
+     * @throws ImageException if the image cannot be saved.
+     */
+    abstract public function saveAs($targetPath, $autoQuality = false);
 
-	/**
-	 * Saves the image to the target path.
-	 *
-	 * @param string $targetPath
-	 *
-	 * @return null
-	 */
-	abstract public function saveAs($targetPath, $autoQuality = false);
+    /**
+     * Returns whether the image is transparent.
+     *
+     * @return boolean
+     */
+    abstract public function getIsTransparent();
 
-	/**
-	 * Returns true if the image is transparent.
-	 *
-	 * @return bool
-	 */
-	abstract public function isTransparent();
+    // Protected Methods
+    // =========================================================================
 
-	// Protected Methods
-	// =========================================================================
+    /**
+     * Normalizes the given dimensions.  If width or height is set to 'AUTO', we calculate the missing dimension.
+     *
+     * @param integer|string $width
+     * @param integer|string $height
+     */
+    protected function normalizeDimensions(&$width, &$height = null)
+    {
+        if (preg_match('/^(?P<width>[0-9]+|AUTO)x(?P<height>[0-9]+|AUTO)/', $width, $matches)) {
+            $width = $matches['width'] != 'AUTO' ? $matches['width'] : null;
+            $height = $matches['height'] != 'AUTO' ? $matches['height'] : null;
+        }
 
-	/**
-	 * Normalizes the given dimensions.  If width or height is set to 'AUTO', we calculate the missing dimension.
-	 *
-	 * @param int|string $width
-	 * @param int|string $height
-	 *
-	 * @throws Exception
-	 */
-	protected function normalizeDimensions(&$width, &$height = null)
-	{
-		if (preg_match('/^(?P<width>[0-9]+|AUTO)x(?P<height>[0-9]+|AUTO)/', $width, $matches))
-		{
-			$width  = $matches['width']  != 'AUTO' ? $matches['width']  : null;
-			$height = $matches['height'] != 'AUTO' ? $matches['height'] : null;
-		}
-
-		if (!$height || !$width)
-		{
-			list($width, $height) = ImageHelper::calculateMissingDimension($width, $height, $this->getWidth(), $this->getHeight());
-		}
-	}
+        if (!$height || !$width) {
+            list($width, $height) = ImageHelper::calculateMissingDimension($width, $height, $this->getWidth(), $this->getHeight());
+        }
+    }
 }

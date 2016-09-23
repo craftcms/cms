@@ -1,18 +1,17 @@
 <?php
 /**
- * @link      http://buildwithcraft.com/
- * @copyright Copyright (c) 2015 Pixel & Tonic, Inc.
- * @license   http://buildwithcraft.com/license
+ * @link      https://craftcms.com/
+ * @copyright Copyright (c) Pixel & Tonic, Inc.
+ * @license   https://craftcms.com/license
  */
 
 namespace craft\app\web;
 
 use Craft;
 use craft\app\base\Element;
-use craft\app\base\ElementInterface;
 use craft\app\events\Event;
 use craft\app\helpers\ArrayHelper;
-use craft\app\helpers\Element as ElementHelper;
+use craft\app\helpers\ElementHelper;
 use craft\app\helpers\Html as HtmlHelper;
 use craft\app\helpers\Io;
 use craft\app\helpers\Json;
@@ -26,6 +25,7 @@ use craft\app\web\twig\Parser;
 use craft\app\web\twig\StringTemplate;
 use craft\app\web\twig\Template;
 use craft\app\web\twig\TemplateLoader;
+use yii\base\Exception;
 use yii\helpers\Html;
 use yii\web\AssetBundle;
 
@@ -37,8 +37,26 @@ use yii\web\AssetBundle;
  */
 class View extends \yii\web\View
 {
-    // Public Methods
+    // Constants
     // =========================================================================
+
+    /**
+     * @const TEMPLATE_MODE_CP
+     */
+    const TEMPLATE_MODE_CP = 'cp';
+
+    /**
+     * @const TEMPLATE_MODE_SITE
+     */
+    const TEMPLATE_MODE_SITE = 'site';
+
+    // Properties
+    // =========================================================================
+
+    /**
+     * @var array The sizes that element thumbnails should be rendered in
+     */
+    private static $_elementThumbSizes = [30, 60, 100, 200];
 
     /**
      * @var
@@ -59,6 +77,16 @@ class View extends \yii\web\View
      * @var
      */
     private $_objectTemplates;
+
+    /**
+     * @var string
+     */
+    private $_templateMode;
+
+    /**
+     * @var string The root path to look for templates in
+     */
+    private $_templatesPath;
 
     /**
      * @var
@@ -114,6 +142,16 @@ class View extends \yii\web\View
     public function init()
     {
         parent::init();
+
+        // Set the initial template mode based on whether this is a CP or Site request
+        $request = Craft::$app->getRequest();
+        if (!$request->getIsConsoleRequest() && $request->getIsCpRequest()) {
+            $this->setTemplateMode(self::TEMPLATE_MODE_CP);
+        } else {
+            $this->setTemplateMode(self::TEMPLATE_MODE_SITE);
+        }
+
+        // Register the cp.elements.element hook
         $this->hook('cp.elements.element', [$this, '_getCpElementHtml']);
     }
 
@@ -122,16 +160,21 @@ class View extends \yii\web\View
      *
      * @param string $loaderClass The name of the class that should be initialized as the Twig instance’s template
      *                            loader. If no class is passed in, [[TemplateLoader]] will be used.
+     * @param array  $options     Options to instantiate Twig with
      *
      * @return Environment The Twig Environment instance.
      */
-    public function getTwig($loaderClass = null)
+    public function getTwig($loaderClass = null, $options = [])
     {
         if (!$loaderClass) {
             $loaderClass = 'craft\app\web\twig\TemplateLoader';
         }
 
-        if (!isset($this->_twigs[$loaderClass])) {
+        $options = array_merge(['safe_mode' => false], $options);
+
+        $cacheKey = $loaderClass.':'.md5(serialize($options));
+
+        if (!isset($this->_twigs[$cacheKey])) {
             /** @var $loader TemplateLoader */
             if ($loaderClass === 'craft\app\web\twig\TemplateLoader') {
                 $loader = new $loaderClass($this);
@@ -139,12 +182,12 @@ class View extends \yii\web\View
                 $loader = new $loaderClass();
             }
 
-            $options = $this->_getTwigOptions();
+            $options = array_merge($this->_getTwigOptions(), $options);
 
             $twig = new Environment($loader, $options);
 
             $twig->addExtension(new \Twig_Extension_StringLoader());
-            $twig->addExtension(new Extension($this));
+            $twig->addExtension(new Extension($this, $twig));
 
             if (Craft::$app->getConfig()->get('devMode')) {
                 $twig->addExtension(new \Twig_Extension_Debug());
@@ -156,16 +199,16 @@ class View extends \yii\web\View
             $timezone = Craft::$app->getTimeZone();
             $core->setTimezone($timezone);
 
-            // Give plugins a chance to add their own Twig extensions
-            $this->_addPluginTwigExtensions($twig);
-
             // Set our custom parser to support resource registration tags using the capture mode
             $twig->setParser(new Parser($twig));
 
-            $this->_twigs[$loaderClass] = $twig;
+            $this->_twigs[$cacheKey] = $twig;
+
+            // Give plugins a chance to add their own Twig extensions
+            $this->_addPluginTwigExtensions($twig);
         }
 
-        return $this->_twigs[$loaderClass];
+        return $this->_twigs[$cacheKey];
     }
 
     /**
@@ -193,13 +236,14 @@ class View extends \yii\web\View
                 $template = $this->resolveTemplate($this->_renderingTemplate);
 
                 if (!$template) {
-                    $template = rtrim(Craft::$app->getPath()->getTemplatesPath(),
-                            '/\\').'/'.$this->_renderingTemplate;
+                    $template = $this->_templatesPath.'/'.$this->_renderingTemplate;
                 }
             }
 
             return $template;
         }
+
+        return null;
     }
 
     /**
@@ -209,13 +253,15 @@ class View extends \yii\web\View
     /**
      * Renders a Twig template.
      *
-     * @param mixed $template  The name of the template to load, or a StringTemplate object.
-     * @param array $variables The variables that should be available to the template.
+     * @param mixed   $template  The name of the template to load, or a StringTemplate object.
+     * @param array   $variables The variables that should be available to the template.
+     * @param boolean $safeMode  Whether to limit what's available to in the Twig context
+     *                           in the interest of security.
      *
      * @return string the rendering result
      * @throws \Twig_Error_Loader if the template doesn’t exist
      */
-    public function renderTemplate($template, $variables = [])
+    public function renderTemplate($template, $variables = [], $safeMode = false)
     {
         Craft::trace("Rendering template: $template", __METHOD__);
 
@@ -223,7 +269,7 @@ class View extends \yii\web\View
         $renderingTemplate = $this->_renderingTemplate;
         $this->_renderingTemplate = $template;
         Craft::beginProfile($template, __METHOD__);
-        $output = $this->getTwig()->render($template, $variables);
+        $output = $this->getTwig(null, ['safe_mode' => $safeMode])->render($template, $variables);
         Craft::endProfile($template, __METHOD__);
         $this->_renderingTemplate = $renderingTemplate;
 
@@ -274,24 +320,26 @@ class View extends \yii\web\View
         $output = call_user_func_array([$twigTemplate, 'get'.$macro], $args);
         $this->_renderingTemplate = $renderingTemplate;
 
-        return $output;
+        return (string)$output;
     }
 
     /**
      * Renders a template defined in a string.
      *
-     * @param string $template  The source template string.
-     * @param array  $variables Any variables that should be available to the template.
+     * @param string  $template  The source template string.
+     * @param array   $variables Any variables that should be available to the template.
+     * @param boolean $safeMode  Whether to limit what's available to in the Twig context
+     *                           in the interest of security.
      *
      * @return string The rendered template.
      */
-    public function renderString($template, $variables = [])
+    public function renderString($template, $variables = [], $safeMode = false)
     {
         $stringTemplate = new StringTemplate(md5($template), $template);
 
         $lastRenderingTemplate = $this->_renderingTemplate;
         $this->_renderingTemplate = 'string:'.$template;
-        $result = $this->renderTemplate($stringTemplate, $variables);
+        $result = $this->renderTemplate($stringTemplate, $variables, $safeMode);
         $this->_renderingTemplate = $lastRenderingTemplate;
 
         return $result;
@@ -303,12 +351,14 @@ class View extends \yii\web\View
      * The template will be parsed for {variables} that are delimited by single braces, which will get replaced with
      * full Twig output tags, i.e. {{ object.variable }}. Regular Twig tags are also supported.
      *
-     * @param string $template The source template string.
-     * @param mixed  $object   The object that should be passed into the template.
+     * @param string  $template The source template string.
+     * @param mixed   $object   The object that should be passed into the template.
+     * @param boolean $safeMode Whether to limit what's available to in the Twig context
+     *                          in the interest of security.
      *
      * @return string The rendered template.
      */
-    public function renderObjectTemplate($template, $object)
+    public function renderObjectTemplate($template, $object, $safeMode = false)
     {
         // If there are no dynamic tags, just return the template
         if (!StringHelper::contains($template, '{')) {
@@ -316,14 +366,16 @@ class View extends \yii\web\View
         }
 
         // Get a Twig instance with the String template loader
-        $twig = $this->getTwig('Twig_Loader_String');
+        $twig = $this->getTwig('Twig_Loader_String', ['safe_mode' => $safeMode]);
 
         // Have we already parsed this template?
-        if (!isset($this->_objectTemplates[$template])) {
+        $cacheKey = $template.':'.($safeMode ? 'safe' : 'unsafe');
+
+        if (!isset($this->_objectTemplates[$cacheKey])) {
             // Replace shortcut "{var}"s with "{{object.var}}"s, without affecting normal Twig tags
             $formattedTemplate = preg_replace('/(?<![\{\%])\{(?![\{\%])/', '{{object.', $template);
             $formattedTemplate = preg_replace('/(?<![\}\%])\}(?![\}\%])/', '|raw}}', $formattedTemplate);
-            $this->_objectTemplates[$template] = $twig->loadTemplate($formattedTemplate);
+            $this->_objectTemplates[$cacheKey] = $twig->loadTemplate($formattedTemplate);
         }
 
         // Temporarily disable strict variables if it's enabled
@@ -337,7 +389,7 @@ class View extends \yii\web\View
         $lastRenderingTemplate = $this->_renderingTemplate;
         $this->_renderingTemplate = 'string:'.$template;
         /** @var Template $templateObj */
-        $templateObj = $this->_objectTemplates[$template];
+        $templateObj = $this->_objectTemplates[$cacheKey];
         $output = $templateObj->render([
             'object' => $object
         ]);
@@ -384,8 +436,8 @@ class View extends \yii\web\View
      * - TemplateName/index.twig
      *
      * If this is a front-end request, the actual list of file extensions and index filenames are configurable via the
-     * [defaultTemplateExtensions](http://buildwithcraft.com/docs/config-settings#defaultTemplateExtensions) and
-     * [indexTemplateFilenames](http://buildwithcraft.com/docs/config-settings#indexTemplateFilenames) config settings.
+     * [defaultTemplateExtensions](http://craftcms.com/docs/config-settings#defaultTemplateExtensions) and
+     * [indexTemplateFilenames](http://craftcms.com/docs/config-settings#indexTemplateFilenames) config settings.
      *
      * For example if you set the following in config/general.php:
      *
@@ -400,8 +452,8 @@ class View extends \yii\web\View
      * - TemplateName.htm
      * - TemplateName/default.htm
      *
-     * The actual directory that those files will be searched for is whatever [[\craft\app\services\Path::getTemplatesPath()]]
-     * returns (probably craft/templates/ if it’s a front-end site request, and craft/app/templates/ if it’s a Control
+     * The actual directory that those files will depend on the current [[setTemplateMode() template mode]]
+     * (probably craft/templates/ if it’s a front-end site request, and craft/app/templates/ if it’s a Control
      * Panel request).
      *
      * If this is a front-end site request, a folder named after the current locale ID will be checked first.
@@ -451,10 +503,7 @@ class View extends \yii\web\View
         // Normalize the template name
         $name = trim(preg_replace('#/{2,}#', '/', strtr($name, '\\', '/')), '/');
 
-        // Get the latest template base path
-        $templatesPath = rtrim(Craft::$app->getPath()->getTemplatesPath(), '/\\');
-
-        $key = $templatesPath.':'.$name;
+        $key = $this->_templatesPath.':'.$name;
 
         // Is this template path already cached?
         if (isset($this->_templatePaths[$key])) {
@@ -469,12 +518,14 @@ class View extends \yii\web\View
 
         // Should we be looking for a localized version of the template?
         $request = Craft::$app->getRequest();
-
-        if (!$request->getIsConsoleRequest() && $request->getIsSiteRequest() && Io::folderExists($templatesPath.'/'.Craft::$app->language)) {
-            $basePaths[] = $templatesPath.'/'.Craft::$app->language;
+        if (!$request->getIsConsoleRequest() && $request->getIsSiteRequest()) {
+            $localePath = $this->_templatesPath.'/'.Craft::$app->language;
+            if (Io::folderExists($localePath)) {
+                $basePaths[] = $localePath;
+            }
         }
 
-        $basePaths[] = $templatesPath;
+        $basePaths[] = $this->_templatesPath;
 
         foreach ($basePaths as $basePath) {
             if (($path = $this->_resolveTemplate($basePath, $name)) !== null) {
@@ -607,9 +658,7 @@ class View extends \yii\web\View
      *
      * @param boolean $scriptTag Whether the Javascript code should be wrapped in a `<script>` tag. Defaults to `true`.
      *
-     * @return string|null|false Returns `false` if there isn’t an active Javascript buffer, `null` if there is an
-     *                           active buffer but no Javascript code was actually added to it, or a string of the
-     *                           included Javascript code if there was any.
+     * @return string|null|false The JS code that was included in the active JS buffer, or `false` if there isn’t one
      */
     public function clearJsBuffer($scriptTag = true)
     {
@@ -617,32 +666,29 @@ class View extends \yii\web\View
             return false;
         }
 
-        // Get the active queue
-        $js = $this->js;
+        // Combine the JS
+        $js = '';
+
+        foreach ([
+                     self::POS_HEAD,
+                     self::POS_BEGIN,
+                     self::POS_END,
+                     self::POS_LOAD,
+                     self::POS_READY
+                 ] as $pos) {
+            if (!empty($this->js[$pos])) {
+                $js .= implode("\n", $this->js[$pos])."\n";
+            }
+        }
 
         // Set the active queue to the last one
         $this->js = array_pop($this->_jsBuffers);
 
         if ($scriptTag === true && !empty($js)) {
-            $lines = [];
-
-            foreach ([
-                         self::POS_HEAD,
-                         self::POS_BEGIN,
-                         self::POS_END,
-                         self::POS_LOAD,
-                         self::POS_READY
-                     ] as $pos) {
-                if (!empty($js[$pos])) {
-                    $lines[] = Html::script(implode("\n", $js[$pos]),
-                        ['type' => 'text/javascript']);
-                }
-            }
-
-            return empty($lines) ? '' : implode("\n", $lines);
-        } else {
-            return $js;
+            return Html::script($js, ['type' => 'text/javascript']);
         }
+
+        return $js;
     }
 
     /**
@@ -684,7 +730,7 @@ class View extends \yii\web\View
      * - JS code registered with [[registerJs()]] with the position set to [[POS_BEGIN]], [[POS_END]], [[POS_READY]], or [[POS_LOAD]]
      * - JS files registered with [[registerJsFile()]] with the position set to [[POS_BEGIN]] or [[POS_END]]
      *
-     * @param boolean $clear    Whether the content should be cleared from the queue (default is true)
+     * @param boolean $clear Whether the content should be cleared from the queue (default is true)
      *
      * @return string the rendered content
      */
@@ -696,7 +742,7 @@ class View extends \yii\web\View
         }
 
         // Get the rendered body begin+end HTML
-        $html = $this->renderBodyBeginHtml() .
+        $html = $this->renderBodyBeginHtml().
             $this->renderBodyEndHtml(true);
 
         // Clear out the queued up files
@@ -715,44 +761,30 @@ class View extends \yii\web\View
     }
 
     /**
-     * Returns the HTML for the CSRF hidden input token.  Used for when the config setting
-     * [enableCsrfValidation](http://buildwithcraft.com/docs/config-settings#enableCsrfValidation) is set to true.
-     *
-     * @return string If 'enabledCsrfProtection' is enabled, the HTML for the hidden input, otherwise an empty string.
-     */
-    public function getCsrfInput()
-    {
-        if (Craft::$app->getConfig()->get('enableCsrfProtection') === true) {
-            return '<input type="hidden" name="'.Craft::$app->getConfig()->get('csrfTokenName').'" value="'.Craft::$app->getRequest()->getCsrfToken().'">';
-        }
-
-        return '';
-    }
-
-    /**
      * Prepares translations for inclusion in the template, to be used by the JS.
+     *
+     * @param string   $category The category the messages are in
+     * @param string[] $messages The messages to be translated
      *
      * @return void
      */
-    public function includeTranslations()
+    public function registerTranslations($category, $messages)
     {
-        $messages = func_get_args();
-
         foreach ($messages as $message) {
-            if (!array_key_exists($message, $this->_translations)) {
-                $translation = Craft::t('app', $message);
+            if (!isset($this->_translations[$category]) || !array_key_exists($message, $this->_translations[$category])) {
+                $translation = Craft::t($category, $message);
 
                 if ($translation != $message) {
-                    $this->_translations[$message] = $translation;
+                    $this->_translations[$category][$message] = $translation;
                 } else {
-                    $this->_translations[$message] = null;
+                    $this->_translations[$category][$message] = null;
                 }
             }
         }
     }
 
     /**
-     * Returns the translations prepared for inclusion by includeTranslations(), in JSON, and flushes out the
+     * Returns the translations prepared for inclusion by registerTranslations(), in JSON, and flushes out the
      * translations queue.
      *
      * @return string A JSON-encoded array of source/translation message mappings.
@@ -761,7 +793,7 @@ class View extends \yii\web\View
      */
     public function getTranslations()
     {
-        $translations = Json::encode(array_filter($this->_translations));
+        $translations = Json::encode(array_filter(array_map('array_filter', $this->_translations)));
         $this->_translations = [];
 
         return $translations;
@@ -793,6 +825,79 @@ class View extends \yii\web\View
     public function setNamespace($namespace)
     {
         $this->_namespace = $namespace;
+    }
+
+    /**
+     * Returns the current template mode (either 'site' or 'cp').
+     *
+     * @return string Either 'site' or 'cp'.
+     */
+    public function getTemplateMode()
+    {
+        return $this->_templateMode;
+    }
+
+    /**
+     * Sets the current template mode.
+     *
+     * The template mode defines:
+     *
+     * - the base path that templates should be looked for in
+     * - the default template file extensions that should be automatically added when looking for templates
+     * - the "index" template filenames that sholud be checked when looking for templates
+     *
+     * @param string $templateMode Either 'site' or 'cp'
+     *
+     * @return void
+     * @throws Exception if $templateMode is invalid
+     */
+    public function setTemplateMode($templateMode)
+    {
+        // Validate
+        if (!in_array($templateMode, [
+            self::TEMPLATE_MODE_CP,
+            self::TEMPLATE_MODE_SITE
+        ])
+        ) {
+            throw new Exception('"'.$templateMode.'" is not a valid template mode');
+        }
+
+        // Set the new template mode
+        $this->_templateMode = $templateMode;
+
+        // Update everything
+        if ($templateMode == self::TEMPLATE_MODE_CP) {
+            $this->setTemplatesPath(Craft::$app->getPath()->getCpTemplatesPath());
+            $this->_defaultTemplateExtensions = ['html', 'twig'];
+            $this->_indexTemplateFilenames = ['index'];
+        } else {
+            $this->setTemplatesPath(Craft::$app->getPath()->getSiteTemplatesPath());
+            $configService = Craft::$app->getConfig();
+            $this->_defaultTemplateExtensions = $configService->get('defaultTemplateExtensions');
+            $this->_indexTemplateFilenames = $configService->get('indexTemplateFilenames');
+        }
+    }
+
+    /**
+     * Returns the base path that templates should be found in.
+     *
+     * @return string
+     */
+    public function getTemplatesPath()
+    {
+        return $this->_templatesPath;
+    }
+
+    /**
+     * Sets the base path that templates should be found in.
+     *
+     * @param string $templatesPath
+     *
+     * @return void
+     */
+    public function setTemplatesPath($templatesPath)
+    {
+        $this->_templatesPath = rtrim($templatesPath, '/\\');
     }
 
     /**
@@ -840,6 +945,10 @@ class View extends \yii\web\View
      */
     public function namespaceInputs($html, $namespace = null, $otherAttributes = true)
     {
+        if (!is_string($html) || $html === '') {
+            return '';
+        }
+
         if ($namespace === null) {
             $namespace = $this->getNamespace();
         }
@@ -856,7 +965,7 @@ class View extends \yii\web\View
             // id= and for= attributes
             if ($otherAttributes) {
                 $idNamespace = $this->formatInputId($namespace);
-                $html = preg_replace('/(?<![\w\-])((id|for|list|data\-target|data\-reverse\-target|data\-target\-prefix)=(\'|")#?)([^\.\'"][^\'"]*)\3/i', '$1'.$idNamespace.'-$4$3', $html);
+                $html = preg_replace('/(?<![\w\-])((id|for|list|aria\-labelledby|data\-target|data\-reverse\-target|data\-target\-prefix)=(\'|")#?)([^\.\'"][^\'"]*)\3/i', '$1'.$idNamespace.'-$4$3', $html);
             }
 
             // Bring back the textarea content
@@ -1044,19 +1153,6 @@ class View extends \yii\web\View
         $basePath = rtrim(Io::normalizePathSeparators($basePath), '/\\');
         $name = trim(Io::normalizePathSeparators($name), '/');
 
-        // Set the defaultTemplateExtensions and indexTemplateFilenames vars
-        if (!isset($this->_defaultTemplateExtensions)) {
-            $request = Craft::$app->getRequest();
-
-            if (!$request->getIsConsoleRequest() && $request->getIsCpRequest()) {
-                $this->_defaultTemplateExtensions = ['html', 'twig'];
-                $this->_indexTemplateFilenames = ['index'];
-            } else {
-                $this->_defaultTemplateExtensions = Craft::$app->getConfig()->get('defaultTemplateExtensions');
-                $this->_indexTemplateFilenames = Craft::$app->getConfig()->get('indexTemplateFilenames');
-            }
-        }
-
         // $name could be an empty string (e.g. to load the homepage template)
         if ($name) {
             // Maybe $name is already the full file path
@@ -1098,7 +1194,8 @@ class View extends \yii\web\View
         if (!isset($this->_twigOptions)) {
             $this->_twigOptions = [
                 'base_template_class' => '\\craft\\app\\web\\twig\\Template',
-                'cache' => Craft::$app->getPath()->getCompiledTemplatesPath(),
+                // See: https://github.com/twigphp/Twig/issues/1951
+                'cache' => rtrim(Craft::$app->getPath()->getCompiledTemplatesPath(), '/'),
                 'auto_reload' => true,
                 'charset' => Craft::$app->charset,
             ];
@@ -1221,66 +1318,73 @@ class View extends \yii\web\View
      *
      * @param array &$context
      *
-     * @return string
+     * @return string|null
      */
     private function _getCpElementHtml(&$context)
     {
         if (!isset($context['element'])) {
-            return;
+            return null;
         }
 
-        /** @var ElementInterface|Element $element */
+        /** @var Element $element */
         $element = $context['element'];
 
         if (!isset($context['context'])) {
             $context['context'] = 'index';
         }
 
-        if (!isset($context['viewMode'])) {
-            $context['viewMode'] = 'table';
-        }
-
-        $thumbClass = 'elementthumb'.$element->id;
-        $iconClass = 'elementicon'.$element->id;
-
-        if ($context['viewMode'] == 'thumbs') {
-            $thumbSize = 100;
-            $iconSize = 90;
-            $thumbSelectorPrefix = '.thumbsview ';
+        // How big is the element going to be?
+        if (isset($context['size']) && ($context['size'] == 'small' || $context['size'] == 'large')) {
+            $elementSize = $context['size'];
+        } else if (isset($context['viewMode']) && $context['viewMode'] == 'thumbs') {
+            $elementSize = 'large';
         } else {
-            $thumbSize = 30;
-            $iconSize = 20;
-            $thumbSelectorPrefix = '';
+            $elementSize = 'small';
         }
 
-        $thumbUrl = $element->getThumbUrl($thumbSize);
-        $iconUrl = null;
+        // Create the thumb/icon image, if there is one
+        // ---------------------------------------------------------------------
+
+        $thumbUrl = $element->getThumbUrl(self::$_elementThumbSizes[0]);
 
         if ($thumbUrl) {
-            $this->registerCss($thumbSelectorPrefix.'.'.$thumbClass." { background-image: url('".$thumbUrl."'); }");
-            $this->registerHiResCss($thumbSelectorPrefix.'.'.$thumbClass." { background-image: url('".$element->getThumbUrl($thumbSize * 2)."'); background-size: ".$thumbSize.'px; }');
-        } else {
-            $iconUrl = $element->getIconUrl($iconSize);
+            $srcsets = [];
 
-            if ($iconUrl) {
-                $this->registerCss($thumbSelectorPrefix.'.'.$iconClass." { background-image: url('".$iconUrl."'); }");
-                $this->registerHiResCss($thumbSelectorPrefix.'.'.$iconClass." { background-image: url('".$element->getIconUrl($iconSize * 2)."); background-size: ".$iconSize.'px; }');
+            foreach (self::$_elementThumbSizes as $i => $size) {
+                if ($i == 0) {
+                    $srcset = $thumbUrl;
+                } else {
+                    $srcset = $element->getThumbUrl($size);
+                }
+
+                $srcsets[] = $srcset.' '.$size.'w';
             }
+
+            $imgHtml = '<div class="elementthumb">'.
+                '<img '.
+                'sizes="'.($elementSize == 'small' ? self::$_elementThumbSizes[0] : self::$_elementThumbSizes[2]).'px" '.
+                'srcset="'.implode(', ', $srcsets).'" '.
+                'alt="">'.
+                '</div> ';
+        } else {
+            $imgHtml = '';
         }
 
-        $html = '<div class="element';
+        $html = '<div class="element '.$elementSize;
 
         if ($context['context'] == 'field') {
             $html .= ' removable';
         }
 
-        if ($thumbUrl) {
-            $html .= ' hasthumb';
-        } else if ($iconUrl) {
-            $html .= ' hasicon';
+        if ($element::hasStatuses()) {
+            $html .= ' hasstatus';
         }
 
-        $label = (string)$element;
+        if ($thumbUrl) {
+            $html .= ' hasthumb';
+        }
+
+        $label = HtmlHelper::encode($element);
 
         $html .= '" data-id="'.$element->id.'" data-locale="'.$element->locale.'" data-status="'.$element->getStatus().'" data-label="'.$label.'" data-url="'.$element->getUrl().'"';
 
@@ -1294,6 +1398,11 @@ class View extends \yii\web\View
             $html .= ' data-editable';
         }
 
+        $isAssetWithThumb = ElementHelper::isAssetWithThumb($element);
+
+        if ($isAssetWithThumb) {
+            $html .= ' data-image';
+        }
         $html .= '>';
 
         if ($context['context'] == 'field' && isset($context['name'])) {
@@ -1302,28 +1411,20 @@ class View extends \yii\web\View
                     'Remove').'"></a> ';
         }
 
-        if ($thumbUrl) {
-            $html .= '<div class="elementthumb '.$thumbClass.'"></div> ';
-        } else if ($iconUrl) {
-            $html .= '<div class="elementicon '.$iconClass.'"></div> ';
-        }
-
-        $html .= '<div class="label">';
-
         if ($element::hasStatuses()) {
-            $html .= '<span class="status '.$element->getStatus().'"></span>';
+            $html .= '<span class="status '.$context['element']->getStatus().'"></span>';
         }
+
+        $html .= $imgHtml;
+        $html .= '<div class="label">';
 
         $html .= '<span class="title">';
 
         if ($context['context'] == 'index' && ($cpEditUrl = $element->getCpEditUrl())) {
-            $html .= HtmlHelper::encodeParams('<a href="{cpEditUrl}">{label}</a>',
-                [
-                    'cpEditUrl' => $cpEditUrl,
-                    'label' => $label
-                ]);
+            $cpEditUrl = HtmlHelper::encode($cpEditUrl);
+            $html .= "<a href=\"{$cpEditUrl}\">{$label}</a>";
         } else {
-            $html .= HtmlHelper::encode($label);
+            $html .= $label;
         }
 
         $html .= '</span></div></div>';

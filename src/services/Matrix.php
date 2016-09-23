@@ -1,8 +1,8 @@
 <?php
 /**
- * @link      http://buildwithcraft.com/
- * @copyright Copyright (c) 2015 Pixel & Tonic, Inc.
- * @license   http://buildwithcraft.com/license
+ * @link      https://craftcms.com/
+ * @copyright Copyright (c) Pixel & Tonic, Inc.
+ * @license   https://craftcms.com/license
  */
 
 namespace craft\app\services;
@@ -10,20 +10,24 @@ namespace craft\app\services;
 use Craft;
 use craft\app\base\Element;
 use craft\app\base\ElementInterface;
+use craft\app\base\Field;
 use craft\app\db\Query;
 use craft\app\elements\db\MatrixBlockQuery;
-use craft\app\errors\Exception;
+use craft\app\errors\MatrixBlockNotFoundException;
+use craft\app\errors\MatrixBlockTypeNotFoundException;
 use craft\app\fields\Matrix as MatrixField;
 use craft\app\helpers\Html;
-use craft\app\helpers\Migration;
+use craft\app\helpers\MigrationHelper;
 use craft\app\helpers\StringHelper;
-use craft\app\models\FieldLayout as FieldLayoutModel;
-use craft\app\models\FieldLayoutTab as FieldLayoutTabModel;
+use craft\app\migrations\CreateMatrixContentTable;
+use craft\app\models\FieldLayout;
+use craft\app\models\FieldLayoutTab;
 use craft\app\elements\MatrixBlock;
-use craft\app\models\MatrixBlockType as MatrixBlockTypeModel;
+use craft\app\models\MatrixBlockType;
 use craft\app\records\MatrixBlock as MatrixBlockRecord;
 use craft\app\records\MatrixBlockType as MatrixBlockTypeRecord;
 use yii\base\Component;
+use yii\base\Exception;
 
 /**
  * The Matrix service provides APIs for managing Matrix fields.
@@ -82,7 +86,7 @@ class Matrix extends Component
      * @param integer $fieldId The Matrix field ID.
      * @param string  $indexBy The property the block types should be indexed by. Defaults to `null`.
      *
-     * @return MatrixBlockTypeModel[] An array of block types.
+     * @return MatrixBlockType[] An array of block types.
      */
     public function getBlockTypesByFieldId($fieldId, $indexBy = null)
     {
@@ -94,7 +98,7 @@ class Matrix extends Component
                 ->all();
 
             foreach ($results as $result) {
-                $blockType = new MatrixBlockTypeModel($result);
+                $blockType = new MatrixBlockType($result);
                 $this->_blockTypesById[$blockType->id] = $blockType;
                 $this->_blockTypesByFieldId[$fieldId][] = $blockType;
             }
@@ -104,15 +108,15 @@ class Matrix extends Component
 
         if (!$indexBy) {
             return $this->_blockTypesByFieldId[$fieldId];
-        } else {
-            $blockTypes = [];
-
-            foreach ($this->_blockTypesByFieldId[$fieldId] as $blockType) {
-                $blockTypes[$blockType->$indexBy] = $blockType;
-            }
-
-            return $blockTypes;
         }
+
+        $blockTypes = [];
+
+        foreach ($this->_blockTypesByFieldId[$fieldId] as $blockType) {
+            $blockTypes[$blockType->$indexBy] = $blockType;
+        }
+
+        return $blockTypes;
     }
 
     /**
@@ -120,7 +124,7 @@ class Matrix extends Component
      *
      * @param integer $blockTypeId The block type ID.
      *
-     * @return MatrixBlockTypeModel|null The block type, or `null` if it didn’t exist.
+     * @return MatrixBlockType|null The block type, or `null` if it didn’t exist.
      */
     public function getBlockTypeById($blockTypeId)
     {
@@ -132,7 +136,7 @@ class Matrix extends Component
                 ->one();
 
             if ($result) {
-                $blockType = new MatrixBlockTypeModel($result);
+                $blockType = new MatrixBlockType($result);
             } else {
                 $blockType = null;
             }
@@ -148,13 +152,13 @@ class Matrix extends Component
      *
      * If the block type doesn’t validate, any validation errors will be stored on the block type.
      *
-     * @param MatrixBlockTypeModel $blockType       The block type.
-     * @param boolean              $validateUniques Whether the Name and Handle attributes should be validated to
+     * @param MatrixBlockType $blockType            The block type.
+     * @param boolean         $validateUniques      Whether the Name and Handle attributes should be validated to
      *                                              ensure they’re unique. Defaults to `true`.
      *
      * @return boolean Whether the block type validated.
      */
-    public function validateBlockType(MatrixBlockTypeModel $blockType, $validateUniques = true)
+    public function validateBlockType(MatrixBlockType $blockType, $validateUniques = true)
     {
         $validates = true;
 
@@ -184,6 +188,7 @@ class Matrix extends Component
         $contentService->fieldColumnPrefix = 'field_'.$blockType->handle.'_';
 
         foreach ($blockType->getFields() as $field) {
+            /** @var Field $field */
             // Hack to allow blank field names
             if (!$field->name) {
                 $field->name = '__blank__';
@@ -227,15 +232,15 @@ class Matrix extends Component
     /**
      * Saves a block type.
      *
-     * @param MatrixBlockTypeModel $blockType The block type to be saved.
-     * @param boolean              $validate  Whether the block type should be validated before being saved.
+     * @param MatrixBlockType $blockType      The block type to be saved.
+     * @param boolean         $validate       Whether the block type should be validated before being saved.
      *                                        Defaults to `true`.
      *
      * @return boolean
-     * @throws Exception
-     * @throws \Exception
+     * @throws Exception if an error occurs when saving the block type
+     * @throws \Exception if reasons
      */
-    public function saveBlockType(MatrixBlockTypeModel $blockType, $validate = true)
+    public function saveBlockType(MatrixBlockType $blockType, $validate = true)
     {
         if (!$validate || $this->validateBlockType($blockType)) {
             $transaction = Craft::$app->getDb()->beginTransaction();
@@ -249,12 +254,12 @@ class Matrix extends Component
 
                 // Get the block type record
                 $blockTypeRecord = $this->_getBlockTypeRecord($blockType);
-                $isNewBlockType = $blockType->isNew();
+                $isNewBlockType = $blockType->getIsNew();
 
                 if (!$isNewBlockType) {
                     // Get the old block type fields
                     $oldBlockTypeRecord = MatrixBlockTypeRecord::findOne($blockType->id);
-                    $oldBlockType = MatrixBlockTypeModel::create($oldBlockTypeRecord);
+                    $oldBlockType = MatrixBlockType::create($oldBlockTypeRecord);
 
                     $contentService->fieldContext = 'matrixBlockType:'.$blockType->id;
                     $contentService->fieldColumnPrefix = 'field_'.$oldBlockType->handle.'_';
@@ -263,12 +268,14 @@ class Matrix extends Component
                     $oldFieldsById = [];
 
                     foreach ($oldBlockType->getFields() as $field) {
+                        /** @var Field $field */
                         $oldFieldsById[$field->id] = $field;
                     }
 
                     // Figure out which ones are still around
                     foreach ($blockType->getFields() as $field) {
-                        if (!$field->isNew()) {
+                        /** @var Field $field */
+                        if (!$field->getIsNew()) {
                             unset($oldFieldsById[$field->id]);
                         }
                     }
@@ -313,10 +320,9 @@ class Matrix extends Component
                     }
 
                     if (!$fieldsService->saveField($field, false)) {
-                        throw new Exception(Craft::t('app', 'An error occurred while saving this Matrix block type.'));
+                        throw new Exception('An error occurred while saving this Matrix block type.');
                     }
 
-                    $field->required = $field->required;
                     $field->sortOrder = ++$sortOrder;
 
                     $fieldLayoutFields[] = $field;
@@ -326,12 +332,12 @@ class Matrix extends Component
                 $contentService->fieldColumnPrefix = $originalFieldColumnPrefix;
                 $fieldsService->oldFieldColumnPrefix = $originalOldFieldColumnPrefix;
 
-                $fieldLayoutTab = new FieldLayoutTabModel();
+                $fieldLayoutTab = new FieldLayoutTab();
                 $fieldLayoutTab->name = 'Content';
                 $fieldLayoutTab->sortOrder = 1;
                 $fieldLayoutTab->setFields($fieldLayoutFields);
 
-                $fieldLayout = new FieldLayoutModel();
+                $fieldLayout = new FieldLayout();
                 $fieldLayout->type = MatrixBlock::className();
                 $fieldLayout->setTabs([$fieldLayoutTab]);
                 $fieldLayout->setFields($fieldLayoutFields);
@@ -346,33 +352,33 @@ class Matrix extends Component
                 // Update the block type with the field layout ID
                 $blockTypeRecord->save(false);
 
-                if (!$isNewBlockType) {
+                if (isset($oldBlockType)) {
                     // Delete the old field layout
                     $fieldsService->deleteLayoutById($oldBlockType->fieldLayoutId);
                 }
 
                 $transaction->commit();
             } catch (\Exception $e) {
-                $transaction->rollback();
+                $transaction->rollBack();
 
                 throw $e;
             }
 
             return true;
-        } else {
-            return false;
         }
+
+        return false;
     }
 
     /**
      * Deletes a block type.
      *
-     * @param MatrixBlockTypeModel $blockType The block type.
+     * @param MatrixBlockType $blockType The block type.
      *
-     * @throws \Exception
      * @return boolean Whether the block type was deleted successfully.
+     * @throws \Exception if reasons
      */
-    public function deleteBlockType(MatrixBlockTypeModel $blockType)
+    public function deleteBlockType(MatrixBlockType $blockType)
     {
         $transaction = Craft::$app->getDb()->beginTransaction();
         try {
@@ -385,28 +391,41 @@ class Matrix extends Component
 
             $this->deleteBlockById($blockIds);
 
-            // Now delete the block type fields
+            // Set the new contentTable
+            $contentService = Craft::$app->getContent();
+            $fieldsService = Craft::$app->getFields();
+            $originalContentTable = $contentService->contentTable;
+            /** @var MatrixField $matrixField */
+            $matrixField = $fieldsService->getFieldById($blockType->fieldId);
+            $newContentTable = $this->getContentTableName($matrixField);
+            $contentService->contentTable = $newContentTable;
+
+            // Set the new fieldColumnPrefix
             $originalFieldColumnPrefix = Craft::$app->getContent()->fieldColumnPrefix;
             Craft::$app->getContent()->fieldColumnPrefix = 'field_'.$blockType->handle.'_';
 
+            // Now delete the block type fields
             foreach ($blockType->getFields() as $field) {
                 Craft::$app->getFields()->deleteField($field);
             }
 
+            // Restore the contentTable and the fieldColumnPrefix to original values.
             Craft::$app->getContent()->fieldColumnPrefix = $originalFieldColumnPrefix;
+            $contentService->contentTable = $originalContentTable;
 
             // Delete the field layout
             Craft::$app->getFields()->deleteLayoutById($blockType->fieldLayoutId);
 
             // Finally delete the actual block type
-            $affectedRows = Craft::$app->getDb()->createCommand()->delete('{{%matrixblocktypes}}',
-                ['id' => $blockType->id])->execute();
+            $affectedRows = Craft::$app->getDb()->createCommand()
+                ->delete('{{%matrixblocktypes}}', ['id' => $blockType->id])
+                ->execute();
 
             $transaction->commit();
 
             return (bool)$affectedRows;
         } catch (\Exception $e) {
-            $transaction->rollback();
+            $transaction->rollBack();
 
             throw $e;
         }
@@ -467,8 +486,8 @@ class Matrix extends Component
      * @param MatrixField $matrixField The Matrix field
      * @param boolean     $validate    Whether the settings should be validated before being saved.
      *
-     * @throws \Exception
      * @return boolean Whether the settings saved successfully.
+     * @throws \Exception if reasons
      */
     public function saveSettings(MatrixField $matrixField, $validate = true)
     {
@@ -482,7 +501,7 @@ class Matrix extends Component
                 // Do we need to create/rename the content table?
                 if (!Craft::$app->getDb()->tableExists($newContentTable)) {
                     if ($oldContentTable && Craft::$app->getDb()->tableExists($oldContentTable)) {
-                        Migration::renameTable($oldContentTable, $newContentTable);
+                        MigrationHelper::renameTable($oldContentTable, $newContentTable);
                     } else {
                         $this->_createContentTable($newContentTable);
                     }
@@ -497,7 +516,7 @@ class Matrix extends Component
                 }
 
                 foreach ($matrixField->getBlockTypes() as $blockType) {
-                    if (!$blockType->isNew()) {
+                    if (!$blockType->getIsNew()) {
                         unset($oldBlockTypesById[$blockType->id]);
                     }
                 }
@@ -528,7 +547,7 @@ class Matrix extends Component
 
                 return true;
             } catch (\Exception $e) {
-                $transaction->rollback();
+                $transaction->rollBack();
 
                 throw $e;
             }
@@ -542,8 +561,8 @@ class Matrix extends Component
      *
      * @param MatrixField $matrixField The Matrix field.
      *
-     * @throws \Exception
      * @return boolean Whether the field was deleted successfully.
+     * @throws \Exception if reasons
      */
     public function deleteMatrixField(MatrixField $matrixField)
     {
@@ -561,7 +580,9 @@ class Matrix extends Component
             }
 
             // Drop the content table
-            Craft::$app->getDb()->createCommand()->dropTable($contentTable)->execute();
+            Craft::$app->getDb()->createCommand()
+                ->dropTable($contentTable)
+                ->execute();
 
             Craft::$app->getContent()->contentTable = $originalContentTable;
 
@@ -569,7 +590,7 @@ class Matrix extends Component
 
             return true;
         } catch (\Exception $e) {
-            $transaction->rollback();
+            $transaction->rollBack();
 
             throw $e;
         }
@@ -651,14 +672,30 @@ class Matrix extends Component
     }
 
     /**
-     * Saves a block.
+     * Saves a new or existing Matrix block.
+     *
+     * ```php
+     * $block = new MatrixBlock();
+     * $block->fieldId = 5;
+     * $block->ownerId = 100;
+     * $block->ownerLocale = 'en_us';
+     * $block->typeId = 2;
+     * $block->sortOrder = 10;
+     *
+     * $block->setFieldValues([
+     *     'fieldHandle' => 'value',
+     *     // ...
+     * ]);
+     *
+     * $success = Craft::$app->matrix->saveBlock($block);
+     * ```
      *
      * @param MatrixBlock $block    The Matrix block.
      * @param boolean     $validate Whether the block should be validated before being saved.
      *                              Defaults to `true`.
      *
-     * @throws \Exception
      * @return boolean Whether the block was saved successfully.
+     * @throws \Exception if reasons
      */
     public function saveBlock(MatrixBlock $block, $validate = true)
     {
@@ -686,7 +723,7 @@ class Matrix extends Component
                     return true;
                 }
             } catch (\Exception $e) {
-                $transaction->rollback();
+                $transaction->rollBack();
 
                 throw $e;
             }
@@ -712,11 +749,13 @@ class Matrix extends Component
             $blockIds = [$blockIds];
         }
 
-        // Tell the browser to forget about these
-        Craft::$app->getSession()->addJsResourceFlash('js/MatrixInput.js');
+        if (!Craft::$app->getRequest()->getIsConsoleRequest()) {
+            // Tell the browser to forget about these
+            Craft::$app->getSession()->addJsResourceFlash('js/MatrixInput.js');
 
-        foreach ($blockIds as $blockId) {
-            Craft::$app->getSession()->addJsFlash('Craft.MatrixInput.forgetCollapsedBlockId('.$blockId.');');
+            foreach ($blockIds as $blockId) {
+                Craft::$app->getSession()->addJsFlash('Craft.MatrixInput.forgetCollapsedBlockId('.$blockId.');');
+            }
         }
 
         // Pass this along to the Elements service for the heavy lifting.
@@ -726,14 +765,15 @@ class Matrix extends Component
     /**
      * Saves a Matrix field.
      *
-     * @param MatrixField              $field The Matrix field
-     * @param ElementInterface|Element $owner The element the field is associated with
+     * @param MatrixField      $field The Matrix field
+     * @param ElementInterface $owner The element the field is associated with
      *
-     * @throws \Exception
      * @return boolean Whether the field was saved successfully.
+     * @throws \Exception if reasons
      */
     public function saveField(MatrixField $field, ElementInterface $owner)
     {
+        /** @var Element $owner */
         /** @var MatrixBlockQuery $query */
         /** @var MatrixBlock[] $blocks */
         $query = $owner->getFieldValue($field->handle);
@@ -790,13 +830,13 @@ class Matrix extends Component
 
             $transaction->commit();
         } catch (\Exception $e) {
-            $transaction->rollback();
+            $transaction->rollBack();
 
             throw $e;
         }
 
         // Tell the browser to collapse any new block IDs
-        if ($collapsedBlockIds) {
+        if (!Craft::$app->getRequest()->getIsConsoleRequest() && $collapsedBlockIds) {
             Craft::$app->getSession()->addJsResourceFlash('js/MatrixInput.js');
 
             foreach ($collapsedBlockIds as $blockId) {
@@ -865,30 +905,26 @@ class Matrix extends Component
     /**
      * Returns a block type record by its ID or creates a new one.
      *
-     * @param MatrixBlockTypeModel $blockType
+     * @param MatrixBlockType $blockType
      *
-     * @throws Exception
      * @return MatrixBlockTypeRecord
+     * @throws MatrixBlockTypeNotFoundException if $blockType->id is invalid
      */
-    private function _getBlockTypeRecord(MatrixBlockTypeModel $blockType)
+    private function _getBlockTypeRecord(MatrixBlockType $blockType)
     {
-        if (!$blockType->isNew()) {
-            $blockTypeId = $blockType->id;
+        if (!$blockType->getIsNew()) {
+            if (!isset($this->_blockTypeRecordsById) || !array_key_exists($blockType->id, $this->_blockTypeRecordsById)) {
+                $this->_blockTypeRecordsById[$blockType->id] = MatrixBlockTypeRecord::findOne($blockType->id);
 
-            if (!isset($this->_blockTypeRecordsById) || !array_key_exists($blockTypeId,
-                    $this->_blockTypeRecordsById)
-            ) {
-                $this->_blockTypeRecordsById[$blockTypeId] = MatrixBlockTypeRecord::findOne($blockTypeId);
-
-                if (!$this->_blockTypeRecordsById[$blockTypeId]) {
-                    throw new Exception(Craft::t('app', 'No block type exists with the ID “{id}”.', ['id' => $blockTypeId]));
+                if (!$this->_blockTypeRecordsById[$blockType->id]) {
+                    throw new MatrixBlockTypeNotFoundException("No block type exists with the ID '{$blockType->id}'");
                 }
             }
 
-            return $this->_blockTypeRecordsById[$blockTypeId];
-        } else {
-            return new MatrixBlockTypeRecord();
+            return $this->_blockTypeRecordsById[$blockType->id];
         }
+
+        return new MatrixBlockTypeRecord();
     }
 
     /**
@@ -896,51 +932,45 @@ class Matrix extends Component
      *
      * @param MatrixBlock $block
      *
-     * @throws Exception
      * @return MatrixBlockRecord
+     * @throws MatrixBlockNotFoundException if $block->id is invalid
      */
     private function _getBlockRecord(MatrixBlock $block)
     {
-        $blockId = $block->id;
-
-        if ($blockId) {
-            if (!isset($this->_blockRecordsById) || !array_key_exists($blockId,
-                    $this->_blockRecordsById)
-            ) {
-                $this->_blockRecordsById[$blockId] = MatrixBlockRecord::find()
-                    ->where(['id' => $blockId])
+        if ($block->id) {
+            if (!isset($this->_blockRecordsById) || !array_key_exists($block->id, $this->_blockRecordsById)) {
+                $this->_blockRecordsById[$block->id] = MatrixBlockRecord::find()
+                    ->where(['id' => $block->id])
                     ->with('element')
                     ->one();
 
-                if (!$this->_blockRecordsById[$blockId]) {
-                    throw new Exception(Craft::t('app', 'No block exists with the ID “{id}”.', ['id' => $blockId]));
+                if (!$this->_blockRecordsById[$block->id]) {
+                    throw new MatrixBlockNotFoundException("No Matrix block exists with the ID '{$block->id}'");
                 }
             }
 
-            return $this->_blockRecordsById[$blockId];
-        } else {
-            return new MatrixBlockRecord();
+            return $this->_blockRecordsById[$block->id];
         }
+
+        return new MatrixBlockRecord();
     }
 
     /**
      * Creates the content table for a Matrix field.
      *
-     * @param string $name
+     * @param string $tableName
      *
      * @return void
      */
-    private function _createContentTable($name)
+    private function _createContentTable($tableName)
     {
-        $db = Craft::$app->getDb();
-        $db->createCommand()->createTable($name, [
-            'elementId' => 'int NOT NULL',
-            'locale' => 'char(12) COLLATE utf8_unicode_ci NOT NULL'
-        ])->execute();
+        $migration = new CreateMatrixContentTable([
+            'tableName' => $tableName
+        ]);
 
-        $db->createCommand()->createIndex($db->getIndexName($name, 'elementId,locale'), $name, 'elementId,locale', true)->execute();
-        $db->createCommand()->addForeignKey($db->getForeignKeyName($name, 'elementId'), $name, 'elementId', '{{%elements}}', 'id', 'CASCADE', null)->execute();
-        $db->createCommand()->addForeignKey($db->getForeignKeyName($name, 'locale'), $name, 'locale', '{{%locales}}', 'locale', 'CASCADE', 'CASCADE')->execute();
+        ob_start();
+        $migration->up();
+        ob_end_clean();
     }
 
     /**
@@ -954,6 +984,7 @@ class Matrix extends Component
      */
     private function _applyFieldTranslationSetting($owner, $field, $blocks)
     {
+        /** @var Element $owner */
         // Does it look like any work is needed here?
         $applyNewTranslationSetting = false;
 
@@ -971,6 +1002,7 @@ class Matrix extends Component
         if ($applyNewTranslationSetting) {
             // Get all of the blocks for this field/owner that use the other locales, whose ownerLocale attribute is set
             // incorrectly
+            /** @var array $blocksInOtherLocales */
             $blocksInOtherLocales = [];
 
             $query = MatrixBlock::find()
@@ -1055,17 +1087,18 @@ class Matrix extends Component
                             }
                         }
 
-                        Craft::$app->getDb()->createCommand()->batchInsert(
-                            'relations',
-                            [
-                                'fieldId',
-                                'sourceId',
-                                'sourceLocale',
-                                'targetId',
-                                'sortOrder'
-                            ],
-                            $rows
-                        )->execute();
+                        Craft::$app->getDb()->createCommand()
+                            ->batchInsert(
+                                'relations',
+                                [
+                                    'fieldId',
+                                    'sourceId',
+                                    'sourceLocale',
+                                    'targetId',
+                                    'sortOrder'
+                                ],
+                                $rows)
+                            ->execute();
                     }
                 } else {
                     // Delete all of these blocks

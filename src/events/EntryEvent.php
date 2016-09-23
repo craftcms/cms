@@ -1,8 +1,8 @@
 <?php
 /**
- * @link      http://buildwithcraft.com/
- * @copyright Copyright (c) 2015 Pixel & Tonic, Inc.
- * @license   http://buildwithcraft.com/license
+ * @link      https://craftcms.com/
+ * @copyright Copyright (c) Pixel & Tonic, Inc.
+ * @license   https://craftcms.com/license
  */
 
 namespace craft\app\events;
@@ -24,4 +24,9 @@ class EntryEvent extends Event
      * @var Entry The entry model associated with the event.
      */
     public $entry;
+
+    /**
+     * @var boolean Whether the entry is brand new
+     */
+    public $isNew;
 }

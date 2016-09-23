@@ -1,8 +1,8 @@
 <?php
 /**
- * @link      http://buildwithcraft.com/
- * @copyright Copyright (c) 2015 Pixel & Tonic, Inc.
- * @license   http://buildwithcraft.com/license
+ * @link      https://craftcms.com/
+ * @copyright Copyright (c) Pixel & Tonic, Inc.
+ * @license   https://craftcms.com/license
  */
 
 namespace craft\app\web;
@@ -26,7 +26,7 @@ class Response extends \yii\web\Response
     /**
      * Sets headers that will instruct the client to cache this response.
      *
-     * @return self The response object itself.
+     * @return $this self reference
      */
     public function setCacheHeaders()
     {
@@ -45,7 +45,7 @@ class Response extends \yii\web\Response
      *
      * @param string $path The file to read the last modified date from.
      *
-     * @return self The response object itself.
+     * @return $this self reference
      */
     public function setLastModifiedHeader($path)
     {
@@ -65,13 +65,14 @@ class Response extends \yii\web\Response
      * @param string $attachmentName
      * @param array  $options
      *
-     * @return self
+     * @return $this self reference
      */
     public function sendFile($filePath, $attachmentName = null, $options = [])
     {
         $this->_clearOutputBuffer();
+        parent::sendFile($filePath, $attachmentName, $options);
 
-        return parent::sendFile($filePath, $attachmentName, $options);
+        return $this;
     }
 
     /**
@@ -81,14 +82,15 @@ class Response extends \yii\web\Response
      * @param string $attachmentName
      * @param array  $options
      *
-     * @return self
+     * @return $this self reference
      * @throws HttpException
      */
     public function sendContentAsFile($content, $attachmentName, $options = [])
     {
         $this->_clearOutputBuffer();
+        parent::sendContentAsFile($content, $attachmentName, $options);
 
-        return parent::sendContentAsFile($content, $attachmentName, $options);
+        return $this;
     }
 
     /**
@@ -134,6 +136,11 @@ class Response extends \yii\web\Response
 
         // Close the session.
         Craft::$app->getSession()->close();
+
+        // In case we're running on php-fpm (https://secure.php.net/manual/en/book.fpm.php)
+        if (function_exists('fastcgi_finish_request')) {
+            fastcgi_finish_request();
+        }
     }
 
     // Private Methods

@@ -1,15 +1,15 @@
 {% from "_includes/forms" import text -%}
 
-{% includeTranslations
+{% do craft.app.view.registerTranslations('app', [
 	"Sort by {attribute}",
 	"Score",
 	"Structure",
 	"Display in a table",
 	"Display hierarchically",
-	"Display as thumbnails"
-%}
+	"Display as thumbnails",
+]) %}
 
-{% set elementInstance = craft.elements.getElementInstance(elementType) %}
+{% set elementInstance = craft.app.elements.createElement(elementType) %}
 {% set context = context is defined ? context : 'index' %}
 {% set showStatusMenu = (showStatusMenu is defined and showStatusMenu != 'auto' ? showStatusMenu : elementInstance.hasStatuses()) %}
 {% set showLocaleMenu = (craft.isLocalized() and context == 'index' ? (showLocaleMenu is defined and showLocaleMenu != 'auto' ? showLocaleMenu : elementInstance.isLocalized()) : false) %}
@@ -33,19 +33,19 @@
 					</td>
 				{% endif %}
 				{% if showLocaleMenu %}
-					{% set editableLocaleIds = craft.i18n.getEditableLocaleIds() %}
+					{% set editableLocaleIds = craft.app.i18n.getEditableLocaleIds() %}
 					{% if editableLocaleIds|length %}
-						{% if craft.locale in editableLocaleIds %}
-							{% set initialLocale = craft.i18n.getCurrentLocale() %}
+						{% if craft.app.language in editableLocaleIds %}
+							{% set initialLocale = craft.app.locale %}
 						{% else %}
-							{% set initialLocale = craft.i18n.getLocaleById(editableLocaleIds|first) %}
+							{% set initialLocale = craft.app.i18n.getLocaleById(editableLocaleIds|first) %}
 						{% endif %}
 						<td class="thin">
-							<div class="btn menubtn localemenubtn">{{ initialLocale ? initialLocale.getDisplayName(craft.locale) }}</div>
+							<div class="btn menubtn localemenubtn">{{ initialLocale ? initialLocale.getDisplayName(craft.app.language) }}</div>
 							<div class="menu">
 								<ul class="padded">
-									{% for locale in craft.i18n.getEditableLocales() %}
-										<li><a{% if initialLocale and locale.id == initialLocale.id %} class="sel"{% endif %} data-locale="{{ locale.id }}">{{ locale.getDisplayName(craft.locale) }}</a></li>
+									{% for locale in craft.app.i18n.getEditableLocales() %}
+										<li><a{% if initialLocale and locale.id == initialLocale.id %} class="sel"{% endif %} data-locale="{{ locale.id }}">{{ locale.getDisplayName(craft.app.language) }}</a></li>
 									{% endfor %}
 								</ul>
 							</div>
@@ -53,7 +53,7 @@
 					{% endif %}
 				{% endif %}
 				<td>
-					<div class="texticon search icon">
+					<div class="texticon search icon clearable">
 						{{ text({
 							placeholder: "Search"|t('app')
 						}) }}
@@ -82,8 +82,4 @@
 	</div>
 
 	<div class="elements"></div>
-
-	<div class="centeralign">
-		<div class="spinner loadingmore hidden"></div>
-	</div>
 </div>

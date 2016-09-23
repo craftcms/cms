@@ -31,15 +31,15 @@ class m151005_142750_volume_s3_storage_settings extends Migration
         foreach ($volumes as $volume) {
             $settings = Json::decode($volume['settings']);
 
-            if (empty($settings['storageClass']))
-            {
+            if (empty($settings['storageClass'])) {
                 $settings['storageClass'] = AwsS3::STORAGE_STANDARD;
 
-                Craft::$app->getDb()->createCommand()->update(
-                    '{{%volumes}}',
-                    array('settings' => Json::encode($settings)),
-                    array('id' => $volume['id'])
-                )->execute();
+                Craft::$app->getDb()->createCommand()
+                    ->update(
+                        '{{%volumes}}',
+                        ['settings' => Json::encode($settings)],
+                        ['id' => $volume['id']])
+                    ->execute();
             }
         }
     }

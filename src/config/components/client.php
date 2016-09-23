@@ -2,5 +2,5 @@
 
 return [
     'emailMessages' => 'craft\app\services\EmailMessages',
-    'entryRevisions' => 'craft\app\services\EntryRevisions',
+    'userPermissions' => 'craft\app\services\UserPermissions',
 ];

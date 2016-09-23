@@ -1,8 +1,8 @@
 <?php
 /**
- * @link      http://buildwithcraft.com/
- * @copyright Copyright (c) 2015 Pixel & Tonic, Inc.
- * @license   http://buildwithcraft.com/license
+ * @link      https://craftcms.com/
+ * @copyright Copyright (c) Pixel & Tonic, Inc.
+ * @license   https://craftcms.com/license
  */
 
 namespace craft\app\records;
@@ -13,13 +13,13 @@ use craft\app\db\ActiveRecord;
 /**
  * Class SectionLocale record.
  *
- * @property integer              $id               ID
- * @property integer              $sectionId        Section ID
- * @property ActiveQueryInterface $locale           Locale
- * @property boolean              $enabledByDefault Enabled by default
- * @property string               $urlFormat        URL format
- * @property string               $nestedUrlFormat  Nested URL format
- * @property ActiveQueryInterface $section          Section
+ * @property integer $id               ID
+ * @property integer $sectionId        Section ID
+ * @property Locale  $locale           Locale
+ * @property boolean $enabledByDefault Enabled by default
+ * @property string  $urlFormat        URL format
+ * @property string  $nestedUrlFormat  Nested URL format
+ * @property Section $section          Section
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since  3.0
@@ -62,7 +62,7 @@ class SectionLocale extends ActiveRecord
     /**
      * Returns the section locale’s section.
      *
-     * @return \yii\db\ActiveQueryInterface The relational query object.
+     * @return ActiveQueryInterface The relational query object.
      */
     public function getSection()
     {
@@ -72,7 +72,7 @@ class SectionLocale extends ActiveRecord
     /**
      * Returns the section locale’s locale.
      *
-     * @return \yii\db\ActiveQueryInterface The relational query object.
+     * @return ActiveQueryInterface The relational query object.
      */
     public function getLocale()
     {

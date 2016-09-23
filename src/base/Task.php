@@ -1,8 +1,8 @@
 <?php
 /**
- * @link      http://buildwithcraft.com/
- * @copyright Copyright (c) 2015 Pixel & Tonic, Inc.
- * @license   http://buildwithcraft.com/license
+ * @link      https://craftcms.com/
+ * @copyright Copyright (c) Pixel & Tonic, Inc.
+ * @license   https://craftcms.com/license
  */
 
 namespace craft\app\base;
@@ -55,9 +55,9 @@ abstract class Task extends SavableComponent implements TaskInterface
     {
         if ($this->totalSteps !== null && $this->currentStep !== null) {
             return $this->currentStep / $this->totalSteps;
-        } else {
-            return 0;
         }
+
+        return 0;
     }
 
     /**
@@ -96,7 +96,7 @@ abstract class Task extends SavableComponent implements TaskInterface
     /**
      * Creates and runs a subtask.
      *
-     * @param TaskInterface|Task|array|string $task The task, the task’s class name, or its config, with a `type` value and optionally a `settings` value
+     * @param TaskInterface|array|string $task The task, the task’s class name, or its config, with a `type` value and optionally a `settings` value
      *
      * @return boolean
      */
@@ -108,12 +108,13 @@ abstract class Task extends SavableComponent implements TaskInterface
             $task = $tasksService->createTask($task);
         }
 
+        /** @var Task $task */
         $task->parentId = $this->id;
 
         if ($tasksService->saveTask($task)) {
             return $tasksService->runTask($task);
-        } else {
-            return false;
         }
+
+        return false;
     }
 }

@@ -1,8 +1,8 @@
 <?php
 /**
- * @link      http://buildwithcraft.com/
- * @copyright Copyright (c) 2015 Pixel & Tonic, Inc.
- * @license   http://buildwithcraft.com/license
+ * @link      https://craftcms.com/
+ * @copyright Copyright (c) Pixel & Tonic, Inc.
+ * @license   https://craftcms.com/license
  */
 
 namespace craft\app\tasks;
@@ -48,10 +48,12 @@ class GeneratePendingTransforms extends Task
         // Don't let an exception stop us from processing the rest
         try {
             $index = Craft::$app->getAssetTransforms()->getTransformIndexModelById($this->_indexIds[$step]);
+
             if (!$index) {
                 // No transform means a probably already finished transform
                 return true;
             }
+
             Craft::$app->getAssetTransforms()->ensureTransformUrlByIndexModel($index);
         } catch (\Exception $e) {
         }

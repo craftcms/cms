@@ -6,22 +6,24 @@
 	{ label: "Settings"|t('app'), url: url('settings') }
 ] %}
 
+{% set fullPageForm = true %}
+
 {% if CraftEdition >= CraftClient %}
-	{% set selectedTab = 'settings' %}
+	{% set selectedNavItem = 'settings' %}
 {% else %}
 	{% set title = "Email Settings"|t('app') %}
 {% endif %}
 
 {% import "_includes/forms" as forms %}
 
-{% includeTranslations
+{% do craft.app.view.registerTranslations('app', [
 	"Email sent successfully! Check your inbox.",
-	"An unknown error occurred."
-%}
+	"An unknown error occurred.",
+]) %}
 
 
 {% if settings is not defined %}
-	{% set settings = craft.systemSettings.email %}
+	{% set settings = craft.app.systemSettings.getSettings('email') %}
 	{% set freshSettings = true %}
 {% else %}
 	{% set freshSettings = false %}
@@ -29,16 +31,13 @@
 
 
 {% block content %}
-	<form id="settings-form" method="post" class="centered" accept-charset="UTF-8" data-saveshortcut>
 		<input type="hidden" name="action" value="system-settings/save-email-settings">
-		<input type="hidden" name="redirect" value="settings">
-
-		{{ getCsrfInput() }}
+		{{ redirectInput('settings') }}
 
 		{{ forms.textField({
 			first: true,
 			label: "System Email Address"|t('app'),
-			instructions: "The email address Craft will use when sending email."|t('app'),
+			instructions: "The email address Craft CMS will use when sending email."|t('app'),
 			id: 'fromEmail',
 			name: 'fromEmail',
 			value: settings.fromEmail,
@@ -49,7 +48,7 @@
 
 		{{ forms.textField({
 			label: "Sender Name"|t('app'),
-			instructions: "The “From” name Craft will use when sending email."|t('app'),
+			instructions: "The “From” name Craft CMS will use when sending email."|t('app'),
 			id: 'fromName',
 			name: 'fromName',
 			value: settings.fromName,
@@ -60,7 +59,7 @@
 		{% if CraftEdition >= CraftClient %}
 			{{ forms.textField({
 				label: "HTML Email Template"|t('app'),
-				instructions: "The template Craft will use for HTML emails"|t('app'),
+				instructions: "The template Craft CMS will use for HTML emails"|t('app'),
 				id: 'template',
 				name: 'template',
 				value: settings.template,
@@ -72,7 +71,7 @@
 
 		{{ forms.selectField({
 			label: "Transport Type"|t('app'),
-			instructions: "How should Craft send the emails?"|t('app'),
+			instructions: "How should Craft CMS send the emails?"|t('app'),
 			id: 'transportType',
 			name: 'transportType',
 			options: transportTypeOptions,
@@ -93,8 +92,6 @@
 		<hr>
 
 		<div class="buttons">
-			<input class="btn submit" type="submit" value="{{ 'Save'|t('app') }}">
 			<div id="test" class="btn formsubmit" data-action="system-settings/test-email-settings">{{ "Test"|t('app') }}</div>
 		</div>
-	</form>
 {% endblock %}

@@ -3,11 +3,17 @@
 {% extends "_layouts/cp" %}
 {% set title = "Routes"|t('app') %}
 
+{% set extraPageHeaderHtml %}
+	<div class="buttons right">
+		<div id="add-route-btn" class="btn submit add icon">{{ "New route"|t('app') }}</div>
+	</div>
+{% endset %}
+
 {% set crumbs = [
 	{ label: "Settings"|t('app'), url: url('settings') }
 ] %}
 
-{% includeTranslations
+{% do craft.app.view.registerTranslations('app', [
 	"Global",
 	"New route order saved.",
 	"Couldn’t save new route order.",
@@ -19,10 +25,10 @@
 	"Route Saved.",
 	"Couldn’t save route.",
 	"Are you sure you want to delete this route?",
-	"Route deleted."
-%}
+	"Route deleted.",
+]) %}
 
-{% set docsUrl = 'http://buildwithcraft.com/docs/routing' %}
+{% set docsUrl = 'http://craftcms.com/docs/routing' %}
 
 
 {% set routes = craft.routes.getDbRoutes() %}
@@ -44,16 +50,12 @@
 						{% if craft.isLocalized() %}
 							<span class="locale">{{ route.locale ?: "Global"|t('app') }}</span>
 						{% endif %}
-						<span class="url" dir="ltr">{{ route.urlDisplayHtml|raw }}</span>
+						<span class="url">{{ route.urlDisplayHtml|raw }}</span>
 					{% endspaceless -%}
 				</div>
-				<div class="template" dir="ltr">{{ route.template }}</div>
+				<div class="template">{{ route.template }}</div>
 			</div>
 		{% endfor %}
-	</div>
-
-	<div class="buttons">
-		<div id="add-route-btn" class="btn submit add icon">{{ "New Route"|t('app') }}</div>
 	</div>
 {% endblock %}
 
@@ -67,6 +69,6 @@
 	};
 
 	{% if craft.isLocalized() %}
-		Craft.routes.locales = {{ craft.i18n.getSiteLocaleIds()|json_encode|raw }};
+		Craft.routes.locales = {{ craft.app.i18n.getSiteLocaleIds()|json_encode|raw }};
 	{% endif %}
 {% endregisterjs %}

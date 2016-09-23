@@ -1,13 +1,14 @@
 <?php
 /**
- * @link      http://buildwithcraft.com/
- * @copyright Copyright (c) 2015 Pixel & Tonic, Inc.
- * @license   http://buildwithcraft.com/license
+ * @link      https://craftcms.com/
+ * @copyright Copyright (c) Pixel & Tonic, Inc.
+ * @license   https://craftcms.com/license
  */
 
 namespace craft\app\fields;
 
 use Craft;
+use craft\app\base\Element;
 use craft\app\elements\db\ElementQueryInterface;
 use craft\app\elements\Tag;
 use craft\app\models\TagGroup;
@@ -33,7 +34,6 @@ class Tags extends BaseRelationField
 
     /**
      * @inheritdoc
-     * @return Tag
      */
     protected static function elementType()
     {
@@ -79,7 +79,8 @@ class Tags extends BaseRelationField
     public function getInputHtml($value, $element)
     {
         if (!($value instanceof ElementQueryInterface)) {
-            $class = self::elementType();
+            /** @var Element $class */
+            $class = static::elementType();
             $value = $class::find()
                 ->id(false);
         }
@@ -89,7 +90,7 @@ class Tags extends BaseRelationField
         if ($tagGroup) {
             return Craft::$app->getView()->renderTemplate('_components/fieldtypes/Tags/input',
                 [
-                    'elementType' => self::elementType(),
+                    'elementType' => static::elementType(),
                     'id' => Craft::$app->getView()->formatInputId($this->handle),
                     'name' => $this->handle,
                     'elements' => $value,
@@ -117,6 +118,8 @@ class Tags extends BaseRelationField
         if ($tagGroupId) {
             return Craft::$app->getTags()->getTagGroupById($tagGroupId);
         }
+
+        return null;
     }
 
     /**

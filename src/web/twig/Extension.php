@@ -1,13 +1,14 @@
 <?php
 /**
- * @link      http://buildwithcraft.com/
- * @copyright Copyright (c) 2015 Pixel & Tonic, Inc.
- * @license   http://buildwithcraft.com/license
+ * @link      https://craftcms.com/
+ * @copyright Copyright (c) Pixel & Tonic, Inc.
+ * @license   https://craftcms.com/license
  */
 
 namespace craft\app\web\twig;
 
 use Craft;
+use craft\app\base\MissingComponentInterface;
 use craft\app\dates\DateTime;
 use craft\app\helpers\DateTimeHelper;
 use craft\app\helpers\Db;
@@ -16,11 +17,11 @@ use craft\app\helpers\StringHelper;
 use craft\app\helpers\Template;
 use craft\app\helpers\Url;
 use craft\app\web\twig\tokenparsers\CacheTokenParser;
+use craft\app\web\twig\tokenparsers\DeprecatedTagTokenParser;
 use craft\app\web\twig\tokenparsers\ExitTokenParser;
 use craft\app\web\twig\tokenparsers\HeaderTokenParser;
 use craft\app\web\twig\tokenparsers\HookTokenParser;
 use craft\app\web\twig\tokenparsers\RegisterResourceTokenParser;
-use craft\app\web\twig\tokenparsers\IncludeTranslationsTokenParser;
 use craft\app\web\twig\tokenparsers\NamespaceTokenParser;
 use craft\app\web\twig\tokenparsers\NavTokenParser;
 use craft\app\web\twig\tokenparsers\PaginateTokenParser;
@@ -30,7 +31,7 @@ use craft\app\web\twig\tokenparsers\RequireEditionTokenParser;
 use craft\app\web\twig\tokenparsers\RequireLoginTokenParser;
 use craft\app\web\twig\tokenparsers\RequirePermissionTokenParser;
 use craft\app\web\twig\tokenparsers\SwitchTokenParser;
-use craft\app\web\twig\variables\Craft as CraftVariable;
+use craft\app\web\twig\variables\CraftVariable;
 use craft\app\web\View;
 use yii\base\InvalidConfigException;
 use yii\helpers\Markdown;
@@ -51,15 +52,24 @@ class Extension extends \Twig_Extension
      */
     protected $view;
 
+    /**
+     * @var Environment
+     */
+    protected $environment;
+
     // Public Methods
     // =========================================================================
 
     /**
-     * @inheritdoc
+     * Constructor
+     *
+     * @param View        $view
+     * @param Environment $environment
      */
-    public function __construct(View $view)
+    public function __construct(View $view, Environment $environment)
     {
         $this->view = $view;
+        $this->environment = $environment;
     }
 
     /**
@@ -79,47 +89,55 @@ class Extension extends \Twig_Extension
      */
     public function getTokenParsers()
     {
-        return [
-            new CacheTokenParser(),
-            new ExitTokenParser(),
-            new HeaderTokenParser(),
-            new HookTokenParser(),
-            new RegisterResourceTokenParser('registerassetbundle', 'registerAssetBundle', false, true, false, false),
-            new RegisterResourceTokenParser('registercss', 'registerCss', true, false, false, true),
-            new RegisterResourceTokenParser('registerhirescss', 'registerHiResCss', true, false, false, true),
-            new RegisterResourceTokenParser('registercssfile', 'registerCssFile', false, false, false, true),
-            new RegisterResourceTokenParser('registercssresource', 'registerCssResource', false, false, false, true),
-            new RegisterResourceTokenParser('registerjs', 'registerJs', true, true, true, false),
-            new RegisterResourceTokenParser('registerjsfile', 'registerJsFile', false, true, false, true),
-            new RegisterResourceTokenParser('registerjsresource', 'registerJsResource', false, true, false, true),
-            new IncludeTranslationsTokenParser(),
-            new NamespaceTokenParser(),
-            new NavTokenParser(),
-            new PaginateTokenParser(),
-            new RedirectTokenParser(),
-            new RequireAdminTokenParser(),
-            new RequireEditionTokenParser(),
-            new RequireLoginTokenParser(),
-            new RequirePermissionTokenParser(),
+        $tokenParsers = [
             new SwitchTokenParser(),
-
-            // Deprecated tags
-            new RegisterResourceTokenParser('includeCss', 'registerCss', false, false, false, true, 'registercss'),
-            new RegisterResourceTokenParser('includeHiResCss', 'registerHiResCss', true, false, false, true, 'registerhirescss'),
-            new RegisterResourceTokenParser('includeCssFile', 'registerCssFile', true, false, false, true, 'registercssfile'),
-            new RegisterResourceTokenParser('includeCssResource', 'registerCssResource', false, false, false, true, 'registercssresource'),
-            new RegisterResourceTokenParser('includeJs', 'registerJs', false, true, true, false, 'registerjs'),
-            new RegisterResourceTokenParser('includeJsFile', 'registerJsFile', true, true, false, true, 'registerjsfile'),
-            new RegisterResourceTokenParser('includeJsResource', 'registerJsResource', false, true, false, true, 'registerjsresource'),
-
-            new RegisterResourceTokenParser('includecss', 'registerCss', false, false, false, true, 'registercss'),
-            new RegisterResourceTokenParser('includehirescss', 'registerHiResCss', true, false, false, true, 'registerhirescss'),
-            new RegisterResourceTokenParser('includecssfile', 'registerCssFile', true, false, false, true, 'registercssfile'),
-            new RegisterResourceTokenParser('includecssresource', 'registerCssResource', false, false, false, true, 'registercssresource'),
-            new RegisterResourceTokenParser('includejs', 'registerJs', false, true, true, false, 'registerjs'),
-            new RegisterResourceTokenParser('includejsfile', 'registerJsFile', true, true, false, true, 'registerjsfile'),
-            new RegisterResourceTokenParser('includejsresource', 'registerJsResource', false, true, false, true, 'registerjsresource'),
         ];
+
+        if (!$this->environment->isSafeMode()) {
+            $tokenParsers = array_merge($tokenParsers, [
+                new CacheTokenParser(),
+                new ExitTokenParser(),
+                new HeaderTokenParser(),
+                new HookTokenParser(),
+                new RegisterResourceTokenParser('registerassetbundle', 'registerAssetBundle', false, true, false, false),
+                new RegisterResourceTokenParser('registercss', 'registerCss', true, false, false, true),
+                new RegisterResourceTokenParser('registerhirescss', 'registerHiResCss', true, false, false, true),
+                new RegisterResourceTokenParser('registercssfile', 'registerCssFile', false, false, false, true),
+                new RegisterResourceTokenParser('registercssresource', 'registerCssResource', false, false, false, true),
+                new RegisterResourceTokenParser('registerjs', 'registerJs', true, true, true, false),
+                new RegisterResourceTokenParser('registerjsfile', 'registerJsFile', false, true, false, true),
+                new RegisterResourceTokenParser('registerjsresource', 'registerJsResource', false, true, false, true),
+                new NamespaceTokenParser(),
+                new NavTokenParser(),
+                new PaginateTokenParser(),
+                new RedirectTokenParser(),
+                new RequireAdminTokenParser(),
+                new RequireEditionTokenParser(),
+                new RequireLoginTokenParser(),
+                new RequirePermissionTokenParser(),
+
+                // Deprecated tags
+                new RegisterResourceTokenParser('includeCss', 'registerCss', false, false, false, true, 'registercss'),
+                new RegisterResourceTokenParser('includeHiResCss', 'registerHiResCss', true, false, false, true, 'registerhirescss'),
+                new RegisterResourceTokenParser('includeCssFile', 'registerCssFile', true, false, false, true, 'registercssfile'),
+                new RegisterResourceTokenParser('includeCssResource', 'registerCssResource', false, false, false, true, 'registercssresource'),
+                new RegisterResourceTokenParser('includeJs', 'registerJs', false, true, true, false, 'registerjs'),
+                new RegisterResourceTokenParser('includeJsFile', 'registerJsFile', true, true, false, true, 'registerjsfile'),
+                new RegisterResourceTokenParser('includeJsResource', 'registerJsResource', false, true, false, true, 'registerjsresource'),
+
+                new RegisterResourceTokenParser('includecss', 'registerCss', false, false, false, true, 'registercss'),
+                new RegisterResourceTokenParser('includehirescss', 'registerHiResCss', true, false, false, true, 'registerhirescss'),
+                new RegisterResourceTokenParser('includecssfile', 'registerCssFile', true, false, false, true, 'registercssfile'),
+                new RegisterResourceTokenParser('includecssresource', 'registerCssResource', false, false, false, true, 'registercssresource'),
+                new RegisterResourceTokenParser('includejs', 'registerJs', false, true, true, false, 'registerjs'),
+                new RegisterResourceTokenParser('includejsfile', 'registerJsFile', true, true, false, true, 'registerjsfile'),
+                new RegisterResourceTokenParser('includejsresource', 'registerJsResource', false, true, false, true, 'registerjsresource'),
+
+                new DeprecatedTagTokenParser('endpaginate'),
+            ]);
+        }
+
+        return $tokenParsers;
     }
 
     /**
@@ -129,39 +147,53 @@ class Extension extends \Twig_Extension
      */
     public function getFilters()
     {
-        $translateFilter = new \Twig_Filter_Method($this, 'translateFilter');
-        $namespaceFilter = new \Twig_Filter_Function('\Craft::$app->getView()->namespaceInputs');
-        $markdownFilter = new \Twig_Filter_Method($this, 'markdownFilter');
-
         return [
-            'currency' => new \Twig_Filter_Function('\Craft::$app->getFormatter()->asCurrency'),
-            'date' => new \Twig_Filter_Method($this, 'dateFilter', ['needs_environment' => true]),
-            'datetime' => new \Twig_Filter_Function('\Craft::$app->getFormatter()->asDateTime'),
-            'filesize' => new \Twig_Filter_Function('\Craft::$app->getFormatter()->asShortSize'),
-            'filter' => new \Twig_Filter_Function('array_filter'),
-            'group' => new \Twig_Filter_Method($this, 'groupFilter'),
-            'id' => new \Twig_Filter_Function('\Craft::$app->getView()->formatInputId'),
-            'indexOf' => new \Twig_Filter_Method($this, 'indexOfFilter'),
-            'intersect' => new \Twig_Filter_Function('array_intersect'),
-            'json_encode' => new \Twig_Filter_Method($this, 'jsonEncodeFilter'),
-            'lcfirst' => new \Twig_Filter_Method($this, 'lcfirstFilter'),
-            'literal' => new \Twig_Filter_Method($this, 'literalFilter'),
-            'markdown' => $markdownFilter,
-            'md' => $markdownFilter,
-            'namespace' => $namespaceFilter,
-            'ns' => $namespaceFilter,
-            'namespaceInputName' => new \Twig_Filter_Function('\Craft::$app->getView()->namespaceInputName'),
-            'namespaceInputId' => new \Twig_Filter_Function('\Craft::$app->getView()->namespaceInputId'),
-            'number' => new \Twig_Filter_Function('\Craft::$app->getFormatter()->asDecimal'),
-            'parseRefs' => new \Twig_Filter_Method($this, 'parseRefsFilter'),
-            'percentage' => new \Twig_Filter_Function('\Craft::$app->getFormatter()->asPercent'),
-            'replace' => new \Twig_Filter_Method($this, 'replaceFilter'),
-            'translate' => $translateFilter,
-            't' => $translateFilter,
-            'ucfirst' => new \Twig_Filter_Method($this, 'ucfirstFilter'),
-            'ucwords' => new \Twig_Filter_Function('ucwords'),
-            'kebab' => new \Twig_Filter_Method($this, 'kebabFilter'),
-            'without' => new \Twig_Filter_Method($this, 'withoutFilter'),
+            new \Twig_SimpleFilter('camel', [$this, 'camelFilter']),
+            new \Twig_SimpleFilter('currency', '\Craft::$app->getFormatter()->asCurrency'),
+            new \Twig_SimpleFilter('date', [$this, 'dateFilter'], ['needs_environment' => true]),
+            new \Twig_SimpleFilter('datetime', '\Craft::$app->getFormatter()->asDateTime'),
+            new \Twig_SimpleFilter('filesize', '\Craft::$app->getFormatter()->asShortSize'),
+            new \Twig_SimpleFilter('filter', 'array_filter'),
+            new \Twig_SimpleFilter('group', [$this, 'groupFilter']),
+            new \Twig_SimpleFilter('hash', '\Craft::$app->getSecurity()->hashData'),
+            new \Twig_SimpleFilter('id', [$this->view, 'formatInputId']),
+            new \Twig_SimpleFilter('indexOf', [$this, 'indexOfFilter']),
+            new \Twig_SimpleFilter('intersect', 'array_intersect'),
+            new \Twig_SimpleFilter('json_encode', [$this, 'jsonEncodeFilter']),
+            new \Twig_SimpleFilter('kebab', [$this, 'kebabFilter']),
+            new \Twig_SimpleFilter('lcfirst', [$this, 'lcfirstFilter']),
+            new \Twig_SimpleFilter('literal', [$this, 'literalFilter']),
+            new \Twig_SimpleFilter('markdown', [$this, 'markdownFilter']),
+            new \Twig_SimpleFilter('md', [$this, 'markdownFilter']),
+            new \Twig_SimpleFilter('namespace', [$this->view, 'namespaceInputs']),
+            new \Twig_SimpleFilter('ns', [$this->view, 'namespaceInputs']),
+            new \Twig_SimpleFilter('namespaceInputName', [$this->view, 'namespaceInputName']),
+            new \Twig_SimpleFilter('namespaceInputId', [$this->view, 'namespaceInputId']),
+            new \Twig_SimpleFilter('number', '\Craft::$app->getFormatter()->asDecimal'),
+            new \Twig_SimpleFilter('parseRefs', [$this, 'parseRefsFilter']),
+            new \Twig_SimpleFilter('pascal', [$this, 'pascalFilter']),
+            new \Twig_SimpleFilter('percentage', '\Craft::$app->getFormatter()->asPercent'),
+            new \Twig_SimpleFilter('replace', [$this, 'replaceFilter']),
+            new \Twig_SimpleFilter('snake', [$this, 'snakeFilter']),
+            new \Twig_SimpleFilter('translate', [$this, 'translateFilter']),
+            new \Twig_SimpleFilter('t', [$this, 'translateFilter']),
+            new \Twig_SimpleFilter('ucfirst', [$this, 'ucfirstFilter']),
+            new \Twig_SimpleFilter('ucwords', 'ucwords'),
+            new \Twig_SimpleFilter('unique', 'array_unique'),
+            new \Twig_SimpleFilter('values', 'array_values'),
+            new \Twig_SimpleFilter('without', [$this, 'withoutFilter']),
+        ];
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function getTests()
+    {
+        return [
+            new \Twig_SimpleTest('missing', function ($obj) {
+                return $obj instanceof MissingComponentInterface;
+            }),
         ];
     }
 
@@ -223,7 +255,7 @@ class Extension extends \Twig_Extension
     }
 
     /**
-     * Kebab-cases a string.
+     * kebab-cases a string.
      *
      * @param string  $string            The string
      * @param string  $glue              The string used to glue the words together (default is a hyphen)
@@ -236,6 +268,43 @@ class Extension extends \Twig_Extension
     {
         return StringHelper::toKebabCase($string, $glue, $lower, $removePunctuation);
     }
+
+    /**
+     * camelCases a string.
+     *
+     * @param string $string The string
+     *
+     * @return string
+     */
+    public function camelFilter($string)
+    {
+        return StringHelper::toCamelCase($string);
+    }
+
+    /**
+     * PascalCases a string.
+     *
+     * @param string $string The string
+     *
+     * @return string
+     */
+    public function pascalFilter($string)
+    {
+        return StringHelper::toPascalCase($string);
+    }
+
+    /**
+     * snake_cases a string.
+     *
+     * @param string $string The string
+     *
+     * @return string
+     */
+    public function snakeFilter($string)
+    {
+        return StringHelper::toSnakeCase($string);
+    }
+
 
     /**
      * This method will JSON encode a variable. We're overriding Twig's default implementation to set some stricter
@@ -251,7 +320,7 @@ class Extension extends \Twig_Extension
     public function jsonEncodeFilter($value, $options = null)
     {
         if ($options === null && (in_array(Header::getMimeType(),
-                array('text/html', 'application/xhtml+xml')))
+                ['text/html', 'application/xhtml+xml']))
         ) {
             $options = JSON_HEX_TAG | JSON_HEX_AMP | JSON_HEX_QUOT;
         }
@@ -313,13 +382,15 @@ class Extension extends \Twig_Extension
         // Are they using the standard Twig syntax?
         if (is_array($search) && $replace === null) {
             return strtr($str, $search);
-        } // Is this a regular expression?
-        else if (preg_match('/^\/(.+)\/$/', $search)) {
-            return preg_replace($search, $replace, $str);
-        } else {
-            // Otherwise use str_replace
-            return str_replace($search, $replace, $str);
         }
+
+        // Is this a regular expression?
+        if (preg_match('/^\/.+\/[a-zA-Z]*$/', $search)) {
+            return preg_replace($search, $replace, $str);
+        }
+
+        // Otherwise use str_replace
+        return str_replace($search, $replace, $str);
     }
 
     /**
@@ -358,9 +429,10 @@ class Extension extends \Twig_Extension
         $groups = [];
 
         $template = '{'.$item.'}';
+        $safeMode = $this->environment->isSafeMode();
 
         foreach ($arr as $key => $object) {
-            $value = Craft::$app->getView()->renderObjectTemplate($template, $object);
+            $value = Craft::$app->getView()->renderObjectTemplate($template, $object, $safeMode);
             $groups[$value][] = $object;
         }
 
@@ -394,9 +466,9 @@ class Extension extends \Twig_Extension
 
         if (isset($index) && $index !== false) {
             return $index;
-        } else {
-            return -1;
         }
+
+        return -1;
     }
 
     /**
@@ -415,13 +487,21 @@ class Extension extends \Twig_Extension
     /**
      * Parses text through Markdown.
      *
-     * @param string $str
+     * @param string  $markdown   The markdown text to parse
+     * @param string  $flavor     The markdown flavor to use. Can be 'original', 'gfm' (GitHub-Flavored Markdown),
+     *                            'gfm-comment' (GFM with newlines converted to `<br>`s),
+     *                            or 'extra' (Markdown Extra). Default is 'original'.
+     * @param boolean $inlineOnly Whether to only parse inline elements, omitting any `<p>` tags.
      *
      * @return \Twig_Markup
      */
-    public function markdownFilter($str)
+    public function markdownFilter($markdown, $flavor = null, $inlineOnly = false)
     {
-        $html = Markdown::process($str);
+        if ($inlineOnly) {
+            $html = Markdown::processParagraph($markdown, $flavor);
+        } else {
+            $html = Markdown::process($markdown, $flavor);
+        }
 
         return Template::getRaw($html);
     }
@@ -434,42 +514,71 @@ class Extension extends \Twig_Extension
     public function getFunctions()
     {
         return [
-            'actionUrl' => new \Twig_Function_Function('\\craft\\app\\helpers\\Url::getActionUrl'),
-            'cpUrl' => new \Twig_Function_Function('\\craft\\app\\helpers\\Url::getCpUrl'),
-            'ceil' => new \Twig_Function_Function('ceil'),
-            'floor' => new \Twig_Function_Function('floor'),
-            'getCsrfInput' => new \Twig_Function_Method($this, 'getCsrfInputFunction'),
-            'getTranslations' => new \Twig_Function_Function('\Craft::$app->getView()->getTranslations'),
-            'max' => new \Twig_Function_Function('max'),
-            'min' => new \Twig_Function_Function('min'),
-            'renderObjectTemplate' => new \Twig_Function_Function('\Craft::$app->getView()->renderObjectTemplate'),
-            'round' => new \Twig_Function_Function('round'),
-            'resourceUrl' => new \Twig_Function_Function('\\craft\\app\\helpers\\Url::getResourceUrl'),
-            'shuffle' => new \Twig_Function_Method($this, 'shuffleFunction'),
-            'siteUrl' => new \Twig_Function_Function('\\craft\\app\\helpers\\Url::getSiteUrl'),
-            'url' => new \Twig_Function_Function('\\craft\\app\\helpers\\Url::getUrl'),
+            new \Twig_SimpleFunction('actionUrl', '\\craft\\app\\helpers\\Url::getActionUrl'),
+            new \Twig_SimpleFunction('cpUrl', '\\craft\\app\\helpers\\Url::getCpUrl'),
+            new \Twig_SimpleFunction('ceil', 'ceil'),
+            new \Twig_SimpleFunction('csrfInput', [$this, 'csrfInputFunction']),
+            new \Twig_SimpleFunction('floor', 'floor'),
+            new \Twig_SimpleFunction('getTranslations', [$this->view, 'getTranslations']),
+            new \Twig_SimpleFunction('max', 'max'),
+            new \Twig_SimpleFunction('min', 'min'),
+            new \Twig_SimpleFunction('redirectInput', [$this, 'redirectInputFunction']),
+            new \Twig_SimpleFunction('renderObjectTemplate', [$this, 'renderObjectTemplate']),
+            new \Twig_SimpleFunction('round', 'round'),
+            new \Twig_SimpleFunction('resourceUrl', '\\craft\\app\\helpers\\Url::getResourceUrl'),
+            new \Twig_SimpleFunction('shuffle', [$this, 'shuffleFunction']),
+            new \Twig_SimpleFunction('siteUrl', '\\craft\\app\\helpers\\Url::getSiteUrl'),
+            new \Twig_SimpleFunction('url', '\\craft\\app\\helpers\\Url::getUrl'),
             // DOM event functions
             new \Twig_SimpleFunction('head', [$this->view, 'head']),
             new \Twig_SimpleFunction('beginBody', [$this->view, 'beginBody']),
             new \Twig_SimpleFunction('endBody', [$this->view, 'endBody']),
             // Deprecated functions
-            new \Twig_SimpleFunction('getHeadHtml', [$this, 'getHeadHtml'],
-                [true]),
-            new \Twig_SimpleFunction('getFootHtml', [$this, 'getFootHtml'],
-                [true]),
+            new \Twig_SimpleFunction('getCsrfInput', [$this, 'getCsrfInput']),
+            new \Twig_SimpleFunction('getHeadHtml', [$this, 'getHeadHtml']),
+            new \Twig_SimpleFunction('getFootHtml', [$this, 'getFootHtml']),
         ];
     }
 
     /**
-     * Returns getCsrfInput() wrapped in a \Twig_Markup object.
+     * Returns a CSRF input wrapped in a \Twig_Markup object.
+     *
+     * @return \Twig_Markup|null
+     */
+    public function csrfInputFunction()
+    {
+        $config = Craft::$app->getConfig();
+
+        if ($config->get('enableCsrfProtection') === true) {
+            return Template::getRaw('<input type="hidden" name="'.$config->get('csrfTokenName').'" value="'.Craft::$app->getRequest()->getCsrfToken().'">');
+        }
+
+        return null;
+    }
+
+    /**
+     * Returns a redirect input wrapped in a \Twig_Markup object.
+     *
+     * @param string $url The URL to redirect to.
      *
      * @return \Twig_Markup
      */
-    public function getCsrfInputFunction()
+    public function redirectInputFunction($url)
     {
-        $html = Craft::$app->getView()->getCsrfInput();
+        return Template::getRaw('<input type="hidden" name="redirect" value="'.Craft::$app->getSecurity()->hashData($url).'">');
+    }
 
-        return Template::getRaw($html);
+    /**
+     * @param $template
+     * @param $object
+     *
+     * @return string
+     */
+    public function renderObjectTemplate($template, $object)
+    {
+        $safeMode = $this->environment->isSafeMode();
+
+        return Craft::$app->getView()->renderObjectTemplate($template, $object, $safeMode);
     }
 
     /**
@@ -499,14 +608,42 @@ class Extension extends \Twig_Extension
      */
     public function getGlobals()
     {
-        // Keep the 'blx' variable around for now
-        $craftVariable = new CraftVariable();
-        $globals['craft'] = $craftVariable;
-        $globals['blx'] = $craftVariable;
+        $safeMode = $this->environment->isSafeMode();
+        $isInstalled = Craft::$app->getIsInstalled();
+        $request = Craft::$app->getRequest();
+
+        $globals = [
+            'user' => null,
+            'currentUser' => null,
+        ];
+
+        if (!$safeMode) {
+            // Keep the 'blx' variable around for now
+            $craftVariable = new CraftVariable();
+            $globals['craft'] = $craftVariable;
+            $globals['blx'] = $craftVariable;
+
+            $globals['loginUrl'] = Url::getUrl(Craft::$app->getConfig()->getLoginPath());
+            $globals['logoutUrl'] = Url::getUrl(Craft::$app->getConfig()->getLogoutPath());
+            $globals['isInstalled'] = $isInstalled;
+
+            if ($isInstalled && !$request->getIsConsoleRequest()) {
+                $globals['currentUser'] = Craft::$app->getUser()->getIdentity();
+            }
+
+            // Keep 'user' around so long as it's not hurting anyone.
+            // Technically deprecated, though.
+            $globals['user'] = $globals['currentUser'];
+
+            if (!$request->getIsConsoleRequest() && $request->getIsCpRequest()) {
+                $globals['CraftEdition'] = Craft::$app->getEdition();
+                $globals['CraftPersonal'] = Craft::Personal;
+                $globals['CraftClient'] = Craft::Client;
+                $globals['CraftPro'] = Craft::Pro;
+            }
+        }
 
         $globals['now'] = new DateTime(null, new \DateTimeZone(Craft::$app->getTimeZone()));
-        $globals['loginUrl'] = Url::getUrl(Craft::$app->getConfig()->getLoginPath());
-        $globals['logoutUrl'] = Url::getUrl(Craft::$app->getConfig()->getLogoutPath());
 
         $globals['POS_HEAD'] = View::POS_HEAD;
         $globals['POS_BEGIN'] = View::POS_BEGIN;
@@ -514,17 +651,9 @@ class Extension extends \Twig_Extension
         $globals['POS_READY'] = View::POS_READY;
         $globals['POS_LOAD'] = View::POS_LOAD;
 
-        if (Craft::$app->isInstalled() && !Craft::$app->getUpdates()->isCraftDbMigrationNeeded()) {
+        if ($isInstalled && !Craft::$app->getIsUpdating()) {
             $globals['siteName'] = Craft::$app->getSiteName();
             $globals['siteUrl'] = Craft::$app->getSiteUrl();
-
-            $globals['currentUser'] = Craft::$app->getUser()->getIdentity();
-
-            // Keep 'user' around so long as it's not hurting anyone.
-            // Technically deprecated, though.
-            $globals['user'] = $globals['currentUser'];
-
-            $request = Craft::$app->getRequest();
 
             if (!$request->getIsConsoleRequest() && $request->getIsSiteRequest()) {
                 foreach (Craft::$app->getGlobals()->getAllSets() as $globalSet) {
@@ -534,16 +663,6 @@ class Extension extends \Twig_Extension
         } else {
             $globals['siteName'] = null;
             $globals['siteUrl'] = null;
-            $globals['user'] = null;
-        }
-
-        $request = Craft::$app->getRequest();
-
-        if (!$request->getIsConsoleRequest() && $request->getIsCpRequest()) {
-            $globals['CraftEdition'] = Craft::$app->getEdition();
-            $globals['CraftPersonal'] = Craft::Personal;
-            $globals['CraftClient'] = Craft::Client;
-            $globals['CraftPro'] = Craft::Pro;
         }
 
         return $globals;
@@ -561,6 +680,17 @@ class Extension extends \Twig_Extension
 
     // Deprecated Methods
     // -------------------------------------------------------------------------
+
+    /**
+     * @deprecated in Craft 3.0. Use csrfInput() instead.
+     * @return \Twig_Markup|null
+     */
+    public function getCsrfInput()
+    {
+        Craft::$app->getDeprecator()->log('getCsrfInput', 'getCsrfInput() has been deprecated. Use csrfInput() instead.');
+
+        return $this->csrfInputFunction();
+    }
 
     /**
      * @deprecated in Craft 3.0. Use head() instead.

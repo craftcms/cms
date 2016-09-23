@@ -2,11 +2,13 @@
 namespace craft\app\volumes;
 
 use Aws\CloudFront\CloudFrontClient;
+use Aws\CloudFront\Exception\CloudFrontException;
 use Aws\S3\Exception\AccessDeniedException;
 use Craft;
 use craft\app\base\Volume;
 use craft\app\cache\adapters\GuzzleCacheAdapter;
 use craft\app\dates\DateTime;
+use craft\app\errors\VolumeException;
 use craft\app\helpers\Assets;
 use craft\app\helpers\DateTimeHelper;
 use craft\app\helpers\StringHelper;
@@ -19,8 +21,8 @@ use \Aws\S3\S3Client as S3Client;
  *
  * @author     Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @copyright  Copyright (c) 2014, Pixel & Tonic, Inc.
- * @license    http://buildwithcraft.com/license Craft License Agreement
- * @see        http://buildwithcraft.com
+ * @license    http://craftcms.com/license Craft License Agreement
+ * @see        http://craftcms.com
  * @package    craft.app.volumes
  * @since      3.0
  */
@@ -30,9 +32,9 @@ class AwsS3 extends Volume
     // Constants
     // =========================================================================
 
-    const STORAGE_STANDARD           = "STANDARD";
+    const STORAGE_STANDARD = "STANDARD";
     const STORAGE_REDUCED_REDUNDANCY = "REDUCED_REDUNDANCY";
-    const STORAGE_STANDARD_IA        = "STANDARD_IA";
+    const STORAGE_STANDARD_IA = "STANDARD_IA";
 
     // Static
     // =========================================================================
@@ -208,60 +210,13 @@ class AwsS3 extends Volume
     }
 
     /**
-     * @inheritdoc
-     */
-    public function createFileByStream($path, $stream, $config = [])
-    {
-        if (!empty($this->expires) && DateTimeHelper::isValidIntervalString($this->expires))
-            {
-                $expires = new DateTime();
-                $now = new DateTime();
-                $expires->modify('+'.$this->expires);
-                $diff = $expires->format('U') - $now->format('U');
-                $config['CacheControl'] = 'max-age='.$diff.', must-revalidate';
-        }
-
-        if (!empty($this->storageClass))
-        {
-            $config['StorageClass'] = $this->storageClass;
-        }
-
-        return parent::createFileByStream($path, $stream, $config);
-    }
-
-    /**
-     * {@inheritdoc}
-     */
-    public function deleteFile($path)
-    {
-        if (parent::deleteFile($path) && !empty($this->cfDistributionId))
-        {
-            // If there's a CloudFront distribution ID set, invalidate the path.
-            $cfClient = $this->_getCloudFrontClient();
-
-            $cfClient->createInvalidation(
-                [
-                    'DistributionId' => $this->cfDistributionId,
-                    'Paths' =>
-                        [
-                            'Quantity' => 1,
-                            'Items' => ['/'.ltrim($path, '/')]
-                        ],
-                    'CallerReference' => 'Craft-'.StringHelper::randomString(24)
-                ]
-            );
-        }
-    }
-
-
-    /**
      * Return a list of available storage classes.
      *
      * @return array
      */
     public static function getStorageClasses()
     {
-        return[
+        return [
             static::STORAGE_STANDARD => 'Standard',
             static::STORAGE_REDUCED_REDUNDANCY => 'Reduced Redundancy Storage',
             static::STORAGE_STANDARD_IA => 'Infrequent Access Storage'
@@ -273,6 +228,7 @@ class AwsS3 extends Volume
 
     /**
      * @inheritdoc
+     *
      * @return AwsS3Adapter
      */
     protected function createAdapter()
@@ -296,6 +252,56 @@ class AwsS3 extends Volume
         $config['credentials.cache'] = static::_getCredentialsCacheAdapter();
 
         return S3Client::factory($config);
+    }
+
+    /**
+     * @inheritdoc
+     */
+    protected function addFileMetadataToConfig($config)
+    {
+        if (!empty($this->expires) && DateTimeHelper::isValidIntervalString($this->expires)) {
+            $expires = new DateTime();
+            $now = new DateTime();
+            $expires->modify('+'.$this->expires);
+            $diff = $expires->format('U') - $now->format('U');
+            $config['CacheControl'] = 'max-age='.$diff.', must-revalidate';
+        }
+
+        if (!empty($this->storageClass)) {
+            $config['StorageClass'] = $this->storageClass;
+        }
+
+        return parent::addFileMetadataToConfig($config);
+    }
+
+    /**
+     * @inheritdoc
+     */
+    protected function invalidateCdnPath($path)
+    {
+        if (!empty($this->cfDistributionId)) {
+            // If there's a CloudFront distribution ID set, invalidate the path.
+            $cfClient = $this->_getCloudFrontClient();
+
+            try {
+                $cfClient->createInvalidation(
+                    [
+                        'DistributionId' => $this->cfDistributionId,
+                        'Paths' =>
+                            [
+                                'Quantity' => 1,
+                                'Items' => ['/'.ltrim($path, '/')]
+                            ],
+                        'CallerReference' => 'Craft-'.StringHelper::randomString(24)
+                    ]
+                );
+            } catch (CloudFrontException $exception) {
+                Craft::warning($exception->getMessage());
+                throw new VolumeException('Failed to invalidate the CDN path for '.$path);
+            }
+        }
+
+        return true;
     }
 
     // Private Methods
@@ -323,6 +329,7 @@ class AwsS3 extends Volume
     private function _getCloudFrontClient()
     {
         $config = $this->_getConfigArray();
+
         return CloudFrontClient::factory($config);
     }
 

@@ -1,8 +1,8 @@
 <?php
 /**
- * @link      http://buildwithcraft.com/
- * @copyright Copyright (c) 2015 Pixel & Tonic, Inc.
- * @license   http://buildwithcraft.com/license
+ * @link      https://craftcms.com/
+ * @copyright Copyright (c) Pixel & Tonic, Inc.
+ * @license   https://craftcms.com/license
  */
 
 namespace craft\app\elements\actions;
@@ -87,7 +87,7 @@ class RenameFile extends ElementAction
 							if (choice != 'cancel')
 							{
 								data.action = choice;
-								Craft.postActionRequest('assets/move-file', data, handleRename);
+								Craft.postActionRequest('assets/move-asset', data, handleRename);
 							}
 						});
 					}
@@ -107,7 +107,7 @@ class RenameFile extends ElementAction
 				}
 			};
 
-			Craft.postActionRequest('assets/move-file', data, handleRename);
+			Craft.postActionRequest('assets/move-asset', data, handleRename);
 		}
 	});
 })();

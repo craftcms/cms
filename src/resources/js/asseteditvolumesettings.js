@@ -1,8 +1,7 @@
 (function($) {
 
-	$urlField = $('.volume-url');
-
-	var $s3AccessKeyIdInput = $('.s3-key-id'),
+	var $urlField = $('.volume-url'),
+		$s3AccessKeyIdInput = $('.s3-key-id'),
 		$s3SecretAccessKeyInput = $('.s3-secret-key'),
 		$s3BucketSelect = $('.s3-bucket-select > select'),
 		$s3RefreshBucketsBtn = $('.s3-refresh-buckets'),
@@ -29,7 +28,7 @@
 			dataType:   'bucketList'
 		};
 
-		Craft.postActionRequest('volumes/loadVolumeTypeData', data, function(response, textStatus)
+		Craft.postActionRequest('volumes/load-volume-type-data', data, function(response, textStatus)
 		{
 			$s3RefreshBucketsBtn.removeClass('disabled');
 			$s3RefreshBucketsSpinner.addClass('hidden');
@@ -119,7 +118,7 @@
 
 		};
 
-		Craft.postActionRequest('volumes/loadVolumeTypeData', data, function(response, textStatus)
+		Craft.postActionRequest('volumes/load-volume-type-data', data, function(response, textStatus)
 		{
 			$rackspaceRefreshContainersBtn.removeClass('disabled');
 			$rackspaceRefreshContainersSpinner.addClass('hidden');
@@ -205,7 +204,7 @@
 			dataType:   'bucketList'
 		};
 
-		Craft.postActionRequest('volumes/loadVolumeTypeData', data, function(response, textStatus)
+		Craft.postActionRequest('volumes/load-volume-type-data', data, function(response, textStatus)
 		{
 			$googleRefreshBucketsBtn.removeClass('disabled');
 			$googleRefreshBucketsSpinner.addClass('hidden');

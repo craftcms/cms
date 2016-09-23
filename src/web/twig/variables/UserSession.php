@@ -1,19 +1,21 @@
 <?php
 /**
- * @link      http://buildwithcraft.com/
- * @copyright Copyright (c) 2015 Pixel & Tonic, Inc.
- * @license   http://buildwithcraft.com/license
+ * @link      https://craftcms.com/
+ * @copyright Copyright (c) Pixel & Tonic, Inc.
+ * @license   https://craftcms.com/license
  */
 
 namespace craft\app\web\twig\variables;
 
+use Craft;
 use craft\app\elements\User;
 
 /**
  * User session functions.
  *
- * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @since  3.0
+ * @author     Pixel & Tonic, Inc. <support@pixelandtonic.com>
+ * @since      3.0
+ * @deprecated in 3.0
  */
 class UserSession
 {
@@ -27,7 +29,9 @@ class UserSession
      */
     public function isLoggedIn()
     {
-        return !\Craft::$app->getUser()->getIsGuest();
+        Craft::$app->getDeprecator()->log('craft.session.isLoggedIn()', 'craft.session.isLoggedIn() has been deprecated. Use `not craft.app.user.isGuest` instead.');
+
+        return !Craft::$app->getUser()->getIsGuest();
     }
 
     /**
@@ -37,7 +41,9 @@ class UserSession
      */
     public function getUser()
     {
-        return \Craft::$app->getUser()->getIdentity();
+        Craft::$app->getDeprecator()->log('craft.session.getUser()', 'craft.session.getUser() has been deprecated. Use currentUser instead.');
+
+        return Craft::$app->getUser()->getIdentity();
     }
 
     /**
@@ -47,11 +53,13 @@ class UserSession
      */
     public function getRemainingSessionTime()
     {
-        if (\Craft::$app->isInstalled()) {
-            return \Craft::$app->getUser()->getRemainingSessionTime();
-        } else {
-            return 0;
+        Craft::$app->getDeprecator()->log('craft.session.getRemainingSessionTime()', 'craft.session.getRemainingSessionTime() has been deprecated. Use craft.app.user.remainingSessionTime instead.');
+
+        if (Craft::$app->getIsInstalled()) {
+            return Craft::$app->getUser()->getRemainingSessionTime();
         }
+
+        return 0;
     }
 
     /**
@@ -61,7 +69,9 @@ class UserSession
      */
     public function getRememberedUsername()
     {
-        return \Craft::$app->getUser()->getRememberedUsername();
+        Craft::$app->getDeprecator()->log('craft.session.getRememberedUsername()', 'craft.session.getRememberedUsername() has been deprecated. Use craft.app.user.rememberedUsername instead.');
+
+        return Craft::$app->getUser()->getRememberedUsername();
     }
 
     /**
@@ -73,7 +83,9 @@ class UserSession
      */
     public function getReturnUrl($defaultUrl = null)
     {
-        return \Craft::$app->getUser()->getReturnUrl($defaultUrl);
+        Craft::$app->getDeprecator()->log('craft.session.getReturnUrl()', 'craft.session.getReturnUrl() has been deprecated. Use craft.app.user.getReturnUrl() instead.');
+
+        return Craft::$app->getUser()->getReturnUrl($defaultUrl);
     }
 
     /**
@@ -85,7 +97,9 @@ class UserSession
      */
     public function getFlashes($delete = true)
     {
-        return \Craft::$app->getSession()->getAllFlashes($delete);
+        Craft::$app->getDeprecator()->log('craft.session.getFlashes()', 'craft.session.getFlashes() has been deprecated. Use craft.app.session.getAllFlashes() instead.');
+
+        return Craft::$app->getSession()->getAllFlashes($delete);
     }
 
     /**
@@ -99,7 +113,9 @@ class UserSession
      */
     public function getFlash($key, $defaultValue = null, $delete = true)
     {
-        return \Craft::$app->getSession()->getFlash($key, $defaultValue, $delete);
+        Craft::$app->getDeprecator()->log('craft.session.getFlash()', 'craft.session.getFlash() has been deprecated. Use craft.app.session.getFlash() instead.');
+
+        return Craft::$app->getSession()->getFlash($key, $defaultValue, $delete);
     }
 
     /**
@@ -111,6 +127,8 @@ class UserSession
      */
     public function hasFlash($key)
     {
-        return \Craft::$app->getSession()->hasFlash($key);
+        Craft::$app->getDeprecator()->log('craft.session.hasFlash()', 'craft.session.hasFlash() has been deprecated. Use craft.app.session.hasFlash() instead.');
+
+        return Craft::$app->getSession()->hasFlash($key);
     }
 }

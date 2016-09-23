@@ -1,8 +1,8 @@
 <?php
 /**
- * @link      http://buildwithcraft.com/
- * @copyright Copyright (c) 2015 Pixel & Tonic, Inc.
- * @license   http://buildwithcraft.com/license
+ * @link      https://craftcms.com/
+ * @copyright Copyright (c) Pixel & Tonic, Inc.
+ * @license   https://craftcms.com/license
  */
 
 namespace craft\app\models;
@@ -28,7 +28,7 @@ class AssetTransformIndex extends Model
     /**
      * @var integer File ID
      */
-    public $fileId;
+    public $assetId;
 
     /**
      * @var integer Filename
@@ -113,7 +113,7 @@ class AssetTransformIndex extends Model
                 'integerOnly' => true
             ],
             [
-                ['fileId'],
+                ['assetId'],
                 'number',
                 'min' => -2147483648,
                 'max' => 2147483647,
@@ -153,7 +153,7 @@ class AssetTransformIndex extends Model
             [
                 [
                     'id',
-                    'fileId',
+                    'assetId',
                     'filename',
                     'format',
                     'location',

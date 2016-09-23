@@ -9,149 +9,35 @@ Craft.AccountSettingsForm = Garnish.Base.extend(
 	$copyPasswordResetUrlBtn: null,
 	$actionSpinner: null,
 
-	currentPasswordModal: null,
-	$lockBtns: null,
-	$currentPasswordInput: null,
-	$currentPasswordSpinner: null,
-	afterVerifyPassword: null,
-	currentPassword: null,
-
 	confirmDeleteModal: null,
 	$deleteBtn: null,
 
-	init: function(userId, isCurrent)
+	init: function(userId, isCurrent, settings)
 	{
 		this.userId = userId;
 		this.isCurrent = isCurrent;
 
-		this.$lockBtns = $('.btn.lock');
+		this.setSettings(settings, Craft.AccountSettingsForm.defaults);
+
 		this.$copyPasswordResetUrlBtn = $('#copy-passwordreset-url');
 		this.$actionSpinner = $('#action-spinner');
 		this.$deleteBtn = $('#delete-btn');
 
-		this.addListener(this.$lockBtns, 'click', 'showCurrentPasswordForm');
-		this.addListener(this.$copyPasswordResetUrlBtn, 'click', 'getPasswordResetUrl');
+		this.addListener(this.$copyPasswordResetUrlBtn, 'click', 'handleCopyPasswordResetUrlBtnClick');
 		this.addListener(this.$deleteBtn, 'click', 'showConfirmDeleteModal');
 	},
 
-	showCurrentPasswordForm: function()
+	handleCopyPasswordResetUrlBtnClick: function()
 	{
-		if (!this.currentPasswordModal)
-		{
-			var passwordMessage = "";
-
-			if (this.isCurrent)
-			{
-				passwordMessage = Craft.t('Please enter your current password.');
-			}
-			else
-			{
-				passwordMessage = Craft.t('Please enter your password.');
-			}
-
-			var $form = $('<form id="verifypasswordmodal" class="modal fitted"/>').appendTo(Garnish.$bod),
-				$body = $('<div class="body"><p>'+passwordMessage+'</p></div>').appendTo($form),
-				$passwordWrapper = $('<div class="passwordwrapper"/>').appendTo($body),
-				$buttons = $('<div class="buttons right"/>').appendTo($body),
-				$cancelBtn = $('<div class="btn">'+Craft.t('Cancel')+'</div>').appendTo($buttons),
-				$submitBtn = $('<input type="submit" class="btn submit" value="'+Craft.t('Continue')+'" />').appendTo($buttons);
-
-			this.$currentPasswordInput = $('<input type="password" class="text password fullwidth"/>').appendTo($passwordWrapper);
-			this.$currentPasswordSpinner = $('<div class="spinner hidden"/>').appendTo($buttons);
-			this.currentPasswordModal = new Garnish.Modal($form, {
-				onHide: $.proxy(function()
-				{
-					this.afterVerifyPassword = null;
-				}, this)
-			});
-
-			new Craft.PasswordInput(this.$currentPasswordInput, {
-				onToggleInput: $.proxy(function($newPasswordInput) {
-					this.$currentPasswordInput = $newPasswordInput;
-				}, this)
-			});
-
-			this.addListener($cancelBtn, 'click', function() {
-				this.currentPasswordModal.hide();
-			});
-
-			this.addListener($form, 'submit', 'submitCurrentPassword');
-		}
-		else
-		{
-			this.currentPasswordModal.show();
-		}
-
-		// Auto-focus the password input
-		if (!Garnish.isMobileBrowser(true))
-		{
-			setTimeout($.proxy(function() {
-				this.$currentPasswordInput.focus();
-			}, this), 100);
-		}
-	},
-
-	submitCurrentPassword: function(ev)
-	{
-		ev.preventDefault();
-
-		var password = this.$currentPasswordInput.val();
-
-		if (password)
-		{
-			this.$currentPasswordSpinner.removeClass('hidden');
-
-			var data = {
-				password: password
-			};
-
-			Craft.postActionRequest('users/verify-password', data, $.proxy(function(response, textStatus)
-			{
-				this.$currentPasswordSpinner.addClass('hidden');
-
-				if (textStatus == 'success')
-				{
-					if (response.success)
-					{
-						this.currentPassword = password;
-						$('<input type="hidden" name="password"/>').val(password).appendTo('#userform');
-						var $newPasswordInput = $('#newPassword');
-						$('#email').add($newPasswordInput).removeClass('disabled').removeAttr('disabled');
-						this.$lockBtns.remove();
-
-						new Craft.PasswordInput($newPasswordInput);
-
-						if (this.afterVerifyPassword)
-						{
-							this.afterVerifyPassword();
-						}
-
-						this.currentPasswordModal.hide();
-					}
-					else
-					{
-						Garnish.shake(this.currentPasswordModal.$container);
-					}
-				}
-
-			}, this));
-		}
+		// Requires an elevated session
+		Craft.elevatedSessionManager.requireElevatedSession($.proxy(this, 'getPasswordResetUrl'));
 	},
 
 	getPasswordResetUrl: function()
 	{
-		// Make sure they've entered their password first
-		if (!this.currentPassword)
-		{
-			this.afterVerifyPassword = $.proxy(this, 'getPasswordResetUrl');
-			this.showCurrentPasswordForm();
-			return;
-		}
-
 		this.$actionSpinner.removeClass('hidden');
 
 		var data = {
-			password: this.currentPassword,
 			userId: this.userId
 		};
 
@@ -161,7 +47,7 @@ Craft.AccountSettingsForm = Garnish.Base.extend(
 
 			if (textStatus == 'success')
 			{
-				var message = Craft.t('{ctrl}C to copy.', {
+				var message = Craft.t('app', '{ctrl}C to copy.', {
 					ctrl: (navigator.appVersion.indexOf('Mac') ? '⌘' : 'Ctrl-')
 				});
 
@@ -174,12 +60,19 @@ Craft.AccountSettingsForm = Garnish.Base.extend(
 	{
 		if (!this.confirmDeleteModal)
 		{
-			this.confirmDeleteModal = new Craft.DeleteUserModal(this.userId);
+			this.confirmDeleteModal = new Craft.DeleteUserModal(this.userId, {
+				redirect: this.settings.deleteModalRedirect
+			});
 		}
 		else
 		{
 			this.confirmDeleteModal.show();
 		}
+	}
+},
+{
+	defaults: {
+		deleteModalRedirect: null
 	}
 });
 

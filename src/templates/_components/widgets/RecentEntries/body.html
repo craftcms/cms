@@ -6,7 +6,7 @@
 					<td>
 						<a href="{{ entry.getCpEditUrl() }}">{{ entry.title }}</a>
 						<span class="light">
-							{%- if entry.postDate %}{{ entry.postDate.uiTimestamp() }}{% endif %}
+							{{ entry.dateCreated.uiTimestamp() }}
 							{%- if CraftEdition >= CraftClient and entry.author %}, {{ entry.author.username }}{% endif -%}
 						</span>
 					</td>

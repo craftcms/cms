@@ -6,6 +6,7 @@ Craft.BaseElementSelectInput = Garnish.Base.extend(
 	elementSelect: null,
 	elementSort: null,
 	modal: null,
+	elementEditor: null,
 
 	$container: null,
 	$elementsContainer: null,
@@ -138,6 +139,7 @@ Craft.BaseElementSelectInput = Garnish.Base.extend(
 					}
 				}, this) : null),
 				ignoreHandleSelector: '.delete',
+				axis: this.getElementSortAxis(),
 				collapseDraggees: true,
 				magnetStrength: 4,
 				helperLagBase: 1.5,
@@ -146,6 +148,11 @@ Craft.BaseElementSelectInput = Garnish.Base.extend(
 				}, this) : null)
 			});
 		}
+	},
+
+	getElementSortAxis: function()
+	{
+		return (this.settings.viewMode == 'list' ? 'y' : null);
 	},
 
 	canAddMoreElements: function()
@@ -225,10 +232,12 @@ Craft.BaseElementSelectInput = Garnish.Base.extend(
 
 		if (this.settings.editable)
 		{
-			this.addListener($elements, 'dblclick', function(ev)
-			{
-				Craft.showElementEditor($(ev.currentTarget));
-			});
+			this._handleShowElementEditor = $.proxy(function(ev) {
+				this.elementEditor = Craft.showElementEditor($(ev.currentTarget), this.settings.editorSettings);
+			}, this);
+
+			this.addListener($elements, 'dblclick', this._handleShowElementEditor);
+			this.addListener($elements, 'taphold', this._handleShowElementEditor);
 		}
 
 		$elements.find('.delete').on('click', $.proxy(function(ev)
@@ -293,6 +302,11 @@ Craft.BaseElementSelectInput = Garnish.Base.extend(
 		};
 		animateCss['margin-'+Craft.left] = -($element.outerWidth() + parseInt($element.css('margin-'+Craft.right)));
 
+		if (this.settings.viewMode == 'list' || this.$elements.length == 0)
+		{
+			animateCss['margin-bottom'] = -($element.outerHeight() + parseInt($element.css('margin-bottom')));
+		}
+
 		$element.velocity(animateCss, Craft.BaseElementSelectInput.REMOVE_FX_DURATION, callback);
 	},
 
@@ -322,6 +336,7 @@ Craft.BaseElementSelectInput = Garnish.Base.extend(
 	getModalSettings: function()
 	{
 		return $.extend({
+			closeOtherModals:   false,
 			storageKey:         this.modalStorageKey,
 			sources:            this.settings.sources,
 			criteria:           this.settings.criteria,
@@ -376,12 +391,12 @@ Craft.BaseElementSelectInput = Garnish.Base.extend(
 	{
 		for (var i = 0; i < elements.length; i++)
 		{
-			var element = elements[i],
-				$element = this.createNewElement(element);
+			var elementInfo = elements[i],
+				$element = this.createNewElement(elementInfo);
 
 			this.appendElement($element);
 			this.addElements($element);
-			this.animateElementIntoPlace(element.$element, $element);
+			this.animateElementIntoPlace(elementInfo.$element, $element);
 		}
 
 		this.onSelectElements(elements);
@@ -392,9 +407,10 @@ Craft.BaseElementSelectInput = Garnish.Base.extend(
 		var $element = elementInfo.$element.clone();
 
 		// Make a couple tweaks
+		Craft.setElementSize($element, (this.settings.viewMode == 'large' ? 'large' : 'small'));
 		$element.addClass('removable');
 		$element.prepend('<input type="hidden" name="'+this.settings.name+'[]" value="'+elementInfo.id+'">' +
-			'<a class="delete icon" title="'+Craft.t('Remove')+'"></a>');
+			'<a class="delete icon" title="'+Craft.t('app', 'Remove')+'"></a>');
 
 		return $element;
 	},
@@ -475,6 +491,7 @@ Craft.BaseElementSelectInput = Garnish.Base.extend(
 		sources: null,
 		criteria: {},
 		sourceElementId: null,
+		viewMode: 'list',
 		limit: null,
 		modalStorageKey: null,
 		modalSettings: {},
@@ -482,6 +499,7 @@ Craft.BaseElementSelectInput = Garnish.Base.extend(
 		onRemoveElements: $.noop,
 		sortable: true,
 		selectable: true,
-		editable: true
+		editable: true,
+		editorSettings: {}
 	}
 });

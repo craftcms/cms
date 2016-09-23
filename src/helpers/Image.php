@@ -1,13 +1,13 @@
 <?php
 /**
- * @link      http://buildwithcraft.com/
- * @copyright Copyright (c) 2015 Pixel & Tonic, Inc.
- * @license   http://buildwithcraft.com/license
+ * @link      https://craftcms.com/
+ * @copyright Copyright (c) Pixel & Tonic, Inc.
+ * @license   https://craftcms.com/license
  */
 
 namespace craft\app\helpers;
 
-use craft;
+use Craft;
 use craft\app\image\Svg;
 
 /**
@@ -25,11 +25,6 @@ class Image
     const EXIF_IFD0_ROTATE_90 = 6;
     const EXIF_IFD0_ROTATE_270 = 8;
 
-    const SVG_WIDTH_RE = '/(.*<svg[^>]* width=")([\d\.]+)([a-z]*)"/si';
-    const SVG_HEIGHT_RE = '/(.*<svg[^>]* height=")([\d\.]+)([a-z]*)"/si';
-    const SVG_VIEWBOX_RE = '/.*<svg[^>].* viewbox="\d+(?:,|\s)\d+(?:,|\s)(\d+)(?:,|\s)(\d+)"/si';
-    const SVG_TAG_RE = '/(.*<svg)([^>].*)/si';
-
     // Public Methods
     // =========================================================================
 
@@ -43,15 +38,14 @@ class Image
      *
      * @return array Array of the width and height.
      */
-    public static function calculateMissingDimension($targetWidth, $targetHeight, $sourceWidth, $sourceHeight) {
+    public static function calculateMissingDimension($targetWidth, $targetHeight, $sourceWidth, $sourceHeight)
+    {
         $factor = $sourceWidth / $sourceHeight;
 
         if (empty($targetHeight)) {
-            $targetHeight = round($targetWidth / $factor);
-        } else {
-            if (empty($targetWidth)) {
-                $targetWidth = round($targetHeight * $factor);
-            }
+            $targetHeight = ceil($targetWidth / $factor);
+        } else if (empty($targetWidth)) {
+            $targetWidth = ceil($targetHeight * $factor);
         }
 
         return [$targetWidth, $targetHeight];
@@ -62,7 +56,7 @@ class Image
      *
      * @param $extension
      *
-     * @return array
+     * @return boolean
      */
     public static function isImageManipulatable($extension)
     {
@@ -71,11 +65,11 @@ class Image
 
         try {
             Craft::$app->getImages()->loadImage($file);
+
             return true;
         } catch (\Exception $e) {
             return false;
         }
-
     }
 
     /**
@@ -207,11 +201,11 @@ class Image
             $svg = Io::getFileContents($filePath);
 
             return static::parseSvgSize($svg);
-        } else {
-            $image = Craft::$app->getImages()->loadImage($filePath);
-
-            return [$image->getWidth(), $image->getHeight()];
         }
+
+        $image = Craft::$app->getImages()->loadImage($filePath);
+
+        return [$image->getWidth(), $image->getHeight()];
     }
 
     /**
@@ -261,33 +255,24 @@ class Image
         $ppi = 72;
 
         switch ($unit) {
-            case 'px': {
+            case 'px':
                 return 1;
-            }
-            case 'in': {
+            case 'in':
                 return $ppi;
-            }
-            case 'pt': {
+            case 'pt':
                 return $ppi / 72;
-            }
-            case 'pc': {
+            case 'pc':
                 return $ppi / 6;
-            }
-            case 'cm': {
+            case 'cm':
                 return $ppi / 2.54;
-            }
-            case 'mm': {
+            case 'mm':
                 return $ppi / 25.4;
-            }
-            case 'em': {
+            case 'em':
                 return 16;
-            }
-            case 'ex': {
+            case 'ex':
                 return 10;
-            }
-            default: {
+            default:
                 return 1;
-            }
         }
     }
 }

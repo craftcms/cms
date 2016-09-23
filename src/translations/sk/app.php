@@ -1,6 +1,6 @@
 <?php
 
-return array(
+return [
     '"{filename}" is not allowed in this field.' => '"{filename}" nie je v tomto poli povolený.',
     '$_SERVER does not have {messages}.' => '$ _SERVER nemá {messages}.',
     '$_SERVER Variable' => 'Premenná $ _SERVER',
@@ -276,7 +276,7 @@ Ak si tento email neočakával, jednoducho ho ignoruj.',
     'Craft Update' => 'Craft Aktualizácia',
     'Craft was unable to install this update :(' => 'Craft túto aktualizáciu nemohol nainštalovať :(',
     'Craft {edition} is required to perform this action.' => 'Na vykonanie tejto akcie je potrebný Craft {edition}.',
-    'Craft’s <a href="http://buildwithcraft.com/license" target="_blank">Terms and Conditions</a> have changed.' => '<a href="http://buildwithcraft.com/license" target="_blank">Zmluvné podmienky</a> Craftu sa zmenili.',
+    'Craft’s <a href="http://craftcms.com/license" target="_blank">Terms and Conditions</a> have changed.' => '<a href="http://craftcms.com/license" target="_blank">Zmluvné podmienky</a> Craftu sa zmenili.',
     'Create' => 'Vytvoriť',
     'Create a new asset source' => 'Vytvoriť nový asset zdroj',
     'Create a new category' => 'Vytvoriť novú kategóriu',
@@ -1206,7 +1206,7 @@ Ak si tento email neočakával, jednoducho ho ignoruj.',
     'You cannot access the CP while the system is offline with that account.' => 'S týmto účtom nemožno získať prístup k ovládaciemu panelu, keď je systém v režime offline.',
     'You cannot access the CP with that account.' => 'S tým účtom nemožno získať prístup k ovládaciemu panelu.',
     'You can’t add any more {type} sections.' => 'Nemôžeš pridať žiadne ďalšie {type} sekcie.',
-    'You don’t have any <a href="http://buildwithcraft.com/docs/rich-text-fields#redactor-configs" target="_blank">Redactor configs</a> yet.' => 'Zatiaľ nemáš žiadne <a href="http://buildwithcraft.com/docs/rich-text-fields#redactor-configs" target="_blank">konfigurácie redaktora</a>.',
+    'You don’t have any <a href="http://craftcms.com/docs/rich-text-fields#redactor-configs" target="_blank">Redactor configs</a> yet.' => 'Zatiaľ nemáš žiadne <a href="http://craftcms.com/docs/rich-text-fields#redactor-configs" target="_blank">konfigurácie redaktora</a>.',
     'You don’t have any widgets yet.' => 'Zatiaľ nemáš žiadne widgety.',
     'You don’t have the proper credentials to access this page.' => 'Pre prístup k tejto stránke nemáš náležité poverenia.',
     'You don’t have the required permissions for this operation.' => 'Pre túto operáciu nemáš potrebné oprávnenia.',
@@ -1256,4 +1256,4 @@ Ak si tento email neočakával, jednoducho ho ignoruj.',
     '“{plugin}” can’t be disabled because it isn’t installed yet.' => '"{plugin}" nemôže byť zakázaný, pretože zatiaľ nie je nainštalovaný.',
     '“{plugin}” can’t be enabled because it isn’t installed yet.' => '"{plugin}" nemôže byť povolený, pretože zatiaľ nie je nainštalovaný.',
     '…Or use one of your field groups as a starting point:' => '...Alebo použiť niektorú zo skupín polí ako východiskový bod:',
-);
+];

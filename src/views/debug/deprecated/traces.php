@@ -27,24 +27,18 @@ $totalTraces = count($log->traces);
 
 foreach ($log->traces as $i => $trace) {
     if ($i === 0) {
-        $info = '<strong>Deprecation error:</strong> '.$log->message;
+        $info = '<strong>Deprecation error:</strong> '.htmlentities($log->message, null, 'UTF-8');
     } else if (!empty($trace['template'])) {
-        $info = '<strong>Template:</strong> '.$trace['template'];
+        $info = '<strong>Template:</strong> '.htmlentities($trace['template'], null, 'UTF-8');
     } else {
-        $info = (!empty($trace['objectClass']) || !empty($trace['class']) ? str_replace('\\',
-                    '\<wbr>',
-                    ($trace['objectClass'] ?: $trace['class'])).'::<wbr>' : '').$trace['method'].'('.$trace['args'].')';
+        $info = (!empty($trace['objectClass']) || !empty($trace['class']) ? str_replace('\\', '\<wbr>', ($trace['objectClass'] ?: $trace['class'])).'::<wbr>' : '').$trace['method'].'('.htmlentities($trace['args'], null, 'UTF-8').')';
     }
 
     if (!empty($trace['file'])) {
-        $info .= '<br><strong>From:</strong> '.str_replace('/', '/<wbr>',
-                $trace['file']).' ('.$trace['line'].')';
+        $info .= '<br><strong>From:</strong> '.str_replace('/', '/<wbr>', $trace['file']).' ('.$trace['line'].')';
     }
 
-    $values[] = [
-        ($totalTraces - $i),
-        $info
-    ];
+    $values[] = [($totalTraces - $i), $info];
 }
 
 echo $this->render('../table', [

@@ -1,13 +1,14 @@
 <?php
 /**
- * @link      http://buildwithcraft.com/
- * @copyright Copyright (c) 2015 Pixel & Tonic, Inc.
- * @license   http://buildwithcraft.com/license
+ * @link      https://craftcms.com/
+ * @copyright Copyright (c) Pixel & Tonic, Inc.
+ * @license   https://craftcms.com/license
  */
 
 namespace craft\app\web\twig\tokenparsers;
 
 use craft\app\web\twig\nodes\SwitchNode;
+use Twig_Node;
 
 /**
  * Class SwitchTokenParser that parses {% switch %} tags.
@@ -48,6 +49,7 @@ class SwitchTokenParser extends \Twig_TokenParser
 
         $stream->expect(\Twig_Token::BLOCK_START_TYPE);
 
+        $expressionParser = $this->parser->getExpressionParser();
         $cases = [];
         $default = null;
         $end = false;
@@ -57,13 +59,25 @@ class SwitchTokenParser extends \Twig_TokenParser
 
             switch ($next->getValue()) {
                 case 'case': {
-                    $expr = $this->parser->getExpressionParser()->parseExpression();
+                    $values = [];
+
+                    while (true) {
+                        $values[] = $expressionParser->parsePrimaryExpression();
+
+                        // Multiple allowed values?
+                        if ($stream->test(\Twig_Token::OPERATOR_TYPE, 'or')) {
+                            $stream->next();
+                        } else {
+                            break;
+                        }
+                    }
+
                     $stream->expect(\Twig_Token::BLOCK_END_TYPE);
                     $body = $this->parser->subparse([$this, 'decideIfFork']);
-                    $cases[] = [
-                        'expr' => $expr,
+                    $cases[] = new Twig_Node([
+                        'values' => new Twig_Node($values),
                         'body' => $body
-                    ];
+                    ]);
                     break;
                 }
                 case 'default': {
@@ -83,7 +97,7 @@ class SwitchTokenParser extends \Twig_TokenParser
 
         $stream->expect(\Twig_Token::BLOCK_END_TYPE);
 
-        return new SwitchNode($name, new \Twig_Node($cases), $default, $lineno, $this->getTag());
+        return new SwitchNode($name, new Twig_Node($cases), $default, $lineno, $this->getTag());
     }
 
     /**

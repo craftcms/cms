@@ -1,8 +1,8 @@
 <?php
 /**
- * @link      http://buildwithcraft.com/
- * @copyright Copyright (c) 2015 Pixel & Tonic, Inc.
- * @license   http://buildwithcraft.com/license
+ * @link      https://craftcms.com/
+ * @copyright Copyright (c) Pixel & Tonic, Inc.
+ * @license   https://craftcms.com/license
  */
 
 namespace craft\app\records;
@@ -13,15 +13,15 @@ use craft\app\db\ActiveRecord;
 /**
  * Class FieldLayoutField record.
  *
- * @property integer              $id        ID
- * @property integer              $layoutId  Layout ID
- * @property integer              $tabId     Tab ID
- * @property integer              $fieldId   Field ID
- * @property boolean              $required  Required
- * @property string               $sortOrder Sort order
- * @property ActiveQueryInterface $layout    Layout
- * @property ActiveQueryInterface $tab       Tab
- * @property ActiveQueryInterface $field     Field
+ * @property integer        $id        ID
+ * @property integer        $layoutId  Layout ID
+ * @property integer        $tabId     Tab ID
+ * @property integer        $fieldId   Field ID
+ * @property boolean        $required  Required
+ * @property string         $sortOrder Sort order
+ * @property FieldLayout    $layout    Layout
+ * @property FieldLayoutTab $tab       Tab
+ * @property Field          $field     Field
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since  3.0
@@ -58,7 +58,7 @@ class FieldLayoutField extends ActiveRecord
     /**
      * Returns the field layout field’s layout.
      *
-     * @return \yii\db\ActiveQueryInterface The relational query object.
+     * @return ActiveQueryInterface The relational query object.
      */
     public function getLayout()
     {
@@ -68,7 +68,7 @@ class FieldLayoutField extends ActiveRecord
     /**
      * Returns the field layout field’s tab.
      *
-     * @return \yii\db\ActiveQueryInterface The relational query object.
+     * @return ActiveQueryInterface The relational query object.
      */
     public function getTab()
     {
@@ -78,7 +78,7 @@ class FieldLayoutField extends ActiveRecord
     /**
      * Returns the field layout field’s field.
      *
-     * @return \yii\db\ActiveQueryInterface The relational query object.
+     * @return ActiveQueryInterface The relational query object.
      */
     public function getField()
     {

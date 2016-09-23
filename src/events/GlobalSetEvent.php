@@ -1,8 +1,8 @@
 <?php
 /**
- * @link      http://buildwithcraft.com/
- * @copyright Copyright (c) 2015 Pixel & Tonic, Inc.
- * @license   http://buildwithcraft.com/license
+ * @link      https://craftcms.com/
+ * @copyright Copyright (c) Pixel & Tonic, Inc.
+ * @license   https://craftcms.com/license
  */
 
 namespace craft\app\events;
@@ -24,4 +24,9 @@ class GlobalSetEvent extends Event
      * @var GlobalSet The global set model associated with the event.
      */
     public $globalSet;
+
+    /**
+     * @var boolean Whether the global set is brand new
+     */
+    public $isNew;
 }

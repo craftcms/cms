@@ -1,8 +1,8 @@
 <?php
 /**
- * @link      http://buildwithcraft.com/
- * @copyright Copyright (c) 2015 Pixel & Tonic, Inc.
- * @license   http://buildwithcraft.com/license
+ * @link      https://craftcms.com/
+ * @copyright Copyright (c) Pixel & Tonic, Inc.
+ * @license   https://craftcms.com/license
  */
 
 namespace craft\app\base;
@@ -10,7 +10,9 @@ namespace craft\app\base;
 /**
  * SavableComponent is the base class for classes representing savable Craft components in terms of objects.
  *
- * @property string $type The class name that should be used to represent the field
+ * @property boolean $isNew    Whether the component is new (unsaved)
+ * @property array   $settings The component’s settings
+ * @property string  $type     The class name that should be used to represent the field
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since  3.0
@@ -39,7 +41,7 @@ abstract class SavableComponent extends Component implements SavableComponentInt
     /**
      * @inheritdoc
      */
-    public function isNew()
+    public function getIsNew()
     {
         return (!$this->id || strncmp($this->id, 'new', 3) === 0);
     }

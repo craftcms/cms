@@ -1,14 +1,15 @@
 <?php
 /**
- * @link      http://buildwithcraft.com/
- * @copyright Copyright (c) 2015 Pixel & Tonic, Inc.
- * @license   http://buildwithcraft.com/license
+ * @link      https://craftcms.com/
+ * @copyright Copyright (c) Pixel & Tonic, Inc.
+ * @license   https://craftcms.com/license
  */
 
 namespace craft\app\fields;
 
 use Craft;
 use craft\app\base\Field;
+use craft\app\base\PreviewableFieldInterface;
 use craft\app\helpers\Html;
 use yii\db\Schema;
 
@@ -18,7 +19,7 @@ use yii\db\Schema;
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since  3.0
  */
-class Color extends Field
+class Color extends Field implements PreviewableFieldInterface
 {
     // Static
     // =========================================================================
@@ -65,10 +66,25 @@ class Color extends Field
     public function getStaticHtml($value, $element)
     {
         if ($value) {
-            return Html::encodeParams('<div class="color" style="cursor: default;"><div class="colorpreview" style="background-color: {bgColor};"></div></div><div class="colorhex">{bgColor}</div>',
+            return Html::encodeParams('<div class="color" style="cursor: default;"><div class="colorpreview" style="background-color: {bgColor};"></div></div><div class="colorhex code">{bgColor}</div>',
                 [
                     'bgColor' => $value
                 ]);
+        }
+
+        return null;
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function getTableAttributeHtml($value, $element)
+    {
+        if ($value && $value != '#000000') {
+            return '<div class="color small static"><div class="colorpreview" style="background-color: '.$value.';"></div></div>'.
+            '<div class="colorhex code">'.$value.'</div>';
+        } else {
+            return '';
         }
     }
 }

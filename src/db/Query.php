@@ -1,14 +1,14 @@
 <?php
 /**
- * @link      http://buildwithcraft.com/
- * @copyright Copyright (c) 2015 Pixel & Tonic, Inc.
- * @license   http://buildwithcraft.com/license
+ * @link      https://craftcms.com/
+ * @copyright Copyright (c) Pixel & Tonic, Inc.
+ * @license   https://craftcms.com/license
  */
 
 namespace craft\app\db;
 
-use craft\app\errors\Exception;
 use craft\app\helpers\ArrayHelper;
+use yii\base\Exception;
 
 /**
  * Class Query
@@ -100,7 +100,7 @@ class Query extends \yii\db\Query
                 $columns = array_keys($rows[0]);
 
                 if (count($columns) < 2) {
-                    throw new Exception('Less than two columns were selected.');
+                    throw new Exception('Less than two columns were selected');
                 }
 
                 $rows = ArrayHelper::map($rows, $columns[0], $columns[1]);
@@ -177,6 +177,7 @@ class Query extends \yii\db\Query
         }
 
         if ($column) {
+            /** @noinspection PhpUndefinedVariableInspection */
             $this->select = $select;
         }
 
@@ -204,6 +205,7 @@ class Query extends \yii\db\Query
         }
 
         if ($column) {
+            /** @noinspection PhpUndefinedVariableInspection */
             $this->select = $select;
         }
 

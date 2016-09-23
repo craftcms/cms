@@ -1,32 +1,53 @@
 /**
  * CP class
  */
-var CP = Garnish.Base.extend(
+Craft.CP = Garnish.Base.extend(
 {
 	authManager: null,
 
+	$container: null,
 	$alerts: null,
-	$header: null,
-	$headerActionsList: null,
+	$globalSidebar: null,
+	$globalSidebarTopbar: null,
+	$siteNameLink: null,
 	$siteName: null,
 	$nav: null,
+	$subnav: null,
+	$pageHeader: null,
+	$containerTopbar: null,
 
 	$overflowNavMenuItem: null,
 	$overflowNavMenuBtn: null,
 	$overflowNavMenu: null,
 	$overflowNavMenuList: null,
 
+	$overflowSubnavMenuItem: null,
+	$overflowSubnavMenuBtn: null,
+	$overflowSubnavMenu: null,
+	$overflowSubnavMenuList: null,
+
 	$notificationWrapper: null,
 	$notificationContainer: null,
 	$main: null,
 	$content: null,
 	$collapsibleTables: null,
+	$primaryForm: null,
 
 	navItems: null,
 	totalNavItems: null,
 	visibleNavItems: null,
 	totalNavWidth: null,
 	showingOverflowNavMenu: false,
+	showingNavToggle: null,
+	showingSidebarToggle: null,
+
+	subnavItems: null,
+	totalSubnavItems: null,
+	visibleSubnavItems: null,
+	totalSubnavWidth: null,
+	showingOverflowSubnavMenu: false,
+
+	selectedItemLabel: null,
 
 	fixedNotifications: false,
 
@@ -34,8 +55,12 @@ var CP = Garnish.Base.extend(
 	trackTaskProgressTimeout: null,
 	taskProgressIcon: null,
 
-	$upgradePromo: null,
+	$edition: null,
 	upgradeModal: null,
+
+	checkingForUpdates: false,
+	forcingRefreshOnUpdatesCheck: false,
+	checkForUpdatesCallbacks: null,
 
 	init: function()
 	{
@@ -46,25 +71,30 @@ var CP = Garnish.Base.extend(
 		}
 
 		// Find all the key elements
+		this.$container = $('#container');
 		this.$alerts = $('#alerts');
-		this.$header = $('#header');
-		this.$headerActionsList = this.$header.find('#header-actions');
-		this.$siteName = this.$header.find('h2');
+		this.$globalSidebar = $('#global-sidebar');
+		this.$pageHeader = $('#page-header');
+		this.$containerTopbar = $('#container').find('.topbar');
+		this.$globalSidebarTopbar = this.$globalSidebar.children('.topbar');
+		this.$siteNameLink = this.$globalSidebarTopbar.children('a.site-name');
+		this.$siteName = this.$siteNameLink.children('h2');
 		this.$nav = $('#nav');
+		this.$subnav = $('#subnav');
+		this.$sidebar = $('#sidebar');
 		this.$notificationWrapper = $('#notifications-wrapper');
 		this.$notificationContainer = $('#notifications');
 		this.$main = $('#main');
 		this.$content = $('#content');
-		this.$collapsibleTables = this.$content.find('table.collapsible');
-		this.$upgradePromo = $('#upgradepromo > a');
+		this.$collapsibleTables = $('table.collapsible');
+		this.$edition = $('#edition');
 
-		// Keep the site name contained
-		this.onActionItemListResize();
-		this.addListener(this.$headerActionsList, 'resize', 'onActionItemListResize');
+		// global sidebar
+		this.addListener(Garnish.$win, 'touchend', 'updateResponsiveGlobalSidebar');
 
 		// Find all the nav items
 		this.navItems = [];
-		this.totalNavWidth = CP.baseNavWidth;
+		this.totalNavWidth = Craft.CP.baseNavWidth;
 
 		var $navItems = this.$nav.children();
 		this.totalNavItems = $navItems.length;
@@ -79,18 +109,47 @@ var CP = Garnish.Base.extend(
 			this.totalNavWidth += width;
 		}
 
-		this.addListener(Garnish.$win, 'resize', 'onWindowResize');
-		this.onWindowResize();
+		// Find all the sub nav items
+		this.subnavItems = [];
+		this.totalSubnavWidth = Craft.CP.baseSubnavWidth;
 
-		this.addListener(Garnish.$win, 'scroll', 'updateFixedNotifications');
+		var $subnavItems = this.$subnav.children();
+		this.totalSubnavItems = $subnavItems.length;
+		this.visibleSubnavItems = this.totalSubnavItems;
+
+		for (var i = 0; i < this.totalSubnavItems; i++)
+		{
+			var $li = $($subnavItems[i]),
+				width = $li.width();
+
+			this.subnavItems.push($li);
+			this.totalSubnavWidth += width;
+		}
+
+		// sidebar
+
+		this.addListener(this.$sidebar.find('nav ul'), 'resize', 'updateResponsiveSidebar');
+
+		this.$sidebarLinks = $('nav a', this.$sidebar);
+		this.addListener(this.$sidebarLinks, 'click', 'selectSidebarItem');
+
+
+		this.addListener(this.$container, 'scroll', 'updateFixedNotifications');
 		this.updateFixedNotifications();
 
-		// Fade the notification out in two seconds
-		var $errorNotifications = this.$notificationContainer.children('.error'),
-			$otherNotifications = this.$notificationContainer.children(':not(.error)');
+		Garnish.$doc.ready($.proxy(function()
+		{
+			// Set up the window resize listener
+			this.addListener(Garnish.$win, 'resize', 'onWindowResize');
+			this.onWindowResize();
 
-		$errorNotifications.delay(CP.notificationDuration * 2).velocity('fadeOut');
-		$otherNotifications.delay(CP.notificationDuration).velocity('fadeOut');
+			// Fade the notification out two seconds after page load
+			var $errorNotifications = this.$notificationContainer.children('.error'),
+				$otherNotifications = this.$notificationContainer.children(':not(.error)');
+
+			$errorNotifications.delay(Craft.CP.notificationDuration * 2).velocity('fadeOut');
+			$otherNotifications.delay(Craft.CP.notificationDuration).velocity('fadeOut');
+		}, this));
 
 		// Alerts
 		if (this.$alerts.length)
@@ -98,27 +157,27 @@ var CP = Garnish.Base.extend(
 			this.initAlerts();
 		}
 
-		// Listen for save shortcuts in primary forms
-		var $primaryForm = $('form[data-saveshortcut]:first');
+		// Does this page have a primary form?
+		if (this.$container.prop('nodeName') == 'FORM')
+		{
+			this.$primaryForm = this.$container;
+		}
+		else
+		{
+			this.$primaryForm = $('form[data-saveshortcut]:first');
+		}
 
-		if ($primaryForm.length == 1)
+		// Does the primary form support the save shortcut?
+		if (this.$primaryForm.length && Garnish.hasAttr(this.$primaryForm, 'data-saveshortcut'))
 		{
 			this.addListener(Garnish.$doc, 'keydown', function(ev)
 			{
-				if ((ev.metaKey || ev.ctrlKey) && ev.keyCode == Garnish.S_KEY)
+				if (Garnish.isCtrlKeyPressed(ev) && ev.keyCode == Garnish.S_KEY)
 				{
 					ev.preventDefault();
-
-					// Give other stuff on the page a chance to prepare
-					this.trigger('beforeSaveShortcut');
-
-					if ($primaryForm.data('saveshortcut-redirect'))
-					{
-						$('<input type="hidden" name="redirect" value="'+$primaryForm.data('saveshortcut-redirect')+'"/>').appendTo($primaryForm);
-					}
-
-					$primaryForm.submit();
+					this.submitPrimaryForm();
 				}
+
 				return true;
 			});
 		}
@@ -159,7 +218,7 @@ var CP = Garnish.Base.extend(
 							this.initialFormValues[i] != $(this.$confirmUnloadForms[i]).serialize()
 						)
 						{
-							var message = Craft.t('Any changes will be lost if you leave this page.');
+							var message = Craft.t('app', 'Any changes will be lost if you leave this page.');
 
 							if (ev)
 							{
@@ -177,14 +236,32 @@ var CP = Garnish.Base.extend(
 			}
 		}, this));
 
-		this.addListener(this.$upgradePromo, 'click', 'showUpgradeModal');
-
-		var $wrongEditionModalContainer = $('#wrongedition-modal');
-
-		if ($wrongEditionModalContainer.length)
+		if (this.$edition.hasClass('hot'))
 		{
-			new Craft.WrongEditionModal($wrongEditionModalContainer);
+			this.addListener(this.$edition, 'click', 'showUpgradeModal');
 		}
+	},
+
+	submitPrimaryForm: function()
+	{
+		// Give other stuff on the page a chance to prepare
+		this.trigger('beforeSaveShortcut');
+
+		if (this.$primaryForm.data('saveshortcut-redirect'))
+		{
+			$('<input type="hidden" name="redirect" value="'+this.$primaryForm.data('saveshortcut-redirect')+'"/>').appendTo(this.$primaryForm);
+		}
+
+		this.$primaryForm.submit();
+	},
+
+	updateSidebarMenuLabel: function()
+	{
+		Garnish.$win.trigger('resize');
+
+		var $selectedLink = $('a.sel:first', this.$sidebar);
+
+		this.selectedItemLabel = $selectedLink.html();
 	},
 
 	/**
@@ -193,135 +270,209 @@ var CP = Garnish.Base.extend(
 	onWindowResize: function()
 	{
 		// Get the new window width
-		this.onWindowResize._cpWidth = Math.min(Garnish.$win.width(), CP.maxWidth);
+		this.onWindowResize._cpWidth = Math.min(Garnish.$win.width(), Craft.CP.maxWidth);
+
+
+		// Update the responsive global sidebar
+		this.updateResponsiveGlobalSidebar();
 
 		// Update the responsive nav
 		this.updateResponsiveNav();
+
+		// Update the responsive sidebar
+		this.updateResponsiveSidebar();
 
 		// Update any responsive tables
 		this.updateResponsiveTables();
 	},
 
-	onActionItemListResize: function()
+	updateResponsiveGlobalSidebar: function()
 	{
-		this.$siteName.css('max-width', 'calc(100% - '+(this.$headerActionsList.width()+14)+'px)');
+		var globalSidebarHeight = window.innerHeight;
+
+		this.$globalSidebar.height(globalSidebarHeight);
 	},
 
 	updateResponsiveNav: function()
 	{
-		// Is an overflow menu going to be needed?
-		if (this.onWindowResize._cpWidth < this.totalNavWidth)
+		if(this.onWindowResize._cpWidth <= 992)
 		{
-			// Show the overflow menu button
-			if (!this.showingOverflowNavMenu)
+			if (!this.showingNavToggle)
 			{
-				if (!this.$overflowNavMenuBtn)
-				{
-					// Create it
-					this.$overflowNavMenuItem = $('<li/>').appendTo(this.$nav);
-					this.$overflowNavMenuBtn = $('<a class="menubtn" title="'+Craft.t('More')+'">…</a>').appendTo(this.$overflowNavMenuItem);
-					this.$overflowNavMenu = $('<div id="overflow-nav" class="menu" data-align="right"/>').appendTo(this.$overflowNavMenuItem);
-					this.$overflowNavMenuList = $('<ul/>').appendTo(this.$overflowNavMenu);
-					new Garnish.MenuBtn(this.$overflowNavMenuBtn);
-				}
-				else
-				{
-					this.$overflowNavMenuItem.show();
-				}
-
-				this.showingOverflowNavMenu = true;
-			}
-
-			// Is the nav too tall?
-			if (this.$nav.height() > CP.navHeight)
-			{
-				// Move items to the overflow menu until the nav is back to its normal height
-				do
-				{
-					this.addLastVisibleNavItemToOverflowMenu();
-				}
-				while ((this.$nav.height() > CP.navHeight) && (this.visibleNavItems > 0));
-			}
-			else
-			{
-				// See if we can fit any more nav items in the main menu
-				while ((this.$nav.height() == CP.navHeight) && (this.visibleNavItems < this.totalNavItems))
-				{
-					this.addFirstOverflowNavItemToMainMenu();
-				}
-
-				// Now kick the last one back.
-				this.addLastVisibleNavItemToOverflowMenu();
+				this.showNavToggle();
 			}
 		}
 		else
 		{
-			if (this.showingOverflowNavMenu)
+			if (this.showingNavToggle)
 			{
-				// Hide the overflow menu button
-				this.$overflowNavMenuItem.hide();
-
-				// Move any nav items in the overflow menu back to the main nav menu
-				while (this.visibleNavItems < this.totalNavItems)
-				{
-					this.addFirstOverflowNavItemToMainMenu();
-				}
-
-				this.showingOverflowNavMenu = false;
+				this.hideNavToggle();
 			}
+		}
+	},
+
+	showNavToggle: function()
+	{
+		this.$navBtn = $('<a class="show-nav" title="'+Craft.t('app', 'Show nav')+'"></a>').prependTo(this.$containerTopbar);
+
+		this.addListener(this.$navBtn, 'click', 'toggleNav');
+
+		this.showingNavToggle = true;
+	},
+
+	hideNavToggle: function()
+	{
+		this.$navBtn.remove();
+		this.showingNavToggle = false;
+	},
+
+	toggleNav: function()
+	{
+		if(Garnish.$bod.hasClass('showing-nav'))
+		{
+			Garnish.$bod.toggleClass('showing-nav');
+		}
+		else
+		{
+			Garnish.$bod.toggleClass('showing-nav');
+		}
+
+	},
+
+	updateResponsiveSidebar: function()
+	{
+		if(this.$sidebar.length > 0)
+		{
+			if(this.onWindowResize._cpWidth < 769)
+			{
+				if (!this.showingSidebarToggle)
+				{
+					this.showSidebarToggle();
+				}
+			}
+			else
+			{
+				if (this.showingSidebarToggle)
+				{
+					this.hideSidebarToggle();
+				}
+			}
+		}
+	},
+
+	showSidebarToggle: function()
+	{
+		var $selectedLink = $('a.sel:first', this.$sidebar);
+
+		this.selectedItemLabel = $selectedLink.html();
+
+		this.$sidebarBtn = $('<a class="show-sidebar" title="'+Craft.t('app', 'Show sidebar')+'">'+this.selectedItemLabel+'</a>').prependTo(this.$content);
+
+		this.addListener(this.$sidebarBtn, 'click', 'toggleSidebar');
+
+		this.showingSidebarToggle = true;
+	},
+
+	selectSidebarItem: function(ev)
+	{
+		var $link = $(ev.currentTarget);
+
+		this.selectedItemLabel = $link.html();
+
+		if (this.$sidebarBtn)
+		{
+			this.$sidebarBtn.html(this.selectedItemLabel);
+
+			this.toggleSidebar();
+		}
+	},
+
+	hideSidebarToggle: function()
+	{
+		if (this.$sidebarBtn)
+		{
+			this.$sidebarBtn.remove();
+		}
+
+		this.showingSidebarToggle = false;
+	},
+
+	toggleSidebar: function()
+	{
+		var $contentWithSidebar = this.$content.filter('.has-sidebar');
+
+		$contentWithSidebar.toggleClass('showing-sidebar');
+
+		this.updateResponsiveContent();
+	},
+	updateResponsiveContent: function()
+	{
+		var $contentWithSidebar = this.$content.filter('.has-sidebar');
+
+		if($contentWithSidebar.hasClass('showing-sidebar'))
+		{
+			var sidebarHeight = $('nav', this.$sidebar).height();
+
+			if($contentWithSidebar.height() <= sidebarHeight)
+			{
+				var newContentHeight = sidebarHeight + 48;
+				$contentWithSidebar.css('height', newContentHeight+'px');
+			}
+		}
+		else
+		{
+			$contentWithSidebar.css('min-height', 0);
+			$contentWithSidebar.css('height', 'auto');
 		}
 	},
 
 	updateResponsiveTables: function()
 	{
-		if (!Garnish.isMobileBrowser())
-		{
-			return;
-		}
-
-		this.updateResponsiveTables._contentWidth = this.$content.width();
-
 		for (this.updateResponsiveTables._i = 0; this.updateResponsiveTables._i < this.$collapsibleTables.length; this.updateResponsiveTables._i++)
 		{
-			this.updateResponsiveTables._$table = $(this.$collapsibleTables[this.updateResponsiveTables._i]);
+			this.updateResponsiveTables._$table = this.$collapsibleTables.eq(this.updateResponsiveTables._i);
+			this.updateResponsiveTables._containerWidth = this.updateResponsiveTables._$table.parent().width();
 			this.updateResponsiveTables._check = false;
 
-			if (typeof this.updateResponsiveTables._lastContentWidth != 'undefined')
+			if(this.updateResponsiveTables._containerWidth > 0)
 			{
-				this.updateResponsiveTables._isLinear = this.updateResponsiveTables._$table.hasClass('collapsed');
-
-				// Getting wider?
-				if (this.updateResponsiveTables._contentWidth > this.updateResponsiveTables._lastContentWidth)
+				// Is this the first time we've checked this table?
+				if (typeof this.updateResponsiveTables._$table.data('lastContainerWidth') === typeof undefined)
 				{
-					if (this.updateResponsiveTables._isLinear)
-					{
-						this.updateResponsiveTables._$table.removeClass('collapsed');
-						this.updateResponsiveTables._check = true;
-					}
+					this.updateResponsiveTables._check = true;
 				}
 				else
 				{
-					if (!this.updateResponsiveTables._isLinear)
+					this.updateResponsiveTables._isCollapsed = this.updateResponsiveTables._$table.hasClass('collapsed');
+
+					// Getting wider?
+					if (this.updateResponsiveTables._containerWidth > this.updateResponsiveTables._$table.data('lastContainerWidth'))
+					{
+						if (this.updateResponsiveTables._isCollapsed)
+						{
+							this.updateResponsiveTables._$table.removeClass('collapsed');
+							this.updateResponsiveTables._check = true;
+						}
+					}
+					else if (!this.updateResponsiveTables._isCollapsed)
 					{
 						this.updateResponsiveTables._check = true;
 					}
 				}
-			}
-			else
-			{
-				this.updateResponsiveTables._check = true;
-			}
 
-			if (this.updateResponsiveTables._check)
-			{
-				if (this.updateResponsiveTables._$table.width() > this.updateResponsiveTables._contentWidth)
+				// Are we checking the table width?
+				if (this.updateResponsiveTables._check)
 				{
-					this.updateResponsiveTables._$table.addClass('collapsed');
+					if (this.updateResponsiveTables._$table.width() > this.updateResponsiveTables._containerWidth)
+					{
+						this.updateResponsiveTables._$table.addClass('collapsed');
+					}
 				}
+
+				// Remember the container width for next time
+				this.updateResponsiveTables._$table.data('lastContainerWidth', this.updateResponsiveTables._containerWidth);
 			}
 		}
-
-		this.updateResponsiveTables._lastContentWidth = this.updateResponsiveTables._contentWidth;
 	},
 
 	/**
@@ -342,11 +493,29 @@ var CP = Garnish.Base.extend(
 		this.visibleNavItems++;
 	},
 
+	/**
+	 * Adds the last visible nav item to the overflow menu.
+	 */
+	addLastVisibleSubnavItemToOverflowMenu: function()
+	{
+		this.subnavItems[this.visibleSubnavItems-1].prependTo(this.$overflowSubnavMenuList);
+		this.visibleSubnavItems--;
+	},
+
+	/**
+	 * Adds the first overflow nav item back to the main nav menu.
+	 */
+	addFirstOverflowSubnavItemToMainMenu: function()
+	{
+		this.subnavItems[this.visibleSubnavItems].insertBefore(this.$overflowSubnavMenuItem);
+		this.visibleSubnavItems++;
+	},
+
 	updateFixedNotifications: function()
 	{
-		this.updateFixedNotifications._headerHeight = this.$header.height();
+		this.updateFixedNotifications._headerHeight = this.$globalSidebar.height();
 
-		if (Garnish.$win.scrollTop() > this.updateFixedNotifications._headerHeight)
+		if (this.$container.scrollTop() > this.updateFixedNotifications._headerHeight)
 		{
 			if (!this.fixedNotifications)
 			{
@@ -367,24 +536,33 @@ var CP = Garnish.Base.extend(
 	/**
 	 * Dispays a notification.
 	 *
-	 * @param string type
-	 * @param string message
+	 * @param {string} type
+	 * @param {string} message
 	 */
 	displayNotification: function(type, message)
 	{
-		var notificationDuration = CP.notificationDuration;
+		var notificationDuration = Craft.CP.notificationDuration;
 
 		if (type == 'error')
 		{
 			notificationDuration *= 2;
 		}
 
-		$('<div class="notification '+type+'">'+message+'</div>')
-			.appendTo(this.$notificationContainer)
+		var $notification = $('<div class="notification '+type+'">'+message+'</div>')
+			.appendTo(this.$notificationContainer);
+
+		var fadedMargin = -($notification.outerWidth()/2)+'px';
+
+		$notification
 			.hide()
-			.velocity('fadeIn', { display: 'inline-block', duration: 'fast' })
+			.css({ opacity: 0, 'margin-left': fadedMargin, 'margin-right': fadedMargin })
+			.velocity({ opacity: 1, 'margin-left': '2px', 'margin-right': '2px' }, { display: 'inline-block', duration: 'fast' })
 			.delay(notificationDuration)
-			.velocity('fadeOut');
+			.velocity({ opacity: 0, 'margin-left': fadedMargin, 'margin-right': fadedMargin }, {
+				complete: function() {
+					$notification.remove();
+				}
+			});
 
 		this.trigger('displayNotification', {
 			notificationType: type,
@@ -395,7 +573,7 @@ var CP = Garnish.Base.extend(
 	/**
 	 * Displays a notice.
 	 *
-	 * @param string message
+	 * @param {string} message
 	 */
 	displayNotice: function(message)
 	{
@@ -405,13 +583,13 @@ var CP = Garnish.Base.extend(
 	/**
 	 * Displays an error.
 	 *
-	 * @param string message
+	 * @param {string} message
 	 */
 	displayError: function(message)
 	{
 		if (!message)
 		{
-			message = Craft.t('An unknown error occurred.');
+			message = Craft.t('app', 'An unknown error occurred.');
 		}
 
 		this.displayNotification('error', message);
@@ -430,19 +608,15 @@ var CP = Garnish.Base.extend(
 	{
 		if (Garnish.isArray(alerts) && alerts.length)
 		{
-			this.$alerts = $('<ul id="alerts"/>').insertBefore($('#header'));
+			this.$alerts = $('<ul id="alerts"/>').insertBefore(this.$containerTopbar);
 
 			for (var i = 0; i < alerts.length; i++)
 			{
 				$('<li>'+alerts[i]+'</li>').appendTo(this.$alerts);
 			}
 
-			var height = this.$alerts.height();
-
-			this.$alerts.height(0).velocity({ height: height }, 'fast', $.proxy(function()
-			{
-				this.$alerts.height('auto');
-			}, this));
+			var height = this.$alerts.outerHeight();
+			this.$alerts.css('margin-top', -height).velocity({ 'margin-top': 0 }, 'fast');
 
 			this.initAlerts();
 		}
@@ -459,7 +633,7 @@ var CP = Garnish.Base.extend(
 			{
 				ev.preventDefault();
 
-				if (confirm(Craft.t('Are you sure you want to transfer your license to this domain?')))
+				if (confirm(Craft.t('app', 'Are you sure you want to transfer your license to this domain?')))
 				{
 					Craft.queueActionRequest('app/transfer-license-to-current-domain', $.proxy(function(response, textStatus)
 					{
@@ -468,11 +642,11 @@ var CP = Garnish.Base.extend(
 							if (response.success)
 							{
 								$transferDomainLink.parent().remove();
-								this.displayNotice(Craft.t('License transferred.'));
+								this.displayNotice(Craft.t('app', 'License transferred.'));
 							}
 							else
 							{
-								Craft.cp.displayError(response.error);
+								this.displayError(response.error);
 							}
 						}
 
@@ -506,7 +680,7 @@ var CP = Garnish.Base.extend(
 						}
 						else
 						{
-							Craft.cp.displayError(response.error);
+							this.displayError(response.error);
 						}
 					}
 
@@ -514,24 +688,76 @@ var CP = Garnish.Base.extend(
 
 			}, this));
 		}
+
+		// Is there an edition resolution link?
+		var $editionResolutionLink = this.$alerts.find('.edition-resolution:first');
+
+		if ($editionResolutionLink.length)
+		{
+			this.addListener($editionResolutionLink, 'click', 'showUpgradeModal');
+		}
 	},
 
-	checkForUpdates: function()
+	checkForUpdates: function(forceRefresh, callback)
 	{
-		Craft.queueActionRequest('app/check-for-updates', $.proxy(function(info)
+		// If forceRefresh == true, we're currently checking for updates, and not currently forcing a refresh,
+		// then just seta new callback that re-checks for updates when the current one is done.
+		if (this.checkingForUpdates && forceRefresh === true && !this.forcingRefreshOnUpdatesCheck)
 		{
-			this.displayUpdateInfo(info);
+			var realCallback = callback;
 
-			this.trigger('checkForUpdates', {
-				updateInfo: info
-			});
-		}, this));
+			callback = function() {
+				Craft.cp.checkForUpdates(true, realCallback);
+			};
+		}
+
+		// Callback function?
+		if (typeof callback == 'function')
+		{
+			if (!Garnish.isArray(this.checkForUpdatesCallbacks))
+			{
+				this.checkForUpdatesCallbacks = [];
+			}
+
+			this.checkForUpdatesCallbacks.push(callback);
+		}
+
+		if (!this.checkingForUpdates)
+		{
+			this.checkingForUpdates = true;
+			this.forcingRefreshOnUpdatesCheck = (forceRefresh === true);
+
+			var data = {
+				forceRefresh: (forceRefresh === true)
+			};
+
+			Craft.queueActionRequest('app/check-for-updates', data, $.proxy(function(info)
+			{
+				this.displayUpdateInfo(info);
+				this.checkingForUpdates = false;
+
+				if (Garnish.isArray(this.checkForUpdatesCallbacks))
+				{
+					var callbacks = this.checkForUpdatesCallbacks;
+					this.checkForUpdatesCallbacks = null;
+
+					for (var i = 0; i < callbacks.length; i++)
+					{
+						callbacks[i](info);
+					}
+				}
+
+				this.trigger('checkForUpdates', {
+					updateInfo: info
+				});
+			}, this));
+		}
 	},
 
 	displayUpdateInfo: function(info)
 	{
 		// Remove the existing header badge, if any
-		this.$headerActionsList.children('li.updates').remove();
+		this.$globalSidebarTopbar.children('a.updates').remove();
 
 		if (info.total)
 		{
@@ -539,19 +765,19 @@ var CP = Garnish.Base.extend(
 
 			if (info.total == 1)
 			{
-				updateText = Craft.t('1 update available');
+				updateText = Craft.t('app', '1 update available');
 			}
 			else
 			{
-				updateText = Craft.t('{num} updates available', { num: info.total });
+				updateText = Craft.t('app', '{num} updates available', { num: info.total });
 			}
 
-			// Header badge
-			$('<li class="updates'+(info.critical ? ' critical' : '')+'">' +
-				'<a data-icon="newstamp" href="'+Craft.getUrl('updates')+'" title="'+updateText+'">' +
+			// Topbar badge
+			$('<a class="updates'+(info.critical ? ' critical' : '')+'" href="'+Craft.getUrl('updates')+'" title="'+updateText+'">' +
+				'<span data-icon="newstamp">' +
 					'<span>'+info.total+'</span>' +
-				'</a>' +
-			'</li>').prependTo(this.$headerActionsList);
+				'</span>' +
+			'</span>').insertAfter(this.$siteNameLink);
 
 			// Footer link
 			$('#footer-updates').text(updateText);
@@ -605,7 +831,7 @@ var CP = Garnish.Base.extend(
 					}
 				}
 			}, this));
-		}, this), (typeof delay != typeof undefined ? delay : 1000));
+		}, this), (typeof delay != typeof undefined ? delay : Craft.CP.taskTrackerUpdateInterval));
 	},
 
 	stopTrackingTaskProgress: function()
@@ -666,10 +892,15 @@ var CP = Garnish.Base.extend(
 	maxWidth: 1051, //1024,
 	navHeight: 38,
 	baseNavWidth: 30,
-	notificationDuration: 2000
+	subnavHeight: 38,
+	baseSubnavWidth: 30,
+	notificationDuration: 2000,
+
+	taskTrackerUpdateInterval: 1000,
+	taskTrackerHudUpdateInterval: 500
 });
 
-Craft.cp = new CP();
+Craft.cp = new Craft.CP();
 
 
 /**
@@ -679,6 +910,8 @@ var TaskProgressIcon = Garnish.Base.extend(
 {
 	$li: null,
 	$a: null,
+	$label: null,
+
 	hud: null,
 	completed: false,
 	failMode: false,
@@ -709,15 +942,17 @@ var TaskProgressIcon = Garnish.Base.extend(
 
 	init: function()
 	{
-		this.$li = $('<li/>').prependTo(Craft.cp.$headerActionsList);
+		this.$li = $('<li/>').appendTo(Craft.cp.$nav);
 		this.$a = $('<a id="taskicon"/>').appendTo(this.$li);
+		this.$canvasContainer = $('<span class="icon"/>').appendTo(this.$a);
+		this.$label = $('<span class="label"></span>').appendTo(this.$a);
 
 		this._canvasSupported = !!(document.createElement('canvas').getContext);
 
 		if (this._canvasSupported)
 		{
 			var m = (window.devicePixelRatio > 1 ? 2 : 1);
-			this._canvasSize = 30 * m;
+			this._canvasSize = 18 * m;
 			this._arcPos = this._canvasSize / 2;
 			this._arcRadius = 7 * m;
 			this._lineWidth = 3 * m;
@@ -735,7 +970,7 @@ var TaskProgressIcon = Garnish.Base.extend(
 		}
 		else
 		{
-			this._progressBar = new Craft.ProgressBar(this.$a);
+			this._progressBar = new Craft.ProgressBar(this.$canvasContainer);
 			this._progressBar.showProgressBar();
 		}
 
@@ -745,6 +980,7 @@ var TaskProgressIcon = Garnish.Base.extend(
 	setDescription: function(description)
 	{
 		this.$a.attr('title', description);
+		this.$label.html(description);
 	},
 
 	setProgress: function(progress, animate)
@@ -778,7 +1014,7 @@ var TaskProgressIcon = Garnish.Base.extend(
 
 				this._animateArc(1, 1, $.proxy(function()
 				{
-					this.$li.remove();
+					this.$a.remove();
 					this.destroy();
 				}, this));
 			}, this));
@@ -813,7 +1049,7 @@ var TaskProgressIcon = Garnish.Base.extend(
 			this._progressBar.setProgressPercentage(50);
 		}
 
-		this.setDescription(Craft.t('Failed task'));
+		this.setDescription(Craft.t('app', 'Failed task'));
 	},
 
 	hideFailMode: function()
@@ -854,7 +1090,7 @@ var TaskProgressIcon = Garnish.Base.extend(
 
 	_createCanvas: function(id, color)
 	{
-		var $canvas = $('<canvas id="taskicon-'+id+'" width="'+this._canvasSize+'" height="'+this._canvasSize+'"/>').appendTo(this.$a),
+		var $canvas = $('<canvas id="taskicon-'+id+'" width="'+this._canvasSize+'" height="'+this._canvasSize+'"/>').appendTo(this.$canvasContainer),
 			ctx = $canvas[0].getContext('2d');
 
 		ctx.strokeStyle = color;
@@ -929,7 +1165,8 @@ var TaskProgressHUD = Garnish.HUD.extend(
 		this.completedTasks = [];
 
 		this.base(this.icon.$a);
-		this.$body.attr('id', 'tasks-hud');
+
+		this.$main.attr('id', 'tasks-hud');
 
 		// Use the known task as a starting point
 		if (Craft.cp.runningTaskInfo && Craft.cp.runningTaskInfo.status != 'error')
@@ -937,7 +1174,7 @@ var TaskProgressHUD = Garnish.HUD.extend(
 			this.showTaskInfo([Craft.cp.runningTaskInfo]);
 		}
 
-		this.$hud.trigger('resize');
+		this.$main.trigger('resize');
 	},
 
 	onShow: function()
@@ -1002,6 +1239,10 @@ var TaskProgressHUD = Garnish.HUD.extend(
 
 		for (var id in this.tasksById)
 		{
+			if (!this.tasksById.hasOwnProperty(id)) {
+				continue;
+			}
+
 			if (!Craft.inArray(id, newTaskIds))
 			{
 				this.tasksById[id].complete();
@@ -1051,7 +1292,7 @@ var TaskProgressHUD = Garnish.HUD.extend(
 
 			if (anyTasksRunning)
 			{
-				this.updateTasksTimeout = setTimeout($.proxy(this, 'updateTasks'), 500);
+				this.updateTasksTimeout = setTimeout($.proxy(this, 'updateTasks'), Craft.CP.taskTrackerHudUpdateInterval);
 			}
 			else
 			{
@@ -1096,7 +1337,7 @@ TaskProgressHUD.Task = Garnish.Base.extend(
 		this.level = info.level;
 		this.description = info.description;
 
-		this.$container = $('<div class="task"/>').appendTo(this.hud.$body);
+		this.$container = $('<div class="task"/>').appendTo(this.hud.$main);
 		this.$statusContainer = $('<div class="task-status"/>').appendTo(this.$container);
 		this.$descriptionContainer = $('<div class="task-description"/>').appendTo(this.$container).text(info.description);
 
@@ -1122,7 +1363,7 @@ TaskProgressHUD.Task = Garnish.Base.extend(
 			{
 				case 'pending':
 				{
-					this.$statusContainer.text(Craft.t('Pending'));
+					this.$statusContainer.text(Craft.t('app', 'Pending'));
 					break;
 				}
 				case 'running':
@@ -1133,16 +1374,16 @@ TaskProgressHUD.Task = Garnish.Base.extend(
 				}
 				case 'error':
 				{
-					$('<span class="error">'+Craft.t('Failed')+'</span>').appendTo(this.$statusContainer);
+					$('<span class="error">'+Craft.t('app', 'Failed')+'</span>').appendTo(this.$statusContainer);
 
 					if (this.level == 0)
 					{
-						var $actionBtn = $('<a class="menubtn error" title="'+Craft.t('Options')+'"/>').appendTo(this.$statusContainer);
+						var $actionBtn = $('<a class="menubtn error" title="'+Craft.t('app', 'Options')+'"/>').appendTo(this.$statusContainer);
 						$(
 							'<div class="menu">' +
 								'<ul>' +
-									'<li><a data-action="rerun">'+Craft.t('Try again')+'</a></li>' +
-									'<li><a data-action="cancel">'+Craft.t('Cancel')+'</a></li>' +
+									'<li><a data-action="rerun">'+Craft.t('app', 'Try again')+'</a></li>' +
+									'<li><a data-action="cancel">'+Craft.t('app', 'Cancel')+'</a></li>' +
 								'</ul>' +
 							'</div>'
 						).appendTo(this.$statusContainer);

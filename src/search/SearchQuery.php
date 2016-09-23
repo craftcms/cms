@@ -1,8 +1,8 @@
 <?php
 /**
- * @link      http://buildwithcraft.com/
- * @copyright Copyright (c) 2015 Pixel & Tonic, Inc.
- * @license   http://buildwithcraft.com/license
+ * @link      https://craftcms.com/
+ * @copyright Copyright (c) Pixel & Tonic, Inc.
+ * @license   https://craftcms.com/license
  */
 
 namespace craft\app\search;
@@ -28,6 +28,11 @@ class SearchQuery
     /**
      * @var array
      */
+    private $_termOptions;
+
+    /**
+     * @var array
+     */
     private $_tokens;
 
     // Public Methods
@@ -37,12 +42,14 @@ class SearchQuery
      * Constructor
      *
      * @param string $query
+     * @param array  $termOptions
      *
      * @return SearchQuery
      */
-    public function __construct($query)
+    public function __construct($query, $termOptions = [])
     {
         $this->_query = $query;
+        $this->_termOptions = $termOptions;
         $this->_tokens = [];
         $this->_parse();
     }
@@ -104,16 +111,25 @@ class SearchQuery
 
             $term = new SearchQueryTerm();
 
+            // Set the default options
+            foreach ($this->_termOptions as $option => $value) {
+                $term->$option = $value;
+            }
+
             // Is this an exclude term?
-            if ($term->exclude = (StringHelper::first($token, 1) == '-')) {
+            if (StringHelper::first($token, 1) == '-') {
+                $term->exclude = true;
                 $token = mb_substr($token, 1);
             }
 
             // Is this an attribute-specific term?
             if (preg_match('/^(\w+)(::?)(.+)$/', $token, $match)) {
                 $term->attribute = $match[1];
-                $term->exact = ($match[2] == '::');
                 $token = $match[3];
+
+                if ($match[2] == '::') {
+                    $term->exact = true;
+                }
             }
 
             // Does it start with a quote?
@@ -131,19 +147,20 @@ class SearchQuery
             }
 
             // Include sub-word matches?
-            if ($term->subLeft = ($token && StringHelper::first($token,
-                    1) == '*')
-            ) {
+            if ($token && StringHelper::first($token, 1) == '*') {
+                $term->subLeft = true;
                 $token = mb_substr($token, 1);
             }
 
-            if ($term->subRight = ($token && substr($token, -1) == '*')) {
+            if ($token && substr($token, -1) == '*') {
+                $term->subRight = true;
                 $token = mb_substr($token, 0, -1);
             }
 
             $term->term = $token;
 
             if ($appendToPrevious) {
+                /** @noinspection PhpUndefinedVariableInspection */
                 $previousToken->terms[] = $term;
             } else {
                 $this->_tokens[] = $term;

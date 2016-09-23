@@ -1,16 +1,16 @@
 <?php
 /**
- * @link      http://buildwithcraft.com/
- * @copyright Copyright (c) 2015 Pixel & Tonic, Inc.
- * @license   http://buildwithcraft.com/license
+ * @link      https://craftcms.com/
+ * @copyright Copyright (c) Pixel & Tonic, Inc.
+ * @license   https://craftcms.com/license
  */
 
 namespace craft\app\services;
 
 use Craft;
-use craft\app\errors\Exception;
 use craft\app\helpers\Io;
 use craft\app\helpers\StringHelper;
+use yii\base\Exception;
 use yii\base\InvalidParamException;
 
 /**
@@ -55,11 +55,10 @@ class Security extends \yii\base\Security
     /**
      * Hashes a given password with the bcrypt blowfish encryption algorithm.
      *
-     * @param string  $string       The string to hash
+     * @param string  $password     The string to hash
      * @param boolean $validateHash If you want to validate the just generated hash. Will throw an exception if
      *                              validation fails.
      *
-     * @throws Exception
      * @return string The hash.
      */
     public function hashPassword($password, $validateHash = false)
@@ -78,12 +77,12 @@ class Security extends \yii\base\Security
     /**
      * Returns a validtion key unique to this Craft installation. Craft will initially check the 'validationKey'
      * config setting and return that if one has been explicitly set. If not, Craft will generate a cryptographically
-     * secure, random key and save it in `craft\storage\validation.key` and server that on future requests.
+     * secure, random key and save it in `craft\storage\validation.key` and serve that on future requests.
      *
      * Note that if this key ever changes, any data that was encrypted with it will not be accessible.
      *
-     * @throws Exception
      * @return mixed|string The validation key.
+     * @throws Exception if the validation key could not be written
      */
     public function getValidationKey()
     {
@@ -95,18 +94,42 @@ class Security extends \yii\base\Security
 
         if (Io::fileExists($validationKeyPath)) {
             return StringHelper::trim(Io::getFileContents($validationKeyPath));
-        } else {
-            if (!Io::isWritable($validationKeyPath)) {
-                throw new Exception(Craft::t('app', 'Tried to write the validation key to {validationKeyPath}, but could not.', ['validationKeyPath' => $validationKeyPath]));
-            }
-
-            $key = $this->generateRandomString();
-
-            if (Io::writeToFile($validationKeyPath, $key)) {
-                return $key;
-            }
-
-            throw new Exception(Craft::t('app', 'Tried to write the validation key to {validationKeyPath}, but could not.', ['validationKeyPath' => $validationKeyPath]));
         }
+
+        if (!Io::isWritable($validationKeyPath)) {
+            throw new Exception("Tried to write the validation key to {$validationKeyPath}, but could not.");
+        }
+
+        $key = $this->generateRandomString();
+
+        if (Io::writeToFile($validationKeyPath, $key)) {
+            return $key;
+        }
+
+        throw new Exception("Tried to write the validation key to {$validationKeyPath}, but could not.");
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function hashData($data, $key = null, $rawHash = false)
+    {
+        if ($key === null) {
+            $key = $this->getValidationKey();
+        }
+
+        return parent::hashData($data, $key, $rawHash);
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function validateData($data, $key = null, $rawHash = false)
+    {
+        if ($key === null) {
+            $key = $this->getValidationKey();
+        }
+
+        return parent::validateData($data, $key, $rawHash);
     }
 }

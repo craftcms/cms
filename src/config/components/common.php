@@ -10,9 +10,11 @@ return [
     'content' => 'craft\app\services\Content',
     'dashboard' => 'craft\app\services\Dashboard',
     'deprecator' => 'craft\app\services\Deprecator',
+    'elementIndexes' => 'craft\app\services\ElementIndexes',
     'elements' => 'craft\app\services\Elements',
     'email' => 'craft\app\services\Email',
     'entries' => 'craft\app\services\Entries',
+    'entryRevisions' => 'craft\app\services\EntryRevisions',
     'et' => 'craft\app\services\Et',
     'feeds' => 'craft\app\services\Feeds',
     'fields' => 'craft\app\services\Fields',
@@ -25,11 +27,12 @@ return [
     'relations' => 'craft\app\services\Relations',
     'routes' => 'craft\app\services\Routes',
     'search' => 'craft\app\services\Search',
+    'sections' => 'craft\app\services\Sections',
     'security' => 'craft\app\services\Security',
     'structures' => 'craft\app\services\Structures',
     'tags' => 'craft\app\services\Tags',
     'tasks' => 'craft\app\services\Tasks',
-    'templateCache' => 'craft\app\services\TemplateCache',
+    'templateCaches' => 'craft\app\services\TemplateCaches',
     'tokens' => 'craft\app\services\Tokens',
     'updates' => 'craft\app\services\Updates',
     'users' => 'craft\app\services\Users',
@@ -46,14 +49,6 @@ return [
         'class' => 'craft\app\services\Resources',
         'dateParam' => 'd',
     ],
-    'sections' => [
-        'class' => 'craft\app\services\Sections',
-        'typeLimits' => [
-            'single' => 5,
-            'channel' => 1,
-            'structure' => 0
-        ]
-    ],
     'systemSettings' => [
         'class' => 'craft\app\services\SystemSettings',
         'defaults' => [
@@ -61,6 +56,7 @@ return [
                 'requireEmailVerification' => true,
                 'allowPublicRegistration' => false,
                 'defaultGroup' => null,
+                'photoVolumeId' => null
             ],
         ]
     ],

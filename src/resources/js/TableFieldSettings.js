@@ -102,6 +102,10 @@ Craft.TableFieldSettings = Garnish.Base.extend(
 
 		for (var colId in columns)
 		{
+			if (!columns.hasOwnProperty(colId)) {
+				continue;
+			}
+
 			tableHtml += '<th scope="col" class="header">'+(columns[colId].heading ? columns[colId].heading : '&nbsp;')+'</th>';
 		}
 
@@ -112,6 +116,10 @@ Craft.TableFieldSettings = Garnish.Base.extend(
 
 		for (var rowId in defaults)
 		{
+			if (!defaults.hasOwnProperty(rowId)) {
+				continue;
+			}
+
 			tableHtml += Craft.EditableTable.getRowHtml(rowId, columns, this.defaultsTableName, defaults[rowId]);
 		}
 

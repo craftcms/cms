@@ -1,24 +1,31 @@
-{%- set id = (id is defined ? id : null) %}
+{%- set labelId = (labelId is defined ? labelId : (id is defined ? id~'-label' : null)) %}
+{%- set fieldId = (fieldId is defined ? fieldId : (id is defined ? id~'-field' : null)) %}
 {%- set label = (label is defined and label != '__blank__' ? label : null) %}
 {%- set locale = ((craft.isLocalized() and locale is defined) ? locale : null) %}
 {%- set instructions = (instructions is defined ? instructions : null) %}
 {%- set warning = (warning is defined ? warning : null) %}
-{%- set orientation = craft.i18n.getLocaleData(locale ?: craft.locale).getOrientation() %}
+{%- set orientation = (locale ? craft.app.i18n.getLocaleById(locale) : craft.app.locale).getOrientation() %}
 {%- set errors = (errors is defined ? errors : null) -%}
+{%- set fieldClass = [
+	'field',
+	(first is defined and first ? 'first' : null),
+	(errors ? 'has-errors' : null),
+	(fieldClass is defined and fieldClass ? fieldClass : null)
+]|filter|join(' ') -%}
 
-<div class="field{% if first is defined and first %} first{% endif %}"{% if id %} id="{{ id }}-field"{% endif %}>
+<div class="{{ fieldClass }}"{% if fieldId %} id="{{ fieldId }}"{% endif %}>
 	{% if label or instructions %}
 		<div class="heading">
 			{% if label %}
-				<label{% if required is defined and required %} class="required"{% endif %}{% if id %} for="{{ id }}"{% endif %}>
+				<label {% if labelId %} id="{{ labelId }}"{% endif %}{% if required is defined and required %} class="required"{% endif %}{% if id is defined and id %} for="{{ id }}"{% endif %}>
 					{{- label|raw -}}
+					{%- if locale -%}
+						<span class="locale">{{ locale }}</span>
+					{%- endif -%}
 				</label>
-				{% if locale %}
-					<span class="locale">{{ locale }}</span>
-				{% endif %}
 			{% endif %}
 			{% if instructions %}
-				<div class="instructions">{{ instructions|md }}</div>
+				<div class="instructions">{{ instructions|md|replace('/&amp;(\\w+);/', '&$1;')|raw }}</div>
 			{% endif %}
 		</div>
 	{% endif %}
@@ -26,7 +33,7 @@
 		{{ input|raw }}
 	</div>
 	{% if warning %}
-		<p class="warning">{{ warning }}</p>
+		<p class="warning">{{ warning|md(inlineOnly=true)|replace('/&amp;(\\w+);/', '&$1;')|raw }}</p>
 	{% endif %}
 	{% include "_includes/forms/errorList" with { errors: errors } %}
 </div>

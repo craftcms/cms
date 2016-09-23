@@ -1,8 +1,8 @@
 <?php
 /**
- * @link      http://buildwithcraft.com/
- * @copyright Copyright (c) 2015 Pixel & Tonic, Inc.
- * @license   http://buildwithcraft.com/license
+ * @link      https://craftcms.com/
+ * @copyright Copyright (c) Pixel & Tonic, Inc.
+ * @license   https://craftcms.com/license
  */
 
 namespace craft\app\elements\db;
@@ -14,7 +14,6 @@ use craft\app\elements\Category;
 use craft\app\helpers\ArrayHelper;
 use craft\app\helpers\Db;
 use craft\app\models\CategoryGroup;
-use craft\app\models\CategoryType;
 
 /**
  * CategoryQuery represents a SELECT SQL statement for categories in a way that is independent of DBMS.
@@ -70,7 +69,7 @@ class CategoryQuery extends ElementQuery
      *
      * @param boolean $value The property value (defaults to true)
      *
-     * @return self The query object itself
+     * @return $this self reference
      */
     public function editable($value = true)
     {
@@ -84,7 +83,7 @@ class CategoryQuery extends ElementQuery
      *
      * @param string|string[]|CategoryGroup $value The property value
      *
-     * @return self The query object itself
+     * @return $this self reference
      */
     public function group($value)
     {
@@ -108,7 +107,7 @@ class CategoryQuery extends ElementQuery
      *
      * @param integer|integer[] $value The property value
      *
-     * @return self The query object itself
+     * @return $this self reference
      */
     public function groupId($value)
     {

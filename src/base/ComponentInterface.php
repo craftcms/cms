@@ -1,8 +1,8 @@
 <?php
 /**
- * @link      http://buildwithcraft.com/
- * @copyright Copyright (c) 2015 Pixel & Tonic, Inc.
- * @license   http://buildwithcraft.com/license
+ * @link      https://craftcms.com/
+ * @copyright Copyright (c) Pixel & Tonic, Inc.
+ * @license   https://craftcms.com/license
  */
 
 namespace craft\app\base;
@@ -23,7 +23,7 @@ interface ComponentInterface
     /**
      * Returns the fully qualified name of this class.
      *
-     * @return self|string The fully qualified name of this class.
+     * @return string|$this The fully qualified name of this class.
      */
     public static function className();
 
@@ -46,7 +46,7 @@ interface ComponentInterface
      *
      * @param array $config The config settings to populate the component with
      *
-     * @return self The new component object
+     * @return $this The new component object
      */
     public static function create($config);
 

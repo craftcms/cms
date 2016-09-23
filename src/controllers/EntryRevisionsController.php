@@ -1,19 +1,19 @@
 <?php
 /**
- * @link      http://buildwithcraft.com/
- * @copyright Copyright (c) 2015 Pixel & Tonic, Inc.
- * @license   http://buildwithcraft.com/license
+ * @link      https://craftcms.com/
+ * @copyright Copyright (c) Pixel & Tonic, Inc.
+ * @license   https://craftcms.com/license
  */
 
 namespace craft\app\controllers;
 
 use Craft;
-use craft\app\errors\Exception;
 use craft\app\helpers\DateTimeHelper;
-use craft\app\models\EntryDraft as EntryDraftModel;
+use craft\app\models\EntryDraft;
 use craft\app\models\Section;
-
-Craft::$app->requireEdition(Craft::Client);
+use yii\web\NotFoundHttpException;
+use yii\web\Response;
+use yii\web\ServerErrorHttpException;
 
 /**
  * The EntryRevisionsController class is a controller that handles various entry version and draft related tasks such as
@@ -32,8 +32,8 @@ class EntryRevisionsController extends BaseEntriesController
     /**
      * Saves a draft, or creates a new one.
      *
-     * @throws Exception
-     * @return void
+     * @return Response|null
+     * @throws NotFoundHttpException if the requested entry draft cannot be found
      */
     public function actionSaveDraft()
     {
@@ -45,10 +45,10 @@ class EntryRevisionsController extends BaseEntriesController
             $draft = Craft::$app->getEntryRevisions()->getDraftById($draftId);
 
             if (!$draft) {
-                throw new Exception(Craft::t('app', 'No draft exists with the ID “{id}”.', ['id' => $draftId]));
+                throw new NotFoundHttpException('Entry draft not found');
             }
         } else {
-            $draft = new EntryDraftModel();
+            $draft = new EntryDraft();
             $draft->id = Craft::$app->getRequest()->getBodyParam('entryId');
             $draft->sectionId = Craft::$app->getRequest()->getRequiredBodyParam('sectionId');
             $draft->creatorId = Craft::$app->getUser()->getIdentity()->id;
@@ -59,6 +59,16 @@ class EntryRevisionsController extends BaseEntriesController
         $this->enforceEditEntryPermissions($draft);
 
         $this->_setDraftAttributesFromPost($draft);
+
+        $fieldsLocation = Craft::$app->getRequest()->getParam('fieldsLocation', 'fields');
+        $draft->setFieldValuesFromPost($fieldsLocation);
+
+        $entryType = $draft->getType();
+
+        if (!$entryType->hasTitleField) {
+            $draft->title = Craft::$app->getView()->renderObjectTemplate($entryType->titleFormat, $draft);
+        }
+
 
         if (!$draft->id) {
             // Attempt to create a new entry
@@ -76,28 +86,28 @@ class EntryRevisionsController extends BaseEntriesController
             }
         }
 
-        $fieldsLocation = Craft::$app->getRequest()->getParam('fieldsLocation', 'fields');
-        $draft->setFieldValuesFromPost($fieldsLocation);
-
         if ($draft->id && Craft::$app->getEntryRevisions()->saveDraft($draft)) {
             Craft::$app->getSession()->setNotice(Craft::t('app', 'Draft saved.'));
 
             return $this->redirectToPostedUrl($draft);
-        } else {
-            Craft::$app->getSession()->setError(Craft::t('app', 'Couldn’t save draft.'));
-
-            // Send the draft back to the template
-            Craft::$app->getUrlManager()->setRouteParams([
-                'entry' => $draft
-            ]);
         }
+
+        Craft::$app->getSession()->setError(Craft::t('app', 'Couldn’t save draft.'));
+
+        // Send the draft back to the template
+        Craft::$app->getUrlManager()->setRouteParams([
+            'entry' => $draft
+        ]);
+
+
+        return null;
     }
 
     /**
      * Renames a draft.
      *
-     * @throws Exception
-     * @return void
+     * @return Response
+     * @throws NotFoundHttpException if the requested entry draft cannot be found
      */
     public function actionUpdateDraftMeta()
     {
@@ -110,7 +120,7 @@ class EntryRevisionsController extends BaseEntriesController
         $draft = Craft::$app->getEntryRevisions()->getDraftById($draftId);
 
         if (!$draft) {
-            throw new Exception(Craft::t('app', 'No draft exists with the ID “{id}”.', ['id' => $draftId]));
+            throw new NotFoundHttpException('Entry draft not found');
         }
 
         if ($draft->creatorId != Craft::$app->getUser()->getIdentity()->id) {
@@ -121,18 +131,18 @@ class EntryRevisionsController extends BaseEntriesController
         $draft->name = $name;
         $draft->revisionNotes = Craft::$app->getRequest()->getBodyParam('notes');
 
-        if (Craft::$app->getEntryRevisions()->saveDraft($draft, false)) {
+        if (Craft::$app->getEntryRevisions()->saveDraft($draft)) {
             return $this->asJson(['success' => true]);
-        } else {
-            return $this->asErrorJson($draft->getFirstError('name'));
         }
+
+        return $this->asErrorJson($draft->getFirstError('name'));
     }
 
     /**
      * Deletes a draft.
      *
-     * @throws Exception
-     * @return void
+     * @return Response
+     * @throws NotFoundHttpException if the requested entry draft cannot be found
      */
     public function actionDeleteDraft()
     {
@@ -142,7 +152,7 @@ class EntryRevisionsController extends BaseEntriesController
         $draft = Craft::$app->getEntryRevisions()->getDraftById($draftId);
 
         if (!$draft) {
-            throw new Exception(Craft::t('app', 'No draft exists with the ID “{id}”.', ['id' => $draftId]));
+            throw new NotFoundHttpException('Entry draft not found');
         }
 
         if ($draft->creatorId != Craft::$app->getUser()->getIdentity()->id) {
@@ -157,8 +167,9 @@ class EntryRevisionsController extends BaseEntriesController
     /**
      * Publish a draft.
      *
-     * @throws Exception
-     * @return void
+     * @return Response|null
+     * @throws NotFoundHttpException if the requested entry draft cannot be found
+     * @throws ServerErrorHttpException if the entry draft is missing its entry
      */
     public function actionPublishDraft()
     {
@@ -169,14 +180,14 @@ class EntryRevisionsController extends BaseEntriesController
         $userId = Craft::$app->getUser()->getIdentity()->id;
 
         if (!$draft) {
-            throw new Exception(Craft::t('app', 'No draft exists with the ID “{id}”.', ['id' => $draftId]));
+            throw new NotFoundHttpException('Entry draft not found');
         }
 
         // Permission enforcement
         $entry = Craft::$app->getEntries()->getEntryById($draft->id, $draft->locale);
 
         if (!$entry) {
-            throw new Exception(Craft::t('app', 'No entry exists with the ID “{id}”.', ['id' => $draft->id]));
+            throw new ServerErrorHttpException('Entry draft is missing its entry');
         }
 
         $this->enforceEditEntryPermissions($entry);
@@ -215,21 +226,25 @@ class EntryRevisionsController extends BaseEntriesController
             Craft::$app->getSession()->setNotice(Craft::t('app', 'Draft published.'));
 
             return $this->redirectToPostedUrl($draft);
-        } else {
-            Craft::$app->getSession()->setError(Craft::t('app', 'Couldn’t publish draft.'));
-
-            // Send the draft back to the template
-            Craft::$app->getUrlManager()->setRouteParams([
-                'entry' => $draft
-            ]);
         }
+
+        Craft::$app->getSession()->setError(Craft::t('app', 'Couldn’t publish draft.'));
+
+        // Send the draft back to the template
+        Craft::$app->getUrlManager()->setRouteParams([
+            'entry' => $draft
+        ]);
+
+
+        return null;
     }
 
     /**
      * Reverts an entry to a version.
      *
-     * @throws Exception
-     * @return void
+     * @return Response|null
+     * @throws NotFoundHttpException if the requested entry version cannot be found
+     * @throws ServerErrorHttpException if the entry version is missing its entry
      */
     public function actionRevertEntryToVersion()
     {
@@ -239,14 +254,14 @@ class EntryRevisionsController extends BaseEntriesController
         $version = Craft::$app->getEntryRevisions()->getVersionById($versionId);
 
         if (!$version) {
-            throw new Exception(Craft::t('app', 'No version exists with the ID “{id}”.', ['id' => $versionId]));
+            throw new NotFoundHttpException('Entry version not found');
         }
 
         // Permission enforcement
         $entry = Craft::$app->getEntries()->getEntryById($version->id, $version->locale);
 
         if (!$entry) {
-            throw new Exception(Craft::t('app', 'No entry exists with the ID “{id}”.', ['id' => $version->id]));
+            throw new ServerErrorHttpException('Entry version is missing its entry');
         }
 
         $this->enforceEditEntryPermissions($entry);
@@ -272,14 +287,17 @@ class EntryRevisionsController extends BaseEntriesController
             Craft::$app->getSession()->setNotice(Craft::t('app', 'Entry reverted to past version.'));
 
             return $this->redirectToPostedUrl($version);
-        } else {
-            Craft::$app->getSession()->setError(Craft::t('app', 'Couldn’t revert entry to past version.'));
-
-            // Send the version back to the template
-            Craft::$app->getUrlManager()->setRouteParams([
-                'entry' => $version
-            ]);
         }
+
+        Craft::$app->getSession()->setError(Craft::t('app', 'Couldn’t revert entry to past version.'));
+
+        // Send the version back to the template
+        Craft::$app->getUrlManager()->setRouteParams([
+            'entry' => $version
+        ]);
+
+
+        return null;
     }
 
     // Private Methods
@@ -288,11 +306,11 @@ class EntryRevisionsController extends BaseEntriesController
     /**
      * Sets a draft's attributes from the post data.
      *
-     * @param EntryDraftModel $draft
+     * @param EntryDraft $draft
      *
      * @return void
      */
-    private function _setDraftAttributesFromPost(EntryDraftModel $draft)
+    private function _setDraftAttributesFromPost(EntryDraft $draft)
     {
         $draft->typeId = Craft::$app->getRequest()->getBodyParam('typeId');
         $draft->slug = Craft::$app->getRequest()->getBodyParam('slug');

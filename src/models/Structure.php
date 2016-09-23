@@ -1,8 +1,8 @@
 <?php
 /**
- * @link      http://buildwithcraft.com/
- * @copyright Copyright (c) 2015 Pixel & Tonic, Inc.
- * @license   http://buildwithcraft.com/license
+ * @link      https://craftcms.com/
+ * @copyright Copyright (c) Pixel & Tonic, Inc.
+ * @license   https://craftcms.com/license
  */
 
 namespace craft\app\models;
@@ -12,6 +12,8 @@ use craft\app\base\Model;
 
 /**
  * Class Structure model.
+ *
+ * @property boolean $isSortable whether elements in this structure can be sorted by the current user
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since  3.0
@@ -63,7 +65,7 @@ class Structure extends Model
      *
      * @return boolean
      */
-    public function isSortable()
+    public function getIsSortable()
     {
         return Craft::$app->getSession()->checkAuthorization('editStructure:'.$this->id);
     }

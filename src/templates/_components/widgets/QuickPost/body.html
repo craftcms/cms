@@ -4,7 +4,7 @@
 
 <form method="post" accept-charset="UTF-8">
 	<input type="hidden" name="fieldsLocation" value="{{ fieldNamespace }}">
-	{{ getCsrfInput() }}
+	{{ csrfInput() }}
 
 	{% if section.type != 'single' and entryType.hasTitleField %}
 		{{ forms.textField({
@@ -29,7 +29,7 @@
 	{% endnamespace %}
 
 	<div class="buttons">
-		<div class="btngroup submit first">
+		<div class="btngroup">
 			<input type="submit" class="btn submit" value="{{ 'Save'|t('app') }}">
 
 			<div class="btn submit menubtn"></div>

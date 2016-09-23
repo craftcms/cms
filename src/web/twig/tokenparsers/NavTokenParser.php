@@ -1,8 +1,8 @@
 <?php
 /**
- * @link      http://buildwithcraft.com/
- * @copyright Copyright (c) 2015 Pixel & Tonic, Inc.
- * @license   http://buildwithcraft.com/license
+ * @link      https://craftcms.com/
+ * @copyright Copyright (c) Pixel & Tonic, Inc.
+ * @license   https://craftcms.com/license
  */
 
 namespace craft\app\web\twig\tokenparsers;
@@ -52,9 +52,15 @@ class NavTokenParser extends \Twig_TokenParser
             $stream->expect(\Twig_Token::BLOCK_END_TYPE);
 
             if ($nextValue == 'ifchildren') {
-                $indent = $this->parser->subparse([$this, 'decideChildrenFork'], true);
+                $indent = $this->parser->subparse([
+                    $this,
+                    'decideChildrenFork'
+                ], true);
                 $stream->expect(\Twig_Token::BLOCK_END_TYPE);
-                $outdent = $this->parser->subparse([$this, 'decideChildrenEnd'], true);
+                $outdent = $this->parser->subparse([
+                    $this,
+                    'decideChildrenEnd'
+                ], true);
                 $stream->expect(\Twig_Token::BLOCK_END_TYPE);
             }
 
@@ -69,6 +75,7 @@ class NavTokenParser extends \Twig_TokenParser
             $valueTarget = $targets->getNode(1);
             $valueTarget = new \Twig_Node_Expression_AssignName($valueTarget->getAttribute('name'), $valueTarget->getLine());
         } else {
+            /** @noinspection PhpParamsInspection */
             $keyTarget = new \Twig_Node_Expression_AssignName('_key', $lineno);
             $valueTarget = $targets->getNode(0);
             $valueTarget = new \Twig_Node_Expression_AssignName($valueTarget->getAttribute('name'), $valueTarget->getLine());

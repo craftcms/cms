@@ -1,8 +1,8 @@
 <?php
 /**
- * @link      http://buildwithcraft.com/
- * @copyright Copyright (c) 2015 Pixel & Tonic, Inc.
- * @license   http://buildwithcraft.com/license
+ * @link      https://craftcms.com/
+ * @copyright Copyright (c) Pixel & Tonic, Inc.
+ * @license   https://craftcms.com/license
  */
 
 namespace craft\app\web\twig\tokenparsers;
@@ -33,6 +33,7 @@ class RedirectTokenParser extends \Twig_TokenParser
         if ($stream->test(\Twig_Token::NUMBER_TYPE)) {
             $httpStatusCode = $this->parser->getExpressionParser()->parseExpression();
         } else {
+            /** @noinspection PhpParamsInspection */
             $httpStatusCode = new \Twig_Node_Expression_Constant(302, 1);
         }
 

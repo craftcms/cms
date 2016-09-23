@@ -1,20 +1,24 @@
 <?php
 /**
- * @link      http://buildwithcraft.com/
- * @copyright Copyright (c) 2015 Pixel & Tonic, Inc.
- * @license   http://buildwithcraft.com/license
+ * @link      https://craftcms.com/
+ * @copyright Copyright (c) Pixel & Tonic, Inc.
+ * @license   https://craftcms.com/license
  */
 
 namespace craft\app\services;
 
 use Craft;
-use craft\app\errors\Exception;
+use craft\app\db\Query;
+use craft\app\errors\EntryNotFoundException;
+use craft\app\errors\SectionNotFoundException;
+use craft\app\events\EntryDeleteEvent;
 use craft\app\events\EntryEvent;
 use craft\app\helpers\DateTimeHelper;
 use craft\app\elements\Entry;
 use craft\app\models\Section;
 use craft\app\records\Entry as EntryRecord;
 use yii\base\Component;
+use yii\base\Exception;
 
 /**
  * The Entries service provides APIs for managing entries in Craft.
@@ -43,6 +47,8 @@ class Entries extends Component
 
     /**
      * @event EntryEvent The event that is triggered before an entry is deleted.
+     *
+     * You may set [[EntryEvent::isValid]] to `false` to prevent the entry from being deleted.
      */
     const EVENT_BEFORE_DELETE_ENTRY = 'beforeDeleteEntry';
 
@@ -69,7 +75,25 @@ class Entries extends Component
      */
     public function getEntryById($entryId, $localeId = null)
     {
-        return Craft::$app->getElements()->getElementById($entryId, Entry::className(), $localeId);
+        if (!$entryId) {
+            return null;
+        }
+
+        // Get the structure ID
+        $structureId = (new Query())
+            ->select('sections.structureId')
+            ->from('{{%entries}} entries')
+            ->innerJoin('{{%sections}} sections', 'sections.id = entries.sectionId')
+            ->where(['entries.id' => $entryId])
+            ->scalar();
+
+        return Entry::find()
+            ->id($entryId)
+            ->structureId($structureId)
+            ->locale($localeId)
+            ->status(null)
+            ->localeEnabled(false)
+            ->one();
     }
 
     /**
@@ -78,20 +102,19 @@ class Entries extends Component
      * ```php
      * $entry = new Entry();
      * $entry->sectionId = 10;
-     * $entry->typeId    = 1;
-     * $entry->authorId  = 5;
-     * $entry->enabled   = true;
+     * $entry->typeId = 1;
+     * $entry->authorId = 5;
+     * $entry->enabled = true;
+     * $entry->title = "Hello World!";
      *
-     * $entry->getContent()->title = "Hello World!";
-     *
-     * $entry->setFieldValuesFromPost(array(
-     *     'body' => "<p>I can’t believe I literally just called this “Hello World!”.</p>",
-     * ));
+     * $entry->setFieldValuesFromPost(
+     *     [
+     *         'body' => "<p>I can’t believe I literally just called this “Hello World!”.</p>",
+     *     ]);
      *
      * $success = Craft::$app->getEntries()->saveEntry($entry);
      *
-     * if (!$success)
-     * {
+     * if (!$success) {
      *     Craft::error('Couldn’t save the entry "'.$entry->title.'"', __METHOD__);
      * }
      * ```
@@ -99,8 +122,10 @@ class Entries extends Component
      * @param Entry $entry The entry to be saved.
      *
      * @return boolean
-     * @throws Exception
-     * @throws \Exception
+     * @throws EntryNotFoundException if $entry->newParentId or $entry->id is invalid
+     * @throws SectionNotFoundException if $entry->sectionId is invalid
+     * @throws Exception if $entry->locale is set to a locale that its section doesn’t support
+     * @throws \Exception if reasons
      */
     public function saveEntry(Entry $entry)
     {
@@ -113,7 +138,7 @@ class Entries extends Component
                 $parentEntry = $this->getEntryById($entry->newParentId, $entry->locale);
 
                 if (!$parentEntry) {
-                    throw new Exception(Craft::t('app', 'No entry exists with the ID “{id}”.', ['id' => $entry->newParentId]));
+                    throw new EntryNotFoundException("No entry exists with the ID '{$entry->newParentId}'");
                 }
             } else {
                 $parentEntry = null;
@@ -127,7 +152,7 @@ class Entries extends Component
             $entryRecord = EntryRecord::findOne($entry->id);
 
             if (!$entryRecord) {
-                throw new Exception(Craft::t('app', 'No entry exists with the ID “{id}”.', ['id' => $entry->id]));
+                throw new EntryNotFoundException("No entry exists with the ID '{$entry->id}'");
             }
         } else {
             $entryRecord = new EntryRecord();
@@ -137,14 +162,14 @@ class Entries extends Component
         $section = Craft::$app->getSections()->getSectionById($entry->sectionId);
 
         if (!$section) {
-            throw new Exception(Craft::t('app', 'No section exists with the ID “{id}”.', ['id' => $entry->sectionId]));
+            throw new SectionNotFoundException("No section exists with the ID '{$entry->sectionId}'");
         }
 
         // Verify that the section is available in this locale
         $sectionLocales = $section->getLocales();
 
         if (!isset($sectionLocales[$entry->locale])) {
-            throw new Exception(Craft::t('app', 'The section “{section}” is not enabled for the locale {locale}', ['section' => $section->name, 'locale' => $entry->locale]));
+            throw new Exception("The section '{$section->name}' is not enabled for the locale '{$entry->locale}'");
         }
 
         // Set the entry data
@@ -183,10 +208,11 @@ class Entries extends Component
         try {
             // Fire a 'beforeSaveEntry' event
             $event = new EntryEvent([
-                'entry' => $entry
+                'entry' => $entry,
+                'isNew' => $isNewEntry
             ]);
 
-            $this->trigger(static::EVENT_BEFORE_SAVE_ENTRY, $event);
+            $this->trigger(self::EVENT_BEFORE_SAVE_ENTRY, $event);
 
             // Is the event giving us the go-ahead?
             if ($event->isValid) {
@@ -195,7 +221,7 @@ class Entries extends Component
 
                 // If it didn't work, rollback the transaction in case something changed in onBeforeSaveEntry
                 if (!$success) {
-                    $transaction->rollback();
+                    $transaction->rollBack();
 
                     // If "title" has an error, check if they've defined a custom title label.
                     if ($entry->getFirstError('title')) {
@@ -232,6 +258,7 @@ class Entries extends Component
                         if (!$entry->newParentId) {
                             Craft::$app->getStructures()->appendToRoot($section->structureId, $entry);
                         } else {
+                            /** @noinspection PhpUndefinedVariableInspection */
                             Craft::$app->getStructures()->append($section->structureId, $entry, $parentEntry);
                         }
                     }
@@ -241,7 +268,7 @@ class Entries extends Component
                 }
 
                 // Save a new version
-                if (Craft::$app->getEdition() >= Craft::Client && $section->enableVersioning) {
+                if ($section->enableVersioning) {
                     Craft::$app->getEntryRevisions()->saveVersion($entry);
                 }
             } else {
@@ -252,15 +279,16 @@ class Entries extends Component
             // in onBeforeSaveEntry
             $transaction->commit();
         } catch (\Exception $e) {
-            $transaction->rollback();
+            $transaction->rollBack();
 
             throw $e;
         }
 
         if ($success) {
             // Fire an 'afterSaveEntry' event
-            $this->trigger(static::EVENT_AFTER_SAVE_ENTRY, new EntryEvent([
-                'entry' => $entry
+            $this->trigger(self::EVENT_AFTER_SAVE_ENTRY, new EntryEvent([
+                'entry' => $entry,
+                'isNew' => $isNewEntry
             ]));
         }
 
@@ -272,8 +300,8 @@ class Entries extends Component
      *
      * @param Entry|Entry[] $entries An entry, or an array of entries, to be deleted.
      *
-     * @throws \Exception
      * @return boolean Whether the entry deletion was successful.
+     * @throws \Exception if reasons
      */
     public function deleteEntry($entries)
     {
@@ -292,21 +320,21 @@ class Entries extends Component
 
             foreach ($entries as $entry) {
                 // Fire a 'beforeDeleteEntry' event
-                $event = new EntryEvent([
+                $event = new EntryDeleteEvent([
                     'entry' => $entry
                 ]);
 
-                $this->trigger(static::EVENT_BEFORE_DELETE_ENTRY, $event);
+                $this->trigger(self::EVENT_BEFORE_DELETE_ENTRY, $event);
 
                 if ($event->isValid) {
                     $section = $entry->getSection();
 
                     if ($section->type == Section::TYPE_STRUCTURE) {
-                        // First let's move the entry's children up a level, so this doesn't mess up the structure
-                        $children = $entry->getChildren()->status(null)->localeEnabled(false)->limit(null)->find();
+                        // First let's move the entry's children up a level, so this doesn't mess up the structure.
+                        $children = $entry->getChildren()->status(null)->localeEnabled(false)->limit(null)->all();
 
                         foreach ($children as $child) {
-                            Craft::$app->getStructures()->moveBefore($section->structureId, $child, $entry, 'update', true);
+                            Craft::$app->getStructures()->moveBefore($section->structureId, $child, $entry, 'update');
                         }
                     }
 
@@ -323,7 +351,7 @@ class Entries extends Component
 
             $transaction->commit();
         } catch (\Exception $e) {
-            $transaction->rollback();
+            $transaction->rollBack();
 
             throw $e;
         }
@@ -331,16 +359,16 @@ class Entries extends Component
         if ($success) {
             foreach ($entries as $entry) {
                 // Fire an 'afterDeleteEntry' event
-                $this->trigger(static::EVENT_AFTER_DELETE_ENTRY,
-                    new EntryEvent([
+                $this->trigger(self::EVENT_AFTER_DELETE_ENTRY,
+                    new EntryDeleteEvent([
                         'entry' => $entry
                     ]));
             }
 
             return true;
-        } else {
-            return false;
         }
+
+        return false;
     }
 
     /**
@@ -365,9 +393,9 @@ class Entries extends Component
 
         if ($entries) {
             return $this->deleteEntry($entries);
-        } else {
-            return false;
         }
+
+        return false;
     }
 
     // Private Methods
@@ -412,8 +440,9 @@ class Entries extends Component
             ->ancestorOf($entry)
             ->ancestorDist(1)
             ->status(null)
+            ->locale($entry->locale)
             ->localeEnabled(false)
-            ->select('id')
+            ->select('elements.id')
             ->scalar();
 
         if ($entry->newParentId != $oldParentId) {

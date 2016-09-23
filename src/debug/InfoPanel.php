@@ -1,13 +1,16 @@
 <?php
 /**
- * @link      http://buildwithcraft.com/
- * @copyright Copyright (c) 2015 Pixel & Tonic, Inc.
- * @license   http://buildwithcraft.com/license
+ * @link      https://craftcms.com/
+ * @copyright Copyright (c) Pixel & Tonic, Inc.
+ * @license   https://craftcms.com/license
  */
 
 namespace craft\app\debug;
 
 use Craft;
+use craft\app\base\Plugin;
+use GuzzleHttp\Client;
+use Imagine\Gd\Imagine;
 use yii\debug\Panel;
 
 /**
@@ -60,8 +63,8 @@ class InfoPanel extends Panel
             'packages' => [
                 'Yii' => \Yii::getVersion(),
                 'Twig' => \Twig_Environment::VERSION,
-                'Guzzle' => \GuzzleHttp\Client::VERSION,
-                'Imagine' => \Imagine\Gd\Imagine::VERSION,
+                'Guzzle' => Client::VERSION,
+                'Imagine' => Imagine::VERSION,
             ],
             'plugins' => $this->_getPlugins(),
             'requirements' => $this->_getRequirementResults(),
@@ -81,6 +84,7 @@ class InfoPanel extends Panel
         $plugins = [];
 
         foreach (Craft::$app->getPlugins()->getAllPlugins() as $plugin) {
+            /** @var Plugin $plugin */
             $plugins[] = [
                 'name' => $plugin->name,
                 'version' => $plugin->version,

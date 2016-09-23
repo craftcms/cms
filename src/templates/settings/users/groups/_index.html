@@ -2,15 +2,15 @@
 {% requireAdmin %}
 
 {% extends "settings/users/_layout" %}
-{% set selectedTab = 'groups' %}
+{% set selectedNavItem = 'groups' %}
 
-{% set docsUrl = 'http://buildwithcraft.com/docs/users#user-groups' %}
-
-
-{% set groups = craft.userGroups.getAllGroups %}
+{% set docsUrl = 'http://craftcms.com/docs/users#user-groups' %}
 
 
-{% set content %}
+{% set groups = craft.app.userGroups.getAllGroups() %}
+
+
+{% block content %}
 	<p id="nogroups"{% if groups|length %} class="hidden"{% endif %}>
 		{{ "No groups exist yet."|t('app') }}
 	</p>
@@ -35,9 +35,9 @@
 	{% endif %}
 
 	<div class="buttons">
-		<a href="{{ url('settings/users/groups/new') }}" class="btn submit add icon">{{ "New Group"|t('app') }}</a>
+		<a href="{{ url('settings/users/groups/new') }}" class="btn submit add icon">{{ "New user group"|t('app') }}</a>
 	</div>
-{% endset %}
+{% endblock %}
 
 
 {% registerjs %}

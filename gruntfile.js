@@ -69,7 +69,8 @@ module.exports = function(grunt) {
 				loopfunc: true, // Supresses "Don't make functions within a loop." errors
 				shadow: true,
 				strict: false,
-				'-W041': true
+				'-W041': true,
+				'-W061': true
 			},
 			beforeconcat: [
 				'gruntfile.js',

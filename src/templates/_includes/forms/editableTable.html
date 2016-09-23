@@ -1,4 +1,5 @@
 {%- set static = (static is defined ? static : false) %}
+{%- set staticRows = static ? true : (staticRows is defined ? staticRows : false) %}
 {%- set cols = (cols is defined ? cols : []) %}
 {%- set rows = (rows is defined ? rows : []) -%}
 
@@ -6,9 +7,14 @@
 	<thead>
 		<tr>
 			{% for col in cols %}
-				<th scope="col" class="header">{{ col.heading ? col.heading : ' ' }}</th>
+				<th scope="col" class="header {{ col.class ?? null }}">
+					{%- if col.heading is defined and col.heading %}{{ col.heading }}{% else %}&nbsp;{% endif %}
+					{%- if col.info is defined -%}
+						<span class="info">{{ col.info|md|raw }}</span>
+					{%- endif -%}
+				</th>
 			{% endfor %}
-			{% if not static %}
+			{% if not staticRows %}
 				<th class="header" colspan="2"></th>
 			{% endif %}
 		</tr>
@@ -17,27 +23,41 @@
 		{% for rowId, row in rows %}
 			<tr data-id="{{ rowId }}">
 				{% for colId, col in cols %}
-					{% set cellName = name~'['~rowId~']['~colId~']' %}
-					{% set value = (row[colId] is defined ? row[colId] : null) %}
-					{% set textual = (col.type in ['singleline','multiline','number']) %}
-					<td class="{% if textual %}textual{% endif %} {% if col.class is defined %}{{ col.class }}{% endif %}"{% if col.width is defined %} width="{{ col.width }}"{% endif %}>
-						{%- if col.type == 'select' -%}
-							{% include "_includes/forms/select" with {
-								class:    'small',
-								name:     cellName,
-								options:  col.options,
-								value:    value,
-								disabled: static
-							} only %}
-						{%- elseif col.type == 'checkbox' -%}
-							<input type="hidden" name="{{ cellName }}">
-							<input type="checkbox" name="{{ cellName }}" value="1"{% if value %} checked{% endif %}{% if static %} disabled{% endif %}>
-						{%- else -%}
-							<textarea name="{{ cellName }}" rows="1"{% if static %} disabled{% endif %}>{{ value }}</textarea>
-						{%- endif -%}
-					</td>
+					{% set value = row[colId] is defined ? (row[colId].value is defined ? row[colId].value : row[colId]) : null %}
+					{% if col.type == 'heading' %}
+						<th scope="row" {% if col.class is defined %}class="{{ col.class }}"{% endif %}>{{ value|raw }}</th>
+					{% else %}
+						{% set hasErrors = row[colId].hasErrors ?? false %}
+						{% set cellName = name~'['~rowId~']['~colId~']' %}
+						{% set textual = (col.type in ['singleline','multiline','number']) %}
+						<td class="{% if textual %}textual{% endif %} {% if col.class is defined %}{{ col.class }}{% endif %} {% if col.code is defined %}code{% endif %} {% if hasErrors %}error{% endif %}"{% if col.width is defined %} width="{{ col.width }}"{% endif %}>
+							{%- switch col.type -%}
+								{% case 'select' -%}
+									{% include "_includes/forms/select" with {
+										class:    'small',
+										name:     cellName,
+										options:  col.options,
+										value:    value,
+										disabled: static
+									} only %}
+								{%- case 'checkbox' -%}
+									<input type="hidden" name="{{ cellName }}">
+									<input type="checkbox" name="{{ cellName }}" value="{{ col.value ?? 1 }}"{% if value %} checked{% endif %}{% if static %} disabled{% endif %}>
+								{%- case 'lightswitch' -%}
+									{% include "_includes/forms/lightswitch" with {
+										name: cellName,
+										on: value,
+										value: col.value ?? 1,
+										small: true,
+										disabled: static
+									} only %}
+								{%- default -%}
+									<textarea name="{{ cellName }}" rows="1"{% if static %} disabled{% endif %}{% if col.placeholder is defined %} placeholder="{{ col.placeholder }}"{% endif %}>{{ value }}</textarea>
+							{%- endswitch -%}
+						</td>
+					{% endif %}
 				{% endfor %}
-				{% if not static %}
+				{% if not staticRows %}
 					<td class="thin action"><a class="move icon" title="{{ 'Reorder'|t('app') }}"></a></td>
 					<td class="thin action"><a class="delete icon" title="{{ 'Delete'|t('app') }}"></a></td>
 				{% endif %}
@@ -45,7 +65,7 @@
 		{% endfor %}
 	</tbody>
 </table>
-{% if not static %}
+{% if not staticRows %}
 	<div class="btn add icon">{{ addRowLabel is defined ? addRowLabel : "Add a row"|t('app') }}</div>
 {% endif %}
 

@@ -1,8 +1,8 @@
 <?php
 /**
- * @link      http://buildwithcraft.com/
- * @copyright Copyright (c) 2015 Pixel & Tonic, Inc.
- * @license   http://buildwithcraft.com/license
+ * @link      https://craftcms.com/
+ * @copyright Copyright (c) Pixel & Tonic, Inc.
+ * @license   https://craftcms.com/license
  */
 
 namespace craft\app\records;
@@ -14,16 +14,16 @@ use craft\app\db\ActiveRecord;
 /**
  * Class Field record.
  *
- * @property integer              $id           ID
- * @property integer              $groupId      Group ID
- * @property string               $name         Name
- * @property string               $handle       Handle
- * @property string               $context      Context
- * @property string               $instructions Instructions
- * @property boolean              $translatable Translatable
- * @property string               $type         Type
- * @property array                $settings     Settings
- * @property ActiveQueryInterface $group        Group
+ * @property integer    $id           ID
+ * @property integer    $groupId      Group ID
+ * @property string     $name         Name
+ * @property string     $handle       Handle
+ * @property string     $context      Context
+ * @property string     $instructions Instructions
+ * @property boolean    $translatable Translatable
+ * @property string     $type         Type
+ * @property array      $settings     Settings
+ * @property FieldGroup $group        Group
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since  3.0
@@ -34,33 +34,44 @@ class Field extends ActiveRecord
     // =========================================================================
 
     /**
-     * @var array
+     * @var array Reserved field handles
+     *
+     * Some of these are element type-specific, but necessary to prevent 'order' criteria param conflicts
      */
     protected $reservedHandleWords = [
         'archived',
+        'attributeLabel',
         'children',
+        'contentTable',
         'dateCreated',
         'dateUpdated',
         'enabled',
         'id',
+        'level',
+        'lft',
         'link',
         'locale',
+        'localeEnabled',
+        'name', // global set-specific
+        'next',
         'next',
         'owner',
         'parents',
+        'postDate', // entry-specific
         'prev',
+        'ref',
+        'rgt',
+        'root',
+        'searchScore',
         'siblings',
+        'slug',
         'sortOrder',
+        'status',
+        'title',
         'uid',
         'uri',
         'url',
-        'ref',
-        'slug',
-        'status',
-        'title',
-        'prev',
-        'next',
-        'contentTable'
+        'username', // user-specific
     ];
 
     /**
@@ -156,7 +167,7 @@ class Field extends ActiveRecord
     /**
      * Returns the field’s group.
      *
-     * @return \yii\db\ActiveQueryInterface The relational query object.
+     * @return ActiveQueryInterface The relational query object.
      */
     public function getGroup()
     {

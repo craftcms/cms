@@ -1,8 +1,8 @@
 <?php
 /**
- * @link      http://buildwithcraft.com/
- * @copyright Copyright (c) 2015 Pixel & Tonic, Inc.
- * @license   http://buildwithcraft.com/license
+ * @link      https://craftcms.com/
+ * @copyright Copyright (c) Pixel & Tonic, Inc.
+ * @license   https://craftcms.com/license
  */
 
 namespace craft\app\validators;
@@ -30,19 +30,15 @@ class Uri extends Validator
     // =========================================================================
 
     /**
-     * @param $object
-     * @param $attribute
-     *
-     * @return void
+     * @inheritdoc
      */
-    public function validateAttribute($object, $attribute)
+    public function validateAttribute($model, $attribute)
     {
-        $uri = $object->$attribute;
+        $uri = $model->$attribute;
 
         if ($uri && !preg_match($this->pattern, $uri)) {
-            $message = Craft::t('app', '{attribute} is not a valid URI',
-                ['attribute' => $object->attribute]);
-            $this->addError($object, $attribute, $message);
+            $message = Craft::t('app', '{attribute} is not a valid URI', ['attribute' => $model->$attribute]);
+            $this->addError($model, $attribute, $message);
         }
     }
 }

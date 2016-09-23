@@ -1,6 +1,6 @@
 <?php
 
-return array(
+return [
     '"{filename}" is not allowed in this field.' => '"{filename}" не допускается в этом поле.',
     '$_SERVER Variable' => 'Переменная $_SERVER',
     '$_SERVER does not have {messages}.' => '$_SERVER не имеет {messages}.',
@@ -269,7 +269,7 @@ return array(
     'Craft was unable to install this update :(' => 'Craft удалось установить это обновление :(',
     'Craft {edition} is required to perform this action.' => 'Для выполнения этого действия требуется Craft {edition}',
     'Craft: a nice alternative to Word, if you’re making a website.' => 'Craft: хорошая альтернатива Word, если вы делаете сайт.',
-    'Craft’s <a href="http://buildwithcraft.com/license" target="_blank">Terms and Conditions</a> have changed.' => '<a href="http://buildwithcraft.com/license" target="_blank">Условия использования</a> Craft были изменены.',
+    'Craft’s <a href="http://craftcms.com/license" target="_blank">Terms and Conditions</a> have changed.' => '<a href="http://craftcms.com/license" target="_blank">Условия использования</a> Craft были изменены.',
     'Create' => 'Создать',
     'Create a new asset source' => 'Создать новый источник ресурсов',
     'Create a new category' => 'Создание новой категории',
@@ -1129,7 +1129,7 @@ return array(
     'You cannot access the CP while the system is offline with that account.' => 'Вам не разрешен доступ в панель управления, когда система работает в автономном режиме.',
     'You cannot access the CP with that account.' => 'Вы не можете получить доступ к панели управления с этой учетной записью.',
     'You can’t add any more {type} sections.' => 'Вы не можете добавить больше {type} секций.',
-    'You don’t have any <a href="http://buildwithcraft.com/docs/rich-text-fields#redactor-configs" target="_blank">Redactor configs</a> yet.' => 'У вас пока что нет <a href="http://buildwithcraft.com/docs/rich-text-fields#redactor-configs" target="_blank">конфигураций Redactor\'а</a>.',
+    'You don’t have any <a href="http://craftcms.com/docs/rich-text-fields#redactor-configs" target="_blank">Redactor configs</a> yet.' => 'У вас пока что нет <a href="http://craftcms.com/docs/rich-text-fields#redactor-configs" target="_blank">конфигураций Redactor\'а</a>.',
     'You don’t have any widgets yet.' => 'У вас пока что нет виджетов.',
     'You don’t have the proper credentials to access this page.' => 'У вашей учетной записи нет прав для доступа к этой странице',
     'You don’t have the required permissions for this operation.' => 'У вас необходимых прав для выполнения этой операции.',
@@ -1253,4 +1253,4 @@ return array(
     '“{plugin}” is already installed.' => 'Плагин “{plugin}” уже установлен.',
     '“{plugin}” is already uninstalled.' => 'Плагин “{plugin}” уже удален.',
     '…Or use one of your field groups as a starting point:' => '... или используйте одну из ваших групп полей в качестве отправной точки:',
-);
+];

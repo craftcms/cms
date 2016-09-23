@@ -1,8 +1,8 @@
 <?php
 /**
- * @link      http://buildwithcraft.com/
- * @copyright Copyright (c) 2015 Pixel & Tonic, Inc.
- * @license   http://buildwithcraft.com/license
+ * @link      https://craftcms.com/
+ * @copyright Copyright (c) Pixel & Tonic, Inc.
+ * @license   https://craftcms.com/license
  */
 
 namespace craft\app\elements\db;
@@ -11,8 +11,6 @@ use Craft;
 use craft\app\db\QueryAbortedException;
 use craft\app\elements\GlobalSet;
 use craft\app\helpers\Db;
-use craft\app\models\GlobalSetGroup;
-use craft\app\models\GlobalSetType;
 
 /**
  * GlobalSetQuery represents a SELECT SQL statement for global sets in a way that is independent of DBMS.
@@ -55,7 +53,7 @@ class GlobalSetQuery extends ElementQuery
      *
      * @param boolean $value The property value (defaults to true)
      *
-     * @return self The query object itself
+     * @return $this self reference
      */
     public function editable($value = true)
     {
@@ -69,7 +67,7 @@ class GlobalSetQuery extends ElementQuery
      *
      * @param string|string[] $value The property value
      *
-     * @return self The query object itself
+     * @return $this self reference
      */
     public function handle($value)
     {

@@ -1,8 +1,8 @@
 <?php
 /**
- * @link      http://buildwithcraft.com/
- * @copyright Copyright (c) 2015 Pixel & Tonic, Inc.
- * @license   http://buildwithcraft.com/license
+ * @link      https://craftcms.com/
+ * @copyright Copyright (c) Pixel & Tonic, Inc.
+ * @license   https://craftcms.com/license
  */
 
 namespace craft\app\elements\db;
@@ -118,7 +118,7 @@ class UserQuery extends ElementQuery
      *
      * @param boolean $value The property value (defaults to true)
      *
-     * @return self The query object itself
+     * @return $this self reference
      */
     public function admin($value = true)
     {
@@ -132,7 +132,7 @@ class UserQuery extends ElementQuery
      *
      * @param boolean $value The property value (defaults to true)
      *
-     * @return self The query object itself
+     * @return $this self reference
      */
     public function client($value = true)
     {
@@ -146,7 +146,7 @@ class UserQuery extends ElementQuery
      *
      * @param string|integer $value The property value
      *
-     * @return self The query object itself
+     * @return $this self reference
      */
     public function can($value)
     {
@@ -160,7 +160,7 @@ class UserQuery extends ElementQuery
      *
      * @param string|string[]|UserGroup $value The property value
      *
-     * @return self The query object itself
+     * @return $this self reference
      */
     public function group($value)
     {
@@ -183,7 +183,7 @@ class UserQuery extends ElementQuery
      *
      * @param integer|integer[] $value The property value
      *
-     * @return self The query object itself
+     * @return $this self reference
      */
     public function groupId($value)
     {
@@ -197,7 +197,7 @@ class UserQuery extends ElementQuery
      *
      * @param string|string[] $value The property value
      *
-     * @return self The query object itself
+     * @return $this self reference
      */
     public function email($value)
     {
@@ -211,7 +211,7 @@ class UserQuery extends ElementQuery
      *
      * @param string|string[] $value The property value
      *
-     * @return self The query object itself
+     * @return $this self reference
      */
     public function username($value)
     {
@@ -225,7 +225,7 @@ class UserQuery extends ElementQuery
      *
      * @param string|string[] $value The property value
      *
-     * @return self The query object itself
+     * @return $this self reference
      */
     public function firstName($value)
     {
@@ -239,7 +239,7 @@ class UserQuery extends ElementQuery
      *
      * @param string|string[] $value The property value
      *
-     * @return self The query object itself
+     * @return $this self reference
      */
     public function lastName($value)
     {
@@ -253,7 +253,7 @@ class UserQuery extends ElementQuery
      *
      * @param mixed $value The property value
      *
-     * @return self The query object itself
+     * @return $this self reference
      */
     public function lastLoginDate($value)
     {
@@ -267,7 +267,7 @@ class UserQuery extends ElementQuery
      *
      * @param boolean $value The property value (defaults to true)
      *
-     * @return self The query object itself
+     * @return $this self reference
      */
     public function withPassword($value = true)
     {
@@ -293,7 +293,8 @@ class UserQuery extends ElementQuery
 
         $this->query->select([
             'users.username',
-            'users.photo',
+            // TODO: uncomment after next breakpoint
+            //'users.photoId',
             'users.firstName',
             'users.lastName',
             'users.email',
@@ -306,6 +307,11 @@ class UserQuery extends ElementQuery
             'users.lastLoginDate',
             'users.lockoutDate',
         ]);
+
+        // TODO: remove after next breakpoint
+        if (version_compare(Craft::$app->getInfo('version'), '3.0', '>=') && Craft::$app->getInfo('build') > 2910) {
+            $this->query->addSelect(['users.photoId']);
+        }
 
         if ($this->withPassword) {
             $this->query->addSelect('users.password');
@@ -388,7 +394,7 @@ class UserQuery extends ElementQuery
 
                 // Get the users that have that permission via a user group
                 $permittedUserIdsViaGroups = (new Query())
-                    ->select('ug_u.userId')
+                    ->select('g_u.userId')
                     ->from('{{%usergroups_users}} g_u')
                     ->innerJoin('{{%userpermissions_usergroups}} p_g', 'p_g.groupId = g_u.groupId')
                     ->where(['p_g.permissionId' => $this->can])

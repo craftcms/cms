@@ -1,8 +1,8 @@
 <?php
 /**
- * @link      http://buildwithcraft.com/
- * @copyright Copyright (c) 2015 Pixel & Tonic, Inc.
- * @license   http://buildwithcraft.com/license
+ * @link      https://craftcms.com/
+ * @copyright Copyright (c) Pixel & Tonic, Inc.
+ * @license   https://craftcms.com/license
  */
 
 namespace craft\app\helpers;
@@ -65,20 +65,19 @@ class Assets
     /**
      * Get appendix for an URL based on it's Source caching settings.
      *
-     * @param Volume $source
+     * @param Volume $volume
      * @param Asset  $file
      *
      * @return string
      */
-    public static function getUrlAppendix(Volume $source, Asset $file)
+    public static function getUrlAppendix(Volume $volume, Asset $file)
     {
         $appendix = '';
 
-        //@TODO add cache apendix here
-        /*if (!empty($source->getSettings()->expires) && DateTimeHelper::isValidIntervalString($source->getSettings()->expires))
+        if (!empty($volume->expires) && DateTimeHelper::isValidIntervalString($volume->expires))
         {
             $appendix = '?mtime='.$file->dateModified->format("YmdHis");
-        }*/
+        }
 
         return $appendix;
     }
@@ -87,12 +86,13 @@ class Assets
      * Clean an Asset's filename.
      *
      * @param         $name
-     * @param boolean $isFilename if set to true (default), will separate extension
-     *                            and clean the filename separately.
+     * @param boolean $isFilename                 if set to true (default), will separate extension
+     *                                            and clean the filename separately.
+     * @param boolean $preventPluginModifications if set to true, will prevent plugins from modify
      *
      * @return mixed
      */
-    public static function prepareAssetName($name, $isFilename = true)
+    public static function prepareAssetName($name, $isFilename = true, $preventPluginModifications = false)
     {
         if ($isFilename) {
             $baseName = Io::getFilename($name, false);
@@ -102,14 +102,21 @@ class Assets
             $extension = '';
         }
 
-
-        $separator = Craft::$app->getConfig()->get('filenameWordSeparator');
+        $config = Craft::$app->getConfig();
+        $separator = $config->get('filenameWordSeparator');
 
         if (!is_string($separator)) {
             $separator = null;
         }
 
-        $baseName = Io::cleanFilename($baseName, Craft::$app->getConfig()->get('convertFilenamesToAscii'), $separator);
+        if ($isFilename && !$preventPluginModifications) {
+            $pluginModifiedAssetName = Craft::$app->getPlugins()->callFirst('modifyAssetFilename', [$baseName], true);
+
+            // Use the plugin-modified name, if anyone was up to the task.
+            $baseName = $pluginModifiedAssetName ?: $baseName;
+        }
+
+        $baseName = Io::cleanFilename($baseName, $config->get('convertFilenamesToAscii'), $separator);
 
         if ($isFilename && empty($baseName)) {
             $baseName = '-';
@@ -125,12 +132,12 @@ class Assets
      * @param VolumeFolder $destinationFolder  The destination folder
      * @param array        $targetTreeMap      map of relative path => existing folder id
      *
-     * @return array $folderIdChanges map of original folder id => new folder id
+     * @return array map of original folder id => new folder id
      */
-    public static function mirrorFolderStructure(
-        VolumeFolder $sourceParentFolder, VolumeFolder $destinationFolder, $targetTreeMap = array()
-    ) {
-        $sourceTree = Craft::$app->getAssets()->getAllDescendantFolders($sourceParentFolder);
+    public static function mirrorFolderStructure(VolumeFolder $sourceParentFolder, VolumeFolder $destinationFolder, $targetTreeMap = [])
+    {
+        $assets = Craft::$app->getAssets();
+        $sourceTree = $assets->getAllDescendantFolders($sourceParentFolder);
         $previousParent = $sourceParentFolder->getParent();
         $sourcePrefixLength = strlen($previousParent->path);
         $folderIdChanges = [];
@@ -151,7 +158,7 @@ class Assets
                 // Any and all parent folders should be already mirrored
                 $folder->parentId = (isset($folderIdChanges[$sourceFolder->parentId]) ? $folderIdChanges[$sourceFolder->parentId] : $destinationFolder->id);
 
-                Craft::$app->getAssets()->createFolder($folder);
+                $assets->createFolder($folder);
 
                 $folderIdChanges[$sourceFolder->id] = $folder->id;
             }
@@ -164,9 +171,10 @@ class Assets
      * Create an Asset transfer list based on a list of Assets and an array of
      * changing folder ids.
      *
-     * @param array $assets List of assets
+     * @param array $assets          List of assets
      * @param array $folderIdChanges A map of folder id changes
-     * @param bool  $merge If set to true, files will be merged in folders
+     * @param bool  $merge           If set to true, files will be merged in folders
+     *
      * @return array
      */
     public static function getFileTransferList($assets, $folderIdChanges, $merge = false)
@@ -201,7 +209,7 @@ class Assets
 
     /**
      * Get a list of available periods for Cache duration settings.
-     * .
+     *
      * @return array
      */
     public static function getPeriodList()
@@ -209,10 +217,29 @@ class Assets
         return [
             PeriodType::Seconds => Craft::t('app', 'Seconds'),
             PeriodType::Minutes => Craft::t('app', 'Minutes'),
-            PeriodType::Hours   => Craft::t('app', 'Hours'),
-            PeriodType::Days    => Craft::t('app', 'Days'),
-            PeriodType::Months  => Craft::t('app', 'Months'),
-            PeriodType::Years   => Craft::t('app', 'Years'),
+            PeriodType::Hours => Craft::t('app', 'Hours'),
+            PeriodType::Days => Craft::t('app', 'Days'),
+            PeriodType::Months => Craft::t('app', 'Months'),
+            PeriodType::Years => Craft::t('app', 'Years'),
         ];
+    }
+
+    /**
+     * Sorts a folder tree by Volume sort order.
+     *
+     * @param array &$tree array passed by reference of the sortable folders.
+     */
+    public static function sortFolderTree(&$tree)
+    {
+        $sort = [];
+
+        foreach ($tree as $topFolder) {
+            /**
+             * @var VolumeFolder $topFolder
+             */
+            $sort[] = $topFolder->getVolume()->sortOrder;
+        }
+
+        array_multisort($sort, $tree);
     }
 }

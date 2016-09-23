@@ -1,8 +1,8 @@
 <?php
 /**
- * @link      http://buildwithcraft.com/
- * @copyright Copyright (c) 2015 Pixel & Tonic, Inc.
- * @license   http://buildwithcraft.com/license
+ * @link      https://craftcms.com/
+ * @copyright Copyright (c) Pixel & Tonic, Inc.
+ * @license   https://craftcms.com/license
  */
 
 namespace craft\app\services;
@@ -108,6 +108,7 @@ class Feeds extends Component
         }
 
         foreach ($feed->get_items($offset, $limit) as $item) {
+            /** @var \SimplePie_Item $item */
             // Validate the permalink
             $permalink = $item->get_permalink();
 
@@ -116,7 +117,7 @@ class Feeds extends Component
                 $urlModel->url = $permalink;
 
                 if (!$urlModel->validate()) {
-                    Craft::log('An item was omitted from the feed ('.$url.') because its permalink was an invalid URL: '.$permalink);
+                    Craft::info('An item was omitted from the feed ('.$url.') because its permalink was an invalid URL: '.$permalink, 'application');
                     continue;
                 }
             }
@@ -145,7 +146,7 @@ class Feeds extends Component
     // =========================================================================
 
     /**
-     * @param $objects
+     * @param \SimplePie_Enclosure[] $objects
      *
      * @return array
      */
@@ -192,7 +193,7 @@ class Feeds extends Component
     }
 
     /**
-     * @param $objects
+     * @param \SimplePie_Rating[] $objects
      *
      * @return array
      */
@@ -213,7 +214,7 @@ class Feeds extends Component
     }
 
     /**
-     * @param $objects
+     * @param \SimplePie_Restriction[] $objects
      *
      * @return array
      */
@@ -235,7 +236,7 @@ class Feeds extends Component
     }
 
     /**
-     * @param $objects
+     * @param \SimplePie_Caption[] $objects
      *
      * @return array
      */
@@ -259,7 +260,7 @@ class Feeds extends Component
     }
 
     /**
-     * @param $objects
+     * @param \SimplePie_Credit[] $objects
      *
      * @return array
      */
@@ -281,7 +282,7 @@ class Feeds extends Component
     }
 
     /**
-     * @param $objects
+     * @param \SimplePie_Category[] $objects
      *
      * @return array
      */
@@ -305,7 +306,7 @@ class Feeds extends Component
     /**
      * Returns an array of authors.
      *
-     * @param array $objects
+     * @param \SimplePie_Author[] $objects
      *
      * @return array
      */
@@ -329,7 +330,7 @@ class Feeds extends Component
     /**
      * Returns an array of categories.
      *
-     * @param array $objects
+     * @param \SimplePie_Category[] $objects
      *
      * @return array
      */

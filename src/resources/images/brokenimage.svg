@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<svg width="1000px" height="1000px" viewBox="0 0 100 100" version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" xmlns:sketch="http://www.bohemiancoding.com/sketch/ns">
+    <!-- Generator: Sketch 3.3.3 (12072) - http://www.bohemiancoding.com/sketch -->
+    <title>brokenimage</title>
+    <desc>Created with Sketch.</desc>
+    <defs></defs>
+    <g id="Page-1" stroke="none" stroke-width="1" fill="none" fill-rule="evenodd" sketch:type="MSPage">
+        <g id="brokenimage" sketch:type="MSArtboardGroup">
+            <rect id="Rectangle-3" fill="#FFFFFF" sketch:type="MSShapeGroup" x="0" y="0" width="100" height="100"></rect>
+            <path d="M25.0576389,68.8452364 L75,68.8452364 L75,31.5437455 L25.0576389,31.5437455 L25.0576389,68.8452364 Z M29.2236111,35.6892 L70.8333333,35.6892 L70.8333333,64.6997818 L29.2236111,64.6997818 L29.2236111,35.6892 Z" id="Fill-1" fill="#D5D8DD" sketch:type="MSShapeGroup"></path>
+            <path d="M34.2465278,61.2542182 L67.0652778,61.2542182 L62.6229167,46.9047273 L59.2909722,48.0088 L56.4041667,42.5927636 L47.075,55.9922545 L42.0770833,52.7885091 L34.2465278,61.2542182" id="Fill-2" fill="#D5D8DD" sketch:type="MSShapeGroup"></path>
+            <path d="M38.3833333,48.1981091 C40.5604167,48.1981091 42.325,46.4425091 42.325,44.2765091 C42.325,42.1091273 40.5604167,40.3535273 38.3833333,40.3535273 C36.2055556,40.3535273 34.4402778,42.1091273 34.4402778,44.2765091 C34.4402778,46.4425091 36.2055556,48.1981091 38.3833333,48.1981091" id="Fill-3" fill="#D5D8DD" sketch:type="MSShapeGroup"></path>
+            <path d="M65.4858505,31.5437455 L43.9498247,68.8452364 L35.866921,68.8452364 L57.4029468,31.5437455 L65.4858505,31.5437455 Z" id="Rectangle-1" fill="#FFFFFF" sketch:type="MSShapeGroup"></path>
+        </g>
+    </g>
+</svg>

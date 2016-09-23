@@ -1,8 +1,8 @@
 <?php
 /**
- * @link      http://buildwithcraft.com/
- * @copyright Copyright (c) 2015 Pixel & Tonic, Inc.
- * @license   http://buildwithcraft.com/license
+ * @link      https://craftcms.com/
+ * @copyright Copyright (c) Pixel & Tonic, Inc.
+ * @license   https://craftcms.com/license
  */
 
 namespace craft\app\dates;
@@ -45,7 +45,7 @@ class DateTime extends \DateTime
      * @param string $time
      * @param mixed  $timezone The timezone the string is set in (defaults to UTC).
      *
-     * @return DateTime
+     * @return DateTime|false
      */
     public static function createFromFormat($format, $time, $timezone = null)
     {
@@ -260,9 +260,9 @@ class DateTime extends \DateTime
             //$newInterval->days = $interval->days;
 
             return $newInterval;
-        } else {
-            return $interval;
         }
+
+        return $interval;
     }
 
     /**

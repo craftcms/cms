@@ -1,8 +1,8 @@
 <?php
 /**
- * @link      http://buildwithcraft.com/
- * @copyright Copyright (c) 2015 Pixel & Tonic, Inc.
- * @license   http://buildwithcraft.com/license
+ * @link      https://craftcms.com/
+ * @copyright Copyright (c) Pixel & Tonic, Inc.
+ * @license   https://craftcms.com/license
  */
 
 namespace craft\app\enums;
@@ -17,14 +17,14 @@ namespace craft\app\enums;
  */
 abstract class PeriodType extends BaseEnum
 {
-	// Constants
-	// =========================================================================
+    // Constants
+    // =========================================================================
 
-	const Seconds = 'seconds';
-	const Minutes = 'minutes';
-	const Hours   = 'hours';
-	const Days    = 'days';
-	const Weeks   = 'weeks';
-	const Months  = 'months';
-	const Years   = 'years';
+    const Seconds = 'seconds';
+    const Minutes = 'minutes';
+    const Hours = 'hours';
+    const Days = 'days';
+    const Weeks = 'weeks';
+    const Months = 'months';
+    const Years = 'years';
 }

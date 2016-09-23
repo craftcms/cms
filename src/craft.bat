@@ -3,9 +3,9 @@
 rem -------------------------------------------------------------
 rem  Craft command line bootstrap script for Windows.
 rem
-rem  @link http://buildwithcraft.com/
+rem  @link http://craftcms.com/
 rem  @copyright Copyright (c) 2013 Pixel & Tonic, Inc.
-rem  @license http://buildwithcraft.com/license
+rem  @license http://craftcms.com/license
 rem -------------------------------------------------------------
 
 @setlocal

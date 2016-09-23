@@ -1,13 +1,11 @@
 <?php
 /**
- * @link      http://buildwithcraft.com/
- * @copyright Copyright (c) 2015 Pixel & Tonic, Inc.
- * @license   http://buildwithcraft.com/license
+ * @link      https://craftcms.com/
+ * @copyright Copyright (c) Pixel & Tonic, Inc.
+ * @license   https://craftcms.com/license
  */
 
 namespace craft\app\base;
-
-use Craft;
 
 /**
  * WidgetTrait implements the common methods and properties for dashboard widget classes.
@@ -21,12 +19,7 @@ trait WidgetTrait
     // =========================================================================
 
     /**
-     * @var integer The ID of the user that owns the widget
+     * @var integer The user’s chosen cospan for the widget
      */
-    public $userId;
-
-    /**
-     * @var integer The widget’s sort order
-     */
-    public $sortOrder;
+    public $colspan;
 }

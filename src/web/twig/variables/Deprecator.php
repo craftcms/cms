@@ -1,17 +1,20 @@
 <?php
 /**
- * @link      http://buildwithcraft.com/
- * @copyright Copyright (c) 2015 Pixel & Tonic, Inc.
- * @license   http://buildwithcraft.com/license
+ * @link      https://craftcms.com/
+ * @copyright Copyright (c) Pixel & Tonic, Inc.
+ * @license   https://craftcms.com/license
  */
 
 namespace craft\app\web\twig\variables;
 
+use Craft;
+
 /**
  * Class Deprecator variable.
  *
- * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @since  3.0
+ * @author     Pixel & Tonic, Inc. <support@pixelandtonic.com>
+ * @since      3.0
+ * @deprecated in 3.0
  */
 class Deprecator
 {
@@ -25,6 +28,8 @@ class Deprecator
      */
     public function getTotalLogs()
     {
-        return \Craft::$app->getDeprecator()->getTotalLogs();
+        Craft::$app->getDeprecator()->log('craft.deprecator.getTotalLogs()', 'craft.deprecator.getTotalLogs() has been deprecated. Use craft.app.deprecator.totalLogs instead.');
+
+        return Craft::$app->getDeprecator()->getTotalLogs();
     }
 }

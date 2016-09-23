@@ -1,8 +1,8 @@
 <?php
 /**
- * @link      http://buildwithcraft.com/
- * @copyright Copyright (c) 2015 Pixel & Tonic, Inc.
- * @license   http://buildwithcraft.com/license
+ * @link      https://craftcms.com/
+ * @copyright Copyright (c) Pixel & Tonic, Inc.
+ * @license   https://craftcms.com/license
  */
 
 namespace craft\app\enums;
@@ -21,9 +21,8 @@ abstract class LicenseKeyStatus extends BaseEnum
     // Constants
     // =========================================================================
 
-    const Valid = 'Valid';
-    const Invalid = 'Invalid';
-    const Missing = 'Missing';
-    const Unverified = 'Unverified';
-    const MismatchedDomain = 'MismatchedDomain';
+    const Valid = 'valid';
+    const Invalid = 'invalid';
+    const Mismatched = 'mismatched';
+    const Unknown = 'unknown';
 }

@@ -1,8 +1,8 @@
 <?php
 /**
- * @link      http://buildwithcraft.com/
- * @copyright Copyright (c) 2015 Pixel & Tonic, Inc.
- * @license   http://buildwithcraft.com/license
+ * @link      https://craftcms.com/
+ * @copyright Copyright (c) Pixel & Tonic, Inc.
+ * @license   https://craftcms.com/license
  */
 
 namespace craft\app\i18n;
@@ -49,6 +49,9 @@ class PhpMessageSource extends \yii\i18n\PhpMessageSource
     /**
      * Returns the override methods defined in the site’s translations folder.
      *
+     * @param string $category
+     * @param string $language
+     *
      * @return array|null
      */
     private function _loadOverrideMessages($category, $language)
@@ -77,6 +80,7 @@ class PhpMessageSource extends \yii\i18n\PhpMessageSource
         }
 
         $this->basePath = $basePath;
-        return (array) $messages;
+
+        return (array)$messages;
     }
 }

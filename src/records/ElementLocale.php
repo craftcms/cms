@@ -1,8 +1,8 @@
 <?php
 /**
- * @link      http://buildwithcraft.com/
- * @copyright Copyright (c) 2015 Pixel & Tonic, Inc.
- * @license   http://buildwithcraft.com/license
+ * @link      https://craftcms.com/
+ * @copyright Copyright (c) Pixel & Tonic, Inc.
+ * @license   https://craftcms.com/license
  */
 
 namespace craft\app\records;
@@ -13,13 +13,13 @@ use craft\app\db\ActiveRecord;
 /**
  * Element locale data record class.
  *
- * @property integer              $id        ID
- * @property integer              $elementId Element ID
- * @property ActiveQueryInterface $locale    Locale
- * @property string               $slug      Slug
- * @property string               $uri       URI
- * @property boolean              $enabled   Enabled
- * @property ActiveQueryInterface $element   Element
+ * @property integer $id        ID
+ * @property integer $elementId Element ID
+ * @property Locale  $locale    Locale
+ * @property string  $slug      Slug
+ * @property string  $uri       URI
+ * @property boolean $enabled   Enabled
+ * @property Element $element   Element
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since  3.0
@@ -60,7 +60,7 @@ class ElementLocale extends ActiveRecord
     /**
      * Returns the element locale’s element.
      *
-     * @return \yii\db\ActiveQueryInterface The relational query object.
+     * @return ActiveQueryInterface The relational query object.
      */
     public function getElement()
     {
@@ -70,7 +70,7 @@ class ElementLocale extends ActiveRecord
     /**
      * Returns the element locale’s locale.
      *
-     * @return \yii\db\ActiveQueryInterface The relational query object.
+     * @return ActiveQueryInterface The relational query object.
      */
     public function getLocale()
     {

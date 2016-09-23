@@ -1,14 +1,15 @@
 <?php
 /**
- * @link      http://buildwithcraft.com/
- * @copyright Copyright (c) 2015 Pixel & Tonic, Inc.
- * @license   http://buildwithcraft.com/license
+ * @link      https://craftcms.com/
+ * @copyright Copyright (c) Pixel & Tonic, Inc.
+ * @license   https://craftcms.com/license
  */
 
 namespace craft\app\fields;
 
 use Craft;
 use craft\app\base\Field;
+use craft\app\base\PreviewableFieldInterface;
 use yii\db\Schema;
 
 /**
@@ -17,7 +18,7 @@ use yii\db\Schema;
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since  3.0
  */
-class Lightswitch extends Field
+class Lightswitch extends Field implements PreviewableFieldInterface
 {
     // Static
     // =========================================================================
@@ -75,11 +76,27 @@ class Lightswitch extends Field
             $value = $this->default;
         }
 
+        $id = Craft::$app->getView()->formatInputId($this->handle);
+
         return Craft::$app->getView()->renderTemplate('_includes/forms/lightswitch',
             [
+                'id' => $id,
+                'labelId' => $id.'-label',
                 'name' => $this->handle,
                 'on' => (bool)$value,
             ]);
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function getTableAttributeHtml($value, $element)
+    {
+        if ($value) {
+            return '<div class="status enabled" title="'.Craft::t('app', 'Enabled').'"></div>';
+        }
+
+        return '<div class="status" title="'.Craft::t('app', 'Not enabled').'"></div>';
     }
 
     /**

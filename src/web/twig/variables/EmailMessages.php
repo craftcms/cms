@@ -1,21 +1,23 @@
 <?php
 /**
- * @link      http://buildwithcraft.com/
- * @copyright Copyright (c) 2015 Pixel & Tonic, Inc.
- * @license   http://buildwithcraft.com/license
+ * @link      https://craftcms.com/
+ * @copyright Copyright (c) Pixel & Tonic, Inc.
+ * @license   https://craftcms.com/license
  */
 
 namespace craft\app\web\twig\variables;
 
-use craft\app\models\RebrandEmail as RebrandEmailModel;
+use Craft;
+use craft\app\models\RebrandEmail;
 
-\Craft::$app->requireEdition(\Craft::Client);
+Craft::$app->requireEdition(Craft::Client);
 
 /**
  * Email functions.
  *
- * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @since  3.0
+ * @author     Pixel & Tonic, Inc. <support@pixelandtonic.com>
+ * @since      3.0
+ * @deprecated in 3.0
  */
 class EmailMessages
 {
@@ -29,7 +31,9 @@ class EmailMessages
      */
     public function getAllMessages()
     {
-        return \Craft::$app->getEmailMessages()->getAllMessages();
+        Craft::$app->getDeprecator()->log('craft.emailMessages.getAllMessages()', 'craft.emailMessages.getAllMessages() has been deprecated. Use craft.app.emailMessages.allMessages instead.');
+
+        return Craft::$app->getEmailMessages()->getAllMessages();
     }
 
     /**
@@ -38,10 +42,12 @@ class EmailMessages
      * @param string      $key
      * @param string|null $language
      *
-     * @return RebrandEmailModel|null
+     * @return RebrandEmail|null
      */
     public function getMessage($key, $language = null)
     {
-        return \Craft::$app->getEmailMessages()->getMessage($key, $language);
+        Craft::$app->getDeprecator()->log('craft.emailMessages.getMessage()', 'craft.emailMessages.getMessage() has been deprecated. Use craft.app.emailMessages.getMessage() instead.');
+
+        return Craft::$app->getEmailMessages()->getMessage($key, $language);
     }
 }

@@ -1,15 +1,16 @@
 <?php
 /**
- * @link      http://buildwithcraft.com/
- * @copyright Copyright (c) 2015 Pixel & Tonic, Inc.
- * @license   http://buildwithcraft.com/license
+ * @link      https://craftcms.com/
+ * @copyright Copyright (c) Pixel & Tonic, Inc.
+ * @license   https://craftcms.com/license
  */
 
 namespace craft\app\i18n;
 
 use Craft;
 use craft\app\db\Query;
-use craft\app\events\DeleteLocaleEvent;
+use craft\app\events\LocaleDeleteEvent;
+use craft\app\events\LocaleEvent;
 use craft\app\helpers\Io;
 use craft\app\tasks\ResaveAllElements;
 use ResourceBundle;
@@ -26,14 +27,19 @@ class I18N extends \yii\i18n\I18N
     // =========================================================================
 
     /**
-     * @event DeleteLocaleEvent The event that is triggered before a locale is deleted.
+     * @event LocaleEvent The event that is triggered after a locale is added.
+     */
+    const EVENT_AFTER_ADD_LOCALE = 'afterAddLocale';
+
+    /**
+     * @event LocaleDeleteEvent The event that is triggered before a locale is deleted.
      *
-     * You may set [[DeleteLocaleEvent::isValid]] to `false` to prevent the locale from getting deleted.
+     * You may set [[LocaleDeleteEvent::isValid]] to `false` to prevent the locale from getting deleted.
      */
     const EVENT_BEFORE_DELETE_LOCALE = 'beforeDeleteLocale';
 
     /**
-     * @event DeleteLocaleEvent The event that is triggered after a locale is deleted.
+     * @event LocaleDeleteEvent The event that is triggered after a locale is deleted.
      */
     const EVENT_AFTER_DELETE_LOCALE = 'afterDeleteLocale';
 
@@ -294,7 +300,7 @@ class I18N extends \yii\i18n\I18N
      */
     public function getEditableLocales()
     {
-        if (Craft::$app->isLocalized()) {
+        if (Craft::$app->getIsLocalized()) {
             $locales = $this->getSiteLocales();
             $editableLocales = [];
 
@@ -305,9 +311,9 @@ class I18N extends \yii\i18n\I18N
             }
 
             return $editableLocales;
-        } else {
-            return $this->getSiteLocales();
         }
+
+        return $this->getSiteLocales();
     }
 
     /**
@@ -340,11 +346,14 @@ class I18N extends \yii\i18n\I18N
             ->from('{{%locales}}')
             ->max('sortOrder');
 
-        $affectedRows = Craft::$app->getDb()->createCommand()->insert('{{%locales}}',
-            [
-                'locale' => $localeId,
-                'sortOrder' => $maxSortOrder + 1
-            ])->execute();
+        $affectedRows = Craft::$app->getDb()->createCommand()
+            ->insert(
+                '{{%locales}}',
+                [
+                    'locale' => $localeId,
+                    'sortOrder' => $maxSortOrder + 1
+                ])
+            ->execute();
 
         $success = (bool)$affectedRows;
 
@@ -371,12 +380,18 @@ class I18N extends \yii\i18n\I18N
                     ];
                 }
 
-                Craft::$app->getDb()->createCommand()->batchInsert(
-                    'categorygroups_i18n',
-                    ['groupId', 'locale', 'urlFormat', 'nestedUrlFormat'],
-                    $newCategoryLocales
-                )->execute();
+                Craft::$app->getDb()->createCommand()
+                    ->batchInsert(
+                        '{{%categorygroups_i18n}}',
+                        ['groupId', 'locale', 'urlFormat', 'nestedUrlFormat'],
+                        $newCategoryLocales)
+                    ->execute();
             }
+
+            // Fire an 'afterAddLocale' event
+            $this->trigger(self::EVENT_AFTER_ADD_LOCALE, new LocaleEvent([
+                'localeId' => $localeId
+            ]));
 
             // Re-save all of the localizable elements
             if (!Craft::$app->getTasks()->areTasksPending(ResaveAllElements::className())) {
@@ -403,11 +418,12 @@ class I18N extends \yii\i18n\I18N
         $oldPrimaryLocaleId = $this->getPrimarySiteLocaleId();
 
         foreach ($localeIds as $sortOrder => $localeId) {
-            Craft::$app->getDb()->createCommand()->update(
-                'locales',
-                ['sortOrder' => $sortOrder + 1],
-                ['locale' => $localeId]
-            )->execute();
+            Craft::$app->getDb()->createCommand()
+                ->update(
+                    '{{%locales}}',
+                    ['sortOrder' => $sortOrder + 1],
+                    ['locale' => $localeId])
+                ->execute();
         }
 
         $this->_siteLocales = null;
@@ -436,12 +452,12 @@ class I18N extends \yii\i18n\I18N
 
         try {
             // Fire a 'beforeDeleteLocale' event
-            $event = new DeleteLocaleEvent([
+            $event = new LocaleDeleteEvent([
                 'localeId' => $localeId,
                 'transferContentTo' => $transferContentTo
             ]);
 
-            $this->trigger(static::EVENT_BEFORE_DELETE_LOCALE, $event);
+            $this->trigger(self::EVENT_BEFORE_DELETE_LOCALE, $event);
 
             // Is the event is giving us the go-ahead?
             if ($event->isValid) {
@@ -467,11 +483,12 @@ class I18N extends \yii\i18n\I18N
                 if ($soloSectionIds) {
                     // Should we enable those for a different locale?
                     if ($transferContentTo) {
-                        Craft::$app->getDb()->createCommand()->update(
-                            'sections_i18n',
-                            ['locale' => $transferContentTo],
-                            ['in', 'sectionId', $soloSectionIds]
-                        )->execute();
+                        Craft::$app->getDb()->createCommand()
+                            ->update(
+                                '{{%sections_i18n}}',
+                                ['locale' => $transferContentTo],
+                                ['in', 'sectionId', $soloSectionIds])
+                            ->execute();
 
                         // Get all of the entry IDs in those sections
                         $entryIds = (new Query())
@@ -482,42 +499,47 @@ class I18N extends \yii\i18n\I18N
 
                         if ($entryIds) {
                             // Delete their template caches
-                            Craft::$app->getTemplateCache()->deleteCachesByElementId($entryIds);
+                            Craft::$app->getTemplateCaches()->deleteCachesByElementId($entryIds);
 
                             // Update the entry tables
-                            Craft::$app->getDb()->createCommand()->update(
-                                'content',
-                                ['locale' => $transferContentTo],
-                                ['in', 'elementId', $entryIds]
-                            )->execute();
+                            Craft::$app->getDb()->createCommand()
+                                ->update(
+                                    '{{%content}}',
+                                    ['locale' => $transferContentTo],
+                                    ['in', 'elementId', $entryIds])
+                                ->execute();
 
-                            Craft::$app->getDb()->createCommand()->update(
-                                'elements_i18n',
-                                ['locale' => $transferContentTo],
-                                ['in', 'elementId', $entryIds]
-                            )->execute();
+                            Craft::$app->getDb()->createCommand()
+                                ->update(
+                                    '{{%elements_i18n}}',
+                                    ['locale' => $transferContentTo],
+                                    ['in', 'elementId', $entryIds])
+                                ->execute();
 
-                            Craft::$app->getDb()->createCommand()->update(
-                                'entrydrafts',
-                                ['locale' => $transferContentTo],
-                                ['in', 'entryId', $entryIds]
-                            )->execute();
+                            Craft::$app->getDb()->createCommand()
+                                ->update(
+                                    '{{%entrydrafts}}',
+                                    ['locale' => $transferContentTo],
+                                    ['in', 'entryId', $entryIds])
+                                ->execute();
 
-                            Craft::$app->getDb()->createCommand()->update(
-                                'entryversions',
-                                ['locale' => $transferContentTo],
-                                ['in', 'entryId', $entryIds]
-                            )->execute();
+                            Craft::$app->getDb()->createCommand()
+                                ->update(
+                                    '{{%entryversions}}',
+                                    ['locale' => $transferContentTo],
+                                    ['in', 'entryId', $entryIds])
+                                ->execute();
 
-                            Craft::$app->getDb()->createCommand()->update(
-                                'relations',
-                                ['sourceLocale' => $transferContentTo],
-                                [
-                                    'and',
-                                    ['in', 'sourceId', $entryIds],
-                                    'sourceLocale is not null'
-                                ]
-                            )->execute();
+                            Craft::$app->getDb()->createCommand()
+                                ->update(
+                                    '{{%relations}}',
+                                    ['sourceLocale' => $transferContentTo],
+                                    [
+                                        'and',
+                                        ['in', 'sourceId', $entryIds],
+                                        'sourceLocale is not null'
+                                    ])
+                                ->execute();
 
                             // All the Matrix tables
                             $blockIds = (new Query())
@@ -527,79 +549,91 @@ class I18N extends \yii\i18n\I18N
                                 ->column();
 
                             if ($blockIds) {
-                                Craft::$app->getDb()->createCommand()->update(
-                                    'matrixblocks',
-                                    ['ownerLocale' => $transferContentTo],
-                                    [
-                                        'and',
-                                        ['in', 'id', $blockIds],
-                                        'ownerLocale is not null'
-                                    ]
-                                )->execute();
+                                Craft::$app->getDb()->createCommand()
+                                    ->update(
+                                        '{{%matrixblocks}}',
+                                        ['ownerLocale' => $transferContentTo],
+                                        [
+                                            'and',
+                                            ['in', 'id', $blockIds],
+                                            'ownerLocale is not null'
+                                        ])
+                                    ->execute();
 
-                                Craft::$app->getDb()->createCommand()->delete(
-                                    'elements_i18n',
-                                    [
-                                        'and',
-                                        ['in', 'elementId', $blockIds],
-                                        'locale = :transferContentTo'
-                                    ],
-                                    [':transferContentTo' => $transferContentTo]
-                                )->execute();
+                                Craft::$app->getDb()->createCommand()
+                                    ->delete(
+                                        '{{%elements_i18n}}',
+                                        [
+                                            'and',
+                                            ['in', 'elementId', $blockIds],
+                                            'locale = :transferContentTo'
+                                        ],
+                                        [':transferContentTo' => $transferContentTo])
+                                    ->execute();
 
-                                Craft::$app->getDb()->createCommand()->update(
-                                    'elements_i18n',
-                                    ['locale' => $transferContentTo],
-                                    [
-                                        'and',
-                                        ['in', 'elementId', $blockIds],
-                                        'locale = :localeId'
-                                    ],
-                                    [':localeId' => $localeId]
-                                )->execute();
+                                Craft::$app->getDb()->createCommand()
+                                    ->update(
+                                        '{{%elements_i18n}}',
+                                        ['locale' => $transferContentTo],
+                                        [
+                                            'and',
+                                            ['in', 'elementId', $blockIds],
+                                            'locale = :localeId'
+                                        ],
+                                        [':localeId' => $localeId])
+                                    ->execute();
 
                                 $matrixTablePrefix = Craft::$app->getDb()->getSchema()->getRawTableName('{{%matrixcontent_}}');
                                 $matrixTablePrefixLength = strlen($matrixTablePrefix);
                                 $tablePrefixLength = strlen(Craft::$app->getDb()->tablePrefix);
 
                                 foreach (Craft::$app->getDb()->getSchema()->getTableNames() as $tableName) {
-                                    if (strncmp($tableName, $matrixTablePrefix,
-                                            $matrixTablePrefixLength) === 0
-                                    ) {
+                                    if (strncmp($tableName, $matrixTablePrefix, $matrixTablePrefixLength) === 0) {
                                         $tableName = substr($tableName, $tablePrefixLength);
 
-                                        Craft::$app->getDb()->createCommand()->delete(
-                                            $tableName,
-                                            [
-                                                'and',
-                                                ['in', 'elementId', $blockIds],
-                                                'locale = :transferContentTo'
-                                            ],
-                                            [':transferContentTo' => $transferContentTo]
-                                        )->execute();
+                                        Craft::$app->getDb()->createCommand()
+                                            ->delete(
+                                                $tableName,
+                                                [
+                                                    'and',
+                                                    [
+                                                        'in',
+                                                        'elementId',
+                                                        $blockIds
+                                                    ],
+                                                    'locale = :transferContentTo'
+                                                ],
+                                                [':transferContentTo' => $transferContentTo])
+                                            ->execute();
 
-                                        Craft::$app->getDb()->createCommand()->update(
-                                            $tableName,
-                                            ['locale' => $transferContentTo],
-                                            [
-                                                'and',
-                                                ['in', 'elementId', $blockIds],
-                                                'locale = :localeId'
-                                            ],
-                                            [':localeId' => $localeId]
-                                        )->execute();
+                                        Craft::$app->getDb()->createCommand()
+                                            ->update(
+                                                $tableName,
+                                                ['locale' => $transferContentTo],
+                                                [
+                                                    'and',
+                                                    [
+                                                        'in',
+                                                        'elementId',
+                                                        $blockIds
+                                                    ],
+                                                    'locale = :localeId'
+                                                ],
+                                                [':localeId' => $localeId])
+                                            ->execute();
                                     }
                                 }
 
-                                Craft::$app->getDb()->createCommand()->update(
-                                    'relations',
-                                    ['sourceLocale' => $transferContentTo],
-                                    [
-                                        'and',
-                                        ['in', 'sourceId', $blockIds],
-                                        'sourceLocale is not null'
-                                    ]
-                                )->execute();
+                                Craft::$app->getDb()->createCommand()
+                                    ->update(
+                                        '{{%relations}}',
+                                        ['sourceLocale' => $transferContentTo],
+                                        [
+                                            'and',
+                                            ['in', 'sourceId', $blockIds],
+                                            'sourceLocale is not null'
+                                        ])
+                                    ->execute();
                             }
                         }
                     } else {
@@ -631,13 +665,17 @@ class I18N extends \yii\i18n\I18N
                 }
 
                 // Delete the locale
-                $affectedRows = Craft::$app->getDb()->createCommand()->delete('{{%locales}}',
-                    ['locale' => $localeId])->execute();
+                $affectedRows = Craft::$app->getDb()->createCommand()
+                    ->delete(
+                        '{{%locales}}',
+                        ['locale' => $localeId])
+                    ->execute();
+
                 $success = (bool)$affectedRows;
 
                 // If it didn't work, rollback the transaction in case something changed in onBeforeDeleteLocale
                 if (!$success) {
-                    $transaction->rollback();
+                    $transaction->rollBack();
 
                     return false;
                 }
@@ -649,15 +687,15 @@ class I18N extends \yii\i18n\I18N
             // in case something changed in onBeforeDeleteLocale
             $transaction->commit();
         } catch (\Exception $e) {
-            $transaction->rollback();
+            $transaction->rollBack();
 
             throw $e;
         }
 
         if ($success) {
             // Fire an 'afterDeleteLocale' event
-            $this->trigger(static::EVENT_AFTER_DELETE_LOCALE,
-                new DeleteLocaleEvent([
+            $this->trigger(self::EVENT_AFTER_DELETE_LOCALE,
+                new LocaleDeleteEvent([
                     'localeId' => $localeId,
                     'transferContentTo' => $transferContentTo
                 ]));
@@ -675,9 +713,14 @@ class I18N extends \yii\i18n\I18N
 
         if ($this->_shouldAddTranslationDebugOutput()) {
             switch ($category) {
-                case 'site': $char = '$'; break;
-                case 'app': $char = '@'; break;
-                default: $char = '%';
+                case 'site':
+                    $char = '$';
+                    break;
+                case 'app':
+                    $char = '@';
+                    break;
+                default:
+                    $char = '%';
             }
 
             $translation = $char.$translation.$char;
@@ -701,7 +744,7 @@ class I18N extends \yii\i18n\I18N
         $nonLocalizedElementTypes = [];
 
         foreach (Craft::$app->getElements()->getAllElementTypes() as $elementType) {
-            /** ElementInterface|Element $elementType */
+            /** Element $elementType */
             if (!$elementType::isLocalized()) {
                 $nonLocalizedElementTypes[] = $elementType::className();
             }
@@ -719,22 +762,30 @@ class I18N extends \yii\i18n\I18N
                 // these elements that don't currently use the old primary locale
                 $deleteConditions = [
                     'and',
-                    array('in', 'elementId', $elementIds),
+                    ['in', 'elementId', $elementIds],
                     'locale != :locale'
                 ];
                 $deleteParams = [':locale' => $oldPrimaryLocaleId];
 
                 $db = Craft::$app->getDb();
 
-                $db->createCommand()->delete('{{%elements_i18n}}', $deleteConditions, $deleteParams)->execute();
-                $db->createCommand()->delete('{{%content}}', $deleteConditions, $deleteParams)->execute();
+                $db->createCommand()
+                    ->delete('{{%elements_i18n}}', $deleteConditions, $deleteParams)
+                    ->execute();
+                $db->createCommand()
+                    ->delete('{{%content}}', $deleteConditions, $deleteParams)
+                    ->execute();
 
                 // Now convert the locales
                 $updateColumns = ['locale' => $newPrimaryLocaleId];
                 $updateConditions = ['in', 'elementId', $elementIds];
 
-                $db->createCommand()->update('{{%elements_i18n}}', $updateColumns, $updateConditions)->execute();
-                $db->createCommand()->update('{{%content}}', $updateColumns, $updateConditions)->execute();
+                $db->createCommand()
+                    ->update('{{%elements_i18n}}', $updateColumns, $updateConditions)
+                    ->execute();
+                $db->createCommand()
+                    ->update('{{%content}}', $updateColumns, $updateConditions)
+                    ->execute();
             }
         }
     }
@@ -746,7 +797,7 @@ class I18N extends \yii\i18n\I18N
     private function _shouldAddTranslationDebugOutput()
     {
         if ($this->_translationDebugOutput === null) {
-            $this->_translationDebugOutput = (bool) Craft::$app->getConfig()->get('translationDebugOutput');
+            $this->_translationDebugOutput = (bool)Craft::$app->getConfig()->get('translationDebugOutput');
         }
 
         return $this->_translationDebugOutput;

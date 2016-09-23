@@ -1,13 +1,14 @@
 <?php
 /**
- * @link      http://buildwithcraft.com/
- * @copyright Copyright (c) 2015 Pixel & Tonic, Inc.
- * @license   http://buildwithcraft.com/license
+ * @link      https://craftcms.com/
+ * @copyright Copyright (c) Pixel & Tonic, Inc.
+ * @license   https://craftcms.com/license
  */
 
 namespace craft\app\services;
 
 use Craft;
+use craft\app\base\Element;
 use craft\app\base\ElementInterface;
 use craft\app\fields\BaseRelationField;
 use yii\base\Component;
@@ -37,6 +38,7 @@ class Relations extends Component
      */
     public function saveRelations(BaseRelationField $field, ElementInterface $source, $targetIds)
     {
+        /** @var Element $source */
         if (!is_array($targetIds)) {
             $targetIds = [];
         }
@@ -67,7 +69,9 @@ class Relations extends Component
                 $oldRelationParams[':sourceLocale'] = $source->locale;
             }
 
-            Craft::$app->getDb()->createCommand()->delete('{{%relations}}', $oldRelationConditions, $oldRelationParams)->execute();
+            Craft::$app->getDb()->createCommand()
+                ->delete('{{%relations}}', $oldRelationConditions, $oldRelationParams)
+                ->execute();
 
             // Add the new ones
             if ($targetIds) {
@@ -96,12 +100,14 @@ class Relations extends Component
                     'targetId',
                     'sortOrder'
                 ];
-                Craft::$app->getDb()->createCommand()->batchInsert('{{%relations}}', $columns, $values)->execute();
+                Craft::$app->getDb()->createCommand()
+                    ->batchInsert('{{%relations}}', $columns, $values)
+                    ->execute();
             }
 
             $transaction->commit();
         } catch (\Exception $e) {
-            $transaction->rollback();
+            $transaction->rollBack();
 
             throw $e;
         }

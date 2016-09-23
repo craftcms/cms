@@ -5,8 +5,8 @@
  *
  * @author     Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @copyright  Copyright (c) 2014, Pixel & Tonic, Inc.
- * @license    http://buildwithcraft.com/license Craft License Agreement
- * @see        http://buildwithcraft.com
+ * @license    http://craftcms.com/license Craft License Agreement
+ * @see        http://craftcms.com
  * @package    craft.app.volumes
  * @since      3.0
  */
@@ -24,6 +24,9 @@ use \Aws\S3\S3Client as S3Client;
 Craft::$app->requireEdition(Craft::Pro);
 
 
+/**
+ * Class GoogleCloud
+ */
 class GoogleCloud extends Volume
 {
     // Static
@@ -159,28 +162,12 @@ class GoogleCloud extends Volume
         return rtrim(rtrim($this->url, '/').'/'.$this->subfolder, '/').'/';
     }
 
-    /**
-     * @inheritdoc
-     */
-    public function createFileByStream($path, $stream, $config = [])
-    {
-        if (!empty($this->expires)  && DateTimeHelper::isValidIntervalString($this->expires))
-        {
-            $expires = new DateTime();
-            $now = new DateTime();
-            $expires->modify('+'.$this->expires);
-            $diff = $expires->format('U') - $now->format('U');
-            $config['CacheControl'] = 'max-age='.$diff.', must-revalidate';
-        }
-
-        return parent::createFileByStream($path, $stream, $config);
-    }
-
     // Protected Methods
     // =========================================================================
 
     /**
      * @inheritdoc
+     *
      * @return GoogleCloudAdapter
      */
     protected function createAdapter()
@@ -204,5 +191,21 @@ class GoogleCloud extends Volume
         $config = array_merge(['key' => $keyId, 'secret' => $secret], $options);
 
         return S3Client::factory($config);
+    }
+
+    /**
+     * @inheritdoc
+     */
+    protected function addFileMetadataToConfig($config)
+    {
+        if (!empty($this->expires) && DateTimeHelper::isValidIntervalString($this->expires)) {
+            $expires = new DateTime();
+            $now = new DateTime();
+            $expires->modify('+'.$this->expires);
+            $diff = $expires->format('U') - $now->format('U');
+            $config['CacheControl'] = 'max-age='.$diff.', must-revalidate';
+        }
+
+        return parent::addFileMetadataToConfig($config);
     }
 }

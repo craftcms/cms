@@ -1,7 +1,6 @@
 <?php
 namespace craft\app\migrations;
 
-use Craft;
 use craft\app\db\Migration;
 use craft\app\db\Query;
 
@@ -31,7 +30,7 @@ class m150724_140822_adjust_quality_settings extends Migration
 
             $closest = 0;
             $closestDistance = 100;
-            $qualityLevels = array(10, 30, 60, 82, 100);
+            $qualityLevels = [10, 30, 60, 82, 100];
 
             foreach ($qualityLevels as $qualityLevel) {
                 if (abs($quality - $qualityLevel) <= $closestDistance) {
@@ -43,6 +42,7 @@ class m150724_140822_adjust_quality_settings extends Migration
             $this->update('{{%assettransforms}}', ['quality' => $closest],
                 'id = :id', [':id' => $transform['id']]);
         }
+
         return true;
     }
 }

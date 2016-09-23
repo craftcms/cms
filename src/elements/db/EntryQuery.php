@@ -1,8 +1,8 @@
 <?php
 /**
- * @link      http://buildwithcraft.com/
- * @copyright Copyright (c) 2015 Pixel & Tonic, Inc.
- * @license   http://buildwithcraft.com/license
+ * @link      https://craftcms.com/
+ * @copyright Copyright (c) Pixel & Tonic, Inc.
+ * @license   https://craftcms.com/license
  */
 
 namespace craft\app\elements\db;
@@ -122,7 +122,7 @@ class EntryQuery extends ElementQuery
      *
      * @param boolean $value The property value (defaults to true)
      *
-     * @return self The query object itself
+     * @return $this self reference
      */
     public function editable($value = true)
     {
@@ -136,7 +136,7 @@ class EntryQuery extends ElementQuery
      *
      * @param string|string[]|Section $value The property value
      *
-     * @return self The query object itself
+     * @return $this self reference
      */
     public function section($value)
     {
@@ -160,7 +160,7 @@ class EntryQuery extends ElementQuery
      *
      * @param integer|integer[] $value The property value
      *
-     * @return self The query object itself
+     * @return $this self reference
      */
     public function sectionId($value)
     {
@@ -174,7 +174,7 @@ class EntryQuery extends ElementQuery
      *
      * @param string|string[]|EntryType $value The property value
      *
-     * @return self The query object itself
+     * @return $this self reference
      */
     public function type($value)
     {
@@ -197,7 +197,7 @@ class EntryQuery extends ElementQuery
      *
      * @param integer|integer[] $value The property value
      *
-     * @return self The query object itself
+     * @return $this self reference
      */
     public function typeId($value)
     {
@@ -211,7 +211,7 @@ class EntryQuery extends ElementQuery
      *
      * @param integer|integer[] $value The property value
      *
-     * @return self The query object itself
+     * @return $this self reference
      */
     public function authorId($value)
     {
@@ -225,7 +225,7 @@ class EntryQuery extends ElementQuery
      *
      * @param string|string[]| $value The property value
      *
-     * @return self The query object itself
+     * @return $this self reference
      */
     public function authorGroup($value)
     {
@@ -248,7 +248,7 @@ class EntryQuery extends ElementQuery
      *
      * @param integer|integer[] $value The property value
      *
-     * @return self The query object itself
+     * @return $this self reference
      */
     public function authorGroupId($value)
     {
@@ -262,7 +262,7 @@ class EntryQuery extends ElementQuery
      *
      * @param mixed $value The property value
      *
-     * @return self The query object itself
+     * @return $this self reference
      */
     public function postDate($value)
     {
@@ -276,7 +276,7 @@ class EntryQuery extends ElementQuery
      *
      * @param DateTime|string $value The property value
      *
-     * @return self The query object itself
+     * @return $this self reference
      */
     public function before($value)
     {
@@ -295,7 +295,7 @@ class EntryQuery extends ElementQuery
      *
      * @param DateTime|string $value The property value
      *
-     * @return self The query object itself
+     * @return $this self reference
      */
     public function after($value)
     {
@@ -314,7 +314,7 @@ class EntryQuery extends ElementQuery
      *
      * @param mixed $value The property value
      *
-     * @return self The query object itself
+     * @return $this self reference
      */
     public function expiryDate($value)
     {

@@ -1,19 +1,25 @@
+/* Flexbox stuff */
+/* Other */
 /* RTL stuff */
-#page-header { padding: 12px 0; }
+#page-header { display: none; }
 
-#content h1, #content p { margin: 45px auto !important; max-width: 750px; text-align: center; }
+#content h1, #content p { margin: 48px auto !important; text-align: center; }
 
-#content h1 + p { margin-top: -25px !important; }
+#content h1 + p, #content p + p { margin-top: -25px !important; }
 
 #content h1 { color: #29323d; }
 
 #content p { font-size: 17px; line-height: 1.4; }
 
-#content img, #content #video-wrapper { display: block; margin: 45px auto; border-radius: 4px 0 0 4px; -webkit-box-shadow: 0 0 50px rgba(0, 0, 0, 0.25); -moz-box-shadow: 0 0 50px rgba(0, 0, 0, 0.25); box-shadow: 0 0 50px rgba(0, 0, 0, 0.25); }
+#content .screenshot, #content #video-wrapper { display: block; margin: 48px auto; }
 
-#content img { max-width: 870px; }
+#content .screenshot { position: relative; max-width: 100%; width: 1000px; }
 
-#content #video-wrapper { max-width: 1040px; }
+#content .screenshot:after { display: block; position: absolute; top: 0; left: 0; border-radius: 4px; width: 100%; height: 100%; content: '.'; font-size: 0; -webkit-box-shadow: inset 0 0 0 1px rgba(0, 0, 20, 0.1); -moz-box-shadow: inset 0 0 0 1px rgba(0, 0, 20, 0.1); box-shadow: inset 0 0 0 1px rgba(0, 0, 20, 0.1); }
+
+#content .screenshot img { display: block; width: 100%; height: auto; border-radius: 4px; }
+
+#content #video-wrapper { max-width: 870px; }
 
 #content header h1 { font-size: 40px; color: #da5a47; }
 

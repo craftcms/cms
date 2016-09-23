@@ -1,8 +1,8 @@
 <?php
 /**
- * @link      http://buildwithcraft.com/
- * @copyright Copyright (c) 2015 Pixel & Tonic, Inc.
- * @license   http://buildwithcraft.com/license
+ * @link      https://craftcms.com/
+ * @copyright Copyright (c) Pixel & Tonic, Inc.
+ * @license   https://craftcms.com/license
  */
 
 namespace craft\app\records;
@@ -13,15 +13,15 @@ use craft\app\db\ActiveRecord;
 /**
  * Class AssetIndexData record.
  *
- * @property integer              $id        ID
- * @property integer              $volumeId  Volume ID
- * @property string               $sessionId Session ID
- * @property integer              $offset    Offset
- * @property string               $uri       URI
- * @property integer              $size      Size
- * @property \DateTime            $timestamp Timestamp
- * @property integer              $recordId  Record ID
- * @property ActiveQueryInterface $source    Source
+ * @property integer   $id        ID
+ * @property integer   $volumeId  Volume ID
+ * @property string    $sessionId Session ID
+ * @property integer   $offset    Offset
+ * @property string    $uri       URI
+ * @property integer   $size      Size
+ * @property \DateTime $timestamp Timestamp
+ * @property integer   $recordId  Record ID
+ * @property Volume    $volume    Volume
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since  3.0
@@ -54,8 +54,8 @@ class AssetIndexData extends ActiveRecord
             [
                 ['size'],
                 'number',
-                'min' => -2147483648,
-                'max' => 2147483647,
+                'min' => 0,
+                'max' => 18446744073709551615,
                 'integerOnly' => true
             ],
             [['timestamp'], 'craft\\app\\validators\\DateTime'],
@@ -73,7 +73,7 @@ class AssetIndexData extends ActiveRecord
             ],
             [['sessionId', 'volumeId', 'offset'], 'required'],
             [['sessionId'], 'string', 'length' => 36],
-            [['uri'], 'string', 'max' => 255],
+            [['uri'], 'string'],
         ];
     }
 
@@ -88,11 +88,11 @@ class AssetIndexData extends ActiveRecord
     }
 
     /**
-     * Returns the asset index data’s source.
+     * Returns the asset index data’s volume.
      *
-     * @return \yii\db\ActiveQueryInterface The relational query object.
+     * @return ActiveQueryInterface The relational query object.
      */
-    public function getSource()
+    public function getVolume()
     {
         return $this->hasOne(Volume::className(), ['id' => 'volumeId']);
     }

@@ -1,8 +1,8 @@
 <?php
 /**
- * @link      http://buildwithcraft.com/
- * @copyright Copyright (c) 2015 Pixel & Tonic, Inc.
- * @license   http://buildwithcraft.com/license
+ * @link      https://craftcms.com/
+ * @copyright Copyright (c) Pixel & Tonic, Inc.
+ * @license   https://craftcms.com/license
  */
 
 namespace craft\app\helpers;
@@ -52,6 +52,11 @@ class DateTimeHelper
     public static function toDateTime($value, $assumeSystemTimeZone = false, $setToSystemTimeZone = true)
     {
         if ($value instanceof \DateTime) {
+            // Make sure it's a Craft DateTime object
+            if (!($value instanceof DateTime)) {
+                return new DateTime('@'.$value->getTimestamp());
+            }
+
             return $value;
         }
 
@@ -67,7 +72,7 @@ class DateTimeHelper
 
             $locale = Craft::$app->getLocale();
 
-            if (!empty($value['timezone']) && ($normalizedTimeZone = self::normalizeTimeZone($value['timezone'])) !== false) {
+            if (!empty($value['timezone']) && ($normalizedTimeZone = static::normalizeTimeZone($value['timezone'])) !== false) {
                 $timeZone = $normalizedTimeZone;
             } else {
                 $timeZone = $defaultTimeZone;
@@ -111,14 +116,22 @@ class DateTimeHelper
             }
 
             if (!empty($dt['time'])) {
+                $timePickerPhpFormat = FormatConverter::convertDateIcuToPhp('short', 'time', $locale->id);
                 // Replace the localized "AM" and "PM"
-                $dt['time'] = str_replace([
-                    $locale->getAMName(),
-                    $locale->getPMName()
-                ], ['AM', 'PM'], $dt['time']);
+                if (preg_match('/(.*)('.preg_quote($locale->getAMName(), '/').'|'.preg_quote($locale->getPMName(), '/').')(.*)/u', $dt['time'], $matches)) {
+                    $dt['time'] = $matches[1].$matches[3];
+
+                    if ($matches[2] == $locale->getAMName()) {
+                        $dt['time'] .= 'AM';
+                    } else {
+                        $dt['time'] .= 'PM';
+                    }
+
+                    $timePickerPhpFormat = str_replace('A', '', $timePickerPhpFormat).'A';
+                }
 
                 $date .= ' '.$dt['time'];
-                $format .= ' '.FormatConverter::convertDateIcuToPhp('short', 'time', $locale->id);
+                $format .= ' '.$timePickerPhpFormat;
             }
 
             // Add the timezone
@@ -128,22 +141,22 @@ class DateTimeHelper
             $date = trim((string)$value);
 
             if (preg_match('/^
-				(?P<year>\d{4})                                  # YYYY (four digit year)
-				(?:
-					-(?P<mon>\d\d?)                              # -M or -MM (1 or 2 digit month)
-					(?:
-						-(?P<day>\d\d?)                          # -D or -DD (1 or 2 digit day)
-						(?:
-							[T\ ](?P<hour>\d\d?)\:(?P<min>\d\d)  # [T or space]hh:mm (1 or 2 digit hour and 2 digit minute)
-							(?:
-								\:(?P<sec>\d\d)                  # :ss (two digit second)
-								(?:\.\d+)?                       # .s (decimal fraction of a second -- not supported)
-							)?
-							(?:[ ]?(?P<ampm>(AM|PM|am|pm))?)?    # An optional space and AM or PM
-							(?P<tz>Z|(?P<tzd>[+\-]\d\d\:?\d\d))? # Z or [+ or -]hh(:)ss (UTC or a timezone offset)
-						)?
-					)?
-				)?$/x', $date, $m)) {
+                (?P<year>\d{4})                                  # YYYY (four digit year)
+                (?:
+                    -(?P<mon>\d\d?)                              # -M or -MM (1 or 2 digit month)
+                    (?:
+                        -(?P<day>\d\d?)                          # -D or -DD (1 or 2 digit day)
+                        (?:
+                            [T\ ](?P<hour>\d\d?)\:(?P<min>\d\d)  # [T or space]hh:mm (1 or 2 digit hour and 2 digit minute)
+                            (?:
+                                \:(?P<sec>\d\d)                  # :ss (two digit second)
+                                (?:\.\d+)?                       # .s (decimal fraction of a second -- not supported)
+                            )?
+                            (?:[ ]?(?P<ampm>(AM|PM|am|pm))?)?    # An optional space and AM or PM
+                            (?P<tz>Z|(?P<tzd>[+\-]\d\d\:?\d\d))? # Z or [+ or -]hh(:)ss (UTC or a timezone offset)
+                        )?
+                    )?
+                )?$/x', $date, $m)) {
                 $format = 'Y-m-d H:i:s';
 
                 $date = $m['year'].
@@ -172,7 +185,7 @@ class DateTimeHelper
                     $format .= 'e';
                     $date .= $defaultTimeZone;
                 }
-            } else if (preg_match('/^\d{10}$/', $date)) {
+            } else if (static::isValidTimeStamp((int)$date)) {
                 $format = 'U';
             } else {
                 return false;
@@ -198,6 +211,7 @@ class DateTimeHelper
      *  - A PHP time zone identifier (UTC, GMT, Atlantic/Azores)
      *
      * @param string $timeZone The time zone to be normalized
+     *
      * @return string|false The PHP time zone identifier, or `false` if it could not be determined
      */
     public static function normalizeTimeZone($timeZone)
@@ -227,7 +241,10 @@ class DateTimeHelper
     }
 
     /**
-     * Determines whether the given value is an ISO-8601 date string, as formatted by [DateTime::ISO8601](http://php.net/manual/en/class.datetime.php#datetime.constants.iso8601).
+     * Determines whether the given value is an ISO-8601-formatted date, as formatted by either
+     * [DateTime::ATOM](http://php.net/manual/en/class.datetime.php#datetime.constants.atom) or
+     * [DateTime::ISO8601](http://php.net/manual/en/class.datetime.php#datetime.constants.iso8601) (with or without
+     * the colon between the hours and minutes of the timezone).
      *
      * @param mixed $value The value
      *
@@ -235,13 +252,11 @@ class DateTimeHelper
      */
     public static function isIso8601($value)
     {
-        if (is_string($value) && preg_match('/^\d\d\d\d-\d\d-\d\dT\d\d:\d\d:\d\d[\+\-]\d\d\d\d$/',
-                $value)
-        ) {
+        if (is_string($value) && preg_match('/^\d\d\d\d-\d\d-\d\dT\d\d:\d\d:\d\d[\+\-]\d\d\:?\d\d$/', $value)) {
             return true;
-        } else {
-            return false;
         }
+
+        return false;
     }
 
     /**
@@ -253,13 +268,13 @@ class DateTimeHelper
      */
     public static function toIso8601($date)
     {
-        $date = self::toDateTime($date);
+        $date = static::toDateTime($date);
 
         if ($date !== false) {
-            return $date->format(\DateTime::ISO8601);
-        } else {
-            return false;
+            return $date->format(\DateTime::ATOM);
         }
+
+        return false;
     }
 
     /**
@@ -283,11 +298,11 @@ class DateTimeHelper
     /**
      * Translates the words in a formatted date string to the application’s language.
      *
-     * @param string $str The formatted date string
+     * @param string $str      The formatted date string
      * @param string $language The language code (e.g. `en-US`, `en`). If this is null, the current
-     * [[\yii\base\Application::language|application language]] will be used.
+     *                         [[\yii\base\Application::language|application language]] will be used.
      *
-     * @return The translated date string
+     * @return string The translated date string
      */
     public static function translateDate($str, $language = null)
     {
@@ -300,6 +315,7 @@ class DateTimeHelper
         }
 
         $translations = self::_getDateTranslations($language);
+
         return strtr($str, $translations);
     }
 
@@ -392,7 +408,7 @@ class DateTimeHelper
             }
         }
 
-        return Craft::$app->getFormatter()->asDateTime($date);
+        return Craft::$app->getFormatter()->asDatetime($date);
     }
 
     /**
@@ -553,16 +569,20 @@ class DateTimeHelper
         // If it's today, just return the local time.
         if (static::isToday($dateTime->getTimestamp())) {
             return $dateTime->localeTime();
-        } // If it was yesterday, display 'Yesterday'
-        else if (static::wasYesterday($dateTime->getTimestamp())) {
-            return Craft::t('app', 'Yesterday');
-        } // If it were up to 7 days ago, display the weekday name.
-        else if (static::wasWithinLast('7 days', $dateTime->getTimestamp())) {
-            return Craft::t('app', $dateTime->format('l'));
-        } else {
-            // Otherwise, just return the local date.
-            return $dateTime->localeDate();
         }
+
+        // If it was yesterday, display 'Yesterday'
+        if (static::wasYesterday($dateTime->getTimestamp())) {
+            return Craft::t('app', 'Yesterday');
+        }
+
+        // If it were up to 7 days ago, display the weekday name.
+        if (static::wasWithinLast('7 days', $dateTime->getTimestamp())) {
+            return Craft::t('app', $dateTime->format('l'));
+        }
+
+        // Otherwise, just return the local date.
+        return $dateTime->localeDate();
     }
 
     /**
@@ -828,13 +848,13 @@ class DateTimeHelper
             $pmName = $targetLocale->getPMName();
 
             static::$_translationPairs[$language] = array_merge(
-                array_combine($sourceLocale->getMonthNames(Locale::FORMAT_FULL), $targetLocale->getMonthNames(Locale::FORMAT_FULL)),
-                array_combine($sourceLocale->getWeekDayNames(Locale::FORMAT_FULL), $targetLocale->getWeekDayNames(Locale::FORMAT_FULL)),
-                array_combine($sourceLocale->getMonthNames(Locale::FORMAT_MEDIUM), $targetLocale->getMonthNames(Locale::FORMAT_MEDIUM)),
-                array_combine($sourceLocale->getWeekDayNames(Locale::FORMAT_MEDIUM), $targetLocale->getWeekDayNames(Locale::FORMAT_MEDIUM)),
+                array_combine($sourceLocale->getMonthNames(Locale::LENGTH_FULL), $targetLocale->getMonthNames(Locale::LENGTH_FULL)),
+                array_combine($sourceLocale->getWeekDayNames(Locale::LENGTH_FULL), $targetLocale->getWeekDayNames(Locale::LENGTH_FULL)),
+                array_combine($sourceLocale->getMonthNames(Locale::LENGTH_MEDIUM), $targetLocale->getMonthNames(Locale::LENGTH_MEDIUM)),
+                array_combine($sourceLocale->getWeekDayNames(Locale::LENGTH_MEDIUM), $targetLocale->getWeekDayNames(Locale::LENGTH_MEDIUM)),
                 [
-                    'AM' => $amName,
-                    'PM' => $pmName,
+                    'AM' => StringHelper::toUpperCase($amName),
+                    'PM' => StringHelper::toUpperCase($pmName),
                     'am' => StringHelper::toLowerCase($amName),
                     'pm' => StringHelper::toLowerCase($pmName)
                 ]

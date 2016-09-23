@@ -1,8 +1,17 @@
 {% extends "_layouts/base" %}
 
-{%- includeTranslations "Show", "Hide" %}
+{# Give the body a .mobile class for mobile devices #}
+{% if craft.app.request.isMobileBrowser(true) %}
+	{% set bodyClass = (bodyClass is defined and bodyClass ? bodyClass~' ' : '') ~ 'mobile' %}
+{% endif %}
 
-{% set orientation = craft.i18n.getLocaleData().getOrientation() %}
+{% do craft.app.view.registerTranslations('app', [
+	"Show",
+	"Hide",
+]) %}
+
+{% set localeData = craft.app.locale %}
+{% set orientation = localeData.getOrientation() %}
 
 {% block foot %}
 	<noscript>
@@ -14,6 +23,7 @@
 	</noscript>
 
 	{% registerjs at head %}
+		// Create the Craft object
 		window.Craft = {
 			siteUid:               "{{ craft.app.getSiteUid()|e('js') }}",
 			baseUrl:               "{{ url()|e('js') }}",
@@ -21,42 +31,66 @@
 			baseSiteUrl:           "{{ siteUrl()|e('js') }}",
 			actionUrl:             "{{ actionUrl()|e('js') }}",
 			resourceUrl:           "{{ resourceUrl()|e('js') }}",
-			scriptName:            "{{ craft.request.getScriptName()|e('js') }}",
-			omitScriptNameInUrls:  {{ craft.config.omitScriptNameInUrls() ? 'true' : 'false' }},
-			usePathInfo:           {{ craft.config.usePathInfo() ? 'true' : 'false' }},
-			resourceTrigger:       "{{ craft.config.getResourceTrigger()|e('js') }}",
-			actionTrigger:         "{{ craft.config.actionTrigger|e('js') }}",
-			path:                  "{{ craft.request.getPath()|e('js') }}",
-			locale:                "{{ craft.locale|e('js') }}",
+			scriptName:            "{{ craft.app.request.getScriptFilename()|e('js') }}",
+			omitScriptNameInUrls:  {{ craft.app.config.omitScriptNameInUrls() ? 'true' : 'false' }},
+			usePathInfo:           {{ craft.app.config.usePathInfo() ? 'true' : 'false' }},
+			useCompressedJs:       {{ craft.app.config.get('useCompressedJs') ? 'true' : 'false' }},
+			resourceTrigger:       "{{ craft.app.config.getResourceTrigger()|e('js') }}",
+			actionTrigger:         "{{ craft.app.config.get('actionTrigger')|e('js') }}",
+			path:                  "{{ craft.app.request.getPathInfo()|e('js') }}",
+			language:              "{{ craft.app.language|e('js') }}",
 			orientation:           "{{ orientation|e('js') }}",
 			left:                  "{{ orientation == 'ltr' ? 'left' : 'right' }}",
 			right:                 "{{ orientation == 'ltr' ? 'right' : 'left' }}",
-			datepickerFormat:      "{{ craft.i18n.getDatepickerJsFormat()|e('js') }}",
 			username:              {{ currentUser is defined and currentUser ? ('"'~currentUser.username|e('js')~'"')|raw : 'null' }},
-			remainingSessionTime:  {{ craft.request.getFirstSegment() not in ['updates', 'manualupdate'] ? craft.session.getRemainingSessionTime : 0 }},
+			remainingSessionTime:  {{ craft.app.request.getSegment(1) not in ['updates', 'manualupdate'] ? craft.app.user.getRemainingSessionTime() : 0 }},
 			Personal:              {{ CraftPersonal }},
 			Client:                {{ CraftClient }},
 			Pro:                   {{ CraftPro }},
 			edition:               {{ CraftEdition }},
 			isLocalized:           {{ craft.isLocalized() ? 'true' : 'false' }},
 			translations:          {{ getTranslations()|raw }},
-			maxUploadSize:         {{ craft.app.getMaxUploadSize() }},
+			maxUploadSize:         {{ craft.io.getMaxUploadSize() }},
 			forceConfirmUnload:    {{ forceConfirmUnload is defined and forceConfirmUnload ? 'true' : 'false' }},
-			{% if craft.config.enableCsrfProtection %}
-				csrfTokenValue:        "{{ craft.request.getCsrfToken()|e('js') }}",
-				csrfTokenName:         "{{ craft.config.csrfTokenName|e('js') }}",
+			{% if craft.app.config.get('enableCsrfProtection') %}
+				csrfTokenValue:        "{{ craft.app.request.getCsrfToken()|e('js') }}",
+				csrfTokenName:         "{{ craft.app.config.get('csrfTokenName')|e('js') }}",
 			{% endif %}
-			runTasksAutomatically: {{ craft.config.runTasksAutomatically ? 'true' : 'false' }},
-			slugWordSeparator:     "{{ craft.config.slugWordSeparator|e('js') }}",
-			limitAutoSlugsToAscii: {{ craft.config.limitAutoSlugsToAscii ? 'true' : 'false' }}
+			runTasksAutomatically: {{ craft.app.config.get('runTasksAutomatically') ? 'true' : 'false' }},
+			slugWordSeparator:     "{{ craft.app.config.get('slugWordSeparator')|e('js') }}",
+			limitAutoSlugsToAscii: {{ craft.app.config.get('limitAutoSlugsToAscii') ? 'true' : 'false' }},
+			fileKinds:             {{ craft.io.getFileKinds()|json_encode|raw }},
+			datepickerOptions: {
+				constrainInput: false,
+				dateFormat: "{{ craft.app.locale.getDateFormat('short', 'jui')|e('js') }}",
+				prevText: '{{ "Prev"|t|e('js') }}',
+				nextText: '{{ "Next"|t|e('js') }}',
+				firstDay: {{ currentUser.getPreference('weekStartDay') ?? craft.app.config.get('defaultWeekStartDay') }},
+				dayNames: {{ localeData.getWeekDayNames('full', true)|json_encode|raw }},
+				dayNamesShort: {{ localeData.getWeekDayNames('short', true)|json_encode|raw }},
+				dayNamesMin: {{ localeData.getWeekDayNames('abbreviated', true)|json_encode|raw }},
+				monthNames: {{ localeData.getMonthNames('full', true)|values|json_encode|raw }},
+				monthNamesShort: {{ localeData.getMonthNames('abbreviated', true)|values|json_encode|raw }}
+			},
+			publishableSections: [
+				{% if isInstalled and currentUser is defined and currentUser %}
+					{% for section in craft.app.sections.getEditableSections() %}
+						{% if section.type != 'single' and currentUser.can('createEntries:'~section.id) %}
+							{id: {{ section.id }}, name: "{{ section.name|t|e('js') }}", handle: "{{ section.handle|e('js') }}", type: "{{ section.type }}"}{% if not loop.last %},{% endif %}
+						{% endif %}
+					{% endfor %}
+				{% endif %}
+			],
+			editableCategoryGroups: [
+				{% if isInstalled %}
+					{% for group in craft.app.categories.getEditableGroups() %}
+						{id: {{ group.id }}, name: "{{ group.name|t|e('js') }}", handle: "{{ group.handle|e('js') }}"}{% if not loop.last %},{% endif %}
+					{% endfor %}
+				{% endif %}
+			]
 		};
 
-		window.Craft.fileKinds = {};
-		{% for kind, info in craft.app.getFileKinds() %}
-			window.Craft.fileKinds.{{ kind }} = [];
-			{% for extension in info.extensions %}
-				window.Craft.fileKinds.{{ kind }}.push("{{ extension }}");
-			{% endfor %}
-		{% endfor %}
+		// Picture element HTML5 shiv
+		document.createElement('picture');
 	{% endregisterjs %}
 {% endblock %}

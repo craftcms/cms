@@ -1,8 +1,8 @@
 <?php
 /**
- * @link      http://buildwithcraft.com/
- * @copyright Copyright (c) 2015 Pixel & Tonic, Inc.
- * @license   http://buildwithcraft.com/license
+ * @link      https://craftcms.com/
+ * @copyright Copyright (c) Pixel & Tonic, Inc.
+ * @license   https://craftcms.com/license
  */
 
 namespace craft\app\elements\db;
@@ -12,7 +12,6 @@ use craft\app\db\Query;
 use craft\app\elements\Tag;
 use craft\app\helpers\Db;
 use craft\app\models\TagGroup;
-use craft\app\models\TagType;
 
 /**
  * TagQuery represents a SELECT SQL statement for tags in a way that is independent of DBMS.
@@ -83,9 +82,9 @@ class TagQuery extends ElementQuery
             }
 
             return $this;
-        } else {
-            return parent::__call($name, $params);
         }
+
+        return parent::__call($name, $params);
     }
 
     /**
@@ -93,7 +92,7 @@ class TagQuery extends ElementQuery
      *
      * @param string|string[]|TagGroup $value The property value
      *
-     * @return self The query object itself
+     * @return $this self reference
      */
     public function group($value)
     {
@@ -116,7 +115,7 @@ class TagQuery extends ElementQuery
      *
      * @param integer|integer[] $value The property value
      *
-     * @return self The query object itself
+     * @return $this self reference
      */
     public function groupId($value)
     {

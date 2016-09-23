@@ -1,8 +1,8 @@
 <?php
 /**
- * @link      http://buildwithcraft.com/
- * @copyright Copyright (c) 2015 Pixel & Tonic, Inc.
- * @license   http://buildwithcraft.com/license
+ * @link      https://craftcms.com/
+ * @copyright Copyright (c) Pixel & Tonic, Inc.
+ * @license   https://craftcms.com/license
  */
 
 namespace craft\app\models;
@@ -31,6 +31,11 @@ class PluginNewRelease extends Model
     public $date;
 
     /**
+     * @var \DateTime Date
+     */
+    public $localizedDate;
+
+    /**
      * @var string Notes
      */
     public $notes;
@@ -39,6 +44,11 @@ class PluginNewRelease extends Model
      * @var boolean Critical
      */
     public $critical = false;
+
+    /**
+     * @var string Manual Download Endpoint
+     */
+    public $manualDownloadEndpoint;
 
     // Public Methods
     // =========================================================================

@@ -1,8 +1,8 @@
 <?php
 /**
- * @link      http://buildwithcraft.com/
- * @copyright Copyright (c) 2015 Pixel & Tonic, Inc.
- * @license   http://buildwithcraft.com/license
+ * @link      https://craftcms.com/
+ * @copyright Copyright (c) Pixel & Tonic, Inc.
+ * @license   https://craftcms.com/license
  */
 
 namespace craft\app\elements;
@@ -11,7 +11,6 @@ use Craft;
 use craft\app\base\Element;
 use craft\app\base\ElementInterface;
 use craft\app\dates\DateInterval;
-use craft\app\dates\DateTime;
 use craft\app\db\Query;
 use craft\app\elements\actions\DeleteUsers;
 use craft\app\elements\actions\Edit;
@@ -19,10 +18,11 @@ use craft\app\elements\actions\SuspendUsers;
 use craft\app\elements\actions\UnsuspendUsers;
 use craft\app\elements\db\ElementQueryInterface;
 use craft\app\elements\db\UserQuery;
-use craft\app\helpers\Assets;
+use craft\app\events\UserLoginFailureEvent;
 use craft\app\helpers\DateTimeHelper;
 use craft\app\helpers\Html;
 use craft\app\helpers\Url;
+use craft\app\i18n\Locale;
 use craft\app\models\UserGroup;
 use craft\app\records\Session as SessionRecord;
 use Exception;
@@ -33,6 +33,8 @@ use yii\web\IdentityInterface;
 /**
  * User represents a user element.
  *
+ * @property boolean     $isCurrent       Whether this is the current logged-in user
+ * @property string      $name            The user's full name or username
  * @property string|null $preferredLocale The user’s preferred locale
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
@@ -57,9 +59,15 @@ class User extends Element implements IdentityInterface
     const AUTH_ACCOUNT_SUSPENDED = 'account_suspended';
     const AUTH_NO_CP_ACCESS = 'no_cp_access';
     const AUTH_NO_CP_OFFLINE_ACCESS = 'no_cp_offline_access';
+    const AUTH_NO_SITE_OFFLINE_ACCESS = 'no_site_offline_access';
     const AUTH_USERNAME_INVALID = 'username_invalid';
 
     const IMPERSONATE_KEY = 'Craft.UserSessionService.prevImpersonateUserId';
+
+    /**
+     * @event UserLoginFailureEvent The event that is triggered when a user fails to log in.
+     */
+    const EVENT_LOGIN_FAILURE = 'loginFailure';
 
     // Static
     // =========================================================================
@@ -129,20 +137,35 @@ class User extends Element implements IdentityInterface
         ];
 
         if (Craft::$app->getEdition() == Craft::Pro) {
-            foreach (Craft::$app->getUserGroups()->getAllGroups() as $group) {
-                $key = 'group:'.$group->id;
+            // Admin source
+            $sources['admins'] = [
+                'label' => Craft::t('app', 'Admins'),
+                'criteria' => ['admin' => true],
+                'hasThumbs' => true
+            ];
 
-                $sources[$key] = [
-                    'label' => Craft::t('site', $group->name),
-                    'criteria' => ['groupId' => $group->id],
-                    'hasThumbs' => true
-                ];
+            $groups = Craft::$app->getUserGroups()->getAllGroups();
+
+            if ($groups) {
+                $sources[] = ['heading' => Craft::t('app', 'Groups')];
+
+                foreach ($groups as $group) {
+                    $key = 'group:'.$group->id;
+
+                    $sources[$key] = [
+                        'label' => Craft::t('site', $group->name),
+                        'criteria' => ['groupId' => $group->id],
+                        'hasThumbs' => true
+                    ];
+                }
             }
         }
 
         // Allow plugins to modify the sources
-        Craft::$app->getPlugins()->call('modifyUserSources',
-            [&$sources, $context]);
+        Craft::$app->getPlugins()->call('modifyUserSources', [
+            &$sources,
+            $context
+        ]);
 
         return $sources;
     }
@@ -202,8 +225,9 @@ class User extends Element implements IdentityInterface
                 'email' => Craft::t('app', 'Email'),
                 'firstName' => Craft::t('app', 'First Name'),
                 'lastName' => Craft::t('app', 'Last Name'),
-                'dateCreated' => Craft::t('app', 'Join Date'),
                 'lastLoginDate' => Craft::t('app', 'Last Login'),
+                'elements.dateCreated' => Craft::t('app', 'Date Created'),
+                'elements.dateUpdated' => Craft::t('app', 'Date Updated'),
             ];
         } else {
             $attributes = [
@@ -211,8 +235,9 @@ class User extends Element implements IdentityInterface
                 'firstName' => Craft::t('app', 'First Name'),
                 'lastName' => Craft::t('app', 'Last Name'),
                 'email' => Craft::t('app', 'Email'),
-                'dateCreated' => Craft::t('app', 'Join Date'),
                 'lastLoginDate' => Craft::t('app', 'Last Login'),
+                'elements.dateCreated' => Craft::t('app', 'Date Created'),
+                'elements.dateUpdated' => Craft::t('app', 'Date Updated'),
             ];
         }
 
@@ -226,30 +251,54 @@ class User extends Element implements IdentityInterface
     /**
      * @inheritdoc
      */
-    public static function defineTableAttributes($source = null)
+    public static function defineAvailableTableAttributes()
     {
         if (Craft::$app->getConfig()->get('useEmailAsUsername')) {
+            // Start with Email and don't even give Username as an option
             $attributes = [
-                'email' => Craft::t('app', 'Email'),
-                'firstName' => Craft::t('app', 'First Name'),
-                'lastName' => Craft::t('app', 'Last Name'),
-                'dateCreated' => Craft::t('app', 'Join Date'),
-                'lastLoginDate' => Craft::t('app', 'Last Login'),
+                'email' => ['label' => Craft::t('app', 'Email')],
             ];
         } else {
             $attributes = [
-                'username' => Craft::t('app', 'Username'),
-                'firstName' => Craft::t('app', 'First Name'),
-                'lastName' => Craft::t('app', 'Last Name'),
-                'email' => Craft::t('app', 'Email'),
-                'dateCreated' => Craft::t('app', 'Join Date'),
-                'lastLoginDate' => Craft::t('app', 'Last Login'),
+                'username' => ['label' => Craft::t('app', 'Username')],
+                'email' => ['label' => Craft::t('app', 'Email')],
             ];
         }
 
+        $attributes['fullName'] = ['label' => Craft::t('app', 'Full Name')];
+        $attributes['firstName'] = ['label' => Craft::t('app', 'First Name')];
+        $attributes['lastName'] = ['label' => Craft::t('app', 'Last Name')];
+
+        if (Craft::$app->getIsLocalized()) {
+            $attributes['preferredLocale'] = ['label' => Craft::t('app', 'Preferred Locale')];
+        }
+
+        $attributes['id'] = ['label' => Craft::t('app', 'ID')];
+        $attributes['dateCreated'] = ['label' => Craft::t('app', 'Join Date')];
+        $attributes['lastLoginDate'] = ['label' => Craft::t('app', 'Last Login')];
+        $attributes['elements.dateCreated'] = ['label' => Craft::t('app', 'Date Created')];
+        $attributes['elements.dateUpdated'] = ['label' => Craft::t('app', 'Date Updated')];
+
         // Allow plugins to modify the attributes
-        Craft::$app->getPlugins()->call('modifyUserTableAttributes',
-            [&$attributes, $source]);
+        $pluginAttributes = Craft::$app->getPlugins()->call('defineAdditionalUserTableAttributes', [], true);
+
+        foreach ($pluginAttributes as $thisPluginAttributes) {
+            $attributes = array_merge($attributes, $thisPluginAttributes);
+        }
+
+        return $attributes;
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public static function getDefaultTableAttributes($source = null)
+    {
+        if (Craft::$app->getConfig()->get('useEmailAsUsername')) {
+            $attributes = ['fullName', 'dateCreated', 'lastLoginDate'];
+        } else {
+            $attributes = ['fullName', 'email', 'dateCreated', 'lastLoginDate'];
+        }
 
         return $attributes;
     }
@@ -282,6 +331,18 @@ class User extends Element implements IdentityInterface
                 }
             }
 
+            case 'preferredLocale': {
+                $localeId = $element->preferredLocale;
+
+                if ($localeId) {
+                    $locale = new Locale($localeId);
+
+                    return $locale->getDisplayName(Craft::$app->language);
+                }
+
+                return '';
+            }
+
             default: {
                 return parent::getTableAttributeHtml($element, $attribute);
             }
@@ -294,26 +355,19 @@ class User extends Element implements IdentityInterface
     public static function getElementQueryStatusCondition(ElementQueryInterface $query, $status)
     {
         switch ($status) {
-            case self::STATUS_ACTIVE: {
+            case self::STATUS_ACTIVE:
                 return 'users.archived = 0 AND users.suspended = 0 AND users.locked = 0 and users.pending = 0';
-            }
-
-            case self::STATUS_PENDING: {
+            case self::STATUS_PENDING:
                 return 'users.pending = 1';
-            }
-
-            case self::STATUS_LOCKED: {
+            case self::STATUS_LOCKED:
                 return 'users.locked = 1';
-            }
-
-            case self::STATUS_SUSPENDED: {
+            case self::STATUS_SUSPENDED:
                 return 'users.suspended = 1';
-            }
-
-            case self::STATUS_ARCHIVED: {
+            case self::STATUS_ARCHIVED:
                 return 'users.archived = 1';
-            }
         }
+
+        return null;
     }
 
     /**
@@ -325,6 +379,7 @@ class User extends Element implements IdentityInterface
         $html = Craft::$app->getView()->renderTemplate('users/_accountfields', [
             'account' => $element,
             'isNewAccount' => false,
+            'meta' => true,
         ]);
 
         $html .= parent::getEditorHtml($element);
@@ -375,6 +430,34 @@ class User extends Element implements IdentityInterface
         }
     }
 
+    /**
+     * @inheritdoc
+     */
+    public static function getEagerLoadingMap($sourceElements, $handle)
+    {
+        if ($handle == 'photo') {
+            // Get the source element IDs
+            $sourceElementIds = [];
+
+            foreach ($sourceElements as $sourceElement) {
+                $sourceElementIds[] = $sourceElement->id;
+            }
+
+            $map = (new Query())
+                ->select('id as source, photoId as target')
+                ->from('{{%users}}')
+                ->where(['in', 'id', $sourceElementIds])
+                ->all();
+
+            return [
+                'elementType' => Asset::className(),
+                'map' => $map
+            ];
+        }
+
+        return parent::getEagerLoadingMap($sourceElements, $handle);
+    }
+
     // IdentityInterface Methods
     // -------------------------------------------------------------------------
 
@@ -392,17 +475,19 @@ class User extends Element implements IdentityInterface
         if ($user !== null) {
             if ($user->getStatus() == self::STATUS_ACTIVE) {
                 return $user;
-            } else {
-                // If the previous user was an admin and we're impersonating the current user.
-                if ($previousUserId = Craft::$app->getSession()->get(self::IMPERSONATE_KEY)) {
-                    $previousUser = Craft::$app->getUsers()->getUserById($previousUserId);
+            }
 
-                    if ($previousUser && $previousUser->admin) {
-                        return $user;
-                    }
+            // If the previous user was an admin and we're impersonating the current user.
+            if ($previousUserId = Craft::$app->getSession()->get(self::IMPERSONATE_KEY)) {
+                $previousUser = Craft::$app->getUsers()->getUserById($previousUserId);
+
+                if ($previousUser && $previousUser->admin) {
+                    return $user;
                 }
             }
         }
+
+        return null;
     }
 
     /**
@@ -427,6 +512,8 @@ class User extends Element implements IdentityInterface
         if (count($data) === 3 && isset($data[0], $data[1], $data[2])) {
             return $data;
         }
+
+        return null;
     }
 
     // Properties
@@ -438,9 +525,9 @@ class User extends Element implements IdentityInterface
     public $username;
 
     /**
-     * @var string Photo
+     * @var integer Photo asset id
      */
-    public $photo;
+    public $photoId;
 
     /**
      * @var string First name
@@ -543,6 +630,11 @@ class User extends Element implements IdentityInterface
     public $authError;
 
     /**
+     * @var Asset user photo
+     */
+    private $_photo;
+
+    /**
      * @var array The cached list of groups the user belongs to. Set by [[getGroups()]].
      */
     private $_groups;
@@ -560,14 +652,11 @@ class User extends Element implements IdentityInterface
      *
      * @return string
      */
+    /** @noinspection PhpInconsistentReturnPointsInspection */
     public function __toString()
     {
         try {
-            if (Craft::$app->getConfig()->get('useEmailAsUsername')) {
-                return $this->email;
-            } else {
-                return $this->username;
-            }
+            return $this->getName();
         } catch (Exception $e) {
             ErrorHandler::convertExceptionToError($e);
         }
@@ -597,7 +686,7 @@ class User extends Element implements IdentityInterface
 
         $rules[] = [['lastLoginDate'], 'craft\\app\\validators\\DateTime'];
         $rules[] = [
-            ['invalidLoginCount'],
+            ['invalidLoginCount', 'photoId'],
             'number',
             'min' => -2147483648,
             'max' => 2147483647,
@@ -618,7 +707,7 @@ class User extends Element implements IdentityInterface
         ];
         $rules[] = [['email', 'unverifiedEmail'], 'email'];
         $rules[] = [['email', 'unverifiedEmail'], 'string', 'min' => 5];
-        $rules[] = [['username', 'photo'], 'string', 'max' => 100];
+        $rules[] = [['username'], 'string', 'max' => 100];
         $rules[] = [['email', 'unverifiedEmail'], 'string', 'max' => 255];
 
         return $rules;
@@ -672,20 +761,17 @@ class User extends Element implements IdentityInterface
         switch ($this->getStatus()) {
             case self::STATUS_ARCHIVED: {
                 $this->authError = self::AUTH_INVALID_CREDENTIALS;
-
-                return false;
+                break;
             }
 
             case self::STATUS_PENDING: {
                 $this->authError = self::AUTH_PENDING_VERIFICATION;
-
-                return false;
+                break;
             }
 
             case self::STATUS_SUSPENDED: {
                 $this->authError = self::AUTH_ACCOUNT_SUSPENDED;
-
-                return false;
+                break;
             }
 
             case self::STATUS_LOCKED: {
@@ -694,8 +780,7 @@ class User extends Element implements IdentityInterface
                 } else {
                     $this->authError = self::AUTH_ACCOUNT_LOCKED;
                 }
-
-                return false;
+                break;
             }
 
             case self::STATUS_ACTIVE: {
@@ -707,39 +792,51 @@ class User extends Element implements IdentityInterface
                     if ($this->locked) {
                         // Will set the authError to either AccountCooldown or AccountLocked
                         return $this->authenticate($password);
-                    } else {
-                        $this->authError = self::AUTH_INVALID_CREDENTIALS;
-
-                        return false;
                     }
+
+                    $this->authError = self::AUTH_INVALID_CREDENTIALS;
+                    break;
                 }
 
                 // Is a password reset required?
                 if ($this->passwordResetRequired) {
                     $this->authError = self::AUTH_PASSWORD_RESET_REQUIRED;
-
-                    return false;
+                    break;
                 }
 
                 $request = Craft::$app->getRequest();
 
-                if (!$request->getIsConsoleRequest() && $request->getIsCpRequest()) {
-                    if (!$this->can('accessCp')) {
-                        $this->authError = self::AUTH_NO_CP_ACCESS;
+                if (!$request->getIsConsoleRequest()) {
+                    if ($request->getIsCpRequest()) {
+                        if (!$this->can('accessCp')) {
+                            if (!$this->authError) {
+                                $this->authError = self::AUTH_NO_CP_ACCESS;
+                            }
+                        }
 
-                        return false;
-                    }
-
-                    if (!Craft::$app->isSystemOn() && !$this->can('accessCpWhenSystemIsOff')) {
-                        $this->authError = self::AUTH_NO_CP_OFFLINE_ACCESS;
-
-                        return false;
+                        if (!Craft::$app->getIsSystemOn() && !$this->can('accessCpWhenSystemIsOff')) {
+                            if (!$this->authError) {
+                                $this->authError = self::AUTH_NO_CP_OFFLINE_ACCESS;
+                            }
+                        }
+                    } else {
+                        if (!Craft::$app->getIsSystemOn() && !$this->can('accessSiteWhenSystemIsOff')) {
+                            if (!$this->authError) {
+                                $this->authError = self::AUTH_NO_SITE_OFFLINE_ACCESS;
+                            }
+                        }
                     }
                 }
-
-                return true;
             }
         }
+
+        if (!$this->authError) {
+            return true;
+        }
+
+        $this->trigger(self::EVENT_LOGIN_FAILURE, new UserLoginFailureEvent([
+            'user' => $this,
+        ]));
 
         return false;
     }
@@ -836,9 +933,9 @@ class User extends Element implements IdentityInterface
 
         if ($fullName) {
             return $fullName;
-        } else {
-            return $this->username;
         }
+
+        return $this->username;
     }
 
     /**
@@ -850,9 +947,9 @@ class User extends Element implements IdentityInterface
     {
         if ($firstName = trim($this->firstName)) {
             return $firstName;
-        } else {
-            return $this->username;
         }
+
+        return $this->username;
     }
 
     /**
@@ -893,17 +990,24 @@ class User extends Element implements IdentityInterface
     /**
      * Returns the URL to the user's photo.
      *
-     * @param integer $size
+     * @param int $size The width and height the photo should be sized to
      *
      * @return string|null
+     * @deprecated in 3.0. Use getPhoto().getUrl() instead.
      */
     public function getPhotoUrl($size = 100)
     {
-        if ($this->photo) {
-            $username = Assets::prepareAssetName($this->username, false);
+        Craft::$app->getDeprecator()->log('User::getPhotoUrl()', 'User::getPhotoUrl() has been deprecated. Use getPhoto() to access the photo asset (if there is one), and call its getUrl() method to access the photo URL.');
+        $photo = $this->getPhoto();
 
-            return Url::getResourceUrl('userphotos/'.$username.'/'.$size.'/'.$this->photo);
+        if ($photo) {
+            return $photo->getUrl([
+                'width' => $size,
+                'height' => $size
+            ]);
         }
+
+        return null;
     }
 
     /**
@@ -911,12 +1015,18 @@ class User extends Element implements IdentityInterface
      */
     public function getThumbUrl($size = 100)
     {
-        $url = $this->getPhotoUrl($size);
-        if (!$url) {
-            $url = Url::getResourceUrl('defaultuserphoto/'.$size);
+        $photo = $this->getPhoto();
+
+        if ($photo) {
+            return Url::getResourceUrl(
+                'resized/'.$this->photoId.'/'.$size,
+                [
+                    Craft::$app->getResources()->dateParam => $photo->dateModified->getTimestamp()
+                ]
+            );
         }
 
-        return $url;
+        return $url = Url::getResourceUrl('defaultuserphoto');
     }
 
     /**
@@ -932,7 +1042,7 @@ class User extends Element implements IdentityInterface
      *
      * @return boolean
      */
-    public function isCurrent()
+    public function getIsCurrent()
     {
         if ($this->id) {
             $currentUser = Craft::$app->getUser()->getIdentity();
@@ -954,17 +1064,19 @@ class User extends Element implements IdentityInterface
      */
     public function can($permission)
     {
-        if (Craft::$app->getEdition() == Craft::Pro) {
-            if ($this->admin || $this->client) {
+        if (Craft::$app->getEdition() >= Craft::Client) {
+            if ($this->admin) {
                 return true;
-            } else if ($this->id) {
-                return Craft::$app->getUserPermissions()->doesUserHavePermission($this->id, $permission);
-            } else {
-                return false;
             }
-        } else {
-            return true;
+
+            if ($this->id) {
+                return Craft::$app->getUserPermissions()->doesUserHavePermission($this->id, $permission);
+            }
+
+            return false;
         }
+
+        return true;
     }
 
     /**
@@ -978,15 +1090,15 @@ class User extends Element implements IdentityInterface
     {
         if ($this->id) {
             return Craft::$app->getUsers()->hasUserShunnedMessage($this->id, $message);
-        } else {
-            return false;
         }
+
+        return false;
     }
 
     /**
      * Returns the time when the user will be over their cooldown period.
      *
-     * @return DateTime|null
+     * @return \DateTime|null
      */
     public function getCooldownEndTime()
     {
@@ -1001,6 +1113,8 @@ class User extends Element implements IdentityInterface
                 return $cooldownEnd;
             }
         }
+
+        return null;
     }
 
     /**
@@ -1018,6 +1132,8 @@ class User extends Element implements IdentityInterface
                 return $currentTime->diff($cooldownEnd);
             }
         }
+
+        return null;
     }
 
     /**
@@ -1025,15 +1141,19 @@ class User extends Element implements IdentityInterface
      */
     public function getCpEditUrl()
     {
-        if ($this->isCurrent()) {
+        if ($this->getIsCurrent()) {
             return Url::getCpUrl('myaccount');
-        } else if (Craft::$app->getEdition() == Craft::Client && $this->client) {
-            return Url::getCpUrl('clientaccount');
-        } else if (Craft::$app->getEdition() == Craft::Pro) {
-            return Url::getCpUrl('users/'.$this->id);
-        } else {
-            return false;
         }
+
+        if (Craft::$app->getEdition() == Craft::Client && $this->client) {
+            return Url::getCpUrl('clientaccount');
+        }
+
+        if (Craft::$app->getEdition() == Craft::Pro) {
+            return Url::getCpUrl('users/'.$this->id);
+        }
+
+        return false;
     }
 
     /**
@@ -1096,13 +1216,11 @@ class User extends Element implements IdentityInterface
         $locale = $this->getPreference('locale');
 
         // Make sure it's valid
-        if ($locale !== null && in_array($locale,
-                Craft::$app->getI18n()->getSiteLocaleIds())
-        ) {
+        if ($locale !== null && in_array($locale, Craft::$app->getI18n()->getSiteLocaleIds())) {
             return $locale;
-        } else {
-            return null;
         }
+
+        return null;
     }
 
     /**
@@ -1117,6 +1235,43 @@ class User extends Element implements IdentityInterface
         $this->_preferences = array_merge($this->getPreferences(), $preferences);
 
         return $this->_preferences;
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function setEagerLoadedElements($handle, $elements)
+    {
+        if ($handle == 'photo') {
+            $photo = isset($elements[0]) ? $elements[0] : null;
+            $this->setPhoto($photo);
+        } else {
+            parent::setEagerLoadedElements($handle, $elements);
+        }
+    }
+
+    /**
+     * Returns the user's photo.
+     *
+     * @return Asset|null
+     */
+    public function getPhoto()
+    {
+        if (!isset($this->_photo) && $this->photoId) {
+            $this->_photo = Craft::$app->getAssets()->getAssetById($this->photoId);
+        }
+
+        return $this->_photo;
+    }
+
+    /**
+     * Sets the entry's author.
+     *
+     * @param Asset|null $photo
+     */
+    public function setPhoto(Asset $photo = null)
+    {
+        $this->_photo = $photo;
     }
 
     // Private Methods

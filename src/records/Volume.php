@@ -1,8 +1,8 @@
 <?php
 /**
- * @link      http://buildwithcraft.com/
- * @copyright Copyright (c) 2015 Pixel & Tonic, Inc.
- * @license   http://buildwithcraft.com/license
+ * @link      https://craftcms.com/
+ * @copyright Copyright (c) Pixel & Tonic, Inc.
+ * @license   https://craftcms.com/license
  */
 
 namespace craft\app\records;
@@ -13,21 +13,24 @@ use craft\app\db\ActiveRecord;
 /**
  * Class Volume record.
  *
- * @property integer              $id            ID
- * @property integer              $fieldLayoutId Field layout ID
- * @property string               $name          Name
- * @property string               $handle        Handle
- * @property string               $type          Type
- * @property string               $url           URL
- * @property array                $settings      Settings
- * @property string               $sortOrder     Sort order
- * @property ActiveQueryInterface $fieldLayout   Field layout
+ * @property integer     $id            ID
+ * @property integer     $fieldLayoutId Field layout ID
+ * @property string      $name          Name
+ * @property string      $handle        Handle
+ * @property string      $type          Type
+ * @property boolean     $hasUrls       Whether Volume has URLs
+ * @property string      $url           URL
+ * @property array       $settings      Settings
+ * @property string      $sortOrder     Sort order
+ * @property FieldLayout $fieldLayout   Field layout
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since  3.0
  */
 class Volume extends ActiveRecord
+
 {
+
     // Public Methods
     // =========================================================================
 
@@ -56,8 +59,9 @@ class Volume extends ActiveRecord
                 'integerOnly' => true
             ],
             [['name', 'handle'], 'unique'],
-            [['name', 'handle', 'type', 'url'], 'required'],
-            [['name', 'handle'], 'string', 'max' => 255],
+            [['name', 'handle', 'type'], 'required'],
+            [['hasUrls'], 'boolean'],
+            [['name', 'handle', 'url'], 'string', 'max' => 255],
             [['type'], 'string', 'max' => 150],
         ];
     }
@@ -73,13 +77,12 @@ class Volume extends ActiveRecord
     }
 
     /**
-     * Returns the asset source’s fieldLayout.
+     * Returns the asset volume’s fieldLayout.
      *
-     * @return \yii\db\ActiveQueryInterface The relational query object.
+     * @return ActiveQueryInterface The relational query object.
      */
     public function getFieldLayout()
     {
-        return $this->hasOne(FieldLayout::className(),
-            ['id' => 'fieldLayoutId']);
+        return $this->hasOne(FieldLayout::className(), ['id' => 'fieldLayoutId']);
     }
 }

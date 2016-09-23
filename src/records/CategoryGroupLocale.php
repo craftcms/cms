@@ -1,8 +1,8 @@
 <?php
 /**
- * @link      http://buildwithcraft.com/
- * @copyright Copyright (c) 2015 Pixel & Tonic, Inc.
- * @license   http://buildwithcraft.com/license
+ * @link      https://craftcms.com/
+ * @copyright Copyright (c) Pixel & Tonic, Inc.
+ * @license   https://craftcms.com/license
  */
 
 namespace craft\app\records;
@@ -13,12 +13,12 @@ use craft\app\db\ActiveRecord;
 /**
  * Class CategoryGroupLocale record.
  *
- * @property integer              $id              ID
- * @property integer              $groupId         Group ID
- * @property ActiveQueryInterface $locale          Locale
- * @property string               $urlFormat       URL format
- * @property string               $nestedUrlFormat Nested URL format
- * @property ActiveQueryInterface $group           Group
+ * @property integer       $id              ID
+ * @property integer       $groupId         Group ID
+ * @property Locale        $locale          Locale
+ * @property string        $urlFormat       URL format
+ * @property string        $nestedUrlFormat Nested URL format
+ * @property CategoryGroup $group           Group
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since  3.0
@@ -57,7 +57,7 @@ class CategoryGroupLocale extends ActiveRecord
     /**
      * Returns the category group locale’s group.
      *
-     * @return \yii\db\ActiveQueryInterface The relational query object.
+     * @return ActiveQueryInterface The relational query object.
      */
     public function getGroup()
     {
@@ -67,7 +67,7 @@ class CategoryGroupLocale extends ActiveRecord
     /**
      * Returns the category group locale’s locale.
      *
-     * @return \yii\db\ActiveQueryInterface The relational query object.
+     * @return ActiveQueryInterface The relational query object.
      */
     public function getLocale()
     {

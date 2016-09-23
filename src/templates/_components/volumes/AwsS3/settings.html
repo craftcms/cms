@@ -107,7 +107,8 @@
 {% endset %}
 
 {{ forms.field({
-    label: "Cache Duration "|t,
+    label: "Cache Duration"|t,
+    instructions: "The Cache-Control duration that assets should be uploaded to the cloud with.",
     id: 'cacheDuration',
 }, cacheInput) }}
 

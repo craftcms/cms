@@ -1,14 +1,15 @@
 <?php
 /**
- * @link      http://buildwithcraft.com/
- * @copyright Copyright (c) 2015 Pixel & Tonic, Inc.
- * @license   http://buildwithcraft.com/license
+ * @link      https://craftcms.com/
+ * @copyright Copyright (c) Pixel & Tonic, Inc.
+ * @license   https://craftcms.com/license
  */
 
 namespace craft\app\models;
 
 use Craft;
-use craft\app\helpers\Element;
+use craft\app\base\Field;
+use craft\app\helpers\ElementHelper;
 use craft\app\elements\Entry;
 use craft\app\elements\User;
 
@@ -44,6 +45,7 @@ class BaseEntryRevisionModel extends Entry
         $contentByFieldHandles = [];
 
         foreach ($content as $fieldId => $value) {
+            /** @var Field $field */
             $field = Craft::$app->getFields()->getFieldById($fieldId);
 
             if ($field) {
@@ -73,7 +75,7 @@ class BaseEntryRevisionModel extends Entry
     public function getUrl()
     {
         if ($this->uri === null) {
-            Element::setUniqueUri($this);
+            ElementHelper::setUniqueUri($this);
         }
 
         return parent::getUrl();

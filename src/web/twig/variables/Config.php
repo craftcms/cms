@@ -1,19 +1,21 @@
 <?php
 /**
- * @link      http://buildwithcraft.com/
- * @copyright Copyright (c) 2015 Pixel & Tonic, Inc.
- * @license   http://buildwithcraft.com/license
+ * @link      https://craftcms.com/
+ * @copyright Copyright (c) Pixel & Tonic, Inc.
+ * @license   https://craftcms.com/license
  */
 
 namespace craft\app\web\twig\variables;
 
+use Craft;
 use craft\app\enums\ConfigCategory;
 
 /**
  * Class Config variable.
  *
- * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @since  3.0
+ * @author     Pixel & Tonic, Inc. <support@pixelandtonic.com>
+ * @since      3.0
+ * @deprecated in 3.0
  */
 class Config
 {
@@ -29,7 +31,7 @@ class Config
      */
     public function __isset($name)
     {
-        return \Craft::$app->getConfig()->exists($name, ConfigCategory::General);
+        return Craft::$app->getConfig()->exists($name, ConfigCategory::General);
     }
 
     /**
@@ -41,7 +43,9 @@ class Config
      */
     public function __get($name)
     {
-        return \Craft::$app->getConfig()->get($name, ConfigCategory::General);
+        Craft::$app->getDeprecator()->log('craft.config.[setting]', 'craft.config.[setting] has been deprecated. Use craft.app.config.get(\'setting\') instead.');
+
+        return Craft::$app->getConfig()->get($name, ConfigCategory::General);
     }
 
     /**
@@ -54,7 +58,9 @@ class Config
      */
     public function get($name, $file = 'general')
     {
-        return \Craft::$app->getConfig()->get($name, $file);
+        Craft::$app->getDeprecator()->log('craft.config.get()', 'craft.config.get() has been deprecated. Use craft.app.config.get() instead.');
+
+        return Craft::$app->getConfig()->get($name, $file);
     }
 
     /**
@@ -64,7 +70,9 @@ class Config
      */
     public function usePathInfo()
     {
-        return \Craft::$app->getConfig()->usePathInfo();
+        Craft::$app->getDeprecator()->log('craft.config.usePathInfo()', 'craft.config.usePathInfo() has been deprecated. Use craft.app.config.usePathInfo() instead.');
+
+        return Craft::$app->getConfig()->usePathInfo();
     }
 
     /**
@@ -74,7 +82,9 @@ class Config
      */
     public function omitScriptNameInUrls()
     {
-        return \Craft::$app->getConfig()->omitScriptNameInUrls();
+        Craft::$app->getDeprecator()->log('craft.config.omitScriptNameInUrls()', 'craft.config.omitScriptNameInUrls() has been deprecated. Use craft.app.config.omitScriptNameInUrls() instead.');
+
+        return Craft::$app->getConfig()->omitScriptNameInUrls();
     }
 
     /**
@@ -84,6 +94,8 @@ class Config
      */
     public function getResourceTrigger()
     {
-        return \Craft::$app->getConfig()->getResourceTrigger();
+        Craft::$app->getDeprecator()->log('craft.config.getResourceTrigger()', 'craft.config.getResourceTrigger() has been deprecated. Use craft.app.config.getResourceTrigger() instead.');
+
+        return Craft::$app->getConfig()->getResourceTrigger();
     }
 }

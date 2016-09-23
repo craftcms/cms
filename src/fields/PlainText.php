@@ -1,14 +1,15 @@
 <?php
 /**
- * @link      http://buildwithcraft.com/
- * @copyright Copyright (c) 2015 Pixel & Tonic, Inc.
- * @license   http://buildwithcraft.com/license
+ * @link      https://craftcms.com/
+ * @copyright Copyright (c) Pixel & Tonic, Inc.
+ * @license   https://craftcms.com/license
  */
 
 namespace craft\app\fields;
 
 use Craft;
 use craft\app\base\Field;
+use craft\app\base\PreviewableFieldInterface;
 use craft\app\helpers\Db;
 use yii\db\Schema;
 
@@ -18,7 +19,7 @@ use yii\db\Schema;
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since  3.0
  */
-class PlainText extends Field
+class PlainText extends Field implements PreviewableFieldInterface
 {
     // Static
     // =========================================================================
@@ -86,9 +87,9 @@ class PlainText extends Field
     {
         if (!$this->maxLength) {
             return Schema::TYPE_TEXT;
-        } else {
-            return Db::getTextualColumnTypeByContentLength($this->maxLength);
         }
+
+        return Db::getTextualColumnTypeByContentLength($this->maxLength);
     }
 
     /**

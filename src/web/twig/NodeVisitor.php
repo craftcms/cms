@@ -1,8 +1,8 @@
 <?php
 /**
- * @link      http://buildwithcraft.com/
- * @copyright Copyright (c) 2015 Pixel & Tonic, Inc.
- * @license   http://buildwithcraft.com/license
+ * @link      https://craftcms.com/
+ * @copyright Copyright (c) Pixel & Tonic, Inc.
+ * @license   https://craftcms.com/license
  */
 
 namespace craft\app\web\twig;
@@ -29,7 +29,10 @@ class NodeVisitor implements \Twig_NodeVisitorInterface
     /**
      * @inheritdoc
      */
-    public function enterNode(\Twig_NodeInterface $node, \Twig_Environment $env)
+    public function enterNode(
+        /** @noinspection PhpDeprecationInspection */ \Twig_NodeInterface $node,
+        \Twig_Environment $env
+    )
     {
         // Is this the top-level template node?
         if ($node instanceof \Twig_Node_Module) {
@@ -53,9 +56,9 @@ class NodeVisitor implements \Twig_NodeVisitorInterface
                 $this->_foundHead = true;
 
                 return $this->_splitTextNode($node, $data, $headPos, 'head');
-            } else if ($this->_foundBeginBody === false && preg_match('/(<body\b[^>]*)(>)?/',
-                    $data, $matches, PREG_OFFSET_CAPTURE) === 1
-            ) {
+            }
+
+            if ($this->_foundBeginBody === false && preg_match('/(<body\b[^>]*)(>)?/', $data, $matches, PREG_OFFSET_CAPTURE) === 1) {
                 if (empty($matches[2][0])) {
                     // Will have to wait for the next text node
                     $this->_findingBeginBody = true;
@@ -80,7 +83,10 @@ class NodeVisitor implements \Twig_NodeVisitorInterface
     /**
      * @inheritdoc
      */
-    public function leaveNode(\Twig_NodeInterface $node, \Twig_Environment $env)
+    public function leaveNode(
+        /** @noinspection PhpDeprecationInspection */ \Twig_NodeInterface $node,
+        \Twig_Environment $env
+    )
     {
         return $node;
     }
@@ -111,12 +117,14 @@ class NodeVisitor implements \Twig_NodeVisitorInterface
      *
      * @param \Twig_NodeInterface $node The current node to traverse
      *
-     * @return \Twig_NodeInterface
+     * @return \Twig_NodeInterface|null
      */
-    private function _findEventTags(\Twig_NodeInterface $node = null)
+    private function _findEventTags(
+        /** @noinspection PhpDeprecationInspection */ \Twig_NodeInterface $node = null
+    )
     {
         if (null === $node) {
-            return;
+            return null;
         }
 
         // Check to see if this is a template event tag

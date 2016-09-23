@@ -1,16 +1,18 @@
 <?php
 /**
- * @link      http://buildwithcraft.com/
- * @copyright Copyright (c) 2015 Pixel & Tonic, Inc.
- * @license   http://buildwithcraft.com/license
+ * @link      https://craftcms.com/
+ * @copyright Copyright (c) Pixel & Tonic, Inc.
+ * @license   https://craftcms.com/license
  */
 
 namespace craft\app\fields;
 
 use Craft;
 use craft\app\base\Field;
+use craft\app\base\Volume;
 use craft\app\fields\data\RichTextData;
 use craft\app\helpers\Db;
+use craft\app\helpers\Html;
 use craft\app\helpers\HtmlPurifier;
 use craft\app\helpers\Io;
 use craft\app\helpers\Json;
@@ -54,12 +56,22 @@ class RichText extends Field
     /**
      * @var boolean Whether the HTML should be purified on save
      */
-    public $purifyHtml = false;
+    public $purifyHtml = true;
 
     /**
      * @var string The type of database column the field should have in the content table
      */
     public $columnType = Schema::TYPE_TEXT;
+
+    /**
+     * @var array The volumes that should be available for Image selection
+     */
+    public $availableVolumes = [];
+
+    /**
+     * @var array The transforms available when selecting an image
+     */
+    public $availableTransforms = [];
 
     /**
      * @var string
@@ -87,6 +99,27 @@ class RichText extends Field
             }
         }
 
+        $volumeOptions = [];
+        /**
+         * @var $volume Volume
+         */
+        foreach (Craft::$app->getVolumes()->getPublicVolumes() as $volume) {
+            if ($volume->hasUrls) {
+                $volumeOptions[] = [
+                    'label' => $volume->name,
+                    'value' => $volume->id
+                ];
+            }
+        }
+
+        $transformOptions = [];
+        foreach (Craft::$app->getAssetTransforms()->getAllTransforms() as $transform) {
+            $transformOptions[] = [
+                'label' => $transform->name,
+                'value' => $transform->id
+            ];
+        }
+
         $columns = [
             'text' => Craft::t('app', 'Text (stores about 64K)'),
             'mediumtext' => Craft::t('app', 'MediumText (stores about 4GB)')
@@ -96,6 +129,8 @@ class RichText extends Field
             [
                 'field' => $this,
                 'configOptions' => $configOptions,
+                'volumeOptions' => $volumeOptions,
+                'transformOptions' => $transformOptions,
                 'columns' => $columns,
                 'existing' => !empty($this->id),
             ]);
@@ -118,9 +153,9 @@ class RichText extends Field
         if ($value) {
             // Prevent everyone from having to use the |raw filter when outputting RTE content
             return new RichTextData($value);
-        } else {
-            return null;
         }
+
+        return null;
     }
 
     /**
@@ -129,32 +164,30 @@ class RichText extends Field
     public function getInputHtml($value, $element)
     {
         /** @var RichTextData|null $value */
-        $configJs = $this->_getConfigJs();
+        $configJs = $this->_getConfigJson();
         $this->_includeFieldResources($configJs);
 
-        $id = Craft::$app->getView()->formatInputId($this->handle);
+        $view = Craft::$app->getView();
+        $id = $view->formatInputId($this->handle);
         $localeId = ($element ? $element->locale : Craft::$app->language);
 
-        if (isset($this->model) && $this->model->translatable)
-        {
-            $locale = craft()->i18n->getLocaleData($localeId);
-            $orientation = '"'.$locale->getOrientation().'"';
-        }
-        else
-        {
-            $orientation = 'Craft.orientation';
+        $settings = [
+            'id' => $view->namespaceInputId($id),
+            'linkOptions' => $this->_getLinkOptions(),
+            'volumes' => $this->_getVolumes(),
+            'transforms' => $this->_getTransforms(),
+            'elementLocale' => $localeId,
+            'redactorConfig' => Json::decode($configJs),
+            'redactorLang' => static::$_redactorLang,
+        ];
+
+        if ($this->translatable) {
+            // Explicitly set the text direction
+            $locale = Craft::$app->getI18n()->getLocaleById($localeId);
+            $settings['direction'] = $locale->getOrientation();
         }
 
-        Craft::$app->getView()->registerJs('new Craft.RichTextInput('.
-            '"'.Craft::$app->getView()->namespaceInputId($id).'", '.
-            Json::encode($this->_getSectionSources()).', '.
-            Json::encode($this->_getCategorySources()).', '.
-            Json::encode($this->_getAssetSources()).', '.
-            '"'.$localeId.'", ' .
-            $orientation.', ' .
-            $configJs.', '.
-            '"'.static::$_redactorLang.'"'.
-            ');');
+        $view->registerJs('new Craft.RichTextInput('.Json::encode($settings).');');
 
         if ($value instanceof RichTextData) {
             $value = $value->getRawContent();
@@ -162,9 +195,9 @@ class RichText extends Field
 
         if (StringHelper::contains($value, '{')) {
             // Preserve the ref tags with hashes {type:id:url} => {type:id:url}#type:id
-            $value = preg_replace_callback('/(href=|src=)([\'"])(\{(\w+\:\d+\:'.Handle::$handlePattern.')\})\2/',
+            $value = preg_replace_callback('/(href=|src=)([\'"])(\{(\w+\:\d+\:'.Handle::$handlePattern.')\})(#[^\'"#]+)?\2/',
                 function ($matches) {
-                    return $matches[1].$matches[2].$matches[3].'#'.$matches[4].$matches[2];
+                    return $matches[1].$matches[2].$matches[3].(!empty($matches[5]) ? $matches[5] : '').'#'.$matches[4].$matches[2];
                 }, $value);
 
             // Now parse 'em
@@ -192,12 +225,7 @@ class RichText extends Field
         $maxDbColumnSize = ceil($maxDbColumnSize * 0.9);
 
         if ($postContentSize > $maxDbColumnSize) {
-            // Give ourselves 10% wiggle room.
-            $maxDbColumnSize = ceil($maxDbColumnSize * 0.9);
-
-            if ($postContentSize > $maxDbColumnSize) {
-                $errors[] = Craft::t('app', '{attribute} is too long.');
-            }
+            $errors[] = Craft::t('app', '{attribute} is too long.');
         }
 
         return $errors;
@@ -256,9 +284,28 @@ class RichText extends Field
         }
 
         // Find any element URLs and swap them with ref tags
-        $value = preg_replace_callback('/(href=|src=)([\'"])[^\'"]+?#(\w+):(\d+)(:'.Handle::$handlePattern.')?\2/', function ($matches) {
-                return $matches[1].$matches[2].'{'.$matches[3].':'.$matches[4].(!empty($matches[5]) ? $matches[5] : ':url').'}'.$matches[2];
-            }, $value);
+        $value = preg_replace_callback(
+            '/(href=|src=)([\'"])[^\'"#]+?(#[^\'"#]+)?(?:#|%23)(\w+):(\d+)(:'.Handle::$handlePattern.')?\2/',
+            function ($matches) {
+                $refTag = '{'.$matches[4].':'.$matches[5].(!empty($matches[6]) ? $matches[6] : ':url').'}';
+                $hash = (!empty($matches[3]) ? $matches[3] : '');
+
+                if ($hash) {
+                    // Make sure that the hash isn't actually part of the parsed URL
+                    // (someone's Entry URL Format could be "#{slug}", etc.)
+                    $url = Craft::$app->getElements()->parseRefs($refTag);
+
+                    if (mb_strpos($url, $hash) !== false) {
+                        $hash = '';
+                    }
+                }
+
+                return $matches[1].$matches[2].$refTag.$hash.$matches[2];
+            },
+            $value);
+
+        // Encode any 4-byte UTF-8 characters.
+        $value = StringHelper::encodeMb4($value);
 
         return $value;
     }
@@ -276,13 +323,59 @@ class RichText extends Field
             $rawContent = $value->getRawContent();
 
             return empty($rawContent);
-        } else {
-            return true;
         }
+
+        return true;
     }
 
     // Private Methods
     // =========================================================================
+
+    /**
+     * Returns the link options available to the field.
+     *
+     * Each link option is represented by an array with the following keys:
+     *
+     * - `optionTitle` (required) – the user-facing option title that appears in the Link dropdown menu
+     * - `elementType` (required) – the element type class that the option should be linking to
+     * - `sources` (optional) – the sources that the user should be able to select elements from
+     * - `criteria` (optional) – any specific element criteria parameters that should limit which elements the user can select
+     * - `storageKey` (optional) – the localStorage key that should be used to store the element selector modal state (defaults to RichTextFieldType.LinkTo[ElementType])
+     *
+     * @return array
+     */
+    private function _getLinkOptions()
+    {
+        $linkOptions = [];
+
+        $sectionSources = $this->_getSectionSources();
+        $categorySources = $this->_getCategorySources();
+
+        if ($sectionSources) {
+            $linkOptions[] = [
+                'optionTitle' => Craft::t('app', 'Link to an entry'),
+                'elementType' => 'Entry',
+                'sources' => $sectionSources,
+            ];
+        }
+
+        if ($categorySources) {
+            $linkOptions[] = [
+                'optionTitle' => Craft::t('app', 'Link to a category'),
+                'elementType' => 'Category',
+                'sources' => $categorySources,
+            ];
+        }
+
+        // Give plugins a chance to add their own
+        $allPluginLinkOptions = Craft::$app->getPlugins()->call('addRichTextLinkOptions', [], true);
+
+        foreach ($allPluginLinkOptions as $pluginLinkOptions) {
+            $linkOptions = array_merge($linkOptions, $pluginLinkOptions);
+        }
+
+        return $linkOptions;
+    }
 
     /**
      * Returns the available section sources.
@@ -298,8 +391,10 @@ class RichText extends Field
         foreach ($sections as $section) {
             if ($section->type == Section::TYPE_SINGLE) {
                 $showSingles = true;
-            } else if ($section->hasUrls) {
-                $sources[] = 'section:'.$section->id;
+            } else {
+                if ($section->hasUrls) {
+                    $sources[] = 'section:'.$section->id;
+                }
             }
         }
 
@@ -330,39 +425,75 @@ class RichText extends Field
     }
 
     /**
-     * Returns the available volume sources.
+     * Returns the available volumes.
      *
      * @return array
      */
-    private function _getAssetSources()
+    private function _getVolumes()
     {
-        $sources = [];
-        $volumeIds = Craft::$app->getVolumes()->getAllVolumeIds();
+        $volumes = [];
 
-        foreach ($volumeIds as $volumeId) {
-            $sources[] = 'volume:'.$volumeId;
+        $volumeIds = $this->availableVolumes;
+
+        if (!$volumeIds) {
+            // TODO: change to getPublicVolumeIds() when it exists
+            $volumeIds = Craft::$app->getVolumes()->getPublicVolumeIds();
         }
 
-        return $sources;
+        $folders = Craft::$app->getAssets()->findFolders([
+            'volumeId' => $volumeIds,
+            'parentId' => ':empty:'
+        ]);
+
+        foreach ($folders as $folder) {
+            $volumes[] = 'folder:'.$folder->id;
+        }
+
+        return $volumes;
     }
 
     /**
-     * Returns the Redactor config JS used by this field.
+     * Get available transforms.
+     *
+     * @return array
+     */
+    private function _getTransforms()
+    {
+        $transforms = Craft::$app->getAssetTransforms()->getAllTransforms('id');
+
+        $transformIds = array_flip(!empty($this->availableTransforms) && is_array($this->availableTransforms) ? $this->availableTransforms : []);
+        if (!empty($transformIds)) {
+            $transforms = array_intersect_key($transforms, $transformIds);
+        }
+
+        $transformList = [];
+        foreach ($transforms as $transform) {
+            $transformList[] = (object)[
+                'handle' => Html::encode($transform->handle),
+                'name' => Html::encode($transform->name)
+            ];
+        }
+
+        return $transformList;
+    }
+
+    /**
+     * Returns the Redactor config JSON used by this field.
      *
      * @return string
      */
-    private function _getConfigJs()
+    private function _getConfigJson()
     {
         if ($this->configFile) {
             $configPath = Craft::$app->getPath()->getConfigPath().'/redactor/'.$this->configFile;
-            $js = Io::getFileContents($configPath);
+            $json = Json::removeComments(Io::getFileContents($configPath));
         }
 
-        if (empty($js)) {
-            $js = '{}';
+        if (empty($json)) {
+            $json = '{}';
         }
 
-        return $js;
+        return $json;
     }
 
     /**
@@ -374,19 +505,21 @@ class RichText extends Field
      */
     private function _includeFieldResources($configJs)
     {
-        Craft::$app->getView()->registerCssResource('lib/redactor/redactor.css');
-        Craft::$app->getView()->registerCssResource('lib/redactor/plugins/pagebreak.css');
+        $view = Craft::$app->getView();
+        $view->registerCssResource('lib/redactor/redactor.css');
+        $view->registerCssResource('lib/redactor/plugins/pagebreak.css');
 
         // Gotta use the uncompressed Redactor JS until the compressed one gets our Live Preview menu fix
-        Craft::$app->getView()->registerJsResource('lib/redactor/redactor.js');
-        //Craft::$app->getView()->registerJsResource('lib/redactor/redactor'.(Craft::$app->getConfig()->get('useCompressedJs') ? '.min' : '').'.js');
+        $view->registerJsResource('lib/redactor/redactor.js');
+        //$view->registerJsResource('lib/redactor/redactor'.(Craft::$app->getConfig()->get('useCompressedJs') ? '.min' : '').'.js');
 
         $this->_maybeIncludeRedactorPlugin($configJs, 'fullscreen', false);
+        $this->_maybeIncludeRedactorPlugin($configJs, 'source|html', false);
         $this->_maybeIncludeRedactorPlugin($configJs, 'table', false);
         $this->_maybeIncludeRedactorPlugin($configJs, 'video', false);
         $this->_maybeIncludeRedactorPlugin($configJs, 'pagebreak', true);
 
-        Craft::$app->getView()->includeTranslations(
+        $view->registerTranslations('app', [
             'Insert image',
             'Insert URL',
             'Choose image',
@@ -395,9 +528,10 @@ class RichText extends Field
             'Insert link',
             'Unlink',
             'Link to an asset',
-            'Link to a category');
+            'Link to a category',
+        ]);
 
-        Craft::$app->getView()->registerJsResource('js/RichTextInput.js');
+        $view->registerJsResource('js/RichTextInput.js');
 
         // Check to see if the Redactor has been translated into the current locale
         if (Craft::$app->language != Craft::$app->sourceLanguage) {
@@ -408,6 +542,29 @@ class RichText extends Field
                 $this->_includeRedactorLangFile($languageId);
             }
         }
+
+        $customTranslations = [
+            'fullscreen' => Craft::t('app', 'Fullscreen'),
+            'insert-page-break' => Craft::t('app', 'Insert Page Break'),
+            'table' => Craft::t('app', 'Table'),
+            'insert-table' => Craft::t('app', 'Insert table'),
+            'insert-row-above' => Craft::t('app', 'Insert row above'),
+            'insert-row-below' => Craft::t('app', 'Insert row below'),
+            'insert-column-left' => Craft::t('app', 'Insert column left'),
+            'insert-column-right' => Craft::t('app', 'Insert column right'),
+            'add-head' => Craft::t('app', 'Add head'),
+            'delete-head' => Craft::t('app', 'Delete head'),
+            'delete-column' => Craft::t('app', 'Delete column'),
+            'delete-row' => Craft::t('app', 'Delete row'),
+            'delete-table' => Craft::t('app', 'Delete table'),
+            'video' => Craft::t('app', 'Video'),
+            'video-html-code' => Craft::t('app', 'Video Embed Code or Youtube/Vimeo Link'),
+        ];
+
+        $view->registerJs(
+            '$.extend($.Redactor.opts.langs["'.static::$_redactorLang.'"], '.
+            Json::encode($customTranslations).
+            ');');
     }
 
     /**
@@ -421,12 +578,17 @@ class RichText extends Field
      */
     private function _maybeIncludeRedactorPlugin($configJs, $plugin, $includeCss)
     {
-        if (preg_match('/([\'"])'.$plugin.'\1/', $configJs)) {
-            if ($includeCss) {
-                Craft::$app->getView()->registerCssResource('lib/redactor/plugins/'.$plugin.'.css');
+        if (preg_match('/([\'"])(?:'.$plugin.')\1/', $configJs)) {
+            if (($pipe = strpos($plugin, '|')) !== false) {
+                $plugin = substr($plugin, 0, $pipe);
             }
 
-            Craft::$app->getView()->registerJsResource('lib/redactor/plugins/'.$plugin.'.js');
+            $view = Craft::$app->getView();
+            if ($includeCss) {
+                $view->registerCssResource('lib/redactor/plugins/'.$plugin.'.css');
+            }
+
+            $view->registerJsResource('lib/redactor/plugins/'.$plugin.'.js');
         }
     }
 
@@ -446,8 +608,8 @@ class RichText extends Field
             static::$_redactorLang = $lang;
 
             return true;
-        } else {
-            return false;
         }
+
+        return false;
     }
 }

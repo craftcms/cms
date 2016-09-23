@@ -1,8 +1,8 @@
 <?php
 /**
- * @link      http://buildwithcraft.com/
- * @copyright Copyright (c) 2015 Pixel & Tonic, Inc.
- * @license   http://buildwithcraft.com/license
+ * @link      https://craftcms.com/
+ * @copyright Copyright (c) Pixel & Tonic, Inc.
+ * @license   https://craftcms.com/license
  */
 
 namespace craft\app\controllers;
@@ -10,8 +10,6 @@ namespace craft\app\controllers;
 use Craft;
 use craft\app\dates\DateTime;
 use craft\app\elements\User;
-use craft\app\errors\Exception;
-use craft\app\errors\HttpException;
 use craft\app\helpers\DateTimeHelper;
 use craft\app\helpers\Json;
 use craft\app\helpers\Url;
@@ -19,6 +17,10 @@ use craft\app\elements\Entry;
 use craft\app\models\EntryDraft;
 use craft\app\models\EntryVersion;
 use craft\app\models\Section;
+use yii\web\ForbiddenHttpException;
+use yii\web\NotFoundHttpException;
+use yii\web\Response;
+use yii\web\ServerErrorHttpException;
 
 /**
  * The EntriesController class is a controller that handles various entry related tasks such as retrieving, saving,
@@ -54,7 +56,6 @@ class EntriesController extends BaseEntriesController
      * @param Entry   $entry         The entry being edited, if there were any validation errors.
      *
      * @return string The rendering result
-     * @throws HttpException
      */
     public function actionEditEntry($sectionHandle, $entryId = null, $draftId = null, $versionId = null, $localeId = null, Entry $entry = null)
     {
@@ -105,7 +106,6 @@ class EntriesController extends BaseEntriesController
         // ---------------------------------------------------------------------
 
         if (
-            Craft::$app->getEdition() >= Craft::Client &&
             $section->type == Section::TYPE_STRUCTURE &&
             $section->maxLevels != 1
         ) {
@@ -142,10 +142,15 @@ class EntriesController extends BaseEntriesController
             $parentId = Craft::$app->getRequest()->getParam('parentId');
 
             if ($parentId === null && $entry->id) {
-                $parentIds = $entry->getAncestors(1)->status(null)->localeEnabled(false)->ids();
+                // Is it already set on the model (e.g. if we're loading a draft)?
+                if ($entry->newParentId) {
+                    $parentId = $entry->newParentId;
+                } else {
+                    $parentIds = $entry->getAncestors(1)->status(null)->localeEnabled(null)->ids();
 
-                if ($parentIds) {
-                    $parentId = $parentIds[0];
+                    if ($parentIds) {
+                        $parentId = $parentIds[0];
+                    }
                 }
             }
 
@@ -157,7 +162,7 @@ class EntriesController extends BaseEntriesController
         // Enabled locales
         // ---------------------------------------------------------------------
 
-        if (Craft::$app->isLocalized()) {
+        if (Craft::$app->getIsLocalized()) {
             if ($entry->id) {
                 $variables['enabledLocales'] = Craft::$app->getElements()->getEnabledLocalesForElement($entry->id);
             } else {
@@ -175,23 +180,21 @@ class EntriesController extends BaseEntriesController
         // ---------------------------------------------------------------------
 
         // Page title w/ revision label
-        if (Craft::$app->getEdition() >= Craft::Client) {
-            switch ($entry::className()) {
-                case EntryDraft::className(): {
-                    /** @var EntryDraft $entry */
-                    $variables['revisionLabel'] = $entry->name;
-                    break;
-                }
+        switch ($entry::className()) {
+            case EntryDraft::className(): {
+                /** @var EntryDraft $entry */
+                $variables['revisionLabel'] = $entry->name;
+                break;
+            }
 
-                case EntryVersion::className(): {
-                    /** @var EntryVersion $entry */
-                    $variables['revisionLabel'] = Craft::t('app', 'Version {num}', ['num' => $entry->num]);
-                    break;
-                }
+            case EntryVersion::className(): {
+                /** @var EntryVersion $entry */
+                $variables['revisionLabel'] = Craft::t('app', 'Version {num}', ['num' => $entry->num]);
+                break;
+            }
 
-                default: {
-                    $variables['revisionLabel'] = Craft::t('app', 'Current');
-                }
+            default: {
+                $variables['revisionLabel'] = Craft::t('app', 'Current');
             }
         }
 
@@ -200,7 +203,7 @@ class EntriesController extends BaseEntriesController
         } else {
             $variables['docTitle'] = $variables['title'] = $entry->title;
 
-            if (Craft::$app->getEdition() >= Craft::Client && $entry::className() != Entry::className()) {
+            if ($entry::className() != Entry::className()) {
                 $variables['docTitle'] .= ' ('.$variables['revisionLabel'].')';
             }
         }
@@ -255,7 +258,7 @@ class EntriesController extends BaseEntriesController
         }
 
         // Enable Live Preview?
-        if (!Craft::$app->getRequest()->getIsMobileBrowser(true) && Craft::$app->getSections()->isSectionTemplateValid($section)) {
+        if (!Craft::$app->getRequest()->isMobileBrowser(true) && Craft::$app->getSections()->isSectionTemplateValid($section)) {
             Craft::$app->getView()->registerJs('Craft.LivePreview.init('.Json::encode([
                     'fields' => '#title-field, #fields > div > div > .field',
                     'extraFields' => '#settings',
@@ -315,7 +318,7 @@ class EntriesController extends BaseEntriesController
         // Set the "Continue Editing" URL
         $variables['continueEditingUrl'] = $variables['baseCpEditUrl'].
             (isset($variables['draftId']) ? '/drafts/'.$variables['draftId'] : '').
-            (Craft::$app->isLocalized() && Craft::$app->language != $variables['localeId'] ? '/'.$variables['localeId'] : '');
+            (Craft::$app->getIsLocalized() && Craft::$app->language != $variables['localeId'] ? '/'.$variables['localeId'] : '');
 
         // Can the user delete the entry?
         $variables['canDeleteEntry'] = $entry->id && (
@@ -323,8 +326,14 @@ class EntriesController extends BaseEntriesController
                 ($entry->authorId != $currentUser->id && $currentUser->can('deletePeerEntries'.$variables['permissionSuffix']))
             );
 
+        // Full page form variables
+        $variables['fullPageForm'] = true;
+        $variables['saveShortcutRedirect'] = $variables['continueEditingUrl'];
+
         // Include translations
-        Craft::$app->getView()->includeTranslations('Live Preview');
+        Craft::$app->getView()->registerTranslations('app', [
+            'Live Preview',
+        ]);
 
         // Render the template!
         Craft::$app->getView()->registerCssResource('css/entry.css');
@@ -335,7 +344,7 @@ class EntriesController extends BaseEntriesController
     /**
      * Switches between two entry types.
      *
-     * @return void
+     * @return Response
      */
     public function actionSwitchEntryType()
     {
@@ -357,6 +366,7 @@ class EntriesController extends BaseEntriesController
             Craft::$app->getView()->renderTemplate('entries/_fields', $variables);
 
         $view = Craft::$app->getView();
+
         return $this->asJson([
             'paneHtml' => $paneHtml,
             'headHtml' => $view->getHeadHtml(),
@@ -367,8 +377,8 @@ class EntriesController extends BaseEntriesController
     /**
      * Previews an entry.
      *
-     * @throws HttpException
-     * @return void
+     * @return string
+     * @throws NotFoundHttpException if the requested entry version cannot be found
      */
     public function actionPreviewEntry()
     {
@@ -381,7 +391,7 @@ class EntriesController extends BaseEntriesController
             $entry = Craft::$app->getEntryRevisions()->getVersionById($versionId);
 
             if (!$entry) {
-                throw new HttpException(404);
+                throw new NotFoundHttpException('Entry version not found');
             }
 
             $this->enforceEditEntryPermissions($entry);
@@ -395,19 +405,20 @@ class EntriesController extends BaseEntriesController
             $this->_populateEntryModel($entry);
         }
 
-        $this->_showEntry($entry);
+        return $this->_showEntry($entry);
     }
 
     /**
      * Saves an entry.
      *
-     * @return void
+     * @return Response|null
      */
     public function actionSaveEntry()
     {
         $this->requirePostRequest();
 
         $entry = $this->_getEntryModel();
+        $request = Craft::$app->getRequest();
 
         // Permission enforcement
         $this->enforceEditEntryPermissions($entry);
@@ -440,50 +451,49 @@ class EntriesController extends BaseEntriesController
 
         // Save the entry (finally!)
         if (Craft::$app->getEntries()->saveEntry($entry)) {
-            if (Craft::$app->getRequest()->getIsAjax()) {
+            if ($request->getIsAjax()) {
                 $return['success'] = true;
                 $return['id'] = $entry->id;
                 $return['title'] = $entry->title;
-                $return['cpEditUrl'] = $entry->getCpEditUrl();
 
-                $author = $entry->getAuthor()->getAttributes();
-
-                if (isset($author['password'])) {
-                    unset($author['password']);
+                if (!$request->getIsConsoleRequest() && $request->getIsCpRequest()) {
+                    $return['cpEditUrl'] = $entry->getCpEditUrl();
                 }
 
-                $return['author'] = $author;
-                $return['postDate'] = ($entry->postDate ? $entry->postDate->localeDate() : null);
+                $return['authorUsername'] = $entry->getAuthor()->username;
+                $return['dateCreated'] = DateTimeHelper::toIso8601($entry->dateCreated);
+                $return['dateUpdated'] = DateTimeHelper::toIso8601($entry->dateUpdated);
+                $return['postDate'] = ($entry->postDate ? DateTimeHelper::toIso8601($entry->postDate) : null);
 
                 return $this->asJson($return);
-            } else {
-                Craft::$app->getSession()->setNotice(Craft::t('app', 'Entry saved.'));
-
-                return $this->redirectToPostedUrl($entry);
             }
-        } else {
-            if (Craft::$app->getRequest()->getIsAjax()) {
-                return $this->asJson([
-                    'errors' => $entry->getErrors(),
-                ]);
-            } else {
-                Craft::$app->getSession()->setError(Craft::t('app', 'Couldn’t save entry.'));
 
-                // Send the entry back to the template
-                Craft::$app->getUrlManager()->setRouteParams([
-                    'entry' => $entry
-                ]);
-            }
+            Craft::$app->getSession()->setNotice(Craft::t('app', 'Entry saved.'));
+
+            return $this->redirectToPostedUrl($entry);
         }
+
+        if ($request->getIsAjax()) {
+            return $this->asJson([
+                'errors' => $entry->getErrors(),
+            ]);
+        }
+
+        Craft::$app->getSession()->setError(Craft::t('app', 'Couldn’t save entry.'));
+
+        // Send the entry back to the template
+        Craft::$app->getUrlManager()->setRouteParams([
+            'entry' => $entry
+        ]);
+
+        return null;
     }
 
     /**
      * Deletes an entry.
      *
-     * @throws Exception
-     * @throws HttpException
-     * @throws \Exception
-     * @return void
+     * @return Response|null
+     * @throws NotFoundHttpException if the requested entry cannot be found
      */
     public function actionDeleteEntry()
     {
@@ -494,7 +504,7 @@ class EntriesController extends BaseEntriesController
         $entry = Craft::$app->getEntries()->getEntryById($entryId, $localeId);
 
         if (!$entry) {
-            throw new Exception(Craft::t('app', 'No entry exists with the ID “{id}”.', ['id' => $entryId]));
+            throw new NotFoundHttpException('Entry not found');
         }
 
         $currentUser = Craft::$app->getUser()->getIdentity();
@@ -508,23 +518,26 @@ class EntriesController extends BaseEntriesController
         if (Craft::$app->getEntries()->deleteEntry($entry)) {
             if (Craft::$app->getRequest()->getIsAjax()) {
                 return $this->asJson(['success' => true]);
-            } else {
-                Craft::$app->getSession()->setNotice(Craft::t('app', 'Entry deleted.'));
-
-                return $this->redirectToPostedUrl($entry);
             }
-        } else {
-            if (Craft::$app->getRequest()->getIsAjax()) {
-                return $this->asJson(['success' => false]);
-            } else {
-                Craft::$app->getSession()->setError(Craft::t('app', 'Couldn’t delete entry.'));
 
-                // Send the entry back to the template
-                Craft::$app->getUrlManager()->setRouteParams([
-                    'entry' => $entry
-                ]);
-            }
+            Craft::$app->getSession()->setNotice(Craft::t('app', 'Entry deleted.'));
+
+            return $this->redirectToPostedUrl($entry);
         }
+
+        if (Craft::$app->getRequest()->getIsAjax()) {
+            return $this->asJson(['success' => false]);
+        }
+
+        Craft::$app->getSession()->setError(Craft::t('app', 'Couldn’t delete entry.'));
+
+        // Send the entry back to the template
+        Craft::$app->getUrlManager()->setRouteParams([
+            'entry' => $entry
+        ]);
+
+
+        return null;
     }
 
     /**
@@ -535,8 +548,9 @@ class EntriesController extends BaseEntriesController
      * @param mixed $draftId
      * @param mixed $versionId
      *
-     * @throws HttpException
-     * @return void
+     * @return Response
+     * @throws NotFoundHttpException if the requested entry/revision cannot be found
+     * @throws ServerErrorHttpException if the section is not configured properly
      */
     public function actionShareEntry($entryId = null, $locale = null, $draftId = null, $versionId = null)
     {
@@ -544,7 +558,7 @@ class EntriesController extends BaseEntriesController
             $entry = Craft::$app->getEntries()->getEntryById($entryId, $locale);
 
             if (!$entry) {
-                throw new HttpException(404);
+                throw new NotFoundHttpException('Entry not found');
             }
 
             $params = ['entryId' => $entryId, 'locale' => $entry->locale];
@@ -552,7 +566,7 @@ class EntriesController extends BaseEntriesController
             $entry = Craft::$app->getEntryRevisions()->getDraftById($draftId);
 
             if (!$entry) {
-                throw new HttpException(404);
+                throw new NotFoundHttpException('Entry draft not found');
             }
 
             $params = ['draftId' => $draftId];
@@ -560,12 +574,12 @@ class EntriesController extends BaseEntriesController
             $entry = Craft::$app->getEntryRevisions()->getVersionById($versionId);
 
             if (!$entry) {
-                throw new HttpException(404);
+                throw new NotFoundHttpException('Entry version not found');
             }
 
             $params = ['versionId' => $versionId];
         } else {
-            throw new HttpException(404);
+            throw new NotFoundHttpException('Entry not found');
         }
 
         // Make sure they have permission to be viewing this entry
@@ -573,13 +587,13 @@ class EntriesController extends BaseEntriesController
 
         // Make sure the entry actually can be viewed
         if (!Craft::$app->getSections()->isSectionTemplateValid($entry->getSection())) {
-            throw new HttpException(404);
+            throw new ServerErrorHttpException('Section not configured properly');
         }
 
         // Create the token and redirect to the entry URL with the token in place
         $token = Craft::$app->getTokens()->createToken([
-            'action' => 'entries/view-shared-entry',
-            'params' => $params
+            'entries/view-shared-entry',
+            $params
         ]);
         $url = Url::getUrlWithToken($entry->getUrl(), $token);
 
@@ -594,8 +608,8 @@ class EntriesController extends BaseEntriesController
      * @param mixed $draftId
      * @param mixed $versionId
      *
-     * @throws HttpException
-     * @return void
+     * @return Response
+     * @throws NotFoundHttpException if the requested category cannot be found
      */
     public function actionViewSharedEntry($entryId = null, $locale = null, $draftId = null, $versionId = null)
     {
@@ -610,10 +624,10 @@ class EntriesController extends BaseEntriesController
         }
 
         if (empty($entry)) {
-            throw new HttpException(404);
+            throw new NotFoundHttpException('Entry not found');
         }
 
-        $this->_showEntry($entry);
+        return $this->_showEntry($entry);
     }
 
     // Private Methods
@@ -624,8 +638,9 @@ class EntriesController extends BaseEntriesController
      *
      * @param array &$variables
      *
-     * @throws HttpException|Exception
      * @return void
+     * @throws NotFoundHttpException if the requested section or entry cannot be found
+     * @throws ForbiddenHttpException if the user is not permitted to edit content in the requested locale
      */
     private function _prepEditEntryVariables(&$variables)
     {
@@ -639,13 +654,13 @@ class EntriesController extends BaseEntriesController
         }
 
         if (empty($variables['section'])) {
-            throw new HttpException(404);
+            throw new NotFoundHttpException('Section not found');
         }
 
         // Get the locale
         // ---------------------------------------------------------------------
 
-        if (Craft::$app->isLocalized()) {
+        if (Craft::$app->getIsLocalized()) {
             // Only use the locales that the user has access to
             $sectionLocaleIds = array_keys($variables['section']->getLocales());
             $editableLocaleIds = Craft::$app->getI18n()->getEditableLocaleIds();
@@ -655,7 +670,7 @@ class EntriesController extends BaseEntriesController
         }
 
         if (!$variables['localeIds']) {
-            throw new HttpException(403, Craft::t('app', 'Your account doesn’t have permission to edit any of this section’s locales.'));
+            throw new ForbiddenHttpException('User not permitted to edit content in any locales supported by this section');
         }
 
         if (empty($variables['localeId'])) {
@@ -667,7 +682,7 @@ class EntriesController extends BaseEntriesController
         } else {
             // Make sure they were requesting a valid locale
             if (!in_array($variables['localeId'], $variables['localeIds'])) {
-                throw new HttpException(404);
+                throw new ForbiddenHttpException('User not permitted to edit content in this locale');
             }
         }
 
@@ -683,7 +698,7 @@ class EntriesController extends BaseEntriesController
                 } else {
                     $variables['entry'] = Craft::$app->getEntries()->getEntryById($variables['entryId'], $variables['localeId']);
 
-                    if ($variables['entry'] && Craft::$app->getEdition() === Craft::Pro) {
+                    if ($variables['entry']) {
                         $versions = Craft::$app->getEntryRevisions()->getVersionsByEntryId($variables['entryId'], $variables['localeId'], 1, true);
 
                         if (isset($versions[0])) {
@@ -693,7 +708,7 @@ class EntriesController extends BaseEntriesController
                 }
 
                 if (!$variables['entry']) {
-                    throw new HttpException(404);
+                    throw new NotFoundHttpException('Entry not found');
                 }
             } else {
                 $variables['entry'] = new Entry();
@@ -705,13 +720,21 @@ class EntriesController extends BaseEntriesController
                     $variables['entry']->locale = $variables['localeId'];
                 }
 
-                if (Craft::$app->isLocalized()) {
+                if (Craft::$app->getIsLocalized()) {
                     // Set the default locale status based on the section's settings
                     foreach ($variables['section']->getLocales() as $locale) {
                         if ($locale->locale == $variables['entry']->locale) {
                             $variables['entry']->localeEnabled = $locale->enabledByDefault;
                             break;
                         }
+                    }
+                } else {
+                    // Set the default entry status based on the section's settings
+                    foreach ($variables['section']->getLocales() as $locale) {
+                        if (!$locale->enabledByDefault) {
+                            $variables['entry']->enabled = false;
+                        }
+                        break;
                     }
                 }
             }
@@ -728,10 +751,6 @@ class EntriesController extends BaseEntriesController
         }
 
         $variables['entryType'] = $variables['entry']->getType();
-
-        if (!$variables['entryType']) {
-            throw new Exception(Craft::t('app', 'No entry types are available for this entry.'));
-        }
 
         // Define the content tabs
         // ---------------------------------------------------------------------
@@ -762,8 +781,8 @@ class EntriesController extends BaseEntriesController
     /**
      * Fetches or creates an Entry.
      *
-     * @throws Exception
      * @return Entry
+     * @throws NotFoundHttpException if the requested entry cannot be found
      */
     private function _getEntryModel()
     {
@@ -774,7 +793,7 @@ class EntriesController extends BaseEntriesController
             $entry = Craft::$app->getEntries()->getEntryById($entryId, $localeId);
 
             if (!$entry) {
-                throw new Exception(Craft::t('app', 'No entry exists with the ID “{id}”.', ['id' => $entryId]));
+                throw new NotFoundHttpException('Entry not found');
             }
         } else {
             $entry = new Entry();
@@ -838,17 +857,10 @@ class EntriesController extends BaseEntriesController
      * @param Entry $entry
      *
      * @return string The rendering result
-     * @throws HttpException
      */
     private function _showEntry(Entry $entry)
     {
         $section = $entry->getSection();
-        $type = $entry->getType();
-
-        if (!$section || !$type) {
-            Craft::error('Attempting to preview an entry that doesn’t have a section/type.', __METHOD__);
-            throw new HttpException(404);
-        }
 
         Craft::$app->language = $entry->locale;
 

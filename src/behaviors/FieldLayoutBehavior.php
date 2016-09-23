@@ -1,13 +1,14 @@
 <?php
 /**
- * @link      http://buildwithcraft.com/
- * @copyright Copyright (c) 2015 Pixel & Tonic, Inc.
- * @license   http://buildwithcraft.com/license
+ * @link      https://craftcms.com/
+ * @copyright Copyright (c) Pixel & Tonic, Inc.
+ * @license   https://craftcms.com/license
  */
 
 namespace craft\app\behaviors;
 
 use Craft;
+use craft\app\base\ElementInterface;
 use craft\app\models\FieldLayout;
 use yii\base\Behavior;
 use yii\base\InvalidConfigException;
@@ -24,7 +25,7 @@ class FieldLayoutBehavior extends Behavior
     // =========================================================================
 
     /**
-     * @var ElementInterface|Element|string The element type that the field layout will be associated with
+     * @var ElementInterface|string The element type that the field layout will be associated with
      */
     public $elementType;
 
@@ -43,6 +44,7 @@ class FieldLayoutBehavior extends Behavior
 
     /**
      * @inheritdoc
+     *
      * @throws InvalidConfigException if the behavior was not configured properly
      */
     public function init()

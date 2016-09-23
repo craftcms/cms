@@ -1,13 +1,14 @@
 <?php
 /**
- * @link      http://buildwithcraft.com/
- * @copyright Copyright (c) 2015 Pixel & Tonic, Inc.
- * @license   http://buildwithcraft.com/license
+ * @link      https://craftcms.com/
+ * @copyright Copyright (c) Pixel & Tonic, Inc.
+ * @license   https://craftcms.com/license
  */
 
 namespace craft\app\helpers;
 
 use Craft;
+use craft\app\elements\db\ElementQuery;
 use craft\app\elements\db\ElementQueryInterface;
 use craft\app\web\twig\variables\Paginate;
 
@@ -31,6 +32,7 @@ class Template
      */
     public static function paginateCriteria(ElementQueryInterface $query)
     {
+        /** @var ElementQuery $query */
         $currentPage = Craft::$app->getRequest()->getPageNum();
         $limit = $query->limit;
         $total = $query->count() - $query->offset;

@@ -2,36 +2,38 @@
 {% set title = "Globals"|t('app') %}
 
 
-{% if craft.isLocalized() %}
-	{% set extraPageHeaderHtml %}
+{% block pageTitle %}
+	{{ parent() }}
+
+	{% if craft.isLocalized() %}
 		<div class="select">
-			<select onchange="document.location.href='{{ url('globals/{locale}/'~globalSetHandle) }}'.replace('{locale}', this.value);">
-				{% for locale in craft.i18n.getEditableLocales() %}
-					<option value="{{ locale.id }}"{% if locale.id == localeId %} selected{% endif %}>{{ locale.getDisplayName(craft.locale) }}</option>
+			<select onchange="document.location.href='{{ url('globals/{locale}/'~globalSet.handle) }}'.replace('{locale}', this.value);">
+				{% for locale in craft.app.i18n.getEditableLocales() %}
+					<option value="{{ locale.id }}"{% if locale.id == globalSet.locale %} selected{% endif %}>{{ locale.getDisplayName(craft.app.language) }}</option>
 				{% endfor %}
 			</select>
 		</div>
-	{% endset %}
-{% endif %}
+	{% endif %}
+{% endblock %}
 
 
-{% set sidebar %}
+{% block sidebar %}
 	<nav>
 		<ul>
-			{% for theGlobalSet in globalSets %}
-				<li><a{% if theGlobalSet.handle == globalSetHandle %} class="sel"{% endif %} href="{{ theGlobalSet.getCpEditUrl() }}">{{ theGlobalSet.name|t('site') }}</a></li>
+			{% for theGlobalSet in editableGlobalSets %}
+				<li><a{% if theGlobalSet.handle == globalSet.handle %} class="sel"{% endif %} href="{{ theGlobalSet.getCpEditUrl() }}">{{ theGlobalSet.name|t('site') }}</a></li>
 			{% endfor %}
 		</ul>
 	</nav>
-{% endset %}
+{% endblock %}
 
 
-{% set content %}
+{% block content %}
 	<form method="post" accept-charset="UTF-8" data-saveshortcut data-confirm-unload>
 		<input type="hidden" name="action" value="globals/save-content">
 		<input type="hidden" name="setId" value="{{ globalSet.id }}">
-		<input type="hidden" name="locale" value="{{ localeId }}">
-		{{ getCsrfInput() }}
+		<input type="hidden" name="locale" value="{{ globalSet.locale }}">
+		{{ csrfInput() }}
 
 		{% if globalSet.getFieldLayout().getFields() | length %}
 			<div>
@@ -48,4 +50,4 @@
 			{{ "This global set doesn’t have any fields assigned to it in its field layout."|t('app') }}
 		{% endif %}
 	</form>
-{% endset %}
+{% endblock %}

@@ -1,12 +1,13 @@
 <?php
 /**
- * @link      http://buildwithcraft.com/
- * @copyright Copyright (c) 2015 Pixel & Tonic, Inc.
- * @license   http://buildwithcraft.com/license
+ * @link      https://craftcms.com/
+ * @copyright Copyright (c) Pixel & Tonic, Inc.
+ * @license   https://craftcms.com/license
  */
 
 namespace craft\app\web\twig\variables;
 
+use Craft;
 use craft\app\helpers\Url;
 
 /**
@@ -58,11 +59,11 @@ class Paginate
     public function getPageUrl($page)
     {
         if ($page >= 1 && $page <= $this->totalPages) {
-            $path = \Craft::$app->getRequest()->getPathInfo();
+            $path = Craft::$app->getRequest()->getPathInfo();
             $params = [];
 
             if ($page != 1) {
-                $pageTrigger = \Craft::$app->getConfig()->get('pageTrigger');
+                $pageTrigger = Craft::$app->getConfig()->get('pageTrigger');
 
                 if (!is_string($pageTrigger) || !strlen($pageTrigger)) {
                     $pageTrigger = 'p';
@@ -89,6 +90,8 @@ class Paginate
 
             return Url::getUrl($path, $params);
         }
+
+        return null;
     }
 
     /**

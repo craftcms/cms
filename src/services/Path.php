@@ -1,8 +1,8 @@
 <?php
 /**
- * @link      http://buildwithcraft.com/
- * @copyright Copyright (c) 2015 Pixel & Tonic, Inc.
- * @license   http://buildwithcraft.com/license
+ * @link      https://craftcms.com/
+ * @copyright Copyright (c) Pixel & Tonic, Inc.
+ * @license   https://craftcms.com/license
  */
 
 namespace craft\app\services;
@@ -44,11 +44,6 @@ class Path extends Component
      * @var
      */
     private $_storagePath;
-
-    /**
-     * @var
-     */
-    private $_templatesPath;
 
     /**
      * @var
@@ -117,6 +112,19 @@ class Path extends Component
         }
 
         return $this->_storagePath;
+    }
+
+    /**
+     * Returns the path to the craft/storage/rebrand/ folder.
+     *
+     * @return string
+     */
+    public function getRebrandPath()
+    {
+        $path = $this->getStoragePath().'/rebrand';
+        Io::ensureFolderExists($path);
+
+        return $path;
     }
 
     /**
@@ -190,19 +198,6 @@ class Path extends Component
     }
 
     /**
-     * Returns the path to the craft/storage/userphotos/ folder.
-     *
-     * @return string The path to the craft/storage/userphotos/ folder.
-     */
-    public function getUserPhotosPath()
-    {
-        $path = $this->getStoragePath().'/userphotos';
-        Io::ensureFolderExists($path);
-
-        return $path;
-    }
-
-    /**
      * Returns the path to the craft/storage/runtime/assets/ folder.
      *
      * @return string The path to the craft/storage/runtime/assets/ folder.
@@ -216,11 +211,24 @@ class Path extends Component
     }
 
     /**
+     * Returns the path to the craft/storage/runtime/cache/assets/ folder.
+     *
+     * @return string The path to the craft/storage/runtime/cache/assets/ folder.
+     */
+    public function getAssetsCachePath()
+    {
+        $path = $this->getAssetsPath().'/cache';
+        Io::ensureFolderExists($path);
+
+        return $path;
+    }
+
+    /**
      * Returns the path to the craft/storage/runtime/assets/tempuploads/ folder.
      *
      * @return string The path to the craft/storage/runtime/assets/tempuploads/ folder.
      */
-    public function getAssetsTempSourcePath()
+    public function getAssetsTempVolumePath()
     {
         $path = $this->getAssetsPath().'/tempuploads';
         Io::ensureFolderExists($path);
@@ -235,7 +243,7 @@ class Path extends Component
      */
     public function getAssetsImageSourcePath()
     {
-        $path = $this->getAssetsPath().'/sources';
+        $path = $this->getAssetsCachePath().'/sources';
         Io::ensureFolderExists($path);
 
         return $path;
@@ -248,7 +256,7 @@ class Path extends Component
      */
     public function getResizedAssetsPath()
     {
-        $path = $this->getAssetsPath().'/resized';
+        $path = $this->getAssetsCachePath().'/resized';
         Io::ensureFolderExists($path);
 
         return $path;
@@ -261,7 +269,20 @@ class Path extends Component
      */
     public function getAssetsIconsPath()
     {
-        $path = $this->getAssetsPath().'/icons';
+        $path = $this->getAssetsCachePath().'/icons';
+        Io::ensureFolderExists($path);
+
+        return $path;
+    }
+
+    /**
+     * Returns the path to the craft/storage/runtime/pluginicons/ folder.
+     *
+     * @return string The path to the craft/storage/runtime/pluginicons/ folder.
+     */
+    public function getPluginIconsPath()
+    {
+        $path = $this->getRuntimePath().'/pluginicons';
         Io::ensureFolderExists($path);
 
         return $path;
@@ -301,9 +322,9 @@ class Path extends Component
     {
         if ($pluginHandle) {
             return $this->getPluginsPath()."/$pluginHandle/migrations";
-        } else {
-            return $this->getAppPath().'/migrations';
         }
+
+        return $this->getAppPath().'/migrations';
     }
 
     /**
@@ -328,37 +349,6 @@ class Path extends Component
         }
 
         return $this->_siteTranslationsPath;
-    }
-
-    /**
-     * Returns the current templates path, taking into account whether this is a
-     * CP or Site request.
-     *
-     * @return string The templates path.
-     */
-    public function getTemplatesPath()
-    {
-        if (!isset($this->_templatesPath)) {
-            $request = Craft::$app->getRequest();
-
-            if (!$request->getIsConsoleRequest() && $request->getIsCpRequest()) {
-                $this->_templatesPath = $this->getCpTemplatesPath();
-            } else {
-                $this->_templatesPath = $this->getSiteTemplatesPath();
-            }
-        }
-
-        return $this->_templatesPath;
-    }
-
-    /**
-     * Sets the current templates path.
-     *
-     * @param string $path The new templates path.
-     */
-    public function setTemplatesPath($path)
-    {
-        $this->_templatesPath = rtrim($path, '/\\');
     }
 
     /**

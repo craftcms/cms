@@ -2,11 +2,10 @@
 
 namespace craft\app\migrations;
 
-use Craft;
 use craft\app\db\Migration;
 use craft\app\db\Query;
-use craft\app\helpers\JsonHelper;
-use craft\app\helpers\Migration as MigrationHelper;
+use craft\app\helpers\Json;
+use craft\app\helpers\MigrationHelper;
 
 /**
  * m150428_231346_userpreferences migration.
@@ -65,16 +64,11 @@ class m150428_231346_userpreferences extends Migration
      */
     private function _createUserPrefsTable()
     {
-        $this->createTable(
-            $this->_prefsTable,
-            [
-                'userId' => 'integer(11) NOT NULL DEFAULT \'0\'',
-                'preferences' => 'text COLLATE utf8_unicode_ci',
-            ],
-            null,
-            false,
-            false
-        );
+        $this->createTable($this->_prefsTable, [
+            'userId' => $this->integer()->notNull(),
+            'preferences' => $this->text(),
+            'PRIMARY KEY(userId)',
+        ]);
     }
 
     /**
@@ -128,10 +122,13 @@ class m150428_231346_userpreferences extends Migration
                     $prefs['weekStartDay'] = $user['weekStartDay'];
                 }
 
-                $rows[] = [$user['id'], JsonHelper::encode($prefs)];
+                $rows[] = [$user['id'], Json::encode($prefs)];
             }
 
-            $this->batchInsert($this->_prefsTable, ['userId', 'preferences'], $rows, false);
+            $this->batchInsert($this->_prefsTable, [
+                'userId',
+                'preferences'
+            ], $rows, false);
         }
     }
 }

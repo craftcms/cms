@@ -60,7 +60,7 @@ var FieldsAdmin = Garnish.Base.extend(
 					else if (response.errors)
 					{
 						var errors = this.flattenErrors(response.errors);
-						alert(Craft.t('Could not create the group:')+"\n\n"+errors.join("\n"));
+						alert(Craft.t('app', 'Could not create the group:')+"\n\n"+errors.join("\n"));
 					}
 					else
 					{
@@ -91,12 +91,12 @@ var FieldsAdmin = Garnish.Base.extend(
 					if (response.success)
 					{
 						this.$selectedGroup.text(response.group.name);
-						Craft.cp.displayNotice(Craft.t('Group renamed.'));
+						Craft.cp.displayNotice(Craft.t('app', 'Group renamed.'));
 					}
 					else if (response.errors)
 					{
 						var errors = this.flattenErrors(response.errors);
-						alert(Craft.t('Could not rename the group:')+"\n\n"+errors.join("\n"));
+						alert(Craft.t('app', 'Could not rename the group:')+"\n\n"+errors.join("\n"));
 					}
 					else
 					{
@@ -110,12 +110,12 @@ var FieldsAdmin = Garnish.Base.extend(
 
 	promptForGroupName: function(oldName)
 	{
-		return prompt(Craft.t('What do you want to name your group?'), oldName);
+		return prompt(Craft.t('app', 'What do you want to name your group?'), oldName);
 	},
 
 	deleteSelectedGroup: function()
 	{
-		if (confirm(Craft.t('Are you sure you want to delete this group and all its fields?')))
+		if (confirm(Craft.t('app', 'Are you sure you want to delete this group and all its fields?')))
 		{
 			var data = {
 				id: this.$selectedGroup.data('id')
@@ -144,6 +144,10 @@ var FieldsAdmin = Garnish.Base.extend(
 
 		for (var attribute in responseErrors)
 		{
+			if (!responseErrors.hasOwnProperty(attribute)) {
+				continue;
+			}
+
 			errors = errors.concat(responseErrors[attribute]);
 		}
 

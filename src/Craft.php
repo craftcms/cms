@@ -1,8 +1,8 @@
 <?php
 /**
- * @link      http://buildwithcraft.com/
- * @copyright Copyright (c) 2015 Pixel & Tonic, Inc.
- * @license   http://buildwithcraft.com/license
+ * @link      https://craftcms.com/
+ * @copyright Copyright (c) Pixel & Tonic, Inc.
+ * @license   https://craftcms.com/license
  */
 
 use craft\app\db\Query;
@@ -111,6 +111,10 @@ class Craft extends Yii
 
     /**
      * Class autoloader.
+     *
+     * @param string $className
+     *
+     * @return void
      */
     public static function autoload($className)
     {

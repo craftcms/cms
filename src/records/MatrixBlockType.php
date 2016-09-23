@@ -1,8 +1,8 @@
 <?php
 /**
- * @link      http://buildwithcraft.com/
- * @copyright Copyright (c) 2015 Pixel & Tonic, Inc.
- * @license   http://buildwithcraft.com/license
+ * @link      https://craftcms.com/
+ * @copyright Copyright (c) Pixel & Tonic, Inc.
+ * @license   https://craftcms.com/license
  */
 
 namespace craft\app\records;
@@ -13,14 +13,14 @@ use craft\app\db\ActiveRecord;
 /**
  * Class MatrixBlockType record.
  *
- * @property integer              $id            ID
- * @property integer              $fieldId       Field ID
- * @property integer              $fieldLayoutId Field layout ID
- * @property string               $name          Name
- * @property string               $handle        Handle
- * @property string               $sortOrder     Sort order
- * @property ActiveQueryInterface $field         Field
- * @property ActiveQueryInterface $fieldLayout   Field layout
+ * @property integer     $id            ID
+ * @property integer     $fieldId       Field ID
+ * @property integer     $fieldLayoutId Field layout ID
+ * @property string      $name          Name
+ * @property string      $handle        Handle
+ * @property string      $sortOrder     Sort order
+ * @property Field       $field         Field
+ * @property FieldLayout $fieldLayout   Field layout
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since  3.0
@@ -77,7 +77,7 @@ class MatrixBlockType extends ActiveRecord
     /**
      * Returns the matrix block type’s field.
      *
-     * @return \yii\db\ActiveQueryInterface The relational query object.
+     * @return ActiveQueryInterface The relational query object.
      */
     public function getField()
     {
@@ -87,11 +87,10 @@ class MatrixBlockType extends ActiveRecord
     /**
      * Returns the matrix block type’s fieldLayout.
      *
-     * @return \yii\db\ActiveQueryInterface The relational query object.
+     * @return ActiveQueryInterface The relational query object.
      */
     public function getFieldLayout()
     {
-        return $this->hasOne(FieldLayout::className(),
-            ['id' => 'fieldLayoutId']);
+        return $this->hasOne(FieldLayout::className(), ['id' => 'fieldLayoutId']);
     }
 }

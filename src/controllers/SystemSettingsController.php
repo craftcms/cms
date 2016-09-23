@@ -1,16 +1,15 @@
 <?php
 /**
- * @link      http://buildwithcraft.com/
- * @copyright Copyright (c) 2015 Pixel & Tonic, Inc.
- * @license   http://buildwithcraft.com/license
+ * @link      https://craftcms.com/
+ * @copyright Copyright (c) Pixel & Tonic, Inc.
+ * @license   https://craftcms.com/license
  */
 
 namespace craft\app\controllers;
 
 use Craft;
 use craft\app\dates\DateTime;
-use craft\app\errors\HttpException;
-use craft\app\errors\InvalidComponentException;
+use craft\app\errors\MissingComponentException;
 use craft\app\helpers\Component;
 use craft\app\helpers\Template;
 use craft\app\helpers\Url;
@@ -29,9 +28,9 @@ use craft\app\tools\ClearCaches;
 use craft\app\tools\DbBackup;
 use craft\app\tools\FindAndReplace;
 use craft\app\tools\SearchIndex;
-use craft\app\web\Response;
-use craft\app\web\twig\variables\ToolInfo;
 use craft\app\web\Controller;
+use yii\web\NotFoundHttpException;
+use yii\web\Response;
 
 /**
  * The SystemSettingsController class is a controller that handles various control panel settings related tasks such as
@@ -49,7 +48,6 @@ class SystemSettingsController extends Controller
 
     /**
      * @inheritdoc
-     * @throws HttpException if the user isn’t an admin
      */
     public function init()
     {
@@ -66,15 +64,15 @@ class SystemSettingsController extends Controller
     {
         $tools = [];
 
-        // Only include the Update Asset Indexes tool if there are any asset sources
+        // Only include the Update Asset Indexes tool if there are any asset volumes
         if (count(Craft::$app->getVolumes()->getAllVolumes()) !== 0) {
-            $tools[] = new ToolInfo(AssetIndex::className());
+            $tools[] = new AssetIndex();
         }
 
-        $tools[] = new ToolInfo(ClearCaches::className());
-        $tools[] = new ToolInfo(DbBackup::className());
-        $tools[] = new ToolInfo(FindAndReplace::className());
-        $tools[] = new ToolInfo(SearchIndex::className());
+        $tools[] = new ClearCaches();
+        $tools[] = new DbBackup();
+        $tools[] = new FindAndReplace();
+        $tools[] = new SearchIndex();
 
         return $this->renderTemplate('settings/_index', [
             'tools' => $tools
@@ -125,7 +123,10 @@ class SystemSettingsController extends Controller
             $offsets[] = $offset;
             $timezoneIds[] = $timezoneId;
             $includedAbbrs[] = $abbr;
-            $timezoneOptions[$timezoneId] = 'UTC'.$format.($abbr != 'UTC' ? " ({$abbr})" : '').($timezoneId != 'UTC' ? ' - '.$timezoneId : '');
+            $timezoneOptions[] = [
+                'value' => $timezoneId,
+                'label' => 'UTC'.$format.($abbr != 'UTC' ? " ({$abbr})" : '').($timezoneId != 'UTC' ? ' – '.$timezoneId : '')
+            ];
         }
 
         array_multisort($offsets, $timezoneIds, $timezoneOptions);
@@ -139,7 +140,7 @@ class SystemSettingsController extends Controller
     /**
      * Saves the general settings.
      *
-     * @return void
+     * @return Response|null
      */
     public function actionSaveGeneralSettings()
     {
@@ -154,15 +155,19 @@ class SystemSettingsController extends Controller
 
         if (Craft::$app->saveInfo($info)) {
             Craft::$app->getSession()->setNotice(Craft::t('app', 'General settings saved.'));
-            $this->redirectToPostedUrl();
-        } else {
-            Craft::$app->getSession()->setError(Craft::t('app', 'Couldn’t save general settings.'));
 
-            // Send the info back to the template
-            Craft::$app->getUrlManager()->setRouteParams([
-                'info' => $info
-            ]);
+            return $this->redirectToPostedUrl();
         }
+
+        Craft::$app->getSession()->setError(Craft::t('app', 'Couldn’t save general settings.'));
+
+        // Send the info back to the template
+        Craft::$app->getUrlManager()->setRouteParams([
+            'info' => $info
+        ]);
+
+
+        return null;
     }
 
     /**
@@ -171,7 +176,7 @@ class SystemSettingsController extends Controller
      * @param MailSettings|null         $settings The posted email settings, if there were any validation errors
      * @param TransportAdaptorInterface $adaptor  The transport adaptor, if there were any validation errors
      *
-*@return Response
+     * @return Response
      */
     public function actionEditEmailSettings(MailSettings $settings = null, TransportAdaptorInterface $adaptor = null)
     {
@@ -236,7 +241,7 @@ class SystemSettingsController extends Controller
         $this->requirePostRequest();
 
         /** @var MailSettings $settings */
-        /** @var TransportAdaptorInterface|BaseTransportAdaptor $adaptor */
+        /** @var BaseTransportAdaptor $adaptor */
         list($settings, $adaptor) = $this->_createMailSettingsAndAdaptorFromPost();
 
         $settingsIsValid = $settings->validate();
@@ -252,6 +257,7 @@ class SystemSettingsController extends Controller
             $systemSettingsService->saveSettings('mailer', $mailerConfig);
 
             Craft::$app->getSession()->setNotice(Craft::t('app', 'Email settings saved.'));
+
             return $this->redirectToPostedUrl();
         }
 
@@ -262,19 +268,21 @@ class SystemSettingsController extends Controller
             'settings' => $settings,
             'adaptor' => $adaptor
         ]);
+
+        return null;
     }
 
     /**
      * Tests the email settings.
      *
-     * @return void
+     * @return null
      */
     public function actionTestEmailSettings()
     {
         $this->requirePostRequest();
 
         /** @var MailSettings $settings */
-        /** @var TransportAdaptorInterface|BaseTransportAdaptor $adaptor */
+        /** @var BaseTransportAdaptor $adaptor */
         list($settings, $adaptor) = $this->_createMailSettingsAndAdaptorFromPost();
 
         $settingsIsValid = $settings->validate();
@@ -282,6 +290,7 @@ class SystemSettingsController extends Controller
 
         if ($settingsIsValid && $adaptorIsValid) {
             $mailerConfig = $this->_getMailerConfig($settings, $adaptor);
+            /** @var Mailer $mailer */
             $mailer = Craft::createObject($mailerConfig);
 
             // Compose the settings list as HTML
@@ -322,6 +331,8 @@ class SystemSettingsController extends Controller
             'settings' => $settings,
             'adaptor' => $adaptor
         ]);
+
+        return null;
     }
 
     /**
@@ -331,7 +342,7 @@ class SystemSettingsController extends Controller
      * @param GlobalSet $globalSet   The global set being edited, if there were any validation errors.
      *
      * @return string The rendering result
-     * @throws HttpException
+     * @throws NotFoundHttpException if the requested global set cannot be found
      */
     public function actionEditGlobalSet($globalSetId = null, GlobalSet $globalSet = null)
     {
@@ -340,7 +351,7 @@ class SystemSettingsController extends Controller
                 $globalSet = Craft::$app->getGlobals()->getSetById($globalSetId);
 
                 if (!$globalSet) {
-                    throw new HttpException(404);
+                    throw new NotFoundHttpException('Global set not found');
                 }
             } else {
                 $globalSet = new GlobalSet();
@@ -403,11 +414,14 @@ class SystemSettingsController extends Controller
     {
         if ($class !== null) {
             try {
-                return Component::createComponent([
+                /** @var TransportAdaptorInterface $adapter */
+                $adapter = Component::createComponent([
                     'type' => $class,
                     'settings' => $settings
                 ], 'craft\app\mail\transportadaptors\TransportAdaptorInterface');
-            } catch (InvalidComponentException $e) {
+
+                return $adapter;
+            } catch (MissingComponentException $e) {
                 if (!$fallbackToPhp) {
                     return false;
                 }

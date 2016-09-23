@@ -1,22 +1,22 @@
 <?php
+/**
+ * @link      https://craftcms.com/
+ * @copyright Copyright (c) Pixel & Tonic, Inc.
+ * @license   https://craftcms.com/license
+ */
+
 namespace craft\app\base;
 
 use craft\app\errors\VolumeObjectExistsException;
-use craft\app\errors\VolumeFolderExistsException;
-use League\Flysystem\FileExistsException;
-use League\Flysystem\FileNotFoundException;
+use craft\app\errors\VolumeObjectNotFoundException;
 
 /**
  * VolumeInterface defines the common interface to be implemented by volume classes.
  *
  * A class implementing this interface should also use [[SavableComponentTrait]] and [[VolumeTrait]].
  *
- * @author    Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @copyright Copyright (c) 2014, Pixel & Tonic, Inc.
- * @license   http://buildwithcraft.com/license Craft License Agreement
- * @see       http://buildwithcraft.com
- * @package   craft.app.base
- * @since     3.0
+ * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
+ * @since  3.0
  */
 interface VolumeInterface extends SavableComponentInterface
 {
@@ -50,11 +50,12 @@ interface VolumeInterface extends SavableComponentInterface
     /**
      * List files.
      *
-     * @param string $directory The path of the directory to list files of.
+     * @param string  $directory The path of the directory to list files of.
+     * @param boolean $recursive whether to fetch file list recursively
      *
      * @return array
      */
-    public function getFileList($directory);
+    public function getFileList($directory, $recursive = true);
 
     /**
      * Creates a file.
@@ -63,7 +64,7 @@ interface VolumeInterface extends SavableComponentInterface
      * @param resource $stream The stream to file
      * @param array    $config Additional config options to pass to the adapter.
      *
-     * @throws VolumeObjectExistsException
+     * @throws VolumeObjectExistsException if a file already exists at the path on the Volume.
      * @return boolean Whether the operation was successful.
      */
     public function createFileByStream($path, $stream, $config = []);
@@ -73,33 +74,11 @@ interface VolumeInterface extends SavableComponentInterface
      *
      * @param string $path   The path of the file, relative to the source’s root.
      * @param string $stream The new contents of the file as a stream.
+     * @param array  $config Additional config options to pass to the adapter.
      *
      * @return boolean Whether the operation was successful.
      */
-    public function updateFileByStream($path, $stream);
-
-    /**
-     * Creates a file, or updates it if it already exists.
-     *
-     * @param string $path     The path of the file, relative to the source’s root.
-     * @param string $contents The contents of the file.
-     *
-     * @throws FileExistsException
-     *
-     * @return boolean Whether the operation was successful.
-     */
-    public function createOrUpdateFile($path, $contents);
-
-    /**
-     * Returns the contents of a file.
-     *
-     * @param string $path The path of the file, relative to the source’s root.
-     *
-     * @throws FileNotFoundException
-     *
-     * @return string|false The contents of the file, or `false` if the file could not be read.
-     */
-    public function getFileContents($path);
+    public function updateFileByStream($path, $stream, $config = []);
 
     /**
      * Returns whether a file exists.
@@ -120,25 +99,13 @@ interface VolumeInterface extends SavableComponentInterface
     public function deleteFile($path);
 
     /**
-     * Deletes a file, and returns its former contents.
-     *
-     * @param string $path The path of the file, relative to the source’s root.
-     *
-     * @throws FileNotFoundException
-     *
-     * @return string The contents of the file.
-     */
-    public function getContentsAndDeleteFile($path);
-
-    /**
      * Renames a file.
      *
      * @param string $path    The old path of the file, relative to the source’s root.
      * @param string $newPath The new path of the file, relative to the source’s root.
      *
-     * @throws FileExistsException
-     * @throws FileNotFoundException
-     *
+     * @throws VolumeObjectExistsException if a file with such a name exists already.
+     * @throws VolumeObjectNotFoundException if the file to be renamed cannot be found.
      * @return boolean Whether the operation was successful.
      */
     public function renameFile($path, $newPath);
@@ -154,42 +121,12 @@ interface VolumeInterface extends SavableComponentInterface
     public function copyFile($path, $newPath);
 
     /**
-     * Returns a file’s MIME type.
-     *
-     * @param string $path The path of the file, relative to the source’s root.
-     *
-     * @throws FileNotFoundException
-     *
-     * @return string|false The file’s MIME type, or `false` if it could not be determined.
-     */
-    public function getMimeType($path);
-
-    /**
-     * Returns a file’s timestamp.
-     *
-     * @param string $path The path of the file, relative to the source’s root.
-     *
-     * @throws FileNotFoundException
-     *
-     * @return string|false The file’s timestamp, or `false` if it could not be determined.
-     */
-    public function getTimestamp($path);
-
-    /**
-     * Returns a file’s size.
-     *
-     * @param string $path The path of the file, relative to the source’s root.
-     *
-     * @return integer|false The file’s size in bytes, or `false` if it could not be determined.
-     */
-    public function getSize($path);
-
-    /**
+     * /**
      * Creates a directory.
      *
      * @param string $path The path of the directory, relative to the source’s root.
      *
-     * @throws VolumeFolderExistsException
+     * @throws VolumeObjectExistsException if a directory with such name already exists.
      * @return boolean Whether the operation was successful.
      */
     public function createDir($path);
@@ -206,12 +143,22 @@ interface VolumeInterface extends SavableComponentInterface
     /**
      * Renames a directory.
      *
-     * @param string $path The path of the directory, relative to the source’s root.
-     * @param string $newPath The new path of the directory, relative to the source’s root.
+     * @param string $path    The path of the directory, relative to the source’s root.
+     * @param string $newName The new path of the directory, relative to the source’s root.
      *
-     * @throws VolumeFolderExistsException
-     *
+     * @throws VolumeObjectExistsException if a directory with such name already exists.
+     * @throws VolumeObjectNotFoundException if a directory with such name already exists.
      * @return boolean Whether the operation was successful.
      */
     public function renameDir($path, $newName);
+
+    /**
+     * Save a file from the source's uriPath to a local target path.
+     *
+     * @param $uriPath
+     * @param $targetPath
+     *
+     * @return integer amount of bytes copied
+     */
+    public function saveFileLocally($uriPath, $targetPath);
 }

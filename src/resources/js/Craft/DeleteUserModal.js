@@ -1,3 +1,6 @@
+/**
+ * Delete User Modal
+ */
 Craft.DeleteUserModal = Garnish.Modal.extend(
 {
 	id: null,
@@ -20,29 +23,29 @@ Craft.DeleteUserModal = Garnish.Modal.extend(
 					Craft.getCsrfInput() +
 					'<input type="hidden" name="action" value="users/delete-user"/>' +
 					(!Garnish.isArray(this.userId) ? '<input type="hidden" name="userId" value="'+this.userId+'"/>' : '') +
-					'<input type="hidden" name="redirect" value="'+(Craft.edition == Craft.Pro ? 'users' : 'dashboard')+'"/>' +
+					(settings.redirect ? '<input type="hidden" name="redirect" value="'+settings.redirect+'"/>' : '') +
 				'</form>'
 			).appendTo(Garnish.$bod),
 			$body = $(
 				'<div class="body">' +
-					'<p>'+Craft.t('What do you want to do with their content?')+'</p>' +
+					'<p>'+Craft.t('app', 'What do you want to do with their content?')+'</p>' +
 					'<div class="options">' +
-						'<label><input type="radio" name="contentAction" value="transfer"/> '+Craft.t('Transfer it to:')+'</label>' +
+						'<label><input type="radio" name="contentAction" value="transfer"/> '+Craft.t('app', 'Transfer it to:')+'</label>' +
 						'<div id="transferselect'+this.id+'" class="elementselect">' +
 							'<div class="elements"></div>' +
-							'<div class="btn add icon dashed">'+Craft.t('Choose a user')+'</div>' +
+							'<div class="btn add icon dashed">'+Craft.t('app', 'Choose a user')+'</div>' +
 						'</div>' +
 					'</div>' +
 					'<div>' +
-						'<label><input type="radio" name="contentAction" value="delete"/> '+Craft.t('Delete it')+'</label>' +
+						'<label><input type="radio" name="contentAction" value="delete"/> '+Craft.t('app', 'Delete it')+'</label>' +
 					'</div>' +
 				'</div>'
 			).appendTo($form),
 			$buttons = $('<div class="buttons right"/>').appendTo($body),
-			$cancelBtn = $('<div class="btn">'+Craft.t('Cancel')+'</div>').appendTo($buttons);
+			$cancelBtn = $('<div class="btn">'+Craft.t('app', 'Cancel')+'</div>').appendTo($buttons);
 
 		this.$deleteActionRadios = $body.find('input[type=radio]');
-		this.$deleteSubmitBtn = $('<input type="submit" class="btn submit disabled" value="'+(Garnish.isArray(this.userId) ? Craft.t('Delete users') : Craft.t('Delete user'))+'" />').appendTo($buttons);
+		this.$deleteSubmitBtn = $('<input type="submit" class="btn submit disabled" value="'+(Garnish.isArray(this.userId) ? Craft.t('app', 'Delete users') : Craft.t('app', 'Delete user'))+'" />').appendTo($buttons);
 		this.$deleteSpinner = $('<div class="spinner hidden"/>').appendTo($buttons);
 
 		var idParam;
@@ -157,6 +160,7 @@ Craft.DeleteUserModal = Garnish.Modal.extend(
 },
 {
 	defaults: {
-		onSubmit: $.noop
+		onSubmit: $.noop,
+		redirect: null
 	}
 });

@@ -1,17 +1,20 @@
 <?php
 /**
- * @link      http://buildwithcraft.com/
- * @copyright Copyright (c) 2015 Pixel & Tonic, Inc.
- * @license   http://buildwithcraft.com/license
+ * @link      https://craftcms.com/
+ * @copyright Copyright (c) Pixel & Tonic, Inc.
+ * @license   https://craftcms.com/license
  */
 
 namespace craft\app\web\twig\variables;
 
+use Craft;
+
 /**
  * Settings functions.
  *
- * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @since  3.0
+ * @author     Pixel & Tonic, Inc. <support@pixelandtonic.com>
+ * @since      3.0
+ * @deprecated in 3.0
  */
 class SystemSettings
 {
@@ -39,6 +42,8 @@ class SystemSettings
      */
     public function __get($category)
     {
-        return \Craft::$app->getSystemSettings()->getSettings($category);
+        Craft::$app->getDeprecator()->log('craft.systemSettings.[category]', 'craft.systemSettings.[category] has been deprecated. Use craft.app.systemSettings.getSettings(\'category\') instead.');
+
+        return Craft::$app->getSystemSettings()->getSettings($category);
     }
 }

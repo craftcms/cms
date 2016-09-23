@@ -1,8 +1,8 @@
 <?php
 /**
- * @link      http://buildwithcraft.com/
- * @copyright Copyright (c) 2015 Pixel & Tonic, Inc.
- * @license   http://buildwithcraft.com/license
+ * @link      https://craftcms.com/
+ * @copyright Copyright (c) Pixel & Tonic, Inc.
+ * @license   https://craftcms.com/license
  */
 
 namespace craft\app\db;
@@ -30,18 +30,27 @@ class Command extends \yii\db\Command
      * @param array   $columns             The column data (name => value) to be inserted into the table.
      * @param boolean $includeAuditColumns Whether `dateCreated`, `dateUpdated`, and `uid` values should be added to $columns.
      *
-     * @return Command The command object itself.
+     * @return $this the command object itself
      */
     public function insert($table, $columns, $includeAuditColumns = true)
     {
         if ($includeAuditColumns) {
             $now = Db::prepareDateForDb(new \DateTime());
-            $columns['dateCreated'] = $now;
-            $columns['dateUpdated'] = $now;
-            $columns['uid'] = StringHelper::UUID();
+
+            if (empty($columns['dateCreated'])) {
+                $columns['dateCreated'] = $now;
+            }
+            if (empty($columns['dateUpdated'])) {
+                $columns['dateUpdated'] = $now;
+            }
+            if (empty($columns['uid'])) {
+                $columns['uid'] = StringHelper::UUID();
+            }
         }
 
-        return parent::insert($table, $columns);
+        parent::insert($table, $columns);
+
+        return $this;
     }
 
     /**
@@ -52,7 +61,7 @@ class Command extends \yii\db\Command
      * @param array   $rows                The rows to be batch inserted into the table.
      * @param boolean $includeAuditColumns Whether `dateCreated`, `dateUpdated`, and `uid` values should be added to $columns.
      *
-     * @return Command The command object itself.
+     * @return $this The command object itself.
      */
     public function batchInsert($table, $columns, $rows, $includeAuditColumns = true)
     {
@@ -74,7 +83,9 @@ class Command extends \yii\db\Command
             }
         }
 
-        return parent::batchInsert($table, $columns, $rows);
+        parent::batchInsert($table, $columns, $rows);
+
+        return $this;
     }
 
     /**
@@ -115,7 +126,7 @@ class Command extends \yii\db\Command
      * @param array        $params              The parameters to be bound to the command.
      * @param boolean      $includeAuditColumns Whether the `dateUpdated` value should be added to $columns.
      *
-     * @return Command The command object itself.
+     * @return $this The command object itself.
      */
     public function update($table, $columns, $conditions = '', $params = [], $includeAuditColumns = true)
     {
@@ -123,7 +134,9 @@ class Command extends \yii\db\Command
             $columns['dateUpdated'] = Db::prepareDateForDb(new \DateTime());
         }
 
-        return parent::update($table, $columns, $conditions, $params);
+        parent::update($table, $columns, $conditions, $params);
+
+        return $this;
     }
 
     /**
@@ -142,28 +155,6 @@ class Command extends \yii\db\Command
         $sql = $this->db->getQueryBuilder()->replace($table, $column, $find, $replace, $params);
 
         return $this->setSql($sql)->bindValues($params);
-    }
-
-    /**
-     * @inheritdoc
-     *
-     * @param string  $table           The name of the table to be created. The name will be properly quoted by the method.
-     * @param array   $columns         The columns (name => definition) in the new table.
-     * @param string  $options         Additional SQL fragment that will be appended to the generated SQL.
-     * @param boolean $addIdColumn     Whether an `id` column should be added.
-     * @param boolean $addAuditColumns Whether `dateCreated` and `dateUpdated` columns should be added.
-     *
-     * @return Command the command object itself
-     */
-    public function createTable($table, $columns, $options = null, $addIdColumn = true, $addAuditColumns = true)
-    {
-        $columns = array_merge(
-            ($addIdColumn ? ['id' => 'pk'] : []),
-            $columns,
-            ($addAuditColumns ? Db::getAuditColumnConfig() : [])
-        );
-
-        return parent::createTable($table, $columns, $options);
     }
 
     /**

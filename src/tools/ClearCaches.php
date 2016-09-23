@@ -1,8 +1,8 @@
 <?php
 /**
- * @link      http://buildwithcraft.com/
- * @copyright Copyright (c) 2015 Pixel & Tonic, Inc.
- * @license   http://buildwithcraft.com/license
+ * @link      https://craftcms.com/
+ * @copyright Copyright (c) Pixel & Tonic, Inc.
+ * @license   https://craftcms.com/license
  */
 
 namespace craft\app\tools;
@@ -77,8 +77,8 @@ class ClearCaches extends Tool
 
         $folders = [
             $obfuscate ? md5('dataCache') : 'dataCache' => Craft::t('app', 'Data caches'),
+            $obfuscate ? md5($runtimePath.'/assets/cache') : $runtimePath.'/assets/cache' => Craft::t('app', 'Asset caches'),
             $obfuscate ? md5($runtimePath.'/cache') : $runtimePath.'/cache' => Craft::t('app', 'RSS caches'),
-            $obfuscate ? md5($runtimePath.'/assets') : $runtimePath.'/assets' => Craft::t('app', 'Asset caches'),
             $obfuscate ? md5($runtimePath.'/compiled_templates') : $runtimePath.'/compiled_templates' => Craft::t('app', 'Compiled templates'),
             $obfuscate ? md5($runtimePath.'/temp') : $runtimePath.'/temp' => Craft::t('app', 'Temp files'),
         ];
@@ -140,19 +140,23 @@ class ClearCaches extends Tool
         if ($params['caches'] == '*' || in_array('templateCaches',
                 $params['caches'])
         ) {
-            Craft::$app->getTemplateCache()->deleteAllCaches();
+            Craft::$app->getTemplateCaches()->deleteAllCaches();
         }
 
         if ($params['caches'] == '*' || in_array('assetTransformIndex',
                 $params['caches'])
         ) {
-            Craft::$app->getDb()->createCommand()->truncateTable('{{%assettransformindex}}')->execute();
+            Craft::$app->getDb()->createCommand()
+                ->truncateTable('{{%assettransformindex}}')
+                ->execute();
         }
 
         if ($params['caches'] == '*' || in_array('assetIndexingData',
                 $params['caches'])
         ) {
-            Craft::$app->getDb()->createCommand()->truncateTable('{{%assetindexdata}}')->execute();
+            Craft::$app->getDb()->createCommand()
+                ->truncateTable('{{%assetindexdata}}')
+                ->execute();
         }
     }
 }

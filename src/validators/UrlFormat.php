@@ -1,14 +1,14 @@
 <?php
 /**
- * @link      http://buildwithcraft.com/
- * @copyright Copyright (c) 2015 Pixel & Tonic, Inc.
- * @license   http://buildwithcraft.com/license
+ * @link      https://craftcms.com/
+ * @copyright Copyright (c) Pixel & Tonic, Inc.
+ * @license   https://craftcms.com/license
  */
 
 namespace craft\app\validators;
 
 use Craft;
-use craft\app\helpers\Element;
+use craft\app\helpers\ElementHelper;
 use yii\validators\Validator;
 
 /**
@@ -33,24 +33,20 @@ class UrlFormat extends Validator
     // =========================================================================
 
     /**
-     * @param $object
-     * @param $attribute
-     *
-     * @return void
+     * @inheritdoc
      */
-    public function validateAttribute($object, $attribute)
+    public function validateAttribute($model, $attribute)
     {
-        $urlFormat = $object->$attribute;
+        $urlFormat = $model->$attribute;
 
         if ($urlFormat) {
-            // Remove any leading or trailing slashes
-            $urlFormat = trim($urlFormat, '/');
-            $object->$attribute = $urlFormat;
+            // Remove any leading or trailing slashes/spaces
+            $urlFormat = trim($urlFormat, '/ ');
+            $model->$attribute = $urlFormat;
 
             if ($this->requireSlug) {
-                if (!Element::doesUrlFormatHaveSlugTag($urlFormat)) {
-                    $this->addError($object, $attribute, Craft::t('app', '{attribute} must contain “{slug}”',
-                            ['attribute' => $object->attribute]));
+                if (!ElementHelper::doesUrlFormatHaveSlugTag($urlFormat)) {
+                    $this->addError($model, $attribute, Craft::t('app', '{attribute} must contain “{slug}”', ['attribute' => $model->$attribute]));
                 }
             }
         }

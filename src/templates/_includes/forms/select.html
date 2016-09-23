@@ -12,7 +12,7 @@
 		{%- if id is defined %} id="{{ id }}"{% endif %}
 		{%- if toggle is defined and toggle %} class="fieldtoggle"{% endif %}
 		{%- if name is defined %} name="{{ name }}"{% endif %}
-		{%- if autofocus is defined and autofocus and not craft.request.isMobileBrowser(true) %} autofocus{% endif %}
+		{%- if autofocus is defined and autofocus and not craft.app.request.isMobileBrowser(true) %} autofocus{% endif %}
 		{%- if disabled is defined and disabled %} disabled{% endif %}
 		{%- if targetPrefix is defined %} data-target-prefix="{{ targetPrefix }}"{% endif %}>
 		{% for key, option in options %}

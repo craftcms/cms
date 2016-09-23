@@ -10,69 +10,32 @@ Craft.AssetSelectorModal = Craft.BaseElementSelectorModal.extend(
 	{
 		settings = $.extend({}, Craft.AssetSelectorModal.defaults, settings);
 
-		if (settings.canSelectImageTransforms)
-		{
-			if (typeof Craft.AssetSelectorModal.transforms == 'undefined')
-			{
-				var base = this.base;
-
-				this.fetchTransformInfo($.proxy(function()
-				{
-					// Finally call this.base()
-					base.call(this, elementType, settings);
-
-					this.createSelectTransformButton();
-				}, this));
-
-				// Prevent this.base() from getting called until later
-				return;
-			}
-		}
-
 		this.base(elementType, settings);
 
-		if (settings.canSelectImageTransforms)
+		if (settings.transforms.length)
 		{
-			this.createSelectTransformButton();
+			this.createSelectTransformButton(settings.transforms);
 		}
 	},
 
-	fetchTransformInfo: function(callback)
+	createSelectTransformButton: function(transforms)
 	{
-		Craft.postActionRequest('assets/get-transform-info', $.proxy(function(response, textStatus)
-		{
-			if (textStatus == 'success' && response instanceof Array)
-			{
-				Craft.AssetSelectorModal.transforms = response;
-			}
-			else
-			{
-				Craft.AssetSelectorModal.transforms = [];
-			}
-
-			callback();
-
-		}, this));
-	},
-
-	createSelectTransformButton: function()
-	{
-		if (!Craft.AssetSelectorModal.transforms.length)
+		if (!transforms || !transforms.length)
 		{
 			return;
 		}
 
-		var $btnGroup = $('<div class="btngroup"/>').appendTo(this.$buttons);
+		var $btnGroup = $('<div class="btngroup"/>').appendTo(this.$primaryButtons);
 		this.$selectBtn.appendTo($btnGroup);
 
-		this.$selectTransformBtn = $('<div class="btn menubtn disabled">'+Craft.t('Select Transform')+'</div>').appendTo($btnGroup);
+		this.$selectTransformBtn = $('<div class="btn menubtn disabled">'+Craft.t('app', 'Select transform')+'</div>').appendTo($btnGroup);
 
 		var $menu = $('<div class="menu" data-align="right"></div>').insertAfter(this.$selectTransformBtn),
 			$menuList = $('<ul></ul>').appendTo($menu);
 
-		for (var i = 0; i < Craft.AssetSelectorModal.transforms.length; i++)
+		for (var i = 0; i < transforms.length; i++)
 		{
-			$('<li><a data-transform="'+Craft.AssetSelectorModal.transforms[i].handle+'">'+Craft.AssetSelectorModal.transforms[i].name+'</a></li>').appendTo($menuList);
+			$('<li><a data-transform="'+transforms[i].handle+'">'+transforms[i].name+'</a></li>').appendTo($menuList);
 		}
 
 		var MenuButton = new Garnish.MenuBtn(this.$selectTransformBtn, {
@@ -85,35 +48,27 @@ Craft.AssetSelectorModal = Craft.BaseElementSelectorModal.extend(
 
 	onSelectionChange: function(ev)
 	{
-		var allowTransforms,
-			MenuBtn;
+		var $selectedElements = this.elementIndex.getSelectedElements(),
+			allowTransforms = false;
 
-		if (this.elementIndex.elementSelect.totalSelected && this.settings.canSelectImageTransforms && Craft.AssetSelectorModal.transforms.length)
+		if ($selectedElements.length && this.settings.transforms.length)
 		{
 			allowTransforms = true;
-			var $selectedItems = this.elementIndex.elementSelect.getSelectedItems();
 
-			for (var i = 0; i < $selectedItems.length; i++)
+			for (var i = 0; i < $selectedElements.length; i++)
 			{
-				if (!$('.element.hasthumb:first', $selectedItems[i]).length)
+				if (!$('.element.hasthumb:first', $selectedElements[i]).length)
 				{
-					allowTransforms = false;
 					break;
 				}
 			}
 		}
-		else
-		{
-			allowTransforms = false;
-		}
+
+		var MenuBtn = null;
 
 		if (this.$selectTransformBtn)
 		{
 			MenuBtn = this.$selectTransformBtn.data('menuButton');
-		}
-		else
-		{
-			MenuBtn = null;
 		}
 
 		if (allowTransforms)
@@ -152,12 +107,12 @@ Craft.AssetSelectorModal = Craft.BaseElementSelectorModal.extend(
 			Craft.AssetSelectorModal.transformUrls[transform] = {};
 		}
 
-		var $selectedItems = this.elementIndex.elementSelect.getSelectedItems(),
+		var $selectedElements = this.elementIndex.getSelectedElements(),
 			imageIdsWithMissingUrls = [];
 
-		for (var i = 0; i < $selectedItems.length; i++)
+		for (var i = 0; i < $selectedElements.length; i++)
 		{
-			var $item = $($selectedItems[i]),
+			var $item = $($selectedElements[i]),
 				elementId = Craft.getElementInfo($item).id;
 
 			if (typeof Craft.AssetSelectorModal.transformUrls[transform][elementId] == 'undefined')
@@ -218,9 +173,9 @@ Craft.AssetSelectorModal = Craft.BaseElementSelectorModal.extend(
 		}, this));
 	},
 
-	getElementInfo: function($selectedItems)
+	getElementInfo: function($selectedElements)
 	{
-		var info = this.base($selectedItems);
+		var info = this.base($selectedElements);
 
 		if (this._selectedTransform)
 		{
@@ -248,11 +203,12 @@ Craft.AssetSelectorModal = Craft.BaseElementSelectorModal.extend(
 },
 {
 	defaults: {
-		canSelectImageTransforms: false
+		canSelectImageTransforms: false,
+		transforms: []
 	},
 
 	transformUrls: {}
 });
 
 // Register it!
-Craft.registerElementSelectorModalClass('Asset', Craft.AssetSelectorModal);
+Craft.registerElementSelectorModalClass('craft\\app\\elements\\Asset', Craft.AssetSelectorModal);

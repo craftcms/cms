@@ -1,8 +1,8 @@
 <?php
 /**
- * @link      http://buildwithcraft.com/
- * @copyright Copyright (c) 2015 Pixel & Tonic, Inc.
- * @license   http://buildwithcraft.com/license
+ * @link      https://craftcms.com/
+ * @copyright Copyright (c) Pixel & Tonic, Inc.
+ * @license   https://craftcms.com/license
  */
 
 namespace craft\app\web\twig\tokenparsers;
@@ -103,7 +103,10 @@ class CacheTokenParser extends \Twig_TokenParser
         }
 
         $stream->expect(\Twig_Token::BLOCK_END_TYPE);
-        $nodes['body'] = $this->parser->subparse([$this, 'decideCacheEnd'], true);
+        $nodes['body'] = $this->parser->subparse([
+            $this,
+            'decideCacheEnd'
+        ], true);
         $stream->expect(\Twig_Token::BLOCK_END_TYPE);
 
         return new CacheNode($nodes, $attributes, $lineno, $this->getTag());

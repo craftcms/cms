@@ -1,8 +1,8 @@
 <?php
 /**
- * @link      http://buildwithcraft.com/
- * @copyright Copyright (c) 2015 Pixel & Tonic, Inc.
- * @license   http://buildwithcraft.com/license
+ * @link      https://craftcms.com/
+ * @copyright Copyright (c) Pixel & Tonic, Inc.
+ * @license   https://craftcms.com/license
  */
 
 namespace craft\app\controllers;
@@ -11,11 +11,11 @@ use Craft;
 use craft\app\base\Field;
 use craft\app\base\FieldInterface;
 use craft\app\helpers\Url;
-use craft\app\models\FieldGroup as FieldGroupModel;
-use craft\app\web\twig\variables\ComponentInfo;
+use craft\app\models\FieldGroup;
 use craft\app\web\Controller;
-use yii\base\Exception;
-use yii\web\HttpException;
+use yii\web\NotFoundHttpException;
+use yii\web\Response;
+use yii\web\ServerErrorHttpException;
 
 /**
  * The FieldsController class is a controller that handles various field and field group related tasks such as saving
@@ -33,7 +33,6 @@ class FieldsController extends Controller
 
     /**
      * @inheritdoc
-     * @throws HttpException if the user isn’t an admin
      */
     public function init()
     {
@@ -47,14 +46,14 @@ class FieldsController extends Controller
     /**
      * Saves a field group.
      *
-     * @return void
+     * @return Response
      */
     public function actionSaveGroup()
     {
         $this->requirePostRequest();
         $this->requireAjaxRequest();
 
-        $group = new FieldGroupModel();
+        $group = new FieldGroup();
         $group->id = Craft::$app->getRequest()->getBodyParam('id');
         $group->name = Craft::$app->getRequest()->getRequiredBodyParam('name');
 
@@ -79,7 +78,7 @@ class FieldsController extends Controller
     /**
      * Deletes a field group.
      *
-     * @return void
+     * @return Response
      */
     public function actionDeleteGroup()
     {
@@ -102,13 +101,13 @@ class FieldsController extends Controller
     /**
      * Edits a field.
      *
-     * @param integer              $fieldId The field’s ID, if editing an existing field
-     * @param FieldInterface|Field $field   The field being edited, if there were any validation errors
-     * @param integer              $groupId The default group ID that the field should be saved in
+     * @param integer        $fieldId The field’s ID, if editing an existing field
+     * @param FieldInterface $field   The field being edited, if there were any validation errors
+     * @param integer        $groupId The default group ID that the field should be saved in
      *
      * @return string The rendering result
-     * @throws HttpException if there are no field groups, or the requested field doesn’t exist
-     * @throws Exception if the field’s group doesn’t exist
+     * @throws NotFoundHttpException if the requested field/field group cannot be found
+     * @throws ServerErrorHttpException if no field groups exist
      */
     public function actionEditField($fieldId = null, FieldInterface $field = null, $groupId = null)
     {
@@ -121,7 +120,7 @@ class FieldsController extends Controller
             $field = Craft::$app->getFields()->getFieldById($fieldId);
 
             if ($field === null) {
-                throw new HttpException(404, "No field exists with the ID '$fieldId'.");
+                throw new NotFoundHttpException('Field not found');
             }
         }
 
@@ -129,7 +128,7 @@ class FieldsController extends Controller
             $field = Craft::$app->getFields()->createField('craft\app\fields\PlainText');
         }
 
-        $fieldTypeInfo = new ComponentInfo($field);
+        /** @var Field $field */
 
         // Field types
         // ---------------------------------------------------------------------
@@ -152,7 +151,7 @@ class FieldsController extends Controller
         $allGroups = Craft::$app->getFields()->getAllGroups();
 
         if (empty($allGroups)) {
-            throw new HttpException(404, 'No field groups exist.');
+            throw new ServerErrorHttpException('No field groups exist');
         }
 
         if ($groupId === null) {
@@ -162,7 +161,7 @@ class FieldsController extends Controller
         $fieldGroup = Craft::$app->getFields()->getGroupById($groupId);
 
         if ($fieldGroup === null) {
-            throw new Exception("No field group exists with the ID '$groupId'.");
+            throw new NotFoundHttpException('Field group not found');
         }
 
         $groupOptions = [];
@@ -201,22 +200,20 @@ class FieldsController extends Controller
         return $this->renderTemplate('settings/fields/_edit', [
             'fieldId' => $fieldId,
             'field' => $field,
-            'fieldTypeInfo' => $fieldTypeInfo,
             'fieldTypeOptions' => $fieldTypeOptions,
             'allFieldTypes' => $allFieldTypes,
             'groupId' => $groupId,
             'groupOptions' => $groupOptions,
             'crumbs' => $crumbs,
             'title' => $title,
-            'docsUrl' => 'http://buildwithcraft.com/docs/fields#field-layouts',
+            'docsUrl' => 'http://craftcms.com/docs/fields#field-layouts',
         ]);
     }
 
     /**
      * Saves a field.
      *
-     * @return void
-     * @throws Exception
+     * @return Response|null
      */
     public function actionSaveField()
     {
@@ -241,20 +238,22 @@ class FieldsController extends Controller
             Craft::$app->getSession()->setNotice(Craft::t('app', 'Field saved.'));
 
             return $this->redirectToPostedUrl($field);
-        } else {
-            Craft::$app->getSession()->setError(Craft::t('app', 'Couldn’t save field.'));
         }
+
+        Craft::$app->getSession()->setError(Craft::t('app', 'Couldn’t save field.'));
 
         // Send the field back to the template
         Craft::$app->getUrlManager()->setRouteParams([
             'field' => $field
         ]);
+
+        return null;
     }
 
     /**
      * Deletes a field.
      *
-     * @return void
+     * @return Response
      */
     public function actionDeleteField()
     {

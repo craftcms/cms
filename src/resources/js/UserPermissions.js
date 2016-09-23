@@ -58,11 +58,11 @@ Craft.UserPermissions = Garnish.Base.extend(
     {
         if(this.$allCheckboxes.filter(':checked').length < this.$allCheckboxes.length)
         {
-            this.$selectAllBtn.text(Craft.t('Select All'));
+            this.$selectAllBtn.text(Craft.t('app', 'Select All'));
         }
         else
         {
-            this.$selectAllBtn.text(Craft.t('Deselect All'));
+            this.$selectAllBtn.text(Craft.t('app', 'Deselect All'));
         }
     }
 });

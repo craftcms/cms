@@ -1,11 +1,13 @@
 <?php
 /**
- * @link      http://buildwithcraft.com/
- * @copyright Copyright (c) 2015 Pixel & Tonic, Inc.
- * @license   http://buildwithcraft.com/license
+ * @link      https://craftcms.com/
+ * @copyright Copyright (c) Pixel & Tonic, Inc.
+ * @license   https://craftcms.com/license
  */
 
 namespace craft\app\web\twig\nodes;
+
+use Twig_Node;
 
 /**
  * Class SwitchNode
@@ -15,28 +17,27 @@ namespace craft\app\web\twig\nodes;
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since  3.0
  */
-
-class SwitchNode extends \Twig_Node
+class SwitchNode extends Twig_Node
 {
-    // Properties
-    // =========================================================================
-
-    /**
-     * @var \Twig_NodeInterface
-     */
-    private $_cases;
-
     // Public Methods
     // =========================================================================
 
     /**
      * @inheritdoc
      */
-    public function __construct(\Twig_NodeInterface $value, \Twig_NodeInterface $cases, \Twig_NodeInterface $default = null, $lineno, $tag = null)
+    public function __construct(
+        /** @noinspection PhpDeprecationInspection */ \Twig_NodeInterface $value,
+        /** @noinspection PhpDeprecationInspection */ \Twig_NodeInterface $cases,
+        /** @noinspection PhpDeprecationInspection */ \Twig_NodeInterface $default = null,
+        $lineno,
+        $tag = null
+    )
     {
-        $this->_cases = $cases;
-
-        parent::__construct(['value' => $value, 'default' => $default], [], $lineno, $tag);
+        parent::__construct([
+            'value' => $value,
+            'cases' => $cases,
+            'default' => $default
+        ], [], $lineno, $tag);
     }
 
     /**
@@ -51,14 +52,25 @@ class SwitchNode extends \Twig_Node
             ->raw(") {\n")
             ->indent();
 
-        foreach ($this->_cases as $case) {
+        foreach ($this->getNode('cases') as $case) {
+            /** @var Twig_Node $case */
+            // The 'body' node may have been removed by Twig if it was an empty text node in a sub-template,
+            // outside of any blocks
+            if (!$case->hasNode('body')) {
+                continue;
+            }
+
+            foreach ($case->getNode('values') as $value) {
+                $compiler
+                    ->write('case ')
+                    ->subcompile($value)
+                    ->raw(":\n");
+            }
+
             $compiler
-                ->write('case ')
-                ->subcompile($case['expr'])
-                ->raw(":\n")
                 ->write("{\n")
                 ->indent()
-                ->subcompile($case['body'])
+                ->subcompile($case->getNode('body'))
                 ->write("break;\n")
                 ->outdent()
                 ->write("}\n");

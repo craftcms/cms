@@ -1,14 +1,15 @@
 <?php
 /**
- * @link      http://buildwithcraft.com/
- * @copyright Copyright (c) 2015 Pixel & Tonic, Inc.
- * @license   http://buildwithcraft.com/license
+ * @link      https://craftcms.com/
+ * @copyright Copyright (c) Pixel & Tonic, Inc.
+ * @license   https://craftcms.com/license
  */
 
 namespace craft\app\models;
 
 use Craft;
 use craft\app\base\Model;
+use craft\app\behaviors\FieldLayoutTrait;
 
 /**
  * CategoryGroup model.
@@ -18,6 +19,11 @@ use craft\app\base\Model;
  */
 class CategoryGroup extends Model
 {
+    // Traits
+    // =========================================================================
+
+    use FieldLayoutTrait;
+
     // Properties
     // =========================================================================
 
@@ -146,7 +152,7 @@ class CategoryGroup extends Model
     /**
      * Returns the category's locale models.
      *
-     * @return array
+     * @return CategoryGroupLocale[]
      */
     public function getLocales()
     {

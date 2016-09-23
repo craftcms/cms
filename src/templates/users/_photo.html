@@ -1,0 +1,19 @@
+{% set volumeId = craft.app.getSystemSettings.getSetting('users', 'photoVolumeId') %}
+{% if volumeId %}
+	<div class="user-photo" data-user="{{ account.id }}">
+		<div id="current-photo">
+			<img sizes="100px" srcset="{{ account.getThumbUrl(100) }} 100w, {{ account.getThumbUrl(200) }} 200w" alt="">
+		</div>
+			<div class="user-photo-controls">
+				<input type="file" name="photo" class="hidden" />
+				{% if account.photoId %}
+					<div class="btn upload-photo">{{ "Change photo"|t('app') }}</div>
+					<div class="btn delete-photo">{{ "Delete photo"|t('app') }}</div>
+				{% else %}
+					<div class="btn upload-photo">{{ "Upload a photo"|t('app') }}</div>
+				{% endif %}
+			</div>
+	</div>
+{% else %}
+	<p>{{ 'Please set a volume for storing the user photos in user settings page first.'|t('app') }}</p>
+{% endif %}

@@ -1,8 +1,8 @@
 <?php
 /**
- * @link      http://buildwithcraft.com/
- * @copyright Copyright (c) 2015 Pixel & Tonic, Inc.
- * @license   http://buildwithcraft.com/license
+ * @link      https://craftcms.com/
+ * @copyright Copyright (c) Pixel & Tonic, Inc.
+ * @license   https://craftcms.com/license
  */
 
 namespace craft\app\records;
@@ -13,11 +13,11 @@ use craft\app\db\ActiveRecord;
 /**
  * Class Migration record.
  *
- * @property integer              $id        ID
- * @property integer              $pluginId  Plugin ID
- * @property string               $version   Version
- * @property \DateTime            $applyTime Apply time
- * @property ActiveQueryInterface $plugin    Plugin
+ * @property integer   $id        ID
+ * @property integer   $pluginId  Plugin ID
+ * @property string    $version   Version
+ * @property \DateTime $applyTime Apply time
+ * @property Plugin    $plugin    Plugin
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since  3.0
@@ -53,7 +53,7 @@ class Migration extends ActiveRecord
     /**
      * Returns the migration’s plugin.
      *
-     * @return \yii\db\ActiveQueryInterface The relational query object.
+     * @return ActiveQueryInterface The relational query object.
      */
     public function getPlugin()
     {

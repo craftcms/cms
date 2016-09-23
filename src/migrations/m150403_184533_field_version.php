@@ -2,7 +2,6 @@
 
 namespace craft\app\migrations;
 
-use Craft;
 use craft\app\db\Migration;
 
 /**

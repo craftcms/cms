@@ -78,12 +78,12 @@ Craft.QuickPostWidget = Garnish.Base.extend(
 			{
 				if (response.success)
 				{
-					Craft.cp.displayNotice(Craft.t('Entry saved.'));
+					Craft.cp.displayNotice(Craft.t('app', 'Entry saved.'));
 					callback(response);
 				}
 				else
 				{
-					Craft.cp.displayError(Craft.t('Couldn’t save entry.'));
+					Craft.cp.displayError(Craft.t('app', 'Couldn’t save entry.'));
 
 					if (response.errors)
 					{
@@ -94,6 +94,10 @@ Craft.QuickPostWidget = Garnish.Base.extend(
 
 						for (var attribute in response.errors)
 						{
+							if (!response.errors.hasOwnProperty(attribute)) {
+								continue;
+							}
+
 							for (var i = 0; i < response.errors[attribute].length; i++)
 							{
 								var error = response.errors[attribute][i];
@@ -123,10 +127,10 @@ Craft.QuickPostWidget = Garnish.Base.extend(
 				if (!widget.params.sectionId || widget.params.sectionId == this.params.sectionId)
 				{
 					widget.addEntry({
-						url:      response.cpEditUrl,
-						title:    response.title,
-						postDate: response.postDate,
-						username: response.author.username
+						url:         response.cpEditUrl,
+						title:       response.title,
+						dateCreated: response.dateCreated,
+						username:    response.authorUsername
 					});
 				}
 			}

@@ -1,8 +1,8 @@
 <?php
 /**
- * @link      http://buildwithcraft.com/
- * @copyright Copyright (c) 2015 Pixel & Tonic, Inc.
- * @license   http://buildwithcraft.com/license
+ * @link      https://craftcms.com/
+ * @copyright Copyright (c) Pixel & Tonic, Inc.
+ * @license   https://craftcms.com/license
  */
 
 namespace craft\app\tasks;
@@ -82,7 +82,7 @@ class DeleteStaleTemplateCaches extends Task
         $totalRows = $this->_getQuery()->count('id');
         $this->_batch = 0;
         $this->_noMoreRows = false;
-        $this->_deletedCacheIds = array();
+        $this->_deletedCacheIds = [];
         $this->_totalDeletedCriteriaRows = 0;
 
         return $totalRows;
@@ -100,7 +100,7 @@ class DeleteStaleTemplateCaches extends Task
                 $this->_batchRows = $this->_getQuery()
                     ->select(['cacheId', 'query'])
                     ->orderBy('id')
-                    ->offset(100*($this->_batch-1) - $this->_totalDeletedCriteriaRows)
+                    ->offset(100 * ($this->_batch - 1) - $this->_totalDeletedCriteriaRows)
                     ->limit(100)
                     ->all();
 
@@ -126,7 +126,7 @@ class DeleteStaleTemplateCaches extends Task
             $query = @unserialize(base64_decode($row['query']));
             if ($query === false || array_intersect($query->ids(), $this->elementId)) {
                 // Delete this cache
-                Craft::$app->getTemplateCache()->deleteCacheById($row['cacheId']);
+                Craft::$app->getTemplateCaches()->deleteCacheById($row['cacheId']);
                 $this->_deletedCacheIds[] = $row['cacheId'];
                 $this->_totalDeletedCriteriaRows++;
             }

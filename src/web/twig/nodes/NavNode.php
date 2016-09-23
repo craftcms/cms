@@ -1,8 +1,8 @@
 <?php
 /**
- * @link      http://buildwithcraft.com/
- * @copyright Copyright (c) 2015 Pixel & Tonic, Inc.
- * @license   http://buildwithcraft.com/license
+ * @link      https://craftcms.com/
+ * @copyright Copyright (c) Pixel & Tonic, Inc.
+ * @license   https://craftcms.com/license
  */
 
 namespace craft\app\web\twig\nodes;
@@ -29,7 +29,17 @@ class NavNode extends \Twig_Node_For
     /**
      * @inheritdoc
      */
-    public function __construct(\Twig_Node_Expression_AssignName $keyTarget, \Twig_Node_Expression_AssignName $valueTarget, \Twig_Node_Expression $seq, \Twig_NodeInterface $upperBody, \Twig_NodeInterface $lowerBody = null, \Twig_NodeInterface $indent = null, \Twig_NodeInterface $outdent = null, $lineno, $tag = null)
+    public function __construct(
+        \Twig_Node_Expression_AssignName $keyTarget,
+        \Twig_Node_Expression_AssignName $valueTarget,
+        \Twig_Node_Expression $seq,
+        /** @noinspection PhpDeprecationInspection */ \Twig_NodeInterface $upperBody,
+        /** @noinspection PhpDeprecationInspection */ \Twig_NodeInterface $lowerBody = null,
+        /** @noinspection PhpDeprecationInspection */ \Twig_NodeInterface $indent = null,
+        /** @noinspection PhpDeprecationInspection */ \Twig_NodeInterface $outdent = null,
+        $lineno,
+        $tag = null
+    )
     {
         $this->navItemNode = new NavItem_Node($valueTarget, $indent, $outdent, $lowerBody, $lineno, $tag);
         $body = new \Twig_Node([$this->navItemNode, $upperBody]);
