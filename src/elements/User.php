@@ -48,11 +48,24 @@ class User extends Element implements IdentityInterface
     // Constants
     // =========================================================================
 
+    const IMPERSONATE_KEY = 'Craft.UserSessionService.prevImpersonateUserId';
+
+    /**
+     * @event UserLoginFailureEvent The event that is triggered when a user fails to log in.
+     */
+    const EVENT_LOGIN_FAILURE = 'loginFailure';
+
+    // User statuses
+    // -------------------------------------------------------------------------
+
     const STATUS_ACTIVE = 'active';
     const STATUS_LOCKED = 'locked';
     const STATUS_SUSPENDED = 'suspended';
     const STATUS_PENDING = 'pending';
     const STATUS_ARCHIVED = 'archived';
+
+    // Authentication error keys
+    // -------------------------------------------------------------------------
 
     const AUTH_INVALID_CREDENTIALS = 'invalid_credentials';
     const AUTH_PENDING_VERIFICATION = 'pending_verification';
@@ -64,13 +77,6 @@ class User extends Element implements IdentityInterface
     const AUTH_NO_CP_OFFLINE_ACCESS = 'no_cp_offline_access';
     const AUTH_NO_SITE_OFFLINE_ACCESS = 'no_site_offline_access';
     const AUTH_USERNAME_INVALID = 'username_invalid';
-
-    const IMPERSONATE_KEY = 'Craft.UserSessionService.prevImpersonateUserId';
-
-    /**
-     * @event UserLoginFailureEvent The event that is triggered when a user fails to log in.
-     */
-    const EVENT_LOGIN_FAILURE = 'loginFailure';
 
     // Static
     // =========================================================================
