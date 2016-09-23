@@ -9,6 +9,9 @@ namespace craft\app\models;
 
 use Craft;
 use craft\app\base\Model;
+use craft\app\records\User as UserRecord;
+use craft\app\validators\HandleValidator;
+use craft\app\validators\UniqueValidator;
 
 Craft::$app->requireEdition(Craft::Pro);
 
@@ -47,14 +50,11 @@ class UserGroup extends Model
     public function rules()
     {
         return [
-            [
-                ['id'],
-                'number',
-                'min' => -2147483648,
-                'max' => 2147483647,
-                'integerOnly' => true
-            ],
-            [['id', 'name', 'handle'], 'safe', 'on' => 'search'],
+            [['id'], 'number', 'integerOnly' => true],
+            [['name', 'handle'], 'required'],
+            [['name', 'handle'], 'string', 'max' => 255],
+            [['handle'], HandleValidator::class, 'reservedWords' => 'id', 'dateCreated', 'dateUpdated', 'uid', 'title'],
+            [['name', 'handle'], UniqueValidator::class, 'targetClass' => UserRecord::class],
         ];
     }
 

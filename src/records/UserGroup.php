@@ -29,29 +29,6 @@ class UserGroup extends ActiveRecord
 
     /**
      * @inheritdoc
-     */
-    public function rules()
-    {
-        return [
-            [
-                ['handle'],
-                HandleValidator::class,
-                'reservedWords' => [
-                    'id',
-                    'dateCreated',
-                    'dateUpdated',
-                    'uid',
-                    'title'
-                ]
-            ],
-            [['name', 'handle'], 'required'],
-            [['name', 'handle'], 'unique'],
-            [['name', 'handle'], 'string', 'max' => 255],
-        ];
-    }
-
-    /**
-     * @inheritdoc
      *
      * @return string
      */

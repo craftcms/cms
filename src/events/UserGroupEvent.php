@@ -10,7 +10,7 @@ namespace craft\app\events;
 use craft\app\models\UserGroup;
 
 /**
- * User Groups event class.
+ * UserGroupEvent class.
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since  3.0
@@ -24,4 +24,9 @@ class UserGroupEvent extends Event
      * @var UserGroup The user group associated with this event
      */
     public $userGroup;
+
+    /**
+     * @var boolean Whether the user group is brand new
+     */
+    public $isNew = false;
 }
