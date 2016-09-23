@@ -10,7 +10,7 @@ namespace craft\app\models;
 use Craft;
 use craft\app\base\Model;
 use craft\app\validators\SiteIdValidator;
-use craft\app\validators\UriFormat;
+use craft\app\validators\UriFormatValidator;
 use yii\base\InvalidConfigException;
 
 /**
@@ -113,7 +113,7 @@ class CategoryGroup_SiteSettings extends Model
             [['id', 'groupId', 'siteId'], 'number', 'integerOnly' => true],
             [['siteId'], SiteIdValidator::class],
             [['template'], 'string', 'max' => 500],
-            [['uriFormat'], UriFormat::class]
+            [['uriFormat'], UriFormatValidator::class]
         ];
 
         if ($this->hasUrls) {

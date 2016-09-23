@@ -11,7 +11,7 @@ use Craft;
 use craft\app\base\Model;
 use craft\app\validators\SingleSectionUriValidator;
 use craft\app\validators\SiteIdValidator;
-use craft\app\validators\UriFormat;
+use craft\app\validators\UriFormatValidator;
 use yii\base\InvalidConfigException;
 
 /**
@@ -131,7 +131,7 @@ class Section_SiteSettings extends Model
         if ($this->getSection()->type == Section::TYPE_SINGLE) {
             $rules[] = ['uriFormat', SingleSectionUriValidator::class];
         } else {
-            $rules[] = ['uriFormat', UriFormat::class];
+            $rules[] = ['uriFormat', UriFormatValidator::class];
         }
 
         if ($this->hasUrls || $this->getSection()->type == Section::TYPE_SINGLE) {
