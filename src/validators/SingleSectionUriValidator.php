@@ -21,7 +21,7 @@ use yii\validators\Validator;
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since  3.0
  */
-class SingleSectionUri extends Validator
+class SingleSectionUriValidator extends Validator
 {
     // Protected Methods
     // =========================================================================
@@ -32,7 +32,7 @@ class SingleSectionUri extends Validator
     public function validateAttribute($model, $attribute)
     {
         if (!($model instanceof Section_SiteSettings) || $attribute != 'uriFormat') {
-            throw new InvalidConfigException('Invalid use of SingleSectionUri validator');
+            throw new InvalidConfigException('Invalid use of SingleSectionUriValidator');
         }
 
         /** @var Section_SiteSettings $model */
