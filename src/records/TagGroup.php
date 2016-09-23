@@ -9,7 +9,6 @@ namespace craft\app\records;
 
 use yii\db\ActiveQueryInterface;
 use craft\app\db\ActiveRecord;
-use craft\app\validators\HandleValidator;
 
 /**
  * Class TagGroup record.
@@ -28,36 +27,6 @@ class TagGroup extends ActiveRecord
 {
     // Public Methods
     // =========================================================================
-
-    /**
-     * @inheritdoc
-     */
-    public function rules()
-    {
-        return [
-            [
-                ['handle'],
-                HandleValidator::class,
-                'reservedWords' => [
-                    'id',
-                    'dateCreated',
-                    'dateUpdated',
-                    'uid',
-                    'title'
-                ]
-            ],
-            [
-                ['fieldLayoutId'],
-                'number',
-                'min' => -2147483648,
-                'max' => 2147483647,
-                'integerOnly' => true
-            ],
-            [['name', 'handle'], 'unique'],
-            [['name', 'handle'], 'required'],
-            [['name', 'handle'], 'string', 'max' => 255],
-        ];
-    }
 
     /**
      * @inheritdoc

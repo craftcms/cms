@@ -11,7 +11,6 @@ use Craft;
 use craft\app\db\Query;
 use craft\app\errors\TagGroupNotFoundException;
 use craft\app\errors\TagNotFoundException;
-use craft\app\events\DeleteTagGroupEvent;
 use craft\app\events\TagEvent;
 use craft\app\elements\Tag;
 use craft\app\events\TagGroupEvent;
@@ -35,8 +34,6 @@ class Tags extends Component
 
     /**
      * @event TagEvent The event that is triggered before a tag is saved.
-     *
-     * You may set [[TagEvent::isValid]] to `false` to prevent the tag from getting saved.
      */
     const EVENT_BEFORE_SAVE_TAG = 'beforeSaveTag';
 
@@ -46,26 +43,22 @@ class Tags extends Component
     const EVENT_AFTER_SAVE_TAG = 'afterSaveTag';
 
     /**
-     * @event TagEvent The event that is triggered before a tag group is saved.
-     *
-     * You may set [[TagEvent::isValid]] to `false` to prevent the tag group from getting saved.
+     * @event TagGroupEvent The event that is triggered before a tag group is saved.
      */
     const EVENT_BEFORE_SAVE_GROUP = 'beforeSaveGroup';
 
     /**
-     * @event TagEvent The event that is triggered after a tag group is saved.
+     * @event TagGroupEvent The event that is triggered after a tag group is saved.
      */
     const EVENT_AFTER_SAVE_GROUP = 'afterSaveGroup';
 
     /**
-     * @event DeleteTagGroupEvent The event that is triggered before a tag group is deleted.
-     *
-     * You may set [[TagEvent::isValid]] to `false` to prevent the tag group from being deleted.
+     * @event TagGroupEvent The event that is triggered before a tag group is deleted.
      */
     const EVENT_BEFORE_DELETE_GROUP = 'beforeDeleteGroup';
 
     /**
-     * @event DeleteTagGroupEvent The event that is triggered after a tag group is deleted.
+     * @event TagGroupEvent The event that is triggered after a tag group is deleted.
      */
     const EVENT_AFTER_DELETE_GROUP = 'afterDeleteGroup';
 
@@ -210,15 +203,30 @@ class Tags extends Component
     /**
      * Saves a tag group.
      *
-     * @param TagGroup $tagGroup
+     * @param TagGroup $tagGroup      The tag group to be saved
+     * @param boolean  $runValidation Whether the tag group should be validated
      *
      * @return boolean Whether the tag group was saved successfully
      * @throws TagGroupNotFoundException if $tagGroup->id is invalid
      * @throws \Exception if reasons
      */
-    public function saveTagGroup(TagGroup $tagGroup)
+    public function saveTagGroup(TagGroup $tagGroup, $runValidation = true)
     {
-        if ($tagGroup->id) {
+        if ($runValidation && !$tagGroup->validate()) {
+            Craft::info('Tag group not saved due to validation error.', __METHOD__);
+
+            return false;
+        }
+
+        $isNewTagGroup = !$tagGroup->id;
+
+        // Fire a 'beforeSaveGroup' event
+        $this->trigger(self::EVENT_BEFORE_SAVE_GROUP, new TagGroupEvent([
+            'tagGroup' => $tagGroup,
+            'isNew' => $isNewTagGroup
+        ]));
+
+        if (!$isNewTagGroup) {
             $tagGroupRecord = TagGroupRecord::findOne($tagGroup->id);
 
             if (!$tagGroupRecord) {
@@ -226,81 +234,58 @@ class Tags extends Component
             }
 
             $oldTagGroup = TagGroup::create($tagGroupRecord);
-            $isNewTagGroup = false;
         } else {
             $tagGroupRecord = new TagGroupRecord();
-            $isNewTagGroup = true;
         }
 
         $tagGroupRecord->name = $tagGroup->name;
         $tagGroupRecord->handle = $tagGroup->handle;
 
-        $tagGroupRecord->validate();
-        $tagGroup->addErrors($tagGroupRecord->getErrors());
+        $transaction = Craft::$app->getDb()->beginTransaction();
 
-        $success = false;
-
-        if (!$tagGroup->hasErrors()) {
-            // Fire a 'beforeSaveGroup' event
-            $event = new TagGroupEvent([
-                'tagGroup' => $tagGroup,
-                'isNew' => $isNewTagGroup
-            ]);
-
-            $this->trigger(self::EVENT_BEFORE_SAVE_GROUP, $event);
-
-            // Make sure the event is giving us the go ahead
-            if ($event->isValid) {
-                $transaction = Craft::$app->getDb()->beginTransaction();
-
-                try {
-                    // Is there a new field layout?
-                    $fieldLayout = $tagGroup->getFieldLayout();
-                    if (!$fieldLayout->id) {
-                        // Delete the old one
-                        /** @noinspection PhpUndefinedVariableInspection */
-                        if (!$isNewTagGroup && $oldTagGroup->fieldLayoutId) {
-                            Craft::$app->getFields()->deleteLayoutById($oldTagGroup->fieldLayoutId);
-                        }
-
-                        // Save the new one
-                        Craft::$app->getFields()->saveLayout($fieldLayout);
-
-                        // Update the tag group record/model with the new layout ID
-                        $tagGroup->fieldLayoutId = $fieldLayout->id;
-                        $tagGroupRecord->fieldLayoutId = $fieldLayout->id;
-                    }
-
-                    // Save it!
-                    $tagGroupRecord->save(false);
-
-                    // Now that we have a tag group ID, save it on the model
-                    if (!$tagGroup->id) {
-                        $tagGroup->id = $tagGroupRecord->id;
-                    }
-
-                    // Might as well update our cache of the tag group while we have it.
-                    $this->_tagGroupsById[$tagGroup->id] = $tagGroup;
-
-                    $transaction->commit();
-                    $success = true;
-                } catch (\Exception $e) {
-                    $transaction->rollBack();
-
-                    throw $e;
+        try {
+            // Is there a new field layout?
+            $fieldLayout = $tagGroup->getFieldLayout();
+            if (!$fieldLayout->id) {
+                // Delete the old one
+                /** @noinspection PhpUndefinedVariableInspection */
+                if (!$isNewTagGroup && $oldTagGroup->fieldLayoutId) {
+                    Craft::$app->getFields()->deleteLayoutById($oldTagGroup->fieldLayoutId);
                 }
+
+                // Save the new one
+                Craft::$app->getFields()->saveLayout($fieldLayout);
+
+                // Update the tag group record/model with the new layout ID
+                $tagGroup->fieldLayoutId = $fieldLayout->id;
+                $tagGroupRecord->fieldLayoutId = $fieldLayout->id;
             }
 
-            if ($success) {
-                // Fire an 'afterSaveGroup' event
-                $this->trigger(self::EVENT_AFTER_SAVE_GROUP, new TagGroupEvent([
-                    'tagGroup' => $tagGroup,
-                    'isNew' => $isNewTagGroup,
-                ]));
+            // Save it!
+            $tagGroupRecord->save(false);
+
+            // Now that we have a tag group ID, save it on the model
+            if (!$tagGroup->id) {
+                $tagGroup->id = $tagGroupRecord->id;
             }
+
+            // Might as well update our cache of the tag group while we have it.
+            $this->_tagGroupsById[$tagGroup->id] = $tagGroup;
+
+            $transaction->commit();
+        } catch (\Exception $e) {
+            $transaction->rollBack();
+
+            throw $e;
         }
 
-        return $success;
+        // Fire an 'afterSaveGroup' event
+        $this->trigger(self::EVENT_AFTER_SAVE_GROUP, new TagGroupEvent([
+            'tagGroup' => $tagGroup,
+            'isNew' => $isNewTagGroup,
+        ]));
+
+        return true;
     }
 
     /**
@@ -324,59 +309,49 @@ class Tags extends Component
         }
 
         // Fire a 'beforeDeleteGroup' event
-        $event = new DeleteTagGroupEvent([
+        $this->trigger(self::EVENT_BEFORE_DELETE_GROUP, new TagGroupEvent([
             'tagGroup' => $tagGroup
-        ]);
+        ]));
 
-        $this->trigger(self::EVENT_BEFORE_DELETE_GROUP, $event);
+        $transaction = Craft::$app->getDb()->beginTransaction();
+        try {
+            // Delete the field layout
+            $fieldLayoutId = (new Query())
+                ->select('fieldLayoutId')
+                ->from('{{%taggroups}}')
+                ->where(['id' => $tagGroupId])
+                ->scalar();
 
-        $success = false;
-
-        // Make sure the event is giving us the go ahead
-        if ($event->isValid) {
-            $transaction = Craft::$app->getDb()->beginTransaction();
-            try {
-                // Delete the field layout
-                $fieldLayoutId = (new Query())
-                    ->select('fieldLayoutId')
-                    ->from('{{%taggroups}}')
-                    ->where(['id' => $tagGroupId])
-                    ->scalar();
-
-                if ($fieldLayoutId) {
-                    Craft::$app->getFields()->deleteLayoutById($fieldLayoutId);
-                }
-
-                // Grab the tag ids so we can clean the elements table.
-                $tagIds = (new Query())
-                    ->select('id')
-                    ->from('{{%tags}}')
-                    ->where(['groupId' => $tagGroupId])
-                    ->column();
-
-                Craft::$app->getElements()->deleteElementById($tagIds);
-
-                Craft::$app->getDb()->createCommand()
-                    ->delete('{{%taggroups}}', ['id' => $tagGroupId])
-                    ->execute();
-
-                $transaction->commit();
-                $success = true;
-            } catch (\Exception $e) {
-                $transaction->rollBack();
-
-                throw $e;
+            if ($fieldLayoutId) {
+                Craft::$app->getFields()->deleteLayoutById($fieldLayoutId);
             }
+
+            // Grab the tag ids so we can clean the elements table.
+            $tagIds = (new Query())
+                ->select('id')
+                ->from('{{%tags}}')
+                ->where(['groupId' => $tagGroupId])
+                ->column();
+
+            Craft::$app->getElements()->deleteElementById($tagIds);
+
+            Craft::$app->getDb()->createCommand()
+                ->delete('{{%taggroups}}', ['id' => $tagGroupId])
+                ->execute();
+
+            $transaction->commit();
+        } catch (\Exception $e) {
+            $transaction->rollBack();
+
+            throw $e;
         }
 
-        if ($success) {
-            // Fire an 'afterSaveGroup' event
-            $this->trigger(self::EVENT_AFTER_DELETE_GROUP, new DeleteTagGroupEvent([
-                'tagGroup' => $tagGroup
-            ]));
-        }
+        // Fire an 'afterSaveGroup' event
+        $this->trigger(self::EVENT_AFTER_DELETE_GROUP, new TagGroupEvent([
+            'tagGroup' => $tagGroup
+        ]));
 
-        return $success;
+        return true;
     }
 
     // Tags
@@ -398,14 +373,21 @@ class Tags extends Component
     /**
      * Saves a tag.
      *
-     * @param Tag $tag
+     * @param Tag     $tag           The tag to be saved
+     * @param boolean $runValidation Whether the tag should be validated
      *
      * @return boolean Whether the tag was saved successfully
      * @throws TagNotFoundException if $tag->id is invalid
      * @throws \Exception if reasons
      */
-    public function saveTag(Tag $tag)
+    public function saveTag(Tag $tag, $runValidation = true)
     {
+        if ($runValidation && !$tag->validate()) {
+            Craft::info('Tag not saved due to validation error.', __METHOD__);
+
+            return false;
+        }
+
         $isNewTag = !$tag->id;
 
         // Tag data
@@ -419,49 +401,30 @@ class Tags extends Component
             $tagRecord = new TagRecord();
         }
 
+        // Fire a 'beforeSaveTag' event
+        $this->trigger(self::EVENT_BEFORE_SAVE_TAG, new TagEvent([
+            'tag' => $tag,
+            'isNew' => $isNewTag
+        ]));
+
         $tagRecord->groupId = $tag->groupId;
-
-        $tagRecord->validate();
-        $tag->addErrors($tagRecord->getErrors());
-
-        if ($tag->hasErrors()) {
-            return false;
-        }
 
         $transaction = Craft::$app->getDb()->beginTransaction();
 
         try {
-            // Fire a 'beforeSaveTag' event
-            $event = new TagEvent([
-                'tag' => $tag,
-                'isNew' => $isNewTag
-            ]);
+            if (!Craft::$app->getElements()->saveElement($tag, false)) {
+                $transaction->rollBack();
 
-            $this->trigger(self::EVENT_BEFORE_SAVE_TAG, $event);
-
-            // Is the event giving us the go-ahead?
-            if ($event->isValid) {
-                $success = Craft::$app->getElements()->saveElement($tag, false);
-
-                // If it didn't work, rollback the transaction in case something changed in onBeforeSaveTag
-                if (!$success) {
-                    $transaction->rollBack();
-
-                    return false;
-                }
-
-                // Now that we have an element ID, save it on the other stuff
-                if ($isNewTag) {
-                    $tagRecord->id = $tag->id;
-                }
-
-                $tagRecord->save(false);
-            } else {
-                $success = false;
+                return false;
             }
 
-            // Commit the transaction regardless of whether we saved the tag, in case something changed
-            // in onBeforeSaveTag
+            // Now that we have an element ID, save it on the other stuff
+            if ($isNewTag) {
+                $tagRecord->id = $tag->id;
+            }
+
+            $tagRecord->save(false);
+
             $transaction->commit();
         } catch (\Exception $e) {
             $transaction->rollBack();
@@ -469,14 +432,12 @@ class Tags extends Component
             throw $e;
         }
 
-        if ($success) {
-            // Fire an 'afterSaveTag' event
-            $this->trigger(self::EVENT_AFTER_SAVE_TAG, new TagEvent([
-                'tag' => $tag,
-                'isNew' => $isNewTag
-            ]));
-        }
+        // Fire an 'afterSaveTag' event
+        $this->trigger(self::EVENT_AFTER_SAVE_TAG, new TagEvent([
+            'tag' => $tag,
+            'isNew' => $isNewTag
+        ]));
 
-        return $success;
+        return true;
     }
 }
