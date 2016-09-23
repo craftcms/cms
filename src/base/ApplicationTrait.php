@@ -64,6 +64,7 @@ use yii\web\ServerErrorHttpException;
  * @property \craft\app\services\Globals         $globals            The globals service
  * @property boolean                             $hasWrongEdition    Whether Craft is running with the wrong edition
  * @property I18N                                $i18n               The internationalization (i18n) component
+ * @property \craft\app\services\ImageEffects    $imageEffects       The image effects service
  * @property \craft\app\services\Images          $images             The images service
  * @property boolean                             $sInMaintenanceMode Whether the system is in maintenance mode
  * @property boolean                             $isInstalled        Whether Craft is installed
@@ -994,6 +995,17 @@ trait ApplicationTrait
     {
         /** @var \craft\app\web\Application|\craft\app\console\Application $this */
         return $this->get('globals');
+    }
+
+    /**
+     * Returns the image effects service.
+     *
+     * @return \craft\app\services\ImageEffects The image effects service
+     */
+    public function getImageEffects()
+    {
+        /** @var \craft\app\web\Application|\craft\app\console\Application $this */
+        return $this->get('imageEffects');
     }
 
     /**

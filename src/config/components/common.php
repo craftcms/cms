@@ -20,6 +20,7 @@ return [
     'fields' => 'craft\app\services\Fields',
     'globals' => 'craft\app\services\Globals',
     'install' => 'craft\app\services\Install',
+    'imageEffects' => 'craft\app\services\ImageEffects',
     'images' => 'craft\app\services\Images',
     'matrix' => 'craft\app\services\Matrix',
     'path' => 'craft\app\services\Path',

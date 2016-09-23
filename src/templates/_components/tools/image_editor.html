@@ -21,7 +21,25 @@
         </ul>
     </section>
     <hr />
-    <section>
-        <div class="section-title">{{ "Filters"|t('app') }}</div>
-    </section>
+    {% set filters = craft.app.imageEffects.getAllFilters() %}
+    {% if filters|length %}
+        <section class="filters">
+            <div class="section-title">{{ "Filters"|t('app') }}</div>
+            <div class="filter-select">
+                <select name="filter-select">
+                    <option value="">---</option>
+                    {% for filter in filters %}
+                        <option value="{{ filter.getType()|replace({'\\' : '-'}) }}">{{ filter }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            {% for filter in filters %}
+                <div class="filter-fields hidden" filter="{{ filter.getType()|replace({'\\' : '-'}) }}">
+                    {{ filter.getFieldHtml() }}
+                </div>
+            {% endfor %}
+
+            <div class="btn submit apply-filter">{{ 'Apply'|t('app') }}</div>
+        </section>
+    {% endif %}
 </div>

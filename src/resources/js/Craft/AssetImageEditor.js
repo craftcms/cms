@@ -4,7 +4,15 @@
 
 Craft.AssetImageEditor = Garnish.Modal.extend(
 	{
-		// References
+		// jQuery objects
+		$body: null,
+		$filters: null,
+		$buttons: null,
+		$cancelBtn: null,
+		$replaceBtn: null,
+		$saveBtn: null,
+
+		// References and parameters
 		canvas: null,
 		image: null,
 		viewport: null,
@@ -12,6 +20,9 @@ Craft.AssetImageEditor = Garnish.Modal.extend(
 		$straighten: null,
 		url: null,
 		assetId: null,
+
+		// Filters
+		appliedFilter: null,
 
 		// Editor paramters
 		editorHeight: 0,
@@ -57,6 +68,7 @@ Craft.AssetImageEditor = Garnish.Modal.extend(
 
 		loadEditor: function (data) {
 			this.$body.html(data.html);
+			this.$filters = $('.image-tools .filters', this.$body);
 
 			this.canvas = new fabric.StaticCanvas('image-manipulator', {backgroundColor: this.backgroundColor});
 			this.canvas.enableRetinaScaling = true;
@@ -180,6 +192,14 @@ Craft.AssetImageEditor = Garnish.Modal.extend(
 
 			$('.btn.cancel', this.$buttons).on('click', $.proxy(this, 'hide'));
 			$('.btn.save', this.$buttons).on('click', $.proxy(this, 'saveImage'));
+
+			this.$filters.on('change', $.proxy(function (ev) {
+				$option = $(ev.currentTarget).find('option:selected');
+				$('.filter-fields').addClass('hidden');
+				if ($option.val()) {
+					$('.filter-fields[filter=' + $option.val() + ']').removeClass('hidden');
+				}
+			}, this));
 		},
 
 		/**
@@ -286,6 +306,10 @@ Craft.AssetImageEditor = Garnish.Modal.extend(
 				replace: $button.hasClass('replace') ? 1 : 0
 			};
 
+			if (this.appliedFilter) {
+
+			}
+
 			Craft.postActionRequest('assets/edit-image', postData, $.proxy(function (data) {
 				this.$buttons.find('.btn').removeClass('disabled').end().find('.spinner').remove();
 			}, this));
@@ -389,6 +413,35 @@ Craft.AssetImageEditor = Garnish.Modal.extend(
 
 		onFadeOut: function () {
 			this.destroy();
+		},
+
+		/**
+		 * Get selected filter
+		 */
+		getSelectedFilter: function () {
+			var $filterOption = $('.filter-select select option:selected', this.$filters);
+			return $filterOption.data('filter');
+		},
+
+		/**
+		 * Get selected filter with the option data set.
+		 * @returns {*}
+		 */
+		getSelectedFilterWithData: function () {
+
+			var filter = this.getSelectedFilter(),
+				$filterFields = $('.filter-fields input', this.$filters),
+				options = {};
+
+			// Build the filter options object based on field values
+			$filterFields.each(function () {
+				$input = $(this);
+				options[$input.prop('name')] = $input.val();
+			});
+
+			filter.setOptions(options);
+
+			return filter;
 		}
 	},
 	{
@@ -399,6 +452,36 @@ Craft.AssetImageEditor = Garnish.Modal.extend(
 			animationDuration: 150,
 
 			onSave: $.noop,
+		}
+	}
+);
+
+/**
+ * Asset image editor class
+ */
+Craft.AssetImageEditor.BaseFilter = Garnish.Base.extend(
+	{
+		filterClass: '',
+		options: {},
+
+		getName: function () {
+			return 'None';
+		},
+
+		setOptions: function (options) {
+			this.options = options;
+		},
+
+		getOptions: function (options) {
+			return this.options;
+		},
+
+		getFieldHtml: function () {
+			return '';
+		},
+
+		applyTo: function (canvasEl) {
+			return;
 		}
 	}
 );

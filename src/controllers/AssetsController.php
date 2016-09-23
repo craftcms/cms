@@ -8,6 +8,7 @@
 namespace craft\app\controllers;
 
 use Craft;
+use craft\app\base\Filter;
 use craft\app\errors\AssetConflictException;
 use craft\app\errors\AssetLogicException;
 use craft\app\errors\AssetException;
@@ -18,6 +19,7 @@ use craft\app\helpers\Image;
 use craft\app\helpers\Io;
 use craft\app\elements\Asset;
 use craft\app\helpers\StringHelper;
+use craft\app\helpers\Url;
 use craft\app\image\Raster;
 use craft\app\models\VolumeFolder;
 use craft\app\web\Controller;
@@ -584,6 +586,9 @@ class AssetsController extends Controller
         $imageRotation = $request->getRequiredBodyParam('imageRotation');
         $replace = $request->getRequiredBodyParam('replace');
 
+        $filter = $request->getBodyParam('filter');
+        $filterOptions = $request->getBodyParam('filterOptions');
+
         $asset = $assets->getAssetById($assetId);
 
         if (empty($asset)) {
@@ -655,6 +660,11 @@ class AssetsController extends Controller
         // image changes as well, if it was not square.
         $image->rotate($viewportRotation);
         $image->saveAs($imageCopy);
+
+        // If filter is set, apply that
+        if (!empty($filter)) {
+
+        }
 
         if ($replace) {
             $assets->replaceAssetFile($asset, $imageCopy, $asset->filename);
