@@ -16,7 +16,7 @@ use craft\app\elements\db\MatrixBlockQuery;
 use craft\app\fields\Matrix;
 use craft\app\helpers\ElementHelper;
 use craft\app\models\MatrixBlockType;
-use craft\app\validators\SiteId as SiteIdValidator;
+use craft\app\validators\SiteIdValidator;
 use yii\base\InvalidConfigException;
 
 /**

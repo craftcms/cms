@@ -9,7 +9,7 @@ namespace craft\app\models;
 
 use Craft;
 use craft\app\base\Model;
-use craft\app\validators\SiteId as SiteIdValidator;
+use craft\app\validators\SiteIdValidator;
 
 Craft::$app->requireEdition(Craft::Client);
 
