@@ -16,7 +16,7 @@ use yii\validators\Validator;
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since  3.0
  */
-class Uri extends Validator
+class UriValidator extends Validator
 {
     // Properties
     // =========================================================================
