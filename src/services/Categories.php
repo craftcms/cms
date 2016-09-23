@@ -11,7 +11,6 @@ use Craft;
 use craft\app\db\Query;
 use craft\app\errors\CategoryGroupNotFoundException;
 use craft\app\errors\CategoryNotFoundException;
-use craft\app\events\CategoryDeleteEvent;
 use craft\app\events\CategoryEvent;
 use craft\app\elements\Category;
 use craft\app\events\CategoryGroupDeleteEvent;
@@ -814,12 +813,19 @@ class Categories extends Component
             return false;
         }
 
+        if (is_array($categories)) {
+            // Order in reverse-hierarchical order, so as we are looping through
+            // them and deleting their descendants, we don't have to worry about
+            // descendants conflicting with other $categories
+            usort($categories, function(Category $a, Category $b) {
+                return ($a->lft > $b->lft) ? -1 : 1;
+            });
+        } else {
+            $categories = [$categories];
+        }
+
         $transaction = Craft::$app->getDb()->beginTransaction();
         try {
-            if (!is_array($categories)) {
-                $categories = [$categories];
-            }
-
             $success = $this->_deleteCategories($categories, true);
 
             $transaction->commit();
@@ -829,19 +835,7 @@ class Categories extends Component
             throw $e;
         }
 
-        if ($success) {
-            foreach ($categories as $category) {
-                // Fire an 'afterDeleteCategory' event
-                $this->trigger(self::EVENT_AFTER_DELETE_CATEGORY,
-                    new CategoryDeleteEvent([
-                        'category' => $category
-                    ]));
-            }
-
-            return true;
-        }
-
-        return false;
+        return $success;
     }
 
     /**
@@ -1006,15 +1000,25 @@ class Categories extends Component
             }
 
             // Fire a 'beforeDeleteCategory' event
-            $this->trigger(self::EVENT_BEFORE_DELETE_CATEGORY,
-                new CategoryDeleteEvent([
-                    'category' => $category
-                ]));
+            $this->trigger(self::EVENT_BEFORE_DELETE_CATEGORY, new CategoryEvent([
+                'category' => $category
+            ]));
 
             $categoryIds[] = $category->id;
         }
 
         // Delete 'em
-        return Craft::$app->getElements()->deleteElementById($categoryIds);
+        $success = Craft::$app->getElements()->deleteElementById($categoryIds);
+
+        if ($success) {
+            foreach ($categories as $category) {
+                // Fire an 'afterDeleteCategory' event
+                $this->trigger(self::EVENT_AFTER_DELETE_CATEGORY, new CategoryEvent([
+                    'category' => $category
+                ]));
+            }
+        }
+
+        return $success;
     }
 }
