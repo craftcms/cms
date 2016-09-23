@@ -28,7 +28,7 @@ use craft\app\helpers\Url;
 use craft\app\models\VolumeFolder;
 use craft\app\records\Asset as AssetRecord;
 use craft\app\validators\DateTimeValidator;
-use craft\app\validators\Unique as UniqueValidator;
+use craft\app\validators\UniqueValidator;
 use Exception;
 use yii\base\ErrorHandler;
 use yii\base\InvalidCallException;

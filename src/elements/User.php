@@ -27,7 +27,7 @@ use craft\app\models\UserGroup;
 use craft\app\records\Session as SessionRecord;
 use craft\app\records\User as UserRecord;
 use craft\app\validators\DateTimeValidator;
-use craft\app\validators\Unique as UniqueValidator;
+use craft\app\validators\UniqueValidator;
 use Exception;
 use yii\base\ErrorHandler;
 use yii\base\NotSupportedException;

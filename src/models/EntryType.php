@@ -13,7 +13,7 @@ use craft\app\behaviors\FieldLayoutTrait;
 use craft\app\helpers\Url;
 use craft\app\records\EntryType as EntryTypeRecord;
 use craft\app\validators\HandleValidator;
-use craft\app\validators\Unique as UniqueValidator;
+use craft\app\validators\UniqueValidator;
 
 /**
  * EntryType model class.

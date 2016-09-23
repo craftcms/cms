@@ -9,19 +9,17 @@ namespace craft\app\validators;
 
 use Craft;
 use craft\app\helpers\ArrayHelper;
-use craft\app\helpers\StringHelper;
 use yii\base\Model;
 use yii\db\ActiveRecord;
-use yii\validators\UniqueValidator;
-use yii\validators\Validator;
+use yii\validators\UniqueValidator as YiiUniqueValidator;
 
 /**
- * Class Unique validator.
+ * Class UniqueValidator.
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since  3.0
  */
-class Unique extends UniqueValidator
+class UniqueValidator extends YiiUniqueValidator
 {
     // Properties
     // =========================================================================

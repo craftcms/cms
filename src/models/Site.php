@@ -11,7 +11,7 @@ use Craft;
 use craft\app\base\Model;
 use craft\app\records\Site as SiteRecord;
 use craft\app\validators\HandleValidator;
-use craft\app\validators\Unique;
+use craft\app\validators\UniqueValidator;
 use craft\app\validators\Url;
 
 /**
@@ -91,7 +91,7 @@ class Site extends Model
         ];
 
         if (Craft::$app->getIsInstalled()) {
-            $rules[] = [['name', 'handle'], Unique::class, 'targetClass' => SiteRecord::class];
+            $rules[] = [['name', 'handle'], UniqueValidator::class, 'targetClass' => SiteRecord::class];
         }
 
         return $rules;

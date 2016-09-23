@@ -15,7 +15,7 @@ use craft\app\elements\db\GlobalSetQuery;
 use craft\app\helpers\Url;
 use craft\app\records\GlobalSet as GlobalSetRecord;
 use craft\app\validators\HandleValidator;
-use craft\app\validators\Unique as UniqueValidator;
+use craft\app\validators\UniqueValidator;
 
 /**
  * GlobalSet represents a global set element.
