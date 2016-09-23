@@ -11,7 +11,7 @@ return [
         'urlManager' => [
             'class' => craft\app\web\UrlManager::class,
             'enablePrettyUrl' => true,
-            'ruleConfig' => craft\app\web\UrlRule::class,
+            'ruleConfig' => ['class' => craft\app\web\UrlRule::class],
         ],
         'user' => [
             'class' => craft\app\web\User::class,
