@@ -8,7 +8,7 @@
 namespace craft\app\models;
 
 use craft\app\base\Model;
-use craft\app\validators\Url as UrlValidator;
+use craft\app\validators\UrlValidator;
 
 /**
  * Validates the required Site attributes for the installer.

@@ -12,7 +12,7 @@ use craft\app\base\Model;
 use craft\app\records\Site as SiteRecord;
 use craft\app\validators\HandleValidator;
 use craft\app\validators\UniqueValidator;
-use craft\app\validators\Url;
+use craft\app\validators\UrlValidator;
 
 /**
  * Site model class.
@@ -87,7 +87,7 @@ class Site extends Model
             [['name', 'handle', 'baseUrl'], 'string', 'max' => 255],
             [['language'], 'string', 'max' => 12],
             [['handle'], HandleValidator::class, 'reservedWords' => ['id', 'dateCreated', 'dateUpdated', 'uid', 'title']],
-            [['baseUrl'], Url::class, 'defaultScheme' => 'http'],
+            [['baseUrl'], UrlValidator::class, 'defaultScheme' => 'http'],
         ];
 
         if (Craft::$app->getIsInstalled()) {
