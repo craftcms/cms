@@ -9,7 +9,7 @@ namespace craft\app\records;
 
 use yii\db\ActiveQueryInterface;
 use craft\app\db\ActiveRecord;
-use craft\app\validators\DateTime as DateTimeValidator;
+use craft\app\validators\DateTimeValidator;
 
 /**
  * Class Migration record.

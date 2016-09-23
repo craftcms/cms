@@ -24,7 +24,7 @@ use craft\app\helpers\Url;
 use craft\app\i18n\Locale;
 use craft\app\models\FieldLayout;
 use craft\app\models\Site;
-use craft\app\validators\DateTime as DateTimeValidator;
+use craft\app\validators\DateTimeValidator;
 use craft\app\validators\SiteId as SiteIdValidator;
 use craft\app\web\UploadedFile;
 use yii\base\Exception;

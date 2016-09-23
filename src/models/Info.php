@@ -8,7 +8,7 @@
 namespace craft\app\models;
 
 use craft\app\base\Model;
-use craft\app\validators\DateTime as DateTimeValidator;
+use craft\app\validators\DateTimeValidator;
 
 /**
  * Class Info model.

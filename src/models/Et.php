@@ -11,7 +11,7 @@ use craft\app\base\Model;
 use craft\app\helpers\DateTimeHelper;
 use craft\app\helpers\Db;
 use craft\app\helpers\Json;
-use craft\app\validators\DateTime as DateTimeValidator;
+use craft\app\validators\DateTimeValidator;
 
 /**
  * Class Et model.

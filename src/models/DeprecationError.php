@@ -10,7 +10,7 @@ namespace craft\app\models;
 use craft\app\base\Model;
 use craft\app\dates\DateTime;
 use craft\app\helpers\Json;
-use craft\app\validators\DateTime as DateTimeValidator;
+use craft\app\validators\DateTimeValidator;
 
 /**
  * DeprecationError model.

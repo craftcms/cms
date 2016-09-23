@@ -8,7 +8,7 @@
 namespace craft\app\records;
 
 use craft\app\db\ActiveRecord;
-use craft\app\validators\DateTime as DateTimeValidator;
+use craft\app\validators\DateTimeValidator;
 
 /**
  * Token record.

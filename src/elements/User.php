@@ -26,7 +26,7 @@ use craft\app\i18n\Locale;
 use craft\app\models\UserGroup;
 use craft\app\records\Session as SessionRecord;
 use craft\app\records\User as UserRecord;
-use craft\app\validators\DateTime as DateTimeValidator;
+use craft\app\validators\DateTimeValidator;
 use craft\app\validators\Unique as UniqueValidator;
 use Exception;
 use yii\base\ErrorHandler;

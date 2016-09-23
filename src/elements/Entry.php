@@ -26,7 +26,7 @@ use craft\app\helpers\Db;
 use craft\app\helpers\Url;
 use craft\app\models\EntryType;
 use craft\app\models\Section;
-use craft\app\validators\DateTime as DateTimeValidator;
+use craft\app\validators\DateTimeValidator;
 use yii\base\InvalidConfigException;
 
 /**
