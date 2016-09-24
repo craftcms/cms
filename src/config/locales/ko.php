@@ -23,6 +23,12 @@ return [
             'datetime' => 'y년 M월 d일 EEEE a h시 m분 s초 zzzz',
         ],
     ],
+    'numberPatterns' => [
+        'decimal' => '#,##0.###',
+        'currency' => '¤#,##0.00',
+        'percent' => '#,##0%',
+        'scientific' => '#E0',
+    ],
     'amName' => '오전',
     'pmName' => '오후',
     'textAttributes' => [

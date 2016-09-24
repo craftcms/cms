@@ -23,6 +23,12 @@ return [
             'datetime' => 'y年M月d日EEEE zzzz ah:mm:ss',
         ],
     ],
+    'numberPatterns' => [
+        'decimal' => '#,##0.###',
+        'currency' => '¤#,##0.00',
+        'percent' => '#,##0%',
+        'scientific' => '#E0',
+    ],
     'amName' => '上午',
     'pmName' => '下午',
     'textAttributes' => [
