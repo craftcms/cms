@@ -126,7 +126,7 @@
                     {% if craft.app.getIsMultiSite() %}
                         {% set languageInput %}
                             <div class="select">
-                                <select id="preferred-language" name="preferred-language">
+                                <select id="preferred-language" name="preferredLanguage">
                                     {% set allSiteLanguages = craft.app.i18n.getSiteLocaleIds %}
                                     {% set userLanguage = account.getPreferredLanguage() ?: (account.getIsCurrent() ? craft.app.language : allSiteLanguages[0]) %}
 
