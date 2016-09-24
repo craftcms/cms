@@ -781,13 +781,15 @@ class Locale extends Object
     public function getCurrencySymbol($currency)
     {
         if (Craft::$app->getI18n()->getIsIntlLoaded()) {
-            // This is way harder than it should be - http://stackoverflow.com/a/28307228/1688568
+            // see http://stackoverflow.com/a/28307228/1688568
             $formatter = new NumberFormatter($this->id, NumberFormatter::CURRENCY);
-            $withCurrency = $formatter->formatCurrency(0, $currency);
-            $formatter->setPattern(str_replace('¤', '', $formatter->getPattern()));
-            $withoutCurrency = $formatter->formatCurrency(0, $currency);
+            $formatter->setPattern('¤');
+            $formatter->setAttribute(NumberFormatter::MAX_SIGNIFICANT_DIGITS, 0);
+            $formattedPrice = $formatter->formatCurrency(0, $currency);
+            $zero = $formatter->getSymbol(NumberFormatter::ZERO_DIGIT_SYMBOL);
+            $currencySymbol = str_replace($zero, '', $formattedPrice);
 
-            return str_replace($withoutCurrency, '', $withCurrency);
+            return $currencySymbol;
         }
 
         if (isset($this->data['currencySymbols'][$currency])) {
