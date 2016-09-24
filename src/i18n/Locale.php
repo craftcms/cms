@@ -76,6 +76,26 @@ class Locale extends Object
     const ATTR_PUBLIC_RULESETS = 7;
 
     /**
+     * @var int Decimal style
+     */
+    const STYLE_DECIMAL = 1;
+
+    /**
+     * @var int Currency style
+     */
+    const STYLE_CURRENCY = 2;
+
+    /**
+     * @var int Percent style
+     */
+    const STYLE_PERCENT = 3;
+
+    /**
+     * @var int Scientific style
+     */
+    const STYLE_SCIENTIFIC = 4;
+
+    /**
      * @var int The decimal separator.
      */
     const SYMBOL_DECIMAL_SEPARATOR = 0;
@@ -711,9 +731,40 @@ class Locale extends Object
     }
 
     /**
+     * Returns a number pattern used by this locale.
+     *
+     * @param integer $style The pattern style to return.
+     *                       Accepted values: Locale::STYLE_DECIMAL, ::STYLE_CURRENCY, ::STYLE_PERCENT, ::STYLE_SCIENTIFIC
+     *
+     * @return string The pattern
+     */
+    public function getNumberPattern($style)
+    {
+        if (Craft::$app->getI18n()->getIsIntlLoaded()) {
+            $formatter = new NumberFormatter($this->id, $style);
+
+            return $formatter->getPattern();
+        }
+
+        switch ($style) {
+            case static::STYLE_DECIMAL:
+                return $this->data['numberPatterns']['decimal'];
+            case static::STYLE_CURRENCY:
+                return $this->data['numberPatterns']['currency'];
+            case static::STYLE_PERCENT:
+                return $this->data['numberPatterns']['percent'];
+            case static::STYLE_SCIENTIFIC:
+                return $this->data['numberPatterns']['scientific'];
+        }
+
+        return null;
+    }
+
+    /**
      * Returns a number symbol used by this locale.
      *
-     * @param integer $symbol The symbol to return. Values: Locale::SYMBOL_DECIMAL_SEPARATOR, ::SYMBOL_GROUPING_SEPARATOR,
+     * @param integer $symbol The symbol to return.
+     *                        Accepted values: Locale::SYMBOL_DECIMAL_SEPARATOR, ::SYMBOL_GROUPING_SEPARATOR,
      *                        ::SYMBOL_PATTERN_SEPARATOR, ::SYMBOL_PERCENT, ::SYMBOL_ZERO_DIGIT, ::SYMBOL_DIGIT, ::SYMBOL_MINUS_SIGN,
      *                        ::SYMBOL_PLUS_SIGN, ::SYMBOL_CURRENCY, ::SYMBOL_INTL_CURRENCY, ::SYMBOL_MONETARY_SEPARATOR,
      *                        ::SYMBOL_EXPONENTIAL, ::SYMBOL_PERMILL, ::SYMBOL_PAD_ESCAPE, ::SYMBOL_INFINITY, ::SYMBOL_NAN,
