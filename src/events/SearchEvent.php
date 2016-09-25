@@ -8,6 +8,7 @@
 namespace craft\app\events;
 
 use craft\app\search\SearchQuery;
+use yii\base\Event;
 
 /**
  * SearchEvent class.
@@ -15,7 +16,7 @@ use craft\app\search\SearchQuery;
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since  3.0
  */
-class SearchEvent extends \yii\base\Event
+class SearchEvent extends Event
 {
     // Properties
     // =========================================================================
