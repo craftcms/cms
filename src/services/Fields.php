@@ -66,6 +66,11 @@ class Fields extends Component
     const FIELD_INTERFACE = \craft\app\base\FieldInterface::class;
 
     /**
+     * @event FieldLayoutEvent The event that is triggered before a field layout is saved.
+     */
+    const EVENT_BEFORE_SAVE_FIELD_LAYOUT = 'beforeSaveFieldLayout';
+
+    /**
      * @event FieldLayoutEvent The event that is triggered after a field layout is saved.
      */
     const EVENT_AFTER_SAVE_FIELD_LAYOUT = 'afterSaveFieldLayout';
@@ -974,6 +979,11 @@ class Fields extends Component
      */
     public function saveLayout(FieldLayout $layout)
     {
+        // Fire a 'beforeSaveFieldLayout' event
+        $this->trigger(self::EVENT_BEFORE_SAVE_FIELD_LAYOUT, new FieldLayoutEvent([
+            'layout' => $layout
+        ]));
+
         // First save the layout
         $layoutRecord = new FieldLayoutRecord();
         $layoutRecord->type = $layout->type;
