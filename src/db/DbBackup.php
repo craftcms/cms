@@ -90,16 +90,14 @@ class DbBackup
     public function run()
     {
         // Normalize the ignored table names if there is a table prefix set.
-        if (($tablePrefix = Craft::$app->getConfig()->get('tablePrefix',
-                ConfigCategory::Db)) !== ''
-        ) {
+        if (($tablePrefix = Craft::$app->getConfig()->get('tablePrefix', ConfigCategory::Db)) !== '' ) {
             foreach ($this->_ignoreDataTables as $key => $tableName) {
                 $this->_ignoreDataTables[$key] = $tablePrefix.'_'.$tableName;
             }
         }
 
         $this->_currentVersion = 'v'.Craft::$app->version.'.'.Craft::$app->build;
-        $siteName = Io::cleanFilename(Craft::$app->getSites()->getPrimarySite()->name, true);
+        $siteName = Io::cleanFilename($this->_getFixedSiteName(), true);
         $filename = ($siteName ? $siteName.'_' : '').gmdate('ymd_His').'_'.$this->_currentVersion.'.sql';
         $this->_filePath = Craft::$app->getPath()->getDbBackupPath().'/'.StringHelper::toLowerCase($filename);
 
@@ -451,5 +449,21 @@ class DbBackup
         }
 
         return $result;
+    }
+
+    /**
+     * TODO: remove this method after the next breakpoint and just use getPrimarySite() directly.
+     *
+     * @return string
+     */
+    private function _getFixedSiteName() {
+        if (version_compare(Craft::$app->getInfo('build'), '2933', '<')) {
+            return (new Query())
+                ->select('siteName')
+                ->from('{{%info}}')
+                ->column()[0];
+        } else {
+            return Craft::$app->getSites()->getPrimarySite()->name;
+        }
     }
 }
