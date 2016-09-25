@@ -10,6 +10,7 @@ namespace craft\app\services;
 use Craft;
 use craft\app\db\Query;
 use craft\app\errors\RouteNotFoundException;
+use craft\app\events\RouteEvent;
 use craft\app\helpers\Io;
 use craft\app\helpers\Json;
 use craft\app\records\Route as RouteRecord;
@@ -25,6 +26,19 @@ use yii\base\Component;
  */
 class Routes extends Component
 {
+    // Constants
+    // =========================================================================
+
+    /**
+     * @event RouteEvent The event that is triggered before a route is saved.
+     */
+    const EVENT_BEFORE_SAVE_ROUTE = 'beforeSaveRoute';
+
+    /**
+     * @event RouteEvent The event that is triggered after a route is saved.
+     */
+    const EVENT_AFTER_SAVE_ROUTE = 'afterSaveRoute';
+
     // Public Methods
     // =========================================================================
 
@@ -106,6 +120,14 @@ class Routes extends Component
      */
     public function saveRoute($uriParts, $template, $siteId = null, $routeId = null)
     {
+        // Fire a 'beforeSaveRoute' event
+        $this->trigger(self::EVENT_BEFORE_SAVE_ROUTE, new RouteEvent([
+            'uriParts' => $uriParts,
+            'template' => $template,
+            'siteId' => $siteId,
+            'routeId' => $routeId,
+        ]));
+
         if ($routeId !== null) {
             $routeRecord = RouteRecord::findOne($routeId);
 
@@ -161,6 +183,14 @@ class Routes extends Component
         $routeRecord->uriPattern = $uriPattern;
         $routeRecord->template = $template;
         $routeRecord->save();
+
+        // Fire an 'afterSaveRoute' event
+        $this->trigger(self::EVENT_AFTER_SAVE_ROUTE, new RouteEvent([
+            'uriParts' => $uriParts,
+            'template' => $template,
+            'siteId' => $siteId,
+            'routeId' => $routeRecord->id,
+        ]));
 
         return $routeRecord;
     }
