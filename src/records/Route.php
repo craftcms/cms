@@ -16,8 +16,8 @@ use craft\app\validators\SiteIdValidator;
  *
  * @property integer $id         ID
  * @property integer $siteId     Site ID
- * @property string  $urlParts   URL parts
- * @property string  $urlPattern URL pattern
+ * @property string  $uriParts   URI parts
+ * @property string  $uriPattern URI pattern
  * @property string  $template   Template
  * @property string  $sortOrder  Sort order
  * @property Site    $site       Site
@@ -37,8 +37,8 @@ class Route extends ActiveRecord
     {
         return [
             [['siteId'], SiteIdValidator::class],
-            [['urlPattern'], 'unique'],
-            [['urlParts', 'urlPattern', 'template'], 'required'],
+            [['uriPattern'], 'unique'],
+            [['uriParts', 'uriPattern', 'template'], 'required'],
         ];
     }
 

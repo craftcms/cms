@@ -32,20 +32,20 @@ class Routes
         $routes = [];
 
         $results = (new Query())
-            ->select(['id', 'siteId', 'urlParts', 'template'])
+            ->select(['id', 'siteId', 'uriParts', 'template'])
             ->from('{{%routes}}')
             ->orderBy('sortOrder')
             ->all();
 
         foreach ($results as $result) {
-            $urlDisplayHtml = '';
-            $urlParts = Json::decode($result['urlParts']);
+            $uriDisplayHtml = '';
+            $uriParts = Json::decode($result['uriParts']);
 
-            foreach ($urlParts as $part) {
+            foreach ($uriParts as $part) {
                 if (is_string($part)) {
-                    $urlDisplayHtml .= $part;
+                    $uriDisplayHtml .= $part;
                 } else {
-                    $urlDisplayHtml .= Html::encodeParams('<span class="token" data-name="{name}" data-value="{value}"><span>{name}</span></span>',
+                    $uriDisplayHtml .= Html::encodeParams('<span class="token" data-name="{name}" data-value="{value}"><span>{name}</span></span>',
                         [
                             'name' => $part[0],
                             'value' => $part[1]
@@ -56,7 +56,7 @@ class Routes
             $routes[] = [
                 'id' => $result['id'],
                 'siteId' => $result['siteId'],
-                'urlDisplayHtml' => $urlDisplayHtml,
+                'uriDisplayHtml' => $uriDisplayHtml,
                 'template' => $result['template']
             ];
         }

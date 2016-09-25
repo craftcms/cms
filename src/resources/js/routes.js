@@ -79,7 +79,7 @@ var Route = Garnish.Base.extend(
 	id: null,
 	siteId: null,
 	$siteLabel: null,
-	$url: null,
+	$uri: null,
 	$template: null,
 	modal: null,
 
@@ -89,7 +89,7 @@ var Route = Garnish.Base.extend(
 		this.id         = this.$container.data('id');
 		this.siteId     = this.$container.data('site-id');
 		this.$siteLabel = this.$container.find('.site:first');
-		this.$url       = this.$container.find('.url:first');
+		this.$uri       = this.$container.find('.uri:first');
 		this.$template  = this.$container.find('.template:first');
 
 		this.addListener(this.$container, 'click', 'edit');
@@ -126,23 +126,23 @@ var Route = Garnish.Base.extend(
 			}
 		}
 
-		var urlHtml = '';
+		var uriHtml = '';
 
-		for (var i = 0; i < this.modal.urlInput.elements.length; i++)
+		for (var i = 0; i < this.modal.uriInput.elements.length; i++)
 		{
-			var $elem = this.modal.urlInput.elements[i];
+			var $elem = this.modal.uriInput.elements[i];
 
-			if (this.modal.urlInput.isText($elem))
+			if (this.modal.uriInput.isText($elem))
 			{
-				urlHtml += $elem.val();
+				uriHtml += $elem.val();
 			}
 			else
 			{
-				urlHtml += $elem.prop('outerHTML');
+				uriHtml += $elem.prop('outerHTML');
 			}
 		}
 
-		this.$url.html(urlHtml);
+		this.$uri.html(uriHtml);
 		this.$template.html(this.modal.$templateInput.val());
 	}
 
@@ -153,8 +153,8 @@ var RouteSettingsModal = Garnish.Modal.extend(
 {
 	route: null,
 	$heading: null,
-	$urlInput: null,
-	urlElements: null,
+	$uriInput: null,
+	uriElements: null,
 	$templateInput: null,
 	$saveBtn: null,
 	$cancelBtn: null,
@@ -186,7 +186,7 @@ var RouteSettingsModal = Garnish.Modal.extend(
 				'<div class="body">' +
 					'<div class="field">' +
 						'<div class="heading">' +
-							'<label for="url">'+Craft.t('app', 'If the URI looks like this')+':</label>' +
+							'<label for="uri">'+Craft.t('app', 'If the URI looks like this')+':</label>' +
 						'</div>';
 
 		if (Craft.isMultiSite)
@@ -197,7 +197,7 @@ var RouteSettingsModal = Garnish.Modal.extend(
 								'<td>';
 		}
 
-		containerHtml += '<div id="url" class="text url ltr"></div>';
+		containerHtml += '<div id="uri" class="text uri ltr"></div>';
 
 		if (Craft.isMultiSite)
 		{
@@ -223,7 +223,7 @@ var RouteSettingsModal = Garnish.Modal.extend(
 		}
 
 		containerHtml +=
-					'<div class="url-tokens">' +
+					'<div class="uri-tokens">' +
 						tokenHtml +
 					'</div>' +
 				'</div>' +
@@ -249,7 +249,7 @@ var RouteSettingsModal = Garnish.Modal.extend(
 		// Find the other elements
 		this.$heading       = $container.find('h1:first');
 		this.$siteInput     = $container.find('.site:first');
-		this.$urlInput      = $container.find('.url:first');
+		this.$uriInput      = $container.find('.uri:first');
 		this.$templateInput = $container.find('.template:first');
 		this.$saveBtn       = $container.find('.submit:first');
 		this.$cancelBtn     = $container.find('.cancel:first');
@@ -262,8 +262,8 @@ var RouteSettingsModal = Garnish.Modal.extend(
 			this.$deleteBtn.hide();
 		}
 
-		// Initialize the URL input
-		this.urlInput = new Garnish.MixedInput(this.$urlInput, {
+		// Initialize the uri input
+		this.uriInput = new Garnish.MixedInput(this.$uriInput, {
 			dir: 'ltr'
 		});
 
@@ -282,30 +282,30 @@ var RouteSettingsModal = Garnish.Modal.extend(
 			// Set the site
 			this.$siteInput.val(this.route.siteId);
 
-			// Set the initial URL value
-			var urlNodes = this.route.$url.prop('childNodes');
+			// Set the initial uri value
+			var uriNodes = this.route.$uri.prop('childNodes');
 
-			for (var i = 0; i < urlNodes.length; i++)
+			for (var i = 0; i < uriNodes.length; i++)
 			{
-				var node = urlNodes[i];
+				var node = uriNodes[i];
 
 				if (Garnish.isTextNode(node))
 				{
-					var text = this.urlInput.addTextElement();
+					var text = this.uriInput.addTextElement();
 					text.setVal(node.nodeValue);
 				}
 				else
 				{
-					this.addUrlVar(node);
+					this.addUriVar(node);
 				}
 			}
 
 			// Focus on the first element
 			setTimeout($.proxy(function()
 			{
-				var $firstElem = this.urlInput.elements[0];
-				this.urlInput.setFocus($firstElem);
-				this.urlInput.setCarotPos($firstElem, 0);
+				var $firstElem = this.uriInput.elements[0];
+				this.uriInput.setFocus($firstElem);
+				this.uriInput.setCarotPos($firstElem, 0);
 			}, this), 1);
 
 			// Set the initial Template value
@@ -316,7 +316,7 @@ var RouteSettingsModal = Garnish.Modal.extend(
 		{
 			setTimeout($.proxy(function()
 			{
-				this.$urlInput.focus();
+				this.$uriInput.focus();
 			}, this), 100);
 		}
 
@@ -324,10 +324,10 @@ var RouteSettingsModal = Garnish.Modal.extend(
 
 		// We must add vars on mousedown, so that text elements don't have a chance
 		// to lose focus, thus losing the carot position.
-		var $urlVars = this.$container.find('.url-tokens').children('div');
+		var $uriVars = this.$container.find('.uri-tokens').children('div');
 
-		this.addListener($urlVars, 'mousedown', function(event) {
-			this.addUrlVar(event.currentTarget);
+		this.addListener($uriVars, 'mousedown', function(event) {
+			this.addUriVar(event.currentTarget);
 		});
 
 		// Save/Cancel/Delete
@@ -336,12 +336,12 @@ var RouteSettingsModal = Garnish.Modal.extend(
 		this.addListener(this.$deleteBtn, 'click', 'deleteRoute');
 	},
 
-	addUrlVar: function(elem)
+	addUriVar: function(elem)
 	{
-		var $urlVar = $(elem).clone().attr('tabindex', '0');
-		this.urlInput.addElement($urlVar);
+		var $uriVar = $(elem).clone().attr('tabindex', '0');
+		this.uriInput.addElement($uriVar);
 
-		this.addListener($urlVar, 'keydown', function(event)
+		this.addListener($uriVar, 'keydown', function(event)
 		{
 			switch (event.keyCode)
 			{
@@ -350,7 +350,7 @@ var RouteSettingsModal = Garnish.Modal.extend(
 					// Select the previous element
 					setTimeout($.proxy(function()
 					{
-						this.urlInput.focusPreviousElement($urlVar);
+						this.uriInput.focusPreviousElement($uriVar);
 					}, this), 1);
 
 					break;
@@ -360,7 +360,7 @@ var RouteSettingsModal = Garnish.Modal.extend(
 					// Select the next element
 					setTimeout($.proxy(function()
 					{
-						this.urlInput.focusNextElement($urlVar);
+						this.uriInput.focusNextElement($uriVar);
 					}, this), 1);
 
 					break;
@@ -370,7 +370,7 @@ var RouteSettingsModal = Garnish.Modal.extend(
 					// Delete this element
 					setTimeout($.proxy(function()
 					{
-						this.urlInput.removeElement($urlVar);
+						this.uriInput.removeElement($uriVar);
 					}, this), 1);
 
 					event.preventDefault();
@@ -408,18 +408,18 @@ var RouteSettingsModal = Garnish.Modal.extend(
 			data.routeId = this.route.id;
 		}
 
-		for (var i = 0; i < this.urlInput.elements.length; i++)
+		for (var i = 0; i < this.uriInput.elements.length; i++)
 		{
-			var $elem = this.urlInput.elements[i];
+			var $elem = this.uriInput.elements[i];
 
-			if (this.urlInput.isText($elem))
+			if (this.uriInput.isText($elem))
 			{
-				data['url['+i+']'] = $elem.val();
+				data['uriParts['+i+']'] = $elem.val();
 			}
 			else
 			{
-				data['url['+i+'][0]'] = $elem.attr('data-name');
-				data['url['+i+'][1]'] = $elem.attr('data-value');
+				data['uriParts['+i+'][0]'] = $elem.attr('data-name');
+				data['uriParts['+i+'][1]'] = $elem.attr('data-value');
 			}
 		}
 
@@ -444,7 +444,7 @@ var RouteSettingsModal = Garnish.Modal.extend(
 					{
 						var routeHtml =
 							'<div class="pane route" data-id="'+response.routeId+'"'+(response.siteId ? ' data-site-id="'+response.siteId+'"' : '')+'>' +
-								'<div class="url-container">';
+								'<div class="uri-container">';
 
 						if (Craft.isMultiSite)
 						{
@@ -452,7 +452,7 @@ var RouteSettingsModal = Garnish.Modal.extend(
 						}
 
 						routeHtml +=
-									'<span class="url" dir="ltr"></span>' +
+									'<span class="uri" dir="ltr"></span>' +
 								'</div>' +
 								'<div class="template" dir="ltr"></div>' +
 							'</div>';

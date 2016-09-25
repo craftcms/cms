@@ -459,8 +459,8 @@ class Install extends Migration
         $this->createTable('{{%routes}}', [
             'id' => $this->primaryKey(),
             'siteId' => $this->integer(),
-            'urlParts' => $this->string()->notNull(),
-            'urlPattern' => $this->string()->notNull(),
+            'uriParts' => $this->string()->notNull(),
+            'uriPattern' => $this->string()->notNull(),
             'template' => $this->string(500)->notNull(),
             'sortOrder' => $this->smallInteger()->unsigned(),
             'dateCreated' => $this->dateTime()->notNull(),
