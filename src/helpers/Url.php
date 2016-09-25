@@ -377,8 +377,12 @@ class Url
      */
     public static function baseUrl()
     {
-        // Is there a current site, and does it have a base URL?
-        $currentSite = Craft::$app->getSites()->currentSite;
+        $currentSite = false;
+
+        if (Craft::$app->getIsInstalled()) {
+            // Is there a current site, and does it have a base URL?
+            $currentSite = Craft::$app->getSites()->currentSite;
+        }
 
         if ($currentSite && $currentSite->baseUrl) {
             $baseUrl = $currentSite->baseUrl;

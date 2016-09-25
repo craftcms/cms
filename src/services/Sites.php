@@ -9,6 +9,7 @@ namespace craft\app\services;
 
 use Craft;
 use craft\app\db\Query;
+use craft\app\errors\DbConnectException;
 use craft\app\errors\SiteNotFoundException;
 use craft\app\events\DeleteSiteEvent;
 use craft\app\events\ReorderSitesEvent;
@@ -833,6 +834,13 @@ class Sites extends Component
                 if (isset($e->errorInfo[0]) && $e->errorInfo[0] == '42S02') {
                     return;
                 }
+            }
+            catch (DbConnectException $e) {
+                // We couldn't connect to the database and Craft isn't installed yet, so swallow this exception, too.
+                if (!Craft::$app->getIsInstalled()) {
+                    return;
+                }
+
             }
         }
     }

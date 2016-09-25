@@ -518,7 +518,7 @@ class View extends \yii\web\View
 
         // Should we be looking for a localized version of the template?
         $request = Craft::$app->getRequest();
-        if (!$request->getIsConsoleRequest() && $request->getIsSiteRequest()) {
+        if (!$request->getIsConsoleRequest() && $request->getIsSiteRequest() && Craft::$app->getIsInstalled()) {
             $sitePath = $this->_templatesPath.'/'.Craft::$app->getSites()->currentSite->handle;
             if (Io::folderExists($sitePath)) {
                 $basePaths[] = $sitePath;
