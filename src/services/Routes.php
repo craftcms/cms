@@ -39,6 +39,16 @@ class Routes extends Component
      */
     const EVENT_AFTER_SAVE_ROUTE = 'afterSaveRoute';
 
+    /**
+     * @event RouteEvent The event that is triggered before a route is deleted.
+     */
+    const EVENT_BEFORE_DELETE_ROUTE = 'beforeDeleteRoute';
+
+    /**
+     * @event RouteEvent The event that is triggered after a route is deleted.
+     */
+    const EVENT_AFTER_DELETE_ROUTE = 'afterDeleteRoute';
+
     // Public Methods
     // =========================================================================
 
@@ -204,9 +214,35 @@ class Routes extends Component
      */
     public function deleteRouteById($routeId)
     {
+        $routeRecord = RouteRecord::findOne($routeId);
+
+        if (!$routeRecord) {
+            return true;
+        }
+
+        $uriParts = Json::decodeIfJson($routeRecord->uriParts);
+
+        // Fire a 'beforeDeleteRoute' event
+        $this->trigger(self::EVENT_BEFORE_DELETE_ROUTE, new RouteEvent([
+            'uriParts' => $uriParts,
+            'template' => $routeRecord->template,
+            'siteId' => $routeRecord->siteId,
+            'routeId' => $routeId,
+        ]));
+
+        $routeRecord->delete();
+
         Craft::$app->getDb()->createCommand()
             ->delete('{{%routes}}', ['id' => $routeId])
             ->execute();
+
+        // Fire an 'afterDeleteRoute' event
+        $this->trigger(self::EVENT_AFTER_DELETE_ROUTE, new RouteEvent([
+            'uriParts' => $uriParts,
+            'template' => $routeRecord->template,
+            'siteId' => $routeRecord->siteId,
+            'routeId' => $routeId,
+        ]));
 
         return true;
     }
