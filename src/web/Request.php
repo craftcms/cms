@@ -529,6 +529,32 @@ class Request extends \yii\web\Request
     }
 
     /**
+     * Validates and returns the named request body parameter value, or bails on the request with a 400 error if that parameter doesn’t pass validation.
+     *
+     * @param string $name The parameter name.
+     *
+     * @return mixed The parameter value
+     * @throws BadRequestHttpException if the param value doesn’t pass validation
+     * @see getBodyParam()
+     */
+    public function getValidatedBodyParam($name)
+    {
+        $value = $this->getBodyParam($name);
+
+        if ($value === null) {
+            return null;
+        }
+
+        $value = Craft::$app->getSecurity()->validateData($value);
+
+        if ($value === false) {
+            throw new BadRequestHttpException('Request contained an invalid body param');
+        }
+
+        return $value;
+    }
+
+    /**
      * @inheritdoc
      */
     public function getQueryParams()
