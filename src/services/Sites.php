@@ -801,6 +801,8 @@ class Sites extends Component
      * Loads all the sites.
      *
      * @return void
+     * @throws DbConnectException if Craft isn't installed yet
+     * @throws \yii\db\Exception if the sites table is missing
      */
     private function _loadAllSites()
     {
@@ -829,11 +831,12 @@ class Sites extends Component
             }
             catch (\yii\db\Exception $e) {
                 // TODO: Maybe MySQL specific?
-                // If the error code is 42S02, it's a missing table and Craft isn't installed yet,
-                // so we swallow the exception.
+                // If the error code is 42S02, the sites table probably doesn't exist yet
                 if (isset($e->errorInfo[0]) && $e->errorInfo[0] == '42S02') {
                     return;
                 }
+
+                throw $e;
             }
             catch (DbConnectException $e) {
                 // We couldn't connect to the database and Craft isn't installed yet, so swallow this exception, too.
@@ -841,6 +844,7 @@ class Sites extends Component
                     return;
                 }
 
+                throw $e;
             }
         }
     }
