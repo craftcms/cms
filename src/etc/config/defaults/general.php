@@ -682,6 +682,23 @@ return array(
 	'useXSendFile' => false,
 
 	/**
+	 * If set to `true`, the following request parameters will need to be hashed to ensure they weren’t tampered with:
+	 *
+	 * - all `redirect` parameters
+	 * - possibly 3rd party plugin parameters
+	 *
+	 * To hash a value from a Twig template, you can pass it through the |hash filter. For example:
+	 *
+	 * ```twig
+	 * <input type="hidden" name="redirect" value="{{ 'my-page'|hash }}">
+	 * ```
+	 *
+	 * Enabling this will prevent certain Denial of Service (DoS) attack vectors. As an added benefit, Twig will no
+	 * longer operate in Safe Mode when processing the input values.
+	 */
+	'validateUnsafeRequestParams' => false,
+
+	/**
 	 * If set, should be a private, random, cryptographically secure key that is used to generate HMAC
 	 * in the SecurityService and is used for such things as verifying that cookies haven't been tampered with.
 	 * If not set, a random one is generated for you. Ultimately saved in craft/storage/runtime/state/state.bin.

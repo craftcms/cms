@@ -265,7 +265,7 @@ abstract class BaseController extends \CController
 	 */
 	public function redirectToPostedUrl($object = null, $default = null)
 	{
-		$url = craft()->request->getPost('redirect');
+		$url = craft()->request->getValidatedPost('redirect');
 
 		if ($url === null)
 		{

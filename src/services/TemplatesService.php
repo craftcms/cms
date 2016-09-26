@@ -245,6 +245,7 @@ class TemplatesService extends BaseApplicationComponent
 	 */
 	public function render($template, $variables = array(), $safeMode = false)
 	{
+		$safeMode = $this->_useSafeMode($safeMode);
 		$twig = $this->getTwig(null, array('safe_mode' => $safeMode));
 
 		$lastRenderingTemplate = $this->_renderingTemplate;
@@ -288,6 +289,7 @@ class TemplatesService extends BaseApplicationComponent
 	 */
 	public function renderString($template, $variables = array(), $safeMode = false)
 	{
+		$safeMode = $this->_useSafeMode($safeMode);
 		$stringTemplate = new StringTemplate(md5($template), $template);
 
 		$lastRenderingTemplate = $this->_renderingTemplate;
@@ -313,6 +315,8 @@ class TemplatesService extends BaseApplicationComponent
 	 */
 	public function renderObjectTemplate($template, $object, $safeMode = false)
 	{
+		$safeMode = $this->_useSafeMode($safeMode);
+
 		// If there are no dynamic tags, just return the template
 		if (strpos($template, '{') === false)
 		{
@@ -1260,6 +1264,21 @@ class TemplatesService extends BaseApplicationComponent
 
 	// Private Methods
 	// =========================================================================
+
+	/**
+	 * Returns whether we care about Safe Mode.
+	 *
+	 * @return bool
+	 */
+	private function _useSafeMode($safeMode)
+	{
+		// If the validateUnsafeRequestParams param is set to true, Safe Mode is pointless
+		if (craft()->config->get('validateUnsafeRequestParams')) {
+			return false;
+		}
+
+		return $safeMode;
+	}
 
 	/**
 	 * Returns the Twig environment options
