@@ -77,7 +77,7 @@ class EditImage extends ElementAction
 		{
 			var \$element = \$selectedItems.find('.element');
 
-			return (\$element.hasClass('hasthumb'));
+			return Garnish.hasAttr(\$element, 'data-image');
 		},
 		activate: function(\$selectedItems)
 		{

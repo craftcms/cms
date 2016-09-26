@@ -798,55 +798,5 @@ class AssetsController extends Controller
     {
         $this->requirePermission($permissionName.':'.$volumeId);
     }
-
-    /**
-     * Return the image editor.
-     *
-     * @return Response The response object.
-     */
-    public function actionImageEditor()
-    {
-        $this->requireAjaxRequest();
-        $this->requireAdmin();
-        $assetId = Craft::$app->getRequest()->getRequiredBodyParam('assetId');
-        $image = Craft::$app->getAssets()->getAssetById($assetId);
-
-        $dimensionLimit = 800;
-
-        $height = $image->getHeight();
-        $width = $image->getWidth();
-
-        $scale = min(1, $dimensionLimit / $height, $dimensionLimit / $width);
-
-        if ($scale < 1) {
-            $url = Url::getResourceUrl(
-                'resized/'.$assetId.'/800',
-                [
-                    Craft::$app->getResources()->dateParam => $image->dateModified->getTimestamp()
-                ]
-            );
-            $width *= $scale;
-            $height *= $scale;
-        }
-        else
-        {
-            $url = $image->getUrl();
-        }
-
-        if ($image->kind == "image") {
-            $output['html'] = Craft::$app->getView()->renderTemplate('_components/tools/image_editor',
-                ['image' => $image]
-            );
-            $output['imageData'] = [
-                'height' => (int) $height,
-                'width' => (int) $width,
-                'url' => $url
-            ];
-
-            return $this->asJson($output);
-        }
-        return $this->asErrorJson(Craft::t('app',
-            'That Asset is not an image.'));
-    }
 }
 

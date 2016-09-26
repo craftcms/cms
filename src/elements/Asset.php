@@ -139,15 +139,6 @@ class Asset extends Element
 
         if (preg_match('/^folder:(\d+)$/', $source, $matches)) {
 
-            // Edit Image
-            $actions[] = Craft::$app->getElements()->createAction(
-                [
-                    'type' => EditImage::className(),
-                    'label' => Craft::t('app', 'Edit image'),
-                ]
-            );
-
-
             $folderId = $matches[1];
 
             $folder = Craft::$app->getAssets()->getFolderById($folderId);
