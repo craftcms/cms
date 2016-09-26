@@ -1,4 +1,4 @@
-/*! Craft 3.0.0 - 2016-09-20 */
+/*! Craft 3.0.0 - 2016-09-26 */
 !function(a){
 // Set all the standard Craft.* stuff
 a.extend(Craft,{navHeight:48,/**
@@ -153,7 +153,7 @@ if(a.length!=b.length)return!1;
 // Is one of them an array but the other is not?
 if(a instanceof Array!=b instanceof Array)return!1;
 // If they're actual objects (not arrays), compare the keys
-if(!(a instanceof Array||Craft.compare(Craft.getObjectKeys(a),Craft.getObjectKeys(b))))return!1;
+if(!(a instanceof Array||Craft.compare(Craft.getObjectKeys(a).sort(),Craft.getObjectKeys(b).sort())))return!1;
 // Compare each value
 for(var c in a)if(a.hasOwnProperty(c)&&!Craft.compare(a[c],b[c]))return!1;
 // All clear
