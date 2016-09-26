@@ -20,6 +20,7 @@ Craft.AssetImageEditor = Garnish.Modal.extend(
 		$straighten: null,
 		url: null,
 		assetId: null,
+		assetSize: 400,
 
 		// Filters
 		appliedFilter: null,
@@ -40,7 +41,7 @@ Craft.AssetImageEditor = Garnish.Modal.extend(
 		// Animation
 		animationInProgress: false,
 
-		init: function (url, assetId, settings) {
+		init: function (assetId, settings) {
 			this.setSettings(settings, Craft.AssetImageEditor.defaults);
 
 			// Build the modal
@@ -60,7 +61,7 @@ Craft.AssetImageEditor = Garnish.Modal.extend(
 			this.addListener(this.$cancelBtn, 'activate', $.proxy(this, 'hide'));
 			this.removeListener(this.$shade, 'click');
 
-			this.url = url;
+			this.url = Craft.getResourceUrl('imageeditor/' + assetId + '/' + this.assetSize);
 			this.assetId = assetId;
 
 			Craft.postActionRequest('assets/image-editor', $.proxy(this, 'loadEditor'));

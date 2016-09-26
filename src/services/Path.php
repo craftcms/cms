@@ -211,9 +211,22 @@ class Path extends Component
     }
 
     /**
-     * Returns the path to the craft/storage/runtime/cache/assets/ folder.
+     * Returns the path to the craft/storage/runtime/assets/imageeditor/ folder.
      *
-     * @return string The path to the craft/storage/runtime/cache/assets/ folder.
+     * @return string The path to the craft/storage/runtime/assets/imageeditor/ folder.
+     */
+    public function getImageEditorSourcesPath()
+    {
+        $path = $this->getAssetsPath().'/imageeditor';
+        Io::ensureFolderExists($path);
+
+        return $path;
+    }
+
+    /**
+     * Returns the path to the craft/storage/runtime/assets/cache/ folder.
+     *
+     * @return string The path to the craft/storage/runtime/assets/cache/ folder.
      */
     public function getAssetsCachePath()
     {

@@ -90,7 +90,7 @@ class EditImage extends ElementAction
                 }
             };
             
-            new Craft.AssetImageEditor(element.url, element.id, settings);
+            new Craft.AssetImageEditor(element.id, settings);
 		}
 	});
 })();

@@ -10,6 +10,7 @@ namespace craft\app\services;
 use Craft;
 use craft\app\cache\AppPathDependency;
 use craft\app\dates\DateTime;
+use craft\app\helpers\ElementHelper;
 use craft\app\helpers\Io;
 use craft\app\helpers\Path as PathHelper;
 use craft\app\helpers\StringHelper;
@@ -107,6 +108,72 @@ class Resources extends Component
                     array_shift($segs);
 
                     return Craft::$app->getPath()->getAssetsTempVolumePath().'/'.implode('/', $segs);
+                }
+
+                case 'imageeditor' : {
+                    if (empty($segs[1]) || empty($segs[2]) || (int) $segs[2] <= 0) {
+                        return false;
+                    }
+
+                    $assetId = $segs[1];
+                    $size = (int) $segs[2];
+
+                    $asset = Craft::$app->getAssets()->getAssetById($assetId);
+
+                    if (!$asset || !ElementHelper::isAssetWithThumb($asset)) {
+                        return false;
+                    }
+
+                    $volume = $asset->getVolume();
+
+                    $imagePath = Craft::$app->getPath()->getImageEditorSourcesPath();
+                    $assetSourcesFolder = $imagePath.'/'.$assetId;
+                    $targetSizedPath = $assetSourcesFolder.'/'.$size;
+                    $targetFilePath = $targetSizedPath.'/'.$assetId.'.'.$asset->getExtension();
+                    Io::ensureFolderExists($targetSizedPath);
+
+                    // You never know.
+                    if (Io::fileExists($targetFilePath)) {
+                        return $targetFilePath;
+                    }
+
+                    // Maybe we have larger sources available
+                    if (Io::folderExists($assetSourcesFolder)) {
+                        $subfolders = Io::getFolderContents($assetSourcesFolder, false);
+
+                        if (is_array($subfolders)) {
+                            foreach ($subfolders as $folder) {
+                                $existingSize = Io::getFilename($folder, false);
+                                $existingAsset = $folder.'/'.$assetId.'.'.$asset->getExtension();
+
+                                if ($existingSize >= $size && Io::fileExists($existingAsset)) {
+                                    Craft::$app->getImages()->loadImage($existingAsset)
+                                        ->scaleToFit($size, $size)
+                                        ->saveAs($targetFilePath);
+
+                                    return $targetFilePath;
+                                }
+                            }
+                        }
+                    }
+                    // No existing resources we could use.
+
+                    // For remote files, check if maxCachedImageSizes setting would work for us.
+                    $maxCachedSize = Craft::$app->getAssetTransforms()->getCachedCloudImageSize();
+
+                    if (!$volume::isLocal() && $maxCachedSize > $size) {
+                        // For remote sources we get a transform source, if maxCachedImageSizes is not smaller than that.
+                        $localSource = $asset->getTransformSource();
+                        Craft::$app->getImages()->loadImage($localSource)->scaleToFit($size, $size)->saveAs($targetFilePath);
+                    } else {
+                        // For local source or if cached versions are smaller or not allowed, get a copy, size it and delete afterwards
+                        $localSource = $asset->getCopyOfFile();
+                        Craft::$app->getImages()->loadImage($localSource)->scaleToFit($size, $size)->saveAs($targetFilePath);
+                        Io::deleteFile($localSource);
+                    }
+                    
+                    return $targetFilePath;
+                    break;
                 }
 
                 case 'resized': {

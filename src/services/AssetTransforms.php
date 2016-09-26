@@ -1136,6 +1136,8 @@ class AssetTransforms extends Component
                     true);
             }
         }
+
+        Io::deleteFolder(Craft::$app->getPath()->getImageEditorSourcesPath().'/'.$asset->id, true);
     }
 
     /**
