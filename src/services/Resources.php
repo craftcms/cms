@@ -137,7 +137,7 @@ class Resources extends Component
                         return $targetFilePath;
                     }
 
-                    // Maybe we have larger sources available
+                    // Maybe we have larger sources available we can use.
                     if (Io::folderExists($assetSourcesFolder)) {
                         $subfolders = Io::getFolderContents($assetSourcesFolder, false);
 
@@ -156,6 +156,7 @@ class Resources extends Component
                             }
                         }
                     }
+
                     // No existing resources we could use.
 
                     // For remote files, check if maxCachedImageSizes setting would work for us.
@@ -171,7 +172,7 @@ class Resources extends Component
                         Craft::$app->getImages()->loadImage($localSource)->scaleToFit($size, $size)->saveAs($targetFilePath);
                         Io::deleteFile($localSource);
                     }
-                    
+
                     return $targetFilePath;
                     break;
                 }
