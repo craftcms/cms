@@ -75,6 +75,16 @@ class Fields extends Component
      */
     const EVENT_AFTER_SAVE_FIELD_LAYOUT = 'afterSaveFieldLayout';
 
+    /**
+     * @event FieldLayoutEvent The event that is triggered before a field layout is deleted.
+     */
+    const EVENT_BEFORE_DELETE_FIELD_LAYOUT = 'beforeDeleteFieldLayout';
+
+    /**
+     * @event FieldLayoutEvent The event that is triggered after a field layout is deleted.
+     */
+    const EVENT_AFTER_DELETE_FIELD_LAYOUT = 'afterDeleteFieldLayout';
+
     // Properties
     // =========================================================================
 
@@ -1021,7 +1031,7 @@ class Fields extends Component
     /**
      * Deletes a field layout(s) by its ID.
      *
-     * @param integer|array $layoutId The field layout’s ID
+     * @param integer|integer[] $layoutId The field layout’s ID
      *
      * @return boolean Whether the field layout was deleted successfully
      */
@@ -1031,23 +1041,44 @@ class Fields extends Component
             return false;
         }
 
-        if (is_array($layoutId)) {
-            $layoutId = array_filter($layoutId);
-
-            if (empty($layoutId)) {
-                return false;
-            }
-
-            $affectedRows = Craft::$app->getDb()->createCommand()
-                ->delete('{{%fieldlayouts}}', ['in', 'id', $layoutId])
-                ->execute();
-        } else {
-            $affectedRows = Craft::$app->getDb()->createCommand()
-                ->delete('{{%fieldlayouts}}', ['id' => $layoutId])
-                ->execute();
+        if (!is_array($layoutId)) {
+            $layoutId = [$layoutId];
         }
 
-        return (bool)$affectedRows;
+        foreach ($layoutId as $thisLayoutId) {
+            $layout = $this->getLayoutById($thisLayoutId);
+
+            if ($layout) {
+                $this->deleteLayout($layout);
+            }
+        }
+
+        return true;
+    }
+
+    /**
+     * Deletes a field layout.
+     *
+     * @param FieldLayout $layout The field layout
+     *
+     * @return boolean Whether the field layout was deleted successfully
+     */
+    public function deleteLayout(FieldLayout $layout)
+    {
+        // Fire a 'beforeDeleteFieldLayout' event
+        $this->trigger(self::EVENT_BEFORE_DELETE_FIELD_LAYOUT, new FieldLayoutEvent([
+            'layout' => $layout
+        ]));
+
+        Craft::$app->getDb()->createCommand()
+            ->delete('{{%fieldlayouts}}', ['id' => $layout->id])
+            ->execute();
+
+        $this->trigger(self::EVENT_AFTER_DELETE_FIELD_LAYOUT, new FieldLayoutEvent([
+            'layout' => $layout
+        ]));
+
+        return true;
     }
 
     /**
