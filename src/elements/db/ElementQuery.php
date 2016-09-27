@@ -625,7 +625,7 @@ class ElementQuery extends Query implements ElementQueryInterface, Arrayable, Co
                 throw new Exception('Invalid site hadle: '.$value);
             }
 
-            $this->ownerSiteId = $site->id;
+            $this->siteId = $site->id;
         }
 
         return $this;
