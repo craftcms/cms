@@ -318,7 +318,7 @@ class Category extends Element
             return [
                 'templates/render',
                 [
-                    'template' => $categoryGroupSiteSettings->template,
+                    'template' => $categoryGroupSiteSettings[$siteId]->template,
                     'variables' => [
                         'category' => $element
                     ]
