@@ -15,6 +15,7 @@ use craft\app\errors\AssetException;
 use craft\app\errors\UploadFailedException;
 use craft\app\fields\Assets as AssetsField;
 use craft\app\helpers\Assets;
+use craft\app\helpers\ElementHelper;
 use craft\app\helpers\Image;
 use craft\app\helpers\Io;
 use craft\app\elements\Asset;
@@ -568,13 +569,34 @@ class AssetsController extends Controller
     }
 
     /**
+     * Get the image being edited.
+     */
+    public function actionEditImage()
+    {
+        $request = Craft::$app->getRequest();
+        $assetId = $request->getRequiredQueryParam('assetId');
+        $size = $request->getRequiredQueryParam('size');
+
+        $filePath = Assets::getEditorImagePath($assetId, $size);
+
+        if (!$filePath) {
+            throw new BadRequestHttpException('The Asset cannot be found');
+        }
+
+        $response = Craft::$app->getResponse();
+
+        return $response->sendFile($filePath, null, ['inline' => true]);
+
+    }
+
+    /**
      * Edit an image according to posted parameters.
      *
      * @return Response
      * @throws BadRequestHttpException if some parameters are missing.
      * @throws \Exception if something went wrong saving the Asset.
      */
-    public function actionEditImage() {
+    public function actionSaveImage() {
         $this->requireLogin();
         $this->requireAjaxRequest();
 

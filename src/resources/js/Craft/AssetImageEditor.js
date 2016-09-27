@@ -61,7 +61,7 @@ Craft.AssetImageEditor = Garnish.Modal.extend(
 			this.addListener(this.$cancelBtn, 'activate', $.proxy(this, 'hide'));
 			this.removeListener(this.$shade, 'click');
 
-			this.url = Craft.getResourceUrl('imageeditor/' + assetId + '/' + this.assetSize);
+			this.url = Craft.getActionUrl('assets/edit-image', {assetId: assetId, size: this.assetSize});
 			this.assetId = assetId;
 
 			Craft.postActionRequest('assets/image-editor', $.proxy(this, 'loadEditor'));
