@@ -134,7 +134,7 @@ class Field extends ActiveRecord
         parent::init();
 
         // Store the old handle in case it's ever requested.
-        //$this->attachEventHandler('onAfterFind', [$this, 'storeOldHandle']);
+        $this->on(self::EVENT_AFTER_FIND, [$this, 'storeOldHandle']);
     }
 
     /**
