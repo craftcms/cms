@@ -46,8 +46,6 @@ class Volumes extends Component
 
     /**
      * @event VolumeEvent The event that is triggered before an Asset volume is deleted.
-     *
-     * You may set [[VolumeEvent::isValid]] to `false` to prevent the volume from getting deleted.
      */
     const EVENT_BEFORE_DELETE_VOLUME = 'beforeDeleteVolume';
 
