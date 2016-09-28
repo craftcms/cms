@@ -10,12 +10,12 @@ namespace craft\app\base;
 use Craft;
 use craft\app\elements\db\ElementQuery;
 use craft\app\elements\db\ElementQueryInterface;
-use craft\app\events\Event;
 use craft\app\helpers\Db;
 use craft\app\helpers\Html;
 use craft\app\helpers\StringHelper;
 use Exception;
 use yii\base\ErrorHandler;
+use yii\base\ModelEvent;
 use yii\db\Schema;
 
 /**
@@ -35,26 +35,26 @@ abstract class Field extends SavableComponent implements FieldInterface
     // =========================================================================
 
     /**
-     * @event Event The event that is triggered before the field is saved
+     * @event ModelEvent The event that is triggered before the field is saved
      *
-     * You may set [[Event::isValid]] to `false` to prevent the field from getting saved.
+     * You may set [[ModelEvent::isValid]] to `false` to prevent the field from getting saved.
      */
     const EVENT_BEFORE_SAVE = 'beforeSave';
 
     /**
-     * @event Event The event that is triggered after the field is saved
+     * @event \yii\base\Event The event that is triggered after the field is saved
      */
     const EVENT_AFTER_SAVE = 'afterSave';
 
     /**
-     * @event Event The event that is triggered before the field is deleted
+     * @event ModelEvent The event that is triggered before the field is deleted
      *
-     * You may set [[Event::isValid]] to `false` to prevent the field from getting deleted.
+     * You may set [[ModelEvent::isValid]] to `false` to prevent the field from getting deleted.
      */
     const EVENT_BEFORE_DELETE = 'beforeDelete';
 
     /**
-     * @event Event The event that is triggered after the field is deleted
+     * @event \yii\base\Event The event that is triggered after the field is deleted
      */
     const EVENT_AFTER_DELETE = 'afterDelete';
 
@@ -169,7 +169,7 @@ abstract class Field extends SavableComponent implements FieldInterface
     public function beforeSave()
     {
         // Trigger a 'beforeSave' event
-        $event = new Event();
+        $event = new ModelEvent();
         $this->trigger(self::EVENT_BEFORE_SAVE, $event);
 
         return $event->isValid;
@@ -181,7 +181,7 @@ abstract class Field extends SavableComponent implements FieldInterface
     public function afterSave()
     {
         // Trigger an 'afterSave' event
-        $this->trigger(self::EVENT_AFTER_SAVE, new Event());
+        $this->trigger(self::EVENT_AFTER_SAVE);
     }
 
     /**
@@ -190,7 +190,7 @@ abstract class Field extends SavableComponent implements FieldInterface
     public function beforeDelete()
     {
         // Trigger a 'beforeDelete' event
-        $event = new Event();
+        $event = new ModelEvent();
         $this->trigger(self::EVENT_BEFORE_DELETE, $event);
 
         return $event->isValid;
@@ -202,7 +202,7 @@ abstract class Field extends SavableComponent implements FieldInterface
     public function afterDelete()
     {
         // Trigger an 'afterDelete' event
-        $this->trigger(self::EVENT_AFTER_DELETE, new Event());
+        $this->trigger(self::EVENT_AFTER_DELETE);
     }
 
     /**
