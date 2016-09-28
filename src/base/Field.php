@@ -13,6 +13,9 @@ use craft\app\elements\db\ElementQueryInterface;
 use craft\app\helpers\Db;
 use craft\app\helpers\Html;
 use craft\app\helpers\StringHelper;
+use craft\app\records\Field as FieldRecord;
+use craft\app\validators\HandleValidator;
+use craft\app\validators\UniqueValidator;
 use Exception;
 use yii\base\ErrorHandler;
 use yii\base\ModelEvent;
@@ -107,27 +110,75 @@ abstract class Field extends SavableComponent implements FieldInterface
      */
     public function rules()
     {
+        // TODO: MySQL specific
+        $maxHandleLength = 64 - strlen(Craft::$app->getContent()->fieldColumnPrefix);
+
         $rules = [
-            [['name', 'handle', 'translationMethod'], 'required'],
+            [['name'], 'string', 'max' => 255],
+            [['type'], 'string', 'max' => 150],
+            [['handle'], 'string', 'max' => $maxHandleLength],
+            [['name', 'handle', 'context', 'type', 'translationMethod'], 'required'],
+            [['groupId'], 'number', 'integerOnly' => true],
             [
-                ['groupId'],
-                'number',
-                'min' => -2147483648,
-                'max' => 2147483647,
-                'integerOnly' => true
+                ['translationMethod'],
+                'in',
+                'range' => [
+                    self::TRANSLATION_METHOD_NONE,
+                    self::TRANSLATION_METHOD_LANGUAGE,
+                    self::TRANSLATION_METHOD_SITE,
+                    self::TRANSLATION_METHOD_CUSTOM
+                ]
             ],
-            [['translationMethod'], 'in', 'range' => [self::TRANSLATION_METHOD_NONE, self::TRANSLATION_METHOD_LANGUAGE, self::TRANSLATION_METHOD_SITE, self::TRANSLATION_METHOD_CUSTOM]],
+            [
+                ['handle'],
+                HandleValidator::class,
+                'reservedWords' => [
+                    'archived',
+                    'attributeLabel',
+                    'children',
+                    'contentTable',
+                    'dateCreated',
+                    'dateUpdated',
+                    'enabled',
+                    'id',
+                    'level',
+                    'lft',
+                    'link',
+                    'enabledForSite',
+                    'name', // global set-specific
+                    'next',
+                    'next',
+                    'owner',
+                    'parents',
+                    'postDate', // entry-specific
+                    'prev',
+                    'ref',
+                    'rgt',
+                    'root',
+                    'searchScore',
+                    'siblings',
+                    'site',
+                    'slug',
+                    'sortOrder',
+                    'status',
+                    'title',
+                    'uid',
+                    'uri',
+                    'url',
+                    'username', // user-specific
+                ]
+            ],
+            [
+                ['handle'],
+                UniqueValidator::class,
+                'targetClass' => FieldRecord::class,
+                'targetAttribute' => ['handle', 'context']
+            ],
         ];
 
         // Only validate the ID if it's not a new field
         if ($this->id !== null && strncmp($this->id, 'new', 3) !== 0) {
-            $rules[] = [
-                ['id'],
-                'number',
-                'min' => -2147483648,
-                'max' => 2147483647,
-                'integerOnly' => true
-            ];
+            $rules[] = [['id'], 'number', 'integerOnly' => true];
         }
 
         if ($this->translationMethod == self::TRANSLATION_METHOD_CUSTOM) {

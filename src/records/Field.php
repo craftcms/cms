@@ -86,45 +86,6 @@ class Field extends ActiveRecord
     // =========================================================================
 
     /**
-     * @inheritdoc
-     */
-    public function rules()
-    {
-        // TODO: MySQL specific
-        $maxHandleLength = 64 - strlen(Craft::$app->getContent()->fieldColumnPrefix);
-
-        return [
-            [
-                ['handle'],
-                HandleValidator::class,
-                'reservedWords' => [
-                    'archived',
-                    'children',
-                    'dateCreated',
-                    'dateUpdated',
-                    'enabled',
-                    'id',
-                    'link',
-                    'parents',
-                    'siblings',
-                    'site',
-                    'uid',
-                    'uri',
-                    'url',
-                    'ref',
-                    'status',
-                    'title'
-                ]
-            ],
-            [['handle'], 'unique', 'targetAttribute' => ['handle', 'context']],
-            [['name', 'handle', 'context', 'type'], 'required'],
-            [['name'], 'string', 'max' => 255],
-            [['handle'], 'string', 'max' => $maxHandleLength],
-            [['type'], 'string', 'max' => 150],
-        ];
-    }
-
-    /**
      * Initializes the application component.
      *
      * @return void

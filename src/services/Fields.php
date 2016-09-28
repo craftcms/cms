@@ -682,6 +682,11 @@ class Fields extends Component
     public function saveField(FieldInterface $field, $runValidation = true)
     {
         /** @var Field $field */
+        // Set the field context if it's not set
+        if (!$field->context) {
+            $field->context = Craft::$app->getContent()->fieldContext;
+        }
+
         if ($runValidation && !$field->validate()) {
             Craft::info('Field not saved due to validation error.', __METHOD__);
 
@@ -702,8 +707,6 @@ class Fields extends Component
 
         $transaction = Craft::$app->getDb()->beginTransaction();
         try {
-            $field->context = Craft::$app->getContent()->fieldContext;
-
             $fieldRecord = $this->_getFieldRecord($field);
 
             // Create/alter the content table column
