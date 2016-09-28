@@ -659,7 +659,7 @@ class Fields extends Component
                 $fieldRecord->context = $field->context;
                 $fieldRecord->instructions = $field->instructions;
                 $fieldRecord->translationMethod = $field->translationMethod;
-                $fieldRecord->translationKeyFormat= $field->translationKeyFormat;
+                $fieldRecord->translationKeyFormat = $field->translationKeyFormat;
                 $fieldRecord->type = $field->getType();
                 $fieldRecord->settings = $field->getSettings();
 
@@ -983,12 +983,19 @@ class Fields extends Component
     /**
      * Saves a field layout.
      *
-     * @param FieldLayout $layout The field layout
+     * @param FieldLayout $layout        The field layout
+     * @param boolean     $runValidation Whether the layout should be validated
      *
      * @return boolean Whether the field layout was saved successfully
      */
-    public function saveLayout(FieldLayout $layout)
+    public function saveLayout(FieldLayout $layout, $runValidation = true)
     {
+        if ($runValidation && !$layout->validate()) {
+            Craft::info('Field layout not saved due to validation error.', __METHOD__);
+
+            return false;
+        }
+
         // Fire a 'beforeSaveFieldLayout' event
         $this->trigger(self::EVENT_BEFORE_SAVE_FIELD_LAYOUT, new FieldLayoutEvent([
             'layout' => $layout

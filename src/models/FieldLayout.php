@@ -53,15 +53,9 @@ class FieldLayout extends Model
     public function rules()
     {
         return [
-            [
-                ['id'],
-                'number',
-                'min' => -2147483648,
-                'max' => 2147483647,
-                'integerOnly' => true
-            ],
+            [['id'], 'number', 'integerOnly' => true],
             [['type'], 'string', 'max' => 150],
-            [['id', 'type'], 'safe', 'on' => 'search'],
+            [['type'], 'required'],
         ];
     }
 
