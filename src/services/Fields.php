@@ -98,6 +98,16 @@ class Fields extends Component
     const EVENT_AFTER_SAVE_FIELD = 'afterSaveField';
 
     /**
+     * @event FieldEvent The event that is triggered before a field is deleted.
+     */
+    const EVENT_BEFORE_DELETE_FIELD = 'beforeDeleteField';
+
+    /**
+     * @event FieldEvent The event that is triggered after a field is deleted.
+     */
+    const EVENT_AFTER_DELETE_FIELD = 'afterDeleteField';
+
+    /**
      * @event FieldLayoutEvent The event that is triggered before a field layout is saved.
      */
     const EVENT_BEFORE_SAVE_FIELD_LAYOUT = 'beforeSaveFieldLayout';
@@ -820,14 +830,11 @@ class Fields extends Component
      */
     public function deleteFieldById($fieldId)
     {
-        /** @var FieldRecord $fieldRecord */
-        $fieldRecord = FieldRecord::findOne($fieldId);
+        $field = $this->getFieldById($fieldId);
 
-        if (!$fieldRecord) {
+        if (!$field) {
             return false;
         }
-
-        $field = $this->createField($fieldRecord);
 
         return $this->deleteField($field);
     }
@@ -847,6 +854,11 @@ class Fields extends Component
             return false;
         }
 
+        // Fire a 'beforeDeleteField' event
+        $this->trigger(self::EVENT_BEFORE_DELETE_FIELD, new FieldEvent([
+            'field' => $field,
+        ]));
+
         $transaction = Craft::$app->getDb()->beginTransaction();
         try {
             // De we need to delete the content column?
@@ -860,26 +872,29 @@ class Fields extends Component
             }
 
             // Delete the row in fields
-            $affectedRows = Craft::$app->getDb()->createCommand()
+            Craft::$app->getDb()->createCommand()
                 ->delete('{{%fields}}', ['id' => $field->id])
                 ->execute();
 
-            if ($affectedRows) {
-                $field->afterDelete();
-            }
+            $field->afterDelete();
 
             if ($field->context === 'global') {
                 $this->_updateFieldVersion();
             }
 
             $transaction->commit();
-
-            return (bool)$affectedRows;
         } catch (\Exception $e) {
             $transaction->rollBack();
 
             throw $e;
         }
+
+        // Fire an 'afterDeleteField' event
+        $this->trigger(self::EVENT_AFTER_DELETE_FIELD, new FieldEvent([
+            'field' => $field,
+        ]));
+
+        return true;
     }
 
     // Layouts
