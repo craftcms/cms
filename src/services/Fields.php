@@ -693,11 +693,7 @@ class Fields extends Component
             return false;
         }
 
-        if (!$field->beforeSave()) {
-            return false;
-        }
-
-        $isNewField = !$field->id;
+        $isNewField = $field->getIsNew();
 
         // Fire a 'beforeSaveField' event
         $this->trigger(self::EVENT_BEFORE_SAVE_FIELD, new FieldEvent([
@@ -707,6 +703,12 @@ class Fields extends Component
 
         $transaction = Craft::$app->getDb()->beginTransaction();
         try {
+            if (!$field->beforeSave()) {
+                $transaction->rollBack();
+
+                return false;
+            }
+
             $fieldRecord = $this->_getFieldRecord($field);
 
             // Create/alter the content table column
@@ -848,10 +850,6 @@ class Fields extends Component
     public function deleteField(FieldInterface $field)
     {
         /** @var Field $field */
-        if (!$field->beforeDelete()) {
-            return false;
-        }
-
         // Fire a 'beforeDeleteField' event
         $this->trigger(self::EVENT_BEFORE_DELETE_FIELD, new FieldEvent([
             'field' => $field,
@@ -859,6 +857,12 @@ class Fields extends Component
 
         $transaction = Craft::$app->getDb()->beginTransaction();
         try {
+            if (!$field->beforeDelete()) {
+                $transaction->rollBack();
+
+                return false;
+            }
+
             // De we need to delete the content column?
             $contentTable = Craft::$app->getContent()->contentTable;
             $fieldColumnPrefix = Craft::$app->getContent()->fieldColumnPrefix;
