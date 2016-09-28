@@ -48,6 +48,16 @@ class Dashboard extends Component
      */
     const EVENT_AFTER_SAVE_WIDGET = 'afterSaveWidget';
 
+    /**
+     * @event WidgetEvent The event that is triggered before a widget is deleted.
+     */
+    const EVENT_BEFORE_DELETE_WIDGET = 'beforeDeleteWidget';
+
+    /**
+     * @event WidgetEvent The event that is triggered after a widget is deleted.
+     */
+    const EVENT_AFTER_DELETE_WIDGET = 'afterDeleteWidget';
+
     // Public Methods
     // =========================================================================
 
@@ -225,7 +235,7 @@ class Dashboard extends Component
     }
 
     /**
-     * Soft deletes a widget.
+     * Soft-deletes a widget by its ID.
      *
      * @param integer $widgetId The widget’s ID
      *
@@ -233,9 +243,56 @@ class Dashboard extends Component
      */
     public function deleteWidgetById($widgetId)
     {
-        $widgetRecord = $this->_getUserWidgetRecordById($widgetId);
-        $widgetRecord->enabled = false;
-        $widgetRecord->save();
+        $widget = $this->getWidgetById($widgetId);
+
+        if (!$widget) {
+            return false;
+        }
+
+        return $this->deleteWidget($widget);
+    }
+
+    /**
+     * Soft-deletes a widget.
+     *
+     * @param WidgetInterface $widget The widget to be deleted
+     *
+     * @return boolean Whether the widget was deleted successfully
+     * @throws \Exception if reasons
+     */
+    public function deleteWidget(WidgetInterface $widget)
+    {
+        /** @var Widget $widget */
+        // Fire a 'beforeDeleteWidget' event
+        $this->trigger(self::EVENT_BEFORE_DELETE_WIDGET, new WidgetEvent([
+            'widget' => $widget,
+        ]));
+
+        $transaction = Craft::$app->getDb()->beginTransaction();
+        try {
+            if (!$widget->beforeDelete()) {
+                $transaction->rollBack();
+
+                return false;
+            }
+
+            $widgetRecord = $this->_getUserWidgetRecordById($widget->id);
+            $widgetRecord->enabled = false;
+            $widgetRecord->save();
+
+            $widget->afterDelete();
+
+            $transaction->commit();
+        } catch (\Exception $e) {
+            $transaction->rollBack();
+
+            throw $e;
+        }
+
+        // Fire an 'afterDeleteWidget' event
+        $this->trigger(self::EVENT_AFTER_DELETE_WIDGET, new WidgetEvent([
+            'widget' => $widget,
+        ]));
 
         return true;
     }
