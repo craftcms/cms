@@ -321,6 +321,7 @@ class Volumes extends Component
      */
     public function getVolumeById($volumeId)
     {
+        // TODO: Temp volumes should not be created here!
         // Temporary volume?
         if (is_null($volumeId)) {
             return new Temp();
