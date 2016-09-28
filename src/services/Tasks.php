@@ -12,6 +12,7 @@ use craft\app\base\Task;
 use craft\app\base\TaskInterface;
 use craft\app\db\Query;
 use craft\app\errors\MissingComponentException;
+use craft\app\events\TaskEvent;
 use craft\app\helpers\Component as ComponentHelper;
 use craft\app\helpers\Header;
 use craft\app\helpers\Json;
@@ -33,6 +34,19 @@ use yii\web\Response;
  */
 class Tasks extends Component
 {
+    // Constants
+    // =========================================================================
+
+    /**
+     * @event TaskEvent The event that is triggered before a task is saved.
+     */
+    const EVENT_BEFORE_SAVE_TASK = 'beforeSaveTask';
+
+    /**
+     * @event TaskEvent The event that is triggered after a task is saved.
+     */
+    const EVENT_AFTER_SAVE_TASK = 'afterSaveTask';
+
     // Properties
     // =========================================================================
 
@@ -109,60 +123,84 @@ class Tasks extends Component
     /**
      * Saves a task.
      *
-     * @param TaskInterface $task     The task to be saved
-     * @param boolean       $validate Whether the task should be validated first
+     * @param TaskInterface $task          The task to be saved
+     * @param boolean       $runValidation Whether the task should be validated
      *
      * @return boolean Whether the task was saved successfully
      * @throws \Exception
      */
-    public function saveTask(TaskInterface $task, $validate = true)
+    public function saveTask(TaskInterface $task, $runValidation = true)
     {
         /** @var Task $task */
-        if (!$validate || $task->validate()) {
-            $transaction = Craft::$app->getDb()->beginTransaction();
-            try {
-                if ($task->getIsNew()) {
-                    $taskRecord = new TaskRecord();
-                } else {
-                    $taskRecord = $this->_getTaskRecordById($task->id);
-                }
+        if ($runValidation && !$task->validate()) {
+            Craft::info('Task not saved due to validation error.', __METHOD__);
 
-                $taskRecord->type = $task->getType();
-                $taskRecord->status = $task->status;
-                $taskRecord->description = $task->description;
-                $taskRecord->totalSteps = $task->totalSteps;
-                $taskRecord->currentStep = $task->currentStep;
-                $taskRecord->settings = $task->getSettings();
-
-                if (!$task->getIsNew()) {
-                    $taskRecord->save(false);
-                } else if (!$task->parentId) {
-                    $taskRecord->makeRoot(false);
-                } else {
-                    $parentTaskRecord = $this->_getTaskRecordById($task->parentId);
-                    $taskRecord->appendTo($parentTaskRecord, false);
-                }
-
-                if ($task->getIsNew()) {
-                    $task->id = $taskRecord->id;
-
-                    if ($task->parentId) {
-                        // We'll be needing this soon
-                        $this->_taskRecordsById[$taskRecord->id] = $taskRecord;
-                    }
-                }
-
-                $transaction->commit();
-
-                return true;
-            } catch (\Exception $e) {
-                $transaction->rollBack();
-
-                throw $e;
-            }
-        } else {
             return false;
         }
+
+        $isNewTask = $task->getIsNew();
+
+        // Fire a 'beforeSaveTask' event
+        $this->trigger(self::EVENT_BEFORE_SAVE_TASK, new TaskEvent([
+            'task' => $task,
+            'isNew' => $isNewTask,
+        ]));
+
+        $transaction = Craft::$app->getDb()->beginTransaction();
+        try {
+            if (!$task->beforeSave()) {
+                $transaction->rollBack();
+
+                return false;
+            }
+
+            if ($task->getIsNew()) {
+                $taskRecord = new TaskRecord();
+            } else {
+                $taskRecord = $this->_getTaskRecordById($task->id);
+            }
+
+            $taskRecord->type = $task->getType();
+            $taskRecord->status = $task->status;
+            $taskRecord->description = $task->description;
+            $taskRecord->totalSteps = $task->totalSteps;
+            $taskRecord->currentStep = $task->currentStep;
+            $taskRecord->settings = $task->getSettings();
+
+            if (!$task->getIsNew()) {
+                $taskRecord->save(false);
+            } else if (!$task->parentId) {
+                $taskRecord->makeRoot(false);
+            } else {
+                $parentTaskRecord = $this->_getTaskRecordById($task->parentId);
+                $taskRecord->appendTo($parentTaskRecord, false);
+            }
+
+            if ($task->getIsNew()) {
+                $task->id = $taskRecord->id;
+
+                if ($task->parentId) {
+                    // We'll be needing this soon
+                    $this->_taskRecordsById[$taskRecord->id] = $taskRecord;
+                }
+            }
+
+            $task->afterSave();
+
+            $transaction->commit();
+        } catch (\Exception $e) {
+            $transaction->rollBack();
+
+            throw $e;
+        }
+
+        // Fire an 'afterSaveTask' event
+        $this->trigger(self::EVENT_AFTER_SAVE_TASK, new TaskEvent([
+            'task' => $task,
+            'isNew' => $isNewTask,
+        ]));
+
+        return true;
     }
 
     /**
