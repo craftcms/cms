@@ -36,8 +36,6 @@ class Volumes extends Component
 
     /**
      * @event VolumeEvent The event that is triggered before an Asset volume is saved.
-     *
-     * You may set [[VolumeEvent::isValid]] to `false` to prevent the volume from getting saved.
      */
     const EVENT_BEFORE_SAVE_VOLUME = 'beforeSaveVolume';
 
@@ -356,123 +354,115 @@ class Volumes extends Component
     /**
      * Saves an asset volume.
      *
-     * @param VolumeInterface $volume   the Volume to be saved.
-     * @param boolean         $validate Whether the volume should be validate first
+     * @param VolumeInterface $volume        the Volume to be saved.
+     * @param boolean         $runValidation Whether the volume should be validated
      *
      * @return boolean Whether the field was saved successfully
      * @throws \Exception
      */
 
-    public function saveVolume(VolumeInterface $volume, $validate = true)
+    public function saveVolume(VolumeInterface $volume, $runValidation = true)
     {
-        $success = true;
-        $isNewVolume = !$volume->id;
-
         /** @var Volume $volume */
-        if (!$validate || $volume->validate()) {
-            $transaction = Craft::$app->getDb()->beginTransaction();
+        if ($runValidation && !$volume->validate()) {
+            Craft::info('Volume not saved due to validation error.', __METHOD__);
 
-            try {
-                // Fire a 'beforeSaveVolume' event
-                $event = new VolumeEvent([
-                    'volume' => $volume,
-                    'isNew' => $isNewVolume
-                ]);
-
-                $this->trigger(self::EVENT_BEFORE_SAVE_VOLUME, $event);
-
-                // Is the event giving us the go-ahead?
-                if ($event->isValid) {
-                    $volumeRecord = $this->_getVolumeRecordById($volume->id);
-
-                    $volumeRecord->name = $volume->name;
-                    $volumeRecord->handle = $volume->handle;
-                    $volumeRecord->type = $volume->getType();
-                    $volumeRecord->hasUrls = $volume->hasUrls;
-                    $volumeRecord->settings = $volume->getSettings();
-                    $volumeRecord->fieldLayoutId = $volume->fieldLayoutId;
-
-                    if ($volume->hasUrls) {
-                        $volumeRecord->url = $volume->url;
-                    } else {
-                        $volumeRecord->url = null;
-                    }
-
-                    $fields = Craft::$app->getFields();
-                    if (!$isNewVolume) {
-                        $fields->deleteLayoutById($volumeRecord->fieldLayoutId);
-                    } else {
-                        // Set the sort order
-                        $maxSortOrder = (new Query())
-                            ->select('max(sortOrder)')
-                            ->from('{{%volumes}}')
-                            ->scalar();
-
-                        $volumeRecord->sortOrder = $maxSortOrder + 1;
-                    }
-
-                    // Save the new one
-                    $fieldLayout = $volume->getFieldLayout();
-                    $fields->saveLayout($fieldLayout);
-
-                    // Update the volume record/model with the new layout ID
-                    $volume->fieldLayoutId = $fieldLayout->id;
-                    $volumeRecord->fieldLayoutId = $fieldLayout->id;
-
-                    // Save the volume
-                    $volumeRecord->save(false);
-
-                    if ($isNewVolume) {
-                        // Now that we have a volume ID, save it on the model
-                        $volume->id = $volumeRecord->id;
-                    } else {
-                        // Update the top folder's name with the volume's new name
-                        $assets = Craft::$app->getAssets();
-                        $topFolder = $assets->findFolder([
-                            'volumeId' => $volume->id,
-                            'parentId' => ':empty:'
-                        ]);
-
-                        if ($topFolder !== null && $topFolder->name != $volume->name) {
-                            $topFolder->name = $volume->name;
-                            $assets->storeFolderRecord($topFolder);
-                        }
-                    }
-
-                    $this->ensureTopFolder($volume);
-
-                    $transaction->commit();
-
-                    if ($isNewVolume && $this->_fetchedAllVolumes) {
-                        $this->_volumesById[$volume->id] = $volume;
-                    }
-
-                    if (isset($this->_viewableVolumeIds)) {
-                        if (Craft::$app->user->checkPermission('viewVolume:'.$volume->id)) {
-                            $this->_viewableVolumeIds[] = $volume->id;
-                        }
-                    }
-                } else {
-                    $success = false;
-                }
-            } catch (\Exception $e) {
-                $transaction->rollBack();
-
-                throw $e;
-            }
-
-            if ($success) {
-                // Fire an 'afterSaveVolume' event
-                $this->trigger(self::EVENT_AFTER_SAVE_VOLUME, new VolumeEvent([
-                    'volume' => $volume,
-                    'isNew' => $isNewVolume
-                ]));
-            }
-        } else {
-            $success = false;
+            return false;
         }
 
-        return $success;
+        $isNewVolume = !$volume->id;
+
+        // Fire a 'beforeSaveVolume' event
+        $this->trigger(self::EVENT_BEFORE_SAVE_VOLUME, new VolumeEvent([
+            'volume' => $volume,
+            'isNew' => $isNewVolume
+        ]));
+
+        $transaction = Craft::$app->getDb()->beginTransaction();
+        try {
+            $volumeRecord = $this->_getVolumeRecordById($volume->id);
+
+            $volumeRecord->name = $volume->name;
+            $volumeRecord->handle = $volume->handle;
+            $volumeRecord->type = $volume->getType();
+            $volumeRecord->hasUrls = $volume->hasUrls;
+            $volumeRecord->settings = $volume->getSettings();
+            $volumeRecord->fieldLayoutId = $volume->fieldLayoutId;
+
+            if ($volume->hasUrls) {
+                $volumeRecord->url = $volume->url;
+            } else {
+                $volumeRecord->url = null;
+            }
+
+            $fields = Craft::$app->getFields();
+
+            if (!$isNewVolume) {
+                $fields->deleteLayoutById($volumeRecord->fieldLayoutId);
+            } else {
+                // Set the sort order
+                $maxSortOrder = (new Query())
+                    ->select('max(sortOrder)')
+                    ->from('{{%volumes}}')
+                    ->scalar();
+
+                $volumeRecord->sortOrder = $maxSortOrder + 1;
+            }
+
+            // Save the new one
+            $fieldLayout = $volume->getFieldLayout();
+            $fields->saveLayout($fieldLayout);
+
+            // Update the volume record/model with the new layout ID
+            $volume->fieldLayoutId = $fieldLayout->id;
+            $volumeRecord->fieldLayoutId = $fieldLayout->id;
+
+            // Save the volume
+            $volumeRecord->save(false);
+
+            if ($isNewVolume) {
+                // Now that we have a volume ID, save it on the model
+                $volume->id = $volumeRecord->id;
+            } else {
+                // Update the top folder's name with the volume's new name
+                $assets = Craft::$app->getAssets();
+                $topFolder = $assets->findFolder([
+                    'volumeId' => $volume->id,
+                    'parentId' => ':empty:'
+                ]);
+
+                if ($topFolder !== null && $topFolder->name != $volume->name) {
+                    $topFolder->name = $volume->name;
+                    $assets->storeFolderRecord($topFolder);
+                }
+            }
+
+            $this->ensureTopFolder($volume);
+
+            $transaction->commit();
+        } catch (\Exception $e) {
+            $transaction->rollBack();
+
+            throw $e;
+        }
+
+        if ($isNewVolume && $this->_fetchedAllVolumes) {
+            $this->_volumesById[$volume->id] = $volume;
+        }
+
+        if (isset($this->_viewableVolumeIds)) {
+            if (Craft::$app->user->checkPermission('viewVolume:'.$volume->id)) {
+                $this->_viewableVolumeIds[] = $volume->id;
+            }
+        }
+
+        // Fire an 'afterSaveVolume' event
+        $this->trigger(self::EVENT_AFTER_SAVE_VOLUME, new VolumeEvent([
+            'volume' => $volume,
+            'isNew' => $isNewVolume
+        ]));
+
+        return true;
     }
 
     /**
@@ -569,8 +559,6 @@ class Volumes extends Component
             return false;
         }
 
-        $success = true;
-
         $dbConnection = Craft::$app->getDb();
         $transaction = $dbConnection->beginTransaction();
         try {
@@ -608,7 +596,6 @@ class Volumes extends Component
             $transaction->rollBack();
 
             throw $e;
-
         }
 
         if ($success) {
