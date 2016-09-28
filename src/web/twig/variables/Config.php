@@ -8,7 +8,7 @@
 namespace craft\app\web\twig\variables;
 
 use Craft;
-use craft\app\enums\ConfigCategory;
+use craft\app\services\Config as ConfigService;
 
 /**
  * Class Config variable.
@@ -31,7 +31,7 @@ class Config
      */
     public function __isset($name)
     {
-        return Craft::$app->getConfig()->exists($name, ConfigCategory::General);
+        return Craft::$app->getConfig()->exists($name, ConfigService::CATEGORY_GENERAL);
     }
 
     /**
@@ -45,7 +45,7 @@ class Config
     {
         Craft::$app->getDeprecator()->log('craft.config.[setting]', 'craft.config.[setting] has been deprecated. Use craft.app.config.get(\'setting\') instead.');
 
-        return Craft::$app->getConfig()->get($name, ConfigCategory::General);
+        return Craft::$app->getConfig()->get($name, ConfigService::CATEGORY_GENERAL);
     }
 
     /**

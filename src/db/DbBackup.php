@@ -8,10 +8,9 @@
 namespace craft\app\db;
 
 use Craft;
-use craft\app\enums\ConfigCategory;
-use craft\app\helpers\DateTimeHelper;
 use craft\app\helpers\Io;
 use craft\app\helpers\StringHelper;
+use craft\app\services\Config;
 use yii\base\Exception;
 
 /**
@@ -90,7 +89,7 @@ class DbBackup
     public function run()
     {
         // Normalize the ignored table names if there is a table prefix set.
-        if (($tablePrefix = Craft::$app->getConfig()->get('tablePrefix', ConfigCategory::Db)) !== '' ) {
+        if (($tablePrefix = Craft::$app->getConfig()->get('tablePrefix', Config::CATEGORY_DB)) !== '' ) {
             foreach ($this->_ignoreDataTables as $key => $tableName) {
                 $this->_ignoreDataTables[$key] = $tablePrefix.'_'.$tableName;
             }

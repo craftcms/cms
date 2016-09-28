@@ -9,7 +9,7 @@ namespace craft\app\db\mysql;
 
 use Craft;
 use craft\app\db\Connection;
-use craft\app\enums\ConfigCategory;
+use craft\app\services\Config;
 use yii\base\Exception;
 use yii\db\Expression;
 
@@ -41,14 +41,12 @@ class QueryBuilder extends \yii\db\mysql\QueryBuilder
 
         // Use the default charset
         if (strpos($options, 'DEFAULT CHARSET=') === false) {
-            $options .= ' DEFAULT CHARSET='.Craft::$app->getConfig()->get('charset',
-                    ConfigCategory::Db);
+            $options .= ' DEFAULT CHARSET='.Craft::$app->getConfig()->get('charset', Config::CATEGORY_DB);
         }
 
         // Use the default collation
         if (strpos($options, 'COLLATE=') === false) {
-            $options .= ' COLLATE='.Craft::$app->getConfig()->get('collation',
-                    ConfigCategory::Db);
+            $options .= ' COLLATE='.Craft::$app->getConfig()->get('collation', Config::CATEGORY_DB);
         }
 
         return parent::createTable($table, $columns, $options);
