@@ -555,57 +555,61 @@ class Volumes extends Component
      */
     public function deleteVolumeById($volumeId)
     {
-        if (!$volumeId) {
+        $volume = $this->getVolumeById($volumeId);
+
+        if (!$volume) {
             return false;
         }
 
-        $dbConnection = Craft::$app->getDb();
-        $transaction = $dbConnection->beginTransaction();
+        return $this->deleteVolume($volume);
+    }
+
+    /**
+     * Deletes an asset volume.
+     *
+     * @param Volume $volume The volume to delete
+     *
+     * @throws \Exception
+     * @return boolean
+     */
+    public function deleteVolume($volume)
+    {
+        // Fire a 'beforeDeleteVolume' event
+        $this->trigger(self::EVENT_BEFORE_DELETE_VOLUME, new VolumeEvent([
+            'volume' => $volume
+        ]));
+
+        $db = Craft::$app->getDb();
+        $transaction = $db->beginTransaction();
+
         try {
+            // Grab the Asset ids so we can clean the elements table.
+            $assetIds = (new Query())
+                ->select('id')
+                ->from('{{%assets}}')
+                ->where(['volumeId' => $volume->id])
+                ->column();
 
-            $volume = $this->getVolumeById($volumeId);
+            Craft::$app->getElements()->deleteElementById($assetIds);
 
-            // Fire a 'beforeDeleteVolume' event
-            $event = new VolumeEvent([
-                'volume' => $volume
-            ]);
+            // Nuke the asset volume.
+            $db->createCommand()
+                ->delete('{{%volumes}}', ['id' => $volume->id])
+                ->execute();
 
-            $this->trigger(self::EVENT_BEFORE_DELETE_VOLUME, $event);
-
-            // Is the event giving us the go-ahead?
-            if ($event->isValid) {
-                // Grab the Asset ids so we can clean the elements table.
-                $assetIds = (new Query())
-                    ->select('id')
-                    ->from('{{%assets}}')
-                    ->where(['volumeId' => $volumeId])
-                    ->column();
-
-                Craft::$app->getElements()->deleteElementById($assetIds);
-
-                // Nuke the asset volume.
-                $dbConnection->createCommand()
-                    ->delete('{{%volumes}}', ['id' => $volumeId])
-                    ->execute();
-
-                $transaction->commit();
-            } else {
-                $success = false;
-            }
+            $transaction->commit();
         } catch (\Exception $e) {
             $transaction->rollBack();
 
             throw $e;
         }
 
-        if ($success) {
-            // Fire an 'afterDeleteVolume' event
-            $this->trigger(self::EVENT_AFTER_DELETE_VOLUME, new VolumeEvent([
-                'volume' => $volume
-            ]));
-        }
+        // Fire an 'afterDeleteVolume' event
+        $this->trigger(self::EVENT_AFTER_DELETE_VOLUME, new VolumeEvent([
+            'volume' => $volume
+        ]));
 
-        return $success;
+        return true;
     }
 
     // Private Methods
