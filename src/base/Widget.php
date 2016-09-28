@@ -68,17 +68,14 @@ abstract class Widget extends SavableComponent implements WidgetInterface
      */
     public function rules()
     {
-        $rules = [];
+        $rules = [
+            [['type'], 'required'],
+            [['type'], 'string', 'max' => 150],
+        ];
 
         // Only validate the ID if it's not a new widget
         if ($this->id !== null && strncmp($this->id, 'new', 3) !== 0) {
-            $rules[] = [
-                ['id'],
-                'number',
-                'min' => -2147483648,
-                'max' => 2147483647,
-                'integerOnly' => true
-            ];
+            $rules[] = [['id'], 'number', 'integerOnly' => true];
         }
 
         return $rules;

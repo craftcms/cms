@@ -12,6 +12,7 @@ use craft\app\base\WidgetInterface;
 use craft\app\db\Query;
 use craft\app\errors\MissingComponentException;
 use craft\app\errors\WidgetNotFoundException;
+use craft\app\events\WidgetEvent;
 use craft\app\helpers\Component as ComponentHelper;
 use craft\app\records\Widget as WidgetRecord;
 use craft\app\base\Widget;
@@ -34,6 +35,19 @@ use yii\base\Exception;
  */
 class Dashboard extends Component
 {
+    // Constants
+    // =========================================================================
+
+    /**
+     * @event WidgetEvent The event that is triggered before a widget is saved.
+     */
+    const EVENT_BEFORE_SAVE_WIDGET = 'beforeSaveWidget';
+
+    /**
+     * @event WidgetEvent The event that is triggered after a widget is saved.
+     */
+    const EVENT_AFTER_SAVE_WIDGET = 'afterSaveWidget';
+
     // Public Methods
     // =========================================================================
 
@@ -144,49 +158,70 @@ class Dashboard extends Component
     /**
      * Saves a widget for the current user.
      *
-     * @param WidgetInterface $widget   The widget to be saved
-     * @param boolean         $validate Whether the widget should be validated first
+     * @param WidgetInterface $widget        The widget to be saved
+     * @param boolean         $runValidation Whether the widget should be validated
      *
      * @return boolean Whether the widget was saved successfully
      * @throws \Exception if reasons
      */
-    public function saveWidget(WidgetInterface $widget, $validate = true)
+    public function saveWidget(WidgetInterface $widget, $runValidation = true)
     {
         /** @var Widget $widget */
-        if ((!$validate || $widget->validate()) && $widget->beforeSave()) {
-            $transaction = Craft::$app->getDb()->beginTransaction();
-            try {
-                $widgetRecord = $this->_getUserWidgetRecordById($widget->id);
-                $isNewWidget = $widgetRecord->getIsNewRecord();
+        if ($runValidation && !$widget->validate()) {
+            Craft::info('Widget not saved due to validation error.', __METHOD__);
 
-                $widgetRecord->type = $widget->getType();
-                $widgetRecord->settings = $widget->getSettings();
-
-                // Enabled by default.
-                if ($isNewWidget) {
-                    $widgetRecord->enabled = true;
-                }
-
-                $widgetRecord->save(false);
-
-                // Now that we have a widget ID, save it on the model
-                if ($isNewWidget) {
-                    $widget->id = $widgetRecord->id;
-                }
-
-                $widget->afterSave();
-
-                $transaction->commit();
-
-                return true;
-            } catch (\Exception $e) {
-                $transaction->rollBack();
-
-                throw $e;
-            }
+            return false;
         }
 
-        return false;
+        $isNewWidget = $widget->getIsNew();
+
+        // Fire a 'beforeSaveWidget' event
+        $this->trigger(self::EVENT_BEFORE_SAVE_WIDGET, new WidgetEvent([
+            'widget' => $widget,
+            'isNew' => $isNewWidget,
+        ]));
+
+        $transaction = Craft::$app->getDb()->beginTransaction();
+        try {
+            if (!$widget->beforeSave()) {
+                $transaction->rollBack();
+
+                return false;
+            }
+
+            $widgetRecord = $this->_getUserWidgetRecordById($widget->id);
+
+            $widgetRecord->type = $widget->getType();
+            $widgetRecord->settings = $widget->getSettings();
+
+            // Enabled by default.
+            if ($isNewWidget) {
+                $widgetRecord->enabled = true;
+            }
+
+            $widgetRecord->save(false);
+
+            // Now that we have a widget ID, save it on the model
+            if ($isNewWidget) {
+                $widget->id = $widgetRecord->id;
+            }
+
+            $widget->afterSave();
+
+            $transaction->commit();
+        } catch (\Exception $e) {
+            $transaction->rollBack();
+
+            throw $e;
+        }
+
+        // Fire an 'afterSaveWidget' event
+        $this->trigger(self::EVENT_AFTER_SAVE_WIDGET, new WidgetEvent([
+            'widget' => $widget,
+            'isNew' => $isNewWidget,
+        ]));
+
+        return true;
     }
 
     /**
