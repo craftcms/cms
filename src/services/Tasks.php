@@ -47,6 +47,16 @@ class Tasks extends Component
      */
     const EVENT_AFTER_SAVE_TASK = 'afterSaveTask';
 
+    /**
+     * @event TaskEvent The event that is triggered before a task is deleted.
+     */
+    const EVENT_BEFORE_DELETE_TASK = 'beforeDeleteTask';
+
+    /**
+     * @event TaskEvent The event that is triggered after a task is deleted.
+     */
+    const EVENT_AFTER_DELETE_TASK = 'afterDeleteTask';
+
     // Properties
     // =========================================================================
 
@@ -617,17 +627,64 @@ class Tasks extends Component
      */
     public function deleteTaskById($taskId)
     {
-        $taskRecord = $this->_getTaskRecordById($taskId);
+        $task = $this->getTaskById($taskId);
+
+        if (!$task) {
+            return false;
+        }
+
+        return $this->deleteTask($task);
+    }
+
+    /**
+     * Deletes a task.
+     *
+     * @param TaskInterface $task The task
+     *
+     * @return boolean Whether the task was deleted successfully
+     * @throws \Exception if reasons
+     */
+    public function deleteTask(TaskInterface $task)
+    {
+        /** @var Task $task */
+        $taskRecord = $this->_getTaskRecordById($task->id);
 
         if ($taskRecord === null) {
             // Fake it
             return true;
         }
 
-        $success = $taskRecord->deleteWithChildren();
-        unset($this->_taskRecordsById[$taskId]);
+        // Fire a 'beforeDeleteTask' event
+        $this->trigger(self::EVENT_BEFORE_DELETE_TASK, new TaskEvent([
+            'task' => $task,
+        ]));
 
-        return $success;
+        $transaction = Craft::$app->getDb()->beginTransaction();
+        try {
+            if (!$task->beforeDelete()) {
+                $transaction->rollBack();
+
+                return false;
+            }
+
+            $taskRecord->deleteWithChildren();
+            unset($this->_taskRecordsById[$task->id]);
+
+            $task->afterDelete();
+
+            $transaction->commit();
+        } catch (\Exception $e) {
+            $transaction->rollBack();
+
+            throw $e;
+        }
+
+        // Fire an 'afterDeleteTask' event
+        $this->trigger(self::EVENT_AFTER_DELETE_TASK, new TaskEvent([
+            'task' => $task,
+        ]));
+
+        return true;
     }
 
     /**
