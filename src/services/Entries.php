@@ -11,7 +11,6 @@ use Craft;
 use craft\app\db\Query;
 use craft\app\errors\EntryNotFoundException;
 use craft\app\errors\SectionNotFoundException;
-use craft\app\events\EntryDeleteEvent;
 use craft\app\events\EntryEvent;
 use craft\app\helpers\DateTimeHelper;
 use craft\app\elements\Entry;
@@ -44,12 +43,12 @@ class Entries extends Component
     const EVENT_AFTER_SAVE_ENTRY = 'afterSaveEntry';
 
     /**
-     * @event EntryDeleteEvent The event that is triggered before an entry is deleted.
+     * @event EntryEvent The event that is triggered before an entry is deleted.
      */
     const EVENT_BEFORE_DELETE_ENTRY = 'beforeDeleteEntry';
 
     /**
-     * @event EntryDeleteEvent The event that is triggered after an entry is deleted.
+     * @event EntryEvent The event that is triggered after an entry is deleted.
      */
     const EVENT_AFTER_DELETE_ENTRY = 'afterDeleteEntry';
 
@@ -293,17 +292,17 @@ class Entries extends Component
             $entries = [$entries];
         }
 
-        // Fire a 'beforeDeleteEntry' event
-        $this->trigger(self::EVENT_BEFORE_DELETE_ENTRY, new EntryDeleteEvent([
-            'entries' => $entries
-        ]));
-
         $transaction = Craft::$app->getDb()->beginTransaction();
 
         try {
             $entryIds = [];
 
             foreach ($entries as $entry) {
+                // Fire a 'beforeDeleteEntry' event
+                $this->trigger(self::EVENT_BEFORE_DELETE_ENTRY, new EntryEvent([
+                    'entry' => $entry
+                ]));
+
                 $section = $entry->getSection();
 
                 if ($section->type == Section::TYPE_STRUCTURE) {
@@ -321,17 +320,18 @@ class Entries extends Component
             // Delete 'em
             Craft::$app->getElements()->deleteElementById($entryIds);
 
+            foreach ($entries as $entry) {
+                // Fire an 'afterDeleteEntry' event
+                $this->trigger(self::EVENT_AFTER_DELETE_ENTRY, new EntryEvent([
+                    'entry' => $entry
+                ]));
+            }
             $transaction->commit();
         } catch (\Exception $e) {
             $transaction->rollBack();
 
             throw $e;
         }
-
-        // Fire an 'afterDeleteEntry' event
-        $this->trigger(self::EVENT_AFTER_DELETE_ENTRY, new EntryDeleteEvent([
-            'entries' => $entries
-        ]));
 
         return true;
     }
