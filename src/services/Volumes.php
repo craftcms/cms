@@ -369,7 +369,7 @@ class Volumes extends Component
             return false;
         }
 
-        $isNewVolume = !$volume->id;
+        $isNewVolume = $volume->getIsNew();
 
         // Fire a 'beforeSaveVolume' event
         $this->trigger(self::EVENT_BEFORE_SAVE_VOLUME, new VolumeEvent([
@@ -379,6 +379,12 @@ class Volumes extends Component
 
         $transaction = Craft::$app->getDb()->beginTransaction();
         try {
+            if (!$volume->beforeSave()) {
+                $transaction->rollBack();
+
+                return false;
+            }
+
             $volumeRecord = $this->_getVolumeRecordById($volume->id);
 
             $volumeRecord->name = $volume->name;
@@ -437,6 +443,8 @@ class Volumes extends Component
             }
 
             $this->ensureTopFolder($volume);
+
+            $volume->afterSave();
 
             $transaction->commit();
         } catch (\Exception $e) {
@@ -582,6 +590,12 @@ class Volumes extends Component
         $transaction = $db->beginTransaction();
 
         try {
+            if (!$volume->beforeDelete()) {
+                $transaction->rollBack();
+
+                return false;
+            }
+
             // Grab the Asset ids so we can clean the elements table.
             $assetIds = (new Query())
                 ->select('id')
@@ -595,6 +609,8 @@ class Volumes extends Component
             $db->createCommand()
                 ->delete('{{%volumes}}', ['id' => $volume->id])
                 ->execute();
+
+            $volume->afterDelete();
 
             $transaction->commit();
         } catch (\Exception $e) {
