@@ -13,15 +13,10 @@ namespace craft\app\events;
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since  3.0
  */
-class DeleteSiteEvent extends Event
+class DeleteSiteEvent extends SiteEvent
 {
     // Properties
     // =========================================================================
-
-    /**
-     * @var integer The site ID to be deleted
-     */
-    public $siteId;
 
     /**
      * @var integer|null The site ID that should take over the deleted site’s contents
