@@ -24,7 +24,7 @@ use craft\app\elements\Tag;
 use craft\app\elements\User;
 use craft\app\errors\ElementNotFoundException;
 use craft\app\errors\MissingComponentException;
-use craft\app\events\ElementsDeleteEvent;
+use craft\app\events\DeleteElementsEvent;
 use craft\app\events\ElementEvent;
 use craft\app\events\MergeElementsEvent;
 use craft\app\helpers\ArrayHelper;
@@ -69,7 +69,7 @@ class Elements extends Component
     const EVENT_AFTER_MERGE_ELEMENTS = 'afterMergeElements';
 
     /**
-     * @event ElementsDeleteEvent The event that is triggered before one or more elements are deleted.
+     * @event DeleteElementsEvent The event that is triggered before one or more elements are deleted.
      */
     const EVENT_BEFORE_DELETE_ELEMENTS = 'beforeDeleteElements';
 
@@ -906,7 +906,7 @@ class Elements extends Component
         try {
             // Fire a 'beforeDeleteElements' event
             $this->trigger(self::EVENT_BEFORE_DELETE_ELEMENTS,
-                new ElementsDeleteEvent([
+                new DeleteElementsEvent([
                     'elementIds' => $elementIds
                 ]));
 
