@@ -78,6 +78,16 @@ class Fields extends Component
     const EVENT_AFTER_SAVE_FIELD_GROUP = 'afterSaveFieldGroup';
 
     /**
+     * @event FieldGroupEvent The event that is triggered before a field group is deleted.
+     */
+    const EVENT_BEFORE_DELETE_FIELD_GROUP = 'beforeDeleteFieldGroup';
+
+    /**
+     * @event FieldGroupEvent The event that is triggered after a field group is deleted.
+     */
+    const EVENT_AFTER_DELETE_FIELD_GROUP = 'afterDeleteFieldGroup';
+
+    /**
      * @event FieldEvent The event that is triggered before a field is saved.
      */
     const EVENT_BEFORE_SAVE_FIELD = 'beforeSaveField';
@@ -287,9 +297,27 @@ class Fields extends Component
      */
     public function deleteGroupById($groupId)
     {
+        $group = $this->getGroupById($groupId);
+
+        if (!$group) {
+            return false;
+        }
+
+        return $this->deleteGroup($group);
+    }
+
+    /**
+     * Deletes a field group.
+     *
+     * @param FieldGroup $group The field group
+     *
+     * @return boolean Whether the field group was deleted successfully
+     */
+    public function deleteGroup(FieldGroup $group)
+    {
         /** @var FieldGroupRecord $groupRecord */
         $groupRecord = FieldGroupRecord::find()
-            ->where(['id' => $groupId])
+            ->where(['id' => $group->id])
             ->with('fields')
             ->one();
 
@@ -297,19 +325,33 @@ class Fields extends Component
             return false;
         }
 
+        // Fire a 'beforeDeleteFieldGroup' event
+        $this->trigger(self::EVENT_BEFORE_DELETE_FIELD_GROUP, new FieldGroupEvent([
+            'group' => $group
+        ]));
+
         // Manually delete the fields (rather than relying on cascade deletes) so we have a chance to delete the
         // content columns
-        /** @var FieldRecord $fieldRecord */
-        foreach ($groupRecord->getFields()->all() as $fieldRecord) {
-            $field = $this->createField($fieldRecord);
+        /** @var Field[] $fields */
+        $fields = $this->getFieldsByGroupId($group->id);
+
+        foreach ($fields as $field) {
             $this->deleteField($field);
         }
 
-        $affectedRows = Craft::$app->getDb()->createCommand()
-            ->delete('{{%fieldgroups}}', ['id' => $groupId])
+        Craft::$app->getDb()->createCommand()
+            ->delete('{{%fieldgroups}}', ['id' => $group->id])
             ->execute();
 
-        return (bool)$affectedRows;
+        // Delete our cache of it
+        unset($this->_groupsById[$group->id]);
+
+        // Fire an 'afterDeleteFieldGroup' event
+        $this->trigger(self::EVENT_AFTER_DELETE_FIELD_GROUP, new FieldGroupEvent([
+            'group' => $group
+        ]));
+
+        return true;
     }
 
     // Fields
