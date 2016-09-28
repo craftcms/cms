@@ -8,8 +8,8 @@
 namespace craft\app\base;
 
 use Craft;
-use craft\app\events\Event;
 use craft\app\helpers\Url;
+use yii\base\ModelEvent;
 
 /**
  * Widget is the base class for classes representing dashboard widgets in terms of objects.
@@ -28,14 +28,14 @@ abstract class Widget extends SavableComponent implements WidgetInterface
     // =========================================================================
 
     /**
-     * @event Event The event that is triggered before the widget is saved
+     * @event ModelEvent The event that is triggered before the widget is saved
      *
-     * You may set [[Event::isValid]] to `false` to prevent the widget from getting saved.
+     * You may set [[ModelEvent::isValid]] to `false` to prevent the widget from getting saved.
      */
     const EVENT_BEFORE_SAVE = 'beforeSave';
 
     /**
-     * @event Event The event that is triggered after the widget is saved
+     * @event \yii\base\Event The event that is triggered after the widget is saved
      */
     const EVENT_AFTER_SAVE = 'afterSave';
 
@@ -90,7 +90,7 @@ abstract class Widget extends SavableComponent implements WidgetInterface
     public function beforeSave()
     {
         // Trigger a 'beforeSave' event
-        $event = new Event();
+        $event = new ModelEvent();
         $this->trigger(self::EVENT_BEFORE_SAVE, $event);
 
         return $event->isValid;
@@ -102,7 +102,7 @@ abstract class Widget extends SavableComponent implements WidgetInterface
     public function afterSave()
     {
         // Trigger an 'afterSave' event
-        $this->trigger(self::EVENT_AFTER_SAVE, new Event());
+        $this->trigger(self::EVENT_AFTER_SAVE);
     }
 
     /**
