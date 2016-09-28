@@ -505,15 +505,9 @@ class Sites extends Component
     public function reorderSites($siteIds)
     {
         // Fire a 'beforeSaveSite' event
-        $event = new ReorderSitesEvent([
+        $this->trigger(self::EVENT_BEFORE_REORDER_SITES, new ReorderSitesEvent([
             'siteIds' => $siteIds,
-        ]);
-
-        $this->trigger(self::EVENT_BEFORE_REORDER_SITES, $event);
-
-        if (!$event->isValid) {
-            return false;
-        }
+        ]));
 
         $this->_loadAllSites();
 
