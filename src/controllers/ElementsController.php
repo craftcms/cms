@@ -233,8 +233,8 @@ class ElementsController extends BaseElementsController
         // Make sure it's a valid element type
         // TODO: should probably move the code inside try{} to a helper method
         try {
-            if (!is_subclass_of($elementType, Elements::ELEMENT_INTERFACE)) {
-                throw new InvalidTypeException($elementType, Elements::ELEMENT_INTERFACE);
+            if (!is_subclass_of($elementType, ElementInterface::class)) {
+                throw new InvalidTypeException($elementType, ElementInterface::class);
             }
         } catch (InvalidTypeException $e) {
             throw new BadRequestHttpException($e->getMessage());

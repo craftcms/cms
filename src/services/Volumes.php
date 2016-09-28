@@ -35,11 +35,6 @@ class Volumes extends Component
     // =========================================================================
 
     /**
-     * @var string The field interface name
-     */
-    const VOLUME_INTERFACE = \craft\app\base\VolumeInterface::class;
-
-    /**
      * @event VolumeEvent The event that is triggered before an Asset volume is saved.
      *
      * You may set [[VolumeEvent::isValid]] to `false` to prevent the volume from getting saved.
@@ -523,7 +518,7 @@ class Volumes extends Component
         }
 
         try {
-            return ComponentHelper::createComponent($config, static::VOLUME_INTERFACE);
+            return ComponentHelper::createComponent($config, VolumeInterface::class);
         } catch (MissingComponentException $e) {
             $config['errorMessage'] = $e->getMessage();
 

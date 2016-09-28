@@ -54,16 +54,6 @@ class Elements extends Component
     // =========================================================================
 
     /**
-     * @var string The element interface name
-     */
-    const ELEMENT_INTERFACE = \craft\app\base\ElementInterface::class;
-
-    /**
-     * @var string The element action interface name
-     */
-    const ACTION_INTERFACE = \craft\app\base\ElementActionInterface::class;
-
-    /**
      * @event MergeElementsEvent The event that is triggered after two elements are merged together.
      */
     const EVENT_AFTER_MERGE_ELEMENTS = 'afterMergeElements';
@@ -122,7 +112,7 @@ class Elements extends Component
         }
 
         try {
-            return ComponentHelper::createComponent($config, self::ELEMENT_INTERFACE);
+            return ComponentHelper::createComponent($config, ElementInterface::class);
         } catch (MissingComponentException $e) {
             $config['errorMessage'] = $e->getMessage();
 
@@ -1012,7 +1002,7 @@ class Elements extends Component
      */
     public function createAction($config)
     {
-        return ComponentHelper::createComponent($config, self::ACTION_INTERFACE);
+        return ComponentHelper::createComponent($config, ElementActionInterface::class);
     }
 
     // Misc

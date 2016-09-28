@@ -63,11 +63,6 @@ class Fields extends Component
     // =========================================================================
 
     /**
-     * @var string The field interface name
-     */
-    const FIELD_INTERFACE = \craft\app\base\FieldInterface::class;
-
-    /**
      * @event FieldGroupEvent The event that is triggered before a field group is saved.
      */
     const EVENT_BEFORE_SAVE_FIELD_GROUP = 'beforeSaveFieldGroup';
@@ -434,7 +429,7 @@ class Fields extends Component
         }
 
         try {
-            return ComponentHelper::createComponent($config, self::FIELD_INTERFACE);
+            return ComponentHelper::createComponent($config, FieldInterface::class);
         } catch (MissingComponentException $e) {
             $config['errorMessage'] = $e->getMessage();
 

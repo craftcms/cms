@@ -34,14 +34,6 @@ use yii\base\Exception;
  */
 class Dashboard extends Component
 {
-    // Constants
-    // =========================================================================
-
-    /**
-     * @var string The widget interface name
-     */
-    const WIDGET_INTERFACE = \craft\app\base\WidgetInterface::class;
-
     // Public Methods
     // =========================================================================
 
@@ -81,7 +73,7 @@ class Dashboard extends Component
         }
 
         try {
-            return ComponentHelper::createComponent($config, self::WIDGET_INTERFACE);
+            return ComponentHelper::createComponent($config, WidgetInterface::class);
         } catch (MissingComponentException $e) {
             $config['errorMessage'] = $e->getMessage();
 

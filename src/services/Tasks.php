@@ -33,14 +33,6 @@ use yii\web\Response;
  */
 class Tasks extends Component
 {
-    // Constants
-    // =========================================================================
-
-    /**
-     * @var string The task interface name
-     */
-    const TASK_INTERFACE = \craft\app\base\TaskInterface::class;
-
     // Properties
     // =========================================================================
 
@@ -106,7 +98,7 @@ class Tasks extends Component
         }
 
         try {
-            return ComponentHelper::createComponent($config, self::TASK_INTERFACE);
+            return ComponentHelper::createComponent($config, TaskInterface::class);
         } catch (MissingComponentException $e) {
             $config['errorMessage'] = $e->getMessage();
 
