@@ -15,6 +15,7 @@ use craft\app\db\Query;
 use craft\app\errors\FieldGroupNotFoundException;
 use craft\app\errors\FieldNotFoundException;
 use craft\app\errors\MissingComponentException;
+use craft\app\events\FieldGroupEvent;
 use craft\app\events\FieldLayoutEvent;
 use craft\app\fields\Assets as AssetsField;
 use craft\app\fields\Categories as CategoriesField;
@@ -64,6 +65,16 @@ class Fields extends Component
      * @var string The field interface name
      */
     const FIELD_INTERFACE = \craft\app\base\FieldInterface::class;
+
+    /**
+     * @event FieldGroupEvent The event that is triggered before a field group is saved.
+     */
+    const EVENT_BEFORE_SAVE_FIELD_GROUP = 'beforeSaveFieldGroup';
+
+    /**
+     * @event FieldGroupEvent The event that is triggered after a field group is saved.
+     */
+    const EVENT_AFTER_SAVE_FIELD_GROUP = 'afterSaveFieldGroup';
 
     /**
      * @event FieldLayoutEvent The event that is triggered before a field layout is saved.
@@ -217,29 +228,39 @@ class Fields extends Component
     /**
      * Saves a field group.
      *
-     * @param FieldGroup $group The field group to be saved
+     * @param FieldGroup $group         The field group to be saved
+     * @param boolean    $runValidation Whether the group should be validated
      *
      * @return boolean Whether the field group was saved successfully
      */
-    public function saveGroup(FieldGroup $group)
+    public function saveGroup(FieldGroup $group, $runValidation = true)
     {
-        $groupRecord = $this->_getGroupRecord($group);
-        $groupRecord->name = $group->name;
+        if ($runValidation && !$group->validate()) {
+            Craft::info('Field group not saved due to validation error.', __METHOD__);
 
-        if ($groupRecord->validate()) {
-            $groupRecord->save(false);
-
-            // Now that we have an ID, save it on the model & models
-            if (!$group->id) {
-                $group->id = $groupRecord->id;
-            }
-
-            return true;
+            return false;
         }
 
-        $group->addErrors($groupRecord->getErrors());
+        // Fire a 'beforeSaveFieldLayout' event
+        $this->trigger(self::EVENT_BEFORE_SAVE_FIELD_GROUP, new FieldGroupEvent([
+            'group' => $group
+        ]));
 
-        return false;
+        $groupRecord = $this->_getGroupRecord($group);
+        $groupRecord->name = $group->name;
+        $groupRecord->save(false);
+
+        // Now that we have an ID, save it on the model & models
+        if (!$group->id) {
+            $group->id = $groupRecord->id;
+        }
+
+        // Fire an 'afterSaveFieldLayout' event
+        $this->trigger(self::EVENT_AFTER_SAVE_FIELD_GROUP, new FieldGroupEvent([
+            'group' => $group
+        ]));
+
+        return true;
     }
 
     /**
