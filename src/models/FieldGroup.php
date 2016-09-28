@@ -8,6 +8,7 @@
 namespace craft\app\models;
 
 use Craft;
+use craft\app\base\FieldInterface;
 use craft\app\base\Model;
 use craft\app\records\FieldGroup as FieldGroupRecord;
 use craft\app\validators\UniqueValidator;
@@ -62,7 +63,7 @@ class FieldGroup extends Model
     /**
      * Returns the group's fields.
      *
-     * @return array
+     * @return FieldInterface[]
      */
     public function getFields()
     {
