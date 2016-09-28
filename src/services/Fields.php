@@ -241,9 +241,12 @@ class Fields extends Component
             return false;
         }
 
+        $isNewGroup = !$group->id;
+
         // Fire a 'beforeSaveFieldLayout' event
         $this->trigger(self::EVENT_BEFORE_SAVE_FIELD_GROUP, new FieldGroupEvent([
-            'group' => $group
+            'group' => $group,
+            'isNew' => $isNewGroup,
         ]));
 
         $groupRecord = $this->_getGroupRecord($group);
@@ -251,13 +254,14 @@ class Fields extends Component
         $groupRecord->save(false);
 
         // Now that we have an ID, save it on the model & models
-        if (!$group->id) {
+        if ($isNewGroup) {
             $group->id = $groupRecord->id;
         }
 
         // Fire an 'afterSaveFieldLayout' event
         $this->trigger(self::EVENT_AFTER_SAVE_FIELD_GROUP, new FieldGroupEvent([
-            'group' => $group
+            'group' => $group,
+            'isNew' => $isNewGroup,
         ]));
 
         return true;
@@ -1017,16 +1021,22 @@ class Fields extends Component
             return false;
         }
 
+        $isNewLayout = !$layout->id;
+
         // Fire a 'beforeSaveFieldLayout' event
         $this->trigger(self::EVENT_BEFORE_SAVE_FIELD_LAYOUT, new FieldLayoutEvent([
-            'layout' => $layout
+            'layout' => $layout,
+            'isNew' => $isNewLayout,
         ]));
 
         // First save the layout
         $layoutRecord = new FieldLayoutRecord();
         $layoutRecord->type = $layout->type;
         $layoutRecord->save(false);
-        $layout->id = $layoutRecord->id;
+
+        if ($isNewLayout) {
+            $layout->id = $layoutRecord->id;
+        }
 
         foreach ($layout->getTabs() as $tab) {
             $tabRecord = new FieldLayoutTabRecord();
@@ -1050,7 +1060,8 @@ class Fields extends Component
 
         // Fire an 'afterSaveFieldLayout' event
         $this->trigger(self::EVENT_AFTER_SAVE_FIELD_LAYOUT, new FieldLayoutEvent([
-            'layout' => $layout
+            'layout' => $layout,
+            'isNew' => $isNewLayout,
         ]));
 
         return true;
