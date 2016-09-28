@@ -31,6 +31,34 @@ interface SavableComponentInterface extends ComponentInterface
     // =========================================================================
 
     /**
+     * Performs any actions before a component is saved.
+     *
+     * @return boolean Whether the component should be saved
+     */
+    public function beforeSave();
+
+    /**
+     * Performs any actions after a component is saved.
+     *
+     * @return void
+     */
+    public function afterSave();
+
+    /**
+     * Performs any actions before a component is deleted.
+     *
+     * @return boolean Whether the component should be deleted
+     */
+    public function beforeDelete();
+
+    /**
+     * Performs any actions after a component is deleted.
+     *
+     * @return void
+     */
+    public function afterDelete();
+
+    /**
      * Returns whether the component is new (unsaved).
      *
      * @return boolean Whether the component is new

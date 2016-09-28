@@ -18,7 +18,6 @@ use craft\app\validators\HandleValidator;
 use craft\app\validators\UniqueValidator;
 use Exception;
 use yii\base\ErrorHandler;
-use yii\base\ModelEvent;
 use yii\db\Schema;
 
 /**
@@ -36,30 +35,6 @@ abstract class Field extends SavableComponent implements FieldInterface
 
     // Constants
     // =========================================================================
-
-    /**
-     * @event ModelEvent The event that is triggered before the field is saved
-     *
-     * You may set [[ModelEvent::isValid]] to `false` to prevent the field from getting saved.
-     */
-    const EVENT_BEFORE_SAVE = 'beforeSave';
-
-    /**
-     * @event \yii\base\Event The event that is triggered after the field is saved
-     */
-    const EVENT_AFTER_SAVE = 'afterSave';
-
-    /**
-     * @event ModelEvent The event that is triggered before the field is deleted
-     *
-     * You may set [[ModelEvent::isValid]] to `false` to prevent the field from getting deleted.
-     */
-    const EVENT_BEFORE_DELETE = 'beforeDelete';
-
-    /**
-     * @event \yii\base\Event The event that is triggered after the field is deleted
-     */
-    const EVENT_AFTER_DELETE = 'afterDelete';
 
     const TRANSLATION_METHOD_NONE = 'none';
     const TRANSLATION_METHOD_LANGUAGE = 'language';
@@ -212,48 +187,6 @@ abstract class Field extends SavableComponent implements FieldInterface
             default:
                 return Craft::$app->getView()->renderObjectTemplate($this->translationKeyFormat, $element);
         }
-    }
-
-    /**
-     * @inheritdoc
-     */
-    public function beforeSave()
-    {
-        // Trigger a 'beforeSave' event
-        $event = new ModelEvent();
-        $this->trigger(self::EVENT_BEFORE_SAVE, $event);
-
-        return $event->isValid;
-    }
-
-    /**
-     * @inheritdoc
-     */
-    public function afterSave()
-    {
-        // Trigger an 'afterSave' event
-        $this->trigger(self::EVENT_AFTER_SAVE);
-    }
-
-    /**
-     * @inheritdoc
-     */
-    public function beforeDelete()
-    {
-        // Trigger a 'beforeDelete' event
-        $event = new ModelEvent();
-        $this->trigger(self::EVENT_BEFORE_DELETE, $event);
-
-        return $event->isValid;
-    }
-
-    /**
-     * @inheritdoc
-     */
-    public function afterDelete()
-    {
-        // Trigger an 'afterDelete' event
-        $this->trigger(self::EVENT_AFTER_DELETE);
     }
 
     /**

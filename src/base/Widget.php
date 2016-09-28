@@ -87,27 +87,6 @@ abstract class Widget extends SavableComponent implements WidgetInterface
     /**
      * @inheritdoc
      */
-    public function beforeSave()
-    {
-        // Trigger a 'beforeSave' event
-        $event = new ModelEvent();
-        $this->trigger(self::EVENT_BEFORE_SAVE, $event);
-
-        return $event->isValid;
-    }
-
-    /**
-     * @inheritdoc
-     */
-    public function afterSave()
-    {
-        // Trigger an 'afterSave' event
-        $this->trigger(self::EVENT_AFTER_SAVE);
-    }
-
-    /**
-     * @inheritdoc
-     */
     public function getTitle()
     {
         // Default to the widget's display name
