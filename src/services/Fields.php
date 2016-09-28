@@ -688,7 +688,7 @@ class Fields extends Component
     {
         /** @var Field $field */
         if ($runValidation && !$field->validate()) {
-            Craft::info('Field layout not saved due to validation error.', __METHOD__);
+            Craft::info('Field not saved due to validation error.', __METHOD__);
 
             return false;
         }
