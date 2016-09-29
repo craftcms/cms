@@ -56,4 +56,10 @@ return array(
 	 * specified, then 'server' and 'port' settings are ignored.
 	 */
 	'unixSocket' => '',
+
+	/**
+	 * An array of SQL statements that should be executed right after the database
+	 * connection is established.
+	 */
+	'initSQLs' => array(),
 );
