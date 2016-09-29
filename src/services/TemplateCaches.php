@@ -169,7 +169,7 @@ class TemplateCaches extends Component
 
         // Is this the first time we've started caching?
         if ($this->_cachedQueries === null) {
-            Event::on(ElementQuery::className(), ElementQuery::EVENT_AFTER_PREPARE, [
+            Event::on(ElementQuery::class, ElementQuery::EVENT_AFTER_PREPARE, [
                 $this,
                 'includeElementQueryInTemplateCaches'
             ]);
@@ -473,7 +473,7 @@ class TemplateCaches extends Component
         if ($deleteQueryCaches && Craft::$app->getConfig()->get('cacheElementQueries')) {
             // If there are any pending DeleteStaleTemplateCaches tasks, just append this element to it
             /** @var DeleteStaleTemplateCaches $task */
-            $task = Craft::$app->getTasks()->getNextPendingTask(DeleteStaleTemplateCaches::className());
+            $task = Craft::$app->getTasks()->getNextPendingTask(DeleteStaleTemplateCaches::class);
 
             if ($task) {
                 if (!is_array($task->elementId)) {
@@ -493,7 +493,7 @@ class TemplateCaches extends Component
                 Craft::$app->getTasks()->saveTask($task, false);
             } else {
                 Craft::$app->getTasks()->queueTask([
-                    'type' => DeleteStaleTemplateCaches::className(),
+                    'type' => DeleteStaleTemplateCaches::class,
                     'elementId' => $elementId
                 ]);
             }

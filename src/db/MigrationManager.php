@@ -93,7 +93,7 @@ class MigrationManager extends Component
             $this->migrationPath = $migrationPath;
         }
 
-        $this->db = Instance::ensure($this->db, Connection::className());
+        $this->db = Instance::ensure($this->db, Connection::class);
     }
 
     /**
@@ -236,7 +236,7 @@ class MigrationManager extends Component
         }
 
         /** @var \yii\db\Migration $migration */
-        $migration = Instance::ensure($migration, 'yii\db\MigrationInterface');
+        $migration = Instance::ensure($migration, \yii\db\MigrationInterface::class);
 
         Craft::info("Applying $migrationName");
 
@@ -286,7 +286,7 @@ class MigrationManager extends Component
         }
 
         /** @var \yii\db\Migration $migration */
-        $migration = Instance::ensure($migration, 'yii\db\MigrationInterface');
+        $migration = Instance::ensure($migration, \yii\db\MigrationInterface::class);
 
         Craft::info("Reverting $migrationName");
 

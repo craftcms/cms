@@ -53,7 +53,7 @@ class Component
             throw new MissingComponentException("Unable to find component class '$class'.");
         }
 
-        if (!is_subclass_of($class, 'craft\app\base\ComponentInterface')) {
+        if (!is_subclass_of($class, \craft\app\base\ComponentInterface::class)) {
             throw new InvalidConfigException("Component class '$class' does not implement ComponentInterface.");
         }
 
@@ -62,7 +62,7 @@ class Component
         }
 
         // Expand the settings and merge with the rest of the config
-        if (is_subclass_of($class, 'craft\app\base\SavableComponentInterface') && !empty($config['settings'])) {
+        if (is_subclass_of($class, \craft\app\base\SavableComponentInterface::class) && !empty($config['settings'])) {
             $settings = $config['settings'];
             unset($config['settings']);
 

@@ -11,8 +11,8 @@ use Craft;
 use craft\app\base\Model;
 use craft\app\behaviors\FieldLayoutTrait;
 use craft\app\records\CategoryGroup as CategoryGroupRecord;
-use craft\app\validators\Handle;
-use craft\app\validators\Unique;
+use craft\app\validators\HandleValidator;
+use craft\app\validators\UniqueValidator;
 
 /**
  * CategoryGroup model.
@@ -77,8 +77,8 @@ class CategoryGroup extends Model
     {
         return [
             'fieldLayout' => [
-                'class' => 'craft\app\behaviors\FieldLayoutBehavior',
-                'elementType' => 'craft\app\elements\Category'
+                'class' => \craft\app\behaviors\FieldLayoutBehavior::class,
+                'elementType' => \craft\app\elements\Category::class
             ],
         ];
     }
@@ -90,8 +90,8 @@ class CategoryGroup extends Model
     {
         return [
             [['id', 'structureId', 'fieldLayoutId', 'maxLevels'], 'number', 'integerOnly' => true],
-            [['handle'], Handle::className(), 'reservedWords' => ['id', 'dateCreated', 'dateUpdated', 'uid', 'title']],
-            [['name', 'handle'], Unique::className(), 'targetClass' => CategoryGroupRecord::className()],
+            [['handle'], HandleValidator::class, 'reservedWords' => ['id', 'dateCreated', 'dateUpdated', 'uid', 'title']],
+            [['name', 'handle'], UniqueValidator::class, 'targetClass' => CategoryGroupRecord::class],
             [['name', 'handle', 'siteSettings'], 'required'],
             [['name', 'handle'], 'string', 'max' => 255],
         ];

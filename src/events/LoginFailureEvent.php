@@ -7,22 +7,27 @@
 
 namespace craft\app\events;
 
-use craft\app\base\VolumeInterface;
+use craft\app\elements\User;
 
 /**
- * Delete volume event class.
+ * LoginFailureEvent class.
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since  3.0
  */
-class DeleteVolumeEvent extends Event
+class LoginFailureEvent extends \yii\base\Event
 {
     // Properties
     // =========================================================================
 
     /**
-     * @var VolumeInterface The asset Volume associated with the event.
+     * @var string|null The authentication error key, if the reason is known.
+     * @see User
      */
-    public $volume;
+    public $authError;
 
+    /**
+     * @var User|null The user that the login was attempted for, if there was a username/email match
+     */
+    public $user;
 }

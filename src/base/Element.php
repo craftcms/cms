@@ -24,8 +24,8 @@ use craft\app\helpers\Url;
 use craft\app\i18n\Locale;
 use craft\app\models\FieldLayout;
 use craft\app\models\Site;
-use craft\app\validators\DateTime as DateTimeValidator;
-use craft\app\validators\SiteId as SiteIdValidator;
+use craft\app\validators\DateTimeValidator;
+use craft\app\validators\SiteIdValidator;
 use craft\app\web\UploadedFile;
 use yii\base\Exception;
 use yii\base\InvalidCallException;
@@ -289,7 +289,7 @@ abstract class Element extends Component implements ElementInterface
      */
     public static function defineSortableAttributes()
     {
-        $tableAttributes = Craft::$app->getElementIndexes()->getAvailableTableAttributes(static::className());
+        $tableAttributes = Craft::$app->getElementIndexes()->getAvailableTableAttributes(static::class);
         $sortableAttributes = [];
 
         foreach ($tableAttributes as $key => $labelInfo) {
@@ -409,7 +409,7 @@ abstract class Element extends Component implements ElementInterface
      */
     protected static function getTableAttributesForSource($sourceKey)
     {
-        $elementType = static::className();
+        $elementType = static::class;
 
         // Give plugins a chance to customize them
         $pluginAttributes = Craft::$app->getPlugins()->callFirst('getTableAttributesForSource', [
@@ -515,7 +515,7 @@ abstract class Element extends Component implements ElementInterface
                 ->all();
 
             return [
-                'elementType' => static::className(),
+                'elementType' => static::class,
                 'map' => $map
             ];
         }
@@ -761,7 +761,7 @@ abstract class Element extends Component implements ElementInterface
     {
         /** @noinspection PhpUndefinedClassInspection */
         return [
-            'customFields' => ContentBehavior::className(),
+            'customFields' => ContentBehavior::class,
         ];
     }
 
@@ -786,7 +786,7 @@ abstract class Element extends Component implements ElementInterface
 
         // Include custom field handles
         /** @noinspection PhpUndefinedClassInspection */
-        $class = new \ReflectionClass(ContentBehavior::className());
+        $class = new \ReflectionClass(ContentBehavior::class);
 
         foreach ($class->getProperties(\ReflectionProperty::IS_PUBLIC) as $property) {
             $name = $property->getName();
@@ -818,8 +818,8 @@ abstract class Element extends Component implements ElementInterface
     {
         $rules = [
             [['id', 'contentId', 'root', 'lft', 'rgt', 'level'], 'number', 'integerOnly' => true],
-            [['siteId'], SiteIdValidator::className()],
-            [['dateCreated', 'dateUpdated'], DateTimeValidator::className()],
+            [['siteId'], SiteIdValidator::class],
+            [['dateCreated', 'dateUpdated'], DateTimeValidator::class],
             [['title'], 'string', 'max' => 255],
         ];
 

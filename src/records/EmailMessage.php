@@ -9,6 +9,7 @@ namespace craft\app\records;
 
 use yii\db\ActiveQueryInterface;
 use craft\app\db\ActiveRecord;
+use craft\app\validators\SiteIdValidator;
 
 /**
  * Class EmailMessage record.
@@ -34,7 +35,7 @@ class EmailMessage extends ActiveRecord
     public function rules()
     {
         return [
-            [['siteId'], 'craft\\app\\validators\\SiteId'],
+            [['siteId'], SiteIdValidator::class],
             [['key'], 'unique', 'targetAttribute' => ['key', 'siteId']],
             [['key', 'siteId', 'subject', 'body'], 'required'],
             [['key'], 'string', 'max' => 150],
@@ -59,6 +60,6 @@ class EmailMessage extends ActiveRecord
      */
     public function getSite()
     {
-        return $this->hasOne(Site::className(), ['id' => 'siteId']);
+        return $this->hasOne(Site::class, ['id' => 'siteId']);
     }
 }

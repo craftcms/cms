@@ -8,6 +8,7 @@
 namespace craft\app\records;
 
 use craft\app\db\ActiveRecord;
+use craft\app\validators\DateTimeValidator;
 
 /**
  * Token record.
@@ -47,7 +48,7 @@ class Token extends ActiveRecord
                 'max' => 255,
                 'integerOnly' => true
             ],
-            [['expiryDate'], 'craft\\app\\validators\\DateTime'],
+            [['expiryDate'], DateTimeValidator::class],
             [['token'], 'unique'],
             [['token', 'expiryDate'], 'required'],
             [['token'], 'string', 'length' => 32],

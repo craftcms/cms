@@ -212,20 +212,20 @@ class Formatter extends \yii\i18n\Formatter
      * This function does not requires the [PHP intl extension](http://php.net/manual/en/book.intl.php) to be installed
      * to work but it is highly recommended to install it to get good formatting results.
      *
-     * @param mixed   $value               the value to be formatted.
-     * @param string  $currency            the 3-letter ISO 4217 currency code indicating the currency to use.
-     *                                     If null, [[currencyCode]] will be used.
-     * @param array   $options             optional configuration for the number formatter. This parameter will be merged with [[numberFormatterOptions]].
-     * @param array   $textOptions         optional configuration for the number formatter. This parameter will be merged with [[numberFormatterTextOptions]].
-     * @param boolean $omitIntegerDecimals Whether the formatted currency should omit the decimals if the value given is an integer.
+     * @param mixed   $value       the value to be formatted.
+     * @param string  $currency    the 3-letter ISO 4217 currency code indicating the currency to use.
+     *                             If null, [[currencyCode]] will be used.
+     * @param array   $options     optional configuration for the number formatter. This parameter will be merged with [[numberFormatterOptions]].
+     * @param array   $textOptions optional configuration for the number formatter. This parameter will be merged with [[numberFormatterTextOptions]].
+     * @param boolean $stripZeros  Whether the formatted currency should remove the fraction digits if $value has no minor value (e.g. cents).
      *
      * @return string the formatted result.
      * @throws InvalidParamException if the input value is not numeric.
      * @throws InvalidConfigException if no currency is given and [[currencyCode]] is not defined.
      */
-    public function asCurrency($value, $currency = null, $options = [], $textOptions = [], $omitIntegerDecimals = false)
+    public function asCurrency($value, $currency = null, $options = [], $textOptions = [], $stripZeros = false)
     {
-        $omitDecimals = ($omitIntegerDecimals && (int)$value == $value);
+        $omitDecimals = ($stripZeros && (int)$value == $value);
 
         if (Craft::$app->getI18n()->getIsIntlLoaded()) {
             if ($omitDecimals) {

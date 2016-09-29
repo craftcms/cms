@@ -1,4 +1,4 @@
-/*! Craft 3.0.0 - 2016-09-20 */
+/*! Craft 3.0.0 - 2016-09-26 */
 (function($){
 
 // Set all the standard Craft.* stuff
@@ -728,7 +728,7 @@ $.extend(Craft,
 			// If they're actual objects (not arrays), compare the keys
 			if (!(obj1 instanceof Array))
 			{
-				if (!Craft.compare(Craft.getObjectKeys(obj1), Craft.getObjectKeys(obj2)))
+				if (!Craft.compare(Craft.getObjectKeys(obj1).sort(), Craft.getObjectKeys(obj2).sort()))
 				{
 					return false;
 				}

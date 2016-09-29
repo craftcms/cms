@@ -18,7 +18,6 @@ use craft\app\elements\actions\SuspendUsers;
 use craft\app\elements\actions\UnsuspendUsers;
 use craft\app\elements\db\ElementQueryInterface;
 use craft\app\elements\db\UserQuery;
-use craft\app\events\UserLoginFailureEvent;
 use craft\app\helpers\DateTimeHelper;
 use craft\app\helpers\Html;
 use craft\app\helpers\Url;
@@ -26,8 +25,8 @@ use craft\app\i18n\Locale;
 use craft\app\models\UserGroup;
 use craft\app\records\Session as SessionRecord;
 use craft\app\records\User as UserRecord;
-use craft\app\validators\DateTime as DateTimeValidator;
-use craft\app\validators\Unique as UniqueValidator;
+use craft\app\validators\DateTimeValidator;
+use craft\app\validators\UniqueValidator;
 use Exception;
 use yii\base\ErrorHandler;
 use yii\base\NotSupportedException;
@@ -48,11 +47,19 @@ class User extends Element implements IdentityInterface
     // Constants
     // =========================================================================
 
+    const IMPERSONATE_KEY = 'Craft.UserSessionService.prevImpersonateUserId';
+
+    // User statuses
+    // -------------------------------------------------------------------------
+
     const STATUS_ACTIVE = 'active';
     const STATUS_LOCKED = 'locked';
     const STATUS_SUSPENDED = 'suspended';
     const STATUS_PENDING = 'pending';
     const STATUS_ARCHIVED = 'archived';
+
+    // Authentication error keys
+    // -------------------------------------------------------------------------
 
     const AUTH_INVALID_CREDENTIALS = 'invalid_credentials';
     const AUTH_PENDING_VERIFICATION = 'pending_verification';
@@ -64,13 +71,6 @@ class User extends Element implements IdentityInterface
     const AUTH_NO_CP_OFFLINE_ACCESS = 'no_cp_offline_access';
     const AUTH_NO_SITE_OFFLINE_ACCESS = 'no_site_offline_access';
     const AUTH_USERNAME_INVALID = 'username_invalid';
-
-    const IMPERSONATE_KEY = 'Craft.UserSessionService.prevImpersonateUserId';
-
-    /**
-     * @event UserLoginFailureEvent The event that is triggered when a user fails to log in.
-     */
-    const EVENT_LOGIN_FAILURE = 'loginFailure';
 
     // Static
     // =========================================================================
@@ -182,21 +182,21 @@ class User extends Element implements IdentityInterface
 
         // Edit
         $actions[] = Craft::$app->getElements()->createAction([
-            'type' => Edit::className(),
+            'type' => Edit::class,
             'label' => Craft::t('app', 'Edit user'),
         ]);
 
         if (Craft::$app->getUser()->checkPermission('administrateUsers')) {
             // Suspend
-            $actions[] = SuspendUsers::className();
+            $actions[] = SuspendUsers::class;
 
             // Unsuspend
-            $actions[] = UnsuspendUsers::className();
+            $actions[] = UnsuspendUsers::class;
         }
 
         if (Craft::$app->getUser()->checkPermission('deleteUsers')) {
             // Delete
-            $actions[] = DeleteUsers::className();
+            $actions[] = DeleteUsers::class;
         }
 
         // Allow plugins to add additional actions
@@ -453,7 +453,7 @@ class User extends Element implements IdentityInterface
                 ->all();
 
             return [
-                'elementType' => Asset::className(),
+                'elementType' => Asset::class,
                 'map' => $map
             ];
         }
@@ -696,14 +696,19 @@ class User extends Element implements IdentityInterface
     public function rules()
     {
         $rules = parent::rules();
-        $rules[] = [['lastLoginDate', 'lastInvalidLoginDate', 'lockoutDate', 'lastPasswordChangeDate', 'verificationCodeIssuedDate'], DateTimeValidator::className()];
+        $rules[] = [['lastLoginDate', 'lastInvalidLoginDate', 'lockoutDate', 'lastPasswordChangeDate', 'verificationCodeIssuedDate'], DateTimeValidator::class];
         $rules[] = [['invalidLoginCount', 'photoId'], 'number', 'integerOnly' => true];
         $rules[] = [['email', 'unverifiedEmail'], 'email'];
         $rules[] = [['email', 'password', 'unverifiedEmail'], 'string', 'max' => 255];
         $rules[] = [['username', 'firstName', 'lastName', 'verificationCode'], 'string', 'max' => 100];
-        $rules[] = [['username', 'email'], UniqueValidator::className(), 'targetClass' => UserRecord::className()];
         $rules[] = [['username', 'email'], 'required'];
         $rules[] = [['lastLoginAttemptIp'], 'string', 'max' => 45];
+
+        $rules[] = [
+            ['username', 'email'],
+            UniqueValidator::class,
+            'targetClass' => UserRecord::class
+        ];
 
         return $rules;
     }
@@ -837,10 +842,6 @@ class User extends Element implements IdentityInterface
             return true;
         }
 
-        $this->trigger(self::EVENT_LOGIN_FAILURE, new UserLoginFailureEvent([
-            'user' => $this,
-        ]));
-
         return false;
     }
 
@@ -883,6 +884,21 @@ class User extends Element implements IdentityInterface
 
         return $groups;
     }
+
+    /**
+      * Sets an array of User element objects on the user.
+      *
+      * @param array $groups An array of User element objects.
+      *
+      * @return void
+      */
+     public function setGroups($groups)
+     {
+        if (Craft::$app->getEdition() == Craft::Pro)
+        {
+            $this->_groups = $groups;
+        }
+     }
 
     /**
      * Returns whether the user is in a specific group.

@@ -12,7 +12,6 @@ use craft\app\dates\DateTime;
 use craft\app\db\Connection;
 use craft\app\db\MigrationManager;
 use craft\app\db\Query;
-use craft\app\enums\ConfigCategory;
 use craft\app\errors\DbConnectException;
 use craft\app\events\EditionChangeEvent;
 use craft\app\helpers\App;
@@ -23,6 +22,7 @@ use craft\app\i18n\Formatter;
 use craft\app\i18n\I18N;
 use craft\app\i18n\Locale;
 use craft\app\models\Info;
+use craft\app\services\Config;
 use craft\app\services\Security;
 use craft\app\web\Application as WebApplication;
 use craft\app\web\AssetManager;
@@ -666,12 +666,12 @@ trait ApplicationTrait
         if ($this->_isDbConfigValid === null) {
             $messages = [];
 
-            $databaseServerName = $this->getConfig()->get('server', ConfigCategory::Db);
-            $databaseAuthName = $this->getConfig()->get('user', ConfigCategory::Db);
-            $databaseName = $this->getConfig()->get('database', ConfigCategory::Db);
-            $databasePort = $this->getConfig()->get('port', ConfigCategory::Db);
-            $databaseCharset = $this->getConfig()->get('charset', ConfigCategory::Db);
-            $databaseCollation = $this->getConfig()->get('collation', ConfigCategory::Db);
+            $databaseServerName = $this->getConfig()->get('server', Config::CATEGORY_DB);
+            $databaseAuthName = $this->getConfig()->get('user', Config::CATEGORY_DB);
+            $databaseName = $this->getConfig()->get('database', Config::CATEGORY_DB);
+            $databasePort = $this->getConfig()->get('port', Config::CATEGORY_DB);
+            $databaseCharset = $this->getConfig()->get('charset', Config::CATEGORY_DB);
+            $databaseCollation = $this->getConfig()->get('collation', Config::CATEGORY_DB);
 
             if (!$databaseServerName) {
                 $messages[] = Craft::t('app', 'The database server name isn’t set in your db config file.');

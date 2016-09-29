@@ -9,6 +9,10 @@ namespace craft\app\models;
 
 use Craft;
 use craft\app\base\Model;
+use craft\app\records\AssetTransform as AssetTransformRecord;
+use craft\app\validators\DateTimeValidator;
+use craft\app\validators\HandleValidator;
+use craft\app\validators\UniqueValidator;
 
 /**
  * The AssetTransform model class.
@@ -82,62 +86,50 @@ class AssetTransform extends Model
     public function rules()
     {
         return [
+            [['id', 'width', 'height', 'quality'], 'number', 'integerOnly' => true],
+            [['dimensionChangeTime'], DateTimeValidator::class],
+            [['handle'], 'string', 'max' => 255],
+            [['name', 'handle', 'mode', 'position'], 'required'],
+            [['handle'], 'string', 'max' => 255],
             [
-                ['id'],
-                'number',
-                'min' => -2147483648,
-                'max' => 2147483647,
-                'integerOnly' => true
+                ['mode'],
+                'in',
+                'range' => [
+                    'stretch',
+                    'fit',
+                    'crop',
+                ],
+            ],
+            [
+                ['position'],
+                'in',
+                'range' => [
+                    'top-left',
+                    'top-center',
+                    'top-right',
+                    'center-left',
+                    'center-center',
+                    'center-right',
+                    'bottom-left',
+                    'bottom-center',
+                    'bottom-right',
+                ],
             ],
             [
                 ['handle'],
-                'craft\\app\\validators\\Handle',
+                HandleValidator::class,
                 'reservedWords' => [
                     'id',
                     'dateCreated',
                     'dateUpdated',
                     'uid',
-                    'title'
-                ]
-            ],
-            [
-                ['width'],
-                'number',
-                'min' => -2147483648,
-                'max' => 2147483647,
-                'integerOnly' => true
-            ],
-            [
-                ['height'],
-                'number',
-                'min' => -2147483648,
-                'max' => 2147483647,
-                'integerOnly' => true
-            ],
-            [['dimensionChangeTime'], 'craft\\app\\validators\\DateTime'],
-            [
-                ['quality'],
-                'number',
-                'min' => -2147483648,
-                'max' => 2147483647,
-                'integerOnly' => true
-            ],
-            [['handle'], 'string', 'max' => 255],
-            [
-                [
-                    'id',
-                    'name',
-                    'handle',
-                    'width',
-                    'height',
-                    'format',
-                    'dimensionChangeTime',
-                    'mode',
-                    'position',
-                    'quality'
+                    'title',
                 ],
-                'safe',
-                'on' => 'search'
+            ],
+            [
+                ['name', 'handle'],
+                UniqueValidator::class,
+                'targetClass' => AssetTransformRecord::class,
             ],
         ];
     }

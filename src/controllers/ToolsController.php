@@ -52,7 +52,7 @@ class ToolsController extends Controller
         $params = Craft::$app->getRequest()->getBodyParam('params', []);
 
         /** @var ToolInterface $tool */
-        $tool = Component::createComponent($class, 'craft\app\base\ToolInterface');
+        $tool = Component::createComponent($class, \craft\app\base\ToolInterface::class);
         $response = $tool->performAction($params);
 
         return $this->asJson($response);

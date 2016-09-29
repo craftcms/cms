@@ -21,12 +21,15 @@ if ($this->checkDatabaseCreds() && extension_loaded('pdo') && extension_loaded('
         'memo' => $this->dbConnectionError ? $this->dbConnectionError : 'MySQL '.$this->requiredMySqlVersion.' or higher is required to run Craft CMS.',
     );
 
-    $requirements[] = array(
-        'name' => 'MySQL InnoDB support',
-        'mandatory' => true,
-        'condition' => $this->isInnoDbSupported(),
-        'memo' => $this->dbConnectionError ? $this->dbConnectionError : 'Craft CMS requires the MySQL InnoDB storage engine to run.',
-    );
+    // If we know we already can't connect to the database, don't both running this one so we don't get double error messages.
+    if (!$this->dbConnectionError) {
+        $requirements[] = [
+            'name' => 'MySQL InnoDB support',
+            'mandatory' => true,
+            'condition' => $this->isInnoDbSupported(),
+            'memo' => $this->dbConnectionError ? $this->dbConnectionError : 'Craft CMS requires the MySQL InnoDB storage engine to run.',
+        ];
+    }
 }
 
 // Only run this requirement check if we're running in the context of Craft.

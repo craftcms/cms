@@ -50,7 +50,7 @@ class Entry extends ActiveRecord
      */
     public function getElement()
     {
-        return $this->hasOne(Element::className(), ['id' => 'id']);
+        return $this->hasOne(Element::class, ['id' => 'id']);
     }
 
     /**
@@ -60,7 +60,7 @@ class Entry extends ActiveRecord
      */
     public function getSection()
     {
-        return $this->hasOne(Section::className(), ['id' => 'sectionId']);
+        return $this->hasOne(Section::class, ['id' => 'sectionId']);
     }
 
     /**
@@ -70,7 +70,7 @@ class Entry extends ActiveRecord
      */
     public function getType()
     {
-        return $this->hasOne(EntryType::className(), ['id' => 'typeId']);
+        return $this->hasOne(EntryType::class, ['id' => 'typeId']);
     }
 
     /**
@@ -80,7 +80,7 @@ class Entry extends ActiveRecord
      */
     public function getAuthor()
     {
-        return $this->hasOne(User::className(), ['id' => 'authorId']);
+        return $this->hasOne(User::class, ['id' => 'authorId']);
     }
 
     /**
@@ -90,6 +90,6 @@ class Entry extends ActiveRecord
      */
     public function getVersions()
     {
-        return $this->hasMany(EntryVersion::className(), ['elementId' => 'id']);
+        return $this->hasMany(EntryVersion::class, ['elementId' => 'id']);
     }
 }

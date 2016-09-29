@@ -375,7 +375,7 @@ class SectionsController extends Controller
 
         // Set the field layout
         $fieldLayout = Craft::$app->getFields()->assembleLayoutFromPost();
-        $fieldLayout->type = Entry::className();
+        $fieldLayout->type = Entry::class;
         $entryType->setFieldLayout($fieldLayout);
 
         // Save it

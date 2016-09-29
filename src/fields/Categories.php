@@ -35,7 +35,7 @@ class Categories extends BaseRelationField
      */
     protected static function elementType()
     {
-        return Category::className();
+        return Category::class;
     }
 
     /**

@@ -9,6 +9,7 @@ namespace craft\app\records;
 
 use yii\db\ActiveQueryInterface;
 use craft\app\db\ActiveRecord;
+use craft\app\validators\HandleValidator;
 
 /**
  * Class MatrixBlockType record.
@@ -48,7 +49,7 @@ class MatrixBlockType extends ActiveRecord
         return [
             [
                 ['handle'],
-                'craft\\app\\validators\\Handle',
+                HandleValidator::class,
                 'reservedWords' => [
                     'id',
                     'dateCreated',
@@ -81,7 +82,7 @@ class MatrixBlockType extends ActiveRecord
      */
     public function getField()
     {
-        return $this->hasOne(Field::className(), ['id' => 'fieldId']);
+        return $this->hasOne(Field::class, ['id' => 'fieldId']);
     }
 
     /**
@@ -91,6 +92,6 @@ class MatrixBlockType extends ActiveRecord
      */
     public function getFieldLayout()
     {
-        return $this->hasOne(FieldLayout::className(), ['id' => 'fieldLayoutId']);
+        return $this->hasOne(FieldLayout::class, ['id' => 'fieldLayoutId']);
     }
 }

@@ -7,21 +7,21 @@
 
 namespace craft\app\events;
 
-use craft\app\elements\User;
+use craft\app\base\PluginInterface;
 
 /**
- * User login failure event class.
+ * PluginEvent class.
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since  3.0
  */
-class UserLoginFailureEvent extends Event
+class PluginEvent extends \yii\base\Event
 {
     // Properties
     // =========================================================================
 
     /**
-     * @var User The user model associated with the event.
+     * @var PluginInterface The plugin associated with this event
      */
-    public $user;
+    public $plugin;
 }

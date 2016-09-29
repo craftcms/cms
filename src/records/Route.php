@@ -9,14 +9,15 @@ namespace craft\app\records;
 
 use yii\db\ActiveQueryInterface;
 use craft\app\db\ActiveRecord;
+use craft\app\validators\SiteIdValidator;
 
 /**
  * Class Route record.
  *
  * @property integer $id         ID
  * @property integer $siteId     Site ID
- * @property string  $urlParts   URL parts
- * @property string  $urlPattern URL pattern
+ * @property string  $uriParts   URI parts
+ * @property string  $uriPattern URI pattern
  * @property string  $template   Template
  * @property string  $sortOrder  Sort order
  * @property Site    $site       Site
@@ -35,9 +36,9 @@ class Route extends ActiveRecord
     public function rules()
     {
         return [
-            [['siteId'], 'craft\\app\\validators\\SiteId'],
-            [['urlPattern'], 'unique'],
-            [['urlParts', 'urlPattern', 'template'], 'required'],
+            [['siteId'], SiteIdValidator::class],
+            [['uriPattern'], 'unique'],
+            [['uriParts', 'uriPattern', 'template'], 'required'],
         ];
     }
 
@@ -58,6 +59,6 @@ class Route extends ActiveRecord
      */
     public function getSite()
     {
-        return $this->hasOne(Site::className(), ['id' => 'siteId']);
+        return $this->hasOne(Site::class, ['id' => 'siteId']);
     }
 }

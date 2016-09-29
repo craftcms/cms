@@ -1,88 +1,75 @@
 <?php
 
-use craft\app\cache\FileCache;
-use craft\app\db\Connection;
 use craft\app\db\MigrationManager;
-use craft\app\db\mysql\Schema as MysqlSchema;
-use craft\app\enums\ConfigCategory;
 use craft\app\log\FileTarget;
-use craft\app\web\AssetManager;
+use craft\app\services\Config;
 use yii\base\InvalidConfigException;
-use yii\caching\ApcCache;
-use yii\caching\DbCache;
-use yii\caching\MemCache;
-use yii\caching\WinCache;
-use yii\caching\XCache;
-use yii\caching\ZendDataCache;
-use yii\log\Dispatcher;
 use yii\log\Logger;
 
 return [
     // Non-configured components
     // -------------------------------------------------------------------------
 
-    'assets' => 'craft\app\services\Assets',
-    'assetIndexer' => 'craft\app\services\AssetIndexer',
-    'assetTransforms' => 'craft\app\services\AssetTransforms',
-    'categories' => 'craft\app\services\Categories',
-    'config' => 'craft\app\services\Config',
-    'content' => 'craft\app\services\Content',
-    'dashboard' => 'craft\app\services\Dashboard',
-    'deprecator' => 'craft\app\services\Deprecator',
-    'elementIndexes' => 'craft\app\services\ElementIndexes',
-    'elements' => 'craft\app\services\Elements',
-    'email' => 'craft\app\services\Email',
-    'entries' => 'craft\app\services\Entries',
-    'entryRevisions' => 'craft\app\services\EntryRevisions',
-    'et' => 'craft\app\services\Et',
-    'feeds' => 'craft\app\services\Feeds',
-    'fields' => 'craft\app\services\Fields',
-    'globals' => 'craft\app\services\Globals',
-    'install' => 'craft\app\services\Install',
-    'images' => 'craft\app\services\Images',
-    'matrix' => 'craft\app\services\Matrix',
-    'path' => 'craft\app\services\Path',
-    'plugins' => 'craft\app\services\Plugins',
-    'relations' => 'craft\app\services\Relations',
-    'routes' => 'craft\app\services\Routes',
-    'search' => 'craft\app\services\Search',
-    'sections' => 'craft\app\services\Sections',
-    'security' => 'craft\app\services\Security',
-    'structures' => 'craft\app\services\Structures',
-    'tags' => 'craft\app\services\Tags',
-    'tasks' => 'craft\app\services\Tasks',
-    'templateCaches' => 'craft\app\services\TemplateCaches',
-    'tokens' => 'craft\app\services\Tokens',
-    'updates' => 'craft\app\services\Updates',
-    'users' => 'craft\app\services\Users',
-    'view' => 'craft\app\web\View',
-    'volumes' => 'craft\app\services\Volumes',
+    'assets' => craft\app\services\Assets::class,
+    'assetIndexer' => craft\app\services\AssetIndexer::class,
+    'assetTransforms' => craft\app\services\AssetTransforms::class,
+    'categories' => craft\app\services\Categories::class,
+    'config' => craft\app\services\Config::class,
+    'content' => craft\app\services\Content::class,
+    'dashboard' => craft\app\services\Dashboard::class,
+    'deprecator' => craft\app\services\Deprecator::class,
+    'elementIndexes' => craft\app\services\ElementIndexes::class,
+    'elements' => craft\app\services\Elements::class,
+    'entries' => craft\app\services\Entries::class,
+    'entryRevisions' => craft\app\services\EntryRevisions::class,
+    'et' => craft\app\services\Et::class,
+    'feeds' => craft\app\services\Feeds::class,
+    'fields' => craft\app\services\Fields::class,
+    'globals' => craft\app\services\Globals::class,
+    'images' => craft\app\services\Images::class,
+    'matrix' => craft\app\services\Matrix::class,
+    'path' => craft\app\services\Path::class,
+    'plugins' => craft\app\services\Plugins::class,
+    'relations' => craft\app\services\Relations::class,
+    'routes' => craft\app\services\Routes::class,
+    'search' => craft\app\services\Search::class,
+    'sections' => craft\app\services\Sections::class,
+    'security' => craft\app\services\Security::class,
+    'structures' => craft\app\services\Structures::class,
+    'tags' => craft\app\services\Tags::class,
+    'tasks' => craft\app\services\Tasks::class,
+    'templateCaches' => craft\app\services\TemplateCaches::class,
+    'tokens' => craft\app\services\Tokens::class,
+    'updates' => craft\app\services\Updates::class,
+    'users' => craft\app\services\Users::class,
+    'view' => craft\app\web\View::class,
+    'volumes' => craft\app\services\Volumes::class,
 
     // Configured components
     // -------------------------------------------------------------------------
 
     'contentMigrator' => [
-        'class' => MigrationManager::className(),
+        'class' => MigrationManager::class,
         'type' => MigrationManager::TYPE_CONTENT,
-        'migrationNamespace' => "craft\\contentmigrations",
+        'migrationNamespace' => 'craft\contentmigrations',
         'migrationPath' => "@contentMigrations",
     ],
     'migrator' => [
-        'class' => MigrationManager::className(),
+        'class' => MigrationManager::class,
         'type' => MigrationManager::TYPE_APP,
         'migrationNamespace' => 'craft\app\migrations',
         'migrationPath' => '@app/migrations',
     ],
     'resources' => [
-        'class' => 'craft\app\services\Resources',
+        'class' => craft\app\services\Resources::class,
         'dateParam' => 'd',
     ],
     'sites' => [
-        'class' => 'craft\app\services\Sites',
+        'class' => craft\app\services\Sites::class,
         'currentSite' => null,
     ],
     'systemSettings' => [
-        'class' => 'craft\app\services\SystemSettings',
+        'class' => craft\app\services\SystemSettings::class,
         'defaults' => [
             'users' => [
                 'requireEmailVerification' => true,
@@ -93,24 +80,24 @@ return [
         ]
     ],
     'i18n' => [
-        'class' => 'craft\app\i18n\I18N',
+        'class' => craft\app\i18n\I18N::class,
         'translations' => [
             'yii' => [
-                'class' => 'craft\app\i18n\PhpMessageSource',
+                'class' => craft\app\i18n\PhpMessageSource::class,
                 'sourceLanguage' => 'en-US',
                 'basePath' => '@yii/messages',
                 'forceTranslation' => true,
                 'allowOverrides' => true,
             ],
             'app' => [
-                'class' => 'craft\app\i18n\PhpMessageSource',
+                'class' => craft\app\i18n\PhpMessageSource::class,
                 'sourceLanguage' => 'en-US',
                 'basePath' => '@app/translations',
                 'forceTranslation' => true,
                 'allowOverrides' => true,
             ],
             'site' => [
-                'class' => 'craft\app\i18n\PhpMessageSource',
+                'class' => craft\app\i18n\PhpMessageSource::class,
                 'sourceLanguage' => 'en-US',
                 'basePath' => '@translations',
                 'forceTranslation' => true,
@@ -125,7 +112,7 @@ return [
         $configService = Craft::$app->getConfig();
 
         $config = [
-            'class' => AssetManager::className(),
+            'class' => craft\app\web\AssetManager::class,
             'basePath' => $configService->get('resourceBasePath'),
             'baseUrl' => $configService->get('resourceBaseUrl')
         ];
@@ -140,39 +127,39 @@ return [
         switch ($cacheMethod) {
             case 'apc':
                 $config = [
-                    'class' => ApcCache::className(),
-                    'useApcu' => $configService->get('useApcu', ConfigCategory::ApcCache),
+                    'class' => yii\caching\ApcCache::class,
+                    'useApcu' => $configService->get('useApcu', Config::CATEGORY_APC),
                 ];
                 break;
             case 'db':
                 $config =[
-                    'class' => DbCache::className(),
-                    'gcProbability' => $configService->get('gcProbability', ConfigCategory::DbCache),
-                    'cacheTable' => '{{%'.$configService->get('cacheTableName', ConfigCategory::DbCache).'}}',
+                    'class' => yii\caching\DbCache::class,
+                    'gcProbability' => $configService->get('gcProbability', Config::CATEGORY_DBCACHE),
+                    'cacheTable' => '{{%'.$configService->get('cacheTableName', Config::CATEGORY_DBCACHE).'}}',
                 ];
                 break;
             case 'file':
                 $config = [
-                    'class' => FileCache::className(),
-                    'cachePath' => $configService->get('cachePath', ConfigCategory::FileCache),
-                    'gcProbability' => $configService->get('gcProbability', ConfigCategory::FileCache),
+                    'class' => craft\app\cache\FileCache::class,
+                    'cachePath' => $configService->get('cachePath', Config::CATEGORY_FILECACHE),
+                    'gcProbability' => $configService->get('gcProbability', Config::CATEGORY_FILECACHE),
                 ];
                 break;
             case 'memcache':
                 $config = [
-                    'class' => MemCache::className(),
-                    'servers' => $configService->get('servers', ConfigCategory::Memcache),
-                    'useMemcached' => $configService->get('useMemcached', ConfigCategory::Memcache),
+                    'class' => yii\caching\MemCache::class,
+                    'servers' => $configService->get('servers', Config::CATEGORY_MEMCACHE),
+                    'useMemcached' => $configService->get('useMemcached', Config::CATEGORY_MEMCACHE),
                 ];
                 break;
             case 'wincache':
-                $config = WinCache::className();
+                $config = yii\caching\WinCache::class;
                 break;
             case 'xcache':
-                $config = XCache::className();
+                $config = yii\caching\XCache::class;
                 break;
             case 'zenddata':
-                $config = ZendDataCache::className();
+                $config = yii\caching\ZendDataCache::class;
                 break;
             default:
                 throw new InvalidConfigException('Unsupported cacheMethod config setting value: '.$cacheMethod);
@@ -184,30 +171,30 @@ return [
     'db' => function() {
         // Build the DSN string
         $configService = Craft::$app->getConfig();
-        $unixSocket = $configService->get('unixSocket', ConfigCategory::Db);
-        $database = $configService->get('database', ConfigCategory::Db);
+        $unixSocket = $configService->get('unixSocket', Config::CATEGORY_DB);
+        $database = $configService->get('database', Config::CATEGORY_DB);
 
         if (!empty($unixSocket)) {
             $dsn = 'mysql:unix_socket='.strtolower($unixSocket).
                 ';dbname='.$database.';';
         } else {
-            $server = $configService->get('server', ConfigCategory::Db);
-            $port = $configService->get('port', ConfigCategory::Db);
+            $server = $configService->get('server', Config::CATEGORY_DB);
+            $port = $configService->get('port', Config::CATEGORY_DB);
             $dsn = 'mysql:host='.strtolower($server).
                 ';dbname='.$database.
                 ';port='.strtolower($port).';';
         }
 
         $config = [
-            'class' => Connection::className(),
+            'class' => craft\app\db\Connection::class,
             'dsn' => $dsn,
             'emulatePrepare' => true,
-            'username' => $configService->get('user', ConfigCategory::Db),
-            'password' => $configService->get('password', ConfigCategory::Db),
-            'charset' => $configService->get('charset', ConfigCategory::Db),
+            'username' => $configService->get('user', Config::CATEGORY_DB),
+            'password' => $configService->get('password', Config::CATEGORY_DB),
+            'charset' => $configService->get('charset', Config::CATEGORY_DB),
             'tablePrefix' => $configService->getDbTablePrefix(),
             'schemaMap' => [
-                'mysql' => MysqlSchema::className(),
+                'mysql' => craft\app\db\mysql\Schema::class,
             ],
         ];
 
@@ -248,7 +235,7 @@ return [
             $fileTarget->logFile = Craft::getAlias('@storage/logs/web.log');
 
             // Only log errors and warnings, unless Craft is running in Dev Mode or it's being updated
-            if (!$configService->get('devMode') || !Craft::$app->getIsUpdating()) {
+            if (!$configService->get('devMode') || (Craft::$app->getIsInstalled() && !Craft::$app->getIsUpdating())) {
                 $fileTarget->setLevels(Logger::LEVEL_ERROR | Logger::LEVEL_WARNING);
             }
         }
@@ -257,7 +244,7 @@ return [
         $fileTarget->dirMode = $configService->get('defaultFolderPermissions');
 
         $config = [
-            'class' => Dispatcher::className(),
+            'class' => yii\log\Dispatcher::class,
             'targets' => [
                 $fileTarget
             ]

@@ -28,5 +28,5 @@ class TagEvent extends Event
     /**
      * @var boolean Whether the tag is brand new
      */
-    public $isNew;
+    public $isNew = false;
 }

@@ -49,7 +49,7 @@ class Connection extends \yii\db\Connection
      * @see   createCommand
      * @since 2.0.7
      */
-    public $commandClass = 'craft\app\db\Command';
+    public $commandClass = \craft\app\db\Command::class;
 
     // Public Methods
     // =========================================================================

@@ -10,6 +10,7 @@ namespace craft\app\records;
 use yii\db\ActiveQueryInterface;
 use Craft;
 use craft\app\db\ActiveRecord;
+use craft\app\validators\DateTimeValidator;
 
 /**
  * Class User record.
@@ -56,8 +57,7 @@ class User extends ActiveRecord
     public function rules()
     {
         return [
-            [['lastLoginDate'], 'craft\\app\\validators\\DateTime'],
-            [['invalidLoginWindowStart'], 'craft\\app\\validators\\DateTime'],
+            [['lastLoginDate', 'invalidLoginWindowStart', 'lastInvalidLoginDate', 'lockoutDate', 'lastPasswordChangeDate', 'verificationCodeIssuedDate'], DateTimeValidator::class],
             [
                 ['invalidLoginCount'],
                 'number',
@@ -65,13 +65,6 @@ class User extends ActiveRecord
                 'max' => 255,
                 'integerOnly' => true
             ],
-            [['lastInvalidLoginDate'], 'craft\\app\\validators\\DateTime'],
-            [['lockoutDate'], 'craft\\app\\validators\\DateTime'],
-            [
-                ['verificationCodeIssuedDate'],
-                'craft\\app\\validators\\DateTime'
-            ],
-            [['lastPasswordChangeDate'], 'craft\\app\\validators\\DateTime'],
             [['username', 'email'], 'unique'],
             [['username', 'email'], 'required'],
             [['email', 'unverifiedEmail'], 'email'],
@@ -104,7 +97,7 @@ class User extends ActiveRecord
      */
     public function getElement()
     {
-        return $this->hasOne(Element::className(), ['id' => 'id']);
+        return $this->hasOne(Element::class, ['id' => 'id']);
     }
 
     /**
@@ -114,7 +107,7 @@ class User extends ActiveRecord
      */
     public function getSessions()
     {
-        return $this->hasMany(Session::className(), ['userId' => 'id']);
+        return $this->hasMany(Session::class, ['userId' => 'id']);
     }
 
     /**
@@ -124,7 +117,7 @@ class User extends ActiveRecord
      */
     public function getGroups()
     {
-        return $this->hasMany(UserGroup::className(), ['id' => 'groupId'])
+        return $this->hasMany(UserGroup::class, ['id' => 'groupId'])
             ->viaTable('{{%usergroups_users}}', ['userId' => 'id']);
     }
 

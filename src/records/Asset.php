@@ -9,6 +9,7 @@ namespace craft\app\records;
 
 use yii\db\ActiveQueryInterface;
 use craft\app\db\ActiveRecord;
+use craft\app\validators\DateTimeValidator;
 
 /**
  * Class Asset record.
@@ -63,7 +64,7 @@ class Asset extends ActiveRecord
                 'max' => 18446744073709551615,
                 'integerOnly' => true
             ],
-            [['dateModified'], 'craft\\app\\validators\\DateTime'],
+            [['dateModified'], DateTimeValidator::class],
             [
                 ['filename'],
                 'unique',
@@ -91,7 +92,7 @@ class Asset extends ActiveRecord
      */
     public function getElement()
     {
-        return $this->hasOne(Element::className(), ['id' => 'id']);
+        return $this->hasOne(Element::class, ['id' => 'id']);
     }
 
     /**
@@ -101,7 +102,7 @@ class Asset extends ActiveRecord
      */
     public function getVolume()
     {
-        return $this->hasOne(Volume::className(), ['id' => 'volumeId']);
+        return $this->hasOne(Volume::class, ['id' => 'volumeId']);
     }
 
     /**
@@ -111,6 +112,6 @@ class Asset extends ActiveRecord
      */
     public function getFolder()
     {
-        return $this->hasOne(VolumeFolder::className(), ['id' => 'folderId']);
+        return $this->hasOne(VolumeFolder::class, ['id' => 'folderId']);
     }
 }

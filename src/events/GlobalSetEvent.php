@@ -28,5 +28,5 @@ class GlobalSetEvent extends Event
     /**
      * @var boolean Whether the global set is brand new
      */
-    public $isNew;
+    public $isNew = false;
 }

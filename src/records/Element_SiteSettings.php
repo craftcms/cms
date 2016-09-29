@@ -9,6 +9,8 @@ namespace craft\app\records;
 
 use yii\db\ActiveQueryInterface;
 use craft\app\db\ActiveRecord;
+use craft\app\validators\SiteIdValidator;
+use craft\app\validators\UriValidator;
 
 /**
  * Element_SiteSettings record class.
@@ -36,11 +38,11 @@ class Element_SiteSettings extends ActiveRecord
     public function rules()
     {
         return [
-            [['siteId'], 'craft\\app\\validators\\SiteId'],
+            [['siteId'], SiteIdValidator::class],
             [['elementId'], 'unique', 'targetAttribute' => ['elementId', 'siteId']],
             [['uri'], 'unique', 'targetAttribute' => ['uri', 'siteId']],
             [['elementId', 'siteId'], 'required'],
-            [['uri'], 'craft\\app\\validators\\Uri'],
+            [['uri'], UriValidator::class],
         ];
     }
 
@@ -61,7 +63,7 @@ class Element_SiteSettings extends ActiveRecord
      */
     public function getElement()
     {
-        return $this->hasOne(Element::className(), ['id' => 'elementId']);
+        return $this->hasOne(Element::class, ['id' => 'elementId']);
     }
 
     /**
@@ -71,6 +73,6 @@ class Element_SiteSettings extends ActiveRecord
      */
     public function getSite()
     {
-        return $this->hasOne(Site::className(), ['id' => 'siteId']);
+        return $this->hasOne(Site::class, ['id' => 'siteId']);
     }
 }

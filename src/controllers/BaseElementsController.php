@@ -60,8 +60,8 @@ abstract class BaseElementsController extends Controller
 
         // TODO: should probably move the code inside try{} to a helper method
         try {
-            if (!is_subclass_of($class, Elements::ELEMENT_INTERFACE)) {
-                throw new InvalidTypeException($class, Elements::ELEMENT_INTERFACE);
+            if (!is_subclass_of($class, ElementInterface::class)) {
+                throw new InvalidTypeException($class, ElementInterface::class);
             }
         } catch (InvalidTypeException $e) {
             throw new BadRequestHttpException($e->getMessage());

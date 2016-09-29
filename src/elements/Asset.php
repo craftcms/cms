@@ -27,8 +27,8 @@ use craft\app\helpers\Template;
 use craft\app\helpers\Url;
 use craft\app\models\VolumeFolder;
 use craft\app\records\Asset as AssetRecord;
-use craft\app\validators\DateTime as DateTimeValidator;
-use craft\app\validators\Unique as UniqueValidator;
+use craft\app\validators\DateTimeValidator;
+use craft\app\validators\UniqueValidator;
 use Exception;
 use yii\base\ErrorHandler;
 use yii\base\InvalidCallException;
@@ -149,19 +149,19 @@ class Asset extends Element
             if ($volume->hasUrls) {
                 $actions[] = Craft::$app->getElements()->createAction(
                     [
-                        'type' => View::className(),
+                        'type' => View::class,
                         'label' => Craft::t('app', 'View asset'),
                     ]
                 );
             }
 
             // Download
-            $actions[] = DownloadAssetFile::className();
+            $actions[] = DownloadAssetFile::class;
 
             // Edit
             $actions[] = Craft::$app->getElements()->createAction(
                 [
-                    'type' => Edit::className(),
+                    'type' => Edit::class,
                     'label' => Craft::t('app', 'Edit asset'),
                 ]
             );
@@ -177,7 +177,7 @@ class Asset extends Element
                     'uploadToVolume'
                 )
             ) {
-                $actions[] = RenameFile::className();
+                $actions[] = RenameFile::class;
             }
 
             // Replace File
@@ -186,14 +186,14 @@ class Asset extends Element
                 'uploadToVolume'
             )
             ) {
-                $actions[] = ReplaceFile::className();
+                $actions[] = ReplaceFile::class;
             }
 
             // Copy Reference Tag
             $actions[] = Craft::$app->getElements()->createAction(
                 [
-                    'type' => CopyReferenceTag::className(),
-                    'elementType' => Asset::className(),
+                    'type' => CopyReferenceTag::class,
+                    'elementType' => Asset::class,
                 ]
             );
 
@@ -203,7 +203,7 @@ class Asset extends Element
                 'removeFromVolume'
             )
             ) {
-                $actions[] = DeleteAssets::className();
+                $actions[] = DeleteAssets::class;
             }
         }
 
@@ -696,10 +696,17 @@ class Asset extends Element
     {
         $rules = parent::rules();
         $rules[] = [['volumeId', 'folderId', 'width', 'height', 'size'], 'number', 'integerOnly' => true];
-        $rules[] = [['dateModified'], DateTimeValidator::className()];
-        $rules[] = [['filename'], UniqueValidator::className(), 'targetClass' => AssetRecord::className(), 'targetAttribute' => ['filename', 'folderId']];
+        $rules[] = [['dateModified'], DateTimeValidator::class];
         $rules[] = [['filename', 'kind'], 'required'];
         $rules[] = [['kind'], 'string', 'max' => 50];
+
+        $rules[] = [
+            ['filename'],
+            UniqueValidator::class,
+            'targetClass' => AssetRecord::class,
+            'targetAttribute' => ['filename', 'folderId'],
+            'comboNotUnique' => Craft::t('yii', '{attribute} "{value}" has already been taken.'),
+        ];
 
         return $rules;
     }

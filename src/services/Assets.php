@@ -27,7 +27,6 @@ use craft\app\errors\VolumeObjectNotFoundException;
 use craft\app\errors\ElementSaveException;
 use craft\app\errors\FileException;
 use craft\app\errors\ValidationException;
-use craft\app\events\AssetDeleteEvent;
 use craft\app\events\AssetEvent;
 use craft\app\events\ReplaceAssetEvent;
 use craft\app\helpers\Assets as AssetsHelper;
@@ -141,7 +140,7 @@ class Assets extends Component
     public function getAssetById($assetId, $siteId = null)
     {
         return Craft::$app->getElements()->getElementById($assetId,
-            Asset::className(), $siteId);
+            Asset::class, $siteId);
     }
 
     /**
@@ -490,8 +489,8 @@ class Assets extends Component
             if ($asset) {
                 $volume = $asset->getVolume();
 
-                // Fire an 'onBeforeDeleteAsset' event
-                $event = new AssetDeleteEvent($this, [
+                // Fire a 'beforeDeleteAsset' event
+                $event = new AssetEvent($this, [
                     'asset' => $asset
                 ]);
 
@@ -505,11 +504,10 @@ class Assets extends Component
                     Craft::$app->getElements()->deleteElementById($assetId);
                     Craft::$app->getAssetTransforms()->deleteAllTransformData($asset);
 
-                    $event = new AssetDeleteEvent($this, [
+                    // Fire an 'afterDeleteAsset' event
+                    $this->trigger(self::EVENT_AFTER_DELETE_ASSET, new AssetEvent($this, [
                         'asset' => $asset
-                    ]);
-
-                    $this->trigger(self::EVENT_AFTER_DELETE_ASSET, $event);
+                    ]));
                 }
             }
         }

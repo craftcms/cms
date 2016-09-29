@@ -14,6 +14,7 @@ use craft\app\db\MigrationManager;
 use craft\app\db\Query;
 use craft\app\enums\LicenseKeyStatus;
 use craft\app\errors\InvalidLicenseKeyException;
+use craft\app\events\PluginEvent;
 use craft\app\helpers\DateTimeHelper;
 use craft\app\helpers\Db;
 use craft\app\helpers\Io;
@@ -37,9 +38,64 @@ class Plugins extends Component
     // =========================================================================
 
     /**
-     * @event Event The event that is triggered after all plugins have been loaded.
+     * @event \yii\base\Event The event that is triggered before any plugins have been loaded
+     */
+    const EVENT_BEFORE_LOAD_PLUGINS = 'beforeLoadPlugins';
+
+    /**
+     * @event \yii\base\Event The event that is triggered after all plugins have been loaded
      */
     const EVENT_AFTER_LOAD_PLUGINS = 'afterLoadPlugins';
+
+    /**
+     * @event PluginEvent The event that is triggered before a plugin is enabled
+     */
+    const EVENT_BEFORE_ENABLE_PLUGIN = 'beforeEnablePlugin';
+
+    /**
+     * @event PluginEvent The event that is triggered before a plugin is enabled
+     */
+    const EVENT_AFTER_ENABLE_PLUGIN = 'afterEnablePlugin';
+
+    /**
+     * @event PluginEvent The event that is triggered before a plugin is disabled
+     */
+    const EVENT_BEFORE_DISABLE_PLUGIN = 'beforeDisablePlugin';
+
+    /**
+     * @event PluginEvent The event that is triggered before a plugin is disabled
+     */
+    const EVENT_AFTER_DISABLE_PLUGIN = 'afterDisablePlugin';
+
+    /**
+     * @event PluginEvent The event that is triggered before a plugin is installed
+     */
+    const EVENT_BEFORE_INSTALL_PLUGIN = 'beforeInstallPlugin';
+
+    /**
+     * @event PluginEvent The event that is triggered before a plugin is installed
+     */
+    const EVENT_AFTER_INSTALL_PLUGIN = 'afterInstallPlugin';
+
+    /**
+     * @event PluginEvent The event that is triggered before a plugin is uninstalled
+     */
+    const EVENT_BEFORE_UNINSTALL_PLUGIN = 'beforeUninstallPlugin';
+
+    /**
+     * @event PluginEvent The event that is triggered before a plugin is uninstalled
+     */
+    const EVENT_AFTER_UNINSTALL_PLUGIN = 'afterUninstallPlugin';
+
+    /**
+     * @event PluginEvent The event that is triggered before a plugin's settings are saved
+     */
+    const EVENT_BEFORE_SAVE_PLUGIN_SETTINGS = 'beforeSavePluginSettings';
+
+    /**
+     * @event PluginEvent The event that is triggered before a plugin's settings are saved
+     */
+    const EVENT_AFTER_SAVE_PLUGIN_SETTINGS = 'afterSavePluginSettings';
 
     // Properties
     // =========================================================================
@@ -80,6 +136,9 @@ class Plugins extends Component
 
         // Prevent this function from getting called twice.
         $this->_loadingPlugins = true;
+
+        // Fire a 'beforeLoadPlugins' event
+        $this->trigger(self::EVENT_BEFORE_LOAD_PLUGINS);
 
         // Find all of the installed plugins
         $this->_installedPluginInfo = (new Query())
@@ -190,6 +249,11 @@ class Plugins extends Component
             $this->_noPluginExists($handle);
         }
 
+        // Fire a 'beforeEnablePlugin' event
+        $this->trigger(self::EVENT_BEFORE_ENABLE_PLUGIN, new PluginEvent([
+            'plugin' => $plugin
+        ]));
+
         Craft::$app->getDb()->createCommand()
             ->update(
                 '{{%plugins}}',
@@ -199,6 +263,11 @@ class Plugins extends Component
 
         $this->_installedPluginInfo[$handle]['enabled'] = true;
         $this->_registerPlugin($handle, $plugin);
+
+        // Fire an 'afterEnablePlugin' event
+        $this->trigger(self::EVENT_AFTER_ENABLE_PLUGIN, new PluginEvent([
+            'plugin' => $plugin
+        ]));
 
         return true;
     }
@@ -230,6 +299,11 @@ class Plugins extends Component
             $this->_noPluginExists($handle);
         }
 
+        // Fire a 'beforeDisablePlugin' event
+        $this->trigger(self::EVENT_BEFORE_DISABLE_PLUGIN, new PluginEvent([
+            'plugin' => $plugin
+        ]));
+
         Craft::$app->getDb()->createCommand()
             ->update(
                 '{{%plugins}}',
@@ -239,6 +313,11 @@ class Plugins extends Component
 
         $this->_installedPluginInfo[$handle]['enabled'] = false;
         $this->_unregisterPlugin($handle);
+
+        // Fire an 'afterDisablePlugin' event
+        $this->trigger(self::EVENT_AFTER_DISABLE_PLUGIN, new PluginEvent([
+            'plugin' => $plugin
+        ]));
 
         return true;
     }
@@ -268,6 +347,11 @@ class Plugins extends Component
             $this->_noPluginExists($handle);
         }
 
+        // Fire a 'beforeInstallPlugin' event
+        $this->trigger(self::EVENT_BEFORE_INSTALL_PLUGIN, new PluginEvent([
+            'plugin' => $plugin
+        ]));
+
         $transaction = Craft::$app->getDb()->beginTransaction();
         try {
             $info = [
@@ -287,23 +371,28 @@ class Plugins extends Component
 
             $this->_setPluginMigrator($plugin, $handle, $info['id']);
 
-            if ($plugin->install() !== false) {
-                $transaction->commit();
+            if ($plugin->install() === false) {
+                $transaction->rollBack();
 
-                $this->_installedPluginInfo[$handle] = $info;
-                $this->_registerPlugin($handle, $plugin);
-
-                return true;
+                return false;
             }
 
-            $transaction->rollBack();
-
-            return false;
+            $transaction->commit();
         } catch (\Exception $e) {
             $transaction->rollBack();
 
             throw $e;
         }
+
+        $this->_installedPluginInfo[$handle] = $info;
+        $this->_registerPlugin($handle, $plugin);
+
+        // Fire an 'afterInstallPlugin' event
+        $this->trigger(self::EVENT_AFTER_INSTALL_PLUGIN, new PluginEvent([
+            'plugin' => $plugin
+        ]));
+
+        return true;
     }
 
     /**
@@ -335,35 +424,47 @@ class Plugins extends Component
             $this->_noPluginExists($handle);
         }
 
+        // Fire a 'beforeUninstallPlugin' event
+        $this->trigger(self::EVENT_BEFORE_UNINSTALL_PLUGIN, new PluginEvent([
+            'plugin' => $plugin
+        ]));
+
         $transaction = Craft::$app->getDb()->beginTransaction();
         try {
-            if ($plugin->uninstall() !== false) {
-                // Clean up the plugins and migrations tables
-                $id = $this->_installedPluginInfo[$handle]['id'];
-                Craft::$app->getDb()->createCommand()
-                    ->delete('{{%plugins}}', ['id' => $id])
-                    ->execute();
-                Craft::$app->getDb()->createCommand()
-                    ->delete('{{%migrations}}', ['pluginId' => $id])
-                    ->execute();
+            // Let the plugin uninstall itself first
+            if ($plugin->uninstall() === false) {
+                $transaction->rollBack();
 
-                // Let's commit to this.
-                $transaction->commit();
-
-                $this->_unregisterPlugin($handle);
-                unset($this->_installedPluginInfo[$handle]);
-
-                return true;
+                return false;
             }
 
-            $transaction->rollBack();
+            // Clean up the plugins and migrations tables
+            $id = $this->_installedPluginInfo[$handle]['id'];
 
-            return false;
+            Craft::$app->getDb()->createCommand()
+                ->delete('{{%plugins}}', ['id' => $id])
+                ->execute();
+
+            Craft::$app->getDb()->createCommand()
+                ->delete('{{%migrations}}', ['pluginId' => $id])
+                ->execute();
+
+            $transaction->commit();
         } catch (\Exception $e) {
             $transaction->rollBack();
 
             throw $e;
         }
+
+        $this->_unregisterPlugin($handle);
+        unset($this->_installedPluginInfo[$handle]);
+
+        // Fire an 'afterUninstallPlugin' event
+        $this->trigger(self::EVENT_AFTER_UNINSTALL_PLUGIN, new PluginEvent([
+            'plugin' => $plugin
+        ]));
+
+        return true;
     }
 
     /**
@@ -384,6 +485,11 @@ class Plugins extends Component
             return false;
         }
 
+        // Fire a 'beforeSavePluginSettings' event
+        $this->trigger(self::EVENT_BEFORE_SAVE_PLUGIN_SETTINGS, new PluginEvent([
+            'plugin' => $plugin
+        ]));
+
         // JSON-encode them and save the plugin row
         $settings = Json::encode($plugin->getSettings());
 
@@ -393,6 +499,11 @@ class Plugins extends Component
                 ['settings' => $settings],
                 ['handle' => $plugin->getHandle()])
             ->execute();
+
+        // Fire an 'afterSavePluginSettings' event
+        $this->trigger(self::EVENT_AFTER_SAVE_PLUGIN_SETTINGS, new PluginEvent([
+            'plugin' => $plugin
+        ]));
 
         return (bool)$affectedRows;
     }
@@ -547,7 +658,7 @@ class Plugins extends Component
         $class = $config['class'];
 
         // Make sure the class exists and it implements PluginInterface
-        if (!is_subclass_of($class, 'craft\app\base\PluginInterface')) {
+        if (!is_subclass_of($class, \craft\app\base\PluginInterface::class)) {
             return null;
         }
 
@@ -624,7 +735,7 @@ class Plugins extends Component
                 $config['class'] = "\\craft\\plugins\\$handle\\Plugin";
             } else {
                 // Just use the base one
-                $config['class'] = Plugin::className();
+                $config['class'] = Plugin::class;
             }
         }
 
@@ -884,7 +995,7 @@ class Plugins extends Component
     {
         /** @var Plugin $plugin */
         $plugin->set('migrator', [
-            'class' => MigrationManager::className(),
+            'class' => MigrationManager::class,
             'type' => MigrationManager::TYPE_PLUGIN,
             'pluginId' => $id,
             'migrationNamespace' => "craft\\plugins\\$handle\\migrations",

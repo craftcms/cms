@@ -9,9 +9,9 @@ namespace craft\app\models;
 
 use Craft;
 use craft\app\base\Model;
-use craft\app\validators\SingleSectionUri;
-use craft\app\validators\SiteId;
-use craft\app\validators\UriFormat;
+use craft\app\validators\SingleSectionUriValidator;
+use craft\app\validators\SiteIdValidator;
+use craft\app\validators\UriFormatValidator;
 use yii\base\InvalidConfigException;
 
 /**
@@ -124,14 +124,14 @@ class Section_SiteSettings extends Model
     {
         $rules = [
             [['id', 'sectionId', 'siteId'], 'number', 'integerOnly' => true],
-            [['siteId'], SiteId::className()],
+            [['siteId'], SiteIdValidator::class],
             [['template'], 'string', 'max' => 500],
         ];
 
         if ($this->getSection()->type == Section::TYPE_SINGLE) {
-            $rules[] = ['uriFormat', SingleSectionUri::className()];
+            $rules[] = ['uriFormat', SingleSectionUriValidator::class];
         } else {
-            $rules[] = ['uriFormat', UriFormat::className()];
+            $rules[] = ['uriFormat', UriFormatValidator::class];
         }
 
         if ($this->hasUrls || $this->getSection()->type == Section::TYPE_SINGLE) {

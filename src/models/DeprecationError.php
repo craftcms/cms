@@ -10,6 +10,7 @@ namespace craft\app\models;
 use craft\app\base\Model;
 use craft\app\dates\DateTime;
 use craft\app\helpers\Json;
+use craft\app\validators\DateTimeValidator;
 
 /**
  * DeprecationError model.
@@ -124,7 +125,7 @@ class DeprecationError extends Model
                 'max' => 2147483647,
                 'integerOnly' => true
             ],
-            [['lastOccurrence'], 'craft\\app\\validators\\DateTime'],
+            [['lastOccurrence'], DateTimeValidator::class],
             [
                 ['line'],
                 'number',

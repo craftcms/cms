@@ -205,7 +205,7 @@ class Matrix extends Field implements EagerLoadingFieldInterface
 
         foreach (Craft::$app->getFields()->getAllFieldTypes() as $class) {
             // No Matrix-Inception, sorry buddy.
-            if ($class !== static::className()) {
+            if ($class !== static::class) {
                 $fieldTypeOptions[] = [
                     'value' => $class,
                     'label' => $class::displayName()
@@ -263,9 +263,8 @@ class Matrix extends Field implements EagerLoadingFieldInterface
         if (is_array($value) || $value === '') {
             $query->status = null;
             $query->enabledForSite = false;
-            $query->enabledForSite = false;
             $query->limit = null;
-            $query->setResult($this->_createBlocksFromPost($value, $element));
+            $query->setCachedResult($this->_createBlocksFromPost($value, $element));
         }
 
         return $query;
@@ -468,7 +467,7 @@ class Matrix extends Field implements EagerLoadingFieldInterface
             ->all();
 
         return [
-            'elementType' => MatrixBlock::className(),
+            'elementType' => MatrixBlock::class,
             'map' => $map,
             'criteria' => ['fieldId' => $this->id]
         ];
@@ -505,7 +504,7 @@ class Matrix extends Field implements EagerLoadingFieldInterface
 
         foreach (Craft::$app->getFields()->getAllFieldTypes() as $class) {
             // No Matrix-Inception, sorry buddy.
-            if ($class === static::className()) {
+            if ($class === static::class) {
                 continue;
             }
 

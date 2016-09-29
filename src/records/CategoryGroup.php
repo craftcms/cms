@@ -48,7 +48,7 @@ class CategoryGroup extends ActiveRecord
      */
     public function getStructure()
     {
-        return $this->hasOne(Structure::className(), ['id' => 'structureId']);
+        return $this->hasOne(Structure::class, ['id' => 'structureId']);
     }
 
     /**
@@ -58,7 +58,7 @@ class CategoryGroup extends ActiveRecord
      */
     public function getFieldLayout()
     {
-        return $this->hasOne(FieldLayout::className(),
+        return $this->hasOne(FieldLayout::class,
             ['id' => 'fieldLayoutId']);
     }
 
@@ -69,7 +69,7 @@ class CategoryGroup extends ActiveRecord
      */
     public function getSiteSettings()
     {
-        return $this->hasMany(CategoryGroup_SiteSettings::className(), ['groupId' => 'id']);
+        return $this->hasMany(CategoryGroup_SiteSettings::class, ['groupId' => 'id']);
     }
 
     /**
@@ -79,6 +79,6 @@ class CategoryGroup extends ActiveRecord
      */
     public function getCategories()
     {
-        return $this->hasMany(Category::className(), ['groupId' => 'id']);
+        return $this->hasMany(Category::class, ['groupId' => 'id']);
     }
 }

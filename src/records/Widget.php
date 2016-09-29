@@ -32,17 +32,6 @@ class Widget extends ActiveRecord
 
     /**
      * @inheritdoc
-     */
-    public function rules()
-    {
-        return [
-            [['type'], 'required'],
-            [['type'], 'string', 'max' => 150],
-        ];
-    }
-
-    /**
-     * @inheritdoc
      *
      * @return string
      */
@@ -58,6 +47,6 @@ class Widget extends ActiveRecord
      */
     public function getUser()
     {
-        return $this->hasOne(User::className(), ['id' => 'userId']);
+        return $this->hasOne(User::class, ['id' => 'userId']);
     }
 }

@@ -58,7 +58,7 @@ class GlobalsController extends Controller
 
         // Set the field layout
         $fieldLayout = Craft::$app->getFields()->assembleLayoutFromPost();
-        $fieldLayout->type = GlobalSet::className();
+        $fieldLayout->type = GlobalSet::class;
         $globalSet->setFieldLayout($fieldLayout);
 
         // Save it

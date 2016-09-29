@@ -10,6 +10,7 @@ namespace craft\app\controllers;
 use Craft;
 use craft\app\errors\SendEmailException;
 use craft\app\errors\UploadFailedException;
+use craft\app\events\LoginFailureEvent;
 use craft\app\events\UserTokenEvent;
 use craft\app\helpers\Assets;
 use craft\app\helpers\Image;
@@ -42,6 +43,14 @@ use yii\web\Response;
  */
 class UsersController extends Controller
 {
+    // Constants
+    // =========================================================================
+
+    /**
+     * @event LoginFailureEvent The event that is triggered when a failed login attempt was made
+     */
+    const EVENT_LOGIN_FAILURE = 'loginFailure';
+
     // Properties
     // =========================================================================
 
@@ -89,12 +98,12 @@ class UsersController extends Controller
         $user = Craft::$app->getUsers()->getUserByUsernameOrEmail($loginName);
 
         if (!$user) {
-            return $this->_handleInvalidLogin(User::AUTH_USERNAME_INVALID);
+            return $this->_handleLoginFailure(User::AUTH_USERNAME_INVALID);
         }
 
         // Did they submit a valid password, and is the user capable of being logged-in?
         if (!$user->authenticate($password)) {
-            return $this->_handleInvalidLogin($user->authError, $user);
+            return $this->_handleLoginFailure($user->authError, $user);
         }
 
         // Log them in
@@ -105,7 +114,7 @@ class UsersController extends Controller
         }
 
         // Unknown error
-        return $this->_handleInvalidLogin(null, $user);
+        return $this->_handleLoginFailure(null, $user);
     }
 
     /**
@@ -896,7 +905,9 @@ class UsersController extends Controller
 
         // Are they allowed to set a new password?
         if ($thisIsPublicRegistration) {
-            $user->newPassword = $request->getBodyParam('password', '');
+            if (Craft::$app->getConfig()->get('deferPublicRegistrationPassword')) {
+                $user->newPassword = $request->getBodyParam('password', '');
+            }
         } else {
             if ($isCurrentUser) {
                 // If there was a newPassword input but it was empty, pretend it didn't exist
@@ -1370,8 +1381,8 @@ class UsersController extends Controller
 
         // Set the field layout
         $fieldLayout = Craft::$app->getFields()->assembleLayoutFromPost();
-        $fieldLayout->type = User::className();
-        Craft::$app->getFields()->deleteLayoutsByType(User::className());
+        $fieldLayout->type = User::class;
+        Craft::$app->getFields()->deleteLayoutsByType(User::class);
 
         if (Craft::$app->getFields()->saveLayout($fieldLayout)) {
             Craft::$app->getSession()->setNotice(Craft::t('app',
@@ -1405,15 +1416,21 @@ class UsersController extends Controller
     // =========================================================================
 
     /**
-     * Handles an invalid login attempt.
+     * Handles a failed login attempt.
      *
      * @param string|null $authError
      * @param User|null $user
      *
      * @return Response|null
      */
-    private function _handleInvalidLogin($authError = null, User $user = null)
+    private function _handleLoginFailure($authError = null, User $user = null)
     {
+        // Fire a 'loginFailure' event
+        $this->trigger(self::EVENT_LOGIN_FAILURE, new LoginFailureEvent([
+            'authError' => $authError,
+            'user' => $user,
+        ]));
+
         switch ($authError) {
             case User::AUTH_PENDING_VERIFICATION: {
                 $message = Craft::t('app', 'Account has not been activated.');

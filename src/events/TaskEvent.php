@@ -7,19 +7,26 @@
 
 namespace craft\app\events;
 
+use craft\app\base\TaskInterface;
+
 /**
- * Delete section event class.
+ * TaskEvent class.
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since  3.0
  */
-class DeleteSectionEvent extends Event
+class TaskEvent extends Event
 {
     // Properties
     // =========================================================================
 
     /**
-     * @var \craft\app\models\Section The section model associated with the event.
+     * @var TaskInterface The task associated with this event.
      */
-    public $section;
+    public $task;
+
+    /**
+     * @var boolean Whether the task is brand new
+     */
+    public $isNew = false;
 }

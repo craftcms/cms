@@ -9,6 +9,7 @@ namespace craft\app\records;
 
 use yii\db\ActiveQueryInterface;
 use craft\app\db\ActiveRecord;
+use craft\app\validators\DateTimeValidator;
 
 /**
  * Class Migration record.
@@ -33,7 +34,7 @@ class Migration extends ActiveRecord
     public function rules()
     {
         return [
-            [['applyTime'], 'craft\\app\\validators\\DateTime'],
+            [['applyTime'], DateTimeValidator::class],
             [['version'], 'unique'],
             [['version', 'applyTime'], 'required'],
             [['version'], 'string', 'max' => 255],
@@ -57,6 +58,6 @@ class Migration extends ActiveRecord
      */
     public function getPlugin()
     {
-        return $this->hasOne(Plugin::className(), ['id' => 'pluginId']);
+        return $this->hasOne(Plugin::class, ['id' => 'pluginId']);
     }
 }

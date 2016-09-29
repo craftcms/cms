@@ -8,6 +8,7 @@
 namespace craft\app\models;
 
 use craft\app\base\Model;
+use craft\app\validators\DateTimeValidator;
 
 /**
  * Stores the info for a Craft release.
@@ -80,7 +81,7 @@ class AppNewRelease extends Model
     public function rules()
     {
         return [
-            [['date'], 'craft\\app\\validators\\DateTime'],
+            [['date'], DateTimeValidator::class],
             [
                 [
                     'version',

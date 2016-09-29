@@ -14,8 +14,8 @@ use craft\app\behaviors\FieldLayoutTrait;
 use craft\app\elements\db\GlobalSetQuery;
 use craft\app\helpers\Url;
 use craft\app\records\GlobalSet as GlobalSetRecord;
-use craft\app\validators\Handle as HandleValidator;
-use craft\app\validators\Unique as UniqueValidator;
+use craft\app\validators\HandleValidator;
+use craft\app\validators\UniqueValidator;
 
 /**
  * GlobalSet represents a global set element.
@@ -105,8 +105,8 @@ class GlobalSet extends Element
     {
         $behaviors = parent::behaviors();
         $behaviors['fieldLayout'] = [
-            'class' => 'craft\app\behaviors\FieldLayoutBehavior',
-            'elementType' => 'craft\app\elements\GlobalSet'
+            'class' => \craft\app\behaviors\FieldLayoutBehavior::class,
+            'elementType' => \craft\app\elements\GlobalSet::class
         ];
 
         return $behaviors;
@@ -119,10 +119,20 @@ class GlobalSet extends Element
     {
         $rules = parent::rules();
         $rules[] = [['fieldLayoutId'], 'number', 'integerOnly' => true];
-        $rules[] = [['handle'], HandleValidator::className(), 'reservedWords' => ['id', 'dateCreated', 'dateUpdated', 'uid', 'title']];
         $rules[] = [['name', 'handle'], 'string', 'max' => 255];
-        $rules[] = [['name', 'handle'], UniqueValidator::className(), 'targetClass' => GlobalSetRecord::className()];
         $rules[] = [['name', 'handle'], 'required'];
+
+        $rules[] = [
+            ['name', 'handle'],
+            UniqueValidator::class,
+            'targetClass' => GlobalSetRecord::class
+        ];
+
+        $rules[] = [
+            ['handle'],
+            HandleValidator::class,
+            'reservedWords' => ['id', 'dateCreated', 'dateUpdated', 'uid', 'title']
+        ];
 
         return $rules;
     }

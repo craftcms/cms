@@ -27,7 +27,7 @@ abstract class Component extends Model implements ComponentInterface
      */
     public static function displayName()
     {
-        $classNameParts = explode('\\', static::className());
+        $classNameParts = explode('\\', static::class);
         $displayName = array_pop($classNameParts);
 
         return $displayName;
@@ -38,7 +38,7 @@ abstract class Component extends Model implements ComponentInterface
      */
     public static function classHandle()
     {
-        $classNameParts = explode('\\', static::className());
+        $classNameParts = explode('\\', static::class);
         $handle = array_pop($classNameParts);
 
         return strtolower($handle);
@@ -52,6 +52,6 @@ abstract class Component extends Model implements ComponentInterface
      */
     public function getType()
     {
-        return static::className();
+        return static::class;
     }
 }

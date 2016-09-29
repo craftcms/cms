@@ -11,12 +11,12 @@ use craft\app\helpers\DateTimeHelper;
 use yii\validators\Validator;
 
 /**
- * Class DateTime validator.
+ * Class DateTimeValidator.
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since  3.0
  */
-class DateTime extends Validator
+class DateTimeValidator extends Validator
 {
     // Protected Methods
     // =========================================================================

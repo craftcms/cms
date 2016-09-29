@@ -35,34 +35,6 @@ class EntryType extends ActiveRecord
 
     /**
      * @inheritdoc
-     */
-    public function rules()
-    {
-        return [
-            [
-                ['handle'],
-                'craft\\app\\validators\\Handle',
-                'reservedWords' => [
-                    'id',
-                    'dateCreated',
-                    'dateUpdated',
-                    'uid',
-                    'title'
-                ]
-            ],
-            [['name'], 'unique', 'targetAttribute' => ['name', 'sectionId']],
-            [
-                ['handle'],
-                'unique',
-                'targetAttribute' => ['handle', 'sectionId']
-            ],
-            [['name', 'handle'], 'required'],
-            [['name', 'handle'], 'string', 'max' => 255],
-        ];
-    }
-
-    /**
-     * @inheritdoc
      *
      * @return string
      */
@@ -78,7 +50,7 @@ class EntryType extends ActiveRecord
      */
     public function getSection()
     {
-        return $this->hasOne(Section::className(), ['id' => 'sectionId']);
+        return $this->hasOne(Section::class, ['id' => 'sectionId']);
     }
 
     /**
@@ -88,6 +60,6 @@ class EntryType extends ActiveRecord
      */
     public function getFieldLayout()
     {
-        return $this->hasOne(FieldLayout::className(), ['id' => 'fieldLayoutId']);
+        return $this->hasOne(FieldLayout::class, ['id' => 'fieldLayoutId']);
     }
 }

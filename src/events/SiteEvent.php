@@ -26,5 +26,5 @@ class SiteEvent extends Event
     /**
      * @var boolean Whether the site is brand new
      */
-    public $isNew;
+    public $isNew = false;
 }

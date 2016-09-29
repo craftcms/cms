@@ -8,8 +8,6 @@
 namespace craft\app\models;
 
 use Craft;
-use craft\app\validators\DateTime;
-use craft\app\validators\SiteId;
 
 /**
  * Class EntryDraft model.

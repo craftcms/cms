@@ -9,6 +9,7 @@ namespace craft\app\records;
 
 use yii\db\ActiveQueryInterface;
 use craft\app\db\ActiveRecord;
+use craft\app\validators\SiteIdValidator;
 
 /**
  * Class MatrixBlock record.
@@ -40,7 +41,7 @@ class MatrixBlock extends ActiveRecord
     public function rules()
     {
         return [
-            [['ownerSiteId'], 'craft\\app\\validators\\SiteId'],
+            [['ownerSiteId'], SiteIdValidator::class],
         ];
     }
 
@@ -61,7 +62,7 @@ class MatrixBlock extends ActiveRecord
      */
     public function getElement()
     {
-        return $this->hasOne(Element::className(), ['id' => 'id']);
+        return $this->hasOne(Element::class, ['id' => 'id']);
     }
 
     /**
@@ -71,7 +72,7 @@ class MatrixBlock extends ActiveRecord
      */
     public function getOwner()
     {
-        return $this->hasOne(Element::className(), ['id' => 'ownerId']);
+        return $this->hasOne(Element::class, ['id' => 'ownerId']);
     }
 
     /**
@@ -81,7 +82,7 @@ class MatrixBlock extends ActiveRecord
      */
     public function getOwnerSite()
     {
-        return $this->hasOne(Site::className(), ['id' => 'ownerSiteId']);
+        return $this->hasOne(Site::class, ['id' => 'ownerSiteId']);
     }
 
     /**
@@ -91,7 +92,7 @@ class MatrixBlock extends ActiveRecord
      */
     public function getField()
     {
-        return $this->hasOne(Field::className(), ['id' => 'fieldId']);
+        return $this->hasOne(Field::class, ['id' => 'fieldId']);
     }
 
     /**
@@ -101,6 +102,6 @@ class MatrixBlock extends ActiveRecord
      */
     public function getType()
     {
-        return $this->hasOne(MatrixBlockType::className(), ['id' => 'typeId']);
+        return $this->hasOne(MatrixBlockType::class, ['id' => 'typeId']);
     }
 }

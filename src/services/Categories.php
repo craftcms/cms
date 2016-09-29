@@ -11,10 +11,8 @@ use Craft;
 use craft\app\db\Query;
 use craft\app\errors\CategoryGroupNotFoundException;
 use craft\app\errors\CategoryNotFoundException;
-use craft\app\events\CategoryDeleteEvent;
 use craft\app\events\CategoryEvent;
 use craft\app\elements\Category;
-use craft\app\events\CategoryGroupDeleteEvent;
 use craft\app\events\CategoryGroupEvent;
 use craft\app\models\CategoryGroup;
 use craft\app\models\CategoryGroup_SiteSettings;
@@ -41,8 +39,6 @@ class Categories extends Component
 
     /**
      * @event CategoryEvent The event that is triggered before a category is saved.
-     *
-     * You may set [[CategoryEvent::isValid]] to `false` to prevent the category from getting saved.
      */
     const EVENT_BEFORE_SAVE_CATEGORY = 'beforeSaveCategory';
 
@@ -73,8 +69,6 @@ class Categories extends Component
 
     /**
      * @event CategoryGroupEvent The event that is triggered before a category group is deleted.
-     *
-     * You may set [[CategoryEvent::isValid]] to `false` to prevent the category group from getting saved.
      */
     const EVENT_BEFORE_DELETE_GROUP = 'beforeDeleteGroup';
 
@@ -321,7 +315,15 @@ class Categories extends Component
             return false;
         }
 
-        if ($group->id) {
+        $isNewCategoryGroup = !$group->id;
+
+        // Fire a 'beforeSaveGroup' event
+        $this->trigger(self::EVENT_BEFORE_SAVE_GROUP, new CategoryGroupEvent([
+            'categoryGroup' => $group,
+            'isNew' => $isNewCategoryGroup,
+        ]));
+
+        if (!$isNewCategoryGroup) {
             $groupRecord = CategoryGroupRecord::findOne($group->id);
 
             if (!$groupRecord) {
@@ -330,10 +332,8 @@ class Categories extends Component
 
             /** @var CategoryGroup $oldCategoryGroup */
             $oldCategoryGroup = CategoryGroup::create($groupRecord);
-            $isNewCategoryGroup = false;
         } else {
             $groupRecord = new CategoryGroupRecord();
-            $isNewCategoryGroup = true;
         }
 
         // If they've set maxLevels to 0 (don't ask why), then pretend like there are none.
@@ -353,12 +353,6 @@ class Categories extends Component
                 throw new Exception('Tried to save a category group that is missing site settings');
             }
         }
-
-        // Fire a 'beforeSaveGroup' event
-        $this->trigger(self::EVENT_BEFORE_SAVE_GROUP, new CategoryGroupEvent([
-            'categoryGroup' => $group,
-            'isNew' => $isNewCategoryGroup,
-        ]));
 
         $db = Craft::$app->getDb();
         $transaction = $db->beginTransaction();
@@ -573,16 +567,9 @@ class Categories extends Component
         }
 
         // Fire a 'beforeDeleteGroup' event
-        $event = new CategoryGroupDeleteEvent([
+        $this->trigger(self::EVENT_BEFORE_DELETE_GROUP, new CategoryGroupEvent([
             'categoryGroup' => $group
-        ]);
-
-        $this->trigger(self::EVENT_BEFORE_DELETE_GROUP, $event);
-
-        // Make sure the event is giving us the go ahead
-        if (!$event->isValid) {
-            return false;
-        }
+        ]));
 
         $transaction = Craft::$app->getDb()->beginTransaction();
         try {
@@ -613,19 +600,18 @@ class Categories extends Component
                 ->execute();
 
             $transaction->commit();
-
-            // Fire an 'afterDeleteGroup' event
-            $this->trigger(self::EVENT_AFTER_DELETE_GROUP,
-                new CategoryGroupDeleteEvent([
-                    'categoryGroup' => $group
-                ]));
-
-            return true;
         } catch (\Exception $e) {
             $transaction->rollBack();
 
             throw $e;
         }
+
+        // Fire an 'afterDeleteGroup' event
+        $this->trigger(self::EVENT_AFTER_DELETE_GROUP, new CategoryGroupEvent([
+            'categoryGroup' => $group
+        ]));
+
+        return true;
     }
 
     /**
@@ -703,14 +689,27 @@ class Categories extends Component
      * Saves a category.
      *
      * @param Category $category
+     * @param boolean $runValidation Whether the category should be validated
      *
      * @return boolean Whether the category was saved successfully
      * @throws CategoryNotFoundException if $category has an invalid $id or invalid $newParentID
      * @throws \Exception if reasons
      */
-    public function saveCategory(Category $category)
+    public function saveCategory(Category $category, $runValidation = true)
     {
+        if ($runValidation && !$category->validate()) {
+            Craft::info('Category not saved due to validation error.', __METHOD__);
+
+            return false;
+        }
+
         $isNewCategory = !$category->id;
+
+        // Fire a 'beforeSaveCategory' event
+        $this->trigger(self::EVENT_BEFORE_SAVE_CATEGORY, new CategoryEvent([
+            'category' => $category,
+            'isNew' => $isNewCategory
+        ]));
 
         $hasNewParent = $this->_checkForNewParent($category);
 
@@ -741,60 +740,38 @@ class Categories extends Component
 
         $categoryRecord->groupId = $category->groupId;
 
-        $categoryRecord->validate();
-        $category->addErrors($categoryRecord->getErrors());
-
-        if ($category->hasErrors()) {
-            return false;
-        }
-
         $transaction = Craft::$app->getDb()->beginTransaction();
 
         try {
-            // Fire a 'beforeSaveCategory' event
-            $event = new CategoryEvent([
-                'category' => $category,
-                'isNew' => $isNewCategory
-            ]);
+            $success = Craft::$app->getElements()->saveElement($category);
 
-            $this->trigger(self::EVENT_BEFORE_SAVE_CATEGORY, $event);
+            // If it didn't work, rollback the transaction in case something changed in onBeforeSaveCategory
+            if (!$success) {
+                $transaction->rollBack();
 
-            // Is the event giving us the go-ahead?
-            if ($event->isValid) {
-                $success = Craft::$app->getElements()->saveElement($category);
-
-                // If it didn't work, rollback the transaction in case something changed in onBeforeSaveCategory
-                if (!$success) {
-                    $transaction->rollBack();
-
-                    return false;
-                }
-
-                // Now that we have an element ID, save it on the other stuff
-                if ($isNewCategory) {
-                    $categoryRecord->id = $category->id;
-                }
-
-                $categoryRecord->save(false);
-
-                // Has the parent changed?
-                if ($hasNewParent) {
-                    if (!$category->newParentId) {
-                        Craft::$app->getStructures()->appendToRoot($category->getGroup()->structureId, $category);
-                    } else {
-                        /** @noinspection PhpUndefinedVariableInspection */
-                        Craft::$app->getStructures()->append($category->getGroup()->structureId, $category, $parentCategory);
-                    }
-                }
-
-                // Update the category's descendants, who may be using this category's URI in their own URIs
-                Craft::$app->getElements()->updateDescendantSlugsAndUris($category, true, true);
-            } else {
-                $success = false;
+                return false;
             }
 
-            // Commit the transaction regardless of whether we saved the category, in case something changed
-            // in onBeforeSaveCategory
+            // Now that we have an element ID, save it on the other stuff
+            if ($isNewCategory) {
+                $categoryRecord->id = $category->id;
+            }
+
+            $categoryRecord->save(false);
+
+            // Has the parent changed?
+            if ($hasNewParent) {
+                if (!$category->newParentId) {
+                    Craft::$app->getStructures()->appendToRoot($category->getGroup()->structureId, $category);
+                } else {
+                    /** @noinspection PhpUndefinedVariableInspection */
+                    Craft::$app->getStructures()->append($category->getGroup()->structureId, $category, $parentCategory);
+                }
+            }
+
+            // Update the category's descendants, who may be using this category's URI in their own URIs
+            Craft::$app->getElements()->updateDescendantSlugsAndUris($category, true, true);
+
             $transaction->commit();
         } catch (\Exception $e) {
             $transaction->rollBack();
@@ -802,16 +779,13 @@ class Categories extends Component
             throw $e;
         }
 
-        if ($success) {
-            // Fire an 'afterSaveCategory' event
-            $this->trigger(self::EVENT_AFTER_SAVE_CATEGORY,
-                new CategoryEvent([
-                    'category' => $category,
-                    'isNew' => $isNewCategory,
-                ]));
-        }
+        // Fire an 'afterSaveCategory' event
+        $this->trigger(self::EVENT_AFTER_SAVE_CATEGORY, new CategoryEvent([
+            'category' => $category,
+            'isNew' => $isNewCategory,
+        ]));
 
-        return $success;
+        return true;
     }
 
     /**
@@ -828,12 +802,19 @@ class Categories extends Component
             return false;
         }
 
+        if (is_array($categories)) {
+            // Order in reverse-hierarchical order, so as we are looping through
+            // them and deleting their descendants, we don't have to worry about
+            // descendants conflicting with other $categories
+            usort($categories, function(Category $a, Category $b) {
+                return ($a->lft > $b->lft) ? -1 : 1;
+            });
+        } else {
+            $categories = [$categories];
+        }
+
         $transaction = Craft::$app->getDb()->beginTransaction();
         try {
-            if (!is_array($categories)) {
-                $categories = [$categories];
-            }
-
             $success = $this->_deleteCategories($categories, true);
 
             $transaction->commit();
@@ -843,19 +824,7 @@ class Categories extends Component
             throw $e;
         }
 
-        if ($success) {
-            foreach ($categories as $category) {
-                // Fire an 'afterDeleteCategory' event
-                $this->trigger(self::EVENT_AFTER_DELETE_CATEGORY,
-                    new CategoryDeleteEvent([
-                        'category' => $category
-                    ]));
-            }
-
-            return true;
-        }
-
-        return false;
+        return $success;
     }
 
     /**
@@ -1020,15 +989,25 @@ class Categories extends Component
             }
 
             // Fire a 'beforeDeleteCategory' event
-            $this->trigger(self::EVENT_BEFORE_DELETE_CATEGORY,
-                new CategoryDeleteEvent([
-                    'category' => $category
-                ]));
+            $this->trigger(self::EVENT_BEFORE_DELETE_CATEGORY, new CategoryEvent([
+                'category' => $category
+            ]));
 
             $categoryIds[] = $category->id;
         }
 
         // Delete 'em
-        return Craft::$app->getElements()->deleteElementById($categoryIds);
+        $success = Craft::$app->getElements()->deleteElementById($categoryIds);
+
+        if ($success) {
+            foreach ($categories as $category) {
+                // Fire an 'afterDeleteCategory' event
+                $this->trigger(self::EVENT_AFTER_DELETE_CATEGORY, new CategoryEvent([
+                    'category' => $category
+                ]));
+            }
+        }
+
+        return $success;
     }
 }

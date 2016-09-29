@@ -49,7 +49,7 @@ class Assets extends BaseRelationField
      */
     protected static function elementType()
     {
-        return Asset::className();
+        return Asset::class;
     }
 
     /**

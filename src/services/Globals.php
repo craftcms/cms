@@ -10,7 +10,6 @@ namespace craft\app\services;
 use Craft;
 use craft\app\db\Query;
 use craft\app\errors\GlobalSetNotFoundException;
-use craft\app\events\DeleteGlobalSetEvent;
 use craft\app\events\GlobalSetContentEvent;
 use craft\app\events\GlobalSetEvent;
 use craft\app\elements\GlobalSet;
@@ -55,14 +54,14 @@ class Globals extends Component
     const EVENT_AFTER_SAVE_GLOBAL_SET = 'afterSaveGlobalSet';
 
     /**
-     * @event DeleteGlobalSetEvent The event that is triggered before a global set is deleted.
+     * @event GlobalSetEvent The event that is triggered before a global set is deleted.
      *
      * You may set [[GlobalSetEvent::isValid]] to `false` to prevent the global set from being deleted.
      */
     const EVENT_BEFORE_DELETE_GLOBAL_SET = 'beforeDeleteGlobalSet';
 
     /**
-     * @event DeleteGlobalSetEvent The event that is triggered after a global set is deleted.
+     * @event GlobalSetEvent The event that is triggered after a global set is deleted.
      */
     const EVENT_AFTER_DELETE_GLOBAL_SET = 'afterDeleteGlobalSet';
 
@@ -230,7 +229,7 @@ class Globals extends Component
                 return $this->_globalSetsById[$globalSetId];
             }
         } else {
-            return Craft::$app->getElements()->getElementById($globalSetId, GlobalSet::className(), $siteId);
+            return Craft::$app->getElements()->getElementById($globalSetId, GlobalSet::class, $siteId);
         }
 
         return null;
@@ -393,7 +392,7 @@ class Globals extends Component
             $globalSet = $this->getSetById($setId);
 
             // Fire a 'beforeDeleteGlobalSet' event
-            $event = new DeleteGlobalSetEvent([
+            $event = new GlobalSetEvent([
                 'globalSet' => $globalSet
             ]);
 
@@ -426,11 +425,9 @@ class Globals extends Component
 
         if ($success) {
             // Fire an 'afterDeleteGlobalSet' event
-            $this->trigger(self::EVENT_AFTER_DELETE_GLOBAL_SET,
-                new DeleteGlobalSetEvent([
-                    'globalSet' => $globalSet
-                ])
-            );
+            $this->trigger(self::EVENT_AFTER_DELETE_GLOBAL_SET, new GlobalSetEvent([
+                'globalSet' => $globalSet
+            ]));
         }
 
         return $success;

@@ -66,9 +66,9 @@ class Application extends \yii\console\Application
     public function coreCommands()
     {
         return [
-            'help' => 'yii\console\controllers\HelpController',
-            'migrate' => 'yii\console\controllers\MigrateController',
-            'cache' => 'yii\console\controllers\CacheController',
+            'help' => \yii\console\controllers\HelpController::class,
+            'migrate' => \yii\console\controllers\MigrateController::class,
+            'cache' => \yii\console\controllers\CacheController::class,
         ];
     }
 }

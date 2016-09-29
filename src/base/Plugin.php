@@ -10,7 +10,6 @@ namespace craft\app\base;
 use Craft;
 use craft\app\db\Migration;
 use craft\app\db\MigrationManager;
-use craft\app\events\Event;
 use craft\app\helpers\Io;
 use craft\app\web\Controller;
 use yii\base\Module;
@@ -29,45 +28,6 @@ class Plugin extends Module implements PluginInterface
     // =========================================================================
 
     use PluginTrait;
-
-    // Constants
-    // =========================================================================
-
-    /**
-     * @event Event The event that is triggered before the plugin is installed
-     *
-     * You may set [[Event::isValid]] to `false` to prevent the plugin from getting installed.
-     */
-    const EVENT_BEFORE_INSTALL = 'beforeInstall';
-
-    /**
-     * @event Event The event that is triggered after the plugin is installed
-     */
-    const EVENT_AFTER_INSTALL = 'afterInstall';
-
-    /**
-     * @event Event The event that is triggered before the plugin is updated
-     *
-     * You may set [[Event::isValid]] to `false` to prevent the plugin from getting updated.
-     */
-    const EVENT_BEFORE_UPDATE = 'beforeUpdate';
-
-    /**
-     * @event Event The event that is triggered after the plugin is updated
-     */
-    const EVENT_AFTER_UPDATE = 'afterUpdate';
-
-    /**
-     * @event Event The event that is triggered before the plugin is uninstalled
-     *
-     * You may set [[Event::isValid]] to `false` to prevent the plugin from getting uninstalled.
-     */
-    const EVENT_BEFORE_UNINSTALL = 'beforeUninstall';
-
-    /**
-     * @event Event The event that is triggered after the plugin is uninstalled
-     */
-    const EVENT_AFTER_UNINSTALL = 'afterUninstall';
 
     // Static
     // =========================================================================
@@ -110,7 +70,7 @@ class Plugin extends Module implements PluginInterface
 
         if (!isset($i18n->translations[$handle]) && !isset($i18n->translations[$handle.'*'])) {
             $i18n->translations[$handle] = [
-                'class' => 'craft\app\i18n\PhpMessageSource',
+                'class' => \craft\app\i18n\PhpMessageSource::class,
                 'sourceLanguage' => $this->sourceLanguage,
                 'basePath' => "@plugins/$handle/translations",
                 'allowOverrides' => true,
@@ -325,10 +285,7 @@ class Plugin extends Module implements PluginInterface
      */
     protected function beforeInstall()
     {
-        $event = new Event();
-        $this->trigger(self::EVENT_BEFORE_INSTALL, $event);
-
-        return $event->isValid;
+        return true;
     }
 
     /**
@@ -336,7 +293,6 @@ class Plugin extends Module implements PluginInterface
      */
     protected function afterInstall()
     {
-        $this->trigger(self::EVENT_AFTER_INSTALL, new Event());
     }
 
     /**
@@ -346,10 +302,7 @@ class Plugin extends Module implements PluginInterface
      */
     protected function beforeUpdate()
     {
-        $event = new Event();
-        $this->trigger(self::EVENT_BEFORE_UPDATE, $event);
-
-        return $event->isValid;
+        return true;
     }
 
     /**
@@ -357,7 +310,6 @@ class Plugin extends Module implements PluginInterface
      */
     protected function afterUpdate()
     {
-        $this->trigger(self::EVENT_AFTER_UPDATE, new Event());
     }
 
     /**
@@ -367,10 +319,7 @@ class Plugin extends Module implements PluginInterface
      */
     protected function beforeUninstall()
     {
-        $event = new Event();
-        $this->trigger(self::EVENT_BEFORE_UNINSTALL, $event);
-
-        return $event->isValid;
+        return true;
     }
 
     /**
@@ -378,7 +327,6 @@ class Plugin extends Module implements PluginInterface
      */
     protected function afterUninstall()
     {
-        $this->trigger(self::EVENT_AFTER_UNINSTALL, new Event());
     }
 
     /**

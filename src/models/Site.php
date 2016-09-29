@@ -10,9 +10,9 @@ namespace craft\app\models;
 use Craft;
 use craft\app\base\Model;
 use craft\app\records\Site as SiteRecord;
-use craft\app\validators\Handle;
-use craft\app\validators\Unique;
-use craft\app\validators\Url;
+use craft\app\validators\HandleValidator;
+use craft\app\validators\UniqueValidator;
+use craft\app\validators\UrlValidator;
 
 /**
  * Site model class.
@@ -86,12 +86,12 @@ class Site extends Model
             [['id'], 'number', 'integerOnly' => true],
             [['name', 'handle', 'baseUrl'], 'string', 'max' => 255],
             [['language'], 'string', 'max' => 12],
-            [['handle'], Handle::className(), 'reservedWords' => ['id', 'dateCreated', 'dateUpdated', 'uid', 'title']],
-            [['baseUrl'], Url::className(), 'defaultScheme' => 'http'],
+            [['handle'], HandleValidator::class, 'reservedWords' => ['id', 'dateCreated', 'dateUpdated', 'uid', 'title']],
+            [['baseUrl'], UrlValidator::class, 'defaultScheme' => 'http'],
         ];
 
         if (Craft::$app->getIsInstalled()) {
-            $rules[] = [['name', 'handle'], Unique::className(), 'targetClass' => SiteRecord::className()];
+            $rules[] = [['name', 'handle'], UniqueValidator::class, 'targetClass' => SiteRecord::class];
         }
 
         return $rules;

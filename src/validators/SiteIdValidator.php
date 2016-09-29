@@ -16,7 +16,7 @@ use yii\validators\Validator;
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since  3.0
  */
-class SiteId extends Validator
+class SiteIdValidator extends Validator
 {
     // Protected Methods
     // =========================================================================

@@ -8,6 +8,7 @@
 namespace craft\app\records;
 
 use craft\app\db\ActiveRecord;
+use craft\app\validators\HandleValidator;
 use yii\db\ActiveQueryInterface;
 
 /**
@@ -28,29 +29,6 @@ class UserGroup extends ActiveRecord
 
     /**
      * @inheritdoc
-     */
-    public function rules()
-    {
-        return [
-            [
-                ['handle'],
-                'craft\\app\\validators\\Handle',
-                'reservedWords' => [
-                    'id',
-                    'dateCreated',
-                    'dateUpdated',
-                    'uid',
-                    'title'
-                ]
-            ],
-            [['name', 'handle'], 'required'],
-            [['name', 'handle'], 'unique'],
-            [['name', 'handle'], 'string', 'max' => 255],
-        ];
-    }
-
-    /**
-     * @inheritdoc
      *
      * @return string
      */
@@ -66,7 +44,7 @@ class UserGroup extends ActiveRecord
      */
     public function getUsers()
     {
-        return $this->hasMany(User::className(), ['id' => 'userId'])
+        return $this->hasMany(User::class, ['id' => 'userId'])
             ->viaTable('{{%usergroups_users}}', ['groupId' => 'id']);
     }
 }

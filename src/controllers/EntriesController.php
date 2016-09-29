@@ -99,7 +99,7 @@ class EntriesController extends BaseEntriesController
             // Author selector variables
             // ---------------------------------------------------------------------
 
-            $variables['userElementType'] = User::className();
+            $variables['userElementType'] = User::class;
 
             $authorPermission = 'editEntries'.$variables['permissionSuffix'];
 
@@ -122,7 +122,7 @@ class EntriesController extends BaseEntriesController
             $section->type == Section::TYPE_STRUCTURE &&
             $section->maxLevels != 1
         ) {
-            $variables['elementType'] = Entry::className();
+            $variables['elementType'] = Entry::class;
 
             $variables['parentOptionCriteria'] = [
                 'siteId' => $site->id,
@@ -195,13 +195,13 @@ class EntriesController extends BaseEntriesController
 
         // Page title w/ revision label
         switch ($entry::className()) {
-            case EntryDraft::className(): {
+            case EntryDraft::class: {
                 /** @var EntryDraft $entry */
                 $variables['revisionLabel'] = $entry->name;
                 break;
             }
 
-            case EntryVersion::className(): {
+            case EntryVersion::class: {
                 /** @var EntryVersion $entry */
                 $variables['revisionLabel'] = Craft::t('app', 'Version {num}', ['num' => $entry->num]);
                 break;
@@ -217,7 +217,7 @@ class EntriesController extends BaseEntriesController
         } else {
             $variables['docTitle'] = $variables['title'] = $entry->title;
 
-            if ($entry::className() != Entry::className()) {
+            if ($entry::className() != Entry::class) {
                 $variables['docTitle'] .= ' ('.$variables['revisionLabel'].')';
             }
         }
@@ -282,7 +282,7 @@ class EntriesController extends BaseEntriesController
                         'sectionId' => $section->id,
                         'entryId' => $entry->id,
                         'siteId' => $entry->siteId,
-                        'versionId' => ($entry::className() == EntryVersion::className() ? $entry->versionId : null),
+                        'versionId' => ($entry::className() == EntryVersion::class ? $entry->versionId : null),
                     ]
                 ]).');');
 
@@ -294,16 +294,16 @@ class EntriesController extends BaseEntriesController
 
                 // If we're looking at the live version of an entry, just use
                 // the entry's main URL as its share URL
-                if ($className == Entry::className() && $entry->getStatus() == Entry::STATUS_LIVE) {
+                if ($className == Entry::class && $entry->getStatus() == Entry::STATUS_LIVE) {
                     $variables['shareUrl'] = $entry->getUrl();
                 } else {
                     switch ($className) {
-                        case EntryDraft::className(): {
+                        case EntryDraft::class: {
                             /** @var EntryDraft $entry */
                             $shareParams = ['draftId' => $entry->draftId];
                             break;
                         }
-                        case EntryVersion::className(): {
+                        case EntryVersion::class: {
                             /** @var EntryVersion $entry */
                             $shareParams = ['versionId' => $entry->versionId];
                             break;

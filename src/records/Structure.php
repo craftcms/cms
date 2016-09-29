@@ -58,6 +58,6 @@ class Structure extends ActiveRecord
      */
     public function getElements()
     {
-        return $this->hasMany(StructureElement::className(), ['structureId' => 'id']);
+        return $this->hasMany(StructureElement::class, ['structureId' => 'id']);
     }
 }

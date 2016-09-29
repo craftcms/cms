@@ -37,7 +37,7 @@ class Tags extends BaseRelationField
      */
     protected static function elementType()
     {
-        return Tag::className();
+        return Tag::class;
     }
 
     /**

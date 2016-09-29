@@ -125,7 +125,7 @@ class FieldsController extends Controller
         }
 
         if ($field === null) {
-            $field = Craft::$app->getFields()->createField('craft\app\fields\PlainText');
+            $field = Craft::$app->getFields()->createField(\craft\app\fields\PlainText::class);
         }
 
         /** @var Field $field */

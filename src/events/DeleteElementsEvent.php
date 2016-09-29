@@ -7,21 +7,19 @@
 
 namespace craft\app\events;
 
-use craft\app\models\TagGroup;
-
 /**
- * Delete Tag group event class.
+ * DeleteElementsEvent class.
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since  3.0
  */
-class DeleteTagGroupEvent extends Event
+class DeleteElementsEvent extends Event
 {
     // Properties
     // =========================================================================
 
     /**
-     * @var TagGroup The tag group model associated with the event.
+     * @var array The element IDs associated with this event.
      */
-    public $tagGroup;
+    public $elementIds;
 }

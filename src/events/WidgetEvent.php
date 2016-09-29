@@ -7,21 +7,26 @@
 
 namespace craft\app\events;
 
-use craft\app\elements\Asset;
+use craft\app\base\WidgetInterface;
 
 /**
- * Asset delete event class.
+ * WidgetEvent class.
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since  3.0
  */
-class AssetDeleteEvent extends Event
+class WidgetEvent extends Event
 {
     // Properties
     // =========================================================================
 
     /**
-     * @var Asset The asset model associated with the event.
+     * @var WidgetInterface The widget associated with this event.
      */
-    public $asset;
+    public $widget;
+
+    /**
+     * @var boolean Whether the widget is brand new
+     */
+    public $isNew = false;
 }

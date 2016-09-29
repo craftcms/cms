@@ -74,8 +74,8 @@ class MatrixBlockType extends Model
     {
         return [
             'fieldLayout' => [
-                'class' => 'craft\app\behaviors\FieldLayoutBehavior',
-                'elementType' => 'craft\app\elements\MatrixBlock'
+                'class' => \craft\app\behaviors\FieldLayoutBehavior::class,
+                'elementType' => \craft\app\elements\MatrixBlock::class
             ],
         ];
     }

@@ -25,7 +25,7 @@ class m160829_000000_pending_user_content_cleanup extends Migration
             ->leftJoin('{{%entries}} en', 'en.id = el.id')
             ->where(
                 ['and', 'el.type = :type', 'en.id is null'],
-                [':type' => Entry::className()]
+                [':type' => Entry::class]
             )
             ->column();
 
