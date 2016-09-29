@@ -265,6 +265,10 @@ class Sections extends Component
      */
     public function getSectionById($sectionId)
     {
+        if (!$sectionId) {
+            return null;
+        }
+
         // If we've already fetched all sections we can save ourselves a trip to the DB for section IDs that don't exist
         if (!$this->_fetchedAllSections &&
             (!isset($this->_sectionsById) || !array_key_exists($sectionId,
@@ -686,16 +690,25 @@ class Sections extends Component
      */
     public function deleteSectionById($sectionId)
     {
-        if (!$sectionId) {
-            return false;
-        }
-
         $section = $this->getSectionById($sectionId);
 
         if (!$section) {
             return false;
         }
 
+        return $this->deleteSection($section);
+    }
+
+    /**
+     * Deletes a section.
+     *
+     * @param Section $section
+     *
+     * @return boolean Whether the section was deleted successfully
+     * @throws \Exception if reasons
+     */
+    public function deleteSection(Section $section)
+    {
         // Fire a 'beforeDeleteSection' event
         $this->trigger(self::EVENT_BEFORE_DELETE_SECTION, new SectionEvent([
             'section' => $section
@@ -705,7 +718,7 @@ class Sections extends Component
         try {
             // Nuke the field layouts first.
             $entryTypeIds = [];
-            $entryTypes = $this->getEntryTypesBySectionId($sectionId);
+            $entryTypes = $this->getEntryTypesBySectionId($section->id);
 
             foreach ($entryTypes as $entryType) {
                 $entryTypeIds[] = $entryType->id;
@@ -726,7 +739,7 @@ class Sections extends Component
             $entryIds = (new Query())
                 ->select('id')
                 ->from('{{%entries}}')
-                ->where(['sectionId' => $sectionId])
+                ->where(['sectionId' => $section->id])
                 ->column();
 
             Craft::$app->getElements()->deleteElementById($entryIds);
@@ -735,7 +748,7 @@ class Sections extends Component
             $structureId = (new Query())
                 ->select('structureId')
                 ->from('{{%sections}}')
-                ->where(['id' => $sectionId])
+                ->where(['id' => $section->id])
                 ->scalar();
 
             if ($structureId) {
@@ -744,7 +757,7 @@ class Sections extends Component
 
             // Delete the section.
             Craft::$app->getDb()->createCommand()
-                ->delete('{{%sections}}', ['id' => $sectionId])
+                ->delete('{{%sections}}', ['id' => $section->id])
                 ->execute();
 
             $transaction->commit();
