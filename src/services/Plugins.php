@@ -101,30 +101,22 @@ class Plugins extends Component
     // =========================================================================
 
     /**
-     * Stores whether plugins have been loaded yet for this request.
-     *
-     * @var bool
+     * @var bool Whether plugins have been loaded yet for this request
      */
     private $_pluginsLoaded = false;
 
     /**
-     * Stores whether plugins are in the middle of being loaded.
-     *
-     * @var bool
+     * @var boolean Whether plugins are in the middle of being loaded
      */
     private $_loadingPlugins = false;
 
     /**
-     * Stores references to all the enabled plugins.
-     *
-     * @var array
+     * @var PluginInterface[] All the enabled plugins
      */
     private $_plugins = [];
 
     /**
-     * Holds a list of all of the stored info for enabled plugins, indexed by the plugins’ handles.
-     *
-     * @var array
+     * @var array All of the stored info for enabled plugins, indexed by the plugins’ handles
      */
     private $_installedPluginInfo;
 
@@ -133,6 +125,8 @@ class Plugins extends Component
 
     /**
      * Loads the enabled plugins.
+     *
+     * @return void
      */
     public function loadPlugins()
     {
@@ -191,7 +185,7 @@ class Plugins extends Component
     /**
      * Returns whether plugins have been loaded yet for this request.
      *
-     * @return boolean Whether plugins have been loaded yet.
+     * @return boolean
      */
     public function arePluginsLoaded()
     {
@@ -219,7 +213,7 @@ class Plugins extends Component
     /**
      * Returns all the enabled plugins.
      *
-     * @return PluginInterface[] The enabled plugins
+     * @return PluginInterface[]
      */
     public function getAllPlugins()
     {
@@ -231,9 +225,9 @@ class Plugins extends Component
     /**
      * Enables a plugin by its handle.
      *
-     * @param string $handle The plugin’s handle.
+     * @param string $handle The plugin’s handle
      *
-     * @return boolean Whether the plugin was enabled successfully.
+     * @return boolean Whether the plugin was enabled successfully
      * @throws Exception if the plugin isn't installed
      */
     public function enablePlugin($handle)
@@ -331,7 +325,7 @@ class Plugins extends Component
     /**
      * Installs a plugin by its handle.
      *
-     * @param string $handle The plugin’s handle.
+     * @param string $handle The plugin’s handle
      *
      * @return boolean Whether the plugin was installed successfully.
      * @throws Exception if the plugin doesn’t exist
@@ -404,7 +398,7 @@ class Plugins extends Component
     /**
      * Uninstalls a plugin by its handle.
      *
-     * @param string $handle The plugin’s handle.
+     * @param string $handle The plugin’s handle
      *
      * @return boolean Whether the plugin was uninstalled successfully
      * @throws Exception if the plugin doesn’t exist
@@ -476,10 +470,10 @@ class Plugins extends Component
     /**
      * Saves a plugin's settings.
      *
-     * @param PluginInterface $plugin   The plugin.
-     * @param array           $settings The plugin’s new settings.
+     * @param PluginInterface $plugin   The plugin
+     * @param array           $settings The plugin’s new settings
      *
-     * @return boolean Whether the plugin’s settings were saved successfully.
+     * @return boolean Whether the plugin’s settings were saved successfully
      */
     public function savePluginSettings(PluginInterface $plugin, $settings)
     {
@@ -517,11 +511,11 @@ class Plugins extends Component
     /**
      * Calls a method on all plugins that have it, and returns an array of the results, indexed by plugin handles.
      *
-     * @param string  $method     The name of the method.
-     * @param array   $args       Any arguments that should be passed when calling the method on the plugins.
-     * @param boolean $ignoreNull Whether plugins that have the method but return a null response should be ignored. Defaults to false.
+     * @param string  $method     The name of the method
+     * @param array   $args       Any arguments that should be passed when calling the method on the plugins
+     * @param boolean $ignoreNull Whether plugins that have the method but return a null response should be ignored. Defaults to false
      *
-     * @return array An array of the plugins’ responses.
+     * @return array An array of the plugins’ responses
      */
     public function call($method, $args = [], $ignoreNull = false)
     {
@@ -544,11 +538,11 @@ class Plugins extends Component
     /**
      * Calls a method on the first plugin that has it, and returns the result.
      *
-     * @param string  $method     The name of the method.
-     * @param array   $args       Any arguments that should be passed when calling the method on the plugins.
-     * @param boolean $ignoreNull Whether plugins that have the method but return a null response should be ignored. Defaults to false.
+     * @param string  $method     The name of the method
+     * @param array   $args       Any arguments that should be passed when calling the method on the plugins
+     * @param boolean $ignoreNull Whether plugins that have the method but return a null response should be ignored. Defaults to false
      *
-     * @return mixed The plugin’s response, or null.
+     * @return mixed The plugin’s response, or null
      */
     public function callFirst($method, $args = [], $ignoreNull = false)
     {
@@ -628,7 +622,7 @@ class Plugins extends Component
      *
      * @param string $handle The plugin handle
      *
-     * @return array|null The stored info, if there is any.
+     * @return array|null The stored info, if there is any
      */
     public function getStoredPluginInfo($handle)
     {
