@@ -52,6 +52,7 @@ class Sepia extends ImageFilter
      */
     public function applyAndStore($imagePath, $options = [], $targetPath = '')
     {
+        $targetPath = empty($targetPath) ? $imagePath : $targetPath;
         $image = new \Imagick($imagePath);
         $this->applyFilter($image, $options);
         return $image->writeImage($targetPath);
@@ -63,7 +64,6 @@ class Sepia extends ImageFilter
     protected function applyFilter(\Imagick $image, $options = [])
     {
         $image->sepiaToneImage(80);
-
         return $image;
     }
 }

@@ -35,7 +35,7 @@
             </div>
             {% for filter in filters %}
                 <div class="filter-fields hidden" filter="{{ filter.getType()|replace({'\\' : '-'}) }}">
-                    {{ filter.getFieldHtml() }}
+                    {{ filter.getFieldHtml()|raw }}
                 </div>
             {% endfor %}
 

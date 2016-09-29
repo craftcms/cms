@@ -11,12 +11,11 @@ use Craft;
 use craft\app\base\ImageFilter;
 
 /**
- * Class Grayscale
- *
+ * Class Brightness
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since  3.0
  */
-class Grayscale extends ImageFilter
+class Brightness extends ImageFilter
 {
 
 
@@ -26,7 +25,7 @@ class Grayscale extends ImageFilter
      * @return string
      */
     public function __toString() {
-        return Craft::t('app', 'Grayscale');
+        return Craft::t('app', 'Brightness');
     }
 
     /**
@@ -53,7 +52,6 @@ class Grayscale extends ImageFilter
     public function applyAndStore($imagePath, $options = [], $targetPath = '')
     {
         $targetPath = empty($targetPath) ? $imagePath : $targetPath;
-
         $image = new \Imagick($imagePath);
         $this->applyFilter($image, $options);
         return $image->writeImage($targetPath);
@@ -62,9 +60,20 @@ class Grayscale extends ImageFilter
     /**
      * @inheritdoc
      */
+    public function getFieldHtml()
+    {
+        $brightness = '<label for="gamma">'.Craft::t('app', 'Gamma').'</label> <input id="gamma" name="gamma" type="range" min="0.5" max="3" step="0.01" value="1"/>';
+        return $brightness;
+    }
+
+    /**
+     * @inheritdoc
+     */
     protected function applyFilter(\Imagick $image, $options = [])
     {
-        $image->transformImageColorspace(\Imagick::COLORSPACE_GRAY);
+        // Defaults
+        $options = array_merge(['gamma' => 1], $options);
+        $image->gammaImage($options['gamma']);
         return $image;
     }
 }

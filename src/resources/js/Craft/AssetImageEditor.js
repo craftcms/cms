@@ -44,6 +44,8 @@ Craft.AssetImageEditor = Garnish.Modal.extend(
 		init: function (assetId, settings) {
 			this.setSettings(settings, Craft.AssetImageEditor.defaults);
 
+			this.assetId = assetId;
+
 			// Build the modal
 			var $container = $('<div class="modal asset-editor"></div>').appendTo(Garnish.$bod),
 				$body = $('<div class="body"><div class="spinner big"></div></div>').appendTo($container),
@@ -61,7 +63,7 @@ Craft.AssetImageEditor = Garnish.Modal.extend(
 			this.addListener(this.$cancelBtn, 'activate', $.proxy(this, 'hide'));
 			this.removeListener(this.$shade, 'click');
 
-			this.url = Craft.getActionUrl('assets/edit-image', {assetId: assetId, size: this.assetSize});
+			this.url = Craft.getActionUrl('assets/edit-image', {assetId: this.assetId, size: this.assetSize});
 			this.assetId = assetId;
 
 			Craft.postActionRequest('assets/image-editor', $.proxy(this, 'loadEditor'));
@@ -201,6 +203,7 @@ Craft.AssetImageEditor = Garnish.Modal.extend(
 					$('.filter-fields[filter=' + $option.val() + ']').removeClass('hidden');
 				}
 			}, this));
+			$('.btn.apply-filter', this.$filters).on('click', $.proxy(this, 'applyFilter'));
 		},
 
 		/**
@@ -307,14 +310,20 @@ Craft.AssetImageEditor = Garnish.Modal.extend(
 				replace: $button.hasClass('replace') ? 1 : 0
 			};
 
-			if (this.appliedFilter) {
+			var filterHandle = this.getSelectedFilter();
 
+			if (filterHandle) {
+				postData.filter = filterHandle;
+				var filterOptions = this.getFilterOptions(filterHandle);
+
+				for (var option in filterOptions) {
+					postData['filterOptions[' + option + ']'] = encodeURIComponent(filterOptions[option]);
+				}
 			}
 
-			Craft.postActionRequest('assets/edit-image', postData, $.proxy(function (data) {
+			Craft.postActionRequest('assets/save-image', postData, $.proxy(function (data) {
 				this.$buttons.find('.btn').removeClass('disabled').end().find('.spinner').remove();
 			}, this));
-
 		},
 
 		/**
@@ -417,32 +426,53 @@ Craft.AssetImageEditor = Garnish.Modal.extend(
 		},
 
 		/**
-		 * Get selected filter
+		 * Apply a selected filter.
 		 */
-		getSelectedFilter: function () {
-			var $filterOption = $('.filter-select select option:selected', this.$filters);
-			return $filterOption.data('filter');
+		applyFilter: function () {
+			var getParams = {
+				assetId: this.assetId,
+				size: this.assetSize
+			};
+
+			var filterHandle = this.getSelectedFilter();
+
+			if (filterHandle) {
+				getParams.filter = filterHandle;
+				var filterOptions = this.getFilterOptions(filterHandle);
+				for (var option in filterOptions) {
+					getParams['filterOptions[' + option + ']'] = encodeURIComponent(filterOptions[option]);
+				}
+			}
+
+			imageUrl = Craft.getActionUrl('assets/edit-image', getParams);
+
+			this.image.setSrc(imageUrl, $.proxy(function (imageObject) {
+				this._scaleAndCenterImage();
+				this.straighten();
+				this.canvas.renderAll();
+			}, this));
 		},
 
 		/**
-		 * Get selected filter with the option data set.
-		 * @returns {*}
+		 * Get the currently selected filter's handle
 		 */
-		getSelectedFilterWithData: function () {
+		getSelectedFilter: function () {
+			return $('.filter-select').find('option:selected').val();
+		},
 
-			var filter = this.getSelectedFilter(),
-				$filterFields = $('.filter-fields input', this.$filters),
-				options = {};
-
-			// Build the filter options object based on field values
+		/**
+		 * Get the filter options by a filter handle
+		 * @param filterHandle
+		 */
+		getFilterOptions: function (filterHandle) {
+			var filterParams = {};
+			$filterFields = $('.filter-fields[filter=' + filterHandle + ']').find('input, select, textarea');
 			$filterFields.each(function () {
 				$input = $(this);
-				options[$input.prop('name')] = $input.val();
+				filterParams[$input.prop('name')] = encodeURIComponent($input.val());
 			});
 
-			filter.setOptions(options);
-
-			return filter;
+			return filterParams;
 		}
 	},
 	{
@@ -453,36 +483,6 @@ Craft.AssetImageEditor = Garnish.Modal.extend(
 			animationDuration: 150,
 
 			onSave: $.noop,
-		}
-	}
-);
-
-/**
- * Asset image editor class
- */
-Craft.AssetImageEditor.BaseFilter = Garnish.Base.extend(
-	{
-		filterClass: '',
-		options: {},
-
-		getName: function () {
-			return 'None';
-		},
-
-		setOptions: function (options) {
-			this.options = options;
-		},
-
-		getOptions: function (options) {
-			return this.options;
-		},
-
-		getFieldHtml: function () {
-			return '';
-		},
-
-		applyTo: function (canvasEl) {
-			return;
 		}
 	}
 );

@@ -1,35 +1,35 @@
 <?php
-namespace craft\app\services;
+    namespace craft\app\services;
 
-use Craft;
-use craft\app\base\Volume;
-use craft\app\base\VolumeInterface;
-use craft\app\db\Query;
-use craft\app\errors\VolumeException;
-use craft\app\errors\MissingComponentException;
-use craft\app\events\DeleteVolumeEvent;
-use craft\app\events\VolumeEvent;
-use craft\app\helpers\Component as ComponentHelper;
-use craft\app\records\Volume as AssetVolumeRecord;
-use craft\app\records\VolumeFolder;
-use craft\app\volumes\AwsS3;
-use craft\app\volumes\GoogleCloud;
-use craft\app\volumes\MissingVolume;
-use craft\app\volumes\Local;
-use craft\app\volumes\Rackspace;
-use craft\app\volumes\Temp;
-use yii\base\Component;
+    use Craft;
+    use craft\app\base\Volume;
+    use craft\app\base\VolumeInterface;
+    use craft\app\db\Query;
+    use craft\app\errors\VolumeException;
+    use craft\app\errors\MissingComponentException;
+    use craft\app\events\DeleteVolumeEvent;
+    use craft\app\events\VolumeEvent;
+    use craft\app\helpers\Component as ComponentHelper;
+    use craft\app\records\Volume as AssetVolumeRecord;
+    use craft\app\records\VolumeFolder;
+    use craft\app\volumes\AwsS3;
+    use craft\app\volumes\GoogleCloud;
+    use craft\app\volumes\MissingVolume;
+    use craft\app\volumes\Local;
+    use craft\app\volumes\Rackspace;
+    use craft\app\volumes\Temp;
+    use yii\base\Component;
 
-/**
- * Class AssetVolumesService
- *
- * @author     Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @copyright  Copyright (c) 2014, Pixel & Tonic, Inc.
- * @license    http://craftcms.com/license Craft License Agreement
- * @see        http://craftcms.com
- * @package    craft.app.services
- * @since      3.0
- */
+    /**
+     * Class AssetVolumesService
+     *
+     * @author     Pixel & Tonic, Inc. <support@pixelandtonic.com>
+     * @copyright  Copyright (c) 2014, Pixel & Tonic, Inc.
+     * @license    http://craftcms.com/license Craft License Agreement
+     * @see        http://craftcms.com
+     * @package    craft.app.services
+     * @since      3.0
+     */
 class Volumes extends Component
 {
     // Constants

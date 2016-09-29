@@ -8,23 +8,21 @@
 namespace craft\app\controllers;
 
 use Craft;
-use craft\app\base\Filter;
 use craft\app\errors\AssetConflictException;
 use craft\app\errors\AssetLogicException;
 use craft\app\errors\AssetException;
 use craft\app\errors\UploadFailedException;
 use craft\app\fields\Assets as AssetsField;
 use craft\app\helpers\Assets;
-use craft\app\helpers\ElementHelper;
 use craft\app\helpers\Image;
 use craft\app\helpers\Io;
 use craft\app\elements\Asset;
 use craft\app\helpers\StringHelper;
-use craft\app\helpers\Url;
-use craft\app\image\Raster;
+use craft\app\image\Raster ;
 use craft\app\models\VolumeFolder;
 use craft\app\web\Controller;
 use craft\app\web\UploadedFile;
+use yii\helpers\FileHelper;
 use yii\web\BadRequestHttpException;
 use yii\web\Response;
 
@@ -585,12 +583,21 @@ class AssetsController extends Controller
 
         $response = Craft::$app->getResponse();
 
-        return $response->sendFile($filePath, null, ['inline' => true]);
+        $filter = $request->getQueryParam('filter');
 
+        if ($filter) {
+            $className = StringHelper::replace($filter, '-', '\\');
+            $filter = Craft::$app->getImageEffects()->getFilter($className);
+            $filterOptions = $request->getQueryParam('filterOptions', []);
+            $imageBlob = $filter->applyAndReturnBlob($filePath, $filterOptions);
+            return $response->sendContentAsFile($imageBlob, null, ['inline' => true, 'mimeType' => FileHelper::getMimeTypeByExtension($filePath)]);
+        } else {
+            return $response->sendFile($filePath, null, ['inline' => true]);
+        }
     }
 
     /**
-     * Edit an image according to posted parameters.
+     * Save an image according to posted parameters.
      *
      * @return Response
      * @throws BadRequestHttpException if some parameters are missing.
@@ -607,9 +614,7 @@ class AssetsController extends Controller
         $viewportRotation = $request->getRequiredBodyParam('viewportRotation');
         $imageRotation = $request->getRequiredBodyParam('imageRotation');
         $replace = $request->getRequiredBodyParam('replace');
-
         $filter = $request->getBodyParam('filter');
-        $filterOptions = $request->getBodyParam('filterOptions');
 
         $asset = $assets->getAssetById($assetId);
 
@@ -636,6 +641,15 @@ class AssetsController extends Controller
         }
 
         $imageCopy = $asset->getCopyOfFile();
+
+        // If filter is set, apply that
+        if (!empty($filter)) {
+            $className = StringHelper::replace($filter, '-', '\\');
+            $filter = Craft::$app->getImageEffects()->getFilter($className);
+            $filterOptions = $request->getBodyParam('filterOptions', []);
+            $filter->applyAndStore($imageCopy, $filterOptions);
+        }
+
         $imageSize = Image::getImageSize($imageCopy);
 
         /**
@@ -682,11 +696,6 @@ class AssetsController extends Controller
         // image changes as well, if it was not square.
         $image->rotate($viewportRotation);
         $image->saveAs($imageCopy);
-
-        // If filter is set, apply that
-        if (!empty($filter)) {
-
-        }
 
         if ($replace) {
             $assets->replaceAssetFile($asset, $imageCopy, $asset->filename);

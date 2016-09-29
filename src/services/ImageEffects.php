@@ -8,6 +8,7 @@ use craft\app\base\ImageFilterInterface;
 use craft\app\helpers\Component as ComponentHelper;
 use craft\app\image\filters\Grayscale;
 use craft\app\image\filters\Sepia;
+use craft\app\image\filters\Brightness;
 
 /**
  * Class ImageEffects
@@ -51,7 +52,8 @@ class ImageEffects extends Component
     {
         $imageFilters = [
             Sepia::className(),
-            Grayscale::className()
+            Grayscale::className(),
+            Brightness::className()
         ];
 
         foreach (Craft::$app->getPlugins()->call('getImageFilters', [], true) as $pluginFilters) {
@@ -72,10 +74,27 @@ class ImageEffects extends Component
         $filters = [];
 
         foreach ($filterTypes as $filterType) {
-            $filters[] = ComponentHelper::createComponent(['type' => $filterType], static::IMAGE_FILTER_INTERFACE);
+            $filters[] = $this->getFilter($filterType);
         }
 
         return $filters;
+    }
+
+    /**
+     * Return an instantiated image filter buy it's component type.
+     *
+     * @param $filterType
+     *
+     * @return ImageFilterInterface
+     */
+    public function getFilter($filterType) {
+
+        /**
+         * @var ImageFilterInterface $filter
+         */
+        $filter = ComponentHelper::createComponent(['type' => $filterType], static::IMAGE_FILTER_INTERFACE);
+
+        return $filter;
     }
 
     /**
