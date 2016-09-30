@@ -16,7 +16,7 @@ use craft\app\db\ActiveRecord;
  *
  * @property integer     $id                         ID
  * @property string      $username                   Username
- * @property string      $photo                      Photo
+ * @property string      $photoId                    PhotoId
  * @property string      $firstName                  First name
  * @property string      $lastName                   Last name
  * @property string      $email                      Email
