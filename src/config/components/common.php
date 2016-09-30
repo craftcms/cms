@@ -175,8 +175,7 @@ return [
         $database = $configService->get('database', Config::CATEGORY_DB);
 
         if (!empty($unixSocket)) {
-            $dsn = 'mysql:unix_socket='.strtolower($unixSocket).
-                ';dbname='.$database.';';
+            $dsn = 'mysql:unix_socket='.strtolower($unixSocket).';dbname='.$database.';';
         } else {
             $server = $configService->get('server', Config::CATEGORY_DB);
             $port = $configService->get('port', Config::CATEGORY_DB);
@@ -196,6 +195,7 @@ return [
             'schemaMap' => [
                 'mysql' => craft\app\db\mysql\Schema::class,
             ],
+            'attributes' => $configService->get('attributes', Config::CATEGORY_DB),
         ];
 
         return Craft::createObject($config);
