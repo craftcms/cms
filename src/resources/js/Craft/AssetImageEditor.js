@@ -430,7 +430,17 @@ Craft.AssetImageEditor = Garnish.Modal.extend(
 		/**
 		 * Apply a selected filter.
 		 */
-		applyFilter: function () {
+		applyFilter: function (ev) {
+
+			$button = $(ev.currentTarget);
+			if ($button.hasClass('disabled')) {
+				return false;
+			}
+
+			$button.addClass('disabled');
+
+			$spinner = $('<div class="spinner filter-spinner"></div>').insertAfter($button);
+
 			var getParams = {
 				assetId: this.assetId,
 				size: this.settings.assetSize
@@ -443,6 +453,8 @@ Craft.AssetImageEditor = Garnish.Modal.extend(
 
 				// No use in requesting same image again.
 				if (filterHandle == this.appliedFilter && JSON.stringify(this.appliedFilterOptions) == JSON.stringify(filterOptions)) {
+					$spinner.remove();
+					$button.removeClass('disabled');
 					return;
 				}
 
@@ -458,6 +470,8 @@ Craft.AssetImageEditor = Garnish.Modal.extend(
 			} else {
 				// No use in requesting same image again.
 				if (this.appliedFilter == null) {
+					$spinner.remove();
+					$button.removeClass('disabled');
 					return;
 				}
 
@@ -470,6 +484,8 @@ Craft.AssetImageEditor = Garnish.Modal.extend(
 			this.image.setSrc(imageUrl, $.proxy(function (imageObject) {
 				this._scaleAndCenterImage();
 				this.straighten();
+				$spinner.remove();
+				$button.removeClass('disabled');
 			}, this));
 		},
 
