@@ -1,4 +1,4 @@
-/*! Craft 3.0.0 - 2016-09-29 */
+/*! Craft 3.0.0 - 2016-09-30 */
 (function($){
 
 // Set all the standard Craft.* stuff
@@ -4979,12 +4979,11 @@ Craft.AssetImageEditor = Garnish.Modal.extend(
 		viewport: null,
 		$editorContainer: null,
 		$straighten: null,
-		url: null,
 		assetId: null,
-		assetSize: 400,
 
 		// Filters
 		appliedFilter: null,
+		appliedFilterOptions: {},
 
 		// Editor paramters
 		editorHeight: 0,
@@ -5017,15 +5016,15 @@ Craft.AssetImageEditor = Garnish.Modal.extend(
 			this.$buttons = $('<div class="buttons rightalign"/>').appendTo($footer);
 			this.$cancelBtn = $('<div class="btn cancel">' + Craft.t('app', 'Cancel') + '</div>').appendTo(this.$buttons);
 			this.$replaceBtn = $('<div class="btn submit save replace">' + Craft.t('app', 'Replace Asset') + '</div>').appendTo(this.$buttons);
-			this.$saveBtn = $('<div class="btn submit save copy">' + Craft.t('app', 'Save as New Asset') + '</div>').appendTo(this.$buttons);
+
+			if (this.settings.allowSavingAsNew) {
+				this.$saveBtn = $('<div class="btn submit save copy">' + Craft.t('app', 'Save as New Asset') + '</div>').appendTo(this.$buttons);
+			}
 
 			this.$body = $body;
 
 			this.addListener(this.$cancelBtn, 'activate', $.proxy(this, 'hide'));
 			this.removeListener(this.$shade, 'click');
-
-			this.url = Craft.getActionUrl('assets/edit-image', {assetId: this.assetId, size: this.assetSize});
-			this.assetId = assetId;
 
 			Craft.postActionRequest('assets/image-editor', $.proxy(this, 'loadEditor'));
 		},
@@ -5044,7 +5043,8 @@ Craft.AssetImageEditor = Garnish.Modal.extend(
 			this.editorWidth = this.$editorContainer.innerWidth();
 
 			// Load the image from URL
-			fabric.Image.fromURL(this.url, $.proxy(function (imageObject) {
+			var imageUrl = Craft.getActionUrl('assets/edit-image', {assetId: this.assetId, size: this.settings.assetSize});
+			fabric.Image.fromURL(imageUrl, $.proxy(function (imageObject) {
 				this.image = imageObject;
 
 				// Store for later reference
@@ -5271,11 +5271,11 @@ Craft.AssetImageEditor = Garnish.Modal.extend(
 				replace: $button.hasClass('replace') ? 1 : 0
 			};
 
-			var filterHandle = this.getSelectedFilter();
+			var filterHandle = this.appliedFilter;
 
 			if (filterHandle) {
 				postData.filter = filterHandle;
-				var filterOptions = this.getFilterOptions(filterHandle);
+				var filterOptions = this.appliedFilterOptions;
 
 				for (var option in filterOptions) {
 					postData['filterOptions[' + option + ']'] = encodeURIComponent(filterOptions[option]);
@@ -5284,6 +5284,8 @@ Craft.AssetImageEditor = Garnish.Modal.extend(
 
 			Craft.postActionRequest('assets/save-image', postData, $.proxy(function (data) {
 				this.$buttons.find('.btn').removeClass('disabled').end().find('.spinner').remove();
+				this.onSave();
+				this.hide();
 			}, this));
 		},
 
@@ -5392,17 +5394,36 @@ Craft.AssetImageEditor = Garnish.Modal.extend(
 		applyFilter: function () {
 			var getParams = {
 				assetId: this.assetId,
-				size: this.assetSize
+				size: this.settings.assetSize
 			};
 
 			var filterHandle = this.getSelectedFilter();
 
 			if (filterHandle) {
-				getParams.filter = filterHandle;
 				var filterOptions = this.getFilterOptions(filterHandle);
+
+				// No use in requesting same image again.
+				if (filterHandle == this.appliedFilter && JSON.stringify(this.appliedFilterOptions) == JSON.stringify(filterOptions)) {
+					return;
+				}
+
+				this.appliedFilter = filterHandle;
+				this.appliedFilterOptions = filterOptions;
+
+				getParams.filter = filterHandle;
+
 				for (var option in filterOptions) {
 					getParams['filterOptions[' + option + ']'] = encodeURIComponent(filterOptions[option]);
 				}
+
+			} else {
+				// No use in requesting same image again.
+				if (this.appliedFilter == null) {
+					return;
+				}
+
+				this.appliedFilterOptions = {};
+				this.appliedFilter = null;
 			}
 
 			imageUrl = Craft.getActionUrl('assets/edit-image', getParams);
@@ -5410,7 +5431,6 @@ Craft.AssetImageEditor = Garnish.Modal.extend(
 			this.image.setSrc(imageUrl, $.proxy(function (imageObject) {
 				this._scaleAndCenterImage();
 				this.straighten();
-				this.canvas.renderAll();
 			}, this));
 		},
 
@@ -5434,6 +5454,10 @@ Craft.AssetImageEditor = Garnish.Modal.extend(
 			});
 
 			return filterParams;
+		},
+
+		onSave: function () {
+			this.settings.onSave();
 		}
 	},
 	{
@@ -5442,6 +5466,8 @@ Craft.AssetImageEditor = Garnish.Modal.extend(
 			gridLineColor: '#000000',
 			gridLinePrecision: 2,
 			animationDuration: 150,
+			assetSize: 400,
+			allowSavingAsNew: true,
 
 			onSave: $.noop,
 		}
