@@ -827,6 +827,12 @@ class AppBehavior extends BaseBehavior
 				$dbConnection->initSQLs = $initSQLs;
 			}
 
+			// See if we have any extra PDO attributes passed in.
+			if ($attributes = craft()->config->get('attributes', ConfigFile::Db))
+			{
+				$dbConnection->attributes = $attributes;
+			}
+
 			$dbConnection->init();
 		}
 		// Most likely missing PDO in general or the specific database PDO driver.
