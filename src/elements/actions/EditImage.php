@@ -86,7 +86,7 @@ class EditImage extends ElementAction
 
             var settings = {
                 onSave: function () {
-                    alert('Ok, saving ' + element.id);
+                    Craft.elementIndex.updateElements();
                 }
             };
             

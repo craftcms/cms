@@ -323,6 +323,8 @@ Craft.AssetImageEditor = Garnish.Modal.extend(
 
 			Craft.postActionRequest('assets/save-image', postData, $.proxy(function (data) {
 				this.$buttons.find('.btn').removeClass('disabled').end().find('.spinner').remove();
+				this.onSave();
+				this.hide();
 			}, this));
 		},
 
@@ -473,6 +475,10 @@ Craft.AssetImageEditor = Garnish.Modal.extend(
 			});
 
 			return filterParams;
+		},
+
+		onSave: function () {
+			this.settings.onSave();
 		}
 	},
 	{
