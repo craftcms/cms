@@ -14,9 +14,20 @@
 					$('#user-photo').find('> img').replaceWith($('#current-photo').find('> img').clone());
 				}
 			}
-
 		}
 	};
 
 	new Craft.ImageUpload(settings);
+
+	var settings = {
+		allowSavingAsNew: false,
+		onSave: function () {
+			// So not optimal.
+			location.reload();
+		}
+	};
+
+	$('#main').on('click', '.btn.edit-photo', function (ev) {
+		new Craft.AssetImageEditor($(ev.currentTarget).data('photoid'), settings);
+	});
 })(jQuery);
