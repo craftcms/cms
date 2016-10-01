@@ -19,6 +19,7 @@ Craft.AssetImageEditor = Garnish.Modal.extend(
 		$editorContainer: null,
 		$straighten: null,
 		assetId: null,
+		cacheBust: null,
 
 		// Filters
 		appliedFilter: null,
@@ -41,6 +42,8 @@ Craft.AssetImageEditor = Garnish.Modal.extend(
 		animationInProgress: false,
 
 		init: function (assetId, settings) {
+			this.cacheBust = Date.now();
+
 			this.setSettings(settings, Craft.AssetImageEditor.defaults);
 
 			this.assetId = assetId;
@@ -82,7 +85,7 @@ Craft.AssetImageEditor = Garnish.Modal.extend(
 			this.editorWidth = this.$editorContainer.innerWidth();
 
 			// Load the image from URL
-			var imageUrl = Craft.getActionUrl('assets/edit-image', {assetId: this.assetId, size: this.settings.assetSize});
+			var imageUrl = Craft.getActionUrl('assets/edit-image', {assetId: this.assetId, size: this.settings.assetSize, cacheBust: this.cacheBust});
 			fabric.Image.fromURL(imageUrl, $.proxy(function (imageObject) {
 				this.image = imageObject;
 
