@@ -1585,8 +1585,7 @@ class Assets extends Component
             // Is the event giving us the go-ahead?
             if ($event->isValid) {
                 // Save the element
-                $success = Craft::$app->getElements()->saveElement($asset,
-                    false);
+                $success = Craft::$app->getElements()->saveElement($asset, false);
 
                 // If it didn't work, rollback the transaction in case something changed in onBeforeSaveAsset
                 if (!$success) {

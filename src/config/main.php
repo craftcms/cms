@@ -17,7 +17,7 @@ $config = [
 
 /* HIDE */
 // Default version/build values for running Craft directly from the source
-$config['build'] = '1';
+$config['build'] = '9999';
 $config['releaseDate'] = '1429092000';
 $config['minBuildRequired'] = '0';
 $config['minBuildUrl'] = 'http://craftcms.com/';
