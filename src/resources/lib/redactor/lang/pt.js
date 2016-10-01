@@ -1,6 +1,6 @@
 (function ($)
 {
-	$.Redactor.opts.langs['pt_br'] = {
+	$.Redactor.opts.langs['pt'] = {
     "format": "Formato",
     "image": "Imagem",
     "file": "Arquivo",
