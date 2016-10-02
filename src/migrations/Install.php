@@ -8,11 +8,13 @@
 namespace craft\app\migrations;
 
 use Craft;
+use craft\app\db\Connection;
 use craft\app\elements\User;
 use craft\app\db\Migration;
 use craft\app\helpers\StringHelper;
 use craft\app\models\Info;
 use craft\app\models\Site;
+use craft\app\services\Config;
 use craft\app\services\Sites;
 
 /**
@@ -37,6 +39,11 @@ class Install extends Migration
     public $password;
 
     /**
+     * @var string The database driver to use
+     */
+    public $driver;
+
+    /**
      * @var string The admin user’s email
      */
     public $email;
@@ -54,6 +61,7 @@ class Install extends Migration
      */
     public function safeUp()
     {
+        $this->driver = Craft::$app->getConfig()->get('driver', Config::CATEGORY_DB);
         $this->createTables();
         $this->createIndexes();
         $this->addForeignKeys();
@@ -474,7 +482,7 @@ class Install extends Migration
             'siteId' => $this->integer()->notNull(),
             'keywords' => $this->text()->notNull(),
             'PRIMARY KEY(elementId, attribute, fieldId, siteId)'
-        ], 'ENGINE=MyISAM');
+        ], $this->driver == Connection::DRIVER_MYSQL ?: 'ENGINE=MyISAM');
         $this->createTable('{{%sections}}', [
             'id' => $this->primaryKey(),
             'structureId' => $this->integer(),
@@ -868,13 +876,15 @@ class Install extends Migration
         $this->createIndex($this->db->getIndexName('{{%volumes}}', 'fieldLayoutId', false), '{{%volumes}}', 'fieldLayoutId', false);
         $this->createIndex($this->db->getIndexName('{{%widgets}}', 'userId', false), '{{%widgets}}', 'userId', false);
 
-        // Add the FULLTEXT index on searchindex.keywords
-        // TODO: MySQL specific
-        $sql = 'CREATE FULLTEXT INDEX '.
-            $this->db->quoteTableName($this->db->getIndexName('{{%searchindex}}', 'keywords')).' ON '.
-            $this->db->quoteTableName('{{%searchindex}}').' '.
-            '('.$this->db->quoteColumnName('keywords').')';
-        $this->db->createCommand($sql)->execute();
+        // If we're using MySQL, add the FULLTEXT index on searchindex.keywords
+        if ($this->driver == Connection::DRIVER_MYSQL) {
+            $sql = 'CREATE FULLTEXT INDEX '.
+                $this->db->quoteTableName($this->db->getIndexName('{{%searchindex}}', 'keywords')).' ON '.
+                $this->db->quoteTableName('{{%searchindex}}').' '.
+                '('.$this->db->quoteColumnName('keywords').')';
+
+            $this->db->createCommand($sql)->execute();
+        }
     }
 
     /**
