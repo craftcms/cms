@@ -175,11 +175,11 @@ return [
         $database = $configService->get('database', Config::CATEGORY_DB);
 
         if (!empty($unixSocket)) {
-            $dsn = 'mysql:unix_socket='.strtolower($unixSocket).';dbname='.$database.';';
+            $dsn = $configService->get('driver', Config::CATEGORY_DB).':unix_socket='.strtolower($unixSocket).';dbname='.$database.';';
         } else {
             $server = $configService->get('server', Config::CATEGORY_DB);
             $port = $configService->get('port', Config::CATEGORY_DB);
-            $dsn = 'mysql:host='.strtolower($server).
+            $dsn = $configService->get('driver', Config::CATEGORY_DB).':host='.strtolower($server).
                 ';dbname='.$database.
                 ';port='.strtolower($port).';';
         }
@@ -194,6 +194,7 @@ return [
             'tablePrefix' => $configService->getDbTablePrefix(),
             'schemaMap' => [
                 'mysql' => craft\app\db\mysql\Schema::class,
+                'pgsql' => craft\app\db\pgsql\Schema::class,
             ],
             'attributes' => $configService->get('attributes', Config::CATEGORY_DB),
         ];

@@ -31,6 +31,10 @@ return [
      */
     'database' => '',
     /**
+     * The database driver to use. Either 'mysql' for MySQL or 'pgsql' for PostgreSQL.
+     */
+    'driver' => 'mysql',
+    /**
      * The prefix to use when naming tables. This can be no more than 5 characters.
      */
     'tablePrefix' => 'craft',

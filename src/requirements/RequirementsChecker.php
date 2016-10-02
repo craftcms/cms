@@ -52,6 +52,7 @@ class RequirementsChecker
     var $result;
 
     var $requiredMySqlVersion = '5.5.0';
+    var $requiredPgSqlVersion = '9.2';
 
     /**
      * Check the given requirements, collecting results into internal field.
@@ -406,18 +407,21 @@ class RequirementsChecker
             $dbCreds = @require_once(dirname(__FILE__).DIRECTORY_SEPARATOR.'..'.DIRECTORY_SEPARATOR.'config'.DIRECTORY_SEPARATOR.'db.php');
 
             if (is_array($dbCreds)) {
-                if ($dbCreds['server'] && $dbCreds['user'] && $dbCreds['password'] && $dbCreds['database']) {
+                if ($dbCreds['server'] && $dbCreds['user'] && $dbCreds['password'] && $dbCreds['database'] && $dbCreds['driver']) {
                     $this->dbCreds = $dbCreds;
 
                     return true;
                 }
             }
         } else if ($this->isCraftRunning()) {
+            $configService = Craft::$app->getConfig();
+
             // Check if we're running in the context of Craft.
-            $this->dbCreds['server'] = Craft::$app->getConfig()->get('server', 'db');
-            $this->dbCreds['user'] = Craft::$app->getConfig()->get('user', 'db');
-            $this->dbCreds['password'] = Craft::$app->getConfig()->get('password', 'db');
-            $this->dbCreds['database'] = Craft::$app->getConfig()->get('database', 'db');
+            $this->dbCreds['server'] = $configService->get('server', 'db');
+            $this->dbCreds['user'] = $configService->get('user', 'db');
+            $this->dbCreds['password'] = $configService->get('password', 'db');
+            $this->dbCreds['database'] = $configService->get('database', 'db');
+            $this->dbCreds['driver'] = $configService->get('driver', 'db');
 
             return true;
         }
@@ -498,10 +502,12 @@ class RequirementsChecker
     /**
      * @return boolean|mixed
      */
-    function checkMySqlServerVersion()
+    function checkDatabaseServerVersion()
     {
         if (($conn = $this->getDbConnection()) !== false) {
-            return version_compare($conn->getAttribute(PDO::ATTR_SERVER_VERSION), $this->requiredMySqlVersion, ">=");
+            $requiredVersion = $this->dbCreds['driver'] == 'mysql' ? $this->requiredMySqlVersion : $this->requiredPgSqlVersion;
+
+            return version_compare($conn->getAttribute(PDO::ATTR_SERVER_VERSION), $requiredVersion, ">=");
         }
 
         return false;
@@ -516,7 +522,7 @@ class RequirementsChecker
 
         if (!$conn) {
             try {
-                $conn = new PDO("mysql:host={$this->dbCreds['server']};dbname={$this->dbCreds['database']}", $this->dbCreds['user'], $this->dbCreds['password']);
+                $conn = new PDO("{$this->dbCreds['driver']}:host={$this->dbCreds['server']};dbname={$this->dbCreds['database']}", $this->dbCreds['user'], $this->dbCreds['password']);
                 $conn->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
             } catch (PDOException $e) {
                 $this->dbConnectionError = "Can't connect to the database with the credentials supplied in db.php. Please double check them and try again.";

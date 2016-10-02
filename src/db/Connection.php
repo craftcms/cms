@@ -236,7 +236,6 @@ class Connection extends \yii\db\Connection
     {
         $schema = $this->getSchema();
 
-        // TODO: Remember to set this on any other supported databases in the future
         if (!isset($schema->maxObjectNameLength)) {
             return $name;
         }
