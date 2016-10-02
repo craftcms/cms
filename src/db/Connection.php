@@ -40,6 +40,9 @@ class Connection extends \yii\db\Connection
      */
     const EVENT_AFTER_CREATE_BACKUP = 'afterCreateBackup';
 
+    const DRIVER_MYSQL = 'mysql';
+    const DRIVER_PGSQL = 'pgsql';
+
     // Properties
     // =========================================================================
 
