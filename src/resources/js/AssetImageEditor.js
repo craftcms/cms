@@ -96,6 +96,9 @@ Craft.AssetImageEditor = Garnish.Modal.extend(
 				// Scale the image and center it on the canvas
 				this._scaleAndCenterImage();
 
+				this._setImageZoomRatioToCover();
+				this._renewImageZoomRatio();
+
 				// Create the cropping mask on the edges so straightening the image looks nice
 				var mask = this._createCroppingMask();
 
@@ -160,8 +163,14 @@ Craft.AssetImageEditor = Garnish.Modal.extend(
 				width: this.editorWidth,
 				height: this.editorHeight
 			});
+		},
 
-			this._setImageZoomRatio();
+		/**
+		 * Renew the image's zoom ratio.
+		 * @private
+		 */
+		_renewImageZoomRatio: function () {
+			this.image.scale(this.zoomRatio);
 		},
 
 		/**
@@ -260,7 +269,7 @@ Craft.AssetImageEditor = Garnish.Modal.extend(
 						this.viewport.set({angle: cleanAngle});
 						this.animationInProgress = false;
 
-						this._setImageZoomRatio();
+						this._setImageZoomRatioToCover();
 					}, this)
 				});
 			}
@@ -294,7 +303,8 @@ Craft.AssetImageEditor = Garnish.Modal.extend(
 					top: 0
 				});
 
-				this._setImageZoomRatio();
+				this._setImageZoomRatioToCover();
+				this._renewImageZoomRatio();
 
 				this.canvas.renderAll();
 
@@ -359,7 +369,7 @@ Craft.AssetImageEditor = Garnish.Modal.extend(
 		/**
 		 * Set image zoom ratio depending on the straighten angle
 		 */
-		_setImageZoomRatio: function () {
+		_setImageZoomRatioToCover: function () {
 			this.imageStraightenAngle = parseFloat(this.$straighten.val());
 
 			// Convert the angle to radians
@@ -370,9 +380,7 @@ Craft.AssetImageEditor = Garnish.Modal.extend(
 			var scaledHeight = Math.sin(angleInRadians) * this.viewportWidth + Math.cos(angleInRadians) * this.viewportHeight;
 
 			// Calculate the ratio
-			var zoomRatio = Math.max(scaledWidth /  this.viewportWidth, scaledHeight / this.viewportHeight);
-
-			this.image.scale(zoomRatio);
+			this.zoomRatio = Math.max(scaledWidth /  this.viewportWidth, scaledHeight / this.viewportHeight);
 		},
 
 		/**
