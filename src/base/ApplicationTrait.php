@@ -631,7 +631,7 @@ trait ApplicationTrait
                     ->execute();
 
                 // Set the new id
-                $info->id = $this->getDb()->getLastInsertID();
+                $info->id = $this->getDb()->getLastInsertID('{{%info}}');
             }
 
             // Use this as the new cached Info

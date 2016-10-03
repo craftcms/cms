@@ -367,7 +367,7 @@ class Plugins extends Component
                 ->execute();
 
             $info['installDate'] = DateTimeHelper::toDateTime($info['installDate']);
-            $info['id'] = Craft::$app->getDb()->getLastInsertID();
+            $info['id'] = Craft::$app->getDb()->getLastInsertID('{{%plugins}}');
 
             $this->_setPluginMigrator($plugin, $handle, $info['id']);
 

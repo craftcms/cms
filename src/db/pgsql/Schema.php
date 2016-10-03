@@ -44,10 +44,10 @@ class Schema extends \yii\db\pgsql\Schema
     {
         parent::init();
 
-        $this->typeMap['tinytext'] = self::TYPE_TINYTEXT;
-        $this->typeMap['mediumtext'] = self::TYPE_MEDIUMTEXT;
-        $this->typeMap['longtext'] = self::TYPE_LONGTEXT;
-        $this->typeMap['enum'] = self::TYPE_ENUM;
+        //$this->typeMap['tinytext'] = self::TYPE_TINYTEXT;
+        //$this->typeMap['mediumtext'] = self::TYPE_MEDIUMTEXT;
+        //$this->typeMap['longtext'] = self::TYPE_LONGTEXT;
+        //$this->typeMap['enum'] = self::TYPE_ENUM;
     }
 
     /**
@@ -68,10 +68,10 @@ class Schema extends \yii\db\pgsql\Schema
      *
      * @return string
      */
-    public function quoteDatabaseName($name)
-    {
-        return '`'.$name.'`';
-    }
+    //public function quoteDatabaseName($name)
+   // {
+     //   return '`'.$name.'`';
+   // }
 
     /**
      * Releases an existing savepoint.
@@ -121,6 +121,18 @@ class Schema extends \yii\db\pgsql\Schema
     public function createColumnSchemaBuilder($type, $length = null)
     {
         return new ColumnSchemaBuilder($type, $length, $this->db);
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function getLastInsertID($sequenceName = '')
+    {
+        if ($sequenceName !== '') {
+            $sequenceName = $this->getRawTableName($sequenceName);
+        }
+
+        return parent::getLastInsertID($sequenceName);
     }
 
     // Protected Methods

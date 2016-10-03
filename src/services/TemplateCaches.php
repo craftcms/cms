@@ -306,7 +306,7 @@ class TemplateCaches extends Component
                     false)
                 ->execute();
 
-            $cacheId = Craft::$app->getDb()->getLastInsertID();
+            $cacheId = Craft::$app->getDb()->getLastInsertID(static::$_templateCachesTable);
 
             // Tag it with any element queries that were executed within the cache
             if (!empty($this->_cachedQueries[$key])) {

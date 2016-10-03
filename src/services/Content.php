@@ -201,7 +201,7 @@ class Content extends Component
             Craft::$app->getDb()->createCommand()
                 ->insert($this->contentTable, $values)
                 ->execute();
-            $element->contentId = Craft::$app->getDb()->getLastInsertID();
+            $element->contentId = Craft::$app->getDb()->getLastInsertID($this->contentTable);
         }
 
         if ($fieldLayout) {

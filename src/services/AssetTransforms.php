@@ -701,7 +701,7 @@ class AssetTransforms extends Component
             $dbConnection->createCommand()
                 ->insert('{{%assettransformindex}}', $values)
                 ->execute();
-            $index->id = $dbConnection->getLastInsertID();
+            $index->id = $dbConnection->getLastInsertID('{{%assettransformindex}}');
         }
 
         return $index;

@@ -112,7 +112,7 @@ class Deprecator extends Component
                             'fingerprint' => $log->fingerprint
                         ]))
                     ->execute();
-                $log->id = $db->getLastInsertID();
+                $log->id = $db->getLastInsertID(static::$_tableName);
             } else {
                 $db->createCommand()
                     ->update(

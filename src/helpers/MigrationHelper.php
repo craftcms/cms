@@ -379,7 +379,7 @@ class MigrationHelper
             }
 
             // Get the new element ID
-            $elementId = $db->getLastInsertID();
+            $elementId = $db->getLastInsertID('{{%elements}}');
 
             // Update this table with the new element ID
             $columns = ['id' => $elementId];
