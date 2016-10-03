@@ -367,7 +367,7 @@ Craft.AssetImageEditor = Garnish.Modal.extend(
 		},
 
 		/**
-		 * Set image zoom ratio depending on the straighten angle
+		 * Set image zoom ratio depending on the straighten angle to cover the viewport fully
 		 */
 		_setImageZoomRatioToCover: function () {
 			this.imageStraightenAngle = parseFloat(this.$straighten.val());
@@ -381,6 +381,23 @@ Craft.AssetImageEditor = Garnish.Modal.extend(
 
 			// Calculate the ratio
 			this.zoomRatio = Math.max(scaledWidth /  this.viewportWidth, scaledHeight / this.viewportHeight);
+		},
+
+		/**
+		 * Set image zoom ratio depending on the straighten angle to fit inside the viewport
+		 */
+		_setImageZoomRatioToFit: function () {
+			this.imageStraightenAngle = parseFloat(this.$straighten.val());
+
+			// Convert the angle to radians
+			var angleInRadians = Math.abs(this.imageStraightenAngle) * (Math.PI / 180);
+
+			// Use straight triangles and substitution to get an expression that equates to scaled height
+			var proportion = this.originalWidth / this.originalHeight;
+			var scaledHeight = this.viewportWidth / (Math.cos(angleInRadians) * proportion + Math.sin(angleInRadians));
+
+			// Calculate the ratio
+			this.zoomRatio = Math.max(scaledHeight / this.viewportHeight);
 		},
 
 		/**
@@ -559,12 +576,20 @@ Craft.AssetImageEditor = Garnish.Modal.extend(
 			$('.rotation-tools, .filter-tools', this.$tools).addClass('disabled');
 			$('.cropping-tools .crop-mode-enabled', this.$tools).removeClass('hidden');
 			$('.cropping-tools .crop-mode-disabled', this.$tools).addClass('hidden');
+
+			this._setImageZoomRatioToFit();
+			this._renewImageZoomRatio();
+			this.canvas.renderAll();
 		},
 
 		disableCropMode: function () {
 			$('.rotation-tools, .filter-tools', this.$tools).removeClass('disabled');
 			$('.cropping-tools .crop-mode-enabled', this.$tools).addClass('hidden');
 			$('.cropping-tools .crop-mode-disabled', this.$tools).removeClass('hidden');
+
+			this._setImageZoomRatioToCover();
+			this._renewImageZoomRatio();
+			this.canvas.renderAll();
 		}
 	},
 	{
