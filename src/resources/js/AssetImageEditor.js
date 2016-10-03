@@ -185,28 +185,30 @@ Craft.AssetImageEditor = Garnish.Modal.extend(
 		 * Add listeners to buttons
 		 */
 		_addListeners: function () {
-			$('.rotate.counter-clockwise').on('click', $.proxy(function () {
+			this.addListener($('.rotate.counter-clockwise'), 'click', $.proxy(function () {
 				this.rotateViewport(-90);
 			}, this));
 
-			$('.rotate.clockwise').on('click', $.proxy(function () {
+			this.addListener($('.rotate.clockwise'),'click', $.proxy(function () {
 				this.rotateViewport(90);
 			}, this));
 
-			$('.rotate.reset').on('click', $.proxy(this, 'resetStraighten'));
-			$('.rotate.straighten').on('input change', $.proxy(this, 'straighten'));
+			this.addListener($('.rotate.reset'), 'click', $.proxy(this, 'resetStraighten'));
+			this.addListener($('.rotate.straighten'), 'input change', $.proxy(this, 'straighten'));
 
-			$('.btn.cancel', this.$buttons).on('click', $.proxy(this, 'hide'));
-			$('.btn.save', this.$buttons).on('click', $.proxy(this, 'saveImage'));
-
-			this.$filters.on('change', $.proxy(function (ev) {
+			this.addListener(this.$filters, 'change', $.proxy(function (ev) {
 				$option = $(ev.currentTarget).find('option:selected');
 				$('.filter-fields').addClass('hidden');
 				if ($option.val()) {
 					$('.filter-fields[filter=' + $option.val() + ']').removeClass('hidden');
 				}
 			}, this));
-			$('.btn.apply-filter', this.$filters).on('click', $.proxy(this, 'applyFilter'));
+			this.addListener($('.btn.apply-filter', this.$filters), 'click', $.proxy(this, 'applyFilter'));
+
+			this.addListener($('.btn.crop'), 'click', $.proxy(this, 'enableCropMode'));
+
+			this.addListener($('.btn.cancel', this.$buttons), 'click', $.proxy(this, 'hide'));
+			this.addListener($('.btn.save', this.$buttons), 'click', $.proxy(this, 'saveImage'));
 		},
 
 		/**
