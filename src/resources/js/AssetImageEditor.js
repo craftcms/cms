@@ -6,7 +6,7 @@ Craft.AssetImageEditor = Garnish.Modal.extend(
 	{
 		// jQuery objects
 		$body: null,
-		$filters: null,
+		$tools: null,
 		$buttons: null,
 		$cancelBtn: null,
 		$replaceBtn: null,
@@ -73,7 +73,7 @@ Craft.AssetImageEditor = Garnish.Modal.extend(
 
 		loadEditor: function (data) {
 			this.$body.html(data.html);
-			this.$filters = $('.image-tools .filters', this.$body);
+			this.$tools = $('.image-tools', this.$body);
 
 			this.canvas = new fabric.StaticCanvas('image-manipulator', {backgroundColor: this.backgroundColor});
 			this.canvas.enableRetinaScaling = true;
@@ -185,27 +185,50 @@ Craft.AssetImageEditor = Garnish.Modal.extend(
 		 * Add listeners to buttons
 		 */
 		_addListeners: function () {
-			this.addListener($('.rotate.counter-clockwise'), 'click', $.proxy(function () {
+
+			// Generate a callback function that checks if the control is active beforehand
+			var _callIfControlActive = function (callback) {
+				return function (ev) {
+					if (this.isActiveControl($(ev.currentTarget))) {
+						callback.call(this, ev);
+					} else {
+						ev.preventDefault();
+						ev.stopPropagation();
+					}
+				}.bind(this);
+			}.bind(this);
+
+			this.addListener($('.rotate.counter-clockwise'), 'click', _callIfControlActive(function (ev) {
 				this.rotateViewport(-90);
-			}, this));
-
-			this.addListener($('.rotate.clockwise'),'click', $.proxy(function () {
+			}));
+			this.addListener($('.rotate.clockwise'),'click', _callIfControlActive(function (ev) {
 				this.rotateViewport(90);
-			}, this));
+			}));
 
-			this.addListener($('.rotate.reset'), 'click', $.proxy(this, 'resetStraighten'));
-			this.addListener($('.rotate.straighten'), 'input change', $.proxy(this, 'straighten'));
+			this.addListener($('.rotate.reset'), 'click', _callIfControlActive(function (ev) {
+				this.resetStraighten(ev);
+			}));
+			this.addListener($('.rotate.straighten'), 'input change mouseup mousedown click', _callIfControlActive(function (ev) {
+				this.straighten(ev);
+			}));
 
-			this.addListener(this.$filters, 'change', $.proxy(function (ev) {
+			this.addListener($('.filter-select select', this.$tools), 'change', _callIfControlActive(function (ev) {
 				$option = $(ev.currentTarget).find('option:selected');
 				$('.filter-fields').addClass('hidden');
 				if ($option.val()) {
 					$('.filter-fields[filter=' + $option.val() + ']').removeClass('hidden');
 				}
-			}, this));
-			this.addListener($('.btn.apply-filter', this.$filters), 'click', $.proxy(this, 'applyFilter'));
+			}));
+			this.addListener($('.filter-tools .btn.apply-filter', this.$tools), 'click', _callIfControlActive(function (ev) {
+				this.applyFilter(ev);
+			}));
 
-			this.addListener($('.btn.crop'), 'click', $.proxy(this, 'enableCropMode'));
+			this.addListener($('.cropping-tool', this.$tools), 'click', _callIfControlActive(function (ev) {
+				this.enableCropMode(ev);
+			}));
+			this.addListener($('.reset-crop', this.$tools), 'click', _callIfControlActive(function (ev) {
+				this.disableCropMode(ev);
+			}));
 
 			this.addListener($('.btn.cancel', this.$buttons), 'click', $.proxy(this, 'hide'));
 			this.addListener($('.btn.save', this.$buttons), 'click', $.proxy(this, 'saveImage'));
@@ -498,7 +521,7 @@ Craft.AssetImageEditor = Garnish.Modal.extend(
 		 * Get the currently selected filter's handle
 		 */
 		getSelectedFilter: function () {
-			return $('.filter-select').find('option:selected').val();
+			return $('.filter-select', this.$tools).find('option:selected').val();
 		},
 
 		/**
@@ -518,6 +541,22 @@ Craft.AssetImageEditor = Garnish.Modal.extend(
 
 		onSave: function () {
 			this.settings.onSave();
+		},
+
+		isActiveControl: function ($element) {
+			return $element.parents('.disabled').length == 0;
+		},
+
+		enableCropMode: function () {
+			$('.rotation-tools, .filter-tools', this.$tools).addClass('disabled');
+			$('.cropping-tools .crop-mode-enabled', this.$tools).removeClass('hidden');
+			$('.cropping-tools .crop-mode-disabled', this.$tools).addClass('hidden');
+		},
+
+		disableCropMode: function () {
+			$('.rotation-tools, .filter-tools', this.$tools).removeClass('disabled');
+			$('.cropping-tools .crop-mode-enabled', this.$tools).addClass('hidden');
+			$('.cropping-tools .crop-mode-disabled', this.$tools).removeClass('hidden');
 		}
 	},
 	{

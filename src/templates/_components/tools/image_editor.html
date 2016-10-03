@@ -4,42 +4,54 @@
 </div>
 <div class="image-tools" style="margin-left: 340px;">
     <section>
-        <div class="section-title">{{ "Rotation"|t('app') }}</div>
-        <ul>
-            <li><a class="rotate clockwise">{{ "Rotate clockwise"|t('app') }}</a></li>
-            <li><a class="rotate counter-clockwise">{{ "Rotate counterclockwise"|t('app') }}</a></li>
-        </ul>
-        <input class="rotate straighten" type="range" min="-45" max="45" step="1" value="0" /><br />
-        <a class="rotate reset">{{ "Reset" }}</a>
+        <div class="rotation-tools">
+            <div class="section-title">{{ "Rotation"|t('app') }}</div>
+            <ul>
+                <li><a class="rotate clockwise">{{ "Rotate clockwise"|t('app') }}</a></li>
+                <li><a class="rotate counter-clockwise">{{ "Rotate counterclockwise"|t('app') }}</a></li>
+            </ul>
+            <input class="rotate straighten" type="range" min="-45" max="45" step="1" value="0" /><br />
+            <a class="rotate reset">{{ "Reset" }}</a>
+        </div>
     </section>
     <hr />
     <section>
-        <div class="section-title">{{ "Cropping"|t('app') }}</div>
-        <ul>
-            <li><a class="crop cropping-tool">{{ "Crop image"|t('app') }}</a></li>
-            <li><a class="crop focal-point">{{ "Set crop focal point"|t('app') }}</a></li>
-        </ul>
+        <div class="cropping-tools">
+            <div class="section-title">{{ "Cropping"|t('app') }}</div>
+            <ul class="crop-mode-disabled">
+                <li><a class="crop cropping-tool">{{ "Crop image"|t('app') }}</a></li>
+                <li><a class="crop focal-point">{{ "Set crop focal point"|t('app') }}</a></li>
+            </ul>
+            <ul class="crop-mode-enabled hidden">
+                <li><a class="crop apply-cropping">{{ "Apply cropping"|t('app') }}</a></li>
+                <li><a class="crop reset-crop">{{ "Reset cropping"|t('app') }}</a></li>
+            </ul>
+
+        </div>
     </section>
     <hr />
     {% set filters = craft.app.imageEffects.getAllFilters() %}
     {% if filters|length %}
-        <section class="filters">
-            <div class="section-title">{{ "Filters"|t('app') }}</div>
-            <div class="filter-select">
-                <select name="filter-select">
-                    <option value="">---</option>
-                    {% for filter in filters %}
-                        <option value="{{ filter.getType()|replace({'\\' : '-'}) }}">{{ filter }}</option>
-                    {% endfor %}
-                </select>
-            </div>
-            {% for filter in filters %}
-                <div class="filter-fields hidden" filter="{{ filter.getType()|replace({'\\' : '-'}) }}">
-                    {{ filter.getFieldHtml()|raw }}
+        <section>
+            <div class="filter-tools">
+                <div class="section-title">{{ "Filters"|t('app') }}</div>
+                <div class="filter-select">
+                    <select>
+                        <option value="">---</option>
+                        {% for filter in filters %}
+                            <option value="{{ filter.getType()|replace({'\\' : '-'}) }}">{{ filter }}</option>
+                        {% endfor %}
+                    </select>
                 </div>
-            {% endfor %}
+                {% for filter in filters %}
+                    <div class="filter-fields hidden" filter="{{ filter.getType()|replace({'\\' : '-'}) }}">
+                        {{ filter.getFieldHtml()|raw }}
+                    </div>
+                {% endfor %}
 
-            <div class="btn submit apply-filter">{{ 'Apply'|t('app') }}</div>
+                <div class="btn submit apply-filter">{{ 'Apply'|t('app') }}</div>
+            </div>
         </section>
+        <hr />
     {% endif %}
 </div>
