@@ -173,13 +173,17 @@ return [
         $configService = Craft::$app->getConfig();
         $unixSocket = $configService->get('unixSocket', Config::CATEGORY_DB);
         $database = $configService->get('database', Config::CATEGORY_DB);
+        $driver = $configService->get('driver', Config::CATEGORY_DB);
+
+        // Set the Yii driver name from the config setting.
+        Craft::$app->getDb()->setDriverName($driver);
 
         if (!empty($unixSocket)) {
-            $dsn = $configService->get('driver', Config::CATEGORY_DB).':unix_socket='.strtolower($unixSocket).';dbname='.$database.';';
+            $dsn = $driver.':unix_socket='.strtolower($unixSocket).';dbname='.$database.';';
         } else {
             $server = $configService->get('server', Config::CATEGORY_DB);
             $port = $configService->get('port', Config::CATEGORY_DB);
-            $dsn = $configService->get('driver', Config::CATEGORY_DB).':host='.strtolower($server).
+            $dsn = $driver.':host='.strtolower($server).
                 ';dbname='.$database.
                 ';port='.strtolower($port).';';
         }
