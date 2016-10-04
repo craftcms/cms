@@ -370,7 +370,7 @@ class StringHelper
 		{
 			foreach ($ignore as $word)
 			{
-				$word = preg_quote(static::_normalizeKeywords($word));
+				$word = preg_quote(static::normalizeKeywords($word));
 				$str  = preg_replace("/\b{$word}\b/u", '', $str);
 			}
 		}
@@ -772,16 +772,16 @@ class StringHelper
 	/**
 	 * Prepares a string for casing routines.
 	 *
-	 * @param string $string The string
-	 * @param
+	 * @param string  $string            The string
+	 * @param bool    $lower
 	 * @param boolean $removePunctuation Whether punctuation marks should be removed (default is true)
 	 *
 	 * @return array The prepped words in the string
 	 *
-	 * @see toKebabCase()
-	 * @see toCamelCase()
-	 * @see toPascalCase()
-	 * @see toSnakeCase()
+	 * @see      toKebabCase()
+	 * @see      toCamelCase()
+	 * @see      toPascalCase()
+	 * @see      toSnakeCase()
 	 */
 	private static function _prepStringForCasing($string, $lower = true, $removePunctuation = true)
 	{
