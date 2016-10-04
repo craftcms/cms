@@ -283,7 +283,7 @@ class ElementIndexes extends Component
         $availableFields = [];
 
         foreach ($fields as $field) {
-            $fieldType = $field->getType();
+            $fieldType = get_class($field);
 
             if ($fieldType && $fieldType instanceof PreviewableFieldInterface) {
                 $availableFields[] = $field;

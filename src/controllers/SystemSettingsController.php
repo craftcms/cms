@@ -213,7 +213,7 @@ class SystemSettingsController extends Controller
         $transportTypeOptions = [];
 
         foreach ($allTransportTypes as $class) {
-            if ($class::className() === $adaptor->getType() || $class::isSelectable()) {
+            if ($class::className() === get_class($adaptor) || $class::isSelectable()) {
                 $transportTypeOptions[] = [
                     'value' => $class::className(),
                     'label' => $class::displayName()
@@ -465,7 +465,7 @@ class SystemSettingsController extends Controller
         $transportSettings = $request->getBodyParam('transportTypes.'.$transportType);
         $adaptor = $this->_createMailerTransportAdaptor($transportType, $transportSettings);
 
-        $settings->transportType = $adaptor->getType();
+        $settings->transportType = get_class($adaptor);
 
         return [$settings, $adaptor];
     }
