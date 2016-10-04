@@ -573,13 +573,10 @@ Craft.AssetImageEditor = Garnish.Modal.extend(
 		},
 
 		enableCropMode: function () {
-			$('.rotation-tools, .filter-tools', this.$tools).addClass('disabled');
 			$('.cropping-tools .crop-mode-enabled', this.$tools).removeClass('hidden');
 			$('.cropping-tools .crop-mode-disabled', this.$tools).addClass('hidden');
-
 			this._setImageZoomRatioToFit();
-			this._renewImageZoomRatio();
-			this.canvas.renderAll();
+			this._switchEditingMode('crop');
 		},
 
 		disableCropMode: function () {
@@ -588,8 +585,24 @@ Craft.AssetImageEditor = Garnish.Modal.extend(
 			$('.cropping-tools .crop-mode-disabled', this.$tools).removeClass('hidden');
 
 			this._setImageZoomRatioToCover();
-			this._renewImageZoomRatio();
-			this.canvas.renderAll();
+			this._switchEditingMode('edit');
+		},
+
+		_switchEditingMode: function (mode) {
+			$('.rotation-tools, .filter-tools, .cropping-tools', this.$tools).addClass('disabled').find('select').prop('disabled', true);
+
+			var selector = '.cropping-tools' + (mode == 'edit' ? ', .rotation-tools, .filter-tools' : '');
+
+			this.image.animate({
+				scaleX: this.zoomRatio,
+				scaleY: this.zoomRatio
+			}, {
+				onChange: this.canvas.renderAll.bind(this.canvas),
+				duration: this.settings.animationDuration,
+				onComplete: $.proxy(function () {
+					$(selector, this.$tools).removeClass('disabled').find('select').prop('disabled', false);
+				}, this)
+			});
 		}
 	},
 	{
