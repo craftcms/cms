@@ -285,7 +285,7 @@ Craft.AssetImageEditor = Garnish.Modal.extend(
 				this.animationInProgress = true;
 
 				if (ev) {
-					if (ev.type == 'change') {
+					if (ev.type == 'change' || ev.type == 'click') {
 						this.hideGrid();
 					} else {
 						this.showGrid();
