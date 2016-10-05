@@ -51,7 +51,7 @@ class ChartsController extends Controller
 
         if ($userGroupId)
         {
-            $query->join('usergroups_users userGroupUsers', 'userGroupUsers.userId = users.id');
+            $query->innerJoin('usergroups_users userGroupUsers', 'userGroupUsers.userId = users.id');
             $query->where('userGroupUsers.groupId = :userGroupId', array(':userGroupId' => $userGroupId));
         }
 
