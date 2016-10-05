@@ -1,4 +1,4 @@
-/*! Craft 3.0.0 - 2016-09-20 */
+/*! Craft 3.0.0 - 2016-10-02 */
 !function(a){
 // Set all the standard Craft.* stuff
 a.extend(Craft,{navHeight:48,/**
@@ -1098,6 +1098,73 @@ this.removeElements(b);
 for(var c=0;c<b.length;c++)this._animateCategoryAway(b,c)},_animateCategoryAway:function(b,c){var d;
 // Is this the last one?
 c==b.length-1&&(d=a.proxy(function(){var a=b.first().parent().parent(),c=a.parent();c[0]==this.$elementsContainer[0]||a.siblings().length?a.remove():c.remove()},this));var e=a.proxy(function(){this.animateElementAway(b.eq(c),d)},this);0==c?e():setTimeout(e,100*c)}}),/**
+ * Craft Charts
+ */
+Craft.charts={},/**
+ * Class Craft.charts.DataTable
+ */
+Craft.charts.DataTable=Garnish.Base.extend({columns:null,rows:null,init:function(b){columns=b.columns,rows=b.rows,rows.forEach(a.proxy(function(b){a.each(b,function(a,c){var d=columns[a];switch(d.type){case"date":b[a]=d3.time.format("%Y-%m-%d").parse(b[a]);break;case"datetime":b[a]=d3.time.format("%Y-%m-%d %H:00:00").parse(b[a]);break;case"percent":b[a]=b[a]/100;break;case"number":b[a]=+b[a]}})},this)),this.columns=columns,this.rows=rows}}),/**
+ * Class Craft.charts.Tip
+ */
+Craft.charts.Tip=Garnish.Base.extend({$tip:null,init:function(b,c){this.setSettings(c,Craft.charts.Tip.defaults),this.$container=b,this.$tip=a('<div class="tooltip"></div>').appendTo(this.$container),this.hide()},tipContentFormat:function(b){var c=this.settings.locale;if(this.settings.tipContentFormat)return this.settings.tipContentFormat(c,b);var d=a("<div />"),e=a('<div class="x-value" />').appendTo(d),f=a('<div class="y-value" />').appendTo(d);return e.html(this.settings.xTickFormat(b[0])),f.html(this.settings.yTickFormat(b[1])),d.get(0)},show:function(a){this.$tip.html(this.tipContentFormat(a)),this.$tip.css("display","block");var b=this.settings.getPosition(this.$tip,a);this.$tip.css("left",b.left+"px"),this.$tip.css("top",b.top+"px")},hide:function(){this.$tip.css("display","none")}},{defaults:{locale:null,tipContentFormat:null,// $.noop ?
+getPosition:null}}),/**
+ * Class Craft.charts.BaseChart
+ */
+Craft.charts.BaseChart=Garnish.Base.extend({$container:null,$chart:null,chartBaseClass:"cp-chart",dataTable:null,
+// dataTables: [],
+// isStacked: true,
+locale:null,orientation:null,svg:null,width:null,height:null,x:null,y:null,init:function(b){this.$container=b,d3.select(window).on("resize",a.proxy(function(){this.resize()},this))},initLocale:function(){var b=window.d3_locale;this.settings.localeDefinition&&(b=a.extend(!0,{},b,this.settings.localeDefinition)),this.locale=d3.locale(b)},initChartElement:function(){
+// reset chart element's HTML
+this.$chart&&this.$chart.remove();
+// chart class
+var b=this.chartBaseClass;this.settings.chartClass&&(b+=" "+this.settings.chartClass),this.$chart=a('<div class="'+b+'" />').appendTo(this.$container)},draw:function(a,b,c){
+// settings
+this.setSettings(b,Craft.charts.BaseChart.defaults),c&&this.setSettings(b,c),
+// chart
+this.initLocale(),this.initChartElement(),this.orientation=this.settings.orientation,this.dataTable=a},xTickFormat:function(a){switch(this.settings.dataScale){case"year":return a.timeFormat("%Y");case"month":return a.timeFormat(this.settings.formats.shortDateFormats.month);case"hour":return a.timeFormat(this.settings.formats.shortDateFormats.month+" %H:00:00");default:return a.timeFormat(this.settings.formats.shortDateFormats.day)}},yTickFormat:function(a){switch(this.dataTable.columns[1].type){case"currency":return a.numberFormat(this.settings.formats.currencyFormat);case"percent":return a.numberFormat(this.settings.formats.percentFormat);case"time":return Craft.charts.utils.getDuration;default:return a.numberFormat("n")}},resize:function(){this.draw(this.dataTable,this.settings)},onAfterDrawTicks:function(){
+// White border for ticks' text
+a(".tick",this.$chart).each(function(b,c){var d=a("text",c),e=d.clone();e.appendTo(c),d.attr("stroke","#ffffff"),d.attr("stroke-width",3)})}},{defaults:{margin:{top:25,right:25,bottom:25,left:25},chartClass:null,colors:["#0594D1","#DE3800","#FF9A00","#009802","#9B009B"],ticksStyles:{fill:"#555","font-size":"11px"}}}),/**
+ * Class Craft.charts.Area
+ */
+Craft.charts.Area=Craft.charts.BaseChart.extend({tip:null,paddedX:null,paddedY:null,draw:function(a,b){this.base(a,b,Craft.charts.Area.defaults),this.tip&&(this.tip=null),this.width=this.$chart.width()-this.settings.margin.left-this.settings.margin.right,this.height=this.$chart.height()-this.settings.margin.top-this.settings.margin.bottom,
+// X & Y Scales & Domains
+this.x=d3.time.scale().range([0,this.width]),this.y=d3.scale.linear().range([this.height,0]),this.x.domain(this.xDomain()),this.y.domain(this.yDomain());
+// Append SVG to chart element
+var c={width:this.width+(this.settings.margin.left+this.settings.margin.right),height:this.height+(this.settings.margin.top+this.settings.margin.bottom),translateX:"rtl"!=this.orientation?this.settings.margin.left:this.settings.margin.right,translateY:this.settings.margin.top};this.svg=d3.select(this.$chart.get(0)).append("svg").attr("width",c.width).attr("height",c.height).append("g").attr("transform","translate("+c.translateX+","+c.translateY+")"),
+// Draw elements
+this.drawGridlines(),this.drawYTicks();
+// Draw padded elements
+var d=this.getChartMargin();this.paddedX=d3.time.scale().range([d.left,this.width-d.right]),this.paddedY=d3.scale.linear().range([this.height,0]),this.paddedX.domain(this.xDomain()),this.paddedY.domain(this.yDomain()),this.drawXTicks(),this.onAfterDrawTicks(),this.drawAxes(),this.drawChart(),this.drawPlots(),this.drawTipTriggers()},getChartMargin:function(){var b=0,c=0,d=0;return a(".y .tick text:last",this.$chart).each(function(b,c){var e=a(c).get(0).getBoundingClientRect().width;e>d&&(d=e)}),b=d+14,{left:"rtl"!=this.orientation?b:c,right:"rtl"!=this.orientation?c:b}},drawChart:function(){var a=this.paddedX,b=this.paddedY,c=d3.svg.line().x(function(b){return a(b[0])}).y(function(a){return b(a[1])});this.svg.append("g").attr("class","chart-line").append("path").datum(this.dataTable.rows).style({fill:"none",stroke:this.settings.colors[0],"stroke-width":"3px"}).attr("d",c);
+// Area
+var d=d3.svg.area().x(function(b){return a(b[0])}).y0(this.height).y1(function(a){return b(a[1])});
+// Area
+this.svg.append("g").attr("class","chart-area").append("path").datum(this.dataTable.rows).style({fill:this.settings.colors[0],"fill-opacity":"0.3"}).attr("d",d)},drawAxes:function(){var a=d3.time.scale().range([0,this.width]),b=this.y,c=d3.svg.axis().scale(a).orient("bottom").ticks(0).outerTickSize(0),d=-0,e=this.height;this.svg.append("g").attr("class","x axis").attr("transform","translate("+d+","+e+")").call(c);var f=this.getChartMargin();if(this.settings.axis.y.show)if("rtl"==this.orientation){var g=this.width-f.right,h=0,i=d3.svg.axis().scale(b).orient("left").ticks(0);this.svg.append("g").attr("class","y axis").attr("transform","translate("+g+", "+h+")").call(i)}else{var g=f.left,h=0,i=d3.svg.axis().scale(b).orient("right").ticks(0);this.svg.append("g").attr("class","y axis").attr("transform","translate("+g+", "+h+")").call(i)}},drawYTicks:function(){var a=this.y;if("rtl"==this.orientation){var b=d3.svg.axis().scale(a).orient("left").tickFormat(this.yTickFormat(this.locale)).tickValues(this.yTickValues()).ticks(this.yTicks()),c=this.width+10,d=0;this.svg.append("g").attr("class","y ticks-axis").attr("transform","translate("+c+",0)").style(this.settings.ticksStyles).call(b),this.svg.selectAll(".y.ticks-axis text").style({"text-anchor":"start"})}else{var b=d3.svg.axis().scale(a).orient("right").tickFormat(this.yTickFormat(this.locale)).tickValues(this.yTickValues()).ticks(this.yTicks()),c=-10,d=0;this.svg.append("g").attr("class","y ticks-axis").attr("transform","translate("+c+", "+d+")").style(this.settings.ticksStyles).call(b)}},drawXTicks:function(){var a=this.paddedX,b=d3.svg.axis().scale(a).orient("bottom").tickFormat(this.xTickFormat(this.locale)).ticks(this.xTicks());this.svg.append("g").attr("class","x ticks-axis").attr("transform","translate(0,"+this.height+")").style(this.settings.ticksStyles).call(b)},drawGridlines:function(){var a=this.x,b=this.y;if(this.settings.xAxisGridlines){var c=d3.svg.axis().scale(a).orient("bottom");
+// draw x lines
+this.svg.append("g").attr("class","x grid-line").attr("transform","translate(0,"+this.height+")").call(c.tickSize(-this.height,0,0).tickFormat(""))}if(this.settings.yAxisGridlines){var d=d3.svg.axis().scale(b).orient("left"),e=0,f=0,g=-this.width,h=0;this.svg.append("g").attr("class","y grid-line").attr("transform","translate(-"+e+" , "+f+")").call(d.tickSize(g,h).tickFormat("").tickValues(this.yTickValues()).ticks(this.yTicks()))}},drawPlots:function(){var b=this.paddedX,c=this.paddedY;this.settings.enablePlots&&this.svg.append("g").attr("class","plots").selectAll("circle").data(this.dataTable.rows).enter().append("circle").style({fill:this.settings.colors[0]}).attr("class",a.proxy(function(a,b){return"plot plot-"+b},this)).attr("r",4).attr("cx",a.proxy(function(a){return b(a[0])},this)).attr("cy",a.proxy(function(a){return c(a[1])},this))},expandPlot:function(a){this.svg.select(".plot-"+a).attr("r",5)},unexpandPlot:function(a){this.svg.select(".plot-"+a).attr("r",4)},getTipTriggerWidth:function(){return Math.max(0,this.xAxisTickInterval())},xAxisTickInterval:function(){var a=this.getChartMargin(),b=6,c=this.svg.select(".x path.domain").node().getTotalLength()-a.left-a.right-2*b,d=c/(this.dataTable.rows.length-1);return d},drawTipTriggers:function(){var b=this.paddedX;if(this.settings.enableTips){var c={chart:this,locale:this.locale,xTickFormat:this.xTickFormat(this.locale),yTickFormat:this.yTickFormat(this.locale),tipContentFormat:a.proxy(this,"tipContentFormat"),getPosition:a.proxy(this,"getTipPosition")};this.tip?this.tip.setSettings(c):this.tip=new Craft.charts.Tip(this.$chart,c),this.svg.append("g").attr("class","tip-triggers").selectAll("rect").data(this.dataTable.rows).enter().append("rect").attr("class","tip-trigger").style({fill:"transparent","fill-opacity":"1"}).attr("width",this.getTipTriggerWidth()).attr("height",this.height).attr("x",a.proxy(function(a){return b(a[0])-this.getTipTriggerWidth()/2},this)).on("mouseover",a.proxy(function(a,b){this.expandPlot(b),this.tip.show(a)},this)).on("mouseout",a.proxy(function(a,b){this.unexpandPlot(b),this.tip.hide()},this))}
+// Apply shadow filter
+Craft.charts.utils.applyShadowFilter("drop-shadow",this.svg)},getTipPosition:function(a,b){var c,d=this.paddedX,e=this.paddedY,f=(this.getChartMargin(),24),g=e(b[1])-a.height()/2;if("rtl"!=this.orientation){c=d(b[0])+this.settings.margin.left+f;var h=this.$chart.offset().left+c+a.width(),i=this.$chart.offset().left+this.$chart.width()-f;h>i&&(c=d(b[0])-(a.width()+f))}else c=d(b[0])-(a.width()+this.settings.margin.left+f);return c<0&&(c=d(b[0])+this.settings.margin.left+f),{top:g,left:c}},xDomain:function(){var a=d3.min(this.dataTable.rows,function(a){return a[0]}),b=d3.max(this.dataTable.rows,function(a){return a[0]});return"rtl"==this.orientation?[b,a]:[a,b]},xTicks:function(){return 3},yAxisMaxValue:function(){return d3.max(this.dataTable.rows,function(a){return a[1]})},yDomain:function(){var b=a.proxy(function(){return this.yAxisMaxValue()},this);return[0,b()]},yTicks:function(){return 2},yTickValues:function(){return[this.yAxisMaxValue()/2,this.yAxisMaxValue()]}},{defaults:{chartClass:"area",enablePlots:!0,enableTips:!0,xAxisGridlines:!1,yAxisGridlines:!0,axis:{y:{show:!1}}}}),/**
+ * Class Craft.charts.Utils
+ */
+Craft.charts.utils={getDuration:function(a){var b=parseInt(a,10),c=Math.floor(b/3600),d=Math.floor((b-3600*c)/60),e=b-3600*c-60*d;c<10&&(c="0"+c),d<10&&(d="0"+d),e<10&&(e="0"+e);var f=c+":"+d+":"+e;return f},/**
+     * arrayToDataTable
+     */
+arrayToDataTable:function(b){var c={columns:[],rows:[]};a.each(b,function(d,e){if(0==d)
+// first row is column definition
+c.columns=[],a.each(e,function(a,e){
+// guess column type from first row
+var f=typeof b[d+1][a],g={name:e,type:f};c.columns.push(g)});else{var f=[];a.each(e,function(a,b){var c=b;f.push(c)}),c.rows.push(f)}});var d=new Craft.charts.DataTable(c);return d},applyShadowFilter:function(a,b){
+// filters go in defs element
+var c=b.append("defs"),d=c.append("filter").attr("id",a).attr("width","200%").attr("height","200%").attr("x","-50%").attr("y","-50%");
+// SourceAlpha refers to opacity of graphic that this filter will be applied to
+// convolve that with a Gaussian with standard deviation 3 and store result
+// in blur
+d.append("feGaussianBlur").attr("in","SourceAlpha").attr("stdDeviation",1).attr("result","blur"),
+// translate output of Gaussian blur to the right and downwards with 2px
+// store result in offsetBlur
+d.append("feOffset").attr("in","blur").attr("dx",0).attr("dy",0).attr("result","offsetBlur");
+// overlay original SourceGraphic over translated blurred opacity by using
+// feMerge filter. Order of specifying inputs is important!
+var e=d.append("feMerge");e.append("feMergeNode").attr("in","offsetBlur"),e.append("feMergeNode").attr("in","SourceGraphic")}},/**
  * CP class
  */
 Craft.CP=Garnish.Base.extend({authManager:null,$container:null,$alerts:null,$globalSidebar:null,$globalSidebarTopbar:null,$siteNameLink:null,$siteName:null,$nav:null,$subnav:null,$pageHeader:null,$containerTopbar:null,$overflowNavMenuItem:null,$overflowNavMenuBtn:null,$overflowNavMenu:null,$overflowNavMenuList:null,$overflowSubnavMenuItem:null,$overflowSubnavMenuBtn:null,$overflowSubnavMenu:null,$overflowSubnavMenuList:null,$notificationWrapper:null,$notificationContainer:null,$main:null,$content:null,$collapsibleTables:null,$primaryForm:null,navItems:null,totalNavItems:null,visibleNavItems:null,totalNavWidth:null,showingOverflowNavMenu:!1,showingNavToggle:null,showingSidebarToggle:null,subnavItems:null,totalSubnavItems:null,visibleSubnavItems:null,totalSubnavWidth:null,showingOverflowSubnavMenu:!1,selectedItemLabel:null,fixedNotifications:!1,runningTaskInfo:null,trackTaskProgressTimeout:null,taskProgressIcon:null,$edition:null,upgradeModal:null,checkingForUpdates:!1,forcingRefreshOnUpdatesCheck:!1,checkForUpdatesCallbacks:null,init:function(){

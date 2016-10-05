@@ -32,6 +32,7 @@ class AppAsset extends AssetBundle
      */
     public $css = [
         'css/craft.css',
+        'css/charts.css',
         'lib/selectize/selectize.css',
     ];
 
