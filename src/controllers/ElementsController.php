@@ -46,6 +46,12 @@ class ElementsController extends BaseElementsController
         $elementType = $this->getElementType();
         $context = $this->getContext();
 
+        $showSiteMenu = Craft::$app->getRequest()->getParam('showSiteMenu', 'auto');
+
+        if ($showSiteMenu !== 'auto') {
+            $showSiteMenu = (bool) $showSiteMenu;
+        }
+
         if (is_array($sourceKeys)) {
             $sources = [];
 
@@ -73,6 +79,7 @@ class ElementsController extends BaseElementsController
                 'elementType' => $elementType,
                 'sources' => $sources,
                 'showSidebar' => $showSidebar,
+                'showSiteMenu' => $showSiteMenu,
             ])
         ]);
     }
