@@ -193,13 +193,7 @@ class MatrixBlock extends Element
      */
     public function getFieldLayout()
     {
-        $blockType = $this->getType();
-
-        if ($blockType) {
-            return $blockType->getFieldLayout();
-        }
-
-        return null;
+        return $this->getType()->getFieldLayout();
     }
 
     /**
