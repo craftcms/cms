@@ -14,7 +14,7 @@
 {% set showStatusMenu = (showStatusMenu is defined and showStatusMenu != 'auto' ? showStatusMenu : elementInstance.hasStatuses()) %}
 {% set showSiteMenu = (craft.app.getIsMultiSite() ? (showSiteMenu ?? 'auto') : false)
 {% if showSiteMenu == 'auto' %}
-	{% set showSiteMenu = elementType.isLocalized() %}
+	{% set showSiteMenu = elementInstance.isLocalized() %}
 {% endif %}
 
 <div class="main">
