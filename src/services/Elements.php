@@ -115,6 +115,8 @@ class Elements extends Component
             return ComponentHelper::createComponent($config, ElementInterface::class);
         } catch (MissingComponentException $e) {
             $config['errorMessage'] = $e->getMessage();
+            $config['expectedType'] = $config['type'];
+            unset($config['type']);
 
             return MissingElement::create($config);
         }

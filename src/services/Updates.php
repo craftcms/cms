@@ -747,6 +747,10 @@ class Updates extends Component
             $updater = new Updater();
             $updater->cleanUp($uid, $handle);
 
+            // Take the site out of maintenance mode.
+            Craft::info('Taking the site out of maintenance mode.', __METHOD__);
+            Craft::$app->disableMaintenanceMode();
+
             Craft::info('Finished cleaning up after the update.', __METHOD__);
         } catch (\Exception $e) {
             Craft::info('There was an error during cleanup, but we don\'t really care: '.$e->getMessage(), __METHOD__);

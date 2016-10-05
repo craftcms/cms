@@ -70,7 +70,7 @@ class FindAndReplace extends Task
             /** @var Matrix $matrixField */
             $matrixField = Craft::$app->getFields()->getFieldById($this->matrixFieldId);
 
-            if (!$matrixField || $matrixField->type != 'Matrix') {
+            if (!$matrixField || get_class($matrixField) != Matrix::class) {
                 return 0;
             }
 

@@ -208,10 +208,6 @@ class Updater
 				throw new DbUpdateException(Craft::t('app', 'The update was performed successfully, but there was a problem setting the new info in the plugins table.'));
 			}
 		}
-
-		// Take the site out of maintenance mode.
-		Craft::info('Taking the site out of maintenance mode.', __METHOD__);
-		Craft::$app->disableMaintenanceMode();
 	}
 
 	/**

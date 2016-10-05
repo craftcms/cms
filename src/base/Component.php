@@ -10,8 +10,6 @@ namespace craft\app\base;
 /**
  * Component is the base class for classes representing Craft components in terms of objects.
  *
- * @property string $type The class name that should be used to represent the field
- *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since  3.0
  */

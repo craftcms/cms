@@ -53,6 +53,11 @@ return [
      */
     'unixSocket' => '',
     /**
+     * An array of SQL statements that should be executed right after the database
+     * connection is established.
+     */
+    'initSQLs' => [],
+    /**
      * An array of key => value pairs of PDO attributes to pass into the PDO constructor.
      *
      * For example, when using the MySQL PDO driver (https://secure.php.net/manual/en/ref.pdo-mysql.php),
@@ -62,8 +67,8 @@ return [
      *
      *     [
      *         PDO::MYSQL_ATTR_SSL_KEY    => '/path/to/my/client-key.pem',
-               PDO::MYSQL_ATTR_SSL_CERT   => '/path/to/my/client-cert.pem',
-               PDO::MYSQL_ATTR_SSL_CA     => '/path/to/my/ca-cert.pem',
+     *         PDO::MYSQL_ATTR_SSL_CERT   => '/path/to/my/client-cert.pem',
+     *         PDO::MYSQL_ATTR_SSL_CA     => '/path/to/my/ca-cert.pem',
      *     ],
      */
     'attributes' => [],

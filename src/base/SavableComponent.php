@@ -14,7 +14,6 @@ use yii\base\ModelEvent;
  *
  * @property boolean $isNew    Whether the component is new (unsaved)
  * @property array   $settings The component’s settings
- * @property string  $type     The class name that should be used to represent the field
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since  3.0

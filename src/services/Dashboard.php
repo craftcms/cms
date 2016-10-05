@@ -100,6 +100,8 @@ class Dashboard extends Component
             return ComponentHelper::createComponent($config, WidgetInterface::class);
         } catch (MissingComponentException $e) {
             $config['errorMessage'] = $e->getMessage();
+            $config['expectedType'] = $config['type'];
+            unset($config['type']);
 
             return MissingWidget::create($config);
         }

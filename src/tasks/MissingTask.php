@@ -32,6 +32,6 @@ class MissingTask extends Task implements MissingComponentInterface
      */
     protected function getDefaultDescription()
     {
-        return $this->type;
+        return $this->expectedType;
     }
 }

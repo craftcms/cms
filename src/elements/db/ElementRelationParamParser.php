@@ -11,6 +11,7 @@ use Craft;
 use craft\app\base\ElementInterface;
 use craft\app\base\Field;
 use craft\app\db\Query;
+use craft\app\fields\Matrix;
 use craft\app\helpers\ArrayHelper;
 use craft\app\helpers\Db;
 use craft\app\models\Site;
@@ -284,7 +285,7 @@ class ElementRelationParamParser
 
                 /** @var Field $fieldModel */
                 // Is this a Matrix field?
-                if ($fieldModel->type == 'Matrix') {
+                if (get_class($fieldModel) == Matrix::class) {
                     $blockTypeFieldIds = [];
 
                     // Searching by a specific block type field?

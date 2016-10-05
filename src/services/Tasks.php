@@ -125,6 +125,8 @@ class Tasks extends Component
             return ComponentHelper::createComponent($config, TaskInterface::class);
         } catch (MissingComponentException $e) {
             $config['errorMessage'] = $e->getMessage();
+            $config['expectedType'] = $config['type'];
+            unset($config['type']);
 
             return MissingTask::create($config);
         }
@@ -339,7 +341,7 @@ class Tasks extends Component
         }
 
         if ($error === null) {
-            Craft::info('Finished task '.$task->id.' ('.$task->type.').', __METHOD__);
+            Craft::info('Finished task '.$task->id.' ('.get_class($task).').', __METHOD__);
 
             // We're done with this task, nuke it.
             $taskRecord->deleteWithChildren();
@@ -367,7 +369,7 @@ class Tasks extends Component
         $this->saveTask($task);
 
         // Log it
-        $logMessage = 'Encountered an error running task '.$task->id.' ('.$task->type.')';
+        $logMessage = 'Encountered an error running task '.$task->id.' ('.get_class($task).')';
 
         if ($task->currentStep) {
             $logMessage .= ', step '.$task->currentStep;

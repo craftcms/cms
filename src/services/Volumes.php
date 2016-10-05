@@ -518,6 +518,8 @@ class Volumes extends Component
             return ComponentHelper::createComponent($config, VolumeInterface::class);
         } catch (MissingComponentException $e) {
             $config['errorMessage'] = $e->getMessage();
+            $config['expectedType'] = $config['type'];
+            unset($config['type']);
 
             return MissingVolume::create($config);
         }
