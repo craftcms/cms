@@ -11,15 +11,17 @@ Craft.AssetImageEditor = Garnish.Modal.extend(
 		$cancelBtn: null,
 		$replaceBtn: null,
 		$saveBtn: null,
+		$editorContainer: null,
+		$straighten: null,
 
 		// References and parameters
 		canvas: null,
 		image: null,
 		viewport: null,
-		$editorContainer: null,
-		$straighten: null,
 		assetId: null,
 		cacheBust: null,
+		cropper: null,
+		viewportMask: null,
 
 		// Filters
 		appliedFilter: null,
@@ -75,8 +77,9 @@ Craft.AssetImageEditor = Garnish.Modal.extend(
 			this.$body.html(data.html);
 			this.$tools = $('.image-tools', this.$body);
 
-			this.canvas = new fabric.StaticCanvas('image-manipulator', {backgroundColor: this.backgroundColor});
+			this.canvas = new fabric.Canvas('image-manipulator', {backgroundColor: this.backgroundColor, hoverCursor: 'default'});
 			this.canvas.enableRetinaScaling = true;
+			this.canvas.selection = false;
 
 			this.$editorContainer = $('#image-holder');
 			this.$straighten = $('.rotate.straighten');
@@ -99,13 +102,19 @@ Craft.AssetImageEditor = Garnish.Modal.extend(
 				this._setImageZoomRatioToCover();
 				this._renewImageZoomRatio();
 
-				// Create the cropping mask on the edges so straightening the image looks nice
-				var mask = this._createCroppingMask();
+				// Create the viewport mask on the edges so straightening the image looks nice
+				this.viewportMask = this._createViewportMask({
+					width: this.viewportWidth,
+					height: this.viewportHeight,
+					top: this.image.top - 1,
+					left: this.image.left - 1
+				});
 
 				// Set up a cropping viewport
-				this.viewport = new fabric.Group([this.image, mask], {
+				this.viewport = new fabric.Group([this.image, this.viewportMask], {
 					originX: 'center',
-					originY: 'center'
+					originY: 'center',
+					selectable: false
 				});
 				this.canvas.add(this.viewport);
 
@@ -178,13 +187,15 @@ Craft.AssetImageEditor = Garnish.Modal.extend(
 		 *
 		 * @returns fabric.Rect
 		 */
-		_createCroppingMask: function () {
+		_createViewportMask: function (dimensions) {
 			var mask = new fabric.Rect({
-				width: this.viewportWidth,
-				height: this.viewportHeight,
+				width: dimensions.width,
+				height: dimensions.height,
 				fill: '#fff',
-				left: this.image.left,
-				top: this.image.top
+				left: dimensions.left + (dimensions.width / 2),
+				top: dimensions.top + (dimensions.height / 2),
+				originX: 'center',
+				originY: 'center'
 			});
 			mask.globalCompositeOperation = 'destination-in';
 			return mask;
@@ -573,25 +584,63 @@ Craft.AssetImageEditor = Garnish.Modal.extend(
 		},
 
 		enableCropMode: function () {
-			$('.cropping-tools .crop-mode-enabled', this.$tools).removeClass('hidden');
-			$('.cropping-tools .crop-mode-disabled', this.$tools).addClass('hidden');
+
 			this._setImageZoomRatioToFit();
-			this._switchEditingMode('crop');
+
+			var callback = function () {
+				$('.cropping-tools .crop-mode-enabled', this.$tools).removeClass('hidden');
+				$('.cropping-tools .crop-mode-disabled', this.$tools).addClass('hidden');
+
+				//this.viewport.remove(this.viewportMask);
+				this.canvas.renderAll();
+			}.bind(this);
+
+			this._switchEditingMode({mode: 'crop', onFinish: callback});
+			this.showCropper();
+			this.canvas.renderAll();
 		},
 
 		disableCropMode: function () {
-			$('.rotation-tools, .filter-tools', this.$tools).removeClass('disabled');
-			$('.cropping-tools .crop-mode-enabled', this.$tools).addClass('hidden');
-			$('.cropping-tools .crop-mode-disabled', this.$tools).removeClass('hidden');
-
 			this._setImageZoomRatioToCover();
-			this._switchEditingMode('edit');
+
+			var callback = function () {
+				$('.rotation-tools, .filter-tools', this.$tools).removeClass('disabled');
+				$('.cropping-tools .crop-mode-enabled', this.$tools).addClass('hidden');
+				$('.cropping-tools .crop-mode-disabled', this.$tools).removeClass('hidden');
+
+				this.viewport.add(this.viewportMask);
+				this.canvas.renderAll();
+			}.bind(this);
+
+			this._switchEditingMode({mode: 'edit', onFinish: callback});
+			this.hideCropper()
+			this.canvas.renderAll();
 		},
 
-		_switchEditingMode: function (mode) {
+		_switchEditingMode: function (settings) {
 			$('.rotation-tools, .filter-tools, .cropping-tools', this.$tools).addClass('disabled').find('select').prop('disabled', true);
 
-			var selector = '.cropping-tools' + (mode == 'edit' ? ', .rotation-tools, .filter-tools' : '');
+			if (settings.mode == 'crop') {
+				var selector = '.cropping-tools';
+
+				this.viewportMask.animate({
+					scaleX: this.editorWidth / this.viewportMask.width,
+					scaleY: this.editorHeight / this.viewportMask.height
+				}, {
+					duration: this.settings.animationDuration
+				});
+			} else {
+				var selector = '.cropping-tools, .rotation-tools, .filter-tools';
+
+				// TODO: This part will likely change as user crops the image.
+				// At that point we just throw old the old mask and create a new one.
+				this.viewportMask.animate({
+					scaleX: 1,
+					scaleY: 1
+				}, {
+					duration: this.settings.animationDuration
+				});
+			}
 
 			this.image.animate({
 				scaleX: this.zoomRatio,
@@ -601,8 +650,70 @@ Craft.AssetImageEditor = Garnish.Modal.extend(
 				duration: this.settings.animationDuration,
 				onComplete: $.proxy(function () {
 					$(selector, this.$tools).removeClass('disabled').find('select').prop('disabled', false);
+					settings.onFinish();
 				}, this)
 			});
+		},
+
+		showCropper: function () {
+			if (this.cropper) {
+				this.canvas.add(this.cropper);
+			} else {
+				this._createCropper();
+			}
+		},
+
+		hideCropper: function () {
+			if (this.cropper) {
+				this.canvas.remove(this.cropper);
+			}
+		},
+
+		_createCropper: function () {
+
+			/*			var mask = new fabric.Rect({
+			 width: this.viewportWidth,
+			 height: this.viewportHeight,
+			 fill: 'rgba(255,255,255,0.4)',
+			 left: this.image.left,
+			 top: this.image.top
+			 });
+			 mask.globalCompositeOperation = 'destination-in';
+			 return mask;*/
+			var rectWidth = this.editorWidth / 2,
+				rectHeight = this.editorHeight / 2;
+
+			var rectangle = new fabric.Rect({
+				left: 0,
+				top: 0,
+				width: rectWidth,
+				height: rectHeight,
+				stroke: 'black',
+				fill: 'rgba(0,0,0,0)'
+			});
+
+
+			// cropping mask
+			// GROUP THE RECTANGLE AND DISABLE ROTATION, BORDER ON GROUP
+			// ALSO HIDE CORNERS AND DRAW SHIT INSTEAD
+
+			this.cropper = new fabric.Group([
+					rectangle],
+				{
+					left: this.editorWidth / 2 - rectWidth / 2,
+					top: this.editorHeight / 2 - rectHeight / 2,
+					hoverCursor: 'move'
+				}
+			);
+
+			this.canvas.add(this.cropper);
+			this.cropper.set({
+				hasBorders: false,
+				cornerColor: 'rgba(0,0,0,0)',
+				lockRotation: true
+			})
+
+			this.canvas.renderAll();
 		}
 	},
 	{
