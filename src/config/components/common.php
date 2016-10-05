@@ -196,6 +196,7 @@ return [
                 'mysql' => craft\app\db\mysql\Schema::class,
             ],
             'attributes' => $configService->get('attributes', Config::CATEGORY_DB),
+            'initSQLs' => $configService->get('initSQLs', Config::CATEGORY_DB),
         ];
 
         return Craft::createObject($config);

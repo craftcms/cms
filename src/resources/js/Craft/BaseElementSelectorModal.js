@@ -198,6 +198,10 @@ Craft.BaseElementSelectorModal = Garnish.Modal.extend(
 			sources:     this.settings.sources
 		};
 
+		if (this.settings.showSiteMenu !== null && this.settings.showSiteMenu != 'auto') {
+ 			data.showSiteMenu = this.settings.showSiteMenu ? '1' : '0';
+ 		}
+
 		Craft.postActionRequest('elements/get-modal-body', data, $.proxy(function(response, textStatus)
 		{
 			if (textStatus == 'success')
@@ -235,6 +239,7 @@ Craft.BaseElementSelectorModal = Garnish.Modal.extend(
 		sources: null,
 		criteria: null,
 		multiSelect: false,
+		showSiteMenu: null,
 		disabledElementIds: [],
 		disableElementsOnSelect: false,
 		hideOnSelect: true,
