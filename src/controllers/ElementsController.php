@@ -30,6 +30,12 @@ class ElementsController extends BaseElementsController
 		$elementType = $this->getElementType();
 		$context = $this->getContext();
 
+		$showLocaleMenu = craft()->request->getParam('showLocaleMenu', 'auto');
+
+		if ($showLocaleMenu !== 'auto') {
+			$showLocaleMenu = (bool) $showLocaleMenu;
+		}
+
 		if (is_array($sourceKeys))
 		{
 			$sources = array();
@@ -55,7 +61,8 @@ class ElementsController extends BaseElementsController
 			'context'     => $context,
 			'elementType' => $elementType,
 			'sources'     => $sources,
-			'showSidebar' => (count($sources) > 1 || ($sources && !empty($source['nested'])))
+			'showSidebar' => (count($sources) > 1 || ($sources && !empty($source['nested']))),
+			'showLocaleMenu' => $showLocaleMenu,
 		));
 	}
 

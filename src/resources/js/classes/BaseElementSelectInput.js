@@ -345,6 +345,7 @@ Craft.BaseElementSelectInput = Garnish.Base.extend(
 			sources:            this.settings.sources,
 			criteria:           this.settings.criteria,
 			multiSelect:        (this.settings.limit != 1),
+			showLocaleMenu:     this.settings.showLocaleMenu,
 			disabledElementIds: this.getDisabledElementIds(),
 			onSelect:           $.proxy(this, 'onModalSelect')
 		}, this.settings.modalSettings);
@@ -497,6 +498,7 @@ Craft.BaseElementSelectInput = Garnish.Base.extend(
 		sourceElementId: null,
 		viewMode: 'list',
 		limit: null,
+		showLocaleMenu: false,
 		modalStorageKey: null,
 		modalSettings: {},
 		onSelectElements: $.noop,

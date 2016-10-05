@@ -11,7 +11,10 @@
 
 {% set context = context is defined ? context : 'index' %}
 {% set showStatusMenu = (showStatusMenu is defined and showStatusMenu != 'auto' ? showStatusMenu : elementType.hasStatuses()) %}
-{% set showLocaleMenu = (craft.isLocalized() and context == 'index' ? (showLocaleMenu is defined and showLocaleMenu != 'auto' ? showLocaleMenu : elementType.isLocalized()) : false) %}
+{% set showLocaleMenu = (craft.isLocalized() ? (showLocaleMenu ?? 'auto') : false) %}
+{% if showLocaleMenu == 'auto' %}
+	{% set showLocaleMenu = elementType.isLocalized() %}
+{% endif %}
 {% set sortableAttributes = elementType.defineSortableAttributes() %}
 
 <div class="main">
