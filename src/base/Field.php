@@ -10,10 +10,12 @@ namespace craft\app\base;
 use Craft;
 use craft\app\elements\db\ElementQuery;
 use craft\app\elements\db\ElementQueryInterface;
-use craft\app\events\Event;
 use craft\app\helpers\Db;
 use craft\app\helpers\Html;
 use craft\app\helpers\StringHelper;
+use craft\app\records\Field as FieldRecord;
+use craft\app\validators\HandleValidator;
+use craft\app\validators\UniqueValidator;
 use Exception;
 use yii\base\ErrorHandler;
 use yii\db\Schema;
@@ -33,30 +35,6 @@ abstract class Field extends SavableComponent implements FieldInterface
 
     // Constants
     // =========================================================================
-
-    /**
-     * @event Event The event that is triggered before the field is saved
-     *
-     * You may set [[Event::isValid]] to `false` to prevent the field from getting saved.
-     */
-    const EVENT_BEFORE_SAVE = 'beforeSave';
-
-    /**
-     * @event Event The event that is triggered after the field is saved
-     */
-    const EVENT_AFTER_SAVE = 'afterSave';
-
-    /**
-     * @event Event The event that is triggered before the field is deleted
-     *
-     * You may set [[Event::isValid]] to `false` to prevent the field from getting deleted.
-     */
-    const EVENT_BEFORE_DELETE = 'beforeDelete';
-
-    /**
-     * @event Event The event that is triggered after the field is deleted
-     */
-    const EVENT_AFTER_DELETE = 'afterDelete';
 
     const TRANSLATION_METHOD_NONE = 'none';
     const TRANSLATION_METHOD_LANGUAGE = 'language';
@@ -107,27 +85,75 @@ abstract class Field extends SavableComponent implements FieldInterface
      */
     public function rules()
     {
+        // TODO: MySQL specific
+        $maxHandleLength = 64 - strlen(Craft::$app->getContent()->fieldColumnPrefix);
+
         $rules = [
-            [['name', 'handle', 'translationMethod'], 'required'],
+            [['name'], 'string', 'max' => 255],
+            [['type'], 'string', 'max' => 150],
+            [['handle'], 'string', 'max' => $maxHandleLength],
+            [['name', 'handle', 'context', 'type', 'translationMethod'], 'required'],
+            [['groupId'], 'number', 'integerOnly' => true],
             [
-                ['groupId'],
-                'number',
-                'min' => -2147483648,
-                'max' => 2147483647,
-                'integerOnly' => true
+                ['translationMethod'],
+                'in',
+                'range' => [
+                    self::TRANSLATION_METHOD_NONE,
+                    self::TRANSLATION_METHOD_LANGUAGE,
+                    self::TRANSLATION_METHOD_SITE,
+                    self::TRANSLATION_METHOD_CUSTOM
+                ]
             ],
-            [['translationMethod'], 'in', 'range' => [self::TRANSLATION_METHOD_NONE, self::TRANSLATION_METHOD_LANGUAGE, self::TRANSLATION_METHOD_SITE, self::TRANSLATION_METHOD_CUSTOM]],
+            [
+                ['handle'],
+                HandleValidator::class,
+                'reservedWords' => [
+                    'archived',
+                    'attributeLabel',
+                    'children',
+                    'contentTable',
+                    'dateCreated',
+                    'dateUpdated',
+                    'enabled',
+                    'id',
+                    'level',
+                    'lft',
+                    'link',
+                    'enabledForSite',
+                    'name', // global set-specific
+                    'next',
+                    'next',
+                    'owner',
+                    'parents',
+                    'postDate', // entry-specific
+                    'prev',
+                    'ref',
+                    'rgt',
+                    'root',
+                    'searchScore',
+                    'siblings',
+                    'site',
+                    'slug',
+                    'sortOrder',
+                    'status',
+                    'title',
+                    'uid',
+                    'uri',
+                    'url',
+                    'username', // user-specific
+                ]
+            ],
+            [
+                ['handle'],
+                UniqueValidator::class,
+                'targetClass' => FieldRecord::class,
+                'targetAttribute' => ['handle', 'context']
+            ],
         ];
 
         // Only validate the ID if it's not a new field
         if ($this->id !== null && strncmp($this->id, 'new', 3) !== 0) {
-            $rules[] = [
-                ['id'],
-                'number',
-                'min' => -2147483648,
-                'max' => 2147483647,
-                'integerOnly' => true
-            ];
+            $rules[] = [['id'], 'number', 'integerOnly' => true];
         }
 
         if ($this->translationMethod == self::TRANSLATION_METHOD_CUSTOM) {
@@ -161,48 +187,6 @@ abstract class Field extends SavableComponent implements FieldInterface
             default:
                 return Craft::$app->getView()->renderObjectTemplate($this->translationKeyFormat, $element);
         }
-    }
-
-    /**
-     * @inheritdoc
-     */
-    public function beforeSave()
-    {
-        // Trigger a 'beforeSave' event
-        $event = new Event();
-        $this->trigger(self::EVENT_BEFORE_SAVE, $event);
-
-        return $event->isValid;
-    }
-
-    /**
-     * @inheritdoc
-     */
-    public function afterSave()
-    {
-        // Trigger an 'afterSave' event
-        $this->trigger(self::EVENT_AFTER_SAVE, new Event());
-    }
-
-    /**
-     * @inheritdoc
-     */
-    public function beforeDelete()
-    {
-        // Trigger a 'beforeDelete' event
-        $event = new Event();
-        $this->trigger(self::EVENT_BEFORE_DELETE, $event);
-
-        return $event->isValid;
-    }
-
-    /**
-     * @inheritdoc
-     */
-    public function afterDelete()
-    {
-        // Trigger an 'afterDelete' event
-        $this->trigger(self::EVENT_AFTER_DELETE, new Event());
     }
 
     /**

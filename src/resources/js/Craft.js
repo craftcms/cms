@@ -1,4 +1,4 @@
-/*! Craft 3.0.0 - 2016-10-02 */
+/*! Craft 3.0.0 - 2016-10-05 */
 (function($){
 
 // Set all the standard Craft.* stuff
@@ -728,7 +728,7 @@ $.extend(Craft,
 			// If they're actual objects (not arrays), compare the keys
 			if (!(obj1 instanceof Array))
 			{
-				if (!Craft.compare(Craft.getObjectKeys(obj1), Craft.getObjectKeys(obj2)))
+				if (!Craft.compare(Craft.getObjectKeys(obj1).sort(), Craft.getObjectKeys(obj2).sort()))
 				{
 					return false;
 				}
@@ -4191,6 +4191,7 @@ Craft.BaseElementSelectInput = Garnish.Base.extend(
 			sources:            this.settings.sources,
 			criteria:           this.settings.criteria,
 			multiSelect:        (this.settings.limit != 1),
+			showSiteMenu:     	this.settings.showSiteMenu,
 			disabledElementIds: this.getDisabledElementIds(),
 			onSelect:           $.proxy(this, 'onModalSelect')
 		}, this.settings.modalSettings);
@@ -4343,6 +4344,7 @@ Craft.BaseElementSelectInput = Garnish.Base.extend(
 		sourceElementId: null,
 		viewMode: 'list',
 		limit: null,
+		showSiteMenu: false,
 		modalStorageKey: null,
 		modalSettings: {},
 		onSelectElements: $.noop,
@@ -4554,6 +4556,10 @@ Craft.BaseElementSelectorModal = Garnish.Modal.extend(
 			sources:     this.settings.sources
 		};
 
+		if (this.settings.showSiteMenu !== null && this.settings.showSiteMenu != 'auto') {
+ 			data.showSiteMenu = this.settings.showSiteMenu ? '1' : '0';
+ 		}
+
 		Craft.postActionRequest('elements/get-modal-body', data, $.proxy(function(response, textStatus)
 		{
 			if (textStatus == 'success')
@@ -4591,6 +4597,7 @@ Craft.BaseElementSelectorModal = Garnish.Modal.extend(
 		sources: null,
 		criteria: null,
 		multiSelect: false,
+		showSiteMenu: null,
 		disabledElementIds: [],
 		disableElementsOnSelect: false,
 		hideOnSelect: true,

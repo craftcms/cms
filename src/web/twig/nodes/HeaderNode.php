@@ -7,6 +7,8 @@
 
 namespace craft\app\web\twig\nodes;
 
+use craft\app\helpers\Header;
+
 /**
  * Class HeaderNode
  *
@@ -24,7 +26,7 @@ class HeaderNode extends \Twig_Node
     public function compile(\Twig_Compiler $compiler)
     {
         $compiler
-            ->write('\craft\app\helpers\HeaderHelper::setHeader(')
+            ->write(Header::class.'::setHeader(')
             ->subcompile($this->getNode('header'))
             ->raw(");\n");
     }

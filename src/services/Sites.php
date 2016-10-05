@@ -9,6 +9,7 @@ namespace craft\app\services;
 
 use Craft;
 use craft\app\db\Query;
+use craft\app\errors\DbConnectException;
 use craft\app\errors\SiteNotFoundException;
 use craft\app\events\DeleteSiteEvent;
 use craft\app\events\ReorderSitesEvent;
@@ -311,6 +312,10 @@ class Sites extends Component
      */
     public function getSiteById($siteId)
     {
+        if (!$siteId) {
+            return null;
+        }
+
         // If we've already fetched all sites we can save ourselves a trip to the DB for site IDs that don't exist
         if (!$this->_fetchedAllSites && !array_key_exists($siteId, $this->_sitesById)) {
             $result = $this->_createSiteQuery()
@@ -500,15 +505,9 @@ class Sites extends Component
     public function reorderSites($siteIds)
     {
         // Fire a 'beforeSaveSite' event
-        $event = new ReorderSitesEvent([
+        $this->trigger(self::EVENT_BEFORE_REORDER_SITES, new ReorderSitesEvent([
             'siteIds' => $siteIds,
-        ]);
-
-        $this->trigger(self::EVENT_BEFORE_REORDER_SITES, $event);
-
-        if (!$event->isValid) {
-            return false;
-        }
+        ]));
 
         $this->_loadAllSites();
 
@@ -554,19 +553,29 @@ class Sites extends Component
      */
     public function deleteSiteById($siteId, $transferContentTo = null)
     {
-        if (!$siteId) {
-            return false;
-        }
-
         $site = $this->getSiteById($siteId);
 
         if (!$site) {
             return false;
         }
 
+        return $this->deleteSite($site, $transferContentTo);
+    }
+
+    /**
+     * Deletes a site.
+     *
+     * @param Site         $site              The site to be deleted
+     * @param integer|null $transferContentTo The site ID that should take over the deleted site’s contents
+     *
+     * @return boolean Whether the site was deleted successfully
+     * @throws \Exception if reasons
+     */
+    public function deleteSite(Site $site, $transferContentTo = null)
+    {
         // Fire a 'beforeDeleteSite' event
         $event = new DeleteSiteEvent([
-            'siteId' => $siteId,
+            'site' => $site,
             'transferContentTo' => $transferContentTo,
         ]);
 
@@ -582,7 +591,7 @@ class Sites extends Component
         $sectionIds = (new Query())
             ->select('sectionId')
             ->from('{{%sections_i18n}}')
-            ->where(['siteId' => $siteId])
+            ->where(['siteId' => $site->id])
             ->column();
 
         // Figure out which ones are *only* enabled for this site
@@ -591,7 +600,7 @@ class Sites extends Component
         foreach ($sectionIds as $sectionId) {
             $sectionSiteSettings = Craft::$app->getSections()->getSectionSiteSettings($sectionId);
 
-            if (count($sectionSiteSettings) == 1 && $sectionSiteSettings[0]->siteId == $siteId) {
+            if (count($sectionSiteSettings) == 1 && $sectionSiteSettings[0]->siteId == $site->id) {
                 $soloSectionIds[] = $sectionId;
             }
         }
@@ -697,7 +706,7 @@ class Sites extends Component
                                     ['in', 'elementId', $blockIds],
                                     'siteId = :siteId'
                                 ],
-                                [':siteId' => $siteId])
+                                [':siteId' => $site->id])
                             ->execute();
 
                         $matrixTablePrefix = Craft::$app->getDb()->getSchema()->getRawTableName('{{%matrixcontent_}}');
@@ -728,7 +737,7 @@ class Sites extends Component
                                             ['in', 'elementId', $blockIds],
                                             'siteId = :siteId'
                                         ],
-                                        [':siteId' => $siteId])
+                                        [':siteId' => $site->id])
                                     ->execute();
                             }
                         }
@@ -756,7 +765,7 @@ class Sites extends Component
         $oldPrimarySiteId = $this->getPrimarySite()->id;
 
         // Is the primary site ID getting deleted?
-        if ($oldPrimarySiteId === $siteId) {
+        if ($oldPrimarySiteId === $site->id) {
             $newPrimarySiteId = $this->_createSiteQuery()
                 ->offset(1)
                 ->scalar('id');
@@ -771,7 +780,7 @@ class Sites extends Component
         $transaction = Craft::$app->getDb()->beginTransaction();
         try {
             $affectedRows = Craft::$app->getDb()->createCommand()
-                ->delete('{{%sites}}', ['id' => $siteId])
+                ->delete('{{%sites}}', ['id' => $site->id])
                 ->execute();
 
             $transaction->commit();
@@ -784,11 +793,10 @@ class Sites extends Component
         }
 
         // Fire an 'afterDeleteSite' event
-        $this->trigger(self::EVENT_AFTER_DELETE_SITE,
-            new DeleteSiteEvent([
-                'siteId' => $siteId,
-                'transferContentTo' => $transferContentTo,
-            ]));
+        $this->trigger(self::EVENT_AFTER_DELETE_SITE, new DeleteSiteEvent([
+            'site' => $site,
+            'transferContentTo' => $transferContentTo,
+        ]));
 
         return $success;
     }
@@ -800,6 +808,8 @@ class Sites extends Component
      * Loads all the sites.
      *
      * @return void
+     * @throws DbConnectException if Craft isn't installed yet
+     * @throws \yii\db\Exception if the sites table is missing
      */
     private function _loadAllSites()
     {
@@ -825,14 +835,21 @@ class Sites extends Component
 
                     $this->_fetchedAllSites = true;
                 }
-            }
-            catch (\yii\db\Exception $e) {
+            } catch (\yii\db\Exception $e) {
                 // TODO: Maybe MySQL specific?
-                // If the error code is 42S02, it's a missing table and Craft isn't installed yet,
-                // so we swallow the exception.
+                // If the error code is 42S02, the sites table probably doesn't exist yet
                 if (isset($e->errorInfo[0]) && $e->errorInfo[0] == '42S02') {
                     return;
                 }
+
+                throw $e;
+            } catch (DbConnectException $e) {
+                // We couldn't connect to the database and Craft isn't installed yet, so swallow this exception, too.
+                if (!Craft::$app->getIsInstalled()) {
+                    return;
+                }
+
+                throw $e;
             }
         }
     }

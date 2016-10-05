@@ -163,7 +163,7 @@ class I18N extends \yii\i18n\I18N
 			$this->_appLocales = [new Locale('en-US')];
 
 			$path = Craft::$app->getPath()->getCpTranslationsPath();
-			$folders = Io::getFolderContents($path, false, ".*\\.php");
+			$folders = Io::getFolderContents($path, false);
 
 			if (is_array($folders) && count($folders) > 0) {
 				foreach ($folders as $dir) {

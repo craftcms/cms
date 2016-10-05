@@ -192,34 +192,6 @@ interface FieldInterface extends SavableComponentInterface
     public function getSearchKeywords($value, $element);
 
     /**
-     * Performs any actions before a field is saved.
-     *
-     * @return boolean Whether the field should be saved
-     */
-    public function beforeSave();
-
-    /**
-     * Performs any actions after a field is saved.
-     *
-     * @return void
-     */
-    public function afterSave();
-
-    /**
-     * Performs any actions before a field is deleted.
-     *
-     * @return boolean Whether the field should be deleted
-     */
-    public function beforeDelete();
-
-    /**
-     * Performs any actions after a field is deleted.
-     *
-     * @return void
-     */
-    public function afterDelete();
-
-    /**
      * Performs any actions before an element is saved.
      *
      * @param ElementInterface $element The element that is about to be saved

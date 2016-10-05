@@ -459,8 +459,8 @@ class Install extends Migration
         $this->createTable('{{%routes}}', [
             'id' => $this->primaryKey(),
             'siteId' => $this->integer(),
-            'urlParts' => $this->string()->notNull(),
-            'urlPattern' => $this->string()->notNull(),
+            'uriParts' => $this->string()->notNull(),
+            'uriPattern' => $this->string()->notNull(),
             'template' => $this->string(500)->notNull(),
             'sortOrder' => $this->smallInteger()->unsigned(),
             'dateCreated' => $this->dateTime()->notNull(),
@@ -811,7 +811,7 @@ class Install extends Migration
         $this->createIndex($this->db->getIndexName('{{%relations}}', 'sourceId', false), '{{%relations}}', 'sourceId', false);
         $this->createIndex($this->db->getIndexName('{{%relations}}', 'targetId', false), '{{%relations}}', 'targetId', false);
         $this->createIndex($this->db->getIndexName('{{%relations}}', 'sourceSiteId', false), '{{%relations}}', 'sourceSiteId', false);
-        $this->createIndex($this->db->getIndexName('{{%routes}}', 'urlPattern', true), '{{%routes}}', 'urlPattern', true);
+        $this->createIndex($this->db->getIndexName('{{%routes}}', 'uriPattern', true), '{{%routes}}', 'uriPattern', true);
         $this->createIndex($this->db->getIndexName('{{%routes}}', 'siteId', false), '{{%routes}}', 'siteId', false);
         $this->createIndex($this->db->getIndexName('{{%sections}}', 'handle', true), '{{%sections}}', 'handle', true);
         $this->createIndex($this->db->getIndexName('{{%sections}}', 'name', true), '{{%sections}}', 'name', true);

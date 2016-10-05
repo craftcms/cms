@@ -263,9 +263,8 @@ class Matrix extends Field implements EagerLoadingFieldInterface
         if (is_array($value) || $value === '') {
             $query->status = null;
             $query->enabledForSite = false;
-            $query->enabledForSite = false;
             $query->limit = null;
-            $query->setResult($this->_createBlocksFromPost($value, $element));
+            $query->setCachedResult($this->_createBlocksFromPost($value, $element));
         }
 
         return $query;

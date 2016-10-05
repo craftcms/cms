@@ -7,21 +7,26 @@
 
 namespace craft\app\events;
 
-use craft\app\elements\Asset;
+use craft\app\base\TaskInterface;
 
 /**
- * Asset delete event class.
+ * TaskEvent class.
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since  3.0
  */
-class AssetDeleteEvent extends Event
+class TaskEvent extends Event
 {
     // Properties
     // =========================================================================
 
     /**
-     * @var Asset The asset model associated with the event.
+     * @var TaskInterface The task associated with this event.
      */
-    public $asset;
+    public $task;
+
+    /**
+     * @var boolean Whether the task is brand new
+     */
+    public $isNew = false;
 }

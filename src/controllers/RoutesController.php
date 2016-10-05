@@ -44,16 +44,16 @@ class RoutesController extends Controller
         $this->requirePostRequest();
         $this->requireAcceptsJson();
 
-        $urlParts = Craft::$app->getRequest()->getRequiredBodyParam('url');
+        $uriParts = Craft::$app->getRequest()->getRequiredBodyParam('uriParts');
         $template = Craft::$app->getRequest()->getRequiredBodyParam('template');
-        $routeId = Craft::$app->getRequest()->getBodyParam('routeId');
         $siteId = Craft::$app->getRequest()->getBodyParam('siteId');
+        $routeId = Craft::$app->getRequest()->getBodyParam('routeId');
 
         if ($siteId === '') {
             $siteId = null;
         }
 
-        $routeRecord = Craft::$app->getRoutes()->saveRoute($urlParts, $template, $routeId, $siteId);
+        $routeRecord = Craft::$app->getRoutes()->saveRoute($uriParts, $template, $siteId, $routeId);
 
         if ($routeRecord->hasErrors()) {
             return $this->asJson(['errors' => $routeRecord->getErrors()]);

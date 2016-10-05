@@ -1,8 +1,8 @@
 <?php
 
 use craft\app\db\MigrationManager;
-use craft\app\enums\ConfigCategory;
 use craft\app\log\FileTarget;
+use craft\app\services\Config;
 use yii\base\InvalidConfigException;
 use yii\log\Logger;
 
@@ -128,28 +128,28 @@ return [
             case 'apc':
                 $config = [
                     'class' => yii\caching\ApcCache::class,
-                    'useApcu' => $configService->get('useApcu', ConfigCategory::ApcCache),
+                    'useApcu' => $configService->get('useApcu', Config::CATEGORY_APC),
                 ];
                 break;
             case 'db':
                 $config =[
                     'class' => yii\caching\DbCache::class,
-                    'gcProbability' => $configService->get('gcProbability', ConfigCategory::DbCache),
-                    'cacheTable' => '{{%'.$configService->get('cacheTableName', ConfigCategory::DbCache).'}}',
+                    'gcProbability' => $configService->get('gcProbability', Config::CATEGORY_DBCACHE),
+                    'cacheTable' => '{{%'.$configService->get('cacheTableName', Config::CATEGORY_DBCACHE).'}}',
                 ];
                 break;
             case 'file':
                 $config = [
                     'class' => craft\app\cache\FileCache::class,
-                    'cachePath' => $configService->get('cachePath', ConfigCategory::FileCache),
-                    'gcProbability' => $configService->get('gcProbability', ConfigCategory::FileCache),
+                    'cachePath' => $configService->get('cachePath', Config::CATEGORY_FILECACHE),
+                    'gcProbability' => $configService->get('gcProbability', Config::CATEGORY_FILECACHE),
                 ];
                 break;
             case 'memcache':
                 $config = [
                     'class' => yii\caching\MemCache::class,
-                    'servers' => $configService->get('servers', ConfigCategory::Memcache),
-                    'useMemcached' => $configService->get('useMemcached', ConfigCategory::Memcache),
+                    'servers' => $configService->get('servers', Config::CATEGORY_MEMCACHE),
+                    'useMemcached' => $configService->get('useMemcached', Config::CATEGORY_MEMCACHE),
                 ];
                 break;
             case 'wincache':
@@ -171,15 +171,14 @@ return [
     'db' => function() {
         // Build the DSN string
         $configService = Craft::$app->getConfig();
-        $unixSocket = $configService->get('unixSocket', ConfigCategory::Db);
-        $database = $configService->get('database', ConfigCategory::Db);
+        $unixSocket = $configService->get('unixSocket', Config::CATEGORY_DB);
+        $database = $configService->get('database', Config::CATEGORY_DB);
 
         if (!empty($unixSocket)) {
-            $dsn = 'mysql:unix_socket='.strtolower($unixSocket).
-                ';dbname='.$database.';';
+            $dsn = 'mysql:unix_socket='.strtolower($unixSocket).';dbname='.$database.';';
         } else {
-            $server = $configService->get('server', ConfigCategory::Db);
-            $port = $configService->get('port', ConfigCategory::Db);
+            $server = $configService->get('server', Config::CATEGORY_DB);
+            $port = $configService->get('port', Config::CATEGORY_DB);
             $dsn = 'mysql:host='.strtolower($server).
                 ';dbname='.$database.
                 ';port='.strtolower($port).';';
@@ -189,13 +188,15 @@ return [
             'class' => craft\app\db\Connection::class,
             'dsn' => $dsn,
             'emulatePrepare' => true,
-            'username' => $configService->get('user', ConfigCategory::Db),
-            'password' => $configService->get('password', ConfigCategory::Db),
-            'charset' => $configService->get('charset', ConfigCategory::Db),
+            'username' => $configService->get('user', Config::CATEGORY_DB),
+            'password' => $configService->get('password', Config::CATEGORY_DB),
+            'charset' => $configService->get('charset', Config::CATEGORY_DB),
             'tablePrefix' => $configService->getDbTablePrefix(),
             'schemaMap' => [
                 'mysql' => craft\app\db\mysql\Schema::class,
             ],
+            'attributes' => $configService->get('attributes', Config::CATEGORY_DB),
+            'initSQLs' => $configService->get('initSQLs', Config::CATEGORY_DB),
         ];
 
         return Craft::createObject($config);
@@ -235,7 +236,7 @@ return [
             $fileTarget->logFile = Craft::getAlias('@storage/logs/web.log');
 
             // Only log errors and warnings, unless Craft is running in Dev Mode or it's being updated
-            if (!$configService->get('devMode') || !Craft::$app->getIsUpdating()) {
+            if (!$configService->get('devMode') || (Craft::$app->getIsInstalled() && !Craft::$app->getIsUpdating())) {
                 $fileTarget->setLevels(Logger::LEVEL_ERROR | Logger::LEVEL_WARNING);
             }
         }

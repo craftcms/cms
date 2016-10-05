@@ -24,7 +24,7 @@ use craft\app\elements\Tag;
 use craft\app\elements\User;
 use craft\app\errors\ElementNotFoundException;
 use craft\app\errors\MissingComponentException;
-use craft\app\events\ElementsDeleteEvent;
+use craft\app\events\DeleteElementsEvent;
 use craft\app\events\ElementEvent;
 use craft\app\events\MergeElementsEvent;
 use craft\app\helpers\ArrayHelper;
@@ -54,22 +54,12 @@ class Elements extends Component
     // =========================================================================
 
     /**
-     * @var string The element interface name
-     */
-    const ELEMENT_INTERFACE = \craft\app\base\ElementInterface::class;
-
-    /**
-     * @var string The element action interface name
-     */
-    const ACTION_INTERFACE = \craft\app\base\ElementActionInterface::class;
-
-    /**
      * @event MergeElementsEvent The event that is triggered after two elements are merged together.
      */
     const EVENT_AFTER_MERGE_ELEMENTS = 'afterMergeElements';
 
     /**
-     * @event ElementsDeleteEvent The event that is triggered before one or more elements are deleted.
+     * @event DeleteElementsEvent The event that is triggered before one or more elements are deleted.
      */
     const EVENT_BEFORE_DELETE_ELEMENTS = 'beforeDeleteElements';
 
@@ -122,7 +112,7 @@ class Elements extends Component
         }
 
         try {
-            return ComponentHelper::createComponent($config, self::ELEMENT_INTERFACE);
+            return ComponentHelper::createComponent($config, ElementInterface::class);
         } catch (MissingComponentException $e) {
             $config['errorMessage'] = $e->getMessage();
 
@@ -906,7 +896,7 @@ class Elements extends Component
         try {
             // Fire a 'beforeDeleteElements' event
             $this->trigger(self::EVENT_BEFORE_DELETE_ELEMENTS,
-                new ElementsDeleteEvent([
+                new DeleteElementsEvent([
                     'elementIds' => $elementIds
                 ]));
 
@@ -1012,7 +1002,7 @@ class Elements extends Component
      */
     public function createAction($config)
     {
-        return ComponentHelper::createComponent($config, self::ACTION_INTERFACE);
+        return ComponentHelper::createComponent($config, ElementActionInterface::class);
     }
 
     // Misc

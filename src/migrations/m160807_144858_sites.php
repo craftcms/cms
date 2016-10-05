@@ -8,7 +8,7 @@ use craft\app\db\Query;
 use craft\app\helpers\Json;
 use craft\app\helpers\MigrationHelper;
 use craft\app\helpers\StringHelper;
-use craft\app\validators\Handle;
+use craft\app\validators\HandleValidator;
 use yii\base\InvalidParamException;
 use yii\db\Expression;
 
@@ -501,7 +501,7 @@ class m160807_144858_sites extends Migration
     protected function locale2handle($locale)
     {
         // Make sure it's a valid handle
-        if (!preg_match('/^'.Handle::$handlePattern.'$/', $locale) || in_array(StringHelper::toLowerCase($locale), Handle::$baseReservedWords)) {
+        if (!preg_match('/^'.HandleValidator::$handlePattern.'$/', $locale) || in_array(StringHelper::toLowerCase($locale), HandleValidator::$baseReservedWords)) {
             $localeParts = array_filter(preg_split('/[^a-zA-Z0-9]/', $locale));
 
             // Prefix with a random string so there's no chance of a conflict with other locales

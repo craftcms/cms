@@ -265,6 +265,10 @@ class Sections extends Component
      */
     public function getSectionById($sectionId)
     {
+        if (!$sectionId) {
+            return null;
+        }
+
         // If we've already fetched all sections we can save ourselves a trip to the DB for section IDs that don't exist
         if (!$this->_fetchedAllSections &&
             (!isset($this->_sectionsById) || !array_key_exists($sectionId,
@@ -594,7 +598,9 @@ class Sections extends Component
                         // Make sure there's only one entry type for this section
                         /** @noinspection PhpUndefinedVariableInspection */
                         if ($entryTypeIds) {
-                            $this->deleteEntryTypeById($entryTypeIds);
+                            foreach ($entryTypeIds as $entryTypeId) {
+                                $this->deleteEntryTypeById($entryTypeId);
+                            }
                         }
                     }
 
@@ -684,16 +690,25 @@ class Sections extends Component
      */
     public function deleteSectionById($sectionId)
     {
-        if (!$sectionId) {
-            return false;
-        }
-
         $section = $this->getSectionById($sectionId);
 
         if (!$section) {
             return false;
         }
 
+        return $this->deleteSection($section);
+    }
+
+    /**
+     * Deletes a section.
+     *
+     * @param Section $section
+     *
+     * @return boolean Whether the section was deleted successfully
+     * @throws \Exception if reasons
+     */
+    public function deleteSection(Section $section)
+    {
         // Fire a 'beforeDeleteSection' event
         $this->trigger(self::EVENT_BEFORE_DELETE_SECTION, new SectionEvent([
             'section' => $section
@@ -703,7 +718,7 @@ class Sections extends Component
         try {
             // Nuke the field layouts first.
             $entryTypeIds = [];
-            $entryTypes = $this->getEntryTypesBySectionId($sectionId);
+            $entryTypes = $this->getEntryTypesBySectionId($section->id);
 
             foreach ($entryTypes as $entryType) {
                 $entryTypeIds[] = $entryType->id;
@@ -724,7 +739,7 @@ class Sections extends Component
             $entryIds = (new Query())
                 ->select('id')
                 ->from('{{%entries}}')
-                ->where(['sectionId' => $sectionId])
+                ->where(['sectionId' => $section->id])
                 ->column();
 
             Craft::$app->getElements()->deleteElementById($entryIds);
@@ -733,7 +748,7 @@ class Sections extends Component
             $structureId = (new Query())
                 ->select('structureId')
                 ->from('{{%sections}}')
-                ->where(['id' => $sectionId])
+                ->where(['id' => $section->id])
                 ->scalar();
 
             if ($structureId) {
@@ -742,7 +757,7 @@ class Sections extends Component
 
             // Delete the section.
             Craft::$app->getDb()->createCommand()
-                ->delete('{{%sections}}', ['id' => $sectionId])
+                ->delete('{{%sections}}', ['id' => $section->id])
                 ->execute();
 
             $transaction->commit();
@@ -827,9 +842,11 @@ class Sections extends Component
      */
     public function getEntryTypeById($entryTypeId)
     {
-        if (!isset($this->_entryTypesById) || !array_key_exists($entryTypeId,
-                $this->_entryTypesById)
-        ) {
+        if (!$entryTypeId) {
+            return null;
+        }
+
+        if (!isset($this->_entryTypesById) || !array_key_exists($entryTypeId, $this->_entryTypesById)) {
             $entryTypeRecord = EntryTypeRecord::findOne($entryTypeId);
 
             if ($entryTypeRecord) {
@@ -996,21 +1013,34 @@ class Sections extends Component
     }
 
     /**
-     * Deletes an entry type(s) by its ID.
+     * Deletes an entry type by its ID.
      *
-     * @param integer|array $entryTypeId
+     * @param integer $entryTypeId
      *
      * @return boolean Whether the entry type was deleted successfully
      * @throws \Exception if reasons
      */
     public function deleteEntryTypeById($entryTypeId)
     {
-        if (!$entryTypeId) {
+        $entryType = $this->getEntryTypeById($entryTypeId);
+
+        if (!$entryType) {
             return false;
         }
 
-        $entryType = $this->getEntryTypeById($entryTypeId);
+        return $this->deleteEntryType($entryType);
+    }
 
+    /**
+     * Deletes an entry type.
+     *
+     * @param EntryType $entryType
+     *
+     * @return boolean Whether the entry type was deleted successfully
+     * @throws \Exception if reasons
+     */
+    public function deleteEntryType(EntryType $entryType)
+    {
         // Fire a 'beforeSaveEntryType' event
         $this->trigger(self::EVENT_BEFORE_DELETE_ENTRY_TYPE, new EntryTypeEvent([
             'entryType' => $entryType,
@@ -1019,47 +1049,31 @@ class Sections extends Component
         $transaction = Craft::$app->getDb()->beginTransaction();
         try {
             // Delete the field layout
-            $query = (new Query())
+            $fieldLayoutId = (new Query())
                 ->select('fieldLayoutId')
-                ->from('{{%entrytypes}}');
+                ->from('{{%entrytypes}}')
+                ->where(['id' => $entryType->id])
+                ->scalar();
 
-            if (is_array($entryTypeId)) {
-                $query->where(['in', 'id', $entryTypeId]);
-            } else {
-                $query->where(['id' => $entryTypeId]);
-            }
-
-            $fieldLayoutIds = $query->column();
-
-            if ($fieldLayoutIds) {
-                Craft::$app->getFields()->deleteLayoutById($fieldLayoutIds);
+            if ($fieldLayoutId) {
+                Craft::$app->getFields()->deleteLayoutById($fieldLayoutId);
             }
 
             // Grab the entry IDs so we can clean the elements table.
-            $query = (new Query())
+            $entryIds = (new Query())
                 ->select('id')
-                ->from('{{%entries}}');
+                ->from('{{%entries}}')
+                ->where(['typeId' => $entryType->id])
+                ->column();
 
-            if (is_array($entryTypeId)) {
-                $query->where(['in', 'typeId', $entryTypeId]);
-            } else {
-                $query->where(['typeId' => $entryTypeId]);
+            if ($entryIds) {
+                Craft::$app->getElements()->deleteElementById($entryIds);
             }
-
-            $entryIds = $query->column();
-
-            Craft::$app->getElements()->deleteElementById($entryIds);
 
             // Delete the entry type.
-            if (is_array($entryTypeId)) {
-                Craft::$app->getDb()->createCommand()
-                    ->delete('{{%entrytypes}}', ['in', 'id', $entryTypeId])
-                    ->execute();
-            } else {
-                Craft::$app->getDb()->createCommand()
-                    ->delete('{{%entrytypes}}', ['id' => $entryTypeId])
-                    ->execute();
-            }
+            Craft::$app->getDb()->createCommand()
+                ->delete('{{%entrytypes}}', ['id' => $entryType->id])
+                ->execute();
 
             $transaction->commit();
         } catch (\Exception $e) {

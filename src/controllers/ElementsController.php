@@ -46,6 +46,12 @@ class ElementsController extends BaseElementsController
         $elementType = $this->getElementType();
         $context = $this->getContext();
 
+        $showSiteMenu = Craft::$app->getRequest()->getParam('showSiteMenu', 'auto');
+
+        if ($showSiteMenu !== 'auto') {
+            $showSiteMenu = (bool) $showSiteMenu;
+        }
+
         if (is_array($sourceKeys)) {
             $sources = [];
 
@@ -73,6 +79,7 @@ class ElementsController extends BaseElementsController
                 'elementType' => $elementType,
                 'sources' => $sources,
                 'showSidebar' => $showSidebar,
+                'showSiteMenu' => $showSiteMenu,
             ])
         ]);
     }
@@ -233,8 +240,8 @@ class ElementsController extends BaseElementsController
         // Make sure it's a valid element type
         // TODO: should probably move the code inside try{} to a helper method
         try {
-            if (!is_subclass_of($elementType, Elements::ELEMENT_INTERFACE)) {
-                throw new InvalidTypeException($elementType, Elements::ELEMENT_INTERFACE);
+            if (!is_subclass_of($elementType, ElementInterface::class)) {
+                throw new InvalidTypeException($elementType, ElementInterface::class);
             }
         } catch (InvalidTypeException $e) {
             throw new BadRequestHttpException($e->getMessage());

@@ -86,9 +86,7 @@ class ResaveElements extends Task
                 ->siteId($this->_siteId)
                 ->one();
 
-            if (!$element || Craft::$app->getElements()->saveElement($element,
-                    false)
-            ) {
+            if (!$element || Craft::$app->getElements()->saveElement($element, false)) {
                 return true;
             }
 

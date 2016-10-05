@@ -227,17 +227,7 @@ abstract class Controller extends \yii\web\Controller
      */
     public function redirectToPostedUrl($object = null, $default = null)
     {
-        $security = Craft::$app->getSecurity();
-
-        $url = Craft::$app->getRequest()->getBodyParam('redirect');
-
-        if ($url !== null) {
-            $url = $security->validateData($url, $security->getValidationKey());
-
-            if ($url === false) {
-                throw new BadRequestHttpException('The redirect param was tampered with');
-            }
-        }
+        $url = Craft::$app->getRequest()->getValidatedBodyParam('redirect');
 
         if ($url === null) {
             if ($default !== null) {

@@ -17,6 +17,7 @@ use craft\app\helpers\ArrayHelper;
 use craft\app\helpers\Update;
 use craft\app\helpers\Url;
 use craft\app\web\Controller;
+use yii\base\Exception;
 use yii\web\Response;
 use yii\web\ServerErrorHttpException;
 
@@ -561,6 +562,108 @@ class UpdateController extends Controller
             'rollBack' => true
         ]);
     }
+
+    /**
+     * This method is useful for service like DeployBot, DeployHQ (or any other deployment
+     * service that supports a post deployment hook.  You can point them to this controller endpoint
+     * and if there are any database migrations that need to run, they will automatically run,
+     * minimizing downtime.
+     *
+     * @throws Exception
+     */
+    public function actionPostDeployCallback()
+    {
+        $this->requirePostRequest();
+
+        $updatesService = Craft::$app->getUpdates();
+
+        $updateCraft = $updatesService->getIsCraftDbMigrationNeeded();
+        $updatePlugin = $updatesService->getIsPluginDbUpdateNeeded();
+        $pluginsToUpdate = [];
+
+        // Make sure either Craft or a plugin needs a migration run.
+        if ($updateCraft || $updatePlugin) {
+            $pluginsService = Craft::$app->getPlugins();
+
+            if ($updatePlugin) {
+
+                // Figure out which plugins need to update the database.
+                $plugins = $pluginsService->getAllPlugins();
+
+                foreach ($plugins as $plugin) {
+                    if ($pluginsService->doesPluginRequireDatabaseUpdate($plugin)) {
+                        $pluginsToUpdate[] = $plugin;
+                    }
+                }
+            }
+
+            // Run prepare update.
+            $return = $updatesService->prepareUpdate(true, 'craft');
+
+            if (!$return['success']) {
+                throw new Exception($return['message']);
+            }
+
+            $dbBackupPath = false;
+
+            // See if we're allowed to backup the database.
+            if (Craft::$app->getConfig()->get('backupDbOnUpdate')) {
+
+                // DO it.
+                $return = $updatesService->backupDatabase();
+
+                if (!$return['success']) {
+                    throw new Exception($return['message']);
+                }
+
+                $dbBackupPath = $return['dbBackupPath'];
+            }
+
+            // Is there a Craft update?
+            if ($updateCraft) {
+                $return = $updatesService->updateDatabase('craft');
+
+                if (!$return['success']) {
+                    $this->_rollbackPostDeployFailure('craft', $return['message'], $dbBackupPath);
+                }
+            }
+
+            // Run any plugin updates.
+            foreach ($plugins as $plugin) {
+
+                $return = $updatesService->updateDatabase($plugin->getHandle());
+
+                if (!$return['success']) {
+                    $this->_rollbackPostDeployFailure($plugin->getHandle(), $return['message'], $dbBackupPath);
+                }
+            }
+
+            // Cleanup
+            $updatesService->updateCleanUp(false, 'craft');
+        }
+    }
+
+    /**
+     * @param $handle
+     * @param $originalErrorMessage
+     *
+     * @param $dbBackupPath
+     *
+     * @throws Exception
+     */
+    private function _rollbackPostDeployFailure($handle, $originalErrorMessage, $dbBackupPath)
+    {
+        $rollbackReturn = Craft::$app->getUpdates()->rollbackUpdate(false, $handle, $dbBackupPath);
+
+        if (!$rollbackReturn['success']) {
+            // It's just not your day, is it?
+            throw new Exception($rollbackReturn['message']);
+        }
+
+        // We've successfully rolled back, throw the original error message.
+        throw new Exception($originalErrorMessage);
+    }
+
 
     // Private Methods
     // =========================================================================

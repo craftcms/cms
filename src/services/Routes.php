@@ -10,6 +10,7 @@ namespace craft\app\services;
 use Craft;
 use craft\app\db\Query;
 use craft\app\errors\RouteNotFoundException;
+use craft\app\events\RouteEvent;
 use craft\app\helpers\Io;
 use craft\app\helpers\Json;
 use craft\app\records\Route as RouteRecord;
@@ -25,6 +26,29 @@ use yii\base\Component;
  */
 class Routes extends Component
 {
+    // Constants
+    // =========================================================================
+
+    /**
+     * @event RouteEvent The event that is triggered before a route is saved.
+     */
+    const EVENT_BEFORE_SAVE_ROUTE = 'beforeSaveRoute';
+
+    /**
+     * @event RouteEvent The event that is triggered after a route is saved.
+     */
+    const EVENT_AFTER_SAVE_ROUTE = 'afterSaveRoute';
+
+    /**
+     * @event RouteEvent The event that is triggered before a route is deleted.
+     */
+    const EVENT_BEFORE_DELETE_ROUTE = 'beforeDeleteRoute';
+
+    /**
+     * @event RouteEvent The event that is triggered after a route is deleted.
+     */
+    const EVENT_AFTER_DELETE_ROUTE = 'afterDeleteRoute';
+
     // Public Methods
     // =========================================================================
 
@@ -72,7 +96,7 @@ class Routes extends Component
     public function getDbRoutes()
     {
         $results = (new Query())
-            ->select(['urlPattern', 'template'])
+            ->select(['uriPattern', 'template'])
             ->from('{{%routes}}')
             ->where(['or', 'siteId is null', 'siteId = :siteId'],
                 [':siteId' => Craft::$app->getSites()->currentSite->id])
@@ -83,7 +107,7 @@ class Routes extends Component
             $routes = [];
 
             foreach ($results as $result) {
-                $routes[$result['urlPattern']] = ['template' => $result['template']];
+                $routes[$result['uriPattern']] = ['template' => $result['template']];
             }
 
             return $routes;
@@ -95,17 +119,25 @@ class Routes extends Component
     /**
      * Saves a new or existing route.
      *
-     * @param array        $urlParts The URL as defined by the user. This is an array where each element is either a
-     *                               string or an array containing the name of a subpattern and the subpattern.
-     * @param string       $template The template to route matching URLs to.
-     * @param integer|null $routeId  The route ID, if editing an existing route.
-     * @param integer|null $siteId
+     * @param array        $uriParts The URI as defined by the user. This is an array where each element is either a
+     *                               string or an array containing the name of a subpattern and the subpattern
+     * @param string       $template The template to route matching requests to
+     * @param integer|null $siteId   The site ID the route should be limited to, if any
+     * @param integer|null $routeId  The route ID, if editing an existing route
      *
      * @return RouteRecord
      * @throws RouteNotFoundException if $routeId is invalid
      */
-    public function saveRoute($urlParts, $template, $routeId = null, $siteId = null)
+    public function saveRoute($uriParts, $template, $siteId = null, $routeId = null)
     {
+        // Fire a 'beforeSaveRoute' event
+        $this->trigger(self::EVENT_BEFORE_SAVE_ROUTE, new RouteEvent([
+            'uriParts' => $uriParts,
+            'template' => $template,
+            'siteId' => $siteId,
+            'routeId' => $routeId,
+        ]));
+
         if ($routeId !== null) {
             $routeRecord = RouteRecord::findOne($routeId);
 
@@ -123,15 +155,15 @@ class Routes extends Component
             $routeRecord->sortOrder = $maxSortOrder + 1;
         }
 
-        // Compile the URL parts into a regex pattern
-        $urlPattern = '';
-        $urlParts = array_filter($urlParts);
+        // Compile the URI parts into a regex pattern
+        $uriPattern = '';
+        $uriParts = array_filter($uriParts);
         $subpatternNameCounts = [];
 
-        foreach ($urlParts as $part) {
+        foreach ($uriParts as $part) {
             if (is_string($part)) {
                 // Escape any special regex characters
-                $urlPattern .= $this->_escapeRegexChars($part);
+                $uriPattern .= $this->_escapeRegexChars($part);
             } else if (is_array($part)) {
                 // Is the name a valid handle?
                 if (preg_match('/^[a-zA-Z][a-zA-Z0-9_]*$/', $part[0])) {
@@ -148,19 +180,27 @@ class Routes extends Component
                     }
 
                     // Add the var as a named subpattern
-                    $urlPattern .= '(?P<'.preg_quote($subpatternName).'>'.$part[1].')';
+                    $uriPattern .= '(?P<'.preg_quote($subpatternName).'>'.$part[1].')';
                 } else {
                     // Just match it
-                    $urlPattern .= '('.$part[1].')';
+                    $uriPattern .= '('.$part[1].')';
                 }
             }
         }
 
         $routeRecord->siteId = $siteId;
-        $routeRecord->urlParts = Json::encode($urlParts);
-        $routeRecord->urlPattern = $urlPattern;
+        $routeRecord->uriParts = Json::encode($uriParts);
+        $routeRecord->uriPattern = $uriPattern;
         $routeRecord->template = $template;
         $routeRecord->save();
+
+        // Fire an 'afterSaveRoute' event
+        $this->trigger(self::EVENT_AFTER_SAVE_ROUTE, new RouteEvent([
+            'uriParts' => $uriParts,
+            'template' => $template,
+            'siteId' => $siteId,
+            'routeId' => $routeRecord->id,
+        ]));
 
         return $routeRecord;
     }
@@ -174,9 +214,35 @@ class Routes extends Component
      */
     public function deleteRouteById($routeId)
     {
+        $routeRecord = RouteRecord::findOne($routeId);
+
+        if (!$routeRecord) {
+            return true;
+        }
+
+        $uriParts = Json::decodeIfJson($routeRecord->uriParts);
+
+        // Fire a 'beforeDeleteRoute' event
+        $this->trigger(self::EVENT_BEFORE_DELETE_ROUTE, new RouteEvent([
+            'uriParts' => $uriParts,
+            'template' => $routeRecord->template,
+            'siteId' => $routeRecord->siteId,
+            'routeId' => $routeId,
+        ]));
+
+        $routeRecord->delete();
+
         Craft::$app->getDb()->createCommand()
             ->delete('{{%routes}}', ['id' => $routeId])
             ->execute();
+
+        // Fire an 'afterDeleteRoute' event
+        $this->trigger(self::EVENT_AFTER_DELETE_ROUTE, new RouteEvent([
+            'uriParts' => $uriParts,
+            'template' => $routeRecord->template,
+            'siteId' => $routeRecord->siteId,
+            'routeId' => $routeId,
+        ]));
 
         return true;
     }

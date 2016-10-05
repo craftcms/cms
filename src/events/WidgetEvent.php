@@ -7,19 +7,26 @@
 
 namespace craft\app\events;
 
+use craft\app\base\WidgetInterface;
+
 /**
- * Delete Site event class.
+ * WidgetEvent class.
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since  3.0
  */
-class DeleteSiteEvent extends SiteEvent
+class WidgetEvent extends Event
 {
     // Properties
     // =========================================================================
 
     /**
-     * @var integer|null The site ID that should take over the deleted site’s contents
+     * @var WidgetInterface The widget associated with this event.
      */
-    public $transferContentTo;
+    public $widget;
+
+    /**
+     * @var boolean Whether the widget is brand new
+     */
+    public $isNew = false;
 }

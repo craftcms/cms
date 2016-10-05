@@ -8,12 +8,12 @@
 namespace craft\app\events;
 
 /**
- * Elements delete event class.
+ * DeleteElementsEvent class.
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since  3.0
  */
-class ElementsDeleteEvent extends Event
+class DeleteElementsEvent extends Event
 {
     // Properties
     // =========================================================================

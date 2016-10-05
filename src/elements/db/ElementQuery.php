@@ -295,14 +295,14 @@ class ElementQuery extends Query implements ElementQueryInterface, Arrayable, Co
     // -------------------------------------------------------------------------
 
     /**
-     * @var Element[] The element query result.
-     * @see setResult()
+     * @var Element[] The cached element query result
+     * @see setCachedResult()
      */
     private $_result;
 
     /**
-     * @var Element[] The element query result.
-     * @see setResult()
+     * @var Element[] The criteria params that were set when the cached element query result was set
+     * @see setCachedResult()
      */
     private $_resultCriteria;
 
@@ -625,7 +625,7 @@ class ElementQuery extends Query implements ElementQueryInterface, Arrayable, Co
                 throw new Exception('Invalid site hadle: '.$value);
             }
 
-            $this->ownerSiteId = $site->id;
+            $this->siteId = $site->id;
         }
 
         return $this;
@@ -1027,14 +1027,10 @@ class ElementQuery extends Query implements ElementQueryInterface, Arrayable, Co
      */
     public function count($q = '*', $db = null)
     {
-        // Do we have a cached result set?
-        if ($this->_result !== null) {
-            // See if the params haven't changed
-            $criteria = $this->toArray([], [], false);
+        $cachedResult = $this->getCachedResult();
 
-            if ($criteria === $this->_resultCriteria) {
-                return count($this->_result);
-            }
+        if ($cachedResult !== null) {
+            return count($cachedResult);
         }
 
         return parent::count($q, $db);
@@ -1045,14 +1041,10 @@ class ElementQuery extends Query implements ElementQueryInterface, Arrayable, Co
      */
     public function all($db = null)
     {
-        // Do we have a cached result set?
-        if ($this->_result !== null) {
-            // See if the params haven't changed
-            $criteria = $this->toArray([], [], false);
+        $cachedResult = $this->getCachedResult();
 
-            if ($criteria === $this->_resultCriteria) {
-                return $this->_result;
-            }
+        if ($cachedResult !== null) {
+            return $cachedResult;
         }
 
         return parent::all($db);
@@ -1088,27 +1080,37 @@ class ElementQuery extends Query implements ElementQueryInterface, Arrayable, Co
     }
 
     /**
-     * Returns the resulting elements set by [[setResult()]].
+     * Returns the resulting elements set by [[setCachedResult()]], if the criteria params haven’t changed since then.
      *
-     * @return ElementInterface[] $elements The resulting elements.
-     * @see setResult()
+     * @return ElementInterface[]|null $elements The resulting elements, or null if setCachedResult() was never called or the criteria has changed
+     * @see setCachedResult()
      */
-    public function getResult()
+    public function getCachedResult()
     {
-        return $this->_result ?: [];
+        if ($this->_result === null) {
+            return null;
+        }
+
+        // Make sure the criteria hasn't changed
+        if ($this->_resultCriteria !== $this->toArray([], [], false)) {
+            $this->_result = null;
+            return null;
+        }
+
+        return $this->_result;
     }
 
     /**
      * Sets the resulting elements.
      *
      * If this is called, [[all()]] will return these elements rather than initiating a new SQL query,
-     * as long as none of the parameters have changed since setResult() was called.
+     * as long as none of the parameters have changed since setCachedResult() was called.
      *
      * @param ElementInterface[] $elements The resulting elements.
      *
-     * @see getResult()
+     * @see getCachedResult()
      */
-    public function setResult($elements)
+    public function setCachedResult($elements)
     {
         $this->_result = $elements;
         $this->_resultCriteria = $this->toArray([], [], false);
@@ -1127,7 +1129,7 @@ class ElementQuery extends Query implements ElementQueryInterface, Arrayable, Co
             array_keys(Craft::getObjectVars($this->getBehavior('customFields')))
         ));
         $fields = array_combine($fields, $fields);
-        unset($fields['query'], $fields['subQuery']);
+        unset($fields['query'], $fields['subQuery'], $fields['owner']);
 
         return $fields;
     }

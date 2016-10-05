@@ -7,22 +7,26 @@
 
 namespace craft\app\events;
 
-use craft\app\base\VolumeInterface;
+use craft\app\models\FieldGroup;
 
 /**
- * Delete volume event class.
+ * FieldGroupEvent class.
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since  3.0
  */
-class DeleteVolumeEvent extends Event
+class FieldGroupEvent extends Event
 {
     // Properties
     // =========================================================================
 
     /**
-     * @var VolumeInterface The asset Volume associated with the event.
+     * @var FieldGroup The field group associated with this event.
      */
-    public $volume;
+    public $group;
 
+    /**
+     * @var boolean Whether the field group is brand new
+     */
+    public $isNew = false;
 }

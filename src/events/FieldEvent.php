@@ -7,21 +7,26 @@
 
 namespace craft\app\events;
 
-use craft\app\elements\GlobalSet;
+use craft\app\base\FieldInterface;
 
 /**
- * Delete Global Set content event class.
+ * FieldEvent class.
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since  3.0
  */
-class DeleteGlobalSetEvent extends Event
+class FieldEvent extends Event
 {
     // Properties
     // =========================================================================
 
     /**
-     * @var GlobalSet The global set model associated with the event.
+     * @var FieldInterface The field associated with this event.
      */
-    public $globalSet;
+    public $field;
+
+    /**
+     * @var boolean Whether the field is brand new
+     */
+    public $isNew = false;
 }

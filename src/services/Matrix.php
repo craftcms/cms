@@ -776,7 +776,7 @@ class Matrix extends Component
         /** @var MatrixBlockQuery $query */
         /** @var MatrixBlock[] $blocks */
         $query = $owner->getFieldValue($field->handle);
-        $blocks = $query->getResult();
+        $blocks = $query->all();
 
         $transaction = Craft::$app->getDb()->beginTransaction();
         try {

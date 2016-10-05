@@ -32,17 +32,6 @@ class Widget extends ActiveRecord
 
     /**
      * @inheritdoc
-     */
-    public function rules()
-    {
-        return [
-            [['type'], 'required'],
-            [['type'], 'string', 'max' => 150],
-        ];
-    }
-
-    /**
-     * @inheritdoc
      *
      * @return string
      */
