@@ -12,7 +12,7 @@
 
 			<div class="matrixblock{% if not block.enabled %} disabled{% endif %}" data-id="{{ blockId }}"{% if block.collapsed %} data-collapsed{% endif %}>
 				{% if not static %}
-					<input type="hidden" name="{{ name }}[{{ blockId }}][type]" value="{{ block.getType() }}">
+					<input type="hidden" name="{{ name }}[{{ blockId }}][type]" value="{{ block.getType().handle }}">
 					<input type="hidden" name="{{ name }}[{{ blockId }}][enabled]" value="{% if block.enabled %}1{% endif %}">
 					<div class="titlebar">
 						<div class="blocktype">{{ block.getType().name|t('site') }}</div>
