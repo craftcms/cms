@@ -594,27 +594,14 @@ class Plugins extends Component
         $this->loadPlugins();
         $handle = $plugin->getHandle();
 
-        if (isset($this->_installedPluginInfo[$handle])) {
-            $localVersion = $plugin->schemaVersion;
-
-            // If the schema version is empty, use the main plugin version
-            if (empty($localVersion)) {
-                $localVersion = $plugin->version;
-                $storedVersion = $this->_installedPluginInfo[$handle]['version'];
-            } else {
-                $storedVersion = $this->_installedPluginInfo[$handle]['schemaVersion'];
-            }
-
-            // One/both could be null so start with seeing if they're not equal
-            if (
-                $localVersion != $storedVersion &&
-                (empty($storedVersion) || version_compare($localVersion, $storedVersion, '>'))
-            ) {
-                return true;
-            }
+        if (!isset($this->_installedPluginInfo[$handle])) {
+            return false;
         }
 
-        return false;
+        $localVersion = $plugin->schemaVersion;
+        $storedVersion = $this->_installedPluginInfo[$handle]['schemaVersion'];
+
+        return version_compare($localVersion, $storedVersion, '>');
     }
 
     /**
@@ -714,6 +701,7 @@ class Plugins extends Component
                 'developerUrl' => null,
                 'description' => null,
                 'documentationUrl' => null,
+                'schemaVersion' => '1.0.0',
             ], Json::decode(Io::getFileContents($configPath)));
         } catch (InvalidParamException $e) {
             Craft::warning("Could not decode $configPath: ".$e->getMessage());
