@@ -684,10 +684,6 @@ trait ApplicationTrait
                 $messages[] = Craft::t('app', 'The database name isn’t set in your db config file.');
             }
 
-            if (!$databasePort) {
-                $messages[] = Craft::t('app', 'The database port isn’t set in your db config file.');
-            }
-
             if (!$databaseCharset) {
                 $messages[] = Craft::t('app', 'The database charset isn’t set in your db config file.');
             }
