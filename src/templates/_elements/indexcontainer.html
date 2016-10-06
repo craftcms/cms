@@ -12,10 +12,11 @@
 {% set elementInstance = craft.app.elements.createElement(elementType) %}
 {% set context = context is defined ? context : 'index' %}
 {% set showStatusMenu = (showStatusMenu is defined and showStatusMenu != 'auto' ? showStatusMenu : elementInstance.hasStatuses()) %}
-{% set showSiteMenu = (craft.app.getIsMultiSite() ? (showSiteMenu ?? 'auto') : false)
+{% set showSiteMenu = (craft.app.getIsMultiSite() ? (showSiteMenu ?? 'auto') : false) %}
 {% if showSiteMenu == 'auto' %}
 	{% set showSiteMenu = elementInstance.isLocalized() %}
 {% endif %}
+{% set sortableAttributes = elementInstance.defineSortableAttributes() %}
 
 <div class="main">
 	<div class="toolbar">
