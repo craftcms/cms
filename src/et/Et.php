@@ -16,6 +16,7 @@ use craft\app\helpers\Io;
 use craft\app\models\Et as EtModel;
 use GuzzleHttp\Client;
 use GuzzleHttp\Exception\RequestException;
+use PDO;
 use yii\base\Exception;
 
 /**
@@ -98,7 +99,7 @@ class Et
             'serverInfo' => [
                 'extensions' => get_loaded_extensions(),
                 'phpVersion' => PHP_VERSION,
-                'mySqlVersion' => Craft::$app->schemaVersion,
+                'mySqlVersion' => Craft::$app->getDb()->pdo->getAttribute(PDO::ATTR_SERVER_VERSION),
                 'proc' => function_exists('proc_open') ? 1 : 0,
             ],
         ]);
