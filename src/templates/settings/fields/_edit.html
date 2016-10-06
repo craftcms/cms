@@ -63,8 +63,8 @@
 		id: 'type',
 		name: 'type',
 		options: fieldTypeOptions,
-		value: field.getType(),
-		errors: (field is missing ? ["The field type “{type}” could not be found."|t('app', { type: field.getType() })] : null),
+		value: field is missing ? field.expectedType : field.className(),
+		errors: (field is missing ? ["The field type “{type}” could not be found."|t('app', { type: field.className() })] : null),
 		toggle: true
 	}) }}
 
@@ -102,7 +102,7 @@
 	<hr>
 
 	{% for type in allFieldTypes %}
-		{% set isCurrent = (type == field.getType()) %}
+		{% set isCurrent = (type == field.className()) %}
 		<div id="{{ type|id }}"{% if not isCurrent %} class="hidden"{% endif %}>
 			{% namespace 'types['~type~']' %}
 				{% set _field = isCurrent ? field : craft.app.fields.createField(type) %}

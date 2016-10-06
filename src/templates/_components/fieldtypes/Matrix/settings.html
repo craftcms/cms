@@ -105,8 +105,8 @@
 										id: 'type',
 										name: 'type',
 										options: fieldTypes,
-										value: field.getType(),
-										errors: (field is missing ? ["The field type “{class}” could not be found."|t('app', { class: field.getType() })] : null),
+										value: field is missing ? field.expectedType : field.className(),
+										errors: (field is missing ? ["The field type “{class}” could not be found."|t('app', { class: field.expectedType })] : null),
 									}) }}
 
 									{% if craft.app.getIsMultiSite() %}

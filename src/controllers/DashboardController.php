@@ -61,8 +61,7 @@ class DashboardController extends Controller
             $settingsHtml = $view->namespaceInputs($widget->getSettingsHtml());
             $settingsJs = $view->clearJsBuffer(false);
 
-            $class = $widget->getType();
-
+            $class = get_class($widget);
             $widgetTypeInfo[$class] = [
                 'iconSvg' => $this->_getWidgetIconSvg($widget),
                 'name' => $widget::displayName(),

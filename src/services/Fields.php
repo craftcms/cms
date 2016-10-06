@@ -432,6 +432,8 @@ class Fields extends Component
             return ComponentHelper::createComponent($config, FieldInterface::class);
         } catch (MissingComponentException $e) {
             $config['errorMessage'] = $e->getMessage();
+            $config['expectedType'] = $config['type'];
+            unset($config['type']);
 
             return MissingField::create($config);
         }

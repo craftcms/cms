@@ -97,7 +97,7 @@
 						<td data-title="{{ 'Handle'|t('app') }}"><code>{{ field.handle }}</code></td>
 						<td data-title="{{ 'Type'|t('app') }}">
 							{% if field is missing %}
-								<span class="error">{{ field.getType() }}</span>
+								<span class="error">{{ field.expectedType }}</span>
 							{% else %}
 								{{ field.displayName() }}
 							{% endif %}
