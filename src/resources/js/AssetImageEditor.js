@@ -18,16 +18,20 @@ Craft.AssetImageEditor = Garnish.Modal.extend(
 		canvas: null,
 		image: null,
 		viewport: null,
+		viewportMask: null,
 		assetId: null,
 		cacheBust: null,
+
+		// Cropping references
+		croppingCanvas: null,
 		cropper: null,
-		viewportMask: null,
+		croppingShade: null,
 
 		// Filters
 		appliedFilter: null,
 		appliedFilterOptions: {},
 
-		// Editor paramters
+		// Editor parameters
 		editorHeight: 0,
 		editorWidth: 0,
 		viewportWidth: 0,
@@ -44,6 +48,9 @@ Craft.AssetImageEditor = Garnish.Modal.extend(
 		animationInProgress: false,
 
 		init: function (assetId, settings) {
+			// TODO when resizing the editor window, destroy and redraw everything:
+			// cropping shade, viewport, image.
+
 			this.cacheBust = Date.now();
 
 			this.setSettings(settings, Craft.AssetImageEditor.defaults);
@@ -77,9 +84,8 @@ Craft.AssetImageEditor = Garnish.Modal.extend(
 			this.$body.html(data.html);
 			this.$tools = $('.image-tools', this.$body);
 
-			this.canvas = new fabric.Canvas('image-manipulator', {backgroundColor: this.backgroundColor, hoverCursor: 'default'});
+			this.canvas = new fabric.StaticCanvas('image-canvas', {backgroundColor: this.backgroundColor, hoverCursor: 'default'});
 			this.canvas.enableRetinaScaling = true;
-			this.canvas.selection = false;
 
 			this.$editorContainer = $('#image-holder');
 			this.$straighten = $('.rotate.straighten');
@@ -657,7 +663,9 @@ Craft.AssetImageEditor = Garnish.Modal.extend(
 
 		showCropper: function () {
 			if (this.cropper) {
-				this.canvas.add(this.cropper);
+				// Shade MUST be added first for masking purposes.
+				this.croppingCanvas.add(this.croppingShade);
+				this.croppingCanvas.add(this.cropper);
 			} else {
 				this._createCropper();
 			}
@@ -665,40 +673,90 @@ Craft.AssetImageEditor = Garnish.Modal.extend(
 
 		hideCropper: function () {
 			if (this.cropper) {
-				this.canvas.remove(this.cropper);
+				this.croppingCanvas.remove(this.cropper);
+				this.croppingCanvas.remove(this.croppingShade);
 			}
 		},
 
 		_createCropper: function () {
 
-			/*			var mask = new fabric.Rect({
-			 width: this.viewportWidth,
-			 height: this.viewportHeight,
-			 fill: 'rgba(255,255,255,0.4)',
-			 left: this.image.left,
-			 top: this.image.top
-			 });
-			 mask.globalCompositeOperation = 'destination-in';
-			 return mask;*/
+			this.croppingCanvas = new fabric.Canvas('cropping-canvas', {backgroundColor: 'rgba(0,0,0,0)', hoverCursor: 'default', selection: false});
+
+			this.croppingCanvas.setDimensions({
+				width: this.editorWidth,
+				height: this.editorHeight
+			});
+
+			$('.canvas-container', this.$editorContainer).css({position: 'absolute', top: 0, left: 0});
+			this.croppingShade = new fabric.Rect({
+				width: this.editorWidth,
+				height: this.editorHeight,
+				fill: 'rgba(255,255,255,0.4)',
+				left: 0,
+				top: 0
+			});
+			this.croppingCanvas.add(this.croppingShade);
+			this.croppingShade.set({
+				hasBorders: false,
+				hasControls: false,
+				selectable: false,
+				lockRotation: true
+			});
+
+			// TODO base this on actual facts.
 			var rectWidth = this.editorWidth / 2,
 				rectHeight = this.editorHeight / 2;
 
-			var rectangle = new fabric.Rect({
+			// Set up the cropping viewport rectangle.
+			var croppingGroup = [];
+			var clipper = new fabric.Rect({
 				left: 0,
 				top: 0,
 				width: rectWidth,
 				height: rectHeight,
 				stroke: 'black',
-				fill: 'rgba(0,0,0,0)'
+				fill: 'rgba(128,0,0,1)'
 			});
+			clipper.globalCompositeOperation = 'destination-out';
+			croppingGroup.push(clipper);
 
+			// Draw the cropping rectangle.
+			var rectangle = new fabric.Rect({
+				left: 0,
+				top: 0,
+				width: rectWidth - 1,
+				height: rectHeight - 1,
+				fill: 'rgba(0,0,0,0)',
+				stroke: 'rgba(255,255,255,0.8)',
+				strokeWidth: 2
+			});
+			croppingGroup.push(rectangle);
 
-			// cropping mask
-			// GROUP THE RECTANGLE AND DISABLE ROTATION, BORDER ON GROUP
-			// ALSO HIDE CORNERS AND DRAW SHIT INSTEAD
+			// Set up segment lengths to draw the resize points.
+			var widthSegment = rectWidth / 10;
+			var heightSegment = rectHeight / 10;
 
-			this.cropper = new fabric.Group([
-					rectangle],
+			// Draw the path around rectangle to mark the resize handle points.
+			var lineOptions = {
+				stroke: 'rgba(255,255,255,0.8)',
+				strokeWidth: 2,
+				selectable: false,
+				hasControls: false,
+				hasBorders: false,
+				lockRotation: true,
+				fill: 'rgba(0,0,0,0)'
+			};
+
+			// Top-Right-Bottom-Left
+			var linePath = 'M'+(widthSegment * 4.5)+',-2L'+(widthSegment * 5.5)+',-2M'+(9*widthSegment)+',-2L'+(widthSegment*10+1)+',-2' +
+				'L'+(widthSegment*10+1)+','+(heightSegment)+'M'+(widthSegment*10+1)+','+(heightSegment * 4.5)+'L'+(widthSegment*10+1)+','+(heightSegment * 5.5)+'M'+(widthSegment*10+1)+','+(9*heightSegment)+'L'+(widthSegment*10+1)+','+(heightSegment*10+1)+
+				'L'+(widthSegment*9)+','+(heightSegment*10+1)+'M'+(widthSegment*5.5)+','+(heightSegment*10+1)+'L'+(widthSegment*4.5)+','+(heightSegment*10+1)+'M'+(widthSegment)+','+(heightSegment*10+1)+'L-2,'+(heightSegment*10+1)+
+				'L-2,'+(9*heightSegment)+'M-2,'+(widthSegment*5.5)+'L-2,'+(heightSegment * 4.5)+'M-2,'+(heightSegment)+'L-2,-2L'+widthSegment+',-2';
+			var handleLine = new fabric.Path(linePath);
+			handleLine.set(lineOptions);
+			croppingGroup.push(handleLine);
+
+			this.cropper = new fabric.Group(croppingGroup,
 				{
 					left: this.editorWidth / 2 - rectWidth / 2,
 					top: this.editorHeight / 2 - rectHeight / 2,
@@ -706,14 +764,17 @@ Craft.AssetImageEditor = Garnish.Modal.extend(
 				}
 			);
 
-			this.canvas.add(this.cropper);
+			this.croppingCanvas.add(this.cropper);
+
+			this.croppingCanvas.setActiveObject(this.cropper);
 			this.cropper.set({
 				hasBorders: false,
 				cornerColor: 'rgba(0,0,0,0)',
-				lockRotation: true
+				lockRotation: true,
+				cornerSize: 30
 			})
 
-			this.canvas.renderAll();
+			this.croppingCanvas.renderAll();
 		}
 	},
 	{
@@ -721,7 +782,7 @@ Craft.AssetImageEditor = Garnish.Modal.extend(
 			gridLineThickness: 1,
 			gridLineColor: '#000000',
 			gridLinePrecision: 2,
-			animationDuration: 150,
+			animationDuration: 100,
 			assetSize: 400,
 			allowSavingAsNew: true,
 
