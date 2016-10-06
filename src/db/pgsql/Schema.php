@@ -8,6 +8,7 @@
 namespace craft\app\db\pgsql;
 
 use Craft;
+use craft\app\services\Config;
 use yii\db\Exception;
 
 /**
@@ -43,6 +44,8 @@ class Schema extends \yii\db\pgsql\Schema
     public function init()
     {
         parent::init();
+
+        $this->defaultSchema = Craft::$app->getConfig()->get('schema', Config::CATEGORY_DB);
 
         //$this->typeMap['tinytext'] = self::TYPE_TINYTEXT;
         //$this->typeMap['mediumtext'] = self::TYPE_MEDIUMTEXT;

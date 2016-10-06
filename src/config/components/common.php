@@ -1,5 +1,6 @@
 <?php
 
+use craft\app\db\Connection;
 use craft\app\db\MigrationManager;
 use craft\app\log\FileTarget;
 use craft\app\services\Config;
@@ -174,18 +175,27 @@ return [
         $unixSocket = $configService->get('unixSocket', Config::CATEGORY_DB);
         $database = $configService->get('database', Config::CATEGORY_DB);
         $driver = $configService->get('driver', Config::CATEGORY_DB);
+        $dsn = $configService->get('dsn', Config::CATEGORY_DB);
 
-        // Set the Yii driver name from the config setting.
-        Craft::$app->getDb()->setDriverName($driver);
+        if ($dsn === '') {
 
-        if (!empty($unixSocket)) {
-            $dsn = $driver.':unix_socket='.strtolower($unixSocket).';dbname='.$database.';';
-        } else {
-            $server = $configService->get('server', Config::CATEGORY_DB);
-            $port = $configService->get('port', Config::CATEGORY_DB);
-            $dsn = $driver.':host='.strtolower($server).
-                ';dbname='.$database.
-                ';port='.strtolower($port).';';
+            if ($driver == Connection::DRIVER_MYSQL && !empty($unixSocket)) {
+                $dsn = $driver.':unix_socket='.strtolower($unixSocket).';dbname='.$database.';';
+            } else {
+                $server = $configService->get('server', Config::CATEGORY_DB);
+                $port = $configService->get('port', Config::CATEGORY_DB);
+
+                if ($port === '' && $driver == Connection::DRIVER_MYSQL) {
+                    $port = 3306;
+                } else {
+                    // PostgreSQL
+                    $port = 5432;
+                }
+
+                $dsn = $driver.':host='.strtolower($server).
+                    ';dbname='.$database.
+                    ';port='.strtolower($port).';';
+            }
         }
 
         $config = [
@@ -203,7 +213,13 @@ return [
             'attributes' => $configService->get('attributes', Config::CATEGORY_DB),
         ];
 
-        return Craft::createObject($config);
+        $db = Craft::createObject($config);
+
+        // Set the Yii driver name from the config setting.
+        /** @var Connection $db */
+        $db->setDriverName($driver);
+
+        return $db;
     },
 
     'mailer' => function() {
