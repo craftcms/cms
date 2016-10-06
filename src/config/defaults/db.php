@@ -49,11 +49,6 @@ return [
      */
     'unixSocket' => '',
     /**
-     * An array of SQL statements that should be executed right after the database
-     * connection is established.
-     */
-    'initSQLs' => [],
-    /**
      * An array of key => value pairs of PDO attributes to pass into the PDO constructor.
      *
      * For example, when using the MySQL PDO driver (https://secure.php.net/manual/en/ref.pdo-mysql.php),
