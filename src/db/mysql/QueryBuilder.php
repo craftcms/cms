@@ -44,11 +44,6 @@ class QueryBuilder extends \yii\db\mysql\QueryBuilder
             $options .= ' DEFAULT CHARSET='.Craft::$app->getConfig()->get('charset', Config::CATEGORY_DB);
         }
 
-        // Use the default collation
-        if (strpos($options, 'COLLATE=') === false) {
-            $options .= ' COLLATE='.Craft::$app->getConfig()->get('collation', Config::CATEGORY_DB);
-        }
-
         return parent::createTable($table, $columns, $options);
     }
 

@@ -671,7 +671,6 @@ trait ApplicationTrait
             $databaseName = $this->getConfig()->get('database', Config::CATEGORY_DB);
             $databasePort = $this->getConfig()->get('port', Config::CATEGORY_DB);
             $databaseCharset = $this->getConfig()->get('charset', Config::CATEGORY_DB);
-            $databaseCollation = $this->getConfig()->get('collation', Config::CATEGORY_DB);
 
             if (!$databaseServerName) {
                 $messages[] = Craft::t('app', 'The database server name isn’t set in your db config file.');
@@ -691,10 +690,6 @@ trait ApplicationTrait
 
             if (!$databaseCharset) {
                 $messages[] = Craft::t('app', 'The database charset isn’t set in your db config file.');
-            }
-
-            if (!$databaseCollation) {
-                $messages[] = Craft::t('app', 'The database collation isn’t set in your db config file.');
             }
 
             if (!empty($messages)) {
