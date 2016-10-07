@@ -27,7 +27,7 @@
 }) }}
 
 
-{% set userGroups = craft.userGroups.getAllGroups() %}
+{% set userGroups = craft.app.userGroups.getAllGroups() %}
 
 {% if userGroups|length > 0 %}
 
