@@ -4,7 +4,7 @@
  * @copyright Copyright (c) Pixel & Tonic, Inc.
  * @license   https://craftcms.com/license
  */
-namespace craft\app\mail\transportadaptors;
+namespace craft\app\mail\transportadapters;
 
 use Craft;
 
@@ -14,7 +14,7 @@ use Craft;
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since  3.0
  */
-class Gmail extends BaseTransportAdaptor
+class Gmail extends BaseTransportAdapter
 {
     // Static
     // =========================================================================
@@ -76,8 +76,8 @@ class Gmail extends BaseTransportAdaptor
      */
     public function getSettingsHtml()
     {
-        return Craft::$app->getView()->renderTemplate('_components/mailertransportadaptors/Gmail/settings', [
-            'adaptor' => $this
+        return Craft::$app->getView()->renderTemplate('_components/mailertransportadapters/Gmail/settings', [
+            'adapter' => $this
         ]);
     }
 

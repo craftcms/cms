@@ -4,15 +4,16 @@
  * @copyright Copyright (c) Pixel & Tonic, Inc.
  * @license   https://craftcms.com/license
  */
-namespace craft\app\mail\transportadaptors;
+
+namespace craft\app\mail\transportadapters;
 
 /**
- * Sendmail implements a Sendmail transport adapter into Craft’s mailer.
+ * Php implements a PHP Mail transport adapter into Craft’s mailer.
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since  3.0
  */
-class Sendmail extends BaseTransportAdaptor
+class Php extends BaseTransportAdapter
 {
     // Static
     // =========================================================================
@@ -22,7 +23,7 @@ class Sendmail extends BaseTransportAdaptor
      */
     public static function displayName()
     {
-        return 'Sendmail';
+        return 'PHP Mail';
     }
 
     // Public Methods
@@ -34,7 +35,7 @@ class Sendmail extends BaseTransportAdaptor
     public function getTransportConfig()
     {
         return [
-            'class' => 'Swift_SendmailTransport',
+            'class' => 'Swift_MailTransport',
         ];
     }
 }

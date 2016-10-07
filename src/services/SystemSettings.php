@@ -9,6 +9,7 @@ namespace craft\app\services;
 
 use craft\app\dates\DateTime;
 use craft\app\helpers\Json;
+use craft\app\models\MailSettings;
 use craft\app\records\SystemSettings as SystemSettingsRecord;
 use yii\base\Component;
 
@@ -136,6 +137,18 @@ class SystemSettings extends Component
         $record->save();
 
         return !$record->hasErrors();
+    }
+
+    /**
+     * Returns the email settings.
+     *
+     * @return MailSettings
+     */
+    public function getEmailSettings()
+    {
+        $settings = $this->getSettings('email');
+
+        return new MailSettings($settings);
     }
 
     // Private Methods

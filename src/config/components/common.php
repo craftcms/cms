@@ -1,7 +1,13 @@
 <?php
 
 use craft\app\db\MigrationManager;
+use craft\app\errors\MissingComponentException;
+use craft\app\helpers\MailerHelper;
+use craft\app\helpers\Component;
 use craft\app\log\FileTarget;
+use craft\app\mail\transportadapters\Php;
+use craft\app\mail\transportadapters\TransportAdapterInterface;
+use craft\app\models\MailSettings;
 use craft\app\services\Config;
 use yii\base\InvalidConfigException;
 use yii\log\Logger;
@@ -202,13 +208,9 @@ return [
     },
 
     'mailer' => function() {
-        $config = Craft::$app->getSystemSettings()->getSettings('mailer');
+        $settings = Craft::$app->getSystemSettings()->getEmailSettings();
 
-        if (!$config) {
-            return null;
-        }
-
-        return Craft::createObject($config);
+        return MailerHelper::createMailer($settings);
     },
 
     'locale' => function() {

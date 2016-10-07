@@ -4,7 +4,7 @@
  * @copyright Copyright (c) Pixel & Tonic, Inc.
  * @license   https://craftcms.com/license
  */
-namespace craft\app\mail\transportadaptors;
+namespace craft\app\mail\transportadapters;
 
 use craft\app\base\SavableComponent;
 
@@ -14,6 +14,6 @@ use craft\app\base\SavableComponent;
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since  3.0
  */
-abstract class BaseTransportAdaptor extends SavableComponent implements TransportAdaptorInterface
+abstract class BaseTransportAdapter extends SavableComponent implements TransportAdapterInterface
 {
 }
