@@ -9,7 +9,7 @@ namespace craft\app\models;
 
 use Craft;
 use craft\app\base\Model;
-use craft\app\mail\transportadaptors\TransportAdaptorInterface;
+use craft\app\mail\transportadapters\TransportAdapterInterface;
 
 /**
  * MailSettings Model class.
@@ -38,7 +38,7 @@ class MailSettings extends Model
     public $template;
 
     /**
-     * @var TransportAdaptorInterface|string The transport type that should be used
+     * @var TransportAdapterInterface|string The transport type that should be used
      */
     public $transportType;
 

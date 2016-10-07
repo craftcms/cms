@@ -3,8 +3,8 @@
 use craft\app\db\MigrationManager;
 use craft\app\helpers\AppConfigHelper;
 use craft\app\log\FileTarget;
-use craft\app\mail\transportadaptors\Php;
-use craft\app\mail\transportadaptors\TransportAdaptorInterface;
+use craft\app\mail\transportadapters\Php;
+use craft\app\mail\transportadapters\TransportAdapterInterface;
 use craft\app\models\MailSettings;
 use craft\app\services\Config;
 use yii\base\InvalidConfigException;
@@ -209,7 +209,7 @@ return [
         $settings = Craft::$app->getSystemSettings()->getSettings('email');
         $settings = new MailSettings($settings);
 
-        if (isset($settings['transportType']) && is_subclass_of($settings['transportType'], TransportAdaptorInterface::class)) {
+        if (isset($settings['transportType']) && is_subclass_of($settings['transportType'], TransportAdapterInterface::class)) {
             $adapterConfig = isset($settings['transportSettings']) && is_array($settings['transportSettings']) ? $settings['transportSettings'] : [];
             $adapterConfig['class'] = $settings['transportType'];
             $adapter = Craft::createObject($adapterConfig);

@@ -5,17 +5,17 @@
  * @license   https://craftcms.com/license
  */
 
-namespace craft\app\mail\transportadaptors;
+namespace craft\app\mail\transportadapters;
 
 use craft\app\base\SavableComponentInterface;
 
 /**
- * TransportAdaptorInterface defines the common interface to be implemented by SwiftMailer transport adaptor classes.
+ * TransportAdapterInterface defines the common interface to be implemented by SwiftMailer transport adapter classes.
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since  3.0
  */
-interface TransportAdaptorInterface extends SavableComponentInterface
+interface TransportAdapterInterface extends SavableComponentInterface
 {
     // Public Methods
     // =========================================================================

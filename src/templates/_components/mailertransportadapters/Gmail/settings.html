@@ -4,23 +4,23 @@
 	label: "Username"|t('app'),
 	id: 'username',
 	name: 'username',
-	value: adaptor.username,
-	errors: adaptor.getErrors('username')
+	value: adapter.username,
+	errors: adapter.getErrors('username')
 }) }}
 
 {{ forms.passwordField({
 	label: "Password"|t('app'),
 	id: 'password',
 	name: 'password',
-	value: adaptor.password,
-	errors: adaptor.getErrors('password')
+	value: adapter.password,
+	errors: adapter.getErrors('password')
 }) }}
 
 {{ forms.textField({
 	label: "Timeout"|t('app'),
 	id: 'timeout',
 	name: 'timeout',
-	value: adaptor.timeout,
+	value: adapter.timeout,
 	size: 2,
-	errors: adaptor.getErrors('timeout')
+	errors: adapter.getErrors('timeout')
 }) }}

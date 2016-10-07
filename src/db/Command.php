@@ -142,17 +142,19 @@ class Command extends \yii\db\Command
     /**
      * Creates a SQL statement for replacing some text with other text in a given table column.
      *
-     * @param string $table   The table to be updated.
-     * @param string $column  The column to be searched.
-     * @param string $find    The text to be searched for.
-     * @param string $replace The replacement text.
+     * @param string       $table     The table to be updated.
+     * @param string       $column    The column to be searched.
+     * @param string       $find      The text to be searched for.
+     * @param string       $replace   The replacement text.
+     * @param string|array $condition The condition that will be put in the WHERE part. Please
+     *                                refer to [[Query::where()]] on how to specify condition.
+     * @param array        $params    The parameters to be bound to the command.
      *
      * @return Command The command object itself.
      */
-    public function replace($table, $column, $find, $replace)
+    public function replace($table, $column, $find, $replace, $condition = '', $params = [])
     {
-        $params = [];
-        $sql = $this->db->getQueryBuilder()->replace($table, $column, $find, $replace, $params);
+        $sql = $this->db->getQueryBuilder()->replace($table, $column, $find, $replace, $condition, $params);
 
         return $this->setSql($sql)->bindValues($params);
     }

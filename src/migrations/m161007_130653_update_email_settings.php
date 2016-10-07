@@ -6,9 +6,9 @@ use Craft;
 use craft\app\db\Migration;
 
 /**
- * m161007_130653_delete_mailer_settings migration.
+ * m161007_130653_update_email_settings migration.
  */
-class m161007_130653_delete_mailer_settings extends Migration
+class m161007_130653_update_email_settings extends Migration
 {
     /**
      * @inheritdoc
@@ -16,6 +16,8 @@ class m161007_130653_delete_mailer_settings extends Migration
     public function safeUp()
     {
         $this->delete('{{%systemsettings}}', ['category' => 'mailer']);
+
+        $this->replace('{{%systemsettings}}', 'settings', 'daptor', 'dapter', ['category' => 'email']);
     }
 
     /**
@@ -23,7 +25,7 @@ class m161007_130653_delete_mailer_settings extends Migration
      */
     public function safeDown()
     {
-        echo "m161007_130653_delete_mailer_settings cannot be reverted.\n";
+        echo "m161007_130653_update_email_settings cannot be reverted.\n";
         return false;
     }
 }
