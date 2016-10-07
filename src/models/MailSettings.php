@@ -38,7 +38,7 @@ class MailSettings extends Model
     public $template;
 
     /**
-     * @var TransportAdapterInterface|string The transport type that should be used
+     * @var string The transport type that should be used
      */
     public $transportType;
 
@@ -69,7 +69,7 @@ class MailSettings extends Model
     public function rules()
     {
         return [
-            [['fromEmail', 'fromName'], 'required'],
+            [['fromEmail', 'fromName', 'transportType'], 'required'],
             [['fromEmail'], 'email'],
         ];
     }

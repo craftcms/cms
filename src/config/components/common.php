@@ -1,7 +1,9 @@
 <?php
 
 use craft\app\db\MigrationManager;
-use craft\app\helpers\AppConfigHelper;
+use craft\app\errors\MissingComponentException;
+use craft\app\helpers\MailerHelper;
+use craft\app\helpers\Component;
 use craft\app\log\FileTarget;
 use craft\app\mail\transportadapters\Php;
 use craft\app\mail\transportadapters\TransportAdapterInterface;
@@ -206,18 +208,9 @@ return [
     },
 
     'mailer' => function() {
-        $settings = Craft::$app->getSystemSettings()->getSettings('email');
-        $settings = new MailSettings($settings);
+        $settings = Craft::$app->getSystemSettings()->getEmailSettings();
 
-        if (isset($settings['transportType']) && is_subclass_of($settings['transportType'], TransportAdapterInterface::class)) {
-            $adapterConfig = isset($settings['transportSettings']) && is_array($settings['transportSettings']) ? $settings['transportSettings'] : [];
-            $adapterConfig['class'] = $settings['transportType'];
-            $adapter = Craft::createObject($adapterConfig);
-        } else {
-            $adapter = new Php();
-        }
-
-        return AppConfigHelper::createMailer($settings, $adapter);
+        return MailerHelper::createMailer($settings);
     },
 
     'locale' => function() {
