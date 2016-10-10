@@ -320,13 +320,13 @@ class MigrationHelper
             // Rename the old id column and add the new one
             if ($migration !== null) {
                 $migration->renameColumn($fk->table->name, $fk->column, $fk->column.'_old');
-                $migration->addColumnAfter($fk->table->name, $fk->column, $fk->columnType, $fk->column.'_old');
+                $migration->addColumn($fk->table->name, $fk->column, $fk->columnType);
             } else {
                 $db->createCommand()
                     ->renameColumn($fk->table->name, $fk->column, $fk->column.'_old')
                     ->execute();
                 $db->createCommand()
-                    ->addColumnAfter($fk->table->name, $fk->column, $fk->columnType, $fk->column.'_old')
+                    ->addColumn($fk->table->name, $fk->column, $fk->columnType)
                     ->execute();
             }
         }
@@ -334,13 +334,13 @@ class MigrationHelper
         // Rename the old id column and add the new one
         if ($migration !== null) {
             $migration->renameColumn($tableName, 'id', 'id_old');
-            $migration->addColumnAfter($tableName, 'id', static::$_idColumnType, 'id_old');
+            $migration->addColumn($tableName, 'id', static::$_idColumnType);
         } else {
             $db->createCommand()
                 ->renameColumn($tableName, 'id', 'id_old')
                 ->execute();
             $db->createCommand()
-                ->addColumnAfter($tableName, 'id', static::$_idColumnType, 'id_old')
+                ->addColumn($tableName, 'id', static::$_idColumnType)
                 ->execute();
         }
 

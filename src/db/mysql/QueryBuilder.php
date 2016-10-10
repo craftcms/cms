@@ -60,26 +60,6 @@ class QueryBuilder extends \yii\db\mysql\QueryBuilder
     }
 
     /**
-     * Builds a SQL statement for adding a new DB column after another column.
-     *
-     * @param string $table  The table that the new column will be added to. The table name will be properly quoted by the method.
-     * @param string $column The name of the new column. The name will be properly quoted by the method.
-     * @param string $type   The column type. The [[getColumnType()]] method will be invoked to convert abstract column type (if any)
-     *                       into the physical one. Anything that is not recognized as abstract type will be kept in the generated SQL.
-     *                       For example, 'string' will be turned into 'varchar(255)', while 'string not null' will become 'varchar(255) not null'.
-     * @param string $after  The name of the column that the new column should be placed after.
-     *
-     * @return string The SQL statement for adding a new column.
-     */
-    public function addColumnAfter($table, $column, $type, $after)
-    {
-        return 'ALTER TABLE '.$this->db->quoteTableName($table).
-        ' ADD '.$this->db->quoteColumnName($column).' '.
-        $this->getColumnType($type).
-        ' AFTER '.$this->db->quoteColumnName($after);
-    }
-
-    /**
      * Builds a SQL statement for adding a new DB column before another column.
      *
      * @param string $table  The table that the new column will be added to. The table name will be properly quoted by the method.

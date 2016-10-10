@@ -44,7 +44,7 @@ class m160804_110002_userphotos_to_assets extends Migration
 
         Craft::info('Updating Users table to drop the photo column and add photoId column.');
         $this->dropColumn('{{%users}}', 'photo');
-        $this->addColumnAfter('{{%users}}', 'photoId', $this->integer()->null(), 'username');
+        $this->addColumn('{{%users}}', 'photoId', $this->integer()->null());
         $this->addForeignKey($this->db->getForeignKeyName('{{%users}}', 'photoId'), '{{%users}}', 'photoId', '{{%assets}}', 'id', 'SET NULL', null);
 
         Craft::info('Setting the photoId value');

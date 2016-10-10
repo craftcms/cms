@@ -21,21 +21,21 @@ class m160807_144858_sites extends Migration
     // =========================================================================
 
     /**
-     * @var array The site FK columns ([table, column, not null?, after, locale column])
+     * @var array The site FK columns ([table, column, not null?, locale column])
      */
     protected $siteColumns = [
-        ['{{%categorygroups_i18n}}', 'siteId', true, 'groupId', 'locale'],
-        ['{{%content}}', 'siteId', true, 'elementId', 'locale'],
-        ['{{%elements_i18n}}', 'siteId', true, 'elementId', 'locale'],
-        ['{{%emailmessages}}', 'siteId', true, 'id', 'locale'],
-        ['{{%entrydrafts}}', 'siteId', true, 'creatorId', 'locale'],
-        ['{{%entryversions}}', 'siteId', true, 'creatorId', 'locale'],
-        ['{{%matrixblocks}}', 'ownerSiteId', false, 'ownerId', 'ownerLocale'],
-        ['{{%relations}}', 'sourceSiteId', false, 'sourceId', 'sourceLocale'],
-        ['{{%routes}}', 'siteId', false, 'id', 'locale'],
-        ['{{%searchindex}}', 'siteId', true, 'fieldId', 'locale'],
-        ['{{%sections_i18n}}', 'siteId', true, 'sectionId', 'locale'],
-        ['{{%templatecaches}}', 'siteId', true, 'id', 'locale'],
+        ['{{%categorygroups_i18n}}', 'siteId', true, 'locale'],
+        ['{{%content}}', 'siteId', true, 'locale'],
+        ['{{%elements_i18n}}', 'siteId', true, 'locale'],
+        ['{{%emailmessages}}', 'siteId', true, 'locale'],
+        ['{{%entrydrafts}}', 'siteId', true, 'locale'],
+        ['{{%entryversions}}', 'siteId', true, 'locale'],
+        ['{{%matrixblocks}}', 'ownerSiteId', false, 'ownerLocale'],
+        ['{{%relations}}', 'sourceSiteId', false, 'sourceLocale'],
+        ['{{%routes}}', 'siteId', false, 'locale'],
+        ['{{%searchindex}}', 'siteId', true, 'locale'],
+        ['{{%sections_i18n}}', 'siteId', true, 'locale'],
+        ['{{%templatecaches}}', 'siteId', true, 'locale'],
     ];
 
     /**
@@ -131,8 +131,8 @@ class m160807_144858_sites extends Migration
         // ---------------------------------------------------------------------
 
         foreach ($this->siteColumns as $columnInfo) {
-            list($table, $column, $isNotNull, $after, $localeColumn) = $columnInfo;
-            $this->addSiteColumn($table, $column, $isNotNull, $after, $localeColumn);
+            list($table, $column, $isNotNull, $localeColumn) = $columnInfo;
+            $this->addSiteColumn($table, $column, $isNotNull, $localeColumn);
         }
 
         // Create the new indexes
@@ -356,7 +356,7 @@ class m160807_144858_sites extends Migration
 
             // Create hasUrls and template columns in the i18n table
             $this->addColumnBefore($tables['i18n'], 'hasUrls', $this->boolean()->notNull()->defaultValue(1), 'uriFormat');
-            $this->addColumnAfter($tables['i18n'], 'template', $this->string(500), 'uriFormat');
+            $this->addColumn($tables['i18n'], 'template', $this->string(500));
 
             // Move the hasUrls and template values into the i18n table
             $results = (new Query())
@@ -379,17 +379,17 @@ class m160807_144858_sites extends Migration
         // Field translation methods
         // ---------------------------------------------------------------------
 
-        $this->addColumnAfter(
+        $this->addColumn(
             '{{%fields}}',
             'translationMethod',
-            $this->enum('translationMethod', ['none', 'language', 'site', 'custom'])->notNull()->defaultValue('none'),
-            'instructions');
+            $this->enum('translationMethod', ['none', 'language', 'site', 'custom'])->notNull()->defaultValue('none')
+        );
 
-        $this->addColumnAfter(
+        $this->addColumn(
             '{{%fields}}',
             'translationKeyFormat',
-            $this->text(),
-            'translationMethod');
+            $this->text()
+        );
 
         $this->update(
             '{{%fields}}',
@@ -472,14 +472,13 @@ class m160807_144858_sites extends Migration
      * @param string  $table
      * @param string  $column
      * @param boolean $isNotNull
-     * @param string  $after
      * @param string  $localeColumn
      */
-    protected function addSiteColumn($table, $column, $isNotNull, $after, $localeColumn)
+    protected function addSiteColumn($table, $column, $isNotNull, $localeColumn)
     {
         // Ignore NOT NULL for now
         $type = $this->integer();
-        $this->addColumnAfter($table, $column, $type, $after);
+        $this->addColumn($table, $column, $type);
 
         // Set the values
         $this->update($table, [
