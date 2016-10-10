@@ -60,33 +60,6 @@ class QueryBuilder extends \yii\db\mysql\QueryBuilder
     }
 
     /**
-     * Builds a SQL statement for changing the definition of a column.
-     *
-     * @param string      $table   The table whose column is to be changed. The table name will be properly quoted by the method.
-     * @param string      $column  The name of the column to be changed. The name will be properly quoted by the method.
-     * @param string      $type    The new column type. The [[getColumnType()]] method will be invoked to convert abstract
-     *                             column type (if any) into the physical one. Anything that is not recognized as abstract type will be kept
-     *                             in the generated SQL. For example, 'string' will be turned into 'varchar(255)', while 'string not null'
-     *                             will become 'varchar(255) not null'.
-     * @param string|null $newName The new column name, if any.
-     * @param string|null $after   The column that this column should be placed after, if it should be moved.
-     *
-     * @return string The SQL statement for changing the definition of a column.
-     */
-    public function alterColumn($table, $column, $type, $newName = null, $after = null)
-    {
-        if (!$newName) {
-            $newName = $column;
-        }
-
-        return 'ALTER TABLE '.$this->db->quoteTableName($table).' CHANGE '.
-        $this->db->quoteColumnName($column).' '.
-        $this->db->quoteColumnName($newName).' '.
-        $this->getColumnType($type).
-        ($after ? ' AFTER '.$this->db->quoteColumnName($after) : '');
-    }
-
-    /**
      * Builds a SQL statement for inserting some given data into a table, or updating an existing row
      * in the event of a key constraint violation.
      *
