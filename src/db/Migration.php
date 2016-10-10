@@ -215,25 +215,6 @@ abstract class Migration extends \yii\db\Migration
     }
 
     /**
-     * Creates a SQL statement for adding a new DB column at the beginning of a table.
-     *
-     * @param string $table  The table that the new column will be added to. The table name will be properly quoted by the method.
-     * @param string $column The name of the new column. The name will be properly quoted by the method.
-     * @param string $type   The column type. [[\yii\db\QueryBuilder::getColumnType()]] will be called
-     *                       to convert the give column type to the physical one. For example, `string` will be converted
-     *                       as `varchar(255)`, and `string not null` becomes `varchar(255) not null`.
-     */
-    public function addColumnFirst($table, $column, $type)
-    {
-        echo "    > add column $column $type to first position in table $table ...";
-        $time = microtime(true);
-        $this->db->createCommand()
-            ->addColumnFirst($table, $column, $type)
-            ->execute();
-        echo " done (time: ".sprintf('%.3f', microtime(true) - $time)."s)\n";
-    }
-
-    /**
      * Creates and executes a SQL statement for adding a new DB column before another column in a table.
      *
      * @param string $table  The table that the new column will be added to. The table name will be properly quoted by the method.

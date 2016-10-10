@@ -60,25 +60,6 @@ class QueryBuilder extends \yii\db\mysql\QueryBuilder
     }
 
     /**
-     * Builds a SQL statement for adding a new DB column before all other columns in the table.
-     *
-     * @param string $table  The table that the new column will be added to. The table name will be properly quoted by the method.
-     * @param string $column The name of the new column. The name will be properly quoted by the method.
-     * @param string $type   The column type. The [[getColumnType()]] method will be invoked to convert abstract column type (if any)
-     *                       into the physical one. Anything that is not recognized as abstract type will be kept in the generated SQL.
-     *                       For example, 'string' will be turned into 'varchar(255)', while 'string not null' will become 'varchar(255) not null'.
-     *
-     * @return string The SQL statement for adding a new column.
-     */
-    public function addColumnFirst($table, $column, $type)
-    {
-        return 'ALTER TABLE '.$this->db->quoteTableName($table).
-        ' ADD '.$this->db->quoteColumnName($column).' '.
-        $this->getColumnType($type).
-        ' FIRST';
-    }
-
-    /**
      * Builds a SQL statement for adding a new DB column after another column.
      *
      * @param string $table  The table that the new column will be added to. The table name will be properly quoted by the method.
@@ -119,10 +100,6 @@ class QueryBuilder extends \yii\db\mysql\QueryBuilder
 
         if ($beforeIndex === false) {
             throw new Exception('A "'.$before.'" columns doesn’t exist on `'.$table.'`.');
-        }
-
-        if ($beforeIndex === 0) {
-            return $this->addColumnFirst($table, $column, $type);
         }
 
         $after = $columns[$beforeIndex - 1];
