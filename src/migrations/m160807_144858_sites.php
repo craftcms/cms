@@ -355,7 +355,7 @@ class m160807_144858_sites extends Migration
             $this->dropColumn($tables['i18n'], 'nestedUrlFormat');
 
             // Create hasUrls and template columns in the i18n table
-            $this->addColumnBefore($tables['i18n'], 'hasUrls', $this->boolean()->notNull()->defaultValue(1), 'uriFormat');
+            $this->addColumn($tables['i18n'], 'hasUrls', $this->boolean()->notNull()->defaultValue(1));
             $this->addColumn($tables['i18n'], 'template', $this->string(500));
 
             // Move the hasUrls and template values into the i18n table

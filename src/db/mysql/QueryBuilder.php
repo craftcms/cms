@@ -60,34 +60,6 @@ class QueryBuilder extends \yii\db\mysql\QueryBuilder
     }
 
     /**
-     * Builds a SQL statement for adding a new DB column before another column.
-     *
-     * @param string $table  The table that the new column will be added to. The table name will be properly quoted by the method.
-     * @param string $column The name of the new column. The name will be properly quoted by the method.
-     * @param string $type   The column type. The [[getColumnType()]] method will be invoked to convert abstract column type (if any)
-     *                       into the physical one. Anything that is not recognized as abstract type will be kept in the generated SQL.
-     *                       For example, 'string' will be turned into 'varchar(255)', while 'string not null' will become 'varchar(255) not null'.
-     * @param string $before The name of the column that the new column should be placed before.
-     *
-     * @return string The SQL statement for adding a new column.
-     * @throws Exception If the $before column doesn't exist.
-     */
-    public function addColumnBefore($table, $column, $type, $before)
-    {
-        $tableInfo = $this->db->getTableSchema($table, true);
-        $columns = array_keys($tableInfo->columns);
-        $beforeIndex = array_search($before, $columns);
-
-        if ($beforeIndex === false) {
-            throw new Exception('A "'.$before.'" columns doesn’t exist on `'.$table.'`.');
-        }
-
-        $after = $columns[$beforeIndex - 1];
-
-        return $this->addColumnAfter($table, $column, $type, $after);
-    }
-
-    /**
      * Builds a SQL statement for changing the definition of a column.
      *
      * @param string      $table   The table whose column is to be changed. The table name will be properly quoted by the method.

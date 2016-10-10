@@ -20,7 +20,7 @@ class m160708_185142_volume_hasUrls_setting extends Migration
     public function safeUp()
     {
         if (!$this->db->columnExists('{{%volumes}}', 'hasUrls')) {
-            $this->addColumnBefore('{{%volumes}}', 'hasUrls', 'boolean', 'url');
+            $this->addColumn('{{%volumes}}', 'hasUrls', 'boolean');
         }
 
         // Update all Volumes and move the setting from settings column to it's own field

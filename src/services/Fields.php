@@ -734,7 +734,7 @@ class Fields extends Component
                         ->execute();
                 } else {
                     Craft::$app->getDb()->createCommand()
-                        ->addColumnBefore($contentTable, $newColumnName, $columnType, 'dateCreated')
+                        ->addColumn($contentTable, $newColumnName, $columnType)
                         ->execute();
                 }
 
