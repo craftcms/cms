@@ -32,7 +32,7 @@ abstract class Migration extends \yii\db\Migration
      */
     public function tinyText()
     {
-        if ($this->db->getDriverName() == 'mysql') {
+        if ($this->db->getDriverName() == Connection::DRIVER_MYSQL) {
             return $this->db->getSchema()->createColumnSchemaBuilder('tinytext');
         }
 
@@ -46,7 +46,7 @@ abstract class Migration extends \yii\db\Migration
      */
     public function mediumText()
     {
-        if ($this->db->getDriverName() == 'mysql') {
+        if ($this->db->getDriverName() == Connection::DRIVER_MYSQL) {
             return $this->db->getSchema()->createColumnSchemaBuilder('mediumtext');
         }
 
@@ -60,7 +60,7 @@ abstract class Migration extends \yii\db\Migration
      */
     public function longText()
     {
-        if ($this->db->getDriverName() == 'mysql') {
+        if ($this->db->getDriverName() == Connection::DRIVER_MYSQL) {
             return $this->db->getSchema()->createColumnSchemaBuilder('longtext');
         }
 
@@ -68,7 +68,7 @@ abstract class Migration extends \yii\db\Migration
     }
 
     /**
-     * Creates an enum column for MySQL, or a string column with a check constraint for others.
+     * Creates an enum column for MySQL and PostgreSQL, or a string column with a check constraint for others.
      *
      * @param string   $columnName The column name
      * @param string[] $values     The allowed column values
@@ -81,7 +81,7 @@ abstract class Migration extends \yii\db\Migration
         $schema = $this->db->getSchema();
         $values = array_map([$schema, 'quoteValue'], $values);
 
-        if ($this->db->getDriverName() == 'mysql') {
+        if ($this->db->getDriverName() == Connection::DRIVER_MYSQL) {
             return $this->db->getSchema()->createColumnSchemaBuilder('enum', $values);
         }
 
