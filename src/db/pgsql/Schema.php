@@ -8,6 +8,7 @@
 namespace craft\app\db\pgsql;
 
 use Craft;
+use craft\app\helpers\Db;
 use craft\app\services\Config;
 use yii\db\Exception;
 
@@ -150,12 +151,6 @@ class Schema extends \yii\db\pgsql\Schema
      */
     protected function findTableNames($schema = null)
     {
-        if (!$schema) {
-            $likeSql = ($this->db->tablePrefix ? ' LIKE \''.$this->db->tablePrefix.'%\'' : '');
-
-            return $this->db->createCommand('SHOW TABLES'.$likeSql)->queryColumn();
-        }
-
-        return parent::findTableNames();
+        return Db::filterTablesByPrefix(parent::findTableNames($schema));
     }
 }

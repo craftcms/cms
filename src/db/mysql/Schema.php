@@ -135,12 +135,6 @@ class Schema extends \yii\db\mysql\Schema
      */
     protected function findTableNames($schema = null)
     {
-        if (!$schema) {
-            $likeSql = ($this->db->tablePrefix ? ' LIKE \''.$this->db->tablePrefix.'%\'' : '');
-
-            return $this->db->createCommand('SHOW TABLES'.$likeSql)->queryColumn();
-        }
-
-        return parent::findTableNames();
+        return Db::filterTablesByPrefix(parent::findTableNames($schema));
     }
 }
