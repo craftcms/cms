@@ -726,7 +726,10 @@ class Fields extends Component
 
                 if (Craft::$app->getDb()->columnExists($contentTable, $oldColumnName)) {
                     Craft::$app->getDb()->createCommand()
-                        ->alterColumn($contentTable, $oldColumnName, $columnType, $newColumnName)
+                        ->alterColumn($contentTable, $oldColumnName, $columnType)
+                        ->execute();
+                    Craft::$app->getDb()->createCommand()
+                        ->renameColumn($contentTable, $oldColumnName, $newColumnName)
                         ->execute();
                 } else if (Craft::$app->getDb()->columnExists($contentTable, $newColumnName)) {
                     Craft::$app->getDb()->createCommand()
