@@ -179,6 +179,29 @@ interface FieldInterface extends SavableComponentInterface
     public function validateValue($value, $element);
 
     /**
+     * Returns the validation rules for an element with this field.
+     *
+     * Rules should be defined in the array syntax required by [[\yii\base\Model::rules()]],
+     * with one difference: you can skip the first argument (the attribute list).
+     *
+     * Below are some examples:
+     *
+     * ```php
+     * [
+     *     // explicitly specify the field attribute
+     *     [$this->handle, 'string', 'min' => 3, 'max' => 12],
+     *     // skip the field attribute
+     *     ['string', 'min' => 3, 'max' => 12],
+     *     // you can only pass the validator class name/handle if not setting any params
+     *     'boolean',
+     * ];
+     * ```
+     *
+     * @return array
+     */
+    public function getElementValidationRules();
+
+    /**
      * Returns the search keywords that should be associated with this field.
      *
      * The keywords can be separated by commas and/or whitespace; it doesn’t really matter. [[\craft\app\services\Search]]

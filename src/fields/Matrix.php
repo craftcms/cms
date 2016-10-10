@@ -21,6 +21,7 @@ use craft\app\helpers\Json;
 use craft\app\helpers\StringHelper;
 use craft\app\elements\MatrixBlock;
 use craft\app\models\MatrixBlockType;
+use craft\app\validators\ArrayValidator;
 
 /**
  * Matrix represents a Matrix field.
@@ -348,30 +349,46 @@ class Matrix extends Field implements EagerLoadingFieldInterface
     /**
      * @inheritdoc
      */
-    public function validateValue($value, $element)
+    public function getElementValidationRules()
     {
-        $errors = parent::validateValue($value, $element);
+        // Don't call parent::getElementValidationRules() here - we'll do our own required validation
+        return [
+            'validateBlocks',
+            [
+                ArrayValidator::class,
+                'min' => ($this->required ? 1 : null),
+                'max' => ($this->maxBlocks ? $this->maxBlocks : null),
+                'tooFew' => Craft::t('app', '{attribute} should contain at least {min, number} {min, plural, one{block} other{blocks}}.'),
+                'tooMany' => Craft::t('app', '{attribute} should contain at most {max, number} {max, plural, one{block} other{blocks}}.'),
+            ],
+        ];
+    }
+
+    /**
+     * Validates an owner element’s Matrix blocks.
+     *
+     * @param ElementInterface $element
+     * @param array|null       $params
+     *
+     * @return void
+     */
+    public function validateBlocks(ElementInterface $element, $params)
+    {
+        /** @var Element $element */
+        /** @var MatrixBlockQuery $value */
+        $value = $element->getFieldValue($this->handle);
         $blocksValidate = true;
 
         foreach ($value as $block) {
-            if (!Craft::$app->getMatrix()->validateBlock($block)) {
+            /** @var MatrixBlock $block */
+            if (!$block->validate()) {
                 $blocksValidate = false;
             }
         }
 
         if (!$blocksValidate) {
-            $errors[] = Craft::t('app', 'Correct the errors listed above.');
+            $element->addError($this->handle, Craft::t('app', 'Correct the errors listed above.'));
         }
-
-        if ($this->maxBlocks && count($value) > $this->maxBlocks) {
-            if ($this->maxBlocks == 1) {
-                $errors[] = Craft::t('app', 'There can’t be more than one block.');
-            } else {
-                $errors[] = Craft::t('app', 'There can’t be more than {max} blocks.', ['max' => $this->maxBlocks]);
-            }
-        }
-
-        return $errors;
     }
 
     /**

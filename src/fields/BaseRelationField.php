@@ -18,6 +18,7 @@ use craft\app\elements\db\ElementQuery;
 use craft\app\elements\db\ElementQueryInterface;
 use craft\app\helpers\StringHelper;
 use craft\app\tasks\LocalizeRelations;
+use craft\app\validators\ArrayValidator;
 use yii\base\NotSupportedException;
 
 /**
@@ -208,27 +209,18 @@ abstract class BaseRelationField extends Field implements PreviewableFieldInterf
     /**
      * @inheritdoc
      */
-    public function validateValue($value, $element)
+    public function getElementValidationRules()
     {
-        /** @var ElementQuery $value */
-        $errors = [];
-
-        // Do we need to validate the number of selections?
-        if ($this->required || ($this->allowLimit && $this->limit)) {
-            $total = $value->count();
-
-            if ($this->required && $total == 0) {
-                $errors[] = Craft::t('yii', '{attribute} cannot be blank.');
-            } else if ($this->allowLimit && $this->limit && $total > $this->limit) {
-                if ($this->limit == 1) {
-                    $errors[] = Craft::t('app', 'There can’t be more than one selection.');
-                } else {
-                    $errors[] = Craft::t('app', 'There can’t be more than {limit} selections.', ['limit' => $this->limit]);
-                }
-            }
-        }
-
-        return $errors;
+        // Don't call parent::getElementValidationRules() here - we'll do our own required validation
+        return [
+            [
+                ArrayValidator::class,
+                'min' => ($this->required ? 1 : null),
+                'max' => ($this->allowLimit && $this->limit ? $this->limit : null),
+                'tooFew' => Craft::t('app', '{attribute} should contain at least {min, number} {min, plural, one{selection} other{selections}}.'),
+                'tooMany' => Craft::t('app', '{attribute} should contain at most {max, number} {max, plural, one{selection} other{selections}}.'),
+            ],
+        ];
     }
 
     /**

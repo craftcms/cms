@@ -9,6 +9,7 @@ namespace craft\app\fields;
 
 use Craft;
 use craft\app\base\Element;
+use craft\app\base\ElementInterface;
 use craft\app\base\Field;
 use craft\app\base\Volume;
 use craft\app\fields\data\RichTextData;
@@ -22,6 +23,7 @@ use craft\app\models\Section;
 use craft\app\validators\HandleValidator;
 use yii\base\Exception;
 use yii\db\Schema;
+use yii\validators\StringValidator;
 
 /**
  * RichText represents a Rich Text field.
@@ -216,22 +218,39 @@ class RichText extends Field
     /**
      * @inheritdoc
      */
-    public function validateValue($value, $element)
+    public function getElementValidationRules()
     {
-        /** @var RichTextData|null $value */
-        $errors = parent::validateValue($value, $element);
+        $rules = parent::getElementValidationRules();
+        $rules[] = 'validateLength';
 
-        $postContentSize = $value ? strlen($value->getRawContent()) : 0;
-        $maxDbColumnSize = Db::getTextualColumnStorageCapacity($this->columnType);
+        return $rules;
+    }
 
-        // Give ourselves 10% wiggle room.
-        $maxDbColumnSize = ceil($maxDbColumnSize * 0.9);
+    /**
+     * Validates the field value.
+     *
+     * @param ElementInterface $element
+     * @param array|null       $params
+     *
+     * @return void
+     */
+    public function validateLength(ElementInterface $element, $params)
+    {
+        /** @var Element $element */
+        /** @var RichTextData $value */
+        $value = $element->getFieldValue($this->handle);
 
-        if ($postContentSize > $maxDbColumnSize) {
-            $errors[] = Craft::t('app', '{attribute} is too long.');
+        // Set the max size based on the column's storage capacity (with a little wiggle room)
+        $max = Db::getTextualColumnStorageCapacity($this->columnType);
+        $max = ceil($max * 0.9);
+
+        $validator = new StringValidator([
+            'max' => $max,
+        ]);
+
+        if (!$validator->validate($value->getRawContent(), $error)) {
+            $element->addError($this->handle, $error);
         }
-
-        return $errors;
     }
 
     /**

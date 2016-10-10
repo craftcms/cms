@@ -252,6 +252,20 @@ abstract class Field extends SavableComponent implements FieldInterface
     /**
      * @inheritdoc
      */
+    public function getElementValidationRules()
+    {
+        $rules = [];
+
+        if ($this->required) {
+            $rules[] = 'required';
+        }
+
+        return $rules;
+    }
+
+    /**
+     * @inheritdoc
+     */
     public function getSearchKeywords($value, $element)
     {
         return StringHelper::toString($value, ' ');

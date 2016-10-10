@@ -31,6 +31,7 @@ use yii\base\Exception;
 use yii\base\InvalidCallException;
 use yii\base\InvalidConfigException;
 use yii\base\UnknownPropertyException;
+use yii\validators\Validator;
 
 /**
  * Element is the base class for classes representing elements in terms of objects.
@@ -83,6 +84,11 @@ abstract class Element extends Component implements ElementInterface
     const STATUS_ENABLED = 'enabled';
     const STATUS_DISABLED = 'disabled';
     const STATUS_ARCHIVED = 'archived';
+
+    /**
+     * The name of the scenario that will only validate core attributes, skipping any custom field validation.
+     */
+    const SCENARIO_CORE = 'core';
 
     /**
      * @event Event The event that is triggered before the element is saved
@@ -828,7 +834,95 @@ abstract class Element extends Component implements ElementInterface
             $rules[] = [['title'], 'required'];
         }
 
+        // Are we validating custom fields?
+        if ($this->scenario == self::SCENARIO_DEFAULT) {
+            $rules = array_merge($rules, $this->customFieldRules());
+        }
+
         return $rules;
+    }
+
+    /**
+     * Returns the validation rules defined by custom fields.
+     *
+     * @return array
+     * @throws InvalidConfigException if a custom field returns invalid rules
+     * @see rules()
+     */
+    public function customFieldRules()
+    {
+        if (!static::hasContent()) {
+            return [];
+        }
+
+        $rules = [];
+
+        foreach ($this->getFieldLayout()->getFields() as $field) {
+            /** @var Field $field */
+            $fieldRules = $field->getElementValidationRules();
+
+            foreach ($fieldRules as $rule) {
+                if ($rule instanceof Validator) {
+                    $rules[] = $rule;
+                } else {
+                    if (is_string($rule)) {
+                        // "Validator" syntax
+                        $rule = [$field->handle, $rule];
+                    }
+
+                    if (is_array($rule) && isset($rule[0])) {
+                        if (!isset($rule[1])) {
+                            // ["Validator"] syntax
+                            array_unshift($rule, $field->handle);
+                        }
+
+                        if ($rule[1] instanceof \Closure || $field->hasMethod($rule[1])) {
+                            // InlineValidator assumes that the closure is on the model being validated
+                            // so it won’t pass a reference to the element
+                            $rule = [
+                                $rule[0],
+                                'validateCustomFieldAttribute',
+                                'params' => [
+                                    $field,
+                                    $rule[1],
+                                    (isset($rule['params']) ? $rule['params'] : null),
+                                ]
+                            ];
+                        }
+
+                        $rules[] = $rule;
+                    } else {
+                        throw new InvalidConfigException('Invalid validation rule for custom field "'.$field->handle.'".');
+                    }
+                }
+            }
+        }
+
+        return $rules;
+    }
+
+    /**
+     * Calls a custom validation function on a custom field.
+     *
+     * This will be called by [[yii\validators\InlineValidator]] if a custom field specified
+     * a closure or the name of a class-level method as the validation type.
+     *
+     * @param string     $attribute The field handle
+     * @param array|null $params
+     *
+     * @return void
+     */
+    public function validateCustomFieldAttribute($attribute, $params)
+    {
+        /** @var Field $field */
+        /** @var array|null $params */
+        list($field, $method, $fieldParams) = $params;
+
+        if (is_string($method)) {
+            $method = [$field, $method];
+        }
+
+        call_user_func($method, $this, $fieldParams);
     }
 
     /**
