@@ -7,6 +7,7 @@
 
 namespace craft\app\helpers;
 
+use Craft;
 use craft\app\base\Savable;
 use craft\app\dates\DateTime;
 use craft\app\enums\ColumnType;
