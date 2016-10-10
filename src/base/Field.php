@@ -92,7 +92,7 @@ abstract class Field extends SavableComponent implements FieldInterface
             [['name'], 'string', 'max' => 255],
             [['type'], 'string', 'max' => 150],
             [['handle'], 'string', 'max' => $maxHandleLength],
-            [['name', 'handle', 'context', 'type', 'translationMethod'], 'required'],
+            [['name', 'handle', 'type', 'translationMethod'], 'required'],
             [['groupId'], 'number', 'integerOnly' => true],
             [
                 ['translationMethod'],
