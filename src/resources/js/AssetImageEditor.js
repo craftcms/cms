@@ -707,12 +707,10 @@ Craft.AssetImageEditor = Garnish.Modal.extend(
 				lockRotation: true
 			});
 
-			// TODO base this on actual facts.
-			zoomToCoverRatio = this.getZoomToCoverRatio();
-			console.log(zoomToCoverRatio);
-			console.log(this.image.width, this.image.scaleX);
-			var rectWidth = this.image.width / this.image.scaleX,
-				rectHeight = this.image.height / this.image.scaleY;
+			// calculate the cropping rectangle size.
+			combinedRatio = (this.getZoomToCoverRatio() / this.getZoomToFitRatio());
+			var rectWidth = this.viewportWidth / combinedRatio,
+				rectHeight = this.viewportHeight / combinedRatio;
 
 			// Set up the cropping viewport rectangle.
 			var croppingGroup = [];
@@ -763,10 +761,11 @@ Craft.AssetImageEditor = Garnish.Modal.extend(
 			handleLine.set(lineOptions);
 			croppingGroup.push(handleLine);
 
+			// Adjust for rectangle stroke thickness
 			this.cropper = new fabric.Group(croppingGroup,
 				{
-					left: this.editorWidth / 2 - rectWidth / 2,
-					top: this.editorHeight / 2 - rectHeight / 2,
+					left: this.editorWidth / 2 - rectWidth / 2 - 2,
+					top: this.editorHeight / 2 - rectHeight / 2 - 2,
 					hoverCursor: 'move'
 				}
 			);
