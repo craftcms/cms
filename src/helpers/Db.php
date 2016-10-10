@@ -404,6 +404,27 @@ class Db
         return static::parseParam($column, $normalizedValues, $params);
     }
 
+    /**
+     * Given a list of database table names, this method will check the tablePrefix
+     * config setting and filter that list to just the tables that begin with the prefix.
+     *
+     * @param array $tables A array of table names to check.
+     *
+     * @return array An array of matched table names.
+     */
+    public static function filterTablesByPrefix($tables) {
+        if ($tablePrefix = Craft::$app->getConfig()->get('tablePrefix', Config::CATEGORY_DB)) {
+
+            foreach ($tables as $key => $table) {
+                if (!preg_match('/^'.$tablePrefix.'_(.)*/', $table)) {
+                    unset($tables[$key]);
+                }
+            }
+        }
+
+        return $tables;
+    }
+
     // Private Methods
     // =========================================================================
 
