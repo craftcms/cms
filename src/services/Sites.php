@@ -836,9 +836,8 @@ class Sites extends Component
                     $this->_fetchedAllSites = true;
                 }
             } catch (\yii\db\Exception $e) {
-                // TODO: Maybe MySQL specific?
-                // If the error code is 42S02, the sites table probably doesn't exist yet
-                if (isset($e->errorInfo[0]) && $e->errorInfo[0] == '42S02') {
+                // If the error code is 42S02 (MySQL) or 42P01 (PostgreSQL), the sites table probably doesn't exist yet
+                if (isset($e->errorInfo[0]) && ($e->errorInfo[0] == '42S02' || $e->errorInfo[0] == '42P01')) {
                     return;
                 }
 
