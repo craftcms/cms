@@ -157,7 +157,7 @@ abstract class BaseRelationField extends Field implements PreviewableFieldInterf
     /**
      * @inheritdoc
      */
-    public function beforeSave()
+    public function beforeSave($isNew)
     {
         $this->_makeExistingRelationsTranslatable = false;
 
@@ -170,13 +170,13 @@ abstract class BaseRelationField extends Field implements PreviewableFieldInterf
             }
         }
 
-        return parent::beforeSave();
+        return parent::beforeSave($isNew);
     }
 
     /**
      * @inheritdoc
      */
-    public function afterSave()
+    public function afterSave($isNew)
     {
         if ($this->_makeExistingRelationsTranslatable) {
             Craft::$app->getTasks()->queueTask([
@@ -185,7 +185,7 @@ abstract class BaseRelationField extends Field implements PreviewableFieldInterf
             ]);
         }
 
-        parent::afterSave();
+        parent::afterSave($isNew);
     }
 
     /**

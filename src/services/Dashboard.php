@@ -197,7 +197,7 @@ class Dashboard extends Component
 
         $transaction = Craft::$app->getDb()->beginTransaction();
         try {
-            if (!$widget->beforeSave()) {
+            if (!$widget->beforeSave($isNewWidget)) {
                 $transaction->rollBack();
 
                 return false;
@@ -220,7 +220,7 @@ class Dashboard extends Component
                 $widget->id = $widgetRecord->id;
             }
 
-            $widget->afterSave();
+            $widget->afterSave($isNewWidget);
 
             $transaction->commit();
         } catch (\Exception $e) {

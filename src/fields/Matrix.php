@@ -224,10 +224,10 @@ class Matrix extends Field implements EagerLoadingFieldInterface
     /**
      * @inheritdoc
      */
-    public function afterSave()
+    public function afterSave($isNew)
     {
         Craft::$app->getMatrix()->saveSettings($this, false);
-        parent::afterSave();
+        parent::afterSave($isNew);
     }
 
     /**

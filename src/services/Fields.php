@@ -705,7 +705,7 @@ class Fields extends Component
 
         $transaction = Craft::$app->getDb()->beginTransaction();
         try {
-            if (!$field->beforeSave()) {
+            if (!$field->beforeSave($isNewField)) {
                 $transaction->rollBack();
 
                 return false;
@@ -800,7 +800,7 @@ class Fields extends Component
             unset($this->_allFieldsInContext[$field->context]);
             unset($this->_fieldsWithContent[$field->context]);
 
-            $field->afterSave();
+            $field->afterSave($isNewField);
 
             // Update the field version
             if ($field->context === 'global') {

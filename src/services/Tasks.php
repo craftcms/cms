@@ -160,7 +160,7 @@ class Tasks extends Component
 
         $transaction = Craft::$app->getDb()->beginTransaction();
         try {
-            if (!$task->beforeSave()) {
+            if (!$task->beforeSave($isNewTask)) {
                 $transaction->rollBack();
 
                 return false;
@@ -197,7 +197,7 @@ class Tasks extends Component
                 }
             }
 
-            $task->afterSave();
+            $task->afterSave($isNewTask);
 
             $transaction->commit();
         } catch (\Exception $e) {

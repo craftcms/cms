@@ -33,16 +33,20 @@ interface SavableComponentInterface extends ComponentInterface
     /**
      * Performs any actions before a component is saved.
      *
+     * @param boolean $isNew Whether the component is brand new
+     *
      * @return boolean Whether the component should be saved
      */
-    public function beforeSave();
+    public function beforeSave($isNew);
 
     /**
      * Performs any actions after a component is saved.
      *
+     * @param boolean $isNew Whether the component is brand new
+     *
      * @return void
      */
-    public function afterSave();
+    public function afterSave($isNew);
 
     /**
      * Performs any actions before a component is deleted.

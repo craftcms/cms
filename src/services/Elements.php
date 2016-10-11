@@ -344,7 +344,7 @@ class Elements extends Component
 
         $transaction = Craft::$app->getDb()->beginTransaction();
         try {
-            if (!$element->beforeSave()) {
+            if (!$element->beforeSave($isNewElement)) {
                 $transaction->rollBack();
 
                 return false;
@@ -583,7 +583,7 @@ class Elements extends Component
                 }
             }
 
-            $element->afterSave();
+            $element->afterSave($isNewElement);
 
             $transaction->commit();
         } catch (\Exception $e) {

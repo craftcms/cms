@@ -379,7 +379,7 @@ class Volumes extends Component
 
         $transaction = Craft::$app->getDb()->beginTransaction();
         try {
-            if (!$volume->beforeSave()) {
+            if (!$volume->beforeSave($isNewVolume)) {
                 $transaction->rollBack();
 
                 return false;
@@ -444,7 +444,7 @@ class Volumes extends Component
 
             $this->ensureTopFolder($volume);
 
-            $volume->afterSave();
+            $volume->afterSave($isNewVolume);
 
             $transaction->commit();
         } catch (\Exception $e) {
