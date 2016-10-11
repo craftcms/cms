@@ -762,8 +762,12 @@ class ConfigService extends BaseApplicationComponent
 		if ($configVal === 'minor-only')
 		{
 			// Return whether the major version number has changed
-			$localMajorVersion = array_shift(explode('.', craft()->getVersion()));
-			$updateMajorVersion = array_shift(explode('.', $updateInfo->app->latestVersion));
+			$versionParts = explode('.', craft()->getVersion());
+			$majorVersionParts = explode('.', $updateInfo->app->latestVersion);
+
+			$localMajorVersion = array_shift($versionParts);
+			$updateMajorVersion = array_shift($majorVersionParts);
+
 			return ($localMajorVersion === $updateMajorVersion);
 		}
 
