@@ -434,7 +434,7 @@ class AssetTransforms extends Component
 
             // Delete the out-of-date record
             Craft::$app->getDb()->createCommand()
-                ->delete('{{%assettransformindex}}', ['id' => $result['id']])
+                ->delete('{{%assettransformindex}}', ['id' => $entry['id']])
                 ->execute();
         }
 
