@@ -964,8 +964,8 @@ class Assets extends Component
             } else {
                 // Queue up a new Generate Pending Transforms task, if there isn't one already
                 $tasks = Craft::$app->getTasks();
-                if (!$tasks->areTasksPending('GeneratePendingTransforms')) {
-                    $tasks->createTask('GeneratePendingTransforms');
+                if (!$tasks->areTasksPending(GeneratePendingTransforms::class)) {
+                    $tasks->createTask(GeneratePendingTransforms::class);
                 }
 
                 // Return the temporary transform URL
