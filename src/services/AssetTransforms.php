@@ -149,7 +149,7 @@ class AssetTransforms extends Component
                     $this->_transformsByHandle))
         ) {
             $result = $this->_createTransformQuery()
-                ->where('handle = :handle', [':handle' => $handle])
+                ->where(['handle' => $handle])
                 ->one();
 
             if ($result) {
@@ -178,7 +178,7 @@ class AssetTransforms extends Component
     public function getTransformById($id)
     {
         $result = $this->_createTransformQuery()
-            ->where('id = :id', [':id' => $id])
+            ->where(['id' => $id])
             ->one();
 
         if ($result) {
@@ -412,19 +412,17 @@ class AssetTransforms extends Component
         $query = (new Query())
             ->select('ti.*')
             ->from('{{%assettransformindex}} ti')
-            ->where('ti.volumeId = :volumeId AND ti.assetId = :assetId AND ti.location = :location',
-                [
-                    ':volumeId' => $asset->volumeId,
-                    ':assetId' => $asset->id,
-                    ':location' => $transformLocation
-                ]);
+            ->where([
+                'volumeId' => $asset->volumeId,
+                'assetId' => $asset->id,
+                'location' => $transformLocation
+            ]);
 
         if (is_null($transform->format)) {
             // A generated auto-transform will have it's format set to null, but the filename will be populated.
             $query->andWhere('format IS NULL');
         } else {
-            $query->andWhere('format = :format',
-                [':format' => $transform->format]);
+            $query->andWhere(['format' => $transform->format]);
         }
 
         $entry = $query->one();
@@ -436,10 +434,7 @@ class AssetTransforms extends Component
 
             // Delete the out-of-date record
             Craft::$app->getDb()->createCommand()
-                ->delete(
-                    '{{%assettransformindex}}',
-                    'id = :transformIndexId',
-                    [':transformIndexId' => $entry['id']])
+                ->delete('{{%assettransformindex}}', ['id' => $result['id']])
                 ->execute();
         }
 
@@ -590,10 +585,16 @@ class AssetTransforms extends Component
             $results = (new Query())
                 ->select('*')
                 ->from('{{%assettransformindex}}')
-                ->where('assetId = :assetId', [':assetId' => $asset->id])
-                ->andWhere(['in', 'location', $possibleLocations])
-                ->andWhere('id <> :indexId', [':indexId' => $index->id])
-                ->andWhere('fileExists = 1')
+                ->where(
+                    [
+                        'and',
+                        ['assetId' => $asset->id, 'fileExists' => 1],
+                        ['in', 'location', $possibleLocations],
+                        'id <> :indexId'
+                    ],
+                    [
+                        ':indexId' => $index->id
+                    ])
                 ->all();
 
             foreach ($results as $result) {
@@ -734,7 +735,7 @@ class AssetTransforms extends Component
         $entry = (new Query())
             ->select('ti.*')
             ->from('{{%assettransformindex}} ti')
-            ->where('ti.id = :id', [':id' => $transformId])
+            ->where(['id' => $transformId])
             ->one();
 
         if ($entry) {
@@ -758,8 +759,10 @@ class AssetTransforms extends Component
         $entry = (new Query())
             ->select('ti.*')
             ->from('{{%assettransformindex}} ti')
-            ->where('ti.assetId = :assetId AND ti.location = :location',
-                [':assetId' => $assetId, ':location' => '_'.$transformHandle])
+            ->where([
+                'assetId' => $assetId,
+                'location' => '_'.$transformHandle
+            ])
             ->one();
 
         if ($entry) {
@@ -1145,7 +1148,7 @@ class AssetTransforms extends Component
         $transforms = (new Query())
             ->select('*')
             ->from('{{%assettransformindex}}')
-            ->where('assetId = :assetId', [':assetId' => $asset->id])
+            ->where(['assetId' => $asset->id])
             ->all();
 
         foreach ($transforms as $key => $value) {

@@ -839,10 +839,12 @@ class Assets extends Component
         $query = (new Query())
             ->select('f.*')
             ->from('{{%volumefolders}} AS f')
-            ->where(['like', 'path', $parentFolder->path.'%', false])
-            ->andWhere('volumeId = :volumeId',
-                [':volumeId' => $parentFolder->volumeId])
-            ->andWhere('parentId IS NOT NULL');
+            ->where([
+                'and',
+                ['like', 'path', $parentFolder->path.'%', false],
+                ['volumeId' => $parentFolder->volumeId],
+                'parentId is not null'
+            ]);
 
         if ($orderBy) {
             $query->orderBy($orderBy);
