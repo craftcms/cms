@@ -10,6 +10,7 @@ namespace craft\app\helpers;
 use Craft;
 use craft\app\base\Savable;
 use craft\app\dates\DateTime;
+use craft\app\db\Connection;
 use craft\app\enums\ColumnType;
 use craft\app\services\Config;
 use yii\base\Exception;
