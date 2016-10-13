@@ -5,11 +5,12 @@
  * @license   https://craftcms.com/license
  */
 
-namespace craft\app\db\mysql;
+namespace craft\app\db\pgsql;
 
 use Craft;
 use craft\app\db\Connection;
 use craft\app\services\Config;
+use yii\base\Exception;
 use yii\db\Expression;
 
 /**
@@ -20,32 +21,8 @@ use yii\db\Expression;
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since  3.0
  */
-class QueryBuilder extends \yii\db\mysql\QueryBuilder
+class QueryBuilder extends \yii\db\pgsql\QueryBuilder
 {
-    /**
-     * @inheritdoc
-     *
-     * @param string $table   the name of the table to be created. The name will be properly quoted by the method.
-     * @param array  $columns the columns (name => definition) in the new table.
-     * @param string $options additional SQL fragment that will be appended to the generated SQL.
-     *
-     * @return string the SQL statement for creating a new DB table.
-     */
-    public function createTable($table, $columns, $options = null)
-    {
-        // Default to InnoDb
-        if ($options === null || strpos($options, 'ENGINE=') === false) {
-            $options = ($options !== null ? $options.' ' : '').'ENGINE=InnoDb';
-        }
-
-        // Use the default charset
-        if (strpos($options, 'DEFAULT CHARSET=') === false) {
-            $options .= ' DEFAULT CHARSET='.Craft::$app->getConfig()->get('charset', Config::CATEGORY_DB);
-        }
-
-        return parent::createTable($table, $columns, $options);
-    }
-
     /**
      * Builds a SQL statement for dropping a DB table if it exists.
      *
@@ -111,10 +88,15 @@ class QueryBuilder extends \yii\db\mysql\QueryBuilder
             }
         }
 
+        $primaryKeys = $schema->getTableSchema($table)->primaryKey;
+
+        if (!is_array($primaryKeys)) {
+            $primaryKeys = [$primaryKeys];
+        }
+
         return 'INSERT INTO '.$schema->quoteTableName($table).
-        ' ('.implode(', ', $names).') VALUES ('.
-        implode(', ', $placeholders).') ON DUPLICATE KEY UPDATE '.
-        implode(', ', $updates);
+        ' ('.implode(', ', $names).') VALUES ('.implode(', ', $placeholders).')'.
+        ' ON CONFLICT ("'.implode('", "', $primaryKeys).'") DO UPDATE SET ';
     }
 
     /**
@@ -146,6 +128,7 @@ class QueryBuilder extends \yii\db\mysql\QueryBuilder
 
     /**
      * Builds the SQL expression used to return a DB result in a fixed order.
+     * http://stackoverflow.com/a/1310188/684
      *
      * @param string $column The column name that contains the values.
      * @param array  $values The column values, in the order in which the rows should be returned in.
@@ -160,7 +143,14 @@ class QueryBuilder extends \yii\db\mysql\QueryBuilder
             $values[$i] = $schema->quoteValue($value);
         }
 
-        return 'FIELD('.$this->db->quoteColumnName($column).', '.
-        implode(', ', $values).')';
+        $sql = 'CASE';
+
+        foreach ($values as $key => $value) {
+            $sql .= ' WHEN '.$this->db->quoteColumnName($column).'='.$value.' THEN '.$key;
+        }
+
+        $sql .= ' ELSE '.($key + 1).' END';
+
+        return $sql;
     }
 }
