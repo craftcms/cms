@@ -254,7 +254,16 @@ class AssetIndexer extends Component
         );
 
         if ($record) {
-            return AssetIndexData::create($record);
+            return new AssetIndexData($record->toArray([
+                'id',
+                'volumeId',
+                'sessionId',
+                'offset',
+                'uri',
+                'size',
+                'recordId',
+                'timestamp',
+            ]));
         }
 
         return false;

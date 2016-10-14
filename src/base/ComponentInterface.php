@@ -41,15 +41,6 @@ interface ComponentInterface
      */
     public static function classHandle();
 
-    /**
-     * Instantiates and returns a new component object.
-     *
-     * @param array $config The config settings to populate the component with
-     *
-     * @return $this The new component object
-     */
-    public static function create($config);
-
     // Public Methods
     // =========================================================================
 

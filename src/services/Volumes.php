@@ -282,7 +282,8 @@ class Volumes extends Component
         if (!$this->_fetchedAllVolumes) {
             $this->_volumesById = [];
 
-            $results = $this->_createVolumeQuery()->all();
+            $results = $this->_createVolumeQuery()
+                ->all();
 
             foreach ($results as $result) {
                 /** @var Volume $volume */
@@ -331,7 +332,7 @@ class Volumes extends Component
                     $this->_volumesById))
         ) {
             $result = $this->_createVolumeQuery()
-                ->where('id = :id', [':id' => $volumeId])
+                ->where(['id' => $volumeId])
                 ->one();
 
             if ($result) {
@@ -515,14 +516,17 @@ class Volumes extends Component
         }
 
         try {
-            return ComponentHelper::createComponent($config, VolumeInterface::class);
+            /** @var Volume $volume */
+            $volume = ComponentHelper::createComponent($config, VolumeInterface::class);
         } catch (MissingComponentException $e) {
             $config['errorMessage'] = $e->getMessage();
             $config['expectedType'] = $config['type'];
             unset($config['type']);
 
-            return MissingVolume::create($config);
+            $volume = new MissingVolume($config);
         }
+
+        return $volume;
     }
 
     /**
@@ -640,7 +644,19 @@ class Volumes extends Component
     private function _createVolumeQuery()
     {
         return (new Query())
-            ->select('id, fieldLayoutId, name, handle, type, hasUrls, url, settings, sortOrder')
+            ->select([
+                'id',
+                'dateCreated',
+                'dateUpdated',
+                'name',
+                'handle',
+                'hasUrls',
+                'url',
+                'sortOrder',
+                'fieldLayoutId',
+                'type',
+                'settings',
+            ])
             ->from('{{%volumes}}')
             ->orderBy('sortOrder');
     }

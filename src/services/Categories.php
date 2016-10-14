@@ -291,7 +291,14 @@ class Categories extends Component
             ->all();
 
         foreach ($siteSettings as $key => $value) {
-            $siteSettings[$key] = CategoryGroup_SiteSettings::create($value);
+            $siteSettings[$key] = new CategoryGroup_SiteSettings($value->toArray([
+                'id',
+                'groupId',
+                'siteId',
+                'hasUrls',
+                'uriFormat',
+                'template',
+            ]));
         }
 
         return $siteSettings;
@@ -330,8 +337,13 @@ class Categories extends Component
                 throw new CategoryGroupNotFoundException("No category group exists with the ID '{$group->id}'");
             }
 
-            /** @var CategoryGroup $oldCategoryGroup */
-            $oldCategoryGroup = CategoryGroup::create($groupRecord);
+            $oldCategoryGroup = new CategoryGroup($groupRecord->toArray([
+                'id',
+                'structureId',
+                'fieldLayoutId',
+                'name',
+                'handle',
+            ]));
         } else {
             $groupRecord = new CategoryGroupRecord();
         }
@@ -912,7 +924,13 @@ class Categories extends Component
             return null;
         }
 
-        $group = CategoryGroup::create($groupRecord);
+        $group = new CategoryGroup($groupRecord->toArray([
+            'id',
+            'structureId',
+            'fieldLayoutId',
+            'name',
+            'handle',
+        ]));
 
         if ($groupRecord->structure) {
             $group->maxLevels = $groupRecord->structure->maxLevels;

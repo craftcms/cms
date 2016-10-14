@@ -255,7 +255,7 @@ class ElementsController extends BaseElementsController
                 throw new BadRequestHttpException('No element exists with the ID '.$elementId);
             }
         } else {
-            $element = $elementType::create([]);
+            $element = new $elementType();
         }
 
         /** @var Element $element */

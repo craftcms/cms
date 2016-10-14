@@ -13,6 +13,7 @@ use craft\app\dates\DateTime;
 use craft\app\elements\Asset;
 use craft\app\errors\VolumeObjectExistsException;
 use craft\app\events\AssetTransformEvent;
+use craft\app\helpers\ArrayHelper;
 use craft\app\helpers\Assets as AssetsHelper;
 use craft\app\helpers\Db;
 use craft\app\helpers\Image;
@@ -109,7 +110,7 @@ class AssetTransforms extends Component
             $this->_transformsByHandle = [];
 
             foreach ($results as $result) {
-                $transform = AssetTransform::create($result);
+                $transform = new AssetTransform($result);
                 $this->_transformsByHandle[$transform->handle] = $transform;
             }
 
@@ -153,7 +154,7 @@ class AssetTransforms extends Component
                 ->one();
 
             if ($result) {
-                $transform = AssetTransform::create($result);
+                $transform = new AssetTransform($result);
             } else {
                 $transform = null;
             }
@@ -182,7 +183,7 @@ class AssetTransforms extends Component
             ->one();
 
         if ($result) {
-            return AssetTransform::create($result);
+            return new AssetTransform($result);
         }
 
 
@@ -409,9 +410,7 @@ class AssetTransforms extends Component
         }
 
         // Check if an entry exists already
-        $query = (new Query())
-            ->select('ti.*')
-            ->from('{{%assettransformindex}} ti')
+        $query = $this->_createTransformIndexQuery()
             ->where([
                 'volumeId' => $asset->volumeId,
                 'assetId' => $asset->id,
@@ -429,7 +428,7 @@ class AssetTransforms extends Component
 
         if ($entry) {
             if ($this->validateTransformIndexResult($entry, $transform, $asset)) {
-                return AssetTransformIndex::create($entry);
+                return new AssetTransformIndex($entry);
             }
 
             // Delete the out-of-date record
@@ -439,18 +438,17 @@ class AssetTransforms extends Component
         }
 
         // Create a new record
-        $time = new DateTime();
-        $data = [
+        $transformIndex = new AssetTransformIndex([
             'assetId' => $asset->id,
             'format' => $transform->format,
             'volumeId' => $asset->volumeId,
-            'dateIndexed' => Db::prepareDateForDb($time),
+            'dateIndexed' => Db::prepareDateForDb(new DateTime()),
             'location' => $transformLocation,
             'fileExists' => 0,
             'inProgress' => 0
-        ];
+        ]);
 
-        return $this->storeTransformIndexData(AssetTransformIndex::create($data));
+        return $this->storeTransformIndexData($transformIndex);
     }
 
     /**
@@ -582,9 +580,7 @@ class AssetTransforms extends Component
 
             // We're looking for transforms that fit the bill and are not the one we are trying to find/create
             // the image for.
-            $results = (new Query())
-                ->select('*')
-                ->from('{{%assettransformindex}}')
+            $results = $this->_createTransformIndexQuery()
                 ->where(
                     [
                         'and',
@@ -601,8 +597,7 @@ class AssetTransforms extends Component
                 // If this is a named transform and indexed before dimensions last changed, this is a stale transform
                 // and needs to go.
                 if ($transform->getIsNamedTransform() && $result['dateIndexed'] < $transform->dimensionChangeTime) {
-                    $transformUri = $asset->getFolder()->path.$this->getTransformSubpath($asset,
-                            AssetTransformIndex::create($result));
+                    $transformUri = $asset->getFolder()->path.$this->getTransformSubpath($asset, new AssetTransformIndex($result));
                     $volume->deleteFile($transformUri);
                     $this->deleteTransformIndex($result['id']);
                 } // Any other should do.
@@ -615,8 +610,7 @@ class AssetTransforms extends Component
         // If we have a match, copy the file.
         if ($matchFound) {
             /** @var array $matchFound */
-            $from = $asset->getFolder()->path.$this->getTransformSubpath($asset,
-                    AssetTransformIndex::create($matchFound));
+            $from = $asset->getFolder()->path.$this->getTransformSubpath($asset, new AssetTransformIndex($matchFound));
             $to = $asset->getFolder()->path.$this->getTransformSubpath($asset,
                     $index);
 
@@ -663,8 +657,23 @@ class AssetTransforms extends Component
                 return $transform;
             }
 
-            if (is_object($transform) || is_array($transform)) {
-                return AssetTransform::create($transform);
+            if (is_object($transform)) {
+                return new AssetTransform(ArrayHelper::toArray($transform, [
+                    'id',
+                    'name',
+                    'handle',
+                    'width',
+                    'height',
+                    'format',
+                    'dimensionChangeTime',
+                    'mode',
+                    'position',
+                    'quality',
+                ]));
+            }
+
+            if (is_array($transform)) {
+                return new AssetTransform($transform);
             }
 
             return null;
@@ -715,9 +724,8 @@ class AssetTransforms extends Component
      */
     public function getPendingTransformIndexIds()
     {
-        return (new Query())
+        return $this->_createTransformIndexQuery()
             ->select('id')
-            ->from('{{%assettransformindex}}')
             ->where(['and', 'fileExists = 0', 'inProgress = 0'])
             ->column();
     }
@@ -731,15 +739,12 @@ class AssetTransforms extends Component
      */
     public function getTransformIndexModelById($transformId)
     {
-        // Check if an entry exists already
-        $entry = (new Query())
-            ->select('ti.*')
-            ->from('{{%assettransformindex}} ti')
+        $entry = $this->_createTransformIndexQuery()
             ->where(['id' => $transformId])
             ->one();
 
         if ($entry) {
-            return AssetTransformIndex::create($entry);
+            return new AssetTransformIndex($entry);
         }
 
         return null;
@@ -755,18 +760,15 @@ class AssetTransforms extends Component
      */
     public function getTransformIndexModelByAssetIdAndHandle($assetId, $transformHandle)
     {
-        // Check if an entry exists already
-        $entry = (new Query())
-            ->select('ti.*')
-            ->from('{{%assettransformindex}} ti')
+        $result = $this->_createTransformIndexQuery()
             ->where([
                 'assetId' => $assetId,
                 'location' => '_'.$transformHandle
             ])
             ->one();
 
-        if ($entry) {
-            return AssetTransformIndex::create($entry);
+        if ($result) {
+            return new AssetTransformIndex($result);
         }
 
         return null;
@@ -1145,17 +1147,15 @@ class AssetTransforms extends Component
      */
     public function getAllCreatedTransformsForAsset(Asset $asset)
     {
-        $transforms = (new Query())
-            ->select('*')
-            ->from('{{%assettransformindex}}')
+        $results = $this->_createTransformIndexQuery()
             ->where(['assetId' => $asset->id])
             ->all();
 
-        foreach ($transforms as $key => $value) {
-            $transforms[$key] = AssetTransformIndex::create($value);
+        foreach ($results as $key => $result) {
+            $results[$key] = new AssetTransformIndex($result);
         }
 
-        return $transforms;
+        return $results;
     }
 
     /**
@@ -1177,6 +1177,30 @@ class AssetTransforms extends Component
 
     // Private Methods
     // =========================================================================
+
+    /**
+     * Returns a Query object prepped for retrieving transform indexes.
+     *
+     * @return Query
+     */
+    private function _createTransformIndexQuery()
+    {
+        return (new Query())
+            ->select([
+                'id',
+                'assetId',
+                'filename',
+                'format',
+                'location',
+                'volumeId',
+                'fileExists',
+                'inProgress',
+                'dateIndexed',
+                'dateUpdated',
+                'dateCreated',
+            ])
+            ->from('{{%assettransformindex}}');
+    }
 
     /**
      * Returns a Query object prepped for retrieving transforms.

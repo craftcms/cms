@@ -20,21 +20,6 @@ use craft\app\validators\DateTimeValidator;
  */
 class DeprecationError extends Model
 {
-    // Static
-    // =========================================================================
-
-    /**
-     * @inheritdoc
-     */
-    public static function populateModel($model, $config)
-    {
-        if (isset($config['traces']) && is_string($config['traces'])) {
-            $config['traces'] = Json::decode($config['traces']);
-        }
-
-        parent::populateModel($model, $config);
-    }
-
     // Properties
     // =========================================================================
 
@@ -100,6 +85,18 @@ class DeprecationError extends Model
 
     // Public Methods
     // =========================================================================
+
+    /**
+     * @inheritdoc
+     */
+    public function init()
+    {
+        parent::init();
+
+        if (isset($this->traces) && is_string($this->traces)) {
+            $this->traces = Json::decode($this->traces);
+        }
+    }
 
     /**
      * @inheritdoc

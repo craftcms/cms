@@ -123,7 +123,12 @@ class Tags extends Component
                 ->all();
 
             foreach ($this->_tagGroupsById as $key => $value) {
-                $this->_tagGroupsById[$key] = TagGroup::create($value);
+                $this->_tagGroupsById[$key] = new TagGroup($value->toArray([
+                    'id',
+                    'name',
+                    'handle',
+                    'fieldLayoutId',
+                ]));
             }
 
             $this->_fetchedAllTagGroups = true;
@@ -171,7 +176,12 @@ class Tags extends Component
             $groupRecord = TagGroupRecord::findOne($groupId);
 
             if ($groupRecord) {
-                $this->_tagGroupsById[$groupId] = TagGroup::create($groupRecord);
+                $this->_tagGroupsById[$groupId] = new TagGroup($groupRecord->toArray([
+                    'id',
+                    'name',
+                    'handle',
+                    'fieldLayoutId',
+                ]));
             } else {
                 $this->_tagGroupsById[$groupId] = null;
             }
@@ -194,7 +204,12 @@ class Tags extends Component
         ]);
 
         if ($groupRecord) {
-            return TagGroup::create($groupRecord);
+            return new TagGroup($groupRecord->toArray([
+                'id',
+                'name',
+                'handle',
+                'fieldLayoutId',
+            ]));
         }
 
         return null;
@@ -233,7 +248,12 @@ class Tags extends Component
                 throw new TagGroupNotFoundException("No tag group exists with the ID '{$tagGroup->id}'");
             }
 
-            $oldTagGroup = TagGroup::create($tagGroupRecord);
+            $oldTagGroup = new TagGroup($tagGroupRecord->toArray([
+                'id',
+                'name',
+                'handle',
+                'fieldLayoutId',
+            ]));
         } else {
             $tagGroupRecord = new TagGroupRecord();
         }

@@ -99,14 +99,17 @@ class Dashboard extends Component
         }
 
         try {
-            return ComponentHelper::createComponent($config, WidgetInterface::class);
+            /** @var Widget $widget */
+            $widget = ComponentHelper::createComponent($config, WidgetInterface::class);
         } catch (MissingComponentException $e) {
             $config['errorMessage'] = $e->getMessage();
             $config['expectedType'] = $config['type'];
             unset($config['type']);
 
-            return MissingWidget::create($config);
+            $widget = new MissingWidget($config);
         }
+
+        return $widget;
     }
 
     /**
@@ -163,7 +166,14 @@ class Dashboard extends Component
         ]);
 
         if ($widgetRecord) {
-            return $this->createWidget($widgetRecord);
+            return $this->createWidget($widgetRecord->toArray([
+                'id',
+                'dateCreated',
+                'dateUpdated',
+                'colspan',
+                'type',
+                'settings',
+            ]));
         }
 
         return null;
@@ -435,8 +445,15 @@ class Dashboard extends Component
             throw new Exception('No logged-in user');
         }
 
-        $records = (new Query())
-            ->select('id, type, colspan, settings')
+        $results = (new Query())
+            ->select([
+                'id',
+                'dateCreated',
+                'dateUpdated',
+                'colspan',
+                'type',
+                'settings',
+            ])
             ->from('{{%widgets}}')
             ->where(['userId' => $userId, 'enabled' => 1])
             ->orderBy('sortOrder')
@@ -444,8 +461,8 @@ class Dashboard extends Component
 
         $widgets = [];
 
-        foreach ($records as $record) {
-            $widget = $this->createWidget($record);
+        foreach ($results as $result) {
+            $widget = $this->createWidget($result);
 
             if ($indexBy === null) {
                 $widgets[] = $widget;

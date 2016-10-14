@@ -18,25 +18,6 @@ use craft\app\validators\DateTimeValidator;
  */
 class AppUpdate extends Model
 {
-    // Static
-    // =========================================================================
-
-    /**
-     * @inheritdoc
-     */
-    public static function populateModel($model, $config)
-    {
-        if (isset($config['releases'])) {
-            foreach ($config['releases'] as $key => $value) {
-                if (!$value instanceof AppNewRelease) {
-                    $config['releases'][$key] = AppNewRelease::create($value);
-                }
-            }
-        }
-
-        parent::populateModel($model, $config);
-    }
-
     // Properties
     // =========================================================================
 
@@ -127,6 +108,22 @@ class AppUpdate extends Model
 
     // Public Methods
     // =========================================================================
+
+    /**
+     * @inheritdoc
+     */
+    public function init()
+    {
+        parent::init();
+
+        if (isset($this->releases)) {
+            foreach ($this->releases as $key => $value) {
+                if (!$value instanceof AppNewRelease) {
+                    $this->releases[$key] = new AppNewRelease($value);
+                }
+            }
+        }
+    }
 
     /**
      * @inheritdoc

@@ -175,8 +175,9 @@ class DashboardController extends Controller
 
         $request = Craft::$app->getRequest();
         $dashboardService = Craft::$app->getDashboard();
-
         $widgetId = $request->getRequiredBodyParam('widgetId');
+
+        // Get the existing widget
         /** @var Widget $widget */
         $widget = $dashboardService->getWidgetById($widgetId);
 
@@ -184,8 +185,17 @@ class DashboardController extends Controller
             throw new BadRequestHttpException();
         }
 
+        // Create a new widget model with the new settings
         $settings = $request->getBodyParam('widget'.$widget->id.'-settings');
-        $widget::populateModel($widget, $settings);
+
+        $widget = $dashboardService->createWidget([
+            'id' => $widget->id,
+            'dateCreated' => $widget->dateCreated,
+            'dateUpdated' => $widget->dateUpdated,
+            'colspan' => $widget->colspan,
+            'type' => get_class($widget),
+            'settings' => $settings,
+        ]);
 
         return $this->_saveAndReturnWidget($widget);
     }

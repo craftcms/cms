@@ -330,7 +330,15 @@ class Sections extends Component
     public function getSectionSiteSettings($sectionId, $indexBy = null)
     {
         $siteSettings = (new Query())
-            ->select('sections_i18n.*')
+            ->select([
+                'sections_i18n.id',
+                'sections_i18n.sectionId',
+                'sections_i18n.siteId',
+                'sections_i18n.enabledByDefault',
+                'sections_i18n.hasUrls',
+                'sections_i18n.uriFormat',
+                'sections_i18n.template',
+            ])
             ->from('{{%sections_i18n}} sections_i18n')
             ->innerJoin('{{%sites}} sites', 'sites.id = sections_i18n.siteId')
             ->where('sections_i18n.sectionId = :sectionId',
@@ -340,7 +348,7 @@ class Sections extends Component
             ->all();
 
         foreach ($siteSettings as $key => $value) {
-            $siteSettings[$key] = Section_SiteSettings::create($value);
+            $siteSettings[$key] = new Section_SiteSettings($value);
         }
 
         return $siteSettings;
@@ -374,7 +382,14 @@ class Sections extends Component
                 throw new SectionNotFoundException("No section exists with the ID '{$section->id}'");
             }
 
-            $oldSection = Section::create($sectionRecord);
+            $oldSection = new Section($sectionRecord->toArray([
+                'id',
+                'structureId',
+                'name',
+                'handle',
+                'type',
+                'enableVersioning',
+            ]));
             $isNewSection = false;
         } else {
             $sectionRecord = new SectionRecord();
@@ -820,17 +835,26 @@ class Sections extends Component
      */
     public function getEntryTypesBySectionId($sectionId, $indexBy = null)
     {
-        $entryTypes = EntryTypeRecord::find()
+        $entryTypeRecords = EntryTypeRecord::find()
             ->where(['sectionId' => $sectionId])
             ->orderBy('sortOrder')
             ->indexBy($indexBy)
             ->all();
 
-        foreach ($entryTypes as $key => $value) {
-            $entryTypes[$key] = EntryType::create($value);
+        foreach ($entryTypeRecords as $key => $entryTypeRecord) {
+            $entryTypeRecords[$key] = new EntryType($entryTypeRecord->toArray([
+                'id',
+                'sectionId',
+                'fieldLayoutId',
+                'name',
+                'handle',
+                'hasTitleField',
+                'titleLabel',
+                'titleFormat',
+            ]));
         }
 
-        return $entryTypes;
+        return $entryTypeRecords;
     }
 
     /**
@@ -850,7 +874,16 @@ class Sections extends Component
             $entryTypeRecord = EntryTypeRecord::findOne($entryTypeId);
 
             if ($entryTypeRecord) {
-                $this->_entryTypesById[$entryTypeId] = EntryType::create($entryTypeRecord);
+                $this->_entryTypesById[$entryTypeId] = new EntryType($entryTypeRecord->toArray([
+                    'id',
+                    'sectionId',
+                    'fieldLayoutId',
+                    'name',
+                    'handle',
+                    'hasTitleField',
+                    'titleLabel',
+                    'titleFormat',
+                ]));
             } else {
                 $this->_entryTypesById[$entryTypeId] = null;
             }
@@ -875,7 +908,16 @@ class Sections extends Component
         ]);
 
         foreach ($entryTypeRecords as $record) {
-            $entryTypes[] = EntryType::create($record);
+            $entryTypes[] = new EntryType($record->toArray([
+                'id',
+                'sectionId',
+                'fieldLayoutId',
+                'name',
+                'handle',
+                'hasTitleField',
+                'titleLabel',
+                'titleFormat',
+            ]));
         }
 
         return $entryTypes;
@@ -914,7 +956,16 @@ class Sections extends Component
                 throw new EntryTypeNotFoundException("No entry type exists with the ID '{$entryType->id}'");
             }
 
-            $oldEntryType = EntryType::create($entryTypeRecord);
+            $oldEntryType = new EntryType($entryTypeRecord->toArray([
+                'id',
+                'sectionId',
+                'fieldLayoutId',
+                'name',
+                'handle',
+                'hasTitleField',
+                'titleLabel',
+                'titleFormat',
+            ]));
         } else {
             $entryTypeRecord = new EntryTypeRecord();
 

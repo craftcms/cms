@@ -26,25 +26,6 @@ class PluginUpdate extends Model
     const STATUS_DELETED = 'Deleted';
     const STATUS_UNKNOWN = 'Unknown';
 
-    // Static
-    // =========================================================================
-
-    /**
-     * @inheritdoc
-     */
-    public static function populateModel($model, $config)
-    {
-        if (isset($config['releases'])) {
-            foreach ($config['releases'] as $key => $value) {
-                if (!$value instanceof PluginNewRelease) {
-                    $config['releases'][$key] = PluginNewRelease::create($value);
-                }
-            }
-        }
-
-        parent::populateModel($model, $config);
-    }
-
     // Properties
     // =========================================================================
 
@@ -100,6 +81,22 @@ class PluginUpdate extends Model
 
     // Public Methods
     // =========================================================================
+
+    /**
+     * @inheritdoc
+     */
+    public function init()
+    {
+        parent::init();
+
+        if (isset($this->releases)) {
+            foreach ($this->releases as $key => $value) {
+                if (!$value instanceof PluginNewRelease) {
+                    $this->releases[$key] = new PluginNewRelease($value);
+                }
+            }
+        }
+    }
 
     /**
      * @inheritdoc

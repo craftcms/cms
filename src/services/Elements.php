@@ -9,6 +9,7 @@ namespace craft\app\services;
 
 use Craft;
 use craft\app\base\Element;
+use craft\app\base\ElementAction;
 use craft\app\base\Field;
 use craft\app\db\Query;
 use craft\app\base\ElementActionInterface;
@@ -118,7 +119,7 @@ class Elements extends Component
             $config['expectedType'] = $config['type'];
             unset($config['type']);
 
-            return MissingElement::create($config);
+            return new MissingElement($config);
         }
     }
 
@@ -979,7 +980,10 @@ class Elements extends Component
      */
     public function createAction($config)
     {
-        return ComponentHelper::createComponent($config, ElementActionInterface::class);
+        /** @var ElementAction $action */
+        $action = ComponentHelper::createComponent($config, ElementActionInterface::class);
+
+        return $action;
     }
 
     // Misc

@@ -25,22 +25,6 @@ use yii\db\Schema;
  */
 abstract class BaseOptionsField extends Field implements PreviewableFieldInterface
 {
-    // Static
-    // =========================================================================
-
-    /**
-     * @inheritdoc
-     */
-    public static function populateModel($model, $config)
-    {
-        if (!empty($config['options'])) {
-            // Drop the string row keys
-            $config['options'] = array_values($config['options']);
-        }
-
-        parent::populateModel($model, $config);
-    }
-
     // Properties
     // =========================================================================
 

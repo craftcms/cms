@@ -161,15 +161,15 @@ class Deprecator extends Component
     public function getLogs($limit = 100)
     {
         if (!isset($this->_allLogs)) {
-            $this->_allLogs = (new Query())
-                ->select('*')
-                ->from(static::$_tableName)
+            $this->_allLogs = [];
+
+            $results = $this->_createDeprecationErrorQuery()
                 ->limit($limit)
                 ->orderBy('lastOccurrence desc')
                 ->all();
 
-            foreach ($this->_allLogs as $key => $value) {
-                $this->_allLogs[$key] = DeprecationError::create($value);
+            foreach ($results as $result) {
+                $this->_allLogs[] = new DeprecationError($result);
             }
         }
 
@@ -185,14 +185,12 @@ class Deprecator extends Component
      */
     public function getLogById($logId)
     {
-        $log = (new Query())
-            ->select('*')
-            ->from(static::$_tableName)
-            ->where('id = :logId', [':logId' => $logId])
+        $log = $this->_createDeprecationErrorQuery()
+            ->where(['id' => $logId])
             ->one();
 
         if ($log !== false) {
-            return DeprecationError::create($log);
+            return new DeprecationError($log);
         }
 
         return null;
@@ -230,6 +228,31 @@ class Deprecator extends Component
 
     // Private Methods
     // =========================================================================
+
+    /**
+     * Returns a Query object prepped for retrieving deprecation logs.
+     *
+     * @return Query
+     */
+    private function _createDeprecationErrorQuery()
+    {
+        return (new Query())
+            ->select([
+                'id',
+                'key',
+                'fingerprint',
+                'lastOccurrence',
+                'file',
+                'line',
+                'class',
+                'method',
+                'template',
+                'templateLine',
+                'message',
+                'traces',
+            ])
+            ->from(static::$_tableName);
+    }
 
     /**
      * Populates a DeprecationError with data pulled from the PHP stack trace.

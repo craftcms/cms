@@ -42,6 +42,7 @@ use craft\app\models\FolderCriteria;
 use craft\app\models\VolumeFolder;
 use craft\app\records\Asset as AssetRecord;
 use craft\app\records\VolumeFolder as VolumeFolderRecord;
+use craft\app\tasks\GeneratePendingTransforms;
 use craft\app\volumes\Temp;
 use yii\base\Component;
 use yii\base\Exception;
@@ -794,8 +795,14 @@ class Assets extends Component
         }
 
         $query = (new Query())
-            ->select('f.*')
-            ->from('{{%volumefolders}} AS f');
+            ->select([
+                'id',
+                'parentId',
+                'volumeId',
+                'name',
+                'path',
+            ])
+            ->from('{{%volumefolders}}');
 
         $this->_applyFolderConditions($query, $criteria);
 
@@ -815,7 +822,7 @@ class Assets extends Component
         $folders = [];
 
         foreach ($results as $result) {
-            $folder = VolumeFolder::create($result);
+            $folder = new VolumeFolder($result);
             $this->_foldersById[$folder->id] = $folder;
             $folders[] = $folder;
         }
@@ -837,8 +844,14 @@ class Assets extends Component
          * @var $query Query
          */
         $query = (new Query())
-            ->select('f.*')
-            ->from('{{%volumefolders}} AS f')
+            ->select([
+                'id',
+                'parentId',
+                'volumeId',
+                'name',
+                'path',
+            ])
+            ->from('{{%volumefolders}}')
             ->where([
                 'and',
                 ['like', 'path', $parentFolder->path.'%', false],
@@ -854,7 +867,7 @@ class Assets extends Component
         $descendantFolders = [];
 
         foreach ($results as $result) {
-            $folder = VolumeFolder::create($result);
+            $folder = new VolumeFolder($result);
             $this->_foldersById[$folder->id] = $folder;
             $descendantFolders[$folder->id] = $folder;
         }
@@ -915,7 +928,7 @@ class Assets extends Component
 
         $query = (new Query())
             ->select('count(id)')
-            ->from('{{%volumefolders}} AS f');
+            ->from('{{%volumefolders}}');
 
         $this->_applyFolderConditions($query, $criteria);
 
@@ -1471,39 +1484,32 @@ class Assets extends Component
         $whereParams = [];
 
         if ($criteria->id) {
-            $whereConditions[] = Db::parseParam('f.id', $criteria->id,
-                $whereParams);
+            $whereConditions[] = Db::parseParam('id', $criteria->id, $whereParams);
         }
 
         if ($criteria->volumeId) {
-            $whereConditions[] = Db::parseParam('f.volumeId',
-                $criteria->volumeId, $whereParams);
+            $whereConditions[] = Db::parseParam('volumeId', $criteria->volumeId, $whereParams);
         }
 
         if ($criteria->parentId) {
-            $whereConditions[] = Db::parseParam('f.parentId',
-                $criteria->parentId, $whereParams);
+            $whereConditions[] = Db::parseParam('parentId', $criteria->parentId, $whereParams);
         }
 
         if ($criteria->name) {
-            $whereConditions[] = Db::parseParam('f.name', $criteria->name,
-                $whereParams);
+            $whereConditions[] = Db::parseParam('name', $criteria->name, $whereParams);
         }
 
         if (!is_null($criteria->path)) {
             // This folder has a comma in it.
             if (strpos($criteria->path, ',') !== false) {
                 // Escape the comma.
-                $condition = Db::parseParam('f.path',
-                    str_replace(',', '\,', $criteria->path), $whereParams);
+                $condition = Db::parseParam('path', str_replace(',', '\,', $criteria->path), $whereParams);
                 $lastKey = key(array_slice($whereParams, -1, 1, true));
 
                 // Now un-escape it.
-                $whereParams[$lastKey] = str_replace('\,', ',',
-                    $whereParams[$lastKey]);
+                $whereParams[$lastKey] = str_replace('\,', ',', $whereParams[$lastKey]);
             } else {
-                $condition = Db::parseParam('f.path', $criteria->path,
-                    $whereParams);
+                $condition = Db::parseParam('path', $criteria->path, $whereParams);
             }
 
             $whereConditions[] = $condition;

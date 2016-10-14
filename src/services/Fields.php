@@ -429,14 +429,17 @@ class Fields extends Component
         }
 
         try {
-            return ComponentHelper::createComponent($config, FieldInterface::class);
+            /** @var Field $field */
+            $field = ComponentHelper::createComponent($config, FieldInterface::class);
         } catch (MissingComponentException $e) {
             $config['errorMessage'] = $e->getMessage();
             $config['expectedType'] = $config['type'];
             unset($config['type']);
 
-            return MissingField::create($config);
+            $field = new MissingField($config);
         }
+
+        return $field;
     }
 
     /**
@@ -465,13 +468,13 @@ class Fields extends Component
         }
 
         if (!empty($missingContexts)) {
-            $rows = $this->_createFieldQuery()
+            $results = $this->_createFieldQuery()
                 ->where(['in', 'fields.context', $missingContexts])
                 ->all();
 
-            foreach ($rows as $row) {
+            foreach ($results as $result) {
                 /** @var Field $field */
-                $field = $this->createField($row);
+                $field = $this->createField($result);
 
                 $this->_allFieldsInContext[$field->context][] = $field;
                 $this->_fieldsById[$field->id] = $field;
@@ -980,7 +983,7 @@ class Fields extends Component
             ->all();
 
         foreach ($tabs as $key => $value) {
-            $tabs[$key] = FieldLayoutTab::create($value);
+            $tabs[$key] = new FieldLayoutTab($value);
         }
 
         return $tabs;
@@ -995,7 +998,9 @@ class Fields extends Component
      */
     public function getFieldsByLayoutId($layoutId)
     {
-        $fields = $this->_createFieldQuery()
+        $fields = [];
+
+        $results = $this->_createFieldQuery()
             ->addSelect([
                 'flf.layoutId',
                 'flf.tabId',
@@ -1008,8 +1013,8 @@ class Fields extends Component
             ->orderBy('flt.sortOrder, flf.sortOrder')
             ->all();
 
-        foreach ($fields as $key => $config) {
-            $fields[$key] = $this->createField($config);
+        foreach ($results as $result) {
+            $fields[] = $this->createField($result);
         }
 
         return $fields;
@@ -1054,13 +1059,14 @@ class Fields extends Component
         }
 
         if ($allFieldIds) {
-            $allFieldsById = $this->_createFieldQuery()
+            $allFieldsById = [];
+
+            $results = $this->_createFieldQuery()
                 ->where(['in', 'id', $allFieldIds])
-                ->indexBy('id')
                 ->all();
 
-            foreach ($allFieldsById as $id => $field) {
-                $allFieldsById[$id] = $this->createField($field);
+            foreach ($results as $result) {
+                $allFieldsById[$result['id']] = $this->createField($result);
             }
         }
 
@@ -1238,7 +1244,10 @@ class Fields extends Component
     private function _createGroupQuery()
     {
         return (new Query())
-            ->select(['id', 'name'])
+            ->select([
+                'id',
+                'name',
+            ])
             ->from('{{%fieldgroups}}')
             ->orderBy('name');
     }
@@ -1253,6 +1262,8 @@ class Fields extends Component
         return (new Query())
             ->select([
                 'fields.id',
+                'fields.dateCreated',
+                'fields.dateUpdated',
                 'fields.groupId',
                 'fields.name',
                 'fields.handle',
@@ -1275,7 +1286,10 @@ class Fields extends Component
     private function _createLayoutQuery()
     {
         return (new Query)
-            ->select(['id', 'type'])
+            ->select([
+                'id',
+                'type',
+            ])
             ->from('{{%fieldlayouts}}');
     }
 
@@ -1287,7 +1301,12 @@ class Fields extends Component
     private function _createLayoutTabQuery()
     {
         return (new Query())
-            ->select(['id', 'layoutId', 'name', 'sortOrder'])
+            ->select([
+                'id',
+                'layoutId',
+                'name',
+                'sortOrder',
+            ])
             ->from('{{%fieldlayouttabs}}')
             ->orderBy('sortOrder');
     }

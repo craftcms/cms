@@ -9,7 +9,7 @@ use craft\app\models\DeprecationError;
 <?php
 
 array_walk($panel->data, function (&$log) {
-    $log = DeprecationError::create($log);
+    $log = new DeprecationError($log);
 });
 
 echo $this->render('logtable', [

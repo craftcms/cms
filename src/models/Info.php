@@ -18,22 +18,6 @@ use craft\app\validators\DateTimeValidator;
  */
 class Info extends Model
 {
-    // Static
-    // =========================================================================
-
-    /**
-     * @inheritdoc
-     */
-    public static function populateModel($model, $config)
-    {
-        // Make sure $edition is going to be an integer
-        if (isset($config['edition'])) {
-            $config['edition'] = (int)$config['edition'];
-        }
-
-        parent::populateModel($model, $config);
-    }
-
     // Properties
     // =========================================================================
 
@@ -109,6 +93,19 @@ class Info extends Model
 
     // Public Methods
     // =========================================================================
+
+    /**
+     * @inheritdoc
+     */
+    public function init()
+    {
+        parent::init();
+
+        // Make sure $edition is going to be an integer
+        if (isset($this->edition)) {
+            $this->edition = (int)$this->edition;
+        }
+    }
 
     /**
      * @inheritdoc

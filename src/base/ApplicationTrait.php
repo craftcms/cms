@@ -590,7 +590,7 @@ trait ApplicationTrait
                 // Prevent an infinite loop in toDateTime.
                 $row['releaseDate'] = DateTimeHelper::toDateTime($row['releaseDate'], false, false);
 
-                $this->_info = Info::create($row);
+                $this->_info = new Info($row);
             } else {
                 $this->_info = new Info();
             }

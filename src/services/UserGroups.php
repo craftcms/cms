@@ -68,7 +68,11 @@ class UserGroups extends Component
             ->all();
 
         foreach ($groups as $key => $value) {
-            $groups[$key] = UserGroup::create($value);
+            $groups[$key] = new UserGroup($value->toArray([
+                'id',
+                'name',
+                'handle',
+            ]));
         }
 
         return $groups;
@@ -86,7 +90,11 @@ class UserGroups extends Component
         $groupRecord = UserGroupRecord::findOne($groupId);
 
         if ($groupRecord) {
-            return UserGroup::create($groupRecord);
+            return new UserGroup($groupRecord->toArray([
+                'id',
+                'name',
+                'handle',
+            ]));
         }
 
         return null;
@@ -106,7 +114,11 @@ class UserGroups extends Component
         ]);
 
         if ($groupRecord) {
-            return UserGroup::create($groupRecord);
+            return new UserGroup($groupRecord->toArray([
+                'id',
+                'name',
+                'handle',
+            ]));
         }
 
         return null;
@@ -123,7 +135,11 @@ class UserGroups extends Component
     public function getGroupsByUserId($userId, $indexBy = null)
     {
         $groups = (new Query())
-            ->select('g.*')
+            ->select([
+                'g.id',
+                'g.name',
+                'g.handle',
+            ])
             ->from('{{%usergroups}} g')
             ->innerJoin('{{%usergroups_users}} gu', 'gu.groupId = g.id')
             ->where(['gu.userId' => $userId])
@@ -131,7 +147,7 @@ class UserGroups extends Component
             ->all();
 
         foreach ($groups as $key => $value) {
-            $groups[$key] = UserGroup::create($value);
+            $groups[$key] = new UserGroup($value);
         }
 
         return $groups;

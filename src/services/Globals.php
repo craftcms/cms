@@ -290,7 +290,15 @@ class Globals extends Component
             }
 
             /** @var GlobalSet $oldSet */
-            $oldSet = GlobalSet::create($globalSetRecord);
+            $oldSet = new GlobalSet($globalSetRecord->toArray([
+                'name',
+                'handle',
+                'fieldLayoutId',
+                'id',
+                'uid',
+                'dateCreated',
+                'dateUpdated',
+            ]));
         } else {
             $globalSetRecord = new GlobalSetRecord();
         }

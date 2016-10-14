@@ -416,26 +416,6 @@ class User extends Element implements IdentityInterface
     /**
      * @inheritdoc
      */
-    public static function populateModel($model, $config)
-    {
-        parent::populateModel($model, $config);
-
-        // Is the user in cooldown mode, and are they past their window?
-        /** @var static $model */
-        if ($model->locked) {
-            $cooldownDuration = Craft::$app->getConfig()->get('cooldownDuration');
-
-            if ($cooldownDuration) {
-                if (!$model->getRemainingCooldownTime()) {
-                    Craft::$app->getUsers()->unlockUser($model);
-                }
-            }
-        }
-    }
-
-    /**
-     * @inheritdoc
-     */
     public static function getEagerLoadingMap($sourceElements, $handle)
     {
         if ($handle == 'photo') {
@@ -476,6 +456,7 @@ class User extends Element implements IdentityInterface
             ->one();
 
         if ($user !== null) {
+            /** @var static $user */
             if ($user->getStatus() == self::STATUS_ACTIVE) {
                 return $user;
             }
@@ -659,6 +640,25 @@ class User extends Element implements IdentityInterface
 
     // Public Methods
     // =========================================================================
+
+    /**
+     * @inheritdoc
+     */
+    public function init()
+    {
+        parent::init();
+
+        // Is this user in cooldown mode, and are they past their window?
+        if ($this->locked) {
+            $cooldownDuration = Craft::$app->getConfig()->get('cooldownDuration');
+
+            if ($cooldownDuration) {
+                if (!$this->getRemainingCooldownTime()) {
+                    Craft::$app->getUsers()->unlockUser($this);
+                }
+            }
+        }
+    }
 
     /**
      * Use the full name or username as the string representation.

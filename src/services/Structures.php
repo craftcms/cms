@@ -66,7 +66,10 @@ class Structures extends Component
         $structureRecord = StructureRecord::findOne($structureId);
 
         if ($structureRecord) {
-            return Structure::create($structureRecord);
+            return new Structure($structureRecord->toArray([
+                'id',
+                'maxLevels',
+            ]));
         }
 
         return null;
