@@ -379,6 +379,7 @@ class Elements extends Component
             if ($isNewElement) {
                 // Save the element ID on the element model, in case {id} is in the URL format
                 $element->id = $elementRecord->id;
+                $element->uid = $elementRecord->uid;
             }
 
             // Update the site settings records and content
