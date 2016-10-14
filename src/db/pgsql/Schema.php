@@ -84,6 +84,7 @@ class Schema extends \yii\db\pgsql\Schema
      *
      * @throws Exception
      */
+/**
     public function releaseSavepoint($name)
     {
         try {
@@ -97,7 +98,7 @@ class Schema extends \yii\db\pgsql\Schema
             }
         }
     }
-
+**/
     /**
      * Rolls back to a previously created savepoint.
      *
@@ -105,6 +106,7 @@ class Schema extends \yii\db\pgsql\Schema
      *
      * @throws Exception
      */
+    /**
     public function rollBackSavepoint($name)
     {
         try {
@@ -117,23 +119,25 @@ class Schema extends \yii\db\pgsql\Schema
                 throw $e;
             }
         }
-    }
+    }**/
 
     /**
      * @inheritdoc
      */
+    /**
     public function createColumnSchemaBuilder($type, $length = null)
     {
         return new ColumnSchemaBuilder($type, $length, $this->db);
     }
 
+     **/
     /**
      * @inheritdoc
      */
     public function getLastInsertID($sequenceName = '')
     {
         if ($sequenceName !== '') {
-            $sequenceName = $this->getRawTableName($sequenceName);
+            $sequenceName = $this->defaultSchema.'.'.$this->getRawTableName($sequenceName).'_id_seq';
         }
 
         return parent::getLastInsertID($sequenceName);
