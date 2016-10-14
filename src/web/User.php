@@ -545,7 +545,7 @@ class User extends \yii\web\User
         Craft::$app->getDb()->createCommand()
             ->delete(
                 '{{%sessions}}',
-                'dateUpdated < :pastTime',
+                Craft::$app->getDb()->getSchema()->quoteColumnName('dateUpdated').' < :pastTime',
                 ['pastTime' => Db::prepareDateForDb($pastTime)])
             ->execute();
     }
