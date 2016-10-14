@@ -11,12 +11,10 @@ use Craft;
 use craft\app\db\Connection;
 use craft\app\elements\User;
 use craft\app\db\Migration;
-use craft\app\helpers\Db;
 use craft\app\helpers\StringHelper;
 use craft\app\models\Info;
 use craft\app\models\Site;
 use craft\app\services\Config;
-use craft\app\services\Sites;
 
 /**
  * Installation Migration
@@ -482,8 +480,8 @@ class Install extends Migration
             'fieldId' => $this->integer()->notNull(),
             'siteId' => $this->integer()->notNull(),
             'keywords' => $this->text()->notNull(),
-            'PRIMARY KEY(elementId, attribute, fieldId, siteId)'
         ], $this->driver == Connection::DRIVER_MYSQL ? ' ENGINE=MyISAM' : '');
+        $this->addPrimaryKey($this->db->getIndexName('{{%searchindex}}', 'elementId,attribute,fieldId,siteId', true), '{{%searchindex}}', 'elementId,attribute,fieldId,siteId');
         $this->createTable('{{%sections}}', [
             'id' => $this->primaryKey(),
             'structureId' => $this->integer(),
@@ -664,9 +662,8 @@ class Install extends Migration
             'uid' => $this->uid(),
         ]);
         $this->createTable('{{%userpreferences}}', [
-            'userId' => $this->integer()->notNull(),
+            'userId' => $this->primaryKey(),
             'preferences' => $this->text(),
-            'PRIMARY KEY(userId)'
         ]);
         $this->createTable('{{%users}}', [
             'id' => $this->primaryKey(),
