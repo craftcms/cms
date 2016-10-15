@@ -148,12 +148,12 @@ abstract class Migration extends \yii\db\Migration
      *                                     or updated in the existing row.
      * @param boolean $includeAuditColumns Whether `dateCreated`, `dateUpdated`, and `uid` values should be added to $columns.
      */
-    public function insertOrUpdate($table, $keyColumns, $updateColumns, $includeAuditColumns = true)
+    public function upsert($table, $keyColumns, $updateColumns, $includeAuditColumns = true)
     {
         echo "    > insert or update into $table ...";
         $time = microtime(true);
         $this->db->createCommand()
-            ->insertOrUpdate($table, $keyColumns, $updateColumns, $includeAuditColumns)
+            ->upsert($table, $keyColumns, $updateColumns, $includeAuditColumns)
             ->execute();
         echo " done (time: ".sprintf('%.3f', microtime(true) - $time)."s)\n";
     }

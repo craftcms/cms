@@ -127,7 +127,7 @@ class ElementIndexes extends Component
         }
 
         $affectedRows = Craft::$app->getDb()->createCommand()
-            ->insertOrUpdate(
+            ->upsert(
                 '{{%elementindexsettings}}',
                 ['type' => $elementType],
                 ['settings' => Json::encode($settings)])

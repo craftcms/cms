@@ -288,7 +288,7 @@ class Search extends Component
 
         // Insert/update the row in searchindex
         Craft::$app->getDb()->createCommand()
-            ->insertOrUpdate(
+            ->upsert(
                 '{{%searchindex}}',
                 $keyColumns,
                 [

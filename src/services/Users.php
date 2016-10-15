@@ -496,7 +496,7 @@ class Users extends Component
         $preferences = $user->mergePreferences($preferences);
 
         Craft::$app->getDb()->createCommand()
-            ->insertOrUpdate(
+            ->upsert(
                 '{{%userpreferences}}',
                 ['userId' => $user->id],
                 ['preferences' => Json::encode($preferences)],
@@ -1132,7 +1132,7 @@ class Users extends Component
     public function shunMessageForUser($userId, $message, $expiryDate = null)
     {
         $affectedRows = Craft::$app->getDb()->createCommand()
-            ->insertOrUpdate(
+            ->upsert(
                 '{{%shunnedmessages}}',
                 [
                     'userId' => $userId,

@@ -101,7 +101,7 @@ class Command extends \yii\db\Command
      *
      * @return Command The command object itself.
      */
-    public function insertOrUpdate($table, $keyColumns, $updateColumns, $includeAuditColumns = true)
+    public function upsert($table, $keyColumns, $updateColumns, $includeAuditColumns = true)
     {
         if ($includeAuditColumns) {
             $now = Db::prepareDateForDb(new \DateTime());
@@ -111,7 +111,7 @@ class Command extends \yii\db\Command
         }
 
         $params = [];
-        $sql = $this->db->getQueryBuilder()->insertOrUpdate($table, $keyColumns, $updateColumns, $params);
+        $sql = $this->db->getQueryBuilder()->upsert($table, $keyColumns, $updateColumns, $params);
 
         return $this->setSql($sql)->bindValues($params);
     }

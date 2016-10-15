@@ -49,7 +49,7 @@ class QueryBuilder extends \yii\db\pgsql\QueryBuilder
      *
      * @return string The SQL statement for inserting or updating data in a table.
      */
-    public function insertOrUpdate($table, $keyColumns, $updateColumns, &$params)
+    public function upsert($table, $keyColumns, $updateColumns, &$params)
     {
         $schema = $this->db->getSchema();
 
