@@ -615,6 +615,10 @@ trait ApplicationTrait
         if ($info->validate()) {
             $attributes = Db::prepareValuesForDb($info);
 
+            if (array_key_exists('id', $attributes) && $attributes['id'] === null) {
+                unset($attributes['id']);
+            }
+
             if ($this->getIsInstalled()) {
                 // TODO: Remove this after the next breakpoint
                 if (version_compare($this->_storedVersion, '3.0', '<')) {
@@ -629,8 +633,11 @@ trait ApplicationTrait
                     ->insert('{{%info}}', $attributes)
                     ->execute();
 
-                // Set the new id
-                $info->id = $this->getDb()->getLastInsertID('{{%info}}');
+                if (Craft::$app->getIsInstalled()) {
+                    // Set the new id
+                    $info->id = $this->getDb()->getLastInsertID('{{%info}}');
+                }
+
             }
 
             // Use this as the new cached Info

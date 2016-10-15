@@ -402,12 +402,15 @@ class Sites extends Component
         } else {
             $siteRecord = new SiteRecord();
             $isNewSite = true;
+            $maxSortOrder = false;
 
-            // Get the next biggest sort order
-            $maxSortOrder = (new Query())
-                ->select('max(sortOrder)')
-                ->from('{{%sites}}')
-                ->scalar();
+            if (Craft::$app->getIsInstalled()) {
+                // Get the next biggest sort order
+                $maxSortOrder = (new Query())
+                    ->select('max(sortOrder)')
+                    ->from('{{%sites}}')
+                    ->scalar();
+            }
 
             $siteRecord->sortOrder = $maxSortOrder ? $maxSortOrder + 1 : 1;
         }
