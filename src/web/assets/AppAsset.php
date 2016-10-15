@@ -32,6 +32,7 @@ class AppAsset extends AssetBundle
      */
     public $css = [
         'css/craft.css',
+        'css/charts.css',
         'lib/selectize/selectize.css',
     ];
 
@@ -67,6 +68,48 @@ class AppAsset extends AssetBundle
             $this->js[] = "lib/datepicker-i18n/datepicker-{$datepickerLanguage}.js";
         }
 
+        // Figure out which D3 i18n script to load
+
+        if(in_array($language, ['ca-ES', 'de-CH', 'de-DE', 'en-CA', 'en-GB', 'en-US', 'es-ES', 'fi-FI', 'fr-CA', 'fr-FR', 'he-IL', 'hu-HU', 'it-IT', 'ja-JP', 'ko-KR', 'nl-NL', 'pl-PL', 'pt-BR', 'ru-RU', 'sv-SE', 'zh-CN']))
+        {
+            $d3Language = $language;
+        }
+        else
+        {
+            $languageId = Craft::$app->getLocale()->getLanguageID();
+
+            $d3LanguageIds = [
+                'ca' => 'ca-ES',
+                'de' => 'de-DE',
+                'en' => 'en-US',
+                'es' => 'es-ES',
+                'fi' => 'fi-FI',
+                'fr' => 'fr-FR',
+                'he' => 'he-IL',
+                'hu' => 'hu-HU',
+                'it' => 'it-IT',
+                'ja' => 'ja-JP',
+                'ko' => 'ko-KR',
+                'nl' => 'nl-NL',
+                'pl' => 'pl-PL',
+                'pt' => 'pt-BR',
+                'ru' => 'ru-RU',
+                'sv' => 'sv-SE',
+                'zh' => 'zh-CN',
+            ];
+
+            if(array_key_exists($languageId, $d3LanguageIds))
+            {
+                $d3Language = $d3LanguageIds[$languageId];
+            }
+            else
+            {
+                $d3Language = 'en-US';
+            }
+        }
+
+        $this->js[] = "lib/d3-i18n/{$d3Language}.js";
+
         $this->js = array_merge($this->js, [
             'lib/velocity'.($useCompressedJs ? '.min' : '').'.js',
             'lib/selectize/selectize'.($useCompressedJs ? '.min' : '').'.js',
@@ -76,6 +119,7 @@ class AppAsset extends AssetBundle
             'lib/picturefill'.($useCompressedJs ? '.min' : '').'.js',
             'lib/element-resize-detector'.($useCompressedJs ? '.min' : '').'.js',
             'lib/garnish'.($useCompressedJs ? '.min' : '').'.js',
+            'lib/d3/d3'.($useCompressedJs ? '.min' : '').'.js',
             'js/'.($useCompressedJs ? 'compressed/' : '').'Craft.js',
         ]);
     }

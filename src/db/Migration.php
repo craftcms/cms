@@ -181,17 +181,20 @@ abstract class Migration extends \yii\db\Migration
     /**
      * Creates and executes a SQL statement for replacing some text with other text in a given table column.
      *
-     * @param string $table   The table to be updated.
-     * @param string $column  The column to be searched.
-     * @param string $find    The text to be searched for.
-     * @param string $replace The replacement text.
+     * @param string       $table     The table to be updated.
+     * @param string       $column    The column to be searched.
+     * @param string       $find      The text to be searched for.
+     * @param string       $replace   The replacement text.
+     * @param string|array $condition The condition that will be put in the WHERE part. Please
+     *                                refer to [[Query::where()]] on how to specify condition.
+     * @param array        $params    The parameters to be bound to the command.
      */
-    public function replace($table, $column, $find, $replace)
+    public function replace($table, $column, $find, $replace, $condition = '', $params = [])
     {
         echo "    > replace \"$find\" with \"$replace\" in $table.$column ...";
         $time = microtime(true);
         $this->db->createCommand()
-            ->replace($table, $column, $find, $replace)
+            ->replace($table, $column, $find, $replace, $condition, $params)
             ->execute();
         echo " done (time: ".sprintf('%.3f', microtime(true) - $time)."s)\n";
     }

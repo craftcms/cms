@@ -19,6 +19,7 @@ use craft\app\base\Widget;
 use craft\app\widgets\Feed as FeedWidget;
 use craft\app\widgets\GetHelp as GetHelpWidget;
 use craft\app\widgets\MissingWidget;
+use craft\app\widgets\NewUsers as NewUsersWidget;
 use craft\app\widgets\QuickPost as QuickPostWidget;
 use craft\app\widgets\RecentEntries as RecentEntriesWidget;
 use craft\app\widgets\Updates as UpdatesWidget;
@@ -71,6 +72,7 @@ class Dashboard extends Component
         $widgetTypes = [
             FeedWidget::class,
             GetHelpWidget::class,
+            NewUsersWidget::class,
             QuickPostWidget::class,
             RecentEntriesWidget::class,
             UpdatesWidget::class,

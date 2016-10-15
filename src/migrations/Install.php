@@ -93,7 +93,7 @@ class Install extends Migration
         Craft::$app->getSystemSettings()->saveSettings('email', [
             'fromEmail' => $this->email,
             'fromName' => $this->site->name,
-            'transportType' => \craft\app\mail\transportadaptors\Php::class
+            'transportType' => \craft\app\mail\transportadapters\Php::class
         ]);
         Craft::$app->getSystemSettings()->saveSettings('mailer', [
             'class' => \craft\app\mail\Mailer::class,
@@ -432,7 +432,7 @@ class Install extends Migration
             'id' => $this->primaryKey(),
             'handle' => $this->string(150)->notNull(),
             'version' => $this->string(15)->notNull(),
-            'schemaVersion' => $this->string(15),
+            'schemaVersion' => $this->string(15)->notNull(),
             'licenseKey' => $this->char(24),
             'licenseKeyStatus' => $this->enum('licenseKeyStatus', ['valid', 'invalid', 'mismatched', 'unknown'])->notNull()->defaultValue('unknown'),
             'enabled' => $this->boolean()->defaultValue(false)->notNull(),

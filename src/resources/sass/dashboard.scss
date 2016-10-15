@@ -37,6 +37,9 @@
 /* Recent Entries widget */
 .recententries .body { overflow: hidden; }
 
+/* New Users Widget */
+.craft\\app\\widgets\\newusers .chart { height: 200px; margin: -10px -24px; }
+
 /* New Widget Menu */
 .newwidgetmenu ul li a { position: relative; @include padding-left(40px); }
 .newwidgetmenu ul li a .icon { position: absolute; top: 8px; @include left(14px); width: 16px; }

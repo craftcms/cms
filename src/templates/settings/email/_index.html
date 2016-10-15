@@ -75,16 +75,16 @@
 			id: 'transportType',
 			name: 'transportType',
 			options: transportTypeOptions,
-			value: adaptor.className(),
+			value: adapter.className(),
 			toggle: true
 		}) }}
 
 
-		{% for _adaptor in allTransportTypes %}
-			{% set isCurrent = (_adaptor.className() == adaptor.className()) %}
-			<div id="{{ _adaptor.className()|id }}"{% if not isCurrent %} class="hidden"{% endif %}>
-				{% namespace 'transportTypes['~_adaptor.className()~']' %}
-					{{ (isCurrent ? adaptor : _adaptor).getSettingsHtml()|raw }}
+		{% for _adapter in allTransportTypes %}
+			{% set isCurrent = (_adapter.className() == adapter.className()) %}
+			<div id="{{ _adapter.className()|id }}"{% if not isCurrent %} class="hidden"{% endif %}>
+				{% namespace 'transportTypes['~_adapter.className()~']' %}
+					{{ (isCurrent ? adapter : _adapter).getSettingsHtml()|raw }}
 				{% endnamespace %}
 			</div>
 		{% endfor %}

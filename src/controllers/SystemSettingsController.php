@@ -10,16 +10,16 @@ namespace craft\app\controllers;
 use Craft;
 use craft\app\dates\DateTime;
 use craft\app\errors\MissingComponentException;
+use craft\app\helpers\MailerHelper;
 use craft\app\helpers\Component;
 use craft\app\helpers\Template;
 use craft\app\helpers\Url;
-use craft\app\mail\Mailer;
-use craft\app\mail\transportadaptors\BaseTransportAdaptor;
-use craft\app\mail\transportadaptors\Gmail;
-use craft\app\mail\transportadaptors\Php;
-use craft\app\mail\transportadaptors\Sendmail;
-use craft\app\mail\transportadaptors\Smtp;
-use craft\app\mail\transportadaptors\TransportAdaptorInterface;
+use craft\app\mail\transportadapters\BaseTransportAdapter;
+use craft\app\mail\transportadapters\Gmail;
+use craft\app\mail\transportadapters\Php;
+use craft\app\mail\transportadapters\Sendmail;
+use craft\app\mail\transportadapters\Smtp;
+use craft\app\mail\transportadapters\TransportAdapterInterface;
 use craft\app\models\MailSettings;
 use craft\app\elements\GlobalSet;
 use craft\app\models\Info;
@@ -172,22 +172,26 @@ class SystemSettingsController extends Controller
      * Renders the email settings page.
      *
      * @param MailSettings|null         $settings The posted email settings, if there were any validation errors
-     * @param TransportAdaptorInterface $adaptor  The transport adaptor, if there were any validation errors
+     * @param TransportAdapterInterface $adapter  The transport adapter, if there were any validation errors
      *
      * @return Response
      */
-    public function actionEditEmailSettings(MailSettings $settings = null, TransportAdaptorInterface $adaptor = null)
+    public function actionEditEmailSettings(MailSettings $settings = null, TransportAdapterInterface $adapter = null)
     {
         if ($settings === null) {
-            $settings = new MailSettings();
-            $settings->setAttributes(Craft::$app->getSystemSettings()->getSettings('email'), false);
+            $settings = Craft::$app->getSystemSettings()->getEmailSettings();
         }
 
-        if ($adaptor === null) {
-            $adaptor = $this->_createMailerTransportAdaptor($settings->transportType, $settings->transportSettings);
+        if ($adapter === null) {
+            $adapter = MailerHelper::createTransportAdapter($settings->transportType, $settings->transportSettings);
+
+            if ($adapter === false) {
+                // Fallback to the PHP mailer
+                $adapter = new Php();
+            }
         }
 
-        /** @var TransportAdaptorInterface[] $allTransportTypes */
+        /** @var TransportAdapterInterface[] $allTransportTypes */
         $allTransportTypes = [
             new Php(),
             new Sendmail(),
@@ -195,14 +199,14 @@ class SystemSettingsController extends Controller
             new Gmail(),
         ];
 
-        foreach (Craft::$app->getPlugins()->call('getMailTransportAdaptors', [], true) as $pluginTransportTypes) {
+        foreach (Craft::$app->getPlugins()->call('getMailTransportAdapters', [], true) as $pluginTransportTypes) {
             foreach ($pluginTransportTypes as $pluginTransportType) {
                 if (is_object($pluginTransportType)) {
-                    if ($pluginTransportType instanceof TransportAdaptorInterface) {
+                    if ($pluginTransportType instanceof TransportAdapterInterface) {
                         $allTransportTypes[] = $pluginTransportType;
                     }
                 } else {
-                    $pluginTransportType = $this->_createMailerTransportAdaptor($pluginTransportType, null, false);
+                    $pluginTransportType = MailerHelper::createTransportAdapter($pluginTransportType);
                     if ($pluginTransportType !== false) {
                         $allTransportTypes[] = $pluginTransportType;
                     }
@@ -213,7 +217,7 @@ class SystemSettingsController extends Controller
         $transportTypeOptions = [];
 
         foreach ($allTransportTypes as $class) {
-            if ($class::className() === get_class($adaptor) || $class::isSelectable()) {
+            if ($class::className() === get_class($adapter) || $class::isSelectable()) {
                 $transportTypeOptions[] = [
                     'value' => $class::className(),
                     'label' => $class::displayName()
@@ -223,7 +227,7 @@ class SystemSettingsController extends Controller
 
         return $this->renderTemplate('settings/email/_index', [
             'settings' => $settings,
-            'adaptor' => $adaptor,
+            'adapter' => $adapter,
             'transportTypeOptions' => $transportTypeOptions,
             'allTransportTypes' => $allTransportTypes,
         ]);
@@ -238,22 +242,15 @@ class SystemSettingsController extends Controller
     {
         $this->requirePostRequest();
 
-        /** @var MailSettings $settings */
-        /** @var BaseTransportAdaptor $adaptor */
-        list($settings, $adaptor) = $this->_createMailSettingsAndAdaptorFromPost();
-
+        $settings = $this->_createMailSettingsFromPost();
         $settingsIsValid = $settings->validate();
-        $adaptorIsValid = $adaptor->validate();
 
-        if ($settingsIsValid && $adaptorIsValid) {
-            $systemSettingsService = Craft::$app->getSystemSettings();
-            $emailSettings = $settings->toArray();
-            $emailSettings['transportSettings'] = $adaptor->toArray();
-            $systemSettingsService->saveSettings('email', $emailSettings);
+        /** @var BaseTransportAdapter $adapter */
+        $adapter = MailerHelper::createTransportAdapter($settings->transportType, $settings->transportSettings);
+        $adapterIsValid = $adapter->validate();
 
-            $mailerConfig = $this->_getMailerConfig($settings, $adaptor);
-            $systemSettingsService->saveSettings('mailer', $mailerConfig);
-
+        if ($settingsIsValid && $adapterIsValid) {
+            Craft::$app->getSystemSettings()->saveSettings('email', $settings->toArray());
             Craft::$app->getSession()->setNotice(Craft::t('app', 'Email settings saved.'));
 
             return $this->redirectToPostedUrl();
@@ -264,7 +261,7 @@ class SystemSettingsController extends Controller
         // Send the settings back to the template
         Craft::$app->getUrlManager()->setRouteParams([
             'settings' => $settings,
-            'adaptor' => $adaptor
+            'adapter' => $adapter
         ]);
 
         return null;
@@ -279,17 +276,15 @@ class SystemSettingsController extends Controller
     {
         $this->requirePostRequest();
 
-        /** @var MailSettings $settings */
-        /** @var BaseTransportAdaptor $adaptor */
-        list($settings, $adaptor) = $this->_createMailSettingsAndAdaptorFromPost();
-
+        $settings = $this->_createMailSettingsFromPost();
         $settingsIsValid = $settings->validate();
-        $adaptorIsValid = $adaptor->validate();
 
-        if ($settingsIsValid && $adaptorIsValid) {
-            $mailerConfig = $this->_getMailerConfig($settings, $adaptor);
-            /** @var Mailer $mailer */
-            $mailer = Craft::createObject($mailerConfig);
+        /** @var BaseTransportAdapter $adapter */
+        $adapter = MailerHelper::createTransportAdapter($settings->transportType, $settings->transportSettings);
+        $adapterIsValid = $adapter->validate();
+
+        if ($settingsIsValid && $adapterIsValid) {
+            $mailer = MailerHelper::createMailer($settings);
 
             // Compose the settings list as HTML
             $includedSettings = [];
@@ -300,11 +295,11 @@ class SystemSettingsController extends Controller
                 }
             }
 
-            $includedSettings[] = '<strong>'.Craft::t('app', 'Transport Type').':</strong> '.$adaptor::displayName();
+            $includedSettings[] = '<strong>'.Craft::t('app', 'Transport Type').':</strong> '.$adapter::displayName();
 
-            foreach ($adaptor->settingsAttributes() as $name) {
-                if (!empty($adaptor->$name)) {
-                    $includedSettings[] = '<strong>'.$adaptor->getAttributeLabel($name).':</strong> '.$adaptor->$name;
+            foreach ($adapter->settingsAttributes() as $name) {
+                if (!empty($adapter->$name)) {
+                    $includedSettings[] = '<strong>'.$adapter->getAttributeLabel($name).':</strong> '.$adapter->$name;
                 }
             }
 
@@ -327,7 +322,7 @@ class SystemSettingsController extends Controller
         // Send the settings back to the template
         Craft::$app->getUrlManager()->setRouteParams([
             'settings' => $settings,
-            'adaptor' => $adaptor
+            'adapter' => $adapter
         ]);
 
         return null;
@@ -400,59 +395,11 @@ class SystemSettingsController extends Controller
     // =========================================================================
 
     /**
-     * Creates a mailer transport adaptor of a given class with the given settings.
+     * Creates a MailSettings model, populated with post data.
      *
-     * @param string|null $class
-     * @param array|null  $settings
-     * @param boolean     $fallbackToPhp
-     *
-     * @return TransportAdaptorInterface|false
+     * @return MailSettings
      */
-    private function _createMailerTransportAdaptor($class, $settings, $fallbackToPhp = true)
-    {
-        if ($class !== null) {
-            try {
-                /** @var TransportAdaptorInterface $adapter */
-                $adapter = Component::createComponent([
-                    'type' => $class,
-                    'settings' => $settings
-                ], \craft\app\mail\transportadaptors\TransportAdaptorInterface::class);
-
-                return $adapter;
-            } catch (MissingComponentException $e) {
-                if (!$fallbackToPhp) {
-                    return false;
-                }
-            }
-        }
-
-        return new Php();
-    }
-
-    /**
-     * Creates a mailer component config based on the given mail settings and adaptor.
-     *
-     * @param MailSettings                                   $settings
-     * @param TransportAdaptorInterface|BaseTransportAdaptor $adaptor
-     *
-     * @return array
-     */
-    private function _getMailerConfig($settings, $adaptor)
-    {
-        return [
-            'class' => Mailer::class,
-            'from' => [$settings->fromEmail => $settings->fromName],
-            'template' => $settings->template,
-            'transport' => $adaptor->getTransportConfig()
-        ];
-    }
-
-    /**
-     * Creates a MailSettings model and mailer transport adaptor, populated with post data.
-     *
-     * @return array
-     */
-    private function _createMailSettingsAndAdaptorFromPost()
+    private function _createMailSettingsFromPost()
     {
         $request = Craft::$app->getRequest();
         $settings = new MailSettings();
@@ -460,13 +407,9 @@ class SystemSettingsController extends Controller
         $settings->fromEmail = $request->getBodyParam('fromEmail');
         $settings->fromName = $request->getBodyParam('fromName');
         $settings->template = $request->getBodyParam('template');
+        $settings->transportType = $request->getBodyParam('transportType');
+        $settings->transportSettings = $request->getBodyParam('transportTypes.'.$settings->transportType);
 
-        $transportType = $request->getBodyParam('transportType');
-        $transportSettings = $request->getBodyParam('transportTypes.'.$transportType);
-        $adaptor = $this->_createMailerTransportAdaptor($transportType, $transportSettings);
-
-        $settings->transportType = get_class($adaptor);
-
-        return [$settings, $adaptor];
+        return $settings;
     }
 }
