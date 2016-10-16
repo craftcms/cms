@@ -219,7 +219,8 @@ class CategoryQuery extends ElementQuery
                 }
 
                 if ($joinCategoryGroups) {
-                    $this->subQuery->innerJoin('{{%categorygroups}} categorygroups', 'categorygroups.id = categories.groupId');
+                    $schema = Craft::$app->getDb()->getSchema();
+                    $this->subQuery->innerJoin('{{%categorygroups}} categorygroups', $schema->quoteTableName('categorygroups').'.'.$schema->quoteColumnName('id').' = '.$schema->quoteTableName('categories').'.'.$schema->quoteColumnName('groupId'));
                 }
             }
         }

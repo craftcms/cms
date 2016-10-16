@@ -147,6 +147,7 @@ class AssetIndex extends Tool
             $missingFiles = Craft::$app->getAssetIndexer()->getMissingFiles($sourceIds, $params['sessionId']);
             $missingFolders = Craft::$app->getSession()->get('assetsMissingFolders', []);
             $skippedFiles = Craft::$app->getSession()->get('assetsSkippedFiles', []);
+            $schema = Craft::$app->getDb()->getSchema();
 
             $responseArray = [];
 
@@ -164,7 +165,7 @@ class AssetIndex extends Tool
             $sessionsInProgress = (new Query())
                 ->select('sessionId')
                 ->from('{{%assetindexdata}}')
-                ->where('recordId IS NULL')
+                ->where($schema->quoteColumnName('recordId').' IS NULL')
                 ->groupBy('sessionId')
                 ->scalar();
 

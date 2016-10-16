@@ -203,10 +203,12 @@ class Elements extends Component
             $conditions[] = 'elements.archived = 0';
         }
 
+        $schema = Craft::$app->getDb()->getSchema();
+
         $result = (new Query())
             ->select('elements.id, elements.type')
             ->from('{{%elements}} elements')
-            ->innerJoin('{{%elements_i18n}} elements_i18n', 'elements_i18n.elementId = elements.id')
+            ->innerJoin('{{%elements_i18n}} elements_i18n', $schema->quoteTableName('elements_i18n').'.'.$schema->quoteColumnName('elementId').' = '.$schema->quoteTableName('elements').'.'.$schema->quoteColumnName('id'))
             ->where($conditions, $params)
             ->one();
 

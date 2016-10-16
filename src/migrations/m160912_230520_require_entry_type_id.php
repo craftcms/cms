@@ -19,11 +19,13 @@ class m160912_230520_require_entry_type_id extends Migration
      */
     public function safeUp()
     {
+        $schema = Craft::$app->getDb()->getSchema();
+
         // Get all of the sections' primary entry type IDs
         $subQuery = (new Query())
             ->select('et.id')
             ->from('{{%entrytypes}} et')
-            ->where('et.sectionId = s.id')
+            ->where($schema->quoteTableName('et').'.'.$schema->quoteColumnName('sectionId').' = '.$schema->quoteTableName('s').'.'.$schema->quoteColumnName('id'))
             ->orderBy('sortOrder asc')
             ->limit(1);
 
@@ -59,7 +61,7 @@ class m160912_230520_require_entry_type_id extends Migration
         $typelessEntryIds = (new Query())
             ->select('id')
             ->from('{{%entries}}')
-            ->where('typeId is null')
+            ->where($schema->quoteColumnName('typeId').' is null')
             ->column();
 
         if ($typelessEntryIds) {

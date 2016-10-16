@@ -326,8 +326,10 @@ class AssetQuery extends ElementQuery
             return false;
         }
 
+        $schema = Craft::$app->getDb()->getSchema();
+
         $this->joinElementTable('assets');
-        $this->query->innerJoin('{{%volumefolders}} volumeFolders', 'assets.folderId = volumeFolders.id');
+        $this->query->innerJoin('{{%volumefolders}} volumeFolders', $schema->quoteTableName('assets').'.'.$schema->quoteColumnName('folderId').' = '.$schema->quoteTableName('volumeFolders').'.'.$schema->quoteColumnName('id'));
 
         $this->query->select([
             'assets.volumeId',

@@ -270,13 +270,11 @@ class Sections extends Component
         }
 
         // If we've already fetched all sections we can save ourselves a trip to the DB for section IDs that don't exist
-        if (!$this->_fetchedAllSections &&
-            (!isset($this->_sectionsById) || !array_key_exists($sectionId,
-                    $this->_sectionsById))
-        ) {
+        if (!$this->_fetchedAllSections && (!isset($this->_sectionsById) || !array_key_exists($sectionId, $this->_sectionsById))) {
+            $schema = Craft::$app->getDb()->getSchema();
+
             $result = $this->_createSectionQuery()
-                ->where('sections.id = :sectionId',
-                    [':sectionId' => $sectionId])
+                ->where($schema->quoteTableName('sections').'.'.$schema->quoteColumnName('id').' = :sectionId', [':sectionId' => $sectionId])
                 ->one();
 
             if ($result) {
@@ -304,9 +302,10 @@ class Sections extends Component
      */
     public function getSectionByHandle($sectionHandle)
     {
+        $schema = Craft::$app->getDb()->getSchema();
+
         $result = $this->_createSectionQuery()
-            ->where('sections.handle = :sectionHandle',
-                [':sectionHandle' => $sectionHandle])
+            ->where($schema->quoteTableName('sections').'.'.$schema->quoteColumnName('handle').' = :sectionHandle', [':sectionHandle' => $sectionHandle])
             ->one();
 
         if ($result) {
@@ -329,13 +328,14 @@ class Sections extends Component
      */
     public function getSectionSiteSettings($sectionId, $indexBy = null)
     {
+        $schema = Craft::$app->getDb()->getSchema();
+
         $siteSettings = (new Query())
             ->select('sections_i18n.*')
             ->from('{{%sections_i18n}} sections_i18n')
-            ->innerJoin('{{%sites}} sites', 'sites.id = sections_i18n.siteId')
-            ->where('sections_i18n.sectionId = :sectionId',
-                [':sectionId' => $sectionId])
-            ->orderBy('sites.sortOrder')
+            ->innerJoin('{{%sites}} sites', $schema->quoteTableName('sites').'.'.$schema->quoteColumnName('id').' = '.$schema->quoteTableName('sections_i18n').'.'.$schema->quoteColumnName('siteId'))
+            ->where($schema->quoteTableName('sections_i18n').'.'.$schema->quoteColumnName('sectionId').' = :sectionId', [':sectionId' => $sectionId])
+            ->orderBy($schema->quoteTableName('sites').'.'.$schema->quoteColumnName('sortOrder'))
             ->indexBy($indexBy)
             ->all();
 
@@ -402,6 +402,7 @@ class Sections extends Component
         ]));
 
         $db = Craft::$app->getDb();
+        $schema = $db->getSchema();
         $transaction = $db->beginTransaction();
 
         try {
@@ -501,8 +502,7 @@ class Sections extends Component
                 $entryTypeIds = (new Query())
                     ->select('id')
                     ->from('{{%entrytypes}}')
-                    ->where('sectionId = :sectionId',
-                        [':sectionId' => $section->id])
+                    ->where($schema->quoteColumnName('sectionId').' = :sectionId', [':sectionId' => $section->id])
                     ->column();
 
                 if ($entryTypeIds) {
@@ -554,8 +554,7 @@ class Sections extends Component
                         $entryIds = (new Query())
                             ->select('id')
                             ->from('{{%entries}}')
-                            ->where('sectionId = :sectionId',
-                                [':sectionId' => $section->id])
+                            ->where($schema->quoteColumnName('sectionId').' = :sectionId', [':sectionId' => $section->id])
                             ->column();
 
                         if ($entryIds) {

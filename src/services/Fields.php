@@ -232,11 +232,11 @@ class Fields extends Component
      */
     public function getGroupById($groupId)
     {
-        if (!isset($this->_groupsById) || !array_key_exists($groupId,
-                $this->_groupsById)
-        ) {
+        if (!isset($this->_groupsById) || !array_key_exists($groupId, $this->_groupsById)) {
+            $schema = Craft::$app->getDb()->getSchema();
+
             $result = $this->_createGroupQuery()
-                ->where('id = :id', [':id' => $groupId])
+                ->where($schema->quoteColumnName('id').' = :id', [':id' => $groupId])
                 ->one();
 
             if ($result) {
@@ -525,11 +525,11 @@ class Fields extends Component
      */
     public function getFieldById($fieldId)
     {
-        if (!isset($this->_fieldsById) || !array_key_exists($fieldId,
-                $this->_fieldsById)
-        ) {
+        if (!isset($this->_fieldsById) || !array_key_exists($fieldId, $this->_fieldsById)) {
+            $schema = Craft::$app->getDb()->getSchema();
+
             $result = $this->_createFieldQuery()
-                ->where('fields.id = :id', [':id' => $fieldId])
+                ->where($schema->quoteTableName('fields').'.'.$schema->quoteColumnName('id').' = :id', [':id' => $fieldId])
                 ->one();
 
             if ($result) {
@@ -622,8 +622,10 @@ class Fields extends Component
      */
     public function getFieldsByGroupId($groupId, $indexBy = null)
     {
+        $schema = Craft::$app->getDb()->getSchema();
+
         $results = $this->_createFieldQuery()
-            ->where('fields.groupId = :groupId', [':groupId' => $groupId])
+            ->where($schema->quoteTableName('fields').'.'.$schema->quoteColumnName('groupId').' = :groupId', [':groupId' => $groupId])
             ->all();
 
         $fields = [];
@@ -651,9 +653,11 @@ class Fields extends Component
      */
     public function getFieldsByElementType($elementType, $indexBy = null)
     {
+        $schema = Craft::$app->getDb()->getSchema();
+
         $results = $this->_createFieldQuery()
-            ->innerJoin('{{%fieldlayoutfields}} flf', 'flf.fieldId = fields.id')
-            ->innerJoin('{{%fieldlayouts}} fl', 'fl.id = flf.layoutId')
+            ->innerJoin('{{%fieldlayoutfields}} flf', $schema->quoteTableName('flf').'.'.$schema->quoteColumnName('fieldId').' = '.$schema->quoteTableName('fields').'.'.$schema->quoteColumnName('id'))
+            ->innerJoin('{{%fieldlayouts}} fl', $schema->quoteTableName('fl').'.'.$schema->quoteColumnName('id').' = '.$schema->quoteTableName('flf').'.'.$schema->quoteColumnName('layoutId'))
             ->where(['fl.type' => $elementType])
             ->all();
 
@@ -916,11 +920,11 @@ class Fields extends Component
      */
     public function getLayoutById($layoutId)
     {
-        if (!isset($this->_layoutsById) || !array_key_exists($layoutId,
-                $this->_layoutsById)
-        ) {
+        if (!isset($this->_layoutsById) || !array_key_exists($layoutId, $this->_layoutsById)) {
+            $schema = Craft::$app->getDb()->getSchema();
+
             $result = $this->_createLayoutQuery()
-                ->where('id = :id', [':id' => $layoutId])
+                ->where($schema->quoteColumnName('id').' = :id', [':id' => $layoutId])
                 ->one();
 
             if ($result) {
@@ -944,11 +948,11 @@ class Fields extends Component
      */
     public function getLayoutByType($type)
     {
-        if (!isset($this->_layoutsByType) || !array_key_exists($type,
-                $this->_layoutsByType)
-        ) {
+        if (!isset($this->_layoutsByType) || !array_key_exists($type, $this->_layoutsByType)) {
+            $schema = Craft::$app->getDb()->getSchema();
+
             $result = $this->_createLayoutQuery()
-                ->where('type = :type', [':type' => $type])
+                ->where($schema->quoteColumnName('type').' = :type', [':type' => $type])
                 ->one();
 
             if ($result) {
@@ -978,8 +982,10 @@ class Fields extends Component
      */
     public function getLayoutTabsById($layoutId)
     {
+        $schema = Craft::$app->getDb()->getSchema();
+
         $tabs = $this->_createLayoutTabQuery()
-            ->where('layoutId = :layoutId', [':layoutId' => $layoutId])
+            ->where($schema->quoteColumnName('layoutId').' = :layoutId', [':layoutId' => $layoutId])
             ->all();
 
         foreach ($tabs as $key => $value) {
@@ -998,6 +1004,8 @@ class Fields extends Component
      */
     public function getFieldsByLayoutId($layoutId)
     {
+        $schema = Craft::$app->getDb()->getSchema();
+
         $fields = $this->_createFieldQuery()
             ->addSelect([
                 'flf.layoutId',
@@ -1005,8 +1013,8 @@ class Fields extends Component
                 'flf.required',
                 'flf.sortOrder'
             ])
-            ->innerJoin('{{%fieldlayoutfields}} flf', 'flf.fieldId = fields.id')
-            ->innerJoin('{{%fieldlayouttabs}} flt', 'flt.id = flf.tabId')
+            ->innerJoin('{{%fieldlayoutfields}} flf', $schema->quoteTableName('flf').'.'.$schema->quoteColumnName('fieldId').' = '.$schema->quoteTableName('fields').'.'.$schema->quoteColumnName('id'))
+            ->innerJoin('{{%fieldlayouttabs}} flt', $schema->quoteTableName('flt').'.'.$schema->quoteColumnName('id').' = '.$schema->quoteTableName('flf').'.'.$schema->quoteColumnName('tabId'))
             ->where(['flf.layoutId' => $layoutId])
             ->orderBy('flt.sortOrder, flf.sortOrder')
             ->all();

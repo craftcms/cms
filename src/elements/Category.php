@@ -344,12 +344,12 @@ class Category extends Element
             $newRelationValues = [];
 
             $ancestorIds = $element->getAncestors()->ids();
+            $schema = Craft::$app->getDb()->getSchema();
 
             $sources = (new Query())
                 ->select(['fieldId', 'sourceId', 'sourceSiteId'])
                 ->from('{{%relations}}')
-                ->where('targetId = :categoryId',
-                    [':categoryId' => $element->id])
+                ->where($schema->quoteColumnName('targetId').' = :categoryId', [':categoryId' => $element->id])
                 ->all();
 
             foreach ($sources as $source) {

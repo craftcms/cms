@@ -504,11 +504,12 @@ class TemplateCaches extends Component
             ->distinct(true)
             ->from(static::$_templateCacheElementsTable);
 
+        $schema = Craft::$app->getDb()->getSchema();
+
         if (is_array($elementId)) {
             $query->where(['in', 'elementId', $elementId]);
         } else {
-            $query->where('elementId = :elementId',
-                [':elementId' => $elementId]);
+            $query->where($schema->quoteColumnName('elementId').' = :elementId', [':elementId' => $elementId]);
         }
 
         $cacheIds = $query->column();

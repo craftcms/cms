@@ -663,11 +663,13 @@ class Categories extends Component
             return null;
         }
 
+        $schema = Craft::$app->getDb()->getSchema();
+
         // Get the structure ID
         $structureId = (new Query())
             ->select('categorygroups.structureId')
             ->from('{{%categories}} categories')
-            ->innerJoin('{{%categorygroups}} categorygroups', 'categorygroups.id = categories.groupId')
+            ->innerJoin('{{%categorygroups}} categorygroups', $schema->quoteTableName('categorygroups').'.'.$schema->quoteColumnName('id').' = '.$schema->quoteTableName('categories').'.'.$schema->quoteColumnName('groupId'))
             ->where(['categories.id' => $categoryId])
             ->scalar();
 

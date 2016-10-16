@@ -54,9 +54,10 @@ class SingleSectionUriValidator extends Validator
             );
 
         if ($section->id) {
+            $schema = Craft::$app->getDb()->getSchema();
             $query
-                ->innerJoin('{{%entries}} entries', 'entries.id = elements_i18n.elementId')
-                ->andWhere('entries.sectionId != :sectionId', [':sectionId' => $section->id]);
+                ->innerJoin('{{%entries}} entries', $schema->quoteTableName('entries').'.'.$schema->quoteColumnName('id').' = '.$schema->quoteTableName('elements_i18n').'.'.$schema->quoteColumnName('elementId'))
+                ->andWhere($schema->quoteTableName('entries').'.'.$schema->quoteColumnName('sectionId').' != :sectionId', [':sectionId' => $section->id]);
         }
 
         if ($query->exists()) {

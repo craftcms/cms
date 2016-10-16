@@ -79,6 +79,7 @@ class m160804_110002_userphotos_to_assets extends Migration
     {
         $affectedUsers = [];
         $subfolders = Io::getFolderContents($this->_basePath, false);
+        $schema = Craft::$app->getDb()->getSchema();
 
         if ($subfolders) {
             // Grab the users with photos
@@ -88,7 +89,7 @@ class m160804_110002_userphotos_to_assets extends Migration
                 $user = (new Query())
                     ->select('id, photo')
                     ->from('{{%users}}')
-                    ->where('username = :username', [':username' => $usernameOrEmail])
+                    ->where($schema->quoteColumnName('username').' = :username', [':username' => $usernameOrEmail])
                     ->one();
 
                 $sourcePath = $subfolder.'original/'.$user['photo'];
@@ -135,10 +136,12 @@ class m160804_110002_userphotos_to_assets extends Migration
         $name = 'User Photos';
 
         $counter = 0;
+        $schema = Craft::$app->getDb()->getSchema();
+
         $existingVolume = (new Query())
             ->select('id')
             ->from('{{%volumes}}')
-            ->where('handle = :handle', [':handle' => $handle])
+            ->where($schema->quoteColumnName('handle').' = :handle', [':handle' => $handle])
             ->one();
 
         while (!empty($existingVolume)) {
@@ -147,8 +150,8 @@ class m160804_110002_userphotos_to_assets extends Migration
             $existingVolume = (new Query())
                 ->select('id')
                 ->from('{{%volumes}}')
-                ->where('handle = :handle', [':handle' => $handle])
-                ->orWhere('name = :name', [':name' => $name])
+                ->where($schema->quoteColumnName('handle').' = :handle', [':handle' => $handle])
+                ->orWhere($schema->quoteColumnName('name').' = :name', [':name' => $name])
                 ->one();
         }
 
@@ -216,6 +219,7 @@ class m160804_110002_userphotos_to_assets extends Migration
     private function _convertPhotosToAssets($volumeId, $userList)
     {
         $db = Craft::$app->getDb();
+        $schema = $db->getSchema();
 
         $locales = (new Query())
             ->select('locale')
@@ -225,20 +229,21 @@ class m160804_110002_userphotos_to_assets extends Migration
         $folderId = (new Query())
             ->select('id')
             ->from('{{%volumefolders}}')
-            ->where('parentId is null')
-            ->andWhere('volumeId = :volumeId', [':volumeId' => $volumeId])
+            ->where($schema->quoteColumnName('parentId').' is null')
+            ->andWhere($schema->quoteColumnName('volumeId').' = :volumeId', [':volumeId' => $volumeId])
             ->scalar();
 
         $changes = [];
+
         foreach ($userList as $user) {
             $filePath = $this->_basePath.'/'.$user['photo'];
 
             $assetExists = (new Query())
                 ->select('assets.id')
                 ->from('{{%assets}} assets')
-                ->innerJoin('{{%volumefolders}} volumefolders', 'volumefolders.id = assets.folderId')
-                ->where('assets.folderId = :folderId', [':folderId' => $folderId])
-                ->andWhere('filename = :filename', [':filename' => $user['photo']])
+                ->innerJoin('{{%volumefolders}} volumefolders', $schema->quoteTableName('volumefolders').'.'.$schema->quoteColumnName('id').' = '.$schema->quoteTableName('assets').'.'.$schema->quoteColumnName('folderId'))
+                ->where($schema->quoteTableName('assets').'.'.$schema->quoteColumnName('folderId').' = :folderId', [':folderId' => $folderId])
+                ->andWhere($schema->quoteColumnName('filename').' = :filename', [':filename' => $user['photo']])
                 ->one();
 
             if (!$assetExists && Io::fileExists($filePath)) {

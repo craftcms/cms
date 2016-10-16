@@ -318,9 +318,9 @@ class UserQuery extends ElementQuery
         }
 
         if ($this->admin) {
-            $this->subQuery->andWhere('users.admin = 1');
+            $this->subQuery->andWhere(['users.admin' => '1']);
         } else if ($this->client) {
-            $this->subQuery->andWhere('users.client = 1');
+            $this->subQuery->andWhere(['users.client' => '1']);
         } else {
             $this->_applyCanParam();
         }
@@ -374,12 +374,14 @@ class UserQuery extends ElementQuery
     private function _applyCanParam()
     {
         if ($this->can === false || !empty($this->can)) {
+            $schema = Craft::$app->getDb()->getSchema();
+
             if (is_string($this->can) && !is_numeric($this->can)) {
                 // Convert it to the actual permission ID, or false if the permission doesn't have an ID yet.
                 $this->can = (new Query())
                     ->select('id')
                     ->from('{{%userpermissions}}')
-                    ->where('name = :name', [':name' => strtolower($this->can)])
+                    ->where($schema->quoteColumnName('name').' = :name', [':name' => strtolower($this->can)])
                     ->scalar();
             }
 
@@ -396,7 +398,7 @@ class UserQuery extends ElementQuery
                 $permittedUserIdsViaGroups = (new Query())
                     ->select('g_u.userId')
                     ->from('{{%usergroups_users}} g_u')
-                    ->innerJoin('{{%userpermissions_usergroups}} p_g', 'p_g.groupId = g_u.groupId')
+                    ->innerJoin('{{%userpermissions_usergroups}} p_g', $schema->quoteTableName('p_g').'.'.$schema->quoteColumnName('groupId').' = '.$schema->quoteTableName('g_u').'.'.$schema->quoteColumnName('groupId'))
                     ->where(['p_g.permissionId' => $this->can])
                     ->column();
 
@@ -410,7 +412,7 @@ class UserQuery extends ElementQuery
                     ['in', 'elements.id', $permittedUserIds]
                 ];
             } else {
-                $permissionConditions = 'users.admin = 1';
+                $permissionConditions = ['users.admin' => '1'];
             }
 
             $this->subQuery->andWhere($permissionConditions);

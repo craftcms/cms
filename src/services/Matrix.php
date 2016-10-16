@@ -92,9 +92,10 @@ class Matrix extends Component
     {
         if (empty($this->_fetchedAllBlockTypesForFieldId[$fieldId])) {
             $this->_blockTypesByFieldId[$fieldId] = [];
+            $schema = Craft::$app->getDb()->getSchema();
 
             $results = $this->_createBlockTypeQuery()
-                ->where('fieldId = :fieldId', [':fieldId' => $fieldId])
+                ->where($schema->quoteColumnName('fieldId').' = :fieldId', [':fieldId' => $fieldId])
                 ->all();
 
             foreach ($results as $result) {
@@ -128,11 +129,11 @@ class Matrix extends Component
      */
     public function getBlockTypeById($blockTypeId)
     {
-        if (!isset($this->_blockTypesById) || !array_key_exists($blockTypeId,
-                $this->_blockTypesById)
-        ) {
+        if (!isset($this->_blockTypesById) || !array_key_exists($blockTypeId, $this->_blockTypesById)) {
+            $schema = Craft::$app->getDb()->getSchema();
+
             $result = $this->_createBlockTypeQuery()
-                ->where('id = :id', [':id' => $blockTypeId])
+                ->where($schema->quoteColumnName('id').' = :id', [':id' => $blockTypeId])
                 ->one();
 
             if ($result) {
@@ -855,17 +856,16 @@ class Matrix extends Component
      */
     public function getParentMatrixField(MatrixField $matrixField)
     {
-        if (!isset($this->_parentMatrixFields) || !array_key_exists($matrixField->id,
-                $this->_parentMatrixFields)
-        ) {
+        if (!isset($this->_parentMatrixFields) || !array_key_exists($matrixField->id, $this->_parentMatrixFields)) {
+            $schema = Craft::$app->getDb()->getSchema();
+
             // Does this Matrix field belong to another one?
             $parentMatrixFieldId = (new Query())
                 ->select('fields.id')
                 ->from('{{%fields}} fields')
-                ->innerJoin('{{%matrixblocktypes}} blocktypes', 'blocktypes.fieldId = fields.id')
-                ->innerJoin('{{%fieldlayoutfields}} fieldlayoutfields', 'fieldlayoutfields.layoutId = blocktypes.fieldLayoutId')
-                ->where('fieldlayoutfields.fieldId = :matrixFieldId',
-                    [':matrixFieldId' => $matrixField->id])
+                ->innerJoin('{{%matrixblocktypes}} blocktypes', $schema->quoteTableName('blocktypes').'.'.$schema->quoteColumnName('fieldId').' = '.$schema->quoteTableName('fields').'.'.$schema->quoteColumnName('id'))
+                ->innerJoin('{{%fieldlayoutfields}} fieldlayoutfields', $schema->quoteTableName('fieldlayoutfields').'.'.$schema->quoteColumnName('layoutId').' = '.$schema->quoteTableName('blocktypes').'.'.$schema->quoteColumnName('fieldLayoutId'))
+                ->where($schema->quoteTableName('fieldlayoutfields').'.'.$schema->quoteColumnName('fieldId').' = :matrixFieldId', [':matrixFieldId' => $matrixField->id])
                 ->scalar();
 
             if ($parentMatrixFieldId) {

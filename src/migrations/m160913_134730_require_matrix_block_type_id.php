@@ -21,7 +21,7 @@ class m160913_134730_require_matrix_block_type_id extends Migration
         $typelessBlockIds = (new Query())
             ->select('id')
             ->from('{{%matrixblocks}}')
-            ->where('typeId is null')
+            ->where(Craft::$app->getDb()->getSchema()->quoteColumnName('typeId').' is null')
             ->column();
 
         if ($typelessBlockIds) {

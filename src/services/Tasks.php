@@ -397,10 +397,12 @@ class Tasks extends Component
      */
     public function getTaskById($taskId)
     {
+        $schema = Craft::$app->getDb()->getSchema();
+
         $result = (new Query())
             ->select('*')
             ->from('{{%tasks}}')
-            ->where('id = :id', [':id' => $taskId])
+            ->where($schema->quoteColumnName('id').' = :id', [':id' => $taskId])
             ->one();
 
         if ($result !== false) {

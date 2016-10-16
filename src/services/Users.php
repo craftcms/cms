@@ -206,7 +206,7 @@ class Users extends Component
     {
         return User::find()
             ->where(
-                ['or', 'username=:usernameOrEmail', 'email=:usernameOrEmail'],
+                ['or', Craft::$app->getDb()->getSchema()->quoteColumnName('username').'=:usernameOrEmail', Craft::$app->getDb()->getSchema()->quoteColumnName('email').'=:usernameOrEmail'],
                 [':usernameOrEmail' => $usernameOrEmail]
             )
             ->withPassword()

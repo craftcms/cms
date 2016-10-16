@@ -223,10 +223,12 @@ class MatrixBlockQuery extends ElementQuery
         $this->contentTable = null;
 
         if (!$this->fieldId && $this->id && is_numeric($this->id)) {
+            $schema = Craft::$app->getDb()->getSchema();
+
             $this->fieldId = (new Query())
                 ->select('fieldId')
                 ->from('{{%matrixblocks}}')
-                ->where('id = :id', [':id' => $this->id])
+                ->where($schema->quoteColumnName('id').' = :id', [':id' => $this->id])
                 ->scalar();
         }
 

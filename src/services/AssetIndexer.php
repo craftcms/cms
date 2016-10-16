@@ -304,14 +304,13 @@ class AssetIndexer extends Component
 
         // Flip for faster lookup
         $processedFiles = array_flip($processedFiles);
+        $schema = Craft::$app->getDb()->getSchema();
 
         $fileEntries = (new Query())
-            ->select(
-                'fi.volumeId, fi.id AS fileId, fi.filename, fo.path, s.name AS volumeName'
-            )
+            ->select('fi.volumeId, fi.id AS fileId, fi.filename, fo.path, s.name AS volumeName')
             ->from('{{%assets}} AS fi')
-            ->innerJoin('{{%volumefolders}} AS fo', 'fi.folderId = fo.id')
-            ->innerJoin('{{%volumes}} AS s', 's.id = fi.volumeId')
+            ->innerJoin('{{%volumefolders}} AS fo', $schema->quoteTableName('fi').'.'.$schema->quoteColumnName('folderId').' = '.$schema->quoteTableName('fo').'.'.$schema->quoteColumnName('id'))
+            ->innerJoin('{{%volumes}} AS s', $schema->quoteTableName('s').'.'.$schema->quoteColumnName('id').' = '.$schema->quoteTableName('fi').'.'.$schema->quoteColumnName('volumeId'))
             ->where(['in', 'fi.volumeId', $volumeIds])
             ->all();
 

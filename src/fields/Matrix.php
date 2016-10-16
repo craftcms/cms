@@ -281,11 +281,12 @@ class Matrix extends Field implements EagerLoadingFieldInterface
         }
 
         if ($value == ':notempty:' || $value == ':empty:') {
-            $alias = 'matrixblocks_'.$this->handle;
+            $schema = Craft::$app->getDb()->getSchema();
+            $alias = $schema->quoteTableName('matrixblocks_'.$this->handle);
             $operator = ($value == ':notempty:' ? '!=' : '=');
 
             $query->subQuery->andWhere(
-                "(select count({$alias}.id) from {{matrixblocks}} {$alias} where {$alias}.ownerId = elements.id and {$alias}.fieldId = :fieldId) {$operator} 0",
+                '(select count('.$alias.'.'.$schema->quoteColumnName('id').') from {{matrixblocks}} '.$alias.' where '.$alias.'.'.$schema->quoteColumnName('ownerId').' = '.$schema->quoteTableName('elements').'.'.$schema->quoteColumnName('id').' and '.$alias.'.'.$schema->quoteColumnName('fieldId').' = :fieldId) '.$operator.' 0',
                 [':fieldId' => $this->id]
             );
         } else if ($value !== null) {

@@ -188,7 +188,7 @@ class Deprecator extends Component
         $log = (new Query())
             ->select('*')
             ->from(static::$_tableName)
-            ->where('id = :logId', [':logId' => $logId])
+            ->where(['id' => $logId])
             ->one();
 
         if ($log !== false) {

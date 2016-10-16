@@ -144,12 +144,11 @@ class AssetTransforms extends Component
     {
         // If we've already fetched all transforms we can save ourselves a trip to the DB for transform handles that
         // don't exist
-        if (!$this->_fetchedAllTransforms &&
-            (!isset($this->_transformsByHandle) || !array_key_exists($handle,
-                    $this->_transformsByHandle))
-        ) {
+        if (!$this->_fetchedAllTransforms && (!isset($this->_transformsByHandle) || !array_key_exists($handle, $this->_transformsByHandle))) {
+            $schema = Craft::$app->getDb()->getSchema();
+
             $result = $this->_createTransformQuery()
-                ->where('handle = :handle', [':handle' => $handle])
+                ->where($schema->quoteColumnName('handle').' = :handle', [':handle' => $handle])
                 ->one();
 
             if ($result) {
@@ -177,8 +176,10 @@ class AssetTransforms extends Component
      */
     public function getTransformById($id)
     {
+        $schema = Craft::$app->getDb()->getSchema();
+
         $result = $this->_createTransformQuery()
-            ->where('id = :id', [':id' => $id])
+            ->where($schema->quoteColumnName('id').' = :id', [':id' => $id])
             ->one();
 
         if ($result) {
@@ -398,6 +399,7 @@ class AssetTransforms extends Component
     {
         $transform = $this->normalizeTransform($transform);
         $transformLocation = $this->_getTransformFolderName($transform);
+        $schema = Craft::$app->getDb()->getSchema();
 
         // Was it eager-loaded?
         $fingerprint = $asset->id.':'.$transformLocation.(is_null($transform->format) ? '' : ':'.$transform->format);
@@ -412,7 +414,7 @@ class AssetTransforms extends Component
         $query = (new Query())
             ->select('ti.*')
             ->from('{{%assettransformindex}} ti')
-            ->where('ti.volumeId = :volumeId AND ti.assetId = :assetId AND ti.location = :location',
+            ->where($schema->quoteTableName('ti').'.'.$schema->quoteColumnName('volumeId').' = :volumeId AND '.$schema->quoteTableName('ti').'.'.$schema->quoteColumnName('assetId').' = :assetId AND '.$schema->quoteTableName('ti').'.'.$schema->quoteColumnName('location').' = :location',
                 [
                     ':volumeId' => $asset->volumeId,
                     ':assetId' => $asset->id,
@@ -421,10 +423,9 @@ class AssetTransforms extends Component
 
         if (is_null($transform->format)) {
             // A generated auto-transform will have it's format set to null, but the filename will be populated.
-            $query->andWhere('format IS NULL');
+            $query->andWhere($schema->quoteColumnName('format').' IS NULL');
         } else {
-            $query->andWhere('format = :format',
-                [':format' => $transform->format]);
+            $query->andWhere($schema->quoteColumnName('format').' = :format', [':format' => $transform->format]);
         }
 
         $entry = $query->one();
@@ -570,11 +571,11 @@ class AssetTransforms extends Component
         $volume = $asset->getVolume();
         $index->detectedFormat = !empty($index->format) ? $index->format : $this->detectAutoTransformFormat($asset);
 
-        $transformFilename = Io::getFilename($asset->filename,
-                false).'.'.$index->detectedFormat;
+        $transformFilename = Io::getFilename($asset->filename, false).'.'.$index->detectedFormat;
         $index->filename = $transformFilename;
 
         $matchFound = false;
+        $schema = Craft::$app->getDb()->getSchema();
 
         // If the detected format matches the file's format, we can use the old-style formats as well so we can dig
         // through existing files. Otherwise, delete all transforms, records of it and create new.
@@ -590,10 +591,10 @@ class AssetTransforms extends Component
             $results = (new Query())
                 ->select('*')
                 ->from('{{%assettransformindex}}')
-                ->where('assetId = :assetId', [':assetId' => $asset->id])
+                ->where($schema->quoteColumnName('assetId').' = :assetId', [':assetId' => $asset->id])
                 ->andWhere(['in', 'location', $possibleLocations])
-                ->andWhere('id <> :indexId', [':indexId' => $index->id])
-                ->andWhere('fileExists = 1')
+                ->andWhere($schema->quoteColumnName('id').' <> :indexId', [':indexId' => $index->id])
+                ->andWhere(['fileExists' => '1'])
                 ->all();
 
             foreach ($results as $result) {
@@ -730,11 +731,13 @@ class AssetTransforms extends Component
      */
     public function getTransformIndexModelById($transformId)
     {
+        $schema = Craft::$app->getDb()->getSchema();
+
         // Check if an entry exists already
         $entry = (new Query())
-            ->select('ti.*')
-            ->from('{{%assettransformindex}} ti')
-            ->where('ti.id = :id', [':id' => $transformId])
+            ->select('*')
+            ->from('{{%assettransformindex}}')
+            ->where($schema->quoteColumnName('id').' = :id', [':id' => $transformId])
             ->one();
 
         if ($entry) {
@@ -754,12 +757,13 @@ class AssetTransforms extends Component
      */
     public function getTransformIndexModelByAssetIdAndHandle($assetId, $transformHandle)
     {
+        $schema = Craft::$app->getDb()->getSchema();
+
         // Check if an entry exists already
         $entry = (new Query())
             ->select('ti.*')
             ->from('{{%assettransformindex}} ti')
-            ->where('ti.assetId = :assetId AND ti.location = :location',
-                [':assetId' => $assetId, ':location' => '_'.$transformHandle])
+            ->where($schema->quoteTableName('ti').'.'.$schema->quoteColumnName('assetId').' = :assetId AND '.$schema->quoteTableName('ti').'.'.$schema->quoteColumnName('location').' = :location', [':assetId' => $assetId, ':location' => '_'.$transformHandle])
             ->one();
 
         if ($entry) {
@@ -1142,10 +1146,12 @@ class AssetTransforms extends Component
      */
     public function getAllCreatedTransformsForAsset(Asset $asset)
     {
+        $schema = Craft::$app->getDb()->getSchema();
+
         $transforms = (new Query())
             ->select('*')
             ->from('{{%assettransformindex}}')
-            ->where('assetId = :assetId', [':assetId' => $asset->id])
+            ->where($schema->quoteColumnName('assetId').' = :assetId', [':assetId' => $asset->id])
             ->all();
 
         foreach ($transforms as $key => $value) {

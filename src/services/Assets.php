@@ -761,11 +761,11 @@ class Assets extends Component
      */
     public function getFolderById($folderId)
     {
-        if (!isset($this->_foldersById) || !array_key_exists($folderId,
-                $this->_foldersById)
-        ) {
+        if (!isset($this->_foldersById) || !array_key_exists($folderId, $this->_foldersById)) {
+            $schema = Craft::$app->getDb()->getSchema();
+
             $result = $this->_createFolderQuery()
-                ->where('id = :id', [':id' => $folderId])
+                ->where($schema->quoteColumnName('id').' = :id', [':id' => $folderId])
                 ->one();
 
             if ($result) {
@@ -833,6 +833,8 @@ class Assets extends Component
      */
     public function getAllDescendantFolders(VolumeFolder $parentFolder, $orderBy = 'path')
     {
+        $schema = Craft::$app->getDb()->getSchema();
+
         /**
          * @var $query Query
          */
@@ -840,9 +842,8 @@ class Assets extends Component
             ->select('f.*')
             ->from('{{%volumefolders}} AS f')
             ->where(['like', 'path', $parentFolder->path.'%', false])
-            ->andWhere('volumeId = :volumeId',
-                [':volumeId' => $parentFolder->volumeId])
-            ->andWhere('parentId IS NOT NULL');
+            ->andWhere($schema->quoteColumnName('volumeId').' = :volumeId', [':volumeId' => $parentFolder->volumeId])
+            ->andWhere($schema->quoteColumnName('parentId').' IS NOT NULL');
 
         if ($orderBy) {
             $query->orderBy($orderBy);

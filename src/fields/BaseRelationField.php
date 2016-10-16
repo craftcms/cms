@@ -291,12 +291,13 @@ abstract class BaseRelationField extends Field implements PreviewableFieldInterf
         }
 
         if ($value == ':notempty:' || $value == ':empty:') {
-            $alias = 'relations_'.$this->handle;
+            $schema = Craft::$app->getDb()->getSchema();
+            $alias = $schema->quoteTableName('relations_'.$this->handle);
             $operator = ($value == ':notempty:' ? '!=' : '=');
             $paramHandle = ':fieldId'.StringHelper::randomString(8);
 
             $query->subQuery->andWhere(
-                "(select count({$alias}.id) from {{relations}} {$alias} where {$alias}.sourceId = elements.id and {$alias}.fieldId = {$paramHandle}) {$operator} 0",
+                '(select count('.$alias.'.'.$schema->quoteColumnName('id').' from {{relations}} '.$alias.' where '.$alias.'.'.$schema->quoteColumnName('sourceId').' = '.$schema->quoteTableName('elements').'.'.$schema->quoteColumnName('id').' and '.$alias.'.'.$schema->quoteColumnName('fieldId').' = '.$paramHandle.') '.$operator.' 0',
                 [$paramHandle => $this->id]
             );
         } else if ($value !== null) {

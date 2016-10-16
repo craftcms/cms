@@ -192,10 +192,12 @@ class UserPermissions extends Component
     public function getPermissionsByGroupId($groupId)
     {
         if (!isset($this->_permissionsByUserId[$groupId])) {
+            $schema = Craft::$app->getDb()->getSchema();
+
             $groupPermissions = (new Query())
                 ->select('p.name')
                 ->from('{{%userpermissions}} p')
-                ->innerJoin('{{%userpermissions_usergroups}} p_g', 'p_g.permissionId = p.id')
+                ->innerJoin('{{%userpermissions_usergroups}} p_g', $schema->quoteTableName('p_g').'.'.$schema->quoteColumnName('permissionId').' = '.$schema->quoteTableName('p').'.'.$schema->quoteColumnName('id'))
                 ->where(['p_g.groupId' => $groupId])
                 ->column();
 
@@ -214,11 +216,13 @@ class UserPermissions extends Component
      */
     public function getGroupPermissionsByUserId($userId)
     {
+        $schema = Craft::$app->getDb()->getSchema();
+
         return (new Query())
             ->select('p.name')
             ->from('{{%userpermissions}} p')
-            ->innerJoin('{{%userpermissions_usergroups}} p_g', 'p_g.permissionId = p.id')
-            ->innerJoin('{{%usergroups_users}} g_u', 'g_u.groupId = p_g.groupId')
+            ->innerJoin('{{%userpermissions_usergroups}} p_g', $schema->quoteTableName('p_g').'.'.$schema->quoteColumnName('permissionId').' = '.$schema->quoteTableName('p').'.'.$schema->quoteColumnName('id'))
+            ->innerJoin('{{%usergroups_users}} g_u', $schema->quoteTableName('g_u').'.'.$schema->quoteColumnName('groupId').' = '.$schema->quoteTableName('p_g').'.'.$schema->quoteColumnName('groupId'))
             ->where(['g_u.userId' => $userId])
             ->column();
     }
@@ -287,11 +291,12 @@ class UserPermissions extends Component
     {
         if (!isset($this->_permissionsByUserId[$userId])) {
             $groupPermissions = $this->getGroupPermissionsByUserId($userId);
+            $schema = Craft::$app->getDb()->getSchema();
 
             $userPermissions = (new Query())
                 ->select('p.name')
                 ->from('{{%userpermissions}} p')
-                ->innerJoin('{{%userpermissions_users}} p_u', 'p_u.permissionId = p.id')
+                ->innerJoin('{{%userpermissions_users}} p_u', $schema->quoteTableName('p_u').'.'.$schema->quoteColumnName('permissionId').' = '.$schema->quoteTableName('p').'.'.$schema->quoteColumnName('id'))
                 ->where(['p_u.userId' => $userId])
                 ->column();
 

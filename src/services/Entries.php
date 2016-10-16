@@ -73,11 +73,13 @@ class Entries extends Component
             return null;
         }
 
+        $schema = Craft::$app->getDb()->getSchema();
+
         // Get the structure ID
         $structureId = (new Query())
             ->select('sections.structureId')
             ->from('{{%entries}} entries')
-            ->innerJoin('{{%sections}} sections', 'sections.id = entries.sectionId')
+            ->innerJoin('{{%sections}} sections', $schema->quoteTableName('sections').'.'.$schema->quoteColumnName('id').' = '.$schema->quoteTableName('entries').'.'.$schema->quoteColumnName('sectionId'))
             ->where(['entries.id' => $entryId])
             ->scalar();
 

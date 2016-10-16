@@ -878,6 +878,8 @@ class ElementQuery extends Query implements ElementQueryInterface, Arrayable, Co
             throw new QueryAbortedException();
         }
 
+        $schema = Craft::$app->getDb()->getSchema();
+
         /** @var Element $class */
         $class = $this->elementType;
 
@@ -920,17 +922,17 @@ class ElementQuery extends Query implements ElementQueryInterface, Arrayable, Co
 
         $this->query
             ->from(['subquery' => $this->subQuery])
-            ->innerJoin('{{%elements}} elements', 'elements.id = subquery.elementsId')
-            ->innerJoin('{{%elements_i18n}} elements_i18n', 'elements_i18n.id = subquery.elmentsI18nId');
+            ->innerJoin('{{%elements}} elements', $schema->quoteTableName('elements').'.'.$schema->quoteColumnName('id').' = '.$schema->quoteTableName('subquery').'.'.$schema->quoteColumnName('elementsId'))
+            ->innerJoin('{{%elements_i18n}} elements_i18n', $schema->quoteTableName('elements_i18n').'.'.$schema->quoteColumnName('id').' = '.$schema->quoteTableName('subquery').'.'.$schema->quoteColumnName('elementsI18nId'));
 
         $this->subQuery
             ->addSelect([
                 'elementsId' => 'elements.id',
-                'elmentsI18nId' => 'elements_i18n.id',
+                'elementsI18nId' => 'elements_i18n.id',
             ])
             ->from(['elements' => '{{%elements}}'])
-            ->innerJoin('{{%elements_i18n}} elements_i18n', 'elements_i18n.elementId = elements.id')
-            ->andWhere('elements_i18n.siteId = :siteId')
+            ->innerJoin('{{%elements_i18n}} elements_i18n', $schema->quoteTableName('elements_i18n').'.'.$schema->quoteColumnName('elementId').' = '.$schema->quoteTableName('elements').'.'.$schema->quoteColumnName('id'))
+            ->andWhere($schema->quoteTableName('elements_i18n').'.'.$schema->quoteColumnName('siteId').' = :siteId')
             ->andWhere($this->where)
             ->offset($this->offset)
             ->limit($this->limit)
@@ -953,9 +955,9 @@ class ElementQuery extends Query implements ElementQueryInterface, Arrayable, Co
         }
 
         if ($this->archived) {
-            $this->subQuery->andWhere('elements.archived = 1');
+            $this->subQuery->andWhere(['elements.archived' => '1']);
         } else {
-            $this->subQuery->andWhere('elements.archived = 0');
+            $this->subQuery->andWhere(['elements.archived' => '0']);
             $this->_applyStatusParam($class);
         }
 
@@ -980,7 +982,7 @@ class ElementQuery extends Query implements ElementQueryInterface, Arrayable, Co
         }
 
         if ($this->enabledForSite) {
-            $this->subQuery->andWhere('elements_i18n.enabled = 1');
+            $this->subQuery->andWhere(['elements_i18n.enabled' => '1']);
         }
 
         $this->_applyRelatedToParam();
@@ -1276,8 +1278,9 @@ class ElementQuery extends Query implements ElementQueryInterface, Arrayable, Co
     protected function joinElementTable($table)
     {
         $joinTable = '{{%'.$table.'}} '.$table;
-        $this->query->innerJoin($joinTable, $table.'.id = subquery.elementsId');
-        $this->subQuery->innerJoin($joinTable, $table.'.id = elements.id');
+        $schema = Craft::$app->getDb()->getSchema();
+        $this->query->innerJoin($joinTable, $schema->quoteTableName($table).'.'.$schema->quoteColumnName('id').' = '.$schema->quoteTableName('subquery').'.'.$schema->quoteColumnName('elementsId'));
+        $this->subQuery->innerJoin($joinTable, $schema->quoteTableName($table).'.'.$schema->quoteColumnName('id').' = '.$schema->quoteTableName('elements').'.'.$schema->quoteTableName('id'));
     }
 
     // Private Methods
@@ -1292,12 +1295,14 @@ class ElementQuery extends Query implements ElementQueryInterface, Arrayable, Co
      */
     private function _joinContentTable($class)
     {
-        // Join in the content table on both queries
-        $this->subQuery->innerJoin($this->contentTable.' content', 'content.elementId = elements.id');
-        $this->subQuery->addSelect(['contentId' => 'content.id']);
-        $this->subQuery->andWhere('content.siteId = :siteId');
+        $schema = Craft::$app->getDb()->getSchema();
 
-        $this->query->innerJoin($this->contentTable.' content', 'content.id = subquery.contentId');
+        // Join in the content table on both queries
+        $this->subQuery->innerJoin($this->contentTable.' content', $schema->quoteTableName('content').'.'.$schema->quoteColumnName('elementId').' = '.$schema->quoteTableName('elements').'.'.$schema->quoteColumnName('id'));
+        $this->subQuery->addSelect(['contentId' => 'content.id']);
+        $this->subQuery->andWhere($schema->quoteColumnName('content').'.'.$schema->quoteColumnName('siteId').' = :siteId');
+
+        $this->query->innerJoin($this->contentTable.' content', $schema->quoteTableName('content').'.'.$schema->quoteColumnName('id').' = '.$schema->quoteTableName('subquery').'.'.$schema->quoteColumnName('contentId'));
 
         // Select the content table columns on the main query
         $this->query->addSelect(['contentId' => 'content.id']);
@@ -1456,6 +1461,8 @@ class ElementQuery extends Query implements ElementQueryInterface, Arrayable, Co
     private function _applyStructureParams($class)
     {
         if ($this->structureId) {
+            $schema = Craft::$app->getDb()->getSchema();
+
             $this->query
                 ->addSelect([
                     'structureelements.root',
@@ -1463,10 +1470,10 @@ class ElementQuery extends Query implements ElementQueryInterface, Arrayable, Co
                     'structureelements.rgt',
                     'structureelements.level',
                 ])
-                ->innerJoin('{{%structureelements}} structureelements', 'structureelements.elementId = subquery.elementsId');
+                ->innerJoin('{{%structureelements}} structureelements', $schema->quoteTableName('structureelements').'.'.$schema->quoteColumnName('elementId').' = '.$schema->quoteTableName('subquery').'.'.$schema->quoteColumnName('elementsId'));
 
             $this->subQuery
-                ->innerJoin('{{%structureelements}} structureelements', 'structureelements.elementId = elements.id')
+                ->innerJoin('{{%structureelements}} structureelements', $schema->quoteTableName('structureelements').'.'.$schema->quoteColumnName('elementId').' = '.$schema->quoteTableName('elements').'.'.$schema->quoteColumnName('id'))
                 ->andWhere(['structureelements.structureId' => $this->structureId]);
 
             if ($this->ancestorOf !== null) {
@@ -1486,8 +1493,9 @@ class ElementQuery extends Query implements ElementQueryInterface, Arrayable, Co
                     ]);
 
                 if ($this->ancestorDist) {
+                    $schema = Craft::$app->getDb()->getSchema();
                     $this->subQuery
-                        ->andWhere('structureelements.level >= :ancestorOf_level')
+                        ->andWhere($schema->quoteTableName('structureelements').'.'.$schema->quoteColumnName('level').' >= :ancestorOf_level')
                         ->addParams([':ancestorOf_level' => $this->ancestorOf->level - $this->ancestorDist]);
                 }
             }
@@ -1509,8 +1517,9 @@ class ElementQuery extends Query implements ElementQueryInterface, Arrayable, Co
                     ]);
 
                 if ($this->descendantDist) {
+                    $schema = Craft::$app->getDb()->getSchema();
                     $this->subQuery
-                        ->andWhere('structureelements.level <= :descendantOf_level')
+                        ->andWhere($schema->quoteTableName('structureelements').'.'.$schema->quoteColumnName('level').' <= :descendantOf_level')
                         ->addParams([':descendantOf_level' => $this->descendantOf->level + $this->descendantDist]);
                 }
             }
@@ -1937,7 +1946,7 @@ class ElementQuery extends Query implements ElementQueryInterface, Arrayable, Co
      * @param mixed $attributes
      *
      * @return boolean Whether $attributes was an array
-     * @todo Remvoe this in Craft 4, along with the methods that call it.
+     * @todo Remove this in Craft 4, along with the methods that call it.
      */
     private function _setAttributes($attributes)
     {
