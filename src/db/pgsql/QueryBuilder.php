@@ -119,7 +119,7 @@ class QueryBuilder extends \yii\db\pgsql\QueryBuilder
      *
      * @return string The SQL statement for replacing some text in a given table.
      */
-    public function replace($table, $column, $find, $replace, &$params)
+    public function replace($table, $column, $find, $replace, $condition, &$params)
     {
         $schema = $this->db->getSchema();
         $column = $schema->quoteColumnName($column);
@@ -130,8 +130,12 @@ class QueryBuilder extends \yii\db\pgsql\QueryBuilder
         $replacePhName = static::PARAM_PREFIX.count($params);
         $params[$replacePhName] = $replace;
 
-        return 'UPDATE '.$schema->quoteTableName($table).
+        $sql = 'UPDATE '.$schema->quoteTableName($table).
         " SET $column = REPLACE($column, $findPhName, $replacePhName)";
+
+        $where = $this->buildWhere($condition, $params);
+
+        return $where === '' ? $sql : $sql . ' ' . $where;
     }
 
     /**
