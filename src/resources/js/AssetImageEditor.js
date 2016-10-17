@@ -30,6 +30,8 @@ Craft.AssetImageEditor = Garnish.Modal.extend(
 		tiltedImageVerticeCoords: null,
 		lastValidCroppingCoordinates: null,
 		lastValidCroppingScales: null,
+		previousScreenX: 0,
+		previousScreenY: 0,
 
 		// Filters
 		appliedFilter: null,
@@ -785,25 +787,37 @@ Craft.AssetImageEditor = Garnish.Modal.extend(
 				var bottomLeft = {x: topLeft.x, y: bottomRight.y};
 
 
-				var fitsTheImage = this.isPointInsideRectangle(topLeft, this.tiltedImageVerticeCoords) &&
-					this.isPointInsideRectangle(topRight, this.tiltedImageVerticeCoords) &&
-					this.isPointInsideRectangle(bottomRight, this.tiltedImageVerticeCoords) &&
-					this.isPointInsideRectangle(bottomLeft, this.tiltedImageVerticeCoords);
+				var fitsTheImage = this.arePointsInsideRectangle([topLeft, topRight, bottomRight, bottomLeft], this.tiltedImageVerticeCoords);
 
 				var bigEnough = rectWidth >= this.settings.minimumCropperSize.width && rectHeight >= this.settings.minimumCropperSize.height;
 
-				if (fitsTheImage && bigEnough)
-				{
-					this.lastValidCroppingScales = {x: cropper.scaleX, y: cropper.scaleY};
-					this.lastValidCroppingCoordinates = {top: cropper.top, left: cropper.left};
-				} else {
+				if (!(fitsTheImage && bigEnough)) {
+					var adjustedPosition = false;
+					if (bigEnough && eventType == "move") {
+						var deltaX = options.e.screenX - this.previousScreenX;
+						var deltaY = options.e.screenY - this.previousScreenY;
+
+						// TODO: Add logic to smoothen out the cropping rectangle restrictions
+					}
+
 					cropper.set({
 						scaleX: this.lastValidCroppingScales.x,
-						scaleY: this.lastValidCroppingScales.y,
-						top: this.lastValidCroppingCoordinates.top,
-						left: this.lastValidCroppingCoordinates.left
-					})
+						scaleY: this.lastValidCroppingScales.y});
+
+					// No adjustment, just hard set to last valid coords.
+					if (!adjustedPosition) {
+						cropper.set({
+							top: this.lastValidCroppingCoordinates.top,
+							left: this.lastValidCroppingCoordinates.left
+						});
+					}
 				}
+
+				this.lastValidCroppingScales = {x: cropper.scaleX, y: cropper.scaleY};
+				this.lastValidCroppingCoordinates = {top: cropper.top, left: cropper.left};
+				this.previousScreenX = options.e.screenX;
+				this.previousScreenY = options.e.screenY;
+
 			}.bind(this);
 
 			this.croppingCanvas.on({
@@ -853,7 +867,7 @@ Craft.AssetImageEditor = Garnish.Modal.extend(
 		},
 
 		/**
-		 * Given a point in the form of {x: int, y:int} and a rectangle in the form of
+		 * Given an array of points in the form of {x: int, y:int} and a rectangle in the form of
 		 * {a:{x:int, y:int}, b:{x:int, y:int}, c:{x:int, y:int}} (the fourth vertice is unnecessary)
 		 * return true if the point is in the rectangle.
 		 *
@@ -862,7 +876,7 @@ Craft.AssetImageEditor = Garnish.Modal.extend(
 		 * @param point
 		 * @param rectangle
 		 */
-		isPointInsideRectangle: function (point, rectangle) {
+		arePointsInsideRectangle: function (points, rectangle) {
 
 			// Return the vector between two points.
 			var getVector = function (a, b) {
@@ -870,35 +884,43 @@ Craft.AssetImageEditor = Garnish.Modal.extend(
 			};
 
 			// Return the dot product for two vectors
-			var dotProduct = function (a, b) {
+			var scalarProduct = function (a, b) {
 				return a.x * b.x + a.y * b.y;
 			}
 
-			// Calculate the vectors for two rectangle sides and for
-			// the vector from vertices a and b to the point P
+			// Pre-calculate the vectors and scalar products for two rectangle edges
 			var ab = getVector(rectangle.a, rectangle.b);
 			var bc = getVector(rectangle.b, rectangle.c);
-			var ap = getVector(rectangle.a, point);
-			var bp = getVector(rectangle.b, point);
+			var scalarAbAb = scalarProduct(ab, ab);
+			var scalarBcBc = scalarProduct(bc, bc);
 
-			// Calculate scalar or dot products for some vector combinations
-			var dotAbAb = dotProduct(ab, ab);
-			var dotBcBc = dotProduct(bc, bc);
-			var dotAbAp = dotProduct(ab, ap);
-			var dotBcBp = dotProduct(bc, bp);
+			for (var i = 0; i < points.length; i++) {
+				var point = points[i];
 
-			// The dot product of two vectors is negative for acute angles and 0 for straight angles, so:
-			// 1) The comparison to 0 makes sure that the angle from vertices A and B to the point P
-			//    is acute or straight and therefore to the correct side of the edge being tested.
-			// 2) That dot product has to be smaller than the edge vector squared.
-			//    Otherwise the dot's projection on the edge is beyond the vector's
-			//    endpoint which means it's outside of rectangle.
-			if (0 <= dotAbAp && dotAbAp <= dotAbAb &&
-				0 <= dotBcBp && dotBcBp <= dotBcBc) {
-				return true;
+				// Calculate the vectors for two rectangle sides and for
+				// the vector from vertices a and b to the point P
+				var ap = getVector(rectangle.a, point);
+				var bp = getVector(rectangle.b, point);
+
+				// Calculate scalar or dot products for some vector combinations
+				var scalarAbAp = scalarProduct(ab, ap);
+				var scalarBcBp = scalarProduct(bc, bp);
+
+				// The dot product of two vectors is negative for acute angles and 0 for straight angles, so:
+				// 1) The comparison to 0 makes sure that point projection on the
+				//    rectangle edge is towards the edge vector's endpoint.
+				// 2) That scalar product has to be smaller than the edge vector
+				//    squared. Otherwise the dot's projection on the edge is beyond
+				//    the vector's endpoint which means it's outside of rectangle.
+				var projectsOnAB = 0 <= scalarAbAp && scalarAbAp <= scalarAbAb;
+				var projectsOnBC = 0 <= scalarBcBp && scalarBcBp <= scalarBcBc;
+
+				if (!(projectsOnAB && projectsOnBC)) {
+					return false;
+				}
 			}
 
-			return false;
+			return true;
 		}
 	},
 	{
