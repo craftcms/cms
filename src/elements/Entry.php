@@ -20,7 +20,6 @@ use craft\app\elements\actions\View;
 use craft\app\elements\db\ElementQuery;
 use craft\app\elements\db\ElementQueryInterface;
 use craft\app\elements\db\EntryQuery;
-use craft\app\errors\EntryNotFoundException;
 use craft\app\events\SetStatusEvent;
 use craft\app\helpers\DateTimeHelper;
 use craft\app\helpers\Db;
@@ -829,8 +828,7 @@ EOD;
 
     /**
      * @inheritdoc
-     *
-     * @throws EntryNotFoundException if [[newParentId]] or [[id]] is invalid
+     * @throws Exception if reasons
      */
     public function afterSave($isNew)
     {
@@ -842,7 +840,7 @@ EOD;
             $entryRecord = EntryRecord::findOne($this->id);
 
             if (!$entryRecord) {
-                throw new EntryNotFoundException('Invalid entry ID: '.$this->id);
+                throw new Exception('Invalid entry ID: '.$this->id);
             }
         } else {
             $entryRecord = new EntryRecord();
