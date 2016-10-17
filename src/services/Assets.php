@@ -300,7 +300,7 @@ class Assets extends Component
             }
         }
 
-        $this->_storeAssetRecord($asset);
+        Craft::$app->getElements()->saveElement($asset);
 
         // Now that we have an ID, store the source
         if (!$volume::isLocal() && $asset->kind == 'image' && !empty($asset->newFilePath)) {
@@ -559,7 +559,7 @@ class Assets extends Component
         if ($volume->renameFile($asset->getUri(), $asset->getUri($newFilename))
         ) {
             $asset->filename = $newFilename;
-            $this->_storeAssetRecord($asset);
+            Craft::$app->getElements()->saveElement($asset);
         }
     }
 
@@ -1520,114 +1520,6 @@ class Assets extends Component
         } else {
             array_unshift($whereConditions, 'and');
             $query->where($whereConditions, $whereParams);
-        }
-    }
-
-    /**
-     * Saves the record for an asset.
-     *
-     * @param Asset $asset
-     *
-     * @throws AssetMissingException    if attempting to update a non-existing Asset.
-     * @throws ValidationException      if the validation failed.
-     * @throws ElementSaveException     if the element failed to save.
-     * @throws ActionCancelledException if something prevented the Asset replacement via Event
-     * @throws \Exception               if reasons
-     * @return boolean
-     */
-    private function _storeAssetRecord(Asset $asset)
-    {
-        $isNewAsset = !$asset->id;
-
-        if (!$isNewAsset) {
-            $assetRecord = AssetRecord::findOne(['id' => $asset->id]);
-
-            if (!$assetRecord) {
-                throw new AssetMissingException(Craft::t('app',
-                    'No asset exists with the ID “{id}”.',
-                    ['id' => $asset->id]));
-            }
-        } else {
-            $assetRecord = new AssetRecord();
-        }
-
-        $assetRecord->volumeId = $asset->volumeId;
-        $assetRecord->folderId = $asset->folderId;
-        $assetRecord->filename = $asset->filename;
-        $assetRecord->kind = $asset->kind;
-        $assetRecord->size = $asset->size;
-        $assetRecord->width = $asset->width;
-        $assetRecord->height = $asset->height;
-        $assetRecord->dateModified = $asset->dateModified;
-
-        $assetRecord->validate();
-        $asset->addErrors($assetRecord->getErrors());
-
-        if ($asset->hasErrors()) {
-            $exception = new ValidationException(
-                Craft::t('app',
-                    'Saving the Asset failed with the following errors: {errors}',
-                    ['errors' => join(', ', $asset->getAllErrors())])
-            );
-
-            $exception->setModel($asset);
-
-            throw $exception;
-        }
-
-        if ($isNewAsset && !$asset->title) {
-            // Give it a default title based on the file name
-            $asset->title = StringHelper::toTitleCase(Io::getFilename($asset->filename, false));
-        }
-
-        $transaction = Craft::$app->getDb()->beginTransaction();
-
-        try {
-            $event = new AssetEvent([
-                'asset' => $asset,
-                'isNew' => $isNewAsset
-            ]);
-
-            $this->trigger(self::EVENT_BEFORE_SAVE_ASSET, $event);
-
-            // Is the event giving us the go-ahead?
-            if ($event->isValid) {
-                // Save the element
-                $success = Craft::$app->getElements()->saveElement($asset, false);
-
-                // If it didn't work, rollback the transaction in case something changed in onBeforeSaveAsset
-                if (!$success) {
-                    $transaction->rollBack();
-
-                    throw new ElementSaveException('Failed to save asset');
-                }
-
-                // Now that we have an element ID, save it on the other stuff
-                if ($isNewAsset) {
-                    $assetRecord->id = $asset->id;
-                }
-
-                // Save the record
-                $assetRecord->save(false);
-
-                $event = new AssetEvent([
-                    'asset' => $asset,
-                    'isNew' => $isNewAsset
-                ]);
-
-                $this->trigger(self::EVENT_AFTER_SAVE_ASSET, $event);
-            } else {
-                throw new ActionCancelledException(Craft::t('app',
-                    'A plugin cancelled the save operation for {asset}!',
-                    ['asset' => $asset->filename]));
-            }
-
-            // Commit the transaction regardless of whether we saved the asset, in case something changed
-            // in onBeforeSaveAsset
-            $transaction->commit();
-        } catch (\Exception $e) {
-            $transaction->rollBack();
-            throw $e;
         }
     }
 }

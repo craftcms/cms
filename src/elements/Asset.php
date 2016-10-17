@@ -23,14 +23,15 @@ use craft\app\fields\Assets;
 use craft\app\helpers\Html;
 use craft\app\helpers\Image;
 use craft\app\helpers\Io;
+use craft\app\helpers\StringHelper;
 use craft\app\helpers\Template;
 use craft\app\helpers\Url;
 use craft\app\models\VolumeFolder;
 use craft\app\records\Asset as AssetRecord;
 use craft\app\validators\DateTimeValidator;
 use craft\app\validators\UniqueValidator;
-use Exception;
 use yii\base\ErrorHandler;
+use yii\base\Exception;
 use yii\base\InvalidCallException;
 use yii\base\UnknownPropertyException;
 
@@ -416,7 +417,7 @@ class Asset extends Element
             // Rename the file
             try {
                 Craft::$app->getAssets()->renameAsset($element, $newFilename);
-            } catch (Exception $exception) {
+            } catch (\Exception $exception) {
                 $element->addError('filename', $exception->getMessage());
 
                 return false;
@@ -610,7 +611,7 @@ class Asset extends Element
             }
 
             return parent::__toString();
-        } catch (Exception $e) {
+        } catch (\Exception $e) {
             ErrorHandler::convertExceptionToError($e);
         }
     }
@@ -695,6 +696,15 @@ class Asset extends Element
     public function rules()
     {
         $rules = parent::rules();
+
+        if (!$this->id && !$this->title) {
+            // Don't validate the title
+            $key = array_search([['title'], 'required'], $rules);
+            if ($key !== -1) {
+                array_splice($rules, $key, 1);
+            }
+        }
+
         $rules[] = [['volumeId', 'folderId', 'width', 'height', 'size'], 'number', 'integerOnly' => true];
         $rules[] = [['dateModified'], DateTimeValidator::class];
         $rules[] = [['filename', 'kind'], 'required'];
@@ -709,6 +719,51 @@ class Asset extends Element
         ];
 
         return $rules;
+    }
+
+    /**
+     * @inheritdoc
+     * @throws Exception if reasons
+     */
+    public function beforeSave($isNew)
+    {
+        if ($isNew && !$this->title) {
+            // Give it a default title based on the file name
+            $this->title = StringHelper::toTitleCase(Io::getFilename($this->filename, false));
+        }
+
+        return parent::beforeSave($isNew);
+    }
+
+    /**
+     * @inheritdoc
+     * @throws Exception if reasons
+     */
+    public function afterSave($isNew)
+    {
+        // Get the asset record
+        if (!$isNew) {
+            $assetRecord = AssetRecord::findOne($this->id);
+
+            if (!$assetRecord) {
+                throw new Exception('Invalid asset ID: '.$this->id);
+            }
+        } else {
+            $assetRecord = new AssetRecord();
+            $assetRecord->id = $this->id;
+        }
+
+        $assetRecord->volumeId = $this->volumeId;
+        $assetRecord->folderId = $this->folderId;
+        $assetRecord->filename = $this->filename;
+        $assetRecord->kind = $this->kind;
+        $assetRecord->size = $this->size;
+        $assetRecord->width = $this->width;
+        $assetRecord->height = $this->height;
+        $assetRecord->dateModified = $this->dateModified;
+        $assetRecord->save(false);
+
+        parent::afterSave($isNew);
     }
 
     /**
