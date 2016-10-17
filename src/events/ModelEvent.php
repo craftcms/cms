@@ -19,7 +19,7 @@ class ModelEvent extends \yii\base\ModelEvent
     // =========================================================================
 
     /**
-     * @var boolean Whether to continue performing the action that called this event
+     * @var boolean Whether the model is brand new
      */
     public $isNew = false;
 }
