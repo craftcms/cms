@@ -314,7 +314,7 @@ class Elements extends Component
      * ensure that they point to valid section and entry type IDs.
      *
      * @param ElementInterface $element       The element that is being saved
-     * @param boolean|null     $runValidation Whether the field should be validated
+     * @param boolean|null     $runValidation Whether the element should be validated
      *
      * @return boolean
      * @throws ElementNotFoundException if $element has an invalid $id
