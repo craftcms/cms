@@ -283,7 +283,7 @@ class EntryRevisions extends Component
         ]));
 
         // Save the entry without re-running validation on it
-        Craft::$app->getEntries()->saveEntry($draft, false);
+        Craft::$app->getElements()->saveElement($draft, false);
 
         // Delete the draft
         $success = false;
@@ -464,7 +464,7 @@ class EntryRevisions extends Component
         ]));
 
         // Revert the entry without re-running validation on it
-        Craft::$app->getEntries()->saveEntry($version, false);
+        Craft::$app->getElements()->saveElement($version, false);
 
         // Fire an 'afterRevertEntryToVersion' event
         $this->trigger(self::EVENT_AFTER_REVERT_ENTRY_TO_VERSION, new EntryEvent([

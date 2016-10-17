@@ -313,6 +313,28 @@ class Elements extends Component
      * saveElement() should be called only after the entry’s sectionId and typeId attributes had been validated to
      * ensure that they point to valid section and entry type IDs.
      *
+     * Example usage - creating a new entry:
+     *
+     * ```php
+     * $entry = new Entry();
+     * $entry->sectionId = 10;
+     * $entry->typeId = 1;
+     * $entry->authorId = 5;
+     * $entry->enabled = true;
+     * $entry->title = "Hello World!";
+     *
+     * $entry->setFieldValuesFromPost(
+     *     [
+     *         'body' => "<p>I can’t believe I literally just called this “Hello World!”.</p>",
+     *     ]);
+     *
+     * $success = Craft::$app->elements->saveElement($entry);
+     *
+     * if (!$success) {
+     *     Craft::error('Couldn’t save the entry "'.$entry->title.'"', __METHOD__);
+     * }
+     * ```
+     *
      * @param ElementInterface $element       The element that is being saved
      * @param boolean|null     $runValidation Whether the element should be validated
      *

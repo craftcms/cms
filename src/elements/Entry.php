@@ -20,13 +20,16 @@ use craft\app\elements\actions\View;
 use craft\app\elements\db\ElementQuery;
 use craft\app\elements\db\ElementQueryInterface;
 use craft\app\elements\db\EntryQuery;
+use craft\app\errors\EntryNotFoundException;
 use craft\app\events\SetStatusEvent;
 use craft\app\helpers\DateTimeHelper;
 use craft\app\helpers\Db;
 use craft\app\helpers\Url;
 use craft\app\models\EntryType;
 use craft\app\models\Section;
+use craft\app\records\Entry as EntryRecord;
 use craft\app\validators\DateTimeValidator;
+use yii\base\Exception;
 use yii\base\InvalidConfigException;
 
 /**
@@ -637,8 +640,7 @@ EOD;
             }
         }
 
-        // Route this through \craft\app\services\Entries::saveEntry() so the proper entry events get fired.
-        return Craft::$app->getEntries()->saveEntry($element);
+        return parent::saveElement($element, $params);
     }
 
     /**
@@ -730,6 +732,12 @@ EOD;
      */
     private $_author;
 
+    /**
+     * @var boolean
+     * @see _hasNewParent()
+     */
+    private $_hasNewParent;
+
     // Public Methods
     // =========================================================================
 
@@ -748,6 +756,19 @@ EOD;
     /**
      * @inheritdoc
      */
+    public function attributeLabels()
+    {
+        $labels = parent::attributeLabels();
+
+        // Use the entry type's title label
+        $labels['title'] = $this->getType()->titleLabel;
+
+        return $labels;
+    }
+
+    /**
+     * @inheritdoc
+     */
     public function rules()
     {
         $rules = parent::rules();
@@ -755,6 +776,107 @@ EOD;
         $rules[] = [['postDate', 'expiryDate'], DateTimeValidator::class];
 
         return $rules;
+    }
+
+    /**
+     * @inheritdoc
+     * @throws Exception if reasons
+     */
+    public function beforeSave($isNew)
+    {
+        $section = $this->getSection();
+        $entryType = $this->getType();
+
+        // Has the entry been assigned to a new parent?
+        if ($this->_hasNewParent()) {
+            if ($this->newParentId) {
+                $parentEntry = Craft::$app->getEntries()->getEntryById($this->newParentId, $this->siteId);
+
+                if (!$parentEntry) {
+                    throw new Exception('Invalid entry ID: '.$this->newParentId);
+                }
+            } else {
+                $parentEntry = null;
+            }
+
+            $this->setParent($parentEntry);
+        }
+
+        // Verify that the section supports this site
+        $sectionSiteSettings = $section->getSiteSettings();
+
+        if (!isset($sectionSiteSettings[$this->siteId])) {
+            throw new Exception("The section '{$section->name}' is not enabled for the site '{$this->siteId}'");
+        }
+
+        if ($section->type == Section::TYPE_SINGLE) {
+            // Single entries don't have
+            $this->authorId = null;
+            $this->expiryDate = null;
+        }
+
+        if ($this->enabled && !$this->postDate) {
+            // Default the post date to the current date/time
+            $this->postDate = DateTimeHelper::currentUTCDateTime();
+        }
+
+        if (!$entryType->hasTitleField) {
+            $this->title = Craft::$app->getView()->renderObjectTemplate($entryType->titleFormat, $this);
+        }
+
+        return parent::beforeSave($isNew);
+    }
+
+    /**
+     * @inheritdoc
+     *
+     * @throws EntryNotFoundException if [[newParentId]] or [[id]] is invalid
+     */
+    public function afterSave($isNew)
+    {
+        $section = $this->getSection();
+        $entryType = $this->getType();
+
+        // Get the entry record
+        if (!$isNew) {
+            $entryRecord = EntryRecord::findOne($this->id);
+
+            if (!$entryRecord) {
+                throw new EntryNotFoundException('Invalid entry ID: '.$this->id);
+            }
+        } else {
+            $entryRecord = new EntryRecord();
+        }
+
+        $entryRecord->id = $this->id;
+        $entryRecord->sectionId = $this->sectionId;
+        $entryRecord->typeId = $this->typeId;
+        $entryRecord->authorId = $this->authorId;
+        $entryRecord->postDate = $this->postDate;
+        $entryRecord->expiryDate = $this->expiryDate;
+        $entryRecord->save(false);
+
+        if ($section->type == Section::TYPE_STRUCTURE) {
+            // Has the parent changed?
+            if ($this->_hasNewParent()) {
+                if (!$this->newParentId) {
+                    Craft::$app->getStructures()->appendToRoot($section->structureId, $this);
+                } else {
+                    /** @noinspection PhpUndefinedVariableInspection */
+                    Craft::$app->getStructures()->append($section->structureId, $this, $parentEntry);
+                }
+            }
+
+            // Update the entry's descendants, who may be using this entry's URI in their own URIs
+            Craft::$app->getElements()->updateDescendantSlugsAndUris($this, true, true);
+        }
+
+        // Save a new version
+        if ($section->enableVersioning) {
+            Craft::$app->getEntryRevisions()->saveVersion($this);
+        }
+
+        parent::afterSave($isNew); // TODO: Change the autogenerated stub
     }
 
     /**
@@ -952,5 +1074,75 @@ EOD;
     protected function resolveStructureId()
     {
         return $this->getSection()->structureId;
+    }
+
+    // Private Methods
+    // =========================================================================
+
+    /**
+     * Returns whether the entry has been assigned a new parent entry.
+     *
+     * @return boolean
+     * @see beforeSave()
+     * @see afterSave()
+     */
+    private function _hasNewParent()
+    {
+        if (!isset($this->_hasNewParent)) {
+            $this->_hasNewParent = $this->_checkForNewParent();
+        }
+
+        return $this->_hasNewParent;
+    }
+
+    /**
+     * Checks if the entry has been assigned a new parent entry.
+     *
+     * @return boolean
+     * @see _hasNewParent()
+     */
+    private function _checkForNewParent()
+    {
+        // Make sure this is a Structure section
+        if ($this->getSection()->type != Section::TYPE_STRUCTURE) {
+            return false;
+        }
+
+        // Is it a brand new entry?
+        if (!$this->id) {
+            return true;
+        }
+
+        // Was a new parent ID actually submitted?
+        if ($this->newParentId === null) {
+            return false;
+        }
+
+        // Is it set to the top level now, but it hadn't been before?
+        if ($this->newParentId === '' && $this->level != 1) {
+            return true;
+        }
+
+        // Is it set to be under a parent now, but didn't have one before?
+        if ($this->newParentId !== '' && $this->level == 1) {
+            return true;
+        }
+
+        // Is the parentId set to a different entry ID than its previous parent?
+        $oldParentId = Entry::find()
+            ->ancestorOf($this)
+            ->ancestorDist(1)
+            ->status(null)
+            ->siteId($this->siteId)
+            ->enabledForSite(false)
+            ->select('elements.id')
+            ->scalar();
+
+        if ($this->newParentId != $oldParentId) {
+            return true;
+        }
+
+        // Must be set to the same one then
+        return false;
     }
 }

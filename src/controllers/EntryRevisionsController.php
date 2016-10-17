@@ -8,6 +8,7 @@
 namespace craft\app\controllers;
 
 use Craft;
+use craft\app\base\Element;
 use craft\app\helpers\DateTimeHelper;
 use craft\app\models\EntryDraft;
 use craft\app\models\Section;
@@ -77,9 +78,8 @@ class EntryRevisionsController extends BaseEntriesController
             if ($draft->validate(['title'])) {
                 $draftEnabled = $draft->enabled;
                 $draft->enabled = false;
-
-                Craft::$app->getEntries()->saveEntry($draft);
-
+                $draft->setScenario(Element::SCENARIO_CORE);
+                Craft::$app->getElements()->saveElement($draft);
                 $draft->enabled = $draftEnabled;
             } else {
                 $draft->addErrors($draft->getErrors());

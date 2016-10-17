@@ -627,7 +627,7 @@ class Sections extends Component
                         $singleEntry->sectionId = $section->id;
                         $singleEntry->typeId = $entryTypeId;
                         $singleEntry->title = $section->name;
-                        Craft::$app->getEntries()->saveEntry($singleEntry);
+                        Craft::$app->getElements()->saveElement($singleEntry, false);
                     }
 
                     break;
