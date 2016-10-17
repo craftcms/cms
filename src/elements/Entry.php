@@ -844,9 +844,9 @@ EOD;
             }
         } else {
             $entryRecord = new EntryRecord();
+            $entryRecord->id = $this->id;
         }
 
-        $entryRecord->id = $this->id;
         $entryRecord->sectionId = $this->sectionId;
         $entryRecord->typeId = $this->typeId;
         $entryRecord->authorId = $this->authorId;
