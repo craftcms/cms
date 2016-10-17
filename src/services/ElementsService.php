@@ -1552,6 +1552,12 @@ class ElementsService extends BaseApplicationComponent
 							break;
 						}
 
+						// Go ahead and re-do search index keywords to grab things like "title" in multi-locale installs.
+						if ($isNewElement)
+						{
+							craft()->search->indexElementAttributes($localizedElement);
+						}
+
 						ElementHelper::setUniqueUri($localizedElement);
 
 						$localeRecord->slug = $localizedElement->slug;
