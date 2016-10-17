@@ -16,7 +16,9 @@ use craft\app\elements\db\MatrixBlockQuery;
 use craft\app\fields\Matrix;
 use craft\app\helpers\ElementHelper;
 use craft\app\models\MatrixBlockType;
+use craft\app\records\MatrixBlock as MatrixBlockRecord;
 use craft\app\validators\SiteIdValidator;
+use yii\base\Exception;
 use yii\base\InvalidConfigException;
 
 /**
@@ -186,6 +188,34 @@ class MatrixBlock extends Element
         $rules[] = [['ownerSiteId'], SiteIdValidator::class];
 
         return $rules;
+    }
+
+    /**
+     * @inheritdoc
+     * @throws Exception if reasons
+     */
+    public function afterSave($isNew)
+    {
+        // Get the block record
+        if (!$isNew) {
+            $blockRecord = MatrixBlockRecord::findOne($this->id);
+
+            if (!$blockRecord) {
+                throw new Exception('Invalid Matrix block ID: '.$this->id);
+            }
+        } else {
+            $blockRecord = new MatrixBlockRecord();
+            $blockRecord->id = $this->id;
+        }
+
+        $blockRecord->fieldId = $this->fieldId;
+        $blockRecord->ownerId = $this->ownerId;
+        $blockRecord->ownerSiteId = $this->ownerSiteId;
+        $blockRecord->typeId = $this->typeId;
+        $blockRecord->sortOrder = $this->sortOrder;
+        $blockRecord->save(false);
+
+        parent::afterSave($isNew);
     }
 
     /**

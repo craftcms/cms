@@ -678,67 +678,6 @@ class Matrix extends Component
     }
 
     /**
-     * Saves a new or existing Matrix block.
-     *
-     * ```php
-     * $block = new MatrixBlock();
-     * $block->fieldId = 5;
-     * $block->ownerId = 100;
-     * $block->ownerSiteId = 1;
-     * $block->typeId = 2;
-     * $block->sortOrder = 10;
-     *
-     * $block->setFieldValues([
-     *     'fieldHandle' => 'value',
-     *     // ...
-     * ]);
-     *
-     * $success = Craft::$app->matrix->saveBlock($block);
-     * ```
-     *
-     * @param MatrixBlock $block    The Matrix block.
-     * @param boolean     $validate Whether the block should be validated before being saved.
-     *                              Defaults to `true`.
-     *
-     * @return boolean Whether the block was saved successfully.
-     * @throws \Exception if reasons
-     */
-    public function saveBlock(MatrixBlock $block, $validate = true)
-    {
-        if (!$validate || $this->validateBlock($block)) {
-            $blockRecord = $this->_getBlockRecord($block);
-            $isNewBlock = $blockRecord->getIsNewRecord();
-
-            $blockRecord->fieldId = $block->fieldId;
-            $blockRecord->ownerId = $block->ownerId;
-            $blockRecord->ownerSiteId = $block->ownerSiteId;
-            $blockRecord->typeId = $block->typeId;
-            $blockRecord->sortOrder = $block->sortOrder;
-
-            $transaction = Craft::$app->getDb()->beginTransaction();
-            try {
-                if (Craft::$app->getElements()->saveElement($block, false)) {
-                    if ($isNewBlock) {
-                        $blockRecord->id = $block->id;
-                    }
-
-                    $blockRecord->save(false);
-
-                    $transaction->commit();
-
-                    return true;
-                }
-            } catch (\Exception $e) {
-                $transaction->rollBack();
-
-                throw $e;
-            }
-        }
-
-        return false;
-    }
-
-    /**
      * Deletes a block(s) by its ID.
      *
      * @param integer|array $blockIds The Matrix block ID(s).
@@ -798,7 +737,7 @@ class Matrix extends Component
                 $block->ownerId = $owner->id;
                 $block->ownerSiteId = ($field->localizeBlocks ? $owner->siteId : null);
 
-                $this->saveBlock($block, false);
+                Craft::$app->getElements()->saveElement($block, false);
 
                 $blockIds[] = $block->id;
 
@@ -1053,7 +992,7 @@ class Matrix extends Component
                             $blockInOtherSite->id = null;
                             $blockInOtherSite->contentId = null;
                             $blockInOtherSite->ownerSiteId = $siteId;
-                            $this->saveBlock($blockInOtherSite, false);
+                            Craft::$app->getElements()->saveElement($blockInOtherSite, false);
 
                             $newBlockIds[$originalBlockId][$siteId] = $blockInOtherSite->id;
                         }
