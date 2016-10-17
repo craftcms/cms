@@ -194,7 +194,7 @@ class GlobalsController extends Controller
 
         $globalSet->setFieldValuesFromPost('fields');
 
-        if (Craft::$app->getGlobals()->saveContent($globalSet)) {
+        if (Craft::$app->getElements()->saveElement($globalSet)) {
             Craft::$app->getSession()->setNotice(Craft::t('app', 'Globals saved.'));
 
             return $this->redirectToPostedUrl();

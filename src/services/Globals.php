@@ -30,18 +30,6 @@ class Globals extends Component
     // =========================================================================
 
     /**
-     * @event GlobalSetContentEvent The event that is triggered before a global set's content is saved.
-     *
-     * You may set [[GlobalSetEvent::isValid]] to `false` to prevent the global set's content from getting saved.
-     */
-    const EVENT_BEFORE_SAVE_GLOBAL_CONTENT = 'beforeSaveGlobalContent';
-
-    /**
-     * @event GlobalSetContentEvent The event that is triggered after a global set's content is saved.
-     */
-    const EVENT_AFTER_SAVE_GLOBAL_CONTENT = 'afterSaveGlobalContent';
-
-    /**
      * @event GlobalSetEvent The event that is triggered before a global set is saved.
      *
      * You may set [[GlobalSetEvent::isValid]] to `false` to prevent the global set from getting saved.
@@ -436,61 +424,6 @@ class Globals extends Component
             $this->trigger(self::EVENT_AFTER_DELETE_GLOBAL_SET, new GlobalSetEvent([
                 'globalSet' => $globalSet
             ]));
-        }
-
-        return $success;
-    }
-
-    /**
-     * Saves a global set's content
-     *
-     * @param GlobalSet $globalSet
-     *
-     * @return boolean Whether the global set’s content was saved successfully
-     * @throws \Exception if reasons
-     */
-    public function saveContent(GlobalSet $globalSet)
-    {
-        $transaction = Craft::$app->getDb()->beginTransaction();
-
-        try {
-            // Fire a 'beforeSaveGlobalContent' event
-            $event = new GlobalSetContentEvent([
-                'globalSet' => $globalSet
-            ]);
-
-            $this->trigger(self::EVENT_BEFORE_SAVE_GLOBAL_CONTENT, $event);
-
-            // Is the event giving us the go-ahead?
-            if ($event->isValid) {
-                $success = Craft::$app->getElements()->saveElement($globalSet);
-
-                // If it didn't work, rollback the transaction in case something changed in onBeforeSaveGlobalContent
-                if (!$success) {
-                    $transaction->rollBack();
-
-                    return false;
-                }
-            } else {
-                $success = false;
-            }
-
-            // Commit the transaction regardless of whether we saved the user, in case something changed
-            // in onBeforeSaveGlobalContent
-            $transaction->commit();
-        } catch (\Exception $e) {
-            $transaction->rollBack();
-
-            throw $e;
-        }
-
-        if ($success) {
-            // Fire an 'afterSaveGlobalContent' event
-            $this->trigger(self::EVENT_AFTER_SAVE_GLOBAL_CONTENT,
-                new GlobalSetContentEvent([
-                    'globalSet' => $globalSet
-                ])
-            );
         }
 
         return $success;
