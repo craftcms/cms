@@ -537,6 +537,12 @@ class Elements extends Component
                             break;
                         }
 
+                        // Go ahead and re-do search index keywords to grab things like "title" in
+                        // a multi-site installs.
+                        if ($isNewElement) {
+                            Craft::$app->getSearch()->indexElementAttributes($localizedElement);
+                        }
+
                         ElementHelper::setUniqueUri($localizedElement);
 
                         $siteSettingsRecord->slug = $localizedElement->slug;
