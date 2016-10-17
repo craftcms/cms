@@ -68,18 +68,6 @@ class Assets extends Component
     const EVENT_BEFORE_UPLOAD_ASSET = 'beforeUploadAsset';
 
     /**
-     * @event AssetEvent The event that is triggered before an asset is saved.
-     *
-     * You may set [[AssetEvent::isValid]] to `false` to prevent the asset from getting saved.
-     */
-    const EVENT_BEFORE_SAVE_ASSET = 'beforeSaveAsset';
-
-    /**
-     * @event AssetEvent The event that is triggered after an asset is saved.
-     */
-    const EVENT_AFTER_SAVE_ASSET = 'afterSaveAsset';
-
-    /**
      * @event AssetEvent The event that is triggered before an asset is replaced.
      *
      * You may set [[AssetEvent::isValid]] to `false` to prevent the asset from being replaced.
