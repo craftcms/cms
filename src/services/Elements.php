@@ -25,7 +25,6 @@ use craft\app\elements\Tag;
 use craft\app\elements\User;
 use craft\app\errors\ElementNotFoundException;
 use craft\app\errors\MissingComponentException;
-use craft\app\events\DeleteElementsEvent;
 use craft\app\events\ElementEvent;
 use craft\app\events\MergeElementsEvent;
 use craft\app\helpers\ArrayHelper;
@@ -60,9 +59,14 @@ class Elements extends Component
     const EVENT_AFTER_MERGE_ELEMENTS = 'afterMergeElements';
 
     /**
-     * @event DeleteElementsEvent The event that is triggered before one or more elements are deleted.
+     * @event ElementEvent The event that is triggered before an element is deleted.
      */
-    const EVENT_BEFORE_DELETE_ELEMENTS = 'beforeDeleteElements';
+    const EVENT_BEFORE_DELETE_ELEMENT = 'beforeDeleteElement';
+
+    /**
+     * @event ElementEvent The event that is triggered after an element is deleted.
+     */
+    const EVENT_AFTER_DELETE_ELEMENT = 'afterDeleteElement';
 
     /**
      * @event ElementEvent The event that is triggered before an element is saved.
@@ -869,57 +873,67 @@ class Elements extends Component
             $elementIds = [$elementIds];
         }
 
+        foreach ($elementIds as $elementId) {
+            $element = $this->getElementById($elementId);
+            $this->deleteElement($element);
+        }
+
+        return true;
+    }
+
+    /**
+     * Deletes an element.
+     *
+     * @param ElementInterface $element The element to be deleted
+     *
+     * @return boolean Whether the element was deleted successfully
+     * @throws \Exception
+     */
+    public function deleteElement($element)
+    {
+        /** @var Element $element */
+        // Fire a 'beforeDeleteElement' event
+        $this->trigger(self::EVENT_BEFORE_DELETE_ELEMENT, new ElementEvent([
+            'element' => $element,
+        ]));
+
         $transaction = Craft::$app->getDb()->beginTransaction();
 
         try {
-            // Fire a 'beforeDeleteElements' event
-            $this->trigger(self::EVENT_BEFORE_DELETE_ELEMENTS,
-                new DeleteElementsEvent([
-                    'elementIds' => $elementIds
-                ]));
+            if (!$element->beforeDelete()) {
+                $transaction->rollBack();
 
-            // First delete any structure nodes with these elements, so NestedSetBehavior can do its thing. We need to
-            // go one-by-one in case one of theme deletes the record of another in the process.
-            foreach ($elementIds as $elementId) {
-                /** @var StructureElementRecord[] $records */
-                $records = StructureElementRecord::findAll([
-                    'elementId' => $elementId
-                ]);
+                return false;
+            }
 
-                foreach ($records as $record) {
-                    // If this element still has any children, move them up before the one getting deleted.
-                    /** @var StructureElementRecord[] $children */
-                    $children = $record->children()->all();
+            // First delete any structure nodes with this element, so NestedSetBehavior can do its thing.
+            /** @var StructureElementRecord[] $records */
+            $records = StructureElementRecord::findAll([
+                'elementId' => $element->id
+            ]);
 
-                    foreach ($children as $child) {
-                        $child->insertBefore($record);
-                    }
+            foreach ($records as $record) {
+                // If this element still has any children, move them up before the one getting deleted.
+                /** @var StructureElementRecord[] $children */
+                $children = $record->children()->all();
 
-                    // Delete this element's node
-                    $record->deleteWithChildren();
+                foreach ($children as $child) {
+                    $child->insertBefore($record);
                 }
+
+                // Delete this element's node
+                $record->deleteWithChildren();
             }
 
             // Delete the caches before they drop their elementId relations (passing `false` because there's no chance
             // this element is suddenly going to show up in a new query)
-            Craft::$app->getTemplateCaches()->deleteCachesByElementId($elementIds, false);
+            Craft::$app->getTemplateCaches()->deleteCachesByElementId($element->id, false);
 
-            // Now delete the rows in the elements table
-            if (count($elementIds) == 1) {
-                $condition = ['id' => $elementIds[0]];
-                $matrixBlockCondition = ['ownerId' => $elementIds[0]];
-                $searchIndexCondition = ['elementId' => $elementIds[0]];
-            } else {
-                $condition = ['in', 'id', $elementIds];
-                $matrixBlockCondition = ['in', 'ownerId', $elementIds];
-                $searchIndexCondition = ['in', 'elementId', $elementIds];
-            }
-
-            // First delete any Matrix blocks that belong to this element(s)
+            // Delete any Matrix blocks that belong to this element(s)
             $matrixBlockIds = (new Query())
                 ->select('id')
                 ->from('{{%matrixblocks}}')
-                ->where($matrixBlockCondition)
+                ->where(['ownerId' => $element->id])
                 ->column();
 
             if ($matrixBlockIds) {
@@ -927,23 +941,31 @@ class Elements extends Component
             }
 
             // Delete the elements table rows, which will cascade across all other InnoDB tables
-            $affectedRows = Craft::$app->getDb()->createCommand()
-                ->delete('{{%elements}}', $condition)
+            Craft::$app->getDb()->createCommand()
+                ->delete('{{%elements}}', ['id' => $element->id])
                 ->execute();
 
-            // The searchindex table is MyISAM, though
+            // The searchindex table is probably MyISAM, though
             Craft::$app->getDb()->createCommand()
-                ->delete('{{%searchindex}}', $searchIndexCondition)
+                ->delete('{{%searchindex}}', ['elementId' => $element->id])
                 ->execute();
+
+            $element->afterDelete();
 
             $transaction->commit();
-
-            return (bool)$affectedRows;
         } catch (\Exception $e) {
             $transaction->rollBack();
 
             throw $e;
         }
+
+
+        // Fire an 'afterDeleteElement' event
+        $this->trigger(self::EVENT_AFTER_DELETE_ELEMENT, new ElementEvent([
+            'element' => $element,
+        ]));
+
+        return true;
     }
 
     // Element classes

@@ -890,16 +890,34 @@ interface ElementInterface extends ComponentInterface
     // -------------------------------------------------------------------------
 
     /**
-     * This method is called right before the element is saved, and returns whether the element should be saved.
+     * Performs any actions before a element is saved.
+     *
+     * @param boolean $isNew Whether the element is brand new
      *
      * @return boolean Whether the element should be saved
      */
-    public function beforeSave();
+    public function beforeSave($isNew);
 
     /**
-     * This method is called right after the element is saved.
+     * Performs any actions after a element is saved.
+     *
+     * @param boolean $isNew Whether the element is brand new
      *
      * @return void
      */
-    public function afterSave();
+    public function afterSave($isNew);
+
+    /**
+     * Performs any actions before a element is deleted.
+     *
+     * @return boolean Whether the element should be deleted
+     */
+    public function beforeDelete();
+
+    /**
+     * Performs any actions after a element is deleted.
+     *
+     * @return void
+     */
+    public function afterDelete();
 }

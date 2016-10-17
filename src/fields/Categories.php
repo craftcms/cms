@@ -102,7 +102,7 @@ class Categories extends BaseRelationField
     /**
      * @inheritdoc
      */
-    public function afterElementSave(ElementInterface $element)
+    public function afterElementSave(ElementInterface $element, $isNew)
     {
         $value = $this->getElementValue($element);
 
@@ -115,5 +115,7 @@ class Categories extends BaseRelationField
 
             Craft::$app->getRelations()->saveRelations($this, $element, $ids);
         }
+
+        parent::afterElementSave($element, $isNew);
     }
 }

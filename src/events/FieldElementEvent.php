@@ -7,19 +7,21 @@
 
 namespace craft\app\events;
 
+use craft\app\base\ElementInterface;
+
 /**
- * DeleteElementsEvent class.
+ * FieldElementEvent class.
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since  3.0
  */
-class DeleteElementsEvent extends Event
+class FieldElementEvent extends ModelEvent
 {
     // Properties
     // =========================================================================
 
     /**
-     * @var array The element IDs associated with this event.
+     * @var ElementInterface The element associated with this event
      */
-    public $elementIds;
+    public $element;
 }

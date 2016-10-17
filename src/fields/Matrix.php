@@ -431,9 +431,11 @@ class Matrix extends Field implements EagerLoadingFieldInterface
     /**
      * @inheritdoc
      */
-    public function afterElementSave(ElementInterface $element)
+    public function afterElementSave(ElementInterface $element, $isNew)
     {
         Craft::$app->getMatrix()->saveField($this, $element);
+
+        parent::afterElementSave($element, $isNew);
     }
 
     /**

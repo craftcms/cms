@@ -10,6 +10,7 @@ namespace craft\app\base;
 use Craft;
 use craft\app\elements\db\ElementQuery;
 use craft\app\elements\db\ElementQueryInterface;
+use craft\app\events\FieldElementEvent;
 use craft\app\helpers\Db;
 use craft\app\helpers\Html;
 use craft\app\helpers\StringHelper;
@@ -35,6 +36,36 @@ abstract class Field extends SavableComponent implements FieldInterface
 
     // Constants
     // =========================================================================
+
+    // Events
+    // -------------------------------------------------------------------------
+
+    /**
+     * @event FieldElementEvent The event that is triggered before the element is saved
+     *
+     * You may set [[FieldElementEvent::isValid]] to `false` to prevent the element from getting saved.
+     */
+    const EVENT_BEFORE_ELEMENT_SAVE = 'beforeElementSave';
+
+    /**
+     * @event FieldElementEvent The event that is triggered after the element is saved
+     */
+    const EVENT_AFTER_ELEMENT_SAVE = 'afterElementSave';
+
+    /**
+     * @event FieldElementEvent The event that is triggered before the element is deleted
+     *
+     * You may set [[FieldElementEvent::isValid]] to `false` to prevent the element from getting deleted.
+     */
+    const EVENT_BEFORE_ELEMENT_DELETE = 'beforeElementDelete';
+
+    /**
+     * @event FieldElementEvent The event that is triggered after the element is deleted
+     */
+    const EVENT_AFTER_ELEMENT_DELETE = 'afterElementDelete';
+
+    // Translation methods
+    // -------------------------------------------------------------------------
 
     const TRANSLATION_METHOD_NONE = 'none';
     const TRANSLATION_METHOD_LANGUAGE = 'language';
@@ -192,15 +223,53 @@ abstract class Field extends SavableComponent implements FieldInterface
     /**
      * @inheritdoc
      */
-    public function beforeElementSave(ElementInterface $element)
+    public function beforeElementSave(ElementInterface $element, $isNew)
     {
+        // Trigger a 'beforeElementSave' event
+        $event = new FieldElementEvent([
+            'element' => $element,
+            'isNew' => $isNew,
+        ]);
+        $this->trigger(self::EVENT_BEFORE_ELEMENT_SAVE, $event);
+
+        return $event->isValid;
     }
 
     /**
      * @inheritdoc
      */
-    public function afterElementSave(ElementInterface $element)
+    public function afterElementSave(ElementInterface $element, $isNew)
     {
+        // Trigger an 'afterElementSave' event
+        $this->trigger(self::EVENT_AFTER_ELEMENT_SAVE, new FieldElementEvent([
+            'element' => $element,
+            'isNew' => $isNew,
+        ]));
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function beforeElementDelete(ElementInterface $element)
+    {
+        // Trigger a 'beforeElementDelete' event
+        $event = new FieldElementEvent([
+            'element' => $element,
+        ]);
+        $this->trigger(self::EVENT_BEFORE_ELEMENT_DELETE, $event);
+
+        return $event->isValid;
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function afterElementDelete(ElementInterface $element)
+    {
+        // Trigger an 'afterElementDelete' event
+        $this->trigger(self::EVENT_AFTER_ELEMENT_DELETE, new FieldElementEvent([
+            'element' => $element,
+        ]));
     }
 
     /**

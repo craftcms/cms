@@ -327,7 +327,7 @@ abstract class BaseRelationField extends Field implements PreviewableFieldInterf
     /**
      * @inheritdoc
      */
-    public function afterElementSave(ElementInterface $element)
+    public function afterElementSave(ElementInterface $element, $isNew)
     {
         $value = $this->getElementValue($element);
 
@@ -338,6 +338,8 @@ abstract class BaseRelationField extends Field implements PreviewableFieldInterf
         if ($value !== null) {
             Craft::$app->getRelations()->saveRelations($this, $element, $value);
         }
+
+        parent::afterElementSave($element, $isNew);
     }
 
     /**

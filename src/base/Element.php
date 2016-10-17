@@ -17,6 +17,7 @@ use craft\app\db\Query;
 use craft\app\elements\db\ElementQuery;
 use craft\app\elements\db\ElementQueryInterface;
 use craft\app\events\Event;
+use craft\app\events\ModelEvent;
 use craft\app\helpers\ArrayHelper;
 use craft\app\helpers\Html;
 use craft\app\helpers\Template;
@@ -91,16 +92,28 @@ abstract class Element extends Component implements ElementInterface
     const SCENARIO_CORE = 'core';
 
     /**
-     * @event Event The event that is triggered before the element is saved
+     * @event ModelEvent The event that is triggered before the element is saved
      *
-     * You may set [[Event::isValid]] to `false` to prevent the element from getting saved.
+     * You may set [[ModelEvent::isValid]] to `false` to prevent the element from getting saved.
      */
     const EVENT_BEFORE_SAVE = 'beforeSave';
 
     /**
-     * @event Event The event that is triggered after the element is saved
+     * @event ModelEvent The event that is triggered after the element is saved
      */
     const EVENT_AFTER_SAVE = 'afterSave';
+
+    /**
+     * @event ModelEvent The event that is triggered before the element is deleted
+     *
+     * You may set [[ModelEvent::isValid]] to `false` to prevent the element from getting deleted.
+     */
+    const EVENT_BEFORE_DELETE = 'beforeDelete';
+
+    /**
+     * @event \yii\base\Event The event that is triggered after the element is deleted
+     */
+    const EVENT_AFTER_DELETE = 'afterDelete';
 
     // Static
     // =========================================================================
@@ -1563,15 +1576,19 @@ abstract class Element extends Component implements ElementInterface
     /**
      * @inheritdoc
      */
-    public function beforeSave()
+    public function beforeSave($isNew)
     {
         // Tell the fields about it
         foreach ($this->getFields() as $field) {
-            $field->beforeElementSave($this);
+            if (!$field->beforeElementSave($this, $isNew)) {
+                return false;
+            }
         }
 
         // Trigger a 'beforeSave' event
-        $event = new Event();
+        $event = new ModelEvent([
+            'isNew' => $isNew,
+        ]);
         $this->trigger(self::EVENT_BEFORE_SAVE, $event);
 
         return $event->isValid;
@@ -1580,15 +1597,50 @@ abstract class Element extends Component implements ElementInterface
     /**
      * @inheritdoc
      */
-    public function afterSave()
+    public function afterSave($isNew)
     {
         // Tell the fields about it
         foreach ($this->getFields() as $field) {
-            $field->afterElementSave($this);
+            $field->afterElementSave($this, $isNew);
         }
 
         // Trigger an 'afterSave' event
-        $this->trigger(self::EVENT_AFTER_SAVE, new Event());
+        $this->trigger(self::EVENT_AFTER_SAVE, new ModelEvent([
+            'isNew' => $isNew,
+        ]));
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function beforeDelete()
+    {
+        // Tell the fields about it
+        foreach ($this->getFields() as $field) {
+            if (!$field->beforeElementDelete($this)) {
+                return false;
+            }
+        }
+
+        // Trigger a 'beforeDelete' event
+        $event = new ModelEvent();
+        $this->trigger(self::EVENT_BEFORE_DELETE, $event);
+
+        return $event->isValid;
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function afterDelete()
+    {
+        // Tell the fields about it
+        foreach ($this->getFields() as $field) {
+            $field->afterElementDelete($this);
+        }
+
+        // Trigger an 'afterDelete' event
+        $this->trigger(self::EVENT_AFTER_DELETE);
     }
 
     // Protected Methods

@@ -203,8 +203,10 @@ class Assets extends BaseRelationField
 
     /**
      * @inheritdoc
+     *
+     * @todo All of the validation stuff here should be moved to an actual validation function
      */
-    public function beforeElementSave(ElementInterface $element)
+    public function beforeElementSave(ElementInterface $element, $isNew)
     {
         /** @var Element $element */
         $incomingFiles = [];
@@ -283,7 +285,7 @@ class Assets extends BaseRelationField
         }
 
         if (!empty($this->_failedFiles)) {
-            return;
+            return parent::beforeElementSave($element, $isNew);
         }
 
         // If we got here either there are no restrictions or all files are valid so let's turn them into Assets
@@ -326,12 +328,14 @@ class Assets extends BaseRelationField
                 $this->setElementValue($element, $newValue);
             }
         }
+
+        return parent::beforeElementSave($element, $isNew);
     }
 
     /**
      * @inheritdoc
      */
-    public function afterElementSave(ElementInterface $element)
+    public function afterElementSave(ElementInterface $element, $isNew)
     {
         $value = $this->getElementValue($element);
         $assetsToMove = [];
@@ -401,7 +405,7 @@ class Assets extends BaseRelationField
             }
         }
 
-        parent::afterElementSave($element);
+        parent::afterElementSave($element, $isNew);
     }
 
     /**
