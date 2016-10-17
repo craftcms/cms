@@ -18,11 +18,13 @@ class m160829_000000_pending_user_content_cleanup extends Migration
      */
     public function safeUp()
     {
+        $schema = Craft::$app->getDb()->getSchema();
+
         // Find any orphaned entries.
         $ids = (new Query())
             ->select('el.id')
             ->from('{{%elements}} el')
-            ->leftJoin('{{%entries}} en', 'en.id = el.id')
+            ->leftJoin('{{%entries}} en', $schema->quoteTableName('en').'.'.$schema->quoteColumnName('id').' = '.$schema->quoteTableName('el').$schema->quoteColumnName('id'))
             ->where(
                 ['and', 'el.type = :type', 'en.id is null'],
                 [':type' => Entry::class]

@@ -558,8 +558,7 @@ class Tasks extends Component
     {
         return (new Query())
             ->from('{{%tasks}}')
-            ->where(['and', 'level = 0', 'status = :status'],
-                [':status' => Task::STATUS_ERROR])
+            ->where(['and', 'level = 0', 'status = :status'], [':status' => Task::STATUS_ERROR])
             ->exists();
     }
 
@@ -573,8 +572,7 @@ class Tasks extends Component
         return (new Query())
             ->from('{{%tasks}}')
             ->where(
-                ['and', 'lft = 1', 'status != :status'],
-                [':status' => Task::STATUS_ERROR]
+                ['and', 'lft = 1', 'status != :status'], [':status' => Task::STATUS_ERROR]
             )
             ->count('id');
     }

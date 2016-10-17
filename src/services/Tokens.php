@@ -173,7 +173,7 @@ class Tokens extends Component
         $affectedRows = Craft::$app->getDb()->createCommand()
             ->delete(
                 '{{%tokens}}',
-                'expiryDate <= :now',
+                Craft::$app->getDb()->getSchema()->quoteColumnName('expiryDate').' <= :now',
                 ['now' => Db::prepareDateForDb(new DateTime())])
             ->execute();
 

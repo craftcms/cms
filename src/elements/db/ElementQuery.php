@@ -1360,6 +1360,8 @@ class ElementQuery extends Query implements ElementQueryInterface, Arrayable, Co
     {
         if ($this->status && $class::hasStatuses()) {
             $statusConditions = [];
+            $schema = Craft::$app->getDb()->getSchema();
+
             $statuses = ArrayHelper::toArray($this->status);
 
             foreach ($statuses as $status) {
@@ -1368,9 +1370,9 @@ class ElementQuery extends Query implements ElementQueryInterface, Arrayable, Co
                 // Is this a supported status?
                 if (in_array($status, array_keys($class::getStatuses()))) {
                     if ($status == Element::STATUS_ENABLED) {
-                        $statusConditions[] = 'elements.enabled = 1';
+                        $statusConditions[] = $schema->quoteTableName('elements').'.'.$schema->quoteColumnName('enabled').' = \'1\'';
                     } else if ($status == Element::STATUS_DISABLED) {
-                        $statusConditions[] = 'elements.enabled = 0';
+                        $statusConditions[] = $schema->quoteTableName('elements').'.'.$schema->quoteColumnName('enabled').' = \'0\'';
                     } else {
                         $elementStatusCondition = $class::getElementQueryStatusCondition($this, $status);
 

@@ -372,7 +372,7 @@ class TemplateCaches extends Component
             $condition = ['in', 'id', $cacheId];
             $params = [];
         } else {
-            $condition = 'id = :id';
+            $condition = Craft::$app->getDb()->getSchema()->quoteColumnName('id').' = :id';
             $params = [':id' => $cacheId];
         }
 
@@ -560,7 +560,7 @@ class TemplateCaches extends Component
             $condition = ['in', 'cacheKey', $key];
             $params = [];
         } else {
-            $condition = 'cacheKey = :cacheKey';
+            $condition = Craft::$app->getDb()->getSchema()->quoteColumnName('cacheKey').' = :cacheKey';
             $params = [':cacheKey' => $key];
         }
 
@@ -585,7 +585,7 @@ class TemplateCaches extends Component
         $affectedRows = Craft::$app->getDb()->createCommand()
             ->delete(
                 static::$_templateCachesTable,
-                'expiryDate <= :now',
+                Craft::$app->getDb()->getSchema()->quoteColumnName('expiryDate').' <= :now',
                 ['now' => Db::prepareDateForDb(new \DateTime())])
             ->execute();
 

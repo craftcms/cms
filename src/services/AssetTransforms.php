@@ -378,11 +378,7 @@ class AssetTransforms extends Component
             Craft::$app->getDb()->createCommand()
                 ->delete(
                     '{{%assettransformindex}}',
-                    [
-                        'in',
-                        'id',
-                        $invalidIndexIds
-                    ])
+                    ['in', 'id', $invalidIndexIds])
                 ->execute();
         }
     }
@@ -439,7 +435,7 @@ class AssetTransforms extends Component
             Craft::$app->getDb()->createCommand()
                 ->delete(
                     '{{%assettransformindex}}',
-                    'id = :transformIndexId',
+                    Craft::$app->getDb()->getSchema()->quoteColumnName('id').' = :transformIndexId',
                     [':transformIndexId' => $entry['id']])
                 ->execute();
         }

@@ -1099,9 +1099,11 @@ class Sections extends Component
      */
     private function _createSectionQuery()
     {
+        $schema = Craft::$app->getDb()->getSchema();
+
         return (new Query())
             ->select('sections.id, sections.structureId, sections.name, sections.handle, sections.type, sections.enableVersioning, structures.maxLevels')
-            ->leftJoin('{{%structures}} structures', 'structures.id = sections.structureId')
+            ->leftJoin('{{%structures}} structures', $schema->quoteTableName('structures').'.'.$schema->quoteColumnName('id').' = '.$schema->quoteTableName('sections').'.'.$schema->quoteColumnName('structureId'))
             ->from('{{%sections}} sections')
             ->orderBy('name');
     }

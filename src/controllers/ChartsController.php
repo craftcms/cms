@@ -37,6 +37,7 @@ class ChartsController extends Controller
         $userGroupId = Craft::$app->getRequest()->getRequiredBodyParam('userGroupId');
         $startDateParam = Craft::$app->getRequest()->getRequiredBodyParam('startDate');
         $endDateParam = Craft::$app->getRequest()->getRequiredBodyParam('endDate');
+        $schema = Craft::$app->getDb()->getSchema();
 
         $startDate = DateTimeHelper::toDateTime($startDateParam);
         $endDate = DateTimeHelper::toDateTime($endDateParam);
@@ -46,13 +47,13 @@ class ChartsController extends Controller
 
         // Prep the query
         $query = (new Query())
-            ->from('{{%users}} users')
-            ->select('COUNT(*) as value');
+            ->select('COUNT(*) as value')
+            ->from('{{%users}} users');
 
         if ($userGroupId)
         {
-            $query->innerJoin('{{%usergroups_users}} usergroups_users', 'usergroups_users.userId = users.id');
-            $query->where('usergroups_users.groupId = :userGroupId', array(':userGroupId' => $userGroupId));
+            $query->innerJoin('{{%usergroups_users}} usergroups_users', $schema->quoteTableName('usergroups_users').'.'.$schema->quoteColumnName('userId').' = '.$schema->quoteTableName('users').'.'.$schema->quoteColumnName('id'));
+            $query->where($schema->quoteTableName('usergroups_users').'.'.$schema->quoteColumnName('groupId').' = :userGroupId', array(':userGroupId' => $userGroupId));
         }
 
         // Get the chart data table
