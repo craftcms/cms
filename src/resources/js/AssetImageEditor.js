@@ -27,6 +27,9 @@ Craft.AssetImageEditor = Garnish.Modal.extend(
 		croppingCanvas: null,
 		cropper: null,
 		croppingShade: null,
+		tiltedImageVerticeCoords: null,
+		lastValidCroppingCoordinates: null,
+		lastValidCroppingScales: null,
 
 		// Filters
 		appliedFilter: null,
@@ -198,7 +201,7 @@ Craft.AssetImageEditor = Garnish.Modal.extend(
 			var mask = new fabric.Rect({
 				width: dimensions.width,
 				height: dimensions.height,
-				fill: '#fff',
+				fill: '#000',
 				left: dimensions.left + (dimensions.width / 2),
 				top: dimensions.top + (dimensions.height / 2),
 				originX: 'center',
@@ -708,9 +711,9 @@ Craft.AssetImageEditor = Garnish.Modal.extend(
 			});
 
 			// calculate the cropping rectangle size.
-			combinedRatio = (this.getZoomToCoverRatio() / this.getZoomToFitRatio());
-			var rectWidth = this.viewportWidth / combinedRatio,
-				rectHeight = this.viewportHeight / combinedRatio;
+			combinedRatio = this.imageStraightenAngle == 0 ? 1.2 : (this.getZoomToCoverRatio() / this.getZoomToFitRatio()) * 1.2;
+			var rectWidth = Math.floor(this.viewportWidth / combinedRatio),
+				rectHeight = Math.floor(this.viewportHeight / combinedRatio);
 
 			// Set up the cropping viewport rectangle.
 			var croppingGroup = [];
@@ -737,45 +740,105 @@ Craft.AssetImageEditor = Garnish.Modal.extend(
 			});
 			croppingGroup.push(rectangle);
 
-			// Set up segment lengths to draw the resize points.
-			var widthSegment = rectWidth / 10;
-			var heightSegment = rectHeight / 10;
-
-			// Draw the path around rectangle to mark the resize handle points.
-			var lineOptions = {
-				stroke: 'rgba(255,255,255,0.8)',
-				strokeWidth: 2,
-				selectable: false,
-				hasControls: false,
-				hasBorders: false,
-				lockRotation: true,
-				fill: 'rgba(0,0,0,0)'
-			};
-
-			// Top-Right-Bottom-Left
-			var linePath = 'M'+(widthSegment * 4.5)+',-2L'+(widthSegment * 5.5)+',-2M'+(9*widthSegment)+',-2L'+(widthSegment*10+1)+',-2' +
-				'L'+(widthSegment*10+1)+','+(heightSegment)+'M'+(widthSegment*10+1)+','+(heightSegment * 4.5)+'L'+(widthSegment*10+1)+','+(heightSegment * 5.5)+'M'+(widthSegment*10+1)+','+(9*heightSegment)+'L'+(widthSegment*10+1)+','+(heightSegment*10+1)+
-				'L'+(widthSegment*9)+','+(heightSegment*10+1)+'M'+(widthSegment*5.5)+','+(heightSegment*10+1)+'L'+(widthSegment*4.5)+','+(heightSegment*10+1)+'M'+(widthSegment)+','+(heightSegment*10+1)+'L-2,'+(heightSegment*10+1)+
-				'L-2,'+(9*heightSegment)+'M-2,'+(widthSegment*5.5)+'L-2,'+(heightSegment * 4.5)+'M-2,'+(heightSegment)+'L-2,-2L'+widthSegment+',-2';
-			var handleLine = new fabric.Path(linePath);
-			handleLine.set(lineOptions);
-			croppingGroup.push(handleLine);
-
 			// Adjust for rectangle stroke thickness
 			this.cropper = new fabric.Group(croppingGroup,
 				{
-					left: this.editorWidth / 2 - rectWidth / 2 - 2,
-					top: this.editorHeight / 2 - rectHeight / 2 - 2,
+					left: Math.round(this.editorWidth / 2 - rectWidth / 2 - 2),
+					top: Math.round(this.editorHeight / 2 - rectHeight / 2 - 2),
 					hoverCursor: 'move'
 				}
 			);
 
 			this.cropper.set({
 				hasBorders: false,
-				cornerColor: 'rgba(0,0,0,0)',
 				lockRotation: true,
-				cornerSize: 30
-			})
+				hasRotatingPoint: false,
+				borderOpacityWhenMoving: 1,
+				cornerColor: 'rgba(255,255,255,0.8)',
+				transparentCorners: false,
+				cornerSize: 10,
+				cornerStyle: 'circle'
+			});
+
+			this.lastValidCroppingCoordinates = {
+				left: this.cropper.left,
+				top: this.cropper.top
+			};
+
+			this.lastValidCroppingScales = {
+				x: 1,
+				y: 1
+			}
+
+			this._setTiltedVerticeCoordinates();
+
+			var onCropperChange = function (eventType, options) {
+				var cropper = options.target;
+
+				var rectWidth = Math.floor(cropper.width * cropper.scaleX);
+				var rectHeight = Math.floor(cropper.height * cropper.scaleY);
+
+				// Cropping rectangle border is 2px thick, so compensate for that.
+				var topLeft = {x: Math.ceil(cropper.left) + 2, y: Math.ceil(cropper.top) + 2};
+				var topRight = {x: topLeft.x + rectWidth - 4, y: topLeft.y};
+				var bottomRight = {x: topRight.x, y: topRight.y + rectHeight - 4};
+				var bottomLeft = {x: topLeft.x, y: bottomRight.y};
+
+
+				var fitsTheImage = this.isPointInsideRectangle(topLeft, this.tiltedImageVerticeCoords) &&
+					this.isPointInsideRectangle(topRight, this.tiltedImageVerticeCoords) &&
+					this.isPointInsideRectangle(bottomRight, this.tiltedImageVerticeCoords) &&
+					this.isPointInsideRectangle(bottomLeft, this.tiltedImageVerticeCoords);
+
+				var bigEnough = rectWidth >= this.settings.minimumCropperSize.width && rectHeight >= this.settings.minimumCropperSize.height;
+
+				if (fitsTheImage && bigEnough)
+				{
+					this.lastValidCroppingScales = {x: cropper.scaleX, y: cropper.scaleY};
+					this.lastValidCroppingCoordinates = {top: cropper.top, left: cropper.left};
+				} else {
+					cropper.set({
+						scaleX: this.lastValidCroppingScales.x,
+						scaleY: this.lastValidCroppingScales.y,
+						top: this.lastValidCroppingCoordinates.top,
+						left: this.lastValidCroppingCoordinates.left
+					})
+				}
+			}.bind(this);
+
+			this.croppingCanvas.on({
+				'object:moving': function (options) { onCropperChange.call(this, "move", options);}.bind(this),
+				'object:scaling': function (options) { onCropperChange.call(this, "scale", options);}.bind(this)
+			});
+		},
+
+		_setTiltedVerticeCoordinates: function () {
+
+			var angleInRadians = -1 * this.imageStraightenAngle * (Math.PI / 180);
+
+			// Get the dimensions of the scaled image
+			var scaledHeight = this.image.height  * this.getZoomToFitRatio();
+			var scaledWidth = this.image.width  * this.getZoomToFitRatio();
+
+			// Calculate the segments of the containing box for the image.
+			// When referring to top/bottom or right/left segments, these are on the
+			// right-side and bottom projection of the containing box for the zoomed out image.
+			var topVerticalSegment = Math.cos(angleInRadians) * scaledHeight;
+			var bottomVerticalSegment = Math.sin(angleInRadians) * scaledWidth;
+			var rightHorizontalSegment = Math.cos(angleInRadians) * scaledWidth;
+			var leftHorizontalSegment = Math.sin(angleInRadians) * scaledHeight;
+
+			// Calculate the offsets from editor box for the image-containing box
+			var verticalOffset = (this.editorHeight - (topVerticalSegment + bottomVerticalSegment)) / 2;
+			var horizontalOffset = (this.editorWidth - (leftHorizontalSegment + rightHorizontalSegment)) / 2;
+
+			// Finally, calculate the tilted image vertice coordinates
+			this.tiltedImageVerticeCoords = {
+				a: {x: horizontalOffset + rightHorizontalSegment, y: verticalOffset},
+				b: {x: this.editorWidth - horizontalOffset, y: verticalOffset + topVerticalSegment},
+				c: {x: horizontalOffset + leftHorizontalSegment, y: this.editorHeight - verticalOffset},
+				d: {x: horizontalOffset, y: verticalOffset + bottomVerticalSegment}
+			};
 		},
 
 		_destroyCropper: function () {
@@ -787,6 +850,55 @@ Craft.AssetImageEditor = Garnish.Modal.extend(
 			$('#cropping-canvas').parent('.canvas-container').before($('#cropping-canvas'));
 			$('.canvas-container').remove();
 
+		},
+
+		/**
+		 * Given a point in the form of {x: int, y:int} and a rectangle in the form of
+		 * {a:{x:int, y:int}, b:{x:int, y:int}, c:{x:int, y:int}} (the fourth vertice is unnecessary)
+		 * return true if the point is in the rectangle.
+		 *
+		 * Adapted from: http://stackoverflow.com/a/2763387/2040791
+		 *
+		 * @param point
+		 * @param rectangle
+		 */
+		isPointInsideRectangle: function (point, rectangle) {
+
+			// Return the vector between two points.
+			var getVector = function (a, b) {
+				return {x: b.x - a.x, y: b.y - a.y};
+			};
+
+			// Return the dot product for two vectors
+			var dotProduct = function (a, b) {
+				return a.x * b.x + a.y * b.y;
+			}
+
+			// Calculate the vectors for two rectangle sides and for
+			// the vector from vertices a and b to the point P
+			var ab = getVector(rectangle.a, rectangle.b);
+			var bc = getVector(rectangle.b, rectangle.c);
+			var ap = getVector(rectangle.a, point);
+			var bp = getVector(rectangle.b, point);
+
+			// Calculate scalar or dot products for some vector combinations
+			var dotAbAb = dotProduct(ab, ab);
+			var dotBcBc = dotProduct(bc, bc);
+			var dotAbAp = dotProduct(ab, ap);
+			var dotBcBp = dotProduct(bc, bp);
+
+			// The dot product of two vectors is negative for acute angles and 0 for straight angles, so:
+			// 1) The comparison to 0 makes sure that the angle from vertices A and B to the point P
+			//    is acute or straight and therefore to the correct side of the edge being tested.
+			// 2) That dot product has to be smaller than the edge vector squared.
+			//    Otherwise the dot's projection on the edge is beyond the vector's
+			//    endpoint which means it's outside of rectangle.
+			if (0 <= dotAbAp && dotAbAp <= dotAbAb &&
+				0 <= dotBcBp && dotBcBp <= dotBcBc) {
+				return true;
+			}
+
+			return false;
 		}
 	},
 	{
@@ -797,6 +909,10 @@ Craft.AssetImageEditor = Garnish.Modal.extend(
 			animationDuration: 100,
 			assetSize: 400,
 			allowSavingAsNew: true,
+			minimumCropperSize : {
+				width: 50,
+				height: 50
+			},
 
 			onSave: $.noop,
 		}
