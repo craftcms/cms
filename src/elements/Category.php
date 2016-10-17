@@ -20,6 +20,8 @@ use craft\app\elements\actions\View;
 use craft\app\elements\db\CategoryQuery;
 use craft\app\helpers\Url;
 use craft\app\models\CategoryGroup;
+use craft\app\records\Category as CategoryRecord;
+use yii\base\Exception;
 use yii\base\InvalidConfigException;
 
 /**
@@ -301,7 +303,7 @@ class Category extends Element
             $element->slug = $params['slug'];
         }
 
-        return Craft::$app->getCategories()->saveCategory($element);
+        return parent::saveElement($element, $params);
     }
 
     /**
@@ -405,6 +407,12 @@ class Category extends Element
      */
     public $newParentId;
 
+    /**
+     * @var boolean
+     * @see _hasNewParent()
+     */
+    private $_hasNewParent;
+
     // Public Methods
     // =========================================================================
 
@@ -417,6 +425,67 @@ class Category extends Element
         $rules[] = [['groupId', 'newParentId'], 'number', 'integerOnly' => true];
 
         return $rules;
+    }
+
+    /**
+     * @inheritdoc
+     * @throws Exception if reasons
+     */
+    public function beforeSave($isNew)
+    {
+        if ($this->_hasNewParent()) {
+            if ($this->newParentId) {
+                $parentCategory = Craft::$app->getCategories()->getCategoryById($this->newParentId, $this->siteId);
+
+                if (!$parentCategory) {
+                    throw new Exception('Invalid category ID: '.$this->newParentId);
+                }
+            } else {
+                $parentCategory = null;
+            }
+
+            $this->setParent($parentCategory);
+        }
+
+        return parent::beforeSave($isNew);
+    }
+
+    /**
+     * @inheritdoc
+     * @throws Exception if reasons
+     */
+    public function afterSave($isNew)
+    {
+        $group = $this->getGroup();
+
+        // Get the category record
+        if (!$isNew) {
+            $categoryRecord = CategoryRecord::findOne($this->id);
+
+            if (!$categoryRecord) {
+                throw new Exception('Invalid category ID: '.$this->id);
+            }
+        } else {
+            $categoryRecord = new CategoryRecord();
+            $categoryRecord->id = $this->id;
+        }
+
+        $categoryRecord->groupId = $this->groupId;
+        $categoryRecord->save(false);
+
+        // Has the parent changed?
+        if ($this->_hasNewParent()) {
+            if (!$this->newParentId) {
+                Craft::$app->getStructures()->appendToRoot($group->structureId, $this);
+            } else {
+                Craft::$app->getStructures()->append($group->structureId, $this, $this->getParent());
+            }
+        }
+
+        // Update the category's descendants, who may be using this category's URI in their own URIs
+        Craft::$app->getElements()->updateDescendantSlugsAndUris($this, true, true);
+
+        parent::afterSave($isNew);
     }
 
     /**
@@ -495,5 +564,66 @@ class Category extends Element
     protected function resolveStructureId()
     {
         return $this->getGroup()->structureId;
+    }
+
+    /**
+     * Returns whether the category has been assigned a new parent entry.
+     *
+     * @return boolean
+     * @see beforeSave()
+     * @see afterSave()
+     */
+    private function _hasNewParent()
+    {
+        if (!isset($this->_hasNewParent)) {
+            $this->_hasNewParent = $this->_checkForNewParent();
+        }
+
+        return $this->_hasNewParent;
+    }
+
+    /**
+     * Checks if an category was submitted with a new parent category selected.
+     *
+     * @return boolean
+     */
+    private function _checkForNewParent()
+    {
+        // Is it a brand new category?
+        if (!$this->id) {
+            return true;
+        }
+
+        // Was a new parent ID actually submitted?
+        if ($this->newParentId === null) {
+            return false;
+        }
+
+        // Is it set to the top level now, but it hadn't been before?
+        if ($this->newParentId === '' && $this->level != 1) {
+            return true;
+        }
+
+        // Is it set to be under a parent now, but didn't have one before?
+        if ($this->newParentId !== '' && $this->level == 1) {
+            return true;
+        }
+
+        // Is the newParentId set to a different category ID than its previous parent?
+        $oldParentId = Category::find()
+            ->ancestorOf($this)
+            ->ancestorDist(1)
+            ->status(null)
+            ->siteId($this->siteId)
+            ->enabledForSite(false)
+            ->select('elements.id')
+            ->scalar();
+
+        if ($this->newParentId != $oldParentId) {
+            return true;
+        }
+
+        // Must be set to the same one then
+        return false;
     }
 }

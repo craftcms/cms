@@ -10,7 +10,6 @@ namespace craft\app\services;
 use Craft;
 use craft\app\db\Query;
 use craft\app\errors\CategoryGroupNotFoundException;
-use craft\app\errors\CategoryNotFoundException;
 use craft\app\events\CategoryEvent;
 use craft\app\elements\Category;
 use craft\app\events\CategoryGroupEvent;
@@ -18,7 +17,6 @@ use craft\app\models\CategoryGroup;
 use craft\app\models\CategoryGroup_SiteSettings;
 use craft\app\models\FieldLayout;
 use craft\app\models\Structure;
-use craft\app\records\Category as CategoryRecord;
 use craft\app\records\CategoryGroup as CategoryGroupRecord;
 use craft\app\records\CategoryGroup_SiteSettings as CategoryGroup_SiteSettingsRecord;
 use yii\base\Component;
@@ -36,16 +34,6 @@ class Categories extends Component
 {
     // Constants
     // =========================================================================
-
-    /**
-     * @event CategoryEvent The event that is triggered before a category is saved.
-     */
-    const EVENT_BEFORE_SAVE_CATEGORY = 'beforeSaveCategory';
-
-    /**
-     * @event CategoryEvent The event that is triggered after a category is saved.
-     */
-    const EVENT_AFTER_SAVE_CATEGORY = 'afterSaveCategory';
 
     /**
      * @event CategoryEvent The event that is triggered before a category is deleted.
@@ -698,109 +686,6 @@ class Categories extends Component
     }
 
     /**
-     * Saves a category.
-     *
-     * @param Category $category
-     * @param boolean $runValidation Whether the category should be validated
-     *
-     * @return boolean Whether the category was saved successfully
-     * @throws CategoryNotFoundException if $category has an invalid $id or invalid $newParentID
-     * @throws \Exception if reasons
-     */
-    public function saveCategory(Category $category, $runValidation = true)
-    {
-        if ($runValidation && !$category->validate()) {
-            Craft::info('Category not saved due to validation error.', __METHOD__);
-
-            return false;
-        }
-
-        $isNewCategory = !$category->id;
-
-        // Fire a 'beforeSaveCategory' event
-        $this->trigger(self::EVENT_BEFORE_SAVE_CATEGORY, new CategoryEvent([
-            'category' => $category,
-            'isNew' => $isNewCategory
-        ]));
-
-        $hasNewParent = $this->_checkForNewParent($category);
-
-        if ($hasNewParent) {
-            if ($category->newParentId) {
-                $parentCategory = $this->getCategoryById($category->newParentId, $category->siteId);
-
-                if (!$parentCategory) {
-                    throw new CategoryNotFoundException("No category exists with the ID '{$category->newParentId}'");
-                }
-            } else {
-                $parentCategory = null;
-            }
-
-            $category->setParent($parentCategory);
-        }
-
-        // Category data
-        if (!$isNewCategory) {
-            $categoryRecord = CategoryRecord::findOne($category->id);
-
-            if (!$categoryRecord) {
-                throw new CategoryNotFoundException("No category exists with the ID '{$category->id}'");
-            }
-        } else {
-            $categoryRecord = new CategoryRecord();
-        }
-
-        $categoryRecord->groupId = $category->groupId;
-
-        $transaction = Craft::$app->getDb()->beginTransaction();
-
-        try {
-            $success = Craft::$app->getElements()->saveElement($category);
-
-            // If it didn't work, rollback the transaction in case something changed in onBeforeSaveCategory
-            if (!$success) {
-                $transaction->rollBack();
-
-                return false;
-            }
-
-            // Now that we have an element ID, save it on the other stuff
-            if ($isNewCategory) {
-                $categoryRecord->id = $category->id;
-            }
-
-            $categoryRecord->save(false);
-
-            // Has the parent changed?
-            if ($hasNewParent) {
-                if (!$category->newParentId) {
-                    Craft::$app->getStructures()->appendToRoot($category->getGroup()->structureId, $category);
-                } else {
-                    /** @noinspection PhpUndefinedVariableInspection */
-                    Craft::$app->getStructures()->append($category->getGroup()->structureId, $category, $parentCategory);
-                }
-            }
-
-            // Update the category's descendants, who may be using this category's URI in their own URIs
-            Craft::$app->getElements()->updateDescendantSlugsAndUris($category, true, true);
-
-            $transaction->commit();
-        } catch (\Exception $e) {
-            $transaction->rollBack();
-
-            throw $e;
-        }
-
-        // Fire an 'afterSaveCategory' event
-        $this->trigger(self::EVENT_AFTER_SAVE_CATEGORY, new CategoryEvent([
-            'category' => $category,
-            'isNew' => $isNewCategory,
-        ]));
-
-        return true;
-    }
-
-    /**
      * Deletes a category(s).
      *
      * @param Category|Category[] $categories
@@ -937,53 +822,6 @@ class Categories extends Component
         }
 
         return $group;
-    }
-
-    /**
-     * Checks if an category was submitted with a new parent category selected.
-     *
-     * @param Category $category
-     *
-     * @return boolean
-     */
-    private function _checkForNewParent(Category $category)
-    {
-        // Is it a brand new category?
-        if (!$category->id) {
-            return true;
-        }
-
-        // Was a new parent ID actually submitted?
-        if ($category->newParentId === null) {
-            return false;
-        }
-
-        // Is it set to the top level now, but it hadn't been before?
-        if ($category->newParentId === '' && $category->level != 1) {
-            return true;
-        }
-
-        // Is it set to be under a parent now, but didn't have one before?
-        if ($category->newParentId !== '' && $category->level == 1) {
-            return true;
-        }
-
-        // Is the newParentId set to a different category ID than its previous parent?
-        $oldParentId = Category::find()
-            ->ancestorOf($category)
-            ->ancestorDist(1)
-            ->status(null)
-            ->siteId($category->siteId)
-            ->enabledForSite(false)
-            ->select('elements.id')
-            ->scalar();
-
-        if ($category->newParentId != $oldParentId) {
-            return true;
-        }
-
-        // Must be set to the same one then
-        return false;
     }
 
     /**

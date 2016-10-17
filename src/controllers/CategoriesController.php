@@ -427,7 +427,7 @@ class CategoriesController extends Controller
         $this->_populateCategoryModel($category);
 
         // Save the category
-        if (Craft::$app->getCategories()->saveCategory($category)) {
+        if (Craft::$app->getElements()->saveElement($category)) {
             if (Craft::$app->getRequest()->getAcceptsJson()) {
                 $return['success'] = true;
                 $return['title'] = $category->title;
