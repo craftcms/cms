@@ -860,8 +860,7 @@ EOD;
                 if (!$this->newParentId) {
                     Craft::$app->getStructures()->appendToRoot($section->structureId, $this);
                 } else {
-                    /** @noinspection PhpUndefinedVariableInspection */
-                    Craft::$app->getStructures()->append($section->structureId, $this, $parentEntry);
+                    Craft::$app->getStructures()->append($section->structureId, $this, $this->getParent());
                 }
             }
 
