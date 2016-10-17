@@ -79,43 +79,6 @@ class Entries extends Component
     }
 
     /**
-     * Saves a new or existing entry.
-     *
-     * ```php
-     * $entry = new Entry();
-     * $entry->sectionId = 10;
-     * $entry->typeId = 1;
-     * $entry->authorId = 5;
-     * $entry->enabled = true;
-     * $entry->title = "Hello World!";
-     *
-     * $entry->setFieldValuesFromPost(
-     *     [
-     *         'body' => "<p>I can’t believe I literally just called this “Hello World!”.</p>",
-     *     ]);
-     *
-     * $success = Craft::$app->getEntries()->saveEntry($entry);
-     *
-     * if (!$success) {
-     *     Craft::error('Couldn’t save the entry "'.$entry->title.'"', __METHOD__);
-     * }
-     * ```
-     *
-     * @param Entry   $entry         The entry to be saved.
-     * @param boolean $runValidation Whether the entry should be validated
-     *
-     * @return bool
-     * @throws EntryNotFoundException if $entry->newParentId or $entry->id is invalid
-     * @throws Exception if $entry->siteId is set to a site that its section doesn’t support
-     * @throws SectionNotFoundException if $entry->sectionId is invalid
-     * @throws \Exception if reasons
-     */
-    public function saveEntry(Entry $entry, $runValidation = true)
-    {
-        return Craft::$app->getElements()->saveElement($entry, $runValidation);
-    }
-
-    /**
      * Deletes an entry(s).
      *
      * @param Entry|Entry[] $entries An entry, or an array of entries, to be deleted.
