@@ -99,8 +99,6 @@ class Entries extends Component
         $transaction = Craft::$app->getDb()->beginTransaction();
 
         try {
-            $entryIds = [];
-
             foreach ($entries as $entry) {
                 // Fire a 'beforeDeleteEntry' event
                 $this->trigger(self::EVENT_BEFORE_DELETE_ENTRY, new EntryEvent([
@@ -118,18 +116,14 @@ class Entries extends Component
                     }
                 }
 
-                $entryIds[] = $entry->id;
-            }
+                Craft::$app->getElements()->deleteElement($entry);
 
-            // Delete 'em
-            Craft::$app->getElements()->deleteElementById($entryIds);
-
-            foreach ($entries as $entry) {
                 // Fire an 'afterDeleteEntry' event
                 $this->trigger(self::EVENT_AFTER_DELETE_ENTRY, new EntryEvent([
                     'entry' => $entry
                 ]));
             }
+
             $transaction->commit();
         } catch (\Exception $e) {
             $transaction->rollBack();

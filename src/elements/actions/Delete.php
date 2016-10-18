@@ -67,7 +67,10 @@ class Delete extends ElementAction
      */
     public function performAction(ElementQueryInterface $query)
     {
-        Craft::$app->getElements()->deleteElementById($query->ids());
+        foreach ($query->all() as $element) {
+            Craft::$app->getElements()->deleteElement($element);
+        }
+
         $this->setMessage($this->successMessage);
 
         return true;

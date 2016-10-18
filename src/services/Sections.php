@@ -578,7 +578,9 @@ class Sections extends Component
 
                             // If there are any more, get rid of them
                             if ($entryIds) {
-                                Craft::$app->getElements()->deleteElementById($entryIds);
+                                foreach ($entryIds as $id) {
+                                    Craft::$app->getElements()->deleteElementById($id);
+                                }
                             }
 
                             // Make sure it's enabled and all that.
@@ -750,14 +752,16 @@ class Sections extends Component
                 Craft::$app->getFields()->deleteLayoutById($fieldLayoutIds);
             }
 
-            // Grab the entry ids so we can clean the elements table.
-            $entryIds = (new Query())
-                ->select('id')
-                ->from('{{%entries}}')
-                ->where(['sectionId' => $section->id])
-                ->column();
+            // Delete the entries
+            $entries = Entry::find()
+                ->status(null)
+                ->enabledForSite(false)
+                ->sectionId($section->id)
+                ->all();
 
-            Craft::$app->getElements()->deleteElementById($entryIds);
+            foreach ($entries as $entry) {
+                Craft::$app->getElements()->deleteElement($entry);
+            }
 
             // Delete the structure, if there is one
             $structureId = (new Query())
@@ -1110,15 +1114,15 @@ class Sections extends Component
                 Craft::$app->getFields()->deleteLayoutById($fieldLayoutId);
             }
 
-            // Grab the entry IDs so we can clean the elements table.
-            $entryIds = (new Query())
-                ->select('id')
-                ->from('{{%entries}}')
-                ->where(['typeId' => $entryType->id])
-                ->column();
+            // Delete the entries
+            $entries = Entry::find()
+                ->status(null)
+                ->enabledForSite(false)
+                ->typeId($entryType->id)
+                ->all();
 
-            if ($entryIds) {
-                Craft::$app->getElements()->deleteElementById($entryIds);
+            foreach ($entries as $entry) {
+                Craft::$app->getElements()->deleteElement($entry);
             }
 
             // Delete the entry type.

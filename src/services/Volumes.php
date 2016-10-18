@@ -5,6 +5,7 @@ use Craft;
 use craft\app\base\Volume;
 use craft\app\base\VolumeInterface;
 use craft\app\db\Query;
+use craft\app\elements\Asset;
 use craft\app\errors\VolumeException;
 use craft\app\errors\MissingComponentException;
 use craft\app\events\VolumeEvent;
@@ -602,14 +603,16 @@ class Volumes extends Component
                 return false;
             }
 
-            // Grab the Asset ids so we can clean the elements table.
-            $assetIds = (new Query())
-                ->select('id')
-                ->from('{{%assets}}')
-                ->where(['volumeId' => $volume->id])
-                ->column();
+            // Delete the assets
+            $assets = Asset::find()
+                ->status(null)
+                ->enabledForSite(false)
+                ->volumeId($volume->id)
+                ->all();
 
-            Craft::$app->getElements()->deleteElementById($assetIds);
+            foreach ($assets as $asset) {
+                Craft::$app->getElements()->deleteElement($asset);
+            }
 
             // Nuke the asset volume.
             $db->createCommand()

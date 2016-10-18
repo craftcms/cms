@@ -895,7 +895,9 @@ class Users extends Component
                     }
                 } else {
                     // Delete the entries
-                    Craft::$app->getElements()->deleteElementById($entryIds);
+                    foreach ($entryIds as $id) {
+                        Craft::$app->getElements()->deleteElementById($id);
+                    }
                 }
 
                 // Delete the user

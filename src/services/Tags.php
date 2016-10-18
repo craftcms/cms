@@ -334,14 +334,16 @@ class Tags extends Component
                 Craft::$app->getFields()->deleteLayoutById($fieldLayoutId);
             }
 
-            // Grab the tag ids so we can clean the elements table.
-            $tagIds = (new Query())
-                ->select('id')
-                ->from('{{%tags}}')
-                ->where(['groupId' => $tagGroupId])
-                ->column();
+            // Delete the tags
+            $tags = Tag::find()
+                ->status(null)
+                ->enabledForSite(false)
+                ->groupId($tagGroupId)
+                ->all();
 
-            Craft::$app->getElements()->deleteElementById($tagIds);
+            foreach ($tags as $tag) {
+                Craft::$app->getElements()->deleteElement($tag);
+            }
 
             Craft::$app->getDb()->createCommand()
                 ->delete('{{%taggroups}}', ['id' => $tagGroupId])

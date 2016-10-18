@@ -584,14 +584,16 @@ class Categories extends Component
                 Craft::$app->getFields()->deleteLayoutById($fieldLayoutId);
             }
 
-            // Grab the category ids so we can clean the elements table.
-            $categoryIds = (new Query())
-                ->select('id')
-                ->from('{{%categories}}')
-                ->where(['groupId' => $groupId])
-                ->column();
+            // Delete the categories
+            $categories = Category::find()
+                ->status(null)
+                ->enabledForSite(false)
+                ->groupId($groupId)
+                ->all();
 
-            Craft::$app->getElements()->deleteElementById($categoryIds);
+            foreach ($categories as $category) {
+                Craft::$app->getElements()->deleteElement($category);
+            }
 
             Craft::$app->getDb()->createCommand()
                 ->delete(
@@ -834,8 +836,6 @@ class Categories extends Component
      */
     private function _deleteCategories($categories, $deleteDescendants = true)
     {
-        $categoryIds = [];
-
         foreach ($categories as $category) {
             if ($deleteDescendants) {
                 // Delete the descendants in reverse order, so structures don't get wonky
@@ -849,21 +849,14 @@ class Categories extends Component
                 'category' => $category
             ]));
 
-            $categoryIds[] = $category->id;
+            Craft::$app->getElements()->deleteElement($category);
+
+            // Fire an 'afterDeleteCategory' event
+            $this->trigger(self::EVENT_AFTER_DELETE_CATEGORY, new CategoryEvent([
+                'category' => $category
+            ]));
         }
 
-        // Delete 'em
-        $success = Craft::$app->getElements()->deleteElementById($categoryIds);
-
-        if ($success) {
-            foreach ($categories as $category) {
-                // Fire an 'afterDeleteCategory' event
-                $this->trigger(self::EVENT_AFTER_DELETE_CATEGORY, new CategoryEvent([
-                    'category' => $category
-                ]));
-            }
-        }
-
-        return $success;
+        return true;
     }
 }

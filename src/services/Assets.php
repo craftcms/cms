@@ -490,7 +490,7 @@ class Assets extends Component
                         $volume->deleteFile($asset->getUri());
                     }
 
-                    Craft::$app->getElements()->deleteElementById($assetId);
+                    Craft::$app->getElements()->deleteElement($asset);
                     Craft::$app->getAssetTransforms()->deleteAllTransformData($asset);
 
                     // Fire an 'afterDeleteAsset' event

@@ -704,7 +704,11 @@ class Matrix extends Component
         }
 
         // Pass this along to the Elements service for the heavy lifting.
-        return Craft::$app->getElements()->deleteElementById($blockIds);
+        foreach ($blockIds as $id) {
+            Craft::$app->getElements()->deleteElementById($id);
+        }
+
+        return true;
     }
 
     /**

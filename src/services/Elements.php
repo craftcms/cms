@@ -878,29 +878,22 @@ class Elements extends Component
     }
 
     /**
-     * Deletes an element(s) by its ID(s).
+     * Deletes an element by its ID.
      *
-     * @param integer|array $elementIds The element’s ID, or an array of elements’ IDs.
+     * @param integer $id The element’s ID
      *
-     * @return boolean Whether the element(s) were deleted successfully.
+     * @return boolean Whether the element was deleted successfully
      * @throws \Exception
      */
-    public function deleteElementById($elementIds)
+    public function deleteElementById($id)
     {
-        if (!$elementIds) {
+        $element = $this->getElementById($id);
+
+        if (!$element) {
             return false;
         }
 
-        if (!is_array($elementIds)) {
-            $elementIds = [$elementIds];
-        }
-
-        foreach ($elementIds as $elementId) {
-            $element = $this->getElementById($elementId);
-            $this->deleteElement($element);
-        }
-
-        return true;
+        return $this->deleteElement($element);
     }
 
     /**
