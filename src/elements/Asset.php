@@ -743,25 +743,25 @@ class Asset extends Element
     {
         // Get the asset record
         if (!$isNew) {
-            $assetRecord = AssetRecord::findOne($this->id);
+            $record = AssetRecord::findOne($this->id);
 
-            if (!$assetRecord) {
+            if (!$record) {
                 throw new Exception('Invalid asset ID: '.$this->id);
             }
         } else {
-            $assetRecord = new AssetRecord();
-            $assetRecord->id = $this->id;
+            $record = new AssetRecord();
+            $record->id = $this->id;
         }
 
-        $assetRecord->volumeId = $this->volumeId;
-        $assetRecord->folderId = $this->folderId;
-        $assetRecord->filename = $this->filename;
-        $assetRecord->kind = $this->kind;
-        $assetRecord->size = $this->size;
-        $assetRecord->width = $this->width;
-        $assetRecord->height = $this->height;
-        $assetRecord->dateModified = $this->dateModified;
-        $assetRecord->save(false);
+        $record->volumeId = $this->volumeId;
+        $record->folderId = $this->folderId;
+        $record->filename = $this->filename;
+        $record->kind = $this->kind;
+        $record->size = $this->size;
+        $record->width = $this->width;
+        $record->height = $this->height;
+        $record->dateModified = $this->dateModified;
+        $record->save(false);
 
         parent::afterSave($isNew);
     }

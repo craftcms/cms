@@ -842,26 +842,25 @@ EOD;
     public function afterSave($isNew)
     {
         $section = $this->getSection();
-        $entryType = $this->getType();
 
         // Get the entry record
         if (!$isNew) {
-            $entryRecord = EntryRecord::findOne($this->id);
+            $record = EntryRecord::findOne($this->id);
 
-            if (!$entryRecord) {
+            if (!$record) {
                 throw new Exception('Invalid entry ID: '.$this->id);
             }
         } else {
-            $entryRecord = new EntryRecord();
-            $entryRecord->id = $this->id;
+            $record = new EntryRecord();
+            $record->id = $this->id;
         }
 
-        $entryRecord->sectionId = $this->sectionId;
-        $entryRecord->typeId = $this->typeId;
-        $entryRecord->authorId = $this->authorId;
-        $entryRecord->postDate = $this->postDate;
-        $entryRecord->expiryDate = $this->expiryDate;
-        $entryRecord->save(false);
+        $record->sectionId = $this->sectionId;
+        $record->typeId = $this->typeId;
+        $record->authorId = $this->authorId;
+        $record->postDate = $this->postDate;
+        $record->expiryDate = $this->expiryDate;
+        $record->save(false);
 
         if ($section->type == Section::TYPE_STRUCTURE) {
             // Has the parent changed?

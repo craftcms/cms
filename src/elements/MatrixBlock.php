@@ -198,22 +198,22 @@ class MatrixBlock extends Element
     {
         // Get the block record
         if (!$isNew) {
-            $blockRecord = MatrixBlockRecord::findOne($this->id);
+            $record = MatrixBlockRecord::findOne($this->id);
 
-            if (!$blockRecord) {
+            if (!$record) {
                 throw new Exception('Invalid Matrix block ID: '.$this->id);
             }
         } else {
-            $blockRecord = new MatrixBlockRecord();
-            $blockRecord->id = $this->id;
+            $record = new MatrixBlockRecord();
+            $record->id = $this->id;
         }
 
-        $blockRecord->fieldId = $this->fieldId;
-        $blockRecord->ownerId = $this->ownerId;
-        $blockRecord->ownerSiteId = $this->ownerSiteId;
-        $blockRecord->typeId = $this->typeId;
-        $blockRecord->sortOrder = $this->sortOrder;
-        $blockRecord->save(false);
+        $record->fieldId = $this->fieldId;
+        $record->ownerId = $this->ownerId;
+        $record->ownerSiteId = $this->ownerSiteId;
+        $record->typeId = $this->typeId;
+        $record->sortOrder = $this->sortOrder;
+        $record->save(false);
 
         parent::afterSave($isNew);
     }

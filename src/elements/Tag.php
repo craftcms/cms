@@ -143,18 +143,18 @@ class Tag extends Element
     {
         // Get the tag record
         if (!$isNew) {
-            $tagRecord = TagRecord::findOne($this->id);
+            $record = TagRecord::findOne($this->id);
 
-            if (!$tagRecord) {
+            if (!$record) {
                 throw new Exception('Invalid tag ID: '.$this->id);
             }
         } else {
-            $tagRecord = new TagRecord();
-            $tagRecord->id = $this->id;
+            $record = new TagRecord();
+            $record->id = $this->id;
         }
 
-        $tagRecord->groupId = $this->groupId;
-        $tagRecord->save(false);
+        $record->groupId = $this->groupId;
+        $record->save(false);
 
         parent::afterSave($isNew);
     }

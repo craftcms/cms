@@ -460,18 +460,18 @@ class Category extends Element
 
         // Get the category record
         if (!$isNew) {
-            $categoryRecord = CategoryRecord::findOne($this->id);
+            $record = CategoryRecord::findOne($this->id);
 
-            if (!$categoryRecord) {
+            if (!$record) {
                 throw new Exception('Invalid category ID: '.$this->id);
             }
         } else {
-            $categoryRecord = new CategoryRecord();
-            $categoryRecord->id = $this->id;
+            $record = new CategoryRecord();
+            $record->id = $this->id;
         }
 
-        $categoryRecord->groupId = $this->groupId;
-        $categoryRecord->save(false);
+        $record->groupId = $this->groupId;
+        $record->save(false);
 
         // Has the parent changed?
         if ($this->_hasNewParent()) {
