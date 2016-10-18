@@ -11,11 +11,9 @@ use Craft;
 use craft\app\db\Query;
 use craft\app\errors\TagGroupNotFoundException;
 use craft\app\errors\TagNotFoundException;
-use craft\app\events\TagEvent;
 use craft\app\elements\Tag;
 use craft\app\events\TagGroupEvent;
 use craft\app\models\TagGroup;
-use craft\app\records\Tag as TagRecord;
 use craft\app\records\TagGroup as TagGroupRecord;
 use yii\base\Component;
 
@@ -31,16 +29,6 @@ class Tags extends Component
 {
     // Constants
     // =========================================================================
-
-    /**
-     * @event TagEvent The event that is triggered before a tag is saved.
-     */
-    const EVENT_BEFORE_SAVE_TAG = 'beforeSaveTag';
-
-    /**
-     * @event TagEvent The event that is triggered after a tag is saved.
-     */
-    const EVENT_AFTER_SAVE_TAG = 'afterSaveTag';
 
     /**
      * @event TagGroupEvent The event that is triggered before a tag group is saved.
@@ -402,62 +390,6 @@ class Tags extends Component
      */
     public function saveTag(Tag $tag, $runValidation = true)
     {
-        if ($runValidation && !$tag->validate()) {
-            Craft::info('Tag not saved due to validation error.', __METHOD__);
 
-            return false;
-        }
-
-        $isNewTag = !$tag->id;
-
-        // Tag data
-        if (!$isNewTag) {
-            $tagRecord = TagRecord::findOne($tag->id);
-
-            if (!$tagRecord) {
-                throw new TagNotFoundException("No tag exists with the ID '{$tag->id}'");
-            }
-        } else {
-            $tagRecord = new TagRecord();
-        }
-
-        // Fire a 'beforeSaveTag' event
-        $this->trigger(self::EVENT_BEFORE_SAVE_TAG, new TagEvent([
-            'tag' => $tag,
-            'isNew' => $isNewTag
-        ]));
-
-        $tagRecord->groupId = $tag->groupId;
-
-        $transaction = Craft::$app->getDb()->beginTransaction();
-
-        try {
-            if (!Craft::$app->getElements()->saveElement($tag, false)) {
-                $transaction->rollBack();
-
-                return false;
-            }
-
-            // Now that we have an element ID, save it on the other stuff
-            if ($isNewTag) {
-                $tagRecord->id = $tag->id;
-            }
-
-            $tagRecord->save(false);
-
-            $transaction->commit();
-        } catch (\Exception $e) {
-            $transaction->rollBack();
-
-            throw $e;
-        }
-
-        // Fire an 'afterSaveTag' event
-        $this->trigger(self::EVENT_AFTER_SAVE_TAG, new TagEvent([
-            'tag' => $tag,
-            'isNew' => $isNewTag
-        ]));
-
-        return true;
     }
 }

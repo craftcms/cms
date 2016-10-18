@@ -12,6 +12,8 @@ use craft\app\base\Element;
 use craft\app\base\ElementInterface;
 use craft\app\elements\db\TagQuery;
 use craft\app\models\TagGroup;
+use craft\app\records\Tag as TagRecord;
+use yii\base\Exception;
 
 /**
  * Tag represents a tag element.
@@ -111,15 +113,6 @@ class Tag extends Element
         return $html;
     }
 
-    /**
-     * @inheritdoc
-     */
-    public static function saveElement(ElementInterface $element, $params)
-    {
-        /** @var Tag $element */
-        return Craft::$app->getTags()->saveTag($element);
-    }
-
     // Properties
     // =========================================================================
 
@@ -140,6 +133,30 @@ class Tag extends Element
         $rules[] = [['groupId'], 'number', 'integerOnly' => true];
 
         return $rules;
+    }
+
+    /**
+     * @inheritdoc
+     * @throws Exception if reasons
+     */
+    public function afterSave($isNew)
+    {
+        // Get the tag record
+        if (!$isNew) {
+            $tagRecord = TagRecord::findOne($this->id);
+
+            if (!$tagRecord) {
+                throw new Exception('Invalid tag ID: '.$this->id);
+            }
+        } else {
+            $tagRecord = new TagRecord();
+            $tagRecord->id = $this->id;
+        }
+
+        $tagRecord->groupId = $this->groupId;
+        $tagRecord->save(false);
+
+        parent::afterSave($isNew);
     }
 
     /**
