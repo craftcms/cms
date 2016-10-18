@@ -335,25 +335,16 @@ class UsersController extends Controller
             $userToProcess = Craft::$app->getUsers()->getUserByUid($id);
 
             // See if we still have a valid token.
-            $isCodeValid = Craft::$app->getUsers()->isVerificationCodeValidForUser($userToProcess,
-                $code);
+            $isCodeValid = Craft::$app->getUsers()->isVerificationCodeValidForUser($userToProcess, $code);
 
             if (!$userToProcess || !$isCodeValid) {
                 $this->_processInvalidToken($userToProcess);
             }
 
-            $newPassword = Craft::$app->getRequest()->getRequiredBodyParam('newPassword');
-            $userToProcess->newPassword = $newPassword;
+            $userToProcess->newPassword = Craft::$app->getRequest()->getRequiredBodyParam('newPassword');
+            $userToProcess->setScenario(User::SCENARIO_PASSWORD);
 
-            if ($userToProcess->passwordResetRequired) {
-                $forceDifferentPassword = true;
-            } else {
-                $forceDifferentPassword = false;
-            }
-
-            if (Craft::$app->getUsers()->changePassword($userToProcess,
-                $forceDifferentPassword)
-            ) {
+            if (Craft::$app->getElements()->saveElement($userToProcess)) {
                 if ($userToProcess->getStatus() == User::STATUS_PENDING) {
                     // Activate them
                     Craft::$app->getUsers()->activateUser($userToProcess);
@@ -979,7 +970,7 @@ class UsersController extends Controller
             $user->addError('photo', Craft::t('app', 'The user photo provided is not an image.'));
         }
 
-        if ($imageValidates && Craft::$app->getUsers()->saveUser($user)) {
+        if ($imageValidates && Craft::$app->getElements()->saveElement($user)) {
             // Save their preferences too
             $preferences = [
                 'language' => $request->getBodyParam('preferredLanguage', $user->getPreference('language')),
@@ -1075,6 +1066,12 @@ class UsersController extends Controller
                 return $this->redirectToPostedUrl($user);
             }
         } else {
+            if ($thisIsPublicRegistration) {
+                // Move any 'newPassword' errors over to 'password'
+                $user->addErrors(['password' => $user->getErrors('newPassword')]);
+                $user->clearErrors('newPassword');
+            }
+
             if ($request->getAcceptsJson()) {
                 return $this->asErrorJson(Craft::t('app', 'Couldn’t save user.'));
             }
@@ -1162,7 +1159,7 @@ class UsersController extends Controller
         }
 
         $user->photoId = null;
-        Craft::$app->getUsers()->saveUser($user);
+        Craft::$app->getElements()->saveElement($user, false);
 
         $html = Craft::$app->getView()->renderTemplate('users/_photo',
             [

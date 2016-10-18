@@ -73,7 +73,7 @@ class Install extends Migration
             'email' => $this->email,
             'admin' => true
         ]);
-        Craft::$app->getUsers()->saveUser($user);
+        Craft::$app->getElements()->saveElement($user);
         echo " done\n";
 
         // Log them in
