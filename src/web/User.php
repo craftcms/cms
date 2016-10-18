@@ -397,7 +397,7 @@ class User extends \yii\web\User
     protected function renewIdentityCookie()
     {
         // Prevent the session row from getting stale
-        $this->_updateSessionToken();
+        $this->_updateSessionRow();
 
         parent::renewIdentityCookie();
     }
@@ -506,7 +506,7 @@ class User extends \yii\web\User
      *
      * @see _deleteStaleSessions()
      */
-    private function _updateSessionToken()
+    private function _updateSessionRow()
     {
         // Extract the current session token's UID from the identity cookie
         $cookieValue = Craft::$app->getRequest()->getCookies()->getValue($this->identityCookie['name']);
