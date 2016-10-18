@@ -477,50 +477,40 @@ class Assets extends Component
     /**
      * Rename an Asset.
      *
-     * @param Asset  $asset
-     * @param string $newFilename
+     * @param Asset        $asset         The asset whose file should be renamed
+     * @param boolean|null $runValidation Whether the filename should be validated
      *
-     * @throws AssetDisallowedExtensionException If the extension is not allowed.
-     * @throws AssetConflictException            If a file with such a name already exists.
-     * @throws AssetLogicException               If the Volume is missing.
-     * @return void
+     * @return boolean Whether the asset was renamed successfully
+     * @throws AssetLogicException if the asset’s volume is missing
      */
-    public function renameAsset(Asset $asset, $newFilename)
+    public function renameFile(Asset $asset, $runValidation = true)
     {
-        $extension = Io::getExtension($newFilename);
+        if ($runValidation && !$asset->validate(['newFilename'])) {
+            Craft::info('Asset file not renamed due to validation error.', __METHOD__);
 
-        if (!Io::isExtensionAllowed($extension)) {
-            throw new AssetDisallowedExtensionException(Craft::t('app',
-                'The extension “{extension}” is not allowed.',
-                ['extension' => $extension]));
-        }
-
-        $newFilename = AssetsHelper::prepareAssetName($newFilename);
-
-        $existingAsset = Asset::find()
-            ->folderId($asset->folderId)
-            ->filename(Db::escapeParam($newFilename))
-            ->one();
-
-        if ($existingAsset && $existingAsset->id != $asset->id) {
-            throw new AssetConflictException(Craft::t('app',
-                'A file with the name “{filename}” already exists in the folder.',
-                ['filename' => $newFilename]));
+            return false;
         }
 
         $volume = $asset->getVolume();
 
         if (!$volume) {
-            throw new AssetLogicException(Craft::t('app',
-                'Volume does not exist with the id of {id}.',
-                ['id' => $asset->volumeId]));
+            throw new AssetLogicException('Invalid volume ID: '.$asset->volumeId);
         }
 
-        if ($volume->renameFile($asset->getUri(), $asset->getUri($newFilename))
-        ) {
-            $asset->filename = $newFilename;
-            Craft::$app->getElements()->saveElement($asset);
+        if (!$volume->renameFile($asset->getUri(), $asset->getUri($asset->newFilename))) {
+            return false;
         }
+
+        // Update the record
+        $record = AssetRecord::findOne($asset->id);
+        $record->filename = $asset->newFilename;
+        $record->save(false);
+
+        // Update the model
+        $asset->filename = $asset->newFilename;
+        $asset->newFilename = null;
+
+        return true;
     }
 
     /**
@@ -1086,6 +1076,7 @@ class Assets extends Component
     {
         try {
             $this->checkPermissionByFolderIds($folderId, $action);
+
             return true;
         } catch (\Exception $exception) {
             return false;

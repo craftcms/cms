@@ -393,9 +393,10 @@ class AssetsController extends Controller
         try {
 
             if (!empty($filename)) {
-                $assets->renameAsset($asset, $filename);
+                $asset->newFilename = $filename;
+                $success = $assets->renameFile($asset);
 
-                return $this->asJson(['success' => true]);
+                return $this->asJson(['success' => $success]);
             }
 
             if ($asset->folderId != $folderId) {

@@ -28,6 +28,7 @@ use craft\app\helpers\Template;
 use craft\app\helpers\Url;
 use craft\app\models\VolumeFolder;
 use craft\app\records\Asset as AssetRecord;
+use craft\app\validators\AssetFilenameValidator;
 use craft\app\validators\DateTimeValidator;
 use craft\app\validators\UniqueValidator;
 use yii\base\ErrorHandler;
@@ -45,6 +46,14 @@ use yii\base\UnknownPropertyException;
  */
 class Asset extends Element
 {
+    // Constants
+    // =========================================================================
+
+    // Validation scenarios
+    // -------------------------------------------------------------------------
+
+    const SCENARIO_FILENAME = 'filename';
+
     // Static
     // =========================================================================
 
@@ -366,8 +375,8 @@ class Asset extends Element
             [
                 [
                     'label' => Craft::t('app', 'Filename'),
-                    'id' => 'filename',
-                    'name' => 'filename',
+                    'id' => 'newFilename',
+                    'name' => 'newFilename',
                     'value' => $element->filename,
                     'errors' => $element->getErrors('filename'),
                     'first' => true,
@@ -404,38 +413,11 @@ class Asset extends Element
     public static function saveElement(ElementInterface $element, $params)
     {
         /** @var Asset $element */
-        // Is the filename changing?
-        if (!empty($params['filename']) && $params['filename'] != $element->filename) {
-            // Validate the content before we do anything drastic
-            if (!Craft::$app->getContent()->validateContent($element)) {
-                return false;
-            }
-
-            $oldFilename = $element->filename;
-            $newFilename = $params['filename'];
-
-            // Rename the file
-            try {
-                Craft::$app->getAssets()->renameAsset($element, $newFilename);
-            } catch (\Exception $exception) {
-                $element->addError('filename', $exception->getMessage());
-
-                return false;
-            }
-            // TODO illegal filenmes?
-        } else {
-            $newFilename = null;
+        if (!empty($params['newFilename'])) {
+            $element->newFilename= $params['newFilename'];
         }
 
-        $success = parent::saveElement($element, $params);
-
-        if (!$success && $newFilename) {
-            // Better rename it back
-            /** @noinspection PhpUndefinedVariableInspection */
-            Craft::$app->getAssets()->renameAsset($element, $oldFilename);
-        }
-
-        return $success;
+        return parent::saveElement($element, $params);
     }
 
     /**
@@ -570,6 +552,11 @@ class Asset extends Element
      * @var \DateTime Date modified
      */
     public $dateModified;
+
+    /**
+     * @var string New filename
+     */
+    public $newFilename;
 
     /**
      * @var string The new file path
@@ -709,16 +696,20 @@ class Asset extends Element
         $rules[] = [['dateModified'], DateTimeValidator::class];
         $rules[] = [['filename', 'kind'], 'required'];
         $rules[] = [['kind'], 'string', 'max' => 50];
-
-        $rules[] = [
-            ['filename'],
-            UniqueValidator::class,
-            'targetClass' => AssetRecord::class,
-            'targetAttribute' => ['filename', 'folderId'],
-            'comboNotUnique' => Craft::t('yii', '{attribute} "{value}" has already been taken.'),
-        ];
+        $rules[] = [['newFilename'], AssetFilenameValidator::class];
 
         return $rules;
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function scenarios()
+    {
+        $scenarios = parent::scenarios();
+        $scenarios[self::SCENARIO_FILENAME] = ['newFilename'];
+
+        return $scenarios;
     }
 
     /**
@@ -748,20 +739,32 @@ class Asset extends Element
             if (!$record) {
                 throw new Exception('Invalid asset ID: '.$this->id);
             }
+
+            if ($this->filename != $record->filename) {
+                throw new Exception('Unable to change an asset’s filename like this.');
+            }
         } else {
             $record = new AssetRecord();
             $record->id = $this->id;
+            $record->filename = $this->filename;
         }
 
         $record->volumeId = $this->volumeId;
         $record->folderId = $this->folderId;
-        $record->filename = $this->filename;
         $record->kind = $this->kind;
         $record->size = $this->size;
         $record->width = $this->width;
         $record->height = $this->height;
         $record->dateModified = $this->dateModified;
         $record->save(false);
+
+        if ($this->newFilename) {
+            if ($this->newFilename == $this->filename) {
+                $this->newFilename = null;
+            } else {
+                Craft::$app->getAssets()->renameFile($this, false);
+            }
+        }
 
         parent::afterSave($isNew);
     }
