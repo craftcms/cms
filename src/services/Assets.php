@@ -133,34 +133,6 @@ class Assets extends Component
     }
 
     /**
-     * Finds the first file that matches the given criteria.
-     *
-     * @param mixed $criteria
-     *
-     * @return Asset|null
-     */
-    public function findAsset($criteria = null)
-    {
-        $query = $this->_createAssetQuery($criteria);
-
-        return $query->one();
-    }
-
-    /**
-     * Finds all assets that matches the given criteria.
-     *
-     * @param mixed $criteria
-     *
-     * @return array|null
-     */
-    public function findAssets($criteria = null)
-    {
-        $query = $this->_createAssetQuery($criteria);
-
-        return $query->all();
-    }
-
-    /**
      * Gets the total number of assets that match a given criteria.
      *
      * @param mixed $criteria
@@ -220,10 +192,10 @@ class Assets extends Component
                 ['extension' => $extension]));
         }
 
-        $existingAsset = $this->findAsset([
-            'filename' => $asset->filename,
-            'folderId' => $asset->folderId
-        ]);
+        $existingAsset = Asset::find()
+            ->folderId($asset->folderId)
+            ->filename(Db::escapeParam($asset->filename))
+            ->one();
 
         if ($existingAsset && $existingAsset->id != $asset->id) {
             throw new AssetConflictException(Craft::t('app',
@@ -525,10 +497,10 @@ class Assets extends Component
 
         $newFilename = AssetsHelper::prepareAssetName($newFilename);
 
-        $existingAsset = $this->findAsset([
-            'filename' => $newFilename,
-            'folderId' => $asset->folderId
-        ]);
+        $existingAsset = Asset::find()
+            ->folderId($asset->folderId)
+            ->filename(Db::escapeParam($newFilename))
+            ->one();
 
         if ($existingAsset && $existingAsset->id != $asset->id) {
             throw new AssetConflictException(Craft::t('app',
@@ -1074,10 +1046,10 @@ class Assets extends Component
                 ['extension' => $extension]));
         }
 
-        $existingAsset = $this->findAsset([
-            'filename' => $filename,
-            'folderId' => $folderId
-        ]);
+        $existingAsset = Asset::find()
+            ->folderId($folderId)
+            ->filename(Db::escapeParam($filename))
+            ->one();
 
         if ($existingAsset && $existingAsset->id != $asset->id) {
             throw new AssetConflictException(Craft::t('app',
@@ -1392,29 +1364,6 @@ class Assets extends Component
             // Nuke the transforms
             $assetTransforms->deleteAllTransformData($asset);
         }
-    }
-
-    /**
-     * Returns an AssetQuery object prepped for retrieving assets.
-     *
-     * @param AssetQuery|array $criteria
-     *
-     * @return AssetQuery
-     */
-    private function _createAssetQuery($criteria)
-    {
-        if ($criteria instanceof AssetQuery) {
-            $query = $criteria;
-        } else {
-            $query = Asset::find()->configure($criteria);
-        }
-
-        if (is_string($query->filename)) {
-            // Backslash-escape any commas in a given string.
-            $query->filename = Db::escapeParam($query->filename);
-        }
-
-        return $query;
     }
 
     /**

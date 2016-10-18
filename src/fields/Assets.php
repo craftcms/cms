@@ -19,6 +19,7 @@ use craft\app\errors\AssetConflictException;
 use craft\app\errors\InvalidSubpathException;
 use craft\app\errors\InvalidVolumeException;
 use craft\app\helpers\Assets as AssetsHelper;
+use craft\app\helpers\Db;
 use craft\app\helpers\Io;
 use craft\app\helpers\StringHelper;
 use craft\app\models\VolumeFolder;
@@ -387,10 +388,10 @@ class Assets extends BaseRelationField
 
                 // Resolve all conflicts by keeping both
                 foreach ($assetsToMove as $asset) {
-                    $conflictingAsset = Craft::$app->getAssets()->findAsset([
-                        'filename' => $asset->filename,
-                        'folderId' => $targetFolderId
-                    ]);
+                    $conflictingAsset = Asset::find()
+                        ->folderId($targetFolderId)
+                        ->filename(Db::escapeParam($asset->filename))
+                        ->one();
 
                     if ($conflictingAsset) {
                         $newFilename = Craft::$app->getAssets()->getNameReplacementInFolder($asset->filename,

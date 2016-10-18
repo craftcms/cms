@@ -8,6 +8,7 @@ use craft\app\db\Query;
 use craft\app\elements\Asset;
 use craft\app\errors\VolumeObjectNotFoundException;
 use craft\app\helpers\Assets as AssetsHelper;
+use craft\app\helpers\Db;
 use craft\app\helpers\Image;
 use craft\app\helpers\Io;
 use craft\app\helpers\StringHelper;
@@ -397,11 +398,10 @@ class AssetIndexer extends Component
 
             $folderId = $parentFolder->id;
 
-            $assetModel = $assets->findAsset(
-                [
-                    'folderId' => $folderId,
-                    'filename' => $filename
-                ]);
+            $assetModel = Asset::find()
+                ->filename(Db::escapeParam($filename))
+                ->folderId($folderId)
+                ->one();
 
             if (is_null($assetModel)) {
                 $assetModel = new Asset();
