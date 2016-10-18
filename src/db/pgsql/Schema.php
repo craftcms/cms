@@ -72,10 +72,10 @@ class Schema extends \yii\db\pgsql\Schema
      *
      * @return string
      */
-    //public function quoteDatabaseName($name)
-   // {
-     //   return '`'.$name.'`';
-   // }
+    public function quoteDatabaseName($name)
+    {
+        return '"'.$name.'"';
+    }
 
     /**
      * Releases an existing savepoint.
@@ -84,21 +84,21 @@ class Schema extends \yii\db\pgsql\Schema
      *
      * @throws Exception
      */
-/**
+
     public function releaseSavepoint($name)
     {
         try {
             parent::releaseSavepoint($name);
         } catch (Exception $e) {
-            // Specifically look for a "SAVEPOINT does not exist" error.
-            if ($e->getCode() == 42000 && isset($e->errorInfo[1]) && $e->errorInfo[1] == 1305) {
+            // Specifically look for a "No such savepoint" error.
+            if ($e->getCode() == 3 && isset($e->errorInfo[0]) && isset($e->errorInfo[1]) && $e->errorInfo[0] == '3B001' && $e->errorInfo[1] == 7) {
                 Craft::warning('Tried to release a savepoint, but it does not exist: '.$e->getMessage(), __METHOD__);
             } else {
                 throw $e;
             }
         }
     }
-**/
+
     /**
      * Rolls back to a previously created savepoint.
      *
@@ -106,20 +106,19 @@ class Schema extends \yii\db\pgsql\Schema
      *
      * @throws Exception
      */
-    /**
     public function rollBackSavepoint($name)
     {
         try {
             parent::rollBackSavepoint($name);
         } catch (Exception $e) {
-            // Specifically look for a "SAVEPOINT does not exist" error.
-            if ($e->getCode() == 42000 && isset($e->errorInfo[1]) && $e->errorInfo[1] == 1305) {
+            // Specifically look for a "No such savepoint" error.
+            if ($e->getCode() == 3 && isset($e->errorInfo[0]) && isset($e->errorInfo[1]) && $e->errorInfo[0] == '3B001' && $e->errorInfo[1] == 7) {
                 Craft::warning('Tried to roll back a savepoint, but it does not exist: '.$e->getMessage(), __METHOD__);
             } else {
                 throw $e;
             }
         }
-    }**/
+    }
 
     /**
      * @inheritdoc
