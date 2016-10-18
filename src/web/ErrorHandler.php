@@ -53,16 +53,6 @@ class ErrorHandler extends \yii\web\ErrorHandler
             }
         }
 
-        // Log MySQL deadlocks
-        if ($exception instanceof DbException && StringHelper::contains($exception->getMessage(), 'Deadlock')) {
-            // TODO: MySQL specific
-            $data = Craft::$app->getDb()->createCommand('SHOW ENGINE INNODB STATUS')->query();
-            $info = $data->read();
-            $info = serialize($info);
-
-            Craft::error('Deadlock error, innodb status: '.$info, 'system.db.CDbCommand');
-        }
-
         parent::handleException($exception);
     }
 
