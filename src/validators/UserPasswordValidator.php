@@ -34,11 +34,6 @@ class UserPasswordValidator extends StringValidator
     public $currentPassword;
 
     /**
-     * @var string User-defined error message used when the new password is the same as [[currentPassword]].
-     */
-    public $sameAsCurrent;
-
-    /**
      * @inheritdoc
      */
     public $min = 6;
@@ -47,6 +42,11 @@ class UserPasswordValidator extends StringValidator
      * @inheritdoc
      */
     public $max = 160;
+
+    /**
+     * @var string User-defined error message used when the new password is the same as [[currentPassword]].
+     */
+    public $sameAsCurrent;
 
     // Public Methods
     // =========================================================================
