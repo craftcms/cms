@@ -468,70 +468,72 @@ class UsersController extends Controller
         $edition = Craft::$app->getEdition();
         $isClientAccount = false;
 
-        // Are we editing a specific user account?
-        if ($userId !== null) {
-            switch ($userId) {
-                case 'current': {
-                    if ($user) {
-                        // Make sure it's actually the current user
-                        if (!$user->getIsCurrent()) {
-                            throw new BadRequestHttpException('Not the current user');
+        if ($user === null) {
+            // Are we editing a specific user account?
+            if ($userId !== null) {
+                switch ($userId) {
+                    case 'current': {
+                        if ($user) {
+                            // Make sure it's actually the current user
+                            if (!$user->getIsCurrent()) {
+                                throw new BadRequestHttpException('Not the current user');
+                            }
+                        } else {
+                            // Get the current user
+                            $user = Craft::$app->getUser()->getIdentity();
                         }
-                    } else {
-                        // Get the current user
-                        $user = Craft::$app->getUser()->getIdentity();
+
+                        break;
                     }
+                    case 'client': {
+                        $isClientAccount = true;
 
-                    break;
-                }
-                case 'client': {
-                    $isClientAccount = true;
+                        if ($user) {
+                            // Make sure it's the client account
+                            if (!$user->client) {
+                                throw new BadRequestHttpException('Not the client account');
+                            }
+                        } else {
+                            // Get the existing client account, if there is one
+                            $user = Craft::$app->getUsers()->getClient();
 
-                    if ($user) {
-                        // Make sure it's the client account
-                        if (!$user->client) {
-                            throw new BadRequestHttpException('Not the client account');
+                            if (!$user) {
+                                // Registering the Client
+                                $user = new User();
+                                $user->client = true;
+                            }
                         }
-                    } else {
-                        // Get the existing client account, if there is one
-                        $user = Craft::$app->getUsers()->getClient();
 
-                        if (!$user) {
-                            // Registering the Client
-                            $user = new User();
-                            $user->client = true;
-                        }
+                        break;
                     }
+                    default: {
+                        if ($user) {
+                            // Make sure they have the right ID
+                            if ($user->id != $userId) {
+                                throw new BadRequestHttpException('Not the right user ID');
+                            }
+                        } else {
+                            // Get the user by its ID
+                            $user = Craft::$app->getUsers()->getUserById($userId);
 
-                    break;
-                }
-                default: {
-                    if ($user) {
-                        // Make sure they have the right ID
-                        if ($user->id != $userId) {
-                            throw new BadRequestHttpException('Not the right user ID');
-                        }
-                    } else {
-                        // Get the user by its ID
-                        $user = Craft::$app->getUsers()->getUserById($userId);
+                            if (!$user) {
+                                throw new NotFoundHttpException('User not found');
+                            }
 
-                        if (!$user) {
-                            throw new NotFoundHttpException('User not found');
-                        }
-
-                        if ($user->client) {
-                            $isClientAccount = true;
+                            if ($user->client) {
+                                $isClientAccount = true;
+                            }
                         }
                     }
                 }
-            }
-        } else {
-            if ($edition == Craft::Pro) {
-                // Registering a new user
-                $user = new User();
             } else {
-                // Nada.
-                throw new NotFoundHttpException('User not found');
+                if ($edition == Craft::Pro) {
+                    // Registering a new user
+                    $user = new User();
+                } else {
+                    // Nada.
+                    throw new NotFoundHttpException('User not found');
+                }
             }
         }
 
