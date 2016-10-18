@@ -95,7 +95,6 @@ class Db
         if ($date !== false) {
             $timezone = $date->getTimezone();
             $date->setTimezone(new \DateTimeZone('UTC'));
-            // TODO: MySQL specific
             $formattedDate = $date->format('Y-m-d H:i:s');
             $date->setTimezone($timezone);
 

@@ -900,7 +900,7 @@ class Sites extends Component
                 ->column();
 
             if ($elementIds) {
-                // To be sure we don't hit any unique constraint MySQL errors, first make sure there are no rows for
+                // To be sure we don't hit any unique constraint database errors, first make sure there are no rows for
                 // these elements that don't currently use the old primary site ID
                 $deleteConditions = [
                     'and',

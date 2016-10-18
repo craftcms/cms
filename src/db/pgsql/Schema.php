@@ -131,6 +131,7 @@ class Schema extends \yii\db\pgsql\Schema
     }
 
      **/
+
     /**
      * @inheritdoc
      */

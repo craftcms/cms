@@ -85,8 +85,8 @@ abstract class Field extends SavableComponent implements FieldInterface
      */
     public function rules()
     {
-        // TODO: MySQL specific
-        $maxHandleLength = 64 - strlen(Craft::$app->getContent()->fieldColumnPrefix);
+        // Make sure the column name is under the databases maximum column length allowed.
+        $maxHandleLength = Craft::$app->getDb()->getSchema()->maxObjectNameLength - strlen(Craft::$app->getContent()->fieldColumnPrefix);
 
         $rules = [
             [['name'], 'string', 'max' => 255],
