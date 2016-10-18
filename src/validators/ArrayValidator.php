@@ -12,7 +12,7 @@ use yii\validators\ValidationAsset;
 use yii\validators\Validator;
 
 /**
- * Class HandleValidator.
+ * Class ArrayValidator.
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since  3.0
