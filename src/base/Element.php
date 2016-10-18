@@ -465,8 +465,9 @@ abstract class Element extends Component implements ElementInterface
                 $sourceElementIds[] = $sourceElement->id;
             }
 
+            $schema = Craft::$app->getDb()->getSchema();
+
             // Get the structure data for these elements
-            // @todo: case sql is MySQL-specific
             $selectSql = 'structureId, elementId, lft, rgt';
 
             if ($handle == 'children') {
@@ -497,7 +498,7 @@ abstract class Element extends Component implements ElementInterface
                 }
 
                 $conditions[] = $thisElementConditions;
-                $sourceSelectSql .= " WHEN structureId=:structureId{$i} AND lft>:lft{$i} AND rgt<:rgt{$i} THEN :sourceId{$i}";
+                $sourceSelectSql .= " WHEN ".$schema->quoteColumnName('structureId')."=:structureId{$i} AND ".$schema->quoteColumnName('left').">:lft{$i} AND ".$schema->quoteColumnName('rgt')."<:{$i} THEN :sourceId{$i}";
                 $params[':structureId'.$i] = $elementStructureData['structureId'];
                 $params[':lft'.$i] = $elementStructureData['lft'];
                 $params[':rgt'.$i] = $elementStructureData['rgt'];
