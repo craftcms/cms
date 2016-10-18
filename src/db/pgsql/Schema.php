@@ -20,14 +20,6 @@ use yii\db\Exception;
  */
 class Schema extends \yii\db\pgsql\Schema
 {
-    // Constants
-    // =========================================================================
-
-    const TYPE_TINYTEXT = 'tinytext';
-    const TYPE_MEDIUMTEXT = 'mediumtext';
-    const TYPE_LONGTEXT = 'longtext';
-    const TYPE_ENUM = 'enum';
-
     // Properties
     // =========================================================================
 
@@ -47,11 +39,6 @@ class Schema extends \yii\db\pgsql\Schema
         parent::init();
 
         $this->defaultSchema = Craft::$app->getConfig()->get('schema', Config::CATEGORY_DB);
-
-        //$this->typeMap['tinytext'] = self::TYPE_TINYTEXT;
-        //$this->typeMap['mediumtext'] = self::TYPE_MEDIUMTEXT;
-        //$this->typeMap['longtext'] = self::TYPE_LONGTEXT;
-        //$this->typeMap['enum'] = self::TYPE_ENUM;
     }
 
     /**
@@ -119,17 +106,6 @@ class Schema extends \yii\db\pgsql\Schema
             }
         }
     }
-
-    /**
-     * @inheritdoc
-     */
-    /**
-    public function createColumnSchemaBuilder($type, $length = null)
-    {
-        return new ColumnSchemaBuilder($type, $length, $this->db);
-    }
-
-     **/
 
     /**
      * @inheritdoc
