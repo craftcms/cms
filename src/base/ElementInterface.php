@@ -417,16 +417,6 @@ interface ElementInterface extends ComponentInterface
      */
     public static function getEagerLoadingMap($sourceElements, $handle);
 
-    /**
-     * Performs actions after an element has been moved within a structure.
-     *
-     * @param ElementInterface $element     The element that was moved.
-     * @param integer          $structureId The ID of the structure that it moved within.
-     *
-     * @return void
-     */
-    public static function onAfterMoveElementInStructure(ElementInterface $element, $structureId);
-
     // Public Methods
     // =========================================================================
 
@@ -897,4 +887,22 @@ interface ElementInterface extends ComponentInterface
      * @return void
      */
     public function afterDelete();
+
+    /**
+     * Performs actions before an element is moved within a structure.
+     *
+     * @param integer $structureId The structure ID
+     *
+     * @return boolean Whether the element should be moved within the structure
+     */
+    public function beforeMoveInStructure($structureId);
+
+    /**
+     * Performs actions after an element is moved within a structure.
+     *
+     * @param integer $structureId The structure ID
+     *
+     * @return void
+     */
+    public function afterMoveInStructure($structureId);
 }

@@ -523,20 +523,6 @@ class Entry extends Element
         }
     }
 
-    /**
-     * @inheritdoc
-     */
-    public static function onAfterMoveElementInStructure(ElementInterface $element, $structureId)
-    {
-        /** @var Entry $element */
-        // Was the entry moved within its section's structure?
-        $section = $element->getSection();
-
-        if ($section->type == Section::TYPE_STRUCTURE && $section->structureId == $structureId) {
-            Craft::$app->getElements()->updateElementSlugAndUri($element, true, true, true);
-        }
-    }
-
     // Properties
     // =========================================================================
 
@@ -1046,6 +1032,21 @@ EOD;
         }
 
         parent::afterSave($isNew);
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function afterMoveInStructure($structureId)
+    {
+        // Was the entry moved within its section's structure?
+        $section = $this->getSection();
+
+        if ($section->type == Section::TYPE_STRUCTURE && $section->structureId == $structureId) {
+            Craft::$app->getElements()->updateElementSlugAndUri($this, true, true, true);
+        }
+
+        parent::afterMoveInStructure($structureId);
     }
 
     // Protected Methods

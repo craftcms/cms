@@ -16,6 +16,7 @@ use craft\app\dates\DateTime;
 use craft\app\db\Query;
 use craft\app\elements\db\ElementQuery;
 use craft\app\elements\db\ElementQueryInterface;
+use craft\app\events\ElementStructureEvent;
 use craft\app\events\Event;
 use craft\app\events\ModelEvent;
 use craft\app\helpers\ArrayHelper;
@@ -116,6 +117,18 @@ abstract class Element extends Component implements ElementInterface
      * @event \yii\base\Event The event that is triggered after the element is deleted
      */
     const EVENT_AFTER_DELETE = 'afterDelete';
+
+    /**
+     * @event ElementStructureEvent The event that is triggered before the element is moved in a structure.
+     *
+     * You may set [[ElementStructureEvent::isValid]] to `false` to prevent the element from getting moved.
+     */
+    const EVENT_BEFORE_MOVE_IN_STRUCTURE = 'beforeMoveInStructure';
+
+    /**
+     * @event ElementStructureEvent The event that is triggered after the element is moved in a structure.
+     */
+    const EVENT_AFTER_MOVE_IN_STRUCTURE = 'afterMoveInStructure';
 
     // Static
     // =========================================================================
@@ -495,15 +508,6 @@ abstract class Element extends Component implements ElementInterface
                 }
             }
         }
-    }
-
-    // Element methods
-
-    /**
-     * @inheritdoc
-     */
-    public static function onAfterMoveElementInStructure(ElementInterface $element, $structureId)
-    {
     }
 
     // Properties
@@ -1630,6 +1634,31 @@ abstract class Element extends Component implements ElementInterface
 
         // Trigger an 'afterDelete' event
         $this->trigger(self::EVENT_AFTER_DELETE);
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function beforeMoveInStructure($structureId)
+    {
+        // Trigger a 'beforeMoveInStructure' event
+        $event = new ElementStructureEvent([
+            'structureId' => $structureId,
+        ]);
+        $this->trigger(self::EVENT_BEFORE_MOVE_IN_STRUCTURE, $event);
+
+        return $event->isValid;
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function afterMoveInStructure($structureId)
+    {
+        // Trigger an 'afterMoveInStructure' event
+        $this->trigger(self::EVENT_AFTER_MOVE_IN_STRUCTURE, new ElementStructureEvent([
+            'structureId' => $structureId,
+        ]));
     }
 
     // Protected Methods

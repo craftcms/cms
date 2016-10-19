@@ -237,69 +237,6 @@ class Category extends Element
         return $attributes;
     }
 
-    /**
-     * @inheritdoc
-     */
-    public static function onAfterMoveElementInStructure(ElementInterface $element, $structureId)
-    {
-        /** @var Category $element */
-        // Was the category moved within its group's structure?
-        if ($element->getGroup()->structureId == $structureId) {
-            // Update its URI
-            Craft::$app->getElements()->updateElementSlugAndUri($element, true, true, true);
-
-            // Make sure that each of the category's ancestors are related wherever the category is related
-            $newRelationValues = [];
-
-            $ancestorIds = $element->getAncestors()->ids();
-
-            $sources = (new Query())
-                ->select(['fieldId', 'sourceId', 'sourceSiteId'])
-                ->from('{{%relations}}')
-                ->where('targetId = :categoryId',
-                    [':categoryId' => $element->id])
-                ->all();
-
-            foreach ($sources as $source) {
-                $existingAncestorRelations = (new Query())
-                    ->select('targetId')
-                    ->from('{{%relations}}')
-                    ->where([
-                        'and',
-                        'fieldId = :fieldId',
-                        'sourceId = :sourceId',
-                        'sourceSiteId = :sourceSiteId',
-                        ['in', 'targetId', $ancestorIds]
-                    ], [
-                        ':fieldId' => $source['fieldId'],
-                        ':sourceId' => $source['sourceId'],
-                        ':sourceSiteId' => $source['sourceSiteId']
-                    ])
-                    ->column();
-
-                $missingAncestorRelations = array_diff($ancestorIds, $existingAncestorRelations);
-
-                foreach ($missingAncestorRelations as $categoryId) {
-                    $newRelationValues[] = [
-                        $source['fieldId'],
-                        $source['sourceId'],
-                        $source['sourceSiteId'],
-                        $categoryId
-                    ];
-                }
-            }
-
-            if ($newRelationValues) {
-                Craft::$app->getDb()->createCommand()
-                    ->batchInsert(
-                        '{{%relations}}',
-                        ['fieldId', 'sourceId', 'sourceSiteId', 'targetId'],
-                        $newRelationValues)
-                    ->execute();
-            }
-        }
-    }
-
     // Properties
     // =========================================================================
 
@@ -537,6 +474,70 @@ class Category extends Element
         Craft::$app->getElements()->updateDescendantSlugsAndUris($this, true, true);
 
         parent::afterSave($isNew);
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function afterMoveInStructure($structureId)
+    {
+        // Was the category moved within its group's structure?
+        if ($this->getGroup()->structureId == $structureId) {
+            // Update its URI
+            Craft::$app->getElements()->updateElementSlugAndUri($this, true, true, true);
+
+            // Make sure that each of the category's ancestors are related wherever the category is related
+            $newRelationValues = [];
+
+            $ancestorIds = $this->getAncestors()->ids();
+
+            $sources = (new Query())
+                ->select(['fieldId', 'sourceId', 'sourceSiteId'])
+                ->from('{{%relations}}')
+                ->where('targetId = :categoryId',
+                    [':categoryId' => $this->id])
+                ->all();
+
+            foreach ($sources as $source) {
+                $existingAncestorRelations = (new Query())
+                    ->select('targetId')
+                    ->from('{{%relations}}')
+                    ->where([
+                        'and',
+                        'fieldId = :fieldId',
+                        'sourceId = :sourceId',
+                        'sourceSiteId = :sourceSiteId',
+                        ['in', 'targetId', $ancestorIds]
+                    ], [
+                        ':fieldId' => $source['fieldId'],
+                        ':sourceId' => $source['sourceId'],
+                        ':sourceSiteId' => $source['sourceSiteId']
+                    ])
+                    ->column();
+
+                $missingAncestorRelations = array_diff($ancestorIds, $existingAncestorRelations);
+
+                foreach ($missingAncestorRelations as $categoryId) {
+                    $newRelationValues[] = [
+                        $source['fieldId'],
+                        $source['sourceId'],
+                        $source['sourceSiteId'],
+                        $categoryId
+                    ];
+                }
+            }
+
+            if ($newRelationValues) {
+                Craft::$app->getDb()->createCommand()
+                    ->batchInsert(
+                        '{{%relations}}',
+                        ['fieldId', 'sourceId', 'sourceSiteId', 'targetId'],
+                        $newRelationValues)
+                    ->execute();
+            }
+        }
+
+        parent::afterMoveInStructure($structureId);
     }
 
     // Protected Methods
