@@ -57,7 +57,7 @@ class ChartsController extends Controller
         }
 
         // Get the chart data table
-        $dataTable = ChartHelper::getRunChartDataFromQuery($query, $startDate, $endDate, 'users.dateCreated', array(
+        $dataTable = ChartHelper::getRunChartDataFromQuery($query, $startDate, $endDate, $schema->quoteTableName('users').'.'.$schema->quoteColumnName('dateCreated'), array(
             'intervalUnit' => $intervalUnit,
             'valueLabel' => Craft::t('app', 'New Users'),
         ));

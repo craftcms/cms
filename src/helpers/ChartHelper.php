@@ -8,8 +8,10 @@
 namespace craft\app\helpers;
 
 use Craft;
+use craft\app\db\Connection;
 use craft\app\db\Query;
 use craft\app\dates\DateTime;
+use craft\app\services\Config;
 
 
 /**
@@ -54,6 +56,8 @@ class ChartHelper
             'valueType' => 'number',
         ], $options);
 
+        $databaseType = Craft::$app->getConfig()->get('driver', Config::CATEGORY_DB);
+
         $craftTimezone = new \DateTimeZone(Craft::$app->getTimeZone());
 
         if ($options['intervalUnit'] && in_array($options['intervalUnit'], ['year', 'month', 'day', 'hour'])) {
@@ -62,45 +66,86 @@ class ChartHelper
             $intervalUnit = self::getRunChartIntervalUnit($startDate, $endDate);
         }
 
+        if ($databaseType == Connection::DRIVER_MYSQL) {
+            $yearCode = "YEAR({$dateColumn})";
+            $monthCode = "MONTH({$dateColumn})";
+            $dayCode = "DAY({$dateColumn})";
+            $hourCode = "HOUR({$dateColumn})";
+        } else {
+            // PostgreSQL
+            $yearCode = "EXTRACT(YEAR FROM {$dateColumn})";
+            $monthCode = "EXTRACT(MONTH FROM {$dateColumn})";
+            $dayCode = "EXTRACT(DAY FROM {$dateColumn})";
+            $hourCode = "EXTRACT(HOUR FROM {$dateColumn})";
+        }
+
         switch ($intervalUnit) {
             case 'year': {
-                $sqlDateFormat = '%Y-01-01';
+                if ($databaseType == Connection::DRIVER_MYSQL) {
+                    $sqlDateFormat = '%Y-01-01';
+                } else {
+                    // PostgreSQL
+                    $sqlDateFormat = 'YYYY-01-01';
+                }
                 $phpDateFormat = 'Y-01-01';
-                $sqlGroup = "YEAR({$dateColumn})";
+                $sqlGroup = $yearCode;
                 $cursorDate = new DateTime($startDate->format('Y-01-01'), $craftTimezone);
                 break;
             }
             case 'month': {
-                $sqlDateFormat = '%Y-%m-01';
+                if ($databaseType == Connection::DRIVER_MYSQL) {
+                    $sqlDateFormat = '%Y-%m-01';
+                } else {
+                    // PostgreSQL
+                    $sqlDateFormat = 'YYYY-MM-01';
+                }
                 $phpDateFormat = 'Y-m-01';
-                $sqlGroup = "YEAR({$dateColumn}), MONTH({$dateColumn})";
+                $sqlGroup = $yearCode.', '.$monthCode;
                 $cursorDate = new DateTime($startDate->format('Y-m-01'), $craftTimezone);
                 break;
             }
             case 'day': {
-                $sqlDateFormat = '%Y-%m-%d';
+                if ($databaseType == Connection::DRIVER_MYSQL) {
+                    $sqlDateFormat = '%Y-%m-%d';
+                } else {
+                    // PostgreSQL
+                    $sqlDateFormat = 'YYYY-MM-DD';
+                }
                 $phpDateFormat = 'Y-m-d';
-                $sqlGroup = "YEAR({$dateColumn}), MONTH({$dateColumn}), DAY({$dateColumn})";
+                $sqlGroup = $yearCode.', '.$monthCode.', '.$dayCode;
                 $cursorDate = new DateTime($startDate->format('Y-m-d'), $craftTimezone);
                 break;
             }
             case 'hour': {
-                $sqlDateFormat = '%Y-%m-%d %H:00:00';
+                if ($databaseType == Connection::DRIVER_MYSQL) {
+                    $sqlDateFormat = '%Y-%m-%d %H:00:00';
+                } else {
+                    // PostgreSQL
+                    $sqlDateFormat = 'YYYY-MM-DD HH24:00:00';
+                }
+
                 $phpDateFormat = 'Y-m-d H:00:00';
-                $sqlGroup = "YEAR({$dateColumn}), MONTH({$dateColumn}), DAY({$dateColumn}), HOUR({$dateColumn})";
+                $sqlGroup = $yearCode.', '.$monthCode.', '.$dayCode.', '.$hourCode;
                 $cursorDate = new DateTime($startDate->format('Y-m-d'), $craftTimezone);
                 break;
             }
         }
 
+        if ($databaseType == Connection::DRIVER_MYSQL) {
+            $select = "DATE_FORMAT({$dateColumn},'{$sqlDateFormat}') AS date";
+        } else {
+            // PostgreSQL
+            $select = "to_char({$dateColumn}, '{$sqlDateFormat}') AS date";
+        }
+
         // Execute the query
         $results = $query
-            ->addSelect(["DATE_FORMAT({$dateColumn},'{$sqlDateFormat}') as date"])
+            ->addSelect([$select])
             ->andWhere(
                 ['and', $dateColumn.' >= :startDate', $dateColumn.' < :endDate'],
-                [':startDate' => $startDate->mySqlDateTime(), ':endDate' => $endDate->mySqlDateTime()])
+                [':startDate' => $startDate->format('Y-m-d H:i:s'), ':endDate' => $endDate->format('Y-m-d H:i:s')])
             ->groupBy($sqlGroup)
-            ->orderBy($dateColumn.' asc')
+            ->orderBy($dateColumn.' ASC')
             ->all();
 
         // Assemble the data
