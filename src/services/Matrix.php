@@ -948,121 +948,126 @@ class Matrix extends Component
             }
         }
 
-        if ($applyNewTranslationSetting) {
-            // Get all of the blocks for this field/owner that use the other sites, whose ownerSiteId attribute is set
-            // incorrectly
-            /** @var array $blocksInOtherSites */
-            $blocksInOtherSites = [];
+        if (!$applyNewTranslationSetting) {
+            // All good
+            return;
+        }
 
-            $query = MatrixBlock::find()
-                ->fieldId($field->id)
-                ->ownerId($owner->id)
-                ->status(null)
-                ->enabledForSite(false)
-                ->limit(null);
+        // Get all of the blocks for this field/owner that use the other sites, whose ownerSiteId attribute is set
+        // incorrectly
+        /** @var array $blocksInOtherSites */
+        $blocksInOtherSites = [];
 
-            if ($field->localizeBlocks) {
-                $query->ownerSiteId(':empty:');
+        $query = MatrixBlock::find()
+            ->fieldId($field->id)
+            ->ownerId($owner->id)
+            ->status(null)
+            ->enabledForSite(false)
+            ->limit(null);
+
+        if ($field->localizeBlocks) {
+            $query->ownerSiteId(':empty:');
+        }
+
+        foreach (Craft::$app->getSites()->getAllSiteIds() as $siteId) {
+            if ($siteId == $owner->siteId) {
+                continue;
             }
 
-            foreach (Craft::$app->getSites()->getAllSiteIds() as $siteId) {
-                if ($siteId == $owner->siteId) {
-                    continue;
-                }
+            $query->siteId($siteId);
 
-                $query->siteId($siteId);
+            if (!$field->localizeBlocks) {
+                $query->ownerSiteId($siteId);
+            }
 
-                if (!$field->localizeBlocks) {
-                    $query->ownerSiteId($siteId);
-                }
+            $blocksInOtherSite = $query->all();
 
-                $blocksInOtherSite = $query->all();
+            if ($blocksInOtherSite) {
+                $blocksInOtherSites[$siteId] = $blocksInOtherSite;
+            }
+        }
 
-                if ($blocksInOtherSite) {
-                    $blocksInOtherSites[$siteId] = $blocksInOtherSite;
+        if (!$blocksInOtherSites) {
+            return;
+        }
+
+        if ($field->localizeBlocks) {
+            $newBlockIds = [];
+
+            // Duplicate the other-site blocks so each site has their own unique set of blocks
+            foreach ($blocksInOtherSites as $siteId => $blocksInOtherSite) {
+                foreach ($blocksInOtherSite as $blockInOtherSite) {
+                    /** @var MatrixBlock $blockInOtherSite */
+                    $originalBlockId = $blockInOtherSite->id;
+
+                    $blockInOtherSite->id = null;
+                    $blockInOtherSite->contentId = null;
+                    $blockInOtherSite->ownerSiteId = $siteId;
+                    Craft::$app->getElements()->saveElement($blockInOtherSite, false);
+
+                    $newBlockIds[$originalBlockId][$siteId] = $blockInOtherSite->id;
                 }
             }
 
-            if ($blocksInOtherSites) {
-                if ($field->localizeBlocks) {
-                    $newBlockIds = [];
+            // Duplicate the relations, too.  First by getting all of the existing relations for the original
+            // blocks
+            $relations = (new Query())
+                ->select([
+                    'fieldId',
+                    'sourceId',
+                    'sourceSiteId',
+                    'targetId',
+                    'sortOrder'
+                ])
+                ->from('{{%relations}}')
+                ->where(['in', 'sourceId', array_keys($newBlockIds)])
+                ->all();
 
-                    // Duplicate the other-site blocks so each site has their own unique set of blocks
-                    foreach ($blocksInOtherSites as $siteId => $blocksInOtherSite) {
-                        foreach ($blocksInOtherSite as $blockInOtherSite) {
-                            /** @var MatrixBlock $blockInOtherSite */
-                            $originalBlockId = $blockInOtherSite->id;
+            if ($relations) {
+                // Now duplicate each one for the other sites' new blocks
+                $rows = [];
 
-                            $blockInOtherSite->id = null;
-                            $blockInOtherSite->contentId = null;
-                            $blockInOtherSite->ownerSiteId = $siteId;
-                            Craft::$app->getElements()->saveElement($blockInOtherSite, false);
+                foreach ($relations as $relation) {
+                    $originalBlockId = $relation['sourceId'];
 
-                            $newBlockIds[$originalBlockId][$siteId] = $blockInOtherSite->id;
+                    // Just to be safe...
+                    if (isset($newBlockIds[$originalBlockId])) {
+                        foreach ($newBlockIds[$originalBlockId] as $siteId => $newBlockId) {
+                            $rows[] = [
+                                $relation['fieldId'],
+                                $newBlockId,
+                                $relation['sourceSiteId'],
+                                $relation['targetId'],
+                                $relation['sortOrder']
+                            ];
                         }
                     }
+                }
 
-                    // Duplicate the relations, too.  First by getting all of the existing relations for the original
-                    // blocks
-                    $relations = (new Query())
-                        ->select([
+                Craft::$app->getDb()->createCommand()
+                    ->batchInsert(
+                        'relations',
+                        [
                             'fieldId',
                             'sourceId',
                             'sourceSiteId',
                             'targetId',
                             'sortOrder'
-                        ])
-                        ->from('{{%relations}}')
-                        ->where(['in', 'sourceId', array_keys($newBlockIds)])
-                        ->all();
+                        ],
+                        $rows)
+                    ->execute();
+            }
+        } else {
+            // Delete all of these blocks
+            $blockIdsToDelete = [];
 
-                    if ($relations) {
-                        // Now duplicate each one for the other sites' new blocks
-                        $rows = [];
-
-                        foreach ($relations as $relation) {
-                            $originalBlockId = $relation['sourceId'];
-
-                            // Just to be safe...
-                            if (isset($newBlockIds[$originalBlockId])) {
-                                foreach ($newBlockIds[$originalBlockId] as $siteId => $newBlockId) {
-                                    $rows[] = [
-                                        $relation['fieldId'],
-                                        $newBlockId,
-                                        $relation['sourceSiteId'],
-                                        $relation['targetId'],
-                                        $relation['sortOrder']
-                                    ];
-                                }
-                            }
-                        }
-
-                        Craft::$app->getDb()->createCommand()
-                            ->batchInsert(
-                                'relations',
-                                [
-                                    'fieldId',
-                                    'sourceId',
-                                    'sourceSiteId',
-                                    'targetId',
-                                    'sortOrder'
-                                ],
-                                $rows)
-                            ->execute();
-                    }
-                } else {
-                    // Delete all of these blocks
-                    $blockIdsToDelete = [];
-
-                    foreach ($blocksInOtherSites as $blocksInOtherSite) {
-                        foreach ($blocksInOtherSite as $blockInOtherSite) {
-                            $blockIdsToDelete[] = $blockInOtherSite->id;
-                        }
-                    }
-
-                    $this->deleteBlockById($blockIdsToDelete);
+            foreach ($blocksInOtherSites as $blocksInOtherSite) {
+                foreach ($blocksInOtherSite as $blockInOtherSite) {
+                    $blockIdsToDelete[] = $blockInOtherSite->id;
                 }
             }
+
+            $this->deleteBlockById($blockIdsToDelete);
         }
     }
 }
