@@ -303,50 +303,6 @@ class Asset extends Element
 
     /**
      * @inheritdoc
-     */
-    public static function getEditorHtml(ElementInterface $element)
-    {
-        /** @var Asset $element */
-        $html = Craft::$app->getView()->renderTemplateMacro(
-            '_includes/forms',
-            'textField',
-            [
-                [
-                    'label' => Craft::t('app', 'Filename'),
-                    'id' => 'newFilename',
-                    'name' => 'newFilename',
-                    'value' => $element->filename,
-                    'errors' => $element->getErrors('filename'),
-                    'first' => true,
-                    'required' => true,
-                    'class' => 'renameHelper text'
-                ]
-            ]
-        );
-
-        $html .= Craft::$app->getView()->renderTemplateMacro(
-            '_includes/forms',
-            'textField',
-            [
-                [
-                    'label' => Craft::t('app', 'Title'),
-                    'siteId' => $element->siteId,
-                    'id' => 'title',
-                    'name' => 'title',
-                    'value' => $element->title,
-                    'errors' => $element->getErrors('title'),
-                    'required' => true
-                ]
-            ]
-        );
-
-        $html .= parent::getEditorHtml($element);
-
-        return $html;
-    }
-
-    /**
-     * @inheritdoc
      *
      * @param string $sourceKey
      *
@@ -993,7 +949,7 @@ class Asset extends Element
         return $volume && $volume->hasUrls;
     }
 
-    // Indexes
+    // Indexes, etc.
     // -------------------------------------------------------------------------
 
     /**
@@ -1031,6 +987,41 @@ class Asset extends Element
         }
 
         return parent::getTableAttributeHtml($attribute);
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function getEditorHtml()
+    {
+        $html = Craft::$app->getView()->renderTemplateMacro('_includes/forms', 'textField', [
+            [
+                'label' => Craft::t('app', 'Filename'),
+                'id' => 'newFilename',
+                'name' => 'newFilename',
+                'value' => $this->filename,
+                'errors' => $this->getErrors('filename'),
+                'first' => true,
+                'required' => true,
+                'class' => 'renameHelper text'
+            ]
+        ]);
+
+        $html .= Craft::$app->getView()->renderTemplateMacro('_includes/forms', 'textField', [
+            [
+                'label' => Craft::t('app', 'Title'),
+                'siteId' => $this->siteId,
+                'id' => 'title',
+                'name' => 'title',
+                'value' => $this->title,
+                'errors' => $this->getErrors('title'),
+                'required' => true
+            ]
+        ]);
+
+        $html .= parent::getEditorHtml();
+
+        return $html;
     }
 
     // Private Methods

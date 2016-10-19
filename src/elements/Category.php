@@ -240,45 +240,6 @@ class Category extends Element
     /**
      * @inheritdoc
      */
-    public static function getEditorHtml(ElementInterface $element)
-    {
-        /** @var Category $element */
-        $html = Craft::$app->getView()->renderTemplateMacro('_includes/forms', 'textField',
-            [
-                [
-                    'label' => Craft::t('app', 'Title'),
-                    'siteId' => $element->siteId,
-                    'id' => 'title',
-                    'name' => 'title',
-                    'value' => $element->title,
-                    'errors' => $element->getErrors('title'),
-                    'first' => true,
-                    'autofocus' => true,
-                    'required' => true
-                ]
-            ]);
-
-        $html .= Craft::$app->getView()->renderTemplateMacro('_includes/forms', 'textField',
-            [
-                [
-                    'label' => Craft::t('app', 'Slug'),
-                    'siteId' => $element->siteId,
-                    'id' => 'slug',
-                    'name' => 'slug',
-                    'value' => $element->slug,
-                    'errors' => $element->getErrors('slug'),
-                    'required' => true
-                ]
-            ]);
-
-        $html .= parent::getEditorHtml($element);
-
-        return $html;
-    }
-
-    /**
-     * @inheritdoc
-     */
     public static function getElementRoute(ElementInterface $element)
     {
         /** @var Category $element */
@@ -525,7 +486,7 @@ class Category extends Element
         return $group;
     }
 
-    // Indexes
+    // Indexes, etc.
     // -------------------------------------------------------------------------
 
     /**
@@ -541,6 +502,42 @@ class Category extends Element
         }
 
         return parent::getTableAttributeHtml($attribute);
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function getEditorHtml()
+    {
+        $html = Craft::$app->getView()->renderTemplateMacro('_includes/forms', 'textField', [
+            [
+                'label' => Craft::t('app', 'Title'),
+                'siteId' => $this->siteId,
+                'id' => 'title',
+                'name' => 'title',
+                'value' => $this->title,
+                'errors' => $this->getErrors('title'),
+                'first' => true,
+                'autofocus' => true,
+                'required' => true
+            ]
+        ]);
+
+        $html .= Craft::$app->getView()->renderTemplateMacro('_includes/forms', 'textField', [
+            [
+                'label' => Craft::t('app', 'Slug'),
+                'siteId' => $this->siteId,
+                'id' => 'slug',
+                'name' => 'slug',
+                'value' => $this->slug,
+                'errors' => $this->getErrors('slug'),
+                'required' => true
+            ]
+        ]);
+
+        $html .= parent::getEditorHtml();
+
+        return $html;
     }
 
     // Protected Methods

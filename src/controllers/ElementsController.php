@@ -357,7 +357,7 @@ class ElementsController extends BaseElementsController
         }
 
         $response['html'] .= '<div class="meta">'.
-            Craft::$app->getView()->namespaceInputs($element::getEditorHtml($element)).
+            Craft::$app->getView()->namespaceInputs($element->getEditorHtml()).
             '</div>';
 
         $view = Craft::$app->getView();

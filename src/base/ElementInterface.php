@@ -418,15 +418,6 @@ interface ElementInterface extends ComponentInterface
     public static function getEagerLoadingMap($sourceElements, $handle);
 
     /**
-     * Returns the HTML for an editor HUD for the given element.
-     *
-     * @param ElementInterface $element The element being edited.
-     *
-     * @return string The HTML for the editor HUD
-     */
-    public static function getEditorHtml(ElementInterface $element);
-
-    /**
      * Returns the route for a given element.
      *
      * @param ElementInterface $element The matched element.
@@ -831,7 +822,7 @@ interface ElementInterface extends ComponentInterface
      */
     public function getHasFreshContent();
 
-    // Indexes
+    // Indexes, etc.
     // -------------------------------------------------------------------------
 
     /**
@@ -866,6 +857,13 @@ interface ElementInterface extends ComponentInterface
      * @return string The HTML that should be shown for a given attribute in Table View.
      */
     public function getTableAttributeHtml($attribute);
+
+    /**
+     * Returns the HTML for the element’s editor HUD.
+     *
+     * @return string The HTML for the editor HUD
+     */
+    public function getEditorHtml();
 
     // Events
     // -------------------------------------------------------------------------

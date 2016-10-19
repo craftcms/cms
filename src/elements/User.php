@@ -340,23 +340,6 @@ class User extends Element implements IdentityInterface
     /**
      * @inheritdoc
      */
-    public static function getEditorHtml(ElementInterface $element)
-    {
-        /** @var User $element */
-        $html = Craft::$app->getView()->renderTemplate('users/_accountfields', [
-            'account' => $element,
-            'isNewAccount' => false,
-            'meta' => true,
-        ]);
-
-        $html .= parent::getEditorHtml($element);
-
-        return $html;
-    }
-
-    /**
-     * @inheritdoc
-     */
     public static function getEagerLoadingMap($sourceElements, $handle)
     {
         if ($handle == 'photo') {
@@ -1346,7 +1329,7 @@ class User extends Element implements IdentityInterface
         $this->_photo = $photo;
     }
 
-    // Indexes
+    // Indexes, etc.
     // -------------------------------------------------------------------------
 
     /**
@@ -1372,6 +1355,22 @@ class User extends Element implements IdentityInterface
         }
 
         return parent::getTableAttributeHtml($attribute);
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function getEditorHtml()
+    {
+        $html = Craft::$app->getView()->renderTemplate('users/_accountfields', [
+            'account' => $this,
+            'isNewAccount' => false,
+            'meta' => true,
+        ]);
+
+        $html .= parent::getEditorHtml();
+
+        return $html;
     }
 
     // Private Methods

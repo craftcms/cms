@@ -87,32 +87,6 @@ class Tag extends Element
         return $sources;
     }
 
-    /**
-     * @inheritdoc
-     */
-    public static function getEditorHtml(ElementInterface $element)
-    {
-        /** @var Tag $element */
-        $html = Craft::$app->getView()->renderTemplateMacro('_includes/forms', 'textField',
-            [
-                [
-                    'label' => Craft::t('app', 'Title'),
-                    'siteId' => $element->siteId,
-                    'id' => 'title',
-                    'name' => 'title',
-                    'value' => $element->title,
-                    'errors' => $element->getErrors('title'),
-                    'first' => true,
-                    'autofocus' => true,
-                    'required' => true
-                ]
-            ]);
-
-        $html .= parent::getEditorHtml($element);
-
-        return $html;
-    }
-
     // Properties
     // =========================================================================
 
@@ -193,6 +167,33 @@ class Tag extends Element
         }
 
         return null;
+    }
+
+    // Indexes, etc.
+    // -------------------------------------------------------------------------
+
+    /**
+     * @inheritdoc
+     */
+    public function getEditorHtml()
+    {
+        $html = Craft::$app->getView()->renderTemplateMacro('_includes/forms', 'textField', [
+            [
+                'label' => Craft::t('app', 'Title'),
+                'siteId' => $this->siteId,
+                'id' => 'title',
+                'name' => 'title',
+                'value' => $this->title,
+                'errors' => $this->getErrors('title'),
+                'first' => true,
+                'autofocus' => true,
+                'required' => true
+            ]
+        ]);
+
+        $html .= parent::getEditorHtml();
+
+        return $html;
     }
 
     // Deprecated Methods

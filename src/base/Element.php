@@ -500,38 +500,6 @@ abstract class Element extends Component implements ElementInterface
     /**
      * @inheritdoc
      */
-    public static function getEditorHtml(ElementInterface $element)
-    {
-        /** @var Element $element */
-        $html = '';
-
-        $fieldLayout = $element->getFieldLayout();
-
-        if ($fieldLayout) {
-            $originalNamespace = Craft::$app->getView()->getNamespace();
-            $namespace = Craft::$app->getView()->namespaceInputName('fields', $originalNamespace);
-            Craft::$app->getView()->setNamespace($namespace);
-
-            foreach ($fieldLayout->getFields() as $field) {
-                $fieldHtml = Craft::$app->getView()->renderTemplate('_includes/field',
-                    [
-                        'element' => $element,
-                        'field' => $field,
-                        'required' => $field->required
-                    ]);
-
-                $html .= Craft::$app->getView()->namespaceInputs($fieldHtml, 'fields');
-            }
-
-            Craft::$app->getView()->setNamespace($originalNamespace);
-        }
-
-        return $html;
-    }
-
-    /**
-     * @inheritdoc
-     */
     public static function getElementRoute(ElementInterface $element)
     {
         return false;
@@ -1477,7 +1445,7 @@ abstract class Element extends Component implements ElementInterface
         return (!$this->contentId && !$this->hasErrors());
     }
 
-    // Indexes
+    // Indexes, etc.
     // -------------------------------------------------------------------------
 
     /**
@@ -1556,6 +1524,36 @@ abstract class Element extends Component implements ElementInterface
 
                 return Html::encode($value);
         }
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function getEditorHtml()
+    {
+        $html = '';
+
+        $fieldLayout = $this->getFieldLayout();
+
+        if ($fieldLayout) {
+            $originalNamespace = Craft::$app->getView()->getNamespace();
+            $namespace = Craft::$app->getView()->namespaceInputName('fields', $originalNamespace);
+            Craft::$app->getView()->setNamespace($namespace);
+
+            foreach ($fieldLayout->getFields() as $field) {
+                $fieldHtml = Craft::$app->getView()->renderTemplate('_includes/field', [
+                    'element' => $this,
+                    'field' => $field,
+                    'required' => $field->required
+                ]);
+
+                $html .= Craft::$app->getView()->namespaceInputs($fieldHtml, 'fields');
+            }
+
+            Craft::$app->getView()->setNamespace($originalNamespace);
+        }
+
+        return $html;
     }
 
     // Events

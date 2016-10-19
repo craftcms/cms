@@ -524,65 +524,6 @@ class Entry extends Element
     }
 
     /**
-     * @inheritdoc
-     */
-    public static function getEditorHtml(ElementInterface $element)
-    {
-        /** @var Entry $element */
-        $html = '';
-        $view = Craft::$app->getView();
-
-        // Show the Entry Type field?
-        if (!$element->id) {
-            $entryTypes = $element->getSection()->getEntryTypes();
-
-            if (count($entryTypes) > 1) {
-                $entryTypeOptions = [];
-
-                foreach ($entryTypes as $entryType) {
-                    $entryTypeOptions[] = [
-                        'label' => Craft::t('site', $entryType->name),
-                        'value' => $entryType->id
-                    ];
-                }
-
-                $html .= Craft::$app->getView()->renderTemplateMacro('_includes/forms', 'selectField', [
-                    [
-                        'label' => Craft::t('app', 'Entry Type'),
-                        'id' => 'entryType',
-                        'value' => $element->typeId,
-                        'options' => $entryTypeOptions,
-                    ]
-                ]);
-
-                $typeInputId = $view->namespaceInputId('entryType');
-                $js = <<<EOD
-$('#{$typeInputId}').on('change', function(ev) {
-	var \$typeInput = $(this),
-		editor = \$typeInput.closest('.hud').data('elementEditor');
-	if (editor) {
-		editor.setElementAttribute('typeId', \$typeInput.val());
-		editor.loadHud();
-	}
-});
-EOD;
-                $view->registerJs($js);
-            }
-        }
-
-        if ($element->getType()->hasTitleField) {
-            $html .= $view->renderTemplate('entries/_titlefield',
-                [
-                    'entry' => $element
-                ]);
-        }
-
-        $html .= parent::getEditorHtml($element);
-
-        return $html;
-    }
-
-    /**
      * Routes the request when the URI matches an element.
      *
      * @param ElementInterface $element
@@ -1022,7 +963,7 @@ EOD;
         }
     }
 
-    // Indexes
+    // Indexes, etc.
     // -------------------------------------------------------------------------
 
     /**
@@ -1051,6 +992,63 @@ EOD;
         }
 
         return parent::getTableAttributeHtml($attribute);
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function getEditorHtml()
+    {
+        $html = '';
+        $view = Craft::$app->getView();
+
+        // Show the Entry Type field?
+        if (!$this->id) {
+            $entryTypes = $this->getSection()->getEntryTypes();
+
+            if (count($entryTypes) > 1) {
+                $entryTypeOptions = [];
+
+                foreach ($entryTypes as $entryType) {
+                    $entryTypeOptions[] = [
+                        'label' => Craft::t('site', $entryType->name),
+                        'value' => $entryType->id
+                    ];
+                }
+
+                $html .= Craft::$app->getView()->renderTemplateMacro('_includes/forms', 'selectField', [
+                    [
+                        'label' => Craft::t('app', 'Entry Type'),
+                        'id' => 'entryType',
+                        'value' => $this->typeId,
+                        'options' => $entryTypeOptions,
+                    ]
+                ]);
+
+                $typeInputId = $view->namespaceInputId('entryType');
+                $js = <<<EOD
+$('#{$typeInputId}').on('change', function(ev) {
+	var \$typeInput = $(this),
+		editor = \$typeInput.closest('.hud').data('elementEditor');
+	if (editor) {
+		editor.setElementAttribute('typeId', \$typeInput.val());
+		editor.loadHud();
+	}
+});
+EOD;
+                $view->registerJs($js);
+            }
+        }
+
+        if ($this->getType()->hasTitleField) {
+            $html .= $view->renderTemplate('entries/_titlefield', [
+                'entry' => $this
+            ]);
+        }
+
+        $html .= parent::getEditorHtml();
+
+        return $html;
     }
 
     // Protected Methods
