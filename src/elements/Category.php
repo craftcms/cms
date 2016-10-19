@@ -296,19 +296,6 @@ class Category extends Element
     /**
      * @inheritdoc
      */
-    public static function saveElement(ElementInterface $element, $params)
-    {
-        /** @var Category $element */
-        if (isset($params['slug'])) {
-            $element->slug = $params['slug'];
-        }
-
-        return parent::saveElement($element, $params);
-    }
-
-    /**
-     * @inheritdoc
-     */
     public static function getElementRoute(ElementInterface $element)
     {
         /** @var Category $element */

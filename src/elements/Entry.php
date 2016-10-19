@@ -21,6 +21,7 @@ use craft\app\elements\db\ElementQuery;
 use craft\app\elements\db\ElementQueryInterface;
 use craft\app\elements\db\EntryQuery;
 use craft\app\events\SetStatusEvent;
+use craft\app\helpers\ArrayHelper;
 use craft\app\helpers\DateTimeHelper;
 use craft\app\helpers\Db;
 use craft\app\helpers\Url;
@@ -623,26 +624,6 @@ EOD;
     }
 
     /**
-     * @inheritdoc Element::saveElement()
-     *
-     * @return boolean
-     */
-    public static function saveElement(ElementInterface $element, $params)
-    {
-        /** @var Entry $element */
-        // Make sure we have an author for this.
-        if (!$element->authorId) {
-            if (!empty($params['author'])) {
-                $element->authorId = $params['author'];
-            } else {
-                $element->authorId = Craft::$app->getUser()->getId();
-            }
-        }
-
-        return parent::saveElement($element, $params);
-    }
-
-    /**
      * Routes the request when the URI matches an element.
      *
      * @param ElementInterface $element
@@ -739,6 +720,18 @@ EOD;
 
     // Public Methods
     // =========================================================================
+
+    /**
+     * @inheritdoc
+     */
+    public function init()
+    {
+        parent::init();
+
+        if ($this->authorId === null) {
+            $this->authorId = Craft::$app->getUser()->getId();
+        }
+    }
 
     /**
      * @inheritdoc

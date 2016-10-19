@@ -401,29 +401,6 @@ class User extends Element implements IdentityInterface
     }
 
     /**
-     * @inheritdoc Element::saveElement()
-     *
-     * @return boolean
-     */
-    public static function saveElement(ElementInterface $element, $params)
-    {
-        /** @var User $element */
-        if (isset($params['username'])) {
-            $element->username = $params['username'];
-        }
-
-        if (isset($params['firstName'])) {
-            $element->firstName = $params['firstName'];
-        }
-
-        if (isset($params['lastName'])) {
-            $element->lastName = $params['lastName'];
-        }
-
-        return parent::saveElement($element, $params);
-    }
-
-    /**
      * @inheritdoc
      */
     public static function getEagerLoadingMap($sourceElements, $handle)

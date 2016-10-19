@@ -469,19 +469,6 @@ interface ElementInterface extends ComponentInterface
     public static function getEditorHtml(ElementInterface $element);
 
     /**
-     * Saves a given element.
-     *
-     * This method will be called when an Element Editor’s Save button is clicked. It should just wrap your service’s
-     * saveX() method.
-     *
-     * @param ElementInterface $element The element being saved
-     * @param array            $params  Any element params found in the POST data
-     *
-     * @return boolean Whether the element was saved successfully
-     */
-    public static function saveElement(ElementInterface $element, $params);
-
-    /**
      * Returns the route for a given element.
      *
      * @param ElementInterface $element The matched element.

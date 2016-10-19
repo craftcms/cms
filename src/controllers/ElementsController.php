@@ -124,12 +124,7 @@ class ElementsController extends BaseElementsController
         /** @var Element $element */
         $element = $this->_getEditorElement();
         $namespace = Craft::$app->getRequest()->getRequiredBodyParam('namespace');
-        $params = Craft::$app->getRequest()->getBodyParam($namespace);
-
-        if (isset($params['title'])) {
-            $element->title = $params['title'];
-            unset($params['title']);
-        }
+        $params = Craft::$app->getRequest()->getBodyParam($namespace, []);
 
         if (isset($params['fields'])) {
             $fields = $params['fields'];
@@ -137,11 +132,13 @@ class ElementsController extends BaseElementsController
             unset($params['fields']);
         }
 
+        Craft::configure($element, $params);
+
         // Either way, at least tell the element where its content comes from
         $element->setContentPostLocation($namespace.'.fields');
 
         // Now save it
-        if ($element::saveElement($element, $params)) {
+        if (Craft::$app->getElements()->saveElement($element)) {
             $response = [
                 'success' => true,
                 'id' => $element->id,

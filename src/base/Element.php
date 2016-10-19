@@ -616,15 +616,6 @@ abstract class Element extends Component implements ElementInterface
     /**
      * @inheritdoc
      */
-    public static function saveElement(ElementInterface $element, $params)
-    {
-        /** @var Element $element */
-        return Craft::$app->getElements()->saveElement($element);
-    }
-
-    /**
-     * @inheritdoc
-     */
     public static function getElementRoute(ElementInterface $element)
     {
         return false;

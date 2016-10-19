@@ -409,19 +409,6 @@ class Asset extends Element
 
     /**
      * @inheritdoc
-     */
-    public static function saveElement(ElementInterface $element, $params)
-    {
-        /** @var Asset $element */
-        if (!empty($params['newFilename'])) {
-            $element->newFilename= $params['newFilename'];
-        }
-
-        return parent::saveElement($element, $params);
-    }
-
-    /**
-     * @inheritdoc
      *
      * @param string $sourceKey
      *
