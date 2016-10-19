@@ -486,7 +486,7 @@ class CategoriesController extends Controller
         $this->requirePermission('editCategories:'.$category->groupId);
 
         // Delete it
-        if (Craft::$app->getCategories()->deleteCategory($category)) {
+        if (Craft::$app->getElements()->deleteElement($category)) {
             if (Craft::$app->getRequest()->getAcceptsJson()) {
                 return $this->asJson(['success' => true]);
             }

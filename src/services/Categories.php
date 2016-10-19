@@ -36,16 +36,6 @@ class Categories extends Component
     // =========================================================================
 
     /**
-     * @event CategoryEvent The event that is triggered before a category is deleted.
-     */
-    const EVENT_BEFORE_DELETE_CATEGORY = 'beforeDeleteCategory';
-
-    /**
-     * @event CategoryEvent The event that is triggered after a category is deleted.
-     */
-    const EVENT_AFTER_DELETE_CATEGORY = 'afterDeleteCategory';
-
-    /**
      * @event CategoryGroupEvent The event that is triggered before a category group is saved.
      */
     const EVENT_BEFORE_SAVE_GROUP = 'beforeSaveGroup';
@@ -688,72 +678,6 @@ class Categories extends Component
     }
 
     /**
-     * Deletes a category(s).
-     *
-     * @param Category|Category[] $categories
-     *
-     * @return boolean Whether the category was deleted successfully
-     * @throws \Exception if reasons
-     */
-    public function deleteCategory($categories)
-    {
-        if (!$categories) {
-            return false;
-        }
-
-        if (is_array($categories)) {
-            // Order in reverse-hierarchical order, so as we are looping through
-            // them and deleting their descendants, we don't have to worry about
-            // descendants conflicting with other $categories
-            usort($categories, function(Category $a, Category $b) {
-                return ($a->lft > $b->lft) ? -1 : 1;
-            });
-        } else {
-            $categories = [$categories];
-        }
-
-        $transaction = Craft::$app->getDb()->beginTransaction();
-        try {
-            $success = $this->_deleteCategories($categories, true);
-
-            $transaction->commit();
-        } catch (\Exception $e) {
-            $transaction->rollBack();
-
-            throw $e;
-        }
-
-        return $success;
-    }
-
-    /**
-     * Deletes an category(s) by its ID.
-     *
-     * @param integer|integer[] $categoryId
-     *
-     * @return boolean
-     */
-    public function deleteCategoryById($categoryId)
-    {
-        if (!$categoryId) {
-            return false;
-        }
-
-        $categories = Category::find()
-            ->id($categoryId)
-            ->limit(null)
-            ->status(null)
-            ->enabledForSite(false)
-            ->all();
-
-        if ($categories) {
-            return $this->deleteCategory($categories);
-        }
-
-        return false;
-    }
-
-    /**
      * Updates a list of category IDs, filling in any gaps in the family tree.
      *
      * @param integer[] $ids The original list of category IDs
@@ -824,39 +748,5 @@ class Categories extends Component
         }
 
         return $group;
-    }
-
-    /**
-     * Deletes categories, and their descendants.
-     *
-     * @param Category[] $categories
-     * @param boolean    $deleteDescendants
-     *
-     * @return boolean
-     */
-    private function _deleteCategories($categories, $deleteDescendants = true)
-    {
-        foreach ($categories as $category) {
-            if ($deleteDescendants) {
-                // Delete the descendants in reverse order, so structures don't get wonky
-                /** @var Category[] $descendants */
-                $descendants = $category->getDescendants()->status(null)->enabledForSite(false)->orderBy('lft desc')->all();
-                $this->_deleteCategories($descendants, false);
-            }
-
-            // Fire a 'beforeDeleteCategory' event
-            $this->trigger(self::EVENT_BEFORE_DELETE_CATEGORY, new CategoryEvent([
-                'category' => $category
-            ]));
-
-            Craft::$app->getElements()->deleteElement($category);
-
-            // Fire an 'afterDeleteCategory' event
-            $this->trigger(self::EVENT_AFTER_DELETE_CATEGORY, new CategoryEvent([
-                'category' => $category
-            ]));
-        }
-
-        return true;
     }
 }

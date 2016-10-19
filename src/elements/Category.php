@@ -479,6 +479,26 @@ class Category extends Element
     /**
      * @inheritdoc
      */
+    public function beforeDelete()
+    {
+        // Delete the descendants in reverse order, so structures don't get wonky
+        /** @var Category[] $descendants */
+        $descendants = $this->getDescendants()
+            ->status(null)
+            ->enabledForSite(false)
+            ->orderBy('lft desc')
+            ->all();
+
+        foreach ($descendants as $descendant) {
+            Craft::$app->getElements()->deleteElement($descendant);
+        }
+
+        return parent::beforeDelete();
+    }
+
+    /**
+     * @inheritdoc
+     */
     public function afterMoveInStructure($structureId)
     {
         // Was the category moved within its group's structure?
