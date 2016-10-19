@@ -104,9 +104,8 @@ class AssetsController extends Controller
                         $assetToDelete = $assets->getAssetById($assetId);
 
                         if ($assetToDelete) {
-                            $this->_requirePermissionByAsset('deleteFilesAndFoldersInVolume',
-                                $assetToDelete);
-                            $assets->deleteAssetsByIds($assetId);
+                            $this->_requirePermissionByAsset('deleteFilesAndFoldersInVolume', $assetToDelete);
+                            Craft::$app->getElements()->deleteElement($assetToDelete);
                         }
                     }
                 }

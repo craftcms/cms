@@ -30,7 +30,6 @@ use craft\app\models\VolumeFolder;
 use craft\app\records\Asset as AssetRecord;
 use craft\app\validators\AssetFilenameValidator;
 use craft\app\validators\DateTimeValidator;
-use craft\app\validators\UniqueValidator;
 use yii\base\ErrorHandler;
 use yii\base\Exception;
 use yii\base\InvalidCallException;
@@ -445,9 +444,14 @@ class Asset extends Element
     public $newFilePath;
 
     /**
+     * @var boolean Whether the associated file should be preserved if the asset record is deleted.
+     */
+    public $keepFileOnDelete = false;
+
+    /**
      * @var boolean Whether the file is currently being indexed
      */
-    public $indexInProgress;
+    public $indexInProgress = false;
 
     /**
      * @var
@@ -1025,6 +1029,19 @@ class Asset extends Element
         }
 
         parent::afterSave($isNew);
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function afterDelete()
+    {
+        if (!$this->keepFileOnDelete) {
+            $this->getVolume()->deleteFile($this->getUri());
+        }
+
+        Craft::$app->getAssetTransforms()->deleteAllTransformData($asset);
+        parent::afterDelete();
     }
 
     // Private Methods

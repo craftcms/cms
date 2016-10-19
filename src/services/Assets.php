@@ -79,18 +79,6 @@ class Assets extends Component
      */
     const EVENT_AFTER_REPLACE_ASSET = 'afterReplaceFile';
 
-    /**
-     * @event AssetEvent The event that is triggered before an asset is deleted.
-     *
-     * You may set [[AssetEvent::isValid]] to `false` to prevent the asset from being deleted.
-     */
-    const EVENT_BEFORE_DELETE_ASSET = 'beforeDeleteAsset';
-
-    /**
-     * @event AssetEvent The event that is triggered after an asset is deleted.
-     */
-    const EVENT_AFTER_DELETE_ASSET = 'afterDeleteAsset';
-
     // Properties
     // =========================================================================
 
@@ -325,10 +313,11 @@ class Assets extends Component
             $this->_moveAssetFileToFolder($assetToReplaceWith,
                 $assetToReplace->getFolder(), $assetToReplace->filename);
 
-            // At this point the existing Asset has it's properties changed and the Asset
+            // At this point the existing Asset has its properties changed and the Asset
             // file itself is changed as well. Save the existing Asset and delete the other one.
             $this->saveAsset($assetToReplace);
-            $this->deleteAssetsByIds($assetToReplaceWith->id, false);
+            $assetToReplaceWith->keepFileOnDelete = true;
+            Craft::$app->getElements()->saveElement($assetToReplaceWith);
         }
     }
 
@@ -428,50 +417,6 @@ class Assets extends Component
             'filename' => $filename
         ]);
         $this->trigger(self::EVENT_AFTER_REPLACE_ASSET, $event);
-    }
-
-    /**
-     * Delete a list of files by an array of ids (or a single id).
-     *
-     * @param array|int $assetIds
-     * @param boolean   $deleteFile Should the file be deleted along the record. Defaults to true.
-     *
-     * @return void
-     */
-    public function deleteAssetsByIds($assetIds, $deleteFile = true)
-    {
-        if (!is_array($assetIds)) {
-            $assetIds = [$assetIds];
-        }
-
-        foreach ($assetIds as $assetId) {
-            $asset = $this->getAssetById($assetId);
-
-            if ($asset) {
-                $volume = $asset->getVolume();
-
-                // Fire a 'beforeDeleteAsset' event
-                $event = new AssetEvent($this, [
-                    'asset' => $asset
-                ]);
-
-                $this->trigger(self::EVENT_BEFORE_DELETE_ASSET, $event);
-
-                if ($event->isValid) {
-                    if ($deleteFile) {
-                        $volume->deleteFile($asset->getUri());
-                    }
-
-                    Craft::$app->getElements()->deleteElement($asset);
-                    Craft::$app->getAssetTransforms()->deleteAllTransformData($asset);
-
-                    // Fire an 'afterDeleteAsset' event
-                    $this->trigger(self::EVENT_AFTER_DELETE_ASSET, new AssetEvent($this, [
-                        'asset' => $asset
-                    ]));
-                }
-            }
-        }
     }
 
     /**

@@ -1155,7 +1155,7 @@ class UsersController extends Controller
         $user = Craft::$app->getUsers()->getUserById($userId);
 
         if ($user->photoId) {
-            Craft::$app->getAssets()->deleteAssetsByIds($user->photoId);
+            Craft::$app->getElements()->deleteElementById($user->photoId);
         }
 
         $user->photoId = null;
