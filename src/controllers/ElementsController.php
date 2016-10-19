@@ -297,7 +297,7 @@ class ElementsController extends BaseElementsController
         $attributes['siteId'] = $siteId;
 
         if ($attributes) {
-            $element->setAttributes($attributes);
+            Craft::configure($element, $attributes);
         }
 
         // Make sure it's editable
