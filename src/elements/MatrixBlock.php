@@ -391,6 +391,21 @@ class MatrixBlock extends Element
         parent::afterSave($isNew);
     }
 
+    /**
+     * @inheritdoc
+     */
+    public function afterDelete()
+    {
+        if (!Craft::$app->getRequest()->getIsConsoleRequest()) {
+            // Tell the browser to forget about this block
+            $session = Craft::$app->getSession();
+            $session->addJsResourceFlash('js/MatrixInput.js');
+            $session->addJsFlash('Craft.MatrixInput.forgetCollapsedBlockId('.$this->id.');');
+        }
+
+        parent::afterDelete();
+    }
+
     // Private Methods
     // =========================================================================
 

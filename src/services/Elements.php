@@ -944,15 +944,19 @@ class Elements extends Component
             // this element is suddenly going to show up in a new query)
             Craft::$app->getTemplateCaches()->deleteCachesByElementId($element->id, false);
 
+            // TODO: move this to fields\Matrix::beforeElementDelete()
             // Delete any Matrix blocks that belong to this element(s)
-            $matrixBlockIds = (new Query())
-                ->select('id')
-                ->from('{{%matrixblocks}}')
-                ->where(['ownerId' => $element->id])
-                ->column();
+            foreach (Craft::$app->getSites()->getAllSiteIds() as $siteId) {
+                $matrixBlocks = MatrixBlock::find()
+                    ->status(null)
+                    ->enabledForSite(false)
+                    ->siteId($siteId)
+                    ->owner($element)
+                    ->all();
 
-            if ($matrixBlockIds) {
-                Craft::$app->getMatrix()->deleteBlockById($matrixBlockIds);
+                foreach ($matrixBlocks as $matrixBlock) {
+                    $this->deleteElement($matrixBlock);
+                }
             }
 
             // Delete the elements table rows, which will cascade across all other InnoDB tables

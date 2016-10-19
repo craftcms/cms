@@ -390,13 +390,16 @@ class Matrix extends Component
         $transaction = Craft::$app->getDb()->beginTransaction();
         try {
             // First delete the blocks of this type
-            $blockIds = (new Query())
-                ->select('id')
-                ->from('{{%matrixblocks}}')
-                ->where(['typeId' => $blockType->id])
-                ->column();
+            foreach (Craft::$app->getSites()->getAllSiteIds() as $siteId) {
+                $blocks = MatrixBlock::find()
+                    ->siteId($siteId)
+                    ->typeId($blockType->id)
+                    ->all();
 
-            $this->deleteBlockById($blockIds);
+                foreach ($blocks as $block) {
+                    Craft::$app->getElements()->deleteElement($block);
+                }
+            }
 
             // Set the new contentTable
             $contentService = Craft::$app->getContent();
@@ -678,40 +681,6 @@ class Matrix extends Component
     }
 
     /**
-     * Deletes a block(s) by its ID.
-     *
-     * @param integer|array $blockIds The Matrix block ID(s).
-     *
-     * @return boolean Whether the block(s) were deleted successfully.
-     */
-    public function deleteBlockById($blockIds)
-    {
-        if (!$blockIds) {
-            return false;
-        }
-
-        if (!is_array($blockIds)) {
-            $blockIds = [$blockIds];
-        }
-
-        if (!Craft::$app->getRequest()->getIsConsoleRequest()) {
-            // Tell the browser to forget about these
-            Craft::$app->getSession()->addJsResourceFlash('js/MatrixInput.js');
-
-            foreach ($blockIds as $blockId) {
-                Craft::$app->getSession()->addJsFlash('Craft.MatrixInput.forgetCollapsedBlockId('.$blockId.');');
-            }
-        }
-
-        // Pass this along to the Elements service for the heavy lifting.
-        foreach ($blockIds as $id) {
-            Craft::$app->getElements()->deleteElementById($id);
-        }
-
-        return true;
-    }
-
-    /**
      * Saves a Matrix field.
      *
      * @param MatrixField      $field The Matrix field
@@ -751,31 +720,21 @@ class Matrix extends Component
                 }
             }
 
-            // Get the IDs of blocks that are row deleted
-            $deletedBlockConditions = [
-                'and',
-                'ownerId = :ownerId',
-                'fieldId = :fieldId',
-                ['not in', 'id', $blockIds]
-            ];
-
-            $deletedBlockParams = [
-                ':ownerId' => $owner->id,
-                ':fieldId' => $field->id
-            ];
+            // Delete any blocks that shouldn't be there anymore
+            $deleteBlocksQuery = MatrixBlock::find()
+                ->ownerId($owner->id)
+                ->fieldId($field->id)
+                ->where(['not in', 'elements.id', $blockIds]);
 
             if ($field->localizeBlocks) {
-                $deletedBlockConditions[] = 'ownerSiteId  = :ownerSiteId';
-                $deletedBlockParams[':ownerSiteId'] = $owner->siteId;
+                $deleteBlocksQuery->ownerSiteId($owner->siteId);
+            } else {
+                $deleteBlocksQuery->siteId($owner->siteId);
             }
 
-            $deletedBlockIds = (new Query())
-                ->select('id')
-                ->from('{{%matrixblocks}}')
-                ->where($deletedBlockConditions, $deletedBlockParams)
-                ->column();
-
-            $this->deleteBlockById($deletedBlockIds);
+            foreach ($deleteBlocksQuery->all() as $deleteBlock) {
+                Craft::$app->getElements()->deleteElement($deleteBlock);
+            }
 
             $transaction->commit();
         } catch (\Exception $e) {
@@ -958,6 +917,7 @@ class Matrix extends Component
         /** @var array $blocksInOtherSites */
         $blocksInOtherSites = [];
 
+        /** @var MatrixBlockQuery $query */
         $query = MatrixBlock::find()
             ->fieldId($field->id)
             ->ownerId($owner->id)
@@ -1059,15 +1019,19 @@ class Matrix extends Component
             }
         } else {
             // Delete all of these blocks
-            $blockIdsToDelete = [];
+            $deletedBlockIds = [];
 
             foreach ($blocksInOtherSites as $blocksInOtherSite) {
                 foreach ($blocksInOtherSite as $blockInOtherSite) {
-                    $blockIdsToDelete[] = $blockInOtherSite->id;
+                    // Have we already deleted this block?
+                    if (in_array($blockInOtherSite->id, $deletedBlockIds)) {
+                        continue;
+                    }
+
+                    Craft::$app->getElements()->deleteElement($blockInOtherSite);
+                    $deletedBlockIds[] = $blockInOtherSite->id;
                 }
             }
-
-            $this->deleteBlockById($blockIdsToDelete);
         }
     }
 }
