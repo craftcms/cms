@@ -867,7 +867,7 @@ interface ElementInterface extends ComponentInterface
     // -------------------------------------------------------------------------
 
     /**
-     * Performs actions before a element is saved.
+     * Performs actions before an element is saved.
      *
      * @param boolean $isNew Whether the element is brand new
      *
@@ -876,7 +876,7 @@ interface ElementInterface extends ComponentInterface
     public function beforeSave($isNew);
 
     /**
-     * Performs actions after a element is saved.
+     * Performs actions after an element is saved.
      *
      * @param boolean $isNew Whether the element is brand new
      *
@@ -885,14 +885,14 @@ interface ElementInterface extends ComponentInterface
     public function afterSave($isNew);
 
     /**
-     * Performs actions before a element is deleted.
+     * Performs actions before an element is deleted.
      *
      * @return boolean Whether the element should be deleted
      */
     public function beforeDelete();
 
     /**
-     * Performs actions after a element is deleted.
+     * Performs actions after an element is deleted.
      *
      * @return void
      */
