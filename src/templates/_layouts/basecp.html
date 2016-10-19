@@ -82,7 +82,21 @@
 				{% if isInstalled and currentUser is defined and currentUser %}
 					{% for section in craft.app.sections.getEditableSections() %}
 						{% if section.type != 'single' and currentUser.can('createEntries:'~section.id) %}
-							{id: {{ section.id }}, name: "{{ section.name|t|e('js') }}", handle: "{{ section.handle|e('js') }}", type: "{{ section.type }}"}{% if not loop.last %},{% endif %}
+							{
+								id: {{ section.id }},
+								name: "{{ section.name|t|e('js') }}",
+								handle: "{{ section.handle|e('js') }}",
+								type: "{{ section.type }}",
+								entryTypes: [
+									{% for entryType in section.getEntryTypes() %}
+										{
+											id: {{ entryType.id }},
+											name: "{{ entryType.name|t|e('js') }}",
+											handle: "{{ entryType.handle|e('js') }}"
+										}{% if not loop.last %},{% endif %}
+									{% endfor %}
+								]
+							}{% if not loop.last %},{% endif %}
 						{% endif %}
 					{% endfor %}
 				{% endif %}
