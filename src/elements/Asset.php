@@ -304,68 +304,6 @@ class Asset extends Element
     /**
      * @inheritdoc
      */
-    public static function getTableAttributeHtml(ElementInterface $element, $attribute)
-    {
-        /** @var Asset $element */
-        // First give plugins a chance to set this
-        $pluginAttributeHtml = Craft::$app->getPlugins()->callFirst(
-            'getAssetTableAttributeHtml',
-            [$element, $attribute],
-            true
-        );
-
-        if ($pluginAttributeHtml !== null) {
-            return $pluginAttributeHtml;
-        }
-
-        switch ($attribute) {
-            case 'filename': {
-                return Html::encodeParams(
-                    '<span style="word-break: break-word;">{filename}</span>',
-                    [
-                        'filename' => $element->filename,
-                    ]
-                );
-            }
-
-            case 'kind': {
-                return Io::getFileKindLabel($element->kind);
-            }
-
-            case 'size': {
-                if ($element->size) {
-                    return Craft::$app->getFormatter()->asShortSize(
-                        $element->size
-                    );
-                } else {
-                    return '';
-                }
-            }
-
-            case 'imageSize': {
-                if (($width = $element->getWidth()) && ($height = $element->getHeight())) {
-                    return "{$width} × {$height}";
-                }
-
-                return '';
-            }
-
-            case 'width':
-            case 'height': {
-                $size = $element->$attribute;
-
-                return ($size ? $size.'px' : '');
-            }
-
-            default: {
-                return parent::getTableAttributeHtml($element, $attribute);
-            }
-        }
-    }
-
-    /**
-     * @inheritdoc
-     */
     public static function getEditorHtml(ElementInterface $element)
     {
         /** @var Asset $element */
@@ -1053,6 +991,46 @@ class Asset extends Element
         $volume = $this->getVolume();
 
         return $volume && $volume->hasUrls;
+    }
+
+    // Indexes
+    // -------------------------------------------------------------------------
+
+    /**
+     * @inheritdoc
+     */
+    public function getTableAttributeHtml($attribute)
+    {
+        // First give plugins a chance to set this
+        $pluginAttributeHtml = Craft::$app->getPlugins()->callFirst('getAssetTableAttributeHtml', [$this, $attribute], true);
+
+        if ($pluginAttributeHtml !== null) {
+            return $pluginAttributeHtml;
+        }
+
+        switch ($attribute) {
+            case 'filename':
+                return Html::encodeParams('<span style="word-break: break-word;">{filename}</span>', [
+                    'filename' => $this->filename,
+                ]);
+
+            case 'kind':
+                return Io::getFileKindLabel($this->kind);
+
+            case 'size':
+                return $this->size ? Craft::$app->getFormatter()->asShortSize($this->size) : '';
+
+            case 'imageSize':
+                return (($width = $this->getWidth()) && ($height = $this->getHeight())) ? "{$width} × {$height}" : '';
+
+            case 'width':
+            case 'height':
+                $size = $this->$attribute;
+
+                return ($size ? $size.'px' : '');
+        }
+
+        return parent::getTableAttributeHtml($attribute);
     }
 
     // Private Methods

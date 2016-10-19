@@ -157,7 +157,7 @@ class ElementsController extends BaseElementsController
                 array_shift($attributes);
 
                 foreach ($attributes as $attribute) {
-                    $response['tableAttributes'][$attribute[0]] = $element->getTableAttributeHtml($element, $attribute[0]);
+                    $response['tableAttributes'][$attribute[0]] = $element->getTableAttributeHtml($attribute[0]);
                 }
             }
 

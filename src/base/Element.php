@@ -236,7 +236,6 @@ abstract class Element extends Component implements ElementInterface
         $variables = [
             'viewMode' => $viewState['mode'],
             'context' => $context,
-            'elementType' => new static(),
             'disabledElementIds' => $disabledElementIds,
             'collapsedElementIds' => Craft::$app->getRequest()->getParam('collapsedElementIds'),
             'showCheckboxes' => $showCheckboxes,
@@ -334,89 +333,6 @@ abstract class Element extends Component implements ElementInterface
         $availableTableAttributes = static::defineAvailableTableAttributes();
 
         return array_keys($availableTableAttributes);
-    }
-
-    /**
-     * @inheritdoc
-     */
-    public static function getTableAttributeHtml(ElementInterface $element, $attribute)
-    {
-        /** @var Element $element */
-        switch ($attribute) {
-            case 'link': {
-                $url = $element->getUrl();
-
-                if ($url) {
-                    return '<a href="'.$url.'" target="_blank" data-icon="world" title="'.Craft::t('app', 'Visit webpage').'"></a>';
-                }
-
-                return '';
-            }
-
-            case 'uri': {
-                $url = $element->getUrl();
-
-                if ($url) {
-                    $value = $element->uri;
-
-                    if ($value == '__home__') {
-                        $value = '<span data-icon="home" title="'.Craft::t('app',
-                                'Homepage').'"></span>';
-                    } else {
-                        // Add some <wbr> tags in there so it doesn't all have to be on one line
-                        $find = ['/'];
-                        $replace = ['/<wbr>'];
-
-                        $wordSeparator = Craft::$app->getConfig()->get('slugWordSeparator');
-
-                        if ($wordSeparator) {
-                            $find[] = $wordSeparator;
-                            $replace[] = $wordSeparator.'<wbr>';
-                        }
-
-                        $value = str_replace($find, $replace, $value);
-                    }
-
-                    return '<a href="'.$url.'" target="_blank" class="go" title="'.Craft::t('app', 'Visit webpage').'"><span dir="ltr">'.$value.'</span></a>';
-                }
-
-                return '';
-            }
-
-            default: {
-                // Is this a custom field?
-                if (preg_match('/^field:(\d+)$/', $attribute, $matches)) {
-                    $fieldId = $matches[1];
-                    $field = Craft::$app->getFields()->getFieldById($fieldId);
-
-                    if ($field) {
-                        /** @var Field $field */
-                        if ($field instanceof PreviewableFieldInterface) {
-                            // Was this field value eager-loaded?
-                            if ($field instanceof EagerLoadingFieldInterface && $element->hasEagerLoadedElements($field->handle)) {
-                                $value = $element->getEagerLoadedElements($field->handle);
-                            } else {
-                                $value = $element->getFieldValue($field->handle);
-                            }
-
-                            return $field->getTableAttributeHtml($value, $element);
-                        }
-                    }
-
-                    return '';
-                }
-
-                $value = $element->$attribute;
-
-                if ($value instanceof DateTime) {
-                    $formatter = Craft::$app->getFormatter();
-
-                    return '<span title="'.$formatter->asDatetime($value, Locale::LENGTH_SHORT).'">'.$formatter->asTimestamp($value, Locale::LENGTH_SHORT).'</span>';
-                }
-
-                return Html::encode($value);
-            }
-        }
     }
 
     /**
@@ -1559,6 +1475,87 @@ abstract class Element extends Component implements ElementInterface
     public function getHasFreshContent()
     {
         return (!$this->contentId && !$this->hasErrors());
+    }
+
+    // Indexes
+    // -------------------------------------------------------------------------
+
+    /**
+     * @inheritdoc
+     */
+    public function getTableAttributeHtml($attribute)
+    {
+        switch ($attribute) {
+            case 'link':
+                $url = $this->getUrl();
+
+                if ($url) {
+                    return '<a href="'.$url.'" target="_blank" data-icon="world" title="'.Craft::t('app', 'Visit webpage').'"></a>';
+                }
+
+                return '';
+
+            case 'uri':
+                $url = $this->getUrl();
+
+                if ($url) {
+                    $value = $this->uri;
+
+                    if ($value == '__home__') {
+                        $value = '<span data-icon="home" title="'.Craft::t('app', 'Homepage').'"></span>';
+                    } else {
+                        // Add some <wbr> tags in there so it doesn't all have to be on one line
+                        $find = ['/'];
+                        $replace = ['/<wbr>'];
+
+                        $wordSeparator = Craft::$app->getConfig()->get('slugWordSeparator');
+
+                        if ($wordSeparator) {
+                            $find[] = $wordSeparator;
+                            $replace[] = $wordSeparator.'<wbr>';
+                        }
+
+                        $value = str_replace($find, $replace, $value);
+                    }
+
+                    return '<a href="'.$url.'" target="_blank" class="go" title="'.Craft::t('app', 'Visit webpage').'"><span dir="ltr">'.$value.'</span></a>';
+                }
+
+                return '';
+
+            default:
+                // Is this a custom field?
+                if (preg_match('/^field:(\d+)$/', $attribute, $matches)) {
+                    $fieldId = $matches[1];
+                    $field = Craft::$app->getFields()->getFieldById($fieldId);
+
+                    if ($field) {
+                        /** @var Field $field */
+                        if ($field instanceof PreviewableFieldInterface) {
+                            // Was this field value eager-loaded?
+                            if ($field instanceof EagerLoadingFieldInterface && $this->hasEagerLoadedElements($field->handle)) {
+                                $value = $this->getEagerLoadedElements($field->handle);
+                            } else {
+                                $value = $this->getFieldValue($field->handle);
+                            }
+
+                            return $field->getTableAttributeHtml($value, $this);
+                        }
+                    }
+
+                    return '';
+                }
+
+                $value = $this->$attribute;
+
+                if ($value instanceof DateTime) {
+                    $formatter = Craft::$app->getFormatter();
+
+                    return '<span title="'.$formatter->asDatetime($value, Locale::LENGTH_SHORT).'">'.$formatter->asTimestamp($value, Locale::LENGTH_SHORT).'</span>';
+                }
+
+                return Html::encode($value);
+        }
     }
 
     // Events

@@ -319,52 +319,6 @@ class User extends Element implements IdentityInterface
     /**
      * @inheritdoc
      */
-    public static function getTableAttributeHtml(ElementInterface $element, $attribute)
-    {
-        /** @var User $element */
-        // First give plugins a chance to set this
-        $pluginAttributeHtml = Craft::$app->getPlugins()->callFirst('getUserTableAttributeHtml',
-            [$element, $attribute], true);
-
-        if ($pluginAttributeHtml !== null) {
-            return $pluginAttributeHtml;
-        }
-
-        switch ($attribute) {
-            case 'email': {
-                $email = $element->email;
-
-                if ($email) {
-                    return Html::encodeParams('<a href="mailto:{email}">{email}</a>',
-                        [
-                            'email' => $email
-                        ]);
-                } else {
-                    return '';
-                }
-            }
-
-            case 'preferredLanguage': {
-                $language = $element->getPreferredLanguage();
-
-                if ($language) {
-                    $locale = new Locale($language);
-
-                    return $locale->getDisplayName(Craft::$app->language);
-                }
-
-                return '';
-            }
-
-            default: {
-                return parent::getTableAttributeHtml($element, $attribute);
-            }
-        }
-    }
-
-    /**
-     * @inheritdoc
-     */
     public static function getElementQueryStatusCondition(ElementQueryInterface $query, $status)
     {
         switch ($status) {
@@ -1390,6 +1344,34 @@ class User extends Element implements IdentityInterface
     public function setPhoto(Asset $photo = null)
     {
         $this->_photo = $photo;
+    }
+
+    // Indexes
+    // -------------------------------------------------------------------------
+
+    /**
+     * @inheritdoc
+     */
+    public function getTableAttributeHtml($attribute)
+    {
+        // First give plugins a chance to set this
+        $pluginAttributeHtml = Craft::$app->getPlugins()->callFirst('getUserTableAttributeHtml', [$this, $attribute], true);
+
+        if ($pluginAttributeHtml !== null) {
+            return $pluginAttributeHtml;
+        }
+
+        switch ($attribute) {
+            case 'email':
+                return $this->email ? Html::encodeParams('<a href="mailto:{email}">{email}</a>', ['email' => $this->email]) : '';
+
+            case 'preferredLanguage':
+                $language = $this->getPreferredLanguage();
+
+                return $language ? (new Locale($language))->getDisplayName(Craft::$app->language) : '';
+        }
+
+        return parent::getTableAttributeHtml($attribute);
     }
 
     // Private Methods

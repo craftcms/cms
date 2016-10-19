@@ -357,48 +357,6 @@ interface ElementInterface extends ComponentInterface
     public static function getDefaultTableAttributes($source = null);
 
     /**
-     * Returns the HTML that should be shown for a given element’s attribute in Table View.
-     *
-     * This method can be used to completely customize what actually shows up within the table’s body for a given
-     * attribtue, rather than simply showing the attribute’s raw value.
-     *
-     * For example, if your elements have an “email” attribute that you want to wrap in a `mailto:` link, your
-     * getTableAttributesHtml() method could do this:
-     *
-     * ```php
-     * switch ($attribute)
-     * {
-     *     case 'email':
-     *     {
-     *         if ($element->email)
-     *         {
-     *             return '<a href="mailto:'.$element->email.'">'.$element->email.'</a>';
-     *         }
-     *
-     *         break;
-     *     }
-     *     default:
-     *     {
-     *         return parent::getTableAttributeHtml($element, $attribute);
-     *     }
-     * }
-     * ```
-     *
-     * Element::getTableAttributeHtml() provides a couple handy attribute checks by default, so it is a good
-     * idea to let the parent method get called (as shown above). They are:
-     *
-     * - If the attribute name is ‘uri’, it will be linked to the front-end URL.
-     * - If the attribute name is ‘dateCreated’ or ‘dateUpdated’, the date will be formatted according to the
-     *   current site’s language.
-     *
-     * @param ElementInterface $element   The element.
-     * @param string           $attribute The attribute name.
-     *
-     * @return string The HTML that should be shown for a given element’s attribute in Table View.
-     */
-    public static function getTableAttributeHtml(ElementInterface $element, $attribute);
-
-    /**
      * Returns the fields that should take part in an upcoming elements query.
      *
      * These fields will get their own criteria parameters in the [[ElementQueryInterface]] that gets passed in,
@@ -872,6 +830,42 @@ interface ElementInterface extends ComponentInterface
      * @return bool Whether the element’s content is fresh
      */
     public function getHasFreshContent();
+
+    // Indexes
+    // -------------------------------------------------------------------------
+
+    /**
+     * Returns the HTML that should be shown for a given attribute in Table View.
+     *
+     * This method can be used to completely customize what actually shows up within the table’s body for a given
+     * attribute, rather than simply showing the attribute’s raw value.
+     *
+     * For example, if your elements have an “email” attribute that you want to wrap in a `mailto:` link, your
+     * getTableAttributesHtml() method could do this:
+     *
+     * ```php
+     * switch ($attribute) {
+     *     case 'email':
+     *         return $this->email ? '<a href="mailto:'.$this->email.'">'.$this->email.'</a>' : '';
+     *     // ...
+     * }
+     *
+     * return parent::getTableAttributeHtml($attribute);
+     * ```
+     *
+     * [[Element::getTableAttributeHtml()]] provides a couple handy attribute checks by default, so it is a good
+     * idea to let the parent method get called (as shown above). They are:
+     *
+     * - If the attribute name is ‘link’ or ‘uri’, it will be linked to the front-end URL.
+     * - If the attribute is a custom field handle, it will pass the responsibility off to the field class.
+     * - If the attribute value is a DateTime object, the date will be formatted with a localized date format.
+     * - For anything else, it will output the attribute value as a string.
+     *
+     * @param string $attribute The attribute name.
+     *
+     * @return string The HTML that should be shown for a given attribute in Table View.
+     */
+    public function getTableAttributeHtml($attribute);
 
     // Events
     // -------------------------------------------------------------------------

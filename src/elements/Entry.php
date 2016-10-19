@@ -438,47 +438,6 @@ class Entry extends Element
     /**
      * @inheritdoc
      */
-    public static function getTableAttributeHtml(ElementInterface $element, $attribute)
-    {
-        /** @var Entry $element */
-        // First give plugins a chance to set this
-        $pluginAttributeHtml = Craft::$app->getPlugins()->callFirst('getEntryTableAttributeHtml',
-            [$element, $attribute], true);
-
-        if ($pluginAttributeHtml !== null) {
-            return $pluginAttributeHtml;
-        }
-
-        switch ($attribute) {
-            case 'author': {
-                $author = $element->getAuthor();
-
-                if ($author) {
-                    return Craft::$app->getView()->renderTemplate('_elements/element', [
-                        'element' => $author
-                    ]);
-                } else {
-                    return '';
-                }
-            }
-
-            case 'section': {
-                return Craft::t('site', $element->getSection()->name);
-            }
-
-            case 'type': {
-                return Craft::t('site', $element->getType()->name);
-            }
-
-            default: {
-                return parent::getTableAttributeHtml($element, $attribute);
-            }
-        }
-    }
-
-    /**
-     * @inheritdoc
-     */
     public static function getElementQueryStatusCondition(ElementQueryInterface $query, $status)
     {
         $currentTimeDb = Db::prepareDateForDb(new \DateTime());
@@ -1061,6 +1020,37 @@ EOD;
         } else {
             parent::setEagerLoadedElements($handle, $elements);
         }
+    }
+
+    // Indexes
+    // -------------------------------------------------------------------------
+
+    /**
+     * @inheritdoc
+     */
+    public function getTableAttributeHtml($attribute)
+    {
+        // First give plugins a chance to set this
+        $pluginAttributeHtml = Craft::$app->getPlugins()->callFirst('getEntryTableAttributeHtml', [$this, $attribute], true);
+
+        if ($pluginAttributeHtml !== null) {
+            return $pluginAttributeHtml;
+        }
+
+        switch ($attribute) {
+            case 'author':
+                $author = $this->getAuthor();
+
+                return $author ? Craft::$app->getView()->renderTemplate('_elements/element', ['element' => $author]) : '';
+
+            case 'section':
+                return Craft::t('site', $this->getSection()->name);
+
+            case 'type':
+                return Craft::t('site', $this->getType()->name);
+        }
+
+        return parent::getTableAttributeHtml($attribute);
     }
 
     // Protected Methods

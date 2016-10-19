@@ -240,23 +240,6 @@ class Category extends Element
     /**
      * @inheritdoc
      */
-    public static function getTableAttributeHtml(ElementInterface $element, $attribute)
-    {
-        /** @var Category $element */
-        // First give plugins a chance to set this
-        $pluginAttributeHtml = Craft::$app->getPlugins()->callFirst('getCategoryTableAttributeHtml',
-            [$element, $attribute], true);
-
-        if ($pluginAttributeHtml !== null) {
-            return $pluginAttributeHtml;
-        }
-
-        return parent::getTableAttributeHtml($element, $attribute);
-    }
-
-    /**
-     * @inheritdoc
-     */
     public static function getEditorHtml(ElementInterface $element)
     {
         /** @var Category $element */
@@ -540,6 +523,24 @@ class Category extends Element
         }
 
         return $group;
+    }
+
+    // Indexes
+    // -------------------------------------------------------------------------
+
+    /**
+     * @inheritdoc
+     */
+    public function getTableAttributeHtml($attribute)
+    {
+        // First give plugins a chance to set this
+        $pluginAttributeHtml = Craft::$app->getPlugins()->callFirst('getCategoryTableAttributeHtml', [$this, $attribute], true);
+
+        if ($pluginAttributeHtml !== null) {
+            return $pluginAttributeHtml;
+        }
+
+        return parent::getTableAttributeHtml($attribute);
     }
 
     // Protected Methods
