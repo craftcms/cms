@@ -215,7 +215,7 @@ interface FieldInterface extends SavableComponentInterface
     public function getSearchKeywords($value, $element);
 
     /**
-     * Performs any actions before an element is saved.
+     * Performs actions before an element is saved.
      *
      * @param ElementInterface $element The element that is about to be saved
      * @param boolean          $isNew   Whether the element is brand new
@@ -225,7 +225,7 @@ interface FieldInterface extends SavableComponentInterface
     public function beforeElementSave(ElementInterface $element, $isNew);
 
     /**
-     * Performs any actions after the element has been saved.
+     * Performs actions after the element has been saved.
      *
      * @param ElementInterface $element The element that was just saved
      * @param boolean          $isNew   Whether the element is brand new
@@ -235,7 +235,7 @@ interface FieldInterface extends SavableComponentInterface
     public function afterElementSave(ElementInterface $element, $isNew);
 
     /**
-     * Performs any actions before an element is deleted.
+     * Performs actions before an element is deleted.
      *
      * @param ElementInterface $element The element that is about to be deleted
      *
@@ -244,7 +244,7 @@ interface FieldInterface extends SavableComponentInterface
     public function beforeElementDelete(ElementInterface $element);
 
     /**
-     * Performs any actions after the element has been deleted.
+     * Performs actions after the element has been deleted.
      *
      * @param ElementInterface $element The element that was just deleted
      *
