@@ -184,7 +184,7 @@ class Section extends Model
      *
      * @param string|null $indexBy
      *
-     * @return array
+     * @return EntryType[]
      */
     public function getEntryTypes($indexBy = null)
     {

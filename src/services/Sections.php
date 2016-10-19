@@ -835,7 +835,7 @@ class Sections extends Component
      * @param integer     $sectionId
      * @param string|null $indexBy
      *
-     * @return array
+     * @return EntryType[]
      */
     public function getEntryTypesBySectionId($sectionId, $indexBy = null)
     {
