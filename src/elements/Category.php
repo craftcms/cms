@@ -335,67 +335,6 @@ class Category extends Element
 
     /**
      * @inheritdoc
-     * @throws Exception if reasons
-     */
-    public function beforeSave($isNew)
-    {
-        if ($this->_hasNewParent()) {
-            if ($this->newParentId) {
-                $parentCategory = Craft::$app->getCategories()->getCategoryById($this->newParentId, $this->siteId);
-
-                if (!$parentCategory) {
-                    throw new Exception('Invalid category ID: '.$this->newParentId);
-                }
-            } else {
-                $parentCategory = null;
-            }
-
-            $this->setParent($parentCategory);
-        }
-
-        return parent::beforeSave($isNew);
-    }
-
-    /**
-     * @inheritdoc
-     * @throws Exception if reasons
-     */
-    public function afterSave($isNew)
-    {
-        $group = $this->getGroup();
-
-        // Get the category record
-        if (!$isNew) {
-            $record = CategoryRecord::findOne($this->id);
-
-            if (!$record) {
-                throw new Exception('Invalid category ID: '.$this->id);
-            }
-        } else {
-            $record = new CategoryRecord();
-            $record->id = $this->id;
-        }
-
-        $record->groupId = $this->groupId;
-        $record->save(false);
-
-        // Has the parent changed?
-        if ($this->_hasNewParent()) {
-            if (!$this->newParentId) {
-                Craft::$app->getStructures()->appendToRoot($group->structureId, $this);
-            } else {
-                Craft::$app->getStructures()->append($group->structureId, $this, $this->getParent());
-            }
-        }
-
-        // Update the category's descendants, who may be using this category's URI in their own URIs
-        Craft::$app->getElements()->updateDescendantSlugsAndUris($this, true, true);
-
-        parent::afterSave($isNew);
-    }
-
-    /**
-     * @inheritdoc
      */
     public function getFieldLayout()
     {
@@ -534,6 +473,70 @@ class Category extends Element
         $html .= parent::getEditorHtml();
 
         return $html;
+    }
+
+    // Events
+    // -------------------------------------------------------------------------
+
+    /**
+     * @inheritdoc
+     * @throws Exception if reasons
+     */
+    public function beforeSave($isNew)
+    {
+        if ($this->_hasNewParent()) {
+            if ($this->newParentId) {
+                $parentCategory = Craft::$app->getCategories()->getCategoryById($this->newParentId, $this->siteId);
+
+                if (!$parentCategory) {
+                    throw new Exception('Invalid category ID: '.$this->newParentId);
+                }
+            } else {
+                $parentCategory = null;
+            }
+
+            $this->setParent($parentCategory);
+        }
+
+        return parent::beforeSave($isNew);
+    }
+
+    /**
+     * @inheritdoc
+     * @throws Exception if reasons
+     */
+    public function afterSave($isNew)
+    {
+        $group = $this->getGroup();
+
+        // Get the category record
+        if (!$isNew) {
+            $record = CategoryRecord::findOne($this->id);
+
+            if (!$record) {
+                throw new Exception('Invalid category ID: '.$this->id);
+            }
+        } else {
+            $record = new CategoryRecord();
+            $record->id = $this->id;
+        }
+
+        $record->groupId = $this->groupId;
+        $record->save(false);
+
+        // Has the parent changed?
+        if ($this->_hasNewParent()) {
+            if (!$this->newParentId) {
+                Craft::$app->getStructures()->appendToRoot($group->structureId, $this);
+            } else {
+                Craft::$app->getStructures()->append($group->structureId, $this, $this->getParent());
+            }
+        }
+
+        // Update the category's descendants, who may be using this category's URI in their own URIs
+        Craft::$app->getElements()->updateDescendantSlugsAndUris($this, true, true);
+
+        parent::afterSave($isNew);
     }
 
     // Protected Methods

@@ -649,104 +649,6 @@ class Entry extends Element
 
     /**
      * @inheritdoc
-     * @throws Exception if reasons
-     */
-    public function beforeSave($isNew)
-    {
-        $section = $this->getSection();
-        $entryType = $this->getType();
-
-        // Has the entry been assigned to a new parent?
-        if ($this->_hasNewParent()) {
-            if ($this->newParentId) {
-                $parentEntry = Craft::$app->getEntries()->getEntryById($this->newParentId, $this->siteId);
-
-                if (!$parentEntry) {
-                    throw new Exception('Invalid entry ID: '.$this->newParentId);
-                }
-            } else {
-                $parentEntry = null;
-            }
-
-            $this->setParent($parentEntry);
-        }
-
-        // Verify that the section supports this site
-        $sectionSiteSettings = $section->getSiteSettings();
-
-        if (!isset($sectionSiteSettings[$this->siteId])) {
-            throw new Exception("The section '{$section->name}' is not enabled for the site '{$this->siteId}'");
-        }
-
-        if ($section->type == Section::TYPE_SINGLE) {
-            // Single entries don't have
-            $this->authorId = null;
-            $this->expiryDate = null;
-        }
-
-        if ($this->enabled && !$this->postDate) {
-            // Default the post date to the current date/time
-            $this->postDate = DateTimeHelper::currentUTCDateTime();
-        }
-
-        if (!$entryType->hasTitleField) {
-            $this->title = Craft::$app->getView()->renderObjectTemplate($entryType->titleFormat, $this);
-        }
-
-        return parent::beforeSave($isNew);
-    }
-
-    /**
-     * @inheritdoc
-     * @throws Exception if reasons
-     */
-    public function afterSave($isNew)
-    {
-        $section = $this->getSection();
-
-        // Get the entry record
-        if (!$isNew) {
-            $record = EntryRecord::findOne($this->id);
-
-            if (!$record) {
-                throw new Exception('Invalid entry ID: '.$this->id);
-            }
-        } else {
-            $record = new EntryRecord();
-            $record->id = $this->id;
-        }
-
-        $record->sectionId = $this->sectionId;
-        $record->typeId = $this->typeId;
-        $record->authorId = $this->authorId;
-        $record->postDate = $this->postDate;
-        $record->expiryDate = $this->expiryDate;
-        $record->save(false);
-
-        if ($section->type == Section::TYPE_STRUCTURE) {
-            // Has the parent changed?
-            if ($this->_hasNewParent()) {
-                if (!$this->newParentId) {
-                    Craft::$app->getStructures()->appendToRoot($section->structureId, $this);
-                } else {
-                    Craft::$app->getStructures()->append($section->structureId, $this, $this->getParent());
-                }
-            }
-
-            // Update the entry's descendants, who may be using this entry's URI in their own URIs
-            Craft::$app->getElements()->updateDescendantSlugsAndUris($this, true, true);
-        }
-
-        // Save a new version
-        if ($section->enableVersioning) {
-            Craft::$app->getEntryRevisions()->saveVersion($this);
-        }
-
-        parent::afterSave($isNew);
-    }
-
-    /**
-     * @inheritdoc
      */
     public function getFieldLayout()
     {
@@ -1043,6 +945,107 @@ EOD;
         $html .= parent::getEditorHtml();
 
         return $html;
+    }
+
+    // Events
+    // -------------------------------------------------------------------------
+
+    /**
+     * @inheritdoc
+     * @throws Exception if reasons
+     */
+    public function beforeSave($isNew)
+    {
+        $section = $this->getSection();
+        $entryType = $this->getType();
+
+        // Has the entry been assigned to a new parent?
+        if ($this->_hasNewParent()) {
+            if ($this->newParentId) {
+                $parentEntry = Craft::$app->getEntries()->getEntryById($this->newParentId, $this->siteId);
+
+                if (!$parentEntry) {
+                    throw new Exception('Invalid entry ID: '.$this->newParentId);
+                }
+            } else {
+                $parentEntry = null;
+            }
+
+            $this->setParent($parentEntry);
+        }
+
+        // Verify that the section supports this site
+        $sectionSiteSettings = $section->getSiteSettings();
+
+        if (!isset($sectionSiteSettings[$this->siteId])) {
+            throw new Exception("The section '{$section->name}' is not enabled for the site '{$this->siteId}'");
+        }
+
+        if ($section->type == Section::TYPE_SINGLE) {
+            // Single entries don't have
+            $this->authorId = null;
+            $this->expiryDate = null;
+        }
+
+        if ($this->enabled && !$this->postDate) {
+            // Default the post date to the current date/time
+            $this->postDate = DateTimeHelper::currentUTCDateTime();
+        }
+
+        if (!$entryType->hasTitleField) {
+            $this->title = Craft::$app->getView()->renderObjectTemplate($entryType->titleFormat, $this);
+        }
+
+        return parent::beforeSave($isNew);
+    }
+
+    /**
+     * @inheritdoc
+     * @throws Exception if reasons
+     */
+    public function afterSave($isNew)
+    {
+        $section = $this->getSection();
+
+        // Get the entry record
+        if (!$isNew) {
+            $record = EntryRecord::findOne($this->id);
+
+            if (!$record) {
+                throw new Exception('Invalid entry ID: '.$this->id);
+            }
+        } else {
+            $record = new EntryRecord();
+            $record->id = $this->id;
+        }
+
+        $record->sectionId = $this->sectionId;
+        $record->typeId = $this->typeId;
+        $record->authorId = $this->authorId;
+        $record->postDate = $this->postDate;
+        $record->expiryDate = $this->expiryDate;
+        $record->save(false);
+
+        if ($section->type == Section::TYPE_STRUCTURE) {
+            // Has the parent changed?
+            if ($this->_hasNewParent()) {
+                if (!$this->newParentId) {
+                    Craft::$app->getStructures()->appendToRoot($section->structureId, $this);
+                } else {
+                    Craft::$app->getStructures()->append($section->structureId, $this, $this->getParent());
+                }
+            }
+
+            // Update the entry's descendants, who may be using this entry's URI in their own URIs
+            Craft::$app->getElements()->updateDescendantSlugsAndUris($this, true, true);
+        }
+
+        // Save a new version
+        if ($section->enableVersioning) {
+            Craft::$app->getEntryRevisions()->saveVersion($this);
+        }
+
+        parent::afterSave($isNew);
     }
 
     // Protected Methods

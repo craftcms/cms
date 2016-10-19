@@ -192,34 +192,6 @@ class MatrixBlock extends Element
 
     /**
      * @inheritdoc
-     * @throws Exception if reasons
-     */
-    public function afterSave($isNew)
-    {
-        // Get the block record
-        if (!$isNew) {
-            $record = MatrixBlockRecord::findOne($this->id);
-
-            if (!$record) {
-                throw new Exception('Invalid Matrix block ID: '.$this->id);
-            }
-        } else {
-            $record = new MatrixBlockRecord();
-            $record->id = $this->id;
-        }
-
-        $record->fieldId = $this->fieldId;
-        $record->ownerId = $this->ownerId;
-        $record->ownerSiteId = $this->ownerSiteId;
-        $record->typeId = $this->typeId;
-        $record->sortOrder = $this->sortOrder;
-        $record->save(false);
-
-        parent::afterSave($isNew);
-    }
-
-    /**
-     * @inheritdoc
      */
     public function getFieldLayout()
     {
@@ -386,6 +358,37 @@ class MatrixBlock extends Element
         $owner = $this->getOwner();
 
         return $owner ? $owner->getHasFreshContent() : false;
+    }
+
+    // Events
+    // -------------------------------------------------------------------------
+
+    /**
+     * @inheritdoc
+     * @throws Exception if reasons
+     */
+    public function afterSave($isNew)
+    {
+        // Get the block record
+        if (!$isNew) {
+            $record = MatrixBlockRecord::findOne($this->id);
+
+            if (!$record) {
+                throw new Exception('Invalid Matrix block ID: '.$this->id);
+            }
+        } else {
+            $record = new MatrixBlockRecord();
+            $record->id = $this->id;
+        }
+
+        $record->fieldId = $this->fieldId;
+        $record->ownerId = $this->ownerId;
+        $record->ownerSiteId = $this->ownerSiteId;
+        $record->typeId = $this->typeId;
+        $record->sortOrder = $this->sortOrder;
+        $record->save(false);
+
+        parent::afterSave($isNew);
     }
 
     // Private Methods

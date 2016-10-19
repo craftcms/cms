@@ -668,77 +668,6 @@ class User extends Element implements IdentityInterface
 
     /**
      * @inheritdoc
-     * @throws Exception if reasons
-     */
-    public function afterSave($isNew)
-    {
-        // Get the user record
-        if (!$isNew) {
-            $record = UserRecord::findOne($this->id);
-
-            if (!$record) {
-                throw new Exception('Invalid user ID: '.$this->id);
-            }
-
-            if ($this->locked != $record->locked) {
-                throw new Exception('Unable to change a user’s locked state like this.');
-            }
-
-            if ($this->suspended != $record->suspended) {
-                throw new Exception('Unable to change a user’s suspended state like this.');
-            }
-
-            if ($this->pending != $record->pending) {
-                throw new Exception('Unable to change a user’s pending state like this.');
-            }
-
-            if ($this->archived != $record->archived) {
-                throw new Exception('Unable to change a user’s archived state like this.');
-            }
-        } else {
-            $record = new UserRecord();
-            $record->id = $this->id;
-            $record->locked = $this->locked;
-            $record->suspended = $this->suspended;
-            $record->pending = $this->pending;
-            $record->archived = $this->archived;
-        }
-
-        $record->username = $this->username;
-        $record->firstName = $this->firstName;
-        $record->lastName = $this->lastName;
-        $record->photoId = $this->photoId;
-        $record->email = $this->email;
-        $record->admin = $this->admin;
-        $record->client = $this->client;
-        $record->passwordResetRequired = $this->passwordResetRequired;
-        $record->unverifiedEmail = $this->unverifiedEmail;
-
-        if ($this->newPassword !== null) {
-            $hash = Craft::$app->getSecurity()->hashPassword($this->newPassword);
-
-            $record->password = $this->password = $hash;
-            $record->invalidLoginWindowStart = null;
-            $record->invalidLoginCount = $this->invalidLoginCount = null;
-            $record->verificationCode = null;
-            $record->verificationCodeIssuedDate = null;
-            $record->lastPasswordChangeDate = $this->lastPasswordChangeDate = DateTimeHelper::currentUTCDateTime();
-
-            // If it's an existing user, reset the passwordResetRequired bit.
-            if ($this->id) {
-                $record->passwordResetRequired = $this->passwordResetRequired = false;
-            }
-
-            $this->newPassword = null;
-        }
-
-        $record->save(false);
-
-        parent::afterSave($isNew);
-    }
-
-    /**
-     * @inheritdoc
      */
     public function getFieldLayout()
     {
@@ -1371,6 +1300,80 @@ class User extends Element implements IdentityInterface
         $html .= parent::getEditorHtml();
 
         return $html;
+    }
+
+    // Events
+    // -------------------------------------------------------------------------
+
+    /**
+     * @inheritdoc
+     * @throws Exception if reasons
+     */
+    public function afterSave($isNew)
+    {
+        // Get the user record
+        if (!$isNew) {
+            $record = UserRecord::findOne($this->id);
+
+            if (!$record) {
+                throw new Exception('Invalid user ID: '.$this->id);
+            }
+
+            if ($this->locked != $record->locked) {
+                throw new Exception('Unable to change a user’s locked state like this.');
+            }
+
+            if ($this->suspended != $record->suspended) {
+                throw new Exception('Unable to change a user’s suspended state like this.');
+            }
+
+            if ($this->pending != $record->pending) {
+                throw new Exception('Unable to change a user’s pending state like this.');
+            }
+
+            if ($this->archived != $record->archived) {
+                throw new Exception('Unable to change a user’s archived state like this.');
+            }
+        } else {
+            $record = new UserRecord();
+            $record->id = $this->id;
+            $record->locked = $this->locked;
+            $record->suspended = $this->suspended;
+            $record->pending = $this->pending;
+            $record->archived = $this->archived;
+        }
+
+        $record->username = $this->username;
+        $record->firstName = $this->firstName;
+        $record->lastName = $this->lastName;
+        $record->photoId = $this->photoId;
+        $record->email = $this->email;
+        $record->admin = $this->admin;
+        $record->client = $this->client;
+        $record->passwordResetRequired = $this->passwordResetRequired;
+        $record->unverifiedEmail = $this->unverifiedEmail;
+
+        if ($this->newPassword !== null) {
+            $hash = Craft::$app->getSecurity()->hashPassword($this->newPassword);
+
+            $record->password = $this->password = $hash;
+            $record->invalidLoginWindowStart = null;
+            $record->invalidLoginCount = $this->invalidLoginCount = null;
+            $record->verificationCode = null;
+            $record->verificationCodeIssuedDate = null;
+            $record->lastPasswordChangeDate = $this->lastPasswordChangeDate = DateTimeHelper::currentUTCDateTime();
+
+            // If it's an existing user, reset the passwordResetRequired bit.
+            if ($this->id) {
+                $record->passwordResetRequired = $this->passwordResetRequired = false;
+            }
+
+            $this->newPassword = null;
+        }
+
+        $record->save(false);
+
+        parent::afterSave($isNew);
     }
 
     // Private Methods

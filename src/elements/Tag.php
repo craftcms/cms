@@ -111,30 +111,6 @@ class Tag extends Element
 
     /**
      * @inheritdoc
-     * @throws Exception if reasons
-     */
-    public function afterSave($isNew)
-    {
-        // Get the tag record
-        if (!$isNew) {
-            $record = TagRecord::findOne($this->id);
-
-            if (!$record) {
-                throw new Exception('Invalid tag ID: '.$this->id);
-            }
-        } else {
-            $record = new TagRecord();
-            $record->id = $this->id;
-        }
-
-        $record->groupId = $this->groupId;
-        $record->save(false);
-
-        parent::afterSave($isNew);
-    }
-
-    /**
-     * @inheritdoc
      */
     public function getIsEditable()
     {
@@ -194,6 +170,33 @@ class Tag extends Element
         $html .= parent::getEditorHtml();
 
         return $html;
+    }
+
+    // Events
+    // -------------------------------------------------------------------------
+
+    /**
+     * @inheritdoc
+     * @throws Exception if reasons
+     */
+    public function afterSave($isNew)
+    {
+        // Get the tag record
+        if (!$isNew) {
+            $record = TagRecord::findOne($this->id);
+
+            if (!$record) {
+                throw new Exception('Invalid tag ID: '.$this->id);
+            }
+        } else {
+            $record = new TagRecord();
+            $record->id = $this->id;
+        }
+
+        $record->groupId = $this->groupId;
+        $record->save(false);
+
+        parent::afterSave($isNew);
     }
 
     // Deprecated Methods

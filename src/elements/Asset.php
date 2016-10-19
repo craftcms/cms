@@ -595,63 +595,6 @@ class Asset extends Element
 
     /**
      * @inheritdoc
-     * @throws Exception if reasons
-     */
-    public function beforeSave($isNew)
-    {
-        if ($isNew && !$this->title) {
-            // Give it a default title based on the file name
-            $this->title = StringHelper::toTitleCase(Io::getFilename($this->filename, false));
-        }
-
-        return parent::beforeSave($isNew);
-    }
-
-    /**
-     * @inheritdoc
-     * @throws Exception if reasons
-     */
-    public function afterSave($isNew)
-    {
-        // Get the asset record
-        if (!$isNew) {
-            $record = AssetRecord::findOne($this->id);
-
-            if (!$record) {
-                throw new Exception('Invalid asset ID: '.$this->id);
-            }
-
-            if ($this->filename != $record->filename) {
-                throw new Exception('Unable to change an asset’s filename like this.');
-            }
-        } else {
-            $record = new AssetRecord();
-            $record->id = $this->id;
-            $record->filename = $this->filename;
-        }
-
-        $record->volumeId = $this->volumeId;
-        $record->folderId = $this->folderId;
-        $record->kind = $this->kind;
-        $record->size = $this->size;
-        $record->width = $this->width;
-        $record->height = $this->height;
-        $record->dateModified = $this->dateModified;
-        $record->save(false);
-
-        if ($this->newFilename) {
-            if ($this->newFilename == $this->filename) {
-                $this->newFilename = null;
-            } else {
-                Craft::$app->getAssets()->renameFile($this, false);
-            }
-        }
-
-        parent::afterSave($isNew);
-    }
-
-    /**
-     * @inheritdoc
      */
     public function getFieldLayout()
     {
@@ -1022,6 +965,66 @@ class Asset extends Element
         $html .= parent::getEditorHtml();
 
         return $html;
+    }
+
+    // Events
+    // -------------------------------------------------------------------------
+
+    /**
+     * @inheritdoc
+     * @throws Exception if reasons
+     */
+    public function beforeSave($isNew)
+    {
+        if ($isNew && !$this->title) {
+            // Give it a default title based on the file name
+            $this->title = StringHelper::toTitleCase(Io::getFilename($this->filename, false));
+        }
+
+        return parent::beforeSave($isNew);
+    }
+
+    /**
+     * @inheritdoc
+     * @throws Exception if reasons
+     */
+    public function afterSave($isNew)
+    {
+        // Get the asset record
+        if (!$isNew) {
+            $record = AssetRecord::findOne($this->id);
+
+            if (!$record) {
+                throw new Exception('Invalid asset ID: '.$this->id);
+            }
+
+            if ($this->filename != $record->filename) {
+                throw new Exception('Unable to change an asset’s filename like this.');
+            }
+        } else {
+            $record = new AssetRecord();
+            $record->id = $this->id;
+            $record->filename = $this->filename;
+        }
+
+        $record->volumeId = $this->volumeId;
+        $record->folderId = $this->folderId;
+        $record->kind = $this->kind;
+        $record->size = $this->size;
+        $record->width = $this->width;
+        $record->height = $this->height;
+        $record->dateModified = $this->dateModified;
+        $record->save(false);
+
+        if ($this->newFilename) {
+            if ($this->newFilename == $this->filename) {
+                $this->newFilename = null;
+            } else {
+                Craft::$app->getAssets()->renameFile($this, false);
+            }
+        }
+
+        parent::afterSave($isNew);
     }
 
     // Private Methods
