@@ -99,6 +99,9 @@ class Categories extends BaseRelationField
         return parent::getInputHtml($value, $element);
     }
 
+    // Events
+    // -------------------------------------------------------------------------
+
     /**
      * @inheritdoc
      */

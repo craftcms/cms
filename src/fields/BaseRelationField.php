@@ -157,40 +157,6 @@ abstract class BaseRelationField extends Field implements PreviewableFieldInterf
     /**
      * @inheritdoc
      */
-    public function beforeSave($isNew)
-    {
-        $this->_makeExistingRelationsTranslatable = false;
-
-        if ($this->id && $this->localizeRelations) {
-            /** @var Field $existingField */
-            $existingField = Craft::$app->getFields()->getFieldById($this->id);
-
-            if ($existingField && $existingField instanceof BaseRelationField && !$existingField->localizeRelations) {
-                $this->_makeExistingRelationsTranslatable = true;
-            }
-        }
-
-        return parent::beforeSave($isNew);
-    }
-
-    /**
-     * @inheritdoc
-     */
-    public function afterSave($isNew)
-    {
-        if ($this->_makeExistingRelationsTranslatable) {
-            Craft::$app->getTasks()->queueTask([
-                'type' => LocalizeRelations::class,
-                'fieldId' => $this->id,
-            ]);
-        }
-
-        parent::afterSave($isNew);
-    }
-
-    /**
-     * @inheritdoc
-     */
     public function getSettingsHtml()
     {
         return Craft::$app->getView()->renderTemplate('_components/fieldtypes/elementfieldsettings',
@@ -327,24 +293,6 @@ abstract class BaseRelationField extends Field implements PreviewableFieldInterf
     /**
      * @inheritdoc
      */
-    public function afterElementSave(ElementInterface $element, $isNew)
-    {
-        $value = $this->getElementValue($element);
-
-        if ($value instanceof ElementQueryInterface) {
-            $value = $value->id;
-        }
-
-        if ($value !== null) {
-            Craft::$app->getRelations()->saveRelations($this, $element, $value);
-        }
-
-        parent::afterElementSave($element, $isNew);
-    }
-
-    /**
-     * @inheritdoc
-     */
     public function getStaticHtml($value, $element)
     {
         /** @var ElementQuery $value */
@@ -429,6 +377,61 @@ abstract class BaseRelationField extends Field implements PreviewableFieldInterf
                 'siteId' => $targetSite
             ],
         ];
+    }
+
+    // Events
+    // -------------------------------------------------------------------------
+
+    /**
+     * @inheritdoc
+     */
+    public function beforeSave($isNew)
+    {
+        $this->_makeExistingRelationsTranslatable = false;
+
+        if ($this->id && $this->localizeRelations) {
+            /** @var Field $existingField */
+            $existingField = Craft::$app->getFields()->getFieldById($this->id);
+
+            if ($existingField && $existingField instanceof BaseRelationField && !$existingField->localizeRelations) {
+                $this->_makeExistingRelationsTranslatable = true;
+            }
+        }
+
+        return parent::beforeSave($isNew);
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function afterSave($isNew)
+    {
+        if ($this->_makeExistingRelationsTranslatable) {
+            Craft::$app->getTasks()->queueTask([
+                'type' => LocalizeRelations::class,
+                'fieldId' => $this->id,
+            ]);
+        }
+
+        parent::afterSave($isNew);
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function afterElementSave(ElementInterface $element, $isNew)
+    {
+        $value = $this->getElementValue($element);
+
+        if ($value instanceof ElementQueryInterface) {
+            $value = $value->id;
+        }
+
+        if ($value !== null) {
+            Craft::$app->getRelations()->saveRelations($this, $element, $value);
+        }
+
+        parent::afterElementSave($element, $isNew);
     }
 
     // Protected Methods

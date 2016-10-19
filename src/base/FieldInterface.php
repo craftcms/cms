@@ -215,44 +215,6 @@ interface FieldInterface extends SavableComponentInterface
     public function getSearchKeywords($value, $element);
 
     /**
-     * Performs actions before an element is saved.
-     *
-     * @param ElementInterface $element The element that is about to be saved
-     * @param boolean          $isNew   Whether the element is brand new
-     *
-     * @return boolean Whether the element should be saved
-     */
-    public function beforeElementSave(ElementInterface $element, $isNew);
-
-    /**
-     * Performs actions after the element has been saved.
-     *
-     * @param ElementInterface $element The element that was just saved
-     * @param boolean          $isNew   Whether the element is brand new
-     *
-     * @return void
-     */
-    public function afterElementSave(ElementInterface $element, $isNew);
-
-    /**
-     * Performs actions before an element is deleted.
-     *
-     * @param ElementInterface $element The element that is about to be deleted
-     *
-     * @return boolean Whether the element should be deleted
-     */
-    public function beforeElementDelete(ElementInterface $element);
-
-    /**
-     * Performs actions after the element has been deleted.
-     *
-     * @param ElementInterface $element The element that was just deleted
-     *
-     * @return void
-     */
-    public function afterElementDelete(ElementInterface $element);
-
-    /**
      * Prepares the field’s value for use.
      *
      * This method is called when the field’s value is first accessed from the element. For example, the first time
@@ -305,4 +267,45 @@ interface FieldInterface extends SavableComponentInterface
      * @return FieldGroup
      */
     public function getGroup();
+
+    // Events
+    // -------------------------------------------------------------------------
+
+    /**
+     * Performs actions before an element is saved.
+     *
+     * @param ElementInterface $element The element that is about to be saved
+     * @param boolean          $isNew   Whether the element is brand new
+     *
+     * @return boolean Whether the element should be saved
+     */
+    public function beforeElementSave(ElementInterface $element, $isNew);
+
+    /**
+     * Performs actions after the element has been saved.
+     *
+     * @param ElementInterface $element The element that was just saved
+     * @param boolean          $isNew   Whether the element is brand new
+     *
+     * @return void
+     */
+    public function afterElementSave(ElementInterface $element, $isNew);
+
+    /**
+     * Performs actions before an element is deleted.
+     *
+     * @param ElementInterface $element The element that is about to be deleted
+     *
+     * @return boolean Whether the element should be deleted
+     */
+    public function beforeElementDelete(ElementInterface $element);
+
+    /**
+     * Performs actions after the element has been deleted.
+     *
+     * @param ElementInterface $element The element that was just deleted
+     *
+     * @return void
+     */
+    public function afterElementDelete(ElementInterface $element);
 }

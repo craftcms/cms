@@ -224,25 +224,6 @@ class Matrix extends Field implements EagerLoadingFieldInterface
     /**
      * @inheritdoc
      */
-    public function afterSave($isNew)
-    {
-        Craft::$app->getMatrix()->saveSettings($this, false);
-        parent::afterSave($isNew);
-    }
-
-    /**
-     * @inheritdoc
-     */
-    public function beforeDelete()
-    {
-        Craft::$app->getMatrix()->deleteMatrixField($this);
-
-        return parent::beforeDelete();
-    }
-
-    /**
-     * @inheritdoc
-     */
     public function prepareValue($value, $element)
     {
         /** @var Element $element */
@@ -431,16 +412,6 @@ class Matrix extends Field implements EagerLoadingFieldInterface
     /**
      * @inheritdoc
      */
-    public function afterElementSave(ElementInterface $element, $isNew)
-    {
-        Craft::$app->getMatrix()->saveField($this, $element);
-
-        parent::afterElementSave($element, $isNew);
-    }
-
-    /**
-     * @inheritdoc
-     */
     public function getStaticHtml($value, $element)
     {
         if ($value) {
@@ -490,6 +461,38 @@ class Matrix extends Field implements EagerLoadingFieldInterface
             'map' => $map,
             'criteria' => ['fieldId' => $this->id]
         ];
+    }
+
+    // Events
+    // -------------------------------------------------------------------------
+
+    /**
+     * @inheritdoc
+     */
+    public function afterSave($isNew)
+    {
+        Craft::$app->getMatrix()->saveSettings($this, false);
+        parent::afterSave($isNew);
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function beforeDelete()
+    {
+        Craft::$app->getMatrix()->deleteMatrixField($this);
+
+        return parent::beforeDelete();
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function afterElementSave(ElementInterface $element, $isNew)
+    {
+        Craft::$app->getMatrix()->saveField($this, $element);
+
+        parent::afterElementSave($element, $isNew);
     }
 
     // Protected Methods

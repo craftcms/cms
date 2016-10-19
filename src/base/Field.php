@@ -223,58 +223,6 @@ abstract class Field extends SavableComponent implements FieldInterface
     /**
      * @inheritdoc
      */
-    public function beforeElementSave(ElementInterface $element, $isNew)
-    {
-        // Trigger a 'beforeElementSave' event
-        $event = new FieldElementEvent([
-            'element' => $element,
-            'isNew' => $isNew,
-        ]);
-        $this->trigger(self::EVENT_BEFORE_ELEMENT_SAVE, $event);
-
-        return $event->isValid;
-    }
-
-    /**
-     * @inheritdoc
-     */
-    public function afterElementSave(ElementInterface $element, $isNew)
-    {
-        // Trigger an 'afterElementSave' event
-        $this->trigger(self::EVENT_AFTER_ELEMENT_SAVE, new FieldElementEvent([
-            'element' => $element,
-            'isNew' => $isNew,
-        ]));
-    }
-
-    /**
-     * @inheritdoc
-     */
-    public function beforeElementDelete(ElementInterface $element)
-    {
-        // Trigger a 'beforeElementDelete' event
-        $event = new FieldElementEvent([
-            'element' => $element,
-        ]);
-        $this->trigger(self::EVENT_BEFORE_ELEMENT_DELETE, $event);
-
-        return $event->isValid;
-    }
-
-    /**
-     * @inheritdoc
-     */
-    public function afterElementDelete(ElementInterface $element)
-    {
-        // Trigger an 'afterElementDelete' event
-        $this->trigger(self::EVENT_AFTER_ELEMENT_DELETE, new FieldElementEvent([
-            'element' => $element,
-        ]));
-    }
-
-    /**
-     * @inheritdoc
-     */
     public function prepareValue($value, $element)
     {
         return $value;
@@ -397,6 +345,61 @@ abstract class Field extends SavableComponent implements FieldInterface
     public function getGroup()
     {
         return Craft::$app->getFields()->getGroupById($this->groupId);
+    }
+
+    // Events
+    // -------------------------------------------------------------------------
+
+    /**
+     * @inheritdoc
+     */
+    public function beforeElementSave(ElementInterface $element, $isNew)
+    {
+        // Trigger a 'beforeElementSave' event
+        $event = new FieldElementEvent([
+            'element' => $element,
+            'isNew' => $isNew,
+        ]);
+        $this->trigger(self::EVENT_BEFORE_ELEMENT_SAVE, $event);
+
+        return $event->isValid;
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function afterElementSave(ElementInterface $element, $isNew)
+    {
+        // Trigger an 'afterElementSave' event
+        $this->trigger(self::EVENT_AFTER_ELEMENT_SAVE, new FieldElementEvent([
+            'element' => $element,
+            'isNew' => $isNew,
+        ]));
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function beforeElementDelete(ElementInterface $element)
+    {
+        // Trigger a 'beforeElementDelete' event
+        $event = new FieldElementEvent([
+            'element' => $element,
+        ]);
+        $this->trigger(self::EVENT_BEFORE_ELEMENT_DELETE, $event);
+
+        return $event->isValid;
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function afterElementDelete(ElementInterface $element)
+    {
+        // Trigger an 'afterElementDelete' event
+        $this->trigger(self::EVENT_AFTER_ELEMENT_DELETE, new FieldElementEvent([
+            'element' => $element,
+        ]));
     }
 
     // Protected Methods

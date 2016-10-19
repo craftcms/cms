@@ -31,38 +31,6 @@ interface SavableComponentInterface extends ComponentInterface
     // =========================================================================
 
     /**
-     * Performs actions before a component is saved.
-     *
-     * @param boolean $isNew Whether the component is brand new
-     *
-     * @return boolean Whether the component should be saved
-     */
-    public function beforeSave($isNew);
-
-    /**
-     * Performs actions after a component is saved.
-     *
-     * @param boolean $isNew Whether the component is brand new
-     *
-     * @return void
-     */
-    public function afterSave($isNew);
-
-    /**
-     * Performs actions before a component is deleted.
-     *
-     * @return boolean Whether the component should be deleted
-     */
-    public function beforeDelete();
-
-    /**
-     * Performs actions after a component is deleted.
-     *
-     * @return void
-     */
-    public function afterDelete();
-
-    /**
      * Returns whether the component is new (unsaved).
      *
      * @return boolean Whether the component is new
@@ -192,4 +160,39 @@ interface SavableComponentInterface extends ComponentInterface
      * @return string|null
      */
     public function getSettingsHtml();
+
+    // Events
+    // -------------------------------------------------------------------------
+
+    /**
+     * Performs actions before a component is saved.
+     *
+     * @param boolean $isNew Whether the component is brand new
+     *
+     * @return boolean Whether the component should be saved
+     */
+    public function beforeSave($isNew);
+
+    /**
+     * Performs actions after a component is saved.
+     *
+     * @param boolean $isNew Whether the component is brand new
+     *
+     * @return void
+     */
+    public function afterSave($isNew);
+
+    /**
+     * Performs actions before a component is deleted.
+     *
+     * @return boolean Whether the component should be deleted
+     */
+    public function beforeDelete();
+
+    /**
+     * Performs actions after a component is deleted.
+     *
+     * @return void
+     */
+    public function afterDelete();
 }
