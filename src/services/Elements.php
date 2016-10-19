@@ -552,8 +552,8 @@ class Elements extends Component
                     $element->addError('slug', Craft::t('app', '{attribute} is invalid.', ['attribute' => Craft::t('app', 'Slug')]));
 
                     // Don't bother with any of the other sites
-                    $success = false;
-                    break;
+                    // TODO: this should be caught in validation
+                    throw new Exception('Invalid slug: '.$originalSlug);
                 }
 
                 // Go ahead and re-do search index keywords to grab things like "title" in
