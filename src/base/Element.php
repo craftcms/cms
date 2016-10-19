@@ -43,6 +43,7 @@ use yii\validators\Validator;
  * @property string|null           $url                 The element’s full URL
  * @property \Twig_Markup|null     $link                An anchor pre-filled with this element’s URL and title
  * @property string|null           $ref                 The reference string to this element
+ * @property string                $indexHtml           The element index HTML
  * @property boolean               $isEditable          Whether the current user can edit the element
  * @property string|null           $cpEditUrl           The element’s CP edit URL
  * @property string|null           $thumbUrl            The URL to the element’s thumbnail, if there is one
