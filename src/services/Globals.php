@@ -41,18 +41,6 @@ class Globals extends Component
      */
     const EVENT_AFTER_SAVE_GLOBAL_SET = 'afterSaveGlobalSet';
 
-    /**
-     * @event GlobalSetEvent The event that is triggered before a global set is deleted.
-     *
-     * You may set [[GlobalSetEvent::isValid]] to `false` to prevent the global set from being deleted.
-     */
-    const EVENT_BEFORE_DELETE_GLOBAL_SET = 'beforeDeleteGlobalSet';
-
-    /**
-     * @event GlobalSetEvent The event that is triggered after a global set is deleted.
-     */
-    const EVENT_AFTER_DELETE_GLOBAL_SET = 'afterDeleteGlobalSet';
-
     // Properties
     // =========================================================================
 
@@ -362,68 +350,6 @@ class Globals extends Component
                     ])
                 );
             }
-        }
-
-        return $success;
-    }
-
-    /**
-     * Deletes a global set by its ID.
-     *
-     * @param integer $setId
-     *
-     * @return boolean Whether the global set was deleted successfully
-     * @throws \Exception if reasons
-     */
-    public function deleteSetById($setId)
-    {
-        if (!$setId) {
-            return false;
-        }
-
-        $success = true;
-
-        $transaction = Craft::$app->getDb()->beginTransaction();
-        try {
-            $globalSet = $this->getSetById($setId);
-
-            // Fire a 'beforeDeleteGlobalSet' event
-            $event = new GlobalSetEvent([
-                'globalSet' => $globalSet
-            ]);
-
-            $this->trigger(self::EVENT_BEFORE_DELETE_GLOBAL_SET, $event);
-
-            // Is the event giving us the go-ahead?
-            if ($event->isValid) {
-                // Delete the field layout
-                $fieldLayoutId = (new Query())
-                    ->select('fieldLayoutId')
-                    ->from('{{%globalsets}}')
-                    ->where(['id' => $setId])
-                    ->scalar();
-
-                if ($fieldLayoutId) {
-                    Craft::$app->getFields()->deleteLayoutById($fieldLayoutId);
-                }
-
-                Craft::$app->getElements()->deleteElementById($setId);
-
-                $transaction->commit();
-            } else {
-                $success = false;
-            }
-        } catch (\Exception $e) {
-            $transaction->rollBack();
-
-            throw $e;
-        }
-
-        if ($success) {
-            // Fire an 'afterDeleteGlobalSet' event
-            $this->trigger(self::EVENT_AFTER_DELETE_GLOBAL_SET, new GlobalSetEvent([
-                'globalSet' => $globalSet
-            ]));
         }
 
         return $success;
