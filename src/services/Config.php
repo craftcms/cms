@@ -678,8 +678,11 @@ class Config extends Component
 
         if ($configVal === 'minor-only') {
             // Return whether the major version number has changed
-            $localMajorVersion = array_shift(explode('.', Craft::$app->version));
-            $updateMajorVersion = array_shift(explode('.', $updateInfo->app->latestVersion));
+            $versionParts = explode('.', Craft::$app->version);
+            $majorVersionParts = explode('.', $updateInfo->app->latestVersion);
+
+            $localMajorVersion = array_shift($versionParts);
+            $updateMajorVersion = array_shift($majorVersionParts);
 
             return ($localMajorVersion === $updateMajorVersion);
         }

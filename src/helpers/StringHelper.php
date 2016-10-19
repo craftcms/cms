@@ -481,7 +481,7 @@ class StringHelper extends \yii\helpers\StringHelper
 
         $string = array_shift($words).implode('', array_map([
                 get_called_class(),
-                'uppercaseFirst'
+                'upperCaseFirst'
             ], $words));
 
         return $string;
@@ -503,7 +503,7 @@ class StringHelper extends \yii\helpers\StringHelper
         $words = self::_prepStringForCasing($string);
         $string = implode('', array_map([
             get_called_class(),
-            'uppercaseFirst'
+            'upperCaseFirst'
         ], $words));
 
         return $string;
@@ -887,7 +887,7 @@ class StringHelper extends \yii\helpers\StringHelper
      *
      * @return string The string with the first character being uppercase.
      */
-    public static function uppercaseFirst($str)
+    public static function upperCaseFirst($str)
     {
         return (string)Stringy::create($str)->upperCaseFirst();
     }
