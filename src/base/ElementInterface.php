@@ -418,16 +418,6 @@ interface ElementInterface extends ComponentInterface
     public static function getEagerLoadingMap($sourceElements, $handle);
 
     /**
-     * Returns the route for a given element.
-     *
-     * @param ElementInterface $element The matched element.
-     *
-     * @return mixed Can be false if no special action should be taken, a string if it should route to a template path,
-     *               or an array that can specify a controller action path, params, etc.
-     */
-    public static function getElementRoute(ElementInterface $element);
-
-    /**
      * Performs actions after an element has been moved within a structure.
      *
      * @param ElementInterface $element     The element that was moved.
@@ -470,8 +460,16 @@ interface ElementInterface extends ComponentInterface
      * Returns the URI format used to generate this element’s URI.
      *
      * @return string|null
+     * @see getElementRoute()
      */
     public function getUriFormat();
+
+    /**
+     * Returns the route that should be used when the element’s URI is requested.
+     *
+     * @return mixed The route that the request should use, or null if no special action should be taken
+     */
+    public function getRoute();
 
     /**
      * Returns the element’s full URL.

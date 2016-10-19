@@ -240,31 +240,6 @@ class Category extends Element
     /**
      * @inheritdoc
      */
-    public static function getElementRoute(ElementInterface $element)
-    {
-        /** @var Category $element */
-        // Make sure the category group is set to have URLs for this site
-        $siteId = Craft::$app->getSites()->currentSite->id;
-        $categoryGroupSiteSettings = $element->getGroup()->getSiteSettings();
-
-        if (isset($categoryGroupSiteSettings[$siteId]) && $categoryGroupSiteSettings[$siteId]->hasUrls) {
-            return [
-                'templates/render',
-                [
-                    'template' => $categoryGroupSiteSettings[$siteId]->template,
-                    'variables' => [
-                        'category' => $element
-                    ]
-                ]
-            ];
-        }
-
-        return false;
-    }
-
-    /**
-     * @inheritdoc
-     */
     public static function onAfterMoveElementInStructure(ElementInterface $element, $structureId)
     {
         /** @var Category $element */
@@ -439,6 +414,27 @@ class Category extends Element
         }
 
         return $categoryGroupSiteSettings[$this->siteId]->uriFormat;
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function getRoute()
+    {
+        // Make sure the category group is set to have URLs for this site
+        $siteId = Craft::$app->getSites()->currentSite->id;
+        $categoryGroupSiteSettings = $this->getGroup()->getSiteSettings();
+
+        if (!isset($categoryGroupSiteSettings[$siteId]) || !$categoryGroupSiteSettings[$siteId]->hasUrls) {
+            return null;
+        }
+
+        return ['templates/render', [
+            'template' => $categoryGroupSiteSettings[$siteId]->template,
+            'variables' => [
+                'category' => $this,
+            ]
+        ]];
     }
 
     /**

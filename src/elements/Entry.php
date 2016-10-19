@@ -524,38 +524,6 @@ class Entry extends Element
     }
 
     /**
-     * Routes the request when the URI matches an element.
-     *
-     * @param ElementInterface $element
-     *
-     * @return array|bool|mixed
-     */
-    public static function getElementRoute(ElementInterface $element)
-    {
-        /** @var Entry $element */
-        // Make sure that the entry is actually live
-        if ($element->getStatus() == Entry::STATUS_LIVE) {
-            // Make sure the section is set to have URLs for this site
-            $siteId = Craft::$app->getSites()->currentSite->id;
-            $sectionSiteSettings = $element->getSection()->getSiteSettings();
-
-            if (isset($sectionSiteSettings[$siteId]) && $sectionSiteSettings[$siteId]->hasUrls) {
-                return [
-                    'templates/render',
-                    [
-                        'template' => $sectionSiteSettings[$siteId]->template,
-                        'variables' => [
-                            'entry' => $element
-                        ]
-                    ]
-                ];
-            }
-        }
-
-        return false;
-    }
-
-    /**
      * @inheritdoc
      */
     public static function onAfterMoveElementInStructure(ElementInterface $element, $structureId)
@@ -815,6 +783,32 @@ class Entry extends Element
         }
 
         return $sectionSiteSettings[$this->siteId]->uriFormat;
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function getRoute()
+    {
+        // Make sure that the entry is actually live
+        if ($this->getStatus() != Entry::STATUS_LIVE) {
+            return null;
+        }
+
+        // Make sure the section is set to have URLs for this site
+        $siteId = Craft::$app->getSites()->currentSite->id;
+        $sectionSiteSettings = $this->getSection()->getSiteSettings();
+
+        if (!isset($sectionSiteSettings[$siteId]) || !$sectionSiteSettings[$siteId]->hasUrls) {
+            return null;
+        }
+
+        return ['templates/render', [
+            'template' => $sectionSiteSettings[$siteId]->template,
+            'variables' => [
+                'entry' => $this,
+            ]
+        ]];
     }
 
     /**

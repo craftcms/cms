@@ -289,12 +289,11 @@ class UrlManager extends \yii\web\UrlManager
 
                 if ($element) {
                     // Do any plugins want a say in this?
-                    $route = Craft::$app->getPlugins()->callFirst('getElementRoute',
-                        [$element], true);
+                    $route = Craft::$app->getPlugins()->callFirst('getElementRoute', [$element], true);
 
                     if (!$route) {
                         // Give the element type a chance
-                        $route = $element::getElementRoute($element);
+                        $route = $element->getRoute();
                     }
 
                     if ($route) {

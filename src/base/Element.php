@@ -52,6 +52,7 @@ use yii\validators\Validator;
  * @property Element               $next                The next element relative to this one, from a given set of criteria
  * @property Element               $prev                The previous element relative to this one, from a given set of criteria
  * @property Element               $parent              The element’s parent
+ * @property mixed                 $route               The route that should be used when the element’s URI is requested
  * @property integer|null          $structureId         The ID of the structure that the element is associated with, if any
  * @property ElementQueryInterface $ancestors           The element’s ancestors
  * @property ElementQueryInterface $descendants         The element’s descendants
@@ -501,14 +502,6 @@ abstract class Element extends Component implements ElementInterface
     /**
      * @inheritdoc
      */
-    public static function getElementRoute(ElementInterface $element)
-    {
-        return false;
-    }
-
-    /**
-     * @inheritdoc
-     */
     public static function onAfterMoveElementInStructure(ElementInterface $element, $structureId)
     {
     }
@@ -847,6 +840,15 @@ abstract class Element extends Component implements ElementInterface
      */
     public function getUriFormat()
     {
+        return null;
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function getRoute()
+    {
+        return null;
     }
 
     /**
