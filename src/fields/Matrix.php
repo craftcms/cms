@@ -491,8 +491,29 @@ class Matrix extends Field implements EagerLoadingFieldInterface
     public function afterElementSave(ElementInterface $element, $isNew)
     {
         Craft::$app->getMatrix()->saveField($this, $element);
-
         parent::afterElementSave($element, $isNew);
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function beforeElementDelete(ElementInterface $element)
+    {
+        // Delete any Matrix blocks that belong to this element(s)
+        foreach (Craft::$app->getSites()->getAllSiteIds() as $siteId) {
+            $matrixBlocks = MatrixBlock::find()
+                ->status(null)
+                ->enabledForSite(false)
+                ->siteId($siteId)
+                ->owner($element)
+                ->all();
+
+            foreach ($matrixBlocks as $matrixBlock) {
+                Craft::$app->getElements()->deleteElement($matrixBlock);
+            }
+        }
+
+        return parent::beforeElementDelete($element);
     }
 
     // Protected Methods
