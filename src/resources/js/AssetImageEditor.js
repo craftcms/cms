@@ -2,6 +2,12 @@
  * Asset image editor class
  */
 
+// TODO: For portrait images the zoomToFitRatio is off
+// TODO: When rotating by 90 degrees, the cropping constraint acts like the image has not been rotated
+// TODO: Smooth out the cropping constraints
+// TODO: UI
+// TODO: Handle resize
+
 Craft.AssetImageEditor = Garnish.Modal.extend(
 	{
 		// jQuery objects
