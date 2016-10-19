@@ -108,18 +108,6 @@ class Users extends Component
     const EVENT_AFTER_UNSUSPEND_USER = 'afterUnsuspendUser';
 
     /**
-     * @event DeleteUserEvent The event that is triggered before a user is deleted.
-     *
-     * You may set [[UserEvent::isValid]] to `false` to prevent the user from getting deleted.
-     */
-    const EVENT_BEFORE_DELETE_USER = 'beforeDeleteUser';
-
-    /**
-     * @event DeleteUserEvent The event that is triggered after a user is deleted.
-     */
-    const EVENT_AFTER_DELETE_USER = 'afterDeleteUser';
-
-    /**
      * @event AssignUserGroupEvent The event that is triggered before a user is assigned to some user groups.
      *
      * You may set [[AssignUserGroupEvent::isValid]] to `false` to prevent the user from getting assigned to the groups.
@@ -835,106 +823,6 @@ class Users extends Component
     }
 
     /**
-     * Deletes a user.
-     *
-     * @param User      $user              The user to be deleted.
-     * @param User|null $transferContentTo The user who should take over the deleted user’s content.
-     *
-     * @return boolean Whether the user was deleted successfully.
-     * @throws \Exception if reasons
-     */
-    public function deleteUser(User $user, User $transferContentTo = null)
-    {
-        if (!$user->id) {
-            return false;
-        }
-
-        $transaction = Craft::$app->getDb()->beginTransaction();
-
-        try {
-            // Fire a 'beforeDeleteUser' event
-            $event = new DeleteUserEvent([
-                'user' => $user,
-                'transferContentTo' => $transferContentTo
-            ]);
-
-            $this->trigger(self::EVENT_BEFORE_DELETE_USER, $event);
-
-            // Is the event is giving us the go-ahead?
-            if ($event->isValid) {
-                // Get the entry IDs that belong to this user
-                $entryIds = (new Query())
-                    ->select('id')
-                    ->from('{{%entries}}')
-                    ->where(['authorId' => $user->id])
-                    ->column();
-
-                // Should we transfer the content to a new user?
-                if ($transferContentTo) {
-                    // Delete the template caches for any entries authored by this user
-                    Craft::$app->getTemplateCaches()->deleteCachesByElementId($entryIds);
-
-                    // Update the entry/version/draft tables to point to the new user
-                    $userRefs = [
-                        '{{%entries}}' => 'authorId',
-                        '{{%entrydrafts}}' => 'creatorId',
-                        '{{%entryversions}}' => 'creatorId',
-                    ];
-
-                    foreach ($userRefs as $table => $column) {
-                        Craft::$app->getDb()->createCommand()
-                            ->update(
-                                $table,
-                                [
-                                    $column => $transferContentTo->id
-                                ],
-                                [
-                                    $column => $user->id
-                                ])
-                            ->execute();
-                    }
-                } else {
-                    // Delete the entries
-                    foreach ($entryIds as $id) {
-                        Craft::$app->getElements()->deleteElementById($id);
-                    }
-                }
-
-                // Delete the user
-                $success = Craft::$app->getElements()->deleteElementById($user->id);
-
-                // If it didn't work, rollback the transaction in case something changed in onBeforeDeleteUser
-                if (!$success) {
-                    $transaction->rollBack();
-
-                    return false;
-                }
-            } else {
-                $success = false;
-            }
-
-            // Commit the transaction regardless of whether we deleted the user,
-            // in case something changed in onBeforeDeleteUser
-            $transaction->commit();
-        } catch (\Exception $e) {
-            $transaction->rollBack();
-
-            throw $e;
-        }
-
-        if ($success) {
-            // Fire an 'afterDeleteUser' event
-            $this->trigger(self::EVENT_AFTER_DELETE_USER,
-                new DeleteUserEvent([
-                    'user' => $user,
-                    'transferContentTo' => $transferContentTo
-                ]));
-        }
-
-        return $success;
-    }
-
-    /**
      * Shuns a message for a user.
      *
      * @param integer  $userId     The user’s ID.
@@ -1053,8 +941,7 @@ class Users extends Component
             if ($userIds) {
                 foreach ($userIds as $userId) {
                     $user = $this->getUserById($userId);
-                    $this->deleteUser($user);
-
+                    Craft::$app->getElements()->deleteElement($user);
                     Craft::info('Just deleted pending userId '.$userId.' ('.$user->username.'), because the were more than '.$duration.' old', __METHOD__);
                 }
             }

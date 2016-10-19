@@ -123,7 +123,8 @@ EOT;
         // Delete the users
         foreach ($users as $user) {
             if (!in_array($user->id, $undeletableIds)) {
-                Craft::$app->getUsers()->deleteUser($user, $transferContentTo);
+                $user->inheritorOnDelete = $transferContentTo;
+                Craft::$app->getElements()->deleteElement($user);
             }
         }
 

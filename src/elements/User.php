@@ -548,6 +548,11 @@ class User extends Element implements IdentityInterface
     public $authError;
 
     /**
+     * @var self The user who should take over the user’s content if the user is deleted.
+     */
+    public $inheritorOnDelete;
+
+    /**
      * @var Asset user photo
      */
     private $_photo;
@@ -1374,6 +1379,52 @@ class User extends Element implements IdentityInterface
         $record->save(false);
 
         parent::afterSave($isNew);
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function beforeDelete()
+    {
+        // Get the entry IDs that belong to this user
+        $entryIds = (new Query())
+            ->select('id')
+            ->from('{{%entries}}')
+            ->where(['authorId' => $this->id])
+            ->column();
+
+        // Should we transfer the content to a new user?
+        if ($this->inheritorOnDelete) {
+            // Delete the template caches for any entries authored by this user
+            Craft::$app->getTemplateCaches()->deleteCachesByElementId($entryIds);
+
+            // Update the entry/version/draft tables to point to the new user
+            $userRefs = [
+                '{{%entries}}' => 'authorId',
+                '{{%entrydrafts}}' => 'creatorId',
+                '{{%entryversions}}' => 'creatorId',
+            ];
+
+            foreach ($userRefs as $table => $column) {
+                Craft::$app->getDb()->createCommand()
+                    ->update(
+                        $table,
+                        [
+                            $column => $this->inheritorOnDelete->id
+                        ],
+                        [
+                            $column => $this->id
+                        ])
+                    ->execute();
+            }
+        } else {
+            // Delete the entries
+            foreach ($entryIds as $id) {
+                Craft::$app->getElements()->deleteElementById($id);
+            }
+        }
+
+        return parent::beforeDelete();
     }
 
     // Private Methods

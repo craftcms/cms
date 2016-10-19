@@ -1319,9 +1319,10 @@ class UsersController extends Controller
         }
 
         // Delete the user
-        if (Craft::$app->getUsers()->deleteUser($user, $transferContentTo)) {
-            Craft::$app->getSession()->setNotice(Craft::t('app',
-                'User deleted.'));
+        $user->inheritorOnDelete = $transferContentTo;
+
+        if (Craft::$app->getElements()->deleteElement($user)) {
+            Craft::$app->getSession()->setNotice(Craft::t('app', 'User deleted.'));
 
             return $this->redirectToPostedUrl();
         }
