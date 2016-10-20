@@ -515,7 +515,10 @@ abstract class BaseModel extends \CModel
 	}
 
 	/**
-	 * Returns all errors in a single list.
+	 * Returns all errors in a single, flattened list, devoid of attribute names.
+	 *
+	 * If you need a multi-dimensional list of all errors along with their attributes,
+	 * use `getErrors()` instead.
 	 *
 	 * @return array
 	 */
