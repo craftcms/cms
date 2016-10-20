@@ -6,7 +6,7 @@
 // TODO: When rotating by 90 degrees, the cropping constraint acts like the image has not been rotated
 // TODO: Smooth out the cropping constraints
 // TODO: UI
-// TODO: Handle resize
+// TODO: Handle modal resize
 
 Craft.AssetImageEditor = Garnish.Modal.extend(
 	{
