@@ -1,5 +1,7 @@
-<div id="image-holder" style="width: 300px; height: 300px; float: left;">
-    <canvas id="image-manipulator">
+<div id="image-holder" style="width: 300px; height: 300px; float: left; position: relative; background-color: #aaa;">
+    <canvas id="image-canvas">
+    </canvas>
+    <canvas id="cropping-canvas">
     </canvas>
 </div>
 <div class="image-tools" style="margin-left: 340px;">
@@ -23,7 +25,7 @@
                 <li><a class="crop focal-point">{{ "Set crop focal point"|t('app') }}</a></li>
             </ul>
             <ul class="crop-mode-enabled hidden">
-                <li><a class="crop apply-cropping">{{ "Apply cropping"|t('app') }}</a></li>
+                <li><a class="crop apply-crop">{{ "Apply cropping"|t('app') }}</a></li>
                 <li><a class="crop reset-crop">{{ "Reset cropping"|t('app') }}</a></li>
             </ul>
 
