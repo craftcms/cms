@@ -24,8 +24,8 @@
             <li><label><input type="checkbox" checked="checked" name="deleteFolder[]" value="{{ folderId }}"> {{ folderName }}</label></li>
         {% endfor %}
 
-        {% for fileId, filename in missingFiles %}
-            <li><label><input type="checkbox" checked="checked" name="deleteFile[]" value="{{ fileId }}"> {{ filename }}</label></li>
+        {% for assetId, filename in missingFiles %}
+            <li><label><input type="checkbox" checked="checked" name="deleteAsset[]" value="{{ assetId }}"> {{ filename }}</label></li>
         {% endfor %}
     </ul>
 {% endif %}

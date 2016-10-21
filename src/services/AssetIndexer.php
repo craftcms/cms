@@ -315,9 +315,9 @@ class AssetIndexer extends Component
         // Flip for faster lookup
         $processedFiles = array_flip($processedFiles);
 
-        $fileEntries = (new Query())
+        $assets = (new Query())
             ->select(
-                'fi.volumeId, fi.id AS fileId, fi.filename, fo.path, s.name AS volumeName'
+                'fi.volumeId, fi.id AS assetId, fi.filename, fo.path, s.name AS volumeName'
             )
             ->from('{{%assets}} AS fi')
             ->innerJoin('{{%volumefolders}} AS fo', 'fi.folderId = fo.id')
@@ -325,9 +325,9 @@ class AssetIndexer extends Component
             ->where(['in', 'fi.volumeId', $volumeIds])
             ->all();
 
-        foreach ($fileEntries as $fileEntry) {
-            if (!isset($processedFiles[$fileEntry['fileId']])) {
-                $output[$fileEntry['fileId']] = $fileEntry['volumeName'].'/'.$fileEntry['path'].$fileEntry['filename'];
+        foreach ($assets as $asset) {
+            if (!isset($processedFiles[$asset['assetId']])) {
+                $output[$asset['assetId']] = $asset['volumeName'].'/'.$asset['path'].$asset['filename'];
             }
         }
 

@@ -193,16 +193,16 @@ class AssetIndex extends Tool
                 ]
             ];
         } else if (!empty($params['finish'])) {
-            if (!empty($params['deleteFile']) && is_array($params['deleteFile'])) {
+            if (!empty($params['deleteAsset']) && is_array($params['deleteAsset'])) {
                 Craft::$app->getDb()->createCommand()
-                    ->delete('assettransformindex', ['in', 'fileId', $params['deleteFile']])
+                    ->delete('assettransformindex', ['in', 'assetId', $params['deleteAsset']])
                     ->execute();
 
                 /** @var Asset[] $assets */
                 $assets = Asset::find()
                     ->status(null)
                     ->enabledForSite(false)
-                    ->id($params['deleteFile'])
+                    ->id($params['deleteAsset'])
                     ->all();
 
                 foreach ($assets as $asset) {

@@ -211,7 +211,7 @@ class AssetsController extends Controller
     public function actionReplaceFile()
     {
         $this->requireAcceptsJson();
-        $assetId = Craft::$app->getRequest()->getBodyParam('fileId');
+        $assetId = Craft::$app->getRequest()->getBodyParam('assetId');
         $uploadedFile = UploadedFile::getInstanceByName('replaceFile');
 
         $assets = Craft::$app->getAssets();
@@ -368,7 +368,7 @@ class AssetsController extends Controller
         $this->requireLogin();
 
         $request = Craft::$app->getRequest();
-        $assetId = $request->getRequiredBodyParam('fileId');
+        $assetId = $request->getRequiredBodyParam('assetId');
         $folderId = $request->getBodyParam('folderId');
         $filename = $request->getBodyParam('filename');
         $conflictResolution = $request->getBodyParam('userResponse');
@@ -600,7 +600,7 @@ class AssetsController extends Controller
         $assetTransforms = Craft::$app->getAssetTransforms();
 
         if (empty($transformId)) {
-            $assetId = $request->getBodyParam('fileId');
+            $assetId = $request->getBodyParam('assetId');
             $handle = $request->getBodyParam('handle');
             $assetModel = Craft::$app->getAssets()->getAssetById($assetId);
             $transformIndexModel = $assetTransforms->getTransformIndex($assetModel,
