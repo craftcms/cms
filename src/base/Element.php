@@ -39,6 +39,7 @@ use yii\validators\Validator;
  * Element is the base class for classes representing elements in terms of objects.
  *
  * @property FieldLayout|null      $fieldLayout         The field layout used by this element
+ * @property array                 $htmlAttributes      Any attributes that should be included in the element’s DOM representation in the Control Panel
  * @property integer[]             $supportedSiteIds    The site IDs this element is available in
  * @property string|null           $uriFormat           The URI format used to generate this element’s URL
  * @property string|null           $url                 The element’s full URL
@@ -1454,6 +1455,14 @@ abstract class Element extends Component implements ElementInterface
 
     // Indexes, etc.
     // -------------------------------------------------------------------------
+
+    /**
+     * @inheritdoc
+     */
+    public function getHtmlAttributes($context)
+    {
+        return [];
+    }
 
     /**
      * @inheritdoc

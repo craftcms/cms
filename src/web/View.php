@@ -251,8 +251,8 @@ class View extends \yii\web\View
     /**
      * Renders a Twig template.
      *
-     * @param mixed   $template  The name of the template to load, or a StringTemplate object.
-     * @param array   $variables The variables that should be available to the template.
+     * @param mixed $template  The name of the template to load, or a StringTemplate object.
+     * @param array $variables The variables that should be available to the template.
      *
      * @return string the rendering result
      * @throws \Twig_Error_Loader if the template doesn’t exist
@@ -322,8 +322,8 @@ class View extends \yii\web\View
     /**
      * Renders a template defined in a string.
      *
-     * @param string  $template  The source template string.
-     * @param array   $variables Any variables that should be available to the template.
+     * @param string $template  The source template string.
+     * @param array  $variables Any variables that should be available to the template.
      *
      * @return string The rendered template.
      */
@@ -345,8 +345,8 @@ class View extends \yii\web\View
      * The template will be parsed for {variables} that are delimited by single braces, which will get replaced with
      * full Twig output tags, i.e. {{ object.variable }}. Regular Twig tags are also supported.
      *
-     * @param string  $template The source template string.
-     * @param mixed   $object   The object that should be passed into the template.
+     * @param string $template The source template string.
+     * @param mixed  $object   The object that should be passed into the template.
      *
      * @return string The rendered template.
      */
@@ -1374,31 +1374,37 @@ class View extends \yii\web\View
             $imgHtml = '';
         }
 
-        $html = '<div class="element '.$elementSize;
+        $htmlAttributes = array_merge(
+            $element->getHtmlAttributes($context['context']),
+            [
+                'class' => 'element '.$elementSize,
+                'data-id' => $element->id,
+                'data-site-id' => $element->siteId,
+                'data-status' => $element->getStatus(),
+                'data-label' => (string)$element,
+                'data-url' => $element->getUrl(),
+                'data-level' => $element->level,
+            ]);
 
         if ($context['context'] == 'field') {
-            $html .= ' removable';
+            $htmlAttributes['class'] .= ' removable';
         }
 
         if ($element::hasStatuses()) {
-            $html .= ' hasstatus';
+            $htmlAttributes['class'] .= ' hasstatus';
         }
 
         if ($thumbUrl) {
-            $html .= ' hasthumb';
+            $htmlAttributes['class'] .= ' hasthumb';
         }
 
-        $label = HtmlHelper::encode($element);
+        $html = '<div';
 
-        $html .= '" data-id="'.$element->id.'" data-site-id="'.$element->siteId.'" data-status="'.$element->getStatus().'" data-label="'.$label.'" data-url="'.$element->getUrl().'"';
-
-        if ($element->level) {
-            $html .= ' data-level="'.$element->level.'"';
+        foreach ($htmlAttributes as $attribute => $value) {
+            $html .= ' '.$attribute.'="'.HtmlHelper::encode($value).'"';
         }
 
-        $isEditable = ElementHelper::isElementEditable($element);
-
-        if ($isEditable) {
+        if (ElementHelper::isElementEditable($element)) {
             $html .= ' data-editable';
         }
 
@@ -1423,6 +1429,8 @@ class View extends \yii\web\View
         $html .= '<div class="label">';
 
         $html .= '<span class="title">';
+
+        $label = HtmlHelper::encode($element);
 
         if ($context['context'] == 'index' && ($cpEditUrl = $element->getCpEditUrl())) {
             $cpEditUrl = HtmlHelper::encode($cpEditUrl);
