@@ -121,20 +121,20 @@ class Command extends \yii\db\Command
      *
      * @param string       $table               The table to be updated.
      * @param array        $columns             The column data (name => value) to be updated.
-     * @param string|array $conditions          The condition that will be put in the WHERE part. Please
+     * @param string|array $condition           The condition that will be put in the WHERE part. Please
      *                                          refer to [[Query::where()]] on how to specify condition.
      * @param array        $params              The parameters to be bound to the command.
      * @param boolean      $includeAuditColumns Whether the `dateUpdated` value should be added to $columns.
      *
      * @return $this The command object itself.
      */
-    public function update($table, $columns, $conditions = '', $params = [], $includeAuditColumns = true)
+    public function update($table, $columns, $condition = '', $params = [], $includeAuditColumns = true)
     {
         if ($includeAuditColumns) {
             $columns['dateUpdated'] = Db::prepareDateForDb(new \DateTime());
         }
 
-        parent::update($table, $columns, $conditions, $params);
+        parent::update($table, $columns, $condition, $params);
 
         return $this;
     }

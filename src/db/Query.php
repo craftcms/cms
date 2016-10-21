@@ -46,37 +46,37 @@ class Query extends \yii\db\Query
     /**
      * @inheritdoc
      */
-    public function where($conditions, $params = [])
+    public function where($condition, $params = [])
     {
-        if (!$conditions) {
-            $conditions = null;
+        if (!$condition) {
+            $condition = null;
         }
 
-        return parent::where($conditions, $params);
+        return parent::where($condition, $params);
     }
 
     /**
      * @inheritdoc
      */
-    public function andWhere($conditions, $params = [])
+    public function andWhere($condition, $params = [])
     {
-        if (!$conditions) {
+        if (!$condition) {
             return $this;
         }
 
-        return parent::andWhere($conditions, $params);
+        return parent::andWhere($condition, $params);
     }
 
     /**
      * @inheritdoc
      */
-    public function orWhere($conditions, $params = [])
+    public function orWhere($condition, $params = [])
     {
-        if (!$conditions) {
+        if (!$condition) {
             return $this;
         }
 
-        return parent::orWhere($conditions, $params);
+        return parent::orWhere($condition, $params);
     }
 
     // Execution functions
