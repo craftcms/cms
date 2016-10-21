@@ -56,6 +56,10 @@ class DashboardController extends Controller
         $view->setNamespace('__NAMESPACE__');
 
         foreach ($widgetTypes as $widgetType) {
+            if (!$widgetType::isSelectable()) {
+                continue;
+            }
+
             $view->startJsBuffer();
             $widget = $dashboardService->createWidget($widgetType);
             $settingsHtml = $view->namespaceInputs($widget->getSettingsHtml());
