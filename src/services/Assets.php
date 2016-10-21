@@ -378,7 +378,7 @@ class Assets extends Component
             if ($asset->filename != $filename) {
                 // Delete old, change the name, upload the new
                 $volume->deleteFile($asset->getUri());
-                $asset->filename = $filename;
+                $asset->newFilename = $filename;
                 $volume->createFileByStream($asset->getUri(), $stream);
             } else {
                 $volume->updateFileByStream($asset->getUri(), $stream);
@@ -390,7 +390,7 @@ class Assets extends Component
 
             // Delete old, change the name, upload the new
             $volume->deleteFile($asset->getUri());
-            $asset->filename = $filename;
+            $asset->newFilename = $filename;
             $volume->createFileByStream($asset->getUri(), $stream);
 
             $asset->kind = Io::getFileKind(Io::getExtension($filename));
