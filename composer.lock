@@ -4,8 +4,8 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#composer-lock-the-lock-file",
         "This file is @generated automatically"
     ],
-    "hash": "b09b440c46c720c534edeb97da74db2e",
-    "content-hash": "5a16afa85682369ece9ebe7693a00827",
+    "hash": "d324b25f9631dad90228b8997e165af0",
+    "content-hash": "673a854a4bc6ae8c3c18e5d018fecaeb",
     "packages": [
         {
             "name": "aws/aws-sdk-php",
@@ -1420,16 +1420,16 @@
         },
         {
             "name": "psr/log",
-            "version": "1.0.1",
+            "version": "1.0.2",
             "source": {
                 "type": "git",
                 "url": "https://github.com/php-fig/log.git",
-                "reference": "5277094ed527a1c4477177d102fe4c53551953e0"
+                "reference": "4ebe3a8bf773a19edfe0a84b6585ba3d401b724d"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/php-fig/log/zipball/5277094ed527a1c4477177d102fe4c53551953e0",
-                "reference": "5277094ed527a1c4477177d102fe4c53551953e0",
+                "url": "https://api.github.com/repos/php-fig/log/zipball/4ebe3a8bf773a19edfe0a84b6585ba3d401b724d",
+                "reference": "4ebe3a8bf773a19edfe0a84b6585ba3d401b724d",
                 "shasum": ""
             },
             "require": {
@@ -1463,7 +1463,7 @@
                 "psr",
                 "psr-3"
             ],
-            "time": "2016-09-19 16:02:08"
+            "time": "2016-10-10 12:19:37"
         },
         {
             "name": "rackspace/php-opencloud",
@@ -1624,7 +1624,7 @@
         },
         {
             "name": "symfony/event-dispatcher",
-            "version": "v2.8.11",
+            "version": "v2.8.12",
             "source": {
                 "type": "git",
                 "url": "https://github.com/symfony/event-dispatcher.git",
@@ -2043,12 +2043,12 @@
             "source": {
                 "type": "git",
                 "url": "https://github.com/yiisoft/yii2-debug.git",
-                "reference": "17658ab8eb4981dad0891a9b09fda786d140be3b"
+                "reference": "4f8de2192fe354c8b903a083fcdcc3d1ddaccc8c"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/yiisoft/yii2-debug/zipball/17658ab8eb4981dad0891a9b09fda786d140be3b",
-                "reference": "17658ab8eb4981dad0891a9b09fda786d140be3b",
+                "url": "https://api.github.com/repos/yiisoft/yii2-debug/zipball/4f8de2192fe354c8b903a083fcdcc3d1ddaccc8c",
+                "reference": "4f8de2192fe354c8b903a083fcdcc3d1ddaccc8c",
                 "shasum": ""
             },
             "require": {
@@ -2082,7 +2082,7 @@
                 "debugger",
                 "yii2"
             ],
-            "time": "2016-09-05 10:57:44"
+            "time": "2016-10-13 20:17:27"
         },
         {
             "name": "yiisoft/yii2-swiftmailer",
@@ -2137,7 +2137,7 @@
     ],
     "packages-dev": [],
     "aliases": [],
-    "minimum-stability": "stable",
+    "minimum-stability": "RC",
     "stability-flags": {
         "yiisoft/yii2-debug": 20
     },
