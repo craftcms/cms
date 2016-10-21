@@ -26,7 +26,7 @@ class m160829_000000_pending_user_content_cleanup extends Migration
             ->from('{{%elements}} el')
             ->leftJoin('{{%entries}} en', $schema->quoteTableName('en').'.'.$schema->quoteColumnName('id').' = '.$schema->quoteTableName('el').$schema->quoteColumnName('id'))
             ->where(
-                ['and', 'el.type = :type', 'en.id is null'],
+                ['and', $schema->quoteTableName('el').'.'.$schema->quoteColumnName('type').' = :type', $schema->quoteTableName('en').'.'.$schema->quoteColumnName('id').' IS NULL'],
                 [':type' => Entry::class]
             )
             ->column();

@@ -95,10 +95,12 @@ class Routes extends Component
      */
     public function getDbRoutes()
     {
+        $schema = Craft::$app->getDb()->getSchema();
+
         $results = (new Query())
             ->select(['uriPattern', 'template'])
             ->from('{{%routes}}')
-            ->where(['or', 'siteId is null', 'siteId = :siteId'], [':siteId' => Craft::$app->getSites()->currentSite->id])
+            ->where(['or', $schema->quoteColumnName('siteId').' IS NULL', $schema->quoteColumnName('siteId').' = :siteId'], [':siteId' => Craft::$app->getSites()->currentSite->id])
             ->orderBy('sortOrder')
             ->all();
 

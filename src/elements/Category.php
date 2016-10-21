@@ -18,6 +18,7 @@ use craft\app\elements\actions\NewChild;
 use craft\app\elements\actions\SetStatus;
 use craft\app\elements\actions\View;
 use craft\app\elements\db\CategoryQuery;
+use craft\app\helpers\Db;
 use craft\app\helpers\Url;
 use craft\app\models\CategoryGroup;
 use yii\base\InvalidConfigException;
@@ -344,12 +345,11 @@ class Category extends Element
             $newRelationValues = [];
 
             $ancestorIds = $element->getAncestors()->ids();
-            $schema = Craft::$app->getDb()->getSchema();
 
             $sources = (new Query())
                 ->select(['fieldId', 'sourceId', 'sourceSiteId'])
                 ->from('{{%relations}}')
-                ->where($schema->quoteColumnName('targetId').' = :categoryId', [':categoryId' => $element->id])
+                ->where(Db::quoteObjects('targetId').' = :categoryId', [':categoryId' => $element->id])
                 ->all();
 
             foreach ($sources as $source) {
@@ -358,9 +358,9 @@ class Category extends Element
                     ->from('{{%relations}}')
                     ->where([
                         'and',
-                        'fieldId = :fieldId',
-                        'sourceId = :sourceId',
-                        'sourceSiteId = :sourceSiteId',
+                        Db::quoteObjects('fieldId').' = :fieldId',
+                        Db::quoteObjects('sourceId').' = :sourceId',
+                        Db::quoteObjects('sourceSiteId').' = :sourceSiteId',
                         ['in', 'targetId', $ancestorIds]
                     ], [
                         ':fieldId' => $source['fieldId'],

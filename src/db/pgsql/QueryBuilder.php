@@ -9,6 +9,7 @@ namespace craft\app\db\pgsql;
 
 use Craft;
 use craft\app\db\Connection;
+use craft\app\helpers\Db;
 use craft\app\services\Config;
 use yii\base\Exception;
 use yii\db\Expression;
@@ -65,7 +66,7 @@ class QueryBuilder extends \yii\db\pgsql\QueryBuilder
         $updates = [];
 
         foreach ($columns as $name => $value) {
-            $qName = $schema->quoteColumnName($name);
+            $qName = Db::quoteObjects($name);
             $names[] = $qName;
 
             if ($value instanceof Expression) {
@@ -121,8 +122,7 @@ class QueryBuilder extends \yii\db\pgsql\QueryBuilder
      */
     public function replace($table, $column, $find, $replace, $condition, &$params)
     {
-        $schema = $this->db->getSchema();
-        $column = $schema->quoteColumnName($column);
+        $column = Db::quoteObjects($column);
 
         $findPhName = static::PARAM_PREFIX.count($params);
         $params[$findPhName] = $find;
@@ -130,7 +130,7 @@ class QueryBuilder extends \yii\db\pgsql\QueryBuilder
         $replacePhName = static::PARAM_PREFIX.count($params);
         $params[$replacePhName] = $replace;
 
-        $sql = 'UPDATE '.$schema->quoteTableName($table).
+        $sql = 'UPDATE '.Db::quoteObjects($table).
         " SET $column = REPLACE($column, $findPhName, $replacePhName)";
 
         $where = $this->buildWhere($condition, $params);
@@ -158,7 +158,7 @@ class QueryBuilder extends \yii\db\pgsql\QueryBuilder
         $sql = 'CASE';
 
         foreach ($values as $key => $value) {
-            $sql .= ' WHEN '.$this->db->quoteColumnName($column).'='.$value.' THEN '.$key;
+            $sql .= ' WHEN '.Db::quoteObjects($column).'='.$value.' THEN '.$key;
         }
 
         $sql .= ' ELSE '.($key + 1).' END';

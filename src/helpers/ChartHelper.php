@@ -143,7 +143,7 @@ class ChartHelper
             ->addSelect([$select])
             ->andWhere(
                 ['and', $dateColumn.' >= :startDate', $dateColumn.' < :endDate'],
-                [':startDate' => $startDate->format('Y-m-d H:i:s'), ':endDate' => $endDate->format('Y-m-d H:i:s')])
+                [':startDate' => Db::quoteValues($startDate->format('Y-m-d H:i:s')), ':endDate' => $endDate->format('Y-m-d H:i:s')])
             ->groupBy($sqlGroup)
             ->orderBy($dateColumn.' ASC')
             ->all();

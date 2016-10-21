@@ -61,7 +61,7 @@ class m160912_230520_require_entry_type_id extends Migration
         $typelessEntryIds = (new Query())
             ->select('id')
             ->from('{{%entries}}')
-            ->where($schema->quoteColumnName('typeId').' is null')
+            ->where($schema->quoteColumnName('typeId').' IS NULL')
             ->column();
 
         if ($typelessEntryIds) {

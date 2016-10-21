@@ -7,6 +7,7 @@
 
 namespace craft\app\db;
 
+use craft\app\helpers\Db;
 use yii\db\ColumnSchemaBuilder;
 
 /**
@@ -77,15 +78,11 @@ abstract class Migration extends \yii\db\Migration
      */
     public function enum($columnName, $values)
     {
-        // Quote the values
-        $schema = $this->db->getSchema();
-        $values = array_map([$schema, 'quoteValue'], $values);
-
         if ($this->db->getDriverName() == Connection::DRIVER_MYSQL) {
             return $this->db->getSchema()->createColumnSchemaBuilder('enum', $values);
         }
 
-        return $this->string()->check($schema->quoteColumnName($columnName).' in ('.implode(',', $values).')');
+        return $this->string()->check(Db::quoteObjects($columnName).' in ('.implode(',', Db::quoteValues($values)).')');
     }
 
     /**

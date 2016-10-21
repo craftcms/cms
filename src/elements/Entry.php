@@ -270,7 +270,7 @@ class Entry extends Element
                                     [
                                         'and',
                                         ['in', 'id', $event->elementIds],
-                                        'postDate is null'
+                                        Db::quoteObjects('postDate').' IS NULL'
                                     ])
                                 ->execute();
                         }
@@ -479,18 +479,19 @@ class Entry extends Element
     public static function getElementQueryStatusCondition(ElementQueryInterface $query, $status)
     {
         $currentTimeDb = Db::prepareDateForDb(new \DateTime());
+        $schema = Craft::$app->getDb()->getSchema();
 
         switch ($status) {
             case Entry::STATUS_LIVE: {
                 return [
                     'and',
-                    'elements.enabled = 1',
-                    'elements_i18n.enabled = 1',
-                    "entries.postDate <= '{$currentTimeDb}'",
+                    Db::quoteObjects('elements.enabled').' = '.Db::quoteValues('1'),
+                    Db::quoteObjects('elements_i18n.enabled').' = '.Db::quoteValues('1'),
+                    Db::quoteObjects('entries.postDate').'.'.Db::quoteObjects('postDate').' <= '.Db::quoteValues($currentTimeDb),
                     [
                         'or',
-                        'entries.expiryDate is null',
-                        "entries.expiryDate > '{$currentTimeDb}'"
+                        Db::quoteObjects('entries.expiryDate').' IS NULL',
+                        Db::quoteObjects('entries.expiryDate').' > '.Db::quoteValues($currentTimeDb)
                     ]
                 ];
             }
@@ -498,19 +499,19 @@ class Entry extends Element
             case Entry::STATUS_PENDING: {
                 return [
                     'and',
-                    'elements.enabled = 1',
-                    'elements_i18n.enabled = 1',
-                    "entries.postDate > '{$currentTimeDb}'"
+                    $schema->quoteTableName('elements').'.'.$schema->quoteColumnName('enabled').' = 1',
+                    $schema->quoteTableName('elements_i18n').'.'.$schema->quoteColumnName('enabled').' = 1',
+                    $schema->quoteTableName('entries').'.'.$schema->quoteColumnName('postDate').' > '.$currentTimeDb
                 ];
             }
 
             case Entry::STATUS_EXPIRED: {
                 return [
                     'and',
-                    'elements.enabled = 1',
-                    'elements_i18n.enabled = 1',
-                    'entries.expiryDate is not null',
-                    "entries.expiryDate <= '{$currentTimeDb}'"
+                    $schema->quoteTableName('elements').'.'.$schema->quoteColumnName('enabled').' = 1',
+                    $schema->quoteTableName('elements_i18n').$schema->quoteColumnName('enabled').' = 1',
+                    $schema->quoteTableName('entries').'.'.$schema->quoteColumnName('expiryDate').' IS NOT NULL',
+                    $schema->quoteTableName('entries').'.'.$schema->quoteColumnName('expiryDate').' <= '.$currentTimeDb,
                 ];
             }
         }

@@ -1178,13 +1178,15 @@ class Users extends Component
      */
     public function hasUserShunnedMessage($userId, $message)
     {
+        $schema = Craft::$app->getDb()->getSchema();
+
         return (new Query())
             ->from('{{%shunnedmessages}}')
             ->where([
                 'and',
                 'userId = :userId',
                 'message = :message',
-                ['or', 'expiryDate IS NULL', 'expiryDate > :now']
+                ['or', $schema->quoteColumnName('expiryDate').' IS NULL', $schema->quoteColumnName('expiryDate').' > :now']
             ], [
                 ':userId' => $userId,
                 ':message' => $message,

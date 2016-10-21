@@ -9,6 +9,7 @@ namespace craft\app\db\mysql;
 
 use Craft;
 use craft\app\db\Connection;
+use craft\app\helpers\Db;
 use craft\app\services\Config;
 use yii\db\Expression;
 
@@ -88,7 +89,7 @@ class QueryBuilder extends \yii\db\mysql\QueryBuilder
         $updates = [];
 
         foreach ($columns as $name => $value) {
-            $qName = $schema->quoteColumnName($name);
+            $qName = Db::quoteObjects($name);
             $names[] = $qName;
 
             if ($value instanceof Expression) {
@@ -133,8 +134,7 @@ class QueryBuilder extends \yii\db\mysql\QueryBuilder
      */
     public function replace($table, $column, $find, $replace, $condition, &$params)
     {
-        $schema = $this->db->getSchema();
-        $column = $schema->quoteColumnName($column);
+        $column = Db::quoteObjects($column);
 
         $findPhName = static::PARAM_PREFIX.count($params);
         $params[$findPhName] = $find;
@@ -142,7 +142,7 @@ class QueryBuilder extends \yii\db\mysql\QueryBuilder
         $replacePhName = static::PARAM_PREFIX.count($params);
         $params[$replacePhName] = $replace;
 
-        $sql = 'UPDATE '.$schema->quoteTableName($table)." SET $column = REPLACE($column, $findPhName, $replacePhName)";
+        $sql = 'UPDATE '.Db::quoteObjects($table)." SET $column = REPLACE($column, $findPhName, $replacePhName)";
         $where = $this->buildWhere($condition, $params);
 
         return $where === '' ? $sql : $sql . ' ' . $where;
@@ -158,13 +158,6 @@ class QueryBuilder extends \yii\db\mysql\QueryBuilder
      */
     public function fixedOrder($column, $values)
     {
-        $schema = $this->db->getSchema();
-
-        foreach ($values as $i => $value) {
-            $values[$i] = $schema->quoteValue($value);
-        }
-
-        return 'FIELD('.$this->db->quoteColumnName($column).', '.
-        implode(', ', $values).')';
+        return 'FIELD('.Db::quoteObjects($column).', '.implode(', ', Db::quoteValues($values)).')';
     }
 }

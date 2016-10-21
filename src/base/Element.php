@@ -18,6 +18,7 @@ use craft\app\elements\db\ElementQuery;
 use craft\app\elements\db\ElementQueryInterface;
 use craft\app\events\Event;
 use craft\app\helpers\ArrayHelper;
+use craft\app\helpers\Db;
 use craft\app\helpers\Html;
 use craft\app\helpers\Template;
 use craft\app\helpers\Url;
@@ -465,8 +466,6 @@ abstract class Element extends Component implements ElementInterface
                 $sourceElementIds[] = $sourceElement->id;
             }
 
-            $schema = Craft::$app->getDb()->getSchema();
-
             // Get the structure data for these elements
             $selectSql = 'structureId, elementId, lft, rgt';
 
@@ -487,18 +486,18 @@ abstract class Element extends Component implements ElementInterface
             foreach ($structureData as $i => $elementStructureData) {
                 $thisElementConditions = [
                     'and',
-                    'structureId=:structureId'.$i,
-                    'lft>:lft'.$i,
-                    'rgt<:rgt'.$i
+                    Db::quoteObjects('structureId').'=:structureId'.$i,
+                    Db::quoteObjects('lft').'>:lft'.$i,
+                    Db::quoteObjects('rgt').'<:rgt'.$i
                 ];
 
                 if ($handle == 'children') {
-                    $thisElementConditions[] = 'level=:level'.$i;
+                    $thisElementConditions[] = Db::quoteObjects('level').'=:level'.$i;
                     $params[':level'.$i] = $elementStructureData['level'] + 1;
                 }
 
                 $conditions[] = $thisElementConditions;
-                $sourceSelectSql .= " WHEN ".$schema->quoteColumnName('structureId')."=:structureId{$i} AND ".$schema->quoteColumnName('left').">:lft{$i} AND ".$schema->quoteColumnName('rgt')."<:{$i} THEN :sourceId{$i}";
+                $sourceSelectSql .= " WHEN ".Db::quoteObjects('structureId')."=:structureId{$i} AND ".Db::quoteObjects('left').">:lft{$i} AND ".Db::quoteObjects('rgt')."<:{$i} THEN :sourceId{$i}";
                 $params[':structureId'.$i] = $elementStructureData['structureId'];
                 $params[':lft'.$i] = $elementStructureData['lft'];
                 $params[':rgt'.$i] = $elementStructureData['rgt'];

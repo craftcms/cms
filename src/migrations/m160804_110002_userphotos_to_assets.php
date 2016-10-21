@@ -229,7 +229,7 @@ class m160804_110002_userphotos_to_assets extends Migration
         $folderId = (new Query())
             ->select('id')
             ->from('{{%volumefolders}}')
-            ->where($schema->quoteColumnName('parentId').' is null')
+            ->where($schema->quoteColumnName('parentId').' IS NULL')
             ->andWhere($schema->quoteColumnName('volumeId').' = :volumeId', [':volumeId' => $volumeId])
             ->scalar();
 

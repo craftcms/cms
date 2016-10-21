@@ -100,15 +100,17 @@ class SetStatus extends ElementAction
             ->execute();
 
         if ($this->status == Element::STATUS_ENABLED) {
+            $schema = Craft::$app->getDb()->getSchema();
+
             // Enable for the site as well
             Craft::$app->getDb()->createCommand()
                 ->update(
                     '{{%elements_i18n}}',
-                    ['enabled' => $sqlNewStatus],
+                    [$schema->quoteColumnName('enabled') => $sqlNewStatus],
                     [
                         'and',
                         ['in', 'elementId', $elementIds],
-                        ['siteId' => $query->siteId]
+                        [$schema->quoteColumnName('siteId') => $query->siteId]
                     ])
                 ->execute();
         }

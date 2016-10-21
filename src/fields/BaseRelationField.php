@@ -408,6 +408,8 @@ abstract class BaseRelationField extends Field implements PreviewableFieldInterf
             $sourceElementIds[] = $sourceElement->id;
         }
 
+        $schema = Craft::$app->getDb()->getSchema();
+
         // Return any relation data on these elements, defined with this field
         $map = (new Query())
             ->select('sourceId as source, targetId as target')
@@ -415,9 +417,9 @@ abstract class BaseRelationField extends Field implements PreviewableFieldInterf
             ->where(
                 [
                     'and',
-                    'fieldId=:fieldId',
+                    $schema->quoteColumnName('fieldId').'=:fieldId',
                     ['in', 'sourceId', $sourceElementIds],
-                    ['or', 'sourceSiteId=:sourceSiteId', 'sourceSiteId is null']
+                    ['or', $schema->quoteColumnName('sourceSiteId').' IS NULL']
                 ],
                 [
                     ':fieldId' => $this->id,

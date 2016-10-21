@@ -265,7 +265,7 @@ class Db
      * Values can also be set to either `':empty:'` or `':notempty:'` if you want to search for empty or non-empty
      * database values. (An “empty” value is either NULL or an empty string of text).
      *
-     * @param string       $column  The database column that the param is targeting.
+     * @param string       $column  The quoted database column that the param is targeting.
      * @param string|array $value   The param value(s).
      * @param array        &$params The [[\yii\db\Query::$params]] array.
      *
@@ -300,11 +300,11 @@ class Db
 
             if (StringHelper::toLowerCase($val) == ':empty:') {
                 if ($operator == '=') {
-                    $conditions[] = ['or', $column.' is null', $column.' = ""'];
+                    $conditions[] = ['or', $column.' IS NULL', $column.' = ""'];
                 } else {
                     $conditions[] = [
                         'and',
-                        $column.' is not null',
+                        $column.' IS NOT NULL',
                         $column.' != ""'
                     ];
                 }
@@ -425,6 +425,47 @@ class Db
         }
 
         return $tables;
+    }
+
+    /**
+     * This method will take a period separated string of database objects (table and column names)
+     * and quote them appropriately for the given database type being used.
+     *
+     * @param string $objects An unquoted string of database objects.
+     *
+     * @return string A fully quoted string for the current database type.
+     */
+    public static function quoteObjects($objects)
+    {
+        $schema = Craft::$app->getDb()->getSchema();
+
+        $parts = explode('.', $objects);
+
+        if (count($parts) > 1) {
+            // Table and column.
+            $parts[0] = $schema->quoteTableName($parts[0]);
+            $parts[1] = $schema->quoteColumnName($parts[1]);
+        } else {
+            // Just column.
+            $parts[0] = $schema->quoteColumnName($parts[0]);
+        }
+
+        return implode('.', $parts);
+    }
+
+    /**
+     * @param $values
+     *
+     * @return array|string
+     */
+    public static function quoteValues($values) {
+        $schema = Craft::$app->getDb()->getSchema();
+
+        if (is_array($values)) {
+            return array_map([$schema, 'quoteValue'], $values);
+        }
+
+        return $schema->quoteValue($values);
     }
 
     // Private Methods

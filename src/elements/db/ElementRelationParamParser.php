@@ -167,6 +167,8 @@ class ElementRelationParamParser
      */
     private function _subparseRelationParam($relCriteria, Query $query)
     {
+        $schema = Craft::$app->getDb()->getSchema();
+
         // Merge in default criteria params
         $relCriteria = array_merge([
             'field' => null,
@@ -328,8 +330,8 @@ class ElementRelationParamParser
 
                             $relationsJoinConditions[] = [
                                 'or',
-                                $sourcesAlias.'.sourceSiteId is null',
-                                $sourcesAlias.'.sourceSiteId = '.$sourceSiteParam
+                                $schema->quoteTableName($sourcesAlias).'.'.$schema->quoteColumnName('sourceSiteId').' IS NULL',
+                                $schema->quoteTableName($sourcesAlias).'.'.$schema->quoteColumnName('sourceSiteId').' = '.$sourceSiteParam
                             ];
                             $relationsJoinParams[$sourceSiteParam] = $relCriteria['sourceSite'];
                         }
@@ -363,8 +365,8 @@ class ElementRelationParamParser
 
                             $relationsJoinConditions[] = [
                                 'or',
-                                $matrixBlockTargetsAlias.'.sourceSiteId is null',
-                                $matrixBlockTargetsAlias.'.sourceSiteId = '.$sourceSiteParam
+                                $schema->quoteTableName($matrixBlockTargetsAlias).'.'.$schema->quoteColumnName('sourceSiteId').' IS NULL',
+                                $schema->quoteTableName($matrixBlockTargetsAlias).'.'.$schema->quoteColumnName('sourceSiteId').' = '.$sourceSiteParam
                             ];
                             $relationsJoinParams[$sourceSiteParam] = $relCriteria['sourceSite'];
                         }
@@ -418,8 +420,8 @@ class ElementRelationParamParser
 
                 $relationsJoinConditions[] = [
                     'or',
-                    $relTableAlias.'.sourceSiteId is null',
-                    $relTableAlias.'.sourceSiteId = '.$sourceSiteParam
+                    $schema->quoteTableName($relTableAlias).'.'.$schema->quoteTableName('sourceSiteId').' IS NULL',
+                    $schema->quoteTableName($relTableAlias).'.'.$schema->quoteTableName('sourceSiteId').' = '.$sourceSiteParam
                 ];
                 $relationsJoinParams[$sourceSiteParam] = $relCriteria['sourceSite'];
             }

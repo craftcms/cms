@@ -316,16 +316,18 @@ class AssetTransforms extends Component
         $transformsByFingerprint = [];
         $indexConditions = [];
 
+        $schema = Craft::$app->getDb()->getSchema();
+
         foreach ($transforms as $transform) {
             $transform = $this->normalizeTransform($transform);
             $location = $fingerprint = $this->_getTransformFolderName($transform);
 
-            $condition = ['and', ['location' => $location]];
+            $condition = ['and', [$schema->quoteColumnName('location') => $location]];
 
             if (is_null($transform->format)) {
-                $condition[] = 'format IS NULL';
+                $condition[] = $schema->quoteColumnName('format').' IS NULL';
             } else {
-                $condition[] = ['format' => $transform->format];
+                $condition[] = [$schema->quoteColumnName('format') => $transform->format];
                 $fingerprint .= ':'.$transform->format;
             }
 

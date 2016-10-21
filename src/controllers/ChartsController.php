@@ -8,6 +8,7 @@
 namespace craft\app\controllers;
 
 use Craft;
+use craft\app\helpers\Db;
 use craft\app\web\Controller;
 use craft\app\helpers\DateTimeHelper;
 use craft\app\helpers\ChartHelper;
@@ -37,7 +38,6 @@ class ChartsController extends Controller
         $userGroupId = Craft::$app->getRequest()->getRequiredBodyParam('userGroupId');
         $startDateParam = Craft::$app->getRequest()->getRequiredBodyParam('startDate');
         $endDateParam = Craft::$app->getRequest()->getRequiredBodyParam('endDate');
-        $schema = Craft::$app->getDb()->getSchema();
 
         $startDate = DateTimeHelper::toDateTime($startDateParam);
         $endDate = DateTimeHelper::toDateTime($endDateParam);
@@ -50,34 +50,32 @@ class ChartsController extends Controller
             ->select('COUNT(*) as value')
             ->from('{{%users}} users');
 
-        if ($userGroupId)
-        {
-            $query->innerJoin('{{%usergroups_users}} usergroups_users', $schema->quoteTableName('usergroups_users').'.'.$schema->quoteColumnName('userId').' = '.$schema->quoteTableName('users').'.'.$schema->quoteColumnName('id'));
-            $query->where($schema->quoteTableName('usergroups_users').'.'.$schema->quoteColumnName('groupId').' = :userGroupId', array(':userGroupId' => $userGroupId));
+        if ($userGroupId) {
+            $query->innerJoin('{{%usergroups_users}} usergroups_users', Db::quoteObjects('usergroups_users.userId').' = '.Db::quoteObjects('users.id'));
+            $query->where(Db::quoteObjects('usergroups_users.groupId').' = :userGroupId', [':userGroupId' => $userGroupId]);
         }
 
         // Get the chart data table
-        $dataTable = ChartHelper::getRunChartDataFromQuery($query, $startDate, $endDate, $schema->quoteTableName('users').'.'.$schema->quoteColumnName('dateCreated'), array(
+        $dataTable = ChartHelper::getRunChartDataFromQuery($query, $startDate, $endDate, Db::quoteObjects('users.dateCreated'), [
             'intervalUnit' => $intervalUnit,
             'valueLabel' => Craft::t('app', 'New Users'),
-        ));
+        ]);
 
         // Get the total number of new users
         $total = 0;
 
-        foreach($dataTable['rows'] as $row)
-        {
+        foreach ($dataTable['rows'] as $row) {
             $total = $total + $row[1];
         }
 
         // Return everything
-        return $this->asJson(array(
+        return $this->asJson([
             'dataTable' => $dataTable,
             'total' => $total,
 
             'formats' => ChartHelper::getFormats(),
             'orientation' => Craft::$app->getLocale()->getOrientation(),
             'scale' => $intervalUnit,
-        ));
+        ]);
     }
 }
