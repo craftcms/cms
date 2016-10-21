@@ -606,7 +606,7 @@ class AssetsController extends Controller
      */
     public function actionSaveImage() {
         $this->requireLogin();
-        $this->requireAjaxRequest();
+        $this->requireAcceptsJson();
 
         $assets = Craft::$app->getAssets();
         $request = Craft::$app->getRequest();

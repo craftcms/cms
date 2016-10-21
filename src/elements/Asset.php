@@ -9,7 +9,6 @@ namespace craft\app\elements;
 
 use Craft;
 use craft\app\base\Element;
-use craft\app\base\ElementInterface;
 use craft\app\base\Volume;
 use craft\app\elements\actions\CopyReferenceTag;
 use craft\app\elements\actions\DeleteAssets;
@@ -190,14 +189,9 @@ class Asset extends Element
 
             // Edit Image
             if (
-                Craft::$app->getAssets()->canUserPerformAction(
-                    $folderId,
-                    'removeFromVolume'
-                ) &&
-                Craft::$app->getAssets()->canUserPerformAction(
-                    $folderId,
-                    'uploadToVolume'
-                )
+                $userSessionService->checkPermission('removeFromVolume:'.$volume->id)
+                &&
+                $userSessionService->checkPermission('uploadToVolume:'.$volume->id)
             ) {
                 $actions[] = EditImage::className();
             }
@@ -632,6 +626,21 @@ class Asset extends Element
 
         return null;
     }
+
+    /**
+     * @inheritdoc
+     */
+    public function getHtmlAttributes($context)
+    {
+        $attributes = parent::getHtmlAttributes($context);
+
+        if ($context == 'index' && Image::isImageManipulatable($this->getExtension())) {
+            $attributes['data-image'] = true;
+        }
+
+        return $attributes;
+    }
+
 
     /**
      * @inheritdoc

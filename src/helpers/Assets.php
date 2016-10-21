@@ -254,7 +254,7 @@ class Assets
     public static function getEditorImagePath($assetId, $size) {
         $asset = Craft::$app->getAssets()->getAssetById($assetId);
 
-        if (!$asset || !ElementHelper::isAssetWithThumb($asset)) {
+        if (!$asset || !Image::isImageManipulatable($asset->getExtension())) {
             return false;
         }
 
