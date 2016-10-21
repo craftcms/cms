@@ -53,35 +53,6 @@ class User extends ActiveRecord
 
     /**
      * @inheritdoc
-     */
-    public function rules()
-    {
-        return [
-            [['lastLoginDate', 'invalidLoginWindowStart', 'lastInvalidLoginDate', 'lockoutDate', 'lastPasswordChangeDate', 'verificationCodeIssuedDate'], DateTimeValidator::class],
-            [
-                ['invalidLoginCount'],
-                'number',
-                'min' => 0,
-                'max' => 255,
-                'integerOnly' => true
-            ],
-            [['username', 'email'], 'unique'],
-            [['username', 'email'], 'required'],
-            [['email', 'unverifiedEmail'], 'email'],
-            [['email', 'unverifiedEmail'], 'string', 'min' => 5],
-            [
-                ['username', 'firstName', 'lastName', 'verificationCode'],
-                'string',
-                'max' => 100
-            ],
-            [['photoId'], 'number'],
-            [['email', 'password', 'unverifiedEmail'], 'string', 'max' => 255],
-            [['lastLoginAttemptIp'], 'string', 'max' => 45],
-        ];
-    }
-
-    /**
-     * @inheritdoc
      *
      * @return string
      */

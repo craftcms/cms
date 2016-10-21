@@ -27,6 +27,17 @@ abstract class ActiveRecord extends \yii\db\ActiveRecord
 
     /**
      * @inheritdoc
+     */
+    public function rules()
+    {
+        return [
+            [['type'], 'required'],
+            [['type'], 'string', 'max' => 150],
+        ];
+    }
+
+    /**
+     * @inheritdoc
      *
      * @return string[]
      */
