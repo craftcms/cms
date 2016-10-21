@@ -586,6 +586,7 @@ trait ApplicationTrait
 
                 // TODO: Remove this after the next breakpoint
                 $this->_storedVersion = $row['version'];
+                unset($row['siteName'], $row['siteUrl']);
 
                 // Prevent an infinite loop in toDateTime.
                 $row['releaseDate'] = DateTimeHelper::toDateTime($row['releaseDate'], false, false);
