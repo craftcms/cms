@@ -137,7 +137,7 @@ class FieldsController extends Controller
         $fieldTypeOptions = [];
 
         foreach ($allFieldTypes as $class) {
-            if ($class === $field->getType() || $class::isSelectable()) {
+            if ($class === get_class($field) || $class::isSelectable()) {
                 $fieldTypeOptions[] = [
                     'value' => $class,
                     'label' => $class::displayName()

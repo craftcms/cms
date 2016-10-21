@@ -215,7 +215,7 @@ class Dashboard extends Component
 
             $widgetRecord = $this->_getUserWidgetRecordById($widget->id);
 
-            $widgetRecord->type = $widget->getType();
+            $widgetRecord->type = get_class($widget);
             $widgetRecord->settings = $widget->getSettings();
 
             // Enabled by default.

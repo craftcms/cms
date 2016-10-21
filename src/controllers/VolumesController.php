@@ -85,7 +85,7 @@ class VolumesController extends Controller
             $volumeTypeOptions = [];
 
             foreach ($allVolumeTypes as $class) {
-                if ($class === $volume->getType() || $class::isSelectable()) {
+                if ($class === get_class($volume) || $class::isSelectable()) {
                     $volumeInstances[$class] = $volumes->createVolume($class);
 
                     $volumeTypeOptions[] = [

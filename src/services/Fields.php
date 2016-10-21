@@ -769,7 +769,7 @@ class Fields extends Component
             $fieldRecord->instructions = $field->instructions;
             $fieldRecord->translationMethod = $field->translationMethod;
             $fieldRecord->translationKeyFormat = $field->translationKeyFormat;
-            $fieldRecord->type = $field->getType();
+            $fieldRecord->type = get_class($field);
             $fieldRecord->settings = $field->getSettings();
 
             $fieldRecord->save(false);

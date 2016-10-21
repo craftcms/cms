@@ -175,7 +175,7 @@ class Tasks extends Component
                 $taskRecord = $this->_getTaskRecordById($task->id);
             }
 
-            $taskRecord->type = $task->getType();
+            $taskRecord->type = get_class($task);
             $taskRecord->status = $task->status;
             $taskRecord->description = $task->description;
             $taskRecord->totalSteps = $task->totalSteps;

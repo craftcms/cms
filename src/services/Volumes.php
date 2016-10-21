@@ -391,7 +391,7 @@ class Volumes extends Component
 
             $volumeRecord->name = $volume->name;
             $volumeRecord->handle = $volume->handle;
-            $volumeRecord->type = $volume->getType();
+            $volumeRecord->type = get_class($volume);
             $volumeRecord->hasUrls = $volume->hasUrls;
             $volumeRecord->settings = $volume->getSettings();
             $volumeRecord->fieldLayoutId = $volume->fieldLayoutId;

@@ -40,14 +40,4 @@ interface ComponentInterface
      * @return string The class handle.
      */
     public static function classHandle();
-
-    // Public Methods
-    // =========================================================================
-
-    /**
-     * Returns the class name that should be used to represent the field.
-     *
-     * @return string The class name that should be used to represent the field.
-     */
-    public function getType();
 }
