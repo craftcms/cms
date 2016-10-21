@@ -91,11 +91,6 @@ abstract class Element extends Component implements ElementInterface
     const STATUS_ARCHIVED = 'archived';
 
     /**
-     * The name of the scenario that will only validate core attributes, skipping any custom field validation.
-     */
-    const SCENARIO_CORE = 'core';
-
-    /**
      * @event ModelEvent The event that is triggered before the element is saved
      *
      * You may set [[ModelEvent::isValid]] to `false` to prevent the element from getting saved.
@@ -515,6 +510,13 @@ abstract class Element extends Component implements ElementInterface
     // =========================================================================
 
     /**
+     * @var boolean|null Whether custom fields rules should be included when validating the element.
+     *
+     * Any value besides `true` or `false` will be treated as "auto", meaning that custom fields will only be validated if the element is enabled.
+     */
+    public $validateCustomFields;
+
+    /**
      * @var array
      */
     private static $_sourcesByContext;
@@ -710,7 +712,7 @@ abstract class Element extends Component implements ElementInterface
     public function rules()
     {
         $rules = [
-            [['id', 'contentId', 'root', 'lft', 'rgt', 'level'], 'number', 'integerOnly' => true],
+            [['id', 'contentId', 'root', 'lft', 'rgt', 'level'], 'number', 'integerOnly' => true, 'on' => self::SCENARIO_DEFAULT],
             [['siteId'], SiteIdValidator::class],
             [['dateCreated', 'dateUpdated'], DateTimeValidator::class],
             [['title'], 'string', 'max' => 255],
@@ -722,64 +724,44 @@ abstract class Element extends Component implements ElementInterface
         }
 
         // Are we validating custom fields?
-        if ($this->scenario == self::SCENARIO_DEFAULT) {
-            $rules = array_merge($rules, $this->customFieldRules());
-        }
+        if ($this->validateCustomFields()) {
+            foreach ($this->getFieldLayout()->getFields() as $field) {
+                /** @var Field $field */
+                $fieldRules = $field->getElementValidationRules();
 
-        return $rules;
-    }
-
-    /**
-     * Returns the validation rules defined by custom fields.
-     *
-     * @return array
-     * @throws InvalidConfigException if a custom field returns invalid rules
-     * @see rules()
-     */
-    public function customFieldRules()
-    {
-        if (!static::hasContent()) {
-            return [];
-        }
-
-        $rules = [];
-
-        foreach ($this->getFieldLayout()->getFields() as $field) {
-            /** @var Field $field */
-            $fieldRules = $field->getElementValidationRules();
-
-            foreach ($fieldRules as $rule) {
-                if ($rule instanceof Validator) {
-                    $rules[] = $rule;
-                } else {
-                    if (is_string($rule)) {
-                        // "Validator" syntax
-                        $rule = [$field->handle, $rule];
-                    }
-
-                    if (is_array($rule) && isset($rule[0])) {
-                        if (!isset($rule[1])) {
-                            // ["Validator"] syntax
-                            array_unshift($rule, $field->handle);
-                        }
-
-                        if ($rule[1] instanceof \Closure || $field->hasMethod($rule[1])) {
-                            // InlineValidator assumes that the closure is on the model being validated
-                            // so it won’t pass a reference to the element
-                            $rule = [
-                                $rule[0],
-                                'validateCustomFieldAttribute',
-                                'params' => [
-                                    $field,
-                                    $rule[1],
-                                    (isset($rule['params']) ? $rule['params'] : null),
-                                ]
-                            ];
-                        }
-
+                foreach ($fieldRules as $rule) {
+                    if ($rule instanceof Validator) {
                         $rules[] = $rule;
                     } else {
-                        throw new InvalidConfigException('Invalid validation rule for custom field "'.$field->handle.'".');
+                        if (is_string($rule)) {
+                            // "Validator" syntax
+                            $rule = [$field->handle, $rule];
+                        }
+
+                        if (is_array($rule) && isset($rule[0])) {
+                            if (!isset($rule[1])) {
+                                // ["Validator"] syntax
+                                array_unshift($rule, $field->handle);
+                            }
+
+                            if ($rule[1] instanceof \Closure || $field->hasMethod($rule[1])) {
+                                // InlineValidator assumes that the closure is on the model being validated
+                                // so it won’t pass a reference to the element
+                                $rule = [
+                                    $rule[0],
+                                    'validateCustomFieldAttribute',
+                                    'params' => [
+                                        $field,
+                                        $rule[1],
+                                        (isset($rule['params']) ? $rule['params'] : null),
+                                    ]
+                                ];
+                            }
+
+                            $rules[] = $rule;
+                        } else {
+                            throw new InvalidConfigException('Invalid validation rule for custom field "'.$field->handle.'".');
+                        }
                     }
                 }
             }
@@ -1672,6 +1654,28 @@ abstract class Element extends Component implements ElementInterface
 
     // Protected Methods
     // =========================================================================
+
+    /**
+     * Returns whether custom fields should be validated.
+     *
+     * @return bool
+     */
+    protected function validateCustomFields()
+    {
+        if (!static::hasContent()) {
+            return false;
+        }
+
+        if ($this->validateCustomFields === true) {
+            return true;
+        }
+
+        if ($this->validateCustomFields !== false && $this->enabled && $this->enabledForSite) {
+            return true;
+        }
+
+        return false;
+    }
 
     /**
      * Prepares a field’s value for use.

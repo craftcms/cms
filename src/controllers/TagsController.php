@@ -245,7 +245,7 @@ class TagsController extends Controller
         $tag = new Tag();
         $tag->groupId = Craft::$app->getRequest()->getRequiredBodyParam('groupId');
         $tag->title = Craft::$app->getRequest()->getRequiredBodyParam('title');
-        $tag->setScenario(Element::SCENARIO_CORE);
+        $tag->validateCustomFields = false;
 
         if (Craft::$app->getElements()->saveElement($tag)) {
             return $this->asJson([

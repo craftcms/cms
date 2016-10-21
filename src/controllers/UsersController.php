@@ -970,6 +970,10 @@ class UsersController extends Controller
             $user->addError('photo', Craft::t('app', 'The user photo provided is not an image.'));
         }
 
+        if ($thisIsPublicRegistration) {
+            $user->validateCustomFields = false;
+        }
+
         if ($imageValidates && Craft::$app->getElements()->saveElement($user)) {
             // Save their preferences too
             $preferences = [

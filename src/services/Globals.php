@@ -302,7 +302,8 @@ class Globals extends Component
 
                 // Is the event giving us the go-ahead?
                 if ($event->isValid) {
-                    if (Craft::$app->getElements()->saveElement($globalSet, false)) {
+                    $globalSet->validateCustomFields = false;
+                    if (Craft::$app->getElements()->saveElement($globalSet)) {
                         // Now that we have an element ID, save it on the other stuff
                         if ($isNewSet) {
                             $globalSetRecord->id = $globalSet->id;

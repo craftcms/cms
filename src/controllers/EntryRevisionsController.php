@@ -78,7 +78,6 @@ class EntryRevisionsController extends BaseEntriesController
             if ($draft->validate(['title'])) {
                 $draftEnabled = $draft->enabled;
                 $draft->enabled = false;
-                $draft->setScenario(Element::SCENARIO_CORE);
                 Craft::$app->getElements()->saveElement($draft);
                 $draft->enabled = $draftEnabled;
             } else {
