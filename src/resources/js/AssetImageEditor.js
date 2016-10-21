@@ -634,7 +634,7 @@ Craft.AssetImageEditor = Garnish.Modal.extend(
 				this.canvas.renderAll();
 			}.bind(this);
 
-			this.hideCropper()
+			this.hideCropper();
 			this._switchEditingMode({mode: 'edit', onFinish: callback});
 
 			this.viewportMask.animate({
@@ -691,7 +691,7 @@ Craft.AssetImageEditor = Garnish.Modal.extend(
 			var cropperCenter = {
 				x: this.lastValidCroppingCoordinates.left + (cropperWidth / 2) + 2,
 				y: this.lastValidCroppingCoordinates.top + (cropperHeight / 2) + 2,
-			}
+			};
 
 
 			var deltaX = this.editorWidth / 2 - cropperCenter.x;
@@ -850,7 +850,7 @@ Craft.AssetImageEditor = Garnish.Modal.extend(
 			this.lastValidCroppingScales = {
 				x: 1,
 				y: 1
-			}
+			};
 
 			this._setTiltedVerticeCoordinates();
 
@@ -965,7 +965,7 @@ Craft.AssetImageEditor = Garnish.Modal.extend(
 			// Return the dot product for two vectors
 			var scalarProduct = function (a, b) {
 				return a.x * b.x + a.y * b.y;
-			}
+			};
 
 			// Pre-calculate the vectors and scalar products for two rectangle edges
 			var ab = getVector(rectangle.a, rectangle.b);
