@@ -1458,6 +1458,14 @@ abstract class Element extends Component implements ElementInterface
     /**
      * @inheritdoc
      */
+    public function getHtmlAttributes($context)
+    {
+        return [];
+    }
+
+    /**
+     * @inheritdoc
+     */
     public function getTableAttributeHtml($attribute)
     {
         switch ($attribute) {

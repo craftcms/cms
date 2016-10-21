@@ -814,6 +814,15 @@ interface ElementInterface extends ComponentInterface
     // -------------------------------------------------------------------------
 
     /**
+     * Returns any attributes that should be included in the element’s DOM representation in the Control Panel.
+     *
+     * @param string $context The context that the element is being rendered in ('index', 'field', etc.)
+     *
+     * @return array
+     */
+    public function getHtmlAttributes($context);
+
+    /**
      * Returns the HTML that should be shown for a given attribute in Table View.
      *
      * This method can be used to completely customize what actually shows up within the table’s body for a given
