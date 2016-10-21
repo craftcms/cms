@@ -102,7 +102,6 @@ abstract class Volume extends SavableComponent implements VolumeInterface
             [['name', 'handle'], UniqueValidator::class, 'targetClass' => VolumeRecord::class],
             [['hasUrls'], 'boolean'],
             [['name', 'handle', 'url'], 'string', 'max' => 255],
-            [['type'], 'string', 'max' => 150],
             [['name', 'handle', 'type'], 'required'],
             [
                 ['handle'],

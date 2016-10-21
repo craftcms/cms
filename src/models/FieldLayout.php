@@ -54,8 +54,6 @@ class FieldLayout extends Model
     {
         return [
             [['id'], 'number', 'integerOnly' => true],
-            [['type'], 'string', 'max' => 150],
-            [['type'], 'required'],
         ];
     }
 
