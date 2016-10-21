@@ -17,7 +17,7 @@ use craft\app\helpers\Component as ComponentHelper;
 use craft\app\records\Widget as WidgetRecord;
 use craft\app\base\Widget;
 use craft\app\widgets\Feed as FeedWidget;
-use craft\app\widgets\GetHelp as GetHelpWidget;
+use craft\app\widgets\CraftSupport as CraftSupportWidget;
 use craft\app\widgets\MissingWidget;
 use craft\app\widgets\NewUsers as NewUsersWidget;
 use craft\app\widgets\QuickPost as QuickPostWidget;
@@ -71,7 +71,7 @@ class Dashboard extends Component
     {
         $widgetTypes = [
             FeedWidget::class,
-            GetHelpWidget::class,
+            CraftSupportWidget::class,
             NewUsersWidget::class,
             QuickPostWidget::class,
             RecentEntriesWidget::class,
@@ -372,7 +372,7 @@ class Dashboard extends Component
 
         // Get Help widget
         if ($user->admin) {
-            $this->saveWidget($this->createWidget(GetHelpWidget::class));
+            $this->saveWidget($this->createWidget(CraftSupportWidget::class));
         }
 
         // Updates widget

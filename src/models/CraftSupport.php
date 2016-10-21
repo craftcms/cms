@@ -11,12 +11,12 @@ use Craft;
 use craft\app\base\Model;
 
 /**
- * Class GetHelp model.
+ * Class CraftSupport model.
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since  3.0
  */
-class GetHelp extends Model
+class CraftSupport extends Model
 {
     // Properties
     // =========================================================================
