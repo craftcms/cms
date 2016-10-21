@@ -34,7 +34,7 @@ class Users extends BaseRelationField
      */
     protected static function elementType()
     {
-        return User::className();
+        return User::class;
     }
 
     /**

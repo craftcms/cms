@@ -24,11 +24,15 @@ use craft\app\fields\Assets;
 use craft\app\helpers\Html;
 use craft\app\helpers\Image;
 use craft\app\helpers\Io;
+use craft\app\helpers\StringHelper;
 use craft\app\helpers\Template;
 use craft\app\helpers\Url;
 use craft\app\models\VolumeFolder;
-use Exception;
+use craft\app\records\Asset as AssetRecord;
+use craft\app\validators\AssetFilenameValidator;
+use craft\app\validators\DateTimeValidator;
 use yii\base\ErrorHandler;
+use yii\base\Exception;
 use yii\base\InvalidCallException;
 use yii\base\UnknownPropertyException;
 
@@ -42,6 +46,14 @@ use yii\base\UnknownPropertyException;
  */
 class Asset extends Element
 {
+    // Constants
+    // =========================================================================
+
+    // Validation scenarios
+    // -------------------------------------------------------------------------
+
+    const SCENARIO_FILENAME = 'filename';
+
     // Static
     // =========================================================================
 
@@ -148,35 +160,32 @@ class Asset extends Element
             if ($volume->hasUrls) {
                 $actions[] = Craft::$app->getElements()->createAction(
                     [
-                        'type' => View::className(),
+                        'type' => View::class,
                         'label' => Craft::t('app', 'View asset'),
                     ]
                 );
             }
 
             // Download
-            $actions[] = DownloadAssetFile::className();
+            $actions[] = DownloadAssetFile::class;
 
             // Edit
             $actions[] = Craft::$app->getElements()->createAction(
                 [
-                    'type' => Edit::className(),
+                    'type' => Edit::class,
                     'label' => Craft::t('app', 'Edit asset'),
                 ]
             );
 
+            $userSessionService = Craft::$app->getUser();
+
             // Rename File
             if (
-                Craft::$app->getAssets()->canUserPerformAction(
-                    $folderId,
-                    'removeFromVolume'
-                ) &&
-                Craft::$app->getAssets()->canUserPerformAction(
-                    $folderId,
-                    'uploadToVolume'
-                )
+                $userSessionService->checkPermission('removeFromVolume:'.$volume->id)
+                &&
+                $userSessionService->checkPermission('uploadToVolume:'.$volume->id)
             ) {
-                $actions[] = RenameFile::className();
+                $actions[] = RenameFile::class;
             }
 
             // Edit Image
@@ -194,29 +203,21 @@ class Asset extends Element
             }
 
             // Replace File
-            if (Craft::$app->getAssets()->canUserPerformAction(
-                $folderId,
-                'uploadToVolume'
-            )
-            ) {
-                $actions[] = ReplaceFile::className();
+            if ($userSessionService->checkPermission('uploadToVolume:'.$volume->id)) {
+                $actions[] = ReplaceFile::class;
             }
 
             // Copy Reference Tag
             $actions[] = Craft::$app->getElements()->createAction(
                 [
-                    'type' => CopyReferenceTag::className(),
-                    'elementType' => Asset::className(),
+                    'type' => CopyReferenceTag::class,
+                    'elementType' => Asset::class,
                 ]
             );
 
             // Delete
-            if (Craft::$app->getAssets()->canUserPerformAction(
-                $folderId,
-                'removeFromVolume'
-            )
-            ) {
-                $actions[] = DeleteAssets::className();
+            if ($userSessionService->checkPermission('removeFromVolume:'.$volume->id)) {
+                $actions[] = DeleteAssets::class;
             }
         }
 
@@ -306,152 +307,6 @@ class Asset extends Element
 
     /**
      * @inheritdoc
-     */
-    public static function getTableAttributeHtml(ElementInterface $element, $attribute)
-    {
-        /** @var Asset $element */
-        // First give plugins a chance to set this
-        $pluginAttributeHtml = Craft::$app->getPlugins()->callFirst(
-            'getAssetTableAttributeHtml',
-            [$element, $attribute],
-            true
-        );
-
-        if ($pluginAttributeHtml !== null) {
-            return $pluginAttributeHtml;
-        }
-
-        switch ($attribute) {
-            case 'filename': {
-                return Html::encodeParams(
-                    '<span style="word-break: break-word;">{filename}</span>',
-                    [
-                        'filename' => $element->filename,
-                    ]
-                );
-            }
-
-            case 'kind': {
-                return Io::getFileKindLabel($element->kind);
-            }
-
-            case 'size': {
-                if ($element->size) {
-                    return Craft::$app->getFormatter()->asShortSize(
-                        $element->size
-                    );
-                } else {
-                    return '';
-                }
-            }
-
-            case 'imageSize': {
-                if (($width = $element->getWidth()) && ($height = $element->getHeight())) {
-                    return "{$width} × {$height}";
-                }
-
-                return '';
-            }
-
-            case 'width':
-            case 'height': {
-                $size = $element->$attribute;
-
-                return ($size ? $size.'px' : '');
-            }
-
-            default: {
-                return parent::getTableAttributeHtml($element, $attribute);
-            }
-        }
-    }
-
-    /**
-     * @inheritdoc
-     */
-    public static function getEditorHtml(ElementInterface $element)
-    {
-        /** @var Asset $element */
-        $html = Craft::$app->getView()->renderTemplateMacro(
-            '_includes/forms',
-            'textField',
-            [
-                [
-                    'label' => Craft::t('app', 'Filename'),
-                    'id' => 'filename',
-                    'name' => 'filename',
-                    'value' => $element->filename,
-                    'errors' => $element->getErrors('filename'),
-                    'first' => true,
-                    'required' => true,
-                    'class' => 'renameHelper text'
-                ]
-            ]
-        );
-
-        $html .= Craft::$app->getView()->renderTemplateMacro(
-            '_includes/forms',
-            'textField',
-            [
-                [
-                    'label' => Craft::t('app', 'Title'),
-                    'locale' => $element->locale,
-                    'id' => 'title',
-                    'name' => 'title',
-                    'value' => $element->title,
-                    'errors' => $element->getErrors('title'),
-                    'required' => true
-                ]
-            ]
-        );
-
-        $html .= parent::getEditorHtml($element);
-
-        return $html;
-    }
-
-    /**
-     * @inheritdoc
-     */
-    public static function saveElement(ElementInterface $element, $params)
-    {
-        /** @var Asset $element */
-        // Is the filename changing?
-        if (!empty($params['filename']) && $params['filename'] != $element->filename) {
-            // Validate the content before we do anything drastic
-            if (!Craft::$app->getContent()->validateContent($element)) {
-                return false;
-            }
-
-            $oldFilename = $element->filename;
-            $newFilename = $params['filename'];
-
-            // Rename the file
-            try {
-                Craft::$app->getAssets()->renameAsset($element, $newFilename);
-            } catch (Exception $exception) {
-                $element->addError('filename', $exception->getMessage());
-
-                return false;
-            }
-            // TODO illegal filenmes?
-        } else {
-            $newFilename = null;
-        }
-
-        $success = parent::saveElement($element, $params);
-
-        if (!$success && $newFilename) {
-            // Better rename it back
-            /** @noinspection PhpUndefinedVariableInspection */
-            Craft::$app->getAssets()->renameAsset($element, $oldFilename);
-        }
-
-        return $success;
-    }
-
-    /**
-     * @inheritdoc
      *
      * @param string $sourceKey
      *
@@ -516,12 +371,7 @@ class Asset extends Element
             'hasThumbs' => true,
             'criteria' => ['folderId' => $folder->id],
             'data' => [
-                'upload' => is_null(
-                    $folder->volumeId
-                ) ? true : Craft::$app->getAssets()->canUserPerformAction(
-                    $folder->id,
-                    'uploadToVolume'
-                )
+                'upload' => is_null($folder->volumeId) ? true : Craft::$app->getUser()->checkPermission('uploadToVolume:'.$folder->volumeId)
             ]
         ];
 
@@ -584,14 +434,24 @@ class Asset extends Element
     public $dateModified;
 
     /**
+     * @var string New filename
+     */
+    public $newFilename;
+
+    /**
      * @var string The new file path
      */
     public $newFilePath;
 
     /**
+     * @var boolean Whether the associated file should be preserved if the asset record is deleted.
+     */
+    public $keepFileOnDelete = false;
+
+    /**
      * @var boolean Whether the file is currently being indexed
      */
-    public $indexInProgress;
+    public $indexInProgress = false;
 
     /**
      * @var
@@ -623,7 +483,7 @@ class Asset extends Element
             }
 
             return parent::__toString();
-        } catch (Exception $e) {
+        } catch (\Exception $e) {
             ErrorHandler::convertExceptionToError($e);
         }
     }
@@ -709,44 +569,32 @@ class Asset extends Element
     {
         $rules = parent::rules();
 
-        $rules[] = [
-            ['volumeId'],
-            'number',
-            'min' => -2147483648,
-            'max' => 2147483647,
-            'integerOnly' => true
-        ];
-        $rules[] = [
-            ['folderId'],
-            'number',
-            'min' => -2147483648,
-            'max' => 2147483647,
-            'integerOnly' => true
-        ];
-        $rules[] = [
-            ['width'],
-            'number',
-            'min' => -2147483648,
-            'max' => 2147483647,
-            'integerOnly' => true
-        ];
-        $rules[] = [
-            ['height'],
-            'number',
-            'min' => -2147483648,
-            'max' => 2147483647,
-            'integerOnly' => true
-        ];
-        $rules[] = [
-            ['size'],
-            'number',
-            'min' => 0,
-            'max' => 18446744073709551615,
-            'integerOnly' => true
-        ];
-        $rules[] = [['dateModified'], 'craft\\app\\validators\\DateTime'];
+        if (!$this->id && !$this->title) {
+            // Don't validate the title
+            $key = array_search([['title'], 'required'], $rules);
+            if ($key !== -1) {
+                array_splice($rules, $key, 1);
+            }
+        }
+
+        $rules[] = [['volumeId', 'folderId', 'width', 'height', 'size'], 'number', 'integerOnly' => true];
+        $rules[] = [['dateModified'], DateTimeValidator::class];
+        $rules[] = [['filename', 'kind'], 'required'];
+        $rules[] = [['kind'], 'string', 'max' => 50];
+        $rules[] = [['newFilename'], AssetFilenameValidator::class];
 
         return $rules;
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function scenarios()
+    {
+        $scenarios = parent::scenarios();
+        $scenarios[self::SCENARIO_FILENAME] = ['newFilename'];
+
+        return $scenarios;
     }
 
     /**
@@ -1046,6 +894,154 @@ class Asset extends Element
         $volume = $this->getVolume();
 
         return $volume && $volume->hasUrls;
+    }
+
+    // Indexes, etc.
+    // -------------------------------------------------------------------------
+
+    /**
+     * @inheritdoc
+     */
+    public function getTableAttributeHtml($attribute)
+    {
+        // First give plugins a chance to set this
+        $pluginAttributeHtml = Craft::$app->getPlugins()->callFirst('getAssetTableAttributeHtml', [$this, $attribute], true);
+
+        if ($pluginAttributeHtml !== null) {
+            return $pluginAttributeHtml;
+        }
+
+        switch ($attribute) {
+            case 'filename':
+                return Html::encodeParams('<span style="word-break: break-word;">{filename}</span>', [
+                    'filename' => $this->filename,
+                ]);
+
+            case 'kind':
+                return Io::getFileKindLabel($this->kind);
+
+            case 'size':
+                return $this->size ? Craft::$app->getFormatter()->asShortSize($this->size) : '';
+
+            case 'imageSize':
+                return (($width = $this->getWidth()) && ($height = $this->getHeight())) ? "{$width} × {$height}" : '';
+
+            case 'width':
+            case 'height':
+                $size = $this->$attribute;
+
+                return ($size ? $size.'px' : '');
+        }
+
+        return parent::getTableAttributeHtml($attribute);
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function getEditorHtml()
+    {
+        $html = Craft::$app->getView()->renderTemplateMacro('_includes/forms', 'textField', [
+            [
+                'label' => Craft::t('app', 'Filename'),
+                'id' => 'newFilename',
+                'name' => 'newFilename',
+                'value' => $this->filename,
+                'errors' => $this->getErrors('filename'),
+                'first' => true,
+                'required' => true,
+                'class' => 'renameHelper text'
+            ]
+        ]);
+
+        $html .= Craft::$app->getView()->renderTemplateMacro('_includes/forms', 'textField', [
+            [
+                'label' => Craft::t('app', 'Title'),
+                'siteId' => $this->siteId,
+                'id' => 'title',
+                'name' => 'title',
+                'value' => $this->title,
+                'errors' => $this->getErrors('title'),
+                'required' => true
+            ]
+        ]);
+
+        $html .= parent::getEditorHtml();
+
+        return $html;
+    }
+
+    // Events
+    // -------------------------------------------------------------------------
+
+    /**
+     * @inheritdoc
+     * @throws Exception if reasons
+     */
+    public function beforeSave($isNew)
+    {
+        if ($isNew && !$this->title) {
+            // Give it a default title based on the file name
+            $this->title = StringHelper::toTitleCase(Io::getFilename($this->filename, false));
+        }
+
+        return parent::beforeSave($isNew);
+    }
+
+    /**
+     * @inheritdoc
+     * @throws Exception if reasons
+     */
+    public function afterSave($isNew)
+    {
+        // Get the asset record
+        if (!$isNew) {
+            $record = AssetRecord::findOne($this->id);
+
+            if (!$record) {
+                throw new Exception('Invalid asset ID: '.$this->id);
+            }
+
+            if ($this->filename != $record->filename) {
+                throw new Exception('Unable to change an asset’s filename like this.');
+            }
+        } else {
+            $record = new AssetRecord();
+            $record->id = $this->id;
+            $record->filename = $this->filename;
+        }
+
+        $record->volumeId = $this->volumeId;
+        $record->folderId = $this->folderId;
+        $record->kind = $this->kind;
+        $record->size = $this->size;
+        $record->width = $this->width;
+        $record->height = $this->height;
+        $record->dateModified = $this->dateModified;
+        $record->save(false);
+
+        if ($this->newFilename) {
+            if ($this->newFilename == $this->filename) {
+                $this->newFilename = null;
+            } else {
+                Craft::$app->getAssets()->renameFile($this, false);
+            }
+        }
+
+        parent::afterSave($isNew);
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function afterDelete()
+    {
+        if (!$this->keepFileOnDelete) {
+            $this->getVolume()->deleteFile($this->getUri());
+        }
+
+        Craft::$app->getAssetTransforms()->deleteAllTransformData($this);
+        parent::afterDelete();
     }
 
     // Private Methods

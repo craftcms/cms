@@ -46,14 +46,14 @@ trait ElementTrait
     public $archived = false;
 
     /**
-     * @var string The element’s locale
+     * @var integer The site ID the element is associated with
      */
-    public $locale;
+    public $siteId;
 
     /**
-     * @var boolean Whether the element is enabled for this [[locale]].
+     * @var boolean Whether the element is enabled for this site.
      */
-    public $localeEnabled = true;
+    public $enabledForSite = true;
 
     /**
      * @var string The element’s title

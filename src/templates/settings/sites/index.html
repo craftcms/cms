@@ -1,0 +1,64 @@
+{% extends "_layouts/cp" %}
+{% set title = "Sites"|t('app') %}
+
+{% includejsresource "js/SiteAdminTable.js" %}
+
+{% do craft.app.view.registerTranslations('app', [
+	"What do you want to do with any content that is only available in {language}?",
+	"Transfer it to:",
+	"Delete it",
+	"Delete {site}"
+]) %}
+
+{% set extraPageHeaderHtml %}
+	<div class="buttons right">
+		<a href="{{ url('settings/sites/new') }}" class="btn submit add icon">{{ "New site"|t('app') }}</a>
+	</div>
+{% endset %}
+
+{% set crumbs = [
+	{ label: "Settings"|t('app'), url: url('settings') }
+] %}
+
+{% set multiple  = (allSites|length > 1) %}
+
+
+{% block content %}
+	<table id="sites" class="data fullwidth collapsible">
+		<thead>
+			<th scope="col">{{ "Name"|t('app') }}</th>
+			<th scope="col">{{ "Handle"|t('app') }}</th>
+			<th scope="col">{{ "Language"|t('app') }}</th>
+			<th scope="col">{{ "Base URL"|t('app') }}</th>
+			{% if multiple %}
+				<td class="thin"></td>
+				<td class="thin"></td>
+			{% endif %}
+		</thead>
+		<tbody>
+			{% for site in allSites %}
+				<tr data-id="{{ site.id }}" data-name="{{ site.name|t('site') }}">
+					<th scope="row" data-title="{{ 'Name'|t('app') }}"><a href="{{ url('settings/sites/' ~ site.id) }}">{{ site.name|t('site') }}</a></th>
+					<td data-title="{{ 'Handle'|t('app') }}"><code>{{ site.handle }}</code></td>
+					<td data-title="{{ 'Language'|t('app') }}"><code>{{ site.language }}</code></td>
+					<td data-title="{{ 'Base URL'|t('app') }}"><code>{{ site.baseUrl }}</code></td>
+					{% if multiple %}
+						<td class="thin"><a class="move icon" title="{{ 'Reorder'|t('app') }}" role="button"></a></td>
+						<td class="thin"><a class="delete icon" title="{{ 'Delete'|t('app') }}" role="button"></a></td>
+					{% endif %}
+				</tr>
+			{% endfor %}
+		</tbody>
+	</table>
+{% endblock %}
+
+
+{% registerjs %}
+	new Craft.SiteAdminTable({
+		tableSelector: '#sites',
+		minItems: 1,
+		sortable: true,
+		reorderAction: 'sites/reorder-sites',
+		deleteAction: 'sites/delete-site',
+	});
+{% endregisterjs %}

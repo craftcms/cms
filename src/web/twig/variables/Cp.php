@@ -150,6 +150,10 @@ class Cp
             'icon' => 'general',
             'label' => Craft::t('app', 'General')
         ];
+        $settings[$label]['sites'] = [
+            'icon' => 'world',
+            'label' => Craft::t('app', 'Sites')
+        ];
         $settings[$label]['routes'] = [
             'icon' => 'routes',
             'label' => Craft::t('app', 'Routes')
@@ -197,13 +201,6 @@ class Cp
             'icon' => 'tags',
             'label' => Craft::t('app', 'Tags')
         ];
-
-        if (Craft::$app->getEdition() == Craft::Pro) {
-            $settings[$label]['locales'] = [
-                'icon' => 'language',
-                'label' => Craft::t('app', 'Locales')
-            ];
-        }
 
         $label = Craft::t('app', 'Plugins');
 

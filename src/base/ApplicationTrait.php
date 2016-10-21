@@ -12,28 +12,21 @@ use craft\app\dates\DateTime;
 use craft\app\db\Connection;
 use craft\app\db\MigrationManager;
 use craft\app\db\Query;
-use craft\app\enums\ConfigCategory;
 use craft\app\errors\DbConnectException;
 use craft\app\events\EditionChangeEvent;
-use craft\app\events\Event;
 use craft\app\helpers\App;
 use craft\app\helpers\DateTimeHelper;
 use craft\app\helpers\Db;
 use craft\app\helpers\StringHelper;
-use craft\app\helpers\Url;
 use craft\app\i18n\Formatter;
 use craft\app\i18n\I18N;
 use craft\app\i18n\Locale;
-use craft\app\log\FileTarget;
-use craft\app\mail\Mailer;
 use craft\app\models\Info;
+use craft\app\services\Config;
 use craft\app\services\Security;
 use craft\app\web\Application as WebApplication;
 use craft\app\web\AssetManager;
 use craft\app\web\View;
-use yii\base\InvalidConfigException;
-use yii\db\Exception;
-use yii\log\Logger;
 use yii\web\BadRequestHttpException;
 use yii\web\ServerErrorHttpException;
 
@@ -49,6 +42,7 @@ use yii\web\ServerErrorHttpException;
  * @property \craft\app\services\Categories      $categories         The categories service
  * @property \craft\app\services\Config          $config             The config service
  * @property \craft\app\services\Content         $content            The content service
+ * @property \craft\app\db\MigrationManager      $contentMigrator    The content migration manager
  * @property \craft\app\services\Dashboard       $dashboard          The dashboard service
  * @property Connection                          $db                 The database connection component
  * @property \craft\app\services\Deprecator      $deprecator         The deprecator service
@@ -68,8 +62,8 @@ use yii\web\ServerErrorHttpException;
  * @property \craft\app\services\Images          $images             The images service
  * @property boolean                             $sInMaintenanceMode Whether the system is in maintenance mode
  * @property boolean                             $isInstalled        Whether Craft is installed
+ * @property boolean                             $sMultiSite         Whether this site has multiple sites
  * @property boolean                             $isUpdating         Whether Craft is in the middle of updating itself
- * @property boolean                             $isLocalized        Whether this site has multiple locales
  * @property boolean                             $isSystemOn         Whether the front end is accepting HTTP requests
  * @property \craft\app\i18n\Locale              $locale             The Locale object for the target language
  * @property \craft\app\mail\Mailer              $mailer             The mailer component
@@ -83,6 +77,7 @@ use yii\web\ServerErrorHttpException;
  * @property \craft\app\services\Search          $search             The search service
  * @property Security                            $security           The security component
  * @property \craft\app\services\Sections        $sections           The sections service
+ * @property \craft\app\services\Sites           $sites              The sites service
  * @property \craft\app\services\Structures      $structures         The structures service
  * @property \craft\app\services\SystemSettings  $systemSettings     The system settings service
  * @property \craft\app\services\Tags            $tags               The tags service
@@ -119,7 +114,7 @@ trait ApplicationTrait
     /**
      * @var
      */
-    private $_isLocalized;
+    private $_isMultiSite;
 
     /**
      * @var
@@ -139,12 +134,12 @@ trait ApplicationTrait
     /**
      * @var bool
      */
-    private $_isDbConfigValid = false;
+    private $_isDbConfigValid;
 
     /**
      * @var bool
      */
-    private $_isDbConnectionValid = false;
+    private $_isDbConnectionValid;
 
     /**
      * @var bool
@@ -202,64 +197,66 @@ trait ApplicationTrait
     {
         /** @var \craft\app\web\Application|\craft\app\console\Application $this */
         if ($this->getIsInstalled()) {
-            // Will any locale validation be necessary here?
             $request = $this->getRequest();
+            $currentSite = $this->getSites()->currentSite;
 
-            if ($useUserLanguage || defined('CRAFT_LOCALE')) {
+            // Will any site validation be necessary here?
+            if ($useUserLanguage || $currentSite) {
                 if ($useUserLanguage) {
-                    $locale = 'auto';
+                    $language = 'auto';
                 } else {
-                    /** @noinspection PhpUndefinedConstantInspection */
-                    $locale = StringHelper::toLowerCase(CRAFT_LOCALE);
+                    $language = $currentSite->language;
                 }
 
-                // Get the list of actual site locale IDs
-                $siteLocaleIds = $this->getI18n()->getSiteLocaleIds();
+                // Get the list of actual site languages
+                $siteLanguages = $this->getI18n()->getSiteLocaleIds();
 
                 // Is it set to "auto"?
-                if ($locale == 'auto') {
+                if ($language == 'auto') {
                     // Place this within a try/catch in case userSession is being fussy.
                     try {
                         // If the user is logged in *and* has a primary language set, use that
                         $user = $this->getUser()->getIdentity();
 
-                        if ($user && ($preferredLocale = $user->getPreferredLocale()) !== null) {
-                            return $preferredLocale;
+                        if ($user && ($preferredLanguage = $user->getPreferredLanguage()) !== null) {
+                            return $preferredLanguage;
                         }
                     } catch (\Exception $e) {
-                        Craft::error('Tried to determine the user’s preferred locale, but got this exception: '.$e->getMessage(), __METHOD__);
+                        Craft::error('Tried to determine the user’s preferred language, but got this exception: '.$e->getMessage(), __METHOD__);
                     }
 
-                    // Is there a default CP languge?
+                    // Is there a default CP language?
                     if ($defaultCpLanguage = Craft::$app->getConfig()->get('defaultCpLanguage')) {
-                        // Make sure it's one of the site locales
+                        // Make sure it's one of the site languages
                         $defaultCpLanguage = StringHelper::toLowerCase($defaultCpLanguage);
 
-                        if (in_array($defaultCpLanguage, $siteLocaleIds)) {
+                        if (in_array($defaultCpLanguage, $siteLanguages)) {
                             return $defaultCpLanguage;
                         }
                     }
 
-                    // Otherwise check if the browser's preferred language matches any of the site locales
+                    // Otherwise check if the browser's preferred language matches any of the site languages
                     if (!$request->getIsConsoleRequest()) {
                         $browserLanguages = $request->getAcceptableLanguages();
 
                         if ($browserLanguages) {
-                            foreach ($browserLanguages as $language) {
-                                if (in_array($language, $siteLocaleIds)) {
-                                    return $language;
+                            foreach ($browserLanguages as $browserLanguage) {
+                                if (in_array($browserLanguage, $siteLanguages)) {
+                                    return $browserLanguage;
                                 }
                             }
                         }
                     }
-                } // Is it set to a valid site locale?
-                else if (in_array($locale, $siteLocaleIds)) {
-                    return $locale;
+                } // Is it set to a valid site language?
+                else if (in_array($language, $siteLanguages)) {
+                    return $language;
                 }
             }
 
-            // Use the primary site locale by default
-            return $this->getI18n()->getPrimarySiteLocaleId();
+            if (!$this->getIsUpdating()) {
+                // Use the primary site's language by default
+                return $this->getSites()->getPrimarySite()->language;
+            }
         }
 
         return $this->_getFallbackLanguage();
@@ -323,31 +320,33 @@ trait ApplicationTrait
             return true;
         }
 
-        $actionSegments = $request->getActionSegments();
+        if (!$request->getIsConsoleRequest()) {
+            $actionSegments = $request->getActionSegments();
 
-        if (
-            $actionSegments == ['update', 'cleanUp'] ||
-            $actionSegments == ['update', 'rollback']
-        ) {
-            return true;
+            if (
+                $actionSegments == ['update', 'cleanUp'] ||
+                $actionSegments == ['update', 'rollback']
+            ) {
+                return true;
+            }
         }
 
         return false;
     }
 
     /**
-     * Returns whether this site has multiple locales.
+     * Returns whether this Craft install has multiple sites.
      *
      * @return boolean
      */
-    public function getIsLocalized()
+    public function getIsMultiSite()
     {
         /** @var \craft\app\web\Application|\craft\app\console\Application $this */
-        if (!isset($this->_isLocalized)) {
-            $this->_isLocalized = ($this->getEdition() == Craft::Pro && count($this->getI18n()->getSiteLocales()) > 1);
+        if (!isset($this->_isMultiSite)) {
+            $this->_isMultiSite = (count($this->getSites()->getAllSites()) > 1);
         }
 
-        return $this->_isLocalized;
+        return $this->_isMultiSite;
     }
 
     /**
@@ -436,6 +435,7 @@ trait ApplicationTrait
         $success = $this->saveInfo($info);
 
         if ($success === true && !$this->getRequest()->getIsConsoleRequest()) {
+            // Fire an 'afterEditionChange' event
             $this->trigger(WebApplication::EVENT_AFTER_EDITION_CHANGE,
                 new EditionChangeEvent([
                     'oldEdition' => $oldEdition,
@@ -505,87 +505,11 @@ trait ApplicationTrait
     }
 
     /**
-     * Returns the site name.
+     * Returns the system's UID.
      *
      * @return string
      */
-    public function getSiteName()
-    {
-        /** @var \craft\app\web\Application|\craft\app\console\Application $this */
-        if (!isset($this->_siteName)) {
-            // Start by checking the config
-            $siteName = $this->getConfig()->getLocalized('siteName');
-
-            if (!$siteName) {
-                $siteName = $this->getInfo('siteName');
-
-                // Parse it for environment variables
-                $siteName = $this->getConfig()->parseEnvironmentString($siteName);
-            }
-
-            $this->_siteName = $siteName;
-        }
-
-        return $this->_siteName;
-    }
-
-    /**
-     * Returns the site URL (with a trailing slash).
-     *
-     * @param string|null $protocol The protocol to use (http or https). If none is specified, it will default to
-     *                              whatever's in the Site URL setting.
-     *
-     * @return string
-     */
-    public function getSiteUrl($protocol = null)
-    {
-        /** @var \craft\app\web\Application|\craft\app\console\Application $this */
-        if (!isset($this->_siteUrl)) {
-            // Start by checking the config
-            $siteUrl = $this->getConfig()->getLocalized('siteUrl');
-
-            if (!$siteUrl) {
-                if (defined('CRAFT_SITE_URL')) {
-                    $siteUrl = CRAFT_SITE_URL;
-                } else {
-                    $siteUrl = $this->getInfo('siteUrl');
-                }
-
-                if ($siteUrl) {
-                    // Parse it for environment variables
-                    $siteUrl = $this->getConfig()->parseEnvironmentString($siteUrl);
-                } else {
-                    // Figure it out for ourselves, then
-                    $request = $this->getRequest();
-                    $siteUrl = $request->getHostInfo().$request->getBaseUrl();
-                }
-            }
-
-            $this->setSiteUrl($siteUrl);
-        }
-
-        return Url::getUrlWithProtocol($this->_siteUrl, $protocol);
-    }
-
-    /**
-     * Sets the site URL, while ensuring that the given URL ends with a trailing slash.
-     *
-     * @param string $siteUrl
-     *
-     * @return void
-     */
-    public function setSiteUrl($siteUrl)
-    {
-        /** @var \craft\app\web\Application|\craft\app\console\Application $this */
-        $this->_siteUrl = rtrim($siteUrl, '/').'/';
-    }
-
-    /**
-     * Returns the site UID.
-     *
-     * @return string
-     */
-    public function getSiteUid()
+    public function getSystemUid()
     {
         /** @var \craft\app\web\Application|\craft\app\console\Application $this */
         return $this->getInfo('uid');
@@ -663,11 +587,12 @@ trait ApplicationTrait
 
                 // TODO: Remove this after the next breakpoint
                 $this->_storedVersion = $row['version'];
+                unset($row['siteName'], $row['siteUrl']);
 
                 // Prevent an infinite loop in toDateTime.
                 $row['releaseDate'] = DateTimeHelper::toDateTime($row['releaseDate'], false, false);
 
-                $this->_info = Info::create($row);
+                $this->_info = new Info($row);
             } else {
                 $this->_info = new Info();
             }
@@ -743,12 +668,12 @@ trait ApplicationTrait
         if ($this->_isDbConfigValid === null) {
             $messages = [];
 
-            $databaseServerName = $this->getConfig()->get('server', ConfigCategory::Db);
-            $databaseAuthName = $this->getConfig()->get('user', ConfigCategory::Db);
-            $databaseName = $this->getConfig()->get('database', ConfigCategory::Db);
-            $databasePort = $this->getConfig()->get('port', ConfigCategory::Db);
-            $databaseCharset = $this->getConfig()->get('charset', ConfigCategory::Db);
-            $databaseCollation = $this->getConfig()->get('collation', ConfigCategory::Db);
+            $databaseServerName = $this->getConfig()->get('server', Config::CATEGORY_DB);
+            $databaseAuthName = $this->getConfig()->get('user', Config::CATEGORY_DB);
+            $databaseName = $this->getConfig()->get('database', Config::CATEGORY_DB);
+            $databasePort = $this->getConfig()->get('port', Config::CATEGORY_DB);
+            $databaseCharset = $this->getConfig()->get('charset', Config::CATEGORY_DB);
+            $databaseCollation = $this->getConfig()->get('collation', Config::CATEGORY_DB);
 
             if (!$databaseServerName) {
                 $messages[] = Craft::t('app', 'The database server name isn’t set in your db config file.');
@@ -793,6 +718,16 @@ trait ApplicationTrait
     public function getIsDbConnectionValid()
     {
         /** @var \craft\app\web\Application|\craft\app\console\Application $this */
+        if (!isset($this->_isDbConnectionValid)) {
+            try {
+                $this->getDb()->open();
+                $this->_isDbConnectionValid = true;
+
+            } catch (DbConnectException $e) {
+                $this->_isDbConnectionValid = false;
+            }
+        }
+
         return $this->_isDbConnectionValid;
     }
 
@@ -874,6 +809,17 @@ trait ApplicationTrait
     {
         /** @var \craft\app\web\Application|\craft\app\console\Application $this */
         return $this->get('content');
+    }
+
+    /**
+     * Returns the content migration manager.
+     *
+     * @return MigrationManager The content migration manager
+     */
+    public function getContentMigrator()
+    {
+        /** @var \craft\app\web\Application|\craft\app\console\Application $this */
+        return $this->get('contentMigrator');
     }
 
     /**
@@ -1141,6 +1087,17 @@ trait ApplicationTrait
     }
 
     /**
+     * Returns the sites service.
+     *
+     * @return \craft\app\services\Sites The sites service
+     */
+    public function getSites()
+    {
+        /** @var \craft\app\web\Application|\craft\app\console\Application $this */
+        return $this->get('sites');
+    }
+
+    /**
      * Returns the structures service.
      *
      * @return \craft\app\services\Structures The structures service
@@ -1291,253 +1248,8 @@ trait ApplicationTrait
         // Load the plugins
         $this->getPlugins()->loadPlugins();
 
-        // Trigger an afterInit event
-        $this->trigger(WebApplication::EVENT_AFTER_INIT, new Event());
-    }
-
-    /**
-     * Returns the definition for a given application component ID, in which we need to take special care on.
-     *
-     * @param string $id
-     *
-     * @return mixed The component definition, or null if it's not known
-     */
-    private function _getComponentDefinition($id)
-    {
-        /** @var \craft\app\web\Application|\craft\app\console\Application $this */
-        switch ($id) {
-            case 'assetManager':
-                return $this->_getAssetManagerDefinition();
-            case 'cache':
-                return $this->_getCacheDefinition();
-            case 'db':
-                return $this->_getDbDefinition();
-            case 'mailer':
-                return $this->_getMailerDefinition();
-            case 'formatter':
-                return $this->getLocale()->getFormatter();
-            case 'locale':
-                return $this->_getLocaleDefinition();
-            case 'log':
-                return $this->_getLogDispatcherDefinition();
-        }
-
-        return null;
-    }
-
-    /**
-     * Returns the definition for the [[\yii\web\AssetManager]] object that will be available from Craft::$app->assetManager.
-     *
-     * @return array
-     */
-    private function _getAssetManagerDefinition()
-    {
-        /** @var \craft\app\web\Application|\craft\app\console\Application $this */
-        $configService = Craft::$app->getConfig();
-
-        return [
-            'class' => 'craft\app\web\AssetManager',
-            'basePath' => $configService->get('resourceBasePath'),
-            'baseUrl' => $configService->get('resourceBaseUrl')
-        ];
-    }
-
-    /**
-     * Returns the definition for the [[\yii\caching\Cache]] object that will be available from Craft::$app->cache.
-     *
-     * @return string|array
-     * @throws InvalidConfigException
-     */
-    private function _getCacheDefinition()
-    {
-        /** @var \craft\app\web\Application|\craft\app\console\Application $this */
-        $configService = Craft::$app->getConfig();
-        $cacheMethod = $configService->get('cacheMethod');
-
-        switch ($cacheMethod) {
-            case 'apc': {
-                return [
-                    'class' => 'yii\caching\ApcCache',
-                    'useApcu' => $configService->get('useApcu', ConfigCategory::ApcCache),
-                ];
-            }
-
-            case 'db': {
-                return [
-                    'class' => 'yii\caching\DbCache',
-                    'gcProbability' => $configService->get('gcProbability', ConfigCategory::DbCache),
-                    'cacheTable' => $this->_getNormalizedTablePrefix().$configService->get('cacheTableName', ConfigCategory::DbCache),
-                ];
-            }
-
-            case 'file': {
-                return [
-                    'class' => 'craft\app\cache\FileCache',
-                    'cachePath' => $configService->get('cachePath', ConfigCategory::FileCache),
-                    'gcProbability' => $configService->get('gcProbability', ConfigCategory::FileCache),
-                ];
-            }
-
-            case 'memcache': {
-                return [
-                    'class' => 'yii\caching\MemCache',
-                    'servers' => $configService->get('servers', ConfigCategory::Memcache),
-                    'useMemcached' => $configService->get('useMemcached', ConfigCategory::Memcache),
-                ];
-            }
-
-            case 'wincache': {
-                return 'yii\caching\WinCache';
-            }
-
-            case 'xcache': {
-                return 'yii\caching\XCache';
-            }
-
-            case 'zenddata': {
-                return 'yii\caching\ZendDataCache';
-            }
-
-            default: {
-                throw new InvalidConfigException('Unsupported cacheMethod config setting value: '.$cacheMethod);
-            }
-        }
-    }
-
-    /**
-     * Returns the definition for the [[Command]] object that will be available from Craft::$app->db.
-     *
-     * @return Connection
-     * @throws DbConnectException
-     */
-    private function _getDbDefinition()
-    {
-        /** @var \craft\app\web\Application|\craft\app\console\Application $this */
-        $configService = $this->getConfig();
-
-        try {
-            $config = [
-                'class' => 'craft\app\db\Connection',
-                'dsn' => $this->_processConnectionString(),
-                'emulatePrepare' => true,
-                'username' => $configService->get('user', ConfigCategory::Db),
-                'password' => $configService->get('password', ConfigCategory::Db),
-                'charset' => $configService->get('charset', ConfigCategory::Db),
-                'tablePrefix' => $this->_getNormalizedTablePrefix(),
-                'schemaMap' => [
-                    'mysql' => '\\craft\\app\\db\\mysql\\Schema',
-                ],
-            ];
-
-            $db = Craft::createObject($config);
-            $db->open();
-        } // Most likely missing PDO in general or the specific database PDO driver.
-        catch (Exception $e) {
-            Craft::error($e->getMessage(), __METHOD__);
-
-            // TODO: Multi-db driver check.
-            if (!extension_loaded('pdo')) {
-                throw new DbConnectException(Craft::t('app', 'Craft CMS requires the PDO extension to operate.'));
-            } else if (!extension_loaded('pdo_mysql')) {
-                throw new DbConnectException(Craft::t('app', 'Craft CMS requires the PDO_MYSQL driver to operate.'));
-            } else {
-                Craft::error($e->getMessage(), __METHOD__);
-                throw new DbConnectException(Craft::t('app', 'Craft CMS can’t connect to the database with the credentials in craft/config/db.php.'));
-            }
-        } catch (\Exception $e) {
-            Craft::error($e->getMessage(), __METHOD__);
-            throw new DbConnectException(Craft::t('app', 'Craft CMS can’t connect to the database with the credentials in craft/config/db.php.'));
-        }
-
-        $this->setIsDbConnectionValid(true);
-
-        return $db;
-    }
-
-    /**
-     * Returns the definition for the Mailer object that will be available from Craft::$app->getMailer().
-     *
-     * @return Mailer
-     */
-    private function _getMailerDefinition()
-    {
-        /** @var \craft\app\web\Application|\craft\app\console\Application $this */
-        return $this->getSystemSettings()->getSettings('mailer');
-    }
-
-    /**
-     * Returns the definition for the Locale object that will be available from Craft::$app->getLocale().
-     *
-     * @return Locale
-     */
-    private function _getLocaleDefinition()
-    {
-        /** @var \craft\app\web\Application|\craft\app\console\Application $this */
-        return new Locale($this->language);
-    }
-
-    /**
-     * Returns the definition for the Dispatcher object that will be available from Craft::$app->getLog().
-     *
-     * @return array|null
-     */
-    private function _getLogDispatcherDefinition()
-    {
-        /** @var \craft\app\web\Application|\craft\app\console\Application $this */
-        $isConsoleRequest = $this->getRequest()->getIsConsoleRequest();
-
-        // Only log console requests and web requests that aren't getAuthTimeout requests
-        if ($isConsoleRequest || $this->getUser()->enableSession) {
-            $configService = Craft::$app->getConfig();
-            $fileTarget = new FileTarget();
-
-            if ($isConsoleRequest) {
-                $fileTarget->logFile = Craft::getAlias('@storage/logs/console.log');
-            } else {
-                $fileTarget->logFile = Craft::getAlias('@storage/logs/web.log');
-
-                // Only log errors and warnings, unless Craft is running in Dev Mode or it's being updated
-                if (!$configService->get('devMode') || !$this->getIsUpdating()) {
-                    $fileTarget->setLevels(Logger::LEVEL_ERROR | Logger::LEVEL_WARNING);
-                }
-            }
-
-            $fileTarget->fileMode = $configService->get('defaultFilePermissions');
-            $fileTarget->dirMode = $configService->get('defaultFolderPermissions');
-
-            return [
-                'class' => '\yii\log\Dispatcher',
-                'targets' => [
-                    $fileTarget
-                ]
-            ];
-        } else {
-            return null;
-        }
-    }
-
-    /**
-     * Returns the application’s configured DB table prefix.
-     *
-     * @return string
-     */
-    private function _getNormalizedTablePrefix()
-    {
-        /** @var \craft\app\web\Application|\craft\app\console\Application $this */
-        // Table prefixes cannot be longer than 5 characters
-        $tablePrefix = rtrim($this->getConfig()->get('tablePrefix', ConfigCategory::Db), '_');
-
-        if ($tablePrefix) {
-            if (StringHelper::length($tablePrefix) > 5) {
-                $tablePrefix = substr($tablePrefix, 0, 5);
-            }
-
-            $tablePrefix .= '_';
-        } else {
-            $tablePrefix = '';
-        }
-
-        return $tablePrefix;
+        // Fire an 'afterInit' event
+        $this->trigger(WebApplication::EVENT_AFTER_INIT);
     }
 
     /**
@@ -1592,23 +1304,6 @@ trait ApplicationTrait
         $info->maintenance = $value;
 
         return $this->saveInfo($info);
-    }
-
-    /**
-     * Returns the correct connection string depending on whether a unixSocket is specified or not in the db config.
-     *
-     * @return string
-     */
-    private function _processConnectionString()
-    {
-        /** @var \craft\app\web\Application|\craft\app\console\Application $this */
-        $unixSocket = $this->getConfig()->get('unixSocket', ConfigCategory::Db);
-
-        if (!empty($unixSocket)) {
-            return strtolower('mysql:unix_socket='.$unixSocket.';dbname=').$this->getConfig()->get('database', ConfigCategory::Db).';';
-        }
-
-        return strtolower('mysql:host='.$this->getConfig()->get('server', ConfigCategory::Db).';dbname=').$this->getConfig()->get('database', ConfigCategory::Db).strtolower(';port='.$this->getConfig()->get('port', ConfigCategory::Db).';');
     }
 
     /**

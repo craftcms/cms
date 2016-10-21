@@ -46,7 +46,7 @@ class RebrandController extends Controller
      */
     public function actionUploadSiteImage()
     {
-        $this->requireAjaxRequest();
+        $this->requireAcceptsJson();
         $this->requireAdmin();
         $type = Craft::$app->getRequest()->getRequiredBodyParam('type');
 

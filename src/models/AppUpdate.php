@@ -8,6 +8,7 @@
 namespace craft\app\models;
 
 use craft\app\base\Model;
+use craft\app\validators\DateTimeValidator;
 
 /**
  * Stores the available Craft update info.
@@ -17,25 +18,6 @@ use craft\app\base\Model;
  */
 class AppUpdate extends Model
 {
-    // Static
-    // =========================================================================
-
-    /**
-     * @inheritdoc
-     */
-    public static function populateModel($model, $config)
-    {
-        if (isset($config['releases'])) {
-            foreach ($config['releases'] as $key => $value) {
-                if (!$value instanceof AppNewRelease) {
-                    $config['releases'][$key] = AppNewRelease::create($value);
-                }
-            }
-        }
-
-        parent::populateModel($model, $config);
-    }
-
     // Properties
     // =========================================================================
 
@@ -130,6 +112,22 @@ class AppUpdate extends Model
     /**
      * @inheritdoc
      */
+    public function init()
+    {
+        parent::init();
+
+        if (isset($this->releases)) {
+            foreach ($this->releases as $key => $value) {
+                if (!$value instanceof AppNewRelease) {
+                    $this->releases[$key] = new AppNewRelease($value);
+                }
+            }
+        }
+    }
+
+    /**
+     * @inheritdoc
+     */
     public function datetimeAttributes()
     {
         $attributes = parent::datetimeAttributes();
@@ -145,8 +143,7 @@ class AppUpdate extends Model
     public function rules()
     {
         return [
-            [['latestDate'], 'craft\\app\\validators\\DateTime'],
-            [['realLatestDate'], 'craft\\app\\validators\\DateTime'],
+            [['latestDate', 'realLatestDate'], DateTimeValidator::class],
             [
                 [
                     'localBuild',

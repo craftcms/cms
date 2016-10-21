@@ -74,7 +74,7 @@ class VolumesController extends Controller
                     throw new NotFoundHttpException('Volume not found');
                 }
             } else {
-                $volume = $volumes->createVolume('craft\app\volumes\Local');
+                $volume = $volumes->createVolume(\craft\app\volumes\Local::class);
             }
         }
 
@@ -162,7 +162,7 @@ class VolumesController extends Controller
         if (Craft::$app->getEdition() == Craft::Pro) {
             $type = $request->getBodyParam('type');
         } else {
-            $type = 'craft\app\volumes\Local';
+            $type = \craft\app\volumes\Local::class;
         }
 
         /** @var Volume $volume */
@@ -178,7 +178,7 @@ class VolumesController extends Controller
 
         // Set the field layout
         $fieldLayout = Craft::$app->getFields()->assembleLayoutFromPost();
-        $fieldLayout->type = Asset::className();
+        $fieldLayout->type = Asset::class;
         $volume->setFieldLayout($fieldLayout);
 
         $session = Craft::$app->getSession();
@@ -206,7 +206,7 @@ class VolumesController extends Controller
     public function actionReorderVolumes()
     {
         $this->requirePostRequest();
-        $this->requireAjaxRequest();
+        $this->requireAcceptsJson();
 
         $volumeIds = Json::decode(Craft::$app->getRequest()->getRequiredBodyParam('ids'));
         Craft::$app->getVolumes()->reorderVolumes($volumeIds);
@@ -222,7 +222,7 @@ class VolumesController extends Controller
     public function actionDeleteVolume()
     {
         $this->requirePostRequest();
-        $this->requireAjaxRequest();
+        $this->requireAcceptsJson();
 
         $volumeId = Craft::$app->getRequest()->getRequiredBodyParam('id');
 
@@ -241,7 +241,7 @@ class VolumesController extends Controller
     public function actionLoadVolumeTypeData()
     {
         $this->requirePostRequest();
-        $this->requireAjaxRequest();
+        $this->requireAcceptsJson();
 
         $request = Craft::$app->getRequest();
         $volumeType = $request->getRequiredBodyParam('volumeType');

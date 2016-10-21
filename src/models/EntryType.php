@@ -11,6 +11,9 @@ use Craft;
 use craft\app\base\Model;
 use craft\app\behaviors\FieldLayoutTrait;
 use craft\app\helpers\Url;
+use craft\app\records\EntryType as EntryTypeRecord;
+use craft\app\validators\HandleValidator;
+use craft\app\validators\UniqueValidator;
 
 /**
  * EntryType model class.
@@ -78,8 +81,8 @@ class EntryType extends Model
     {
         return [
             'fieldLayout' => [
-                'class' => 'craft\app\behaviors\FieldLayoutBehavior',
-                'elementType' => 'craft\app\elements\Entry'
+                'class' => \craft\app\behaviors\FieldLayoutBehavior::class,
+                'elementType' => \craft\app\elements\Entry::class
             ],
         ];
     }
@@ -90,40 +93,27 @@ class EntryType extends Model
     public function rules()
     {
         return [
+            [['id', 'sectionId', 'fieldLayoutId'], 'number', 'integerOnly' => true],
+            [['name', 'handle'], 'required'],
+            [['name', 'handle'], 'string', 'max' => 255],
             [
-                ['id'],
-                'number',
-                'min' => -2147483648,
-                'max' => 2147483647,
-                'integerOnly' => true
+                ['handle'],
+                HandleValidator::class,
+                'reservedWords' => ['id', 'dateCreated', 'dateUpdated', 'uid', 'title']
             ],
             [
-                ['sectionId'],
-                'number',
-                'min' => -2147483648,
-                'max' => 2147483647,
-                'integerOnly' => true
+                ['name'],
+                UniqueValidator::class,
+                'targetClass' => EntryTypeRecord::class,
+                'targetAttribute' => ['name', 'sectionId'],
+                'comboNotUnique' => Craft::t('yii', '{attribute} "{value}" has already been taken.'),
             ],
             [
-                ['fieldLayoutId'],
-                'number',
-                'min' => -2147483648,
-                'max' => 2147483647,
-                'integerOnly' => true
-            ],
-            [
-                [
-                    'id',
-                    'sectionId',
-                    'fieldLayoutId',
-                    'name',
-                    'handle',
-                    'hasTitleField',
-                    'titleLabel',
-                    'titleFormat'
-                ],
-                'safe',
-                'on' => 'search'
+                ['handle'],
+                UniqueValidator::class,
+                'targetClass' => EntryTypeRecord::class,
+                'targetAttribute' => ['handle', 'sectionId'],
+                'comboNotUnique' => Craft::t('yii', '{attribute} "{value}" has already been taken.'),
             ],
         ];
     }

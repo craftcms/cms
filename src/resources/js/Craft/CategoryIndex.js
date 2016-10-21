@@ -197,8 +197,8 @@ Craft.CategoryIndex = Craft.BaseElementIndex.extend(
 
 		new Craft.ElementEditor({
 			hudTrigger: this.$newCategoryBtnGroup,
-			elementType: 'Category',
-			locale: this.locale,
+			elementType: 'craft\\app\\elements\\Category',
+			siteId: this.siteId,
 			attributes: {
 				groupId: groupId
 			},

@@ -83,8 +83,8 @@ class Svg extends Image
     public function loadImage($path)
     {
         if (!Io::fileExists($path)) {
-            throw new ImageException(Craft::t('app',
-                'No file exists at the path “{path}”', ['path' => $path]));
+            Craft::error('Tried to load an image at '.$path.', but the file does not exist.');
+            throw new ImageException(Craft::t('app', 'No file exists at the given path.'));
         }
 
         list($width, $height) = ImageHelper::getImageSize($path);

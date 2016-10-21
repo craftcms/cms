@@ -28,5 +28,5 @@ class ElementEvent extends Event
     /**
      * @var boolean Whether the element is brand new
      */
-    public $isNew;
+    public $isNew = false;
 }

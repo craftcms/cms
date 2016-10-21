@@ -100,7 +100,7 @@ class SetStatus extends ElementAction
             ->execute();
 
         if ($this->status == Element::STATUS_ENABLED) {
-            // Enable their locale as well
+            // Enable for the site as well
             Craft::$app->getDb()->createCommand()
                 ->update(
                     '{{%elements_i18n}}',
@@ -108,9 +108,8 @@ class SetStatus extends ElementAction
                     [
                         'and',
                         ['in', 'elementId', $elementIds],
-                        'locale = :locale'
-                    ],
-                    [':locale' => $query->locale])
+                        ['siteId' => $query->siteId]
+                    ])
                 ->execute();
         }
 

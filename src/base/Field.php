@@ -10,10 +10,13 @@ namespace craft\app\base;
 use Craft;
 use craft\app\elements\db\ElementQuery;
 use craft\app\elements\db\ElementQueryInterface;
-use craft\app\events\Event;
+use craft\app\events\FieldElementEvent;
 use craft\app\helpers\Db;
 use craft\app\helpers\Html;
 use craft\app\helpers\StringHelper;
+use craft\app\records\Field as FieldRecord;
+use craft\app\validators\HandleValidator;
+use craft\app\validators\UniqueValidator;
 use Exception;
 use yii\base\ErrorHandler;
 use yii\db\Schema;
@@ -34,29 +37,40 @@ abstract class Field extends SavableComponent implements FieldInterface
     // Constants
     // =========================================================================
 
+    // Events
+    // -------------------------------------------------------------------------
+
     /**
-     * @event Event The event that is triggered before the field is saved
+     * @event FieldElementEvent The event that is triggered before the element is saved
      *
-     * You may set [[Event::isValid]] to `false` to prevent the field from getting saved.
+     * You may set [[FieldElementEvent::isValid]] to `false` to prevent the element from getting saved.
      */
-    const EVENT_BEFORE_SAVE = 'beforeSave';
+    const EVENT_BEFORE_ELEMENT_SAVE = 'beforeElementSave';
 
     /**
-     * @event Event The event that is triggered after the field is saved
+     * @event FieldElementEvent The event that is triggered after the element is saved
      */
-    const EVENT_AFTER_SAVE = 'afterSave';
+    const EVENT_AFTER_ELEMENT_SAVE = 'afterElementSave';
 
     /**
-     * @event Event The event that is triggered before the field is deleted
+     * @event FieldElementEvent The event that is triggered before the element is deleted
      *
-     * You may set [[Event::isValid]] to `false` to prevent the field from getting deleted.
+     * You may set [[FieldElementEvent::isValid]] to `false` to prevent the element from getting deleted.
      */
-    const EVENT_BEFORE_DELETE = 'beforeDelete';
+    const EVENT_BEFORE_ELEMENT_DELETE = 'beforeElementDelete';
 
     /**
-     * @event Event The event that is triggered after the field is deleted
+     * @event FieldElementEvent The event that is triggered after the element is deleted
      */
-    const EVENT_AFTER_DELETE = 'afterDelete';
+    const EVENT_AFTER_ELEMENT_DELETE = 'afterElementDelete';
+
+    // Translation methods
+    // -------------------------------------------------------------------------
+
+    const TRANSLATION_METHOD_NONE = 'none';
+    const TRANSLATION_METHOD_LANGUAGE = 'language';
+    const TRANSLATION_METHOD_SITE = 'site';
+    const TRANSLATION_METHOD_CUSTOM = 'custom';
 
     // Static
     // =========================================================================
@@ -102,26 +116,79 @@ abstract class Field extends SavableComponent implements FieldInterface
      */
     public function rules()
     {
+        // TODO: MySQL specific
+        $maxHandleLength = 64 - strlen(Craft::$app->getContent()->fieldColumnPrefix);
+
         $rules = [
-            [['name', 'handle'], 'required'],
+            [['name'], 'string', 'max' => 255],
+            [['type'], 'string', 'max' => 150],
+            [['handle'], 'string', 'max' => $maxHandleLength],
+            [['name', 'handle', 'type', 'translationMethod'], 'required'],
+            [['groupId'], 'number', 'integerOnly' => true],
             [
-                ['groupId'],
-                'number',
-                'min' => -2147483648,
-                'max' => 2147483647,
-                'integerOnly' => true
+                ['translationMethod'],
+                'in',
+                'range' => [
+                    self::TRANSLATION_METHOD_NONE,
+                    self::TRANSLATION_METHOD_LANGUAGE,
+                    self::TRANSLATION_METHOD_SITE,
+                    self::TRANSLATION_METHOD_CUSTOM
+                ]
+            ],
+            [
+                ['handle'],
+                HandleValidator::class,
+                'reservedWords' => [
+                    'archived',
+                    'attributeLabel',
+                    'children',
+                    'contentTable',
+                    'dateCreated',
+                    'dateUpdated',
+                    'enabled',
+                    'id',
+                    'level',
+                    'lft',
+                    'link',
+                    'enabledForSite',
+                    'name', // global set-specific
+                    'next',
+                    'next',
+                    'owner',
+                    'parents',
+                    'postDate', // entry-specific
+                    'prev',
+                    'ref',
+                    'rgt',
+                    'root',
+                    'searchScore',
+                    'siblings',
+                    'site',
+                    'slug',
+                    'sortOrder',
+                    'status',
+                    'title',
+                    'uid',
+                    'uri',
+                    'url',
+                    'username', // user-specific
+                ]
+            ],
+            [
+                ['handle'],
+                UniqueValidator::class,
+                'targetClass' => FieldRecord::class,
+                'targetAttribute' => ['handle', 'context']
             ],
         ];
 
         // Only validate the ID if it's not a new field
         if ($this->id !== null && strncmp($this->id, 'new', 3) !== 0) {
-            $rules[] = [
-                ['id'],
-                'number',
-                'min' => -2147483648,
-                'max' => 2147483647,
-                'integerOnly' => true
-            ];
+            $rules[] = [['id'], 'number', 'integerOnly' => true];
+        }
+
+        if ($this->translationMethod == self::TRANSLATION_METHOD_CUSTOM) {
+            $rules[] = [['translationKeyFormat'], 'required'];
         }
 
         return $rules;
@@ -138,57 +205,19 @@ abstract class Field extends SavableComponent implements FieldInterface
     /**
      * @inheritdoc
      */
-    public function beforeSave()
+    public function getTranslationKey($element)
     {
-        // Trigger a 'beforeSave' event
-        $event = new Event();
-        $this->trigger(self::EVENT_BEFORE_SAVE, $event);
-
-        return $event->isValid;
-    }
-
-    /**
-     * @inheritdoc
-     */
-    public function afterSave()
-    {
-        // Trigger an 'afterSave' event
-        $this->trigger(self::EVENT_AFTER_SAVE, new Event());
-    }
-
-    /**
-     * @inheritdoc
-     */
-    public function beforeDelete()
-    {
-        // Trigger a 'beforeDelete' event
-        $event = new Event();
-        $this->trigger(self::EVENT_BEFORE_DELETE, $event);
-
-        return $event->isValid;
-    }
-
-    /**
-     * @inheritdoc
-     */
-    public function afterDelete()
-    {
-        // Trigger an 'afterDelete' event
-        $this->trigger(self::EVENT_AFTER_DELETE, new Event());
-    }
-
-    /**
-     * @inheritdoc
-     */
-    public function beforeElementSave(ElementInterface $element)
-    {
-    }
-
-    /**
-     * @inheritdoc
-     */
-    public function afterElementSave(ElementInterface $element)
-    {
+        /** @var Element $element */
+        switch ($this->translationMethod) {
+            case self::TRANSLATION_METHOD_NONE:
+                return '1';
+            case self::TRANSLATION_METHOD_LANGUAGE:
+                return $element->getSite()->language;
+            case self::TRANSLATION_METHOD_SITE:
+                return (string)$element->siteId;
+            default:
+                return Craft::$app->getView()->renderObjectTemplate($this->translationKeyFormat, $element);
+        }
     }
 
     /**
@@ -235,6 +264,20 @@ abstract class Field extends SavableComponent implements FieldInterface
         }
 
         return [];
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function getElementValidationRules()
+    {
+        $rules = [];
+
+        if ($this->required) {
+            $rules[] = 'required';
+        }
+
+        return $rules;
     }
 
     /**
@@ -302,6 +345,61 @@ abstract class Field extends SavableComponent implements FieldInterface
     public function getGroup()
     {
         return Craft::$app->getFields()->getGroupById($this->groupId);
+    }
+
+    // Events
+    // -------------------------------------------------------------------------
+
+    /**
+     * @inheritdoc
+     */
+    public function beforeElementSave(ElementInterface $element, $isNew)
+    {
+        // Trigger a 'beforeElementSave' event
+        $event = new FieldElementEvent([
+            'element' => $element,
+            'isNew' => $isNew,
+        ]);
+        $this->trigger(self::EVENT_BEFORE_ELEMENT_SAVE, $event);
+
+        return $event->isValid;
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function afterElementSave(ElementInterface $element, $isNew)
+    {
+        // Trigger an 'afterElementSave' event
+        $this->trigger(self::EVENT_AFTER_ELEMENT_SAVE, new FieldElementEvent([
+            'element' => $element,
+            'isNew' => $isNew,
+        ]));
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function beforeElementDelete(ElementInterface $element)
+    {
+        // Trigger a 'beforeElementDelete' event
+        $event = new FieldElementEvent([
+            'element' => $element,
+        ]);
+        $this->trigger(self::EVENT_BEFORE_ELEMENT_DELETE, $event);
+
+        return $event->isValid;
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function afterElementDelete(ElementInterface $element)
+    {
+        // Trigger an 'afterElementDelete' event
+        $this->trigger(self::EVENT_AFTER_ELEMENT_DELETE, new FieldElementEvent([
+            'element' => $element,
+        ]));
     }
 
     // Protected Methods

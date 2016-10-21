@@ -51,6 +51,7 @@ Craft.AuthManager = Garnish.Base.extend(
 		$.ajax({
 			url: Craft.getActionUrl('users/get-remaining-session-time', (extendSession ? null : 'dontExtendSession=1')),
 			type: 'GET',
+			dataType: 'json',
 			complete: $.proxy(function(jqXHR, textStatus)
 			{
 				if (textStatus == 'success')
@@ -353,12 +354,14 @@ Craft.AuthManager = Garnish.Base.extend(
 
 	logout: function()
 	{
-		var url = Craft.getActionUrl('users/logout');
-
-		$.get(url, $.proxy(function()
-		{
-			Craft.redirectTo('');
-		}, this));
+		$.get({
+			url: Craft.getActionUrl('users/logout'),
+			dataType: 'json',
+			success: $.proxy(function()
+			{
+				Craft.redirectTo('');
+			}, this)
+		});
 	},
 
 	renewSession: function(ev)

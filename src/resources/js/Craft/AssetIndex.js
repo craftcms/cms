@@ -18,10 +18,10 @@ Craft.AssetIndex = Craft.BaseElementIndex.extend(
 
 	_uploadTotalFiles: 0,
 	_uploadFileProgress: {},
-	_uploadedFileIds: [],
+	_uploadedAssetIds: [],
 	_currentUploaderSettings: {},
 
-	_fileDrag: null,
+	_assetDrag: null,
 	_folderDrag: null,
 	_expandDropTargetFolderTimeout: null,
 	_tempExpandedFolders: [],
@@ -65,9 +65,9 @@ Craft.AssetIndex = Craft.BaseElementIndex.extend(
 				this._folderDrag.addItems($source.parent());
 			}
 
-			if (this._fileDrag)
+			if (this._assetDrag)
 			{
-				this._fileDrag.updateDropTargets();
+				this._assetDrag.updateDropTargets();
 			}
 		}
 	},
@@ -91,9 +91,9 @@ Craft.AssetIndex = Craft.BaseElementIndex.extend(
 				this._folderDrag.removeItems($source.parent());
 			}
 
-			if (this._fileDrag)
+			if (this._assetDrag)
 			{
-				this._fileDrag.updateDropTargets();
+				this._assetDrag.updateDropTargets();
 			}
 		}
 	},
@@ -115,10 +115,10 @@ Craft.AssetIndex = Craft.BaseElementIndex.extend(
 		var onDragStartProxy = $.proxy(this, '_onDragStart'),
 			onDropTargetChangeProxy = $.proxy(this, '_onDropTargetChange');
 
-		// File dragging
+		// Asset dragging
 		// ---------------------------------------------------------------------
 
-		this._fileDrag = new Garnish.DragDrop({
+		this._assetDrag = new Garnish.DragDrop({
 			activeDropTargetClass: 'sel',
 			helperOpacity: 0.75,
 
@@ -230,39 +230,39 @@ Craft.AssetIndex = Craft.BaseElementIndex.extend(
 	 */
 	_onFileDragStop: function()
 	{
-		if (this._fileDrag.$activeDropTarget && this._fileDrag.$activeDropTarget[0] != this.$source[0])
+		if (this._assetDrag.$activeDropTarget && this._assetDrag.$activeDropTarget[0] != this.$source[0])
 		{
 			// Keep it selected
 			var originatingSource = this.$source;
 
-			var targetFolderId = this._getFolderIdFromSourceKey(this._fileDrag.$activeDropTarget.data('key')),
-				originalFileIds = [];
+			var targetFolderId = this._getFolderIdFromSourceKey(this._assetDrag.$activeDropTarget.data('key')),
+				originalAssetIds = [];
 
 			// For each file, prepare array data.
-			for (var i = 0; i < this._fileDrag.$draggee.length; i++)
+			for (var i = 0; i < this._assetDrag.$draggee.length; i++)
 			{
-				var originalFileId = Craft.getElementInfo(this._fileDrag.$draggee[i]).id;
+				var originalAssetId = Craft.getElementInfo(this._assetDrag.$draggee[i]).id;
 
-				originalFileIds.push(originalFileId);
+				originalAssetIds.push(originalAssetId);
 			}
 
 			// Are any files actually getting moved?
-			if (originalFileIds.length)
+			if (originalAssetIds.length)
 			{
 				this.setIndexBusy();
 
 				this._positionProgressBar();
 				this.progressBar.resetProgressBar();
-				this.progressBar.setItemCount(originalFileIds.length);
+				this.progressBar.setItemCount(originalAssetIds.length);
 				this.progressBar.showProgressBar();
 
 
 				// For each file to move a separate request
 				var parameterArray = [];
-				for (i = 0; i < originalFileIds.length; i++)
+				for (i = 0; i < originalAssetIds.length; i++)
 				{
 					parameterArray.push({
-						fileId: originalFileIds[i],
+						assetId: originalAssetIds[i],
 						folderId: targetFolderId
 					});
 				}
@@ -306,12 +306,12 @@ Craft.AssetIndex = Craft.BaseElementIndex.extend(
 						this.sourceSelect.selectItem(originatingSource);
 
 						// Make sure we use the correct offset when fetching the next page
-						this._totalVisible -= this._fileDrag.$draggee.length;
+						this._totalVisible -= this._assetDrag.$draggee.length;
 
 						// And remove the elements that have been moved away
-						for (var i = 0; i < originalFileIds.length; i++)
+						for (var i = 0; i < originalAssetIds.length; i++)
 						{
-							$('[data-id=' + originalFileIds[i] + ']').remove();
+							$('[data-id=' + originalAssetIds[i] + ']').remove();
 						}
 
 						this.view.deselectAllElements();
@@ -342,7 +342,7 @@ Craft.AssetIndex = Craft.BaseElementIndex.extend(
 								// Find the matching request parameters for this file and modify them slightly
 								for (var ii = 0; ii < parameterArray.length; ii++)
 								{
-									if (parameterArray[ii].fileId == returnData[i].fileId)
+									if (parameterArray[ii].assetId == returnData[i].assetId)
 									{
 										parameterArray[ii].userResponse = returnData[i].choice;
 										newParameterArray.push(parameterArray[ii]);
@@ -368,13 +368,13 @@ Craft.AssetIndex = Craft.BaseElementIndex.extend(
 							}
 						}, this);
 
-						this._fileDrag.fadeOutHelpers();
+						this._assetDrag.fadeOutHelpers();
 						this.promptHandler.showBatchPrompts(promptCallback);
 					}
 					else
 					{
 						performAfterMoveActions.apply(this);
-						this._fileDrag.fadeOutHelpers();
+						this._assetDrag.fadeOutHelpers();
 					}
 				}, this);
 
@@ -393,7 +393,7 @@ Craft.AssetIndex = Craft.BaseElementIndex.extend(
 			this._collapseExtraExpandedFolders();
 		}
 
-		this._fileDrag.returnHelpersToDraggees();
+		this._assetDrag.returnHelpersToDraggees();
 	},
 
 	/**
@@ -993,7 +993,7 @@ Craft.AssetIndex = Craft.BaseElementIndex.extend(
 		if (response.success || response.prompt)
 		{
 			// Add the uploaded file to the selected ones, if appropriate
-			this._uploadedFileIds.push(response.fileId);
+			this._uploadedAssetIds.push(response.assetId);
 
 			// If there is a prompt, add it to the queue
 			if (response.prompt)
@@ -1074,9 +1074,9 @@ Craft.AssetIndex = Craft.BaseElementIndex.extend(
 
 			Craft.postActionRequest('assets/save-asset', postData, $.proxy(function(data, textStatus)
 			{
-				if (textStatus == 'success' && data.fileId)
+				if (textStatus == 'success' && data.assetId)
 				{
-					this._uploadedFileIds.push(data.fileId);
+					this._uploadedAssetIds.push(data.assetId);
 				}
 				parameterIndex++;
 				this.progressBar.incrementProcessedItemCount(1);
@@ -1118,25 +1118,25 @@ Craft.AssetIndex = Craft.BaseElementIndex.extend(
 		{
 			if (!append)
 			{
-				this._fileDrag.removeAllItems();
+				this._assetDrag.removeAllItems();
 			}
 
-			this._fileDrag.addItems($newElements);
+			this._assetDrag.addItems($newElements);
 		}
 
 		// See if we have freshly uploaded files to add to selection
-		if (this._uploadedFileIds.length)
+		if (this._uploadedAssetIds.length)
 		{
 			if (this.view.settings.selectable)
 			{
-				for (var i = 0; i < this._uploadedFileIds.length; i++)
+				for (var i = 0; i < this._uploadedAssetIds.length; i++)
 				{
-					this.view.selectElementById(this._uploadedFileIds[i]);
+					this.view.selectElementById(this._uploadedAssetIds[i]);
 				}
 			}
 
 			// Reset the list.
-			this._uploadedFileIds = [];
+			this._uploadedAssetIds = [];
 		}
 
 		this.base(append, $newElements);

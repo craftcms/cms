@@ -15,6 +15,7 @@ use craft\app\dates\DateTime;
 use craft\app\helpers\Io;
 use craft\app\helpers\Json;
 use craft\app\helpers\StringHelper;
+use craft\app\i18n\Locale;
 use craft\app\io\Zip;
 use craft\app\models\GetHelp;
 use craft\app\web\Controller;
@@ -60,8 +61,7 @@ class DashboardController extends Controller
             $settingsHtml = $view->namespaceInputs($widget->getSettingsHtml());
             $settingsJs = $view->clearJsBuffer(false);
 
-            $class = $widget->getType();
-
+            $class = get_class($widget);
             $widgetTypeInfo[$class] = [
                 'iconSvg' => $this->_getWidgetIconSvg($widget),
                 'name' => $widget::displayName(),
@@ -139,7 +139,7 @@ class DashboardController extends Controller
     public function actionCreateWidget()
     {
         $this->requirePostRequest();
-        $this->requireAjaxRequest();
+        $this->requireAcceptsJson();
 
         $request = Craft::$app->getRequest();
         $dashboardService = Craft::$app->getDashboard();
@@ -171,12 +171,13 @@ class DashboardController extends Controller
     public function actionSaveWidgetSettings()
     {
         $this->requirePostRequest();
-        $this->requireAjaxRequest();
+        $this->requireAcceptsJson();
 
         $request = Craft::$app->getRequest();
         $dashboardService = Craft::$app->getDashboard();
-
         $widgetId = $request->getRequiredBodyParam('widgetId');
+
+        // Get the existing widget
         /** @var Widget $widget */
         $widget = $dashboardService->getWidgetById($widgetId);
 
@@ -184,8 +185,17 @@ class DashboardController extends Controller
             throw new BadRequestHttpException();
         }
 
+        // Create a new widget model with the new settings
         $settings = $request->getBodyParam('widget'.$widget->id.'-settings');
-        $widget::populateModel($widget, $settings);
+
+        $widget = $dashboardService->createWidget([
+            'id' => $widget->id,
+            'dateCreated' => $widget->dateCreated,
+            'dateUpdated' => $widget->dateUpdated,
+            'colspan' => $widget->colspan,
+            'type' => get_class($widget),
+            'settings' => $settings,
+        ]);
 
         return $this->_saveAndReturnWidget($widget);
     }
@@ -198,7 +208,7 @@ class DashboardController extends Controller
     public function actionDeleteUserWidget()
     {
         $this->requirePostRequest();
-        $this->requireAjaxRequest();
+        $this->requireAcceptsJson();
 
         $widgetId = Json::decode(Craft::$app->getRequest()->getRequiredBodyParam('id'));
         Craft::$app->getDashboard()->deleteWidgetById($widgetId);
@@ -214,7 +224,7 @@ class DashboardController extends Controller
     public function actionChangeWidgetColspan()
     {
         $this->requirePostRequest();
-        $this->requireAjaxRequest();
+        $this->requireAcceptsJson();
 
         $request = Craft::$app->getRequest();
         $widgetId = $request->getRequiredBodyParam('id');
@@ -233,7 +243,7 @@ class DashboardController extends Controller
     public function actionReorderUserWidgets()
     {
         $this->requirePostRequest();
-        $this->requireAjaxRequest();
+        $this->requireAcceptsJson();
 
         $widgetIds = Json::decode(Craft::$app->getRequest()->getRequiredBodyParam('ids'));
         Craft::$app->getDashboard()->reorderWidgets($widgetIds);
@@ -248,9 +258,11 @@ class DashboardController extends Controller
      */
     public function actionGetFeedItems()
     {
-        $this->requireAjaxRequest();
+        $this->requireAcceptsJson();
 
         $request = Craft::$app->getRequest();
+        $formatter = Craft::$app->getFormatter();
+
         $url = $request->getRequiredParam('url');
         $limit = $request->getParam('limit');
 
@@ -260,7 +272,7 @@ class DashboardController extends Controller
             if (isset($item['date'])) {
                 /** @var DateTime $date */
                 $date = $item['date'];
-                $item['date'] = $date->uiTimestamp();
+                $item['date'] = $formatter->asTimestamp($date, Locale::LENGTH_SHORT);
             } else {
                 unset($item['date']);
             }
@@ -344,12 +356,15 @@ class DashboardController extends Controller
                         // Grab it all.
                         $logFolderContents = Io::getFolderContents(Craft::$app->getPath()->getLogPath());
 
-                        foreach ($logFolderContents as $file) {
-                            // Make sure it's a file.
-                            if (Io::fileExists($file)) {
-                                Zip::add($zipFile, $file, Craft::$app->getPath()->getStoragePath());
+                        if ($logFolderContents) {
+                            foreach ($logFolderContents as $file) {
+                                // Make sure it's a file.
+                                if (Io::fileExists($file)) {
+                                    Zip::add($zipFile, $file, Craft::$app->getPath()->getStoragePath());
+                                }
                             }
                         }
+
                     }
 
                     if ($getHelpModel->attachDbBackup && Io::folderExists(Craft::$app->getPath()->getDbBackupPath())) {
@@ -398,20 +413,23 @@ class DashboardController extends Controller
                         // Grab it all.
                         $templateFolderContents = Io::getFolderContents(Craft::$app->getPath()->getSiteTemplatesPath());
 
-                        foreach ($templateFolderContents as $file) {
-                            // Make sure it's a file.
-                            if (Io::fileExists($file)) {
-                                $templateFolderName = Io::getFolderName(Craft::$app->getPath()->getSiteTemplatesPath(), false);
-                                $siteTemplatePath = Craft::$app->getPath()->getSiteTemplatesPath();
-                                $tempPath = substr($siteTemplatePath, 0, (StringHelper::length($siteTemplatePath) - StringHelper::length($templateFolderName)) - 1);
-                                Zip::add($zipFile, $file, $tempPath);
+                        if ($templateFolderContents) {
+                            foreach ($templateFolderContents as $file) {
+                                // Make sure it's a file.
+                                if (Io::fileExists($file)) {
+                                    $templateFolderName = Io::getFolderName(Craft::$app->getPath()->getSiteTemplatesPath(), false);
+                                    $siteTemplatePath = Craft::$app->getPath()->getSiteTemplatesPath();
+                                    $tempPath = substr($siteTemplatePath, 0, (StringHelper::length($siteTemplatePath) - StringHelper::length($templateFolderName)) - 1);
+                                    Zip::add($zipFile, $file, $tempPath);
+                                }
                             }
                         }
+
                     }
                 }
 
                 if ($zipFile) {
-                    $requestParams['File1_sFilename'] = 'SupportAttachment-'.Io::cleanFilename(Craft::$app->getSiteName()).'.zip';
+                    $requestParams['File1_sFilename'] = 'SupportAttachment-'.Io::cleanFilename(Craft::$app->getSites()->getPrimarySite()->name).'.zip';
                     $requestParams['File1_sFileMimeType'] = 'application/zip';
                     $requestParams['File1_bFileBody'] = base64_encode(Io::getFileContents($zipFile));
 

@@ -27,18 +27,6 @@ class FieldGroup extends ActiveRecord
 
     /**
      * @inheritdoc
-     */
-    public function rules()
-    {
-        return [
-            [['name'], 'unique'],
-            [['name'], 'required'],
-            [['name'], 'string', 'max' => 255],
-        ];
-    }
-
-    /**
-     * @inheritdoc
      *
      * @return string
      */
@@ -54,6 +42,6 @@ class FieldGroup extends ActiveRecord
      */
     public function getFields()
     {
-        return $this->hasMany(Field::className(), ['groupId' => 'id']);
+        return $this->hasMany(Field::class, ['groupId' => 'id']);
     }
 }

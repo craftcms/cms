@@ -7,7 +7,8 @@
 
 namespace craft\app\errors;
 
-use yii\base\Exception;
+use Craft;
+use yii\base\UserException;
 
 /**
  * Class DbConnectException
@@ -15,6 +16,13 @@ use yii\base\Exception;
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since  3.0
  */
-class DbConnectException extends Exception
+class DbConnectException extends UserException
 {
+    /**
+     * @inheritdoc
+     */
+    public function getName()
+    {
+        return Craft::t('app', 'Database Connection Exception');
+    }
 }

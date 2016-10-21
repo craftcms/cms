@@ -8,6 +8,7 @@
 namespace craft\app\models;
 
 use craft\app\base\Model;
+use craft\app\validators\DateTimeValidator;
 
 /**
  * Class Info model.
@@ -17,22 +18,6 @@ use craft\app\base\Model;
  */
 class Info extends Model
 {
-    // Static
-    // =========================================================================
-
-    /**
-     * @inheritdoc
-     */
-    public static function populateModel($model, $config)
-    {
-        // Make sure $edition is going to be an integer
-        if (isset($config['edition'])) {
-            $config['edition'] = (int)$config['edition'];
-        }
-
-        parent::populateModel($model, $config);
-    }
-
     // Properties
     // =========================================================================
 
@@ -65,16 +50,6 @@ class Info extends Model
      * @var \DateTime Release date
      */
     public $releaseDate;
-
-    /**
-     * @var string Site name
-     */
-    public $siteName;
-
-    /**
-     * @var string Site URL
-     */
-    public $siteUrl;
 
     /**
      * @var string Timezone
@@ -122,6 +97,19 @@ class Info extends Model
     /**
      * @inheritdoc
      */
+    public function init()
+    {
+        parent::init();
+
+        // Make sure $edition is going to be an integer
+        if (isset($this->edition)) {
+            $this->edition = (int)$this->edition;
+        }
+    }
+
+    /**
+     * @inheritdoc
+     */
     public function datetimeAttributes()
     {
         $names = parent::datetimeAttributes();
@@ -157,7 +145,7 @@ class Info extends Model
                 'max' => 2147483647,
                 'integerOnly' => true
             ],
-            [['releaseDate'], 'craft\\app\\validators\\DateTime'],
+            [['releaseDate'], DateTimeValidator::class],
             [
                 [
                     'version',
@@ -165,18 +153,10 @@ class Info extends Model
                     'schemaVersion',
                     'edition',
                     'releaseDate',
-                    'siteName',
-                    'siteUrl',
                     'track'
                 ],
                 'required'
             ],
-            [
-                ['siteUrl'],
-                'craft\\app\\validators\\Url',
-                'defaultScheme' => 'http'
-            ],
-            [['siteName', 'siteUrl'], 'string', 'max' => 255],
             [['timezone'], 'string', 'max' => 30],
             [['track'], 'string', 'max' => 40],
             [
@@ -187,8 +167,6 @@ class Info extends Model
                     'schemaVersion',
                     'edition',
                     'releaseDate',
-                    'siteName',
-                    'siteUrl',
                     'timezone',
                     'on',
                     'maintenance',

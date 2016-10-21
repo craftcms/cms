@@ -119,10 +119,10 @@ class Craft extends Yii
     public static function autoload($className)
     {
         if (
-            $className === 'craft\\app\\behaviors\\ContentBehavior' ||
-            $className === 'craft\\app\\behaviors\\ContentTrait' ||
-            $className === 'craft\\app\\behaviors\\ElementQueryBehavior' ||
-            $className === 'craft\\app\\behaviors\\ElementQueryTrait'
+            $className === \craft\app\behaviors\ContentBehavior::class ||
+            $className === \craft\app\behaviors\ContentTrait::class ||
+            $className === \craft\app\behaviors\ElementQueryBehavior::class ||
+            $className === \craft\app\behaviors\ElementQueryTrait::class
         ) {
             $storedFieldVersion = static::$app->getInfo('fieldVersion');
             $compiledClassesPath = static::$app->getPath()->getRuntimePath().'/compiled_classes';

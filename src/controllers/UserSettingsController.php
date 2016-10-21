@@ -105,7 +105,7 @@ class UserSettingsController extends Controller
     public function actionDeleteGroup()
     {
         $this->requirePostRequest();
-        $this->requireAjaxRequest();
+        $this->requireAcceptsJson();
 
         $groupId = Craft::$app->getRequest()->getRequiredBodyParam('id');
 

@@ -61,7 +61,7 @@ class VolumeFolder extends ActiveRecord
      */
     public function getParent()
     {
-        return $this->hasOne(VolumeFolder::className(), ['id' => 'parentId']);
+        return $this->hasOne(VolumeFolder::class, ['id' => 'parentId']);
     }
 
     /**
@@ -71,6 +71,6 @@ class VolumeFolder extends ActiveRecord
      */
     public function getVolume()
     {
-        return $this->hasOne(Volume::className(), ['id' => 'volumeId']);
+        return $this->hasOne(Volume::class, ['id' => 'volumeId']);
     }
 }

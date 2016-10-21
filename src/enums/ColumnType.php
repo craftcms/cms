@@ -41,5 +41,4 @@ abstract class ColumnType extends BaseEnum
     const Date = 'date';
     const Binary = 'binary';
     const Enum = 'enum';
-    const Locale = 'locale';
 }

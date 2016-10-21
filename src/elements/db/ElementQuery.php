@@ -28,9 +28,11 @@ use craft\app\events\PopulateElementEvent;
 use craft\app\helpers\ArrayHelper;
 use craft\app\helpers\Db;
 use craft\app\helpers\StringHelper;
+use craft\app\models\Site;
 use IteratorAggregate;
 use yii\base\Arrayable;
 use yii\base\ArrayableTrait;
+use yii\base\Exception;
 use yii\base\NotSupportedException;
 
 /**
@@ -38,6 +40,8 @@ use yii\base\NotSupportedException;
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since  3.0
+ *
+ * @property string|Site $site The site or site handle that the elements should be returned in
  *
  * @method ElementInterface|array nth($n, $db = null)
  */
@@ -146,14 +150,14 @@ class ElementQuery extends Query implements ElementQueryInterface, Arrayable, Co
     public $dateUpdated;
 
     /**
-     * @var string The locale that the elements should be returned in.
+     * @var integer The site ID that the elements should be returned in.
      */
-    public $locale;
+    public $siteId;
 
     /**
-     * @var boolean Whether the elements must be enabled in the chosen locale.
+     * @var boolean Whether the elements must be enabled for the chosen site.
      */
-    public $localeEnabled = true;
+    public $enabledForSite = true;
 
     /**
      * @var integer|array|Element The element relation criteria.
@@ -194,7 +198,7 @@ class ElementQuery extends Query implements ElementQueryInterface, Arrayable, Co
     /**
      * @inheritdoc
      */
-    public $orderBy = 'elements.dateCreated desc';
+    public $orderBy;
 
     // Structure parameters
     // -------------------------------------------------------------------------
@@ -291,14 +295,14 @@ class ElementQuery extends Query implements ElementQueryInterface, Arrayable, Co
     // -------------------------------------------------------------------------
 
     /**
-     * @var Element[] The element query result.
-     * @see setResult()
+     * @var Element[] The cached element query result
+     * @see setCachedResult()
      */
     private $_result;
 
     /**
-     * @var Element[] The element query result.
-     * @see setResult()
+     * @var Element[] The criteria params that were set when the cached element query result was set
+     * @see setCachedResult()
      */
     private $_resultCriteria;
 
@@ -341,13 +345,29 @@ class ElementQuery extends Query implements ElementQueryInterface, Arrayable, Co
      */
     public function __get($name)
     {
-        if ($name === 'order') {
-            Craft::$app->getDeprecator()->log('ElementQuery::order()', 'The “order” element parameter has been deprecated. Use “orderBy” instead.');
+        switch ($name) {
+            case 'locale': {
+                Craft::$app->getDeprecator()->log('ElementQuery::locale()', 'The “locale” element parameter has been deprecated. Use “site” or “siteId” instead.');
 
-            return $this->orderBy;
+                if ($this->siteId) {
+                    $site = Craft::$app->getSites()->getSiteById($this->siteId);
+
+                    if ($site) {
+                        return $site->handle;
+                    }
+                }
+
+                return null;
+            }
+            case 'order': {
+                Craft::$app->getDeprecator()->log('ElementQuery::order()', 'The “order” element parameter has been deprecated. Use “orderBy” instead.');
+
+                return $this->orderBy;
+            }
+            default: {
+                return parent::__get($name);
+            }
         }
-
-        return parent::__get($name);
     }
 
     /**
@@ -356,6 +376,17 @@ class ElementQuery extends Query implements ElementQueryInterface, Arrayable, Co
     public function __set($name, $value)
     {
         switch ($name) {
+            case 'site':
+                $this->site($value);
+                break;
+            case 'localeEnabled':
+                Craft::$app->getDeprecator()->log('ElementQuery::localeEnabled()', 'The “localeEnabled” element parameter has been deprecated. Use “enabledForSite” instead.');
+                $this->enabledForSite($value);
+                break;
+            case 'locale':
+                Craft::$app->getDeprecator()->log('ElementQuery::locale()', 'The “locale” element parameter has been deprecated. Use “site” or “siteId” instead.');
+                $this->site($value);
+                break;
             case 'order':
                 Craft::$app->getDeprecator()->log('ElementQuery::order()', 'The “order” element parameter has been deprecated. Use “orderBy” instead.');
                 $this->orderBy = $value;
@@ -479,7 +510,7 @@ class ElementQuery extends Query implements ElementQueryInterface, Arrayable, Co
     {
         /** @noinspection PhpUndefinedClassInspection */
         return [
-            'customFields' => ElementQueryBehavior::className(),
+            'customFields' => ElementQueryBehavior::class,
         ];
     }
 
@@ -581,10 +612,21 @@ class ElementQuery extends Query implements ElementQueryInterface, Arrayable, Co
 
     /**
      * @inheritdoc
+     * @throws Exception if $value is an invalid site handle
      */
-    public function locale($value)
+    public function site($value)
     {
-        $this->locale = $value;
+        if ($value instanceof Site) {
+            $this->siteId = $value->id;
+        } else {
+            $site = Craft::$app->getSites()->getSiteByHandle($value);
+
+            if (!$site) {
+                throw new Exception('Invalid site hadle: '.$value);
+            }
+
+            $this->siteId = $site->id;
+        }
 
         return $this;
     }
@@ -592,9 +634,51 @@ class ElementQuery extends Query implements ElementQueryInterface, Arrayable, Co
     /**
      * @inheritdoc
      */
+    public function siteId($value)
+    {
+        $this->siteId = $value;
+
+        return $this;
+    }
+
+    /**
+     * Sets the [[locale]] property.
+     *
+     * @param string $value The property value
+     *
+     * @return $this self reference
+     * @deprecated in 3.0. Use [[site]] or [[siteId]] instead.
+     */
+    public function locale($value)
+    {
+        Craft::$app->getDeprecator()->log('ElementQuery::locale()', 'The “locale” element parameter has been deprecated. Use “site” or “siteId” instead.');
+        $this->site($value);
+
+        return $this;
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function enabledForSite($value = true)
+    {
+        $this->enabledForSite = $value;
+
+        return $this;
+    }
+
+    /**
+     * Sets the [[enabledForSite]] property.
+     *
+     * @param mixed $value The property value (defaults to true)
+     *
+     * @return $this self reference
+     * @deprecated in 3.0. Use [[enabledForSite]] instead.
+     */
     public function localeEnabled($value = true)
     {
-        $this->localeEnabled = $value;
+        Craft::$app->getDeprecator()->log('ElementQuery::localeEnabled()', 'The “localeEnabled” element parameter has been deprecated. Use “enabledForSite” instead.');
+        $this->enabledForSite = $value;
 
         return $this;
     }
@@ -797,13 +881,13 @@ class ElementQuery extends Query implements ElementQueryInterface, Arrayable, Co
         /** @var Element $class */
         $class = $this->elementType;
 
-        // Make sure the locale param is set to a supported locale
+        // Make sure the siteId param is set
         if (!$class::isLocalized()) {
-            // The criteria *must* be set to the primary locale
-            $this->locale = Craft::$app->getI18n()->getPrimarySiteLocaleId();
-        } else if (!$this->locale) {
-            // Default to the current app locale
-            $this->locale = Craft::$app->language;
+            // The criteria *must* be set to the primary site ID
+            $this->siteId = Craft::$app->getSites()->getPrimarySite()->id;
+        } else if (!$this->siteId) {
+            // Default to the current site
+            $this->siteId = Craft::$app->getSites()->currentSite->id;
         }
 
         // Build the query
@@ -823,14 +907,13 @@ class ElementQuery extends Query implements ElementQueryInterface, Arrayable, Co
             $this->query->addSelect([
                 'elements.id',
                 'elements.uid',
-                'elements.type',
                 'elements.enabled',
                 'elements.archived',
                 'elements.dateCreated',
                 'elements.dateUpdated',
                 'elements_i18n.slug',
                 'elements_i18n.uri',
-                'localeEnabled' => 'elements_i18n.enabled',
+                'enabledForSite' => 'elements_i18n.enabled',
             ]);
         }
 
@@ -846,12 +929,12 @@ class ElementQuery extends Query implements ElementQueryInterface, Arrayable, Co
             ])
             ->from(['elements' => '{{%elements}}'])
             ->innerJoin('{{%elements_i18n}} elements_i18n', 'elements_i18n.elementId = elements.id')
-            ->andWhere('elements_i18n.locale = :locale')
+            ->andWhere('elements_i18n.siteId = :siteId')
             ->andWhere($this->where)
             ->offset($this->offset)
             ->limit($this->limit)
             ->addParams($this->params)
-            ->addParams([':locale' => $this->locale]);
+            ->addParams([':siteId' => $this->siteId]);
 
         if ($class::hasContent() && $this->contentTable) {
             $this->customFields = $class::getFieldsForElementsQuery($this);
@@ -895,7 +978,7 @@ class ElementQuery extends Query implements ElementQueryInterface, Arrayable, Co
             $this->subQuery->andWhere(Db::parseParam('elements_i18n.uri', $this->uri, $this->subQuery->params));
         }
 
-        if ($this->localeEnabled) {
+        if ($this->enabledForSite) {
             $this->subQuery->andWhere('elements_i18n.enabled = 1');
         }
 
@@ -943,14 +1026,10 @@ class ElementQuery extends Query implements ElementQueryInterface, Arrayable, Co
      */
     public function count($q = '*', $db = null)
     {
-        // Do we have a cached result set?
-        if ($this->_result !== null) {
-            // See if the params haven't changed
-            $criteria = $this->toArray([], [], false);
+        $cachedResult = $this->getCachedResult();
 
-            if ($criteria === $this->_resultCriteria) {
-                return count($this->_result);
-            }
+        if ($cachedResult !== null) {
+            return count($cachedResult);
         }
 
         return parent::count($q, $db);
@@ -961,14 +1040,10 @@ class ElementQuery extends Query implements ElementQueryInterface, Arrayable, Co
      */
     public function all($db = null)
     {
-        // Do we have a cached result set?
-        if ($this->_result !== null) {
-            // See if the params haven't changed
-            $criteria = $this->toArray([], [], false);
+        $cachedResult = $this->getCachedResult();
 
-            if ($criteria === $this->_resultCriteria) {
-                return $this->_result;
-            }
+        if ($cachedResult !== null) {
+            return $cachedResult;
         }
 
         return parent::all($db);
@@ -1004,27 +1079,37 @@ class ElementQuery extends Query implements ElementQueryInterface, Arrayable, Co
     }
 
     /**
-     * Returns the resulting elements set by [[setResult()]].
+     * Returns the resulting elements set by [[setCachedResult()]], if the criteria params haven’t changed since then.
      *
-     * @return ElementInterface[] $elements The resulting elements.
-     * @see setResult()
+     * @return ElementInterface[]|null $elements The resulting elements, or null if setCachedResult() was never called or the criteria has changed
+     * @see setCachedResult()
      */
-    public function getResult()
+    public function getCachedResult()
     {
-        return $this->_result ?: [];
+        if ($this->_result === null) {
+            return null;
+        }
+
+        // Make sure the criteria hasn't changed
+        if ($this->_resultCriteria !== $this->toArray([], [], false)) {
+            $this->_result = null;
+            return null;
+        }
+
+        return $this->_result;
     }
 
     /**
      * Sets the resulting elements.
      *
      * If this is called, [[all()]] will return these elements rather than initiating a new SQL query,
-     * as long as none of the parameters have changed since setResult() was called.
+     * as long as none of the parameters have changed since setCachedResult() was called.
      *
      * @param ElementInterface[] $elements The resulting elements.
      *
-     * @see getResult()
+     * @see getCachedResult()
      */
-    public function setResult($elements)
+    public function setCachedResult($elements)
     {
         $this->_result = $elements;
         $this->_resultCriteria = $this->toArray([], [], false);
@@ -1043,7 +1128,7 @@ class ElementQuery extends Query implements ElementQueryInterface, Arrayable, Co
             array_keys(Craft::getObjectVars($this->getBehavior('customFields')))
         ));
         $fields = array_combine($fields, $fields);
-        unset($fields['query'], $fields['subQuery']);
+        unset($fields['query'], $fields['subQuery'], $fields['owner']);
 
         return $fields;
     }
@@ -1209,7 +1294,7 @@ class ElementQuery extends Query implements ElementQueryInterface, Arrayable, Co
         // Join in the content table on both queries
         $this->subQuery->innerJoin($this->contentTable.' content', 'content.elementId = elements.id');
         $this->subQuery->addSelect(['contentId' => 'content.id']);
-        $this->subQuery->andWhere('content.locale = :locale');
+        $this->subQuery->andWhere('content.siteId = :siteId');
 
         $this->query->innerJoin($this->contentTable.' content', 'content.id = subquery.contentId');
 
@@ -1560,7 +1645,7 @@ class ElementQuery extends Query implements ElementQueryInterface, Arrayable, Co
         if ($this->$property !== false && !$this->$property instanceof ElementInterface) {
             $this->$property = $class::find()
                 ->id($this->$property)
-                ->locale($this->locale)
+                ->siteId($this->siteId)
                 ->one();
 
             if ($this->$property === null) {
@@ -1588,15 +1673,21 @@ class ElementQuery extends Query implements ElementQueryInterface, Arrayable, Co
             // Get the element IDs
             $limit = $this->query->limit;
             $offset = $this->query->offset;
+            $subLimit = $this->subQuery->limit;
+            $subOffset = $this->subQuery->offset;
 
             $this->query->limit = null;
             $this->query->offset = null;
+            $this->subQuery->limit = null;
+            $this->subQuery->offset = null;
 
             $elementIds = $this->query->column('elements.id');
-            $searchResults = Craft::$app->getSearch()->filterElementIdsByQuery($elementIds, $this->search, true, $this->locale, true);
+            $searchResults = Craft::$app->getSearch()->filterElementIdsByQuery($elementIds, $this->search, true, $this->siteId, true);
 
             $this->query->limit = $limit;
             $this->query->offset = $offset;
+            $this->subQuery->limit = $subLimit;
+            $this->subQuery->offset = $subOffset;
 
             // No results?
             if (!$searchResults) {
@@ -1610,10 +1701,12 @@ class ElementQuery extends Query implements ElementQueryInterface, Arrayable, Co
                 $orderBy = [
                     new FixedOrderExpression('elements.id', $filteredElementIds, $db)
                 ];
+
                 $this->query->orderBy($orderBy);
+                $this->subQuery->orderBy($orderBy);
             }
 
-            $this->andWhere(['in', 'elements.id', $filteredElementIds]);
+            $this->subQuery->andWhere(['in', 'elements.id', $filteredElementIds]);
 
             $this->_searchScores = $searchResults;
         }
@@ -1632,16 +1725,27 @@ class ElementQuery extends Query implements ElementQueryInterface, Arrayable, Co
             return;
         }
 
-        if ($this->fixedOrder) {
-            $ids = ArrayHelper::toArray($this->id);
+        if ($this->orderBy === null) {
+            if ($this->fixedOrder) {
+                $ids = ArrayHelper::toArray($this->id);
 
-            if (!$ids) {
-                throw new QueryAbortedException;
+                if (!$ids) {
+                    throw new QueryAbortedException;
+                }
+
+                $this->orderBy = [new FixedOrderExpression('elements.id', $ids, $db)];
+            } else if ($this->structureId) {
+                $this->orderBy = 'structureelements.lft';
+            } else {
+                $this->orderBy = 'elements.dateCreated desc';
             }
+        }
 
-            $orderBy = [new FixedOrderExpression('elements.id', $ids, $db)];
-        } else if (!empty($this->orderBy) && $this->orderBy !== ['score' => SORT_ASC] && empty($this->query->orderBy)) {
-            $orderBy = $this->orderBy;
+        if (!empty($this->orderBy) && $this->orderBy !== ['score' => SORT_ASC] && empty($this->query->orderBy)) {
+            // In case $this->orderBy was set directly instead of via orderBy()
+            $orderBy = $this->normalizeOrderBy($this->orderBy);
+            $orderByColumns = array_keys($orderBy);
+
             $orderColumnMap = [];
 
             if (is_array($this->customFields)) {
@@ -1657,12 +1761,15 @@ class ElementQuery extends Query implements ElementQueryInterface, Arrayable, Co
             $orderColumnMap['id'] = 'elements.id';
 
             foreach ($orderColumnMap as $orderValue => $columnName) {
-                // Avoid matching fields named "asc" or "desc" in the string "column_name asc" or
-                // "column_name desc"
-                $orderBy = preg_replace('/(?<!\w\s|\.)\b'.$orderValue.'\b/', $columnName.'$1', $orderBy);
+                // Are we ordering by this column name?
+                $pos = array_search($orderValue, $orderByColumns);
+
+                if ($pos !== false) {
+                    // Swap it with the mapped column name
+                    $orderByColumns[$pos] = $columnName;
+                    $orderBy = array_combine($orderByColumns, $orderBy);
+                }
             }
-        } else if ($this->structureId) {
-            $orderBy = 'structureelements.lft';
         }
 
         if (!empty($orderBy)) {
@@ -1766,7 +1873,7 @@ class ElementQuery extends Query implements ElementQueryInterface, Arrayable, Co
     private function _createElement($row)
     {
         // Do we have a placeholder for this element?
-        $element = Craft::$app->getElements()->getPlaceholderElement($row['id'], $this->locale);
+        $element = Craft::$app->getElements()->getPlaceholderElement($row['id'], $this->siteId);
 
         if ($element !== null) {
             return $element;
@@ -1776,21 +1883,12 @@ class ElementQuery extends Query implements ElementQueryInterface, Arrayable, Co
         $class = $this->elementType;
 
         // Instantiate the element
-        $row['locale'] = $this->locale;
+        $row['siteId'] = $this->siteId;
 
         if ($this->structureId) {
             $row['structureId'] = $this->structureId;
         }
 
-        /** @var Element $element */
-        $element = $class::create($row);
-
-        // Verify that an element was returned
-        if (!$element || !($element instanceof ElementInterface)) {
-            return false;
-        }
-
-        // Set the custom field values
         if ($class::hasContent() && $this->contentTable) {
             // Separate the content values from the main element attributes
             $fieldValues = [];
@@ -1807,10 +1905,23 @@ class ElementQuery extends Query implements ElementQueryInterface, Arrayable, Co
                         if (!isset($fieldValues[$field->handle]) || (empty($fieldValues[$field->handle]) && !empty($row[$colName]))) {
                             $fieldValues[$field->handle] = $row[$colName];
                         }
+
+                        unset($row[$colName]);
                     }
                 }
             }
+        }
 
+        /** @var Element $element */
+        $element = new $class($row);
+
+        // Verify that an element was returned
+        if (!$element || !($element instanceof ElementInterface)) {
+            return false;
+        }
+
+        // Set the custom field values
+        if (isset($fieldValues)) {
             $element->setFieldValues($fieldValues);
         }
 

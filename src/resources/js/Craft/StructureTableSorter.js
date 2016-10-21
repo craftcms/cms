@@ -543,7 +543,7 @@ Craft.StructureTableSorter = Garnish.DragSort.extend({
 		return {
 			structureId: this.structureId,
 			elementId:   $row.data('id'),
-			locale:      $row.find('.element:first').data('locale')
+			siteId:      $row.find('.element:first').data('site-id')
 		};
 	},
 

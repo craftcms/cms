@@ -9,20 +9,23 @@ namespace craft\app\records;
 
 use yii\db\ActiveQueryInterface;
 use craft\app\db\ActiveRecord;
+use craft\app\validators\SiteIdValidator;
 
 /**
  * Class MatrixBlock record.
  *
  * @property integer         $id          ID
  * @property integer         $ownerId     Owner ID
- * @property Locale          $ownerLocale Owner locale
+ * @property integer         $ownerSiteId Owner site ID
  * @property integer         $fieldId     Field ID
  * @property integer         $typeId      Type ID
  * @property string          $sortOrder   Sort order
  * @property Element         $element     Element
  * @property Element         $owner       Owner
+ * @property Site            $ownerSite   Owner's site
  * @property Field           $field       Field
  * @property MatrixBlockType $type        Type
+ * @property Site            $site        Site
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since  3.0
@@ -31,16 +34,6 @@ class MatrixBlock extends ActiveRecord
 {
     // Public Methods
     // =========================================================================
-
-    /**
-     * @inheritdoc
-     */
-    public function rules()
-    {
-        return [
-            [['ownerLocale'], 'craft\\app\\validators\\Locale'],
-        ];
-    }
 
     /**
      * @inheritdoc
@@ -59,7 +52,7 @@ class MatrixBlock extends ActiveRecord
      */
     public function getElement()
     {
-        return $this->hasOne(Element::className(), ['id' => 'id']);
+        return $this->hasOne(Element::class, ['id' => 'id']);
     }
 
     /**
@@ -69,17 +62,17 @@ class MatrixBlock extends ActiveRecord
      */
     public function getOwner()
     {
-        return $this->hasOne(Element::className(), ['id' => 'ownerId']);
+        return $this->hasOne(Element::class, ['id' => 'ownerId']);
     }
 
     /**
-     * Returns the matrix block’s ownerLocale.
+     * Returns the matrix block’s owner's site.
      *
      * @return ActiveQueryInterface The relational query object.
      */
-    public function getOwnerLocale()
+    public function getOwnerSite()
     {
-        return $this->hasOne(Locale::className(), ['id' => 'ownerLocale']);
+        return $this->hasOne(Site::class, ['id' => 'ownerSiteId']);
     }
 
     /**
@@ -89,7 +82,7 @@ class MatrixBlock extends ActiveRecord
      */
     public function getField()
     {
-        return $this->hasOne(Field::className(), ['id' => 'fieldId']);
+        return $this->hasOne(Field::class, ['id' => 'fieldId']);
     }
 
     /**
@@ -99,6 +92,6 @@ class MatrixBlock extends ActiveRecord
      */
     public function getType()
     {
-        return $this->hasOne(MatrixBlockType::className(), ['id' => 'typeId']);
+        return $this->hasOne(MatrixBlockType::class, ['id' => 'typeId']);
     }
 }

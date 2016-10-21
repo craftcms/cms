@@ -29,8 +29,8 @@
 		{% endif %}
 	{% endblock %}
 
-	{% block targetLocaleField %}
-		{{ targetLocaleFieldHtml|raw }}
+	{% block targetSiteField %}
+		{{ targetSiteFieldHtml|raw }}
 	{% endblock %}
 
 	{% block limitField %}
@@ -61,5 +61,16 @@
 			placeholder: defaultSelectionLabel,
 			errors: field.getErrors('selectionLabel')
 		}) }}
+	{% endblock %}
+
+	{% block localizeRelationsField %}
+		{% if craft.app.getIsMultiSite() %}
+			{{ forms.checkboxField({
+				label: "Manage relations on a per-site basis"|t('app'),
+				id: 'localize-relations',
+				name: 'localizeRelations',
+				checked: field.localizeRelations
+			}) }}
+		{% endif %}
 	{% endblock %}
 {% endblock %}

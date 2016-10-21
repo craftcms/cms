@@ -16,6 +16,7 @@ use craft\app\elements\User;
 use craft\app\errors\ActionCancelledException;
 use craft\app\errors\AssetConflictException;
 use craft\app\errors\AssetDisallowedExtensionException;
+use craft\app\errors\AssetException;
 use craft\app\errors\AssetLogicException;
 use craft\app\errors\AssetMissingException;
 use craft\app\errors\ImageException;
@@ -26,7 +27,6 @@ use craft\app\errors\VolumeObjectNotFoundException;
 use craft\app\errors\ElementSaveException;
 use craft\app\errors\FileException;
 use craft\app\errors\ValidationException;
-use craft\app\events\AssetDeleteEvent;
 use craft\app\events\AssetEvent;
 use craft\app\events\ReplaceAssetEvent;
 use craft\app\helpers\Assets as AssetsHelper;
@@ -42,6 +42,7 @@ use craft\app\models\FolderCriteria;
 use craft\app\models\VolumeFolder;
 use craft\app\records\Asset as AssetRecord;
 use craft\app\records\VolumeFolder as VolumeFolderRecord;
+use craft\app\tasks\GeneratePendingTransforms;
 use craft\app\volumes\Temp;
 use yii\base\Component;
 use yii\base\Exception;
@@ -67,18 +68,6 @@ class Assets extends Component
     const EVENT_BEFORE_UPLOAD_ASSET = 'beforeUploadAsset';
 
     /**
-     * @event AssetEvent The event that is triggered before an asset is saved.
-     *
-     * You may set [[AssetEvent::isValid]] to `false` to prevent the asset from getting saved.
-     */
-    const EVENT_BEFORE_SAVE_ASSET = 'beforeSaveAsset';
-
-    /**
-     * @event AssetEvent The event that is triggered after an asset is saved.
-     */
-    const EVENT_AFTER_SAVE_ASSET = 'afterSaveAsset';
-
-    /**
      * @event AssetEvent The event that is triggered before an asset is replaced.
      *
      * You may set [[AssetEvent::isValid]] to `false` to prevent the asset from being replaced.
@@ -89,18 +78,6 @@ class Assets extends Component
      * @event AssetEvent The event that is triggered after an asset is replaced.
      */
     const EVENT_AFTER_REPLACE_ASSET = 'afterReplaceFile';
-
-    /**
-     * @event AssetEvent The event that is triggered before an asset is deleted.
-     *
-     * You may set [[AssetEvent::isValid]] to `false` to prevent the asset from being deleted.
-     */
-    const EVENT_BEFORE_DELETE_ASSET = 'beforeDeleteAsset';
-
-    /**
-     * @event AssetEvent The event that is triggered after an asset is deleted.
-     */
-    const EVENT_AFTER_DELETE_ASSET = 'afterDeleteAsset';
 
     // Properties
     // =========================================================================
@@ -132,43 +109,15 @@ class Assets extends Component
     /**
      * Returns a file by its ID.
      *
-     * @param             $assetId
-     * @param string|null $localeId
+     * @param integer      $assetId
+     * @param integer|null $siteId
      *
      * @return Asset|null
      */
-    public function getAssetById($assetId, $localeId = null)
+    public function getAssetById($assetId, $siteId = null)
     {
         return Craft::$app->getElements()->getElementById($assetId,
-            Asset::className(), $localeId);
-    }
-
-    /**
-     * Finds the first file that matches the given criteria.
-     *
-     * @param mixed $criteria
-     *
-     * @return Asset|null
-     */
-    public function findAsset($criteria = null)
-    {
-        $query = $this->_createAssetQuery($criteria);
-
-        return $query->one();
-    }
-
-    /**
-     * Finds all assets that matches the given criteria.
-     *
-     * @param mixed $criteria
-     *
-     * @return array|null
-     */
-    public function findAssets($criteria = null)
-    {
-        $query = $this->_createAssetQuery($criteria);
-
-        return $query->all();
+            Asset::class, $siteId);
     }
 
     /**
@@ -231,10 +180,10 @@ class Assets extends Component
                 ['extension' => $extension]));
         }
 
-        $existingAsset = $this->findAsset([
-            'filename' => $asset->filename,
-            'folderId' => $asset->folderId
-        ]);
+        $existingAsset = Asset::find()
+            ->folderId($asset->folderId)
+            ->filename(Db::escapeParam($asset->filename))
+            ->one();
 
         if ($existingAsset && $existingAsset->id != $asset->id) {
             throw new AssetConflictException(Craft::t('app',
@@ -299,7 +248,7 @@ class Assets extends Component
             }
         }
 
-        $this->_storeAssetRecord($asset);
+        Craft::$app->getElements()->saveElement($asset);
 
         // Now that we have an ID, store the source
         if (!$volume::isLocal() && $asset->kind == 'image' && !empty($asset->newFilePath)) {
@@ -364,10 +313,11 @@ class Assets extends Component
             $this->_moveAssetFileToFolder($assetToReplaceWith,
                 $assetToReplace->getFolder(), $assetToReplace->filename);
 
-            // At this point the existing Asset has it's properties changed and the Asset
+            // At this point the existing Asset has its properties changed and the Asset
             // file itself is changed as well. Save the existing Asset and delete the other one.
             $this->saveAsset($assetToReplace);
-            $this->deleteAssetsByIds($assetToReplaceWith->id, false);
+            $assetToReplaceWith->keepFileOnDelete = true;
+            Craft::$app->getElements()->saveElement($assetToReplaceWith);
         }
     }
 
@@ -428,7 +378,7 @@ class Assets extends Component
             if ($asset->filename != $filename) {
                 // Delete old, change the name, upload the new
                 $volume->deleteFile($asset->getUri());
-                $asset->filename = $filename;
+                $asset->newFilename = $filename;
                 $volume->createFileByStream($asset->getUri(), $stream);
             } else {
                 $volume->updateFileByStream($asset->getUri(), $stream);
@@ -440,7 +390,7 @@ class Assets extends Component
 
             // Delete old, change the name, upload the new
             $volume->deleteFile($asset->getUri());
-            $asset->filename = $filename;
+            $asset->newFilename = $filename;
             $volume->createFileByStream($asset->getUri(), $stream);
 
             $asset->kind = Io::getFileKind(Io::getExtension($filename));
@@ -470,97 +420,42 @@ class Assets extends Component
     }
 
     /**
-     * Delete a list of files by an array of ids (or a single id).
-     *
-     * @param array|int $assetIds
-     * @param boolean   $deleteFile Should the file be deleted along the record. Defaults to true.
-     *
-     * @return void
-     */
-    public function deleteAssetsByIds($assetIds, $deleteFile = true)
-    {
-        if (!is_array($assetIds)) {
-            $assetIds = [$assetIds];
-        }
-
-        foreach ($assetIds as $assetId) {
-            $asset = $this->getAssetById($assetId);
-
-            if ($asset) {
-                $volume = $asset->getVolume();
-
-                // Fire an 'onBeforeDeleteAsset' event
-                $event = new AssetDeleteEvent($this, [
-                    'asset' => $asset
-                ]);
-
-                $this->trigger(self::EVENT_BEFORE_DELETE_ASSET, $event);
-
-                if ($event->isValid) {
-                    if ($deleteFile) {
-                        $volume->deleteFile($asset->getUri());
-                    }
-
-                    Craft::$app->getElements()->deleteElementById($assetId);
-                    Craft::$app->getAssetTransforms()->deleteAllTransformData($asset);
-
-                    $event = new AssetDeleteEvent($this, [
-                        'asset' => $asset
-                    ]);
-
-                    $this->trigger(self::EVENT_AFTER_DELETE_ASSET, $event);
-                }
-            }
-        }
-    }
-
-    /**
      * Rename an Asset.
      *
-     * @param Asset  $asset
-     * @param string $newFilename
+     * @param Asset        $asset         The asset whose file should be renamed
+     * @param boolean|null $runValidation Whether the filename should be validated
      *
-     * @throws AssetDisallowedExtensionException If the extension is not allowed.
-     * @throws AssetConflictException            If a file with such a name already exists.
-     * @throws AssetLogicException               If the Volume is missing.
-     * @return void
+     * @return boolean Whether the asset was renamed successfully
+     * @throws AssetLogicException if the asset’s volume is missing
      */
-    public function renameAsset(Asset $asset, $newFilename)
+    public function renameFile(Asset $asset, $runValidation = true)
     {
-        $extension = Io::getExtension($newFilename);
+        if ($runValidation && !$asset->validate(['newFilename'])) {
+            Craft::info('Asset file not renamed due to validation error.', __METHOD__);
 
-        if (!Io::isExtensionAllowed($extension)) {
-            throw new AssetDisallowedExtensionException(Craft::t('app',
-                'The extension “{extension}” is not allowed.',
-                ['extension' => $extension]));
-        }
-
-        $newFilename = AssetsHelper::prepareAssetName($newFilename);
-
-        $existingAsset = $this->findAsset([
-            'filename' => $newFilename,
-            'folderId' => $asset->folderId
-        ]);
-
-        if ($existingAsset && $existingAsset->id != $asset->id) {
-            throw new AssetConflictException(Craft::t('app',
-                'A file with the name “{filename}” already exists in the folder.',
-                ['filename' => $newFilename]));
+            return false;
         }
 
         $volume = $asset->getVolume();
 
         if (!$volume) {
-            throw new AssetLogicException(Craft::t('app',
-                'Volume does not exist with the id of {id}.',
-                ['id' => $asset->volumeId]));
+            throw new AssetLogicException('Invalid volume ID: '.$asset->volumeId);
         }
 
-        if ($volume->renameFile($asset->getUri(), $asset->getUri($newFilename))
-        ) {
-            $asset->filename = $newFilename;
-            $this->_storeAssetRecord($asset);
+        if (!$volume->renameFile($asset->getUri(), $asset->getUri($asset->newFilename))) {
+            return false;
         }
+
+        // Update the record
+        $record = AssetRecord::findOne($asset->id);
+        $record->filename = $asset->newFilename;
+        $record->save(false);
+
+        // Update the model
+        $asset->filename = $asset->newFilename;
+        $asset->newFilename = null;
+
+        return true;
     }
 
     /**
@@ -795,8 +690,14 @@ class Assets extends Component
         }
 
         $query = (new Query())
-            ->select('f.*')
-            ->from('{{%volumefolders}} AS f');
+            ->select([
+                'id',
+                'parentId',
+                'volumeId',
+                'name',
+                'path',
+            ])
+            ->from('{{%volumefolders}}');
 
         $this->_applyFolderConditions($query, $criteria);
 
@@ -816,7 +717,7 @@ class Assets extends Component
         $folders = [];
 
         foreach ($results as $result) {
-            $folder = VolumeFolder::create($result);
+            $folder = new VolumeFolder($result);
             $this->_foldersById[$folder->id] = $folder;
             $folders[] = $folder;
         }
@@ -838,12 +739,20 @@ class Assets extends Component
          * @var $query Query
          */
         $query = (new Query())
-            ->select('f.*')
-            ->from('{{%volumefolders}} AS f')
-            ->where(['like', 'path', $parentFolder->path.'%', false])
-            ->andWhere('volumeId = :volumeId',
-                [':volumeId' => $parentFolder->volumeId])
-            ->andWhere('parentId IS NOT NULL');
+            ->select([
+                'id',
+                'parentId',
+                'volumeId',
+                'name',
+                'path',
+            ])
+            ->from('{{%volumefolders}}')
+            ->where([
+                'and',
+                ['like', 'path', $parentFolder->path.'%', false],
+                ['volumeId' => $parentFolder->volumeId],
+                'parentId is not null'
+            ]);
 
         if ($orderBy) {
             $query->orderBy($orderBy);
@@ -853,7 +762,7 @@ class Assets extends Component
         $descendantFolders = [];
 
         foreach ($results as $result) {
-            $folder = VolumeFolder::create($result);
+            $folder = new VolumeFolder($result);
             $this->_foldersById[$folder->id] = $folder;
             $descendantFolders[$folder->id] = $folder;
         }
@@ -914,7 +823,7 @@ class Assets extends Component
 
         $query = (new Query())
             ->select('count(id)')
-            ->from('{{%volumefolders}} AS f');
+            ->from('{{%volumefolders}}');
 
         $this->_applyFolderConditions($query, $criteria);
 
@@ -963,8 +872,8 @@ class Assets extends Component
             } else {
                 // Queue up a new Generate Pending Transforms task, if there isn't one already
                 $tasks = Craft::$app->getTasks();
-                if (!$tasks->areTasksPending('GeneratePendingTransforms')) {
-                    $tasks->createTask('GeneratePendingTransforms');
+                if (!$tasks->areTasksPending(GeneratePendingTransforms::class)) {
+                    $tasks->createTask(GeneratePendingTransforms::class);
                 }
 
                 // Return the temporary transform URL
@@ -1072,10 +981,10 @@ class Assets extends Component
                 ['extension' => $extension]));
         }
 
-        $existingAsset = $this->findAsset([
-            'filename' => $filename,
-            'folderId' => $folderId
-        ]);
+        $existingAsset = Asset::find()
+            ->folderId($folderId)
+            ->filename(Db::escapeParam($filename))
+            ->one();
 
         if ($existingAsset && $existingAsset->id != $asset->id) {
             throw new AssetConflictException(Craft::t('app',
@@ -1099,90 +1008,6 @@ class Assets extends Component
         $this->saveAsset($asset);
     }
 
-
-    /**
-     * Return true if user has permission to perform the action on the folder.
-     *
-     * @param $folderId
-     * @param $action
-     *
-     * @return boolean
-     */
-    public function canUserPerformAction($folderId, $action)
-    {
-        try {
-            $this->checkPermissionByFolderIds($folderId, $action);
-            return true;
-        } catch (\Exception $exception) {
-            return false;
-        }
-    }
-
-    /**
-     * Check for a permission on a volumeId by a folder id or an array of folder ids.
-     *
-     * @param $folderIds
-     * @param $permission
-     *
-     * @return void
-     * @throws Exception if reasons
-     */
-    public function checkPermissionByFolderIds($folderIds, $permission)
-    {
-        // TODO permissions.
-        if (!is_array($folderIds)) {
-            $folderIds = [$folderIds];
-        }
-
-        foreach ($folderIds as $folderId) {
-            $folderModel = $this->getFolderById($folderId);
-
-            if (!$folderModel) {
-                // TODO: Replace with a meaningful exception class and translate the response message elsewhere
-                throw new Exception(Craft::t('app',
-                    'That folder does not seem to exist anymore. Re-index the Assets volume and try again.'));
-            }
-
-            if (!Craft::$app->user->checkPermission($permission.':'.$folderModel->volumeId)) {
-                // TODO: Replace with a meaningful exception class and translate the response message elsewhere
-                throw new Exception(Craft::t('app',
-                    'You don’t have the required permissions for this operation.'));
-            }
-        }
-    }
-
-    /**
-     * Check for a permission on a volume by a file id or an array of file ids.
-     *
-     * @param $fileIds
-     * @param $permission
-     *
-     * @return void
-     * @throws Exception if reasons
-     */
-    public function checkPermissionByFileIds($fileIds, $permission)
-    {
-        // TODO permissions.
-        if (!is_array($fileIds)) {
-            $fileIds = [$fileIds];
-        }
-
-        foreach ($fileIds as $fileId) {
-            $file = $this->getAssetById($fileId);
-
-            if (!$file) {
-                // TODO: Replace with a meaningful exception class and translate the response message elsewhere
-                throw new Exception(Craft::t('app',
-                    'That file does not seem to exist anymore. Re-index the Assets volume and try again.'));
-            }
-
-            if (!Craft::$app->user->checkPermission($permission.':'.$file->volumeId)) {
-                // TODO: Replace with a meaningful exception class and translate the response message elsewhere
-                throw new Exception(Craft::t('app',
-                    'You don’t have the required permissions for this operation.'));
-            }
-        }
-    }
 
     /**
      * Ensure a folder entry exists in the DB for the full path and return it's id.
@@ -1397,29 +1222,6 @@ class Assets extends Component
     }
 
     /**
-     * Returns an AssetQuery object prepped for retrieving assets.
-     *
-     * @param AssetQuery|array $criteria
-     *
-     * @return AssetQuery
-     */
-    private function _createAssetQuery($criteria)
-    {
-        if ($criteria instanceof AssetQuery) {
-            $query = $criteria;
-        } else {
-            $query = Asset::find()->configure($criteria);
-        }
-
-        if (is_string($query->filename)) {
-            // Backslash-escape any commas in a given string.
-            $query->filename = Db::escapeParam($query->filename);
-        }
-
-        return $query;
-    }
-
-    /**
      * Returns a DbCommand object prepped for retrieving assets.
      *
      * @return Query
@@ -1474,39 +1276,32 @@ class Assets extends Component
         $whereParams = [];
 
         if ($criteria->id) {
-            $whereConditions[] = Db::parseParam('f.id', $criteria->id,
-                $whereParams);
+            $whereConditions[] = Db::parseParam('id', $criteria->id, $whereParams);
         }
 
         if ($criteria->volumeId) {
-            $whereConditions[] = Db::parseParam('f.volumeId',
-                $criteria->volumeId, $whereParams);
+            $whereConditions[] = Db::parseParam('volumeId', $criteria->volumeId, $whereParams);
         }
 
         if ($criteria->parentId) {
-            $whereConditions[] = Db::parseParam('f.parentId',
-                $criteria->parentId, $whereParams);
+            $whereConditions[] = Db::parseParam('parentId', $criteria->parentId, $whereParams);
         }
 
         if ($criteria->name) {
-            $whereConditions[] = Db::parseParam('f.name', $criteria->name,
-                $whereParams);
+            $whereConditions[] = Db::parseParam('name', $criteria->name, $whereParams);
         }
 
         if (!is_null($criteria->path)) {
             // This folder has a comma in it.
             if (strpos($criteria->path, ',') !== false) {
                 // Escape the comma.
-                $condition = Db::parseParam('f.path',
-                    str_replace(',', '\,', $criteria->path), $whereParams);
+                $condition = Db::parseParam('path', str_replace(',', '\,', $criteria->path), $whereParams);
                 $lastKey = key(array_slice($whereParams, -1, 1, true));
 
                 // Now un-escape it.
-                $whereParams[$lastKey] = str_replace('\,', ',',
-                    $whereParams[$lastKey]);
+                $whereParams[$lastKey] = str_replace('\,', ',', $whereParams[$lastKey]);
             } else {
-                $condition = Db::parseParam('f.path', $criteria->path,
-                    $whereParams);
+                $condition = Db::parseParam('path', $criteria->path, $whereParams);
             }
 
             $whereConditions[] = $condition;
@@ -1517,116 +1312,6 @@ class Assets extends Component
         } else {
             array_unshift($whereConditions, 'and');
             $query->where($whereConditions, $whereParams);
-        }
-    }
-
-    /**
-     * Saves the record for an asset.
-     *
-     * @param Asset $asset
-     *
-     * @throws AssetMissingException    if attempting to update a non-existing Asset.
-     * @throws ValidationException      if the validation failed.
-     * @throws ElementSaveException     if the element failed to save.
-     * @throws ActionCancelledException if something prevented the Asset replacement via Event
-     * @throws \Exception               if reasons
-     * @return boolean
-     */
-    private function _storeAssetRecord(Asset $asset)
-    {
-        $isNewAsset = !$asset->id;
-
-        if (!$isNewAsset) {
-            $assetRecord = AssetRecord::findOne(['id' => $asset->id]);
-
-            if (!$assetRecord) {
-                throw new AssetMissingException(Craft::t('app',
-                    'No asset exists with the ID “{id}”.',
-                    ['id' => $asset->id]));
-            }
-        } else {
-            $assetRecord = new AssetRecord();
-        }
-
-        $assetRecord->volumeId = $asset->volumeId;
-        $assetRecord->folderId = $asset->folderId;
-        $assetRecord->filename = $asset->filename;
-        $assetRecord->kind = $asset->kind;
-        $assetRecord->size = $asset->size;
-        $assetRecord->width = $asset->width;
-        $assetRecord->height = $asset->height;
-        $assetRecord->dateModified = $asset->dateModified;
-
-        $assetRecord->validate();
-        $asset->addErrors($assetRecord->getErrors());
-
-        if ($asset->hasErrors()) {
-            $exception = new ValidationException(
-                Craft::t('app',
-                    'Saving the Asset failed with the following errors: {errors}',
-                    ['errors' => join(', ', $asset->getAllErrors())])
-            );
-
-            $exception->setModel($asset);
-
-            throw $exception;
-        }
-
-        if ($isNewAsset && !$asset->title) {
-            // Give it a default title based on the file name
-            $asset->title = StringHelper::toTitleCase(Io::getFilename($asset->filename, false));
-        }
-
-        $transaction = Craft::$app->getDb()->beginTransaction();
-
-        try {
-            $event = new AssetEvent([
-                'asset' => $asset,
-                'isNew' => $isNewAsset
-            ]);
-
-            $this->trigger(self::EVENT_BEFORE_SAVE_ASSET, $event);
-
-            // Is the event giving us the go-ahead?
-            if ($event->isValid) {
-                // Save the element
-                $success = Craft::$app->getElements()->saveElement($asset,
-                    false);
-
-                // If it didn't work, rollback the transaction in case something changed in onBeforeSaveAsset
-                if (!$success) {
-                    $transaction->rollBack();
-
-                    throw new ElementSaveException(Craft::t('app',
-                        'Failed to save the Asset Element'));
-                }
-
-                // Now that we have an element ID, save it on the other stuff
-                if ($isNewAsset) {
-                    $assetRecord->id = $asset->id;
-                }
-
-                // Save the record
-                $assetRecord->save(false);
-
-                $event = new AssetEvent([
-                    'asset' => $asset,
-                    'isNew' => $isNewAsset
-                ]);
-
-                $this->trigger(self::EVENT_AFTER_SAVE_ASSET, $event);
-            } else {
-                throw new ActionCancelledException(Craft::t('app',
-                    'A plugin cancelled the save operation for {asset}!',
-                    ['asset' => $asset->filename]));
-            }
-
-            // Commit the transaction regardless of whether we saved the asset, in case something changed
-            // in onBeforeSaveAsset
-            $transaction->commit();
-        } catch (\Exception $e) {
-            $transaction->rollBack();
-            throw $e;
         }
     }
 }

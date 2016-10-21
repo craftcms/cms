@@ -69,7 +69,7 @@ class FindAndReplace extends Tool
     {
         if (!empty($params['find']) && !empty($params['replace'])) {
             Craft::$app->getTasks()->queueTask([
-                'type' => FindAndReplaceTask::className(),
+                'type' => FindAndReplaceTask::class,
                 'find' => $params['find'],
                 'replace' => $params['replace']
             ]);

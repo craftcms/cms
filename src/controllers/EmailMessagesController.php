@@ -44,12 +44,12 @@ class EmailMessagesController extends Controller
      */
     public function actionGetMessageModal()
     {
-        $this->requireAjaxRequest();
+        $this->requireAcceptsJson();
 
         $request = Craft::$app->getRequest();
         $key = $request->getRequiredBodyParam('key');
-        $localeId = $request->getBodyParam('locale');
-        $message = Craft::$app->getEmailMessages()->getMessage($key, $localeId);
+        $siteId = $request->getBodyParam('siteId');
+        $message = Craft::$app->getEmailMessages()->getMessage($key, $siteId);
 
         return $this->renderTemplate('settings/email/_message_modal', [
             'message' => $message,
@@ -64,17 +64,17 @@ class EmailMessagesController extends Controller
     public function actionSaveMessage()
     {
         $this->requirePostRequest();
-        $this->requireAjaxRequest();
+        $this->requireAcceptsJson();
 
         $message = new RebrandEmail();
         $message->key = Craft::$app->getRequest()->getRequiredBodyParam('key');
         $message->subject = Craft::$app->getRequest()->getRequiredBodyParam('subject');
         $message->body = Craft::$app->getRequest()->getRequiredBodyParam('body');
 
-        if (Craft::$app->getIsLocalized()) {
-            $message->locale = Craft::$app->getRequest()->getBodyParam('locale');
+        if (Craft::$app->getIsMultiSite()) {
+            $message->siteId = Craft::$app->getRequest()->getBodyParam('siteId');
         } else {
-            $message->locale = Craft::$app->language;
+            $message->siteId = Craft::$app->getSites()->getPrimarySite()->id;
         }
 
         if (Craft::$app->getEmailMessages()->saveMessage($message)) {

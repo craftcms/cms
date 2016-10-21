@@ -54,7 +54,7 @@ class DeleteUsers extends ElementAction
      */
     public function getTriggerHtml()
     {
-        $type = Json::encode(static::className());
+        $type = Json::encode(static::class);
         $undeletableIds = Json::encode($this->_getUndeletableUserIds());
         $redirect = Json::encode(Craft::$app->getSecurity()->hashData(Craft::$app->getEdition() == Craft::Pro ? 'users' : 'dashboard'));
 
@@ -123,7 +123,8 @@ EOT;
         // Delete the users
         foreach ($users as $user) {
             if (!in_array($user->id, $undeletableIds)) {
-                Craft::$app->getUsers()->deleteUser($user, $transferContentTo);
+                $user->inheritorOnDelete = $transferContentTo;
+                Craft::$app->getElements()->deleteElement($user);
             }
         }
 

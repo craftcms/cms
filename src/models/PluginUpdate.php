@@ -8,6 +8,7 @@
 namespace craft\app\models;
 
 use craft\app\base\Model;
+use craft\app\validators\DateTimeValidator;
 
 /**
  * Stores the available plugin update info.
@@ -24,25 +25,6 @@ class PluginUpdate extends Model
     const STATUS_UPDATE_AVAILABLE = 'UpdateAvailable';
     const STATUS_DELETED = 'Deleted';
     const STATUS_UNKNOWN = 'Unknown';
-
-    // Static
-    // =========================================================================
-
-    /**
-     * @inheritdoc
-     */
-    public static function populateModel($model, $config)
-    {
-        if (isset($config['releases'])) {
-            foreach ($config['releases'] as $key => $value) {
-                if (!$value instanceof PluginNewRelease) {
-                    $config['releases'][$key] = PluginNewRelease::create($value);
-                }
-            }
-        }
-
-        parent::populateModel($model, $config);
-    }
 
     // Properties
     // =========================================================================
@@ -103,6 +85,22 @@ class PluginUpdate extends Model
     /**
      * @inheritdoc
      */
+    public function init()
+    {
+        parent::init();
+
+        if (isset($this->releases)) {
+            foreach ($this->releases as $key => $value) {
+                if (!$value instanceof PluginNewRelease) {
+                    $this->releases[$key] = new PluginNewRelease($value);
+                }
+            }
+        }
+    }
+
+    /**
+     * @inheritdoc
+     */
     public function datetimeAttributes()
     {
         $attributes = parent::datetimeAttributes();
@@ -117,7 +115,7 @@ class PluginUpdate extends Model
     public function rules()
     {
         return [
-            [['latestDate'], 'craft\\app\\validators\\DateTime'],
+            [['latestDate'], DateTimeValidator::class],
             [
                 ['status'],
                 'in',

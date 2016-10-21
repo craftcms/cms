@@ -21,6 +21,7 @@ use craft\app\helpers\Json;
 use craft\app\helpers\StringHelper;
 use craft\app\elements\MatrixBlock;
 use craft\app\models\MatrixBlockType;
+use craft\app\validators\ArrayValidator;
 
 /**
  * Matrix represents a Matrix field.
@@ -49,6 +50,10 @@ class Matrix extends Field implements EagerLoadingFieldInterface
      */
     public $maxBlocks;
 
+    /**
+     * @var integer Whether each site should get its own unique set of blocks
+     */
+    public $localizeBlocks = false;
 
     /**
      * @var MatrixBlockType[] The field’s block types
@@ -95,6 +100,16 @@ class Matrix extends Field implements EagerLoadingFieldInterface
     public function setBlockTypes($blockTypes)
     {
         $this->_blockTypes = [];
+        $defaultFieldConfig = [
+            'type' => null,
+            'name' => null,
+            'handle' => null,
+            'instructions' => null,
+            'required' => false,
+            'translationMethod' => Field::TRANSLATION_METHOD_NONE,
+            'translationKeyFormat' => null,
+            'typesettings' => null,
+        ];
 
         foreach ($blockTypes as $key => $config) {
             if ($config instanceof MatrixBlockType) {
@@ -110,15 +125,18 @@ class Matrix extends Field implements EagerLoadingFieldInterface
 
                 if (!empty($config['fields'])) {
                     foreach ($config['fields'] as $fieldId => $fieldConfig) {
+                        $fieldConfig = array_merge($defaultFieldConfig, $fieldConfig);
+
                         $fields[] = Craft::$app->getFields()->createField([
                             'type' => $fieldConfig['type'],
                             'id' => $fieldId,
                             'name' => $fieldConfig['name'],
                             'handle' => $fieldConfig['handle'],
                             'instructions' => $fieldConfig['instructions'],
-                            'required' => !empty($fieldConfig['required']),
-                            'translatable' => !empty($fieldConfig['translatable']),
-                            'settings' => (isset($fieldConfig['typesettings']) ? $fieldConfig['typesettings'] : null),
+                            'required' => (bool)$fieldConfig['required'],
+                            'translationMethod' => $fieldConfig['translationMethod'],
+                            'translationKeyFormat' => $fieldConfig['translationKeyFormat'],
+                            'settings' => $fieldConfig['typesettings'],
                         ]);
                     }
                 }
@@ -175,7 +193,12 @@ class Matrix extends Field implements EagerLoadingFieldInterface
             'Field Type',
             'How you’ll refer to this block type in the templates.',
             'This field is required',
-            'This field is translatable',
+            'Translation Method',
+            'Not translatable',
+            'Translate for each language',
+            'Translate for each site',
+            'Custom…',
+            'Translation Key Format',
             'What this block type will be called in the CP.',
         ]);
 
@@ -183,7 +206,7 @@ class Matrix extends Field implements EagerLoadingFieldInterface
 
         foreach (Craft::$app->getFields()->getAllFieldTypes() as $class) {
             // No Matrix-Inception, sorry buddy.
-            if ($class !== static::className()) {
+            if ($class !== static::class) {
                 $fieldTypeOptions[] = [
                     'value' => $class,
                     'label' => $class::displayName()
@@ -201,27 +224,9 @@ class Matrix extends Field implements EagerLoadingFieldInterface
     /**
      * @inheritdoc
      */
-    public function afterSave()
-    {
-        Craft::$app->getMatrix()->saveSettings($this, false);
-        parent::afterSave();
-    }
-
-    /**
-     * @inheritdoc
-     */
-    public function beforeDelete()
-    {
-        Craft::$app->getMatrix()->deleteMatrixField($this);
-
-        return parent::beforeDelete();
-    }
-
-    /**
-     * @inheritdoc
-     */
     public function prepareValue($value, $element)
     {
+        /** @var Element $element */
         $query = MatrixBlock::find();
 
         // Existing element?
@@ -233,16 +238,15 @@ class Matrix extends Field implements EagerLoadingFieldInterface
 
         $query
             ->fieldId($this->id)
-            ->locale($element->locale);
+            ->siteId($element->siteId);
 
         // Set the initially matched elements if $value is already set, which is the case if there was a validation
         // error or we're loading an entry revision.
         if (is_array($value) || $value === '') {
             $query->status = null;
-            $query->localeEnabled = false;
-            $query->localeEnabled = false;
+            $query->enabledForSite = false;
             $query->limit = null;
-            $query->setResult($this->_createBlocksFromPost($value, $element));
+            $query->setCachedResult($this->_createBlocksFromPost($value, $element));
         }
 
         return $query;
@@ -310,7 +314,7 @@ class Matrix extends Field implements EagerLoadingFieldInterface
             $value
                 ->limit(null)
                 ->status(null)
-                ->localeEnabled(false);
+                ->enabledForSite(false);
         }
 
         return Craft::$app->getView()->renderTemplate('_components/fieldtypes/Matrix/input',
@@ -326,30 +330,46 @@ class Matrix extends Field implements EagerLoadingFieldInterface
     /**
      * @inheritdoc
      */
-    public function validateValue($value, $element)
+    public function getElementValidationRules()
     {
-        $errors = parent::validateValue($value, $element);
+        // Don't call parent::getElementValidationRules() here - we'll do our own required validation
+        return [
+            'validateBlocks',
+            [
+                ArrayValidator::class,
+                'min' => ($this->required ? 1 : null),
+                'max' => ($this->maxBlocks ? $this->maxBlocks : null),
+                'tooFew' => Craft::t('app', '{attribute} should contain at least {min, number} {min, plural, one{block} other{blocks}}.'),
+                'tooMany' => Craft::t('app', '{attribute} should contain at most {max, number} {max, plural, one{block} other{blocks}}.'),
+            ],
+        ];
+    }
+
+    /**
+     * Validates an owner element’s Matrix blocks.
+     *
+     * @param ElementInterface $element
+     * @param array|null       $params
+     *
+     * @return void
+     */
+    public function validateBlocks(ElementInterface $element, $params)
+    {
+        /** @var Element $element */
+        /** @var MatrixBlockQuery $value */
+        $value = $element->getFieldValue($this->handle);
         $blocksValidate = true;
 
         foreach ($value as $block) {
-            if (!Craft::$app->getMatrix()->validateBlock($block)) {
+            /** @var MatrixBlock $block */
+            if (!$block->validate()) {
                 $blocksValidate = false;
             }
         }
 
         if (!$blocksValidate) {
-            $errors[] = Craft::t('app', 'Correct the errors listed above.');
+            $element->addError($this->handle, Craft::t('app', 'Correct the errors listed above.'));
         }
-
-        if ($this->maxBlocks && count($value) > $this->maxBlocks) {
-            if ($this->maxBlocks == 1) {
-                $errors[] = Craft::t('app', 'There can’t be more than one block.');
-            } else {
-                $errors[] = Craft::t('app', 'There can’t be more than {max} blocks.', ['max' => $this->maxBlocks]);
-            }
-        }
-
-        return $errors;
     }
 
     /**
@@ -387,14 +407,6 @@ class Matrix extends Field implements EagerLoadingFieldInterface
         }
 
         return parent::getSearchKeywords($keywords, $element);
-    }
-
-    /**
-     * @inheritdoc
-     */
-    public function afterElementSave(ElementInterface $element)
-    {
-        Craft::$app->getMatrix()->saveField($this, $element);
     }
 
     /**
@@ -445,10 +457,63 @@ class Matrix extends Field implements EagerLoadingFieldInterface
             ->all();
 
         return [
-            'elementType' => MatrixBlock::className(),
+            'elementType' => MatrixBlock::class,
             'map' => $map,
             'criteria' => ['fieldId' => $this->id]
         ];
+    }
+
+    // Events
+    // -------------------------------------------------------------------------
+
+    /**
+     * @inheritdoc
+     */
+    public function afterSave($isNew)
+    {
+        Craft::$app->getMatrix()->saveSettings($this, false);
+        parent::afterSave($isNew);
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function beforeDelete()
+    {
+        Craft::$app->getMatrix()->deleteMatrixField($this);
+
+        return parent::beforeDelete();
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function afterElementSave(ElementInterface $element, $isNew)
+    {
+        Craft::$app->getMatrix()->saveField($this, $element);
+        parent::afterElementSave($element, $isNew);
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function beforeElementDelete(ElementInterface $element)
+    {
+        // Delete any Matrix blocks that belong to this element(s)
+        foreach (Craft::$app->getSites()->getAllSiteIds() as $siteId) {
+            $matrixBlocks = MatrixBlock::find()
+                ->status(null)
+                ->enabledForSite(false)
+                ->siteId($siteId)
+                ->owner($element)
+                ->all();
+
+            foreach ($matrixBlocks as $matrixBlock) {
+                Craft::$app->getElements()->deleteElement($matrixBlock);
+            }
+        }
+
+        return parent::beforeElementDelete($element);
     }
 
     // Protected Methods
@@ -482,7 +547,7 @@ class Matrix extends Field implements EagerLoadingFieldInterface
 
         foreach (Craft::$app->getFields()->getAllFieldTypes() as $class) {
             // No Matrix-Inception, sorry buddy.
-            if ($class === static::className()) {
+            if ($class === static::class) {
                 continue;
             }
 
@@ -530,7 +595,7 @@ class Matrix extends Field implements EagerLoadingFieldInterface
 
             if ($element) {
                 $block->setOwner($element);
-                $block->locale = $element->locale;
+                $block->siteId = $element->siteId;
             }
 
             $fieldLayoutFields = $blockType->getFieldLayout()->getFields();
@@ -606,8 +671,8 @@ class Matrix extends Field implements EagerLoadingFieldInterface
                     ->id($ids)
                     ->limit(null)
                     ->status(null)
-                    ->localeEnabled(false)
-                    ->locale($element->locale)
+                    ->enabledForSite(false)
+                    ->siteId($element->siteId)
                     ->indexBy('id')
                     ->all();
             }
@@ -634,7 +699,7 @@ class Matrix extends Field implements EagerLoadingFieldInterface
                 $block->fieldId = $this->id;
                 $block->typeId = $blockType->id;
                 $block->ownerId = $ownerId;
-                $block->locale = $element->locale;
+                $block->siteId = $element->siteId;
 
                 // Preserve the collapsed state, which the browser can't remember on its own for new blocks
                 $block->collapsed = !empty($blockData['collapsed']);

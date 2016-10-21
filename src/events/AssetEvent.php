@@ -28,5 +28,5 @@ class AssetEvent extends Event
     /**
      * @var boolean Whether the asset is brand new
      */
-    public $isNew;
+    public $isNew = false;
 }

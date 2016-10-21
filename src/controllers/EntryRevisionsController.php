@@ -8,6 +8,7 @@
 namespace craft\app\controllers;
 
 use Craft;
+use craft\app\base\Element;
 use craft\app\helpers\DateTimeHelper;
 use craft\app\models\EntryDraft;
 use craft\app\models\Section;
@@ -52,7 +53,7 @@ class EntryRevisionsController extends BaseEntriesController
             $draft->id = Craft::$app->getRequest()->getBodyParam('entryId');
             $draft->sectionId = Craft::$app->getRequest()->getRequiredBodyParam('sectionId');
             $draft->creatorId = Craft::$app->getUser()->getIdentity()->id;
-            $draft->locale = Craft::$app->getRequest()->getBodyParam('locale', Craft::$app->getI18n()->getPrimarySiteLocaleId());
+            $draft->siteId = Craft::$app->getRequest()->getBodyParam('siteId') ?: Craft::$app->getSites()->getPrimarySite()->id;
         }
 
         // Make sure they have permission to be editing this
@@ -77,9 +78,8 @@ class EntryRevisionsController extends BaseEntriesController
             if ($draft->validate(['title'])) {
                 $draftEnabled = $draft->enabled;
                 $draft->enabled = false;
-
-                Craft::$app->getEntries()->saveEntry($draft);
-
+                $draft->setScenario(Element::SCENARIO_CORE);
+                Craft::$app->getElements()->saveElement($draft);
                 $draft->enabled = $draftEnabled;
             } else {
                 $draft->addErrors($draft->getErrors());
@@ -112,7 +112,7 @@ class EntryRevisionsController extends BaseEntriesController
     public function actionUpdateDraftMeta()
     {
         $this->requirePostRequest();
-        $this->requireAjaxRequest();
+        $this->requireAcceptsJson();
 
         $draftId = Craft::$app->getRequest()->getRequiredBodyParam('draftId');
         $name = Craft::$app->getRequest()->getRequiredBodyParam('name');
@@ -184,7 +184,7 @@ class EntryRevisionsController extends BaseEntriesController
         }
 
         // Permission enforcement
-        $entry = Craft::$app->getEntries()->getEntryById($draft->id, $draft->locale);
+        $entry = Craft::$app->getEntries()->getEntryById($draft->id, $draft->siteId);
 
         if (!$entry) {
             throw new ServerErrorHttpException('Entry draft is missing its entry');
@@ -258,7 +258,7 @@ class EntryRevisionsController extends BaseEntriesController
         }
 
         // Permission enforcement
-        $entry = Craft::$app->getEntries()->getEntryById($version->id, $version->locale);
+        $entry = Craft::$app->getEntries()->getEntryById($version->id, $version->siteId);
 
         if (!$entry) {
             throw new ServerErrorHttpException('Entry version is missing its entry');

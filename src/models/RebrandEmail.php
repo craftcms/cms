@@ -9,6 +9,7 @@ namespace craft\app\models;
 
 use Craft;
 use craft\app\base\Model;
+use craft\app\validators\SiteIdValidator;
 
 Craft::$app->requireEdition(Craft::Client);
 
@@ -29,9 +30,9 @@ class RebrandEmail extends Model
     public $key;
 
     /**
-     * @var string Locale
+     * @var integer Site ID
      */
-    public $locale;
+    public $siteId;
 
     /**
      * @var string Subject
@@ -62,9 +63,9 @@ class RebrandEmail extends Model
     public function rules()
     {
         return [
-            [['locale'], 'craft\\app\\validators\\Locale'],
+            [['siteId'], SiteIdValidator::class],
             [
-                ['key', 'locale', 'subject', 'body', 'htmlBody'],
+                ['key', 'siteId', 'subject', 'body', 'htmlBody'],
                 'safe',
                 'on' => 'search'
             ],

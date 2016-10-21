@@ -41,9 +41,9 @@ class RecentEntries extends Widget
     public $section = '*';
 
     /**
-     * string The locale that the widget should pull entries from
+     * string The site ID that the widget should pull entries from
      */
-    public $locale;
+    public $siteId;
 
     /**
      * integer The total number of entries that the widget should show
@@ -60,8 +60,8 @@ class RecentEntries extends Widget
     {
         parent::init();
 
-        if ($this->locale === null) {
-            $this->locale = Craft::$app->language;
+        if ($this->siteId === null) {
+            $this->siteId = Craft::$app->getSites()->currentSite->id;
         }
     }
 
@@ -103,16 +103,18 @@ class RecentEntries extends Widget
             $title = Craft::t('app', 'Recent Entries');
         }
 
-        // See if they are pulling entries from a different locale
-        $targetLocale = $this->_getTargetLocale();
+        // See if they are pulling entries from a different site
+        $targetSiteId = $this->_getTargetSiteId();
 
-        if ($targetLocale && $targetLocale != Craft::$app->language) {
-            $locale = Craft::$app->getI18n()->getLocaleById($targetLocale);
+        if ($targetSiteId && $targetSiteId != Craft::$app->getSites()->currentSite->id) {
+            $site = Craft::$app->getSites()->getSiteById($targetSiteId);
 
-            $title = Craft::t('app', '{title} ({locale})', [
-                'title' => $title,
-                'locale' => $locale->getDisplayName(Craft::$app->language)
-            ]);
+            if ($site) {
+                $title = Craft::t('app', '{title} ({site})', [
+                    'title' => $title,
+                    'site' => Craft::t('site', $site->name),
+                ]);
+            }
         }
 
         return $title;
@@ -155,9 +157,9 @@ class RecentEntries extends Widget
      */
     private function _getEntries()
     {
-        $targetLocale = $this->_getTargetLocale();
+        $targetSiteId = $this->_getTargetSiteId();
 
-        if (!$targetLocale) {
+        if (!$targetSiteId) {
             // Hopeless
             return [];
         }
@@ -178,8 +180,8 @@ class RecentEntries extends Widget
 
         return Entry::find()
             ->status(null)
-            ->localeEnabled(false)
-            ->locale($targetLocale)
+            ->enabledForSite(false)
+            ->siteId($targetSiteId)
             ->sectionId($targetSectionId)
             ->editable(true)
             ->limit($this->limit ?: 100)
@@ -206,32 +208,32 @@ class RecentEntries extends Widget
     }
 
     /**
-     * Returns the target locale for the widget.
+     * Returns the target site ID for the widget.
      *
      * @return string|false
      */
-    private function _getTargetLocale()
+    private function _getTargetSiteId()
     {
-        // Make sure that the user is actually allowed to edit entries in the current locale. Otherwise grab entries in
-        // their first editable locale.
+        // Make sure that the user is actually allowed to edit entries in the current site. Otherwise grab entries in
+        // their first editable site.
 
-        // Figure out which locales the user is actually allowed to edit
-        $editableLocaleIds = Craft::$app->getI18n()->getEditableLocaleIds();
+        // Figure out which sites the user is actually allowed to edit
+        $editableSiteIds = Craft::$app->getSites()->getEditableSiteIds();
 
-        // If they aren't allowed to edit *any* locales, return false
-        if (!$editableLocaleIds) {
+        // If they aren't allowed to edit *any* sites, return false
+        if (!$editableSiteIds) {
             return false;
         }
 
-        // Figure out which locale was selected in the settings
-        $targetLocale = $this->locale;
+        // Figure out which site was selected in the settings
+        $targetSiteId = $this->siteId;
 
-        // Only use that locale if it still exists and they're allowed to edit it.
-        // Otherwise go with the first locale that they are allowed to edit.
-        if (!in_array($targetLocale, $editableLocaleIds)) {
-            $targetLocale = $editableLocaleIds[0];
+        // Only use that site if it still exists and they're allowed to edit it.
+        // Otherwise go with the first site that they are allowed to edit.
+        if (!in_array($targetSiteId, $editableSiteIds)) {
+            $targetSiteId = $editableSiteIds[0];
         }
 
-        return $targetLocale;
+        return $targetSiteId;
     }
 }

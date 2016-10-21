@@ -58,7 +58,7 @@ class UserPermission_UserGroup extends ActiveRecord
      */
     public function getPermission()
     {
-        return $this->hasOne(UserPermission::className(),
+        return $this->hasOne(UserPermission::class,
             ['id' => 'permissionId']);
     }
 
@@ -69,6 +69,6 @@ class UserPermission_UserGroup extends ActiveRecord
      */
     public function getGroup()
     {
-        return $this->hasOne(UserGroup::className(), ['id' => 'groupId']);
+        return $this->hasOne(UserGroup::class, ['id' => 'groupId']);
     }
 }

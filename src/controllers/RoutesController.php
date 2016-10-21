@@ -42,18 +42,18 @@ class RoutesController extends Controller
     public function actionSaveRoute()
     {
         $this->requirePostRequest();
-        $this->requireAjaxRequest();
+        $this->requireAcceptsJson();
 
-        $urlParts = Craft::$app->getRequest()->getRequiredBodyParam('url');
+        $uriParts = Craft::$app->getRequest()->getRequiredBodyParam('uriParts');
         $template = Craft::$app->getRequest()->getRequiredBodyParam('template');
+        $siteId = Craft::$app->getRequest()->getBodyParam('siteId');
         $routeId = Craft::$app->getRequest()->getBodyParam('routeId');
-        $locale = Craft::$app->getRequest()->getBodyParam('locale');
 
-        if ($locale === '') {
-            $locale = null;
+        if ($siteId === '') {
+            $siteId = null;
         }
 
-        $routeRecord = Craft::$app->getRoutes()->saveRoute($urlParts, $template, $routeId, $locale);
+        $routeRecord = Craft::$app->getRoutes()->saveRoute($uriParts, $template, $siteId, $routeId);
 
         if ($routeRecord->hasErrors()) {
             return $this->asJson(['errors' => $routeRecord->getErrors()]);
@@ -62,7 +62,7 @@ class RoutesController extends Controller
         return $this->asJson([
             'success' => true,
             'routeId' => $routeRecord->id,
-            'locale' => $routeRecord->locale
+            'siteId' => $routeRecord->siteId
         ]);
     }
 
@@ -89,7 +89,7 @@ class RoutesController extends Controller
     public function actionUpdateRouteOrder()
     {
         $this->requirePostRequest();
-        $this->requireAjaxRequest();
+        $this->requireAcceptsJson();
 
         $routeIds = Craft::$app->getRequest()->getRequiredBodyParam('routeIds');
         Craft::$app->getRoutes()->updateRouteOrder($routeIds);

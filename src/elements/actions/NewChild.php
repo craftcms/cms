@@ -63,7 +63,7 @@ class NewChild extends ElementAction
      */
     public function getTriggerHtml()
     {
-        $type = Json::encode(static::className());
+        $type = Json::encode(static::class);
         $maxLevels = Json::encode($this->maxLevels);
         $newChildUrl = Json::encode($this->newChildUrl);
 

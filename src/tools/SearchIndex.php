@@ -75,18 +75,18 @@ class SearchIndex extends Tool
             $class = $params['type'];
 
             if ($class::isLocalized()) {
-                $localeIds = Craft::$app->getI18n()->getSiteLocaleIds();
+                $siteIds = Craft::$app->getSites()->getAllSiteIds();
             } else {
-                $localeIds = [Craft::$app->getI18n()->getPrimarySiteLocaleId()];
+                $siteIds = [Craft::$app->getSites()->getPrimarySite()->id];
             }
 
             $query = $class::find()
                 ->id($params['id'])
                 ->status(null)
-                ->localeEnabled(false);
+                ->enabledForSite(false);
 
-            foreach ($localeIds as $localeId) {
-                $query->locale($localeId);
+            foreach ($siteIds as $siteId) {
+                $query->siteId($siteId);
                 $element = $query->one();
 
                 if ($element) {
@@ -99,13 +99,13 @@ class SearchIndex extends Tool
 
                         foreach ($fieldLayout->getFields() as $field) {
                             /** @var Field $field */
-                            // Set the keywords for the content's locale
+                            // Set the keywords for the content's site
                             $fieldValue = $element->getFieldValue($field->handle);
                             $fieldSearchKeywords = $field->getSearchKeywords($fieldValue, $element);
                             $keywords[$field->id] = $fieldSearchKeywords;
                         }
 
-                        Craft::$app->getSearch()->indexElementFields($element->id, $localeId, $keywords);
+                        Craft::$app->getSearch()->indexElementFields($element->id, $siteId, $keywords);
                     }
                 }
             }

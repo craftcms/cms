@@ -144,7 +144,7 @@ Craft.AssetSelectorModal = Craft.BaseElementSelectorModal.extend(
 		var elementId = imageIdsWithMissingUrls.pop();
 
 		var data = {
-			fileId: elementId,
+			assetId: elementId,
 			handle: transform,
 			returnUrl: true
 		};

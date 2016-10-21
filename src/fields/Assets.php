@@ -19,6 +19,7 @@ use craft\app\errors\AssetConflictException;
 use craft\app\errors\InvalidSubpathException;
 use craft\app\errors\InvalidVolumeException;
 use craft\app\helpers\Assets as AssetsHelper;
+use craft\app\helpers\Db;
 use craft\app\helpers\Io;
 use craft\app\helpers\StringHelper;
 use craft\app\models\VolumeFolder;
@@ -49,7 +50,7 @@ class Assets extends BaseRelationField
      */
     protected static function elementType()
     {
-        return Asset::className();
+        return Asset::class;
     }
 
     /**
@@ -167,7 +168,7 @@ class Assets extends BaseRelationField
                 'allowLimit' => $this->allowLimit,
                 'folderOptions' => $folderOptions,
                 'sourceOptions' => $sourceOptions,
-                'targetLocaleFieldHtml' => $this->getTargetLocaleFieldHtml(),
+                'targetSiteFieldHtml' => $this->getTargetSiteFieldHtml(),
                 'viewModeFieldHtml' => $this->getViewModeFieldHtml(),
                 'field' => $this,
                 'displayName' => static::displayName(),
@@ -204,7 +205,100 @@ class Assets extends BaseRelationField
     /**
      * @inheritdoc
      */
-    public function beforeElementSave(ElementInterface $element)
+    public function getElementValidationRules()
+    {
+        $rules = parent::getElementValidationRules();
+        $rules[] = 'validateFileType';
+
+        return $rules;
+    }
+
+    /**
+     * Validates the files to make sure they are one of the allowed file kinds.
+     *
+     * @param ElementInterface $element
+     * @param array|null       $params
+     *
+     * @return void
+     */
+    public function validateFileType(ElementInterface $element, $params)
+    {
+        /** @var Element $element */
+        $value = $element->getFieldValue($this->handle);
+
+        // Check if this field restricts files and if files are passed at all.
+        if (isset($this->restrictFiles) && !empty($this->restrictFiles) && !empty($this->allowedKinds) && is_array($value) && !empty($value)) {
+            $allowedExtensions = $this->_getAllowedExtensions($this->allowedKinds);
+
+            foreach ($value as $assetId) {
+                $file = Craft::$app->getAssets()->getAssetById($assetId);
+
+                if ($file && !in_array(mb_strtolower(Io::getExtension($file->filename)), $allowedExtensions)) {
+                    $element->addError($this->handle, Craft::t('app', '"{filename}" is not allowed in this field.', ['filename' => $file->filename]));
+                }
+            }
+        }
+
+        foreach ($this->_failedFiles as $file) {
+            $element->addError($this->handle, Craft::t('app', '"{filename}" is not allowed in this field.', ['filename' => $file]));
+        }
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function prepareValue($value, $element)
+    {
+        // If data strings are passed along, make sure the array keys are retained.
+        if (isset($value['data']) && !empty($value['data'])) {
+            /** @var Asset $class */
+            $class = static::elementType();
+            /** @var ElementQuery $query */
+            $query = $class::find()
+                ->siteId($this->getTargetSiteId($element));
+
+            // $value might be an array of element IDs
+            if (is_array($value)) {
+                $query
+                    ->id(array_filter($value))
+                    ->fixedOrder();
+
+                if ($this->allowLimit && $this->limit) {
+                    $query->limit($this->limit);
+                } else {
+                    $query->limit(null);
+                }
+
+                return $query;
+            }
+        }
+
+        return parent::prepareValue($value,
+            $element);
+    }
+
+
+    /**
+     * Resolve source path for uploading for this field.
+     *
+     * @param ElementInterface|null $element
+     *
+     * @return mixed
+     */
+    public function resolveDynamicPathToFolderId($element)
+    {
+        return $this->_determineUploadFolderId($element, true);
+    }
+
+    // Events
+    // -------------------------------------------------------------------------
+
+    /**
+     * @inheritdoc
+     *
+     * @todo All of the validation stuff here should be moved to an actual validation function
+     */
+    public function beforeElementSave(ElementInterface $element, $isNew)
     {
         /** @var Element $element */
         $incomingFiles = [];
@@ -283,7 +377,7 @@ class Assets extends BaseRelationField
         }
 
         if (!empty($this->_failedFiles)) {
-            return;
+            return parent::beforeElementSave($element, $isNew);
         }
 
         // If we got here either there are no restrictions or all files are valid so let's turn them into Assets
@@ -326,12 +420,14 @@ class Assets extends BaseRelationField
                 $this->setElementValue($element, $newValue);
             }
         }
+
+        return parent::beforeElementSave($element, $isNew);
     }
 
     /**
      * @inheritdoc
      */
-    public function afterElementSave(ElementInterface $element)
+    public function afterElementSave(ElementInterface $element, $isNew)
     {
         $value = $this->getElementValue($element);
         $assetsToMove = [];
@@ -383,10 +479,10 @@ class Assets extends BaseRelationField
 
                 // Resolve all conflicts by keeping both
                 foreach ($assetsToMove as $asset) {
-                    $conflictingAsset = Craft::$app->getAssets()->findAsset([
-                        'filename' => $asset->filename,
-                        'folderId' => $targetFolderId
-                    ]);
+                    $conflictingAsset = Asset::find()
+                        ->folderId($targetFolderId)
+                        ->filename(Db::escapeParam($asset->filename))
+                        ->one();
 
                     if ($conflictingAsset) {
                         $newFilename = Craft::$app->getAssets()->getNameReplacementInFolder($asset->filename,
@@ -401,80 +497,7 @@ class Assets extends BaseRelationField
             }
         }
 
-        parent::afterElementSave($element);
-    }
-
-    /**
-     * @inheritdoc
-     */
-    public function validateValue($value, $element)
-    {
-        $errors = parent::validateValue($value, $element);
-
-        // Check if this field restricts files and if files are passed at all.
-        if (isset($this->restrictFiles) && !empty($this->restrictFiles) && !empty($this->allowedKinds) && is_array($value) && !empty($value)) {
-            $allowedExtensions = $this->_getAllowedExtensions($this->allowedKinds);
-
-            foreach ($value as $fileId) {
-                $file = Craft::$app->getAssets()->getAssetById($fileId);
-
-                if ($file && !in_array(mb_strtolower(Io::getExtension($file->filename)), $allowedExtensions)) {
-                    $errors[] = Craft::t('app', '"{filename}" is not allowed in this field.', ['filename' => $file->filename]);
-                }
-            }
-        }
-
-        foreach ($this->_failedFiles as $file) {
-            $errors[] = Craft::t('app', '"{filename}" is not allowed in this field.', ['filename' => $file]);
-        }
-
-        return $errors;
-    }
-
-    /**
-     * @inheritdoc
-     */
-    public function prepareValue($value, $element)
-    {
-        // If data strings are passed along, make sure the array keys are retained.
-        if (isset($value['data']) && !empty($value['data'])) {
-            /** @var Asset $class */
-            $class = static::elementType();
-            /** @var ElementQuery $query */
-            $query = $class::find()
-                ->locale($this->getTargetLocale($element));
-
-            // $value might be an array of element IDs
-            if (is_array($value)) {
-                $query
-                    ->id(array_filter($value))
-                    ->fixedOrder();
-
-                if ($this->allowLimit && $this->limit) {
-                    $query->limit($this->limit);
-                } else {
-                    $query->limit(null);
-                }
-
-                return $query;
-            }
-        }
-
-        return parent::prepareValue($value,
-            $element);
-    }
-
-
-    /**
-     * Resolve source path for uploading for this field.
-     *
-     * @param ElementInterface|null $element
-     *
-     * @return mixed
-     */
-    public function resolveDynamicPathToFolderId($element)
-    {
-        return $this->_determineUploadFolderId($element, true);
+        parent::afterElementSave($element, $isNew);
     }
 
     // Protected Methods

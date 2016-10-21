@@ -11,6 +11,7 @@ use Craft;
 use craft\app\helpers\Db;
 use craft\app\helpers\Io;
 use yii\base\Component;
+use yii\base\Exception;
 use yii\base\InvalidConfigException;
 use yii\db\MigrationInterface;
 use yii\di\Instance;
@@ -28,8 +29,22 @@ class MigrationManager extends Component
      */
     const BASE_MIGRATION = 'm000000_000000_base';
 
+    const TYPE_APP = 'app';
+    const TYPE_PLUGIN = 'plugin';
+    const TYPE_CONTENT = 'content';
+
     // Properties
     // =========================================================================
+
+    /**
+     * @var string The type of migrations we're dealing with here. Can be 'app', 'plugin', or 'content'.
+     */
+    public $type;
+
+    /**
+     * @var integer The plugin ID, if [[type]] is set to 'plugin'.
+     */
+    public $pluginId;
 
     /**
      * @var string The namespace that the migration classes are in
@@ -37,7 +52,7 @@ class MigrationManager extends Component
     public $migrationNamespace;
 
     /**
-     * @var string The path of the migrations folder
+     * @var string|false The path of the migrations folder, or false if it doesn't exist
      */
     public $migrationPath;
 
@@ -50,11 +65,6 @@ class MigrationManager extends Component
      * @var string The migrations table name
      */
     public $migrationTable = '{{%migrations}}';
-
-    /**
-     * @var array Values that should always be present when inserting and selecting data from the migrations table
-     */
-    public $fixedColumnValues = [];
 
     // Public Methods
     // =========================================================================
@@ -70,10 +80,20 @@ class MigrationManager extends Component
             throw new InvalidConfigException('The migration folder path has not been set.');
         }
 
-        $this->migrationPath = Craft::getAlias($this->migrationPath);
-        Io::ensureFolderExists($this->migrationPath);
+        if (!in_array($this->type, [self::TYPE_APP, self::TYPE_PLUGIN, self::TYPE_CONTENT])) {
+            throw new InvalidConfigException('Invalid migration type: '.$this->type);
+        }
 
-        $this->db = Instance::ensure($this->db, Connection::className());
+        $migrationPath = Craft::getAlias($this->migrationPath);
+
+        if (!$migrationPath || !Io::folderExists($migrationPath)) {
+            Craft::warning('Migration folder doesn\'t exist: '.$migrationPath);
+            $this->migrationPath = false;
+        } else {
+            $this->migrationPath = $migrationPath;
+        }
+
+        $this->db = Instance::ensure($this->db, Connection::class);
     }
 
     /**
@@ -85,6 +105,10 @@ class MigrationManager extends Component
      */
     public function createMigration($name)
     {
+        if ($this->migrationPath === false) {
+            throw new Exception('Can\'t create new migrations because the migration folder doesn\'t exist');
+        }
+
         $file = $this->migrationPath."/$name.php";
         $class = $this->migrationNamespace."\\$name";
         require_once($file);
@@ -212,7 +236,7 @@ class MigrationManager extends Component
         }
 
         /** @var \yii\db\Migration $migration */
-        $migration = Instance::ensure($migration, 'yii\db\MigrationInterface');
+        $migration = Instance::ensure($migration, \yii\db\MigrationInterface::class);
 
         Craft::info("Applying $migrationName");
 
@@ -262,7 +286,7 @@ class MigrationManager extends Component
         }
 
         /** @var \yii\db\Migration $migration */
-        $migration = Instance::ensure($migration, 'yii\db\MigrationInterface');
+        $migration = Instance::ensure($migration, \yii\db\MigrationInterface::class);
 
         Craft::info("Reverting $migrationName");
 
@@ -325,10 +349,12 @@ class MigrationManager extends Component
         Craft::$app->getDb()->createCommand()
             ->insert(
                 $this->migrationTable,
-                array_merge($this->fixedColumnValues, [
+                [
+                    'type' => $this->type,
+                    'pluginId' => $this->pluginId,
                     'name' => $name,
                     'applyTime' => Db::prepareDateForDb(new \DateTime())
-                ]))
+                ])
             ->execute();
     }
 
@@ -342,9 +368,11 @@ class MigrationManager extends Component
         Craft::$app->getDb()->createCommand()
             ->delete(
                 $this->migrationTable,
-                array_merge($this->fixedColumnValues, [
+                [
+                    'type' => $this->type,
+                    'pluginId' => $this->pluginId,
                     'name' => $name
-                ]))
+                ])
             ->execute();
     }
 
@@ -370,6 +398,12 @@ class MigrationManager extends Component
     public function getNewMigrations()
     {
         $migrations = [];
+
+        // Ignore if the migrations folder doesn't exist
+        if ($this->migrationPath === false) {
+            return $migrations;
+        }
+
         $history = $this->getMigrationHistory();
         $handle = opendir($this->migrationPath);
 
@@ -425,22 +459,30 @@ class MigrationManager extends Component
     {
         // TODO: Remove after next breakpoint
         if (version_compare(Craft::$app->getInfo('version'), '3.0', '<')) {
-            $nameColumn = 'version as name';
+            $query = (new Query())
+                ->select('version as name, applyTime')
+                ->from($this->migrationTable)
+                ->orderBy('name desc');
 
-            if ($this->fixedColumnValues === ['type' => 'app']) {
-                $condition = ['pluginId' => null];
+            if ($this->type === self::TYPE_PLUGIN) {
+                $query->where(['pluginId' => $this->pluginId]);
             } else {
-                $condition = ['pluginId' => $this->fixedColumnValues['pluginId']];
+                $query->where(['pluginId' => null]);
             }
-        } else {
-            $nameColumn = 'name';
-            $condition = $this->fixedColumnValues;
+
+            return $query;
         }
 
-        return (new Query())
-            ->select("$nameColumn, applyTime")
+        $query = (new Query())
+            ->select('name, applyTime')
             ->from($this->migrationTable)
             ->orderBy('name desc')
-            ->where($condition);
+            ->where(['type' => $this->type]);
+
+        if ($this->type === self::TYPE_PLUGIN) {
+            $query->andWhere(['pluginId' => $this->pluginId]);
+        }
+
+        return $query;
     }
 }

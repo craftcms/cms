@@ -5,10 +5,10 @@
 
 $requirements = array(
     array(
-        'name' => 'PHP 5.5+',
+        'name' => 'PHP 5.6+',
         'mandatory' => true,
-        'condition' => version_compare(PHP_VERSION, '5.5.0', '>='),
-        'memo' => 'PHP 5.5.0 or higher is required.',
+        'condition' => version_compare(PHP_VERSION, '5.6.0', '>='),
+        'memo' => 'PHP 5.6.0 or higher is required.',
     ),
 );
 
@@ -21,18 +21,21 @@ if ($this->checkDatabaseCreds() && extension_loaded('pdo') && extension_loaded('
         'memo' => $this->dbConnectionError ? $this->dbConnectionError : 'MySQL '.$this->requiredMySqlVersion.' or higher is required to run Craft CMS.',
     );
 
-    $requirements[] = array(
-        'name' => 'MySQL InnoDB support',
-        'mandatory' => true,
-        'condition' => $this->isInnoDbSupported(),
-        'memo' => $this->dbConnectionError ? $this->dbConnectionError : 'Craft CMS requires the MySQL InnoDB storage engine to run.',
-    );
+    // If we know we already can't connect to the database, don't both running this one so we don't get double error messages.
+    if (!$this->dbConnectionError) {
+        $requirements[] = [
+            'name' => 'MySQL InnoDB support',
+            'mandatory' => true,
+            'condition' => $this->isInnoDbSupported(),
+            'memo' => $this->dbConnectionError ? $this->dbConnectionError : 'Craft CMS requires the MySQL InnoDB storage engine to run.',
+        ];
+    }
 }
 
 // Only run this requirement check if we're running in the context of Craft.
 if ($this->isCraftRunning()) {
     $requirements[] = array(
-        'name' => 'Craft CMS folders in public web root',
+        'name' => 'Sensitive Craft folders should not be publicly accessible',
         'mandatory' => false,
         'condition' => $this->checkWebRoot(),
         'memo' => $this->webRootFolderMessage,
@@ -111,7 +114,7 @@ $requirements = array_merge($requirements, array(
         'mandatory' => false,
         'condition' => $this->checkPhpExtensionVersion('intl', '1.0.2', '>='),
         'memo' => 'The <a href="http://www.php.net/manual/en/book.intl.php">Intl</a> extension version 1.0.2 is highly '.
-            'recommended especially if you will be using any non-English locales for this Craft CMS installation.'
+            'recommended especially if you will be using any non-English languages for this Craft CMS installation.'
     ),
     array(
         'name' => 'Fileinfo extension',

@@ -189,11 +189,33 @@ Craft.TagSelectInput = Craft.BaseElementSelectInput.extend(
 			id = $option.data('id'),
 			title = $option.text();
 
-		var $element = $('<div class="element small removable" data-id="'+id+'" data-editable/>').appendTo(this.$elementsContainer),
-			$input = $('<input type="hidden" name="'+this.settings.name+'[]" value="'+id+'"/>').appendTo($element);
+		var $element = $('<div/>', {
+			'class': 'element small removable',
+			'data-id': id,
+			'data-site-id': this.settings.targetSiteId,
+			'data-label': title,
+			'data-editable': '1'
+		}).appendTo(this.$elementsContainer);
 
-		$('<a class="delete icon" title="'+Craft.t('app', 'Remove')+'"></a>').appendTo($element);
-		$('<span class="label">'+title+'</span>').appendTo($element);
+		var $input = $('<input/>', {
+			'type': 'hidden',
+			'name': this.settings.name+'[]',
+			'value': id
+		}).appendTo($element);
+
+		$('<a/>', {
+			'class': 'delete icon',
+			'title': Craft.t('app', 'Remove')
+		}).appendTo($element);
+
+		var $titleContainer = $('<div/>', {
+			'class': 'label'
+		}).appendTo($element);
+
+		$('<span/>', {
+			'class': 'title',
+			text: title
+		}).appendTo($titleContainer);
 
 		var margin = -($element.outerWidth()+10);
 		this.$addTagInput.css('margin-'+Craft.left, margin+'px');

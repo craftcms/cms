@@ -32,8 +32,6 @@ class UserGroups extends Component
 
     /**
      * @event UserGroupEvent The event that is triggered before a user group is saved.
-     *
-     * You may set [[UserGroupEvent::isValid]] to `false` to prevent the user group from being saved.
      */
     const EVENT_BEFORE_SAVE_USER_GROUP = 'beforeSaveUserGroup';
 
@@ -44,8 +42,6 @@ class UserGroups extends Component
 
     /**
      * @event UserGroupEvent The event that is triggered before a user group is deleted.
-     *
-     * You may set [[UserGroupEvent::isValid]] to `false` to prevent the user group from being deleted.
      */
     const EVENT_BEFORE_DELETE_USER_GROUP = 'beforeDeleteUserGroup';
 
@@ -72,7 +68,11 @@ class UserGroups extends Component
             ->all();
 
         foreach ($groups as $key => $value) {
-            $groups[$key] = UserGroup::create($value);
+            $groups[$key] = new UserGroup($value->toArray([
+                'id',
+                'name',
+                'handle',
+            ]));
         }
 
         return $groups;
@@ -90,7 +90,11 @@ class UserGroups extends Component
         $groupRecord = UserGroupRecord::findOne($groupId);
 
         if ($groupRecord) {
-            return UserGroup::create($groupRecord);
+            return new UserGroup($groupRecord->toArray([
+                'id',
+                'name',
+                'handle',
+            ]));
         }
 
         return null;
@@ -110,7 +114,11 @@ class UserGroups extends Component
         ]);
 
         if ($groupRecord) {
-            return UserGroup::create($groupRecord);
+            return new UserGroup($groupRecord->toArray([
+                'id',
+                'name',
+                'handle',
+            ]));
         }
 
         return null;
@@ -127,7 +135,11 @@ class UserGroups extends Component
     public function getGroupsByUserId($userId, $indexBy = null)
     {
         $groups = (new Query())
-            ->select('g.*')
+            ->select([
+                'g.id',
+                'g.name',
+                'g.handle',
+            ])
             ->from('{{%usergroups}} g')
             ->innerJoin('{{%usergroups_users}} gu', 'gu.groupId = g.id')
             ->where(['gu.userId' => $userId])
@@ -135,7 +147,7 @@ class UserGroups extends Component
             ->all();
 
         foreach ($groups as $key => $value) {
-            $groups[$key] = UserGroup::create($value);
+            $groups[$key] = new UserGroup($value);
         }
 
         return $groups;
@@ -144,47 +156,46 @@ class UserGroups extends Component
     /**
      * Saves a user group.
      *
-     * @param UserGroup $group
+     * @param UserGroup $group         The user group to be saved
+     * @param boolean   $runValidation Whether the user group should be validated
      *
      * @return boolean
      */
-    public function saveGroup(UserGroup $group)
+    public function saveGroup(UserGroup $group, $runValidation = true)
     {
-        $success = false;
+        if ($runValidation && !$group->validate()) {
+            Craft::info('User group not saved due to validation error.', __METHOD__);
+
+            return false;
+        }
+
+        $isNewGroup = !$group->id;
 
         // Fire a 'beforeSaveUserGroup' event
-        $event = new UserGroupEvent([
+        $this->trigger(self::EVENT_BEFORE_SAVE_USER_GROUP, new UserGroupEvent([
             'userGroup' => $group,
-        ]);
+            'isNew' => $isNewGroup,
+        ]));
 
-        $this->trigger(self::EVENT_BEFORE_SAVE_USER_GROUP, $event);
+        $groupRecord = $this->_getGroupRecordById($group->id);
 
-        if ($event->isValid) {
-            $groupRecord = $this->_getGroupRecordById($group->id);
+        $groupRecord->name = $group->name;
+        $groupRecord->handle = $group->handle;
 
-            $groupRecord->name = $group->name;
-            $groupRecord->handle = $group->handle;
+        $groupRecord->save(false);
 
-            if ($groupRecord->save()) {
-                // Now that we have a group ID, save it on the model
-                if (!$group->id) {
-                    $group->id = $groupRecord->id;
-                }
-
-                $success = true;
-            } else {
-                $group->addErrors($groupRecord->getErrors());
-            }
+        // Now that we have a group ID, save it on the model
+        if ($isNewGroup) {
+            $group->id = $groupRecord->id;
         }
 
-        if ($success) {
-            // Fire an 'afterSaveUserGroup' event
-            $this->trigger(self::EVENT_AFTER_SAVE_USER_GROUP, new UserGroupEvent([
-                'userGroup' => $group
-            ]));
-        }
+        // Fire an 'afterSaveUserGroup' event
+        $this->trigger(self::EVENT_AFTER_SAVE_USER_GROUP, new UserGroupEvent([
+            'userGroup' => $group,
+            'isNew' => $isNewGroup,
+        ]));
 
-        return $success;
+        return true;
     }
 
     /**
@@ -198,28 +209,25 @@ class UserGroups extends Component
     {
         $group = $this->getGroupById($groupId);
 
-        // Fire a 'beforeDeleteUserGroup' event
-        $event = new UserGroupEvent([
-            'userGroup' => $group,
-        ]);
-
-        $this->trigger(self::EVENT_BEFORE_DELETE_USER_GROUP, $event);
-
-        if ($event->isValid) {
-            Craft::$app->getDb()->createCommand()
-                ->delete('{{%usergroups}}', ['id' => $groupId])
-                ->execute();
-
-            // Fire an 'afterDeleteUserGroup' event
-            $this->trigger(self::EVENT_AFTER_DELETE_USER_GROUP,
-                new UserGroupEvent([
-                    'userGroup' => $group
-                ]));
-
-            return true;
+        if (!$group) {
+            return false;
         }
 
-        return false;
+        // Fire a 'beforeDeleteUserGroup' event
+        $this->trigger(self::EVENT_BEFORE_DELETE_USER_GROUP, new UserGroupEvent([
+            'userGroup' => $group,
+        ]));
+
+        Craft::$app->getDb()->createCommand()
+            ->delete('{{%usergroups}}', ['id' => $groupId])
+            ->execute();
+
+        // Fire an 'afterDeleteUserGroup' event
+        $this->trigger(self::EVENT_AFTER_DELETE_USER_GROUP, new UserGroupEvent([
+            'userGroup' => $group
+        ]));
+
+        return true;
     }
 
     // Private Methods

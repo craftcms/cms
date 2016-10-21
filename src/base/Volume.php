@@ -16,6 +16,9 @@ use Craft;
 use craft\app\behaviors\FieldLayoutTrait;
 use craft\app\errors\VolumeObjectExistsException;
 use craft\app\errors\VolumeObjectNotFoundException;
+use craft\app\records\Volume as VolumeRecord;
+use craft\app\validators\HandleValidator;
+use craft\app\validators\UniqueValidator;
 use League\Flysystem\AdapterInterface;
 use League\Flysystem\FileExistsException;
 use League\Flysystem\FileNotFoundException;
@@ -73,8 +76,8 @@ abstract class Volume extends SavableComponent implements VolumeInterface
     {
         return [
             'fieldLayout' => [
-                'class' => 'craft\app\behaviors\FieldLayoutBehavior',
-                'elementType' => 'craft\app\elements\Asset'
+                'class' => \craft\app\behaviors\FieldLayoutBehavior::class,
+                'elementType' => \craft\app\elements\Asset::class
             ],
         ];
     }
@@ -94,48 +97,25 @@ abstract class Volume extends SavableComponent implements VolumeInterface
      */
     public function rules()
     {
-        $rules = parent::rules();
-        $rules[] = [
-            ['id'],
-            'number',
-            'min' => -2147483648,
-            'max' => 2147483647,
-            'integerOnly' => true
-        ];
-        $rules[] = [
-            ['handle'],
-            'craft\\app\\validators\\Handle',
-            'reservedWords' => [
-                'id',
-                'dateCreated',
-                'dateUpdated',
-                'uid',
-                'title'
-            ]
-        ];
-        $rules[] = [
-            ['fieldLayoutId'],
-            'number',
-            'min' => -2147483648,
-            'max' => 2147483647,
-            'integerOnly' => true
-        ];
-        $rules[] = [['handle'], 'string', 'max' => 255];
-        $rules[] = [
+        $rules = [
+            [['id', 'fieldLayoutId'], 'number', 'integerOnly' => true],
+            [['name', 'handle'], UniqueValidator::class, 'targetClass' => VolumeRecord::class],
+            [['hasUrls'], 'boolean'],
+            [['name', 'handle', 'url'], 'string', 'max' => 255],
+            [['type'], 'string', 'max' => 150],
+            [['name', 'handle', 'type'], 'required'],
             [
-                'id',
-                'type',
-                'settings',
-                'name',
-                'handle',
-                'sortOrder',
-                'fieldLayoutId',
-                'url'
+                ['handle'],
+                HandleValidator::class,
+                'reservedWords' => [
+                    'id',
+                    'dateCreated',
+                    'dateUpdated',
+                    'uid',
+                    'title'
+                ]
             ],
-            'safe',
-            'on' => 'search'
         ];
-        $rules[] = [['name', 'handle'], 'required'];
 
         // Require URLs for public Volumes.
         if ($this->hasUrls) {

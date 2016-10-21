@@ -89,7 +89,7 @@ class Update
         $dbBackup = new DbBackup();
 
         $fileName = $backupPath.'.sql';
-        $fullBackupPath = Craft::$app->getPath()->getDbBackupPath().$fileName;
+        $fullBackupPath = Craft::$app->getPath()->getDbBackupPath().'/'.$fileName;
 
         // Make sure we're constrained to the backups folder.
         if (Path::ensurePathIsContained($fileName)) {

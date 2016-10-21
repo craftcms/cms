@@ -47,9 +47,9 @@ body, input, select, textarea { font-family: HelveticaNeue, sans-serif; }
 
 body.rtl .ltr { text-align: left; direction: rtl; }
 
-body.rtl .input.ltr { text-align: right; direction: rtl; }
+body.rtl .input.ltr { text-align: left; direction: ltr; }
 
-body.ltr .input.rtl { text-align: left; direction: ltr; }
+body.ltr .input.rtl { text-align: right; direction: rtl; }
 
 body.rtl .text.ltr { text-align: right !important; direction: ltr !important; }
 
@@ -204,6 +204,8 @@ body.rtl .rightalign { text-align: left; }
 .nowrap { white-space: nowrap; }
 
 .light { color: #8f98a3 !important; font-weight: normal; }
+
+.extralight { color: #b9bfc6 !important; }
 
 .smalltext { font-size: 11px; }
 
@@ -1408,9 +1410,9 @@ body.rtl .chars-left { margin: -24px 0 0 7px ; }
 
 .field > .heading > label { position: relative; font-weight: bold; color: #576575; }
 
-.field > .heading > label > .locale { display: inline-block; border-radius: 3px; padding: 0 4px; font-size: 11px; color: #8f98a3; background: #ebedef; }
-body.ltr .field > .heading > label > .locale { margin-left: 7px; }
-body.rtl .field > .heading > label > .locale { margin-right: 7px; }
+.field > .heading > label > .site { display: inline-block; border-radius: 3px; padding: 0 4px; font-size: 11px; color: #8f98a3; background: #ebedef; }
+body.ltr .field > .heading > label > .site { margin-left: 7px; }
+body.rtl .field > .heading > label > .site { margin-right: 7px; }
 
 .field > .heading > .instructions { margin-top: 4px; font-size: 11px; line-height: 1.4; color: #8f98a3; }
 

@@ -11,8 +11,8 @@ use Craft;
 use craft\app\base\Element;
 use craft\app\base\ElementInterface;
 use craft\app\db\Query;
-use craft\app\elements\Asset;
 use craft\app\errors\OperationAbortedException;
+use yii\base\Exception;
 
 /**
  * Class ElementHelper
@@ -82,30 +82,30 @@ class ElementHelper
     public static function setUniqueUri(ElementInterface $element)
     {
         /** @var Element $element */
-        $urlFormat = $element->getUrlFormat();
+        $uriFormat = $element->getUriFormat();
 
         // No URL format, no URI.
-        if (!$urlFormat) {
+        if (!$uriFormat) {
             $element->uri = null;
 
             return;
         }
 
         // No slug, or a URL format with no {slug}, just parse the URL format and get on with our lives
-        if (!$element->slug || !static::doesUrlFormatHaveSlugTag($urlFormat)) {
-            $element->uri = Craft::$app->getView()->renderObjectTemplate($urlFormat, $element);
+        if (!$element->slug || !static::doesUriFormatHaveSlugTag($uriFormat)) {
+            $element->uri = Craft::$app->getView()->renderObjectTemplate($uriFormat, $element);
 
             return;
         }
 
         $uniqueUriConditions = [
             'and',
-            'locale = :locale',
+            'siteId = :siteId',
             'uri = :uri'
         ];
 
         $uniqueUriParams = [
-            ':locale' => $element->locale
+            ':siteId' => $element->siteId
         ];
 
         if ($element->id) {
@@ -126,7 +126,7 @@ class ElementHelper
             $originalSlug = $element->slug;
             $element->slug = $testSlug;
 
-            $testUri = Craft::$app->getView()->renderObjectTemplate($urlFormat, $element);
+            $testUri = Craft::$app->getView()->renderObjectTemplate($uriFormat, $element);
 
             // Make sure we're not over our max length.
             if (strlen($testUri) > 255) {
@@ -175,20 +175,50 @@ class ElementHelper
     /**
      * Returns whether a given URL format has a proper {slug} tag.
      *
-     * @param string $urlFormat
+     * @param string $uriFormat
      *
      * @return boolean
      */
-    public static function doesUrlFormatHaveSlugTag($urlFormat)
+    public static function doesUriFormatHaveSlugTag($uriFormat)
     {
         $element = (object)['slug' => StringHelper::randomString()];
-        $uri = Craft::$app->getView()->renderObjectTemplate($urlFormat, $element);
+        $uri = Craft::$app->getView()->renderObjectTemplate($uriFormat, $element);
 
         return StringHelper::contains($uri, $element->slug);
     }
 
     /**
-     * Returns whether the given element is editable by the current user, taking user locale permissions into account.
+     * Returns a list of sites that a given element supports.
+     *
+     * Each site is represented as an array with 'siteId' and 'enabledByDefault' keys.
+     *
+     * @param ElementInterface $element
+     *
+     * @return array
+     * @throws Exception if any of the element's supported sites are invalid
+     */
+    public static function getSupportedSitesForElement(ElementInterface $element)
+    {
+        $sites = [];
+
+        foreach ($element->getSupportedSites() as $site) {
+            if (!is_array($site)) {
+                $site = [
+                    'siteId' => $site,
+                ];
+            } else if (!isset($site['siteId'])) {
+                throw new Exception('Missing "siteId" key in '.$element::className().'::getSupportedSites()');
+            }
+            $sites[] = array_merge([
+                'enabledByDefault' => true,
+            ], $site);
+        }
+
+        return $sites;
+    }
+
+    /**
+     * Returns whether the given element is editable by the current user, taking user permissions into account.
      *
      * @param ElementInterface $element
      *
@@ -197,13 +227,9 @@ class ElementHelper
     public static function isElementEditable(ElementInterface $element)
     {
         if ($element->getIsEditable()) {
-            if (Craft::$app->getIsLocalized()) {
-                foreach ($element->getLocales() as $localeId => $localeInfo) {
-                    if (is_numeric($localeId) && is_string($localeInfo)) {
-                        $localeId = $localeInfo;
-                    }
-
-                    if (Craft::$app->getUser()->checkPermission('editLocale:'.$localeId)) {
+            if (Craft::$app->getIsMultiSite()) {
+                foreach (static::getSupportedSitesForElement($element) as $siteInfo) {
+                    if (Craft::$app->getUser()->checkPermission('editSite:'.$siteInfo['siteId'])) {
                         return true;
                     }
                 }
@@ -216,49 +242,28 @@ class ElementHelper
     }
 
     /**
-     * Returns whether the given element is an Asset that is a manipulatable image.
-     *
-     * @param Element $element
-     *
-     * @return boolean
-     */
-    public static function isAssetWithThumb(Element $element)
-    {
-        if ($element->getType() == 'craft\app\elements\Asset') {
-            /**
-             * @var $element Asset
-             */
-            return $element->getHasThumb();
-        }
-        return false;
-    }
-    /**
-     * Returns the editable locale IDs for a given element, taking user locale permissions into account.
+     * Returns the editable site IDs for a given element, taking user permissions into account.
      *
      * @param ElementInterface $element
      *
      * @return array
      */
-    public static function getEditableLocaleIdsForElement(ElementInterface $element)
+    public static function getEditableSiteIdsForElement(ElementInterface $element)
     {
-        $localeIds = [];
+        $siteIds = [];
 
         if ($element->getIsEditable()) {
-            if (Craft::$app->getIsLocalized()) {
-                foreach ($element->getLocales() as $localeId => $localeInfo) {
-                    if (is_numeric($localeId) && is_string($localeInfo)) {
-                        $localeId = $localeInfo;
-                    }
-
-                    if (Craft::$app->getUser()->checkPermission('editLocale:'.$localeId)) {
-                        $localeIds[] = $localeId;
+            if (Craft::$app->getIsMultiSite()) {
+                foreach (static::getSupportedSitesForElement($element) as $siteInfo) {
+                    if (Craft::$app->getUser()->checkPermission('editSite:'.$siteInfo['siteId'])) {
+                        $siteIds[] = $siteInfo['siteId'];
                     }
                 }
             } else {
-                $localeIds[] = Craft::$app->getI18n()->getPrimarySiteLocaleId();
+                $siteIds[] = Craft::$app->getSites()->getPrimarySite()->id;
             }
         }
 
-        return $localeIds;
+        return $siteIds;
     }
 }

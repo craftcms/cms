@@ -8,7 +8,6 @@
 namespace craft\app\services;
 
 use Craft;
-use craft\app\enums\ConfigCategory;
 use craft\app\helpers\App;
 use craft\app\helpers\ArrayHelper;
 use craft\app\helpers\DateTimeHelper;
@@ -31,6 +30,16 @@ use yii\base\Component;
  */
 class Config extends Component
 {
+    // Constants
+    // =========================================================================
+
+    const CATEGORY_FILECACHE = 'filecache';
+    const CATEGORY_GENERAL = 'general';
+    const CATEGORY_DB = 'db';
+    const CATEGORY_DBCACHE = 'dbcache';
+    const CATEGORY_MEMCACHE = 'memcache';
+    const CATEGORY_APC = 'apc';
+
     // Properties
     // =========================================================================
 
@@ -84,7 +93,7 @@ class Config extends Component
      *
      * @return mixed The value of the config setting, or `null` if a value could not be found.
      */
-    public function get($item, $category = ConfigCategory::General)
+    public function get($item, $category = self::CATEGORY_GENERAL)
     {
         $this->_loadConfigSettings($category);
 
@@ -119,7 +128,7 @@ class Config extends Component
      *
      * @return void
      */
-    public function set($item, $value, $category = ConfigCategory::General)
+    public function set($item, $value, $category = self::CATEGORY_GENERAL)
     {
         $this->_loadConfigSettings($category);
         $this->_configSettings[$category][$item] = $value;
@@ -129,7 +138,7 @@ class Config extends Component
      * Returns a localized config setting value by its name.
      *
      * Internally, [[get()]] will be called to get the value of the config setting. If the value is an array,
-     * then only a single value in that array will be returned: the one that has a key matching the `$localeId` argument.
+     * then only a single value in that array will be returned: the one that has a key matching the `$siteId` argument.
      * If no matching key is found, the first element of the array will be returned instead.
      *
      * This function is used for Craft’s “localizable” config settings:
@@ -141,24 +150,23 @@ class Config extends Component
      * - [setPasswordPath](http://craftcms.com/docs/config-settings#setPasswordPath)
      * - [setPasswordSuccessPath](http://craftcms.com/docs/config-settings#setPasswordSuccessPath)
      *
-     * @param string $item     The name of the config setting.
-     * @param string $localeId The locale ID to return. Defaults to
-     *                         [[\craft\app\web\Application::language `Craft::$app->language`]].
-     * @param string $category The name of the config file (sans .php). Defaults to 'general'.
+     * @param string $item       The name of the config setting.
+     * @param string $siteHandle The site handle to return. Defaults to the current site.
+     * @param string $category   The name of the config file (sans .php). Defaults to 'general'.
      *
      * @return mixed The value of the config setting, or `null` if a value could not be found.
      */
-    public function getLocalized($item, $localeId = null, $category = ConfigCategory::General)
+    public function getLocalized($item, $siteHandle = null, $category = self::CATEGORY_GENERAL)
     {
         $value = $this->get($item, $category);
 
         if (is_array($value)) {
-            if (!$localeId) {
-                $localeId = Craft::$app->language;
+            if (!$siteHandle) {
+                $siteHandle = Craft::$app->getSites()->currentSite->handle;
             }
 
-            if (isset($value[$localeId])) {
-                return $value[$localeId];
+            if (isset($value[$siteHandle])) {
+                return $value[$siteHandle];
             }
 
             if ($value) {
@@ -200,7 +208,7 @@ class Config extends Component
      *
      * @return boolean Whether the config setting value exists.
      */
-    public function exists($item, $category = ConfigCategory::General)
+    public function exists($item, $category = self::CATEGORY_GENERAL)
     {
         $this->_loadConfigSettings($category);
 
@@ -670,13 +678,40 @@ class Config extends Component
 
         if ($configVal === 'minor-only') {
             // Return whether the major version number has changed
-            $localMajorVersion = array_shift(explode('.', Craft::$app->version));
-            $updateMajorVersion = array_shift(explode('.', $updateInfo->app->latestVersion));
+            $versionParts = explode('.', Craft::$app->version);
+            $majorVersionParts = explode('.', $updateInfo->app->latestVersion);
+
+            $localMajorVersion = array_shift($versionParts);
+            $updateMajorVersion = array_shift($majorVersionParts);
 
             return ($localMajorVersion === $updateMajorVersion);
         }
 
         return false;
+    }
+
+
+    /**
+     * Returns the application’s configured DB table prefix.
+     *
+     * @return string
+     */
+    public function getDbTablePrefix()
+    {
+        // Table prefixes cannot be longer than 5 characters
+        $tablePrefix = rtrim($this->get('tablePrefix', self::CATEGORY_DB), '_');
+
+        if ($tablePrefix) {
+            if (StringHelper::length($tablePrefix) > 5) {
+                $tablePrefix = substr($tablePrefix, 0, 5);
+            }
+
+            $tablePrefix .= '_';
+        } else {
+            $tablePrefix = '';
+        }
+
+        return $tablePrefix;
     }
 
     // Private Methods
@@ -695,7 +730,7 @@ class Config extends Component
         $pathService = Craft::$app->getPath();
 
         // Is this a valid Craft config category?
-        if (ConfigCategory::isValidName($category)) {
+        if (in_array($category, [self::CATEGORY_FILECACHE, self::CATEGORY_GENERAL, self::CATEGORY_DB, self::CATEGORY_DBCACHE, self::CATEGORY_MEMCACHE, self::CATEGORY_APC])) {
             $defaultsPath = $pathService->getAppPath().'/config/defaults/'.$category.'.php';
         } else {
             $defaultsPath = $pathService->getPluginsPath().'/'.$category.'/config.php';
@@ -710,7 +745,7 @@ class Config extends Component
         }
 
         // Little extra logic for the general config category.
-        if ($category == ConfigCategory::General) {
+        if ($category == self::CATEGORY_GENERAL) {
             // Does craft/config/general.php exist? (It used to be called blocks.php so maybe not.)
             $filePath = $pathService->getConfigPath().'/general.php';
 
@@ -738,7 +773,7 @@ class Config extends Component
                 // Originally db.php defined a $dbConfig variable, and later returned an array directly.
                 if (is_array($customConfig = require_once($filePath))) {
                     $this->_mergeConfigs($configSettings, $customConfig);
-                } else if ($category == ConfigCategory::Db && isset($dbConfig)) {
+                } else if ($category == self::CATEGORY_DB && isset($dbConfig)) {
                     $configSettings = array_merge($configSettings, $dbConfig);
                     unset($dbConfig);
                 }

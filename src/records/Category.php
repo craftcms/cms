@@ -43,7 +43,7 @@ class Category extends ActiveRecord
      */
     public function getElement()
     {
-        return $this->hasOne(Element::className(), ['id' => 'id']);
+        return $this->hasOne(Element::class, ['id' => 'id']);
     }
 
     /**
@@ -53,6 +53,6 @@ class Category extends ActiveRecord
      */
     public function getGroup()
     {
-        return $this->hasOne(CategoryGroup::className(), ['id' => 'groupId']);
+        return $this->hasOne(CategoryGroup::class, ['id' => 'groupId']);
     }
 }

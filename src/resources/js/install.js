@@ -53,7 +53,7 @@ Craft.Installer = Garnish.Base.extend(
 	{
 		event.preventDefault();
 
-		var inputs = ['siteName', 'siteUrl'];
+		var inputs = ['siteName', 'siteUrl', 'siteLanguage'];
 		this.validate('site', inputs, $.proxy(this, 'showInstallScreen'));
 	},
 
@@ -61,7 +61,7 @@ Craft.Installer = Garnish.Base.extend(
 	{
 		this.showScreen(3, $.proxy(function()
 		{
-			var inputs = ['username', 'email', 'password', 'siteName', 'siteUrl', 'locale'];
+			var inputs = ['username', 'email', 'password', 'siteName', 'siteUrl', 'siteLanguage'];
 
 			var data = {};
 

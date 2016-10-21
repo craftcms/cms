@@ -7,6 +7,8 @@
 
 namespace craft\app\events;
 
+use craft\app\models\FieldLayout;
+
 /**
  * Field layout Event class.
  *
@@ -19,7 +21,12 @@ class FieldLayoutEvent extends Event
     // =========================================================================
 
     /**
-     * @var \craft\app\models\FieldLayout The field layout associated with this event.
+     * @var FieldLayout The field layout associated with this event.
      */
     public $layout;
+
+    /**
+     * @var boolean Whether the field is brand new
+     */
+    public $isNew = false;
 }

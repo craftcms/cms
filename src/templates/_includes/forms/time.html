@@ -9,7 +9,7 @@
 		name: (name ? name~'[time]'),
 		autocomplete: false,
 		size: 10,
-		value: (value and value.localeTime is defined ? value.localeTime() : value)
+		value: (value ? value|time('short') : '')
 	} -%}
 	{% if name -%}
 		<input type="hidden" name="{{ name }}[timezone]" value="{{ craft.getTimeZone() }}">

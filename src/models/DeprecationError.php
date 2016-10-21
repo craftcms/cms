@@ -10,6 +10,7 @@ namespace craft\app\models;
 use craft\app\base\Model;
 use craft\app\dates\DateTime;
 use craft\app\helpers\Json;
+use craft\app\validators\DateTimeValidator;
 
 /**
  * DeprecationError model.
@@ -19,21 +20,6 @@ use craft\app\helpers\Json;
  */
 class DeprecationError extends Model
 {
-    // Static
-    // =========================================================================
-
-    /**
-     * @inheritdoc
-     */
-    public static function populateModel($model, $config)
-    {
-        if (isset($config['traces']) && is_string($config['traces'])) {
-            $config['traces'] = Json::decode($config['traces']);
-        }
-
-        parent::populateModel($model, $config);
-    }
-
     // Properties
     // =========================================================================
 
@@ -103,6 +89,18 @@ class DeprecationError extends Model
     /**
      * @inheritdoc
      */
+    public function init()
+    {
+        parent::init();
+
+        if (isset($this->traces) && is_string($this->traces)) {
+            $this->traces = Json::decode($this->traces);
+        }
+    }
+
+    /**
+     * @inheritdoc
+     */
     public function datetimeAttributes()
     {
         $names = parent::datetimeAttributes();
@@ -124,7 +122,7 @@ class DeprecationError extends Model
                 'max' => 2147483647,
                 'integerOnly' => true
             ],
-            [['lastOccurrence'], 'craft\\app\\validators\\DateTime'],
+            [['lastOccurrence'], DateTimeValidator::class],
             [
                 ['line'],
                 'number',

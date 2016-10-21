@@ -8,6 +8,7 @@
 namespace craft\app\controllers;
 
 use Craft;
+use craft\app\base\Element;
 use craft\app\helpers\Db;
 use craft\app\helpers\Search;
 use craft\app\helpers\StringHelper;
@@ -131,7 +132,7 @@ class TagsController extends Controller
 
         // Set the field layout
         $fieldLayout = Craft::$app->getFields()->assembleLayoutFromPost();
-        $fieldLayout->type = Tag::className();
+        $fieldLayout->type = Tag::class;
         $tagGroup->setFieldLayout($fieldLayout);
 
         // Save it
@@ -159,7 +160,7 @@ class TagsController extends Controller
     public function actionDeleteTagGroup()
     {
         $this->requirePostRequest();
-        $this->requireAjaxRequest();
+        $this->requireAcceptsJson();
         $this->requireAdmin();
 
         $sectionId = Craft::$app->getRequest()->getRequiredBodyParam('id');
@@ -177,7 +178,7 @@ class TagsController extends Controller
     public function actionSearchForTags()
     {
         $this->requirePostRequest();
-        $this->requireAjaxRequest();
+        $this->requireAcceptsJson();
 
         $search = Craft::$app->getRequest()->getBodyParam('search');
         $tagGroupId = Craft::$app->getRequest()->getBodyParam('tagGroupId');
@@ -239,13 +240,14 @@ class TagsController extends Controller
     public function actionCreateTag()
     {
         $this->requireLogin();
-        $this->requireAjaxRequest();
+        $this->requireAcceptsJson();
 
         $tag = new Tag();
         $tag->groupId = Craft::$app->getRequest()->getRequiredBodyParam('groupId');
         $tag->title = Craft::$app->getRequest()->getRequiredBodyParam('title');
+        $tag->setScenario(Element::SCENARIO_CORE);
 
-        if (Craft::$app->getTags()->saveTag($tag)) {
+        if (Craft::$app->getElements()->saveElement($tag)) {
             return $this->asJson([
                 'success' => true,
                 'id' => $tag->id

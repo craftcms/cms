@@ -15,6 +15,7 @@ use craft\app\elements\db\ElementQuery;
 use craft\app\elements\db\ElementQueryInterface;
 use craft\app\helpers\DateTimeHelper;
 use craft\app\helpers\Db;
+use craft\app\i18n\Locale;
 use yii\db\Schema;
 
 /**
@@ -34,40 +35,6 @@ class Date extends Field implements PreviewableFieldInterface
     public static function displayName()
     {
         return Craft::t('app', 'Date/Time');
-    }
-
-    /**
-     * @inheritdoc
-     */
-    public static function populateModel($model, $config)
-    {
-        if (isset($config['dateTime'])) {
-            switch ($config['dateTime']) {
-                case 'showBoth': {
-                    unset($config['dateTime']);
-                    $config['showTime'] = true;
-                    $config['showDate'] = true;
-
-                    break;
-                }
-                case 'showDate': {
-                    unset($config['dateTime']);
-                    $config['showDate'] = true;
-                    $config['showTime'] = false;
-
-                    break;
-                }
-                case 'showTime': {
-                    unset($config['dateTime']);
-                    $config['showTime'] = true;
-                    $config['showDate'] = false;
-
-                    break;
-                }
-            }
-        }
-
-        parent::populateModel($model, $config);
     }
 
     // Properties
@@ -91,6 +58,43 @@ class Date extends Field implements PreviewableFieldInterface
     // Public Methods
     // =========================================================================
 
+    /**
+     * @inheritdoc
+     */
+    public function __construct($config = [])
+    {
+        // dateTime => showDate + showTime
+        if (isset($config['dateTime'])) {
+            switch ($config['dateTime']) {
+                case 'showBoth': {
+                    $config['showDate'] = true;
+                    $config['showTime'] = true;
+
+                    break;
+                }
+                case 'showDate': {
+                    $config['showDate'] = true;
+                    $config['showTime'] = false;
+
+                    break;
+                }
+                case 'showTime': {
+                    $config['showDate'] = false;
+                    $config['showTime'] = true;
+
+                    break;
+                }
+            }
+
+            unset($config['dateTime']);
+        }
+
+        parent::__construct($config);
+    }
+
+    /**
+     * @inheritdoc
+     */
     public function init()
     {
         parent::init();
@@ -200,8 +204,10 @@ class Date extends Field implements PreviewableFieldInterface
     public function getTableAttributeHtml($value, $element)
     {
         if ($value) {
+            $formatter = Craft::$app->getFormatter();
+
             /** @var DateTime $value */
-            return '<span title="'.$value->localeDate().' '.$value->localeTime().'">'.$value->uiTimestamp().'</span>';
+            return '<span title="'.$formatter->asDatetime($value, Locale::LENGTH_SHORT).'">'.$formatter->asTimestamp($value, Locale::LENGTH_SHORT).'</span>';
         }
 
         return '';

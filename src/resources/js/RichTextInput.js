@@ -9,7 +9,7 @@
 			id: null,
 			linkOptions: null,
 			volumes: null,
-			elementLocale: null,
+			elementSiteId: null,
 			redactorConfig: null,
 
 			$textarea: null,
@@ -22,7 +22,7 @@
 				this.linkOptions = settings.linkOptions;
 				this.volumes = settings.volumes;
 				this.transforms = settings.transforms;
-				this.elementLocale = settings.elementLocale;
+				this.elementSiteId = settings.elementSiteId;
 				this.redactorConfig = settings.redactorConfig;
 
 				this.linkOptionModals = [];
@@ -260,7 +260,7 @@
 						storageKey: 'RichTextFieldType.ChooseImage',
 						multiSelect: true,
 						sources: this.volumes,
-						criteria: { locale: this.elementLocale, kind: 'image' },
+						criteria: { siteId: this.elementSiteId, kind: 'image' },
 						onSelect: $.proxy(function(assets, transform)
 						{
 							if (assets.length)
@@ -301,7 +301,7 @@
 					this.assetLinkSelectionModal = Craft.createElementSelectorModal('craft\\app\\elements\\Asset', {
 						storageKey: 'RichTextFieldType.LinkToAsset',
 						sources: this.volumes,
-						criteria: { locale: this.elementLocale },
+						criteria: { siteId: this.elementSiteId },
 						onSelect: $.proxy(function(assets)
 						{
 							if (assets.length)
@@ -336,7 +336,7 @@
 					this.linkOptionModals[key] = Craft.createElementSelectorModal(settings.elementType, {
 						storageKey: (settings.storageKey || 'RichTextFieldType.LinkTo'+settings.elementType),
 						sources: settings.sources,
-						criteria: $.extend({ locale: this.elementLocale }, settings.criteria),
+						criteria: $.extend({ siteId: this.elementSiteId }, settings.criteria),
 						onSelect: $.proxy(function(elements)
 						{
 							if (elements.length)

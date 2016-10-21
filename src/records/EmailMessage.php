@@ -9,15 +9,17 @@ namespace craft\app\records;
 
 use yii\db\ActiveQueryInterface;
 use craft\app\db\ActiveRecord;
+use craft\app\validators\SiteIdValidator;
 
 /**
  * Class EmailMessage record.
  *
  * @property integer $id      ID
- * @property Locale  $locale  Locale
+ * @property integer $siteId  Site ID
  * @property string  $key     Key
  * @property string  $subject Subject
  * @property string  $body    Body
+ * @property Site    $site    Site
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since  3.0
@@ -33,9 +35,9 @@ class EmailMessage extends ActiveRecord
     public function rules()
     {
         return [
-            [['locale'], 'craft\\app\\validators\\Locale'],
-            [['key'], 'unique', 'targetAttribute' => ['key', 'locale']],
-            [['key', 'locale', 'subject', 'body'], 'required'],
+            [['siteId'], SiteIdValidator::class],
+            [['key'], 'unique', 'targetAttribute' => ['key', 'siteId']],
+            [['key', 'siteId', 'subject', 'body'], 'required'],
             [['key'], 'string', 'max' => 150],
             [['subject'], 'string', 'max' => 1000],
         ];
@@ -52,12 +54,12 @@ class EmailMessage extends ActiveRecord
     }
 
     /**
-     * Returns the email message’s locale.
+     * Returns the associated site
      *
      * @return ActiveQueryInterface The relational query object.
      */
-    public function getLocale()
+    public function getSite()
     {
-        return $this->hasOne(Locale::className(), ['id' => 'locale']);
+        return $this->hasOne(Site::class, ['id' => 'siteId']);
     }
 }

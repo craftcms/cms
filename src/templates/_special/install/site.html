@@ -7,19 +7,18 @@
 	<form id="siteform" accept-charset="UTF-8">
 		{{ csrfInput() }}
 		{{ forms.textField({ label: "Site Name"|t('app'), id: 'siteName', value: defaultSiteName, maxlength: 255 }) }}
-		{{ forms.textField({ label: "Site URL"|t('app'), id: 'siteUrl', value: defaultSiteUrl, maxlength: 255 }) }}
+		{{ forms.textField({ label: "Base URL"|t('app'), id: 'siteUrl', value: defaultSiteUrl, maxlength: 255 }) }}
 
-		{% set localeInput %}
+		{% set languageInput %}
 			<div class="select">
-				<select id="locale">
-					{% set language = craft.app.language %}
+				<select id="siteLanguage">
 					{% for locale in craft.app.i18n.getAllLocales() %}
-						<option value="{{ locale.id }}"{% if locale.id == craft.app.language %} selected{% endif %}>{{ locale.id }} ({{ locale.getDisplayName(language) }})</option>
+						<option value="{{ locale.id }}"{% if locale.id == craft.app.language %} selected{% endif %}>{{ locale.id }} ({{ locale.getDisplayName(craft.app.language) }})</option>
 					{% endfor %}
 				</select>
 			</div>
 		{% endset %}
-		{{ forms.field({ label: "Locale"|t('app'), id: 'locale' }, localeInput) }}
+		{{ forms.field({ label: "Language"|t('app'), id: 'siteLanguage' }, languageInput) }}
 
 		<div class="buttons">
 			<div id="sitesubmit" class="btn big submit">{{ "Finish up"|t('app') }}

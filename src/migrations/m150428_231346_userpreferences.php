@@ -115,7 +115,7 @@ class m150428_231346_userpreferences extends Migration
                 $prefs = [];
 
                 if (!empty($user['preferredLocale'])) {
-                    $prefs['locale'] = $user['preferredLocale'];
+                    $prefs['language'] = $user['preferredLocale'];
                 }
 
                 if ($user['weekStartDay'] != 0) {

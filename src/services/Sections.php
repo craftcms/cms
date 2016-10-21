@@ -12,21 +12,20 @@ use craft\app\db\Query;
 use craft\app\elements\Entry;
 use craft\app\errors\EntryTypeNotFoundException;
 use craft\app\errors\SectionNotFoundException;
-use craft\app\events\EntryTypeDeleteEvent;
-use craft\app\events\DeleteSectionEvent;
 use craft\app\events\EntryTypeEvent;
 use craft\app\events\SectionEvent;
 use craft\app\helpers\ArrayHelper;
 use craft\app\helpers\Db;
 use craft\app\models\EntryType;
 use craft\app\models\Section;
-use craft\app\models\SectionLocale;
+use craft\app\models\Section_SiteSettings;
 use craft\app\models\Structure;
 use craft\app\records\EntryType as EntryTypeRecord;
 use craft\app\records\Section as SectionRecord;
-use craft\app\records\SectionLocale as SectionLocaleRecord;
+use craft\app\records\Section_SiteSettings as Section_SiteSettingsRecord;
 use craft\app\tasks\ResaveElements;
 use yii\base\Component;
+use yii\base\Exception;
 
 /**
  * Class Sections service.
@@ -43,8 +42,6 @@ class Sections extends Component
 
     /**
      * @event SectionEvent The event that is triggered before a section is saved.
-     *
-     * You may set [[SectionEvent::isValid]] to `false` to prevent the section from getting saved.
      */
     const EVENT_BEFORE_SAVE_SECTION = 'beforeSaveSection';
 
@@ -54,21 +51,17 @@ class Sections extends Component
     const EVENT_AFTER_SAVE_SECTION = 'afterSaveSection';
 
     /**
-     * @event DeleteSectionEvent The event that is triggered before a section is deleted.
-     *
-     * You may set [[SectionEvent::isValid]] to `false` to prevent the section from getting deleted.
+     * @event SectionEvent The event that is triggered before a section is deleted.
      */
     const EVENT_BEFORE_DELETE_SECTION = 'beforeDeleteSection';
 
     /**
-     * @event DeleteSectionEvent The event that is triggered after a section is deleted.
+     * @event SectionEvent The event that is triggered after a section is deleted.
      */
     const EVENT_AFTER_DELETE_SECTION = 'afterDeleteSection';
 
     /**
      * @event EntryTypeEvent The event that is triggered before an entry type is saved.
-     *
-     * You may set [[EntryTypeEvent::isValid]] to `false` to prevent the entry type from getting saved.
      */
     const EVENT_BEFORE_SAVE_ENTRY_TYPE = 'beforeSaveEntryType';
 
@@ -78,14 +71,12 @@ class Sections extends Component
     const EVENT_AFTER_SAVE_ENTRY_TYPE = 'afterSaveEntryType';
 
     /**
-     * @event EntryTypeDeleteEvent The event that is triggered before an entry type is deleted.
-     *
-     * You may set [[EntryTypeDeleteEvent::isValid]] to `false` to prevent the entry type from getting deleted.
+     * @event EntryTypeEvent The event that is triggered before an entry type is deleted.
      */
     const EVENT_BEFORE_DELETE_ENTRY_TYPE = 'beforeDeleteEntryType';
 
     /**
-     * @event EntryTypeDeleteEvent The event that is triggered after an entry type is deleted.
+     * @event EntryTypeEvent The event that is triggered after an entry type is deleted.
      */
     const EVENT_AFTER_DELETE_ENTRY_TYPE = 'afterDeleteEntryType';
 
@@ -274,6 +265,10 @@ class Sections extends Component
      */
     public function getSectionById($sectionId)
     {
+        if (!$sectionId) {
+            return null;
+        }
+
         // If we've already fetched all sections we can save ourselves a trip to the DB for section IDs that don't exist
         if (!$this->_fetchedAllSections &&
             (!isset($this->_sectionsById) || !array_key_exists($sectionId,
@@ -325,43 +320,58 @@ class Sections extends Component
     }
 
     /**
-     * Returns a section’s locales.
+     * Returns a section’s site-specific settings.
      *
      * @param integer     $sectionId
      * @param string|null $indexBy
      *
-     * @return SectionLocale[] The section’s locales.
+     * @return Section_SiteSettings[] The section’s site-specific settings.
      */
-    public function getSectionLocales($sectionId, $indexBy = null)
+    public function getSectionSiteSettings($sectionId, $indexBy = null)
     {
-        $sectionLocales = (new Query())
-            ->select('*')
+        $siteSettings = (new Query())
+            ->select([
+                'sections_i18n.id',
+                'sections_i18n.sectionId',
+                'sections_i18n.siteId',
+                'sections_i18n.enabledByDefault',
+                'sections_i18n.hasUrls',
+                'sections_i18n.uriFormat',
+                'sections_i18n.template',
+            ])
             ->from('{{%sections_i18n}} sections_i18n')
-            ->innerJoin('{{%locales}} locales', 'locales.locale = sections_i18n.locale')
+            ->innerJoin('{{%sites}} sites', 'sites.id = sections_i18n.siteId')
             ->where('sections_i18n.sectionId = :sectionId',
                 [':sectionId' => $sectionId])
-            ->orderBy('locales.sortOrder')
+            ->orderBy('sites.sortOrder')
             ->indexBy($indexBy)
             ->all();
 
-        foreach ($sectionLocales as $key => $value) {
-            $sectionLocales[$key] = SectionLocale::create($value);
+        foreach ($siteSettings as $key => $value) {
+            $siteSettings[$key] = new Section_SiteSettings($value);
         }
 
-        return $sectionLocales;
+        return $siteSettings;
     }
 
     /**
      * Saves a section.
      *
-     * @param Section $section
+     * @param Section $section       The section to be saved
+     * @param boolean $runValidation Whether the section should be validated
      *
      * @return boolean
      * @throws SectionNotFoundException if $section->id is invalid
      * @throws \Exception if reasons
      */
-    public function saveSection(Section $section)
+    public function saveSection(Section $section, $runValidation = true)
     {
+        if ($runValidation && !$section->validate()) {
+            Craft::info('Section not saved due to validation error.', __METHOD__);
+
+            return false;
+        }
+
         if ($section->id) {
             $sectionRecord = SectionRecord::find()
                 ->where(['id' => $section->id])
@@ -372,430 +382,319 @@ class Sections extends Component
                 throw new SectionNotFoundException("No section exists with the ID '{$section->id}'");
             }
 
-            $oldSection = Section::create($sectionRecord);
+            $oldSection = new Section($sectionRecord->toArray([
+                'id',
+                'structureId',
+                'name',
+                'handle',
+                'type',
+                'enableVersioning',
+            ]));
             $isNewSection = false;
         } else {
             $sectionRecord = new SectionRecord();
             $isNewSection = true;
         }
 
-        // Shared attributes
+        // Main section settings
+        /** @var SectionRecord $sectionRecord */
         $sectionRecord->name = $section->name;
         $sectionRecord->handle = $section->handle;
         $sectionRecord->type = $section->type;
         $sectionRecord->enableVersioning = $section->enableVersioning ? 1 : 0;
 
-        // Type-specific attributes
-        if ($section->type == Section::TYPE_SINGLE) {
-            $sectionRecord->hasUrls = $section->hasUrls = true;
-        } else {
-            $sectionRecord->hasUrls = $section->hasUrls;
+        // Get the site settings
+        $allSiteSettings = $section->getSiteSettings();
+
+        if (!$allSiteSettings) {
+            throw new Exception('Tried to save a section without any site settings');
         }
 
-        if ($section->hasUrls) {
-            $sectionRecord->template = $section->template;
-        } else {
-            $sectionRecord->template = $section->template = null;
-        }
+        // Fire a 'beforeSaveSection' event
+        $this->trigger(self::EVENT_BEFORE_SAVE_SECTION, new SectionEvent([
+            'section' => $section,
+            'isNew' => $isNewSection
+        ]));
 
-        $sectionRecord->validate();
-        $section->addErrors($sectionRecord->getErrors());
+        $db = Craft::$app->getDb();
+        $transaction = $db->beginTransaction();
 
-        // Make sure that all of the URL formats are set properly
-        $sectionLocales = $section->getLocales();
-
-        if (!$sectionLocales) {
-            $section->addError('localeErrors', Craft::t('app', 'At least one locale must be selected for the section.'));
-        }
-
-        $firstSectionLocale = null;
-
-        foreach ($sectionLocales as $localeId => $sectionLocale) {
-            // Is this the first one?
-            if ($firstSectionLocale === null) {
-                $firstSectionLocale = $sectionLocale;
-            }
-
-            if ($section->type == Section::TYPE_SINGLE) {
-                $errorKey = 'urlFormat-'.$localeId;
-
-                if (empty($sectionLocale->urlFormat)) {
-                    $section->addError($errorKey, Craft::t('app', 'URI cannot be blank.'));
-                } else if ($section) {
-                    // Make sure no other elements are using this URI already
-                    $query = (new Query())
-                        ->from('{{%elements_i18n}} elements_i18n')
-                        ->where(
-                            [
-                                'and',
-                                'elements_i18n.locale = :locale',
-                                'elements_i18n.uri = :uri'
-                            ],
-                            [
-                                ':locale' => $localeId,
-                                ':uri' => $sectionLocale->urlFormat
-                            ]
-                        );
-
-                    if ($section->id) {
-                        $query
-                            ->innerJoin('{{%entries}} entries', 'entries.id = elements_i18n.elementId')
-                            ->andWhere('entries.sectionId != :sectionId', [':sectionId' => $section->id]);
-                    }
-
-                    if ($query->exists()) {
-                        $section->addError($errorKey, Craft::t('app', 'This URI is already in use.'));
-                    }
-                }
-
-                $sectionLocale->nestedUrlFormat = null;
-            } else if ($section->hasUrls) {
-                $urlFormatAttributes = ['urlFormat'];
-                $sectionLocale->urlFormatIsRequired = true;
-
-                if ($section->type == Section::TYPE_STRUCTURE && $section->maxLevels != 1) {
-                    $urlFormatAttributes[] = 'nestedUrlFormat';
-                    $sectionLocale->nestedUrlFormatIsRequired = true;
+        try {
+            // Do we need to create a structure?
+            if ($section->type == Section::TYPE_STRUCTURE) {
+                /** @noinspection PhpUndefinedVariableInspection */
+                if (!$isNewSection && $oldSection->type == Section::TYPE_STRUCTURE) {
+                    $structure = Craft::$app->getStructures()->getStructureById($oldSection->structureId);
+                    $isNewStructure = false;
                 } else {
-                    $sectionLocale->nestedUrlFormat = null;
+                    $structure = new Structure();
+                    $isNewStructure = true;
                 }
 
-                foreach ($urlFormatAttributes as $attribute) {
-                    if (!$sectionLocale->validate([$attribute])) {
-                        $section->addError($attribute.'-'.$localeId, $sectionLocale->getFirstError($attribute));
-                    }
+                // If they've set maxLevels to 0 (don't ask why), then pretend like there are none.
+                if ($section->maxLevels == 0) {
+                    $section->maxLevels = null;
                 }
+
+                $structure->maxLevels = $section->maxLevels;
+                Craft::$app->getStructures()->saveStructure($structure);
+
+                $sectionRecord->structureId = $structure->id;
+                $section->structureId = $structure->id;
             } else {
-                $sectionLocale->urlFormat = null;
-                $sectionLocale->nestedUrlFormat = null;
+                /** @noinspection PhpUndefinedVariableInspection */
+                if (!$isNewSection && $oldSection->structureId) {
+                    // Delete the old one
+                    Craft::$app->getStructures()->deleteStructureById($oldSection->structureId);
+                    $sectionRecord->structureId = null;
+                }
             }
-        }
 
-        if (!$section->hasErrors()) {
-            $transaction = Craft::$app->getDb()->beginTransaction();
+            $sectionRecord->save(false);
 
-            try {
-                // Fire a 'beforeSaveSection' event
-                $event = new SectionEvent([
-                    'section' => $section,
-                    'isNew' => $isNewSection
-                ]);
+            // Now that we have a section ID, save it on the model
+            if ($isNewSection) {
+                $section->id = $sectionRecord->id;
+            }
 
-                $this->trigger(self::EVENT_BEFORE_SAVE_SECTION, $event);
+            // Might as well update our cache of the section while we have it. (It's possible that the URL format
+            //includes {section.handle} or something...)
+            $this->_sectionsById[$section->id] = $section;
 
-                // Is the event giving us the go-ahead?
-                if ($event->isValid) {
-                    // Do we need to create a structure?
-                    if ($section->type == Section::TYPE_STRUCTURE) {
-                        /** @noinspection PhpUndefinedVariableInspection */
-                        if (!$isNewSection && $oldSection->type == Section::TYPE_STRUCTURE) {
-                            $structure = Craft::$app->getStructures()->getStructureById($oldSection->structureId);
-                            $isNewStructure = false;
-                        }
+            // Update the site settings
+            // -----------------------------------------------------------------
 
-                        if (empty($structure)) {
-                            $structure = new Structure();
-                            $isNewStructure = true;
-                        }
+            if (!$isNewSection) {
+                // Get the old section site settings
+                $allOldSiteSettingsRecords = Section_SiteSettingsRecord::find()
+                    ->where(['sectionId' => $section->id])
+                    ->indexBy('siteId')
+                    ->all();
+            }
 
-                        $structure->maxLevels = $section->maxLevels;
-                        Craft::$app->getStructures()->saveStructure($structure);
+            foreach ($allSiteSettings as $siteId => $siteSettings) {
+                // Was this already selected?
+                if (!$isNewSection && isset($allOldSiteSettingsRecords[$siteId])) {
+                    $siteSettingsRecord = $allOldSiteSettingsRecords[$siteId];
+                } else {
+                    $siteSettingsRecord = new Section_SiteSettingsRecord();
+                    $siteSettingsRecord->sectionId = $section->id;
+                    $siteSettingsRecord->siteId = $siteId;
+                }
 
-                        $sectionRecord->structureId = $structure->id;
-                        $section->structureId = $structure->id;
-                    } else {
-                        /** @noinspection PhpUndefinedVariableInspection */
-                        if (!$isNewSection && $oldSection->structureId) {
-                            // Delete the old one
-                            Craft::$app->getStructures()->deleteStructureById($oldSection->structureId);
-                            $sectionRecord->structureId = null;
-                        }
+                $siteSettingsRecord->enabledByDefault = $siteSettings->enabledByDefault;
+                $siteSettingsRecord->hasUrls = $siteSettings->hasUrls;
+                $siteSettingsRecord->uriFormat = $siteSettings->uriFormat;
+                $siteSettingsRecord->template = $siteSettings->template;
+
+                $siteSettingsRecord->save(false);
+
+                // Set the ID on the model
+                $siteSettings->id = $siteSettingsRecord->id;
+            }
+
+            if (!$isNewSection) {
+                // Drop any sites that are no longer being used, as well as the associated entry/element site
+                // rows
+                $siteIds = array_keys($allSiteSettings);
+
+                /** @noinspection PhpUndefinedVariableInspection */
+                foreach ($allOldSiteSettingsRecords as $siteId => $siteSettingsRecord) {
+                    if (!in_array($siteId, $siteIds)) {
+                        $siteSettingsRecord->delete();
                     }
+                }
+            }
 
-                    $sectionRecord->save(false);
+            // Make sure there's at least one entry type for this section
+            // -----------------------------------------------------------------
 
-                    // Now that we have a section ID, save it on the model
-                    if ($isNewSection) {
-                        $section->id = $sectionRecord->id;
-                    }
+            $entryTypeId = null;
 
-                    // Might as well update our cache of the section while we have it. (It's possible that the URL format
-                    //includes {section.handle} or something...)
-                    $this->_sectionsById[$section->id] = $section;
+            if (!$isNewSection) {
+                // Let's grab all of the entry type IDs to save ourselves a query down the road if this is a Single
+                $entryTypeIds = (new Query())
+                    ->select('id')
+                    ->from('{{%entrytypes}}')
+                    ->where('sectionId = :sectionId',
+                        [':sectionId' => $section->id])
+                    ->column();
 
-                    // Update the sections_i18n table
-                    $newLocaleData = [];
+                if ($entryTypeIds) {
+                    $entryTypeId = array_shift($entryTypeIds);
+                }
+            }
+
+            if (!$entryTypeId) {
+                $entryType = new EntryType();
+
+                $entryType->sectionId = $section->id;
+                $entryType->name = $section->name;
+                $entryType->handle = $section->handle;
+
+                if ($section->type == Section::TYPE_SINGLE) {
+                    $entryType->hasTitleField = false;
+                    $entryType->titleLabel = null;
+                    $entryType->titleFormat = '{section.name|raw}';
+                } else {
+                    $entryType->hasTitleField = true;
+                    $entryType->titleLabel = Craft::t('app', 'Title');
+                    $entryType->titleFormat = null;
+                }
+
+                $this->saveEntryType($entryType);
+
+                $entryTypeId = $entryType->id;
+            }
+
+            // Now, regardless of whether the section type changed or not, let the section type make sure
+            // everything is cool
+            // -----------------------------------------------------------------
+
+            switch ($section->type) {
+                case Section::TYPE_SINGLE: {
+                    // Make sure that there is one and only one Entry Type and Entry for this section.
+                    $singleEntryId = null;
 
                     if (!$isNewSection) {
-                        // Get the old section locales
-                        /** @var SectionLocaleRecord[] $oldSectionLocales */
-                        $oldSectionLocales = SectionLocaleRecord::find()
-                            ->where(['sectionId' => $section->id])
-                            ->indexBy('locale')
-                            ->all();
-
-                        foreach ($oldSectionLocales as $key => $value) {
-                            $oldSectionLocales[$key] = SectionLocale::create($value);
-                        }
-                    }
-
-                    foreach ($sectionLocales as $localeId => $locale) {
-                        // Was this already selected?
-                        if (!$isNewSection && isset($oldSectionLocales[$localeId])) {
-                            $oldLocale = $oldSectionLocales[$localeId];
-
-                            // Has anything changed?
-                            if ($locale->enabledByDefault != $oldLocale->enabledByDefault || $locale->urlFormat != $oldLocale->urlFormat || $locale->nestedUrlFormat != $oldLocale->nestedUrlFormat) {
-                                Craft::$app->getDb()->createCommand()
-                                    ->update(
-                                        '{{%sections_i18n}}',
-                                        [
-                                            'enabledByDefault' => (int)$locale->enabledByDefault,
-                                            'urlFormat' => $locale->urlFormat,
-                                            'nestedUrlFormat' => $locale->nestedUrlFormat
-                                        ],
-                                        [
-                                            'id' => $oldLocale->id
-                                        ])
-                                    ->execute();
-                            }
-                        } else {
-                            $newLocaleData[] = [
-                                $section->id,
-                                $localeId,
-                                (int)$locale->enabledByDefault,
-                                $locale->urlFormat,
-                                $locale->nestedUrlFormat
-                            ];
-                        }
-                    }
-
-                    // Insert the new locales
-                    Craft::$app->getDb()->createCommand()
-                        ->batchInsert(
-                            '{{%sections_i18n}}',
-                            [
-                                'sectionId',
-                                'locale',
-                                'enabledByDefault',
-                                'urlFormat',
-                                'nestedUrlFormat'
-                            ],
-                            $newLocaleData)
-                        ->execute();
-
-                    if (!$isNewSection) {
-                        // Drop any locales that are no longer being used, as well as the associated entry/element locale
-                        // rows
+                        // Re-save the entrytype name if the section name just changed
                         /** @noinspection PhpUndefinedVariableInspection */
-                        $droppedLocaleIds = array_diff(array_keys($oldSectionLocales), array_keys($sectionLocales));
-
-                        if ($droppedLocaleIds) {
-                            Craft::$app->getDb()->createCommand()
-                                ->delete(
-                                    '{{%sections_i18n}}',
-                                    [
-                                        'and',
-                                        'sectionId = :sectionId',
-                                        ['in', 'locale', $droppedLocaleIds]
-                                    ],
-                                    [':sectionId' => $section->id])
-                                ->execute();
+                        if (!$isNewSection && $oldSection->name != $section->name) {
+                            $entryType = $this->getEntryTypeById($entryTypeId);
+                            $entryType->name = $section->name;
+                            $this->saveEntryType($entryType);
                         }
-                    }
 
-                    // Make sure there's at least one entry type for this section
-                    $entryTypeId = null;
-
-                    if (!$isNewSection) {
-                        // Let's grab all of the entry type IDs to save ourselves a query down the road if this is a Single
-                        $entryTypeIds = (new Query())
+                        // Make sure there's only one entry in this section
+                        $entryIds = (new Query())
                             ->select('id')
-                            ->from('{{%entrytypes}}')
+                            ->from('{{%entries}}')
                             ->where('sectionId = :sectionId',
                                 [':sectionId' => $section->id])
                             ->column();
 
-                        if ($entryTypeIds) {
-                            $entryTypeId = array_shift($entryTypeIds);
-                        }
-                    }
+                        if ($entryIds) {
+                            $singleEntryId = array_shift($entryIds);
 
-                    if (!$entryTypeId) {
-                        $entryType = new EntryType();
-
-                        $entryType->sectionId = $section->id;
-                        $entryType->name = $section->name;
-                        $entryType->handle = $section->handle;
-
-                        if ($section->type == Section::TYPE_SINGLE) {
-                            $entryType->hasTitleField = false;
-                            $entryType->titleLabel = null;
-                            $entryType->titleFormat = '{section.name|raw}';
-                        } else {
-                            $entryType->hasTitleField = true;
-                            $entryType->titleLabel = Craft::t('app', 'Title');
-                            $entryType->titleFormat = null;
-                        }
-
-                        $this->saveEntryType($entryType);
-
-                        $entryTypeId = $entryType->id;
-                    }
-
-                    // Now, regardless of whether the section type changed or not, let the section type make sure
-                    // everything is cool
-
-                    switch ($section->type) {
-                        case Section::TYPE_SINGLE: {
-                            // Make sure that there is one and only one Entry Type and Entry for this section.
-                            $singleEntryId = null;
-
-                            if (!$isNewSection) {
-                                // Re-save the entrytype name if the section name just changed
-                                /** @noinspection PhpUndefinedVariableInspection */
-                                if (!$isNewSection && $oldSection->name != $section->name) {
-                                    $entryType = $this->getEntryTypeById($entryTypeId);
-                                    $entryType->name = $section->name;
-                                    $this->saveEntryType($entryType);
-                                }
-
-                                // Make sure there's only one entry in this section
-                                $entryIds = (new Query())
-                                    ->select('id')
-                                    ->from('{{%entries}}')
-                                    ->where('sectionId = :sectionId',
-                                        [':sectionId' => $section->id])
-                                    ->column();
-
-                                if ($entryIds) {
-                                    $singleEntryId = array_shift($entryIds);
-
-                                    // If there are any more, get rid of them
-                                    if ($entryIds) {
-                                        Craft::$app->getElements()->deleteElementById($entryIds);
-                                    }
-
-                                    // Make sure it's enabled and all that.
-
-                                    Craft::$app->getDb()->createCommand()
-                                        ->update(
-                                            '{{%elements}}',
-                                            [
-                                                'enabled' => 1,
-                                                'archived' => 0,
-                                            ],
-                                            [
-                                                'id' => $singleEntryId
-                                            ])
-                                        ->execute();
-
-                                    Craft::$app->getDb()->createCommand()
-                                        ->update(
-                                            '{{%entries}}',
-                                            [
-                                                'typeId' => $entryTypeId,
-                                                'authorId' => null,
-                                                'postDate' => Db::prepareDateForDb(new \DateTime()),
-                                                'expiryDate' => null,
-                                            ],
-                                            [
-                                                'id' => $singleEntryId
-                                            ])
-                                        ->execute();
-                                }
-
-                                // Make sure there's only one entry type for this section
-                                /** @noinspection PhpUndefinedVariableInspection */
-                                if ($entryTypeIds) {
-                                    $this->deleteEntryTypeById($entryTypeIds);
+                            // If there are any more, get rid of them
+                            if ($entryIds) {
+                                foreach ($entryIds as $id) {
+                                    Craft::$app->getElements()->deleteElementById($id);
                                 }
                             }
 
-                            if (!$singleEntryId) {
-                                // Create it, baby
-                                $singleEntry = new Entry();
-                                $singleEntry->locale = $firstSectionLocale->locale;
-                                $singleEntry->sectionId = $section->id;
-                                $singleEntry->typeId = $entryTypeId;
-                                $singleEntry->title = $section->name;
-                                Craft::$app->getEntries()->saveEntry($singleEntry);
-                            }
+                            // Make sure it's enabled and all that.
 
-                            break;
+                            $db->createCommand()
+                                ->update(
+                                    '{{%elements}}',
+                                    [
+                                        'enabled' => 1,
+                                        'archived' => 0,
+                                    ],
+                                    [
+                                        'id' => $singleEntryId
+                                    ])
+                                ->execute();
+
+                            $db->createCommand()
+                                ->update(
+                                    '{{%entries}}',
+                                    [
+                                        'typeId' => $entryTypeId,
+                                        'authorId' => null,
+                                        'postDate' => Db::prepareDateForDb(new \DateTime()),
+                                        'expiryDate' => null,
+                                    ],
+                                    [
+                                        'id' => $singleEntryId
+                                    ])
+                                ->execute();
                         }
 
-                        case Section::TYPE_STRUCTURE: {
-                            /** @noinspection PhpUndefinedVariableInspection */
-                            if (!$isNewSection && $isNewStructure) {
-                                // Add all of the entries to the structure
-                                /** @noinspection PhpUndefinedVariableInspection */
-                                $query = Entry::find()
-                                    ->locale(ArrayHelper::getFirstKey($oldSectionLocales))
-                                    ->sectionId($section->id)
-                                    ->status(null)
-                                    ->localeEnabled(false)
-                                    ->orderBy('elements.id');
-
-                                /** @var Entry $entry */
-                                foreach ($query->each() as $entry) {
-                                    Craft::$app->getStructures()->appendToRoot($section->structureId, $entry, 'insert');
-                                }
-                            }
-
-                            break;
-                        }
-                    }
-
-                    // Finally, deal with the existing entries...
-
-                    if (!$isNewSection) {
-                        // Get the most-primary locale that this section was already enabled in
+                        // Make sure there's only one entry type for this section
                         /** @noinspection PhpUndefinedVariableInspection */
-                        $locales = array_values(array_intersect(Craft::$app->i18n->getSiteLocaleIds(), array_keys($oldSectionLocales)));
-
-                        if ($locales) {
-                            Craft::$app->getTasks()->queueTask([
-                                'type' => ResaveElements::className(),
-                                'description' => Craft::t('app', 'Resaving {section} entries', ['section' => $section->name]),
-                                'elementType' => Entry::className(),
-                                'criteria' => [
-                                    'locale' => $locales[0],
-                                    'sectionId' => $section->id,
-                                    'status' => null,
-                                    'localeEnabled' => false,
-                                    'limit' => null,
-                                ]
-                            ]);
+                        if ($entryTypeIds) {
+                            foreach ($entryTypeIds as $entryTypeId) {
+                                $this->deleteEntryTypeById($entryTypeId);
+                            }
                         }
                     }
 
-                    $success = true;
-                } else {
-                    $success = false;
+                    if (!$singleEntryId) {
+                        // Create it
+                        $firstSiteSettings = ArrayHelper::getFirstValue($allSiteSettings);
+                        $singleEntry = new Entry();
+                        $singleEntry->siteId = $firstSiteSettings->siteId;
+                        $singleEntry->sectionId = $section->id;
+                        $singleEntry->typeId = $entryTypeId;
+                        $singleEntry->title = $section->name;
+                        Craft::$app->getElements()->saveElement($singleEntry, false);
+                    }
+
+                    break;
                 }
 
-                // Commit the transaction regardless of whether we saved the section, in case something changed
-                // in onBeforeSaveSection
-                $transaction->commit();
-            } catch (\Exception $e) {
-                $transaction->rollBack();
+                case Section::TYPE_STRUCTURE: {
+                    /** @noinspection PhpUndefinedVariableInspection */
+                    if (!$isNewSection && $isNewStructure) {
+                        // Add all of the entries to the structure
+                        /** @noinspection PhpUndefinedVariableInspection */
+                        $query = Entry::find()
+                            ->siteId(ArrayHelper::getFirstKey($allOldSiteSettingsRecords))
+                            ->sectionId($section->id)
+                            ->status(null)
+                            ->enabledForSite(false)
+                            ->orderBy('elements.id');
 
-                throw $e;
+                        /** @var Entry $entry */
+                        foreach ($query->each() as $entry) {
+                            Craft::$app->getStructures()->appendToRoot($section->structureId, $entry, 'insert');
+                        }
+                    }
+
+                    break;
+                }
             }
-        } else {
-            $success = false;
+
+            // Finally, deal with the existing entries...
+            // -----------------------------------------------------------------
+
+            if (!$isNewSection) {
+                // Get the most-primary site that this section was already enabled in
+                /** @noinspection PhpUndefinedVariableInspection */
+                $siteIds = array_values(array_intersect(Craft::$app->getSites()->getAllSiteIds(), array_keys($allOldSiteSettingsRecords)));
+
+                if ($siteIds) {
+                    Craft::$app->getTasks()->queueTask([
+                        'type' => ResaveElements::class,
+                        'description' => Craft::t('app', 'Resaving {section} entries', ['section' => $section->name]),
+                        'elementType' => Entry::class,
+                        'criteria' => [
+                            'siteId' => $siteIds[0],
+                            'sectionId' => $section->id,
+                            'status' => null,
+                            'enabledForSite' => false,
+                            'limit' => null,
+                        ]
+                    ]);
+                }
+            }
+
+            $transaction->commit();
+        } catch (\Exception $e) {
+            $transaction->rollBack();
+
+            throw $e;
         }
 
-        if ($success) {
-            // Fire an 'afterSaveSection' event
-            $this->trigger(self::EVENT_AFTER_SAVE_SECTION, new SectionEvent([
-                'section' => $section,
-                'isNew' => $isNewSection
-            ]));
-        }
+        // Fire an 'afterSaveSection' event
+        $this->trigger(self::EVENT_AFTER_SAVE_SECTION, new SectionEvent([
+            'section' => $section,
+            'isNew' => $isNewSection
+        ]));
 
-        return $success;
+        return true;
     }
 
     /**
@@ -808,33 +707,35 @@ class Sections extends Component
      */
     public function deleteSectionById($sectionId)
     {
-        if (!$sectionId) {
-            return false;
-        }
-
         $section = $this->getSectionById($sectionId);
 
         if (!$section) {
             return false;
         }
 
+        return $this->deleteSection($section);
+    }
+
+    /**
+     * Deletes a section.
+     *
+     * @param Section $section
+     *
+     * @return boolean Whether the section was deleted successfully
+     * @throws \Exception if reasons
+     */
+    public function deleteSection(Section $section)
+    {
         // Fire a 'beforeDeleteSection' event
-        $event = new DeleteSectionEvent([
+        $this->trigger(self::EVENT_BEFORE_DELETE_SECTION, new SectionEvent([
             'section' => $section
-        ]);
-
-        $this->trigger(self::EVENT_BEFORE_DELETE_SECTION, $event);
-
-        // Make sure the event is giving us the go ahead
-        if (!$event->isValid) {
-            return false;
-        }
+        ]));
 
         $transaction = Craft::$app->getDb()->beginTransaction();
         try {
             // Nuke the field layouts first.
             $entryTypeIds = [];
-            $entryTypes = $this->getEntryTypesBySectionId($sectionId);
+            $entryTypes = $this->getEntryTypesBySectionId($section->id);
 
             foreach ($entryTypes as $entryType) {
                 $entryTypeIds[] = $entryType->id;
@@ -851,20 +752,22 @@ class Sections extends Component
                 Craft::$app->getFields()->deleteLayoutById($fieldLayoutIds);
             }
 
-            // Grab the entry ids so we can clean the elements table.
-            $entryIds = (new Query())
-                ->select('id')
-                ->from('{{%entries}}')
-                ->where(['sectionId' => $sectionId])
-                ->column();
+            // Delete the entries
+            $entries = Entry::find()
+                ->status(null)
+                ->enabledForSite(false)
+                ->sectionId($section->id)
+                ->all();
 
-            Craft::$app->getElements()->deleteElementById($entryIds);
+            foreach ($entries as $entry) {
+                Craft::$app->getElements()->deleteElement($entry);
+            }
 
             // Delete the structure, if there is one
             $structureId = (new Query())
                 ->select('structureId')
                 ->from('{{%sections}}')
-                ->where(['id' => $sectionId])
+                ->where(['id' => $section->id])
                 ->scalar();
 
             if ($structureId) {
@@ -873,42 +776,44 @@ class Sections extends Component
 
             // Delete the section.
             Craft::$app->getDb()->createCommand()
-                ->delete('{{%sections}}', ['id' => $sectionId])
+                ->delete('{{%sections}}', ['id' => $section->id])
                 ->execute();
 
             $transaction->commit();
-
-            // Fire an 'afterDeleteSection' event
-            $this->trigger(self::EVENT_AFTER_DELETE_SECTION,
-                new DeleteSectionEvent([
-                    'section' => $section
-                ]));
-
-            return true;
         } catch (\Exception $e) {
             $transaction->rollBack();
 
             throw $e;
         }
+
+        // Fire an 'afterDeleteSection' event
+        $this->trigger(self::EVENT_AFTER_DELETE_SECTION, new SectionEvent([
+            'section' => $section
+        ]));
+
+        return true;
     }
 
     /**
-     * Returns whether a section’s entries have URLs, and if the section’s template path is valid.
+     * Returns whether a section’s entries have URLs for the given site ID, and if the section’s template path is valid.
      *
      * @param Section $section
+     * @param integer $siteId
      *
      * @return boolean
      */
-    public function isSectionTemplateValid(Section $section)
+    public function isSectionTemplateValid(Section $section, $siteId)
     {
-        if ($section->hasUrls) {
+        $sectionSiteSettings = $section->getSiteSettings();
+
+        if (isset($sectionSiteSettings[$siteId]) && $sectionSiteSettings[$siteId]->hasUrls) {
             // Set Craft to the site template mode
             $view = Craft::$app->getView();
             $oldTemplateMode = $view->getTemplateMode();
             $view->setTemplateMode($view::TEMPLATE_MODE_SITE);
 
             // Does the template exist?
-            $templateExists = Craft::$app->getView()->doesTemplateExist($section->template);
+            $templateExists = Craft::$app->getView()->doesTemplateExist($sectionSiteSettings[$siteId]->template);
 
             // Restore the original template mode
             $view->setTemplateMode($oldTemplateMode);
@@ -930,21 +835,30 @@ class Sections extends Component
      * @param integer     $sectionId
      * @param string|null $indexBy
      *
-     * @return array
+     * @return EntryType[]
      */
     public function getEntryTypesBySectionId($sectionId, $indexBy = null)
     {
-        $entryTypes = EntryTypeRecord::find()
+        $entryTypeRecords = EntryTypeRecord::find()
             ->where(['sectionId' => $sectionId])
             ->orderBy('sortOrder')
             ->indexBy($indexBy)
             ->all();
 
-        foreach ($entryTypes as $key => $value) {
-            $entryTypes[$key] = EntryType::create($value);
+        foreach ($entryTypeRecords as $key => $entryTypeRecord) {
+            $entryTypeRecords[$key] = new EntryType($entryTypeRecord->toArray([
+                'id',
+                'sectionId',
+                'fieldLayoutId',
+                'name',
+                'handle',
+                'hasTitleField',
+                'titleLabel',
+                'titleFormat',
+            ]));
         }
 
-        return $entryTypes;
+        return $entryTypeRecords;
     }
 
     /**
@@ -956,13 +870,24 @@ class Sections extends Component
      */
     public function getEntryTypeById($entryTypeId)
     {
-        if (!isset($this->_entryTypesById) || !array_key_exists($entryTypeId,
-                $this->_entryTypesById)
-        ) {
+        if (!$entryTypeId) {
+            return null;
+        }
+
+        if (!isset($this->_entryTypesById) || !array_key_exists($entryTypeId, $this->_entryTypesById)) {
             $entryTypeRecord = EntryTypeRecord::findOne($entryTypeId);
 
             if ($entryTypeRecord) {
-                $this->_entryTypesById[$entryTypeId] = EntryType::create($entryTypeRecord);
+                $this->_entryTypesById[$entryTypeId] = new EntryType($entryTypeRecord->toArray([
+                    'id',
+                    'sectionId',
+                    'fieldLayoutId',
+                    'name',
+                    'handle',
+                    'hasTitleField',
+                    'titleLabel',
+                    'titleFormat',
+                ]));
             } else {
                 $this->_entryTypesById[$entryTypeId] = null;
             }
@@ -987,7 +912,16 @@ class Sections extends Component
         ]);
 
         foreach ($entryTypeRecords as $record) {
-            $entryTypes[] = EntryType::create($record);
+            $entryTypes[] = new EntryType($record->toArray([
+                'id',
+                'sectionId',
+                'fieldLayoutId',
+                'name',
+                'handle',
+                'hasTitleField',
+                'titleLabel',
+                'titleFormat',
+            ]));
         }
 
         return $entryTypes;
@@ -996,15 +930,28 @@ class Sections extends Component
     /**
      * Saves an entry type.
      *
-     * @param EntryType $entryType
+     * @param EntryType $entryType     The entry type to be saved
+     * @param boolean   $runValidation Whether the entry type should be validated
      *
      * @return boolean Whether the entry type was saved successfully
      * @throws EntryTypeNotFoundException if $entryType->id is invalid
      * @throws \Exception if reasons
      */
-    public function saveEntryType(EntryType $entryType)
+    public function saveEntryType(EntryType $entryType, $runValidation = true)
     {
+        if ($runValidation && !$entryType->validate()) {
+            Craft::info('Entry type not saved due to validation error.', __METHOD__);
+
+            return false;
+        }
+
         $isNewEntryType = !$entryType->id;
+
+        // Fire a 'beforeSaveEntryType' event
+        $this->trigger(self::EVENT_BEFORE_SAVE_ENTRY_TYPE, new EntryTypeEvent([
+            'entryType' => $entryType,
+            'isNew' => $isNewEntryType,
+        ]));
 
         if ($entryType->id) {
             $entryTypeRecord = EntryTypeRecord::findOne($entryType->id);
@@ -1013,7 +960,16 @@ class Sections extends Component
                 throw new EntryTypeNotFoundException("No entry type exists with the ID '{$entryType->id}'");
             }
 
-            $oldEntryType = EntryType::create($entryTypeRecord);
+            $oldEntryType = new EntryType($entryTypeRecord->toArray([
+                'id',
+                'sectionId',
+                'fieldLayoutId',
+                'name',
+                'handle',
+                'hasTitleField',
+                'titleLabel',
+                'titleFormat',
+            ]));
         } else {
             $entryTypeRecord = new EntryTypeRecord();
 
@@ -1034,79 +990,52 @@ class Sections extends Component
         $entryTypeRecord->titleLabel = ($entryType->hasTitleField ? $entryType->titleLabel : null);
         $entryTypeRecord->titleFormat = (!$entryType->hasTitleField ? $entryType->titleFormat : null);
 
-        $entryTypeRecord->validate();
-        $entryType->addErrors($entryTypeRecord->getErrors());
+        $transaction = Craft::$app->getDb()->beginTransaction();
 
-        if (!$entryType->hasErrors()) {
-            $transaction = Craft::$app->getDb()->beginTransaction();
+        try {
+            // Is there a new field layout?
+            $fieldLayout = $entryType->getFieldLayout();
 
-            try {
-                // Fire a 'beforeSaveEntryType' event
-                $event = new EntryTypeEvent([
-                    'entryType' => $entryType,
-                    'isNew' => $isNewEntryType,
-                ]);
-
-                $this->trigger(self::EVENT_BEFORE_SAVE_ENTRY_TYPE, $event);
-
-                // Is the event giving us the go-ahead?
-                if ($event->isValid) {
-                    // Is there a new field layout?
-                    $fieldLayout = $entryType->getFieldLayout();
-
-                    if (!$fieldLayout->id) {
-                        // Delete the old one
-                        /** @noinspection PhpUndefinedVariableInspection */
-                        if (!$isNewEntryType && $oldEntryType->fieldLayoutId) {
-                            Craft::$app->getFields()->deleteLayoutById($oldEntryType->fieldLayoutId);
-                        }
-
-                        // Save the new one
-                        Craft::$app->getFields()->saveLayout($fieldLayout);
-
-                        // Update the entry type record/model with the new layout ID
-                        $entryType->fieldLayoutId = $fieldLayout->id;
-                        $entryTypeRecord->fieldLayoutId = $fieldLayout->id;
-                    }
-
-                    // Save the entry type
-                    $entryTypeRecord->save(false);
-
-                    // Now that we have an entry type ID, save it on the model
-                    if (!$entryType->id) {
-                        $entryType->id = $entryTypeRecord->id;
-                    }
-
-                    // Might as well update our cache of the entry type while we have it.
-                    $this->_entryTypesById[$entryType->id] = $entryType;
-
-                    $success = true;
-                } else {
-                    $success = false;
+            if (!$fieldLayout->id) {
+                // Delete the old one
+                /** @noinspection PhpUndefinedVariableInspection */
+                if (!$isNewEntryType && $oldEntryType->fieldLayoutId) {
+                    Craft::$app->getFields()->deleteLayoutById($oldEntryType->fieldLayoutId);
                 }
 
-                // Commit the transaction regardless of whether we saved the user, in case something changed
-                // in onBeforeSaveEntryType
-                $transaction->commit();
-            } catch (\Exception $e) {
-                $transaction->rollBack();
+                // Save the new one
+                Craft::$app->getFields()->saveLayout($fieldLayout);
 
-                throw $e;
+                // Update the entry type record/model with the new layout ID
+                $entryType->fieldLayoutId = $fieldLayout->id;
+                $entryTypeRecord->fieldLayoutId = $fieldLayout->id;
             }
-        } else {
-            $success = false;
+
+            // Save the entry type
+            $entryTypeRecord->save(false);
+
+            // Now that we have an entry type ID, save it on the model
+            if (!$entryType->id) {
+                $entryType->id = $entryTypeRecord->id;
+            }
+
+            // Might as well update our cache of the entry type while we have it.
+            $this->_entryTypesById[$entryType->id] = $entryType;
+
+            $transaction->commit();
+        } catch (\Exception $e) {
+            $transaction->rollBack();
+
+            throw $e;
         }
 
-        if ($success) {
-            // Fire an 'afterSaveEntryType' event
-            $this->trigger(self::EVENT_AFTER_SAVE_ENTRY_TYPE,
-                new EntryTypeEvent([
-                    'entryType' => $entryType,
-                    'isNew' => $isNewEntryType,
-                ]));
-        }
+        // Fire an 'afterSaveEntryType' event
+        $this->trigger(self::EVENT_AFTER_SAVE_ENTRY_TYPE, new EntryTypeEvent([
+            'entryType' => $entryType,
+            'isNew' => $isNewEntryType,
+        ]));
 
-        return $success;
+        return true;
     }
 
     /**
@@ -1139,118 +1068,81 @@ class Sections extends Component
     }
 
     /**
-     * Deletes an entry type(s) by its ID.
+     * Deletes an entry type by its ID.
      *
-     * @param integer|array $entryTypeId
+     * @param integer $entryTypeId
      *
      * @return boolean Whether the entry type was deleted successfully
      * @throws \Exception if reasons
      */
     public function deleteEntryTypeById($entryTypeId)
     {
-        if (!$entryTypeId) {
+        $entryType = $this->getEntryTypeById($entryTypeId);
+
+        if (!$entryType) {
             return false;
         }
 
-        $success = false;
-        $entryType = $this->getEntryTypeById($entryTypeId);
-
-        // Fire a 'beforeSaveEntryType' event
-        $event = new EntryTypeDeleteEvent([
-            'entryType' => $entryType,
-        ]);
-
-        $this->trigger(self::EVENT_BEFORE_DELETE_ENTRY_TYPE, $event);
-
-        // Is the event giving us the go-ahead?
-        if ($event->isValid) {
-            $transaction = Craft::$app->getDb()->beginTransaction();
-            try {
-                // Delete the field layout
-                $query = (new Query())
-                    ->select('fieldLayoutId')
-                    ->from('{{%entrytypes}}');
-
-                if (is_array($entryTypeId)) {
-                    $query->where(['in', 'id', $entryTypeId]);
-                } else {
-                    $query->where(['id' => $entryTypeId]);
-                }
-
-                $fieldLayoutIds = $query->column();
-
-                if ($fieldLayoutIds) {
-                    Craft::$app->getFields()->deleteLayoutById($fieldLayoutIds);
-                }
-
-                // Grab the entry IDs so we can clean the elements table.
-                $query = (new Query())
-                    ->select('id')
-                    ->from('{{%entries}}');
-
-                if (is_array($entryTypeId)) {
-                    $query->where(['in', 'typeId', $entryTypeId]);
-                } else {
-                    $query->where(['typeId' => $entryTypeId]);
-                }
-
-                $entryIds = $query->column();
-
-                Craft::$app->getElements()->deleteElementById($entryIds);
-
-                // Delete the entry type.
-                if (is_array($entryTypeId)) {
-                    Craft::$app->getDb()->createCommand()
-                        ->delete('{{%entrytypes}}', ['in', 'id', $entryTypeId])
-                        ->execute();
-                } else {
-                    Craft::$app->getDb()->createCommand()
-                        ->delete('{{%entrytypes}}', ['id' => $entryTypeId])
-                        ->execute();
-                }
-
-                $transaction->commit();
-                $success = true;
-            } catch (\Exception $e) {
-                $transaction->rollBack();
-
-                throw $e;
-            }
-        }
-
-        if ($success) {
-            // Fire an 'afterDeleteEntryType' event
-            $this->trigger(self::EVENT_AFTER_DELETE_ENTRY_TYPE,
-                new EntryTypeEvent([
-                    'entryType' => $entryType,
-                ]));
-        }
-
-        return $success;
+        return $this->deleteEntryType($entryType);
     }
 
-    // Helpers
-    // -------------------------------------------------------------------------
-
     /**
-     * Returns whether a homepage section exists.
+     * Deletes an entry type.
      *
-     * @return boolean
+     * @param EntryType $entryType
+     *
+     * @return boolean Whether the entry type was deleted successfully
+     * @throws \Exception if reasons
      */
-    public function doesHomepageExist()
+    public function deleteEntryType(EntryType $entryType)
     {
-        $conditions = [
-            'and',
-            'sections.type = :type',
-            'sections_i18n.urlFormat = :homeUri'
-        ];
-        $params = [':type' => Section::TYPE_SINGLE, ':homeUri' => '__home__'];
+        // Fire a 'beforeSaveEntryType' event
+        $this->trigger(self::EVENT_BEFORE_DELETE_ENTRY_TYPE, new EntryTypeEvent([
+            'entryType' => $entryType,
+        ]));
 
-        return (new Query())
-            ->from('{{%sections}} sections')
-            ->innerJoin('{{%sections_i18n}} sections_i18n', 'sections_i18n.sectionId = sections.id')
-            ->where($conditions, $params)
-            ->exists();
+        $transaction = Craft::$app->getDb()->beginTransaction();
+        try {
+            // Delete the field layout
+            $fieldLayoutId = (new Query())
+                ->select('fieldLayoutId')
+                ->from('{{%entrytypes}}')
+                ->where(['id' => $entryType->id])
+                ->scalar();
+
+            if ($fieldLayoutId) {
+                Craft::$app->getFields()->deleteLayoutById($fieldLayoutId);
+            }
+
+            // Delete the entries
+            $entries = Entry::find()
+                ->status(null)
+                ->enabledForSite(false)
+                ->typeId($entryType->id)
+                ->all();
+
+            foreach ($entries as $entry) {
+                Craft::$app->getElements()->deleteElement($entry);
+            }
+
+            // Delete the entry type.
+            Craft::$app->getDb()->createCommand()
+                ->delete('{{%entrytypes}}', ['id' => $entryType->id])
+                ->execute();
+
+            $transaction->commit();
+        } catch (\Exception $e) {
+            $transaction->rollBack();
+
+            throw $e;
+        }
+
+        // Fire an 'afterDeleteEntryType' event
+        $this->trigger(self::EVENT_AFTER_DELETE_ENTRY_TYPE, new EntryTypeEvent([
+            'entryType' => $entryType,
+        ]));
+
+        return true;
     }
 
     // Private Methods
@@ -1264,7 +1156,7 @@ class Sections extends Component
     private function _createSectionQuery()
     {
         return (new Query())
-            ->select('sections.id, sections.structureId, sections.name, sections.handle, sections.type, sections.hasUrls, sections.template, sections.enableVersioning, structures.maxLevels')
+            ->select('sections.id, sections.structureId, sections.name, sections.handle, sections.type, sections.enableVersioning, structures.maxLevels')
             ->leftJoin('{{%structures}} structures', 'structures.id = sections.structureId')
             ->from('{{%sections}} sections')
             ->orderBy('name');

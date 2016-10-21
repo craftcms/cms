@@ -70,7 +70,7 @@ class FindAndReplace extends Task
             /** @var Matrix $matrixField */
             $matrixField = Craft::$app->getFields()->getFieldById($this->matrixFieldId);
 
-            if (!$matrixField || $matrixField->type != 'Matrix') {
+            if (!$matrixField || get_class($matrixField) != Matrix::class) {
                 return 0;
             }
 
@@ -120,7 +120,7 @@ class FindAndReplace extends Task
                 if ($field) {
                     /** @var Field $field */
                     return $this->runSubTask([
-                        'type' => FindAndReplace::className(),
+                        'type' => FindAndReplace::class,
                         'description' => Craft::t('app', 'Working in Matrix field “{field}”', ['field' => $field->name]),
                         'find' => $this->find,
                         'replace' => $this->replace,

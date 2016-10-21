@@ -21,7 +21,7 @@ trait MissingComponentTrait
     /**
      * @var string|Component The expected component class name.
      */
-    public $type;
+    public $expectedType;
 
     /**
      * @var string The exception message that explains why the component class was invalid
@@ -32,17 +32,4 @@ trait MissingComponentTrait
      * @var mixed The custom settings associated with the component, if it is savable
      */
     public $settings;
-
-    // Public Methods
-    // =========================================================================
-
-    /**
-     * Returns the expected component class name.
-     *
-     * @return string
-     */
-    public function getType()
-    {
-        return $this->type;
-    }
 }

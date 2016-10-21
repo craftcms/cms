@@ -17,13 +17,14 @@ use craft\app\db\ActiveRecord;
  * @property integer $entryId   Entry ID
  * @property integer $sectionId Section ID
  * @property integer $creatorId Creator ID
- * @property Locale  $locale    Locale
+ * @property integer $siteId    Site ID
  * @property string  $name      Name
  * @property string  $notes     Notes
  * @property array   $data      Data
  * @property Entry   $entry     Entry
  * @property Section $section   Section
  * @property User    $creator   Creator
+ * @property Site    $site      Site
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since  3.0
@@ -32,17 +33,6 @@ class EntryDraft extends ActiveRecord
 {
     // Public Methods
     // =========================================================================
-
-    /**
-     * @inheritdoc
-     */
-    public function rules()
-    {
-        return [
-            [['locale'], 'craft\\app\\validators\\Locale'],
-            [['locale', 'name', 'data'], 'required'],
-        ];
-    }
 
     /**
      * @inheritdoc
@@ -61,7 +51,7 @@ class EntryDraft extends ActiveRecord
      */
     public function getEntry()
     {
-        return $this->hasOne(Entry::className(), ['id' => 'entryId']);
+        return $this->hasOne(Entry::class, ['id' => 'entryId']);
     }
 
     /**
@@ -71,7 +61,7 @@ class EntryDraft extends ActiveRecord
      */
     public function getSection()
     {
-        return $this->hasOne(Section::className(), ['id' => 'sectionId']);
+        return $this->hasOne(Section::class, ['id' => 'sectionId']);
     }
 
     /**
@@ -81,16 +71,16 @@ class EntryDraft extends ActiveRecord
      */
     public function getCreator()
     {
-        return $this->hasOne(User::className(), ['id' => 'creatorId']);
+        return $this->hasOne(User::class, ['id' => 'creatorId']);
     }
 
     /**
-     * Returns the entry draft’s locale.
+     * Returns the associated site.
      *
      * @return ActiveQueryInterface The relational query object.
      */
-    public function getLocale()
+    public function getSite()
     {
-        return $this->hasOne(Locale::className(), ['id' => 'locale']);
+        return $this->hasOne(Site::class, ['id' => 'siteId']);
     }
 }

@@ -30,36 +30,6 @@ class TagGroup extends ActiveRecord
 
     /**
      * @inheritdoc
-     */
-    public function rules()
-    {
-        return [
-            [
-                ['handle'],
-                'craft\\app\\validators\\Handle',
-                'reservedWords' => [
-                    'id',
-                    'dateCreated',
-                    'dateUpdated',
-                    'uid',
-                    'title'
-                ]
-            ],
-            [
-                ['fieldLayoutId'],
-                'number',
-                'min' => -2147483648,
-                'max' => 2147483647,
-                'integerOnly' => true
-            ],
-            [['name', 'handle'], 'unique'],
-            [['name', 'handle'], 'required'],
-            [['name', 'handle'], 'string', 'max' => 255],
-        ];
-    }
-
-    /**
-     * @inheritdoc
      *
      * @return string
      */
@@ -75,7 +45,7 @@ class TagGroup extends ActiveRecord
      */
     public function getFieldLayout()
     {
-        return $this->hasOne(FieldLayout::className(),
+        return $this->hasOne(FieldLayout::class,
             ['id' => 'fieldLayoutId']);
     }
 
@@ -86,6 +56,6 @@ class TagGroup extends ActiveRecord
      */
     public function getTags()
     {
-        return $this->hasMany(Tag::className(), ['groupId' => 'id']);
+        return $this->hasMany(Tag::class, ['groupId' => 'id']);
     }
 }

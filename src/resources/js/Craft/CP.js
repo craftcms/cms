@@ -812,22 +812,25 @@ Craft.CP = Garnish.Base.extend(
 
 		this.trackTaskProgressTimeout = setTimeout($.proxy(function()
 		{
-			Craft.queueActionRequest('tasks/get-running-task-info', $.proxy(function(taskInfo, textStatus)
+			Craft.queueActionRequest('tasks/get-running-task-info', $.proxy(function(response, textStatus)
 			{
 				if (textStatus == 'success')
 				{
 					this.trackTaskProgressTimeout = null;
-					this.setRunningTaskInfo(taskInfo, true);
+					this.setRunningTaskInfo(response.task, true);
 
-					if (taskInfo.status == 'running')
+					if (response.task)
 					{
-						// Check again in one second
-						this.trackTaskProgress();
-					}
-					else if (taskInfo.status == 'pending')
-					{
-						// Check again in 30 seconds
-						this.trackTaskProgress(30000);
+						if (response.task.status == 'running')
+						{
+							// Check again in one second
+							this.trackTaskProgress();
+						}
+						else if (response.task.status == 'pending')
+						{
+							// Check again in 30 seconds
+							this.trackTaskProgress(30000);
+						}
 					}
 				}
 			}, this));
@@ -1215,11 +1218,11 @@ var TaskProgressHUD = Garnish.HUD.extend(
 	{
 		this.completed = false;
 
-		Craft.postActionRequest('tasks/get-task-info', $.proxy(function(taskInfo, textStatus)
+		Craft.postActionRequest('tasks/get-task-info', $.proxy(function(response, textStatus)
 		{
 			if (textStatus == 'success')
 			{
-				this.showTaskInfo(taskInfo);
+				this.showTaskInfo(response.tasks);
 			}
 		}, this));
 	},
@@ -1434,11 +1437,11 @@ TaskProgressHUD.Task = Garnish.Base.extend(
 		{
 			case 'rerun':
 			{
-				Craft.postActionRequest('tasks/rerun-task', { taskId: this.id }, $.proxy(function(taskInfo, textStatus)
+				Craft.postActionRequest('tasks/rerun-task', { taskId: this.id }, $.proxy(function(response, textStatus)
 				{
 					if (textStatus == 'success')
 					{
-						this.updateStatus(taskInfo);
+						this.updateStatus(response.task);
 
 						if (this.hud.completed)
 						{
@@ -1450,7 +1453,7 @@ TaskProgressHUD.Task = Garnish.Base.extend(
 			}
 			case 'cancel':
 			{
-				Craft.postActionRequest('tasks/delete-task', { taskId: this.id }, $.proxy(function(taskInfo, textStatus)
+				Craft.postActionRequest('tasks/delete-task', { taskId: this.id }, $.proxy(function(response, textStatus)
 				{
 					if (textStatus == 'success')
 					{

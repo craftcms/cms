@@ -12,12 +12,12 @@ use craft\app\base\Plugin;
 use craft\app\base\PluginInterface;
 use craft\app\enums\PluginUpdateStatus;
 use craft\app\enums\VersionUpdateStatus;
-use craft\app\events\Event;
 use craft\app\events\UpdateEvent;
 use craft\app\helpers\DateTimeHelper;
 use craft\app\helpers\Io;
 use craft\app\helpers\Json;
 use craft\app\helpers\Update as UpdateHelper;
+use craft\app\i18n\Locale;
 use craft\app\models\AppUpdate;
 use craft\app\models\Et;
 use craft\app\models\PluginNewRelease;
@@ -58,14 +58,14 @@ class Updates extends Component
     const EVENT_BEFORE_UPDATE = 'beforeUpdate';
 
     /**
-     * @event Event The event that is triggered after an update is installed.
+     * @event UpdateEvent The event that is triggered after an update is installed.
      */
     const EVENT_AFTER_UPDATE = 'afterUpdate';
 
     /**
-     * @event Event The event that is triggered after an update has failed to install.
+     * @event UpdateEvent The event that is triggered after an update has failed to install.
      */
-    const EVENT_AFTER_UPDATE_FAIL = 'afterUpdateFail';
+    const EVENT_UPDATE_FAILURE = 'updateFailure';
 
     // Properties
     // =========================================================================
@@ -293,7 +293,7 @@ class Updates extends Component
 
         foreach ($plugins as $plugin) {
             $pluginUpdateModel = new PluginUpdate();
-            $pluginUpdateModel->class = $plugin::className();
+            $pluginUpdateModel->class = $plugin->getHandle();
             $pluginUpdateModel->localVersion = $plugin->version;
 
             $pluginUpdateModels[$plugin::className()] = $pluginUpdateModel;
@@ -475,7 +475,7 @@ class Updates extends Component
                     $releaseModel = new PluginNewRelease();
                     $releaseModel->version = $release['version'];
                     $releaseModel->date = $date;
-                    $releaseModel->localizedDate = $date->localeDate();
+                    $releaseModel->localizedDate = Craft::$app->getFormatter()->asDate($date, Locale::LENGTH_SHORT);
                     $releaseModel->notes = $notes;
                     $releaseModel->critical = $critical;
                     $releaseModel->manualDownloadEndpoint = $release['downloadUrl'];
@@ -545,12 +545,13 @@ class Updates extends Component
     {
         Craft::info('Preparing to update '.$handle.'.', __METHOD__);
 
-        try {
-            // Fire a 'beforeUpdate' event and pass in the type
-            $this->trigger(self::EVENT_BEFORE_UPDATE, new UpdateEvent([
-                'type' => $manual ? 'manual' : 'auto'
-            ]));
+        // Fire a 'beforeUpdate' event
+        $this->trigger(self::EVENT_BEFORE_UPDATE, new UpdateEvent([
+            'type' => $manual ? 'manual' : 'auto',
+            'handle' => $handle,
+        ]));
 
+        try {
             $updater = new Updater();
 
             // Make sure we still meet the existing requirements. This will throw an exception if the server doesn't meet Craft's current requirements.
@@ -565,19 +566,19 @@ class Updates extends Component
                 } else {
                     $latestVersion = null;
                     $localVersion = null;
-                    $class = null;
+                    $handle = null;
 
                     foreach ($updateModel->plugins as $pluginUpdateModel) {
                         if (strtolower($pluginUpdateModel->class) === $handle) {
                             $latestVersion = $pluginUpdateModel->latestVersion;
                             $localVersion = $pluginUpdateModel->localVersion;
-                            $class = $pluginUpdateModel->class;
+                            $handle = $pluginUpdateModel->class;
 
                             break;
                         }
                     }
 
-                    Craft::info('Updating plugin "'.$class.'" from '.$localVersion.' to '.$latestVersion.'.');
+                    Craft::info('Updating plugin "'.$handle.'" from '.$localVersion.' to '.$latestVersion.'.');
                 }
 
                 $result = $updater->getUpdateFileInfo($handle);
@@ -746,13 +747,19 @@ class Updates extends Component
             $updater = new Updater();
             $updater->cleanUp($uid, $handle);
 
+            // Take the site out of maintenance mode.
+            Craft::info('Taking the site out of maintenance mode.', __METHOD__);
+            Craft::$app->disableMaintenanceMode();
+
             Craft::info('Finished cleaning up after the update.', __METHOD__);
         } catch (\Exception $e) {
             Craft::info('There was an error during cleanup, but we don\'t really care: '.$e->getMessage(), __METHOD__);
         }
 
         // Fire an 'afterUpdate' event
-        $this->trigger(self::EVENT_AFTER_UPDATE, new Event());
+        $this->trigger(self::EVENT_AFTER_UPDATE, new UpdateEvent([
+            'handle' => $handle,
+        ]));
     }
 
     /**
@@ -765,8 +772,10 @@ class Updates extends Component
     public function rollbackUpdate($uid, $handle, $dbBackupPath = false)
     {
         try {
-            // Fire an 'afterUpdateFail' event
-            $this->trigger(self::EVENT_AFTER_UPDATE_FAIL, new Event());
+            // Fire an 'updateFailure' event
+            $this->trigger(self::EVENT_UPDATE_FAILURE, new UpdateEvent([
+                'handle' => $handle,
+            ]));
 
             Craft::$app->getConfig()->maxPowerCaptain();
 

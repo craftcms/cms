@@ -198,11 +198,15 @@ Craft.BaseElementSelectorModal = Garnish.Modal.extend(
 			sources:     this.settings.sources
 		};
 
+		if (this.settings.showSiteMenu !== null && this.settings.showSiteMenu != 'auto') {
+ 			data.showSiteMenu = this.settings.showSiteMenu ? '1' : '0';
+ 		}
+
 		Craft.postActionRequest('elements/get-modal-body', data, $.proxy(function(response, textStatus)
 		{
 			if (textStatus == 'success')
 			{
-				this.$body.html(response);
+				this.$body.html(response.html);
 
 				if (this.$body.has('.sidebar:not(.hidden)').length)
 				{
@@ -222,7 +226,6 @@ Craft.BaseElementSelectorModal = Garnish.Modal.extend(
 				});
 
 				// Double-clicking or double-tapping should select the elements
-				this.addListener(this.elementIndex.$elements, 'dblclick', 'selectElements');
 				this.addListener(this.elementIndex.$elements, 'doubletap', 'selectElements');
 			}
 
@@ -236,6 +239,7 @@ Craft.BaseElementSelectorModal = Garnish.Modal.extend(
 		sources: null,
 		criteria: null,
 		multiSelect: false,
+		showSiteMenu: null,
 		disabledElementIds: [],
 		disableElementsOnSelect: false,
 		hideOnSelect: true,

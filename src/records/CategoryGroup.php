@@ -13,17 +13,15 @@ use craft\app\db\ActiveRecord;
 /**
  * Class CategoryGroup record.
  *
- * @property integer               $id            ID
- * @property integer               $structureId   Structure ID
- * @property integer               $fieldLayoutId Field layout ID
- * @property string                $name          Name
- * @property string                $handle        Handle
- * @property boolean               $hasUrls       Has URLs
- * @property string                $template      Template
- * @property Structure             $structure     Structure
- * @property FieldLayout           $fieldLayout   Field layout
- * @property CategoryGroupLocale[] $locales       Locales
- * @property Category[]            $categories    Categories
+ * @property integer                      $id            ID
+ * @property integer                      $structureId   Structure ID
+ * @property integer                      $fieldLayoutId Field layout ID
+ * @property string                       $name          Name
+ * @property string                       $handle        Handle
+ * @property Structure                    $structure     Structure
+ * @property FieldLayout                  $fieldLayout   Field layout
+ * @property CategoryGroup_SiteSettings[] $siteSettings  Site settings
+ * @property Category[]                   $categories    Categories
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since  3.0
@@ -32,30 +30,6 @@ class CategoryGroup extends ActiveRecord
 {
     // Public Methods
     // =========================================================================
-
-    /**
-     * @inheritdoc
-     */
-    public function rules()
-    {
-        return [
-            [
-                ['handle'],
-                'craft\\app\\validators\\Handle',
-                'reservedWords' => [
-                    'id',
-                    'dateCreated',
-                    'dateUpdated',
-                    'uid',
-                    'title'
-                ]
-            ],
-            [['name', 'handle'], 'unique'],
-            [['name', 'handle'], 'required'],
-            [['name', 'handle'], 'string', 'max' => 255],
-            [['template'], 'string', 'max' => 500],
-        ];
-    }
 
     /**
      * @inheritdoc
@@ -74,7 +48,7 @@ class CategoryGroup extends ActiveRecord
      */
     public function getStructure()
     {
-        return $this->hasOne(Structure::className(), ['id' => 'structureId']);
+        return $this->hasOne(Structure::class, ['id' => 'structureId']);
     }
 
     /**
@@ -84,18 +58,18 @@ class CategoryGroup extends ActiveRecord
      */
     public function getFieldLayout()
     {
-        return $this->hasOne(FieldLayout::className(),
+        return $this->hasOne(FieldLayout::class,
             ['id' => 'fieldLayoutId']);
     }
 
     /**
-     * Returns the category group’s locales.
+     * Returns the category group’s site settings.
      *
      * @return ActiveQueryInterface The relational query object.
      */
-    public function getLocales()
+    public function getSiteSettings()
     {
-        return $this->hasMany(CategoryGroupLocale::className(), ['groupId' => 'id']);
+        return $this->hasMany(CategoryGroup_SiteSettings::class, ['groupId' => 'id']);
     }
 
     /**
@@ -105,6 +79,6 @@ class CategoryGroup extends ActiveRecord
      */
     public function getCategories()
     {
-        return $this->hasMany(Category::className(), ['groupId' => 'id']);
+        return $this->hasMany(Category::class, ['groupId' => 'id']);
     }
 }

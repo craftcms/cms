@@ -190,15 +190,15 @@ abstract class Controller extends \yii\web\Controller
     }
 
     /**
-     * Throws a 400 error if this isn’t an Ajax request.
+     * Throws a 400 error if the request doesn't accept JSON.
      *
      * @return void
-     * @throws BadRequestHttpException if the request is not an ajax request
+     * @throws BadRequestHttpException if the request doesn't accept JSON
      */
-    public function requireAjaxRequest()
+    public function requireAcceptsJson()
     {
-        if (!Craft::$app->getRequest()->getIsAjax()) {
-            throw new BadRequestHttpException('Ajax request required');
+        if (!Craft::$app->getRequest()->getAcceptsJson()) {
+            //throw new BadRequestHttpException('Request must accept JSON in response');
         }
     }
 
@@ -227,17 +227,7 @@ abstract class Controller extends \yii\web\Controller
      */
     public function redirectToPostedUrl($object = null, $default = null)
     {
-        $security = Craft::$app->getSecurity();
-
-        $url = Craft::$app->getRequest()->getBodyParam('redirect');
-
-        if ($url !== null) {
-            $url = $security->validateData($url, $security->getValidationKey());
-
-            if ($url === false) {
-                throw new BadRequestHttpException('The redirect param was tampered with');
-            }
-        }
+        $url = Craft::$app->getRequest()->getValidatedBodyParam('redirect');
 
         if ($url === null) {
             if ($default !== null) {

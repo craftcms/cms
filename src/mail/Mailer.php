@@ -10,7 +10,7 @@ namespace craft\app\mail;
 use Craft;
 use craft\app\elements\User;
 use craft\app\errors\SendEmailException;
-use craft\app\events\SendEmailErrorEvent;
+use craft\app\events\MailFailureEvent;
 use yii\base\InvalidConfigException;
 use yii\helpers\Markdown;
 
@@ -28,9 +28,9 @@ class Mailer extends \yii\swiftmailer\Mailer
     // =========================================================================
 
     /**
-     * @event SendEmailErrorEvent The event that is triggered when there is an error sending an email.
+     * @event MailFailureEvent The event that is triggered when there is an error sending an email.
      */
-    const EVENT_SEND_EMAIL_ERROR = 'sendEmailError';
+    const EVENT_SEND_MAIL_FAILURE = 'sendMailFailure';
 
     // Properties
     // =========================================================================
@@ -38,7 +38,7 @@ class Mailer extends \yii\swiftmailer\Mailer
     /**
      * @var string The default message class name
      */
-    public $messageClass = 'craft\app\mail\Message';
+    public $messageClass = \craft\app\mail\Message::class;
 
     /**
      * @var string The email template that should be used
@@ -155,28 +155,25 @@ class Mailer extends \yii\swiftmailer\Mailer
             $message->setFrom($this->from);
         }
 
-        $isSuccessful = null;
-
-        $event = new SendEmailErrorEvent([
-            'user' => $message->getTo(),
-            'email' => $message,
-            'variables' => $message->variables,
-            'error' => 'Unknown',
-        ]);
-
         try {
             $isSuccessful = parent::send($message);
+            $error = null;
         } catch (\Exception $e) {
-            $event->error = $e->getMessage();
             $isSuccessful = false;
+            $error = $e->getMessage();
         }
 
         // Either an exception was thrown or parent::send() returned false.
         if ($isSuccessful === false) {
-            // Fire a 'SendEmailErrorEvent' event
-            $this->trigger(self::EVENT_SEND_EMAIL_ERROR, $event);
+            // Fire a 'sendMailFailure' event
+            $this->trigger(self::EVENT_SEND_MAIL_FAILURE, new MailFailureEvent([
+                'user' => $message->getTo(),
+                'email' => $message,
+                'variables' => $message->variables,
+                'error' => $error,
+            ]));
 
-            throw new SendEmailException(Craft::t('app', 'Email error: {error}', ['error' => $event->error]));
+            throw new SendEmailException('Error sending email: '.($error ?: 'Unknown'));
         }
 
         return $isSuccessful;

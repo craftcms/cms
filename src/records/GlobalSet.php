@@ -9,6 +9,7 @@ namespace craft\app\records;
 
 use yii\db\ActiveQueryInterface;
 use craft\app\db\ActiveRecord;
+use craft\app\validators\HandleValidator;
 
 /**
  * Field group record class.
@@ -36,7 +37,7 @@ class GlobalSet extends ActiveRecord
         return [
             [
                 ['handle'],
-                'craft\\app\\validators\\Handle',
+                HandleValidator::class,
                 'reservedWords' => [
                     'id',
                     'dateCreated',
@@ -75,7 +76,7 @@ class GlobalSet extends ActiveRecord
      */
     public function getElement()
     {
-        return $this->hasOne(Element::className(), ['id' => 'id']);
+        return $this->hasOne(Element::class, ['id' => 'id']);
     }
 
     /**
@@ -85,7 +86,7 @@ class GlobalSet extends ActiveRecord
      */
     public function getFieldLayout()
     {
-        return $this->hasOne(FieldLayout::className(),
+        return $this->hasOne(FieldLayout::class,
             ['id' => 'fieldLayoutId']);
     }
 }

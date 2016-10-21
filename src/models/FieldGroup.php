@@ -8,7 +8,10 @@
 namespace craft\app\models;
 
 use Craft;
+use craft\app\base\FieldInterface;
 use craft\app\base\Model;
+use craft\app\records\FieldGroup as FieldGroupRecord;
+use craft\app\validators\UniqueValidator;
 
 /**
  * FieldGroup model class.
@@ -40,15 +43,10 @@ class FieldGroup extends Model
     public function rules()
     {
         return [
-            [
-                ['id'],
-                'number',
-                'min' => -2147483648,
-                'max' => 2147483647,
-                'integerOnly' => true
-            ],
+            [['id'], 'number', 'integerOnly' => true],
             [['name'], 'string', 'max' => 255],
-            [['id', 'name'], 'safe', 'on' => 'search'],
+            [['name'], UniqueValidator::class, 'targetClass' => FieldGroupRecord::class],
+            [['name'], 'required'],
         ];
     }
 
@@ -65,7 +63,7 @@ class FieldGroup extends Model
     /**
      * Returns the group's fields.
      *
-     * @return array
+     * @return FieldInterface[]
      */
     public function getFields()
     {

@@ -14,7 +14,12 @@ use craft\app\base\Field;
 use craft\app\elements\db\ElementQueryInterface;
 use craft\app\elements\db\MatrixBlockQuery;
 use craft\app\fields\Matrix;
+use craft\app\helpers\ElementHelper;
 use craft\app\models\MatrixBlockType;
+use craft\app\records\MatrixBlock as MatrixBlockRecord;
+use craft\app\validators\SiteIdValidator;
+use yii\base\Exception;
+use yii\base\InvalidConfigException;
 
 /**
  * MatrixBlock represents a matrix block element.
@@ -141,9 +146,9 @@ class MatrixBlock extends Element
     public $ownerId;
 
     /**
-     * @var string Owner locale
+     * @var integer Owner site ID
      */
-    public $ownerLocale;
+    public $ownerSiteId;
 
     /**
      * @var integer Type ID
@@ -179,36 +184,8 @@ class MatrixBlock extends Element
     public function rules()
     {
         $rules = parent::rules();
-
-        $rules[] = [
-            ['fieldId'],
-            'number',
-            'min' => -2147483648,
-            'max' => 2147483647,
-            'integerOnly' => true
-        ];
-        $rules[] = [
-            ['ownerId'],
-            'number',
-            'min' => -2147483648,
-            'max' => 2147483647,
-            'integerOnly' => true
-        ];
-        $rules[] = [['ownerLocale'], 'craft\\app\\validators\\Locale'];
-        $rules[] = [
-            ['typeId'],
-            'number',
-            'min' => -2147483648,
-            'max' => 2147483647,
-            'integerOnly' => true
-        ];
-        $rules[] = [
-            ['sortOrder'],
-            'number',
-            'min' => -2147483648,
-            'max' => 2147483647,
-            'integerOnly' => true
-        ];
+        $rules[] = [['fieldId', 'ownerId', 'typeId', 'sortOrder'], 'number', 'integerOnly' => true];
+        $rules[] = [['ownerSiteId'], SiteIdValidator::class];
 
         return $rules;
     }
@@ -218,59 +195,56 @@ class MatrixBlock extends Element
      */
     public function getFieldLayout()
     {
-        $blockType = $this->getType();
-
-        if ($blockType) {
-            return $blockType->getFieldLayout();
-        }
-
-        return null;
+        return $this->getType()->getFieldLayout();
     }
 
     /**
      * @inheritdoc
      */
-    public function getLocales()
+    public function getSupportedSites()
     {
-        // If the Matrix field is translatable, than each individual block is tied to a single locale, and thus aren't
-        // translatable. Otherwise all blocks belong to all locales, and their content is translatable.
+        // If the Matrix field is translatable, than each individual block is tied to a single site, and thus aren't
+        // translatable. Otherwise all blocks belong to all sites, and their content is translatable.
 
-        if ($this->ownerLocale) {
-            return [$this->ownerLocale];
+        if ($this->ownerSiteId) {
+            return [$this->ownerSiteId];
         }
 
         $owner = $this->getOwner();
 
         if ($owner) {
-            // Just send back an array of locale IDs -- don't pass along enabledByDefault configs
-            $localeIds = [];
+            // Just send back an array of site IDs -- don't pass along enabledByDefault configs
+            $siteIds = [];
 
-            foreach ($owner->getLocales() as $localeId => $localeInfo) {
-                if (is_numeric($localeId) && is_string($localeInfo)) {
-                    $localeIds[] = $localeInfo;
-                } else {
-                    $localeIds[] = $localeId;
-                }
+            foreach (ElementHelper::getSupportedSitesForElement($owner) as $siteInfo) {
+                $siteIds[] = $siteInfo['siteId'];
             }
 
-            return $localeIds;
+            return $siteIds;
         }
 
-        return [Craft::$app->getI18n()->getPrimarySiteLocaleId()];
+        return [Craft::$app->getSites()->getPrimarySite()->id];
     }
 
     /**
      * Returns the block type.
      *
      * @return MatrixBlockType|null
+     * @throws InvalidConfigException if [[typeId]] is missing or invalid
      */
     public function getType()
     {
-        if ($this->typeId) {
-            return Craft::$app->getMatrix()->getBlockTypeById($this->typeId);
+        if (!$this->typeId) {
+            throw new InvalidConfigException('Matrix block is missing its type ID');
         }
 
-        return null;
+        $blockType = Craft::$app->getMatrix()->getBlockTypeById($this->typeId);
+
+        if (!$blockType) {
+            throw new InvalidConfigException('Invalid Matrix block ID: '.$this->typeId);
+        }
+
+        return $blockType;
     }
 
     /**
@@ -281,7 +255,7 @@ class MatrixBlock extends Element
     public function getOwner()
     {
         if (!isset($this->_owner) && $this->ownerId) {
-            $this->_owner = Craft::$app->getElements()->getElementById($this->ownerId, null, $this->locale);
+            $this->_owner = Craft::$app->getElements()->getElementById($this->ownerId, null, $this->siteId);
 
             if (!$this->_owner) {
                 $this->_owner = false;
@@ -384,6 +358,52 @@ class MatrixBlock extends Element
         $owner = $this->getOwner();
 
         return $owner ? $owner->getHasFreshContent() : false;
+    }
+
+    // Events
+    // -------------------------------------------------------------------------
+
+    /**
+     * @inheritdoc
+     * @throws Exception if reasons
+     */
+    public function afterSave($isNew)
+    {
+        // Get the block record
+        if (!$isNew) {
+            $record = MatrixBlockRecord::findOne($this->id);
+
+            if (!$record) {
+                throw new Exception('Invalid Matrix block ID: '.$this->id);
+            }
+        } else {
+            $record = new MatrixBlockRecord();
+            $record->id = $this->id;
+        }
+
+        $record->fieldId = $this->fieldId;
+        $record->ownerId = $this->ownerId;
+        $record->ownerSiteId = $this->ownerSiteId;
+        $record->typeId = $this->typeId;
+        $record->sortOrder = $this->sortOrder;
+        $record->save(false);
+
+        parent::afterSave($isNew);
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function afterDelete()
+    {
+        if (!Craft::$app->getRequest()->getIsConsoleRequest()) {
+            // Tell the browser to forget about this block
+            $session = Craft::$app->getSession();
+            $session->addJsResourceFlash('js/MatrixInput.js');
+            $session->addJsFlash('Craft.MatrixInput.forgetCollapsedBlockId('.$this->id.');');
+        }
+
+        parent::afterDelete();
     }
 
     // Private Methods

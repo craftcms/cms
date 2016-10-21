@@ -61,7 +61,7 @@
 {% block main %}
     <div class="grid" data-max-cols="3">
         <div class="item" data-position="left" data-colspan="2">
-            <form id="userform" class="pane" method="post" accept-charset="UTF-8" data-saveshortcut data-saveshortcut-redirect="{{ (account.getIsCurrent() ? 'myaccount' : (CraftEdition == CraftPro and currentUser.can('editUsers') ? 'users/{id}' : 'dashboard'))|hash }}">
+            <form id="userform" class="pane" method="post" accept-charset="UTF-8" autocomplete="off" data-saveshortcut data-saveshortcut-redirect="{{ (account.getIsCurrent() ? 'myaccount' : (CraftEdition == CraftPro and currentUser.can('editUsers') ? 'users/{id}' : 'dashboard'))|hash }}">
                 <input type="hidden" name="action" value="users/save-user">
                 {{ redirectInput(CraftEdition == CraftPro and currentUser.can('editUsers') ? 'users' : 'dashboard') }}
                 {{ hiddenInputs }}
@@ -123,26 +123,24 @@
 
                     {% endif %}
 
-                    {% if craft.isLocalized() %}
-                        {% set localeInput %}
+                    {% if craft.app.getIsMultiSite() %}
+                        {% set languageInput %}
                             <div class="select">
-                                <select id="preferredLocale"
-                                        name="preferredLocale">
-                                    {% set allSiteLocales = craft.app.i18n.getSiteLocales %}
-                                    {% set userLocale = account.getPreferredLocale() ?: (account.getIsCurrent() ? craft.app.language : allSiteLocales[0]) %}
+                                <select id="preferred-language" name="preferredLanguage">
+                                    {% set allSiteLanguages = craft.app.i18n.getSiteLocaleIds %}
+                                    {% set userLanguage = account.getPreferredLanguage() ?: (account.getIsCurrent() ? craft.app.language : allSiteLanguages[0]) %}
 
-                                    {% for locale in allSiteLocales %}
-                                        <option value="{{ locale.id }}"
-                                                {% if locale.id == userLocale %}selected{% endif %}>{{ locale.getDisplayName(craft.app.language) }}</option>
+                                    {% for language in allSiteLanguages %}
+                                        <option value="{{ language }}" {% if language == userLanguage %}selected{% endif %}>{{ craft.app.i18n.getLocaleById(language).getDisplayName(craft.app.language) }}</option>
                                     {% endfor %}
                                 </select>
                             </div>
                         {% endset %}
 
                         {{ forms.field({
-                            id: 'preferredLocale',
-                            label: "Preferred Locale"|t('app')
-                        }, localeInput) }}
+                            id: 'preferred-language',
+                            label: "Preferred Language"|t('app')
+                        }, languageInput) }}
                     {% endif %}
 
                     {% if account.getIsCurrent() %}
@@ -310,23 +308,23 @@
 
                     <div class="data">
                         <h5 class="heading">{{ "Registration Date"|t('app') }}</h5>
-                        <p class="value">{{ account.dateCreated.localeDate() }} {{ account.dateCreated.localeTime() }}</p>
+                        <p class="value">{{ account.dateCreated|datetime('short') }}</p>
                     </div>
 
                     {% if account.status != 'pending' %}
                         <div class="data">
                             <h5 class="heading">{{ "Last Login Date"|t('app') }}</h5>
-                            <p class="value">{% if account.lastLoginDate %}{{ account.lastLoginDate.localeDate() }} {{ account.lastLoginDate.localeTime() }}{% else %}{{ "Never"|t('app') }}{% endif %}</p>
+                            <p class="value">{% if account.lastLoginDate %}{{ account.lastLoginDate|datetime('short') }}{% else %}{{ "Never"|t('app') }}{% endif %}</p>
                         </div>
 
                         <div class="data">
                             <h5 class="heading">{{ "Last Invalid Login Date"|t('app') }}</h5>
-                            <p class="value">{% if account.lastInvalidLoginDate %}{{ account.lastInvalidLoginDate.localeDate() }} {{ account.lastInvalidLoginDate.localeTime() }}{% else %}{{ "Never"|t('app') }}{% endif %}</p>
+                            <p class="value">{% if account.lastInvalidLoginDate %}{{ account.lastInvalidLoginDate|datetime('short') }}{% else %}{{ "Never"|t('app') }}{% endif %}</p>
                         </div>
 
                         <div class="data">
                             <h5 class="heading">{{ "Last Password Change Date"|t('app') }}</h5>
-                            <p class="value">{% if account.lastPasswordChangeDate %}{{ account.lastPasswordChangeDate.localeDate() }} {{ account.lastPasswordChangeDate.localeTime() }}{% else %}{{ "Never"|t('app') }}{% endif %}</p>
+                            <p class="value">{% if account.lastPasswordChangeDate %}{{ account.lastPasswordChangeDate|datetime('short') }}{% else %}{{ "Never"|t('app') }}{% endif %}</p>
                         </div>
 
                         <div class="data">

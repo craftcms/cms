@@ -9,13 +9,10 @@ namespace craft\app\controllers;
 
 use Craft;
 use craft\app\helpers\Image;
-use craft\app\helpers\Io;
-use craft\app\helpers\Url;
 use craft\app\models\AssetTransform;
 use craft\app\web\Controller;
-use \craft\app\helpers\StringHelper;
-use craft\app\web\Response;
 use yii\web\NotFoundHttpException;
+use yii\web\Response;
 
 /**
  * The AssetTransformsController class is a controller that handles various actions related to asset transformations,
@@ -150,11 +147,13 @@ class AssetTransformsController extends Controller
 
     /**
      * Deletes an asset transform.
+     *
+     * @return Response
      */
     public function actionDeleteTransform()
     {
         $this->requirePostRequest();
-        $this->requireAjaxRequest();
+        $this->requireAcceptsJson();
 
         $transformId = Craft::$app->getRequest()->getRequiredBodyParam('id');
 

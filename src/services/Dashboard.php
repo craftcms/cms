@@ -12,12 +12,14 @@ use craft\app\base\WidgetInterface;
 use craft\app\db\Query;
 use craft\app\errors\MissingComponentException;
 use craft\app\errors\WidgetNotFoundException;
+use craft\app\events\WidgetEvent;
 use craft\app\helpers\Component as ComponentHelper;
 use craft\app\records\Widget as WidgetRecord;
 use craft\app\base\Widget;
 use craft\app\widgets\Feed as FeedWidget;
 use craft\app\widgets\GetHelp as GetHelpWidget;
 use craft\app\widgets\MissingWidget;
+use craft\app\widgets\NewUsers as NewUsersWidget;
 use craft\app\widgets\QuickPost as QuickPostWidget;
 use craft\app\widgets\RecentEntries as RecentEntriesWidget;
 use craft\app\widgets\Updates as UpdatesWidget;
@@ -38,9 +40,24 @@ class Dashboard extends Component
     // =========================================================================
 
     /**
-     * @var string The widget interface name
+     * @event WidgetEvent The event that is triggered before a widget is saved.
      */
-    const WIDGET_INTERFACE = 'craft\app\base\WidgetInterface';
+    const EVENT_BEFORE_SAVE_WIDGET = 'beforeSaveWidget';
+
+    /**
+     * @event WidgetEvent The event that is triggered after a widget is saved.
+     */
+    const EVENT_AFTER_SAVE_WIDGET = 'afterSaveWidget';
+
+    /**
+     * @event WidgetEvent The event that is triggered before a widget is deleted.
+     */
+    const EVENT_BEFORE_DELETE_WIDGET = 'beforeDeleteWidget';
+
+    /**
+     * @event WidgetEvent The event that is triggered after a widget is deleted.
+     */
+    const EVENT_AFTER_DELETE_WIDGET = 'afterDeleteWidget';
 
     // Public Methods
     // =========================================================================
@@ -53,11 +70,12 @@ class Dashboard extends Component
     public function getAllWidgetTypes()
     {
         $widgetTypes = [
-            FeedWidget::className(),
-            GetHelpWidget::className(),
-            QuickPostWidget::className(),
-            RecentEntriesWidget::className(),
-            UpdatesWidget::className(),
+            FeedWidget::class,
+            GetHelpWidget::class,
+            NewUsersWidget::class,
+            QuickPostWidget::class,
+            RecentEntriesWidget::class,
+            UpdatesWidget::class,
         ];
 
         foreach (Craft::$app->getPlugins()->call('getWidgetTypes', [], true) as $pluginWidgetTypes) {
@@ -81,12 +99,17 @@ class Dashboard extends Component
         }
 
         try {
-            return ComponentHelper::createComponent($config, self::WIDGET_INTERFACE);
+            /** @var Widget $widget */
+            $widget = ComponentHelper::createComponent($config, WidgetInterface::class);
         } catch (MissingComponentException $e) {
             $config['errorMessage'] = $e->getMessage();
+            $config['expectedType'] = $config['type'];
+            unset($config['type']);
 
-            return MissingWidget::create($config);
+            $widget = new MissingWidget($config);
         }
+
+        return $widget;
     }
 
     /**
@@ -143,7 +166,14 @@ class Dashboard extends Component
         ]);
 
         if ($widgetRecord) {
-            return $this->createWidget($widgetRecord);
+            return $this->createWidget($widgetRecord->toArray([
+                'id',
+                'dateCreated',
+                'dateUpdated',
+                'colspan',
+                'type',
+                'settings',
+            ]));
         }
 
         return null;
@@ -152,53 +182,74 @@ class Dashboard extends Component
     /**
      * Saves a widget for the current user.
      *
-     * @param WidgetInterface $widget   The widget to be saved
-     * @param boolean         $validate Whether the widget should be validated first
+     * @param WidgetInterface $widget        The widget to be saved
+     * @param boolean         $runValidation Whether the widget should be validated
      *
      * @return boolean Whether the widget was saved successfully
      * @throws \Exception if reasons
      */
-    public function saveWidget(WidgetInterface $widget, $validate = true)
+    public function saveWidget(WidgetInterface $widget, $runValidation = true)
     {
         /** @var Widget $widget */
-        if ((!$validate || $widget->validate()) && $widget->beforeSave()) {
-            $transaction = Craft::$app->getDb()->beginTransaction();
-            try {
-                $widgetRecord = $this->_getUserWidgetRecordById($widget->id);
-                $isNewWidget = $widgetRecord->getIsNewRecord();
+        if ($runValidation && !$widget->validate()) {
+            Craft::info('Widget not saved due to validation error.', __METHOD__);
 
-                $widgetRecord->type = $widget->getType();
-                $widgetRecord->settings = $widget->getSettings();
-
-                // Enabled by default.
-                if ($isNewWidget) {
-                    $widgetRecord->enabled = true;
-                }
-
-                $widgetRecord->save(false);
-
-                // Now that we have a widget ID, save it on the model
-                if ($isNewWidget) {
-                    $widget->id = $widgetRecord->id;
-                }
-
-                $widget->afterSave();
-
-                $transaction->commit();
-
-                return true;
-            } catch (\Exception $e) {
-                $transaction->rollBack();
-
-                throw $e;
-            }
+            return false;
         }
 
-        return false;
+        $isNewWidget = $widget->getIsNew();
+
+        // Fire a 'beforeSaveWidget' event
+        $this->trigger(self::EVENT_BEFORE_SAVE_WIDGET, new WidgetEvent([
+            'widget' => $widget,
+            'isNew' => $isNewWidget,
+        ]));
+
+        $transaction = Craft::$app->getDb()->beginTransaction();
+        try {
+            if (!$widget->beforeSave($isNewWidget)) {
+                $transaction->rollBack();
+
+                return false;
+            }
+
+            $widgetRecord = $this->_getUserWidgetRecordById($widget->id);
+
+            $widgetRecord->type = $widget->getType();
+            $widgetRecord->settings = $widget->getSettings();
+
+            // Enabled by default.
+            if ($isNewWidget) {
+                $widgetRecord->enabled = true;
+            }
+
+            $widgetRecord->save(false);
+
+            // Now that we have a widget ID, save it on the model
+            if ($isNewWidget) {
+                $widget->id = $widgetRecord->id;
+            }
+
+            $widget->afterSave($isNewWidget);
+
+            $transaction->commit();
+        } catch (\Exception $e) {
+            $transaction->rollBack();
+
+            throw $e;
+        }
+
+        // Fire an 'afterSaveWidget' event
+        $this->trigger(self::EVENT_AFTER_SAVE_WIDGET, new WidgetEvent([
+            'widget' => $widget,
+            'isNew' => $isNewWidget,
+        ]));
+
+        return true;
     }
 
     /**
-     * Soft deletes a widget.
+     * Soft-deletes a widget by its ID.
      *
      * @param integer $widgetId The widget’s ID
      *
@@ -206,9 +257,56 @@ class Dashboard extends Component
      */
     public function deleteWidgetById($widgetId)
     {
-        $widgetRecord = $this->_getUserWidgetRecordById($widgetId);
-        $widgetRecord->enabled = false;
-        $widgetRecord->save();
+        $widget = $this->getWidgetById($widgetId);
+
+        if (!$widget) {
+            return false;
+        }
+
+        return $this->deleteWidget($widget);
+    }
+
+    /**
+     * Soft-deletes a widget.
+     *
+     * @param WidgetInterface $widget The widget to be deleted
+     *
+     * @return boolean Whether the widget was deleted successfully
+     * @throws \Exception if reasons
+     */
+    public function deleteWidget(WidgetInterface $widget)
+    {
+        /** @var Widget $widget */
+        // Fire a 'beforeDeleteWidget' event
+        $this->trigger(self::EVENT_BEFORE_DELETE_WIDGET, new WidgetEvent([
+            'widget' => $widget,
+        ]));
+
+        $transaction = Craft::$app->getDb()->beginTransaction();
+        try {
+            if (!$widget->beforeDelete()) {
+                $transaction->rollBack();
+
+                return false;
+            }
+
+            $widgetRecord = $this->_getUserWidgetRecordById($widget->id);
+            $widgetRecord->enabled = false;
+            $widgetRecord->save();
+
+            $widget->afterDelete();
+
+            $transaction->commit();
+        } catch (\Exception $e) {
+            $transaction->rollBack();
+
+            throw $e;
+        }
+
+        // Fire an 'afterDeleteWidget' event
+        $this->trigger(self::EVENT_AFTER_DELETE_WIDGET, new WidgetEvent([
+            'widget' => $widget,
+        ]));
 
         return true;
     }
@@ -270,21 +368,21 @@ class Dashboard extends Component
         $user = Craft::$app->getUser()->getIdentity();
 
         // Recent Entries widget
-        $this->saveWidget($this->createWidget(RecentEntriesWidget::className()));
+        $this->saveWidget($this->createWidget(RecentEntriesWidget::class));
 
         // Get Help widget
         if ($user->admin) {
-            $this->saveWidget($this->createWidget(GetHelpWidget::className()));
+            $this->saveWidget($this->createWidget(GetHelpWidget::class));
         }
 
         // Updates widget
         if ($user->can('performupdates')) {
-            $this->saveWidget($this->createWidget(UpdatesWidget::className()));
+            $this->saveWidget($this->createWidget(UpdatesWidget::class));
         }
 
         // Blog & Tonic feed widget
         $this->saveWidget($this->createWidget([
-            'type' => FeedWidget::className(),
+            'type' => FeedWidget::class,
             'url' => 'https://craftcms.com/news.rss',
             'title' => 'Craft News'
         ]));
@@ -347,8 +445,15 @@ class Dashboard extends Component
             throw new Exception('No logged-in user');
         }
 
-        $records = (new Query())
-            ->select('id, type, colspan, settings')
+        $results = (new Query())
+            ->select([
+                'id',
+                'dateCreated',
+                'dateUpdated',
+                'colspan',
+                'type',
+                'settings',
+            ])
             ->from('{{%widgets}}')
             ->where(['userId' => $userId, 'enabled' => 1])
             ->orderBy('sortOrder')
@@ -356,8 +461,8 @@ class Dashboard extends Component
 
         $widgets = [];
 
-        foreach ($records as $record) {
-            $widget = $this->createWidget($record);
+        foreach ($results as $result) {
+            $widget = $this->createWidget($result);
 
             if ($indexBy === null) {
                 $widgets[] = $widget;

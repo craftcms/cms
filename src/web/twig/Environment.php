@@ -17,49 +17,8 @@ use Craft;
  */
 class Environment extends \Twig_Environment
 {
-    // Properties
-    // =========================================================================
-
-    /**
-     * @var boolean
-     */
-    protected $safeMode;
-
     // Public Methods
     // =========================================================================
-
-    /**
-     * Constructor
-     *
-     * @param \Twig_LoaderInterface $loader
-     * @param array                 $options
-     */
-    public function __construct(\Twig_LoaderInterface $loader, array $options)
-    {
-        $options = array_merge([
-            'safe_mode' => false,
-        ], $options);
-
-        $this->safeMode = $options['safe_mode'];
-
-        parent::__construct($loader, $options);
-    }
-
-    /**
-     * @return mixed
-     */
-    public function isSafeMode()
-    {
-        return $this->safeMode;
-    }
-
-    /**
-     * @param $safeMode
-     */
-    public function setSafeMode($safeMode)
-    {
-        $this->safeMode = $safeMode;
-    }
 
     /**
      * @inheritdoc

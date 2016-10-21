@@ -8,6 +8,7 @@
 namespace craft\app\i18n;
 
 use Craft;
+use craft\app\helpers\DateTimeHelper;
 use DateTime;
 use DateTimeZone;
 use NumberFormatter;
@@ -151,25 +152,80 @@ class Formatter extends \yii\i18n\Formatter
     }
 
     /**
+     * Formats the value as a human-readable timestamp.
+     *
+     * - If $value is from today, "Today" or the formatted time will be returned, depending on whether $value contains time information
+     * - If $value is from yesterday, "Yesterday" will be returned
+     * - If $value is within the past 7 days, the weekday will be returned
+     *
+     * @param integer|string|DateTime $value  The value to be formatted. The following
+     *                                        types of value are supported:
+     *
+     * - an integer representing a UNIX timestamp
+     * - a string that can be [parsed to create a DateTime object](http://php.net/manual/en/datetime.formats.php).
+     *   The timestamp is assumed to be in [[defaultTimeZone]] unless a time zone is explicitly given.
+     * - a PHP [DateTime](http://php.net/manual/en/class.datetime.php) object
+     *
+     * @param string                  $format The format used to convert the value into a date string.
+     *                                        If null, [[dateFormat]] will be used.
+     *
+     * This can be "short", "medium", "long", or "full", which represents a preset format of different lengths.
+     * It can also be a custom format as specified in the [ICU manual](http://userguide.icu-project.org/formatparse/datetime).
+     *
+     * Alternatively this can be a string prefixed with `php:` representing a format that can be recognized by the
+     * PHP [date()](http://php.net/manual/en/function.date.php)-function.
+     *
+     * @return string the formatted result.
+     * @throws InvalidParamException if the input value can not be evaluated as a date value.
+     * @throws InvalidConfigException if the date format is invalid.
+     * @see datetimeFormat
+     */
+    public function asTimestamp($value, $format = null)
+    {
+        /** @var DateTime $timestamp */
+        /** @var boolean $hasTimeInfo */
+        list($timestamp, $hasTimeInfo) = $this->normalizeDatetimeValue($value, true);
+
+        // If it's today, just return the local time.
+        if (DateTimeHelper::isToday($timestamp)) {
+            return $hasTimeInfo ? $this->asTime($timestamp, $format) : Craft::t('app', 'Today');
+        }
+
+        // If it was yesterday, display 'Yesterday'
+        if (DateTimeHelper::isYesterday($timestamp)) {
+            return Craft::t('app', 'Yesterday');
+        }
+
+        // If it were up to 7 days ago, display the weekday name.
+        if (DateTimeHelper::isWithinLast($timestamp, '7 days')) {
+            $day = $timestamp->format('w');
+            Craft::$app->getI18n()->getLocaleById($this->locale)->getWeekDayName($day);
+        }
+
+        // Otherwise, just return the local date.
+        return $this->asDate($timestamp, $format);
+    }
+
+    /**
      * Formats the value as a currency number.
      *
      * This function does not requires the [PHP intl extension](http://php.net/manual/en/book.intl.php) to be installed
      * to work but it is highly recommended to install it to get good formatting results.
      *
-     * @param mixed   $value               the value to be formatted.
-     * @param string  $currency            the 3-letter ISO 4217 currency code indicating the currency to use.
-     *                                     If null, [[currencyCode]] will be used.
-     * @param array   $options             optional configuration for the number formatter. This parameter will be merged with [[numberFormatterOptions]].
-     * @param array   $textOptions         optional configuration for the number formatter. This parameter will be merged with [[numberFormatterTextOptions]].
-     * @param boolean $omitIntegerDecimals Whether the formatted currency should omit the decimals if the value given is an integer.
+     * @param mixed   $value       the value to be formatted.
+     * @param string  $currency    the 3-letter ISO 4217 currency code indicating the currency to use.
+     *                             If null, [[currencyCode]] will be used.
+     * @param array   $options     optional configuration for the number formatter. This parameter will be merged with [[numberFormatterOptions]].
+     * @param array   $textOptions optional configuration for the number formatter. This parameter will be merged with [[numberFormatterTextOptions]].
+     * @param boolean $stripZeros  Whether the formatted currency should remove the fraction digits if $value has no minor value (e.g. cents).
      *
      * @return string the formatted result.
      * @throws InvalidParamException if the input value is not numeric.
      * @throws InvalidConfigException if no currency is given and [[currencyCode]] is not defined.
      */
-    public function asCurrency($value, $currency = null, $options = [], $textOptions = [], $omitIntegerDecimals = false)
+    public function asCurrency($value, $currency = null, $options = [], $textOptions = [], $stripZeros = false)
     {
-        $omitDecimals = ($omitIntegerDecimals && (int)$value == $value);
+        $omitDecimals = ($stripZeros && (int)$value == $value);
 
         if (Craft::$app->getI18n()->getIsIntlLoaded()) {
             if ($omitDecimals) {

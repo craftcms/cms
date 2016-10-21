@@ -11,11 +11,8 @@ use Craft;
 use craft\app\base\Field;
 use craft\app\db\Query;
 use craft\app\errors\EntryDraftNotFoundException;
-use craft\app\events\EntryDraftDeleteEvent;
 use craft\app\events\DraftEvent;
-use craft\app\events\PublishDraftEvent;
-use craft\app\events\RevertEntryEvent;
-use craft\app\helpers\ArrayHelper;
+use craft\app\events\EntryEvent;
 use craft\app\helpers\Json;
 use craft\app\elements\Entry;
 use craft\app\models\EntryDraft;
@@ -40,8 +37,6 @@ class EntryRevisions extends Component
 
     /**
      * @event DraftEvent The event that is triggered before a draft is saved.
-     *
-     * You may set [[DraftEvent::isValid]] to `false` to prevent the draft from getting saved.
      */
     const EVENT_BEFORE_SAVE_DRAFT = 'beforeSaveDraft';
 
@@ -52,8 +47,6 @@ class EntryRevisions extends Component
 
     /**
      * @event DraftEvent The event that is triggered before a draft is published.
-     *
-     * You may set [[DraftEvent::isValid]] to `false` to prevent the draft from getting published.
      */
     const EVENT_BEFORE_PUBLISH_DRAFT = 'beforePublishDraft';
 
@@ -64,8 +57,6 @@ class EntryRevisions extends Component
 
     /**
      * @event DraftEvent The event that is triggered before a draft is deleted.
-     *
-     * You may set [[DraftEvent::isValid]] to `false` to prevent the draft from getting deleted.
      */
     const EVENT_BEFORE_DELETE_DRAFT = 'beforeDeleteDraft';
 
@@ -73,6 +64,11 @@ class EntryRevisions extends Component
      * @event DraftEvent The event that is triggered after a draft is deleted.
      */
     const EVENT_AFTER_DELETE_DRAFT = 'afterDeleteDraft';
+
+    /**
+     * @event EntryEvent The event that is triggered before an entry is reverted to an old version.
+     */
+    const EVENT_BEFORE_REVERT_ENTRY_TO_VERSION = 'beforeRevertEntryToVersion';
 
     /**
      * @event EntryEvent The event that is triggered after an entry is reverted to an old version.
@@ -94,14 +90,26 @@ class EntryRevisions extends Component
         $draftRecord = EntryDraftRecord::findOne($draftId);
 
         if ($draftRecord) {
-            $config = ArrayHelper::toArray($draftRecord, [], false);
+            $config = $draftRecord->toArray([
+                'id',
+                'entryId',
+                'sectionId',
+                'creatorId',
+                'siteId',
+                'name',
+                'notes',
+                'data',
+                'dateCreated',
+                'dateUpdated',
+                'uid',
+            ]);
             $config['data'] = Json::decode($config['data']);
-            $draft = EntryDraft::create($config);
+            $draft = new EntryDraft($config);
 
             // This is a little hacky, but fixes a bug where entries are getting the wrong URL when a draft is published
             // inside of a structured section since the selected URL Format depends on the entry's level, and there's no
             // reason to store the level along with the other draft data.
-            $entry = Craft::$app->getEntries()->getEntryById($draftRecord->entryId, $draftRecord->locale);
+            $entry = Craft::$app->getEntries()->getEntryById($draftRecord->entryId, $draftRecord->siteId);
 
             $draft->root = $entry->root;
             $draft->lft = $entry->lft;
@@ -118,23 +126,34 @@ class EntryRevisions extends Component
      * Returns drafts of a given entry.
      *
      * @param integer $entryId
-     * @param string  $localeId
+     * @param integer $siteId
      *
      * @return EntryDraft[]
      */
-    public function getDraftsByEntryId($entryId, $localeId = null)
+    public function getDraftsByEntryId($entryId, $siteId = null)
     {
-        if (!$localeId) {
-            $localeId = Craft::$app->getI18n()->getPrimarySiteLocale();
+        if (!$siteId) {
+            $siteId = Craft::$app->getSites()->getPrimarySite()->id;
         }
 
         $drafts = [];
 
         $results = (new Query())
-            ->select('*')
+            ->select([
+                'id',
+                'entryId',
+                'sectionId',
+                'creatorId',
+                'siteId',
+                'name',
+                'notes',
+                'data',
+                'dateCreated',
+                'dateUpdated',
+                'uid',
+            ])
             ->from('{{%entrydrafts}}')
-            ->where(['and', 'entryId = :entryId', 'locale = :locale'],
-                [':entryId' => $entryId, ':locale' => $localeId])
+            ->where(['entryId' => $entryId, 'siteId' => $siteId])
             ->orderBy('name asc')
             ->all();
 
@@ -144,7 +163,7 @@ class EntryRevisions extends Component
             // Don't initialize the content
             unset($result['data']['fields']);
 
-            $drafts[] = EntryDraft::create($result);
+            $drafts[] = new EntryDraft($result);
         }
 
         return $drafts;
@@ -154,17 +173,17 @@ class EntryRevisions extends Component
      * Returns the drafts of a given entry that are editable by the current user.
      *
      * @param integer $entryId
-     * @param string  $localeId
+     * @param integer $siteId
      *
      * @return EntryDraft[]
      */
-    public function getEditableDraftsByEntryId($entryId, $localeId = null)
+    public function getEditableDraftsByEntryId($entryId, $siteId = null)
     {
         $editableDrafts = [];
         $user = Craft::$app->getUser()->getIdentity();
 
         if ($user) {
-            $allDrafts = $this->getDraftsByEntryId($entryId, $localeId);
+            $allDrafts = $this->getDraftsByEntryId($entryId, $siteId);
 
             foreach ($allDrafts as $draft) {
                 if ($draft->creatorId == $user->id || $user->can('editPeerEntryDrafts:'.$draft->sectionId)) {
@@ -179,22 +198,26 @@ class EntryRevisions extends Component
     /**
      * Saves a draft.
      *
-     * @param EntryDraft $draft
+     * @param EntryDraft $draft         The draft to be saved
+     * @param boolean    $runValidation Whether to perform validation
      *
      * @return boolean
      */
-    public function saveDraft(EntryDraft $draft)
+    public function saveDraft(EntryDraft $draft, $runValidation = true)
     {
-        $isNewDraft = !$draft->id;
+        if ($runValidation && !$draft->validate()) {
+            Craft::info('Draft not saved due to validation error.', __METHOD__);
+
+            return false;
+        }
+
+        $isNewDraft = !$draft->draftId;
 
         if (!$draft->name && $draft->id) {
-            // Get the total number of existing drafts for this entry/locale
+            // Get the total number of existing drafts for this entry/site
             $totalDrafts = (new Query())
                 ->from('{{%entrydrafts}}')
-                ->where(
-                    ['and', 'entryId = :entryId', 'locale = :locale'],
-                    [':entryId' => $draft->id, ':locale' => $draft->locale]
-                )
+                ->where(['entryId' => $draft->id, 'siteId' => $draft->siteId])
                 ->count('id');
 
             $draft->name = Craft::t('app', 'Draft {num}',
@@ -202,53 +225,50 @@ class EntryRevisions extends Component
         }
 
         // Fire a 'beforeSaveDraft' event
-        $event = new DraftEvent([
+        $this->trigger(self::EVENT_BEFORE_SAVE_DRAFT, new DraftEvent([
             'draft' => $draft,
             'isNew' => $isNewDraft,
-        ]);
+        ]));
 
-        $this->trigger(self::EVENT_BEFORE_SAVE_DRAFT, $event);
+        $draftRecord = $this->_getDraftRecord($draft);
+        $draftRecord->name = $draft->name;
+        $draftRecord->notes = $draft->revisionNotes;
+        $draftRecord->data = $this->_getRevisionData($draft);
 
-        $success = false;
+        $draftRecord->save(false);
 
-        // Is the event giving us the go-ahead?
-        if ($event->isValid) {
-
-            $draftRecord = $this->_getDraftRecord($draft);
-            $draftRecord->name = $draft->name;
-            $draftRecord->notes = $draft->revisionNotes;
-            $draftRecord->data = $this->_getRevisionData($draft);
-
-            if ($draftRecord->save()) {
-                $draft->draftId = $draftRecord->id;
-
-                $success = true;
-            }
+        if ($isNewDraft) {
+            $draft->draftId = $draftRecord->id;
         }
 
-        if ($success) {
-            // Fire an 'afterSaveDraft' event
-            $this->trigger(self::EVENT_AFTER_SAVE_DRAFT, new DraftEvent([
-                'draft' => $draft,
-                'isNew' => $isNewDraft,
-            ]));
-        }
+        // Fire an 'afterSaveDraft' event
+        $this->trigger(self::EVENT_AFTER_SAVE_DRAFT, new DraftEvent([
+            'draft' => $draft,
+            'isNew' => $isNewDraft,
+        ]));
 
-         return $success;
+        return true;
     }
 
     /**
      * Publishes a draft.
      *
-     * @param EntryDraft $draft
+     * @param EntryDraft $draft         The draft to be published
+     * @param boolean    $runValidation Whether to perform validation
      *
      * @return boolean
      */
-    public function publishDraft(EntryDraft $draft)
+    public function publishDraft(EntryDraft $draft, $runValidation)
     {
         // If this is a single, we'll have to set the title manually
         if ($draft->getSection()->type == Section::TYPE_SINGLE) {
             $draft->title = $draft->getSection()->name;
+        }
+
+        if ($runValidation && !$draft->validate()) {
+            Craft::info('Draft not published due to validation error.', __METHOD__);
+
+            return false;
         }
 
         // Set the version notes
@@ -258,79 +278,48 @@ class EntryRevisions extends Component
         }
 
         // Fire a 'beforePublishDraft' event
-        $event = new PublishDraftEvent([
+        $this->trigger(self::EVENT_BEFORE_PUBLISH_DRAFT, new DraftEvent([
             'draft' => $draft
-        ]);
+        ]));
 
-        $this->trigger(self::EVENT_BEFORE_PUBLISH_DRAFT, $event);
+        // Save the entry without re-running validation on it
+        Craft::$app->getElements()->saveElement($draft, false);
 
+        // Delete the draft
         $success = false;
+        $this->deleteDraft($draft);
 
-        // Is the event giving us the go-ahead?
-        if ($event->isValid) {
-            if (Craft::$app->getEntries()->saveEntry($draft)) {
-                $success = true;
-                $this->deleteDraft($draft);
-            }
-        }
+        // Fire an 'afterPublishDraft' event
+        $this->trigger(self::EVENT_AFTER_PUBLISH_DRAFT, new DraftEvent([
+            'draft' => $draft
+        ]));
 
-        if ($success) {
-            // Fire an 'afterPublishDraft' event
-            $this->trigger(self::EVENT_AFTER_PUBLISH_DRAFT, new PublishDraftEvent([
-                'draft' => $draft
-            ]));
-        }
-
-        return $success;
+        return true;
     }
 
     /**
      * Deletes a draft by it's model.
      *
-     * @param EntryDraft $draft
+     * @param EntryDraft $draft The draft to be deleted
      *
      * @return boolean Whether the draft was deleted successfully
-     * @throws \Exception if reasons
      */
     public function deleteDraft(EntryDraft $draft)
     {
-        $transaction = Craft::$app->getDb()->beginTransaction();
+        // Fire a 'beforeDeleteDraft' event
+        $this->trigger(self::EVENT_BEFORE_DELETE_DRAFT, new DraftEvent([
+            'draft' => $draft
+        ]));
 
-        try {
-            // Fire a 'beforeDeleteDraft' event
-            $event = new EntryDraftDeleteEvent([
-                'draft' => $draft
-            ]);
+        // Delete it
+        $this->_getDraftRecord($draft)->delete();
 
-            $this->trigger(self::EVENT_BEFORE_DELETE_DRAFT, $event);
+        // Fire an 'afterDeleteDraft' event
+        $this->trigger(self::EVENT_AFTER_DELETE_DRAFT, new DraftEvent([
+            'draft' => $draft
+        ]));
 
-            // Is the event giving us the go-ahead?
-            if ($event->isValid) {
-                $draftRecord = $this->_getDraftRecord($draft);
-                $draftRecord->delete();
-
-                $success = true;
-            } else {
-                $success = false;
-            }
-
-            // Commit the transaction regardless of whether we deleted the draft, in case something changed
-            // in onBeforeDeleteDraft
-            $transaction->commit();
-        } catch (\Exception $e) {
-            $transaction->rollBack();
-
-            throw $e;
-        }
-
-        if ($success) {
-            // Fire an 'afterDeleteDraft' event
-            $this->trigger(self::EVENT_AFTER_DELETE_DRAFT, new EntryDraftDeleteEvent([
-                'draft' => $draft
-            ]));
-        }
-
-        return $success;
+        return true;
     }
 
     /**
@@ -345,10 +334,22 @@ class EntryRevisions extends Component
         $versionRecord = EntryVersionRecord::findOne($versionId);
 
         if ($versionRecord) {
-            $config = ArrayHelper::toArray($versionRecord, [], false);
+            $config = $versionRecord->toArray([
+                'id',
+                'entryId',
+                'sectionId',
+                'creatorId',
+                'siteId',
+                'num',
+                'notes',
+                'data',
+                'dateCreated',
+                'dateUpdated',
+                'uid',
+            ]);
             $config['data'] = Json::decode($config['data']);
 
-            return EntryVersion::create($config);
+            return new EntryVersion($config);
         }
 
         return null;
@@ -358,25 +359,36 @@ class EntryRevisions extends Component
      * Returns versions by an entry ID.
      *
      * @param integer      $entryId        The entry ID to search for.
-     * @param string       $localeId       The locale ID to search for.
+     * @param integer      $siteId         The site ID to search for.
      * @param integer|null $limit          The limit on the number of versions to retrieve.
      * @param boolean      $includeCurrent Whether to include the current "top" version of the entry.
      *
      * @return EntryVersion[]
      */
-    public function getVersionsByEntryId($entryId, $localeId, $limit = null, $includeCurrent = false)
+    public function getVersionsByEntryId($entryId, $siteId, $limit = null, $includeCurrent = false)
     {
-        if (!$localeId) {
-            $localeId = Craft::$app->getI18n()->getPrimarySiteLocale();
+        if (!$siteId) {
+            $siteId = Craft::$app->getSites()->getPrimarySite()->id;
         }
 
         $versions = [];
 
         $results = (new Query())
-            ->select('*')
+            ->select([
+                'id',
+                'entryId',
+                'sectionId',
+                'creatorId',
+                'siteId',
+                'num',
+                'notes',
+                'data',
+                'dateCreated',
+                'dateUpdated',
+                'uid',
+            ])
             ->from('{{%entryversions}}')
-            ->where(['and', 'entryId = :entryId', 'locale = :locale'],
-                [':entryId' => $entryId, ':locale' => $localeId])
+            ->where(['entryId' => $entryId, 'siteId' => $siteId])
             ->orderBy('dateCreated desc')
             ->offset($includeCurrent ? 0 : 1)
             ->limit($limit)
@@ -388,7 +400,7 @@ class EntryRevisions extends Component
             // Don't initialize the content
             unset($result['data']['fields']);
 
-            $versions[] = EntryVersion::create($result);
+            $versions[] = new EntryVersion($result);
         }
 
         return $versions;
@@ -403,20 +415,17 @@ class EntryRevisions extends Component
      */
     public function saveVersion(Entry $entry)
     {
-        // Get the total number of existing versions for this entry/locale
+        // Get the total number of existing versions for this entry/site
         $totalVersions = (new Query())
             ->from('{{%entryversions}}')
-            ->where(
-                ['and', 'entryId = :entryId', 'locale = :locale'],
-                [':entryId' => $entry->id, ':locale' => $entry->locale]
-            )
+            ->where(['entryId' => $entry->id, 'siteId' => $entry->siteId])
             ->count('id');
 
         $versionRecord = new EntryVersionRecord();
         $versionRecord->entryId = $entry->id;
         $versionRecord->sectionId = $entry->sectionId;
         $versionRecord->creatorId = Craft::$app->getUser()->getIdentity() ? Craft::$app->getUser()->getIdentity()->id : $entry->authorId;
-        $versionRecord->locale = $entry->locale;
+        $versionRecord->siteId = $entry->siteId;
         $versionRecord->num = $totalVersions + 1;
         $versionRecord->data = $this->_getRevisionData($entry);
         $versionRecord->notes = $entry->revisionNotes;
@@ -428,31 +437,41 @@ class EntryRevisions extends Component
      * Reverts an entry to a version.
      *
      * @param EntryVersion $version
+     * @param boolean      $runValidation Whether to perform validation
      *
      * @return boolean
      */
-    public function revertEntryToVersion(EntryVersion $version)
+    public function revertEntryToVersion(EntryVersion $version, $runValidation)
     {
         // If this is a single, we'll have to set the title manually
         if ($version->getSection()->type == Section::TYPE_SINGLE) {
             $version->title = $version->getSection()->name;
         }
 
+        if ($runValidation && !$version->validate()) {
+            Craft::info('Entry not reverted due to validation error.', __METHOD__);
+
+            return false;
+        }
+
         // Set the version notes
         $version->revisionNotes = Craft::t('app', 'Reverted version {num}.',
             ['num' => $version->num]);
 
-        if (Craft::$app->getEntries()->saveEntry($version)) {
-            // Fire an 'afterRevertEntryToVersion' event
-            $this->trigger(self::EVENT_AFTER_REVERT_ENTRY_TO_VERSION,
-                new RevertEntryEvent([
-                    'entry' => $version,
-                ]));
+        // Fire a 'beforeRevertEntryToVersion' event
+        $this->trigger(self::EVENT_BEFORE_REVERT_ENTRY_TO_VERSION, new EntryEvent([
+            'entry' => $version,
+        ]));
 
-            return true;
-        }
+        // Revert the entry without re-running validation on it
+        Craft::$app->getElements()->saveElement($version, false);
 
-        return false;
+        // Fire an 'afterRevertEntryToVersion' event
+        $this->trigger(self::EVENT_AFTER_REVERT_ENTRY_TO_VERSION, new EntryEvent([
+            'entry' => $version,
+        ]));
+
+        return true;
     }
 
     // Private Methods
@@ -472,14 +491,14 @@ class EntryRevisions extends Component
             $draftRecord = EntryDraftRecord::findOne($draft->draftId);
 
             if (!$draftRecord) {
-                throw new EntryDraftNotFoundException("No draft exists with the ID '{$draft->draftId}'");
+                throw new EntryDraftNotFoundException('Invalid entry draft ID: '.$draft->draftId);
             }
         } else {
             $draftRecord = new EntryDraftRecord();
             $draftRecord->entryId = $draft->id;
             $draftRecord->sectionId = $draft->sectionId;
             $draftRecord->creatorId = $draft->creatorId;
-            $draftRecord->locale = $draft->locale;
+            $draftRecord->siteId = $draft->siteId;
         }
 
         return $draftRecord;

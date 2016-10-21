@@ -327,7 +327,7 @@ Craft.ui =
     createField: function(input, config)
     {
         var label = (config.label && config.label != '__blank__' ? config.label : null),
-            locale = (Craft.isLocalized && config.locale ? config.locale : null);
+            siteId = (Craft.isMultiSite && config.siteId ? config.siteId : null);
 
         var $field = $('<div/>', {
             'class': 'field',
@@ -349,9 +349,14 @@ Craft.ui =
                     text: label
                 }).appendTo($heading);
 
-                if (locale)
+                if (siteId)
                 {
-                    $('<span class="locale"/>').text(locale).appendTo($label);
+                    for (var i = 0; i < Craft.sites.length; i++) {
+                        if (Craft.sites[i].id == siteId) {
+                            $('<span class="site"/>').text(Craft.sites[i].name).appendTo($label);
+                            break;
+                        }
+                    }
                 }
             }
 

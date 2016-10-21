@@ -49,12 +49,12 @@ class Application extends \yii\web\Application
     // =========================================================================
 
     /**
-     * @event EditionChangeEvent The event that is triggered after the application has been initialized
+     * @event \yii\base\Event The event that is triggered after the application has been initialized
      */
     const EVENT_AFTER_INIT = 'afterInit';
 
     /**
-     * @event EditionChangeEvent The event that is triggered after the edition changes
+     * @event \craft\app\events\EditionChangeEvent The event that is triggered after the edition changes
      */
     const EVENT_AFTER_EDITION_CHANGE = 'afterEditionChange';
 
@@ -295,21 +295,7 @@ class Application extends \yii\web\Application
     }
 
     /**
-     * @inheritdoc
-     */
-    public function get($id, $throwException = true)
-    {
-        if (!$this->has($id, true)) {
-            if (($definition = $this->_getComponentDefinition($id)) !== null) {
-                $this->set($id, $definition);
-            }
-        }
-
-        return parent::get($id, $throwException);
-    }
-
-    /**
-     * Tries to find a match between the browser's preferred locales and the locales Craft has been translated into.
+     * Tries to find a match between the browser's preferred languages and the languages Craft has been translated into.
      *
      * @return string
      */
@@ -318,10 +304,10 @@ class Application extends \yii\web\Application
         $browserLanguages = $this->getRequest()->getAcceptableLanguages();
 
         if ($browserLanguages) {
-            $appLocaleIds = $this->getI18n()->getAppLocaleIds();
+            $appLanguages = $this->getI18n()->getAppLocaleIds();
 
             foreach ($browserLanguages as $language) {
-                if (in_array($language, $appLocaleIds)) {
+                if (in_array($language, $appLanguages)) {
                     return $language;
                 }
             }

@@ -12,8 +12,8 @@ use craft\app\db\Query;
 use craft\app\dates\DateTime;
 use craft\app\elements\Asset;
 use craft\app\errors\VolumeObjectExistsException;
-use craft\app\events\AssetTransformDeleteEvent;
 use craft\app\events\AssetTransformEvent;
+use craft\app\helpers\ArrayHelper;
 use craft\app\helpers\Assets as AssetsHelper;
 use craft\app\helpers\Db;
 use craft\app\helpers\Image;
@@ -45,28 +45,24 @@ class AssetTransforms extends Component
     // =========================================================================
 
     /**
-    * @event AssetTransformEvent The event that is triggered before an asset transform is saved.
-    *
-    * You may set [[AssetTransformEvent::isValid]] to `false` to prevent the asset transform from being saved.
-    */
-   const EVENT_BEFORE_SAVE_ASSET_TRANSFORM = 'beforeSaveAssetTransform';
-
-   /**
-    * @event AssetTransformEvent The event that is triggered after an asset transform is saved.
-    */
-   const EVENT_AFTER_SAVE_ASSET_TRANSFORM = 'afterSaveAssetTransform';
+     * @event AssetTransformEvent The event that is triggered before an asset transform is saved
+     */
+    const EVENT_BEFORE_SAVE_ASSET_TRANSFORM = 'beforeSaveAssetTransform';
 
     /**
-    * @event AssetTransformEvent The event that is triggered before an asset transform is deleted.
-    *
-    * You may set [[AssetTransformEvent::isValid]] to `false` to prevent the asset transform from being deleted.
-    */
-   const EVENT_BEFORE_DELETE_ASSET_TRANSFORM = 'beforeDeleteAssetTransform';
+     * @event AssetTransformEvent The event that is triggered after an asset transform is saved
+     */
+    const EVENT_AFTER_SAVE_ASSET_TRANSFORM = 'afterSaveAssetTransform';
 
-   /**
-    * @event AssetTransformEvent The event that is triggered after an asset transform is deleted.
-    */
-   const EVENT_AFTER_DELETE_ASSET_TRANSFORM = 'afterDeleteAssetTransform';
+    /**
+     * @event AssetTransformEvent The event that is triggered before an asset transform is deleted
+     */
+    const EVENT_BEFORE_DELETE_ASSET_TRANSFORM = 'beforeDeleteAssetTransform';
+
+    /**
+     * @event AssetTransformEvent The event that is triggered after an asset transform is deleted
+     */
+    const EVENT_AFTER_DELETE_ASSET_TRANSFORM = 'afterDeleteAssetTransform';
 
     // Properties
     // =========================================================================
@@ -114,7 +110,7 @@ class AssetTransforms extends Component
             $this->_transformsByHandle = [];
 
             foreach ($results as $result) {
-                $transform = AssetTransform::create($result);
+                $transform = new AssetTransform($result);
                 $this->_transformsByHandle[$transform->handle] = $transform;
             }
 
@@ -154,11 +150,11 @@ class AssetTransforms extends Component
                     $this->_transformsByHandle))
         ) {
             $result = $this->_createTransformQuery()
-                ->where('handle = :handle', [':handle' => $handle])
+                ->where(['handle' => $handle])
                 ->one();
 
             if ($result) {
-                $transform = AssetTransform::create($result);
+                $transform = new AssetTransform($result);
             } else {
                 $transform = null;
             }
@@ -183,11 +179,11 @@ class AssetTransforms extends Component
     public function getTransformById($id)
     {
         $result = $this->_createTransformQuery()
-            ->where('id = :id', [':id' => $id])
+            ->where(['id' => $id])
             ->one();
 
         if ($result) {
-            return AssetTransform::create($result);
+            return new AssetTransform($result);
         }
 
 
@@ -197,19 +193,31 @@ class AssetTransforms extends Component
     /**
      * Saves an asset transform.
      *
-     * @param AssetTransform $transform
+     * @param AssetTransform $transform     The transform to be saved
+     * @param boolean        $runValidation Whether the transform should be validated
      *
      * @throws AssetTransformException If attempting to update a non-existing transform.
      * @throws ValidationException     If the validation failed.
      * @return boolean
      */
-    public function saveTransform(AssetTransform $transform)
+    public function saveTransform(AssetTransform $transform, $runValidation = true)
     {
-        $isNew = !$transform->id;
+        if ($runValidation && !$transform->validate()) {
+            Craft::info('Asset transform not saved due to validation error.', __METHOD__);
 
-        if ($isNew) {
+            return false;
+        }
+
+        $isNewTransform = !$transform->id;
+
+        // Fire a 'beforeSaveAssetTransform' event
+        $this->trigger(self::EVENT_BEFORE_SAVE_ASSET_TRANSFORM, new AssetTransformEvent([
+            'assetTransform' => $transform,
+            'isNew' => $isNewTransform,
+        ]));
+
+        if ($isNewTransform) {
             $transformRecord = new AssetTransformRecord();
-
         } else {
             $transformRecord = AssetTransformRecord::findOne($transform->id);
 
@@ -238,42 +246,20 @@ class AssetTransforms extends Component
         $transformRecord->quality = $transform->quality;
         $transformRecord->format = $transform->format;
 
-        $transformRecord->validate();
-        $transform->addErrors($transformRecord->getErrors());
+        $transformRecord->save(false);
 
-        if ($transform->hasErrors()) {
-            return false;
+        // Now that we have a transform ID, save it on the model
+        if (!$transform->id) {
+            $transform->id = $transformRecord->id;
         }
 
-        // Fire a 'beforeSaveAssetTransform' event
-        $event = new AssetTransformEvent([
+        // Fire an 'afterSaveAssetTransform' event
+        $this->trigger(self::EVENT_AFTER_SAVE_ASSET_TRANSFORM, new AssetTransformEvent([
             'assetTransform' => $transform,
-            'isNew' => $isNew,
-        ]);
+            'isNew' => $transform,
+        ]));
 
-        $this->trigger(self::EVENT_BEFORE_SAVE_ASSET_TRANSFORM, $event);
-
-        // Is the event giving us the go-ahead?
-        if ($event->isValid) {
-            if ($transformRecord->save()) {
-
-                // Now that we have a transform ID, save it on the model
-                if (!$transform->id) {
-                    $transform->id = $transformRecord->id;
-                }
-
-                // Fire an 'afterSaveAssetTransform' event
-                $this->trigger(self::EVENT_AFTER_SAVE_ASSET_TRANSFORM,
-                    new AssetTransformEvent([
-                        'assetTransform' => $transform,
-                        'isNew' => $transform,
-                    ]));
-
-                return true;
-            }
-        }
-
-        return false;
+        return true;
     }
 
     /**
@@ -288,31 +274,22 @@ class AssetTransforms extends Component
         $transform = $this->getTransformById($transformId);
 
         // Fire a 'beforeDeleteAssetTransform' event
-        $event = new AssetTransformDeleteEvent([
+        $this->trigger(self::EVENT_BEFORE_DELETE_ASSET_TRANSFORM, new AssetTransformEvent([
             'assetTransform' => $transform
-        ]);
+        ]));
 
-        $this->trigger(self::EVENT_BEFORE_SAVE_ASSET_TRANSFORM, $event);
+        Craft::$app->getDb()->createCommand()
+            ->delete(
+                '{{%assettransforms}}',
+                ['id' => $transformId])
+            ->execute();
 
-        // Is the event giving us the go-ahead?
-        if ($event->isValid) {
-            Craft::$app->getDb()->createCommand()
-                ->delete(
-                    '{{%assettransforms}}',
-                    ['id' => $transformId])
-                ->execute();
+        // Fire an 'afterDeleteAssetTransform' event
+        $this->trigger(self::EVENT_AFTER_DELETE_ASSET_TRANSFORM, new AssetTransformEvent([
+            'assetTransform' => $transform
+        ]));
 
-            // Fire an 'afterDeleteAssetTransform' event
-            $this->trigger(self::EVENT_AFTER_DELETE_ASSET_TRANSFORM,
-                new AssetTransformDeleteEvent([
-                    'assetTransform' => $transform
-                ]));
-
-            return true;
-
-        }
-
-        return false;
+        return true;
     }
 
     /**
@@ -433,53 +410,45 @@ class AssetTransforms extends Component
         }
 
         // Check if an entry exists already
-        $query = (new Query())
-            ->select('ti.*')
-            ->from('{{%assettransformindex}} ti')
-            ->where('ti.volumeId = :volumeId AND ti.assetId = :assetId AND ti.location = :location',
-                [
-                    ':volumeId' => $asset->volumeId,
-                    ':assetId' => $asset->id,
-                    ':location' => $transformLocation
-                ]);
+        $query = $this->_createTransformIndexQuery()
+            ->where([
+                'volumeId' => $asset->volumeId,
+                'assetId' => $asset->id,
+                'location' => $transformLocation
+            ]);
 
         if (is_null($transform->format)) {
             // A generated auto-transform will have it's format set to null, but the filename will be populated.
             $query->andWhere('format IS NULL');
         } else {
-            $query->andWhere('format = :format',
-                [':format' => $transform->format]);
+            $query->andWhere(['format' => $transform->format]);
         }
 
         $entry = $query->one();
 
         if ($entry) {
             if ($this->validateTransformIndexResult($entry, $transform, $asset)) {
-                return AssetTransformIndex::create($entry);
+                return new AssetTransformIndex($entry);
             }
 
             // Delete the out-of-date record
             Craft::$app->getDb()->createCommand()
-                ->delete(
-                    '{{%assettransformindex}}',
-                    'id = :transformIndexId',
-                    [':transformIndexId' => $entry['id']])
+                ->delete('{{%assettransformindex}}', ['id' => $entry['id']])
                 ->execute();
         }
 
         // Create a new record
-        $time = new DateTime();
-        $data = [
+        $transformIndex = new AssetTransformIndex([
             'assetId' => $asset->id,
             'format' => $transform->format,
             'volumeId' => $asset->volumeId,
-            'dateIndexed' => Db::prepareDateForDb($time),
+            'dateIndexed' => Db::prepareDateForDb(new DateTime()),
             'location' => $transformLocation,
             'fileExists' => 0,
             'inProgress' => 0
-        ];
+        ]);
 
-        return $this->storeTransformIndexData(AssetTransformIndex::create($data));
+        return $this->storeTransformIndexData($transformIndex);
     }
 
     /**
@@ -611,21 +580,24 @@ class AssetTransforms extends Component
 
             // We're looking for transforms that fit the bill and are not the one we are trying to find/create
             // the image for.
-            $results = (new Query())
-                ->select('*')
-                ->from('{{%assettransformindex}}')
-                ->where('assetId = :assetId', [':assetId' => $asset->id])
-                ->andWhere(['in', 'location', $possibleLocations])
-                ->andWhere('id <> :indexId', [':indexId' => $index->id])
-                ->andWhere('fileExists = 1')
+            $results = $this->_createTransformIndexQuery()
+                ->where(
+                    [
+                        'and',
+                        ['assetId' => $asset->id, 'fileExists' => 1],
+                        ['in', 'location', $possibleLocations],
+                        'id <> :indexId'
+                    ],
+                    [
+                        ':indexId' => $index->id
+                    ])
                 ->all();
 
             foreach ($results as $result) {
                 // If this is a named transform and indexed before dimensions last changed, this is a stale transform
                 // and needs to go.
                 if ($transform->getIsNamedTransform() && $result['dateIndexed'] < $transform->dimensionChangeTime) {
-                    $transformUri = $asset->getFolder()->path.$this->getTransformSubpath($asset,
-                            AssetTransformIndex::create($result));
+                    $transformUri = $asset->getFolder()->path.$this->getTransformSubpath($asset, new AssetTransformIndex($result));
                     $volume->deleteFile($transformUri);
                     $this->deleteTransformIndex($result['id']);
                 } // Any other should do.
@@ -638,8 +610,7 @@ class AssetTransforms extends Component
         // If we have a match, copy the file.
         if ($matchFound) {
             /** @var array $matchFound */
-            $from = $asset->getFolder()->path.$this->getTransformSubpath($asset,
-                    AssetTransformIndex::create($matchFound));
+            $from = $asset->getFolder()->path.$this->getTransformSubpath($asset, new AssetTransformIndex($matchFound));
             $to = $asset->getFolder()->path.$this->getTransformSubpath($asset,
                     $index);
 
@@ -686,8 +657,23 @@ class AssetTransforms extends Component
                 return $transform;
             }
 
-            if (is_object($transform) || is_array($transform)) {
-                return AssetTransform::create($transform);
+            if (is_object($transform)) {
+                return new AssetTransform(ArrayHelper::toArray($transform, [
+                    'id',
+                    'name',
+                    'handle',
+                    'width',
+                    'height',
+                    'format',
+                    'dimensionChangeTime',
+                    'mode',
+                    'position',
+                    'quality',
+                ]));
+            }
+
+            if (is_array($transform)) {
+                return new AssetTransform($transform);
             }
 
             return null;
@@ -738,9 +724,8 @@ class AssetTransforms extends Component
      */
     public function getPendingTransformIndexIds()
     {
-        return (new Query())
+        return $this->_createTransformIndexQuery()
             ->select('id')
-            ->from('{{%assettransformindex}}')
             ->where(['and', 'fileExists = 0', 'inProgress = 0'])
             ->column();
     }
@@ -754,15 +739,12 @@ class AssetTransforms extends Component
      */
     public function getTransformIndexModelById($transformId)
     {
-        // Check if an entry exists already
-        $entry = (new Query())
-            ->select('ti.*')
-            ->from('{{%assettransformindex}} ti')
-            ->where('ti.id = :id', [':id' => $transformId])
+        $entry = $this->_createTransformIndexQuery()
+            ->where(['id' => $transformId])
             ->one();
 
         if ($entry) {
-            return AssetTransformIndex::create($entry);
+            return new AssetTransformIndex($entry);
         }
 
         return null;
@@ -778,16 +760,15 @@ class AssetTransforms extends Component
      */
     public function getTransformIndexModelByAssetIdAndHandle($assetId, $transformHandle)
     {
-        // Check if an entry exists already
-        $entry = (new Query())
-            ->select('ti.*')
-            ->from('{{%assettransformindex}} ti')
-            ->where('ti.assetId = :assetId AND ti.location = :location',
-                [':assetId' => $assetId, ':location' => '_'.$transformHandle])
+        $result = $this->_createTransformIndexQuery()
+            ->where([
+                'assetId' => $assetId,
+                'location' => '_'.$transformHandle
+            ])
             ->one();
 
-        if ($entry) {
-            return AssetTransformIndex::create($entry);
+        if ($result) {
+            return new AssetTransformIndex($result);
         }
 
         return null;
@@ -1130,10 +1111,12 @@ class AssetTransforms extends Component
     {
         $thumbFolders = Io::getFolderContents(Craft::$app->getPath()->getResizedAssetsPath());
 
-        foreach ($thumbFolders as $folder) {
-            if (is_dir($folder)) {
-                Io::deleteFile($folder.'/'.$asset->id.'.'.$this->_getThumbExtension($asset),
-                    true);
+        if ($thumbFolders) {
+            foreach ($thumbFolders as $folder) {
+                if (is_dir($folder)) {
+                    Io::deleteFile($folder.'/'.$asset->id.'.'.$this->_getThumbExtension($asset),
+                        true);
+                }
             }
         }
 
@@ -1166,17 +1149,15 @@ class AssetTransforms extends Component
      */
     public function getAllCreatedTransformsForAsset(Asset $asset)
     {
-        $transforms = (new Query())
-            ->select('*')
-            ->from('{{%assettransformindex}}')
-            ->where('assetId = :assetId', [':assetId' => $asset->id])
+        $results = $this->_createTransformIndexQuery()
+            ->where(['assetId' => $asset->id])
             ->all();
 
-        foreach ($transforms as $key => $value) {
-            $transforms[$key] = AssetTransformIndex::create($value);
+        foreach ($results as $key => $result) {
+            $results[$key] = new AssetTransformIndex($result);
         }
 
-        return $transforms;
+        return $results;
     }
 
     /**
@@ -1198,6 +1179,30 @@ class AssetTransforms extends Component
 
     // Private Methods
     // =========================================================================
+
+    /**
+     * Returns a Query object prepped for retrieving transform indexes.
+     *
+     * @return Query
+     */
+    private function _createTransformIndexQuery()
+    {
+        return (new Query())
+            ->select([
+                'id',
+                'assetId',
+                'filename',
+                'format',
+                'location',
+                'volumeId',
+                'fileExists',
+                'inProgress',
+                'dateIndexed',
+                'dateUpdated',
+                'dateCreated',
+            ])
+            ->from('{{%assettransformindex}}');
+    }
 
     /**
      * Returns a Query object prepped for retrieving transforms.

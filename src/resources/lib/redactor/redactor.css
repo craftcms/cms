@@ -3,7 +3,7 @@
 
 	http://imperavi.com/redactor/
 
-	Copyright (c) 2009-2016, Imperavi LLC.
+	Copyright (c) 2009-2016, Imperavi Oy.
 	License: http://imperavi.com/redactor/license/
 */
 .redactor-box {
@@ -255,6 +255,39 @@
 
 .redactor-structure div:before {
   content: "DIV"; }
+
+#redactor-image-box {
+  position: relative;
+  max-width: 100%;
+  display: inline-block;
+  line-height: 0;
+  outline: 1px dashed rgba(0, 0, 0, 0.6); }
+
+#redactor-image-editter {
+  position: absolute;
+  z-index: 5;
+  top: 50%;
+  left: 50%;
+  margin-top: -11px;
+  margin-left: -18px;
+  line-height: 1;
+  background-color: #000;
+  color: #fff;
+  font-size: 11px;
+  padding: 7px 10px;
+  cursor: pointer; }
+
+#redactor-image-resizer {
+  position: absolute;
+  z-index: 2;
+  line-height: 1;
+  cursor: nw-resize;
+  bottom: -4px;
+  right: -5px;
+  border: 1px solid #fff;
+  background-color: #000;
+  width: 8px;
+  height: 8px; }
 
 #redactor-droparea {
   position: relative;

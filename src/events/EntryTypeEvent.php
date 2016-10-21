@@ -26,5 +26,5 @@ class EntryTypeEvent extends Event
     /**
      * @var boolean Whether the entry type is brand new
      */
-    public $isNew;
+    public $isNew = false;
 }

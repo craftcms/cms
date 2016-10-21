@@ -9,9 +9,11 @@ namespace craft\app\db;
 
 use Craft;
 use craft\app\db\mysql\QueryBuilder;
+use craft\app\errors\DbConnectException;
 use craft\app\events\DbBackupEvent;
 use craft\app\helpers\ArrayHelper;
 use craft\app\helpers\StringHelper;
+use yii\db\Exception as DbException;
 
 /**
  * @inheritdoc
@@ -29,9 +31,7 @@ class Connection extends \yii\db\Connection
     // =========================================================================
 
     /**
-     * @event Event The event that is triggered before the backup is created.
-     *
-     * You may set [[Event::isValid]] to `false` to prevent the backup from being created.
+     * @event \yii\base\Event The event that is triggered before the backup is created.
      */
     const EVENT_BEFORE_CREATE_BACKUP = 'beforeCreateBackup';
 
@@ -49,10 +49,37 @@ class Connection extends \yii\db\Connection
      * @see   createCommand
      * @since 2.0.7
      */
-    public $commandClass = 'craft\app\db\Command';
+    public $commandClass = \craft\app\db\Command::class;
 
     // Public Methods
     // =========================================================================
+
+    /**
+     * @inheritdoc
+     *
+     * @throws DbConnectException if there are any issues
+     */
+    public function open()
+    {
+        try {
+            parent::open();
+        } catch (DbException $e) {
+            Craft::error($e->getMessage(), __METHOD__);
+
+            // TODO: Multi-db driver check.
+            if (!extension_loaded('pdo')) {
+                throw new DbConnectException(Craft::t('app', 'Craft CMS requires the PDO extension to operate.'));
+            } else if (!extension_loaded('pdo_mysql')) {
+                throw new DbConnectException(Craft::t('app', 'Craft CMS requires the PDO_MYSQL driver to operate.'));
+            } else {
+                Craft::error($e->getMessage(), __METHOD__);
+                throw new DbConnectException(Craft::t('app', 'Craft CMS can’t connect to the database with the credentials in craft/config/db.php.'));
+            }
+        } catch (\Exception $e) {
+            Craft::error($e->getMessage(), __METHOD__);
+            throw new DbConnectException(Craft::t('app', 'Craft CMS can’t connect to the database with the credentials in craft/config/db.php.'));
+        }
+    }
 
     /**
      * Performs a database backup.
@@ -71,23 +98,18 @@ class Connection extends \yii\db\Connection
             $backup->setIgnoreDataTables($ignoreDataTables);
         }
 
-        $event = new DbBackupEvent();
-        $this->trigger(self::EVENT_BEFORE_CREATE_BACKUP,
-            $event
-        );
+        // Fire a 'beforeCreateBackup' event
+        $this->trigger(self::EVENT_BEFORE_CREATE_BACKUP);
 
-        if ($event->isValid) {
-            if (($backupFile = $backup->run()) !== false) {
+        if (($backupFile = $backup->run()) !== false) {
 
-                // Fire an 'afterCreateBackup' event
-                $this->trigger(self::EVENT_AFTER_CREATE_BACKUP,
-                    new DbBackupEvent(['filePath' => $backupFile])
-                );
+            // Fire an 'afterCreateBackup' event
+            $this->trigger(self::EVENT_AFTER_CREATE_BACKUP,
+                new DbBackupEvent(['filePath' => $backupFile])
+            );
 
-                return $backupFile;
-            }
+            return $backupFile;
         }
-
 
         return false;
     }

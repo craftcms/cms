@@ -1,4 +1,4 @@
-{% set drafts = craft.app.entryRevisions.getEditableDraftsByEntryId(entry.id, entry.locale) %}
+{% set drafts = craft.app.entryRevisions.getEditableDraftsByEntryId(entry.id, entry.siteId) %}
 {% set baseUrl = 'entries/'~entry.getSection().handle~'/'~entry.id~(entry.slug ? '-'~entry.slug)~'/' %}
 
 <div id="revision-btn" class="btn menubtn">{{ revisionLabel }}</div>
@@ -21,14 +21,14 @@
 	{% endif %}
 
 	{% if section.enableVersioning %}
-		{% set versions = craft.app.entryRevisions.getVersionsByEntryId(entry.id, entry.locale) %}
+		{% set versions = craft.app.entryRevisions.getVersionsByEntryId(entry.id, entry.siteId) %}
 		{% if versions %}
 			<h6>{{ "Recent Versions"|t('app') }}</h6>
 			<ul class="padded">
 				{% for version in versions %}
 					<li><a{% if entry.className() == 'craft\\app\\models\\EntryVersion' and version.versionId == versionId %} class="sel"{% endif %} href="{{ url(baseUrl~'versions/'~version.versionId) }}">
 						{{ "Version {num}"|t('app', { num: version.num }) }}
-						<span class="light">{{ version.dateCreated.uiTimestamp() }}, {{ version.creator }}</span>
+						<span class="light">{{ version.dateCreated|timestamp('short') }}, {{ version.creator }}</span>
 					</a></li>
 				{% endfor %}
 			</ul>

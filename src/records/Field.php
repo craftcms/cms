@@ -10,20 +10,23 @@ namespace craft\app\records;
 use yii\db\ActiveQueryInterface;
 use Craft;
 use craft\app\db\ActiveRecord;
+use craft\app\validators\HandleValidator;
 
 /**
  * Class Field record.
  *
- * @property integer    $id           ID
- * @property integer    $groupId      Group ID
- * @property string     $name         Name
- * @property string     $handle       Handle
- * @property string     $context      Context
- * @property string     $instructions Instructions
- * @property boolean    $translatable Translatable
- * @property string     $type         Type
- * @property array      $settings     Settings
- * @property FieldGroup $group        Group
+ * @property integer    $id                   ID
+ * @property integer    $groupId              Group ID
+ * @property string     $name                 Name
+ * @property string     $handle               Handle
+ * @property string     $context              Context
+ * @property string     $instructions         Instructions
+ * @property boolean    $translatable         Translatable
+ * @property string     $translationMethod    Translation method
+ * @property string     $translationKeyFormat Translation key format
+ * @property string     $type                 Type
+ * @property array      $settings             Settings
+ * @property FieldGroup $group                Group
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since  3.0
@@ -50,8 +53,7 @@ class Field extends ActiveRecord
         'level',
         'lft',
         'link',
-        'locale',
-        'localeEnabled',
+        'enabledForSite',
         'name', // global set-specific
         'next',
         'next',
@@ -64,6 +66,7 @@ class Field extends ActiveRecord
         'root',
         'searchScore',
         'siblings',
+        'site',
         'slug',
         'sortOrder',
         'status',
@@ -83,45 +86,6 @@ class Field extends ActiveRecord
     // =========================================================================
 
     /**
-     * @inheritdoc
-     */
-    public function rules()
-    {
-        // TODO: MySQL specific
-        $maxHandleLength = 64 - strlen(Craft::$app->getContent()->fieldColumnPrefix);
-
-        return [
-            [
-                ['handle'],
-                'craft\\app\\validators\\Handle',
-                'reservedWords' => [
-                    'archived',
-                    'children',
-                    'dateCreated',
-                    'dateUpdated',
-                    'enabled',
-                    'id',
-                    'link',
-                    'locale',
-                    'parents',
-                    'siblings',
-                    'uid',
-                    'uri',
-                    'url',
-                    'ref',
-                    'status',
-                    'title'
-                ]
-            ],
-            [['handle'], 'unique', 'targetAttribute' => ['handle', 'context']],
-            [['name', 'handle', 'context', 'type'], 'required'],
-            [['name'], 'string', 'max' => 255],
-            [['handle'], 'string', 'max' => $maxHandleLength],
-            [['type'], 'string', 'max' => 150],
-        ];
-    }
-
-    /**
      * Initializes the application component.
      *
      * @return void
@@ -131,7 +95,7 @@ class Field extends ActiveRecord
         parent::init();
 
         // Store the old handle in case it's ever requested.
-        //$this->attachEventHandler('onAfterFind', [$this, 'storeOldHandle']);
+        $this->on(self::EVENT_AFTER_FIND, [$this, 'storeOldHandle']);
     }
 
     /**
@@ -171,6 +135,6 @@ class Field extends ActiveRecord
      */
     public function getGroup()
     {
-        return $this->hasOne(FieldGroup::className(), ['id' => 'groupId']);
+        return $this->hasOne(FieldGroup::class, ['id' => 'groupId']);
     }
 }

@@ -47,18 +47,6 @@ class Temp extends Local
         return true;
     }
 
-    /**
-     * @inheritdoc
-     */
-    public static function populateModel($model, $config)
-    {
-        if (isset($config['path'])) {
-            $config['path'] = rtrim($config['path'], '/');
-        }
-
-        parent::populateModel($model, $config);
-    }
-
     // Properties
     // =========================================================================
 
@@ -75,13 +63,23 @@ class Temp extends Local
     /**
      * Constructor
      */
-    public function __construct()
+    public function init()
     {
-        $this->path = Craft::$app->getPath()->getAssetsTempVolumePath();
-        $this->url = rtrim(Url::getResourceUrl(), '/').'/tempassets/';
-        $this->name = Craft::t('app', 'Temporary source');
+        parent::init();
 
-        parent::__construct();
+        if (isset($this->path)) {
+            $this->path = rtrim($this->path, '/');
+        } else {
+            $this->path = Craft::$app->getPath()->getAssetsTempVolumePath();
+        }
+
+        if (!isset($this->url)) {
+            $this->url = rtrim(Url::getResourceUrl(), '/').'/tempassets/';
+        }
+
+        if (!isset($this->name)) {
+            $this->name = Craft::t('app', 'Temporary source');
+        }
     }
 
     /**

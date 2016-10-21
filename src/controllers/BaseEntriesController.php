@@ -39,9 +39,9 @@ abstract class BaseEntriesController extends Controller
         $userSessionService = Craft::$app->getUser();
         $permissionSuffix = ':'.$entry->sectionId;
 
-        if (Craft::$app->getIsLocalized()) {
-            // Make sure they have access to this locale
-            $this->requirePermission('editLocale:'.$entry->locale);
+        if (Craft::$app->getIsMultiSite()) {
+            // Make sure they have access to this site
+            $this->requirePermission('editSite:'.$entry->siteId);
         }
 
         // Make sure the user is allowed to edit entries in this section
@@ -53,7 +53,7 @@ abstract class BaseEntriesController extends Controller
             $this->requirePermission('createEntries'.$permissionSuffix);
         } else {
             switch ($entry::className()) {
-                case Entry::className(): {
+                case Entry::class: {
                     // If it's another user's entry (and it's not a Single), make sure they have permission to edit those
                     if (
                         $entry->authorId != $userSessionService->getIdentity()->id &&
@@ -65,7 +65,7 @@ abstract class BaseEntriesController extends Controller
                     break;
                 }
 
-                case EntryDraft::className(): {
+                case EntryDraft::class: {
                     // If it's another user's draft, make sure they have permission to edit those
                     /** @var EntryDraft $entry */
                     if ($entry->creatorId != $userSessionService->getIdentity()->id) {

@@ -18,6 +18,7 @@ use craft\app\elements\db\ElementQuery;
 use craft\app\elements\db\ElementQueryInterface;
 use craft\app\helpers\StringHelper;
 use craft\app\tasks\LocalizeRelations;
+use craft\app\validators\ArrayValidator;
 use yii\base\NotSupportedException;
 
 /**
@@ -74,9 +75,9 @@ abstract class BaseRelationField extends Field implements PreviewableFieldInterf
     public $source;
 
     /**
-     * @var string The locale that this field should relate elements from
+     * @var integer The site that this field should relate elements from
      */
-    public $targetLocale;
+    public $targetSiteId;
 
     /**
      * @var string The view mode
@@ -92,6 +93,11 @@ abstract class BaseRelationField extends Field implements PreviewableFieldInterf
      * @var string The label that should be used on the selection input
      */
     public $selectionLabel;
+
+    /**
+     * @var integer Whether each site should get its own unique set of relations
+     */
+    public $localizeRelations = false;
 
     /**
      * @var boolean Whether to allow multiple source selection in the settings
@@ -139,46 +145,13 @@ abstract class BaseRelationField extends Field implements PreviewableFieldInterf
         $attributes = parent::settingsAttributes();
         $attributes[] = 'sources';
         $attributes[] = 'source';
-        $attributes[] = 'targetLocale';
+        $attributes[] = 'targetSiteId';
         $attributes[] = 'viewMode';
         $attributes[] = 'limit';
         $attributes[] = 'selectionLabel';
+        $attributes[] = 'localizeRelations';
 
         return $attributes;
-    }
-
-    /**
-     * @inheritdoc
-     */
-    public function beforeSave()
-    {
-        $this->_makeExistingRelationsTranslatable = false;
-
-        if ($this->id && $this->translatable) {
-            /** @var Field $existingField */
-            $existingField = Craft::$app->getFields()->getFieldById($this->id);
-
-            if ($existingField && !$existingField->translatable) {
-                $this->_makeExistingRelationsTranslatable = true;
-            }
-        }
-
-        return parent::beforeSave();
-    }
-
-    /**
-     * @inheritdoc
-     */
-    public function afterSave()
-    {
-        if ($this->_makeExistingRelationsTranslatable) {
-            Craft::$app->getTasks()->queueTask([
-                'type' => LocalizeRelations::className(),
-                'fieldId' => $this->id,
-            ]);
-        }
-
-        parent::afterSave();
     }
 
     /**
@@ -191,7 +164,7 @@ abstract class BaseRelationField extends Field implements PreviewableFieldInterf
                 'allowMultipleSources' => $this->allowMultipleSources,
                 'allowLimit' => $this->allowLimit,
                 'sources' => $this->getSourceOptions(),
-                'targetLocaleFieldHtml' => $this->getTargetLocaleFieldHtml(),
+                'targetSiteFieldHtml' => $this->getTargetSiteFieldHtml(),
                 'viewModeFieldHtml' => $this->getViewModeFieldHtml(),
                 'field' => $this,
                 'displayName' => static::displayName(),
@@ -202,27 +175,18 @@ abstract class BaseRelationField extends Field implements PreviewableFieldInterf
     /**
      * @inheritdoc
      */
-    public function validateValue($value, $element)
+    public function getElementValidationRules()
     {
-        /** @var ElementQuery $value */
-        $errors = [];
-
-        // Do we need to validate the number of selections?
-        if ($this->required || ($this->allowLimit && $this->limit)) {
-            $total = $value->count();
-
-            if ($this->required && $total == 0) {
-                $errors[] = Craft::t('yii', '{attribute} cannot be blank.');
-            } else if ($this->allowLimit && $this->limit && $total > $this->limit) {
-                if ($this->limit == 1) {
-                    $errors[] = Craft::t('app', 'There can’t be more than one selection.');
-                } else {
-                    $errors[] = Craft::t('app', 'There can’t be more than {limit} selections.', ['limit' => $this->limit]);
-                }
-            }
-        }
-
-        return $errors;
+        // Don't call parent::getElementValidationRules() here - we'll do our own required validation
+        return [
+            [
+                ArrayValidator::class,
+                'min' => ($this->required ? 1 : null),
+                'max' => ($this->allowLimit && $this->limit ? $this->limit : null),
+                'tooFew' => Craft::t('app', '{attribute} should contain at least {min, number} {min, plural, one{selection} other{selections}}.'),
+                'tooMany' => Craft::t('app', '{attribute} should contain at most {max, number} {max, plural, one{selection} other{selections}}.'),
+            ],
+        ];
     }
 
     /**
@@ -230,11 +194,12 @@ abstract class BaseRelationField extends Field implements PreviewableFieldInterf
      */
     public function prepareValue($value, $element)
     {
+        /** @var Element $element */
         /** @var Element $class */
         $class = static::elementType();
         /** @var ElementQuery $query */
         $query = $class::find()
-            ->locale($this->getTargetLocale($element));
+            ->siteId($this->getTargetSiteId($element));
 
         // $value will be an array of element IDs if there was a validation error or we're loading a draft/version.
         if (is_array($value)) {
@@ -244,7 +209,7 @@ abstract class BaseRelationField extends Field implements PreviewableFieldInterf
         } else if ($value !== '' && !empty($element->id)) {
             $query->relatedTo([
                 'sourceElement' => $element->id,
-                'sourceLocale' => $element->locale,
+                'sourceSite' => $element->siteId,
                 'field' => $this->id
             ]);
 
@@ -328,22 +293,6 @@ abstract class BaseRelationField extends Field implements PreviewableFieldInterf
     /**
      * @inheritdoc
      */
-    public function afterElementSave(ElementInterface $element)
-    {
-        $value = $this->getElementValue($element);
-
-        if ($value instanceof ElementQueryInterface) {
-            $value = $value->id;
-        }
-
-        if ($value !== null) {
-            Craft::$app->getRelations()->saveRelations($this, $element, $value);
-        }
-    }
-
-    /**
-     * @inheritdoc
-     */
     public function getStaticHtml($value, $element)
     {
         /** @var ElementQuery $value */
@@ -390,6 +339,7 @@ abstract class BaseRelationField extends Field implements PreviewableFieldInterf
      */
     public function getEagerLoadingMap($sourceElements)
     {
+        /** @var Element|null $firstElement */
         $firstElement = isset($sourceElements[0]) ? $sourceElements[0] : null;
 
         // Get the source element IDs
@@ -408,25 +358,80 @@ abstract class BaseRelationField extends Field implements PreviewableFieldInterf
                     'and',
                     'fieldId=:fieldId',
                     ['in', 'sourceId', $sourceElementIds],
-                    ['or', 'sourceLocale=:sourceLocale', 'sourceLocale is null']
+                    ['or', 'sourceSiteId=:sourceSiteId', 'sourceSiteId is null']
                 ],
                 [
                     ':fieldId' => $this->id,
-                    ':sourceLocale' => ($firstElement ? $firstElement->locale : null),
+                    ':sourceSiteId' => ($firstElement ? $firstElement->siteId : null),
                 ])
             ->orderBy('sortOrder')
             ->all();
 
-        // Figure out which target locale to use
-        $targetLocale = $this->getTargetLocale($firstElement);
+        // Figure out which target site to use
+        $targetSite = $this->getTargetSiteId($firstElement);
 
         return [
             'elementType' => static::elementType(),
             'map' => $map,
             'criteria' => [
-                'locale' => $targetLocale
+                'siteId' => $targetSite
             ],
         ];
+    }
+
+    // Events
+    // -------------------------------------------------------------------------
+
+    /**
+     * @inheritdoc
+     */
+    public function beforeSave($isNew)
+    {
+        $this->_makeExistingRelationsTranslatable = false;
+
+        if ($this->id && $this->localizeRelations) {
+            /** @var Field $existingField */
+            $existingField = Craft::$app->getFields()->getFieldById($this->id);
+
+            if ($existingField && $existingField instanceof BaseRelationField && !$existingField->localizeRelations) {
+                $this->_makeExistingRelationsTranslatable = true;
+            }
+        }
+
+        return parent::beforeSave($isNew);
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function afterSave($isNew)
+    {
+        if ($this->_makeExistingRelationsTranslatable) {
+            Craft::$app->getTasks()->queueTask([
+                'type' => LocalizeRelations::class,
+                'fieldId' => $this->id,
+            ]);
+        }
+
+        parent::afterSave($isNew);
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function afterElementSave(ElementInterface $element, $isNew)
+    {
+        $value = $this->getElementValue($element);
+
+        if ($value instanceof ElementQueryInterface) {
+            $value = $value->id;
+        }
+
+        if ($value !== null) {
+            Craft::$app->getRelations()->saveRelations($this, $element, $value);
+        }
+
+        parent::afterElementSave($element, $isNew);
     }
 
     // Protected Methods
@@ -450,12 +455,12 @@ abstract class BaseRelationField extends Field implements PreviewableFieldInterf
         } else {
             $selectedElementsQuery
                 ->status(null)
-                ->localeEnabled(null);
+                ->enabledForSite(false);
         }
 
         $selectionCriteria = $this->getInputSelectionCriteria();
-        $selectionCriteria['localeEnabled'] = null;
-        $selectionCriteria['locale'] = $this->getTargetLocale($element);
+        $selectionCriteria['enabledForSite'] = null;
+        $selectionCriteria['siteId'] = $this->getTargetSiteId($element);
 
         return [
             'jsClass' => $this->inputJsClass,
@@ -503,59 +508,59 @@ abstract class BaseRelationField extends Field implements PreviewableFieldInterf
     }
 
     /**
-     * Returns the locale that target elements should have.
+     * Returns the site ID that target elements should have.
      *
      * @param ElementInterface|null $element
      *
-     * @return string
+     * @return integer
      */
-    protected function getTargetLocale($element)
+    protected function getTargetSiteId($element)
     {
         /** @var Element|null $element */
-        if (Craft::$app->getIsLocalized()) {
-            if ($this->targetLocale) {
-                return $this->targetLocale;
+        if (Craft::$app->getIsMultiSite()) {
+            if ($this->targetSiteId) {
+                return $this->targetSiteId;
             }
 
             if (!empty($element)) {
-                return $element->locale;
+                return $element->siteId;
             }
         }
 
-        return Craft::$app->language;
+        return Craft::$app->getSites()->currentSite->id;
     }
 
     /**
-     * Returns the HTML for the Target Locale setting.
+     * Returns the HTML for the Target Site setting.
      *
      * @return string|null
      */
-    protected function getTargetLocaleFieldHtml()
+    protected function getTargetSiteFieldHtml()
     {
         /** @var Element $class */
         $class = static::elementType();
 
-        if (Craft::$app->getIsLocalized() && $class::isLocalized()) {
-            $localeOptions = [
+        if (Craft::$app->getIsMultiSite() && $class::isLocalized()) {
+            $siteOptions = [
                 ['label' => Craft::t('app', 'Same as source'), 'value' => null]
             ];
 
-            foreach (Craft::$app->getI18n()->getSiteLocales() as $locale) {
-                $localeOptions[] = [
-                    'label' => $locale->getDisplayName(Craft::$app->language),
-                    'value' => $locale->id
+            foreach (Craft::$app->getSites()->getAllSites() as $site) {
+                $siteOptions[] = [
+                    'label' => Craft::t('site', $site->name),
+                    'value' => $site->id
                 ];
             }
 
             return Craft::$app->getView()->renderTemplateMacro('_includes/forms', 'selectField',
                 [
                     [
-                        'label' => Craft::t('app', 'Target Locale'),
-                        'instructions' => Craft::t('app', 'Which locale do you want to select {type} in?', ['type' => StringHelper::toLowerCase(static::displayName())]),
-                        'id' => 'targetLocale',
-                        'name' => 'targetLocale',
-                        'options' => $localeOptions,
-                        'value' => $this->targetLocale
+                        'label' => Craft::t('app', 'Target Site'),
+                        'instructions' => Craft::t('app', 'Which site do you want to select {type} in?', ['type' => StringHelper::toLowerCase(static::displayName())]),
+                        'id' => 'targetSiteId',
+                        'name' => 'targetSiteId',
+                        'options' => $siteOptions,
+                        'value' => $this->targetSiteId
                     ]
                 ]);
         }

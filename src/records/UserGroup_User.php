@@ -54,7 +54,7 @@ class UserGroup_User extends ActiveRecord
      */
     public function getGroup()
     {
-        return $this->hasOne(UserGroup::className(), ['id' => 'groupId']);
+        return $this->hasOne(UserGroup::class, ['id' => 'groupId']);
     }
 
     /**
@@ -64,6 +64,6 @@ class UserGroup_User extends ActiveRecord
      */
     public function getUser()
     {
-        return $this->hasOne(User::className(), ['id' => 'userId']);
+        return $this->hasOne(User::class, ['id' => 'userId']);
     }
 }

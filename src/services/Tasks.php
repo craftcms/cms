@@ -12,6 +12,7 @@ use craft\app\base\Task;
 use craft\app\base\TaskInterface;
 use craft\app\db\Query;
 use craft\app\errors\MissingComponentException;
+use craft\app\events\TaskEvent;
 use craft\app\helpers\Component as ComponentHelper;
 use craft\app\helpers\Header;
 use craft\app\helpers\Json;
@@ -37,9 +38,24 @@ class Tasks extends Component
     // =========================================================================
 
     /**
-     * @var string The task interface name
+     * @event TaskEvent The event that is triggered before a task is saved.
      */
-    const TASK_INTERFACE = 'craft\app\base\TaskInterface';
+    const EVENT_BEFORE_SAVE_TASK = 'beforeSaveTask';
+
+    /**
+     * @event TaskEvent The event that is triggered after a task is saved.
+     */
+    const EVENT_AFTER_SAVE_TASK = 'afterSaveTask';
+
+    /**
+     * @event TaskEvent The event that is triggered before a task is deleted.
+     */
+    const EVENT_BEFORE_DELETE_TASK = 'beforeDeleteTask';
+
+    /**
+     * @event TaskEvent The event that is triggered after a task is deleted.
+     */
+    const EVENT_AFTER_DELETE_TASK = 'afterDeleteTask';
 
     // Properties
     // =========================================================================
@@ -106,71 +122,100 @@ class Tasks extends Component
         }
 
         try {
-            return ComponentHelper::createComponent($config, self::TASK_INTERFACE);
+            /** @var Task $task */
+            $task = ComponentHelper::createComponent($config, TaskInterface::class);
         } catch (MissingComponentException $e) {
             $config['errorMessage'] = $e->getMessage();
+            $config['expectedType'] = $config['type'];
+            unset($config['type']);
 
-            return MissingTask::create($config);
+            $task = new MissingTask($config);
         }
+
+        return $task;
     }
 
     /**
      * Saves a task.
      *
-     * @param TaskInterface $task     The task to be saved
-     * @param boolean       $validate Whether the task should be validated first
+     * @param TaskInterface $task          The task to be saved
+     * @param boolean       $runValidation Whether the task should be validated
      *
      * @return boolean Whether the task was saved successfully
      * @throws \Exception
      */
-    public function saveTask(TaskInterface $task, $validate = true)
+    public function saveTask(TaskInterface $task, $runValidation = true)
     {
         /** @var Task $task */
-        if (!$validate || $task->validate()) {
-            $transaction = Craft::$app->getDb()->beginTransaction();
-            try {
-                if ($task->getIsNew()) {
-                    $taskRecord = new TaskRecord();
-                } else {
-                    $taskRecord = $this->_getTaskRecordById($task->id);
-                }
+        if ($runValidation && !$task->validate()) {
+            Craft::info('Task not saved due to validation error.', __METHOD__);
 
-                $taskRecord->type = $task->getType();
-                $taskRecord->status = $task->status;
-                $taskRecord->description = $task->description;
-                $taskRecord->totalSteps = $task->totalSteps;
-                $taskRecord->currentStep = $task->currentStep;
-                $taskRecord->settings = $task->getSettings();
-
-                if (!$task->getIsNew()) {
-                    $taskRecord->save(false);
-                } else if (!$task->parentId) {
-                    $taskRecord->makeRoot(false);
-                } else {
-                    $parentTaskRecord = $this->_getTaskRecordById($task->parentId);
-                    $taskRecord->appendTo($parentTaskRecord, false);
-                }
-
-                if ($task->getIsNew()) {
-                    $task->id = $taskRecord->id;
-
-                    if ($task->parentId) {
-                        // We'll be needing this soon
-                        $this->_taskRecordsById[$taskRecord->id] = $taskRecord;
-                    }
-                }
-
-                $transaction->commit();
-
-                return true;
-            } catch (\Exception $e) {
-                $transaction->rollBack();
-
-                throw $e;
-            }
-        } else {
             return false;
         }
+
+        $isNewTask = $task->getIsNew();
+
+        // Fire a 'beforeSaveTask' event
+        $this->trigger(self::EVENT_BEFORE_SAVE_TASK, new TaskEvent([
+            'task' => $task,
+            'isNew' => $isNewTask,
+        ]));
+
+        $transaction = Craft::$app->getDb()->beginTransaction();
+        try {
+            if (!$task->beforeSave($isNewTask)) {
+                $transaction->rollBack();
+
+                return false;
+            }
+
+            if ($task->getIsNew()) {
+                $taskRecord = new TaskRecord();
+            } else {
+                $taskRecord = $this->_getTaskRecordById($task->id);
+            }
+
+            $taskRecord->type = $task->getType();
+            $taskRecord->status = $task->status;
+            $taskRecord->description = $task->description;
+            $taskRecord->totalSteps = $task->totalSteps;
+            $taskRecord->currentStep = $task->currentStep;
+            $taskRecord->settings = $task->getSettings();
+
+            if (!$task->getIsNew()) {
+                $taskRecord->save(false);
+            } else if (!$task->parentId) {
+                $taskRecord->makeRoot(false);
+            } else {
+                $parentTaskRecord = $this->_getTaskRecordById($task->parentId);
+                $taskRecord->appendTo($parentTaskRecord, false);
+            }
+
+            if ($task->getIsNew()) {
+                $task->id = $taskRecord->id;
+
+                if ($task->parentId) {
+                    // We'll be needing this soon
+                    $this->_taskRecordsById[$taskRecord->id] = $taskRecord;
+                }
+            }
+
+            $task->afterSave($isNewTask);
+
+            $transaction->commit();
+        } catch (\Exception $e) {
+            $transaction->rollBack();
+
+            throw $e;
+        }
+
+        // Fire an 'afterSaveTask' event
+        $this->trigger(self::EVENT_AFTER_SAVE_TASK, new TaskEvent([
+            'task' => $task,
+            'isNew' => $isNewTask,
+        ]));
+
+        return true;
     }
 
     /**
@@ -299,7 +344,7 @@ class Tasks extends Component
         }
 
         if ($error === null) {
-            Craft::info('Finished task '.$task->id.' ('.$task->type.').', __METHOD__);
+            Craft::info('Finished task '.$task->id.' ('.get_class($task).').', __METHOD__);
 
             // We're done with this task, nuke it.
             $taskRecord->deleteWithChildren();
@@ -327,7 +372,7 @@ class Tasks extends Component
         $this->saveTask($task);
 
         // Log it
-        $logMessage = 'Encountered an error running task '.$task->id.' ('.$task->type.')';
+        $logMessage = 'Encountered an error running task '.$task->id.' ('.get_class($task).')';
 
         if ($task->currentStep) {
             $logMessage .= ', step '.$task->currentStep;
@@ -355,10 +400,8 @@ class Tasks extends Component
      */
     public function getTaskById($taskId)
     {
-        $result = (new Query())
-            ->select('*')
-            ->from('{{%tasks}}')
-            ->where('id = :id', [':id' => $taskId])
+        $result = $this->_createTaskQuery()
+            ->where(['id' => $taskId])
             ->one();
 
         if ($result !== false) {
@@ -375,10 +418,7 @@ class Tasks extends Component
      */
     public function getAllTasks()
     {
-        $tasks = (new Query())
-            ->select('*')
-            ->from('{{%tasks}}')
-            ->orderBy('root asc, lft asc')
+        $tasks = $this->_createTaskQuery()
             ->all();
 
         foreach ($tasks as $key => $value) {
@@ -396,9 +436,7 @@ class Tasks extends Component
     public function getRunningTask()
     {
         if ($this->_runningTask === null) {
-            $result = (new Query())
-                ->select('*')
-                ->from('{{%tasks}}')
+            $result = $this->_createTaskQuery()
                 ->where(
                     [
                         'and',
@@ -435,8 +473,7 @@ class Tasks extends Component
     public function getIsTaskRunning()
     {
         // Remember that a root task could appear to be stagnant if it has sub-tasks.
-        return (new Query())
-            ->from('{{%tasks}}')
+        return $this->_createTaskQuery()
             ->where(
                 ['and', 'status = :status'/*, 'dateUpdated >= :aMinuteAgo'*/],
                 [
@@ -464,8 +501,7 @@ class Tasks extends Component
             $params[':type'] = $type;
         }
 
-        return (new Query())
-            ->from('{{%tasks}}')
+        return $this->_createTaskQuery()
             ->where($conditions, $params)
             ->exists();
     }
@@ -480,17 +516,12 @@ class Tasks extends Component
      */
     public function getPendingTasks($type = null, $limit = null)
     {
-        $conditions = ['and', 'lft = 1', 'status = :status'];
-        $params = [':status' => Task::STATUS_PENDING];
+        $query = $this->_createTaskQuery()
+            ->where(['lft' => 1, 'status' => Task::STATUS_PENDING]);
 
         if ($type) {
-            $conditions[] = 'type = :type';
-            $params[':type'] = $type;
+            $query->andWhere(['type' => $type]);
         }
-
-        $query = (new Query())
-            ->from('{{%tasks}}')
-            ->where($conditions, $params);
 
         if ($limit) {
             $query->limit($limit);
@@ -512,10 +543,8 @@ class Tasks extends Component
      */
     public function getHaveTasksFailed()
     {
-        return (new Query())
-            ->from('{{%tasks}}')
-            ->where(['and', 'level = 0', 'status = :status'],
-                [':status' => Task::STATUS_ERROR])
+        return $this->_createTaskQuery()
+            ->where(['level' => 0, 'status' => Task::STATUS_ERROR])
             ->exists();
     }
 
@@ -526,8 +555,7 @@ class Tasks extends Component
      */
     public function getTotalTasks()
     {
-        return (new Query())
-            ->from('{{%tasks}}')
+        return $this->_createTaskQuery()
             ->where(
                 ['and', 'lft = 1', 'status != :status'],
                 [':status' => Task::STATUS_ERROR]
@@ -562,7 +590,18 @@ class Tasks extends Component
                 if ($taskRecord) {
                     /** @var TaskRecord $taskRecord */
                     $this->_taskRecordsById[$taskRecord->id] = $taskRecord;
-                    $this->_nextPendingTask = $this->createTask($taskRecord);
+                    $this->_nextPendingTask = $this->createTask($taskRecord->toArray([
+                        'id',
+                        'dateCreated',
+                        'dateUpdated',
+                        'level',
+                        'description',
+                        'totalSteps',
+                        'currentStep',
+                        'status',
+                        'type',
+                        'settings',
+                    ]));
                 } else {
                     $this->_nextPendingTask = false;
                 }
@@ -587,17 +626,64 @@ class Tasks extends Component
      */
     public function deleteTaskById($taskId)
     {
-        $taskRecord = $this->_getTaskRecordById($taskId);
+        $task = $this->getTaskById($taskId);
+
+        if (!$task) {
+            return false;
+        }
+
+        return $this->deleteTask($task);
+    }
+
+    /**
+     * Deletes a task.
+     *
+     * @param TaskInterface $task The task
+     *
+     * @return boolean Whether the task was deleted successfully
+     * @throws \Exception if reasons
+     */
+    public function deleteTask(TaskInterface $task)
+    {
+        /** @var Task $task */
+        $taskRecord = $this->_getTaskRecordById($task->id);
 
         if ($taskRecord === null) {
             // Fake it
             return true;
         }
 
-        $success = $taskRecord->deleteWithChildren();
-        unset($this->_taskRecordsById[$taskId]);
+        // Fire a 'beforeDeleteTask' event
+        $this->trigger(self::EVENT_BEFORE_DELETE_TASK, new TaskEvent([
+            'task' => $task,
+        ]));
 
-        return $success;
+        $transaction = Craft::$app->getDb()->beginTransaction();
+        try {
+            if (!$task->beforeDelete()) {
+                $transaction->rollBack();
+
+                return false;
+            }
+
+            $taskRecord->deleteWithChildren();
+            unset($this->_taskRecordsById[$task->id]);
+
+            $task->afterDelete();
+
+            $transaction->commit();
+        } catch (\Exception $e) {
+            $transaction->rollBack();
+
+            throw $e;
+        }
+
+        // Fire an 'afterDeleteTask' event
+        $this->trigger(self::EVENT_AFTER_DELETE_TASK, new TaskEvent([
+            'task' => $task,
+        ]));
+
+        return true;
     }
 
     /**
@@ -675,6 +761,30 @@ EOT;
 
     // Private Methods
     // =========================================================================
+
+    /**
+     * Returns a Query object prepped for retrieving tasks.
+     *
+     * @return Query
+     */
+    private function _createTaskQuery()
+    {
+        return (new Query())
+            ->select([
+                'id',
+                'dateCreated',
+                'dateUpdated',
+                'level',
+                'description',
+                'totalSteps',
+                'currentStep',
+                'status',
+                'type',
+                'settings',
+            ])
+            ->from('{{%tasks}}')
+            ->orderBy('root asc, lft asc');
+    }
 
     /**
      * Returns a TaskRecord by its ID.

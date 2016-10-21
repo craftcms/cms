@@ -60,48 +60,54 @@ class TasksController extends Controller
             }
         }
 
-        Craft::$app->end();
+        return '1';
     }
 
     /**
      * Returns the completion percentage for the running task.
      *
-     * @return Response|null
+     * @return Response
      */
     public function actionGetRunningTaskInfo()
     {
-        $this->requireAjaxRequest();
+        $this->requireAcceptsJson();
         $this->requirePermission('accessCp');
 
         $tasksService = Craft::$app->getTasks();
 
         if ($task = $tasksService->getRunningTask()) {
-            return $this->asJson($task);
+            return $this->asJson([
+                'task' => $task
+            ]);
         }
 
         // No running tasks left? Check for a failed one
         if ($tasksService->getHaveTasksFailed()) {
-            return $this->asJson(['status' => 'error']);
+            return $this->asJson([
+                'task' => ['status' => 'error']
+            ]);
         }
 
         // Any pending tasks?
         if ($task = $tasksService->getNextPendingTask()) {
-            return $this->asJson($task);
+            return $this->asJson([
+                'task' => $task
+            ]);
         }
 
-        Craft::$app->end();
-
-        return null;
+        return $this->asJson([
+            'task' => null
+        ]);
     }
 
     /**
      * Re-runs a failed task.
      *
-     * @return Response|null
+     * @return Response
      */
     public function actionRerunTask()
     {
-        $this->requireAjaxRequest();
+        $this->requireAcceptsJson();
         $this->requirePostRequest();
         $this->requirePermission('accessCp');
 
@@ -116,29 +122,33 @@ class TasksController extends Controller
 
             Craft::$app->getTasks()->runPendingTasks();
         } else {
-            return $this->asJson($task);
+            return $this->asJson([
+                'task' => $task
+            ]);
         }
 
-        Craft::$app->end();
-
-        return null;
+        return $this->asJson([
+            'task' => null
+        ]);
     }
 
     /**
      * Deletes a task.
      *
-     * @return void
+     * @return Response
      */
     public function actionDeleteTask()
     {
-        $this->requireAjaxRequest();
+        $this->requireAcceptsJson();
         $this->requirePostRequest();
         $this->requirePermission('accessCp');
 
         $taskId = Craft::$app->getRequest()->getRequiredBodyParam('taskId');
         Craft::$app->getTasks()->deleteTaskById($taskId);
 
-        Craft::$app->end();
+        return $this->asJson([
+            'success' => true
+        ]);
     }
 
     /**
@@ -148,9 +158,11 @@ class TasksController extends Controller
      */
     public function actionGetTaskInfo()
     {
-        $this->requireAjaxRequest();
+        $this->requireAcceptsJson();
         $this->requirePermission('accessCp');
 
-        return $this->asJson(Craft::$app->getTasks()->getAllTasks());
+        return $this->asJson([
+            'tasks' => Craft::$app->getTasks()->getAllTasks()
+        ]);
     }
 }

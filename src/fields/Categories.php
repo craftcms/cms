@@ -35,7 +35,7 @@ class Categories extends BaseRelationField
      */
     protected static function elementType()
     {
-        return Category::className();
+        return Category::class;
     }
 
     /**
@@ -99,10 +99,13 @@ class Categories extends BaseRelationField
         return parent::getInputHtml($value, $element);
     }
 
+    // Events
+    // -------------------------------------------------------------------------
+
     /**
      * @inheritdoc
      */
-    public function afterElementSave(ElementInterface $element)
+    public function afterElementSave(ElementInterface $element, $isNew)
     {
         $value = $this->getElementValue($element);
 
@@ -115,5 +118,7 @@ class Categories extends BaseRelationField
 
             Craft::$app->getRelations()->saveRelations($this, $element, $ids);
         }
+
+        parent::afterElementSave($element, $isNew);
     }
 }

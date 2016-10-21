@@ -10,7 +10,7 @@ namespace craft\app\events;
 use craft\app\base\VolumeInterface;
 
 /**
- * Asset Volume event class.
+ * VolumeEvent class.
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since  3.0
@@ -21,12 +21,12 @@ class VolumeEvent extends Event
     // =========================================================================
 
     /**
-     * @var VolumeInterface The asset Volume associated with the event.
+     * @var VolumeInterface The volume associated with the event.
      */
     public $volume;
 
     /**
-     * @var boolean Whether the Volume is brand new
+     * @var boolean Whether the volume is brand new
      */
-    public $isNew;
+    public $isNew = false;
 }

@@ -515,6 +515,7 @@ $.extend(Craft,
 		var jqXHR = $.ajax($.extend({
 			url:      Craft.getActionUrl(action),
 			type:     'POST',
+			dataType: 'json',
 			data:     data,
 			success:  callback,
 			error:    function(jqXHR, textStatus, errorThrown)
@@ -724,7 +725,7 @@ $.extend(Craft,
 			// If they're actual objects (not arrays), compare the keys
 			if (!(obj1 instanceof Array))
 			{
-				if (!Craft.compare(Craft.getObjectKeys(obj1), Craft.getObjectKeys(obj2)))
+				if (!Craft.compare(Craft.getObjectKeys(obj1).sort(), Craft.getObjectKeys(obj2).sort()))
 				{
 					return false;
 				}
@@ -733,7 +734,7 @@ $.extend(Craft,
 			// Compare each value
 			for (var i in obj1)
 			{
-				if (!obj.hasOwnProperty(i)) {
+				if (!obj1.hasOwnProperty(i)) {
 					continue;
 				}
 
@@ -1257,7 +1258,7 @@ $.extend(Craft,
 	 */
 	getLocalStorage: function(key, defaultValue)
 	{
-		key = 'Craft-'+Craft.siteUid+'.'+key;
+		key = 'Craft-'+Craft.systemUid+'.'+key;
 
 		if (typeof localStorage != 'undefined' && typeof localStorage[key] != 'undefined')
 		{
@@ -1279,7 +1280,7 @@ $.extend(Craft,
 	{
 		if (typeof localStorage != 'undefined')
 		{
-			key = 'Craft-'+Craft.siteUid+'.'+key;
+			key = 'Craft-'+Craft.systemUid+'.'+key;
 
 			// localStorage might be filled all the way up.
 			// Especially likely if this is a private window in Safari 8+, where localStorage technically exists,
@@ -1309,7 +1310,7 @@ $.extend(Craft,
 
 		return {
 			id: $element.data('id'),
-			locale: $element.data('locale'),
+			siteId: $element.data('site-id'),
 			label: $element.data('label'),
 			status: $element.data('status'),
 			url: $element.data('url'),

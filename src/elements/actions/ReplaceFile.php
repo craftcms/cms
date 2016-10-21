@@ -35,7 +35,7 @@ class ReplaceFile extends ElementAction
      */
     public function getTriggerHtml()
     {
-        $type = Json::encode(static::className());
+        $type = Json::encode(static::class);
 
         $js = <<<EOT
 (function()
@@ -57,7 +57,7 @@ class ReplaceFile extends ElementAction
 
 			var tempUploader = new Craft.Uploader(\$fileInput, options);
 			tempUploader.setParams({
-				fileId: \$element.data('id')
+				assetId: \$element.data('id')
 			});
 
 			\$fileInput.click();

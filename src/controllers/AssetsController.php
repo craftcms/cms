@@ -57,7 +57,7 @@ class AssetsController extends Controller
      */
     public function actionSaveAsset()
     {
-        $this->requireAjaxRequest();
+        $this->requireAcceptsJson();
 
         $uploadedFile = UploadedFile::getInstanceByName('assets-upload');
         $request = Craft::$app->getRequest();
@@ -79,10 +79,11 @@ class AssetsController extends Controller
                 if ($conflictResolution == 'replace') {
                     $assetToReplaceWith = $assets->getAssetById($assetId);
                     $filename = Assets::prepareAssetName($request->getRequiredBodyParam('filename'));
-                    $assetToReplace = $assets->findAsset([
-                        'filename' => $filename,
-                        'folderId' => $assetToReplaceWith->folderId
-                    ]);
+
+                    $assetToReplace = Asset::find()
+                        ->folderId($assetToReplaceWith->folderId)
+                        ->filename(Db::escapeParam($filename))
+                        ->one();
 
                     if (!$assetToReplace) {
                         throw new BadRequestHttpException('Asset to be replaced cannot be found');
@@ -103,9 +104,8 @@ class AssetsController extends Controller
                         $assetToDelete = $assets->getAssetById($assetId);
 
                         if ($assetToDelete) {
-                            $this->_requirePermissionByAsset('deleteFilesAndFoldersInVolume',
-                                $assetToDelete);
-                            $assets->deleteAssetsByIds($assetId);
+                            $this->_requirePermissionByAsset('deleteFilesAndFoldersInVolume', $assetToDelete);
+                            Craft::$app->getElements()->deleteElement($assetToDelete);
                         }
                     }
                 }
@@ -210,8 +210,8 @@ class AssetsController extends Controller
      */
     public function actionReplaceFile()
     {
-        $this->requireAjaxRequest();
-        $assetId = Craft::$app->getRequest()->getBodyParam('fileId');
+        $this->requireAcceptsJson();
+        $assetId = Craft::$app->getRequest()->getBodyParam('assetId');
         $uploadedFile = UploadedFile::getInstanceByName('replaceFile');
 
         $assets = Craft::$app->getAssets();
@@ -254,7 +254,7 @@ class AssetsController extends Controller
     public function actionCreateFolder()
     {
         $this->requireLogin();
-        $this->requireAjaxRequest();
+        $this->requireAcceptsJson();
         $request = Craft::$app->getRequest();
         $parentId = $request->getRequiredBodyParam('parentId');
         $folderName = $request->getRequiredBodyParam('folderName');
@@ -299,7 +299,7 @@ class AssetsController extends Controller
     public function actionDeleteFolder()
     {
         $this->requireLogin();
-        $this->requireAjaxRequest();
+        $this->requireAcceptsJson();
         $folderId = Craft::$app->getRequest()->getRequiredBodyParam('folderId');
 
         $assets = Craft::$app->getAssets();
@@ -330,7 +330,7 @@ class AssetsController extends Controller
     public function actionRenameFolder()
     {
         $this->requireLogin();
-        $this->requireAjaxRequest();
+        $this->requireAcceptsJson();
 
         $request = Craft::$app->getRequest();
         $assets = Craft::$app->getAssets();
@@ -368,7 +368,7 @@ class AssetsController extends Controller
         $this->requireLogin();
 
         $request = Craft::$app->getRequest();
-        $assetId = $request->getRequiredBodyParam('fileId');
+        $assetId = $request->getRequiredBodyParam('assetId');
         $folderId = $request->getBodyParam('folderId');
         $filename = $request->getBodyParam('filename');
         $conflictResolution = $request->getBodyParam('userResponse');
@@ -393,33 +393,30 @@ class AssetsController extends Controller
         try {
 
             if (!empty($filename)) {
-                $assets->renameAsset($asset, $filename);
+                $asset->newFilename = $filename;
+                $success = $assets->renameFile($asset);
 
-                return $this->asJson(['success' => true]);
+                return $this->asJson(['success' => $success]);
             }
 
             if ($asset->folderId != $folderId) {
                 if (!empty($conflictResolution)) {
-                    $conflictingAsset = $assets->findAsset([
-                        'filename' => $asset->filename,
-                        'folderId' => $folderId
-                    ]);
+                    $conflictingAsset = Asset::find()
+                        ->folderId($folderId)
+                        ->filename(Db::escapeParam($asset->filename))
+                        ->one();
 
                     if ($conflictResolution == 'replace') {
-                        $assets->replaceAsset($conflictingAsset,
-                            $asset, true);
+                        $assets->replaceAsset($conflictingAsset, $asset, true);
                     } else {
                         if ($conflictResolution == 'keepBoth') {
-                            $newFilename = $assets->getNameReplacementInFolder($asset->filename,
-                                $folderId);
-                            $assets->moveAsset($asset,
-                                $folderId, $newFilename);
+                            $newFilename = $assets->getNameReplacementInFolder($asset->filename, $folderId);
+                            $assets->moveAsset($asset, $folderId, $newFilename);
                         }
                     }
                 } else {
                     try {
-                        $assets->moveAsset($asset,
-                            $folderId);
+                        $assets->moveAsset($asset, $folderId);
                     } catch (AssetConflictException $exception) {
                         return $this->asJson([
                             'prompt' => true,
@@ -499,7 +496,9 @@ class AssetsController extends Controller
                     // Get the file transfer list.
                     $allSourceFolderIds = array_keys($sourceTree);
                     $allSourceFolderIds[] = $folderBeingMovedId;
-                    $foundAssets = $assets->findAssets(['folderId' => $allSourceFolderIds]);
+                    $foundAssets = Asset::find()
+                        ->folderId($allSourceFolderIds)
+                        ->all();
                     $fileTransferList = Assets::getFileTransferList($foundAssets,
                         $folderIdChanges, $conflictResolution == 'merge');
                 }
@@ -538,7 +537,9 @@ class AssetsController extends Controller
                 // Get file transfer list for the progress bar
                 $allSourceFolderIds = array_keys($sourceTree);
                 $allSourceFolderIds[] = $folderBeingMovedId;
-                $foundAssets = $assets->findAssets(['folderId' => $allSourceFolderIds]);
+                $foundAssets = Asset::find()
+                    ->folderId($allSourceFolderIds)
+                    ->all();
                 $fileTransferList = Assets::getFileTransferList($foundAssets,
                     $folderIdChanges, $conflictResolution == 'merge');
             }
@@ -773,7 +774,7 @@ class AssetsController extends Controller
         $assetTransforms = Craft::$app->getAssetTransforms();
 
         if (empty($transformId)) {
-            $assetId = $request->getBodyParam('fileId');
+            $assetId = $request->getBodyParam('assetId');
             $handle = $request->getBodyParam('handle');
             $assetModel = Craft::$app->getAssets()->getAssetById($assetId);
             $transformIndexModel = $assetTransforms->getTransformIndex($assetModel,

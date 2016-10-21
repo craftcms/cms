@@ -45,12 +45,13 @@
 					id: 'type',
 					name: 'type',
 					options: volumeTypeOptions,
-					value: volume.getType(),
+					value: volume is missing ? volume.expectedType : volume.className(),
+					errors: (volume is missing ? ["The volume type “{class}” could not be found."|t('app', { class: volume.expectedType })] : null),
 					toggle: true
 				}) }}
 
 				{% for _volumeType in volumeTypes %}
-					{% set isCurrent = (_volumeType == volume.getType()) %}
+					{% set isCurrent = (_volumeType == volume.className()) %}
 
 					<div id="{{ _volumeType|id }}"{% if not isCurrent %} class="hidden"{% endif %}>
 						{% namespace 'types['~_volumeType~']' %}

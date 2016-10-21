@@ -43,60 +43,6 @@ class Task extends ActiveRecord
 
     /**
      * @inheritdoc
-     */
-    public function rules()
-    {
-        return [
-            [
-                ['root'],
-                'number',
-                'min' => 0,
-                'max' => 4294967295,
-                'integerOnly' => true
-            ],
-            [
-                ['lft'],
-                'number',
-                'min' => 0,
-                'max' => 4294967295,
-                'integerOnly' => true
-            ],
-            [
-                ['rgt'],
-                'number',
-                'min' => 0,
-                'max' => 4294967295,
-                'integerOnly' => true
-            ],
-            [
-                ['level'],
-                'number',
-                'min' => 0,
-                'max' => 65535,
-                'integerOnly' => true
-            ],
-            [
-                ['currentStep'],
-                'number',
-                'min' => 0,
-                'max' => 4294967295,
-                'integerOnly' => true
-            ],
-            [
-                ['totalSteps'],
-                'number',
-                'min' => 0,
-                'max' => 4294967295,
-                'integerOnly' => true
-            ],
-            [['status'], 'in', 'range' => ['pending', 'error', 'running']],
-            [['type'], 'required'],
-            [['type'], 'string', 'max' => 150],
-        ];
-    }
-
-    /**
-     * @inheritdoc
      *
      * @return string
      */
@@ -113,7 +59,7 @@ class Task extends ActiveRecord
     public static function find()
     {
         /** @var TaskQuery $query */
-        $query = Craft::createObject(TaskQuery::className(), [get_called_class()]);
+        $query = Craft::createObject(TaskQuery::class, [get_called_class()]);
 
         return $query;
     }
@@ -125,7 +71,7 @@ class Task extends ActiveRecord
     {
         return [
             'tree' => [
-                'class' => NestedSetsBehavior::className(),
+                'class' => NestedSetsBehavior::class,
                 'treeAttribute' => 'root',
                 'leftAttribute' => 'lft',
                 'rightAttribute' => 'rgt',

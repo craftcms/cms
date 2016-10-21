@@ -28,5 +28,5 @@ class CategoryGroupEvent extends Event
     /**
      * @var boolean Whether the category group is brand new
      */
-    public $isNew;
+    public $isNew = false;
 }

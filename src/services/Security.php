@@ -67,7 +67,7 @@ class Security extends \yii\base\Security
 
         if ($validateHash) {
             if (!$this->validatePassword($password, $hash)) {
-                throw new InvalidParamException(Craft::t('app', 'Could not hash the given string.'));
+                throw new InvalidParamException('Could not hash the given string.');
             }
         }
 

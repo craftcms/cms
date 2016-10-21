@@ -9,7 +9,12 @@ namespace craft\app\models;
 
 use Craft;
 use craft\app\base\Model;
+use craft\app\behaviors\FieldLayoutBehavior;
 use craft\app\behaviors\FieldLayoutTrait;
+use craft\app\elements\Tag;
+use craft\app\records\TagGroup as TagGroupRecord;
+use craft\app\validators\HandleValidator;
+use craft\app\validators\UniqueValidator;
 
 /**
  * TagGroup model.
@@ -57,8 +62,8 @@ class TagGroup extends Model
     {
         return [
             'fieldLayout' => [
-                'class' => 'craft\app\behaviors\FieldLayoutBehavior',
-                'elementType' => 'craft\app\elements\Tag'
+                'class' => FieldLayoutBehavior::class,
+                'elementType' => Tag::class
             ],
         ];
     }
@@ -69,25 +74,11 @@ class TagGroup extends Model
     public function rules()
     {
         return [
-            [
-                ['id'],
-                'number',
-                'min' => -2147483648,
-                'max' => 2147483647,
-                'integerOnly' => true
-            ],
-            [
-                ['fieldLayoutId'],
-                'number',
-                'min' => -2147483648,
-                'max' => 2147483647,
-                'integerOnly' => true
-            ],
-            [
-                ['id', 'name', 'handle', 'fieldLayoutId'],
-                'safe',
-                'on' => 'search'
-            ],
+            [['id', 'fieldLayoutId'], 'number', 'integerOnly' => true],
+            [['handle'], HandleValidator::class, 'reservedWords' => ['id', 'dateCreated', 'dateUpdated', 'uid', 'title']],
+            [['name', 'handle'], UniqueValidator::class, 'targetClass' => TagGroupRecord::class],
+            [['name', 'handle'], 'required'],
+            [['name', 'handle'], 'string', 'max' => 255],
         ];
     }
 

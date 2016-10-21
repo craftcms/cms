@@ -37,7 +37,7 @@ abstract class BaseElementsController extends Controller
     public function init()
     {
         // Element controllers only support JSON responses
-        $this->requireAjaxRequest();
+        $this->requireAcceptsJson();
 
         // Element controllers are only available to the Control Panel
         if (!Craft::$app->getRequest()->getIsCpRequest()) {
@@ -60,8 +60,8 @@ abstract class BaseElementsController extends Controller
 
         // TODO: should probably move the code inside try{} to a helper method
         try {
-            if (!is_subclass_of($class, Elements::ELEMENT_INTERFACE)) {
-                throw new InvalidTypeException($class, Elements::ELEMENT_INTERFACE);
+            if (!is_subclass_of($class, ElementInterface::class)) {
+                throw new InvalidTypeException($class, ElementInterface::class);
             }
         } catch (InvalidTypeException $e) {
             throw new BadRequestHttpException($e->getMessage());

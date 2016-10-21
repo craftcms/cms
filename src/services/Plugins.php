@@ -10,9 +10,11 @@ namespace craft\app\services;
 use Craft;
 use craft\app\base\Plugin;
 use craft\app\base\PluginInterface;
+use craft\app\db\MigrationManager;
 use craft\app\db\Query;
 use craft\app\enums\LicenseKeyStatus;
 use craft\app\errors\InvalidLicenseKeyException;
+use craft\app\events\PluginEvent;
 use craft\app\helpers\DateTimeHelper;
 use craft\app\helpers\Db;
 use craft\app\helpers\Io;
@@ -36,38 +38,85 @@ class Plugins extends Component
     // =========================================================================
 
     /**
-     * @event Event The event that is triggered after all plugins have been loaded.
+     * @event \yii\base\Event The event that is triggered before any plugins have been loaded
+     */
+    const EVENT_BEFORE_LOAD_PLUGINS = 'beforeLoadPlugins';
+
+    /**
+     * @event \yii\base\Event The event that is triggered after all plugins have been loaded
      */
     const EVENT_AFTER_LOAD_PLUGINS = 'afterLoadPlugins';
+
+    /**
+     * @event PluginEvent The event that is triggered before a plugin is enabled
+     */
+    const EVENT_BEFORE_ENABLE_PLUGIN = 'beforeEnablePlugin';
+
+    /**
+     * @event PluginEvent The event that is triggered before a plugin is enabled
+     */
+    const EVENT_AFTER_ENABLE_PLUGIN = 'afterEnablePlugin';
+
+    /**
+     * @event PluginEvent The event that is triggered before a plugin is disabled
+     */
+    const EVENT_BEFORE_DISABLE_PLUGIN = 'beforeDisablePlugin';
+
+    /**
+     * @event PluginEvent The event that is triggered before a plugin is disabled
+     */
+    const EVENT_AFTER_DISABLE_PLUGIN = 'afterDisablePlugin';
+
+    /**
+     * @event PluginEvent The event that is triggered before a plugin is installed
+     */
+    const EVENT_BEFORE_INSTALL_PLUGIN = 'beforeInstallPlugin';
+
+    /**
+     * @event PluginEvent The event that is triggered before a plugin is installed
+     */
+    const EVENT_AFTER_INSTALL_PLUGIN = 'afterInstallPlugin';
+
+    /**
+     * @event PluginEvent The event that is triggered before a plugin is uninstalled
+     */
+    const EVENT_BEFORE_UNINSTALL_PLUGIN = 'beforeUninstallPlugin';
+
+    /**
+     * @event PluginEvent The event that is triggered before a plugin is uninstalled
+     */
+    const EVENT_AFTER_UNINSTALL_PLUGIN = 'afterUninstallPlugin';
+
+    /**
+     * @event PluginEvent The event that is triggered before a plugin's settings are saved
+     */
+    const EVENT_BEFORE_SAVE_PLUGIN_SETTINGS = 'beforeSavePluginSettings';
+
+    /**
+     * @event PluginEvent The event that is triggered before a plugin's settings are saved
+     */
+    const EVENT_AFTER_SAVE_PLUGIN_SETTINGS = 'afterSavePluginSettings';
 
     // Properties
     // =========================================================================
 
     /**
-     * Stores whether plugins have been loaded yet for this request.
-     *
-     * @var bool
+     * @var bool Whether plugins have been loaded yet for this request
      */
     private $_pluginsLoaded = false;
 
     /**
-     * Stores whether plugins are in the middle of being loaded.
-     *
-     * @var bool
+     * @var boolean Whether plugins are in the middle of being loaded
      */
     private $_loadingPlugins = false;
 
     /**
-     * Stores references to all the enabled plugins.
-     *
-     * @var array
+     * @var PluginInterface[] All the enabled plugins
      */
     private $_plugins = [];
 
     /**
-     * Holds a list of all of the stored info for enabled plugins, indexed by the plugins’ handles.
-     *
-     * @var array
+     * @var array All of the stored info for enabled plugins, indexed by the plugins’ handles
      */
     private $_installedPluginInfo;
 
@@ -76,6 +125,8 @@ class Plugins extends Component
 
     /**
      * Loads the enabled plugins.
+     *
+     * @return void
      */
     public function loadPlugins()
     {
@@ -85,6 +136,9 @@ class Plugins extends Component
 
         // Prevent this function from getting called twice.
         $this->_loadingPlugins = true;
+
+        // Fire a 'beforeLoadPlugins' event
+        $this->trigger(self::EVENT_BEFORE_LOAD_PLUGINS);
 
         // Find all of the installed plugins
         $this->_installedPluginInfo = (new Query())
@@ -131,7 +185,7 @@ class Plugins extends Component
     /**
      * Returns whether plugins have been loaded yet for this request.
      *
-     * @return boolean Whether plugins have been loaded yet.
+     * @return boolean
      */
     public function arePluginsLoaded()
     {
@@ -159,7 +213,7 @@ class Plugins extends Component
     /**
      * Returns all the enabled plugins.
      *
-     * @return PluginInterface[] The enabled plugins
+     * @return PluginInterface[]
      */
     public function getAllPlugins()
     {
@@ -171,9 +225,9 @@ class Plugins extends Component
     /**
      * Enables a plugin by its handle.
      *
-     * @param string $handle The plugin’s handle.
+     * @param string $handle The plugin’s handle
      *
-     * @return boolean Whether the plugin was enabled successfully.
+     * @return boolean Whether the plugin was enabled successfully
      * @throws Exception if the plugin isn't installed
      */
     public function enablePlugin($handle)
@@ -195,6 +249,11 @@ class Plugins extends Component
             $this->_noPluginExists($handle);
         }
 
+        // Fire a 'beforeEnablePlugin' event
+        $this->trigger(self::EVENT_BEFORE_ENABLE_PLUGIN, new PluginEvent([
+            'plugin' => $plugin
+        ]));
+
         Craft::$app->getDb()->createCommand()
             ->update(
                 '{{%plugins}}',
@@ -204,6 +263,11 @@ class Plugins extends Component
 
         $this->_installedPluginInfo[$handle]['enabled'] = true;
         $this->_registerPlugin($handle, $plugin);
+
+        // Fire an 'afterEnablePlugin' event
+        $this->trigger(self::EVENT_AFTER_ENABLE_PLUGIN, new PluginEvent([
+            'plugin' => $plugin
+        ]));
 
         return true;
     }
@@ -235,6 +299,11 @@ class Plugins extends Component
             $this->_noPluginExists($handle);
         }
 
+        // Fire a 'beforeDisablePlugin' event
+        $this->trigger(self::EVENT_BEFORE_DISABLE_PLUGIN, new PluginEvent([
+            'plugin' => $plugin
+        ]));
+
         Craft::$app->getDb()->createCommand()
             ->update(
                 '{{%plugins}}',
@@ -245,13 +314,18 @@ class Plugins extends Component
         $this->_installedPluginInfo[$handle]['enabled'] = false;
         $this->_unregisterPlugin($handle);
 
+        // Fire an 'afterDisablePlugin' event
+        $this->trigger(self::EVENT_AFTER_DISABLE_PLUGIN, new PluginEvent([
+            'plugin' => $plugin
+        ]));
+
         return true;
     }
 
     /**
      * Installs a plugin by its handle.
      *
-     * @param string $handle The plugin’s handle.
+     * @param string $handle The plugin’s handle
      *
      * @return boolean Whether the plugin was installed successfully.
      * @throws Exception if the plugin doesn’t exist
@@ -273,6 +347,11 @@ class Plugins extends Component
             $this->_noPluginExists($handle);
         }
 
+        // Fire a 'beforeInstallPlugin' event
+        $this->trigger(self::EVENT_BEFORE_INSTALL_PLUGIN, new PluginEvent([
+            'plugin' => $plugin
+        ]));
+
         $transaction = Craft::$app->getDb()->beginTransaction();
         try {
             $info = [
@@ -292,29 +371,34 @@ class Plugins extends Component
 
             $this->_setPluginMigrator($plugin, $handle, $info['id']);
 
-            if ($plugin->install() !== false) {
-                $transaction->commit();
+            if ($plugin->install() === false) {
+                $transaction->rollBack();
 
-                $this->_installedPluginInfo[$handle] = $info;
-                $this->_registerPlugin($handle, $plugin);
-
-                return true;
+                return false;
             }
 
-            $transaction->rollBack();
-
-            return false;
+            $transaction->commit();
         } catch (\Exception $e) {
             $transaction->rollBack();
 
             throw $e;
         }
+
+        $this->_installedPluginInfo[$handle] = $info;
+        $this->_registerPlugin($handle, $plugin);
+
+        // Fire an 'afterInstallPlugin' event
+        $this->trigger(self::EVENT_AFTER_INSTALL_PLUGIN, new PluginEvent([
+            'plugin' => $plugin
+        ]));
+
+        return true;
     }
 
     /**
      * Uninstalls a plugin by its handle.
      *
-     * @param string $handle The plugin’s handle.
+     * @param string $handle The plugin’s handle
      *
      * @return boolean Whether the plugin was uninstalled successfully
      * @throws Exception if the plugin doesn’t exist
@@ -340,44 +424,56 @@ class Plugins extends Component
             $this->_noPluginExists($handle);
         }
 
+        // Fire a 'beforeUninstallPlugin' event
+        $this->trigger(self::EVENT_BEFORE_UNINSTALL_PLUGIN, new PluginEvent([
+            'plugin' => $plugin
+        ]));
+
         $transaction = Craft::$app->getDb()->beginTransaction();
         try {
-            if ($plugin->uninstall() !== false) {
-                // Clean up the plugins and migrations tables
-                $id = $this->_installedPluginInfo[$handle]['id'];
-                Craft::$app->getDb()->createCommand()
-                    ->delete('{{%plugins}}', ['id' => $id])
-                    ->execute();
-                Craft::$app->getDb()->createCommand()
-                    ->delete('{{%migrations}}', ['pluginId' => $id])
-                    ->execute();
+            // Let the plugin uninstall itself first
+            if ($plugin->uninstall() === false) {
+                $transaction->rollBack();
 
-                // Let's commit to this.
-                $transaction->commit();
-
-                $this->_unregisterPlugin($handle);
-                unset($this->_installedPluginInfo[$handle]);
-
-                return true;
+                return false;
             }
 
-            $transaction->rollBack();
+            // Clean up the plugins and migrations tables
+            $id = $this->_installedPluginInfo[$handle]['id'];
 
-            return false;
+            Craft::$app->getDb()->createCommand()
+                ->delete('{{%plugins}}', ['id' => $id])
+                ->execute();
+
+            Craft::$app->getDb()->createCommand()
+                ->delete('{{%migrations}}', ['pluginId' => $id])
+                ->execute();
+
+            $transaction->commit();
         } catch (\Exception $e) {
             $transaction->rollBack();
 
             throw $e;
         }
+
+        $this->_unregisterPlugin($handle);
+        unset($this->_installedPluginInfo[$handle]);
+
+        // Fire an 'afterUninstallPlugin' event
+        $this->trigger(self::EVENT_AFTER_UNINSTALL_PLUGIN, new PluginEvent([
+            'plugin' => $plugin
+        ]));
+
+        return true;
     }
 
     /**
      * Saves a plugin's settings.
      *
-     * @param PluginInterface $plugin   The plugin.
-     * @param array           $settings The plugin’s new settings.
+     * @param PluginInterface $plugin   The plugin
+     * @param array           $settings The plugin’s new settings
      *
-     * @return boolean Whether the plugin’s settings were saved successfully.
+     * @return boolean Whether the plugin’s settings were saved successfully
      */
     public function savePluginSettings(PluginInterface $plugin, $settings)
     {
@@ -389,6 +485,11 @@ class Plugins extends Component
             return false;
         }
 
+        // Fire a 'beforeSavePluginSettings' event
+        $this->trigger(self::EVENT_BEFORE_SAVE_PLUGIN_SETTINGS, new PluginEvent([
+            'plugin' => $plugin
+        ]));
+
         // JSON-encode them and save the plugin row
         $settings = Json::encode($plugin->getSettings());
 
@@ -399,17 +500,22 @@ class Plugins extends Component
                 ['handle' => $plugin->getHandle()])
             ->execute();
 
+        // Fire an 'afterSavePluginSettings' event
+        $this->trigger(self::EVENT_AFTER_SAVE_PLUGIN_SETTINGS, new PluginEvent([
+            'plugin' => $plugin
+        ]));
+
         return (bool)$affectedRows;
     }
 
     /**
      * Calls a method on all plugins that have it, and returns an array of the results, indexed by plugin handles.
      *
-     * @param string  $method     The name of the method.
-     * @param array   $args       Any arguments that should be passed when calling the method on the plugins.
-     * @param boolean $ignoreNull Whether plugins that have the method but return a null response should be ignored. Defaults to false.
+     * @param string  $method     The name of the method
+     * @param array   $args       Any arguments that should be passed when calling the method on the plugins
+     * @param boolean $ignoreNull Whether plugins that have the method but return a null response should be ignored. Defaults to false
      *
-     * @return array An array of the plugins’ responses.
+     * @return array An array of the plugins’ responses
      */
     public function call($method, $args = [], $ignoreNull = false)
     {
@@ -432,11 +538,11 @@ class Plugins extends Component
     /**
      * Calls a method on the first plugin that has it, and returns the result.
      *
-     * @param string  $method     The name of the method.
-     * @param array   $args       Any arguments that should be passed when calling the method on the plugins.
-     * @param boolean $ignoreNull Whether plugins that have the method but return a null response should be ignored. Defaults to false.
+     * @param string  $method     The name of the method
+     * @param array   $args       Any arguments that should be passed when calling the method on the plugins
+     * @param boolean $ignoreNull Whether plugins that have the method but return a null response should be ignored. Defaults to false
      *
-     * @return mixed The plugin’s response, or null.
+     * @return mixed The plugin’s response, or null
      */
     public function callFirst($method, $args = [], $ignoreNull = false)
     {
@@ -488,27 +594,14 @@ class Plugins extends Component
         $this->loadPlugins();
         $handle = $plugin->getHandle();
 
-        if (isset($this->_installedPluginInfo[$handle])) {
-            $localVersion = $plugin->schemaVersion;
-
-            // If the schema version is empty, use the main plugin version
-            if (empty($localVersion)) {
-                $localVersion = $plugin->version;
-                $storedVersion = $this->_installedPluginInfo[$handle]['version'];
-            } else {
-                $storedVersion = $this->_installedPluginInfo[$handle]['schemaVersion'];
-            }
-
-            // One/both could be null so start with seeing if they're not equal
-            if (
-                $localVersion != $storedVersion &&
-                (empty($storedVersion) || version_compare($localVersion, $storedVersion, '>'))
-            ) {
-                return true;
-            }
+        if (!isset($this->_installedPluginInfo[$handle])) {
+            return false;
         }
 
-        return false;
+        $localVersion = $plugin->schemaVersion;
+        $storedVersion = $this->_installedPluginInfo[$handle]['schemaVersion'];
+
+        return version_compare($localVersion, $storedVersion, '>');
     }
 
     /**
@@ -516,7 +609,7 @@ class Plugins extends Component
      *
      * @param string $handle The plugin handle
      *
-     * @return array|null The stored info, if there is any.
+     * @return array|null The stored info, if there is any
      */
     public function getStoredPluginInfo($handle)
     {
@@ -552,7 +645,7 @@ class Plugins extends Component
         $class = $config['class'];
 
         // Make sure the class exists and it implements PluginInterface
-        if (!is_subclass_of($class, 'craft\app\base\PluginInterface')) {
+        if (!is_subclass_of($class, \craft\app\base\PluginInterface::class)) {
             return null;
         }
 
@@ -608,6 +701,7 @@ class Plugins extends Component
                 'developerUrl' => null,
                 'description' => null,
                 'documentationUrl' => null,
+                'schemaVersion' => '1.0.0',
             ], Json::decode(Io::getFileContents($configPath)));
         } catch (InvalidParamException $e) {
             Craft::warning("Could not decode $configPath: ".$e->getMessage());
@@ -629,7 +723,7 @@ class Plugins extends Component
                 $config['class'] = "\\craft\\plugins\\$handle\\Plugin";
             } else {
                 // Just use the base one
-                $config['class'] = Plugin::className();
+                $config['class'] = Plugin::class;
             }
         }
 
@@ -641,7 +735,7 @@ class Plugins extends Component
      *
      * @return array Info about all of the plugins saved in craft/plugins
      */
-    public function getPluginInfo()
+    public function getAllPluginInfo()
     {
         $this->loadPlugins();
 
@@ -765,7 +859,7 @@ class Plugins extends Component
             ->update(
                 '{{%plugins}}',
                 ['licenseKey' => $normalizedLicenseKey],
-                ['class' => $pluginHandle])
+                ['handle' => $pluginHandle])
             ->execute();
 
         // Update our cache of it if the plugin is enabled
@@ -826,7 +920,7 @@ class Plugins extends Component
             ->update(
                 '{{%plugins}}',
                 ['licenseKeyStatus' => $licenseKeyStatus],
-                ['class' => $pluginHandle])
+                ['handle' => $pluginHandle])
             ->execute();
 
         // Update our cache of it if the plugin is enabled
@@ -888,16 +982,12 @@ class Plugins extends Component
     private function _setPluginMigrator(PluginInterface $plugin, $handle, $id)
     {
         /** @var Plugin $plugin */
-        $plugin->setComponents([
-            'migrator' => [
-                'class' => 'craft\app\db\MigrationManager',
-                'migrationNamespace' => "craft\\plugins\\$handle\\migrations",
-                'migrationPath' => "@plugins/$handle/migrations",
-                'fixedColumnValues' => [
-                    'type' => 'plugin',
-                    'pluginId' => $id
-                ],
-            ]
+        $plugin->set('migrator', [
+            'class' => MigrationManager::class,
+            'type' => MigrationManager::TYPE_PLUGIN,
+            'pluginId' => $id,
+            'migrationNamespace' => "craft\\plugins\\$handle\\migrations",
+            'migrationPath' => "@plugins/$handle/migrations",
         ]);
     }
 }

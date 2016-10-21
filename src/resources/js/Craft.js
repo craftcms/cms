@@ -1,4 +1,4 @@
-/*! Craft 3.0.0 - 2016-10-01 */
+/*! Craft 3.0.0 - 2016-10-21 */
 (function($){
 
 // Set all the standard Craft.* stuff
@@ -518,6 +518,7 @@ $.extend(Craft,
 		var jqXHR = $.ajax($.extend({
 			url:      Craft.getActionUrl(action),
 			type:     'POST',
+			dataType: 'json',
 			data:     data,
 			success:  callback,
 			error:    function(jqXHR, textStatus, errorThrown)
@@ -727,7 +728,7 @@ $.extend(Craft,
 			// If they're actual objects (not arrays), compare the keys
 			if (!(obj1 instanceof Array))
 			{
-				if (!Craft.compare(Craft.getObjectKeys(obj1), Craft.getObjectKeys(obj2)))
+				if (!Craft.compare(Craft.getObjectKeys(obj1).sort(), Craft.getObjectKeys(obj2).sort()))
 				{
 					return false;
 				}
@@ -736,7 +737,7 @@ $.extend(Craft,
 			// Compare each value
 			for (var i in obj1)
 			{
-				if (!obj.hasOwnProperty(i)) {
+				if (!obj1.hasOwnProperty(i)) {
 					continue;
 				}
 
@@ -1260,7 +1261,7 @@ $.extend(Craft,
 	 */
 	getLocalStorage: function(key, defaultValue)
 	{
-		key = 'Craft-'+Craft.siteUid+'.'+key;
+		key = 'Craft-'+Craft.systemUid+'.'+key;
 
 		if (typeof localStorage != 'undefined' && typeof localStorage[key] != 'undefined')
 		{
@@ -1282,7 +1283,7 @@ $.extend(Craft,
 	{
 		if (typeof localStorage != 'undefined')
 		{
-			key = 'Craft-'+Craft.siteUid+'.'+key;
+			key = 'Craft-'+Craft.systemUid+'.'+key;
 
 			// localStorage might be filled all the way up.
 			// Especially likely if this is a private window in Safari 8+, where localStorage technically exists,
@@ -1312,7 +1313,7 @@ $.extend(Craft,
 
 		return {
 			id: $element.data('id'),
-			locale: $element.data('locale'),
+			siteId: $element.data('site-id'),
 			label: $element.data('label'),
 			status: $element.data('status'),
 			url: $element.data('url'),
@@ -1706,9 +1707,9 @@ Craft.BaseElementIndex = Garnish.Base.extend(
 	statusMenu: null,
 	status: null,
 
-	$localeMenuBtn: null,
-	localeMenu: null,
-	locale: null,
+	$siteMenuBtn: null,
+	siteMenu: null,
+	siteId: null,
 
 	$sortMenuBtn: null,
 	sortMenu: null,
@@ -1771,7 +1772,7 @@ Craft.BaseElementIndex = Garnish.Base.extend(
 		this.$toolbar = this.$container.find('.toolbar:first');
 		this.$toolbarTableRow = this.$toolbar.children('table').children('tbody').children('tr');
 		this.$statusMenuBtn = this.$toolbarTableRow.find('.statusmenubtn:first');
-		this.$localeMenuBtn = this.$toolbarTableRow.find('.localemenubtn:first');
+		this.$siteMenuBtn = this.$toolbarTableRow.find('.sitemenubtn:first');
 		this.$sortMenuBtn = this.$toolbarTableRow.find('.sortmenubtn:first');
 		this.$search = this.$toolbarTableRow.find('.search:first input:first');
 		this.$clearSearchBtn = this.$toolbarTableRow.find('.search:first > .clear');
@@ -1824,55 +1825,55 @@ Craft.BaseElementIndex = Garnish.Base.extend(
 			this.statusMenu.on('optionselect', $.proxy(this, '_handleStatusChange'));
 		}
 
-		// Initialize the locale menu
+		// Initialize the site menu
 		// ---------------------------------------------------------------------
 
-		// Is there a locale menu?
-		if (this.$localeMenuBtn.length)
+		// Is there a site menu?
+		if (this.$siteMenuBtn.length)
 		{
-			this.localeMenu = this.$localeMenuBtn.menubtn().data('menubtn').menu;
+			this.siteMenu = this.$siteMenuBtn.menubtn().data('menubtn').menu;
 
-			// Figure out the initial locale
-			var $option = this.localeMenu.$options.filter('.sel:first');
+			// Figure out the initial site
+			var $option = this.siteMenu.$options.filter('.sel:first');
 
 			if (!$option.length)
 			{
-				$option = this.localeMenu.$options.first();
+				$option = this.siteMenu.$options.first();
 			}
 
 			if ($option.length)
 			{
-				this.locale = $option.data('locale');
+				this.siteId = $option.data('site-id');
 			}
 			else
 			{
-				// No locale options -- they must not have any locale permissions
+				// No site options -- they must not have any site permissions
 				this.settings.criteria = { id: '0' };
 			}
 
-			this.localeMenu.on('optionselect', $.proxy(this, '_handleLocaleChange'));
+			this.siteMenu.on('optionselect', $.proxy(this, '_handleSiteChange'));
 
-			if (this.locale)
+			if (this.site)
 			{
-				// Do we have a different locale stored in localStorage?
-				var storedLocale = Craft.getLocalStorage('BaseElementIndex.locale');
+				// Do we have a different site stored in localStorage?
+				var storedSiteId = Craft.getLocalStorage('BaseElementIndex.siteId');
 
-				if (storedLocale && storedLocale != this.locale)
+				if (storedSiteId && storedSiteId != this.siteId)
 				{
 					// Is that one available here?
-					var $storedLocaleOption = this.localeMenu.$options.filter('[data-locale="'+storedLocale+'"]:first');
+					var $storedSiteOption = this.siteMenu.$options.filter('[data-site-id="'+storedSiteId+'"]:first');
 
-					if ($storedLocaleOption.length)
+					if ($storedSiteOption.length)
 					{
-						// Todo: switch this to localeMenu.selectOption($storedLocaleOption) once Menu is updated to support that
-						$storedLocaleOption.trigger('click');
+						// Todo: switch this to siteMenu.selectOption($storedSiteOption) once Menu is updated to support that
+						$storedSiteOption.trigger('click');
 					}
 				}
 			}
 		}
-		else if (this.settings.criteria && this.settings.criteria.locale)
+		else if (this.settings.criteria && this.settings.criteria.siteId)
 		{
-			this.locale = this.settings.criteria.locale;
+			this.siteId = this.settings.criteria.siteId;
 		}
 
 		// Initialize the search input
@@ -2197,7 +2198,7 @@ Craft.BaseElementIndex = Garnish.Base.extend(
 	{
 		var criteria = $.extend({
 			status: this.status,
-			locale: this.locale,
+			siteId: this.siteId,
 			search: this.searchText,
 			limit: this.settings.batchSize
 		}, this.settings.criteria);
@@ -3041,18 +3042,18 @@ Craft.BaseElementIndex = Garnish.Base.extend(
 		this.updateElements();
 	},
 
-	_handleLocaleChange: function(ev)
+	_handleSiteChange: function(ev)
 	{
-		this.localeMenu.$options.removeClass('sel');
+		this.siteMenu.$options.removeClass('sel');
 		var $option = $(ev.selectedOption).addClass('sel');
-		this.$localeMenuBtn.html($option.html());
+		this.$siteMenuBtn.html($option.html());
 
-		this.locale = $option.data('locale');
+		this.siteId = $option.data('site-id');
 
 		if (this.initialized)
 		{
-			// Remember this locale for later
-			Craft.setLocalStorage('BaseElementIndex.locale', this.locale);
+			// Remember this site for later
+			Craft.setLocalStorage('BaseElementIndex.siteId', this.siteId);
 
 			// Update the elements
 			this.updateElements();
@@ -3523,7 +3524,11 @@ Craft.BaseElementIndexView = Garnish.Base.extend(
             }, this);
 
             this.addListener(this.$elementContainer, 'dblclick', this._handleElementEditing);
-            this.addListener(this.$elementContainer, 'taphold', this._handleElementEditing);
+
+            if($.isTouchCapable())
+            {
+                this.addListener(this.$elementContainer, 'taphold', this._handleElementEditing);
+            }
         }
 
         // Give sub-classes a chance to do post-initialization stuff here
@@ -4078,7 +4083,11 @@ Craft.BaseElementSelectInput = Garnish.Base.extend(
 			}, this);
 
 			this.addListener($elements, 'dblclick', this._handleShowElementEditor);
-			this.addListener($elements, 'taphold', this._handleShowElementEditor);
+
+			if($.isTouchCapable())
+			{
+				this.addListener($elements, 'taphold', this._handleShowElementEditor);
+			}
 		}
 
 		$elements.find('.delete').on('click', $.proxy(function(ev)
@@ -4182,6 +4191,7 @@ Craft.BaseElementSelectInput = Garnish.Base.extend(
 			sources:            this.settings.sources,
 			criteria:           this.settings.criteria,
 			multiSelect:        (this.settings.limit != 1),
+			showSiteMenu:     	this.settings.showSiteMenu,
 			disabledElementIds: this.getDisabledElementIds(),
 			onSelect:           $.proxy(this, 'onModalSelect')
 		}, this.settings.modalSettings);
@@ -4334,6 +4344,7 @@ Craft.BaseElementSelectInput = Garnish.Base.extend(
 		sourceElementId: null,
 		viewMode: 'list',
 		limit: null,
+		showSiteMenu: false,
 		modalStorageKey: null,
 		modalSettings: {},
 		onSelectElements: $.noop,
@@ -4545,11 +4556,15 @@ Craft.BaseElementSelectorModal = Garnish.Modal.extend(
 			sources:     this.settings.sources
 		};
 
+		if (this.settings.showSiteMenu !== null && this.settings.showSiteMenu != 'auto') {
+ 			data.showSiteMenu = this.settings.showSiteMenu ? '1' : '0';
+ 		}
+
 		Craft.postActionRequest('elements/get-modal-body', data, $.proxy(function(response, textStatus)
 		{
 			if (textStatus == 'success')
 			{
-				this.$body.html(response);
+				this.$body.html(response.html);
 
 				if (this.$body.has('.sidebar:not(.hidden)').length)
 				{
@@ -4569,7 +4584,6 @@ Craft.BaseElementSelectorModal = Garnish.Modal.extend(
 				});
 
 				// Double-clicking or double-tapping should select the elements
-				this.addListener(this.elementIndex.$elements, 'dblclick', 'selectElements');
 				this.addListener(this.elementIndex.$elements, 'doubletap', 'selectElements');
 			}
 
@@ -4583,6 +4597,7 @@ Craft.BaseElementSelectorModal = Garnish.Modal.extend(
 		sources: null,
 		criteria: null,
 		multiSelect: false,
+		showSiteMenu: null,
 		disabledElementIds: [],
 		disableElementsOnSelect: false,
 		hideOnSelect: true,
@@ -4963,51 +4978,78 @@ Craft.AdminTable = Garnish.Base.extend(
  * Asset image editor class
  */
 
+// TODO: Sometimes the rotation messes up the zoom
+// TODO: Rotating by 0.1 degree kills stuff for non-square images?
+
 Craft.AssetImageEditor = Garnish.Modal.extend(
 	{
-		// jQuery objects
-		$body: null,
-		$filters: null,
-		$buttons: null,
-		$cancelBtn: null,
-		$replaceBtn: null,
-		$saveBtn: null,
+		assetId: 0,
 
-		// References and parameters
+		imageUrl: "",
+
+		// Original parameters for reference
+		originalImageHeight: 0,
+		originalImageWidth: 0,
+		aspectRatio: 0,
+
+		// The currently resized image dimensions
+		imageHeight: 0,
+		imageWidth: 0,
+
 		canvas: null,
-		image: null,
-		viewport: null,
-		$editorContainer: null,
-		$straighten: null,
-		assetId: null,
-		cacheBust: null,
+		canvasContext: null,
+		canvasImageHeight: 0,
+		canvasImageWidth: 0,
 
-		// Filters
-		appliedFilter: null,
-		appliedFilterOptions: {},
+		// Image and frame rotation degrees
+		rotation: 0,
+		frameRotation: 0,
 
-		// Editor paramters
-		editorHeight: 0,
-		editorWidth: 0,
-		viewportWidth: 0,
-		viewportHeight: 0,
+		// TODO: should this be limited to 50 (or some other arbitrary number)?
+		// Operation stack
+		doneOperations: [],
+		undoneOperations: [],
 
-		// Image attributes
-		imageAngle: 0,
-		imageStraightenAngle: 0,
-		viewportRotation: 0,
-		originalWidth: 0,
-		originalHeight: 0,
+		// zoom ratio for the image
+		zoomRatio: 1,
 
-		// Animation
+		// Used when dragging the slider
+		previousSliderValue: 0,
+		// Used to store values when releasing the slider
+		previousSavedSliderValue: 0,
+
+		paddingSize: 24,
+		imageLoaded: false,
+
 		animationInProgress: false,
+		animationFrames: 20,
+		drawGridLines: false,
 
-		init: function (assetId, settings) {
-			this.cacheBust = Date.now();
+		$img: null,
 
-			this.setSettings(settings, Craft.AssetImageEditor.defaults);
+		init: function(assetId)
+		{
+			this.setSettings(Craft.AssetImageEditor.defaults);
 
 			this.assetId = assetId;
+			this.imageHeight = 0;
+			this.imageWidth = 0;
+			this.originalImageHeight = 0;
+			this.originalImageWidth = 0;
+			this.imageUrl = "";
+			this.aspectRatio = 0;
+			this.canvasImageHeight = 0;
+			this.canvasImageWidth = 0;
+			this.imageLoaded = false;
+			this.canvas = null;
+			this.$img = null;
+			this.rotation = 0;
+			this.animationInProgress = false;
+			this.doneOperations = [];
+			this.undoneOperations = [];
+			this.previousSliderValue = 0;
+			this.previousSavedSliderValue = 0;
+
 
 			// Build the modal
 			var $container = $('<div class="modal asset-editor"></div>').appendTo(Garnish.$bod),
@@ -5017,481 +5059,615 @@ Craft.AssetImageEditor = Garnish.Modal.extend(
 			this.base($container, this.settings);
 
 			this.$buttons = $('<div class="buttons rightalign"/>').appendTo($footer);
-			this.$cancelBtn = $('<div class="btn cancel">' + Craft.t('app', 'Cancel') + '</div>').appendTo(this.$buttons);
-			this.$replaceBtn = $('<div class="btn submit save replace">' + Craft.t('app', 'Replace Asset') + '</div>').appendTo(this.$buttons);
-
-			if (this.settings.allowSavingAsNew) {
-				this.$saveBtn = $('<div class="btn submit save copy">' + Craft.t('app', 'Save as New Asset') + '</div>').appendTo(this.$buttons);
-			}
+			this.$cancelBtn = $('<div class="btn">'+Craft.t('app', 'Cancel')+'</div>').appendTo(this.$buttons);
+			this.$selectBtn = $('<div class="btn disabled submit">'+Craft.t('app', 'Replace Image')+'</div>').appendTo(this.$buttons);
+			this.$selectBtn = $('<div class="btn disabled submit">'+Craft.t('app', 'Save as New Image')+'</div>').appendTo(this.$buttons);
 
 			this.$body = $body;
 
-			this.addListener(this.$cancelBtn, 'activate', $.proxy(this, 'hide'));
+			this.addListener(this.$cancelBtn, 'activate', 'cancel');
 			this.removeListener(this.$shade, 'click');
 
-			Craft.postActionRequest('assets/image-editor', $.proxy(this, 'loadEditor'));
+			Craft.postActionRequest('assets/image-editor', {assetId: this.assetId}, $.proxy(this, 'loadEditor'));
+
 		},
 
-		loadEditor: function (data) {
+		loadEditor: function (data)
+		{
 			this.$body.html(data.html);
-			this.$filters = $('.image-tools .filters', this.$body);
+			this.canvas = this.$body.find('canvas')[0];
+			this.canvasContext = this.canvas.getContext("2d");
 
-			this.canvas = new fabric.StaticCanvas('image-manipulator', {backgroundColor: this.backgroundColor});
-			this.canvas.enableRetinaScaling = true;
-
-			this.$editorContainer = $('#image-holder');
-			this.$straighten = $('.rotate.straighten');
-
-			this.editorHeight = this.$editorContainer.innerHeight();
-			this.editorWidth = this.$editorContainer.innerWidth();
-
-			// Load the image from URL
-			var imageUrl = Craft.getActionUrl('assets/edit-image', {assetId: this.assetId, size: this.settings.assetSize, cacheBust: this.cacheBust});
-			fabric.Image.fromURL(imageUrl, $.proxy(function (imageObject) {
-				this.image = imageObject;
-
-				// Store for later reference
-				this.originalHeight = this.image.getHeight();
-				this.originalWidth = this.image.getWidth();
-
-				// Scale the image and center it on the canvas
-				this._scaleAndCenterImage();
-
-				// Create the cropping mask on the edges so straightening the image looks nice
-				var mask = this._createCroppingMask();
-
-				// Set up a cropping viewport
-				this.viewport = new fabric.Group([this.image, mask], {
-					originX: 'center',
-					originY: 'center'
-				});
-				this.canvas.add(this.viewport);
-
-				// Add listeners to buttons and draw the grid
-				this._addListeners();
-				this._drawGrid();
-
-				// Render it, finally
-				this.canvas.renderAll();
-			}, this));
+			this.imageHeight = this.originalImageHeight = data.imageData.height;
+			this.imageWidth = this.originalImageWidth = data.imageData.width;
+			this.imageUrl = data.imageData.url;
+			this.aspectRatio = this.imageHeight / this.imageWidth;
+			this.initImage($.proxy(this, 'updateSizeAndPosition'));
+			this.addListeners();
 		},
 
-		/**
-		 * Scale and center the image in the editor
-		 */
-		_scaleAndCenterImage: function () {
-
-			// The width/height correction by a pixel might seem paranoid, but we really want
-			// to get rid of 0.5 pixels and also make sure that the image is within
-			// the editor or the final image might have a 1px sliver of background
-			if (this.image.height > this.image.width) {
-				this.viewportHeight = this.editorHeight;
-				this.image.height = this.viewportHeight;
-
-				// Never scale to parts of a pixel
-				this.image.width = Math.round(this.originalWidth * (this.image.height / this.originalHeight));
-
-				// Correct for neat divisions
-				if (this.image.width % 2 == 1) {
-					this.image.width += (this.image.width < this.editorWidth ? 1 : -1);
-				}
-
-				this.viewportWidth = this.image.width;
-			} else {
-				this.viewportWidth = this.editorWidth;
-				this.image.width = this.viewportWidth;
-
-				// Never scale to parts of a pixel
-				this.image.height = Math.round(this.originalHeight * (this.image.width / this.originalWidth));
-
-				// Correct for neat divisions
-				if (this.image.height % 2 == 1) {
-					this.image.height += (this.image.height < this.editorHeight ? 1 : -1);
-				}
-
-				this.viewportHeight = this.image.height;
+		updateSizeAndPosition: function()
+		{
+			if (!this.imageLoaded)
+			{
+				this.base();
 			}
-
-			this.image.set({
-				left: (this.editorWidth - this.image.width) / 2,
-				top: (this.editorHeight - this.image.height) / 2
-			});
-
-			this.canvas.setDimensions({
-				width: this.editorWidth,
-				height: this.editorHeight
-			});
-
-			this._setImageZoomRatio();
-		},
-
-		/**
-		 * Create the cropping mask so that the image is cropped to viewport when rotating
-		 *
-		 * @returns fabric.Rect
-		 */
-		_createCroppingMask: function () {
-			var mask = new fabric.Rect({
-				width: this.viewportWidth,
-				height: this.viewportHeight,
-				fill: '#fff',
-				left: this.image.left,
-				top: this.image.top
-			});
-			mask.globalCompositeOperation = 'destination-in';
-			return mask;
-		},
-
-		/**
-		 * Add listeners to buttons
-		 */
-		_addListeners: function () {
-			$('.rotate.counter-clockwise').on('click', $.proxy(function () {
-				this.rotateViewport(-90);
-			}, this));
-
-			$('.rotate.clockwise').on('click', $.proxy(function () {
-				this.rotateViewport(90);
-			}, this));
-
-			$('.rotate.reset').on('click', $.proxy(this, 'resetStraighten'));
-			$('.rotate.straighten').on('input change', $.proxy(this, 'straighten'));
-
-			$('.btn.cancel', this.$buttons).on('click', $.proxy(this, 'hide'));
-			$('.btn.save', this.$buttons).on('click', $.proxy(this, 'saveImage'));
-
-			this.$filters.on('change', $.proxy(function (ev) {
-				$option = $(ev.currentTarget).find('option:selected');
-				$('.filter-fields').addClass('hidden');
-				if ($option.val()) {
-					$('.filter-fields[filter=' + $option.val() + ']').removeClass('hidden');
-				}
-			}, this));
-			$('.btn.apply-filter', this.$filters).on('click', $.proxy(this, 'applyFilter'));
-		},
-
-		/**
-		 * Rotate the image along with the cropping mask.
-		 *
-		 * @param integer degrees
-		 */
-		rotateViewport: function (degrees) {
-			if (!this.animationInProgress) {
-				this.animationInProgress = true;
-
-				this.viewportRotation += degrees;
-
-				// Normalize the viewport rotation angle so it's between 0 and 359
-				this.viewportRotation = parseInt((this.viewportRotation + 360) % 360, 10);
-
-				var newAngle = this.viewport.getAngle() + degrees;
-
-				// Animate the rotations
-				this.viewport.animate('angle', newAngle, {
-					onChange: this.canvas.renderAll.bind(this.canvas),
-					duration: this.settings.animationDuration,
-					onComplete: $.proxy(function () {
-						// Clean up angle
-						var cleanAngle = parseInt((this.viewport.getAngle() + 360) % 360, 10);
-						this.viewport.set({angle: cleanAngle});
-						this.animationInProgress = false;
-
-						this._setImageZoomRatio();
-					}, this)
-				});
+			else
+			{
+				this.redrawEditor();
 			}
 		},
 
-		/**
-		 * Perform the straightening by slider
-		 *
-		 * @param Event ev
-		 */
-		straighten: function (ev) {
-			if (!this.animationInProgress) {
-				this.animationInProgress = true;
-
-				if (ev) {
-					if (ev.type == 'change') {
-						this.hideGrid();
-					} else {
-						this.showGrid();
-					}
-				}
-
-				var newAngle = parseInt(this.$straighten.val(), 10);
-
-				// Straighten the image
-				this.image.set({
-					angle: parseInt((newAngle + 360) % 360, 10),
-					originX: 'center',
-					originY: 'center',
-					left: 0,
-					top: 0
-				});
-
-				this._setImageZoomRatio();
-
-				this.canvas.renderAll();
-
-				this.animationInProgress = false;
-			}
-		},
-
-		/**
-		 * Reset the straighten degrees
-		 *
-		 * @param Event ev
-		 */
-		resetStraighten: function (ev) {
-			if (this.animationInProgress) {
-				return;
-			}
-
-			this.$straighten.val(0);
-			this.straighten();
-		},
-
-		/**
-		 * Save the image.
-		 *
-		 * @param Event ev
-		 */
-		saveImage: function (ev) {
-
-			$button = $(ev.currentTarget);
-			if ($button.hasClass('disabled')) {
-				return false;
-			}
-
-			$('.btn', this.$buttons).addClass('disabled');
-			this.$buttons.append('<div class="spinner"></div>');
-
-			var postData = {
-				assetId: this.assetId,
-				viewportRotation: this.viewportRotation,
-				imageRotation: this.imageStraightenAngle,
-				replace: $button.hasClass('replace') ? 1 : 0
-			};
-
-			var filterHandle = this.appliedFilter;
-
-			if (filterHandle) {
-				postData.filter = filterHandle;
-				var filterOptions = this.appliedFilterOptions;
-
-				for (var option in filterOptions) {
-					postData['filterOptions[' + option + ']'] = encodeURIComponent(filterOptions[option]);
-				}
-			}
-
-			Craft.postActionRequest('assets/save-image', postData, $.proxy(function (data) {
-				this.$buttons.find('.btn').removeClass('disabled').end().find('.spinner').remove();
-				this.onSave();
-				this.hide();
-			}, this));
-		},
-
-		/**
-		 * Set image zoom ratio depending on the straighten angle
-		 */
-		_setImageZoomRatio: function () {
-			this.imageStraightenAngle = parseFloat(this.$straighten.val());
-
-			// Convert the angle to radians
-			var angleInRadians = Math.abs(this.imageStraightenAngle) * (Math.PI / 180);
-
-			// Calculate the dimensions of the scaled image using the magic of math
-			var scaledWidth = Math.sin(angleInRadians) * this.viewportHeight + Math.cos(angleInRadians) * this.viewportWidth;
-			var scaledHeight = Math.sin(angleInRadians) * this.viewportWidth + Math.cos(angleInRadians) * this.viewportHeight;
-
-			// Calculate the ratio
-			var zoomRatio = Math.max(scaledWidth /  this.viewportWidth, scaledHeight / this.viewportHeight);
-
-			this.image.scale(zoomRatio);
-		},
-
-		/**
-		 * Draw the grid.
-		 *
-		 * @private
-		 */
-		_drawGrid: function () {
-			var strokeOptions = {
-				strokeWidth: this.settings.gridLineThickness,
-				opacity: 1,
-				stroke: this.settings.gridLineColor
-			};
-
-			var imageWidth = this.viewportWidth,
-				imageHeight = this.viewportHeight;
-
-			// draw Frame;
-			var gridLines = [
-				new fabric.Line([0, 0, imageWidth - 1, 0], strokeOptions),
-				new fabric.Line([0, imageHeight - 1, 0, 0], strokeOptions),
-				new fabric.Line([imageWidth - 1, 0, imageWidth - 1, imageHeight - 1], strokeOptions),
-				new fabric.Line([imageWidth, imageHeight - 1, 0, imageHeight - 1], strokeOptions)
-			];
-
-			/**
-			 * This function takes a length of a dimension, divides it in two, draws a line and recursively calls
-			 * itself on both of the new segments.
-			 */
-			var divideAndDraw = $.proxy(function (divisionLevel, dimensionToDivide, offset, lineLength, axis) {
-
-				var divisionPoint = Math.ceil(dimensionToDivide / 2 - this.settings.gridLineThickness / 2 + offset);
-
-				// Set the start/end points depending on the axis we're drawing along
-				if (axis == 'x') {
-					pointOptions = [0, divisionPoint, lineLength, divisionPoint];
-				} else {
-					pointOptions = [divisionPoint, 0, divisionPoint, lineLength];
-				}
-
-				// Ensure the opacity gradually decreases
-				strokeOptions.opacity = 1 - ((divisionLevel - 1) * (1 / this.settings.gridLinePrecision));
-
-				gridLines.push(new fabric.Line(pointOptions, strokeOptions));
-
-				// If we're not done yet, divide and conquer both new segments
-				if (divisionLevel < this.settings.gridLinePrecision) {
-					divideAndDraw(divisionLevel + 1, dimensionToDivide / 2, offset, lineLength, axis);
-					divideAndDraw(divisionLevel + 1, dimensionToDivide / 2, offset + dimensionToDivide / 2, lineLength, axis);
-				}
-			}, this);
-
-			divideAndDraw(1, imageWidth, 0, imageHeight, 'y');
-			divideAndDraw(1, imageHeight, 0, imageWidth, 'x');
-
-			this.grid = new fabric.Group(gridLines, {
-				left: this.image.left,
-				top: this.image.top,
-				opacity: 0
-			});
-
-			this.viewport.add(this.grid);
-		},
-
-		/**
-		 * Show the grid
-		 */
-		showGrid: function () {
-			this.grid.set({opacity: 1});
-		},
-
-		/**
-		 * Hide the grid
-		 */
-		hideGrid: function () {
-			this.grid.set({opacity: 0});
-		},
-
-		onFadeOut: function () {
+		cancel: function ()
+		{
+			this.hide();
 			this.destroy();
 		},
 
-		/**
-		 * Apply a selected filter.
-		 */
-		applyFilter: function (ev) {
+		hide: function ()
+		{
+			this.removeListeners();
+			this.base();
+		},
 
-			$button = $(ev.currentTarget);
-			if ($button.hasClass('disabled')) {
-				return false;
-			}
+		initImage: function (callback)
+		{
+			this.$img = $('<img />');
 
-			$button.addClass('disabled');
-
-			$spinner = $('<div class="spinner filter-spinner"></div>').insertAfter($button);
-
-			var getParams = {
-				assetId: this.assetId,
-				size: this.settings.assetSize
-			};
-
-			var filterHandle = this.getSelectedFilter();
-
-			if (filterHandle) {
-				var filterOptions = this.getFilterOptions(filterHandle);
-
-				// No use in requesting same image again.
-				if (filterHandle == this.appliedFilter && JSON.stringify(this.appliedFilterOptions) == JSON.stringify(filterOptions)) {
-					$spinner.remove();
-					$button.removeClass('disabled');
-					return;
-				}
-
-				this.appliedFilter = filterHandle;
-				this.appliedFilterOptions = filterOptions;
-
-				getParams.filter = filterHandle;
-
-				for (var option in filterOptions) {
-					getParams['filterOptions[' + option + ']'] = encodeURIComponent(filterOptions[option]);
-				}
-
-			} else {
-				// No use in requesting same image again.
-				if (this.appliedFilter == null) {
-					$spinner.remove();
-					$button.removeClass('disabled');
-					return;
-				}
-
-				this.appliedFilterOptions = {};
-				this.appliedFilter = null;
-			}
-
-			imageUrl = Craft.getActionUrl('assets/edit-image', getParams);
-
-			this.image.setSrc(imageUrl, $.proxy(function (imageObject) {
-				this._scaleAndCenterImage();
-				this.straighten();
-				$spinner.remove();
-				$button.removeClass('disabled');
+			this.$img.attr('src', this.imageUrl).on('load', $.proxy(function ()
+			{
+				this.imageLoaded = true;
+				callback();
 			}, this));
 		},
 
-		/**
-		 * Get the currently selected filter's handle
-		 */
-		getSelectedFilter: function () {
-			return $('.filter-select').find('option:selected').val();
+		redrawEditor: function ()
+		{
+			var desiredHeight = 600,
+				desiredWidth = 600;
+
+			if (this.imageLoaded)
+			{
+				desiredHeight = this.originalImageHeight;
+				desiredWidth = this.originalImageWidth;
+			}
+
+			var availableHeight = Garnish.$win.height() - (4 * this.paddingSize) - this.$container.find('.footer').outerHeight(),
+				availableWidth = Garnish.$win.width() - (5 * this.paddingSize) - this.$container.find('.image-tools').outerWidth();
+
+			// Make the image area square, so we can rotate it comfortably.
+			var imageHolderSize = Math.max(parseInt(this.$container.find('.image-tools').css('min-height'), 10), Math.min(availableHeight, availableWidth));
+
+			// Set it all up!
+			var containerWidth = imageHolderSize + this.$container.find('.image-tools').outerWidth() + (3 * this.paddingSize),
+				containerHeight = imageHolderSize + this.$container.find('.footer').outerHeight() + (2 * this.paddingSize);
+
+			this.$container.width(containerWidth).height(containerHeight)
+				.find('.image-holder').width(imageHolderSize).height(imageHolderSize);
+
+			this.canvasImageHeight = this.canvasImageWidth = imageHolderSize;
+
+			this.$container.find('.image-tools').height(imageHolderSize + (2 * this.paddingSize));
+
+			// Re-center.
+			this.$container.css('left', Math.round((Garnish.$win.width() - containerWidth) / 2));
+			this.$container.css('top', Math.round((Garnish.$win.height() - containerHeight) / 2));
+
+			if (this.imageLoaded)
+			{
+				this.renderImage(true);
+			}
+		},
+
+		renderImage: function (drawFrame, recalculateZoomRatio)
+		{
+
+			this.canvas.height = this.canvasImageHeight;
+			this.canvas.width = this.canvasImageWidth;
+
+			var yRatio = this.originalImageHeight / this.canvasImageHeight;
+			var xRatio = this.originalImageWidth / this.canvasImageWidth;
+
+			// Figure out the size
+			if (xRatio > 1 || yRatio > 1)
+			{
+				if (xRatio > yRatio)
+				{
+					this.imageWidth = this.canvasImageWidth;
+					this.imageHeight = this.imageWidth * this.aspectRatio;
+				}
+				else
+				{
+					this.imageHeight = this.canvasImageHeight;
+					this.imageWidth = this.imageHeight / this.aspectRatio;
+				}
+			}
+
+			// Clear canvas
+			this.canvasContext.clearRect(0, 0, this.canvasImageWidth, this.canvasImageHeight);
+
+			// Calculate the zoom ratio unless we're in the middle of an animation
+			// or we're forced to (when resetting the straighten slider)
+			if (!this.animationInProgress || recalculateZoomRatio)
+			{
+				// For non-straightened images we know the zoom is going to be 1
+				if (this.rotation % 90 == 0)
+				{
+					this.zoomRatio = 1;
+				}
+				else
+				{
+					var rectangle = this.calculateLargestProportionalRectangle(this.rotation, this.imageWidth, this.imageHeight);
+					this.zoomRatio = Math.max(this.imageWidth / rectangle.w, this.imageHeight / rectangle.h);
+				}
+
+			}
+
+			// Remember the current context
+			this.canvasContext.save();
+
+			// Move (0,0) to center of canvas and rotate around it
+			this.canvasContext.translate(Math.round(this.canvasImageWidth / 2), Math.round(this.canvasImageHeight / 2));
+			this.canvasContext.rotate(this.rotation * Math.PI / 180);
+
+			var adjustedHeight = this.imageHeight * this.zoomRatio,
+				adjustedWidth = this.imageWidth * this.zoomRatio;
+
+			// Draw the rotated image
+			this.canvasContext.drawImage(this.$img[0], 0, 0, this.originalImageWidth, this.originalImageHeight,
+				-(adjustedWidth / 2), -(adjustedHeight / 2), adjustedWidth, adjustedHeight);
+
+			this.canvasContext.restore();
+
+			if (drawFrame)
+			{
+				this.drawFrame();
+			}
+
+			if (this.drawGridLines)
+			{
+				this.drawGrid();
+			}
+
+			this.clipImage();
+		},
+
+		addListeners: function ()
+		{
+			this.$container.find('a.rotate.clockwise').on('click', $.proxy(function ()
+			{
+				if (!this.animationInProgress)
+				{
+					this.addOperation({imageRotation: 90});
+					this.rotate(90);
+				}
+			}, this));
+			this.$container.find('a.rotate.counter-clockwise').on('click', $.proxy(function ()
+			{
+				if (!this.animationInProgress)
+				{
+					this.addOperation({imageRotation: -90});
+					this.rotate(-90);
+				}
+			}, this));
+
+			var straighten = this.$container.find('.straighten')[0];
+
+			straighten.oninput = $.proxy(this, 'straightenImage');
+			straighten.onchange = $.proxy(function (event)
+			{
+				this.straightenImage(event, true);
+			}, this);
+
+
+			straighten.onmousedown = $.proxy(function ()
+			{
+				this.showGridLines();
+				this.renderImage(true);
+			}, this);
+
+			straighten.onmouseup = $.proxy(function ()
+			{
+				this.hideGridLines();
+				this.renderImage(true);
+			}, this);
+
+			$('.rotate.reset').on('click', $.proxy(function ()
+			{
+				this.$container.find('.straighten').val(0);
+				this.setStraightenOffset(0, false, true, true);
+			}, this));
+
+			// TODO: remove magic numbers and move them to Garnish Constants
+			this.addListener(Garnish.$doc, 'keydown', $.proxy(function (ev)
+			{
+				// CMD/CTRL + Y, CMD/CTRL + SHIFT + Z
+				if ((ev.metaKey || ev.ctrlKey) && (ev.keyCode == 89 || (ev.keyCode == 90 && ev.shiftKey)))
+				{
+					this.redo();
+					return false;
+				}
+			}, this));
+
+			this.addListener(Garnish.$doc, 'keydown', $.proxy(function (ev)
+			{
+				if ((ev.metaKey || ev.ctrlKey) && !ev.shiftKey && ev.keyCode == 90)
+				{
+					this.undo();
+					return false;
+				}
+			}, this));
+
+		},
+
+		removeListeners: function ()
+		{
+			this.removeListener(Garnish.$doc, 'keydown');
+		},
+
+		addOperation: function (operation)
+		{
+			this.doneOperations.push(operation);
+
+			// As soon as we do something, the stack of undone operations is gone.
+			this.undoneOperations = [];
+		},
+
+		undo: function ()
+		{
+			if (this.animationInProgress)
+			{
+				return;
+			}
+
+			if (this.doneOperations.length > 0)
+			{
+				var operation = this.doneOperations.pop();
+				this.performOperation(operation, true);
+				this.undoneOperations.push(operation);
+			}
+		},
+
+		redo: function ()
+		{
+			if (this.animationInProgress)
+			{
+				return;
+			}
+			if (this.undoneOperations.length > 0)
+			{
+				var operation = this.undoneOperations.pop();
+				this.performOperation(operation, false);
+				this.doneOperations.push(operation);
+			}
+
+		},
+
+		// TODO: This is a horrible name for this function
+		performOperation: function (operation, reverse)
+		{
+			var modifier = reverse ? -1 : 1;
+
+			if (typeof operation.imageRotation != "undefined")
+			{
+				this.rotation += modifier * operation.imageRotation;
+				this.frameRotation += modifier * operation.imageRotation;
+			}
+
+			if (typeof operation.straightenOffset != "undefined")
+			{
+				var value = modifier * operation.straightenOffset;
+				this.rotation += value;
+
+				var $straighten = this.$container.find('.straighten');
+				var newValue = parseFloat($straighten.val()) + value;
+
+				// TODO: this is the part where we refactor the code a bit to be less confusing.
+				this.previousSavedSliderValue = newValue;
+				this.previousSliderValue = newValue;
+				$straighten.val(newValue);
+			}
+
+			this.renderImage(true);
+		},
+
+		rotate: function (degrees, animateInstantly, preventFrameRotation)
+		{
+			var targetDegrees = this.rotation + degrees;
+
+			if (!animateInstantly)
+			{
+				this.animationInProgress = true;
+				var degreesPerFrame = Math.round(degrees / this.animationFrames * 10) / 10;
+
+				var frameCount = 0;
+
+				var animateCanvas = function ()
+				{
+					frameCount++;
+					this.rotation += degreesPerFrame;
+
+					if (!preventFrameRotation)
+					{
+						this.frameRotation += degreesPerFrame;
+					}
+
+					this.renderImage(true, preventFrameRotation);
+					if (frameCount < this.animationFrames)
+					{
+						setTimeout($.proxy(animateCanvas, this), 1);
+					}
+					else
+					{
+						// Clean up the fractions and whatnot
+						this.rotation = targetDegrees;
+						this.cleanUpRotationDegrees();
+
+						this.renderImage(true, preventFrameRotation);
+						this.animationInProgress = false;
+					}
+				};
+
+				animateCanvas.call(this);
+			}
+			else
+			{
+				this.rotation = targetDegrees;
+				this.cleanUpRotationDegrees();
+				this.renderImage(true);
+			}
+		},
+
+		cleanUpRotationDegrees: function ()
+		{
+			this.rotation = this._cleanUpDegrees(this.rotation);
+			this.frameRotation = this._cleanUpDegrees(this.frameRotation);
 		},
 
 		/**
-		 * Get the filter options by a filter handle
-		 * @param filterHandle
+		 * Ensure a degree value is within [0..360] and has at most one decimal part.
 		 */
-		getFilterOptions: function (filterHandle) {
-			var filterParams = {};
-			$filterFields = $('.filter-fields[filter=' + filterHandle + ']').find('input, select, textarea');
-			$filterFields.each(function () {
-				$input = $(this);
-				filterParams[$input.prop('name')] = encodeURIComponent($input.val());
-			});
+		_cleanUpDegrees: function (degrees)
+		{
+			if (degrees > 360)
+			{
+				degrees -= 360;
+			}
+			else if (degrees < 0)
+			{
+				degrees += 360;
+			}
 
-			return filterParams;
+			degrees = Math.round(degrees * 10) / 10;
+
+			return degrees;
 		},
 
-		onSave: function () {
-			this.settings.onSave();
+		// Trigger operation - whether we're stopping to drag the slider and should trigger a state save
+		straightenImage: function (event, triggerOperation)
+		{
+			if (this.animationInProgress)
+			{
+				return;
+			}
+			this.setStraightenOffset($(event.currentTarget).val(), true, false, triggerOperation);
+		},
+
+		setStraightenOffset: function (degrees, animateInstantly, preventFrameRotation, triggerOperation)
+		{
+			var delta = degrees - this.previousSliderValue;
+
+			this.previousSliderValue = degrees;
+
+			if (triggerOperation)
+			{
+				this.addOperation({straightenOffset: degrees - this.previousSavedSliderValue});
+				this.previousSavedSliderValue = degrees;
+			}
+
+			this.rotate(delta, animateInstantly, preventFrameRotation);
+
+		},
+
+		showGridLines: function ()
+		{
+			this.drawGridLines = true;
+		},
+
+		hideGridLines: function ()
+		{
+			this.drawGridLines = false;
+		},
+
+		/**
+		 * Draw the frame around the image.
+		 */
+		drawFrame: function ()
+		{
+			// Remember the current context
+			this.canvasContext.save();
+
+			this.prepareImageFrameRectangle(this.canvasContext);
+
+			this.canvasContext.lineWidth = 1;
+			this.canvasContext.strokeStyle = 'rgba(0,0,0,0.6)';
+			this.canvasContext.stroke();
+
+			// Restore that context
+			this.canvasContext.restore();
+
+		},
+
+		prepareImageFrameRectangle: function (canvasContext)
+		{
+			canvasContext.translate(Math.round(this.canvasImageWidth / 2), Math.round(this.canvasImageHeight / 2));
+			canvasContext.rotate(this.frameRotation * Math.PI / 180);
+			canvasContext.rect(-(this.imageWidth / 2) + 1, -(this.imageHeight / 2) + 1, this.imageWidth - 2, this.imageHeight - 2);
+		},
+
+		/**
+		 * Draw the grid with guides for straightening.
+		 */
+		drawGrid: function ()
+		{
+			this.canvasContext.lineWidth = 1;
+
+			this.canvasContext.save();
+
+			// Rotate along the frame
+			this.canvasContext.translate(Math.round(this.canvasImageWidth / 2), Math.round(this.canvasImageHeight / 2));
+			this.canvasContext.rotate(this.frameRotation * Math.PI / 180);
+
+			var xStep = (this.imageWidth - 2) / 8;
+			var yStep = (this.imageHeight - 2) / 8;
+
+			for (var step = 0; step < 9; step++)
+			{
+				switch (step)
+				{
+					case 0:
+					case 8:
+					case 4:
+					{
+						this.canvasContext.strokeStyle = 'rgba(0,0,0,0.6)';
+						break;
+					}
+					case 2:
+					case 6:
+					{
+						this.canvasContext.strokeStyle = 'rgba(0,0,0,0.3)';
+						break;
+					}
+					default:
+					{
+						this.canvasContext.strokeStyle = 'rgba(0,0,0,0.15)';
+						break;
+					}
+
+				}
+				this.canvasContext.beginPath();
+				this.canvasContext.moveTo(-(this.imageWidth / 2) + xStep * step + 1, -(this.imageHeight / 2));
+				this.canvasContext.lineTo(-(this.imageWidth / 2) + xStep * step + 1, (this.imageHeight / 2));
+				this.canvasContext.closePath();
+				this.canvasContext.stroke();
+			}
+
+			for (step = 0; step < 9; step++)
+			{
+				switch (step)
+				{
+					case 0:
+					case 8:
+					case 4:
+					{
+						this.canvasContext.strokeStyle = 'rgba(0,0,0,0.6)';
+						break;
+					}
+					case 2:
+					case 6:
+					{
+						this.canvasContext.strokeStyle = 'rgba(0,0,0,0.3)';
+						break;
+					}
+					default:
+					{
+						this.canvasContext.strokeStyle = 'rgba(0,0,0,0.15)';
+						break;
+					}
+
+				}
+				this.canvasContext.beginPath();
+				this.canvasContext.moveTo(-(this.imageWidth / 2), -(this.imageHeight / 2) + yStep * step + 1);
+				this.canvasContext.lineTo((this.imageWidth / 2), -(this.imageHeight / 2) + yStep * step + 1);
+				this.canvasContext.closePath();
+				this.canvasContext.stroke();
+			}
+
+			this.canvasContext.restore();
+		},
+
+		/**
+		 * Add a new clipping canvas on top of the existing canvas.
+		 */
+		clipImage: function ()
+		{
+			var mask = Garnish.$doc[0].createElement('canvas');
+			mask.width = this.canvas.width;
+			mask.height = this.canvas.height;
+
+			var context = mask.getContext('2d');
+			context.fillStyle = 'white';
+			context.fillRect(0, 0, mask.width, mask.height);
+			context.globalCompositeOperation = 'xor';
+			this.prepareImageFrameRectangle(context);
+			context.fill();
+
+			this.canvasContext.drawImage(mask, 0, 0);
+
+		},
+
+		/**
+		 * Calculate the largest possible rectangle within a rotated rectangle.
+		 * Adapted from http://stackoverflow.com/a/18402507/2040791
+		 */
+		calculateLargestProportionalRectangle: function(angle, origWidth, origHeight)
+		{
+
+			var w0, h0;
+
+			if (origWidth <= origHeight)
+			{
+				w0 = origWidth;
+				h0 = origHeight;
+			}
+			else
+			{
+				w0 = origHeight;
+				h0 = origWidth;
+			}
+
+			// Angle normalization in range [-PI..PI)
+			if (angle > 180)
+			{
+				angle = 180 - angle;
+			}
+			if (angle < 0)
+			{
+				angle = angle + 180;
+			}
+			var ang = angle * (Math.PI / 180);
+
+			if (ang > Math.PI / 2)
+			{
+				ang = Math.PI - ang;
+			}
+
+			var c = w0 / (h0 * Math.sin(ang) + w0 * Math.cos(ang)),
+				w, h;
+
+			if (origWidth <= origHeight)
+			{
+				w = w0 * c;
+				h = h0 * c;
+			}
+			else
+			{
+				w = h0 * c;
+				h = w0 * c;
+			}
+
+			return { w: w, h: h};
 		}
+
 	},
 	{
 		defaults: {
-			gridLineThickness: 1,
-			gridLineColor: '#000000',
-			gridLinePrecision: 2,
-			animationDuration: 150,
-			assetSize: 400,
-			allowSavingAsNew: true,
-
-			onSave: $.noop,
+			resizable: false,
+			shadeClass: "assetEditor"
 		}
 	}
 );
+
 /**
  * Asset index class
  */
@@ -5512,10 +5688,10 @@ Craft.AssetIndex = Craft.BaseElementIndex.extend(
 
 	_uploadTotalFiles: 0,
 	_uploadFileProgress: {},
-	_uploadedFileIds: [],
+	_uploadedAssetIds: [],
 	_currentUploaderSettings: {},
 
-	_fileDrag: null,
+	_assetDrag: null,
 	_folderDrag: null,
 	_expandDropTargetFolderTimeout: null,
 	_tempExpandedFolders: [],
@@ -5559,9 +5735,9 @@ Craft.AssetIndex = Craft.BaseElementIndex.extend(
 				this._folderDrag.addItems($source.parent());
 			}
 
-			if (this._fileDrag)
+			if (this._assetDrag)
 			{
-				this._fileDrag.updateDropTargets();
+				this._assetDrag.updateDropTargets();
 			}
 		}
 	},
@@ -5585,9 +5761,9 @@ Craft.AssetIndex = Craft.BaseElementIndex.extend(
 				this._folderDrag.removeItems($source.parent());
 			}
 
-			if (this._fileDrag)
+			if (this._assetDrag)
 			{
-				this._fileDrag.updateDropTargets();
+				this._assetDrag.updateDropTargets();
 			}
 		}
 	},
@@ -5609,10 +5785,10 @@ Craft.AssetIndex = Craft.BaseElementIndex.extend(
 		var onDragStartProxy = $.proxy(this, '_onDragStart'),
 			onDropTargetChangeProxy = $.proxy(this, '_onDropTargetChange');
 
-		// File dragging
+		// Asset dragging
 		// ---------------------------------------------------------------------
 
-		this._fileDrag = new Garnish.DragDrop({
+		this._assetDrag = new Garnish.DragDrop({
 			activeDropTargetClass: 'sel',
 			helperOpacity: 0.75,
 
@@ -5724,39 +5900,39 @@ Craft.AssetIndex = Craft.BaseElementIndex.extend(
 	 */
 	_onFileDragStop: function()
 	{
-		if (this._fileDrag.$activeDropTarget && this._fileDrag.$activeDropTarget[0] != this.$source[0])
+		if (this._assetDrag.$activeDropTarget && this._assetDrag.$activeDropTarget[0] != this.$source[0])
 		{
 			// Keep it selected
 			var originatingSource = this.$source;
 
-			var targetFolderId = this._getFolderIdFromSourceKey(this._fileDrag.$activeDropTarget.data('key')),
-				originalFileIds = [];
+			var targetFolderId = this._getFolderIdFromSourceKey(this._assetDrag.$activeDropTarget.data('key')),
+				originalAssetIds = [];
 
 			// For each file, prepare array data.
-			for (var i = 0; i < this._fileDrag.$draggee.length; i++)
+			for (var i = 0; i < this._assetDrag.$draggee.length; i++)
 			{
-				var originalFileId = Craft.getElementInfo(this._fileDrag.$draggee[i]).id;
+				var originalAssetId = Craft.getElementInfo(this._assetDrag.$draggee[i]).id;
 
-				originalFileIds.push(originalFileId);
+				originalAssetIds.push(originalAssetId);
 			}
 
 			// Are any files actually getting moved?
-			if (originalFileIds.length)
+			if (originalAssetIds.length)
 			{
 				this.setIndexBusy();
 
 				this._positionProgressBar();
 				this.progressBar.resetProgressBar();
-				this.progressBar.setItemCount(originalFileIds.length);
+				this.progressBar.setItemCount(originalAssetIds.length);
 				this.progressBar.showProgressBar();
 
 
 				// For each file to move a separate request
 				var parameterArray = [];
-				for (i = 0; i < originalFileIds.length; i++)
+				for (i = 0; i < originalAssetIds.length; i++)
 				{
 					parameterArray.push({
-						fileId: originalFileIds[i],
+						assetId: originalAssetIds[i],
 						folderId: targetFolderId
 					});
 				}
@@ -5800,12 +5976,12 @@ Craft.AssetIndex = Craft.BaseElementIndex.extend(
 						this.sourceSelect.selectItem(originatingSource);
 
 						// Make sure we use the correct offset when fetching the next page
-						this._totalVisible -= this._fileDrag.$draggee.length;
+						this._totalVisible -= this._assetDrag.$draggee.length;
 
 						// And remove the elements that have been moved away
-						for (var i = 0; i < originalFileIds.length; i++)
+						for (var i = 0; i < originalAssetIds.length; i++)
 						{
-							$('[data-id=' + originalFileIds[i] + ']').remove();
+							$('[data-id=' + originalAssetIds[i] + ']').remove();
 						}
 
 						this.view.deselectAllElements();
@@ -5836,7 +6012,7 @@ Craft.AssetIndex = Craft.BaseElementIndex.extend(
 								// Find the matching request parameters for this file and modify them slightly
 								for (var ii = 0; ii < parameterArray.length; ii++)
 								{
-									if (parameterArray[ii].fileId == returnData[i].fileId)
+									if (parameterArray[ii].assetId == returnData[i].assetId)
 									{
 										parameterArray[ii].userResponse = returnData[i].choice;
 										newParameterArray.push(parameterArray[ii]);
@@ -5862,13 +6038,13 @@ Craft.AssetIndex = Craft.BaseElementIndex.extend(
 							}
 						}, this);
 
-						this._fileDrag.fadeOutHelpers();
+						this._assetDrag.fadeOutHelpers();
 						this.promptHandler.showBatchPrompts(promptCallback);
 					}
 					else
 					{
 						performAfterMoveActions.apply(this);
-						this._fileDrag.fadeOutHelpers();
+						this._assetDrag.fadeOutHelpers();
 					}
 				}, this);
 
@@ -5887,7 +6063,7 @@ Craft.AssetIndex = Craft.BaseElementIndex.extend(
 			this._collapseExtraExpandedFolders();
 		}
 
-		this._fileDrag.returnHelpersToDraggees();
+		this._assetDrag.returnHelpersToDraggees();
 	},
 
 	/**
@@ -6487,7 +6663,7 @@ Craft.AssetIndex = Craft.BaseElementIndex.extend(
 		if (response.success || response.prompt)
 		{
 			// Add the uploaded file to the selected ones, if appropriate
-			this._uploadedFileIds.push(response.fileId);
+			this._uploadedAssetIds.push(response.assetId);
 
 			// If there is a prompt, add it to the queue
 			if (response.prompt)
@@ -6568,9 +6744,9 @@ Craft.AssetIndex = Craft.BaseElementIndex.extend(
 
 			Craft.postActionRequest('assets/save-asset', postData, $.proxy(function(data, textStatus)
 			{
-				if (textStatus == 'success' && data.fileId)
+				if (textStatus == 'success' && data.assetId)
 				{
-					this._uploadedFileIds.push(data.fileId);
+					this._uploadedAssetIds.push(data.assetId);
 				}
 				parameterIndex++;
 				this.progressBar.incrementProcessedItemCount(1);
@@ -6612,25 +6788,25 @@ Craft.AssetIndex = Craft.BaseElementIndex.extend(
 		{
 			if (!append)
 			{
-				this._fileDrag.removeAllItems();
+				this._assetDrag.removeAllItems();
 			}
 
-			this._fileDrag.addItems($newElements);
+			this._assetDrag.addItems($newElements);
 		}
 
 		// See if we have freshly uploaded files to add to selection
-		if (this._uploadedFileIds.length)
+		if (this._uploadedAssetIds.length)
 		{
 			if (this.view.settings.selectable)
 			{
-				for (var i = 0; i < this._uploadedFileIds.length; i++)
+				for (var i = 0; i < this._uploadedAssetIds.length; i++)
 				{
-					this.view.selectElementById(this._uploadedFileIds[i]);
+					this.view.selectElementById(this._uploadedAssetIds[i]);
 				}
 			}
 
 			// Reset the list.
-			this._uploadedFileIds = [];
+			this._uploadedAssetIds = [];
 		}
 
 		this.base(append, $newElements);
@@ -7393,7 +7569,7 @@ Craft.AssetSelectorModal = Craft.BaseElementSelectorModal.extend(
 		var elementId = imageIdsWithMissingUrls.pop();
 
 		var data = {
-			fileId: elementId,
+			assetId: elementId,
 			handle: transform,
 			returnUrl: true
 		};
@@ -7515,6 +7691,7 @@ Craft.AuthManager = Garnish.Base.extend(
 		$.ajax({
 			url: Craft.getActionUrl('users/get-remaining-session-time', (extendSession ? null : 'dontExtendSession=1')),
 			type: 'GET',
+			dataType: 'json',
 			complete: $.proxy(function(jqXHR, textStatus)
 			{
 				if (textStatus == 'success')
@@ -7817,12 +7994,14 @@ Craft.AuthManager = Garnish.Base.extend(
 
 	logout: function()
 	{
-		var url = Craft.getActionUrl('users/logout');
-
-		$.get(url, $.proxy(function()
-		{
-			Craft.redirectTo('');
-		}, this));
+		$.get({
+			url: Craft.getActionUrl('users/logout'),
+			dataType: 'json',
+			success: $.proxy(function()
+			{
+				Craft.redirectTo('');
+			}, this)
+		});
 	},
 
 	renewSession: function(ev)
@@ -8748,22 +8927,25 @@ Craft.CP = Garnish.Base.extend(
 
 		this.trackTaskProgressTimeout = setTimeout($.proxy(function()
 		{
-			Craft.queueActionRequest('tasks/get-running-task-info', $.proxy(function(taskInfo, textStatus)
+			Craft.queueActionRequest('tasks/get-running-task-info', $.proxy(function(response, textStatus)
 			{
 				if (textStatus == 'success')
 				{
 					this.trackTaskProgressTimeout = null;
-					this.setRunningTaskInfo(taskInfo, true);
+					this.setRunningTaskInfo(response.task, true);
 
-					if (taskInfo.status == 'running')
+					if (response.task)
 					{
-						// Check again in one second
-						this.trackTaskProgress();
-					}
-					else if (taskInfo.status == 'pending')
-					{
-						// Check again in 30 seconds
-						this.trackTaskProgress(30000);
+						if (response.task.status == 'running')
+						{
+							// Check again in one second
+							this.trackTaskProgress();
+						}
+						else if (response.task.status == 'pending')
+						{
+							// Check again in 30 seconds
+							this.trackTaskProgress(30000);
+						}
 					}
 				}
 			}, this));
@@ -9151,11 +9333,11 @@ var TaskProgressHUD = Garnish.HUD.extend(
 	{
 		this.completed = false;
 
-		Craft.postActionRequest('tasks/get-task-info', $.proxy(function(taskInfo, textStatus)
+		Craft.postActionRequest('tasks/get-task-info', $.proxy(function(response, textStatus)
 		{
 			if (textStatus == 'success')
 			{
-				this.showTaskInfo(taskInfo);
+				this.showTaskInfo(response.tasks);
 			}
 		}, this));
 	},
@@ -9370,11 +9552,11 @@ TaskProgressHUD.Task = Garnish.Base.extend(
 		{
 			case 'rerun':
 			{
-				Craft.postActionRequest('tasks/rerun-task', { taskId: this.id }, $.proxy(function(taskInfo, textStatus)
+				Craft.postActionRequest('tasks/rerun-task', { taskId: this.id }, $.proxy(function(response, textStatus)
 				{
 					if (textStatus == 'success')
 					{
-						this.updateStatus(taskInfo);
+						this.updateStatus(response.task);
 
 						if (this.hud.completed)
 						{
@@ -9386,7 +9568,7 @@ TaskProgressHUD.Task = Garnish.Base.extend(
 			}
 			case 'cancel':
 			{
-				Craft.postActionRequest('tasks/delete-task', { taskId: this.id }, $.proxy(function(taskInfo, textStatus)
+				Craft.postActionRequest('tasks/delete-task', { taskId: this.id }, $.proxy(function(response, textStatus)
 				{
 					if (textStatus == 'success')
 					{
@@ -9619,8 +9801,8 @@ Craft.CategoryIndex = Craft.BaseElementIndex.extend(
 
 		new Craft.ElementEditor({
 			hudTrigger: this.$newCategoryBtnGroup,
-			elementType: 'Category',
-			locale: this.locale,
+			elementType: 'craft\\app\\elements\\Category',
+			siteId: this.siteId,
 			attributes: {
 				groupId: groupId
 			},
@@ -9697,7 +9879,7 @@ Craft.CategorySelectInput = Craft.BaseElementSelectInput.extend(
 
 		var data = {
 			categoryIds:    selectedCategoryIds,
-			locale:         elements[0].locale,
+			siteId:         elements[0].siteId,
 			id:             this.settings.id,
 			name:           this.settings.name,
 			limit:          this.settings.limit,
@@ -9790,6 +9972,883 @@ Craft.CategorySelectInput = Craft.BaseElementSelectInput.extend(
 		}
 	}
 });
+
+/**
+ * Craft Charts
+ */
+
+Craft.charts = {};
+
+/**
+ * Class Craft.charts.DataTable
+ */
+Craft.charts.DataTable = Garnish.Base.extend(
+{
+    columns: null,
+    rows: null,
+
+    init: function(data)
+    {
+        columns = data.columns;
+        rows = data.rows;
+
+        rows.forEach($.proxy(function(d)
+        {
+            $.each(d, function(cellIndex, cell)
+            {
+                var column = columns[cellIndex];
+
+                switch(column.type)
+                {
+                    case 'date':
+                        d[cellIndex] = d3.time.format("%Y-%m-%d").parse(d[cellIndex]);
+                    break;
+
+                    case 'datetime':
+                        d[cellIndex] = d3.time.format("%Y-%m-%d %H:00:00").parse(d[cellIndex]);
+                    break;
+
+                    case 'percent':
+                    d[cellIndex] = d[cellIndex] / 100;
+                    break;
+
+                    case 'number':
+                        d[cellIndex] = +d[cellIndex];
+                        break;
+
+                    default:
+                        // do nothing
+                }
+            });
+
+        }, this));
+
+        this.columns = columns;
+        this.rows = rows;
+    }
+});
+
+/**
+ * Class Craft.charts.Tip
+ */
+Craft.charts.Tip = Garnish.Base.extend(
+{
+    $tip: null,
+
+    init: function($container, settings)
+    {
+        this.setSettings(settings, Craft.charts.Tip.defaults);
+
+        this.$container = $container;
+
+        this.$tip = $('<div class="tooltip"></div>').appendTo(this.$container);
+
+        this.hide();
+    },
+
+    tipContentFormat: function(d)
+    {
+        var locale = this.settings.locale;
+
+
+        if(this.settings.tipContentFormat)
+        {
+            return this.settings.tipContentFormat(locale, d);
+        }
+        else
+        {
+            var $content = $('<div />');
+            var $xValue = $('<div class="x-value" />').appendTo($content);
+            var $yValue = $('<div class="y-value" />').appendTo($content);
+
+            $xValue.html(this.settings.xTickFormat(d[0]));
+            $yValue.html(this.settings.yTickFormat(d[1]));
+
+            return $content.get(0);
+        }
+    },
+
+    show: function(d)
+    {
+        this.$tip.html(this.tipContentFormat(d));
+        this.$tip.css("display", 'block');
+
+        var position = this.settings.getPosition(this.$tip, d);
+
+        this.$tip.css("left", position.left + "px");
+        this.$tip.css("top", position.top + "px");
+    },
+
+    hide: function()
+    {
+        this.$tip.css("display", 'none');
+    },
+},
+{
+    defaults: {
+        locale: null,
+        tipContentFormat: null, // $.noop ?
+        getPosition: null, // $.noop ?
+    }
+});
+
+/**
+ * Class Craft.charts.BaseChart
+ */
+Craft.charts.BaseChart = Garnish.Base.extend(
+{
+    $container: null,
+    $chart: null,
+
+    chartBaseClass: 'cp-chart',
+    dataTable: null,
+
+    // dataTables: [],
+    // isStacked: true,
+
+    locale: null,
+    orientation: null,
+
+    svg: null,
+    width: null,
+    height: null,
+    x: null,
+    y: null,
+
+    init: function(container)
+    {
+        this.$container = container;
+
+        d3.select(window).on('resize', $.proxy(function() {
+            this.resize();
+        }, this));
+    },
+
+    initLocale: function()
+    {
+        var localeDefinition = window.d3_locale;
+
+        if(this.settings.localeDefinition)
+        {
+            localeDefinition = $.extend(true, {}, localeDefinition, this.settings.localeDefinition);
+        }
+
+        this.locale = d3.locale(localeDefinition);
+    },
+
+    initChartElement: function()
+    {
+        // reset chart element's HTML
+
+        if(this.$chart)
+        {
+            this.$chart.remove();
+        }
+
+        // chart class
+
+        var className = this.chartBaseClass;
+
+        if(this.settings.chartClass)
+        {
+            className += ' '+this.settings.chartClass;
+        }
+
+        this.$chart = $('<div class="'+className+'" />').appendTo(this.$container);
+    },
+
+    draw: function(dataTable, settings, settingsDefaults)
+    {
+        // settings
+
+        this.setSettings(settings, Craft.charts.BaseChart.defaults);
+
+        if(settingsDefaults)
+        {
+            this.setSettings(settings, settingsDefaults);
+        }
+
+
+        // chart
+
+        this.initLocale();
+        this.initChartElement();
+
+        this.orientation = this.settings.orientation;
+
+        this.dataTable = dataTable;
+    },
+
+    xTickFormat: function(locale)
+    {
+        switch(this.settings.dataScale)
+        {
+            case 'year':
+                return locale.timeFormat('%Y');
+
+            case 'month':
+                return locale.timeFormat(this.settings.formats.shortDateFormats.month);
+
+            case 'hour':
+                return locale.timeFormat(this.settings.formats.shortDateFormats.month+" %H:00:00");
+
+            default:
+                return locale.timeFormat(this.settings.formats.shortDateFormats.day);
+        }
+    },
+
+    yTickFormat: function(locale)
+    {
+        switch(this.dataTable.columns[1].type)
+        {
+            case 'currency':
+                return locale.numberFormat(this.settings.formats.currencyFormat);
+
+            case 'percent':
+                return locale.numberFormat(this.settings.formats.percentFormat);
+
+            case 'time':
+                return Craft.charts.utils.getDuration;
+
+            default:
+                return locale.numberFormat("n");
+        }
+    },
+
+    resize: function()
+    {
+        this.draw(this.dataTable, this.settings);
+    },
+
+    onAfterDrawTicks: function()
+    {
+        // White border for ticks' text
+        $('.tick', this.$chart).each(function(tickKey, tick)
+        {
+            var $tickText = $('text', tick);
+
+            var $clone = $tickText.clone();
+            $clone.appendTo(tick);
+
+            $tickText.attr('stroke', '#ffffff');
+            $tickText.attr('stroke-width', 3);
+        });
+    }
+},
+{
+    defaults: {
+        margin: { top: 25, right: 25, bottom: 25, left: 25 },
+        chartClass: null,
+        colors: ["#0594D1", "#DE3800", "#FF9A00", "#009802", "#9B009B"],
+        ticksStyles: {
+            'fill': '#555',
+            'font-size': '11px'
+        }
+    }
+});
+
+
+/**
+ * Class Craft.charts.Area
+ */
+Craft.charts.Area = Craft.charts.BaseChart.extend(
+{
+    tip: null,
+
+    paddedX: null,
+    paddedY: null,
+
+    draw: function(dataTable, settings)
+    {
+        this.base(dataTable, settings, Craft.charts.Area.defaults);
+
+        if(this.tip)
+        {
+            this.tip = null;
+        }
+
+        this.width = this.$chart.width() - this.settings.margin.left - this.settings.margin.right;
+        this.height = this.$chart.height() - this.settings.margin.top - this.settings.margin.bottom;
+
+        // X & Y Scales & Domains
+        this.x = d3.time.scale().range([0, this.width]);
+        this.y = d3.scale.linear().range([this.height, 0]);
+        this.x.domain(this.xDomain());
+        this.y.domain(this.yDomain());
+
+        // Append SVG to chart element
+
+        var svg = {
+            width: this.width + (this.settings.margin.left + this.settings.margin.right),
+            height: this.height + (this.settings.margin.top + this.settings.margin.bottom),
+            translateX: (this.orientation != 'rtl' ? (this.settings.margin.left) : (this.settings.margin.right)),
+            translateY: this.settings.margin.top
+        };
+
+        this.svg = d3.select(this.$chart.get(0)).append("svg")
+                .attr("width", svg.width)
+                .attr("height", svg.height)
+            .append("g")
+                .attr("transform", "translate(" + svg.translateX + "," + svg.translateY + ")");
+
+        // Draw elements
+        this.drawGridlines();
+        this.drawYTicks();
+
+
+        // Draw padded elements
+        var chartMargin = this.getChartMargin();
+        this.paddedX = d3.time.scale().range([chartMargin.left, (this.width - chartMargin.right)]);
+        this.paddedY = d3.scale.linear().range([this.height, 0]);
+        this.paddedX.domain(this.xDomain());
+        this.paddedY.domain(this.yDomain());
+
+        this.drawXTicks();
+        this.onAfterDrawTicks();
+        this.drawAxes();
+        this.drawChart();
+        this.drawPlots();
+        this.drawTipTriggers();
+    },
+
+    getChartMargin: function()
+    {
+        var left = 0;
+        var right = 0;
+
+
+        // calculate left based on widest Y tick's width
+
+        var yTickMaxWidth = 0;
+
+        $('.y .tick text:last', this.$chart).each(function(tickKey, tick)
+        {
+            var tickWidth = $(tick).get(0).getBoundingClientRect().width;
+
+            if(tickWidth > yTickMaxWidth)
+            {
+                yTickMaxWidth = tickWidth;
+            }
+        });
+
+        left = yTickMaxWidth + 14;
+
+        return {
+            left: (this.orientation != 'rtl' ? left : right),
+            right: (this.orientation != 'rtl' ? right : left)
+        };
+    },
+
+    drawChart: function()
+    {
+        var x = this.paddedX;
+        var y = this.paddedY;
+
+        // Line
+
+        var line = d3.svg.line()
+            .x(function(d) { return x(d[0]); })
+            .y(function(d) { return y(d[1]); });
+
+        this.svg
+            .append("g")
+                .attr("class", "chart-line")
+            .append("path")
+                .datum(this.dataTable.rows)
+                .style({
+                    'fill': 'none',
+                    'stroke': this.settings.colors[0],
+                    'stroke-width': '3px',
+                })
+                .attr("d", line);
+
+        // Area
+        var area = d3.svg.area()
+            .x(function(d) { return x(d[0]); })
+            .y0(this.height)
+            .y1(function(d) { return y(d[1]); });
+
+        // Area
+        this.svg
+            .append("g")
+                .attr("class", "chart-area")
+            .append("path")
+                .datum(this.dataTable.rows)
+                .style({
+                    'fill': this.settings.colors[0],
+                    'fill-opacity': '0.3'
+                })
+                .attr("d", area);
+    },
+
+    drawAxes: function()
+    {
+        var x = d3.time.scale().range([0, this.width]);
+        var y = this.y;
+
+        var xAxis = d3.svg.axis().scale(x).orient("bottom").ticks(0).outerTickSize(0);
+
+        var xTranslateX = - 0;
+        var xTranslateY = this.height;
+
+        this.svg.append("g")
+            .attr("class", "x axis")
+            .attr("transform", "translate("+ xTranslateX +"," + xTranslateY + ")")
+            .call(xAxis);
+
+        var chartMargin = this.getChartMargin();
+
+        if(this.settings.axis.y.show)
+        {
+            if(this.orientation == 'rtl')
+            {
+                var yTranslateX = this.width - chartMargin.right;
+                var yTranslateY = 0;
+
+                var yAxis = d3.svg.axis().scale(y).orient("left").ticks(0);
+
+                this.svg.append("g")
+                    .attr("class", "y axis")
+                    .attr("transform", "translate(" + yTranslateX + ", "+ yTranslateY +")")
+                    .call(yAxis);
+            }
+            else
+            {
+                var yTranslateX = chartMargin.left;
+                var yTranslateY = 0;
+
+                var yAxis = d3.svg.axis().scale(y).orient("right").ticks(0);
+
+                this.svg.append("g")
+                    .attr("class", "y axis")
+                    .attr("transform", "translate(" + yTranslateX + ", "+ yTranslateY +")")
+                    .call(yAxis);
+            }
+        }
+    },
+
+    drawYTicks: function()
+    {
+        var y = this.y;
+
+        if(this.orientation == 'rtl')
+        {
+            var yAxis = d3.svg.axis().scale(y).orient("left")
+                .tickFormat(this.yTickFormat(this.locale))
+                .tickValues(this.yTickValues())
+                .ticks(this.yTicks());
+
+            var translateX = this.width + 10;
+            var translateY = 0;
+
+            this.svg.append("g")
+                .attr("class", "y ticks-axis")
+                .attr("transform", "translate(" + translateX + ",0)")
+                .style(this.settings.ticksStyles)
+                .call(yAxis);
+
+            this.svg.selectAll('.y.ticks-axis text').style({
+                'text-anchor': 'start',
+            });
+        }
+        else
+        {
+            var yAxis = d3.svg.axis().scale(y).orient("right")
+                .tickFormat(this.yTickFormat(this.locale))
+                .tickValues(this.yTickValues())
+                .ticks(this.yTicks());
+
+            var translateX = - (10);
+            var translateY = 0;
+
+            this.svg.append("g")
+                .attr("class", "y ticks-axis")
+                .attr("transform", "translate("+ translateX + ", "+ translateY +")")
+                .style(this.settings.ticksStyles)
+                .call(yAxis);
+        }
+    },
+
+    drawXTicks: function()
+    {
+        var x = this.paddedX;
+
+        var xAxis = d3.svg.axis().scale(x).orient("bottom")
+            .tickFormat(this.xTickFormat(this.locale))
+            .ticks(this.xTicks());
+
+        this.svg.append("g")
+            .attr("class", "x ticks-axis")
+            .attr("transform", "translate(0," + this.height + ")")
+            .style(this.settings.ticksStyles)
+            .call(xAxis);
+    },
+
+    drawGridlines: function()
+    {
+        var x = this.x;
+        var y = this.y;
+
+        if(this.settings.xAxisGridlines)
+        {
+            var xLineAxis = d3.svg.axis().scale(x).orient("bottom");
+
+            // draw x lines
+            this.svg.append("g")
+                .attr("class", "x grid-line")
+                .attr("transform", "translate(0," + this.height + ")")
+                .call(xLineAxis
+                    .tickSize(-this.height, 0, 0)
+                    .tickFormat("")
+                );
+        }
+
+        if(this.settings.yAxisGridlines)
+        {
+            var yLineAxis = d3.svg.axis().scale(y).orient("left");
+
+            var translateX = 0;
+            var translateY = 0;
+
+            var innerTickSize = - (this.width);
+            var outerTickSize = 0;
+
+            this.svg.append("g")
+                .attr("class", "y grid-line")
+                .attr("transform", "translate(-"+ translateX +" , "+ translateY +")")
+                .call(yLineAxis
+                    .tickSize(innerTickSize, outerTickSize)
+                    .tickFormat("")
+                    .tickValues(this.yTickValues())
+                    .ticks(this.yTicks())
+                );
+        }
+    },
+
+    drawPlots: function()
+    {
+        var x = this.paddedX;
+        var y = this.paddedY;
+
+        if(this.settings.enablePlots)
+        {
+            this.svg.append('g')
+                .attr("class", "plots")
+            .selectAll("circle")
+                .data(this.dataTable.rows)
+                .enter()
+                .append("circle")
+                    .style({
+                        'fill': this.settings.colors[0],
+                    })
+                    .attr("class", $.proxy(function(d, index) { return 'plot plot-'+index; }, this))
+                    .attr("r", 4)
+                    .attr("cx", $.proxy(function(d) { return x(d[0]); }, this))
+                    .attr("cy", $.proxy(function(d) { return y(d[1]); }, this));
+        }
+    },
+
+    expandPlot: function(index)
+    {
+        this.svg.select('.plot-'+index).attr("r", 5);
+    },
+
+    unexpandPlot: function(index)
+    {
+        this.svg.select('.plot-'+index).attr("r", 4);
+    },
+
+    getTipTriggerWidth: function () {
+
+        return Math.max(0, this.xAxisTickInterval());
+    },
+
+    xAxisTickInterval: function()
+    {
+        var chartMargin = this.getChartMargin();
+
+        var outerTickSize = 6;
+        var length = this.svg.select('.x path.domain').node().getTotalLength() - chartMargin.left - chartMargin.right - outerTickSize * 2;
+        var interval = length / (this.dataTable.rows.length - 1);
+
+        return interval;
+    },
+
+    drawTipTriggers: function()
+    {
+        var x = this.paddedX;
+
+        if(this.settings.enableTips)
+        {
+            var tipSettings = {
+                chart: this,
+                locale: this.locale,
+                xTickFormat: this.xTickFormat(this.locale),
+                yTickFormat: this.yTickFormat(this.locale),
+                tipContentFormat: $.proxy(this, 'tipContentFormat'),
+                getPosition: $.proxy(this, 'getTipPosition')
+            };
+
+            if(!this.tip)
+            {
+                this.tip = new Craft.charts.Tip(this.$chart, tipSettings);
+            }
+            else
+            {
+                this.tip.setSettings(tipSettings);
+            }
+
+            this.svg.append('g')
+                .attr("class", "tip-triggers")
+            .selectAll("rect")
+                .data(this.dataTable.rows)
+            .enter().append("rect")
+                .attr("class", "tip-trigger")
+                .style({
+                    'fill': 'transparent',
+                    'fill-opacity': '1',
+                })
+                .attr("width", this.getTipTriggerWidth())
+                .attr("height", this.height)
+                .attr("x", $.proxy(function(d) { return x(d[0]) - this.getTipTriggerWidth() / 2; }, this))
+                .on("mouseover", $.proxy(function(d, index)
+                {
+                    this.expandPlot(index);
+                    this.tip.show(d);
+                }, this))
+                .on("mouseout", $.proxy(function(d, index)
+                {
+                    this.unexpandPlot(index);
+                    this.tip.hide();
+                }, this));
+        }
+
+        // Apply shadow filter
+        Craft.charts.utils.applyShadowFilter('drop-shadow', this.svg);
+    },
+
+    getTipPosition: function($tip, d)
+    {
+        var x = this.paddedX;
+        var y = this.paddedY;
+
+        var chartMargin = this.getChartMargin();
+
+        var offset = 24;
+        var top = (y(d[1]) - $tip.height() / 2);
+        var left;
+
+        if(this.orientation != 'rtl')
+        {
+            left = (x(d[0]) + this.settings.margin.left + offset);
+
+            var calcLeft = (this.$chart.offset().left + left + $tip.width());
+            var maxLeft = this.$chart.offset().left + this.$chart.width() - offset;
+
+            if(calcLeft > maxLeft)
+            {
+                left = x(d[0]) - ($tip.width() + offset);
+            }
+        }
+        else
+        {
+            left = (x(d[0]) - ($tip.width() + this.settings.margin.left + offset));
+        }
+
+        if(left < 0)
+        {
+            left = (x(d[0]) + this.settings.margin.left + offset);
+        }
+
+        return {
+            top: top,
+            left: left,
+        };
+    },
+
+    xDomain: function()
+    {
+        var min = d3.min(this.dataTable.rows, function(d) { return d[0]; });
+        var max = d3.max(this.dataTable.rows, function(d) { return d[0]; });
+
+        if(this.orientation == 'rtl')
+        {
+            return [max, min];
+        }
+        else
+        {
+            return [min, max];
+        }
+    },
+
+    xTicks: function()
+    {
+        return 3;
+    },
+
+    yAxisMaxValue: function()
+    {
+        return d3.max(this.dataTable.rows, function(d) { return d[1]; });
+    },
+
+    yDomain: function()
+    {
+        var yDomainMax = $.proxy(function()
+        {
+            return this.yAxisMaxValue();
+
+        }, this);
+
+        return [0, yDomainMax()];
+    },
+
+    yTicks: function()
+    {
+        return 2;
+    },
+
+    yTickValues: function()
+    {
+        return [this.yAxisMaxValue() / 2, this.yAxisMaxValue()];
+    },
+},
+{
+    defaults: {
+        chartClass: 'area',
+        enablePlots: true,
+        enableTips: true,
+        xAxisGridlines: false,
+        yAxisGridlines: true,
+        axis: {
+            y: {
+                show: false
+            }
+        }
+    }
+});
+
+/**
+ * Class Craft.charts.Utils
+ */
+Craft.charts.utils = {
+
+    getDuration: function(value)
+    {
+        var sec_num = parseInt(value, 10);
+        var hours   = Math.floor(sec_num / 3600);
+        var minutes = Math.floor((sec_num - (hours * 3600)) / 60);
+        var seconds = sec_num - (hours * 3600) - (minutes * 60);
+
+        if (hours < 10)
+        {
+            hours = "0"+hours;
+        }
+
+        if (minutes < 10)
+        {
+            minutes = "0"+minutes;
+        }
+
+        if (seconds < 10)
+        {
+            seconds = "0"+seconds;
+        }
+
+        var time = hours+':'+minutes+':'+seconds;
+
+        return time;
+    },
+
+    /**
+     * arrayToDataTable
+     */
+    arrayToDataTable: function(twoDArray)
+    {
+
+        var data = {
+            columns: [],
+            rows: []
+        };
+
+        $.each(twoDArray, function(k, v) {
+            if(k == 0)
+            {
+                // first row is column definition
+
+                data.columns = [];
+
+                $.each(v, function(k2, v2) {
+
+                    // guess column type from first row
+                    var columnType = typeof(twoDArray[(k + 1)][k2]);
+
+                    var column = {
+                        name: v2,
+                        type: columnType,
+                    };
+
+                    data.columns.push(column);
+                });
+            }
+            else
+            {
+                var row = [];
+
+                $.each(v, function(k2, v2) {
+                    var cell = v2;
+
+                    row.push(cell);
+                });
+
+                data.rows.push(row);
+            }
+        });
+
+        var dataTable = new Craft.charts.DataTable(data);
+
+        return dataTable;
+    },
+
+    applyShadowFilter: function(id, svg)
+    {
+        // filters go in defs element
+        var defs = svg.append("defs");
+
+        // create filter with id #{id}
+        // height=130% so that the shadow is not clipped
+        var filter = defs.append("filter")
+            .attr("id", id)
+            .attr("width", "200%")
+            .attr("height", "200%")
+            .attr("x", "-50%")
+            .attr("y", "-50%");
+
+        // SourceAlpha refers to opacity of graphic that this filter will be applied to
+        // convolve that with a Gaussian with standard deviation 3 and store result
+        // in blur
+        filter.append("feGaussianBlur")
+            .attr("in", "SourceAlpha")
+            .attr("stdDeviation", 1)
+            .attr("result", "blur");
+
+        // translate output of Gaussian blur to the right and downwards with 2px
+        // store result in offsetBlur
+        filter.append("feOffset")
+            .attr("in", "blur")
+            .attr("dx", 0)
+            .attr("dy", 0)
+            .attr("result", "offsetBlur");
+
+        // overlay original SourceGraphic over translated blurred opacity by using
+        // feMerge filter. Order of specifying inputs is important!
+        var feMerge = filter.append("feMerge");
+
+        feMerge.append("feMergeNode")
+            .attr("in", "offsetBlur");
+        feMerge.append("feMergeNode")
+            .attr("in", "SourceGraphic");
+    }
+};
 
 /**
 * Customize Sources modal
@@ -11068,7 +12127,7 @@ Craft.ElementEditor = Garnish.Base.extend(
 {
 	$element: null,
 	elementId: null,
-	locale: null,
+	siteId: null,
 
 	$form: null,
 	$fieldsContainer: null,
@@ -11076,8 +12135,8 @@ Craft.ElementEditor = Garnish.Base.extend(
 	$saveBtn: null,
 	$spinner: null,
 
-	$localeSelect: null,
-	$localeSpinner: null,
+	$siteSelect: null,
+	$siteSpinner: null,
 
 	hud: null,
 
@@ -11111,11 +12170,11 @@ Craft.ElementEditor = Garnish.Base.extend(
 	getBaseData: function () {
 		var data = $.extend({}, this.settings.params);
 
-		if (this.settings.locale) {
-			data.locale = this.settings.locale;
+		if (this.settings.siteId) {
+			data.siteId = this.settings.siteId;
 		}
-		else if (this.$element && this.$element.data('locale')) {
-			data.locale = this.$element.data('locale');
+		else if (this.$element && this.$element.data('site-id')) {
+			data.siteId = this.$element.data('site-id');
 		}
 
 		if (this.settings.elementId) {
@@ -11139,7 +12198,7 @@ Craft.ElementEditor = Garnish.Base.extend(
 	loadHud: function () {
 		this.onBeginLoading();
 		var data = this.getBaseData();
-		data.includeLocales = this.settings.showLocaleSwitcher;
+		data.includeSites = this.settings.showSiteSwitcher;
 		Craft.postActionRequest('elements/get-editor-html', data, $.proxy(this, 'showHud'));
 	},
 
@@ -11149,19 +12208,19 @@ Craft.ElementEditor = Garnish.Base.extend(
 		if (textStatus == 'success') {
 			var $hudContents = $();
 
-			if (response.locales) {
+			if (response.sites) {
 				var $header = $('<div class="header"/>'),
-					$localeSelectContainer = $('<div class="select"/>').appendTo($header);
+					$siteSelectContainer = $('<div class="select"/>').appendTo($header);
 
-				this.$localeSelect = $('<select/>').appendTo($localeSelectContainer);
-				this.$localeSpinner = $('<div class="spinner hidden"/>').appendTo($header);
+				this.$siteSelect = $('<select/>').appendTo($siteSelectContainer);
+				this.$siteSpinner = $('<div class="spinner hidden"/>').appendTo($header);
 
-				for (var i = 0; i < response.locales.length; i++) {
-					var locale = response.locales[i];
-					$('<option value="' + locale.id + '"' + (locale.id == response.locale ? ' selected="selected"' : '') + '>' + locale.name + '</option>').appendTo(this.$localeSelect);
+				for (var i = 0; i < response.sites.length; i++) {
+					var siteInfo = response.sites[i];
+					$('<option value="' + siteInfo.id + '"' + (siteInfo.id == response.siteId ? ' selected="selected"' : '') + '>' + siteInfo.name + '</option>').appendTo(this.$siteSelect);
 				}
 
-				this.addListener(this.$localeSelect, 'change', 'switchLocale');
+				this.addListener(this.$siteSelect, 'change', 'switchSite');
 
 				$hudContents = $hudContents.add($header);
 			}
@@ -11212,33 +12271,33 @@ Craft.ElementEditor = Garnish.Base.extend(
 		}
 	},
 
-	switchLocale: function () {
-		var newLocale = this.$localeSelect.val();
+	switchSite: function () {
+		var newSiteId = this.$siteSelect.val();
 
-		if (newLocale == this.locale) {
+		if (newSiteId == this.siteId) {
 			return;
 		}
 
-		this.$localeSpinner.removeClass('hidden');
+		this.$siteSpinner.removeClass('hidden');
 
 
 		var data = this.getBaseData();
-		data.locale = newLocale;
+		data.siteId = newSiteId;
 
 		Craft.postActionRequest('elements/get-editor-html', data, $.proxy(function (response, textStatus) {
-			this.$localeSpinner.addClass('hidden');
+			this.$siteSpinner.addClass('hidden');
 
 			if (textStatus == 'success') {
 				this.updateForm(response);
 			}
 			else {
-				this.$localeSelect.val(this.locale);
+				this.$siteSelect.val(this.siteId);
 			}
 		}, this));
 	},
 
 	updateForm: function (response) {
-		this.locale = response.locale;
+		this.siteId = response.siteId;
 
 		this.$fieldsContainer.html(response.html);
 
@@ -11281,7 +12340,7 @@ Craft.ElementEditor = Garnish.Base.extend(
 
 			if (textStatus == 'success') {
 				if (textStatus == 'success' && response.success) {
-					if (this.$element && this.locale == this.$element.data('locale')) {
+					if (this.$element && this.siteId == this.$element.data('site-id')) {
 						// Update the label
 						var $title = this.$element.find('.title'),
 							$a = $title.find('a');
@@ -11361,10 +12420,10 @@ Craft.ElementEditor = Garnish.Base.extend(
 {
 	defaults: {
 		hudTrigger: null,
-		showLocaleSwitcher: true,
+		showSiteSwitcher: true,
 		elementId: null,
 		elementType: null,
-		locale: null,
+		siteId: null,
 		attributes: null,
 		params: null,
 
@@ -11858,10 +12917,11 @@ Craft.EntryIndex = Craft.BaseElementIndex.extend(
 
 		new Craft.ElementEditor({
 			hudTrigger: this.$newEntryBtnGroup,
-			elementType: 'Entry',
-			locale: this.locale,
+			elementType: 'craft\\app\\elements\\Entry',
+			siteId: this.siteId,
 			attributes: {
-				sectionId: sectionId
+				sectionId: sectionId,
+				typeId: section.entryTypes[0].id
 			},
 			onBeginLoading: $.proxy(function()
 			{
@@ -11894,40 +12954,6 @@ Craft.EntryIndex = Craft.BaseElementIndex.extend(
 
 // Register it!
 Craft.registerElementIndexClass('craft\\app\\elements\\Entry', Craft.EntryIndex);
-
-/**
- * Handle Generator
- */
-Craft.EntryUrlFormatGenerator = Craft.BaseInputGenerator.extend(
-{
-	generateTargetValue: function(sourceVal)
-	{
-		// Remove HTML tags
-		sourceVal = sourceVal.replace("/<(.*?)>/g", '');
-
-		// Make it lowercase
-		sourceVal = sourceVal.toLowerCase();
-
-		// Convert extended ASCII characters to basic ASCII
-		sourceVal = Craft.asciiString(sourceVal);
-
-		// Handle must start with a letter and end with a letter/number
-		sourceVal = sourceVal.replace(/^[^a-z]+/, '');
-		sourceVal = sourceVal.replace(/[^a-z0-9]+$/, '');
-
-		// Get the "words"
-		var words = Craft.filterArray(sourceVal.split(/[^a-z0-9]+/));
-
-		var urlFormat = words.join('-');
-
-		if (urlFormat && this.settings.suffix)
-		{
-			urlFormat += this.settings.suffix;
-		}
-
-		return urlFormat;
-	}
-});
 
 Craft.FieldLayoutDesigner = Garnish.Base.extend(
 {
@@ -13567,8 +14593,6 @@ Craft.HandleGenerator = Craft.BaseInputGenerator.extend(
 		return handle;
 	}
 });
-
-// TODO I'm 999% sure this can be done smarter, better and more good looking.
 
 /**
  * Image upload class for user photos, site icon and logo.
@@ -15742,7 +16766,7 @@ Craft.StructureDrag = Garnish.Drag.extend(
 				var data = {
 					structureId: this.structure.id,
 					elementId:   $element.data('id'),
-					locale:      $element.data('locale'),
+					siteId:      $element.data('site-id'),
 					prevId:      this.$draggee.prev().children('.row').children('.element').data('id'),
 					parentId:    this.$draggee.parent('ul').parent('li').children('.row').children('.element').data('id')
 				};
@@ -16336,7 +17360,7 @@ Craft.StructureTableSorter = Garnish.DragSort.extend({
 		return {
 			structureId: this.structureId,
 			elementId:   $row.data('id'),
-			locale:      $row.find('.element:first').data('locale')
+			siteId:      $row.find('.element:first').data('site-id')
 		};
 	},
 
@@ -17084,11 +18108,33 @@ Craft.TagSelectInput = Craft.BaseElementSelectInput.extend(
 			id = $option.data('id'),
 			title = $option.text();
 
-		var $element = $('<div class="element small removable" data-id="'+id+'" data-editable/>').appendTo(this.$elementsContainer),
-			$input = $('<input type="hidden" name="'+this.settings.name+'[]" value="'+id+'"/>').appendTo($element);
+		var $element = $('<div/>', {
+			'class': 'element small removable',
+			'data-id': id,
+			'data-site-id': this.settings.targetSiteId,
+			'data-label': title,
+			'data-editable': '1'
+		}).appendTo(this.$elementsContainer);
 
-		$('<a class="delete icon" title="'+Craft.t('app', 'Remove')+'"></a>').appendTo($element);
-		$('<span class="label">'+title+'</span>').appendTo($element);
+		var $input = $('<input/>', {
+			'type': 'hidden',
+			'name': this.settings.name+'[]',
+			'value': id
+		}).appendTo($element);
+
+		$('<a/>', {
+			'class': 'delete icon',
+			'title': Craft.t('app', 'Remove')
+		}).appendTo($element);
+
+		var $titleContainer = $('<div/>', {
+			'class': 'label'
+		}).appendTo($element);
+
+		$('<span/>', {
+			'class': 'title',
+			text: title
+		}).appendTo($titleContainer);
 
 		var margin = -($element.outerWidth()+10);
 		this.$addTagInput.css('margin-'+Craft.left, margin+'px');
@@ -17491,7 +18537,7 @@ Craft.ui =
     createField: function(input, config)
     {
         var label = (config.label && config.label != '__blank__' ? config.label : null),
-            locale = (Craft.isLocalized && config.locale ? config.locale : null);
+            siteId = (Craft.isMultiSite && config.siteId ? config.siteId : null);
 
         var $field = $('<div/>', {
             'class': 'field',
@@ -17513,9 +18559,14 @@ Craft.ui =
                     text: label
                 }).appendTo($heading);
 
-                if (locale)
+                if (siteId)
                 {
-                    $('<span class="locale"/>').text(locale).appendTo($label);
+                    for (var i = 0; i < Craft.sites.length; i++) {
+                        if (Craft.sites[i].id == siteId) {
+                            $('<span class="site"/>').text(Craft.sites[i].name).appendTo($label);
+                            break;
+                        }
+                    }
                 }
             }
 
@@ -18460,6 +19511,40 @@ Craft.Uploader = Garnish.Base.extend(
 		allowedKinds: null,
 		events: {},
 		canAddMoreFiles: null
+	}
+});
+
+/**
+ * Handle Generator
+ */
+Craft.UriFormatGenerator = Craft.BaseInputGenerator.extend(
+{
+	generateTargetValue: function(sourceVal)
+	{
+		// Remove HTML tags
+		sourceVal = sourceVal.replace("/<(.*?)>/g", '');
+
+		// Make it lowercase
+		sourceVal = sourceVal.toLowerCase();
+
+		// Convert extended ASCII characters to basic ASCII
+		sourceVal = Craft.asciiString(sourceVal);
+
+		// Handle must start with a letter and end with a letter/number
+		sourceVal = sourceVal.replace(/^[^a-z]+/, '');
+		sourceVal = sourceVal.replace(/[^a-z0-9]+$/, '');
+
+		// Get the "words"
+		var words = Craft.filterArray(sourceVal.split(/[^a-z0-9]+/));
+
+		var uriFormat = words.join('-');
+
+		if (uriFormat && this.settings.suffix)
+		{
+			uriFormat += this.settings.suffix;
+		}
+
+		return uriFormat;
 	}
 });
 

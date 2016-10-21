@@ -159,7 +159,23 @@ class StringHelper extends \yii\helpers\StringHelper
      */
     public static function endsWith($str, $substring, $caseSensitive = true)
     {
-        return (string)Stringy::create($str)->endsWith($substring, $caseSensitive);
+        return Stringy::create($str)->endsWith($substring, $caseSensitive);
+    }
+
+    /**
+     * Ensures that a string ends with a given substring.
+     *
+     * @param string &$str The string to amend
+     * @param string $substring The substring to look for
+     * @param boolean $caseSensitive Whether or not to enforce case-sensitivity.
+     *
+     * @return void
+     */
+    public static function ensureEndsWith(&$str, $substring, $caseSensitive = true)
+    {
+        if (!self::endsWith($str, $substring, $caseSensitive)) {
+            $str .= $substring;
+        }
     }
 
     /**
@@ -465,7 +481,7 @@ class StringHelper extends \yii\helpers\StringHelper
 
         $string = array_shift($words).implode('', array_map([
                 get_called_class(),
-                'uppercaseFirst'
+                'upperCaseFirst'
             ], $words));
 
         return $string;
@@ -487,7 +503,7 @@ class StringHelper extends \yii\helpers\StringHelper
         $words = self::_prepStringForCasing($string);
         $string = implode('', array_map([
             get_called_class(),
-            'uppercaseFirst'
+            'upperCaseFirst'
         ], $words));
 
         return $string;
@@ -732,7 +748,23 @@ class StringHelper extends \yii\helpers\StringHelper
      */
     public static function startsWith($str, $substring, $caseSensitive = true)
     {
-        return (string)Stringy::create($str)->startsWith($substring, $caseSensitive);
+        return Stringy::create($str)->startsWith($substring, $caseSensitive);
+    }
+
+    /**
+     * Ensures that a string starts with a given substring.
+     *
+     * @param string &$str The string to amend
+     * @param string $substring The substring to look for
+     * @param boolean $caseSensitive Whether or not to enforce case-sensitivity.
+     *
+     * @return void
+     */
+    public static function ensureStartsWith(&$str, $substring, $caseSensitive = true)
+    {
+        if (!self::startsWith($str, $substring, $caseSensitive)) {
+            $str = $substring.$str;
+        }
     }
 
     /**
@@ -855,7 +887,7 @@ class StringHelper extends \yii\helpers\StringHelper
      *
      * @return string The string with the first character being uppercase.
      */
-    public static function uppercaseFirst($str)
+    public static function upperCaseFirst($str)
     {
         return (string)Stringy::create($str)->upperCaseFirst();
     }

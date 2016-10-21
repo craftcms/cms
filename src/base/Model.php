@@ -20,48 +20,6 @@ use yii\base\UnknownMethodException;
  */
 abstract class Model extends \yii\base\Model
 {
-    // Static
-    // =========================================================================
-
-    /**
-     * Instantiates and populates a new model instance with the given set of attributes.
-     *
-     * @param mixed $config Attribute values to populate the model with (name => value).
-     *
-     * @return $this The new model
-     */
-    public static function create($config)
-    {
-        $model = new static();
-        static::populateModel($model, ArrayHelper::toArray($config, [], false));
-
-        return $model;
-    }
-
-    /**
-     * Populates a new model instance with a given set of attributes.
-     *
-     * @param Model $model  The model to be populated.
-     * @param array $config Attribute values to populate the model with (name => value).
-     *
-     * @return void
-     */
-    public static function populateModel($model, $config)
-    {
-        $attributes = array_flip($model->attributes());
-        $datetimeAttributes = array_flip($model->datetimeAttributes());
-
-        foreach ($config as $name => $value) {
-            if (isset($attributes[$name]) || $model->canSetProperty($name)) {
-                if ($value !== null && isset($datetimeAttributes[$name])) {
-                    $value = DateTimeHelper::toDateTime($value);
-                }
-
-                $model->$name = $value;
-            }
-        }
-    }
-
     // Properties
     // =========================================================================
 
@@ -72,6 +30,19 @@ abstract class Model extends \yii\base\Model
 
     // Public Methods
     // =========================================================================
+
+    /**
+     * @inheritdoc
+     */
+    public function init()
+    {
+        parent::init();
+
+        // Normalize the DateTime attributes
+        foreach ($this->datetimeAttributes() as $attribute) {
+            $this->$attribute = DateTimeHelper::toDateTime($this->$attribute);
+        }
+    }
 
     /**
      * Magic __call() method, used for chain-setting attribute values.

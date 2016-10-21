@@ -38,7 +38,7 @@ class SuspendUsers extends ElementAction
      */
     public function getTriggerHtml()
     {
-        $type = Json::encode(static::className());
+        $type = Json::encode(static::class);
         $userId = Json::encode(Craft::$app->getUser()->getIdentity()->id);
 
         $js = <<<EOT
