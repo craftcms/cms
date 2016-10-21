@@ -175,26 +175,19 @@ class Asset extends Element
                 ]
             );
 
+            $userSessionService = Craft::$app->getUser();
+
             // Rename File
             if (
-                Craft::$app->getAssets()->canUserPerformAction(
-                    $folderId,
-                    'removeFromVolume'
-                ) &&
-                Craft::$app->getAssets()->canUserPerformAction(
-                    $folderId,
-                    'uploadToVolume'
-                )
+                $userSessionService->checkPermission('removeFromVolume:'.$volume->id)
+                &&
+                $userSessionService->checkPermission('uploadToVolume:'.$volume->id)
             ) {
                 $actions[] = RenameFile::class;
             }
 
             // Replace File
-            if (Craft::$app->getAssets()->canUserPerformAction(
-                $folderId,
-                'uploadToVolume'
-            )
-            ) {
+            if ($userSessionService->checkPermission('uploadToVolume:'.$volume->id)) {
                 $actions[] = ReplaceFile::class;
             }
 
@@ -207,11 +200,7 @@ class Asset extends Element
             );
 
             // Delete
-            if (Craft::$app->getAssets()->canUserPerformAction(
-                $folderId,
-                'removeFromVolume'
-            )
-            ) {
+            if ($userSessionService->checkPermission('removeFromVolume:'.$volume->id)) {
                 $actions[] = DeleteAssets::class;
             }
         }
@@ -366,12 +355,7 @@ class Asset extends Element
             'hasThumbs' => true,
             'criteria' => ['folderId' => $folder->id],
             'data' => [
-                'upload' => is_null(
-                    $folder->volumeId
-                ) ? true : Craft::$app->getAssets()->canUserPerformAction(
-                    $folder->id,
-                    'uploadToVolume'
-                )
+                'upload' => is_null($folder->volumeId) ? true : Craft::$app->getUser()->checkPermission('uploadToVolume:'.$folder->volumeId)
             ]
         ];
 
@@ -1040,7 +1024,7 @@ class Asset extends Element
             $this->getVolume()->deleteFile($this->getUri());
         }
 
-        Craft::$app->getAssetTransforms()->deleteAllTransformData($asset);
+        Craft::$app->getAssetTransforms()->deleteAllTransformData($this);
         parent::afterDelete();
     }
 
