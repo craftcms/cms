@@ -17,39 +17,6 @@ use Craft;
  */
 class EntryDraft extends BaseEntryRevisionModel
 {
-    // Static
-    // =========================================================================
-
-    /**
-     * @inheritdoc
-     */
-    public static function populateModel($model, $config)
-    {
-        /** @var static $model */
-        // Merge the draft and entry data
-        $entryData = $config['data'];
-        $fieldContent = isset($entryData['fields']) ? $entryData['fields'] : null;
-        $config['draftId'] = $config['id'];
-        $config['id'] = $config['entryId'];
-        $config['revisionNotes'] = $config['notes'];
-        $title = $entryData['title'];
-        unset($config['data'], $entryData['fields'], $config['entryId'], $config['notes'], $entryData['title']);
-        $config = array_merge($config, $entryData);
-
-        parent::populateModel($model, $config);
-
-        // Use the live content as a starting point
-        Craft::$app->getContent()->populateElementContent($model);
-
-        if ($title) {
-            $model->title = $title;
-        }
-
-        if ($fieldContent) {
-            $model->setContentFromRevision($fieldContent);
-        }
-    }
-
     // Properties
     // =========================================================================
 
@@ -69,11 +36,41 @@ class EntryDraft extends BaseEntryRevisionModel
     /**
      * @inheritdoc
      */
+    public function __construct($config = [])
+    {
+        if (isset($config['data'])) {
+            // Merge the draft and entry data
+            $entryData = $config['data'];
+            $fieldContent = isset($entryData['fields']) ? $entryData['fields'] : null;
+            $config['draftId'] = $config['id'];
+            $config['id'] = $config['entryId'];
+            $config['revisionNotes'] = $config['notes'];
+            $title = $entryData['title'];
+            unset($config['data'], $entryData['fields'], $config['entryId'], $config['notes'], $entryData['title']);
+            $config = array_merge($config, $entryData);
+        }
+
+        parent::__construct($config);
+
+        // Use the live content as a starting point
+        Craft::$app->getContent()->populateElementContent($this);
+
+        if (!empty($title)) {
+            $this->title = $title;
+        }
+
+        if (!empty($fieldContent)) {
+            $this->setContentFromRevision($fieldContent);
+        }
+    }
+
+    /**
+     * @inheritdoc
+     */
     public function rules()
     {
         $rules = parent::rules();
         $rules[] = [['draftId'], 'number', 'integerOnly' => true];
-        $rules[] = [['name'], 'required'];
 
         return $rules;
     }

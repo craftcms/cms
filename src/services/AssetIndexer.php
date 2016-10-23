@@ -8,6 +8,7 @@ use craft\app\db\Query;
 use craft\app\elements\Asset;
 use craft\app\errors\VolumeObjectNotFoundException;
 use craft\app\helpers\Assets as AssetsHelper;
+use craft\app\helpers\Db;
 use craft\app\helpers\Image;
 use craft\app\helpers\Io;
 use craft\app\helpers\StringHelper;
@@ -254,7 +255,16 @@ class AssetIndexer extends Component
         );
 
         if ($record) {
-            return AssetIndexData::create($record);
+            return new AssetIndexData($record->toArray([
+                'id',
+                'volumeId',
+                'sessionId',
+                'offset',
+                'uri',
+                'size',
+                'recordId',
+                'timestamp',
+            ]));
         }
 
         return false;
@@ -306,17 +316,17 @@ class AssetIndexer extends Component
         $processedFiles = array_flip($processedFiles);
         $schema = Craft::$app->getDb()->getSchema();
 
-        $fileEntries = (new Query())
-            ->select('fi.volumeId, fi.id AS fileId, fi.filename, fo.path, s.name AS volumeName')
+        $assets = (new Query())
+            ->select('fi.volumeId, fi.id AS assetId, fi.filename, fo.path, s.name AS volumeName')
             ->from('{{%assets}} AS fi')
             ->innerJoin('{{%volumefolders}} AS fo', $schema->quoteTableName('fi').'.'.$schema->quoteColumnName('folderId').' = '.$schema->quoteTableName('fo').'.'.$schema->quoteColumnName('id'))
             ->innerJoin('{{%volumes}} AS s', $schema->quoteTableName('s').'.'.$schema->quoteColumnName('id').' = '.$schema->quoteTableName('fi').'.'.$schema->quoteColumnName('volumeId'))
             ->where(['in', 'fi.volumeId', $volumeIds])
             ->all();
 
-        foreach ($fileEntries as $fileEntry) {
-            if (!isset($processedFiles[$fileEntry['fileId']])) {
-                $output[$fileEntry['fileId']] = $fileEntry['volumeName'].'/'.$fileEntry['path'].$fileEntry['filename'];
+        foreach ($assets as $asset) {
+            if (!isset($processedFiles[$asset['assetId']])) {
+                $output[$asset['assetId']] = $asset['volumeName'].'/'.$asset['path'].$asset['filename'];
             }
         }
 
@@ -387,11 +397,10 @@ class AssetIndexer extends Component
 
             $folderId = $parentFolder->id;
 
-            $assetModel = $assets->findAsset(
-                [
-                    'folderId' => $folderId,
-                    'filename' => $filename
-                ]);
+            $assetModel = Asset::find()
+                ->filename(Db::escapeParam($filename))
+                ->folderId($folderId)
+                ->one();
 
             if (is_null($assetModel)) {
                 $assetModel = new Asset();

@@ -117,13 +117,15 @@ class Content extends Component
             return;
         }
 
-        $fieldLayout = $element->getFieldLayout();
-
         if ($row = $this->getContentRow($element)) {
             $element->contentId = $row['id'];
+
             if ($element->hasTitles() && isset($row['title'])) {
                 $element->title = $row['title'];
             }
+
+            $fieldLayout = $element->getFieldLayout();
+
             if ($fieldLayout) {
                 foreach ($fieldLayout->getFields() as $field) {
                     /** @var Field $field */

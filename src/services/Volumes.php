@@ -5,6 +5,7 @@ use Craft;
 use craft\app\base\Volume;
 use craft\app\base\VolumeInterface;
 use craft\app\db\Query;
+use craft\app\elements\Asset;
 use craft\app\errors\VolumeException;
 use craft\app\errors\MissingComponentException;
 use craft\app\events\VolumeEvent;
@@ -282,7 +283,8 @@ class Volumes extends Component
         if (!$this->_fetchedAllVolumes) {
             $this->_volumesById = [];
 
-            $results = $this->_createVolumeQuery()->all();
+            $results = $this->_createVolumeQuery()
+                ->all();
 
             foreach ($results as $result) {
                 /** @var Volume $volume */
@@ -330,7 +332,7 @@ class Volumes extends Component
             $schema = Craft::$app->getDb()->getSchema();
 
             $result = $this->_createVolumeQuery()
-                ->where($schema->quoteColumnName('id').' = :id', [':id' => $volumeId])
+                ->where(['id' => $volumeId])
                 ->one();
 
             if ($result) {
@@ -378,7 +380,7 @@ class Volumes extends Component
 
         $transaction = Craft::$app->getDb()->beginTransaction();
         try {
-            if (!$volume->beforeSave()) {
+            if (!$volume->beforeSave($isNewVolume)) {
                 $transaction->rollBack();
 
                 return false;
@@ -388,7 +390,7 @@ class Volumes extends Component
 
             $volumeRecord->name = $volume->name;
             $volumeRecord->handle = $volume->handle;
-            $volumeRecord->type = $volume->getType();
+            $volumeRecord->type = get_class($volume);
             $volumeRecord->hasUrls = $volume->hasUrls;
             $volumeRecord->settings = $volume->getSettings();
             $volumeRecord->fieldLayoutId = $volume->fieldLayoutId;
@@ -443,7 +445,7 @@ class Volumes extends Component
 
             $this->ensureTopFolder($volume);
 
-            $volume->afterSave();
+            $volume->afterSave($isNewVolume);
 
             $transaction->commit();
         } catch (\Exception $e) {
@@ -514,14 +516,17 @@ class Volumes extends Component
         }
 
         try {
-            return ComponentHelper::createComponent($config, VolumeInterface::class);
+            /** @var Volume $volume */
+            $volume = ComponentHelper::createComponent($config, VolumeInterface::class);
         } catch (MissingComponentException $e) {
             $config['errorMessage'] = $e->getMessage();
             $config['expectedType'] = $config['type'];
             unset($config['type']);
 
-            return MissingVolume::create($config);
+            $volume = new MissingVolume($config);
         }
+
+        return $volume;
     }
 
     /**
@@ -597,14 +602,16 @@ class Volumes extends Component
                 return false;
             }
 
-            // Grab the Asset ids so we can clean the elements table.
-            $assetIds = (new Query())
-                ->select('id')
-                ->from('{{%assets}}')
-                ->where(['volumeId' => $volume->id])
-                ->column();
+            // Delete the assets
+            $assets = Asset::find()
+                ->status(null)
+                ->enabledForSite(false)
+                ->volumeId($volume->id)
+                ->all();
 
-            Craft::$app->getElements()->deleteElementById($assetIds);
+            foreach ($assets as $asset) {
+                Craft::$app->getElements()->deleteElement($asset);
+            }
 
             // Nuke the asset volume.
             $db->createCommand()
@@ -639,7 +646,19 @@ class Volumes extends Component
     private function _createVolumeQuery()
     {
         return (new Query())
-            ->select('id, fieldLayoutId, name, handle, type, hasUrls, url, settings, sortOrder')
+            ->select([
+                'id',
+                'dateCreated',
+                'dateUpdated',
+                'name',
+                'handle',
+                'hasUrls',
+                'url',
+                'sortOrder',
+                'fieldLayoutId',
+                'type',
+                'settings',
+            ])
             ->from('{{%volumes}}')
             ->orderBy('sortOrder');
     }

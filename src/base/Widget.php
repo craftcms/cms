@@ -9,7 +9,6 @@ namespace craft\app\base;
 
 use Craft;
 use craft\app\helpers\Url;
-use yii\base\ModelEvent;
 
 /**
  * Widget is the base class for classes representing dashboard widgets in terms of objects.
@@ -23,21 +22,6 @@ abstract class Widget extends SavableComponent implements WidgetInterface
     // =========================================================================
 
     use WidgetTrait;
-
-    // Constants
-    // =========================================================================
-
-    /**
-     * @event ModelEvent The event that is triggered before the widget is saved
-     *
-     * You may set [[ModelEvent::isValid]] to `false` to prevent the widget from getting saved.
-     */
-    const EVENT_BEFORE_SAVE = 'beforeSave';
-
-    /**
-     * @event \yii\base\Event The event that is triggered after the widget is saved
-     */
-    const EVENT_AFTER_SAVE = 'afterSave';
 
     // Static
     // =========================================================================
@@ -68,10 +52,7 @@ abstract class Widget extends SavableComponent implements WidgetInterface
      */
     public function rules()
     {
-        $rules = [
-            [['type'], 'required'],
-            [['type'], 'string', 'max' => 150],
-        ];
+        $rules = [];
 
         // Only validate the ID if it's not a new widget
         if ($this->id !== null && strncmp($this->id, 'new', 3) !== 0) {

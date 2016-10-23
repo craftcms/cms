@@ -9,6 +9,7 @@ namespace craft\app\services;
 
 use Craft;
 use craft\app\base\Element;
+use craft\app\base\ElementAction;
 use craft\app\base\Field;
 use craft\app\db\Query;
 use craft\app\base\ElementActionInterface;
@@ -24,7 +25,6 @@ use craft\app\elements\Tag;
 use craft\app\elements\User;
 use craft\app\errors\ElementNotFoundException;
 use craft\app\errors\MissingComponentException;
-use craft\app\events\DeleteElementsEvent;
 use craft\app\events\ElementEvent;
 use craft\app\events\MergeElementsEvent;
 use craft\app\helpers\ArrayHelper;
@@ -59,9 +59,14 @@ class Elements extends Component
     const EVENT_AFTER_MERGE_ELEMENTS = 'afterMergeElements';
 
     /**
-     * @event DeleteElementsEvent The event that is triggered before one or more elements are deleted.
+     * @event ElementEvent The event that is triggered before an element is deleted.
      */
-    const EVENT_BEFORE_DELETE_ELEMENTS = 'beforeDeleteElements';
+    const EVENT_BEFORE_DELETE_ELEMENT = 'beforeDeleteElement';
+
+    /**
+     * @event ElementEvent The event that is triggered after an element is deleted.
+     */
+    const EVENT_AFTER_DELETE_ELEMENT = 'afterDeleteElement';
 
     /**
      * @event ElementEvent The event that is triggered before an element is saved.
@@ -118,7 +123,7 @@ class Elements extends Component
             $config['expectedType'] = $config['type'];
             unset($config['type']);
 
-            return MissingElement::create($config);
+            return new MissingElement($config);
         }
     }
 
@@ -310,36 +315,43 @@ class Elements extends Component
      * saveElement() should be called only after the entry’s sectionId and typeId attributes had been validated to
      * ensure that they point to valid section and entry type IDs.
      *
-     * @param ElementInterface $element                 The element that is being saved
-     * @param boolean|null     $validateContent         Whether the element's content should be validated. If left 'null', it
-     *                                                  will depend on whether the element is enabled or not.
+     * Example usage - creating a new entry:
+     *
+     * ```php
+     * $entry = new Entry();
+     * $entry->sectionId = 10;
+     * $entry->typeId = 1;
+     * $entry->authorId = 5;
+     * $entry->enabled = true;
+     * $entry->title = "Hello World!";
+     *
+     * $entry->setFieldValuesFromPost(
+     *     [
+     *         'body' => "<p>I can’t believe I literally just called this “Hello World!”.</p>",
+     *     ]);
+     *
+     * $success = Craft::$app->elements->saveElement($entry);
+     *
+     * if (!$success) {
+     *     Craft::error('Couldn’t save the entry "'.$entry->title.'"', __METHOD__);
+     * }
+     * ```
+     *
+     * @param ElementInterface $element       The element that is being saved
+     * @param boolean|null     $runValidation Whether the element should be validated
      *
      * @return boolean
      * @throws ElementNotFoundException if $element has an invalid $id
      * @throws Exception if the $element doesn’t have any supported sites
      * @throws \Exception if reasons
      */
-    public function saveElement(ElementInterface $element, $validateContent = null)
+    public function saveElement(ElementInterface $element, $runValidation = true)
     {
         /** @var Element $element */
         $isNewElement = !$element->id;
 
-        // Validation
-        $element->validate();
-        if ($element->hasContent() && ($validateContent || ($validateContent === null && $element->enabled))) {
-            Craft::$app->getContent()->validateContent($element);
-        }
-        if ($element->hasErrors()) {
-            return false;
-        }
-
-        // Make sure the element is cool with this
-        if (!$element->beforeSave()) {
-            return false;
-        }
-
         // Set a dummy title if there isn't one already and the element type has titles
-        if ($element->hasContent() && $element->hasTitles() && !$element->validate(['title'])) {
+        if ($element::hasContent() && $element::hasTitles() && !$element->validate(['title'])) {
             if ($isNewElement) {
                 $element->title = 'New '.$element->classHandle();
             } else {
@@ -347,266 +359,268 @@ class Elements extends Component
             }
         }
 
-        // Get the element record
-        if (!$isNewElement) {
-            $elementRecord = ElementRecord::findOne([
-                'id' => $element->id,
-                'type' => $element::className()
-            ]);
+        if ($runValidation && !$element->validate()) {
+            Craft::info('Element not saved due to validation error.', __METHOD__);
 
-            if (!$elementRecord) {
-                throw new ElementNotFoundException("No element exists with the ID '{$element->id}'");
-            }
-        } else {
-            $elementRecord = new ElementRecord();
-            $elementRecord->type = $element::className();
+            return false;
         }
 
-        // Set the attributes
-        $elementRecord->enabled = (bool)$element->enabled;
-        $elementRecord->archived = (bool)$element->archived;
+        // Fire a 'beforeSaveElement' event
+        $this->trigger(self::EVENT_BEFORE_SAVE_ELEMENT, new ElementEvent([
+            'element' => $element,
+            'isNew' => $isNewElement
+        ]));
 
         $transaction = Craft::$app->getDb()->beginTransaction();
-
         try {
-            // Fire a 'beforeSaveElement' event
-            $event = new ElementEvent([
-                'element' => $element,
-                'isNew' => $isNewElement
-            ]);
+            if (!$element->beforeSave($isNewElement)) {
+                $transaction->rollBack();
 
-            $this->trigger(self::EVENT_BEFORE_SAVE_ELEMENT, $event);
+                return false;
+            }
 
-            // Is the event giving us the go-ahead?
-            if ($event->isValid) {
-                // Save the element record
-                $success = $elementRecord->save(false);
+            // Get the element record
+            if (!$isNewElement) {
+                $elementRecord = ElementRecord::findOne([
+                    'id' => $element->id,
+                    'type' => $element::className()
+                ]);
 
-                if ($success) {
-                    // Save the new dateCreated and dateUpdated dates on the model
-                    $element->dateCreated = DateTimeHelper::toDateTime($elementRecord->dateCreated);
-                    $element->dateUpdated = DateTimeHelper::toDateTime($elementRecord->dateUpdated);
+                if (!$elementRecord) {
+                    throw new ElementNotFoundException("No element exists with the ID '{$element->id}'");
+                }
+            } else {
+                $elementRecord = new ElementRecord();
+                $elementRecord->type = $element::className();
+            }
 
-                    if ($isNewElement) {
-                        // Save the element ID on the element model, in case {id} is in the URL format
-                        $element->id = $elementRecord->id;
+            // Set the attributes
+            $elementRecord->enabled = (bool)$element->enabled;
+            $elementRecord->archived = (bool)$element->archived;
+
+            // Save the element record
+            $elementRecord->save(false);
+
+            // Save the new dateCreated and dateUpdated dates on the model
+            $element->dateCreated = DateTimeHelper::toDateTime($elementRecord->dateCreated);
+            $element->dateUpdated = DateTimeHelper::toDateTime($elementRecord->dateUpdated);
+
+            if ($isNewElement) {
+                // Save the element ID on the element model, in case {id} is in the URL format
+                $element->id = $elementRecord->id;
+                $element->uid = $elementRecord->uid;
+            }
+
+            // Update the site settings records and content
+
+            // We're saving all of the element's site settings here to ensure that they all exist and to update the URI in
+            // the event that the URL format includes some value that just changed
+
+            if (!$isNewElement) {
+                $siteSettingsRecords = Element_SiteSettingsRecord::find()
+                    ->where([
+                        'elementId' => $element->id
+                    ])
+                    ->indexBy('siteId')
+                    ->all();
+            } else {
+                $siteSettingsRecords = [];
+            }
+
+            $masterSiteId = $element->siteId;
+
+            $supportedSites = ElementHelper::getSupportedSitesForElement($element);
+
+            if (!$supportedSites) {
+                throw new Exception('All elements must have at least one site associated with them.');
+            }
+
+            $supportedSiteIds = [];
+
+            foreach ($supportedSites as $siteInfo) {
+                $supportedSiteIds[] = $siteInfo['siteId'];
+            }
+
+            // Make sure the element actually supports this site
+            if (array_search($element->siteId, $supportedSiteIds) === false) {
+                throw new Exception('Attempting to save an element in an unsupported site.');
+            }
+
+            if ($element::hasContent()) {
+                // Are we dealing with translations?
+                if ($element::isLocalized() && Craft::$app->getIsMultiSite()) {
+                    $translateContent = true;
+
+                    // Get all of the field translation keys
+                    $masterFieldTranslationKeys = [];
+
+                    foreach ($element->getFieldLayout()->getFields() as $field) {
+                        /** @var Field $field */
+                        if ($field->getContentColumnType()) {
+                            $masterFieldTranslationKeys[$field->id] = $field->getTranslationKey($element);
+                        }
                     }
+                } else {
+                    $translateContent = false;
+                }
 
-                    // Update the site settings records and content
+                $masterFieldValues = $element->getFieldValues();
+            }
 
-                    // We're saving all of the element's site settings here to ensure that they all exist and to update the URI in
-                    // the event that the URL format includes some value that just changed
+            foreach ($supportedSites as $siteInfo) {
+                if (isset($siteSettingsRecords[$siteInfo['siteId']])) {
+                    $siteSettingsRecord = $siteSettingsRecords[$siteInfo['siteId']];
+                } else {
+                    $siteSettingsRecord = new Element_SiteSettingsRecord();
 
-                    if (!$isNewElement) {
-                        $siteSettingsRecords = Element_SiteSettingsRecord::find()
-                            ->where([
-                                'elementId' => $element->id
-                            ])
-                            ->indexBy('siteId')
-                            ->all();
+                    $siteSettingsRecord->elementId = $element->id;
+                    $siteSettingsRecord->siteId = $siteInfo['siteId'];
+                    $siteSettingsRecord->enabled = $siteInfo['enabledByDefault'];
+                }
+
+                // Is this the master site?
+                $isMasterSite = ($siteInfo['siteId'] == $masterSiteId);
+
+                if ($isMasterSite) {
+                    $localizedElement = $element;
+                } else {
+                    // Copy the element for this site
+                    $localizedElement = $element->copy();
+                    $localizedElement->siteId = $siteInfo['siteId'];
+                    $localizedElement->contentId = null;
+
+                    if ($siteSettingsRecord->id) {
+                        // Keep the original slug
+                        $localizedElement->slug = $siteSettingsRecord->slug;
                     } else {
-                        $siteSettingsRecords = [];
+                        // Default to the master site's slug
+                        $localizedElement->slug = $element->slug;
                     }
+                }
 
-                    $masterSiteId = $element->siteId;
+                if ($element->hasContent()) {
+                    if (!$isMasterSite) {
+                        $fieldValues = false;
 
-                    $supportedSites = ElementHelper::getSupportedSitesForElement($element);
+                        if (!$isNewElement) {
+                            // Do we already have a content row for this site?
+                            $fieldValues = Craft::$app->getContent()->getContentRow($localizedElement);
 
-                    if (!$supportedSites) {
-                        throw new Exception('All elements must have at least one site associated with them.');
-                    }
-
-                    $supportedSiteIds = [];
-
-                    foreach ($supportedSites as $siteInfo) {
-                        $supportedSiteIds[] = $siteInfo['siteId'];
-                    }
-
-                    // Make sure the element actually supports this site
-                    if (array_search($element->siteId, $supportedSiteIds) === false) {
-                        throw new Exception('Attempting to save an element in an unsupported site.');
-                    }
-
-                    if ($element::hasContent()) {
-                        // Are we dealing with translations?
-                        if ($element::isLocalized() && Craft::$app->getIsMultiSite()) {
-                            $translateContent = true;
-
-                            // Get all of the field translation keys
-                            $masterFieldTranslationKeys = [];
-
-                            foreach ($element->getFieldLayout()->getFields() as $field) {
-                                /** @var Field $field */
-                                if ($field->getContentColumnType()) {
-                                    $masterFieldTranslationKeys[$field->id] = $field->getTranslationKey($element);
+                            if ($fieldValues !== false) {
+                                $localizedElement->contentId = $fieldValues['id'];
+                                if (isset($fieldValues['title'])) {
+                                    $localizedElement->title = $fieldValues['title'];
                                 }
-                            }
-                        } else {
-                            $translateContent = false;
-                        }
+                                unset($fieldValues['id'], $fieldValues['elementId'], $fieldValues['siteId'], $fieldValues['title'], $fieldValues['dateCreated'], $fieldValues['dateUpdated'], $fieldValues['uid']);
 
-                        $masterFieldValues = $element->getFieldValues();
-                    }
+                                // Are we worried about translations?
+                                if ($translateContent) {
+                                    foreach ($localizedElement->getFieldLayout()->getFields() as $field) {
+                                        /** @var Field $field */
+                                        if (isset($masterFieldTranslationKeys[$field->id])) {
+                                            // Does this field produce the same translation key as it did for the master element?
+                                            $fieldTranslationKey = $field->getTranslationKey($localizedElement);
 
-                    foreach ($supportedSites as $siteInfo) {
-                        if (isset($siteSettingsRecords[$siteInfo['siteId']])) {
-                            $siteSettingsRecord = $siteSettingsRecords[$siteInfo['siteId']];
-                        } else {
-                            $siteSettingsRecord = new Element_SiteSettingsRecord();
-
-                            $siteSettingsRecord->elementId = $element->id;
-                            $siteSettingsRecord->siteId = $siteInfo['siteId'];
-                            $siteSettingsRecord->enabled = $siteInfo['enabledByDefault'];
-                        }
-
-                        // Is this the master site?
-                        $isMasterSite = ($siteInfo['siteId'] == $masterSiteId);
-
-                        if ($isMasterSite) {
-                            $localizedElement = $element;
-                        } else {
-                            // Copy the element for this site
-                            $localizedElement = $element->copy();
-                            $localizedElement->siteId = $siteInfo['siteId'];
-                            $localizedElement->contentId = null;
-
-                            if ($siteSettingsRecord->id) {
-                                // Keep the original slug
-                                $localizedElement->slug = $siteSettingsRecord->slug;
-                            } else {
-                                // Default to the master site's slug
-                                $localizedElement->slug = $element->slug;
-                            }
-                        }
-
-                        if ($element->hasContent()) {
-                            if (!$isMasterSite) {
-                                $fieldValues = false;
-
-                                if (!$isNewElement) {
-                                    // Do we already have a content row for this site?
-                                    $fieldValues = Craft::$app->getContent()->getContentRow($localizedElement);
-
-                                    if ($fieldValues !== false) {
-                                        $localizedElement->contentId = $fieldValues['id'];
-                                        if (isset($fieldValues['title'])) {
-                                            $localizedElement->title = $fieldValues['title'];
-                                        }
-                                        unset($fieldValues['id'], $fieldValues['elementId'], $fieldValues['siteId'], $fieldValues['title'], $fieldValues['dateCreated'], $fieldValues['dateUpdated'], $fieldValues['uid']);
-
-                                        // Are we worried about translations?
-                                        if ($translateContent) {
-                                            foreach ($localizedElement->getFieldLayout()->getFields() as $field) {
-                                                /** @var Field $field */
-                                                if (isset($masterFieldTranslationKeys[$field->id])) {
-                                                    // Does this field produce the same translation key as it did for the master element?
-                                                    $fieldTranslationKey = $field->getTranslationKey($localizedElement);
-
-                                                    if ($fieldTranslationKey == $masterFieldTranslationKeys[$field->id]) {
-                                                        // Copy the master element's value over
-                                                        $fieldValues[$field->handle] = $masterFieldValues[$field->handle];
-                                                    }
-                                                }
+                                            if ($fieldTranslationKey == $masterFieldTranslationKeys[$field->id]) {
+                                                // Copy the master element's value over
+                                                $fieldValues[$field->handle] = $masterFieldValues[$field->handle];
                                             }
                                         }
                                     }
                                 }
-
-                                if ($fieldValues === false) {
-                                    // Just default to whatever's on the master element we're saving here
-                                    $fieldValues = $masterFieldValues;
-                                }
-
-                                $localizedElement->setFieldValues($fieldValues);
                             }
-
-                            Craft::$app->getContent()->saveContent($localizedElement, false);
                         }
 
-                        // Capture the original slug, in case it's entirely composed of invalid characters
-                        $originalSlug = $localizedElement->slug;
-
-                        // Clean up the slug
-                        ElementHelper::setValidSlug($localizedElement);
-
-                        // If the slug was entirely composed of invalid characters, it will be blank now.
-                        if ($originalSlug && !$localizedElement->slug) {
-                            $localizedElement->slug = $originalSlug;
-                            $element->addError('slug', Craft::t('app', '{attribute} is invalid.', ['attribute' => Craft::t('app', 'Slug')]));
-
-                            // Don't bother with any of the other sites
-                            $success = false;
-                            break;
+                        if ($fieldValues === false) {
+                            // Just default to whatever's on the master element we're saving here
+                            $fieldValues = $masterFieldValues;
                         }
 
-                        ElementHelper::setUniqueUri($localizedElement);
-
-                        $siteSettingsRecord->slug = $localizedElement->slug;
-                        $siteSettingsRecord->uri = $localizedElement->uri;
-
-                        if ($isMasterSite) {
-                            $siteSettingsRecord->enabled = (bool)$element->enabledForSite;
-                        }
-
-                        $success = $siteSettingsRecord->save();
-
-                        if (!$success) {
-                            // Pass any validation errors on to the element
-                            $element->addErrors($siteSettingsRecord->getErrors());
-
-                            // Don't bother with any of the other sites
-                            break;
-                        }
+                        $localizedElement->setFieldValues($fieldValues);
                     }
 
-                    // Update the search index
-                    Craft::$app->getSearch()->indexElementAttributes($element);
-
-                    if (!$isNewElement) {
-                        // Delete the rows that don't need to be there anymore
-
-                        Craft::$app->getDb()->createCommand()
-                            ->delete(
-                                '{{%elements_i18n}}',
-                                [
-                                    'and',
-                                    'elementId = :elementId',
-                                    ['not in', 'siteId', $supportedSiteIds]
-                                ],
-                                [
-                                    ':elementId' => $element->id
-                                ])
-                            ->execute();
-
-                        if ($element::hasContent()) {
-                            Craft::$app->getDb()->createCommand()
-                                ->delete(
-                                    $element->getContentTable(),
-                                    [
-                                        'and',
-                                        'elementId = :elementId',
-                                        ['not in', 'siteId', $supportedSiteIds]
-                                    ],
-                                    [
-                                        ':elementId' => $element->id
-                                    ])
-                                ->execute();
-                        }
-                    }
-
-                    // Tell the element it was just saved
-                    $element->afterSave();
-
-                    // Finally, delete any caches involving this element. (Even do this for new elements, since they
-                    // might pop up in a cached criteria.)
-                    Craft::$app->getTemplateCaches()->deleteCachesByElement($element);
+                    Craft::$app->getContent()->saveContent($localizedElement, false);
                 }
-            } else {
-                $success = false;
+
+                // Capture the original slug, in case it's entirely composed of invalid characters
+                $originalSlug = $localizedElement->slug;
+
+                // Clean up the slug
+                ElementHelper::setValidSlug($localizedElement);
+
+                // If the slug was entirely composed of invalid characters, it will be blank now.
+                if ($originalSlug && !$localizedElement->slug) {
+                    $localizedElement->slug = $originalSlug;
+                    $element->addError('slug', Craft::t('app', '{attribute} is invalid.', ['attribute' => Craft::t('app', 'Slug')]));
+
+                    // Don't bother with any of the other sites
+                    // TODO: this should be caught in validation
+                    throw new Exception('Invalid slug: '.$originalSlug);
+                }
+
+                // Go ahead and re-do search index keywords to grab things like "title" in
+                // a multi-site installs.
+                if ($isNewElement) {
+                    Craft::$app->getSearch()->indexElementAttributes($localizedElement);
+                }
+
+                ElementHelper::setUniqueUri($localizedElement);
+
+                $siteSettingsRecord->slug = $localizedElement->slug;
+                $siteSettingsRecord->uri = $localizedElement->uri;
+
+                if ($isMasterSite) {
+                    $siteSettingsRecord->enabled = (bool)$element->enabledForSite;
+                }
+
+                $success = $siteSettingsRecord->save();
+
+                if (!$success) {
+                    // Pass any validation errors on to the element
+                    $element->addErrors($siteSettingsRecord->getErrors());
+
+                    // Don't bother with any of the other sites
+                    break;
+                }
             }
 
-            // Commit the transaction regardless of whether we saved the user, in case something changed
-            // in onBeforeSaveElement
+            // Update the search index
+            Craft::$app->getSearch()->indexElementAttributes($element);
+
+            if (!$isNewElement) {
+                // Delete the rows that don't need to be there anymore
+
+                Craft::$app->getDb()->createCommand()
+                    ->delete(
+                        '{{%elements_i18n}}',
+                        [
+                            'and',
+                            'elementId = :elementId',
+                            ['not in', 'siteId', $supportedSiteIds]
+                        ],
+                        [
+                            ':elementId' => $element->id
+                        ])
+                    ->execute();
+
+                if ($element::hasContent()) {
+                    Craft::$app->getDb()->createCommand()
+                        ->delete(
+                            $element->getContentTable(),
+                            [
+                                'and',
+                                'elementId = :elementId',
+                                ['not in', 'siteId', $supportedSiteIds]
+                            ],
+                            [
+                                ':elementId' => $element->id
+                            ])
+                        ->execute();
+                }
+            }
+
+            $element->afterSave($isNewElement);
+
             $transaction->commit();
         } catch (\Exception $e) {
             $transaction->rollBack();
@@ -614,23 +628,17 @@ class Elements extends Component
             throw $e;
         }
 
-        if ($success) {
-            // Fire an 'afterSaveElement' event
-            $this->trigger(self::EVENT_AFTER_SAVE_ELEMENT, new ElementEvent([
-                'element' => $element,
-                'isNew' => $isNewElement,
-            ]));
-        } else {
-            if ($isNewElement) {
-                $element->id = null;
+        // Delete any caches involving this element. (Even do this for new elements, since they
+        // might pop up in a cached criteria.)
+        Craft::$app->getTemplateCaches()->deleteCachesByElement($element);
 
-                if ($element->hasContent()) {
-                    $element->contentId = null;
-                }
-            }
-        }
+        // Fire an 'afterSaveElement' event
+        $this->trigger(self::EVENT_AFTER_SAVE_ELEMENT, new ElementEvent([
+            'element' => $element,
+            'isNew' => $isNewElement,
+        ]));
 
-        return $success;
+        return true;
     }
 
     /**
@@ -878,98 +886,98 @@ class Elements extends Component
     }
 
     /**
-     * Deletes an element(s) by its ID(s).
+     * Deletes an element by its ID.
      *
-     * @param integer|array $elementIds The element’s ID, or an array of elements’ IDs.
+     * @param integer $id The element’s ID
      *
-     * @return boolean Whether the element(s) were deleted successfully.
+     * @return boolean Whether the element was deleted successfully
      * @throws \Exception
      */
-    public function deleteElementById($elementIds)
+    public function deleteElementById($id)
     {
-        if (!$elementIds) {
+        $element = $this->getElementById($id);
+
+        if (!$element) {
             return false;
         }
 
-        if (!is_array($elementIds)) {
-            $elementIds = [$elementIds];
-        }
+        return $this->deleteElement($element);
+    }
+
+    /**
+     * Deletes an element.
+     *
+     * @param ElementInterface $element The element to be deleted
+     *
+     * @return boolean Whether the element was deleted successfully
+     * @throws \Exception
+     */
+    public function deleteElement($element)
+    {
+        /** @var Element $element */
+        // Fire a 'beforeDeleteElement' event
+        $this->trigger(self::EVENT_BEFORE_DELETE_ELEMENT, new ElementEvent([
+            'element' => $element,
+        ]));
 
         $transaction = Craft::$app->getDb()->beginTransaction();
 
         try {
-            // Fire a 'beforeDeleteElements' event
-            $this->trigger(self::EVENT_BEFORE_DELETE_ELEMENTS,
-                new DeleteElementsEvent([
-                    'elementIds' => $elementIds
-                ]));
+            if (!$element->beforeDelete()) {
+                $transaction->rollBack();
 
-            // First delete any structure nodes with these elements, so NestedSetBehavior can do its thing. We need to
-            // go one-by-one in case one of theme deletes the record of another in the process.
-            foreach ($elementIds as $elementId) {
-                /** @var StructureElementRecord[] $records */
-                $records = StructureElementRecord::findAll([
-                    'elementId' => $elementId
-                ]);
+                return false;
+            }
 
-                foreach ($records as $record) {
-                    // If this element still has any children, move them up before the one getting deleted.
-                    /** @var StructureElementRecord[] $children */
-                    $children = $record->children()->all();
+            // First delete any structure nodes with this element, so NestedSetBehavior can do its thing.
+            /** @var StructureElementRecord[] $records */
+            $records = StructureElementRecord::findAll([
+                'elementId' => $element->id
+            ]);
 
-                    foreach ($children as $child) {
-                        $child->insertBefore($record);
-                    }
+            foreach ($records as $record) {
+                // If this element still has any children, move them up before the one getting deleted.
+                /** @var StructureElementRecord[] $children */
+                $children = $record->children()->all();
 
-                    // Delete this element's node
-                    $record->deleteWithChildren();
+                foreach ($children as $child) {
+                    $child->insertBefore($record);
                 }
+
+                // Delete this element's node
+                $record->deleteWithChildren();
             }
 
             // Delete the caches before they drop their elementId relations (passing `false` because there's no chance
             // this element is suddenly going to show up in a new query)
-            Craft::$app->getTemplateCaches()->deleteCachesByElementId($elementIds, false);
-
-            // Now delete the rows in the elements table
-            if (count($elementIds) == 1) {
-                $condition = ['id' => $elementIds[0]];
-                $matrixBlockCondition = ['ownerId' => $elementIds[0]];
-                $searchIndexCondition = ['elementId' => $elementIds[0]];
-            } else {
-                $condition = ['in', 'id', $elementIds];
-                $matrixBlockCondition = ['in', 'ownerId', $elementIds];
-                $searchIndexCondition = ['in', 'elementId', $elementIds];
-            }
-
-            // First delete any Matrix blocks that belong to this element(s)
-            $matrixBlockIds = (new Query())
-                ->select('id')
-                ->from('{{%matrixblocks}}')
-                ->where($matrixBlockCondition)
-                ->column();
-
-            if ($matrixBlockIds) {
-                Craft::$app->getMatrix()->deleteBlockById($matrixBlockIds);
-            }
+            Craft::$app->getTemplateCaches()->deleteCachesByElementId($element->id, false);
 
             // Delete the elements table rows, which will cascade across all other InnoDB tables
-            $affectedRows = Craft::$app->getDb()->createCommand()
-                ->delete('{{%elements}}', $condition)
+            Craft::$app->getDb()->createCommand()
+                ->delete('{{%elements}}', ['id' => $element->id])
                 ->execute();
 
-            // The searchindex table is MyISAM, though
+            // The searchindex table is probably MyISAM, though
             Craft::$app->getDb()->createCommand()
-                ->delete('{{%searchindex}}', $searchIndexCondition)
+                ->delete('{{%searchindex}}', ['elementId' => $element->id])
                 ->execute();
+
+            $element->afterDelete();
 
             $transaction->commit();
-
-            return (bool)$affectedRows;
         } catch (\Exception $e) {
             $transaction->rollBack();
 
             throw $e;
         }
+
+
+        // Fire an 'afterDeleteElement' event
+        $this->trigger(self::EVENT_AFTER_DELETE_ELEMENT, new ElementEvent([
+            'element' => $element,
+        ]));
+
+        return true;
     }
 
     // Element classes
@@ -1006,7 +1014,10 @@ class Elements extends Component
      */
     public function createAction($config)
     {
-        return ComponentHelper::createComponent($config, ElementActionInterface::class);
+        /** @var ElementAction $action */
+        $action = ComponentHelper::createComponent($config, ElementActionInterface::class);
+
+        return $action;
     }
 
     // Misc

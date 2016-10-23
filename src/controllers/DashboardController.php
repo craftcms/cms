@@ -17,7 +17,7 @@ use craft\app\helpers\Json;
 use craft\app\helpers\StringHelper;
 use craft\app\i18n\Locale;
 use craft\app\io\Zip;
-use craft\app\models\GetHelp;
+use craft\app\models\CraftSupport;
 use craft\app\web\Controller;
 use craft\app\web\UploadedFile;
 use yii\helpers\FileHelper;
@@ -26,7 +26,7 @@ use yii\web\Response;
 
 /**
  * The DashboardController class is a controller that handles various dashboard related actions including managing
- * widgets, getting [[\craft\app\widgets\Feed]] feeds and sending [[\craft\app\widgets\GetHelp]] support ticket requests.
+ * widgets, getting [[\craft\app\widgets\Feed]] feeds and sending [[\craft\app\widgets\CraftSupport]] support ticket requests.
  *
  * Note that all actions in the controller require an authenticated Craft session via [[Controller::allowAnonymous]].
  *
@@ -56,6 +56,10 @@ class DashboardController extends Controller
         $view->setNamespace('__NAMESPACE__');
 
         foreach ($widgetTypes as $widgetType) {
+            if (!$widgetType::isSelectable()) {
+                continue;
+            }
+
             $view->startJsBuffer();
             $widget = $dashboardService->createWidget($widgetType);
             $settingsHtml = $view->namespaceInputs($widget->getSettingsHtml());
@@ -175,8 +179,9 @@ class DashboardController extends Controller
 
         $request = Craft::$app->getRequest();
         $dashboardService = Craft::$app->getDashboard();
-
         $widgetId = $request->getRequiredBodyParam('widgetId');
+
+        // Get the existing widget
         /** @var Widget $widget */
         $widget = $dashboardService->getWidgetById($widgetId);
 
@@ -184,8 +189,17 @@ class DashboardController extends Controller
             throw new BadRequestHttpException();
         }
 
+        // Create a new widget model with the new settings
         $settings = $request->getBodyParam('widget'.$widget->id.'-settings');
-        $widget::populateModel($widget, $settings);
+
+        $widget = $dashboardService->createWidget([
+            'id' => $widget->id,
+            'dateCreated' => $widget->dateCreated,
+            'dateUpdated' => $widget->dateUpdated,
+            'colspan' => $widget->colspan,
+            'type' => get_class($widget),
+            'settings' => $settings,
+        ]);
 
         return $this->_saveAndReturnWidget($widget);
     }
@@ -272,7 +286,7 @@ class DashboardController extends Controller
     }
 
     /**
-     * Creates a new support ticket for the GetHelp widget.
+     * Creates a new support ticket for the CraftSupport widget.
      *
      * @return string
      */
@@ -292,7 +306,7 @@ class DashboardController extends Controller
         $namespace = $request->getBodyParam('namespace');
         $namespace = $namespace ? $namespace.'.' : '';
 
-        $getHelpModel = new GetHelp();
+        $getHelpModel = new CraftSupport();
         $getHelpModel->fromEmail = $request->getBodyParam($namespace.'fromEmail');
         $getHelpModel->message = trim($request->getBodyParam($namespace.'message'));
         $getHelpModel->attachLogs = (bool)$request->getBodyParam($namespace.'attachLogs');
@@ -467,7 +481,7 @@ class DashboardController extends Controller
             $errors = $getHelpModel->getErrors();
         }
 
-        return $this->renderTemplate('_components/widgets/GetHelp/response', [
+        return $this->renderTemplate('_components/widgets/CraftSupport/response', [
             'success' => $success,
             'errors' => Json::encode($errors),
             'widgetId' => $widgetId

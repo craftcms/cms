@@ -31,13 +31,7 @@ class Structure extends ActiveRecord
     public function rules()
     {
         return [
-            [
-                ['maxLevels'],
-                'number',
-                'min' => 1,
-                'max' => 65535,
-                'integerOnly' => true
-            ],
+            [['maxLevels'], 'number', 'min' => 1, 'max' => 65535, 'integerOnly' => true],
         ];
     }
 

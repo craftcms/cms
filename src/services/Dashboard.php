@@ -17,7 +17,7 @@ use craft\app\helpers\Component as ComponentHelper;
 use craft\app\records\Widget as WidgetRecord;
 use craft\app\base\Widget;
 use craft\app\widgets\Feed as FeedWidget;
-use craft\app\widgets\GetHelp as GetHelpWidget;
+use craft\app\widgets\CraftSupport as CraftSupportWidget;
 use craft\app\widgets\MissingWidget;
 use craft\app\widgets\NewUsers as NewUsersWidget;
 use craft\app\widgets\QuickPost as QuickPostWidget;
@@ -71,7 +71,7 @@ class Dashboard extends Component
     {
         $widgetTypes = [
             FeedWidget::class,
-            GetHelpWidget::class,
+            CraftSupportWidget::class,
             NewUsersWidget::class,
             QuickPostWidget::class,
             RecentEntriesWidget::class,
@@ -99,14 +99,17 @@ class Dashboard extends Component
         }
 
         try {
-            return ComponentHelper::createComponent($config, WidgetInterface::class);
+            /** @var Widget $widget */
+            $widget = ComponentHelper::createComponent($config, WidgetInterface::class);
         } catch (MissingComponentException $e) {
             $config['errorMessage'] = $e->getMessage();
             $config['expectedType'] = $config['type'];
             unset($config['type']);
 
-            return MissingWidget::create($config);
+            $widget = new MissingWidget($config);
         }
+
+        return $widget;
     }
 
     /**
@@ -163,7 +166,14 @@ class Dashboard extends Component
         ]);
 
         if ($widgetRecord) {
-            return $this->createWidget($widgetRecord);
+            return $this->createWidget($widgetRecord->toArray([
+                'id',
+                'dateCreated',
+                'dateUpdated',
+                'colspan',
+                'type',
+                'settings',
+            ]));
         }
 
         return null;
@@ -197,7 +207,7 @@ class Dashboard extends Component
 
         $transaction = Craft::$app->getDb()->beginTransaction();
         try {
-            if (!$widget->beforeSave()) {
+            if (!$widget->beforeSave($isNewWidget)) {
                 $transaction->rollBack();
 
                 return false;
@@ -205,7 +215,7 @@ class Dashboard extends Component
 
             $widgetRecord = $this->_getUserWidgetRecordById($widget->id);
 
-            $widgetRecord->type = $widget->getType();
+            $widgetRecord->type = get_class($widget);
             $widgetRecord->settings = $widget->getSettings();
 
             // Enabled by default.
@@ -221,7 +231,7 @@ class Dashboard extends Component
                 $widget->id = $widgetRecord->id;
             }
 
-            $widget->afterSave();
+            $widget->afterSave($isNewWidget);
 
             $transaction->commit();
         } catch (\Exception $e) {
@@ -363,7 +373,7 @@ class Dashboard extends Component
 
         // Get Help widget
         if ($user->admin) {
-            $this->saveWidget($this->createWidget(['type' => GetHelpWidget::class, 'colspan' => false]));
+            $this->saveWidget($this->createWidget(CraftSupportWidget::class));
         }
 
         // Updates widget
@@ -436,8 +446,15 @@ class Dashboard extends Component
             throw new Exception('No logged-in user');
         }
 
-        $records = (new Query())
-            ->select('id, type, colspan, settings')
+        $results = (new Query())
+            ->select([
+                'id',
+                'dateCreated',
+                'dateUpdated',
+                'colspan',
+                'type',
+                'settings',
+            ])
             ->from('{{%widgets}}')
             ->where(['userId' => $userId, 'enabled' => 1])
             ->orderBy('sortOrder')
@@ -445,8 +462,8 @@ class Dashboard extends Component
 
         $widgets = [];
 
-        foreach ($records as $record) {
-            $widget = $this->createWidget($record);
+        foreach ($results as $result) {
+            $widget = $this->createWidget($result);
 
             if ($indexBy === null) {
                 $widgets[] = $widget;

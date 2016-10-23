@@ -909,7 +909,6 @@ class ElementQuery extends Query implements ElementQueryInterface, Arrayable, Co
             $this->query->addSelect([
                 'elements.id',
                 'elements.uid',
-                'elements.type',
                 'elements.enabled',
                 'elements.archived',
                 'elements.dateCreated',
@@ -1901,15 +1900,6 @@ class ElementQuery extends Query implements ElementQueryInterface, Arrayable, Co
             $row['structureId'] = $this->structureId;
         }
 
-        /** @var Element $element */
-        $element = $class::create($row);
-
-        // Verify that an element was returned
-        if (!$element || !($element instanceof ElementInterface)) {
-            return false;
-        }
-
-        // Set the custom field values
         if ($class::hasContent() && $this->contentTable) {
             // Separate the content values from the main element attributes
             $fieldValues = [];
@@ -1926,10 +1916,23 @@ class ElementQuery extends Query implements ElementQueryInterface, Arrayable, Co
                         if (!isset($fieldValues[$field->handle]) || (empty($fieldValues[$field->handle]) && !empty($row[$colName]))) {
                             $fieldValues[$field->handle] = $row[$colName];
                         }
+
+                        unset($row[$colName]);
                     }
                 }
             }
+        }
 
+        /** @var Element $element */
+        $element = new $class($row);
+
+        // Verify that an element was returned
+        if (!$element || !($element instanceof ElementInterface)) {
+            return false;
+        }
+
+        // Set the custom field values
+        if (isset($fieldValues)) {
             $element->setFieldValues($fieldValues);
         }
 

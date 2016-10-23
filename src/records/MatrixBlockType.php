@@ -47,6 +47,10 @@ class MatrixBlockType extends ActiveRecord
     public function rules()
     {
         return [
+            [['name'], 'unique', 'targetAttribute' => ['name', 'fieldId']],
+            [['handle'], 'unique', 'targetAttribute' => ['handle', 'fieldId']],
+            [['name', 'handle'], 'required'],
+            [['name', 'handle'], 'string', 'max' => 255],
             [
                 ['handle'],
                 HandleValidator::class,
@@ -58,10 +62,6 @@ class MatrixBlockType extends ActiveRecord
                     'title'
                 ]
             ],
-            [['name'], 'unique', 'targetAttribute' => ['name', 'fieldId']],
-            [['handle'], 'unique', 'targetAttribute' => ['handle', 'fieldId']],
-            [['name', 'handle'], 'required'],
-            [['name', 'handle'], 'string', 'max' => 255],
         ];
     }
 

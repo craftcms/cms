@@ -451,6 +451,11 @@ class m160807_144858_sites extends Migration
                 [],
                 false);
         }
+
+        // Update Recent Entries widgets
+        // ---------------------------------------------------------------------
+
+        $this->updateRecentEntriesWidgets($siteIdsByLocale);
     }
 
     /**
@@ -463,7 +468,41 @@ class m160807_144858_sites extends Migration
         return false;
     }
 
-    // Public Methods
+    /**
+     * Updates the 'locale' setting in Recent Entries widgets
+     *
+     * @param array $siteIdsByLocale Mapping of site IDs to the locale IDs they used to be
+     *
+     * @return void
+     */
+    public function updateRecentEntriesWidgets($siteIdsByLocale)
+    {
+        // Fetch all the Recent Entries widgets that have a locale setting
+        $widgetResults = (new Query())
+            ->select(['id', 'settings'])
+            ->from('{{%widgets}}')
+            ->where(['like', 'settings', '"locale":'])
+            ->all();
+
+        foreach ($widgetResults as $result) {
+            $settings = Json::decode($result['settings']);
+
+            // Just to be sure...
+            if (!isset($settings['locale'])) {
+                continue;
+            }
+
+            if (isset($siteIdsByLocale[$settings['locale']])) {
+                $settings['siteId'] = $siteIdsByLocale[$settings['locale']];
+            }
+
+            unset($settings['locale']);
+
+            $this->update('{{%widgets}}', ['settings' => Json::encode($settings)], ['id' => $result['id']]);
+        }
+    }
+
+    // Protected Methods
     // =========================================================================
 
     /**

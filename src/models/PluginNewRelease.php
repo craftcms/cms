@@ -72,11 +72,6 @@ class PluginNewRelease extends Model
     {
         return [
             [['date'], DateTimeValidator::class],
-            [
-                ['version', 'date', 'notes', 'critical'],
-                'safe',
-                'on' => 'search'
-            ],
         ];
     }
 }

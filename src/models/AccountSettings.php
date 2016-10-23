@@ -58,7 +58,6 @@ class AccountSettings extends Model
             [['password'], 'string', 'min' => 6],
             [['username'], 'string', 'max' => 100],
             [['email'], 'string', 'max' => 255],
-            [['username', 'email', 'password'], 'safe', 'on' => 'search'],
         ];
     }
 

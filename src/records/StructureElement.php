@@ -46,39 +46,9 @@ class StructureElement extends ActiveRecord
     public function rules()
     {
         return [
-            [
-                ['root'],
-                'number',
-                'min' => 0,
-                'max' => 4294967295,
-                'integerOnly' => true
-            ],
-            [
-                ['lft'],
-                'number',
-                'min' => 0,
-                'max' => 4294967295,
-                'integerOnly' => true
-            ],
-            [
-                ['rgt'],
-                'number',
-                'min' => 0,
-                'max' => 4294967295,
-                'integerOnly' => true
-            ],
-            [
-                ['level'],
-                'number',
-                'min' => 0,
-                'max' => 65535,
-                'integerOnly' => true
-            ],
-            [
-                ['structureId'],
-                'unique',
-                'targetAttribute' => ['structureId', 'elementId']
-            ],
+            [['root', 'lft', 'rgt'], 'number', 'min' => 0, 'max' => 4294967295, 'integerOnly' => true],
+            [['level'], 'number', 'min' => 0, 'max' => 65535, 'integerOnly' => true],
+            [['structureId'], 'unique', 'targetAttribute' => ['structureId', 'elementId']],
         ];
     }
 

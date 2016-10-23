@@ -52,14 +52,17 @@ class DeleteAssets extends ElementAction
      */
     public function performAction(ElementQueryInterface $query)
     {
-
         try {
-            Craft::$app->getAssets()->deleteAssetsByIds($query->ids());
-            $this->setMessage(Craft::t('app', 'Assets deleted.'));
+            foreach ($query->all() as $asset) {
+                Craft::$app->getElements()->deleteElement($asset);
+            }
         } catch (Exception $exception) {
             $this->setMessage($exception->getMessage());
+
             return false;
         }
+
+        $this->setMessage(Craft::t('app', 'Assets deleted.'));
 
         return true;
     }

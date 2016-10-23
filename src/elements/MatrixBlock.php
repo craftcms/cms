@@ -16,7 +16,9 @@ use craft\app\elements\db\MatrixBlockQuery;
 use craft\app\fields\Matrix;
 use craft\app\helpers\ElementHelper;
 use craft\app\models\MatrixBlockType;
+use craft\app\records\MatrixBlock as MatrixBlockRecord;
 use craft\app\validators\SiteIdValidator;
+use yii\base\Exception;
 use yii\base\InvalidConfigException;
 
 /**
@@ -356,6 +358,52 @@ class MatrixBlock extends Element
         $owner = $this->getOwner();
 
         return $owner ? $owner->getHasFreshContent() : false;
+    }
+
+    // Events
+    // -------------------------------------------------------------------------
+
+    /**
+     * @inheritdoc
+     * @throws Exception if reasons
+     */
+    public function afterSave($isNew)
+    {
+        // Get the block record
+        if (!$isNew) {
+            $record = MatrixBlockRecord::findOne($this->id);
+
+            if (!$record) {
+                throw new Exception('Invalid Matrix block ID: '.$this->id);
+            }
+        } else {
+            $record = new MatrixBlockRecord();
+            $record->id = $this->id;
+        }
+
+        $record->fieldId = $this->fieldId;
+        $record->ownerId = $this->ownerId;
+        $record->ownerSiteId = $this->ownerSiteId;
+        $record->typeId = $this->typeId;
+        $record->sortOrder = $this->sortOrder;
+        $record->save(false);
+
+        parent::afterSave($isNew);
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function afterDelete()
+    {
+        if (!Craft::$app->getRequest()->getIsConsoleRequest()) {
+            // Tell the browser to forget about this block
+            $session = Craft::$app->getSession();
+            $session->addJsResourceFlash('js/MatrixInput.js');
+            $session->addJsFlash('Craft.MatrixInput.forgetCollapsedBlockId('.$this->id.');');
+        }
+
+        parent::afterDelete();
     }
 
     // Private Methods

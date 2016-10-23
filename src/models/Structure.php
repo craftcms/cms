@@ -42,21 +42,7 @@ class Structure extends Model
     public function rules()
     {
         return [
-            [
-                ['id'],
-                'number',
-                'min' => -2147483648,
-                'max' => 2147483647,
-                'integerOnly' => true
-            ],
-            [
-                ['maxLevels'],
-                'number',
-                'min' => -2147483648,
-                'max' => 2147483647,
-                'integerOnly' => true
-            ],
-            [['id', 'maxLevels'], 'safe', 'on' => 'search'],
+            [['id', 'maxLevels'], 'number', 'integerOnly' => true],
         ];
     }
 

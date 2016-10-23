@@ -86,39 +86,7 @@ class MatrixBlockType extends Model
     public function rules()
     {
         return [
-            [
-                ['id'],
-                'number',
-                'min' => -2147483648,
-                'max' => 2147483647,
-                'integerOnly' => true
-            ],
-            [
-                ['fieldId'],
-                'number',
-                'min' => -2147483648,
-                'max' => 2147483647,
-                'integerOnly' => true
-            ],
-            [
-                ['sortOrder'],
-                'number',
-                'min' => -2147483648,
-                'max' => 2147483647,
-                'integerOnly' => true
-            ],
-            [
-                [
-                    'id',
-                    'fieldId',
-                    'fieldLayoutId',
-                    'name',
-                    'handle',
-                    'sortOrder'
-                ],
-                'safe',
-                'on' => 'search'
-            ],
+            [['id', 'fieldId', 'sortOrder'], 'number', 'integerOnly' => true],
         ];
     }
 

@@ -122,14 +122,17 @@ class Tasks extends Component
         }
 
         try {
-            return ComponentHelper::createComponent($config, TaskInterface::class);
+            /** @var Task $task */
+            $task = ComponentHelper::createComponent($config, TaskInterface::class);
         } catch (MissingComponentException $e) {
             $config['errorMessage'] = $e->getMessage();
             $config['expectedType'] = $config['type'];
             unset($config['type']);
 
-            return MissingTask::create($config);
+            $task = new MissingTask($config);
         }
+
+        return $task;
     }
 
     /**
@@ -160,7 +163,7 @@ class Tasks extends Component
 
         $transaction = Craft::$app->getDb()->beginTransaction();
         try {
-            if (!$task->beforeSave()) {
+            if (!$task->beforeSave($isNewTask)) {
                 $transaction->rollBack();
 
                 return false;
@@ -172,7 +175,7 @@ class Tasks extends Component
                 $taskRecord = $this->_getTaskRecordById($task->id);
             }
 
-            $taskRecord->type = $task->getType();
+            $taskRecord->type = get_class($task);
             $taskRecord->status = $task->status;
             $taskRecord->description = $task->description;
             $taskRecord->totalSteps = $task->totalSteps;
@@ -197,7 +200,7 @@ class Tasks extends Component
                 }
             }
 
-            $task->afterSave();
+            $task->afterSave($isNewTask);
 
             $transaction->commit();
         } catch (\Exception $e) {
@@ -397,12 +400,8 @@ class Tasks extends Component
      */
     public function getTaskById($taskId)
     {
-        $schema = Craft::$app->getDb()->getSchema();
-
-        $result = (new Query())
-            ->select('*')
-            ->from('{{%tasks}}')
-            ->where($schema->quoteColumnName('id').' = :id', [':id' => $taskId])
+        $result = $this->_createTaskQuery()
+            ->where(['id' => $taskId])
             ->one();
 
         if ($result !== false) {
@@ -419,10 +418,7 @@ class Tasks extends Component
      */
     public function getAllTasks()
     {
-        $tasks = (new Query())
-            ->select('*')
-            ->from('{{%tasks}}')
-            ->orderBy('root asc, lft asc')
+        $tasks = $this->_createTaskQuery()
             ->all();
 
         foreach ($tasks as $key => $value) {
@@ -440,9 +436,7 @@ class Tasks extends Component
     public function getRunningTask()
     {
         if ($this->_runningTask === null) {
-            $result = (new Query())
-                ->select('*')
-                ->from('{{%tasks}}')
+            $result = $this->_createTaskQuery()
                 ->where(
                     [
                         'and',
@@ -479,8 +473,7 @@ class Tasks extends Component
     public function getIsTaskRunning()
     {
         // Remember that a root task could appear to be stagnant if it has sub-tasks.
-        return (new Query())
-            ->from('{{%tasks}}')
+        return $this->_createTaskQuery()
             ->where(
                 ['and', 'status = :status'/*, 'dateUpdated >= :aMinuteAgo'*/],
                 [
@@ -508,8 +501,7 @@ class Tasks extends Component
             $params[':type'] = $type;
         }
 
-        return (new Query())
-            ->from('{{%tasks}}')
+        return $this->_createTaskQuery()
             ->where($conditions, $params)
             ->exists();
     }
@@ -524,17 +516,12 @@ class Tasks extends Component
      */
     public function getPendingTasks($type = null, $limit = null)
     {
-        $conditions = ['and', 'lft = 1', 'status = :status'];
-        $params = [':status' => Task::STATUS_PENDING];
+        $query = $this->_createTaskQuery()
+            ->where(['lft' => 1, 'status' => Task::STATUS_PENDING]);
 
         if ($type) {
-            $conditions[] = 'type = :type';
-            $params[':type'] = $type;
+            $query->andWhere(['type' => $type]);
         }
-
-        $query = (new Query())
-            ->from('{{%tasks}}')
-            ->where($conditions, $params);
 
         if ($limit) {
             $query->limit($limit);
@@ -556,9 +543,8 @@ class Tasks extends Component
      */
     public function getHaveTasksFailed()
     {
-        return (new Query())
-            ->from('{{%tasks}}')
-            ->where(['and', 'level = 0', 'status = :status'], [':status' => Task::STATUS_ERROR])
+        return $this->_createTaskQuery()
+            ->where(['level' => 0, 'status' => Task::STATUS_ERROR])
             ->exists();
     }
 
@@ -569,8 +555,7 @@ class Tasks extends Component
      */
     public function getTotalTasks()
     {
-        return (new Query())
-            ->from('{{%tasks}}')
+        return $this->_createTaskQuery()
             ->where(
                 ['and', 'lft = 1', 'status != :status'], [':status' => Task::STATUS_ERROR]
             )
@@ -604,7 +589,18 @@ class Tasks extends Component
                 if ($taskRecord) {
                     /** @var TaskRecord $taskRecord */
                     $this->_taskRecordsById[$taskRecord->id] = $taskRecord;
-                    $this->_nextPendingTask = $this->createTask($taskRecord);
+                    $this->_nextPendingTask = $this->createTask($taskRecord->toArray([
+                        'id',
+                        'dateCreated',
+                        'dateUpdated',
+                        'level',
+                        'description',
+                        'totalSteps',
+                        'currentStep',
+                        'status',
+                        'type',
+                        'settings',
+                    ]));
                 } else {
                     $this->_nextPendingTask = false;
                 }
@@ -764,6 +760,30 @@ EOT;
 
     // Private Methods
     // =========================================================================
+
+    /**
+     * Returns a Query object prepped for retrieving tasks.
+     *
+     * @return Query
+     */
+    private function _createTaskQuery()
+    {
+        return (new Query())
+            ->select([
+                'id',
+                'dateCreated',
+                'dateUpdated',
+                'level',
+                'description',
+                'totalSteps',
+                'currentStep',
+                'status',
+                'type',
+                'settings',
+            ])
+            ->from('{{%tasks}}')
+            ->orderBy('root asc, lft asc');
+    }
 
     /**
      * Returns a TaskRecord by its ID.

@@ -185,16 +185,16 @@ class Assets
         foreach ($assets as $asset) {
             $newFolderId = $folderIdChanges[$asset->folderId];
             $transferItem = [
-                'fileId' => $asset->id,
+                'assetId' => $asset->id,
                 'folderId' => $newFolderId
             ];
 
             // If we're merging, preemptively figure out if there'll be conflicts and resolve them
             if ($merge) {
-                $conflictingAsset = Craft::$app->getAssets()->findAsset([
-                    'filename' => $asset->filename,
-                    'folderId' => $newFolderId
-                ]);
+                $conflictingAsset = Asset::find()
+                    ->folderId($newFolderId)
+                    ->filename(Db::escapeParam($asset->filename))
+                    ->one();
 
                 if ($conflictingAsset) {
                     $transferItem['userResponse'] = 'replace';

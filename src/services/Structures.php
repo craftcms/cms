@@ -66,7 +66,10 @@ class Structures extends Component
         $structureRecord = StructureRecord::findOne($structureId);
 
         if ($structureRecord) {
-            return Structure::create($structureRecord);
+            return new Structure($structureRecord->toArray([
+                'id',
+                'maxLevels',
+            ]));
         }
 
         return null;
@@ -353,6 +356,13 @@ class Structures extends Component
 
         $transaction = Craft::$app->getDb()->beginTransaction();
         try {
+            // Tell the element about it
+            if (!$element->beforeMoveInStructure($structureId)) {
+                $transaction->rollBack();
+
+                return false;
+            }
+
             if (!$elementRecord->$action($targetElementRecord)) {
                 $transaction->rollBack();
 
@@ -364,8 +374,8 @@ class Structures extends Component
             $element->rgt = $elementRecord->rgt;
             $element->level = $elementRecord->level;
 
-            // Tell the element type about it
-            $element::onAfterMoveElementInStructure($element, $structureId);
+            // Tell the element about it
+            $element->afterMoveInStructure($structureId);
 
             $transaction->commit();
         } catch (\Exception $e) {

@@ -12,6 +12,8 @@ use craft\app\base\Element;
 use craft\app\base\ElementInterface;
 use craft\app\elements\db\TagQuery;
 use craft\app\models\TagGroup;
+use craft\app\records\Tag as TagRecord;
+use yii\base\Exception;
 
 /**
  * Tag represents a tag element.
@@ -85,41 +87,6 @@ class Tag extends Element
         return $sources;
     }
 
-    /**
-     * @inheritdoc
-     */
-    public static function getEditorHtml(ElementInterface $element)
-    {
-        /** @var Tag $element */
-        $html = Craft::$app->getView()->renderTemplateMacro('_includes/forms', 'textField',
-            [
-                [
-                    'label' => Craft::t('app', 'Title'),
-                    'siteId' => $element->siteId,
-                    'id' => 'title',
-                    'name' => 'title',
-                    'value' => $element->title,
-                    'errors' => $element->getErrors('title'),
-                    'first' => true,
-                    'autofocus' => true,
-                    'required' => true
-                ]
-            ]);
-
-        $html .= parent::getEditorHtml($element);
-
-        return $html;
-    }
-
-    /**
-     * @inheritdoc
-     */
-    public static function saveElement(ElementInterface $element, $params)
-    {
-        /** @var Tag $element */
-        return Craft::$app->getTags()->saveTag($element);
-    }
-
     // Properties
     // =========================================================================
 
@@ -176,6 +143,60 @@ class Tag extends Element
         }
 
         return null;
+    }
+
+    // Indexes, etc.
+    // -------------------------------------------------------------------------
+
+    /**
+     * @inheritdoc
+     */
+    public function getEditorHtml()
+    {
+        $html = Craft::$app->getView()->renderTemplateMacro('_includes/forms', 'textField', [
+            [
+                'label' => Craft::t('app', 'Title'),
+                'siteId' => $this->siteId,
+                'id' => 'title',
+                'name' => 'title',
+                'value' => $this->title,
+                'errors' => $this->getErrors('title'),
+                'first' => true,
+                'autofocus' => true,
+                'required' => true
+            ]
+        ]);
+
+        $html .= parent::getEditorHtml();
+
+        return $html;
+    }
+
+    // Events
+    // -------------------------------------------------------------------------
+
+    /**
+     * @inheritdoc
+     * @throws Exception if reasons
+     */
+    public function afterSave($isNew)
+    {
+        // Get the tag record
+        if (!$isNew) {
+            $record = TagRecord::findOne($this->id);
+
+            if (!$record) {
+                throw new Exception('Invalid tag ID: '.$this->id);
+            }
+        } else {
+            $record = new TagRecord();
+            $record->id = $this->id;
+        }
+
+        $record->groupId = $this->groupId;
+        $record->save(false);
+
+        parent::afterSave($isNew);
     }
 
     // Deprecated Methods

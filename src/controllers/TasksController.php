@@ -60,7 +60,7 @@ class TasksController extends Controller
             }
         }
 
-        Craft::$app->end();
+        return '1';
     }
 
     /**

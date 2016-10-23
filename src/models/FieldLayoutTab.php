@@ -62,23 +62,9 @@ class FieldLayoutTab extends Model
     public function rules()
     {
         return [
-            [
-                ['id'],
-                'number',
-                'min' => -2147483648,
-                'max' => 2147483647,
-                'integerOnly' => true
-            ],
-            [
-                ['layoutId'],
-                'number',
-                'min' => -2147483648,
-                'max' => 2147483647,
-                'integerOnly' => true
-            ],
+            [['id', 'layoutId'], 'number', 'integerOnly' => true],
             [['name'], 'string', 'max' => 255],
             [['sortOrder'], 'string', 'max' => 4],
-            [['id', 'layoutId', 'name', 'sortOrder'], 'safe', 'on' => 'search'],
         ];
     }
 

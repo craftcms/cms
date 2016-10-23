@@ -16,7 +16,9 @@ use craft\app\dates\DateTime;
 use craft\app\db\Query;
 use craft\app\elements\db\ElementQuery;
 use craft\app\elements\db\ElementQueryInterface;
+use craft\app\events\ElementStructureEvent;
 use craft\app\events\Event;
+use craft\app\events\ModelEvent;
 use craft\app\helpers\ArrayHelper;
 use craft\app\helpers\Db;
 use craft\app\helpers\Html;
@@ -32,16 +34,19 @@ use yii\base\Exception;
 use yii\base\InvalidCallException;
 use yii\base\InvalidConfigException;
 use yii\base\UnknownPropertyException;
+use yii\validators\Validator;
 
 /**
  * Element is the base class for classes representing elements in terms of objects.
  *
  * @property FieldLayout|null      $fieldLayout         The field layout used by this element
+ * @property array                 $htmlAttributes      Any attributes that should be included in the element’s DOM representation in the Control Panel
  * @property integer[]             $supportedSiteIds    The site IDs this element is available in
  * @property string|null           $uriFormat           The URI format used to generate this element’s URL
  * @property string|null           $url                 The element’s full URL
  * @property \Twig_Markup|null     $link                An anchor pre-filled with this element’s URL and title
  * @property string|null           $ref                 The reference string to this element
+ * @property string                $indexHtml           The element index HTML
  * @property boolean               $isEditable          Whether the current user can edit the element
  * @property string|null           $cpEditUrl           The element’s CP edit URL
  * @property string|null           $thumbUrl            The URL to the element’s thumbnail, if there is one
@@ -50,6 +55,7 @@ use yii\base\UnknownPropertyException;
  * @property Element               $next                The next element relative to this one, from a given set of criteria
  * @property Element               $prev                The previous element relative to this one, from a given set of criteria
  * @property Element               $parent              The element’s parent
+ * @property mixed                 $route               The route that should be used when the element’s URI is requested
  * @property integer|null          $structureId         The ID of the structure that the element is associated with, if any
  * @property ElementQueryInterface $ancestors           The element’s ancestors
  * @property ElementQueryInterface $descendants         The element’s descendants
@@ -86,16 +92,40 @@ abstract class Element extends Component implements ElementInterface
     const STATUS_ARCHIVED = 'archived';
 
     /**
-     * @event Event The event that is triggered before the element is saved
+     * @event ModelEvent The event that is triggered before the element is saved
      *
-     * You may set [[Event::isValid]] to `false` to prevent the element from getting saved.
+     * You may set [[ModelEvent::isValid]] to `false` to prevent the element from getting saved.
      */
     const EVENT_BEFORE_SAVE = 'beforeSave';
 
     /**
-     * @event Event The event that is triggered after the element is saved
+     * @event ModelEvent The event that is triggered after the element is saved
      */
     const EVENT_AFTER_SAVE = 'afterSave';
+
+    /**
+     * @event ModelEvent The event that is triggered before the element is deleted
+     *
+     * You may set [[ModelEvent::isValid]] to `false` to prevent the element from getting deleted.
+     */
+    const EVENT_BEFORE_DELETE = 'beforeDelete';
+
+    /**
+     * @event \yii\base\Event The event that is triggered after the element is deleted
+     */
+    const EVENT_AFTER_DELETE = 'afterDelete';
+
+    /**
+     * @event ElementStructureEvent The event that is triggered before the element is moved in a structure.
+     *
+     * You may set [[ElementStructureEvent::isValid]] to `false` to prevent the element from getting moved.
+     */
+    const EVENT_BEFORE_MOVE_IN_STRUCTURE = 'beforeMoveInStructure';
+
+    /**
+     * @event ElementStructureEvent The event that is triggered after the element is moved in a structure.
+     */
+    const EVENT_AFTER_MOVE_IN_STRUCTURE = 'afterMoveInStructure';
 
     // Static
     // =========================================================================
@@ -218,7 +248,6 @@ abstract class Element extends Component implements ElementInterface
         $variables = [
             'viewMode' => $viewState['mode'],
             'context' => $context,
-            'elementType' => new static(),
             'disabledElementIds' => $disabledElementIds,
             'collapsedElementIds' => Craft::$app->getRequest()->getParam('collapsedElementIds'),
             'showCheckboxes' => $showCheckboxes,
@@ -316,89 +345,6 @@ abstract class Element extends Component implements ElementInterface
         $availableTableAttributes = static::defineAvailableTableAttributes();
 
         return array_keys($availableTableAttributes);
-    }
-
-    /**
-     * @inheritdoc
-     */
-    public static function getTableAttributeHtml(ElementInterface $element, $attribute)
-    {
-        /** @var Element $element */
-        switch ($attribute) {
-            case 'link': {
-                $url = $element->getUrl();
-
-                if ($url) {
-                    return '<a href="'.$url.'" target="_blank" data-icon="world" title="'.Craft::t('app', 'Visit webpage').'"></a>';
-                }
-
-                return '';
-            }
-
-            case 'uri': {
-                $url = $element->getUrl();
-
-                if ($url) {
-                    $value = $element->uri;
-
-                    if ($value == '__home__') {
-                        $value = '<span data-icon="home" title="'.Craft::t('app',
-                                'Homepage').'"></span>';
-                    } else {
-                        // Add some <wbr> tags in there so it doesn't all have to be on one line
-                        $find = ['/'];
-                        $replace = ['/<wbr>'];
-
-                        $wordSeparator = Craft::$app->getConfig()->get('slugWordSeparator');
-
-                        if ($wordSeparator) {
-                            $find[] = $wordSeparator;
-                            $replace[] = $wordSeparator.'<wbr>';
-                        }
-
-                        $value = str_replace($find, $replace, $value);
-                    }
-
-                    return '<a href="'.$url.'" target="_blank" class="go" title="'.Craft::t('app', 'Visit webpage').'"><span dir="ltr">'.$value.'</span></a>';
-                }
-
-                return '';
-            }
-
-            default: {
-                // Is this a custom field?
-                if (preg_match('/^field:(\d+)$/', $attribute, $matches)) {
-                    $fieldId = $matches[1];
-                    $field = Craft::$app->getFields()->getFieldById($fieldId);
-
-                    if ($field) {
-                        /** @var Field $field */
-                        if ($field instanceof PreviewableFieldInterface) {
-                            // Was this field value eager-loaded?
-                            if ($field instanceof EagerLoadingFieldInterface && $element->hasEagerLoadedElements($field->handle)) {
-                                $value = $element->getEagerLoadedElements($field->handle);
-                            } else {
-                                $value = $element->getFieldValue($field->handle);
-                            }
-
-                            return $field->getTableAttributeHtml($value, $element);
-                        }
-                    }
-
-                    return '';
-                }
-
-                $value = $element->$attribute;
-
-                if ($value instanceof DateTime) {
-                    $formatter = Craft::$app->getFormatter();
-
-                    return '<span title="'.$formatter->asDatetime($value, Locale::LENGTH_SHORT).'">'.$formatter->asTimestamp($value, Locale::LENGTH_SHORT).'</span>';
-                }
-
-                return Html::encode($value);
-            }
-        }
     }
 
     /**
@@ -560,66 +506,15 @@ abstract class Element extends Component implements ElementInterface
         }
     }
 
-    // Element methods
-
-    /**
-     * @inheritdoc
-     */
-    public static function getEditorHtml(ElementInterface $element)
-    {
-        /** @var Element $element */
-        $html = '';
-
-        $fieldLayout = $element->getFieldLayout();
-
-        if ($fieldLayout) {
-            $originalNamespace = Craft::$app->getView()->getNamespace();
-            $namespace = Craft::$app->getView()->namespaceInputName('fields', $originalNamespace);
-            Craft::$app->getView()->setNamespace($namespace);
-
-            foreach ($fieldLayout->getFields() as $field) {
-                $fieldHtml = Craft::$app->getView()->renderTemplate('_includes/field',
-                    [
-                        'element' => $element,
-                        'field' => $field,
-                        'required' => $field->required
-                    ]);
-
-                $html .= Craft::$app->getView()->namespaceInputs($fieldHtml, 'fields');
-            }
-
-            Craft::$app->getView()->setNamespace($originalNamespace);
-        }
-
-        return $html;
-    }
-
-    /**
-     * @inheritdoc
-     */
-    public static function saveElement(ElementInterface $element, $params)
-    {
-        /** @var Element $element */
-        return Craft::$app->getElements()->saveElement($element);
-    }
-
-    /**
-     * @inheritdoc
-     */
-    public static function getElementRoute(ElementInterface $element)
-    {
-        return false;
-    }
-
-    /**
-     * @inheritdoc
-     */
-    public static function onAfterMoveElementInStructure(ElementInterface $element, $structureId)
-    {
-    }
-
     // Properties
     // =========================================================================
+
+    /**
+     * @var boolean|null Whether custom fields rules should be included when validating the element.
+     *
+     * Any value besides `true` or `false` will be treated as "auto", meaning that custom fields will only be validated if the element is enabled.
+     */
+    public $validateCustomFields;
 
     /**
      * @var array
@@ -817,7 +712,7 @@ abstract class Element extends Component implements ElementInterface
     public function rules()
     {
         $rules = [
-            [['id', 'contentId', 'root', 'lft', 'rgt', 'level'], 'number', 'integerOnly' => true],
+            [['id', 'contentId', 'root', 'lft', 'rgt', 'level'], 'number', 'integerOnly' => true, 'on' => self::SCENARIO_DEFAULT],
             [['siteId'], SiteIdValidator::class],
             [['dateCreated', 'dateUpdated'], DateTimeValidator::class],
             [['title'], 'string', 'max' => 255],
@@ -828,7 +723,75 @@ abstract class Element extends Component implements ElementInterface
             $rules[] = [['title'], 'required'];
         }
 
+        // Are we validating custom fields?
+        if ($this->validateCustomFields()) {
+            foreach ($this->getFieldLayout()->getFields() as $field) {
+                /** @var Field $field */
+                $fieldRules = $field->getElementValidationRules();
+
+                foreach ($fieldRules as $rule) {
+                    if ($rule instanceof Validator) {
+                        $rules[] = $rule;
+                    } else {
+                        if (is_string($rule)) {
+                            // "Validator" syntax
+                            $rule = [$field->handle, $rule];
+                        }
+
+                        if (is_array($rule) && isset($rule[0])) {
+                            if (!isset($rule[1])) {
+                                // ["Validator"] syntax
+                                array_unshift($rule, $field->handle);
+                            }
+
+                            if ($rule[1] instanceof \Closure || $field->hasMethod($rule[1])) {
+                                // InlineValidator assumes that the closure is on the model being validated
+                                // so it won’t pass a reference to the element
+                                $rule = [
+                                    $rule[0],
+                                    'validateCustomFieldAttribute',
+                                    'params' => [
+                                        $field,
+                                        $rule[1],
+                                        (isset($rule['params']) ? $rule['params'] : null),
+                                    ]
+                                ];
+                            }
+
+                            $rules[] = $rule;
+                        } else {
+                            throw new InvalidConfigException('Invalid validation rule for custom field "'.$field->handle.'".');
+                        }
+                    }
+                }
+            }
+        }
+
         return $rules;
+    }
+
+    /**
+     * Calls a custom validation function on a custom field.
+     *
+     * This will be called by [[yii\validators\InlineValidator]] if a custom field specified
+     * a closure or the name of a class-level method as the validation type.
+     *
+     * @param string     $attribute The field handle
+     * @param array|null $params
+     *
+     * @return void
+     */
+    public function validateCustomFieldAttribute($attribute, $params)
+    {
+        /** @var Field $field */
+        /** @var array|null $params */
+        list($field, $method, $fieldParams) = $params;
+
+        if (is_string($method)) {
+            $method = [$field, $method];
+        }
+
+        call_user_func($method, $this, $fieldParams);
     }
 
     /**
@@ -864,6 +827,15 @@ abstract class Element extends Component implements ElementInterface
      */
     public function getUriFormat()
     {
+        return null;
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function getRoute()
+    {
+        return null;
     }
 
     /**
@@ -1463,21 +1435,144 @@ abstract class Element extends Component implements ElementInterface
         return (!$this->contentId && !$this->hasErrors());
     }
 
+    // Indexes, etc.
+    // -------------------------------------------------------------------------
+
+    /**
+     * @inheritdoc
+     */
+    public function getHtmlAttributes($context)
+    {
+        return [];
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function getTableAttributeHtml($attribute)
+    {
+        switch ($attribute) {
+            case 'link':
+                $url = $this->getUrl();
+
+                if ($url) {
+                    return '<a href="'.$url.'" target="_blank" data-icon="world" title="'.Craft::t('app', 'Visit webpage').'"></a>';
+                }
+
+                return '';
+
+            case 'uri':
+                $url = $this->getUrl();
+
+                if ($url) {
+                    $value = $this->uri;
+
+                    if ($value == '__home__') {
+                        $value = '<span data-icon="home" title="'.Craft::t('app', 'Homepage').'"></span>';
+                    } else {
+                        // Add some <wbr> tags in there so it doesn't all have to be on one line
+                        $find = ['/'];
+                        $replace = ['/<wbr>'];
+
+                        $wordSeparator = Craft::$app->getConfig()->get('slugWordSeparator');
+
+                        if ($wordSeparator) {
+                            $find[] = $wordSeparator;
+                            $replace[] = $wordSeparator.'<wbr>';
+                        }
+
+                        $value = str_replace($find, $replace, $value);
+                    }
+
+                    return '<a href="'.$url.'" target="_blank" class="go" title="'.Craft::t('app', 'Visit webpage').'"><span dir="ltr">'.$value.'</span></a>';
+                }
+
+                return '';
+
+            default:
+                // Is this a custom field?
+                if (preg_match('/^field:(\d+)$/', $attribute, $matches)) {
+                    $fieldId = $matches[1];
+                    $field = Craft::$app->getFields()->getFieldById($fieldId);
+
+                    if ($field) {
+                        /** @var Field $field */
+                        if ($field instanceof PreviewableFieldInterface) {
+                            // Was this field value eager-loaded?
+                            if ($field instanceof EagerLoadingFieldInterface && $this->hasEagerLoadedElements($field->handle)) {
+                                $value = $this->getEagerLoadedElements($field->handle);
+                            } else {
+                                $value = $this->getFieldValue($field->handle);
+                            }
+
+                            return $field->getTableAttributeHtml($value, $this);
+                        }
+                    }
+
+                    return '';
+                }
+
+                $value = $this->$attribute;
+
+                if ($value instanceof DateTime) {
+                    $formatter = Craft::$app->getFormatter();
+
+                    return '<span title="'.$formatter->asDatetime($value, Locale::LENGTH_SHORT).'">'.$formatter->asTimestamp($value, Locale::LENGTH_SHORT).'</span>';
+                }
+
+                return Html::encode($value);
+        }
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function getEditorHtml()
+    {
+        $html = '';
+
+        $fieldLayout = $this->getFieldLayout();
+
+        if ($fieldLayout) {
+            $originalNamespace = Craft::$app->getView()->getNamespace();
+            $namespace = Craft::$app->getView()->namespaceInputName('fields', $originalNamespace);
+            Craft::$app->getView()->setNamespace($namespace);
+
+            foreach ($fieldLayout->getFields() as $field) {
+                $fieldHtml = Craft::$app->getView()->renderTemplate('_includes/field', [
+                    'element' => $this,
+                    'field' => $field,
+                    'required' => $field->required
+                ]);
+
+                $html .= Craft::$app->getView()->namespaceInputs($fieldHtml, 'fields');
+            }
+
+            Craft::$app->getView()->setNamespace($originalNamespace);
+        }
+
+        return $html;
+    }
+
     // Events
     // -------------------------------------------------------------------------
 
     /**
      * @inheritdoc
      */
-    public function beforeSave()
+    public function beforeSave($isNew)
     {
         // Tell the fields about it
         foreach ($this->getFields() as $field) {
-            $field->beforeElementSave($this);
+            if (!$field->beforeElementSave($this, $isNew)) {
+                return false;
+            }
         }
 
         // Trigger a 'beforeSave' event
-        $event = new Event();
+        $event = new ModelEvent([
+            'isNew' => $isNew,
+        ]);
         $this->trigger(self::EVENT_BEFORE_SAVE, $event);
 
         return $event->isValid;
@@ -1486,19 +1581,101 @@ abstract class Element extends Component implements ElementInterface
     /**
      * @inheritdoc
      */
-    public function afterSave()
+    public function afterSave($isNew)
     {
         // Tell the fields about it
         foreach ($this->getFields() as $field) {
-            $field->afterElementSave($this);
+            $field->afterElementSave($this, $isNew);
         }
 
         // Trigger an 'afterSave' event
-        $this->trigger(self::EVENT_AFTER_SAVE, new Event());
+        $this->trigger(self::EVENT_AFTER_SAVE, new ModelEvent([
+            'isNew' => $isNew,
+        ]));
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function beforeDelete()
+    {
+        // Tell the fields about it
+        foreach ($this->getFields() as $field) {
+            if (!$field->beforeElementDelete($this)) {
+                return false;
+            }
+        }
+
+        // Trigger a 'beforeDelete' event
+        $event = new ModelEvent();
+        $this->trigger(self::EVENT_BEFORE_DELETE, $event);
+
+        return $event->isValid;
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function afterDelete()
+    {
+        // Tell the fields about it
+        foreach ($this->getFields() as $field) {
+            $field->afterElementDelete($this);
+        }
+
+        // Trigger an 'afterDelete' event
+        $this->trigger(self::EVENT_AFTER_DELETE);
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function beforeMoveInStructure($structureId)
+    {
+        // Trigger a 'beforeMoveInStructure' event
+        $event = new ElementStructureEvent([
+            'structureId' => $structureId,
+        ]);
+        $this->trigger(self::EVENT_BEFORE_MOVE_IN_STRUCTURE, $event);
+
+        return $event->isValid;
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function afterMoveInStructure($structureId)
+    {
+        // Trigger an 'afterMoveInStructure' event
+        $this->trigger(self::EVENT_AFTER_MOVE_IN_STRUCTURE, new ElementStructureEvent([
+            'structureId' => $structureId,
+        ]));
     }
 
     // Protected Methods
     // =========================================================================
+
+    /**
+     * Returns whether custom fields should be validated.
+     *
+     * @return bool
+     */
+    protected function validateCustomFields()
+    {
+        if (!static::hasContent()) {
+            return false;
+        }
+
+        if ($this->validateCustomFields === true) {
+            return true;
+        }
+
+        if ($this->validateCustomFields !== false && $this->enabled && $this->enabledForSite) {
+            return true;
+        }
+
+        return false;
+    }
 
     /**
      * Prepares a field’s value for use.

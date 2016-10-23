@@ -331,7 +331,15 @@ class Sections extends Component
         $schema = Craft::$app->getDb()->getSchema();
 
         $siteSettings = (new Query())
-            ->select('sections_i18n.*')
+            ->select([
+                'sections_i18n.id',
+                'sections_i18n.sectionId',
+                'sections_i18n.siteId',
+                'sections_i18n.enabledByDefault',
+                'sections_i18n.hasUrls',
+                'sections_i18n.uriFormat',
+                'sections_i18n.template',
+            ])
             ->from('{{%sections_i18n}} sections_i18n')
             ->innerJoin('{{%sites}} sites', $schema->quoteTableName('sites').'.'.$schema->quoteColumnName('id').' = '.$schema->quoteTableName('sections_i18n').'.'.$schema->quoteColumnName('siteId'))
             ->where($schema->quoteTableName('sections_i18n').'.'.$schema->quoteColumnName('sectionId').' = :sectionId', [':sectionId' => $sectionId])
@@ -340,7 +348,7 @@ class Sections extends Component
             ->all();
 
         foreach ($siteSettings as $key => $value) {
-            $siteSettings[$key] = Section_SiteSettings::create($value);
+            $siteSettings[$key] = new Section_SiteSettings($value);
         }
 
         return $siteSettings;
@@ -374,7 +382,14 @@ class Sections extends Component
                 throw new SectionNotFoundException("No section exists with the ID '{$section->id}'");
             }
 
-            $oldSection = Section::create($sectionRecord);
+            $oldSection = new Section($sectionRecord->toArray([
+                'id',
+                'structureId',
+                'name',
+                'handle',
+                'type',
+                'enableVersioning',
+            ]));
             $isNewSection = false;
         } else {
             $sectionRecord = new SectionRecord();
@@ -562,7 +577,9 @@ class Sections extends Component
 
                             // If there are any more, get rid of them
                             if ($entryIds) {
-                                Craft::$app->getElements()->deleteElementById($entryIds);
+                                foreach ($entryIds as $id) {
+                                    Craft::$app->getElements()->deleteElementById($id);
+                                }
                             }
 
                             // Make sure it's enabled and all that.
@@ -611,7 +628,7 @@ class Sections extends Component
                         $singleEntry->sectionId = $section->id;
                         $singleEntry->typeId = $entryTypeId;
                         $singleEntry->title = $section->name;
-                        Craft::$app->getEntries()->saveEntry($singleEntry);
+                        Craft::$app->getElements()->saveElement($singleEntry, false);
                     }
 
                     break;
@@ -734,14 +751,16 @@ class Sections extends Component
                 Craft::$app->getFields()->deleteLayoutById($fieldLayoutIds);
             }
 
-            // Grab the entry ids so we can clean the elements table.
-            $entryIds = (new Query())
-                ->select('id')
-                ->from('{{%entries}}')
-                ->where(['sectionId' => $section->id])
-                ->column();
+            // Delete the entries
+            $entries = Entry::find()
+                ->status(null)
+                ->enabledForSite(false)
+                ->sectionId($section->id)
+                ->all();
 
-            Craft::$app->getElements()->deleteElementById($entryIds);
+            foreach ($entries as $entry) {
+                Craft::$app->getElements()->deleteElement($entry);
+            }
 
             // Delete the structure, if there is one
             $structureId = (new Query())
@@ -815,21 +834,30 @@ class Sections extends Component
      * @param integer     $sectionId
      * @param string|null $indexBy
      *
-     * @return array
+     * @return EntryType[]
      */
     public function getEntryTypesBySectionId($sectionId, $indexBy = null)
     {
-        $entryTypes = EntryTypeRecord::find()
+        $entryTypeRecords = EntryTypeRecord::find()
             ->where(['sectionId' => $sectionId])
             ->orderBy('sortOrder')
             ->indexBy($indexBy)
             ->all();
 
-        foreach ($entryTypes as $key => $value) {
-            $entryTypes[$key] = EntryType::create($value);
+        foreach ($entryTypeRecords as $key => $entryTypeRecord) {
+            $entryTypeRecords[$key] = new EntryType($entryTypeRecord->toArray([
+                'id',
+                'sectionId',
+                'fieldLayoutId',
+                'name',
+                'handle',
+                'hasTitleField',
+                'titleLabel',
+                'titleFormat',
+            ]));
         }
 
-        return $entryTypes;
+        return $entryTypeRecords;
     }
 
     /**
@@ -849,7 +877,16 @@ class Sections extends Component
             $entryTypeRecord = EntryTypeRecord::findOne($entryTypeId);
 
             if ($entryTypeRecord) {
-                $this->_entryTypesById[$entryTypeId] = EntryType::create($entryTypeRecord);
+                $this->_entryTypesById[$entryTypeId] = new EntryType($entryTypeRecord->toArray([
+                    'id',
+                    'sectionId',
+                    'fieldLayoutId',
+                    'name',
+                    'handle',
+                    'hasTitleField',
+                    'titleLabel',
+                    'titleFormat',
+                ]));
             } else {
                 $this->_entryTypesById[$entryTypeId] = null;
             }
@@ -874,7 +911,16 @@ class Sections extends Component
         ]);
 
         foreach ($entryTypeRecords as $record) {
-            $entryTypes[] = EntryType::create($record);
+            $entryTypes[] = new EntryType($record->toArray([
+                'id',
+                'sectionId',
+                'fieldLayoutId',
+                'name',
+                'handle',
+                'hasTitleField',
+                'titleLabel',
+                'titleFormat',
+            ]));
         }
 
         return $entryTypes;
@@ -913,7 +959,16 @@ class Sections extends Component
                 throw new EntryTypeNotFoundException("No entry type exists with the ID '{$entryType->id}'");
             }
 
-            $oldEntryType = EntryType::create($entryTypeRecord);
+            $oldEntryType = new EntryType($entryTypeRecord->toArray([
+                'id',
+                'sectionId',
+                'fieldLayoutId',
+                'name',
+                'handle',
+                'hasTitleField',
+                'titleLabel',
+                'titleFormat',
+            ]));
         } else {
             $entryTypeRecord = new EntryTypeRecord();
 
@@ -1058,15 +1113,15 @@ class Sections extends Component
                 Craft::$app->getFields()->deleteLayoutById($fieldLayoutId);
             }
 
-            // Grab the entry IDs so we can clean the elements table.
-            $entryIds = (new Query())
-                ->select('id')
-                ->from('{{%entries}}')
-                ->where(['typeId' => $entryType->id])
-                ->column();
+            // Delete the entries
+            $entries = Entry::find()
+                ->status(null)
+                ->enabledForSite(false)
+                ->typeId($entryType->id)
+                ->all();
 
-            if ($entryIds) {
-                Craft::$app->getElements()->deleteElementById($entryIds);
+            foreach ($entries as $entry) {
+                Craft::$app->getElements()->deleteElement($entry);
             }
 
             // Delete the entry type.

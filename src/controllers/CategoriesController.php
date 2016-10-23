@@ -427,7 +427,7 @@ class CategoriesController extends Controller
         $this->_populateCategoryModel($category);
 
         // Save the category
-        if (Craft::$app->getCategories()->saveCategory($category)) {
+        if (Craft::$app->getElements()->saveElement($category)) {
             if (Craft::$app->getRequest()->getAcceptsJson()) {
                 $return['success'] = true;
                 $return['title'] = $category->title;
@@ -486,7 +486,7 @@ class CategoriesController extends Controller
         $this->requirePermission('editCategories:'.$category->groupId);
 
         // Delete it
-        if (Craft::$app->getCategories()->deleteCategory($category)) {
+        if (Craft::$app->getElements()->deleteElement($category)) {
             if (Craft::$app->getRequest()->getAcceptsJson()) {
                 return $this->asJson(['success' => true]);
             }

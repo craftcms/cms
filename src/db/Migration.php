@@ -160,17 +160,17 @@ abstract class Migration extends \yii\db\Migration
      *
      * @param string       $table               The table to be updated.
      * @param array        $columns             The column data (name => value) to be updated.
-     * @param string|array $conditions          The condition that will be put in the WHERE part. Please
+     * @param string|array $condition           The condition that will be put in the WHERE part. Please
      *                                          refer to [[Query::where()]] on how to specify condition.
      * @param array        $params              The parameters to be bound to the command.
      * @param boolean      $includeAuditColumns Whether the `dateUpdated` value should be added to $columns.
      */
-    public function update($table, $columns, $conditions = '', $params = [], $includeAuditColumns = true)
+    public function update($table, $columns, $condition = '', $params = [], $includeAuditColumns = true)
     {
         echo "    > update in $table ...";
         $time = microtime(true);
         $this->db->createCommand()
-            ->update($table, $columns, $conditions, $params, $includeAuditColumns)
+            ->update($table, $columns, $condition, $params, $includeAuditColumns)
             ->execute();
         echo " done (time: ".sprintf('%.3f', microtime(true) - $time)."s)\n";
     }

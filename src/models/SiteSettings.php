@@ -41,13 +41,8 @@ class SiteSettings extends Model
     {
         return [
             [['siteName', 'siteUrl'], 'required'],
-            [
-                ['siteUrl'],
-                UrlValidator::class,
-                'defaultScheme' => 'http'
-            ],
+            [['siteUrl'], UrlValidator::class, 'defaultScheme' => 'http'],
             [['siteName', 'siteUrl'], 'string', 'max' => 255],
-            [['siteName', 'siteUrl'], 'safe', 'on' => 'search'],
         ];
     }
 }

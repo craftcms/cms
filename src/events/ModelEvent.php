@@ -7,26 +7,19 @@
 
 namespace craft\app\events;
 
-use craft\app\elements\User;
-
 /**
- * User event class.
+ * ModelEvent class.
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since  3.0
  */
-class UserEvent extends Event
+class ModelEvent extends \yii\base\ModelEvent
 {
     // Properties
     // =========================================================================
 
     /**
-     * @var User The user model associated with the event.
-     */
-    public $user;
-
-    /**
-     * @var boolean Whether the user is brand new
+     * @var boolean Whether the model is brand new
      */
     public $isNew = false;
 }

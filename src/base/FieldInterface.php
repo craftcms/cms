@@ -179,6 +179,29 @@ interface FieldInterface extends SavableComponentInterface
     public function validateValue($value, $element);
 
     /**
+     * Returns the validation rules for an element with this field.
+     *
+     * Rules should be defined in the array syntax required by [[\yii\base\Model::rules()]],
+     * with one difference: you can skip the first argument (the attribute list).
+     *
+     * Below are some examples:
+     *
+     * ```php
+     * [
+     *     // explicitly specify the field attribute
+     *     [$this->handle, 'string', 'min' => 3, 'max' => 12],
+     *     // skip the field attribute
+     *     ['string', 'min' => 3, 'max' => 12],
+     *     // you can only pass the validator class name/handle if not setting any params
+     *     'boolean',
+     * ];
+     * ```
+     *
+     * @return array
+     */
+    public function getElementValidationRules();
+
+    /**
      * Returns the search keywords that should be associated with this field.
      *
      * The keywords can be separated by commas and/or whitespace; it doesn’t really matter. [[\craft\app\services\Search]]
@@ -190,20 +213,6 @@ interface FieldInterface extends SavableComponentInterface
      * @return string A string of search keywords.
      */
     public function getSearchKeywords($value, $element);
-
-    /**
-     * Performs any actions before an element is saved.
-     *
-     * @param ElementInterface $element The element that is about to be saved
-     */
-    public function beforeElementSave(ElementInterface $element);
-
-    /**
-     * Performs any actions after the element has been saved.
-     *
-     * @param ElementInterface $element The element that was just saved
-     */
-    public function afterElementSave(ElementInterface $element);
 
     /**
      * Prepares the field’s value for use.
@@ -258,4 +267,45 @@ interface FieldInterface extends SavableComponentInterface
      * @return FieldGroup
      */
     public function getGroup();
+
+    // Events
+    // -------------------------------------------------------------------------
+
+    /**
+     * Performs actions before an element is saved.
+     *
+     * @param ElementInterface $element The element that is about to be saved
+     * @param boolean          $isNew   Whether the element is brand new
+     *
+     * @return boolean Whether the element should be saved
+     */
+    public function beforeElementSave(ElementInterface $element, $isNew);
+
+    /**
+     * Performs actions after the element has been saved.
+     *
+     * @param ElementInterface $element The element that was just saved
+     * @param boolean          $isNew   Whether the element is brand new
+     *
+     * @return void
+     */
+    public function afterElementSave(ElementInterface $element, $isNew);
+
+    /**
+     * Performs actions before an element is deleted.
+     *
+     * @param ElementInterface $element The element that is about to be deleted
+     *
+     * @return boolean Whether the element should be deleted
+     */
+    public function beforeElementDelete(ElementInterface $element);
+
+    /**
+     * Performs actions after the element has been deleted.
+     *
+     * @param ElementInterface $element The element that was just deleted
+     *
+     * @return void
+     */
+    public function afterElementDelete(ElementInterface $element);
 }

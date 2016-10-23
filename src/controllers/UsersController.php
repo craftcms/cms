@@ -335,25 +335,16 @@ class UsersController extends Controller
             $userToProcess = Craft::$app->getUsers()->getUserByUid($id);
 
             // See if we still have a valid token.
-            $isCodeValid = Craft::$app->getUsers()->isVerificationCodeValidForUser($userToProcess,
-                $code);
+            $isCodeValid = Craft::$app->getUsers()->isVerificationCodeValidForUser($userToProcess, $code);
 
             if (!$userToProcess || !$isCodeValid) {
                 $this->_processInvalidToken($userToProcess);
             }
 
-            $newPassword = Craft::$app->getRequest()->getRequiredBodyParam('newPassword');
-            $userToProcess->newPassword = $newPassword;
+            $userToProcess->newPassword = Craft::$app->getRequest()->getRequiredBodyParam('newPassword');
+            $userToProcess->setScenario(User::SCENARIO_PASSWORD);
 
-            if ($userToProcess->passwordResetRequired) {
-                $forceDifferentPassword = true;
-            } else {
-                $forceDifferentPassword = false;
-            }
-
-            if (Craft::$app->getUsers()->changePassword($userToProcess,
-                $forceDifferentPassword)
-            ) {
+            if (Craft::$app->getElements()->saveElement($userToProcess)) {
                 if ($userToProcess->getStatus() == User::STATUS_PENDING) {
                     // Activate them
                     Craft::$app->getUsers()->activateUser($userToProcess);
@@ -468,70 +459,72 @@ class UsersController extends Controller
         $edition = Craft::$app->getEdition();
         $isClientAccount = false;
 
-        // Are we editing a specific user account?
-        if ($userId !== null) {
-            switch ($userId) {
-                case 'current': {
-                    if ($user) {
-                        // Make sure it's actually the current user
-                        if (!$user->getIsCurrent()) {
-                            throw new BadRequestHttpException('Not the current user');
+        if ($user === null) {
+            // Are we editing a specific user account?
+            if ($userId !== null) {
+                switch ($userId) {
+                    case 'current': {
+                        if ($user) {
+                            // Make sure it's actually the current user
+                            if (!$user->getIsCurrent()) {
+                                throw new BadRequestHttpException('Not the current user');
+                            }
+                        } else {
+                            // Get the current user
+                            $user = Craft::$app->getUser()->getIdentity();
                         }
-                    } else {
-                        // Get the current user
-                        $user = Craft::$app->getUser()->getIdentity();
+
+                        break;
                     }
+                    case 'client': {
+                        $isClientAccount = true;
 
-                    break;
-                }
-                case 'client': {
-                    $isClientAccount = true;
+                        if ($user) {
+                            // Make sure it's the client account
+                            if (!$user->client) {
+                                throw new BadRequestHttpException('Not the client account');
+                            }
+                        } else {
+                            // Get the existing client account, if there is one
+                            $user = Craft::$app->getUsers()->getClient();
 
-                    if ($user) {
-                        // Make sure it's the client account
-                        if (!$user->client) {
-                            throw new BadRequestHttpException('Not the client account');
+                            if (!$user) {
+                                // Registering the Client
+                                $user = new User();
+                                $user->client = true;
+                            }
                         }
-                    } else {
-                        // Get the existing client account, if there is one
-                        $user = Craft::$app->getUsers()->getClient();
 
-                        if (!$user) {
-                            // Registering the Client
-                            $user = new User();
-                            $user->client = true;
-                        }
+                        break;
                     }
+                    default: {
+                        if ($user) {
+                            // Make sure they have the right ID
+                            if ($user->id != $userId) {
+                                throw new BadRequestHttpException('Not the right user ID');
+                            }
+                        } else {
+                            // Get the user by its ID
+                            $user = Craft::$app->getUsers()->getUserById($userId);
 
-                    break;
-                }
-                default: {
-                    if ($user) {
-                        // Make sure they have the right ID
-                        if ($user->id != $userId) {
-                            throw new BadRequestHttpException('Not the right user ID');
-                        }
-                    } else {
-                        // Get the user by its ID
-                        $user = Craft::$app->getUsers()->getUserById($userId);
+                            if (!$user) {
+                                throw new NotFoundHttpException('User not found');
+                            }
 
-                        if (!$user) {
-                            throw new NotFoundHttpException('User not found');
-                        }
-
-                        if ($user->client) {
-                            $isClientAccount = true;
+                            if ($user->client) {
+                                $isClientAccount = true;
+                            }
                         }
                     }
                 }
-            }
-        } else {
-            if ($edition == Craft::Pro) {
-                // Registering a new user
-                $user = new User();
             } else {
-                // Nada.
-                throw new NotFoundHttpException('User not found');
+                if ($edition == Craft::Pro) {
+                    // Registering a new user
+                    $user = new User();
+                } else {
+                    // Nada.
+                    throw new NotFoundHttpException('User not found');
+                }
             }
         }
 
@@ -977,7 +970,11 @@ class UsersController extends Controller
             $user->addError('photo', Craft::t('app', 'The user photo provided is not an image.'));
         }
 
-        if ($imageValidates && Craft::$app->getUsers()->saveUser($user)) {
+        if ($thisIsPublicRegistration) {
+            $user->validateCustomFields = false;
+        }
+
+        if ($imageValidates && Craft::$app->getElements()->saveElement($user)) {
             // Save their preferences too
             $preferences = [
                 'language' => $request->getBodyParam('preferredLanguage', $user->getPreference('language')),
@@ -1073,6 +1070,12 @@ class UsersController extends Controller
                 return $this->redirectToPostedUrl($user);
             }
         } else {
+            if ($thisIsPublicRegistration) {
+                // Move any 'newPassword' errors over to 'password'
+                $user->addErrors(['password' => $user->getErrors('newPassword')]);
+                $user->clearErrors('newPassword');
+            }
+
             if ($request->getAcceptsJson()) {
                 return $this->asErrorJson(Craft::t('app', 'Couldn’t save user.'));
             }
@@ -1156,11 +1159,11 @@ class UsersController extends Controller
         $user = Craft::$app->getUsers()->getUserById($userId);
 
         if ($user->photoId) {
-            Craft::$app->getAssets()->deleteAssetsByIds($user->photoId);
+            Craft::$app->getElements()->deleteElementById($user->photoId);
         }
 
         $user->photoId = null;
-        Craft::$app->getUsers()->saveUser($user);
+        Craft::$app->getElements()->saveElement($user, false);
 
         $html = Craft::$app->getView()->renderTemplate('users/_photo',
             [
@@ -1320,9 +1323,10 @@ class UsersController extends Controller
         }
 
         // Delete the user
-        if (Craft::$app->getUsers()->deleteUser($user, $transferContentTo)) {
-            Craft::$app->getSession()->setNotice(Craft::t('app',
-                'User deleted.'));
+        $user->inheritorOnDelete = $transferContentTo;
+
+        if (Craft::$app->getElements()->deleteElement($user)) {
+            Craft::$app->getSession()->setNotice(Craft::t('app', 'User deleted.'));
 
             return $this->redirectToPostedUrl();
         }

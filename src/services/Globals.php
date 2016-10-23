@@ -30,18 +30,6 @@ class Globals extends Component
     // =========================================================================
 
     /**
-     * @event GlobalSetContentEvent The event that is triggered before a global set's content is saved.
-     *
-     * You may set [[GlobalSetEvent::isValid]] to `false` to prevent the global set's content from getting saved.
-     */
-    const EVENT_BEFORE_SAVE_GLOBAL_CONTENT = 'beforeSaveGlobalContent';
-
-    /**
-     * @event GlobalSetContentEvent The event that is triggered after a global set's content is saved.
-     */
-    const EVENT_AFTER_SAVE_GLOBAL_CONTENT = 'afterSaveGlobalContent';
-
-    /**
      * @event GlobalSetEvent The event that is triggered before a global set is saved.
      *
      * You may set [[GlobalSetEvent::isValid]] to `false` to prevent the global set from getting saved.
@@ -52,18 +40,6 @@ class Globals extends Component
      * @event GlobalSetEvent The event that is triggered after a global set is saved.
      */
     const EVENT_AFTER_SAVE_GLOBAL_SET = 'afterSaveGlobalSet';
-
-    /**
-     * @event GlobalSetEvent The event that is triggered before a global set is deleted.
-     *
-     * You may set [[GlobalSetEvent::isValid]] to `false` to prevent the global set from being deleted.
-     */
-    const EVENT_BEFORE_DELETE_GLOBAL_SET = 'beforeDeleteGlobalSet';
-
-    /**
-     * @event GlobalSetEvent The event that is triggered after a global set is deleted.
-     */
-    const EVENT_AFTER_DELETE_GLOBAL_SET = 'afterDeleteGlobalSet';
 
     // Properties
     // =========================================================================
@@ -290,7 +266,15 @@ class Globals extends Component
             }
 
             /** @var GlobalSet $oldSet */
-            $oldSet = GlobalSet::create($globalSetRecord);
+            $oldSet = new GlobalSet($globalSetRecord->toArray([
+                'name',
+                'handle',
+                'fieldLayoutId',
+                'id',
+                'uid',
+                'dateCreated',
+                'dateUpdated',
+            ]));
         } else {
             $globalSetRecord = new GlobalSetRecord();
         }
@@ -318,7 +302,8 @@ class Globals extends Component
 
                 // Is the event giving us the go-ahead?
                 if ($event->isValid) {
-                    if (Craft::$app->getElements()->saveElement($globalSet, false)) {
+                    $globalSet->validateCustomFields = false;
+                    if (Craft::$app->getElements()->saveElement($globalSet)) {
                         // Now that we have an element ID, save it on the other stuff
                         if ($isNewSet) {
                             $globalSetRecord->id = $globalSet->id;
@@ -366,123 +351,6 @@ class Globals extends Component
                     ])
                 );
             }
-        }
-
-        return $success;
-    }
-
-    /**
-     * Deletes a global set by its ID.
-     *
-     * @param integer $setId
-     *
-     * @return boolean Whether the global set was deleted successfully
-     * @throws \Exception if reasons
-     */
-    public function deleteSetById($setId)
-    {
-        if (!$setId) {
-            return false;
-        }
-
-        $success = true;
-
-        $transaction = Craft::$app->getDb()->beginTransaction();
-        try {
-            $globalSet = $this->getSetById($setId);
-
-            // Fire a 'beforeDeleteGlobalSet' event
-            $event = new GlobalSetEvent([
-                'globalSet' => $globalSet
-            ]);
-
-            $this->trigger(self::EVENT_BEFORE_DELETE_GLOBAL_SET, $event);
-
-            // Is the event giving us the go-ahead?
-            if ($event->isValid) {
-                // Delete the field layout
-                $fieldLayoutId = (new Query())
-                    ->select('fieldLayoutId')
-                    ->from('{{%globalsets}}')
-                    ->where(['id' => $setId])
-                    ->scalar();
-
-                if ($fieldLayoutId) {
-                    Craft::$app->getFields()->deleteLayoutById($fieldLayoutId);
-                }
-
-                Craft::$app->getElements()->deleteElementById($setId);
-
-                $transaction->commit();
-            } else {
-                $success = false;
-            }
-        } catch (\Exception $e) {
-            $transaction->rollBack();
-
-            throw $e;
-        }
-
-        if ($success) {
-            // Fire an 'afterDeleteGlobalSet' event
-            $this->trigger(self::EVENT_AFTER_DELETE_GLOBAL_SET, new GlobalSetEvent([
-                'globalSet' => $globalSet
-            ]));
-        }
-
-        return $success;
-    }
-
-    /**
-     * Saves a global set's content
-     *
-     * @param GlobalSet $globalSet
-     *
-     * @return boolean Whether the global set’s content was saved successfully
-     * @throws \Exception if reasons
-     */
-    public function saveContent(GlobalSet $globalSet)
-    {
-        $transaction = Craft::$app->getDb()->beginTransaction();
-
-        try {
-            // Fire a 'beforeSaveGlobalContent' event
-            $event = new GlobalSetContentEvent([
-                'globalSet' => $globalSet
-            ]);
-
-            $this->trigger(self::EVENT_BEFORE_SAVE_GLOBAL_CONTENT, $event);
-
-            // Is the event giving us the go-ahead?
-            if ($event->isValid) {
-                $success = Craft::$app->getElements()->saveElement($globalSet);
-
-                // If it didn't work, rollback the transaction in case something changed in onBeforeSaveGlobalContent
-                if (!$success) {
-                    $transaction->rollBack();
-
-                    return false;
-                }
-            } else {
-                $success = false;
-            }
-
-            // Commit the transaction regardless of whether we saved the user, in case something changed
-            // in onBeforeSaveGlobalContent
-            $transaction->commit();
-        } catch (\Exception $e) {
-            $transaction->rollBack();
-
-            throw $e;
-        }
-
-        if ($success) {
-            // Fire an 'afterSaveGlobalContent' event
-            $this->trigger(self::EVENT_AFTER_SAVE_GLOBAL_CONTENT,
-                new GlobalSetContentEvent([
-                    'globalSet' => $globalSet
-                ])
-            );
         }
 
         return $success;

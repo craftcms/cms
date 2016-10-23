@@ -32,26 +32,6 @@ class QuickPost extends Widget
         return Craft::t('app', 'Quick Post');
     }
 
-    /**
-     * @inheritdoc
-     */
-    public static function populateModel($model, $config)
-    {
-        // If we're saving the widget settings, all of the section-specific
-        // attributes will be tucked away in a 'sections' array
-        if (isset($config['sections'], $config['section'])) {
-            $sectionId = $config['section'];
-
-            if (isset($config['sections'][$sectionId])) {
-                $config = array_merge($config, $config['sections'][$sectionId]);
-            }
-
-            unset($config['sections']);
-        }
-
-        parent::populateModel($model, $config);
-    }
-
     // Properties
     // =========================================================================
 
@@ -77,6 +57,26 @@ class QuickPost extends Widget
 
     // Public Methods
     // =========================================================================
+
+    /**
+     * @inheritdoc
+     */
+    public function __construct($config = [])
+    {
+        // If we're saving the widget settings, all of the section-specific
+        // attributes will be tucked away in a 'sections' array
+        if (isset($config['sections'], $config['section'])) {
+            $sectionId = $config['section'];
+
+            if (isset($config['sections'][$sectionId])) {
+                $config = array_merge($config, $config['sections'][$sectionId]);
+            }
+
+            unset($config['sections']);
+        }
+
+        parent::__construct($config);
+    }
 
     /**
      * @inheritdoc

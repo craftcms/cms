@@ -464,7 +464,7 @@ class EntriesController extends BaseEntriesController
         }
 
         // Save the entry (finally!)
-        if (Craft::$app->getEntries()->saveEntry($entry)) {
+        if (Craft::$app->getElements()->saveElement($entry)) {
             if ($request->getAcceptsJson()) {
                 $return['success'] = true;
                 $return['id'] = $entry->id;
@@ -529,7 +529,7 @@ class EntriesController extends BaseEntriesController
             $this->requirePermission('deletePeerEntries:'.$entry->sectionId);
         }
 
-        if (Craft::$app->getEntries()->deleteEntry($entry)) {
+        if (Craft::$app->getElements()->deleteElement($entry)) {
             if (Craft::$app->getRequest()->getAcceptsJson()) {
                 return $this->asJson(['success' => true]);
             }

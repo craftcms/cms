@@ -37,40 +37,6 @@ class Date extends Field implements PreviewableFieldInterface
         return Craft::t('app', 'Date/Time');
     }
 
-    /**
-     * @inheritdoc
-     */
-    public static function populateModel($model, $config)
-    {
-        if (isset($config['dateTime'])) {
-            switch ($config['dateTime']) {
-                case 'showBoth': {
-                    unset($config['dateTime']);
-                    $config['showTime'] = true;
-                    $config['showDate'] = true;
-
-                    break;
-                }
-                case 'showDate': {
-                    unset($config['dateTime']);
-                    $config['showDate'] = true;
-                    $config['showTime'] = false;
-
-                    break;
-                }
-                case 'showTime': {
-                    unset($config['dateTime']);
-                    $config['showTime'] = true;
-                    $config['showDate'] = false;
-
-                    break;
-                }
-            }
-        }
-
-        parent::populateModel($model, $config);
-    }
-
     // Properties
     // =========================================================================
 
@@ -92,6 +58,43 @@ class Date extends Field implements PreviewableFieldInterface
     // Public Methods
     // =========================================================================
 
+    /**
+     * @inheritdoc
+     */
+    public function __construct($config = [])
+    {
+        // dateTime => showDate + showTime
+        if (isset($config['dateTime'])) {
+            switch ($config['dateTime']) {
+                case 'showBoth': {
+                    $config['showDate'] = true;
+                    $config['showTime'] = true;
+
+                    break;
+                }
+                case 'showDate': {
+                    $config['showDate'] = true;
+                    $config['showTime'] = false;
+
+                    break;
+                }
+                case 'showTime': {
+                    $config['showDate'] = false;
+                    $config['showTime'] = true;
+
+                    break;
+                }
+            }
+
+            unset($config['dateTime']);
+        }
+
+        parent::__construct($config);
+    }
+
+    /**
+     * @inheritdoc
+     */
     public function init()
     {
         parent::init();

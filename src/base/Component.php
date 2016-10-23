@@ -41,15 +41,4 @@ abstract class Component extends Model implements ComponentInterface
 
         return strtolower($handle);
     }
-
-    // Public Methods
-    // =========================================================================
-
-    /**
-     * @inheritdoc
-     */
-    public function getType()
-    {
-        return static::class;
-    }
 }

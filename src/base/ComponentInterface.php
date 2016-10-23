@@ -40,23 +40,4 @@ interface ComponentInterface
      * @return string The class handle.
      */
     public static function classHandle();
-
-    /**
-     * Instantiates and returns a new component object.
-     *
-     * @param array $config The config settings to populate the component with
-     *
-     * @return $this The new component object
-     */
-    public static function create($config);
-
-    // Public Methods
-    // =========================================================================
-
-    /**
-     * Returns the class name that should be used to represent the field.
-     *
-     * @return string The class name that should be used to represent the field.
-     */
-    public function getType();
 }

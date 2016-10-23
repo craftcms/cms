@@ -1,4 +1,4 @@
-/*! Craft 3.0.0 - 2016-10-07 */
+/*! Craft 3.0.0 - 2016-10-21 */
 !function(a){
 // Set all the standard Craft.* stuff
 a.extend(Craft,{navHeight:48,/**
@@ -734,17 +734,17 @@ calculateLargestProportionalRectangle:function(a,b,c){var d,e;b<=c?(d=b,e=c):(d=
 a>180&&(a=180-a),a<0&&(a+=180);var f=a*(Math.PI/180);f>Math.PI/2&&(f=Math.PI-f);var g,h,i=d/(e*Math.sin(f)+d*Math.cos(f));return b<=c?(g=d*i,h=e*i):(g=e*i,h=d*i),{w:g,h:h}}},{defaults:{resizable:!1,shadeClass:"assetEditor"}}),/**
  * Asset index class
  */
-Craft.AssetIndex=Craft.BaseElementIndex.extend({$includeSubfoldersContainer:null,$includeSubfoldersCheckbox:null,showingIncludeSubfoldersCheckbox:!1,$uploadButton:null,$uploadInput:null,$progressBar:null,$folders:null,uploader:null,promptHandler:null,progressBar:null,_uploadTotalFiles:0,_uploadFileProgress:{},_uploadedFileIds:[],_currentUploaderSettings:{},_fileDrag:null,_folderDrag:null,_expandDropTargetFolderTimeout:null,_tempExpandedFolders:[],_fileConflictTemplate:{message:"File “{file}” already exists at target location.",choices:[{value:"keepBoth",title:Craft.t("app","Keep both")},{value:"replace",title:Craft.t("app","Replace it")}]},_folderConflictTemplate:{message:"Folder “{folder}” already exists at target location",choices:[{value:"replace",title:Craft.t("app","Replace the folder (all existing files will be deleted)")},{value:"merge",title:Craft.t("app","Merge the folder (any conflicting files will be replaced)")}]},init:function(a,b,c){this.base(a,b,c),"index"==this.settings.context&&this._initIndexPageMode()},initSource:function(a){this.base(a),this._createFolderContextMenu(a),"index"==this.settings.context&&(this._folderDrag&&this._getSourceLevel(a)>1&&this._folderDrag.addItems(a.parent()),this._fileDrag&&this._fileDrag.updateDropTargets())},deinitSource:function(a){this.base(a);
+Craft.AssetIndex=Craft.BaseElementIndex.extend({$includeSubfoldersContainer:null,$includeSubfoldersCheckbox:null,showingIncludeSubfoldersCheckbox:!1,$uploadButton:null,$uploadInput:null,$progressBar:null,$folders:null,uploader:null,promptHandler:null,progressBar:null,_uploadTotalFiles:0,_uploadFileProgress:{},_uploadedAssetIds:[],_currentUploaderSettings:{},_assetDrag:null,_folderDrag:null,_expandDropTargetFolderTimeout:null,_tempExpandedFolders:[],_fileConflictTemplate:{message:"File “{file}” already exists at target location.",choices:[{value:"keepBoth",title:Craft.t("app","Keep both")},{value:"replace",title:Craft.t("app","Replace it")}]},_folderConflictTemplate:{message:"Folder “{folder}” already exists at target location",choices:[{value:"replace",title:Craft.t("app","Replace the folder (all existing files will be deleted)")},{value:"merge",title:Craft.t("app","Merge the folder (any conflicting files will be replaced)")}]},init:function(a,b,c){this.base(a,b,c),"index"==this.settings.context&&this._initIndexPageMode()},initSource:function(a){this.base(a),this._createFolderContextMenu(a),"index"==this.settings.context&&(this._folderDrag&&this._getSourceLevel(a)>1&&this._folderDrag.addItems(a.parent()),this._assetDrag&&this._assetDrag.updateDropTargets())},deinitSource:function(a){this.base(a);
 // Does this source have a context menu?
-var b=a.data("contextmenu");b&&b.destroy(),"index"==this.settings.context&&(this._folderDrag&&this._getSourceLevel(a)>1&&this._folderDrag.removeItems(a.parent()),this._fileDrag&&this._fileDrag.updateDropTargets())},_getSourceLevel:function(a){return a.parentsUntil("nav","ul").length},/**
+var b=a.data("contextmenu");b&&b.destroy(),"index"==this.settings.context&&(this._folderDrag&&this._getSourceLevel(a)>1&&this._folderDrag.removeItems(a.parent()),this._assetDrag&&this._assetDrag.updateDropTargets())},_getSourceLevel:function(a){return a.parentsUntil("nav","ul").length},/**
 	 * Initialize the index page-specific features
 	 */
 _initIndexPageMode:function(){
 // Make the elements selectable
 this.settings.selectable=!0,this.settings.multiSelect=!0;var b=a.proxy(this,"_onDragStart"),c=a.proxy(this,"_onDropTargetChange");
-// File dragging
+// Asset dragging
 // ---------------------------------------------------------------------
-this._fileDrag=new Garnish.DragDrop({activeDropTargetClass:"sel",helperOpacity:.75,filter:a.proxy(function(){return this.view.getSelectedElements()},this),helper:a.proxy(function(a){return this._getFileDragHelper(a)},this),dropTargets:a.proxy(function(){for(var b=[],c=0;c<this.$sources.length;c++)b.push(a(this.$sources[c]));return b},this),onDragStart:b,onDropTargetChange:c,onDragStop:a.proxy(this,"_onFileDragStop")}),
+this._assetDrag=new Garnish.DragDrop({activeDropTargetClass:"sel",helperOpacity:.75,filter:a.proxy(function(){return this.view.getSelectedElements()},this),helper:a.proxy(function(a){return this._getFileDragHelper(a)},this),dropTargets:a.proxy(function(){for(var b=[],c=0;c<this.$sources.length;c++)b.push(a(this.$sources[c]));return b},this),onDragStart:b,onDropTargetChange:c,onDragStop:a.proxy(this,"_onFileDragStop")}),
 // Folder dragging
 // ---------------------------------------------------------------------
 this._folderDrag=new Garnish.DragDrop({activeDropTargetClass:"sel",helperOpacity:.75,filter:a.proxy(function(){for(var b=this.sourceSelect.getSelectedItems(),c=[],d=0;d<b.length;d++){var e=a(b[d]).parent();e.hasClass("sel")&&this._getSourceLevel(e)>1&&c.push(e[0])}return a(c)},this),helper:a.proxy(function(b){var c=a('<div class="sidebar" style="padding-top: 0; padding-bottom: 0;"/>'),d=a("<nav/>").appendTo(c),e=a("<ul/>").appendTo(d);
@@ -752,13 +752,13 @@ this._folderDrag=new Garnish.DragDrop({activeDropTargetClass:"sel",helperOpacity
 return b.appendTo(e).removeClass("expanded"),b.children("a").addClass("sel"),b.css({"padding-top":this._folderDrag.$draggee.css("padding-top"),"padding-right":this._folderDrag.$draggee.css("padding-right"),"padding-bottom":this._folderDrag.$draggee.css("padding-bottom"),"padding-left":this._folderDrag.$draggee.css("padding-left")}),c},this),dropTargets:a.proxy(function(){var b=[],c=[];this._folderDrag.$draggee.find("a[data-key]").each(function(){c.push(a(this).data("key"))});for(var d=0;d<this.$sources.length;d++){var e=a(this.$sources[d]);Craft.inArray(e.data("key"),c)||b.push(e)}return b},this),onDragStart:b,onDropTargetChange:c,onDragStop:a.proxy(this,"_onFolderDragStop")})},/**
 	 * On file drag stop
 	 */
-_onFileDragStop:function(){if(this._fileDrag.$activeDropTarget&&this._fileDrag.$activeDropTarget[0]!=this.$source[0]){
+_onFileDragStop:function(){if(this._assetDrag.$activeDropTarget&&this._assetDrag.$activeDropTarget[0]!=this.$source[0]){
 // For each file, prepare array data.
-for(var b=this.$source,c=this._getFolderIdFromSourceKey(this._fileDrag.$activeDropTarget.data("key")),d=[],e=0;e<this._fileDrag.$draggee.length;e++){var f=Craft.getElementInfo(this._fileDrag.$draggee[e]).id;d.push(f)}
+for(var b=this.$source,c=this._getFolderIdFromSourceKey(this._assetDrag.$activeDropTarget.data("key")),d=[],e=0;e<this._assetDrag.$draggee.length;e++){var f=Craft.getElementInfo(this._assetDrag.$draggee[e]).id;d.push(f)}
 // Are any files actually getting moved?
 if(d.length){this.setIndexBusy(),this._positionProgressBar(),this.progressBar.resetProgressBar(),this.progressBar.setItemCount(d.length),this.progressBar.showProgressBar();
 // For each file to move a separate request
-var g=[];for(e=0;e<d.length;e++)g.push({fileId:d[e],folderId:c});
+var g=[];for(e=0;e<d.length;e++)g.push({assetId:d[e],folderId:c});
 // Define the callback for when all file moves are complete
 var h=a.proxy(function(e){this.promptHandler.resetPrompts();
 // Loop trough all the responses
@@ -768,7 +768,7 @@ if(i.prompt){var j={message:this._fileConflictTemplate.message,choices:this._fil
 // Select original source
 this.sourceSelect.selectItem(b),
 // Make sure we use the correct offset when fetching the next page
-this._totalVisible-=this._fileDrag.$draggee.length;
+this._totalVisible-=this._assetDrag.$draggee.length;
 // And remove the elements that have been moved away
 for(var e=0;e<d.length;e++)a("[data-id="+d[e]+"]").remove();this.view.deselectAllElements(),this._collapseExtraExpandedFolders(c),k&&this.updateElements()};if(this.promptHandler.getPromptCount()){
 // Define callback for completing all prompts
@@ -776,18 +776,18 @@ var m=a.proxy(function(a){
 // Loop trough all returned data and prepare a new request array
 for(var b=[],c=0;c<a.length;c++)if("cancel"!=a[c].choice)
 // Find the matching request parameters for this file and modify them slightly
-for(var d=0;d<g.length;d++)g[d].fileId==a[c].fileId&&(g[d].userResponse=a[c].choice,b.push(g[d]));else k=!0;
+for(var d=0;d<g.length;d++)g[d].assetId==a[c].assetId&&(g[d].userResponse=a[c].choice,b.push(g[d]));else k=!0;
 // Nothing to do, carry on
 0==b.length?l.apply(this):(
 // Start working
 this.setIndexBusy(),this.progressBar.resetProgressBar(),this.progressBar.setItemCount(this.promptHandler.getPromptCount()),this.progressBar.showProgressBar(),
 // Move conflicting files again with resolutions now
-this._moveFile(b,0,h))},this);this._fileDrag.fadeOutHelpers(),this.promptHandler.showBatchPrompts(m)}else l.apply(this),this._fileDrag.fadeOutHelpers()},this);
+this._moveFile(b,0,h))},this);this._assetDrag.fadeOutHelpers(),this.promptHandler.showBatchPrompts(m)}else l.apply(this),this._assetDrag.fadeOutHelpers()},this);
 // Skip returning dragees
 // Initiate the file move with the built array, index of 0 and callback to use when done
 return void this._moveFile(g,0,h)}}else
 // Add the .sel class back on the selected source
-this.$source.addClass("sel"),this._collapseExtraExpandedFolders();this._fileDrag.returnHelpersToDraggees()},/**
+this.$source.addClass("sel"),this._collapseExtraExpandedFolders();this._assetDrag.returnHelpersToDraggees()},/**
 	 * On folder drag stop
 	 */
 _onFolderDragStop:function(){
@@ -886,7 +886,7 @@ _onUploadComplete:function(b,c){var d=c.result,e=c.files[0].name,f=!0;if(d.succe
 // If there is a prompt, add it to the queue
 if(
 // Add the uploaded file to the selected ones, if appropriate
-this._uploadedFileIds.push(d.fileId),d.prompt){var g={message:this._fileConflictTemplate.message,choices:this._fileConflictTemplate.choices};g.message=Craft.t("app",g.message,{file:d.filename}),d.prompt=g,this.promptHandler.addPrompt(d)}}else d.error?alert(Craft.t("app","Upload failed. The error message was: “{error}”",{error:d.error})):alert(Craft.t("app","Upload failed for {filename}.",{filename:e})),f=!1;
+this._uploadedAssetIds.push(d.assetId),d.prompt){var g={message:this._fileConflictTemplate.message,choices:this._fileConflictTemplate.choices};g.message=Craft.t("app",g.message,{file:d.filename}),d.prompt=g,this.promptHandler.addPrompt(d)}}else d.error?alert(Craft.t("app","Upload failed. The error message was: “{error}”",{error:d.error})):alert(Craft.t("app","Upload failed for {filename}.",{filename:e})),f=!1;
 // For the last file, display prompts, if any. If not - just update the element view.
 this.uploader.isLastUpload()&&(this.setIndexAvailable(),this.progressBar.hideProgressBar(),this.promptHandler.getPromptCount()?this.promptHandler.showBatchPrompts(a.proxy(this,"_uploadFollowup")):f&&this.updateElements())},/**
 	 * Follow up to an upload that triggered at least one conflict resolution prompt.
@@ -894,15 +894,15 @@ this.uploader.isLastUpload()&&(this.setIndexAvailable(),this.progressBar.hidePro
 	 * @param returnData
 	 * @private
 	 */
-_uploadFollowup:function(b){this.setIndexBusy(),this.progressBar.resetProgressBar(),this.promptHandler.resetPrompts();var c=a.proxy(function(){this.setIndexAvailable(),this.progressBar.hideProgressBar(),this.updateElements()},this);this.progressBar.setItemCount(b.length);var d=a.proxy(function(b,c,e){var f={assetId:b[c].assetId,filename:b[c].filename,userResponse:b[c].choice};Craft.postActionRequest("assets/save-asset",f,a.proxy(function(a,f){"success"==f&&a.fileId&&this._uploadedFileIds.push(a.fileId),c++,this.progressBar.incrementProcessedItemCount(1),this.progressBar.updateProgressBar(),c==b.length?e():d(b,c,e)},this))},this);this.progressBar.showProgressBar(),d(b,0,c)},/**
+_uploadFollowup:function(b){this.setIndexBusy(),this.progressBar.resetProgressBar(),this.promptHandler.resetPrompts();var c=a.proxy(function(){this.setIndexAvailable(),this.progressBar.hideProgressBar(),this.updateElements()},this);this.progressBar.setItemCount(b.length);var d=a.proxy(function(b,c,e){var f={assetId:b[c].assetId,filename:b[c].filename,userResponse:b[c].choice};Craft.postActionRequest("assets/save-asset",f,a.proxy(function(a,f){"success"==f&&a.assetId&&this._uploadedAssetIds.push(a.assetId),c++,this.progressBar.incrementProcessedItemCount(1),this.progressBar.updateProgressBar(),c==b.length?e():d(b,c,e)},this))},this);this.progressBar.showProgressBar(),d(b,0,c)},/**
 	 * Perform actions after updating elements
 	 * @private
 	 */
 onUpdateElements:function(){this._onUpdateElements(!1,this.view.getAllElements()),this.view.on("appendElements",a.proxy(function(a){this._onUpdateElements(!0,a.newElements)},this)),this.base()},_onUpdateElements:function(a,b){
 // See if we have freshly uploaded files to add to selection
-if("index"==this.settings.context&&(a||this._fileDrag.removeAllItems(),this._fileDrag.addItems(b)),this._uploadedFileIds.length){if(this.view.settings.selectable)for(var c=0;c<this._uploadedFileIds.length;c++)this.view.selectElementById(this._uploadedFileIds[c]);
+if("index"==this.settings.context&&(a||this._assetDrag.removeAllItems(),this._assetDrag.addItems(b)),this._uploadedAssetIds.length){if(this.view.settings.selectable)for(var c=0;c<this._uploadedAssetIds.length;c++)this.view.selectElementById(this._uploadedAssetIds[c]);
 // Reset the list.
-this._uploadedFileIds=[]}this.base(a,b)},/**
+this._uploadedAssetIds=[]}this.base(a,b)},/**
 	 * On Drag Start
 	 */
 _onDragStart:function(){this._tempExpandedFolders=[]},/**
@@ -1003,7 +1003,7 @@ return c.extension==this.originalExtension||(""==c.extension?this.originalFilena
  */
 Craft.AssetSelectorModal=Craft.BaseElementSelectorModal.extend({$selectTransformBtn:null,_selectedTransform:null,init:function(b,c){c=a.extend({},Craft.AssetSelectorModal.defaults,c),this.base(b,c),c.transforms.length&&this.createSelectTransformButton(c.transforms)},createSelectTransformButton:function(b){if(b&&b.length){var c=a('<div class="btngroup"/>').appendTo(this.$primaryButtons);this.$selectBtn.appendTo(c),this.$selectTransformBtn=a('<div class="btn menubtn disabled">'+Craft.t("app","Select transform")+"</div>").appendTo(c);for(var d=a('<div class="menu" data-align="right"></div>').insertAfter(this.$selectTransformBtn),e=a("<ul></ul>").appendTo(d),f=0;f<b.length;f++)a('<li><a data-transform="'+b[f].handle+'">'+b[f].name+"</a></li>").appendTo(e);var g=new Garnish.MenuBtn(this.$selectTransformBtn,{onOptionSelect:a.proxy(this,"onSelectTransform")});g.disable(),this.$selectTransformBtn.data("menuButton",g)}},onSelectionChange:function(b){var c=this.elementIndex.getSelectedElements(),d=!1;if(c.length&&this.settings.transforms.length){d=!0;for(var e=0;e<c.length&&a(".element.hasthumb:first",c[e]).length;e++);}var f=null;this.$selectTransformBtn&&(f=this.$selectTransformBtn.data("menuButton")),d?(f&&f.enable(),this.$selectTransformBtn.removeClass("disabled")):this.$selectTransformBtn&&(f&&f.disable(),this.$selectTransformBtn.addClass("disabled")),this.base()},onSelectTransform:function(b){var c=a(b).data("transform");this.selectImagesWithTransform(c)},selectImagesWithTransform:function(b){
 // First we must get any missing transform URLs
-"undefined"==typeof Craft.AssetSelectorModal.transformUrls[b]&&(Craft.AssetSelectorModal.transformUrls[b]={});for(var c=this.elementIndex.getSelectedElements(),d=[],e=0;e<c.length;e++){var f=a(c[e]),g=Craft.getElementInfo(f).id;"undefined"==typeof Craft.AssetSelectorModal.transformUrls[b][g]&&d.push(g)}d.length?(this.showFooterSpinner(),this.fetchMissingTransformUrls(d,b,a.proxy(function(){this.hideFooterSpinner(),this.selectImagesWithTransform(b)},this))):(this._selectedTransform=b,this.selectElements(),this._selectedTransform=null)},fetchMissingTransformUrls:function(b,c,d){var e=b.pop(),f={fileId:e,handle:c,returnUrl:!0};Craft.postActionRequest("assets/generate-transform",f,a.proxy(function(a,f){Craft.AssetSelectorModal.transformUrls[c][e]=!1,"success"==f&&a.url&&(Craft.AssetSelectorModal.transformUrls[c][e]=a.url),
+"undefined"==typeof Craft.AssetSelectorModal.transformUrls[b]&&(Craft.AssetSelectorModal.transformUrls[b]={});for(var c=this.elementIndex.getSelectedElements(),d=[],e=0;e<c.length;e++){var f=a(c[e]),g=Craft.getElementInfo(f).id;"undefined"==typeof Craft.AssetSelectorModal.transformUrls[b][g]&&d.push(g)}d.length?(this.showFooterSpinner(),this.fetchMissingTransformUrls(d,b,a.proxy(function(){this.hideFooterSpinner(),this.selectImagesWithTransform(b)},this))):(this._selectedTransform=b,this.selectElements(),this._selectedTransform=null)},fetchMissingTransformUrls:function(b,c,d){var e=b.pop(),f={assetId:e,handle:c,returnUrl:!0};Craft.postActionRequest("assets/generate-transform",f,a.proxy(function(a,f){Craft.AssetSelectorModal.transformUrls[c][e]=!1,"success"==f&&a.url&&(Craft.AssetSelectorModal.transformUrls[c][e]=a.url),
 // More to load?
 b.length?this.fetchMissingTransformUrls(b,c,d):d()},this))},getElementInfo:function(a){var b=this.base(a);if(this._selectedTransform)for(var c=0;c<b.length;c++){var d=b[c].id;"undefined"!=typeof Craft.AssetSelectorModal.transformUrls[this._selectedTransform][d]&&Craft.AssetSelectorModal.transformUrls[this._selectedTransform][d]!==!1&&(b[c].url=Craft.AssetSelectorModal.transformUrls[this._selectedTransform][d])}return b},onSelect:function(a){this.settings.onSelect(a,this._selectedTransform)}},{defaults:{canSelectImageTransforms:!1,transforms:[]},transformUrls:{}}),
 // Register it!
@@ -1080,7 +1080,7 @@ var c;if(b)for(var d=0;d<this.editableGroups.length;d++)if(this.editableGroups[d
 if(c){var f=this._getGroupTriggerHref(c),g="index"==this.settings.context?Craft.t("app","New category"):Craft.t("app","New {group} category",{group:c.name});this.$newCategoryBtn=a('<a class="btn submit add icon" '+f+">"+g+"</a>").appendTo(this.$newCategoryBtnGroup),"index"!=this.settings.context&&this.addListener(this.$newCategoryBtn,"click",function(a){this._openCreateCategoryModal(a.currentTarget.getAttribute("data-id"))}),this.editableGroups.length>1&&(e=a('<div class="btn submit menubtn"></div>').appendTo(this.$newCategoryBtnGroup))}else this.$newCategoryBtn=e=a('<div class="btn submit add icon menubtn">'+Craft.t("app","New category")+"</div>").appendTo(this.$newCategoryBtnGroup);if(e){for(var h='<div class="menu"><ul>',d=0;d<this.editableGroups.length;d++){var i=this.editableGroups[d];if("index"==this.settings.context||i!=c){var f=this._getGroupTriggerHref(i),g="index"==this.settings.context?i.name:Craft.t("app","New {group} category",{group:i.name});h+="<li><a "+f+'">'+g+"</a></li>"}}h+="</ul></div>";var j=(a(h).appendTo(this.$newCategoryBtnGroup),new Garnish.MenuBtn(e));"index"!=this.settings.context&&j.on("optionSelect",a.proxy(function(a){this._openCreateCategoryModal(a.option.getAttribute("data-id"))},this))}this.addButton(this.$newCategoryBtnGroup)}
 // Update the URL if we're on the Categories index
 // ---------------------------------------------------------------------
-if("index"==this.settings.context&&"undefined"!=typeof history){var k="categories";b&&(k+="/"+b),history.replaceState({},"",Craft.getUrl(k))}this.base()},_getGroupTriggerHref:function(a){return"index"==this.settings.context?'href="'+Craft.getUrl("categories/"+a.handle+"/new")+'"':'data-id="'+a.id+'"'},_openCreateCategoryModal:function(b){if(!this.$newCategoryBtn.hasClass("loading")){for(var c,d=0;d<this.editableGroups.length;d++)if(this.editableGroups[d].id==b){c=this.editableGroups[d];break}if(c){this.$newCategoryBtn.addClass("inactive");var e=this.$newCategoryBtn.text();this.$newCategoryBtn.text(Craft.t("app","New {group} category",{group:c.name})),new Craft.ElementEditor({hudTrigger:this.$newCategoryBtnGroup,elementType:"Category",siteId:this.siteId,attributes:{groupId:b},onBeginLoading:a.proxy(function(){this.$newCategoryBtn.addClass("loading")},this),onEndLoading:a.proxy(function(){this.$newCategoryBtn.removeClass("loading")},this),onHideHud:a.proxy(function(){this.$newCategoryBtn.removeClass("inactive").text(e)},this),onSaveElement:a.proxy(function(a){
+if("index"==this.settings.context&&"undefined"!=typeof history){var k="categories";b&&(k+="/"+b),history.replaceState({},"",Craft.getUrl(k))}this.base()},_getGroupTriggerHref:function(a){return"index"==this.settings.context?'href="'+Craft.getUrl("categories/"+a.handle+"/new")+'"':'data-id="'+a.id+'"'},_openCreateCategoryModal:function(b){if(!this.$newCategoryBtn.hasClass("loading")){for(var c,d=0;d<this.editableGroups.length;d++)if(this.editableGroups[d].id==b){c=this.editableGroups[d];break}if(c){this.$newCategoryBtn.addClass("inactive");var e=this.$newCategoryBtn.text();this.$newCategoryBtn.text(Craft.t("app","New {group} category",{group:c.name})),new Craft.ElementEditor({hudTrigger:this.$newCategoryBtnGroup,elementType:"craft\\app\\elements\\Category",siteId:this.siteId,attributes:{groupId:b},onBeginLoading:a.proxy(function(){this.$newCategoryBtn.addClass("loading")},this),onEndLoading:a.proxy(function(){this.$newCategoryBtn.removeClass("loading")},this),onHideHud:a.proxy(function(){this.$newCategoryBtn.removeClass("inactive").text(e)},this),onSaveElement:a.proxy(function(a){
 // Make sure the right group is selected
 var c="group:"+b;this.sourceKey!=c&&this.selectSourceByKey(c),this.selectElementAfterUpdate(a.id),this.updateElements()},this)})}}}}),
 // Register it!
@@ -1434,7 +1434,7 @@ var c;if(b)for(var d=0;d<this.publishableSections.length;d++)if(this.publishable
 if(c){var f=this._getSectionTriggerHref(c),g="index"==this.settings.context?Craft.t("app","New entry"):Craft.t("app","New {section} entry",{section:c.name});this.$newEntryBtn=a('<a class="btn submit add icon" '+f+">"+g+"</a>").appendTo(this.$newEntryBtnGroup),"index"!=this.settings.context&&this.addListener(this.$newEntryBtn,"click",function(a){this._openCreateEntryModal(a.currentTarget.getAttribute("data-id"))}),this.publishableSections.length>1&&(e=a('<div class="btn submit menubtn"></div>').appendTo(this.$newEntryBtnGroup))}else this.$newEntryBtn=e=a('<div class="btn submit add icon menubtn">'+Craft.t("app","New entry")+"</div>").appendTo(this.$newEntryBtnGroup);if(e){for(var h='<div class="menu"><ul>',d=0;d<this.publishableSections.length;d++){var i=this.publishableSections[d];if("index"==this.settings.context||i!=c){var f=this._getSectionTriggerHref(i),g="index"==this.settings.context?i.name:Craft.t("app","New {section} entry",{section:i.name});h+="<li><a "+f+'">'+g+"</a></li>"}}h+="</ul></div>";var j=(a(h).appendTo(this.$newEntryBtnGroup),new Garnish.MenuBtn(e));"index"!=this.settings.context&&j.on("optionSelect",a.proxy(function(a){this._openCreateEntryModal(a.option.getAttribute("data-id"))},this))}this.addButton(this.$newEntryBtnGroup)}
 // Update the URL if we're on the Entries index
 // ---------------------------------------------------------------------
-if("index"==this.settings.context&&"undefined"!=typeof history){var k="entries";b&&(k+="/"+b),history.replaceState({},"",Craft.getUrl(k))}this.base()},_getSectionTriggerHref:function(a){return"index"==this.settings.context?'href="'+Craft.getUrl("entries/"+a.handle+"/new")+'"':'data-id="'+a.id+'"'},_openCreateEntryModal:function(b){if(!this.$newEntryBtn.hasClass("loading")){for(var c,d=0;d<this.publishableSections.length;d++)if(this.publishableSections[d].id==b){c=this.publishableSections[d];break}if(c){this.$newEntryBtn.addClass("inactive");var e=this.$newEntryBtn.text();this.$newEntryBtn.text(Craft.t("app","New {section} entry",{section:c.name})),new Craft.ElementEditor({hudTrigger:this.$newEntryBtnGroup,elementType:"Entry",siteId:this.siteId,attributes:{sectionId:b},onBeginLoading:a.proxy(function(){this.$newEntryBtn.addClass("loading")},this),onEndLoading:a.proxy(function(){this.$newEntryBtn.removeClass("loading")},this),onHideHud:a.proxy(function(){this.$newEntryBtn.removeClass("inactive").text(e)},this),onSaveElement:a.proxy(function(a){
+if("index"==this.settings.context&&"undefined"!=typeof history){var k="entries";b&&(k+="/"+b),history.replaceState({},"",Craft.getUrl(k))}this.base()},_getSectionTriggerHref:function(a){return"index"==this.settings.context?'href="'+Craft.getUrl("entries/"+a.handle+"/new")+'"':'data-id="'+a.id+'"'},_openCreateEntryModal:function(b){if(!this.$newEntryBtn.hasClass("loading")){for(var c,d=0;d<this.publishableSections.length;d++)if(this.publishableSections[d].id==b){c=this.publishableSections[d];break}if(c){this.$newEntryBtn.addClass("inactive");var e=this.$newEntryBtn.text();this.$newEntryBtn.text(Craft.t("app","New {section} entry",{section:c.name})),new Craft.ElementEditor({hudTrigger:this.$newEntryBtnGroup,elementType:"craft\\app\\elements\\Entry",siteId:this.siteId,attributes:{sectionId:b,typeId:c.entryTypes[0].id},onBeginLoading:a.proxy(function(){this.$newEntryBtn.addClass("loading")},this),onEndLoading:a.proxy(function(){this.$newEntryBtn.removeClass("loading")},this),onHideHud:a.proxy(function(){this.$newEntryBtn.removeClass("inactive").text(e)},this),onSaveElement:a.proxy(function(a){
 // Make sure the right section is selected
 var c="section:"+b;this.sourceKey!=c&&this.selectSourceByKey(c),this.selectElementAfterUpdate(a.id),this.updateElements()},this)})}}}}),
 // Register it!

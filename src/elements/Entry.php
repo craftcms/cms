@@ -21,12 +21,15 @@ use craft\app\elements\db\ElementQuery;
 use craft\app\elements\db\ElementQueryInterface;
 use craft\app\elements\db\EntryQuery;
 use craft\app\events\SetStatusEvent;
+use craft\app\helpers\ArrayHelper;
 use craft\app\helpers\DateTimeHelper;
 use craft\app\helpers\Db;
 use craft\app\helpers\Url;
 use craft\app\models\EntryType;
 use craft\app\models\Section;
+use craft\app\records\Entry as EntryRecord;
 use craft\app\validators\DateTimeValidator;
+use yii\base\Exception;
 use yii\base\InvalidConfigException;
 
 /**
@@ -435,47 +438,6 @@ class Entry extends Element
     /**
      * @inheritdoc
      */
-    public static function getTableAttributeHtml(ElementInterface $element, $attribute)
-    {
-        /** @var Entry $element */
-        // First give plugins a chance to set this
-        $pluginAttributeHtml = Craft::$app->getPlugins()->callFirst('getEntryTableAttributeHtml',
-            [$element, $attribute], true);
-
-        if ($pluginAttributeHtml !== null) {
-            return $pluginAttributeHtml;
-        }
-
-        switch ($attribute) {
-            case 'author': {
-                $author = $element->getAuthor();
-
-                if ($author) {
-                    return Craft::$app->getView()->renderTemplate('_elements/element', [
-                        'element' => $author
-                    ]);
-                } else {
-                    return '';
-                }
-            }
-
-            case 'section': {
-                return Craft::t('site', $element->getSection()->name);
-            }
-
-            case 'type': {
-                return Craft::t('site', $element->getType()->name);
-            }
-
-            default: {
-                return parent::getTableAttributeHtml($element, $attribute);
-            }
-        }
-    }
-
-    /**
-     * @inheritdoc
-     */
     public static function getElementQueryStatusCondition(ElementQueryInterface $query, $status)
     {
         $currentTimeDb = Db::prepareDateForDb(new \DateTime());
@@ -562,132 +524,6 @@ class Entry extends Element
         }
     }
 
-    /**
-     * @inheritdoc
-     */
-    public static function getEditorHtml(ElementInterface $element)
-    {
-        /** @var Entry $element */
-        $html = '';
-        $view = Craft::$app->getView();
-
-        // Show the Entry Type field?
-        if (!$element->id) {
-            $entryTypes = $element->getSection()->getEntryTypes();
-
-            if (count($entryTypes) > 1) {
-                $entryTypeOptions = [];
-
-                foreach ($entryTypes as $entryType) {
-                    $entryTypeOptions[] = [
-                        'label' => Craft::t('site', $entryType->name),
-                        'value' => $entryType->id
-                    ];
-                }
-
-                $html .= Craft::$app->getView()->renderTemplateMacro('_includes/forms', 'selectField', [
-                    [
-                        'label' => Craft::t('app', 'Entry Type'),
-                        'id' => 'entryType',
-                        'value' => $element->typeId,
-                        'options' => $entryTypeOptions,
-                    ]
-                ]);
-
-                $typeInputId = $view->namespaceInputId('entryType');
-                $js = <<<EOD
-$('#{$typeInputId}').on('change', function(ev) {
-	var \$typeInput = $(this),
-		editor = \$typeInput.closest('.hud').data('elementEditor');
-	if (editor) {
-		editor.setElementAttribute('typeId', \$typeInput.val());
-		editor.loadHud();
-	}
-});
-EOD;
-                $view->registerJs($js);
-            }
-        }
-
-        if ($element->getType()->hasTitleField) {
-            $html .= $view->renderTemplate('entries/_titlefield',
-                [
-                    'entry' => $element
-                ]);
-        }
-
-        $html .= parent::getEditorHtml($element);
-
-        return $html;
-    }
-
-    /**
-     * @inheritdoc Element::saveElement()
-     *
-     * @return boolean
-     */
-    public static function saveElement(ElementInterface $element, $params)
-    {
-        /** @var Entry $element */
-        // Make sure we have an author for this.
-        if (!$element->authorId) {
-            if (!empty($params['author'])) {
-                $element->authorId = $params['author'];
-            } else {
-                $element->authorId = Craft::$app->getUser()->getId();
-            }
-        }
-
-        // Route this through \craft\app\services\Entries::saveEntry() so the proper entry events get fired.
-        return Craft::$app->getEntries()->saveEntry($element);
-    }
-
-    /**
-     * Routes the request when the URI matches an element.
-     *
-     * @param ElementInterface $element
-     *
-     * @return array|bool|mixed
-     */
-    public static function getElementRoute(ElementInterface $element)
-    {
-        /** @var Entry $element */
-        // Make sure that the entry is actually live
-        if ($element->getStatus() == Entry::STATUS_LIVE) {
-            // Make sure the section is set to have URLs for this site
-            $siteId = Craft::$app->getSites()->currentSite->id;
-            $sectionSiteSettings = $element->getSection()->getSiteSettings();
-
-            if (isset($sectionSiteSettings[$siteId]) && $sectionSiteSettings[$siteId]->hasUrls) {
-                return [
-                    'templates/render',
-                    [
-                        'template' => $sectionSiteSettings[$siteId]->template,
-                        'variables' => [
-                            'entry' => $element
-                        ]
-                    ]
-                ];
-            }
-        }
-
-        return false;
-    }
-
-    /**
-     * @inheritdoc
-     */
-    public static function onAfterMoveElementInStructure(ElementInterface $element, $structureId)
-    {
-        /** @var Entry $element */
-        // Was the entry moved within its section's structure?
-        $section = $element->getSection();
-
-        if ($section->type == Section::TYPE_STRUCTURE && $section->structureId == $structureId) {
-            Craft::$app->getElements()->updateElementSlugAndUri($element, true, true, true);
-        }
-    }
-
     // Properties
     // =========================================================================
 
@@ -731,8 +567,26 @@ EOD;
      */
     private $_author;
 
+    /**
+     * @var boolean
+     * @see _hasNewParent()
+     */
+    private $_hasNewParent;
+
     // Public Methods
     // =========================================================================
+
+    /**
+     * @inheritdoc
+     */
+    public function init()
+    {
+        parent::init();
+
+        if ($this->authorId === null) {
+            $this->authorId = Craft::$app->getUser()->getId();
+        }
+    }
 
     /**
      * @inheritdoc
@@ -749,9 +603,31 @@ EOD;
     /**
      * @inheritdoc
      */
+    public function attributeLabels()
+    {
+        $labels = parent::attributeLabels();
+
+        // Use the entry type's title label
+        $labels['title'] = $this->getType()->titleLabel;
+
+        return $labels;
+    }
+
+    /**
+     * @inheritdoc
+     */
     public function rules()
     {
         $rules = parent::rules();
+
+        if (!$this->getType()->hasTitleField) {
+            // Don't validate the title
+            $key = array_search([['title'], 'required'], $rules);
+            if ($key !== -1) {
+                array_splice($rules, $key, 1);
+            }
+        }
+
         $rules[] = [['sectionId', 'typeId', 'authorId', 'newParentId'], 'number', 'integerOnly' => true];
         $rules[] = [['postDate', 'expiryDate'], DateTimeValidator::class];
 
@@ -796,6 +672,32 @@ EOD;
         }
 
         return $sectionSiteSettings[$this->siteId]->uriFormat;
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function getRoute()
+    {
+        // Make sure that the entry is actually live
+        if ($this->getStatus() != Entry::STATUS_LIVE) {
+            return null;
+        }
+
+        // Make sure the section is set to have URLs for this site
+        $siteId = Craft::$app->getSites()->currentSite->id;
+        $sectionSiteSettings = $this->getSection()->getSiteSettings();
+
+        if (!isset($sectionSiteSettings[$siteId]) || !$sectionSiteSettings[$siteId]->hasUrls) {
+            return null;
+        }
+
+        return ['templates/render', [
+            'template' => $sectionSiteSettings[$siteId]->template,
+            'variables' => [
+                'entry' => $this,
+            ]
+        ]];
     }
 
     /**
@@ -944,6 +846,210 @@ EOD;
         }
     }
 
+    // Indexes, etc.
+    // -------------------------------------------------------------------------
+
+    /**
+     * @inheritdoc
+     */
+    public function getTableAttributeHtml($attribute)
+    {
+        // First give plugins a chance to set this
+        $pluginAttributeHtml = Craft::$app->getPlugins()->callFirst('getEntryTableAttributeHtml', [$this, $attribute], true);
+
+        if ($pluginAttributeHtml !== null) {
+            return $pluginAttributeHtml;
+        }
+
+        switch ($attribute) {
+            case 'author':
+                $author = $this->getAuthor();
+
+                return $author ? Craft::$app->getView()->renderTemplate('_elements/element', ['element' => $author]) : '';
+
+            case 'section':
+                return Craft::t('site', $this->getSection()->name);
+
+            case 'type':
+                return Craft::t('site', $this->getType()->name);
+        }
+
+        return parent::getTableAttributeHtml($attribute);
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function getEditorHtml()
+    {
+        $html = '';
+        $view = Craft::$app->getView();
+
+        // Show the Entry Type field?
+        if (!$this->id) {
+            $entryTypes = $this->getSection()->getEntryTypes();
+
+            if (count($entryTypes) > 1) {
+                $entryTypeOptions = [];
+
+                foreach ($entryTypes as $entryType) {
+                    $entryTypeOptions[] = [
+                        'label' => Craft::t('site', $entryType->name),
+                        'value' => $entryType->id
+                    ];
+                }
+
+                $html .= Craft::$app->getView()->renderTemplateMacro('_includes/forms', 'selectField', [
+                    [
+                        'label' => Craft::t('app', 'Entry Type'),
+                        'id' => 'entryType',
+                        'value' => $this->typeId,
+                        'options' => $entryTypeOptions,
+                    ]
+                ]);
+
+                $typeInputId = $view->namespaceInputId('entryType');
+                $js = <<<EOD
+$('#{$typeInputId}').on('change', function(ev) {
+	var \$typeInput = $(this),
+		editor = \$typeInput.closest('.hud').data('elementEditor');
+	if (editor) {
+		editor.setElementAttribute('typeId', \$typeInput.val());
+		editor.loadHud();
+	}
+});
+EOD;
+                $view->registerJs($js);
+            }
+        }
+
+        if ($this->getType()->hasTitleField) {
+            $html .= $view->renderTemplate('entries/_titlefield', [
+                'entry' => $this
+            ]);
+        }
+
+        $html .= parent::getEditorHtml();
+
+        return $html;
+    }
+
+    // Events
+    // -------------------------------------------------------------------------
+
+    /**
+     * @inheritdoc
+     * @throws Exception if reasons
+     */
+    public function beforeSave($isNew)
+    {
+        $section = $this->getSection();
+        $entryType = $this->getType();
+
+        // Has the entry been assigned to a new parent?
+        if ($this->_hasNewParent()) {
+            if ($this->newParentId) {
+                $parentEntry = Craft::$app->getEntries()->getEntryById($this->newParentId, $this->siteId);
+
+                if (!$parentEntry) {
+                    throw new Exception('Invalid entry ID: '.$this->newParentId);
+                }
+            } else {
+                $parentEntry = null;
+            }
+
+            $this->setParent($parentEntry);
+        }
+
+        // Verify that the section supports this site
+        $sectionSiteSettings = $section->getSiteSettings();
+
+        if (!isset($sectionSiteSettings[$this->siteId])) {
+            throw new Exception("The section '{$section->name}' is not enabled for the site '{$this->siteId}'");
+        }
+
+        if ($section->type == Section::TYPE_SINGLE) {
+            // Single entries don't have
+            $this->authorId = null;
+            $this->expiryDate = null;
+        }
+
+        if ($this->enabled && !$this->postDate) {
+            // Default the post date to the current date/time
+            $this->postDate = DateTimeHelper::currentUTCDateTime();
+        }
+
+        if (!$entryType->hasTitleField) {
+            $this->title = Craft::$app->getView()->renderObjectTemplate($entryType->titleFormat, $this);
+        }
+
+        return parent::beforeSave($isNew);
+    }
+
+    /**
+     * @inheritdoc
+     * @throws Exception if reasons
+     */
+    public function afterSave($isNew)
+    {
+        $section = $this->getSection();
+
+        // Get the entry record
+        if (!$isNew) {
+            $record = EntryRecord::findOne($this->id);
+
+            if (!$record) {
+                throw new Exception('Invalid entry ID: '.$this->id);
+            }
+        } else {
+            $record = new EntryRecord();
+            $record->id = $this->id;
+        }
+
+        $record->sectionId = $this->sectionId;
+        $record->typeId = $this->typeId;
+        $record->authorId = $this->authorId;
+        $record->postDate = $this->postDate;
+        $record->expiryDate = $this->expiryDate;
+        $record->save(false);
+
+        if ($section->type == Section::TYPE_STRUCTURE) {
+            // Has the parent changed?
+            if ($this->_hasNewParent()) {
+                if (!$this->newParentId) {
+                    Craft::$app->getStructures()->appendToRoot($section->structureId, $this);
+                } else {
+                    Craft::$app->getStructures()->append($section->structureId, $this, $this->getParent());
+                }
+            }
+
+            // Update the entry's descendants, who may be using this entry's URI in their own URIs
+            Craft::$app->getElements()->updateDescendantSlugsAndUris($this, true, true);
+        }
+
+        // Save a new version
+        if ($section->enableVersioning) {
+            Craft::$app->getEntryRevisions()->saveVersion($this);
+        }
+
+        parent::afterSave($isNew);
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function afterMoveInStructure($structureId)
+    {
+        // Was the entry moved within its section's structure?
+        $section = $this->getSection();
+
+        if ($section->type == Section::TYPE_STRUCTURE && $section->structureId == $structureId) {
+            Craft::$app->getElements()->updateElementSlugAndUri($this, true, true, true);
+        }
+
+        parent::afterMoveInStructure($structureId);
+    }
+
     // Protected Methods
     // =========================================================================
 
@@ -953,5 +1059,75 @@ EOD;
     protected function resolveStructureId()
     {
         return $this->getSection()->structureId;
+    }
+
+    // Private Methods
+    // =========================================================================
+
+    /**
+     * Returns whether the entry has been assigned a new parent entry.
+     *
+     * @return boolean
+     * @see beforeSave()
+     * @see afterSave()
+     */
+    private function _hasNewParent()
+    {
+        if (!isset($this->_hasNewParent)) {
+            $this->_hasNewParent = $this->_checkForNewParent();
+        }
+
+        return $this->_hasNewParent;
+    }
+
+    /**
+     * Checks if the entry has been assigned a new parent entry.
+     *
+     * @return boolean
+     * @see _hasNewParent()
+     */
+    private function _checkForNewParent()
+    {
+        // Make sure this is a Structure section
+        if ($this->getSection()->type != Section::TYPE_STRUCTURE) {
+            return false;
+        }
+
+        // Is it a brand new entry?
+        if (!$this->id) {
+            return true;
+        }
+
+        // Was a new parent ID actually submitted?
+        if ($this->newParentId === null) {
+            return false;
+        }
+
+        // Is it set to the top level now, but it hadn't been before?
+        if ($this->newParentId === '' && $this->level != 1) {
+            return true;
+        }
+
+        // Is it set to be under a parent now, but didn't have one before?
+        if ($this->newParentId !== '' && $this->level == 1) {
+            return true;
+        }
+
+        // Is the parentId set to a different entry ID than its previous parent?
+        $oldParentId = Entry::find()
+            ->ancestorOf($this)
+            ->ancestorDist(1)
+            ->status(null)
+            ->siteId($this->siteId)
+            ->enabledForSite(false)
+            ->select('elements.id')
+            ->scalar();
+
+        if ($this->newParentId != $oldParentId) {
+            return true;
+        }
+
+        // Must be set to the same one then
+        return false;
     }
 }

@@ -13,7 +13,7 @@ use craft\app\helpers\DateTimeHelper;
 use craft\app\elements\User as UserElement;
 use craft\app\helpers\Db;
 use craft\app\helpers\Url;
-use craft\app\models\Password;
+use craft\app\validators\UserPasswordValidator;
 use yii\web\Cookie;
 use yii\web\IdentityInterface;
 
@@ -282,11 +282,9 @@ class User extends \yii\web\User
         }
 
         // Validate the password
-        $passwordModel = new Password();
-        $passwordModel->password = $password;
+        $validator = new UserPasswordValidator();
 
-        if ($passwordModel->validate() && Craft::$app->getSecurity()->validatePassword($password, $user->password)) {
-
+        if ($validator->validate($password) && Craft::$app->getSecurity()->validatePassword($password, $user->password)) {
             $elevatedSessionDuration = Craft::$app->getConfig()->getElevatedSessionDuration();
 
             // Make sure it hasn't been disabled.

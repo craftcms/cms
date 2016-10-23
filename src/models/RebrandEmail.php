@@ -64,11 +64,6 @@ class RebrandEmail extends Model
     {
         return [
             [['siteId'], SiteIdValidator::class],
-            [
-                ['key', 'siteId', 'subject', 'body', 'htmlBody'],
-                'safe',
-                'on' => 'search'
-            ],
         ];
     }
 }

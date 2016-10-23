@@ -82,20 +82,6 @@ class AppNewRelease extends Model
     {
         return [
             [['date'], DateTimeValidator::class],
-            [
-                [
-                    'version',
-                    'build',
-                    'date',
-                    'notes',
-                    'type',
-                    'critical',
-                    'manual',
-                    'breakpoint'
-                ],
-                'safe',
-                'on' => 'search'
-            ],
         ];
     }
 }

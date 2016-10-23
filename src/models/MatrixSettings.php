@@ -47,14 +47,7 @@ class MatrixSettings extends Model
     public function rules()
     {
         return [
-            [
-                ['maxBlocks'],
-                'number',
-                'min' => -2147483648,
-                'max' => 2147483647,
-                'integerOnly' => true
-            ],
-            [['maxBlocks'], 'safe', 'on' => 'search'],
+            [['maxBlocks'], 'number', 'integerOnly' => true],
         ];
     }
 

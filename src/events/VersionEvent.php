@@ -7,26 +7,21 @@
 
 namespace craft\app\events;
 
-use craft\app\elements\Category;
+use craft\app\elements\Entry;
 
 /**
- * Category event class.
+ * Entry event class.
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since  3.0
  */
-class CategoryEvent extends Event
+class VersionEvent extends Event
 {
     // Properties
     // =========================================================================
 
     /**
-     * @var Category The category model associated with the event.
+     * @var Entry The entry version associated with the event.
      */
-    public $category;
-
-    /**
-     * @var boolean Whether the category is brand new
-     */
-    public $isNew = false;
+    public $version;
 }

@@ -10,6 +10,7 @@ namespace craft\app\tools;
 use Craft;
 use craft\app\base\Tool;
 use craft\app\db\Query;
+use craft\app\elements\Asset;
 
 /**
  * AssetIndex represents an Update Asset Indexes tool.
@@ -193,15 +194,22 @@ class AssetIndex extends Tool
                 ]
             ];
         } else if (!empty($params['finish'])) {
-            if (!empty($params['deleteFile']) && is_array($params['deleteFile'])) {
+            if (!empty($params['deleteAsset']) && is_array($params['deleteAsset'])) {
                 Craft::$app->getDb()->createCommand()
-                    ->delete('assettransformindex', [
-                        'in',
-                        'fileId',
-                        $params['deleteFile']
-                    ])
+                    ->delete('assettransformindex', ['in', 'assetId', $params['deleteAsset']])
                     ->execute();
-                Craft::$app->getAssets()->deleteAssetsByIds($params['deleteFile'], false);
+
+                /** @var Asset[] $assets */
+                $assets = Asset::find()
+                    ->status(null)
+                    ->enabledForSite(false)
+                    ->id($params['deleteAsset'])
+                    ->all();
+
+                foreach ($assets as $asset) {
+                    $asset->keepFileOnDelete = true;
+                    Craft::$app->getElements()->deleteElement($asset);
+                }
             }
 
             if (!empty($params['deleteFolder']) && is_array($params['deleteFolder'])) {

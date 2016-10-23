@@ -7,26 +7,19 @@
 
 namespace craft\app\events;
 
-use craft\app\elements\Entry;
-
 /**
- * Entry event class.
+ * ElementStructureEvent class.
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since  3.0
  */
-class EntryEvent extends Event
+class ElementStructureEvent extends ModelEvent
 {
     // Properties
     // =========================================================================
 
     /**
-     * @var Entry The entry model associated with the event.
+     * @var integer The structure ID
      */
-    public $entry;
-
-    /**
-     * @var boolean Whether the entry is brand new
-     */
-    public $isNew = false;
+    public $structureId;
 }

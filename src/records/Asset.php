@@ -39,44 +39,6 @@ class Asset extends ActiveRecord
 
     /**
      * @inheritdoc
-     */
-    public function rules()
-    {
-        return [
-            [
-                ['width'],
-                'number',
-                'min' => 0,
-                'max' => 65535,
-                'integerOnly' => true
-            ],
-            [
-                ['height'],
-                'number',
-                'min' => 0,
-                'max' => 65535,
-                'integerOnly' => true
-            ],
-            [
-                ['size'],
-                'number',
-                'min' => 0,
-                'max' => 18446744073709551615,
-                'integerOnly' => true
-            ],
-            [['dateModified'], DateTimeValidator::class],
-            [
-                ['filename'],
-                'unique',
-                'targetAttribute' => ['filename', 'folderId']
-            ],
-            [['filename', 'kind'], 'required'],
-            [['kind'], 'string', 'max' => 50],
-        ];
-    }
-
-    /**
-     * @inheritdoc
      *
      * @return string
      */

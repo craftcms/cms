@@ -279,7 +279,7 @@ class Plugin extends Module implements PluginInterface
     }
 
     /**
-     * Performs any actions before the plugin is installed.
+     * Performs actions before the plugin is installed.
      *
      * @return boolean Whether the plugin should be installed
      */
@@ -289,14 +289,14 @@ class Plugin extends Module implements PluginInterface
     }
 
     /**
-     * Performs any actions after the plugin is installed.
+     * Performs actions after the plugin is installed.
      */
     protected function afterInstall()
     {
     }
 
     /**
-     * Performs any actions before the plugin is updated.
+     * Performs actions before the plugin is updated.
      *
      * @return boolean Whether the plugin should be updated
      */
@@ -306,14 +306,14 @@ class Plugin extends Module implements PluginInterface
     }
 
     /**
-     * Performs any actions after the plugin is updated.
+     * Performs actions after the plugin is updated.
      */
     protected function afterUpdate()
     {
     }
 
     /**
-     * Performs any actions before the plugin is installed.
+     * Performs actions before the plugin is installed.
      *
      * @return boolean Whether the plugin should be installed
      */
@@ -323,7 +323,7 @@ class Plugin extends Module implements PluginInterface
     }
 
     /**
-     * Performs any actions after the plugin is installed.
+     * Performs actions after the plugin is installed.
      */
     protected function afterUninstall()
     {

@@ -47,7 +47,7 @@ class RenameFile extends ElementAction
 		activate: function(\$selectedItems)
 		{
 			var \$element = \$selectedItems.find('.element'),
-				fileId = \$element.data('id'),
+				assetId = \$element.data('id'),
 				oldName = \$element.data('url').split('/').pop();
 
 			if (oldName.indexOf('?') !== -1)
@@ -65,7 +65,7 @@ class RenameFile extends ElementAction
 			Craft.elementIndex.setIndexBusy();
 
 			var data = {
-				fileId:   fileId,
+				assetId:   assetId,
 				folderId: Craft.elementIndex.\$source.data('key').split(':')[1],
 				filename: newName
 			};

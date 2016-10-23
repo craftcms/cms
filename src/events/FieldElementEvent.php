@@ -7,26 +7,21 @@
 
 namespace craft\app\events;
 
-use craft\app\elements\Tag;
+use craft\app\base\ElementInterface;
 
 /**
- * Tag event class.
+ * FieldElementEvent class.
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since  3.0
  */
-class TagEvent extends Event
+class FieldElementEvent extends ModelEvent
 {
     // Properties
     // =========================================================================
 
     /**
-     * @var Tag The tag model associated with the event.
+     * @var ElementInterface The element associated with this event
      */
-    public $tag;
-
-    /**
-     * @var boolean Whether the tag is brand new
-     */
-    public $isNew = false;
+    public $element;
 }

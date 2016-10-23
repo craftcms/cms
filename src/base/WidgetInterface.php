@@ -21,18 +21,6 @@ interface WidgetInterface extends SavableComponentInterface
     // =========================================================================
 
     /**
-     * Performs any actions before a widget is saved.
-     *
-     * @return boolean Whether the widget should be saved
-     */
-    public function beforeSave();
-
-    /**
-     * Performs any actions after a widget is saved.
-     */
-    public function afterSave();
-
-    /**
      * Returns the widget’s title.
      *
      * @return string The widget’s title.

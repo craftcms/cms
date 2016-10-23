@@ -155,4 +155,19 @@ class GlobalSet extends Element
     {
         return Url::getCpUrl('globals/'.$this->handle);
     }
+
+    // Events
+    // -------------------------------------------------------------------------
+
+    /**
+     * @inheritdoc
+     */
+    public function beforeDelete()
+    {
+        if ($this->fieldLayoutId) {
+            Craft::$app->getFields()->deleteLayoutById($this->fieldLayoutId);
+        }
+
+        return parent::beforeDelete();
+    }
 }

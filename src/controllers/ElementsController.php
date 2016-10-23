@@ -15,7 +15,6 @@ use craft\app\errors\InvalidTypeException;
 use craft\app\helpers\ArrayHelper;
 use craft\app\helpers\ElementHelper;
 use craft\app\helpers\StringHelper;
-use craft\app\services\Elements;
 use yii\web\BadRequestHttpException;
 use yii\web\ForbiddenHttpException;
 use yii\web\NotFoundHttpException;
@@ -124,12 +123,7 @@ class ElementsController extends BaseElementsController
         /** @var Element $element */
         $element = $this->_getEditorElement();
         $namespace = Craft::$app->getRequest()->getRequiredBodyParam('namespace');
-        $params = Craft::$app->getRequest()->getBodyParam($namespace);
-
-        if (isset($params['title'])) {
-            $element->title = $params['title'];
-            unset($params['title']);
-        }
+        $params = Craft::$app->getRequest()->getBodyParam($namespace, []);
 
         if (isset($params['fields'])) {
             $fields = $params['fields'];
@@ -137,11 +131,13 @@ class ElementsController extends BaseElementsController
             unset($params['fields']);
         }
 
+        Craft::configure($element, $params);
+
         // Either way, at least tell the element where its content comes from
         $element->setContentPostLocation($namespace.'.fields');
 
         // Now save it
-        if ($element::saveElement($element, $params)) {
+        if (Craft::$app->getElements()->saveElement($element)) {
             $response = [
                 'success' => true,
                 'id' => $element->id,
@@ -160,7 +156,7 @@ class ElementsController extends BaseElementsController
                 array_shift($attributes);
 
                 foreach ($attributes as $attribute) {
-                    $response['tableAttributes'][$attribute[0]] = $element->getTableAttributeHtml($element, $attribute[0]);
+                    $response['tableAttributes'][$attribute[0]] = $element->getTableAttributeHtml($attribute[0]);
                 }
             }
 
@@ -255,7 +251,7 @@ class ElementsController extends BaseElementsController
                 throw new BadRequestHttpException('No element exists with the ID '.$elementId);
             }
         } else {
-            $element = $elementType::create([]);
+            $element = new $elementType();
         }
 
         /** @var Element $element */
@@ -297,7 +293,7 @@ class ElementsController extends BaseElementsController
         $attributes['siteId'] = $siteId;
 
         if ($attributes) {
-            $element->setAttributes($attributes);
+            Craft::configure($element, $attributes);
         }
 
         // Make sure it's editable
@@ -360,7 +356,7 @@ class ElementsController extends BaseElementsController
         }
 
         $response['html'] .= '<div class="meta">'.
-            Craft::$app->getView()->namespaceInputs($element::getEditorHtml($element)).
+            Craft::$app->getView()->namespaceInputs($element->getEditorHtml()).
             '</div>';
 
         $view = Craft::$app->getView();

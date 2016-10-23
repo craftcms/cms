@@ -31,18 +31,6 @@ class PositionSelect extends Field
     }
 
     /**
-     * @inheritdoc
-     */
-    public static function populateModel($model, $config)
-    {
-        if (isset($config['options'])) {
-            $config['options'] = array_values(array_filter($config['options']));
-        }
-
-        parent::populateModel($model, $config);
-    }
-
-    /**
      * Returns the position options.
      *
      * @return array
@@ -79,6 +67,8 @@ class PositionSelect extends Field
 
         if ($this->options === null) {
             $this->options = array_keys(static::_getOptions());
+        } else {
+            $this->options = array_values(array_filter($this->options));
         }
     }
 

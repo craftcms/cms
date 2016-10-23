@@ -37,16 +37,6 @@ class MatrixBlock extends ActiveRecord
 
     /**
      * @inheritdoc
-     */
-    public function rules()
-    {
-        return [
-            [['ownerSiteId'], SiteIdValidator::class],
-        ];
-    }
-
-    /**
-     * @inheritdoc
      *
      * @return string
      */

@@ -53,18 +53,6 @@ class Local extends Volume
         return true;
     }
 
-    /**
-     * @inheritdoc
-     */
-    public static function populateModel($model, $config)
-    {
-        if (isset($config['path'])) {
-            $config['path'] = rtrim($config['path'], '/');
-        }
-
-        parent::populateModel($model, $config);
-    }
-
     // Properties
     // =========================================================================
 
@@ -77,6 +65,18 @@ class Local extends Volume
 
     // Public Methods
     // =========================================================================
+
+    /**
+     * @inheritdoc
+     */
+    public function init()
+    {
+        parent::init();
+
+        if (isset($this->path)) {
+            $this->path = rtrim($this->path, '/');
+        }
+    }
 
     /**
      * @inheritdoc

@@ -18,6 +18,7 @@ use craft\app\elements\db\ElementQuery;
 use craft\app\elements\db\ElementQueryInterface;
 use craft\app\helpers\StringHelper;
 use craft\app\tasks\LocalizeRelations;
+use craft\app\validators\ArrayValidator;
 use yii\base\NotSupportedException;
 
 /**
@@ -156,40 +157,6 @@ abstract class BaseRelationField extends Field implements PreviewableFieldInterf
     /**
      * @inheritdoc
      */
-    public function beforeSave()
-    {
-        $this->_makeExistingRelationsTranslatable = false;
-
-        if ($this->id && $this->localizeRelations) {
-            /** @var Field $existingField */
-            $existingField = Craft::$app->getFields()->getFieldById($this->id);
-
-            if ($existingField && $existingField instanceof BaseRelationField && !$existingField->localizeRelations) {
-                $this->_makeExistingRelationsTranslatable = true;
-            }
-        }
-
-        return parent::beforeSave();
-    }
-
-    /**
-     * @inheritdoc
-     */
-    public function afterSave()
-    {
-        if ($this->_makeExistingRelationsTranslatable) {
-            Craft::$app->getTasks()->queueTask([
-                'type' => LocalizeRelations::class,
-                'fieldId' => $this->id,
-            ]);
-        }
-
-        parent::afterSave();
-    }
-
-    /**
-     * @inheritdoc
-     */
     public function getSettingsHtml()
     {
         return Craft::$app->getView()->renderTemplate('_components/fieldtypes/elementfieldsettings',
@@ -208,27 +175,18 @@ abstract class BaseRelationField extends Field implements PreviewableFieldInterf
     /**
      * @inheritdoc
      */
-    public function validateValue($value, $element)
+    public function getElementValidationRules()
     {
-        /** @var ElementQuery $value */
-        $errors = [];
-
-        // Do we need to validate the number of selections?
-        if ($this->required || ($this->allowLimit && $this->limit)) {
-            $total = $value->count();
-
-            if ($this->required && $total == 0) {
-                $errors[] = Craft::t('yii', '{attribute} cannot be blank.');
-            } else if ($this->allowLimit && $this->limit && $total > $this->limit) {
-                if ($this->limit == 1) {
-                    $errors[] = Craft::t('app', 'There can’t be more than one selection.');
-                } else {
-                    $errors[] = Craft::t('app', 'There can’t be more than {limit} selections.', ['limit' => $this->limit]);
-                }
-            }
-        }
-
-        return $errors;
+        // Don't call parent::getElementValidationRules() here - we'll do our own required validation
+        return [
+            [
+                ArrayValidator::class,
+                'min' => ($this->required ? 1 : null),
+                'max' => ($this->allowLimit && $this->limit ? $this->limit : null),
+                'tooFew' => Craft::t('app', '{attribute} should contain at least {min, number} {min, plural, one{selection} other{selections}}.'),
+                'tooMany' => Craft::t('app', '{attribute} should contain at most {max, number} {max, plural, one{selection} other{selections}}.'),
+            ],
+        ];
     }
 
     /**
@@ -336,22 +294,6 @@ abstract class BaseRelationField extends Field implements PreviewableFieldInterf
     /**
      * @inheritdoc
      */
-    public function afterElementSave(ElementInterface $element)
-    {
-        $value = $this->getElementValue($element);
-
-        if ($value instanceof ElementQueryInterface) {
-            $value = $value->id;
-        }
-
-        if ($value !== null) {
-            Craft::$app->getRelations()->saveRelations($this, $element, $value);
-        }
-    }
-
-    /**
-     * @inheritdoc
-     */
     public function getStaticHtml($value, $element)
     {
         /** @var ElementQuery $value */
@@ -438,6 +380,61 @@ abstract class BaseRelationField extends Field implements PreviewableFieldInterf
                 'siteId' => $targetSite
             ],
         ];
+    }
+
+    // Events
+    // -------------------------------------------------------------------------
+
+    /**
+     * @inheritdoc
+     */
+    public function beforeSave($isNew)
+    {
+        $this->_makeExistingRelationsTranslatable = false;
+
+        if ($this->id && $this->localizeRelations) {
+            /** @var Field $existingField */
+            $existingField = Craft::$app->getFields()->getFieldById($this->id);
+
+            if ($existingField && $existingField instanceof BaseRelationField && !$existingField->localizeRelations) {
+                $this->_makeExistingRelationsTranslatable = true;
+            }
+        }
+
+        return parent::beforeSave($isNew);
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function afterSave($isNew)
+    {
+        if ($this->_makeExistingRelationsTranslatable) {
+            Craft::$app->getTasks()->queueTask([
+                'type' => LocalizeRelations::class,
+                'fieldId' => $this->id,
+            ]);
+        }
+
+        parent::afterSave($isNew);
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function afterElementSave(ElementInterface $element, $isNew)
+    {
+        $value = $this->getElementValue($element);
+
+        if ($value instanceof ElementQueryInterface) {
+            $value = $value->id;
+        }
+
+        if ($value !== null) {
+            Craft::$app->getRelations()->saveRelations($this, $element, $value);
+        }
+
+        parent::afterElementSave($element, $isNew);
     }
 
     // Protected Methods

@@ -12,8 +12,7 @@ use craft\app\base\Field;
 use craft\app\db\Query;
 use craft\app\errors\EntryDraftNotFoundException;
 use craft\app\events\DraftEvent;
-use craft\app\events\EntryEvent;
-use craft\app\helpers\ArrayHelper;
+use craft\app\events\VersionEvent;
 use craft\app\helpers\Json;
 use craft\app\elements\Entry;
 use craft\app\models\EntryDraft;
@@ -67,12 +66,12 @@ class EntryRevisions extends Component
     const EVENT_AFTER_DELETE_DRAFT = 'afterDeleteDraft';
 
     /**
-     * @event EntryEvent The event that is triggered before an entry is reverted to an old version.
+     * @event VersionEvent The event that is triggered before an entry is reverted to an old version.
      */
     const EVENT_BEFORE_REVERT_ENTRY_TO_VERSION = 'beforeRevertEntryToVersion';
 
     /**
-     * @event EntryEvent The event that is triggered after an entry is reverted to an old version.
+     * @event VersionEvent The event that is triggered after an entry is reverted to an old version.
      */
     const EVENT_AFTER_REVERT_ENTRY_TO_VERSION = 'afterRevertEntryToVersion';
 
@@ -91,9 +90,21 @@ class EntryRevisions extends Component
         $draftRecord = EntryDraftRecord::findOne($draftId);
 
         if ($draftRecord) {
-            $config = ArrayHelper::toArray($draftRecord, [], false);
+            $config = $draftRecord->toArray([
+                'id',
+                'entryId',
+                'sectionId',
+                'creatorId',
+                'siteId',
+                'name',
+                'notes',
+                'data',
+                'dateCreated',
+                'dateUpdated',
+                'uid',
+            ]);
             $config['data'] = Json::decode($config['data']);
-            $draft = EntryDraft::create($config);
+            $draft = new EntryDraft($config);
 
             // This is a little hacky, but fixes a bug where entries are getting the wrong URL when a draft is published
             // inside of a structured section since the selected URL Format depends on the entry's level, and there's no
@@ -128,7 +139,19 @@ class EntryRevisions extends Component
         $drafts = [];
 
         $results = (new Query())
-            ->select('*')
+            ->select([
+                'id',
+                'entryId',
+                'sectionId',
+                'creatorId',
+                'siteId',
+                'name',
+                'notes',
+                'data',
+                'dateCreated',
+                'dateUpdated',
+                'uid',
+            ])
             ->from('{{%entrydrafts}}')
             ->where(['entryId' => $entryId, 'siteId' => $siteId])
             ->orderBy('name asc')
@@ -140,7 +163,7 @@ class EntryRevisions extends Component
             // Don't initialize the content
             unset($result['data']['fields']);
 
-            $drafts[] = EntryDraft::create($result);
+            $drafts[] = new EntryDraft($result);
         }
 
         return $drafts;
@@ -260,7 +283,7 @@ class EntryRevisions extends Component
         ]));
 
         // Save the entry without re-running validation on it
-        Craft::$app->getEntries()->saveEntry($draft, false);
+        Craft::$app->getElements()->saveElement($draft, false);
 
         // Delete the draft
         $success = false;
@@ -311,10 +334,22 @@ class EntryRevisions extends Component
         $versionRecord = EntryVersionRecord::findOne($versionId);
 
         if ($versionRecord) {
-            $config = ArrayHelper::toArray($versionRecord, [], false);
+            $config = $versionRecord->toArray([
+                'id',
+                'entryId',
+                'sectionId',
+                'creatorId',
+                'siteId',
+                'num',
+                'notes',
+                'data',
+                'dateCreated',
+                'dateUpdated',
+                'uid',
+            ]);
             $config['data'] = Json::decode($config['data']);
 
-            return EntryVersion::create($config);
+            return new EntryVersion($config);
         }
 
         return null;
@@ -339,7 +374,19 @@ class EntryRevisions extends Component
         $versions = [];
 
         $results = (new Query())
-            ->select('*')
+            ->select([
+                'id',
+                'entryId',
+                'sectionId',
+                'creatorId',
+                'siteId',
+                'num',
+                'notes',
+                'data',
+                'dateCreated',
+                'dateUpdated',
+                'uid',
+            ])
             ->from('{{%entryversions}}')
             ->where(['entryId' => $entryId, 'siteId' => $siteId])
             ->orderBy('dateCreated desc')
@@ -353,7 +400,7 @@ class EntryRevisions extends Component
             // Don't initialize the content
             unset($result['data']['fields']);
 
-            $versions[] = EntryVersion::create($result);
+            $versions[] = new EntryVersion($result);
         }
 
         return $versions;
@@ -412,16 +459,16 @@ class EntryRevisions extends Component
             ['num' => $version->num]);
 
         // Fire a 'beforeRevertEntryToVersion' event
-        $this->trigger(self::EVENT_BEFORE_REVERT_ENTRY_TO_VERSION, new EntryEvent([
-            'entry' => $version,
+        $this->trigger(self::EVENT_BEFORE_REVERT_ENTRY_TO_VERSION, new VersionEvent([
+            'version' => $version,
         ]));
 
         // Revert the entry without re-running validation on it
-        Craft::$app->getEntries()->saveEntry($version, false);
+        Craft::$app->getElements()->saveElement($version, false);
 
         // Fire an 'afterRevertEntryToVersion' event
-        $this->trigger(self::EVENT_AFTER_REVERT_ENTRY_TO_VERSION, new EntryEvent([
-            'entry' => $version,
+        $this->trigger(self::EVENT_AFTER_REVERT_ENTRY_TO_VERSION, new VersionEvent([
+            'version' => $version,
         ]));
 
         return true;

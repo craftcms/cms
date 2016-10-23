@@ -8,6 +8,8 @@
 namespace craft\app\elements\db;
 
 use Craft;
+use craft\app\base\Element;
+use craft\app\base\ElementInterface;
 use craft\app\db\Query;
 use craft\app\elements\MatrixBlock;
 use craft\app\fields\Matrix as MatrixField;
@@ -53,7 +55,7 @@ class MatrixBlockQuery extends ElementQuery
     public $ownerId;
 
     /**
-     * @var integer|integer[] The locale(s) that the resulting Matrix blocks must have been defined in.
+     * @var integer The site ID that the resulting Matrix blocks must have been defined in.
      */
     public $ownerSiteId;
 
@@ -118,15 +120,21 @@ class MatrixBlockQuery extends ElementQuery
     }
 
     /**
-     * Sets the [[ownerSiteId]] property.
+     * Sets the [[ownerSiteId]] and [[siteId]] properties.
      *
-     * @param integer|integer[] $value The property value
+     * @param integer $value The property value
      *
      * @return $this self reference
      */
     public function ownerSiteId($value)
     {
         $this->ownerSiteId = $value;
+
+        if ($value && strtolower($value) != ':empty:') {
+            // A block will never exist in a site that is different than its ownerSiteId,
+            // so let's set the siteId param here too.
+            $this->siteId = $value;
+        }
 
         return $this;
     }
@@ -142,7 +150,7 @@ class MatrixBlockQuery extends ElementQuery
     public function ownerSite($value)
     {
         if ($value instanceof Site) {
-            $this->ownerSiteId = $value->id;
+            $this->ownerSiteId($value->id);
         } else {
             $site = Craft::$app->getSites()->getSiteByHandle($value);
 
@@ -150,7 +158,7 @@ class MatrixBlockQuery extends ElementQuery
                 throw new Exception('Invalid site hadle: '.$value);
             }
 
-            $this->ownerSiteId = $site->id;
+            $this->ownerSiteId($site->id);
         }
 
         return $this;
@@ -168,6 +176,22 @@ class MatrixBlockQuery extends ElementQuery
     {
         Craft::$app->getDeprecator()->log('ElementQuery::locale()', 'The “locale” element parameter has been deprecated. Use “site” or “siteId” instead.');
         $this->ownerSite($value);
+
+        return $this;
+    }
+
+    /**
+     * Sets the [[ownerId]] and [[ownerSiteId]] properties based on a given element.
+     *
+     * @param ElementInterface $owner The owner element
+     *
+     * @return $this self reference
+     */
+    public function owner(ElementInterface $owner)
+    {
+        /** @var Element $owner */
+        $this->ownerId = $owner->id;
+        $this->siteId = $owner->siteId;
 
         return $this;
     }

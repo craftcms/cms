@@ -20,21 +20,6 @@ use craft\app\validators\DateTimeValidator;
  */
 class DeprecationError extends Model
 {
-    // Static
-    // =========================================================================
-
-    /**
-     * @inheritdoc
-     */
-    public static function populateModel($model, $config)
-    {
-        if (isset($config['traces']) && is_string($config['traces'])) {
-            $config['traces'] = Json::decode($config['traces']);
-        }
-
-        parent::populateModel($model, $config);
-    }
-
     // Properties
     // =========================================================================
 
@@ -104,6 +89,18 @@ class DeprecationError extends Model
     /**
      * @inheritdoc
      */
+    public function init()
+    {
+        parent::init();
+
+        if (isset($this->traces) && is_string($this->traces)) {
+            $this->traces = Json::decode($this->traces);
+        }
+    }
+
+    /**
+     * @inheritdoc
+     */
     public function datetimeAttributes()
     {
         $names = parent::datetimeAttributes();
@@ -118,46 +115,8 @@ class DeprecationError extends Model
     public function rules()
     {
         return [
-            [
-                ['id'],
-                'number',
-                'min' => -2147483648,
-                'max' => 2147483647,
-                'integerOnly' => true
-            ],
+            [['id', 'line', 'templateLine'], 'number', 'integerOnly' => true],
             [['lastOccurrence'], DateTimeValidator::class],
-            [
-                ['line'],
-                'number',
-                'min' => -2147483648,
-                'max' => 2147483647,
-                'integerOnly' => true
-            ],
-            [
-                ['templateLine'],
-                'number',
-                'min' => -2147483648,
-                'max' => 2147483647,
-                'integerOnly' => true
-            ],
-            [
-                [
-                    'id',
-                    'key',
-                    'fingerprint',
-                    'lastOccurrence',
-                    'file',
-                    'line',
-                    'class',
-                    'method',
-                    'template',
-                    'templateLine',
-                    'message',
-                    'traces'
-                ],
-                'safe',
-                'on' => 'search'
-            ],
         ];
     }
 
