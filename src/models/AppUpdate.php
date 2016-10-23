@@ -144,29 +144,6 @@ class AppUpdate extends Model
     {
         return [
             [['latestDate', 'realLatestDate'], DateTimeValidator::class],
-            [
-                [
-                    'localBuild',
-                    'localVersion',
-                    'latestVersion',
-                    'latestBuild',
-                    'latestDate',
-                    'targetVersion',
-                    'targetBuild',
-                    'realLatestVersion',
-                    'realLatestBuild',
-                    'realLatestDate',
-                    'criticalUpdateAvailable',
-                    'manualUpdateRequired',
-                    'breakpointRelease',
-                    'licenseUpdated',
-                    'versionUpdateStatus',
-                    'manualDownloadEndpoint',
-                    'releases'
-                ],
-                'safe',
-                'on' => 'search'
-            ],
         ];
     }
 }

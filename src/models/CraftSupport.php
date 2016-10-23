@@ -72,20 +72,7 @@ class CraftSupport extends Model
         return [
             [['fromEmail', 'message'], 'required'],
             [['fromEmail'], 'email'],
-            [['fromEmail'], 'string', 'min' => 5],
-            [['fromEmail'], 'string', 'max' => 255],
-            [
-                [
-                    'fromEmail',
-                    'message',
-                    'attachLogs',
-                    'attachDbBackup',
-                    'attachTemplates',
-                    'attachment'
-                ],
-                'safe',
-                'on' => 'search'
-            ],
+            [['fromEmail'], 'string', 'min' => 5, 'max' => 255],
             [['attachment'], 'file', 'maxSize' => 3145728],
         ];
     }

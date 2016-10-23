@@ -155,37 +155,9 @@ class Et extends Model
         return [
             [['licensedEdition'], 'in', 'range' => [0, 1, 2]],
             [['requestTime'], DateTimeValidator::class],
-            [
-                ['localBuild'],
-                'number',
-                'min' => -2147483648,
-                'max' => 2147483647,
-                'integerOnly' => true
-            ],
+            [['localBuild'], 'number', 'integerOnly' => true],
             [['localVersion', 'localBuild', 'localEdition', 'handle'], 'required'],
             [['userEmail'], 'email'],
-            [
-                [
-                    'licenseKey',
-                    'licenseKeyStatus',
-                    'licensedEdition',
-                    'licensedDomain',
-                    'editionTestableDomain',
-                    'data',
-                    'requestUrl',
-                    'requestIp',
-                    'requestTime',
-                    'requestPort',
-                    'localVersion',
-                    'localBuild',
-                    'localEdition',
-                    'userEmail',
-                    'track',
-                    'errors'
-                ],
-                'safe',
-                'on' => 'search'
-            ],
         ];
     }
 

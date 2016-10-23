@@ -35,11 +35,7 @@ class VolumeFolder extends ActiveRecord
     public function rules()
     {
         return [
-            [
-                ['name'],
-                'unique',
-                'targetAttribute' => ['name', 'parentId', 'volumeId']
-            ],
+            [['name'], 'unique', 'targetAttribute' => ['name', 'parentId', 'volumeId']],
             [['name'], 'required'],
         ];
     }

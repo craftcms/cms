@@ -36,7 +36,6 @@ class Username extends Model
     {
         $rules = [
             [['username'], 'string', 'max' => 100],
-            [['username'], 'safe', 'on' => 'search'],
         ];
 
         if (!Craft::$app->getConfig()->get('useEmailAsUsername')) {

@@ -33,11 +33,7 @@ class UserPermission_UserGroup extends ActiveRecord
     public function rules()
     {
         return [
-            [
-                ['permissionId'],
-                'unique',
-                'targetAttribute' => ['permissionId', 'groupId']
-            ],
+            [['permissionId'], 'unique', 'targetAttribute' => ['permissionId', 'groupId']],
         ];
     }
 

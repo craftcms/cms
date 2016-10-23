@@ -49,10 +49,7 @@ class UpgradeInfo extends Model
     public function rules()
     {
         return [
-            [
-                ['editions', 'stripePublicKey', 'countries', 'states'],
-                'required'
-            ],
+            [['editions', 'stripePublicKey', 'countries', 'states'], 'required'],
         ];
     }
 }

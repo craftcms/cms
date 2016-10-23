@@ -124,58 +124,11 @@ class Info extends Model
     public function rules()
     {
         return [
-            [
-                ['id'],
-                'number',
-                'min' => -2147483648,
-                'max' => 2147483647,
-                'integerOnly' => true
-            ],
-            [
-                ['build'],
-                'number',
-                'min' => -2147483648,
-                'max' => 2147483647,
-                'integerOnly' => true
-            ],
-            [
-                ['edition'],
-                'number',
-                'min' => -2147483648,
-                'max' => 2147483647,
-                'integerOnly' => true
-            ],
+            [['id', 'build', 'edition'], 'number', 'integerOnly' => true],
             [['releaseDate'], DateTimeValidator::class],
-            [
-                [
-                    'version',
-                    'build',
-                    'schemaVersion',
-                    'edition',
-                    'releaseDate',
-                    'track'
-                ],
-                'required'
-            ],
+            [['version', 'build', 'schemaVersion', 'edition', 'releaseDate', 'track'], 'required'],
             [['timezone'], 'string', 'max' => 30],
             [['track'], 'string', 'max' => 40],
-            [
-                [
-                    'id',
-                    'version',
-                    'build',
-                    'schemaVersion',
-                    'edition',
-                    'releaseDate',
-                    'timezone',
-                    'on',
-                    'maintenance',
-                    'track',
-                    'uid'
-                ],
-                'safe',
-                'on' => 'search'
-            ],
         ];
     }
 }

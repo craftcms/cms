@@ -115,46 +115,8 @@ class DeprecationError extends Model
     public function rules()
     {
         return [
-            [
-                ['id'],
-                'number',
-                'min' => -2147483648,
-                'max' => 2147483647,
-                'integerOnly' => true
-            ],
+            [['id', 'line', 'templateLine'], 'number', 'integerOnly' => true],
             [['lastOccurrence'], DateTimeValidator::class],
-            [
-                ['line'],
-                'number',
-                'min' => -2147483648,
-                'max' => 2147483647,
-                'integerOnly' => true
-            ],
-            [
-                ['templateLine'],
-                'number',
-                'min' => -2147483648,
-                'max' => 2147483647,
-                'integerOnly' => true
-            ],
-            [
-                [
-                    'id',
-                    'key',
-                    'fingerprint',
-                    'lastOccurrence',
-                    'file',
-                    'line',
-                    'class',
-                    'method',
-                    'template',
-                    'templateLine',
-                    'message',
-                    'traces'
-                ],
-                'safe',
-                'on' => 'search'
-            ],
         ];
     }
 

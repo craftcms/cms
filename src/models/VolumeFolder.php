@@ -62,32 +62,7 @@ class VolumeFolder extends Model
     public function rules()
     {
         return [
-            [
-                ['id'],
-                'number',
-                'min' => -2147483648,
-                'max' => 2147483647,
-                'integerOnly' => true
-            ],
-            [
-                ['parentId'],
-                'number',
-                'min' => -2147483648,
-                'max' => 2147483647,
-                'integerOnly' => true
-            ],
-            [
-                ['volumeId'],
-                'number',
-                'min' => -2147483648,
-                'max' => 2147483647,
-                'integerOnly' => true
-            ],
-            [
-                ['id', 'parentId', 'volumeId', 'name', 'path'],
-                'safe',
-                'on' => 'search'
-            ],
+            [['id', 'parentId', 'volumeId'], 'number', 'integerOnly' => true],
         ];
     }
 
