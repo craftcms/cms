@@ -13,6 +13,7 @@ use craft\app\web\Controller;
 use craft\app\helpers\DateTimeHelper;
 use craft\app\helpers\ChartHelper;
 use craft\app\db\Query;
+use yii\base\Response;
 
 /**
  * The ChartsController class is a controller that handles charts related operations such as preparing and returning data,
@@ -31,7 +32,7 @@ class ChartsController extends Controller
     /**
      * Returns the data needed to display a New Users chart.
      *
-     * @return void
+     * @return Response
      */
     public function actionGetNewUsersData()
     {
