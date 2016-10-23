@@ -10,7 +10,6 @@ namespace craft\app\services;
 use Craft;
 use craft\app\db\Query;
 use craft\app\errors\CategoryGroupNotFoundException;
-use craft\app\events\CategoryEvent;
 use craft\app\elements\Category;
 use craft\app\events\CategoryGroupEvent;
 use craft\app\models\CategoryGroup;

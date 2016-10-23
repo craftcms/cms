@@ -15,7 +15,6 @@ use craft\app\elements\Asset;
 use craft\app\errors\ImageException;
 use craft\app\errors\UserNotFoundException;
 use craft\app\errors\VolumeException;
-use craft\app\events\DeleteUserEvent;
 use craft\app\events\UserActivateEvent;
 use craft\app\events\UserAssignGroupEvent;
 use craft\app\events\UserGroupsAssignEvent;

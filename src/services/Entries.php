@@ -9,13 +9,8 @@ namespace craft\app\services;
 
 use Craft;
 use craft\app\db\Query;
-use craft\app\errors\EntryNotFoundException;
-use craft\app\errors\SectionNotFoundException;
-use craft\app\events\EntryEvent;
 use craft\app\elements\Entry;
-use craft\app\models\Section;
 use yii\base\Component;
-use yii\base\Exception;
 
 /**
  * The Entries service provides APIs for managing entries in Craft.
