@@ -166,7 +166,7 @@ class AssetIndex extends Tool
                 ->select(['sessionId'])
                 ->from(['{{%assetindexdata}}'])
                 ->where(['recordId' => null])
-                ->groupBy('sessionId')
+                ->groupBy(['sessionId'])
                 ->scalar();
 
             if (empty($sessionsInProgress)) {

@@ -88,7 +88,7 @@ class ChartHelper
                     $sqlDateFormat = 'YYYY-01-01';
                 }
                 $phpDateFormat = 'Y-01-01';
-                $sqlGroup = $yearSql;
+                $sqlGroup = [$yearSql];
                 $cursorDate = new DateTime($startDate->format('Y-01-01'), $craftTimezone);
                 break;
             }
@@ -100,7 +100,7 @@ class ChartHelper
                     $sqlDateFormat = 'YYYY-MM-01';
                 }
                 $phpDateFormat = 'Y-m-01';
-                $sqlGroup = $yearSql.', '.$monthSql;
+                $sqlGroup = [$yearSql, $monthSql];
                 $cursorDate = new DateTime($startDate->format('Y-m-01'), $craftTimezone);
                 break;
             }
@@ -112,7 +112,7 @@ class ChartHelper
                     $sqlDateFormat = 'YYYY-MM-DD';
                 }
                 $phpDateFormat = 'Y-m-d';
-                $sqlGroup = $yearSql.', '.$monthSql.', '.$daySql;
+                $sqlGroup = [$yearSql, $monthSql, $daySql];
                 $cursorDate = new DateTime($startDate->format('Y-m-d'), $craftTimezone);
                 break;
             }
@@ -125,7 +125,7 @@ class ChartHelper
                 }
 
                 $phpDateFormat = 'Y-m-d H:00:00';
-                $sqlGroup = $yearSql.', '.$monthSql.', '.$daySql.', '.$hourSql;
+                $sqlGroup = [$yearSql, $monthSql, $daySql, $hourSql];
                 $cursorDate = new DateTime($startDate->format('Y-m-d'), $craftTimezone);
                 break;
             }
