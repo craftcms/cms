@@ -332,7 +332,19 @@ class AssetTransforms extends Component
 
         // Query for the indexes
         $results = (new Query())
-            ->select('id, assetId, filename, format, location, volumeId, fileExists, inProgress, dateIndexed, dateCreated, dateUpdated')
+            ->select([
+                'id',
+                'assetId',
+                'filename',
+                'format',
+                'location',
+                'volumeId',
+                'fileExists',
+                'inProgress',
+                'dateIndexed',
+                'dateCreated',
+                'dateUpdated',
+            ])
             ->from('{{%assettransformindex}}')
             ->where([
                 'and',
@@ -710,7 +722,7 @@ class AssetTransforms extends Component
     public function getPendingTransformIndexIds()
     {
         return $this->_createTransformIndexQuery()
-            ->select('id')
+            ->select(['id'])
             ->where(['fileExists' => '0', 'inProgress' => '0'])
             ->column();
     }

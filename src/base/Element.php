@@ -412,14 +412,14 @@ abstract class Element extends Component implements ElementInterface
             }
 
             // Get the structure data for these elements
-            $selectSql = 'structureId, elementId, lft, rgt';
+            $selectColumns = ['structureId', 'elementId', 'lft', 'rgt'];
 
             if ($handle == 'children') {
-                $selectSql .= ', level';
+                $selectColumns[] = 'level';
             }
 
             $structureData = (new Query())
-                ->select($selectSql)
+                ->select($selectColumns)
                 ->from('{{%structureelements}}')
                 ->where(['elementId' => $sourceElementIds])
                 ->all();
@@ -459,7 +459,7 @@ abstract class Element extends Component implements ElementInterface
 
             // Return any child elements
             $map = $query
-                ->select($sourceSelectSql.', elementId as target')
+                ->select([$sourceSelectSql, 'elementId as target'])
                 ->from('structureelements')
                 ->where($condition)
                 ->orderBy(['structureId' => SORT_ASC, 'lft' => SORT_ASC])

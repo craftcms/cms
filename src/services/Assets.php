@@ -820,12 +820,11 @@ class Assets extends Component
         }
 
         $query = (new Query())
-            ->select('count(id)')
             ->from('{{%volumefolders}}');
 
         $this->_applyFolderConditions($query, $criteria);
 
-        return (int)$query->scalar();
+        return (int)$query->count('[[id]]');
     }
 
     // File and folder managing
@@ -1227,7 +1226,7 @@ class Assets extends Component
     private function _createFolderQuery()
     {
         return (new Query())
-            ->select('id, parentId, volumeId, name, path')
+            ->select(['id', 'parentId', 'volumeId', 'name', 'path'])
             ->from('{{%volumefolders}}');
     }
 

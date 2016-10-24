@@ -169,7 +169,7 @@ class UserQuery extends ElementQuery
         } else {
             $query = new Query();
             $this->groupId = $query
-                ->select('id')
+                ->select(['id'])
                 ->from('{{%usergroups}}')
                 ->where(Db::parseParam('handle', $value))
                 ->column();
@@ -314,7 +314,7 @@ class UserQuery extends ElementQuery
         }
 
         if ($this->withPassword) {
-            $this->query->addSelect('users.password');
+            $this->query->addSelect(['users.password']);
         }
 
         if ($this->admin) {
@@ -328,7 +328,7 @@ class UserQuery extends ElementQuery
         if ($this->groupId) {
             $query = new Query();
             $userIds = $query
-                ->select('userId')
+                ->select(['userId'])
                 ->from('{{%usergroups_users}}')
                 ->where(Db::parseParam('groupId', $this->groupId))
                 ->column();
@@ -381,7 +381,7 @@ class UserQuery extends ElementQuery
         if (is_string($this->can) && !is_numeric($this->can)) {
             // Convert it to the actual permission ID, or false if the permission doesn't have an ID yet.
             $this->can = (new Query())
-                ->select('id')
+                ->select(['id'])
                 ->from('{{%userpermissions}}')
                 ->where(['name' => strtolower($this->can)])
                 ->scalar();
@@ -391,14 +391,14 @@ class UserQuery extends ElementQuery
         if ($this->can !== false) {
             // Get the users that have that permission directly
             $permittedUserIds = (new Query())
-                ->select('userId')
+                ->select(['userId'])
                 ->from('{{%userpermissions_users}}')
                 ->where(['permissionId' => $this->can])
                 ->column();
 
             // Get the users that have that permission via a user group
             $permittedUserIdsViaGroups = (new Query())
-                ->select('g_u.userId')
+                ->select(['g_u.userId'])
                 ->from('{{%usergroups_users}} g_u')
                 ->innerJoin('{{%userpermissions_usergroups}} p_g', '[[p_g.groupId]] = [[g_u.groupId]]')
                 ->where(['p_g.permissionId' => $this->can])

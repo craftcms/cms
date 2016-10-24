@@ -192,7 +192,7 @@ class Elements extends Component
         // First get the element ID and type
 
         $query = (new Query())
-            ->select('elements.id, elements.type')
+            ->select(['elements.id', 'elements.type'])
             ->from('{{%elements}} elements')
             ->innerJoin('{{%elements_i18n}} elements_i18n', '[[elements_i18n.elementId]] = [[elements.id]]')
             ->where([
@@ -234,14 +234,14 @@ class Elements extends Component
     {
         if (is_array($elementId)) {
             return (new Query())
-                ->select('type')
+                ->select(['type'])
                 ->distinct(true)
                 ->from('{{%elements}}')
                 ->where(['id' => $elementId])
                 ->column();
         } else {
             return (new Query())
-                ->select('type')
+                ->select(['type'])
                 ->from('{{%elements}}')
                 ->where(['id' => $elementId])
                 ->scalar();
@@ -259,7 +259,7 @@ class Elements extends Component
     public function getElementUriForSite($elementId, $siteId)
     {
         return (new Query())
-            ->select('uri')
+            ->select(['uri'])
             ->from('{{%elements_i18n}}')
             ->where(['elementId' => $elementId, 'siteId' => $siteId])
             ->scalar();
@@ -276,7 +276,7 @@ class Elements extends Component
     public function getEnabledSiteIdsForElement($elementId)
     {
         return (new Query())
-            ->select('siteId')
+            ->select(['siteId'])
             ->from('{{%elements_i18n}}')
             ->where(['elementId' => $elementId, 'enabled' => 1])
             ->column();

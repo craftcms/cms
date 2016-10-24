@@ -17,7 +17,7 @@ class m150724_140822_adjust_quality_settings extends Migration
     public function safeUp()
     {
         $transforms = (new Query())
-            ->select('id, quality')
+            ->select(['id', 'quality'])
             ->from('{{%assettransforms}}')
             ->all();
 

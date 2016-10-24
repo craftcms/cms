@@ -346,7 +346,7 @@ class MigrationHelper
 
         // Get all of the rows
         $oldRows = (new Query())
-            ->select('id_old')
+            ->select(['id_old'])
             ->from($tableName)
             ->all($db);
 

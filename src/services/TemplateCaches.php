@@ -127,7 +127,7 @@ class TemplateCaches extends Component
         $this->deleteExpiredCachesIfOverdue();
 
         $query = (new Query())
-            ->select('body')
+            ->select(['body'])
             ->from(static::$_templateCachesTable)
             ->where([
                 'and',
@@ -391,7 +391,7 @@ class TemplateCaches extends Component
         $this->_deletedCachesByElementType[$elementType] = true;
 
         $cacheIds = (new Query())
-            ->select('cacheId')
+            ->select(['cacheId'])
             ->from(static::$_templateCacheQueriesTable)
             ->where(['type' => $elementType])
             ->column();
@@ -492,7 +492,7 @@ class TemplateCaches extends Component
         }
 
         $cacheIds = (new Query())
-            ->select('cacheId')
+            ->select(['cacheId'])
             ->distinct(true)
             ->from(static::$_templateCacheElementsTable)
             ->where(['elementId' => $elementId])

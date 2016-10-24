@@ -765,7 +765,7 @@ class Matrix extends Component
         if (!isset($this->_parentMatrixFields) || !array_key_exists($matrixField->id, $this->_parentMatrixFields)) {
             // Does this Matrix field belong to another one?
             $parentMatrixFieldId = (new Query())
-                ->select('fields.id')
+                ->select(['fields.id'])
                 ->from('{{%fields}} fields')
                 ->innerJoin('{{%matrixblocktypes}} blocktypes', '[[blocktypes.fieldId]] = [[fields.id]]')
                 ->innerJoin('{{%fieldlayoutfields}} fieldlayoutfields', '[[fieldlayoutfields.layoutId]] = [[blocktypes.fieldLayoutId]]')

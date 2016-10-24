@@ -117,7 +117,7 @@ class AssetQuery extends ElementQuery
         } else {
             $query = new Query();
             $this->volumeId = $query
-                ->select('id')
+                ->select(['id'])
                 ->from('{{%volumes}}')
                 ->where(Db::parseParam('handle', $value))
                 ->column();

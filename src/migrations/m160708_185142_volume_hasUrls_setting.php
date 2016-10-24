@@ -25,7 +25,7 @@ class m160708_185142_volume_hasUrls_setting extends Migration
 
         // Update all Volumes and move the setting from settings column to it's own field
         $volumes = (new Query())
-            ->select('id, settings')
+            ->select(['id', 'settings'])
             ->from('{{%volumes}}')
             ->all();
 

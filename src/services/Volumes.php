@@ -137,7 +137,7 @@ class Volumes extends Component
                 $this->_allVolumeIds = array_keys($this->_volumesById);
             } else {
                 $this->_allVolumeIds = (new Query())
-                    ->select('id')
+                    ->select(['id'])
                     ->from('{{%volumes}}')
                     ->column();
             }
@@ -406,9 +406,8 @@ class Volumes extends Component
             } else {
                 // Set the sort order
                 $maxSortOrder = (new Query())
-                    ->select('max(sortOrder)')
                     ->from('{{%volumes}}')
-                    ->scalar();
+                    ->max('[[sortOrder]]');
 
                 $volumeRecord->sortOrder = $maxSortOrder + 1;
             }

@@ -20,7 +20,7 @@ class m160829_000000_pending_user_content_cleanup extends Migration
     {
         // Find any orphaned entries.
         $ids = (new Query())
-            ->select('el.id')
+            ->select(['el.id'])
             ->from('{{%elements}} el')
             ->leftJoin('{{%entries}} en', '[[en.id]] = [[el.id]]')
             ->where([

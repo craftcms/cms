@@ -51,7 +51,7 @@ class LocalizeRelations extends Task
     public function getTotalSteps()
     {
         $this->_relations = (new Query())
-            ->select('id, sourceId, sourceSiteId, targetId, sortOrder')
+            ->select(['id', 'sourceId', 'sourceSiteId', 'targetId', 'sortOrder'])
             ->from('{{%relations}}')
             ->where([
                 'fieldId' => $this->fieldId,

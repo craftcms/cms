@@ -74,12 +74,12 @@ class m160807_144858_sites extends Migration
         // ---------------------------------------------------------------------
 
         $siteInfo = (new Query())
-            ->select('siteName, siteUrl')
+            ->select(['siteName', 'siteUrl'])
             ->from('{{%info}}')
             ->one();
 
         $locales = (new Query())
-            ->select('locale')
+            ->select(['locale'])
             ->from('{{%locales}}')
             ->orderBy(['sortOrder' => SORT_ASC])
             ->column();

@@ -598,7 +598,7 @@ class Fields extends Component
             $this->_allFieldHandlesByContext = [];
 
             $results = (new Query())
-                ->select('handle,context')
+                ->select(['handle', 'context'])
                 ->from('{{%fields}}')
                 ->all();
 
@@ -999,7 +999,7 @@ class Fields extends Component
                 'flf.layoutId',
                 'flf.tabId',
                 'flf.required',
-                'flf.sortOrder'
+                'flf.sortOrder',
             ])
             ->innerJoin('{{%fieldlayoutfields}} flf', '[[flf.fieldId]] = [[fields.id]]')
             ->innerJoin('{{%fieldlayouttabs}} flt', '[[flt.id]] = [[flf.tabId]]')

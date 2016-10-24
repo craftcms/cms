@@ -47,7 +47,7 @@ class ChartsController extends Controller
 
         // Prep the query
         $query = (new Query())
-            ->select('COUNT(*) as value')
+            ->select(['COUNT(*) as [[value]]'])
             ->from('{{%users}} users');
 
         if ($userGroupId) {

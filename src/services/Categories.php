@@ -95,7 +95,7 @@ class Categories extends Component
                 $this->_allGroupIds = array_keys($this->_categoryGroupsById);
             } else {
                 $this->_allGroupIds = (new Query())
-                    ->select('id')
+                    ->select(['id'])
                     ->from('{{%categorygroups}}')
                     ->column();
             }
@@ -561,7 +561,7 @@ class Categories extends Component
         try {
             // Delete the field layout
             $fieldLayoutId = (new Query())
-                ->select('fieldLayoutId')
+                ->select(['fieldLayoutId'])
                 ->from('{{%categorygroups}}')
                 ->where(['id' => $groupId])
                 ->scalar();
@@ -653,7 +653,7 @@ class Categories extends Component
 
         // Get the structure ID
         $structureId = (new Query())
-            ->select('categorygroups.structureId')
+            ->select(['categorygroups.structureId'])
             ->from('{{%categories}} categories')
             ->innerJoin('{{%categorygroups}} categorygroups', '[[categorygroups.id]] = [[categories.groupId]]')
             ->where(['categories.id' => $categoryId])

@@ -460,7 +460,7 @@ class MigrationManager extends Component
         // TODO: Remove after next breakpoint
         if (version_compare(Craft::$app->getInfo('version'), '3.0', '<')) {
             $query = (new Query())
-                ->select('version as name, applyTime')
+                ->select(['version as name', 'applyTime'])
                 ->from($this->migrationTable)
                 ->orderBy(['name' => SORT_DESC]);
 
@@ -474,7 +474,7 @@ class MigrationManager extends Component
         }
 
         $query = (new Query())
-            ->select('name, applyTime')
+            ->select(['name', 'applyTime'])
             ->from($this->migrationTable)
             ->orderBy(['name' => SORT_DESC])
             ->where(['type' => $this->type]);

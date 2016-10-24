@@ -86,7 +86,7 @@ class m160804_110002_userphotos_to_assets extends Migration
                 $usernameOrEmail = trim(StringHelper::replace($subfolder, $this->_basePath, ''), '/');
 
                 $user = (new Query())
-                    ->select('id, photo')
+                    ->select(['id', 'photo'])
                     ->from('{{%users}}')
                     ->where(['username' => $usernameOrEmail])
                     ->one();
@@ -137,7 +137,7 @@ class m160804_110002_userphotos_to_assets extends Migration
         $counter = 0;
 
         $existingVolume = (new Query())
-            ->select('id')
+            ->select(['id'])
             ->from('{{%volumes}}')
             ->where(['handle' => $handle])
             ->one();
@@ -146,7 +146,7 @@ class m160804_110002_userphotos_to_assets extends Migration
             $handle = 'userPhotos'.++$counter;
             $name = 'User Photos '.$counter;
             $existingVolume = (new Query())
-                ->select('id')
+                ->select(['id'])
                 ->from('{{%volumes}}')
                 ->where([
                     'or',
@@ -158,9 +158,8 @@ class m160804_110002_userphotos_to_assets extends Migration
 
         // Set the sort order
         $maxSortOrder = (new Query())
-            ->select('max(sortOrder)')
             ->from('{{%volumes}}')
-            ->scalar();
+            ->max('[[sortOrder]]');
 
         $volumeData = [
             'type' => 'craft\app\volumes\Local',
@@ -222,12 +221,12 @@ class m160804_110002_userphotos_to_assets extends Migration
         $db = Craft::$app->getDb();
 
         $locales = (new Query())
-            ->select('locale')
+            ->select(['locale'])
             ->from('{{%locales}}')
             ->column();
 
         $folderId = (new Query())
-            ->select('id')
+            ->select(['id'])
             ->from('{{%volumefolders}}')
             ->where([
                 'parentId' => null,
@@ -241,7 +240,7 @@ class m160804_110002_userphotos_to_assets extends Migration
             $filePath = $this->_basePath.'/'.$user['photo'];
 
             $assetExists = (new Query())
-                ->select('assets.id')
+                ->select(['assets.id'])
                 ->from('{{%assets}} assets')
                 ->innerJoin('{{%volumefolders}} volumefolders', '[[volumefolders.id]] = [[assets.folderId]]')
                 ->where([

@@ -193,7 +193,7 @@ class UserPermissions extends Component
     {
         if (!isset($this->_permissionsByUserId[$groupId])) {
             $groupPermissions = (new Query())
-                ->select('p.name')
+                ->select(['p.name'])
                 ->from('{{%userpermissions}} p')
                 ->innerJoin('{{%userpermissions_usergroups}} p_g', '[[p_g.permissionId]] = [[p.id]]')
                 ->where(['p_g.groupId' => $groupId])
@@ -215,7 +215,7 @@ class UserPermissions extends Component
     public function getGroupPermissionsByUserId($userId)
     {
         return (new Query())
-            ->select('p.name')
+            ->select(['p.name'])
             ->from('{{%userpermissions}} p')
             ->innerJoin('{{%userpermissions_usergroups}} p_g', '[[p_g.permissionId]] = [[p.id]]')
             ->innerJoin('{{%usergroups_users}} g_u', '[[g_u.groupId]] = [[p_g.groupId]]')
@@ -289,7 +289,7 @@ class UserPermissions extends Component
             $groupPermissions = $this->getGroupPermissionsByUserId($userId);
 
             $userPermissions = (new Query())
-                ->select('p.name')
+                ->select(['p.name'])
                 ->from('{{%userpermissions}} p')
                 ->innerJoin('{{%userpermissions_users}} p_u', '[[p_u.permissionId]] = [[p.id]]')
                 ->where(['p_u.userId' => $userId])

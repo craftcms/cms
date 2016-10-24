@@ -22,7 +22,7 @@ class m151002_095935_volume_cache_settings extends Migration
     {
         // Update how cache settings are stored for S3 and Google Cloud Volumes.
         $volumes = (new Query())
-            ->select('id, settings')
+            ->select(['id', 'settings'])
             ->from('{{%volumes}}')
             ->where([
                 'or',

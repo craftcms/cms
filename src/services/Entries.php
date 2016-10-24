@@ -45,7 +45,7 @@ class Entries extends Component
 
         // Get the structure ID
         $structureId = (new Query())
-            ->select('sections.structureId')
+            ->select(['sections.structureId'])
             ->from('{{%entries}} entries')
             ->innerJoin('{{%sections}} sections', '[[sections.id]] = [[entries.sectionId]]')
             ->where(['entries.id' => $entryId])

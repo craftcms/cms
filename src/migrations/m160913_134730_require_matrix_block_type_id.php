@@ -19,7 +19,7 @@ class m160913_134730_require_matrix_block_type_id extends Migration
     {
         // Are there any Matrix blocks that don't have a type?
         $typelessBlockIds = (new Query())
-            ->select('id')
+            ->select(['id'])
             ->from('{{%matrixblocks}}')
             >where(['typeId' => null])
             ->column();

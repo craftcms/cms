@@ -1301,7 +1301,7 @@ class ElementQuery extends Query implements ElementQueryInterface, Arrayable, Co
         $this->query->addSelect(['contentId' => 'content.id']);
 
         if ($class::hasTitles()) {
-            $this->query->addSelect('content.title');
+            $this->query->addSelect(['content.title']);
         }
 
         if (is_array($this->customFields)) {
@@ -1312,7 +1312,7 @@ class ElementQuery extends Query implements ElementQueryInterface, Arrayable, Co
             foreach ($this->customFields as $field) {
                 /** @var Field $field */
                 if ($field->hasContentColumn()) {
-                    $this->query->addSelect('content.'.$this->_getFieldContentColumnName($field));
+                    $this->query->addSelect(['content.'.$this->_getFieldContentColumnName($field)]);
                 }
 
                 $handle = $field->handle;

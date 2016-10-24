@@ -93,7 +93,7 @@ class CategoryQuery extends ElementQuery
         } else {
             $query = new Query();
             $this->groupId = $query
-                ->select('id')
+                ->select(['id'])
                 ->from('{{%categorygroups}}')
                 ->where(Db::parseParam('handle', $value))
                 ->column();
@@ -170,7 +170,7 @@ class CategoryQuery extends ElementQuery
             if ($this->structureId === null && (!is_array($this->groupId) || count($this->groupId) === 1)) {
                 $query = new Query();
                 $this->structureId = $query
-                    ->select('structureId')
+                    ->select(['structureId'])
                     ->from('{{%categorygroups}}')
                     ->where(Db::parseParam('id', $this->groupId))
                     ->scalar();

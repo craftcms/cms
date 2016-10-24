@@ -95,7 +95,7 @@ class Deprecator extends Component
 
             // Do we already have this one logged?
             $existingId = (new Query())
-                ->select('id')
+                ->select(['id'])
                 ->from(static::$_tableName)
                 ->where([
                     'key' => $log->key,

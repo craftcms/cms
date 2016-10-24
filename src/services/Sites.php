@@ -407,9 +407,8 @@ class Sites extends Component
             if (Craft::$app->getIsInstalled()) {
                 // Get the next biggest sort order
                 $maxSortOrder = (new Query())
-                    ->select('max(sortOrder)')
                     ->from('{{%sites}}')
-                    ->scalar();
+                    ->max('[[sortOrder]]');
             }
 
             $siteRecord->sortOrder = $maxSortOrder ? $maxSortOrder + 1 : 1;
@@ -592,7 +591,7 @@ class Sites extends Component
         // TODO: Move this code into entries module, etc.
         // Get the section IDs that are enabled for this site
         $sectionIds = (new Query())
-            ->select('sectionId')
+            ->select(['sectionId'])
             ->from('{{%sections_i18n}}')
             ->where(['siteId' => $site->id])
             ->column();
@@ -621,7 +620,7 @@ class Sites extends Component
 
                 // Get all of the entry IDs in those sections
                 $entryIds = (new Query())
-                    ->select('id')
+                    ->select(['id'])
                     ->from('{{%entries}}')
                     ->where(['sectionId' => $soloSectionIds])
                     ->column();
@@ -672,7 +671,7 @@ class Sites extends Component
 
                     // All the Matrix tables
                     $blockIds = (new Query())
-                        ->select('id')
+                        ->select(['id'])
                         ->from('{{%matrixblocks}}')
                         ->where(['ownerId' => $entryIds])
                         ->column();
@@ -856,7 +855,7 @@ class Sites extends Component
     private function _createSiteQuery()
     {
         return (new Query())
-            ->select('id, name, handle, language, hasUrls, baseUrl')
+            ->select(['id', 'name', 'handle', 'language', 'hasUrls', 'baseUrl'])
             ->from('{{%sites}}')
             ->orderBy(['sortOrder' => SORT_ASC]);
     }
@@ -886,7 +885,7 @@ class Sites extends Component
 
         if ($nonLocalizedElementTypes) {
             $elementIds = (new Query())
-                ->select('id')
+                ->select(['id'])
                 ->from('{{%elements}}')
                 ->where(['type' => $nonLocalizedElementTypes])
                 ->column();

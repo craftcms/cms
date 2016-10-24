@@ -703,7 +703,7 @@ class Search extends Component
     {
         // FULLTEXT indexes are not used in queries with subselects, so let's do this as its own query.
         $query = (new Query())
-            ->select('elementId')
+            ->select(['elementId'])
             ->from('{{%searchindex}}')
             ->where($where);
 

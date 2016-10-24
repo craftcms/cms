@@ -295,7 +295,7 @@ class Users extends Component
         // TODO: Remove try/catch after next breakpoint
         try {
             $preferences = (new Query())
-                ->select('preferences')
+                ->select(['preferences'])
                 ->from('{{%userpreferences}}')
                 ->where(['userId' => $userId])
                 ->scalar();
@@ -931,7 +931,7 @@ class Users extends Component
             $pastTime = $expire->sub($interval);
 
             $userIds = (new Query())
-                ->select('id')
+                ->select(['id'])
                 ->from('{{%users}}')
                 ->where([
                     'and',

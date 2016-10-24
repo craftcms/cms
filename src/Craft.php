@@ -143,7 +143,7 @@ class Craft extends Yii
 
             // Get the field handles
             $fieldHandles = (new Query())
-                ->select('handle')
+                ->select(['handle'])
                 ->distinct(true)
                 ->from('{{%fields}}')
                 ->column();

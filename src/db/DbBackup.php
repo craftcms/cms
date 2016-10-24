@@ -458,7 +458,7 @@ class DbBackup
     private function _getFixedSiteName() {
         if (version_compare(Craft::$app->getInfo('version'), '3.0', '<') || Craft::$app->getInfo('build') < 2933) {
             return (new Query())
-                ->select('siteName')
+                ->select(['siteName'])
                 ->from('{{%info}}')
                 ->column()[0];
         } else {
