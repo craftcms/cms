@@ -122,7 +122,7 @@ abstract class Field extends SavableComponent implements FieldInterface
         $rules = [
             [['name'], 'string', 'max' => 255],
             [['handle'], 'string', 'max' => $maxHandleLength],
-            [['name', 'handle', 'type', 'translationMethod'], 'required'],
+            [['name', 'handle', 'translationMethod'], 'required'],
             [['groupId'], 'number', 'integerOnly' => true],
             [
                 ['translationMethod'],
