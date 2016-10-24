@@ -139,7 +139,7 @@ return [
                 ];
                 break;
             case 'db':
-                $config =[
+                $config = [
                     'class' => yii\caching\DbCache::class,
                     'gcProbability' => $configService->get('gcProbability', Config::CATEGORY_DBCACHE),
                     'cacheTable' => '{{%'.$configService->get('cacheTableName', Config::CATEGORY_DBCACHE).'}}',
@@ -183,19 +183,31 @@ return [
         $driver = $configService->get('driver', Config::CATEGORY_DB);
         $dsn = $configService->get('dsn', Config::CATEGORY_DB);
 
-        if ($dsn === '') {
+        // Make sure it's a supported driver
+        if (!in_array($driver, [
+            Connection::DRIVER_MYSQL,
+            Connection::DRIVER_PGSQL
+        ])
+        ) {
+            throw new Exception('Unsupported connection type: '.$driver);
+        }
 
+        if ($dsn === '') {
             if ($driver == Connection::DRIVER_MYSQL && !empty($unixSocket)) {
                 $dsn = $driver.':unix_socket='.strtolower($unixSocket).';dbname='.$database.';';
             } else {
                 $server = $configService->get('server', Config::CATEGORY_DB);
                 $port = $configService->get('port', Config::CATEGORY_DB);
 
-                if ($port === '' && $driver == Connection::DRIVER_MYSQL) {
-                    $port = 3306;
-                } else {
-                    // PostgreSQL
-                    $port = 5432;
+                if ($port === '') {
+                    switch ($driver) {
+                        case Connection::DRIVER_MYSQL:
+                            $port = 3306;
+                            break;
+                        case Connection::DRIVER_PGSQL:
+                            $port = 5432;
+                            break;
+                    }
                 }
 
                 $dsn = $driver.':host='.strtolower($server).

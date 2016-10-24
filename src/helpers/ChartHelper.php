@@ -12,6 +12,7 @@ use craft\app\db\Connection;
 use craft\app\db\Query;
 use craft\app\dates\DateTime;
 use craft\app\services\Config;
+use yii\base\Exception;
 
 
 /**
@@ -66,76 +67,97 @@ class ChartHelper
             $intervalUnit = self::getRunChartIntervalUnit($startDate, $endDate);
         }
 
-        if ($databaseType == Connection::DRIVER_MYSQL) {
-            $yearSql = "YEAR([[{$dateColumn}]])";
-            $monthSql = "MONTH([[{$dateColumn}]])";
-            $daySql = "DAY([[{$dateColumn}]])";
-            $hourSql = "HOUR([[{$dateColumn}]])";
-        } else {
-            // PostgreSQL
-            $yearSql = "EXTRACT(YEAR FROM [[{$dateColumn}]])";
-            $monthSql = "EXTRACT(MONTH FROM [[{$dateColumn}]])";
-            $daySql = "EXTRACT(DAY FROM [[{$dateColumn}]])";
-            $hourSql = "EXTRACT(HOUR FROM [[{$dateColumn}]])";
+        switch ($databaseType) {
+            case Connection::DRIVER_MYSQL:
+                $yearSql = "YEAR([[{$dateColumn}]])";
+                $monthSql = "MONTH([[{$dateColumn}]])";
+                $daySql = "DAY([[{$dateColumn}]])";
+                $hourSql = "HOUR([[{$dateColumn}]])";
+                break;
+            case Connection::DRIVER_PGSQL:
+                $yearSql = "EXTRACT(YEAR FROM [[{$dateColumn}]])";
+                $monthSql = "EXTRACT(MONTH FROM [[{$dateColumn}]])";
+                $daySql = "EXTRACT(DAY FROM [[{$dateColumn}]])";
+                $hourSql = "EXTRACT(HOUR FROM [[{$dateColumn}]])";
+                break;
+            default:
+                throw new Exception('Unsupported connection type: '.$databaseType);
         }
 
         switch ($intervalUnit) {
-            case 'year': {
-                if ($databaseType == Connection::DRIVER_MYSQL) {
-                    $sqlDateFormat = '%Y-01-01';
-                } else {
-                    // PostgreSQL
-                    $sqlDateFormat = 'YYYY-01-01';
+            case 'year':
+                switch ($databaseType) {
+                    case Connection::DRIVER_MYSQL:
+                        $sqlDateFormat = '%Y-01-01';
+                        break;
+                    case Connection::DRIVER_PGSQL:
+                        $sqlDateFormat = 'YYYY-01-01';
+                        break;
+                    default:
+                        throw new Exception('Unsupported connection type: '.$databaseType);
                 }
                 $phpDateFormat = 'Y-01-01';
                 $sqlGroup = [$yearSql];
                 $cursorDate = new DateTime($startDate->format('Y-01-01'), $craftTimezone);
                 break;
-            }
-            case 'month': {
-                if ($databaseType == Connection::DRIVER_MYSQL) {
-                    $sqlDateFormat = '%Y-%m-01';
-                } else {
-                    // PostgreSQL
-                    $sqlDateFormat = 'YYYY-MM-01';
+            case 'month':
+                switch ($databaseType) {
+                    case Connection::DRIVER_MYSQL:
+                        $sqlDateFormat = '%Y-%m-01';
+                        break;
+                    case Connection::DRIVER_PGSQL:
+                        $sqlDateFormat = 'YYYY-MM-01';
+                        break;
+                    default:
+                        throw new Exception('Unsupported connection type: '.$databaseType);
                 }
                 $phpDateFormat = 'Y-m-01';
                 $sqlGroup = [$yearSql, $monthSql];
                 $cursorDate = new DateTime($startDate->format('Y-m-01'), $craftTimezone);
                 break;
-            }
-            case 'day': {
-                if ($databaseType == Connection::DRIVER_MYSQL) {
-                    $sqlDateFormat = '%Y-%m-%d';
-                } else {
-                    // PostgreSQL
-                    $sqlDateFormat = 'YYYY-MM-DD';
+            case 'day':
+                switch ($databaseType) {
+                    case Connection::DRIVER_MYSQL:
+                        $sqlDateFormat = '%Y-%m-%d';
+                        break;
+                    case Connection::DRIVER_PGSQL:
+                        $sqlDateFormat = 'YYYY-MM-DD';
+                        break;
+                    default:
+                        throw new Exception('Unsupported connection type: '.$databaseType);
                 }
                 $phpDateFormat = 'Y-m-d';
                 $sqlGroup = [$yearSql, $monthSql, $daySql];
                 $cursorDate = new DateTime($startDate->format('Y-m-d'), $craftTimezone);
                 break;
-            }
-            case 'hour': {
-                if ($databaseType == Connection::DRIVER_MYSQL) {
-                    $sqlDateFormat = '%Y-%m-%d %H:00:00';
-                } else {
-                    // PostgreSQL
-                    $sqlDateFormat = 'YYYY-MM-DD HH24:00:00';
+            case 'hour':
+                switch ($databaseType) {
+                    case Connection::DRIVER_MYSQL:
+                        $sqlDateFormat = '%Y-%m-%d %H:00:00';
+                        break;
+                    case Connection::DRIVER_PGSQL:
+                        $sqlDateFormat = 'YYYY-MM-DD HH24:00:00';
+                        break;
+                    default:
+                        throw new Exception('Unsupported connection type: '.$databaseType);
                 }
-
                 $phpDateFormat = 'Y-m-d H:00:00';
                 $sqlGroup = [$yearSql, $monthSql, $daySql, $hourSql];
                 $cursorDate = new DateTime($startDate->format('Y-m-d'), $craftTimezone);
                 break;
-            }
+            default:
+                throw new Exception('Invalid interval unit: '.$intervalUnit);
         }
 
-        if ($databaseType == Connection::DRIVER_MYSQL) {
-            $select = "DATE_FORMAT([[{$dateColumn}]],'{$sqlDateFormat}') AS date";
-        } else {
-            // PostgreSQL
-            $select = "to_char([[{$dateColumn}]], '{$sqlDateFormat}') AS date";
+        switch ($databaseType) {
+            case Connection::DRIVER_MYSQL:
+                $select = "DATE_FORMAT([[{$dateColumn}]], '{$sqlDateFormat}') AS date";
+                break;
+            case Connection::DRIVER_PGSQL:
+                $select = "to_char([[{$dateColumn}]], '{$sqlDateFormat}') AS date";
+                break;
+            default:
+                throw new Exception('Unsupported connection type: '.$databaseType);
         }
 
         // Execute the query

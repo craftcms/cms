@@ -13,34 +13,39 @@ $requirements = array(
 );
 
 if ($this->checkDatabaseCreds()) {
-    if ($this->dbCreds['driver'] == 'mysql') {
-        if (extension_loaded('pdo') && extension_loaded('pdo_mysql')) {
-            $requirements[] = [
-                'name' => "MySQL {$this->requiredMySqlVersion}+",
-                'mandatory' => true,
-                'condition' => $this->checkDatabaseServerVersion(),
-                'memo' => $this->dbConnectionError ? $this->dbConnectionError : 'MySQL '.$this->requiredMySqlVersion.' or higher is required to run Craft CMS.',
-            ];
-
-            // If we know we already can't connect to the database, don't both running this one so we don't get double error messages.
-            if (!$this->dbConnectionError) {
+    switch ($this->dbCreds['driver']) {
+        case 'mysql':
+            if (extension_loaded('pdo') && extension_loaded('pdo_mysql')) {
                 $requirements[] = [
-                    'name' => 'MySQL InnoDB support',
+                    'name' => "MySQL {$this->requiredMySqlVersion}+",
                     'mandatory' => true,
-                    'condition' => $this->isInnoDbSupported(),
-                    'memo' => $this->dbConnectionError ? $this->dbConnectionError : 'Craft CMS requires the MySQL InnoDB storage engine to run.',
+                    'condition' => $this->checkDatabaseServerVersion(),
+                    'memo' => $this->dbConnectionError ? $this->dbConnectionError : 'MySQL '.$this->requiredMySqlVersion.' or higher is required to run Craft CMS.',
+                ];
+
+                // If we know we already can't connect to the database, don't both running this one so we don't get double error messages.
+                if (!$this->dbConnectionError) {
+                    $requirements[] = [
+                        'name' => 'MySQL InnoDB support',
+                        'mandatory' => true,
+                        'condition' => $this->isInnoDbSupported(),
+                        'memo' => $this->dbConnectionError ? $this->dbConnectionError : 'Craft CMS requires the MySQL InnoDB storage engine to run.',
+                    ];
+                }
+            }
+            break;
+        case 'pgsql':
+            if (extension_loaded('pdo') && extension_loaded('pdo_pgsql')) {
+                $requirements[] = [
+                    'name' => "PostgreSQL {$this->requiredPgSqlVersion}+",
+                    'mandatory' => true,
+                    'condition' => $this->checkDatabaseServerVersion(),
+                    'memo' => $this->dbConnectionError ? $this->dbConnectionError : 'PostgresSQL '.$this->requiredPgSqlVersion.' or higher is required to run Craft CMS.',
                 ];
             }
-        }
-    } else {
-        if (extension_loaded('pdo') && extension_loaded('pdo_pgsql')) {
-            $requirements[] = [
-                'name' => "PostgreSQL {$this->requiredPgSqlVersion}+",
-                'mandatory' => true,
-                'condition' => $this->checkDatabaseServerVersion(),
-                'memo' => $this->dbConnectionError ? $this->dbConnectionError : 'PostgresSQL '.$this->requiredPgSqlVersion.' or higher is required to run Craft CMS.',
-            ];
-        }
+            break;
+        default:
+            throw new Exception('Unsupported connection type: '.$this->dbCreds['driver']);
     }
 }
 
@@ -54,20 +59,25 @@ if ($this->isCraftRunning()) {
     );
 }
 
-if ($this->dbCreds['driver'] == 'mysql') {
-    $requirements[] = array(
-        'name' => 'PDO MySQL extension',
-        'mandatory' => true,
-        'condition' => extension_loaded('pdo_mysql'),
-        'memo' => 'The <http://php.net/manual/en/ref.pdo-mysql.php>PDO MySQL</a> extension is required.'
-    );
-} else {
-    $requirements[] = array(
-        'name' => 'PDO PostgreSQL extension',
-        'mandatory' => true,
-        'condition' => extension_loaded('pdo_pgsql'),
-        'memo' => 'The <https://secure.php.net/manual/en/ref.pdo-pgsql.php>PDO PostgreSQL</a> extension is required.'
-    );
+switch ($this->dbCreds['driver']) {
+    case 'mysql':
+        $requirements[] = array(
+            'name' => 'PDO MySQL extension',
+            'mandatory' => true,
+            'condition' => extension_loaded('pdo_mysql'),
+            'memo' => 'The <http://php.net/manual/en/ref.pdo-mysql.php>PDO MySQL</a> extension is required.'
+        );
+        break;
+    case 'pgsql':
+        $requirements[] = array(
+            'name' => 'PDO PostgreSQL extension',
+            'mandatory' => true,
+            'condition' => extension_loaded('pdo_pgsql'),
+            'memo' => 'The <https://secure.php.net/manual/en/ref.pdo-pgsql.php>PDO PostgreSQL</a> extension is required.'
+        );
+        break;
+    default:
+        throw new Exception('Unsupported connection type: '.$this->dbCreds['driver']);
 }
 
 $requirements = array_merge($requirements, array(

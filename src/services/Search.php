@@ -269,19 +269,21 @@ class Search extends Component
 
         $maxDbColumnSize = Db::getTextualColumnStorageCapacity(ColumnType::Text);
 
-        // Give ourselves 10% wiggle room.
-        $maxDbColumnSize = ceil($maxDbColumnSize * 0.9);
+        if ($maxDbColumnSize) {
+            // Give ourselves 10% wiggle room.
+            $maxDbColumnSize = ceil($maxDbColumnSize * 0.9);
 
-        if ($cleanKeywordsLength > $maxDbColumnSize) {
-            // Time to truncate.
-            $cleanKeywords = mb_strcut($cleanKeywords, 0, $maxDbColumnSize);
+            if ($cleanKeywordsLength > $maxDbColumnSize) {
+                // Time to truncate.
+                $cleanKeywords = mb_strcut($cleanKeywords, 0, $maxDbColumnSize);
 
-            // Make sure we don't cut off a word in the middle.
-            if ($cleanKeywords[mb_strlen($cleanKeywords) - 1] !== ' ') {
-                $position = mb_strrpos($cleanKeywords, ' ');
+                // Make sure we don't cut off a word in the middle.
+                if ($cleanKeywords[mb_strlen($cleanKeywords) - 1] !== ' ') {
+                    $position = mb_strrpos($cleanKeywords, ' ');
 
-                if ($position) {
-                    $cleanKeywords = mb_substr($cleanKeywords, 0, $position + 1);
+                    if ($position) {
+                        $cleanKeywords = mb_substr($cleanKeywords, 0, $position + 1);
+                    }
                 }
             }
         }

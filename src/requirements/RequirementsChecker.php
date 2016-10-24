@@ -505,9 +505,18 @@ class RequirementsChecker
     function checkDatabaseServerVersion()
     {
         if (($conn = $this->getDbConnection()) !== false) {
-            $requiredVersion = $this->dbCreds['driver'] == 'mysql' ? $this->requiredMySqlVersion : $this->requiredPgSqlVersion;
+            switch ($this->dbCreds['driver']) {
+                case 'mysql':
+                    $requiredVersion = $this->requiredMySqlVersion;
+                    break;
+                case 'pgsql':
+                    $requiredVersion = $this->requiredPgSqlVersion;
+                    break;
+                default:
+                    throw new Exception('Unsupported connection type: '.$this->dbCreds['driver']);
+            }
 
-            return version_compare($conn->getAttribute(PDO::ATTR_SERVER_VERSION), $requiredVersion, ">=");
+            return version_compare($conn->getAttribute(PDO::ATTR_SERVER_VERSION), $requiredVersion, '>=');
         }
 
         return false;

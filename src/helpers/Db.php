@@ -171,69 +171,81 @@ class Db
     /**
      * Returns the maximum number of bytes a given textual column type can hold for a given database.
      *
-     * @param string $columnType The textual column type to check.
-     * @param string $database   The type of database to use.
+     * @param string     $columnType The textual column type to check
+     * @param Connection $db         The database connection
      *
-     * @return integer The storage capacity of the column type in bytes.
+     * @return integer|null The storage capacity of the column type in bytes. If unlimited, null is returned.
      * @throws Exception if given an unknown column type/database combination
      */
-    public static function getTextualColumnStorageCapacity($columnType, $database = 'mysql')
+    public static function getTextualColumnStorageCapacity($columnType, $db = null)
     {
-        switch ($database) {
-            case 'mysql': {
-                switch ($columnType) {
-                    case ColumnType::TinyText: {
-                        // 255 bytes
-                        return 255;
-                    }
-
-                    case ColumnType::Text: {
-                        // 65k
-                        return 65535;
-                    }
-
-                    case ColumnType::MediumText: {
-                        // 16MB
-                        return 16777215;
-                    }
-
-                    case ColumnType::LongText: {
-                        // 4GB
-                        return 4294967295;
-                    }
-                }
-
-                break;
-            }
+        if ($db === null) {
+            $db = Craft::$app->getDb();
         }
 
-        throw new Exception('Unknown column type');
+        switch ($db->getDriverName()) {
+            case Connection::DRIVER_MYSQL:
+                switch ($columnType) {
+                    case ColumnType::TinyText:
+                        // 255 bytes
+                        return 255;
+                    case ColumnType::Text:
+                        // 65k
+                        return 65535;
+                    case ColumnType::MediumText:
+                        // 16MB
+                        return 16777215;
+                    case ColumnType::LongText:
+                        // 4GB
+                        return 4294967295;
+                    default:
+                        throw new Exception('Unknown textual column type: '.$columnType);
+                }
+                break;
+            case Connection::DRIVER_PGSQL:
+                return null;
+            default:
+                throw new Exception('Unsupported connection type: '.$db->getDriverName());
+        }
     }
 
     /**
      * Given a length of a piece of content, returns the underlying database column type to use for saving.
      *
-     * @param $contentLength
+     * @param            $contentLength
+     * @param Connection $db The database connection
      *
      * @return string
+     * @throws Exception if using an unsupported connection type
      */
-    public static function getTextualColumnTypeByContentLength($contentLength)
+    public static function getTextualColumnTypeByContentLength($contentLength, $db = null)
     {
-        if ($contentLength <= static::getTextualColumnStorageCapacity(ColumnType::TinyText)) {
-            return Schema::TYPE_STRING;
+        if ($db === null) {
+            $db = Craft::$app->getDb();
         }
 
-        if ($contentLength <= static::getTextualColumnStorageCapacity(ColumnType::Text)) {
-            return Schema::TYPE_TEXT;
-        }
+        switch ($db->getDriverName()) {
+            case Connection::DRIVER_MYSQL:
+                if ($contentLength <= static::getTextualColumnStorageCapacity(ColumnType::TinyText)) {
+                    return Schema::TYPE_STRING;
+                }
 
-        if ($contentLength <= static::getTextualColumnStorageCapacity(ColumnType::MediumText)) {
-            // Yii doesn't support 'mediumtext' so we use our own.
-            return ColumnType::MediumText;
-        }
+                if ($contentLength <= static::getTextualColumnStorageCapacity(ColumnType::Text)) {
+                    return Schema::TYPE_TEXT;
+                }
 
-        // Yii doesn't support 'longtext' so we use our own.
-        return ColumnType::LongText;
+                if ($contentLength <= static::getTextualColumnStorageCapacity(ColumnType::MediumText)) {
+                    // Yii doesn't support 'mediumtext' so we use our own.
+                    return ColumnType::MediumText;
+                }
+
+                // Yii doesn't support 'longtext' so we use our own.
+                return ColumnType::LongText;
+            case Connection::DRIVER_PGSQL:
+                return Schema::TYPE_TEXT;
+            default:
+                throw new Exception('Unsupported connection type: '.$db->getDriverName());
+        }
     }
 
     /**
@@ -265,8 +277,8 @@ class Db
      * Values can also be set to either `':empty:'` or `':notempty:'` if you want to search for empty or non-empty
      * database values. (An “empty” value is either NULL or an empty string of text).
      *
-     * @param string       $column  The database column that the param is targeting.
-     * @param string|array $value   The param value(s).
+     * @param string       $column The database column that the param is targeting.
+     * @param string|array $value  The param value(s).
      *
      * @return mixed
      */
@@ -403,7 +415,7 @@ class Db
     /**
      * Returns whether a given DB connection’s schema supports a column type.
      *
-     * @param string $type
+     * @param string     $type
      * @param Connection $db
      *
      * @return boolean

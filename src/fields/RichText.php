@@ -242,10 +242,14 @@ class RichText extends Field
 
         // Set the max size based on the column's storage capacity (with a little wiggle room)
         $max = Db::getTextualColumnStorageCapacity($this->columnType);
-        $max = ceil($max * 0.9);
+
+        if ($max === null) {
+            // null means unlimited, so no need to validate this
+            return;
+        }
 
         $validator = new StringValidator([
-            'max' => $max,
+            'max' => ceil($max * 0.9),
         ]);
 
         if (!$validator->validate($value->getRawContent(), $error)) {
