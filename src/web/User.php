@@ -415,19 +415,21 @@ class User extends \yii\web\User
         if ($value !== null) {
             $data = json_decode($value, true);
 
-            if (count($data) === 4 && isset($data[0], $data[1], $data[2], $data[3])) {
-                $authKey = $data[1];
+            if (is_array($data) && isset($data[2])) {
+                $authData = UserElement::getAuthData($data[1]);
 
-                // TODO: this can't be right (params don't match conditions)
-                Craft::$app->getDb()->createCommand()
-                    ->delete(
-                        '{{%sessions}}',
-                        ['and', 'userId=:userId', 'uid=:uid'],
-                        [
-                            'userId' => $identity->id,
-                            'token' => $authKey
-                        ])
-                    ->execute();
+                if ($authData) {
+                    $tokenUid = $authData[1];
+
+                    Craft::$app->getDb()->createCommand()
+                        ->delete(
+                            '{{%sessions}}',
+                            [
+                                'userId' => $identity->id,
+                                'uid' => $tokenUid
+                            ])
+                        ->execute();
+                }
             }
         }
 
