@@ -1270,41 +1270,30 @@ class Assets extends Component
      */
     private function _applyFolderConditions($query, FolderCriteria $criteria)
     {
-        $whereConditions = [];
-
         if ($criteria->id) {
-            $whereConditions[] = Db::parseParam('id', $criteria->id);
+            $query->andWhere(Db::parseParam('id', $criteria->id));
         }
 
         if ($criteria->volumeId) {
-            $whereConditions[] = Db::parseParam('volumeId', $criteria->volumeId);
+            $query->andWhere(Db::parseParam('volumeId', $criteria->volumeId));
         }
 
         if ($criteria->parentId) {
-            $whereConditions[] = Db::parseParam('parentId', $criteria->parentId);
+            $query->andWhere(Db::parseParam('parentId', $criteria->parentId));
         }
 
         if ($criteria->name) {
-            $whereConditions[] = Db::parseParam('name', $criteria->name);
+            $query->andWhere(Db::parseParam('name', $criteria->name));
         }
 
         if (!is_null($criteria->path)) {
-            // This folder has a comma in it.
+            // Does the path have a comma in it?
             if (strpos($criteria->path, ',') !== false) {
                 // Escape the comma.
-                $condition = Db::parseParam('path', str_replace(',', '\,', $criteria->path));
+                $query->andWhere(Db::parseParam('path', str_replace(',', '\,', $criteria->path)));
             } else {
-                $condition = Db::parseParam('path', $criteria->path);
+                $query->andWhere(Db::parseParam('path', $criteria->path));
             }
-
-            $whereConditions[] = $condition;
-        }
-
-        if (count($whereConditions) == 1) {
-            $query->where($whereConditions[0]);
-        } else {
-            array_unshift($whereConditions, 'and');
-            $query->where($whereConditions);
         }
     }
 }

@@ -24,8 +24,11 @@ class m151002_095935_volume_cache_settings extends Migration
         $volumes = (new Query())
             ->select('id, settings')
             ->from('{{%volumes}}')
-            ->where(['like', 'type', '%AwsS3', false])
-            ->orWhere(['like', 'type', '%GoogleCloud', false])
+            ->where([
+                'or',
+                ['like', 'type', '%AwsS3', false],
+                ['like', 'type', '%GoogleCloud', false]
+            ])
             ->all();
 
         foreach ($volumes as $volume) {

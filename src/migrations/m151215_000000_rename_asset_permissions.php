@@ -19,7 +19,7 @@ class m151215_000000_rename_asset_permissions extends Migration
         $permissions = (new Query())
             ->select('id, name')
             ->from('{{%userpermissions}}')
-            ->where(['like', 'name', '%volume%', false])
+            ->where(['like', 'name', 'volume'])
             ->all();
 
         foreach ($permissions as $permission) {

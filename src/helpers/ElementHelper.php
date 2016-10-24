@@ -100,17 +100,12 @@ class ElementHelper
 
         $uniqueUriConditions = [
             'and',
-            'siteId = :siteId',
-            'uri = :uri'
-        ];
-
-        $uniqueUriParams = [
-            ':siteId' => $element->siteId
+            ['siteId' => $element->siteId],
+            '[[uri]]=:uri'
         ];
 
         if ($element->id) {
-            $uniqueUriConditions[] = 'elementId != :elementId';
-            $uniqueUriParams[':elementId'] = $element->id;
+            $uniqueUriConditions[] = ['not', ['elementId' => $element->id]];
         }
 
         $slugWordSeparator = Craft::$app->getConfig()->get('slugWordSeparator');
@@ -151,11 +146,9 @@ class ElementHelper
                 }
             }
 
-            $uniqueUriParams[':uri'] = $testUri;
-
             $totalElements = (new Query())
                 ->from('{{%elements_i18n}}')
-                ->where($uniqueUriConditions, $uniqueUriParams)
+                ->where($uniqueUriConditions, [':uri' => $testUri])
                 ->count('id');
 
             if ($totalElements == 0) {

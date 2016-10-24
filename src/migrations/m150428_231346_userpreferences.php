@@ -102,9 +102,11 @@ class m150428_231346_userpreferences extends Migration
             ->select(['id', 'preferredLocale', 'weekStartDay'])
             ->from($this->_usersTable)
             ->where([
-                'or',
-                'preferredLocale is not null',
-                'weekStartDay != \'0\''
+                'not',
+                [
+                    'preferredLocale' => null,
+                    'weekStartDay' => '0'
+                ]
             ])
             ->all($this->db);
 

@@ -311,7 +311,7 @@ class AssetTransforms extends Component
 
         // Get the index conditions
         $transformsByFingerprint = [];
-        $indexConditions = [];
+        $indexConditions = ['or'];
 
         foreach ($transforms as $transform) {
             $transform = $this->normalizeTransform($transform);
@@ -328,12 +328,6 @@ class AssetTransforms extends Component
 
             $indexConditions[] = $condition;
             $transformsByFingerprint[$fingerprint] = $transform;
-        }
-
-        if (count($indexConditions) == 1) {
-            $indexConditions = $indexConditions[0];
-        } else {
-            array_unshift($indexConditions, 'or');
         }
 
         // Query for the indexes
@@ -717,7 +711,7 @@ class AssetTransforms extends Component
     {
         return $this->_createTransformIndexQuery()
             ->select('id')
-            ->where(['and', 'fileExists = 0', 'inProgress = 0'])
+            ->where(['fileExists' => '0', 'inProgress' => '0'])
             ->column();
     }
 

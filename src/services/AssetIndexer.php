@@ -303,14 +303,12 @@ class AssetIndexer extends Component
         $processedFiles = (new Query())
             ->select('recordId')
             ->from('{{%assetindexdata}}')
-            ->where(
-                [
-                    'and',
-                    ['sessionId' => $sessionId],
-                    'recordId is not null'
-                ],
-                [':sessionId' => $sessionId])
-            ->column();
+            ->where([
+                'and',
+                ['sessionId' => $sessionId],
+                ['not', ['recordId' => null]]
+            ])
+           ->column();
 
         // Flip for faster lookup
         $processedFiles = array_flip($processedFiles);

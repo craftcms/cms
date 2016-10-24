@@ -563,10 +563,9 @@ class Fields extends Component
             if ($this->doesFieldWithHandleExist($handle, $context)) {
                 $result = $this->_createFieldQuery()
                     ->where([
-                        'and',
-                        'fields.handle = :handle',
-                        'fields.context = :context'
-                    ], [':handle' => $handle, ':context' => $context])
+                        'fields.handle' => $handle,
+                        'fields.context' => $context
+                    ])
                     ->one();
 
                 if ($result) {

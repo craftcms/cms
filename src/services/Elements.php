@@ -191,36 +191,31 @@ class Elements extends Component
 
         // First get the element ID and type
 
-        $conditions = [
-            'and',
-            'elements_i18n.uri = :uri',
-            'elements_i18n.siteId = :siteId'
-        ];
-
-        $params = [
-            ':uri' => $uri,
-            ':siteId' => $siteId
-        ];
-
-        if ($enabledOnly) {
-            $conditions[] = 'elements_i18n.enabled = 1';
-            $conditions[] = 'elements.enabled = 1';
-            $conditions[] = 'elements.archived = 0';
-        }
-
-        $result = (new Query())
+        $query = (new Query())
             ->select('elements.id, elements.type')
             ->from('{{%elements}} elements')
             ->innerJoin('{{%elements_i18n}} elements_i18n', '[[elements_i18n.elementId]] = [[elements.id]]')
-            ->where($conditions, $params)
-            ->one();
+            ->where([
+                'elements_i18n.uri' => $uri,
+                'elements_i18n.siteId' => $siteId
+            ]);
 
-        if ($result) {
-            // Return the actual element
-            return $this->getElementById($result['id'], $result['type'], $siteId);
+        if ($enabledOnly) {
+            $query->andWhere([
+                'elements_i18n.enabled' => '1',
+                'elements.enabled' => '1',
+                'elements.archived' => '0',
+            ]);
         }
 
-        return null;
+        $result = $query->one();
+
+        if (!$result) {
+            return null;
+        }
+
+        // Return the actual element
+        return $this->getElementById($result['id'], $result['type'], $siteId);
     }
 
     /**

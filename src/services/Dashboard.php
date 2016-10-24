@@ -146,7 +146,7 @@ class Dashboard extends Component
             ->where([
                 'userId' => Craft::$app->getUser()->getIdentity()->id,
                 'type' => $type,
-                'enabled' => true
+                'enabled' => '1'
             ])
             ->exists();
     }
@@ -456,7 +456,7 @@ class Dashboard extends Component
                 'settings',
             ])
             ->from('{{%widgets}}')
-            ->where(['userId' => $userId, 'enabled' => 1])
+            ->where(['userId' => $userId, 'enabled' => '1'])
             ->orderBy('sortOrder')
             ->all();
 

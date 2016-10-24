@@ -339,10 +339,13 @@ class m160807_144858_sites extends Migration
                 ->select(['id', 'uriFormat', 'nestedUrlFormat'])
                 ->from($tables['i18n'])
                 ->where([
-                    'and',
-                    'nestedUrlFormat is not null',
-                    'nestedUrlFormat != ""',
-                    'nestedUrlFormat != uriFormat'
+                    'not',
+                    [
+                        'or',
+                        ['nestedUrlFormat' => null],
+                        ['nestedUrlFormat' => ''],
+                        '[[nestedUrlFormat]] = [[uriFormat]]'
+                    ]
                 ])
                 ->all();
 

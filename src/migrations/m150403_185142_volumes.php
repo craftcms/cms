@@ -63,7 +63,7 @@ class m150403_185142_volumes extends Migration
         $permissions = (new Query())
             ->select('id, name')
             ->from('{{%userpermissions}}')
-            ->where(['like', 'name', '%assetsource%', false])
+            ->where(['like', 'name', 'assetsource'])
             ->all();
 
         foreach ($permissions as $permission) {
