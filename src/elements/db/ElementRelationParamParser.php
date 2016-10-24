@@ -329,12 +329,12 @@ class ElementRelationParamParser
 
                         $condition = [
                             'and',
-                            Db::parseParam($targetMatrixBlocksAlias.'.ownerId', $relElementIds, $query->params),
+                            Db::parseParam($targetMatrixBlocksAlias.'.ownerId', $relElementIds),
                             [$targetMatrixBlocksAlias.'.fieldId' => $fieldModel->id]
                         ];
 
                         if ($blockTypeFieldIds) {
-                            $condition[] = Db::parseParam($sourcesAlias.'.fieldId', $blockTypeFieldIds, $query->params);
+                            $condition[] = Db::parseParam($sourcesAlias.'.fieldId', $blockTypeFieldIds);
                         }
                     } else {
                         $this->_joinSourceMatrixBlocksCount++;
@@ -359,12 +359,12 @@ class ElementRelationParamParser
 
                         $condition = [
                             'and',
-                            Db::parseParam($matrixBlockTargetsAlias.'.targetId', $relElementIds, $query->params),
+                            Db::parseParam($matrixBlockTargetsAlias.'.targetId', $relElementIds),
                             [$sourceMatrixBlocksAlias.'.fieldId' => $fieldModel->id]
                         ];
 
                         if ($blockTypeFieldIds) {
-                            $condition[] = Db::parseParam($matrixBlockTargetsAlias.'.fieldId', $blockTypeFieldIds, $query->params);
+                            $condition[] = Db::parseParam($matrixBlockTargetsAlias.'.fieldId', $blockTypeFieldIds);
                         }
                     }
 
@@ -405,13 +405,13 @@ class ElementRelationParamParser
             }
 
             $query->leftJoin("{{%relations}} {$relTableAlias}", $relationsJoinConditions);
-            $condition = Db::parseParam($relTableAlias.'.'.$relConditionColumn, $relElementIds, $query->params);
+            $condition = Db::parseParam($relTableAlias.'.'.$relConditionColumn, $relElementIds);
 
             if ($normalFieldIds) {
                 $condition = [
                     'and',
                     $condition,
-                    Db::parseParam($relTableAlias.'.fieldId', $normalFieldIds, $query->params)
+                    Db::parseParam($relTableAlias.'.fieldId', $normalFieldIds)
                 ];
             }
 

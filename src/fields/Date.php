@@ -233,7 +233,7 @@ class Date extends Field implements PreviewableFieldInterface
         if ($value !== null) {
             $handle = $this->handle;
             /** @var ElementQuery $query */
-            $query->subQuery->andWhere(Db::parseDateParam('content.'.Craft::$app->getContent()->fieldColumnPrefix.$handle, $value, $query->subQuery->params));
+            $query->subQuery->andWhere(Db::parseDateParam('content.'.Craft::$app->getContent()->fieldColumnPrefix.$handle, $value));
         }
     }
 }

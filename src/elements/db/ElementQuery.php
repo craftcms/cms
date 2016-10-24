@@ -943,11 +943,11 @@ class ElementQuery extends Query implements ElementQueryInterface, Arrayable, Co
         }
 
         if ($this->id) {
-            $this->subQuery->andWhere(Db::parseParam('elements.id', $this->id, $this->subQuery->params));
+            $this->subQuery->andWhere(Db::parseParam('elements.id', $this->id));
         }
 
         if ($this->uid) {
-            $this->subQuery->andWhere(Db::parseParam('elements.uid', $this->uid, $this->subQuery->params));
+            $this->subQuery->andWhere(Db::parseParam('elements.uid', $this->uid));
         }
 
         if ($this->archived) {
@@ -958,23 +958,23 @@ class ElementQuery extends Query implements ElementQueryInterface, Arrayable, Co
         }
 
         if ($this->dateCreated) {
-            $this->subQuery->andWhere(Db::parseDateParam('elements.dateCreated', $this->dateCreated, $this->subQuery->params));
+            $this->subQuery->andWhere(Db::parseDateParam('elements.dateCreated', $this->dateCreated));
         }
 
         if ($this->dateUpdated) {
-            $this->subQuery->andWhere(Db::parseDateParam('elements.dateUpdated', $this->dateUpdated, $this->subQuery->params));
+            $this->subQuery->andWhere(Db::parseDateParam('elements.dateUpdated', $this->dateUpdated));
         }
 
         if ($this->title && $class::hasTitles()) {
-            $this->subQuery->andWhere(Db::parseParam('content.title', $this->title, $this->subQuery->params));
+            $this->subQuery->andWhere(Db::parseParam('content.title', $this->title));
         }
 
         if ($this->slug) {
-            $this->subQuery->andWhere(Db::parseParam('elements_i18n.slug', $this->slug, $this->subQuery->params));
+            $this->subQuery->andWhere(Db::parseParam('elements_i18n.slug', $this->slug));
         }
 
         if ($this->uri) {
-            $this->subQuery->andWhere(Db::parseParam('elements_i18n.uri', $this->uri, $this->subQuery->params));
+            $this->subQuery->andWhere(Db::parseParam('elements_i18n.uri', $this->uri));
         }
 
         if ($this->enabledForSite) {
@@ -1576,7 +1576,7 @@ class ElementQuery extends Query implements ElementQueryInterface, Arrayable, Co
             }
 
             if ($this->level) {
-                $this->subQuery->andWhere(Db::parseParam('structureelements.level', $this->level, $this->subQuery->params));
+                $this->subQuery->andWhere(Db::parseParam('structureelements.level', $this->level));
             }
         }
     }

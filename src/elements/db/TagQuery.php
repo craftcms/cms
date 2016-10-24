@@ -103,7 +103,7 @@ class TagQuery extends ElementQuery
             $this->groupId = $query
                 ->select('id')
                 ->from('{{%taggroups}}')
-                ->where(Db::parseParam('handle', $value, $query->params))
+                ->where(Db::parseParam('handle', $value))
                 ->column();
         }
 
@@ -144,7 +144,7 @@ class TagQuery extends ElementQuery
         ]);
 
         if ($this->groupId) {
-            $this->subQuery->andWhere(Db::parseParam('tags.groupId', $this->groupId, $this->subQuery->params));
+            $this->subQuery->andWhere(Db::parseParam('tags.groupId', $this->groupId));
         }
 
         if (is_string($this->orderBy)) {

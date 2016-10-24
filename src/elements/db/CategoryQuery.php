@@ -95,7 +95,7 @@ class CategoryQuery extends ElementQuery
             $this->groupId = $query
                 ->select('id')
                 ->from('{{%categorygroups}}')
-                ->where(Db::parseParam('handle', $value, $query->params))
+                ->where(Db::parseParam('handle', $value))
                 ->column();
         }
 
@@ -175,11 +175,11 @@ class CategoryQuery extends ElementQuery
                 $this->structureId = $query
                     ->select('structureId')
                     ->from('{{%categorygroups}}')
-                    ->where(Db::parseParam('id', $this->groupId, $query->params))
+                    ->where(Db::parseParam('id', $this->groupId))
                     ->scalar();
             }
 
-            $this->subQuery->andWhere(Db::parseParam('categories.groupId', $this->groupId, $this->subQuery->params));
+            $this->subQuery->andWhere(Db::parseParam('categories.groupId', $this->groupId));
         }
     }
 
@@ -198,12 +198,12 @@ class CategoryQuery extends ElementQuery
 
                 if ($parts) {
                     if (count($parts) == 1) {
-                        $conditionals[] = Db::parseParam('elements_i18n.slug', $parts[0], $this->subQuery->params);
+                        $conditionals[] = Db::parseParam('elements_i18n.slug', $parts[0]);
                     } else {
                         $conditionals[] = [
                             'and',
-                            Db::parseParam('categorygroups.handle', $parts[0], $this->subQuery->params),
-                            Db::parseParam('elements_i18n.slug', $parts[1], $this->subQuery->params)
+                            Db::parseParam('categorygroups.handle', $parts[0]),
+                            Db::parseParam('elements_i18n.slug', $parts[1])
                         ];
                         $joinCategoryGroups = true;
                     }

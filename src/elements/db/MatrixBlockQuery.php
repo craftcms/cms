@@ -212,7 +212,7 @@ class MatrixBlockQuery extends ElementQuery
             $this->typeId = $query
                 ->select('id')
                 ->from('{{%matrixblocktypes}}')
-                ->where(Db::parseParam('handle', $value, $query->params))
+                ->where(Db::parseParam('handle', $value))
                 ->column();
         }
 
@@ -272,19 +272,19 @@ class MatrixBlockQuery extends ElementQuery
         ]);
 
         if ($this->fieldId) {
-            $this->subQuery->andWhere(Db::parseParam('matrixblocks.fieldId', $this->fieldId, $this->subQuery->params));
+            $this->subQuery->andWhere(Db::parseParam('matrixblocks.fieldId', $this->fieldId));
         }
 
         if ($this->ownerId) {
-            $this->subQuery->andWhere(Db::parseParam('matrixblocks.ownerId', $this->ownerId, $this->subQuery->params));
+            $this->subQuery->andWhere(Db::parseParam('matrixblocks.ownerId', $this->ownerId));
         }
 
         if ($this->ownerSiteId) {
-            $this->subQuery->andWhere(Db::parseParam('matrixblocks.ownerSiteId', $this->ownerSiteId, $this->subQuery->params));
+            $this->subQuery->andWhere(Db::parseParam('matrixblocks.ownerSiteId', $this->ownerSiteId));
         }
 
         if ($this->typeId) {
-            $this->subQuery->andWhere(Db::parseParam('matrixblocks.typeId', $this->typeId, $this->subQuery->params));
+            $this->subQuery->andWhere(Db::parseParam('matrixblocks.typeId', $this->typeId));
         }
 
         return parent::beforePrepare();

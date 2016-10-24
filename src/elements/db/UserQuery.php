@@ -171,7 +171,7 @@ class UserQuery extends ElementQuery
             $this->groupId = $query
                 ->select('id')
                 ->from('{{%usergroups}}')
-                ->where(Db::parseParam('handle', $value, $query->params))
+                ->where(Db::parseParam('handle', $value))
                 ->column();
         }
 
@@ -330,7 +330,7 @@ class UserQuery extends ElementQuery
             $userIds = $query
                 ->select('userId')
                 ->from('{{%usergroups_users}}')
-                ->where(Db::parseParam('groupId', $this->groupId, $query->params))
+                ->where(Db::parseParam('groupId', $this->groupId))
                 ->column();
 
             if (!empty($userIds)) {
@@ -341,23 +341,23 @@ class UserQuery extends ElementQuery
         }
 
         if ($this->email) {
-            $this->subQuery->andWhere(Db::parseParam('users.email', $this->email, $this->subQuery->params));
+            $this->subQuery->andWhere(Db::parseParam('users.email', $this->email));
         }
 
         if ($this->username) {
-            $this->subQuery->andWhere(Db::parseParam('users.username', $this->username, $this->subQuery->params));
+            $this->subQuery->andWhere(Db::parseParam('users.username', $this->username));
         }
 
         if ($this->firstName) {
-            $this->subQuery->andWhere(Db::parseParam('users.firstName', $this->firstName, $this->subQuery->params));
+            $this->subQuery->andWhere(Db::parseParam('users.firstName', $this->firstName));
         }
 
         if ($this->lastName) {
-            $this->subQuery->andWhere(Db::parseParam('users.lastName', $this->lastName, $this->subQuery->params));
+            $this->subQuery->andWhere(Db::parseParam('users.lastName', $this->lastName));
         }
 
         if ($this->lastLoginDate) {
-            $this->subQuery->andWhere(Db::parseDateParam('entries.lastLoginDate', $this->lastLoginDate, $this->subQuery->params));
+            $this->subQuery->andWhere(Db::parseDateParam('entries.lastLoginDate', $this->lastLoginDate));
         }
 
         return parent::beforePrepare();

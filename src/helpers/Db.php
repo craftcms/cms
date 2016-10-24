@@ -267,11 +267,10 @@ class Db
      *
      * @param string       $column  The database column that the param is targeting.
      * @param string|array $value   The param value(s).
-     * @param array        &$params The [[\yii\db\Query::$params]] array.
      *
      * @return mixed
      */
-    public static function parseParam($column, $value, &$params)
+    public static function parseParam($column, $value)
     {
         // Need to do a strict check here in case $value = true
         if ($value === 'not ') {
@@ -357,11 +356,10 @@ class Db
      *
      * @param string                 $column
      * @param string|array|\DateTime $value
-     * @param array                  &$params
      *
      * @return mixed
      */
-    public static function parseDateParam($column, $value, &$params)
+    public static function parseDateParam($column, $value)
     {
         $normalizedValues = [];
 
@@ -399,7 +397,7 @@ class Db
             $normalizedValues[] = $operator.static::prepareDateForDb($val);
         }
 
-        return static::parseParam($column, $normalizedValues, $params);
+        return static::parseParam($column, $normalizedValues);
     }
 
     /**

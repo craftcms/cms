@@ -119,7 +119,7 @@ class AssetQuery extends ElementQuery
             $this->volumeId = $query
                 ->select('id')
                 ->from('{{%volumes}}')
-                ->where(Db::parseParam('handle', $value, $query->params))
+                ->where(Db::parseParam('handle', $value))
                 ->column();
         }
 
@@ -342,41 +342,41 @@ class AssetQuery extends ElementQuery
         ]);
 
         if ($this->volumeId) {
-            $this->subQuery->andWhere(Db::parseParam('assets.volumeId', $this->volumeId, $this->subQuery->params));
+            $this->subQuery->andWhere(Db::parseParam('assets.volumeId', $this->volumeId));
         }
 
         if ($this->folderId) {
             if ($this->includeSubfolders) {
                 $folders = Craft::$app->getAssets()->getAllDescendantFolders(
                     Craft::$app->getAssets()->getFolderById($this->folderId));
-                $this->subQuery->andWhere(Db::parseParam('assets.folderId', array_keys($folders), $this->subQuery->params));
+                $this->subQuery->andWhere(Db::parseParam('assets.folderId', array_keys($folders)));
             } else {
-                $this->subQuery->andWhere(Db::parseParam('assets.folderId', $this->folderId, $this->subQuery->params));
+                $this->subQuery->andWhere(Db::parseParam('assets.folderId', $this->folderId));
             }
         }
 
         if ($this->filename) {
-            $this->subQuery->andWhere(Db::parseParam('assets.filename', $this->filename, $this->subQuery->params));
+            $this->subQuery->andWhere(Db::parseParam('assets.filename', $this->filename));
         }
 
         if ($this->kind) {
-            $this->subQuery->andWhere(Db::parseParam('assets.kind', $this->kind, $this->subQuery->params));
+            $this->subQuery->andWhere(Db::parseParam('assets.kind', $this->kind));
         }
 
         if ($this->width) {
-            $this->subQuery->andWhere(Db::parseParam('assets.width', $this->width, $this->subQuery->params));
+            $this->subQuery->andWhere(Db::parseParam('assets.width', $this->width));
         }
 
         if ($this->height) {
-            $this->subQuery->andWhere(Db::parseParam('assets.height', $this->height, $this->subQuery->params));
+            $this->subQuery->andWhere(Db::parseParam('assets.height', $this->height));
         }
 
         if ($this->size) {
-            $this->subQuery->andWhere(Db::parseParam('assets.size', $this->size, $this->subQuery->params));
+            $this->subQuery->andWhere(Db::parseParam('assets.size', $this->size));
         }
 
         if ($this->dateModified) {
-            $this->subQuery->andWhere(Db::parseDateParam('assets.dateModified', $this->dateModified, $this->subQuery->params));
+            $this->subQuery->andWhere(Db::parseDateParam('assets.dateModified', $this->dateModified));
         }
 
         return parent::beforePrepare();
