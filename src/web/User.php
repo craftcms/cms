@@ -512,10 +512,10 @@ class User extends \yii\web\User
         $cookieValue = Craft::$app->getRequest()->getCookies()->getValue($this->identityCookie['name']);
 
         if ($cookieValue !== null) {
-            $identityData = json_decode($cookieValue, true);
+            $data = json_decode($cookieValue, true);
 
-            if (count($identityData) === 3 && isset($identityData[0], $identityData[1], $identityData[2])) {
-                $authData = UserElement::getAuthData($identityData[1]);
+            if (is_array($data) && isset($data[2])) {
+                $authData = UserElement::getAuthData($data[1]);
 
                 if ($authData) {
                     $tokenUid = $authData[1];
