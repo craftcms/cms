@@ -177,11 +177,7 @@ class AssetIndex extends Tool
                 Craft::$app->getDb()->createCommand()
                     ->delete(
                         '{{%assetindexdata}}',
-                        [
-                            'not in',
-                            'sessionId',
-                            $sessionsInProgress
-                        ])
+                        ['not', ['sessionId' => $sessionsInProgress]])
                     ->execute();
             }
 
