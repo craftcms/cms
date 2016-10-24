@@ -154,11 +154,8 @@ class CategoryQuery extends ElementQuery
     {
         if ($this->editable) {
             // Limit the query to only the category groups the user has permission to edit
-            $editableGroupIds = Craft::$app->getCategories()->getEditableGroupIds();
             $this->subQuery->andWhere([
-                'in',
-                'categories.groupId',
-                $editableGroupIds
+                'categories.groupId' => Craft::$app->getCategories()->getEditableGroupIds()
             ]);
         }
     }
@@ -185,43 +182,40 @@ class CategoryQuery extends ElementQuery
 
     /**
      * Applies the 'ref' param to the query being prepared.
+     *
+     * @return void
      */
     private function _applyRefParam()
     {
-        if ($this->ref) {
-            $joinCategoryGroups = false;
-            $refs = ArrayHelper::toArray($this->ref);
-            $conditionals = [];
+        if (!$this->ref) {
+            return;
+        }
 
-            foreach ($refs as $ref) {
-                $parts = array_filter(explode('/', $ref));
+        $refs = ArrayHelper::toArray($this->ref);
+        $conditional = ['or'];
+        $joinCategoryGroups = false;
 
-                if ($parts) {
-                    if (count($parts) == 1) {
-                        $conditionals[] = Db::parseParam('elements_i18n.slug', $parts[0]);
-                    } else {
-                        $conditionals[] = [
-                            'and',
-                            Db::parseParam('categorygroups.handle', $parts[0]),
-                            Db::parseParam('elements_i18n.slug', $parts[1])
-                        ];
-                        $joinCategoryGroups = true;
-                    }
-                }
-            }
+        foreach ($refs as $ref) {
+            $parts = array_filter(explode('/', $ref));
 
-            if ($conditionals) {
-                if (count($conditionals) == 1) {
-                    $this->subQuery->andWhere($conditionals[0]);
+            if ($parts) {
+                if (count($parts) == 1) {
+                    $conditional[] = Db::parseParam('elements_i18n.slug', $parts[0]);
                 } else {
-                    array_unshift($conditionals, 'or');
-                    $this->subQuery->andWhere($conditionals);
-                }
-
-                if ($joinCategoryGroups) {
-                    $this->subQuery->innerJoin('{{%categorygroups}} categorygroups', '[[categorygroups.id]] = [[categories.groupId]]');
+                    $conditional[] = [
+                        'and',
+                        Db::parseParam('categorygroups.handle', $parts[0]),
+                        Db::parseParam('elements_i18n.slug', $parts[1])
+                    ];
+                    $joinCategoryGroups = true;
                 }
             }
+        }
+
+        $this->subQuery->andWhere($conditional);
+
+        if ($joinCategoryGroups) {
+            $this->subQuery->innerJoin('{{%categorygroups}} categorygroups', '[[categorygroups.id]] = [[categories.groupId]]');
         }
     }
 }

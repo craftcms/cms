@@ -67,16 +67,16 @@ class ChartHelper
         }
 
         if ($databaseType == Connection::DRIVER_MYSQL) {
-            $yearCode = "YEAR([[{$dateColumn}]])";
-            $monthCode = "MONTH([[{$dateColumn}]])";
-            $dayCode = "DAY([[{$dateColumn}]])";
-            $hourCode = "HOUR([[{$dateColumn}]])";
+            $yearSql = "YEAR([[{$dateColumn}]])";
+            $monthSql = "MONTH([[{$dateColumn}]])";
+            $daySql = "DAY([[{$dateColumn}]])";
+            $hourSql = "HOUR([[{$dateColumn}]])";
         } else {
             // PostgreSQL
-            $yearCode = "EXTRACT(YEAR FROM [[{$dateColumn}]])";
-            $monthCode = "EXTRACT(MONTH FROM [[{$dateColumn}]])";
-            $dayCode = "EXTRACT(DAY FROM [[{$dateColumn}]])";
-            $hourCode = "EXTRACT(HOUR FROM [[{$dateColumn}]])";
+            $yearSql = "EXTRACT(YEAR FROM [[{$dateColumn}]])";
+            $monthSql = "EXTRACT(MONTH FROM [[{$dateColumn}]])";
+            $daySql = "EXTRACT(DAY FROM [[{$dateColumn}]])";
+            $hourSql = "EXTRACT(HOUR FROM [[{$dateColumn}]])";
         }
 
         switch ($intervalUnit) {
@@ -88,7 +88,7 @@ class ChartHelper
                     $sqlDateFormat = 'YYYY-01-01';
                 }
                 $phpDateFormat = 'Y-01-01';
-                $sqlGroup = $yearCode;
+                $sqlGroup = $yearSql;
                 $cursorDate = new DateTime($startDate->format('Y-01-01'), $craftTimezone);
                 break;
             }
@@ -100,7 +100,7 @@ class ChartHelper
                     $sqlDateFormat = 'YYYY-MM-01';
                 }
                 $phpDateFormat = 'Y-m-01';
-                $sqlGroup = $yearCode.', '.$monthCode;
+                $sqlGroup = $yearSql.', '.$monthSql;
                 $cursorDate = new DateTime($startDate->format('Y-m-01'), $craftTimezone);
                 break;
             }
@@ -112,7 +112,7 @@ class ChartHelper
                     $sqlDateFormat = 'YYYY-MM-DD';
                 }
                 $phpDateFormat = 'Y-m-d';
-                $sqlGroup = $yearCode.', '.$monthCode.', '.$dayCode;
+                $sqlGroup = $yearSql.', '.$monthSql.', '.$daySql;
                 $cursorDate = new DateTime($startDate->format('Y-m-d'), $craftTimezone);
                 break;
             }
@@ -125,7 +125,7 @@ class ChartHelper
                 }
 
                 $phpDateFormat = 'Y-m-d H:00:00';
-                $sqlGroup = $yearCode.', '.$monthCode.', '.$dayCode.', '.$hourCode;
+                $sqlGroup = $yearSql.', '.$monthSql.', '.$daySql.', '.$hourSql;
                 $cursorDate = new DateTime($startDate->format('Y-m-d'), $craftTimezone);
                 break;
             }
@@ -141,7 +141,8 @@ class ChartHelper
         // Execute the query
         $results = $query
             ->addSelect([$select])
-            ->andWhere(['and',
+            ->andWhere([
+                'and',
                 ['>=', $dateColumn, $startDate->format('Y-m-d H:i:s')],
                 ['<', $dateColumn, $endDate->format('Y-m-d H:i:s')]
             ])

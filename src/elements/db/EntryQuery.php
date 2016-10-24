@@ -387,44 +387,34 @@ class EntryQuery extends ElementQuery
     /**
      * Applies the 'editable' param to the query being prepared.
      *
+     * @return void
      * @throws QueryAbortedException
      */
     private function _applyEditableParam()
     {
-        if ($this->editable) {
-            $user = Craft::$app->getUser()->getIdentity();
+        if (!$this->editable) {
+            return;
+        }
 
-            if (!$user) {
-                throw new QueryAbortedException();
-            }
+        $user = Craft::$app->getUser()->getIdentity();
 
-            // Limit the query to only the sections the user has permission to edit
-            $editableSectionIds = Craft::$app->getSections()->getEditableSectionIds();
-            $this->subQuery->andWhere([
-                'in',
-                'entries.sectionId',
-                $editableSectionIds
-            ]);
+        if (!$user) {
+            throw new QueryAbortedException();
+        }
 
-            // Enforce the editPeerEntries permissions for non-Single sections
-            $noPeerConditions = [];
+        // Limit the query to only the sections the user has permission to edit
+        $this->subQuery->andWhere([
+            'entries.sectionId' => Craft::$app->getSections()->getEditableSectionIds()
+        ]);
 
-            foreach (Craft::$app->getSections()->getEditableSections() as $section) {
-                if (
-                    $section->type != Section::TYPE_SINGLE &&
-                    !$user->can('editPeerEntries:'.$section->id)
-                ) {
-                    $noPeerConditions[] = [
-                        'or',
-                        'entries.sectionId != '.$section->id,
-                        'entries.authorId = '.$user->id
-                    ];
-                }
-            }
-
-            if ($noPeerConditions) {
-                array_unshift($noPeerConditions, 'and');
-                $this->subQuery->andWhere($noPeerConditions);
+        // Enforce the editPeerEntries permissions for non-Single sections
+        foreach (Craft::$app->getSections()->getEditableSections() as $section) {
+            if ($section->type != Section::TYPE_SINGLE && !$user->can('editPeerEntries:'.$section->id)) {
+                $this->subQuery->andWhere([
+                    'or',
+                    ['not', ['entries.sectionId' => $section->id]],
+                    ['entries.authorId' => $user->id]
+                ]);
             }
         }
     }
@@ -451,43 +441,40 @@ class EntryQuery extends ElementQuery
 
     /**
      * Applies the 'ref' param to the query being prepared.
+     *
+     * @return void
      */
     private function _applyRefParam()
     {
-        if ($this->ref) {
-            $joinSections = false;
-            $refs = ArrayHelper::toArray($this->ref);
-            $conditionals = [];
+        if (!$this->ref) {
+            return;
+        }
 
-            foreach ($refs as $ref) {
-                $parts = array_filter(explode('/', $ref));
+        $refs = ArrayHelper::toArray($this->ref);
+        $joinSections = false;
+        $condition = ['or'];
 
-                if ($parts) {
-                    if (count($parts) == 1) {
-                        $conditionals[] = Db::parseParam('elements_i18n.slug', $parts[0]);
-                    } else {
-                        $conditionals[] = [
-                            'and',
-                            Db::parseParam('sections.handle', $parts[0]),
-                            Db::parseParam('elements_i18n.slug', $parts[1])
-                        ];
-                        $joinSections = true;
-                    }
-                }
-            }
+        foreach ($refs as $ref) {
+            $parts = array_filter(explode('/', $ref));
 
-            if ($conditionals) {
-                if (count($conditionals) == 1) {
-                    $this->subQuery->andWhere($conditionals[0]);
+            if ($parts) {
+                if (count($parts) == 1) {
+                    $condition[] = Db::parseParam('elements_i18n.slug', $parts[0]);
                 } else {
-                    array_unshift($conditionals, 'or');
-                    $this->subQuery->andWhere($conditionals);
-                }
-
-                if ($joinSections) {
-                    $this->subQuery->innerJoin('{{%sections}} sections', '[[sections.id]] = [[entries.sectionId]]');
+                    $condition[] = [
+                        'and',
+                        Db::parseParam('sections.handle', $parts[0]),
+                        Db::parseParam('elements_i18n.slug', $parts[1])
+                    ];
+                    $joinSections = true;
                 }
             }
+        }
+
+        $this->subQuery->andWhere($condition);
+
+        if ($joinSections) {
+            $this->subQuery->innerJoin('{{%sections}} sections', '[[sections.id]] = [[entries.sectionId]]');
         }
     }
 }

@@ -1347,51 +1347,46 @@ class ElementQuery extends Query implements ElementQueryInterface, Arrayable, Co
      *
      * @param Element $class
      *
+     * @return void
      * @throws QueryAbortedException
      */
     private function _applyStatusParam($class)
     {
-        if ($this->status && $class::hasStatuses()) {
-            $statusConditions = [];
-            $statuses = ArrayHelper::toArray($this->status);
+        if (!$this->status || !$class::hasStatuses()) {
+            return;
+        }
 
-            foreach ($statuses as $status) {
-                $status = StringHelper::toLowerCase($status);
+        $statuses = ArrayHelper::toArray($this->status);
+        $condition = ['or'];
 
-                // Is this a supported status?
-                if (in_array($status, array_keys($class::getStatuses()))) {
-                    if ($status == Element::STATUS_ENABLED) {
-                        $statusConditions[] = ['elements.enabled' => '1'];
-                    } else if ($status == Element::STATUS_DISABLED) {
-                        $statusConditions[] = ['elements.enabled' => '0'];
-                    } else {
-                        $elementStatusCondition = $class::getElementQueryStatusCondition($this, $status);
+        foreach ($statuses as $status) {
+            $status = StringHelper::toLowerCase($status);
 
-                        if ($elementStatusCondition) {
-                            $statusConditions[] = $elementStatusCondition;
-                        } else if ($elementStatusCondition === false) {
-                            throw new QueryAbortedException();
-                        }
+            // Is this a supported status?
+            if (in_array($status, array_keys($class::getStatuses()))) {
+                if ($status == Element::STATUS_ENABLED) {
+                    $condition[] = ['elements.enabled' => '1'];
+                } else if ($status == Element::STATUS_DISABLED) {
+                    $condition[] = ['elements.enabled' => '0'];
+                } else {
+                    $elementStatusCondition = $class::getElementQueryStatusCondition($this, $status);
+
+                    if ($elementStatusCondition) {
+                        $condition[] = $elementStatusCondition;
+                    } else if ($elementStatusCondition === false) {
+                        throw new QueryAbortedException();
                     }
                 }
             }
-
-            if ($statusConditions) {
-                if (count($statusConditions) == 1) {
-                    $statusCondition = $statusConditions[0];
-                } else {
-                    array_unshift($statusConditions, 'or');
-                    $statusCondition = $statusConditions;
-                }
-
-                $this->subQuery->andWhere($statusCondition);
-            }
         }
+
+        $this->subQuery->andWhere($condition);
     }
 
     /**
      * Applies the 'relatedTo' param to the query being prepared.
      *
+     * @return void
      * @throws QueryAbortedException
      */
     private function _applyRelatedToParam()
@@ -1426,21 +1421,23 @@ class ElementQuery extends Query implements ElementQueryInterface, Arrayable, Co
             Craft::$app->getDeprecator()->log('element_old_relation_params', 'The ‘childOf’, ‘childField’, ‘parentOf’, and ‘parentField’ element params have been deprecated. Use ‘relatedTo’ instead.');
         }
 
-        if ($this->relatedTo) {
-            $relationParamParser = new ElementRelationParamParser();
-            $relConditions = $relationParamParser->parseRelationParam($this->relatedTo, $this->subQuery);
+        if (!$this->relatedTo) {
+            return;
+        }
 
-            if ($relConditions === false) {
-                throw new QueryAbortedException();
-            }
+        $relationParamParser = new ElementRelationParamParser();
+        $condition = $relationParamParser->parseRelationParam($this->relatedTo, $this->subQuery);
 
-            $this->subQuery->andWhere($relConditions);
+        if ($condition === false) {
+            throw new QueryAbortedException();
+        }
 
-            // If there's only one relation criteria and it's specifically for grabbing target elements, allow the query
-            // to order by the relation sort order
-            if ($relationParamParser->getIsRelationFieldQuery()) {
-                $this->subQuery->addSelect('sources1.sortOrder');
-            }
+        $this->subQuery->andWhere($condition);
+
+        // If there's only one relation criteria and it's specifically for grabbing target elements, allow the query
+        // to order by the relation sort order
+        if ($relationParamParser->getIsRelationFieldQuery()) {
+            $this->subQuery->addSelect(['sources1.sortOrder']);
         }
     }
 

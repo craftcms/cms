@@ -369,51 +369,54 @@ class UserQuery extends ElementQuery
     /**
      * Applies the 'can' param to the query being prepared.
      *
+     * @return void
      * @throws QueryAbortedException
      */
     private function _applyCanParam()
     {
-        if ($this->can === false || !empty($this->can)) {
-            if (is_string($this->can) && !is_numeric($this->can)) {
-                // Convert it to the actual permission ID, or false if the permission doesn't have an ID yet.
-                $this->can = (new Query())
-                    ->select('id')
-                    ->from('{{%userpermissions}}')
-                    ->where(['name' => strtolower($this->can)])
-                    ->scalar();
-            }
-
-            // False means that the permission doesn't have an ID yet.
-            if ($this->can !== false) {
-                // Get the users that have that permission directly
-                $permittedUserIds = (new Query())
-                    ->select('userId')
-                    ->from('{{%userpermissions_users}}')
-                    ->where(['permissionId' => $this->can])
-                    ->column();
-
-                // Get the users that have that permission via a user group
-                $permittedUserIdsViaGroups = (new Query())
-                    ->select('g_u.userId')
-                    ->from('{{%usergroups_users}} g_u')
-                    ->innerJoin('{{%userpermissions_usergroups}} p_g', '[[p_g.groupId]] = [[g_u.groupId]]')
-                    ->where(['p_g.permissionId' => $this->can])
-                    ->column();
-
-                $permittedUserIds = array_unique(array_merge($permittedUserIds, $permittedUserIdsViaGroups));
-            }
-
-            if (!empty($permittedUserIds)) {
-                $permissionConditions = [
-                    'or',
-                    'users.admin = 1',
-                    ['elements.id' => $permittedUserIds]
-                ];
-            } else {
-                $permissionConditions = ['users.admin' => '1'];
-            }
-
-            $this->subQuery->andWhere($permissionConditions);
+        if ($this->can !== false && empty($this->can)) {
+            return;
         }
+
+        if (is_string($this->can) && !is_numeric($this->can)) {
+            // Convert it to the actual permission ID, or false if the permission doesn't have an ID yet.
+            $this->can = (new Query())
+                ->select('id')
+                ->from('{{%userpermissions}}')
+                ->where(['name' => strtolower($this->can)])
+                ->scalar();
+        }
+
+        // False means that the permission doesn't have an ID yet.
+        if ($this->can !== false) {
+            // Get the users that have that permission directly
+            $permittedUserIds = (new Query())
+                ->select('userId')
+                ->from('{{%userpermissions_users}}')
+                ->where(['permissionId' => $this->can])
+                ->column();
+
+            // Get the users that have that permission via a user group
+            $permittedUserIdsViaGroups = (new Query())
+                ->select('g_u.userId')
+                ->from('{{%usergroups_users}} g_u')
+                ->innerJoin('{{%userpermissions_usergroups}} p_g', '[[p_g.groupId]] = [[g_u.groupId]]')
+                ->where(['p_g.permissionId' => $this->can])
+                ->column();
+
+            $permittedUserIds = array_unique(array_merge($permittedUserIds, $permittedUserIdsViaGroups));
+        }
+
+        if (!empty($permittedUserIds)) {
+            $condition = [
+                'or',
+                ['users.admin' => '1'],
+                ['elements.id' => $permittedUserIds]
+            ];
+        } else {
+            $condition = ['users.admin' => '1'];
+        }
+
+        $this->subQuery->andWhere($condition);
     }
 }
