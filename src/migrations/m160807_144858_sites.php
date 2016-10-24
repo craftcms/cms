@@ -123,7 +123,7 @@ class m160807_144858_sites extends Migration
             [
                 'name' => new Expression(str_replace('%', $this->db->quoteColumnName('name'), $permissionsCaseSql)),
             ],
-            ['in', 'name', $localePermissions],
+            ['name' => $localePermissions],
             [],
             false);
 
@@ -409,14 +409,16 @@ class m160807_144858_sites extends Migration
         $fields = (new Query())
             ->select(['id', 'type', 'translationMethod', 'settings'])
             ->from('{{%fields}}')
-            ->where(['in', 'type', [
-                'craft\app\fields\Matrix',
-                'craft\app\fields\Assets',
-                'craft\app\fields\Categories',
-                'craft\app\fields\Entries',
-                'craft\app\fields\Tags',
-                'craft\app\fields\Users'
-            ]])
+            ->where([
+                'type' => [
+                    'craft\app\fields\Matrix',
+                    'craft\app\fields\Assets',
+                    'craft\app\fields\Categories',
+                    'craft\app\fields\Entries',
+                    'craft\app\fields\Tags',
+                    'craft\app\fields\Users'
+                ]
+            ])
             ->all();
 
         foreach ($fields as $field) {

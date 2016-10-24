@@ -467,18 +467,16 @@ class Categories extends Component
                         ->delete(
                             '{{%elements_i18n}}',
                             [
-                                'and',
-                                ['in', 'elementId', $categoryIds],
-                                ['in', 'siteId', $droppedSiteIds]
+                                'elementId' => $categoryIds,
+                                'siteId' => $droppedSiteIds
                             ])
                         ->execute();
                     $db->createCommand()
                         ->delete(
                             '{{%content}}',
                             [
-                                'and',
-                                ['in', 'elementId', $categoryIds],
-                                ['in', 'siteId', $droppedSiteIds]
+                                'elementId' => $categoryIds,
+                                'siteId' => $droppedSiteIds
                             ])
                         ->execute();
                 }
@@ -492,9 +490,8 @@ class Categories extends Component
                                 '{{%elements_i18n}}',
                                 ['uri' => null],
                                 [
-                                    'and',
-                                    ['in', 'elementId', $categoryIds],
-                                    ['in', 'siteId', $sitesNowWithoutUrls]
+                                    'elementId' => $categoryIds,
+                                    'siteId' => $sitesNowWithoutUrls,
                                 ])
                             ->execute();
                     } else if ($sitesWithNewUriFormats) {

@@ -96,7 +96,7 @@ class SetStatus extends ElementAction
             ->update(
                 '{{%elements}}',
                 ['enabled' => $sqlNewStatus],
-                ['in', 'id', $elementIds])
+                ['id' => $elementIds])
             ->execute();
 
         if ($this->status == Element::STATUS_ENABLED) {
@@ -106,9 +106,8 @@ class SetStatus extends ElementAction
                     '{{%elements_i18n}}',
                     ['enabled' => $sqlNewStatus],
                     [
-                        'and',
-                        ['in', 'elementId', $elementIds],
-                        ['siteId' => $query->siteId]
+                        'elementId' => $elementIds,
+                        'siteId' => $query->siteId,
                     ])
                 ->execute();
         }

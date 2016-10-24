@@ -501,7 +501,7 @@ class Entry extends Element
             $map = (new Query())
                 ->select('id as source, authorId as target')
                 ->from('{{%entries}}')
-                ->where(['in', 'id', $sourceElementIds])
+                ->where(['id' => $sourceElementIds])
                 ->all();
 
             return [

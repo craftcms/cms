@@ -342,7 +342,7 @@ class AssetTransforms extends Component
             ->from('{{%assettransformindex}}')
             ->where([
                 'and',
-                ['in', 'assetId', array_keys($assetsById)],
+                ['assetId' => array_keys($assetsById)],
                 $indexConditions
             ])
             ->all();
@@ -573,16 +573,15 @@ class AssetTransforms extends Component
             // We're looking for transforms that fit the bill and are not the one we are trying to find/create
             // the image for.
             $results = $this->_createTransformIndexQuery()
-                ->where(
+                ->where([
+                    'and',
                     [
-                        'and',
-                        ['assetId' => $asset->id, 'fileExists' => 1],
-                        ['in', 'location', $possibleLocations],
-                        'id <> :indexId'
+                        'assetId' => $asset->id,
+                        'fileExists' => 1,
+                        'location' => $possibleLocations,
                     ],
-                    [
-                        ':indexId' => $index->id
-                    ])
+                    ['not', ['id' => $index->id]]
+                ])
                 ->all();
 
             foreach ($results as $result) {

@@ -50,10 +50,10 @@ class m150403_184729_type_columns extends Migration
                 'type' => new Expression('concat(\''.addslashes($namespace.'\\').'\', type)')
             ];
 
-            $condition = ['in', 'type', $classes];
+            $condition = ['type' => $classes];
 
             foreach ($tables as $table) {
-                $this->alterColumn($table, 'type', 'string not null');
+                $this->alterColumn($table, 'type', $this->string()->notNull());
                 $this->update($table, $columns, $condition, [], false);
             }
         }

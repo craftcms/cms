@@ -188,7 +188,7 @@ class TagsController extends Controller
         $tags = Tag::find()
             ->groupId($tagGroupId)
             ->title(Db::escapeParam($search).'*')
-            ->where(['not in', 'elements.id', $excludeIds])
+            ->where(['not', ['elements.id' => $excludeIds]])
             ->all();
 
         $return = [];

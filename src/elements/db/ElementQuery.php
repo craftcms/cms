@@ -1656,7 +1656,7 @@ class ElementQuery extends Query implements ElementQueryInterface, Arrayable, Co
                 $this->subQuery->orderBy($orderBy);
             }
 
-            $this->subQuery->andWhere(['in', 'elements.id', $filteredElementIds]);
+            $this->subQuery->andWhere(['elements.id' => $filteredElementIds]);
 
             $this->_searchScores = $searchResults;
         }

@@ -421,7 +421,7 @@ abstract class Element extends Component implements ElementInterface
             $structureData = (new Query())
                 ->select($selectSql)
                 ->from('{{%structureelements}}')
-                ->where(['in', 'elementId', $sourceElementIds])
+                ->where(['elementId' => $sourceElementIds])
                 ->all();
 
             $db = Craft::$app->getDb();

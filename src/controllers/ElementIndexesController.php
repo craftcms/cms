@@ -325,7 +325,7 @@ class ElementIndexesController extends BaseElementsController
                 }
 
                 if ($descendantIds) {
-                    $query->andWhere(['not in', 'element.id', $descendantIds]);
+                    $query->andWhere(['not', ['element.id' => $descendantIds]]);
                 }
             }
         }

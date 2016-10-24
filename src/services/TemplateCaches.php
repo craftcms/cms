@@ -400,7 +400,7 @@ class TemplateCaches extends Component
             Craft::$app->getDb()->createCommand()
                 ->delete(
                     static::$_templateCachesTable,
-                    ['in', 'id', $cacheIds])
+                    ['id' => $cacheIds])
                 ->execute();
         }
 

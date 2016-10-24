@@ -722,7 +722,7 @@ class Matrix extends Component
             $deleteBlocksQuery = MatrixBlock::find()
                 ->ownerId($owner->id)
                 ->fieldId($field->id)
-                ->where(['not in', 'elements.id', $blockIds]);
+                ->where(['not', ['elements.id' => $blockIds]]);
 
             if ($field->localizeBlocks) {
                 $deleteBlocksQuery->ownerSiteId($owner->siteId);
@@ -975,7 +975,7 @@ class Matrix extends Component
                     'sortOrder'
                 ])
                 ->from('{{%relations}}')
-                ->where(['in', 'sourceId', array_keys($newBlockIds)])
+                ->where(['sourceId' => array_keys($newBlockIds)])
                 ->all();
 
             if ($relations) {

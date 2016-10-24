@@ -156,15 +156,8 @@ class DeleteStaleTemplateCaches extends Task
      */
     private function _getQuery()
     {
-        $query = (new Query())
-            ->from('{{%templatecachequeries}}');
-
-        if (is_array($this->_elementType)) {
-            $query->where(['in', 'type', $this->_elementType]);
-        } else {
-            $query->where(['type' => $this->_elementType]);
-        }
-
-        return $query;
+        return (new Query())
+            ->from('{{%templatecachequeries}}')
+            ->where(['type' => $this->_elementType]);
     }
 }

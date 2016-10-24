@@ -319,7 +319,7 @@ class AssetIndexer extends Component
             ->from('{{%assets}} AS fi')
             ->innerJoin('{{%volumefolders}} AS fo', '[[fi.folderId]] = [[fo.id]]')
             ->innerJoin('{{%volumes}} AS s', '[[s.id]] = [[fi.volumeId]]')
-            ->where(['in', 'fi.volumeId', $volumeIds])
+            ->where(['fi.volumeId' => $volumeIds])
             ->all();
 
         foreach ($assets as $asset) {

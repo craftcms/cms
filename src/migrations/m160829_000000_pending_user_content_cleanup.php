@@ -33,7 +33,7 @@ class m160829_000000_pending_user_content_cleanup extends Migration
             Craft::info('Found '.count($ids).' orphaned element IDs in the elements table: '.implode(', ', $ids));
 
             // Delete 'em
-            $this->delete('{{%elements}}', ['in', 'id', $ids]);
+            $this->delete('{{%elements}}', ['id' => $ids]);
 
             Craft::info('They have been murdered.');
         } else {

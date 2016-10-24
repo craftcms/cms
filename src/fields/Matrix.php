@@ -446,13 +446,10 @@ class Matrix extends Field implements EagerLoadingFieldInterface
         $map = (new Query())
             ->select('ownerId as source, id as target')
             ->from('{{%matrixblocks}}')
-            ->where(
-                [
-                    'and',
-                    'fieldId=:fieldId',
-                    ['in', 'ownerId', $sourceElementIds]
-                ],
-                [':fieldId' => $this->id])
+            ->where([
+                'fieldId' => $this->id,
+                'ownerId' => $sourceElementIds,
+            ])
             ->orderBy('sortOrder')
             ->all();
 

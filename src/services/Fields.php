@@ -467,7 +467,7 @@ class Fields extends Component
 
         if (!empty($missingContexts)) {
             $results = $this->_createFieldQuery()
-                ->where(['in', 'fields.context', $missingContexts])
+                ->where(['fields.context' => $missingContexts])
                 ->all();
 
             foreach ($results as $result) {
@@ -1057,7 +1057,7 @@ class Fields extends Component
             $allFieldsById = [];
 
             $results = $this->_createFieldQuery()
-                ->where(['in', 'id', $allFieldIds])
+                ->where(['id' => $allFieldIds])
                 ->all();
 
             foreach ($results as $result) {

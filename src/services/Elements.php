@@ -242,7 +242,7 @@ class Elements extends Component
                 ->select('type')
                 ->distinct(true)
                 ->from('{{%elements}}')
-                ->where(['in', 'id', $elementId])
+                ->where(['id' => $elementId])
                 ->column();
         } else {
             return (new Query())
@@ -593,11 +593,8 @@ class Elements extends Component
                         '{{%elements_i18n}}',
                         [
                             'and',
-                            'elementId = :elementId',
-                            ['not in', 'siteId', $supportedSiteIds]
-                        ],
-                        [
-                            ':elementId' => $element->id
+                            ['elementId' => $element->id],
+                            ['not', ['siteId' => $supportedSiteIds]]
                         ])
                     ->execute();
 
@@ -607,11 +604,8 @@ class Elements extends Component
                             $element->getContentTable(),
                             [
                                 'and',
-                                'elementId = :elementId',
-                                ['not in', 'siteId', $supportedSiteIds]
-                            ],
-                            [
-                                ':elementId' => $element->id
+                                ['elementId' => $element->id],
+                                ['not', ['siteId' => $supportedSiteIds]]
                             ])
                         ->execute();
                 }

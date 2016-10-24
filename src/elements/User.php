@@ -353,7 +353,7 @@ class User extends Element implements IdentityInterface
             $map = (new Query())
                 ->select('id as source, photoId as target')
                 ->from('{{%users}}')
-                ->where(['in', 'id', $sourceElementIds])
+                ->where(['id' => $sourceElementIds])
                 ->all();
 
             return [

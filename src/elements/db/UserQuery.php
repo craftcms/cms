@@ -334,7 +334,7 @@ class UserQuery extends ElementQuery
                 ->column();
 
             if (!empty($userIds)) {
-                $this->subQuery->andWhere(['in', 'elements.id', $userIds]);
+                $this->subQuery->andWhere(['elements.id' => $userIds]);
             } else {
                 return false;
             }
@@ -407,7 +407,7 @@ class UserQuery extends ElementQuery
                 $permissionConditions = [
                     'or',
                     'users.admin = 1',
-                    ['in', 'elements.id', $permittedUserIds]
+                    ['elements.id' => $permittedUserIds]
                 ];
             } else {
                 $permissionConditions = ['users.admin' => '1'];

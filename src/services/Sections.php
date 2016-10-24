@@ -737,7 +737,7 @@ class Sections extends Component
             $fieldLayoutIds = (new Query())
                 ->select('fieldLayoutId')
                 ->from('{{%entrytypes}}')
-                ->where(['in', 'id', $entryTypeIds])
+                ->where(['id' => $entryTypeIds])
                 ->column();
 
             if ($fieldLayoutIds) {
