@@ -259,12 +259,14 @@ class Routes extends Component
      */
     public function updateRouteOrder($routeIds)
     {
-        foreach ($routeIds as $order => $routeId) {
-            $data = ['sortOrder' => $order + 1];
-            $condition = ['id' => $routeId];
+        $db = Craft::$app->getDb();
 
-            Craft::$app->getDb()->createCommand()
-                ->update('{{%routes}}', $data, $condition)
+        foreach ($routeIds as $order => $routeId) {
+            $db->createCommand()
+                ->update(
+                    '{{%routes}}',
+                    ['sortOrder' => $order + 1],
+                    ['id' => $routeId])
                 ->execute();
         }
     }

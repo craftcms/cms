@@ -523,8 +523,10 @@ class User extends \yii\web\User
                         ->update(
                             '{{%sessions}}',
                             [],
-                            ['and', 'userId=:userId', 'uid=:uid'],
-                            [':userId' => $this->getId(), ':uid' => $tokenUid])
+                            [
+                                'userId' => $this->getId(),
+                                'uid' => $tokenUid
+                            ])
                         ->execute();
                 }
             }

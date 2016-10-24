@@ -316,7 +316,7 @@ class m160804_110002_userphotos_to_assets extends Migration
             $db = Craft::$app->getDb();
             foreach ($userlist as $userId => $assetId) {
                 $db->createCommand()
-                    ->update('{{%users}}', ['photoId' => $assetId], 'id = :userId', [':userId' => $userId])
+                    ->update('{{%users}}', ['photoId' => $assetId], ['id' => $userId])
                     ->execute();
             }
         }
