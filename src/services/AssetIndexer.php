@@ -314,9 +314,9 @@ class AssetIndexer extends Component
         $processedFiles = array_flip($processedFiles);
         $assets = (new Query())
             ->select(['fi.volumeId', 'fi.id AS assetId', 'fi.filename', 'fo.path', 's.name AS volumeName'])
-            ->from(['{{%assets}} AS fi'])
-            ->innerJoin('{{%volumefolders}} AS fo', '[[fi.folderId]] = [[fo.id]]')
-            ->innerJoin('{{%volumes}} AS s', '[[s.id]] = [[fi.volumeId]]')
+            ->from(['{{%assets}} fi'])
+            ->innerJoin('{{%volumefolders}} fo', '[[fi.folderId]] = [[fo.id]]')
+            ->innerJoin('{{%volumes}} s', '[[s.id]] = [[fi.volumeId]]')
             ->where(['fi.volumeId' => $volumeIds])
             ->all();
 
