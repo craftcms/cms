@@ -102,7 +102,7 @@ class DbBackup
 
         $this->_processHeader();
 
-        $tableNames = Craft::$app->getDb()->getSchema()->getTableNames();
+        $tableNames = $this->_getTableNames();
 
         foreach ($tableNames as $tableName) {
             $this->_processResult($tableName);
@@ -168,6 +168,29 @@ class DbBackup
     // =========================================================================
 
     /**
+     * Returns all of the table names that start with the table prefix in the DB config.
+     *
+     * @return string[]
+     */
+    private function _getTableNames()
+    {
+        $tableNames = Craft::$app->getDb()->getSchema()->getTableNames();
+        $tablePrefix = Craft::$app->getConfig()->get('tablePrefix', Config::CATEGORY_DB);
+
+        if (!$tablePrefix) {
+            return $tableNames;
+        }
+
+        foreach ($tableNames as $i => $tableName) {
+            if (!StringHelper::startsWith($tableName, $tablePrefix, false)) {
+                unset($tableNames[$i]);
+            }
+        }
+
+        return array_values($tableNames);
+    }
+
+    /**
      * @param array $sql
      *
      * @return array
@@ -207,7 +230,7 @@ class DbBackup
         $db = Craft::$app->getDb();
         $sql = $db->getSchema()->getQueryBuilder()->checkIntegrity(false).PHP_EOL.PHP_EOL;
 
-        $results = $db->getSchema()->getTableNames();
+        $results = $this->_getTableNames();
 
         foreach ($results as $result) {
             $sql .= $this->_processResult($result, 'delete');
@@ -219,7 +242,6 @@ class DbBackup
 
         Craft::info('Database nuked.');
     }
-
 
     /**
      * Generate the foreign key constraints for all tables.

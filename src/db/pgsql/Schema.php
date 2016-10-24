@@ -118,19 +118,4 @@ class Schema extends \yii\db\pgsql\Schema
 
         return parent::getLastInsertID($sequenceName);
     }
-
-    // Protected Methods
-    // =========================================================================
-
-    /**
-     * Returns all table names in the database which start with the tablePrefix.
-     *
-     * @param string $schema
-     *
-     * @return string
-     */
-    protected function findTableNames($schema = null)
-    {
-        return Db::filterTablesByPrefix(parent::findTableNames($schema));
-    }
 }
