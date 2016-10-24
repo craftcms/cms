@@ -192,7 +192,7 @@ class CategoryQuery extends ElementQuery
         }
 
         $refs = ArrayHelper::toArray($this->ref);
-        $conditional = ['or'];
+        $condition = ['or'];
         $joinCategoryGroups = false;
 
         foreach ($refs as $ref) {
@@ -200,9 +200,9 @@ class CategoryQuery extends ElementQuery
 
             if ($parts) {
                 if (count($parts) == 1) {
-                    $conditional[] = Db::parseParam('elements_i18n.slug', $parts[0]);
+                    $condition[] = Db::parseParam('elements_i18n.slug', $parts[0]);
                 } else {
-                    $conditional[] = [
+                    $condition[] = [
                         'and',
                         Db::parseParam('categorygroups.handle', $parts[0]),
                         Db::parseParam('elements_i18n.slug', $parts[1])
@@ -212,7 +212,7 @@ class CategoryQuery extends ElementQuery
             }
         }
 
-        $this->subQuery->andWhere($conditional);
+        $this->subQuery->andWhere($condition);
 
         if ($joinCategoryGroups) {
             $this->subQuery->innerJoin('{{%categorygroups}} categorygroups', '[[categorygroups.id]] = [[categories.groupId]]');

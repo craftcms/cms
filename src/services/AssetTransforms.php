@@ -311,22 +311,22 @@ class AssetTransforms extends Component
 
         // Get the index conditions
         $transformsByFingerprint = [];
-        $indexConditions = ['or'];
+        $indexCondition = ['or'];
 
         foreach ($transforms as $transform) {
             $transform = $this->normalizeTransform($transform);
             $location = $fingerprint = $this->_getTransformFolderName($transform);
 
-            $condition = ['and', ['location' => $location]];
+            $transformCondition = ['and', ['location' => $location]];
 
             if (is_null($transform->format)) {
-                $condition[] = ['format' => null];
+                $transformCondition[] = ['format' => null];
             } else {
-                $condition[] = ['format' => $transform->format];
+                $transformCondition[] = ['format' => $transform->format];
                 $fingerprint .= ':'.$transform->format;
             }
 
-            $indexConditions[] = $condition;
+            $indexCondition[] = $transformCondition;
             $transformsByFingerprint[$fingerprint] = $transform;
         }
 
@@ -349,7 +349,7 @@ class AssetTransforms extends Component
             ->where([
                 'and',
                 ['assetId' => array_keys($assetsById)],
-                $indexConditions
+                $indexCondition
             ])
             ->all();
 

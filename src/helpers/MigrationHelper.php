@@ -383,26 +383,26 @@ class MigrationHelper
 
             // Update this table with the new element ID
             $columns = ['id' => $elementId];
-            $conditions = ['id_old' => $row['id_old']];
+            $condition = ['id_old' => $row['id_old']];
 
             if ($migration !== null) {
-                $migration->update($tableName, $columns, $conditions);
+                $migration->update($tableName, $columns, $condition);
             } else {
                 $db->createCommand()
-                    ->update($tableName, $columns, $conditions)
+                    ->update($tableName, $columns, $condition)
                     ->execute();
             }
 
             // Update the other tables' new FK columns
             foreach ($fks as $fk) {
                 $columns = [$fk->column => $elementId];
-                $conditions = [$fk->column.'_old' => $row['id_old']];
+                $condition = [$fk->column.'_old' => $row['id_old']];
 
                 if ($migration !== null) {
-                    $migration->update($fk->table->name, $columns, $conditions);
+                    $migration->update($fk->table->name, $columns, $condition);
                 } else {
                     $db->createCommand()
-                        ->update($fk->table->name, $columns, $conditions)
+                        ->update($fk->table->name, $columns, $condition)
                         ->execute();
                 }
             }

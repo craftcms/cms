@@ -289,8 +289,6 @@ class Db
             return '';
         }
 
-        $conditions = [];
-
         $value = ArrayHelper::toArray($value);
 
         if (!count($value)) {
@@ -300,10 +298,12 @@ class Db
         $firstVal = StringHelper::toLowerCase(ArrayHelper::getFirstValue($value));
 
         if ($firstVal == 'and' || $firstVal == 'or') {
-            $join = array_shift($value);
+            $conditionOperator = array_shift($value);
         } else {
-            $join = 'or';
+            $conditionOperator = 'or';
         }
+
+        $condition = [$conditionOperator];
 
         foreach ($value as $val) {
             static::_normalizeEmptyValue($val);
@@ -311,13 +311,13 @@ class Db
 
             if (StringHelper::toLowerCase($val) == ':empty:') {
                 if ($operator == '=') {
-                    $conditions[] = [
+                    $condition[] = [
                         'or',
                         [$column => null],
                         [$column => '']
                     ];
                 } else {
-                    $conditions[] = [
+                    $condition[] = [
                         'not',
                         [
                             'or',
@@ -342,25 +342,19 @@ class Db
                 $val = str_replace('\*', '*', $val);
 
                 if ($like) {
-                    $conditions[] = [
+                    $condition[] = [
                         ($operator == '=' ? 'like' : 'not like'),
                         $column,
                         $val,
                         false
                     ];
                 } else {
-                    $conditions[] = [$operator, $column, $val];
+                    $condition[] = [$operator, $column, $val];
                 }
             }
         }
 
-        if (count($conditions) == 1) {
-            return $conditions[0];
-        }
-
-        array_unshift($conditions, $join);
-
-        return $conditions;
+        return $condition;
     }
 
     /**
