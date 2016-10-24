@@ -153,7 +153,7 @@ class Routes extends Component
             // Get the next biggest sort order
             $maxSortOrder = (new Query())
                 ->from(['{{%routes}}'])
-                ->max('sortOrder');
+                ->max('[[sortOrder]]');
 
             $routeRecord->sortOrder = $maxSortOrder + 1;
         }
