@@ -221,7 +221,6 @@ class Dashboard extends Component
             // Enabled by default.
             if ($isNewWidget) {
                 $widgetRecord->enabled = true;
-                $widgetRecord->colspan = $widget->colspan;
             }
 
             $widgetRecord->save(false);
@@ -369,7 +368,7 @@ class Dashboard extends Component
         $user = Craft::$app->getUser()->getIdentity();
 
         // Recent Entries widget
-        $this->saveWidget($this->createWidget(['type' => RecentEntriesWidget::class, 'colspan' => false]));
+        $this->saveWidget($this->createWidget(RecentEntriesWidget::class));
 
         // Get Help widget
         if ($user->admin) {
@@ -378,7 +377,7 @@ class Dashboard extends Component
 
         // Updates widget
         if ($user->can('performupdates')) {
-            $this->saveWidget($this->createWidget(['type' => UpdatesWidget::class, 'colspan' => false]));
+            $this->saveWidget($this->createWidget(UpdatesWidget::class));
         }
 
         // Blog & Tonic feed widget
