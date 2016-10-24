@@ -154,7 +154,7 @@ class EntryRevisions extends Component
             ])
             ->from('{{%entrydrafts}}')
             ->where(['entryId' => $entryId, 'siteId' => $siteId])
-            ->orderBy('name asc')
+            ->orderBy(['name' => SORT_ASC])
             ->all();
 
         foreach ($results as $result) {
@@ -389,7 +389,7 @@ class EntryRevisions extends Component
             ])
             ->from('{{%entryversions}}')
             ->where(['entryId' => $entryId, 'siteId' => $siteId])
-            ->orderBy('dateCreated desc')
+            ->orderBy(['dateCreated' => SORT_DESC])
             ->offset($includeCurrent ? 0 : 1)
             ->limit($limit)
             ->all();

@@ -1004,7 +1004,7 @@ class Fields extends Component
             ->innerJoin('{{%fieldlayoutfields}} flf', '[[flf.fieldId]] = [[fields.id]]')
             ->innerJoin('{{%fieldlayouttabs}} flt', '[[flt.id]] = [[flf.tabId]]')
             ->where(['flf.layoutId' => $layoutId])
-            ->orderBy('flt.sortOrder, flf.sortOrder')
+            ->orderBy(['flt.sortOrder' => SORT_ASC, 'flf.sortOrder' => SORT_ASC])
             ->all();
 
         foreach ($results as $result) {
@@ -1243,7 +1243,7 @@ class Fields extends Component
                 'name',
             ])
             ->from('{{%fieldgroups}}')
-            ->orderBy('name');
+            ->orderBy(['name' => SORT_ASC]);
     }
 
     /**
@@ -1269,7 +1269,7 @@ class Fields extends Component
                 'fields.settings'
             ])
             ->from('{{%fields}} fields')
-            ->orderBy('fields.name');
+            ->orderBy(['fields.name' => SORT_ASC]);
     }
 
     /**
@@ -1302,7 +1302,7 @@ class Fields extends Component
                 'sortOrder',
             ])
             ->from('{{%fieldlayouttabs}}')
-            ->orderBy('sortOrder');
+            ->orderBy(['sortOrder' => SORT_ASC]);
     }
 
     /**

@@ -457,7 +457,7 @@ class Dashboard extends Component
             ])
             ->from('{{%widgets}}')
             ->where(['userId' => $userId, 'enabled' => '1'])
-            ->orderBy('sortOrder')
+            ->orderBy(['sortOrder' => SORT_ASC])
             ->all();
 
         $widgets = [];

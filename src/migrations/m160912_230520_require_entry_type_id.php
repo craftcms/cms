@@ -24,7 +24,7 @@ class m160912_230520_require_entry_type_id extends Migration
             ->select('et.id')
             ->from('{{%entrytypes}} et')
             ->where('[[et.sectionId]] = [[s.id]]')
-            ->orderBy('sortOrder asc')
+            ->orderBy(['sortOrder' => SORT_ASC])
             ->limit(1);
 
         $results = (new Query())

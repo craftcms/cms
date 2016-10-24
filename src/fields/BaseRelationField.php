@@ -214,7 +214,7 @@ abstract class BaseRelationField extends Field implements PreviewableFieldInterf
             ]);
 
             if ($this->sortable) {
-                $query->orderBy('sortOrder');
+                $query->orderBy(['sortOrder' => SORT_ASC]);
             }
 
             if (!$this->allowMultipleSources && $this->source) {
@@ -365,7 +365,7 @@ abstract class BaseRelationField extends Field implements PreviewableFieldInterf
                     ['sourceSiteId' => null]
                 ]
             ])
-            ->orderBy('sortOrder')
+            ->orderBy(['sortOrder' => SORT_ASC])
             ->all();
 
         // Figure out which target site to use

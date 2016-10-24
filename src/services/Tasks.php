@@ -575,7 +575,7 @@ class Tasks extends Component
             if ($this->_nextPendingTask === null) {
                 $taskRecord = TaskRecord::find()
                     ->where(['status' => Task::STATUS_PENDING])
-                    ->orderBy('dateCreated')
+                    ->orderBy(['dateCreated' => SORT_ASC])
                     ->roots()
                     ->one();
 
@@ -775,7 +775,7 @@ EOT;
                 'settings',
             ])
             ->from('{{%tasks}}')
-            ->orderBy('root asc, lft asc');
+            ->orderBy(['root' => SORT_ASC, 'lft' => SORT_ASC]);
     }
 
     /**

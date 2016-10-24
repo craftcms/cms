@@ -462,7 +462,7 @@ abstract class Element extends Component implements ElementInterface
                 ->select($sourceSelectSql.', elementId as target')
                 ->from('structureelements')
                 ->where($condition)
-                ->orderBy('structureId, lft')
+                ->orderBy(['structureId' => SORT_ASC, 'lft' => SORT_ASC])
                 ->all();
 
             return [

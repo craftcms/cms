@@ -858,7 +858,7 @@ class Sites extends Component
         return (new Query())
             ->select('id, name, handle, language, hasUrls, baseUrl')
             ->from('{{%sites}}')
-            ->orderBy('sortOrder');
+            ->orderBy(['sortOrder' => SORT_ASC]);
     }
 
     /**

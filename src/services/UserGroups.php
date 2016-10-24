@@ -63,7 +63,7 @@ class UserGroups extends Component
     public function getAllGroups($indexBy = null)
     {
         $groups = UserGroupRecord::find()
-            ->orderBy('name')
+            ->orderBy(['name' => SORT_ASC])
             ->indexBy($indexBy)
             ->all();
 

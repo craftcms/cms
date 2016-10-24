@@ -165,7 +165,7 @@ class Deprecator extends Component
 
             $results = $this->_createDeprecationErrorQuery()
                 ->limit($limit)
-                ->orderBy('lastOccurrence desc')
+                ->orderBy(['lastOccurrence' => SORT_DESC])
                 ->all();
 
             foreach ($results as $result) {

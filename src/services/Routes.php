@@ -103,7 +103,7 @@ class Routes extends Component
                 ['siteId' => null],
                 ['siteId' => Craft::$app->getSites()->currentSite->id]
             ])
-            ->orderBy('sortOrder')
+            ->orderBy(['sortOrder' => SORT_ASC])
             ->all();
 
         if ($results) {

@@ -802,7 +802,7 @@ class Matrix extends Component
                 'sortOrder'
             ])
             ->from('{{%matrixblocktypes}}')
-            ->orderBy('sortOrder');
+            ->orderBy(['sortOrder' => SORT_ASC]);
     }
 
     /**

@@ -136,7 +136,7 @@ class Categories extends Component
         if (!$this->_fetchedAllCategoryGroups) {
             /** @var CategoryGroupRecord[] $groupRecords */
             $groupRecords = CategoryGroupRecord::find()
-                ->orderBy('name asc')
+                ->orderBy(['name' => SORT_ASC])
                 ->with('structure')
                 ->all();
 

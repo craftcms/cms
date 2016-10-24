@@ -99,7 +99,7 @@ class DeleteStaleTemplateCaches extends Task
                 $this->_batch++;
                 $this->_batchRows = $this->_getQuery()
                     ->select(['cacheId', 'query'])
-                    ->orderBy('id')
+                    ->orderBy(['id' => SORT_ASC])
                     ->offset(100 * ($this->_batch - 1) - $this->_totalDeletedCriteriaRows)
                     ->limit(100)
                     ->all();

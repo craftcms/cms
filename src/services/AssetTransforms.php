@@ -1208,7 +1208,7 @@ class AssetTransforms extends Component
                 'dimensionChangeTime'
             ])
             ->from('{{%assettransforms}}')
-            ->orderBy('name');
+            ->orderBy(['name' => SORT_ASC]);
     }
 
     /**

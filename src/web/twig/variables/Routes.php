@@ -34,7 +34,7 @@ class Routes
         $results = (new Query())
             ->select(['id', 'siteId', 'uriParts', 'template'])
             ->from('{{%routes}}')
-            ->orderBy('sortOrder')
+            ->orderBy(['sortOrder' => SORT_ASC])
             ->all();
 
         foreach ($results as $result) {

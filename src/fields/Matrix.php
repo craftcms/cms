@@ -450,7 +450,7 @@ class Matrix extends Field implements EagerLoadingFieldInterface
                 'fieldId' => $this->id,
                 'ownerId' => $sourceElementIds,
             ])
-            ->orderBy('sortOrder')
+            ->orderBy(['sortOrder' => SORT_ASC])
             ->all();
 
         return [

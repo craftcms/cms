@@ -658,7 +658,7 @@ class Volumes extends Component
                 'settings',
             ])
             ->from('{{%volumes}}')
-            ->orderBy('sortOrder');
+            ->orderBy(['sortOrder' => SORT_ASC]);
     }
 
     /**

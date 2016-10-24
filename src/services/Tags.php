@@ -106,7 +106,7 @@ class Tags extends Component
     {
         if (!$this->_fetchedAllTagGroups) {
             $this->_tagGroupsById = TagGroupRecord::find()
-                ->orderBy('name')
+                ->orderBy(['name' => SORT_ASC])
                 ->indexBy('id')
                 ->all();
 

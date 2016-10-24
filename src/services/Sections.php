@@ -337,7 +337,7 @@ class Sections extends Component
             ->from('{{%sections_i18n}} sections_i18n')
             ->innerJoin('{{%sites}} sites', '[[sites.id]] = [[sections_i18n.siteId]]')
             ->where(['sections_i18n.sectionId' => $sectionId])
-            ->orderBy('sites.sortOrder')
+            ->orderBy(['sites.sortOrder' => SORT_ASC])
             ->indexBy($indexBy)
             ->all();
 
@@ -833,7 +833,7 @@ class Sections extends Component
     {
         $entryTypeRecords = EntryTypeRecord::find()
             ->where(['sectionId' => $sectionId])
-            ->orderBy('sortOrder')
+            ->orderBy(['sortOrder' => SORT_ASC])
             ->indexBy($indexBy)
             ->all();
 
@@ -1151,6 +1151,6 @@ class Sections extends Component
             ->select('sections.id, sections.structureId, sections.name, sections.handle, sections.type, sections.enableVersioning, structures.maxLevels')
             ->leftJoin('{{%structures}} structures', '[[structures.id]] = [[sections.structureId]]')
             ->from('{{%sections}} sections')
-            ->orderBy('name');
+            ->orderBy(['name' => SORT_ASC]);
     }
 }

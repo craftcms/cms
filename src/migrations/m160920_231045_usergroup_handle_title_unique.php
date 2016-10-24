@@ -52,7 +52,7 @@ class m160920_231045_usergroup_handle_title_unique extends Migration
                 $rows = (new Query())
                     ->from('{{%usergroups}}')
                     ->where([$type => $duplicate[$type]])
-                    ->orderBy('dateCreated')
+                    ->orderBy(['dateCreated' => SORT_ASC])
                     ->all();
 
                 // Find anything?

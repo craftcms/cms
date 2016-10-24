@@ -462,7 +462,7 @@ class MigrationManager extends Component
             $query = (new Query())
                 ->select('version as name, applyTime')
                 ->from($this->migrationTable)
-                ->orderBy('name desc');
+                ->orderBy(['name' => SORT_DESC]);
 
             if ($this->type === self::TYPE_PLUGIN) {
                 $query->where(['pluginId' => $this->pluginId]);
@@ -476,7 +476,7 @@ class MigrationManager extends Component
         $query = (new Query())
             ->select('name, applyTime')
             ->from($this->migrationTable)
-            ->orderBy('name desc')
+            ->orderBy(['name' => SORT_DESC])
             ->where(['type' => $this->type]);
 
         if ($this->type === self::TYPE_PLUGIN) {
