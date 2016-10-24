@@ -102,7 +102,7 @@ class TagQuery extends ElementQuery
             $query = new Query();
             $this->groupId = $query
                 ->select(['id'])
-                ->from('{{%taggroups}}')
+                ->from(['{{%taggroups}}'])
                 ->where(Db::parseParam('handle', $value))
                 ->column();
         }

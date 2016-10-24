@@ -62,7 +62,7 @@ class m150403_185142_volumes extends Migration
         // Update permissions
         $permissions = (new Query())
             ->select(['id', 'name'])
-            ->from('{{%userpermissions}}')
+            ->from(['{{%userpermissions}}'])
             ->where(['like', 'name', 'assetsource'])
             ->all();
 

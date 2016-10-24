@@ -96,7 +96,7 @@ class Deprecator extends Component
             // Do we already have this one logged?
             $existingId = (new Query())
                 ->select(['id'])
-                ->from(static::$_tableName)
+                ->from([static::$_tableName])
                 ->where([
                     'key' => $log->key,
                     'fingerprint' => $log->fingerprint
@@ -147,7 +147,7 @@ class Deprecator extends Component
     public function getTotalLogs()
     {
         return (new Query())
-            ->from(static::$_tableName)
+            ->from([static::$_tableName])
             ->count('id');
     }
 
@@ -251,7 +251,7 @@ class Deprecator extends Component
                 'message',
                 'traces',
             ])
-            ->from(static::$_tableName);
+            ->from([static::$_tableName]);
     }
 
     /**

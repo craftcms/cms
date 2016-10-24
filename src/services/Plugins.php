@@ -153,7 +153,7 @@ class Plugins extends Component
                 'settings',
                 'installDate'
             ])
-            ->from('{{%plugins}}')
+            ->from(['{{%plugins}}'])
             ->indexBy('handle')
             ->all();
 

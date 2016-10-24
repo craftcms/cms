@@ -170,7 +170,7 @@ class UserQuery extends ElementQuery
             $query = new Query();
             $this->groupId = $query
                 ->select(['id'])
-                ->from('{{%usergroups}}')
+                ->from(['{{%usergroups}}'])
                 ->where(Db::parseParam('handle', $value))
                 ->column();
         }
@@ -329,7 +329,7 @@ class UserQuery extends ElementQuery
             $query = new Query();
             $userIds = $query
                 ->select(['userId'])
-                ->from('{{%usergroups_users}}')
+                ->from(['{{%usergroups_users}}'])
                 ->where(Db::parseParam('groupId', $this->groupId))
                 ->column();
 
@@ -382,7 +382,7 @@ class UserQuery extends ElementQuery
             // Convert it to the actual permission ID, or false if the permission doesn't have an ID yet.
             $this->can = (new Query())
                 ->select(['id'])
-                ->from('{{%userpermissions}}')
+                ->from(['{{%userpermissions}}'])
                 ->where(['name' => strtolower($this->can)])
                 ->scalar();
         }
@@ -392,14 +392,14 @@ class UserQuery extends ElementQuery
             // Get the users that have that permission directly
             $permittedUserIds = (new Query())
                 ->select(['userId'])
-                ->from('{{%userpermissions_users}}')
+                ->from(['{{%userpermissions_users}}'])
                 ->where(['permissionId' => $this->can])
                 ->column();
 
             // Get the users that have that permission via a user group
             $permittedUserIdsViaGroups = (new Query())
                 ->select(['g_u.userId'])
-                ->from('{{%usergroups_users}} g_u')
+                ->from(['{{%usergroups_users}} g_u'])
                 ->innerJoin('{{%userpermissions_usergroups}} p_g', '[[p_g.groupId]] = [[g_u.groupId]]')
                 ->where(['p_g.permissionId' => $this->can])
                 ->column();

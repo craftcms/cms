@@ -84,7 +84,7 @@ class Content extends Component
         $this->fieldContext = $element->getFieldContext();
 
         $row = (new Query())
-            ->from($this->contentTable)
+            ->from([$this->contentTable])
             ->where([
                 'elementId' => $element->id,
                 'siteId' => $element->siteId

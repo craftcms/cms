@@ -140,7 +140,7 @@ class UserGroups extends Component
                 'g.name',
                 'g.handle',
             ])
-            ->from('{{%usergroups}} g')
+            ->from(['{{%usergroups}} g'])
             ->innerJoin('{{%usergroups_users}} gu', '[[gu.groupId]] = [[g.id]]')
             ->where(['gu.userId' => $userId])
             ->indexBy($indexBy)

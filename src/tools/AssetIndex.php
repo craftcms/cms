@@ -164,7 +164,7 @@ class AssetIndex extends Tool
             // Clean up stale indexing data (all sessions that have all recordIds set)
             $sessionsInProgress = (new Query())
                 ->select(['sessionId'])
-                ->from('{{%assetindexdata}}')
+                ->from(['{{%assetindexdata}}'])
                 ->where(['recordId' => null])
                 ->groupBy('sessionId')
                 ->scalar();

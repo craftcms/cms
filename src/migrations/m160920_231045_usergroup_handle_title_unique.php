@@ -38,7 +38,7 @@ class m160920_231045_usergroup_handle_title_unique extends Migration
         // Get any duplicates.
         $duplicates = (new Query())
             ->select($type)
-            ->from('{{%usergroups}}')
+            ->from(['{{%usergroups}}'])
             ->groupBy($type)
             ->having('count('.$this->db->quoteValue($type).') > '.$this->db->quoteValue('1'))
             ->all();
@@ -50,7 +50,7 @@ class m160920_231045_usergroup_handle_title_unique extends Migration
                 echo '    > fixing duplicate "'.$duplicate[$type].'" user group '.$type."s\n";
 
                 $rows = (new Query())
-                    ->from('{{%usergroups}}')
+                    ->from(['{{%usergroups}}'])
                     ->where([$type => $duplicate[$type]])
                     ->orderBy(['dateCreated' => SORT_ASC])
                     ->all();
@@ -73,7 +73,7 @@ class m160920_231045_usergroup_handle_title_unique extends Migration
                                 }
 
                                 $exists = (new Query())
-                                    ->from('{{%usergroups}}')
+                                    ->from(['{{%usergroups}}'])
                                     ->where([$type => $newString])
                                     ->exists();
 

@@ -145,7 +145,7 @@ class Craft extends Yii
             $fieldHandles = (new Query())
                 ->select(['handle'])
                 ->distinct(true)
-                ->from('{{%fields}}')
+                ->from(['{{%fields}}'])
                 ->column();
 
             $properties = [];

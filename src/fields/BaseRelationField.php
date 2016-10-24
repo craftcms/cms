@@ -352,7 +352,7 @@ abstract class BaseRelationField extends Field implements PreviewableFieldInterf
         // Return any relation data on these elements, defined with this field
         $map = (new Query())
             ->select(['sourceId as source', 'targetId as target'])
-            ->from('{{%relations}}')
+            ->from(['{{%relations}}'])
             ->where([
                 'and',
                 [

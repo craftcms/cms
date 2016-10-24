@@ -171,7 +171,7 @@ class CategoryQuery extends ElementQuery
                 $query = new Query();
                 $this->structureId = $query
                     ->select(['structureId'])
-                    ->from('{{%categorygroups}}')
+                    ->from(['{{%categorygroups}}'])
                     ->where(Db::parseParam('id', $this->groupId))
                     ->scalar();
             }

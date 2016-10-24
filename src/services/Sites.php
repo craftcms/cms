@@ -407,7 +407,7 @@ class Sites extends Component
             if (Craft::$app->getIsInstalled()) {
                 // Get the next biggest sort order
                 $maxSortOrder = (new Query())
-                    ->from('{{%sites}}')
+                    ->from(['{{%sites}}'])
                     ->max('[[sortOrder]]');
             }
 
@@ -454,7 +454,7 @@ class Sites extends Component
             // Create site settings for each of the category groups
             $allSiteSettings = (new Query())
                 ->select(['groupId', 'uriFormat'])
-                ->from('{{%categorygroups_i18n}}')
+                ->from(['{{%categorygroups_i18n}}'])
                 ->where(['siteId' => $this->getPrimarySite()->id])
                 ->all();
 
@@ -592,7 +592,7 @@ class Sites extends Component
         // Get the section IDs that are enabled for this site
         $sectionIds = (new Query())
             ->select(['sectionId'])
-            ->from('{{%sections_i18n}}')
+            ->from(['{{%sections_i18n}}'])
             ->where(['siteId' => $site->id])
             ->column();
 
@@ -621,7 +621,7 @@ class Sites extends Component
                 // Get all of the entry IDs in those sections
                 $entryIds = (new Query())
                     ->select(['id'])
-                    ->from('{{%entries}}')
+                    ->from(['{{%entries}}'])
                     ->where(['sectionId' => $soloSectionIds])
                     ->column();
 
@@ -672,7 +672,7 @@ class Sites extends Component
                     // All the Matrix tables
                     $blockIds = (new Query())
                         ->select(['id'])
-                        ->from('{{%matrixblocks}}')
+                        ->from(['{{%matrixblocks}}'])
                         ->where(['ownerId' => $entryIds])
                         ->column();
 
@@ -856,7 +856,7 @@ class Sites extends Component
     {
         return (new Query())
             ->select(['id', 'name', 'handle', 'language', 'hasUrls', 'baseUrl'])
-            ->from('{{%sites}}')
+            ->from(['{{%sites}}'])
             ->orderBy(['sortOrder' => SORT_ASC]);
     }
 
@@ -886,7 +886,7 @@ class Sites extends Component
         if ($nonLocalizedElementTypes) {
             $elementIds = (new Query())
                 ->select(['id'])
-                ->from('{{%elements}}')
+                ->from(['{{%elements}}'])
                 ->where(['type' => $nonLocalizedElementTypes])
                 ->column();
 

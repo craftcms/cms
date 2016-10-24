@@ -128,7 +128,7 @@ class TemplateCaches extends Component
 
         $query = (new Query())
             ->select(['body'])
-            ->from(static::$_templateCachesTable)
+            ->from([static::$_templateCachesTable])
             ->where([
                 'and',
                 [
@@ -392,7 +392,7 @@ class TemplateCaches extends Component
 
         $cacheIds = (new Query())
             ->select(['cacheId'])
-            ->from(static::$_templateCacheQueriesTable)
+            ->from([static::$_templateCacheQueriesTable])
             ->where(['type' => $elementType])
             ->column();
 
@@ -494,7 +494,7 @@ class TemplateCaches extends Component
         $cacheIds = (new Query())
             ->select(['cacheId'])
             ->distinct(true)
-            ->from(static::$_templateCacheElementsTable)
+            ->from([static::$_templateCacheElementsTable])
             ->where(['elementId' => $elementId])
             ->column();
 

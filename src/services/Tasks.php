@@ -774,7 +774,7 @@ EOT;
                 'type',
                 'settings',
             ])
-            ->from('{{%tasks}}')
+            ->from(['{{%tasks}}'])
             ->orderBy(['root' => SORT_ASC, 'lft' => SORT_ASC]);
     }
 

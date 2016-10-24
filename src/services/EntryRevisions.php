@@ -152,7 +152,7 @@ class EntryRevisions extends Component
                 'dateUpdated',
                 'uid',
             ])
-            ->from('{{%entrydrafts}}')
+            ->from(['{{%entrydrafts}}'])
             ->where(['entryId' => $entryId, 'siteId' => $siteId])
             ->orderBy(['name' => SORT_ASC])
             ->all();
@@ -216,7 +216,7 @@ class EntryRevisions extends Component
         if (!$draft->name && $draft->id) {
             // Get the total number of existing drafts for this entry/site
             $totalDrafts = (new Query())
-                ->from('{{%entrydrafts}}')
+                ->from(['{{%entrydrafts}}'])
                 ->where(['entryId' => $draft->id, 'siteId' => $draft->siteId])
                 ->count('id');
 
@@ -387,7 +387,7 @@ class EntryRevisions extends Component
                 'dateUpdated',
                 'uid',
             ])
-            ->from('{{%entryversions}}')
+            ->from(['{{%entryversions}}'])
             ->where(['entryId' => $entryId, 'siteId' => $siteId])
             ->orderBy(['dateCreated' => SORT_DESC])
             ->offset($includeCurrent ? 0 : 1)
@@ -417,7 +417,7 @@ class EntryRevisions extends Component
     {
         // Get the total number of existing versions for this entry/site
         $totalVersions = (new Query())
-            ->from('{{%entryversions}}')
+            ->from(['{{%entryversions}}'])
             ->where(['entryId' => $entry->id, 'siteId' => $entry->siteId])
             ->count('id');
 

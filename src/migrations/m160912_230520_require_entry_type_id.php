@@ -22,7 +22,7 @@ class m160912_230520_require_entry_type_id extends Migration
         // Get all of the sections' primary entry type IDs
         $subQuery = (new Query())
             ->select(['et.id'])
-            ->from('{{%entrytypes}} et')
+            ->from(['{{%entrytypes}} et'])
             ->where('[[et.sectionId]] = [[s.id]]')
             ->orderBy(['sortOrder' => SORT_ASC])
             ->limit(1);
@@ -32,7 +32,7 @@ class m160912_230520_require_entry_type_id extends Migration
                 'sectionId' => 's.id',
                 'typeId' => $subQuery
             ])
-            ->from('{{%sections}} s')
+            ->from(['{{%sections}} s'])
             ->all();
 
         if ($results) {
@@ -58,7 +58,7 @@ class m160912_230520_require_entry_type_id extends Migration
         // Are there any entries that still don't have a type?
         $typelessEntryIds = (new Query())
             ->select(['id'])
-            ->from('{{%entries}}')
+            ->from(['{{%entries}}'])
             ->where(['typeId' => null])
             ->column();
 

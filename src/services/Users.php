@@ -296,7 +296,7 @@ class Users extends Component
         try {
             $preferences = (new Query())
                 ->select(['preferences'])
-                ->from('{{%userpreferences}}')
+                ->from(['{{%userpreferences}}'])
                 ->where(['userId' => $userId])
                 ->scalar();
 
@@ -881,7 +881,7 @@ class Users extends Component
     public function hasUserShunnedMessage($userId, $message)
     {
         return (new Query())
-            ->from('{{%shunnedmessages}}')
+            ->from(['{{%shunnedmessages}}'])
             ->where([
                 'and',
                 [
@@ -932,7 +932,7 @@ class Users extends Component
 
             $userIds = (new Query())
                 ->select(['id'])
-                ->from('{{%users}}')
+                ->from(['{{%users}}'])
                 ->where([
                     'and',
                     ['pending' => '1'],

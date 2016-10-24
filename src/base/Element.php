@@ -420,7 +420,7 @@ abstract class Element extends Component implements ElementInterface
 
             $structureData = (new Query())
                 ->select($selectColumns)
-                ->from('{{%structureelements}}')
+                ->from(['{{%structureelements}}'])
                 ->where(['elementId' => $sourceElementIds])
                 ->all();
 
@@ -460,7 +460,7 @@ abstract class Element extends Component implements ElementInterface
             // Return any child elements
             $map = $query
                 ->select([$sourceSelectSql, 'elementId as target'])
-                ->from('structureelements')
+                ->from(['{{%structureelements}}'])
                 ->where($condition)
                 ->orderBy(['structureId' => SORT_ASC, 'lft' => SORT_ASC])
                 ->all();

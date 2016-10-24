@@ -445,7 +445,7 @@ class Matrix extends Field implements EagerLoadingFieldInterface
         // Return any relation data on these elements, defined with this field
         $map = (new Query())
             ->select(['ownerId as source', 'id as target'])
-            ->from('{{%matrixblocks}}')
+            ->from(['{{%matrixblocks}}'])
             ->where([
                 'fieldId' => $this->id,
                 'ownerId' => $sourceElementIds,

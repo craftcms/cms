@@ -77,7 +77,7 @@ class Globals extends Component
         if (!isset($this->_allGlobalSetIds)) {
             $this->_allGlobalSetIds = (new Query())
                 ->select(['id'])
-                ->from('{{%globalsets}}')
+                ->from(['{{%globalsets}}'])
                 ->column();
         }
 

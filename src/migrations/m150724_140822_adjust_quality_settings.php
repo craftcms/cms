@@ -18,7 +18,7 @@ class m150724_140822_adjust_quality_settings extends Migration
     {
         $transforms = (new Query())
             ->select(['id', 'quality'])
-            ->from('{{%assettransforms}}')
+            ->from(['{{%assettransforms}}'])
             ->all();
 
         foreach ($transforms as $transform) {

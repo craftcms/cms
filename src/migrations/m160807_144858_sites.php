@@ -75,12 +75,12 @@ class m160807_144858_sites extends Migration
 
         $siteInfo = (new Query())
             ->select(['siteName', 'siteUrl'])
-            ->from('{{%info}}')
+            ->from(['{{%info}}'])
             ->one();
 
         $locales = (new Query())
             ->select(['locale'])
-            ->from('{{%locales}}')
+            ->from(['{{%locales}}'])
             ->orderBy(['sortOrder' => SORT_ASC])
             ->column();
 
@@ -337,7 +337,7 @@ class m160807_144858_sites extends Migration
             // Combine the uriFormat and nestedUrlFormat columns
             $results = (new Query())
                 ->select(['id', 'uriFormat', 'nestedUrlFormat'])
-                ->from($tables['i18n'])
+                ->from([$tables['i18n']])
                 ->where([
                     'not',
                     [
@@ -364,7 +364,7 @@ class m160807_144858_sites extends Migration
             // Move the hasUrls and template values into the i18n table
             $results = (new Query())
                 ->select(['id', 'hasUrls', 'template'])
-                ->from($tables['primary'])
+                ->from([$tables['primary']])
                 ->all();
 
             foreach ($results as $result) {
@@ -411,7 +411,7 @@ class m160807_144858_sites extends Migration
 
         $fields = (new Query())
             ->select(['id', 'type', 'translationMethod', 'settings'])
-            ->from('{{%fields}}')
+            ->from(['{{%fields}}'])
             ->where([
                 'type' => [
                     'craft\app\fields\Matrix',
@@ -485,7 +485,7 @@ class m160807_144858_sites extends Migration
         // Fetch all the Recent Entries widgets that have a locale setting
         $widgetResults = (new Query())
             ->select(['id', 'settings'])
-            ->from('{{%widgets}}')
+            ->from(['{{%widgets}}'])
             ->where(['like', 'settings', '"locale":'])
             ->all();
 

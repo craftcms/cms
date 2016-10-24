@@ -147,7 +147,7 @@ class EntryQuery extends ElementQuery
             $query = new Query();
             $this->sectionId = $query
                 ->select(['id'])
-                ->from('{{%sections}}')
+                ->from(['{{%sections}}'])
                 ->where(Db::parseParam('handle', $value))
                 ->column();
         }
@@ -184,7 +184,7 @@ class EntryQuery extends ElementQuery
             $query = new Query();
             $this->typeId = $query
                 ->select(['id'])
-                ->from('{{%entrytypes}}')
+                ->from(['{{%entrytypes}}'])
                 ->where(Db::parseParam('handle', $value))
                 ->column();
         }
@@ -235,7 +235,7 @@ class EntryQuery extends ElementQuery
             $query = new Query();
             $this->authorGroupId = $query
                 ->select(['id'])
-                ->from('{{%usergroups}}')
+                ->from(['{{%usergroups}}'])
                 ->where(Db::parseParam('handle', $value))
                 ->column();
         }
@@ -430,7 +430,7 @@ class EntryQuery extends ElementQuery
                 $query = new Query();
                 $this->structureId = $query
                     ->select(['structureId'])
-                    ->from('{{%sections}}')
+                    ->from(['{{%sections}}'])
                     ->where(Db::parseParam('id', $this->sectionId))
                     ->scalar();
             }

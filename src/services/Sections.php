@@ -334,7 +334,7 @@ class Sections extends Component
                 'sections_i18n.uriFormat',
                 'sections_i18n.template',
             ])
-            ->from('{{%sections_i18n}} sections_i18n')
+            ->from(['{{%sections_i18n}} sections_i18n'])
             ->innerJoin('{{%sites}} sites', '[[sites.id]] = [[sections_i18n.siteId]]')
             ->where(['sections_i18n.sectionId' => $sectionId])
             ->orderBy(['sites.sortOrder' => SORT_ASC])
@@ -509,7 +509,7 @@ class Sections extends Component
                 // Let's grab all of the entry type IDs to save ourselves a query down the road if this is a Single
                 $entryTypeIds = (new Query())
                     ->select(['id'])
-                    ->from('{{%entrytypes}}')
+                    ->from(['{{%entrytypes}}'])
                     ->where(['sectionId' => $section->id])
                     ->column();
 
@@ -561,7 +561,7 @@ class Sections extends Component
                         // Make sure there's only one entry in this section
                         $entryIds = (new Query())
                             ->select(['id'])
-                            ->from('{{%entries}}')
+                            ->from(['{{%entries}}'])
                             ->where(['sectionId' => $section->id])
                             ->column();
 
@@ -736,7 +736,7 @@ class Sections extends Component
             // Delete the field layout(s)
             $fieldLayoutIds = (new Query())
                 ->select(['fieldLayoutId'])
-                ->from('{{%entrytypes}}')
+                ->from(['{{%entrytypes}}'])
                 ->where(['id' => $entryTypeIds])
                 ->column();
 
@@ -758,7 +758,7 @@ class Sections extends Component
             // Delete the structure, if there is one
             $structureId = (new Query())
                 ->select(['structureId'])
-                ->from('{{%sections}}')
+                ->from(['{{%sections}}'])
                 ->where(['id' => $section->id])
                 ->scalar();
 
@@ -967,7 +967,7 @@ class Sections extends Component
 
             // Get the next biggest sort order
             $maxSortOrder = (new Query())
-                ->from('{{%entrytypes}}')
+                ->from(['{{%entrytypes}}'])
                 ->where(['sectionId' => $entryType->sectionId])
                 ->max('[[sortOrder]]');
 
@@ -1097,7 +1097,7 @@ class Sections extends Component
             // Delete the field layout
             $fieldLayoutId = (new Query())
                 ->select(['fieldLayoutId'])
-                ->from('{{%entrytypes}}')
+                ->from(['{{%entrytypes}}'])
                 ->where(['id' => $entryType->id])
                 ->scalar();
 
@@ -1157,7 +1157,7 @@ class Sections extends Component
                 'structures.maxLevels',
             ])
             ->leftJoin('{{%structures}} structures', '[[structures.id]] = [[sections.structureId]]')
-            ->from('{{%sections}} sections')
+            ->from(['{{%sections}} sections'])
             ->orderBy(['name' => SORT_ASC]);
     }
 }

@@ -302,7 +302,7 @@ class AssetIndexer extends Component
         // Load the record IDs of the files that were indexed.
         $processedFiles = (new Query())
             ->select(['recordId'])
-            ->from('{{%assetindexdata}}')
+            ->from(['{{%assetindexdata}}'])
             ->where([
                 'and',
                 ['sessionId' => $sessionId],
@@ -314,7 +314,7 @@ class AssetIndexer extends Component
         $processedFiles = array_flip($processedFiles);
         $assets = (new Query())
             ->select(['fi.volumeId', 'fi.id AS assetId', 'fi.filename', 'fo.path', 's.name AS volumeName'])
-            ->from('{{%assets}} AS fi')
+            ->from(['{{%assets}} AS fi'])
             ->innerJoin('{{%volumefolders}} AS fo', '[[fi.folderId]] = [[fo.id]]')
             ->innerJoin('{{%volumes}} AS s', '[[s.id]] = [[fi.volumeId]]')
             ->where(['fi.volumeId' => $volumeIds])

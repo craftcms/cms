@@ -575,7 +575,7 @@ trait ApplicationTrait
         if (!isset($this->_info)) {
             if ($this->getIsInstalled()) {
                 $row = (new Query())
-                    ->from('{{%info}}')
+                    ->from(['{{%info}}'])
                     ->one();
 
                 if (!$row) {

@@ -599,7 +599,7 @@ class Fields extends Component
 
             $results = (new Query())
                 ->select(['handle', 'context'])
-                ->from('{{%fields}}')
+                ->from(['{{%fields}}'])
                 ->all();
 
             foreach ($results as $result) {
@@ -1242,7 +1242,7 @@ class Fields extends Component
                 'id',
                 'name',
             ])
-            ->from('{{%fieldgroups}}')
+            ->from(['{{%fieldgroups}}'])
             ->orderBy(['name' => SORT_ASC]);
     }
 
@@ -1268,7 +1268,7 @@ class Fields extends Component
                 'fields.type',
                 'fields.settings'
             ])
-            ->from('{{%fields}} fields')
+            ->from(['{{%fields}} fields'])
             ->orderBy(['fields.name' => SORT_ASC]);
     }
 
@@ -1284,7 +1284,7 @@ class Fields extends Component
                 'id',
                 'type',
             ])
-            ->from('{{%fieldlayouts}}');
+            ->from(['{{%fieldlayouts}}']);
     }
 
     /**
@@ -1301,7 +1301,7 @@ class Fields extends Component
                 'name',
                 'sortOrder',
             ])
-            ->from('{{%fieldlayouttabs}}')
+            ->from(['{{%fieldlayouttabs}}'])
             ->orderBy(['sortOrder' => SORT_ASC]);
     }
 

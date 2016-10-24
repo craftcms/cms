@@ -492,14 +492,14 @@ class Category extends Element
 
             $sources = (new Query())
                 ->select(['fieldId', 'sourceId', 'sourceSiteId'])
-                ->from('{{%relations}}')
+                ->from(['{{%relations}}'])
                 ->where(['targetId' => $this->id])
                 ->all();
 
             foreach ($sources as $source) {
                 $existingAncestorRelations = (new Query())
                     ->select(['targetId'])
-                    ->from('{{%relations}}')
+                    ->from(['{{%relations}}'])
                     ->where([
                         'fieldId' => $source['fieldId'],
                         'sourceId' => $source['sourceId'],

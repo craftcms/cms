@@ -193,7 +193,7 @@ class Elements extends Component
 
         $query = (new Query())
             ->select(['elements.id', 'elements.type'])
-            ->from('{{%elements}} elements')
+            ->from(['{{%elements}} elements'])
             ->innerJoin('{{%elements_i18n}} elements_i18n', '[[elements_i18n.elementId]] = [[elements.id]]')
             ->where([
                 'elements_i18n.uri' => $uri,
@@ -236,13 +236,13 @@ class Elements extends Component
             return (new Query())
                 ->select(['type'])
                 ->distinct(true)
-                ->from('{{%elements}}')
+                ->from(['{{%elements}}'])
                 ->where(['id' => $elementId])
                 ->column();
         } else {
             return (new Query())
                 ->select(['type'])
-                ->from('{{%elements}}')
+                ->from(['{{%elements}}'])
                 ->where(['id' => $elementId])
                 ->scalar();
         }
@@ -260,7 +260,7 @@ class Elements extends Component
     {
         return (new Query())
             ->select(['uri'])
-            ->from('{{%elements_i18n}}')
+            ->from(['{{%elements_i18n}}'])
             ->where(['elementId' => $elementId, 'siteId' => $siteId])
             ->scalar();
     }
@@ -277,7 +277,7 @@ class Elements extends Component
     {
         return (new Query())
             ->select(['siteId'])
-            ->from('{{%elements_i18n}}')
+            ->from(['{{%elements_i18n}}'])
             ->where(['elementId' => $elementId, 'enabled' => 1])
             ->column();
     }
@@ -771,14 +771,14 @@ class Elements extends Component
             // Update any relations that point to the merged element
             $relations = (new Query())
                 ->select(['id', 'fieldId', 'sourceId', 'sourceSiteId'])
-                ->from('{{%relations}}')
+                ->from(['{{%relations}}'])
                 ->where(['targetId' => $mergedElementId])
                 ->all();
 
             foreach ($relations as $relation) {
                 // Make sure the persisting element isn't already selected in the same field
                 $persistingElementIsRelatedToo = (new Query())
-                    ->from('{{%relations}}')
+                    ->from(['{{%relations}}'])
                     ->where([
                         'fieldId' => $relation['fieldId'],
                         'sourceId' => $relation['sourceId'],
@@ -804,14 +804,14 @@ class Elements extends Component
             // Update any structures that the merged element is in
             $structureElements = (new Query())
                 ->select(['id', 'structureId'])
-                ->from('{{%structureelements}}')
+                ->from(['{{%structureelements}}'])
                 ->where(['elementId' => $mergedElementId])
                 ->all();
 
             foreach ($structureElements as $structureElement) {
                 // Make sure the persisting element isn't already a part of that structure
                 $persistingElementIsInStructureToo = (new Query())
-                    ->from('{{%structureElements}}')
+                    ->from(['{{%structureElements}}'])
                     ->where([
                         'structureId' => $structureElement['structureId'],
                         'elementId' => $prevailingElementId

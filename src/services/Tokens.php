@@ -90,7 +90,7 @@ class Tokens extends Component
         $this->deleteExpiredTokens();
         $result = (new Query())
             ->select(['id', 'route', 'usageLimit', 'usageCount'])
-            ->from('{{%tokens}}')
+            ->from(['{{%tokens}}'])
             ->where(['token' => $token])
             ->one();
 

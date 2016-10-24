@@ -347,7 +347,7 @@ class MigrationHelper
         // Get all of the rows
         $oldRows = (new Query())
             ->select(['id_old'])
-            ->from($tableName)
+            ->from([$tableName])
             ->all($db);
 
         // Figure out which sites we're going to be storing elements_i18n and content rows in.

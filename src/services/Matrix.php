@@ -766,7 +766,7 @@ class Matrix extends Component
             // Does this Matrix field belong to another one?
             $parentMatrixFieldId = (new Query())
                 ->select(['fields.id'])
-                ->from('{{%fields}} fields')
+                ->from(['{{%fields}} fields'])
                 ->innerJoin('{{%matrixblocktypes}} blocktypes', '[[blocktypes.fieldId]] = [[fields.id]]')
                 ->innerJoin('{{%fieldlayoutfields}} fieldlayoutfields', '[[fieldlayoutfields.layoutId]] = [[blocktypes.fieldLayoutId]]')
                 ->where(['fieldlayoutfields.fieldId' => $matrixField->id])
@@ -801,7 +801,7 @@ class Matrix extends Component
                 'handle',
                 'sortOrder'
             ])
-            ->from('{{%matrixblocktypes}}')
+            ->from(['{{%matrixblocktypes}}'])
             ->orderBy(['sortOrder' => SORT_ASC]);
     }
 
@@ -974,7 +974,7 @@ class Matrix extends Component
                     'targetId',
                     'sortOrder'
                 ])
-                ->from('{{%relations}}')
+                ->from(['{{%relations}}'])
                 ->where(['sourceId' => array_keys($newBlockIds)])
                 ->all();
 

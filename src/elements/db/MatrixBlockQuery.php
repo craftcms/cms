@@ -211,7 +211,7 @@ class MatrixBlockQuery extends ElementQuery
             $query = new Query();
             $this->typeId = $query
                 ->select(['id'])
-                ->from('{{%matrixblocktypes}}')
+                ->from(['{{%matrixblocktypes}}'])
                 ->where(Db::parseParam('handle', $value))
                 ->column();
         }
@@ -249,7 +249,7 @@ class MatrixBlockQuery extends ElementQuery
         if (!$this->fieldId && $this->id && is_numeric($this->id)) {
             $this->fieldId = (new Query())
                 ->select(['fieldId'])
-                ->from('{{%matrixblocks}}')
+                ->from(['{{%matrixblocks}}'])
                 ->where(['id' => $this->id])
                 ->scalar();
         }

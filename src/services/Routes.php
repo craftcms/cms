@@ -97,7 +97,7 @@ class Routes extends Component
     {
         $results = (new Query())
             ->select(['uriPattern', 'template'])
-            ->from('{{%routes}}')
+            ->from(['{{%routes}}'])
             ->where([
                 'or',
                 ['siteId' => null],
@@ -152,7 +152,7 @@ class Routes extends Component
 
             // Get the next biggest sort order
             $maxSortOrder = (new Query())
-                ->from('{{%routes}}')
+                ->from(['{{%routes}}'])
                 ->max('sortOrder');
 
             $routeRecord->sortOrder = $maxSortOrder + 1;

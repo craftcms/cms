@@ -52,7 +52,7 @@ class LocalizeRelations extends Task
     {
         $this->_relations = (new Query())
             ->select(['id', 'sourceId', 'sourceSiteId', 'targetId', 'sortOrder'])
-            ->from('{{%relations}}')
+            ->from(['{{%relations}}'])
             ->where([
                 'fieldId' => $this->fieldId,
                 'sourceSiteId' => null

@@ -48,7 +48,7 @@ class ChartsController extends Controller
         // Prep the query
         $query = (new Query())
             ->select(['COUNT(*) as [[value]]'])
-            ->from('{{%users}} users');
+            ->from(['{{%users}} users']);
 
         if ($userGroupId) {
             $query->innerJoin('{{%usergroups_users}} usergroups_users', '[[usergroups_users.userId]] = [[users.id]]');

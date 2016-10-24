@@ -695,7 +695,7 @@ class Assets extends Component
                 'name',
                 'path',
             ])
-            ->from('{{%volumefolders}}');
+            ->from(['{{%volumefolders}}']);
 
         $this->_applyFolderConditions($query, $criteria);
 
@@ -744,7 +744,7 @@ class Assets extends Component
                 'name',
                 'path',
             ])
-            ->from('{{%volumefolders}}')
+            ->from(['{{%volumefolders}}'])
             ->where([
                 'and',
                 ['like', 'path', $parentFolder->path.'%', false],
@@ -820,7 +820,7 @@ class Assets extends Component
         }
 
         $query = (new Query())
-            ->from('{{%volumefolders}}');
+            ->from(['{{%volumefolders}}']);
 
         $this->_applyFolderConditions($query, $criteria);
 
@@ -1227,7 +1227,7 @@ class Assets extends Component
     {
         return (new Query())
             ->select(['id', 'parentId', 'volumeId', 'name', 'path'])
-            ->from('{{%volumefolders}}');
+            ->from(['{{%volumefolders}}']);
     }
 
     /**

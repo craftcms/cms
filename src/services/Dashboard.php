@@ -455,7 +455,7 @@ class Dashboard extends Component
                 'type',
                 'settings',
             ])
-            ->from('{{%widgets}}')
+            ->from(['{{%widgets}}'])
             ->where(['userId' => $userId, 'enabled' => '1'])
             ->orderBy(['sortOrder' => SORT_ASC])
             ->all();

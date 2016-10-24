@@ -20,7 +20,7 @@ class m160707_000000_rename_richtext_assetsource_setting extends Migration
         // Update permissions
         $fields = (new Query())
             ->select(['id', 'settings'])
-            ->from('{{%fields}}')
+            ->from(['{{%fields}}'])
             ->where(['type' => 'craft\app\fields\RichText'])
             ->all();
 

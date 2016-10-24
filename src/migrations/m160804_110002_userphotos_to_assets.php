@@ -87,7 +87,7 @@ class m160804_110002_userphotos_to_assets extends Migration
 
                 $user = (new Query())
                     ->select(['id', 'photo'])
-                    ->from('{{%users}}')
+                    ->from(['{{%users}}'])
                     ->where(['username' => $usernameOrEmail])
                     ->one();
 
@@ -138,7 +138,7 @@ class m160804_110002_userphotos_to_assets extends Migration
 
         $existingVolume = (new Query())
             ->select(['id'])
-            ->from('{{%volumes}}')
+            ->from(['{{%volumes}}'])
             ->where(['handle' => $handle])
             ->one();
 
@@ -147,7 +147,7 @@ class m160804_110002_userphotos_to_assets extends Migration
             $name = 'User Photos '.$counter;
             $existingVolume = (new Query())
                 ->select(['id'])
-                ->from('{{%volumes}}')
+                ->from(['{{%volumes}}'])
                 ->where([
                     'or',
                     ['handle' => $handle],
@@ -158,7 +158,7 @@ class m160804_110002_userphotos_to_assets extends Migration
 
         // Set the sort order
         $maxSortOrder = (new Query())
-            ->from('{{%volumes}}')
+            ->from(['{{%volumes}}'])
             ->max('[[sortOrder]]');
 
         $volumeData = [
@@ -222,12 +222,12 @@ class m160804_110002_userphotos_to_assets extends Migration
 
         $locales = (new Query())
             ->select(['locale'])
-            ->from('{{%locales}}')
+            ->from(['{{%locales}}'])
             ->column();
 
         $folderId = (new Query())
             ->select(['id'])
-            ->from('{{%volumefolders}}')
+            ->from(['{{%volumefolders}}'])
             ->where([
                 'parentId' => null,
                 'volumeId' => $volumeId
@@ -241,7 +241,7 @@ class m160804_110002_userphotos_to_assets extends Migration
 
             $assetExists = (new Query())
                 ->select(['assets.id'])
-                ->from('{{%assets}} assets')
+                ->from(['{{%assets}} assets'])
                 ->innerJoin('{{%volumefolders}} volumefolders', '[[volumefolders.id]] = [[assets.folderId]]')
                 ->where([
                     'assets.folderId' => $folderId,

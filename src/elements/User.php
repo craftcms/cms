@@ -352,7 +352,7 @@ class User extends Element implements IdentityInterface
 
             $map = (new Query())
                 ->select(['id as source', 'photoId as target'])
-                ->from('{{%users}}')
+                ->from(['{{%users}}'])
                 ->where(['id' => $sourceElementIds])
                 ->all();
 
@@ -643,7 +643,7 @@ class User extends Element implements IdentityInterface
             // Get the current password hash
             $currentPassword = (new Query())
                 ->select(['password'])
-                ->from('{{%users}})')
+                ->from(['{{%users}})'])
                 ->where(['id' => $this->id])
                 ->scalar();
         } else {
@@ -1389,7 +1389,7 @@ class User extends Element implements IdentityInterface
         // Get the entry IDs that belong to this user
         $entryIds = (new Query())
             ->select(['id'])
-            ->from('{{%entries}}')
+            ->from(['{{%entries}}'])
             ->where(['authorId' => $this->id])
             ->column();
 
@@ -1458,7 +1458,7 @@ class User extends Element implements IdentityInterface
     {
         return (new Query())
             ->select(['token'])
-            ->from('{{%sessions}}')
+            ->from(['{{%sessions}}'])
             ->where(['userId' => $this->id, 'uid' => $uid])
             ->scalar();
     }

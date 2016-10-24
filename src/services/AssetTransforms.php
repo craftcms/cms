@@ -345,7 +345,7 @@ class AssetTransforms extends Component
                 'dateCreated',
                 'dateUpdated',
             ])
-            ->from('{{%assettransformindex}}')
+            ->from(['{{%assettransformindex}}'])
             ->where([
                 'and',
                 ['assetId' => array_keys($assetsById)],
@@ -1196,7 +1196,7 @@ class AssetTransforms extends Component
                 'dateUpdated',
                 'dateCreated',
             ])
-            ->from('{{%assettransformindex}}');
+            ->from(['{{%assettransformindex}}']);
     }
 
     /**
@@ -1219,7 +1219,7 @@ class AssetTransforms extends Component
                 'quality',
                 'dimensionChangeTime'
             ])
-            ->from('{{%assettransforms}}')
+            ->from(['{{%assettransforms}}'])
             ->orderBy(['name' => SORT_ASC]);
     }
 

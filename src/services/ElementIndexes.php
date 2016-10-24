@@ -46,7 +46,7 @@ class ElementIndexes extends Component
         if ($this->_indexSettings === null || !array_key_exists($elementType, $this->_indexSettings)) {
             $result = (new Query())
                 ->select(['settings'])
-                ->from('{{%elementindexsettings}}')
+                ->from(['{{%elementindexsettings}}'])
                 ->where(['type' => $elementType])
                 ->scalar();
 

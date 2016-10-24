@@ -461,7 +461,7 @@ class MigrationManager extends Component
         if (version_compare(Craft::$app->getInfo('version'), '3.0', '<')) {
             $query = (new Query())
                 ->select(['version as name', 'applyTime'])
-                ->from($this->migrationTable)
+                ->from([$this->migrationTable])
                 ->orderBy(['name' => SORT_DESC]);
 
             if ($this->type === self::TYPE_PLUGIN) {
@@ -475,7 +475,7 @@ class MigrationManager extends Component
 
         $query = (new Query())
             ->select(['name', 'applyTime'])
-            ->from($this->migrationTable)
+            ->from([$this->migrationTable])
             ->orderBy(['name' => SORT_DESC])
             ->where(['type' => $this->type]);
 

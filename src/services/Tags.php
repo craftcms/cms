@@ -87,7 +87,7 @@ class Tags extends Component
             } else {
                 $this->_allTagGroupIds = (new Query())
                     ->select(['id'])
-                    ->from('{{%taggroups}}')
+                    ->from(['{{%taggroups}}'])
                     ->column();
             }
         }
@@ -326,7 +326,7 @@ class Tags extends Component
             // Delete the field layout
             $fieldLayoutId = (new Query())
                 ->select(['fieldLayoutId'])
-                ->from('{{%taggroups}}')
+                ->from(['{{%taggroups}}'])
                 ->where(['id' => $tagGroupId])
                 ->scalar();
 
