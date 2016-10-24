@@ -8,7 +8,6 @@
 namespace craft\app\controllers;
 
 use Craft;
-use craft\app\helpers\Db;
 use craft\app\web\Controller;
 use craft\app\helpers\DateTimeHelper;
 use craft\app\helpers\ChartHelper;
@@ -52,12 +51,12 @@ class ChartsController extends Controller
             ->from('{{%users}} users');
 
         if ($userGroupId) {
-            $query->innerJoin('{{%usergroups_users}} usergroups_users', Db::quoteObjects('usergroups_users.userId').' = '.Db::quoteObjects('users.id'));
-            $query->where(Db::quoteObjects('usergroups_users.groupId').' = :userGroupId', [':userGroupId' => $userGroupId]);
+            $query->innerJoin('{{%usergroups_users}} usergroups_users', '[[usergroups_users.userId]] = [[users.id]]');
+            $query->where(['usergroups_users.groupId' => $userGroupId]);
         }
 
         // Get the chart data table
-        $dataTable = ChartHelper::getRunChartDataFromQuery($query, $startDate, $endDate, Db::quoteObjects('users.dateCreated'), [
+        $dataTable = ChartHelper::getRunChartDataFromQuery($query, $startDate, $endDate, 'users.dateCreated', [
             'intervalUnit' => $intervalUnit,
             'valueLabel' => Craft::t('app', 'New Users'),
         ]);

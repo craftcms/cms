@@ -146,8 +146,6 @@ class AssetTransforms extends Component
         // If we've already fetched all transforms we can save ourselves a trip to the DB for transform handles that
         // don't exist
         if (!$this->_fetchedAllTransforms && (!isset($this->_transformsByHandle) || !array_key_exists($handle, $this->_transformsByHandle))) {
-            $schema = Craft::$app->getDb()->getSchema();
-
             $result = $this->_createTransformQuery()
                 ->where(['handle' => $handle])
                 ->one();
@@ -177,8 +175,6 @@ class AssetTransforms extends Component
      */
     public function getTransformById($id)
     {
-        $schema = Craft::$app->getDb()->getSchema();
-
         $result = $this->_createTransformQuery()
             ->where(['id' => $id])
             ->one();
@@ -317,18 +313,16 @@ class AssetTransforms extends Component
         $transformsByFingerprint = [];
         $indexConditions = [];
 
-        $schema = Craft::$app->getDb()->getSchema();
-
         foreach ($transforms as $transform) {
             $transform = $this->normalizeTransform($transform);
             $location = $fingerprint = $this->_getTransformFolderName($transform);
 
-            $condition = ['and', [$schema->quoteColumnName('location') => $location]];
+            $condition = ['and', ['location' => $location]];
 
             if (is_null($transform->format)) {
-                $condition[] = $schema->quoteColumnName('format').' IS NULL';
+                $condition[] = ['format' => null];
             } else {
-                $condition[] = [$schema->quoteColumnName('format') => $transform->format];
+                $condition[] = ['format' => $transform->format];
                 $fingerprint .= ':'.$transform->format;
             }
 
@@ -381,7 +375,7 @@ class AssetTransforms extends Component
             Craft::$app->getDb()->createCommand()
                 ->delete(
                     '{{%assettransformindex}}',
-                    ['in', 'id', $invalidIndexIds])
+                    ['id' => $invalidIndexIds])
                 ->execute();
         }
     }
@@ -398,7 +392,6 @@ class AssetTransforms extends Component
     {
         $transform = $this->normalizeTransform($transform);
         $transformLocation = $this->_getTransformFolderName($transform);
-        $schema = Craft::$app->getDb()->getSchema();
 
         // Was it eager-loaded?
         $fingerprint = $asset->id.':'.$transformLocation.(is_null($transform->format) ? '' : ':'.$transform->format);
@@ -419,7 +412,7 @@ class AssetTransforms extends Component
 
         if (is_null($transform->format)) {
             // A generated auto-transform will have it's format set to null, but the filename will be populated.
-            $query->andWhere($schema->quoteColumnName('format').' IS NULL');
+            $query->andWhere(['format' => null]);
         } else {
             $query->andWhere(['format' => $transform->format]);
         }
@@ -567,7 +560,6 @@ class AssetTransforms extends Component
         $index->filename = $transformFilename;
 
         $matchFound = false;
-        $schema = Craft::$app->getDb()->getSchema();
 
         // If the detected format matches the file's format, we can use the old-style formats as well so we can dig
         // through existing files. Otherwise, delete all transforms, records of it and create new.

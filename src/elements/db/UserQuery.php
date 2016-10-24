@@ -374,14 +374,12 @@ class UserQuery extends ElementQuery
     private function _applyCanParam()
     {
         if ($this->can === false || !empty($this->can)) {
-            $schema = Craft::$app->getDb()->getSchema();
-
             if (is_string($this->can) && !is_numeric($this->can)) {
                 // Convert it to the actual permission ID, or false if the permission doesn't have an ID yet.
                 $this->can = (new Query())
                     ->select('id')
                     ->from('{{%userpermissions}}')
-                    ->where($schema->quoteColumnName('name').' = :name', [':name' => strtolower($this->can)])
+                    ->where(['name' => strtolower($this->can)])
                     ->scalar();
             }
 
@@ -398,7 +396,7 @@ class UserQuery extends ElementQuery
                 $permittedUserIdsViaGroups = (new Query())
                     ->select('g_u.userId')
                     ->from('{{%usergroups_users}} g_u')
-                    ->innerJoin('{{%userpermissions_usergroups}} p_g', $schema->quoteTableName('p_g').'.'.$schema->quoteColumnName('groupId').' = '.$schema->quoteTableName('g_u').'.'.$schema->quoteColumnName('groupId'))
+                    ->innerJoin('{{%userpermissions_usergroups}} p_g', '[[p_g.groupId]] = [[g_u.groupId]]')
                     ->where(['p_g.permissionId' => $this->can])
                     ->column();
 

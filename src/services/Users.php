@@ -164,10 +164,11 @@ class Users extends Component
     public function getUserByUsernameOrEmail($usernameOrEmail)
     {
         return User::find()
-            ->where(
-                ['or', Craft::$app->getDb()->getSchema()->quoteColumnName('username').'=:usernameOrEmail', Craft::$app->getDb()->getSchema()->quoteColumnName('email').'=:usernameOrEmail'],
-                [':usernameOrEmail' => $usernameOrEmail]
-            )
+            ->where([
+                'or',
+                ['username' => $usernameOrEmail],
+                ['email' => $usernameOrEmail]
+            ])
             ->withPassword()
             ->status(null)
             ->one();
@@ -879,19 +880,19 @@ class Users extends Component
      */
     public function hasUserShunnedMessage($userId, $message)
     {
-        $schema = Craft::$app->getDb()->getSchema();
-
         return (new Query())
             ->from('{{%shunnedmessages}}')
             ->where([
                 'and',
-                'userId = :userId',
-                'message = :message',
-                ['or', $schema->quoteColumnName('expiryDate').' IS NULL', $schema->quoteColumnName('expiryDate').' > :now']
-            ], [
-                ':userId' => $userId,
-                ':message' => $message,
-                ':now' => Db::prepareDateForDb(new \DateTime())
+                [
+                    'userId' => $userId,
+                    'message' => $message
+                ],
+                [
+                    'or',
+                    ['expiryDate' => null],
+                    ['>', 'expiryDate', Db::prepareDateForDb(new \DateTime())]
+                ]
             ])
             ->exists();
     }
@@ -934,9 +935,9 @@ class Users extends Component
                 ->from('{{%users}}')
                 ->where([
                     'and',
-                    'pending=\'1\'',
-                    'verificationCodeIssuedDate < :pastTime'
-                ], [':pastTime' => Db::prepareDateForDb($pastTime)])
+                    ['pending' => '1'],
+                    ['<', 'verificationCodeIssuedDate', Db::prepareDateForDb($pastTime)]
+                ])
                 ->column();
 
             if ($userIds) {

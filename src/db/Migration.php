@@ -7,7 +7,6 @@
 
 namespace craft\app\db;
 
-use craft\app\helpers\Db;
 use yii\db\ColumnSchemaBuilder;
 
 /**
@@ -82,7 +81,16 @@ abstract class Migration extends \yii\db\Migration
             return $this->db->getSchema()->createColumnSchemaBuilder('enum', $values);
         }
 
-        return $this->string()->check(Db::quoteObjects($columnName).' in ('.implode(',', Db::quoteValues($values)).')');
+        $check = "[[{$columnName}]] in (";
+        foreach ($values as $i => $value) {
+            if ($i != 0) {
+                $check .= ',';
+            }
+            $check .= $this->db->quoteValue($value);
+        }
+        $check .= ')';
+
+        return $this->string()->check($check);
     }
 
     /**

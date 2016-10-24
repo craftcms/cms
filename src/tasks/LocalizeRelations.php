@@ -50,13 +50,13 @@ class LocalizeRelations extends Task
      */
     public function getTotalSteps()
     {
-        $schema = Craft::$app->getDb()->getSchema();
-
         $this->_relations = (new Query())
             ->select('id, sourceId, sourceSiteId, targetId, sortOrder')
             ->from('{{%relations}}')
-            ->where(['and', $schema->quoteColumnName('fieldId').' = :fieldId', $schema->quoteColumnName('sourceSiteId').' IS NULL'],
-                [':fieldId' => $this->fieldId])
+            ->where([
+                'fieldId' => $this->fieldId,
+                'sourceSiteId' => null
+            ])
             ->all();
 
         $this->_allSiteIds = Craft::$app->getSites()->getAllSiteIds();

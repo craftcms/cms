@@ -658,10 +658,8 @@ class Assets extends Component
     public function getFolderById($folderId)
     {
         if (!isset($this->_foldersById) || !array_key_exists($folderId, $this->_foldersById)) {
-            $schema = Craft::$app->getDb()->getSchema();
-
             $result = $this->_createFolderQuery()
-                ->where($schema->quoteColumnName('id').' = :id', [':id' => $folderId])
+                ->where(['id' => $folderId])
                 ->one();
 
             if ($result) {
@@ -735,8 +733,6 @@ class Assets extends Component
      */
     public function getAllDescendantFolders(VolumeFolder $parentFolder, $orderBy = 'path')
     {
-        $schema = Craft::$app->getDb()->getSchema();
-
         /**
          * @var $query Query
          */

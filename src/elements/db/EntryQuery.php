@@ -364,9 +364,8 @@ class EntryQuery extends ElementQuery
             }
 
             if ($this->authorGroupId) {
-                $schema = Craft::$app->getDb()->getSchema();
                 $this->subQuery
-                    ->innerJoin('{{%usergroups_users}} usergroups_users', $schema->quoteTableName('usergroups_users').'.'.$schema->quoteColumnName('userId').' = '.$schema->quoteTableName('entries').'.'.$schema->quoteColumnName('authorId'))
+                    ->innerJoin('{{%usergroups_users}} usergroups_users', '[[usergroups_users.userId]] = [[entries.authorId]]')
                     ->andWhere(Db::parseParam('usergroups_users.groupId', $this->authorGroupId, $this->subQuery->params));
             }
         }
@@ -486,8 +485,7 @@ class EntryQuery extends ElementQuery
                 }
 
                 if ($joinSections) {
-                    $schema = Craft::$app->getDb()->getSchema();
-                    $this->subQuery->innerJoin('{{%sections}} sections', $schema->quoteTableName('sections').'.'.$schema->quoteColumnName('id').' = '.$schema->quoteTableName('entries').'.'.$schema->quoteColumnName('sectionId'));
+                    $this->subQuery->innerJoin('{{%sections}} sections', '[[sections.id]] = [[entries.sectionId]]');
                 }
             }
         }

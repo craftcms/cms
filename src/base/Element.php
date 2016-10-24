@@ -20,7 +20,6 @@ use craft\app\events\ElementStructureEvent;
 use craft\app\events\Event;
 use craft\app\events\ModelEvent;
 use craft\app\helpers\ArrayHelper;
-use craft\app\helpers\Db;
 use craft\app\helpers\Html;
 use craft\app\helpers\Template;
 use craft\app\helpers\Url;
@@ -425,38 +424,44 @@ abstract class Element extends Component implements ElementInterface
                 ->where(['in', 'elementId', $sourceElementIds])
                 ->all();
 
-            $conditions = ['or'];
-            $params = [];
+            $db = Craft::$app->getDb();
+            $qb = $db->getQueryBuilder();
+            $query = new Query();
             $sourceSelectSql = '(CASE';
+            $condition = ['or'];
 
             foreach ($structureData as $i => $elementStructureData) {
-                $thisElementConditions = [
-                    'and',
-                    Db::quoteObjects('structureId').'=:structureId'.$i,
-                    Db::quoteObjects('lft').'>:lft'.$i,
-                    Db::quoteObjects('rgt').'<:rgt'.$i
+                $thisElementCondition = ['and',
+                    ['structureId' => $elementStructureData['structureId']],
+                    ['>', 'lft', $elementStructureData['lft']],
+                    ['<', 'rgt', $elementStructureData['rgt']],
                 ];
 
                 if ($handle == 'children') {
-                    $thisElementConditions[] = Db::quoteObjects('level').'=:level'.$i;
-                    $params[':level'.$i] = $elementStructureData['level'] + 1;
+                    $thisElementCondition[] = ['level' => $elementStructureData['level'] + 1];
                 }
 
-                $conditions[] = $thisElementConditions;
-                $sourceSelectSql .= " WHEN ".Db::quoteObjects('structureId')."=:structureId{$i} AND ".Db::quoteObjects('left').">:lft{$i} AND ".Db::quoteObjects('rgt')."<:{$i} THEN :sourceId{$i}";
-                $params[':structureId'.$i] = $elementStructureData['structureId'];
-                $params[':lft'.$i] = $elementStructureData['lft'];
-                $params[':rgt'.$i] = $elementStructureData['rgt'];
-                $params[':sourceId'.$i] = $elementStructureData['elementId'];
+                $condition[] = $thisElementCondition;
+                $sourceSelectSql .= ' WHEN '.
+                    $qb->buildCondition(
+                        [
+                            'and',
+                            ['structureId' => $elementStructureData['structureId']],
+                            ['>', 'lft', $elementStructureData['lft']],
+                            ['<', 'rgt', $elementStructureData['rgt']]
+                        ],
+                        $query->params).
+                    " THEN :sourceId{$i}";
+                $query->params[':sourceId'.$i] = $elementStructureData['elementId'];
             }
 
             $sourceSelectSql .= ' END) as source';
 
             // Return any child elements
-            $map = (new Query())
+            $map = $query
                 ->select($sourceSelectSql.', elementId as target')
                 ->from('structureelements')
-                ->where($conditions, $params)
+                ->where($condition)
                 ->orderBy('structureId, lft')
                 ->all();
 

@@ -9,7 +9,6 @@ namespace craft\app\elements;
 
 use Craft;
 use craft\app\base\Element;
-use craft\app\base\ElementInterface;
 use craft\app\controllers\ElementIndexesController;
 use craft\app\db\Query;
 use craft\app\elements\actions\Delete;
@@ -18,7 +17,6 @@ use craft\app\elements\actions\NewChild;
 use craft\app\elements\actions\SetStatus;
 use craft\app\elements\actions\View;
 use craft\app\elements\db\CategoryQuery;
-use craft\app\helpers\Db;
 use craft\app\helpers\Url;
 use craft\app\models\CategoryGroup;
 use craft\app\records\Category as CategoryRecord;
@@ -495,7 +493,7 @@ class Category extends Element
             $sources = (new Query())
                 ->select(['fieldId', 'sourceId', 'sourceSiteId'])
                 ->from('{{%relations}}')
-                ->where(Db::quoteObjects('targetId').' = :categoryId', [':categoryId' => $this->id])
+                ->where(['targetId' => $this->id])
                 ->all();
 
             foreach ($sources as $source) {
@@ -503,15 +501,10 @@ class Category extends Element
                     ->select('targetId')
                     ->from('{{%relations}}')
                     ->where([
-                        'and',
-                        Db::quoteObjects('fieldId').' = :fieldId',
-                        Db::quoteObjects('sourceId').' = :sourceId',
-                        Db::quoteObjects('sourceSiteId').' = :sourceSiteId',
-                        ['in', 'targetId', $ancestorIds]
-                    ], [
-                        ':fieldId' => $source['fieldId'],
-                        ':sourceId' => $source['sourceId'],
-                        ':sourceSiteId' => $source['sourceSiteId']
+                        'fieldId' => $source['fieldId'],
+                        'sourceId' => $source['sourceId'],
+                        'sourceSiteId' => $source['sourceSiteId'],
+                        'targetId' => $ancestorIds,
                     ])
                     ->column();
 

@@ -388,8 +388,7 @@ interface ElementInterface extends ComponentInterface
      * {
      *     case 'pending':
      *     {
-     *         $schema = Craft::$app->getDb()->getSchema();
-     *         $query->andWhere($schema->quoteTableName('mytable').'.'.$schema->quoteColumnName('pending').' = 1');
+     *         $query->andWhere(['mytable.pending' => 1]);
      *         break;
      *     }
      * }

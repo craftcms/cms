@@ -556,9 +556,11 @@ class Tasks extends Component
     public function getTotalTasks()
     {
         return $this->_createTaskQuery()
-            ->where(
-                ['and', 'lft = 1', 'status != :status'], [':status' => Task::STATUS_ERROR]
-            )
+            ->where([
+                'and',
+                ['lft' => '1'],
+                ['not', ['status' => Task::STATUS_ERROR]]
+            ])
             ->count('id');
     }
 

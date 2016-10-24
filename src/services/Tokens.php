@@ -88,12 +88,10 @@ class Tokens extends Component
     {
         // Take the opportunity to delete any expired tokens
         $this->deleteExpiredTokens();
-        $schema = Craft::$app->getDb()->getSchema();
-
         $result = (new Query())
             ->select(['id', 'route', 'usageLimit', 'usageCount'])
             ->from('{{%tokens}}')
-            ->where($schema->quoteColumnName('token').' = :token', [':token' => $token])
+            ->where(['token' => $token])
             ->one();
 
         if ($result) {
@@ -171,10 +169,7 @@ class Tokens extends Component
         }
 
         $affectedRows = Craft::$app->getDb()->createCommand()
-            ->delete(
-                '{{%tokens}}',
-                Craft::$app->getDb()->getSchema()->quoteColumnName('expiryDate').' <= :now',
-                ['now' => Db::prepareDateForDb(new DateTime())])
+            ->delete('{{%tokens}}', ['<=', 'expiryDate', Db::prepareDateForDb(new DateTime())])
             ->execute();
 
         $this->_deletedExpiredTokens = true;

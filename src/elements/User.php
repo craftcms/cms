@@ -1456,12 +1456,10 @@ class User extends Element implements IdentityInterface
      */
     private function _findSessionTokenByUid($uid)
     {
-        $schema = Craft::$app->getDb()->getSchema();
-
         return (new Query())
             ->select('token')
             ->from('{{%sessions}}')
-            ->where(['and', $schema->quoteColumnName('userId').'=:userId', $schema->quoteColumnName('uid').'=:uid'], [':userId' => $this->id, ':uid' => $uid])
+            ->where(['userId' => $this->id, 'uid' => $uid])
             ->scalar();
     }
 

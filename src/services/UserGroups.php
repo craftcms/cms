@@ -134,8 +134,6 @@ class UserGroups extends Component
      */
     public function getGroupsByUserId($userId, $indexBy = null)
     {
-        $schema = Craft::$app->getDb()->getSchema();
-
         $groups = (new Query())
             ->select([
                 'g.id',
@@ -143,7 +141,7 @@ class UserGroups extends Component
                 'g.handle',
             ])
             ->from('{{%usergroups}} g')
-            ->innerJoin('{{%usergroups_users}} gu', $schema->quoteTableName('gu').'.'.$schema->quoteColumnName('groupId').' = '.$schema->quoteTableName('g').'.'.$schema->quoteColumnName('id'))
+            ->innerJoin('{{%usergroups_users}} gu', '[[gu.groupId]] = [[g.id]]')
             ->where(['gu.userId' => $userId])
             ->indexBy($indexBy)
             ->all();

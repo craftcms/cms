@@ -541,10 +541,7 @@ class User extends \yii\web\User
         $pastTime = $expire->sub($interval);
 
         Craft::$app->getDb()->createCommand()
-            ->delete(
-                '{{%sessions}}',
-                Craft::$app->getDb()->getSchema()->quoteColumnName('dateUpdated').' < :pastTime',
-                ['pastTime' => Db::prepareDateForDb($pastTime)])
+            ->delete('{{%sessions}}', ['<', 'dateUpdated', Db::prepareDateForDb($pastTime)])
             ->execute();
     }
 }

@@ -249,13 +249,12 @@ abstract class BaseRelationField extends Field implements PreviewableFieldInterf
         }
 
         if ($value == ':notempty:' || $value == ':empty:') {
-            $schema = Craft::$app->getDb()->getSchema();
-            $alias = $schema->quoteTableName('relations_'.$this->handle);
+            $alias = 'relations_'.$this->handle;
             $operator = ($value == ':notempty:' ? '!=' : '=');
             $paramHandle = ':fieldId'.StringHelper::randomString(8);
 
             $query->subQuery->andWhere(
-                '(select count('.$alias.'.'.$schema->quoteColumnName('id').' from {{relations}} '.$alias.' where '.$alias.'.'.$schema->quoteColumnName('sourceId').' = '.$schema->quoteTableName('elements').'.'.$schema->quoteColumnName('id').' and '.$alias.'.'.$schema->quoteColumnName('fieldId').' = '.$paramHandle.') '.$operator.' 0',
+                "(select count([[{$alias}.id]]) from {{%relations}} {{{$alias}}} where [[{$alias}.sourceId]] = [[elements.id]] and [[{$alias}.fieldId]] = {$paramHandle}) {$operator} 0",
                 [$paramHandle => $this->id]
             );
         } else if ($value !== null) {
@@ -350,23 +349,22 @@ abstract class BaseRelationField extends Field implements PreviewableFieldInterf
             $sourceElementIds[] = $sourceElement->id;
         }
 
-        $schema = Craft::$app->getDb()->getSchema();
-
         // Return any relation data on these elements, defined with this field
         $map = (new Query())
             ->select('sourceId as source, targetId as target')
             ->from('{{%relations}}')
-            ->where(
+            ->where([
+                'and',
                 [
-                    'and',
-                    $schema->quoteColumnName('fieldId').'=:fieldId',
-                    ['in', 'sourceId', $sourceElementIds],
-                    ['or', $schema->quoteColumnName('sourceSiteId').' IS NULL']
+                    'fieldId' => $this->id,
+                    'sourceId' => $sourceElementIds,
                 ],
                 [
-                    ':fieldId' => $this->id,
-                    ':sourceSiteId' => ($firstElement ? $firstElement->siteId : null),
-                ])
+                    'or',
+                    ['sourceSiteId' => ($firstElement ? $firstElement->siteId : null)],
+                    ['sourceSiteId' => null]
+                ]
+            ])
             ->orderBy('sortOrder')
             ->all();
 

@@ -329,8 +329,6 @@ class Volumes extends Component
 
         // If we've already fetched all volumes, just use that.
         if (!$this->_fetchedAllVolumes && (!isset($this->_volumesById) || !array_key_exists($volumeId, $this->_volumesById))) {
-            $schema = Craft::$app->getDb()->getSchema();
-
             $result = $this->_createVolumeQuery()
                 ->where(['id' => $volumeId])
                 ->one();

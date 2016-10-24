@@ -67,16 +67,16 @@ class ChartHelper
         }
 
         if ($databaseType == Connection::DRIVER_MYSQL) {
-            $yearCode = "YEAR({$dateColumn})";
-            $monthCode = "MONTH({$dateColumn})";
-            $dayCode = "DAY({$dateColumn})";
-            $hourCode = "HOUR({$dateColumn})";
+            $yearCode = "YEAR([[{$dateColumn}]])";
+            $monthCode = "MONTH([[{$dateColumn}]])";
+            $dayCode = "DAY([[{$dateColumn}]])";
+            $hourCode = "HOUR([[{$dateColumn}]])";
         } else {
             // PostgreSQL
-            $yearCode = "EXTRACT(YEAR FROM {$dateColumn})";
-            $monthCode = "EXTRACT(MONTH FROM {$dateColumn})";
-            $dayCode = "EXTRACT(DAY FROM {$dateColumn})";
-            $hourCode = "EXTRACT(HOUR FROM {$dateColumn})";
+            $yearCode = "EXTRACT(YEAR FROM [[{$dateColumn}]])";
+            $monthCode = "EXTRACT(MONTH FROM [[{$dateColumn}]])";
+            $dayCode = "EXTRACT(DAY FROM [[{$dateColumn}]])";
+            $hourCode = "EXTRACT(HOUR FROM [[{$dateColumn}]])";
         }
 
         switch ($intervalUnit) {
@@ -132,20 +132,21 @@ class ChartHelper
         }
 
         if ($databaseType == Connection::DRIVER_MYSQL) {
-            $select = "DATE_FORMAT({$dateColumn},'{$sqlDateFormat}') AS date";
+            $select = "DATE_FORMAT([[{$dateColumn}]],'{$sqlDateFormat}') AS date";
         } else {
             // PostgreSQL
-            $select = "to_char({$dateColumn}, '{$sqlDateFormat}') AS date";
+            $select = "to_char([[{$dateColumn}]], '{$sqlDateFormat}') AS date";
         }
 
         // Execute the query
         $results = $query
             ->addSelect([$select])
-            ->andWhere(
-                ['and', $dateColumn.' >= :startDate', $dateColumn.' < :endDate'],
-                [':startDate' => Db::quoteValues($startDate->format('Y-m-d H:i:s')), ':endDate' => $endDate->format('Y-m-d H:i:s')])
+            ->andWhere(['and',
+                ['>=', $dateColumn, $startDate->format('Y-m-d H:i:s')],
+                ['<', $dateColumn, $endDate->format('Y-m-d H:i:s')]
+            ])
             ->groupBy($sqlGroup)
-            ->orderBy($dateColumn.' ASC')
+            ->orderBy([$dateColumn => SORT_ASC])
             ->all();
 
         // Assemble the data

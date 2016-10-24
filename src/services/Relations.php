@@ -46,33 +46,28 @@ class Relations extends Component
         // Prevent duplicate target IDs.
         $targetIds = array_unique($targetIds);
 
-        $schema = Craft::$app->getDb()->getSchema();
-
         $transaction = Craft::$app->getDb()->beginTransaction();
 
         try {
             // Delete the existing relations
             $oldRelationConditions = [
                 'and',
-                $schema->quoteColumnName('fieldId').' = :fieldId',
-                $schema->quoteColumnName('sourceId').' = :sourceId'
-            ];
-            $oldRelationParams = [
-                ':fieldId' => $field->id,
-                ':sourceId' => $source->id
+                [
+                    'fieldId' => $field->id,
+                    'sourceId' => $source->id,
+                ]
             ];
 
             if ($field->localizeRelations) {
                 $oldRelationConditions[] = [
                     'or',
-                    $schema->quoteColumnName('sourceSiteId').' IS NULL',
-                    $schema->quoteColumnName('sourceSiteId').' = :sourceSiteId'
+                    ['sourceSiteId' => null],
+                    ['sourceSiteId' => $source->siteId]
                 ];
-                $oldRelationParams[':sourceSiteId'] = $source->siteId;
             }
 
             Craft::$app->getDb()->createCommand()
-                ->delete('{{%relations}}', $oldRelationConditions, $oldRelationParams)
+                ->delete('{{%relations}}', $oldRelationConditions)
                 ->execute();
 
             // Add the new ones

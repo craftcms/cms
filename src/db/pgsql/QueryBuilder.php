@@ -9,9 +9,6 @@ namespace craft\app\db\pgsql;
 
 use Craft;
 use craft\app\db\Connection;
-use craft\app\helpers\Db;
-use craft\app\services\Config;
-use yii\base\Exception;
 use yii\db\Expression;
 
 /**
@@ -66,7 +63,7 @@ class QueryBuilder extends \yii\db\pgsql\QueryBuilder
         $updates = [];
 
         foreach ($columns as $name => $value) {
-            $qName = Db::quoteObjects($name);
+            $qName = $schema->quoteColumnName($name);
             $names[] = $qName;
 
             if ($value instanceof Expression) {
@@ -122,7 +119,7 @@ class QueryBuilder extends \yii\db\pgsql\QueryBuilder
      */
     public function replace($table, $column, $find, $replace, $condition, &$params)
     {
-        $column = Db::quoteObjects($column);
+        $column = $this->db->quoteColumnName($column);
 
         $findPhName = static::PARAM_PREFIX.count($params);
         $params[$findPhName] = $find;
@@ -130,8 +127,8 @@ class QueryBuilder extends \yii\db\pgsql\QueryBuilder
         $replacePhName = static::PARAM_PREFIX.count($params);
         $params[$replacePhName] = $replace;
 
-        $sql = 'UPDATE '.Db::quoteObjects($table).
-        " SET $column = REPLACE($column, $findPhName, $replacePhName)";
+        $sql = 'UPDATE '.$table.
+            " SET $column = REPLACE($column, $findPhName, $replacePhName)";
 
         $where = $this->buildWhere($condition, $params);
 
@@ -151,17 +148,13 @@ class QueryBuilder extends \yii\db\pgsql\QueryBuilder
     {
         $schema = $this->db->getSchema();
 
-        foreach ($values as $i => $value) {
-            $values[$i] = $schema->quoteValue($value);
-        }
-
         $sql = 'CASE';
 
         foreach ($values as $key => $value) {
-            $sql .= ' WHEN '.Db::quoteObjects($column).'='.$value.' THEN '.$key;
+            $sql .= ' WHEN '.$schema->quoteColumnName($column).'='.$schema->quoteValue($value).' THEN '.$schema->quoteValue($key);
         }
 
-        $sql .= ' ELSE '.($key + 1).' END';
+        $sql .= ' ELSE '.$schema->quoteValue($key + 1).' END';
 
         return $sql;
     }

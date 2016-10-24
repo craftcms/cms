@@ -16,9 +16,12 @@ class m161006_205918_schemaVersion_not_null extends Migration
      */
     public function safeUp()
     {
-        $this->update('{{%plugins}}', [
-            'schemaVersion' => '1.0.0'
-        ], Craft::$app->getDb()->getSchema()->quoteColumnName('schemaVersion').' IS NULL', [], false);
+        $this->update(
+            '{{%plugins}}',
+            ['schemaVersion' => '1.0.0'],
+            ['schemaVersion' => null],
+            [],
+            false);
 
         $database = Craft::$app->getConfig()->get('driver', 'db');
 

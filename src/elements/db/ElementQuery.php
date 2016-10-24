@@ -878,8 +878,6 @@ class ElementQuery extends Query implements ElementQueryInterface, Arrayable, Co
             throw new QueryAbortedException();
         }
 
-        $schema = Craft::$app->getDb()->getSchema();
-
         /** @var Element $class */
         $class = $this->elementType;
 
@@ -921,8 +919,8 @@ class ElementQuery extends Query implements ElementQueryInterface, Arrayable, Co
 
         $this->query
             ->from(['subquery' => $this->subQuery])
-            ->innerJoin('{{%elements}} elements', $schema->quoteTableName('elements').'.'.$schema->quoteColumnName('id').' = '.$schema->quoteTableName('subquery').'.'.$schema->quoteColumnName('elementsId'))
-            ->innerJoin('{{%elements_i18n}} elements_i18n', $schema->quoteTableName('elements_i18n').'.'.$schema->quoteColumnName('id').' = '.$schema->quoteTableName('subquery').'.'.$schema->quoteColumnName('elementsI18nId'));
+            ->innerJoin('{{%elements}} elements', '[[elements.id]] = [[subquery.elementsId]]')
+            ->innerJoin('{{%elements_i18n}} elements_i18n', '[[elements_i18n.id]] = [[subquery.elementsI18nId]]');
 
         $this->subQuery
             ->addSelect([
@@ -930,13 +928,12 @@ class ElementQuery extends Query implements ElementQueryInterface, Arrayable, Co
                 'elementsI18nId' => 'elements_i18n.id',
             ])
             ->from(['elements' => '{{%elements}}'])
-            ->innerJoin('{{%elements_i18n}} elements_i18n', $schema->quoteTableName('elements_i18n').'.'.$schema->quoteColumnName('elementId').' = '.$schema->quoteTableName('elements').'.'.$schema->quoteColumnName('id'))
-            ->andWhere($schema->quoteTableName('elements_i18n').'.'.$schema->quoteColumnName('siteId').' = :siteId')
+            ->innerJoin('{{%elements_i18n}} elements_i18n', '[[elements_i18n.elementId]] = [[elements.id]]')
+            ->andWhere(['elements_i18n.siteId' => $this->siteId])
             ->andWhere($this->where)
             ->offset($this->offset)
             ->limit($this->limit)
-            ->addParams($this->params)
-            ->addParams([':siteId' => $this->siteId]);
+            ->addParams($this->params);
 
         if ($class::hasContent() && $this->contentTable) {
             $this->customFields = $class::getFieldsForElementsQuery($this);
@@ -1276,10 +1273,9 @@ class ElementQuery extends Query implements ElementQueryInterface, Arrayable, Co
      */
     protected function joinElementTable($table)
     {
-        $joinTable = '{{%'.$table.'}} '.$table;
-        $schema = Craft::$app->getDb()->getSchema();
-        $this->query->innerJoin($joinTable, $schema->quoteTableName($table).'.'.$schema->quoteColumnName('id').' = '.$schema->quoteTableName('subquery').'.'.$schema->quoteColumnName('elementsId'));
-        $this->subQuery->innerJoin($joinTable, $schema->quoteTableName($table).'.'.$schema->quoteColumnName('id').' = '.$schema->quoteTableName('elements').'.'.$schema->quoteTableName('id'));
+        $joinTable = "{{%{$table}}} {$table}";
+        $this->query->innerJoin($joinTable, "[[{$table}.id]] = [[subquery.elementsId]]");
+        $this->subQuery->innerJoin($joinTable, "[[{$table}.id]] = [[elements.id]]");
     }
 
     // Private Methods
@@ -1294,14 +1290,12 @@ class ElementQuery extends Query implements ElementQueryInterface, Arrayable, Co
      */
     private function _joinContentTable($class)
     {
-        $schema = Craft::$app->getDb()->getSchema();
-
         // Join in the content table on both queries
-        $this->subQuery->innerJoin($this->contentTable.' content', $schema->quoteTableName('content').'.'.$schema->quoteColumnName('elementId').' = '.$schema->quoteTableName('elements').'.'.$schema->quoteColumnName('id'));
+        $this->subQuery->innerJoin($this->contentTable.' content', '[[content.elementId]] = [[elements.id]]');
         $this->subQuery->addSelect(['contentId' => 'content.id']);
-        $this->subQuery->andWhere($schema->quoteColumnName('content').'.'.$schema->quoteColumnName('siteId').' = :siteId');
+        $this->subQuery->andWhere(['content.siteId' => $this->siteId]);
 
-        $this->query->innerJoin($this->contentTable.' content', $schema->quoteTableName('content').'.'.$schema->quoteColumnName('id').' = '.$schema->quoteTableName('subquery').'.'.$schema->quoteColumnName('contentId'));
+        $this->query->innerJoin($this->contentTable.' content', '[[content.id]] = [[subquery.contentId]]');
 
         // Select the content table columns on the main query
         $this->query->addSelect(['contentId' => 'content.id']);
@@ -1359,8 +1353,6 @@ class ElementQuery extends Query implements ElementQueryInterface, Arrayable, Co
     {
         if ($this->status && $class::hasStatuses()) {
             $statusConditions = [];
-            $schema = Craft::$app->getDb()->getSchema();
-
             $statuses = ArrayHelper::toArray($this->status);
 
             foreach ($statuses as $status) {
@@ -1369,9 +1361,9 @@ class ElementQuery extends Query implements ElementQueryInterface, Arrayable, Co
                 // Is this a supported status?
                 if (in_array($status, array_keys($class::getStatuses()))) {
                     if ($status == Element::STATUS_ENABLED) {
-                        $statusConditions[] = $schema->quoteTableName('elements').'.'.$schema->quoteColumnName('enabled').' = \'1\'';
+                        $statusConditions[] = ['elements.enabled' => '1'];
                     } else if ($status == Element::STATUS_DISABLED) {
-                        $statusConditions[] = $schema->quoteTableName('elements').'.'.$schema->quoteColumnName('enabled').' = \'0\'';
+                        $statusConditions[] = ['elements.enabled' => '0'];
                     } else {
                         $elementStatusCondition = $class::getElementQueryStatusCondition($this, $status);
 
@@ -1462,8 +1454,6 @@ class ElementQuery extends Query implements ElementQueryInterface, Arrayable, Co
     private function _applyStructureParams($class)
     {
         if ($this->structureId) {
-            $schema = Craft::$app->getDb()->getSchema();
-
             $this->query
                 ->addSelect([
                     'structureelements.root',
@@ -1471,75 +1461,53 @@ class ElementQuery extends Query implements ElementQueryInterface, Arrayable, Co
                     'structureelements.rgt',
                     'structureelements.level',
                 ])
-                ->innerJoin('{{%structureelements}} structureelements', $schema->quoteTableName('structureelements').'.'.$schema->quoteColumnName('elementId').' = '.$schema->quoteTableName('subquery').'.'.$schema->quoteColumnName('elementsId'));
+                ->innerJoin('{{%structureelements}} structureelements', '[[structureelements.elementId]] = [[subquery.elementsId]]');
 
             $this->subQuery
-                ->innerJoin('{{%structureelements}} structureelements', $schema->quoteTableName('structureelements').'.'.$schema->quoteColumnName('elementId').' = '.$schema->quoteTableName('elements').'.'.$schema->quoteColumnName('id'))
+                ->innerJoin('{{%structureelements}} structureelements', '[[structureelements.elementId]] = [[elements.id]]')
                 ->andWhere(['structureelements.structureId' => $this->structureId]);
 
             if ($this->ancestorOf !== null) {
                 $this->_normalizeStructureParamValue('ancestorOf', $class);
 
-                $this->subQuery
-                    ->andWhere([
-                        'and',
-                        'structureelements.lft < :ancestorOf_lft',
-                        'structureelements.rgt > :ancestorOf_rgt',
-                        'structureelements.root = :ancestorOf_root'
-                    ])
-                    ->addParams([
-                        ':ancestorOf_lft' => $this->ancestorOf->lft,
-                        ':ancestorOf_rgt' => $this->ancestorOf->rgt,
-                        ':ancestorOf_root' => $this->ancestorOf->root
-                    ]);
+                $this->subQuery->andWhere([
+                    'and',
+                    ['<', 'structureelements.lft', $this->ancestorOf->lft],
+                    ['>', 'structureelements.rgt', $this->ancestorOf->rgt],
+                    ['structureelements.root' => $this->ancestorOf->root]
+                ]);
 
                 if ($this->ancestorDist) {
-                    $schema = Craft::$app->getDb()->getSchema();
-                    $this->subQuery
-                        ->andWhere($schema->quoteTableName('structureelements').'.'.$schema->quoteColumnName('level').' >= :ancestorOf_level')
-                        ->addParams([':ancestorOf_level' => $this->ancestorOf->level - $this->ancestorDist]);
+                    $this->subQuery->andWhere(['>=', 'structureelements.level', $this->ancestorOf->level - $this->ancestorDist]);
                 }
             }
 
             if ($this->descendantOf !== null) {
                 $this->_normalizeStructureParamValue('descendantOf', $class);
 
-                $this->subQuery
-                    ->andWhere([
-                        'and',
-                        'structureelements.lft > :descendantOf_lft',
-                        'structureelements.rgt < :descendantOf_rgt',
-                        'structureelements.root = :descendantOf_root'
-                    ])
-                    ->addParams([
-                        ':descendantOf_lft' => $this->descendantOf->lft,
-                        ':descendantOf_rgt' => $this->descendantOf->rgt,
-                        ':descendantOf_root' => $this->descendantOf->root
-                    ]);
+                $this->subQuery->andWhere([
+                    'and',
+                    ['>', 'structureelements.lft', $this->descendantOf->lft],
+                    ['<', 'structureelements.rgt', $this->descendantOf->rgt],
+                    ['structureelements.root' => $this->descendantOf->root]
+                ]);
 
                 if ($this->descendantDist) {
-                    $schema = Craft::$app->getDb()->getSchema();
-                    $this->subQuery
-                        ->andWhere($schema->quoteTableName('structureelements').'.'.$schema->quoteColumnName('level').' <= :descendantOf_level')
-                        ->addParams([':descendantOf_level' => $this->descendantOf->level + $this->descendantDist]);
+                    $this->subQuery->andWhere(['<=', 'structureelements.level', $this->descendantOf->level + $this->descendantDist]);
                 }
             }
 
             if ($this->siblingOf !== null) {
                 $this->_normalizeStructureParamValue('siblingOf', $class);
 
-                $this->subQuery
-                    ->andWhere([
-                        'and',
-                        'structureelements.level = :siblingOf_level',
-                        'structureelements.root = :siblingOf_root',
-                        'structureelements.elementId != :siblingOf_elementId'
-                    ])
-                    ->addParams([
-                        ':siblingOf_level' => $this->siblingOf->level,
-                        ':siblingOf_root' => $this->siblingOf->root,
-                        ':siblingOf_elementId' => $this->siblingOf->id
-                    ]);
+                $this->subQuery->andWhere([
+                    'and',
+                    [
+                        'structureelements.level' => $this->siblingOf->level,
+                        'structureelements.root' => $this->siblingOf->root,
+                    ],
+                    ['not', ['structureelements.elementId' => $this->siblingOf->id]]
+                ]);
 
                 if ($this->siblingOf->level != 1) {
                     /** @var Element $parent */
@@ -1549,81 +1517,52 @@ class ElementQuery extends Query implements ElementQueryInterface, Arrayable, Co
                         throw new QueryAbortedException();
                     }
 
-                    $this->subQuery
-                        ->andWhere([
-                            'and',
-                            'structureelements.lft > :siblingOf_lft',
-                            'structureelements.rgt < :siblingOf_rgt'
-                        ])
-                        ->addParams([
-                            ':siblingOf_lft' => $parent->lft,
-                            ':siblingOf_rgt' => $parent->rgt
-                        ]);
+                    $this->subQuery->andWhere([
+                        'and',
+                        ['>', 'structureelements.lft', $parent->lft],
+                        ['<', 'structureelements.rgt', $parent->rgt]
+                    ]);
                 }
             }
 
             if ($this->prevSiblingOf !== null) {
                 $this->_normalizeStructureParamValue('prevSiblingOf', $class);
 
-                $this->subQuery
-                    ->andWhere([
-                        'and',
-                        'structureelements.level = :prevSiblingOf_level',
-                        'structureelements.rgt = :prevSiblingOf_rgt',
-                        'structureelements.root = :prevSiblingOf_root'
-                    ])
-                    ->addParams([
-                        ':prevSiblingOf_level' => $this->prevSiblingOf->level,
-                        ':prevSiblingOf_rgt' => $this->prevSiblingOf->lft - 1,
-                        ':prevSiblingOf_root' => $this->prevSiblingOf->root
-                    ]);
+                $this->subQuery->andWhere([
+                    'structureelements.level' => $this->prevSiblingOf->level,
+                    'structureelements.rgt' => $this->prevSiblingOf->lft - 1,
+                    'structureelements.root' => $this->prevSiblingOf->root
+                ]);
             }
 
             if ($this->nextSiblingOf !== null) {
                 $this->_normalizeStructureParamValue('nextSiblingOf', $class);
 
-                $this->subQuery
-                    ->andWhere([
-                        'and',
-                        'structureelements.level = :nextSiblingOf_level',
-                        'structureelements.lft = :nextSiblingOf_lft',
-                        'structureelements.root = :nextSiblingOf_root'
-                    ])
-                    ->addParams([
-                        ':nextSiblingOf_level' => $this->nextSiblingOf->level,
-                        ':nextSiblingOf_lft' => $this->nextSiblingOf->rgt + 1,
-                        ':nextSiblingOf_root' => $this->nextSiblingOf->root
-                    ]);
+                $this->subQuery->andWhere([
+                    'structureelements.level' => $this->nextSiblingOf->level,
+                    'structureelements.lft' => $this->nextSiblingOf->rgt + 1,
+                    'structureelements.root' => $this->nextSiblingOf->root
+                ]);
             }
 
             if ($this->positionedBefore !== null) {
                 $this->_normalizeStructureParamValue('positionedBefore', $class);
 
-                $this->subQuery
-                    ->andWhere([
-                        'and',
-                        'structureelements.rgt < :positionedBefore_rgt',
-                        'structureelements.root = :positionedBefore_root'
-                    ])
-                    ->addParams([
-                        ':positionedBefore_rgt' => $this->positionedBefore->lft,
-                        ':positionedBefore_root' => $this->positionedBefore->root
-                    ]);
+                $this->subQuery->andWhere([
+                    'and',
+                    ['<', 'structureelements.rgt', $this->positionedBefore->lft],
+                    ['structureelements.root' => $this->positionedBefore->root]
+                ]);
             }
 
             if ($this->positionedAfter !== null) {
                 $this->_normalizeStructureParamValue('positionedAfter', $class);
 
-                $this->subQuery
-                    ->andWhere([
-                        'and',
-                        'structureelements.lft > :positionedAfter_lft',
-                        'structureelements.root = :positionedAfter_root'
-                    ])
-                    ->addParams([
-                        ':positionedAfter_lft' => $this->positionedAfter->rgt,
-                        ':positionedAfter_root' => $this->positionedAfter->root
-                    ]);
+                $this->subQuery->andWhere([
+                    'and',
+                    ['>', 'structureelements.lft', $this->positionedAfter->rgt],
+                    ['structureelements.root' => $this->positionedAfter->root],
+                ]);
             }
 
             // TODO: Remove this code in Craft 4

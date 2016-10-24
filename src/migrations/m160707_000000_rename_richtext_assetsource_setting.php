@@ -17,13 +17,11 @@ class m160707_000000_rename_richtext_assetsource_setting extends Migration
      */
     public function safeUp()
     {
-        $schema = Craft::$app->getDb()->getSchema();
-
         // Update permissions
         $fields = (new Query())
             ->select('id, settings')
             ->from('{{%fields}}')
-            ->where($schema->quoteColumnName('type').' = :type', [':type' => 'craft\app\fields\RichText'])
+            ->where(['type' => 'craft\app\fields\RichText'])
             ->all();
 
         echo '';

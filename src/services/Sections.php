@@ -271,10 +271,8 @@ class Sections extends Component
 
         // If we've already fetched all sections we can save ourselves a trip to the DB for section IDs that don't exist
         if (!$this->_fetchedAllSections && (!isset($this->_sectionsById) || !array_key_exists($sectionId, $this->_sectionsById))) {
-            $schema = Craft::$app->getDb()->getSchema();
-
             $result = $this->_createSectionQuery()
-                ->where($schema->quoteTableName('sections').'.'.$schema->quoteColumnName('id').' = :sectionId', [':sectionId' => $sectionId])
+                ->where(['sections.id' => $sectionId])
                 ->one();
 
             if ($result) {
@@ -302,10 +300,8 @@ class Sections extends Component
      */
     public function getSectionByHandle($sectionHandle)
     {
-        $schema = Craft::$app->getDb()->getSchema();
-
         $result = $this->_createSectionQuery()
-            ->where($schema->quoteTableName('sections').'.'.$schema->quoteColumnName('handle').' = :sectionHandle', [':sectionHandle' => $sectionHandle])
+            ->where(['sections.handle' => $sectionHandle])
             ->one();
 
         if ($result) {
@@ -328,8 +324,6 @@ class Sections extends Component
      */
     public function getSectionSiteSettings($sectionId, $indexBy = null)
     {
-        $schema = Craft::$app->getDb()->getSchema();
-
         $siteSettings = (new Query())
             ->select([
                 'sections_i18n.id',
@@ -341,9 +335,9 @@ class Sections extends Component
                 'sections_i18n.template',
             ])
             ->from('{{%sections_i18n}} sections_i18n')
-            ->innerJoin('{{%sites}} sites', $schema->quoteTableName('sites').'.'.$schema->quoteColumnName('id').' = '.$schema->quoteTableName('sections_i18n').'.'.$schema->quoteColumnName('siteId'))
-            ->where($schema->quoteTableName('sections_i18n').'.'.$schema->quoteColumnName('sectionId').' = :sectionId', [':sectionId' => $sectionId])
-            ->orderBy($schema->quoteTableName('sites').'.'.$schema->quoteColumnName('sortOrder'))
+            ->innerJoin('{{%sites}} sites', '[[sites.id]] = [[sections_i18n.siteId]]')
+            ->where(['sections_i18n.sectionId' => $sectionId])
+            ->orderBy('sites.sortOrder')
             ->indexBy($indexBy)
             ->all();
 
@@ -417,7 +411,6 @@ class Sections extends Component
         ]));
 
         $db = Craft::$app->getDb();
-        $schema = $db->getSchema();
         $transaction = $db->beginTransaction();
 
         try {
@@ -517,7 +510,7 @@ class Sections extends Component
                 $entryTypeIds = (new Query())
                     ->select('id')
                     ->from('{{%entrytypes}}')
-                    ->where($schema->quoteColumnName('sectionId').' = :sectionId', [':sectionId' => $section->id])
+                    ->where(['sectionId' => $section->id])
                     ->column();
 
                 if ($entryTypeIds) {
@@ -569,7 +562,7 @@ class Sections extends Component
                         $entryIds = (new Query())
                             ->select('id')
                             ->from('{{%entries}}')
-                            ->where($schema->quoteColumnName('sectionId').' = :sectionId', [':sectionId' => $section->id])
+                            ->where(['sectionId' => $section->id])
                             ->column();
 
                         if ($entryIds) {
@@ -1154,11 +1147,9 @@ class Sections extends Component
      */
     private function _createSectionQuery()
     {
-        $schema = Craft::$app->getDb()->getSchema();
-
         return (new Query())
             ->select('sections.id, sections.structureId, sections.name, sections.handle, sections.type, sections.enableVersioning, structures.maxLevels')
-            ->leftJoin('{{%structures}} structures', $schema->quoteTableName('structures').'.'.$schema->quoteColumnName('id').' = '.$schema->quoteTableName('sections').'.'.$schema->quoteColumnName('structureId'))
+            ->leftJoin('{{%structures}} structures', '[[structures.id]] = [[sections.structureId]]')
             ->from('{{%sections}} sections')
             ->orderBy('name');
     }
