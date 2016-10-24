@@ -901,9 +901,7 @@ class ElementQuery extends Query implements ElementQueryInterface, Arrayable, Co
             throw new QueryAbortedException();
         }
 
-        if ($this->select) {
-            $this->query->select = $this->select;
-        } else {
+        if (!$this->select) {
             $this->query->addSelect([
                 'elements.id',
                 'elements.uid',
@@ -986,6 +984,11 @@ class ElementQuery extends Query implements ElementQueryInterface, Arrayable, Co
         $this->_applySearchParam($builder->db);
         $this->_applyOrderByParams($builder->db);
 
+        // If the select clause has been explicitly defined, go with that.
+        if ($this->select) {
+            $this->query->select($this->select);
+        }
+
         // Give other classes a chance to make changes up front
         if (!$this->afterPrepare()) {
             throw new QueryAbortedException();
@@ -1031,7 +1034,14 @@ class ElementQuery extends Query implements ElementQueryInterface, Arrayable, Co
             return count($cachedResult);
         }
 
-        return parent::count($q, $db);
+        // Explicitly clear any orderBy before counting.
+        $orderBy = $this->orderBy;
+        $this->orderBy = false;
+
+        $count = parent::count($q, $db);
+        $this->orderBy = $orderBy;
+
+        return $count;
     }
 
     /**
