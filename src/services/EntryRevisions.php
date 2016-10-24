@@ -218,7 +218,7 @@ class EntryRevisions extends Component
             $totalDrafts = (new Query())
                 ->from(['{{%entrydrafts}}'])
                 ->where(['entryId' => $draft->id, 'siteId' => $draft->siteId])
-                ->count('id');
+                ->count('[[id]]');
 
             $draft->name = Craft::t('app', 'Draft {num}',
                 ['num' => $totalDrafts + 1]);
@@ -419,7 +419,7 @@ class EntryRevisions extends Component
         $totalVersions = (new Query())
             ->from(['{{%entryversions}}'])
             ->where(['entryId' => $entry->id, 'siteId' => $entry->siteId])
-            ->count('id');
+            ->count('[[id]]');
 
         $versionRecord = new EntryVersionRecord();
         $versionRecord->entryId = $entry->id;

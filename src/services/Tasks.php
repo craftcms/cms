@@ -552,7 +552,7 @@ class Tasks extends Component
                 ['lft' => '1'],
                 ['not', ['status' => Task::STATUS_ERROR]]
             ])
-            ->count('id');
+            ->count('[[id]]');
     }
 
     /**

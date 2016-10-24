@@ -148,7 +148,7 @@ class Deprecator extends Component
     {
         return (new Query())
             ->from([static::$_tableName])
-            ->count('id');
+            ->count('[[id]]');
     }
 
     /**

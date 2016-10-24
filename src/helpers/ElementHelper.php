@@ -149,7 +149,7 @@ class ElementHelper
             $totalElements = (new Query())
                 ->from(['{{%elements_i18n}}'])
                 ->where($uniqueUriConditions, [':uri' => $testUri])
-                ->count('id');
+                ->count('[[id]]');
 
             if ($totalElements == 0) {
                 // OMG!
