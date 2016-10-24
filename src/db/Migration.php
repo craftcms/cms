@@ -7,6 +7,7 @@
 
 namespace craft\app\db;
 
+use craft\app\helpers\Db;
 use yii\db\ColumnSchemaBuilder;
 
 /**
@@ -32,7 +33,7 @@ abstract class Migration extends \yii\db\Migration
      */
     public function tinyText()
     {
-        if ($this->db->getDriverName() == Connection::DRIVER_MYSQL) {
+        if (Db::isTypeSupported('tinytext', $this->db)) {
             return $this->db->getSchema()->createColumnSchemaBuilder('tinytext');
         }
 
@@ -46,7 +47,7 @@ abstract class Migration extends \yii\db\Migration
      */
     public function mediumText()
     {
-        if ($this->db->getDriverName() == Connection::DRIVER_MYSQL) {
+        if (Db::isTypeSupported('mediumtext', $this->db)) {
             return $this->db->getSchema()->createColumnSchemaBuilder('mediumtext');
         }
 
@@ -60,7 +61,7 @@ abstract class Migration extends \yii\db\Migration
      */
     public function longText()
     {
-        if ($this->db->getDriverName() == Connection::DRIVER_MYSQL) {
+        if (Db::isTypeSupported('longtext', $this->db)) {
             return $this->db->getSchema()->createColumnSchemaBuilder('longtext');
         }
 
@@ -77,7 +78,7 @@ abstract class Migration extends \yii\db\Migration
      */
     public function enum($columnName, $values)
     {
-        if ($this->db->getDriverName() == Connection::DRIVER_MYSQL) {
+        if (Db::isTypeSupported('enum', $this->db)) {
             return $this->db->getSchema()->createColumnSchemaBuilder('enum', $values);
         }
 

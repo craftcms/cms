@@ -400,6 +400,26 @@ class Db
         return static::parseParam($column, $normalizedValues);
     }
 
+    /**
+     * Returns whether a given DB connection’s schema supports a column type.
+     *
+     * @param string $type
+     * @param Connection $db
+     *
+     * @return boolean
+     */
+    public static function isTypeSupported($type, $db = null)
+    {
+        if ($db === null) {
+            $db = Craft::$app->getDb();
+        }
+
+        /** @var \craft\app\db\mysql\Schema|\craft\app\db\pgsql\Schema $schema */
+        $schema = $db->getSchema();
+
+        return isset($schema->typeMap[$type]);
+    }
+
     // Private Methods
     // =========================================================================
 
