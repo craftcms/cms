@@ -298,7 +298,7 @@ class ElementIndexesController extends BaseElementsController
                 ->id($collapsedElementIds)
                 ->offset(0)
                 ->limit(null)
-                ->orderBy('lft asc')
+                ->orderBy(['lft' => SORT_ASC])
                 ->positionedAfter(null)
                 ->positionedBefore(null)
                 ->all();

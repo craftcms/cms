@@ -257,7 +257,7 @@ abstract class Element extends Component implements ElementInterface
             $source = static::getSourceByKey($sourceKey, $context);
 
             if (isset($source['structureId'])) {
-                $elementQuery->orderBy('lft asc');
+                $elementQuery->orderBy(['lft' => SORT_ASC]);
                 $variables['structure'] = Craft::$app->getStructures()->getStructureById($source['structureId']);
 
                 // Are they allowed to make changes to this structure?
