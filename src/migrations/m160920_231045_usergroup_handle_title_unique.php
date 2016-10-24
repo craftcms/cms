@@ -40,7 +40,7 @@ class m160920_231045_usergroup_handle_title_unique extends Migration
             ->select($type)
             ->from('{{%usergroups}}')
             ->groupBy($type)
-            ->having('count("'.$type.'") > 1')
+            ->having('count('.$this->db->quoteValue($type).') > '.$this->db->quoteValue('1'))
             ->all();
 
         if ($duplicates) {
