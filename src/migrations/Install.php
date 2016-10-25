@@ -386,7 +386,7 @@ class Install extends Migration
             'build' => $this->integer()->notNull()->unsigned(),
             'schemaVersion' => $this->string(15)->notNull(),
             'releaseDate' => $this->dateTime()->notNull(),
-            'edition' => $this->boolean()->defaultValue(false)->notNull(),
+            'edition' => $this->smallInteger()->unsigned()->notNull(),
             'timezone' => $this->string(30),
             'on' => $this->boolean()->defaultValue(false)->notNull(),
             'maintenance' => $this->boolean()->defaultValue(false)->notNull(),
