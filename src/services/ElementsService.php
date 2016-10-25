@@ -243,7 +243,6 @@ class ElementsService extends BaseApplicationComponent
 		$locale = $criteria->locale;
 		$elementType = $criteria->getElementType();
 		$indexBy = $criteria->indexBy;
-		$lastElement = null;
 
 		foreach ($results as $result)
 		{
@@ -326,21 +325,9 @@ class ElementsService extends BaseApplicationComponent
 			{
 				$elements[] = $element;
 			}
-
-			if ($lastElement)
-			{
-				$lastElement->setNext($element);
-				$element->setPrev($lastElement);
-			}
-			else
-			{
-				$element->setPrev(false);
-			}
-
-			$lastElement = $element;
 		}
 
-		$lastElement->setNext(false);
+		ElementHelper::setNextPrevOnElements($elements);
 
 		// Should we eager-load some elements onto these?
 		if ($criteria->with)

@@ -1086,6 +1086,8 @@ abstract class BaseElementModel extends BaseModel
 	{
 		if (isset($this->_eagerLoadedElements[$handle]))
 		{
+			ElementHelper::setNextPrevOnElements($this->_eagerLoadedElements[$handle]);
+
 			return $this->_eagerLoadedElements[$handle];
 		}
 
