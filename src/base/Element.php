@@ -20,6 +20,7 @@ use craft\app\events\ElementStructureEvent;
 use craft\app\events\Event;
 use craft\app\events\ModelEvent;
 use craft\app\helpers\ArrayHelper;
+use craft\app\helpers\ElementHelper;
 use craft\app\helpers\Html;
 use craft\app\helpers\Template;
 use craft\app\helpers\Url;
@@ -1413,6 +1414,8 @@ abstract class Element extends Component implements ElementInterface
     public function getEagerLoadedElements($handle)
     {
         if (isset($this->_eagerLoadedElements[$handle])) {
+
+            ElementHelper::setNextPrevOnElements($this->_eagerLoadedElements[$handle]);
             return $this->_eagerLoadedElements[$handle];
         }
 
