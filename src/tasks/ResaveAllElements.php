@@ -61,7 +61,7 @@ class ResaveAllElements extends Task
 
         foreach (Craft::$app->getElements()->getAllElementTypes() as $elementType) {
             if (!$localizableOnly || $elementType::isLocalized()) {
-                $this->_elementType[] = $elementType::className();
+                $this->_elementType[] = $elementType;
             }
         }
 

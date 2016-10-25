@@ -431,7 +431,8 @@ class TemplateCaches extends Component
             $elements = [$elements];
         }
 
-        $deleteQueryCaches = empty($this->_deletedCachesByElementType[$firstElement::className()]);
+        $elementType = get_class($firstElement);
+        $deleteQueryCaches = empty($this->_deletedCachesByElementType[$elementType]);
         $elementIds = [];
 
         /** @var Element[] $elements */

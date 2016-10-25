@@ -879,7 +879,7 @@ class Sites extends Component
         foreach (Craft::$app->getElements()->getAllElementTypes() as $elementType) {
             /** Element $elementType */
             if (!$elementType::isLocalized()) {
-                $nonLocalizedElementTypes[] = $elementType::className();
+                $nonLocalizedElementTypes[] = $elementType;
             }
         }
 

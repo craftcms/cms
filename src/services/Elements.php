@@ -370,7 +370,7 @@ class Elements extends Component
             if (!$isNewElement) {
                 $elementRecord = ElementRecord::findOne([
                     'id' => $element->id,
-                    'type' => $element::className()
+                    'type' => get_class($element)
                 ]);
 
                 if (!$elementRecord) {
@@ -378,7 +378,7 @@ class Elements extends Component
                 }
             } else {
                 $elementRecord = new ElementRecord();
-                $elementRecord->type = $element::className();
+                $elementRecord->type = get_class($element);
             }
 
             // Set the attributes
@@ -639,7 +639,7 @@ class Elements extends Component
             Craft::$app->getTasks()->queueTask([
                 'type' => UpdateElementSlugsAndUris::class,
                 'elementId' => $element->id,
-                'elementType' => $element::className(),
+                'elementType' => get_class($element),
                 'siteId' => $element->siteId,
                 'updateOtherSites' => $updateOtherSites,
                 'updateDescendants' => $updateDescendants,
@@ -728,7 +728,7 @@ class Elements extends Component
                 Craft::$app->getTasks()->queueTask([
                     'type' => UpdateElementSlugsAndUris::class,
                     'elementId' => $childIds,
-                    'elementType' => $element::className(),
+                    'elementType' => get_class($element),
                     'siteId' => $element->siteId,
                     'updateOtherSites' => $updateOtherSites,
                     'updateDescendants' => true,
@@ -1036,13 +1036,13 @@ class Elements extends Component
             $refTagsByElementHandle = [];
 
             $str = preg_replace_callback('/\{(\w+)\:([^\:\}]+)(?:\:([^\:\}]+))?\}/',
-                function ($matches) {
+                function($matches) {
                     global $refTagsByElementHandle;
 
                     if (strpos($matches[1], '_') === false) {
                         $elementTypeHandle = ucfirst($matches[1]);
                     } else {
-                        $elementTypeHandle = preg_replace_callback('/^\w|_\w/', function ($matches) {
+                        $elementTypeHandle = preg_replace_callback('/^\w|_\w/', function($matches) {
                             return strtoupper($matches[0]);
                         }, $matches[1]);
                     }
@@ -1194,9 +1194,9 @@ class Elements extends Component
     /**
      * Eager-loads additional elements onto a given set of elements.
      *
-     * @param ElementInterface|string $elementType The root element type
-     * @param ElementInterface[]      $elements    The root element models that should be updated with the eager-loaded elements
-     * @param string|array            $with        Dot-delimited paths of the elements that should be eager-loaded into the root elements
+     * @param string             $elementType The root element type class
+     * @param ElementInterface[] $elements    The root element models that should be updated with the eager-loaded elements
+     * @param string|array       $with        Dot-delimited paths of the elements that should be eager-loaded into the root elements
      *
      * @return void
      */
@@ -1228,7 +1228,7 @@ class Elements extends Component
 
         // Load 'em up!
         $elementsByPath = ['__root__' => $elements];
-        $elementTypesByPath = ['__root__' => $elementType::className()];
+        $elementTypesByPath = ['__root__' => $elementType];
 
         foreach ($paths as $path) {
             $pathSegments = explode('.', $path);

@@ -528,7 +528,7 @@ class DashboardController extends Controller
 
         return [
             'id' => $widget->id,
-            'type' => $widget->className(),
+            'type' => get_class($widget),
             'colspan' => $colspan,
             'title' => $widget->getTitle(),
             'name' => $widget->displayName(),

@@ -194,8 +194,8 @@ class SystemSettingsController extends Controller
             }
         }
 
-        /** @var TransportAdapterInterface[] $allTransportTypes */
-        $allTransportTypes = [
+        /** @var TransportAdapterInterface[] $allTransportAdapterTypes */
+        $allTransportAdapterTypes = [
             new Php(),
             new Sendmail(),
             new Smtp(),
@@ -208,20 +208,22 @@ class SystemSettingsController extends Controller
                     if (!$pluginTransportType instanceof TransportAdapterInterface) {
                         throw new Exception('\''.get_class($pluginTransportType).'\' is not an instance of \''.TransportAdapterInterface::class.'\'.');
                     }
-                    $allTransportTypes[] = $pluginTransportType;
+                    $allTransportAdapterTypes[] = $pluginTransportType;
                 } else {
-                    $allTransportTypes[] = MailerHelper::createTransportAdapter($pluginTransportType);
+                    $allTransportAdapterTypes[] = MailerHelper::createTransportAdapter($pluginTransportType);
                 }
             }
         }
 
         $transportTypeOptions = [];
 
-        foreach ($allTransportTypes as $class) {
-            if ($class::className() === get_class($adapter) || $class::isSelectable()) {
+        foreach ($allTransportAdapterTypes as $transportAdapterType) {
+            $class = get_class($transportAdapterType);
+
+            if ($class === get_class($adapter) || $transportAdapterType::isSelectable()) {
                 $transportTypeOptions[] = [
-                    'value' => $class::className(),
-                    'label' => $class::displayName()
+                    'value' => $class,
+                    'label' => $transportAdapterType::displayName()
                 ];
             }
         }
@@ -230,7 +232,7 @@ class SystemSettingsController extends Controller
             'settings' => $settings,
             'adapter' => $adapter,
             'transportTypeOptions' => $transportTypeOptions,
-            'allTransportTypes' => $allTransportTypes,
+            'allTransportTypes' => $allTransportAdapterTypes,
         ]);
     }
 

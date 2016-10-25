@@ -152,7 +152,7 @@ class ElementIndexesController extends BaseElementsController
         if ($this->_actions) {
             /** @var ElementAction $availableAction */
             foreach ($this->_actions as $availableAction) {
-                if ($actionClass == $availableAction::className()) {
+                if ($actionClass == get_class($availableAction)) {
                     $action = $availableAction;
                     break;
                 }
@@ -420,7 +420,7 @@ class ElementIndexesController extends BaseElementsController
             /** @var ElementAction $action */
             foreach ($this->_actions as $action) {
                 $actionData[] = [
-                    'type' => $action::className(),
+                    'type' => get_class($action),
                     'destructive' => $action->isDestructive(),
                     'name' => $action->getTriggerLabel(),
                     'trigger' => $action->getTriggerHtml(),

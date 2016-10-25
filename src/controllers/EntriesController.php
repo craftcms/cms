@@ -194,7 +194,7 @@ class EntriesController extends BaseEntriesController
         // ---------------------------------------------------------------------
 
         // Page title w/ revision label
-        switch ($entry::className()) {
+        switch (get_class($entry)) {
             case EntryDraft::class: {
                 /** @var EntryDraft $entry */
                 $variables['revisionLabel'] = $entry->name;
@@ -217,7 +217,7 @@ class EntriesController extends BaseEntriesController
         } else {
             $variables['docTitle'] = $variables['title'] = $entry->title;
 
-            if ($entry::className() != Entry::class) {
+            if (get_class($entry) != Entry::class) {
                 $variables['docTitle'] .= ' ('.$variables['revisionLabel'].')';
             }
         }
@@ -282,7 +282,7 @@ class EntriesController extends BaseEntriesController
                         'sectionId' => $section->id,
                         'entryId' => $entry->id,
                         'siteId' => $entry->siteId,
-                        'versionId' => ($entry::className() == EntryVersion::class ? $entry->versionId : null),
+                        'versionId' => ($entry instanceof EntryVersion ? $entry->versionId : null),
                     ]
                 ]).');');
 
@@ -290,7 +290,7 @@ class EntriesController extends BaseEntriesController
 
             // Should we show the Share button too?
             if ($entry->id) {
-                $className = $entry::className();
+                $className = get_class($entry);
 
                 // If we're looking at the live version of an entry, just use
                 // the entry's main URL as its share URL

@@ -90,7 +90,7 @@ class ResaveElements extends Task
                 return true;
             }
 
-            $error = 'Encountered the following validation errors when trying to save '.$element::className().' element "'.$element.'" with the ID "'.$element->id.'":';
+            $error = 'Encountered the following validation errors when trying to save '.get_class($element).' element "'.$element.'" with the ID "'.$element->id.'":';
 
             foreach ($element->getAllErrors() as $attributeError) {
                 $error .= "\n - {$attributeError}";

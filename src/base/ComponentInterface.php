@@ -21,13 +21,6 @@ interface ComponentInterface
     // =========================================================================
 
     /**
-     * Returns the fully qualified name of this class.
-     *
-     * @return string The fully qualified name of this class.
-     */
-    public static function className();
-
-    /**
      * Returns the display name of this class.
      *
      * @return string The display name of this class.
