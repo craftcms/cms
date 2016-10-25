@@ -13,6 +13,7 @@ use craft\app\dates\DateTime;
 use craft\app\helpers\DateTimeHelper;
 use craft\app\helpers\Db;
 use craft\app\helpers\Header;
+use craft\app\helpers\Json;
 use craft\app\helpers\StringHelper;
 use craft\app\helpers\Template;
 use craft\app\helpers\Url;
@@ -580,7 +581,6 @@ class Extension extends \Twig_Extension
             new \Twig_SimpleFunction('className', 'get_class'),
             new \Twig_SimpleFunction('csrfInput', [$this, 'csrfInputFunction']),
             new \Twig_SimpleFunction('floor', 'floor'),
-            new \Twig_SimpleFunction('getTranslations', [$this->view, 'getTranslations']),
             new \Twig_SimpleFunction('redirectInput', [$this, 'redirectInputFunction']),
             new \Twig_SimpleFunction('renderObjectTemplate', [$this, 'renderObjectTemplate']),
             new \Twig_SimpleFunction('round', [$this, 'roundFunction']),
@@ -596,6 +596,7 @@ class Extension extends \Twig_Extension
             new \Twig_SimpleFunction('getCsrfInput', [$this, 'getCsrfInput']),
             new \Twig_SimpleFunction('getHeadHtml', [$this, 'getHeadHtml']),
             new \Twig_SimpleFunction('getFootHtml', [$this, 'getFootHtml']),
+            new \Twig_SimpleFunction('getTranslations', [$this, 'getTranslations']),
         ];
     }
 
@@ -791,5 +792,16 @@ class Extension extends \Twig_Extension
         $this->view->endBody();
 
         return Template::getRaw(ob_get_clean());
+    }
+
+    /**
+     * @deprecated in Craft 3.0. Use craft.app.view.getTranslations() instead.
+     * @return string A JSON-encoded array of source/translation message mappings.
+     */
+    public function getTranslations()
+    {
+        Craft::$app->getDeprecator()->log('getTranslations', 'getTranslations() has been deprecated. Use craft.app.view.getTranslations() instead.');
+
+        return Json::encode($this->view->getTranslations());
     }
 }
