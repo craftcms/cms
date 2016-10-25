@@ -24,7 +24,7 @@ class MissingField extends Field implements MissingComponentInterface
 
     use MissingComponentTrait;
 
-    // Public Methods
+    // Static
     // =========================================================================
 
     /**

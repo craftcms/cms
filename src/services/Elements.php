@@ -19,7 +19,6 @@ use craft\app\base\ElementInterface;
 use craft\app\elements\db\ElementQuery;
 use craft\app\elements\Entry;
 use craft\app\elements\GlobalSet;
-use craft\app\elements\MissingElement;
 use craft\app\elements\MatrixBlock;
 use craft\app\elements\Tag;
 use craft\app\elements\User;
@@ -116,15 +115,10 @@ class Elements extends Component
             $config = ['type' => $config];
         }
 
-        try {
-            return ComponentHelper::createComponent($config, ElementInterface::class);
-        } catch (MissingComponentException $e) {
-            $config['errorMessage'] = $e->getMessage();
-            $config['expectedType'] = $config['type'];
-            unset($config['type']);
+        /** @var Element $element */
+        $element = ComponentHelper::createComponent($config, ElementInterface::class);
 
-            return new MissingElement($config);
-        }
+        return $element;
     }
 
     // Finding Elements

@@ -11,7 +11,6 @@ use Craft;
 use craft\app\dates\DateTime;
 use craft\app\errors\MissingComponentException;
 use craft\app\helpers\MailerHelper;
-use craft\app\helpers\Component;
 use craft\app\helpers\Template;
 use craft\app\helpers\Url;
 use craft\app\mail\transportadapters\BaseTransportAdapter;
@@ -29,6 +28,7 @@ use craft\app\tools\DbBackup;
 use craft\app\tools\FindAndReplace;
 use craft\app\tools\SearchIndex;
 use craft\app\web\Controller;
+use yii\base\Exception;
 use yii\web\NotFoundHttpException;
 use yii\web\Response;
 
@@ -175,6 +175,7 @@ class SystemSettingsController extends Controller
      * @param TransportAdapterInterface $adapter  The transport adapter, if there were any validation errors
      *
      * @return Response
+     * @throws Exception if a plugin returns an invalid mail transport type
      */
     public function actionEditEmailSettings(MailSettings $settings = null, TransportAdapterInterface $adapter = null)
     {
@@ -183,11 +184,13 @@ class SystemSettingsController extends Controller
         }
 
         if ($adapter === null) {
-            $adapter = MailerHelper::createTransportAdapter($settings->transportType, $settings->transportSettings);
-
-            if ($adapter === false) {
-                // Fallback to the PHP mailer
+            try {
+                $adapter = MailerHelper::createTransportAdapter($settings->transportType, $settings->transportSettings);
+            } catch (MissingComponentException $e) {
                 $adapter = new Php();
+                $adapter->addError('type', Craft::t('app', 'The transport type “{type}” could not be found.', [
+                    'type' => $settings->transportType
+                ]));
             }
         }
 
@@ -202,14 +205,12 @@ class SystemSettingsController extends Controller
         foreach (Craft::$app->getPlugins()->call('getMailTransportAdapters', [], true) as $pluginTransportTypes) {
             foreach ($pluginTransportTypes as $pluginTransportType) {
                 if (is_object($pluginTransportType)) {
-                    if ($pluginTransportType instanceof TransportAdapterInterface) {
-                        $allTransportTypes[] = $pluginTransportType;
+                    if (!$pluginTransportType instanceof TransportAdapterInterface) {
+                        throw new Exception('\''.get_class($pluginTransportType).'\' is not an instance of \''.TransportAdapterInterface::class.'\'.');
                     }
+                    $allTransportTypes[] = $pluginTransportType;
                 } else {
-                    $pluginTransportType = MailerHelper::createTransportAdapter($pluginTransportType);
-                    if ($pluginTransportType !== false) {
-                        $allTransportTypes[] = $pluginTransportType;
-                    }
+                    $allTransportTypes[] = MailerHelper::createTransportAdapter($pluginTransportType);
                 }
             }
         }

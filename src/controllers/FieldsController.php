@@ -10,6 +10,7 @@ namespace craft\app\controllers;
 use Craft;
 use craft\app\base\Field;
 use craft\app\base\FieldInterface;
+use craft\app\fields\MissingField;
 use craft\app\fields\PlainText;
 use craft\app\helpers\Url;
 use craft\app\models\FieldGroup;
@@ -119,19 +120,26 @@ class FieldsController extends Controller
         // The field
         // ---------------------------------------------------------------------
 
+        /** @var Field $field */
         if ($field === null && $fieldId !== null) {
             $field = $fieldsService->getFieldById($fieldId);
 
             if ($field === null) {
                 throw new NotFoundHttpException('Field not found');
             }
+
+            if ($field instanceof MissingField) {
+                $expectedType = $field->expectedType;
+                $field = $field->createFallback(PlainText::class);
+                $field->addError('type', Craft::t('app', 'The field type “{type}” could not be found.', [
+                    'type' => $expectedType
+                ]));
+            }
         }
 
         if ($field === null) {
             $field = $fieldsService->createField(PlainText::class);
         }
-
-        /** @var Field $field */
 
         // Field types
         // ---------------------------------------------------------------------
