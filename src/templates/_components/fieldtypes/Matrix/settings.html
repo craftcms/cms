@@ -105,7 +105,7 @@
 										id: 'type',
 										name: 'type',
 										options: fieldTypes,
-										value: field is missing ? field.expectedType : field.className(),
+										value: field is missing ? field.expectedType : className(field),
 										errors: (field is missing ? ["The field type “{class}” could not be found."|t('app', { class: field.expectedType })] : null),
 									}) }}
 

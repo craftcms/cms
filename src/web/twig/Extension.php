@@ -577,6 +577,7 @@ class Extension extends \Twig_Extension
             new \Twig_SimpleFunction('actionUrl', '\\craft\\app\\helpers\\Url::getActionUrl'),
             new \Twig_SimpleFunction('cpUrl', '\\craft\\app\\helpers\\Url::getCpUrl'),
             new \Twig_SimpleFunction('ceil', 'ceil'),
+            new \Twig_SimpleFunction('className', 'get_class'),
             new \Twig_SimpleFunction('csrfInput', [$this, 'csrfInputFunction']),
             new \Twig_SimpleFunction('floor', 'floor'),
             new \Twig_SimpleFunction('getTranslations', [$this->view, 'getTranslations']),
