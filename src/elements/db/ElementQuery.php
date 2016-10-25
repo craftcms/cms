@@ -27,6 +27,7 @@ use craft\app\events\Event;
 use craft\app\events\PopulateElementEvent;
 use craft\app\helpers\ArrayHelper;
 use craft\app\helpers\Db;
+use craft\app\helpers\ElementHelper;
 use craft\app\helpers\StringHelper;
 use craft\app\models\Site;
 use IteratorAggregate;
@@ -1774,9 +1775,6 @@ class ElementQuery extends Query implements ElementQueryInterface, Arrayable, Co
                 $elements[$key] = $row;
             }
         } else {
-            /** @var Element $lastElement */
-            $lastElement = null;
-
             foreach ($rows as $row) {
 
                 $element = $this->_createElement($row);
@@ -1797,19 +1795,9 @@ class ElementQuery extends Query implements ElementQueryInterface, Arrayable, Co
 
                     $elements[$key] = $element;
                 }
-
-                // setNext() / setPrev()
-                if ($lastElement) {
-                    $lastElement->setNext($element);
-                    $element->setPrev($lastElement);
-                } else {
-                    $element->setPrev(false);
-                }
-
-                $lastElement = $element;
             }
 
-            $lastElement->setNext(false);
+            ElementHelper::setNextPrevOnElements($elements);
 
             // Should we eager-load some elements onto these?
             if ($this->with) {
