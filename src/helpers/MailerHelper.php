@@ -29,22 +29,18 @@ class MailerHelper
      * @param string     $type
      * @param array|null $settings
      *
-     * @return TransportAdapterInterface|false
+     * @return TransportAdapterInterface
+     * @throws MissingComponentException if $type is missing
      */
     public static function createTransportAdapter($type, $settings = null)
     {
-        // Create the transport adapter
-        try {
-            /** @var BaseTransportAdapter $adapter */
-            $adapter = Component::createComponent([
-                'type' => $type,
-                'settings' => $settings,
-            ], TransportAdapterInterface::class);
+        /** @var BaseTransportAdapter $adapter */
+        $adapter = Component::createComponent([
+            'type' => $type,
+            'settings' => $settings,
+        ], TransportAdapterInterface::class);
 
-            return $adapter;
-        } catch (MissingComponentException $e) {
-            return false;
-        }
+        return $adapter;
     }
 
     /**
@@ -56,9 +52,9 @@ class MailerHelper
      */
     public static function createMailer(MailSettings $settings)
     {
-        $adapter = self::createTransportAdapter($settings->transportType, $settings->transportSettings);
-
-        if ($adapter === false) {
+        try {
+            $adapter = self::createTransportAdapter($settings->transportType, $settings->transportSettings);
+        } catch (MissingComponentException $e) {
             // Fallback to the PHP mailer
             $adapter = new Php();
         }

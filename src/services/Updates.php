@@ -296,7 +296,7 @@ class Updates extends Component
             $pluginUpdateModel->class = $plugin->getHandle();
             $pluginUpdateModel->localVersion = $plugin->version;
 
-            $pluginUpdateModels[$plugin::className()] = $pluginUpdateModel;
+            $pluginUpdateModels[get_class($plugin)] = $pluginUpdateModel;
         }
 
         $updateModel->plugins = $pluginUpdateModels;

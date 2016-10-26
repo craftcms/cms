@@ -791,13 +791,14 @@ class View extends \yii\web\View
      * Returns the translations prepared for inclusion by registerTranslations(), in JSON, and flushes out the
      * translations queue.
      *
-     * @return string A JSON-encoded array of source/translation message mappings.
+     * @return array Source/translation message mappings.
      *
      * @todo Add a $json param that determines whether the returned array should be JSON-encoded (defaults to true).
      */
     public function getTranslations()
     {
-        $translations = Json::encode(array_filter(array_map('array_filter', $this->_translations)));
+        // Prune out any empty translations
+        $translations = array_filter(array_map('array_filter', $this->_translations));
         $this->_translations = [];
 
         return $translations;

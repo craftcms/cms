@@ -12,6 +12,8 @@ use craft\app\base\Volume;
 use craft\app\elements\Asset;
 use craft\app\helpers\Json;
 use craft\app\helpers\Url;
+use craft\app\volumes\Local;
+use craft\app\volumes\MissingVolume;
 use craft\app\web\Controller;
 use Exception;
 use yii\web\NotFoundHttpException;
@@ -66,15 +68,25 @@ class VolumesController extends Controller
         $this->requireAdmin();
 
         $volumes = Craft::$app->getVolumes();
+
+        /** @var Volume $volume */
         if ($volume === null) {
             if ($volumeId !== null) {
                 $volume = $volumes->getVolumeById($volumeId);
 
-                if (!$volume) {
+                if ($volume === null) {
                     throw new NotFoundHttpException('Volume not found');
                 }
+
+                if ($volume instanceof MissingVolume) {
+                    $expectedType = $volume->expectedType;
+                    $volume = $volume->createFallback(Local::class);
+                    $volume->addError('type', Craft::t('app', 'The volume type “{type}” could not be found.', [
+                        'type' => $expectedType
+                    ]));
+                }
             } else {
-                $volume = $volumes->createVolume(\craft\app\volumes\Local::class);
+                $volume = $volumes->createVolume(Local::class);
             }
         }
 
@@ -162,7 +174,7 @@ class VolumesController extends Controller
         if (Craft::$app->getEdition() == Craft::Pro) {
             $type = $request->getBodyParam('type');
         } else {
-            $type = \craft\app\volumes\Local::class;
+            $type = Local::class;
         }
 
         /** @var Volume $volume */

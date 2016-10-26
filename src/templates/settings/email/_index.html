@@ -76,6 +76,7 @@
 			name: 'transportType',
 			options: transportTypeOptions,
 			value: className(adapter),
+			errors: adapter.getErrors('type') ?? null,
 			toggle: true
 		}) }}
 

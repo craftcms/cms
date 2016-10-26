@@ -50,7 +50,7 @@
 			Pro:                   {{ CraftPro }},
 			edition:               {{ CraftEdition }},
 			isMultiSite:           {{ craft.app.getIsMultiSite() ? 'true' : 'false' }},
-			translations:          {{ getTranslations()|raw }},
+			translations:          {{ craft.app.view.getTranslations()|json_encode|raw }},
 			maxUploadSize:         {{ craft.io.getMaxUploadSize() }},
 			forceConfirmUnload:    {{ forceConfirmUnload is defined and forceConfirmUnload ? 'true' : 'false' }},
 			{% if craft.app.config.get('enableCsrfProtection') %}

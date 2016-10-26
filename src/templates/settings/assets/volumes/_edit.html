@@ -45,8 +45,8 @@
 					id: 'type',
 					name: 'type',
 					options: volumeTypeOptions,
-					value: volume is missing ? volume.expectedType : className(volume),
-					errors: (volume is missing ? ["The volume type “{class}” could not be found."|t('app', { class: volume.expectedType })] : null),
+					value: className(volume),
+					errors: volume.getErrors('type') ?? null,
 					toggle: true
 				}) }}
 

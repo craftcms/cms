@@ -10,6 +10,8 @@ namespace craft\app\controllers;
 use Craft;
 use craft\app\base\Field;
 use craft\app\base\FieldInterface;
+use craft\app\fields\MissingField;
+use craft\app\fields\PlainText;
 use craft\app\helpers\Url;
 use craft\app\models\FieldGroup;
 use craft\app\web\Controller;
@@ -113,27 +115,36 @@ class FieldsController extends Controller
     {
         $this->requireAdmin();
 
+        $fieldsService = Craft::$app->getFields();
+
         // The field
         // ---------------------------------------------------------------------
 
+        /** @var Field $field */
         if ($field === null && $fieldId !== null) {
-            $field = Craft::$app->getFields()->getFieldById($fieldId);
+            $field = $fieldsService->getFieldById($fieldId);
 
             if ($field === null) {
                 throw new NotFoundHttpException('Field not found');
             }
+
+            if ($field instanceof MissingField) {
+                $expectedType = $field->expectedType;
+                $field = $field->createFallback(PlainText::class);
+                $field->addError('type', Craft::t('app', 'The field type “{type}” could not be found.', [
+                    'type' => $expectedType
+                ]));
+            }
         }
 
         if ($field === null) {
-            $field = Craft::$app->getFields()->createField(\craft\app\fields\PlainText::class);
+            $field = $fieldsService->createField(PlainText::class);
         }
-
-        /** @var Field $field */
 
         // Field types
         // ---------------------------------------------------------------------
 
-        $allFieldTypes = Craft::$app->getFields()->getAllFieldTypes();
+        $allFieldTypes = $fieldsService->getAllFieldTypes();
         $fieldTypeOptions = [];
 
         foreach ($allFieldTypes as $class) {
@@ -148,7 +159,7 @@ class FieldsController extends Controller
         // Groups
         // ---------------------------------------------------------------------
 
-        $allGroups = Craft::$app->getFields()->getAllGroups();
+        $allGroups = $fieldsService->getAllGroups();
 
         if (empty($allGroups)) {
             throw new ServerErrorHttpException('No field groups exist');
@@ -158,7 +169,7 @@ class FieldsController extends Controller
             $groupId = ($field !== null && $field->groupId !== null) ? $field->groupId : $allGroups[0]->id;
         }
 
-        $fieldGroup = Craft::$app->getFields()->getGroupById($groupId);
+        $fieldGroup = $fieldsService->getGroupById($groupId);
 
         if ($fieldGroup === null) {
             throw new NotFoundHttpException('Field group not found');

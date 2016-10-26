@@ -7,6 +7,9 @@
 
 namespace craft\app\base;
 
+use craft\app\helpers\Component as ComponentHelper;
+use yii\base\Arrayable;
+
 /**
  * MissingComponentTrait implements the common methods and properties for classes implementing [[MissingComponentInterface]].
  *
@@ -32,4 +35,22 @@ trait MissingComponentTrait
      * @var mixed The custom settings associated with the component, if it is savable
      */
     public $settings;
+
+    // Properties
+    // =========================================================================
+
+    /**
+     * Creates a new component of a given type based on this one’s properties.
+     *
+     * @return ComponentInterface
+     */
+    public function createFallback($type)
+    {
+        /** @var Arrayable $this */
+        $config = $this->toArray();
+        unset($config['expectedType'], $config['errorMessage'], $config['settings']);
+        $config['type'] = $type;
+
+        return ComponentHelper::createComponent($config);
+    }
 }

@@ -19,7 +19,6 @@ use craft\app\base\ElementInterface;
 use craft\app\elements\db\ElementQuery;
 use craft\app\elements\Entry;
 use craft\app\elements\GlobalSet;
-use craft\app\elements\MissingElement;
 use craft\app\elements\MatrixBlock;
 use craft\app\elements\Tag;
 use craft\app\elements\User;
@@ -116,15 +115,10 @@ class Elements extends Component
             $config = ['type' => $config];
         }
 
-        try {
-            return ComponentHelper::createComponent($config, ElementInterface::class);
-        } catch (MissingComponentException $e) {
-            $config['errorMessage'] = $e->getMessage();
-            $config['expectedType'] = $config['type'];
-            unset($config['type']);
+        /** @var Element $element */
+        $element = ComponentHelper::createComponent($config, ElementInterface::class);
 
-            return new MissingElement($config);
-        }
+        return $element;
     }
 
     // Finding Elements
@@ -376,7 +370,7 @@ class Elements extends Component
             if (!$isNewElement) {
                 $elementRecord = ElementRecord::findOne([
                     'id' => $element->id,
-                    'type' => $element::className()
+                    'type' => get_class($element)
                 ]);
 
                 if (!$elementRecord) {
@@ -384,7 +378,7 @@ class Elements extends Component
                 }
             } else {
                 $elementRecord = new ElementRecord();
-                $elementRecord->type = $element::className();
+                $elementRecord->type = get_class($element);
             }
 
             // Set the attributes
@@ -645,7 +639,7 @@ class Elements extends Component
             Craft::$app->getTasks()->queueTask([
                 'type' => UpdateElementSlugsAndUris::class,
                 'elementId' => $element->id,
-                'elementType' => $element::className(),
+                'elementType' => get_class($element),
                 'siteId' => $element->siteId,
                 'updateOtherSites' => $updateOtherSites,
                 'updateDescendants' => $updateDescendants,
@@ -734,7 +728,7 @@ class Elements extends Component
                 Craft::$app->getTasks()->queueTask([
                     'type' => UpdateElementSlugsAndUris::class,
                     'elementId' => $childIds,
-                    'elementType' => $element::className(),
+                    'elementType' => get_class($element),
                     'siteId' => $element->siteId,
                     'updateOtherSites' => $updateOtherSites,
                     'updateDescendants' => true,
@@ -1042,13 +1036,13 @@ class Elements extends Component
             $refTagsByElementHandle = [];
 
             $str = preg_replace_callback('/\{(\w+)\:([^\:\}]+)(?:\:([^\:\}]+))?\}/',
-                function ($matches) {
+                function($matches) {
                     global $refTagsByElementHandle;
 
                     if (strpos($matches[1], '_') === false) {
                         $elementTypeHandle = ucfirst($matches[1]);
                     } else {
-                        $elementTypeHandle = preg_replace_callback('/^\w|_\w/', function ($matches) {
+                        $elementTypeHandle = preg_replace_callback('/^\w|_\w/', function($matches) {
                             return strtoupper($matches[0]);
                         }, $matches[1]);
                     }
@@ -1200,9 +1194,9 @@ class Elements extends Component
     /**
      * Eager-loads additional elements onto a given set of elements.
      *
-     * @param ElementInterface|string $elementType The root element type
-     * @param ElementInterface[]      $elements    The root element models that should be updated with the eager-loaded elements
-     * @param string|array            $with        Dot-delimited paths of the elements that should be eager-loaded into the root elements
+     * @param string             $elementType The root element type class
+     * @param ElementInterface[] $elements    The root element models that should be updated with the eager-loaded elements
+     * @param string|array       $with        Dot-delimited paths of the elements that should be eager-loaded into the root elements
      *
      * @return void
      */
@@ -1234,7 +1228,7 @@ class Elements extends Component
 
         // Load 'em up!
         $elementsByPath = ['__root__' => $elements];
-        $elementTypesByPath = ['__root__' => $elementType::className()];
+        $elementTypesByPath = ['__root__' => $elementType];
 
         foreach ($paths as $path) {
             $pathSegments = explode('.', $path);

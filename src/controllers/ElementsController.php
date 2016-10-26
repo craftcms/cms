@@ -150,7 +150,7 @@ class ElementsController extends BaseElementsController
             $sourceKey = Craft::$app->getRequest()->getBodyParam('includeTableAttributesForSource');
 
             if ($sourceKey) {
-                $attributes = Craft::$app->getElementIndexes()->getTableAttributes($element->className(), $sourceKey);
+                $attributes = Craft::$app->getElementIndexes()->getTableAttributes(get_class($element), $sourceKey);
 
                 // Drop the first one
                 array_shift($attributes);

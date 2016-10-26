@@ -200,7 +200,7 @@ class ElementHelper
                     'siteId' => $site,
                 ];
             } else if (!isset($site['siteId'])) {
-                throw new Exception('Missing "siteId" key in '.$element::className().'::getSupportedSites()');
+                throw new Exception('Missing "siteId" key in '.get_class($element).'::getSupportedSites()');
             }
             $sites[] = array_merge([
                 'enabledByDefault' => true,
