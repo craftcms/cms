@@ -263,29 +263,31 @@ class ElementHelper
 	 * Given an array of elements, will go through and set the appropriate "next"
 	 * and "prev" elements on them.
 	 *
-	 * @param $elements The array of elements.
+	 * @param BaseElementModel[] $elements The array of elements.
 	 */
 	public static function setNextPrevOnElements($elements)
 	{
+		/** @var BaseElementModel $lastElement */
+		$lastElement = null;
+
 		foreach ($elements as $i => $element)
 		{
-			if ($i !== 0)
+			if ($lastElement)
 			{
-				$element->setPrev($elements[$i - 1]);
+				$lastElement->setNext($element);
+				$element->setPrev($lastElement);
 			}
 			else
 			{
 				$element->setPrev(false);
 			}
 
-			if ($i !== count($elements) - 1)
-			{
-				$element->setNext($elements[$i + 1]);
-			}
-			else
-			{
-				$element->setNext(false);
-			}
+			$lastElement = $element;
+		}
+
+		if ($lastElement)
+		{
+			$lastElement->setNext(false);
 		}
 	}
 }
