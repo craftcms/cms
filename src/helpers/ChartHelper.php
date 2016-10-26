@@ -33,11 +33,11 @@ class ChartHelper
      *
      * The $options array can override the following defaults:
      *
-     *  - `intervalUnit` - The time interval unit to use ('hour', 'day', 'month', or 'year').
+     *  - `intervalUnit`  - The time interval unit to use ('hour', 'day', 'month', or 'year').
      *                     By default, a unit will be decided automatically based on the start/end date duration.
      *  - `categoryLabel` - The label to use for the chart categories (times). Defaults to "Date".
-     *  - `valueLabel` - The label to use for the chart values. Defaults to "Value".
-     *  - `valueType` - The type of values that are being plotted ('number', 'currency', 'percent', 'time'). Defaults to 'number'.
+     *  - `valueLabel`    - The label to use for the chart values. Defaults to "Value".
+     *  - `valueType`     - The type of values that are being plotted ('number', 'currency', 'percent', 'time'). Defaults to 'number'.
      *
      * @param Query      $query      The DB query that should be used
      * @param DateTime   $startDate  The start of the time duration to select (inclusive)
@@ -46,6 +46,7 @@ class ChartHelper
      * @param array|null $options    Any customizations that should be made over the default options
      *
      * @return array
+     * @throws Exception
      */
     public static function getRunChartDataFromQuery(Query $query, DateTime $startDate, DateTime $endDate, $dateColumn, $options = [])
     {
@@ -151,14 +152,16 @@ class ChartHelper
 
         switch ($databaseType) {
             case Connection::DRIVER_MYSQL:
-                $select = "DATE_FORMAT([[{$dateColumn}]], '{$sqlDateFormat}') AS date";
+                $select = "DATE_FORMAT([[{$dateColumn}]], '{$sqlDateFormat}') AS [[date]]";
                 break;
             case Connection::DRIVER_PGSQL:
-                $select = "to_char([[{$dateColumn}]], '{$sqlDateFormat}') AS date";
+                $select = "to_char([[{$dateColumn}]], '{$sqlDateFormat}') AS [[date]]";
                 break;
             default:
                 throw new Exception('Unsupported connection type: '.$databaseType);
         }
+
+        $sqlGroup[] = '[[date]]';
 
         // Execute the query
         $results = $query
@@ -169,7 +172,7 @@ class ChartHelper
                 ['<', $dateColumn, $endDate->format('Y-m-d H:i:s')]
             ])
             ->groupBy($sqlGroup)
-            ->orderBy([$dateColumn => SORT_ASC])
+            ->orderBy(['[[date]]' => SORT_ASC])
             ->all();
 
         // Assemble the data
