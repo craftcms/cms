@@ -62,27 +62,26 @@ class EntriesController extends BaseEntriesController
      */
     public function actionEditEntry($sectionHandle, $entryId = null, $draftId = null, $versionId = null, $siteHandle = null, Entry $entry = null)
     {
-        if ($siteHandle) {
-            $site = Craft::$app->getSites()->getSiteByHandle($siteHandle);
-
-            if (!$site) {
-                throw new NotFoundHttpException('Invalid site handle: '.$siteHandle);
-            }
-        } else {
-            $site = Craft::$app->getSites()->currentSite;
-        }
-
         $variables = [
             'sectionHandle' => $sectionHandle,
             'entryId' => $entryId,
             'draftId' => $draftId,
             'versionId' => $versionId,
-            'site' => $site,
             'entry' => $entry
         ];
 
+        if ($siteHandle) {
+            $variables['site'] = Craft::$app->getSites()->getSiteByHandle($siteHandle);
+
+            if (!$variables['site']) {
+                throw new NotFoundHttpException('Invalid site handle: '.$siteHandle);
+            }
+        }
+
         $this->_prepEditEntryVariables($variables);
 
+        /** @var Site $site */
+        $site = $variables['site'];
         /** @var Entry $entry */
         $entry = $variables['entry'];
         /** @var Section $section */

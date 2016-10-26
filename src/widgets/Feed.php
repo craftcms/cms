@@ -46,7 +46,7 @@ class Feed extends Widget
     /**
      * @var integer The maximum number of feed items to display
      */
-    public $limit;
+    public $limit = 5;
 
     // Public Methods
     // =========================================================================

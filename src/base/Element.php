@@ -730,8 +730,8 @@ abstract class Element extends Component implements ElementInterface
         }
 
         // Are we validating custom fields?
-        if ($this->validateCustomFields()) {
-            foreach ($this->getFieldLayout()->getFields() as $field) {
+        if ($this->validateCustomFields() && ($fieldLayout = $this->getFieldLayout())) {
+            foreach ($fieldLayout->getFields() as $field) {
                 /** @var Field $field */
                 $fieldRules = $field->getElementValidationRules();
 

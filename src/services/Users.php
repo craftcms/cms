@@ -514,7 +514,7 @@ class Users extends Component
      */
     public function deleteUserPhoto(User $user)
     {
-        Craft::$app->getElements()->deleteElementById($user->photoId);
+        Craft::$app->getElements()->deleteElementById($user->photoId, Asset::class);
     }
 
     /**

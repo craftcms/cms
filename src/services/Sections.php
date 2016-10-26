@@ -559,19 +559,27 @@ class Sections extends Component
                         }
 
                         // Make sure there's only one entry in this section
-                        $entryIds = (new Query())
-                            ->select(['id'])
-                            ->from(['{{%entries}}'])
-                            ->where(['sectionId' => $section->id])
-                            ->column();
+                        $results = (new Query())
+                            ->select([
+                                'id' => 'e.id',
+                                'siteId' => (new Query())
+                                    ->select('i18n.siteId')
+                                    ->from('{{%elements_i18n}} i18n')
+                                    ->where('[[i18n.elementId]] = [[e.id]]')
+                                    ->limit(1)
+                            ])
+                            ->from(['{{%entries}} e'])
+                            ->where(['e.sectionId' => $section->id])
+                            ->all();
 
-                        if ($entryIds) {
-                            $singleEntryId = array_shift($entryIds);
+                        if ($results) {
+                            $firstResult = array_shift($results);
+                            $singleEntryId = $firstResult['id'];
 
                             // If there are any more, get rid of them
-                            if ($entryIds) {
-                                foreach ($entryIds as $id) {
-                                    Craft::$app->getElements()->deleteElementById($id);
+                            if ($results) {
+                                foreach ($results as $result) {
+                                    Craft::$app->getElements()->deleteElementById($result['id'], Entry::class, $result['siteId']);
                                 }
                             }
 

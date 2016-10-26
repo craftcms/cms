@@ -128,14 +128,14 @@ class Elements extends Component
      * Returns an element by its ID.
      *
      * If no element type is provided, the method will first have to run a DB query to determine what type of element
-     * the $elementId is, so you should definitely pass it if it’s known.
+     * the $id is, so you should definitely pass it if it’s known.
      *
      * The element’s status will not be a factor when using this method.
      *
-     * @param integer                      $elementId   The element’s ID.
-     * @param string|null|ElementInterface $elementType The element class.
-     * @param integer|null                 $siteId      The site to fetch the element in.
-     *                                                  Defaults to the current site.
+     * @param integer      $elementId   The element’s ID.
+     * @param string|null  $elementType The element class.
+     * @param integer|null $siteId      The site to fetch the element in.
+     *                                  Defaults to the current site.
      *
      * @return ElementInterface|null The matching element, or `null`.
      */
@@ -145,7 +145,7 @@ class Elements extends Component
             return null;
         }
 
-        if (!$elementType) {
+        if ($elementType === null) {
             $elementType = $this->getElementTypeById($elementId);
 
             if (!$elementType) {
@@ -153,6 +153,7 @@ class Elements extends Component
             }
         }
 
+        /** @var Element $elementType */
         /** @var ElementQuery $query */
         $query = $elementType::find();
         $query->id = $elementId;
@@ -220,7 +221,7 @@ class Elements extends Component
      *
      * If an array is passed in, then an array will be returned.
      *
-     * @param integer|array $elementId An element’s ID, or an array of elements’ IDs.
+     * @param integer|array $elementId The element’s ID, or an array of element IDs.
      *
      * @return ElementInterface|ElementInterface[]|Element|Element[]|null The element class(es).
      */
@@ -869,14 +870,38 @@ class Elements extends Component
     /**
      * Deletes an element by its ID.
      *
-     * @param integer $id The element’s ID
+     * @param integer      $elementId   The element’s ID
+     * @param string|null  $elementType The element class.
+     * @param integer|null $siteId      The site to fetch the element in.
+     *                                  Defaults to the current site.
      *
      * @return boolean Whether the element was deleted successfully
      * @throws \Exception
      */
-    public function deleteElementById($id)
+    public function deleteElementById($elementId, $elementType = null, $siteId = null)
     {
-        $element = $this->getElementById($id);
+        if ($elementType === null) {
+            $elementType = $this->getElementTypeById($elementId);
+
+            if (!$elementType) {
+                return false;
+            }
+        }
+
+        if ($siteId === null && $elementType::isLocalized() && Craft::$app->getIsMultiSite()) {
+            // Get a site this element is enabled in
+            $siteId = (new Query())
+                ->select('siteId')
+                ->from('{{%elements_i18n}}')
+                ->where(['elementId' => $elementId])
+                ->scalar();
+
+            if (!$siteId) {
+                return false;
+            }
+        }
+
+        $element = $this->getElementById($elementId, $elementType, $siteId);
 
         if (!$element) {
             return false;
