@@ -363,6 +363,40 @@ class UserQuery extends ElementQuery
         return parent::beforePrepare();
     }
 
+    /**
+     * @inheritdoc
+     */
+    protected function statusCondition($status)
+    {
+        switch ($status) {
+            case User::STATUS_ACTIVE:
+                return [
+                    'users.archived' => '0',
+                    'users.suspended' => '0',
+                    'users.locked' => '0',
+                    'users.pending' => '0'
+                ];
+            case User::STATUS_PENDING:
+                return [
+                    'users.pending' => '1'
+                ];
+            case User::STATUS_LOCKED:
+                return [
+                    'users.locked' => '1'
+                ];
+            case User::STATUS_SUSPENDED:
+                return [
+                    'users.suspended' => '1'
+                ];
+            case User::STATUS_ARCHIVED:
+                return [
+                    'users.archived' => '1'
+                ];
+            default:
+                return parent::statusCondition($status);
+        }
+    }
+
     // Private Methods
     // =========================================================================
 

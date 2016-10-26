@@ -315,27 +315,6 @@ class User extends Element implements IdentityInterface
     /**
      * @inheritdoc
      */
-    public static function getElementQueryStatusCondition(ElementQueryInterface $query, $status)
-    {
-        switch ($status) {
-            case self::STATUS_ACTIVE:
-                return 'users.archived = 0 AND users.suspended = 0 AND users.locked = 0 and users.pending = 0';
-            case self::STATUS_PENDING:
-                return 'users.pending = 1';
-            case self::STATUS_LOCKED:
-                return 'users.locked = 1';
-            case self::STATUS_SUSPENDED:
-                return 'users.suspended = 1';
-            case self::STATUS_ARCHIVED:
-                return 'users.archived = 1';
-        }
-
-        return null;
-    }
-
-    /**
-     * @inheritdoc
-     */
     public static function getEagerLoadingMap($sourceElements, $handle)
     {
         if ($handle == 'photo') {

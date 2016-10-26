@@ -935,7 +935,7 @@ class ElementQuery extends Query implements ElementQueryInterface, Arrayable, Co
             ->addParams($this->params);
 
         if ($class::hasContent() && $this->contentTable) {
-            $this->customFields = $class::getFieldsForElementsQuery($this);
+            $this->customFields = $this->customFields();
             $this->_joinContentTable($class);
         } else {
             $this->customFields = null;
@@ -1278,6 +1278,64 @@ class ElementQuery extends Query implements ElementQueryInterface, Arrayable, Co
     }
 
     /**
+     * Returns the fields that should take part in an upcoming elements query.
+     *
+     * These fields will get their own criteria parameters in the [[ElementQueryInterface]] that gets passed in,
+     * their field types will each have an opportunity to help build the element query, and their columns in the content
+     * table will be selected by the query (for those that have one).
+     *
+     * If a field has its own column in the content table, but the column name is prefixed with something besides
+     * “field_”, make sure you set the `columnPrefix` attribute on the [[\craft\app\base\Field]], so
+     * [[\craft\app\services\Elements::buildElementsQuery()]] knows which column to select.
+     *
+     * @return FieldInterface[] The fields that should take part in the upcoming elements query
+     */
+    protected function customFields()
+    {
+        $contentService = Craft::$app->getContent();
+        $originalFieldContext = $contentService->fieldContext;
+        $contentService->fieldContext = 'global';
+        $fields = Craft::$app->getFields()->getAllFields();
+        $contentService->fieldContext = $originalFieldContext;
+
+        return $fields;
+    }
+
+    /**
+     * Returns the condition that should be applied to the element query for a given status.
+     *
+     * For example, if you support a status called “pending”, which maps back to a `pending` database column that will
+     * either be 0 or 1, this method could do this:
+     *
+     * ```php
+     * protected function statusCondition($status)
+     * {
+     *     switch ($status) {
+     *         case 'pending':
+     *             return ['mytable.pending' => 1];
+     *         default:
+     *             return parent::statusCondition($status);
+     *     }
+     * ```
+     *
+     * @param string $status The status
+     *
+     * @return mixed|false The status condition, or false if $status is an unsupported status
+     */
+    protected function statusCondition($status)
+    {
+        switch ($status)
+        {
+            case Element::STATUS_ENABLED:
+                return ['elements.enabled' => '1'];
+            case Element::STATUS_DISABLED:
+                return ['elements.enabled' => '0'];
+            default:
+                return false;
+        }
+    }
+
+    /**
      * Joins in a table with an `id` column that has a foreign key pointing to `craft_elements`.`id`.
      *
      * @param string $table The unprefixed table name. This will also be used as the table’s alias within the query.
@@ -1372,22 +1430,14 @@ class ElementQuery extends Query implements ElementQueryInterface, Arrayable, Co
 
         foreach ($statuses as $status) {
             $status = StringHelper::toLowerCase($status);
+            $statusCondition = $this->statusCondition($status);
 
-            // Is this a supported status?
-            if (in_array($status, array_keys($class::getStatuses()))) {
-                if ($status == Element::STATUS_ENABLED) {
-                    $condition[] = ['elements.enabled' => '1'];
-                } else if ($status == Element::STATUS_DISABLED) {
-                    $condition[] = ['elements.enabled' => '0'];
-                } else {
-                    $elementStatusCondition = $class::getElementQueryStatusCondition($this, $status);
+            if ($statusCondition === false) {
+                throw new QueryAbortedException('Unsupported status: '.$status);
+            }
 
-                    if ($elementStatusCondition) {
-                        $condition[] = $elementStatusCondition;
-                    } else if ($elementStatusCondition === false) {
-                        throw new QueryAbortedException();
-                    }
-                }
+            if ($statusCondition) {
+                $condition[] = $statusCondition;
             }
         }
 

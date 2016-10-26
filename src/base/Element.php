@@ -371,32 +371,8 @@ abstract class Element extends Component implements ElementInterface
         return Craft::$app->getElementIndexes()->getTableAttributes($elementType, $sourceKey);
     }
 
-    // Methods for customizing the content table
-    // -----------------------------------------------------------------------------
-
-    /**
-     * @inheritdoc
-     */
-    public static function getFieldsForElementsQuery(ElementQueryInterface $query)
-    {
-        $contentService = Craft::$app->getContent();
-        $originalFieldContext = $contentService->fieldContext;
-        $contentService->fieldContext = 'global';
-        $fields = Craft::$app->getFields()->getAllFields();
-        $contentService->fieldContext = $originalFieldContext;
-
-        return $fields;
-    }
-
     // Methods for customizing element queries
     // -------------------------------------------------------------------------
-
-    /**
-     * @inheritdoc
-     */
-    public static function getElementQueryStatusCondition(ElementQueryInterface $query, $status)
-    {
-    }
 
     /**
      * @inheritdoc
