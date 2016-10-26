@@ -935,7 +935,7 @@ class ElementQuery extends Query implements ElementQueryInterface, Arrayable, Co
             ->addParams($this->params);
 
         if ($class::hasContent() && $this->contentTable) {
-            $this->customFields = $class::getFieldsForElementsQuery($this);
+            $this->customFields = $this->customFields();
             $this->_joinContentTable($class);
         } else {
             $this->customFields = null;
@@ -1275,6 +1275,30 @@ class ElementQuery extends Query implements ElementQueryInterface, Arrayable, Co
         $this->trigger(self::EVENT_AFTER_PREPARE, $event);
 
         return $event->isValid;
+    }
+
+    /**
+     * Returns the fields that should take part in an upcoming elements query.
+     *
+     * These fields will get their own criteria parameters in the [[ElementQueryInterface]] that gets passed in,
+     * their field types will each have an opportunity to help build the element query, and their columns in the content
+     * table will be selected by the query (for those that have one).
+     *
+     * If a field has its own column in the content table, but the column name is prefixed with something besides
+     * “field_”, make sure you set the `columnPrefix` attribute on the [[\craft\app\base\Field]], so
+     * [[\craft\app\services\Elements::buildElementsQuery()]] knows which column to select.
+     *
+     * @return FieldInterface[] The fields that should take part in the upcoming elements query
+     */
+    protected function customFields()
+    {
+        $contentService = Craft::$app->getContent();
+        $originalFieldContext = $contentService->fieldContext;
+        $contentService->fieldContext = 'global';
+        $fields = Craft::$app->getFields()->getAllFields();
+        $contentService->fieldContext = $originalFieldContext;
+
+        return $fields;
     }
 
     /**

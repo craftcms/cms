@@ -357,23 +357,6 @@ interface ElementInterface extends ComponentInterface
     public static function getDefaultTableAttributes($source = null);
 
     /**
-     * Returns the fields that should take part in an upcoming elements query.
-     *
-     * These fields will get their own criteria parameters in the [[ElementQueryInterface]] that gets passed in,
-     * their field types will each have an opportunity to help build the element query, and their columns in the content
-     * table will be selected by the query (for those that have one).
-     *
-     * If a field has its own column in the content table, but the column name is prefixed with something besides
-     * “field_”, make sure you set the `columnPrefix` attribute on the [[\craft\app\base\Field]], so
-     * [[\craft\app\services\Elements::buildElementsQuery()]] knows which column to select.
-     *
-     * @param ElementQueryInterface $query
-     *
-     * @return FieldInterface[] The fields that should take part in the upcoming elements query
-     */
-    public static function getFieldsForElementsQuery(ElementQueryInterface $query);
-
-    /**
      * Returns the element query condition for a custom status parameter value.
      *
      * If the ElementQuery’s [[\craft\app\elements\ElementQuery::status status]] parameter is set to something besides
