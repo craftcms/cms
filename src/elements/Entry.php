@@ -437,57 +437,6 @@ class Entry extends Element
     /**
      * @inheritdoc
      */
-    public static function getElementQueryStatusCondition(ElementQueryInterface $query, $status)
-    {
-        $currentTimeDb = Db::prepareDateForDb(new \DateTime());
-
-        switch ($status) {
-            case Entry::STATUS_LIVE: {
-                return [
-                    'and',
-                    [
-                        'elements.enabled' => '1',
-                        'elements_i18n.enabled' => '1'
-                    ],
-                    ['<=', 'entries.postDate', $currentTimeDb],
-                    [
-                        'or',
-                        ['entries.expiryDate' => null],
-                        ['>', 'entries.expiryDate', $currentTimeDb]
-                    ]
-                ];
-            }
-
-            case Entry::STATUS_PENDING: {
-                return [
-                    'and',
-                    [
-                        'elements.enabled' => '1',
-                        'elements_i18n.enabled' => '1',
-                    ],
-                    ['>', 'entries.postDate', $currentTimeDb]
-                ];
-            }
-
-            case Entry::STATUS_EXPIRED: {
-                return [
-                    'and',
-                    [
-                        'elements.enabled' => '1',
-                        'elements_i18n.enabled' => '1'
-                    ],
-                    ['not', ['entries.expiryDate' => null]],
-                    ['<=', 'entries.expiryDate', $currentTimeDb]
-                ];
-            }
-        }
-
-        return null;
-    }
-
-    /**
-     * @inheritdoc
-     */
     public static function getEagerLoadingMap($sourceElements, $handle)
     {
         if ($handle == 'author') {

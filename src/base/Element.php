@@ -377,13 +377,6 @@ abstract class Element extends Component implements ElementInterface
     /**
      * @inheritdoc
      */
-    public static function getElementQueryStatusCondition(ElementQueryInterface $query, $status)
-    {
-    }
-
-    /**
-     * @inheritdoc
-     */
     public static function getEagerLoadingMap($sourceElements, $handle)
     {
         // Eager-loading descendants or direct children?

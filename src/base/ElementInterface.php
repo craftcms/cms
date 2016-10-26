@@ -357,34 +357,6 @@ interface ElementInterface extends ComponentInterface
     public static function getDefaultTableAttributes($source = null);
 
     /**
-     * Returns the element query condition for a custom status parameter value.
-     *
-     * If the ElementQuery’s [[\craft\app\elements\ElementQuery::status status]] parameter is set to something besides
-     * 'enabled' or 'disabled', and it’s one of the statuses that you’ve defined in [[getStatuses()]], this method
-     * is where you can turn that custom status into an actual SQL query condition.
-     *
-     * For example, if you support a status called “pending”, which maps back to a `pending` database column that will
-     * either be 0 or 1, this method could do this:
-     *
-     * ```php
-     * switch ($status)
-     * {
-     *     case 'pending':
-     *     {
-     *         $query->andWhere(['mytable.pending' => 1]);
-     *         break;
-     *     }
-     * }
-     * ```
-     *
-     * @param ElementQueryInterface $query  The database query
-     * @param string                $status The custom status
-     *
-     * @return string|false
-     */
-    public static function getElementQueryStatusCondition(ElementQueryInterface $query, $status);
-
-    /**
      * Returns an array that maps source-to-target element IDs based on the given sub-property handle.
      *
      * This method aids in the eager-loading of elements when performing an element query. The returned array should

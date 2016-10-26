@@ -381,6 +381,52 @@ class EntryQuery extends ElementQuery
         return parent::beforePrepare();
     }
 
+    /**
+     * @inheritdoc
+     */
+    protected function statusCondition($status)
+    {
+        $currentTimeDb = Db::prepareDateForDb(new \DateTime());
+
+        switch ($status) {
+            case Entry::STATUS_LIVE:
+                return [
+                    'and',
+                    [
+                        'elements.enabled' => '1',
+                        'elements_i18n.enabled' => '1'
+                    ],
+                    ['<=', 'entries.postDate', $currentTimeDb],
+                    [
+                        'or',
+                        ['entries.expiryDate' => null],
+                        ['>', 'entries.expiryDate', $currentTimeDb]
+                    ]
+                ];
+            case Entry::STATUS_PENDING:
+                return [
+                    'and',
+                    [
+                        'elements.enabled' => '1',
+                        'elements_i18n.enabled' => '1',
+                    ],
+                    ['>', 'entries.postDate', $currentTimeDb]
+                ];
+            case Entry::STATUS_EXPIRED:
+                return [
+                    'and',
+                    [
+                        'elements.enabled' => '1',
+                        'elements_i18n.enabled' => '1'
+                    ],
+                    ['not', ['entries.expiryDate' => null]],
+                    ['<=', 'entries.expiryDate', $currentTimeDb]
+                ];
+            default:
+                return parent::statusCondition($status);
+        }
+    }
+
     // Private Methods
     // =========================================================================
 
