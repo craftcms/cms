@@ -1383,15 +1383,15 @@ class User extends Element implements IdentityInterface
     public function beforeDelete()
     {
         // Get the entry IDs that belong to this user
-        $entryIds = (new Query())
-            ->select(['id'])
-            ->from(['{{%entries}}'])
-            ->where(['authorId' => $this->id])
-            ->column();
+        $entryQuery = (new Query())
+            ->select('e.id')
+            ->from('{{%entries}} e')
+            ->where(['e.authorId' => $this->id]);
 
         // Should we transfer the content to a new user?
         if ($this->inheritorOnDelete) {
             // Delete the template caches for any entries authored by this user
+            $entryIds = $entryQuery->column();
             Craft::$app->getTemplateCaches()->deleteCachesByElementId($entryIds);
 
             // Update the entry/version/draft tables to point to the new user
@@ -1414,9 +1414,20 @@ class User extends Element implements IdentityInterface
                     ->execute();
             }
         } else {
-            // Delete the entries
-            foreach ($entryIds as $id) {
-                Craft::$app->getElements()->deleteElementById($id);
+            // Get the entry IDs along with one of the sites they’re enabled in
+            $results = $entryQuery
+                ->addSelect([
+                    'siteId' => (new Query())
+                        ->select('i18n.siteId')
+                        ->from('{{%elements_i18n}} i18n')
+                        ->where('[[i18n.elementId]] = [[e.id]]')
+                        ->limit(1)
+                ])
+                ->all();
+
+            // Delete them
+            foreach ($results as $result) {
+                Craft::$app->getElements()->deleteElementById($result['id'], Entry::class, $result['siteId']);
             }
         }
 

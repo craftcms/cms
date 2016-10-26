@@ -8,6 +8,7 @@
 namespace craft\app\controllers;
 
 use Craft;
+use craft\app\elements\Asset;
 use craft\app\errors\SendEmailException;
 use craft\app\errors\UploadFailedException;
 use craft\app\events\LoginFailureEvent;
@@ -1159,7 +1160,7 @@ class UsersController extends Controller
         $user = Craft::$app->getUsers()->getUserById($userId);
 
         if ($user->photoId) {
-            Craft::$app->getElements()->deleteElementById($user->photoId);
+            Craft::$app->getElements()->deleteElementById($user->photoId, Asset::class);
         }
 
         $user->photoId = null;
