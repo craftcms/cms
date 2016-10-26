@@ -264,7 +264,7 @@ class m160807_144858_sites extends Migration
         // ---------------------------------------------------------------------
 
         foreach ($this->siteColumns as $columnInfo) {
-            list($table, , , , $localeColumn) = $columnInfo;
+            list($table, , , $localeColumn) = $columnInfo;
             $this->dropColumn($table, $localeColumn);
         }
 
@@ -276,7 +276,7 @@ class m160807_144858_sites extends Migration
         foreach ($this->db->getSchema()->getTableNames() as $tableName) {
             if (StringHelper::startsWith($tableName, $matrixTablePrefix)) {
                 // Add the new siteId column + index
-                $this->addSiteColumn($tableName, 'siteId', true, 'elementId', 'locale');
+                $this->addSiteColumn($tableName, 'siteId', true, 'locale');
                 $this->createIndex($this->db->getIndexName($tableName, 'elementId,siteId'), $tableName, 'elementId,siteId', true);
                 $this->addForeignKey($this->db->getForeignKeyName($tableName, 'siteId'), $tableName, 'siteId', '{{%sites}}', 'id', 'CASCADE', 'CASCADE');
 
@@ -305,7 +305,7 @@ class m160807_144858_sites extends Migration
                     $oldColumn = $fkInfo->fk->columns[$i];
                     $newColumn = $oldColumn.'__siteId';
                     $isNotNull = (stripos($fkInfo->table->columns[$oldColumn]->type, 'not null') !== false);
-                    $this->addSiteColumn($table, $newColumn, $isNotNull, $oldColumn, $oldColumn);
+                    $this->addSiteColumn($table, $newColumn, $isNotNull, $oldColumn);
                     $this->addForeignKey($this->db->getForeignKeyName($table, $newColumn), $table, $newColumn, '{{%sites}}', 'id', 'CASCADE', 'CASCADE');
                 }
             }
