@@ -75,7 +75,7 @@ class CacheNode extends \Twig_Node
 
         $compiler
             ->raw(";\n")
-            ->write("\$cacheBody{$n} = \$cacheService->getTemplateCaches(\$cacheKey{$n}, {$global});\n")
+            ->write("\$cacheBody{$n} = \$cacheService->getTemplateCache(\$cacheKey{$n}, {$global});\n")
             ->outdent()
             ->write("} else {\n")
             ->indent()
