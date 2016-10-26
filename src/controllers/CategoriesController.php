@@ -240,25 +240,24 @@ class CategoriesController extends Controller
      */
     public function actionEditCategory($groupHandle, $categoryId = null, $siteHandle = null, Category $category = null)
     {
-        if ($siteHandle) {
-            $site = Craft::$app->getSites()->getSiteByHandle($siteHandle);
-
-            if (!$site) {
-                throw new NotFoundHttpException('Invalid site handle: '.$siteHandle);
-            }
-        } else {
-            $site = Craft::$app->getSites()->currentSite;
-        }
-
         $variables = [
             'groupHandle' => $groupHandle,
             'categoryId' => $categoryId,
-            'site' => $site,
             'category' => $category
         ];
 
         $this->_prepEditCategoryVariables($variables);
 
+        if ($siteHandle) {
+            $variables['site'] = Craft::$app->getSites()->getSiteByHandle($siteHandle);
+
+            if (!$variables['site']) {
+                throw new NotFoundHttpException('Invalid site handle: '.$siteHandle);
+            }
+        }
+
+        /** @var Site $site */
+        $site = $variables['site'];
         /** @var Category $category */
         $category = $variables['category'];
 
