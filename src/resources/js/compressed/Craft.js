@@ -1,4 +1,4 @@
-/*! Craft 3.0.0 - 2016-10-21 */
+/*! Craft 3.0.0 - 2016-10-26 */
 !function(a){
 // Set all the standard Craft.* stuff
 a.extend(Craft,{navHeight:48,/**
@@ -143,9 +143,10 @@ d[g]||(d[g]=h.length),h[d[g]]=e)}return b},/**
 	 *
 	 * @param obj1
 	 * @param obj2
+	 * @param preserveObjectKeys Whether object keys should be sorted before being compared. Default is true.
 	 * @return boolean
 	 */
-compare:function(a,b){
+compare:function(a,b,c){
 // Compare the types
 if(typeof a!=typeof b)return!1;if("object"==typeof a){
 // Compare the lengths
@@ -153,9 +154,9 @@ if(a.length!=b.length)return!1;
 // Is one of them an array but the other is not?
 if(a instanceof Array!=b instanceof Array)return!1;
 // If they're actual objects (not arrays), compare the keys
-if(!(a instanceof Array||Craft.compare(Craft.getObjectKeys(a).sort(),Craft.getObjectKeys(b).sort())))return!1;
+if(!(a instanceof Array))if("undefined"==typeof c||1==c){if(!Craft.compare(Craft.getObjectKeys(a).sort(),Craft.getObjectKeys(b).sort()))return!1}else if(!Craft.compare(Craft.getObjectKeys(a),Craft.getObjectKeys(b)))return!1;
 // Compare each value
-for(var c in a)if(a.hasOwnProperty(c)&&!Craft.compare(a[c],b[c]))return!1;
+for(var d in a)if(a.hasOwnProperty(d)&&!Craft.compare(a[d],b[d]))return!1;
 // All clear
 return!0}return a===b},/**
 	 * Returns an array of an object's keys.
@@ -1711,7 +1712,7 @@ this.updateWidths()},slideIn:function(){a("html").addClass("noscroll"),this.$spi
 // so any radio buttons in the field get deselected from the clone rather than the actual field.
 this.$fieldPlaceholder.insertAfter(b.$field),b.$field.detach(),this.$fieldPlaceholder.replaceWith(b.$newClone),b.$clone.replaceWith(b.$field)}Garnish.$win.trigger("resize")},getIframeWidth:function(){return Garnish.$win.width()-(this.editorWidthInPx+Craft.LivePreview.dragHandleWidth)},updateWidths:function(){this.$editorContainer.css("width",this.editorWidthInPx+"px"),this.$iframeContainer.width(this.getIframeWidth())},updateIframe:function(b){if(b&&(this.lastPostData=null),!this.inPreviewMode)return!1;if(this.loading)return this.checkAgain=!0,!1;
 // Has the post data changed?
-var c=a.extend(Garnish.getPostData(this.$editor),Garnish.getPostData(this.$extraFields));if(this.lastPostData&&Craft.compare(c,this.lastPostData))return!1;this.lastPostData=c,this.loading=!0;var d=a(this.$iframe[0].contentWindow.document);return this._scrollX=d.scrollLeft(),this._scrollY=d.scrollTop(),a.ajax({url:this.previewUrl,method:"POST",data:a.extend({},c,this.basePostData),xhrFields:{withCredentials:!0},crossDomain:!0,success:this._handleSuccessProxy,error:this._handleErrorProxy}),!0},handleSuccess:function(b,c,d){var e=b+'<script type="text/javascript">window.scrollTo('+this._scrollX+", "+this._scrollY+");</script>";
+var c=a.extend(Garnish.getPostData(this.$editor),Garnish.getPostData(this.$extraFields));if(this.lastPostData&&Craft.compare(c,this.lastPostData,!1))return!1;this.lastPostData=c,this.loading=!0;var d=a(this.$iframe[0].contentWindow.document);return this._scrollX=d.scrollLeft(),this._scrollY=d.scrollTop(),a.ajax({url:this.previewUrl,method:"POST",data:a.extend({},c,this.basePostData),xhrFields:{withCredentials:!0},crossDomain:!0,success:this._handleSuccessProxy,error:this._handleErrorProxy}),!0},handleSuccess:function(b,c,d){var e=b+'<script type="text/javascript">window.scrollTo('+this._scrollX+", "+this._scrollY+");</script>";
 // Set the iframe to use the same bg as the iframe body,
 // to reduce the blink when reloading the DOM
 this.$iframe.css("background",a(this.$iframe[0].contentWindow.document.body).css("background")),this.$iframe[0].contentWindow.document.open(),this.$iframe[0].contentWindow.document.write(e),this.$iframe[0].contentWindow.document.close(),this.onResponse()},handleError:function(a,b,c){this.onResponse()},onResponse:function(){this.loading=!1,this.checkAgain&&(this.checkAgain=!1,this.updateIframe())},_getClone:function(a){var b=a.clone();

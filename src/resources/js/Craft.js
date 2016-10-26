@@ -1,4 +1,4 @@
-/*! Craft 3.0.0 - 2016-10-21 */
+/*! Craft 3.0.0 - 2016-10-26 */
 (function($){
 
 // Set all the standard Craft.* stuff
@@ -701,9 +701,10 @@ $.extend(Craft,
 	 *
 	 * @param obj1
 	 * @param obj2
+	 * @param preserveObjectKeys Whether object keys should be sorted before being compared. Default is true.
 	 * @return boolean
 	 */
-	compare: function(obj1, obj2)
+	compare: function(obj1, obj2, sortObjectKeys)
 	{
 		// Compare the types
 		if (typeof obj1 != typeof obj2)
@@ -728,9 +729,19 @@ $.extend(Craft,
 			// If they're actual objects (not arrays), compare the keys
 			if (!(obj1 instanceof Array))
 			{
-				if (!Craft.compare(Craft.getObjectKeys(obj1).sort(), Craft.getObjectKeys(obj2).sort()))
+				if (typeof sortObjectKeys === typeof undefined || sortObjectKeys == true)
 				{
-					return false;
+					if (!Craft.compare(Craft.getObjectKeys(obj1).sort(), Craft.getObjectKeys(obj2).sort()))
+					{
+						return false;
+					}
+				}
+				else
+				{
+					if (!Craft.compare(Craft.getObjectKeys(obj1), Craft.getObjectKeys(obj2)))
+					{
+						return false;
+					}
 				}
 			}
 
@@ -15346,7 +15357,7 @@ Craft.LivePreview = Garnish.Base.extend(
 		// Has the post data changed?
 		var postData = $.extend(Garnish.getPostData(this.$editor), Garnish.getPostData(this.$extraFields));
 
-		if (!this.lastPostData || !Craft.compare(postData, this.lastPostData))
+		if (!this.lastPostData || !Craft.compare(postData, this.lastPostData, false))
 		{
 			this.lastPostData = postData;
 			this.loading = true;
