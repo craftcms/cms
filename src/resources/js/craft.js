@@ -555,9 +555,10 @@ $.extend(Craft,
 	 *
 	 * @param mixed obj1
 	 * @param mixed obj2
+	 * @param bool preserveObjectKeys Whether object keys should be sorted before being compared. Default is true.
 	 * @return bool
 	 */
-	compare: function(obj1, obj2)
+	compare: function(obj1, obj2, sortObjectKeys)
 	{
 		// Compare the types
 		if (typeof obj1 != typeof obj2)
@@ -582,9 +583,19 @@ $.extend(Craft,
 			// If they're actual objects (not arrays), compare the keys
 			if (!(obj1 instanceof Array))
 			{
-				if (!Craft.compare(Craft.getObjectKeys(obj1).sort(), Craft.getObjectKeys(obj2).sort()))
+				if (typeof sortObjectKeys === typeof undefined || sortObjectKeys == true)
 				{
-					return false;
+					if (!Craft.compare(Craft.getObjectKeys(obj1).sort(), Craft.getObjectKeys(obj2).sort()))
+					{
+						return false;
+					}
+				}
+				else
+				{
+					if (!Craft.compare(Craft.getObjectKeys(obj1), Craft.getObjectKeys(obj2)))
+					{
+						return false;
+					}
 				}
 			}
 

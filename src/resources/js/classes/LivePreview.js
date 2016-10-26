@@ -356,7 +356,7 @@ Craft.LivePreview = Garnish.Base.extend(
 		// Has the post data changed?
 		var postData = $.extend(Garnish.getPostData(this.$editor), Garnish.getPostData(this.$extraFields));
 
-		if (!this.lastPostData || !Craft.compare(postData, this.lastPostData))
+		if (!this.lastPostData || !Craft.compare(postData, this.lastPostData, false))
 		{
 			this.lastPostData = postData;
 			this.loading = true;
