@@ -51,8 +51,10 @@ class EmailMessagesController extends Controller
         $siteId = $request->getBodyParam('siteId');
         $message = Craft::$app->getEmailMessages()->getMessage($key, $siteId);
 
-        return $this->renderTemplate('settings/email/_message_modal', [
-            'message' => $message,
+        return $this->asJson([
+            'body' => Craft::$app->getView()->renderTemplate('settings/email/_message_modal', [
+                'message' => $message,
+            ])
         ]);
     }
 

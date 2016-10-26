@@ -108,13 +108,13 @@ var MessageSettingsModal = Garnish.Modal.extend(
 			{
 				if (!this.$container)
 				{
-					var $container = $('<form class="modal fitted message-settings" accept-charset="UTF-8">'+response+'</form>').appendTo(Garnish.$bod);
+					var $container = $('<form class="modal fitted message-settings" accept-charset="UTF-8">'+response.body+'</form>').appendTo(Garnish.$bod);
 					this.setContainer($container);
 					this.show();
 				}
 				else
 				{
-					this.$container.html(response);
+					this.$container.html(response.body);
 				}
 
 				this.$siteSelect = this.$container.find('.site:first > select');
