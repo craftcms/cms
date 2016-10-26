@@ -145,7 +145,7 @@ class Elements extends Component
             return null;
         }
 
-        if (!$elementType) {
+        if ($elementType === null) {
             $elementType = $this->getElementTypeById($elementId);
 
             if (!$elementType) {
@@ -880,6 +880,27 @@ class Elements extends Component
      */
     public function deleteElementById($elementId, $elementType = null, $siteId = null)
     {
+        if ($elementType === null) {
+            $elementType = $this->getElementTypeById($elementId);
+
+            if (!$elementType) {
+                return false;
+            }
+        }
+
+        if ($siteId === null && $elementType::isLocalized() && Craft::$app->getIsMultiSite()) {
+            // Get a site this element is enabled in
+            $siteId = (new Query())
+                ->select('siteId')
+                ->from('{{%elements_i18n}}')
+                ->where(['elementId' => $elementId])
+                ->scalar();
+
+            if (!$siteId) {
+                return false;
+            }
+        }
+
         $element = $this->getElementById($elementId, $elementType, $siteId);
 
         if (!$element) {
