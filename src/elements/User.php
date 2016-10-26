@@ -94,11 +94,7 @@ class User extends Element implements IdentityInterface
      */
     public static function hasContent()
     {
-        if (Craft::$app->getEdition() == Craft::Pro) {
-            return true;
-        }
-
-        return false;
+        return true;
     }
 
     /**
