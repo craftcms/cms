@@ -122,7 +122,7 @@ class Schema extends \yii\db\pgsql\Schema
 
     /**
      * Backs up a database using pg_dump, or with any command specified by the
-     * `backupCommand` database config setting.
+     * `backupCommand` config setting.
      *
      * @param string $filePath         The path of the backup file.
      * @param array  $ignoreDataTables An array of tables to skip backing up the data for.
@@ -145,7 +145,7 @@ class Schema extends \yii\db\pgsql\Schema
         $database = $config->get('database', Config::CATEGORY_DB);
         $schema = $config->get('schema', Config::CATEGORY_DB);
 
-        if (($backupCommand = $config->get('backupCommand', Config::CATEGORY_DB)) !== '') {
+        if (($backupCommand = $config->get('backupCommand'))) {
             $backupCommand = preg_replace('/\{filePath\}/', $filePath, $backupCommand);
             $command->setCommand($backupCommand);
         } else {
@@ -204,7 +204,7 @@ class Schema extends \yii\db\pgsql\Schema
             $command->useExec = true;
         }
 
-        if (($restoreCommand = $config->get('$restoreCommand', Config::CATEGORY_DB)) !== '') {
+        if (($restoreCommand = $config->get('$restoreCommand'))) {
             $restoreCommand = preg_replace('/\{filePath\}/', $filePath, $restoreCommand);
             $command->setCommand($restoreCommand);
         } else {

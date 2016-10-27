@@ -396,7 +396,7 @@ class UpdateController extends Controller
 
         $handle = $this->_getFixedHandle($data);
 
-        if (Craft::$app->getConfig()->get('backupDbOnUpdate')) {
+        if (Craft::$app->getConfig()->get('backupOnUpdate')) {
             if ($handle !== 'craft') {
                 /** @var Plugin $plugin */
                 $plugin = Craft::$app->getPlugins()->getPlugin($handle);
@@ -607,7 +607,7 @@ class UpdateController extends Controller
             $dbBackupPath = false;
 
             // See if we're allowed to backup the database.
-            if (Craft::$app->getConfig()->get('backupDbOnUpdate')) {
+            if (Craft::$app->getConfig()->get('backupOnUpdate')) {
 
                 // DO it.
                 $return = $updatesService->backupDatabase();
