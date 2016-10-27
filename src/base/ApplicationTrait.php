@@ -676,7 +676,6 @@ trait ApplicationTrait
             $databaseServerName = $this->getConfig()->get('server', Config::CATEGORY_DB);
             $databaseAuthName = $this->getConfig()->get('user', Config::CATEGORY_DB);
             $databaseName = $this->getConfig()->get('database', Config::CATEGORY_DB);
-            $databasePort = $this->getConfig()->get('port', Config::CATEGORY_DB);
             $databaseCharset = $this->getConfig()->get('charset', Config::CATEGORY_DB);
 
             if (!$databaseServerName) {
