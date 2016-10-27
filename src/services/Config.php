@@ -8,6 +8,7 @@
 namespace craft\app\services;
 
 use Craft;
+use craft\app\db\Connection;
 use craft\app\helpers\App;
 use craft\app\helpers\ArrayHelper;
 use craft\app\helpers\DateTimeHelper;
@@ -712,6 +713,33 @@ class Config extends Component
         }
 
         return $tablePrefix;
+    }
+
+    /**
+     * If a custom database port has been set in config/db.php, will return that value.
+     * Otherwise, will return the default port depending on the database type that is
+     * selected.
+     *
+     * @return int
+     */
+    public function getDbPort()
+    {
+        $config = Craft::$app->getConfig();
+        $port = $config->get('port', Config::CATEGORY_DB);
+        $driver = $config->get('driver', Config::CATEGORY_DB);
+
+        if ($port === '') {
+            switch ($driver) {
+                case Connection::DRIVER_MYSQL:
+                    $port = 3306;
+                    break;
+                case Connection::DRIVER_PGSQL:
+                    $port = 5432;
+                    break;
+            }
+        }
+
+        return $port;
     }
 
     // Private Methods
