@@ -86,14 +86,12 @@ class Update
      */
     public static function rollBackDatabaseChanges($backupPath)
     {
-        $dbBackup = new DbBackup();
-
         $fileName = $backupPath.'.sql';
         $fullBackupPath = Craft::$app->getPath()->getDbBackupPath().'/'.$fileName;
 
         // Make sure we're constrained to the backups folder.
         if (Path::ensurePathIsContained($fileName)) {
-            if ($dbBackup->restore($fullBackupPath)) {
+            if (Craft::$app->getDb()->restore($fullBackupPath)) {
                 return true;
             } else {
                 Craft::error('There was a problem restoring the database backup.', __METHOD__);
