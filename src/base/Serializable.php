@@ -8,21 +8,21 @@
 namespace craft\app\base;
 
 /**
- * Storable is the interface that should be implemented by classes who want to support customizable representation of their instances
- * when getting saved to the database.
+ * Serializable is the interface that should be implemented by classes who want to support customizable representation of their instances
+ * when getting stored somewhere.
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since  3.0
  */
-interface Savable
+interface Serializable
 {
     // Public Methods
     // =========================================================================
 
     /**
-     * Returns the object’s savable value.
+     * Returns the object’s serialized value.
      *
-     * @return mixed The savable value
+     * @return mixed The serialized value
      */
-    public function getSavableValue();
+    public function serialize();
 }

@@ -8,7 +8,7 @@
 namespace craft\app\helpers;
 
 use Craft;
-use craft\app\base\Savable;
+use craft\app\base\Serializable;
 use craft\app\dates\DateTime;
 use craft\app\db\Connection;
 use craft\app\enums\ColumnType;
@@ -64,8 +64,8 @@ class Db
     public static function prepareValueForDb($value)
     {
         // If the object explicitly defines its savable value, use that
-        if ($value instanceof Savable) {
-            return $value->getSavableValue();
+        if ($value instanceof Serializable) {
+            return $value->serialize();
         }
 
         // Only DateTime objects and ISO-8601 strings should automatically be detected as dates
