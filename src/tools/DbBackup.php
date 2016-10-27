@@ -60,22 +60,20 @@ class DbBackup extends Tool
      */
     public function performAction($params = [])
     {
-        // In addition to the default tables we want to ignore data in, we also don't care about data in the session
-        // table in this tools' case.
-        $file = Craft::$app->getDb()->backup();
+        if (($file = Craft::$app->getDb()->backup()) !== false) {
 
-        if (Io::fileExists($file) && isset($params['downloadBackup']) && (bool)$params['downloadBackup']) {
-            $destZip = Craft::$app->getPath()->getTempPath().'/'.Io::getFilename($file,
-                    false).'.zip';
+            if (Io::fileExists($file) && isset($params['downloadBackup']) && (bool)$params['downloadBackup']) {
+                $destZip = Craft::$app->getPath()->getTempPath().'/'.Io::getFilename($file, false).'.zip';
 
-            if (Io::fileExists($destZip)) {
-                Io::deleteFile($destZip, true);
-            }
+                if (Io::fileExists($destZip)) {
+                    Io::deleteFile($destZip, true);
+                }
 
-            Io::createFile($destZip);
+                Io::createFile($destZip);
 
-            if (Zip::add($destZip, $file, Craft::$app->getPath()->getDbBackupPath())) {
-                return ['backupFile' => Io::getFilename($destZip, false)];
+                if (Zip::add($destZip, $file, Craft::$app->getPath()->getDbBackupPath())) {
+                    return ['backupFile' => Io::getFilename($destZip, false)];
+                }
             }
         }
 
