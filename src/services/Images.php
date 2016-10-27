@@ -104,7 +104,7 @@ class Images extends Component
      *
      * @param string $requiredVersion version string
      *
-     * @return bool
+     * @return boolean
      */
     public function getIsImagickAtLeast($requiredVersion)
     {
