@@ -81,4 +81,10 @@ return [
      * 'driver' and 'unixSocket' config settings will be ignored.
      */
     'dsn' => '',
+    /**
+     * Craft will use the command line libraries pg_dump and mysqldump for backing up a database
+     * by default.  If you want to use some other library, or specify different
+     * parameters than the default, you can override that here.
+     */
+    'backupCommand' => ''
 ];
