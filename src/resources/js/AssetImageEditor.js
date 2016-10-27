@@ -2,7 +2,6 @@
  * Asset image editor class
  */
 
-// TODO: For portrait images the zoomToFitRatio is a little off
 // TODO: When rotating by 90 degrees, the cropping constraint acts like the image has not been rotated
 // TODO: Smooth out the cropping constraints
 // TODO: UI
@@ -424,7 +423,7 @@ Craft.AssetImageEditor = Garnish.Modal.extend(
 				var scaledWidth = scaledHeight * proportion;
 			} else {
 				var proportion = this.originalHeight / this.originalWidth;
-				var scaledWidth = this.editorHeight / (Math.sin(angleInRadians) * proportion + Math.cos(angleInRadians));
+				var scaledWidth = this.editorHeight / (Math.sin(angleInRadians) + Math.cos(angleInRadians) * proportion);
 				var scaledHeight = scaledWidth * proportion;
 			}
 
