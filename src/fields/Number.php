@@ -99,7 +99,7 @@ class Number extends Field implements PreviewableFieldInterface
     /**
      * @inheritdoc
      */
-    public function prepareValue($value, $element)
+    public function normalizeValue($value, $element)
     {
         /** @var Element $element */
         // Is this a post request?

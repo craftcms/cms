@@ -247,7 +247,7 @@ class Assets extends BaseRelationField
     /**
      * @inheritdoc
      */
-    public function prepareValue($value, $element)
+    public function normalizeValue($value, $element)
     {
         // If data strings are passed along, make sure the array keys are retained.
         if (isset($value['data']) && !empty($value['data'])) {
@@ -273,7 +273,7 @@ class Assets extends BaseRelationField
             }
         }
 
-        return parent::prepareValue($value,
+        return parent::normalizeValue($value,
             $element);
     }
 
@@ -416,7 +416,7 @@ class Assets extends BaseRelationField
                 $element->setRawPostValueForField($this->handle, $assetIds);
 
                 /** @var AssetQuery $newValue */
-                $newValue = $this->prepareValue($assetIds, $element);
+                $newValue = $this->normalizeValue($assetIds, $element);
                 $this->setElementValue($element, $newValue);
             }
         }

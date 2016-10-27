@@ -192,7 +192,7 @@ abstract class BaseRelationField extends Field implements PreviewableFieldInterf
     /**
      * @inheritdoc
      */
-    public function prepareValue($value, $element)
+    public function normalizeValue($value, $element)
     {
         /** @var Element $element */
         /** @var Element $class */

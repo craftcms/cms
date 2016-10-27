@@ -216,7 +216,7 @@ class Date extends Field implements PreviewableFieldInterface
     /**
      * @inheritdoc
      */
-    public function prepareValue($value, $element)
+    public function normalizeValue($value, $element)
     {
         if ($value && ($date = DateTimeHelper::toDateTime($value)) !== false) {
             return $date;

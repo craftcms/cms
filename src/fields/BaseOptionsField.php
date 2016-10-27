@@ -148,7 +148,7 @@ abstract class BaseOptionsField extends Field implements PreviewableFieldInterfa
     /**
      * @inheritdoc
      */
-    public function prepareValue($value, $element)
+    public function normalizeValue($value, $element)
     {
         $selectedValues = ArrayHelper::toArray($value);
 

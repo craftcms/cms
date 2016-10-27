@@ -146,7 +146,7 @@ interface FieldInterface extends SavableComponentInterface
      * The same principles also apply if you’re including your JavaScript code with
      * [[\craft\app\web\View::registerJs()]].
      *
-     * @param mixed                 $value           The field’s value. This will either be the [[prepareValue() prepared value]],
+     * @param mixed                 $value           The field’s value. This will either be the [[normalizeValue() normalized value]],
      *                                               raw POST data (i.e. if there was a validation error), or null
      * @param ElementInterface|null $element         The element the field is associated with, if there is one
      *
@@ -215,7 +215,7 @@ interface FieldInterface extends SavableComponentInterface
     public function getSearchKeywords($value, $element);
 
     /**
-     * Prepares the field’s value for use.
+     * Normalizes the field’s value for use.
      *
      * This method is called when the field’s value is first accessed from the element. For example, the first time
      * `entry.myFieldHandle` is called from a template, or right before [[getInputHtml()]] is called. Whatever
@@ -227,7 +227,7 @@ interface FieldInterface extends SavableComponentInterface
      *
      * @return mixed The prepared field value
      */
-    public function prepareValue($value, $element);
+    public function normalizeValue($value, $element);
 
     /**
      * Prepares the field’s value for DB storage.

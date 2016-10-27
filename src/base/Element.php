@@ -519,9 +519,9 @@ abstract class Element extends Component implements ElementInterface
     private $_rawPostContent;
 
     /**
-     * @var array Stores a record of the fields that have already prepared their values
+     * @var array Record of the fields whose values have already been normalized
      */
-    private $_preparedFields;
+    private $_normalizedFieldValues;
 
     /**
      * @var
@@ -1260,8 +1260,8 @@ abstract class Element extends Component implements ElementInterface
     public function getFieldValue($fieldHandle)
     {
         // Is this the first time this field value has been accessed?
-        if (!isset($this->_preparedFields[$fieldHandle])) {
-            $this->prepareFieldValue($fieldHandle);
+        if (!isset($this->_normalizedFieldValues[$fieldHandle])) {
+            $this->normalizeFieldValue($fieldHandle);
         }
 
         $behavior = $this->getBehavior('customFields');
@@ -1276,6 +1276,9 @@ abstract class Element extends Component implements ElementInterface
     {
         $behavior = $this->getBehavior('customFields');
         $behavior->$fieldHandle = $value;
+
+        // Don't assume that $value has been normalized
+        unset($this->_normalizedFieldValues[$fieldHandle]);
     }
 
     /**
@@ -1662,14 +1665,14 @@ abstract class Element extends Component implements ElementInterface
     }
 
     /**
-     * Prepares a field’s value for use.
+     * Normalizes a field’s value.
      *
      * @param string $fieldHandle The field handle
      *
      * @return void
      * @throws Exception if there is no field with the handle $fieldValue
      */
-    protected function prepareFieldValue($fieldHandle)
+    protected function normalizeFieldValue($fieldHandle)
     {
         $field = $this->getFieldByHandle($fieldHandle);
 
@@ -1678,8 +1681,8 @@ abstract class Element extends Component implements ElementInterface
         }
 
         $behavior = $this->getBehavior('customFields');
-        $behavior->$fieldHandle = $field->prepareValue($behavior->$fieldHandle, $this);
-        $this->_preparedFields[$fieldHandle] = true;
+        $behavior->$fieldHandle = $field->normalizeValue($behavior->$fieldHandle, $this);
+        $this->_normalizedFieldValues[$fieldHandle] = true;
     }
 
     /**

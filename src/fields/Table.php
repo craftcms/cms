@@ -170,7 +170,7 @@ class Table extends Field
     /**
      * @inheritdoc
      */
-    public function prepareValue($value, $element)
+    public function normalizeValue($value, $element)
     {
         if (is_string($value) && !empty($value)) {
             $value = Json::decode($value);
