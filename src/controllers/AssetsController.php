@@ -503,7 +503,7 @@ class AssetsController extends Controller
                         $folderIdChanges, $conflictResolution == 'merge');
                 }
             } else {
-                // Resolving a confclit
+                // Resolving a conflict
                 $existingFolder = $assets->findFolder([
                     'parentId' => $newParentFolderId,
                     'name' => $folderToMove->name
