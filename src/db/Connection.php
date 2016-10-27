@@ -12,6 +12,7 @@ use craft\app\db\mysql\QueryBuilder;
 use craft\app\errors\DbConnectException;
 use craft\app\events\DbBackupEvent;
 use craft\app\helpers\ArrayHelper;
+use craft\app\helpers\Io;
 use craft\app\helpers\StringHelper;
 use yii\db\Exception as DbException;
 
@@ -88,30 +89,50 @@ class Connection extends \yii\db\Connection
      * Performs a database backup.
      *
      * @param array|null $ignoreDataTables If set to an empty array, a full database backup will be performed. If set
-     *                                     to an array or database table names, they will get merged with the default
+     *                                     to an array of database table names, they will get merged with the default
      *                                     list of table names whose data is to be ignored during a database backup.
      *
-     * @return boolean|string The file path to the database backup, or false if something ennt wrong.
+     * @return boolean|string The file path to the database backup, or false if something went wrong.
      */
     public function backup($ignoreDataTables = null)
     {
-        $backup = new DbBackup();
+        $defaultIgnoreDataTables = [
+            'assetindexdata',
+            'assettransformindex',
+            'sessions',
+            'templatecaches',
+            'templatecachequeries',
+            'templatecacheelements'
+        ];
 
-        if ($ignoreDataTables !== null) {
-            $backup->setIgnoreDataTables($ignoreDataTables);
+        // If it's an empty array, we want every table.
+        if ($ignoreDataTables !== []) {
+            $ignoreDataTables = $ignoreDataTables ?: [];
+            $ignoreDataTables = array_merge($defaultIgnoreDataTables, $ignoreDataTables);
         }
+
+        // Normalize the ignored table names if there is a table prefix set.
+        if (($tablePrefix = Craft::$app->getConfig()->getDbTablePrefix()) !== '' ) {
+            foreach ($ignoreDataTables as $key => $tableName) {
+                $ignoreDataTables[$key] = $tablePrefix.'_'.$tableName;
+            }
+        }
+
+        $currentVersion = 'v'.Craft::$app->version.'.'.Craft::$app->build;
+        $siteName = Io::cleanFilename($this->_getFixedSiteName(), true);
+        $filename = ($siteName ? $siteName.'_' : '').gmdate('ymd_His').'_'.$currentVersion.'.sql';
+        $filePath = Craft::$app->getPath()->getDbBackupPath().'/'.StringHelper::toLowerCase($filename);
 
         // Fire a 'beforeCreateBackup' event
         $this->trigger(self::EVENT_BEFORE_CREATE_BACKUP);
 
-        if (($backupFile = $backup->run()) !== false) {
-
+        if ($this->getSchema()->backup($filePath, $ignoreDataTables)) {
             // Fire an 'afterCreateBackup' event
             $this->trigger(self::EVENT_AFTER_CREATE_BACKUP,
-                new DbBackupEvent(['filePath' => $backupFile])
+                new DbBackupEvent(['filePath' => $filePath])
             );
 
-            return $backupFile;
+            return $filePath;
         }
 
         return false;
@@ -294,5 +315,21 @@ class Connection extends \yii\db\Connection
         }
 
         return $table;
+    }
+
+    /**
+     * TODO: remove this method after the next breakpoint and just use getPrimarySite() directly.
+     *
+     * @return string
+     */
+    private function _getFixedSiteName() {
+        if (version_compare(Craft::$app->getInfo('version'), '3.0', '<') || Craft::$app->getInfo('build') < 2933) {
+            return (new Query())
+                ->select(['siteName'])
+                ->from(['{{%info}}'])
+                ->column()[0];
+        } else {
+            return Craft::$app->getSites()->getPrimarySite()->name;
+        }
     }
 }
