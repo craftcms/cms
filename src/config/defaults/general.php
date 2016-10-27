@@ -526,7 +526,7 @@ return [
      * Configures Craft to send all system emails to a single email address, or an array of email addresses for testing
      * purposes.
      */
-    'testToEmailAddress' => '',
+    'testToEmailAddress' => null,
     /**
      * The timezone of the site. If set, it will take precedence over the Timezone setting in Settings → General.
      *
