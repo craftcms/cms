@@ -139,6 +139,22 @@ class Connection extends \yii\db\Connection
     }
 
     /**
+     * Restores a database at the given file path.
+     *
+     * @param string $filePath The path of the database backup to restore.
+     *
+     * @return bool Whether the restore was successful or not.
+     */
+    public function restore($filePath)
+    {
+        if ($this->getSchema()->restore($filePath)) {
+            return true;
+        }
+
+        return false;
+    }
+
+    /**
      * @param $name
      *
      * @return string

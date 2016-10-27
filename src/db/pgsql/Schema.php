@@ -191,5 +191,41 @@ class Schema extends \yii\db\pgsql\Schema
         if (!Io::fileExists($filePath)) {
             throw new Exception("Could not find the SQL file to restore: {$filePath}");
         }
+
+        $command = new ShellCommand();
+        $config = Craft::$app->getConfig();
+        $port = $config->getDbPort();
+        $server = $config->get('server', Config::CATEGORY_DB);
+        $user = $config->get('user', Config::CATEGORY_DB);
+        $database = $config->get('database', Config::CATEGORY_DB);
+
+        // If we don't have proc_open, maybe we've got exec
+        if (!function_exists('proc_open') && function_exists('exec')) {
+            $command->useExec = true;
+        }
+
+        if (($restoreCommand = $config->get('$restoreCommand', Config::CATEGORY_DB)) !== '') {
+            $restoreCommand = preg_replace('/\{filePath\}/', $filePath, $restoreCommand);
+            $command->setCommand($restoreCommand);
+        } else {
+            $command->setCommand('psql');
+
+            $command->addArg('--dbname=', $database);
+            $command->addArg('--host=', $server);
+            $command->addArg('--port=', $port);
+            $command->addArg('--username=', $user);
+            $command->addArg('--no-password');
+            $command->addArg('< ', $filePath);
+        }
+
+        if ($command->execute()) {
+            return true;
+        } else {
+            $error = $command->getError();
+            $exitCode = $command->getExitCode();
+
+            Craft::error('Could not restore database. Error: '.$error.'. Exit Code:'.$exitCode, __METHOD__);
+            return false;
+        }
     }
 }

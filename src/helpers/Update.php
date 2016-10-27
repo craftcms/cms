@@ -82,7 +82,7 @@ class Update
      *
      * @param $backupPath
      *
-     * @return void
+     * @return boolean
      */
     public static function rollBackDatabaseChanges($backupPath)
     {
@@ -93,10 +93,16 @@ class Update
 
         // Make sure we're constrained to the backups folder.
         if (Path::ensurePathIsContained($fileName)) {
-            $dbBackup->restore($fullBackupPath);
+            if ($dbBackup->restore($fullBackupPath)) {
+                return true;
+            } else {
+                Craft::error('There was a problem restoring the database backup.', __METHOD__);
+            }
         } else {
             Craft::warning('Someone tried to restore a database from outside of the Craft backups folder: '.$fullBackupPath, __METHOD__);
         }
+
+        return false;
     }
 
     /**
