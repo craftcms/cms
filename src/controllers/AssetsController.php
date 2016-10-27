@@ -616,6 +616,7 @@ class AssetsController extends Controller
         $imageRotation = $request->getRequiredBodyParam('imageRotation');
         $replace = $request->getRequiredBodyParam('replace');
         $filter = $request->getBodyParam('filter');
+        $cropping = $request->getBodyParam('cropData');
 
         $asset = $assets->getAssetById($assetId);
 
@@ -641,6 +642,10 @@ class AssetsController extends Controller
             throw new BadRequestHttpException('Viewport rotation must be 0, 90, 180 or 270 degrees');
         }
 
+        if (is_array($cropping) && array_diff(['width', 'height', 'cornerLeft', 'cornerTop', 'scaledWidth', 'scaledHeight', 'zoomRatio'], array_keys($cropping))) {
+            throw new BadRequestHttpException('Invalid cropping parameters passed');
+        }
+
         $imageCopy = $asset->getCopyOfFile();
 
         // If filter is set, apply that
@@ -657,43 +662,55 @@ class AssetsController extends Controller
          * @var Raster $image
          */
         $image = Craft::$app->getImages()->loadImage($imageCopy, true, max($imageSize));
+        $originalImageWidth = $imageSize[0];
+        $originalImageHeight = $imageSize[1];
 
         // Deal with straighten rotation first.
         if ($imageRotation) {
-
             $image->rotate($imageRotation);
+        }
 
-            $imageWidth = $imageSize[0];
-            $imageHeight = $imageSize[1];
+        if ($cropping) {
+            $baseWidth = $cropping['width'];
+            $baseHeight = $cropping['height'];
+            $scale = $originalImageHeight / $cropping['scaledHeight'] / $cropping['zoomRatio'];
+            $cropAreaHeight = $baseHeight * $scale;
+            $cropAreaWidth = $baseWidth * $scale;
+            $leftOffset = $cropping['cornerLeft'] * $scale;
+            $topOffset = $cropping['cornerTop'] * $scale;
 
+            $image->crop($leftOffset, $leftOffset + $cropAreaWidth, $topOffset, $topOffset + $cropAreaHeight);
+        } elseif ($imageRotation) {
+
+            // If we're not cropping, we're due for some trigonometry!
             // Convert the angle to radians
             $angleInRadians = abs(deg2rad($imageRotation));
 
             // When the image is rotated and scaled up, it forms four right angled
             // triangles on the viewport sides. The adjacency is in relation to the
             // rotation angle.
-            $sideTriangleAdjacentLeg = cos($angleInRadians) * $imageHeight;
-            $sideTriangleOppositeLeg = sin($angleInRadians) * $imageHeight;
-            $bottomTriangleAdjacentLeg = cos($angleInRadians) * $imageWidth;
-            $bottomTriangleOppositeLeg = sin($angleInRadians) * $imageWidth;
+            $sideTriangleAdjacentLeg = cos($angleInRadians) * $originalImageHeight;
+            $sideTriangleOppositeLeg = sin($angleInRadians) * $originalImageHeight;
+            $bottomTriangleAdjacentLeg = cos($angleInRadians) * $originalImageWidth;
+            $bottomTriangleOppositeLeg = sin($angleInRadians) * $originalImageWidth;
 
             // For the rotated image, the side and top/bottom edges are composed like this
             $scaledHeight = $sideTriangleAdjacentLeg + $bottomTriangleOppositeLeg;
             $scaledWidth = $bottomTriangleAdjacentLeg + $sideTriangleOppositeLeg;
 
             // Now use that to calculate the zoom factor and zoom in.
-            $zoomFactor = max($scaledHeight / $imageHeight, $scaledWidth / $imageWidth);
+            $zoomFactor = max($scaledHeight / $originalImageHeight, $scaledWidth / $originalImageWidth);
             $image->resize($image->getWidth() * $zoomFactor, $image->getHeight() * $zoomFactor);
 
             // In all likelihood this part will change as we implement more cropping tools,
             // but for now the cropping takes place in the center.
-            $leftOffset = ($image->getWidth() - $imageWidth) / 2;
-            $topOffset = ($image->getHeight() - $imageHeight) / 2;
+            $leftOffset = ($image->getWidth() - $originalImageWidth) / 2;
+            $topOffset = ($image->getHeight() - $originalImageHeight) / 2;
 
-            $image->crop($leftOffset, $leftOffset + $imageWidth, $topOffset, $topOffset + $imageHeight);
+            $image->crop($leftOffset, $leftOffset + $originalImageWidth, $topOffset, $topOffset + $originalImageHeight);
         }
 
-        // Now, rotate by viewport rotation degrees. We do this after so that the actual aspet ratio of the
+        // Now, rotate by viewport rotation degrees. We do this after so that the actual aspect ratio of the
         // image changes as well, if it was not square.
         $image->rotate($viewportRotation);
         $image->saveAs($imageCopy);
