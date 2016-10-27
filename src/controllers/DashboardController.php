@@ -374,7 +374,7 @@ class DashboardController extends Controller
                     if ($getHelpModel->attachDbBackup && Io::folderExists(Craft::$app->getPath()->getDbBackupPath())) {
                         // Make a fresh database backup of the current schema/data. We want all data from all tables
                         // for debugging.
-                        Craft::$app->getDb()->backup();
+                        Craft::$app->getDb()->backup([]);
 
                         $backups = Io::getLastModifiedFiles(Craft::$app->getPath()->getDbBackupPath(), 3);
 
