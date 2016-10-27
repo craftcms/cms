@@ -8,8 +8,8 @@
 namespace craft\app\db\pgsql;
 
 use Craft;
-use craft\app\helpers\Db;
 use craft\app\services\Config;
+use mikehaertl\shellcommand\Command as ShellCommand;
 use yii\db\Exception;
 
 /**
@@ -117,5 +117,61 @@ class Schema extends \yii\db\pgsql\Schema
         }
 
         return parent::getLastInsertID($sequenceName);
+    }
+
+    /**
+     * Backs up a database using pg_dump, or with any command specified by the
+     * `backupCommand` database config setting.
+     *
+     * @param string $filePath         The path of the backup file.
+     * @param array  $ignoreDataTables An array of tables to skip backing up the data for.
+     *
+     * @return bool Whether the backup was successful or not.
+     */
+    public function backup($filePath, $ignoreDataTables)
+    {
+        $command = new ShellCommand();
+
+        // If we don't have proc_open, maybe we've got exec
+        if (!function_exists('proc_open') && function_exists('exec')) {
+            $command->useExec = true;
+        }
+
+        $config = Craft::$app->getConfig();
+        $port = $config->getDbPort();
+        $server = $config->get('server', Config::CATEGORY_DB);
+        $user = $config->get('user', Config::CATEGORY_DB);
+        $database = $config->get('database', Config::CATEGORY_DB);
+        $schema = $config->get('schema', Config::CATEGORY_DB);
+
+        if ($backupCommand = $config->get('backupCommand', Config::CATEGORY_DB) !== '') {
+            $command->setCommand($backupCommand);
+        } else {
+            $command->setCommand('/Applications/Postgres.app/Contents/Versions/9.6/bin/pg_dump');
+
+            $command->addArg('--dbname=', $database);
+            $command->addArg('--host=', $server);
+            $command->addArg('--port=', $port);
+            $command->addArg('--username=', $user);
+            $command->addArg('--no-password');
+            $command->addArg('--if-exists');
+            $command->addArg('--clean');
+            $command->addArg('--file=', $filePath);
+            $command->addArg('--schema=', $schema);
+
+            foreach ($ignoreDataTables as $ignoreDataTable) {
+                $command->addArg('--exclude-table-data=', $ignoreDataTable);
+            }
+        }
+
+        if ($command->execute()) {
+            return true;
+        } else {
+            $error = $command->getError();
+            $exitCode = $command->getExitCode();
+
+            Craft::error('Could not back up database. Error: '.$error.'. Exit Code:'.$exitCode, __METHOD__);
+            return false;
+        }
     }
 }
