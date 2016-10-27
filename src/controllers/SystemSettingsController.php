@@ -29,6 +29,7 @@ use craft\app\tools\FindAndReplace;
 use craft\app\tools\SearchIndex;
 use craft\app\web\Controller;
 use yii\base\Exception;
+use yii\helpers\Inflector;
 use yii\web\NotFoundHttpException;
 use yii\web\Response;
 
@@ -302,7 +303,15 @@ class SystemSettingsController extends Controller
 
             foreach ($adapter->settingsAttributes() as $name) {
                 if (!empty($adapter->$name)) {
-                    $includedSettings[] = '<strong>'.$adapter->getAttributeLabel($name).':</strong> '.$adapter->$name;
+                    $label = $adapter->getAttributeLabel($name);
+                    $value = $adapter->$name;
+
+                    // Hide passwords/keys
+                    if (preg_match('/\b(key|password|secret)\b/', Inflector::camel2words($name, false))) {
+                        $value = str_repeat('•', strlen($value));
+                    }
+
+                    $includedSettings[] = '<strong>'.$label.':</strong> '.$value;
                 }
             }
 
