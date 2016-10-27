@@ -269,7 +269,7 @@ class RichText extends Field
     /**
      * @inheritdoc
      */
-    public function prepareValueForDb($value, $element)
+    public function serializeValue($value, $element)
     {
         /** @var RichTextData|null $value */
         if (!$value) {

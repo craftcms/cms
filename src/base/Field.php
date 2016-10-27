@@ -305,7 +305,7 @@ abstract class Field extends SavableComponent implements FieldInterface
     /**
      * @inheritdoc
      */
-    public function prepareValueForDb($value, $element)
+    public function serializeValue($value, $element)
     {
         return Db::prepareValueForDb($value);
     }

@@ -187,7 +187,7 @@ class Content extends Component
                 /** @var Field $field */
                 if ($field::hasContentColumn()) {
                     $column = $this->fieldColumnPrefix.$field->handle;
-                    $values[$column] = $field->prepareValueForDb($element->getFieldValue($field->handle), $element);
+                    $values[$column] = $field->serializeValue($element->getFieldValue($field->handle), $element);
                 }
             }
         }

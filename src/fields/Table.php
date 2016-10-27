@@ -195,7 +195,7 @@ class Table extends Field
     /**
      * @inheritdoc
      */
-    public function prepareValueForDb($value, $element)
+    public function serializeValue($value, $element)
     {
         if (is_array($value)) {
             // Drop the string row keys
@@ -213,7 +213,7 @@ class Table extends Field
             }
         }
 
-        return parent::prepareValueForDb($value, $element);
+        return parent::serializeValue($value, $element);
     }
 
     /**

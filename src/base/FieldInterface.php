@@ -220,7 +220,7 @@ interface FieldInterface extends SavableComponentInterface
      * This method is called when the field’s value is first accessed from the element. For example, the first time
      * `entry.myFieldHandle` is called from a template, or right before [[getInputHtml()]] is called. Whatever
      * this method returns is what `entry.myFieldHandle` will likewise return, and what [[getInputHtml()]]’s and
-     * [[prepareValueForDb()]]’s $value arguments will be set to.
+     * [[serializeValue()]]’s $value arguments will be set to.
      *
      * @param mixed                 $value   The raw field value
      * @param ElementInterface|null $element The element the field is associated with, if there is one
@@ -230,14 +230,16 @@ interface FieldInterface extends SavableComponentInterface
     public function normalizeValue($value, $element);
 
     /**
-     * Prepares the field’s value for DB storage.
+     * Prepares the field’s value to be stored somewhere, like the content table or JSON-encoded in an entry revision table.
      *
-     * This method is called when the field’s value is about to be saved to the database.
+     * Data types that are JSON-encodable are safe (arrays, integers, strings, booleans, etc).
      *
      * @param mixed                 $value   The raw field value
      * @param ElementInterface|null $element The element the field is associated with, if there is one
+     *
+     * @return mixed The serialized field value
      */
-    public function prepareValueForDb($value, $element);
+    public function serializeValue($value, $element);
 
     /**
      * Modifies an element query.
