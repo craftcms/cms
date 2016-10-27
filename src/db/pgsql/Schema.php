@@ -8,6 +8,7 @@
 namespace craft\app\db\pgsql;
 
 use Craft;
+use craft\app\helpers\Io;
 use craft\app\services\Config;
 use mikehaertl\shellcommand\Command as ShellCommand;
 use yii\db\Exception;
@@ -144,10 +145,11 @@ class Schema extends \yii\db\pgsql\Schema
         $database = $config->get('database', Config::CATEGORY_DB);
         $schema = $config->get('schema', Config::CATEGORY_DB);
 
-        if ($backupCommand = $config->get('backupCommand', Config::CATEGORY_DB) !== '') {
+        if (($backupCommand = $config->get('backupCommand', Config::CATEGORY_DB)) !== '') {
+            $backupCommand = preg_replace('/\{filePath\}/', $filePath, $backupCommand);
             $command->setCommand($backupCommand);
         } else {
-            $command->setCommand('/Applications/Postgres.app/Contents/Versions/9.6/bin/pg_dump');
+            $command->setCommand('pg_dump');
 
             $command->addArg('--dbname=', $database);
             $command->addArg('--host=', $server);
@@ -172,6 +174,22 @@ class Schema extends \yii\db\pgsql\Schema
 
             Craft::error('Could not back up database. Error: '.$error.'. Exit Code:'.$exitCode, __METHOD__);
             return false;
+        }
+    }
+
+    /**
+     * Restores a database backup with the given backup file. Note that all tables and data in the database will be
+     * deleted before the backup file is executed.
+     *
+     * @param string $filePath The file path of the database backup to restore.
+     *
+     * @return void
+     * @throws Exception if $filePath doesn’t exist
+     */
+    public function restore($filePath)
+    {
+        if (!Io::fileExists($filePath)) {
+            throw new Exception("Could not find the SQL file to restore: {$filePath}");
         }
     }
 }
