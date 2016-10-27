@@ -364,6 +364,10 @@ class Raster extends Image
     {
         $this->_image->rotate($degrees);
 
+        if (Craft::$app->getImages()->getIsImagick()) {
+            $this->_image->getImagick()->setImagePage(0, 0, 0, 0);
+        }
+
         return $this;
     }
 
