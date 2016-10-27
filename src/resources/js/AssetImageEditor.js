@@ -800,6 +800,8 @@ Craft.AssetImageEditor = Garnish.Modal.extend(
 
 		_createCropper: function () {
 
+			var strokeThickness = 2;
+
 			this.croppingCanvas = new fabric.Canvas('cropping-canvas', {backgroundColor: 'rgba(0,0,0,0)', hoverCursor: 'default', selection: false});
 
 			this.croppingCanvas.setDimensions({
@@ -852,14 +854,14 @@ Craft.AssetImageEditor = Garnish.Modal.extend(
 				height: rectHeight - 1,
 				fill: 'rgba(0,0,0,0)',
 				stroke: 'rgba(255,255,255,0.8)',
-				strokeWidth: 2
+				strokeWidth: strokeThickness
 			});
 			croppingGroup.push(rectangle);
 
 			this.cropper = new fabric.Group(croppingGroup,
 				{
-					left: Math.round(this.editorWidth / 2 - rectWidth / 2) - 2,
-					top: Math.round(this.editorHeight / 2 - rectHeight / 2) - 2,
+					left: Math.round(this.editorWidth / 2 - rectWidth / 2) - strokeThickness,
+					top: Math.round(this.editorHeight / 2 - rectHeight / 2) - strokeThickness,
 					hoverCursor: 'move'
 				}
 			);
@@ -902,11 +904,10 @@ Craft.AssetImageEditor = Garnish.Modal.extend(
 				var rectWidth = Math.floor(cropper.width * cropper.scaleX);
 				var rectHeight = Math.floor(cropper.height * cropper.scaleY);
 
-				// Cropping rectangle border is 2px thick, so compensate for that.
-				// TODO seems *INCREDIBLY* error-prone
-				var topLeft = {x: Math.ceil(cropper.left) + 2, y: Math.ceil(cropper.top) + 2};
-				var topRight = {x: topLeft.x + rectWidth - 4, y: topLeft.y};
-				var bottomRight = {x: topRight.x, y: topRight.y + rectHeight - 4};
+				// Compensate for rectangle border thickness. Also, this seems *INCREDIBLY* error-prone
+				var topLeft = {x: Math.ceil(cropper.left) + strokeThickness, y: Math.ceil(cropper.top) + strokeThickness};
+				var topRight = {x: topLeft.x + rectWidth - strokeThickness*2, y: topLeft.y};
+				var bottomRight = {x: topRight.x, y: topRight.y + rectHeight - strokeThickness*2};
 				var bottomLeft = {x: topLeft.x, y: bottomRight.y};
 
 
@@ -1020,12 +1021,6 @@ Craft.AssetImageEditor = Garnish.Modal.extend(
 				var scalarAbAp = scalarProduct(ab, ap);
 				var scalarBcBp = scalarProduct(bc, bp);
 
-				// The dot product of two vectors is negative for acute angles and 0 for straight angles, so:
-				// 1) The comparison to 0 makes sure that point projection on the
-				//    rectangle edge is towards the edge vector's endpoint.
-				// 2) That scalar product has to be smaller than the edge vector
-				//    squared. Otherwise the dot's projection on the edge is beyond
-				//    the vector's endpoint which means it's outside of rectangle.
 				var projectsOnAB = 0 <= scalarAbAp && scalarAbAp <= scalarAbAb;
 				var projectsOnBC = 0 <= scalarBcBp && scalarBcBp <= scalarBcBc;
 
