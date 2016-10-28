@@ -185,8 +185,8 @@
 
                         {% if CraftEdition == CraftPro %}
                             {% include "_includes/fields" with {
-                            fields: craft.app.fields.getLayoutByType('craft\\app\\elements\\User').getFields(),
-                            element: account
+                                fields: craft.app.fields.getLayoutByType('craft\\app\\elements\\User').getFields(),
+                                element: account
                             } only %}
 
                             {{ saveUserButtons }}
