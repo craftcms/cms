@@ -40,7 +40,9 @@ abstract class Model extends \yii\base\Model
 
         // Normalize the DateTime attributes
         foreach ($this->datetimeAttributes() as $attribute) {
-            $this->$attribute = DateTimeHelper::toDateTime($this->$attribute);
+            if ($this->$attribute !== null) {
+                $this->$attribute = DateTimeHelper::toDateTime($this->$attribute);
+            }
         }
     }
 
