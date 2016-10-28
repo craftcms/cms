@@ -77,27 +77,28 @@ class ResaveElements extends Task
      */
     public function runStep($step)
     {
-        $class = $this->elementType;
-
         try {
             /** @var Element $element */
-            $element = $class::find()
-                ->id($this->_elementIds[$step])
-                ->siteId($this->_siteId)
-                ->one();
+            $elementId = $this->_elementIds[$step];
+            $element = Craft::$app->getElements()->getElementById($elementId, $this->elementType, $this->_siteId);
 
-            if (!$element || Craft::$app->getElements()->saveElement($element, false)) {
+            if (!$element) {
                 return true;
             }
 
-            $error = 'Encountered the following validation errors when trying to save '.get_class($element).' element "'.$element.'" with the ID "'.$element->id.'":';
+            if (!Craft::$app->getElements()->saveElement($element, false)) {
+                $error = 'Encountered the following validation errors when trying to save '.get_class($element).' element "'.$element.'" with the ID "'.$element->id.'":';
 
-            foreach ($element->getAllErrors() as $attributeError) {
-                $error .= "\n - {$attributeError}";
+                foreach ($element->getAllErrors() as $attributeError) {
+                    $error .= "\n - {$attributeError}";
+                }
+
+                return $error;
             }
 
-            return $error;
+            return true;
         } catch (\Exception $e) {
+            $class = $this->elementType;
             return 'An exception was thrown while trying to save the '.StringHelper::toLowerCase($class::displayName()).' with the ID “'.$this->_elementIds[$step].'”: '.$e->getMessage();
         }
     }
