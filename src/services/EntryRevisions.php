@@ -525,7 +525,7 @@ class EntryRevisions extends Component
             'fields' => [],
         ];
 
-        $content = $revision->getContentFromPost();
+        $content = $revision->getSerializedFieldValues();
 
         foreach (Craft::$app->getFields()->getAllFields() as $field) {
             /** @var Field $field */

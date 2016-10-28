@@ -192,7 +192,7 @@ class GlobalsController extends Controller
             throw new NotFoundHttpException('Global set not found');
         }
 
-        $globalSet->setFieldValuesFromPost('fields');
+        $globalSet->setFieldValuesFromRequest('fields');
 
         if (Craft::$app->getElements()->saveElement($globalSet)) {
             Craft::$app->getSession()->setNotice(Craft::t('app', 'Globals saved.'));

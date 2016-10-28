@@ -39,38 +39,38 @@ use yii\validators\Validator;
 /**
  * Element is the base class for classes representing elements in terms of objects.
  *
- * @property FieldLayout|null      $fieldLayout         The field layout used by this element
- * @property array                 $htmlAttributes      Any attributes that should be included in the element’s DOM representation in the Control Panel
- * @property integer[]             $supportedSiteIds    The site IDs this element is available in
- * @property string|null           $uriFormat           The URI format used to generate this element’s URL
- * @property string|null           $url                 The element’s full URL
- * @property \Twig_Markup|null     $link                An anchor pre-filled with this element’s URL and title
- * @property string|null           $ref                 The reference string to this element
- * @property string                $indexHtml           The element index HTML
- * @property boolean               $isEditable          Whether the current user can edit the element
- * @property string|null           $cpEditUrl           The element’s CP edit URL
- * @property string|null           $thumbUrl            The URL to the element’s thumbnail, if there is one
- * @property string|null           $iconUrl             The URL to the element’s icon image, if there is one
- * @property string|null           $status              The element’s status
- * @property Element               $next                The next element relative to this one, from a given set of criteria
- * @property Element               $prev                The previous element relative to this one, from a given set of criteria
- * @property Element               $parent              The element’s parent
- * @property mixed                 $route               The route that should be used when the element’s URI is requested
- * @property integer|null          $structureId         The ID of the structure that the element is associated with, if any
- * @property ElementQueryInterface $ancestors           The element’s ancestors
- * @property ElementQueryInterface $descendants         The element’s descendants
- * @property ElementQueryInterface $children            The element’s children
- * @property ElementQueryInterface $siblings            All of the element’s siblings
- * @property Element               $prevSibling         The element’s previous sibling
- * @property Element               $nextSibling         The element’s next sibling
- * @property boolean               $hasDescendants      Whether the element has descendants
- * @property integer               $totalDescendants    The total number of descendants that the element has
- * @property string                $title               The element’s title
- * @property array                 $contentFromPost     The raw content from the post data, as it was given to [[setFieldValuesFromPost]]
- * @property string|null           $contentPostLocation The location in POST that the content was pulled from
- * @property string                $contentTable        The name of the table this element’s content is stored in
- * @property string                $fieldColumnPrefix   The field column prefix this element’s content uses
- * @property string                $fieldContext        The field context this element’s content uses
+ * @property FieldLayout|null      $fieldLayout           The field layout used by this element
+ * @property array                 $htmlAttributes        Any attributes that should be included in the element’s DOM representation in the Control Panel
+ * @property integer[]             $supportedSiteIds      The site IDs this element is available in
+ * @property string|null           $uriFormat             The URI format used to generate this element’s URL
+ * @property string|null           $url                   The element’s full URL
+ * @property \Twig_Markup|null     $link                  An anchor pre-filled with this element’s URL and title
+ * @property string|null           $ref                   The reference string to this element
+ * @property string                $indexHtml             The element index HTML
+ * @property boolean               $isEditable            Whether the current user can edit the element
+ * @property string|null           $cpEditUrl             The element’s CP edit URL
+ * @property string|null           $thumbUrl              The URL to the element’s thumbnail, if there is one
+ * @property string|null           $iconUrl               The URL to the element’s icon image, if there is one
+ * @property string|null           $status                The element’s status
+ * @property Element               $next                  The next element relative to this one, from a given set of criteria
+ * @property Element               $prev                  The previous element relative to this one, from a given set of criteria
+ * @property Element               $parent                The element’s parent
+ * @property mixed                 $route                 The route that should be used when the element’s URI is requested
+ * @property integer|null          $structureId           The ID of the structure that the element is associated with, if any
+ * @property ElementQueryInterface $ancestors             The element’s ancestors
+ * @property ElementQueryInterface $descendants           The element’s descendants
+ * @property ElementQueryInterface $children              The element’s children
+ * @property ElementQueryInterface $siblings              All of the element’s siblings
+ * @property Element               $prevSibling           The element’s previous sibling
+ * @property Element               $nextSibling           The element’s next sibling
+ * @property boolean               $hasDescendants        Whether the element has descendants
+ * @property integer               $totalDescendants      The total number of descendants that the element has
+ * @property string                $title                 The element’s title
+ * @property string|null           $serializedFieldValues Array of the element’s serialized custom field values, indexed by their handles
+ * @property array                 $fieldParamNamespace   The namespace used by custom field params on the request
+ * @property string                $contentTable          The name of the table this element’s content is stored in
+ * @property string                $fieldColumnPrefix     The field column prefix this element’s content uses
+ * @property string                $fieldContext          The field context this element’s content uses
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since  3.0
@@ -408,7 +408,8 @@ abstract class Element extends Component implements ElementInterface
             $condition = ['or'];
 
             foreach ($structureData as $i => $elementStructureData) {
-                $thisElementCondition = ['and',
+                $thisElementCondition = [
+                    'and',
                     ['structureId' => $elementStructureData['structureId']],
                     ['>', 'lft', $elementStructureData['lft']],
                     ['<', 'rgt', $elementStructureData['rgt']],
@@ -511,12 +512,7 @@ abstract class Element extends Component implements ElementInterface
     /**
      * @var
      */
-    private $_contentPostLocation;
-
-    /**
-     * @var
-     */
-    private $_rawPostContent;
+    private $_fieldParamNamePrefix;
 
     /**
      * @var array Record of the fields whose values have already been normalized
@@ -694,7 +690,12 @@ abstract class Element extends Component implements ElementInterface
     public function rules()
     {
         $rules = [
-            [['id', 'contentId', 'root', 'lft', 'rgt', 'level'], 'number', 'integerOnly' => true, 'on' => self::SCENARIO_DEFAULT],
+            [
+                ['id', 'contentId', 'root', 'lft', 'rgt', 'level'],
+                'number',
+                'integerOnly' => true,
+                'on' => self::SCENARIO_DEFAULT
+            ],
             [['siteId'], SiteIdValidator::class],
             [['dateCreated', 'dateUpdated'], DateTimeValidator::class],
             [['title'], 'string', 'max' => 255],
@@ -1227,7 +1228,7 @@ abstract class Element extends Component implements ElementInterface
     /**
      * @inheritdoc
      */
-    public function getFieldValues($fieldHandles = null, $except = [])
+    public function getFieldValues($fieldHandles = null)
     {
         $values = [];
 
@@ -1237,11 +1238,24 @@ abstract class Element extends Component implements ElementInterface
             }
         }
 
-        foreach ($except as $handle) {
-            unset($values[$handle]);
+        return $values;
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function getSerializedFieldValues($fieldHandles = null)
+    {
+        $serializedValues = [];
+
+        foreach ($this->getFields() as $field) {
+            if ($fieldHandles === null || in_array($field->handle, $fieldHandles)) {
+                $value = $this->getFieldValue($field->handle);
+                $serializedValues[$field->handle] = $field->serializeValue($value, $this);
+            }
         }
 
-        return $values;
+        return $serializedValues;
     }
 
     /**
@@ -1284,67 +1298,40 @@ abstract class Element extends Component implements ElementInterface
     /**
      * @inheritdoc
      */
-    public function setFieldValuesFromPost($values)
+    public function setFieldValuesFromRequest($paramNamespace = '')
     {
-        if (is_string($values)) {
-            // Keep track of where the post data is coming from, in case any field types need to know where to
-            // look in $_FILES
-            $this->setContentPostLocation($values);
-            $values = Craft::$app->getRequest()->getBodyParam($values, []);
-        }
+        $this->setFieldParamNamespace($paramNamespace);
+        $values = Craft::$app->getRequest()->getBodyParam($paramNamespace, []);
 
         foreach ($this->getFields() as $field) {
             // Do we have any post data for this field?
             if (isset($values[$field->handle])) {
                 $value = $values[$field->handle];
-            } else if (!empty($this->_contentPostLocation) && UploadedFile::getInstancesByName($this->_contentPostLocation.'.'.$field->handle)) {
+            } else if (!empty($this->_fieldParamNamePrefix) && UploadedFile::getInstancesByName($this->_fieldParamNamePrefix.'.'.$field->handle)) {
                 // A file was uploaded for this field
                 $value = null;
             } else {
                 continue;
             }
+
             $this->setFieldValue($field->handle, $value);
-            $this->setRawPostValueForField($field->handle, $value);
         }
     }
 
     /**
-     * Sets a field’s raw post content.
-     *
-     * @param string       $handle The field handle.
-     * @param string|array The     posted field value.
+     * @inheritdoc
      */
-    public function setRawPostValueForField($handle, $value)
+    public function getFieldParamNamespace()
     {
-        $this->_rawPostContent[$handle] = $value;
+        return $this->_fieldParamNamePrefix;
     }
 
     /**
      * @inheritdoc
      */
-    public function getContentFromPost()
+    public function setFieldParamNamespace($namespace)
     {
-        if (isset($this->_rawPostContent)) {
-            return $this->_rawPostContent;
-        }
-
-        return [];
-    }
-
-    /**
-     * @inheritdoc
-     */
-    public function getContentPostLocation()
-    {
-        return $this->_contentPostLocation;
-    }
-
-    /**
-     * @inheritdoc
-     */
-    public function setContentPostLocation($contentPostLocation)
-    {
-        $this->_contentPostLocation = $contentPostLocation;
+        $this->_fieldParamNamePrefix = $namespace;
     }
 
     /**
@@ -1395,6 +1382,7 @@ abstract class Element extends Component implements ElementInterface
         if (isset($this->_eagerLoadedElements[$handle])) {
 
             ElementHelper::setNextPrevOnElements($this->_eagerLoadedElements[$handle]);
+
             return $this->_eagerLoadedElements[$handle];
         }
 

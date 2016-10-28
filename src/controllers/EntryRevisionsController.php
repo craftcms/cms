@@ -62,7 +62,7 @@ class EntryRevisionsController extends BaseEntriesController
         $this->_setDraftAttributesFromPost($draft);
 
         $fieldsLocation = Craft::$app->getRequest()->getParam('fieldsLocation', 'fields');
-        $draft->setFieldValuesFromPost($fieldsLocation);
+        $draft->setFieldValuesFromRequest($fieldsLocation);
 
         $entryType = $draft->getType();
 
@@ -218,7 +218,7 @@ class EntryRevisionsController extends BaseEntriesController
 
         // Populate the field content
         $fieldsLocation = Craft::$app->getRequest()->getParam('fieldsLocation', 'fields');
-        $draft->setFieldValuesFromPost($fieldsLocation);
+        $draft->setFieldValuesFromRequest($fieldsLocation);
 
         // Publish the draft (finally!)
         if (Craft::$app->getEntryRevisions()->publishDraft($draft)) {

@@ -313,10 +313,9 @@ class Elements extends Component
      * $entry->enabled = true;
      * $entry->title = "Hello World!";
      *
-     * $entry->setFieldValuesFromPost(
-     *     [
-     *         'body' => "<p>I can’t believe I literally just called this “Hello World!”.</p>",
-     *     ]);
+     * $entry->setFieldValues([
+     *     'body' => "<p>I can’t believe I literally just called this “Hello World!”.</p>",
+     * ]);
      *
      * $success = Craft::$app->elements->saveElement($entry);
      *

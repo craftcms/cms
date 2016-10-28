@@ -346,7 +346,7 @@ class Assets extends BaseRelationField
         }
 
         // See if we have uploaded file(s).
-        $contentPostLocation = $this->getContentPostLocation($element);
+        $contentPostLocation = $this->getRequestParamName($element);
 
         if ($contentPostLocation) {
             $files = UploadedFile::getInstancesByName($contentPostLocation);
@@ -410,10 +410,6 @@ class Assets extends BaseRelationField
                 }
 
                 $assetIds = array_unique(array_merge($value, $assetIds));
-
-                // Make it look like the actual POST data contained these file IDs as well,
-                // so they make it into entry draft/version data
-                $element->setRawPostValueForField($this->handle, $assetIds);
 
                 /** @var AssetQuery $newValue */
                 $newValue = $this->normalizeValue($assetIds, $element);

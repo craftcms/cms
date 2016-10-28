@@ -666,16 +666,26 @@ interface ElementInterface extends ComponentInterface
     public function offsetExists($offset);
 
     /**
-     * Returns the element’s custom field values.
+     * Returns an array of the element’s normalized custom field values, indexed by their handles.
      *
      * @param array $fieldHandles The list of field handles whose values need to be returned.
      *                            Defaults to null, meaning all fields’ values will be returned.
      *                            If it is an array, only the fields in the array will be returned.
-     * @param array $except       The list of field handles whose values should NOT be returned.
      *
      * @return array The field values (handle => value)
      */
-    public function getFieldValues($fieldHandles = null, $except = []);
+    public function getFieldValues($fieldHandles);
+
+    /**
+     * Returns an array of the element’s serialized custom field values, indexed by their handles.
+     *
+     * @param array $fieldHandles The list of field handles whose values need to be returned.
+     *                            Defaults to null, meaning all fields’ values will be returned.
+     *                            If it is an array, only the fields in the array will be returned.
+     *
+     * @return array
+     */
+    public function getSerializedFieldValues($fieldHandles);
 
     /**
      * Sets the element’s custom field values.
@@ -708,34 +718,27 @@ interface ElementInterface extends ComponentInterface
     /**
      * Sets the element’s custom field values, when the values have come from post data.
      *
-     * @param array|string $values The array of field values, or the post location of the content
+     * @param string $paramNamespace The field param namespace
      *
      * @return void
      */
-    public function setFieldValuesFromPost($values);
+    public function setFieldValuesFromRequest($paramNamespace);
 
     /**
-     * Returns the raw content from the post data, as it was given to [[setFieldValuesFromPost]]
+     * Returns the namespace used by custom field params on the request.
      *
-     * @return array
+     * @return string|null The field param namespace
      */
-    public function getContentFromPost();
+    public function getFieldParamNamespace();
 
     /**
-     * Returns the location in POST that the content was pulled from.
+     * Sets the namespace used by custom field params on the request.
      *
-     * @return string|null
+     * @param string $namespace The field param namespace
+     *
+     * @return void
      */
-    public function getContentPostLocation();
-
-    /**
-     * Sets the location in POST that the content was pulled from.
-     *
-     * @param $contentPostLocation
-     *
-     * @return string|null
-     */
-    public function setContentPostLocation($contentPostLocation);
+    public function setFieldParamNamespace($namespace);
 
     /**
      * Returns the name of the table this element’s content is stored in.

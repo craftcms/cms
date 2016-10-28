@@ -848,7 +848,7 @@ class EntriesController extends BaseEntriesController
         }
 
         $fieldsLocation = Craft::$app->getRequest()->getParam('fieldsLocation', 'fields');
-        $entry->setFieldValuesFromPost($fieldsLocation);
+        $entry->setFieldValuesFromRequest($fieldsLocation);
 
         // Author
         $authorId = Craft::$app->getRequest()->getBodyParam('author', ($entry->authorId ? $entry->authorId : Craft::$app->getUser()->getIdentity()->id));

@@ -262,7 +262,7 @@ class Matrix extends Field implements EagerLoadingFieldInterface
             $query->status = null;
             $query->enabledForSite = false;
             $query->limit = null;
-            $query->setCachedResult($this->_createBlocksFromPost($value, $element));
+            $query->setCachedResult($this->_createBlocksFromSerializedData($value, $element));
         }
 
         return $query;
@@ -646,14 +646,14 @@ class Matrix extends Field implements EagerLoadingFieldInterface
     }
 
     /**
-     * Creates an array of blocks based on the given post data
+     * Creates an array of blocks based on the given serialized data.
      *
      * @param mixed                 $value   The raw field value
      * @param ElementInterface|null $element The element the field is associated with, if there is one
      *
      * @return MatrixBlock[]
      */
-    private function _createBlocksFromPost($value, $element)
+    private function _createBlocksFromSerializedData($value, $element)
     {
         /** @var Element $element */
         // Get the possible block types for this field
@@ -724,14 +724,15 @@ class Matrix extends Field implements EagerLoadingFieldInterface
             $block->enabled = (isset($blockData['enabled']) ? (bool)$blockData['enabled'] : true);
 
             // Set the content post location on the block if we can
-            $ownerContentPostLocation = $element->getContentPostLocation();
+            $fieldNamespace = $element->getFieldParamNamespace();
 
-            if ($ownerContentPostLocation) {
-                $block->setContentPostLocation("{$ownerContentPostLocation}.{$this->handle}.{$blockId}.fields");
+            if ($fieldNamespace !== null) {
+                $blockFieldNamespace = ($fieldNamespace ? $fieldNamespace.'.' : '').'.'.$this->handle.'.'.$blockId.'.fields';
+                $block->setFieldParamNamespace($blockFieldNamespace);
             }
 
             if (isset($blockData['fields'])) {
-                $block->setFieldValuesFromPost($blockData['fields']);
+                $block->setFieldValues($blockData['fields']);
             }
 
             $sortOrder++;

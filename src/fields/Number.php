@@ -101,9 +101,9 @@ class Number extends Field implements PreviewableFieldInterface
      */
     public function normalizeValue($value, $element)
     {
-        /** @var Element $element */
         // Is this a post request?
         $request = Craft::$app->getRequest();
+
         if (!$request->getIsConsoleRequest() && $request->getIsPost()) {
             // Normalize the number and make it look like this is what was posted
             if ($value === '') {
@@ -111,7 +111,6 @@ class Number extends Field implements PreviewableFieldInterface
             } else {
                 $value = Localization::normalizeNumber($value);
             }
-            $element->setRawPostValueForField($this->handle, $value);
         }
 
         return $value;

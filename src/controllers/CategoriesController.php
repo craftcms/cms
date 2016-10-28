@@ -733,7 +733,7 @@ class CategoriesController extends Controller
         $category->title = Craft::$app->getRequest()->getBodyParam('title', $category->title);
 
         $fieldsLocation = Craft::$app->getRequest()->getParam('fieldsLocation', 'fields');
-        $category->setFieldValuesFromPost($fieldsLocation);
+        $category->setFieldValuesFromRequest($fieldsLocation);
 
         // Parent
         $parentId = Craft::$app->getRequest()->getBodyParam('parentId');

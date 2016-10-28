@@ -418,23 +418,25 @@ abstract class Field extends SavableComponent implements FieldInterface
     }
 
     /**
-     * Returns the location in POST that this field's content was pulled from.
+     * Returns the field’s param name on the request.
      *
      * @param ElementInterface $element The element this field is associated with
      *
-     * @return string|null
+     * @return string|null The field’s param name on the request
      */
-    protected function getContentPostLocation($element)
+    protected function getRequestParamName($element)
     {
-        if ($element) {
-            $elementContentPostLocation = $element->getContentPostLocation();
-
-            if ($elementContentPostLocation) {
-                return $elementContentPostLocation.'.'.$this->handle;
-            }
+        if (!$element) {
+            return null;
         }
 
-        return null;
+        $namespace = $element->getFieldParamNamespace();
+
+        if (!$namespace === null) {
+            return null;
+        }
+
+        return ($namespace ? $namespace.'.' : '').$this->handle;
     }
 
     /**
