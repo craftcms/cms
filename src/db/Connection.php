@@ -12,9 +12,12 @@ use craft\app\db\mysql\QueryBuilder;
 use craft\app\errors\DbConnectException;
 use craft\app\events\BackupEvent;
 use craft\app\events\BackupFailureEvent;
+use craft\app\events\RestoreEvent;
+use craft\app\events\RestoreFailureEvent;
 use craft\app\helpers\ArrayHelper;
 use craft\app\helpers\Io;
 use craft\app\helpers\StringHelper;
+use craft\app\services\Config;
 use mikehaertl\shellcommand\Command as ShellCommand;
 use yii\db\Exception as DbException;
 
@@ -39,14 +42,29 @@ class Connection extends \yii\db\Connection
     const EVENT_BEFORE_CREATE_BACKUP = 'beforeCreateBackup';
 
     /**
-     * @event BackupEvent The event that is triggered after the DB backup is created.
+     * @event BackupEvent The event that is triggered after the backup is created.
      */
     const EVENT_AFTER_CREATE_BACKUP = 'afterCreateBackup';
 
     /**
-     * @event BackupFailureEvent The event that is triggered when a failed login attempt was made
+     * @event BackupFailureEvent The event that is triggered when a failed backup occurred.
      */
     const EVENT_BACKUP_FAILURE = 'backupFailure';
+
+    /**
+     * @event RestoreEvent The event that is triggered before the restore is started.
+     */
+    const EVENT_BEFORE_RESTORE_BACKUP = 'beforeRestoreBackup';
+
+    /**
+     * @event RestoreEvent The event that is triggered after the restore occurred.
+     */
+    const EVENT_AFTER_RESTORE_BACKUP = 'afterRestoreBackup';
+
+    /**
+     * @event RestoreFailureEvent The event that is triggered when a failed restore occurred.
+     */
+    const EVENT_RESTORE_FAILURE = 'restoreFailure';
 
     const DRIVER_MYSQL = 'mysql';
     const DRIVER_PGSQL = 'pgsql';
@@ -60,7 +78,7 @@ class Connection extends \yii\db\Connection
      * @see   createCommand
      * @since 2.0.7
      */
-    public $commandClass = \craft\app\db\Command::class;
+    public $commandClass = Command::class;
 
     // Public Methods
     // =========================================================================
@@ -201,8 +219,59 @@ class Connection extends \yii\db\Connection
      */
     public function restore($filePath)
     {
-        if ($this->getSchema()->restore($filePath)) {
+        $command = new ShellCommand();
+
+        // If we don't have proc_open, maybe we've got exec
+        if (!function_exists('proc_open') && function_exists('exec')) {
+            $command->useExec = true;
+        }
+
+        $config = Craft::$app->getConfig();
+        $port = $config->getDbPort();
+        $server = $config->get('server', Config::CATEGORY_DB);
+        $user = $config->get('user', Config::CATEGORY_DB);
+        $database = $config->get('database', Config::CATEGORY_DB);
+
+        // See if they are using their own restoreCommand.
+        if ($restoreCommand = $config->get('restoreCommand')) {
+
+            // Swap out any tokens
+            $restoreCommand = preg_replace('/\{filePath\}/', $filePath, $restoreCommand);
+            $restoreCommand = preg_replace('/\{port\}/', $port, $restoreCommand);
+            $restoreCommand = preg_replace('/\{server\}/', $server, $restoreCommand);
+            $restoreCommand = preg_replace('/\{user\}/', $user, $restoreCommand);
+            $restoreCommand = preg_replace('/\{database\}/', $database, $restoreCommand);
+
+            $command->setCommand($restoreCommand);
+        } else {
+            // Go with Craft's default.
+            $command = $this->getSchema()->getDefaultRestoreCommand($command, $filePath);
+        }
+
+        // Fire a 'beforeRestoreBackup' event
+        $this->trigger(self::EVENT_BEFORE_RESTORE_BACKUP,
+            new RestoreEvent(['filePath' => $filePath])
+        );
+
+        if ($command->execute()) {
+            // Fire an 'afterRestoreBackup' event
+            $this->trigger(self::EVENT_AFTER_RESTORE_BACKUP,
+                new BackupEvent(['filePath' => $filePath])
+            );
+
             return true;
+        } else {
+            $errorMessage = $command->getError();
+            $exitCode = $command->getExitCode();
+
+            // Fire a 'restoreFailure' event
+            $this->trigger(self::EVENT_RESTORE_FAILURE, new RestoreFailureEvent([
+                'exitCode' => $exitCode,
+                'errorMessage' => $errorMessage,
+                'filePath' => $filePath,
+            ]));
+
+            Craft::error('Could not perform restore. Error: '.$errorMessage.'. Exit Code:'.$exitCode, __METHOD__);
         }
 
         return false;

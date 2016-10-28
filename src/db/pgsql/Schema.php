@@ -158,54 +158,30 @@ class Schema extends \yii\db\pgsql\Schema
     }
 
     /**
-     * Restores a database backup with the given backup file. Note that all tables and data in the database will be
-     * deleted before the backup file is executed.
+     * Generates the default database restore command to execute.
      *
-     * @param string $filePath The file path of the database backup to restore.
+     * @param ShellCommand $command  The command to execute.
+     * @param string       $filePath The file path of the database backup to restore.
      *
-     * @return void
-     * @throws Exception if $filePath doesn’t exist
+     * @return ShellCommand The command to execute.
      */
-    public function restore($filePath)
+    public function getDefaultRestoreCommand(ShellCommand $command, $filePath)
     {
-        if (!Io::fileExists($filePath)) {
-            throw new Exception("Could not find the SQL file to restore: {$filePath}");
-        }
-
-        $command = new ShellCommand();
         $config = Craft::$app->getConfig();
         $port = $config->getDbPort();
         $server = $config->get('server', Config::CATEGORY_DB);
         $user = $config->get('user', Config::CATEGORY_DB);
         $database = $config->get('database', Config::CATEGORY_DB);
 
-        // If we don't have proc_open, maybe we've got exec
-        if (!function_exists('proc_open') && function_exists('exec')) {
-            $command->useExec = true;
-        }
+        $command->setCommand('psql');
 
-        if (($restoreCommand = $config->get('$restoreCommand'))) {
-            $restoreCommand = preg_replace('/\{filePath\}/', $filePath, $restoreCommand);
-            $command->setCommand($restoreCommand);
-        } else {
-            $command->setCommand('psql');
+        $command->addArg('--dbname=', $database);
+        $command->addArg('--host=', $server);
+        $command->addArg('--port=', $port);
+        $command->addArg('--username=', $user);
+        $command->addArg('--no-password');
+        $command->addArg('< ', $filePath);
 
-            $command->addArg('--dbname=', $database);
-            $command->addArg('--host=', $server);
-            $command->addArg('--port=', $port);
-            $command->addArg('--username=', $user);
-            $command->addArg('--no-password');
-            $command->addArg('< ', $filePath);
-        }
-
-        if ($command->execute()) {
-            return true;
-        } else {
-            $error = $command->getError();
-            $exitCode = $command->getExitCode();
-
-            Craft::error('Could not restore database. Error: '.$error.'. Exit Code:'.$exitCode, __METHOD__);
-            return false;
-        }
+        return $command;
     }
 }
