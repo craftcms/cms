@@ -10,7 +10,8 @@ namespace craft\app\db;
 use Craft;
 use craft\app\db\mysql\QueryBuilder;
 use craft\app\errors\DbConnectException;
-use craft\app\events\DbBackupEvent;
+use craft\app\events\BackupEvent;
+use craft\app\events\BackupFailureEvent;
 use craft\app\helpers\ArrayHelper;
 use craft\app\helpers\Io;
 use craft\app\helpers\StringHelper;
@@ -33,14 +34,19 @@ class Connection extends \yii\db\Connection
     // =========================================================================
 
     /**
-     * @event \yii\base\Event The event that is triggered before the backup is created.
+     * @event BackupEvent The event that is triggered before the backup is created.
      */
     const EVENT_BEFORE_CREATE_BACKUP = 'beforeCreateBackup';
 
     /**
-     * @event DbBackupEvent The event that is triggered after the DB backup is created.
+     * @event BackupEvent The event that is triggered after the DB backup is created.
      */
     const EVENT_AFTER_CREATE_BACKUP = 'afterCreateBackup';
+
+    /**
+     * @event BackupFailureEvent The event that is triggered when a failed login attempt was made
+     */
+    const EVENT_BACKUP_FAILURE = 'backupFailure';
 
     const DRIVER_MYSQL = 'mysql';
     const DRIVER_PGSQL = 'pgsql';
@@ -158,20 +164,29 @@ class Connection extends \yii\db\Connection
         }
 
         // Fire a 'beforeCreateBackup' event
-        $this->trigger(self::EVENT_BEFORE_CREATE_BACKUP);
+        $this->trigger(self::EVENT_BEFORE_CREATE_BACKUP,
+            new BackupEvent(['filePath' => $filePath])
+        );
 
         if ($command->execute()) {
             // Fire an 'afterCreateBackup' event
             $this->trigger(self::EVENT_AFTER_CREATE_BACKUP,
-                new DbBackupEvent(['filePath' => $filePath])
+                new BackupEvent(['filePath' => $filePath])
             );
 
             return $filePath;
         } else {
-            $error = $command->getError();
+            $errorMessage = $command->getError();
             $exitCode = $command->getExitCode();
 
-            Craft::error('Could not back up database. Error: '.$error.'. Exit Code:'.$exitCode, __METHOD__);
+            // Fire a 'backupFailure' event
+            $this->trigger(self::EVENT_BACKUP_FAILURE, new BackupFailureEvent([
+                'exitCode' => $exitCode,
+                'errorMessage' => $errorMessage,
+                'filePath' => $filePath,
+            ]));
+
+            Craft::error('Could not perform backup. Error: '.$errorMessage.'. Exit Code:'.$exitCode, __METHOD__);
         }
 
         return false;

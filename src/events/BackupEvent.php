@@ -8,18 +8,18 @@
 namespace craft\app\events;
 
 /**
- * DB backup event class.
+ * Backup event class.
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since  3.0
  */
-class DbBackupEvent extends Event
+class BackupEvent extends Event
 {
     // Properties
     // =========================================================================
 
     /**
-     * @var string The file path to the backup
+     * @var string The file path to the backup.
      */
     public $filePath;
 }
