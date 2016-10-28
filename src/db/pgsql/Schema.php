@@ -121,23 +121,16 @@ class Schema extends \yii\db\pgsql\Schema
     }
 
     /**
-     * Backs up a database using pg_dump, or with any command specified by the
-     * `backupCommand` config setting.
+     * Gets the default backup command to execute.
      *
-     * @param string $filePath         The path of the backup file.
-     * @param array  $ignoreDataTables An array of tables to skip backing up the data for.
+     * @param ShellCommand $command          The command to execute.
+     * @param string       $filePath         The path of the backup file.
+     * @param array        $ignoreDataTables An array of tables to skip backing up the data for.
      *
-     * @return bool Whether the backup was successful or not.
+     * @return ShellCommand The command to execute.
      */
-    public function backup($filePath, $ignoreDataTables)
+    public function getDefaultBackupCommand(ShellCommand $command, $filePath, $ignoreDataTables)
     {
-        $command = new ShellCommand();
-
-        // If we don't have proc_open, maybe we've got exec
-        if (!function_exists('proc_open') && function_exists('exec')) {
-            $command->useExec = true;
-        }
-
         $config = Craft::$app->getConfig();
         $port = $config->getDbPort();
         $server = $config->get('server', Config::CATEGORY_DB);
@@ -145,36 +138,23 @@ class Schema extends \yii\db\pgsql\Schema
         $database = $config->get('database', Config::CATEGORY_DB);
         $schema = $config->get('schema', Config::CATEGORY_DB);
 
-        if (($backupCommand = $config->get('backupCommand'))) {
-            $backupCommand = preg_replace('/\{filePath\}/', $filePath, $backupCommand);
-            $command->setCommand($backupCommand);
-        } else {
-            $command->setCommand('pg_dump');
+        $command->setCommand('pg_dump');
 
-            $command->addArg('--dbname=', $database);
-            $command->addArg('--host=', $server);
-            $command->addArg('--port=', $port);
-            $command->addArg('--username=', $user);
-            $command->addArg('--no-password');
-            $command->addArg('--if-exists');
-            $command->addArg('--clean');
-            $command->addArg('--file=', $filePath);
-            $command->addArg('--schema=', $schema);
+        $command->addArg('--dbname=', $database);
+        $command->addArg('--host=', $server);
+        $command->addArg('--port=', $port);
+        $command->addArg('--username=', $user);
+        $command->addArg('--no-password');
+        $command->addArg('--if-exists');
+        $command->addArg('--clean');
+        $command->addArg('--file=', $filePath);
+        $command->addArg('--schema=', $schema);
 
-            foreach ($ignoreDataTables as $ignoreDataTable) {
-                $command->addArg('--exclude-table-data=', $ignoreDataTable);
-            }
+        foreach ($ignoreDataTables as $ignoreDataTable) {
+            $command->addArg('--exclude-table-data=', $ignoreDataTable);
         }
 
-        if ($command->execute()) {
-            return true;
-        } else {
-            $error = $command->getError();
-            $exitCode = $command->getExitCode();
-
-            Craft::error('Could not back up database. Error: '.$error.'. Exit Code:'.$exitCode, __METHOD__);
-            return false;
-        }
+        return $command;
     }
 
     /**

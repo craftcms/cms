@@ -14,6 +14,7 @@ use craft\app\events\DbBackupEvent;
 use craft\app\helpers\ArrayHelper;
 use craft\app\helpers\Io;
 use craft\app\helpers\StringHelper;
+use mikehaertl\shellcommand\Command as ShellCommand;
 use yii\db\Exception as DbException;
 
 /**
@@ -86,7 +87,9 @@ class Connection extends \yii\db\Connection
     }
 
     /**
-     * Performs a database backup.
+     * Performs a backup operation. If a `backupCommand` config setting has been set, will execute it. If not,
+     * will execute the default database schema specific backup defined in `getDefaultBackupCommand()`, which uses
+     * `pg_dump` for PostgreSQL and `mysqldump` for MySQL.
      *
      * @param array|null $ignoreDataTables If set to an empty array, a full database backup will be performed. If set
      *                                     to an array of database table names, they will get merged with the default
@@ -123,16 +126,52 @@ class Connection extends \yii\db\Connection
         $filename = ($siteName ? $siteName.'_' : '').gmdate('ymd_His').'_'.$currentVersion.'.sql';
         $filePath = Craft::$app->getPath()->getDbBackupPath().'/'.StringHelper::toLowerCase($filename);
 
+        $command = new ShellCommand();
+
+        // If we don't have proc_open, maybe we've got exec
+        if (!function_exists('proc_open') && function_exists('exec')) {
+            $command->useExec = true;
+        }
+
+        $config = Craft::$app->getConfig();
+        $port = $config->getDbPort();
+        $server = $config->get('server', Config::CATEGORY_DB);
+        $user = $config->get('user', Config::CATEGORY_DB);
+        $database = $config->get('database', Config::CATEGORY_DB);
+        $schema = $config->get('schema', Config::CATEGORY_DB);
+
+        // See if they are using their own backupCommand.
+        if (($backupCommand = $config->get('backupCommand'))) {
+
+            // Swap out any tokens
+            $backupCommand = preg_replace('/\{filePath\}/', $filePath, $backupCommand);
+            $backupCommand = preg_replace('/\{port\}/', $port, $backupCommand);
+            $backupCommand = preg_replace('/\{server\}/', $server, $backupCommand);
+            $backupCommand = preg_replace('/\{user\}/', $user, $backupCommand);
+            $backupCommand = preg_replace('/\{database\}/', $database, $backupCommand);
+            $backupCommand = preg_replace('/\{schema\}/', $schema, $backupCommand);
+
+            $command->setCommand($backupCommand);
+        } else {
+            // Go with Craft's default.
+            $command = $this->getSchema()->getDefaultBackupCommand($command, $filePath, $ignoreDataTables);
+        }
+
         // Fire a 'beforeCreateBackup' event
         $this->trigger(self::EVENT_BEFORE_CREATE_BACKUP);
 
-        if ($this->getSchema()->backup($filePath, $ignoreDataTables)) {
+        if ($command->execute()) {
             // Fire an 'afterCreateBackup' event
             $this->trigger(self::EVENT_AFTER_CREATE_BACKUP,
                 new DbBackupEvent(['filePath' => $filePath])
             );
 
             return $filePath;
+        } else {
+            $error = $command->getError();
+            $exitCode = $command->getExitCode();
+
+            Craft::error('Could not back up database. Error: '.$error.'. Exit Code:'.$exitCode, __METHOD__);
         }
 
         return false;
