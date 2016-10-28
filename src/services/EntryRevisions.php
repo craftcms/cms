@@ -258,7 +258,7 @@ class EntryRevisions extends Component
      *
      * @return boolean
      */
-    public function publishDraft(EntryDraft $draft, $runValidation)
+    public function publishDraft(EntryDraft $draft, $runValidation = true)
     {
         // If this is a single, we'll have to set the title manually
         if ($draft->getSection()->type == Section::TYPE_SINGLE) {
@@ -441,7 +441,7 @@ class EntryRevisions extends Component
      *
      * @return boolean
      */
-    public function revertEntryToVersion(EntryVersion $version, $runValidation)
+    public function revertEntryToVersion(EntryVersion $version, $runValidation = true)
     {
         // If this is a single, we'll have to set the title manually
         if ($version->getSection()->type == Section::TYPE_SINGLE) {

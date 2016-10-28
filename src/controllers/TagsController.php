@@ -136,20 +136,20 @@ class TagsController extends Controller
         $tagGroup->setFieldLayout($fieldLayout);
 
         // Save it
-        if (Craft::$app->getTags()->saveTagGroup($tagGroup)) {
-            Craft::$app->getSession()->setNotice(Craft::t('app', 'Tag group saved.'));
+        if (!Craft::$app->getTags()->saveTagGroup($tagGroup)) {
+            Craft::$app->getSession()->setError(Craft::t('app', 'Couldn’t save the tag group.'));
 
-            return $this->redirectToPostedUrl($tagGroup);
+            // Send the tag group back to the template
+            Craft::$app->getUrlManager()->setRouteParams([
+                'tagGroup' => $tagGroup
+            ]);
+
+            return null;
         }
 
-        Craft::$app->getSession()->setError(Craft::t('app', 'Couldn’t save the tag group.'));
+        Craft::$app->getSession()->setNotice(Craft::t('app', 'Tag group saved.'));
 
-        // Send the tag group back to the template
-        Craft::$app->getUrlManager()->setRouteParams([
-            'tagGroup' => $tagGroup
-        ]);
-
-        return null;
+        return $this->redirectToPostedUrl($tagGroup);
     }
 
     /**

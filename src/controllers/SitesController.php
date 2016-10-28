@@ -142,20 +142,20 @@ class SitesController extends Controller
         $site->baseUrl = $site->hasUrls ? $request->getBodyParam('baseUrl') : null;
 
         // Save it
-        if (Craft::$app->getSites()->saveSite($site)) {
-            Craft::$app->getSession()->setNotice(Craft::t('app', 'Site saved.'));
+        if (!Craft::$app->getSites()->saveSite($site)) {
+            Craft::$app->getSession()->setError(Craft::t('app', 'Couldn’t save the site.'));
 
-            return $this->redirectToPostedUrl($site);
+            // Send the site back to the template
+            Craft::$app->getUrlManager()->setRouteParams([
+                'site' => $site
+            ]);
+
+            return null;
         }
 
-        Craft::$app->getSession()->setError(Craft::t('app', 'Couldn’t save the site.'));
+        Craft::$app->getSession()->setNotice(Craft::t('app', 'Site saved.'));
 
-        // Send the site back to the template
-        Craft::$app->getUrlManager()->setRouteParams([
-            'site' => $site
-        ]);
-
-        return null;
+        return $this->redirectToPostedUrl($site);
     }
 
     /**

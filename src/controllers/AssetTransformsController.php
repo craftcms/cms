@@ -104,6 +104,7 @@ class AssetTransformsController extends Controller
             $transform->format = null;
         }
 
+        // TODO: This validation should be handled on the transform object
         $errors = false;
 
         $session = Craft::$app->getSession();
@@ -127,22 +128,23 @@ class AssetTransformsController extends Controller
         }
 
         if (!$errors) {
-            // Did it save?
-            if (Craft::$app->getAssetTransforms()->saveTransform($transform)) {
-                $session->setNotice(Craft::t('app', 'Transform saved.'));
-
-                return $this->redirectToPostedUrl($transform);
-            }
-
-            $session->setError(Craft::t('app', 'Couldn’t save transform.'));
+            $success = Craft::$app->getAssetTransforms()->saveTransform($transform);
+        } else {
+            $success = false;
         }
 
-        // Send the transform back to the template
-        Craft::$app->getUrlManager()->setRouteParams([
-            'transform' => $transform
-        ]);
+        if (!$success) {
+            // Send the transform back to the template
+            Craft::$app->getUrlManager()->setRouteParams([
+                'transform' => $transform
+            ]);
 
-        return null;
+            return null;
+        }
+
+        $session->setNotice(Craft::t('app', 'Transform saved.'));
+
+        return $this->redirectToPostedUrl($transform);
     }
 
     /**

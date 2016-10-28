@@ -194,20 +194,20 @@ class SectionsController extends Controller
         $section->setSiteSettings($allSiteSettings);
 
         // Save it
-        if (Craft::$app->getSections()->saveSection($section)) {
-            Craft::$app->getSession()->setNotice(Craft::t('app', 'Section saved.'));
+        if (!Craft::$app->getSections()->saveSection($section)) {
+            Craft::$app->getSession()->setError(Craft::t('app', 'Couldn’t save section.'));
 
-            return $this->redirectToPostedUrl($section);
+            // Send the section back to the template
+            Craft::$app->getUrlManager()->setRouteParams([
+                'section' => $section
+            ]);
+
+            return null;
         }
 
-        Craft::$app->getSession()->setError(Craft::t('app', 'Couldn’t save section.'));
+        Craft::$app->getSession()->setNotice(Craft::t('app', 'Section saved.'));
 
-        // Send the section back to the template
-        Craft::$app->getUrlManager()->setRouteParams([
-            'section' => $section
-        ]);
-
-        return null;
+        return $this->redirectToPostedUrl($section);
     }
 
     /**
@@ -379,20 +379,20 @@ class SectionsController extends Controller
         $entryType->setFieldLayout($fieldLayout);
 
         // Save it
-        if (Craft::$app->getSections()->saveEntryType($entryType)) {
-            Craft::$app->getSession()->setNotice(Craft::t('app', 'Entry type saved.'));
+        if (!Craft::$app->getSections()->saveEntryType($entryType)) {
+            Craft::$app->getSession()->setError(Craft::t('app', 'Couldn’t save entry type.'));
 
-            return $this->redirectToPostedUrl($entryType);
+            // Send the entry type back to the template
+            Craft::$app->getUrlManager()->setRouteParams([
+                'entryType' => $entryType
+            ]);
+
+            return null;
         }
 
-        Craft::$app->getSession()->setError(Craft::t('app', 'Couldn’t save entry type.'));
+        Craft::$app->getSession()->setNotice(Craft::t('app', 'Entry type saved.'));
 
-        // Send the entry type back to the template
-        Craft::$app->getUrlManager()->setRouteParams([
-            'entryType' => $entryType
-        ]);
-
-        return null;
+        return $this->redirectToPostedUrl($entryType);
     }
 
     /**

@@ -62,20 +62,20 @@ class GlobalsController extends Controller
         $globalSet->setFieldLayout($fieldLayout);
 
         // Save it
-        if (Craft::$app->getGlobals()->saveSet($globalSet)) {
-            Craft::$app->getSession()->setNotice(Craft::t('app', 'Global set saved.'));
+        if (!Craft::$app->getGlobals()->saveSet($globalSet)) {
+            Craft::$app->getSession()->setError(Craft::t('app', 'Couldn’t save global set.'));
 
-            return $this->redirectToPostedUrl($globalSet);
+            // Send the global set back to the template
+            Craft::$app->getUrlManager()->setRouteParams([
+                'globalSet' => $globalSet
+            ]);
+
+            return null;
         }
 
-        Craft::$app->getSession()->setError(Craft::t('app', 'Couldn’t save global set.'));
+        Craft::$app->getSession()->setNotice(Craft::t('app', 'Global set saved.'));
 
-        // Send the global set back to the template
-        Craft::$app->getUrlManager()->setRouteParams([
-            'globalSet' => $globalSet
-        ]);
-
-        return null;
+        return $this->redirectToPostedUrl($globalSet);
     }
 
     /**
@@ -194,19 +194,19 @@ class GlobalsController extends Controller
 
         $globalSet->setFieldValuesFromRequest('fields');
 
-        if (Craft::$app->getElements()->saveElement($globalSet)) {
-            Craft::$app->getSession()->setNotice(Craft::t('app', 'Globals saved.'));
+        if (!Craft::$app->getElements()->saveElement($globalSet)) {
+            Craft::$app->getSession()->setError(Craft::t('app', 'Couldn’t save globals.'));
 
-            return $this->redirectToPostedUrl();
+            // Send the global set back to the template
+            Craft::$app->getUrlManager()->setRouteParams([
+                'globalSet' => $globalSet,
+            ]);
+
+            return null;
         }
 
-        Craft::$app->getSession()->setError(Craft::t('app', 'Couldn’t save globals.'));
+        Craft::$app->getSession()->setNotice(Craft::t('app', 'Globals saved.'));
 
-        // Send the global set back to the template
-        Craft::$app->getUrlManager()->setRouteParams([
-            'globalSet' => $globalSet,
-        ]);
-
-        return null;
+        return $this->redirectToPostedUrl();
     }
 }

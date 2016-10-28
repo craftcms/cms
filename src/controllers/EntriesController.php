@@ -463,43 +463,43 @@ class EntriesController extends BaseEntriesController
         }
 
         // Save the entry (finally!)
-        if (Craft::$app->getElements()->saveElement($entry)) {
+        if (!Craft::$app->getElements()->saveElement($entry)) {
             if ($request->getAcceptsJson()) {
-                $return['success'] = true;
-                $return['id'] = $entry->id;
-                $return['title'] = $entry->title;
-
-                if (!$request->getIsConsoleRequest() && $request->getIsCpRequest()) {
-                    $return['cpEditUrl'] = $entry->getCpEditUrl();
-                }
-
-                $return['authorUsername'] = $entry->getAuthor()->username;
-                $return['dateCreated'] = DateTimeHelper::toIso8601($entry->dateCreated);
-                $return['dateUpdated'] = DateTimeHelper::toIso8601($entry->dateUpdated);
-                $return['postDate'] = ($entry->postDate ? DateTimeHelper::toIso8601($entry->postDate) : null);
-
-                return $this->asJson($return);
+                return $this->asJson([
+                    'errors' => $entry->getErrors(),
+                ]);
             }
 
-            Craft::$app->getSession()->setNotice(Craft::t('app', 'Entry saved.'));
+            Craft::$app->getSession()->setError(Craft::t('app', 'Couldn’t save entry.'));
 
-            return $this->redirectToPostedUrl($entry);
+            // Send the entry back to the template
+            Craft::$app->getUrlManager()->setRouteParams([
+                'entry' => $entry
+            ]);
+
+            return null;
         }
 
         if ($request->getAcceptsJson()) {
-            return $this->asJson([
-                'errors' => $entry->getErrors(),
-            ]);
+            $return['success'] = true;
+            $return['id'] = $entry->id;
+            $return['title'] = $entry->title;
+
+            if (!$request->getIsConsoleRequest() && $request->getIsCpRequest()) {
+                $return['cpEditUrl'] = $entry->getCpEditUrl();
+            }
+
+            $return['authorUsername'] = $entry->getAuthor()->username;
+            $return['dateCreated'] = DateTimeHelper::toIso8601($entry->dateCreated);
+            $return['dateUpdated'] = DateTimeHelper::toIso8601($entry->dateUpdated);
+            $return['postDate'] = ($entry->postDate ? DateTimeHelper::toIso8601($entry->postDate) : null);
+
+            return $this->asJson($return);
         }
 
-        Craft::$app->getSession()->setError(Craft::t('app', 'Couldn’t save entry.'));
+        Craft::$app->getSession()->setNotice(Craft::t('app', 'Entry saved.'));
 
-        // Send the entry back to the template
-        Craft::$app->getUrlManager()->setRouteParams([
-            'entry' => $entry
-        ]);
-
-        return null;
+        return $this->redirectToPostedUrl($entry);
     }
 
     /**
@@ -528,29 +528,28 @@ class EntriesController extends BaseEntriesController
             $this->requirePermission('deletePeerEntries:'.$entry->sectionId);
         }
 
-        if (Craft::$app->getElements()->deleteElement($entry)) {
+        if (!Craft::$app->getElements()->deleteElement($entry)) {
             if (Craft::$app->getRequest()->getAcceptsJson()) {
-                return $this->asJson(['success' => true]);
+                return $this->asJson(['success' => false]);
             }
 
-            Craft::$app->getSession()->setNotice(Craft::t('app', 'Entry deleted.'));
+            Craft::$app->getSession()->setError(Craft::t('app', 'Couldn’t delete entry.'));
 
-            return $this->redirectToPostedUrl($entry);
+            // Send the entry back to the template
+            Craft::$app->getUrlManager()->setRouteParams([
+                'entry' => $entry
+            ]);
+
+            return null;
         }
 
         if (Craft::$app->getRequest()->getAcceptsJson()) {
-            return $this->asJson(['success' => false]);
+            return $this->asJson(['success' => true]);
         }
 
-        Craft::$app->getSession()->setError(Craft::t('app', 'Couldn’t delete entry.'));
+        Craft::$app->getSession()->setNotice(Craft::t('app', 'Entry deleted.'));
 
-        // Send the entry back to the template
-        Craft::$app->getUrlManager()->setRouteParams([
-            'entry' => $entry
-        ]);
-
-
-        return null;
+        return $this->redirectToPostedUrl($entry);
     }
 
     /**

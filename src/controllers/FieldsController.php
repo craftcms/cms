@@ -246,20 +246,20 @@ class FieldsController extends Controller
             'settings' => $request->getBodyParam('types.'.$type),
         ]);
 
-        if ($fieldsService->saveField($field)) {
-            Craft::$app->getSession()->setNotice(Craft::t('app', 'Field saved.'));
+        if (!$fieldsService->saveField($field)) {
+            Craft::$app->getSession()->setError(Craft::t('app', 'Couldn’t save field.'));
 
-            return $this->redirectToPostedUrl($field);
+            // Send the field back to the template
+            Craft::$app->getUrlManager()->setRouteParams([
+                'field' => $field
+            ]);
+
+            return null;
         }
 
-        Craft::$app->getSession()->setError(Craft::t('app', 'Couldn’t save field.'));
+        Craft::$app->getSession()->setNotice(Craft::t('app', 'Field saved.'));
 
-        // Send the field back to the template
-        Craft::$app->getUrlManager()->setRouteParams([
-            'field' => $field
-        ]);
-
-        return null;
+        return $this->redirectToPostedUrl($field);
     }
 
     /**

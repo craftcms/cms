@@ -85,21 +85,20 @@ class EntryRevisionsController extends BaseEntriesController
             }
         }
 
-        if ($draft->id && Craft::$app->getEntryRevisions()->saveDraft($draft)) {
-            Craft::$app->getSession()->setNotice(Craft::t('app', 'Draft saved.'));
+        if (!$draft->id || !Craft::$app->getEntryRevisions()->saveDraft($draft)) {
+            Craft::$app->getSession()->setError(Craft::t('app', 'Couldn’t save draft.'));
 
-            return $this->redirectToPostedUrl($draft);
+            // Send the draft back to the template
+            Craft::$app->getUrlManager()->setRouteParams([
+                'entry' => $draft
+            ]);
+
+            return null;
         }
 
-        Craft::$app->getSession()->setError(Craft::t('app', 'Couldn’t save draft.'));
+        Craft::$app->getSession()->setNotice(Craft::t('app', 'Draft saved.'));
 
-        // Send the draft back to the template
-        Craft::$app->getUrlManager()->setRouteParams([
-            'entry' => $draft
-        ]);
-
-
-        return null;
+        return $this->redirectToPostedUrl($draft);
     }
 
     /**
@@ -221,21 +220,20 @@ class EntryRevisionsController extends BaseEntriesController
         $draft->setFieldValuesFromRequest($fieldsLocation);
 
         // Publish the draft (finally!)
-        if (Craft::$app->getEntryRevisions()->publishDraft($draft)) {
-            Craft::$app->getSession()->setNotice(Craft::t('app', 'Draft published.'));
+        if (!Craft::$app->getEntryRevisions()->publishDraft($draft)) {
+            Craft::$app->getSession()->setError(Craft::t('app', 'Couldn’t publish draft.'));
 
-            return $this->redirectToPostedUrl($draft);
+            // Send the draft back to the template
+            Craft::$app->getUrlManager()->setRouteParams([
+                'entry' => $draft
+            ]);
+
+            return null;
         }
 
-        Craft::$app->getSession()->setError(Craft::t('app', 'Couldn’t publish draft.'));
+        Craft::$app->getSession()->setNotice(Craft::t('app', 'Draft published.'));
 
-        // Send the draft back to the template
-        Craft::$app->getUrlManager()->setRouteParams([
-            'entry' => $draft
-        ]);
-
-
-        return null;
+        return $this->redirectToPostedUrl($draft);
     }
 
     /**
@@ -282,21 +280,20 @@ class EntryRevisionsController extends BaseEntriesController
         }
 
         // Revert to the version
-        if (Craft::$app->getEntryRevisions()->revertEntryToVersion($version)) {
-            Craft::$app->getSession()->setNotice(Craft::t('app', 'Entry reverted to past version.'));
+        if (!Craft::$app->getEntryRevisions()->revertEntryToVersion($version)) {
+            Craft::$app->getSession()->setError(Craft::t('app', 'Couldn’t revert entry to past version.'));
 
-            return $this->redirectToPostedUrl($version);
+            // Send the version back to the template
+            Craft::$app->getUrlManager()->setRouteParams([
+                'entry' => $version
+            ]);
+
+            return null;
         }
 
-        Craft::$app->getSession()->setError(Craft::t('app', 'Couldn’t revert entry to past version.'));
+        Craft::$app->getSession()->setNotice(Craft::t('app', 'Entry reverted to past version.'));
 
-        // Send the version back to the template
-        Craft::$app->getUrlManager()->setRouteParams([
-            'entry' => $version
-        ]);
-
-
-        return null;
+        return $this->redirectToPostedUrl($version);
     }
 
     // Private Methods

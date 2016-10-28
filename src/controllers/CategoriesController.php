@@ -167,21 +167,20 @@ class CategoriesController extends Controller
         $group->setFieldLayout($fieldLayout);
 
         // Save it
-        if (Craft::$app->getCategories()->saveGroup($group)) {
-            Craft::$app->getSession()->setNotice(Craft::t('app', 'Category group saved.'));
+        if (!Craft::$app->getCategories()->saveGroup($group)) {
+            Craft::$app->getSession()->setError(Craft::t('app', 'Couldn’t save the category group.'));
 
-            return $this->redirectToPostedUrl($group);
+            // Send the category group back to the template
+            Craft::$app->getUrlManager()->setRouteParams([
+                'categoryGroup' => $group
+            ]);
+
+            return null;
         }
 
-        Craft::$app->getSession()->setError(Craft::t('app', 'Couldn’t save the category group.'));
+        Craft::$app->getSession()->setNotice(Craft::t('app', 'Category group saved.'));
 
-
-        // Send the category group back to the template
-        Craft::$app->getUrlManager()->setRouteParams([
-            'categoryGroup' => $group
-        ]);
-
-        return null;
+        return $this->redirectToPostedUrl($group);
     }
 
     /**
@@ -426,42 +425,42 @@ class CategoriesController extends Controller
         $this->_populateCategoryModel($category);
 
         // Save the category
-        if (Craft::$app->getElements()->saveElement($category)) {
-            if (Craft::$app->getRequest()->getAcceptsJson()) {
-                $return['success'] = true;
-                $return['title'] = $category->title;
-                $return['cpEditUrl'] = $category->getCpEditUrl();
-
-                return $this->asJson([
-                    'success' => true,
-                    'id' => $category->id,
-                    'title' => $category->title,
-                    'status' => $category->getStatus(),
-                    'url' => $category->getUrl(),
-                    'cpEditUrl' => $category->getCpEditUrl()
-                ]);
-            } else {
-                Craft::$app->getSession()->setNotice(Craft::t('app', 'Category saved.'));
-
-                return $this->redirectToPostedUrl($category);
-            }
-        } else {
+        if (!Craft::$app->getElements()->saveElement($category)) {
             if (Craft::$app->getRequest()->getAcceptsJson()) {
                 return $this->asJson([
                     'success' => false,
                     'errors' => $category->getErrors(),
                 ]);
-            } else {
-                Craft::$app->getSession()->setError(Craft::t('app', 'Couldn’t save category.'));
-
-                // Send the category back to the template
-                Craft::$app->getUrlManager()->setRouteParams([
-                    'category' => $category
-                ]);
             }
+
+            Craft::$app->getSession()->setError(Craft::t('app', 'Couldn’t save category.'));
+
+            // Send the category back to the template
+            Craft::$app->getUrlManager()->setRouteParams([
+                'category' => $category
+            ]);
+
+            return null;
         }
 
-        return null;
+        if (Craft::$app->getRequest()->getAcceptsJson()) {
+            $return['success'] = true;
+            $return['title'] = $category->title;
+            $return['cpEditUrl'] = $category->getCpEditUrl();
+
+            return $this->asJson([
+                'success' => true,
+                'id' => $category->id,
+                'title' => $category->title,
+                'status' => $category->getStatus(),
+                'url' => $category->getUrl(),
+                'cpEditUrl' => $category->getCpEditUrl()
+            ]);
+        }
+
+        Craft::$app->getSession()->setNotice(Craft::t('app', 'Category saved.'));
+
+        return $this->redirectToPostedUrl($category);
     }
 
     /**
@@ -485,29 +484,28 @@ class CategoriesController extends Controller
         $this->requirePermission('editCategories:'.$category->groupId);
 
         // Delete it
-        if (Craft::$app->getElements()->deleteElement($category)) {
+        if (!Craft::$app->getElements()->deleteElement($category)) {
             if (Craft::$app->getRequest()->getAcceptsJson()) {
-                return $this->asJson(['success' => true]);
+                return $this->asJson(['success' => false]);
             }
 
-            Craft::$app->getSession()->setNotice(Craft::t('app', 'Category deleted.'));
+            Craft::$app->getSession()->setError(Craft::t('app', 'Couldn’t delete category.'));
 
-            return $this->redirectToPostedUrl($category);
+            // Send the category back to the template
+            Craft::$app->getUrlManager()->setRouteParams([
+                'category' => $category
+            ]);
+
+            return null;
         }
 
         if (Craft::$app->getRequest()->getAcceptsJson()) {
-            return $this->asJson(['success' => false]);
+            return $this->asJson(['success' => true]);
         }
 
-        Craft::$app->getSession()->setError(Craft::t('app', 'Couldn’t delete category.'));
+        Craft::$app->getSession()->setNotice(Craft::t('app', 'Category deleted.'));
 
-        // Send the category back to the template
-        Craft::$app->getUrlManager()->setRouteParams([
-            'category' => $category
-        ]);
-
-
-        return null;
+        return $this->redirectToPostedUrl($category);
     }
 
     /**
