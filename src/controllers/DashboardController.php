@@ -581,7 +581,7 @@ class DashboardController extends Controller
                 'footHtml' => $view->getBodyHtml(),
             ]);
         } else {
-            $errors = $widget->getAllErrors();
+            $errors = $widget->getFlattenedErrors();
 
             foreach ($widget->getErrors() as $attribute => $attributeErrors) {
                 $errors = array_merge($errors, $attributeErrors);

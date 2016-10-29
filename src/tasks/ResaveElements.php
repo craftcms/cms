@@ -89,7 +89,7 @@ class ResaveElements extends Task
             if (!Craft::$app->getElements()->saveElement($element, false)) {
                 $error = 'Encountered the following validation errors when trying to save '.get_class($element).' element "'.$element.'" with the ID "'.$element->id.'":';
 
-                foreach ($element->getAllErrors() as $attributeError) {
+                foreach ($element->getFlattenedErrors() as $attributeError) {
                     $error .= "\n - {$attributeError}";
                 }
 

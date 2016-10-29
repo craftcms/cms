@@ -119,11 +119,11 @@ abstract class Model extends \yii\base\Model
     }
 
     /**
-     * Returns all errors in a single list.
+     * Returns all errors flattened into a single list.
      *
      * @return array
      */
-    public function getAllErrors()
+    public function getFlattenedErrors()
     {
         $errors = [];
 
