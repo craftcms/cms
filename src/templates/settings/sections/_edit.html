@@ -62,7 +62,11 @@
 
 	{% for site in craft.app.sites.getAllSites() %}
 		{% set siteSettings = section.siteSettings[site.id] ?? null %}
-		{% set siteErrors = siteErrors|merge(siteSettings.getAllErrors() ?? []) %}
+		{% if siteSettings %}
+			{% for attribute, errors in siteSettings.getErrors() %}
+				{% set siteErrors = siteErrors|merge(errors) %}
+			{% endfor %}
+		{% endif %}
 		{% set siteRows = siteRows|merge({
 			(site.handle): {
 				heading: site.name|t('site'),
