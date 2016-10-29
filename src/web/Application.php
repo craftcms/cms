@@ -117,7 +117,7 @@ class Application extends \yii\web\Application
             // In case PHP is already setting one
             Header::removeHeader('X-Powered-By');
         }
-
+        
         // If the system in is maintenance mode and it's a site request, throw a 503.
         if ($this->getIsInMaintenanceMode() && $request->getIsSiteRequest()) {
             $this->_unregisterDebugModule();

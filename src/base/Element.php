@@ -1633,7 +1633,7 @@ abstract class Element extends Component implements ElementInterface
     /**
      * Returns whether custom fields should be validated.
      *
-     * @return bool
+     * @return boolean
      */
     protected function validateCustomFields()
     {

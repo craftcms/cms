@@ -8,8 +8,8 @@
 namespace craft\app\db\pgsql;
 
 use Craft;
-use craft\app\helpers\Db;
 use craft\app\services\Config;
+use mikehaertl\shellcommand\Command as ShellCommand;
 use yii\db\Exception;
 
 /**
@@ -117,5 +117,65 @@ class Schema extends \yii\db\pgsql\Schema
         }
 
         return parent::getLastInsertID($sequenceName);
+    }
+
+    /**
+     * Gets the default backup command to execute.
+     *
+     * @param ShellCommand $command          The command to execute.
+     * @param string       $filePath         The path of the backup file.
+     *
+     * @return ShellCommand The command to execute.
+     */
+    public function getDefaultBackupCommand(ShellCommand $command, $filePath)
+    {
+        $config = Craft::$app->getConfig();
+        $port = $config->getDbPort();
+        $server = $config->get('server', Config::CATEGORY_DB);
+        $user = $config->get('user', Config::CATEGORY_DB);
+        $database = $config->get('database', Config::CATEGORY_DB);
+        $schema = $config->get('schema', Config::CATEGORY_DB);
+
+        $command->setCommand('pg_dump');
+
+        $command->addArg('--dbname=', $database);
+        $command->addArg('--host=', $server);
+        $command->addArg('--port=', $port);
+        $command->addArg('--username=', $user);
+        $command->addArg('--no-password');
+        $command->addArg('--if-exists');
+        $command->addArg('--clean');
+        $command->addArg('--file=', $filePath);
+        $command->addArg('--schema=', $schema);
+
+        return $command;
+    }
+
+    /**
+     * Generates the default database restore command to execute.
+     *
+     * @param ShellCommand $command  The command to execute.
+     * @param string       $filePath The file path of the database backup to restore.
+     *
+     * @return ShellCommand The command to execute.
+     */
+    public function getDefaultRestoreCommand(ShellCommand $command, $filePath)
+    {
+        $config = Craft::$app->getConfig();
+        $port = $config->getDbPort();
+        $server = $config->get('server', Config::CATEGORY_DB);
+        $user = $config->get('user', Config::CATEGORY_DB);
+        $database = $config->get('database', Config::CATEGORY_DB);
+
+        $command->setCommand('psql');
+
+        $command->addArg('--dbname=', $database);
+        $command->addArg('--host=', $server);
+        $command->addArg('--port=', $port);
+        $command->addArg('--username=', $user);
+        $command->addArg('--no-password');
+        $command->addArg('< ', $filePath);
+
+        return $command;
     }
 }

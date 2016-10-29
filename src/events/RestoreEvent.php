@@ -8,18 +8,18 @@
 namespace craft\app\events;
 
 /**
- * DB backup event class.
+ * Restore event class.
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since  3.0
  */
-class DbBackupEvent extends Event
+class RestoreEvent extends Event
 {
     // Properties
     // =========================================================================
 
     /**
-     * @var string The file path to the backup
+     * @var string The file path to the backup to restore.
      */
     public $filePath;
 }

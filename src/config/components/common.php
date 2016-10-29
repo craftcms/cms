@@ -197,18 +197,7 @@ return [
                 $dsn = $driver.':unix_socket='.strtolower($unixSocket).';dbname='.$database.';';
             } else {
                 $server = $configService->get('server', Config::CATEGORY_DB);
-                $port = $configService->get('port', Config::CATEGORY_DB);
-
-                if ($port === '') {
-                    switch ($driver) {
-                        case Connection::DRIVER_MYSQL:
-                            $port = 3306;
-                            break;
-                        case Connection::DRIVER_PGSQL:
-                            $port = 5432;
-                            break;
-                    }
-                }
+                $port = $configService->getDbPort();
 
                 $dsn = $driver.':host='.strtolower($server).
                     ';dbname='.$database.

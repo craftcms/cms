@@ -43,7 +43,8 @@
         "pixelandtonic/flysystem-google-cloud": "1.0",
         "pclzip/pclzip": "2.8.2",
         "fxp/composer-asset-plugin": "1.2.0",
-        "php-http/guzzle6-adapter": "^1.1"
+        "php-http/guzzle6-adapter": "^1.1",
+        "mikehaertl/php-shellcommand": "1.2.2"
     },
     "autoload": {
         "psr-4": {

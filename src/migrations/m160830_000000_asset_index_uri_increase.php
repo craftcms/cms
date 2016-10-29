@@ -13,7 +13,7 @@ class m160830_000000_asset_index_uri_increase extends Migration
     /**
      * Any migration code in here is wrapped inside of a transaction.
      *
-     * @return bool
+     * @return boolean
      */
     public function safeUp()
     {

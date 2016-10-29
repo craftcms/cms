@@ -8,7 +8,10 @@
 namespace craft\app\db\mysql;
 
 use Craft;
-use craft\app\helpers\Db;
+use craft\app\errors\DbBackupException;
+use craft\app\helpers\Io;
+use craft\app\services\Config;
+use mikehaertl\shellcommand\Command as ShellCommand;
 use yii\db\Exception;
 
 /**
@@ -122,5 +125,81 @@ class Schema extends \yii\db\mysql\Schema
     public function createColumnSchemaBuilder($type, $length = null)
     {
         return new ColumnSchemaBuilder($type, $length, $this->db);
+    }
+
+    /**
+     * Gets the default backup command to execute.
+     *
+     * @param ShellCommand $command  The command to execute.
+     * @param string       $filePath The path of the backup file.
+     *
+     * @return ShellCommand The command to execute.
+     * @throws DbBackupException
+     */
+    public function getDefaultBackupCommand(ShellCommand $command, $filePath)
+    {
+        $config = Craft::$app->getConfig();
+        $port = $config->getDbPort();
+        $server = $config->get('server', Config::CATEGORY_DB);
+        $user = $config->get('user', Config::CATEGORY_DB);
+        $database = $config->get('database', Config::CATEGORY_DB);
+        $password = $config->get('password', Config::CATEGORY_DB);
+
+        $tempConnectFile = Craft::$app->getPath()->getTempPath().'/my.cnf';
+        $contents = "[client]".PHP_EOL."user={$user}".PHP_EOL."password={$password}".PHP_EOL."host={$server}".PHP_EOL."port={$port}";
+
+        if (!Io::writeToFile($tempConnectFile, $contents)) {
+            throw new DbBackupException('Could not write the my.cnf file for mysqldump to use to connect to the database.');
+        }
+
+        $command->setCommand('/Applications/MAMP/Library/bin/mysqldump');
+
+        $command->addArg('--defaults-extra-file=', $tempConnectFile);
+        $command->addArg('--add-drop-table');
+        $command->addArg('--comments');
+        $command->addArg('--create-options');
+        $command->addArg('--dump-date');
+        $command->addArg('--no-autocommit');
+        $command->addArg('--routines');
+        $command->addArg('--set-charset');
+        $command->addArg('--triggers');
+        $command->addArg('--result-file=', $filePath);
+        $command->addArg($database);
+
+        return $command;
+    }
+
+    /**
+     * Generates the default database restore command to execute.
+     *
+     * @param ShellCommand $command  The command to execute.
+     * @param string       $filePath The file path of the database backup to restore.
+     *
+     * @return ShellCommand The command to execute.
+     * @throws DbBackupException
+     */
+    public function getDefaultRestoreCommand(ShellCommand $command, $filePath)
+    {
+        $config = Craft::$app->getConfig();
+        $port = $config->getDbPort();
+        $server = $config->get('server', Config::CATEGORY_DB);
+        $user = $config->get('user', Config::CATEGORY_DB);
+        $database = $config->get('database', Config::CATEGORY_DB);
+        $password = $config->get('password', Config::CATEGORY_DB);
+
+        $tempConnectFile = Craft::$app->getPath()->getTempPath().'/my.cnf';
+        $contents = "[client]".PHP_EOL."user={$user}".PHP_EOL."password={$password}".PHP_EOL."host={$server}".PHP_EOL."port={$port}";
+
+        if (!Io::writeToFile($tempConnectFile, $contents)) {
+            throw new DbBackupException('Could not write the my.cnf file for mysqldump to use to connect to the database.');
+        }
+
+        $command->setCommand('/Applications/MAMP/Library/bin/mysqldump');
+
+        $command->addArg('--defaults-extra-file=', $tempConnectFile);
+        $command->addArg($database);
+        $command->addArg('< ', $filePath);
+
+        return $command;
     }
 }

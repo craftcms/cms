@@ -4,8 +4,8 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#composer-lock-the-lock-file",
         "This file is @generated automatically"
     ],
-    "hash": "7d093c9308519783d66bf9d6408794fa",
-    "content-hash": "5323a0ed3dffb934c0c531a44fe985d2",
+    "hash": "7a5c8c945c213a0ba5ecd75a0444a0e7",
+    "content-hash": "31533914967e1839f382920d15048fa0",
     "packages": [
         {
             "name": "aws/aws-sdk-php",
@@ -1110,6 +1110,42 @@
             "time": "2016-07-18 21:40:02"
         },
         {
+            "name": "mikehaertl/php-shellcommand",
+            "version": "1.2.2",
+            "source": {
+                "type": "git",
+                "url": "https://github.com/mikehaertl/php-shellcommand.git",
+                "reference": "0de4e2cce17936ec7cef60a62c722a4aaa56c18c"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://api.github.com/repos/mikehaertl/php-shellcommand/zipball/0de4e2cce17936ec7cef60a62c722a4aaa56c18c",
+                "reference": "0de4e2cce17936ec7cef60a62c722a4aaa56c18c",
+                "shasum": ""
+            },
+            "type": "library",
+            "autoload": {
+                "psr-4": {
+                    "mikehaertl\\shellcommand\\": "src/"
+                }
+            },
+            "notification-url": "https://packagist.org/downloads/",
+            "license": [
+                "MIT"
+            ],
+            "authors": [
+                {
+                    "name": "Michael Härtl",
+                    "email": "haertl.mike@gmail.com"
+                }
+            ],
+            "description": "An object oriented interface to shell commands",
+            "keywords": [
+                "shell"
+            ],
+            "time": "2016-07-16 09:42:31"
+        },
+        {
             "name": "mikemccabe/json-patch-php",
             "version": "0.1.0",
             "source": {
@@ -2043,12 +2079,12 @@
             "source": {
                 "type": "git",
                 "url": "https://github.com/yiisoft/yii2-debug.git",
-                "reference": "4f8de2192fe354c8b903a083fcdcc3d1ddaccc8c"
+                "reference": "99f2f9275674a3b461632268adc78e90f2e9b29d"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/yiisoft/yii2-debug/zipball/4f8de2192fe354c8b903a083fcdcc3d1ddaccc8c",
-                "reference": "4f8de2192fe354c8b903a083fcdcc3d1ddaccc8c",
+                "url": "https://api.github.com/repos/yiisoft/yii2-debug/zipball/99f2f9275674a3b461632268adc78e90f2e9b29d",
+                "reference": "99f2f9275674a3b461632268adc78e90f2e9b29d",
                 "shasum": ""
             },
             "require": {
@@ -2082,7 +2118,7 @@
                 "debugger",
                 "yii2"
             ],
-            "time": "2016-10-13 20:17:27"
+            "time": "2016-10-26 16:39:50"
         },
         {
             "name": "yiisoft/yii2-httpclient",
