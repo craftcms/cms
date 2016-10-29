@@ -27,7 +27,6 @@ class m160807_144858_sites extends Migration
         ['{{%categorygroups_i18n}}', 'siteId', true, 'locale'],
         ['{{%content}}', 'siteId', true, 'locale'],
         ['{{%elements_i18n}}', 'siteId', true, 'locale'],
-        ['{{%emailmessages}}', 'siteId', true, 'locale'],
         ['{{%entrydrafts}}', 'siteId', true, 'locale'],
         ['{{%entryversions}}', 'siteId', true, 'locale'],
         ['{{%matrixblocks}}', 'ownerSiteId', false, 'ownerLocale'],
@@ -86,16 +85,18 @@ class m160807_144858_sites extends Migration
 
         $siteIdsByLocale = [];
         $this->caseSql = 'case';
+        $languageCaseSql = 'case';
         $localePermissions = [];
         $permissionsCaseSql = 'case';
 
         foreach ($locales as $i => $locale) {
             $siteHandle = $this->locale2handle($locale);
+            $language = $this->locale2language($locale);
 
             $this->insert('{{%sites}}', [
                 'name' => $siteInfo['siteName'],
                 'handle' => $siteHandle,
-                'language' => $this->locale2language($locale),
+                'language' => $language,
                 'hasUrls' => 1,
                 'baseUrl' => $siteInfo['siteUrl'],
                 'sortOrder' => $i + 1,
@@ -105,14 +106,16 @@ class m160807_144858_sites extends Migration
             $siteIdsByLocale[$locale] = $siteId;
 
             $this->caseSql .= ' when % = '.$this->db->quoteValue($locale).' then '.$this->db->quoteValue($siteId);
+            $languageCaseSql .= ' when [[language]] = '.$this->db->quoteValue($locale).' then '.$this->db->quoteValue($language);
 
             $localePermission = 'editlocale:'.$locale;
             $sitePermission = 'editsite:'.$siteId;
             $localePermissions[] = $localePermission;
-            $permissionsCaseSql .= ' when % = '.$this->db->quoteValue($localePermission).' then '.$this->db->quoteValue($sitePermission);
+            $permissionsCaseSql .= ' when [[name]] = '.$this->db->quoteValue($localePermission).' then '.$this->db->quoteValue($sitePermission);
         }
 
         $this->caseSql .= ' end';
+        $languageCaseSql .= ' end';
         $permissionsCaseSql .= ' end';
 
         // Update the user permissions
@@ -121,7 +124,7 @@ class m160807_144858_sites extends Migration
         $this->update(
             '{{%userpermissions}}',
             [
-                'name' => new Expression(str_replace('%', $this->db->quoteColumnName('name'), $permissionsCaseSql)),
+                'name' => new Expression($permissionsCaseSql),
             ],
             ['name' => $localePermissions],
             [],
@@ -146,8 +149,6 @@ class m160807_144858_sites extends Migration
         $this->createIndex($this->db->getIndexName('{{%elements_i18n}}', 'uri,siteId', true), '{{%elements_i18n}}', 'uri,siteId', true);
         $this->createIndex($this->db->getIndexName('{{%elements_i18n}}', 'siteId', false), '{{%elements_i18n}}', 'siteId', false);
         $this->createIndex($this->db->getIndexName('{{%elements_i18n}}', 'slug,siteId', false), '{{%elements_i18n}}', 'slug,siteId', false);
-        $this->createIndex($this->db->getIndexName('{{%emailmessages}}', 'key,siteId', true), '{{%emailmessages}}', 'key,siteId', true);
-        $this->createIndex($this->db->getIndexName('{{%emailmessages}}', 'siteId', false), '{{%emailmessages}}', 'siteId', false);
         $this->createIndex($this->db->getIndexName('{{%entrydrafts}}', 'entryId,siteId', false), '{{%entrydrafts}}', 'entryId,siteId', false);
         $this->createIndex($this->db->getIndexName('{{%entrydrafts}}', 'siteId', false), '{{%entrydrafts}}', 'siteId', false);
         $this->createIndex($this->db->getIndexName('{{%entryversions}}', 'entryId,siteId', false), '{{%entryversions}}', 'entryId,siteId', false);
@@ -167,7 +168,6 @@ class m160807_144858_sites extends Migration
         $this->addForeignKey($this->db->getForeignKeyName('{{%categorygroups_i18n}}', 'siteId'), '{{%categorygroups_i18n}}', 'siteId', '{{%sites}}', 'id', 'CASCADE', 'CASCADE');
         $this->addForeignKey($this->db->getForeignKeyName('{{%content}}', 'siteId'), '{{%content}}', 'siteId', '{{%sites}}', 'id', 'CASCADE', 'CASCADE');
         $this->addForeignKey($this->db->getForeignKeyName('{{%elements_i18n}}', 'siteId'), '{{%elements_i18n}}', 'siteId', '{{%sites}}', 'id', 'CASCADE', 'CASCADE');
-        $this->addForeignKey($this->db->getForeignKeyName('{{%emailmessages}}', 'siteId'), '{{%emailmessages}}', 'siteId', '{{%sites}}', 'id', 'CASCADE', 'CASCADE');
         $this->addForeignKey($this->db->getForeignKeyName('{{%entrydrafts}}', 'siteId'), '{{%entrydrafts}}', 'siteId', '{{%sites}}', 'id', 'CASCADE', 'CASCADE');
         $this->addForeignKey($this->db->getForeignKeyName('{{%entryversions}}', 'siteId'), '{{%entryversions}}', 'siteId', '{{%sites}}', 'id', 'CASCADE', 'CASCADE');
         $this->addForeignKey($this->db->getForeignKeyName('{{%matrixblocks}}', 'ownerSiteId'), '{{%matrixblocks}}', 'ownerSiteId', '{{%sites}}', 'id', 'CASCADE', 'CASCADE');
@@ -188,7 +188,6 @@ class m160807_144858_sites extends Migration
         MigrationHelper::dropForeignKeyIfExists('{{%categorygroups_i18n}}', ['locale'], $this);
         MigrationHelper::dropForeignKeyIfExists('{{%content}}', ['locale'], $this);
         MigrationHelper::dropForeignKeyIfExists('{{%elements_i18n}}', ['locale'], $this);
-        MigrationHelper::dropForeignKeyIfExists('{{%emailmessages}}', ['locale'], $this);
         MigrationHelper::dropForeignKeyIfExists('{{%entrydrafts}}', ['locale'], $this);
         MigrationHelper::dropForeignKeyIfExists('{{%entryversions}}', ['locale'], $this);
         MigrationHelper::dropForeignKeyIfExists('{{%matrixblocks}}', ['ownerLocale'], $this);
@@ -223,11 +222,6 @@ class m160807_144858_sites extends Migration
             'slug',
             'locale'
         ], false, $this);
-        MigrationHelper::dropIndexIfExists('{{%emailmessages}}', [
-            'key',
-            'locale'
-        ], true, $this);
-        MigrationHelper::dropIndexIfExists('{{%emailmessages}}', ['locale'], false, $this);
         MigrationHelper::dropIndexIfExists('{{%entrydrafts}}', [
             'entryId',
             'locale'
@@ -267,6 +261,17 @@ class m160807_144858_sites extends Migration
             list($table, , , $localeColumn) = $columnInfo;
             $this->dropColumn($table, $localeColumn);
         }
+
+        // Email Messages
+        // ---------------------------------------------------------------------
+
+        MigrationHelper::dropForeignKeyIfExists('{{%emailmessages}}', ['locale'], $this);
+        MigrationHelper::renameColumn('{{%emailmessages}}', 'locale', 'language', $this);
+        $this->alterColumn('{{%emailmessages}}', 'language', $this->string()->notNull());
+
+        $this->update('{{%emailmessages}}', [
+            'language' => new Expression($languageCaseSql),
+        ], '', [], false);
 
         // Matrix content tables
         // ---------------------------------------------------------------------
@@ -526,7 +531,7 @@ class m160807_144858_sites extends Migration
 
         // Set the values
         $this->update($table, [
-            $column => new Expression(str_replace('%', $this->db->quoteColumnName($localeColumn), $this->caseSql))
+            $column => new Expression(str_replace('%', "[[{$localeColumn}]]", $this->caseSql))
         ], '', [], false);
 
         if ($isNotNull) {

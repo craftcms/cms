@@ -48,8 +48,8 @@ class EmailMessagesController extends Controller
 
         $request = Craft::$app->getRequest();
         $key = $request->getRequiredBodyParam('key');
-        $siteId = $request->getBodyParam('siteId');
-        $message = Craft::$app->getEmailMessages()->getMessage($key, $siteId);
+        $language = $request->getBodyParam('language');
+        $message = Craft::$app->getEmailMessages()->getMessage($key, $language);
 
         return $this->asJson([
             'body' => Craft::$app->getView()->renderTemplate('settings/email/_message_modal', [
@@ -74,9 +74,9 @@ class EmailMessagesController extends Controller
         $message->body = Craft::$app->getRequest()->getRequiredBodyParam('body');
 
         if (Craft::$app->getIsMultiSite()) {
-            $message->siteId = Craft::$app->getRequest()->getBodyParam('siteId');
+            $message->language = Craft::$app->getRequest()->getBodyParam('language');
         } else {
-            $message->siteId = Craft::$app->getSites()->getPrimarySite()->id;
+            $message->language = Craft::$app->language;
         }
 
         if (Craft::$app->getEmailMessages()->saveMessage($message)) {
