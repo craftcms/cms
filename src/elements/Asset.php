@@ -122,7 +122,7 @@ class Asset extends Element
     /**
      * @inheritdoc
      */
-    public static function getSourceByKey($key, $context = null)
+    public static function source($key, $context = null)
     {
         if (preg_match('/folder:(\d+)(:single)?/', $key, $matches)) {
             $folder = Craft::$app->getAssets()->getFolderById($matches[1]);
@@ -135,7 +135,7 @@ class Asset extends Element
             }
         }
 
-        return parent::getSourceByKey($key, $context);
+        return parent::source($key, $context);
     }
 
     /**

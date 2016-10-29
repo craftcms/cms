@@ -240,7 +240,7 @@ interface ElementInterface extends ComponentInterface
      *
      * @return array|null
      */
-    public static function getSourceByKey($key, $context = null);
+    public static function source($key, $context = null);
 
     /**
      * Returns the available element actions for a given source (if one is provided).

@@ -55,7 +55,7 @@ class ElementsController extends BaseElementsController
             $sources = [];
 
             foreach ($sourceKeys as $key) {
-                $source = $elementType::getSourceByKey($key, $context);
+                $source = $elementType::source($key, $context);
 
                 if ($source) {
                     $sources[$key] = $source;

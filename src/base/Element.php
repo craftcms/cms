@@ -210,7 +210,7 @@ abstract class Element extends Component implements ElementInterface
     /**
      * @inheritdoc
      */
-    public static function getSourceByKey($key, $context = null)
+    public static function source($key, $context = null)
     {
         $contextKey = ($context ? $context : '*');
 
@@ -255,7 +255,7 @@ abstract class Element extends Component implements ElementInterface
 
         // Special case for sorting by structure
         if (isset($viewState['order']) && $viewState['order'] == 'structure') {
-            $source = static::getSourceByKey($sourceKey, $context);
+            $source = static::source($sourceKey, $context);
 
             if (isset($source['structureId'])) {
                 $elementQuery->orderBy(['lft' => SORT_ASC]);

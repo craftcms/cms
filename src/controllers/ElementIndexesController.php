@@ -238,7 +238,7 @@ class ElementIndexesController extends BaseElementsController
     {
         if ($this->_sourceKey) {
             $elementType = $this->_elementType;
-            $source = $elementType::getSourceByKey($this->_sourceKey, $this->_context);
+            $source = $elementType::source($this->_sourceKey, $this->_context);
 
             if (!$source) {
                 // That wasn't a valid source, or the user doesn't have access to it in this context
