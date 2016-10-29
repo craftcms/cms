@@ -8,7 +8,6 @@
 namespace craft\app\db\pgsql;
 
 use Craft;
-use craft\app\helpers\Io;
 use craft\app\services\Config;
 use mikehaertl\shellcommand\Command as ShellCommand;
 use yii\db\Exception;

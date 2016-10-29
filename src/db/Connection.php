@@ -166,6 +166,9 @@ class Connection extends \yii\db\Connection
                 new BackupEvent(['filePath' => $filePath])
             );
 
+            // Nuke any temp connection files that might have been created.
+            Io::clearFolder(Craft::$app->getPath()->getTempPath());
+
             return $filePath;
         } else {
             $errorMessage = $command->getError();
@@ -180,6 +183,9 @@ class Connection extends \yii\db\Connection
 
             Craft::error('Could not perform backup. Error: '.$errorMessage.'. Exit Code:'.$exitCode, __METHOD__);
         }
+
+        // Nuke any temp connection files that might have been created.
+        Io::clearFolder(Craft::$app->getPath()->getTempPath());
 
         return false;
     }
