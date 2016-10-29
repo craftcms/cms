@@ -206,7 +206,7 @@ class Entry extends Element
     /**
      * @inheritdoc
      */
-    public static function getAvailableActions($source = null)
+    public static function actions($source = null)
     {
         // Get the section(s) we need to check permissions on
         switch ($source) {

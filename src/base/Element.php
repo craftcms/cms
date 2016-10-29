@@ -224,7 +224,7 @@ abstract class Element extends Component implements ElementInterface
     /**
      * @inheritdoc
      */
-    public static function getAvailableActions($source = null)
+    public static function actions($source = null)
     {
         return [];
     }

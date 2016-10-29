@@ -118,7 +118,7 @@ class Category extends Element
     /**
      * @inheritdoc
      */
-    public static function getAvailableActions($source = null)
+    public static function actions($source = null)
     {
         // Get the group we need to check permissions on
         if (preg_match('/^group:(\d+)$/', $source, $matches)) {

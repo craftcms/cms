@@ -252,7 +252,7 @@ interface ElementInterface extends ComponentInterface
      *
      * @return array|null The available element actions.
      */
-    public static function getAvailableActions($source = null);
+    public static function actions($source = null);
 
     /**
      * Defines which element attributes should be searchable.

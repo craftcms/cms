@@ -179,7 +179,7 @@ class User extends Element implements IdentityInterface
     /**
      * @inheritdoc
      */
-    public static function getAvailableActions($source = null)
+    public static function actions($source = null)
     {
         $actions = [];
 

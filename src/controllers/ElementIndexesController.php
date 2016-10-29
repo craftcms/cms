@@ -387,7 +387,7 @@ class ElementIndexesController extends BaseElementsController
 
         /** @var Element $elementType */
         $elementType = $this->_elementType;
-        $actions = $elementType::getAvailableActions($this->_sourceKey);
+        $actions = $elementType::actions($this->_sourceKey);
 
         if ($actions) {
             foreach ($actions as $i => $action) {
