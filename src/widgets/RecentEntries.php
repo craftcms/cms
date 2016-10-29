@@ -68,6 +68,17 @@ class RecentEntries extends Widget
     /**
      * @inheritdoc
      */
+    public function rules()
+    {
+        $rules = parent::rules();
+        $rules[] = [['siteId', 'limit'], 'number', 'integerOnly' => true];
+
+        return $rules;
+    }
+
+    /**
+     * @inheritdoc
+     */
     public function getSettingsHtml()
     {
         return Craft::$app->getView()->renderTemplate('_components/widgets/RecentEntries/settings',
@@ -168,9 +179,7 @@ class RecentEntries extends Widget
         $editableSectionIds = $this->_getEditableSectionIds();
         $targetSectionId = $this->section;
 
-        if (!$targetSectionId || $targetSectionId == '*' || !in_array($targetSectionId,
-                $editableSectionIds)
-        ) {
+        if (!$targetSectionId || $targetSectionId == '*' || !in_array($targetSectionId, $editableSectionIds)) {
             $targetSectionId = array_merge($editableSectionIds);
         }
 
