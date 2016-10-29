@@ -12,6 +12,7 @@ use craft\app\elements\Asset;
 use craft\app\errors\SendEmailException;
 use craft\app\errors\UploadFailedException;
 use craft\app\events\LoginFailureEvent;
+use craft\app\events\RegisterUserActionsEvent;
 use craft\app\events\UserTokenEvent;
 use craft\app\helpers\Assets;
 use craft\app\helpers\Image;
@@ -51,6 +52,11 @@ class UsersController extends Controller
      * @event LoginFailureEvent The event that is triggered when a failed login attempt was made
      */
     const EVENT_LOGIN_FAILURE = 'loginFailure';
+
+    /**
+     * @event RegisterUserActionsEvent The event that is triggered when a user’s available actions are being registered
+     */
+    const EVENT_REGISTER_USER_ACTIONS = 'registerUserActions';
 
     // Properties
     // =========================================================================
@@ -546,8 +552,9 @@ class UsersController extends Controller
         // ---------------------------------------------------------------------
 
         $statusActions = [];
-        $loginActions = [];
-        $sketchyActions = [];
+        $sessionActions = [];
+        $destructiveActions = [];
+        $miscActions = [];
 
         if ($edition >= Craft::Client && !$isNewAccount) {
             switch ($user->getStatus()) {
@@ -621,21 +628,21 @@ class UsersController extends Controller
 
             if (!$user->getIsCurrent()) {
                 if (Craft::$app->getUser()->getIsAdmin()) {
-                    $loginActions[] = [
+                    $sessionActions[] = [
                         'action' => 'users/impersonate',
                         'label' => Craft::t('app', 'Login as {user}', ['user' => $user->getName()])
                     ];
                 }
 
                 if (Craft::$app->getUser()->checkPermission('administrateUsers') && $user->getStatus() != User::STATUS_SUSPENDED) {
-                    $sketchyActions[] = [
+                    $destructiveActions[] = [
                         'action' => 'users/suspend-user',
                         'label' => Craft::t('app', 'Suspend')
                     ];
                 }
 
                 if (Craft::$app->getUser()->checkPermission('deleteUsers')) {
-                    $sketchyActions[] = [
+                    $destructiveActions[] = [
                         'id' => 'delete-btn',
                         'label' => Craft::t('app', 'Delete…')
                     ];
@@ -643,27 +650,22 @@ class UsersController extends Controller
             }
         }
 
-        $actions = [];
+        // Give plugins a chance to modify these, or add new ones
+        $event = new RegisterUserActionsEvent([
+            'user' => $user,
+            'statusActions' => $statusActions,
+            'sessionActions' => $sessionActions,
+            'destructiveActions' => $destructiveActions,
+            'miscActions' => $miscActions,
+        ]);
+        $this->trigger(self::EVENT_REGISTER_USER_ACTIONS, $event);
 
-        if ($statusActions) {
-            array_push($actions, $statusActions);
-        }
-
-        // Give plugins a chance to add more actions
-        $pluginActions = Craft::$app->getPlugins()->call('addUserAdministrationOptions',
-            [$user], true);
-
-        if ($pluginActions) {
-            $actions = array_merge($actions, array_values($pluginActions));
-        }
-
-        if ($loginActions) {
-            array_push($actions, $loginActions);
-        }
-
-        if ($sketchyActions) {
-            array_push($actions, $sketchyActions);
-        }
+        $actions = array_filter([
+            $event->statusActions,
+            $event->miscActions,
+            $event->sessionActions,
+            $event->destructiveActions,
+        ]);
 
         // Set the appropriate page title
         // ---------------------------------------------------------------------
