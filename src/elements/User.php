@@ -112,7 +112,7 @@ class User extends Element implements IdentityInterface
      *
      * @return array|null
      */
-    public static function getStatuses()
+    public static function statuses()
     {
         return [
             self::STATUS_ACTIVE => Craft::t('app', 'Active'),

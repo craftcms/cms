@@ -93,7 +93,7 @@ class Entry extends Element
     /**
      * @inheritdoc
      */
-    public static function getStatuses()
+    public static function statuses()
     {
         return [
             self::STATUS_LIVE => Craft::t('app', 'Live'),

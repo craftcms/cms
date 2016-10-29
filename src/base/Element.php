@@ -165,7 +165,7 @@ abstract class Element extends Component implements ElementInterface
     /**
      * @inheritdoc
      */
-    public static function getStatuses()
+    public static function statuses()
     {
         return [
             self::STATUS_ENABLED => Craft::t('app', 'Enabled'),

@@ -54,10 +54,10 @@ interface ElementInterface extends ComponentInterface
      * If this returns `true`, the element index template will show a Status menu by default, and your elements will
      * get status indicator icons next to them.
      *
-     * Use [[getStatuses()]] to customize which statuses the elements might have.
+     * Use [[statuses()]] to customize which statuses the elements might have.
      *
      * @return boolean Whether elements of this type have statuses.
-     * @see getStatuses()
+     * @see statuses()
      */
     public static function hasStatuses();
 
@@ -199,7 +199,7 @@ interface ElementInterface extends ComponentInterface
      * @return string[]|null
      * @see hasStatuses()
      */
-    public static function getStatuses();
+    public static function statuses();
 
     /**
      * Returns the keys of the sources that elements of this type may belong to.
