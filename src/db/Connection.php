@@ -115,36 +115,10 @@ class Connection extends \yii\db\Connection
      * will execute the default database schema specific backup defined in `getDefaultBackupCommand()`, which uses
      * `pg_dump` for PostgreSQL and `mysqldump` for MySQL.
      *
-     * @param array|null $ignoreDataTables If set to an empty array, a full database backup will be performed. If set
-     *                                     to an array of database table names, they will get merged with the default
-     *                                     list of table names whose data is to be ignored during a database backup.
-     *
      * @return boolean|string The file path to the database backup, or false if something went wrong.
      */
-    public function backup($ignoreDataTables = null)
+    public function backup()
     {
-        $defaultIgnoreDataTables = [
-            'assetindexdata',
-            'assettransformindex',
-            'sessions',
-            'templatecaches',
-            'templatecachequeries',
-            'templatecacheelements'
-        ];
-
-        // If it's an empty array, we want every table.
-        if ($ignoreDataTables !== []) {
-            $ignoreDataTables = $ignoreDataTables ?: [];
-            $ignoreDataTables = array_merge($defaultIgnoreDataTables, $ignoreDataTables);
-        }
-
-        // Normalize the ignored table names if there is a table prefix set.
-        if (($tablePrefix = Craft::$app->getConfig()->getDbTablePrefix()) !== '' ) {
-            foreach ($ignoreDataTables as $key => $tableName) {
-                $ignoreDataTables[$key] = $tablePrefix.'_'.$tableName;
-            }
-        }
-
         $currentVersion = 'v'.Craft::$app->version.'.'.Craft::$app->build;
         $siteName = Io::cleanFilename($this->_getFixedSiteName(), true);
         $filename = ($siteName ? $siteName.'_' : '').gmdate('ymd_His').'_'.$currentVersion.'.sql';
@@ -178,7 +152,7 @@ class Connection extends \yii\db\Connection
             $command->setCommand($backupCommand);
         } else {
             // Go with Craft's default.
-            $command = $this->getSchema()->getDefaultBackupCommand($command, $filePath, $ignoreDataTables);
+            $command = $this->getSchema()->getDefaultBackupCommand($command, $filePath);
         }
 
         // Fire a 'beforeCreateBackup' event

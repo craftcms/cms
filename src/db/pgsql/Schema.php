@@ -125,11 +125,10 @@ class Schema extends \yii\db\pgsql\Schema
      *
      * @param ShellCommand $command          The command to execute.
      * @param string       $filePath         The path of the backup file.
-     * @param array        $ignoreDataTables An array of tables to skip backing up the data for.
      *
      * @return ShellCommand The command to execute.
      */
-    public function getDefaultBackupCommand(ShellCommand $command, $filePath, $ignoreDataTables)
+    public function getDefaultBackupCommand(ShellCommand $command, $filePath)
     {
         $config = Craft::$app->getConfig();
         $port = $config->getDbPort();
@@ -149,10 +148,6 @@ class Schema extends \yii\db\pgsql\Schema
         $command->addArg('--clean');
         $command->addArg('--file=', $filePath);
         $command->addArg('--schema=', $schema);
-
-        foreach ($ignoreDataTables as $ignoreDataTable) {
-            $command->addArg('--exclude-table-data=', $ignoreDataTable);
-        }
 
         return $command;
     }
