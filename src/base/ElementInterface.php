@@ -277,7 +277,7 @@ interface ElementInterface extends ComponentInterface
      *
      * @return string[] The element attributes that should be searchable
      */
-    public static function defineSearchableAttributes();
+    public static function searchableAttributes();
 
     /**
      * Returns the element index HTML.
