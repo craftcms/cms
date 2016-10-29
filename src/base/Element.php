@@ -202,7 +202,7 @@ abstract class Element extends Component implements ElementInterface
     /**
      * @inheritdoc
      */
-    public static function getSources($context = null)
+    public static function sources($context = null)
     {
         return false;
     }
@@ -215,7 +215,7 @@ abstract class Element extends Component implements ElementInterface
         $contextKey = ($context ? $context : '*');
 
         if (!isset(self::$_sourcesByContext[$contextKey])) {
-            self::$_sourcesByContext[$contextKey] = static::getSources($context);
+            self::$_sourcesByContext[$contextKey] = static::sources($context);
         }
 
         return static::_findSource($key, self::$_sourcesByContext[$contextKey]);

@@ -101,7 +101,7 @@ class Asset extends Element
     /**
      * @inheritdoc
      */
-    public static function getSources($context = null)
+    public static function sources($context = null)
     {
         if ($context == 'index') {
             $sourceIds = Craft::$app->getVolumes()->getViewableVolumeIds();

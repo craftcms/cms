@@ -72,7 +72,7 @@ class ElementIndexes extends Component
     {
         // Get the currently saved settings
         $settings = $this->getSettings($elementType);
-        $baseSources = $this->_normalizeSources($elementType::getSources('index'));
+        $baseSources = $this->_normalizeSources($elementType::sources('index'));
 
         // Updating the source order?
         if (isset($newSettings['sourceOrder'])) {
@@ -153,7 +153,7 @@ class ElementIndexes extends Component
     public function getSources($elementType, $context = 'index')
     {
         $settings = $this->getSettings($elementType);
-        $baseSources = $this->_normalizeSources($elementType::getSources($context));
+        $baseSources = $this->_normalizeSources($elementType::sources($context));
         $sources = [];
 
         // Should we output the sources in a custom order?

@@ -87,7 +87,7 @@ class Category extends Element
     /**
      * @inheritdoc
      */
-    public static function getSources($context = null)
+    public static function sources($context = null)
     {
         $sources = [];
 

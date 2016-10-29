@@ -230,7 +230,7 @@ interface ElementInterface extends ComponentInterface
      *
      * @return string[]|false The source keys.
      */
-    public static function getSources($context = null);
+    public static function sources($context = null);
 
     /**
      * Returns a source by its key and context.
