@@ -198,8 +198,7 @@ class Entry extends Element
         }
 
         // Allow plugins to modify the sources
-        Craft::$app->getPlugins()->call('modifyEntrySources',
-            [&$sources, $context]);
+        Craft::$app->getPlugins()->call('modifyEntrySources', [&$sources, $context]);
 
         return $sources;
     }
@@ -346,8 +345,7 @@ class Entry extends Element
         }
 
         // Allow plugins to add additional actions
-        $allPluginActions = Craft::$app->getPlugins()->call('addEntryActions',
-            [$source], true);
+        $allPluginActions = Craft::$app->getPlugins()->call('addEntryActions', [$source], true);
 
         foreach ($allPluginActions as $pluginActions) {
             $actions = array_merge($actions, $pluginActions);
@@ -371,8 +369,7 @@ class Entry extends Element
         ];
 
         // Allow plugins to modify the attributes
-        Craft::$app->getPlugins()->call('modifyEntrySortableAttributes',
-            [&$attributes]);
+        Craft::$app->getPlugins()->call('modifyEntrySortableAttributes', [&$attributes]);
 
         return $attributes;
     }

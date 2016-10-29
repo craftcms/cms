@@ -110,8 +110,7 @@ class Category extends Element
         }
 
         // Allow plugins to modify the sources
-        Craft::$app->getPlugins()->call('modifyCategorySources',
-            [&$sources, $context]);
+        Craft::$app->getPlugins()->call('modifyCategorySources', [&$sources, $context]);
 
         return $sources;
     }
@@ -173,8 +172,7 @@ class Category extends Element
         }
 
         // Allow plugins to add additional actions
-        $allPluginActions = Craft::$app->getPlugins()->call('addCategoryActions',
-            [$source], true);
+        $allPluginActions = Craft::$app->getPlugins()->call('addCategoryActions', [$source], true);
 
         foreach ($allPluginActions as $pluginActions) {
             $actions = array_merge($actions, $pluginActions);
@@ -196,8 +194,7 @@ class Category extends Element
         ];
 
         // Allow plugins to modify the attributes
-        Craft::$app->getPlugins()->call('modifyCategorySortableAttributes',
-            [&$attributes]);
+        Craft::$app->getPlugins()->call('modifyCategorySortableAttributes', [&$attributes]);
 
         return $attributes;
     }

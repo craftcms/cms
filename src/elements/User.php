@@ -171,10 +171,7 @@ class User extends Element implements IdentityInterface
         }
 
         // Allow plugins to modify the sources
-        Craft::$app->getPlugins()->call('modifyUserSources', [
-            &$sources,
-            $context
-        ]);
+        Craft::$app->getPlugins()->call('modifyUserSources', [&$sources, $context]);
 
         return $sources;
     }
@@ -206,8 +203,7 @@ class User extends Element implements IdentityInterface
         }
 
         // Allow plugins to add additional actions
-        $allPluginActions = Craft::$app->getPlugins()->call('addUserActions',
-            [$source], true);
+        $allPluginActions = Craft::$app->getPlugins()->call('addUserActions', [$source], true);
 
         foreach ($allPluginActions as $pluginActions) {
             $actions = array_merge($actions, $pluginActions);
@@ -251,8 +247,7 @@ class User extends Element implements IdentityInterface
         }
 
         // Allow plugins to modify the attributes
-        Craft::$app->getPlugins()->call('modifyUserSortableAttributes',
-            [&$attributes]);
+        Craft::$app->getPlugins()->call('modifyUserSortableAttributes', [&$attributes]);
 
         return $attributes;
     }

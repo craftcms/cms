@@ -114,10 +114,7 @@ class Asset extends Element
         $sources = static::_assembleSourceList($tree, $context != 'settings');
 
         // Allow plugins to modify the sources
-        Craft::$app->getPlugins()->call(
-            'modifyAssetSources',
-            [&$sources, $context]
-        );
+        Craft::$app->getPlugins()->call('modifyAssetSources', [&$sources, $context]);
 
         return $sources;
     }
@@ -206,11 +203,7 @@ class Asset extends Element
         }
 
         // Allow plugins to add additional actions
-        $allPluginActions = Craft::$app->getPlugins()->call(
-            'addAssetActions',
-            [$source],
-            true
-        );
+        $allPluginActions = Craft::$app->getPlugins()->call('addAssetActions', [$source], true);
 
         foreach ($allPluginActions as $pluginActions) {
             $actions = array_merge($actions, $pluginActions);
@@ -242,10 +235,7 @@ class Asset extends Element
         ];
 
         // Allow plugins to modify the attributes
-        Craft::$app->getPlugins()->call(
-            'modifyAssetSortableAttributes',
-            [&$attributes]
-        );
+        Craft::$app->getPlugins()->call('modifyAssetSortableAttributes', [&$attributes]);
 
         return $attributes;
     }
