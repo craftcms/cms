@@ -358,7 +358,7 @@ class ElementIndexesController extends BaseElementsController
         $showCheckboxes = !empty($this->_actions);
         $elementType = $this->_elementType;
 
-        $responseData['html'] = $elementType::getIndexHtml(
+        $responseData['html'] = $elementType::indexHtml(
             $this->_elementQuery,
             $disabledElementIds,
             $this->_viewState,
