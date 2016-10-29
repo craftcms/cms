@@ -779,7 +779,7 @@ class Updates extends Component
 
             Craft::$app->getConfig()->maxPowerCaptain();
 
-            if ($dbBackupPath && Craft::$app->getConfig()->get('backupDbOnUpdate') && Craft::$app->getConfig()->get('restoreDbOnUpdateFailure')) {
+            if ($dbBackupPath && Craft::$app->getConfig()->get('backupOnUpdate') && Craft::$app->getConfig()->get('restoreOnUpdateFailure')) {
                 Craft::info('Rolling back any database changes.', __METHOD__);
                 UpdateHelper::rollBackDatabaseChanges($dbBackupPath);
                 Craft::info('Done rolling back any database changes.', __METHOD__);

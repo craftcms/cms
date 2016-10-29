@@ -26,7 +26,7 @@
 	{% if editableSites|length > 1 %}
 		{% set siteInput %}
 			<div class="select">
-				<select id="site" name="site">
+				<select id="site-id" name="siteId">
 					{% for site in editableSites %}
 						<option value="{{ site.id }}"{% if site.id == widget.siteId %} selected{% endif %}>{{ site.name|t('site') }}</option>
 					{% endfor %}
@@ -35,7 +35,7 @@
 		{% endset %}
 
 		{{ forms.field({
-			id: 'site',
+			id: 'site-id',
 			label: "Site"|t('app')
 		}, siteInput) }}
 	{% endif %}

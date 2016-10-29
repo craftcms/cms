@@ -11,12 +11,12 @@ use Craft;
 use yii\validators\Validator;
 
 /**
- * Will validate that the given attribute is a valid site ID.
+ * Will validate that the given attribute is a valid site language.
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since  3.0
  */
-class SiteIdValidator extends Validator
+class LanguageValidator extends Validator
 {
     // Protected Methods
     // =========================================================================
@@ -29,10 +29,10 @@ class SiteIdValidator extends Validator
      */
     public function validateAttribute($object, $attribute)
     {
-        $siteId = $object->$attribute;
+        $language = $object->$attribute;
 
-        if ($siteId && !in_array($siteId, Craft::$app->getSites()->getAllSiteIds())) {
-            $message = Craft::t('app', 'Your system isn’t set up to save content for the site “{site}”.', ['site' => $siteId]);
+        if ($language && !in_array($language, Craft::$app->getI18n()->getSiteLocaleIds())) {
+            $message = Craft::t('app', 'Your system isn’t set up to save content for the language “{language}”.', ['language' => $language]);
             $this->addError($object, $attribute, $message);
         }
     }

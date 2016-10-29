@@ -40,26 +40,19 @@ class EmailMessages extends Component
     /**
      * Returns all of the system email messages.
      *
-     * @param integer|null $siteId
+     * @param integer|null $language
      *
-     * @return array
-     * @throws Exception if $siteId is invalid
+     * @return RebrandEmail[]
      */
-    public function getAllMessages($siteId = null)
+    public function getAllMessages($language = null)
     {
-        if ($siteId) {
-            $site = Craft::$app->getSites()->getSiteById($siteId);
-
-            if (!$site) {
-                throw new Exception('Invalid site ID: '.$siteId);
-            }
-        } else {
-            $site = Craft::$app->getSites()->currentSite;
+        if ($language === null) {
+            $language = Craft::$app->language;
         }
 
         // Find any custom messages
         $records = EmailMessageRecord::findAll([
-            'siteId' => $site->id
+            'language' => $language
         ]);
 
         // Index the records by their keys
@@ -74,7 +67,7 @@ class EmailMessages extends Component
         foreach ($this->_getAllMessageKeys() as $key) {
             $message = new RebrandEmail();
             $message->key = $key;
-            $message->siteId = $siteId;
+            $message->language = $language;
 
             // Is there a custom message?
             if (isset($recordsByKey[$key])) {
@@ -82,12 +75,12 @@ class EmailMessages extends Component
                 $message->body = $recordsByKey[$key]->body;
             } else {
                 // Default to whatever's in the translation file
-                $message->subject = $this->_translateMessageString($key, 'subject', $site->language);
-                $message->body = $this->_translateMessageString($key, 'body', $site->language);
+                $message->subject = $this->_translateMessageString($key, 'subject', $language);
+                $message->body = $this->_translateMessageString($key, 'body', $language);
             }
 
             // Not possible to customize the heading
-            $message->heading = $this->_translateMessageString($key, 'heading', $site->language);
+            $message->heading = $this->_translateMessageString($key, 'heading', $language);
 
             $messages[] = $message;
         }
@@ -98,22 +91,22 @@ class EmailMessages extends Component
     /**
      * Returns a system email message by its key.
      *
-     * @param string       $key
-     * @param integer|null $siteId
+     * @param string $key
+     * @param string $language
      *
      * @return RebrandEmail
      */
-    public function getMessage($key, $siteId = null)
+    public function getMessage($key, $language = null)
     {
-        if (!$siteId) {
-            $siteId = Craft::$app->getSites()->currentSite->id;
+        if ($language === null) {
+            $language = Craft::$app->language;
         }
 
         $message = new RebrandEmail();
         $message->key = $key;
-        $message->siteId = $siteId;
+        $message->language = $language;
 
-        $record = $this->_getMessageRecord($key, $siteId);
+        $record = $this->_getMessageRecord($key, $language);
 
         $message->subject = $record->subject;
         $message->body = $record->body;
@@ -130,7 +123,7 @@ class EmailMessages extends Component
      */
     public function saveMessage(RebrandEmail $message)
     {
-        $record = $this->_getMessageRecord($message->key, $message->siteId);
+        $record = $this->_getMessageRecord($message->key, $message->language);
 
         $record->subject = $message->subject;
         $record->body = $message->body;
@@ -243,35 +236,28 @@ class EmailMessages extends Component
     /**
      * Gets a message record by its key.
      *
-     * @param string       $key
-     * @param integer|null $siteId
+     * @param string $key
+     * @param string $language
      *
      * @return EmailMessageRecord
-     * @throws Exception if $siteId is invalid
      */
-    private function _getMessageRecord($key, $siteId = null)
+    private function _getMessageRecord($key, $language = null)
     {
-        if ($siteId) {
-            $site = Craft::$app->getSites()->getSiteById($siteId);
-
-            if (!$site) {
-                throw new Exception('Invalid site ID: '.$siteId);
-            }
-        } else {
-            $site = Craft::$app->getSites()->currentSite;
+        if ($language === null) {
+            $language = Craft::$app->language;
         }
 
         $record = EmailMessageRecord::findOne([
             'key' => $key,
-            'siteId' => $site->id,
+            'language' => $language,
         ]);
 
         if (!$record) {
             $record = new EmailMessageRecord();
             $record->key = $key;
-            $record->siteId = $site->id;
-            $record->subject = $this->_translateMessageString($key, 'subject', $site->language);
-            $record->body = $this->_translateMessageString($key, 'body', $site->language);
+            $record->language = $language;
+            $record->subject = $this->_translateMessageString($key, 'subject', $language);
+            $record->body = $this->_translateMessageString($key, 'body', $language);
         }
 
         return $record;

@@ -871,7 +871,7 @@ class Asset extends Element
     /**
      * Return whether the Asset has a URL.
      *
-     * @return bool
+     * @return boolean
      */
     public function getHasUrls()
     {

@@ -155,7 +155,7 @@ class Image
      *
      * @param string $filePath the file path to check.
      *
-     * @return bool
+     * @return boolean
      */
     public static function canHaveExifData($filePath)
     {

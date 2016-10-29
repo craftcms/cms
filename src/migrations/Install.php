@@ -263,7 +263,7 @@ class Install extends Migration
         ]);
         $this->createTable('{{%emailmessages}}', [
             'id' => $this->primaryKey(),
-            'siteId' => $this->integer()->notNull(),
+            'language' => $this->string()->notNull(),
             'key' => $this->string()->notNull(),
             'subject' => $this->text()->notNull(),
             'body' => $this->text()->notNull(),
@@ -767,8 +767,8 @@ class Install extends Migration
         $this->createIndex($this->db->getIndexName('{{%elements_i18n}}', 'siteId', false), '{{%elements_i18n}}', 'siteId', false);
         $this->createIndex($this->db->getIndexName('{{%elements_i18n}}', 'slug,siteId', false), '{{%elements_i18n}}', 'slug,siteId', false);
         $this->createIndex($this->db->getIndexName('{{%elements_i18n}}', 'enabled', false), '{{%elements_i18n}}', 'enabled', false);
-        $this->createIndex($this->db->getIndexName('{{%emailmessages}}', 'key,siteId', true), '{{%emailmessages}}', 'key,siteId', true);
-        $this->createIndex($this->db->getIndexName('{{%emailmessages}}', 'siteId', false), '{{%emailmessages}}', 'siteId', false);
+        $this->createIndex($this->db->getIndexName('{{%emailmessages}}', 'key,language', true), '{{%emailmessages}}', 'key,language', true);
+        $this->createIndex($this->db->getIndexName('{{%emailmessages}}', 'language', false), '{{%emailmessages}}', 'language', false);
         $this->createIndex($this->db->getIndexName('{{%entries}}', 'postDate', false), '{{%entries}}', 'postDate', false);
         $this->createIndex($this->db->getIndexName('{{%entries}}', 'expiryDate', false), '{{%entries}}', 'expiryDate', false);
         $this->createIndex($this->db->getIndexName('{{%entries}}', 'authorId', false), '{{%entries}}', 'authorId', false);
@@ -906,7 +906,6 @@ class Install extends Migration
         $this->addForeignKey($this->db->getForeignKeyName('{{%content}}', 'siteId'), '{{%content}}', 'siteId', '{{%sites}}', 'id', 'CASCADE', 'CASCADE');
         $this->addForeignKey($this->db->getForeignKeyName('{{%elements_i18n}}', 'elementId'), '{{%elements_i18n}}', 'elementId', '{{%elements}}', 'id', 'CASCADE', null);
         $this->addForeignKey($this->db->getForeignKeyName('{{%elements_i18n}}', 'siteId'), '{{%elements_i18n}}', 'siteId', '{{%sites}}', 'id', 'CASCADE', 'CASCADE');
-        $this->addForeignKey($this->db->getForeignKeyName('{{%emailmessages}}', 'siteId'), '{{%emailmessages}}', 'siteId', '{{%sites}}', 'id', 'CASCADE', 'CASCADE');
         $this->addForeignKey($this->db->getForeignKeyName('{{%entries}}', 'authorId'), '{{%entries}}', 'authorId', '{{%users}}', 'id', 'CASCADE', null);
         $this->addForeignKey($this->db->getForeignKeyName('{{%entries}}', 'id'), '{{%entries}}', 'id', '{{%elements}}', 'id', 'CASCADE', null);
         $this->addForeignKey($this->db->getForeignKeyName('{{%entries}}', 'sectionId'), '{{%entries}}', 'sectionId', '{{%sections}}', 'id', 'CASCADE', null);
