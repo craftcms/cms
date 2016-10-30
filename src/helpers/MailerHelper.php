@@ -46,23 +46,21 @@ class MailerHelper
      */
     public static function getAllMailerTransportAdapterTypes()
     {
+        $types = [
+            Php::class,
+            Sendmail::class,
+            Smtp::class,
+            Gmail::class,
+        ];
+
         $event = new RegisterComponentTypesEvent([
-            'types' => [
-                Php::class,
-                Sendmail::class,
-                Smtp::class,
-                Gmail::class,
-            ]
+            'types' => $types
         ]);
-
         Event::trigger(static::class, self::EVENT_REGISTER_MAILER_TRANSPORT_ADAPTER_TYPES, $event);
-
-        foreach ($event->types as $type) {
-
-        }
 
         return $event->types;
     }
+
     /**
      * Creates a transport adapter based on the given mail settings.
      *
