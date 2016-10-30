@@ -10,6 +10,7 @@ namespace craft\app\services;
 use Craft;
 use craft\app\base\Plugin;
 use craft\app\events\RegisterEmailMessagesEvent;
+use craft\app\helpers\ArrayHelper;
 use craft\app\models\RebrandEmail;
 use craft\app\records\EmailMessage as EmailMessageRecord;
 use yii\base\Component;
@@ -216,7 +217,7 @@ class EmailMessages extends Component
             ]);
             $this->trigger(self::EVENT_REGISTER_MESSAGES, $event);
 
-            $this->_messagesInfo = $event->messages;
+            $this->_messagesInfo = ArrayHelper::index($event->messages, 'key');
         }
     }
 
