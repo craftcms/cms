@@ -201,9 +201,6 @@ class View extends \yii\web\View
             $twig->setParser(new Parser($twig));
 
             $this->_twigs[$cacheKey] = $twig;
-
-            // Give plugins a chance to add their own Twig extensions
-            $this->_addPluginTwigExtensions($twig);
         }
 
         return $this->_twigs[$cacheKey];
@@ -1108,20 +1105,6 @@ class View extends \yii\web\View
         return $return;
     }
 
-    /**
-     * Loads plugin-supplied Twig extensions now that all plugins have been loaded.
-     *
-     * @param Event $event
-     *
-     * @return void
-     */
-    public function onPluginsLoaded(Event $event)
-    {
-        foreach ($this->_twigs as $twig) {
-            $this->_addPluginTwigExtensions($twig);
-        }
-    }
-
     // Private Methods
     // =========================================================================
 
@@ -1212,46 +1195,6 @@ class View extends \yii\web\View
         }
 
         return $this->_twigOptions;
-    }
-
-    /**
-     * Adds any plugin-supplied Twig extensions to a given Twig instance.
-     *
-     * @param \Twig_Environment $twig
-     *
-     * @return void
-     */
-    private function _addPluginTwigExtensions(\Twig_Environment $twig)
-    {
-        // Check if the Plugins service has been loaded yet
-        $pluginsService = Craft::$app->getPlugins();
-        $pluginsService->loadPlugins();
-
-        // Could be that this is getting called in the middle of plugin loading, so check again
-        if ($pluginsService->arePluginsLoaded()) {
-            $pluginExtensions = $pluginsService->call('addTwigExtension');
-
-            try {
-                foreach ($pluginExtensions as $extension) {
-                    // It's possible for a plugin to register multiple extensions.
-                    if (is_array($extension)) {
-                        foreach ($extension as $innerExtension) {
-                            $twig->addExtension($innerExtension);
-                        }
-                    } else {
-                        $twig->addExtension($extension);
-                    }
-                }
-            } catch (\LogicException $e) {
-                Craft::warning('Tried to register plugin-supplied Twig extensions, but Twig environment has already initialized its extensions.', __METHOD__);
-
-                return;
-            }
-        } else {
-            // Wait around for plugins to actually be loaded, then do it for all Twig environments that have been created.
-            Event::on(Plugins::class, Plugins::EVENT_AFTER_LOAD_PLUGINS,
-                [$this, 'onPluginsLoaded']);
-        }
     }
 
     /**
