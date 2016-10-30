@@ -18,6 +18,7 @@ use craft\app\errors\MissingComponentException;
 use craft\app\events\FieldEvent;
 use craft\app\events\FieldGroupEvent;
 use craft\app\events\FieldLayoutEvent;
+use craft\app\events\RegisterComponentTypesEvent;
 use craft\app\fields\Assets as AssetsField;
 use craft\app\fields\Categories as CategoriesField;
 use craft\app\fields\Checkboxes as CheckboxesField;
@@ -61,6 +62,11 @@ class Fields extends Component
 {
     // Constants
     // =========================================================================
+
+    /**
+     * @event RegisterComponentTypesEvent The event that is triggered when registering field types.
+     */
+    const EVENT_REGISTER_FIELD_TYPES = 'registerFieldTypes';
 
     /**
      * @event FieldGroupEvent The event that is triggered before a field group is saved.
@@ -363,7 +369,7 @@ class Fields extends Component
     /**
      * Returns all available field type classes.
      *
-     * @return FieldInterface[] The available field type classes
+     * @return string[] The available field type classes
      */
     public function getAllFieldTypes()
     {
@@ -388,11 +394,12 @@ class Fields extends Component
             UsersField::class,
         ];
 
-        foreach (Craft::$app->getPlugins()->call('getFieldTypes', [], true) as $pluginFieldTypes) {
-            $fieldTypes = array_merge($fieldTypes, $pluginFieldTypes);
-        }
+        $event = new RegisterComponentTypesEvent([
+            'types' => $fieldTypes
+        ]);
+        $this->trigger(self::EVENT_REGISTER_FIELD_TYPES, $event);
 
-        return $fieldTypes;
+        return $event->types;
     }
 
     /**
