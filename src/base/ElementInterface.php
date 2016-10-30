@@ -228,7 +228,7 @@ interface ElementInterface extends ComponentInterface
      *
      * @param string|null $context The context ('index' or 'modal').
      *
-     * @return string[]|false The source keys.
+     * @return array The sources.
      */
     public static function sources($context = null);
 

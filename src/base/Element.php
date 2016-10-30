@@ -204,7 +204,7 @@ abstract class Element extends Component implements ElementInterface
      */
     public static function sources($context = null)
     {
-        return false;
+        return [];
     }
 
     /**
