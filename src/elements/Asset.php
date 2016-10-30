@@ -213,9 +213,9 @@ class Asset extends Element
     /**
      * @inheritdoc
      */
-    public static function sortableAttributes()
+    protected static function defineSortableAttributes()
     {
-        $attributes = [
+        return [
             'title' => Craft::t('app', 'Title'),
             'filename' => Craft::t('app', 'Filename'),
             'size' => Craft::t('app', 'File Size'),
@@ -223,11 +223,6 @@ class Asset extends Element
             'elements.dateCreated' => Craft::t('app', 'Date Uploaded'),
             'elements.dateUpdated' => Craft::t('app', 'Date Updated'),
         ];
-
-        // Allow plugins to modify the attributes
-        Craft::$app->getPlugins()->call('modifyAssetSortableAttributes', [&$attributes]);
-
-        return $attributes;
     }
 
     /**

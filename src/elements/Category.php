@@ -174,19 +174,14 @@ class Category extends Element
     /**
      * @inheritdoc
      */
-    public static function sortableAttributes()
+    protected static function defineSortableAttributes()
     {
-        $attributes = [
+        return [
             'title' => Craft::t('app', 'Title'),
             'uri' => Craft::t('app', 'URI'),
             'elements.dateCreated' => Craft::t('app', 'Date Created'),
             'elements.dateUpdated' => Craft::t('app', 'Date Updated'),
         ];
-
-        // Allow plugins to modify the attributes
-        Craft::$app->getPlugins()->call('modifyCategorySortableAttributes', [&$attributes]);
-
-        return $attributes;
     }
 
     /**

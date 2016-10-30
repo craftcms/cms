@@ -20,6 +20,7 @@ use craft\app\events\ElementStructureEvent;
 use craft\app\events\Event;
 use craft\app\events\ModelEvent;
 use craft\app\events\RegisterElementActionsEvent;
+use craft\app\events\RegisterElementSortableAttributesEvent;
 use craft\app\events\RegisterElementSourcesEvent;
 use craft\app\helpers\ArrayHelper;
 use craft\app\helpers\ElementHelper;
@@ -102,6 +103,11 @@ abstract class Element extends Component implements ElementInterface
      * @event RegisterElementActionsEvent The event that is triggered when registering the available actions for the element type.
      */
     const EVENT_REGISTER_ACTIONS = 'registerActions';
+
+    /**
+     * @event RegisterElementSortableAttributesEvent The event that is triggered when registering the sortable attributes for the element type.
+     */
+    const EVENT_REGISTER_SORTABLE_ATTRIBUTES = 'registerSortableAttributes';
 
     /**
      * @event ModelEvent The event that is triggered before the element is saved
@@ -375,14 +381,15 @@ abstract class Element extends Component implements ElementInterface
      */
     public static function sortableAttributes()
     {
-        $tableAttributes = Craft::$app->getElementIndexes()->getAvailableTableAttributes(static::class);
-        $sortableAttributes = [];
+        $sortableAttributes = static::defineSortableAttributes();
 
-        foreach ($tableAttributes as $key => $labelInfo) {
-            $sortableAttributes[$key] = $labelInfo['label'];
-        }
+        // Give plugins a chance to modify them
+        $event = new RegisterElementSortableAttributesEvent([
+            'sortableAttributes' => $sortableAttributes
+        ]);
+        Event::trigger(static::class, self::EVENT_REGISTER_SORTABLE_ATTRIBUTES, $event);
 
-        return $sortableAttributes;
+        return $event->sortableAttributes;
     }
 
     /**
@@ -425,6 +432,24 @@ abstract class Element extends Component implements ElementInterface
         }
 
         return Craft::$app->getElementIndexes()->getTableAttributes($elementType, $sourceKey);
+    }
+
+    /**
+     * Defines the attributes that elements can be sorted by.
+     *
+     * @return string[] The attributes that elements can be sorted by
+     * @see sortableAttributes()
+     */
+    protected static function defineSortableAttributes()
+    {
+        $tableAttributes = Craft::$app->getElementIndexes()->getAvailableTableAttributes(static::class);
+        $sortableAttributes = [];
+
+        foreach ($tableAttributes as $key => $labelInfo) {
+            $sortableAttributes[$key] = $labelInfo['label'];
+        }
+
+        return $sortableAttributes;
     }
 
     // Methods for customizing element queries

@@ -295,7 +295,7 @@ interface ElementInterface extends ComponentInterface
     public static function indexHtml($elementQuery, $disabledElementIds, $viewState, $sourceKey, $context, $includeContainer, $showCheckboxes);
 
     /**
-     * Defines the attributes that elements can be sorted by.
+     * Returns the attributes that elements can be sorted by.
      *
      * This method should return an array, where the keys reference database column names that should be sorted on,
      * and where the values define the user-facing labels.

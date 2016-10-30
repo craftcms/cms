@@ -213,7 +213,7 @@ class User extends Element implements IdentityInterface
     /**
      * @inheritdoc
      */
-    public static function sortableAttributes()
+    protected static function defineSortableAttributes()
     {
         if (Craft::$app->getConfig()->get('useEmailAsUsername')) {
             $attributes = [
@@ -235,9 +235,6 @@ class User extends Element implements IdentityInterface
                 'elements.dateUpdated' => Craft::t('app', 'Date Updated'),
             ];
         }
-
-        // Allow plugins to modify the attributes
-        Craft::$app->getPlugins()->call('modifyUserSortableAttributes', [&$attributes]);
 
         return $attributes;
     }
