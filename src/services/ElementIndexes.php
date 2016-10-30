@@ -257,7 +257,7 @@ class ElementIndexes extends Component
         if (isset($settings['sources'][$sourceKey]['tableAttributes'])) {
             $attributeKeys = $settings['sources'][$sourceKey]['tableAttributes'];
         } else {
-            $attributeKeys = $elementType::getDefaultTableAttributes($sourceKey);
+            $attributeKeys = $elementType::defaultTableAttributes($sourceKey);
         }
 
         // Assemble the remainder of the list

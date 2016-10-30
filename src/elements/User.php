@@ -296,7 +296,7 @@ class User extends Element implements IdentityInterface
     /**
      * @inheritdoc
      */
-    public static function getDefaultTableAttributes($source = null)
+    public static function defaultTableAttributes($source = null)
     {
         if (Craft::$app->getConfig()->get('useEmailAsUsername')) {
             $attributes = ['fullName', 'dateCreated', 'lastLoginDate'];

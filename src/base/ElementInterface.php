@@ -354,7 +354,7 @@ interface ElementInterface extends ComponentInterface
      *
      * @return array The table attribute keys
      */
-    public static function getDefaultTableAttributes($source = null);
+    public static function defaultTableAttributes($source = null);
 
     /**
      * Returns an array that maps source-to-target element IDs based on the given sub-property handle.
