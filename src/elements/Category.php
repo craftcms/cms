@@ -87,7 +87,7 @@ class Category extends Element
     /**
      * @inheritdoc
      */
-    public static function getSources($context = null)
+    public static function sources($context = null)
     {
         $sources = [];
 
@@ -110,8 +110,7 @@ class Category extends Element
         }
 
         // Allow plugins to modify the sources
-        Craft::$app->getPlugins()->call('modifyCategorySources',
-            [&$sources, $context]);
+        Craft::$app->getPlugins()->call('modifyCategorySources', [&$sources, $context]);
 
         return $sources;
     }
@@ -119,7 +118,7 @@ class Category extends Element
     /**
      * @inheritdoc
      */
-    public static function getAvailableActions($source = null)
+    public static function actions($source = null)
     {
         // Get the group we need to check permissions on
         if (preg_match('/^group:(\d+)$/', $source, $matches)) {
@@ -173,8 +172,7 @@ class Category extends Element
         }
 
         // Allow plugins to add additional actions
-        $allPluginActions = Craft::$app->getPlugins()->call('addCategoryActions',
-            [$source], true);
+        $allPluginActions = Craft::$app->getPlugins()->call('addCategoryActions', [$source], true);
 
         foreach ($allPluginActions as $pluginActions) {
             $actions = array_merge($actions, $pluginActions);
@@ -186,7 +184,7 @@ class Category extends Element
     /**
      * @inheritdoc
      */
-    public static function defineSortableAttributes()
+    public static function sortableAttributes()
     {
         $attributes = [
             'title' => Craft::t('app', 'Title'),
@@ -196,8 +194,7 @@ class Category extends Element
         ];
 
         // Allow plugins to modify the attributes
-        Craft::$app->getPlugins()->call('modifyCategorySortableAttributes',
-            [&$attributes]);
+        Craft::$app->getPlugins()->call('modifyCategorySortableAttributes', [&$attributes]);
 
         return $attributes;
     }
@@ -205,7 +202,7 @@ class Category extends Element
     /**
      * @inheritdoc
      */
-    public static function defineAvailableTableAttributes()
+    public static function tableAttributes()
     {
         $attributes = [
             'title' => ['label' => Craft::t('app', 'Title')],
@@ -229,7 +226,7 @@ class Category extends Element
     /**
      * @inheritdoc
      */
-    public static function getDefaultTableAttributes($source = null)
+    public static function defaultTableAttributes($source = null)
     {
         $attributes = ['link'];
 

@@ -165,7 +165,7 @@ abstract class Element extends Component implements ElementInterface
     /**
      * @inheritdoc
      */
-    public static function getStatuses()
+    public static function statuses()
     {
         return [
             self::STATUS_ENABLED => Craft::t('app', 'Enabled'),
@@ -202,20 +202,20 @@ abstract class Element extends Component implements ElementInterface
     /**
      * @inheritdoc
      */
-    public static function getSources($context = null)
+    public static function sources($context = null)
     {
-        return false;
+        return [];
     }
 
     /**
      * @inheritdoc
      */
-    public static function getSourceByKey($key, $context = null)
+    public static function source($key, $context = null)
     {
         $contextKey = ($context ? $context : '*');
 
         if (!isset(self::$_sourcesByContext[$contextKey])) {
-            self::$_sourcesByContext[$contextKey] = static::getSources($context);
+            self::$_sourcesByContext[$contextKey] = static::sources($context);
         }
 
         return static::_findSource($key, self::$_sourcesByContext[$contextKey]);
@@ -224,7 +224,7 @@ abstract class Element extends Component implements ElementInterface
     /**
      * @inheritdoc
      */
-    public static function getAvailableActions($source = null)
+    public static function actions($source = null)
     {
         return [];
     }
@@ -232,7 +232,7 @@ abstract class Element extends Component implements ElementInterface
     /**
      * @inheritdoc
      */
-    public static function defineSearchableAttributes()
+    public static function searchableAttributes()
     {
         return [];
     }
@@ -243,7 +243,7 @@ abstract class Element extends Component implements ElementInterface
     /**
      * @inheritdoc
      */
-    public static function getIndexHtml($elementQuery, $disabledElementIds, $viewState, $sourceKey, $context, $includeContainer, $showCheckboxes)
+    public static function indexHtml($elementQuery, $disabledElementIds, $viewState, $sourceKey, $context, $includeContainer, $showCheckboxes)
     {
         $variables = [
             'viewMode' => $viewState['mode'],
@@ -255,7 +255,7 @@ abstract class Element extends Component implements ElementInterface
 
         // Special case for sorting by structure
         if (isset($viewState['order']) && $viewState['order'] == 'structure') {
-            $source = static::getSourceByKey($sourceKey, $context);
+            $source = static::source($sourceKey, $context);
 
             if (isset($source['structureId'])) {
                 $elementQuery->orderBy(['lft' => SORT_ASC]);
@@ -274,7 +274,7 @@ abstract class Element extends Component implements ElementInterface
         } else if (!empty($viewState['order']) && $viewState['order'] == 'score') {
             $elementQuery->orderBy('score');
         } else {
-            $sortableAttributes = static::defineSortableAttributes();
+            $sortableAttributes = static::sortableAttributes();
 
             if ($sortableAttributes) {
                 $order = (!empty($viewState['order']) && isset($sortableAttributes[$viewState['order']])) ? $viewState['order'] : ArrayHelper::getFirstKey($sortableAttributes);
@@ -317,7 +317,7 @@ abstract class Element extends Component implements ElementInterface
     /**
      * @inheritdoc
      */
-    public static function defineSortableAttributes()
+    public static function sortableAttributes()
     {
         $tableAttributes = Craft::$app->getElementIndexes()->getAvailableTableAttributes(static::class);
         $sortableAttributes = [];
@@ -332,7 +332,7 @@ abstract class Element extends Component implements ElementInterface
     /**
      * @inheritdoc
      */
-    public static function defineAvailableTableAttributes()
+    public static function tableAttributes()
     {
         return [];
     }
@@ -340,9 +340,9 @@ abstract class Element extends Component implements ElementInterface
     /**
      * @inheritdoc
      */
-    public static function getDefaultTableAttributes($source = null)
+    public static function defaultTableAttributes($source = null)
     {
-        $availableTableAttributes = static::defineAvailableTableAttributes();
+        $availableTableAttributes = static::tableAttributes();
 
         return array_keys($availableTableAttributes);
     }
@@ -377,7 +377,7 @@ abstract class Element extends Component implements ElementInterface
     /**
      * @inheritdoc
      */
-    public static function getEagerLoadingMap($sourceElements, $handle)
+    public static function eagerLoadingMap($sourceElements, $handle)
     {
         // Eager-loading descendants or direct children?
         if ($handle == 'descendants' || $handle == 'children') {

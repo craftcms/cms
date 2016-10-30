@@ -112,7 +112,7 @@ class User extends Element implements IdentityInterface
      *
      * @return array|null
      */
-    public static function getStatuses()
+    public static function statuses()
     {
         return [
             self::STATUS_ACTIVE => Craft::t('app', 'Active'),
@@ -136,7 +136,7 @@ class User extends Element implements IdentityInterface
     /**
      * @inheritdoc
      */
-    public static function getSources($context = null)
+    public static function sources($context = null)
     {
         $sources = [
             '*' => [
@@ -171,10 +171,7 @@ class User extends Element implements IdentityInterface
         }
 
         // Allow plugins to modify the sources
-        Craft::$app->getPlugins()->call('modifyUserSources', [
-            &$sources,
-            $context
-        ]);
+        Craft::$app->getPlugins()->call('modifyUserSources', [&$sources, $context]);
 
         return $sources;
     }
@@ -182,7 +179,7 @@ class User extends Element implements IdentityInterface
     /**
      * @inheritdoc
      */
-    public static function getAvailableActions($source = null)
+    public static function actions($source = null)
     {
         $actions = [];
 
@@ -206,8 +203,7 @@ class User extends Element implements IdentityInterface
         }
 
         // Allow plugins to add additional actions
-        $allPluginActions = Craft::$app->getPlugins()->call('addUserActions',
-            [$source], true);
+        $allPluginActions = Craft::$app->getPlugins()->call('addUserActions', [$source], true);
 
         foreach ($allPluginActions as $pluginActions) {
             $actions = array_merge($actions, $pluginActions);
@@ -219,7 +215,7 @@ class User extends Element implements IdentityInterface
     /**
      * @inheritdoc
      */
-    public static function defineSearchableAttributes()
+    public static function searchableAttributes()
     {
         return ['username', 'firstName', 'lastName', 'fullName', 'email'];
     }
@@ -227,7 +223,7 @@ class User extends Element implements IdentityInterface
     /**
      * @inheritdoc
      */
-    public static function defineSortableAttributes()
+    public static function sortableAttributes()
     {
         if (Craft::$app->getConfig()->get('useEmailAsUsername')) {
             $attributes = [
@@ -251,8 +247,7 @@ class User extends Element implements IdentityInterface
         }
 
         // Allow plugins to modify the attributes
-        Craft::$app->getPlugins()->call('modifyUserSortableAttributes',
-            [&$attributes]);
+        Craft::$app->getPlugins()->call('modifyUserSortableAttributes', [&$attributes]);
 
         return $attributes;
     }
@@ -260,7 +255,7 @@ class User extends Element implements IdentityInterface
     /**
      * @inheritdoc
      */
-    public static function defineAvailableTableAttributes()
+    public static function tableAttributes()
     {
         if (Craft::$app->getConfig()->get('useEmailAsUsername')) {
             // Start with Email and don't even give Username as an option
@@ -301,7 +296,7 @@ class User extends Element implements IdentityInterface
     /**
      * @inheritdoc
      */
-    public static function getDefaultTableAttributes($source = null)
+    public static function defaultTableAttributes($source = null)
     {
         if (Craft::$app->getConfig()->get('useEmailAsUsername')) {
             $attributes = ['fullName', 'dateCreated', 'lastLoginDate'];
@@ -315,7 +310,7 @@ class User extends Element implements IdentityInterface
     /**
      * @inheritdoc
      */
-    public static function getEagerLoadingMap($sourceElements, $handle)
+    public static function eagerLoadingMap($sourceElements, $handle)
     {
         if ($handle == 'photo') {
             // Get the source element IDs
@@ -337,7 +332,7 @@ class User extends Element implements IdentityInterface
             ];
         }
 
-        return parent::getEagerLoadingMap($sourceElements, $handle);
+        return parent::eagerLoadingMap($sourceElements, $handle);
     }
 
     // IdentityInterface Methods

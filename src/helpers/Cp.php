@@ -88,10 +88,7 @@ class Cp
             }
         }
 
-        $allPluginAlerts = Craft::$app->getPlugins()->call('getCpAlerts', [
-            $path,
-            $fetch
-        ], true);
+        $allPluginAlerts = Craft::$app->getPlugins()->call('getCpAlerts', [$path, $fetch], true);
 
         foreach ($allPluginAlerts as $pluginAlerts) {
             $alerts = array_merge($alerts, $pluginAlerts);

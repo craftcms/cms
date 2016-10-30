@@ -101,7 +101,7 @@ class Asset extends Element
     /**
      * @inheritdoc
      */
-    public static function getSources($context = null)
+    public static function sources($context = null)
     {
         if ($context == 'index') {
             $sourceIds = Craft::$app->getVolumes()->getViewableVolumeIds();
@@ -114,10 +114,7 @@ class Asset extends Element
         $sources = static::_assembleSourceList($tree, $context != 'settings');
 
         // Allow plugins to modify the sources
-        Craft::$app->getPlugins()->call(
-            'modifyAssetSources',
-            [&$sources, $context]
-        );
+        Craft::$app->getPlugins()->call('modifyAssetSources', [&$sources, $context]);
 
         return $sources;
     }
@@ -125,7 +122,7 @@ class Asset extends Element
     /**
      * @inheritdoc
      */
-    public static function getSourceByKey($key, $context = null)
+    public static function source($key, $context = null)
     {
         if (preg_match('/folder:(\d+)(:single)?/', $key, $matches)) {
             $folder = Craft::$app->getAssets()->getFolderById($matches[1]);
@@ -138,13 +135,13 @@ class Asset extends Element
             }
         }
 
-        return parent::getSourceByKey($key, $context);
+        return parent::source($key, $context);
     }
 
     /**
      * @inheritdoc
      */
-    public static function getAvailableActions($source = null)
+    public static function actions($source = null)
     {
         $actions = [];
 
@@ -206,11 +203,7 @@ class Asset extends Element
         }
 
         // Allow plugins to add additional actions
-        $allPluginActions = Craft::$app->getPlugins()->call(
-            'addAssetActions',
-            [$source],
-            true
-        );
+        $allPluginActions = Craft::$app->getPlugins()->call('addAssetActions', [$source], true);
 
         foreach ($allPluginActions as $pluginActions) {
             $actions = array_merge($actions, $pluginActions);
@@ -222,7 +215,7 @@ class Asset extends Element
     /**
      * @inheritdoc
      */
-    public static function defineSearchableAttributes()
+    public static function searchableAttributes()
     {
         return ['filename', 'extension', 'kind'];
     }
@@ -230,7 +223,7 @@ class Asset extends Element
     /**
      * @inheritdoc
      */
-    public static function defineSortableAttributes()
+    public static function sortableAttributes()
     {
         $attributes = [
             'title' => Craft::t('app', 'Title'),
@@ -242,10 +235,7 @@ class Asset extends Element
         ];
 
         // Allow plugins to modify the attributes
-        Craft::$app->getPlugins()->call(
-            'modifyAssetSortableAttributes',
-            [&$attributes]
-        );
+        Craft::$app->getPlugins()->call('modifyAssetSortableAttributes', [&$attributes]);
 
         return $attributes;
     }
@@ -253,7 +243,7 @@ class Asset extends Element
     /**
      * @inheritdoc
      */
-    public static function defineAvailableTableAttributes()
+    public static function tableAttributes()
     {
         $attributes = [
             'title' => ['label' => Craft::t('app', 'Title')],
@@ -282,7 +272,7 @@ class Asset extends Element
     /**
      * @inheritdoc
      */
-    public static function getDefaultTableAttributes($source = null)
+    public static function defaultTableAttributes($source = null)
     {
         $attributes = ['filename', 'size', 'dateModified'];
 

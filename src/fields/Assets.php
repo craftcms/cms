@@ -137,7 +137,7 @@ class Assets extends BaseRelationField
         /** @var Asset $class */
         $class = static::elementType();
 
-        foreach ($class::getSources('settings') as $key => $source) {
+        foreach ($class::sources('settings') as $key => $source) {
             if (!isset($source['heading'])) {
                 $folderOptions[] = [
                     'label' => $source['label'],

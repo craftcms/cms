@@ -1272,7 +1272,7 @@ class Elements extends Component
                     // Get the eager-loading map from the source element type
                     /** @var Element $sourceElementType */
                     $sourceElementType = $elementTypesByPath[$sourcePath];
-                    $map = $sourceElementType::getEagerLoadingMap($elementsByPath[$sourcePath], $segment);
+                    $map = $sourceElementType::eagerLoadingMap($elementsByPath[$sourcePath], $segment);
 
                     if ($map && !empty($map['map'])) {
                         // Remember the element type in case there are more segments after this
