@@ -32,9 +32,9 @@ class MailerHelper
     // =========================================================================
 
     /**
-     * @event RegisterComponentTypesEvent The event that is triggered when collecting registered mailer transport adapter types.
+     * @event RegisterComponentTypesEvent The event that is triggered when registering mailer transport adapter types.
      */
-    const EVENT_REGISTER_MAILER_TRANSPORT_ADAPTER_TYPES = 'registerMailerTransportAdapterTypes';
+    const EVENT_REGISTER_MAILER_TRANSPORT_TYPES = 'registerMailerTransportTypes';
 
     // Static
     // =========================================================================
@@ -44,9 +44,9 @@ class MailerHelper
      *
      * @return string[]
      */
-    public static function getAllMailerTransportAdapterTypes()
+    public static function getAllMailerTransportTypes()
     {
-        $types = [
+        $transportTypes = [
             Php::class,
             Sendmail::class,
             Smtp::class,
@@ -54,9 +54,9 @@ class MailerHelper
         ];
 
         $event = new RegisterComponentTypesEvent([
-            'types' => $types
+            'types' => $transportTypes
         ]);
-        Event::trigger(static::class, self::EVENT_REGISTER_MAILER_TRANSPORT_ADAPTER_TYPES, $event);
+        Event::trigger(static::class, self::EVENT_REGISTER_MAILER_TRANSPORT_TYPES, $event);
 
         return $event->types;
     }
