@@ -8,6 +8,7 @@ use craft\app\db\Query;
 use craft\app\elements\Asset;
 use craft\app\errors\VolumeException;
 use craft\app\errors\MissingComponentException;
+use craft\app\events\RegisterComponentTypesEvent;
 use craft\app\events\VolumeEvent;
 use craft\app\helpers\Component as ComponentHelper;
 use craft\app\records\Volume as AssetVolumeRecord;
@@ -34,6 +35,11 @@ class Volumes extends Component
 {
     // Constants
     // =========================================================================
+
+    /**
+     * @event RegisterComponentTypesEvent The event that is triggered when registering volume types.
+     */
+    const EVENT_REGISTER_VOLUME_TYPES = 'registerVolumeTypes';
 
     /**
      * @event VolumeEvent The event that is triggered before an Asset volume is saved.
@@ -100,9 +106,9 @@ class Volumes extends Component
     // -------------------------------------------------------------------------
 
     /**
-     * Returns all available volume types.
+     * Returns all registered volume types.
      *
-     * @return array the available volume type classes
+     * @return string[]
      */
     public function getAllVolumeTypes()
     {
@@ -118,11 +124,12 @@ class Volumes extends Component
             ]);
         }
 
-        foreach (Craft::$app->getPlugins()->call('getVolumeTypes', [], true) as $pluginVolumeTypes) {
-            $volumeTypes = array_merge($volumeTypes, $pluginVolumeTypes);
-        }
+        $event = new RegisterComponentTypesEvent([
+            'types' => $volumeTypes
+        ]);
+        $this->trigger(self::EVENT_REGISTER_VOLUME_TYPES, $event);
 
-        return $volumeTypes;
+        return $event->types;
     }
 
     /**
