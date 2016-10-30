@@ -116,7 +116,7 @@ class Entry extends Element
     /**
      * @inheritdoc
      */
-    public static function sources($context = null)
+    protected static function defineSources($context = null)
     {
         if ($context == 'index') {
             $sections = Craft::$app->getSections()->getEditableSections();
@@ -196,9 +196,6 @@ class Entry extends Element
                 }
             }
         }
-
-        // Allow plugins to modify the sources
-        Craft::$app->getPlugins()->call('modifyEntrySources', [&$sources, $context]);
 
         return $sources;
     }

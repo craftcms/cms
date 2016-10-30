@@ -136,7 +136,7 @@ class User extends Element implements IdentityInterface
     /**
      * @inheritdoc
      */
-    public static function sources($context = null)
+    protected static function defineSources($context = null)
     {
         $sources = [
             '*' => [
@@ -169,9 +169,6 @@ class User extends Element implements IdentityInterface
                 }
             }
         }
-
-        // Allow plugins to modify the sources
-        Craft::$app->getPlugins()->call('modifyUserSources', [&$sources, $context]);
 
         return $sources;
     }

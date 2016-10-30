@@ -101,7 +101,7 @@ class Asset extends Element
     /**
      * @inheritdoc
      */
-    public static function sources($context = null)
+    protected static function defineSources($context = null)
     {
         if ($context == 'index') {
             $sourceIds = Craft::$app->getVolumes()->getViewableVolumeIds();
@@ -112,9 +112,6 @@ class Asset extends Element
         $additionalCriteria = $context == 'settings' ? ['parentId' => ':empty:'] : [];
         $tree = Craft::$app->getAssets()->getFolderTreeByVolumeIds($sourceIds, $additionalCriteria);
         $sources = static::_assembleSourceList($tree, $context != 'settings');
-
-        // Allow plugins to modify the sources
-        Craft::$app->getPlugins()->call('modifyAssetSources', [&$sources, $context]);
 
         return $sources;
     }

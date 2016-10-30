@@ -87,7 +87,7 @@ class Category extends Element
     /**
      * @inheritdoc
      */
-    public static function sources($context = null)
+    protected static function defineSources($context = null)
     {
         $sources = [];
 
@@ -108,9 +108,6 @@ class Category extends Element
                 'structureEditable' => Craft::$app->getUser()->checkPermission('editCategories:'.$group->id),
             ];
         }
-
-        // Allow plugins to modify the sources
-        Craft::$app->getPlugins()->call('modifyCategorySources', [&$sources, $context]);
 
         return $sources;
     }

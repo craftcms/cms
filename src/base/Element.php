@@ -19,6 +19,7 @@ use craft\app\elements\db\ElementQueryInterface;
 use craft\app\events\ElementStructureEvent;
 use craft\app\events\Event;
 use craft\app\events\ModelEvent;
+use craft\app\events\RegisterElementSourcesEvent;
 use craft\app\helpers\ArrayHelper;
 use craft\app\helpers\ElementHelper;
 use craft\app\helpers\Html;
@@ -90,6 +91,11 @@ abstract class Element extends Component implements ElementInterface
     const STATUS_ENABLED = 'enabled';
     const STATUS_DISABLED = 'disabled';
     const STATUS_ARCHIVED = 'archived';
+
+    /**
+     * @event RegisterElementSourcesEvent The event that is triggered when registering the available sources for the element type.
+     */
+    const EVENT_REGISTER_SOURCES = 'registerSources';
 
     /**
      * @event ModelEvent The event that is triggered before the element is saved
@@ -204,7 +210,15 @@ abstract class Element extends Component implements ElementInterface
      */
     public static function sources($context = null)
     {
-        return [];
+        $sources = static::defineSources($context);
+
+        // Give plugins a chance to modify them
+        $event = new RegisterElementSourcesEvent([
+            'sources' => $sources
+        ]);
+        Event::trigger(static::class, self::EVENT_REGISTER_SOURCES, $event);
+
+        return $event->sources;
     }
 
     /**
@@ -233,6 +247,19 @@ abstract class Element extends Component implements ElementInterface
      * @inheritdoc
      */
     public static function searchableAttributes()
+    {
+        return [];
+    }
+
+    /**
+     * Defines the sources that elements of this type may belong to.
+     *
+     * @param string|null $context The context ('index' or 'modal').
+     *
+     * @return array The sources.
+     * @see sources()
+     */
+    protected static function defineSources($context = null)
     {
         return [];
     }
