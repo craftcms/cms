@@ -19,6 +19,7 @@ use craft\app\elements\db\ElementQueryInterface;
 use craft\app\events\ElementStructureEvent;
 use craft\app\events\Event;
 use craft\app\events\ModelEvent;
+use craft\app\events\RegisterElementActionsEvent;
 use craft\app\events\RegisterElementSourcesEvent;
 use craft\app\helpers\ArrayHelper;
 use craft\app\helpers\ElementHelper;
@@ -96,6 +97,11 @@ abstract class Element extends Component implements ElementInterface
      * @event RegisterElementSourcesEvent The event that is triggered when registering the available sources for the element type.
      */
     const EVENT_REGISTER_SOURCES = 'registerSources';
+
+    /**
+     * @event RegisterElementActionsEvent The event that is triggered when registering the available actions for the element type.
+     */
+    const EVENT_REGISTER_ACTIONS = 'registerActions';
 
     /**
      * @event ModelEvent The event that is triggered before the element is saved
@@ -240,7 +246,15 @@ abstract class Element extends Component implements ElementInterface
      */
     public static function actions($source = null)
     {
-        return [];
+        $actions = static::defineActions($source);
+
+        // Give plugins a chance to modify them
+        $event = new RegisterElementActionsEvent([
+            'actions' => $actions
+        ]);
+        Event::trigger(static::class, self::EVENT_REGISTER_ACTIONS, $event);
+
+        return $event->actions;
     }
 
     /**
@@ -260,6 +274,19 @@ abstract class Element extends Component implements ElementInterface
      * @see sources()
      */
     protected static function defineSources($context = null)
+    {
+        return [];
+    }
+
+    /**
+     * Defines the available element actions for a given source (if one is provided).
+     *
+     * @param string|null $source The selected source’s key, if any.
+     *
+     * @return array|null The available element actions.
+     * @see actions()
+     */
+    protected static function defineActions($source = null)
     {
         return [];
     }

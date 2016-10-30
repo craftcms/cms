@@ -138,7 +138,7 @@ class Asset extends Element
     /**
      * @inheritdoc
      */
-    public static function actions($source = null)
+    protected static function defineActions($source = null)
     {
         $actions = [];
 
@@ -197,13 +197,6 @@ class Asset extends Element
             if ($userSessionService->checkPermission('removeFromVolume:'.$volume->id)) {
                 $actions[] = DeleteAssets::class;
             }
-        }
-
-        // Allow plugins to add additional actions
-        $allPluginActions = Craft::$app->getPlugins()->call('addAssetActions', [$source], true);
-
-        foreach ($allPluginActions as $pluginActions) {
-            $actions = array_merge($actions, $pluginActions);
         }
 
         return $actions;

@@ -115,7 +115,7 @@ class Category extends Element
     /**
      * @inheritdoc
      */
-    public static function actions($source = null)
+    protected static function defineActions($source = null)
     {
         // Get the group we need to check permissions on
         if (preg_match('/^group:(\d+)$/', $source, $matches)) {
@@ -166,13 +166,6 @@ class Category extends Element
                 'confirmationMessage' => Craft::t('app', 'Are you sure you want to delete the selected categories?'),
                 'successMessage' => Craft::t('app', 'Categories deleted.'),
             ]);
-        }
-
-        // Allow plugins to add additional actions
-        $allPluginActions = Craft::$app->getPlugins()->call('addCategoryActions', [$source], true);
-
-        foreach ($allPluginActions as $pluginActions) {
-            $actions = array_merge($actions, $pluginActions);
         }
 
         return $actions;

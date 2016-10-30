@@ -203,7 +203,7 @@ class Entry extends Element
     /**
      * @inheritdoc
      */
-    public static function actions($source = null)
+    protected static function defineActions($source = null)
     {
         // Get the section(s) we need to check permissions on
         switch ($source) {
@@ -339,13 +339,6 @@ class Entry extends Element
                     ]);
                 }
             }
-        }
-
-        // Allow plugins to add additional actions
-        $allPluginActions = Craft::$app->getPlugins()->call('addEntryActions', [$source], true);
-
-        foreach ($allPluginActions as $pluginActions) {
-            $actions = array_merge($actions, $pluginActions);
         }
 
         return $actions;

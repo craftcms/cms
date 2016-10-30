@@ -176,7 +176,7 @@ class User extends Element implements IdentityInterface
     /**
      * @inheritdoc
      */
-    public static function actions($source = null)
+    protected static function defineActions($source = null)
     {
         $actions = [];
 
@@ -197,13 +197,6 @@ class User extends Element implements IdentityInterface
         if (Craft::$app->getUser()->checkPermission('deleteUsers')) {
             // Delete
             $actions[] = DeleteUsers::class;
-        }
-
-        // Allow plugins to add additional actions
-        $allPluginActions = Craft::$app->getPlugins()->call('addUserActions', [$source], true);
-
-        foreach ($allPluginActions as $pluginActions) {
-            $actions = array_merge($actions, $pluginActions);
         }
 
         return $actions;
