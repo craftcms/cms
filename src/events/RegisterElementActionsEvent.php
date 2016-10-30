@@ -19,6 +19,11 @@ class RegisterElementActionsEvent extends Event
     // =========================================================================
 
     /**
+     * @var string|null The selected source’s key, if any.
+     */
+    public $source;
+
+    /**
      * @var array List of registered actions for the element type.
      */
     public $actions = [];

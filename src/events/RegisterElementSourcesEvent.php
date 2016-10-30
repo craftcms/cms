@@ -19,6 +19,11 @@ class RegisterElementSourcesEvent extends Event
     // =========================================================================
 
     /**
+     * @var string|null The context ('index' or 'modal').
+     */
+    public $context;
+
+    /**
      * @var array List of registered sources for the element type.
      */
     public $sources = [];

@@ -220,6 +220,7 @@ abstract class Element extends Component implements ElementInterface
 
         // Give plugins a chance to modify them
         $event = new RegisterElementSourcesEvent([
+            'context' => $context,
             'sources' => $sources
         ]);
         Event::trigger(static::class, self::EVENT_REGISTER_SOURCES, $event);
@@ -250,6 +251,7 @@ abstract class Element extends Component implements ElementInterface
 
         // Give plugins a chance to modify them
         $event = new RegisterElementActionsEvent([
+            'source' => $source,
             'actions' => $actions
         ]);
         Event::trigger(static::class, self::EVENT_REGISTER_ACTIONS, $event);
