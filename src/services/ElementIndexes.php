@@ -209,7 +209,7 @@ class ElementIndexes extends Component
      */
     public function getAvailableTableAttributes($elementType, $includeFields = true)
     {
-        $attributes = $elementType::defineAvailableTableAttributes();
+        $attributes = $elementType::tableAttributes();
 
         foreach ($attributes as $key => $info) {
             if (!is_array($info)) {

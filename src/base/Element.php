@@ -332,7 +332,7 @@ abstract class Element extends Component implements ElementInterface
     /**
      * @inheritdoc
      */
-    public static function defineAvailableTableAttributes()
+    public static function tableAttributes()
     {
         return [];
     }
@@ -342,7 +342,7 @@ abstract class Element extends Component implements ElementInterface
      */
     public static function getDefaultTableAttributes($source = null)
     {
-        $availableTableAttributes = static::defineAvailableTableAttributes();
+        $availableTableAttributes = static::tableAttributes();
 
         return array_keys($availableTableAttributes);
     }

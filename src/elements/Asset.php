@@ -243,7 +243,7 @@ class Asset extends Element
     /**
      * @inheritdoc
      */
-    public static function defineAvailableTableAttributes()
+    public static function tableAttributes()
     {
         $attributes = [
             'title' => ['label' => Craft::t('app', 'Title')],

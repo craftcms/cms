@@ -342,13 +342,13 @@ interface ElementInterface extends ComponentInterface
      *
      * @return array The table attributes.
      */
-    public static function defineAvailableTableAttributes();
+    public static function tableAttributes();
 
     /**
      * Returns the list of table attribute keys that should be shown by default.
      *
      * This method should return an array where each element in the array maps to one of the keys of the array returned
-     * by [[defineAvailableTableAttributes()]].
+     * by [[tableAttributes()]].
      *
      * @param string|null $source The selected source’s key, if any.
      *

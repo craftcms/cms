@@ -255,7 +255,7 @@ class User extends Element implements IdentityInterface
     /**
      * @inheritdoc
      */
-    public static function defineAvailableTableAttributes()
+    public static function tableAttributes()
     {
         if (Craft::$app->getConfig()->get('useEmailAsUsername')) {
             // Start with Email and don't even give Username as an option
