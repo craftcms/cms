@@ -228,9 +228,9 @@ class Asset extends Element
     /**
      * @inheritdoc
      */
-    public static function tableAttributes()
+    protected static function defineTableAttributes()
     {
-        $attributes = [
+        return [
             'title' => ['label' => Craft::t('app', 'Title')],
             'filename' => ['label' => Craft::t('app', 'Filename')],
             'size' => ['label' => Craft::t('app', 'File Size')],
@@ -243,15 +243,6 @@ class Asset extends Element
             'dateCreated' => ['label' => Craft::t('app', 'Date Created')],
             'dateUpdated' => ['label' => Craft::t('app', 'Date Updated')],
         ];
-
-        // Allow plugins to modify the attributes
-        $pluginAttributes = Craft::$app->getPlugins()->call('defineAdditionalAssetTableAttributes', [], true);
-
-        foreach ($pluginAttributes as $thisPluginAttributes) {
-            $attributes = array_merge($attributes, $thisPluginAttributes);
-        }
-
-        return $attributes;
     }
 
     /**

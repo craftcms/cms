@@ -242,7 +242,7 @@ class User extends Element implements IdentityInterface
     /**
      * @inheritdoc
      */
-    public static function tableAttributes()
+    protected static function defineTableAttributes()
     {
         if (Craft::$app->getConfig()->get('useEmailAsUsername')) {
             // Start with Email and don't even give Username as an option
@@ -269,13 +269,6 @@ class User extends Element implements IdentityInterface
         $attributes['lastLoginDate'] = ['label' => Craft::t('app', 'Last Login')];
         $attributes['elements.dateCreated'] = ['label' => Craft::t('app', 'Date Created')];
         $attributes['elements.dateUpdated'] = ['label' => Craft::t('app', 'Date Updated')];
-
-        // Allow plugins to modify the attributes
-        $pluginAttributes = Craft::$app->getPlugins()->call('defineAdditionalUserTableAttributes', [], true);
-
-        foreach ($pluginAttributes as $thisPluginAttributes) {
-            $attributes = array_merge($attributes, $thisPluginAttributes);
-        }
 
         return $attributes;
     }

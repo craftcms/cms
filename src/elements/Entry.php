@@ -362,7 +362,7 @@ class Entry extends Element
     /**
      * @inheritdoc
      */
-    public static function tableAttributes()
+    protected static function defineTableAttributes()
     {
         $attributes = [
             'title' => ['label' => Craft::t('app', 'Title')],
@@ -382,13 +382,6 @@ class Entry extends Element
         // Hide Author from Craft Personal/Client
         if (Craft::$app->getEdition() != Craft::Pro) {
             unset($attributes['author']);
-        }
-
-        // Allow plugins to modify the attributes
-        $pluginAttributes = Craft::$app->getPlugins()->call('defineAdditionalEntryTableAttributes', [], true);
-
-        foreach ($pluginAttributes as $thisPluginAttributes) {
-            $attributes = array_merge($attributes, $thisPluginAttributes);
         }
 
         return $attributes;

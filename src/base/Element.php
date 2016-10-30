@@ -22,6 +22,7 @@ use craft\app\events\ModelEvent;
 use craft\app\events\RegisterElementActionsEvent;
 use craft\app\events\RegisterElementSortableAttributesEvent;
 use craft\app\events\RegisterElementSourcesEvent;
+use craft\app\events\RegisterElementTableAttributesEvent;
 use craft\app\helpers\ArrayHelper;
 use craft\app\helpers\ElementHelper;
 use craft\app\helpers\Html;
@@ -108,6 +109,11 @@ abstract class Element extends Component implements ElementInterface
      * @event RegisterElementSortableAttributesEvent The event that is triggered when registering the sortable attributes for the element type.
      */
     const EVENT_REGISTER_SORTABLE_ATTRIBUTES = 'registerSortableAttributes';
+
+    /**
+     * @event RegisterElementTableAttributesEvent The event that is triggered when registering the table attributes for the element type.
+     */
+    const EVENT_REGISTER_TABLE_ATTRIBUTES = 'registerTableAttributes';
 
     /**
      * @event ModelEvent The event that is triggered before the element is saved
@@ -397,7 +403,15 @@ abstract class Element extends Component implements ElementInterface
      */
     public static function tableAttributes()
     {
-        return [];
+        $tableAttributes = static::defineTableAttributes();
+
+        // Give plugins a chance to modify them
+        $event = new RegisterElementTableAttributesEvent([
+            'tableAttributes' => $tableAttributes
+        ]);
+        Event::trigger(static::class, self::EVENT_REGISTER_TABLE_ATTRIBUTES, $event);
+
+        return $event->tableAttributes;
     }
 
     /**
@@ -450,6 +464,17 @@ abstract class Element extends Component implements ElementInterface
         }
 
         return $sortableAttributes;
+    }
+
+    /**
+     * Defines all of the available columns that can be shown in table views.
+     *
+     * @return array The table attributes.
+     * @see tableAttributes()
+     */
+    protected static function defineTableAttributes()
+    {
+        return [];
     }
 
     // Methods for customizing element queries
