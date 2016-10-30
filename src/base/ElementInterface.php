@@ -325,7 +325,7 @@ interface ElementInterface extends ComponentInterface
      *
      * @return string[] The attributes that elements can be sorted by
      */
-    public static function defineSortableAttributes();
+    public static function sortableAttributes();
 
     /**
      * Defines all of the available columns that can be shown in table views.

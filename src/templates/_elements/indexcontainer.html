@@ -16,7 +16,7 @@
 {% if showSiteMenu == 'auto' %}
 	{% set showSiteMenu = elementInstance.isLocalized() %}
 {% endif %}
-{% set sortableAttributes = elementInstance.defineSortableAttributes() %}
+{% set sortableAttributes = elementInstance.sortableAttributes() %}
 
 <div class="main">
 	<div class="toolbar">

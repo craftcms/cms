@@ -223,7 +223,7 @@ class Asset extends Element
     /**
      * @inheritdoc
      */
-    public static function defineSortableAttributes()
+    public static function sortableAttributes()
     {
         $attributes = [
             'title' => Craft::t('app', 'Title'),

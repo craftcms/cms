@@ -223,7 +223,7 @@ class User extends Element implements IdentityInterface
     /**
      * @inheritdoc
      */
-    public static function defineSortableAttributes()
+    public static function sortableAttributes()
     {
         if (Craft::$app->getConfig()->get('useEmailAsUsername')) {
             $attributes = [

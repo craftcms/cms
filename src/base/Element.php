@@ -274,7 +274,7 @@ abstract class Element extends Component implements ElementInterface
         } else if (!empty($viewState['order']) && $viewState['order'] == 'score') {
             $elementQuery->orderBy('score');
         } else {
-            $sortableAttributes = static::defineSortableAttributes();
+            $sortableAttributes = static::sortableAttributes();
 
             if ($sortableAttributes) {
                 $order = (!empty($viewState['order']) && isset($sortableAttributes[$viewState['order']])) ? $viewState['order'] : ArrayHelper::getFirstKey($sortableAttributes);
@@ -317,7 +317,7 @@ abstract class Element extends Component implements ElementInterface
     /**
      * @inheritdoc
      */
-    public static function defineSortableAttributes()
+    public static function sortableAttributes()
     {
         $tableAttributes = Craft::$app->getElementIndexes()->getAvailableTableAttributes(static::class);
         $sortableAttributes = [];
