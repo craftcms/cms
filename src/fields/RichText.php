@@ -12,6 +12,7 @@ use craft\app\base\Element;
 use craft\app\base\ElementInterface;
 use craft\app\base\Field;
 use craft\app\base\Volume;
+use craft\app\events\RegisterRichTextLinkOptionsEvent;
 use craft\app\fields\data\RichTextData;
 use craft\app\helpers\Db;
 use craft\app\helpers\Html;
@@ -43,6 +44,14 @@ class RichText extends Field
     {
         return Craft::t('app', 'Rich Text');
     }
+
+    // Constants
+    // =========================================================================
+
+    /**
+     * @event RegisterRichTextLinkOptionsEvent The event that is triggered when registering the link options for the field.
+     */
+    const EVENT_REGISTER_LINK_OPTIONS = 'registerLinkOptions';
 
     // Properties
     // =========================================================================
@@ -396,13 +405,12 @@ class RichText extends Field
         }
 
         // Give plugins a chance to add their own
-        $allPluginLinkOptions = Craft::$app->getPlugins()->call('addRichTextLinkOptions', [], true);
+        $event = new RegisterRichTextLinkOptionsEvent([
+            'linkOptions' => $linkOptions
+        ]);
+        $this->trigger(self::EVENT_REGISTER_LINK_OPTIONS, $event);
 
-        foreach ($allPluginLinkOptions as $pluginLinkOptions) {
-            $linkOptions = array_merge($linkOptions, $pluginLinkOptions);
-        }
-
-        return $linkOptions;
+        return $event->linkOptions;
     }
 
     /**
