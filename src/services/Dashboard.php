@@ -41,9 +41,9 @@ class Dashboard extends Component
     // =========================================================================
 
     /**
-     * @event RegisterComponentTypesEvent The event that is triggered when registering Dashboard widgets.
+     * @event RegisterComponentTypesEvent The event that is triggered when registering Dashboard widget types.
      */
-    const EVENT_REGISTER_WIDGETS = 'registerWidgets';
+    const EVENT_REGISTER_WIDGET_TYPES = 'registerWidgetTypes';
 
     /**
      * @event WidgetEvent The event that is triggered before a widget is saved.
