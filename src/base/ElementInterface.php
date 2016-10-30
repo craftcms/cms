@@ -370,7 +370,7 @@ interface ElementInterface extends ComponentInterface
      *
      * @return array|false The eager-loading element ID mappings, or false if no mappings exist
      */
-    public static function getEagerLoadingMap($sourceElements, $handle);
+    public static function eagerLoadingMap($sourceElements, $handle);
 
     // Public Methods
     // =========================================================================

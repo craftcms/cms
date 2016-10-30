@@ -377,7 +377,7 @@ abstract class Element extends Component implements ElementInterface
     /**
      * @inheritdoc
      */
-    public static function getEagerLoadingMap($sourceElements, $handle)
+    public static function eagerLoadingMap($sourceElements, $handle)
     {
         // Eager-loading descendants or direct children?
         if ($handle == 'descendants' || $handle == 'children') {

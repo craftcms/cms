@@ -434,7 +434,7 @@ class Entry extends Element
     /**
      * @inheritdoc
      */
-    public static function getEagerLoadingMap($sourceElements, $handle)
+    public static function eagerLoadingMap($sourceElements, $handle)
     {
         if ($handle == 'author') {
             // Get the source element IDs
@@ -456,7 +456,7 @@ class Entry extends Element
             ];
         }
 
-        return parent::getEagerLoadingMap($sourceElements, $handle);
+        return parent::eagerLoadingMap($sourceElements, $handle);
     }
 
     /**

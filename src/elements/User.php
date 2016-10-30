@@ -310,7 +310,7 @@ class User extends Element implements IdentityInterface
     /**
      * @inheritdoc
      */
-    public static function getEagerLoadingMap($sourceElements, $handle)
+    public static function eagerLoadingMap($sourceElements, $handle)
     {
         if ($handle == 'photo') {
             // Get the source element IDs
@@ -332,7 +332,7 @@ class User extends Element implements IdentityInterface
             ];
         }
 
-        return parent::getEagerLoadingMap($sourceElements, $handle);
+        return parent::eagerLoadingMap($sourceElements, $handle);
     }
 
     // IdentityInterface Methods
