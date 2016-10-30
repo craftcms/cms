@@ -9,6 +9,7 @@ namespace craft\app\services;
 
 use Craft;
 use craft\app\base\Plugin;
+use craft\app\events\RegisterEmailMessagesEvent;
 use craft\app\models\RebrandEmail;
 use craft\app\records\EmailMessage as EmailMessageRecord;
 use yii\base\Component;
@@ -26,6 +27,14 @@ Craft::$app->requireEdition(Craft::Client);
  */
 class EmailMessages extends Component
 {
+    // Constants
+    // =========================================================================
+
+    /**
+     * @event RegisterEmailMessagesEvent The event that is triggered when registering email messages.
+     */
+    const EVENT_REGISTER_MESSAGES = 'registerMessages';
+
     // Properties
     // =========================================================================
 
@@ -178,30 +187,36 @@ class EmailMessages extends Component
     private function _setAllMessageInfo()
     {
         if (!isset($this->_messagesInfo)) {
-            $craftMessageInfo = [
-                'category' => 'app',
-                'sourceLanguage' => Craft::$app->sourceLanguage
-            ];
-
-            $this->_messagesInfo = [
-                'account_activation' => $craftMessageInfo,
-                'verify_new_email' => $craftMessageInfo,
-                'forgot_password' => $craftMessageInfo,
-                'test_email' => $craftMessageInfo,
+            $messages = [
+                [
+                    'key' => 'account_activation',
+                    'category' => 'app',
+                    'sourceLanguage' => Craft::$app->sourceLanguage
+                ],
+                [
+                    'key' => 'verify_new_email',
+                    'category' => 'app',
+                    'sourceLanguage' => Craft::$app->sourceLanguage
+                ],
+                [
+                    'key' => 'forgot_password',
+                    'category' => 'app',
+                    'sourceLanguage' => Craft::$app->sourceLanguage
+                ],
+                [
+                    'key' => 'test_email',
+                    'category' => 'app',
+                    'sourceLanguage' => Craft::$app->sourceLanguage
+                ],
             ];
 
             // Give plugins a chance to add additional messages
-            foreach (Craft::$app->getPlugins()->call('registerEmailMessages') as $pluginHandle => $pluginKeys) {
-                /** @var Plugin $plugin */
-                $plugin = Craft::$app->getPlugins()->getPlugin($pluginHandle);
+            $event = new RegisterEmailMessagesEvent([
+                'messages' => $messages
+            ]);
+            $this->trigger(self::EVENT_REGISTER_MESSAGES, $event);
 
-                foreach ($pluginKeys as $key) {
-                    $this->_messagesInfo[$key] = [
-                        'category' => $pluginHandle,
-                        'sourceLanguage' => $plugin->sourceLanguage
-                    ];
-                }
-            }
+            $this->_messagesInfo = $event->messages;
         }
     }
 
