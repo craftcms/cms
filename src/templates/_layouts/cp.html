@@ -181,11 +181,11 @@
 		<nav>
 			<ul id="nav">
 
-				{% for handle, item in craft.cp.nav() %}
+				{% for item in craft.cp.nav() %}
 
 					{% set hasSubnav = (subnav is defined and subnav) %}
 
-					<li id="nav-{{ handle }}"{% if item.sel and hasSubnav %} class="has-subnav"{% endif %}>
+					<li id="{{ item.id }}"{% if item.sel and hasSubnav %} class="has-subnav"{% endif %}>
 						<a{% if item.sel %} class="sel"{% endif %} href="{{ item.url }}">
 							<span class="icon">
 								{%- if item.icon is defined -%}
