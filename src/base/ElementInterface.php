@@ -202,7 +202,7 @@ interface ElementInterface extends ComponentInterface
     public static function statuses();
 
     /**
-     * Returns the keys of the sources that elements of this type may belong to.
+     * Returns the source definitions that elements of this type may belong to.
      *
      * This defines what will show up in the source list on element indexes and element selector modals.
      *
