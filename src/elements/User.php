@@ -1219,15 +1219,8 @@ class User extends Element implements IdentityInterface
     /**
      * @inheritdoc
      */
-    public function getTableAttributeHtml($attribute)
+    protected function tableAttributeHtml($attribute)
     {
-        // First give plugins a chance to set this
-        $pluginAttributeHtml = Craft::$app->getPlugins()->callFirst('getUserTableAttributeHtml', [$this, $attribute], true);
-
-        if ($pluginAttributeHtml !== null) {
-            return $pluginAttributeHtml;
-        }
-
         switch ($attribute) {
             case 'email':
                 return $this->email ? Html::encodeParams('<a href="mailto:{email}">{email}</a>', ['email' => $this->email]) : '';

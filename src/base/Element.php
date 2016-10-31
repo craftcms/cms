@@ -23,6 +23,7 @@ use craft\app\events\RegisterElementActionsEvent;
 use craft\app\events\RegisterElementSortableAttributesEvent;
 use craft\app\events\RegisterElementSourcesEvent;
 use craft\app\events\RegisterElementTableAttributesEvent;
+use craft\app\events\SetElementTableAttributeHtmlEvent;
 use craft\app\helpers\ArrayHelper;
 use craft\app\helpers\ElementHelper;
 use craft\app\helpers\Html;
@@ -114,6 +115,11 @@ abstract class Element extends Component implements ElementInterface
      * @event RegisterElementTableAttributesEvent The event that is triggered when registering the table attributes for the element type.
      */
     const EVENT_REGISTER_TABLE_ATTRIBUTES = 'registerTableAttributes';
+
+    /**
+     * @event SetElementTableAttributeHtmlEvent The event that is triggered when defining the HTML to represent a table attribute.
+     */
+    const EVENT_SET_TABLE_ATTRIBUTE_HTML = 'setTableAttributeHtml';
 
     /**
      * @event ModelEvent The event that is triggered before the element is saved
@@ -1520,77 +1526,17 @@ abstract class Element extends Component implements ElementInterface
      */
     public function getTableAttributeHtml($attribute)
     {
-        switch ($attribute) {
-            case 'link':
-                $url = $this->getUrl();
+        // Give plugins a chance to set this
+        $event = new SetElementTableAttributeHtmlEvent([
+            'attribute' => $attribute
+        ]);
+        $this->trigger(self::EVENT_SET_TABLE_ATTRIBUTE_HTML, $event);
 
-                if ($url) {
-                    return '<a href="'.$url.'" target="_blank" data-icon="world" title="'.Craft::t('app', 'Visit webpage').'"></a>';
-                }
-
-                return '';
-
-            case 'uri':
-                $url = $this->getUrl();
-
-                if ($url) {
-                    $value = $this->uri;
-
-                    if ($value == '__home__') {
-                        $value = '<span data-icon="home" title="'.Craft::t('app', 'Homepage').'"></span>';
-                    } else {
-                        // Add some <wbr> tags in there so it doesn't all have to be on one line
-                        $find = ['/'];
-                        $replace = ['/<wbr>'];
-
-                        $wordSeparator = Craft::$app->getConfig()->get('slugWordSeparator');
-
-                        if ($wordSeparator) {
-                            $find[] = $wordSeparator;
-                            $replace[] = $wordSeparator.'<wbr>';
-                        }
-
-                        $value = str_replace($find, $replace, $value);
-                    }
-
-                    return '<a href="'.$url.'" target="_blank" class="go" title="'.Craft::t('app', 'Visit webpage').'"><span dir="ltr">'.$value.'</span></a>';
-                }
-
-                return '';
-
-            default:
-                // Is this a custom field?
-                if (preg_match('/^field:(\d+)$/', $attribute, $matches)) {
-                    $fieldId = $matches[1];
-                    $field = Craft::$app->getFields()->getFieldById($fieldId);
-
-                    if ($field) {
-                        /** @var Field $field */
-                        if ($field instanceof PreviewableFieldInterface) {
-                            // Was this field value eager-loaded?
-                            if ($field instanceof EagerLoadingFieldInterface && $this->hasEagerLoadedElements($field->handle)) {
-                                $value = $this->getEagerLoadedElements($field->handle);
-                            } else {
-                                $value = $this->getFieldValue($field->handle);
-                            }
-
-                            return $field->getTableAttributeHtml($value, $this);
-                        }
-                    }
-
-                    return '';
-                }
-
-                $value = $this->$attribute;
-
-                if ($value instanceof DateTime) {
-                    $formatter = Craft::$app->getFormatter();
-
-                    return '<span title="'.$formatter->asDatetime($value, Locale::LENGTH_SHORT).'">'.$formatter->asTimestamp($value, Locale::LENGTH_SHORT).'</span>';
-                }
-
-                return Html::encode($value);
+        if ($event->html !== null) {
+            return $event->html;
         }
+
+        return $this->tableAttributeHtml($attribute);
     }
 
     /**
@@ -1866,6 +1812,89 @@ abstract class Element extends Component implements ElementInterface
     protected function resolveStructureId()
     {
         return null;
+    }
+
+    /**
+     * Returns the HTML that should be shown for a given attribute in Table View.
+     *
+     * @param string $attribute The attribute name.
+     *
+     * @return string The HTML that should be shown for a given attribute in Table View.
+     * @see getTableAttributeHtml()
+     */
+    protected function tableAttributeHtml($attribute)
+    {
+        switch ($attribute) {
+            case 'link':
+                $url = $this->getUrl();
+
+                if ($url) {
+                    return '<a href="'.$url.'" target="_blank" data-icon="world" title="'.Craft::t('app', 'Visit webpage').'"></a>';
+                }
+
+                return '';
+
+            case 'uri':
+                $url = $this->getUrl();
+
+                if ($url) {
+                    $value = $this->uri;
+
+                    if ($value == '__home__') {
+                        $value = '<span data-icon="home" title="'.Craft::t('app', 'Homepage').'"></span>';
+                    } else {
+                        // Add some <wbr> tags in there so it doesn't all have to be on one line
+                        $find = ['/'];
+                        $replace = ['/<wbr>'];
+
+                        $wordSeparator = Craft::$app->getConfig()->get('slugWordSeparator');
+
+                        if ($wordSeparator) {
+                            $find[] = $wordSeparator;
+                            $replace[] = $wordSeparator.'<wbr>';
+                        }
+
+                        $value = str_replace($find, $replace, $value);
+                    }
+
+                    return '<a href="'.$url.'" target="_blank" class="go" title="'.Craft::t('app', 'Visit webpage').'"><span dir="ltr">'.$value.'</span></a>';
+                }
+
+                return '';
+
+            default:
+                // Is this a custom field?
+                if (preg_match('/^field:(\d+)$/', $attribute, $matches)) {
+                    $fieldId = $matches[1];
+                    $field = Craft::$app->getFields()->getFieldById($fieldId);
+
+                    if ($field) {
+                        /** @var Field $field */
+                        if ($field instanceof PreviewableFieldInterface) {
+                            // Was this field value eager-loaded?
+                            if ($field instanceof EagerLoadingFieldInterface && $this->hasEagerLoadedElements($field->handle)) {
+                                $value = $this->getEagerLoadedElements($field->handle);
+                            } else {
+                                $value = $this->getFieldValue($field->handle);
+                            }
+
+                            return $field->getTableAttributeHtml($value, $this);
+                        }
+                    }
+
+                    return '';
+                }
+
+                $value = $this->$attribute;
+
+                if ($value instanceof DateTime) {
+                    $formatter = Craft::$app->getFormatter();
+
+                    return '<span title="'.$formatter->asDatetime($value, Locale::LENGTH_SHORT).'">'.$formatter->asTimestamp($value, Locale::LENGTH_SHORT).'</span>';
+                }
+
+                return Html::encode($value);
+        }
     }
 
     // Private Methods

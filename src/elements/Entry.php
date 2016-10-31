@@ -780,15 +780,8 @@ class Entry extends Element
     /**
      * @inheritdoc
      */
-    public function getTableAttributeHtml($attribute)
+    protected function tableAttributeHtml($attribute)
     {
-        // First give plugins a chance to set this
-        $pluginAttributeHtml = Craft::$app->getPlugins()->callFirst('getEntryTableAttributeHtml', [$this, $attribute], true);
-
-        if ($pluginAttributeHtml !== null) {
-            return $pluginAttributeHtml;
-        }
-
         switch ($attribute) {
             case 'author':
                 $author = $this->getAuthor();

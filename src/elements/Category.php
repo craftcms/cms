@@ -336,21 +336,6 @@ class Category extends Element
     /**
      * @inheritdoc
      */
-    public function getTableAttributeHtml($attribute)
-    {
-        // First give plugins a chance to set this
-        $pluginAttributeHtml = Craft::$app->getPlugins()->callFirst('getCategoryTableAttributeHtml', [$this, $attribute], true);
-
-        if ($pluginAttributeHtml !== null) {
-            return $pluginAttributeHtml;
-        }
-
-        return parent::getTableAttributeHtml($attribute);
-    }
-
-    /**
-     * @inheritdoc
-     */
     public function getEditorHtml()
     {
         $html = Craft::$app->getView()->renderTemplateMacro('_includes/forms', 'textField', [
