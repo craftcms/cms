@@ -103,6 +103,8 @@ class QueryBuilder extends \yii\db\pgsql\QueryBuilder
 
             $sql .= $update;
         }
+
+        return $sql;
     }
 
     /**
