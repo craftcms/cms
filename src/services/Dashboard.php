@@ -87,7 +87,7 @@ class Dashboard extends Component
         $event = new RegisterComponentTypesEvent([
             'types' => $widgetTypes
         ]);
-        $this->trigger(self::EVENT_REGISTER_WIDGETS, $event);
+        $this->trigger(self::EVENT_REGISTER_WIDGET_TYPES, $event);
 
         return $event->types;
     }
