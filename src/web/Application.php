@@ -389,9 +389,9 @@ class Application extends \yii\web\Application
         if ($request->getIsResourceRequest()) {
             // Get the path segments, except for the first one which we already know is "resources"
             $segs = array_slice(array_merge($request->getSegments()), 1);
-            $path = implode('/', $segs);
+            $uri = implode('/', $segs);
 
-            $this->getResources()->sendResource($path);
+            $this->getResources()->sendResource($uri);
         }
     }
 

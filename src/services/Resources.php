@@ -10,6 +10,7 @@ namespace craft\app\services;
 use Craft;
 use craft\app\cache\AppPathDependency;
 use craft\app\dates\DateTime;
+use craft\app\events\ResolveResourcePathEvent;
 use craft\app\helpers\Io;
 use craft\app\helpers\Path as PathHelper;
 use craft\app\helpers\StringHelper;
@@ -31,6 +32,11 @@ use yii\web\ServerErrorHttpException;
  */
 class Resources extends Component
 {
+    /**
+     * @event ResolveResourcePathEvent The event that is triggered when mapping a resource URI to a file path.
+     */
+    const EVENT_RESOLVE_RESOURCE_PATH = 'resolveResourcePath';
+
     // Properties
     // =========================================================================
 
@@ -43,18 +49,18 @@ class Resources extends Component
     // =========================================================================
 
     /**
-     * Returns the cached file system path for a given resource, if we have it.
+     * Returns the cached file system path for a given resource URI, if we have it.
      *
-     * @param string $path
+     * @param string $uri
      *
      * @return string|null
      */
-    public function getCachedResourcePath($path)
+    public function getCachedResourcePath($uri)
     {
-        $realPath = Craft::$app->getCache()->get('resourcePath:'.$path);
+        $path = Craft::$app->getCache()->get('resourcePath:'.$uri);
 
-        if ($realPath && Io::fileExists($realPath)) {
-            return $realPath;
+        if ($path && Io::fileExists($path)) {
+            return $path;
         }
 
         return null;
@@ -63,32 +69,32 @@ class Resources extends Component
     /**
      * Caches a file system path for a given resource.
      *
+     * @param string $uri
      * @param string $path
-     * @param string $realPath
      *
      * @return void
      */
-    public function cacheResourcePath($path, $realPath)
+    public function cacheResourcePath($uri, $path)
     {
-        if (!$realPath) {
-            $realPath = ':(';
+        if (!$path) {
+            $path = ':(';
         }
 
-        Craft::$app->getCache()->set('resourcePath:'.$path, $realPath, null, new AppPathDependency());
+        Craft::$app->getCache()->set('resourcePath:'.$uri, $path, null, new AppPathDependency());
     }
 
     /**
-     * Resolves a resource path to the actual file system path, or returns false if the resource cannot be found.
+     * Resolves a resource URI to the actual file system path, or returns false if the resource cannot be found.
      *
-     * @param string $path
+     * @param string $uri
      *
      * @return string
      * @throws NotFoundHttpException if the requested image transform cannot be found
      * @throws ServerErrorHttpException if reasons
      */
-    public function getResourcePath($path)
+    public function resolveResourcePath($uri)
     {
-        $segs = explode('/', $path);
+        $segs = explode('/', $uri);
 
         // Special resource routing
         if (isset($segs[0])) {
@@ -178,7 +184,7 @@ class Resources extends Component
         }
 
         // Check app/resources folder first.
-        $appResourcePath = Craft::$app->getPath()->getResourcesPath().'/'.$path;
+        $appResourcePath = Craft::$app->getPath()->getResourcesPath().'/'.$uri;
 
         if (Io::fileExists($appResourcePath)) {
             return $appResourcePath;
@@ -195,11 +201,14 @@ class Resources extends Component
         }
 
         // Maybe a plugin wants to do something custom with this URL
-        $pluginPath = Craft::$app->getPlugins()->callFirst('getResourcePath',
-            [$path], true);
+        Craft::$app->getPlugins()->loadPlugins();
+        $event = new ResolveResourcePathEvent([
+            'uri' => $uri
+        ]);
+        $this->trigger(self::EVENT_RESOLVE_RESOURCE_PATH, $event);
 
-        if ($pluginPath && Io::fileExists($pluginPath)) {
-            return $pluginPath;
+        if ($event->path !== null && Io::fileExists($event->path)) {
+            return $event->path;
         }
 
         // Couldn't find the file
@@ -209,37 +218,37 @@ class Resources extends Component
     /**
      * Sends a resource back to the browser.
      *
-     * @param string $path
+     * @param string $uri
      *
      * @return void
-     * @throws ForbiddenHttpException if the requested resource path is not contained within the allowed directories
+     * @throws ForbiddenHttpException if the requested resource URI is not contained within the allowed directories
      * @throws NotFoundHttpException if the requested resource cannot be found
      */
-    public function sendResource($path)
+    public function sendResource($uri)
     {
-        if (PathHelper::ensurePathIsContained($path) === false) {
+        if (PathHelper::ensurePathIsContained($uri) === false) {
             throw new ForbiddenHttpException(Craft::t('app', 'Resource path not contained within allowed directories'));
         }
 
-        $cachedPath = $this->getCachedResourcePath($path);
+        $cachedPath = $this->getCachedResourcePath($uri);
 
         if ($cachedPath) {
             if ($cachedPath == ':(') {
                 // 404
-                $realPath = false;
+                $path = false;
             } else {
                 // We've got it already
-                $realPath = $cachedPath;
+                $path = $cachedPath;
             }
         } else {
             // We don't have a cache of the file system path, so let's get it
-            $realPath = $this->getResourcePath($path);
+            $path = $this->resolveResourcePath($uri);
 
             // Now cache it
-            $this->cacheResourcePath($path, $realPath);
+            $this->cacheResourcePath($uri, $path);
         }
 
-        if ($realPath === false || !Io::fileExists($realPath)) {
+        if ($path === false || !Io::fileExists($path)) {
             throw new NotFoundHttpException(Craft::t('app', 'Resource not found'));
         }
 
@@ -252,7 +261,7 @@ class Resources extends Component
                 $_SERVER)
         ) {
             $requestDate = DateTime::createFromFormat('U', $timestamp);
-            $lastModifiedFileDate = Io::getLastTimeModified($realPath);
+            $lastModifiedFileDate = Io::getLastTimeModified($path);
 
             if ($lastModifiedFileDate && $lastModifiedFileDate <= $requestDate) {
                 // Let the browser serve it from cache.
@@ -261,8 +270,8 @@ class Resources extends Component
             }
         }
 
-        $filename = Io::getFilename($realPath);
-        $mimeType = FileHelper::getMimeTypeByExtension($realPath);
+        $filename = Io::getFilename($path);
+        $mimeType = FileHelper::getMimeTypeByExtension($path);
         $response = Craft::$app->getResponse();
 
         $options = [
@@ -272,19 +281,19 @@ class Resources extends Component
 
         if (Craft::$app->getRequest()->getQueryParam($this->dateParam)) {
             $response->setCacheHeaders();
-            $response->setLastModifiedHeader($realPath);
+            $response->setLastModifiedHeader($path);
         }
 
         // Is this a CSS file?
         if ($mimeType == 'text/css') {
             // Normalize the URLs
-            $contents = Io::getFileContents($realPath);
+            $contents = Io::getFileContents($path);
             $contents = preg_replace_callback('/(url\(([\'"]?))(.+?)(\2\))/',
                 [&$this, '_normalizeCssUrl'], $contents);
 
             $response->sendContentAsFile($contents, $filename, $options);
         } else {
-            $response->sendFile($realPath, $filename, $options);
+            $response->sendFile($path, $filename, $options);
         }
 
         // You shall not pass.
