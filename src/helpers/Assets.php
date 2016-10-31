@@ -11,6 +11,8 @@ use Craft;
 use craft\app\base\Volume;
 use craft\app\elements\Asset;
 use craft\app\enums\PeriodType;
+use craft\app\events\Event;
+use craft\app\events\SetAssetFilenameEvent;
 use craft\app\models\VolumeFolder;
 
 /**
@@ -25,6 +27,11 @@ class Assets
     // =========================================================================
 
     const INDEX_SKIP_ITEMS_PATTERN = '/.*(Thumbs\.db|__MACOSX|__MACOSX\/|__MACOSX\/.*|\.DS_STORE)$/i';
+
+    /**
+     * @event SetElementTableAttributeHtmlEvent The event that is triggered when defining an asset’s filename.
+     */
+    const EVENT_SET_FILENAME = 'setFilename';
 
     // Public Methods
     // =========================================================================
@@ -110,10 +117,11 @@ class Assets
         }
 
         if ($isFilename && !$preventPluginModifications) {
-            $pluginModifiedAssetName = Craft::$app->getPlugins()->callFirst('modifyAssetFilename', [$baseName], true);
-
-            // Use the plugin-modified name, if anyone was up to the task.
-            $baseName = $pluginModifiedAssetName ?: $baseName;
+            $event = new SetAssetFilenameEvent([
+                'filename' => $baseName
+            ]);
+            Event::trigger(self::class, self::EVENT_SET_FILENAME, $event);
+            $baseName = $event->filename;
         }
 
         $baseName = Io::cleanFilename($baseName, $config->get('convertFilenamesToAscii'), $separator);
