@@ -44,7 +44,7 @@ use yii\helpers\Markdown;
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since  3.0
  */
-class Extension extends \Twig_Extension
+class Extension extends \Twig_Extension implements \Twig_Extension_GlobalsInterface
 {
     // Properties
     // =========================================================================
