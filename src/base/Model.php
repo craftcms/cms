@@ -119,22 +119,6 @@ abstract class Model extends \yii\base\Model
     }
 
     /**
-     * Returns all errors flattened into a single list.
-     *
-     * @return array
-     */
-    public function getFlattenedErrors()
-    {
-        $errors = [];
-
-        foreach ($this->getErrors() as $attributeErrors) {
-            $errors = array_merge($errors, $attributeErrors);
-        }
-
-        return $errors;
-    }
-
-    /**
      * Returns a copy of this model.
      *
      * @return $this

@@ -26,6 +26,7 @@ use craft\app\errors\ElementNotFoundException;
 use craft\app\errors\MissingComponentException;
 use craft\app\events\ElementEvent;
 use craft\app\events\MergeElementsEvent;
+use craft\app\events\RegisterComponentTypesEvent;
 use craft\app\helpers\ArrayHelper;
 use craft\app\helpers\Component as ComponentHelper;
 use craft\app\helpers\DateTimeHelper;
@@ -51,6 +52,11 @@ class Elements extends Component
 {
     // Constants
     // =========================================================================
+
+    /**
+     * @event RegisterComponentTypesEvent The event that is triggered when registering element types.
+     */
+    const EVENT_REGISTER_ELEMENT_TYPES = 'registerElementTypes';
 
     /**
      * @event MergeElementsEvent The event that is triggered after two elements are merged together.
@@ -991,12 +997,11 @@ class Elements extends Component
     /**
      * Returns all available element classes.
      *
-     * @return ElementInterface[] The available element classes.
+     * @return string[] The available element classes.
      */
     public function getAllElementTypes()
     {
-        // TODO: Come up with a way for plugins to add more element classes
-        return [
+        $elementTypes = [
             Asset::class,
             Category::class,
             Entry::class,
@@ -1005,6 +1010,13 @@ class Elements extends Component
             Tag::class,
             User::class,
         ];
+
+        $event = new RegisterComponentTypesEvent([
+            'types' => $elementTypes
+        ]);
+        $this->trigger(self::EVENT_REGISTER_ELEMENT_TYPES, $event);
+
+        return $event->types;
     }
 
     // Element Actions
@@ -1272,7 +1284,7 @@ class Elements extends Component
                     // Get the eager-loading map from the source element type
                     /** @var Element $sourceElementType */
                     $sourceElementType = $elementTypesByPath[$sourcePath];
-                    $map = $sourceElementType::getEagerLoadingMap($elementsByPath[$sourcePath], $segment);
+                    $map = $sourceElementType::eagerLoadingMap($elementsByPath[$sourcePath], $segment);
 
                     if ($map && !empty($map['map'])) {
                         // Remember the element type in case there are more segments after this

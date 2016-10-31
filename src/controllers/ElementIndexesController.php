@@ -238,7 +238,7 @@ class ElementIndexesController extends BaseElementsController
     {
         if ($this->_sourceKey) {
             $elementType = $this->_elementType;
-            $source = $elementType::getSourceByKey($this->_sourceKey, $this->_context);
+            $source = $elementType::source($this->_sourceKey, $this->_context);
 
             if (!$source) {
                 // That wasn't a valid source, or the user doesn't have access to it in this context
@@ -358,7 +358,7 @@ class ElementIndexesController extends BaseElementsController
         $showCheckboxes = !empty($this->_actions);
         $elementType = $this->_elementType;
 
-        $responseData['html'] = $elementType::getIndexHtml(
+        $responseData['html'] = $elementType::indexHtml(
             $this->_elementQuery,
             $disabledElementIds,
             $this->_viewState,
@@ -387,7 +387,7 @@ class ElementIndexesController extends BaseElementsController
 
         /** @var Element $elementType */
         $elementType = $this->_elementType;
-        $actions = $elementType::getAvailableActions($this->_sourceKey);
+        $actions = $elementType::actions($this->_sourceKey);
 
         if ($actions) {
             foreach ($actions as $i => $action) {

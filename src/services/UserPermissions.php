@@ -11,6 +11,7 @@ namespace craft\app\services;
 use Craft;
 use craft\app\base\Plugin;
 use craft\app\db\Query;
+use craft\app\events\RegisterUserPermissionsEvent;
 use craft\app\models\Section;
 use craft\app\records\UserPermission as UserPermissionRecord;
 use yii\base\Component;
@@ -27,6 +28,14 @@ Craft::$app->requireEdition(Craft::Client);
  */
 class UserPermissions extends Component
 {
+    // Constants
+    // =========================================================================
+
+    /**
+     * @event RegisterUserPermissionsEvent The event that is triggered when registering user permissions.
+     */
+    const EVENT_REGISTER_PERMISSIONS = 'registerPermissions';
+
     // Properties
     // =========================================================================
 
@@ -171,15 +180,15 @@ class UserPermissions extends Component
             $permissions[$label] = $this->_getVolumePermissions($volume->id);
         }
 
-        // Plugins
+        // Let plugins customize them and add new ones
         // ---------------------------------------------------------------------
 
-        foreach (Craft::$app->getPlugins()->call('registerUserPermissions') as $pluginHandle => $pluginPermissions) {
-            $plugin = Craft::$app->getPlugins()->getPlugin($pluginHandle);
-            $permissions[$plugin->name] = $pluginPermissions;
-        }
+        $event = new RegisterUserPermissionsEvent([
+            'permissions' => $permissions
+        ]);
+        $this->trigger(self::EVENT_REGISTER_PERMISSIONS, $event);
 
-        return $permissions;
+        return $event->permissions;
     }
 
     /**

@@ -69,7 +69,7 @@ class MatrixBlock extends Element
     /**
      * @inheritdoc
      */
-    public static function getEagerLoadingMap($sourceElements, $handle)
+    public static function eagerLoadingMap($sourceElements, $handle)
     {
         // $handle *must* be set as "blockTypeHandle:fieldHandle" so we know _which_ myRelationalField to resolve to
         $handleParts = explode(':', $handle);
@@ -96,7 +96,7 @@ class MatrixBlock extends Element
         $originalFieldContext = $contentService->fieldContext;
         $contentService->fieldContext = 'matrixBlockType:'.$blockType->id;
 
-        $map = parent::getEagerLoadingMap($sourceElements, $fieldHandle);
+        $map = parent::eagerLoadingMap($sourceElements, $fieldHandle);
 
         $contentService->fieldContext = $originalFieldContext;
 

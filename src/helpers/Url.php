@@ -253,32 +253,32 @@ class Url
     /**
      * Returns a resource URL.
      *
-     * @param string            $path
+     * @param string            $uri
      * @param array|string|null $params
      * @param string|null       $protocol The protocol to use (e.g. http, https). If empty, the protocol used for the
      *                                    current request will be used.
      *
      * @return string
      */
-    public static function getResourceUrl($path = '', $params = null, $protocol = null)
+    public static function getResourceUrl($uri = '', $params = null, $protocol = null)
     {
-        $path = trim($path, '/');
+        $uri = trim($uri, '/');
 
-        if ($path) {
+        if ($uri) {
             // If we've served this resource before, we should have a cached copy of the server path already. Use that
             // to get its timestamp, and add timestamp to the resource URL so the Resources service sends it with
             // a Pragma: Cache header.
             $dateParam = Craft::$app->getResources()->dateParam;
 
             if (!isset($params[$dateParam])) {
-                $realPath = Craft::$app->getResources()->getCachedResourcePath($path);
+                $path = Craft::$app->getResources()->getCachedResourcePath($uri);
 
-                if ($realPath) {
+                if ($path) {
                     if (!is_array($params)) {
                         $params = [$params];
                     }
 
-                    $timeModified = Io::getLastTimeModified($realPath);
+                    $timeModified = Io::getLastTimeModified($path);
                     $params[$dateParam] = $timeModified->getTimestamp();
                 } else {
                     // Just set a random query string param on there, so even if the browser decides to cache it,
@@ -295,7 +295,7 @@ class Url
             }
         }
 
-        return static::getUrl(Craft::$app->getConfig()->getResourceTrigger().'/'.$path, $params, $protocol);
+        return static::getUrl(Craft::$app->getConfig()->getResourceTrigger().'/'.$uri, $params, $protocol);
     }
 
     /**

@@ -93,6 +93,12 @@ class VolumesController extends Controller
         if (Craft::$app->getEdition() == Craft::Pro) {
             /** @var Volume[] $allVolumeTypes */
             $allVolumeTypes = $volumes->getAllVolumeTypes();
+
+            // Make sure the selected volume class is in there
+            if (!in_array(get_class($volume), $allVolumeTypes)) {
+                $allVolumeTypes[] = get_class($volume);
+            }
+
             $volumeInstances = [];
             $volumeTypeOptions = [];
 

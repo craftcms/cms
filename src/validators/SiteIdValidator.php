@@ -32,7 +32,7 @@ class SiteIdValidator extends Validator
         $siteId = $object->$attribute;
 
         if ($siteId && !in_array($siteId, Craft::$app->getSites()->getAllSiteIds())) {
-            $message = Craft::t('app', 'Your site isn’t set up to save content for the site “{site}”.', ['site' => $siteId]);
+            $message = Craft::t('app', 'Your system isn’t set up to save content for the site “{site}”.', ['site' => $siteId]);
             $this->addError($object, $attribute, $message);
         }
     }

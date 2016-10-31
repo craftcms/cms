@@ -54,10 +54,10 @@ interface ElementInterface extends ComponentInterface
      * If this returns `true`, the element index template will show a Status menu by default, and your elements will
      * get status indicator icons next to them.
      *
-     * Use [[getStatuses()]] to customize which statuses the elements might have.
+     * Use [[statuses()]] to customize which statuses the elements might have.
      *
      * @return boolean Whether elements of this type have statuses.
-     * @see getStatuses()
+     * @see statuses()
      */
     public static function hasStatuses();
 
@@ -199,10 +199,10 @@ interface ElementInterface extends ComponentInterface
      * @return string[]|null
      * @see hasStatuses()
      */
-    public static function getStatuses();
+    public static function statuses();
 
     /**
-     * Returns the keys of the sources that elements of this type may belong to.
+     * Returns the source definitions that elements of this type may belong to.
      *
      * This defines what will show up in the source list on element indexes and element selector modals.
      *
@@ -228,9 +228,9 @@ interface ElementInterface extends ComponentInterface
      *
      * @param string|null $context The context ('index' or 'modal').
      *
-     * @return string[]|false The source keys.
+     * @return array The sources.
      */
-    public static function getSources($context = null);
+    public static function sources($context = null);
 
     /**
      * Returns a source by its key and context.
@@ -240,7 +240,7 @@ interface ElementInterface extends ComponentInterface
      *
      * @return array|null
      */
-    public static function getSourceByKey($key, $context = null);
+    public static function source($key, $context = null);
 
     /**
      * Returns the available element actions for a given source (if one is provided).
@@ -252,7 +252,7 @@ interface ElementInterface extends ComponentInterface
      *
      * @return array|null The available element actions.
      */
-    public static function getAvailableActions($source = null);
+    public static function actions($source = null);
 
     /**
      * Defines which element attributes should be searchable.
@@ -277,7 +277,7 @@ interface ElementInterface extends ComponentInterface
      *
      * @return string[] The element attributes that should be searchable
      */
-    public static function defineSearchableAttributes();
+    public static function searchableAttributes();
 
     /**
      * Returns the element index HTML.
@@ -292,10 +292,10 @@ interface ElementInterface extends ComponentInterface
      *
      * @return string The element index HTML
      */
-    public static function getIndexHtml($elementQuery, $disabledElementIds, $viewState, $sourceKey, $context, $includeContainer, $showCheckboxes);
+    public static function indexHtml($elementQuery, $disabledElementIds, $viewState, $sourceKey, $context, $includeContainer, $showCheckboxes);
 
     /**
-     * Defines the attributes that elements can be sorted by.
+     * Returns the attributes that elements can be sorted by.
      *
      * This method should return an array, where the keys reference database column names that should be sorted on,
      * and where the values define the user-facing labels.
@@ -325,7 +325,7 @@ interface ElementInterface extends ComponentInterface
      *
      * @return string[] The attributes that elements can be sorted by
      */
-    public static function defineSortableAttributes();
+    public static function sortableAttributes();
 
     /**
      * Defines all of the available columns that can be shown in table views.
@@ -342,19 +342,19 @@ interface ElementInterface extends ComponentInterface
      *
      * @return array The table attributes.
      */
-    public static function defineAvailableTableAttributes();
+    public static function tableAttributes();
 
     /**
      * Returns the list of table attribute keys that should be shown by default.
      *
      * This method should return an array where each element in the array maps to one of the keys of the array returned
-     * by [[defineAvailableTableAttributes()]].
+     * by [[tableAttributes()]].
      *
      * @param string|null $source The selected source’s key, if any.
      *
      * @return array The table attribute keys
      */
-    public static function getDefaultTableAttributes($source = null);
+    public static function defaultTableAttributes($source = null);
 
     /**
      * Returns an array that maps source-to-target element IDs based on the given sub-property handle.
@@ -370,7 +370,7 @@ interface ElementInterface extends ComponentInterface
      *
      * @return array|false The eager-loading element ID mappings, or false if no mappings exist
      */
-    public static function getEagerLoadingMap($sourceElements, $handle);
+    public static function eagerLoadingMap($sourceElements, $handle);
 
     // Public Methods
     // =========================================================================

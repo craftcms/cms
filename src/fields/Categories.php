@@ -89,7 +89,7 @@ class Categories extends BaseRelationField
         if ($this->source) {
             /** @var Category $class */
             $class = static::elementType();
-            $source = $class::getSourceByKey($this->source, 'field');
+            $source = $class::source($this->source, 'field');
         }
 
         if (empty($source)) {

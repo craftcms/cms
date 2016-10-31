@@ -56,6 +56,7 @@ class DashboardController extends Controller
         $view->setNamespace('__NAMESPACE__');
 
         foreach ($widgetTypes as $widgetType) {
+            /** @var WidgetInterface $widgetType */
             if (!$widgetType::isSelectable()) {
                 continue;
             }
@@ -581,14 +582,16 @@ class DashboardController extends Controller
                 'footHtml' => $view->getBodyHtml(),
             ]);
         } else {
-            $errors = $widget->getFlattenedErrors();
+            $allErrors = [];
 
-            foreach ($widget->getErrors() as $attribute => $attributeErrors) {
-                $errors = array_merge($errors, $attributeErrors);
+            foreach ($widget->getErrors() as $attribute => $errors) {
+                foreach ($errors as $error) {
+                    $allErrors[] = $error;
+                }
             }
 
             return $this->asJson([
-                'errors' => $errors
+                'errors' => $allErrors
             ]);
         }
     }

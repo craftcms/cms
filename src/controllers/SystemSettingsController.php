@@ -30,6 +30,7 @@ use craft\app\tools\SearchIndex;
 use craft\app\web\Controller;
 use yii\base\Exception;
 use yii\helpers\Inflector;
+use yii\httpclient\Transport;
 use yii\web\NotFoundHttpException;
 use yii\web\Response;
 
@@ -194,35 +195,23 @@ class SystemSettingsController extends Controller
             }
         }
 
-        /** @var TransportAdapterInterface[] $allTransportAdapterTypes */
-        $allTransportAdapterTypes = [
-            new Php(),
-            new Sendmail(),
-            new Smtp(),
-            new Gmail(),
-        ];
+        // Get all the registered transport adapter types
+        $allTransportAdapterTypes = MailerHelper::getAllMailerTransportTypes();
 
-        foreach (Craft::$app->getPlugins()->call('getMailTransportAdapters', [], true) as $pluginTransportTypes) {
-            foreach ($pluginTransportTypes as $pluginTransportType) {
-                if (is_object($pluginTransportType)) {
-                    if (!$pluginTransportType instanceof TransportAdapterInterface) {
-                        throw new Exception('\''.get_class($pluginTransportType).'\' is not an instance of \''.TransportAdapterInterface::class.'\'.');
-                    }
-                    $allTransportAdapterTypes[] = $pluginTransportType;
-                } else {
-                    $allTransportAdapterTypes[] = MailerHelper::createTransportAdapter($pluginTransportType);
-                }
-            }
+        // Make sure the selected adapter class is in there
+        if (!in_array(get_class($adapter), $allTransportAdapterTypes)) {
+            $allTransportAdapterTypes[] = get_class($adapter);
         }
 
+        $allTransportAdapters = [];
         $transportTypeOptions = [];
 
         foreach ($allTransportAdapterTypes as $transportAdapterType) {
-            $class = get_class($transportAdapterType);
-
-            if ($class === get_class($adapter) || $transportAdapterType::isSelectable()) {
+            /** @var string|TransportAdapterInterface $transportAdapterType */
+            if ($transportAdapterType === get_class($adapter) || $transportAdapterType::isSelectable()) {
+                $allTransportAdapters[] = MailerHelper::createTransportAdapter($transportAdapterType);
                 $transportTypeOptions[] = [
-                    'value' => $class,
+                    'value' => $transportAdapterType,
                     'label' => $transportAdapterType::displayName()
                 ];
             }
@@ -232,7 +221,7 @@ class SystemSettingsController extends Controller
             'settings' => $settings,
             'adapter' => $adapter,
             'transportTypeOptions' => $transportTypeOptions,
-            'allTransportTypes' => $allTransportAdapterTypes,
+            'allTransportAdapters' => $allTransportAdapters,
         ]);
     }
 

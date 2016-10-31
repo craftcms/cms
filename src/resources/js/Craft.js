@@ -1,4 +1,4 @@
-/*! Craft 3.0.0 - 2016-10-26 */
+/*! Craft 3.0.0 - 2016-10-29 */
 (function($){
 
 // Set all the standard Craft.* stuff
@@ -12146,7 +12146,7 @@ Craft.ElementEditor = Garnish.Base.extend(
 	$saveBtn: null,
 	$spinner: null,
 
-	$siteSelect: null,
+	$languageSelect: null,
 	$siteSpinner: null,
 
 	hud: null,
@@ -12302,7 +12302,7 @@ Craft.ElementEditor = Garnish.Base.extend(
 				this.updateForm(response);
 			}
 			else {
-				this.$siteSelect.val(this.siteId);
+				this.$languageSelect.val(this.siteId);
 			}
 		}, this));
 	},

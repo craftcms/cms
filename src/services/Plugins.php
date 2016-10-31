@@ -509,57 +509,6 @@ class Plugins extends Component
     }
 
     /**
-     * Calls a method on all plugins that have it, and returns an array of the results, indexed by plugin handles.
-     *
-     * @param string  $method     The name of the method
-     * @param array   $args       Any arguments that should be passed when calling the method on the plugins
-     * @param boolean $ignoreNull Whether plugins that have the method but return a null response should be ignored. Defaults to false
-     *
-     * @return array An array of the plugins’ responses
-     */
-    public function call($method, $args = [], $ignoreNull = false)
-    {
-        $allResults = [];
-
-        foreach ($this->getAllPlugins() as $handle => $plugin) {
-            if (method_exists($plugin, $method)) {
-                $result = call_user_func_array([$plugin, $method], $args);
-
-                if (!$ignoreNull || $result !== null) {
-                    $allResults[$handle] = $result;
-                    unset($result);
-                }
-            }
-        }
-
-        return $allResults;
-    }
-
-    /**
-     * Calls a method on the first plugin that has it, and returns the result.
-     *
-     * @param string  $method     The name of the method
-     * @param array   $args       Any arguments that should be passed when calling the method on the plugins
-     * @param boolean $ignoreNull Whether plugins that have the method but return a null response should be ignored. Defaults to false
-     *
-     * @return mixed The plugin’s response, or null
-     */
-    public function callFirst($method, $args = [], $ignoreNull = false)
-    {
-        foreach ($this->getAllPlugins() as $plugin) {
-            if (method_exists($plugin, $method)) {
-                $result = call_user_func_array([$plugin, $method], $args);
-
-                if (!$ignoreNull || $result !== null) {
-                    return $result;
-                }
-            }
-        }
-
-        return null;
-    }
-
-    /**
      * Returns whether the given plugin’s version number has changed from what we have recorded in the database.
      *
      * @param PluginInterface $plugin The plugin

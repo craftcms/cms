@@ -12,6 +12,7 @@ use craft\app\base\WidgetInterface;
 use craft\app\db\Query;
 use craft\app\errors\MissingComponentException;
 use craft\app\errors\WidgetNotFoundException;
+use craft\app\events\RegisterComponentTypesEvent;
 use craft\app\events\WidgetEvent;
 use craft\app\helpers\Component as ComponentHelper;
 use craft\app\records\Widget as WidgetRecord;
@@ -40,6 +41,11 @@ class Dashboard extends Component
     // =========================================================================
 
     /**
+     * @event RegisterComponentTypesEvent The event that is triggered when registering Dashboard widget types.
+     */
+    const EVENT_REGISTER_WIDGET_TYPES = 'registerWidgetTypes';
+
+    /**
      * @event WidgetEvent The event that is triggered before a widget is saved.
      */
     const EVENT_BEFORE_SAVE_WIDGET = 'beforeSaveWidget';
@@ -65,7 +71,7 @@ class Dashboard extends Component
     /**
      * Returns all available widget type classes.
      *
-     * @return WidgetInterface[] The available widget type classes.
+     * @return string[]
      */
     public function getAllWidgetTypes()
     {
@@ -78,11 +84,12 @@ class Dashboard extends Component
             UpdatesWidget::class,
         ];
 
-        foreach (Craft::$app->getPlugins()->call('getWidgetTypes', [], true) as $pluginWidgetTypes) {
-            $widgetTypes = array_merge($widgetTypes, $pluginWidgetTypes);
-        }
+        $event = new RegisterComponentTypesEvent([
+            'types' => $widgetTypes
+        ]);
+        $this->trigger(self::EVENT_REGISTER_WIDGET_TYPES, $event);
 
-        return $widgetTypes;
+        return $event->types;
     }
 
     /**

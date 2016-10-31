@@ -93,7 +93,7 @@ class Entry extends Element
     /**
      * @inheritdoc
      */
-    public static function getStatuses()
+    public static function statuses()
     {
         return [
             self::STATUS_LIVE => Craft::t('app', 'Live'),
@@ -116,7 +116,7 @@ class Entry extends Element
     /**
      * @inheritdoc
      */
-    public static function getSources($context = null)
+    protected static function defineSources($context = null)
     {
         if ($context == 'index') {
             $sections = Craft::$app->getSections()->getEditableSections();
@@ -197,17 +197,13 @@ class Entry extends Element
             }
         }
 
-        // Allow plugins to modify the sources
-        Craft::$app->getPlugins()->call('modifyEntrySources',
-            [&$sources, $context]);
-
         return $sources;
     }
 
     /**
      * @inheritdoc
      */
-    public static function getAvailableActions($source = null)
+    protected static function defineActions($source = null)
     {
         // Get the section(s) we need to check permissions on
         switch ($source) {
@@ -345,23 +341,15 @@ class Entry extends Element
             }
         }
 
-        // Allow plugins to add additional actions
-        $allPluginActions = Craft::$app->getPlugins()->call('addEntryActions',
-            [$source], true);
-
-        foreach ($allPluginActions as $pluginActions) {
-            $actions = array_merge($actions, $pluginActions);
-        }
-
         return $actions;
     }
 
     /**
      * @inheritdoc
      */
-    public static function defineSortableAttributes()
+    protected static function defineSortableAttributes()
     {
-        $attributes = [
+        return [
             'title' => Craft::t('app', 'Title'),
             'uri' => Craft::t('app', 'URI'),
             'postDate' => Craft::t('app', 'Post Date'),
@@ -369,18 +357,12 @@ class Entry extends Element
             'elements.dateCreated' => Craft::t('app', 'Date Created'),
             'elements.dateUpdated' => Craft::t('app', 'Date Updated'),
         ];
-
-        // Allow plugins to modify the attributes
-        Craft::$app->getPlugins()->call('modifyEntrySortableAttributes',
-            [&$attributes]);
-
-        return $attributes;
     }
 
     /**
      * @inheritdoc
      */
-    public static function defineAvailableTableAttributes()
+    protected static function defineTableAttributes()
     {
         $attributes = [
             'title' => ['label' => Craft::t('app', 'Title')],
@@ -402,20 +384,13 @@ class Entry extends Element
             unset($attributes['author']);
         }
 
-        // Allow plugins to modify the attributes
-        $pluginAttributes = Craft::$app->getPlugins()->call('defineAdditionalEntryTableAttributes', [], true);
-
-        foreach ($pluginAttributes as $thisPluginAttributes) {
-            $attributes = array_merge($attributes, $thisPluginAttributes);
-        }
-
         return $attributes;
     }
 
     /**
      * @inheritdoc
      */
-    public static function getDefaultTableAttributes($source = null)
+    public static function defaultTableAttributes($source = null)
     {
         $attributes = [];
 
@@ -437,7 +412,7 @@ class Entry extends Element
     /**
      * @inheritdoc
      */
-    public static function getEagerLoadingMap($sourceElements, $handle)
+    public static function eagerLoadingMap($sourceElements, $handle)
     {
         if ($handle == 'author') {
             // Get the source element IDs
@@ -459,7 +434,7 @@ class Entry extends Element
             ];
         }
 
-        return parent::getEagerLoadingMap($sourceElements, $handle);
+        return parent::eagerLoadingMap($sourceElements, $handle);
     }
 
     /**
@@ -630,7 +605,7 @@ class Entry extends Element
     /**
      * @inheritdoc
      */
-    public function getRoute()
+    protected function route()
     {
         // Make sure that the entry is actually live
         if ($this->getStatus() != Entry::STATUS_LIVE) {
@@ -805,15 +780,8 @@ class Entry extends Element
     /**
      * @inheritdoc
      */
-    public function getTableAttributeHtml($attribute)
+    protected function tableAttributeHtml($attribute)
     {
-        // First give plugins a chance to set this
-        $pluginAttributeHtml = Craft::$app->getPlugins()->callFirst('getEntryTableAttributeHtml', [$this, $attribute], true);
-
-        if ($pluginAttributeHtml !== null) {
-            return $pluginAttributeHtml;
-        }
-
         switch ($attribute) {
             case 'author':
                 $author = $this->getAuthor();
@@ -827,7 +795,7 @@ class Entry extends Element
                 return Craft::t('site', $this->getType()->name);
         }
 
-        return parent::getTableAttributeHtml($attribute);
+        return parent::tableAttributeHtml($attribute);
     }
 
     /**

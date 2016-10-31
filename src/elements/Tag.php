@@ -71,7 +71,7 @@ class Tag extends Element
     /**
      * @inheritdoc
      */
-    public static function getSources($context = null)
+    protected static function defineSources($context = null)
     {
         $sources = [];
 

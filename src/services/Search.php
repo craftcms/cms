@@ -77,7 +77,7 @@ class Search extends Component
     {
         /** @var Element $element */
         // Does it have any searchable attributes?
-        $searchableAttributes = $element::defineSearchableAttributes();
+        $searchableAttributes = $element::searchableAttributes();
 
         $searchableAttributes[] = 'slug';
 

@@ -19,6 +19,12 @@ use craft\app\elements\db\ElementQueryInterface;
 use craft\app\events\ElementStructureEvent;
 use craft\app\events\Event;
 use craft\app\events\ModelEvent;
+use craft\app\events\RegisterElementActionsEvent;
+use craft\app\events\RegisterElementSortableAttributesEvent;
+use craft\app\events\RegisterElementSourcesEvent;
+use craft\app\events\RegisterElementTableAttributesEvent;
+use craft\app\events\SetElementRouteEvent;
+use craft\app\events\SetElementTableAttributeHtmlEvent;
 use craft\app\helpers\ArrayHelper;
 use craft\app\helpers\ElementHelper;
 use craft\app\helpers\Html;
@@ -90,6 +96,36 @@ abstract class Element extends Component implements ElementInterface
     const STATUS_ENABLED = 'enabled';
     const STATUS_DISABLED = 'disabled';
     const STATUS_ARCHIVED = 'archived';
+
+    /**
+     * @event RegisterElementSourcesEvent The event that is triggered when registering the available sources for the element type.
+     */
+    const EVENT_REGISTER_SOURCES = 'registerSources';
+
+    /**
+     * @event RegisterElementActionsEvent The event that is triggered when registering the available actions for the element type.
+     */
+    const EVENT_REGISTER_ACTIONS = 'registerActions';
+
+    /**
+     * @event RegisterElementSortableAttributesEvent The event that is triggered when registering the sortable attributes for the element type.
+     */
+    const EVENT_REGISTER_SORTABLE_ATTRIBUTES = 'registerSortableAttributes';
+
+    /**
+     * @event RegisterElementTableAttributesEvent The event that is triggered when registering the table attributes for the element type.
+     */
+    const EVENT_REGISTER_TABLE_ATTRIBUTES = 'registerTableAttributes';
+
+    /**
+     * @event SetElementTableAttributeHtmlEvent The event that is triggered when defining the HTML to represent a table attribute.
+     */
+    const EVENT_SET_TABLE_ATTRIBUTE_HTML = 'setTableAttributeHtml';
+
+    /**
+     * @event SetElementRouteEvent The event that is triggered when defining the route that should be used when this element’s URL is requested
+     */
+    const EVENT_SET_ROUTE = 'setRoute';
 
     /**
      * @event ModelEvent The event that is triggered before the element is saved
@@ -165,7 +201,7 @@ abstract class Element extends Component implements ElementInterface
     /**
      * @inheritdoc
      */
-    public static function getStatuses()
+    public static function statuses()
     {
         return [
             self::STATUS_ENABLED => Craft::t('app', 'Enabled'),
@@ -202,20 +238,29 @@ abstract class Element extends Component implements ElementInterface
     /**
      * @inheritdoc
      */
-    public static function getSources($context = null)
+    public static function sources($context = null)
     {
-        return false;
+        $sources = static::defineSources($context);
+
+        // Give plugins a chance to modify them
+        $event = new RegisterElementSourcesEvent([
+            'context' => $context,
+            'sources' => $sources
+        ]);
+        Event::trigger(static::class, self::EVENT_REGISTER_SOURCES, $event);
+
+        return $event->sources;
     }
 
     /**
      * @inheritdoc
      */
-    public static function getSourceByKey($key, $context = null)
+    public static function source($key, $context = null)
     {
         $contextKey = ($context ? $context : '*');
 
         if (!isset(self::$_sourcesByContext[$contextKey])) {
-            self::$_sourcesByContext[$contextKey] = static::getSources($context);
+            self::$_sourcesByContext[$contextKey] = static::sources($context);
         }
 
         return static::_findSource($key, self::$_sourcesByContext[$contextKey]);
@@ -224,15 +269,50 @@ abstract class Element extends Component implements ElementInterface
     /**
      * @inheritdoc
      */
-    public static function getAvailableActions($source = null)
+    public static function actions($source = null)
     {
-        return [];
+        $actions = static::defineActions($source);
+
+        // Give plugins a chance to modify them
+        $event = new RegisterElementActionsEvent([
+            'source' => $source,
+            'actions' => $actions
+        ]);
+        Event::trigger(static::class, self::EVENT_REGISTER_ACTIONS, $event);
+
+        return $event->actions;
     }
 
     /**
      * @inheritdoc
      */
-    public static function defineSearchableAttributes()
+    public static function searchableAttributes()
+    {
+        return [];
+    }
+
+    /**
+     * Defines the sources that elements of this type may belong to.
+     *
+     * @param string|null $context The context ('index' or 'modal').
+     *
+     * @return array The sources.
+     * @see sources()
+     */
+    protected static function defineSources($context = null)
+    {
+        return [];
+    }
+
+    /**
+     * Defines the available element actions for a given source (if one is provided).
+     *
+     * @param string|null $source The selected source’s key, if any.
+     *
+     * @return array|null The available element actions.
+     * @see actions()
+     */
+    protected static function defineActions($source = null)
     {
         return [];
     }
@@ -243,7 +323,7 @@ abstract class Element extends Component implements ElementInterface
     /**
      * @inheritdoc
      */
-    public static function getIndexHtml($elementQuery, $disabledElementIds, $viewState, $sourceKey, $context, $includeContainer, $showCheckboxes)
+    public static function indexHtml($elementQuery, $disabledElementIds, $viewState, $sourceKey, $context, $includeContainer, $showCheckboxes)
     {
         $variables = [
             'viewMode' => $viewState['mode'],
@@ -255,7 +335,7 @@ abstract class Element extends Component implements ElementInterface
 
         // Special case for sorting by structure
         if (isset($viewState['order']) && $viewState['order'] == 'structure') {
-            $source = static::getSourceByKey($sourceKey, $context);
+            $source = static::source($sourceKey, $context);
 
             if (isset($source['structureId'])) {
                 $elementQuery->orderBy(['lft' => SORT_ASC]);
@@ -274,7 +354,7 @@ abstract class Element extends Component implements ElementInterface
         } else if (!empty($viewState['order']) && $viewState['order'] == 'score') {
             $elementQuery->orderBy('score');
         } else {
-            $sortableAttributes = static::defineSortableAttributes();
+            $sortableAttributes = static::sortableAttributes();
 
             if ($sortableAttributes) {
                 $order = (!empty($viewState['order']) && isset($sortableAttributes[$viewState['order']])) ? $viewState['order'] : ArrayHelper::getFirstKey($sortableAttributes);
@@ -317,32 +397,41 @@ abstract class Element extends Component implements ElementInterface
     /**
      * @inheritdoc
      */
-    public static function defineSortableAttributes()
+    public static function sortableAttributes()
     {
-        $tableAttributes = Craft::$app->getElementIndexes()->getAvailableTableAttributes(static::class);
-        $sortableAttributes = [];
+        $sortableAttributes = static::defineSortableAttributes();
 
-        foreach ($tableAttributes as $key => $labelInfo) {
-            $sortableAttributes[$key] = $labelInfo['label'];
-        }
+        // Give plugins a chance to modify them
+        $event = new RegisterElementSortableAttributesEvent([
+            'sortableAttributes' => $sortableAttributes
+        ]);
+        Event::trigger(static::class, self::EVENT_REGISTER_SORTABLE_ATTRIBUTES, $event);
 
-        return $sortableAttributes;
+        return $event->sortableAttributes;
     }
 
     /**
      * @inheritdoc
      */
-    public static function defineAvailableTableAttributes()
+    public static function tableAttributes()
     {
-        return [];
+        $tableAttributes = static::defineTableAttributes();
+
+        // Give plugins a chance to modify them
+        $event = new RegisterElementTableAttributesEvent([
+            'tableAttributes' => $tableAttributes
+        ]);
+        Event::trigger(static::class, self::EVENT_REGISTER_TABLE_ATTRIBUTES, $event);
+
+        return $event->tableAttributes;
     }
 
     /**
      * @inheritdoc
      */
-    public static function getDefaultTableAttributes($source = null)
+    public static function defaultTableAttributes($source = null)
     {
-        $availableTableAttributes = static::defineAvailableTableAttributes();
+        $availableTableAttributes = static::tableAttributes();
 
         return array_keys($availableTableAttributes);
     }
@@ -356,19 +445,36 @@ abstract class Element extends Component implements ElementInterface
      */
     protected static function getTableAttributesForSource($sourceKey)
     {
-        $elementType = static::class;
+        return Craft::$app->getElementIndexes()->getTableAttributes(static::class, $sourceKey);
+    }
 
-        // Give plugins a chance to customize them
-        $pluginAttributes = Craft::$app->getPlugins()->callFirst('getTableAttributesForSource', [
-            $elementType,
-            $sourceKey
-        ], true);
+    /**
+     * Defines the attributes that elements can be sorted by.
+     *
+     * @return string[] The attributes that elements can be sorted by
+     * @see sortableAttributes()
+     */
+    protected static function defineSortableAttributes()
+    {
+        $tableAttributes = Craft::$app->getElementIndexes()->getAvailableTableAttributes(static::class);
+        $sortableAttributes = [];
 
-        if ($pluginAttributes !== null) {
-            return $pluginAttributes;
+        foreach ($tableAttributes as $key => $labelInfo) {
+            $sortableAttributes[$key] = $labelInfo['label'];
         }
 
-        return Craft::$app->getElementIndexes()->getTableAttributes($elementType, $sourceKey);
+        return $sortableAttributes;
+    }
+
+    /**
+     * Defines all of the available columns that can be shown in table views.
+     *
+     * @return array The table attributes.
+     * @see tableAttributes()
+     */
+    protected static function defineTableAttributes()
+    {
+        return [];
     }
 
     // Methods for customizing element queries
@@ -377,7 +483,7 @@ abstract class Element extends Component implements ElementInterface
     /**
      * @inheritdoc
      */
-    public static function getEagerLoadingMap($sourceElements, $handle)
+    public static function eagerLoadingMap($sourceElements, $handle)
     {
         // Eager-loading descendants or direct children?
         if ($handle == 'descendants' || $handle == 'children') {
@@ -818,7 +924,15 @@ abstract class Element extends Component implements ElementInterface
      */
     public function getRoute()
     {
-        return null;
+        // Give plugins a chance to set this
+        $event = new SetElementRouteEvent();
+        $this->trigger(self::EVENT_SET_ROUTE, $event);
+
+        if ($event->route !== null) {
+            return $event->route;
+        }
+
+        return $this->route();
     }
 
     /**
@@ -1426,77 +1540,17 @@ abstract class Element extends Component implements ElementInterface
      */
     public function getTableAttributeHtml($attribute)
     {
-        switch ($attribute) {
-            case 'link':
-                $url = $this->getUrl();
+        // Give plugins a chance to set this
+        $event = new SetElementTableAttributeHtmlEvent([
+            'attribute' => $attribute
+        ]);
+        $this->trigger(self::EVENT_SET_TABLE_ATTRIBUTE_HTML, $event);
 
-                if ($url) {
-                    return '<a href="'.$url.'" target="_blank" data-icon="world" title="'.Craft::t('app', 'Visit webpage').'"></a>';
-                }
-
-                return '';
-
-            case 'uri':
-                $url = $this->getUrl();
-
-                if ($url) {
-                    $value = $this->uri;
-
-                    if ($value == '__home__') {
-                        $value = '<span data-icon="home" title="'.Craft::t('app', 'Homepage').'"></span>';
-                    } else {
-                        // Add some <wbr> tags in there so it doesn't all have to be on one line
-                        $find = ['/'];
-                        $replace = ['/<wbr>'];
-
-                        $wordSeparator = Craft::$app->getConfig()->get('slugWordSeparator');
-
-                        if ($wordSeparator) {
-                            $find[] = $wordSeparator;
-                            $replace[] = $wordSeparator.'<wbr>';
-                        }
-
-                        $value = str_replace($find, $replace, $value);
-                    }
-
-                    return '<a href="'.$url.'" target="_blank" class="go" title="'.Craft::t('app', 'Visit webpage').'"><span dir="ltr">'.$value.'</span></a>';
-                }
-
-                return '';
-
-            default:
-                // Is this a custom field?
-                if (preg_match('/^field:(\d+)$/', $attribute, $matches)) {
-                    $fieldId = $matches[1];
-                    $field = Craft::$app->getFields()->getFieldById($fieldId);
-
-                    if ($field) {
-                        /** @var Field $field */
-                        if ($field instanceof PreviewableFieldInterface) {
-                            // Was this field value eager-loaded?
-                            if ($field instanceof EagerLoadingFieldInterface && $this->hasEagerLoadedElements($field->handle)) {
-                                $value = $this->getEagerLoadedElements($field->handle);
-                            } else {
-                                $value = $this->getFieldValue($field->handle);
-                            }
-
-                            return $field->getTableAttributeHtml($value, $this);
-                        }
-                    }
-
-                    return '';
-                }
-
-                $value = $this->$attribute;
-
-                if ($value instanceof DateTime) {
-                    $formatter = Craft::$app->getFormatter();
-
-                    return '<span title="'.$formatter->asDatetime($value, Locale::LENGTH_SHORT).'">'.$formatter->asTimestamp($value, Locale::LENGTH_SHORT).'</span>';
-                }
-
-                return Html::encode($value);
+        if ($event->html !== null) {
+            return $event->html;
         }
+
+        return $this->tableAttributeHtml($attribute);
     }
 
     /**
@@ -1770,6 +1824,100 @@ abstract class Element extends Component implements ElementInterface
      * @see getStructureId()
      */
     protected function resolveStructureId()
+    {
+        return null;
+    }
+
+    /**
+     * Returns the HTML that should be shown for a given attribute in Table View.
+     *
+     * @param string $attribute The attribute name.
+     *
+     * @return string The HTML that should be shown for a given attribute in Table View.
+     * @see getTableAttributeHtml()
+     */
+    protected function tableAttributeHtml($attribute)
+    {
+        switch ($attribute) {
+            case 'link':
+                $url = $this->getUrl();
+
+                if ($url) {
+                    return '<a href="'.$url.'" target="_blank" data-icon="world" title="'.Craft::t('app', 'Visit webpage').'"></a>';
+                }
+
+                return '';
+
+            case 'uri':
+                $url = $this->getUrl();
+
+                if ($url) {
+                    $value = $this->uri;
+
+                    if ($value == '__home__') {
+                        $value = '<span data-icon="home" title="'.Craft::t('app', 'Homepage').'"></span>';
+                    } else {
+                        // Add some <wbr> tags in there so it doesn't all have to be on one line
+                        $find = ['/'];
+                        $replace = ['/<wbr>'];
+
+                        $wordSeparator = Craft::$app->getConfig()->get('slugWordSeparator');
+
+                        if ($wordSeparator) {
+                            $find[] = $wordSeparator;
+                            $replace[] = $wordSeparator.'<wbr>';
+                        }
+
+                        $value = str_replace($find, $replace, $value);
+                    }
+
+                    return '<a href="'.$url.'" target="_blank" class="go" title="'.Craft::t('app', 'Visit webpage').'"><span dir="ltr">'.$value.'</span></a>';
+                }
+
+                return '';
+
+            default:
+                // Is this a custom field?
+                if (preg_match('/^field:(\d+)$/', $attribute, $matches)) {
+                    $fieldId = $matches[1];
+                    $field = Craft::$app->getFields()->getFieldById($fieldId);
+
+                    if ($field) {
+                        /** @var Field $field */
+                        if ($field instanceof PreviewableFieldInterface) {
+                            // Was this field value eager-loaded?
+                            if ($field instanceof EagerLoadingFieldInterface && $this->hasEagerLoadedElements($field->handle)) {
+                                $value = $this->getEagerLoadedElements($field->handle);
+                            } else {
+                                $value = $this->getFieldValue($field->handle);
+                            }
+
+                            return $field->getTableAttributeHtml($value, $this);
+                        }
+                    }
+
+                    return '';
+                }
+
+                $value = $this->$attribute;
+
+                if ($value instanceof DateTime) {
+                    $formatter = Craft::$app->getFormatter();
+
+                    return '<span title="'.$formatter->asDatetime($value, Locale::LENGTH_SHORT).'">'.$formatter->asTimestamp($value, Locale::LENGTH_SHORT).'</span>';
+                }
+
+                return Html::encode($value);
+        }
+    }
+
+    /**
+     * Returns the route that should be used when the element’s URI is requested.
+     *
+     * @return mixed The route that the request should use, or null if no special action should be taken
+     * @see getRoute()
+     */
+    protected function route()
     {
         return null;
     }

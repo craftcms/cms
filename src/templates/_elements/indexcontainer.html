@@ -16,7 +16,7 @@
 {% if showSiteMenu == 'auto' %}
 	{% set showSiteMenu = elementInstance.isLocalized() %}
 {% endif %}
-{% set sortableAttributes = elementInstance.defineSortableAttributes() %}
+{% set sortableAttributes = elementInstance.sortableAttributes() %}
 
 <div class="main">
 	<div class="toolbar">
@@ -28,7 +28,7 @@
 						<div class="menu">
 							<ul class="padded">
 								<li><a data-status="" class="sel"><span class="status"></span>{{ "All"|t('app') }}</a></li>
-								{% for status, label in elementInstance.getStatuses() %}
+								{% for status, label in elementInstance.statuses() %}
 									<li><a data-status="{{ status }}"><span class="status {{ status }}"></span>{{ label }}</a></li>
 								{% endfor %}
 							</ul>

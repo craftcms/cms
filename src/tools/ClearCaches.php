@@ -9,6 +9,8 @@ namespace craft\app\tools;
 
 use Craft;
 use craft\app\base\Tool;
+use craft\app\events\Event;
+use craft\app\events\RegisterCacheOptionsEvent;
 use craft\app\helpers\Io;
 
 /**
@@ -19,6 +21,14 @@ use craft\app\helpers\Io;
  */
 class ClearCaches extends Tool
 {
+    // Constants
+    // =========================================================================
+
+    /**
+     * @event RegisterCacheOptionsEvent The event that is triggered when registering cache options.
+     */
+    const EVENT_REGISTER_CACHE_OPTIONS = 'registerCacheOptions';
+
     // Static
     // =========================================================================
 
@@ -43,16 +53,19 @@ class ClearCaches extends Tool
      */
     public static function optionsHtml()
     {
-        $caches = self::_getFolders();
-        $caches['assetTransformIndex'] = Craft::t('app', 'Asset transform index');
-        $caches['assetIndexingData'] = Craft::t('app', 'Asset indexing data');
-        $caches['templateCaches'] = Craft::t('app', 'Template caches');
+        $options = [];
 
-        return Craft::$app->getView()->renderTemplate('_includes/forms/checkboxSelect',
-            [
-                'name' => 'caches',
-                'options' => $caches
-            ]);
+        foreach (self::_getAllCacheOptions() as $cacheOption) {
+            $options[] = [
+                'label' => $cacheOption['label'],
+                'value' => $cacheOption['key']
+            ];
+        }
+
+        return Craft::$app->getView()->renderTemplate('_includes/forms/checkboxSelect', [
+            'name' => 'caches',
+            'options' => $options
+        ]);
     }
 
     /**
@@ -67,33 +80,69 @@ class ClearCaches extends Tool
      * Returns the cache folders we allow to be cleared as well as any plugin cache paths that have used the
      * 'registerCachePaths' hook.
      *
-     * @param boolean $obfuscate If true, will MD5 the path so it will be obfuscated in the template.
-     *
      * @return array
      */
-    private static function _getFolders($obfuscate = true)
+    private static function _getAllCacheOptions()
     {
         $runtimePath = Craft::$app->getPath()->getRuntimePath();
 
-        $folders = [
-            $obfuscate ? md5('dataCache') : 'dataCache' => Craft::t('app', 'Data caches'),
-            $obfuscate ? md5($runtimePath.'/assets/cache') : $runtimePath.'/assets/cache' => Craft::t('app', 'Asset caches'),
-            $obfuscate ? md5($runtimePath.'/cache') : $runtimePath.'/cache' => Craft::t('app', 'RSS caches'),
-            $obfuscate ? md5($runtimePath.'/compiled_templates') : $runtimePath.'/compiled_templates' => Craft::t('app', 'Compiled templates'),
-            $obfuscate ? md5($runtimePath.'/temp') : $runtimePath.'/temp' => Craft::t('app', 'Temp files'),
+        $options = [
+            [
+                'key' => 'data',
+                'label' => Craft::t('app', 'Data caches'),
+                'action' => [Craft::$app->getCache(), 'flush']
+            ],
+            [
+                'key' => 'asset',
+                'label' => Craft::t('app', 'Asset caches'),
+                'action' => $runtimePath.'/assets/cache'
+            ],
+            [
+                'key' => 'rss',
+                'label' => Craft::t('app', 'RSS caches'),
+                'action' => $runtimePath.'/cache'
+            ],
+            [
+                'key' => 'compiled-templates',
+                'label' => Craft::t('app', 'Compiled templates'),
+                'action' => $runtimePath.'/compiled_templates'
+            ],
+            [
+                'key' => 'temp-files',
+                'label' => Craft::t('app', 'Temp files'),
+                'action' => $runtimePath.'/temp'
+            ],
+            [
+                'key' => 'transform-indexes',
+                'label' => Craft::t('app', 'Asset transform index'),
+                'action' => function() {
+                    Craft::$app->getDb()->createCommand()
+                        ->truncateTable('{{%assettransformindex}}')
+                        ->execute();
+                }
+            ],
+            [
+                'key' => 'asset-indexing-data',
+                'label' => Craft::t('app', 'Asset indexing data'),
+                'action' => function() {
+                    Craft::$app->getDb()->createCommand()
+                        ->truncateTable('{{%assetindexdata}}')
+                        ->execute();
+                }
+            ],
+            [
+                'key' => 'template-caches',
+                'label' => Craft::t('app', 'Template caches'),
+                'action' => [Craft::$app->getTemplateCaches(), 'deleteAllCaches']
+            ],
         ];
 
-        $pluginCachePaths = Craft::$app->getPlugins()->call('registerCachePaths');
+        $event = new RegisterCacheOptionsEvent([
+            'options' => $options
+        ]);
+        Event::trigger(self::class, self::EVENT_REGISTER_CACHE_OPTIONS, $event);
 
-        if (is_array($pluginCachePaths) && count($pluginCachePaths) > 0) {
-            foreach ($pluginCachePaths as $paths) {
-                foreach ($paths as $path => $label) {
-                    $folders[$obfuscate ? md5($path) : $path] = $label;
-                }
-            }
-        }
-
-        return $folders;
+        return $options;
     }
 
     // Public Methods
@@ -108,55 +157,20 @@ class ClearCaches extends Tool
             return;
         }
 
-        $allFolderKeys = array_keys(self::_getFolders());
-
-        if ($params['caches'] == '*') {
-            $folders = $allFolderKeys;
-        } else {
-            $folders = [];
-
-            foreach ($params['caches'] as $cacheKey) {
-                if (in_array($cacheKey, $allFolderKeys)) {
-                    $folders[] = $cacheKey;
-                }
+        foreach (self::_getAllCacheOptions() as $cacheOption) {
+            if (is_array($params['caches']) && !in_array($cacheOption['key'], $params['caches'])) {
+                continue;
             }
-        }
 
-        $allFolders = array_keys(self::_getFolders(false));
+            $action = $cacheOption['action'];
 
-        foreach ($folders as $folder) {
-            foreach ($allFolders as $allFolder) {
-                if (md5($allFolder) == $folder) {
-                    if ($allFolder == 'dataCache') {
-                        Craft::$app->getCache()->flush();
-                    } else {
-                        Io::clearFolder($allFolder, true);
-                        break;
-                    }
-                }
+            if (is_string($action)) {
+                Io::clearFolder($action, true);
+            } else if (isset($cacheOption['params'])) {
+                call_user_func_array($action, $cacheOption['params']);
+            } else {
+                call_user_func($action);
             }
-        }
-
-        if ($params['caches'] == '*' || in_array('templateCaches',
-                $params['caches'])
-        ) {
-            Craft::$app->getTemplateCaches()->deleteAllCaches();
-        }
-
-        if ($params['caches'] == '*' || in_array('assetTransformIndex',
-                $params['caches'])
-        ) {
-            Craft::$app->getDb()->createCommand()
-                ->truncateTable('{{%assettransformindex}}')
-                ->execute();
-        }
-
-        if ($params['caches'] == '*' || in_array('assetIndexingData',
-                $params['caches'])
-        ) {
-            Craft::$app->getDb()->createCommand()
-                ->truncateTable('{{%assetindexdata}}')
-                ->execute();
         }
     }
 }
