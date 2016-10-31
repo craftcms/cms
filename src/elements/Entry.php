@@ -605,7 +605,7 @@ class Entry extends Element
     /**
      * @inheritdoc
      */
-    public function getRoute()
+    protected function route()
     {
         // Make sure that the entry is actually live
         if ($this->getStatus() != Entry::STATUS_LIVE) {

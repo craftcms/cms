@@ -23,6 +23,7 @@ use craft\app\events\RegisterElementActionsEvent;
 use craft\app\events\RegisterElementSortableAttributesEvent;
 use craft\app\events\RegisterElementSourcesEvent;
 use craft\app\events\RegisterElementTableAttributesEvent;
+use craft\app\events\SetElementRouteEvent;
 use craft\app\events\SetElementTableAttributeHtmlEvent;
 use craft\app\helpers\ArrayHelper;
 use craft\app\helpers\ElementHelper;
@@ -120,6 +121,11 @@ abstract class Element extends Component implements ElementInterface
      * @event SetElementTableAttributeHtmlEvent The event that is triggered when defining the HTML to represent a table attribute.
      */
     const EVENT_SET_TABLE_ATTRIBUTE_HTML = 'setTableAttributeHtml';
+
+    /**
+     * @event SetElementRouteEvent The event that is triggered when defining the route that should be used when this element’s URL is requested
+     */
+    const EVENT_SET_ROUTE = 'setRoute';
 
     /**
      * @event ModelEvent The event that is triggered before the element is saved
@@ -918,7 +924,15 @@ abstract class Element extends Component implements ElementInterface
      */
     public function getRoute()
     {
-        return null;
+        // Give plugins a chance to set this
+        $event = new SetElementRouteEvent();
+        $this->trigger(self::EVENT_SET_ROUTE, $event);
+
+        if ($event->route !== null) {
+            return $event->route;
+        }
+
+        return $this->route();
     }
 
     /**
@@ -1895,6 +1909,17 @@ abstract class Element extends Component implements ElementInterface
 
                 return Html::encode($value);
         }
+    }
+
+    /**
+     * Returns the route that should be used when the element’s URI is requested.
+     *
+     * @return mixed The route that the request should use, or null if no special action should be taken
+     * @see getRoute()
+     */
+    protected function route()
+    {
+        return null;
     }
 
     // Private Methods

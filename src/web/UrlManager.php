@@ -300,13 +300,7 @@ class UrlManager extends \yii\web\UrlManager
                 $element = Craft::$app->getElements()->getElementByUri($path, Craft::$app->getSites()->currentSite->id, true);
 
                 if ($element) {
-                    // Do any plugins want a say in this?
-                    $route = Craft::$app->getPlugins()->callFirst('getElementRoute', [$element], true);
-
-                    if (!$route) {
-                        // Give the element type a chance
-                        $route = $element->getRoute();
-                    }
+                    $route = $element->getRoute();
 
                     if ($route) {
                         $this->_matchedElement = $element;

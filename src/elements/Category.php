@@ -267,7 +267,7 @@ class Category extends Element
     /**
      * @inheritdoc
      */
-    public function getRoute()
+    protected function route()
     {
         // Make sure the category group is set to have URLs for this site
         $siteId = Craft::$app->getSites()->currentSite->id;
