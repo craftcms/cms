@@ -433,19 +433,7 @@ abstract class Element extends Component implements ElementInterface
      */
     protected static function getTableAttributesForSource($sourceKey)
     {
-        $elementType = static::class;
-
-        // Give plugins a chance to customize them
-        $pluginAttributes = Craft::$app->getPlugins()->callFirst('getTableAttributesForSource', [
-            $elementType,
-            $sourceKey
-        ], true);
-
-        if ($pluginAttributes !== null) {
-            return $pluginAttributes;
-        }
-
-        return Craft::$app->getElementIndexes()->getTableAttributes($elementType, $sourceKey);
+        return Craft::$app->getElementIndexes()->getTableAttributes(static::class, $sourceKey);
     }
 
     /**
