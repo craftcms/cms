@@ -1231,7 +1231,7 @@ class User extends Element implements IdentityInterface
                 return $language ? (new Locale($language))->getDisplayName(Craft::$app->language) : '';
         }
 
-        return parent::getTableAttributeHtml($attribute);
+        return parent::tableAttributeHtml($attribute);
     }
 
     /**

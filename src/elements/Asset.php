@@ -876,7 +876,7 @@ class Asset extends Element
                 return ($size ? $size.'px' : '');
         }
 
-        return parent::getTableAttributeHtml($attribute);
+        return parent::tableAttributeHtml($attribute);
     }
 
     /**

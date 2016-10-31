@@ -795,7 +795,7 @@ class Entry extends Element
                 return Craft::t('site', $this->getType()->name);
         }
 
-        return parent::getTableAttributeHtml($attribute);
+        return parent::tableAttributeHtml($attribute);
     }
 
     /**
