@@ -57,7 +57,7 @@ class App
      *
      * @return array All the known Craft editions’ IDs.
      */
-    public static function getEditions()
+    public static function editions()
     {
         return [Craft::Personal, Craft::Client, Craft::Pro];
     }
@@ -91,7 +91,7 @@ class App
     public static function isValidEdition($edition)
     {
         return (is_numeric($edition) && in_array($edition,
-                static::getEditions()));
+                static::editions()));
     }
 
     /**
