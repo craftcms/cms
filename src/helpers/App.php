@@ -101,7 +101,7 @@ class App
      *
      * @return boolean Whether it is set to the php.ini equivelant of `true`.
      */
-    public static function getPhpConfigValueAsBool($var)
+    public static function phpConfigValueAsBool($var)
     {
         $value = ini_get($var);
 
