@@ -641,7 +641,7 @@ class Sections extends Component
                         // Add all of the entries to the structure
                         /** @noinspection PhpUndefinedVariableInspection */
                         $query = Entry::find()
-                            ->siteId(ArrayHelper::getFirstKey($allOldSiteSettingsRecords))
+                            ->siteId(ArrayHelper::firstKey($allOldSiteSettingsRecords))
                             ->sectionId($section->id)
                             ->status(null)
                             ->enabledForSite(false)
