@@ -363,7 +363,7 @@ class User extends Element implements IdentityInterface
      *
      * @return array|null The authentication data, or `null` if it was invalid.
      */
-    public static function getAuthData($authKey)
+    public static function authData($authKey)
     {
         $data = json_decode($authKey, true);
 
@@ -655,7 +655,7 @@ class User extends Element implements IdentityInterface
      */
     public function validateAuthKey($authKey)
     {
-        $data = static::getAuthData($authKey);
+        $data = static::authData($authKey);
 
         if ($data) {
             list($token, $tokenUid, $userAgent) = $data;

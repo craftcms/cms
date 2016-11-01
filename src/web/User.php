@@ -416,7 +416,7 @@ class User extends \yii\web\User
             $data = json_decode($value, true);
 
             if (is_array($data) && isset($data[2])) {
-                $authData = UserElement::getAuthData($data[1]);
+                $authData = UserElement::authData($data[1]);
 
                 if ($authData) {
                     $tokenUid = $authData[1];
@@ -515,7 +515,7 @@ class User extends \yii\web\User
             $data = json_decode($cookieValue, true);
 
             if (is_array($data) && isset($data[2])) {
-                $authData = UserElement::getAuthData($data[1]);
+                $authData = UserElement::authData($data[1]);
 
                 if ($authData) {
                     $tokenUid = $authData[1];
