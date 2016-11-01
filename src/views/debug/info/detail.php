@@ -23,7 +23,7 @@ $values = [
     ],
     [
         'Edition',
-        'Craft '.App::getEditionName($panel->data['craftEdition'])
+        'Craft '.App::editionName($panel->data['craftEdition'])
     ],
 ];
 

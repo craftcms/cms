@@ -69,7 +69,7 @@ class App
      *
      * @return string The edition’s name.
      */
-    public static function getEditionName($edition)
+    public static function editionName($edition)
     {
         switch ($edition) {
             case Craft::Client:
