@@ -138,7 +138,11 @@ Craft.AssetIndex = Craft.BaseElementIndex.extend(
 
 				for (var i = 0; i < this.$sources.length; i++)
 				{
-					targets.push($(this.$sources[i]));
+					// Make sure it's a volume folder
+					var $source = this.$sources.eq(i);
+					if (this._getFolderIdFromSourceKey($source.data('key'))) {
+						targets.push($source);
+					}
 				}
 
 				return targets;
@@ -209,9 +213,11 @@ Craft.AssetIndex = Craft.BaseElementIndex.extend(
 
 				for (var i = 0; i < this.$sources.length; i++)
 				{
-					var $source = $(this.$sources[i]);
-					if (!Craft.inArray($source.data('key'), draggedSourceIds))
-					{
+					// Make sure it's a volume folder and not one of the dragged folders
+					var $source = this.$sources.eq(i),
+						key = $source.data('key');
+
+					if (this._getFolderIdFromSourceKey(key) && !Craft.inArray(key, draggedSourceIds)) {
 						targets.push($source);
 					}
 				}
@@ -868,15 +874,17 @@ Craft.AssetIndex = Craft.BaseElementIndex.extend(
 
 	onSelectSource: function()
 	{
-		this.uploader.setParams({folderId: this._getFolderIdFromSourceKey(this.sourceKey)});
-		if (!this.$source.attr('data-upload'))
-		{
+		var folderId = this._getFolderIdFromSourceKey(this.sourceKey);
+
+		if (folderId && this.$source.attr('data-upload')) {
+			this.uploader.setParams({
+				folderId: folderId
+			});
+			this.$uploadButton.removeClass('disabled');
+		} else {
 			this.$uploadButton.addClass('disabled');
 		}
-		else
-		{
-			this.$uploadButton.removeClass('disabled');
-		}
+
 		this.base();
 	},
 
