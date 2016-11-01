@@ -1285,7 +1285,7 @@ Craft.AssetIndex = Craft.BaseElementIndex.extend(
 
 	_getSourceByFolderId: function(folderId)
 	{
-		return this.$sources.filter('[data-key="folder:' + folderId + '"]');
+		return this.$sources.filter('[data-key$="folder:' + folderId + '"]');
 	},
 
 	_hasSubfolders: function($source)
