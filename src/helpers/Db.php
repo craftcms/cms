@@ -295,7 +295,7 @@ class Db
             return '';
         }
 
-        $firstVal = StringHelper::toLowerCase(ArrayHelper::getFirstValue($value));
+        $firstVal = StringHelper::toLowerCase(ArrayHelper::firstValue($value));
 
         if ($firstVal == 'and' || $firstVal == 'or') {
             $conditionOperator = array_shift($value);

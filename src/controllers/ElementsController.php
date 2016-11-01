@@ -66,7 +66,7 @@ class ElementsController extends BaseElementsController
         }
 
         if (!empty($sources) && count($sources) === 1) {
-            $firstSource = ArrayHelper::getFirstValue($sources);
+            $firstSource = ArrayHelper::firstValue($sources);
             $showSidebar = !empty($firstSource['nested']);
         } else {
             $showSidebar = !empty($sources);

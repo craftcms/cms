@@ -142,7 +142,7 @@ class ArrayHelper extends \yii\helpers\ArrayHelper
      *
      * @return mixed|null
      */
-    public static function getFirstValue($arr)
+    public static function firstValue($arr)
     {
         if (is_array($arr)) {
             foreach ($arr as $value) {

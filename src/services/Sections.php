@@ -623,7 +623,7 @@ class Sections extends Component
 
                     if (!$singleEntryId) {
                         // Create it
-                        $firstSiteSettings = ArrayHelper::getFirstValue($allSiteSettings);
+                        $firstSiteSettings = ArrayHelper::firstValue($allSiteSettings);
                         $singleEntry = new Entry();
                         $singleEntry->siteId = $firstSiteSettings->siteId;
                         $singleEntry->sectionId = $section->id;
