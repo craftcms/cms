@@ -502,7 +502,7 @@ class UpdateController extends Controller
         Craft::$app->getUpdates()->updateCleanUp($uid, $handle);
 
         // New major Craft CMS version?
-        if ($handle == 'craft' && $oldVersion && App::getMajorVersion($oldVersion) < App::getMajorVersion(Craft::$app->version)) {
+        if ($handle == 'craft' && $oldVersion && App::majorVersion($oldVersion) < App::majorVersion(Craft::$app->version)) {
             $returnUrl = Url::getUrl('whats-new');
         } else {
             $returnUrl = Craft::$app->getConfig()->get('postCpLoginRedirect');
