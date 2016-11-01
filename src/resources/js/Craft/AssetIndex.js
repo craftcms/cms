@@ -882,7 +882,9 @@ Craft.AssetIndex = Craft.BaseElementIndex.extend(
 
 	_getFolderIdFromSourceKey: function(sourceKey)
 	{
-		return sourceKey.split(':')[1];
+		var m = sourceKey.match(/\bfolder:(\d)$/);
+
+		return m ? m[1] : null;
 	},
 
 	startSearching: function()
