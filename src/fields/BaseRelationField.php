@@ -16,6 +16,7 @@ use craft\app\base\PreviewableFieldInterface;
 use craft\app\db\Query;
 use craft\app\elements\db\ElementQuery;
 use craft\app\elements\db\ElementQueryInterface;
+use craft\app\helpers\ElementHelper;
 use craft\app\helpers\StringHelper;
 use craft\app\tasks\LocalizeRelations;
 use craft\app\validators\ArrayValidator;
@@ -218,7 +219,7 @@ abstract class BaseRelationField extends Field implements PreviewableFieldInterf
             }
 
             if (!$this->allowMultipleSources && $this->source) {
-                $source = $class::source($this->source);
+                $source = ElementHelper::findSource($class, $this->source);
 
                 // Does the source specify any criteria attributes?
                 if (isset($source['criteria'])) {

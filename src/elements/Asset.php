@@ -119,30 +119,11 @@ class Asset extends Element
     /**
      * @inheritdoc
      */
-    public static function source($key, $context = null)
-    {
-        if (preg_match('/folder:(\d+)(:single)?/', $key, $matches)) {
-            $folder = Craft::$app->getAssets()->getFolderById($matches[1]);
-
-            if ($folder) {
-                return static::_assembleSourceInfoForFolder(
-                    $folder,
-                    empty($matches[2])
-                );
-            }
-        }
-
-        return parent::source($key, $context);
-    }
-
-    /**
-     * @inheritdoc
-     */
     protected static function defineActions($source = null)
     {
         $actions = [];
 
-        if (preg_match('/^folder:(\d+)$/', $source, $matches)) {
+        if (preg_match('/^folder:(\d+)/', $source, $matches)) {
             $folderId = $matches[1];
 
             $folder = Craft::$app->getAssets()->getFolderById($folderId);
@@ -253,35 +234,6 @@ class Asset extends Element
         $attributes = ['filename', 'size', 'dateModified'];
 
         return $attributes;
-    }
-
-    /**
-     * @inheritdoc
-     *
-     * @param string $sourceKey
-     *
-     * @return array
-     */
-    protected static function getTableAttributesForSource($sourceKey)
-    {
-        // Make sure it's a folder
-        if (strncmp($sourceKey, 'folder:', 7) === 0) {
-            $assetsService = Craft::$app->getAssets();
-            $folder = $assetsService->getFolderById(substr($sourceKey, 7));
-
-            // Is it a nested folder?
-            if ($folder && $folder->parentId) {
-                // Get the root folder in that source
-                $rootFolder = $assetsService->getRootFolderByVolumeId($folder->volumeId);
-
-                if ($rootFolder) {
-                    // Use the root folder's source key
-                    $sourceKey = 'folder:'.$rootFolder->id;
-                }
-            }
-        }
-
-        return parent::getTableAttributesForSource($sourceKey);
     }
 
     /**

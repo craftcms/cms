@@ -255,20 +255,6 @@ abstract class Element extends Component implements ElementInterface
     /**
      * @inheritdoc
      */
-    public static function source($key, $context = null)
-    {
-        $contextKey = ($context ? $context : '*');
-
-        if (!isset(self::$_sourcesByContext[$contextKey])) {
-            self::$_sourcesByContext[$contextKey] = static::sources($context);
-        }
-
-        return static::_findSource($key, self::$_sourcesByContext[$contextKey]);
-    }
-
-    /**
-     * @inheritdoc
-     */
     public static function actions($source = null)
     {
         $actions = static::defineActions($source);
@@ -335,7 +321,7 @@ abstract class Element extends Component implements ElementInterface
 
         // Special case for sorting by structure
         if (isset($viewState['order']) && $viewState['order'] == 'structure') {
-            $source = static::source($sourceKey, $context);
+            $source = ElementHelper::findSource(static::class, $sourceKey, $context);
 
             if (isset($source['structureId'])) {
                 $elementQuery->orderBy(['lft' => SORT_ASC]);
@@ -376,7 +362,7 @@ abstract class Element extends Component implements ElementInterface
         switch ($viewState['mode']) {
             case 'table': {
                 // Get the table columns
-                $variables['attributes'] = static::getTableAttributesForSource($sourceKey);
+                $variables['attributes'] = Craft::$app->getElementIndexes()->getTableAttributes(static::class, $sourceKey);
 
                 // Give each attribute a chance to modify the criteria
                 foreach ($variables['attributes'] as $attribute) {
@@ -434,18 +420,6 @@ abstract class Element extends Component implements ElementInterface
         $availableTableAttributes = static::tableAttributes();
 
         return array_keys($availableTableAttributes);
-    }
-
-    /**
-     * Returns the attributes that should be shown for the given source.
-     *
-     * @param string $sourceKey The source key
-     *
-     * @return array The attributes that should be shown for the given source
-     */
-    protected static function getTableAttributesForSource($sourceKey)
-    {
-        return Craft::$app->getElementIndexes()->getTableAttributes(static::class, $sourceKey);
     }
 
     /**

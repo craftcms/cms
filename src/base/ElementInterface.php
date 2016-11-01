@@ -233,16 +233,6 @@ interface ElementInterface extends ComponentInterface
     public static function sources($context = null);
 
     /**
-     * Returns a source by its key and context.
-     *
-     * @param string $key     The source’s key.
-     * @param string $context The context ('index' or 'modal').
-     *
-     * @return array|null
-     */
-    public static function source($key, $context = null);
-
-    /**
      * Returns the available element actions for a given source (if one is provided).
      *
      * The actions can either be represented by their class handle (e.g. 'SetStatus'), or by an
