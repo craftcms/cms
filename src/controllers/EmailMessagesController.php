@@ -12,8 +12,6 @@ use craft\app\models\RebrandEmail;
 use craft\app\web\Controller;
 use yii\web\Response;
 
-Craft::$app->requireEdition(Craft::Client);
-
 /**
  * The EmailMessagesController class is a controller that handles various email message tasks such as saving email
  * messages.
@@ -33,6 +31,11 @@ class EmailMessagesController extends Controller
      */
     public function init()
     {
+        if (!is_a(Craft::$app, 'craft/app/console/Application'))
+        {
+            Craft::$app->requireEdition(Craft::Client);
+        }
+
         // All email message actions require an admin
         $this->requireAdmin();
     }

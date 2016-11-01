@@ -13,8 +13,6 @@ use craft\app\web\Controller;
 use yii\web\NotFoundHttpException;
 use yii\web\Response;
 
-Craft::$app->requireEdition(Craft::Pro);
-
 /**
  * The UserSettingsController class is a controller that handles various user group and user settings related tasks such as
  * creating, editing and deleting user groups and saving Craft user settings.
@@ -34,6 +32,11 @@ class UserSettingsController extends Controller
      */
     public function init()
     {
+        if (!is_a(Craft::$app, 'craft/app/console/Application'))
+        {
+            Craft::$app->requireEdition(Craft::Pro);
+        }
+
         // All user settings actions require an admin
         $this->requireAdmin();
     }
