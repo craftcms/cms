@@ -317,7 +317,7 @@ class ElementIndexes extends Component
         $normalizedSources = [];
         $pendingHeading = null;
 
-        foreach ($sources as $key => $source) {
+        foreach ($sources as $source) {
             // Is this a heading?
             if (array_key_exists('heading', $source)) {
                 $pendingHeading = $source['heading'];
@@ -326,11 +326,6 @@ class ElementIndexes extends Component
                 if ($pendingHeading !== null) {
                     $normalizedSources[] = ['heading' => $pendingHeading];
                     $pendingHeading = null;
-                }
-
-                // Ensure the key is specified in the source
-                if (!is_numeric($key)) {
-                    $source['key'] = $key;
                 }
 
                 // Only allow sources that have a key

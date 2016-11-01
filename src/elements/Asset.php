@@ -249,10 +249,7 @@ class Asset extends Element
         $sources = [];
 
         foreach ($folders as $folder) {
-            $sources['folder:'.$folder->id] = static::_assembleSourceInfoForFolder(
-                $folder,
-                $includeNestedFolders
-            );
+            $sources[] = static::_assembleSourceInfoForFolder($folder, $includeNestedFolders);
         }
 
         return $sources;
@@ -269,6 +266,7 @@ class Asset extends Element
     private static function _assembleSourceInfoForFolder(VolumeFolder $folder, $includeNestedFolders = true)
     {
         $source = [
+            'key' => 'folder:'.$folder->id,
             'label' => ($folder->parentId ? $folder->name : Craft::t('site', $folder->name)),
             'hasThumbs' => true,
             'criteria' => ['folderId' => $folder->id],

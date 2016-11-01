@@ -1,12 +1,12 @@
 {% spaceless %}
 {% set keyPrefix = keyPrefix ?? '' %}
 <ul>
-	{% for key, source in sources %}
+	{% for source in sources %}
 		{% if source.heading is defined %}
 			<li class="heading"><span>{{ source.heading|t('site') }}</span></li>
 		{% else %}
 			<li>
-				<a data-key="{{ keyPrefix ~ key }}"
+				<a data-key="{{ keyPrefix ~ source.key }}"
 					{%- if source.hasThumbs is defined and source.hasThumbs %} data-has-thumbs{% endif %}
 					{%- if source.structureId is defined and source.structureId %} data-has-structure{% endif %}
 					{%- if source.defaultSort is defined %}{% set defaultSort = source.defaultSort %} data-default-sort="{{ defaultSort is iterable ? defaultSort|join(':') : defaultSort }}"{% endif %}
@@ -21,7 +21,7 @@
 				{% if source.nested is defined and source.nested is not empty %}
 					<div class="toggle"></div>
 					{% include "_elements/sources" with {
-						keyPrefix: key~'/',
+						keyPrefix: source.key ~ '/',
 						sources: source.nested
 					} %}
 				{% endif %}

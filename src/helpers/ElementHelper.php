@@ -303,23 +303,31 @@ class ElementHelper
         /** @var ElementInterface $elementType */
         $path = explode('/', $sourceKey);
         $sources = $elementType::sources($context);
-        $source = null;
 
         while ($path) {
             $key = array_shift($path);
+            $source = null;
 
-            if (!isset($sources[$key])) {
+            foreach ($sources as $testSource) {
+                if (isset($testSource['key']) && $testSource['key'] == $key) {
+                    $source = $testSource;
+                    break;
+                }
+            }
+
+            if ($source === null) {
                 return null;
             }
 
-            $source = $sources[$key];
-
-            // Looking for something more nested?
-            if ($path) {
-                $sources = isset($source['nested']) ? $source['nested'] : [];
+            // Is that the end of the path?
+            if (!$path) {
+                return $source;
             }
+
+            // Prepare for searching nested sources
+            $sources = isset($source['nested']) ? $source['nested'] : [];
         }
 
-        return $source;
+        return null;
     }
 }

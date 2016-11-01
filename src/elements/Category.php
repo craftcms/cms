@@ -98,9 +98,8 @@ class Category extends Element
         }
 
         foreach ($groups as $group) {
-            $key = 'group:'.$group->id;
-
-            $sources[$key] = [
+            $sources[] = [
+                'key' => 'group:'.$group->id,
                 'label' => Craft::t('site', $group->name),
                 'data' => ['handle' => $group->handle],
                 'criteria' => ['groupId' => $group->id],

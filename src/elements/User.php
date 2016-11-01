@@ -139,7 +139,8 @@ class User extends Element implements IdentityInterface
     protected static function defineSources($context = null)
     {
         $sources = [
-            '*' => [
+            [
+                'key' => '*',
                 'label' => Craft::t('app', 'All users'),
                 'hasThumbs' => true
             ]
@@ -147,7 +148,8 @@ class User extends Element implements IdentityInterface
 
         if (Craft::$app->getEdition() == Craft::Pro) {
             // Admin source
-            $sources['admins'] = [
+            $sources[] = [
+                'key' => 'admins',
                 'label' => Craft::t('app', 'Admins'),
                 'criteria' => ['admin' => true],
                 'hasThumbs' => true
@@ -159,9 +161,8 @@ class User extends Element implements IdentityInterface
                 $sources[] = ['heading' => Craft::t('app', 'Groups')];
 
                 foreach ($groups as $group) {
-                    $key = 'group:'.$group->id;
-
-                    $sources[$key] = [
+                    $sources[] = [
+                        'key' => 'group:'.$group->id,
                         'label' => Craft::t('site', $group->name),
                         'criteria' => ['groupId' => $group->id],
                         'hasThumbs' => true
