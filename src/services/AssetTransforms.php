@@ -800,7 +800,7 @@ class AssetTransforms extends Component
     {
         $volume = $asset->getVolume();
         $baseUrl = $volume->getRootUrl();
-        $appendix = AssetsHelper::getUrlAppendix($volume, $asset);
+        $appendix = AssetsHelper::urlAppendix($volume, $asset);
 
         return $baseUrl.$asset->getFolder()->path.$this->getTransformSubpath($asset,
             $transformIndexModel).$appendix;

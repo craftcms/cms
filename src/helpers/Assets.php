@@ -64,7 +64,7 @@ class Assets
         $baseUrl = $volume->getRootUrl();
         $folderPath = $file->getFolder()->path;
         $filename = $file->filename;
-        $appendix = static::getUrlAppendix($volume, $file);
+        $appendix = static::urlAppendix($volume, $file);
 
         return $baseUrl.$folderPath.$filename.$appendix;
     }
@@ -77,7 +77,7 @@ class Assets
      *
      * @return string
      */
-    public static function getUrlAppendix(Volume $volume, Asset $file)
+    public static function urlAppendix(Volume $volume, Asset $file)
     {
         $appendix = '';
 
