@@ -29,9 +29,9 @@ class Io
      */
     public function getMaxUploadSize()
     {
-        $maxUpload = AppHelper::getPhpConfigValueInBytes('upload_max_filesize');
-        $maxPost = AppHelper::getPhpConfigValueInBytes('post_max_size');
-        $memoryLimit = AppHelper::getPhpConfigValueInBytes('memory_limit');
+        $maxUpload = AppHelper::phpConfigValueInBytes('upload_max_filesize');
+        $maxPost = AppHelper::phpConfigValueInBytes('post_max_size');
+        $memoryLimit = AppHelper::phpConfigValueInBytes('memory_limit');
 
         $uploadInBytes = min($maxUpload, $maxPost);
 

@@ -116,7 +116,7 @@ class App
      *
      * @return integer The size in bytes.
      */
-    public static function getPhpConfigValueInBytes($var)
+    public static function phpConfigValueInBytes($var)
     {
         $value = ini_get($var);
 
