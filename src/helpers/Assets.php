@@ -43,7 +43,7 @@ class Assets
      *
      * @return mixed
      */
-    public static function getTempFilePath($extension = 'tmp')
+    public static function tempFilePath($extension = 'tmp')
     {
         $extension = strpos($extension, '.') !== false ? pathinfo($extension, PATHINFO_EXTENSION) : $extension;
         $filename = uniqid('assets', true).'.'.$extension;
