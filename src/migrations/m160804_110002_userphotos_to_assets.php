@@ -283,7 +283,7 @@ class m160804_110002_userphotos_to_assets extends Migration
                         ->execute();
                 }
 
-                $imageSize = Image::getImageSize($filePath);
+                $imageSize = Image::imageSize($filePath);
                 $assetData = [
                     'id' => $elementId,
                     'volumeId' => $volumeId,

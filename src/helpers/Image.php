@@ -195,7 +195,7 @@ class Image
      *
      * @return array [$width, $height]
      */
-    public static function getImageSize($filePath)
+    public static function imageSize($filePath)
     {
         if (Io::getExtension($filePath) == 'svg') {
             $svg = Io::getFileContents($filePath);

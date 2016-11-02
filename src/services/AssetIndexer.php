@@ -203,7 +203,7 @@ class AssetIndexer extends Component
                     }
 
                     clearstatcache();
-                    list ($asset->width, $asset->height) = Image::getImageSize(
+                    list ($asset->width, $asset->height) = Image::imageSize(
                         $targetPath
                     );
                 }
