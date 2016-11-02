@@ -247,7 +247,7 @@ class ChartHelper
     public static function formats()
     {
         return [
-            'shortDateFormats' => self::getShortDateFormats(),
+            'shortDateFormats' => self::shortDateFormats(),
             'decimalFormat' => self::getDecimalFormat(),
             'percentFormat' => self::getPercentFormat(),
             'currencyFormat' => self::getCurrencyFormat(),
@@ -259,7 +259,7 @@ class ChartHelper
      *
      * @return array
      */
-    public static function getShortDateFormats()
+    public static function shortDateFormats()
     {
         $format = Craft::$app->getLocale()->getDateFormat('short');
 
