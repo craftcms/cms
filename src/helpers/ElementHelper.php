@@ -190,7 +190,7 @@ class ElementHelper
      * @return array
      * @throws Exception if any of the element's supported sites are invalid
      */
-    public static function getSupportedSitesForElement(ElementInterface $element)
+    public static function supportedSitesForElement(ElementInterface $element)
     {
         $sites = [];
 
@@ -221,7 +221,7 @@ class ElementHelper
     {
         if ($element->getIsEditable()) {
             if (Craft::$app->getIsMultiSite()) {
-                foreach (static::getSupportedSitesForElement($element) as $siteInfo) {
+                foreach (static::supportedSitesForElement($element) as $siteInfo) {
                     if (Craft::$app->getUser()->checkPermission('editSite:'.$siteInfo['siteId'])) {
                         return true;
                     }
@@ -247,7 +247,7 @@ class ElementHelper
 
         if ($element->getIsEditable()) {
             if (Craft::$app->getIsMultiSite()) {
-                foreach (static::getSupportedSitesForElement($element) as $siteInfo) {
+                foreach (static::supportedSitesForElement($element) as $siteInfo) {
                     if (Craft::$app->getUser()->checkPermission('editSite:'.$siteInfo['siteId'])) {
                         $siteIds[] = $siteInfo['siteId'];
                     }

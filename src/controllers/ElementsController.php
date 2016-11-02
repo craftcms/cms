@@ -262,7 +262,7 @@ class ElementsController extends BaseElementsController
             $elementSiteIds = [];
             $newSiteId = null;
 
-            foreach (ElementHelper::getSupportedSitesForElement($element) as $siteInfo) {
+            foreach (ElementHelper::supportedSitesForElement($element) as $siteInfo) {
                 $elementSiteIds[] = $siteInfo['siteId'];
             }
 

@@ -422,7 +422,7 @@ class Elements extends Component
 
             $masterSiteId = $element->siteId;
 
-            $supportedSites = ElementHelper::getSupportedSitesForElement($element);
+            $supportedSites = ElementHelper::supportedSitesForElement($element);
 
             if (!$supportedSites) {
                 throw new Exception('All elements must have at least one site associated with them.');
