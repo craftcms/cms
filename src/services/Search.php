@@ -633,7 +633,7 @@ class Search extends Component
      */
     private function _isFulltextTerm($term)
     {
-        $ftStopWords = SearchHelper::getStopWords();
+        $ftStopWords = SearchHelper::stopWords();
 
         // Check if complete term is in stopwords
         if (in_array($term, $ftStopWords)) {

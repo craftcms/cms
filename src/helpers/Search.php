@@ -109,7 +109,7 @@ class Search
      * @todo Make this customizable from the config settings
      * @return array
      */
-    public static function getStopWords()
+    public static function stopWords()
     {
         if (!isset(static::$_ftStopWords)) {
             $words = explode(' ', static::DEFAULT_STOP_WORDS);
