@@ -831,6 +831,7 @@ Craft.BaseElementIndex = Garnish.Base.extend(
 		var parts = key.split('/'),
 			testKey;
 
+		var $parent;
 		for (var i = parts.length - 1; i > 0; i--) {
 			testKey = parts.slice(0, i).join('/');
 
