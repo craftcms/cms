@@ -925,7 +925,7 @@ class StringHelper extends \yii\helpers\StringHelper
      *
      * @return array The fully merged ASCII character mappings.
      */
-    public static function getAsciiCharMap()
+    public static function asciiCharMap()
     {
         if (!isset(static::$_asciiCharMap)) {
             // Get the map from Stringy.

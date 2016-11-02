@@ -139,7 +139,7 @@ class Search
 
         if (empty($map)) {
             // This will replace accented chars with non-accented chars
-            foreach (StringHelper::getAsciiCharMap() as $asciiChar => $charsArray) {
+            foreach (StringHelper::asciiCharMap() as $asciiChar => $charsArray) {
                 foreach ($charsArray as $char) {
                     $map[$char] = $asciiChar;
                 }
