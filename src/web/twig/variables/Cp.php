@@ -264,6 +264,6 @@ class Cp extends Component
      */
     public function getAlerts()
     {
-        return CpHelper::getAlerts(Craft::$app->getRequest()->getPathInfo());
+        return CpHelper::alerts(Craft::$app->getRequest()->getPathInfo());
     }
 }

@@ -64,7 +64,7 @@ class AppController extends Controller
         $path = Craft::$app->getRequest()->getRequiredBodyParam('path');
 
         // Fetch 'em and send 'em
-        $alerts = Cp::getAlerts($path, true);
+        $alerts = Cp::alerts($path, true);
 
         return $this->asJson($alerts);
     }
