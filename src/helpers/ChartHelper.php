@@ -343,7 +343,7 @@ class ChartHelper
      *
      * @return array
      */
-    public static function getDateRanges()
+    public static function dateRanges()
     {
         $dateRanges = [
             'd7' => ['label' => Craft::t('app', 'Last 7 days'), 'startDate' => '-7 days', 'endDate' => null],
