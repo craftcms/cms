@@ -44,7 +44,7 @@ class Feeds
 
         foreach ($items as &$item) {
             foreach ($rawProperties as $prop) {
-                $item[$prop] = Template::getRaw($item[$prop]);
+                $item[$prop] = Template::raw($item[$prop]);
             }
         }
 

@@ -307,7 +307,7 @@ class SystemSettingsController extends Controller
 
             // Try to send the test email
             $message = $mailer
-                ->composeFromKey('test_email', ['settings' => Template::getRaw($settingsHtml)])
+                ->composeFromKey('test_email', ['settings' => Template::raw($settingsHtml)])
                 ->setTo(Craft::$app->getUser()->getIdentity());
 
             if ($message->send()) {

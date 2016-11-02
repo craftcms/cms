@@ -960,7 +960,7 @@ abstract class Element extends Component implements ElementInterface
         if ($url !== null) {
             $link = '<a href="'.$url.'">'.Html::encode($this->__toString()).'</a>';
 
-            return Template::getRaw($link);
+            return Template::raw($link);
         }
 
         return null;
