@@ -244,7 +244,7 @@ class ChartHelper
      *
      * @return array
      */
-    public static function getFormats()
+    public static function formats()
     {
         return [
             'shortDateFormats' => self::getShortDateFormats(),
