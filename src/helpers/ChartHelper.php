@@ -248,7 +248,7 @@ class ChartHelper
     {
         return [
             'shortDateFormats' => self::shortDateFormats(),
-            'decimalFormat' => self::getDecimalFormat(),
+            'decimalFormat' => self::decimalFormat(),
             'percentFormat' => self::getPercentFormat(),
             'currencyFormat' => self::getCurrencyFormat(),
         ];
@@ -313,7 +313,7 @@ class ChartHelper
      *
      * @return string
      */
-    public static function getDecimalFormat()
+    public static function decimalFormat()
     {
         return ',.3f';
     }
