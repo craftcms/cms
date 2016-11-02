@@ -165,7 +165,7 @@ class AwsS3 extends Volume
             ];
         }
 
-        $client = static::getClient($config);
+        $client = static::client($config);
 
         $objects = $client->listBuckets();
 
@@ -235,7 +235,7 @@ class AwsS3 extends Volume
     {
         $config = $this->_getConfigArray();
 
-        $client = static::getClient($config);
+        $client = static::client($config);
 
         return new AwsS3Adapter($client, $this->bucket, $this->subfolder);
     }
@@ -247,7 +247,7 @@ class AwsS3 extends Volume
      *
      * @return S3Client
      */
-    protected static function getClient($config = [])
+    protected static function client($config = [])
     {
         $config['credentials.cache'] = static::_getCredentialsCacheAdapter();
 
