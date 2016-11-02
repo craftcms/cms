@@ -185,7 +185,7 @@ class Assets
      *
      * @return array
      */
-    public static function getFileTransferList($assets, $folderIdChanges, $merge = false)
+    public static function fileTransferList($assets, $folderIdChanges, $merge = false)
     {
         $fileTransferList = [];
 
