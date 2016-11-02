@@ -141,7 +141,7 @@ class AwsS3 extends Volume
             [
                 'volume' => $this,
                 'periods' => array_merge(['' => ''], Assets::periodList()),
-                'storageClasses' => static::getStorageClasses(),
+                'storageClasses' => static::storageClasses(),
             ]);
     }
 
@@ -214,7 +214,7 @@ class AwsS3 extends Volume
      *
      * @return array
      */
-    public static function getStorageClasses()
+    public static function storageClasses()
     {
         return [
             static::STORAGE_STANDARD => 'Standard',
