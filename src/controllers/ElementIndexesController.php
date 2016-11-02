@@ -226,6 +226,22 @@ class ElementIndexesController extends BaseElementsController
         return $this->asJson($responseData);
     }
 
+    /**
+     * Returns the source tree HTML for an element index.
+     */
+    public function actionGetSourceTreeHtml()
+    {
+        $this->requireAcceptsJson();
+
+        $sources = Craft::$app->getElementIndexes()->getSources($this->_elementType, $this->_context);
+
+        return $this->asJson([
+            'html' => Craft::$app->getView()->renderTemplate('_elements/sources', [
+                'sources' => $sources
+            ])
+        ]);
+    }
+
     // Private Methods
     // =========================================================================
 

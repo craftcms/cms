@@ -127,24 +127,9 @@ Craft.BaseElementIndex = Garnish.Base.extend(
 		// Initialize the sources
 		// ---------------------------------------------------------------------
 
-		var $sources = this._getSourcesInList(this.$sidebar.children('nav').children('ul'));
-
-		// No source, no party.
-		if ($sources.length == 0)
-		{
+		if (!this.initSources()) {
 			return;
 		}
-
-		// The source selector
-		this.sourceSelect = new Garnish.Select(this.$sidebar.find('nav'), {
-			multi:             false,
-			allowEmpty:        false,
-			vertical:          true,
-			onSelectionChange: $.proxy(this, '_handleSourceSelectionChange')
-		});
-
-		this.sourcesByKey = {};
-		this._initSources($sources);
 
 		// Customize button
 		if (this.$customizeSourcesBtn.length)
@@ -300,6 +285,62 @@ Craft.BaseElementIndex = Garnish.Base.extend(
 		// Select the initial source
 		// ---------------------------------------------------------------------
 
+		this.selectDefaultSource();
+
+		// Load the first batch of elements!
+		// ---------------------------------------------------------------------
+
+		this.updateElements();
+	},
+
+	afterInit: function()
+	{
+		this.onAfterInit();
+	},
+
+	getSourceContainer: function()
+	{
+		return this.$sidebar.children('nav').children('ul');
+	},
+
+	get $sources()
+	{
+		if (!this.sourceSelect)
+		{
+			return undefined;
+		}
+
+		return this.sourceSelect.$items;
+	},
+
+	initSources: function()
+	{
+		var $sources = this._getSourcesInList(this.getSourceContainer());
+
+		// No source, no party.
+		if ($sources.length == 0)
+		{
+			return false;
+		}
+
+		// The source selector
+		if (!this.sourceSelect) {
+			this.sourceSelect = new Garnish.Select(this.$sidebar.find('nav'), {
+				multi:             false,
+				allowEmpty:        false,
+				vertical:          true,
+				onSelectionChange: $.proxy(this, '_handleSourceSelectionChange')
+			});
+		}
+
+		this.sourcesByKey = {};
+		this._initSources($sources);
+
+		return true;
+	},
+
+	selectDefaultSource: function()
+	{
 		var sourceKey = this.getDefaultSourceKey(),
 			$source;
 
@@ -318,26 +359,35 @@ Craft.BaseElementIndex = Garnish.Base.extend(
 		{
 			this.selectSource($source);
 		}
-
-		// Load the first batch of elements!
-		// ---------------------------------------------------------------------
-
-		this.updateElements();
 	},
 
-	afterInit: function()
+	refreshSources: function()
 	{
-		this.onAfterInit();
-	},
+		this.sourceSelect.removeAllItems();
 
-	get $sources()
-	{
-		if (!this.sourceSelect)
+		var params = {
+			context: this.settings.context,
+			elementType: this.elementType
+		};
+
+		this.setIndexBusy();
+
+		Craft.postActionRequest('element-indexes/get-source-tree-html', params, $.proxy(function(response, textStatus)
 		{
-			return undefined;
-		}
+			this.setIndexAvailable();
 
-		return this.sourceSelect.$items;
+			if (textStatus == 'success')
+			{
+				this.getSourceContainer().replaceWith(response.html);
+				this.initSources();
+				this.selectDefaultSource();
+			}
+			else
+			{
+				Craft.cp.displayError(Craft.t('app', 'An unknown error occurred.'));
+			}
+
+		}, this));
 	},
 
 	updateFixedToolbar: function()
