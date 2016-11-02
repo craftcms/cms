@@ -86,9 +86,7 @@ Craft.BaseElementIndex = Garnish.Base.extend(
 		// Set the state objects
 		// ---------------------------------------------------------------------
 
-		this.instanceState = {
-			selectedSource: null
-		};
+		this.instanceState = this.getDefaultInstanceState();
 
 		this.sourceStates = {};
 
@@ -307,7 +305,7 @@ Craft.BaseElementIndex = Garnish.Base.extend(
 
 		if (sourceKey)
 		{
-			$source = this.getSourceByKey(sourceKey, true);
+			$source = this.getSourceByKey(sourceKey);
 		}
 
 		if (!sourceKey || !$source)
@@ -382,6 +380,10 @@ Craft.BaseElementIndex = Garnish.Base.extend(
 		this.sourceSelect.addItems($source);
 		this.initSourceToggle($source);
 		this.sourcesByKey[$source.data('key')] = $source;
+
+		if ($source.data('hasNestedSources') && this.instanceState.expandedSources.indexOf($source.data('key')) != -1) {
+			this._expandSource($source);
+		}
 	},
 
 	initSourceToggle: function($source)
@@ -413,9 +415,22 @@ Craft.BaseElementIndex = Garnish.Base.extend(
 		$source.removeData('hasNestedSources');
 	},
 
+	getDefaultInstanceState: function()
+	{
+		return {
+			selectedSource: null,
+			expandedSources: []
+		};
+	},
+
 	getDefaultSourceKey: function()
 	{
 		return this.instanceState.selectedSource;
+	},
+
+	getDefaultExpandedSources: function ()
+	{
+		return this.instanceState.expandedSources;
 	},
 
 	startSearching: function()
@@ -459,7 +474,11 @@ Craft.BaseElementIndex = Garnish.Base.extend(
 			this.instanceState[key] = value;
 		}
 
-		// Store it in localStorage too?
+		this.storeInstanceState();
+	},
+
+	storeInstanceState: function()
+	{
 		if (this.settings.storageKey)
 		{
 			Craft.setLocalStorage(this.settings.storageKey, this.instanceState);
@@ -814,66 +833,9 @@ Craft.BaseElementIndex = Garnish.Base.extend(
 		this.getSortDirectionOption(dir).addClass('sel');
 	},
 
-	getSourceByKey: function(key, autoExpand)
+	getSourceByKey: function(key)
 	{
-		// If we already have it indexed, return it
-		if (typeof this.sourcesByKey[key] !== typeof undefined) {
-			return this.sourcesByKey[key];
-		}
-
-		// Give up if sources aren't loaded, we're not interested in expanding
-		// nested sources for it, or if this is a top-level source
-		if (!this.$sources || !autoExpand || key.indexOf('/') == -1) {
-			return null;
-		}
-
-		// It's a nested source. Get its closet enabled parent
-		var parts = key.split('/'),
-			testKey;
-
-		for (var i = parts.length - 1; i > 0; i--) {
-			testKey = parts.slice(0, i).join('/');
-
-			if (typeof this.sourcesByKey[testKey] !== typeof undefined) {
-				var $parent = this.sourcesByKey[testKey];
-				break;
-			}
-		}
-
-		// Give up if we couldn't find a closest parent, or it doesn't have nested sources
-		if (typeof $parent === typeof undefined || !$parent.data('hasNestedSources')) {
-			return null;
-		}
-
-		// Expand the sources leading up to our requested source
-		// Now expand the parents until we've reached the requested source
-		this._expandSource($parent);
-		var expandedSources = [$parent];
-
-		for (var j = i + 1; j < parts.length - 1; j++) {
-			testKey = parts.slice(0, j).join('/');
-
-			// Give up if this source doesn't exist, or it doesn't have nested sources
-			if (typeof this.sourcesByKey[testKey] === typeof undefined || !this.sourcesByKey[testKey].data('hasNestedSources')) {
-				// But first collapse any sources we just expanded
-				for (var k = expandedSources.length - 1; k >= 0; k--) {
-					this._collapseSource(expandedSources[k]);
-				}
-
-				return null;
-			}
-
-			this._expandSource(this.sourcesByKey[testKey]);
-			expandedSources.push(this.sourcesByKey[testKey]);
-		}
-
-		// Now that all parents have been expanded, give up if the requseted source still doesn't exist
 		if (typeof this.sourcesByKey[key] === typeof undefined) {
-			// But first collapse any sources we just expanded
-			for (var l = expandedSources.length - 1; l >= 0; l--) {
-				this._collapseSource(expandedSources[l]);
-			}
-
 			return null;
 		}
 
@@ -1536,6 +1498,12 @@ Craft.BaseElementIndex = Garnish.Base.extend(
 
 		var $childSources = this._getChildSources($source);
 		this._initSources($childSources);
+
+		var key = $source.data('key');
+		if (this.instanceState.expandedSources.indexOf(key) == -1) {
+			this.instanceState.expandedSources.push(key);
+			this.storeInstanceState();
+		}
 	},
 
 	_collapseSource: function($source)
@@ -1544,6 +1512,12 @@ Craft.BaseElementIndex = Garnish.Base.extend(
 
 		var $childSources = this._getChildSources($source);
 		this._deinitSources($childSources);
+
+		var i = this.instanceState.expandedSources.indexOf($source.data('key'));
+		if (i != -1) {
+			this.instanceState.expandedSources.splice(i, 1);
+			this.storeInstanceState();
+		}
 	},
 
 	// View
