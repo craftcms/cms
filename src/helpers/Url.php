@@ -113,7 +113,7 @@ class Url
      *
      * @return string
      */
-    public static function getUrlWithToken($url, $token)
+    public static function urlWithToken($url, $token)
     {
         $protocol = static::getProtocolForTokenizedUrl();
         $url = static::getUrlWithProtocol($url, $protocol);

@@ -607,7 +607,7 @@ class EntriesController extends BaseEntriesController
             'entries/view-shared-entry',
             $params
         ]);
-        $url = Url::getUrlWithToken($entry->getUrl(), $token);
+        $url = Url::urlWithToken($entry->getUrl(), $token);
 
         return Craft::$app->getResponse()->redirect($url);
     }
