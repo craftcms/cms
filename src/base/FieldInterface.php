@@ -167,18 +167,6 @@ interface FieldInterface extends SavableComponentInterface
     public function getStaticHtml($value, $element);
 
     /**
-     * Validates the field’s value.
-     *
-     * @param mixed            $value   The field’s value
-     * @param ElementInterface $element The element the field is associated with, if there is one
-     *
-     * @return string|string[]|null The error message(s) if there are any validation errors, or null if everything checks out.
-     *                              The messages can contain `{attribute}` and `{value}` tokens, which will be replaced with the
-     *                              field handle and value, respectively.
-     */
-    public function validateValue($value, $element);
-
-    /**
      * Returns the validation rules for an element with this field.
      *
      * Rules should be defined in the array syntax required by [[\yii\base\Model::rules()]],

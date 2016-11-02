@@ -532,7 +532,7 @@ class Elements extends Component
                         $localizedElement->setFieldValues($fieldValues);
                     }
 
-                    Craft::$app->getContent()->saveContent($localizedElement, false);
+                    Craft::$app->getContent()->saveContent($localizedElement);
                 }
 
                 // Capture the original slug, in case it's entirely composed of invalid characters
