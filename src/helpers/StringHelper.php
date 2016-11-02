@@ -225,7 +225,7 @@ class StringHelper extends \yii\helpers\StringHelper
      *
      * @return string
      */
-    public static function getCharAt($str, $i)
+    public static function charAt($str, $i)
     {
         return (string)Stringy::create($str)->at($i);
     }
