@@ -379,19 +379,4 @@ class Tags extends Component
     {
         return Craft::$app->getElements()->getElementById($tagId, Tag::class, $siteId);
     }
-
-    /**
-     * Saves a tag.
-     *
-     * @param Tag     $tag           The tag to be saved
-     * @param boolean $runValidation Whether the tag should be validated
-     *
-     * @return boolean Whether the tag was saved successfully
-     * @throws TagNotFoundException if $tag->id is invalid
-     * @throws \Exception if reasons
-     */
-    public function saveTag(Tag $tag, $runValidation = true)
-    {
-
-    }
 }
