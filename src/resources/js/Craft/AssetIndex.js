@@ -892,7 +892,7 @@ Craft.AssetIndex = Craft.BaseElementIndex.extend(
 	{
 		var m = sourceKey.match(/\bfolder:(\d)$/);
 
-		return m ? m[1] : null;
+		return m ? m.split(':')[1] : null;
 	},
 
 	startSearching: function()
