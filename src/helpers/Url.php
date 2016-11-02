@@ -116,7 +116,7 @@ class Url
     public static function urlWithToken($url, $token)
     {
         $protocol = static::getProtocolForTokenizedUrl();
-        $url = static::getUrlWithProtocol($url, $protocol);
+        $url = static::urlWithProtocol($url, $protocol);
 
         return static::urlWithParams($url, [
             Craft::$app->getConfig()->get('tokenParam') => $token
@@ -131,7 +131,7 @@ class Url
      *
      * @return string
      */
-    public static function getUrlWithProtocol($url, $protocol)
+    public static function urlWithProtocol($url, $protocol)
     {
         if (!$url || !$protocol) {
             return $url;
@@ -168,7 +168,7 @@ class Url
             }
 
             if ($protocol) {
-                $path = static::getUrlWithProtocol($path, $protocol);
+                $path = static::urlWithProtocol($path, $protocol);
             }
 
             return $path;
@@ -433,7 +433,7 @@ class Url
 
                 if ($protocol) {
                     // Make sure we're using the right protocol
-                    $baseUrl = static::getUrlWithProtocol($baseUrl, $protocol);
+                    $baseUrl = static::urlWithProtocol($baseUrl, $protocol);
                 }
 
                 // Should we be adding that script name in?
@@ -451,7 +451,7 @@ class Url
                 }
 
                 if ($protocol) {
-                    $baseUrl = static::getUrlWithProtocol($baseUrl, $protocol);
+                    $baseUrl = static::urlWithProtocol($baseUrl, $protocol);
                 }
             }
         } else {
