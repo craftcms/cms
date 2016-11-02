@@ -77,7 +77,7 @@ class Image
      *
      * @return array
      */
-    public static function getWebSafeFormats()
+    public static function webSafeFormats()
     {
         return ['jpg', 'jpeg', 'gif', 'png', 'svg'];
     }
