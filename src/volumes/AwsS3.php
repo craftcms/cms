@@ -140,7 +140,7 @@ class AwsS3 extends Volume
         return Craft::$app->getView()->renderTemplate('_components/volumes/AwsS3/settings',
             [
                 'volume' => $this,
-                'periods' => array_merge(['' => ''], Assets::getPeriodList()),
+                'periods' => array_merge(['' => ''], Assets::periodList()),
                 'storageClasses' => static::getStorageClasses(),
             ]);
     }

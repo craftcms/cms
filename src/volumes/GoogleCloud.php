@@ -108,7 +108,7 @@ class GoogleCloud extends Volume
         return Craft::$app->getView()->renderTemplate('_components/volumes/GoogleCloud/settings',
             [
                 'volume' => $this,
-                'periods' => array_merge(['' => ''], Assets::getPeriodList())
+                'periods' => array_merge(['' => ''], Assets::periodList())
             ]);
     }
 

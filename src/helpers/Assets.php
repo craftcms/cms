@@ -220,7 +220,7 @@ class Assets
      *
      * @return array
      */
-    public static function getPeriodList()
+    public static function periodList()
     {
         return [
             PeriodType::Seconds => Craft::t('app', 'Seconds'),
