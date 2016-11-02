@@ -84,11 +84,11 @@ class TagsController extends Controller
         $crumbs = [
             [
                 'label' => Craft::t('app', 'Settings'),
-                'url' => Url::getUrl('settings')
+                'url' => Url::url('settings')
             ],
             [
                 'label' => Craft::t('app', 'Tags'),
-                'url' => Url::getUrl('settings/tags')
+                'url' => Url::url('settings/tags')
             ]
         ];
 

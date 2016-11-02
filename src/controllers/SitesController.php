@@ -74,11 +74,11 @@ class SitesController extends Controller
         $variables['crumbs'] = [
             [
                 'label' => Craft::t('app', 'Settings'),
-                'url' => Url::getUrl('settings')
+                'url' => Url::url('settings')
             ],
             [
                 'label' => Craft::t('app', 'Sites'),
-                'url' => Url::getUrl('settings/sites')
+                'url' => Url::url('settings/sites')
             ]
         ];
 

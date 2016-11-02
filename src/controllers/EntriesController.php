@@ -225,19 +225,19 @@ class EntriesController extends BaseEntriesController
         $variables['crumbs'] = [
             [
                 'label' => Craft::t('app', 'Entries'),
-                'url' => Url::getUrl('entries')
+                'url' => Url::url('entries')
             ]
         ];
 
         if ($section->type == Section::TYPE_SINGLE) {
             $variables['crumbs'][] = [
                 'label' => Craft::t('app', 'Singles'),
-                'url' => Url::getUrl('entries/singles')
+                'url' => Url::url('entries/singles')
             ];
         } else {
             $variables['crumbs'][] = [
                 'label' => Craft::t('site', $section->name),
-                'url' => Url::getUrl('entries/'.$section->handle)
+                'url' => Url::url('entries/'.$section->handle)
             ];
 
             if ($section->type == Section::TYPE_STRUCTURE) {

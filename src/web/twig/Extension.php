@@ -587,7 +587,7 @@ class Extension extends \Twig_Extension implements \Twig_Extension_GlobalsInterf
             new \Twig_SimpleFunction('resourceUrl', '\\craft\\app\\helpers\\Url::getResourceUrl'),
             new \Twig_SimpleFunction('shuffle', [$this, 'shuffleFunction']),
             new \Twig_SimpleFunction('siteUrl', '\\craft\\app\\helpers\\Url::getSiteUrl'),
-            new \Twig_SimpleFunction('url', '\\craft\\app\\helpers\\Url::getUrl'),
+            new \Twig_SimpleFunction('url', '\\craft\\app\\helpers\\Url::url'),
             // DOM event functions
             new \Twig_SimpleFunction('head', [$this->view, 'head']),
             new \Twig_SimpleFunction('beginBody', [$this->view, 'beginBody']),
@@ -695,8 +695,8 @@ class Extension extends \Twig_Extension implements \Twig_Extension_GlobalsInterf
         $globals['craft'] = $craftVariable;
         $globals['blx'] = $craftVariable;
 
-        $globals['loginUrl'] = Url::getUrl(Craft::$app->getConfig()->getLoginPath());
-        $globals['logoutUrl'] = Url::getUrl(Craft::$app->getConfig()->getLogoutPath());
+        $globals['loginUrl'] = Url::url(Craft::$app->getConfig()->getLoginPath());
+        $globals['logoutUrl'] = Url::url(Craft::$app->getConfig()->getLogoutPath());
         $globals['isInstalled'] = $isInstalled;
 
         if ($isInstalled && !$request->getIsConsoleRequest() && !Craft::$app->getIsUpdating()) {

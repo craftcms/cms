@@ -155,7 +155,7 @@ class Cp extends Component
                 $item['id'] = 'nav-'.preg_replace('/[^\w\-_]/', '', $item['url']);
             }
 
-            $item['url'] = Url::getUrl($item['url']);
+            $item['url'] = Url::url($item['url']);
         }
 
         return $navItems;

@@ -412,7 +412,7 @@ class UsersController extends Controller
             }
 
             // Redirect to the site/CP root
-            $url = Url::getUrl('');
+            $url = Url::url('');
 
             return $this->redirect($url);
         }

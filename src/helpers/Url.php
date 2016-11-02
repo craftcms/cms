@@ -159,7 +159,7 @@ class Url
      *
      * @return string
      */
-    public static function getUrl($path = '', $params = null, $protocol = null, $mustShowScriptName = false)
+    public static function url($path = '', $params = null, $protocol = null, $mustShowScriptName = false)
     {
         // Return $path if it appears to be an absolute URL.
         if (static::isFullUrl($path)) {
@@ -295,7 +295,7 @@ class Url
             }
         }
 
-        return static::getUrl(Craft::$app->getConfig()->getResourceTrigger().'/'.$uri, $params, $protocol);
+        return static::url(Craft::$app->getConfig()->getResourceTrigger().'/'.$uri, $params, $protocol);
     }
 
     /**
@@ -311,7 +311,7 @@ class Url
         $path = Craft::$app->getConfig()->get('actionTrigger').'/'.trim($path,
                 '/');
 
-        return static::getUrl($path, $params, $protocol, true);
+        return static::url($path, $params, $protocol, true);
     }
 
     /**

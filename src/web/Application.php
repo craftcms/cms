@@ -432,7 +432,7 @@ class Application extends \yii\web\Application
         if (!$isInstalled) {
             // Give it to them if accessing the CP
             if ($isCpRequest) {
-                $url = Url::getUrl('install');
+                $url = Url::url('install');
                 $this->getResponse()->redirect($url);
                 $this->end();
             } // Otherwise return a 503
@@ -606,7 +606,7 @@ class Application extends \yii\web\Application
                     $error = Craft::t('app', 'Your account doesn’t have permission to access the site when the system is offline.');
                 }
 
-                $error .= ' ['.Craft::t('app', 'Log out?').']('.Url::getUrl($this->getConfig()->getLogoutPath()).')';
+                $error .= ' ['.Craft::t('app', 'Log out?').']('.Url::url($this->getConfig()->getLogoutPath()).')';
             } else {
                 // If this is a CP request, redirect to the Login page
                 if ($this->getRequest()->getIsCpRequest()) {
