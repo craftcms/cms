@@ -133,7 +133,7 @@ class Rackspace extends Volume
             throw new \InvalidArgumentException('You must specify a username, the API key and a region to get the container list.');
         }
 
-        $client = static::getClient($username, $apiKey);
+        $client = static::client($username, $apiKey);
 
         $service = $client->objectStoreService('cloudFiles', $region);
 
@@ -177,7 +177,7 @@ class Rackspace extends Volume
      */
     protected function createAdapter()
     {
-        $client = static::getClient($this->username, $this->apiKey);
+        $client = static::client($this->username, $this->apiKey);
 
         $store = $client->objectStoreService('cloudFiles', $this->region);
         $container = $store->getContainer($this->container);
@@ -193,7 +193,7 @@ class Rackspace extends Volume
      *
      * @return OpenStack
      */
-    protected static function getClient($username, $apiKey)
+    protected static function client($username, $apiKey)
     {
         $config = ['username' => $username, 'apiKey' => $apiKey];
 
