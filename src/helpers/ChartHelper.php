@@ -250,7 +250,7 @@ class ChartHelper
             'shortDateFormats' => self::shortDateFormats(),
             'decimalFormat' => self::decimalFormat(),
             'percentFormat' => self::percentFormat(),
-            'currencyFormat' => self::getCurrencyFormat(),
+            'currencyFormat' => self::currencyFormat(),
         ];
     }
 
@@ -333,7 +333,7 @@ class ChartHelper
      *
      * @return string
      */
-    public static function getCurrencyFormat()
+    public static function currencyFormat()
     {
         return '$,.2f';
     }
