@@ -84,7 +84,7 @@ class Url
      *
      * @return string
      */
-    public static function getUrlWithParams($url, $params)
+    public static function urlWithParams($url, $params)
     {
         $params = static::_normalizeParams($params, $anchor);
 
@@ -118,7 +118,7 @@ class Url
         $protocol = static::getProtocolForTokenizedUrl();
         $url = static::getUrlWithProtocol($url, $protocol);
 
-        return static::getUrlWithParams($url, [
+        return static::urlWithParams($url, [
             Craft::$app->getConfig()->get('tokenParam') => $token
         ]);
     }
@@ -164,7 +164,7 @@ class Url
         // Return $path if it appears to be an absolute URL.
         if (static::isFullUrl($path)) {
             if ($params) {
-                $path = static::getUrlWithParams($path, $params);
+                $path = static::urlWithParams($path, $params);
             }
 
             if ($protocol) {
