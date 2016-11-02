@@ -21,7 +21,7 @@
 				{% if source.nested is defined and source.nested is not empty %}
 					<div class="toggle"></div>
 					{% include "_elements/sources" with {
-						keyPrefix: source.key ~ '/',
+						keyPrefix: keyPrefix ~ source.key ~ '/',
 						sources: source.nested
 					} %}
 				{% endif %}
