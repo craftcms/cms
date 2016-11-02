@@ -94,7 +94,7 @@ class Search
      * @todo Get actual value from DB
      * @return integer
      */
-    public static function getMinWordLength()
+    public static function minWordLength()
     {
         if (!isset(static::$_ftMinWordLength)) {
             static::$_ftMinWordLength = 4;
