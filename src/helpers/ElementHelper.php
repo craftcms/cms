@@ -241,7 +241,7 @@ class ElementHelper
      *
      * @return array
      */
-    public static function getEditableSiteIdsForElement(ElementInterface $element)
+    public static function editableSiteIdsForElement(ElementInterface $element)
     {
         $siteIds = [];
 

@@ -317,7 +317,7 @@ class ElementsController extends BaseElementsController
     private function _getEditorHtmlResponse(ElementInterface $element, $includeSites)
     {
         /** @var Element $element */
-        $siteIds = ElementHelper::getEditableSiteIdsForElement($element);
+        $siteIds = ElementHelper::editableSiteIdsForElement($element);
 
         if (!$siteIds) {
             throw new ForbiddenHttpException('User not permitted to edit content in any of the sites supported by this element');
