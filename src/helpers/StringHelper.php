@@ -971,7 +971,7 @@ class StringHelper extends \yii\helpers\StringHelper
 
         // Otherwise set HTMLPurifier to the actual string encoding
         $config = \HTMLPurifier_Config::createDefault();
-        $config->set('Core.Encoding', (string)static::getEncoding($string));
+        $config->set('Core.Encoding', (string)static::encoding($string));
 
         // Clean it
         $string = HtmlPurifier::cleanUtf8($string);
@@ -980,7 +980,7 @@ class StringHelper extends \yii\helpers\StringHelper
         if (App::checkForValidIconv()) {
             $string = HtmlPurifier::convertToUtf8($string, $config);
         } else {
-            $encoding = static::getEncoding($string);
+            $encoding = static::encoding($string);
             $string = mb_convert_encoding($string, 'utf-8', $encoding);
         }
 
@@ -996,7 +996,7 @@ class StringHelper extends \yii\helpers\StringHelper
      */
     public static function isUtf8($string)
     {
-        return static::getEncoding($string) == 'utf-8' ? true : false;
+        return static::encoding($string) == 'utf-8' ? true : false;
     }
 
     /**
@@ -1006,7 +1006,7 @@ class StringHelper extends \yii\helpers\StringHelper
      *
      * @return string
      */
-    public static function getEncoding($string)
+    public static function encoding($string)
     {
         return static::toLowerCase(mb_detect_encoding($string, mb_detect_order(), true));
     }
