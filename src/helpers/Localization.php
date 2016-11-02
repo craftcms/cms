@@ -64,7 +64,7 @@ class Localization
      *
      * @return array|null
      */
-    public static function getLocaleData($localeId)
+    public static function localeData($localeId)
     {
         $data = null;
 
