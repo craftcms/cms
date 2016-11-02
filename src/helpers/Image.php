@@ -96,7 +96,7 @@ class Image
      *
      * @return array|bool Info embedded in the PNG file, or `false` if it wasn’t found.
      */
-    public static function getPngImageInfo($file)
+    public static function pngImageInfo($file)
     {
         if (empty($file)) {
             return false;
