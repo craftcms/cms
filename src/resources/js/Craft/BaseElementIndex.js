@@ -26,6 +26,7 @@ Craft.BaseElementIndex = Garnish.Base.extend(
 	sourceKey: null,
 	sourceViewModes: null,
 	$source: null,
+	sourcesByKey: null,
 
 	$customizeSourcesBtn: null,
 	customizeSourcesModal: null,
@@ -144,6 +145,7 @@ Craft.BaseElementIndex = Garnish.Base.extend(
 			onSelectionChange: $.proxy(this, '_handleSourceSelectionChange')
 		});
 
+		this.sourcesByKey = {};
 		this._initSources($sources);
 
 		// Customize button
@@ -305,14 +307,7 @@ Craft.BaseElementIndex = Garnish.Base.extend(
 
 		if (sourceKey)
 		{
-			$source = this.getSourceByKey(sourceKey);
-
-			if ($source)
-			{
-				// Expand any parent sources
-				var $parentSources = $source.parentsUntil('.sidebar', 'li');
-				$parentSources.not(':first').addClass('expanded');
-			}
+			$source = this.getSourceByKey(sourceKey, true);
 		}
 
 		if (!sourceKey || !$source)
@@ -386,15 +381,18 @@ Craft.BaseElementIndex = Garnish.Base.extend(
 	{
 		this.sourceSelect.addItems($source);
 		this.initSourceToggle($source);
+		this.sourcesByKey[$source.data('key')] = $source;
 	},
 
 	initSourceToggle: function($source)
 	{
 		var $toggle = this._getSourceToggle($source);
 
-		if ($toggle.length)
-		{
+		if ($toggle.length) {
 			this.addListener($toggle, 'click', '_handleSourceToggleClick');
+			$source.data('hasNestedSources', true);
+		} else {
+			$source.data('hasNestedSources', false);
 		}
 	},
 
@@ -402,16 +400,17 @@ Craft.BaseElementIndex = Garnish.Base.extend(
 	{
 		this.sourceSelect.removeItems($source);
 		this.deinitSourceToggle($source);
+		delete this.sourcesByKey[$source.data('key')];
 	},
 
 	deinitSourceToggle: function($source)
 	{
-		var $toggle = this._getSourceToggle($source);
-
-		if ($toggle.length)
-		{
+		if ($source.data('hasNestedSources')) {
+			var $toggle = this._getSourceToggle($source);
 			this.removeListener($toggle, 'click');
 		}
+
+		$source.removeData('hasNestedSources');
 	},
 
 	getDefaultSourceKey: function()
@@ -815,17 +814,70 @@ Craft.BaseElementIndex = Garnish.Base.extend(
 		this.getSortDirectionOption(dir).addClass('sel');
 	},
 
-	getSourceByKey: function(key)
+	getSourceByKey: function(key, autoExpand)
 	{
-		if (this.$sources)
-		{
-			var $source = this.$sources.filter('[data-key="'+key+'"]:first');
+		// If we already have it indexed, return it
+		if (typeof this.sourcesByKey[key] !== typeof undefined) {
+			return this.sourcesByKey[key];
+		}
 
-			if ($source.length)
-			{
-				return $source;
+		// Give up if sources aren't loaded, we're not interested in expanding
+		// nested sources for it, or if this is a top-level source
+		if (!this.$sources || !autoExpand || key.indexOf('/') == -1) {
+			return null;
+		}
+
+		// It's a nested source. Get its closet enabled parent
+		var parts = key.split('/'),
+			testKey;
+
+		for (var i = parts.length - 1; i > 0; i--) {
+			testKey = parts.slice(0, i).join('/');
+
+			if (typeof this.sourcesByKey[testKey] !== typeof undefined) {
+				var $parent = this.sourcesByKey[testKey];
+				break;
 			}
 		}
+
+		// Give up if we couldn't find a closest parent, or it doesn't have nested sources
+		if (typeof $parent === typeof undefined || !$parent.data('hasNestedSources')) {
+			return null;
+		}
+
+		// Expand the sources leading up to our requested source
+		// Now expand the parents until we've reached the requested source
+		this._expandSource($parent);
+		var expandedSources = [$parent];
+
+		for (var j = i + 1; j < parts.length - 1; j++) {
+			testKey = parts.slice(0, j).join('/');
+
+			// Give up if this source doesn't exist, or it doesn't have nested sources
+			if (typeof this.sourcesByKey[testKey] === typeof undefined || !this.sourcesByKey[testKey].data('hasNestedSources')) {
+				// But first collapse any sources we just expanded
+				for (var k = expandedSources.length - 1; k >= 0; k--) {
+					this._collapseSource(expandedSources[k]);
+				}
+
+				return null;
+			}
+
+			this._expandSource(this.sourcesByKey[testKey]);
+			expandedSources.push(this.sourcesByKey[testKey]);
+		}
+
+		// Now that all parents have been expanded, give up if the requseted source still doesn't exist
+		if (typeof this.sourcesByKey[key] === typeof undefined) {
+			// But first collapse any sources we just expanded
+			for (var l = expandedSources.length - 1; l >= 0; l--) {
+				this._collapseSource(expandedSources[l]);
+			}
+
+			return null;
+		}
+
+		return this.sourcesByKey[key];
 	},
 
 	selectSource: function($source)
