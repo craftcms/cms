@@ -11,7 +11,6 @@ use Craft;
 use craft\app\errors\DbBackupException;
 use craft\app\helpers\Io;
 use craft\app\services\Config;
-use mikehaertl\shellcommand\Command as ShellCommand;
 use yii\db\Exception;
 
 /**
@@ -128,78 +127,64 @@ class Schema extends \yii\db\mysql\Schema
     }
 
     /**
-     * Gets the default backup command to execute.
+     * Returns the default backup command to execute.
      *
-     * @param ShellCommand $command  The command to execute.
-     * @param string       $filePath The path of the backup file.
-     *
-     * @return ShellCommand The command to execute.
-     * @throws DbBackupException
+     * @return string The command to execute
      */
-    public function getDefaultBackupCommand(ShellCommand $command, $filePath)
+    public function getDefaultBackupCommand()
     {
-        $config = Craft::$app->getConfig();
-        $port = $config->getDbPort();
-        $server = $config->get('server', Config::CATEGORY_DB);
-        $user = $config->get('user', Config::CATEGORY_DB);
-        $database = $config->get('database', Config::CATEGORY_DB);
-        $password = $config->get('password', Config::CATEGORY_DB);
-
-        $tempConnectFile = Craft::$app->getPath()->getTempPath().'/my.cnf';
-        $contents = "[client]".PHP_EOL."user={$user}".PHP_EOL."password={$password}".PHP_EOL."host={$server}".PHP_EOL."port={$port}";
-
-        if (!Io::writeToFile($tempConnectFile, $contents)) {
-            throw new DbBackupException('Could not write the my.cnf file for mysqldump to use to connect to the database.');
-        }
-
-        $command->setCommand('/Applications/MAMP/Library/bin/mysqldump');
-
-        $command->addArg('--defaults-extra-file=', $tempConnectFile);
-        $command->addArg('--add-drop-table');
-        $command->addArg('--comments');
-        $command->addArg('--create-options');
-        $command->addArg('--dump-date');
-        $command->addArg('--no-autocommit');
-        $command->addArg('--routines');
-        $command->addArg('--set-charset');
-        $command->addArg('--triggers');
-        $command->addArg('--result-file=', $filePath);
-        $command->addArg($database);
-
-        return $command;
+        return 'mysqldump'.
+            ' --defaults-extra-file='.$this->_createDumpConfigFile().
+            ' --add-drop-table'.
+            ' --comments'.
+            ' --create-options'.
+            ' --dump-date'.
+            ' --no-autocommit'.
+            ' --routines'.
+            ' --set-charset'.
+            ' --triggers'.
+            ' --result-file={file}'.
+            ' {database}';
     }
 
     /**
-     * Generates the default database restore command to execute.
+     * Returns the default database restore command to execute.
      *
-     * @param ShellCommand $command  The command to execute.
-     * @param string       $filePath The file path of the database backup to restore.
-     *
-     * @return ShellCommand The command to execute.
+     * @return string The command to execute
      * @throws DbBackupException
      */
-    public function getDefaultRestoreCommand(ShellCommand $command, $filePath)
+    public function getDefaultRestoreCommand()
     {
+        return 'mysqldump'.
+            ' --defaults-extra-file='.$this->_createDumpConfigFile().
+            ' {database}'.
+            ' < {file}';
+    }
+
+    // Public Methods
+    // =========================================================================
+
+    /**
+     * Creates a temporary my.cnf file based on the DB config settings.
+     *
+     * @return string The path to the my.cnf file
+     * @throws DbBackupException if the file cannot be created
+     */
+    private function _createDumpConfigFile()
+    {
+        $filePath = Craft::$app->getPath()->getTempPath().'/my.cnf';
+
         $config = Craft::$app->getConfig();
-        $port = $config->getDbPort();
-        $server = $config->get('server', Config::CATEGORY_DB);
-        $user = $config->get('user', Config::CATEGORY_DB);
-        $database = $config->get('database', Config::CATEGORY_DB);
-        $password = $config->get('password', Config::CATEGORY_DB);
+        $contents = '[client]'.PHP_EOL.
+            'user='.$config->get('user', Config::CATEGORY_DB).PHP_EOL.
+            'password='.$config->get('password', Config::CATEGORY_DB).PHP_EOL.
+            'host='.$config->get('server', Config::CATEGORY_DB).PHP_EOL.
+            'port='.$config->getDbPort();
 
-        $tempConnectFile = Craft::$app->getPath()->getTempPath().'/my.cnf';
-        $contents = "[client]".PHP_EOL."user={$user}".PHP_EOL."password={$password}".PHP_EOL."host={$server}".PHP_EOL."port={$port}";
-
-        if (!Io::writeToFile($tempConnectFile, $contents)) {
+        if (!Io::writeToFile($filePath, $contents)) {
             throw new DbBackupException('Could not write the my.cnf file for mysqldump to use to connect to the database.');
         }
 
-        $command->setCommand('/Applications/MAMP/Library/bin/mysqldump');
-
-        $command->addArg('--defaults-extra-file=', $tempConnectFile);
-        $command->addArg($database);
-        $command->addArg('< ', $filePath);
-
-        return $command;
+        return $filePath;
     }
 }

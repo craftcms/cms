@@ -119,51 +119,39 @@ class Connection extends \yii\db\Connection
      */
     public function backup()
     {
+        // Determine the backup file path
         $currentVersion = 'v'.Craft::$app->version.'.'.Craft::$app->build;
         $siteName = Io::cleanFilename($this->_getFixedSiteName(), true);
         $filename = ($siteName ? $siteName.'_' : '').gmdate('ymd_His').'_'.$currentVersion.'.sql';
         $filePath = Craft::$app->getPath()->getDbBackupPath().'/'.StringHelper::toLowerCase($filename);
 
-        $command = new ShellCommand();
+        // Determine the command that should be executed
+        $backupCommand = Craft::$app->getConfig()->get('backupCommand');
 
-        // If we don't have proc_open, maybe we've got exec
-        if (!function_exists('proc_open') && function_exists('exec')) {
-            $command->useExec = true;
+        if ($backupCommand === null) {
+            /** @var mysql\Schema|pgsql\Schema $schema */
+            $schema = $command = $this->getSchema();
+            $backupCommand = $schema->getDefaultBackupCommand();
         }
 
-        $config = Craft::$app->getConfig();
-        $port = $config->getDbPort();
-        $server = $config->get('server', Config::CATEGORY_DB);
-        $user = $config->get('user', Config::CATEGORY_DB);
-        $database = $config->get('database', Config::CATEGORY_DB);
-        $schema = $config->get('schema', Config::CATEGORY_DB);
+        if ($backupCommand === false) {
+            Craft::info('Database not backed up because the backup command is false.', __METHOD__);
 
-        // See if they are using their own backupCommand.
-        if (($backupCommand = $config->get('backupCommand'))) {
-
-            // Swap out any tokens
-            $backupCommand = preg_replace('/\{filePath\}/', $filePath, $backupCommand);
-            $backupCommand = preg_replace('/\{port\}/', $port, $backupCommand);
-            $backupCommand = preg_replace('/\{server\}/', $server, $backupCommand);
-            $backupCommand = preg_replace('/\{user\}/', $user, $backupCommand);
-            $backupCommand = preg_replace('/\{database\}/', $database, $backupCommand);
-            $backupCommand = preg_replace('/\{schema\}/', $schema, $backupCommand);
-
-            $command->setCommand($backupCommand);
-        } else {
-            // Go with Craft's default.
-            $command = $this->getSchema()->getDefaultBackupCommand($command, $filePath);
+            return false;
         }
+
+        // Create the shell command
+        $command = $this->_createShellCommand($backupCommand, $filePath);
 
         // Fire a 'beforeCreateBackup' event
         $this->trigger(self::EVENT_BEFORE_CREATE_BACKUP,
-            new BackupEvent(['filePath' => $filePath])
+            new BackupEvent(['file' => $filePath])
         );
 
         if ($command->execute()) {
             // Fire an 'afterCreateBackup' event
             $this->trigger(self::EVENT_AFTER_CREATE_BACKUP,
-                new BackupEvent(['filePath' => $filePath])
+                new BackupEvent(['file' => $filePath])
             );
 
             // Nuke any temp connection files that might have been created.
@@ -178,7 +166,7 @@ class Connection extends \yii\db\Connection
             $this->trigger(self::EVENT_BACKUP_FAILURE, new BackupFailureEvent([
                 'exitCode' => $exitCode,
                 'errorMessage' => $errorMessage,
-                'filePath' => $filePath,
+                'file' => $filePath,
             ]));
 
             Craft::error('Could not perform backup. Error: '.$errorMessage.'. Exit Code:'.$exitCode, __METHOD__);
@@ -199,44 +187,33 @@ class Connection extends \yii\db\Connection
      */
     public function restore($filePath)
     {
-        $command = new ShellCommand();
+        // Determine the command that should be executed
+        $restoreCommand = Craft::$app->getConfig()->get('restoreCommand');
 
-        // If we don't have proc_open, maybe we've got exec
-        if (!function_exists('proc_open') && function_exists('exec')) {
-            $command->useExec = true;
+        if ($restoreCommand === null) {
+            /** @var mysql\Schema|pgsql\Schema $schema */
+            $schema = $command = $this->getSchema();
+            $restoreCommand = $schema->getDefaultRestoreCommand();
         }
 
-        $config = Craft::$app->getConfig();
-        $port = $config->getDbPort();
-        $server = $config->get('server', Config::CATEGORY_DB);
-        $user = $config->get('user', Config::CATEGORY_DB);
-        $database = $config->get('database', Config::CATEGORY_DB);
+        if ($restoreCommand === false) {
+            Craft::info('Database not restored because the restore command is false.', __METHOD__);
 
-        // See if they are using their own restoreCommand.
-        if ($restoreCommand = $config->get('restoreCommand')) {
-
-            // Swap out any tokens
-            $restoreCommand = preg_replace('/\{filePath\}/', $filePath, $restoreCommand);
-            $restoreCommand = preg_replace('/\{port\}/', $port, $restoreCommand);
-            $restoreCommand = preg_replace('/\{server\}/', $server, $restoreCommand);
-            $restoreCommand = preg_replace('/\{user\}/', $user, $restoreCommand);
-            $restoreCommand = preg_replace('/\{database\}/', $database, $restoreCommand);
-
-            $command->setCommand($restoreCommand);
-        } else {
-            // Go with Craft's default.
-            $command = $this->getSchema()->getDefaultRestoreCommand($command, $filePath);
+            return false;
         }
+
+        // Create the shell command
+        $command = $this->_createShellCommand($restoreCommand, $filePath);
 
         // Fire a 'beforeRestoreBackup' event
         $this->trigger(self::EVENT_BEFORE_RESTORE_BACKUP,
-            new RestoreEvent(['filePath' => $filePath])
+            new RestoreEvent(['file' => $filePath])
         );
 
         if ($command->execute()) {
             // Fire an 'afterRestoreBackup' event
             $this->trigger(self::EVENT_AFTER_RESTORE_BACKUP,
-                new BackupEvent(['filePath' => $filePath])
+                new BackupEvent(['file' => $filePath])
             );
 
             return true;
@@ -248,7 +225,7 @@ class Connection extends \yii\db\Connection
             $this->trigger(self::EVENT_RESTORE_FAILURE, new RestoreFailureEvent([
                 'exitCode' => $exitCode,
                 'errorMessage' => $errorMessage,
-                'filePath' => $filePath,
+                'file' => $filePath,
             ]));
 
             Craft::error('Could not perform restore. Error: '.$errorMessage.'. Exit Code:'.$exitCode, __METHOD__);
@@ -434,6 +411,40 @@ class Connection extends \yii\db\Connection
         }
 
         return $table;
+    }
+
+    /**
+     * Creates a shell command set to the given string. The string can contain tokens.
+     *
+     * @param string $command The tokenized command to be executed
+     * @param string $file The path to the backup file
+     *
+     * @return ShellCommand
+     */
+    private function _createShellCommand($command, $file)
+    {
+        // Swap out any tokens in the command
+        $config = Craft::$app->getConfig();
+        $tokens = [
+            '{file}' => $file,
+            '{port}' => $config->getDbPort(),
+            '{server}' => $config->get('server', Config::CATEGORY_DB),
+            '{user}' => $config->get('user', Config::CATEGORY_DB),
+            '{database}' => $config->get('database', Config::CATEGORY_DB),
+            '{schema}' => $config->get('schema', Config::CATEGORY_DB),
+        ];
+        $command = str_replace(array_keys($tokens), array_values($tokens), $command);
+
+        // Create the shell command
+        $shellCommand = new ShellCommand();
+        $shellCommand->setCommand($command);
+
+        // If we don't have proc_open, maybe we've got exec
+        if (!function_exists('proc_open') && function_exists('exec')) {
+            $shellCommand->useExec = true;
+        }
+
+        return $shellCommand;
     }
 
     /**
