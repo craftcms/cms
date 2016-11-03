@@ -23,144 +23,144 @@
 				var dropdown = {};
 
 				dropdown.insert_table = {
-									title: this.lang.get('insert-table'),
-									func: this.table.insert,
-									observe: {
-										element: 'table',
-										in: {
-											attr: {
-												'class': 'redactor-dropdown-link-inactive',
-												'aria-disabled': true,
-											}
-										}
-									}
-								};
+					title: this.lang.get('insert-table'),
+					func: this.table.insert,
+					observe: {
+						element: 'table',
+						in: {
+							attr: {
+								'class': 'redactor-dropdown-link-inactive',
+								'aria-disabled': true,
+							}
+						}
+					}
+				};
 
 				dropdown.insert_row_above = {
-									title: this.lang.get('insert-row-above'),
-									func: this.table.addRowAbove,
-									observe: {
-										element: 'table',
-										out: {
-											attr: {
-												'class': 'redactor-dropdown-link-inactive',
-												'aria-disabled': true,
-											}
-										}
-									}
-								};
+					title: this.lang.get('insert-row-above'),
+					func: this.table.addRowAbove,
+					observe: {
+						element: 'table',
+						out: {
+							attr: {
+								'class': 'redactor-dropdown-link-inactive',
+								'aria-disabled': true,
+							}
+						}
+					}
+				};
 
 				dropdown.insert_row_below = {
-									title: this.lang.get('insert-row-below'),
-									func: this.table.addRowBelow,
-									observe: {
-										element: 'table',
-										out: {
-											attr: {
-												'class': 'redactor-dropdown-link-inactive',
-												'aria-disabled': true,
-											}
-										}
-									}
-								};
+					title: this.lang.get('insert-row-below'),
+					func: this.table.addRowBelow,
+					observe: {
+						element: 'table',
+						out: {
+							attr: {
+								'class': 'redactor-dropdown-link-inactive',
+								'aria-disabled': true,
+							}
+						}
+					}
+				};
 
 				dropdown.insert_column_left = {
-									title: this.lang.get('insert-column-left'),
-									func: this.table.addColumnLeft,
-									observe: {
-										element: 'table',
-										out: {
-											attr: {
-												'class': 'redactor-dropdown-link-inactive',
-												'aria-disabled': true,
-											}
-										}
-									}
-								};
+					title: this.lang.get('insert-column-left'),
+					func: this.table.addColumnLeft,
+					observe: {
+						element: 'table',
+						out: {
+							attr: {
+								'class': 'redactor-dropdown-link-inactive',
+								'aria-disabled': true,
+							}
+						}
+					}
+				};
 
 				dropdown.insert_column_right = {
-									title: this.lang.get('insert-column-right'),
-									func: this.table.addColumnRight,
-									observe: {
-										element: 'table',
-										out: {
-											attr: {
-												'class': 'redactor-dropdown-link-inactive',
-												'aria-disabled': true,
-											}
-										}
-									}
-								};
+					title: this.lang.get('insert-column-right'),
+					func: this.table.addColumnRight,
+					observe: {
+						element: 'table',
+						out: {
+							attr: {
+								'class': 'redactor-dropdown-link-inactive',
+								'aria-disabled': true,
+							}
+						}
+					}
+				};
 
 				dropdown.add_head = {
-									title: this.lang.get('add-head'),
-									func: this.table.addHead,
-									observe: {
-										element: 'table',
-										out: {
-											attr: {
-												'class': 'redactor-dropdown-link-inactive',
-												'aria-disabled': true,
-											}
-										}
-									}
-								};
+					title: this.lang.get('add-head'),
+					func: this.table.addHead,
+					observe: {
+						element: 'table',
+						out: {
+							attr: {
+								'class': 'redactor-dropdown-link-inactive',
+								'aria-disabled': true,
+							}
+						}
+					}
+				};
 
 				dropdown.delete_head = {
-									title: this.lang.get('delete-head'),
-									func: this.table.deleteHead,
-									observe: {
-										element: 'table',
-										out: {
-											attr: {
-												'class': 'redactor-dropdown-link-inactive',
-												'aria-disabled': true,
-											}
-										}
-									}
-								};
+					title: this.lang.get('delete-head'),
+					func: this.table.deleteHead,
+					observe: {
+						element: 'table',
+						out: {
+							attr: {
+								'class': 'redactor-dropdown-link-inactive',
+								'aria-disabled': true,
+							}
+						}
+					}
+				};
 
 				dropdown.delete_column = {
-									title: this.lang.get('delete-column'),
-									func: this.table.deleteColumn,
-									observe: {
-										element: 'table',
-										out: {
-											attr: {
-												'class': 'redactor-dropdown-link-inactive',
-												'aria-disabled': true,
-											}
-										}
-									}
-								};
+    				title: this.lang.get('delete-column'),
+    				func: this.table.deleteColumn,
+    				observe: {
+    					element: 'table',
+    					out: {
+    						attr: {
+    							'class': 'redactor-dropdown-link-inactive',
+    							'aria-disabled': true,
+    						}
+    					}
+    				}
+    			};
 
 				dropdown.delete_row = {
-									title: this.lang.get('delete-row'),
-									func: this.table.deleteRow,
-									observe: {
-										element: 'table',
-										out: {
-											attr: {
-												'class': 'redactor-dropdown-link-inactive',
-												'aria-disabled': true,
-											}
-										}
-									}
-								};
+					title: this.lang.get('delete-row'),
+					func: this.table.deleteRow,
+					observe: {
+						element: 'table',
+						out: {
+							attr: {
+								'class': 'redactor-dropdown-link-inactive',
+								'aria-disabled': true,
+							}
+						}
+					}
+				};
 
 				dropdown.delete_table = {
-									title: this.lang.get('delete-table'),
-									func: this.table.deleteTable,
-									observe: {
-										element: 'table',
-										out: {
-											attr: {
-												'class': 'redactor-dropdown-link-inactive',
-												'aria-disabled': true,
-											}
-										}
-									}
-								};
+					title: this.lang.get('delete-table'),
+					func: this.table.deleteTable,
+					observe: {
+						element: 'table',
+						out: {
+							attr: {
+								'class': 'redactor-dropdown-link-inactive',
+								'aria-disabled': true,
+							}
+						}
+					}
+				};
 
 
 				var button = this.button.addBefore('link', 'table', this.lang.get('table'));
@@ -207,7 +207,7 @@
 				this.buffer.set();
 
 				var current = this.selection.current();
-				if ($(current).closest('li').length !== 0)
+				if ($(current).closest('li', this.core.editor()[0]).length !== 0)
 				{
 					$(current).closest('ul, ol').first().after(html);
 				}
