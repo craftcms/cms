@@ -394,10 +394,11 @@ class UpdateController extends Controller
         $this->requireAcceptsJson();
 
         $data = Craft::$app->getRequest()->getRequiredBodyParam('data');
-
         $handle = $this->_getFixedHandle($data);
 
-        if (Craft::$app->getConfig()->get('backupOnUpdate')) {
+        $config = Craft::$app->getConfig();
+
+        if ($config->get('backupOnUpdate') && $config->get('backupCommand') !== false) {
             if ($handle !== 'craft') {
                 /** @var Plugin $plugin */
                 $plugin = Craft::$app->getPlugins()->getPlugin($handle);
@@ -607,9 +608,10 @@ class UpdateController extends Controller
 
             $dbBackupPath = false;
 
-            // See if we're allowed to backup the database.
-            if (Craft::$app->getConfig()->get('backupOnUpdate')) {
+            $config = Craft::$app->getConfig();
 
+            // See if we're allowed to backup the database.
+            if ($config->get('backupOnUpdate') && $config->get('backupCommand') !== false) {
                 // DO it.
                 $return = $updatesService->backupDatabase();
 

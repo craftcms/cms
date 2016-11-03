@@ -81,12 +81,14 @@ return [
      *
      * There are several tokens you can use that Craft will swap out at runtime:
      *
-     *     * `{filePath}` - Swapped with the dynamically generated backup file path.
+     *     * `{path}` - Swapped with the dynamically generated backup file path.
      *     * `{port}` - Swapped with the current database port.
      *     * `{server}` - Swapped with the current database host name.
      *     * `{user}` - Swapped with the user to connect to the database.
      *     * `{database}` - Swapped with the current database name.
      *     * `{schema}` - Swapped with the current database schema (if any).
+     *
+     * This can also be set to `false` to disable database backups completely.
      */
     'backupCommand' => null,
     /**
@@ -489,11 +491,14 @@ return [
      *
      * There are several tokens you can use that Craft will swap out at runtime:
      *
-     *     * `{filePath}` - Swapped with the dynamically generated backup file path.
+     *     * `{path}` - Swapped with the dynamically generated backup file path.
      *     * `{port}` - Swapped with the current database port.
      *     * `{server}` - Swapped with the current database host name.
      *     * `{user}` - Swapped with the user to connect to the database.
      *     * `{database}` - Swapped with the current database name.
+     *     * `{schema}` - Swapped with the current database schema (if any).
+     *
+     * This can also be set to `false` to disable database restores completely.
     */
     'restoreCommand' => null,
     /**
