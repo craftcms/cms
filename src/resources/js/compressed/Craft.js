@@ -353,16 +353,19 @@ d=c.data("menu")?c.data("menu").$anchor.closest("form"):c.closest("form"),c.attr
 Craft.BaseElementIndex=Garnish.Base.extend({
 // Properties
 // =========================================================================
-initialized:!1,elementType:null,instanceState:null,sourceStates:null,sourceStatesStorageKey:null,searchTimeout:null,sourceSelect:null,$container:null,$main:null,$mainSpinner:null,isIndexBusy:!1,$sidebar:null,showingSidebar:null,sourceKey:null,sourceViewModes:null,$source:null,$customizeSourcesBtn:null,customizeSourcesModal:null,$toolbar:null,$toolbarTableRow:null,toolbarOffset:null,$search:null,searching:!1,searchText:null,$clearSearchBtn:null,$statusMenuBtn:null,statusMenu:null,status:null,$siteMenuBtn:null,siteMenu:null,siteId:null,$sortMenuBtn:null,sortMenu:null,$sortAttributesList:null,$sortDirectionsList:null,$scoreSortAttribute:null,$structureSortAttribute:null,$elements:null,$viewModeBtnTd:null,$viewModeBtnContainer:null,viewModeBtns:null,viewMode:null,view:null,_autoSelectElements:null,actions:null,actionsHeadHtml:null,actionsFootHtml:null,$selectAllContainer:null,$selectAllCheckbox:null,showingActionTriggers:!1,_$triggers:null,
+initialized:!1,elementType:null,instanceState:null,sourceStates:null,sourceStatesStorageKey:null,searchTimeout:null,sourceSelect:null,$container:null,$main:null,$mainSpinner:null,isIndexBusy:!1,$sidebar:null,showingSidebar:null,sourceKey:null,sourceViewModes:null,$source:null,sourcesByKey:null,$customizeSourcesBtn:null,customizeSourcesModal:null,$toolbar:null,$toolbarTableRow:null,toolbarOffset:null,$search:null,searching:!1,searchText:null,$clearSearchBtn:null,$statusMenuBtn:null,statusMenu:null,status:null,$siteMenuBtn:null,siteMenu:null,siteId:null,$sortMenuBtn:null,sortMenu:null,$sortAttributesList:null,$sortDirectionsList:null,$scoreSortAttribute:null,$structureSortAttribute:null,$elements:null,$viewModeBtnTd:null,$viewModeBtnContainer:null,viewModeBtns:null,viewMode:null,view:null,_autoSelectElements:null,actions:null,actionsHeadHtml:null,actionsFootHtml:null,$selectAllContainer:null,$selectAllCheckbox:null,showingActionTriggers:!1,_$triggers:null,
 // Public methods
 // =========================================================================
 /**
 	 * Constructor
 	 */
-init:function(b,c,d){this.elementType=b,this.$container=c,this.setSettings(d,Craft.BaseElementIndex.defaults),
+init:function(b,c,d){
+// Initialize the sources
+// ---------------------------------------------------------------------
+if(this.elementType=b,this.$container=c,this.setSettings(d,Craft.BaseElementIndex.defaults),
 // Set the state objects
 // ---------------------------------------------------------------------
-this.instanceState={selectedSource:null},this.sourceStates={},
+this.instanceState=this.getDefaultInstanceState(),this.sourceStates={},
 // Instance states (selected source) are stored by a custom storage key defined in the settings
 this.settings.storageKey&&a.extend(this.instanceState,Craft.getLocalStorage(this.settings.storageKey),{}),
 // Source states (view mode, etc.) are stored by the element type and context
@@ -371,33 +374,26 @@ this.sourceStatesStorageKey="BaseElementIndex."+this.elementType+"."+this.settin
 // ---------------------------------------------------------------------
 this.$main=this.$container.find(".main"),this.$toolbar=this.$container.find(".toolbar:first"),this.$toolbarTableRow=this.$toolbar.children("table").children("tbody").children("tr"),this.$statusMenuBtn=this.$toolbarTableRow.find(".statusmenubtn:first"),this.$siteMenuBtn=this.$toolbarTableRow.find(".sitemenubtn:first"),this.$sortMenuBtn=this.$toolbarTableRow.find(".sortmenubtn:first"),this.$search=this.$toolbarTableRow.find(".search:first input:first"),this.$clearSearchBtn=this.$toolbarTableRow.find(".search:first > .clear"),this.$mainSpinner=this.$toolbar.find(".spinner:first"),this.$sidebar=this.$container.find(".sidebar:first"),this.$customizeSourcesBtn=this.$sidebar.children(".customize-sources"),this.$elements=this.$container.find(".elements:first"),this.$viewModeBtnTd=this.$toolbarTableRow.find(".viewbtns:first"),this.$viewModeBtnContainer=a('<div class="btngroup fullwidth"/>').appendTo(this.$viewModeBtnTd),
 // Keep the toolbar at the top of the window
-"index"!=this.settings.context||Garnish.isMobileBrowser(!0)||this.addListener(Garnish.$win,"resize,scroll","updateFixedToolbar");
-// Initialize the sources
-// ---------------------------------------------------------------------
-var e=this._getSourcesInList(this.$sidebar.children("nav").children("ul"));
-// No source, no party.
-if(0!=e.length){
+"index"!=this.settings.context||Garnish.isMobileBrowser(!0)||this.addListener(Garnish.$win,"resize,scroll","updateFixedToolbar"),this.initSources()){
 // Initialize the site menu
 // ---------------------------------------------------------------------
 // Is there a site menu?
 if(
-// The source selector
-this.sourceSelect=new Garnish.Select(this.$sidebar.find("nav"),{multi:!1,allowEmpty:!1,vertical:!0,onSelectionChange:a.proxy(this,"_handleSourceSelectionChange")}),this._initSources(e),
 // Customize button
 this.$customizeSourcesBtn.length&&this.addListener(this.$customizeSourcesBtn,"click","createCustomizeSourcesModal"),
 // Initialize the status menu
 // ---------------------------------------------------------------------
 this.$statusMenuBtn.length&&(this.statusMenu=this.$statusMenuBtn.menubtn().data("menubtn").menu,this.statusMenu.on("optionselect",a.proxy(this,"_handleStatusChange"))),this.$siteMenuBtn.length){this.siteMenu=this.$siteMenuBtn.menubtn().data("menubtn").menu;
 // Figure out the initial site
-var f=this.siteMenu.$options.filter(".sel:first");if(f.length||(f=this.siteMenu.$options.first()),f.length?this.siteId=f.data("site-id"):
+var e=this.siteMenu.$options.filter(".sel:first");if(e.length||(e=this.siteMenu.$options.first()),e.length?this.siteId=e.data("site-id"):
 // No site options -- they must not have any site permissions
 this.settings.criteria={id:"0"},this.siteMenu.on("optionselect",a.proxy(this,"_handleSiteChange")),this.site){
 // Do we have a different site stored in localStorage?
-var g=Craft.getLocalStorage("BaseElementIndex.siteId");if(g&&g!=this.siteId){
+var f=Craft.getLocalStorage("BaseElementIndex.siteId");if(f&&f!=this.siteId){
 // Is that one available here?
-var h=this.siteMenu.$options.filter('[data-site-id="'+g+'"]:first');h.length&&
+var g=this.siteMenu.$options.filter('[data-site-id="'+f+'"]:first');g.length&&
 // Todo: switch this to siteMenu.selectOption($storedSiteOption) once Menu is updated to support that
-h.trigger("click")}}}else this.settings.criteria&&this.settings.criteria.siteId&&(this.siteId=this.settings.criteria.siteId);
+g.trigger("click")}}}else this.settings.criteria&&this.settings.criteria.siteId&&(this.siteId=this.settings.criteria.siteId);
 // Initialize the search input
 // ---------------------------------------------------------------------
 // Automatically update the elements after new search text has been sitting for a 1/2 second
@@ -414,23 +410,23 @@ Garnish.isMobileBrowser(!0)||this.$search.focus(),
 this.$sortMenuBtn.length&&(this.sortMenu=this.$sortMenuBtn.menubtn().data("menubtn").menu,this.$sortAttributesList=this.sortMenu.$container.children(".sort-attributes"),this.$sortDirectionsList=this.sortMenu.$container.children(".sort-directions"),this.sortMenu.on("optionselect",a.proxy(this,"_handleSortChange"))),
 // Let everyone know that the UI is initialized
 // ---------------------------------------------------------------------
-this.initialized=!0,this.afterInit();
+this.initialized=!0,this.afterInit(),
 // Select the initial source
 // ---------------------------------------------------------------------
-var i,j=this.getDefaultSourceKey();if(j&&(i=this.getSourceByKey(j))){
-// Expand any parent sources
-var k=i.parentsUntil(".sidebar","li");k.not(":first").addClass("expanded")}j&&i||(
-// Select the first source by default
-i=this.$sources.first()),i.length&&this.selectSource(i),
+this.selectDefaultSource(),
 // Load the first batch of elements!
 // ---------------------------------------------------------------------
-this.updateElements()}},afterInit:function(){this.onAfterInit()},get $sources(){if(this.sourceSelect)return this.sourceSelect.$items},updateFixedToolbar:function(){(this.toolbarOffset||(this.toolbarOffset=this.$toolbar.offset().top,this.toolbarOffset))&&(this.updateFixedToolbar._scrollTop=Garnish.$win.scrollTop(),Garnish.$win.width()>992&&this.updateFixedToolbar._scrollTop>this.toolbarOffset-7?(this.$toolbar.hasClass("fixed")||(this.$elements.css("padding-top",this.$toolbar.outerHeight()+24),this.$toolbar.addClass("fixed")),this.$toolbar.css("width",this.$main.width())):this.$toolbar.hasClass("fixed")&&(this.$toolbar.removeClass("fixed"),this.$toolbar.css("width",""),this.$elements.css("padding-top","")))},initSource:function(a){this.sourceSelect.addItems(a),this.initSourceToggle(a)},initSourceToggle:function(a){var b=this._getSourceToggle(a);b.length&&this.addListener(b,"click","_handleSourceToggleClick")},deinitSource:function(a){this.sourceSelect.removeItems(a),this.deinitSourceToggle(a)},deinitSourceToggle:function(a){var b=this._getSourceToggle(a);b.length&&this.removeListener(b,"click")},getDefaultSourceKey:function(){return this.instanceState.selectedSource},startSearching:function(){
+this.updateElements()}},afterInit:function(){this.onAfterInit()},getSourceContainer:function(){return this.$sidebar.children("nav").children("ul")},get $sources(){if(this.sourceSelect)return this.sourceSelect.$items},initSources:function(){var b=this._getSourcesInList(this.getSourceContainer());
+// No source, no party.
+// No source, no party.
+// The source selector
+return 0!=b.length&&(this.sourceSelect||(this.sourceSelect=new Garnish.Select(this.$sidebar.find("nav"),{multi:!1,allowEmpty:!1,vertical:!0,onSelectionChange:a.proxy(this,"_handleSourceSelectionChange")})),this.sourcesByKey={},this._initSources(b),!0)},selectDefaultSource:function(){var a,b=this.getDefaultSourceKey();b&&(a=this.getSourceByKey(b)),b&&a||(
+// Select the first source by default
+a=this.$sources.first()),a.length&&this.selectSource(a)},refreshSources:function(){this.sourceSelect.removeAllItems();var b={context:this.settings.context,elementType:this.elementType};this.setIndexBusy(),Craft.postActionRequest("element-indexes/get-source-tree-html",b,a.proxy(function(a,b){this.setIndexAvailable(),"success"==b?(this.getSourceContainer().replaceWith(a.html),this.initSources(),this.selectDefaultSource()):Craft.cp.displayError(Craft.t("app","An unknown error occurred."))},this))},updateFixedToolbar:function(){(this.toolbarOffset||(this.toolbarOffset=this.$toolbar.offset().top,this.toolbarOffset))&&(this.updateFixedToolbar._scrollTop=Garnish.$win.scrollTop(),Garnish.$win.width()>992&&this.updateFixedToolbar._scrollTop>this.toolbarOffset-7?(this.$toolbar.hasClass("fixed")||(this.$elements.css("padding-top",this.$toolbar.outerHeight()+24),this.$toolbar.addClass("fixed")),this.$toolbar.css("width",this.$main.width())):this.$toolbar.hasClass("fixed")&&(this.$toolbar.removeClass("fixed"),this.$toolbar.css("width",""),this.$elements.css("padding-top","")))},initSource:function(a){this.sourceSelect.addItems(a),this.initSourceToggle(a),this.sourcesByKey[a.data("key")]=a,a.data("hasNestedSources")&&this.instanceState.expandedSources.indexOf(a.data("key"))!=-1&&this._expandSource(a)},initSourceToggle:function(a){var b=this._getSourceToggle(a);b.length?(this.addListener(b,"click","_handleSourceToggleClick"),a.data("hasNestedSources",!0)):a.data("hasNestedSources",!1)},deinitSource:function(a){this.sourceSelect.removeItems(a),this.deinitSourceToggle(a),delete this.sourcesByKey[a.data("key")]},deinitSourceToggle:function(a){if(a.data("hasNestedSources")){var b=this._getSourceToggle(a);this.removeListener(b,"click")}a.removeData("hasNestedSources")},getDefaultInstanceState:function(){return{selectedSource:null,expandedSources:[]}},getDefaultSourceKey:function(){return this.instanceState.selectedSource},getDefaultExpandedSources:function(){return this.instanceState.expandedSources},startSearching:function(){
 // Show the clear button and add/select the Score sort option
 this.$clearSearchBtn.removeClass("hidden"),this.$scoreSortAttribute||(this.$scoreSortAttribute=a('<li><a data-attr="score">'+Craft.t("app","Score")+"</a></li>"),this.sortMenu.addOptions(this.$scoreSortAttribute.children())),this.$scoreSortAttribute.prependTo(this.$sortAttributesList),this.setSortAttribute("score"),this.getSortAttributeOption("structure").addClass("disabled"),this.searching=!0},stopSearching:function(){
 // Hide the clear button and Score sort option
-this.$clearSearchBtn.addClass("hidden"),this.$scoreSortAttribute.detach(),this.getSortAttributeOption("structure").removeClass("disabled"),this.setStoredSortOptionsForSource(),this.searching=!1},setInstanceState:function(b,c){"object"==typeof b?a.extend(this.instanceState,b):this.instanceState[b]=c,
-// Store it in localStorage too?
-this.settings.storageKey&&Craft.setLocalStorage(this.settings.storageKey,this.instanceState)},getSourceState:function(a,b,c){
+this.$clearSearchBtn.addClass("hidden"),this.$scoreSortAttribute.detach(),this.getSortAttributeOption("structure").removeClass("disabled"),this.setStoredSortOptionsForSource(),this.searching=!1},setInstanceState:function(b,c){"object"==typeof b?a.extend(this.instanceState,b):this.instanceState[b]=c,this.storeInstanceState()},storeInstanceState:function(){this.settings.storageKey&&Craft.setLocalStorage(this.settings.storageKey,this.instanceState)},getSourceState:function(a,b,c){
 // Set it now so any modifications to it by whoever's calling this will be stored.
 return"undefined"==typeof this.sourceStates[a]&&(this.sourceStates[a]={}),"undefined"==typeof b?this.sourceStates[a]:"undefined"!=typeof this.sourceStates[a][b]?this.sourceStates[a][b]:"undefined"!=typeof c?c:null},getSelectedSourceState:function(a,b){return this.getSourceState(this.instanceState.selectedSource,a,b)},setSelecetedSourceState:function(b,c){var d=this.getSelectedSourceState();"object"==typeof b?a.extend(d,b):d[b]=c,this.sourceStates[this.instanceState.selectedSource]=d,
 // Store it in localStorage too
@@ -465,7 +461,7 @@ this.$toolbar.css("min-height",""),this.showingActionTriggers=!1)},updateActionT
 // Do we have an action UI to update?
 if(this.actions){var a=this.view.getSelectedElements().length;0!=a?(a==this.view.getEnabledElements().length?(this.$selectAllCheckbox.removeClass("indeterminate"),this.$selectAllCheckbox.addClass("checked"),this.$selectAllBtn.attr("aria-checked","true")):(this.$selectAllCheckbox.addClass("indeterminate"),this.$selectAllCheckbox.removeClass("checked"),this.$selectAllBtn.attr("aria-checked","mixed")),this.showActionTriggers()):(this.$selectAllCheckbox.removeClass("indeterminate checked"),this.$selectAllBtn.attr("aria-checked","false"),this.hideActionTriggers())}},getSelectedElements:function(){return this.view?this.view.getSelectedElements():a()},getSelectedElementIds:function(){return this.view?this.view.getSelectedElementIds():[]},getSortAttributeOption:function(a){return this.$sortAttributesList.find('a[data-attr="'+a+'"]:first')},getSelectedSortAttribute:function(){return this.$sortAttributesList.find("a.sel:first").data("attr")},setSortAttribute:function(a){
 // Find the option (and make sure it actually exists)
-var b=this.getSortAttributeOption(a);if(b.length){this.$sortAttributesList.find("a.sel").removeClass("sel"),b.addClass("sel");var c=b.text();this.$sortMenuBtn.attr("title",Craft.t("app","Sort by {attribute}",{attribute:c})),this.$sortMenuBtn.text(c),this.setSortDirection("asc"),"score"==a||"structure"==a?this.$sortDirectionsList.find("a").addClass("disabled"):this.$sortDirectionsList.find("a").removeClass("disabled")}},getSortDirectionOption:function(a){return this.$sortDirectionsList.find("a[data-dir="+a+"]:first")},getSelectedSortDirection:function(){return this.$sortDirectionsList.find("a.sel:first").data("dir")},getSelectedViewMode:function(){return this.getSelectedSourceState("mode")},setSortDirection:function(a){"desc"!=a&&(a="asc"),this.$sortMenuBtn.attr("data-icon",a),this.$sortDirectionsList.find("a.sel").removeClass("sel"),this.getSortDirectionOption(a).addClass("sel")},getSourceByKey:function(a){if(this.$sources){var b=this.$sources.filter('[data-key="'+a+'"]:first');if(b.length)return b}},selectSource:function(b){if(!b||!b.length)return!1;if(this.$source&&this.$source[0]&&this.$source[0]==b[0])return!1;
+var b=this.getSortAttributeOption(a);if(b.length){this.$sortAttributesList.find("a.sel").removeClass("sel"),b.addClass("sel");var c=b.text();this.$sortMenuBtn.attr("title",Craft.t("app","Sort by {attribute}",{attribute:c})),this.$sortMenuBtn.text(c),this.setSortDirection("asc"),"score"==a||"structure"==a?this.$sortDirectionsList.find("a").addClass("disabled"):this.$sortDirectionsList.find("a").removeClass("disabled")}},getSortDirectionOption:function(a){return this.$sortDirectionsList.find("a[data-dir="+a+"]:first")},getSelectedSortDirection:function(){return this.$sortDirectionsList.find("a.sel:first").data("dir")},getSelectedViewMode:function(){return this.getSelectedSourceState("mode")},setSortDirection:function(a){"desc"!=a&&(a="asc"),this.$sortMenuBtn.attr("data-icon",a),this.$sortDirectionsList.find("a.sel").removeClass("sel"),this.getSortDirectionOption(a).addClass("sel")},getSourceByKey:function(a){return"undefined"==typeof this.sourcesByKey[a]?null:this.sourcesByKey[a]},selectSource:function(b){if(!b||!b.length)return!1;if(this.$source&&this.$source[0]&&this.$source[0]==b[0])return!1;
 // Create the buttons if there's more than one mode available to this source
 if(this.$source=b,this.sourceKey=b.data("key"),this.setInstanceState("selectedSource",this.sourceKey),b[0]!=this.sourceSelect.$selectedItems[0]&&this.sourceSelect.selectItem(b),Craft.cp.updateSidebarMenuLabel(),this.searching&&(
 // Clear the search value without causing it to update elements
@@ -528,7 +524,7 @@ this.updateElements())},_handleSortChange:function(b){var c=a(b.selectedOption);
 c.parent().parent().is(this.$sortAttributesList)?this.setSortAttribute(c.data("attr")):this.setSortDirection(c.data("dir")),this.storeSortAttributeAndDirection(),this.updateElements())},_handleSelectionChange:function(){this.updateActionTriggers(),this.onSelectionChange()},_handleSourceToggleClick:function(b){this._toggleSource(a(b.currentTarget).prev("a")),b.stopPropagation()},
 // Source managemnet
 // -------------------------------------------------------------------------
-_getSourcesInList:function(a){return a.children("li").children("a")},_getChildSources:function(a){var b=a.siblings("ul");return this._getSourcesInList(b)},_getSourceToggle:function(a){return a.siblings(".toggle")},_initSources:function(b){for(var c=0;c<b.length;c++)this.initSource(a(b[c]))},_deinitSources:function(b){for(var c=0;c<b.length;c++)this.deinitSource(a(b[c]))},_toggleSource:function(a){a.parent("li").hasClass("expanded")?this._collapseSource(a):this._expandSource(a)},_expandSource:function(a){a.parent("li").addClass("expanded");var b=this._getChildSources(a);this._initSources(b)},_collapseSource:function(a){a.parent("li").removeClass("expanded");var b=this._getChildSources(a);this._deinitSources(b)},
+_getSourcesInList:function(a){return a.children("li").children("a")},_getChildSources:function(a){var b=a.siblings("ul");return this._getSourcesInList(b)},_getSourceToggle:function(a){return a.siblings(".toggle")},_initSources:function(b){for(var c=0;c<b.length;c++)this.initSource(a(b[c]))},_deinitSources:function(b){for(var c=0;c<b.length;c++)this.deinitSource(a(b[c]))},_toggleSource:function(a){a.parent("li").hasClass("expanded")?this._collapseSource(a):this._expandSource(a)},_expandSource:function(a){a.parent("li").addClass("expanded");var b=this._getChildSources(a);this._initSources(b);var c=a.data("key");this.instanceState.expandedSources.indexOf(c)==-1&&(this.instanceState.expandedSources.push(c),this.storeInstanceState())},_collapseSource:function(a){a.parent("li").removeClass("expanded");var b=this._getChildSources(a);this._deinitSources(b);var c=this.instanceState.expandedSources.indexOf(a.data("key"));c!=-1&&(this.instanceState.expandedSources.splice(c,1),this.storeInstanceState())},
 // View
 // -------------------------------------------------------------------------
 _updateView:function(b,c){
@@ -735,22 +731,26 @@ calculateLargestProportionalRectangle:function(a,b,c){var d,e;b<=c?(d=b,e=c):(d=
 a>180&&(a=180-a),a<0&&(a+=180);var f=a*(Math.PI/180);f>Math.PI/2&&(f=Math.PI-f);var g,h,i=d/(e*Math.sin(f)+d*Math.cos(f));return b<=c?(g=d*i,h=e*i):(g=e*i,h=d*i),{w:g,h:h}}},{defaults:{resizable:!1,shadeClass:"assetEditor"}}),/**
  * Asset index class
  */
-Craft.AssetIndex=Craft.BaseElementIndex.extend({$includeSubfoldersContainer:null,$includeSubfoldersCheckbox:null,showingIncludeSubfoldersCheckbox:!1,$uploadButton:null,$uploadInput:null,$progressBar:null,$folders:null,uploader:null,promptHandler:null,progressBar:null,_uploadTotalFiles:0,_uploadFileProgress:{},_uploadedAssetIds:[],_currentUploaderSettings:{},_assetDrag:null,_folderDrag:null,_expandDropTargetFolderTimeout:null,_tempExpandedFolders:[],_fileConflictTemplate:{message:"File “{file}” already exists at target location.",choices:[{value:"keepBoth",title:Craft.t("app","Keep both")},{value:"replace",title:Craft.t("app","Replace it")}]},_folderConflictTemplate:{message:"Folder “{folder}” already exists at target location",choices:[{value:"replace",title:Craft.t("app","Replace the folder (all existing files will be deleted)")},{value:"merge",title:Craft.t("app","Merge the folder (any conflicting files will be replaced)")}]},init:function(a,b,c){this.base(a,b,c),"index"==this.settings.context&&this._initIndexPageMode()},initSource:function(a){this.base(a),this._createFolderContextMenu(a),"index"==this.settings.context&&(this._folderDrag&&this._getSourceLevel(a)>1&&this._folderDrag.addItems(a.parent()),this._assetDrag&&this._assetDrag.updateDropTargets())},deinitSource:function(a){this.base(a);
+Craft.AssetIndex=Craft.BaseElementIndex.extend({$includeSubfoldersContainer:null,$includeSubfoldersCheckbox:null,showingIncludeSubfoldersCheckbox:!1,$uploadButton:null,$uploadInput:null,$progressBar:null,$folders:null,uploader:null,promptHandler:null,progressBar:null,_uploadTotalFiles:0,_uploadFileProgress:{},_uploadedAssetIds:[],_currentUploaderSettings:{},_assetDrag:null,_folderDrag:null,_expandDropTargetFolderTimeout:null,_tempExpandedFolders:[],_fileConflictTemplate:{message:"File “{file}” already exists at target location.",choices:[{value:"keepBoth",title:Craft.t("app","Keep both")},{value:"replace",title:Craft.t("app","Replace it")}]},_folderConflictTemplate:{message:"Folder “{folder}” already exists at target location",choices:[{value:"replace",title:Craft.t("app","Replace the folder (all existing files will be deleted)")},{value:"merge",title:Craft.t("app","Merge the folder (any conflicting files will be replaced)")}]},init:function(a,b,c){this.base(a,b,c),"index"!=this.settings.context||this._folderDrag||this._initIndexPageMode()},initSources:function(){return"index"!=this.settings.context||this._folderDrag||this._initIndexPageMode(),this.base()},initSource:function(a){this.base(a),this._createFolderContextMenu(a),"index"==this.settings.context&&(this._folderDrag&&this._getSourceLevel(a)>1&&this._folderDrag.addItems(a.parent()),this._assetDrag&&this._assetDrag.updateDropTargets())},deinitSource:function(a){this.base(a);
 // Does this source have a context menu?
 var b=a.data("contextmenu");b&&b.destroy(),"index"==this.settings.context&&(this._folderDrag&&this._getSourceLevel(a)>1&&this._folderDrag.removeItems(a.parent()),this._assetDrag&&this._assetDrag.updateDropTargets())},_getSourceLevel:function(a){return a.parentsUntil("nav","ul").length},/**
 	 * Initialize the index page-specific features
 	 */
-_initIndexPageMode:function(){
+_initIndexPageMode:function(){if(!this._folderDrag){
 // Make the elements selectable
 this.settings.selectable=!0,this.settings.multiSelect=!0;var b=a.proxy(this,"_onDragStart"),c=a.proxy(this,"_onDropTargetChange");
 // Asset dragging
 // ---------------------------------------------------------------------
-this._assetDrag=new Garnish.DragDrop({activeDropTargetClass:"sel",helperOpacity:.75,filter:a.proxy(function(){return this.view.getSelectedElements()},this),helper:a.proxy(function(a){return this._getFileDragHelper(a)},this),dropTargets:a.proxy(function(){for(var b=[],c=0;c<this.$sources.length;c++)b.push(a(this.$sources[c]));return b},this),onDragStart:b,onDropTargetChange:c,onDragStop:a.proxy(this,"_onFileDragStop")}),
+this._assetDrag=new Garnish.DragDrop({activeDropTargetClass:"sel",helperOpacity:.75,filter:a.proxy(function(){return this.view.getSelectedElements()},this),helper:a.proxy(function(a){return this._getFileDragHelper(a)},this),dropTargets:a.proxy(function(){for(var a=[],b=0;b<this.$sources.length;b++){
+// Make sure it's a volume folder
+var c=this.$sources.eq(b);this._getFolderIdFromSourceKey(c.data("key"))&&a.push(c)}return a},this),onDragStart:b,onDropTargetChange:c,onDragStop:a.proxy(this,"_onFileDragStop")}),
 // Folder dragging
 // ---------------------------------------------------------------------
 this._folderDrag=new Garnish.DragDrop({activeDropTargetClass:"sel",helperOpacity:.75,filter:a.proxy(function(){for(var b=this.sourceSelect.getSelectedItems(),c=[],d=0;d<b.length;d++){var e=a(b[d]).parent();e.hasClass("sel")&&this._getSourceLevel(e)>1&&c.push(e[0])}return a(c)},this),helper:a.proxy(function(b){var c=a('<div class="sidebar" style="padding-top: 0; padding-bottom: 0;"/>'),d=a("<nav/>").appendTo(c),e=a("<ul/>").appendTo(d);
 // Match the style
-return b.appendTo(e).removeClass("expanded"),b.children("a").addClass("sel"),b.css({"padding-top":this._folderDrag.$draggee.css("padding-top"),"padding-right":this._folderDrag.$draggee.css("padding-right"),"padding-bottom":this._folderDrag.$draggee.css("padding-bottom"),"padding-left":this._folderDrag.$draggee.css("padding-left")}),c},this),dropTargets:a.proxy(function(){var b=[],c=[];this._folderDrag.$draggee.find("a[data-key]").each(function(){c.push(a(this).data("key"))});for(var d=0;d<this.$sources.length;d++){var e=a(this.$sources[d]);Craft.inArray(e.data("key"),c)||b.push(e)}return b},this),onDragStart:b,onDropTargetChange:c,onDragStop:a.proxy(this,"_onFolderDragStop")})},/**
+return b.appendTo(e).removeClass("expanded"),b.children("a").addClass("sel"),b.css({"padding-top":this._folderDrag.$draggee.css("padding-top"),"padding-right":this._folderDrag.$draggee.css("padding-right"),"padding-bottom":this._folderDrag.$draggee.css("padding-bottom"),"padding-left":this._folderDrag.$draggee.css("padding-left")}),c},this),dropTargets:a.proxy(function(){var b=[],c=[];this._folderDrag.$draggee.find("a[data-key]").each(function(){c.push(a(this).data("key"))});for(var d=0;d<this.$sources.length;d++){
+// Make sure it's a volume folder and not one of the dragged folders
+var e=this.$sources.eq(d),f=e.data("key");this._getFolderIdFromSourceKey(f)&&!Craft.inArray(f,c)&&b.push(e)}return b},this),onDragStart:b,onDropTargetChange:c,onDragStop:a.proxy(this,"_onFolderDragStop")})}},/**
 	 * On file drag stop
 	 */
 _onFileDragStop:function(){if(this._assetDrag.$activeDropTarget&&this._assetDrag.$activeDropTarget[0]!=this.$source[0]){
@@ -813,39 +813,33 @@ this.requestId++;/*
 				 6) Champagne
 				 */
 // This will hold the final list of files to move
-var j=[],k=[],l={},m=[],n=a.proxy(function(d){this.promptHandler.resetPrompts();
+var j=[],k="",l=a.proxy(function(b){this.promptHandler.resetPrompts();
 // Loop trough all the responses
-for(var e=0;e<d.length;e++){var f=d[e];
-// If succesful and have data, then update
-if(f.success&&f.transferList&&f.changedIds){for(var g=0;g<f.transferList.length;g++)j.push(f.transferList[g]);k=c;for(var h in f.changedIds)f.changedIds.hasOwnProperty(h)&&(l[h]=f.changedIds[h]);m.push(f.removeFromTree)}
+for(var d=0;d<b.length;d++){var e=b[d];
 // Push prompt into prompt array
-if(f.prompt){var p={message:this._folderConflictTemplate.message,choices:this._folderConflictTemplate.choices};p.message=Craft.t("app",p.message,{folder:f.foldername}),f.prompt=p,this.promptHandler.addPrompt(f)}f.error&&alert(f.error)}if(this.promptHandler.getPromptCount()){
+if(
+// If succesful and have data, then update
+e.success&&(e.transferList&&(j=e.transferList),e.newFolderId&&(k=this._folderDrag.$activeDropTarget.data("key")+"/folder:"+e.newFolderId)),e.prompt){var f={message:this._folderConflictTemplate.message,choices:this._folderConflictTemplate.choices};f.message=Craft.t("app",f.message,{folder:e.foldername}),e.prompt=f,this.promptHandler.addPrompt(e)}e.error&&alert(e.error)}if(this.promptHandler.getPromptCount()){
 // Define callback for completing all prompts
-var q=a.proxy(function(b){this.promptHandler.resetPrompts();
+var g=a.proxy(function(b){this.promptHandler.resetPrompts();
 // Loop trough all returned data and prepare a new request array
-for(var c=[],d=0;d<b.length;d++)"cancel"!=b[d].choice&&(i[0].userResponse=b[d].choice,c.push(i[0]));
+for(var d=[],e=0;e<b.length;e++)"cancel"!=b[e].choice&&(i[0].userResponse=b[e].choice,d.push(i[0]));
 // Start working on them lists, baby
-0==c.length?a.proxy(this,"_performActualFolderMove",j,k,l,m)():(
+0==d.length?a.proxy(this,"_performActualFolderMove",j,c,k)():(
 // Start working
 this.setIndexBusy(),this.progressBar.resetProgressBar(),this.progressBar.setItemCount(this.promptHandler.getPromptCount()),this.progressBar.showProgressBar(),
 // Move conflicting files again with resolutions now
-o(c,0,n))},this);this.promptHandler.showBatchPrompts(q),this.setIndexAvailable(),this.progressBar.hideProgressBar()}else a.proxy(this,"_performActualFolderMove",j,k,l,m,b)()},this),o=a.proxy(function(b,c,d){0==c&&(h=[]),Craft.postActionRequest("assets/move-folder",b[c],a.proxy(function(a,e){c++,this.progressBar.incrementProcessedItemCount(1),this.progressBar.updateProgressBar(),"success"==e&&h.push(a),c>=b.length?d(h):o(b,c,d)},this))},this);
+m(d,0,l))},this);this.promptHandler.showBatchPrompts(g),this.setIndexAvailable(),this.progressBar.hideProgressBar()}else a.proxy(this,"_performActualFolderMove",j,c,k)()},this),m=a.proxy(function(b,c,d){0==c&&(h=[]),Craft.postActionRequest("assets/move-folder",b[c],a.proxy(function(a,e){c++,this.progressBar.incrementProcessedItemCount(1),this.progressBar.updateProgressBar(),"success"==e&&h.push(a),c>=b.length?d(h):m(b,c,d)},this))},this);
 // Skip returning dragees until we get the Ajax response
 // Initiate the folder move with the built array, index of 0 and callback to use when done
-return void o(i,0,n)}}else
+return void m(i,0,l)}}else
 // Add the .sel class back on the selected source
 this.$source.addClass("sel"),this._collapseExtraExpandedFolders();this._folderDrag.returnHelpersToDraggees()},/**
 	 * Really move the folder. Like really. For real.
 	 */
-_performActualFolderMove:function(b,c,d,e,f){this.setIndexBusy(),this.progressBar.resetProgressBar(),this.progressBar.setItemCount(1),this.progressBar.showProgressBar();var g=a.proxy(function(b,c,d){
-//Move the folders around in the tree
-var e=a(),g=a(),h=0;
-// Change the folder ids
-for(var i in c)c.hasOwnProperty(i)&&(g=this._getSourceByFolderId(i),
-// Change the id and select the containing element as the folder element.
-g=g.attr("data-key","folder:"+c[i]).data("key","folder:"+c[i]).parent(),(0==e.length||e.parents().filter(g).length>0)&&(e=g,h=c[i]));if(0==e.length)return this.setIndexAvailable(),this.progressBar.hideProgressBar(),void this._folderDrag.returnHelpersToDraggees();var j=e.children("a"),k=e.siblings("ul, .toggle"),l=this._getParentSource(j),m=this._getSourceByFolderId(f);if("undefined"!=typeof d)for(var n=0;n<d.length;n++)m.parent().find('[data-key="folder:'+d[n]+'"]').parent().remove();this._prepareParentForChildren(m),this._appendSubfolder(m,e),j.after(k),this._cleanUpTree(l),this._cleanUpTree(m),this.$sidebar.find("ul>ul, ul>.toggle").remove();
-// Delete the old folders
-for(var n=0;n<b.length;n++)Craft.postActionRequest("assets/delete-folder",{folderId:b[n]});this.setIndexAvailable(),this.progressBar.hideProgressBar(),this._folderDrag.returnHelpersToDraggees(),this._selectSourceByFolderId(h)},this);b.length>0?this._moveFile(b,0,a.proxy(function(){g(c,d,e)},this)):g(c,d,e)},/**
+_performActualFolderMove:function(b,c,d){this.setIndexBusy(),this.progressBar.resetProgressBar(),this.progressBar.setItemCount(1),this.progressBar.showProgressBar();var e=function(a){for(var b=0,c=a.length,e=0;e<a.length;e++)
+// When all folders are deleted, reload the sources.
+Craft.postActionRequest("assets/delete-folder",{folderId:a[e]},function(){++b==c&&(this.setIndexAvailable(),this.progressBar.hideProgressBar(),this._folderDrag.returnHelpersToDraggees(),this.setInstanceState("selectedSource",d),this.refreshSources())}.bind(this))}.bind(this);b.length>0?this._moveFile(b,0,a.proxy(function(){e(c)},this)):e(c)},/**
 	 * Get parent source for a source.
 	 *
 	 * @param $source
@@ -867,7 +861,7 @@ Craft.cp.runPendingTasks()),c++,c>=b.length?d(this.responseArray):this._moveFile
 	 *
 	 * @private
 	 */
-afterInit:function(){this.$uploadButton||(this.$uploadButton=a('<div class="btn submit" data-icon="upload" style="position: relative; overflow: hidden;" role="button">'+Craft.t("app","Upload files")+"</div>"),this.addButton(this.$uploadButton),this.$uploadInput=a('<input type="file" multiple="multiple" name="assets-upload" />').hide().insertBefore(this.$uploadButton)),this.promptHandler=new Craft.PromptHandler,this.progressBar=new Craft.ProgressBar(this.$main,!0);var b={url:Craft.getActionUrl("assets/save-asset"),fileInput:this.$uploadInput,dropZone:this.$main};b.events={fileuploadstart:a.proxy(this,"_onUploadStart"),fileuploadprogressall:a.proxy(this,"_onUploadProgress"),fileuploaddone:a.proxy(this,"_onUploadComplete")},"undefined"!=typeof this.settings.criteria.kind&&(b.allowedKinds=this.settings.criteria.kind),this._currentUploaderSettings=b,this.uploader=new Craft.Uploader(this.$uploadButton,b),this.$uploadButton.on("click",a.proxy(function(){this.$uploadButton.hasClass("disabled")||this.isIndexBusy||this.$uploadButton.parent().find("input[name=assets-upload]").click()},this)),this.base()},onSelectSource:function(){this.uploader.setParams({folderId:this._getFolderIdFromSourceKey(this.sourceKey)}),this.$source.attr("data-upload")?this.$uploadButton.removeClass("disabled"):this.$uploadButton.addClass("disabled"),this.base()},_getFolderIdFromSourceKey:function(a){return a.split(":")[1]},startSearching:function(){
+afterInit:function(){this.$uploadButton||(this.$uploadButton=a('<div class="btn submit" data-icon="upload" style="position: relative; overflow: hidden;" role="button">'+Craft.t("app","Upload files")+"</div>"),this.addButton(this.$uploadButton),this.$uploadInput=a('<input type="file" multiple="multiple" name="assets-upload" />').hide().insertBefore(this.$uploadButton)),this.promptHandler=new Craft.PromptHandler,this.progressBar=new Craft.ProgressBar(this.$main,!0);var b={url:Craft.getActionUrl("assets/save-asset"),fileInput:this.$uploadInput,dropZone:this.$main};b.events={fileuploadstart:a.proxy(this,"_onUploadStart"),fileuploadprogressall:a.proxy(this,"_onUploadProgress"),fileuploaddone:a.proxy(this,"_onUploadComplete")},"undefined"!=typeof this.settings.criteria.kind&&(b.allowedKinds=this.settings.criteria.kind),this._currentUploaderSettings=b,this.uploader=new Craft.Uploader(this.$uploadButton,b),this.$uploadButton.on("click",a.proxy(function(){this.$uploadButton.hasClass("disabled")||this.isIndexBusy||this.$uploadButton.parent().find("input[name=assets-upload]").click()},this)),this.base()},onSelectSource:function(){var a=this._getFolderIdFromSourceKey(this.sourceKey);a&&this.$source.attr("data-upload")?(this.uploader.setParams({folderId:a}),this.$uploadButton.removeClass("disabled")):this.$uploadButton.addClass("disabled"),this.base()},_getFolderIdFromSourceKey:function(a){var b=a.match(/\bfolder:(\d+)$/);return b?b[1]:null},startSearching:function(){
 // Does this source have subfolders?
 if(this.$source.siblings("ul").length){if(null===this.$includeSubfoldersContainer){var b="includeSubfolders-"+Math.floor(1e9*Math.random());this.$includeSubfoldersContainer=a('<div style="margin-bottom: -23px; opacity: 0;"/>').insertAfter(this.$search);var c=a('<div style="padding-top: 5px;"/>').appendTo(this.$includeSubfoldersContainer);this.$includeSubfoldersCheckbox=a('<input type="checkbox" id="'+b+'" class="checkbox"/>').appendTo(c),a('<label class="light smalltext" for="'+b+'"/>').text(" "+Craft.t("app","Search in subfolders")).appendTo(c),this.addListener(this.$includeSubfoldersCheckbox,"change",function(){this.setSelecetedSourceState("includeSubfolders",this.$includeSubfoldersCheckbox.prop("checked")),this.updateElements()})}else this.$includeSubfoldersContainer.velocity("stop");var d=this.getSelectedSourceState("includeSubfolders",!1);this.$includeSubfoldersCheckbox.prop("checked",d),this.$includeSubfoldersContainer.velocity({marginBottom:0,opacity:1},"fast"),this.showingIncludeSubfoldersCheckbox=!0}this.base()},stopSearching:function(){this.showingIncludeSubfoldersCheckbox&&(this.$includeSubfoldersContainer.velocity("stop"),this.$includeSubfoldersContainer.velocity({marginBottom:-23,opacity:0},"fast"),this.showingIncludeSubfoldersCheckbox=!1),this.base()},getViewParams:function(){var a=this.base();return this.showingIncludeSubfoldersCheckbox&&this.$includeSubfoldersCheckbox.prop("checked")&&(a.criteria.includeSubfolders=!0),a},/**
 	 * React on upload submit.
@@ -927,13 +921,13 @@ _collapseExtraExpandedFolders:function(a){clearTimeout(this._expandDropTargetFol
 // If a source ID is passed in, exclude its parents
 var b;a&&(b=this._getSourceByFolderId(a).parents("li").children("a"));for(var c=this._tempExpandedFolders.length-1;c>=0;c--){var d=this._tempExpandedFolders[c];
 // Check the parent list, if a source id is passed in
-a&&0!=b.filter('[data-key="'+d.data("key")+'"]').length||(this._collapseFolder(d),this._tempExpandedFolders.splice(c,1))}},_getSourceByFolderId:function(a){return this.$sources.filter('[data-key="folder:'+a+'"]')},_hasSubfolders:function(a){return a.siblings("ul").find("li").length},_isExpanded:function(a){return a.parent("li").hasClass("expanded")},_expandFolder:function(){
+a&&0!=b.filter('[data-key="'+d.data("key")+'"]').length||(this._collapseFolder(d),this._tempExpandedFolders.splice(c,1))}},_getSourceByFolderId:function(a){return this.$sources.filter('[data-key$="folder:'+a+'"]')},_hasSubfolders:function(a){return a.siblings("ul").find("li").length},_isExpanded:function(a){return a.parent("li").hasClass("expanded")},_expandFolder:function(){
 // Collapse any temp-expanded drop targets that aren't parents of this one
 this._collapseExtraExpandedFolders(this._getFolderIdFromSourceKey(this.dropTargetFolder.data("key"))),this.dropTargetFolder.siblings(".toggle").click(),
 // Keep a record of that
 this._tempExpandedFolders.push(this.dropTargetFolder)},_collapseFolder:function(a){a.parent().hasClass("expanded")&&a.siblings(".toggle").click()},_createFolderContextMenu:function(b){var c=[{label:Craft.t("app","New subfolder"),onClick:a.proxy(this,"_createSubfolder",b)}];
 // For all folders that are not top folders
-"index"==this.settings.context&&this._getSourceLevel(b)>1&&(c.push({label:Craft.t("app","Rename folder"),onClick:a.proxy(this,"_renameFolder",b)}),c.push({label:Craft.t("app","Delete folder"),onClick:a.proxy(this,"_deleteFolder",b)})),new Garnish.ContextMenu(b,c,{menuClass:"menu"})},_createSubfolder:function(b){var c=prompt(Craft.t("app","Enter the name of the folder"));if(c){var d={parentId:this._getFolderIdFromSourceKey(b.data("key")),folderName:c};this.setIndexBusy(),Craft.postActionRequest("assets/create-folder",d,a.proxy(function(c,d){if(this.setIndexAvailable(),"success"==d&&c.success){this._prepareParentForChildren(b);var e=a('<li><a data-key="folder:'+c.folderId+'"'+(Garnish.hasAttr(b,"data-has-thumbs")?" data-has-thumbs":"")+' data-upload="'+b.attr("data-upload")+'">'+c.folderName+"</a></li>"),f=e.children("a:first");this._appendSubfolder(b,e),this.initSource(f)}"success"==d&&c.error&&alert(c.error)},this))}},_deleteFolder:function(b){if(confirm(Craft.t("app","Really delete folder “{folder}”?",{folder:a.trim(b.text())}))){var c={folderId:this._getFolderIdFromSourceKey(b.data("key"))};this.setIndexBusy(),Craft.postActionRequest("assets/delete-folder",c,a.proxy(function(a,c){if(this.setIndexAvailable(),"success"==c&&a.success){var d=this._getParentSource(b);
+"index"==this.settings.context&&this._getSourceLevel(b)>1&&(c.push({label:Craft.t("app","Rename folder"),onClick:a.proxy(this,"_renameFolder",b)}),c.push({label:Craft.t("app","Delete folder"),onClick:a.proxy(this,"_deleteFolder",b)})),new Garnish.ContextMenu(b,c,{menuClass:"menu"})},_createSubfolder:function(b){var c=prompt(Craft.t("app","Enter the name of the folder"));if(c){var d={parentId:this._getFolderIdFromSourceKey(b.data("key")),folderName:c};this.setIndexBusy(),Craft.postActionRequest("assets/create-folder",d,a.proxy(function(c,d){if(this.setIndexAvailable(),"success"==d&&c.success){this._prepareParentForChildren(b);var e=a('<li><a data-key="'+b.data("key")+"/folder:"+c.folderId+'"'+(Garnish.hasAttr(b,"data-has-thumbs")?" data-has-thumbs":"")+' data-upload="'+b.attr("data-upload")+'">'+c.folderName+"</a></li>"),f=e.children("a:first");this._appendSubfolder(b,e),this.initSource(f)}"success"==d&&c.error&&alert(c.error)},this))}},_deleteFolder:function(b){if(confirm(Craft.t("app","Really delete folder “{folder}”?",{folder:a.trim(b.text())}))){var c={folderId:this._getFolderIdFromSourceKey(b.data("key"))};this.setIndexBusy(),Craft.postActionRequest("assets/delete-folder",c,a.proxy(function(a,c){if(this.setIndexAvailable(),"success"==c&&a.success){var d=this._getParentSource(b);
 // Remove folder and any trace from its parent, if needed
 this.deinitSource(b),b.parent().remove(),this._cleanUpTree(d)}"success"==c&&a.error&&alert(a.error)},this))}},/**
 	 * Rename

@@ -288,4 +288,46 @@ class ElementHelper
             $lastElement->setNext(false);
         }
     }
+
+    /**
+     * Returns an element type's source definition based on a given source key/path and context.
+     *
+     * @param string      $elementType The element type class
+     * @param string      $sourceKey   The source key/path
+     * @param string|null $context     The context
+     *
+     * @return array|null The source definition, or null if it cannot be found
+     */
+    public static function findSource($elementType, $sourceKey, $context = null)
+    {
+        /** @var ElementInterface $elementType */
+        $path = explode('/', $sourceKey);
+        $sources = $elementType::sources($context);
+
+        while ($path) {
+            $key = array_shift($path);
+            $source = null;
+
+            foreach ($sources as $testSource) {
+                if (isset($testSource['key']) && $testSource['key'] == $key) {
+                    $source = $testSource;
+                    break;
+                }
+            }
+
+            if ($source === null) {
+                return null;
+            }
+
+            // Is that the end of the path?
+            if (!$path) {
+                return $source;
+            }
+
+            // Prepare for searching nested sources
+            $sources = isset($source['nested']) ? $source['nested'] : [];
+        }
+
+        return null;
+    }
 }

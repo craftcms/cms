@@ -15,6 +15,7 @@ use craft\app\elements\db\ElementQuery;
 use craft\app\elements\db\ElementQueryInterface;
 use craft\app\base\ElementInterface;
 use craft\app\events\ElementActionEvent;
+use craft\app\helpers\ElementHelper;
 use yii\web\BadRequestHttpException;
 use yii\web\ForbiddenHttpException;
 use yii\web\Response;
@@ -225,6 +226,22 @@ class ElementIndexesController extends BaseElementsController
         return $this->asJson($responseData);
     }
 
+    /**
+     * Returns the source tree HTML for an element index.
+     */
+    public function actionGetSourceTreeHtml()
+    {
+        $this->requireAcceptsJson();
+
+        $sources = Craft::$app->getElementIndexes()->getSources($this->_elementType, $this->_context);
+
+        return $this->asJson([
+            'html' => Craft::$app->getView()->renderTemplate('_elements/sources', [
+                'sources' => $sources
+            ])
+        ]);
+    }
+
     // Private Methods
     // =========================================================================
 
@@ -236,19 +253,18 @@ class ElementIndexesController extends BaseElementsController
      */
     private function _getSource()
     {
-        if ($this->_sourceKey) {
-            $elementType = $this->_elementType;
-            $source = $elementType::source($this->_sourceKey, $this->_context);
-
-            if (!$source) {
-                // That wasn't a valid source, or the user doesn't have access to it in this context
-                throw new ForbiddenHttpException('User not permitted to access this source');
-            }
-
-            return $source;
+        if (!$this->_sourceKey) {
+            return null;
         }
 
-        return null;
+        $source = ElementHelper::findSource($this->_elementType, $this->_sourceKey, $this->_context);
+
+        if ($source === null) {
+            // That wasn't a valid source, or the user doesn't have access to it in this context
+            throw new ForbiddenHttpException('User not permitted to access this source');
+        }
+
+        return $source;
     }
 
     /**

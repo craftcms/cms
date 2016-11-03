@@ -141,7 +141,8 @@ class Entry extends Element
         }
 
         $sources = [
-            '*' => [
+            [
+                'key' => '*',
                 'label' => Craft::t('app', 'All entries'),
                 'criteria' => [
                     'sectionId' => $sectionIds,
@@ -152,7 +153,8 @@ class Entry extends Element
         ];
 
         if ($singleSectionIds) {
-            $sources['singles'] = [
+            $sources[] = [
+                'key' => 'singles',
                 'label' => Craft::t('app', 'Singles'),
                 'criteria' => [
                     'sectionId' => $singleSectionIds,
@@ -172,9 +174,8 @@ class Entry extends Element
                 $sources[] = ['heading' => $heading];
 
                 foreach ($sectionsByType[$type] as $section) {
-                    $key = 'section:'.$section->id;
-
-                    $sources[$key] = [
+                    $source = [
+                        'key' => 'section:'.$section->id,
                         'label' => Craft::t('site', $section->name),
                         'data' => [
                             'type' => $type,
@@ -187,12 +188,14 @@ class Entry extends Element
                     ];
 
                     if ($type == Section::TYPE_STRUCTURE) {
-                        $sources[$key]['defaultSort'] = ['structure', 'asc'];
-                        $sources[$key]['structureId'] = $section->structureId;
-                        $sources[$key]['structureEditable'] = Craft::$app->getUser()->checkPermission('publishEntries:'.$section->id);
+                        $source['defaultSort'] = ['structure', 'asc'];
+                        $source['structureId'] = $section->structureId;
+                        $source['structureEditable'] = Craft::$app->getUser()->checkPermission('publishEntries:'.$section->id);
                     } else {
-                        $sources[$key]['defaultSort'] = ['postDate', 'desc'];
+                        $source['defaultSort'] = ['postDate', 'desc'];
                     }
+
+                    $sources[] = $source;
                 }
             }
         }

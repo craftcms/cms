@@ -10,6 +10,7 @@ namespace craft\app\fields;
 use Craft;
 use craft\app\base\ElementInterface;
 use craft\app\elements\Category;
+use craft\app\helpers\ElementHelper;
 
 /**
  * Categories represents a Categories field.
@@ -87,9 +88,7 @@ class Categories extends BaseRelationField
     {
         // Make sure the field is set to a valid category group
         if ($this->source) {
-            /** @var Category $class */
-            $class = static::elementType();
-            $source = $class::source($this->source, 'field');
+            $source = ElementHelper::findSource(static::elementType(), $this->source, 'field');
         }
 
         if (empty($source)) {

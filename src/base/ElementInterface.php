@@ -206,9 +206,10 @@ interface ElementInterface extends ComponentInterface
      *
      * This defines what will show up in the source list on element indexes and element selector modals.
      *
-     * Each item in the array should have a key that identifies the source’s key (e.g. "section:3"), and should be set
-     * to an array that has the following keys:
+     * Each item in the array should be set to an array that has the following keys:
      *
+     * - **`key`** – The source’s key. This is the string that will be passed into the $source argument of [[actions()]],
+     *   [[indexHtml()]], and [[defaultTableAttributes()]].
      * - **`label`** – The human-facing label of the source.
      * - **`criteria`** – An array of element criteria parameters that the source should use when the source is selected.
      *   (Optional)
@@ -231,16 +232,6 @@ interface ElementInterface extends ComponentInterface
      * @return array The sources.
      */
     public static function sources($context = null);
-
-    /**
-     * Returns a source by its key and context.
-     *
-     * @param string $key     The source’s key.
-     * @param string $context The context ('index' or 'modal').
-     *
-     * @return array|null
-     */
-    public static function source($key, $context = null);
 
     /**
      * Returns the available element actions for a given source (if one is provided).
