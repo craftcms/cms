@@ -726,8 +726,7 @@ var Field = Garnish.Base.extend(
 			id: this.inputIdPrefix+'-instructions',
 			'class': 'nicetext',
 			name: this.inputNamePrefix+'[instructions]',
-			maxlength: 64,
-			required: true
+			maxlength: 64
 		}).appendTo($container);
 
 		Craft.ui.createCheckboxField({
