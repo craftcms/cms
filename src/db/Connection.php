@@ -144,21 +144,16 @@ class Connection extends \yii\db\Connection
         $command = $this->_createShellCommand($backupCommand, $filePath);
 
         // Fire a 'beforeCreateBackup' event
-        $this->trigger(self::EVENT_BEFORE_CREATE_BACKUP,
-            new BackupEvent(['file' => $filePath])
-        );
+        $this->trigger(self::EVENT_BEFORE_CREATE_BACKUP, new BackupEvent([
+            'file' => $filePath
+        ]));
 
-        if ($command->execute()) {
-            // Fire an 'afterCreateBackup' event
-            $this->trigger(self::EVENT_AFTER_CREATE_BACKUP,
-                new BackupEvent(['file' => $filePath])
-            );
+        $success = $command->execute();
 
-            // Nuke any temp connection files that might have been created.
-            Io::clearFolder(Craft::$app->getPath()->getTempPath());
+        // Nuke any temp connection files that might have been created.
+        Io::clearFolder(Craft::$app->getPath()->getTempPath());
 
-            return $filePath;
-        } else {
+        if (!$success) {
             $errorMessage = $command->getError();
             $exitCode = $command->getExitCode();
 
@@ -170,12 +165,16 @@ class Connection extends \yii\db\Connection
             ]));
 
             Craft::error('Could not perform backup. Error: '.$errorMessage.'. Exit Code:'.$exitCode, __METHOD__);
+
+            return false;
         }
 
-        // Nuke any temp connection files that might have been created.
-        Io::clearFolder(Craft::$app->getPath()->getTempPath());
+        // Fire an 'afterCreateBackup' event
+        $this->trigger(self::EVENT_AFTER_CREATE_BACKUP, new BackupEvent([
+            'file' => $filePath
+        ]));
 
-        return false;
+        return $filePath;
     }
 
     /**
@@ -206,18 +205,16 @@ class Connection extends \yii\db\Connection
         $command = $this->_createShellCommand($restoreCommand, $filePath);
 
         // Fire a 'beforeRestoreBackup' event
-        $this->trigger(self::EVENT_BEFORE_RESTORE_BACKUP,
-            new RestoreEvent(['file' => $filePath])
-        );
+        $this->trigger(self::EVENT_BEFORE_RESTORE_BACKUP, new RestoreEvent([
+            'file' => $filePath
+        ]));
 
-        if ($command->execute()) {
-            // Fire an 'afterRestoreBackup' event
-            $this->trigger(self::EVENT_AFTER_RESTORE_BACKUP,
-                new BackupEvent(['file' => $filePath])
-            );
+        $success = $command->execute();
 
-            return true;
-        } else {
+        // Nuke any temp connection files that might have been created.
+        Io::clearFolder(Craft::$app->getPath()->getTempPath());
+
+        if (!$success) {
             $errorMessage = $command->getError();
             $exitCode = $command->getExitCode();
 
@@ -229,9 +226,16 @@ class Connection extends \yii\db\Connection
             ]));
 
             Craft::error('Could not perform restore. Error: '.$errorMessage.'. Exit Code:'.$exitCode, __METHOD__);
+
+            return false;
         }
 
-        return false;
+        // Fire an 'afterRestoreBackup' event
+        $this->trigger(self::EVENT_AFTER_RESTORE_BACKUP, new BackupEvent([
+            'file' => $filePath
+        ]));
+
+        return true;
     }
 
     /**
