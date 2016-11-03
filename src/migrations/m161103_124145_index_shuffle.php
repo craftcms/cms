@@ -16,11 +16,11 @@ class m161103_124145_index_shuffle extends Migration
     public function safeUp()
     {
         // Order is important
-        Craft::info('Dropping `expiryDate,cacheKey,locale,path` index on the templatecaches table.', __METHOD__);
-        $this->dropIndex($this->db->getIndexName('{{%templatecaches}}', 'expiryDate,cacheKey,locale,path'), '{{%templatecaches}}');
+        Craft::info('Dropping `expiryDate,cacheKey,siteId,path` index on the templatecaches table.', __METHOD__);
+        $this->dropIndex($this->db->getIndexName('{{%templatecaches}}', 'expiryDate,cacheKey,siteId,path'), '{{%templatecaches}}');
 
-        Craft::info('Creating `locale,cacheKey,path,expiryDate` index on the templatecaches table.', __METHOD__);
-        $this->createIndex($this->db->getIndexName('{{%templatecaches}}', 'locale,cacheKey,path,expiryDate'), '{{%templatecaches}}', 'locale,cacheKey,path,expiryDate');
+        Craft::info('Creating `siteId,cacheKey,path,expiryDate` index on the templatecaches table.', __METHOD__);
+        $this->createIndex($this->db->getIndexName('{{%templatecaches}}', 'siteId,cacheKey,path,expiryDate'), '{{%templatecaches}}', 'siteId,cacheKey,path,expiryDate');
     }
 
     /**
@@ -28,7 +28,7 @@ class m161103_124145_index_shuffle extends Migration
      */
     public function safeDown()
     {
-        echo "m161029_124145_email_message_languages cannot be reverted.\n";
+        echo "m161103_124145_index_shuffle cannot be reverted.\n";
         return false;
     }
 }
