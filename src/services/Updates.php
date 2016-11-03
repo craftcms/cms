@@ -777,9 +777,10 @@ class Updates extends Component
                 'handle' => $handle,
             ]));
 
-            Craft::$app->getConfig()->maxPowerCaptain();
+            $config = Craft::$app->getConfig();
+            $config->maxPowerCaptain();
 
-            if ($dbBackupPath && Craft::$app->getConfig()->get('backupOnUpdate') && Craft::$app->getConfig()->get('restoreOnUpdateFailure')) {
+            if ($dbBackupPath && $config->get('backupOnUpdate') && $config->get('restoreOnUpdateFailure') && $config->get('restoreCommand') !== false) {
                 Craft::info('Rolling back any database changes.', __METHOD__);
                 UpdateHelper::rollBackDatabaseChanges($dbBackupPath);
                 Craft::info('Done rolling back any database changes.', __METHOD__);

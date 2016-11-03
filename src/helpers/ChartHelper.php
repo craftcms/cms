@@ -244,13 +244,13 @@ class ChartHelper
      *
      * @return array
      */
-    public static function getFormats()
+    public static function formats()
     {
         return [
-            'shortDateFormats' => self::getShortDateFormats(),
-            'decimalFormat' => self::getDecimalFormat(),
-            'percentFormat' => self::getPercentFormat(),
-            'currencyFormat' => self::getCurrencyFormat(),
+            'shortDateFormats' => self::shortDateFormats(),
+            'decimalFormat' => self::decimalFormat(),
+            'percentFormat' => self::percentFormat(),
+            'currencyFormat' => self::currencyFormat(),
         ];
     }
 
@@ -259,7 +259,7 @@ class ChartHelper
      *
      * @return array
      */
-    public static function getShortDateFormats()
+    public static function shortDateFormats()
     {
         $format = Craft::$app->getLocale()->getDateFormat('short');
 
@@ -313,7 +313,7 @@ class ChartHelper
      *
      * @return string
      */
-    public static function getDecimalFormat()
+    public static function decimalFormat()
     {
         return ',.3f';
     }
@@ -323,7 +323,7 @@ class ChartHelper
      *
      * @return string
      */
-    public static function getPercentFormat()
+    public static function percentFormat()
     {
         return ',.2%';
     }
@@ -333,7 +333,7 @@ class ChartHelper
      *
      * @return string
      */
-    public static function getCurrencyFormat()
+    public static function currencyFormat()
     {
         return '$,.2f';
     }
@@ -343,7 +343,7 @@ class ChartHelper
      *
      * @return array
      */
-    public static function getDateRanges()
+    public static function dateRanges()
     {
         $dateRanges = [
             'd7' => ['label' => Craft::t('app', 'Last 7 days'), 'startDate' => '-7 days', 'endDate' => null],

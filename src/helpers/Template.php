@@ -88,7 +88,7 @@ class Template
      *
      * @return \Twig_Markup
      */
-    public static function getRaw($value)
+    public static function raw($value)
     {
         return new \Twig_Markup($value, Craft::$app->charset);
     }

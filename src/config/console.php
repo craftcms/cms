@@ -7,5 +7,6 @@ return [
     ],
     'controllerMap' => [
         'migrate' => craft\app\console\controllers\MigrateController::class,
-    ]
+    ],
+    'controllerNamespace' => 'craft\\app\\console\\controllers',
 ];

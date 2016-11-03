@@ -343,7 +343,7 @@ abstract class Element extends Component implements ElementInterface
             $sortableAttributes = static::sortableAttributes();
 
             if ($sortableAttributes) {
-                $order = (!empty($viewState['order']) && isset($sortableAttributes[$viewState['order']])) ? $viewState['order'] : ArrayHelper::getFirstKey($sortableAttributes);
+                $order = (!empty($viewState['order']) && isset($sortableAttributes[$viewState['order']])) ? $viewState['order'] : ArrayHelper::firstKey($sortableAttributes);
                 $sort = (!empty($viewState['sort']) && in_array($viewState['sort'],
                         ['asc', 'desc'])) ? $viewState['sort'] : 'asc';
 
@@ -934,7 +934,7 @@ abstract class Element extends Component implements ElementInterface
         if ($url !== null) {
             $link = '<a href="'.$url.'">'.Html::encode($this->__toString()).'</a>';
 
-            return Template::getRaw($link);
+            return Template::raw($link);
         }
 
         return null;

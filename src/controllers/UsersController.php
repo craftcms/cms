@@ -412,7 +412,7 @@ class UsersController extends Controller
             }
 
             // Redirect to the site/CP root
-            $url = Url::getUrl('');
+            $url = Url::url('');
 
             return $this->redirect($url);
         }
@@ -1121,7 +1121,7 @@ class UsersController extends Controller
                 $user = $users->getUserById($userId);
 
                 // Move to our own temp location
-                $fileLocation = Assets::getTempFilePath($file->getExtension());
+                $fileLocation = Assets::tempFilePath($file->getExtension());
                 move_uploaded_file($file->tempName, $fileLocation);
                 $users->saveUserPhoto($fileLocation, $user, $file->name);
                 Io::deleteFile($fileLocation);
@@ -1645,7 +1645,7 @@ class UsersController extends Controller
 
         // Did they upload a new one?
         if ($photo = UploadedFile::getInstanceByName('photo')) {
-            $fileLocation = Assets::getTempFilePath($photo->getExtension());
+            $fileLocation = Assets::tempFilePath($photo->getExtension());
             move_uploaded_file($photo->tempName, $fileLocation);
             $users->saveUserPhoto($fileLocation, $user, $photo->name);
             Io::deleteFile($fileLocation);

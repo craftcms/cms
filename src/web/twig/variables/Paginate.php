@@ -88,7 +88,7 @@ class Paginate
                 }
             }
 
-            return Url::getUrl($path, $params);
+            return Url::url($path, $params);
         }
 
         return null;

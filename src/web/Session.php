@@ -48,7 +48,7 @@ class Session extends \yii\web\Session
         $this->setName(Craft::$app->getConfig()->get('phpSessionName'));
 
         // Set the default session cookie params
-        $this->setCookieParams(Craft::getCookieConfig());
+        $this->setCookieParams(Craft::cookieConfig());
 
         parent::__construct($config);
     }

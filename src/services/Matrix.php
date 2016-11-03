@@ -648,37 +648,6 @@ class Matrix extends Component
     }
 
     /**
-     * Validates a block.
-     *
-     * If the block doesn’t validate, any validation errors will be stored on the block.
-     *
-     * @param MatrixBlock $block The Matrix block to validate.
-     *
-     * @return boolean Whether the block validated.
-     */
-    public function validateBlock(MatrixBlock $block)
-    {
-        $block->clearErrors();
-
-        $blockRecord = $this->_getBlockRecord($block);
-
-        $blockRecord->fieldId = $block->fieldId;
-        $blockRecord->ownerId = $block->ownerId;
-        $blockRecord->typeId = $block->typeId;
-        $blockRecord->sortOrder = $block->sortOrder;
-
-        $blockRecord->validate();
-        $block->addErrors($blockRecord->getErrors());
-
-        $originalFieldContext = Craft::$app->getContent()->fieldContext;
-        Craft::$app->getContent()->fieldContext = 'matrixBlockType:'.$block->typeId;
-        Craft::$app->getContent()->validateContent($block);
-        Craft::$app->getContent()->fieldContext = $originalFieldContext;
-
-        return !$block->hasErrors();
-    }
-
-    /**
      * Saves a Matrix field.
      *
      * @param MatrixField      $field The Matrix field

@@ -37,7 +37,7 @@ class Cp
      *
      * @return array
      */
-    public static function getAlerts($path = null, $fetch = false)
+    public static function alerts($path = null, $fetch = false)
     {
         $alerts = [];
         $user = Craft::$app->getUser()->getIdentity();
@@ -69,7 +69,7 @@ class Cp
                 if (!empty($updateModel->app->releases)) {
                     if (Craft::$app->getUpdates()->criticalCraftUpdateAvailable($updateModel->app->releases)) {
                         $alerts[] = Craft::t('app', 'There’s a critical Craft CMS update available.').
-                            ' <a class="go nowrap" href="'.Url::getUrl('updates').'">'.Craft::t('app', 'Go to Updates').'</a>';
+                            ' <a class="go nowrap" href="'.Url::url('updates').'">'.Craft::t('app', 'Go to Updates').'</a>';
                     }
                 }
             }

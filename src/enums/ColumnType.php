@@ -16,7 +16,7 @@ namespace craft\app\enums;
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since  3.0
  */
-abstract class ColumnType extends BaseEnum
+abstract class ColumnType
 {
     // Constants
     // =========================================================================

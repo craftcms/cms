@@ -159,7 +159,7 @@ class AssetTransform extends Model
      *
      * @return array
      */
-    public static function getTransformModes()
+    public static function modes()
     {
         return [
             'crop' => Craft::t('app', 'Scale and crop'),

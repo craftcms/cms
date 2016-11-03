@@ -57,7 +57,7 @@ class App
      *
      * @return array All the known Craft editions’ IDs.
      */
-    public static function getEditions()
+    public static function editions()
     {
         return [Craft::Personal, Craft::Client, Craft::Pro];
     }
@@ -69,7 +69,7 @@ class App
      *
      * @return string The edition’s name.
      */
-    public static function getEditionName($edition)
+    public static function editionName($edition)
     {
         switch ($edition) {
             case Craft::Client:
@@ -91,7 +91,7 @@ class App
     public static function isValidEdition($edition)
     {
         return (is_numeric($edition) && in_array($edition,
-                static::getEditions()));
+                static::editions()));
     }
 
     /**
@@ -101,7 +101,7 @@ class App
      *
      * @return boolean Whether it is set to the php.ini equivelant of `true`.
      */
-    public static function getPhpConfigValueAsBool($var)
+    public static function phpConfigValueAsBool($var)
     {
         $value = ini_get($var);
 
@@ -116,7 +116,7 @@ class App
      *
      * @return integer The size in bytes.
      */
-    public static function getPhpConfigValueInBytes($var)
+    public static function phpConfigValueInBytes($var)
     {
         $value = ini_get($var);
 
@@ -171,7 +171,7 @@ class App
      *
      * @return string|null The major version
      */
-    public static function getMajorVersion($version)
+    public static function majorVersion($version)
     {
         $version = static::normalizeVersionNumber($version);
         $parts = explode('.', $version, 2);

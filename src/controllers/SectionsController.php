@@ -120,11 +120,11 @@ class SectionsController extends Controller
         $variables['crumbs'] = [
             [
                 'label' => Craft::t('app', 'Settings'),
-                'url' => Url::getUrl('settings')
+                'url' => Url::url('settings')
             ],
             [
                 'label' => Craft::t('app', 'Sections'),
-                'url' => Url::getUrl('settings/sections')
+                'url' => Url::url('settings/sections')
             ],
         ];
 
@@ -248,15 +248,15 @@ class SectionsController extends Controller
         $crumbs = [
             [
                 'label' => Craft::t('app', 'Settings'),
-                'url' => Url::getUrl('settings')
+                'url' => Url::url('settings')
             ],
             [
                 'label' => Craft::t('app', 'Sections'),
-                'url' => Url::getUrl('settings/sections')
+                'url' => Url::url('settings/sections')
             ],
             [
                 'label' => Craft::t('site', $section->name),
-                'url' => Url::getUrl('settings/sections/'.$section->id)
+                'url' => Url::url('settings/sections/'.$section->id)
             ],
         ];
 
@@ -317,19 +317,19 @@ class SectionsController extends Controller
         $crumbs = [
             [
                 'label' => Craft::t('app', 'Settings'),
-                'url' => Url::getUrl('settings')
+                'url' => Url::url('settings')
             ],
             [
                 'label' => Craft::t('app', 'Sections'),
-                'url' => Url::getUrl('settings/sections')
+                'url' => Url::url('settings/sections')
             ],
             [
                 'label' => $section->name,
-                'url' => Url::getUrl('settings/sections/'.$section->id)
+                'url' => Url::url('settings/sections/'.$section->id)
             ],
             [
                 'label' => Craft::t('app', 'Entry Types'),
-                'url' => Url::getUrl('settings/sections/'.$sectionId.'/entrytypes')
+                'url' => Url::url('settings/sections/'.$sectionId.'/entrytypes')
             ],
         ];
 

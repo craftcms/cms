@@ -94,7 +94,7 @@ class Search
      * @todo Get actual value from DB
      * @return integer
      */
-    public static function getMinWordLength()
+    public static function minWordLength()
     {
         if (!isset(static::$_ftMinWordLength)) {
             static::$_ftMinWordLength = 4;
@@ -109,7 +109,7 @@ class Search
      * @todo Make this customizable from the config settings
      * @return array
      */
-    public static function getStopWords()
+    public static function stopWords()
     {
         if (!isset(static::$_ftStopWords)) {
             $words = explode(' ', static::DEFAULT_STOP_WORDS);
@@ -139,7 +139,7 @@ class Search
 
         if (empty($map)) {
             // This will replace accented chars with non-accented chars
-            foreach (StringHelper::getAsciiCharMap() as $asciiChar => $charsArray) {
+            foreach (StringHelper::asciiCharMap() as $asciiChar => $charsArray) {
                 foreach ($charsArray as $char) {
                     $map[$char] = $asciiChar;
                 }

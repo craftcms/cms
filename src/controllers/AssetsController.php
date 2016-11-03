@@ -496,7 +496,7 @@ class AssetsController extends Controller
                     $foundAssets = Asset::find()
                         ->folderId($allSourceFolderIds)
                         ->all();
-                    $fileTransferList = Assets::getFileTransferList($foundAssets,
+                    $fileTransferList = Assets::fileTransferList($foundAssets,
                         $folderIdChanges, $conflictResolution == 'merge');
                 }
             } else {
@@ -535,7 +535,7 @@ class AssetsController extends Controller
                 $foundAssets = Asset::find()
                     ->folderId($allSourceFolderIds)
                     ->all();
-                $fileTransferList = Assets::getFileTransferList($foundAssets,
+                $fileTransferList = Assets::fileTransferList($foundAssets,
                     $folderIdChanges, $conflictResolution == 'merge');
             }
         } catch (AssetLogicException $exception) {

@@ -196,15 +196,15 @@ class FieldsController extends Controller
         $crumbs = [
             [
                 'label' => Craft::t('app', 'Settings'),
-                'url' => Url::getUrl('settings')
+                'url' => Url::url('settings')
             ],
             [
                 'label' => Craft::t('app', 'Fields'),
-                'url' => Url::getUrl('settings/fields')
+                'url' => Url::url('settings/fields')
             ],
             [
                 'label' => Craft::t('site', $fieldGroup->name),
-                'url' => Url::getUrl('settings/fields/'.$groupId)
+                'url' => Url::url('settings/fields/'.$groupId)
             ],
         ];
 

@@ -140,7 +140,7 @@ class Request
     {
         Craft::$app->getDeprecator()->log('craft.request.getUrl()', 'craft.request.getUrl() has been deprecated. Use url(craft.app.request.pathInfo) instead.');
 
-        return Url::getUrl(Craft::$app->getRequest()->getPathInfo());
+        return Url::url(Craft::$app->getRequest()->getPathInfo());
     }
 
     /**

@@ -33,12 +33,14 @@
 			checked: true
 		}) }}
 
-		{{ forms.checkboxField({
-			label: "Attach a database backup?"|t('app'),
-			class: 'attachDbBackup',
-			name: 'attachDbBackup',
-			checked: craft.app.config.get('backupDbOnUpdate'),
-		}) }}
+		{% if showBackupOption %}
+			{{ forms.checkboxField({
+				label: "Attach a database backup?"|t('app'),
+				class: 'attachDbBackup',
+				name: 'attachDbBackup',
+				checked: true,
+			}) }}
+		{% endif %}
 
 		{{ forms.checkboxField({
 			name: 'attachTemplates',

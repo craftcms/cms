@@ -633,7 +633,7 @@ class Search extends Component
      */
     private function _isFulltextTerm($term)
     {
-        $ftStopWords = SearchHelper::getStopWords();
+        $ftStopWords = SearchHelper::stopWords();
 
         // Check if complete term is in stopwords
         if (in_array($term, $ftStopWords)) {
@@ -645,7 +645,7 @@ class Search extends Component
 
         // Then loop through terms and return false it doesn't match up
         foreach ($words as $word) {
-            if (mb_strlen($word) < SearchHelper::getMinWordLength() || in_array($word, $ftStopWords)) {
+            if (mb_strlen($word) < SearchHelper::minWordLength() || in_array($word, $ftStopWords)) {
                 return false;
             }
         }

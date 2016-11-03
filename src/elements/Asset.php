@@ -553,7 +553,7 @@ class Asset extends Element
         if ($this->kind == 'image' && $this->getHasUrls()) {
             $img = '<img src="'.$this->getUrl().'" width="'.$this->getWidth().'" height="'.$this->getHeight().'" alt="'.Html::encode($this->title).'" />';
 
-            return Template::getRaw($img);
+            return Template::raw($img);
         }
 
         return null;

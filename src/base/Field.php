@@ -256,18 +256,6 @@ abstract class Field extends SavableComponent implements FieldInterface
     /**
      * @inheritdoc
      */
-    public function validateValue($value, $element)
-    {
-        if ($this->required && $this->isValueEmpty($value, $element)) {
-            return [Craft::t('yii', '{attribute} cannot be blank.')];
-        }
-
-        return [];
-    }
-
-    /**
-     * @inheritdoc
-     */
     public function getElementValidationRules()
     {
         $rules = [];

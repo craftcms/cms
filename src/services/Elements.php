@@ -422,7 +422,7 @@ class Elements extends Component
 
             $masterSiteId = $element->siteId;
 
-            $supportedSites = ElementHelper::getSupportedSitesForElement($element);
+            $supportedSites = ElementHelper::supportedSitesForElement($element);
 
             if (!$supportedSites) {
                 throw new Exception('All elements must have at least one site associated with them.');
@@ -532,7 +532,7 @@ class Elements extends Component
                         $localizedElement->setFieldValues($fieldValues);
                     }
 
-                    Craft::$app->getContent()->saveContent($localizedElement, false);
+                    Craft::$app->getContent()->saveContent($localizedElement);
                 }
 
                 // Capture the original slug, in case it's entirely composed of invalid characters

@@ -220,39 +220,6 @@ class Plugin extends Module implements PluginInterface
         return $this->_basePath;
     }
 
-    // Component Registration
-    // -------------------------------------------------------------------------
-
-    /**
-     * Returns the plugin’s available field types.
-     *
-     * @return FieldInterface[]|null
-     */
-    public function getFieldTypes()
-    {
-        return $this->getClassesInSubpath('fields');
-    }
-
-    /**
-     * Returns the plugin’s available widget types.
-     *
-     * @return WidgetInterface[]|null
-     */
-    public function getWidgetTypes()
-    {
-        return $this->getClassesInSubpath('widgets');
-    }
-
-    /**
-     * Returns the plugin’s available volume types.
-     *
-     * @return VolumeInterface[]|null
-     */
-    public function getVolumeTypes()
-    {
-        return $this->getClassesInSubpath('volumes');
-    }
-
     // Protected Methods
     // =========================================================================
 
@@ -347,35 +314,5 @@ class Plugin extends Module implements PluginInterface
     protected function getSettingsHtml()
     {
         return null;
-    }
-
-    /**
-     * Returns the names of classes located within a subpath of this plugin’s base path.
-     *
-     * @param string  $subpath   The path to check relative to this plugin’s base path
-     * @param boolean $recursive Whether the path should be checked recursively
-     *
-     * @return string
-     */
-    protected function getClassesInSubpath($subpath = '', $recursive = true)
-    {
-        $path = $this->getBasePath().'/'.$subpath;
-        // Regex pulled from http://php.net/manual/en/language.oop5.basic.php
-        $files = Io::getFolderContents($path, $recursive,
-            ['\/[a-zA-Z_\x7f-\xff][a-zA-Z0-9_\x7f-\xff]*\.php$']);
-        $classes = [];
-
-        if (!empty($files)) {
-            $chop = strlen(Io::getRealPath($path));
-            $classPrefix = "craft\\plugins\\{$this->id}\\".trim(str_replace('/',
-                    '\\', $subpath), '\\').'\\';
-
-            foreach ($files as $file) {
-                $classes[] = $classPrefix.str_replace('/', '\\',
-                        substr($file, $chop, -4));
-            }
-        }
-
-        return $classes;
     }
 }

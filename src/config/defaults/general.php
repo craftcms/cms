@@ -81,12 +81,14 @@ return [
      *
      * There are several tokens you can use that Craft will swap out at runtime:
      *
-     *     * `{filePath}` - Swapped with the dynamically generated backup file path.
+     *     * `{path}` - Swapped with the dynamically generated backup file path.
      *     * `{port}` - Swapped with the current database port.
      *     * `{server}` - Swapped with the current database host name.
      *     * `{user}` - Swapped with the user to connect to the database.
      *     * `{database}` - Swapped with the current database name.
      *     * `{schema}` - Swapped with the current database schema (if any).
+     *
+     * This can also be set to `false` to disable database backups completely.
      */
     'backupCommand' => null,
     /**
@@ -154,7 +156,7 @@ return [
     /**
      * Any custom ASCII character mappings.
      *
-     * This array is merged into the default one in StringHelper::getAsciiCharMap(). The key is the ASCII character to
+     * This array is merged into the default one in StringHelper::asciiCharMap(). The key is the ASCII character to
      * be used for the replacement and the value is an array of non-ASCII characters that the key maps to.
      *
      * For example:
@@ -489,11 +491,14 @@ return [
      *
      * There are several tokens you can use that Craft will swap out at runtime:
      *
-     *     * `{filePath}` - Swapped with the dynamically generated backup file path.
+     *     * `{path}` - Swapped with the dynamically generated backup file path.
      *     * `{port}` - Swapped with the current database port.
      *     * `{server}` - Swapped with the current database host name.
      *     * `{user}` - Swapped with the user to connect to the database.
      *     * `{database}` - Swapped with the current database name.
+     *     * `{schema}` - Swapped with the current database schema (if any).
+     *
+     * This can also be set to `false` to disable database restores completely.
     */
     'restoreCommand' => null,
     /**

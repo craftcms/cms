@@ -84,6 +84,11 @@ class CraftSupport extends Widget
             'Couldn’t send support request.',
         ]);
 
-        return Craft::$app->getView()->renderTemplate('_components/widgets/CraftSupport/body');
+        // Only show the DB backup option if DB backups haven't been disabled
+        $showBackupOption = (Craft::$app->getConfig()->get('backupCommand') !== false);
+
+        return Craft::$app->getView()->renderTemplate('_components/widgets/CraftSupport/body', [
+            'showBackupOption' => $showBackupOption
+        ]);
     }
 }

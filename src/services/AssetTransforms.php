@@ -800,7 +800,7 @@ class AssetTransforms extends Component
     {
         $volume = $asset->getVolume();
         $baseUrl = $volume->getRootUrl();
-        $appendix = AssetsHelper::getUrlAppendix($volume, $asset);
+        $appendix = AssetsHelper::urlAppendix($volume, $asset);
 
         return $baseUrl.$asset->getFolder()->path.$this->getTransformSubpath($asset,
             $transformIndexModel).$appendix;
@@ -987,7 +987,7 @@ class AssetTransforms extends Component
     public function detectAutoTransformFormat(Asset $asset)
     {
         if (in_array(mb_strtolower($asset->getExtension()),
-            Image::getWebSafeFormats())) {
+            Image::webSafeFormats())) {
             return $asset->getExtension();
         }
 
@@ -1382,7 +1382,7 @@ class AssetTransforms extends Component
     private function _getThumbExtension(Asset $asset)
     {
         // For non-web-safe formats we go with jpg.
-        if (!in_array(mb_strtolower(Io::getExtension($asset->filename)), Image::getWebSafeFormats())) {
+        if (!in_array(mb_strtolower(Io::getExtension($asset->filename)), Image::webSafeFormats())) {
             return 'jpg';
         }
 
