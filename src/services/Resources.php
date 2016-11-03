@@ -327,10 +327,10 @@ class Resources extends Component
 
         $pathParts = array_merge($requestFolderParts, $cssUrlParts);
         $path = implode('/', $pathParts);
-        $url = Url::getUrl($path);
+        $url = Url::url($path);
 
         // Is this going to be a resource URL?
-        $rootResourceUrl = Url::getUrl(Craft::$app->getConfig()->getResourceTrigger()).'/';
+        $rootResourceUrl = Url::url(Craft::$app->getConfig()->getResourceTrigger()).'/';
         $rootResourceUrlLength = strlen($rootResourceUrl);
 
         if (strncmp($rootResourceUrl, $url, $rootResourceUrlLength) === 0) {

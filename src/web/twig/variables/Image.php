@@ -60,7 +60,7 @@ class Image
     public function getSize()
     {
         if (!isset($this->size)) {
-            $size = ImageHelper::getImageSize($this->path);
+            $size = ImageHelper::imageSize($this->path);
             $this->size = [$size[0], $size[1]];
         }
 

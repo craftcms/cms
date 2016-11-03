@@ -344,7 +344,7 @@ class Users extends Component
         }
 
         return Craft::$app->getMailer()
-            ->composeFromKey('account_activation', ['link' => Template::getRaw($url)])
+            ->composeFromKey('account_activation', ['link' => Template::raw($url)])
             ->setTo($user)
             ->send();
     }
@@ -363,7 +363,7 @@ class Users extends Component
         $url = $this->getEmailVerifyUrl($user);
 
         return Craft::$app->getMailer()
-            ->composeFromKey('verify_new_email', ['link' => Template::getRaw($url)])
+            ->composeFromKey('verify_new_email', ['link' => Template::raw($url)])
             ->setTo($user)
             ->send();
     }
@@ -382,7 +382,7 @@ class Users extends Component
         $url = $this->getPasswordResetUrl($user);
 
         return Craft::$app->getMailer()
-            ->composeFromKey('forgot_password', ['link' => Template::getRaw($url)])
+            ->composeFromKey('forgot_password', ['link' => Template::raw($url)])
             ->setTo($user)
             ->send();
     }

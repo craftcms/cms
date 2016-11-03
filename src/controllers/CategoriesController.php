@@ -72,11 +72,11 @@ class CategoriesController extends Controller
         $variables['crumbs'] = [
             [
                 'label' => Craft::t('app', 'Settings'),
-                'url' => Url::getUrl('settings')
+                'url' => Url::url('settings')
             ],
             [
                 'label' => Craft::t('app', 'Categories'),
-                'url' => Url::getUrl('settings/categories')
+                'url' => Url::url('settings/categories')
             ]
         ];
 
@@ -326,11 +326,11 @@ class CategoriesController extends Controller
         $variables['crumbs'] = [
             [
                 'label' => Craft::t('app', 'Categories'),
-                'url' => Url::getUrl('categories')
+                'url' => Url::url('categories')
             ],
             [
                 'label' => Craft::t('site', $variables['group']->name),
-                'url' => Url::getUrl('categories/'.$variables['group']->handle)
+                'url' => Url::url('categories/'.$variables['group']->handle)
             ]
         ];
 
@@ -543,7 +543,7 @@ class CategoriesController extends Controller
             ]
         ]);
 
-        $url = Url::getUrlWithToken($category->getUrl(), $token);
+        $url = Url::urlWithToken($category->getUrl(), $token);
 
         return Craft::$app->getResponse()->redirect($url);
     }

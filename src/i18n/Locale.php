@@ -268,10 +268,10 @@ class Locale extends Object
         $this->id = $id;
 
         if (!Craft::$app->getI18n()->getIsIntlLoaded()) {
-            $this->data = Localization::getLocaleData($this->id);
+            $this->data = Localization::localeData($this->id);
 
             if ($this->data === null) {
-                $this->data = Localization::getLocaleData('en-US');
+                $this->data = Localization::localeData('en-US');
             }
         }
 

@@ -24,6 +24,7 @@ return [
             'errorAction' => 'templates/render-error'
         ]
     ],
+    'controllerNamespace' => 'craft\\app\\controllers',
     'modules' => [
         'debug' => [
             'class' => yii\debug\Module::class,

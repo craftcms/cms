@@ -15,7 +15,7 @@ namespace craft\app\enums;
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since  2.0
  */
-abstract class PeriodType extends BaseEnum
+abstract class PeriodType
 {
     // Constants
     // =========================================================================

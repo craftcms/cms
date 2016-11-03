@@ -15,7 +15,7 @@ namespace craft\app\enums;
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since  3.0
  */
-abstract class VersionUpdateStatus extends BaseEnum
+abstract class VersionUpdateStatus
 {
     // Constants
     // =========================================================================

@@ -388,7 +388,7 @@ class Assets extends BaseRelationField
 
             if (!empty($targetFolderId)) {
                 foreach ($incomingFiles as $file) {
-                    $tempPath = AssetsHelper::getTempFilePath($file['filename']);
+                    $tempPath = AssetsHelper::tempFilePath($file['filename']);
                     if ($file['type'] == 'upload') {
                         move_uploaded_file($file['location'], $tempPath);
                     }

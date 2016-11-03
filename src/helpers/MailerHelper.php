@@ -44,7 +44,7 @@ class MailerHelper
      *
      * @return string[]
      */
-    public static function getAllMailerTransportTypes()
+    public static function allMailerTransportTypes()
     {
         $transportTypes = [
             Php::class,

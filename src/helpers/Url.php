@@ -84,7 +84,7 @@ class Url
      *
      * @return string
      */
-    public static function getUrlWithParams($url, $params)
+    public static function urlWithParams($url, $params)
     {
         $params = static::_normalizeParams($params, $anchor);
 
@@ -113,12 +113,12 @@ class Url
      *
      * @return string
      */
-    public static function getUrlWithToken($url, $token)
+    public static function urlWithToken($url, $token)
     {
         $protocol = static::getProtocolForTokenizedUrl();
-        $url = static::getUrlWithProtocol($url, $protocol);
+        $url = static::urlWithProtocol($url, $protocol);
 
-        return static::getUrlWithParams($url, [
+        return static::urlWithParams($url, [
             Craft::$app->getConfig()->get('tokenParam') => $token
         ]);
     }
@@ -131,7 +131,7 @@ class Url
      *
      * @return string
      */
-    public static function getUrlWithProtocol($url, $protocol)
+    public static function urlWithProtocol($url, $protocol)
     {
         if (!$url || !$protocol) {
             return $url;
@@ -159,16 +159,16 @@ class Url
      *
      * @return string
      */
-    public static function getUrl($path = '', $params = null, $protocol = null, $mustShowScriptName = false)
+    public static function url($path = '', $params = null, $protocol = null, $mustShowScriptName = false)
     {
         // Return $path if it appears to be an absolute URL.
         if (static::isFullUrl($path)) {
             if ($params) {
-                $path = static::getUrlWithParams($path, $params);
+                $path = static::urlWithParams($path, $params);
             }
 
             if ($protocol) {
-                $path = static::getUrlWithProtocol($path, $protocol);
+                $path = static::urlWithProtocol($path, $protocol);
             }
 
             return $path;
@@ -295,7 +295,7 @@ class Url
             }
         }
 
-        return static::getUrl(Craft::$app->getConfig()->getResourceTrigger().'/'.$uri, $params, $protocol);
+        return static::url(Craft::$app->getConfig()->getResourceTrigger().'/'.$uri, $params, $protocol);
     }
 
     /**
@@ -311,7 +311,7 @@ class Url
         $path = Craft::$app->getConfig()->get('actionTrigger').'/'.trim($path,
                 '/');
 
-        return static::getUrl($path, $params, $protocol, true);
+        return static::url($path, $params, $protocol, true);
     }
 
     /**
@@ -433,7 +433,7 @@ class Url
 
                 if ($protocol) {
                     // Make sure we're using the right protocol
-                    $baseUrl = static::getUrlWithProtocol($baseUrl, $protocol);
+                    $baseUrl = static::urlWithProtocol($baseUrl, $protocol);
                 }
 
                 // Should we be adding that script name in?
@@ -451,7 +451,7 @@ class Url
                 }
 
                 if ($protocol) {
-                    $baseUrl = static::getUrlWithProtocol($baseUrl, $protocol);
+                    $baseUrl = static::urlWithProtocol($baseUrl, $protocol);
                 }
             }
         } else {

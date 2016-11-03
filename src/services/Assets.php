@@ -244,7 +244,7 @@ class Assets extends Component
 
             if ($asset->kind == 'image' && !empty($asset->newFilePath)) {
 
-                list ($asset->width, $asset->height) = Image::getImageSize($asset->newFilePath);
+                list ($asset->width, $asset->height) = Image::imageSize($asset->newFilePath);
             }
         }
 
@@ -401,7 +401,7 @@ class Assets extends Component
         }
 
         if ($asset->kind == "image") {
-            list ($asset->width, $asset->height) = Image::getImageSize($pathOnServer);
+            list ($asset->width, $asset->height) = Image::imageSize($pathOnServer);
         } else {
             $asset->width = null;
             $asset->height = null;

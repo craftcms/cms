@@ -187,7 +187,7 @@ class MatrixBlock extends Element
             // Just send back an array of site IDs -- don't pass along enabledByDefault configs
             $siteIds = [];
 
-            foreach (ElementHelper::getSupportedSitesForElement($owner) as $siteInfo) {
+            foreach (ElementHelper::supportedSitesForElement($owner) as $siteInfo) {
                 $siteIds[] = $siteInfo['siteId'];
             }
 

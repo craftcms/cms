@@ -196,7 +196,7 @@ class SystemSettingsController extends Controller
         }
 
         // Get all the registered transport adapter types
-        $allTransportAdapterTypes = MailerHelper::getAllMailerTransportTypes();
+        $allTransportAdapterTypes = MailerHelper::allMailerTransportTypes();
 
         // Make sure the selected adapter class is in there
         if (!in_array(get_class($adapter), $allTransportAdapterTypes)) {
@@ -307,7 +307,7 @@ class SystemSettingsController extends Controller
 
             // Try to send the test email
             $message = $mailer
-                ->composeFromKey('test_email', ['settings' => Template::getRaw($settingsHtml)])
+                ->composeFromKey('test_email', ['settings' => Template::raw($settingsHtml)])
                 ->setTo(Craft::$app->getUser()->getIdentity());
 
             if ($message->send()) {
@@ -361,11 +361,11 @@ class SystemSettingsController extends Controller
         $crumbs = [
             [
                 'label' => Craft::t('app', 'Settings'),
-                'url' => Url::getUrl('settings')
+                'url' => Url::url('settings')
             ],
             [
                 'label' => Craft::t('app', 'Globals'),
-                'url' => Url::getUrl('settings/globals')
+                'url' => Url::url('settings/globals')
             ]
         ];
 

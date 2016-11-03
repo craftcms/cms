@@ -366,7 +366,7 @@ trait ApplicationTrait
     public function getEditionName()
     {
         /** @var \craft\app\web\Application|\craft\app\console\Application $this */
-        return App::getEditionName($this->getEdition());
+        return App::editionName($this->getEdition());
     }
 
     /**
@@ -397,7 +397,7 @@ trait ApplicationTrait
         $licensedEdition = $this->getLicensedEdition();
 
         if ($licensedEdition !== null) {
-            return App::getEditionName($licensedEdition);
+            return App::editionName($licensedEdition);
         }
 
         return null;
@@ -460,7 +460,7 @@ trait ApplicationTrait
             $installedEdition = $this->getEdition();
 
             if (($orBetter && $installedEdition < $edition) || (!$orBetter && $installedEdition !== $edition)) {
-                $editionName = App::getEditionName($edition);
+                $editionName = App::editionName($edition);
                 throw new BadRequestHttpException("Craft {$editionName} is required for this");
             }
         }

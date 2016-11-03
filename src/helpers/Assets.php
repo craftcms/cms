@@ -43,7 +43,7 @@ class Assets
      *
      * @return mixed
      */
-    public static function getTempFilePath($extension = 'tmp')
+    public static function tempFilePath($extension = 'tmp')
     {
         $extension = strpos($extension, '.') !== false ? pathinfo($extension, PATHINFO_EXTENSION) : $extension;
         $filename = uniqid('assets', true).'.'.$extension;
@@ -64,7 +64,7 @@ class Assets
         $baseUrl = $volume->getRootUrl();
         $folderPath = $file->getFolder()->path;
         $filename = $file->filename;
-        $appendix = static::getUrlAppendix($volume, $file);
+        $appendix = static::urlAppendix($volume, $file);
 
         return $baseUrl.$folderPath.$filename.$appendix;
     }
@@ -77,7 +77,7 @@ class Assets
      *
      * @return string
      */
-    public static function getUrlAppendix(Volume $volume, Asset $file)
+    public static function urlAppendix(Volume $volume, Asset $file)
     {
         $appendix = '';
 
@@ -185,7 +185,7 @@ class Assets
      *
      * @return array
      */
-    public static function getFileTransferList($assets, $folderIdChanges, $merge = false)
+    public static function fileTransferList($assets, $folderIdChanges, $merge = false)
     {
         $fileTransferList = [];
 
@@ -220,7 +220,7 @@ class Assets
      *
      * @return array
      */
-    public static function getPeriodList()
+    public static function periodList()
     {
         return [
             PeriodType::Seconds => Craft::t('app', 'Seconds'),

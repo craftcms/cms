@@ -56,14 +56,14 @@ class User extends \yii\web\User
     {
         // Set the configurable properties
         $configService = Craft::$app->getConfig();
-        $config['loginUrl'] = Url::getUrl($configService->getLoginPath());
+        $config['loginUrl'] = Url::url($configService->getLoginPath());
         $config['authTimeout'] = $configService->getUserSessionDuration(false);
 
         // Set the state-based property names
         $appId = Craft::$app->getConfig()->get('appId');
         $stateKeyPrefix = md5('Craft.'.get_class($this).($appId ? '.'.$appId : ''));
-        $config['identityCookie'] = Craft::getCookieConfig(['name' => $stateKeyPrefix.'_identity']);
-        $config['usernameCookie'] = Craft::getCookieConfig(['name' => $stateKeyPrefix.'_username']);
+        $config['identityCookie'] = Craft::cookieConfig(['name' => $stateKeyPrefix.'_identity']);
+        $config['usernameCookie'] = Craft::cookieConfig(['name' => $stateKeyPrefix.'_username']);
         $config['idParam'] = $stateKeyPrefix.'__id';
         $config['authTimeoutParam'] = $stateKeyPrefix.'__expire';
         $config['absoluteAuthTimeoutParam'] = $stateKeyPrefix.'__absoluteExpire';
@@ -416,7 +416,7 @@ class User extends \yii\web\User
             $data = json_decode($value, true);
 
             if (is_array($data) && isset($data[2])) {
-                $authData = UserElement::getAuthData($data[1]);
+                $authData = UserElement::authData($data[1]);
 
                 if ($authData) {
                     $tokenUid = $authData[1];
@@ -515,7 +515,7 @@ class User extends \yii\web\User
             $data = json_decode($cookieValue, true);
 
             if (is_array($data) && isset($data[2])) {
-                $authData = UserElement::getAuthData($data[1]);
+                $authData = UserElement::authData($data[1]);
 
                 if ($authData) {
                     $tokenUid = $authData[1];

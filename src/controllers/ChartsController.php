@@ -73,7 +73,7 @@ class ChartsController extends Controller
             'dataTable' => $dataTable,
             'total' => $total,
 
-            'formats' => ChartHelper::getFormats(),
+            'formats' => ChartHelper::formats(),
             'orientation' => Craft::$app->getLocale()->getOrientation(),
             'scale' => $intervalUnit,
         ]);

@@ -124,7 +124,7 @@ class ArrayHelper extends \yii\helpers\ArrayHelper
      *
      * @return string|integer|null The first key, whether that is a number (if the array is numerically indexed) or a string, or null if $arr isn’t an array, or is empty.
      */
-    public static function getFirstKey($arr)
+    public static function firstKey($arr)
     {
         if (is_array($arr)) {
             foreach ($arr as $key => $value) {
@@ -142,7 +142,7 @@ class ArrayHelper extends \yii\helpers\ArrayHelper
      *
      * @return mixed|null
      */
-    public static function getFirstValue($arr)
+    public static function firstValue($arr)
     {
         if (is_array($arr)) {
             foreach ($arr as $value) {

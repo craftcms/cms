@@ -365,7 +365,7 @@ class Extension extends \Twig_Extension implements \Twig_Extension_GlobalsInterf
     {
         $str = Craft::$app->getElements()->parseRefs($str);
 
-        return Template::getRaw($str);
+        return Template::raw($str);
     }
 
     /**
@@ -564,7 +564,7 @@ class Extension extends \Twig_Extension implements \Twig_Extension_GlobalsInterf
             $html = Markdown::process($markdown, $flavor);
         }
 
-        return Template::getRaw($html);
+        return Template::raw($html);
     }
 
     /**
@@ -587,7 +587,7 @@ class Extension extends \Twig_Extension implements \Twig_Extension_GlobalsInterf
             new \Twig_SimpleFunction('resourceUrl', '\\craft\\app\\helpers\\Url::getResourceUrl'),
             new \Twig_SimpleFunction('shuffle', [$this, 'shuffleFunction']),
             new \Twig_SimpleFunction('siteUrl', '\\craft\\app\\helpers\\Url::getSiteUrl'),
-            new \Twig_SimpleFunction('url', '\\craft\\app\\helpers\\Url::getUrl'),
+            new \Twig_SimpleFunction('url', '\\craft\\app\\helpers\\Url::url'),
             // DOM event functions
             new \Twig_SimpleFunction('head', [$this->view, 'head']),
             new \Twig_SimpleFunction('beginBody', [$this->view, 'beginBody']),
@@ -610,7 +610,7 @@ class Extension extends \Twig_Extension implements \Twig_Extension_GlobalsInterf
         $config = Craft::$app->getConfig();
 
         if ($config->get('enableCsrfProtection') === true) {
-            return Template::getRaw('<input type="hidden" name="'.$config->get('csrfTokenName').'" value="'.Craft::$app->getRequest()->getCsrfToken().'">');
+            return Template::raw('<input type="hidden" name="'.$config->get('csrfTokenName').'" value="'.Craft::$app->getRequest()->getCsrfToken().'">');
         }
 
         return null;
@@ -625,7 +625,7 @@ class Extension extends \Twig_Extension implements \Twig_Extension_GlobalsInterf
      */
     public function redirectInputFunction($url)
     {
-        return Template::getRaw('<input type="hidden" name="redirect" value="'.Craft::$app->getSecurity()->hashData($url).'">');
+        return Template::raw('<input type="hidden" name="redirect" value="'.Craft::$app->getSecurity()->hashData($url).'">');
     }
 
     /**
@@ -695,8 +695,8 @@ class Extension extends \Twig_Extension implements \Twig_Extension_GlobalsInterf
         $globals['craft'] = $craftVariable;
         $globals['blx'] = $craftVariable;
 
-        $globals['loginUrl'] = Url::getUrl(Craft::$app->getConfig()->getLoginPath());
-        $globals['logoutUrl'] = Url::getUrl(Craft::$app->getConfig()->getLogoutPath());
+        $globals['loginUrl'] = Url::url(Craft::$app->getConfig()->getLoginPath());
+        $globals['logoutUrl'] = Url::url(Craft::$app->getConfig()->getLogoutPath());
         $globals['isInstalled'] = $isInstalled;
 
         if ($isInstalled && !$request->getIsConsoleRequest() && !Craft::$app->getIsUpdating()) {
@@ -776,7 +776,7 @@ class Extension extends \Twig_Extension implements \Twig_Extension_GlobalsInterf
         ob_implicit_flush(false);
         $this->view->head();
 
-        return Template::getRaw(ob_get_clean());
+        return Template::raw(ob_get_clean());
     }
 
     /**
@@ -791,7 +791,7 @@ class Extension extends \Twig_Extension implements \Twig_Extension_GlobalsInterf
         ob_implicit_flush(false);
         $this->view->endBody();
 
-        return Template::getRaw(ob_get_clean());
+        return Template::raw(ob_get_clean());
     }
 
     /**

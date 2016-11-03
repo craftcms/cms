@@ -9,7 +9,6 @@ namespace craft\app\db\pgsql;
 
 use Craft;
 use craft\app\services\Config;
-use mikehaertl\shellcommand\Command as ShellCommand;
 use yii\db\Exception;
 
 /**
@@ -120,62 +119,37 @@ class Schema extends \yii\db\pgsql\Schema
     }
 
     /**
-     * Gets the default backup command to execute.
+     * Returns the default backup command to execute.
      *
-     * @param ShellCommand $command          The command to execute.
-     * @param string       $filePath         The path of the backup file.
-     *
-     * @return ShellCommand The command to execute.
+     * @return string|false The command to execute
      */
-    public function getDefaultBackupCommand(ShellCommand $command, $filePath)
+    public function getDefaultBackupCommand()
     {
-        $config = Craft::$app->getConfig();
-        $port = $config->getDbPort();
-        $server = $config->get('server', Config::CATEGORY_DB);
-        $user = $config->get('user', Config::CATEGORY_DB);
-        $database = $config->get('database', Config::CATEGORY_DB);
-        $schema = $config->get('schema', Config::CATEGORY_DB);
-
-        $command->setCommand('pg_dump');
-
-        $command->addArg('--dbname=', $database);
-        $command->addArg('--host=', $server);
-        $command->addArg('--port=', $port);
-        $command->addArg('--username=', $user);
-        $command->addArg('--no-password');
-        $command->addArg('--if-exists');
-        $command->addArg('--clean');
-        $command->addArg('--file=', $filePath);
-        $command->addArg('--schema=', $schema);
-
-        return $command;
+        return 'pg_dump'.
+            ' --dbname={database}'.
+            ' --host={server}'.
+            ' --port={port}'.
+            ' --username={user}'.
+            ' --no-password'.
+            ' --if-exists'.
+            ' --clean'.
+            ' --file={file}'.
+            ' --schema={schema}';
     }
 
     /**
-     * Generates the default database restore command to execute.
+     * Returns the default database restore command to execute.
      *
-     * @param ShellCommand $command  The command to execute.
-     * @param string       $filePath The file path of the database backup to restore.
-     *
-     * @return ShellCommand The command to execute.
+     * @return string The command to execute
      */
-    public function getDefaultRestoreCommand(ShellCommand $command, $filePath)
+    public function getDefaultRestoreCommand()
     {
-        $config = Craft::$app->getConfig();
-        $port = $config->getDbPort();
-        $server = $config->get('server', Config::CATEGORY_DB);
-        $user = $config->get('user', Config::CATEGORY_DB);
-        $database = $config->get('database', Config::CATEGORY_DB);
-
-        $command->setCommand('psql');
-
-        $command->addArg('--dbname=', $database);
-        $command->addArg('--host=', $server);
-        $command->addArg('--port=', $port);
-        $command->addArg('--username=', $user);
-        $command->addArg('--no-password');
-        $command->addArg('< ', $filePath);
-
-        return $command;
+        return 'psql'.
+            ' --dbname={database}'.
+            ' --host={server}'.
+            ' --port={port}'.
+            ' --username={user}'.
+            ' --no-password'.
+            ' < {file}';
     }
 }

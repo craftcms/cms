@@ -225,19 +225,19 @@ class EntriesController extends BaseEntriesController
         $variables['crumbs'] = [
             [
                 'label' => Craft::t('app', 'Entries'),
-                'url' => Url::getUrl('entries')
+                'url' => Url::url('entries')
             ]
         ];
 
         if ($section->type == Section::TYPE_SINGLE) {
             $variables['crumbs'][] = [
                 'label' => Craft::t('app', 'Singles'),
-                'url' => Url::getUrl('entries/singles')
+                'url' => Url::url('entries/singles')
             ];
         } else {
             $variables['crumbs'][] = [
                 'label' => Craft::t('site', $section->name),
-                'url' => Url::getUrl('entries/'.$section->handle)
+                'url' => Url::url('entries/'.$section->handle)
             ];
 
             if ($section->type == Section::TYPE_STRUCTURE) {
@@ -607,7 +607,7 @@ class EntriesController extends BaseEntriesController
             'entries/view-shared-entry',
             $params
         ]);
-        $url = Url::getUrlWithToken($entry->getUrl(), $token);
+        $url = Url::urlWithToken($entry->getUrl(), $token);
 
         return Craft::$app->getResponse()->redirect($url);
     }
@@ -761,7 +761,7 @@ class EntriesController extends BaseEntriesController
 
         if (!$typeId) {
             // Default to the section's first entry type
-            $typeId = ArrayHelper::getFirstKey($variables['section']->getEntryTypes('id'));
+            $typeId = ArrayHelper::firstKey($variables['section']->getEntryTypes('id'));
         }
 
         $variables['entry']->typeId = $typeId;
@@ -843,7 +843,7 @@ class EntriesController extends BaseEntriesController
 
         if (!$entry->typeId) {
             // Default to the section's first entry type
-            $entry->typeId = ArrayHelper::getFirstKey($entry->getSection()->getEntryTypes('id'));
+            $entry->typeId = ArrayHelper::firstKey($entry->getSection()->getEntryTypes('id'));
         }
 
         $fieldsLocation = Craft::$app->getRequest()->getParam('fieldsLocation', 'fields');
