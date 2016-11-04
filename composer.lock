@@ -4,8 +4,8 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#composer-lock-the-lock-file",
         "This file is @generated automatically"
     ],
-    "hash": "7a5c8c945c213a0ba5ecd75a0444a0e7",
-    "content-hash": "31533914967e1839f382920d15048fa0",
+    "hash": "cb9d27e52f9f4d3653bf72b250de8b9e",
+    "content-hash": "6565cd8473708168dfccd6dcdd5c6b93",
     "packages": [
         {
             "name": "aws/aws-sdk-php",
@@ -457,62 +457,6 @@
                 "html"
             ],
             "time": "2016-07-16 12:58:58"
-        },
-        {
-            "name": "fxp/composer-asset-plugin",
-            "version": "v1.2.0",
-            "source": {
-                "type": "git",
-                "url": "https://github.com/fxpio/composer-asset-plugin.git",
-                "reference": "8d74bc7c714aadbda54622c216b2e7bf786595cb"
-            },
-            "dist": {
-                "type": "zip",
-                "url": "https://api.github.com/repos/fxpio/composer-asset-plugin/zipball/8d74bc7c714aadbda54622c216b2e7bf786595cb",
-                "reference": "8d74bc7c714aadbda54622c216b2e7bf786595cb",
-                "shasum": ""
-            },
-            "require": {
-                "composer-plugin-api": "^1.0",
-                "php": ">=5.3.3"
-            },
-            "require-dev": {
-                "composer/composer": "^1.0.0"
-            },
-            "type": "composer-plugin",
-            "extra": {
-                "class": "Fxp\\Composer\\AssetPlugin\\FxpAssetPlugin",
-                "branch-alias": {
-                    "dev-master": "1.2-dev"
-                }
-            },
-            "autoload": {
-                "psr-4": {
-                    "Fxp\\Composer\\AssetPlugin\\": ""
-                }
-            },
-            "notification-url": "https://packagist.org/downloads/",
-            "license": [
-                "MIT"
-            ],
-            "authors": [
-                {
-                    "name": "François Pluchino",
-                    "email": "francois.pluchino@gmail.com"
-                }
-            ],
-            "description": "NPM/Bower Dependency Manager for Composer",
-            "homepage": "https://github.com/fxpio/composer-asset-plugin",
-            "keywords": [
-                "asset",
-                "bower",
-                "composer",
-                "dependency manager",
-                "nodejs",
-                "npm",
-                "package"
-            ],
-            "time": "2016-07-01 12:04:16"
         },
         {
             "name": "guzzle/guzzle",
@@ -1660,16 +1604,16 @@
         },
         {
             "name": "symfony/event-dispatcher",
-            "version": "v2.8.12",
+            "version": "v2.8.13",
             "source": {
                 "type": "git",
                 "url": "https://github.com/symfony/event-dispatcher.git",
-                "reference": "889983a79a043dfda68f38c38b6dba092dd49cd8"
+                "reference": "25c576abd4e0f212e678fe8b2bd9a9a98c7ea934"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/symfony/event-dispatcher/zipball/889983a79a043dfda68f38c38b6dba092dd49cd8",
-                "reference": "889983a79a043dfda68f38c38b6dba092dd49cd8",
+                "url": "https://api.github.com/repos/symfony/event-dispatcher/zipball/25c576abd4e0f212e678fe8b2bd9a9a98c7ea934",
+                "reference": "25c576abd4e0f212e678fe8b2bd9a9a98c7ea934",
                 "shasum": ""
             },
             "require": {
@@ -1716,7 +1660,7 @@
             ],
             "description": "Symfony EventDispatcher Component",
             "homepage": "https://symfony.com",
-            "time": "2016-07-28 16:56:28"
+            "time": "2016-10-13 01:43:15"
         },
         {
             "name": "symfony/polyfill-mbstring",
@@ -2122,16 +2066,16 @@
         },
         {
             "name": "yiisoft/yii2-httpclient",
-            "version": "2.0.1",
+            "version": "2.0.2",
             "source": {
                 "type": "git",
                 "url": "https://github.com/yiisoft/yii2-httpclient.git",
-                "reference": "05056e8f13fdee09c252686cea62f0889ecab8b7"
+                "reference": "2cc58c318da3c7c71bda1cc26bd3ec5a3ac26284"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/yiisoft/yii2-httpclient/zipball/05056e8f13fdee09c252686cea62f0889ecab8b7",
-                "reference": "05056e8f13fdee09c252686cea62f0889ecab8b7",
+                "url": "https://api.github.com/repos/yiisoft/yii2-httpclient/zipball/2cc58c318da3c7c71bda1cc26bd3ec5a3ac26284",
+                "reference": "2cc58c318da3c7c71bda1cc26bd3ec5a3ac26284",
                 "shasum": ""
             },
             "require": {
@@ -2165,7 +2109,7 @@
                 "httpclient",
                 "yii2"
             ],
-            "time": "2016-08-04 13:29:03"
+            "time": "2016-10-31 11:29:06"
         },
         {
             "name": "yiisoft/yii2-swiftmailer",
