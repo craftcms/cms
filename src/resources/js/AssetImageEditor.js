@@ -36,6 +36,7 @@ Craft.AssetImageEditor = Garnish.Modal.extend(
 		tiltedImageVerticeCoords: null,
 		lastValidCroppingCoordinates: null,
 		lastValidCroppingScales: null,
+		lastMouseCoords: null,
 		isCroppingPerformed: false,
 		cropData: {},
 
@@ -889,17 +890,73 @@ Craft.AssetImageEditor = Garnish.Modal.extend(
 
 			this._setTiltedVerticeCoordinates();
 
-			var onCropperChange = function (eventType, options) {
-				var cropper = options.target;
+			// 1) convert each edge of the tilted image to a vector, so we get four vectors in pairs of parallel
+			// 	  vectors pointing in four directions along the edges of the tilted image
+			// 2) calculate four possible new rectangle positions - each shifted by one pixel along the calculated vectors
+			// 3) rule out the vectors that still put the vector in a collision position
+			// 	  (if one vector remains, then problem solved)
+			// 4) create a new vector from, say, top left vertex of the cropping
+			//    rectangle to mouse cursor (doesn't matter from which vertex, really)
+			// 5) calculate the angle between the new vector and each of the remaining vectors from step 3.
+			// 6) rule out all angles wider than 90 degrees
+			// 7) if more than one remains, the most acute angle wins.
+			// 8) Take that one vector and shift the cropping rectangle one point in that direction.
 
-				if (eventType == "scale") {
+			// Pre-calc as much variables as possible to reduce the strain during dragging
+			var parentOffset = $('canvas.upper-canvas').offset();
+			var edgeVectors = [];
+			edgeVectors.push(this._getVector(this.tiltedImageVerticeCoords.a, this.tiltedImageVerticeCoords.b));
+			edgeVectors.push(this._getVector(this.tiltedImageVerticeCoords.b, this.tiltedImageVerticeCoords.a));
+			edgeVectors.push(this._getVector(this.tiltedImageVerticeCoords.b, this.tiltedImageVerticeCoords.c));
+			edgeVectors.push(this._getVector(this.tiltedImageVerticeCoords.c, this.tiltedImageVerticeCoords.b));
+
+			var debug = false;
+
+			// TODO refactor the crap out of this - move to it's not method for starters.
+			var onCropperChange = function (eventType, options) {
+
+				var immobilizeCropper = function () {
+					cropper.set({
+						scaleX: this.lastValidCroppingScales.x,
+						scaleY: this.lastValidCroppingScales.y});
+
+					cropper.set({
+						top: this.lastValidCroppingCoordinates.top,
+						left: this.lastValidCroppingCoordinates.left
+					});
+				}.bind(this);
+
+				var cropper = options.target;
+				var mouseX = options.e.pageX - parentOffset.left;
+				var mouseY = options.e.pageY - parentOffset.top;
+
+				if (this.lastMouseCoords) {
+					var deltaX = mouseX - this.lastMouseCoords.x;
+					var deltaY = mouseY - this.lastMouseCoords.y;
+				} else {
+					var deltaX = 0;
+					var deltaY = 0;
+				}
+
+
+				// Just full pixel moves, please
+				if (this.lastMouseCoords && deltaX == 0 && deltaY == 0) {
+					immobilizeCropper();
+					return false;
+				}
+
+				this.lastMouseCoords = {
+					x: mouseX,
+					y: mouseY
+				};
+
+				if (eventType != "scale") {
 					// Enforce non-decimal coordinates
 					cropper.set({
 						top: Math.round(cropper.top),
 						left: Math.round(cropper.left)
 					});
 				}
-
 
 				var rectWidth = Math.floor(cropper.width * cropper.scaleX);
 				var rectHeight = Math.floor(cropper.height * cropper.scaleY);
@@ -909,23 +966,108 @@ Craft.AssetImageEditor = Garnish.Modal.extend(
 				var topRight = {x: topLeft.x + rectWidth - strokeThickness*2, y: topLeft.y};
 				var bottomRight = {x: topRight.x, y: topRight.y + rectHeight - strokeThickness*2};
 				var bottomLeft = {x: topLeft.x, y: bottomRight.y};
+				var cropperVertices = [topLeft, topRight, bottomRight, bottomLeft];
 
-
-				var fitsTheImage = this.arePointsInsideRectangle([topLeft, topRight, bottomRight, bottomLeft], this.tiltedImageVerticeCoords);
-
+				var fitsTheImage = this.arePointsInsideRectangle(cropperVertices, this.tiltedImageVerticeCoords);
 				var bigEnough = rectWidth >= this.settings.minimumCropperSize.width && rectHeight >= this.settings.minimumCropperSize.height;
 
 				if (!(fitsTheImage && bigEnough)) {
-					// Enforce size
-					cropper.set({
-						scaleX: this.lastValidCroppingScales.x,
-						scaleY: this.lastValidCroppingScales.y});
 
-					// Enforce postion
-					cropper.set({
-						top: this.lastValidCroppingCoordinates.top,
-						left: this.lastValidCroppingCoordinates.left
-					});
+					immobilizeCropper();
+
+					// Collision!
+					if (eventType == "move") {
+
+						// FabricJS does not actually recalculate the cropper position internally
+						// even if we set it manually, so recalculate the vertices to last good positions
+						var topLeft = {x: cropper.left + strokeThickness, y: cropper.top + strokeThickness};
+						var topRight = {x: topLeft.x + rectWidth - strokeThickness*2, y: topLeft.y};
+						var bottomRight = {x: topRight.x, y: topRight.y + rectHeight - strokeThickness*2};
+						var bottomLeft = {x: topLeft.x, y: bottomRight.y};
+						var cropperVertices = [topLeft, topRight, bottomRight, bottomLeft];
+
+						possiblePositions = [];
+						// For each edge vector
+						for (var vectorIndex = 0; vectorIndex < 4; vectorIndex++) {
+							var vector = edgeVectors[vectorIndex];
+							if (vector.x > vector.y) {
+								pushX = 1;
+								pushY = 1 / vector.x * vector.y;
+							} else {
+								pushY = 0.1;
+								pushX = 1 / vector.y * vector.x;
+							}
+							var newVerticePositions = [];
+							// Shift the rectangle along it
+							for (var verticeIndex = 0; verticeIndex < 4; verticeIndex++) {
+								newVerticePositions.push({
+									x: cropperVertices[verticeIndex].x + pushX,
+									y: cropperVertices[verticeIndex].y + pushY
+								});
+							}
+							// The new position is good, remember the top left corner and the vector
+							if (this.arePointsInsideRectangle(newVerticePositions, this.tiltedImageVerticeCoords)) {
+								possiblePositions.push({position: newVerticePositions[0], vector: vector});
+								console.log(cropperVertices);
+								console.log(newVerticePositions);
+							}
+						}
+						console.log(possiblePositions.length);
+						if (possiblePositions.length > 0) {
+							// Not much of a choice, eh?
+							if (possiblePositions.length == 1) {
+								this.lastValidCroppingCoordinates = {
+									top: possiblePositions[0].y,
+									left: possiblePositions[0].x,
+								}
+							} else {
+								// Put the point of gravity to the side of mouse movement
+								var pointOfGravity = {
+									x: cropper.left + rectWidth / 2 + (rectWidth * deltaX),
+									y: cropper.top + rectHeight / 2 + (rectHeight * deltaY)
+								};
+
+								//this.cropper.remove(debug);
+								if (debug) {
+									debug.set({left: pointOfGravity.x, top: pointOfGravity.y});
+								} else {
+									debug = new fabric.Circle({radius: 5, fill: '#0f0', left: pointOfGravity.x, top: pointOfGravity.y});
+									this.canvas.add(debug);
+								}
+
+								this.canvas.renderAll();
+
+								var directVector = this._getVector({x: cropper.left + rectWidth / 2, y: cropper.top + rectHeight / 2}, pointOfGravity);
+								var directMagnitude = this._getMagnitude(directVector);
+								var smallestAngle = 999;
+								var pushHere = null;
+								//console.log(directVector);
+//console.log(possiblePositions);
+
+								for (var positionIndex = 0; positionIndex <  possiblePositions.length; positionIndex++) {
+									var movementVector = possiblePositions[positionIndex].vector;
+									var movementMagnitude = this._getMagnitude(movementVector);
+									var angleBetween = Math.acos(this._getScalarProduct(directVector, movementVector) / (directMagnitude * movementMagnitude));
+									//console.log(angleBetween);
+									if (angleBetween == smallestAngle) {
+										debugger;
+									}
+									if (angleBetween < smallestAngle) {
+										smallestAngle = angleBetween;
+										pushHere = possiblePositions[positionIndex].position;
+									}
+								}
+							}
+//console.log(cropper.left, cropper.top, pushHere.x, pushHere.y);
+							if (pushHere) {
+								cropper.set({
+									top: pushHere.y,
+									left: pushHere.x
+								});
+							}
+
+						}
+					}
 				}
 
 				this.lastValidCroppingScales = {x: cropper.scaleX, y: cropper.scaleY};
@@ -992,21 +1134,11 @@ Craft.AssetImageEditor = Garnish.Modal.extend(
 		 */
 		arePointsInsideRectangle: function (points, rectangle) {
 
-			// Return the vector between two points.
-			var getVector = function (a, b) {
-				return {x: b.x - a.x, y: b.y - a.y};
-			};
-
-			// Return the dot product for two vectors
-			var scalarProduct = function (a, b) {
-				return a.x * b.x + a.y * b.y;
-			};
-
 			// Pre-calculate the vectors and scalar products for two rectangle edges
-			var ab = getVector(rectangle.a, rectangle.b);
-			var bc = getVector(rectangle.b, rectangle.c);
-			var scalarAbAb = scalarProduct(ab, ab);
-			var scalarBcBc = scalarProduct(bc, bc);
+			var ab = this._getVector(rectangle.a, rectangle.b);
+			var bc = this._getVector(rectangle.b, rectangle.c);
+			var scalarAbAb = this._getScalarProduct(ab, ab);
+			var scalarBcBc = this._getScalarProduct(bc, bc);
 
 			for (var i = 0; i < points.length; i++) {
 				var point = points[i];
@@ -1014,12 +1146,12 @@ Craft.AssetImageEditor = Garnish.Modal.extend(
 
 				// Calculate the vectors for two rectangle sides and for
 				// the vector from vertices a and b to the point P
-				var ap = getVector(rectangle.a, point);
-				var bp = getVector(rectangle.b, point);
+				var ap = this._getVector(rectangle.a, point);
+				var bp = this._getVector(rectangle.b, point);
 
 				// Calculate scalar or dot products for some vector combinations
-				var scalarAbAp = scalarProduct(ab, ap);
-				var scalarBcBp = scalarProduct(bc, bp);
+				var scalarAbAp = this._getScalarProduct(ab, ap);
+				var scalarBcBp = this._getScalarProduct(bc, bp);
 
 				var projectsOnAB = 0 <= scalarAbAp && scalarAbAp <= scalarAbAb;
 				var projectsOnBC = 0 <= scalarBcBp && scalarBcBp <= scalarBcBc;
@@ -1040,6 +1172,41 @@ Craft.AssetImageEditor = Garnish.Modal.extend(
 				top: 0
 			});
 			this.canvas.renderAll();
+		},
+
+		/**
+		 * Returns an object representing the vector between points a and b.
+		 *
+		 * @param {{x: number, y: number}} a
+		 * @param {{x: number, y: number}} b
+		 *
+		 * @return {{x: number, y: number}}
+		 */
+		_getVector: function (a, b) {
+			return {x: b.x - a.x, y: b.y - a.y};
+		},
+
+		/**
+		 * Returns the scalar product of two vectors
+		 *
+		 * @param {{x: number, y: number}} a
+		 * @param {{x: number, y: number}} b
+		 *
+		 * @return {number}
+		 */
+		_getScalarProduct: function (a, b) {
+			return a.x * b.x + a.y * b.y;
+		},
+
+		/**
+		 * Returns the magnituted of a vector.
+		 *
+		 * @param {{x: number, y: number}} vector
+		 *
+		 * @return {number}
+		 */
+		_getMagnitude: function (vector) {
+			return Math.sqrt(vector.x * vector.x + vector.y * vector.y);
 		}
 	},
 	{
