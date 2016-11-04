@@ -46,7 +46,9 @@ Craft.AssetIndex = Craft.BaseElementIndex.extend(
 		{
 			if (this._folderDrag && this._getSourceLevel($source) > 1)
 			{
-				this._folderDrag.addItems($source.parent());
+				if (this._getFolderIdFromSourceKey($source.data('key'))) {
+					this._folderDrag.addItems($source.parent());
+				}
 			}
 
 			if (this._fileDrag)
@@ -122,6 +124,9 @@ Craft.AssetIndex = Craft.BaseElementIndex.extend(
 
 				for (var i = 0; i < this.$sources.length; i++)
 				{
+					if (!this._getFolderIdFromSourceKey(this.$sources.eq(i).data('key'))) {
+						continue;
+					}
 					targets.push($(this.$sources[i]));
 				}
 
@@ -149,7 +154,11 @@ Craft.AssetIndex = Craft.BaseElementIndex.extend(
 
 				for (var i = 0; i < $selected.length; i++)
 				{
-					var $source = $($selected[i]).parent();
+
+					if (!this._getFolderIdFromSourceKey($selected.data('key'))) {
+						continue;
+					}
+					var $source = $selected.eq(i).parent();
 
 					if ($source.hasClass('sel') && this._getSourceLevel($source) > 1)
 					{
@@ -193,7 +202,12 @@ Craft.AssetIndex = Craft.BaseElementIndex.extend(
 
 				for (var i = 0; i < this.$sources.length; i++)
 				{
-					var $source = $(this.$sources[i]);
+					var $source = this.$sources.eq(i);
+
+					if (!this._getFolderIdFromSourceKey($source.data('key'))) {
+						continue;
+					}
+
 					if (!Craft.inArray($source.data('key'), draggedSourceIds))
 					{
 						targets.push($source);
@@ -845,7 +859,12 @@ Craft.AssetIndex = Craft.BaseElementIndex.extend(
 
 	_getFolderIdFromSourceKey: function(sourceKey)
 	{
-		return sourceKey.split(':')[1];
+		var parts = sourceKey.split(':');
+		if (parts.length > 1 && parts[0] == 'folder') {
+			return parts[1];
+		}
+
+		return null;
 	},
 
 	startSearching: function()
@@ -1259,6 +1278,10 @@ Craft.AssetIndex = Craft.BaseElementIndex.extend(
 
 	_createFolderContextMenu: function($source)
 	{
+		if (!this._getFolderIdFromSourceKey($source.data('key'))) {
+			return;
+		}
+
 		var menuOptions = [{ label: Craft.t('New subfolder'), onClick: $.proxy(this, '_createSubfolder', $source) }];
 
 		// For all folders that are not top folders
