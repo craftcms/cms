@@ -71,7 +71,9 @@ Craft.AssetIndex = Craft.BaseElementIndex.extend(
 		{
 			if (this._folderDrag && this._getSourceLevel($source) > 1)
 			{
-				this._folderDrag.addItems($source.parent());
+				if (this._getFolderIdFromSourceKey($source.data('key'))) {
+					this._folderDrag.addItems($source.parent());
+				}
 			}
 
 			if (this._assetDrag)
@@ -180,13 +182,13 @@ Craft.AssetIndex = Craft.BaseElementIndex.extend(
 				var $selected = this.sourceSelect.getSelectedItems(),
 					draggees = [];
 
-				for (var i = 0; i < $selected.length; i++)
-				{
-					var $source = $($selected[i]).parent();
+				for (var i = 0; i < $selected.length; i++) {
+					if (this._getFolderIdFromSourceKey($selected.data('key'))) {
+						var $source = $selected.eq(i).parent();
 
-					if ($source.hasClass('sel') && this._getSourceLevel($source) > 1)
-					{
-						draggees.push($source[0]);
+						if ($source.hasClass('sel') && this._getSourceLevel($source) > 1) {
+							draggees.push($source[0]);
+						}
 					}
 				}
 
@@ -1265,16 +1267,19 @@ Craft.AssetIndex = Craft.BaseElementIndex.extend(
 
 	_createFolderContextMenu: function($source)
 	{
-		var menuOptions = [{ label: Craft.t('app', 'New subfolder'), onClick: $.proxy(this, '_createSubfolder', $source) }];
+		// Make sure it's a volume folder
+		if (this._getFolderIdFromSourceKey($source.data('key'))) {
+			var menuOptions = [{ label: Craft.t('app', 'New subfolder'), onClick: $.proxy(this, '_createSubfolder', $source) }];
 
-		// For all folders that are not top folders
-		if (this.settings.context == 'index' && this._getSourceLevel($source) > 1)
-		{
-			menuOptions.push({ label: Craft.t('app', 'Rename folder'), onClick: $.proxy(this, '_renameFolder', $source) });
-			menuOptions.push({ label: Craft.t('app', 'Delete folder'), onClick: $.proxy(this, '_deleteFolder', $source) });
+			// For all folders that are not top folders
+			if (this.settings.context == 'index' && this._getSourceLevel($source) > 1)
+			{
+				menuOptions.push({ label: Craft.t('app', 'Rename folder'), onClick: $.proxy(this, '_renameFolder', $source) });
+				menuOptions.push({ label: Craft.t('app', 'Delete folder'), onClick: $.proxy(this, '_deleteFolder', $source) });
+			}
+
+			new Garnish.ContextMenu($source, menuOptions, {menuClass: 'menu'});
 		}
-
-		new Garnish.ContextMenu($source, menuOptions, {menuClass: 'menu'});
 	},
 
 	_createSubfolder: function($parentFolder)
