@@ -14,9 +14,9 @@ use craft\app\helpers\Io;
 // Setup
 // -----------------------------------------------------------------------------
 
-// Determine what type of application we're loading
+// Validate the app type
 if (!isset($appType) || ($appType !== 'web' && $appType !== 'console')) {
-    $appType = 'web';
+    throw new Exception('$appType must be set to "web" or "console".');
 }
 
 $getArg = function ($param, $unset = true) {
@@ -80,11 +80,14 @@ $ensureFolderIsReadable = function ($path, $writableToo = false) {
 // Determine the paths
 // -----------------------------------------------------------------------------
 
-// App folder, we are already in you.
-$appPath = __DIR__;
+// Set the vendor path. By default assume that Craft is located as a Composer dependency.
+$vendorPath = realpath(defined('CRAFT_VENDOR_PATH') ? CRAFT_VENDOR_PATH : $getArg('vendorPath') ?: dirname(dirname(dirname(__DIR__))));
 
-// By default the craft/ folder will be one level up
-$craftPath = realpath(defined('CRAFT_BASE_PATH') ? CRAFT_BASE_PATH : $getArg('basePath') ?: dirname($appPath));
+// Set the app path
+$appPath = dirname(__DIR__).'/cms';
+
+// Set the craft/ folder path. By default assume that it is alongside the vendor/ folder.
+$craftPath = realpath(defined('CRAFT_BASE_PATH') ? CRAFT_BASE_PATH : ($getArg('basePath') ?: dirname($vendorPath).'/craft'));
 
 // By default the remaining folders will be in craft/
 $configPath = realpath(defined('CRAFT_CONFIG_PATH') ? CRAFT_CONFIG_PATH : $getArg('configPath') ?: $craftPath.'/config');
@@ -191,8 +194,7 @@ defined('CURLOPT_TIMEOUT_MS') || define('CURLOPT_TIMEOUT_MS', 155);
 defined('CURLOPT_CONNECTTIMEOUT_MS') || define('CURLOPT_CONNECTTIMEOUT_MS', 156);
 
 // Load the files
-require $appPath.'/vendor/autoload.php';
-require $appPath.'/vendor/yiisoft/yii2/Yii.php';
+require $vendorPath.'/yiisoft/yii2/Yii.php';
 require $appPath.'/Craft.php';
 
 // Set aliases
@@ -210,6 +212,8 @@ $config = ArrayHelper::merge(
     require $appPath.'/config/common.php',
     require $appPath.'/config/'.$appType.'.php'
 );
+
+$config['vendorPath'] = $vendorPath;
 
 // Set the current site
 if (defined('CRAFT_SITE') || defined('CRAFT_LOCALE')) {
