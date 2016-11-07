@@ -17,6 +17,34 @@ if (isset($appPath[0]) && isset($appPath[1]))
 
 defined('CRAFT_APP_PATH') || define('CRAFT_APP_PATH', $appPath.'/');
 
+if (!defined('CRAFT_VENDOR_PATH'))
+{
+    // Packager will put it in app/
+    if (is_dir(CRAFT_APP_PATH.'vendor'))
+    {
+        define('CRAFT_VENDOR_PATH', CRAFT_APP_PATH.'vendor/');
+    }
+    else
+    {
+        // Running from source, so vendor/ sits alongside cms/
+        define('CRAFT_VENDOR_PATH', dirname(CRAFT_APP_PATH).'/vendor/');
+    }
+}
+
+if (!defined('CRAFT_FRAMEWORK_PATH'))
+{
+    // Packager will put it in app/
+    if (is_dir(CRAFT_APP_PATH.'framework'))
+    {
+        define('CRAFT_FRAMEWORK_PATH', CRAFT_APP_PATH.'framework/');
+    }
+    else
+    {
+        // Running from source, so it's still in the vendor folder
+        define('CRAFT_FRAMEWORK_PATH', CRAFT_VENDOR_PATH.'yiisoft/yii/framework/');
+    }
+}
+
 // The app/ folder goes inside craft/ by default, so work backwards from app/
 defined('CRAFT_BASE_PATH') || define('CRAFT_BASE_PATH', realpath(CRAFT_APP_PATH.'..').'/');
 
@@ -158,7 +186,7 @@ else
 // Load Yii, if it's not already
 if (!class_exists('Yii', false))
 {
-	require CRAFT_APP_PATH.'framework/yii.php';
+	require CRAFT_FRAMEWORK_PATH.'yii.php';
 }
 
 // Guzzle makes use of these PHP constants, but they aren't actually defined in some compilations of PHP
@@ -167,7 +195,7 @@ defined('CURLOPT_TIMEOUT_MS')        || define('CURLOPT_TIMEOUT_MS',        155)
 defined('CURLOPT_CONNECTTIMEOUT_MS') || define('CURLOPT_CONNECTTIMEOUT_MS', 156);
 
 // Load up Composer's files
-require CRAFT_APP_PATH.'vendor/autoload.php';
+require CRAFT_VENDOR_PATH.'autoload.php';
 
 // Disable the PHP include path
 Yii::$enableIncludePath = false;

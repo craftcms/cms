@@ -101,7 +101,7 @@ class LocalizationHelper
 		}
 
 		// No luck in cache, check the file system.
-		$frameworkMessagePath = IOHelper::normalizePathSeparators(Craft::getPathOfAlias('app.framework.messages'));
+		$frameworkMessagePath = IOHelper::normalizePathSeparators(craft()->path->getFrameworkPath().'messages');
 
 		foreach ($translationFiles as $translationFile)
 		{

@@ -36,7 +36,7 @@ class LocalizationService extends BaseApplicationComponent
 
 	/**
 	 * Returns an array of all known locales. The list of known locales is based on whatever files exist in
-	 * craft/app/framework/i18n/data/.
+	 * framework/i18n/data/.
 	 *
 	 * @return array An array of LocaleModel objects.
 	 */

@@ -22,6 +22,34 @@ if (isset($_SERVER['argv']))
 defined('CRAFT_BASE_PATH')         || define('CRAFT_BASE_PATH', str_replace('\\', '/', realpath(dirname(__FILE__).'/../../../')).'/');
 defined('CRAFT_APP_PATH')          || define('CRAFT_APP_PATH',          CRAFT_BASE_PATH.'app/');
 
+if (!defined('CRAFT_VENDOR_PATH'))
+{
+    // Packager will put it in app/
+    if (is_dir(CRAFT_APP_PATH.'vendor'))
+    {
+        define('CRAFT_VENDOR_PATH', CRAFT_APP_PATH.'vendor/');
+    }
+    else
+    {
+        // Running from source, so vendor/ sits alongside cms/
+        define('CRAFT_VENDOR_PATH', dirname(CRAFT_APP_PATH).'/vendor/');
+    }
+}
+
+if (!defined('CRAFT_FRAMEWORK_PATH'))
+{
+    // Packager will put it in app/
+    if (is_dir(CRAFT_APP_PATH.'framework'))
+    {
+        define('CRAFT_FRAMEWORK_PATH', CRAFT_APP_PATH.'framework/');
+    }
+    else
+    {
+        // Running from source, so it's still in the vendor folder
+        define('CRAFT_FRAMEWORK_PATH', CRAFT_VENDOR_PATH.'yiisoft/yii/framework/');
+    }
+}
+
 if ($frontConfigPath)
 {
 	defined('CRAFT_CONFIG_PATH')   || define('CRAFT_CONFIG_PATH',       $frontConfigPath);
@@ -62,7 +90,7 @@ defined('CURLOPT_TIMEOUT_MS')        || define('CURLOPT_TIMEOUT_MS',        155)
 defined('CURLOPT_CONNECTTIMEOUT_MS') || define('CURLOPT_CONNECTTIMEOUT_MS', 156);
 
 // Load up Composer's files
-require CRAFT_APP_PATH.'vendor/autoload.php';
+require CRAFT_VENDOR_PATH.'autoload.php';
 
 // Disable the PHP include path
 Yii::$enableIncludePath = false;

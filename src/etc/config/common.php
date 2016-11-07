@@ -1,17 +1,10 @@
 <?php
 
+$componentAliases = require(dirname(__FILE__).'/component_aliases.php');
+
 $configArray = array(
 
-	// autoloading model and component classes
-	'import' => array(
-		'application.framework.cli.commands.*',
-		'application.framework.console.*',
-		'application.framework.logging.CLogger',
-	),
-
-	'componentAliases' => array(
-/* COMPONENT ALIASES */
-	),
+	'componentAliases' => $componentAliases,
 
 	'components' => array(
 
