@@ -40,23 +40,16 @@ class SingleSectionUriValidator extends Validator
 
         // Make sure no other elements are using this URI already
         $query = (new Query())
-            ->from('{{%elements_i18n}} elements_i18n')
-            ->where(
-                [
-                    'and',
-                    'elements_i18n.siteId = :siteId',
-                    'elements_i18n.uri = :uri'
-                ],
-                [
-                    ':siteId' => $model->siteId,
-                    ':uri' => $model->uriFormat
-                ]
-            );
+            ->from(['{{%elements_i18n}} elements_i18n'])
+            ->where([
+                'elements_i18n.siteId' => $model->siteId,
+                'elements_i18n.uri' => $model->uriFormat
+            ]);
 
         if ($section->id) {
             $query
-                ->innerJoin('{{%entries}} entries', 'entries.id = elements_i18n.elementId')
-                ->andWhere('entries.sectionId != :sectionId', [':sectionId' => $section->id]);
+                ->innerJoin('{{%entries}} entries', '[[entries.id]] = [[elements_i18n.elementId]]')
+                ->andWhere(['not', ['entries.sectionId' => $section->id]]);
         }
 
         if ($query->exists()) {

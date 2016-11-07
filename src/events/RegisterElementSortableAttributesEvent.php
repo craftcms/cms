@@ -7,21 +7,19 @@
 
 namespace craft\app\events;
 
-use craft\app\elements\Entry;
-
 /**
- * Entry delete event class.
+ * RegisterElementSortableAttributesEvent class.
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since  3.0
  */
-class EntryDeleteEvent extends Event
+class RegisterElementSortableAttributesEvent extends Event
 {
     // Properties
     // =========================================================================
 
     /**
-     * @var Entry The entry model associated with the event.
+     * @var array List of registered sortable attributes for the element type.
      */
-    public $entry;
+    public $sortableAttributes = [];
 }

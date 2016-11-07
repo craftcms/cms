@@ -84,7 +84,7 @@ class Content extends Component
         $this->fieldContext = $element->getFieldContext();
 
         $row = (new Query())
-            ->from($this->contentTable)
+            ->from([$this->contentTable])
             ->where([
                 'elementId' => $element->id,
                 'siteId' => $element->siteId
@@ -140,24 +140,17 @@ class Content extends Component
     /**
      * Saves an element's content.
      *
-     * @param ElementInterface $element       The element whose content we're saving.
-     * @param boolean          $runValidation Whether the element's content should be validated first.
+     * @param ElementInterface $element The element whose content we're saving.
      *
      * @return boolean Whether the content was saved successfully. If it wasn't, any validation errors will be saved on the
      *                 element and its content model.
      * @throws Exception if $element has not been saved yet
      */
-    public function saveContent(ElementInterface $element, $runValidation = true)
+    public function saveContent(ElementInterface $element)
     {
         /** @var Element $element */
         if (!$element->id) {
             throw new Exception('Cannot save the content of an unsaved element.');
-        }
-
-        if ($runValidation && $this->validateContent($element)) {
-             Craft::info('Content not saved due to validation error.', __METHOD__);
-
-             return false;
         }
 
         $originalContentTable = $this->contentTable;
@@ -187,7 +180,7 @@ class Content extends Component
                 /** @var Field $field */
                 if ($field::hasContentColumn()) {
                     $column = $this->fieldColumnPrefix.$field->handle;
-                    $values[$column] = $field->prepareValueForDb($element->getFieldValue($field->handle), $element);
+                    $values[$column] = $field->serializeValue($element->getFieldValue($field->handle), $element);
                 }
             }
         }
@@ -203,7 +196,7 @@ class Content extends Component
             Craft::$app->getDb()->createCommand()
                 ->insert($this->contentTable, $values)
                 ->execute();
-            $element->contentId = Craft::$app->getDb()->getLastInsertID();
+            $element->contentId = Craft::$app->getDb()->getLastInsertID($this->contentTable);
         }
 
         if ($fieldLayout) {
@@ -220,50 +213,6 @@ class Content extends Component
         $this->fieldContext = $originalFieldContext;
 
         return true;
-    }
-
-    /**
-     * Validates some content with a given field layout.
-     *
-     * @param ElementInterface $element The element whose content should be validated.
-     *
-     * @return boolean Whether the element's content validates.
-     */
-    public function validateContent(ElementInterface $element)
-    {
-        /** @var Element $element */
-        $validates = true;
-        $fieldLayout = $element->getFieldLayout();
-
-        if ($fieldLayout) {
-            foreach ($fieldLayout->getFields() as $field) {
-                /** @var Field $field */
-                $value = $element->getFieldValue($field->handle);
-                $errors = $field->validateValue($value, $element);
-
-                if (!empty($errors) && $errors !== true) {
-                    if (!is_array($errors)) {
-                        $errors = [$errors];
-                    }
-
-                    // Parse any {attribute} and {value} tokens in the error message(s)
-                    $i18n = Craft::$app->getI18n();
-                    $params = [
-                        'attribute' => Craft::t('site', $field->name),
-                        'value' => is_array($value) ? 'array()' : (is_object($value) ? get_class($value) : $value),
-                    ];
-
-                    foreach ($errors as $error) {
-                        $error = $i18n->format($error, $params, Craft::$app->language);
-                        $element->addError('field__'.$field->handle, $error);
-                    }
-
-                    $validates = false;
-                }
-            }
-        }
-
-        return $validates;
     }
 
     // Private Methods

@@ -65,7 +65,7 @@ class BaseEntryRevisionModel extends Entry
         }
 
         // Set the values and prep them
-        $this->setFieldValuesFromPost($contentByFieldHandles);
+        $this->setFieldValues($contentByFieldHandles);
     }
 
     /**

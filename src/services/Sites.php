@@ -402,12 +402,14 @@ class Sites extends Component
         } else {
             $siteRecord = new SiteRecord();
             $isNewSite = true;
+            $maxSortOrder = false;
 
-            // Get the next biggest sort order
-            $maxSortOrder = (new Query())
-                ->select('max(sortOrder)')
-                ->from('{{%sites}}')
-                ->scalar();
+            if (Craft::$app->getIsInstalled()) {
+                // Get the next biggest sort order
+                $maxSortOrder = (new Query())
+                    ->from(['{{%sites}}'])
+                    ->max('[[sortOrder]]');
+            }
 
             $siteRecord->sortOrder = $maxSortOrder ? $maxSortOrder + 1 : 1;
         }
@@ -452,7 +454,7 @@ class Sites extends Component
             // Create site settings for each of the category groups
             $allSiteSettings = (new Query())
                 ->select(['groupId', 'uriFormat'])
-                ->from('{{%categorygroups_i18n}}')
+                ->from(['{{%categorygroups_i18n}}'])
                 ->where(['siteId' => $this->getPrimarySite()->id])
                 ->all();
 
@@ -589,8 +591,8 @@ class Sites extends Component
         // TODO: Move this code into entries module, etc.
         // Get the section IDs that are enabled for this site
         $sectionIds = (new Query())
-            ->select('sectionId')
-            ->from('{{%sections_i18n}}')
+            ->select(['sectionId'])
+            ->from(['{{%sections_i18n}}'])
             ->where(['siteId' => $site->id])
             ->column();
 
@@ -613,14 +615,14 @@ class Sites extends Component
                     ->update(
                         '{{%sections_i18n}}',
                         ['siteId' => $transferContentTo],
-                        ['in', 'sectionId', $soloSectionIds])
+                        ['sectionId' => $soloSectionIds])
                     ->execute();
 
                 // Get all of the entry IDs in those sections
                 $entryIds = (new Query())
-                    ->select('id')
-                    ->from('{{%entries}}')
-                    ->where(['in', 'sectionId', $soloSectionIds])
+                    ->select(['id'])
+                    ->from(['{{%entries}}'])
+                    ->where(['sectionId' => $soloSectionIds])
                     ->column();
 
                 if ($entryIds) {
@@ -632,28 +634,28 @@ class Sites extends Component
                         ->update(
                             '{{%content}}',
                             ['siteId' => $transferContentTo],
-                            ['in', 'elementId', $entryIds])
+                            ['elementId' => $entryIds])
                         ->execute();
 
                     Craft::$app->getDb()->createCommand()
                         ->update(
                             '{{%elements_i18n}}',
                             ['siteId' => $transferContentTo],
-                            ['in', 'elementId', $entryIds])
+                            ['elementId' => $entryIds])
                         ->execute();
 
                     Craft::$app->getDb()->createCommand()
                         ->update(
                             '{{%entrydrafts}}',
                             ['siteId' => $transferContentTo],
-                            ['in', 'entryId', $entryIds])
+                            ['entryId' => $entryIds])
                         ->execute();
 
                     Craft::$app->getDb()->createCommand()
                         ->update(
                             '{{%entryversions}}',
                             ['siteId' => $transferContentTo],
-                            ['in', 'entryId', $entryIds])
+                            ['entryId' => $entryIds])
                         ->execute();
 
                     Craft::$app->getDb()->createCommand()
@@ -662,16 +664,16 @@ class Sites extends Component
                             ['sourceSiteId' => $transferContentTo],
                             [
                                 'and',
-                                ['in', 'sourceId', $entryIds],
-                                'sourceSiteId is not null'
+                                ['sourceId' => $entryIds],
+                                ['not', ['sourceSiteId' => null]]
                             ])
                         ->execute();
 
                     // All the Matrix tables
                     $blockIds = (new Query())
-                        ->select('id')
-                        ->from('{{%matrixblocks}}')
-                        ->where(['in', 'ownerId', $entryIds])
+                        ->select(['id'])
+                        ->from(['{{%matrixblocks}}'])
+                        ->where(['ownerId' => $entryIds])
                         ->column();
 
                     if ($blockIds) {
@@ -681,8 +683,8 @@ class Sites extends Component
                                 ['ownerSiteId' => $transferContentTo],
                                 [
                                     'and',
-                                    ['in', 'id', $blockIds],
-                                    'ownerSiteId is not null'
+                                    ['id' => $blockIds],
+                                    ['not', ['ownerSiteId' => null]]
                                 ])
                             ->execute();
 
@@ -690,11 +692,9 @@ class Sites extends Component
                             ->delete(
                                 '{{%elements_i18n}}',
                                 [
-                                    'and',
-                                    ['in', 'elementId', $blockIds],
-                                    'siteId = :transferContentTo'
-                                ],
-                                [':transferContentTo' => $transferContentTo])
+                                    'elementId' => $blockIds,
+                                    'siteId' => $transferContentTo
+                                ])
                             ->execute();
 
                         Craft::$app->getDb()->createCommand()
@@ -702,11 +702,9 @@ class Sites extends Component
                                 '{{%elements_i18n}}',
                                 ['siteId' => $transferContentTo],
                                 [
-                                    'and',
-                                    ['in', 'elementId', $blockIds],
-                                    'siteId = :siteId'
-                                ],
-                                [':siteId' => $site->id])
+                                    'elementId' => $blockIds,
+                                    'siteId' => $site->id
+                                ])
                             ->execute();
 
                         $matrixTablePrefix = Craft::$app->getDb()->getSchema()->getRawTableName('{{%matrixcontent_}}');
@@ -721,11 +719,9 @@ class Sites extends Component
                                     ->delete(
                                         $tableName,
                                         [
-                                            'and',
-                                            ['in', 'elementId', $blockIds],
-                                            'siteId = :transferContentTo'
-                                        ],
-                                        [':transferContentTo' => $transferContentTo])
+                                            'elementId' => $blockIds,
+                                            'siteId' => $transferContentTo
+                                        ])
                                     ->execute();
 
                                 Craft::$app->getDb()->createCommand()
@@ -733,11 +729,9 @@ class Sites extends Component
                                         $tableName,
                                         ['siteId' => $transferContentTo],
                                         [
-                                            'and',
-                                            ['in', 'elementId', $blockIds],
-                                            'siteId = :siteId'
-                                        ],
-                                        [':siteId' => $site->id])
+                                            'elementId' => $blockIds,
+                                            'siteId' => $site->id
+                                        ])
                                     ->execute();
                             }
                         }
@@ -748,8 +742,8 @@ class Sites extends Component
                                 ['sourceSiteId' => $transferContentTo],
                                 [
                                     'and',
-                                    ['in', 'sourceId', $blockIds],
-                                    'sourceSiteId is not null'
+                                    ['sourceId' => $blockIds],
+                                    ['not', ['sourceSiteId' => null]]
                                 ])
                             ->execute();
                     }
@@ -836,9 +830,8 @@ class Sites extends Component
                     $this->_fetchedAllSites = true;
                 }
             } catch (\yii\db\Exception $e) {
-                // TODO: Maybe MySQL specific?
-                // If the error code is 42S02, the sites table probably doesn't exist yet
-                if (isset($e->errorInfo[0]) && $e->errorInfo[0] == '42S02') {
+                // If the error code is 42S02 (MySQL) or 42P01 (PostgreSQL), the sites table probably doesn't exist yet
+                if (isset($e->errorInfo[0]) && ($e->errorInfo[0] == '42S02' || $e->errorInfo[0] == '42P01')) {
                     return;
                 }
 
@@ -862,21 +855,21 @@ class Sites extends Component
     private function _createSiteQuery()
     {
         return (new Query())
-            ->select('id, name, handle, language, hasUrls, baseUrl')
-            ->from('{{%sites}}')
-            ->orderBy('sortOrder');
+            ->select(['id', 'name', 'handle', 'language', 'hasUrls', 'baseUrl'])
+            ->from(['{{%sites}}'])
+            ->orderBy(['sortOrder' => SORT_ASC]);
     }
 
     /**
      * Handles things that happen when there's a new primary site
      *
      * @param integer $oldPrimarySiteId
-     * @param integer $newPrimaryStieId
+     * @param integer $newPrimarySiteId
      */
-    private function _processNewPrimarySite($oldPrimarySiteId, $newPrimaryStieId)
+    private function _processNewPrimarySite($oldPrimarySiteId, $newPrimarySiteId)
     {
         // Set the new primary site
-        $this->_primarySite = $this->getSiteById($newPrimaryStieId);
+        $this->_primarySite = $this->getSiteById($newPrimarySiteId);
 
         Craft::$app->getConfig()->maxPowerCaptain();
 
@@ -886,45 +879,44 @@ class Sites extends Component
         foreach (Craft::$app->getElements()->getAllElementTypes() as $elementType) {
             /** Element $elementType */
             if (!$elementType::isLocalized()) {
-                $nonLocalizedElementTypes[] = $elementType::className();
+                $nonLocalizedElementTypes[] = $elementType;
             }
         }
 
         if ($nonLocalizedElementTypes) {
             $elementIds = (new Query())
-                ->select('id')
-                ->from('{{%elements}}')
-                ->where(['in', 'type', $nonLocalizedElementTypes])
+                ->select(['id'])
+                ->from(['{{%elements}}'])
+                ->where(['type' => $nonLocalizedElementTypes])
                 ->column();
 
             if ($elementIds) {
-                // To be sure we don't hit any unique constraint MySQL errors, first make sure there are no rows for
+                // To be sure we don't hit any unique constraint database errors, first make sure there are no rows for
                 // these elements that don't currently use the old primary site ID
-                $deleteConditions = [
+                $deleteCondition = [
                     'and',
-                    ['in', 'elementId', $elementIds],
-                    'siteId != :siteId'
+                    ['elementId' => $elementIds],
+                    ['not', ['siteId' => $oldPrimarySiteId]]
                 ];
-                $deleteParams = [':siteId' => $oldPrimarySiteId];
 
                 $db = Craft::$app->getDb();
 
                 $db->createCommand()
-                    ->delete('{{%elements_i18n}}', $deleteConditions, $deleteParams)
+                    ->delete('{{%elements_i18n}}', $deleteCondition)
                     ->execute();
                 $db->createCommand()
-                    ->delete('{{%content}}', $deleteConditions, $deleteParams)
+                    ->delete('{{%content}}', $deleteCondition)
                     ->execute();
 
                 // Now swap the sites
-                $updateColumns = ['siteId' => $newPrimaryStieId];
-                $updateConditions = ['in', 'elementId', $elementIds];
+                $updateColumns = ['siteId' => $newPrimarySiteId];
+                $updateCondition = ['elementId' => $elementIds];
 
                 $db->createCommand()
-                    ->update('{{%elements_i18n}}', $updateColumns, $updateConditions)
+                    ->update('{{%elements_i18n}}', $updateColumns, $updateCondition)
                     ->execute();
                 $db->createCommand()
-                    ->update('{{%content}}', $updateColumns, $updateConditions)
+                    ->update('{{%content}}', $updateColumns, $updateCondition)
                     ->execute();
             }
         }

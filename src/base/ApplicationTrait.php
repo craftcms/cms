@@ -283,8 +283,7 @@ trait ApplicationTrait
                 return false;
             }
 
-            $this->_isInstalled = (bool)($this->getRequest()->getIsConsoleRequest() || $this->getDb()->tableExists('{{%info}}',
-                    false));
+            $this->_isInstalled = (bool)($this->getRequest()->getIsConsoleRequest() || $this->getDb()->tableExists('{{%info}}', false));
         }
 
         return $this->_isInstalled;
@@ -368,7 +367,7 @@ trait ApplicationTrait
     public function getEditionName()
     {
         /** @var \craft\app\web\Application|\craft\app\console\Application $this */
-        return App::getEditionName($this->getEdition());
+        return App::editionName($this->getEdition());
     }
 
     /**
@@ -399,7 +398,7 @@ trait ApplicationTrait
         $licensedEdition = $this->getLicensedEdition();
 
         if ($licensedEdition !== null) {
-            return App::getEditionName($licensedEdition);
+            return App::editionName($licensedEdition);
         }
 
         return null;
@@ -462,7 +461,7 @@ trait ApplicationTrait
             $installedEdition = $this->getEdition();
 
             if (($orBetter && $installedEdition < $edition) || (!$orBetter && $installedEdition !== $edition)) {
-                $editionName = App::getEditionName($edition);
+                $editionName = App::editionName($edition);
                 throw new BadRequestHttpException("Craft {$editionName} is required for this");
             }
         }
@@ -577,7 +576,7 @@ trait ApplicationTrait
         if (!isset($this->_info)) {
             if ($this->getIsInstalled()) {
                 $row = (new Query())
-                    ->from('{{%info}}')
+                    ->from(['{{%info}}'])
                     ->one();
 
                 if (!$row) {
@@ -618,6 +617,10 @@ trait ApplicationTrait
         if ($info->validate()) {
             $attributes = Db::prepareValuesForDb($info);
 
+            if (array_key_exists('id', $attributes) && $attributes['id'] === null) {
+                unset($attributes['id']);
+            }
+
             if ($this->getIsInstalled()) {
                 // TODO: Remove this after the next breakpoint
                 if (version_compare($this->_storedVersion, '3.0', '<')) {
@@ -632,8 +635,11 @@ trait ApplicationTrait
                     ->insert('{{%info}}', $attributes)
                     ->execute();
 
-                // Set the new id
-                $info->id = $this->getDb()->getLastInsertID();
+                if (Craft::$app->getIsInstalled()) {
+                    // Set the new id
+                    $info->id = $this->getDb()->getLastInsertID('{{%info}}');
+                }
+
             }
 
             // Use this as the new cached Info
@@ -671,9 +677,7 @@ trait ApplicationTrait
             $databaseServerName = $this->getConfig()->get('server', Config::CATEGORY_DB);
             $databaseAuthName = $this->getConfig()->get('user', Config::CATEGORY_DB);
             $databaseName = $this->getConfig()->get('database', Config::CATEGORY_DB);
-            $databasePort = $this->getConfig()->get('port', Config::CATEGORY_DB);
             $databaseCharset = $this->getConfig()->get('charset', Config::CATEGORY_DB);
-            $databaseCollation = $this->getConfig()->get('collation', Config::CATEGORY_DB);
 
             if (!$databaseServerName) {
                 $messages[] = Craft::t('app', 'The database server name isn’t set in your db config file.');
@@ -687,16 +691,8 @@ trait ApplicationTrait
                 $messages[] = Craft::t('app', 'The database name isn’t set in your db config file.');
             }
 
-            if (!$databasePort) {
-                $messages[] = Craft::t('app', 'The database port isn’t set in your db config file.');
-            }
-
             if (!$databaseCharset) {
                 $messages[] = Craft::t('app', 'The database charset isn’t set in your db config file.');
-            }
-
-            if (!$databaseCollation) {
-                $messages[] = Craft::t('app', 'The database collation isn’t set in your db config file.');
             }
 
             if (!empty($messages)) {
@@ -1242,11 +1238,12 @@ trait ApplicationTrait
         // Set the timezone
         $this->_setTimeZone();
 
+        // Load the plugins
+        // (this has to happen before setting the language, so plugin class aliases are registered in time)
+        $this->getPlugins()->loadPlugins();
+
         // Set the language
         $this->_setLanguage();
-
-        // Load the plugins
-        $this->getPlugins()->loadPlugins();
 
         // Fire an 'afterInit' event
         $this->trigger(WebApplication::EVENT_AFTER_INIT);

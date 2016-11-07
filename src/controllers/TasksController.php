@@ -29,7 +29,7 @@ class TasksController extends Controller
     /**
      * @inheritdoc
      */
-    protected $allowAnonymous = ['actionRunPendingTasks'];
+    protected $allowAnonymous = ['run-pending-tasks'];
 
     // Public Methods
     // =========================================================================

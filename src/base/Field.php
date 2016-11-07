@@ -116,14 +116,13 @@ abstract class Field extends SavableComponent implements FieldInterface
      */
     public function rules()
     {
-        // TODO: MySQL specific
-        $maxHandleLength = 64 - strlen(Craft::$app->getContent()->fieldColumnPrefix);
+        // Make sure the column name is under the databases maximum column length allowed.
+        $maxHandleLength = Craft::$app->getDb()->getSchema()->maxObjectNameLength - strlen(Craft::$app->getContent()->fieldColumnPrefix);
 
         $rules = [
             [['name'], 'string', 'max' => 255],
-            [['type'], 'string', 'max' => 150],
             [['handle'], 'string', 'max' => $maxHandleLength],
-            [['name', 'handle', 'type', 'translationMethod'], 'required'],
+            [['name', 'handle', 'translationMethod'], 'required'],
             [['groupId'], 'number', 'integerOnly' => true],
             [
                 ['translationMethod'],
@@ -223,7 +222,7 @@ abstract class Field extends SavableComponent implements FieldInterface
     /**
      * @inheritdoc
      */
-    public function prepareValue($value, $element)
+    public function normalizeValue($value, $element)
     {
         return $value;
     }
@@ -252,18 +251,6 @@ abstract class Field extends SavableComponent implements FieldInterface
         Craft::$app->getView()->clearJsBuffer();
 
         return $inputHtml;
-    }
-
-    /**
-     * @inheritdoc
-     */
-    public function validateValue($value, $element)
-    {
-        if ($this->required && $this->isValueEmpty($value, $element)) {
-            return [Craft::t('yii', '{attribute} cannot be blank.')];
-        }
-
-        return [];
     }
 
     /**
@@ -306,7 +293,7 @@ abstract class Field extends SavableComponent implements FieldInterface
     /**
      * @inheritdoc
      */
-    public function prepareValueForDb($value, $element)
+    public function serializeValue($value, $element)
     {
         return Db::prepareValueForDb($value);
     }
@@ -325,7 +312,7 @@ abstract class Field extends SavableComponent implements FieldInterface
 
             $handle = $this->handle;
             /** @var ElementQuery $query */
-            $query->subQuery->andWhere(Db::parseParam('content.'.Craft::$app->getContent()->fieldColumnPrefix.$handle, $value, $query->subQuery->params));
+            $query->subQuery->andWhere(Db::parseParam('content.'.Craft::$app->getContent()->fieldColumnPrefix.$handle, $value));
         }
 
         return null;
@@ -419,23 +406,25 @@ abstract class Field extends SavableComponent implements FieldInterface
     }
 
     /**
-     * Returns the location in POST that this field's content was pulled from.
+     * Returns the field’s param name on the request.
      *
      * @param ElementInterface $element The element this field is associated with
      *
-     * @return string|null
+     * @return string|null The field’s param name on the request
      */
-    protected function getContentPostLocation($element)
+    protected function getRequestParamName($element)
     {
-        if ($element) {
-            $elementContentPostLocation = $element->getContentPostLocation();
-
-            if ($elementContentPostLocation) {
-                return $elementContentPostLocation.'.'.$this->handle;
-            }
+        if (!$element) {
+            return null;
         }
 
-        return null;
+        $namespace = $element->getFieldParamNamespace();
+
+        if (!$namespace === null) {
+            return null;
+        }
+
+        return ($namespace ? $namespace.'.' : '').$this->handle;
     }
 
     /**

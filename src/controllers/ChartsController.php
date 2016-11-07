@@ -12,6 +12,7 @@ use craft\app\web\Controller;
 use craft\app\helpers\DateTimeHelper;
 use craft\app\helpers\ChartHelper;
 use craft\app\db\Query;
+use yii\base\Response;
 
 /**
  * The ChartsController class is a controller that handles charts related operations such as preparing and returning data,
@@ -30,7 +31,7 @@ class ChartsController extends Controller
     /**
      * Returns the data needed to display a New Users chart.
      *
-     * @return void
+     * @return Response
      */
     public function actionGetNewUsersData()
     {
@@ -46,37 +47,35 @@ class ChartsController extends Controller
 
         // Prep the query
         $query = (new Query())
-            ->from('{{%users}} users')
-            ->select('COUNT(*) as value');
+            ->select(['COUNT(*) as [[value]]'])
+            ->from(['{{%users}} users']);
 
-        if ($userGroupId)
-        {
-            $query->innerJoin('{{%usergroups_users}} usergroups_users', 'usergroups_users.userId = users.id');
-            $query->where('usergroups_users.groupId = :userGroupId', array(':userGroupId' => $userGroupId));
+        if ($userGroupId) {
+            $query->innerJoin('{{%usergroups_users}} usergroups_users', '[[usergroups_users.userId]] = [[users.id]]');
+            $query->where(['usergroups_users.groupId' => $userGroupId]);
         }
 
         // Get the chart data table
-        $dataTable = ChartHelper::getRunChartDataFromQuery($query, $startDate, $endDate, 'users.dateCreated', array(
+        $dataTable = ChartHelper::getRunChartDataFromQuery($query, $startDate, $endDate, 'users.dateCreated', [
             'intervalUnit' => $intervalUnit,
             'valueLabel' => Craft::t('app', 'New Users'),
-        ));
+        ]);
 
         // Get the total number of new users
         $total = 0;
 
-        foreach($dataTable['rows'] as $row)
-        {
+        foreach ($dataTable['rows'] as $row) {
             $total = $total + $row[1];
         }
 
         // Return everything
-        return $this->asJson(array(
+        return $this->asJson([
             'dataTable' => $dataTable,
             'total' => $total,
 
-            'formats' => ChartHelper::getFormats(),
+            'formats' => ChartHelper::formats(),
             'orientation' => Craft::$app->getLocale()->getOrientation(),
             'scale' => $intervalUnit,
-        ));
+        ]);
     }
 }

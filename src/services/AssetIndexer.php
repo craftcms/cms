@@ -203,7 +203,7 @@ class AssetIndexer extends Component
                     }
 
                     clearstatcache();
-                    list ($asset->width, $asset->height) = Image::getImageSize(
+                    list ($asset->width, $asset->height) = Image::imageSize(
                         $targetPath
                     );
                 }
@@ -301,28 +301,23 @@ class AssetIndexer extends Component
 
         // Load the record IDs of the files that were indexed.
         $processedFiles = (new Query())
-            ->select('recordId')
-            ->from('{{%assetindexdata}}')
-            ->where(
-                [
-                    'and',
-                    ['sessionId' => $sessionId],
-                    'recordId is not null'
-                ],
-                [':sessionId' => $sessionId])
-            ->column();
+            ->select(['recordId'])
+            ->from(['{{%assetindexdata}}'])
+            ->where([
+                'and',
+                ['sessionId' => $sessionId],
+                ['not', ['recordId' => null]]
+            ])
+           ->column();
 
         // Flip for faster lookup
         $processedFiles = array_flip($processedFiles);
-
         $assets = (new Query())
-            ->select(
-                'fi.volumeId, fi.id AS assetId, fi.filename, fo.path, s.name AS volumeName'
-            )
-            ->from('{{%assets}} AS fi')
-            ->innerJoin('{{%volumefolders}} AS fo', 'fi.folderId = fo.id')
-            ->innerJoin('{{%volumes}} AS s', 's.id = fi.volumeId')
-            ->where(['in', 'fi.volumeId', $volumeIds])
+            ->select(['fi.volumeId', 'fi.id AS assetId', 'fi.filename', 'fo.path', 's.name AS volumeName'])
+            ->from(['{{%assets}} fi'])
+            ->innerJoin('{{%volumefolders}} fo', '[[fi.folderId]] = [[fo.id]]')
+            ->innerJoin('{{%volumes}} s', '[[s.id]] = [[fi.volumeId]]')
+            ->where(['fi.volumeId' => $volumeIds])
             ->all();
 
         foreach ($assets as $asset) {

@@ -1,7 +1,7 @@
 /*
 	Redactor II
-	Version 1.3
-	Updated: October 10, 2016
+	Version 1.3.1
+	Updated: October 24, 2016
 
 	http://imperavi.com/redactor/
 
@@ -101,7 +101,7 @@
 
 	// Options
 	$.Redactor = Redactor;
-	$.Redactor.VERSION = '1.3';
+	$.Redactor.VERSION = '1.3.1';
 	$.Redactor.modules = ['air', 'autosave', 'block', 'buffer', 'build', 'button', 'caret', 'clean', 'code', 'core', 'detect', 'dropdown',
 						  'events', 'file', 'focus', 'image', 'indent', 'inline', 'insert', 'keydown', 'keyup',
 						  'lang', 'line', 'link', 'linkify', 'list', 'marker', 'modal', 'observe', 'offset', 'paragraphize', 'paste', 'placeholder',
@@ -117,6 +117,7 @@
 		animation: false,
 		lang: 'en',
 		direction: 'ltr',
+		spellcheck: true,
 
 		focus: false,
 		focusEnd: false,
@@ -507,6 +508,7 @@
 				this.$element.data(),
 				options
 			);
+
 		},
 		getModuleMethods: function(object)
 		{
@@ -1269,6 +1271,9 @@
 
 					}
 
+					// spellcheck
+					this.core.editor().attr('spellcheck', this.opts.spellcheck);
+
 					// structure
 					if (this.opts.structure)
 					{
@@ -1312,7 +1317,6 @@
 					{
 						this.core.editor().css({ 'max-width': this.opts.maxWidth, 'margin': 'auto' });
 					}
-
 
 				},
 				callEditor: function()
@@ -2549,6 +2553,9 @@
 					// remove empty paragpraphs
 					html = html.replace(/<p><\/p>/gi, "");
 
+					// remove new lines
+                    html = html.replace(/\n{2,}/g, "\n");
+
 					return html;
 				},
 				onPaste: function(html, data, insert)
@@ -2847,15 +2854,16 @@
 
 					html = $div.html();
 
+
                     // links & images
 					if (data.links && this.opts.pasteLinks)
 					{
-						html = html.replace(/<a(.*?)href="(.*?)"(.*?)>(.*?)<\/a>/gi, '###a$1href="$2"$3###$4###/a###');
+						html = html.replace(/<a(.*?)href="(.*?[^>])"(.*?[^>])>(.*?)<\/a>/gi, '##%a$1href="$2"$3%##$4##%/a%##');
 					}
 
 					if (data.images && this.opts.pasteImages)
 					{
-						html = html.replace(/<img(.*?)src="(.*?)"(.*?[^>])>/gi, '###img$1src="$2"$3###');
+						html = html.replace(/<img(.*?)src="(.*?)"(.*?[^>])>/gi, '##%img$1src="$2"$3%##');
 					}
 
 					// plain text
@@ -2863,6 +2871,8 @@
 					{
 						return html;
 					}
+
+
 
 					// all tags
 					var blockTags = (data.lists) ? ['ul', 'ol', 'li'] : this.opts.pasteBlockTags;
@@ -2877,10 +2887,11 @@
 						tags = (data.inline) ? this.opts.pasteInlineTags : [];
 					}
 
+
 					var len = tags.length;
 					for (var i = 0; i < len; i++)
 					{
-						html = html.replace(new RegExp('</' + tags[i] + '>', 'gi'), '###/' + tags[i] + '###');
+						html = html.replace(new RegExp('<\/' + tags[i] + '>', 'gi'), '###/' + tags[i] + '###');
 
 						if (tags[i] === 'td' || tags[i] === 'th')
 						{
@@ -2892,29 +2903,23 @@
 						}
 					}
 
-
 					return html;
 
 				},
 				reconvertTags: function(html, data)
 				{
 					// links & images
-					if (data.links && this.opts.pasteLinks)
+					if ((data.links && this.opts.pasteLinks) || (data.images && this.opts.pasteImages))
 					{
-						html = html.replace(/###a(.*?)href="(.*?)"(.*?)###(.*?)###\/a###/gi, '<a$1href="$2"$3>$4</a>');
-					}
-
-					if (data.images && this.opts.pasteImages)
-					{
-						html = html.replace(/###img(.*?)src="(.*?)"###/gi, '<img src="$2">');
-					}
+						html = html.replace(new RegExp('##%', 'gi'), '<');
+						html = html.replace(new RegExp('%##', 'gi'), '>');
+                    }
 
 					// plain text
 					if (this.opts.pastePlainText)
 					{
 						return html;
 					}
-
 
 					var blockTags = (data.lists) ? ['ul', 'ol', 'li'] : this.opts.pasteBlockTags;
 
@@ -2931,7 +2936,7 @@
 					var len = tags.length;
 					for (var i = 0; i < len; i++)
 					{
-						html = html.replace(new RegExp('###/' + tags[i] + '###', 'gi'), '</' + tags[i] + '>');
+						html = html.replace(new RegExp('###\/' + tags[i] + '###', 'gi'), '</' + tags[i] + '>');
 						html = html.replace(new RegExp('###' + tags[i] + '###', 'gi'), '<' + tags[i] + '>');
                     }
 
@@ -4882,7 +4887,7 @@
 					}
 
 					var $current = $(this.selection.current()).closest('li');
-					var $list = $current.closest('ul, ol');
+					var $list = $current.closest('ul, ol', this.core.editor()[0]);
 
 					var $li = $current.closest('li');
 					var $prev = $li.prev();
@@ -4925,7 +4930,7 @@
 					}
 
 					var $current = $(this.selection.current()).closest('li');
-					var $list = $current.closest('ul, ol');
+					var $list = $current.closest('ul, ol', this.core.editor()[0]);
 
 					this.buffer.set();
 
@@ -7432,7 +7437,7 @@
     				var $prev = $(block).prev();
     				var $next = $(block).next();
                     var isEmptyBlock = (block && block.tagName === 'P' && (block.innerHTML === '<br>' || block.innerHTML === ''));
-                    var isBlockWrapped = ($prev.closest('ol, ul').length === 1 && $next.closest('ol, ul').length === 1);
+                    var isBlockWrapped = ($prev.closest('ol, ul', this.core.editor()[0]).length === 1 && $next.closest('ol, ul', this.core.editor()[0]).length === 1);
 
                     if (isEmptyBlock && isBlockWrapped)
                     {
@@ -8328,6 +8333,7 @@
 					// before
 					html = html.replace(/(<br\s?\/?>){1,}\n?<\/blockquote>/gi, '</blockquote>');
 					html = html.replace(/<\/pre>/gi, "</pre>\n\n");
+					html = html.replace(/<p>\s<br><\/p>/gi, '<p></p>');
 
 					html = this.paragraphize.getSafes(html);
 
@@ -8352,17 +8358,15 @@
 						return $(this).append('<br />').contents();
 					});
 
-
                     $div.find(this.opts.paragraphizeBlocks.join(', ')).each($.proxy(function(i,s)
 					{
 						this.paragraphize.z++;
 						this.paragraphize.safes[this.paragraphize.z] = s.outerHTML;
 
-						return $(s).replaceWith('\n#####replace' + this.paragraphize.z + '#####\n\n');
+						return $(s).replaceWith("\n#####replace" + this.paragraphize.z + "#####\n\n");
 
 
 					}, this));
-
 
                     // deal with redactor selection markers
                     $div.find('span.redactor-selection-marker').each($.proxy(function(i,s)
@@ -8370,7 +8374,7 @@
                         this.paragraphize.z++;
                         this.paragraphize.safes[this.paragraphize.z] = s.outerHTML;
 
-                        return $(s).replaceWith('n#####replace' + this.paragraphize.z + '#####nn');
+                        return $(s).replaceWith("\n#####replace" + this.paragraphize.z + "#####\n\n");
                     }, this));
 
 					return $div.html();

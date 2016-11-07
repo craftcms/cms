@@ -11,6 +11,7 @@ use Craft;
 use craft\app\base\Element;
 use craft\app\base\ElementInterface;
 use craft\app\base\Field;
+use craft\app\db\Connection;
 use craft\app\db\Query;
 use craft\app\enums\ColumnType;
 use craft\app\events\SearchEvent;
@@ -20,6 +21,7 @@ use craft\app\helpers\Search as SearchHelper;
 use craft\app\search\SearchQuery;
 use craft\app\search\SearchQueryTerm;
 use craft\app\search\SearchQueryTermGroup;
+use Exception;
 use yii\base\Component;
 
 /**
@@ -77,7 +79,7 @@ class Search extends Component
     {
         /** @var Element $element */
         // Does it have any searchable attributes?
-        $searchableAttributes = $element::defineSearchableAttributes();
+        $searchableAttributes = $element::searchableAttributes();
 
         $searchableAttributes[] = 'slug';
 
@@ -269,26 +271,28 @@ class Search extends Component
 
         $maxDbColumnSize = Db::getTextualColumnStorageCapacity(ColumnType::Text);
 
-        // Give ourselves 10% wiggle room.
-        $maxDbColumnSize = ceil($maxDbColumnSize * 0.9);
+        if ($maxDbColumnSize) {
+            // Give ourselves 10% wiggle room.
+            $maxDbColumnSize = ceil($maxDbColumnSize * 0.9);
 
-        if ($cleanKeywordsLength > $maxDbColumnSize) {
-            // Time to truncate.
-            $cleanKeywords = mb_strcut($cleanKeywords, 0, $maxDbColumnSize);
+            if ($cleanKeywordsLength > $maxDbColumnSize) {
+                // Time to truncate.
+                $cleanKeywords = mb_strcut($cleanKeywords, 0, $maxDbColumnSize);
 
-            // Make sure we don't cut off a word in the middle.
-            if ($cleanKeywords[mb_strlen($cleanKeywords) - 1] !== ' ') {
-                $position = mb_strrpos($cleanKeywords, ' ');
+                // Make sure we don't cut off a word in the middle.
+                if ($cleanKeywords[mb_strlen($cleanKeywords) - 1] !== ' ') {
+                    $position = mb_strrpos($cleanKeywords, ' ');
 
-                if ($position) {
-                    $cleanKeywords = mb_substr($cleanKeywords, 0, $position + 1);
+                    if ($position) {
+                        $cleanKeywords = mb_substr($cleanKeywords, 0, $position + 1);
+                    }
                 }
             }
         }
 
         // Insert/update the row in searchindex
         Craft::$app->getDb()->createCommand()
-            ->insertOrUpdate(
+            ->upsert(
                 '{{%searchindex}}',
                 $keyColumns,
                 [
@@ -454,7 +458,9 @@ class Search extends Component
             } // No SQL but keywords, save them for later
             else if ($keywords) {
                 if ($inclusive) {
-                    $keywords = '+'.$keywords;
+                    if (Craft::$app->getDb()->getDriverName() == Connection::DRIVER_MYSQL) {
+                        $keywords = '+'.$keywords;
+                    }
                 }
 
                 $words[] = $keywords;
@@ -463,7 +469,7 @@ class Search extends Component
 
         // If we collected full-text words, combine them into one
         if ($words) {
-            $where[] = $this->_sqlMatch($words);
+            $where[] = $this->_sqlFullText($words);
         }
 
         // If we have valid where clauses now, stringify them
@@ -563,8 +569,8 @@ class Search extends Component
 
                     // Only create an SQL clause if there's a subselect. Otherwise, return the keywords.
                     if ($subSelect) {
-                        // If there is a subselect, create the MATCH AGAINST bit
-                        $sql = $this->_sqlMatch($keywords);
+                        // If there is a subselect, create the full text SQL bit
+                        $sql = $this->_sqlFullText($keywords);
                     }
                 } // Create LIKE clause from term
                 else {
@@ -579,7 +585,7 @@ class Search extends Component
                     }
 
                     // Generate the SQL
-                    $sql = $this->_sqlWhere('keywords', $operator, $keywords);
+                    $sql = $this->_sqlWhere(Craft::$app->getDb()->getDriverName() == Connection::DRIVER_MYSQL ? 'keywords' : 'keywords::text', $operator, $keywords);
                 }
             }
         } else {
@@ -627,7 +633,7 @@ class Search extends Component
      */
     private function _isFulltextTerm($term)
     {
-        $ftStopWords = SearchHelper::getStopWords();
+        $ftStopWords = SearchHelper::stopWords();
 
         // Check if complete term is in stopwords
         if (in_array($term, $ftStopWords)) {
@@ -639,9 +645,7 @@ class Search extends Component
 
         // Then loop through terms and return false it doesn't match up
         foreach ($words as $word) {
-            if (mb_strlen($word) < SearchHelper::getMinWordLength() || in_array($word,
-                    $ftStopWords)
-            ) {
+            if (mb_strlen($word) < SearchHelper::minWordLength() || in_array($word, $ftStopWords)) {
                 return false;
             }
         }
@@ -681,16 +685,29 @@ class Search extends Component
     }
 
     /**
-     * Get SQL but for MATCH AGAINST clause.
+     * Get SQL necessary for a full text search.
      *
      * @param mixed   $val  String or Array of keywords
      * @param boolean $bool Use In Boolean Mode or not
      *
      * @return string
+     * @throws Exception
      */
-    private function _sqlMatch($val, $bool = true)
+    private function _sqlFullText($val, $bool = true)
     {
-        return sprintf("MATCH(%s) AGAINST('%s'%s)", Craft::$app->getDb()->quoteColumnName('keywords'), (is_array($val) ? implode(' ', $val) : $val), ($bool ? ' IN BOOLEAN MODE' : ''));
+        $driver = Craft::$app->getDb()->getDriverName();
+        switch ($driver)
+        {
+            case Connection::DRIVER_MYSQL:
+                return sprintf("MATCH(%s) AGAINST('%s'%s)", Craft::$app->getDb()->quoteColumnName('keywords'), (is_array($val) ? implode(' ', $val) : $val), ($bool ? ' IN BOOLEAN MODE' : ''));
+
+            case Connection::DRIVER_PGSQL:
+                return sprintf("%s::tsvector @@ '%s'::tsquery", Craft::$app->getDb()->quoteColumnName('keywords'), (is_array($val) ? implode(' ', $val) : $val));
+
+            default:
+                throw new Exception('Unsupported connection type: '.$driver);
+        }
+
     }
 
     /**
@@ -703,10 +720,9 @@ class Search extends Component
      */
     private function _sqlSubSelect($where, $siteId = null)
     {
-        // FULLTEXT indexes are not used in queries with subselects, so let's do this as its own query.
         $query = (new Query())
-            ->select('elementId')
-            ->from('{{%searchindex}}')
+            ->select(['elementId'])
+            ->from(['{{%searchindex}}'])
             ->where($where);
 
         if ($siteId) {

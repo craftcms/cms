@@ -7,26 +7,19 @@
 
 namespace craft\app\events;
 
-use craft\app\elements\User;
-
 /**
- * User event class.
+ * RegisterRichTextLinkOptionsEvent class.
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since  3.0
  */
-class UserEvent extends Event
+class RegisterRichTextLinkOptionsEvent extends Event
 {
     // Properties
     // =========================================================================
 
     /**
-     * @var User The user model associated with the event.
+     * @var array The registered link options
      */
-    public $user;
-
-    /**
-     * @var boolean Whether the user is brand new
-     */
-    public $isNew = false;
+    public $linkOptions = [];
 }

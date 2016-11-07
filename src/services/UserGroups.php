@@ -63,7 +63,7 @@ class UserGroups extends Component
     public function getAllGroups($indexBy = null)
     {
         $groups = UserGroupRecord::find()
-            ->orderBy('name')
+            ->orderBy(['name' => SORT_ASC])
             ->indexBy($indexBy)
             ->all();
 
@@ -140,8 +140,8 @@ class UserGroups extends Component
                 'g.name',
                 'g.handle',
             ])
-            ->from('{{%usergroups}} g')
-            ->innerJoin('{{%usergroups_users}} gu', 'gu.groupId = g.id')
+            ->from(['{{%usergroups}} g'])
+            ->innerJoin('{{%usergroups_users}} gu', '[[gu.groupId]] = [[g.id]]')
             ->where(['gu.userId' => $userId])
             ->indexBy($indexBy)
             ->all();

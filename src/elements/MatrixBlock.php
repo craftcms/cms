@@ -69,36 +69,7 @@ class MatrixBlock extends Element
     /**
      * @inheritdoc
      */
-    public static function getFieldsForElementsQuery(ElementQueryInterface $query)
-    {
-        /** @var MatrixBlockQuery $query */
-        $blockTypes = Craft::$app->getMatrix()->getBlockTypesByFieldId($query->fieldId);
-
-        // Preload all of the fields up front to save ourselves some DB queries, and discard
-        $contexts = [];
-        foreach ($blockTypes as $blockType) {
-            $contexts[] = 'matrixBlockType:'.$blockType->id;
-        }
-        Craft::$app->getFields()->getAllFields(null, $contexts);
-
-        // Now assemble the actual fields list
-        $fields = [];
-        foreach ($blockTypes as $blockType) {
-            $fieldColumnPrefix = 'field_'.$blockType->handle.'_';
-            foreach ($blockType->getFields() as $field) {
-                /** @var Field $field */
-                $field->columnPrefix = $fieldColumnPrefix;
-                $fields[] = $field;
-            }
-        }
-
-        return $fields;
-    }
-
-    /**
-     * @inheritdoc
-     */
-    public static function getEagerLoadingMap($sourceElements, $handle)
+    public static function eagerLoadingMap($sourceElements, $handle)
     {
         // $handle *must* be set as "blockTypeHandle:fieldHandle" so we know _which_ myRelationalField to resolve to
         $handleParts = explode(':', $handle);
@@ -125,7 +96,7 @@ class MatrixBlock extends Element
         $originalFieldContext = $contentService->fieldContext;
         $contentService->fieldContext = 'matrixBlockType:'.$blockType->id;
 
-        $map = parent::getEagerLoadingMap($sourceElements, $fieldHandle);
+        $map = parent::eagerLoadingMap($sourceElements, $fieldHandle);
 
         $contentService->fieldContext = $originalFieldContext;
 
@@ -216,7 +187,7 @@ class MatrixBlock extends Element
             // Just send back an array of site IDs -- don't pass along enabledByDefault configs
             $siteIds = [];
 
-            foreach (ElementHelper::getSupportedSitesForElement($owner) as $siteInfo) {
+            foreach (ElementHelper::supportedSitesForElement($owner) as $siteInfo) {
                 $siteIds[] = $siteInfo['siteId'];
             }
 

@@ -11,7 +11,6 @@ use Craft;
 use craft\app\dates\DateTime;
 use craft\app\errors\MissingComponentException;
 use craft\app\helpers\MailerHelper;
-use craft\app\helpers\Component;
 use craft\app\helpers\Template;
 use craft\app\helpers\Url;
 use craft\app\mail\transportadapters\BaseTransportAdapter;
@@ -29,6 +28,9 @@ use craft\app\tools\DbBackup;
 use craft\app\tools\FindAndReplace;
 use craft\app\tools\SearchIndex;
 use craft\app\web\Controller;
+use yii\base\Exception;
+use yii\helpers\Inflector;
+use yii\httpclient\Transport;
 use yii\web\NotFoundHttpException;
 use yii\web\Response;
 
@@ -151,21 +153,20 @@ class SystemSettingsController extends Controller
         $info->on = (bool)Craft::$app->getRequest()->getBodyParam('on');
         $info->timezone = Craft::$app->getRequest()->getBodyParam('timezone');
 
-        if (Craft::$app->saveInfo($info)) {
-            Craft::$app->getSession()->setNotice(Craft::t('app', 'General settings saved.'));
+        if (!Craft::$app->saveInfo($info)) {
+            Craft::$app->getSession()->setError(Craft::t('app', 'Couldn’t save general settings.'));
 
-            return $this->redirectToPostedUrl();
+            // Send the info back to the template
+            Craft::$app->getUrlManager()->setRouteParams([
+                'info' => $info
+            ]);
+
+            return null;
         }
 
-        Craft::$app->getSession()->setError(Craft::t('app', 'Couldn’t save general settings.'));
+        Craft::$app->getSession()->setNotice(Craft::t('app', 'General settings saved.'));
 
-        // Send the info back to the template
-        Craft::$app->getUrlManager()->setRouteParams([
-            'info' => $info
-        ]);
-
-
-        return null;
+        return $this->redirectToPostedUrl();
     }
 
     /**
@@ -175,6 +176,7 @@ class SystemSettingsController extends Controller
      * @param TransportAdapterInterface $adapter  The transport adapter, if there were any validation errors
      *
      * @return Response
+     * @throws Exception if a plugin returns an invalid mail transport type
      */
     public function actionEditEmailSettings(MailSettings $settings = null, TransportAdapterInterface $adapter = null)
     {
@@ -183,44 +185,34 @@ class SystemSettingsController extends Controller
         }
 
         if ($adapter === null) {
-            $adapter = MailerHelper::createTransportAdapter($settings->transportType, $settings->transportSettings);
-
-            if ($adapter === false) {
-                // Fallback to the PHP mailer
+            try {
+                $adapter = MailerHelper::createTransportAdapter($settings->transportType, $settings->transportSettings);
+            } catch (MissingComponentException $e) {
                 $adapter = new Php();
+                $adapter->addError('type', Craft::t('app', 'The transport type “{type}” could not be found.', [
+                    'type' => $settings->transportType
+                ]));
             }
         }
 
-        /** @var TransportAdapterInterface[] $allTransportTypes */
-        $allTransportTypes = [
-            new Php(),
-            new Sendmail(),
-            new Smtp(),
-            new Gmail(),
-        ];
+        // Get all the registered transport adapter types
+        $allTransportAdapterTypes = MailerHelper::allMailerTransportTypes();
 
-        foreach (Craft::$app->getPlugins()->call('getMailTransportAdapters', [], true) as $pluginTransportTypes) {
-            foreach ($pluginTransportTypes as $pluginTransportType) {
-                if (is_object($pluginTransportType)) {
-                    if ($pluginTransportType instanceof TransportAdapterInterface) {
-                        $allTransportTypes[] = $pluginTransportType;
-                    }
-                } else {
-                    $pluginTransportType = MailerHelper::createTransportAdapter($pluginTransportType);
-                    if ($pluginTransportType !== false) {
-                        $allTransportTypes[] = $pluginTransportType;
-                    }
-                }
-            }
+        // Make sure the selected adapter class is in there
+        if (!in_array(get_class($adapter), $allTransportAdapterTypes)) {
+            $allTransportAdapterTypes[] = get_class($adapter);
         }
 
+        $allTransportAdapters = [];
         $transportTypeOptions = [];
 
-        foreach ($allTransportTypes as $class) {
-            if ($class::className() === get_class($adapter) || $class::isSelectable()) {
+        foreach ($allTransportAdapterTypes as $transportAdapterType) {
+            /** @var string|TransportAdapterInterface $transportAdapterType */
+            if ($transportAdapterType === get_class($adapter) || $transportAdapterType::isSelectable()) {
+                $allTransportAdapters[] = MailerHelper::createTransportAdapter($transportAdapterType);
                 $transportTypeOptions[] = [
-                    'value' => $class::className(),
-                    'label' => $class::displayName()
+                    'value' => $transportAdapterType,
+                    'label' => $transportAdapterType::displayName()
                 ];
             }
         }
@@ -229,7 +221,7 @@ class SystemSettingsController extends Controller
             'settings' => $settings,
             'adapter' => $adapter,
             'transportTypeOptions' => $transportTypeOptions,
-            'allTransportTypes' => $allTransportTypes,
+            'allTransportAdapters' => $allTransportAdapters,
         ]);
     }
 
@@ -249,22 +241,22 @@ class SystemSettingsController extends Controller
         $adapter = MailerHelper::createTransportAdapter($settings->transportType, $settings->transportSettings);
         $adapterIsValid = $adapter->validate();
 
-        if ($settingsIsValid && $adapterIsValid) {
-            Craft::$app->getSystemSettings()->saveSettings('email', $settings->toArray());
-            Craft::$app->getSession()->setNotice(Craft::t('app', 'Email settings saved.'));
+        if (!$settingsIsValid || !$adapterIsValid) {
+            Craft::$app->getSession()->setError(Craft::t('app', 'Couldn’t save email settings.'));
 
-            return $this->redirectToPostedUrl();
+            // Send the settings back to the template
+            Craft::$app->getUrlManager()->setRouteParams([
+                'settings' => $settings,
+                'adapter' => $adapter
+            ]);
+
+            return null;
         }
 
-        Craft::$app->getSession()->setError(Craft::t('app', 'Couldn’t save email settings.'));
+        Craft::$app->getSystemSettings()->saveSettings('email', $settings->toArray());
+        Craft::$app->getSession()->setNotice(Craft::t('app', 'Email settings saved.'));
 
-        // Send the settings back to the template
-        Craft::$app->getUrlManager()->setRouteParams([
-            'settings' => $settings,
-            'adapter' => $adapter
-        ]);
-
-        return null;
+        return $this->redirectToPostedUrl();
     }
 
     /**
@@ -299,7 +291,15 @@ class SystemSettingsController extends Controller
 
             foreach ($adapter->settingsAttributes() as $name) {
                 if (!empty($adapter->$name)) {
-                    $includedSettings[] = '<strong>'.$adapter->getAttributeLabel($name).':</strong> '.$adapter->$name;
+                    $label = $adapter->getAttributeLabel($name);
+                    $value = $adapter->$name;
+
+                    // Hide passwords/keys
+                    if (preg_match('/\b(key|password|secret)\b/', Inflector::camel2words($name, false))) {
+                        $value = str_repeat('•', strlen($value));
+                    }
+
+                    $includedSettings[] = '<strong>'.$label.':</strong> '.$value;
                 }
             }
 
@@ -307,7 +307,7 @@ class SystemSettingsController extends Controller
 
             // Try to send the test email
             $message = $mailer
-                ->composeFromKey('test_email', ['settings' => Template::getRaw($settingsHtml)])
+                ->composeFromKey('test_email', ['settings' => Template::raw($settingsHtml)])
                 ->setTo(Craft::$app->getUser()->getIdentity());
 
             if ($message->send()) {
@@ -361,11 +361,11 @@ class SystemSettingsController extends Controller
         $crumbs = [
             [
                 'label' => Craft::t('app', 'Settings'),
-                'url' => Url::getUrl('settings')
+                'url' => Url::url('settings')
             ],
             [
                 'label' => Craft::t('app', 'Globals'),
-                'url' => Url::getUrl('settings/globals')
+                'url' => Url::url('settings/globals')
             ]
         ];
 

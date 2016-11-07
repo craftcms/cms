@@ -9,6 +9,7 @@ namespace craft\app\web;
 
 use Craft;
 use craft\app\base\ElementInterface;
+use craft\app\events\RegisterUrlRulesEvent;
 use craft\app\helpers\ArrayHelper;
 use craft\app\helpers\Url;
 
@@ -20,6 +21,19 @@ use craft\app\helpers\Url;
  */
 class UrlManager extends \yii\web\UrlManager
 {
+    // Constants
+    // =========================================================================
+
+    /**
+     * @event RegisterUrlRulesEvent The event that is triggered when registering URL rules for the Control Panel.
+     */
+    const EVENT_REGISTER_CP_URL_RULES = 'registerCpUrlRules';
+
+    /**
+     * @event RegisterUrlRulesEvent The event that is triggered when registering URL rules for the front-end site.
+     */
+    const EVENT_REGISTER_SITE_URL_RULES = 'registerSiteUrlRules';
+
     // Properties
     // =========================================================================
 
@@ -215,7 +229,7 @@ class UrlManager extends \yii\web\UrlManager
                 }
             }
 
-            $pluginHook = 'registerCpRoutes';
+            $eventName = self::EVENT_REGISTER_CP_URL_RULES;
         } else {
             $routesService = Craft::$app->getRoutes();
 
@@ -224,17 +238,15 @@ class UrlManager extends \yii\web\UrlManager
                 $routesService->getDbRoutes()
             );
 
-            $pluginHook = 'registerSiteRoutes';
+            $eventName = self::EVENT_REGISTER_SITE_URL_RULES;
         }
 
-        // Load the plugin-supplied rules
-        $allPluginRules = Craft::$app->getPlugins()->call($pluginHook);
+        $event = new RegisterUrlRulesEvent([
+            'rules' => $rules
+        ]);
+        $this->trigger($eventName, $event);
 
-        foreach ($allPluginRules as $pluginRules) {
-            $rules = array_merge($rules, $pluginRules);
-        }
-
-        return array_filter($rules);
+        return array_filter($event->rules);
     }
 
     /**
@@ -288,13 +300,7 @@ class UrlManager extends \yii\web\UrlManager
                 $element = Craft::$app->getElements()->getElementByUri($path, Craft::$app->getSites()->currentSite->id, true);
 
                 if ($element) {
-                    // Do any plugins want a say in this?
-                    $route = Craft::$app->getPlugins()->callFirst('getElementRoute', [$element], true);
-
-                    if (!$route) {
-                        // Give the element type a chance
-                        $route = $element->getRoute();
-                    }
+                    $route = $element->getRoute();
 
                     if ($route) {
                         $this->_matchedElement = $element;

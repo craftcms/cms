@@ -10,8 +10,8 @@
 
 {% set sectionHandle = section.handle %}
 {% set isSingle = section.type == 'single' %}
-{% set isVersion = entry.className() == 'craft\\app\\models\\EntryVersion' %}
-{% set isDraft = entry.id and entry.className() == 'craft\\app\\models\\EntryDraft' %}
+{% set isVersion = className(entry) == 'craft\\app\\models\\EntryVersion' %}
+{% set isDraft = entry.id and className(entry) == 'craft\\app\\models\\EntryDraft' %}
 
 {% set canPublish = currentUser.can('publishEntries'~permissionSuffix) %}
 {% set canSave = (
@@ -108,8 +108,8 @@
 			<div class="menu">
 				<ul>
 					<li><a class="formsubmit" data-redirect="{{ continueEditingUrl|hash }}">
-							{{ "Save and continue editing"|t('app') }}
 							{{ forms.optionShortcutLabel('S') }}
+							{{ "Save and continue editing"|t('app') }}
 						</a></li>
 
 					{% set nextEntryParams = [] %}

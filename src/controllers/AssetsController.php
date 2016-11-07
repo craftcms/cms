@@ -470,8 +470,6 @@ class AssetsController extends Controller
             $destinationFolder);
 
         try {
-            $removeFromTree = [];
-
             $sourceTree = $assets->getAllDescendantFolders($folderToMove);
 
             if (empty($conflictResolution)) {
@@ -499,7 +497,7 @@ class AssetsController extends Controller
                     $foundAssets = Asset::find()
                         ->folderId($allSourceFolderIds)
                         ->all();
-                    $fileTransferList = Assets::getFileTransferList($foundAssets,
+                    $fileTransferList = Assets::fileTransferList($foundAssets,
                         $folderIdChanges, $conflictResolution == 'merge');
                 }
             } else {
@@ -521,11 +519,9 @@ class AssetsController extends Controller
                             $targetPrefixLength)] = $existingFolder->id;
                     }
 
-                    $removeFromTree = [$existingFolder->id];
                 } // When replacing, just nuke everything that's in our way
                 else {
                     if ($conflictResolution == 'replace') {
-                        $removeFromTree = [$existingFolder->id];
                         $assets->deleteFoldersByIds($existingFolder->id);
                     }
                 }
@@ -540,7 +536,7 @@ class AssetsController extends Controller
                 $foundAssets = Asset::find()
                     ->folderId($allSourceFolderIds)
                     ->all();
-                $fileTransferList = Assets::getFileTransferList($foundAssets,
+                $fileTransferList = Assets::fileTransferList($foundAssets,
                     $folderIdChanges, $conflictResolution == 'merge');
             }
         } catch (AssetLogicException $exception) {
@@ -549,9 +545,8 @@ class AssetsController extends Controller
 
         return $this->asJson([
             'success' => true,
-            'changedIds' => $folderIdChanges,
             'transferList' => $fileTransferList,
-            'removeFromTree' => $removeFromTree
+            'newFolderId' => isset($folderIdChanges[$folderBeingMovedId]) ? $folderIdChanges[$folderBeingMovedId] : null
         ]);
     }
 

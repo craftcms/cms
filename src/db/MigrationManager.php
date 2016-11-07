@@ -443,7 +443,7 @@ class MigrationManager extends Component
             $migrationName = $migration;
             $migration = $this->createMigration($migration);
         } else {
-            $classParts = explode('\\', $migration::className());
+            $classParts = explode('\\', get_class($migration));
             $migrationName = array_pop($classParts);
         }
 
@@ -460,9 +460,9 @@ class MigrationManager extends Component
         // TODO: Remove after next breakpoint
         if (version_compare(Craft::$app->getInfo('version'), '3.0', '<')) {
             $query = (new Query())
-                ->select('version as name, applyTime')
-                ->from($this->migrationTable)
-                ->orderBy('name desc');
+                ->select(['version as name', 'applyTime'])
+                ->from([$this->migrationTable])
+                ->orderBy(['name' => SORT_DESC]);
 
             if ($this->type === self::TYPE_PLUGIN) {
                 $query->where(['pluginId' => $this->pluginId]);
@@ -474,9 +474,9 @@ class MigrationManager extends Component
         }
 
         $query = (new Query())
-            ->select('name, applyTime')
-            ->from($this->migrationTable)
-            ->orderBy('name desc')
+            ->select(['name', 'applyTime'])
+            ->from([$this->migrationTable])
+            ->orderBy(['name' => SORT_DESC])
             ->where(['type' => $this->type]);
 
         if ($this->type === self::TYPE_PLUGIN) {

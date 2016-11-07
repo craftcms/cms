@@ -52,7 +52,7 @@ abstract class BaseEntriesController extends Controller
             // Make sure they have permission to create new entries in this section
             $this->requirePermission('createEntries'.$permissionSuffix);
         } else {
-            switch ($entry::className()) {
+            switch (get_class($entry)) {
                 case Entry::class: {
                     // If it's another user's entry (and it's not a Single), make sure they have permission to edit those
                     if (

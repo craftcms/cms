@@ -58,7 +58,7 @@ class SearchIndex extends Tool
             // Get all the element IDs ever
             $elements = (new Query())
                 ->select(['id', 'type'])
-                ->from('{{%elements}}')
+                ->from(['{{%elements}}'])
                 ->all();
 
             $batch = [];

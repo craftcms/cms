@@ -137,7 +137,7 @@ class Assets extends BaseRelationField
         /** @var Asset $class */
         $class = static::elementType();
 
-        foreach ($class::getSources('settings') as $key => $source) {
+        foreach ($class::sources('settings') as $key => $source) {
             if (!isset($source['heading'])) {
                 $folderOptions[] = [
                     'label' => $source['label'],
@@ -247,7 +247,7 @@ class Assets extends BaseRelationField
     /**
      * @inheritdoc
      */
-    public function prepareValue($value, $element)
+    public function normalizeValue($value, $element)
     {
         // If data strings are passed along, make sure the array keys are retained.
         if (isset($value['data']) && !empty($value['data'])) {
@@ -273,7 +273,7 @@ class Assets extends BaseRelationField
             }
         }
 
-        return parent::prepareValue($value,
+        return parent::normalizeValue($value,
             $element);
     }
 
@@ -346,7 +346,7 @@ class Assets extends BaseRelationField
         }
 
         // See if we have uploaded file(s).
-        $contentPostLocation = $this->getContentPostLocation($element);
+        $contentPostLocation = $this->getRequestParamName($element);
 
         if ($contentPostLocation) {
             $files = UploadedFile::getInstancesByName($contentPostLocation);
@@ -388,7 +388,7 @@ class Assets extends BaseRelationField
 
             if (!empty($targetFolderId)) {
                 foreach ($incomingFiles as $file) {
-                    $tempPath = AssetsHelper::getTempFilePath($file['filename']);
+                    $tempPath = AssetsHelper::tempFilePath($file['filename']);
                     if ($file['type'] == 'upload') {
                         move_uploaded_file($file['location'], $tempPath);
                     }
@@ -411,12 +411,8 @@ class Assets extends BaseRelationField
 
                 $assetIds = array_unique(array_merge($value, $assetIds));
 
-                // Make it look like the actual POST data contained these file IDs as well,
-                // so they make it into entry draft/version data
-                $element->setRawPostValueForField($this->handle, $assetIds);
-
                 /** @var AssetQuery $newValue */
-                $newValue = $this->prepareValue($assetIds, $element);
+                $newValue = $this->normalizeValue($assetIds, $element);
                 $this->setElementValue($element, $newValue);
             }
         }

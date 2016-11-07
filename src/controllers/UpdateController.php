@@ -45,7 +45,8 @@ class UpdateController extends Controller
         'backup-database',
         'update-database',
         'clean-up',
-        'rollback'
+        'rollback',
+        'run-pending-migrations',
     ];
 
     // Public Methods
@@ -393,10 +394,11 @@ class UpdateController extends Controller
         $this->requireAcceptsJson();
 
         $data = Craft::$app->getRequest()->getRequiredBodyParam('data');
-
         $handle = $this->_getFixedHandle($data);
 
-        if (Craft::$app->getConfig()->get('backupDbOnUpdate')) {
+        $config = Craft::$app->getConfig();
+
+        if ($config->get('backupOnUpdate') && $config->get('backupCommand') !== false) {
             if ($handle !== 'craft') {
                 /** @var Plugin $plugin */
                 $plugin = Craft::$app->getPlugins()->getPlugin($handle);
@@ -501,8 +503,8 @@ class UpdateController extends Controller
         Craft::$app->getUpdates()->updateCleanUp($uid, $handle);
 
         // New major Craft CMS version?
-        if ($handle == 'craft' && $oldVersion && App::getMajorVersion($oldVersion) < App::getMajorVersion(Craft::$app->version)) {
-            $returnUrl = Url::getUrl('whats-new');
+        if ($handle == 'craft' && $oldVersion && App::majorVersion($oldVersion) < App::majorVersion(Craft::$app->version)) {
+            $returnUrl = Url::url('whats-new');
         } else {
             $returnUrl = Craft::$app->getConfig()->get('postCpLoginRedirect');
         }
@@ -571,7 +573,7 @@ class UpdateController extends Controller
      *
      * @throws Exception
      */
-    public function actionPostDeployCallback()
+    public function actionRunPendingMigrations()
     {
         $this->requirePostRequest();
 
@@ -606,9 +608,10 @@ class UpdateController extends Controller
 
             $dbBackupPath = false;
 
-            // See if we're allowed to backup the database.
-            if (Craft::$app->getConfig()->get('backupDbOnUpdate')) {
+            $config = Craft::$app->getConfig();
 
+            // See if we're allowed to backup the database.
+            if ($config->get('backupOnUpdate') && $config->get('backupCommand') !== false) {
                 // DO it.
                 $return = $updatesService->backupDatabase();
 
@@ -624,17 +627,17 @@ class UpdateController extends Controller
                 $return = $updatesService->updateDatabase('craft');
 
                 if (!$return['success']) {
-                    $this->_rollbackPostDeployFailure('craft', $return['message'], $dbBackupPath);
+                    $this->_rollbackUpdate('craft', $return['message'], $dbBackupPath);
                 }
             }
 
             // Run any plugin updates.
-            foreach ($plugins as $plugin) {
+            foreach ($pluginsToUpdate as $plugin) {
 
                 $return = $updatesService->updateDatabase($plugin->getHandle());
 
                 if (!$return['success']) {
-                    $this->_rollbackPostDeployFailure($plugin->getHandle(), $return['message'], $dbBackupPath);
+                    $this->_rollbackUpdate($plugin->getHandle(), $return['message'], $dbBackupPath);
                 }
             }
 
@@ -651,7 +654,7 @@ class UpdateController extends Controller
      *
      * @throws Exception
      */
-    private function _rollbackPostDeployFailure($handle, $originalErrorMessage, $dbBackupPath)
+    private function _rollbackUpdate($handle, $originalErrorMessage, $dbBackupPath)
     {
         $rollbackReturn = Craft::$app->getUpdates()->rollbackUpdate(false, $handle, $dbBackupPath);
 

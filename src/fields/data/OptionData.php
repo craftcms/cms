@@ -7,7 +7,7 @@
 
 namespace craft\app\fields\data;
 
-use craft\app\base\Savable;
+use craft\app\base\Serializable;
 
 /**
  * Class OptionData
@@ -15,7 +15,7 @@ use craft\app\base\Savable;
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since  3.0
  */
-class OptionData implements Savable
+class OptionData implements Serializable
 {
     // Properties
     // =========================================================================
@@ -65,7 +65,7 @@ class OptionData implements Savable
     /**
      * @inheritdoc
      */
-    public function getSavableValue()
+    public function serialize()
     {
         return $this->value;
     }

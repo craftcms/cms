@@ -21,21 +21,20 @@ class m160807_144858_sites extends Migration
     // =========================================================================
 
     /**
-     * @var array The site FK columns ([table, column, not null?, after, locale column])
+     * @var array The site FK columns ([table, column, not null?, locale column])
      */
     protected $siteColumns = [
-        ['{{%categorygroups_i18n}}', 'siteId', true, 'groupId', 'locale'],
-        ['{{%content}}', 'siteId', true, 'elementId', 'locale'],
-        ['{{%elements_i18n}}', 'siteId', true, 'elementId', 'locale'],
-        ['{{%emailmessages}}', 'siteId', true, 'id', 'locale'],
-        ['{{%entrydrafts}}', 'siteId', true, 'creatorId', 'locale'],
-        ['{{%entryversions}}', 'siteId', true, 'creatorId', 'locale'],
-        ['{{%matrixblocks}}', 'ownerSiteId', false, 'ownerId', 'ownerLocale'],
-        ['{{%relations}}', 'sourceSiteId', false, 'sourceId', 'sourceLocale'],
-        ['{{%routes}}', 'siteId', false, 'id', 'locale'],
-        ['{{%searchindex}}', 'siteId', true, 'fieldId', 'locale'],
-        ['{{%sections_i18n}}', 'siteId', true, 'sectionId', 'locale'],
-        ['{{%templatecaches}}', 'siteId', true, 'id', 'locale'],
+        ['{{%categorygroups_i18n}}', 'siteId', true, 'locale'],
+        ['{{%content}}', 'siteId', true, 'locale'],
+        ['{{%elements_i18n}}', 'siteId', true, 'locale'],
+        ['{{%entrydrafts}}', 'siteId', true, 'locale'],
+        ['{{%entryversions}}', 'siteId', true, 'locale'],
+        ['{{%matrixblocks}}', 'ownerSiteId', false, 'ownerLocale'],
+        ['{{%relations}}', 'sourceSiteId', false, 'sourceLocale'],
+        ['{{%routes}}', 'siteId', false, 'locale'],
+        ['{{%searchindex}}', 'siteId', true, 'locale'],
+        ['{{%sections_i18n}}', 'siteId', true, 'locale'],
+        ['{{%templatecaches}}', 'siteId', true, 'locale'],
     ];
 
     /**
@@ -74,28 +73,30 @@ class m160807_144858_sites extends Migration
         // ---------------------------------------------------------------------
 
         $siteInfo = (new Query())
-            ->select('siteName, siteUrl')
-            ->from('{{%info}}')
+            ->select(['siteName', 'siteUrl'])
+            ->from(['{{%info}}'])
             ->one();
 
         $locales = (new Query())
-            ->select('locale')
-            ->from('{{%locales}}')
-            ->orderBy('sortOrder')
+            ->select(['locale'])
+            ->from(['{{%locales}}'])
+            ->orderBy(['sortOrder' => SORT_ASC])
             ->column();
 
         $siteIdsByLocale = [];
         $this->caseSql = 'case';
+        $languageCaseSql = 'case';
         $localePermissions = [];
         $permissionsCaseSql = 'case';
 
         foreach ($locales as $i => $locale) {
             $siteHandle = $this->locale2handle($locale);
+            $language = $this->locale2language($locale);
 
             $this->insert('{{%sites}}', [
                 'name' => $siteInfo['siteName'],
                 'handle' => $siteHandle,
-                'language' => $this->locale2language($locale),
+                'language' => $language,
                 'hasUrls' => 1,
                 'baseUrl' => $siteInfo['siteUrl'],
                 'sortOrder' => $i + 1,
@@ -105,14 +106,16 @@ class m160807_144858_sites extends Migration
             $siteIdsByLocale[$locale] = $siteId;
 
             $this->caseSql .= ' when % = '.$this->db->quoteValue($locale).' then '.$this->db->quoteValue($siteId);
+            $languageCaseSql .= ' when [[language]] = '.$this->db->quoteValue($locale).' then '.$this->db->quoteValue($language);
 
             $localePermission = 'editlocale:'.$locale;
             $sitePermission = 'editsite:'.$siteId;
             $localePermissions[] = $localePermission;
-            $permissionsCaseSql .= ' when % = '.$this->db->quoteValue($localePermission).' then '.$this->db->quoteValue($sitePermission);
+            $permissionsCaseSql .= ' when [[name]] = '.$this->db->quoteValue($localePermission).' then '.$this->db->quoteValue($sitePermission);
         }
 
         $this->caseSql .= ' end';
+        $languageCaseSql .= ' end';
         $permissionsCaseSql .= ' end';
 
         // Update the user permissions
@@ -121,9 +124,9 @@ class m160807_144858_sites extends Migration
         $this->update(
             '{{%userpermissions}}',
             [
-                'name' => new Expression(str_replace('%', $this->db->quoteColumnName('name'), $permissionsCaseSql)),
+                'name' => new Expression($permissionsCaseSql),
             ],
-            ['in', 'name', $localePermissions],
+            ['name' => $localePermissions],
             [],
             false);
 
@@ -131,8 +134,8 @@ class m160807_144858_sites extends Migration
         // ---------------------------------------------------------------------
 
         foreach ($this->siteColumns as $columnInfo) {
-            list($table, $column, $isNotNull, $after, $localeColumn) = $columnInfo;
-            $this->addSiteColumn($table, $column, $isNotNull, $after, $localeColumn);
+            list($table, $column, $isNotNull, $localeColumn) = $columnInfo;
+            $this->addSiteColumn($table, $column, $isNotNull, $localeColumn);
         }
 
         // Create the new indexes
@@ -146,8 +149,6 @@ class m160807_144858_sites extends Migration
         $this->createIndex($this->db->getIndexName('{{%elements_i18n}}', 'uri,siteId', true), '{{%elements_i18n}}', 'uri,siteId', true);
         $this->createIndex($this->db->getIndexName('{{%elements_i18n}}', 'siteId', false), '{{%elements_i18n}}', 'siteId', false);
         $this->createIndex($this->db->getIndexName('{{%elements_i18n}}', 'slug,siteId', false), '{{%elements_i18n}}', 'slug,siteId', false);
-        $this->createIndex($this->db->getIndexName('{{%emailmessages}}', 'key,siteId', true), '{{%emailmessages}}', 'key,siteId', true);
-        $this->createIndex($this->db->getIndexName('{{%emailmessages}}', 'siteId', false), '{{%emailmessages}}', 'siteId', false);
         $this->createIndex($this->db->getIndexName('{{%entrydrafts}}', 'entryId,siteId', false), '{{%entrydrafts}}', 'entryId,siteId', false);
         $this->createIndex($this->db->getIndexName('{{%entrydrafts}}', 'siteId', false), '{{%entrydrafts}}', 'siteId', false);
         $this->createIndex($this->db->getIndexName('{{%entryversions}}', 'entryId,siteId', false), '{{%entryversions}}', 'entryId,siteId', false);
@@ -167,7 +168,6 @@ class m160807_144858_sites extends Migration
         $this->addForeignKey($this->db->getForeignKeyName('{{%categorygroups_i18n}}', 'siteId'), '{{%categorygroups_i18n}}', 'siteId', '{{%sites}}', 'id', 'CASCADE', 'CASCADE');
         $this->addForeignKey($this->db->getForeignKeyName('{{%content}}', 'siteId'), '{{%content}}', 'siteId', '{{%sites}}', 'id', 'CASCADE', 'CASCADE');
         $this->addForeignKey($this->db->getForeignKeyName('{{%elements_i18n}}', 'siteId'), '{{%elements_i18n}}', 'siteId', '{{%sites}}', 'id', 'CASCADE', 'CASCADE');
-        $this->addForeignKey($this->db->getForeignKeyName('{{%emailmessages}}', 'siteId'), '{{%emailmessages}}', 'siteId', '{{%sites}}', 'id', 'CASCADE', 'CASCADE');
         $this->addForeignKey($this->db->getForeignKeyName('{{%entrydrafts}}', 'siteId'), '{{%entrydrafts}}', 'siteId', '{{%sites}}', 'id', 'CASCADE', 'CASCADE');
         $this->addForeignKey($this->db->getForeignKeyName('{{%entryversions}}', 'siteId'), '{{%entryversions}}', 'siteId', '{{%sites}}', 'id', 'CASCADE', 'CASCADE');
         $this->addForeignKey($this->db->getForeignKeyName('{{%matrixblocks}}', 'ownerSiteId'), '{{%matrixblocks}}', 'ownerSiteId', '{{%sites}}', 'id', 'CASCADE', 'CASCADE');
@@ -188,7 +188,6 @@ class m160807_144858_sites extends Migration
         MigrationHelper::dropForeignKeyIfExists('{{%categorygroups_i18n}}', ['locale'], $this);
         MigrationHelper::dropForeignKeyIfExists('{{%content}}', ['locale'], $this);
         MigrationHelper::dropForeignKeyIfExists('{{%elements_i18n}}', ['locale'], $this);
-        MigrationHelper::dropForeignKeyIfExists('{{%emailmessages}}', ['locale'], $this);
         MigrationHelper::dropForeignKeyIfExists('{{%entrydrafts}}', ['locale'], $this);
         MigrationHelper::dropForeignKeyIfExists('{{%entryversions}}', ['locale'], $this);
         MigrationHelper::dropForeignKeyIfExists('{{%matrixblocks}}', ['ownerLocale'], $this);
@@ -223,11 +222,6 @@ class m160807_144858_sites extends Migration
             'slug',
             'locale'
         ], false, $this);
-        MigrationHelper::dropIndexIfExists('{{%emailmessages}}', [
-            'key',
-            'locale'
-        ], true, $this);
-        MigrationHelper::dropIndexIfExists('{{%emailmessages}}', ['locale'], false, $this);
         MigrationHelper::dropIndexIfExists('{{%entrydrafts}}', [
             'entryId',
             'locale'
@@ -264,9 +258,20 @@ class m160807_144858_sites extends Migration
         // ---------------------------------------------------------------------
 
         foreach ($this->siteColumns as $columnInfo) {
-            list($table, , , , $localeColumn) = $columnInfo;
+            list($table, , , $localeColumn) = $columnInfo;
             $this->dropColumn($table, $localeColumn);
         }
+
+        // Email Messages
+        // ---------------------------------------------------------------------
+
+        MigrationHelper::dropForeignKeyIfExists('{{%emailmessages}}', ['locale'], $this);
+        MigrationHelper::renameColumn('{{%emailmessages}}', 'locale', 'language', $this);
+        $this->alterColumn('{{%emailmessages}}', 'language', $this->string()->notNull());
+
+        $this->update('{{%emailmessages}}', [
+            'language' => new Expression($languageCaseSql),
+        ], '', [], false);
 
         // Matrix content tables
         // ---------------------------------------------------------------------
@@ -276,7 +281,7 @@ class m160807_144858_sites extends Migration
         foreach ($this->db->getSchema()->getTableNames() as $tableName) {
             if (StringHelper::startsWith($tableName, $matrixTablePrefix)) {
                 // Add the new siteId column + index
-                $this->addSiteColumn($tableName, 'siteId', true, 'elementId', 'locale');
+                $this->addSiteColumn($tableName, 'siteId', true, 'locale');
                 $this->createIndex($this->db->getIndexName($tableName, 'elementId,siteId'), $tableName, 'elementId,siteId', true);
                 $this->addForeignKey($this->db->getForeignKeyName($tableName, 'siteId'), $tableName, 'siteId', '{{%sites}}', 'id', 'CASCADE', 'CASCADE');
 
@@ -305,7 +310,7 @@ class m160807_144858_sites extends Migration
                     $oldColumn = $fkInfo->fk->columns[$i];
                     $newColumn = $oldColumn.'__siteId';
                     $isNotNull = (stripos($fkInfo->table->columns[$oldColumn]->type, 'not null') !== false);
-                    $this->addSiteColumn($table, $newColumn, $isNotNull, $oldColumn, $oldColumn);
+                    $this->addSiteColumn($table, $newColumn, $isNotNull, $oldColumn);
                     $this->addForeignKey($this->db->getForeignKeyName($table, $newColumn), $table, $newColumn, '{{%sites}}', 'id', 'CASCADE', 'CASCADE');
                 }
             }
@@ -337,12 +342,15 @@ class m160807_144858_sites extends Migration
             // Combine the uriFormat and nestedUrlFormat columns
             $results = (new Query())
                 ->select(['id', 'uriFormat', 'nestedUrlFormat'])
-                ->from($tables['i18n'])
+                ->from([$tables['i18n']])
                 ->where([
-                    'and',
-                    'nestedUrlFormat is not null',
-                    'nestedUrlFormat != ""',
-                    'nestedUrlFormat != uriFormat'
+                    'not',
+                    [
+                        'or',
+                        ['nestedUrlFormat' => null],
+                        ['nestedUrlFormat' => ''],
+                        '[[nestedUrlFormat]] = [[uriFormat]]'
+                    ]
                 ])
                 ->all();
 
@@ -355,13 +363,13 @@ class m160807_144858_sites extends Migration
             $this->dropColumn($tables['i18n'], 'nestedUrlFormat');
 
             // Create hasUrls and template columns in the i18n table
-            $this->addColumnBefore($tables['i18n'], 'hasUrls', $this->boolean()->notNull()->defaultValue(1), 'uriFormat');
-            $this->addColumnAfter($tables['i18n'], 'template', $this->string(500), 'uriFormat');
+            $this->addColumn($tables['i18n'], 'hasUrls', $this->boolean()->notNull()->defaultValue(1));
+            $this->addColumn($tables['i18n'], 'template', $this->string(500));
 
             // Move the hasUrls and template values into the i18n table
             $results = (new Query())
                 ->select(['id', 'hasUrls', 'template'])
-                ->from($tables['primary'])
+                ->from([$tables['primary']])
                 ->all();
 
             foreach ($results as $result) {
@@ -379,17 +387,17 @@ class m160807_144858_sites extends Migration
         // Field translation methods
         // ---------------------------------------------------------------------
 
-        $this->addColumnAfter(
+        $this->addColumn(
             '{{%fields}}',
             'translationMethod',
-            $this->enum('translationMethod', ['none', 'language', 'site', 'custom'])->notNull()->defaultValue('none'),
-            'instructions');
+            $this->enum('translationMethod', ['none', 'language', 'site', 'custom'])->notNull()->defaultValue('none')
+        );
 
-        $this->addColumnAfter(
+        $this->addColumn(
             '{{%fields}}',
             'translationKeyFormat',
-            $this->text(),
-            'translationMethod');
+            $this->text()
+        );
 
         $this->update(
             '{{%fields}}',
@@ -408,15 +416,17 @@ class m160807_144858_sites extends Migration
 
         $fields = (new Query())
             ->select(['id', 'type', 'translationMethod', 'settings'])
-            ->from('{{%fields}}')
-            ->where(['in', 'type', [
-                'craft\app\fields\Matrix',
-                'craft\app\fields\Assets',
-                'craft\app\fields\Categories',
-                'craft\app\fields\Entries',
-                'craft\app\fields\Tags',
-                'craft\app\fields\Users'
-            ]])
+            ->from(['{{%fields}}'])
+            ->where([
+                'type' => [
+                    'craft\app\fields\Matrix',
+                    'craft\app\fields\Assets',
+                    'craft\app\fields\Categories',
+                    'craft\app\fields\Entries',
+                    'craft\app\fields\Tags',
+                    'craft\app\fields\Users'
+                ]
+            ])
             ->all();
 
         foreach ($fields as $field) {
@@ -480,7 +490,7 @@ class m160807_144858_sites extends Migration
         // Fetch all the Recent Entries widgets that have a locale setting
         $widgetResults = (new Query())
             ->select(['id', 'settings'])
-            ->from('{{%widgets}}')
+            ->from(['{{%widgets}}'])
             ->where(['like', 'settings', '"locale":'])
             ->all();
 
@@ -511,18 +521,17 @@ class m160807_144858_sites extends Migration
      * @param string  $table
      * @param string  $column
      * @param boolean $isNotNull
-     * @param string  $after
      * @param string  $localeColumn
      */
-    protected function addSiteColumn($table, $column, $isNotNull, $after, $localeColumn)
+    protected function addSiteColumn($table, $column, $isNotNull, $localeColumn)
     {
         // Ignore NOT NULL for now
         $type = $this->integer();
-        $this->addColumnAfter($table, $column, $type, $after);
+        $this->addColumn($table, $column, $type);
 
         // Set the values
         $this->update($table, [
-            $column => new Expression(str_replace('%', $this->db->quoteColumnName($localeColumn), $this->caseSql))
+            $column => new Expression(str_replace('%', "[[{$localeColumn}]]", $this->caseSql))
         ], '', [], false);
 
         if ($isNotNull) {

@@ -169,9 +169,9 @@ class UserQuery extends ElementQuery
         } else {
             $query = new Query();
             $this->groupId = $query
-                ->select('id')
-                ->from('{{%usergroups}}')
-                ->where(Db::parseParam('handle', $value, $query->params))
+                ->select(['id'])
+                ->from(['{{%usergroups}}'])
+                ->where(Db::parseParam('handle', $value))
                 ->column();
         }
 
@@ -314,13 +314,13 @@ class UserQuery extends ElementQuery
         }
 
         if ($this->withPassword) {
-            $this->query->addSelect('users.password');
+            $this->query->addSelect(['users.password']);
         }
 
         if ($this->admin) {
-            $this->subQuery->andWhere('users.admin = 1');
+            $this->subQuery->andWhere(['users.admin' => '1']);
         } else if ($this->client) {
-            $this->subQuery->andWhere('users.client = 1');
+            $this->subQuery->andWhere(['users.client' => '1']);
         } else {
             $this->_applyCanParam();
         }
@@ -328,39 +328,73 @@ class UserQuery extends ElementQuery
         if ($this->groupId) {
             $query = new Query();
             $userIds = $query
-                ->select('userId')
-                ->from('{{%usergroups_users}}')
-                ->where(Db::parseParam('groupId', $this->groupId, $query->params))
+                ->select(['userId'])
+                ->from(['{{%usergroups_users}}'])
+                ->where(Db::parseParam('groupId', $this->groupId))
                 ->column();
 
             if (!empty($userIds)) {
-                $this->subQuery->andWhere(['in', 'elements.id', $userIds]);
+                $this->subQuery->andWhere(['elements.id' => $userIds]);
             } else {
                 return false;
             }
         }
 
         if ($this->email) {
-            $this->subQuery->andWhere(Db::parseParam('users.email', $this->email, $this->subQuery->params));
+            $this->subQuery->andWhere(Db::parseParam('users.email', $this->email));
         }
 
         if ($this->username) {
-            $this->subQuery->andWhere(Db::parseParam('users.username', $this->username, $this->subQuery->params));
+            $this->subQuery->andWhere(Db::parseParam('users.username', $this->username));
         }
 
         if ($this->firstName) {
-            $this->subQuery->andWhere(Db::parseParam('users.firstName', $this->firstName, $this->subQuery->params));
+            $this->subQuery->andWhere(Db::parseParam('users.firstName', $this->firstName));
         }
 
         if ($this->lastName) {
-            $this->subQuery->andWhere(Db::parseParam('users.lastName', $this->lastName, $this->subQuery->params));
+            $this->subQuery->andWhere(Db::parseParam('users.lastName', $this->lastName));
         }
 
         if ($this->lastLoginDate) {
-            $this->subQuery->andWhere(Db::parseDateParam('entries.lastLoginDate', $this->lastLoginDate, $this->subQuery->params));
+            $this->subQuery->andWhere(Db::parseDateParam('entries.lastLoginDate', $this->lastLoginDate));
         }
 
         return parent::beforePrepare();
+    }
+
+    /**
+     * @inheritdoc
+     */
+    protected function statusCondition($status)
+    {
+        switch ($status) {
+            case User::STATUS_ACTIVE:
+                return [
+                    'users.archived' => '0',
+                    'users.suspended' => '0',
+                    'users.locked' => '0',
+                    'users.pending' => '0'
+                ];
+            case User::STATUS_PENDING:
+                return [
+                    'users.pending' => '1'
+                ];
+            case User::STATUS_LOCKED:
+                return [
+                    'users.locked' => '1'
+                ];
+            case User::STATUS_SUSPENDED:
+                return [
+                    'users.suspended' => '1'
+                ];
+            case User::STATUS_ARCHIVED:
+                return [
+                    'users.archived' => '1'
+                ];
+            default:
+                return parent::statusCondition($status);
+        }
     }
 
     // Private Methods
@@ -369,51 +403,54 @@ class UserQuery extends ElementQuery
     /**
      * Applies the 'can' param to the query being prepared.
      *
+     * @return void
      * @throws QueryAbortedException
      */
     private function _applyCanParam()
     {
-        if ($this->can === false || !empty($this->can)) {
-            if (is_string($this->can) && !is_numeric($this->can)) {
-                // Convert it to the actual permission ID, or false if the permission doesn't have an ID yet.
-                $this->can = (new Query())
-                    ->select('id')
-                    ->from('{{%userpermissions}}')
-                    ->where('name = :name', [':name' => strtolower($this->can)])
-                    ->scalar();
-            }
-
-            // False means that the permission doesn't have an ID yet.
-            if ($this->can !== false) {
-                // Get the users that have that permission directly
-                $permittedUserIds = (new Query())
-                    ->select('userId')
-                    ->from('{{%userpermissions_users}}')
-                    ->where(['permissionId' => $this->can])
-                    ->column();
-
-                // Get the users that have that permission via a user group
-                $permittedUserIdsViaGroups = (new Query())
-                    ->select('g_u.userId')
-                    ->from('{{%usergroups_users}} g_u')
-                    ->innerJoin('{{%userpermissions_usergroups}} p_g', 'p_g.groupId = g_u.groupId')
-                    ->where(['p_g.permissionId' => $this->can])
-                    ->column();
-
-                $permittedUserIds = array_unique(array_merge($permittedUserIds, $permittedUserIdsViaGroups));
-            }
-
-            if (!empty($permittedUserIds)) {
-                $permissionConditions = [
-                    'or',
-                    'users.admin = 1',
-                    ['in', 'elements.id', $permittedUserIds]
-                ];
-            } else {
-                $permissionConditions = 'users.admin = 1';
-            }
-
-            $this->subQuery->andWhere($permissionConditions);
+        if ($this->can !== false && empty($this->can)) {
+            return;
         }
+
+        if (is_string($this->can) && !is_numeric($this->can)) {
+            // Convert it to the actual permission ID, or false if the permission doesn't have an ID yet.
+            $this->can = (new Query())
+                ->select(['id'])
+                ->from(['{{%userpermissions}}'])
+                ->where(['name' => strtolower($this->can)])
+                ->scalar();
+        }
+
+        // False means that the permission doesn't have an ID yet.
+        if ($this->can !== false) {
+            // Get the users that have that permission directly
+            $permittedUserIds = (new Query())
+                ->select(['userId'])
+                ->from(['{{%userpermissions_users}}'])
+                ->where(['permissionId' => $this->can])
+                ->column();
+
+            // Get the users that have that permission via a user group
+            $permittedUserIdsViaGroups = (new Query())
+                ->select(['g_u.userId'])
+                ->from(['{{%usergroups_users}} g_u'])
+                ->innerJoin('{{%userpermissions_usergroups}} p_g', '[[p_g.groupId]] = [[g_u.groupId]]')
+                ->where(['p_g.permissionId' => $this->can])
+                ->column();
+
+            $permittedUserIds = array_unique(array_merge($permittedUserIds, $permittedUserIdsViaGroups));
+        }
+
+        if (!empty($permittedUserIds)) {
+            $condition = [
+                'or',
+                ['users.admin' => '1'],
+                ['elements.id' => $permittedUserIds]
+            ];
+        } else {
+            $condition = ['users.admin' => '1'];
+        }
+
+        $this->subQuery->andWhere($condition);
     }
 }

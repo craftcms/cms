@@ -146,7 +146,7 @@ interface FieldInterface extends SavableComponentInterface
      * The same principles also apply if you’re including your JavaScript code with
      * [[\craft\app\web\View::registerJs()]].
      *
-     * @param mixed                 $value           The field’s value. This will either be the [[prepareValue() prepared value]],
+     * @param mixed                 $value           The field’s value. This will either be the [[normalizeValue() normalized value]],
      *                                               raw POST data (i.e. if there was a validation error), or null
      * @param ElementInterface|null $element         The element the field is associated with, if there is one
      *
@@ -165,18 +165,6 @@ interface FieldInterface extends SavableComponentInterface
      * @return string The static version of the field’s input HTML
      */
     public function getStaticHtml($value, $element);
-
-    /**
-     * Validates the field’s value.
-     *
-     * @param mixed            $value   The field’s value
-     * @param ElementInterface $element The element the field is associated with, if there is one
-     *
-     * @return string|string[]|null The error message(s) if there are any validation errors, or null if everything checks out.
-     *                              The messages can contain `{attribute}` and `{value}` tokens, which will be replaced with the
-     *                              field handle and value, respectively.
-     */
-    public function validateValue($value, $element);
 
     /**
      * Returns the validation rules for an element with this field.
@@ -215,29 +203,31 @@ interface FieldInterface extends SavableComponentInterface
     public function getSearchKeywords($value, $element);
 
     /**
-     * Prepares the field’s value for use.
+     * Normalizes the field’s value for use.
      *
      * This method is called when the field’s value is first accessed from the element. For example, the first time
      * `entry.myFieldHandle` is called from a template, or right before [[getInputHtml()]] is called. Whatever
      * this method returns is what `entry.myFieldHandle` will likewise return, and what [[getInputHtml()]]’s and
-     * [[prepareValueForDb()]]’s $value arguments will be set to.
+     * [[serializeValue()]]’s $value arguments will be set to.
      *
      * @param mixed                 $value   The raw field value
      * @param ElementInterface|null $element The element the field is associated with, if there is one
      *
      * @return mixed The prepared field value
      */
-    public function prepareValue($value, $element);
+    public function normalizeValue($value, $element);
 
     /**
-     * Prepares the field’s value for DB storage.
+     * Prepares the field’s value to be stored somewhere, like the content table or JSON-encoded in an entry revision table.
      *
-     * This method is called when the field’s value is about to be saved to the database.
+     * Data types that are JSON-encodable are safe (arrays, integers, strings, booleans, etc).
      *
      * @param mixed                 $value   The raw field value
      * @param ElementInterface|null $element The element the field is associated with, if there is one
+     *
+     * @return mixed The serialized field value
      */
-    public function prepareValueForDb($value, $element);
+    public function serializeValue($value, $element);
 
     /**
      * Modifies an element query.

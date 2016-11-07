@@ -95,8 +95,8 @@ class Deprecator extends Component
 
             // Do we already have this one logged?
             $existingId = (new Query())
-                ->select('id')
-                ->from(static::$_tableName)
+                ->select(['id'])
+                ->from([static::$_tableName])
                 ->where([
                     'key' => $log->key,
                     'fingerprint' => $log->fingerprint
@@ -112,7 +112,7 @@ class Deprecator extends Component
                             'fingerprint' => $log->fingerprint
                         ]))
                     ->execute();
-                $log->id = $db->getLastInsertID();
+                $log->id = $db->getLastInsertID(static::$_tableName);
             } else {
                 $db->createCommand()
                     ->update(
@@ -147,8 +147,8 @@ class Deprecator extends Component
     public function getTotalLogs()
     {
         return (new Query())
-            ->from(static::$_tableName)
-            ->count('id');
+            ->from([static::$_tableName])
+            ->count('[[id]]');
     }
 
     /**
@@ -165,7 +165,7 @@ class Deprecator extends Component
 
             $results = $this->_createDeprecationErrorQuery()
                 ->limit($limit)
-                ->orderBy('lastOccurrence desc')
+                ->orderBy(['lastOccurrence' => SORT_DESC])
                 ->all();
 
             foreach ($results as $result) {
@@ -251,7 +251,7 @@ class Deprecator extends Component
                 'message',
                 'traces',
             ])
-            ->from(static::$_tableName);
+            ->from([static::$_tableName]);
     }
 
     /**

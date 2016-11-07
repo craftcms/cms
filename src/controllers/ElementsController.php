@@ -15,7 +15,6 @@ use craft\app\errors\InvalidTypeException;
 use craft\app\helpers\ArrayHelper;
 use craft\app\helpers\ElementHelper;
 use craft\app\helpers\StringHelper;
-use craft\app\services\Elements;
 use yii\web\BadRequestHttpException;
 use yii\web\ForbiddenHttpException;
 use yii\web\NotFoundHttpException;
@@ -56,9 +55,9 @@ class ElementsController extends BaseElementsController
             $sources = [];
 
             foreach ($sourceKeys as $key) {
-                $source = $elementType::getSourceByKey($key, $context);
+                $source = ElementHelper::findSource($elementType, $key, $context);
 
-                if ($source) {
+                if ($source !== null) {
                     $sources[$key] = $source;
                 }
             }
@@ -67,7 +66,7 @@ class ElementsController extends BaseElementsController
         }
 
         if (!empty($sources) && count($sources) === 1) {
-            $firstSource = ArrayHelper::getFirstValue($sources);
+            $firstSource = ArrayHelper::firstValue($sources);
             $showSidebar = !empty($firstSource['nested']);
         } else {
             $showSidebar = !empty($sources);
@@ -151,7 +150,7 @@ class ElementsController extends BaseElementsController
             $sourceKey = Craft::$app->getRequest()->getBodyParam('includeTableAttributesForSource');
 
             if ($sourceKey) {
-                $attributes = Craft::$app->getElementIndexes()->getTableAttributes($element->className(), $sourceKey);
+                $attributes = Craft::$app->getElementIndexes()->getTableAttributes(get_class($element), $sourceKey);
 
                 // Drop the first one
                 array_shift($attributes);
@@ -258,12 +257,12 @@ class ElementsController extends BaseElementsController
         /** @var Element $element */
         // Make sure the user is allowed to edit this site
         $userService = Craft::$app->getUser();
-        if (Craft::$app->getIsMultiSite() && $elementType->isLocalized() && !$userService->checkPermission('editSite:'.$element->siteId)) {
+        if (Craft::$app->getIsMultiSite() && $elementType::isLocalized() && !$userService->checkPermission('editSite:'.$element->siteId)) {
             // Find the first site the user does have permission to edit
             $elementSiteIds = [];
             $newSiteId = null;
 
-            foreach (ElementHelper::getSupportedSitesForElement($element) as $siteInfo) {
+            foreach (ElementHelper::supportedSitesForElement($element) as $siteInfo) {
                 $elementSiteIds[] = $siteInfo['siteId'];
             }
 
@@ -318,7 +317,7 @@ class ElementsController extends BaseElementsController
     private function _getEditorHtmlResponse(ElementInterface $element, $includeSites)
     {
         /** @var Element $element */
-        $siteIds = ElementHelper::getEditableSiteIdsForElement($element);
+        $siteIds = ElementHelper::editableSiteIdsForElement($element);
 
         if (!$siteIds) {
             throw new ForbiddenHttpException('User not permitted to edit content in any of the sites supported by this element');

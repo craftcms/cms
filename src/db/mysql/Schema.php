@@ -8,6 +8,9 @@
 namespace craft\app\db\mysql;
 
 use Craft;
+use craft\app\errors\DbBackupException;
+use craft\app\helpers\Io;
+use craft\app\services\Config;
 use yii\db\Exception;
 
 /**
@@ -123,24 +126,65 @@ class Schema extends \yii\db\mysql\Schema
         return new ColumnSchemaBuilder($type, $length, $this->db);
     }
 
-    // Protected Methods
+    /**
+     * Returns the default backup command to execute.
+     *
+     * @return string The command to execute
+     */
+    public function getDefaultBackupCommand()
+    {
+        return 'mysqldump'.
+            ' --defaults-extra-file='.$this->_createDumpConfigFile().
+            ' --add-drop-table'.
+            ' --comments'.
+            ' --create-options'.
+            ' --dump-date'.
+            ' --no-autocommit'.
+            ' --routines'.
+            ' --set-charset'.
+            ' --triggers'.
+            ' --result-file={file}'.
+            ' {database}';
+    }
+
+    /**
+     * Returns the default database restore command to execute.
+     *
+     * @return string The command to execute
+     * @throws DbBackupException
+     */
+    public function getDefaultRestoreCommand()
+    {
+        return 'mysqldump'.
+            ' --defaults-extra-file='.$this->_createDumpConfigFile().
+            ' {database}'.
+            ' < {file}';
+    }
+
+    // Public Methods
     // =========================================================================
 
     /**
-     * Returns all table names in the database which start with the tablePrefix.
+     * Creates a temporary my.cnf file based on the DB config settings.
      *
-     * @param string $schema
-     *
-     * @return string
+     * @return string The path to the my.cnf file
+     * @throws DbBackupException if the file cannot be created
      */
-    protected function findTableNames($schema = null)
+    private function _createDumpConfigFile()
     {
-        if (!$schema) {
-            $likeSql = ($this->db->tablePrefix ? ' LIKE \''.$this->db->tablePrefix.'%\'' : '');
+        $filePath = Craft::$app->getPath()->getTempPath().'/my.cnf';
 
-            return $this->db->createCommand('SHOW TABLES'.$likeSql)->queryColumn();
+        $config = Craft::$app->getConfig();
+        $contents = '[client]'.PHP_EOL.
+            'user='.$config->get('user', Config::CATEGORY_DB).PHP_EOL.
+            'password='.$config->get('password', Config::CATEGORY_DB).PHP_EOL.
+            'host='.$config->get('server', Config::CATEGORY_DB).PHP_EOL.
+            'port='.$config->getDbPort();
+
+        if (!Io::writeToFile($filePath, $contents)) {
+            throw new DbBackupException('Could not write the my.cnf file for mysqldump to use to connect to the database.');
         }
 
-        return parent::findTableNames();
+        return $filePath;
     }
 }

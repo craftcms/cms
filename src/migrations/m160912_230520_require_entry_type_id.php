@@ -21,10 +21,10 @@ class m160912_230520_require_entry_type_id extends Migration
     {
         // Get all of the sections' primary entry type IDs
         $subQuery = (new Query())
-            ->select('et.id')
-            ->from('{{%entrytypes}} et')
-            ->where('et.sectionId = s.id')
-            ->orderBy('sortOrder asc')
+            ->select(['et.id'])
+            ->from(['{{%entrytypes}} et'])
+            ->where('[[et.sectionId]] = [[s.id]]')
+            ->orderBy(['sortOrder' => SORT_ASC])
             ->limit(1);
 
         $results = (new Query())
@@ -32,7 +32,7 @@ class m160912_230520_require_entry_type_id extends Migration
                 'sectionId' => 's.id',
                 'typeId' => $subQuery
             ])
-            ->from('{{%sections}} s')
+            ->from(['{{%sections}} s'])
             ->all();
 
         if ($results) {
@@ -57,13 +57,13 @@ class m160912_230520_require_entry_type_id extends Migration
 
         // Are there any entries that still don't have a type?
         $typelessEntryIds = (new Query())
-            ->select('id')
-            ->from('{{%entries}}')
-            ->where('typeId is null')
+            ->select(['id'])
+            ->from(['{{%entries}}'])
+            ->where(['typeId' => null])
             ->column();
 
         if ($typelessEntryIds) {
-            $this->delete('{{%elements}}', ['in', 'id', $typelessEntryIds]);
+            $this->delete('{{%elements}}', ['id' => $typelessEntryIds]);
             Craft::warning("Deleted the following entries, because they didn't have an entry type: ".implode(',', $typelessEntryIds));
         }
 

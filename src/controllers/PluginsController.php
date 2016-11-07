@@ -151,19 +151,19 @@ class PluginsController extends Controller
             throw new NotFoundHttpException('Plugin not found');
         }
 
-        if (Craft::$app->getPlugins()->savePluginSettings($plugin, $settings)) {
-            Craft::$app->getSession()->setNotice(Craft::t('app', 'Plugin settings saved.'));
+        if (!Craft::$app->getPlugins()->savePluginSettings($plugin, $settings)) {
+            Craft::$app->getSession()->setError(Craft::t('app', 'Couldn’t save plugin settings.'));
 
-            return $this->redirectToPostedUrl();
+            // Send the plugin back to the template
+            Craft::$app->getUrlManager()->setRouteParams([
+                'plugin' => $plugin
+            ]);
+
+            return null;
         }
 
-        Craft::$app->getSession()->setError(Craft::t('app', 'Couldn’t save plugin settings.'));
+        Craft::$app->getSession()->setNotice(Craft::t('app', 'Plugin settings saved.'));
 
-        // Send the plugin back to the template
-        Craft::$app->getUrlManager()->setRouteParams([
-            'plugin' => $plugin
-        ]);
-
-        return null;
+        return $this->redirectToPostedUrl();
     }
 }

@@ -2,6 +2,7 @@
 
 namespace craft\app\migrations;
 
+use Craft;
 use craft\app\db\Migration;
 
 /**
@@ -15,7 +16,7 @@ class m160727_194637_column_cleanup extends Migration
     public function safeUp()
     {
         // Disable FK checks
-        $this->execute('SET FOREIGN_KEY_CHECKS = 0;');
+        $this->execute(Craft::$app->getDb()->getSchema()->getQueryBuilder()->checkIntegrity(false));
 
         // Normalize the sortOrder columns
         $sortOrderTables = [
@@ -56,7 +57,7 @@ class m160727_194637_column_cleanup extends Migration
         $this->alterColumn('{{%users}}', 'invalidLoginCount', $this->smallInteger()->unsigned());
 
         // Re-enable FK checks
-        $this->execute('SET FOREIGN_KEY_CHECKS = 1;');
+        $this->execute(Craft::$app->getDb()->getSchema()->getQueryBuilder()->checkIntegrity(true));
     }
 
     /**

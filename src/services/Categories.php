@@ -10,7 +10,6 @@ namespace craft\app\services;
 use Craft;
 use craft\app\db\Query;
 use craft\app\errors\CategoryGroupNotFoundException;
-use craft\app\events\CategoryEvent;
 use craft\app\elements\Category;
 use craft\app\events\CategoryGroupEvent;
 use craft\app\models\CategoryGroup;
@@ -96,8 +95,8 @@ class Categories extends Component
                 $this->_allGroupIds = array_keys($this->_categoryGroupsById);
             } else {
                 $this->_allGroupIds = (new Query())
-                    ->select('id')
-                    ->from('{{%categorygroups}}')
+                    ->select(['id'])
+                    ->from(['{{%categorygroups}}'])
                     ->column();
             }
         }
@@ -137,7 +136,7 @@ class Categories extends Component
         if (!$this->_fetchedAllCategoryGroups) {
             /** @var CategoryGroupRecord[] $groupRecords */
             $groupRecords = CategoryGroupRecord::find()
-                ->orderBy('name asc')
+                ->orderBy(['name' => SORT_ASC])
                 ->with('structure')
                 ->all();
 
@@ -468,18 +467,16 @@ class Categories extends Component
                         ->delete(
                             '{{%elements_i18n}}',
                             [
-                                'and',
-                                ['in', 'elementId', $categoryIds],
-                                ['in', 'siteId', $droppedSiteIds]
+                                'elementId' => $categoryIds,
+                                'siteId' => $droppedSiteIds
                             ])
                         ->execute();
                     $db->createCommand()
                         ->delete(
                             '{{%content}}',
                             [
-                                'and',
-                                ['in', 'elementId', $categoryIds],
-                                ['in', 'siteId', $droppedSiteIds]
+                                'elementId' => $categoryIds,
+                                'siteId' => $droppedSiteIds
                             ])
                         ->execute();
                 }
@@ -493,9 +490,8 @@ class Categories extends Component
                                 '{{%elements_i18n}}',
                                 ['uri' => null],
                                 [
-                                    'and',
-                                    ['in', 'elementId', $categoryIds],
-                                    ['in', 'siteId', $sitesNowWithoutUrls]
+                                    'elementId' => $categoryIds,
+                                    'siteId' => $sitesNowWithoutUrls,
                                 ])
                             ->execute();
                     } else if ($sitesWithNewUriFormats) {
@@ -565,8 +561,8 @@ class Categories extends Component
         try {
             // Delete the field layout
             $fieldLayoutId = (new Query())
-                ->select('fieldLayoutId')
-                ->from('{{%categorygroups}}')
+                ->select(['fieldLayoutId'])
+                ->from(['{{%categorygroups}}'])
                 ->where(['id' => $groupId])
                 ->scalar();
 
@@ -657,9 +653,9 @@ class Categories extends Component
 
         // Get the structure ID
         $structureId = (new Query())
-            ->select('categorygroups.structureId')
-            ->from('{{%categories}} categories')
-            ->innerJoin('{{%categorygroups}} categorygroups', 'categorygroups.id = categories.groupId')
+            ->select(['categorygroups.structureId'])
+            ->from(['{{%categories}} categories'])
+            ->innerJoin('{{%categorygroups}} categorygroups', '[[categorygroups.id]] = [[categories.groupId]]')
             ->where(['categories.id' => $categoryId])
             ->scalar();
 

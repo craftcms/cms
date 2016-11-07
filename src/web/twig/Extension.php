@@ -13,6 +13,7 @@ use craft\app\dates\DateTime;
 use craft\app\helpers\DateTimeHelper;
 use craft\app\helpers\Db;
 use craft\app\helpers\Header;
+use craft\app\helpers\Json;
 use craft\app\helpers\StringHelper;
 use craft\app\helpers\Template;
 use craft\app\helpers\Url;
@@ -43,7 +44,7 @@ use yii\helpers\Markdown;
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since  3.0
  */
-class Extension extends \Twig_Extension
+class Extension extends \Twig_Extension implements \Twig_Extension_GlobalsInterface
 {
     // Properties
     // =========================================================================
@@ -364,7 +365,7 @@ class Extension extends \Twig_Extension
     {
         $str = Craft::$app->getElements()->parseRefs($str);
 
-        return Template::getRaw($str);
+        return Template::raw($str);
     }
 
     /**
@@ -563,7 +564,7 @@ class Extension extends \Twig_Extension
             $html = Markdown::process($markdown, $flavor);
         }
 
-        return Template::getRaw($html);
+        return Template::raw($html);
     }
 
     /**
@@ -577,16 +578,16 @@ class Extension extends \Twig_Extension
             new \Twig_SimpleFunction('actionUrl', '\\craft\\app\\helpers\\Url::getActionUrl'),
             new \Twig_SimpleFunction('cpUrl', '\\craft\\app\\helpers\\Url::getCpUrl'),
             new \Twig_SimpleFunction('ceil', 'ceil'),
+            new \Twig_SimpleFunction('className', 'get_class'),
             new \Twig_SimpleFunction('csrfInput', [$this, 'csrfInputFunction']),
             new \Twig_SimpleFunction('floor', 'floor'),
-            new \Twig_SimpleFunction('getTranslations', [$this->view, 'getTranslations']),
             new \Twig_SimpleFunction('redirectInput', [$this, 'redirectInputFunction']),
             new \Twig_SimpleFunction('renderObjectTemplate', [$this, 'renderObjectTemplate']),
             new \Twig_SimpleFunction('round', [$this, 'roundFunction']),
             new \Twig_SimpleFunction('resourceUrl', '\\craft\\app\\helpers\\Url::getResourceUrl'),
             new \Twig_SimpleFunction('shuffle', [$this, 'shuffleFunction']),
             new \Twig_SimpleFunction('siteUrl', '\\craft\\app\\helpers\\Url::getSiteUrl'),
-            new \Twig_SimpleFunction('url', '\\craft\\app\\helpers\\Url::getUrl'),
+            new \Twig_SimpleFunction('url', '\\craft\\app\\helpers\\Url::url'),
             // DOM event functions
             new \Twig_SimpleFunction('head', [$this->view, 'head']),
             new \Twig_SimpleFunction('beginBody', [$this->view, 'beginBody']),
@@ -595,6 +596,7 @@ class Extension extends \Twig_Extension
             new \Twig_SimpleFunction('getCsrfInput', [$this, 'getCsrfInput']),
             new \Twig_SimpleFunction('getHeadHtml', [$this, 'getHeadHtml']),
             new \Twig_SimpleFunction('getFootHtml', [$this, 'getFootHtml']),
+            new \Twig_SimpleFunction('getTranslations', [$this, 'getTranslations']),
         ];
     }
 
@@ -608,7 +610,7 @@ class Extension extends \Twig_Extension
         $config = Craft::$app->getConfig();
 
         if ($config->get('enableCsrfProtection') === true) {
-            return Template::getRaw('<input type="hidden" name="'.$config->get('csrfTokenName').'" value="'.Craft::$app->getRequest()->getCsrfToken().'">');
+            return Template::raw('<input type="hidden" name="'.$config->get('csrfTokenName').'" value="'.Craft::$app->getRequest()->getCsrfToken().'">');
         }
 
         return null;
@@ -623,7 +625,7 @@ class Extension extends \Twig_Extension
      */
     public function redirectInputFunction($url)
     {
-        return Template::getRaw('<input type="hidden" name="redirect" value="'.Craft::$app->getSecurity()->hashData($url).'">');
+        return Template::raw('<input type="hidden" name="redirect" value="'.Craft::$app->getSecurity()->hashData($url).'">');
     }
 
     /**
@@ -693,8 +695,8 @@ class Extension extends \Twig_Extension
         $globals['craft'] = $craftVariable;
         $globals['blx'] = $craftVariable;
 
-        $globals['loginUrl'] = Url::getUrl(Craft::$app->getConfig()->getLoginPath());
-        $globals['logoutUrl'] = Url::getUrl(Craft::$app->getConfig()->getLogoutPath());
+        $globals['loginUrl'] = Url::url(Craft::$app->getConfig()->getLoginPath());
+        $globals['logoutUrl'] = Url::url(Craft::$app->getConfig()->getLogoutPath());
         $globals['isInstalled'] = $isInstalled;
 
         if ($isInstalled && !$request->getIsConsoleRequest() && !Craft::$app->getIsUpdating()) {
@@ -774,7 +776,7 @@ class Extension extends \Twig_Extension
         ob_implicit_flush(false);
         $this->view->head();
 
-        return Template::getRaw(ob_get_clean());
+        return Template::raw(ob_get_clean());
     }
 
     /**
@@ -789,6 +791,17 @@ class Extension extends \Twig_Extension
         ob_implicit_flush(false);
         $this->view->endBody();
 
-        return Template::getRaw(ob_get_clean());
+        return Template::raw(ob_get_clean());
+    }
+
+    /**
+     * @deprecated in Craft 3.0. Use craft.app.view.getTranslations() instead.
+     * @return string A JSON-encoded array of source/translation message mappings.
+     */
+    public function getTranslations()
+    {
+        Craft::$app->getDeprecator()->log('getTranslations', 'getTranslations() has been deprecated. Use craft.app.view.getTranslations() instead.');
+
+        return Json::encode($this->view->getTranslations());
     }
 }

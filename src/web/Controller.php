@@ -328,7 +328,7 @@ abstract class Controller extends \yii\web\Controller
     public function redirect($url, $statusCode = 302)
     {
         if (is_string($url)) {
-            $url = Url::getUrl($url);
+            $url = Url::url($url);
         }
 
         if ($url !== null) {

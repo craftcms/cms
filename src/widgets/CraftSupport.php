@@ -11,12 +11,12 @@ use Craft;
 use craft\app\base\Widget;
 
 /**
- * GetHelp represents a Get Help dashboard widget.
+ * CraftSupport represents a Craft Support dashboard widget.
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since  3.0
  */
-class GetHelp extends Widget
+class CraftSupport extends Widget
 {
     // Static
     // =========================================================================
@@ -26,7 +26,7 @@ class GetHelp extends Widget
      */
     public static function displayName()
     {
-        return Craft::t('app', 'Get Help');
+        return Craft::t('app', 'Craft Support');
     }
 
     /**
@@ -34,7 +34,7 @@ class GetHelp extends Widget
      */
     public static function isSelectable()
     {
-        // Only admins get the Get Help widget.
+        // Only admins get the Craft Support widget.
         return (parent::isSelectable() && Craft::$app->getUser()->getIsAdmin());
     }
 
@@ -54,7 +54,7 @@ class GetHelp extends Widget
      */
     public function getIconPath()
     {
-        return Craft::$app->getPath()->getResourcesPath().'/images/widgets/get-help.svg';
+        return Craft::$app->getPath()->getResourcesPath().'/images/widgets/craft-support.svg';
     }
 
     /**
@@ -62,7 +62,7 @@ class GetHelp extends Widget
      */
     public function getTitle()
     {
-        return Craft::t('app', 'Send a message to Craft CMS Support');
+        return Craft::t('app', 'Send a message to Craft Support');
     }
 
     /**
@@ -70,20 +70,25 @@ class GetHelp extends Widget
      */
     public function getBodyHtml()
     {
-        // Only admins get the Get Help widget.
+        // Only admins get the Craft Support widget.
         if (!Craft::$app->getUser()->getIsAdmin()) {
             return false;
         }
 
-        $js = "new Craft.GetHelpWidget({$this->id});";
+        $js = "new Craft.CraftSupportWidget({$this->id});";
         Craft::$app->getView()->registerJs($js);
 
-        Craft::$app->getView()->registerJsResource('js/GetHelpWidget.js');
+        Craft::$app->getView()->registerJsResource('js/CraftSupportWidget.js');
         Craft::$app->getView()->registerTranslations('app', [
             'Message sent successfully.',
             'Couldn’t send support request.',
         ]);
 
-        return Craft::$app->getView()->renderTemplate('_components/widgets/GetHelp/body');
+        // Only show the DB backup option if DB backups haven't been disabled
+        $showBackupOption = (Craft::$app->getConfig()->get('backupCommand') !== false);
+
+        return Craft::$app->getView()->renderTemplate('_components/widgets/CraftSupport/body', [
+            'showBackupOption' => $showBackupOption
+        ]);
     }
 }

@@ -119,19 +119,8 @@ class UpgradePurchase extends Model
     public function rules()
     {
         $rules = [
-            [
-                ['edition'],
-                'number',
-                'min' => -2147483648,
-                'max' => 2147483647,
-                'integerOnly' => true
-            ],
+            [['edition'], 'number', 'integerOnly' => true],
             [['edition', 'expectedPrice', 'name', 'email'], 'required'],
-            [
-                ['ccTokenId', 'edition', 'expectedPrice', 'success'],
-                'safe',
-                'on' => 'search'
-            ],
         ];
 
         if ($this->expectedPrice != 0) {

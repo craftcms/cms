@@ -108,7 +108,7 @@ class GoogleCloud extends Volume
         return Craft::$app->getView()->renderTemplate('_components/volumes/GoogleCloud/settings',
             [
                 'volume' => $this,
-                'periods' => array_merge(['' => ''], Assets::getPeriodList())
+                'periods' => array_merge(['' => ''], Assets::periodList())
             ]);
     }
 
@@ -127,7 +127,7 @@ class GoogleCloud extends Volume
             throw new \InvalidArgumentException('You must specify secret key ID and the secret key to get the bucket list.');
         }
 
-        $client = static::getClient($keyId, $secret, ['base_url' => 'https://storage.googleapis.com']);
+        $client = static::client($keyId, $secret, ['base_url' => 'https://storage.googleapis.com']);
         $objects = $client->listBuckets();
         if (empty($objects['Buckets'])) {
             return [];
@@ -172,7 +172,7 @@ class GoogleCloud extends Volume
      */
     protected function createAdapter()
     {
-        $client = static::getClient($this->keyId, $this->secret, ['base_url' => 'https://storage.googleapis.com']);
+        $client = static::client($this->keyId, $this->secret, ['base_url' => 'https://storage.googleapis.com']);
 
         return new GoogleCloudAdapter($client, $this->bucket, $this->subfolder);
     }
@@ -186,7 +186,7 @@ class GoogleCloud extends Volume
      *
      * @return S3Client
      */
-    protected static function getClient($keyId, $secret, $options = [])
+    protected static function client($keyId, $secret, $options = [])
     {
         $config = array_merge(['key' => $keyId, 'secret' => $secret], $options);
 

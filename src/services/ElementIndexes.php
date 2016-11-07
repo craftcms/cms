@@ -45,8 +45,8 @@ class ElementIndexes extends Component
     {
         if ($this->_indexSettings === null || !array_key_exists($elementType, $this->_indexSettings)) {
             $result = (new Query())
-                ->select('settings')
-                ->from('{{%elementindexsettings}}')
+                ->select(['settings'])
+                ->from(['{{%elementindexsettings}}'])
                 ->where(['type' => $elementType])
                 ->scalar();
 
@@ -72,7 +72,7 @@ class ElementIndexes extends Component
     {
         // Get the currently saved settings
         $settings = $this->getSettings($elementType);
-        $baseSources = $this->_normalizeSources($elementType::getSources('index'));
+        $baseSources = $this->_normalizeSources($elementType::sources('index'));
 
         // Updating the source order?
         if (isset($newSettings['sourceOrder'])) {
@@ -127,7 +127,7 @@ class ElementIndexes extends Component
         }
 
         $affectedRows = Craft::$app->getDb()->createCommand()
-            ->insertOrUpdate(
+            ->upsert(
                 '{{%elementindexsettings}}',
                 ['type' => $elementType],
                 ['settings' => Json::encode($settings)])
@@ -153,7 +153,7 @@ class ElementIndexes extends Component
     public function getSources($elementType, $context = 'index')
     {
         $settings = $this->getSettings($elementType);
-        $baseSources = $this->_normalizeSources($elementType::getSources($context));
+        $baseSources = $this->_normalizeSources($elementType::sources($context));
         $sources = [];
 
         // Should we output the sources in a custom order?
@@ -209,7 +209,7 @@ class ElementIndexes extends Component
      */
     public function getAvailableTableAttributes($elementType, $includeFields = true)
     {
-        $attributes = $elementType::defineAvailableTableAttributes();
+        $attributes = $elementType::tableAttributes();
 
         foreach ($attributes as $key => $info) {
             if (!is_array($info)) {
@@ -240,6 +240,11 @@ class ElementIndexes extends Component
      */
     public function getTableAttributes($elementType, $sourceKey)
     {
+        // If this is a source path, use the first segment
+        if (($slash = strpos($sourceKey, '/')) !== false) {
+            $sourceKey = substr($sourceKey, 0, $slash);
+        }
+
         $settings = $this->getSettings($elementType);
         $availableAttributes = $this->getAvailableTableAttributes($elementType);
         $attributes = [];
@@ -257,7 +262,7 @@ class ElementIndexes extends Component
         if (isset($settings['sources'][$sourceKey]['tableAttributes'])) {
             $attributeKeys = $settings['sources'][$sourceKey]['tableAttributes'];
         } else {
-            $attributeKeys = $elementType::getDefaultTableAttributes($sourceKey);
+            $attributeKeys = $elementType::defaultTableAttributes($sourceKey);
         }
 
         // Assemble the remainder of the list
@@ -312,7 +317,7 @@ class ElementIndexes extends Component
         $normalizedSources = [];
         $pendingHeading = null;
 
-        foreach ($sources as $key => $source) {
+        foreach ($sources as $source) {
             // Is this a heading?
             if (array_key_exists('heading', $source)) {
                 $pendingHeading = $source['heading'];
@@ -321,11 +326,6 @@ class ElementIndexes extends Component
                 if ($pendingHeading !== null) {
                     $normalizedSources[] = ['heading' => $pendingHeading];
                     $pendingHeading = null;
-                }
-
-                // Ensure the key is specified in the source
-                if (!is_numeric($key)) {
-                    $source['key'] = $key;
                 }
 
                 // Only allow sources that have a key

@@ -18,7 +18,7 @@ class m150403_184533_field_version extends Migration
     public function safeUp()
     {
         if (!$this->db->columnExists('{{%info}}', 'fieldVersion')) {
-            $this->addColumnAfter('{{%info}}', 'fieldVersion', 'integer not null default \'1\'', 'track');
+            $this->addColumn('{{%info}}', 'fieldVersion', 'integer not null default \'1\'');
         }
     }
 

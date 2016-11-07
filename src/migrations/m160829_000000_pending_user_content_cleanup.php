@@ -14,26 +14,26 @@ class m160829_000000_pending_user_content_cleanup extends Migration
     /**
      * Any migration code in here is wrapped inside of a transaction.
      *
-     * @return bool
+     * @return boolean
      */
     public function safeUp()
     {
         // Find any orphaned entries.
         $ids = (new Query())
-            ->select('el.id')
-            ->from('{{%elements}} el')
-            ->leftJoin('{{%entries}} en', 'en.id = el.id')
-            ->where(
-                ['and', 'el.type = :type', 'en.id is null'],
-                [':type' => Entry::class]
-            )
+            ->select(['el.id'])
+            ->from(['{{%elements}} el'])
+            ->leftJoin('{{%entries}} en', '[[en.id]] = [[el.id]]')
+            ->where([
+                'el.type' => 'craft\app\elements\Entry',
+                'en.id' => null
+            ])
             ->column();
 
         if ($ids) {
             Craft::info('Found '.count($ids).' orphaned element IDs in the elements table: '.implode(', ', $ids));
 
             // Delete 'em
-            $this->delete('{{%elements}}', ['in', 'id', $ids]);
+            $this->delete('{{%elements}}', ['id' => $ids]);
 
             Craft::info('They have been murdered.');
         } else {

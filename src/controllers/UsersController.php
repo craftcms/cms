@@ -8,9 +8,11 @@
 namespace craft\app\controllers;
 
 use Craft;
+use craft\app\elements\Asset;
 use craft\app\errors\SendEmailException;
 use craft\app\errors\UploadFailedException;
 use craft\app\events\LoginFailureEvent;
+use craft\app\events\RegisterUserActionsEvent;
 use craft\app\events\UserTokenEvent;
 use craft\app\helpers\Assets;
 use craft\app\helpers\Image;
@@ -50,6 +52,11 @@ class UsersController extends Controller
      * @event LoginFailureEvent The event that is triggered when a failed login attempt was made
      */
     const EVENT_LOGIN_FAILURE = 'loginFailure';
+
+    /**
+     * @event RegisterUserActionsEvent The event that is triggered when a user’s available actions are being registered
+     */
+    const EVENT_REGISTER_USER_ACTIONS = 'registerUserActions';
 
     // Properties
     // =========================================================================
@@ -137,17 +144,17 @@ class UsersController extends Controller
 
         $session->set(User::IMPERSONATE_KEY, $originalUserId);
 
-        if ($userService->loginByUserId($userId)) {
-            $session->setNotice(Craft::t('app', 'Logged in.'));
+        if (!$userService->loginByUserId($userId)) {
+            $session->remove(User::IMPERSONATE_KEY);
+            $session->setError(Craft::t('app', 'There was a problem impersonating this user.'));
+            Craft::error($userService->getIdentity()->username.' tried to impersonate userId: '.$userId.' but something went wrong.', __METHOD__);
 
-            return $this->_handleSuccessfulLogin(true);
+            return null;
         }
 
-        $session->remove(User::IMPERSONATE_KEY);
-        $session->setError(Craft::t('app', 'There was a problem impersonating this user.'));
-        Craft::error($userService->getIdentity()->username.' tried to impersonate userId: '.$userId.' but something went wrong.', __METHOD__);
+        $session->setNotice(Craft::t('app', 'Logged in.'));
 
-        return null;
+        return $this->_handleSuccessfulLogin(true);
     }
 
     /**
@@ -405,7 +412,7 @@ class UsersController extends Controller
             }
 
             // Redirect to the site/CP root
-            $url = Url::getUrl('');
+            $url = Url::url('');
 
             return $this->redirect($url);
         }
@@ -431,11 +438,9 @@ class UsersController extends Controller
         }
 
         if (Craft::$app->getUsers()->activateUser($user)) {
-            Craft::$app->getSession()->setNotice(Craft::t('app',
-                'Successfully activated the user.'));
+            Craft::$app->getSession()->setNotice(Craft::t('app', 'Successfully activated the user.'));
         } else {
-            Craft::$app->getSession()->setError(Craft::t('app',
-                'There was a problem activating the user.'));
+            Craft::$app->getSession()->setError(Craft::t('app', 'There was a problem activating the user.'));
         }
 
         return $this->redirectToPostedUrl();
@@ -547,8 +552,9 @@ class UsersController extends Controller
         // ---------------------------------------------------------------------
 
         $statusActions = [];
-        $loginActions = [];
-        $sketchyActions = [];
+        $sessionActions = [];
+        $destructiveActions = [];
+        $miscActions = [];
 
         if ($edition >= Craft::Client && !$isNewAccount) {
             switch ($user->getStatus()) {
@@ -622,21 +628,21 @@ class UsersController extends Controller
 
             if (!$user->getIsCurrent()) {
                 if (Craft::$app->getUser()->getIsAdmin()) {
-                    $loginActions[] = [
+                    $sessionActions[] = [
                         'action' => 'users/impersonate',
                         'label' => Craft::t('app', 'Login as {user}', ['user' => $user->getName()])
                     ];
                 }
 
                 if (Craft::$app->getUser()->checkPermission('administrateUsers') && $user->getStatus() != User::STATUS_SUSPENDED) {
-                    $sketchyActions[] = [
+                    $destructiveActions[] = [
                         'action' => 'users/suspend-user',
                         'label' => Craft::t('app', 'Suspend')
                     ];
                 }
 
                 if (Craft::$app->getUser()->checkPermission('deleteUsers')) {
-                    $sketchyActions[] = [
+                    $destructiveActions[] = [
                         'id' => 'delete-btn',
                         'label' => Craft::t('app', 'Delete…')
                     ];
@@ -644,27 +650,22 @@ class UsersController extends Controller
             }
         }
 
-        $actions = [];
+        // Give plugins a chance to modify these, or add new ones
+        $event = new RegisterUserActionsEvent([
+            'user' => $user,
+            'statusActions' => $statusActions,
+            'sessionActions' => $sessionActions,
+            'destructiveActions' => $destructiveActions,
+            'miscActions' => $miscActions,
+        ]);
+        $this->trigger(self::EVENT_REGISTER_USER_ACTIONS, $event);
 
-        if ($statusActions) {
-            array_push($actions, $statusActions);
-        }
-
-        // Give plugins a chance to add more actions
-        $pluginActions = Craft::$app->getPlugins()->call('addUserAdministrationOptions',
-            [$user], true);
-
-        if ($pluginActions) {
-            $actions = array_merge($actions, array_values($pluginActions));
-        }
-
-        if ($loginActions) {
-            array_push($actions, $loginActions);
-        }
-
-        if ($sketchyActions) {
-            array_push($actions, $sketchyActions);
-        }
+        $actions = array_filter([
+            $event->statusActions,
+            $event->miscActions,
+            $event->sessionActions,
+            $event->destructiveActions,
+        ]);
 
         // Set the appropriate page title
         // ---------------------------------------------------------------------
@@ -956,7 +957,7 @@ class UsersController extends Controller
 
         // If this is Craft Pro, grab any profile content from post
         if ($edition == Craft::Pro) {
-            $user->setFieldValuesFromPost('fields');
+            $user->setFieldValuesFromRequest('fields');
         }
 
         // Validate and save!
@@ -970,102 +971,11 @@ class UsersController extends Controller
             $user->addError('photo', Craft::t('app', 'The user photo provided is not an image.'));
         }
 
-        if ($imageValidates && Craft::$app->getElements()->saveElement($user)) {
-            // Save their preferences too
-            $preferences = [
-                'language' => $request->getBodyParam('preferredLanguage', $user->getPreference('language')),
-                'weekStartDay' => $request->getBodyParam('weekStartDay', $user->getPreference('weekStartDay')),
-            ];
+        if ($thisIsPublicRegistration) {
+            $user->validateCustomFields = false;
+        }
 
-            if ($user->admin) {
-                $preferences = array_merge($preferences, [
-                    'enableDebugToolbarForSite' => (bool)$request->getBodyParam('enableDebugToolbarForSite', $user->getPreference('enableDebugToolbarForSite')),
-                    'enableDebugToolbarForCp' => (bool)$request->getBodyParam('enableDebugToolbarForCp', $user->getPreference('enableDebugToolbarForCp')),
-                ]);
-            }
-
-            Craft::$app->getUsers()->saveUserPreferences($user, $preferences);
-
-            // Is this the current user?
-            if ($user->getIsCurrent()) {
-                // Make sure these preferences make it to the main identity user
-                if ($user !== $currentUser) {
-                    $currentUser->mergePreferences($preferences);
-                }
-
-                $userComponent->saveDebugPreferencesToSession();
-            }
-
-            // Is this the current user, and did their username just change?
-            /** @noinspection PhpUndefinedVariableInspection */
-            if ($isCurrentUser && $user->username !== $oldUsername) {
-                // Update the username cookie
-                Craft::$app->getUser()->sendUsernameCookie($user);
-            }
-
-            // Save the user's photo, if it was submitted
-            $this->_processUserPhoto($user);
-
-            // If this is public registration, assign the user to the default user group
-            if ($thisIsPublicRegistration) {
-                // Assign them to the default user group
-                Craft::$app->getUsers()->assignUserToDefaultGroup($user);
-            } else {
-                // Assign user groups and permissions if the current user is allowed to do that
-                $this->_processUserGroupsPermissions($user);
-            }
-
-            // Do we need to send a verification email out?
-            if ($verifyNewEmail) {
-                // Temporarily set the unverified email on the User so the verification email goes to the
-                // right place
-                $originalEmail = $user->email;
-                $user->email = $user->unverifiedEmail;
-
-                try {
-                    if ($isNewUser) {
-                        // Send the activation email
-                        Craft::$app->getUsers()->sendActivationEmail($user);
-                    } else {
-                        // Send the standard verification email
-                        Craft::$app->getUsers()->sendNewEmailVerifyEmail($user);
-                    }
-                } catch (SendEmailException $e) {
-                    Craft::$app->getSession()->setError(Craft::t('app', 'User saved, but couldn’t send verification email. Check your email settings.'));
-                }
-
-                // Put the original email back into place
-                $user->email = $originalEmail;
-            }
-
-            // Is this public registration, and was the user going to be activated automatically?
-            $publicActivation = $thisIsPublicRegistration && $user->status == User::STATUS_ACTIVE;
-
-            if ($publicActivation) {
-                // Maybe automatically log them in
-                $this->_maybeLoginUserAfterAccountActivation($user);
-            }
-
-            if ($request->getAcceptsJson()) {
-                return $this->asJson([
-                    'success' => true,
-                    'id' => $user->id
-                ]);
-            } else {
-                if ($thisIsPublicRegistration) {
-                    Craft::$app->getSession()->setNotice(Craft::t('app', 'User registered.'));
-                } else {
-                    Craft::$app->getSession()->setNotice(Craft::t('app', 'User saved.'));
-                }
-
-                // Is this public registration, and is the user going to be activated automatically?
-                if ($publicActivation) {
-                    return $this->_redirectUserAfterAccountActivation($user);
-                }
-
-                return $this->redirectToPostedUrl($user);
-            }
-        } else {
+        if (!$imageValidates || !Craft::$app->getElements()->saveElement($user)) {
             if ($thisIsPublicRegistration) {
                 // Move any 'newPassword' errors over to 'password'
                 $user->addErrors(['password' => $user->getErrors('newPassword')]);
@@ -1082,9 +992,104 @@ class UsersController extends Controller
             Craft::$app->getUrlManager()->setRouteParams([
                 'user' => $user
             ]);
+
+            return null;
         }
 
-        return null;
+        // Save their preferences too
+        $preferences = [
+            'language' => $request->getBodyParam('preferredLanguage', $user->getPreference('language')),
+            'weekStartDay' => $request->getBodyParam('weekStartDay', $user->getPreference('weekStartDay')),
+        ];
+
+        if ($user->admin) {
+            $preferences = array_merge($preferences, [
+                'enableDebugToolbarForSite' => (bool)$request->getBodyParam('enableDebugToolbarForSite', $user->getPreference('enableDebugToolbarForSite')),
+                'enableDebugToolbarForCp' => (bool)$request->getBodyParam('enableDebugToolbarForCp', $user->getPreference('enableDebugToolbarForCp')),
+            ]);
+        }
+
+        Craft::$app->getUsers()->saveUserPreferences($user, $preferences);
+
+        // Is this the current user?
+        if ($user->getIsCurrent()) {
+            // Make sure these preferences make it to the main identity user
+            if ($user !== $currentUser) {
+                $currentUser->mergePreferences($preferences);
+            }
+
+            $userComponent->saveDebugPreferencesToSession();
+        }
+
+        // Is this the current user, and did their username just change?
+        /** @noinspection PhpUndefinedVariableInspection */
+        if ($isCurrentUser && $user->username !== $oldUsername) {
+            // Update the username cookie
+            Craft::$app->getUser()->sendUsernameCookie($user);
+        }
+
+        // Save the user's photo, if it was submitted
+        $this->_processUserPhoto($user);
+
+        // If this is public registration, assign the user to the default user group
+        if ($thisIsPublicRegistration) {
+            // Assign them to the default user group
+            Craft::$app->getUsers()->assignUserToDefaultGroup($user);
+        } else {
+            // Assign user groups and permissions if the current user is allowed to do that
+            $this->_processUserGroupsPermissions($user);
+        }
+
+        // Do we need to send a verification email out?
+        if ($verifyNewEmail) {
+            // Temporarily set the unverified email on the User so the verification email goes to the
+            // right place
+            $originalEmail = $user->email;
+            $user->email = $user->unverifiedEmail;
+
+            try {
+                if ($isNewUser) {
+                    // Send the activation email
+                    Craft::$app->getUsers()->sendActivationEmail($user);
+                } else {
+                    // Send the standard verification email
+                    Craft::$app->getUsers()->sendNewEmailVerifyEmail($user);
+                }
+            } catch (SendEmailException $e) {
+                Craft::$app->getSession()->setError(Craft::t('app', 'User saved, but couldn’t send verification email. Check your email settings.'));
+            }
+
+            // Put the original email back into place
+            $user->email = $originalEmail;
+        }
+
+        // Is this public registration, and was the user going to be activated automatically?
+        $publicActivation = $thisIsPublicRegistration && $user->status == User::STATUS_ACTIVE;
+
+        if ($publicActivation) {
+            // Maybe automatically log them in
+            $this->_maybeLoginUserAfterAccountActivation($user);
+        }
+
+        if ($request->getAcceptsJson()) {
+            return $this->asJson([
+                'success' => true,
+                'id' => $user->id
+            ]);
+        }
+
+        if ($thisIsPublicRegistration) {
+            Craft::$app->getSession()->setNotice(Craft::t('app', 'User registered.'));
+        } else {
+            Craft::$app->getSession()->setNotice(Craft::t('app', 'User saved.'));
+        }
+
+        // Is this public registration, and is the user going to be activated automatically?
+        if ($publicActivation) {
+            return $this->_redirectUserAfterAccountActivation($user);
+        }
+
+        return $this->redirectToPostedUrl($user);
     }
 
     /**
@@ -1116,7 +1121,7 @@ class UsersController extends Controller
                 $user = $users->getUserById($userId);
 
                 // Move to our own temp location
-                $fileLocation = Assets::getTempFilePath($file->getExtension());
+                $fileLocation = Assets::tempFilePath($file->getExtension());
                 move_uploaded_file($file->tempName, $fileLocation);
                 $users->saveUserPhoto($fileLocation, $user, $file->name);
                 Io::deleteFile($fileLocation);
@@ -1155,7 +1160,7 @@ class UsersController extends Controller
         $user = Craft::$app->getUsers()->getUserById($userId);
 
         if ($user->photoId) {
-            Craft::$app->getElements()->deleteElementById($user->photoId);
+            Craft::$app->getElements()->deleteElementById($user->photoId, Asset::class);
         }
 
         $user->photoId = null;
@@ -1268,15 +1273,15 @@ class UsersController extends Controller
             throw new ForbiddenHttpException('Only admins can suspend other admins');
         }
 
-        if (Craft::$app->getUsers()->suspendUser($user)) {
-            Craft::$app->getSession()->setNotice(Craft::t('app', 'User suspended.'));
+        if (!Craft::$app->getUsers()->suspendUser($user)) {
+            Craft::$app->getSession()->setError(Craft::t('app', 'Couldn’t suspend user.'));
 
-            return $this->redirectToPostedUrl();
+            return null;
         }
 
-        Craft::$app->getSession()->setError(Craft::t('app', 'Couldn’t suspend user.'));
+        Craft::$app->getSession()->setNotice(Craft::t('app', 'User suspended.'));
 
-        return null;
+        return $this->redirectToPostedUrl();
     }
 
     /**
@@ -1321,15 +1326,15 @@ class UsersController extends Controller
         // Delete the user
         $user->inheritorOnDelete = $transferContentTo;
 
-        if (Craft::$app->getElements()->deleteElement($user)) {
-            Craft::$app->getSession()->setNotice(Craft::t('app', 'User deleted.'));
+        if (!Craft::$app->getElements()->deleteElement($user)) {
+            Craft::$app->getSession()->setError(Craft::t('app', 'Couldn’t delete the user.'));
 
-            return $this->redirectToPostedUrl();
+            return null;
         }
 
-        Craft::$app->getSession()->setError(Craft::t('app', 'Couldn’t delete the user.'));
+        Craft::$app->getSession()->setNotice(Craft::t('app', 'User deleted.'));
 
-        return null;
+        return $this->redirectToPostedUrl();
     }
 
     /**
@@ -1358,15 +1363,15 @@ class UsersController extends Controller
             throw new ForbiddenHttpException('Only admins can unsuspend other admins');
         }
 
-        if (Craft::$app->getUsers()->unsuspendUser($user)) {
-            Craft::$app->getSession()->setNotice(Craft::t('app', 'User unsuspended.'));
+        if (!Craft::$app->getUsers()->unsuspendUser($user)) {
+            Craft::$app->getSession()->setError(Craft::t('app', 'Couldn’t unsuspend user.'));
 
-            return $this->redirectToPostedUrl();
+            return null;
         }
 
-        Craft::$app->getSession()->setError(Craft::t('app', 'Couldn’t unsuspend user.'));
+        Craft::$app->getSession()->setNotice(Craft::t('app', 'User unsuspended.'));
 
-        return null;
+        return $this->redirectToPostedUrl();
     }
 
     /**
@@ -1384,16 +1389,15 @@ class UsersController extends Controller
         $fieldLayout->type = User::class;
         Craft::$app->getFields()->deleteLayoutsByType(User::class);
 
-        if (Craft::$app->getFields()->saveLayout($fieldLayout)) {
-            Craft::$app->getSession()->setNotice(Craft::t('app',
-                'User fields saved.'));
+        if (!Craft::$app->getFields()->saveLayout($fieldLayout)) {
+            Craft::$app->getSession()->setError(Craft::t('app', 'Couldn’t save user fields.'));
 
-            return $this->redirectToPostedUrl();
+            return null;
         }
 
-        Craft::$app->getSession()->setError(Craft::t('app', 'Couldn’t save user fields.'));
+        Craft::$app->getSession()->setNotice(Craft::t('app', 'User fields saved.'));
 
-        return null;
+        return $this->redirectToPostedUrl();
     }
 
     /**
@@ -1641,7 +1645,7 @@ class UsersController extends Controller
 
         // Did they upload a new one?
         if ($photo = UploadedFile::getInstanceByName('photo')) {
-            $fileLocation = Assets::getTempFilePath($photo->getExtension());
+            $fileLocation = Assets::tempFilePath($photo->getExtension());
             move_uploaded_file($photo->tempName, $fileLocation);
             $users->saveUserPhoto($fileLocation, $user, $photo->name);
             Io::deleteFile($fileLocation);

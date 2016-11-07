@@ -126,31 +126,31 @@ class TemplateCaches extends Component
         // Take the opportunity to delete any expired caches
         $this->deleteExpiredCachesIfOverdue();
 
-        $conditions = [
-            'and',
-            'expiryDate > :now',
-            'cacheKey = :key',
-            'siteId = :siteId'
-        ];
-
-        $params = [
-            ':now' => Db::prepareDateForDb(new \DateTime()),
-            ':key' => $key,
-            ':siteId' => Craft::$app->getSites()->currentSite->id
-        ];
+        $query = (new Query())
+            ->select(['body'])
+            ->from([static::$_templateCachesTable])
+            ->where([
+                'and',
+                [
+                    'cacheKey' => $key,
+                    'siteId' => Craft::$app->getSites()->currentSite->id
+                ],
+                ['>', 'expiryDate', Db::prepareDateForDb(new \DateTime())],
+            ]);
 
         if (!$global) {
-            $conditions[] = 'path = :path';
-            $params[':path'] = $this->_getPath();
+            $query->andWhere([
+                'path' => $this->_getPath()
+            ]);
         }
 
-        $cachedBody = (new Query())
-            ->select('body')
-            ->from(static::$_templateCachesTable)
-            ->where($conditions, $params)
-            ->scalar();
+        $cachedBody = $query->scalar();
 
-        return ($cachedBody !== false ? $cachedBody : null);
+        if ($cachedBody === false) {
+            return null;
+        }
+
+        return $cachedBody;
     }
 
     /**
@@ -306,7 +306,7 @@ class TemplateCaches extends Component
                     false)
                 ->execute();
 
-            $cacheId = Craft::$app->getDb()->getLastInsertID();
+            $cacheId = Craft::$app->getDb()->getLastInsertID(static::$_templateCachesTable);
 
             // Tag it with any element queries that were executed within the cache
             if (!empty($this->_cachedQueries[$key])) {
@@ -368,16 +368,8 @@ class TemplateCaches extends Component
             return false;
         }
 
-        if (is_array($cacheId)) {
-            $condition = ['in', 'id', $cacheId];
-            $params = [];
-        } else {
-            $condition = 'id = :id';
-            $params = [':id' => $cacheId];
-        }
-
         $affectedRows = Craft::$app->getDb()->createCommand()
-            ->delete(static::$_templateCachesTable, $condition, $params)
+            ->delete(static::$_templateCachesTable, ['id' => $cacheId])
             ->execute();
 
         return (bool)$affectedRows;
@@ -399,8 +391,8 @@ class TemplateCaches extends Component
         $this->_deletedCachesByElementType[$elementType] = true;
 
         $cacheIds = (new Query())
-            ->select('cacheId')
-            ->from(static::$_templateCacheQueriesTable)
+            ->select(['cacheId'])
+            ->from([static::$_templateCacheQueriesTable])
             ->where(['type' => $elementType])
             ->column();
 
@@ -408,7 +400,7 @@ class TemplateCaches extends Component
             Craft::$app->getDb()->createCommand()
                 ->delete(
                     static::$_templateCachesTable,
-                    ['in', 'id', $cacheIds])
+                    ['id' => $cacheIds])
                 ->execute();
         }
 
@@ -433,13 +425,14 @@ class TemplateCaches extends Component
         }
 
         if (is_array($elements)) {
-            $firstElement = ArrayHelper::getFirstValue($elements);
+            $firstElement = ArrayHelper::firstValue($elements);
         } else {
             $firstElement = $elements;
             $elements = [$elements];
         }
 
-        $deleteQueryCaches = empty($this->_deletedCachesByElementType[$firstElement::className()]);
+        $elementType = get_class($firstElement);
+        $deleteQueryCaches = empty($this->_deletedCachesByElementType[$elementType]);
         $elementIds = [];
 
         /** @var Element[] $elements */
@@ -499,25 +492,18 @@ class TemplateCaches extends Component
             }
         }
 
-        $query = (new Query())
-            ->select('cacheId')
+        $cacheIds = (new Query())
+            ->select(['cacheId'])
             ->distinct(true)
-            ->from(static::$_templateCacheElementsTable);
+            ->from([static::$_templateCacheElementsTable])
+            ->where(['elementId' => $elementId])
+            ->column();
 
-        if (is_array($elementId)) {
-            $query->where(['in', 'elementId', $elementId]);
-        } else {
-            $query->where('elementId = :elementId',
-                [':elementId' => $elementId]);
+        if (!$cacheIds) {
+            return false;
         }
 
-        $cacheIds = $query->column();
-
-        if ($cacheIds) {
-            return $this->deleteCacheById($cacheIds);
-        }
-
-        return false;
+        return $this->deleteCacheById($cacheIds);
     }
 
     /**
@@ -555,16 +541,8 @@ class TemplateCaches extends Component
             return false;
         }
 
-        if (is_array($key)) {
-            $condition = ['in', 'cacheKey', $key];
-            $params = [];
-        } else {
-            $condition = 'cacheKey = :cacheKey';
-            $params = [':cacheKey' => $key];
-        }
-
         $affectedRows = Craft::$app->getDb()->createCommand()
-            ->delete(static::$_templateCachesTable, $condition, $params)
+            ->delete(static::$_templateCachesTable, ['cacheKey' => $key])
             ->execute();
 
         return (bool)$affectedRows;
@@ -582,10 +560,7 @@ class TemplateCaches extends Component
         }
 
         $affectedRows = Craft::$app->getDb()->createCommand()
-            ->delete(
-                static::$_templateCachesTable,
-                'expiryDate <= :now',
-                ['now' => Db::prepareDateForDb(new \DateTime())])
+            ->delete(static::$_templateCachesTable, ['<=', 'expiryDate', Db::prepareDateForDb(new \DateTime())])
             ->execute();
 
         $this->_deletedExpiredCaches = true;

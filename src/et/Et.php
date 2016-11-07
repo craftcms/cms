@@ -14,6 +14,7 @@ use craft\app\helpers\ArrayHelper;
 use craft\app\helpers\DateTimeHelper;
 use craft\app\helpers\Io;
 use craft\app\models\Et as EtModel;
+use craft\app\services\Config;
 use GuzzleHttp\Client;
 use GuzzleHttp\Exception\RequestException;
 use PDO;
@@ -84,23 +85,24 @@ class Et
         $userEmail = $user ? $user->email : '';
 
         $this->_model = new EtModel([
-            'licenseKey' => $this->_getLicenseKey(),
-            'pluginLicenseKeys' => $this->_getPluginLicenseKeys(),
-            'requestUrl' => Craft::$app->getRequest()->getAbsoluteUrl(),
-            'requestIp' => Craft::$app->getRequest()->getUserIP(),
-            'requestTime' => DateTimeHelper::currentTimeStamp(),
-            'requestPort' => Craft::$app->getRequest()->getPort(),
-            'localBuild' => Craft::$app->build,
-            'localVersion' => Craft::$app->version,
-            'localEdition' => Craft::$app->getEdition(),
-            'userEmail' => $userEmail,
-            'track' => Craft::$app->track,
-            'showBeta' => Craft::$app->getConfig()->get('showBetaUpdates'),
-            'serverInfo' => [
-                'extensions' => get_loaded_extensions(),
-                'phpVersion' => PHP_VERSION,
-                'mySqlVersion' => Craft::$app->getDb()->pdo->getAttribute(PDO::ATTR_SERVER_VERSION),
-                'proc' => function_exists('proc_open') ? 1 : 0,
+            'licenseKey'           => $this->_getLicenseKey(),
+            'pluginLicenseKeys'    => $this->_getPluginLicenseKeys(),
+            'requestUrl'           => Craft::$app->getRequest()->getAbsoluteUrl(),
+            'requestIp'            => Craft::$app->getRequest()->getUserIP(),
+            'requestTime'          => DateTimeHelper::currentTimeStamp(),
+            'requestPort'          => Craft::$app->getRequest()->getPort(),
+            'localBuild'           => Craft::$app->build,
+            'localVersion'         => Craft::$app->version,
+            'localEdition'         => Craft::$app->getEdition(),
+            'userEmail'            => $userEmail,
+            'track'                => Craft::$app->track,
+            'showBeta'             => Craft::$app->getConfig()->get('showBetaUpdates'),
+            'serverInfo'           => [
+                'extensions'       => get_loaded_extensions(),
+                'phpVersion'       => PHP_VERSION,
+                'databaseType'     => Craft::$app->getConfig()->get('driver', Config::CATEGORY_DB),
+                'databaseVersion'  => Craft::$app->getDb()->pdo->getAttribute(PDO::ATTR_SERVER_VERSION),
+                'proc'             => function_exists('proc_open') ? 1 : 0,
             ],
         ]);
 

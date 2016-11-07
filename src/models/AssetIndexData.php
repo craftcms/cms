@@ -81,54 +81,7 @@ class AssetIndexData extends Model
     public function rules()
     {
         return [
-            [
-                ['id'],
-                'number',
-                'min' => -2147483648,
-                'max' => 2147483647,
-                'integerOnly' => true
-            ],
-            [
-                ['volumeId'],
-                'number',
-                'min' => -2147483648,
-                'max' => 2147483647,
-                'integerOnly' => true
-            ],
-            [
-                ['offset'],
-                'number',
-                'min' => -2147483648,
-                'max' => 2147483647,
-                'integerOnly' => true
-            ],
-            [
-                ['size'],
-                'number',
-                'min' => -2147483648,
-                'max' => 2147483647,
-                'integerOnly' => true
-            ],
-            [
-                ['recordId'],
-                'number',
-                'min' => -2147483648,
-                'max' => 2147483647,
-                'integerOnly' => true
-            ],
-            [
-                [
-                    'id',
-                    'volumeId',
-                    'sessionId',
-                    'offset',
-                    'uri',
-                    'size',
-                    'recordId'
-                ],
-                'safe',
-                'on' => 'search'
-            ],
+            [['id', 'volumeId', 'offset', 'number', 'size', 'recordId'], 'number', 'integerOnly' => true],
         ];
     }
 

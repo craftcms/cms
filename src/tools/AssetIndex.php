@@ -163,10 +163,10 @@ class AssetIndex extends Tool
 
             // Clean up stale indexing data (all sessions that have all recordIds set)
             $sessionsInProgress = (new Query())
-                ->select('sessionId')
-                ->from('{{%assetindexdata}}')
-                ->where('recordId IS NULL')
-                ->groupBy('sessionId')
+                ->select(['sessionId'])
+                ->from(['{{%assetindexdata}}'])
+                ->where(['recordId' => null])
+                ->groupBy(['sessionId'])
                 ->scalar();
 
             if (empty($sessionsInProgress)) {
@@ -177,11 +177,7 @@ class AssetIndex extends Tool
                 Craft::$app->getDb()->createCommand()
                     ->delete(
                         '{{%assetindexdata}}',
-                        [
-                            'not in',
-                            'sessionId',
-                            $sessionsInProgress
-                        ])
+                        ['not', ['sessionId' => $sessionsInProgress]])
                     ->execute();
             }
 
@@ -195,7 +191,7 @@ class AssetIndex extends Tool
         } else if (!empty($params['finish'])) {
             if (!empty($params['deleteAsset']) && is_array($params['deleteAsset'])) {
                 Craft::$app->getDb()->createCommand()
-                    ->delete('assettransformindex', ['in', 'assetId', $params['deleteAsset']])
+                    ->delete('assettransformindex', ['assetId' => $params['deleteAsset']])
                     ->execute();
 
                 /** @var Asset[] $assets */

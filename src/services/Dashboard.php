@@ -12,12 +12,13 @@ use craft\app\base\WidgetInterface;
 use craft\app\db\Query;
 use craft\app\errors\MissingComponentException;
 use craft\app\errors\WidgetNotFoundException;
+use craft\app\events\RegisterComponentTypesEvent;
 use craft\app\events\WidgetEvent;
 use craft\app\helpers\Component as ComponentHelper;
 use craft\app\records\Widget as WidgetRecord;
 use craft\app\base\Widget;
 use craft\app\widgets\Feed as FeedWidget;
-use craft\app\widgets\GetHelp as GetHelpWidget;
+use craft\app\widgets\CraftSupport as CraftSupportWidget;
 use craft\app\widgets\MissingWidget;
 use craft\app\widgets\NewUsers as NewUsersWidget;
 use craft\app\widgets\QuickPost as QuickPostWidget;
@@ -38,6 +39,11 @@ class Dashboard extends Component
 {
     // Constants
     // =========================================================================
+
+    /**
+     * @event RegisterComponentTypesEvent The event that is triggered when registering Dashboard widget types.
+     */
+    const EVENT_REGISTER_WIDGET_TYPES = 'registerWidgetTypes';
 
     /**
      * @event WidgetEvent The event that is triggered before a widget is saved.
@@ -65,24 +71,25 @@ class Dashboard extends Component
     /**
      * Returns all available widget type classes.
      *
-     * @return WidgetInterface[] The available widget type classes.
+     * @return string[]
      */
     public function getAllWidgetTypes()
     {
         $widgetTypes = [
             FeedWidget::class,
-            GetHelpWidget::class,
+            CraftSupportWidget::class,
             NewUsersWidget::class,
             QuickPostWidget::class,
             RecentEntriesWidget::class,
             UpdatesWidget::class,
         ];
 
-        foreach (Craft::$app->getPlugins()->call('getWidgetTypes', [], true) as $pluginWidgetTypes) {
-            $widgetTypes = array_merge($widgetTypes, $pluginWidgetTypes);
-        }
+        $event = new RegisterComponentTypesEvent([
+            'types' => $widgetTypes
+        ]);
+        $this->trigger(self::EVENT_REGISTER_WIDGET_TYPES, $event);
 
-        return $widgetTypes;
+        return $event->types;
     }
 
     /**
@@ -146,7 +153,7 @@ class Dashboard extends Component
             ->where([
                 'userId' => Craft::$app->getUser()->getIdentity()->id,
                 'type' => $type,
-                'enabled' => true
+                'enabled' => '1'
             ])
             ->exists();
     }
@@ -215,7 +222,7 @@ class Dashboard extends Component
 
             $widgetRecord = $this->_getUserWidgetRecordById($widget->id);
 
-            $widgetRecord->type = $widget->getType();
+            $widgetRecord->type = get_class($widget);
             $widgetRecord->settings = $widget->getSettings();
 
             // Enabled by default.
@@ -372,7 +379,7 @@ class Dashboard extends Component
 
         // Get Help widget
         if ($user->admin) {
-            $this->saveWidget($this->createWidget(GetHelpWidget::class));
+            $this->saveWidget($this->createWidget(CraftSupportWidget::class));
         }
 
         // Updates widget
@@ -454,9 +461,9 @@ class Dashboard extends Component
                 'type',
                 'settings',
             ])
-            ->from('{{%widgets}}')
-            ->where(['userId' => $userId, 'enabled' => 1])
-            ->orderBy('sortOrder')
+            ->from(['{{%widgets}}'])
+            ->where(['userId' => $userId, 'enabled' => '1'])
+            ->orderBy(['sortOrder' => SORT_ASC])
             ->all();
 
         $widgets = [];

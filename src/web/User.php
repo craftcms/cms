@@ -56,14 +56,14 @@ class User extends \yii\web\User
     {
         // Set the configurable properties
         $configService = Craft::$app->getConfig();
-        $config['loginUrl'] = Url::getUrl($configService->getLoginPath());
+        $config['loginUrl'] = Url::url($configService->getLoginPath());
         $config['authTimeout'] = $configService->getUserSessionDuration(false);
 
         // Set the state-based property names
         $appId = Craft::$app->getConfig()->get('appId');
         $stateKeyPrefix = md5('Craft.'.get_class($this).($appId ? '.'.$appId : ''));
-        $config['identityCookie'] = Craft::getCookieConfig(['name' => $stateKeyPrefix.'_identity']);
-        $config['usernameCookie'] = Craft::getCookieConfig(['name' => $stateKeyPrefix.'_username']);
+        $config['identityCookie'] = Craft::cookieConfig(['name' => $stateKeyPrefix.'_identity']);
+        $config['usernameCookie'] = Craft::cookieConfig(['name' => $stateKeyPrefix.'_username']);
         $config['idParam'] = $stateKeyPrefix.'__id';
         $config['authTimeoutParam'] = $stateKeyPrefix.'__expire';
         $config['absoluteAuthTimeoutParam'] = $stateKeyPrefix.'__absoluteExpire';
@@ -395,7 +395,7 @@ class User extends \yii\web\User
     protected function renewIdentityCookie()
     {
         // Prevent the session row from getting stale
-        $this->_updateSessionToken();
+        $this->_updateSessionRow();
 
         parent::renewIdentityCookie();
     }
@@ -415,19 +415,21 @@ class User extends \yii\web\User
         if ($value !== null) {
             $data = json_decode($value, true);
 
-            if (count($data) === 4 && isset($data[0], $data[1], $data[2], $data[3])) {
-                $authKey = $data[1];
+            if (is_array($data) && isset($data[2])) {
+                $authData = UserElement::authData($data[1]);
 
-                // TODO: this can't be right (params don't match conditions)
-                Craft::$app->getDb()->createCommand()
-                    ->delete(
-                        '{{%sessions}}',
-                        ['and', 'userId=:userId', 'uid=:uid'],
-                        [
-                            'userId' => $identity->id,
-                            'token' => $authKey
-                        ])
-                    ->execute();
+                if ($authData) {
+                    $tokenUid = $authData[1];
+
+                    Craft::$app->getDb()->createCommand()
+                        ->delete(
+                            '{{%sessions}}',
+                            [
+                                'userId' => $identity->id,
+                                'uid' => $tokenUid
+                            ])
+                        ->execute();
+                }
             }
         }
 
@@ -504,16 +506,16 @@ class User extends \yii\web\User
      *
      * @see _deleteStaleSessions()
      */
-    private function _updateSessionToken()
+    private function _updateSessionRow()
     {
         // Extract the current session token's UID from the identity cookie
         $cookieValue = Craft::$app->getRequest()->getCookies()->getValue($this->identityCookie['name']);
 
         if ($cookieValue !== null) {
-            $identityData = json_decode($cookieValue, true);
+            $data = json_decode($cookieValue, true);
 
-            if (count($identityData) === 3 && isset($identityData[0], $identityData[1], $identityData[2])) {
-                $authData = UserElement::getAuthData($identityData[1]);
+            if (is_array($data) && isset($data[2])) {
+                $authData = UserElement::authData($data[1]);
 
                 if ($authData) {
                     $tokenUid = $authData[1];
@@ -523,8 +525,10 @@ class User extends \yii\web\User
                         ->update(
                             '{{%sessions}}',
                             [],
-                            ['and', 'userId=:userId', 'uid=:uid'],
-                            [':userId' => $this->getId(), ':uid' => $tokenUid])
+                            [
+                                'userId' => $this->getId(),
+                                'uid' => $tokenUid
+                            ])
                         ->execute();
                 }
             }
@@ -541,10 +545,7 @@ class User extends \yii\web\User
         $pastTime = $expire->sub($interval);
 
         Craft::$app->getDb()->createCommand()
-            ->delete(
-                '{{%sessions}}',
-                'dateUpdated < :pastTime',
-                ['pastTime' => Db::prepareDateForDb($pastTime)])
+            ->delete('{{%sessions}}', ['<', 'dateUpdated', Db::prepareDateForDb($pastTime)])
             ->execute();
     }
 }

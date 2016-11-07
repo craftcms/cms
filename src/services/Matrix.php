@@ -94,7 +94,7 @@ class Matrix extends Component
             $this->_blockTypesByFieldId[$fieldId] = [];
 
             $results = $this->_createBlockTypeQuery()
-                ->where('fieldId = :fieldId', [':fieldId' => $fieldId])
+                ->where(['fieldId' => $fieldId])
                 ->all();
 
             foreach ($results as $result) {
@@ -128,11 +128,9 @@ class Matrix extends Component
      */
     public function getBlockTypeById($blockTypeId)
     {
-        if (!isset($this->_blockTypesById) || !array_key_exists($blockTypeId,
-                $this->_blockTypesById)
-        ) {
+        if (!isset($this->_blockTypesById) || !array_key_exists($blockTypeId, $this->_blockTypesById)) {
             $result = $this->_createBlockTypeQuery()
-                ->where('id = :id', [':id' => $blockTypeId])
+                ->where(['id' => $blockTypeId])
                 ->one();
 
             if ($result) {
@@ -650,37 +648,6 @@ class Matrix extends Component
     }
 
     /**
-     * Validates a block.
-     *
-     * If the block doesn’t validate, any validation errors will be stored on the block.
-     *
-     * @param MatrixBlock $block The Matrix block to validate.
-     *
-     * @return boolean Whether the block validated.
-     */
-    public function validateBlock(MatrixBlock $block)
-    {
-        $block->clearErrors();
-
-        $blockRecord = $this->_getBlockRecord($block);
-
-        $blockRecord->fieldId = $block->fieldId;
-        $blockRecord->ownerId = $block->ownerId;
-        $blockRecord->typeId = $block->typeId;
-        $blockRecord->sortOrder = $block->sortOrder;
-
-        $blockRecord->validate();
-        $block->addErrors($blockRecord->getErrors());
-
-        $originalFieldContext = Craft::$app->getContent()->fieldContext;
-        Craft::$app->getContent()->fieldContext = 'matrixBlockType:'.$block->typeId;
-        Craft::$app->getContent()->validateContent($block);
-        Craft::$app->getContent()->fieldContext = $originalFieldContext;
-
-        return !$block->hasErrors();
-    }
-
-    /**
      * Saves a Matrix field.
      *
      * @param MatrixField      $field The Matrix field
@@ -724,7 +691,7 @@ class Matrix extends Component
             $deleteBlocksQuery = MatrixBlock::find()
                 ->ownerId($owner->id)
                 ->fieldId($field->id)
-                ->where(['not in', 'elements.id', $blockIds]);
+                ->where(['not', ['elements.id' => $blockIds]]);
 
             if ($field->localizeBlocks) {
                 $deleteBlocksQuery->ownerSiteId($owner->siteId);
@@ -764,17 +731,14 @@ class Matrix extends Component
      */
     public function getParentMatrixField(MatrixField $matrixField)
     {
-        if (!isset($this->_parentMatrixFields) || !array_key_exists($matrixField->id,
-                $this->_parentMatrixFields)
-        ) {
+        if (!isset($this->_parentMatrixFields) || !array_key_exists($matrixField->id, $this->_parentMatrixFields)) {
             // Does this Matrix field belong to another one?
             $parentMatrixFieldId = (new Query())
-                ->select('fields.id')
-                ->from('{{%fields}} fields')
-                ->innerJoin('{{%matrixblocktypes}} blocktypes', 'blocktypes.fieldId = fields.id')
-                ->innerJoin('{{%fieldlayoutfields}} fieldlayoutfields', 'fieldlayoutfields.layoutId = blocktypes.fieldLayoutId')
-                ->where('fieldlayoutfields.fieldId = :matrixFieldId',
-                    [':matrixFieldId' => $matrixField->id])
+                ->select(['fields.id'])
+                ->from(['{{%fields}} fields'])
+                ->innerJoin('{{%matrixblocktypes}} blocktypes', '[[blocktypes.fieldId]] = [[fields.id]]')
+                ->innerJoin('{{%fieldlayoutfields}} fieldlayoutfields', '[[fieldlayoutfields.layoutId]] = [[blocktypes.fieldLayoutId]]')
+                ->where(['fieldlayoutfields.fieldId' => $matrixField->id])
                 ->scalar();
 
             if ($parentMatrixFieldId) {
@@ -806,8 +770,8 @@ class Matrix extends Component
                 'handle',
                 'sortOrder'
             ])
-            ->from('{{%matrixblocktypes}}')
-            ->orderBy('sortOrder');
+            ->from(['{{%matrixblocktypes}}'])
+            ->orderBy(['sortOrder' => SORT_ASC]);
     }
 
     /**
@@ -979,8 +943,8 @@ class Matrix extends Component
                     'targetId',
                     'sortOrder'
                 ])
-                ->from('{{%relations}}')
-                ->where(['in', 'sourceId', array_keys($newBlockIds)])
+                ->from(['{{%relations}}'])
+                ->where(['sourceId' => array_keys($newBlockIds)])
                 ->all();
 
             if ($relations) {

@@ -101,7 +101,7 @@ class Asset extends Element
     /**
      * @inheritdoc
      */
-    public static function getSources($context = null)
+    protected static function defineSources($context = null)
     {
         if ($context == 'index') {
             $sourceIds = Craft::$app->getVolumes()->getViewableVolumeIds();
@@ -113,42 +113,17 @@ class Asset extends Element
         $tree = Craft::$app->getAssets()->getFolderTreeByVolumeIds($sourceIds, $additionalCriteria);
         $sources = static::_assembleSourceList($tree, $context != 'settings');
 
-        // Allow plugins to modify the sources
-        Craft::$app->getPlugins()->call(
-            'modifyAssetSources',
-            [&$sources, $context]
-        );
-
         return $sources;
     }
 
     /**
      * @inheritdoc
      */
-    public static function getSourceByKey($key, $context = null)
-    {
-        if (preg_match('/folder:(\d+)(:single)?/', $key, $matches)) {
-            $folder = Craft::$app->getAssets()->getFolderById($matches[1]);
-
-            if ($folder) {
-                return static::_assembleSourceInfoForFolder(
-                    $folder,
-                    empty($matches[2])
-                );
-            }
-        }
-
-        return parent::getSourceByKey($key, $context);
-    }
-
-    /**
-     * @inheritdoc
-     */
-    public static function getAvailableActions($source = null)
+    protected static function defineActions($source = null)
     {
         $actions = [];
 
-        if (preg_match('/^folder:(\d+)$/', $source, $matches)) {
+        if (preg_match('/^folder:(\d+)/', $source, $matches)) {
 
             $folderId = $matches[1];
 
@@ -215,24 +190,13 @@ class Asset extends Element
             }
         }
 
-        // Allow plugins to add additional actions
-        $allPluginActions = Craft::$app->getPlugins()->call(
-            'addAssetActions',
-            [$source],
-            true
-        );
-
-        foreach ($allPluginActions as $pluginActions) {
-            $actions = array_merge($actions, $pluginActions);
-        }
-
         return $actions;
     }
 
     /**
      * @inheritdoc
      */
-    public static function defineSearchableAttributes()
+    public static function searchableAttributes()
     {
         return ['filename', 'extension', 'kind'];
     }
@@ -240,9 +204,9 @@ class Asset extends Element
     /**
      * @inheritdoc
      */
-    public static function defineSortableAttributes()
+    protected static function defineSortableAttributes()
     {
-        $attributes = [
+        return [
             'title' => Craft::t('app', 'Title'),
             'filename' => Craft::t('app', 'Filename'),
             'size' => Craft::t('app', 'File Size'),
@@ -250,22 +214,14 @@ class Asset extends Element
             'elements.dateCreated' => Craft::t('app', 'Date Uploaded'),
             'elements.dateUpdated' => Craft::t('app', 'Date Updated'),
         ];
-
-        // Allow plugins to modify the attributes
-        Craft::$app->getPlugins()->call(
-            'modifyAssetSortableAttributes',
-            [&$attributes]
-        );
-
-        return $attributes;
     }
 
     /**
      * @inheritdoc
      */
-    public static function defineAvailableTableAttributes()
+    protected static function defineTableAttributes()
     {
-        $attributes = [
+        return [
             'title' => ['label' => Craft::t('app', 'Title')],
             'filename' => ['label' => Craft::t('app', 'Filename')],
             'size' => ['label' => Craft::t('app', 'File Size')],
@@ -278,54 +234,16 @@ class Asset extends Element
             'dateCreated' => ['label' => Craft::t('app', 'Date Created')],
             'dateUpdated' => ['label' => Craft::t('app', 'Date Updated')],
         ];
-
-        // Allow plugins to modify the attributes
-        $pluginAttributes = Craft::$app->getPlugins()->call('defineAdditionalAssetTableAttributes', [], true);
-
-        foreach ($pluginAttributes as $thisPluginAttributes) {
-            $attributes = array_merge($attributes, $thisPluginAttributes);
-        }
-
-        return $attributes;
     }
 
     /**
      * @inheritdoc
      */
-    public static function getDefaultTableAttributes($source = null)
+    public static function defaultTableAttributes($source = null)
     {
         $attributes = ['filename', 'size', 'dateModified'];
 
         return $attributes;
-    }
-
-    /**
-     * @inheritdoc
-     *
-     * @param string $sourceKey
-     *
-     * @return array
-     */
-    protected static function getTableAttributesForSource($sourceKey)
-    {
-        // Make sure it's a folder
-        if (strncmp($sourceKey, 'folder:', 7) === 0) {
-            $assetsService = Craft::$app->getAssets();
-            $folder = $assetsService->getFolderById(substr($sourceKey, 7));
-
-            // Is it a nested folder?
-            if ($folder && $folder->parentId) {
-                // Get the root folder in that source
-                $rootFolder = $assetsService->getRootFolderByVolumeId($folder->volumeId);
-
-                if ($rootFolder) {
-                    // Use the root folder's source key
-                    $sourceKey = 'folder:'.$rootFolder->id;
-                }
-            }
-        }
-
-        return parent::getTableAttributesForSource($sourceKey);
     }
 
     /**
@@ -341,10 +259,7 @@ class Asset extends Element
         $sources = [];
 
         foreach ($folders as $folder) {
-            $sources['folder:'.$folder->id] = static::_assembleSourceInfoForFolder(
-                $folder,
-                $includeNestedFolders
-            );
+            $sources[] = static::_assembleSourceInfoForFolder($folder, $includeNestedFolders);
         }
 
         return $sources;
@@ -361,6 +276,7 @@ class Asset extends Element
     private static function _assembleSourceInfoForFolder(VolumeFolder $folder, $includeNestedFolders = true)
     {
         $source = [
+            'key' => 'folder:'.$folder->id,
             'label' => ($folder->parentId ? $folder->name : Craft::t('site', $folder->name)),
             'hasThumbs' => true,
             'criteria' => ['folderId' => $folder->id],
@@ -662,7 +578,7 @@ class Asset extends Element
         if ($this->kind == 'image' && $this->getHasUrls()) {
             $img = '<img src="'.$this->getUrl().'" width="'.$this->getWidth().'" height="'.$this->getHeight().'" alt="'.Html::encode($this->title).'" />';
 
-            return Template::getRaw($img);
+            return Template::raw($img);
         }
 
         return null;
@@ -896,7 +812,7 @@ class Asset extends Element
     /**
      * Return whether the Asset has a URL.
      *
-     * @return bool
+     * @return boolean
      */
     public function getHasUrls()
     {
@@ -911,15 +827,8 @@ class Asset extends Element
     /**
      * @inheritdoc
      */
-    public function getTableAttributeHtml($attribute)
+    protected function tableAttributeHtml($attribute)
     {
-        // First give plugins a chance to set this
-        $pluginAttributeHtml = Craft::$app->getPlugins()->callFirst('getAssetTableAttributeHtml', [$this, $attribute], true);
-
-        if ($pluginAttributeHtml !== null) {
-            return $pluginAttributeHtml;
-        }
-
         switch ($attribute) {
             case 'filename':
                 return Html::encodeParams('<span style="word-break: break-word;">{filename}</span>', [
@@ -942,7 +851,7 @@ class Asset extends Element
                 return ($size ? $size.'px' : '');
         }
 
-        return parent::getTableAttributeHtml($attribute);
+        return parent::tableAttributeHtml($attribute);
     }
 
     /**

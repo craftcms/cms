@@ -19,7 +19,6 @@ use craft\app\base\ElementInterface;
 use craft\app\elements\db\ElementQuery;
 use craft\app\elements\Entry;
 use craft\app\elements\GlobalSet;
-use craft\app\elements\MissingElement;
 use craft\app\elements\MatrixBlock;
 use craft\app\elements\Tag;
 use craft\app\elements\User;
@@ -27,6 +26,7 @@ use craft\app\errors\ElementNotFoundException;
 use craft\app\errors\MissingComponentException;
 use craft\app\events\ElementEvent;
 use craft\app\events\MergeElementsEvent;
+use craft\app\events\RegisterComponentTypesEvent;
 use craft\app\helpers\ArrayHelper;
 use craft\app\helpers\Component as ComponentHelper;
 use craft\app\helpers\DateTimeHelper;
@@ -52,6 +52,11 @@ class Elements extends Component
 {
     // Constants
     // =========================================================================
+
+    /**
+     * @event RegisterComponentTypesEvent The event that is triggered when registering element types.
+     */
+    const EVENT_REGISTER_ELEMENT_TYPES = 'registerElementTypes';
 
     /**
      * @event MergeElementsEvent The event that is triggered after two elements are merged together.
@@ -116,15 +121,10 @@ class Elements extends Component
             $config = ['type' => $config];
         }
 
-        try {
-            return ComponentHelper::createComponent($config, ElementInterface::class);
-        } catch (MissingComponentException $e) {
-            $config['errorMessage'] = $e->getMessage();
-            $config['expectedType'] = $config['type'];
-            unset($config['type']);
+        /** @var Element $element */
+        $element = ComponentHelper::createComponent($config, ElementInterface::class);
 
-            return new MissingElement($config);
-        }
+        return $element;
     }
 
     // Finding Elements
@@ -134,14 +134,14 @@ class Elements extends Component
      * Returns an element by its ID.
      *
      * If no element type is provided, the method will first have to run a DB query to determine what type of element
-     * the $elementId is, so you should definitely pass it if it’s known.
+     * the $id is, so you should definitely pass it if it’s known.
      *
      * The element’s status will not be a factor when using this method.
      *
-     * @param integer                      $elementId   The element’s ID.
-     * @param string|null|ElementInterface $elementType The element class.
-     * @param integer|null                 $siteId      The site to fetch the element in.
-     *                                                  Defaults to the current site.
+     * @param integer      $elementId   The element’s ID.
+     * @param string|null  $elementType The element class.
+     * @param integer|null $siteId      The site to fetch the element in.
+     *                                  Defaults to the current site.
      *
      * @return ElementInterface|null The matching element, or `null`.
      */
@@ -151,7 +151,7 @@ class Elements extends Component
             return null;
         }
 
-        if (!$elementType) {
+        if ($elementType === null) {
             $elementType = $this->getElementTypeById($elementId);
 
             if (!$elementType) {
@@ -159,6 +159,7 @@ class Elements extends Component
             }
         }
 
+        /** @var Element $elementType */
         /** @var ElementQuery $query */
         $query = $elementType::find();
         $query->id = $elementId;
@@ -191,36 +192,31 @@ class Elements extends Component
 
         // First get the element ID and type
 
-        $conditions = [
-            'and',
-            'elements_i18n.uri = :uri',
-            'elements_i18n.siteId = :siteId'
-        ];
-
-        $params = [
-            ':uri' => $uri,
-            ':siteId' => $siteId
-        ];
+        $query = (new Query())
+            ->select(['elements.id', 'elements.type'])
+            ->from(['{{%elements}} elements'])
+            ->innerJoin('{{%elements_i18n}} elements_i18n', '[[elements_i18n.elementId]] = [[elements.id]]')
+            ->where([
+                'elements_i18n.uri' => $uri,
+                'elements_i18n.siteId' => $siteId
+            ]);
 
         if ($enabledOnly) {
-            $conditions[] = 'elements_i18n.enabled = 1';
-            $conditions[] = 'elements.enabled = 1';
-            $conditions[] = 'elements.archived = 0';
+            $query->andWhere([
+                'elements_i18n.enabled' => '1',
+                'elements.enabled' => '1',
+                'elements.archived' => '0',
+            ]);
         }
 
-        $result = (new Query())
-            ->select('elements.id, elements.type')
-            ->from('{{%elements}} elements')
-            ->innerJoin('{{%elements_i18n}} elements_i18n', 'elements_i18n.elementId = elements.id')
-            ->where($conditions, $params)
-            ->one();
+        $result = $query->one();
 
-        if ($result) {
-            // Return the actual element
-            return $this->getElementById($result['id'], $result['type'], $siteId);
+        if (!$result) {
+            return null;
         }
 
-        return null;
+        // Return the actual element
+        return $this->getElementById($result['id'], $result['type'], $siteId);
     }
 
     /**
@@ -231,7 +227,7 @@ class Elements extends Component
      *
      * If an array is passed in, then an array will be returned.
      *
-     * @param integer|array $elementId An element’s ID, or an array of elements’ IDs.
+     * @param integer|array $elementId The element’s ID, or an array of element IDs.
      *
      * @return ElementInterface|ElementInterface[]|Element|Element[]|null The element class(es).
      */
@@ -239,15 +235,15 @@ class Elements extends Component
     {
         if (is_array($elementId)) {
             return (new Query())
-                ->select('type')
+                ->select(['type'])
                 ->distinct(true)
-                ->from('{{%elements}}')
-                ->where(['in', 'id', $elementId])
+                ->from(['{{%elements}}'])
+                ->where(['id' => $elementId])
                 ->column();
         } else {
             return (new Query())
-                ->select('type')
-                ->from('{{%elements}}')
+                ->select(['type'])
+                ->from(['{{%elements}}'])
                 ->where(['id' => $elementId])
                 ->scalar();
         }
@@ -264,8 +260,8 @@ class Elements extends Component
     public function getElementUriForSite($elementId, $siteId)
     {
         return (new Query())
-            ->select('uri')
-            ->from('{{%elements_i18n}}')
+            ->select(['uri'])
+            ->from(['{{%elements_i18n}}'])
             ->where(['elementId' => $elementId, 'siteId' => $siteId])
             ->scalar();
     }
@@ -281,8 +277,8 @@ class Elements extends Component
     public function getEnabledSiteIdsForElement($elementId)
     {
         return (new Query())
-            ->select('siteId')
-            ->from('{{%elements_i18n}}')
+            ->select(['siteId'])
+            ->from(['{{%elements_i18n}}'])
             ->where(['elementId' => $elementId, 'enabled' => 1])
             ->column();
     }
@@ -323,10 +319,9 @@ class Elements extends Component
      * $entry->enabled = true;
      * $entry->title = "Hello World!";
      *
-     * $entry->setFieldValuesFromPost(
-     *     [
-     *         'body' => "<p>I can’t believe I literally just called this “Hello World!”.</p>",
-     *     ]);
+     * $entry->setFieldValues([
+     *     'body' => "<p>I can’t believe I literally just called this “Hello World!”.</p>",
+     * ]);
      *
      * $success = Craft::$app->elements->saveElement($entry);
      *
@@ -381,7 +376,7 @@ class Elements extends Component
             if (!$isNewElement) {
                 $elementRecord = ElementRecord::findOne([
                     'id' => $element->id,
-                    'type' => $element::className()
+                    'type' => get_class($element)
                 ]);
 
                 if (!$elementRecord) {
@@ -389,7 +384,7 @@ class Elements extends Component
                 }
             } else {
                 $elementRecord = new ElementRecord();
-                $elementRecord->type = $element::className();
+                $elementRecord->type = get_class($element);
             }
 
             // Set the attributes
@@ -427,7 +422,7 @@ class Elements extends Component
 
             $masterSiteId = $element->siteId;
 
-            $supportedSites = ElementHelper::getSupportedSitesForElement($element);
+            $supportedSites = ElementHelper::supportedSitesForElement($element);
 
             if (!$supportedSites) {
                 throw new Exception('All elements must have at least one site associated with them.');
@@ -537,7 +532,7 @@ class Elements extends Component
                         $localizedElement->setFieldValues($fieldValues);
                     }
 
-                    Craft::$app->getContent()->saveContent($localizedElement, false);
+                    Craft::$app->getContent()->saveContent($localizedElement);
                 }
 
                 // Capture the original slug, in case it's entirely composed of invalid characters
@@ -593,11 +588,8 @@ class Elements extends Component
                         '{{%elements_i18n}}',
                         [
                             'and',
-                            'elementId = :elementId',
-                            ['not in', 'siteId', $supportedSiteIds]
-                        ],
-                        [
-                            ':elementId' => $element->id
+                            ['elementId' => $element->id],
+                            ['not', ['siteId' => $supportedSiteIds]]
                         ])
                     ->execute();
 
@@ -607,11 +599,8 @@ class Elements extends Component
                             $element->getContentTable(),
                             [
                                 'and',
-                                'elementId = :elementId',
-                                ['not in', 'siteId', $supportedSiteIds]
-                            ],
-                            [
-                                ':elementId' => $element->id
+                                ['elementId' => $element->id],
+                                ['not', ['siteId' => $supportedSiteIds]]
                             ])
                         ->execute();
                 }
@@ -656,7 +645,7 @@ class Elements extends Component
             Craft::$app->getTasks()->queueTask([
                 'type' => UpdateElementSlugsAndUris::class,
                 'elementId' => $element->id,
-                'elementType' => $element::className(),
+                'elementType' => get_class($element),
                 'siteId' => $element->siteId,
                 'updateOtherSites' => $updateOtherSites,
                 'updateDescendants' => $updateDescendants,
@@ -745,7 +734,7 @@ class Elements extends Component
                 Craft::$app->getTasks()->queueTask([
                     'type' => UpdateElementSlugsAndUris::class,
                     'elementId' => $childIds,
-                    'elementType' => $element::className(),
+                    'elementType' => get_class($element),
                     'siteId' => $element->siteId,
                     'updateOtherSites' => $updateOtherSites,
                     'updateDescendants' => true,
@@ -782,14 +771,14 @@ class Elements extends Component
             // Update any relations that point to the merged element
             $relations = (new Query())
                 ->select(['id', 'fieldId', 'sourceId', 'sourceSiteId'])
-                ->from('{{%relations}}')
+                ->from(['{{%relations}}'])
                 ->where(['targetId' => $mergedElementId])
                 ->all();
 
             foreach ($relations as $relation) {
                 // Make sure the persisting element isn't already selected in the same field
                 $persistingElementIsRelatedToo = (new Query())
-                    ->from('{{%relations}}')
+                    ->from(['{{%relations}}'])
                     ->where([
                         'fieldId' => $relation['fieldId'],
                         'sourceId' => $relation['sourceId'],
@@ -815,14 +804,14 @@ class Elements extends Component
             // Update any structures that the merged element is in
             $structureElements = (new Query())
                 ->select(['id', 'structureId'])
-                ->from('{{%structureelements}}')
+                ->from(['{{%structureelements}}'])
                 ->where(['elementId' => $mergedElementId])
                 ->all();
 
             foreach ($structureElements as $structureElement) {
                 // Make sure the persisting element isn't already a part of that structure
                 $persistingElementIsInStructureToo = (new Query())
-                    ->from('{{%structureElements}}')
+                    ->from(['{{%structureElements}}'])
                     ->where([
                         'structureId' => $structureElement['structureId'],
                         'elementId' => $prevailingElementId
@@ -886,14 +875,38 @@ class Elements extends Component
     /**
      * Deletes an element by its ID.
      *
-     * @param integer $id The element’s ID
+     * @param integer      $elementId   The element’s ID
+     * @param string|null  $elementType The element class.
+     * @param integer|null $siteId      The site to fetch the element in.
+     *                                  Defaults to the current site.
      *
      * @return boolean Whether the element was deleted successfully
      * @throws \Exception
      */
-    public function deleteElementById($id)
+    public function deleteElementById($elementId, $elementType = null, $siteId = null)
     {
-        $element = $this->getElementById($id);
+        if ($elementType === null) {
+            $elementType = $this->getElementTypeById($elementId);
+
+            if (!$elementType) {
+                return false;
+            }
+        }
+
+        if ($siteId === null && $elementType::isLocalized() && Craft::$app->getIsMultiSite()) {
+            // Get a site this element is enabled in
+            $siteId = (new Query())
+                ->select('siteId')
+                ->from('{{%elements_i18n}}')
+                ->where(['elementId' => $elementId])
+                ->scalar();
+
+            if (!$siteId) {
+                return false;
+            }
+        }
+
+        $element = $this->getElementById($elementId, $elementType, $siteId);
 
         if (!$element) {
             return false;
@@ -984,12 +997,11 @@ class Elements extends Component
     /**
      * Returns all available element classes.
      *
-     * @return ElementInterface[] The available element classes.
+     * @return string[] The available element classes.
      */
     public function getAllElementTypes()
     {
-        // TODO: Come up with a way for plugins to add more element classes
-        return [
+        $elementTypes = [
             Asset::class,
             Category::class,
             Entry::class,
@@ -998,6 +1010,13 @@ class Elements extends Component
             Tag::class,
             User::class,
         ];
+
+        $event = new RegisterComponentTypesEvent([
+            'types' => $elementTypes
+        ]);
+        $this->trigger(self::EVENT_REGISTER_ELEMENT_TYPES, $event);
+
+        return $event->types;
     }
 
     // Element Actions
@@ -1053,13 +1072,13 @@ class Elements extends Component
             $refTagsByElementHandle = [];
 
             $str = preg_replace_callback('/\{(\w+)\:([^\:\}]+)(?:\:([^\:\}]+))?\}/',
-                function ($matches) {
+                function($matches) {
                     global $refTagsByElementHandle;
 
                     if (strpos($matches[1], '_') === false) {
                         $elementTypeHandle = ucfirst($matches[1]);
                     } else {
-                        $elementTypeHandle = preg_replace_callback('/^\w|_\w/', function ($matches) {
+                        $elementTypeHandle = preg_replace_callback('/^\w|_\w/', function($matches) {
                             return strtoupper($matches[0]);
                         }, $matches[1]);
                     }
@@ -1211,9 +1230,9 @@ class Elements extends Component
     /**
      * Eager-loads additional elements onto a given set of elements.
      *
-     * @param ElementInterface|string $elementType The root element type
-     * @param ElementInterface[]      $elements    The root element models that should be updated with the eager-loaded elements
-     * @param string|array            $with        Dot-delimited paths of the elements that should be eager-loaded into the root elements
+     * @param string             $elementType The root element type class
+     * @param ElementInterface[] $elements    The root element models that should be updated with the eager-loaded elements
+     * @param string|array       $with        Dot-delimited paths of the elements that should be eager-loaded into the root elements
      *
      * @return void
      */
@@ -1245,7 +1264,7 @@ class Elements extends Component
 
         // Load 'em up!
         $elementsByPath = ['__root__' => $elements];
-        $elementTypesByPath = ['__root__' => $elementType::className()];
+        $elementTypesByPath = ['__root__' => $elementType];
 
         foreach ($paths as $path) {
             $pathSegments = explode('.', $path);
@@ -1265,7 +1284,7 @@ class Elements extends Component
                     // Get the eager-loading map from the source element type
                     /** @var Element $sourceElementType */
                     $sourceElementType = $elementTypesByPath[$sourcePath];
-                    $map = $sourceElementType::getEagerLoadingMap($elementsByPath[$sourcePath], $segment);
+                    $map = $sourceElementType::eagerLoadingMap($elementsByPath[$sourcePath], $segment);
 
                     if ($map && !empty($map['map'])) {
                         // Remember the element type in case there are more segments after this

@@ -9,10 +9,12 @@ namespace craft\app\web\twig\variables;
 
 use Craft;
 use craft\app\base\Plugin;
+use craft\app\events\RegisterCpNavItemsEvent;
 use craft\app\helpers\Cp as CpHelper;
 use craft\app\helpers\Io as IoHelper;
 use craft\app\helpers\StringHelper;
 use craft\app\helpers\Url;
+use yii\base\Component;
 
 /**
  * CP functions
@@ -20,28 +22,38 @@ use craft\app\helpers\Url;
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since  3.0
  */
-class Cp
+class Cp extends Component
 {
+    // Constants
+    // =========================================================================
+
+    /**
+     * @event RegisterCpNavItemsEvent The event that is triggered when registering Control Panel nav items.
+     */
+    const EVENT_REGISTER_CP_NAV_ITEMS = 'registerCpNavItems';
+
     // Public Methods
     // =========================================================================
 
     /**
-     * Get the sections of the CP.
-     *
-     * @param integer $iconSize The icon size
+     * Returns the Control Panel nav items.
      *
      * @return array
      */
-    public function nav($iconSize = 32)
+    public function nav()
     {
-        $nav['dashboard'] = [
-            'label' => Craft::t('app', 'Dashboard'),
-            'icon' => 'gauge'
+        $navItems = [
+            [
+                'label' => Craft::t('app', 'Dashboard'),
+                'url' => 'dashboard',
+                'icon' => 'gauge'
+            ],
         ];
 
         if (Craft::$app->getSections()->getTotalEditableSections()) {
-            $nav['entries'] = [
+            $navItems[] = [
                 'label' => Craft::t('app', 'Entries'),
+                'url' => 'entries',
                 'icon' => 'section'
             ];
         }
@@ -49,7 +61,7 @@ class Cp
         $globals = Craft::$app->getGlobals()->getEditableSets();
 
         if ($globals) {
-            $nav['globals'] = [
+            $navItems[] = [
                 'label' => Craft::t('app', 'Globals'),
                 'url' => 'globals/'.$globals[0]->handle,
                 'icon' => 'globe'
@@ -57,22 +69,25 @@ class Cp
         }
 
         if (Craft::$app->getCategories()->getEditableGroupIds()) {
-            $nav['categories'] = [
+            $navItems[] = [
                 'label' => Craft::t('app', 'Categories'),
+                'url' => 'categories',
                 'icon' => 'categories'
             ];
         }
 
         if (Craft::$app->getVolumes()->getTotalViewableVolumes()) {
-            $nav['assets'] = [
+            $navItems[] = [
                 'label' => Craft::t('app', 'Assets'),
+                'url' => 'assets',
                 'icon' => 'assets'
             ];
         }
 
         if (Craft::$app->getEdition() == Craft::Pro && Craft::$app->getUser()->checkPermission('editUsers')) {
-            $nav['users'] = [
+            $navItems[] = [
                 'label' => Craft::t('app', 'Users'),
+                'url' => 'users',
                 'icon' => 'users'
             ];
         }
@@ -95,8 +110,9 @@ class Cp
                         $iconSvg = false;
                     }
 
-                    $nav[$lcHandle] = [
+                    $navItems[] = [
                         'label' => $plugin->name,
+                        'url' => $lcHandle,
                         'iconSvg' => $iconSvg
                     ];
                 }
@@ -104,37 +120,45 @@ class Cp
         }
 
         if (Craft::$app->getUser()->getIsAdmin()) {
-            $nav['settings'] = [
+            $navItems[] = [
+                'url' => 'settings',
                 'label' => Craft::t('app', 'Settings'),
                 'icon' => 'settings'
             ];
         }
 
         // Allow plugins to modify the nav
-        Craft::$app->getPlugins()->call('modifyCpNav', [&$nav]);
+        $event = new RegisterCpNavItemsEvent([
+            'navItems' => $navItems
+        ]);
+        $this->trigger(self::EVENT_REGISTER_CP_NAV_ITEMS, $event);
+        $navItems = $event->navItems;
 
         // Figure out which item is selected, and normalize the items
-        $firstSegment = Craft::$app->getRequest()->getSegment(1);
+        $path = Craft::$app->getRequest()->getPathInfo();
 
-        if ($firstSegment == 'myaccount') {
-            $firstSegment = 'users';
+        if ($path == 'myaccount') {
+            $path = 'users';
         }
 
-        foreach ($nav as $handle => &$item) {
-            if (is_string($item)) {
-                $item = ['label' => $item];
-            }
+        $foundSelectedItem = false;
 
-            $item['sel'] = ($handle == $firstSegment);
-
-            if (isset($item['url'])) {
-                $item['url'] = Url::getUrl($item['url']);
+        foreach ($navItems as &$item) {
+            if (!$foundSelectedItem && ($item['url'] == $path || StringHelper::startsWith($path, $item['url'].'/'))) {
+                $item['sel'] = true;
+                $foundSelectedItem = true;
             } else {
-                $item['url'] = Url::getUrl($handle);
+                $item['sel'] = false;
             }
+
+            if (!isset($item['id'])) {
+                $item['id'] = 'nav-'.preg_replace('/[^\w\-_]/', '', $item['url']);
+            }
+
+            $item['url'] = Url::url($item['url']);
         }
 
-        return $nav;
+        return $navItems;
     }
 
     /**
@@ -240,6 +264,6 @@ class Cp
      */
     public function getAlerts()
     {
-        return CpHelper::getAlerts(Craft::$app->getRequest()->getPathInfo());
+        return CpHelper::alerts(Craft::$app->getRequest()->getPathInfo());
     }
 }

@@ -68,7 +68,7 @@ var MessageSettingsModal = Garnish.Modal.extend(
 {
 	message: null,
 
-	$siteSelect: null,
+	$languageSelect: null,
 	$subjectInput: null,
 	$bodyInput: null,
 	$saveBtn: null,
@@ -88,11 +88,11 @@ var MessageSettingsModal = Garnish.Modal.extend(
 		this.loadContainer();
 	},
 
-	loadContainer: function(siteId)
+	loadContainer: function(language)
 	{
 		var data = {
-			key:    this.message.key,
-			siteId: siteId
+			key:      this.message.key,
+			language: language
 		};
 
 		// If CSRF protection isn't enabled, these won't be defined.
@@ -108,23 +108,23 @@ var MessageSettingsModal = Garnish.Modal.extend(
 			{
 				if (!this.$container)
 				{
-					var $container = $('<form class="modal fitted message-settings" accept-charset="UTF-8">'+response+'</form>').appendTo(Garnish.$bod);
+					var $container = $('<form class="modal fitted message-settings" accept-charset="UTF-8">'+response.body+'</form>').appendTo(Garnish.$bod);
 					this.setContainer($container);
 					this.show();
 				}
 				else
 				{
-					this.$container.html(response);
+					this.$container.html(response.body);
 				}
 
-				this.$siteSelect = this.$container.find('.site:first > select');
+				this.$languageSelect = this.$container.find('.language:first > select');
 				this.$subjectInput = this.$container.find('.message-subject:first');
 				this.$bodyInput = this.$container.find('.message-body:first');
 				this.$saveBtn = this.$container.find('.submit:first');
 				this.$cancelBtn = this.$container.find('.cancel:first');
 				this.$spinner = this.$container.find('.spinner:first');
 
-				this.addListener(this.$siteSelect, 'change', 'switchSite');
+				this.addListener(this.$languageSelect, 'change', 'switchLanguage');
 				this.addListener(this.$container, 'submit', 'saveMessage');
 				this.addListener(this.$cancelBtn, 'click', 'cancel');
 
@@ -136,9 +136,9 @@ var MessageSettingsModal = Garnish.Modal.extend(
 		}, this));
 	},
 
-	switchSite: function()
+	switchLanguage: function()
 	{
-		this.loadContainer(this.$siteSelect.val());
+		this.loadContainer(this.$languageSelect.val());
 	},
 
 	saveMessage: function(event)
@@ -151,10 +151,10 @@ var MessageSettingsModal = Garnish.Modal.extend(
 		}
 
 		var data = {
-			key:     this.message.key,
-			siteId:  (this.$siteSelect.length ? this.$siteSelect.val() : Craft.siteId),
-			subject: this.$subjectInput.val(),
-			body:    this.$bodyInput.val()
+			key:      this.message.key,
+			language: (this.$languageSelect.length ? this.$languageSelect.val() : Craft.language),
+			subject:  this.$subjectInput.val(),
+			body:     this.$bodyInput.val()
 		};
 
 		this.$subjectInput.removeClass('error');
@@ -186,8 +186,8 @@ var MessageSettingsModal = Garnish.Modal.extend(
 			{
 				if (response.success)
 				{
-					// Only update the page if we're editing the current site's message
-					if (data.siteId == Craft.siteId)
+					// Only update the page if we're editing the current language's message
+					if (data.language == Craft.language)
 					{
 						this.message.updateHtmlFromModal();
 					}

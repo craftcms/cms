@@ -54,10 +54,10 @@ interface ElementInterface extends ComponentInterface
      * If this returns `true`, the element index template will show a Status menu by default, and your elements will
      * get status indicator icons next to them.
      *
-     * Use [[getStatuses()]] to customize which statuses the elements might have.
+     * Use [[statuses()]] to customize which statuses the elements might have.
      *
      * @return boolean Whether elements of this type have statuses.
-     * @see getStatuses()
+     * @see statuses()
      */
     public static function hasStatuses();
 
@@ -199,16 +199,17 @@ interface ElementInterface extends ComponentInterface
      * @return string[]|null
      * @see hasStatuses()
      */
-    public static function getStatuses();
+    public static function statuses();
 
     /**
-     * Returns the keys of the sources that elements of this type may belong to.
+     * Returns the source definitions that elements of this type may belong to.
      *
      * This defines what will show up in the source list on element indexes and element selector modals.
      *
-     * Each item in the array should have a key that identifies the source’s key (e.g. "section:3"), and should be set
-     * to an array that has the following keys:
+     * Each item in the array should be set to an array that has the following keys:
      *
+     * - **`key`** – The source’s key. This is the string that will be passed into the $source argument of [[actions()]],
+     *   [[indexHtml()]], and [[defaultTableAttributes()]].
      * - **`label`** – The human-facing label of the source.
      * - **`criteria`** – An array of element criteria parameters that the source should use when the source is selected.
      *   (Optional)
@@ -228,19 +229,9 @@ interface ElementInterface extends ComponentInterface
      *
      * @param string|null $context The context ('index' or 'modal').
      *
-     * @return string[]|false The source keys.
+     * @return array The sources.
      */
-    public static function getSources($context = null);
-
-    /**
-     * Returns a source by its key and context.
-     *
-     * @param string $key     The source’s key.
-     * @param string $context The context ('index' or 'modal').
-     *
-     * @return array|null
-     */
-    public static function getSourceByKey($key, $context = null);
+    public static function sources($context = null);
 
     /**
      * Returns the available element actions for a given source (if one is provided).
@@ -252,7 +243,7 @@ interface ElementInterface extends ComponentInterface
      *
      * @return array|null The available element actions.
      */
-    public static function getAvailableActions($source = null);
+    public static function actions($source = null);
 
     /**
      * Defines which element attributes should be searchable.
@@ -277,7 +268,7 @@ interface ElementInterface extends ComponentInterface
      *
      * @return string[] The element attributes that should be searchable
      */
-    public static function defineSearchableAttributes();
+    public static function searchableAttributes();
 
     /**
      * Returns the element index HTML.
@@ -292,10 +283,10 @@ interface ElementInterface extends ComponentInterface
      *
      * @return string The element index HTML
      */
-    public static function getIndexHtml($elementQuery, $disabledElementIds, $viewState, $sourceKey, $context, $includeContainer, $showCheckboxes);
+    public static function indexHtml($elementQuery, $disabledElementIds, $viewState, $sourceKey, $context, $includeContainer, $showCheckboxes);
 
     /**
-     * Defines the attributes that elements can be sorted by.
+     * Returns the attributes that elements can be sorted by.
      *
      * This method should return an array, where the keys reference database column names that should be sorted on,
      * and where the values define the user-facing labels.
@@ -325,7 +316,7 @@ interface ElementInterface extends ComponentInterface
      *
      * @return string[] The attributes that elements can be sorted by
      */
-    public static function defineSortableAttributes();
+    public static function sortableAttributes();
 
     /**
      * Defines all of the available columns that can be shown in table views.
@@ -342,64 +333,19 @@ interface ElementInterface extends ComponentInterface
      *
      * @return array The table attributes.
      */
-    public static function defineAvailableTableAttributes();
+    public static function tableAttributes();
 
     /**
      * Returns the list of table attribute keys that should be shown by default.
      *
      * This method should return an array where each element in the array maps to one of the keys of the array returned
-     * by [[defineAvailableTableAttributes()]].
+     * by [[tableAttributes()]].
      *
      * @param string|null $source The selected source’s key, if any.
      *
      * @return array The table attribute keys
      */
-    public static function getDefaultTableAttributes($source = null);
-
-    /**
-     * Returns the fields that should take part in an upcoming elements query.
-     *
-     * These fields will get their own criteria parameters in the [[ElementQueryInterface]] that gets passed in,
-     * their field types will each have an opportunity to help build the element query, and their columns in the content
-     * table will be selected by the query (for those that have one).
-     *
-     * If a field has its own column in the content table, but the column name is prefixed with something besides
-     * “field_”, make sure you set the `columnPrefix` attribute on the [[\craft\app\base\Field]], so
-     * [[\craft\app\services\Elements::buildElementsQuery()]] knows which column to select.
-     *
-     * @param ElementQueryInterface $query
-     *
-     * @return FieldInterface[] The fields that should take part in the upcoming elements query
-     */
-    public static function getFieldsForElementsQuery(ElementQueryInterface $query);
-
-    /**
-     * Returns the element query condition for a custom status parameter value.
-     *
-     * If the ElementQuery’s [[\craft\app\elements\ElementQuery::status status]] parameter is set to something besides
-     * 'enabled' or 'disabled', and it’s one of the statuses that you’ve defined in [[getStatuses()]], this method
-     * is where you can turn that custom status into an actual SQL query condition.
-     *
-     * For example, if you support a status called “pending”, which maps back to a `pending` database column that will
-     * either be 0 or 1, this method could do this:
-     *
-     * ```php
-     * switch ($status)
-     * {
-     *     case 'pending':
-     *     {
-     *         $query->andWhere('mytable.pending = 1');
-     *         break;
-     *     }
-     * }
-     * ```
-     *
-     * @param ElementQueryInterface $query  The database query
-     * @param string                $status The custom status
-     *
-     * @return string|false
-     */
-    public static function getElementQueryStatusCondition(ElementQueryInterface $query, $status);
+    public static function defaultTableAttributes($source = null);
 
     /**
      * Returns an array that maps source-to-target element IDs based on the given sub-property handle.
@@ -415,7 +361,7 @@ interface ElementInterface extends ComponentInterface
      *
      * @return array|false The eager-loading element ID mappings, or false if no mappings exist
      */
-    public static function getEagerLoadingMap($sourceElements, $handle);
+    public static function eagerLoadingMap($sourceElements, $handle);
 
     // Public Methods
     // =========================================================================
@@ -711,16 +657,26 @@ interface ElementInterface extends ComponentInterface
     public function offsetExists($offset);
 
     /**
-     * Returns the element’s custom field values.
+     * Returns an array of the element’s normalized custom field values, indexed by their handles.
      *
      * @param array $fieldHandles The list of field handles whose values need to be returned.
      *                            Defaults to null, meaning all fields’ values will be returned.
      *                            If it is an array, only the fields in the array will be returned.
-     * @param array $except       The list of field handles whose values should NOT be returned.
      *
      * @return array The field values (handle => value)
      */
-    public function getFieldValues($fieldHandles = null, $except = []);
+    public function getFieldValues($fieldHandles);
+
+    /**
+     * Returns an array of the element’s serialized custom field values, indexed by their handles.
+     *
+     * @param array $fieldHandles The list of field handles whose values need to be returned.
+     *                            Defaults to null, meaning all fields’ values will be returned.
+     *                            If it is an array, only the fields in the array will be returned.
+     *
+     * @return array
+     */
+    public function getSerializedFieldValues($fieldHandles);
 
     /**
      * Sets the element’s custom field values.
@@ -753,34 +709,27 @@ interface ElementInterface extends ComponentInterface
     /**
      * Sets the element’s custom field values, when the values have come from post data.
      *
-     * @param array|string $values The array of field values, or the post location of the content
+     * @param string $paramNamespace The field param namespace
      *
      * @return void
      */
-    public function setFieldValuesFromPost($values);
+    public function setFieldValuesFromRequest($paramNamespace);
 
     /**
-     * Returns the raw content from the post data, as it was given to [[setFieldValuesFromPost]]
+     * Returns the namespace used by custom field params on the request.
      *
-     * @return array
+     * @return string|null The field param namespace
      */
-    public function getContentFromPost();
+    public function getFieldParamNamespace();
 
     /**
-     * Returns the location in POST that the content was pulled from.
+     * Sets the namespace used by custom field params on the request.
      *
-     * @return string|null
+     * @param string $namespace The field param namespace
+     *
+     * @return void
      */
-    public function getContentPostLocation();
-
-    /**
-     * Sets the location in POST that the content was pulled from.
-     *
-     * @param $contentPostLocation
-     *
-     * @return string|null
-     */
-    public function setContentPostLocation($contentPostLocation);
+    public function setFieldParamNamespace($namespace);
 
     /**
      * Returns the name of the table this element’s content is stored in.

@@ -22,7 +22,7 @@ class m161021_102916_fix_recent_entries_widgets extends Migration
         // (this is the closest thing to the original locale IDs we have now)
         $siteResults = (new Query())
             ->select(['id', 'handle'])
-            ->from('{{%sites}}')
+            ->from(['{{%sites}}'])
             ->all();
         $siteIdsByHandle = ArrayHelper::map($siteResults, 'handle', 'id');
 

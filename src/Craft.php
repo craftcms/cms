@@ -83,7 +83,7 @@ class Craft extends Yii
      *
      * @return array The cookie config array.
      */
-    public static function getCookieConfig($config = [], $request = null)
+    public static function cookieConfig($config = [], $request = null)
     {
         if (!isset(static::$_baseCookieConfig)) {
             $configService = static::$app->getConfig();
@@ -143,9 +143,9 @@ class Craft extends Yii
 
             // Get the field handles
             $fieldHandles = (new Query())
-                ->select('handle')
+                ->select(['handle'])
                 ->distinct(true)
-                ->from('{{%fields}}')
+                ->from(['{{%fields}}'])
                 ->column();
 
             $properties = [];

@@ -145,10 +145,7 @@ class AssetTransforms extends Component
     {
         // If we've already fetched all transforms we can save ourselves a trip to the DB for transform handles that
         // don't exist
-        if (!$this->_fetchedAllTransforms &&
-            (!isset($this->_transformsByHandle) || !array_key_exists($handle,
-                    $this->_transformsByHandle))
-        ) {
+        if (!$this->_fetchedAllTransforms && (!isset($this->_transformsByHandle) || !array_key_exists($handle, $this->_transformsByHandle))) {
             $result = $this->_createTransformQuery()
                 ->where(['handle' => $handle])
                 ->one();
@@ -314,39 +311,45 @@ class AssetTransforms extends Component
 
         // Get the index conditions
         $transformsByFingerprint = [];
-        $indexConditions = [];
+        $indexCondition = ['or'];
 
         foreach ($transforms as $transform) {
             $transform = $this->normalizeTransform($transform);
             $location = $fingerprint = $this->_getTransformFolderName($transform);
 
-            $condition = ['and', ['location' => $location]];
+            $transformCondition = ['and', ['location' => $location]];
 
             if (is_null($transform->format)) {
-                $condition[] = 'format IS NULL';
+                $transformCondition[] = ['format' => null];
             } else {
-                $condition[] = ['format' => $transform->format];
+                $transformCondition[] = ['format' => $transform->format];
                 $fingerprint .= ':'.$transform->format;
             }
 
-            $indexConditions[] = $condition;
+            $indexCondition[] = $transformCondition;
             $transformsByFingerprint[$fingerprint] = $transform;
-        }
-
-        if (count($indexConditions) == 1) {
-            $indexConditions = $indexConditions[0];
-        } else {
-            array_unshift($indexConditions, 'or');
         }
 
         // Query for the indexes
         $results = (new Query())
-            ->select('id, assetId, filename, format, location, volumeId, fileExists, inProgress, dateIndexed, dateCreated, dateUpdated')
-            ->from('{{%assettransformindex}}')
+            ->select([
+                'id',
+                'assetId',
+                'filename',
+                'format',
+                'location',
+                'volumeId',
+                'fileExists',
+                'inProgress',
+                'dateIndexed',
+                'dateCreated',
+                'dateUpdated',
+            ])
+            ->from(['{{%assettransformindex}}'])
             ->where([
                 'and',
-                ['in', 'assetId', array_keys($assetsById)],
-                $indexConditions
+                ['assetId' => array_keys($assetsById)],
+                $indexCondition
             ])
             ->all();
 
@@ -378,11 +381,7 @@ class AssetTransforms extends Component
             Craft::$app->getDb()->createCommand()
                 ->delete(
                     '{{%assettransformindex}}',
-                    [
-                        'in',
-                        'id',
-                        $invalidIndexIds
-                    ])
+                    ['id' => $invalidIndexIds])
                 ->execute();
         }
     }
@@ -419,7 +418,7 @@ class AssetTransforms extends Component
 
         if (is_null($transform->format)) {
             // A generated auto-transform will have it's format set to null, but the filename will be populated.
-            $query->andWhere('format IS NULL');
+            $query->andWhere(['format' => null]);
         } else {
             $query->andWhere(['format' => $transform->format]);
         }
@@ -563,8 +562,7 @@ class AssetTransforms extends Component
         $volume = $asset->getVolume();
         $index->detectedFormat = !empty($index->format) ? $index->format : $this->detectAutoTransformFormat($asset);
 
-        $transformFilename = Io::getFilename($asset->filename,
-                false).'.'.$index->detectedFormat;
+        $transformFilename = Io::getFilename($asset->filename, false).'.'.$index->detectedFormat;
         $index->filename = $transformFilename;
 
         $matchFound = false;
@@ -581,16 +579,15 @@ class AssetTransforms extends Component
             // We're looking for transforms that fit the bill and are not the one we are trying to find/create
             // the image for.
             $results = $this->_createTransformIndexQuery()
-                ->where(
+                ->where([
+                    'and',
                     [
-                        'and',
-                        ['assetId' => $asset->id, 'fileExists' => 1],
-                        ['in', 'location', $possibleLocations],
-                        'id <> :indexId'
+                        'assetId' => $asset->id,
+                        'fileExists' => 1,
+                        'location' => $possibleLocations,
                     ],
-                    [
-                        ':indexId' => $index->id
-                    ])
+                    ['not', ['id' => $index->id]]
+                ])
                 ->all();
 
             foreach ($results as $result) {
@@ -711,7 +708,7 @@ class AssetTransforms extends Component
             $dbConnection->createCommand()
                 ->insert('{{%assettransformindex}}', $values)
                 ->execute();
-            $index->id = $dbConnection->getLastInsertID();
+            $index->id = $dbConnection->getLastInsertID('{{%assettransformindex}}');
         }
 
         return $index;
@@ -725,8 +722,8 @@ class AssetTransforms extends Component
     public function getPendingTransformIndexIds()
     {
         return $this->_createTransformIndexQuery()
-            ->select('id')
-            ->where(['and', 'fileExists = 0', 'inProgress = 0'])
+            ->select(['id'])
+            ->where(['fileExists' => '0', 'inProgress' => '0'])
             ->column();
     }
 
@@ -803,7 +800,7 @@ class AssetTransforms extends Component
     {
         $volume = $asset->getVolume();
         $baseUrl = $volume->getRootUrl();
-        $appendix = AssetsHelper::getUrlAppendix($volume, $asset);
+        $appendix = AssetsHelper::urlAppendix($volume, $asset);
 
         return $baseUrl.$asset->getFolder()->path.$this->getTransformSubpath($asset,
             $transformIndexModel).$appendix;
@@ -990,7 +987,7 @@ class AssetTransforms extends Component
     public function detectAutoTransformFormat(Asset $asset)
     {
         if (in_array(mb_strtolower($asset->getExtension()),
-            Image::getWebSafeFormats())) {
+            Image::webSafeFormats())) {
             return $asset->getExtension();
         }
 
@@ -1201,7 +1198,7 @@ class AssetTransforms extends Component
                 'dateUpdated',
                 'dateCreated',
             ])
-            ->from('{{%assettransformindex}}');
+            ->from(['{{%assettransformindex}}']);
     }
 
     /**
@@ -1224,8 +1221,8 @@ class AssetTransforms extends Component
                 'quality',
                 'dimensionChangeTime'
             ])
-            ->from('{{%assettransforms}}')
-            ->orderBy('name');
+            ->from(['{{%assettransforms}}'])
+            ->orderBy(['name' => SORT_ASC]);
     }
 
     /**
@@ -1387,7 +1384,7 @@ class AssetTransforms extends Component
     private function _getThumbExtension(Asset $asset)
     {
         // For non-web-safe formats we go with jpg.
-        if (!in_array(mb_strtolower(Io::getExtension($asset->filename)), Image::getWebSafeFormats())) {
+        if (!in_array(mb_strtolower(Io::getExtension($asset->filename)), Image::webSafeFormats())) {
             return 'jpg';
         }
 

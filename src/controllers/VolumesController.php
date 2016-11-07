@@ -12,6 +12,8 @@ use craft\app\base\Volume;
 use craft\app\elements\Asset;
 use craft\app\helpers\Json;
 use craft\app\helpers\Url;
+use craft\app\volumes\Local;
+use craft\app\volumes\MissingVolume;
 use craft\app\web\Controller;
 use Exception;
 use yii\web\NotFoundHttpException;
@@ -66,26 +68,42 @@ class VolumesController extends Controller
         $this->requireAdmin();
 
         $volumes = Craft::$app->getVolumes();
+
+        /** @var Volume $volume */
         if ($volume === null) {
             if ($volumeId !== null) {
                 $volume = $volumes->getVolumeById($volumeId);
 
-                if (!$volume) {
+                if ($volume === null) {
                     throw new NotFoundHttpException('Volume not found');
                 }
+
+                if ($volume instanceof MissingVolume) {
+                    $expectedType = $volume->expectedType;
+                    $volume = $volume->createFallback(Local::class);
+                    $volume->addError('type', Craft::t('app', 'The volume type “{type}” could not be found.', [
+                        'type' => $expectedType
+                    ]));
+                }
             } else {
-                $volume = $volumes->createVolume(\craft\app\volumes\Local::class);
+                $volume = $volumes->createVolume(Local::class);
             }
         }
 
         if (Craft::$app->getEdition() == Craft::Pro) {
             /** @var Volume[] $allVolumeTypes */
             $allVolumeTypes = $volumes->getAllVolumeTypes();
+
+            // Make sure the selected volume class is in there
+            if (!in_array(get_class($volume), $allVolumeTypes)) {
+                $allVolumeTypes[] = get_class($volume);
+            }
+
             $volumeInstances = [];
             $volumeTypeOptions = [];
 
             foreach ($allVolumeTypes as $class) {
-                if ($class === $volume->getType() || $class::isSelectable()) {
+                if ($class === get_class($volume) || $class::isSelectable()) {
                     $volumeInstances[$class] = $volumes->createVolume($class);
 
                     $volumeTypeOptions[] = [
@@ -111,15 +129,15 @@ class VolumesController extends Controller
         $crumbs = [
             [
                 'label' => Craft::t('app', 'Settings'),
-                'url' => Url::getUrl('settings')
+                'url' => Url::url('settings')
             ],
             [
                 'label' => Craft::t('app', 'Assets'),
-                'url' => Url::getUrl('settings/assets')
+                'url' => Url::url('settings/assets')
             ],
             [
                 'label' => Craft::t('app', 'Volumes'),
-                'url' => Url::getUrl('settings/assets')
+                'url' => Url::url('settings/assets')
             ],
         ];
 
@@ -162,7 +180,7 @@ class VolumesController extends Controller
         if (Craft::$app->getEdition() == Craft::Pro) {
             $type = $request->getBodyParam('type');
         } else {
-            $type = \craft\app\volumes\Local::class;
+            $type = Local::class;
         }
 
         /** @var Volume $volume */
@@ -182,20 +200,21 @@ class VolumesController extends Controller
         $volume->setFieldLayout($fieldLayout);
 
         $session = Craft::$app->getSession();
-        if ($volumes->saveVolume($volume)) {
-            $session->setNotice(Craft::t('app', 'Volume saved.'));
 
-            return $this->redirectToPostedUrl();
+        if (!$volumes->saveVolume($volume)) {
+            $session->setError(Craft::t('app', 'Couldn’t save volume.'));
+
+            // Send the volume back to the template
+            Craft::$app->getUrlManager()->setRouteParams([
+                'volume' => $volume
+            ]);
+
+            return null;
         }
 
-        $session->setError(Craft::t('app', 'Couldn’t save volume.'));
+        $session->setNotice(Craft::t('app', 'Volume saved.'));
 
-        // Send the volume back to the template
-        Craft::$app->getUrlManager()->setRouteParams([
-            'volume' => $volume
-        ]);
-
-        return null;
+        return $this->redirectToPostedUrl();
     }
 
     /**

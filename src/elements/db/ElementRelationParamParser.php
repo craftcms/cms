@@ -49,11 +49,6 @@ class ElementRelationParamParser
      */
     private $_joinTargetsCount;
 
-    /**
-     * @var int
-     */
-    private $_sourceSiteParamCount;
-
     // Public Methods
     // =========================================================================
 
@@ -66,7 +61,6 @@ class ElementRelationParamParser
         $this->_joinTargetMatrixBlocksCount = 0;
         $this->_joinSourcesCount = 0;
         $this->_joinTargetsCount = 0;
-        $this->_sourceSiteParamCount = 0;
     }
 
     /**
@@ -318,33 +312,29 @@ class ElementRelationParamParser
 
                         $relationsJoinConditions = [
                             'and',
-                            $sourcesAlias.'.targetId = elements.id'
+                            "[[{$sourcesAlias}.targetId]] = [[elements.id]]"
                         ];
-                        $relationsJoinParams = [];
 
                         if ($relCriteria['sourceSite']) {
-                            $this->_sourceSiteParamCount++;
-                            $sourceSiteParam = ':sourceSiteId'.$this->_sourceSiteParamCount;
 
                             $relationsJoinConditions[] = [
                                 'or',
-                                $sourcesAlias.'.sourceSiteId is null',
-                                $sourcesAlias.'.sourceSiteId = '.$sourceSiteParam
+                                [$sourcesAlias.'.sourceSiteId' => null],
+                                [$sourcesAlias.'.sourceSiteId' => $relCriteria['sourceSite']]
                             ];
-                            $relationsJoinParams[$sourceSiteParam] = $relCriteria['sourceSite'];
                         }
 
-                        $query->leftJoin('{{%relations}} '.$sourcesAlias, $relationsJoinConditions, $relationsJoinParams);
-                        $query->leftJoin('{{%matrixblocks}} '.$targetMatrixBlocksAlias, $targetMatrixBlocksAlias.'.id = '.$sourcesAlias.'.sourceId');
+                        $query->leftJoin("{{%relations}} {$sourcesAlias}", $relationsJoinConditions);
+                        $query->leftJoin("{{%matrixblocks}} {$targetMatrixBlocksAlias}", "[[{$targetMatrixBlocksAlias}.id]] = [[{$sourcesAlias}.sourceId]]");
 
                         $condition = [
                             'and',
-                            Db::parseParam($targetMatrixBlocksAlias.'.ownerId', $relElementIds, $query->params),
-                            $targetMatrixBlocksAlias.'.fieldId = '.$fieldModel->id
+                            Db::parseParam($targetMatrixBlocksAlias.'.ownerId', $relElementIds),
+                            [$targetMatrixBlocksAlias.'.fieldId' => $fieldModel->id]
                         ];
 
                         if ($blockTypeFieldIds) {
-                            $condition[] = Db::parseParam($sourcesAlias.'.fieldId', $blockTypeFieldIds, $query->params);
+                            $condition[] = Db::parseParam($sourcesAlias.'.fieldId', $blockTypeFieldIds);
                         }
                     } else {
                         $this->_joinSourceMatrixBlocksCount++;
@@ -353,33 +343,28 @@ class ElementRelationParamParser
 
                         $relationsJoinConditions = [
                             'and',
-                            $matrixBlockTargetsAlias.'.sourceId = '.$sourceMatrixBlocksAlias.'.id'
+                            "[[{$matrixBlockTargetsAlias}.sourceId]] = [[{$sourceMatrixBlocksAlias}.id]]"
                         ];
-                        $relationsJoinParams = [];
 
                         if ($relCriteria['sourceSite']) {
-                            $this->_sourceSiteParamCount++;
-                            $sourceSiteParam = ':sourceSiteId'.$this->_sourceSiteParamCount;
-
                             $relationsJoinConditions[] = [
                                 'or',
-                                $matrixBlockTargetsAlias.'.sourceSiteId is null',
-                                $matrixBlockTargetsAlias.'.sourceSiteId = '.$sourceSiteParam
+                                [$matrixBlockTargetsAlias.'.sourceSiteId' => null],
+                                [$matrixBlockTargetsAlias.'.sourceSiteId' => $relCriteria['sourceSite']]
                             ];
-                            $relationsJoinParams[$sourceSiteParam] = $relCriteria['sourceSite'];
                         }
 
-                        $query->leftJoin('{{%matrixblocks}} '.$sourceMatrixBlocksAlias, $sourceMatrixBlocksAlias.'.ownerId = elements.id');
-                        $query->leftJoin('{{%relations}} '.$matrixBlockTargetsAlias, $relationsJoinConditions, $relationsJoinParams);
+                        $query->leftJoin("{{%matrixblocks}} {$sourceMatrixBlocksAlias}", "[[{$sourceMatrixBlocksAlias}.ownerId]] = [[elements.id]]");
+                        $query->leftJoin("{{%relations}} {$matrixBlockTargetsAlias}", $relationsJoinConditions);
 
                         $condition = [
                             'and',
-                            Db::parseParam($matrixBlockTargetsAlias.'.targetId', $relElementIds, $query->params),
-                            $sourceMatrixBlocksAlias.'.fieldId = '.$fieldModel->id
+                            Db::parseParam($matrixBlockTargetsAlias.'.targetId', $relElementIds),
+                            [$sourceMatrixBlocksAlias.'.fieldId' => $fieldModel->id]
                         ];
 
                         if ($blockTypeFieldIds) {
-                            $condition[] = Db::parseParam($matrixBlockTargetsAlias.'.fieldId', $blockTypeFieldIds, $query->params);
+                            $condition[] = Db::parseParam($matrixBlockTargetsAlias.'.fieldId', $blockTypeFieldIds);
                         }
                     }
 
@@ -408,30 +393,25 @@ class ElementRelationParamParser
 
             $relationsJoinConditions = [
                 'and',
-                $relTableAlias.'.'.$relElementColumn.' = elements.id'
+                "[[{$relTableAlias}.{$relElementColumn}]] = [[elements.id]]"
             ];
-            $relationsJoinParams = [];
 
             if ($relCriteria['sourceSite']) {
-                $this->_sourceSiteParamCount++;
-                $sourceSiteParam = ':sourceSiteId'.$this->_sourceSiteParamCount;
-
                 $relationsJoinConditions[] = [
                     'or',
-                    $relTableAlias.'.sourceSiteId is null',
-                    $relTableAlias.'.sourceSiteId = '.$sourceSiteParam
+                    [$relTableAlias.'.sourceSiteId' => null],
+                    [$relTableAlias.'.sourceSiteId' => $relCriteria['sourceSite']]
                 ];
-                $relationsJoinParams[$sourceSiteParam] = $relCriteria['sourceSite'];
             }
 
-            $query->leftJoin('{{%relations}} '.$relTableAlias, $relationsJoinConditions, $relationsJoinParams);
-            $condition = Db::parseParam($relTableAlias.'.'.$relConditionColumn, $relElementIds, $query->params);
+            $query->leftJoin("{{%relations}} {$relTableAlias}", $relationsJoinConditions);
+            $condition = Db::parseParam($relTableAlias.'.'.$relConditionColumn, $relElementIds);
 
             if ($normalFieldIds) {
                 $condition = [
                     'and',
                     $condition,
-                    Db::parseParam($relTableAlias.'.fieldId', $normalFieldIds, $query->params)
+                    Db::parseParam($relTableAlias.'.fieldId', $normalFieldIds)
                 ];
             }
 

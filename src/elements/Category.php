@@ -9,7 +9,6 @@ namespace craft\app\elements;
 
 use Craft;
 use craft\app\base\Element;
-use craft\app\base\ElementInterface;
 use craft\app\controllers\ElementIndexesController;
 use craft\app\db\Query;
 use craft\app\elements\actions\Delete;
@@ -88,7 +87,7 @@ class Category extends Element
     /**
      * @inheritdoc
      */
-    public static function getSources($context = null)
+    protected static function defineSources($context = null)
     {
         $sources = [];
 
@@ -99,9 +98,8 @@ class Category extends Element
         }
 
         foreach ($groups as $group) {
-            $key = 'group:'.$group->id;
-
-            $sources[$key] = [
+            $sources[] = [
+                'key' => 'group:'.$group->id,
                 'label' => Craft::t('site', $group->name),
                 'data' => ['handle' => $group->handle],
                 'criteria' => ['groupId' => $group->id],
@@ -110,17 +108,13 @@ class Category extends Element
             ];
         }
 
-        // Allow plugins to modify the sources
-        Craft::$app->getPlugins()->call('modifyCategorySources',
-            [&$sources, $context]);
-
         return $sources;
     }
 
     /**
      * @inheritdoc
      */
-    public static function getAvailableActions($source = null)
+    protected static function defineActions($source = null)
     {
         // Get the group we need to check permissions on
         if (preg_match('/^group:(\d+)$/', $source, $matches)) {
@@ -173,42 +167,28 @@ class Category extends Element
             ]);
         }
 
-        // Allow plugins to add additional actions
-        $allPluginActions = Craft::$app->getPlugins()->call('addCategoryActions',
-            [$source], true);
-
-        foreach ($allPluginActions as $pluginActions) {
-            $actions = array_merge($actions, $pluginActions);
-        }
-
         return $actions;
     }
 
     /**
      * @inheritdoc
      */
-    public static function defineSortableAttributes()
+    protected static function defineSortableAttributes()
     {
-        $attributes = [
+        return [
             'title' => Craft::t('app', 'Title'),
             'uri' => Craft::t('app', 'URI'),
             'elements.dateCreated' => Craft::t('app', 'Date Created'),
             'elements.dateUpdated' => Craft::t('app', 'Date Updated'),
         ];
-
-        // Allow plugins to modify the attributes
-        Craft::$app->getPlugins()->call('modifyCategorySortableAttributes',
-            [&$attributes]);
-
-        return $attributes;
     }
 
     /**
      * @inheritdoc
      */
-    public static function defineAvailableTableAttributes()
+    protected static function defineTableAttributes()
     {
-        $attributes = [
+        return [
             'title' => ['label' => Craft::t('app', 'Title')],
             'uri' => ['label' => Craft::t('app', 'URI')],
             'link' => ['label' => Craft::t('app', 'Link'), 'icon' => 'world'],
@@ -216,21 +196,12 @@ class Category extends Element
             'dateCreated' => ['label' => Craft::t('app', 'Date Created')],
             'dateUpdated' => ['label' => Craft::t('app', 'Date Updated')],
         ];
-
-        // Allow plugins to modify the attributes
-        $pluginAttributes = Craft::$app->getPlugins()->call('defineAdditionalCategoryTableAttributes', [], true);
-
-        foreach ($pluginAttributes as $thisPluginAttributes) {
-            $attributes = array_merge($attributes, $thisPluginAttributes);
-        }
-
-        return $attributes;
     }
 
     /**
      * @inheritdoc
      */
-    public static function getDefaultTableAttributes($source = null)
+    public static function defaultTableAttributes($source = null)
     {
         $attributes = ['link'];
 
@@ -295,7 +266,7 @@ class Category extends Element
     /**
      * @inheritdoc
      */
-    public function getRoute()
+    protected function route()
     {
         // Make sure the category group is set to have URLs for this site
         $siteId = Craft::$app->getSites()->currentSite->id;
@@ -360,21 +331,6 @@ class Category extends Element
 
     // Indexes, etc.
     // -------------------------------------------------------------------------
-
-    /**
-     * @inheritdoc
-     */
-    public function getTableAttributeHtml($attribute)
-    {
-        // First give plugins a chance to set this
-        $pluginAttributeHtml = Craft::$app->getPlugins()->callFirst('getCategoryTableAttributeHtml', [$this, $attribute], true);
-
-        if ($pluginAttributeHtml !== null) {
-            return $pluginAttributeHtml;
-        }
-
-        return parent::getTableAttributeHtml($attribute);
-    }
 
     /**
      * @inheritdoc
@@ -493,25 +449,19 @@ class Category extends Element
 
             $sources = (new Query())
                 ->select(['fieldId', 'sourceId', 'sourceSiteId'])
-                ->from('{{%relations}}')
-                ->where('targetId = :categoryId',
-                    [':categoryId' => $this->id])
+                ->from(['{{%relations}}'])
+                ->where(['targetId' => $this->id])
                 ->all();
 
             foreach ($sources as $source) {
                 $existingAncestorRelations = (new Query())
-                    ->select('targetId')
-                    ->from('{{%relations}}')
+                    ->select(['targetId'])
+                    ->from(['{{%relations}}'])
                     ->where([
-                        'and',
-                        'fieldId = :fieldId',
-                        'sourceId = :sourceId',
-                        'sourceSiteId = :sourceSiteId',
-                        ['in', 'targetId', $ancestorIds]
-                    ], [
-                        ':fieldId' => $source['fieldId'],
-                        ':sourceId' => $source['sourceId'],
-                        ':sourceSiteId' => $source['sourceSiteId']
+                        'fieldId' => $source['fieldId'],
+                        'sourceId' => $source['sourceId'],
+                        'sourceSiteId' => $source['sourceSiteId'],
+                        'targetId' => $ancestorIds,
                     ])
                     ->column();
 

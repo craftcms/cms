@@ -38,40 +38,9 @@ class AssetIndexData extends ActiveRecord
     public function rules()
     {
         return [
-            [
-                ['volumeId'],
-                'number',
-                'min' => -2147483648,
-                'max' => 2147483647,
-                'integerOnly' => true
-            ],
-            [
-                ['offset'],
-                'number',
-                'min' => -2147483648,
-                'max' => 2147483647,
-                'integerOnly' => true
-            ],
-            [
-                ['size'],
-                'number',
-                'min' => 0,
-                'max' => 18446744073709551615,
-                'integerOnly' => true
-            ],
+            [['volumeId', 'recordId', 'offset', 'size'], 'number', 'integerOnly' => true],
             [['timestamp'], DateTimeValidator::class],
-            [
-                ['recordId'],
-                'number',
-                'min' => -2147483648,
-                'max' => 2147483647,
-                'integerOnly' => true
-            ],
-            [
-                ['sessionId'],
-                'unique',
-                'targetAttribute' => ['sessionId', 'volumeId', 'offset']
-            ],
+            [['sessionId'], 'unique', 'targetAttribute' => ['sessionId', 'volumeId', 'offset']],
             [['sessionId', 'volumeId', 'offset'], 'required'],
             [['sessionId'], 'string', 'length' => 36],
             [['uri'], 'string'],

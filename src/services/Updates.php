@@ -296,7 +296,7 @@ class Updates extends Component
             $pluginUpdateModel->class = $plugin->getHandle();
             $pluginUpdateModel->localVersion = $plugin->version;
 
-            $pluginUpdateModels[$plugin::className()] = $pluginUpdateModel;
+            $pluginUpdateModels[get_class($plugin)] = $pluginUpdateModel;
         }
 
         $updateModel->plugins = $pluginUpdateModels;
@@ -777,9 +777,10 @@ class Updates extends Component
                 'handle' => $handle,
             ]));
 
-            Craft::$app->getConfig()->maxPowerCaptain();
+            $config = Craft::$app->getConfig();
+            $config->maxPowerCaptain();
 
-            if ($dbBackupPath && Craft::$app->getConfig()->get('backupDbOnUpdate') && Craft::$app->getConfig()->get('restoreDbOnUpdateFailure')) {
+            if ($dbBackupPath && $config->get('backupOnUpdate') && $config->get('restoreOnUpdateFailure') && $config->get('restoreCommand') !== false) {
                 Craft::info('Rolling back any database changes.', __METHOD__);
                 UpdateHelper::rollBackDatabaseChanges($dbBackupPath);
                 Craft::info('Done rolling back any database changes.', __METHOD__);

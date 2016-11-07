@@ -7,9 +7,12 @@
 
 namespace craft\app\helpers;
 
-use craft\app\base\Savable;
+use Craft;
+use craft\app\base\Serializable;
 use craft\app\dates\DateTime;
+use craft\app\db\Connection;
 use craft\app\enums\ColumnType;
+use craft\app\services\Config;
 use yii\base\Exception;
 use yii\db\Schema;
 
@@ -61,8 +64,8 @@ class Db
     public static function prepareValueForDb($value)
     {
         // If the object explicitly defines its savable value, use that
-        if ($value instanceof Savable) {
-            return $value->getSavableValue();
+        if ($value instanceof Serializable) {
+            return $value->serialize();
         }
 
         // Only DateTime objects and ISO-8601 strings should automatically be detected as dates
@@ -92,7 +95,6 @@ class Db
         if ($date !== false) {
             $timezone = $date->getTimezone();
             $date->setTimezone(new \DateTimeZone('UTC'));
-            // TODO: MySQL specific
             $formattedDate = $date->format('Y-m-d H:i:s');
             $date->setTimezone($timezone);
 
@@ -169,69 +171,81 @@ class Db
     /**
      * Returns the maximum number of bytes a given textual column type can hold for a given database.
      *
-     * @param string $columnType The textual column type to check.
-     * @param string $database   The type of database to use.
+     * @param string     $columnType The textual column type to check
+     * @param Connection $db         The database connection
      *
-     * @return integer The storage capacity of the column type in bytes.
+     * @return integer|null The storage capacity of the column type in bytes. If unlimited, null is returned.
      * @throws Exception if given an unknown column type/database combination
      */
-    public static function getTextualColumnStorageCapacity($columnType, $database = 'mysql')
+    public static function getTextualColumnStorageCapacity($columnType, $db = null)
     {
-        switch ($database) {
-            case 'mysql': {
-                switch ($columnType) {
-                    case ColumnType::TinyText: {
-                        // 255 bytes
-                        return 255;
-                    }
-
-                    case ColumnType::Text: {
-                        // 65k
-                        return 65535;
-                    }
-
-                    case ColumnType::MediumText: {
-                        // 16MB
-                        return 16777215;
-                    }
-
-                    case ColumnType::LongText: {
-                        // 4GB
-                        return 4294967295;
-                    }
-                }
-
-                break;
-            }
+        if ($db === null) {
+            $db = Craft::$app->getDb();
         }
 
-        throw new Exception('Unknown column type');
+        switch ($db->getDriverName()) {
+            case Connection::DRIVER_MYSQL:
+                switch ($columnType) {
+                    case ColumnType::TinyText:
+                        // 255 bytes
+                        return 255;
+                    case ColumnType::Text:
+                        // 65k
+                        return 65535;
+                    case ColumnType::MediumText:
+                        // 16MB
+                        return 16777215;
+                    case ColumnType::LongText:
+                        // 4GB
+                        return 4294967295;
+                    default:
+                        throw new Exception('Unknown textual column type: '.$columnType);
+                }
+                break;
+            case Connection::DRIVER_PGSQL:
+                return null;
+            default:
+                throw new Exception('Unsupported connection type: '.$db->getDriverName());
+        }
     }
 
     /**
      * Given a length of a piece of content, returns the underlying database column type to use for saving.
      *
-     * @param $contentLength
+     * @param            $contentLength
+     * @param Connection $db The database connection
      *
      * @return string
+     * @throws Exception if using an unsupported connection type
      */
-    public static function getTextualColumnTypeByContentLength($contentLength)
+    public static function getTextualColumnTypeByContentLength($contentLength, $db = null)
     {
-        if ($contentLength <= static::getTextualColumnStorageCapacity(ColumnType::TinyText)) {
-            return Schema::TYPE_STRING;
+        if ($db === null) {
+            $db = Craft::$app->getDb();
         }
 
-        if ($contentLength <= static::getTextualColumnStorageCapacity(ColumnType::Text)) {
-            return Schema::TYPE_TEXT;
-        }
+        switch ($db->getDriverName()) {
+            case Connection::DRIVER_MYSQL:
+                if ($contentLength <= static::getTextualColumnStorageCapacity(ColumnType::TinyText)) {
+                    return Schema::TYPE_STRING;
+                }
 
-        if ($contentLength <= static::getTextualColumnStorageCapacity(ColumnType::MediumText)) {
-            // Yii doesn't support 'mediumtext' so we use our own.
-            return ColumnType::MediumText;
-        }
+                if ($contentLength <= static::getTextualColumnStorageCapacity(ColumnType::Text)) {
+                    return Schema::TYPE_TEXT;
+                }
 
-        // Yii doesn't support 'longtext' so we use our own.
-        return ColumnType::LongText;
+                if ($contentLength <= static::getTextualColumnStorageCapacity(ColumnType::MediumText)) {
+                    // Yii doesn't support 'mediumtext' so we use our own.
+                    return ColumnType::MediumText;
+                }
+
+                // Yii doesn't support 'longtext' so we use our own.
+                return ColumnType::LongText;
+            case Connection::DRIVER_PGSQL:
+                return Schema::TYPE_TEXT;
+            default:
+                throw new Exception('Unsupported connection type: '.$db->getDriverName());
+        }
     }
 
     /**
@@ -263,20 +277,17 @@ class Db
      * Values can also be set to either `':empty:'` or `':notempty:'` if you want to search for empty or non-empty
      * database values. (An “empty” value is either NULL or an empty string of text).
      *
-     * @param string       $column  The database column that the param is targeting.
-     * @param string|array $value   The param value(s).
-     * @param array        &$params The [[\yii\db\Query::$params]] array.
+     * @param string       $column The database column that the param is targeting.
+     * @param string|array $value  The param value(s).
      *
      * @return mixed
      */
-    public static function parseParam($column, $value, &$params)
+    public static function parseParam($column, $value)
     {
         // Need to do a strict check here in case $value = true
         if ($value === 'not ') {
             return '';
         }
-
-        $conditions = [];
 
         $value = ArrayHelper::toArray($value);
 
@@ -284,13 +295,15 @@ class Db
             return '';
         }
 
-        $firstVal = StringHelper::toLowerCase(ArrayHelper::getFirstValue($value));
+        $firstVal = StringHelper::toLowerCase(ArrayHelper::firstValue($value));
 
         if ($firstVal == 'and' || $firstVal == 'or') {
-            $join = array_shift($value);
+            $conditionOperator = array_shift($value);
         } else {
-            $join = 'or';
+            $conditionOperator = 'or';
         }
+
+        $condition = [$conditionOperator];
 
         foreach ($value as $val) {
             static::_normalizeEmptyValue($val);
@@ -298,12 +311,19 @@ class Db
 
             if (StringHelper::toLowerCase($val) == ':empty:') {
                 if ($operator == '=') {
-                    $conditions[] = ['or', $column.' is null', $column.' = ""'];
+                    $condition[] = [
+                        'or',
+                        [$column => null],
+                        [$column => '']
+                    ];
                 } else {
-                    $conditions[] = [
-                        'and',
-                        $column.' is not null',
-                        $column.' != ""'
+                    $condition[] = [
+                        'not',
+                        [
+                            'or',
+                            [$column => null],
+                            [$column => '']
+                        ]
                     ];
                 }
             } else {
@@ -322,36 +342,19 @@ class Db
                 $val = str_replace('\*', '*', $val);
 
                 if ($like) {
-                    $conditions[] = [
+                    $condition[] = [
                         ($operator == '=' ? 'like' : 'not like'),
                         $column,
                         $val,
                         false
                     ];
                 } else {
-                    // Find a unique param name
-                    $paramKey = ':'.str_replace('.', '', $column);
-                    $i = 1;
-
-                    while (isset($params[$paramKey.$i])) {
-                        $i++;
-                    }
-
-                    $param = $paramKey.$i;
-                    $params[$param] = $val;
-
-                    $conditions[] = $column.$operator.$param;
+                    $condition[] = [$operator, $column, $val];
                 }
             }
         }
 
-        if (count($conditions) == 1) {
-            return $conditions[0];
-        }
-
-        array_unshift($conditions, $join);
-
-        return $conditions;
+        return $condition;
     }
 
     /**
@@ -359,11 +362,10 @@ class Db
      *
      * @param string                 $column
      * @param string|array|\DateTime $value
-     * @param array                  &$params
      *
      * @return mixed
      */
-    public static function parseDateParam($column, $value, &$params)
+    public static function parseDateParam($column, $value)
     {
         $normalizedValues = [];
 
@@ -401,7 +403,27 @@ class Db
             $normalizedValues[] = $operator.static::prepareDateForDb($val);
         }
 
-        return static::parseParam($column, $normalizedValues, $params);
+        return static::parseParam($column, $normalizedValues);
+    }
+
+    /**
+     * Returns whether a given DB connection’s schema supports a column type.
+     *
+     * @param string     $type
+     * @param Connection $db
+     *
+     * @return boolean
+     */
+    public static function isTypeSupported($type, $db = null)
+    {
+        if ($db === null) {
+            $db = Craft::$app->getDb();
+        }
+
+        /** @var \craft\app\db\mysql\Schema|\craft\app\db\pgsql\Schema $schema */
+        $schema = $db->getSchema();
+
+        return isset($schema->typeMap[$type]);
     }
 
     // Private Methods

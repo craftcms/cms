@@ -46,10 +46,19 @@ Craft.AssetIndex = Craft.BaseElementIndex.extend(
 	{
 		this.base(elementType, $container, settings);
 
-		if (this.settings.context == 'index')
+		if (this.settings.context == 'index' && !this._folderDrag)
 		{
 			this._initIndexPageMode();
 		}
+	},
+
+	initSources: function ()
+	{
+		if (this.settings.context == 'index' && !this._folderDrag) {
+			this._initIndexPageMode();
+		}
+
+		return this.base();
 	},
 
 	initSource: function($source)
@@ -62,7 +71,9 @@ Craft.AssetIndex = Craft.BaseElementIndex.extend(
 		{
 			if (this._folderDrag && this._getSourceLevel($source) > 1)
 			{
-				this._folderDrag.addItems($source.parent());
+				if (this._getFolderIdFromSourceKey($source.data('key'))) {
+					this._folderDrag.addItems($source.parent());
+				}
 			}
 
 			if (this._assetDrag)
@@ -108,6 +119,10 @@ Craft.AssetIndex = Craft.BaseElementIndex.extend(
 	 */
 	_initIndexPageMode: function()
 	{
+		if (this._folderDrag) {
+			return;
+		}
+
 		// Make the elements selectable
 		this.settings.selectable = true;
 		this.settings.multiSelect = true;
@@ -138,7 +153,11 @@ Craft.AssetIndex = Craft.BaseElementIndex.extend(
 
 				for (var i = 0; i < this.$sources.length; i++)
 				{
-					targets.push($(this.$sources[i]));
+					// Make sure it's a volume folder
+					var $source = this.$sources.eq(i);
+					if (this._getFolderIdFromSourceKey($source.data('key'))) {
+						targets.push($source);
+					}
 				}
 
 				return targets;
@@ -163,13 +182,13 @@ Craft.AssetIndex = Craft.BaseElementIndex.extend(
 				var $selected = this.sourceSelect.getSelectedItems(),
 					draggees = [];
 
-				for (var i = 0; i < $selected.length; i++)
-				{
-					var $source = $($selected[i]).parent();
+				for (var i = 0; i < $selected.length; i++) {
+					if (this._getFolderIdFromSourceKey($selected.data('key'))) {
+						var $source = $selected.eq(i).parent();
 
-					if ($source.hasClass('sel') && this._getSourceLevel($source) > 1)
-					{
-						draggees.push($source[0]);
+						if ($source.hasClass('sel') && this._getSourceLevel($source) > 1) {
+							draggees.push($source[0]);
+						}
 					}
 				}
 
@@ -209,9 +228,11 @@ Craft.AssetIndex = Craft.BaseElementIndex.extend(
 
 				for (var i = 0; i < this.$sources.length; i++)
 				{
-					var $source = $(this.$sources[i]);
-					if (!Craft.inArray($source.data('key'), draggedSourceIds))
-					{
+					// Make sure it's a volume folder and not one of the dragged folders
+					var $source = this.$sources.eq(i),
+						key = $source.data('key');
+
+					if (this._getFolderIdFromSourceKey(key) && !Craft.inArray(key, draggedSourceIds)) {
 						targets.push($source);
 					}
 				}
@@ -477,7 +498,7 @@ Craft.AssetIndex = Craft.BaseElementIndex.extend(
 				// This one tracks the changed folder ids
 				var changedFolderIds = {};
 
-				var removeFromTree = [];
+				var newSourceKey = '';
 
 				var onMoveFinish = $.proxy(function(responseArray)
 				{
@@ -491,26 +512,14 @@ Craft.AssetIndex = Craft.BaseElementIndex.extend(
 						// If succesful and have data, then update
 						if (data.success)
 						{
-							// TODO REFACTOR THIS OUT
-							if (data.transferList && data.changedIds)
+							if (data.transferList)
 							{
-								for (var ii = 0; ii < data.transferList.length; ii++)
-								{
-									fileMoveList.push(data.transferList[ii]);
-								}
+								fileMoveList = data.transferList;
+							}
 
-								folderDeleteList = folderIds;
-
-								for (var oldFolderId in data.changedIds)
-								{
-									if (!data.changedIds.hasOwnProperty(oldFolderId)) {
-										continue;
-									}
-
-									changedFolderIds[oldFolderId] = data.changedIds[oldFolderId];
-								}
-
-								removeFromTree.push(data.removeFromTree);
+							if (data.newFolderId)
+							{
+								newSourceKey = this._folderDrag.$activeDropTarget.data('key')+'/folder:'+data.newFolderId;
 							}
 						}
 
@@ -558,7 +567,7 @@ Craft.AssetIndex = Craft.BaseElementIndex.extend(
 							// Start working on them lists, baby
 							if (newParameterArray.length == 0)
 							{
-								$.proxy(this, '_performActualFolderMove', fileMoveList, folderDeleteList, changedFolderIds, removeFromTree)();
+								$.proxy(this, '_performActualFolderMove', fileMoveList, folderIds, newSourceKey)();
 							}
 							else
 							{
@@ -580,7 +589,7 @@ Craft.AssetIndex = Craft.BaseElementIndex.extend(
 					}
 					else
 					{
-						$.proxy(this, '_performActualFolderMove', fileMoveList, folderDeleteList, changedFolderIds, removeFromTree, targetFolderId)();
+						$.proxy(this, '_performActualFolderMove', fileMoveList, folderIds, newSourceKey)();
 					}
 				}, this);
 
@@ -634,98 +643,43 @@ Craft.AssetIndex = Craft.BaseElementIndex.extend(
 	/**
 	 * Really move the folder. Like really. For real.
 	 */
-	_performActualFolderMove: function(fileMoveList, folderDeleteList, changedFolderIds, removeFromTree, targetFolderId)
+	_performActualFolderMove: function(fileMoveList, folderDeleteList, newSourceKey)
 	{
 		this.setIndexBusy();
 		this.progressBar.resetProgressBar();
 		this.progressBar.setItemCount(1);
 		this.progressBar.showProgressBar();
 
-		var moveCallback = $.proxy(function(folderDeleteList, changedFolderIds, removeFromTree)
+		var moveCallback = function(folderDeleteList)
 		{
-			//Move the folders around in the tree
-			var topFolderLi = $();
-			var folderToMove = $();
-			var topFolderMovedId = 0;
-
-			// Change the folder ids
-			for (var previousFolderId in changedFolderIds)
-			{
-				if (!changedFolderIds.hasOwnProperty(previousFolderId)) {
-					continue;
-				}
-
-				folderToMove = this._getSourceByFolderId(previousFolderId);
-
-				// Change the id and select the containing element as the folder element.
-				folderToMove = folderToMove
-									.attr('data-key', 'folder:' + changedFolderIds[previousFolderId])
-									.data('key', 'folder:' + changedFolderIds[previousFolderId]).parent();
-
-				if (topFolderLi.length == 0 || topFolderLi.parents().filter(folderToMove).length > 0)
-				{
-					topFolderLi = folderToMove;
-					topFolderMovedId = changedFolderIds[previousFolderId];
-				}
-			}
-
-			if (topFolderLi.length == 0)
-			{
-				this.setIndexAvailable();
-				this.progressBar.hideProgressBar();
-				this._folderDrag.returnHelpersToDraggees();
-
-				return;
-			}
-
-			var topFolder = topFolderLi.children('a');
-
-			// Now move the uppermost node.
-			var siblings = topFolderLi.siblings('ul, .toggle');
-			var parentSource = this._getParentSource(topFolder);
-
-			var $newParent = this._getSourceByFolderId(targetFolderId);
-
-			if (typeof removeFromTree != "undefined")
-			{
-				for (var i = 0; i < removeFromTree.length; i++)
-				{
-					$newParent.parent().find('[data-key="folder:' + removeFromTree[i] + '"]').parent().remove();
-				}
-			}
-			this._prepareParentForChildren($newParent);
-			this._appendSubfolder($newParent, topFolderLi);
-
-			topFolder.after(siblings);
-
-			this._cleanUpTree(parentSource);
-			this._cleanUpTree($newParent);
-			this.$sidebar.find('ul>ul, ul>.toggle').remove();
-
 			// Delete the old folders
+			var counter = 0;
+			var limit = folderDeleteList.length;
 			for (var i = 0; i < folderDeleteList.length; i++)
 			{
-				Craft.postActionRequest('assets/delete-folder', {folderId: folderDeleteList[i]});
+				// When all folders are deleted, reload the sources.
+				Craft.postActionRequest('assets/delete-folder', {folderId: folderDeleteList[i]}, function () {
+					if (++counter == limit) {
+						this.setIndexAvailable();
+						this.progressBar.hideProgressBar();
+						this._folderDrag.returnHelpersToDraggees();
+						this.setInstanceState('selectedSource', newSourceKey);
+						this.refreshSources();
+					}
+				}.bind(this));
 			}
-
-			this.setIndexAvailable();
-			this.progressBar.hideProgressBar();
-			this._folderDrag.returnHelpersToDraggees();
-
-			this._selectSourceByFolderId(topFolderMovedId);
-
-		}, this);
+		}.bind(this);
 
 		if (fileMoveList.length > 0)
 		{
 			this._moveFile(fileMoveList, 0, $.proxy(function()
 			{
-				moveCallback(folderDeleteList, changedFolderIds, removeFromTree);
+				moveCallback(folderDeleteList);
 			}, this));
 		}
 		else
 		{
-			moveCallback(folderDeleteList, changedFolderIds, removeFromTree);
+			moveCallback(folderDeleteList);
 		}
 	},
 
@@ -868,21 +822,25 @@ Craft.AssetIndex = Craft.BaseElementIndex.extend(
 
 	onSelectSource: function()
 	{
-		this.uploader.setParams({folderId: this._getFolderIdFromSourceKey(this.sourceKey)});
-		if (!this.$source.attr('data-upload'))
-		{
+		var folderId = this._getFolderIdFromSourceKey(this.sourceKey);
+
+		if (folderId && this.$source.attr('data-upload')) {
+			this.uploader.setParams({
+				folderId: folderId
+			});
+			this.$uploadButton.removeClass('disabled');
+		} else {
 			this.$uploadButton.addClass('disabled');
 		}
-		else
-		{
-			this.$uploadButton.removeClass('disabled');
-		}
+
 		this.base();
 	},
 
 	_getFolderIdFromSourceKey: function(sourceKey)
 	{
-		return sourceKey.split(':')[1];
+		var m = sourceKey.match(/\bfolder:(\d+)$/);
+
+		return m ? m[1] : null;
 	},
 
 	startSearching: function()
@@ -1275,7 +1233,7 @@ Craft.AssetIndex = Craft.BaseElementIndex.extend(
 
 	_getSourceByFolderId: function(folderId)
 	{
-		return this.$sources.filter('[data-key="folder:' + folderId + '"]');
+		return this.$sources.filter('[data-key$="folder:' + folderId + '"]');
 	},
 
 	_hasSubfolders: function($source)
@@ -1309,16 +1267,19 @@ Craft.AssetIndex = Craft.BaseElementIndex.extend(
 
 	_createFolderContextMenu: function($source)
 	{
-		var menuOptions = [{ label: Craft.t('app', 'New subfolder'), onClick: $.proxy(this, '_createSubfolder', $source) }];
+		// Make sure it's a volume folder
+		if (this._getFolderIdFromSourceKey($source.data('key'))) {
+			var menuOptions = [{ label: Craft.t('app', 'New subfolder'), onClick: $.proxy(this, '_createSubfolder', $source) }];
 
-		// For all folders that are not top folders
-		if (this.settings.context == 'index' && this._getSourceLevel($source) > 1)
-		{
-			menuOptions.push({ label: Craft.t('app', 'Rename folder'), onClick: $.proxy(this, '_renameFolder', $source) });
-			menuOptions.push({ label: Craft.t('app', 'Delete folder'), onClick: $.proxy(this, '_deleteFolder', $source) });
+			// For all folders that are not top folders
+			if (this.settings.context == 'index' && this._getSourceLevel($source) > 1)
+			{
+				menuOptions.push({ label: Craft.t('app', 'Rename folder'), onClick: $.proxy(this, '_renameFolder', $source) });
+				menuOptions.push({ label: Craft.t('app', 'Delete folder'), onClick: $.proxy(this, '_deleteFolder', $source) });
+			}
+
+			new Garnish.ContextMenu($source, menuOptions, {menuClass: 'menu'});
 		}
-
-		new Garnish.ContextMenu($source, menuOptions, {menuClass: 'menu'});
 	},
 
 	_createSubfolder: function($parentFolder)
@@ -1344,7 +1305,7 @@ Craft.AssetIndex = Craft.BaseElementIndex.extend(
 
 					var $subfolder = $(
 						'<li>' +
-							'<a data-key="folder:'+data.folderId+'"' +
+							'<a data-key="'+$parentFolder.data('key')+'/folder:'+data.folderId+'"' +
 								(Garnish.hasAttr($parentFolder, 'data-has-thumbs') ? ' data-has-thumbs' : '') +
 								' data-upload="'+$parentFolder.attr('data-upload')+'"' +
 							'>' +

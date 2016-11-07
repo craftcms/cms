@@ -8,12 +8,13 @@
 namespace craft\app\migrations;
 
 use Craft;
+use craft\app\db\Connection;
 use craft\app\elements\User;
 use craft\app\db\Migration;
 use craft\app\helpers\StringHelper;
 use craft\app\models\Info;
 use craft\app\models\Site;
-use craft\app\services\Sites;
+use craft\app\services\Config;
 
 /**
  * Installation Migration
@@ -37,6 +38,11 @@ class Install extends Migration
     public $password;
 
     /**
+     * @var string The database driver to use
+     */
+    public $driver;
+
+    /**
      * @var string The admin user’s email
      */
     public $email;
@@ -54,6 +60,7 @@ class Install extends Migration
      */
     public function safeUp()
     {
+        $this->driver = Craft::$app->getConfig()->get('driver', Config::CATEGORY_DB);
         $this->createTables();
         $this->createIndexes();
         $this->addForeignKeys();
@@ -150,8 +157,8 @@ class Install extends Migration
             'format' => $this->string(),
             'location' => $this->string()->notNull(),
             'volumeId' => $this->integer(),
-            'fileExists' => $this->boolean()->notNull()->defaultValue(0)->unsigned(),
-            'inProgress' => $this->boolean()->notNull()->defaultValue(0)->unsigned(),
+            'fileExists' => $this->boolean()->defaultValue(false)->notNull(),
+            'inProgress' => $this->boolean()->defaultValue(false)->notNull(),
             'dateIndexed' => $this->dateTime(),
             'dateCreated' => $this->dateTime()->notNull(),
             'dateUpdated' => $this->dateTime()->notNull(),
@@ -193,7 +200,7 @@ class Install extends Migration
             'id' => $this->primaryKey(),
             'groupId' => $this->integer()->notNull(),
             'siteId' => $this->integer()->notNull(),
-            'hasUrls' => $this->boolean()->notNull()->defaultValue(1),
+            'hasUrls' => $this->boolean()->defaultValue(true)->notNull(),
             'uriFormat' => $this->text(),
             'template' => $this->string(500),
             'dateCreated' => $this->dateTime()->notNull(),
@@ -237,8 +244,8 @@ class Install extends Migration
         $this->createTable('{{%elements}}', [
             'id' => $this->primaryKey(),
             'type' => $this->string()->notNull(),
-            'enabled' => $this->boolean()->notNull()->defaultValue(1)->unsigned(),
-            'archived' => $this->boolean()->notNull()->defaultValue(0)->unsigned(),
+            'enabled' => $this->boolean()->defaultValue(true)->notNull(),
+            'archived' => $this->boolean()->defaultValue(false)->notNull(),
             'dateCreated' => $this->dateTime()->notNull(),
             'dateUpdated' => $this->dateTime()->notNull(),
             'uid' => $this->uid(),
@@ -249,14 +256,14 @@ class Install extends Migration
             'siteId' => $this->integer()->notNull(),
             'slug' => $this->string(),
             'uri' => $this->string(),
-            'enabled' => $this->boolean()->defaultValue(1),
+            'enabled' => $this->boolean()->defaultValue(true)->notNull(),
             'dateCreated' => $this->dateTime()->notNull(),
             'dateUpdated' => $this->dateTime()->notNull(),
             'uid' => $this->uid(),
         ]);
         $this->createTable('{{%emailmessages}}', [
             'id' => $this->primaryKey(),
-            'siteId' => $this->integer()->notNull(),
+            'language' => $this->string()->notNull(),
             'key' => $this->string()->notNull(),
             'subject' => $this->text()->notNull(),
             'body' => $this->text()->notNull(),
@@ -294,7 +301,7 @@ class Install extends Migration
             'fieldLayoutId' => $this->integer(),
             'name' => $this->string()->notNull(),
             'handle' => $this->string()->notNull(),
-            'hasTitleField' => $this->boolean()->notNull()->defaultValue(1),
+            'hasTitleField' => $this->boolean()->defaultValue(true)->notNull(),
             'titleLabel' => $this->string(),
             'titleFormat' => $this->string(),
             'sortOrder' => $this->smallInteger()->unsigned(),
@@ -327,7 +334,7 @@ class Install extends Migration
             'layoutId' => $this->integer()->notNull(),
             'tabId' => $this->integer()->notNull(),
             'fieldId' => $this->integer()->notNull(),
-            'required' => $this->boolean()->notNull()->defaultValue(0)->unsigned(),
+            'required' => $this->boolean()->defaultValue(false)->notNull(),
             'sortOrder' => $this->smallInteger()->unsigned(),
             'dateCreated' => $this->dateTime()->notNull(),
             'dateUpdated' => $this->dateTime()->notNull(),
@@ -379,10 +386,10 @@ class Install extends Migration
             'build' => $this->integer()->notNull()->unsigned(),
             'schemaVersion' => $this->string(15)->notNull(),
             'releaseDate' => $this->dateTime()->notNull(),
-            'edition' => $this->boolean()->notNull()->defaultValue(0)->unsigned(),
+            'edition' => $this->smallInteger()->unsigned()->notNull(),
             'timezone' => $this->string(30),
-            'on' => $this->boolean()->notNull()->defaultValue(0)->unsigned(),
-            'maintenance' => $this->boolean()->notNull()->defaultValue(0)->unsigned(),
+            'on' => $this->boolean()->defaultValue(false)->notNull(),
+            'maintenance' => $this->boolean()->defaultValue(false)->notNull(),
             'track' => $this->string(40)->notNull(),
             'fieldVersion' => $this->char(12)->notNull()->defaultValue('1'),
             'dateCreated' => $this->dateTime()->notNull(),
@@ -428,7 +435,7 @@ class Install extends Migration
             'schemaVersion' => $this->string(15)->notNull(),
             'licenseKey' => $this->char(24),
             'licenseKeyStatus' => $this->enum('licenseKeyStatus', ['valid', 'invalid', 'mismatched', 'unknown'])->notNull()->defaultValue('unknown'),
-            'enabled' => $this->boolean()->notNull()->defaultValue(0)->unsigned(),
+            'enabled' => $this->boolean()->defaultValue(false)->notNull(),
             'settings' => $this->text(),
             'installDate' => $this->dateTime()->notNull(),
             'dateCreated' => $this->dateTime()->notNull(),
@@ -467,21 +474,13 @@ class Install extends Migration
             'dateUpdated' => $this->dateTime()->notNull(),
             'uid' => $this->uid(),
         ]);
-        $this->createTable('{{%searchindex}}', [
-            'elementId' => $this->integer()->notNull(),
-            'attribute' => $this->string(25)->notNull(),
-            'fieldId' => $this->integer()->notNull(),
-            'siteId' => $this->integer()->notNull(),
-            'keywords' => $this->text()->notNull(),
-            'PRIMARY KEY(elementId, attribute, fieldId, siteId)'
-        ], 'ENGINE=MyISAM');
         $this->createTable('{{%sections}}', [
             'id' => $this->primaryKey(),
             'structureId' => $this->integer(),
             'name' => $this->string()->notNull(),
             'handle' => $this->string()->notNull(),
             'type' => $this->enum('type', ['single', 'channel', 'structure'])->notNull()->defaultValue('channel'),
-            'enableVersioning' => $this->boolean()->notNull()->defaultValue(0)->unsigned(),
+            'enableVersioning' => $this->boolean()->defaultValue(false)->notNull(),
             'dateCreated' => $this->dateTime()->notNull(),
             'dateUpdated' => $this->dateTime()->notNull(),
             'uid' => $this->uid(),
@@ -490,8 +489,8 @@ class Install extends Migration
             'id' => $this->primaryKey(),
             'sectionId' => $this->integer()->notNull(),
             'siteId' => $this->integer()->notNull(),
-            'enabledByDefault' => $this->boolean()->defaultValue(1),
-            'hasUrls' => $this->boolean()->notNull()->defaultValue(1)->unsigned(),
+            'enabledByDefault' => $this->boolean()->defaultValue(true)->notNull(),
+            'hasUrls' => $this->boolean()->defaultValue(true)->notNull(),
             'uriFormat' => $this->text(),
             'template' => $this->string(500),
             'dateCreated' => $this->dateTime()->notNull(),
@@ -520,7 +519,7 @@ class Install extends Migration
             'name' => $this->string()->notNull(),
             'handle' => $this->string()->notNull(),
             'language' => $this->string(12)->notNull(),
-            'hasUrls' => $this->boolean()->unsigned(),
+            'hasUrls' => $this->boolean()->defaultValue(false)->notNull(),
             'baseUrl' => $this->string(),
             'sortOrder' => $this->smallInteger()->unsigned(),
             'dateCreated' => $this->dateTime()->notNull(),
@@ -655,9 +654,8 @@ class Install extends Migration
             'uid' => $this->uid(),
         ]);
         $this->createTable('{{%userpreferences}}', [
-            'userId' => $this->integer()->notNull(),
+            'userId' => $this->primaryKey(),
             'preferences' => $this->text(),
-            'PRIMARY KEY(userId)'
         ]);
         $this->createTable('{{%users}}', [
             'id' => $this->primaryKey(),
@@ -666,23 +664,23 @@ class Install extends Migration
             'firstName' => $this->string(100),
             'lastName' => $this->string(100),
             'email' => $this->string()->notNull(),
-            'password' => $this->char(255),
-            'admin' => $this->boolean()->notNull()->defaultValue(0)->unsigned(),
-            'client' => $this->boolean()->notNull(),
-            'locked' => $this->boolean()->notNull(),
-            'suspended' => $this->boolean()->notNull(),
-            'pending' => $this->boolean()->notNull(),
-            'archived' => $this->boolean()->notNull(),
+            'password' => $this->string(),
+            'admin' => $this->boolean()->defaultValue(false)->notNull(),
+            'client' => $this->boolean()->defaultValue(false)->notNull(),
+            'locked' => $this->boolean()->defaultValue(false)->notNull(),
+            'suspended' => $this->boolean()->defaultValue(false)->notNull(),
+            'pending' => $this->boolean()->defaultValue(false)->notNull(),
+            'archived' => $this->boolean()->defaultValue(false)->notNull(),
             'lastLoginDate' => $this->dateTime(),
             'lastLoginAttemptIp' => $this->string(45),
             'invalidLoginWindowStart' => $this->dateTime(),
             'invalidLoginCount' => $this->smallInteger()->unsigned(),
             'lastInvalidLoginDate' => $this->dateTime(),
             'lockoutDate' => $this->dateTime(),
-            'verificationCode' => $this->char(100),
+            'verificationCode' => $this->string(),
             'verificationCodeIssuedDate' => $this->dateTime(),
             'unverifiedEmail' => $this->string(),
-            'passwordResetRequired' => $this->boolean()->notNull()->defaultValue(0)->unsigned(),
+            'passwordResetRequired' => $this->boolean()->defaultValue(false)->notNull(),
             'lastPasswordChangeDate' => $this->dateTime(),
             'dateCreated' => $this->dateTime()->notNull(),
             'dateUpdated' => $this->dateTime()->notNull(),
@@ -704,7 +702,7 @@ class Install extends Migration
             'name' => $this->string()->notNull(),
             'handle' => $this->string()->notNull(),
             'type' => $this->string()->notNull(),
-            'hasUrls' => $this->boolean()->unsigned(),
+            'hasUrls' => $this->boolean()->defaultValue(true)->notNull(),
             'url' => $this->string(),
             'settings' => $this->text(),
             'sortOrder' => $this->smallInteger()->unsigned(),
@@ -717,9 +715,9 @@ class Install extends Migration
             'userId' => $this->integer()->notNull(),
             'type' => $this->string()->notNull(),
             'sortOrder' => $this->smallInteger()->unsigned(),
-            'colspan' => $this->boolean()->unsigned(),
+            'colspan' => $this->boolean()->defaultValue(false)->notNull(),
             'settings' => $this->text(),
-            'enabled' => $this->boolean()->defaultValue(1),
+            'enabled' => $this->boolean()->defaultValue(true)->notNull(),
             'dateCreated' => $this->dateTime()->notNull(),
             'dateUpdated' => $this->dateTime()->notNull(),
             'uid' => $this->uid(),
@@ -761,8 +759,8 @@ class Install extends Migration
         $this->createIndex($this->db->getIndexName('{{%elements_i18n}}', 'siteId', false), '{{%elements_i18n}}', 'siteId', false);
         $this->createIndex($this->db->getIndexName('{{%elements_i18n}}', 'slug,siteId', false), '{{%elements_i18n}}', 'slug,siteId', false);
         $this->createIndex($this->db->getIndexName('{{%elements_i18n}}', 'enabled', false), '{{%elements_i18n}}', 'enabled', false);
-        $this->createIndex($this->db->getIndexName('{{%emailmessages}}', 'key,siteId', true), '{{%emailmessages}}', 'key,siteId', true);
-        $this->createIndex($this->db->getIndexName('{{%emailmessages}}', 'siteId', false), '{{%emailmessages}}', 'siteId', false);
+        $this->createIndex($this->db->getIndexName('{{%emailmessages}}', 'key,language', true), '{{%emailmessages}}', 'key,language', true);
+        $this->createIndex($this->db->getIndexName('{{%emailmessages}}', 'language', false), '{{%emailmessages}}', 'language', false);
         $this->createIndex($this->db->getIndexName('{{%entries}}', 'postDate', false), '{{%entries}}', 'postDate', false);
         $this->createIndex($this->db->getIndexName('{{%entries}}', 'expiryDate', false), '{{%entries}}', 'expiryDate', false);
         $this->createIndex($this->db->getIndexName('{{%entries}}', 'authorId', false), '{{%entries}}', 'authorId', false);
@@ -868,13 +866,43 @@ class Install extends Migration
         $this->createIndex($this->db->getIndexName('{{%volumes}}', 'fieldLayoutId', false), '{{%volumes}}', 'fieldLayoutId', false);
         $this->createIndex($this->db->getIndexName('{{%widgets}}', 'userId', false), '{{%widgets}}', 'userId', false);
 
-        // Add the FULLTEXT index on searchindex.keywords
-        // TODO: MySQL specific
-        $sql = 'CREATE FULLTEXT INDEX '.
-            $this->db->quoteTableName($this->db->getIndexName('{{%searchindex}}', 'keywords')).' ON '.
-            $this->db->quoteTableName('{{%searchindex}}').' '.
-            '('.$this->db->quoteColumnName('keywords').')';
-        $this->db->createCommand($sql)->execute();
+        // If we're using MySQL, add the FULLTEXT index on searchindex.keywords
+        switch ($this->driver)
+        {
+            case Connection::DRIVER_MYSQL:
+                $this->createTable('{{%searchindex}}', [
+                    'elementId' => $this->integer()->notNull(),
+                    'attribute' => $this->string(25)->notNull(),
+                    'fieldId' => $this->integer()->notNull(),
+                    'siteId' => $this->integer()->notNull(),
+                    'keywords' => $this-> text()->notNull(),
+                ], ' ENGINE=MyISAM');
+
+                $this->addPrimaryKey($this->db->getIndexName('{{%searchindex}}', 'elementId,attribute,fieldId,siteId', true), '{{%searchindex}}', 'elementId,attribute,fieldId,siteId');
+
+                $sql = 'CREATE FULLTEXT INDEX '.
+                    $this->db->quoteTableName($this->db->getIndexName('{{%searchindex}}', 'keywords')).' ON '.
+                    $this->db->quoteTableName('{{%searchindex}}').' '.
+                    '('.$this->db->quoteColumnName('keywords').')';
+
+                $this->db->createCommand($sql)->execute();
+                break;
+            case Connection::DRIVER_PGSQL:
+                $this->createTable('{{%searchindex}}', [
+                    'elementId' => $this->integer()->notNull(),
+                    'attribute' => $this->string(25)->notNull(),
+                    'fieldId' => $this->integer()->notNull(),
+                    'siteId' => $this->integer()->notNull(),
+                    'keywords' => $this->getDb()->getSchema()->createColumnSchemaBuilder('tsvector')->notNull(),
+                ]);
+
+                $this->addPrimaryKey($this->db->getIndexName('{{%searchindex}}', 'elementId,attribute,fieldId,siteId', true), '{{%searchindex}}', 'elementId,attribute,fieldId,siteId');
+
+                $sql = 'CREATE INDEX '.$this->db->quoteTableName($this->db->getIndexName('{{%searchindex}}', 'keywords')).' ON {{%searchindex}} USING GIN([[keywords]] "pg_catalog"."tsvector_ops") WITH (FASTUPDATE=YES)';
+
+                $this->db->createCommand($sql)->execute();
+                break;
+        }
     }
 
     /**
@@ -898,7 +926,6 @@ class Install extends Migration
         $this->addForeignKey($this->db->getForeignKeyName('{{%content}}', 'siteId'), '{{%content}}', 'siteId', '{{%sites}}', 'id', 'CASCADE', 'CASCADE');
         $this->addForeignKey($this->db->getForeignKeyName('{{%elements_i18n}}', 'elementId'), '{{%elements_i18n}}', 'elementId', '{{%elements}}', 'id', 'CASCADE', null);
         $this->addForeignKey($this->db->getForeignKeyName('{{%elements_i18n}}', 'siteId'), '{{%elements_i18n}}', 'siteId', '{{%sites}}', 'id', 'CASCADE', 'CASCADE');
-        $this->addForeignKey($this->db->getForeignKeyName('{{%emailmessages}}', 'siteId'), '{{%emailmessages}}', 'siteId', '{{%sites}}', 'id', 'CASCADE', 'CASCADE');
         $this->addForeignKey($this->db->getForeignKeyName('{{%entries}}', 'authorId'), '{{%entries}}', 'authorId', '{{%users}}', 'id', 'CASCADE', null);
         $this->addForeignKey($this->db->getForeignKeyName('{{%entries}}', 'id'), '{{%entries}}', 'id', '{{%elements}}', 'id', 'CASCADE', null);
         $this->addForeignKey($this->db->getForeignKeyName('{{%entries}}', 'sectionId'), '{{%entries}}', 'sectionId', '{{%sections}}', 'id', 'CASCADE', null);

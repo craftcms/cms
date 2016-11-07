@@ -40,7 +40,9 @@ abstract class Model extends \yii\base\Model
 
         // Normalize the DateTime attributes
         foreach ($this->datetimeAttributes() as $attribute) {
-            $this->$attribute = DateTimeHelper::toDateTime($this->$attribute);
+            if ($this->$attribute !== null) {
+                $this->$attribute = DateTimeHelper::toDateTime($this->$attribute);
+            }
         }
     }
 
@@ -114,22 +116,6 @@ abstract class Model extends \yii\base\Model
         }
 
         return $fields;
-    }
-
-    /**
-     * Returns all errors in a single list.
-     *
-     * @return array
-     */
-    public function getAllErrors()
-    {
-        $errors = [];
-
-        foreach ($this->getErrors() as $attributeErrors) {
-            $errors = array_merge($errors, $attributeErrors);
-        }
-
-        return $errors;
     }
 
     /**

@@ -38,9 +38,9 @@ class m160920_231045_usergroup_handle_title_unique extends Migration
         // Get any duplicates.
         $duplicates = (new Query())
             ->select($type)
-            ->from('{{%usergroups}}')
-            ->groupBy($type)
-            ->having('count("'.$type.'") > 1')
+            ->from(['{{%usergroups}}'])
+            ->groupBy([$type])
+            ->having('count('.$this->db->quoteValue($type).') > '.$this->db->quoteValue('1'))
             ->all();
 
         if ($duplicates) {
@@ -50,9 +50,9 @@ class m160920_231045_usergroup_handle_title_unique extends Migration
                 echo '    > fixing duplicate "'.$duplicate[$type].'" user group '.$type."s\n";
 
                 $rows = (new Query())
-                    ->from('{{%usergroups}}')
-                    ->where($type.'=:type', ['type' => $duplicate[$type]])
-                    ->orderBy('dateCreated')
+                    ->from(['{{%usergroups}}'])
+                    ->where([$type => $duplicate[$type]])
+                    ->orderBy(['dateCreated' => SORT_ASC])
                     ->all();
 
                 // Find anything?
@@ -73,8 +73,8 @@ class m160920_231045_usergroup_handle_title_unique extends Migration
                                 }
 
                                 $exists = (new Query())
-                                    ->from('{{%usergroups}}')
-                                    ->where($type.'=:type', array('type' => $newString))
+                                    ->from(['{{%usergroups}}'])
+                                    ->where([$type => $newString])
                                     ->exists();
 
                                 // Found a free one.

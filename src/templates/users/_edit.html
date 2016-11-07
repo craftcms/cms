@@ -36,8 +36,8 @@
                 <div class="menu">
                     <ul>
                         <li><a class="formsubmit" data-redirect="{{ (isNewAccount ? 'users/{id}' : account.getCpEditUrl())|hash }}">
-                                {{ "Save and continue editing"|t('app') }}
                                 {{ forms.optionShortcutLabel('S') }}
+                                {{ "Save and continue editing"|t('app') }}
                             </a></li>
                         <li><a class="formsubmit" data-redirect="{{ 'users/new'|hash }}">{{ "Save and add another"|t('app') }}</a></li>
                     </ul>
@@ -185,8 +185,8 @@
 
                         {% if CraftEdition == CraftPro %}
                             {% include "_includes/fields" with {
-                            fields: craft.app.fields.getLayoutByType('craft\\app\\elements\\User').getFields(),
-                            element: account
+                                fields: craft.app.fields.getLayoutByType('craft\\app\\elements\\User').getFields(),
+                                element: account
                             } only %}
 
                             {{ saveUserButtons }}

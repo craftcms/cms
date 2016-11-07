@@ -7,21 +7,19 @@
 
 namespace craft\app\events;
 
-use craft\app\elements\User;
-
 /**
- * Delete user event class.
+ * Backup event class.
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since  3.0
  */
-class DeleteUserEvent extends UserEvent
+class BackupEvent extends Event
 {
     // Properties
     // =========================================================================
 
     /**
-     * @var User The user model that the deleted user's content is getting transfered to.
+     * @var string The file path to the backup.
      */
-    public $transferContentTo;
+    public $file;
 }

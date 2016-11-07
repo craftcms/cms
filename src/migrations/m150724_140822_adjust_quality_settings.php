@@ -12,13 +12,13 @@ class m150724_140822_adjust_quality_settings extends Migration
     /**
      * Any migration code in here is wrapped inside of a transaction.
      *
-     * @return bool
+     * @return boolean
      */
     public function safeUp()
     {
         $transforms = (new Query())
-            ->select('id, quality')
-            ->from('{{%assettransforms}}')
+            ->select(['id', 'quality'])
+            ->from(['{{%assettransforms}}'])
             ->all();
 
         foreach ($transforms as $transform) {

@@ -86,8 +86,8 @@ class Tags extends Component
                 $this->_allTagGroupIds = array_keys($this->_tagGroupsById);
             } else {
                 $this->_allTagGroupIds = (new Query())
-                    ->select('id')
-                    ->from('{{%taggroups}}')
+                    ->select(['id'])
+                    ->from(['{{%taggroups}}'])
                     ->column();
             }
         }
@@ -106,7 +106,7 @@ class Tags extends Component
     {
         if (!$this->_fetchedAllTagGroups) {
             $this->_tagGroupsById = TagGroupRecord::find()
-                ->orderBy('name')
+                ->orderBy(['name' => SORT_ASC])
                 ->indexBy('id')
                 ->all();
 
@@ -325,8 +325,8 @@ class Tags extends Component
         try {
             // Delete the field layout
             $fieldLayoutId = (new Query())
-                ->select('fieldLayoutId')
-                ->from('{{%taggroups}}')
+                ->select(['fieldLayoutId'])
+                ->from(['{{%taggroups}}'])
                 ->where(['id' => $tagGroupId])
                 ->scalar();
 
@@ -378,20 +378,5 @@ class Tags extends Component
     public function getTagById($tagId, $siteId)
     {
         return Craft::$app->getElements()->getElementById($tagId, Tag::class, $siteId);
-    }
-
-    /**
-     * Saves a tag.
-     *
-     * @param Tag     $tag           The tag to be saved
-     * @param boolean $runValidation Whether the tag should be validated
-     *
-     * @return boolean Whether the tag was saved successfully
-     * @throws TagNotFoundException if $tag->id is invalid
-     * @throws \Exception if reasons
-     */
-    public function saveTag(Tag $tag, $runValidation = true)
-    {
-
     }
 }

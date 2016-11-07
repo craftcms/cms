@@ -16,6 +16,7 @@ use craft\app\base\PreviewableFieldInterface;
 use craft\app\db\Query;
 use craft\app\elements\db\ElementQuery;
 use craft\app\elements\db\ElementQueryInterface;
+use craft\app\helpers\ElementHelper;
 use craft\app\helpers\StringHelper;
 use craft\app\tasks\LocalizeRelations;
 use craft\app\validators\ArrayValidator;
@@ -192,7 +193,7 @@ abstract class BaseRelationField extends Field implements PreviewableFieldInterf
     /**
      * @inheritdoc
      */
-    public function prepareValue($value, $element)
+    public function normalizeValue($value, $element)
     {
         /** @var Element $element */
         /** @var Element $class */
@@ -214,11 +215,11 @@ abstract class BaseRelationField extends Field implements PreviewableFieldInterf
             ]);
 
             if ($this->sortable) {
-                $query->orderBy('sortOrder');
+                $query->orderBy(['sortOrder' => SORT_ASC]);
             }
 
             if (!$this->allowMultipleSources && $this->source) {
-                $source = $class::getSourceByKey($this->source);
+                $source = ElementHelper::findSource($class, $this->source);
 
                 // Does the source specify any criteria attributes?
                 if (isset($source['criteria'])) {
@@ -254,7 +255,7 @@ abstract class BaseRelationField extends Field implements PreviewableFieldInterf
             $paramHandle = ':fieldId'.StringHelper::randomString(8);
 
             $query->subQuery->andWhere(
-                "(select count({$alias}.id) from {{relations}} {$alias} where {$alias}.sourceId = elements.id and {$alias}.fieldId = {$paramHandle}) {$operator} 0",
+                "(select count([[{$alias}.id]]) from {{%relations}} {{{$alias}}} where [[{$alias}.sourceId]] = [[elements.id]] and [[{$alias}.fieldId]] = {$paramHandle}) {$operator} 0",
                 [$paramHandle => $this->id]
             );
         } else if ($value !== null) {
@@ -351,20 +352,21 @@ abstract class BaseRelationField extends Field implements PreviewableFieldInterf
 
         // Return any relation data on these elements, defined with this field
         $map = (new Query())
-            ->select('sourceId as source, targetId as target')
-            ->from('{{%relations}}')
-            ->where(
+            ->select(['sourceId as source', 'targetId as target'])
+            ->from(['{{%relations}}'])
+            ->where([
+                'and',
                 [
-                    'and',
-                    'fieldId=:fieldId',
-                    ['in', 'sourceId', $sourceElementIds],
-                    ['or', 'sourceSiteId=:sourceSiteId', 'sourceSiteId is null']
+                    'fieldId' => $this->id,
+                    'sourceId' => $sourceElementIds,
                 ],
                 [
-                    ':fieldId' => $this->id,
-                    ':sourceSiteId' => ($firstElement ? $firstElement->siteId : null),
-                ])
-            ->orderBy('sortOrder')
+                    'or',
+                    ['sourceSiteId' => ($firstElement ? $firstElement->siteId : null)],
+                    ['sourceSiteId' => null]
+                ]
+            ])
+            ->orderBy(['sortOrder' => SORT_ASC])
             ->all();
 
         // Figure out which target site to use

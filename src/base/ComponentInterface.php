@@ -21,13 +21,6 @@ interface ComponentInterface
     // =========================================================================
 
     /**
-     * Returns the fully qualified name of this class.
-     *
-     * @return string The fully qualified name of this class.
-     */
-    public static function className();
-
-    /**
      * Returns the display name of this class.
      *
      * @return string The display name of this class.
@@ -40,14 +33,4 @@ interface ComponentInterface
      * @return string The class handle.
      */
     public static function classHandle();
-
-    // Public Methods
-    // =========================================================================
-
-    /**
-     * Returns the class name that should be used to represent the field.
-     *
-     * @return string The class name that should be used to represent the field.
-     */
-    public function getType();
 }

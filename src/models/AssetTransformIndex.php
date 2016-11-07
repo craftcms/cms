@@ -32,12 +32,17 @@ class AssetTransformIndex extends Model
     public $assetId;
 
     /**
-     * @var integer Filename
+     * @var integer Volume ID
+     */
+    public $volumeId;
+
+    /**
+     * @var string Filename
      */
     public $filename;
 
     /**
-     * @var integer Format
+     * @var string Format
      */
     public $format;
 
@@ -45,11 +50,6 @@ class AssetTransformIndex extends Model
      * @var string Location
      */
     public $location;
-
-    /**
-     * @var integer Volume ID
-     */
-    public $volumeId;
 
     /**
      * @var boolean File exists
@@ -77,7 +77,7 @@ class AssetTransformIndex extends Model
     public $dateCreated;
 
     /**
-     * @var integer Detected format
+     * @var string Detected format
      */
     public $detectedFormat;
 
@@ -106,68 +106,8 @@ class AssetTransformIndex extends Model
     public function rules()
     {
         return [
-            [
-                ['id'],
-                'number',
-                'min' => -2147483648,
-                'max' => 2147483647,
-                'integerOnly' => true
-            ],
-            [
-                ['assetId'],
-                'number',
-                'min' => -2147483648,
-                'max' => 2147483647,
-                'integerOnly' => true
-            ],
-            [
-                ['filename'],
-                'number',
-                'min' => -2147483648,
-                'max' => 2147483647,
-                'integerOnly' => true
-            ],
-            [
-                ['format'],
-                'number',
-                'min' => -2147483648,
-                'max' => 2147483647,
-                'integerOnly' => true
-            ],
-            [
-                ['volumeId'],
-                'number',
-                'min' => -2147483648,
-                'max' => 2147483647,
-                'integerOnly' => true
-            ],
+            [['id', 'assetId', 'volumeId'], 'number', 'integerOnly' => true],
             [['dateIndexed', 'dateUpdated', 'dateCreated'], DateTimeValidator::class],
-            [
-                ['detectedFormat'],
-                'number',
-                'min' => -2147483648,
-                'max' => 2147483647,
-                'integerOnly' => true
-            ],
-            [
-                [
-                    'id',
-                    'assetId',
-                    'filename',
-                    'format',
-                    'location',
-                    'volumeId',
-                    'fileExists',
-                    'inProgress',
-                    'dateIndexed',
-                    'dateUpdated',
-                    'dateCreated',
-                    'detectedFormat',
-                    'transform'
-                ],
-                'safe',
-                'on' => 'search'
-            ],
         ];
     }
 

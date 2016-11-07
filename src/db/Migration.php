@@ -7,6 +7,7 @@
 
 namespace craft\app\db;
 
+use craft\app\helpers\Db;
 use yii\db\ColumnSchemaBuilder;
 
 /**
@@ -32,7 +33,7 @@ abstract class Migration extends \yii\db\Migration
      */
     public function tinyText()
     {
-        if ($this->db->getDriverName() == 'mysql') {
+        if (Db::isTypeSupported('tinytext', $this->db)) {
             return $this->db->getSchema()->createColumnSchemaBuilder('tinytext');
         }
 
@@ -46,7 +47,7 @@ abstract class Migration extends \yii\db\Migration
      */
     public function mediumText()
     {
-        if ($this->db->getDriverName() == 'mysql') {
+        if (Db::isTypeSupported('mediumtext', $this->db)) {
             return $this->db->getSchema()->createColumnSchemaBuilder('mediumtext');
         }
 
@@ -60,7 +61,7 @@ abstract class Migration extends \yii\db\Migration
      */
     public function longText()
     {
-        if ($this->db->getDriverName() == 'mysql') {
+        if (Db::isTypeSupported('longtext', $this->db)) {
             return $this->db->getSchema()->createColumnSchemaBuilder('longtext');
         }
 
@@ -68,7 +69,7 @@ abstract class Migration extends \yii\db\Migration
     }
 
     /**
-     * Creates an enum column for MySQL, or a string column with a check constraint for others.
+     * Creates an enum column for MySQL and PostgreSQL, or a string column with a check constraint for others.
      *
      * @param string   $columnName The column name
      * @param string[] $values     The allowed column values
@@ -77,15 +78,20 @@ abstract class Migration extends \yii\db\Migration
      */
     public function enum($columnName, $values)
     {
-        // Quote the values
-        $schema = $this->db->getSchema();
-        $values = array_map([$schema, 'quoteValue'], $values);
-
-        if ($this->db->getDriverName() == 'mysql') {
+        if (Db::isTypeSupported('enum', $this->db)) {
             return $this->db->getSchema()->createColumnSchemaBuilder('enum', $values);
         }
 
-        return $this->string()->check($schema->quoteColumnName($columnName).' in ('.implode(',', $values).')');
+        $check = "[[{$columnName}]] in (";
+        foreach ($values as $i => $value) {
+            if ($i != 0) {
+                $check .= ',';
+            }
+            $check .= $this->db->quoteValue($value);
+        }
+        $check .= ')';
+
+        return $this->string()->check($check);
     }
 
     /**
@@ -148,12 +154,12 @@ abstract class Migration extends \yii\db\Migration
      *                                     or updated in the existing row.
      * @param boolean $includeAuditColumns Whether `dateCreated`, `dateUpdated`, and `uid` values should be added to $columns.
      */
-    public function insertOrUpdate($table, $keyColumns, $updateColumns, $includeAuditColumns = true)
+    public function upsert($table, $keyColumns, $updateColumns, $includeAuditColumns = true)
     {
         echo "    > insert or update into $table ...";
         $time = microtime(true);
         $this->db->createCommand()
-            ->insertOrUpdate($table, $keyColumns, $updateColumns, $includeAuditColumns)
+            ->upsert($table, $keyColumns, $updateColumns, $includeAuditColumns)
             ->execute();
         echo " done (time: ".sprintf('%.3f', microtime(true) - $time)."s)\n";
     }
@@ -163,17 +169,17 @@ abstract class Migration extends \yii\db\Migration
      *
      * @param string       $table               The table to be updated.
      * @param array        $columns             The column data (name => value) to be updated.
-     * @param string|array $conditions          The condition that will be put in the WHERE part. Please
+     * @param string|array $condition           The condition that will be put in the WHERE part. Please
      *                                          refer to [[Query::where()]] on how to specify condition.
      * @param array        $params              The parameters to be bound to the command.
      * @param boolean      $includeAuditColumns Whether the `dateUpdated` value should be added to $columns.
      */
-    public function update($table, $columns, $conditions = '', $params = [], $includeAuditColumns = true)
+    public function update($table, $columns, $condition = '', $params = [], $includeAuditColumns = true)
     {
         echo "    > update in $table ...";
         $time = microtime(true);
         $this->db->createCommand()
-            ->update($table, $columns, $conditions, $params, $includeAuditColumns)
+            ->update($table, $columns, $condition, $params, $includeAuditColumns)
             ->execute();
         echo " done (time: ".sprintf('%.3f', microtime(true) - $time)."s)\n";
     }
@@ -213,87 +219,6 @@ abstract class Migration extends \yii\db\Migration
         $time = microtime(true);
         $this->db->createCommand()
             ->dropTableIfExists($table)
-            ->execute();
-        echo " done (time: ".sprintf('%.3f', microtime(true) - $time)."s)\n";
-    }
-
-    /**
-     * Creates a SQL statement for adding a new DB column at the beginning of a table.
-     *
-     * @param string $table  The table that the new column will be added to. The table name will be properly quoted by the method.
-     * @param string $column The name of the new column. The name will be properly quoted by the method.
-     * @param string $type   The column type. [[\yii\db\QueryBuilder::getColumnType()]] will be called
-     *                       to convert the give column type to the physical one. For example, `string` will be converted
-     *                       as `varchar(255)`, and `string not null` becomes `varchar(255) not null`.
-     */
-    public function addColumnFirst($table, $column, $type)
-    {
-        echo "    > add column $column $type to first position in table $table ...";
-        $time = microtime(true);
-        $this->db->createCommand()
-            ->addColumnFirst($table, $column, $type)
-            ->execute();
-        echo " done (time: ".sprintf('%.3f', microtime(true) - $time)."s)\n";
-    }
-
-    /**
-     * Creates and executes a SQL statement for adding a new DB column before another column in a table.
-     *
-     * @param string $table  The table that the new column will be added to. The table name will be properly quoted by the method.
-     * @param string $column The name of the new column. The name will be properly quoted by the method.
-     * @param string $type   The column type. [[\yii\db\QueryBuilder::getColumnType()]] will be called
-     *                       to convert the give column type to the physical one. For example, `string` will be converted
-     *                       as `varchar(255)`, and `string not null` becomes `varchar(255) not null`.
-     * @param string $before The name of the column that the new column should be placed before.
-     */
-    public function addColumnBefore($table, $column, $type, $before)
-    {
-        echo "    > add column $column $type before $before in table $table ...";
-        $time = microtime(true);
-        $this->db->createCommand()
-            ->addColumnBefore($table, $column, $type, $before)
-            ->execute();
-        echo " done (time: ".sprintf('%.3f', microtime(true) - $time)."s)\n";
-    }
-
-    /**
-     * Creates and executes a SQL statement for adding a new DB column after another column in a table.
-     *
-     * @param string $table  The table that the new column will be added to. The table name will be properly quoted by the method.
-     * @param string $column The name of the new column. The name will be properly quoted by the method.
-     * @param string $type   The column type. [[\yii\db\QueryBuilder::getColumnType()]] will be called
-     *                       to convert the give column type to the physical one. For example, `string` will be converted
-     *                       as `varchar(255)`, and `string not null` becomes `varchar(255) not null`.
-     * @param string $after  The name of the column that the new column should be placed after.
-     */
-    public function addColumnAfter($table, $column, $type, $after)
-    {
-        echo "    > add column $column $type after $after in $table ...";
-        $time = microtime(true);
-        $this->db->createCommand()
-            ->addColumnAfter($table, $column, $type, $after)
-            ->execute();
-        echo " done (time: ".sprintf('%.3f', microtime(true) - $time)."s)\n";
-    }
-
-    /**
-     * @inheritdoc
-     *
-     * @param string      $table   The table whose column is to be changed. The table name will be properly quoted by the method.
-     * @param string      $column  The name of the column to be changed. The name will be properly quoted by the method.
-     * @param string      $type    The new column type. The [[getColumnType()]] method will be invoked to convert abstract
-     *                             column type (if any) into the physical one. Anything that is not recognized as abstract type will be kept
-     *                             in the generated SQL. For example, 'string' will be turned into 'varchar(255)', while 'string not null'
-     *                             will become 'varchar(255) not null'.
-     * @param string|null $newName The new column name, if any.
-     * @param string|null $after   The column that this column should be placed after, if it should be moved.
-     */
-    public function alterColumn($table, $column, $type, $newName = null, $after = null)
-    {
-        echo "    > alter column $column $type in table $table ...";
-        $time = microtime(true);
-        $this->db->createCommand()
-            ->alterColumn($table, $column, $type, $newName, $after)
             ->execute();
         echo " done (time: ".sprintf('%.3f', microtime(true) - $time)."s)\n";
     }

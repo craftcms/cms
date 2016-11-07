@@ -97,10 +97,13 @@ class Routes extends Component
     {
         $results = (new Query())
             ->select(['uriPattern', 'template'])
-            ->from('{{%routes}}')
-            ->where(['or', 'siteId is null', 'siteId = :siteId'],
-                [':siteId' => Craft::$app->getSites()->currentSite->id])
-            ->orderBy('sortOrder')
+            ->from(['{{%routes}}'])
+            ->where([
+                'or',
+                ['siteId' => null],
+                ['siteId' => Craft::$app->getSites()->currentSite->id]
+            ])
+            ->orderBy(['sortOrder' => SORT_ASC])
             ->all();
 
         if ($results) {
@@ -149,8 +152,8 @@ class Routes extends Component
 
             // Get the next biggest sort order
             $maxSortOrder = (new Query())
-                ->from('{{%routes}}')
-                ->max('sortOrder');
+                ->from(['{{%routes}}'])
+                ->max('[[sortOrder]]');
 
             $routeRecord->sortOrder = $maxSortOrder + 1;
         }
@@ -256,12 +259,14 @@ class Routes extends Component
      */
     public function updateRouteOrder($routeIds)
     {
-        foreach ($routeIds as $order => $routeId) {
-            $data = ['sortOrder' => $order + 1];
-            $condition = ['id' => $routeId];
+        $db = Craft::$app->getDb();
 
-            Craft::$app->getDb()->createCommand()
-                ->update('{{%routes}}', $data, $condition)
+        foreach ($routeIds as $order => $routeId) {
+            $db->createCommand()
+                ->update(
+                    '{{%routes}}',
+                    ['sortOrder' => $order + 1],
+                    ['id' => $routeId])
                 ->execute();
         }
     }

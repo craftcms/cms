@@ -11,12 +11,12 @@ use Craft;
 use craft\app\base\Model;
 
 /**
- * Class GetHelp model.
+ * Class CraftSupport model.
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since  3.0
  */
-class GetHelp extends Model
+class CraftSupport extends Model
 {
     // Properties
     // =========================================================================
@@ -72,20 +72,7 @@ class GetHelp extends Model
         return [
             [['fromEmail', 'message'], 'required'],
             [['fromEmail'], 'email'],
-            [['fromEmail'], 'string', 'min' => 5],
-            [['fromEmail'], 'string', 'max' => 255],
-            [
-                [
-                    'fromEmail',
-                    'message',
-                    'attachLogs',
-                    'attachDbBackup',
-                    'attachTemplates',
-                    'attachment'
-                ],
-                'safe',
-                'on' => 'search'
-            ],
+            [['fromEmail'], 'string', 'min' => 5, 'max' => 255],
             [['attachment'], 'file', 'maxSize' => 3145728],
         ];
     }

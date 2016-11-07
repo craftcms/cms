@@ -40,25 +40,25 @@
 				{% registerjsresource "js/asseteditvolumesettings.js" %}
 
 				{{ forms.selectField({
-					label: "Type"|t('app'),
+					label: "Volume Type"|t('app'),
 					instructions: "What type of volume is this?"|t('app'),
 					id: 'type',
 					name: 'type',
 					options: volumeTypeOptions,
-					value: volume is missing ? volume.expectedType : volume.className(),
-					errors: (volume is missing ? ["The volume type “{class}” could not be found."|t('app', { class: volume.expectedType })] : null),
+					value: className(volume),
+					errors: volume.getErrors('type') ?? null,
 					toggle: true
 				}) }}
 
-				{% for _volumeType in volumeTypes %}
-					{% set isCurrent = (_volumeType == volume.className()) %}
+				{% for volumeType in volumeTypes %}
+					{% set isCurrent = (volumeType == className(volume)) %}
 
-					<div id="{{ _volumeType|id }}"{% if not isCurrent %} class="hidden"{% endif %}>
-						{% namespace 'types['~_volumeType~']' %}
+					<div id="{{ volumeType|id }}"{% if not isCurrent %} class="hidden"{% endif %}>
+						{% namespace 'types['~volumeType~']' %}
 							{% if isCurrent %}
 								{{ volume.getSettingsHtml()|raw }}
 							{% else %}
-								{{ volumeInstances[_volumeType].getSettingsHtml()|raw }}
+								{{ volumeInstances[volumeType].getSettingsHtml()|raw }}
 							{% endif %}
 						{% endnamespace %}
 					</div>

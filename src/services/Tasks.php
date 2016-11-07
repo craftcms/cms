@@ -175,7 +175,7 @@ class Tasks extends Component
                 $taskRecord = $this->_getTaskRecordById($task->id);
             }
 
-            $taskRecord->type = $task->getType();
+            $taskRecord->type = get_class($task);
             $taskRecord->status = $task->status;
             $taskRecord->description = $task->description;
             $taskRecord->totalSteps = $task->totalSteps;
@@ -437,18 +437,11 @@ class Tasks extends Component
     {
         if ($this->_runningTask === null) {
             $result = $this->_createTaskQuery()
-                ->where(
-                    [
-                        'and',
-                        'lft = 1',
-                        'status = :status'
-                        /*, 'dateUpdated >= :aMinuteAgo'*/
-                    ],
-                    [
-                        ':status' => Task::STATUS_RUNNING
-                        /*, ':aMinuteAgo' => DateTimeHelper::formatTimeForDb('-1 minute')*/
-                    ]
-                )
+                ->where([
+                    'lft' => '1',
+                    'status' => Task::STATUS_RUNNING,
+                    /* ['>=', 'dateUpdated' >= DateTimeHelper::formatTimeForDb('-1 minute')], */
+                ])
                 ->one();
 
             if ($result !== false) {
@@ -474,13 +467,11 @@ class Tasks extends Component
     {
         // Remember that a root task could appear to be stagnant if it has sub-tasks.
         return $this->_createTaskQuery()
-            ->where(
-                ['and', 'status = :status'/*, 'dateUpdated >= :aMinuteAgo'*/],
-                [
-                    ':status' => Task::STATUS_RUNNING
-                    /*, ':aMinuteAgo' => DateTimeHelper::formatTimeForDb('-1 minute')*/
-                ]
-            )
+            ->where([
+                'and',
+                ['status' => Task::STATUS_RUNNING],
+                /* ['>=', 'dateUpdated', DateTimeHelper::formatTimeForDb('-1 minute')], */
+            ])
             ->exists();
     }
 
@@ -493,17 +484,17 @@ class Tasks extends Component
      */
     public function areTasksPending($type = null)
     {
-        $conditions = ['and', 'lft = 1', 'status = :status'];
-        $params = [':status' => Task::STATUS_PENDING];
+        $query = $this->_createTaskQuery()
+            ->where([
+                'lft' => '1',
+                'status' => Task::STATUS_PENDING
+            ]);
 
         if ($type) {
-            $conditions[] = 'type = :type';
-            $params[':type'] = $type;
+            $query->andWhere(['type' => $type]);
         }
 
-        return $this->_createTaskQuery()
-            ->where($conditions, $params)
-            ->exists();
+        return $query->exists();
     }
 
     /**
@@ -556,11 +547,12 @@ class Tasks extends Component
     public function getTotalTasks()
     {
         return $this->_createTaskQuery()
-            ->where(
-                ['and', 'lft = 1', 'status != :status'],
-                [':status' => Task::STATUS_ERROR]
-            )
-            ->count('id');
+            ->where([
+                'and',
+                ['lft' => '1'],
+                ['not', ['status' => Task::STATUS_ERROR]]
+            ])
+            ->count('[[id]]');
     }
 
     /**
@@ -583,7 +575,7 @@ class Tasks extends Component
             if ($this->_nextPendingTask === null) {
                 $taskRecord = TaskRecord::find()
                     ->where(['status' => Task::STATUS_PENDING])
-                    ->orderBy('dateCreated')
+                    ->orderBy(['dateCreated' => SORT_ASC])
                     ->roots()
                     ->one();
 
@@ -782,8 +774,8 @@ EOT;
                 'type',
                 'settings',
             ])
-            ->from('{{%tasks}}')
-            ->orderBy('root asc, lft asc');
+            ->from(['{{%tasks}}'])
+            ->orderBy(['root' => SORT_ASC, 'lft' => SORT_ASC]);
     }
 
     /**

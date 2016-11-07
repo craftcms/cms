@@ -10,7 +10,6 @@ namespace craft\app\db\mysql;
 use Craft;
 use craft\app\db\Connection;
 use craft\app\services\Config;
-use yii\base\Exception;
 use yii\db\Expression;
 
 /**
@@ -44,11 +43,6 @@ class QueryBuilder extends \yii\db\mysql\QueryBuilder
             $options .= ' DEFAULT CHARSET='.Craft::$app->getConfig()->get('charset', Config::CATEGORY_DB);
         }
 
-        // Use the default collation
-        if (strpos($options, 'COLLATE=') === false) {
-            $options .= ' COLLATE='.Craft::$app->getConfig()->get('collation', Config::CATEGORY_DB);
-        }
-
         return parent::createTable($table, $columns, $options);
     }
 
@@ -65,104 +59,6 @@ class QueryBuilder extends \yii\db\mysql\QueryBuilder
     }
 
     /**
-     * Builds a SQL statement for adding a new DB column before all other columns in the table.
-     *
-     * @param string $table  The table that the new column will be added to. The table name will be properly quoted by the method.
-     * @param string $column The name of the new column. The name will be properly quoted by the method.
-     * @param string $type   The column type. The [[getColumnType()]] method will be invoked to convert abstract column type (if any)
-     *                       into the physical one. Anything that is not recognized as abstract type will be kept in the generated SQL.
-     *                       For example, 'string' will be turned into 'varchar(255)', while 'string not null' will become 'varchar(255) not null'.
-     *
-     * @return string The SQL statement for adding a new column.
-     */
-    public function addColumnFirst($table, $column, $type)
-    {
-        return 'ALTER TABLE '.$this->db->quoteTableName($table).
-        ' ADD '.$this->db->quoteColumnName($column).' '.
-        $this->getColumnType($type).
-        ' FIRST';
-    }
-
-    /**
-     * Builds a SQL statement for adding a new DB column after another column.
-     *
-     * @param string $table  The table that the new column will be added to. The table name will be properly quoted by the method.
-     * @param string $column The name of the new column. The name will be properly quoted by the method.
-     * @param string $type   The column type. The [[getColumnType()]] method will be invoked to convert abstract column type (if any)
-     *                       into the physical one. Anything that is not recognized as abstract type will be kept in the generated SQL.
-     *                       For example, 'string' will be turned into 'varchar(255)', while 'string not null' will become 'varchar(255) not null'.
-     * @param string $after  The name of the column that the new column should be placed after.
-     *
-     * @return string The SQL statement for adding a new column.
-     */
-    public function addColumnAfter($table, $column, $type, $after)
-    {
-        return 'ALTER TABLE '.$this->db->quoteTableName($table).
-        ' ADD '.$this->db->quoteColumnName($column).' '.
-        $this->getColumnType($type).
-        ' AFTER '.$this->db->quoteColumnName($after);
-    }
-
-    /**
-     * Builds a SQL statement for adding a new DB column before another column.
-     *
-     * @param string $table  The table that the new column will be added to. The table name will be properly quoted by the method.
-     * @param string $column The name of the new column. The name will be properly quoted by the method.
-     * @param string $type   The column type. The [[getColumnType()]] method will be invoked to convert abstract column type (if any)
-     *                       into the physical one. Anything that is not recognized as abstract type will be kept in the generated SQL.
-     *                       For example, 'string' will be turned into 'varchar(255)', while 'string not null' will become 'varchar(255) not null'.
-     * @param string $before The name of the column that the new column should be placed before.
-     *
-     * @return string The SQL statement for adding a new column.
-     * @throws Exception If the $before column doesn't exist.
-     */
-    public function addColumnBefore($table, $column, $type, $before)
-    {
-        $tableInfo = $this->db->getTableSchema($table, true);
-        $columns = array_keys($tableInfo->columns);
-        $beforeIndex = array_search($before, $columns);
-
-        if ($beforeIndex === false) {
-            throw new Exception('A "'.$before.'" columns doesn’t exist on `'.$table.'`.');
-        }
-
-        if ($beforeIndex === 0) {
-            return $this->addColumnFirst($table, $column, $type);
-        }
-
-        $after = $columns[$beforeIndex - 1];
-
-        return $this->addColumnAfter($table, $column, $type, $after);
-    }
-
-    /**
-     * Builds a SQL statement for changing the definition of a column.
-     *
-     * @param string      $table   The table whose column is to be changed. The table name will be properly quoted by the method.
-     * @param string      $column  The name of the column to be changed. The name will be properly quoted by the method.
-     * @param string      $type    The new column type. The [[getColumnType()]] method will be invoked to convert abstract
-     *                             column type (if any) into the physical one. Anything that is not recognized as abstract type will be kept
-     *                             in the generated SQL. For example, 'string' will be turned into 'varchar(255)', while 'string not null'
-     *                             will become 'varchar(255) not null'.
-     * @param string|null $newName The new column name, if any.
-     * @param string|null $after   The column that this column should be placed after, if it should be moved.
-     *
-     * @return string The SQL statement for changing the definition of a column.
-     */
-    public function alterColumn($table, $column, $type, $newName = null, $after = null)
-    {
-        if (!$newName) {
-            $newName = $column;
-        }
-
-        return 'ALTER TABLE '.$this->db->quoteTableName($table).' CHANGE '.
-        $this->db->quoteColumnName($column).' '.
-        $this->db->quoteColumnName($newName).' '.
-        $this->getColumnType($type).
-        ($after ? ' AFTER '.$this->db->quoteColumnName($after) : '');
-    }
-
-    /**
      * Builds a SQL statement for inserting some given data into a table, or updating an existing row
      * in the event of a key constraint violation.
      *
@@ -176,7 +72,7 @@ class QueryBuilder extends \yii\db\mysql\QueryBuilder
      *
      * @return string The SQL statement for inserting or updating data in a table.
      */
-    public function insertOrUpdate($table, $keyColumns, $updateColumns, &$params)
+    public function upsert($table, $keyColumns, $updateColumns, &$params)
     {
         $schema = $this->db->getSchema();
 
@@ -237,8 +133,7 @@ class QueryBuilder extends \yii\db\mysql\QueryBuilder
      */
     public function replace($table, $column, $find, $replace, $condition, &$params)
     {
-        $schema = $this->db->getSchema();
-        $column = $schema->quoteColumnName($column);
+        $column = $this->db->quoteColumnName($column);
 
         $findPhName = static::PARAM_PREFIX.count($params);
         $params[$findPhName] = $find;
@@ -246,7 +141,7 @@ class QueryBuilder extends \yii\db\mysql\QueryBuilder
         $replacePhName = static::PARAM_PREFIX.count($params);
         $params[$replacePhName] = $replace;
 
-        $sql = 'UPDATE '.$schema->quoteTableName($table)." SET $column = REPLACE($column, $findPhName, $replacePhName)";
+        $sql = "UPDATE {$table} SET {$column} = REPLACE({$column}, {$findPhName}, {$replacePhName})";
         $where = $this->buildWhere($condition, $params);
 
         return $where === '' ? $sql : $sql . ' ' . $where;
@@ -262,13 +157,12 @@ class QueryBuilder extends \yii\db\mysql\QueryBuilder
      */
     public function fixedOrder($column, $values)
     {
-        $schema = $this->db->getSchema();
-
-        foreach ($values as $i => $value) {
-            $values[$i] = $schema->quoteValue($value);
+        $sql = 'FIELD('.$this->db->quoteColumnName($column);
+        foreach ($values as $value) {
+            $sql .= ','.$this->db->quoteValue($value);
         }
+        $sql .= ')';
 
-        return 'FIELD('.$this->db->quoteColumnName($column).', '.
-        implode(', ', $values).')';
+        return $sql;
     }
 }

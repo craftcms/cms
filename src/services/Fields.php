@@ -18,6 +18,7 @@ use craft\app\errors\MissingComponentException;
 use craft\app\events\FieldEvent;
 use craft\app\events\FieldGroupEvent;
 use craft\app\events\FieldLayoutEvent;
+use craft\app\events\RegisterComponentTypesEvent;
 use craft\app\fields\Assets as AssetsField;
 use craft\app\fields\Categories as CategoriesField;
 use craft\app\fields\Checkboxes as CheckboxesField;
@@ -61,6 +62,11 @@ class Fields extends Component
 {
     // Constants
     // =========================================================================
+
+    /**
+     * @event RegisterComponentTypesEvent The event that is triggered when registering field types.
+     */
+    const EVENT_REGISTER_FIELD_TYPES = 'registerFieldTypes';
 
     /**
      * @event FieldGroupEvent The event that is triggered before a field group is saved.
@@ -232,11 +238,9 @@ class Fields extends Component
      */
     public function getGroupById($groupId)
     {
-        if (!isset($this->_groupsById) || !array_key_exists($groupId,
-                $this->_groupsById)
-        ) {
+        if (!isset($this->_groupsById) || !array_key_exists($groupId, $this->_groupsById)) {
             $result = $this->_createGroupQuery()
-                ->where('id = :id', [':id' => $groupId])
+                ->where(['id' => $groupId])
                 ->one();
 
             if ($result) {
@@ -365,7 +369,7 @@ class Fields extends Component
     /**
      * Returns all available field type classes.
      *
-     * @return FieldInterface[] The available field type classes
+     * @return string[] The available field type classes
      */
     public function getAllFieldTypes()
     {
@@ -390,11 +394,12 @@ class Fields extends Component
             UsersField::class,
         ];
 
-        foreach (Craft::$app->getPlugins()->call('getFieldTypes', [], true) as $pluginFieldTypes) {
-            $fieldTypes = array_merge($fieldTypes, $pluginFieldTypes);
-        }
+        $event = new RegisterComponentTypesEvent([
+            'types' => $fieldTypes
+        ]);
+        $this->trigger(self::EVENT_REGISTER_FIELD_TYPES, $event);
 
-        return $fieldTypes;
+        return $event->types;
     }
 
     /**
@@ -469,7 +474,7 @@ class Fields extends Component
 
         if (!empty($missingContexts)) {
             $results = $this->_createFieldQuery()
-                ->where(['in', 'fields.context', $missingContexts])
+                ->where(['fields.context' => $missingContexts])
                 ->all();
 
             foreach ($results as $result) {
@@ -528,11 +533,9 @@ class Fields extends Component
      */
     public function getFieldById($fieldId)
     {
-        if (!isset($this->_fieldsById) || !array_key_exists($fieldId,
-                $this->_fieldsById)
-        ) {
+        if (!isset($this->_fieldsById) || !array_key_exists($fieldId, $this->_fieldsById)) {
             $result = $this->_createFieldQuery()
-                ->where('fields.id = :id', [':id' => $fieldId])
+                ->where(['fields.id' => $fieldId])
                 ->one();
 
             if ($result) {
@@ -567,10 +570,9 @@ class Fields extends Component
             if ($this->doesFieldWithHandleExist($handle, $context)) {
                 $result = $this->_createFieldQuery()
                     ->where([
-                        'and',
-                        'fields.handle = :handle',
-                        'fields.context = :context'
-                    ], [':handle' => $handle, ':context' => $context])
+                        'fields.handle' => $handle,
+                        'fields.context' => $context
+                    ])
                     ->one();
 
                 if ($result) {
@@ -603,8 +605,8 @@ class Fields extends Component
             $this->_allFieldHandlesByContext = [];
 
             $results = (new Query())
-                ->select('handle,context')
-                ->from('{{%fields}}')
+                ->select(['handle', 'context'])
+                ->from(['{{%fields}}'])
                 ->all();
 
             foreach ($results as $result) {
@@ -626,7 +628,7 @@ class Fields extends Component
     public function getFieldsByGroupId($groupId, $indexBy = null)
     {
         $results = $this->_createFieldQuery()
-            ->where('fields.groupId = :groupId', [':groupId' => $groupId])
+            ->where(['fields.groupId' => $groupId])
             ->all();
 
         $fields = [];
@@ -655,8 +657,8 @@ class Fields extends Component
     public function getFieldsByElementType($elementType, $indexBy = null)
     {
         $results = $this->_createFieldQuery()
-            ->innerJoin('{{%fieldlayoutfields}} flf', 'flf.fieldId = fields.id')
-            ->innerJoin('{{%fieldlayouts}} fl', 'fl.id = flf.layoutId')
+            ->innerJoin('{{%fieldlayoutfields}} flf', '[[flf.fieldId]] = [[fields.id]]')
+            ->innerJoin('{{%fieldlayouts}} fl', '[[fl.id]] = [[flf.layoutId]]')
             ->where(['fl.type' => $elementType])
             ->all();
 
@@ -729,7 +731,10 @@ class Fields extends Component
 
                 if (Craft::$app->getDb()->columnExists($contentTable, $oldColumnName)) {
                     Craft::$app->getDb()->createCommand()
-                        ->alterColumn($contentTable, $oldColumnName, $columnType, $newColumnName)
+                        ->alterColumn($contentTable, $oldColumnName, $columnType)
+                        ->execute();
+                    Craft::$app->getDb()->createCommand()
+                        ->renameColumn($contentTable, $oldColumnName, $newColumnName)
                         ->execute();
                 } else if (Craft::$app->getDb()->columnExists($contentTable, $newColumnName)) {
                     Craft::$app->getDb()->createCommand()
@@ -737,7 +742,7 @@ class Fields extends Component
                         ->execute();
                 } else {
                     Craft::$app->getDb()->createCommand()
-                        ->addColumnBefore($contentTable, $newColumnName, $columnType, 'dateCreated')
+                        ->addColumn($contentTable, $newColumnName, $columnType)
                         ->execute();
                 }
 
@@ -769,7 +774,7 @@ class Fields extends Component
             $fieldRecord->instructions = $field->instructions;
             $fieldRecord->translationMethod = $field->translationMethod;
             $fieldRecord->translationKeyFormat = $field->translationKeyFormat;
-            $fieldRecord->type = $field->getType();
+            $fieldRecord->type = get_class($field);
             $fieldRecord->settings = $field->getSettings();
 
             $fieldRecord->save(false);
@@ -916,11 +921,9 @@ class Fields extends Component
      */
     public function getLayoutById($layoutId)
     {
-        if (!isset($this->_layoutsById) || !array_key_exists($layoutId,
-                $this->_layoutsById)
-        ) {
+        if (!isset($this->_layoutsById) || !array_key_exists($layoutId, $this->_layoutsById)) {
             $result = $this->_createLayoutQuery()
-                ->where('id = :id', [':id' => $layoutId])
+                ->where(['id' => $layoutId])
                 ->one();
 
             if ($result) {
@@ -944,11 +947,9 @@ class Fields extends Component
      */
     public function getLayoutByType($type)
     {
-        if (!isset($this->_layoutsByType) || !array_key_exists($type,
-                $this->_layoutsByType)
-        ) {
+        if (!isset($this->_layoutsByType) || !array_key_exists($type, $this->_layoutsByType)) {
             $result = $this->_createLayoutQuery()
-                ->where('type = :type', [':type' => $type])
+                ->where(['type' => $type])
                 ->one();
 
             if ($result) {
@@ -979,7 +980,7 @@ class Fields extends Component
     public function getLayoutTabsById($layoutId)
     {
         $tabs = $this->_createLayoutTabQuery()
-            ->where('layoutId = :layoutId', [':layoutId' => $layoutId])
+            ->where(['layoutId' => $layoutId])
             ->all();
 
         foreach ($tabs as $key => $value) {
@@ -1005,12 +1006,12 @@ class Fields extends Component
                 'flf.layoutId',
                 'flf.tabId',
                 'flf.required',
-                'flf.sortOrder'
+                'flf.sortOrder',
             ])
-            ->innerJoin('{{%fieldlayoutfields}} flf', 'flf.fieldId = fields.id')
-            ->innerJoin('{{%fieldlayouttabs}} flt', 'flt.id = flf.tabId')
+            ->innerJoin('{{%fieldlayoutfields}} flf', '[[flf.fieldId]] = [[fields.id]]')
+            ->innerJoin('{{%fieldlayouttabs}} flt', '[[flt.id]] = [[flf.tabId]]')
             ->where(['flf.layoutId' => $layoutId])
-            ->orderBy('flt.sortOrder, flf.sortOrder')
+            ->orderBy(['flt.sortOrder' => SORT_ASC, 'flf.sortOrder' => SORT_ASC])
             ->all();
 
         foreach ($results as $result) {
@@ -1062,7 +1063,7 @@ class Fields extends Component
             $allFieldsById = [];
 
             $results = $this->_createFieldQuery()
-                ->where(['in', 'id', $allFieldIds])
+                ->where(['id' => $allFieldIds])
                 ->all();
 
             foreach ($results as $result) {
@@ -1248,8 +1249,8 @@ class Fields extends Component
                 'id',
                 'name',
             ])
-            ->from('{{%fieldgroups}}')
-            ->orderBy('name');
+            ->from(['{{%fieldgroups}}'])
+            ->orderBy(['name' => SORT_ASC]);
     }
 
     /**
@@ -1274,8 +1275,8 @@ class Fields extends Component
                 'fields.type',
                 'fields.settings'
             ])
-            ->from('{{%fields}} fields')
-            ->orderBy('fields.name');
+            ->from(['{{%fields}} fields'])
+            ->orderBy(['fields.name' => SORT_ASC]);
     }
 
     /**
@@ -1290,7 +1291,7 @@ class Fields extends Component
                 'id',
                 'type',
             ])
-            ->from('{{%fieldlayouts}}');
+            ->from(['{{%fieldlayouts}}']);
     }
 
     /**
@@ -1307,8 +1308,8 @@ class Fields extends Component
                 'name',
                 'sortOrder',
             ])
-            ->from('{{%fieldlayouttabs}}')
-            ->orderBy('sortOrder');
+            ->from(['{{%fieldlayouttabs}}'])
+            ->orderBy(['sortOrder' => SORT_ASC]);
     }
 
     /**

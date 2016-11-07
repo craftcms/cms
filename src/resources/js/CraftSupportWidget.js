@@ -1,7 +1,7 @@
 (function($) {
 
 
-	Craft.GetHelpWidget = Garnish.Base.extend(
+	Craft.CraftSupportWidget = Garnish.Base.extend(
 	{
 		widgetId: 0,
 		loading: false,
@@ -22,7 +22,7 @@
 		{
 			this.widgetId = widgetId;
 
-			Craft.GetHelpWidget.widgets[this.widgetId] = this;
+			Craft.CraftSupportWidget.widgets[this.widgetId] = this;
 
 			this.$widget = $('#widget'+widgetId);
 			this.$message = this.$widget.find('.message:first');

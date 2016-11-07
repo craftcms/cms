@@ -18,13 +18,4 @@ namespace craft\app\base;
  */
 interface MissingComponentInterface
 {
-    // Public Methods
-    // =========================================================================
-
-    /**
-     * Returns the expected component class name.
-     *
-     * @return string
-     */
-    public function getType();
 }

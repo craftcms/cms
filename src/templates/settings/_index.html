@@ -31,10 +31,10 @@
 
 	<ul class="icons">
 		{% for tool in tools %}
-			{% set triggerId = 'tool-'~tool.className()|id %}
+			{% set triggerId = 'tool-' ~ className(tool)|id %}
 			<li><a id="{{ triggerId }}" data-icon="{{ tool.iconValue() }}">{{ tool.displayName() }}</a></li>
 			{% registerjs %}
-				new Craft.Tool('{{ triggerId|e("js") }}', '{{ tool.className()|e("js") }}', {{ tool.optionsHtml()|json_encode|raw }}, '{{ tool.buttonLabel()|e("js") }}');
+				new Craft.Tool('{{ triggerId|e("js") }}', '{{ className(tool)|e("js") }}', {{ tool.optionsHtml()|json_encode|raw }}, '{{ tool.buttonLabel()|e("js") }}');
 			{% endregisterjs %}
 		{% endfor %}
 	</ul>

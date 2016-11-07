@@ -8,6 +8,7 @@ use craft\app\db\Query;
 use craft\app\elements\Asset;
 use craft\app\errors\VolumeException;
 use craft\app\errors\MissingComponentException;
+use craft\app\events\RegisterComponentTypesEvent;
 use craft\app\events\VolumeEvent;
 use craft\app\helpers\Component as ComponentHelper;
 use craft\app\records\Volume as AssetVolumeRecord;
@@ -34,6 +35,11 @@ class Volumes extends Component
 {
     // Constants
     // =========================================================================
+
+    /**
+     * @event RegisterComponentTypesEvent The event that is triggered when registering volume types.
+     */
+    const EVENT_REGISTER_VOLUME_TYPES = 'registerVolumeTypes';
 
     /**
      * @event VolumeEvent The event that is triggered before an Asset volume is saved.
@@ -100,9 +106,9 @@ class Volumes extends Component
     // -------------------------------------------------------------------------
 
     /**
-     * Returns all available volume types.
+     * Returns all registered volume types.
      *
-     * @return array the available volume type classes
+     * @return string[]
      */
     public function getAllVolumeTypes()
     {
@@ -118,11 +124,12 @@ class Volumes extends Component
             ]);
         }
 
-        foreach (Craft::$app->getPlugins()->call('getVolumeTypes', [], true) as $pluginVolumeTypes) {
-            $volumeTypes = array_merge($volumeTypes, $pluginVolumeTypes);
-        }
+        $event = new RegisterComponentTypesEvent([
+            'types' => $volumeTypes
+        ]);
+        $this->trigger(self::EVENT_REGISTER_VOLUME_TYPES, $event);
 
-        return $volumeTypes;
+        return $event->types;
     }
 
     /**
@@ -137,8 +144,8 @@ class Volumes extends Component
                 $this->_allVolumeIds = array_keys($this->_volumesById);
             } else {
                 $this->_allVolumeIds = (new Query())
-                    ->select('id')
-                    ->from('{{%volumes}}')
+                    ->select(['id'])
+                    ->from(['{{%volumes}}'])
                     ->column();
             }
         }
@@ -328,10 +335,7 @@ class Volumes extends Component
         }
 
         // If we've already fetched all volumes, just use that.
-        if (!$this->_fetchedAllVolumes &&
-            (!isset($this->_volumesById) || !array_key_exists($volumeId,
-                    $this->_volumesById))
-        ) {
+        if (!$this->_fetchedAllVolumes && (!isset($this->_volumesById) || !array_key_exists($volumeId, $this->_volumesById))) {
             $result = $this->_createVolumeQuery()
                 ->where(['id' => $volumeId])
                 ->one();
@@ -391,7 +395,7 @@ class Volumes extends Component
 
             $volumeRecord->name = $volume->name;
             $volumeRecord->handle = $volume->handle;
-            $volumeRecord->type = $volume->getType();
+            $volumeRecord->type = get_class($volume);
             $volumeRecord->hasUrls = $volume->hasUrls;
             $volumeRecord->settings = $volume->getSettings();
             $volumeRecord->fieldLayoutId = $volume->fieldLayoutId;
@@ -409,9 +413,8 @@ class Volumes extends Component
             } else {
                 // Set the sort order
                 $maxSortOrder = (new Query())
-                    ->select('max(sortOrder)')
-                    ->from('{{%volumes}}')
-                    ->scalar();
+                    ->from(['{{%volumes}}'])
+                    ->max('[[sortOrder]]');
 
                 $volumeRecord->sortOrder = $maxSortOrder + 1;
             }
@@ -660,8 +663,8 @@ class Volumes extends Component
                 'type',
                 'settings',
             ])
-            ->from('{{%volumes}}')
-            ->orderBy('sortOrder');
+            ->from(['{{%volumes}}'])
+            ->orderBy(['sortOrder' => SORT_ASC]);
     }
 
     /**

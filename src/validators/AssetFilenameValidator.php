@@ -85,7 +85,7 @@ class AssetFilenameValidator extends Validator
         // Ensure a file doesn't already exist in the target folder
         if ($model->folderId) {
             $existingAssetId = Asset::find()
-                ->select('elements.id')
+                ->select(['elements.id'])
                 ->folderId($model->folderId)
                 ->filename(Db::escapeParam($value))
                 ->scalar();

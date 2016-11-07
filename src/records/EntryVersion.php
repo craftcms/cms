@@ -37,18 +37,6 @@ class EntryVersion extends ActiveRecord
 
     /**
      * @inheritdoc
-     */
-    public function rules()
-    {
-        return [
-            [['siteId'], SiteIdValidator::class],
-            [['num'], 'number', 'min' => 0, 'max' => 65535, 'integerOnly' => true],
-            [['siteId', 'num', 'data'], 'required'],
-        ];
-    }
-
-    /**
-     * @inheritdoc
      *
      * @return string
      */

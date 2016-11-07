@@ -1,5 +1,6 @@
 <?php
 
+use craft\app\db\Connection;
 use craft\app\db\MigrationManager;
 use craft\app\errors\MissingComponentException;
 use craft\app\helpers\MailerHelper;
@@ -139,7 +140,7 @@ return [
                 ];
                 break;
             case 'db':
-                $config =[
+                $config = [
                     'class' => yii\caching\DbCache::class,
                     'gcProbability' => $configService->get('gcProbability', Config::CATEGORY_DBCACHE),
                     'cacheTable' => '{{%'.$configService->get('cacheTableName', Config::CATEGORY_DBCACHE).'}}',
@@ -180,15 +181,29 @@ return [
         $configService = Craft::$app->getConfig();
         $unixSocket = $configService->get('unixSocket', Config::CATEGORY_DB);
         $database = $configService->get('database', Config::CATEGORY_DB);
+        $driver = $configService->get('driver', Config::CATEGORY_DB);
+        $dsn = $configService->get('dsn', Config::CATEGORY_DB);
 
-        if (!empty($unixSocket)) {
-            $dsn = 'mysql:unix_socket='.strtolower($unixSocket).';dbname='.$database.';';
-        } else {
-            $server = $configService->get('server', Config::CATEGORY_DB);
-            $port = $configService->get('port', Config::CATEGORY_DB);
-            $dsn = 'mysql:host='.strtolower($server).
-                ';dbname='.$database.
-                ';port='.strtolower($port).';';
+        // Make sure it's a supported driver
+        if (!in_array($driver, [
+            Connection::DRIVER_MYSQL,
+            Connection::DRIVER_PGSQL
+        ])
+        ) {
+            throw new Exception('Unsupported connection type: '.$driver);
+        }
+
+        if ($dsn === '') {
+            if ($driver == Connection::DRIVER_MYSQL && !empty($unixSocket)) {
+                $dsn = $driver.':unix_socket='.strtolower($unixSocket).';dbname='.$database.';';
+            } else {
+                $server = $configService->get('server', Config::CATEGORY_DB);
+                $port = $configService->getDbPort();
+
+                $dsn = $driver.':host='.strtolower($server).
+                    ';dbname='.$database.
+                    ';port='.strtolower($port).';';
+            }
         }
 
         $config = [
@@ -201,11 +216,18 @@ return [
             'tablePrefix' => $configService->getDbTablePrefix(),
             'schemaMap' => [
                 'mysql' => craft\app\db\mysql\Schema::class,
+                'pgsql' => craft\app\db\pgsql\Schema::class,
             ],
             'attributes' => $configService->get('attributes', Config::CATEGORY_DB),
         ];
 
-        return Craft::createObject($config);
+        $db = Craft::createObject($config);
+
+        // Set the Yii driver name from the config setting.
+        /** @var Connection $db */
+        $db->setDriverName($driver);
+
+        return $db;
     },
 
     'mailer' => function() {

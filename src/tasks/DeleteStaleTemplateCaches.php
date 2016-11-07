@@ -79,7 +79,7 @@ class DeleteStaleTemplateCaches extends Task
         }
 
         // Figure out how many rows we're dealing with
-        $totalRows = $this->_getQuery()->count('id');
+        $totalRows = $this->_getQuery()->count('[[id]]');
         $this->_batch = 0;
         $this->_noMoreRows = false;
         $this->_deletedCacheIds = [];
@@ -99,7 +99,7 @@ class DeleteStaleTemplateCaches extends Task
                 $this->_batch++;
                 $this->_batchRows = $this->_getQuery()
                     ->select(['cacheId', 'query'])
-                    ->orderBy('id')
+                    ->orderBy(['id' => SORT_ASC])
                     ->offset(100 * ($this->_batch - 1) - $this->_totalDeletedCriteriaRows)
                     ->limit(100)
                     ->all();
@@ -156,15 +156,8 @@ class DeleteStaleTemplateCaches extends Task
      */
     private function _getQuery()
     {
-        $query = (new Query())
-            ->from('{{%templatecachequeries}}');
-
-        if (is_array($this->_elementType)) {
-            $query->where(['in', 'type', $this->_elementType]);
-        } else {
-            $query->where(['type' => $this->_elementType]);
-        }
-
-        return $query;
+        return (new Query())
+            ->from(['{{%templatecachequeries}}'])
+            ->where(['type' => $this->_elementType]);
     }
 }

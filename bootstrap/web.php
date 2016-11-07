@@ -60,8 +60,9 @@ setlocale(
 // Set default timezone to UTC
 date_default_timezone_set('UTC');
 
-// Load and run Craft
+// Load Craft
 // -----------------------------------------------------------------------------
 
-$app = require 'bootstrap.php';
-$app->run();
+$appType = 'web';
+
+return require __DIR__.'/bootstrap.php';

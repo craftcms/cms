@@ -12,7 +12,7 @@ use craft\app\base\Field;
 use craft\app\db\Query;
 use craft\app\errors\EntryDraftNotFoundException;
 use craft\app\events\DraftEvent;
-use craft\app\events\EntryEvent;
+use craft\app\events\VersionEvent;
 use craft\app\helpers\Json;
 use craft\app\elements\Entry;
 use craft\app\models\EntryDraft;
@@ -66,12 +66,12 @@ class EntryRevisions extends Component
     const EVENT_AFTER_DELETE_DRAFT = 'afterDeleteDraft';
 
     /**
-     * @event EntryEvent The event that is triggered before an entry is reverted to an old version.
+     * @event VersionEvent The event that is triggered before an entry is reverted to an old version.
      */
     const EVENT_BEFORE_REVERT_ENTRY_TO_VERSION = 'beforeRevertEntryToVersion';
 
     /**
-     * @event EntryEvent The event that is triggered after an entry is reverted to an old version.
+     * @event VersionEvent The event that is triggered after an entry is reverted to an old version.
      */
     const EVENT_AFTER_REVERT_ENTRY_TO_VERSION = 'afterRevertEntryToVersion';
 
@@ -152,9 +152,9 @@ class EntryRevisions extends Component
                 'dateUpdated',
                 'uid',
             ])
-            ->from('{{%entrydrafts}}')
+            ->from(['{{%entrydrafts}}'])
             ->where(['entryId' => $entryId, 'siteId' => $siteId])
-            ->orderBy('name asc')
+            ->orderBy(['name' => SORT_ASC])
             ->all();
 
         foreach ($results as $result) {
@@ -216,9 +216,9 @@ class EntryRevisions extends Component
         if (!$draft->name && $draft->id) {
             // Get the total number of existing drafts for this entry/site
             $totalDrafts = (new Query())
-                ->from('{{%entrydrafts}}')
+                ->from(['{{%entrydrafts}}'])
                 ->where(['entryId' => $draft->id, 'siteId' => $draft->siteId])
-                ->count('id');
+                ->count('[[id]]');
 
             $draft->name = Craft::t('app', 'Draft {num}',
                 ['num' => $totalDrafts + 1]);
@@ -258,7 +258,7 @@ class EntryRevisions extends Component
      *
      * @return boolean
      */
-    public function publishDraft(EntryDraft $draft, $runValidation)
+    public function publishDraft(EntryDraft $draft, $runValidation = true)
     {
         // If this is a single, we'll have to set the title manually
         if ($draft->getSection()->type == Section::TYPE_SINGLE) {
@@ -387,9 +387,9 @@ class EntryRevisions extends Component
                 'dateUpdated',
                 'uid',
             ])
-            ->from('{{%entryversions}}')
+            ->from(['{{%entryversions}}'])
             ->where(['entryId' => $entryId, 'siteId' => $siteId])
-            ->orderBy('dateCreated desc')
+            ->orderBy(['dateCreated' => SORT_DESC])
             ->offset($includeCurrent ? 0 : 1)
             ->limit($limit)
             ->all();
@@ -417,9 +417,9 @@ class EntryRevisions extends Component
     {
         // Get the total number of existing versions for this entry/site
         $totalVersions = (new Query())
-            ->from('{{%entryversions}}')
+            ->from(['{{%entryversions}}'])
             ->where(['entryId' => $entry->id, 'siteId' => $entry->siteId])
-            ->count('id');
+            ->count('[[id]]');
 
         $versionRecord = new EntryVersionRecord();
         $versionRecord->entryId = $entry->id;
@@ -441,7 +441,7 @@ class EntryRevisions extends Component
      *
      * @return boolean
      */
-    public function revertEntryToVersion(EntryVersion $version, $runValidation)
+    public function revertEntryToVersion(EntryVersion $version, $runValidation = true)
     {
         // If this is a single, we'll have to set the title manually
         if ($version->getSection()->type == Section::TYPE_SINGLE) {
@@ -459,16 +459,16 @@ class EntryRevisions extends Component
             ['num' => $version->num]);
 
         // Fire a 'beforeRevertEntryToVersion' event
-        $this->trigger(self::EVENT_BEFORE_REVERT_ENTRY_TO_VERSION, new EntryEvent([
-            'entry' => $version,
+        $this->trigger(self::EVENT_BEFORE_REVERT_ENTRY_TO_VERSION, new VersionEvent([
+            'version' => $version,
         ]));
 
         // Revert the entry without re-running validation on it
         Craft::$app->getElements()->saveElement($version, false);
 
         // Fire an 'afterRevertEntryToVersion' event
-        $this->trigger(self::EVENT_AFTER_REVERT_ENTRY_TO_VERSION, new EntryEvent([
-            'entry' => $version,
+        $this->trigger(self::EVENT_AFTER_REVERT_ENTRY_TO_VERSION, new VersionEvent([
+            'version' => $version,
         ]));
 
         return true;
@@ -525,7 +525,7 @@ class EntryRevisions extends Component
             'fields' => [],
         ];
 
-        $content = $revision->getContentFromPost();
+        $content = $revision->getSerializedFieldValues();
 
         foreach (Craft::$app->getFields()->getAllFields() as $field) {
             /** @var Field $field */

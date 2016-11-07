@@ -7,26 +7,19 @@
 
 namespace craft\app\events;
 
-use craft\app\elements\Category;
-
 /**
- * Category event class.
+ * SetAssetFilenameEvent class.
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since  3.0
  */
-class CategoryEvent extends Event
+class SetAssetFilenameEvent extends Event
 {
     // Properties
     // =========================================================================
 
     /**
-     * @var Category The category model associated with the event.
+     * @var string The asset filename (sans extension).
      */
-    public $category;
-
-    /**
-     * @var boolean Whether the category is brand new
-     */
-    public $isNew = false;
+    public $filename;
 }

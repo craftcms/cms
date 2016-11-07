@@ -15,7 +15,6 @@ use craft\app\elements\Asset;
 use craft\app\errors\ImageException;
 use craft\app\errors\UserNotFoundException;
 use craft\app\errors\VolumeException;
-use craft\app\events\DeleteUserEvent;
 use craft\app\events\UserActivateEvent;
 use craft\app\events\UserAssignGroupEvent;
 use craft\app\events\UserGroupsAssignEvent;
@@ -165,10 +164,11 @@ class Users extends Component
     public function getUserByUsernameOrEmail($usernameOrEmail)
     {
         return User::find()
-            ->where(
-                ['or', 'username=:usernameOrEmail', 'email=:usernameOrEmail'],
-                [':usernameOrEmail' => $usernameOrEmail]
-            )
+            ->where([
+                'or',
+                ['username' => $usernameOrEmail],
+                ['email' => $usernameOrEmail]
+            ])
             ->withPassword()
             ->status(null)
             ->one();
@@ -295,8 +295,8 @@ class Users extends Component
         // TODO: Remove try/catch after next breakpoint
         try {
             $preferences = (new Query())
-                ->select('preferences')
-                ->from('{{%userpreferences}}')
+                ->select(['preferences'])
+                ->from(['{{%userpreferences}}'])
                 ->where(['userId' => $userId])
                 ->scalar();
 
@@ -317,7 +317,7 @@ class Users extends Component
         $preferences = $user->mergePreferences($preferences);
 
         Craft::$app->getDb()->createCommand()
-            ->insertOrUpdate(
+            ->upsert(
                 '{{%userpreferences}}',
                 ['userId' => $user->id],
                 ['preferences' => Json::encode($preferences)],
@@ -344,7 +344,7 @@ class Users extends Component
         }
 
         return Craft::$app->getMailer()
-            ->composeFromKey('account_activation', ['link' => Template::getRaw($url)])
+            ->composeFromKey('account_activation', ['link' => Template::raw($url)])
             ->setTo($user)
             ->send();
     }
@@ -363,7 +363,7 @@ class Users extends Component
         $url = $this->getEmailVerifyUrl($user);
 
         return Craft::$app->getMailer()
-            ->composeFromKey('verify_new_email', ['link' => Template::getRaw($url)])
+            ->composeFromKey('verify_new_email', ['link' => Template::raw($url)])
             ->setTo($user)
             ->send();
     }
@@ -382,7 +382,7 @@ class Users extends Component
         $url = $this->getPasswordResetUrl($user);
 
         return Craft::$app->getMailer()
-            ->composeFromKey('forgot_password', ['link' => Template::getRaw($url)])
+            ->composeFromKey('forgot_password', ['link' => Template::raw($url)])
             ->setTo($user)
             ->send();
     }
@@ -514,7 +514,7 @@ class Users extends Component
      */
     public function deleteUserPhoto(User $user)
     {
-        Craft::$app->getElements()->deleteElementById($user->photoId);
+        Craft::$app->getElements()->deleteElementById($user->photoId, Asset::class);
     }
 
     /**
@@ -834,7 +834,7 @@ class Users extends Component
     public function shunMessageForUser($userId, $message, $expiryDate = null)
     {
         $affectedRows = Craft::$app->getDb()->createCommand()
-            ->insertOrUpdate(
+            ->upsert(
                 '{{%shunnedmessages}}',
                 [
                     'userId' => $userId,
@@ -881,16 +881,18 @@ class Users extends Component
     public function hasUserShunnedMessage($userId, $message)
     {
         return (new Query())
-            ->from('{{%shunnedmessages}}')
+            ->from(['{{%shunnedmessages}}'])
             ->where([
                 'and',
-                'userId = :userId',
-                'message = :message',
-                ['or', 'expiryDate IS NULL', 'expiryDate > :now']
-            ], [
-                ':userId' => $userId,
-                ':message' => $message,
-                ':now' => Db::prepareDateForDb(new \DateTime())
+                [
+                    'userId' => $userId,
+                    'message' => $message
+                ],
+                [
+                    'or',
+                    ['expiryDate' => null],
+                    ['>', 'expiryDate', Db::prepareDateForDb(new \DateTime())]
+                ]
             ])
             ->exists();
     }
@@ -929,13 +931,13 @@ class Users extends Component
             $pastTime = $expire->sub($interval);
 
             $userIds = (new Query())
-                ->select('id')
-                ->from('{{%users}}')
+                ->select(['id'])
+                ->from(['{{%users}}'])
                 ->where([
                     'and',
-                    'pending=1',
-                    'verificationCodeIssuedDate < :pastTime'
-                ], [':pastTime' => Db::prepareDateForDb($pastTime)])
+                    ['pending' => '1'],
+                    ['<', 'verificationCodeIssuedDate', Db::prepareDateForDb($pastTime)]
+                ])
                 ->column();
 
             if ($userIds) {

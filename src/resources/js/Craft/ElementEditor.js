@@ -13,7 +13,7 @@ Craft.ElementEditor = Garnish.Base.extend(
 	$saveBtn: null,
 	$spinner: null,
 
-	$siteSelect: null,
+	$languageSelect: null,
 	$siteSpinner: null,
 
 	hud: null,
@@ -169,7 +169,7 @@ Craft.ElementEditor = Garnish.Base.extend(
 				this.updateForm(response);
 			}
 			else {
-				this.$siteSelect.val(this.siteId);
+				this.$languageSelect.val(this.siteId);
 			}
 		}, this));
 	},

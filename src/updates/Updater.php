@@ -214,7 +214,7 @@ class Updater
 	 * @param string $uid
 	 * @param string $handle
 	 *
-	 * @return bool
+	 * @return boolean
 	 * @throws InvalidateCacheException
 	 */
 	public function cleanUp($uid, $handle)

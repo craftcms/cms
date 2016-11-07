@@ -71,14 +71,13 @@ class Tag extends Element
     /**
      * @inheritdoc
      */
-    public static function getSources($context = null)
+    protected static function defineSources($context = null)
     {
         $sources = [];
 
         foreach (Craft::$app->getTags()->getAllTagGroups() as $tagGroup) {
-            $key = 'taggroup:'.$tagGroup->id;
-
-            $sources[$key] = [
+            $sources[] = [
+                'key' => 'taggroup:'.$tagGroup->id,
                 'label' => Craft::t('site', $tagGroup->name),
                 'criteria' => ['groupId' => $tagGroup->id]
             ];

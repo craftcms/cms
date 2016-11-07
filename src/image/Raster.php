@@ -646,7 +646,7 @@ class Raster extends Image
                     'png_compression_level' => $normalizedQuality,
                     'flatten' => false
                 ];
-                $pngInfo = ImageHelper::getPngImageInfo($this->_imageSourcePath);
+                $pngInfo = ImageHelper::pngImageInfo($this->_imageSourcePath);
 
                 // Even though a 2 channel PNG is valid (Grayscale with alpha channel), Imagick doesn't recognize it as
                 // a valid format: http://www.imagemagick.org/script/formats.php

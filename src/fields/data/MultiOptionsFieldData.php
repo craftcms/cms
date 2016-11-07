@@ -7,7 +7,7 @@
 
 namespace craft\app\fields\data;
 
-use craft\app\base\Savable;
+use craft\app\base\Serializable;
 use craft\app\helpers\Json;
 
 /**
@@ -16,7 +16,7 @@ use craft\app\helpers\Json;
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since  3.0
  */
-class MultiOptionsFieldData extends \ArrayObject implements Savable
+class MultiOptionsFieldData extends \ArrayObject implements Serializable
 {
     // Properties
     // =========================================================================
@@ -70,7 +70,7 @@ class MultiOptionsFieldData extends \ArrayObject implements Savable
     /**
      * @inheritdoc
      */
-    public function getSavableValue()
+    public function serialize()
     {
         return Json::encode($this->getArrayCopy());
     }

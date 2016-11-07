@@ -11,7 +11,6 @@
 // Set this early.
 date_default_timezone_set('UTC');
 
-$appType = 'console';
-$app = require 'bootstrap.php';
+$app = require __DIR__.'/bootstrap/console.php';
 $exitCode = $app->run();
 exit($exitCode);

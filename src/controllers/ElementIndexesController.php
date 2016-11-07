@@ -15,6 +15,7 @@ use craft\app\elements\db\ElementQuery;
 use craft\app\elements\db\ElementQueryInterface;
 use craft\app\base\ElementInterface;
 use craft\app\events\ElementActionEvent;
+use craft\app\helpers\ElementHelper;
 use yii\web\BadRequestHttpException;
 use yii\web\ForbiddenHttpException;
 use yii\web\Response;
@@ -152,7 +153,7 @@ class ElementIndexesController extends BaseElementsController
         if ($this->_actions) {
             /** @var ElementAction $availableAction */
             foreach ($this->_actions as $availableAction) {
-                if ($actionClass == $availableAction::className()) {
+                if ($actionClass == get_class($availableAction)) {
                     $action = $availableAction;
                     break;
                 }
@@ -225,6 +226,22 @@ class ElementIndexesController extends BaseElementsController
         return $this->asJson($responseData);
     }
 
+    /**
+     * Returns the source tree HTML for an element index.
+     */
+    public function actionGetSourceTreeHtml()
+    {
+        $this->requireAcceptsJson();
+
+        $sources = Craft::$app->getElementIndexes()->getSources($this->_elementType, $this->_context);
+
+        return $this->asJson([
+            'html' => Craft::$app->getView()->renderTemplate('_elements/sources', [
+                'sources' => $sources
+            ])
+        ]);
+    }
+
     // Private Methods
     // =========================================================================
 
@@ -236,19 +253,18 @@ class ElementIndexesController extends BaseElementsController
      */
     private function _getSource()
     {
-        if ($this->_sourceKey) {
-            $elementType = $this->_elementType;
-            $source = $elementType::getSourceByKey($this->_sourceKey, $this->_context);
-
-            if (!$source) {
-                // That wasn't a valid source, or the user doesn't have access to it in this context
-                throw new ForbiddenHttpException('User not permitted to access this source');
-            }
-
-            return $source;
+        if (!$this->_sourceKey) {
+            return null;
         }
 
-        return null;
+        $source = ElementHelper::findSource($this->_elementType, $this->_sourceKey, $this->_context);
+
+        if ($source === null) {
+            // That wasn't a valid source, or the user doesn't have access to it in this context
+            throw new ForbiddenHttpException('User not permitted to access this source');
+        }
+
+        return $source;
     }
 
     /**
@@ -298,7 +314,7 @@ class ElementIndexesController extends BaseElementsController
                 ->id($collapsedElementIds)
                 ->offset(0)
                 ->limit(null)
-                ->orderBy('lft asc')
+                ->orderBy(['lft' => SORT_ASC])
                 ->positionedAfter(null)
                 ->positionedBefore(null)
                 ->all();
@@ -325,7 +341,7 @@ class ElementIndexesController extends BaseElementsController
                 }
 
                 if ($descendantIds) {
-                    $query->andWhere(['not in', 'element.id', $descendantIds]);
+                    $query->andWhere(['not', ['element.id' => $descendantIds]]);
                 }
             }
         }
@@ -358,7 +374,7 @@ class ElementIndexesController extends BaseElementsController
         $showCheckboxes = !empty($this->_actions);
         $elementType = $this->_elementType;
 
-        $responseData['html'] = $elementType::getIndexHtml(
+        $responseData['html'] = $elementType::indexHtml(
             $this->_elementQuery,
             $disabledElementIds,
             $this->_viewState,
@@ -387,7 +403,7 @@ class ElementIndexesController extends BaseElementsController
 
         /** @var Element $elementType */
         $elementType = $this->_elementType;
-        $actions = $elementType::getAvailableActions($this->_sourceKey);
+        $actions = $elementType::actions($this->_sourceKey);
 
         if ($actions) {
             foreach ($actions as $i => $action) {
@@ -420,7 +436,7 @@ class ElementIndexesController extends BaseElementsController
             /** @var ElementAction $action */
             foreach ($this->_actions as $action) {
                 $actionData[] = [
-                    'type' => $action::className(),
+                    'type' => get_class($action),
                     'destructive' => $action->isDestructive(),
                     'name' => $action->getTriggerLabel(),
                     'trigger' => $action->getTriggerHtml(),

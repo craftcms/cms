@@ -93,7 +93,7 @@ class Entry extends Element
     /**
      * @inheritdoc
      */
-    public static function getStatuses()
+    public static function statuses()
     {
         return [
             self::STATUS_LIVE => Craft::t('app', 'Live'),
@@ -116,7 +116,7 @@ class Entry extends Element
     /**
      * @inheritdoc
      */
-    public static function getSources($context = null)
+    protected static function defineSources($context = null)
     {
         if ($context == 'index') {
             $sections = Craft::$app->getSections()->getEditableSections();
@@ -141,7 +141,8 @@ class Entry extends Element
         }
 
         $sources = [
-            '*' => [
+            [
+                'key' => '*',
                 'label' => Craft::t('app', 'All entries'),
                 'criteria' => [
                     'sectionId' => $sectionIds,
@@ -152,7 +153,8 @@ class Entry extends Element
         ];
 
         if ($singleSectionIds) {
-            $sources['singles'] = [
+            $sources[] = [
+                'key' => 'singles',
                 'label' => Craft::t('app', 'Singles'),
                 'criteria' => [
                     'sectionId' => $singleSectionIds,
@@ -172,9 +174,8 @@ class Entry extends Element
                 $sources[] = ['heading' => $heading];
 
                 foreach ($sectionsByType[$type] as $section) {
-                    $key = 'section:'.$section->id;
-
-                    $sources[$key] = [
+                    $source = [
+                        'key' => 'section:'.$section->id,
                         'label' => Craft::t('site', $section->name),
                         'data' => [
                             'type' => $type,
@@ -187,19 +188,17 @@ class Entry extends Element
                     ];
 
                     if ($type == Section::TYPE_STRUCTURE) {
-                        $sources[$key]['defaultSort'] = ['structure', 'asc'];
-                        $sources[$key]['structureId'] = $section->structureId;
-                        $sources[$key]['structureEditable'] = Craft::$app->getUser()->checkPermission('publishEntries:'.$section->id);
+                        $source['defaultSort'] = ['structure', 'asc'];
+                        $source['structureId'] = $section->structureId;
+                        $source['structureEditable'] = Craft::$app->getUser()->checkPermission('publishEntries:'.$section->id);
                     } else {
-                        $sources[$key]['defaultSort'] = ['postDate', 'desc'];
+                        $source['defaultSort'] = ['postDate', 'desc'];
                     }
+
+                    $sources[] = $source;
                 }
             }
         }
-
-        // Allow plugins to modify the sources
-        Craft::$app->getPlugins()->call('modifyEntrySources',
-            [&$sources, $context]);
 
         return $sources;
     }
@@ -207,7 +206,7 @@ class Entry extends Element
     /**
      * @inheritdoc
      */
-    public static function getAvailableActions($source = null)
+    protected static function defineActions($source = null)
     {
         // Get the section(s) we need to check permissions on
         switch ($source) {
@@ -271,9 +270,8 @@ class Entry extends Element
                                     '{{%entries}}',
                                     ['postDate' => Db::prepareDateForDb(new \DateTime())],
                                     [
-                                        'and',
-                                        ['in', 'id', $event->elementIds],
-                                        'postDate is null'
+                                        'id' => $event->elementIds,
+                                        'postDate' => null,
                                     ])
                                 ->execute();
                         }
@@ -346,23 +344,15 @@ class Entry extends Element
             }
         }
 
-        // Allow plugins to add additional actions
-        $allPluginActions = Craft::$app->getPlugins()->call('addEntryActions',
-            [$source], true);
-
-        foreach ($allPluginActions as $pluginActions) {
-            $actions = array_merge($actions, $pluginActions);
-        }
-
         return $actions;
     }
 
     /**
      * @inheritdoc
      */
-    public static function defineSortableAttributes()
+    protected static function defineSortableAttributes()
     {
-        $attributes = [
+        return [
             'title' => Craft::t('app', 'Title'),
             'uri' => Craft::t('app', 'URI'),
             'postDate' => Craft::t('app', 'Post Date'),
@@ -370,18 +360,12 @@ class Entry extends Element
             'elements.dateCreated' => Craft::t('app', 'Date Created'),
             'elements.dateUpdated' => Craft::t('app', 'Date Updated'),
         ];
-
-        // Allow plugins to modify the attributes
-        Craft::$app->getPlugins()->call('modifyEntrySortableAttributes',
-            [&$attributes]);
-
-        return $attributes;
     }
 
     /**
      * @inheritdoc
      */
-    public static function defineAvailableTableAttributes()
+    protected static function defineTableAttributes()
     {
         $attributes = [
             'title' => ['label' => Craft::t('app', 'Title')],
@@ -403,20 +387,13 @@ class Entry extends Element
             unset($attributes['author']);
         }
 
-        // Allow plugins to modify the attributes
-        $pluginAttributes = Craft::$app->getPlugins()->call('defineAdditionalEntryTableAttributes', [], true);
-
-        foreach ($pluginAttributes as $thisPluginAttributes) {
-            $attributes = array_merge($attributes, $thisPluginAttributes);
-        }
-
         return $attributes;
     }
 
     /**
      * @inheritdoc
      */
-    public static function getDefaultTableAttributes($source = null)
+    public static function defaultTableAttributes($source = null)
     {
         $attributes = [];
 
@@ -438,52 +415,7 @@ class Entry extends Element
     /**
      * @inheritdoc
      */
-    public static function getElementQueryStatusCondition(ElementQueryInterface $query, $status)
-    {
-        $currentTimeDb = Db::prepareDateForDb(new \DateTime());
-
-        switch ($status) {
-            case Entry::STATUS_LIVE: {
-                return [
-                    'and',
-                    'elements.enabled = 1',
-                    'elements_i18n.enabled = 1',
-                    "entries.postDate <= '{$currentTimeDb}'",
-                    [
-                        'or',
-                        'entries.expiryDate is null',
-                        "entries.expiryDate > '{$currentTimeDb}'"
-                    ]
-                ];
-            }
-
-            case Entry::STATUS_PENDING: {
-                return [
-                    'and',
-                    'elements.enabled = 1',
-                    'elements_i18n.enabled = 1',
-                    "entries.postDate > '{$currentTimeDb}'"
-                ];
-            }
-
-            case Entry::STATUS_EXPIRED: {
-                return [
-                    'and',
-                    'elements.enabled = 1',
-                    'elements_i18n.enabled = 1',
-                    'entries.expiryDate is not null',
-                    "entries.expiryDate <= '{$currentTimeDb}'"
-                ];
-            }
-        }
-
-        return null;
-    }
-
-    /**
-     * @inheritdoc
-     */
-    public static function getEagerLoadingMap($sourceElements, $handle)
+    public static function eagerLoadingMap($sourceElements, $handle)
     {
         if ($handle == 'author') {
             // Get the source element IDs
@@ -494,9 +426,9 @@ class Entry extends Element
             }
 
             $map = (new Query())
-                ->select('id as source, authorId as target')
-                ->from('{{%entries}}')
-                ->where(['in', 'id', $sourceElementIds])
+                ->select(['id as source', 'authorId as target'])
+                ->from(['{{%entries}}'])
+                ->where(['id' => $sourceElementIds])
                 ->all();
 
             return [
@@ -505,7 +437,7 @@ class Entry extends Element
             ];
         }
 
-        return parent::getEagerLoadingMap($sourceElements, $handle);
+        return parent::eagerLoadingMap($sourceElements, $handle);
     }
 
     /**
@@ -676,7 +608,7 @@ class Entry extends Element
     /**
      * @inheritdoc
      */
-    public function getRoute()
+    protected function route()
     {
         // Make sure that the entry is actually live
         if ($this->getStatus() != Entry::STATUS_LIVE) {
@@ -851,15 +783,8 @@ class Entry extends Element
     /**
      * @inheritdoc
      */
-    public function getTableAttributeHtml($attribute)
+    protected function tableAttributeHtml($attribute)
     {
-        // First give plugins a chance to set this
-        $pluginAttributeHtml = Craft::$app->getPlugins()->callFirst('getEntryTableAttributeHtml', [$this, $attribute], true);
-
-        if ($pluginAttributeHtml !== null) {
-            return $pluginAttributeHtml;
-        }
-
         switch ($attribute) {
             case 'author':
                 $author = $this->getAuthor();
@@ -873,7 +798,7 @@ class Entry extends Element
                 return Craft::t('site', $this->getType()->name);
         }
 
-        return parent::getTableAttributeHtml($attribute);
+        return parent::tableAttributeHtml($attribute);
     }
 
     /**

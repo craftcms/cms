@@ -244,7 +244,7 @@ class Assets extends Component
 
             if ($asset->kind == 'image' && !empty($asset->newFilePath)) {
 
-                list ($asset->width, $asset->height) = Image::getImageSize($asset->newFilePath);
+                list ($asset->width, $asset->height) = Image::imageSize($asset->newFilePath);
             }
         }
 
@@ -401,7 +401,7 @@ class Assets extends Component
         }
 
         if ($asset->kind == "image") {
-            list ($asset->width, $asset->height) = Image::getImageSize($pathOnServer);
+            list ($asset->width, $asset->height) = Image::imageSize($pathOnServer);
         } else {
             $asset->width = null;
             $asset->height = null;
@@ -657,11 +657,9 @@ class Assets extends Component
      */
     public function getFolderById($folderId)
     {
-        if (!isset($this->_foldersById) || !array_key_exists($folderId,
-                $this->_foldersById)
-        ) {
+        if (!isset($this->_foldersById) || !array_key_exists($folderId, $this->_foldersById)) {
             $result = $this->_createFolderQuery()
-                ->where('id = :id', [':id' => $folderId])
+                ->where(['id' => $folderId])
                 ->one();
 
             if ($result) {
@@ -697,7 +695,7 @@ class Assets extends Component
                 'name',
                 'path',
             ])
-            ->from('{{%volumefolders}}');
+            ->from(['{{%volumefolders}}']);
 
         $this->_applyFolderConditions($query, $criteria);
 
@@ -746,12 +744,12 @@ class Assets extends Component
                 'name',
                 'path',
             ])
-            ->from('{{%volumefolders}}')
+            ->from(['{{%volumefolders}}'])
             ->where([
                 'and',
                 ['like', 'path', $parentFolder->path.'%', false],
                 ['volumeId' => $parentFolder->volumeId],
-                'parentId is not null'
+                ['not', ['parentId' => null]]
             ]);
 
         if ($orderBy) {
@@ -822,12 +820,11 @@ class Assets extends Component
         }
 
         $query = (new Query())
-            ->select('count(id)')
-            ->from('{{%volumefolders}}');
+            ->from(['{{%volumefolders}}']);
 
         $this->_applyFolderConditions($query, $criteria);
 
-        return (int)$query->scalar();
+        return (int)$query->count('[[id]]');
     }
 
     // File and folder managing
@@ -1229,8 +1226,8 @@ class Assets extends Component
     private function _createFolderQuery()
     {
         return (new Query())
-            ->select('id, parentId, volumeId, name, path')
-            ->from('{{%volumefolders}}');
+            ->select(['id', 'parentId', 'volumeId', 'name', 'path'])
+            ->from(['{{%volumefolders}}']);
     }
 
     /**
@@ -1272,46 +1269,30 @@ class Assets extends Component
      */
     private function _applyFolderConditions($query, FolderCriteria $criteria)
     {
-        $whereConditions = [];
-        $whereParams = [];
-
         if ($criteria->id) {
-            $whereConditions[] = Db::parseParam('id', $criteria->id, $whereParams);
+            $query->andWhere(Db::parseParam('id', $criteria->id));
         }
 
         if ($criteria->volumeId) {
-            $whereConditions[] = Db::parseParam('volumeId', $criteria->volumeId, $whereParams);
+            $query->andWhere(Db::parseParam('volumeId', $criteria->volumeId));
         }
 
         if ($criteria->parentId) {
-            $whereConditions[] = Db::parseParam('parentId', $criteria->parentId, $whereParams);
+            $query->andWhere(Db::parseParam('parentId', $criteria->parentId));
         }
 
         if ($criteria->name) {
-            $whereConditions[] = Db::parseParam('name', $criteria->name, $whereParams);
+            $query->andWhere(Db::parseParam('name', $criteria->name));
         }
 
         if (!is_null($criteria->path)) {
-            // This folder has a comma in it.
+            // Does the path have a comma in it?
             if (strpos($criteria->path, ',') !== false) {
                 // Escape the comma.
-                $condition = Db::parseParam('path', str_replace(',', '\,', $criteria->path), $whereParams);
-                $lastKey = key(array_slice($whereParams, -1, 1, true));
-
-                // Now un-escape it.
-                $whereParams[$lastKey] = str_replace('\,', ',', $whereParams[$lastKey]);
+                $query->andWhere(Db::parseParam('path', str_replace(',', '\,', $criteria->path)));
             } else {
-                $condition = Db::parseParam('path', $criteria->path, $whereParams);
+                $query->andWhere(Db::parseParam('path', $criteria->path));
             }
-
-            $whereConditions[] = $condition;
-        }
-
-        if (count($whereConditions) == 1) {
-            $query->where($whereConditions[0], $whereParams);
-        } else {
-            array_unshift($whereConditions, 'and');
-            $query->where($whereConditions, $whereParams);
         }
     }
 }

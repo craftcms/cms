@@ -66,10 +66,31 @@ return [
      */
     'autoLoginAfterAccountActivation' => false,
     /**
-     *  Whether Craft should backup the database when updating. This applies to
+     *  Whether Craft should run the backup logic when updating. This applies to
      * both auto and manual updates.
      */
-    'backupDbOnUpdate' => true,
+    'backupOnUpdate' => true,
+    /**
+     * Craft will use the command line libraries `pg_dump` and `mysqldump` for backing up a database
+     * by default.  It assumes that those libraries are in the $PATH variable for the user the web server is
+     * running as.
+     *
+     * If you want to use some other library, or want to specify an absolute path to them,
+     * or want to specify different parameters than the default, or you want to implement some other backup
+     * solution, you can override that behavior here.
+     *
+     * There are several tokens you can use that Craft will swap out at runtime:
+     *
+     *     * `{path}` - Swapped with the dynamically generated backup file path.
+     *     * `{port}` - Swapped with the current database port.
+     *     * `{server}` - Swapped with the current database host name.
+     *     * `{user}` - Swapped with the user to connect to the database.
+     *     * `{database}` - Swapped with the current database name.
+     *     * `{schema}` - Swapped with the current database schema (if any).
+     *
+     * This can also be set to `false` to disable database backups completely.
+     */
+    'backupCommand' => null,
     /**
      * Sets the base URL to the CP that Craft should use when generating CP-facing URLs. This will be determined
      * automatically if left blank.
@@ -135,7 +156,7 @@ return [
     /**
      * Any custom ASCII character mappings.
      *
-     * This array is merged into the default one in StringHelper::getAsciiCharMap(). The key is the ASCII character to
+     * This array is merged into the default one in StringHelper::asciiCharMap(). The key is the ASCII character to
      * be used for the replacement and the value is an array of non-ASCII characters that the key maps to.
      *
      * For example:
@@ -460,10 +481,30 @@ return [
      */
     'resourceTrigger' => 'cpresources',
     /**
-     * Whether Craft should attempt to restore the just-created DB backup in the event that there was an error making
-     * the database schema changes mandated by the update.
+     * Craft will use the command line libraries `psql` and `mysql` for restoring a database
+     * by default.  It assumes that those libraries are in the $PATH variable for the user the web server is
+     * running as.
+     *
+     * If you want to use some other library, or want to specify an absolute path to them,
+     * or want to specify different parameters than the default, or you want to implement some other restoration
+     * solution, you can override that behavior here.
+     *
+     * There are several tokens you can use that Craft will swap out at runtime:
+     *
+     *     * `{path}` - Swapped with the dynamically generated backup file path.
+     *     * `{port}` - Swapped with the current database port.
+     *     * `{server}` - Swapped with the current database host name.
+     *     * `{user}` - Swapped with the user to connect to the database.
+     *     * `{database}` - Swapped with the current database name.
+     *     * `{schema}` - Swapped with the current database schema (if any).
+     *
+     * This can also be set to `false` to disable database restores completely.
+    */
+    'restoreCommand' => null,
+    /**
+     * Whether Craft should attempt to restore the backup in the event that there was an error.
      */
-    'restoreDbOnUpdateFailure' => true,
+    'restoreOnUpdateFailure' => true,
     /**
      * Whether Craft should rotate images according to their EXIF data on upload.
      */
@@ -526,7 +567,7 @@ return [
      * Configures Craft to send all system emails to a single email address, or an array of email addresses for testing
      * purposes.
      */
-    'testToEmailAddress' => '',
+    'testToEmailAddress' => null,
     /**
      * The timezone of the site. If set, it will take precedence over the Timezone setting in Settings → General.
      *

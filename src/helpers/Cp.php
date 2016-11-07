@@ -9,6 +9,8 @@ namespace craft\app\helpers;
 
 use Craft;
 use craft\app\enums\LicenseKeyStatus;
+use craft\app\events\Event;
+use craft\app\events\RegisterCpAlertsEvent;
 
 /**
  * Class Cp
@@ -18,7 +20,15 @@ use craft\app\enums\LicenseKeyStatus;
  */
 class Cp
 {
-    // Public Methods
+    // Constants
+    // =========================================================================
+
+    /**
+     * @event RegisterCpAlertsEvent The event that is triggered when registering CP alerts.
+     */
+    const EVENT_REGISTER_ALERTS = 'registerAlerts';
+
+    // Static
     // =========================================================================
 
     /**
@@ -27,7 +37,7 @@ class Cp
      *
      * @return array
      */
-    public static function getAlerts($path = null, $fetch = false)
+    public static function alerts($path = null, $fetch = false)
     {
         $alerts = [];
         $user = Craft::$app->getUser()->getIdentity();
@@ -59,7 +69,7 @@ class Cp
                 if (!empty($updateModel->app->releases)) {
                     if (Craft::$app->getUpdates()->criticalCraftUpdateAvailable($updateModel->app->releases)) {
                         $alerts[] = Craft::t('app', 'There’s a critical Craft CMS update available.').
-                            ' <a class="go nowrap" href="'.Url::getUrl('updates').'">'.Craft::t('app', 'Go to Updates').'</a>';
+                            ' <a class="go nowrap" href="'.Url::url('updates').'">'.Craft::t('app', 'Go to Updates').'</a>';
                     }
                 }
             }
@@ -88,14 +98,10 @@ class Cp
             }
         }
 
-        $allPluginAlerts = Craft::$app->getPlugins()->call('getCpAlerts', [
-            $path,
-            $fetch
-        ], true);
-
-        foreach ($allPluginAlerts as $pluginAlerts) {
-            $alerts = array_merge($alerts, $pluginAlerts);
-        }
+        // Give plugins a chance to add their own alerts
+        $event = new RegisterCpAlertsEvent();
+        Event::trigger(self::class, self::EVENT_REGISTER_ALERTS, $event);
+        $alerts = array_merge($alerts, $event->alerts);
 
         return $alerts;
     }

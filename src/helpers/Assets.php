@@ -11,6 +11,8 @@ use Craft;
 use craft\app\base\Volume;
 use craft\app\elements\Asset;
 use craft\app\enums\PeriodType;
+use craft\app\events\Event;
+use craft\app\events\SetAssetFilenameEvent;
 use craft\app\models\VolumeFolder;
 
 /**
@@ -26,6 +28,11 @@ class Assets
 
     const INDEX_SKIP_ITEMS_PATTERN = '/.*(Thumbs\.db|__MACOSX|__MACOSX\/|__MACOSX\/.*|\.DS_STORE)$/i';
 
+    /**
+     * @event SetElementTableAttributeHtmlEvent The event that is triggered when defining an asset’s filename.
+     */
+    const EVENT_SET_FILENAME = 'setFilename';
+
     // Public Methods
     // =========================================================================
 
@@ -36,7 +43,7 @@ class Assets
      *
      * @return mixed
      */
-    public static function getTempFilePath($extension = 'tmp')
+    public static function tempFilePath($extension = 'tmp')
     {
         $extension = strpos($extension, '.') !== false ? pathinfo($extension, PATHINFO_EXTENSION) : $extension;
         $filename = uniqid('assets', true).'.'.$extension;
@@ -57,7 +64,7 @@ class Assets
         $baseUrl = $volume->getRootUrl();
         $folderPath = $file->getFolder()->path;
         $filename = $file->filename;
-        $appendix = static::getUrlAppendix($volume, $file);
+        $appendix = static::urlAppendix($volume, $file);
 
         return $baseUrl.$folderPath.$filename.$appendix;
     }
@@ -70,7 +77,7 @@ class Assets
      *
      * @return string
      */
-    public static function getUrlAppendix(Volume $volume, Asset $file)
+    public static function urlAppendix(Volume $volume, Asset $file)
     {
         $appendix = '';
 
@@ -110,10 +117,11 @@ class Assets
         }
 
         if ($isFilename && !$preventPluginModifications) {
-            $pluginModifiedAssetName = Craft::$app->getPlugins()->callFirst('modifyAssetFilename', [$baseName], true);
-
-            // Use the plugin-modified name, if anyone was up to the task.
-            $baseName = $pluginModifiedAssetName ?: $baseName;
+            $event = new SetAssetFilenameEvent([
+                'filename' => $baseName
+            ]);
+            Event::trigger(self::class, self::EVENT_SET_FILENAME, $event);
+            $baseName = $event->filename;
         }
 
         $baseName = Io::cleanFilename($baseName, $config->get('convertFilenamesToAscii'), $separator);
@@ -177,7 +185,7 @@ class Assets
      *
      * @return array
      */
-    public static function getFileTransferList($assets, $folderIdChanges, $merge = false)
+    public static function fileTransferList($assets, $folderIdChanges, $merge = false)
     {
         $fileTransferList = [];
 
@@ -212,7 +220,7 @@ class Assets
      *
      * @return array
      */
-    public static function getPeriodList()
+    public static function periodList()
     {
         return [
             PeriodType::Seconds => Craft::t('app', 'Seconds'),

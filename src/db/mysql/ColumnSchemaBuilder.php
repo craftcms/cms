@@ -7,6 +7,7 @@
 
 namespace craft\app\db\mysql;
 
+use Craft;
 use yii\db\mysql\ColumnSchemaBuilder as YiiColumnSchemaBuilder;
 
 /**
@@ -26,5 +27,41 @@ class ColumnSchemaBuilder extends YiiColumnSchemaBuilder
         $this->categoryMap[Schema::TYPE_MEDIUMTEXT] = self::CATEGORY_STRING;
         $this->categoryMap[Schema::TYPE_LONGTEXT] = self::CATEGORY_STRING;
         $this->categoryMap[Schema::TYPE_ENUM] = self::CATEGORY_STRING;
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function defaultValue($default)
+    {
+        if ($default === true) {
+            $default = 1;
+        } else if ($default === false) {
+            $default = 0;
+        }
+
+        return parent::defaultValue($default);
+    }
+
+    /**
+     * @inheritdoc
+     */
+    protected function buildLengthString()
+    {
+        if ($this->type == Schema::TYPE_ENUM) {
+            $schema = Craft::$app->getDb()->getSchema();
+            $str = '(';
+            foreach ($this->length as $i => $value) {
+                if ($i != 0) {
+                    $str .= ',';
+                }
+                $str .= $schema->quoteValue($value);
+            }
+            $str .= ')';
+
+            return $str;
+        }
+
+        return parent::buildLengthString();
     }
 }

@@ -101,12 +101,12 @@
 
 									{{ forms.selectField({
 										label: "Field Type"|t('app'),
-										warning: (not field.getIsNew() ? "Changing this may result in data loss."|t('app')),
+										warning: (not field.getIsNew() and not field.hasErrors('type') ? "Changing this may result in data loss."|t('app')),
 										id: 'type',
 										name: 'type',
 										options: fieldTypes,
-										value: field is missing ? field.expectedType : field.className(),
-										errors: (field is missing ? ["The field type “{class}” could not be found."|t('app', { class: field.expectedType })] : null),
+										value: className(field),
+										errors: field.getErrors('type') ?? null
 									}) }}
 
 									{% if craft.app.getIsMultiSite() %}

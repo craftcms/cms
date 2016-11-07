@@ -53,14 +53,4 @@ class Update extends Model
             }
         }
     }
-
-    /**
-     * @inheritdoc
-     */
-    public function rules()
-    {
-        return [
-            [['app', 'plugins', 'errors'], 'safe', 'on' => 'search'],
-        ];
-    }
 }

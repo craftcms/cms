@@ -8,18 +8,18 @@
 namespace craft\app\events;
 
 /**
- * DB backup event class.
+ * RegisterUrlRulesEvent class.
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since  3.0
  */
-class DbBackupEvent extends Event
+class RegisterUrlRulesEvent extends Event
 {
     // Properties
     // =========================================================================
 
     /**
-     * @var string The file path to the backup
+     * @var array The registered URL rules.
      */
-    public $filePath;
+    public $rules = [];
 }

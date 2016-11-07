@@ -93,7 +93,7 @@ class GlobalSetQuery extends ElementQuery
         ]);
 
         if ($this->handle) {
-            $this->subQuery->andWhere(Db::parseParam('globalsets.handle', $this->handle, $this->subQuery->params));
+            $this->subQuery->andWhere(Db::parseParam('globalsets.handle', $this->handle));
         }
 
         $this->_applyEditableParam();
@@ -114,7 +114,7 @@ class GlobalSetQuery extends ElementQuery
         if ($this->editable) {
             // Limit the query to only the global sets the user has permission to edit
             $editableSetIds = Craft::$app->getGlobals()->getEditableSetIds();
-            $this->subQuery->andWhere(['in', 'elements.id', $editableSetIds]);
+            $this->subQuery->andWhere(['elements.id' => $editableSetIds]);
         }
     }
 }

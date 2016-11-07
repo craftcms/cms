@@ -17,7 +17,7 @@ use craft\app\helpers\Json;
 use craft\app\helpers\StringHelper;
 use craft\app\i18n\Locale;
 use craft\app\io\Zip;
-use craft\app\models\GetHelp;
+use craft\app\models\CraftSupport;
 use craft\app\web\Controller;
 use craft\app\web\UploadedFile;
 use yii\helpers\FileHelper;
@@ -26,7 +26,7 @@ use yii\web\Response;
 
 /**
  * The DashboardController class is a controller that handles various dashboard related actions including managing
- * widgets, getting [[\craft\app\widgets\Feed]] feeds and sending [[\craft\app\widgets\GetHelp]] support ticket requests.
+ * widgets, getting [[\craft\app\widgets\Feed]] feeds and sending [[\craft\app\widgets\CraftSupport]] support ticket requests.
  *
  * Note that all actions in the controller require an authenticated Craft session via [[Controller::allowAnonymous]].
  *
@@ -56,6 +56,11 @@ class DashboardController extends Controller
         $view->setNamespace('__NAMESPACE__');
 
         foreach ($widgetTypes as $widgetType) {
+            /** @var WidgetInterface $widgetType */
+            if (!$widgetType::isSelectable()) {
+                continue;
+            }
+
             $view->startJsBuffer();
             $widget = $dashboardService->createWidget($widgetType);
             $settingsHtml = $view->namespaceInputs($widget->getSettingsHtml());
@@ -282,7 +287,7 @@ class DashboardController extends Controller
     }
 
     /**
-     * Creates a new support ticket for the GetHelp widget.
+     * Creates a new support ticket for the CraftSupport widget.
      *
      * @return string
      */
@@ -302,7 +307,7 @@ class DashboardController extends Controller
         $namespace = $request->getBodyParam('namespace');
         $namespace = $namespace ? $namespace.'.' : '';
 
-        $getHelpModel = new GetHelp();
+        $getHelpModel = new CraftSupport();
         $getHelpModel->fromEmail = $request->getBodyParam($namespace.'fromEmail');
         $getHelpModel->message = trim($request->getBodyParam($namespace.'message'));
         $getHelpModel->attachLogs = (bool)$request->getBodyParam($namespace.'attachLogs');
@@ -477,7 +482,7 @@ class DashboardController extends Controller
             $errors = $getHelpModel->getErrors();
         }
 
-        return $this->renderTemplate('_components/widgets/GetHelp/response', [
+        return $this->renderTemplate('_components/widgets/CraftSupport/response', [
             'success' => $success,
             'errors' => Json::encode($errors),
             'widgetId' => $widgetId
@@ -524,7 +529,7 @@ class DashboardController extends Controller
 
         return [
             'id' => $widget->id,
-            'type' => $widget->className(),
+            'type' => get_class($widget),
             'colspan' => $colspan,
             'title' => $widget->getTitle(),
             'name' => $widget->displayName(),
@@ -577,14 +582,16 @@ class DashboardController extends Controller
                 'footHtml' => $view->getBodyHtml(),
             ]);
         } else {
-            $errors = $widget->getAllErrors();
+            $allErrors = [];
 
-            foreach ($widget->getErrors() as $attribute => $attributeErrors) {
-                $errors = array_merge($errors, $attributeErrors);
+            foreach ($widget->getErrors() as $attribute => $errors) {
+                foreach ($errors as $error) {
+                    $allErrors[] = $error;
+                }
             }
 
             return $this->asJson([
-                'errors' => $errors
+                'errors' => $allErrors
             ]);
         }
     }

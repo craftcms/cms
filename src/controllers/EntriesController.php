@@ -62,27 +62,26 @@ class EntriesController extends BaseEntriesController
      */
     public function actionEditEntry($sectionHandle, $entryId = null, $draftId = null, $versionId = null, $siteHandle = null, Entry $entry = null)
     {
-        if ($siteHandle) {
-            $site = Craft::$app->getSites()->getSiteByHandle($siteHandle);
-
-            if (!$site) {
-                throw new NotFoundHttpException('Invalid site handle: '.$siteHandle);
-            }
-        } else {
-            $site = Craft::$app->getSites()->currentSite;
-        }
-
         $variables = [
             'sectionHandle' => $sectionHandle,
             'entryId' => $entryId,
             'draftId' => $draftId,
             'versionId' => $versionId,
-            'site' => $site,
             'entry' => $entry
         ];
 
+        if ($siteHandle) {
+            $variables['site'] = Craft::$app->getSites()->getSiteByHandle($siteHandle);
+
+            if (!$variables['site']) {
+                throw new NotFoundHttpException('Invalid site handle: '.$siteHandle);
+            }
+        }
+
         $this->_prepEditEntryVariables($variables);
 
+        /** @var Site $site */
+        $site = $variables['site'];
         /** @var Entry $entry */
         $entry = $variables['entry'];
         /** @var Section $section */
@@ -194,7 +193,7 @@ class EntriesController extends BaseEntriesController
         // ---------------------------------------------------------------------
 
         // Page title w/ revision label
-        switch ($entry::className()) {
+        switch (get_class($entry)) {
             case EntryDraft::class: {
                 /** @var EntryDraft $entry */
                 $variables['revisionLabel'] = $entry->name;
@@ -217,7 +216,7 @@ class EntriesController extends BaseEntriesController
         } else {
             $variables['docTitle'] = $variables['title'] = $entry->title;
 
-            if ($entry::className() != Entry::class) {
+            if (get_class($entry) != Entry::class) {
                 $variables['docTitle'] .= ' ('.$variables['revisionLabel'].')';
             }
         }
@@ -226,19 +225,19 @@ class EntriesController extends BaseEntriesController
         $variables['crumbs'] = [
             [
                 'label' => Craft::t('app', 'Entries'),
-                'url' => Url::getUrl('entries')
+                'url' => Url::url('entries')
             ]
         ];
 
         if ($section->type == Section::TYPE_SINGLE) {
             $variables['crumbs'][] = [
                 'label' => Craft::t('app', 'Singles'),
-                'url' => Url::getUrl('entries/singles')
+                'url' => Url::url('entries/singles')
             ];
         } else {
             $variables['crumbs'][] = [
                 'label' => Craft::t('site', $section->name),
-                'url' => Url::getUrl('entries/'.$section->handle)
+                'url' => Url::url('entries/'.$section->handle)
             ];
 
             if ($section->type == Section::TYPE_STRUCTURE) {
@@ -282,7 +281,7 @@ class EntriesController extends BaseEntriesController
                         'sectionId' => $section->id,
                         'entryId' => $entry->id,
                         'siteId' => $entry->siteId,
-                        'versionId' => ($entry::className() == EntryVersion::class ? $entry->versionId : null),
+                        'versionId' => ($entry instanceof EntryVersion ? $entry->versionId : null),
                     ]
                 ]).');');
 
@@ -290,7 +289,7 @@ class EntriesController extends BaseEntriesController
 
             // Should we show the Share button too?
             if ($entry->id) {
-                $className = $entry::className();
+                $className = get_class($entry);
 
                 // If we're looking at the live version of an entry, just use
                 // the entry's main URL as its share URL
@@ -464,43 +463,43 @@ class EntriesController extends BaseEntriesController
         }
 
         // Save the entry (finally!)
-        if (Craft::$app->getElements()->saveElement($entry)) {
+        if (!Craft::$app->getElements()->saveElement($entry)) {
             if ($request->getAcceptsJson()) {
-                $return['success'] = true;
-                $return['id'] = $entry->id;
-                $return['title'] = $entry->title;
-
-                if (!$request->getIsConsoleRequest() && $request->getIsCpRequest()) {
-                    $return['cpEditUrl'] = $entry->getCpEditUrl();
-                }
-
-                $return['authorUsername'] = $entry->getAuthor()->username;
-                $return['dateCreated'] = DateTimeHelper::toIso8601($entry->dateCreated);
-                $return['dateUpdated'] = DateTimeHelper::toIso8601($entry->dateUpdated);
-                $return['postDate'] = ($entry->postDate ? DateTimeHelper::toIso8601($entry->postDate) : null);
-
-                return $this->asJson($return);
+                return $this->asJson([
+                    'errors' => $entry->getErrors(),
+                ]);
             }
 
-            Craft::$app->getSession()->setNotice(Craft::t('app', 'Entry saved.'));
+            Craft::$app->getSession()->setError(Craft::t('app', 'Couldn’t save entry.'));
 
-            return $this->redirectToPostedUrl($entry);
+            // Send the entry back to the template
+            Craft::$app->getUrlManager()->setRouteParams([
+                'entry' => $entry
+            ]);
+
+            return null;
         }
 
         if ($request->getAcceptsJson()) {
-            return $this->asJson([
-                'errors' => $entry->getErrors(),
-            ]);
+            $return['success'] = true;
+            $return['id'] = $entry->id;
+            $return['title'] = $entry->title;
+
+            if (!$request->getIsConsoleRequest() && $request->getIsCpRequest()) {
+                $return['cpEditUrl'] = $entry->getCpEditUrl();
+            }
+
+            $return['authorUsername'] = $entry->getAuthor()->username;
+            $return['dateCreated'] = DateTimeHelper::toIso8601($entry->dateCreated);
+            $return['dateUpdated'] = DateTimeHelper::toIso8601($entry->dateUpdated);
+            $return['postDate'] = ($entry->postDate ? DateTimeHelper::toIso8601($entry->postDate) : null);
+
+            return $this->asJson($return);
         }
 
-        Craft::$app->getSession()->setError(Craft::t('app', 'Couldn’t save entry.'));
+        Craft::$app->getSession()->setNotice(Craft::t('app', 'Entry saved.'));
 
-        // Send the entry back to the template
-        Craft::$app->getUrlManager()->setRouteParams([
-            'entry' => $entry
-        ]);
-
-        return null;
+        return $this->redirectToPostedUrl($entry);
     }
 
     /**
@@ -529,29 +528,28 @@ class EntriesController extends BaseEntriesController
             $this->requirePermission('deletePeerEntries:'.$entry->sectionId);
         }
 
-        if (Craft::$app->getElements()->deleteElement($entry)) {
+        if (!Craft::$app->getElements()->deleteElement($entry)) {
             if (Craft::$app->getRequest()->getAcceptsJson()) {
-                return $this->asJson(['success' => true]);
+                return $this->asJson(['success' => false]);
             }
 
-            Craft::$app->getSession()->setNotice(Craft::t('app', 'Entry deleted.'));
+            Craft::$app->getSession()->setError(Craft::t('app', 'Couldn’t delete entry.'));
 
-            return $this->redirectToPostedUrl($entry);
+            // Send the entry back to the template
+            Craft::$app->getUrlManager()->setRouteParams([
+                'entry' => $entry
+            ]);
+
+            return null;
         }
 
         if (Craft::$app->getRequest()->getAcceptsJson()) {
-            return $this->asJson(['success' => false]);
+            return $this->asJson(['success' => true]);
         }
 
-        Craft::$app->getSession()->setError(Craft::t('app', 'Couldn’t delete entry.'));
+        Craft::$app->getSession()->setNotice(Craft::t('app', 'Entry deleted.'));
 
-        // Send the entry back to the template
-        Craft::$app->getUrlManager()->setRouteParams([
-            'entry' => $entry
-        ]);
-
-
-        return null;
+        return $this->redirectToPostedUrl($entry);
     }
 
     /**
@@ -609,7 +607,7 @@ class EntriesController extends BaseEntriesController
             'entries/view-shared-entry',
             $params
         ]);
-        $url = Url::getUrlWithToken($entry->getUrl(), $token);
+        $url = Url::urlWithToken($entry->getUrl(), $token);
 
         return Craft::$app->getResponse()->redirect($url);
     }
@@ -763,7 +761,7 @@ class EntriesController extends BaseEntriesController
 
         if (!$typeId) {
             // Default to the section's first entry type
-            $typeId = ArrayHelper::getFirstKey($variables['section']->getEntryTypes('id'));
+            $typeId = ArrayHelper::firstKey($variables['section']->getEntryTypes('id'));
         }
 
         $variables['entry']->typeId = $typeId;
@@ -845,11 +843,11 @@ class EntriesController extends BaseEntriesController
 
         if (!$entry->typeId) {
             // Default to the section's first entry type
-            $entry->typeId = ArrayHelper::getFirstKey($entry->getSection()->getEntryTypes('id'));
+            $entry->typeId = ArrayHelper::firstKey($entry->getSection()->getEntryTypes('id'));
         }
 
         $fieldsLocation = Craft::$app->getRequest()->getParam('fieldsLocation', 'fields');
-        $entry->setFieldValuesFromPost($fieldsLocation);
+        $entry->setFieldValuesFromRequest($fieldsLocation);
 
         // Author
         $authorId = Craft::$app->getRequest()->getBodyParam('author', ($entry->authorId ? $entry->authorId : Craft::$app->getUser()->getIdentity()->id));

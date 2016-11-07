@@ -12,6 +12,7 @@ use craft\app\base\Element;
 use craft\app\base\ElementInterface;
 use craft\app\base\Field;
 use craft\app\base\Volume;
+use craft\app\events\RegisterRichTextLinkOptionsEvent;
 use craft\app\fields\data\RichTextData;
 use craft\app\helpers\Db;
 use craft\app\helpers\Html;
@@ -43,6 +44,14 @@ class RichText extends Field
     {
         return Craft::t('app', 'Rich Text');
     }
+
+    // Constants
+    // =========================================================================
+
+    /**
+     * @event RegisterRichTextLinkOptionsEvent The event that is triggered when registering the link options for the field.
+     */
+    const EVENT_REGISTER_LINK_OPTIONS = 'registerLinkOptions';
 
     // Properties
     // =========================================================================
@@ -151,7 +160,7 @@ class RichText extends Field
     /**
      * @inheritdoc
      */
-    public function prepareValue($value, $element)
+    public function normalizeValue($value, $element)
     {
         /** @var string|null $value */
         if ($value) {
@@ -242,10 +251,14 @@ class RichText extends Field
 
         // Set the max size based on the column's storage capacity (with a little wiggle room)
         $max = Db::getTextualColumnStorageCapacity($this->columnType);
-        $max = ceil($max * 0.9);
+
+        if ($max === null) {
+            // null means unlimited, so no need to validate this
+            return;
+        }
 
         $validator = new StringValidator([
-            'max' => $max,
+            'max' => ceil($max * 0.9),
         ]);
 
         if (!$validator->validate($value->getRawContent(), $error)) {
@@ -265,7 +278,7 @@ class RichText extends Field
     /**
      * @inheritdoc
      */
-    public function prepareValueForDb($value, $element)
+    public function serializeValue($value, $element)
     {
         /** @var RichTextData|null $value */
         if (!$value) {
@@ -392,13 +405,12 @@ class RichText extends Field
         }
 
         // Give plugins a chance to add their own
-        $allPluginLinkOptions = Craft::$app->getPlugins()->call('addRichTextLinkOptions', [], true);
+        $event = new RegisterRichTextLinkOptionsEvent([
+            'linkOptions' => $linkOptions
+        ]);
+        $this->trigger(self::EVENT_REGISTER_LINK_OPTIONS, $event);
 
-        foreach ($allPluginLinkOptions as $pluginLinkOptions) {
-            $linkOptions = array_merge($linkOptions, $pluginLinkOptions);
-        }
-
-        return $linkOptions;
+        return $event->linkOptions;
     }
 
     /**

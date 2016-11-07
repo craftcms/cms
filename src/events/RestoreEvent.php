@@ -7,26 +7,19 @@
 
 namespace craft\app\events;
 
-use craft\app\elements\Entry;
-
 /**
- * Entry event class.
+ * Restore event class.
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since  3.0
  */
-class EntryEvent extends Event
+class RestoreEvent extends Event
 {
     // Properties
     // =========================================================================
 
     /**
-     * @var Entry The entry model associated with the event.
+     * @var string The file path to the backup to restore.
      */
-    public $entry;
-
-    /**
-     * @var boolean Whether the entry is brand new
-     */
-    public $isNew = false;
+    public $file;
 }

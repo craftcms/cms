@@ -19,13 +19,13 @@ class m160913_134730_require_matrix_block_type_id extends Migration
     {
         // Are there any Matrix blocks that don't have a type?
         $typelessBlockIds = (new Query())
-            ->select('id')
-            ->from('{{%matrixblocks}}')
-            ->where('typeId is null')
+            ->select(['id'])
+            ->from(['{{%matrixblocks}}'])
+            ->where(['typeId' => null])
             ->column();
 
         if ($typelessBlockIds) {
-            $this->delete('{{%elements}}', ['in', 'id', $typelessBlockIds]);
+            $this->delete('{{%elements}}', ['id' => $typelessBlockIds]);
             Craft::warning("Deleted the following Matrix blocks, because they didn't have a block type: ".implode(',', $typelessBlockIds));
         }
 

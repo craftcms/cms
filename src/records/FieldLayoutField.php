@@ -37,11 +37,7 @@ class FieldLayoutField extends ActiveRecord
     public function rules()
     {
         return [
-            [
-                ['layoutId'],
-                'unique',
-                'targetAttribute' => ['layoutId', 'fieldId']
-            ],
+            [['layoutId'], 'unique', 'targetAttribute' => ['layoutId', 'fieldId']],
         ];
     }
 

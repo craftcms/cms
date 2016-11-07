@@ -146,7 +146,7 @@ class Structures extends Component
         /** @var StructureElement $deepestDescendant */
         $deepestDescendant = $elementRecord
             ->children()
-            ->orderBy('level desc')
+            ->orderBy(['level' => SORT_DESC])
             ->one();
 
         if ($deepestDescendant) {

@@ -77,7 +77,7 @@ class Image
      *
      * @return array
      */
-    public static function getWebSafeFormats()
+    public static function webSafeFormats()
     {
         return ['jpg', 'jpeg', 'gif', 'png', 'svg'];
     }
@@ -96,7 +96,7 @@ class Image
      *
      * @return array|bool Info embedded in the PNG file, or `false` if it wasn’t found.
      */
-    public static function getPngImageInfo($file)
+    public static function pngImageInfo($file)
     {
         if (empty($file)) {
             return false;
@@ -155,7 +155,7 @@ class Image
      *
      * @param string $filePath the file path to check.
      *
-     * @return bool
+     * @return boolean
      */
     public static function canHaveExifData($filePath)
     {
@@ -195,7 +195,7 @@ class Image
      *
      * @return array [$width, $height]
      */
-    public static function getImageSize($filePath)
+    public static function imageSize($filePath)
     {
         if (Io::getExtension($filePath) == 'svg') {
             $svg = Io::getFileContents($filePath);

@@ -320,13 +320,13 @@ class MigrationHelper
             // Rename the old id column and add the new one
             if ($migration !== null) {
                 $migration->renameColumn($fk->table->name, $fk->column, $fk->column.'_old');
-                $migration->addColumnAfter($fk->table->name, $fk->column, $fk->columnType, $fk->column.'_old');
+                $migration->addColumn($fk->table->name, $fk->column, $fk->columnType);
             } else {
                 $db->createCommand()
                     ->renameColumn($fk->table->name, $fk->column, $fk->column.'_old')
                     ->execute();
                 $db->createCommand()
-                    ->addColumnAfter($fk->table->name, $fk->column, $fk->columnType, $fk->column.'_old')
+                    ->addColumn($fk->table->name, $fk->column, $fk->columnType)
                     ->execute();
             }
         }
@@ -334,20 +334,20 @@ class MigrationHelper
         // Rename the old id column and add the new one
         if ($migration !== null) {
             $migration->renameColumn($tableName, 'id', 'id_old');
-            $migration->addColumnAfter($tableName, 'id', static::$_idColumnType, 'id_old');
+            $migration->addColumn($tableName, 'id', static::$_idColumnType);
         } else {
             $db->createCommand()
                 ->renameColumn($tableName, 'id', 'id_old')
                 ->execute();
             $db->createCommand()
-                ->addColumnAfter($tableName, 'id', static::$_idColumnType, 'id_old')
+                ->addColumn($tableName, 'id', static::$_idColumnType)
                 ->execute();
         }
 
         // Get all of the rows
         $oldRows = (new Query())
-            ->select('id_old')
-            ->from($tableName)
+            ->select(['id_old'])
+            ->from([$tableName])
             ->all($db);
 
         // Figure out which sites we're going to be storing elements_i18n and content rows in.
@@ -379,30 +379,30 @@ class MigrationHelper
             }
 
             // Get the new element ID
-            $elementId = $db->getLastInsertID();
+            $elementId = $db->getLastInsertID('{{%elements}}');
 
             // Update this table with the new element ID
             $columns = ['id' => $elementId];
-            $conditions = ['id_old' => $row['id_old']];
+            $condition = ['id_old' => $row['id_old']];
 
             if ($migration !== null) {
-                $migration->update($tableName, $columns, $conditions);
+                $migration->update($tableName, $columns, $condition);
             } else {
                 $db->createCommand()
-                    ->update($tableName, $columns, $conditions)
+                    ->update($tableName, $columns, $condition)
                     ->execute();
             }
 
             // Update the other tables' new FK columns
             foreach ($fks as $fk) {
                 $columns = [$fk->column => $elementId];
-                $conditions = [$fk->column.'_old' => $row['id_old']];
+                $condition = [$fk->column.'_old' => $row['id_old']];
 
                 if ($migration !== null) {
-                    $migration->update($fk->table->name, $columns, $conditions);
+                    $migration->update($fk->table->name, $columns, $condition);
                 } else {
                     $db->createCommand()
-                        ->update($fk->table->name, $columns, $conditions)
+                        ->update($fk->table->name, $columns, $condition)
                         ->execute();
                 }
             }

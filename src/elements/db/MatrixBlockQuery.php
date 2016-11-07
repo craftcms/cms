@@ -10,6 +10,7 @@ namespace craft\app\elements\db;
 use Craft;
 use craft\app\base\Element;
 use craft\app\base\ElementInterface;
+use craft\app\base\Field;
 use craft\app\db\Query;
 use craft\app\elements\MatrixBlock;
 use craft\app\fields\Matrix as MatrixField;
@@ -210,9 +211,9 @@ class MatrixBlockQuery extends ElementQuery
         } else {
             $query = new Query();
             $this->typeId = $query
-                ->select('id')
-                ->from('{{%matrixblocktypes}}')
-                ->where(Db::parseParam('handle', $value, $query->params))
+                ->select(['id'])
+                ->from(['{{%matrixblocktypes}}'])
+                ->where(Db::parseParam('handle', $value))
                 ->column();
         }
 
@@ -248,9 +249,9 @@ class MatrixBlockQuery extends ElementQuery
 
         if (!$this->fieldId && $this->id && is_numeric($this->id)) {
             $this->fieldId = (new Query())
-                ->select('fieldId')
-                ->from('{{%matrixblocks}}')
-                ->where('id = :id', [':id' => $this->id])
+                ->select(['fieldId'])
+                ->from(['{{%matrixblocks}}'])
+                ->where(['id' => $this->id])
                 ->scalar();
         }
 
@@ -272,21 +273,49 @@ class MatrixBlockQuery extends ElementQuery
         ]);
 
         if ($this->fieldId) {
-            $this->subQuery->andWhere(Db::parseParam('matrixblocks.fieldId', $this->fieldId, $this->subQuery->params));
+            $this->subQuery->andWhere(Db::parseParam('matrixblocks.fieldId', $this->fieldId));
         }
 
         if ($this->ownerId) {
-            $this->subQuery->andWhere(Db::parseParam('matrixblocks.ownerId', $this->ownerId, $this->subQuery->params));
+            $this->subQuery->andWhere(Db::parseParam('matrixblocks.ownerId', $this->ownerId));
         }
 
         if ($this->ownerSiteId) {
-            $this->subQuery->andWhere(Db::parseParam('matrixblocks.ownerSiteId', $this->ownerSiteId, $this->subQuery->params));
+            $this->subQuery->andWhere(Db::parseParam('matrixblocks.ownerSiteId', $this->ownerSiteId));
         }
 
         if ($this->typeId) {
-            $this->subQuery->andWhere(Db::parseParam('matrixblocks.typeId', $this->typeId, $this->subQuery->params));
+            $this->subQuery->andWhere(Db::parseParam('matrixblocks.typeId', $this->typeId));
         }
 
         return parent::beforePrepare();
+    }
+
+    /**
+     * @inheritdoc
+     */
+    protected function customFields()
+    {
+        $blockTypes = Craft::$app->getMatrix()->getBlockTypesByFieldId($this->fieldId);
+
+        // Preload all of the fields up front to save ourselves some DB queries, and discard
+        $contexts = [];
+        foreach ($blockTypes as $blockType) {
+            $contexts[] = 'matrixBlockType:'.$blockType->id;
+        }
+        Craft::$app->getFields()->getAllFields(null, $contexts);
+
+        // Now assemble the actual fields list
+        $fields = [];
+        foreach ($blockTypes as $blockType) {
+            $fieldColumnPrefix = 'field_'.$blockType->handle.'_';
+            foreach ($blockType->getFields() as $field) {
+                /** @var Field $field */
+                $field->columnPrefix = $fieldColumnPrefix;
+                $fields[] = $field;
+            }
+        }
+
+        return $fields;
     }
 }

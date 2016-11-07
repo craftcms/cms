@@ -270,13 +270,9 @@ class Sections extends Component
         }
 
         // If we've already fetched all sections we can save ourselves a trip to the DB for section IDs that don't exist
-        if (!$this->_fetchedAllSections &&
-            (!isset($this->_sectionsById) || !array_key_exists($sectionId,
-                    $this->_sectionsById))
-        ) {
+        if (!$this->_fetchedAllSections && (!isset($this->_sectionsById) || !array_key_exists($sectionId, $this->_sectionsById))) {
             $result = $this->_createSectionQuery()
-                ->where('sections.id = :sectionId',
-                    [':sectionId' => $sectionId])
+                ->where(['sections.id' => $sectionId])
                 ->one();
 
             if ($result) {
@@ -305,8 +301,7 @@ class Sections extends Component
     public function getSectionByHandle($sectionHandle)
     {
         $result = $this->_createSectionQuery()
-            ->where('sections.handle = :sectionHandle',
-                [':sectionHandle' => $sectionHandle])
+            ->where(['sections.handle' => $sectionHandle])
             ->one();
 
         if ($result) {
@@ -339,11 +334,10 @@ class Sections extends Component
                 'sections_i18n.uriFormat',
                 'sections_i18n.template',
             ])
-            ->from('{{%sections_i18n}} sections_i18n')
-            ->innerJoin('{{%sites}} sites', 'sites.id = sections_i18n.siteId')
-            ->where('sections_i18n.sectionId = :sectionId',
-                [':sectionId' => $sectionId])
-            ->orderBy('sites.sortOrder')
+            ->from(['{{%sections_i18n}} sections_i18n'])
+            ->innerJoin('{{%sites}} sites', '[[sites.id]] = [[sections_i18n.siteId]]')
+            ->where(['sections_i18n.sectionId' => $sectionId])
+            ->orderBy(['sites.sortOrder' => SORT_ASC])
             ->indexBy($indexBy)
             ->all();
 
@@ -514,10 +508,9 @@ class Sections extends Component
             if (!$isNewSection) {
                 // Let's grab all of the entry type IDs to save ourselves a query down the road if this is a Single
                 $entryTypeIds = (new Query())
-                    ->select('id')
-                    ->from('{{%entrytypes}}')
-                    ->where('sectionId = :sectionId',
-                        [':sectionId' => $section->id])
+                    ->select(['id'])
+                    ->from(['{{%entrytypes}}'])
+                    ->where(['sectionId' => $section->id])
                     ->column();
 
                 if ($entryTypeIds) {
@@ -566,20 +559,27 @@ class Sections extends Component
                         }
 
                         // Make sure there's only one entry in this section
-                        $entryIds = (new Query())
-                            ->select('id')
-                            ->from('{{%entries}}')
-                            ->where('sectionId = :sectionId',
-                                [':sectionId' => $section->id])
-                            ->column();
+                        $results = (new Query())
+                            ->select([
+                                'id' => 'e.id',
+                                'siteId' => (new Query())
+                                    ->select('i18n.siteId')
+                                    ->from('{{%elements_i18n}} i18n')
+                                    ->where('[[i18n.elementId]] = [[e.id]]')
+                                    ->limit(1)
+                            ])
+                            ->from(['{{%entries}} e'])
+                            ->where(['e.sectionId' => $section->id])
+                            ->all();
 
-                        if ($entryIds) {
-                            $singleEntryId = array_shift($entryIds);
+                        if ($results) {
+                            $firstResult = array_shift($results);
+                            $singleEntryId = $firstResult['id'];
 
                             // If there are any more, get rid of them
-                            if ($entryIds) {
-                                foreach ($entryIds as $id) {
-                                    Craft::$app->getElements()->deleteElementById($id);
+                            if ($results) {
+                                foreach ($results as $result) {
+                                    Craft::$app->getElements()->deleteElementById($result['id'], Entry::class, $result['siteId']);
                                 }
                             }
 
@@ -623,7 +623,7 @@ class Sections extends Component
 
                     if (!$singleEntryId) {
                         // Create it
-                        $firstSiteSettings = ArrayHelper::getFirstValue($allSiteSettings);
+                        $firstSiteSettings = ArrayHelper::firstValue($allSiteSettings);
                         $singleEntry = new Entry();
                         $singleEntry->siteId = $firstSiteSettings->siteId;
                         $singleEntry->sectionId = $section->id;
@@ -641,7 +641,7 @@ class Sections extends Component
                         // Add all of the entries to the structure
                         /** @noinspection PhpUndefinedVariableInspection */
                         $query = Entry::find()
-                            ->siteId(ArrayHelper::getFirstKey($allOldSiteSettingsRecords))
+                            ->siteId(ArrayHelper::firstKey($allOldSiteSettingsRecords))
                             ->sectionId($section->id)
                             ->status(null)
                             ->enabledForSite(false)
@@ -743,9 +743,9 @@ class Sections extends Component
 
             // Delete the field layout(s)
             $fieldLayoutIds = (new Query())
-                ->select('fieldLayoutId')
-                ->from('{{%entrytypes}}')
-                ->where(['in', 'id', $entryTypeIds])
+                ->select(['fieldLayoutId'])
+                ->from(['{{%entrytypes}}'])
+                ->where(['id' => $entryTypeIds])
                 ->column();
 
             if ($fieldLayoutIds) {
@@ -765,8 +765,8 @@ class Sections extends Component
 
             // Delete the structure, if there is one
             $structureId = (new Query())
-                ->select('structureId')
-                ->from('{{%sections}}')
+                ->select(['structureId'])
+                ->from(['{{%sections}}'])
                 ->where(['id' => $section->id])
                 ->scalar();
 
@@ -841,7 +841,7 @@ class Sections extends Component
     {
         $entryTypeRecords = EntryTypeRecord::find()
             ->where(['sectionId' => $sectionId])
-            ->orderBy('sortOrder')
+            ->orderBy(['sortOrder' => SORT_ASC])
             ->indexBy($indexBy)
             ->all();
 
@@ -975,10 +975,9 @@ class Sections extends Component
 
             // Get the next biggest sort order
             $maxSortOrder = (new Query())
-                ->select('max(sortOrder)')
-                ->from('{{%entrytypes}}')
+                ->from(['{{%entrytypes}}'])
                 ->where(['sectionId' => $entryType->sectionId])
-                ->scalar();
+                ->max('[[sortOrder]]');
 
             $entryTypeRecord->sortOrder = $maxSortOrder ? $maxSortOrder + 1 : 1;
         }
@@ -1105,8 +1104,8 @@ class Sections extends Component
         try {
             // Delete the field layout
             $fieldLayoutId = (new Query())
-                ->select('fieldLayoutId')
-                ->from('{{%entrytypes}}')
+                ->select(['fieldLayoutId'])
+                ->from(['{{%entrytypes}}'])
                 ->where(['id' => $entryType->id])
                 ->scalar();
 
@@ -1156,9 +1155,17 @@ class Sections extends Component
     private function _createSectionQuery()
     {
         return (new Query())
-            ->select('sections.id, sections.structureId, sections.name, sections.handle, sections.type, sections.enableVersioning, structures.maxLevels')
-            ->leftJoin('{{%structures}} structures', 'structures.id = sections.structureId')
-            ->from('{{%sections}} sections')
-            ->orderBy('name');
+            ->select([
+                'sections.id',
+                'sections.structureId',
+                'sections.name',
+                'sections.handle',
+                'sections.type',
+                'sections.enableVersioning',
+                'structures.maxLevels',
+            ])
+            ->leftJoin('{{%structures}} structures', '[[structures.id]] = [[sections.structureId]]')
+            ->from(['{{%sections}} sections'])
+            ->orderBy(['name' => SORT_ASC]);
     }
 }
