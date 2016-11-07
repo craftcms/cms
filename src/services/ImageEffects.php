@@ -50,13 +50,17 @@ class ImageEffects extends Component
      */
     public function getAllFilterTypes()
     {
+        // TODO filters
+        return [];
+
         $imageFilters = [
             Sepia::className(),
             Grayscale::className(),
             Brightness::className()
         ];
 
-        foreach (Craft::$app->getPlugins()->call('getImageFilters', [], true) as $pluginFilters) {
+        // TODO filters
+       foreach (Craft::$app->getPlugins()->call('getImageFilters', [], true) as $pluginFilters) {
             $imageFilters = array_merge($imageFilters, $pluginFilters);
         }
 
