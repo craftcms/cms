@@ -42,8 +42,5 @@
             "type": "vcs",
             "url": "https://github.com/pixelandtonic/pel"
         }
-    ],
-    "config": {
-        "vendor-dir": "craft/app/vendor"
-    }
+    ]
 }
