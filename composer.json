@@ -42,5 +42,11 @@
             "type": "vcs",
             "url": "https://github.com/pixelandtonic/pel"
         }
-    ]
+    ],
+    "extra": {
+        "asset-installer-paths": {
+            "npm-asset-library": "vendor/npm",
+            "bower-asset-library": "vendor/bower"
+        }
+    }
 }
