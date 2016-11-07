@@ -2,27 +2,27 @@
     "homepage": "http://craftcms.com",
     "repositories": [
         {
-            "type": "git",
+            "type": "vcs",
             "url": "https://github.com/pixelandtonic/Imagine"
         },
         {
-            "type": "git",
+            "type": "vcs",
             "url": "https://github.com/pixelandtonic/Twig"
         },
         {
-            "type": "git",
+            "type": "vcs",
             "url": "https://github.com/pixelandtonic/guzzle3"
         },
         {
-            "type": "git",
+            "type": "vcs",
             "url": "https://github.com/pixelandtonic/simplepie"
         },
         {
-            "type": "git",
+            "type": "vcs",
             "url": "https://github.com/pixelandtonic/PHPMailer"
         },
         {
-            "type": "git",
+            "type": "vcs",
             "url": "https://github.com/pixelandtonic/pel"
         }
     ],
