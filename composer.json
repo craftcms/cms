@@ -1,0 +1,29 @@
+{
+    "name": "craftcms/craft-template",
+    "description": "Craft CMS Starter Template",
+    "keywords": ["craft", "cms", "craftcms", "project template"],
+    "homepage": "https://craftcms.com/",
+    "type": "project",
+    "support": {
+        "email": "support@craftcms.com",
+        "issues": "https://github.com/craftcms/craft/issues?state=open",
+        "forum": "https://craftcms.stackexchange.com/",
+        "source": "https://github.com/craftcms/craft",
+        "docs": "https://craftcms.com/docs",
+        "rss": "https://craftcms.com/changelog.rss"
+    },
+    "minimum-stability": "dev",
+    "require": {
+        "php": ">=5.6.0",
+        "craftcms/craft": "^3.0.0"
+    },
+    "repositories": [
+        {
+            "type": "git",
+            "url": "https://github.com/pixelandtonic/craft"
+        }
+    ],
+    "config": {
+        "vendor-dir": "craft/app/vendor"
+    }
+}
