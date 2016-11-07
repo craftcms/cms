@@ -15,12 +15,32 @@
     "minimum-stability": "dev",
     "require": {
         "php": ">=5.6.0",
-        "craftcms/craft": "^3.0.0"
+        "craftcms/craft": "dev-master"
     },
     "repositories": [
         {
-            "type": "git",
+            "type": "vcs",
             "url": "https://github.com/pixelandtonic/craft"
+        },
+        {
+            "type": "vcs",
+            "url": "https://github.com/pixelandtonic/flysystem-google-cloud"
+        },
+        {
+            "type": "vcs",
+            "url": "https://github.com/pixelandtonic/Twig"
+        },
+        {
+            "type": "vcs",
+            "url": "https://github.com/pixelandtonic/Imagine"
+        },
+        {
+            "type": "vcs",
+            "url": "https://github.com/pixelandtonic/simplepie"
+        },
+        {
+            "type": "vcs",
+            "url": "https://github.com/pixelandtonic/pel"
         }
     ],
     "config": {
