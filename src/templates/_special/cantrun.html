@@ -1,11 +1,11 @@
 {% extends "_layouts/message" %}
-{% set title = "Can’t run @@@appName@@@"|t %}
+{% set title = "Can’t run Craft CMS"|t %}
 
 {% block message %}
 	<h2>{{ title }} :(</h2>
 
 	{% if reqCheck.result == 'failed' %}
-		<p>{{ "Your server doesn’t meet the following requirements to run @@@appName@@@:"|t }}</p>
+		<p>{{ "Your server doesn’t meet the following requirements to run Craft CMS:"|t }}</p>
 
 		<ul class="bullets">
 			{% for req in reqCheck.requirements %}

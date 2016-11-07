@@ -92,7 +92,7 @@ class RequirementsChecker extends \CComponent
 	 */
 	private function _calculateServerInfo()
 	{
-		$info[] = '<a href="http://craftcms.com/">@@@appName@@@</a> ' .
+		$info[] = '<a href="http://craftcms.com/">Craft CMS</a> ' .
 			Craft::t('{version} build {build}', array(
 				'version' => CRAFT_VERSION,
 				'build'   => CRAFT_BUILD

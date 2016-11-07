@@ -130,7 +130,7 @@
 	<header id="global-sidebar">
 
 		{% if currentUser.admin and craft.config.devMode %}
-			<div id="devmode" title="{{ '@@@appName@@@ is running in Dev Mode.'|t }}"></div>
+			<div id="devmode" title="{{ 'Craft CMS is running in Dev Mode.'|t }}"></div>
 		{% endif %}
 
 		<div class="topbar">
@@ -376,7 +376,7 @@
 			{% endspaceless -%}
 
 			<ul>
-				<li>@@@appName@@@ {{ craft.app.getVersion() }}.{{ craft.app.getBuild() }}</li>
+				<li>Craft CMS {{ craft.app.getVersion() }}.{{ craft.app.getBuild() }}</li>
 				<li>© Pixel &amp; Tonic</li>
 				{% if currentUser.can('performUpdates') %}
 					<li><a id="footer-updates" href="{{ url('updates') }}">{{ craft.app.isUpdateInfoCached() and totalUpdates is defined and totalUpdates ? updateText : "Check for updates"|t }}</a></li>

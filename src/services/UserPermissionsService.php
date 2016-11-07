@@ -52,7 +52,7 @@ class UserPermissionsService extends BaseApplicationComponent
 						'label' => Craft::t('Access the CP when the system is off')
 					),
 					'performUpdates' => array(
-						'label' => Craft::t('Perform @@@appName@@@ and plugin updates')
+						'label' => Craft::t('Perform Craft CMS and plugin updates')
 					),
 				)
 			),

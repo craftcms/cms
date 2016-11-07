@@ -220,7 +220,7 @@ class WebApp extends \CWebApplication
 				$build = $this->getBuild();
 				$url = "https://download.craftcdn.com/craft/{$version}/{$version}.{$build}/Craft-{$version}.{$build}.zip";
 
-				throw new HttpException(200, Craft::t('@@@appName@@@ does not support backtracking to this version. Please upload @@@appName@@@ {url} or later.', array(
+				throw new HttpException(200, Craft::t('Craft CMS does not support backtracking to this version. Please upload Craft CMS {url} or later.', array(
 					'url' => '['.$build.']('.$url.')',
 				)));
 			}
@@ -899,7 +899,7 @@ class WebApp extends \CWebApplication
 			{
 				if ($this->updates->isBreakpointUpdateNeeded())
 				{
-					throw new HttpException(200, Craft::t('You need to be on at least @@@appName@@@ {url} before you can manually update to @@@appName@@@ {targetVersion} build {targetBuild}.', array(
+					throw new HttpException(200, Craft::t('You need to be on at least Craft CMS {url} before you can manually update to Craft CMS {targetVersion} build {targetBuild}.', array(
 						'url'           => '[build '.CRAFT_MIN_BUILD_REQUIRED.']('.CRAFT_MIN_BUILD_URL.')',
 						'targetVersion' => CRAFT_VERSION,
 						'targetBuild'   => CRAFT_BUILD
