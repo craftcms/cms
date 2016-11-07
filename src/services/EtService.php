@@ -16,16 +16,16 @@ class EtService extends BaseApplicationComponent
 	// Constants
 	// =========================================================================
 
-	const Ping              = '@@@elliottEndpointUrl@@@actions/elliott/app/ping';
-	const CheckForUpdates   = '@@@elliottEndpointUrl@@@actions/elliott/app/checkForUpdates';
-	const TransferLicense   = '@@@elliottEndpointUrl@@@actions/elliott/app/transferLicenseToCurrentDomain';
-	const GetUpgradeInfo    = '@@@elliottEndpointUrl@@@actions/elliott/app/getUpgradeInfo';
-	const GetCouponPrice    = '@@@elliottEndpointUrl@@@actions/elliott/app/getCouponPrice';
-	const PurchaseUpgrade   = '@@@elliottEndpointUrl@@@actions/elliott/app/purchaseUpgrade';
-	const GetUpdateFileInfo = '@@@elliottEndpointUrl@@@actions/elliott/app/getUpdateFileInfo';
-	const RegisterPlugin    = '@@@elliottEndpointUrl@@@actions/elliott/plugins/registerPlugin';
-	const UnregisterPlugin  = '@@@elliottEndpointUrl@@@actions/elliott/plugins/unregisterPlugin';
-	const TransferPlugin    = '@@@elliottEndpointUrl@@@actions/elliott/plugins/transferPlugin';
+    const ENDPOINT_PING = 'app/ping';
+    const ENDPOINT_CHECK_FOR_UPDATES = 'app/checkForUpdates';
+    const ENDPOINT_TRANSFER_LICENSE = 'app/transferLicenseToCurrentDomain';
+    const ENDPOINT_GET_UPGRADE_INFO = 'app/getUpgradeInfo';
+    const ENDPOINT_GET_COUPON_PRICE = 'app/getCouponPrice';
+    const ENDPOINT_PURCHASE_UPGRADE = 'app/purchaseUpgrade';
+    const ENDPOINT_GET_UPDATE_FILE_INFO = 'app/getUpdateFileInfo';
+    const ENDPOINT_REGISTER_PLUGIN = 'plugins/registerPlugin';
+    const ENDPOINT_UNREGISTER_PLUGIN = 'plugins/unregisterPlugin';
+    const ENDPOINT_TRANSFER_PLUGIN = 'plugins/transferPlugin';
 
 	// Public Methods
 	// =========================================================================
@@ -35,7 +35,7 @@ class EtService extends BaseApplicationComponent
 	 */
 	public function ping()
 	{
-		$et = new Et(static::Ping);
+		$et = $this->_createEt(static::ENDPOINT_PING);
 		$etResponse = $et->phoneHome();
 		return $etResponse;
 	}
@@ -49,7 +49,7 @@ class EtService extends BaseApplicationComponent
 	 */
 	public function checkForUpdates($updateInfo)
 	{
-		$et = new Et(static::CheckForUpdates);
+		$et = $this->_createEt(static::ENDPOINT_CHECK_FOR_UPDATES);
 		$et->setData($updateInfo);
 		$etResponse = $et->phoneHome();
 
@@ -98,7 +98,7 @@ class EtService extends BaseApplicationComponent
 	 */
 	public function getUpdateFileInfo($handle)
 	{
-		$et = new Et(static::GetUpdateFileInfo);
+		$et = $this->_createEt(static::ENDPOINT_GET_UPDATE_FILE_INFO);
 
 		if ($handle !== 'craft')
 		{
@@ -170,7 +170,7 @@ class EtService extends BaseApplicationComponent
 			$path = 'https://download.craftcdn.com/plugins/'.$handle.'/'.$latestVersion.'/'.$latestVersion.'.'.$latestBuild.'/Patch/'.$localVersion.'.'.$localBuild.'/'.$md5.'.zip';
 		}
 
-		$et = new Et($path, 240);
+		$et = $this->_createEt($path, 240);
 		$et->setDestinationFileName($downloadPath);
 
 		if (($fileName = $et->phoneHome()) !== null)
@@ -188,7 +188,7 @@ class EtService extends BaseApplicationComponent
 	 */
 	public function transferLicenseToCurrentDomain()
 	{
-		$et = new Et(static::TransferLicense);
+		$et = $this->_createEt(static::ENDPOINT_TRANSFER_LICENSE);
 		$etResponse = $et->phoneHome();
 
 		if (!empty($etResponse->data['success']))
@@ -231,7 +231,7 @@ class EtService extends BaseApplicationComponent
 	 */
 	public function fetchUpgradeInfo()
 	{
-		$et = new Et(static::GetUpgradeInfo);
+		$et = $this->_createEt(static::ENDPOINT_GET_UPGRADE_INFO);
 		$etResponse = $et->phoneHome();
 
 		if ($etResponse)
@@ -249,7 +249,7 @@ class EtService extends BaseApplicationComponent
 	 */
 	public function fetchCouponPrice($edition, $couponCode)
 	{
-		$et = new Et(static::GetCouponPrice);
+		$et = $this->_createEt(static::ENDPOINT_GET_COUPON_PRICE);
 		$et->setData(array('edition' => $edition, 'couponCode' => $couponCode));
 		$etResponse = $et->phoneHome();
 
@@ -267,7 +267,7 @@ class EtService extends BaseApplicationComponent
 	{
 		if ($model->validate())
 		{
-			$et = new Et(static::PurchaseUpgrade);
+			$et = $this->_createEt(static::ENDPOINT_PURCHASE_UPGRADE);
 			$et->setData($model);
 			$etResponse = $et->phoneHome();
 
@@ -329,7 +329,7 @@ class EtService extends BaseApplicationComponent
 	 */
 	public function registerPlugin($pluginHandle)
 	{
-		$et = new Et(static::RegisterPlugin);
+		$et = $this->_createEt(static::ENDPOINT_REGISTER_PLUGIN);
 		$et->setData(array(
 			'pluginHandle' => $pluginHandle
 		));
@@ -347,7 +347,7 @@ class EtService extends BaseApplicationComponent
 	 */
 	public function transferPlugin($pluginHandle)
 	{
-		$et = new Et(static::TransferPlugin);
+		$et = $this->_createEt(static::ENDPOINT_TRANSFER_PLUGIN);
 		$et->setData(array(
 			'pluginHandle' => $pluginHandle
 		));
@@ -365,7 +365,7 @@ class EtService extends BaseApplicationComponent
 	 */
 	public function unregisterPlugin($pluginHandle)
 	{
-		$et = new Et(static::UnregisterPlugin);
+		$et = $this->_createEt(static::ENDPOINT_UNREGISTER_PLUGIN);
 		$et->setData(array(
 			'pluginHandle' => $pluginHandle
 		));
@@ -427,4 +427,29 @@ class EtService extends BaseApplicationComponent
 			}
 		}
 	}
+
+    // Private Methods
+    // =========================================================================
+
+    /**
+     * Creates an Et worker set to a given endpoint.
+     *
+     * @param string $endpoint
+     *
+     * @return Et
+     */
+    private function _createEt($endpoint)
+    {
+        // Maybe this wan overridden for local testing
+        $baseUrl = craft()->config->get('elliottBaseUrl');
+
+        if ($baseUrl === null)
+        {
+            $baseUrl = 'https://elliott.craftcms.com/';
+        }
+
+        $url = $baseUrl.$endpoint;
+
+        return new Et($url);
+    }
 }
