@@ -1,4 +1,5 @@
 {
+    "name": "craftcms/craft",
     "homepage": "https://craftcms.com",
     "minimum-stability": "rc",
     "repositories": [
