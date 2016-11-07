@@ -4,23 +4,23 @@
     "minimum-stability": "rc",
     "repositories": [
         {
-            "type": "git",
+            "type": "vcs",
             "url": "https://github.com/pixelandtonic/flysystem-google-cloud"
         },
         {
-            "type": "git",
+            "type": "vcs",
             "url": "https://github.com/pixelandtonic/Twig"
         },
         {
-            "type": "git",
+            "type": "vcs",
             "url": "https://github.com/pixelandtonic/Imagine"
         },
         {
-            "type": "git",
+            "type": "vcs",
             "url": "https://github.com/pixelandtonic/simplepie"
         },
         {
-            "type": "git",
+            "type": "vcs",
             "url": "https://github.com/pixelandtonic/pel"
         }
     ],
