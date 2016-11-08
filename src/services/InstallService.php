@@ -379,7 +379,7 @@ class InstallService extends BaseApplicationComponent
 			'siteUrl'       => $inputs['siteUrl'],
 			'on'            => 1,
 			'maintenance'   => 0,
-			'track'         => '@@@track@@@',
+			'track'         => 'stable',
 		));
 
 		if (craft()->saveInfo($info))
