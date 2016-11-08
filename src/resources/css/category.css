@@ -1,0 +1,27 @@
+/* Flexbox stuff */
+/* Other */
+/* RTL stuff */
+body.ltr #locales { padding: 0 0 0 24px; }
+body.rtl #locales { padding: 0 24px 0 0; }
+
+#locales li { position: relative; }
+body.ltr #locales li { padding: 7px 45px 7px 0; }
+body.rtl #locales li { padding: 7px 0 7px 45px; }
+
+#locales li + li { border-top: 1px solid #e3e5e8; }
+
+#locales li.sel { color: #8f98a3; cursor: default; }
+
+#locales li.sel:before { font-size: 11px; color: #8f98a3 !important; font-family: 'Craft'; speak: none; -webkit-font-feature-settings: "liga", "dlig"; -moz-font-feature-settings: "liga=1, dlig=1"; -moz-font-feature-settings: "liga", "dlig"; -ms-font-feature-settings: "liga", "dlig"; -o-font-feature-settings: "liga", "dlig"; font-feature-settings: "liga", "dlig"; text-rendering: optimizeLegibility; font-weight: normal; font-variant: normal; text-transform: none; line-height: 1; direction: ltr; -webkit-font-smoothing: antialiased; -moz-osx-font-smoothing: grayscale; display: inline-block; text-align: center; font-style: normal; vertical-align: middle; word-wrap: normal !important; -webkit-user-select: none; -moz-user-select: none; -ms-user-select: none; content: 'check'; }
+body.ltr #locales li.sel:before { float: left; }
+body.rtl #locales li.sel:before { float: right; }
+body.ltr #locales li.sel:before { margin: 3px 0 0 -16px ; }
+body.rtl #locales li.sel:before { margin: 3px -16px 0 0 ; }
+
+#locales li a { color: #29323d; }
+
+#locales li a:hover { color: #0d78f2; cursor: pointer; }
+
+#settings .select, #settings .select select { width: 100%; }
+
+/*# sourceMappingURL=category.css.map */

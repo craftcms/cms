@@ -1,0 +1,22 @@
+/* Flexbox stuff */
+/* Other */
+/* RTL stuff */
+.toolhud .main { width: 200px; }
+
+.toolhud .main .form { display: block; position: relative; }
+
+.toolhud .main .form .buttons { text-align: center; }
+
+.toolhud .main .form .buttons .btn { float: none; display: inline-block; }
+
+.toolhud .main .progressbar { position: absolute; width: 132px; }
+body.ltr .toolhud .main .progressbar { left: 230px; }
+body.rtl .toolhud .main .progressbar { right: 230px; }
+
+.toolhud .main .alldone { position: absolute; width: 140px; font-size: 40px; line-height: 50px; text-align: center; }
+body.ltr .toolhud .main .alldone { left: 230px; }
+body.rtl .toolhud .main .alldone { right: 230px; }
+
+.confirmmodal .body { max-height: 200px; overflow: auto; }
+
+/*# sourceMappingURL=settings.css.map */

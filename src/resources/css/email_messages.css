@@ -1,0 +1,23 @@
+/* Flexbox stuff */
+/* Other */
+/* RTL stuff */
+.message { position: relative; cursor: pointer; }
+
+body.ltr .message:hover { padding-right: 26px; }
+body.rtl .message:hover { padding-left: 26px; }
+
+.message:hover:after { position: absolute; top: 18px; font-family: 'Craft'; speak: none; -webkit-font-feature-settings: "liga", "dlig"; -moz-font-feature-settings: "liga=1, dlig=1"; -moz-font-feature-settings: "liga", "dlig"; -ms-font-feature-settings: "liga", "dlig"; -o-font-feature-settings: "liga", "dlig"; font-feature-settings: "liga", "dlig"; text-rendering: optimizeLegibility; font-weight: normal; font-variant: normal; text-transform: none; line-height: 1; direction: ltr; -webkit-font-smoothing: antialiased; -moz-osx-font-smoothing: grayscale; display: inline-block; text-align: center; font-style: normal; vertical-align: middle; word-wrap: normal !important; -webkit-user-select: none; -moz-user-select: none; -ms-user-select: none; content: 'edit'; color: #0d78f2; }
+body.ltr .message:hover:after { right: 15px; }
+body.rtl .message:hover:after { left: 15px; }
+
+.message .subject { padding-bottom: 15px; border-bottom: 1px solid #dbdbdb; margin-bottom: 15px; }
+
+.message .body { font-size: 12px; line-height: 16px; font-family: Courier, monospace; color: #8f98a3; }
+
+.modal.message-settings { width: 500px; }
+
+.modal.message-settings .header .right { top: 12px; }
+
+.modal.message-settings .body { height: calc(100% - 136px); overflow: auto; }
+
+/*# sourceMappingURL=email_messages.css.map */

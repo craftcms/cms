@@ -1,0 +1,7 @@
+{
+"version": 3,
+"mappings": ";;;AAGA,eAAgB,GAAE,gBAAgB,EAAE,8BAA8B,EAAE,iBAAiB,EAAE,SAAS,EAAE,mBAAmB,EAAE,OAAO;;AAE9H,aAAc,GAAE,KAAK,EAAE,IAAI,EAAE,MAAM,EAAE,IAAI,EAAE,QAAQ,EAAE,IAAI;;AACzD,oBAAqB,GAAE,KAAK,ECOV,OAAmB;;ADLrC,8PAKA,GACC,eAAgB,GAAE,gBAAgB,EAAE,iCAAiC,EAAE,eAAe,EAAE,IAAI",
+"sources": ["../sass/deprecator.scss","../sass/_shared.scss"],
+"names": [],
+"file": "deprecator.css"
+}

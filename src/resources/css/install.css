@@ -1,0 +1,74 @@
+/* Flexbox stuff */
+/* Other */
+/* RTL stuff */
+html, body { height: 100%; }
+
+body { overflow: hidden; background: #fff; }
+
+#bg { position: fixed; top: 0; left: 0; width: 150%; height: 100%; background: url(../images/install_bg.jpg) no-repeat 0 50%; background-size: 100%; }
+
+.beginbtncontainer { position: absolute; top: 50%; margin-top: -15px; width: 100%; text-align: center; }
+
+#beginbtn { display: inline-block; border-radius: 4px; padding: 12px 15px; font-weight: bold; font-size: 19px; height: 42px; line-height: 18px; }
+
+.modal { display: none; position: absolute; top: 50%; left: 50%; margin: -255px 0 0 -385px; padding: 35px; width: 700px; height: 440px; background: #fff; -webkit-box-shadow: 0 0 0 1px rgba(0, 0, 0, 0.1), 0 10px 50px -10px #000; -moz-box-shadow: 0 0 0 1px rgba(0, 0, 0, 0.1), 0 10px 50px -10px #000; box-shadow: 0 0 0 1px rgba(0, 0, 0, 0.1), 0 10px 50px -10px #000; }
+
+h1 { margin-bottom: 35px; text-align: center; }
+
+.grid { margin-top: 35px; margin-bottom: 35px; }
+
+.buttons { position: absolute; bottom: 35px; }
+body.ltr .buttons { right: 35px; }
+body.rtl .buttons { left: 35px; }
+
+body.ltr #beginbtn, body.ltr .buttons .btn { padding-right: 10px; }
+body.rtl #beginbtn, body.rtl .buttons .btn { padding-left: 10px; }
+
+#beginbtn:after, .buttons .btn:after { font-family: 'Craft'; speak: none; -webkit-font-feature-settings: "liga", "dlig"; -moz-font-feature-settings: "liga=1, dlig=1"; -moz-font-feature-settings: "liga", "dlig"; -ms-font-feature-settings: "liga", "dlig"; -o-font-feature-settings: "liga", "dlig"; font-feature-settings: "liga", "dlig"; text-rendering: optimizeLegibility; font-weight: normal; font-variant: normal; text-transform: none; line-height: 1; direction: ltr; -webkit-font-smoothing: antialiased; -moz-osx-font-smoothing: grayscale; display: inline-block; text-align: center; font-style: normal; vertical-align: middle; word-wrap: normal !important; -webkit-user-select: none; -moz-user-select: none; -ms-user-select: none; font-size: 20px; width: 20px; height: 20px; line-height: 18px; }
+body.ltr #beginbtn:after, body.ltr .buttons .btn:after { margin: -2px 0 0 4px ; }
+body.rtl #beginbtn:after, body.rtl .buttons .btn:after { margin: -2px 4px 0 0 ; }
+body.ltr #beginbtn:after, body.ltr .buttons .btn:after { content: 'rarr'; }
+body.rtl #beginbtn:after, body.rtl .buttons .btn:after { content: 'larr'; }
+
+.buttons .btn.loading:after { content: '' !important; background: url(../images/spinner_submit.gif) no-repeat 0 0; }
+
+.dots { position: absolute; bottom: 10px; left: 50%; margin-left: -17px; }
+
+.dots div { border-radius: 4px; border: 1px solid rgba(0, 0, 0, 0.15); width: 6px; height: 6px; }
+body.ltr .dots div { float: left; }
+body.rtl .dots div { float: right; }
+
+body.ltr .dots div + div { margin-left: 5px; }
+body.rtl .dots div + div { margin-right: 5px; }
+
+.dots div.sel { border-color: #da5a47; background: #da5a47; }
+
+input.hidden { position: absolute; top: 100px; }
+
+#welcome { display: block; opacity: 0; }
+
+#welcome h1 { margin-top: 140px; }
+
+#welcome .buttons { position: static; margin-top: 0; text-align: center; }
+
+#accountform, #siteform { width: 50%; float: right; }
+
+#account, #site { background: #fff no-repeat 0 100%; }
+
+#account { background-image: url(../images/setup-screen-bgs/account.gif); }
+
+#site { background-image: url(../images/setup-screen-bgs/site.gif); }
+
+#welcome h1, #installing h1 { margin-top: 140px; }
+
+#installing #spinner { display: block; margin: 0 auto; }
+
+#welcome .buttons, #installing .buttons { position: static; margin: 0; text-align: center; }
+
+#installing .buttons .btn { margin: 0; float: none; }
+
+#siteform .select, #siteform .select select { width: 100%; }
+
+@media only screen and (-webkit-min-device-pixel-ratio: 1.5), only screen and (-moz-min-device-pixel-ratio: 1.5), only screen and (-o-min-device-pixel-ratio: 3 / 2), only screen and (min-device-pixel-ratio: 1.5), only screen and (min-resolution: 1.5dppx) { .buttons .btn.loading:after { background-image: url(../images/spinner_submit_2x.gif); background-size: 20px; } }
+
+/*# sourceMappingURL=install.css.map */

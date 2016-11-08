@@ -1,0 +1,74 @@
+/* Flexbox stuff */
+/* Other */
+/* RTL stuff */
+html, body { height: 100%; }
+
+#login-form { display: block; position: absolute; top: 50%; left: 50%; margin: -208px 0 0 -150px; width: 300px; background: no-repeat center top; }
+
+#login-form.has-logo { padding-top: 116px; }
+
+#login-form h1 { text-align: center; font-size: 3em; color: #29323d; word-wrap: break-word; }
+
+#login-form .field { margin: 0; }
+
+#login-form .btn { display: block; }
+
+#login-form .text:focus { position: relative; z-index: 1; }
+
+.passwordwrapper .password-toggle { z-index: 1; }
+
+#loginName { padding: 14px 16px; border-top-left-radius: 4px; border-top-right-radius: 4px; border-bottom-left-radius: 0; border-bottom-right-radius: 0; }
+
+#login-form.reset-password #loginName { border-bottom-left-radius: 4px; border-bottom-right-radius: 4px; }
+
+#password { margin-top: -1px; padding: 14px 5em 14px 16px; border-top-left-radius: 0; border-top-right-radius: 0; border-bottom-left-radius: 4px; border-bottom-right-radius: 4px; }
+
+#password-field .passwordwrapper .password-toggle { top: 14px; }
+body.ltr #password-field .passwordwrapper .password-toggle { right: 14px; }
+body.rtl #password-field .passwordwrapper .password-toggle { left: 14px; }
+
+#rememberMe-field { padding-top: 24px; }
+
+#forgot-password { position: relative; z-index: 1; display: block; font-style: normal; font-size: 11px; color: #8f98a3; margin-top: 24px; }
+body.ltr #forgot-password { float: right; }
+body.rtl #forgot-password { float: left; }
+
+#forgot-password:hover { color: #0d78f2; text-decoration: none; }
+
+#login-form .buttons { position: relative; text-align: center; }
+
+#login-form #ssl-icon { position: absolute; top: 0; z-index: 1; line-height: 30px; width: 2.2em; color: #fff; text-align: center; cursor: pointer; }
+body.ltr #login-form #ssl-icon { left: 0; }
+body.rtl #login-form #ssl-icon { right: 0; }
+
+#login-form #ssl-icon.disabled { opacity: 0.75; cursor: default; }
+
+body.ltr #login-form #ssl-icon + #submit { padding-left: 2em; }
+body.rtl #login-form #ssl-icon + #submit { padding-right: 2em; }
+
+#login-form .submit { display: block; width: auto; float: none; padding: 14px 16px; height: auto; width: 100%; border-radius: 4px; }
+
+#login-form #submit.reset-password { margin-top: 24px; }
+
+#spinner { position: absolute; top: 58px; left: 50%; margin-left: -12px; }
+
+p.error { text-align: center; }
+
+#poweredby { display: block; text-align: center; margin-top: 70px; margin-bottom: 48px; opacity: .6; }
+
+#poweredby:hover { opacity: 0.8; }
+
+#poweredby:active { opacity: 1; }
+
+.modal.email-sent { width: 300px; }
+
+body.ltr .modal.email-sent .body { padding-left: 68px; }
+body.rtl .modal.email-sent .body { padding-right: 68px; }
+
+.modal.email-sent .body:before { font-family: 'Craft'; speak: none; -webkit-font-feature-settings: "liga", "dlig"; -moz-font-feature-settings: "liga=1, dlig=1"; -moz-font-feature-settings: "liga", "dlig"; -ms-font-feature-settings: "liga", "dlig"; -o-font-feature-settings: "liga", "dlig"; font-feature-settings: "liga", "dlig"; text-rendering: optimizeLegibility; font-weight: normal; font-variant: normal; text-transform: none; line-height: 1; direction: ltr; -webkit-font-smoothing: antialiased; -moz-osx-font-smoothing: grayscale; display: inline-block; text-align: center; font-style: normal; vertical-align: middle; word-wrap: normal !important; -webkit-user-select: none; -moz-user-select: none; -ms-user-select: none; display: block; position: absolute; top: 17px; top: 24px; content: 'mail'; font-size: 30px; color: #0d78f2; }
+body.ltr .modal.email-sent .body:before { left: 24px; }
+body.rtl .modal.email-sent .body:before { right: 24px; }
+
+@media only screen and (-webkit-min-device-pixel-ratio: 1.5), only screen and (-moz-min-device-pixel-ratio: 1.5), only screen and (-o-min-device-pixel-ratio: 3 / 2), only screen and (min-device-pixel-ratio: 1.5), only screen and (min-resolution: 1.5dppx) { #login-form { background-size: 202px; } }
+
+/*# sourceMappingURL=login.css.map */

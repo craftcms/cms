@@ -1,0 +1,24 @@
+/* Flexbox stuff */
+/* Other */
+/* RTL stuff */
+#plugins .plugin-infos { display: table; }
+
+#plugins .plugin-infos .icon, #plugins .plugin-infos .details { display: table-cell; }
+
+#plugins .plugin-infos .icon { vertical-align: top; padding-right: 12px; }
+
+#plugins .plugin-infos .icon a { display: block; line-height: 0; }
+
+#plugins .plugin-infos .icon img { width: 36px; }
+
+#plugins .plugin-infos .details { vertical-align: middle; }
+
+#plugins .plugin-infos .details .name .light { margin-left: 6px; }
+
+#plugins .plugin-infos .details .description { font-weight: normal; }
+
+#plugins:not(.collapsed) .plugin-infos .details { min-width: 150px; }
+
+#plugins:not(.collapsed) .status-cell { white-space: nowrap; }
+
+/*# sourceMappingURL=plugins.css.map */

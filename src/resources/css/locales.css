@@ -1,0 +1,26 @@
+/* Flexbox stuff */
+/* Other */
+/* RTL stuff */
+body.ltr #addlocale .text { padding-right: 30px; }
+body.rtl #addlocale .text { padding-left: 30px; }
+
+#addlocale .spinner { position: absolute; top: 0; }
+body.ltr #addlocale .spinner { right: 5px; }
+body.rtl #addlocale .spinner { left: 5px; }
+
+#confirmdeletemodal { max-width: 400px; }
+
+#confirmdeletemodal .options label { display: inline-block; line-height: 30px; }
+
+#confirmdeletemodal #transferselect { display: inline-block; vertical-align: middle; }
+body.ltr #confirmdeletemodal #transferselect { margin-left: 10px; }
+body.rtl #confirmdeletemodal #transferselect { margin-right: 10px; }
+
+body.ltr #confirmdeletemodal .buttons .spinner { float: right; }
+body.rtl #confirmdeletemodal .buttons .spinner { float: left; }
+body.ltr #confirmdeletemodal .buttons .spinner { margin-right: -20px; }
+body.rtl #confirmdeletemodal .buttons .spinner { margin-left: -20px; }
+body.ltr #confirmdeletemodal .buttons .spinner { margin-left: -4px; }
+body.rtl #confirmdeletemodal .buttons .spinner { margin-right: -4px; }
+
+/*# sourceMappingURL=locales.css.map */

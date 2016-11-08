@@ -1,0 +1,16 @@
+/* Flexbox stuff */
+/* Other */
+/* RTL stuff */
+div.cp-image div.cp-current-image { border-radius: 4px; width: 100px; height: 100px; background: no-repeat; -webkit-box-shadow: inset 0 0 0 1px rgba(0, 0, 20, 0.1); -moz-box-shadow: inset 0 0 0 1px rgba(0, 0, 20, 0.1); box-shadow: inset 0 0 0 1px rgba(0, 0, 20, 0.1); }
+
+div.cp-image div.cp-image-controls { margin-top: 10px; float: none; position: relative; }
+
+div.cp-image-controls .progress-shade { background: rgba(255, 255, 255, 0.8); width: 100%; height: 100%; position: absolute; top: 0; display: none; }
+body.ltr div.cp-image-controls .progress-shade { left: 0; }
+body.rtl div.cp-image-controls .progress-shade { right: 0; }
+
+div.cp-image-controls.uploading .progress-shade { display: block; }
+
+.cp-image-modal { width: 500px; }
+
+/*# sourceMappingURL=rebrand.css.map */

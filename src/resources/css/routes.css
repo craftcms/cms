@@ -1,0 +1,66 @@
+/* Flexbox stuff */
+/* Other */
+/* RTL stuff */
+#routes { margin: 0 1px 25px; }
+
+.route { background: #fff; -webkit-box-shadow: 0 0 0 1px #e3e5e8; -moz-box-shadow: 0 0 0 1px #e3e5e8; box-shadow: 0 0 0 1px #e3e5e8; position: relative; margin: 15px 0; padding: 0; border-radius: 2px; background-image: -webkit-linear-gradient(#fafafa, #f3f3f3); background-image: -moz-linear-gradient(#fafafa, #f3f3f3); background-image: -ms-linear-gradient(#fafafa, #f3f3f3); background-image: -o-linear-gradient(#fafafa, #f3f3f3); background-image: linear-gradient(#fafafa, #f3f3f3); cursor: pointer; }
+
+.route:hover:after { position: absolute; top: 9px; font-family: 'Craft'; speak: none; -webkit-font-feature-settings: "liga", "dlig"; -moz-font-feature-settings: "liga=1, dlig=1"; -moz-font-feature-settings: "liga", "dlig"; -ms-font-feature-settings: "liga", "dlig"; -o-font-feature-settings: "liga", "dlig"; font-feature-settings: "liga", "dlig"; text-rendering: optimizeLegibility; font-weight: normal; font-variant: normal; text-transform: none; line-height: 1; direction: ltr; -webkit-font-smoothing: antialiased; -moz-osx-font-smoothing: grayscale; display: inline-block; text-align: center; font-style: normal; vertical-align: middle; word-wrap: normal !important; -webkit-user-select: none; -moz-user-select: none; -ms-user-select: none; content: 'edit'; color: #0d78f2; }
+body.ltr .route:hover:after { right: 5px; }
+body.rtl .route:hover:after { left: 5px; }
+
+.route .url-container, .route .template { padding: 7px 14px; }
+
+.route .url-container { position: relative; color: #0d78f2; background: #fff; }
+body.ltr .route .url-container { margin-right: 20px; }
+body.rtl .route .url-container { margin-left: 20px; }
+body.ltr .route .url-container { padding-right: 10px; }
+body.rtl .route .url-container { padding-left: 10px; }
+body.ltr .route .url-container { border-radius: 2px 0 0 2px; }
+body.rtl .route .url-container { border-radius: 0 2px 2px 0; }
+body.ltr .route .url-container { float: left; }
+body.rtl .route .url-container { float: right; }
+
+.route .url-container:after { display: block; content: '.'; text-indent: -100%; overflow: hidden; position: absolute; top: 0; width: 15px; height: 32px; background-repeat: no-repeat; }
+body.ltr .route .url-container:after { right: -15px; }
+body.rtl .route .url-container:after { left: -15px; }
+body.ltr .route .url-container:after { background-image: url(../images/route-bg.png); }
+body.rtl .route .url-container:after { background-image: url(../images/route-bg_rtl.png); }
+
+.route .url-container .locale { display: inline-block; border-radius: 3px; padding: 1px 5px; background: #f0f2f4; -webkit-box-shadow: inset 0 0 0 1px rgba(0, 0, 0, 0.05); -moz-box-shadow: inset 0 0 0 1px rgba(0, 0, 0, 0.05); box-shadow: inset 0 0 0 1px rgba(0, 0, 0, 0.05); color: #8f98a3; }
+body.ltr .route .url-container .locale { margin: -1px 8px -1px 0 ; }
+body.rtl .route .url-container .locale { margin: -1px 0 -1px 8px ; }
+
+.route .url-container .url .token { margin: 0 2px; }
+
+.route .template { color: #8f98a3; }
+
+.route .template:before { font-family: 'Craft'; speak: none; -webkit-font-feature-settings: "liga", "dlig"; -moz-font-feature-settings: "liga=1, dlig=1"; -moz-font-feature-settings: "liga", "dlig"; -ms-font-feature-settings: "liga", "dlig"; -o-font-feature-settings: "liga", "dlig"; font-feature-settings: "liga", "dlig"; text-rendering: optimizeLegibility; font-weight: normal; font-variant: normal; text-transform: none; line-height: 1; direction: ltr; -webkit-font-smoothing: antialiased; -moz-osx-font-smoothing: grayscale; display: inline-block; text-align: center; font-style: normal; vertical-align: middle; word-wrap: normal !important; -webkit-user-select: none; -moz-user-select: none; -ms-user-select: none; content: 'template'; }
+body.ltr .route .template:before { margin: 0 5px 0 0 ; }
+body.rtl .route .template:before { margin: 0 0 0 5px ; }
+
+.modal.route-settings { width: 500px; }
+
+.modal.route-settings .body { height: calc(100% - 130px); overflow: auto; }
+
+.modal.route-settings .body .url { width: auto; padding-top: 0; padding-bottom: 0; cursor: text; }
+
+.modal.route-settings .body .url .token { cursor: default; }
+
+.route-settings .url-tokens { margin-top: 10px; border-radius: 5px; padding: 15px 25px; background: #fafafa; -webkit-box-shadow: inset 0 0 0 1px rgba(0, 0, 0, 0.05), inset 0 1px 2px rgba(0, 0, 0, 0.1); -moz-box-shadow: inset 0 0 0 1px rgba(0, 0, 0, 0.05), inset 0 1px 2px rgba(0, 0, 0, 0.1); box-shadow: inset 0 0 0 1px rgba(0, 0, 0, 0.05), inset 0 1px 2px rgba(0, 0, 0, 0.1); }
+
+.route-settings .url-tokens h4 { margin-bottom: 5px; text-align: center; }
+
+.route-settings .url-tokens .token { cursor: pointer; }
+body.ltr .route-settings .url-tokens .token { margin: 5px 5px 0 0 ; }
+body.rtl .route-settings .url-tokens .token { margin: 5px 0 0 5px ; }
+
+.route-settings .delete { display: block; margin-top: 7px; color: #da5a47; }
+body.ltr .route-settings .delete { float: left; }
+body.rtl .route-settings .delete { float: right; }
+
+@media only screen and (-webkit-min-device-pixel-ratio: 1.5), only screen and (-moz-min-device-pixel-ratio: 1.5), only screen and (-o-min-device-pixel-ratio: 3 / 2), only screen and (min-device-pixel-ratio: 1.5), only screen and (min-resolution: 1.5dppx) { .route .url-container:after { background-size: 15px 32px; }
+  body.ltr .route .url-container:after { background-image: url(../images/route-bg_2x.png); }
+  body.rtl .route .url-container:after { background-image: url(../images/route-bg_rtl_2x.png); } }
+
+/*# sourceMappingURL=routes.css.map */

@@ -1,0 +1,2 @@
+Craft.FeedWidget=Garnish.Base.extend({$widget:null,init:function(a,b,c){this.$widget=$("#widget"+a),this.$widget.addClass("loading");var d={url:b,limit:c};Craft.postActionRequest("dashboard/getFeedItems",d,$.proxy(function(a,b){if(this.$widget.removeClass("loading"),"success"==b)for(var c=this.$widget.find("td"),d=0;d<a.items.length;d++){var e=a.items[d],f=$(c[d]),g='<a href="'+e.permalink+'" target="_blank">'+e.title+"</a> ";e.date&&(g+='<span class="light nowrap">'+e.date+"</span>"),f.html(g)}},this))}});
+//# sourceMappingURL=FeedWidget.js.map

@@ -1,0 +1,21 @@
+/* Flexbox stuff */
+/* Other */
+/* RTL stuff */
+#mode:after { content: '.'; display: block; height: 0; clear: both; visibility: hidden; }
+
+#mode label { display: block; margin-top: -1px; width: 113px; padding-top: 85px; text-align: center; background: no-repeat 50% 0; }
+body.ltr #mode label { float: left; }
+body.rtl #mode label { float: right; }
+
+#mode label#mode-crop { background-image: url(../images/transforms/crop.jpg); }
+
+#mode label#mode-fit { background-image: url(../images/transforms/fit.jpg); }
+
+#mode label#mode-stretch { background-image: url(../images/transforms/stretch.jpg); }
+
+@media only screen and (-webkit-min-device-pixel-ratio: 1.5), only screen and (-moz-min-device-pixel-ratio: 1.5), only screen and (-o-min-device-pixel-ratio: 3 / 2), only screen and (min-device-pixel-ratio: 1.5), only screen and (min-resolution: 1.5dppx) { #mode label { background-size: 113px; }
+  #mode label#mode-crop { background-image: url(../images/transforms/crop_2x.jpg); }
+  #mode label#mode-fit { background-image: url(../images/transforms/fit_2x.jpg); }
+  #mode label#mode-stretch { background-image: url(../images/transforms/stretch_2x.jpg); } }
+
+/*# sourceMappingURL=transforms.css.map */
