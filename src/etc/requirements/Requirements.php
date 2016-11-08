@@ -21,7 +21,7 @@ class Requirements
 	 */
 	public static function getRequirements()
 	{
-		$requiredMysqlVersion = '@@@requiredMySQLVersion@@@';
+		$requiredMysqlVersion = '5.1.0';
 
 		return array(
 			new PhpVersionRequirement(),
@@ -377,7 +377,7 @@ class PhpVersionRequirement extends Requirement
 	// Constants
 	// =========================================================================
 
-	const REQUIRED_PHP_VERSION = '@@@requiredPHPVersion@@@';
+	const REQUIRED_PHP_VERSION = '5.3.0';
 
 	// Protected Methods
 	// =========================================================================
