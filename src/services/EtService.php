@@ -435,10 +435,11 @@ class EtService extends BaseApplicationComponent
      * Creates an Et worker set to a given endpoint.
      *
      * @param string $endpoint
+     * @param int    $timeout
      *
      * @return Et
      */
-    private function _createEt($endpoint)
+    private function _createEt($endpoint, $timeout = 30)
     {
         // Maybe this wan overridden for local testing
         $baseUrl = craft()->config->get('elliottBaseUrl');
@@ -450,6 +451,6 @@ class EtService extends BaseApplicationComponent
 
         $url = $baseUrl.$endpoint;
 
-        return new Et($url);
+        return new Et($url, $timeout);
     }
 }
