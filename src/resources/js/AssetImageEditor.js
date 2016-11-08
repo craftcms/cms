@@ -703,13 +703,13 @@ Craft.AssetImageEditor = Garnish.Modal.extend(
 
 		applyCrop: function () {
 
-			var cropperWidth = this.clipper.width * this.lastValidCroppingScales.x;
-			var cropperHeight = this.clipper.height * this.lastValidCroppingScales.y;
+			var cropperWidth = this.clipper.width;
+			var cropperHeight = this.clipper.height;
 
 			// Compensate for frame stroke thickness
 			var cropperCenter = {
-				x: this.lastValidCroppingCoordinates.left + (cropperWidth / 2) + 2,
-				y: this.lastValidCroppingCoordinates.top + (cropperHeight / 2) + 2,
+				x: this.cropper.left + (cropperWidth / 2) + 2,
+				y: this.cropper.top + (cropperHeight / 2) + 2,
 			};
 
 
@@ -868,8 +868,7 @@ Craft.AssetImageEditor = Garnish.Modal.extend(
 			this.cropper = new fabric.Group(croppingGroup,
 				{
 					left: Math.round(this.editorWidth / 2 - rectWidth / 2) - strokeThickness,
-					top: Math.round(this.editorHeight / 2 - rectHeight / 2) - strokeThickness,
-					hoverCursor: 'move'
+					top: Math.round(this.editorHeight / 2 - rectHeight / 2) - strokeThickness
 				}
 			);
 
@@ -881,11 +880,6 @@ Craft.AssetImageEditor = Garnish.Modal.extend(
 				hasControls: false,
 				selectable: false,
 			});
-
-			this.lastValidCroppingScales = {
-				x: 1,
-				y: 1
-			};
 
 			this._setTiltedVerticeCoordinates();
 
