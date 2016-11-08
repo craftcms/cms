@@ -181,12 +181,6 @@ class DeprecatorService extends BaseApplicationComponent
 		$log->class  = !empty($traces[1]['class'])    ? $traces[1]['class']    : null;
 		$log->method = !empty($traces[1]['function']) ? $traces[1]['function'] : null;
 
-		/* HIDE */
-		$foundPlugin = false;
-		$pluginsPath = realpath(craft()->path->getPluginsPath()).'/';
-		$pluginsPathLength = strlen($pluginsPath);
-		/* end HIDE */
-
 		$isTemplateRendering = (craft()->request->isSiteRequest() && craft()->templates->isRendering());
 
 		if ($isTemplateRendering)
@@ -240,46 +234,7 @@ class DeprecatorService extends BaseApplicationComponent
 						break;
 					}
 				}
-
-				/* HIDE */
-				if ($isTemplateRendering && !$foundTemplate)
-				{
-					// Is this a plugin's template?
-					if (!$foundPlugin && craft()->request->isCpRequest() && $logTrace['template'])
-					{
-						$firstSeg = array_shift(explode('/', $logTrace['template']));
-
-						if (craft()->plugins->getPlugin($firstSeg))
-						{
-							$log->plugin = $firstSeg;
-							$foundPlugin = true;
-						}
-					}
-
-					$foundTemplate = true;
-				}
-				/* end HIDE */
 			}
-
-			/* HIDE */
-			// Is this a plugin's file?
-			else if (!$foundPlugin && $logTrace['file'])
-			{
-				$filePath = realpath($logTrace['file']).'/';
-
-				if (strncmp($pluginsPath, $logTrace['file'], $pluginsPathLength) === 0)
-				{
-					$remainingFilePath = substr($filePath, $pluginsPathLength);
-					$firstSeg = array_shift(explode('/', $remainingFilePath));
-
-					if (craft()->plugins->getPlugin($firstSeg))
-					{
-						$log->plugin = $firstSeg;
-						$foundPlugin = true;
-					}
-				}
-			}
-			/* end HIDE */
 
 			$logTraces[] = $logTrace;
 		}
