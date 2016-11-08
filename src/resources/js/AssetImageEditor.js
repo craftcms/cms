@@ -930,7 +930,7 @@ Craft.AssetImageEditor = Garnish.Modal.extend(
 		_handleCropperDrag: function (options) {
 			var deltaX = options.e.pageX - this.previousMouseX;
 			var deltaY = options.e.pageY - this.previousMouseY;
-			var vertices = this._getFabricObjectVertices(this.cropper, deltaX, deltaY);
+			var vertices = this._getCropperVertices(this.cropper, deltaX, deltaY);
 
 			if (!this.arePointsInsideRectangle(vertices, this.tiltedImageVerticeCoords)) {
 				return;
@@ -959,7 +959,7 @@ Craft.AssetImageEditor = Garnish.Modal.extend(
 			return true;
 		},
 
-		_getFabricObjectVertices(fabricObject, offsetX, offsetY) {
+		_getCropperVertices(fabricObject, offsetX, offsetY) {
 			if (typeof offsetX == typeof undefined) {
 				offsetX = 0;
 			}
@@ -967,9 +967,9 @@ Craft.AssetImageEditor = Garnish.Modal.extend(
 				offsetY = 0;
 			}
 
-			var topLeft = {x: fabricObject.left + offsetX, y: fabricObject.top + offsetY};
-			var topRight = {x: topLeft.x + fabricObject.width, y: topLeft.y};
-			var bottomRight = {x: topRight.x, y: topRight.y + fabricObject.height};
+			var topLeft = {x: fabricObject.left + offsetX + this.settings.cropperBorderThickness, y: fabricObject.top + offsetY + this.settings.cropperBorderThickness};
+			var topRight = {x: topLeft.x + fabricObject.width - this.settings.cropperBorderThickness*2, y: topLeft.y};
+			var bottomRight = {x: topRight.x, y: topRight.y + fabricObject.height - this.settings.cropperBorderThickness*2};
 			var bottomLeft = {x: topLeft.x, y: bottomRight.y};
 
 			return [topLeft, topRight, bottomRight, bottomLeft];
