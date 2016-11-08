@@ -1,6 +1,16 @@
 <?php
 
-$configPath = dirname(__FILE__).'/../config/console.php';
+// We're already in the app/etc/console/ folder, so let's use that as the starting point. Make sure it doesn't look like we're on a
+// network share that starts with \\
+$appPath = realpath(dirname(dirname(dirname(__FILE__))));
+
+if (isset($appPath[0]) && isset($appPath[1]))
+{
+    if ($appPath[0] !== '\\' && $appPath[1] !== '\\')
+    {
+        $appPath = str_replace('\\', '/', $appPath);
+    }
+}
 
 $frontConfigPath = false;
 
@@ -19,46 +29,15 @@ if (isset($_SERVER['argv']))
 	}
 }
 
-defined('CRAFT_BASE_PATH')         || define('CRAFT_BASE_PATH', str_replace('\\', '/', realpath(dirname(__FILE__).'/../../../')).'/');
-defined('CRAFT_APP_PATH')          || define('CRAFT_APP_PATH',          CRAFT_BASE_PATH.'app/');
+defined('CRAFT_APP_PATH') || define('CRAFT_APP_PATH', $appPath.'/');
+defined('CRAFT_VENDOR_PATH') || define('CRAFT_VENDOR_PATH', CRAFT_APP_PATH.'vendor/');
+defined('CRAFT_FRAMEWORK_PATH') || define('CRAFT_FRAMEWORK_PATH', CRAFT_APP_PATH.'framework/');;
 
-if (!defined('CRAFT_VENDOR_PATH'))
-{
-    // Packager will put it in app/
-    if (is_dir(CRAFT_APP_PATH.'vendor'))
-    {
-        define('CRAFT_VENDOR_PATH', CRAFT_APP_PATH.'vendor/');
-    }
-    else
-    {
-        // Running from source, so vendor/ sits alongside cms/
-        define('CRAFT_VENDOR_PATH', dirname(CRAFT_APP_PATH).'/vendor/');
-    }
-}
+// The app/ folder goes inside craft/ by default, so work backwards from app/
+defined('CRAFT_BASE_PATH') || define('CRAFT_BASE_PATH', realpath(CRAFT_APP_PATH.'..').'/');
 
-if (!defined('CRAFT_FRAMEWORK_PATH'))
-{
-    // Packager will put it in app/
-    if (is_dir(CRAFT_APP_PATH.'framework'))
-    {
-        define('CRAFT_FRAMEWORK_PATH', CRAFT_APP_PATH.'framework/');
-    }
-    else
-    {
-        // Running from source, so it's still in the vendor folder
-        define('CRAFT_FRAMEWORK_PATH', CRAFT_VENDOR_PATH.'yiisoft/yii/framework/');
-    }
-}
-
-if ($frontConfigPath)
-{
-	defined('CRAFT_CONFIG_PATH')   || define('CRAFT_CONFIG_PATH',       $frontConfigPath);
-}
-else
-{
-	defined('CRAFT_CONFIG_PATH')   || define('CRAFT_CONFIG_PATH',       CRAFT_BASE_PATH.'config/');
-}
-
+// Everything else should be relative from craft/ by default
+defined('CRAFT_CONFIG_PATH')       || define('CRAFT_CONFIG_PATH',       ($frontConfigPath ?: CRAFT_BASE_PATH.'config/'));
 defined('CRAFT_PLUGINS_PATH')      || define('CRAFT_PLUGINS_PATH',      CRAFT_BASE_PATH.'plugins/');
 defined('CRAFT_STORAGE_PATH')      || define('CRAFT_STORAGE_PATH',      CRAFT_BASE_PATH.'storage/');
 defined('CRAFT_TEMPLATES_PATH')    || define('CRAFT_TEMPLATES_PATH',    CRAFT_BASE_PATH.'templates/');
@@ -103,6 +82,7 @@ require_once(CRAFT_APP_PATH.'framework/web/CHttpRequest.php');
 Yii::setPathOfAlias('app', CRAFT_APP_PATH);
 Yii::setPathOfAlias('plugins', CRAFT_PLUGINS_PATH);
 
+$configPath = dirname(__FILE__).'/../config/console.php';
 $app = Yii::createApplication('Craft\ConsoleApp', $configPath);
 $app->commandRunner->addCommands(Craft\Craft::getPathOfAlias('application.consolecommands.*'));
 

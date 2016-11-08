@@ -16,34 +16,8 @@ if (isset($appPath[0]) && isset($appPath[1]))
 }
 
 defined('CRAFT_APP_PATH') || define('CRAFT_APP_PATH', $appPath.'/');
-
-if (!defined('CRAFT_VENDOR_PATH'))
-{
-    // Packager will put it in app/
-    if (is_dir(CRAFT_APP_PATH.'vendor'))
-    {
-        define('CRAFT_VENDOR_PATH', CRAFT_APP_PATH.'vendor/');
-    }
-    else
-    {
-        // Running from source, so vendor/ sits alongside cms/
-        define('CRAFT_VENDOR_PATH', dirname(CRAFT_APP_PATH).'/vendor/');
-    }
-}
-
-if (!defined('CRAFT_FRAMEWORK_PATH'))
-{
-    // Packager will put it in app/
-    if (is_dir(CRAFT_APP_PATH.'framework'))
-    {
-        define('CRAFT_FRAMEWORK_PATH', CRAFT_APP_PATH.'framework/');
-    }
-    else
-    {
-        // Running from source, so it's still in the vendor folder
-        define('CRAFT_FRAMEWORK_PATH', CRAFT_VENDOR_PATH.'yiisoft/yii/framework/');
-    }
-}
+defined('CRAFT_VENDOR_PATH') || define('CRAFT_VENDOR_PATH', CRAFT_APP_PATH.'vendor/');
+defined('CRAFT_FRAMEWORK_PATH') || define('CRAFT_FRAMEWORK_PATH', CRAFT_APP_PATH.'framework/');;
 
 // The app/ folder goes inside craft/ by default, so work backwards from app/
 defined('CRAFT_BASE_PATH') || define('CRAFT_BASE_PATH', realpath(CRAFT_APP_PATH.'..').'/');
