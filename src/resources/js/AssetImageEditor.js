@@ -6,6 +6,7 @@
 // TODO: Smooth out the cropping constraints
 // TODO: UI
 // TODO: Handle modal resize
+// TODO: Maybe namespace all the attributes?
 
 Craft.AssetImageEditor = Garnish.Modal.extend(
 	{
@@ -18,6 +19,7 @@ Craft.AssetImageEditor = Garnish.Modal.extend(
 		$saveBtn: null,
 		$editorContainer: null,
 		$straighten: null,
+		$croppingCanvas: null,
 
 		// References and parameters
 		canvas: null,
@@ -34,11 +36,14 @@ Craft.AssetImageEditor = Garnish.Modal.extend(
 		cropper: null,
 		croppingShade: null,
 		tiltedImageVerticeCoords: null,
-		lastValidCroppingCoordinates: null,
-		lastValidCroppingScales: null,
-		lastMouseCoords: null,
 		isCroppingPerformed: false,
 		cropData: {},
+
+		// Cropping event-related references
+		draggingCropper: false,
+		scalingCropper: false,
+		previousMouseX: 0,
+		previousMouseY: 0,
 
 		// Filters
 		appliedFilter: null,
@@ -391,7 +396,7 @@ Craft.AssetImageEditor = Garnish.Modal.extend(
 			Craft.postActionRequest('assets/save-image', postData, $.proxy(function (data) {
 				this.$buttons.find('.btn').removeClass('disabled').end().find('.spinner').remove();
 				this.onSave();
-				this.hide();
+				//this.hide();
 			}, this));
 		},
 
@@ -803,6 +808,7 @@ Craft.AssetImageEditor = Garnish.Modal.extend(
 			var strokeThickness = this.settings.cropperBorderThickness;
 
 			this.croppingCanvas = new fabric.Canvas('cropping-canvas', {backgroundColor: 'rgba(0,0,0,0)', hoverCursor: 'default', selection: false});
+			this.$croppingCanvas = $('#cropping-canvas', this.$editorContainer);
 
 			this.croppingCanvas.setDimensions({
 				width: this.editorWidth,
@@ -873,11 +879,6 @@ Craft.AssetImageEditor = Garnish.Modal.extend(
 				hasBorders: false,
 				hasControls: false,
 				selectable: false,
-				borderOpacityWhenMoving: 1,
-				cornerColor: 'rgba(255,255,255,0.8)',
-				transparentCorners: false,
-				cornerSize: 10,
-				cornerStyle: 'circle'
 			});
 
 			this.lastValidCroppingScales = {
@@ -896,53 +897,81 @@ Craft.AssetImageEditor = Garnish.Modal.extend(
 
 		_handleMouseDown: function (options) {
 
+			if (this._cropperHitTest(options.e)) {
+				this.previousMouseX = options.e.pageX;
+				this.previousMouseY = options.e.pageY;
+
+				// Determine should we start dragging or cropping
+				this.draggingCropper = true;
+			}
 		},
+
 		_handleMouseMove: function (options) {
 
+			if (this.draggingCropper || this.scalingCropper) {
+				if (this.draggingCropper) {
+					this._handleCropperDrag(options);
+				} else {
+					this._handleCropperScale(options);
+				}
+
+				this.previousMouseX = options.e.pageX;
+				this.previousMouseY = options.e.pageY;
+				this.croppingCanvas.renderAll();
+			}
 		},
+
 		_handleMouseUp: function (options) {
-
+			this.draggingCropper = false;
+			this.scalingCropper = false;
 		},
 
+		_handleCropperDrag: function (options) {
+			var deltaX = options.e.pageX - this.previousMouseX;
+			var deltaY = options.e.pageY - this.previousMouseY;
+			var vertices = this._getFabricObjectVertices(this.cropper, deltaX, deltaY);
 
-		_validateCropperScaling: function (options) {
-			var cropper = options.target;
-			var cropperVertices = this._getFabricObjectVertices(cropper, this.settings.cropperBorderThickness);
-			var cropperDimensions = this._getFabricObjectDimensions(cropper);
-
-			var fitsTheImage = this.arePointsInsideRectangle(cropperVertices, this.tiltedImageVerticeCoords);
-			var bigEnough = cropperDimensions.w >= this.settings.minimumCropperSize.width && cropperDimensions.h >= this.settings.minimumCropperSize.height;
-
-			if (!(fitsTheImage && bigEnough)) {
-				cropper.set({
-					scaleX: this.lastValidCroppingScales.x,
-					scaleY: this.lastValidCroppingScales.y
-				});
+			if (!this.arePointsInsideRectangle(vertices, this.tiltedImageVerticeCoords)) {
+				return;
 			}
 
-			this.lastValidCroppingScales = {x: cropper.scaleX, y: cropper.scaleY};
+			this.cropper.set({
+				left: this.cropper.left + deltaX,
+				top: this.cropper.top + deltaY
+			});
 		},
 
-		_getFabricObjectVertices(fabricObject, strokeThickness) {
-			if (!strokeThickness) {
-				strokeThickness = 0;
+		_cropperHitTest(ev) {
+			var parentOffset = this.$croppingCanvas.offset()
+			var mouseX = ev.pageX - parentOffset.left;
+			var mouseY = ev.pageY - parentOffset.top;
+
+			var lb = this.cropper.left;
+			var rb = this.cropper.left + this.cropper.width;
+			var tb = this.cropper.top;
+			var bb = this.cropper.top + this.cropper.height;
+
+			if (!(mouseX >= lb && mouseX <= rb && mouseY >= tb && mouseY <= bb)) {
+				return false;
 			}
 
-			var cropperDimensions = this._getFabricObjectDimensions(fabricObject);
+			return true;
+		},
 
-			var topLeft = {x: Math.ceil(fabricObject.left) + strokeThickness, y: Math.ceil(fabricObject.top) + strokeThickness};
-			var topRight = {x: topLeft.x + cropperDimensions.w - strokeThickness*2, y: topLeft.y};
-			var bottomRight = {x: topRight.x, y: topRight.y + cropperDimensions.h - strokeThickness*2};
+		_getFabricObjectVertices(fabricObject, offsetX, offsetY) {
+			if (typeof offsetX == typeof undefined) {
+				offsetX = 0;
+			}
+			if (typeof offsetY == typeof undefined) {
+				offsetY = 0;
+			}
+
+			var topLeft = {x: fabricObject.left + offsetX, y: fabricObject.top + offsetY};
+			var topRight = {x: topLeft.x + fabricObject.width, y: topLeft.y};
+			var bottomRight = {x: topRight.x, y: topRight.y + fabricObject.height};
 			var bottomLeft = {x: topLeft.x, y: bottomRight.y};
 
 			return [topLeft, topRight, bottomRight, bottomLeft];
-		},
-
-		_getFabricObjectDimensions: function (fabricObject) {
-			return {
-				h: Math.floor(fabricObject.width * fabricObject.scaleX),
-				w: Math.floor(fabricObject.height * fabricObject.scaleY)
-			}
 		},
 
 		_setTiltedVerticeCoordinates: function () {
