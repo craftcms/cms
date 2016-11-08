@@ -4,6 +4,8 @@ namespace Craft;
 /**
  * Class BaseMigration
  *
+ * @property DbConnection $dbConnection The currently active database connection.
+ *
  * @author    Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @copyright Copyright (c) 2014, Pixel & Tonic, Inc.
  * @license   http://craftcms.com/license Craft License Agreement
