@@ -778,7 +778,7 @@ Craft.AssetIndex = Craft.BaseElementIndex.extend(
 			{
 				$parentSource.children('.toggle').click();
 			}
-		};
+		}
 
 		this.sourceSelect.selectItem($targetSource);
 
@@ -892,7 +892,7 @@ Craft.AssetIndex = Craft.BaseElementIndex.extend(
 				this.$includeSubfoldersContainer.velocity('stop');
 			}
 
-			var checked = this.getSelectedSourceState('includeSubfolders', false)
+			var checked = this.getSelectedSourceState('includeSubfolders', false);
 			this.$includeSubfoldersCheckbox.prop('checked', checked);
 
 			this.$includeSubfoldersContainer.velocity({
@@ -1082,7 +1082,7 @@ Craft.AssetIndex = Craft.BaseElementIndex.extend(
 			this._onUpdateElements(true, ev.newElements);
 		}, this));
 
-		this.base()
+		this.base();
 	},
 
 	_onUpdateElements: function(append, $newElements)
@@ -1223,10 +1223,12 @@ Craft.AssetIndex = Craft.BaseElementIndex.extend(
 	{
 		clearTimeout(this._expandDropTargetFolderTimeout);
 
+		var excluded;
+
 		// If a source ID is passed in, exclude its parents
 		if (dropTargetFolderId)
 		{
-			var excluded = this._getSourceByFolderId(dropTargetFolderId).parents('li').children('a');
+			excluded = this._getSourceByFolderId(dropTargetFolderId).parents('li').children('a');
 		}
 
 		for (var i = this._tempExpandedFolders.length-1; i >= 0; i--)
@@ -1345,7 +1347,7 @@ Craft.AssetIndex = Craft.BaseElementIndex.extend(
 		{
 			var params = {
 				folderId: this._getFolderIdFromSourceKey($targetFolder.data('key'))
-			}
+			};
 
 			this.setIndexBusy();
 
@@ -1446,7 +1448,7 @@ Craft.AssetIndex = Craft.BaseElementIndex.extend(
 				folderInserted = true;
 				break;
 			}
-		};
+		}
 
 		if (!folderInserted)
 		{

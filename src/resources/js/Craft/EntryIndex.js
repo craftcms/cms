@@ -53,14 +53,16 @@ Craft.EntryIndex = Craft.BaseElementIndex.extend(
 
 	onSelectSource: function()
 	{
+		var selectedSourceHandle;
+
 		// Get the handle of the selected source
 		if (this.$source.data('key') == 'singles')
 		{
-			var selectedSourceHandle = 'singles';
+			selectedSourceHandle = 'singles';
 		}
 		else
 		{
-			var selectedSourceHandle = this.$source.data('handle');
+			selectedSourceHandle = this.$source.data('handle');
 		}
 
 		// Update the New Entry button

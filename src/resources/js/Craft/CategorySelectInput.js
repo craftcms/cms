@@ -97,10 +97,12 @@ Craft.CategorySelectInput = Craft.BaseElementSelectInput.extend(
 
 	_animateCategoryAway: function($allCategories, i)
 	{
+		var callback;
+
 		// Is this the last one?
 		if (i == $allCategories.length - 1)
 		{
-			var callback = $.proxy(function()
+			callback = $.proxy(function()
 			{
 				var $li = $allCategories.first().parent().parent(),
 					$ul = $li.parent();

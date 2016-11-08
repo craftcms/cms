@@ -104,15 +104,17 @@ Craft.LivePreview = Garnish.Base.extend(
 
 	set editorWidth(width)
 	{
+		var inPx;
+
 		// Is this getting set in pixels?
 		if (width >= 1)
 		{
-			var inPx = width;
+			inPx = width;
 			width /= Garnish.$win.width();
 		}
 		else
 		{
-			var inPx = Math.round(width * Garnish.$win.width());
+			inPx = Math.round(width * Garnish.$win.width());
 		}
 
 		// Make sure it's no less than the minimum
@@ -152,7 +154,7 @@ Craft.LivePreview = Garnish.Base.extend(
 		if (!this.$editor)
 		{
 			this.$shade = $('<div class="modal-shade dark"/>').appendTo(Garnish.$bod).css('z-index', 2);
-			this.$editorContainer = $('<div class="lp-editor-container"/>').appendTo(Garnish.$bod)
+			this.$editorContainer = $('<div class="lp-editor-container"/>').appendTo(Garnish.$bod);
 			this.$editor = $('<div class="lp-editor"/>').appendTo(this.$editorContainer);
 			this.$iframeContainer = $('<div class="lp-iframe-container"/>').appendTo(Garnish.$bod);
 			this.$iframe = $('<iframe class="lp-iframe" frameborder="0"/>').appendTo(this.$iframeContainer);
@@ -460,7 +462,7 @@ Craft.LivePreview = Garnish.Base.extend(
 	}
 },
 {
-	defaultEditorWidth: .33,
+	defaultEditorWidth: 0.33,
 	minEditorWidthInPx: 320,
 	dragHandleWidth: 4,
 

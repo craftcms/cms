@@ -134,7 +134,7 @@ Craft.RichTextInput = Garnish.Base.extend(
 		return function() {
 			callback1.apply(this, arguments);
 			callback2.apply(this, arguments);
-		}
+		};
 	},
 
 	initRedactor: function()

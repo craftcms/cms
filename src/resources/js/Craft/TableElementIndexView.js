@@ -231,7 +231,7 @@ Craft.TableElementIndexView = Craft.BaseElementIndexView.extend(
 
 				if (this.structureTableSort)
 				{
-					this.structureTableSort.removeItems($nextRow)
+					this.structureTableSort.removeItems($nextRow);
 				}
 
 				this._totalVisible--;
@@ -311,7 +311,7 @@ Craft.TableElementIndexView = Craft.BaseElementIndexView.extend(
 
 							if (this.structureTableSort)
 							{
-								this.structureTableSort.removeItems($nextRows)
+								this.structureTableSort.removeItems($nextRows);
 							}
 
 							$nextRows.remove();

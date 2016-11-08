@@ -164,7 +164,7 @@ Craft.ElementEditor = Garnish.Base.extend(
 			$hudContents.find('.text:first').focus();
 
 			this.addListener(this.$cancelBtn, 'click', function() {
-				this.hud.hide()
+				this.hud.hide();
 			});
 		}
 	},

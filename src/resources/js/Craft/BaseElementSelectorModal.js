@@ -7,7 +7,6 @@ Craft.BaseElementSelectorModal = Garnish.Modal.extend(
 	elementIndex: null,
 
 	$body: null,
-	$selectBtn: null,
 	$sidebar: null,
 	$sources: null,
 	$sourceToggles: null,

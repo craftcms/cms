@@ -270,7 +270,7 @@ Craft.BaseElementIndex = Garnish.Base.extend(
 
 			this.updateElementsIfSearchTextChanged();
 
-		}, this))
+		}, this));
 
 		// Auto-focus the Search box
 		if (!Garnish.isMobileBrowser(true))
@@ -300,11 +300,12 @@ Craft.BaseElementIndex = Garnish.Base.extend(
 		// Select the initial source
 		// ---------------------------------------------------------------------
 
-		var sourceKey = this.getDefaultSourceKey();
+		var sourceKey = this.getDefaultSourceKey(),
+			$source;
 
 		if (sourceKey)
 		{
-			var $source = this.getSourceByKey(sourceKey);
+			$source = this.getSourceByKey(sourceKey);
 
 			if ($source)
 			{
@@ -317,7 +318,7 @@ Craft.BaseElementIndex = Garnish.Base.extend(
 		if (!sourceKey || !$source)
 		{
 			// Select the first source by default
-			var $source = this.$sources.first();
+			$source = this.$sources.first();
 		}
 
 		if ($source.length)
@@ -627,7 +628,8 @@ Craft.BaseElementIndex = Garnish.Base.extend(
 		// Make sure something's selected
 		var selectedElementIds = this.view.getSelectedElementIds(),
 			totalSelected = selectedElementIds.length,
-			totalItems = this.view.getEnabledElements.length;
+			totalItems = this.view.getEnabledElements.length,
+			action;
 
 		if (totalSelected == 0)
 		{
@@ -639,7 +641,7 @@ Craft.BaseElementIndex = Garnish.Base.extend(
 		{
 			if (this.actions[i].handle == actionHandle)
 			{
-				var action = this.actions[i];
+				action = this.actions[i];
 				break;
 			}
 		}
@@ -1122,7 +1124,7 @@ Craft.BaseElementIndex = Garnish.Base.extend(
 
 	getElementById: function(id)
 	{
-		return this.view.getElementById(id)
+		return this.view.getElementById(id);
 	},
 
 	enableElementsById: function(ids)
@@ -1236,7 +1238,6 @@ Craft.BaseElementIndex = Garnish.Base.extend(
 		var modal = new Craft.CustomizeSourcesModal(this, {
 			onHide: function() {
 				modal.destroy();
-				delete modal;
 			}
 		});
 
@@ -1278,7 +1279,7 @@ Craft.BaseElementIndex = Garnish.Base.extend(
 
 	onAfterInit: function()
 	{
-		this.settings.onAfterInit()
+		this.settings.onAfterInit();
 		this.trigger('afterInit');
 	},
 
@@ -1655,13 +1656,16 @@ Craft.BaseElementIndex = Garnish.Base.extend(
 			}
 		}
 
+		var $btn;
+
 		if (safeMenuActions.length || destructiveMenuActions.length)
 		{
 			var $menuTrigger = $('<form/>'),
-				$btn = $('<div class="btn menubtn" data-icon="settings" title="'+Craft.t('Actions')+'"/>').appendTo($menuTrigger),
 				$menu = $('<ul class="menu"/>').appendTo($menuTrigger),
 				$safeList = this._createMenuTriggerList(safeMenuActions),
 				$destructiveList = this._createMenuTriggerList(destructiveMenuActions);
+
+			$btn = $('<div class="btn menubtn" data-icon="settings" title="'+Craft.t('Actions')+'"/>').appendTo($menuTrigger);
 
 			if ($safeList)
 			{
@@ -1694,7 +1698,7 @@ Craft.BaseElementIndex = Garnish.Base.extend(
 
 		this._$triggers.insertAfter(this.$selectAllContainer);
 		Craft.appendHeadHtml(this.actionsHeadHtml);
-		Craft.appendFootHtml(this.actionsFootHtml)
+		Craft.appendFootHtml(this.actionsFootHtml);
 
 		Craft.initUiElements(this._$triggers);
 

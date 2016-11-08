@@ -151,7 +151,7 @@ Craft.charts.BaseChart = Garnish.Base.extend(
 
     initLocale: function()
     {
-        var localeDefinition = window['d3_locale'];
+        var localeDefinition = window.d3_locale;
 
         if(this.settings.localeDefinition)
         {
@@ -210,15 +210,12 @@ Craft.charts.BaseChart = Garnish.Base.extend(
         {
             case 'year':
                 return locale.timeFormat('%Y');
-                break;
 
             case 'month':
                 return locale.timeFormat(this.settings.formats.shortDateFormats.month);
-                break;
 
             case 'hour':
                 return locale.timeFormat(this.settings.formats.shortDateFormats.month+" %H:00:00");
-                break;
 
             default:
                 return locale.timeFormat(this.settings.formats.shortDateFormats.day);
@@ -231,15 +228,12 @@ Craft.charts.BaseChart = Garnish.Base.extend(
         {
             case 'currency':
                 return locale.numberFormat(this.settings.formats.currencyFormat);
-                break;
 
             case 'percent':
                 return locale.numberFormat(this.settings.formats.percentFormat);
-                break;
 
             case 'time':
                 return Craft.charts.utils.getDuration;
-                break;
 
             default:
                 return locale.numberFormat("n");
@@ -596,7 +590,7 @@ Craft.charts.Area = Craft.charts.BaseChart.extend(
 
     xAxisTickInterval: function()
     {
-        var chartMargin = this.getChartMargin()
+        var chartMargin = this.getChartMargin();
 
         var outerTickSize = 6;
         var length = this.svg.select('.x path.domain').node().getTotalLength() - chartMargin.left - chartMargin.right - outerTickSize * 2;
@@ -663,14 +657,15 @@ Craft.charts.Area = Craft.charts.BaseChart.extend(
         var x = this.paddedX;
         var y = this.paddedY;
 
-        var chartMargin = this.getChartMargin()
+        var chartMargin = this.getChartMargin();
 
         var offset = 24;
         var top = (y(d[1]) - $tip.height() / 2);
+        var left;
 
         if(this.orientation != 'rtl')
         {
-            var left = (x(d[0]) + this.settings.margin.left + offset);
+            left = (x(d[0]) + this.settings.margin.left + offset);
 
             var calcLeft = (this.$chart.offset().left + left + $tip.width());
             var maxLeft = this.$chart.offset().left + this.$chart.width() - offset;
@@ -682,7 +677,7 @@ Craft.charts.Area = Craft.charts.BaseChart.extend(
         }
         else
         {
-            var left = (x(d[0]) - ($tip.width() + this.settings.margin.left + offset));
+            left = (x(d[0]) - ($tip.width() + this.settings.margin.left + offset));
         }
 
         if(left < 0)
@@ -874,7 +869,7 @@ Craft.charts.utils = {
         var feMerge = filter.append("feMerge");
 
         feMerge.append("feMergeNode")
-            .attr("in", "offsetBlur")
+            .attr("in", "offsetBlur");
         feMerge.append("feMergeNode")
             .attr("in", "SourceGraphic");
     }

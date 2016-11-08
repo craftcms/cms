@@ -449,7 +449,7 @@ Craft.Grid = Garnish.Base.extend(
 
 			Garnish.requestAnimationFrame($.proxy(function() {
 				this.refreshCols(force);
-			}, this))
+			}, this));
 		}
 	},
 

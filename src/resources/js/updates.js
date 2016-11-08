@@ -129,7 +129,8 @@ var Update = Garnish.Base.extend(
 
 	createDownloadButton: function()
 	{
-		var $buttonContainer = $('<div class="buttons right"/>').appendTo(this.$paneHeader);
+		var $buttonContainer = $('<div class="buttons right"/>').appendTo(this.$paneHeader),
+			$updateBtn;
 
 		// Is a manual update required?
 		if (this.manualUpdateRequired)
@@ -139,11 +140,12 @@ var Update = Garnish.Base.extend(
 		else
 		{
 			var $btnGroup = $('<div class="btngroup submit"/>').appendTo($buttonContainer),
-				$updateBtn = $('<div class="btn submit">'+Craft.t('Update')+'</div>').appendTo($btnGroup),
 				$menuBtn = $('<div class="btn submit menubtn"/>').appendTo($btnGroup),
 				$menu = $('<div class="menu" data-align="right"/>').appendTo($btnGroup),
 				$menuUl = $('<ul/>').appendTo($menu),
 				$downloadLi = $('<li/>').appendTo($menuUl);
+
+			$updateBtn = $('<div class="btn submit">'+Craft.t('Update')+'</div>').appendTo($btnGroup);
 
 			this.$downloadBtn = $('<a>'+Craft.t('Download')+'</a>').appendTo($downloadLi);
 
@@ -272,7 +274,7 @@ Release = Garnish.Base.extend(
 
 		if (this.releaseInfo.critical)
 		{
-			heading += ' <span class="critical">'+Craft.t('Critical')+'</span>'
+			heading += ' <span class="critical">'+Craft.t('Critical')+'</span>';
 		}
 
 		$('<h2/>', {html: heading}).appendTo(this.$container);

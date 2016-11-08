@@ -301,7 +301,7 @@ var RouteSettingsModal = Garnish.Modal.extend(
 
 			// Set the initial Template value
 			var templateVal = this.route.$template.text();
-			this.$templateInput.val(templateVal)
+			this.$templateInput.val(templateVal);
 		}
 		else
 		{
@@ -414,7 +414,7 @@ var RouteSettingsModal = Garnish.Modal.extend(
 			}
 		}
 
-		data['template'] = this.$templateInput.val();
+		data.template = this.$templateInput.val();
 
 		this.loading = true;
 		this.$saveBtn.addClass('active');
@@ -497,7 +497,7 @@ var RouteSettingsModal = Garnish.Modal.extend(
 			{
 				if (textStatus == 'success')
 				{
-					Craft.cp.displayNotice(Craft.t('Route deleted.'))
+					Craft.cp.displayNotice(Craft.t('Route deleted.'));
 				}
 			});
 

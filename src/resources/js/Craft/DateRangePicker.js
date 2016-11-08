@@ -267,7 +267,7 @@ Craft.DateRangePicker = Garnish.Base.extend(
             var $buttons = $('<div class="buttons" />').appendTo(this.$hudBody);
             this.$applyBtn = $('<input type="button" class="btn" value="'+Craft.t('Apply')+'" />').appendTo($buttons);
 
-            this.addListener(this.$applyBtn, 'click', 'applyCustomRange')
+            this.addListener(this.$applyBtn, 'click', 'applyCustomRange');
         }
         else
         {

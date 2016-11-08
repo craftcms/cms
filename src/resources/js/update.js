@@ -111,7 +111,7 @@ Craft.Updater = Garnish.Base.extend(
 				) +
 			'">' +
 				Craft.t('Send for help') +
-			'</a>'
+			'</a>';
 
 		this.updateStatus(errorText);
 	},

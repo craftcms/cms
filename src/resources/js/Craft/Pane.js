@@ -29,7 +29,7 @@ Craft.Pane = Garnish.Base.extend(
 
 		// Initialize the tabs
 		this.$tabsContainer = this.$pane.children('.tabs');
-		var $tabs = this.$tabsContainer.find('a')
+		var $tabs = this.$tabsContainer.find('a');
 
 		if ($tabs.length)
 		{

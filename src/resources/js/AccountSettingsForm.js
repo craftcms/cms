@@ -68,4 +68,4 @@ Craft.AccountSettingsForm = Garnish.Base.extend(
 });
 
 
-})(jQuery)
+})(jQuery);

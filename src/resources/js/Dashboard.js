@@ -95,7 +95,7 @@ Craft.Dashboard = Garnish.Base.extend(
         }
 
         var widget = new Craft.Widget($container, settingsHtml.replace(/__NAMESPACE__/g, settingsNamespace), function() {
-            eval(settingsJs)
+            eval(settingsJs);
         });
 
         // Append the new widget after the last one
@@ -433,7 +433,7 @@ Craft.Widget = Garnish.Base.extend(
 
             if (this.$settingsForm)
             {
-                this.$settingsForm.prepend('<input type="hidden" name="widgetId" value="'+this.id+'"/>')
+                this.$settingsForm.prepend('<input type="hidden" name="widgetId" value="'+this.id+'"/>');
             }
 
             // Store a reference to this object on the main Dashboard object, now that the widget actually exists
@@ -529,7 +529,7 @@ Craft.Widget = Garnish.Base.extend(
     {
         var typeName = this.getTypeInfo('name');
 
-        return this.title+(this.title != typeName ? ' <span class="light">('+typeName+')</span>' : '')
+        return this.title+(this.title != typeName ? ' <span class="light">('+typeName+')</span>' : '');
     },
 
     destroy: function()
@@ -678,4 +678,4 @@ Craft.WidgetColspanPicker = Garnish.Base.extend(
 });
 
 
-})(jQuery)
+})(jQuery);

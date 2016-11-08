@@ -130,7 +130,7 @@ var MessageSettingsModal = Garnish.Modal.extend(
 
 				setTimeout($.proxy(function() {
 					this.$subjectInput.focus();
-				}, this), 100)
+				}, this), 100);
 			}
 
 		}, this));

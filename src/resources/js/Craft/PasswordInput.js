@@ -117,10 +117,13 @@ Craft.PasswordInput = Garnish.Base.extend(
 		// Prevent focus change
 		ev.preventDefault();
 
+		var selectionStart,
+			selectionEnd;
+
 		if (this.$currentInput[0].setSelectionRange)
 		{
-			var selectionStart = this.$currentInput[0].selectionStart,
-				selectionEnd   = this.$currentInput[0].selectionEnd;
+			selectionStart = this.$currentInput[0].selectionStart;
+			selectionEnd   = this.$currentInput[0].selectionEnd;
 		}
 
 		this.togglePassword();

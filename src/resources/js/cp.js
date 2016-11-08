@@ -763,13 +763,15 @@ Craft.CP = Garnish.Base.extend(
 
 		if (info.total)
 		{
+			var updateText;
+
 			if (info.total == 1)
 			{
-				var updateText = Craft.t('1 update available');
+				updateText = Craft.t('1 update available');
 			}
 			else
 			{
-				var updateText = Craft.t('{num} updates available', { num: info.total });
+				updateText = Craft.t('{num} updates available', { num: info.total });
 			}
 
 			// Topbar badge
@@ -1221,7 +1223,7 @@ var TaskProgressHUD = Garnish.HUD.extend(
 			{
 				this.showTaskInfo(taskInfo);
 			}
-		}, this))
+		}, this));
 	},
 
 	showTaskInfo: function(taskInfo)
@@ -1342,7 +1344,7 @@ TaskProgressHUD.Task = Garnish.Base.extend(
 		if (this.level != 0)
 		{
 			this.$container.css('padding-'+Craft.left, 24+(this.level*24));
-			$('<div class="indent" data-icon="'+(Craft.orientation == 'ltr' ? 'rarr' : 'larr')+'"/>').appendTo(this.$descriptionContainer);;
+			$('<div class="indent" data-icon="'+(Craft.orientation == 'ltr' ? 'rarr' : 'larr')+'"/>').appendTo(this.$descriptionContainer);
 		}
 
 		this.updateStatus(info);
@@ -1457,7 +1459,7 @@ TaskProgressHUD.Task = Garnish.Base.extend(
 							this.hud.updateTasks();
 						}
 					}
-				}, this))
+				}, this));
 			}
 		}
 	},

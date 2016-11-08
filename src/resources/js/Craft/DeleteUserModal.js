@@ -48,9 +48,11 @@ Craft.DeleteUserModal = Garnish.Modal.extend(
 		this.$deleteSubmitBtn = $('<input type="submit" class="btn submit disabled" value="'+(Garnish.isArray(this.userId) ? Craft.t('Delete users') : Craft.t('Delete user'))+'" />').appendTo($buttons);
 		this.$deleteSpinner = $('<div class="spinner hidden"/>').appendTo($buttons);
 
+		var idParam;
+
 		if (Garnish.isArray(this.userId))
 		{
-			var idParam = ['and'];
+			idParam = ['and'];
 
 			for (var i = 0; i < this.userId.length; i++)
 			{
@@ -59,7 +61,7 @@ Craft.DeleteUserModal = Garnish.Modal.extend(
 		}
 		else
 		{
-			var idParam = 'not '+this.userId;
+			idParam = 'not '+this.userId;
 		}
 
 		this.userSelect = new Craft.BaseElementSelectInput({
@@ -114,11 +116,11 @@ Craft.DeleteUserModal = Garnish.Modal.extend(
 
 		if (validates)
 		{
-			this.$deleteSubmitBtn.removeClass('disabled')
+			this.$deleteSubmitBtn.removeClass('disabled');
 		}
 		else
 		{
-			this.$deleteSubmitBtn.addClass('disabled')
+			this.$deleteSubmitBtn.addClass('disabled');
 		}
 
 		return validates;
