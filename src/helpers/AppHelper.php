@@ -112,7 +112,8 @@ class AppHelper
 	 * Retrieves a PHP config setting that represents a filesize and normalizes it to bytes.
 	 *
 	 * @param string $var The PHP config setting to retrieve.
-	 * @param int The size in bytes.
+     *
+	 * @return int The size in bytes.
 	 */
 	public static function getPhpConfigValueInBytes($var)
 	{
