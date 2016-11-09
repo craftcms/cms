@@ -194,13 +194,38 @@ class Et
 				$client = new \Guzzle\Http\Client();
 				$client->setUserAgent($this->_userAgent, true);
 
+				// Maybe the base endpoint URL was overridden for local testing
+				$baseEndpointUrl = craft()->config->get('elliottBaseUrl');
+
+				if ($baseEndpointUrl === null)
+				{
+					$baseEndpointUrl = 'https://elliott.craftcms.com/actions/elliott/';
+				}
+
+				$endpointUrl = $baseEndpointUrl.$this->_endpoint;
+
 				$options = array(
 					'timeout'         => $this->getTimeout(),
 					'connect_timeout' => $this->getConnectTimeout(),
 					'allow_redirects' => $this->getAllowRedirects(),
 				);
 
-				$request = $client->post($this->_endpoint, null, null, $options);
+				// Add support for xdebug session cookies.
+				// If the request is coming from a different server than the xdebug client, xdebug should have the following config:
+				//     xdebug.remote_enable = 1
+				//     xdebug.remote_connect_back = 0
+				//     xdebug.remote_host = 192.168.X.Y
+				// The xdebug config is located at /etc/php5/fpm/conf.d/20-xdebug.ini in Homestead.
+				$xdebugSessionId = craft()->config->get('elliottXdebugSessionId');
+
+				if ($xdebugSessionId)
+				{
+					$options['cookies'] = array(
+						'XDEBUG_SESSION' => $xdebugSessionId,
+					);
+				}
+
+				$request = $client->post($endpointUrl, null, null, $options);
 				$request->setBody($data, 'application/json');
 
 				// Potentially long-running request, so close session to prevent session blocking on subsequent requests.
@@ -263,7 +288,7 @@ class Et
 					}
 					else
 					{
-						Craft::log('Error in calling '.$this->_endpoint.' Response: '.$response->getBody(), LogLevel::Warning);
+						Craft::log('Error in calling '.$endpointUrl.' Response: '.$response->getBody(), LogLevel::Warning);
 
 						if (craft()->cache->get('etConnectFailure'))
 						{
@@ -274,7 +299,7 @@ class Et
 				}
 				else
 				{
-					Craft::log('Error in calling '.$this->_endpoint.' Response: '.$response->getBody(), LogLevel::Warning);
+					Craft::log('Error in calling '.$endpointUrl.' Response: '.$response->getBody(), LogLevel::Warning);
 
 					if (craft()->cache->get('etConnectFailure'))
 					{

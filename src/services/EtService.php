@@ -35,7 +35,7 @@ class EtService extends BaseApplicationComponent
 	 */
 	public function ping()
 	{
-		$et = $this->_createEt(static::ENDPOINT_PING);
+		$et = new Et(static::ENDPOINT_PING);
 		$etResponse = $et->phoneHome();
 		return $etResponse;
 	}
@@ -49,7 +49,7 @@ class EtService extends BaseApplicationComponent
 	 */
 	public function checkForUpdates($updateInfo)
 	{
-		$et = $this->_createEt(static::ENDPOINT_CHECK_FOR_UPDATES);
+		$et = new Et(static::ENDPOINT_CHECK_FOR_UPDATES);
 		$et->setData($updateInfo);
 		$etResponse = $et->phoneHome();
 
@@ -98,7 +98,7 @@ class EtService extends BaseApplicationComponent
 	 */
 	public function getUpdateFileInfo($handle)
 	{
-		$et = $this->_createEt(static::ENDPOINT_GET_UPDATE_FILE_INFO);
+		$et = new Et(static::ENDPOINT_GET_UPDATE_FILE_INFO);
 
 		if ($handle !== 'craft')
 		{
@@ -170,7 +170,7 @@ class EtService extends BaseApplicationComponent
 			$path = 'https://download.craftcdn.com/plugins/'.$handle.'/'.$latestVersion.'/'.$latestVersion.'.'.$latestBuild.'/Patch/'.$localVersion.'.'.$localBuild.'/'.$md5.'.zip';
 		}
 
-		$et = $this->_createEt($path, 240);
+		$et = new Et($path, 240);
 		$et->setDestinationFileName($downloadPath);
 
 		if (($fileName = $et->phoneHome()) !== null)
@@ -188,7 +188,7 @@ class EtService extends BaseApplicationComponent
 	 */
 	public function transferLicenseToCurrentDomain()
 	{
-		$et = $this->_createEt(static::ENDPOINT_TRANSFER_LICENSE);
+		$et = new Et(static::ENDPOINT_TRANSFER_LICENSE);
 		$etResponse = $et->phoneHome();
 
 		if (!empty($etResponse->data['success']))
@@ -231,7 +231,7 @@ class EtService extends BaseApplicationComponent
 	 */
 	public function fetchUpgradeInfo()
 	{
-		$et = $this->_createEt(static::ENDPOINT_GET_UPGRADE_INFO);
+		$et = new Et(static::ENDPOINT_GET_UPGRADE_INFO);
 		$etResponse = $et->phoneHome();
 
 		if ($etResponse)
@@ -249,7 +249,7 @@ class EtService extends BaseApplicationComponent
 	 */
 	public function fetchCouponPrice($edition, $couponCode)
 	{
-		$et = $this->_createEt(static::ENDPOINT_GET_COUPON_PRICE);
+		$et = new Et(static::ENDPOINT_GET_COUPON_PRICE);
 		$et->setData(array('edition' => $edition, 'couponCode' => $couponCode));
 		$etResponse = $et->phoneHome();
 
@@ -267,7 +267,7 @@ class EtService extends BaseApplicationComponent
 	{
 		if ($model->validate())
 		{
-			$et = $this->_createEt(static::ENDPOINT_PURCHASE_UPGRADE);
+			$et = new Et(static::ENDPOINT_PURCHASE_UPGRADE);
 			$et->setData($model);
 			$etResponse = $et->phoneHome();
 
@@ -329,7 +329,7 @@ class EtService extends BaseApplicationComponent
 	 */
 	public function registerPlugin($pluginHandle)
 	{
-		$et = $this->_createEt(static::ENDPOINT_REGISTER_PLUGIN);
+		$et = new Et(static::ENDPOINT_REGISTER_PLUGIN);
 		$et->setData(array(
 			'pluginHandle' => $pluginHandle
 		));
@@ -347,7 +347,7 @@ class EtService extends BaseApplicationComponent
 	 */
 	public function transferPlugin($pluginHandle)
 	{
-		$et = $this->_createEt(static::ENDPOINT_TRANSFER_PLUGIN);
+		$et = new Et(static::ENDPOINT_TRANSFER_PLUGIN);
 		$et->setData(array(
 			'pluginHandle' => $pluginHandle
 		));
@@ -365,7 +365,7 @@ class EtService extends BaseApplicationComponent
 	 */
 	public function unregisterPlugin($pluginHandle)
 	{
-		$et = $this->_createEt(static::ENDPOINT_UNREGISTER_PLUGIN);
+		$et = new Et(static::ENDPOINT_UNREGISTER_PLUGIN);
 		$et->setData(array(
 			'pluginHandle' => $pluginHandle
 		));
@@ -427,30 +427,4 @@ class EtService extends BaseApplicationComponent
 			}
 		}
 	}
-
-    // Private Methods
-    // =========================================================================
-
-    /**
-     * Creates an Et worker set to a given endpoint.
-     *
-     * @param string $endpoint
-     * @param int    $timeout
-     *
-     * @return Et
-     */
-    private function _createEt($endpoint, $timeout = 30)
-    {
-        // Maybe this wan overridden for local testing
-        $baseUrl = craft()->config->get('elliottBaseUrl');
-
-        if ($baseUrl === null)
-        {
-            $baseUrl = 'https://elliott.craftcms.com/';
-        }
-
-        $url = $baseUrl.$endpoint;
-
-        return new Et($url, $timeout);
-    }
 }
