@@ -33,7 +33,8 @@ Craft.AssetImageEditor = Garnish.Modal.extend(
 		// Cropping references
 		croppingCanvas: null,
 		clipper: null,
-		cropper: null,
+		croppingRectangle: null,
+		cropperHandles: null,
 		croppingShade: null,
 		tiltedImageVerticeCoords: null,
 		isCroppingPerformed: false,
@@ -44,6 +45,7 @@ Craft.AssetImageEditor = Garnish.Modal.extend(
 		scalingCropper: false,
 		previousMouseX: 0,
 		previousMouseY: 0,
+		lockAspectRatio: false,
 
 		// Filters
 		appliedFilter: null,
@@ -270,6 +272,19 @@ Craft.AssetImageEditor = Garnish.Modal.extend(
 
 			this.addListener($('.btn.cancel', this.$buttons), 'click', $.proxy(this, 'hide'));
 			this.addListener($('.btn.save', this.$buttons), 'click', $.proxy(this, 'saveImage'));
+
+			this.addListener(Garnish.$doc, 'keydown', function (ev)
+			{
+				if (ev.keyCode == Garnish.SHIFT_KEY) {
+					this.lockAspectRatio = true;
+				}
+			}.bind(this));
+			this.addListener(Garnish.$doc, 'keyup', function (ev)
+			{
+				if (ev.keyCode == Garnish.SHIFT_KEY) {
+					this.lockAspectRatio = false;
+				}
+			}.bind(this));
 		},
 
 		/**
@@ -703,23 +718,23 @@ Craft.AssetImageEditor = Garnish.Modal.extend(
 
 		applyCrop: function () {
 
-			var cropperWidth = this.clipper.width;
-			var cropperHeight = this.clipper.height;
+			var clipperWidth = this.clipper.width;
+			var clipperHeight = this.clipper.height;
 
 			// Compensate for frame stroke thickness
-			var cropperCenter = {
-				x: this.cropper.left + (cropperWidth / 2) + 2,
-				y: this.cropper.top + (cropperHeight / 2) + 2,
+			var clipperCenter = {
+				x: this.clipper.left + (clipperWidth / 2) + 2,
+				y: this.clipper.top + (clipperHeight / 2) + 2,
 			};
 
 
-			var deltaX = cropperCenter.x - this.editorWidth / 2;
-			var deltaY = cropperCenter.y - this.editorHeight / 2;
+			var deltaX = clipperCenter.x - this.editorWidth / 2;
+			var deltaY = clipperCenter.y - this.editorHeight / 2;
 
 			// Morph the viewport to match the clipper
 			this.viewportMask.animate({
-				width: cropperWidth,
-				height: cropperHeight
+				width: clipperWidth,
+				height: clipperHeight
 			}, {
 				duration: this.settings.animationDuration
 			});
@@ -788,24 +803,37 @@ Craft.AssetImageEditor = Garnish.Modal.extend(
 		},
 
 		showCropper: function () {
-			if (!this.cropper) {
-				this._createCropper();
-			}
-
-			// Shade MUST be added first for masking purposes.
-			this.croppingCanvas.add(this.croppingShade);
-			this.croppingCanvas.add(this.cropper);
+			this._createCropper();
 		},
 
 		hideCropper: function () {
-			if (this.cropper) {
-				this.croppingCanvas.remove(this.cropper);
+			if (this.clipper) {
+				this.croppingCanvas.remove(this.clipper);
 				this.croppingCanvas.remove(this.croppingShade);
+				this.croppingCanvas.remove(this.cropperHandles);
+				this.croppingCanvas.remove(this.croppingRectangle);
+				this.croppingCanvas.off({
+					'mouse:down': this._handleMouseDown.bind(this),
+					'mouse:move': this._handleMouseMove.bind(this),
+					'mouse:up': this._handleMouseUp.bind(this)
+				});
 			}
 		},
 
 		_createCropper: function () {
 
+			this._drawCropper();
+			this._setTiltedVerticeCoordinates();
+			this._redrawCropperBoundaries();
+
+			this.croppingCanvas.on({
+				'mouse:down': this._handleMouseDown.bind(this),
+				'mouse:move': this._handleMouseMove.bind(this),
+				'mouse:up': this._handleMouseUp.bind(this)
+			});
+		},
+
+		_drawCropper: function () {
 			var strokeThickness = this.settings.cropperBorderThickness;
 
 			this.croppingCanvas = new fabric.Canvas('cropping-canvas', {backgroundColor: 'rgba(0,0,0,0)', hoverCursor: 'default', selection: false});
@@ -829,8 +857,7 @@ Craft.AssetImageEditor = Garnish.Modal.extend(
 			this.croppingShade.set({
 				hasBorders: false,
 				hasControls: false,
-				selectable: false,
-				lockRotation: true
+				selectable: false
 			});
 
 			// calculate the cropping rectangle size.
@@ -839,65 +866,90 @@ Craft.AssetImageEditor = Garnish.Modal.extend(
 				rectHeight = this.viewportHeight / rectangleRatio;
 
 			// Set up the cropping viewport rectangle.
-			var croppingGroup = [];
+			//var croppingGroup = [];
 			this.clipper = new fabric.Rect({
-				left: 0,
-				top: 0,
+				left: Math.round(this.editorWidth / 2 - rectWidth / 2) - strokeThickness,
+				top: Math.round(this.editorHeight / 2 - rectHeight / 2) - strokeThickness,
 				width: rectWidth,
 				height: rectHeight,
 				stroke: 'black',
 				fill: 'rgba(128,0,0,1)',
-				strokeWidth: 0
+				strokeWidth: 0,
+				hasBorders: false,
+				hasControls: false,
+				selectable: false
 			});
 
 			this.clipper.globalCompositeOperation = 'destination-out';
-			croppingGroup.push(this.clipper);
+			this.croppingCanvas.add(this.croppingShade);
+			this.croppingCanvas.add(this.clipper);
+		},
 
-			// Draw the cropping rectangle.
-			var rectangle = new fabric.Rect({
-				left: 0,
-				top: 0,
-				width: rectWidth - 1,
-				height: rectHeight - 1,
-				fill: 'rgba(0,0,0,0)',
-				stroke: 'rgba(255,255,255,0.8)',
-				strokeWidth: strokeThickness
-			});
-			croppingGroup.push(rectangle);
+		_redrawCropperBoundaries: function () {
+			if (this.cropperHandles) {
+				this.croppingCanvas.remove(this.cropperHandles);
+				this.croppingCanvas.remove(this.croppingRectangle);
+			}
 
-			this.cropper = new fabric.Group(croppingGroup,
-				{
-					left: Math.round(this.editorWidth / 2 - rectWidth / 2) - strokeThickness,
-					top: Math.round(this.editorHeight / 2 - rectHeight / 2) - strokeThickness
-				}
-			);
+			var lineOptions = {
+				strokeWidth: 2,
+				stroke: 'rgb(255,255,255)',
+				fill: false
+			};
 
-			this.cropper.set({
-				hasBorders: false,
-				lockRotation: true,
-				hasRotatingPoint: false,
+			var pathGroup = [];
+			var path = new fabric.Path('M 0,10 L 0,0 L 10,0');
+			path.set(lineOptions);
+			pathGroup.push(path);
+			var path = new fabric.Path('M '+(this.clipper.width-8)+',0 L '+(this.clipper.width+4)+',0 L '+(this.clipper.width+4)+',10');
+			path.set(lineOptions);
+			pathGroup.push(path);
+			var path = new fabric.Path('M '+(this.clipper.width+4)+','+(this.clipper.height-8)+' L'+(this.clipper.width+4)+','+(this.clipper.height+4)+' L '+(this.clipper.width-8)+','+(this.clipper.height+4));
+			path.set(lineOptions);
+			pathGroup.push(path);
+			var path = new fabric.Path('M 10,'+(this.clipper.height+4)+' L 0,'+(this.clipper.height+4)+' L 0,'+(this.clipper.height-8));
+			path.set(lineOptions);
+			pathGroup.push(path);
+
+			this.cropperHandles = new fabric.Group(pathGroup, {
+				left: this.clipper.left - 2,
+				top: this.clipper.top - 2,
 				hasBorders: false,
 				hasControls: false,
-				selectable: false,
+				selectable: false
 			});
 
-			this._setTiltedVerticeCoordinates();
 
-			this.croppingCanvas.on({
-				'mouse:down': this._handleMouseDown.bind(this),
-				'mouse:move': this._handleMouseMove.bind(this),
-				'mouse:up': this._handleMouseUp.bind(this),
+			this.croppingRectangle = new fabric.Rect({
+				left: this.clipper.left,
+				top: this.clipper.top,
+				width: this.clipper.width,
+				height: this.clipper.height,
+				fill: 'rgba(0,0,0,0)',
+				stroke: 'rgba(255,255,255,0.8)',
+				strokeWidth: 2,
+				hasBorders: false,
+				hasControls: false,
+				selectable: false
 			});
+
+			this.croppingCanvas.add(this.cropperHandles);
+			this.croppingCanvas.add(this.croppingRectangle);
+			this.croppingCanvas.renderAll();
 		},
 
 		_handleMouseDown: function (options) {
 
-			if (this._cropperHitTest(options.e)) {
+			var handle = this._cropperHandleHitTest(options.e);
+			var move = this._cropperHitTest(options.e);
+			if (handle || move) {
 				this.previousMouseX = options.e.pageX;
 				this.previousMouseY = options.e.pageY;
-
-				// Determine should we start dragging or cropping
-				this.draggingCropper = true;
+				if (handle) {
+					this.scalingCropper = handle;
+				} else if (move) {
+					this.draggingCropper = true;
+				}
 			}
 		},
 
@@ -912,7 +964,10 @@ Craft.AssetImageEditor = Garnish.Modal.extend(
 
 				this.previousMouseX = options.e.pageX;
 				this.previousMouseY = options.e.pageY;
+				this._redrawCropperBoundaries();
 				this.croppingCanvas.renderAll();
+			} else {
+				this._setMouseCursor(options.e);
 			}
 		},
 
@@ -924,16 +979,174 @@ Craft.AssetImageEditor = Garnish.Modal.extend(
 		_handleCropperDrag: function (options) {
 			var deltaX = options.e.pageX - this.previousMouseX;
 			var deltaY = options.e.pageY - this.previousMouseY;
-			var vertices = this._getCropperVertices(this.cropper, deltaX, deltaY);
+			var vertices = this._getRectangleVertices(this.clipper, deltaX, deltaY);
 
 			if (!this.arePointsInsideRectangle(vertices, this.tiltedImageVerticeCoords)) {
 				return;
 			}
 
-			this.cropper.set({
-				left: this.cropper.left + deltaX,
-				top: this.cropper.top + deltaY
+			this.clipper.set({
+				left: this.clipper.left + deltaX,
+				top: this.clipper.top + deltaY
 			});
+			this._redrawCropperBoundaries();
+		},
+
+		_handleCropperScale: function (options) {
+			var deltaX = options.e.pageX - this.previousMouseX;
+			var deltaY = options.e.pageY - this.previousMouseY;
+
+			// Lock the aspect ratio
+			if (this.lockAspectRatio &&
+				(this.scalingCropper == 'tl' || this.scalingCropper == 'tr' ||
+				this.scalingCropper == 'bl' || this.scalingCropper == 'br')
+			) {
+				if (Math.abs(deltaX) > Math.abs(deltaY)) {
+					var ratio = this.clipper.width / this.clipper.height;
+					deltaY = deltaX / ratio;
+					deltaY *= (this.scalingCropper == 'tr' || this.scalingCropper == 'bl') ? -1 : 1;
+				} else {
+					var ratio = this.clipper.width / this.clipper.height;
+					deltaX = deltaY * ratio;
+					deltaX *= (this.scalingCropper == 'tr' || this.scalingCropper == 'bl') ? -1 : 1;
+				}
+			}
+
+			var rectangle = {
+				left: this.clipper.left,
+				top: this.clipper.top,
+				width: this.clipper.width,
+				height: this.clipper.height
+			};
+
+			switch (this.scalingCropper) {
+				case 't':
+					rectangle.top += deltaY;
+					rectangle.height -= deltaY;
+					break;
+				case 'b':
+					rectangle.height += deltaY;
+					break;
+				case 'l':
+					rectangle.left += deltaX;
+					rectangle.width -= deltaX;
+					break;
+				case 'r':
+					rectangle.width += deltaX;
+					break;
+				case 'tl':
+					rectangle.top += deltaY;
+					rectangle.height -= deltaY;
+					rectangle.left += deltaX;
+					rectangle.width -= deltaX;
+					break;
+				case 'tr':
+					rectangle.top += deltaY;
+					rectangle.height -= deltaY;
+					rectangle.width += deltaX;
+					break;
+				case 'bl':
+					rectangle.height += deltaY;
+					rectangle.left += deltaX;
+					rectangle.width -= deltaX;
+					break;
+				case 'br':
+					rectangle.height += deltaY;
+					rectangle.width += deltaX;
+					break;
+			}
+
+			if (rectangle.height < 20 || rectangle.width < 20) {
+				return;
+			}
+
+			var vertices = this._getRectangleVertices(rectangle);
+
+			if (!this.arePointsInsideRectangle(vertices, this.tiltedImageVerticeCoords)) {
+				return;
+			}
+
+			this.clipper.set({
+				top: rectangle.top,
+				left: rectangle.left,
+				width: rectangle.width,
+				height: rectangle.height
+			});
+
+			this._redrawCropperBoundaries();
+			this.croppingCanvas.renderAll();
+
+		},
+
+		_setMouseCursor: function (ev) {
+			var cursor = 'default';
+			var handle = this._cropperHandleHitTest(ev);
+
+			if (handle) {
+				if (handle == 't' || handle == 'b') {
+					cursor = 'ns-resize';
+				} else if (handle == 'l' || handle == 'r') {
+					cursor = 'ew-resize';
+				} else if (handle == 'tl' || handle == 'br') {
+					cursor = 'nwse-resize';
+				} else if (handle == 'bl' || handle == 'tr') {
+					cursor = 'nesw-resize';
+				}
+			} else if (this._cropperHitTest(ev)) {
+				cursor = 'move';
+			}
+
+			$('.upper-canvas').css('cursor', cursor);
+		},
+
+		_cropperHandleHitTest: function (ev) {
+			var parentOffset = this.$croppingCanvas.offset()
+			var mouseX = ev.pageX - parentOffset.left;
+			var mouseY = ev.pageY - parentOffset.top;
+
+			var top = false;
+			var left = false;
+			var right = false;
+			var bottom = false;
+
+			var lb = this.clipper.left;
+			var rb = this.clipper.left + this.clipper.width;
+			var tb = this.clipper.top;
+			var bb = this.clipper.top + this.clipper.height;
+
+			// Left side
+			if (mouseX < lb + 10 && mouseX > lb - 3) {
+				if (mouseY < tb + 10 && mouseY > tb - 3) {
+					return 'tl';
+				} else if (mouseY < bb + 3 && mouseY > bb - 10) {
+					return 'bl';
+				}
+			}
+			// Right side
+			if (mouseX > rb - 13 && mouseX < rb + 3) {
+				if (mouseY < tb + 10 && mouseY > tb - 3) {
+					return 'tr';
+				} else if (mouseY < bb + 2 && mouseY > bb - 10) {
+					return 'br';
+				}
+			}
+			if (mouseX < lb + 3 && mouseX > lb - 3 && mouseY < bb - 10 && mouseY > tb + 10) {
+				return 'l';
+			}
+			if (mouseX < rb + 1 && mouseX > rb - 5 && mouseY < bb - 10 && mouseY > tb + 10) {
+				return 'r';
+			}
+
+			// Top
+			if (mouseY < tb + 4 && mouseY > tb - 2 && mouseX > lb + 10 && mouseX < rb - 10) {
+				return 't';
+			}
+			// Bottom
+			if (mouseY < bb + 2 && mouseY > bb - 4 && mouseX > lb + 10 && mouseX < rb - 10) {
+				return 'b';
+			}
+
+			return false;
 		},
 
 		_cropperHitTest(ev) {
@@ -941,10 +1154,10 @@ Craft.AssetImageEditor = Garnish.Modal.extend(
 			var mouseX = ev.pageX - parentOffset.left;
 			var mouseY = ev.pageY - parentOffset.top;
 
-			var lb = this.cropper.left;
-			var rb = this.cropper.left + this.cropper.width;
-			var tb = this.cropper.top;
-			var bb = this.cropper.top + this.cropper.height;
+			var lb = this.clipper.left;
+			var rb = this.clipper.left + this.clipper.width;
+			var tb = this.clipper.top;
+			var bb = this.clipper.top + this.clipper.height;
 
 			if (!(mouseX >= lb && mouseX <= rb && mouseY >= tb && mouseY <= bb)) {
 				return false;
@@ -953,7 +1166,7 @@ Craft.AssetImageEditor = Garnish.Modal.extend(
 			return true;
 		},
 
-		_getCropperVertices(fabricObject, offsetX, offsetY) {
+		_getRectangleVertices(rectangle, offsetX, offsetY) {
 			if (typeof offsetX == typeof undefined) {
 				offsetX = 0;
 			}
@@ -961,9 +1174,9 @@ Craft.AssetImageEditor = Garnish.Modal.extend(
 				offsetY = 0;
 			}
 
-			var topLeft = {x: fabricObject.left + offsetX + this.settings.cropperBorderThickness, y: fabricObject.top + offsetY + this.settings.cropperBorderThickness};
-			var topRight = {x: topLeft.x + fabricObject.width - this.settings.cropperBorderThickness*2, y: topLeft.y};
-			var bottomRight = {x: topRight.x, y: topRight.y + fabricObject.height - this.settings.cropperBorderThickness*2};
+			var topLeft = {x: rectangle.left + offsetX, y: rectangle.top + offsetY};
+			var topRight = {x: topLeft.x + rectangle.width, y: topLeft.y};
+			var bottomRight = {x: topRight.x, y: topRight.y + rectangle.height};
 			var bottomLeft = {x: topLeft.x, y: bottomRight.y};
 
 			return [topLeft, topRight, bottomRight, bottomLeft];
@@ -1000,7 +1213,8 @@ Craft.AssetImageEditor = Garnish.Modal.extend(
 
 		_destroyCropper: function () {
 			this.clipper = null;
-			this.cropper = null;
+			this.cropperHandles = null;
+			this.croppingRectangle = null;
 			this.croppingShade = null;
 			this.croppingCanvas = null;
 
@@ -1030,7 +1244,6 @@ Craft.AssetImageEditor = Garnish.Modal.extend(
 
 			for (var i = 0; i < points.length; i++) {
 				var point = points[i];
-
 
 				// Calculate the vectors for two rectangle sides and for
 				// the vector from vertices a and b to the point P
