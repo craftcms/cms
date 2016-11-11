@@ -1472,7 +1472,8 @@ body .redactor-editor ul { list-style-type: disc; }
 body .redactor-box textarea { border-top-left-radius: 0; border-top-right-radius: 0; @include box-sizing(border-box); }
 body #redactor-modal footer button:first-child { border-bottom-left-radius: $btnBorderRadius; }
 body #redactor-modal footer button:last-child { border-bottom-right-radius: $btnBorderRadius; }
-
+body .redactor-link-tooltip { z-index: 101; }
+body .redactor-toolbar { z-index: 102; }
 /**
  * Selects
  *
