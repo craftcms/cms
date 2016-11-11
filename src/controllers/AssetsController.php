@@ -651,7 +651,7 @@ class AssetsController extends Controller
             $filter->applyAndStore($imageCopy, $filterOptions);
         }
 
-        $imageSize = Image::getImageSize($imageCopy);
+        $imageSize = Image::imageSize($imageCopy);
 
         /**
          * @var Raster $image

@@ -754,29 +754,27 @@ Craft.AssetImageEditor = Garnish.Modal.extend(
 			this.hideCropper();
 
 			var cropperBorderThickness = this.settings.cropperBorderThickness;
-			// TODO send over crop data
-			/*
 			 // If the image has not been straightened, then we probably have some
 			 // space on top/bottom or left/right edges.
 			 if (this.imageStraightenAngle == 0) {
-			 var leftOffset = Math.round((this.editorWidth - this.image.width) / 2) - croppingRectangleBorderThickness;
-			 var topOffset = Math.round((this.editorHeight - this.image.height) / 2) - croppingRectangleBorderThickness;
+				 var leftOffset = Math.round((this.editorWidth - this.image.width) / 2);
+				 var topOffset = Math.round((this.editorHeight - this.image.height) / 2);
 			 } else {
-			 var leftOffset = -1 * croppingRectangleBorderThickness;
-			 var topOffset = -1 * croppingRectangleBorderThickness;
+			 	var leftOffset = 0;
+			 	var topOffset = 0;
 			 }
 
 			 // When passing along the coordinates, take into account the possible excess space on edge of editor
 			 this.cropData = {
-			 width: cropperWidth,
-			 height: cropperHeight,
-			 cornerLeft: Math.max(Math.round(this.lastValidCroppingCoordinates.left - leftOffset - this.tiltedImageVerticeCoords.c.x), 0),
-			 cornerTop: Math.max(Math.round(this.lastValidCroppingCoordinates.top - topOffset - this.tiltedImageVerticeCoords.d.y), 0),
-			 scaledWidth: this.image.width,
-			 scaledHeight: this.image.height,
-			 zoomRatio: this.getZoomToFitRatio()
+			 	width: this.clipper.width,
+			 	height: this.clipper.height,
+			 	cornerLeft: Math.max(Math.round(this.clipper.left - leftOffset - this.tiltedImageVerticeCoords.c.x), 0),
+			 	cornerTop: Math.max(Math.round(this.clipper.top - topOffset - this.tiltedImageVerticeCoords.d.y), 0),
+			 	scaledWidth: this.image.width,
+			 	scaledHeight: this.image.height,
+			 	zoomRatio: this.getZoomToFitRatio()
 			 }
-			 */
+
 			this.isCroppingPerformed = true;
 		},
 
