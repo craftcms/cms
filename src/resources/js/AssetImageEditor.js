@@ -803,7 +803,15 @@ Craft.AssetImageEditor = Garnish.Modal.extend(
 		},
 
 		showCropper: function () {
-			this._createCropper();
+			this._drawCropper();
+			this._setTiltedVerticeCoordinates();
+			this._redrawCropperBoundaries();
+
+			this.croppingCanvas.on({
+				'mouse:down': this._handleMouseDown.bind(this),
+				'mouse:move': this._handleMouseMove.bind(this),
+				'mouse:up': this._handleMouseUp.bind(this)
+			});
 		},
 
 		hideCropper: function () {
@@ -818,19 +826,6 @@ Craft.AssetImageEditor = Garnish.Modal.extend(
 					'mouse:up': this._handleMouseUp.bind(this)
 				});
 			}
-		},
-
-		_createCropper: function () {
-
-			this._drawCropper();
-			this._setTiltedVerticeCoordinates();
-			this._redrawCropperBoundaries();
-
-			this.croppingCanvas.on({
-				'mouse:down': this._handleMouseDown.bind(this),
-				'mouse:move': this._handleMouseMove.bind(this),
-				'mouse:up': this._handleMouseUp.bind(this)
-			});
 		},
 
 		_drawCropper: function () {
