@@ -370,7 +370,7 @@
 			{% endspaceless -%}
 
 			<ul>
-				<li>Craft CMS {{ craft.app.getVersion() }}.{{ craft.app.getBuild() }}</li>
+				<li>Craft CMS {{ craft.app.getVersion() }}</li>
 				<li>© Pixel &amp; Tonic</li>
 				{% if currentUser.can('performUpdates') %}
 					<li><a id="footer-updates" href="{{ url('updates') }}">{{ craft.app.isUpdateInfoCached() and totalUpdates is defined and totalUpdates ? updateText : "Check for updates"|t }}</a></li>

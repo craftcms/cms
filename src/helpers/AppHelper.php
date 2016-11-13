@@ -163,6 +163,34 @@ class AppHelper
 		return null;
 	}
 
+	/**
+	 * Returns the major and minor (X.Y) versions from a given version number.
+	 *
+	 * @param string $version The full version number
+	 *
+	 * @return string The X.Y parts of the version number
+	 */
+	public static function getMajorMinorVersion($version)
+	{
+		preg_match('/^\d+\.\d+/', $version, $matches);
+
+		return $matches[0];
+	}
+
+	/**
+	 * Returns the Craft download URL for a given version.
+	 *
+	 * @param string $version The Craft version
+	 *
+	 * @return string The download URL
+	 */
+	public static function getCraftDownloadUrl($version)
+	{
+		$xy = self::getMajorMinorVersion($version);
+
+		return "https://download.craftcdn.com/craft/{$xy}/{$version}/Craft-{$version}.zip";
+	}
+
 	// Deprecated Methods
 	// -------------------------------------------------------------------------
 

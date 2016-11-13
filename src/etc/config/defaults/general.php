@@ -36,8 +36,8 @@ return array(
 	 * Possible values are:
 	 *
 	 * - `true` (all updates are allowed)
-	 * - `'minor-only'` (only minor and build updates are allowed)
-	 * - `'build-only'` (only build updates are allowed)
+	 * - `'minor-only'` (only minor and patch updates are allowed - the "Y" and "Z" in X.Y.Z)
+	 * - `'patch-only'` (only patch updates are allowed - the "Z" in X.Y.Z)
 	 * - `false` (no updates are allowed)
 	 */
 	'allowAutoUpdates' => true,

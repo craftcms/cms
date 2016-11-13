@@ -66,25 +66,27 @@ class Craft extends \Yii
 	/**
 	 * Returns the installed Craft build.
 	 *
-	 * @deprecated Deprecated in 1.3. Use {@link AppBehavior::getBuild() `craft()->getBuild()`} instead.
+	 * @deprecated Deprecated in 1.3.
 	 * @return string
+	 * @todo Remove in v3
 	 */
 	public static function getBuild()
 	{
-		craft()->deprecator->log('Craft::getBuild()', 'Craft::getBuild() has been deprecated. Use craft()->getBuild() instead.');
-		return craft()->getBuild();
+		craft()->deprecator->log('Craft::getBuild()', 'Craft::getBuild() has been deprecated.');
+		return null;
 	}
 
 	/**
 	 * Returns the installed Craft release date.
 	 *
-	 * @deprecated Deprecated in 1.3. Use {@link AppBehavior::getReleaseDate() `craft()->getReleaseDate()`} instead.
+	 * @deprecated Deprecated in 1.3.
 	 * @return string
+	 * @todo Remove in v3
 	 */
 	public static function getReleaseDate()
 	{
-		craft()->deprecator->log('Craft::getReleaseDate()', 'Craft::getReleaseDate() has been deprecated. Use craft()->getReleaseDate() instead.');
-		return craft()->getReleaseDate();
+		craft()->deprecator->log('Craft::getReleaseDate()', 'Craft::getReleaseDate() has been deprecated.');
+		return null;
 	}
 
 	/**
@@ -92,11 +94,12 @@ class Craft extends \Yii
 	 *
 	 * @deprecated Deprecated in 1.3. Use {@link AppBehavior::getTrack() `craft()->getTrack()`} instead.
 	 * @return string
+	 * @todo Remove in v3
 	 */
 	public static function getTrack()
 	{
-		craft()->deprecator->log('Craft::getTrack()', 'Craft::getTrack() has been deprecated. Use craft()->getTrack() instead.');
-		return craft()->getTrack();
+		craft()->deprecator->log('Craft::getTrack()', 'Craft::getTrack() has been deprecated.');
+		return null;
 	}
 
 	/**

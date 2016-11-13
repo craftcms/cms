@@ -138,36 +138,32 @@ class EtService extends BaseApplicationComponent
 		}
 
 		$updateModel = craft()->updates->getUpdates();
-		$buildVersion = $updateModel->app->latestVersion.'.'.$updateModel->app->latestBuild;
 
 		if ($handle == 'craft')
 		{
-			$path = 'https://download.craftcdn.com/craft/'.$updateModel->app->latestVersion.'/'.$buildVersion.'/Patch/'.($handle == 'craft' ? $updateModel->app->localBuild : $updateModel->app->localVersion.'.'.$updateModel->app->localBuild).'/'.$md5.'.zip';
+			$latestVersion = $updateModel->app->latestVersion;
+			$latestXY = AppHelper::getMajorMinorVersion($updateModel->app->latestVersion);
+			$localVersion = $updateModel->app->localVersion;
+			$path = "https://download.craftcdn.com/craft/{$latestXY}/{$latestVersion}/Patch/{$localVersion}/{$md5}.zip";
 		}
 		else
 		{
 			$localVersion = null;
-			$localBuild = null;
 			$latestVersion = null;
-			$latestBuild = null;
 
 			foreach ($updateModel->plugins as $plugin)
 			{
 				if (strtolower($plugin->class) == $handle)
 				{
-					$parts = explode('.', $plugin->localVersion);
-					$localVersion = $parts[0].'.'.$parts[1];
-					$localBuild = $parts[2];
-
-					$parts = explode('.', $plugin->latestVersion);
-					$latestVersion = $parts[0].'.'.$parts[1];
-					$latestBuild = $parts[2];
+					$localVersion = $plugin->localVersion;
+					$latestVersion = $plugin->latestVersion;
 
 					break;
 				}
 			}
 
-			$path = 'https://download.craftcdn.com/plugins/'.$handle.'/'.$latestVersion.'/'.$latestVersion.'.'.$latestBuild.'/Patch/'.$localVersion.'.'.$localBuild.'/'.$md5.'.zip';
+			$latestXY = AppHelper::getMajorMinorVersion($latestVersion);
+			$path = 'https://download.craftcdn.com/plugins/'.$handle.'/'.$latestXY.'/'.$latestVersion.'/Patch/'.$localVersion.'/'.$md5.'.zip';
 		}
 
 		$et = new Et($path, 240);
@@ -418,8 +414,7 @@ class EtService extends BaseApplicationComponent
 			{
 				$etModel = new EtModel($attributes);
 
-				// Make sure it's valid. (At a minimum, localBuild and localVersion
-				// should be set.)
+				// Make sure it's valid.
 				if ($etModel->validate())
 				{
 					return $etModel;

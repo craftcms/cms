@@ -290,7 +290,7 @@ class ErrorHandler extends \CErrorHandler
 	{
 		if (YII_DEBUG)
 		{
-			$version = '<a href="http://craftcms.com/">Craft</a> '.CRAFT_VERSION.'.'.CRAFT_BUILD;
+			$version = '<a href="http://craftcms.com/">Craft CMS</a> '.CRAFT_VERSION;
 
 			if (isset($_SERVER['SERVER_SOFTWARE']))
 			{

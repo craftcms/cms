@@ -141,14 +141,16 @@ class AppBehavior extends BaseBehavior
 	 * Returns the installed Craft build.
 	 *
 	 * @return string
+     * @deprecated
+     * @todo remove in 3.0
 	 */
 	public function getBuild()
 	{
-		return $this->getInfo('build');
+        return null;
 	}
 
 	/**
-	 * Returns the installed Craft build.
+	 * Returns the installed Craft schema version.
 	 *
 	 * @return string
 	 */
@@ -161,20 +163,24 @@ class AppBehavior extends BaseBehavior
 	 * Returns the installed Craft release date.
 	 *
 	 * @return string
+	 * @deprecated
+	 * @todo Remove in v3
 	 */
 	public function getReleaseDate()
 	{
-		return $this->getInfo('releaseDate');
+		return null;
 	}
 
 	/**
 	 * Returns the Craft track.
 	 *
 	 * @return string
+	 * @deprecated
+	 * @todo Remove in v3
 	 */
 	public function getTrack()
 	{
-		return $this->getInfo('track');
+		return null;
 	}
 
 	/**
@@ -496,8 +502,8 @@ class AppBehavior extends BaseBehavior
 					throw new Exception(Craft::t('Craft appears to be installed but the info table is empty.'));
 				}
 
-				// Prevent an infinite loop in createFromString.
-				$row['releaseDate'] = DateTime::createFromString($row['releaseDate'], null, false);
+				// todo: remove after next breakpiont
+				unset($row['build'], $row['releaseDate'], $row['track']);
 
 				$this->_info = new InfoModel($row);
 			}
@@ -529,6 +535,9 @@ class AppBehavior extends BaseBehavior
 		if ($info->validate())
 		{
 			$attributes = $info->getAttributes(null, true);
+
+			// todo: remove after next breakpoint
+			unset($attributes['build'], $attributes['releaseDate'], $attributes['track']);
 
 			if ($this->isInstalled())
 			{

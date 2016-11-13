@@ -196,32 +196,7 @@ class UpdateHelper
 	 */
 	public static function isManifestVersionInfoLine($line)
 	{
-		if ($line[0] == '#' && $line[1] == '#')
-		{
-			return true;
-		}
-
-		return false;
-	}
-
-	/**
-	 * Returns the local build number from the given manifest file.
-	 *
-	 * @param $manifestData
-	 *
-	 * @return bool|string
-	 */
-	public static function getLocalBuildFromManifest($manifestData)
-	{
-		if (static::isManifestVersionInfoLine($manifestData[0]))
-		{
-			$parts = explode(';', $manifestData[0]);
-			$index = mb_strrpos($parts[0], '.');
-			$version = mb_substr($parts[0], $index + 1);
-			return $version;
-		}
-
-		return false;
+		return strncmp($line, '##', 2) === 0;
 	}
 
 	/**
@@ -233,16 +208,14 @@ class UpdateHelper
 	 */
 	public static function getLocalVersionFromManifest($manifestData)
 	{
-		if (static::isManifestVersionInfoLine($manifestData[0]))
+		if (!static::isManifestVersionInfoLine($manifestData[0]))
 		{
-			$parts = explode(';', $manifestData[0]);
-			$index = mb_strrpos($parts[0], '.');
-			$build = mb_substr($parts[0], 2, $index - 2);
-
-			return $build;
+			return false;
 		}
 
-		return false;
+		preg_match('/^##(.*);/', $manifestData[0], $matches);
+
+		return $matches[1];
 	}
 
 	/**
@@ -263,7 +236,7 @@ class UpdateHelper
 	}
 
 	/**
-	 * Returns the relevant lines from the update manifest file starting with the current local version/build.
+	 * Returns the relevant lines from the update manifest file starting with the current local version.
 	 *
 	 * @param $manifestDataPath
 	 * @param $handle
@@ -298,7 +271,7 @@ class UpdateHelper
 
 				if ($handle == 'craft')
 				{
-					$localVersion = $updateModel->app->localVersion.'.'.$updateModel->app->localBuild;
+					$localVersion = $updateModel->app->localVersion;
 				}
 				else
 				{

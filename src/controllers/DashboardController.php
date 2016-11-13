@@ -286,7 +286,7 @@ class DashboardController extends BaseController
 			// Add some extra info about this install
 			$message = $getHelpModel->message . "\n\n" .
 				"------------------------------\n\n" .
-				'Craft '.craft()->getEditionName().' '.craft()->getVersion().'.'.craft()->getBuild();
+				'Craft '.craft()->getEditionName().' '.craft()->getVersion();
 
 			$plugins = craft()->plugins->getPlugins();
 

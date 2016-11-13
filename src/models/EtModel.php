@@ -73,17 +73,11 @@ class EtModel extends BaseModel
 		// The local version number.
 		$attributes['localVersion'] = array(AttributeType::String, 'required' => true);
 
-		// The local build number.
-		$attributes['localBuild'] = array(AttributeType::Number, 'required' => true);
-
 		// The local edition.
 		$attributes['localEdition'] = array(AttributeType::String, 'required' => true);
 
 		// The currently logged in user's email address.
 		$attributes['userEmail'] = AttributeType::Email;
-
-		// The track this install is on.  Not required for backwards compatibility.
-		$attributes['track'] = array(AttributeType::String);
 
 		// Whether or not to show beta releases.
 		$attributes['showBeta'] = AttributeType::Bool;

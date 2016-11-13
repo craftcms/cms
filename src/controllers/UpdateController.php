@@ -105,7 +105,13 @@ class UpdateController extends BaseController
 				case 'all':
 				{
 					// Craft first.
-					$return[] = array('handle' => 'Craft', 'name' => 'Craft', 'version' => $updateInfo->app->latestVersion.'.'.$updateInfo->app->latestBuild, 'critical' => $updateInfo->app->criticalUpdateAvailable, 'releaseDate' => $updateInfo->app->latestDate->getTimestamp());
+					$return[] = array(
+						'handle' => 'Craft',
+						'name' => 'Craft',
+						'version' => $updateInfo->app->latestVersion,
+						'critical' => $updateInfo->app->criticalUpdateAvailable,
+						'releaseDate' => $updateInfo->app->latestDate->getTimestamp(),
+					);
 
 					// Plugins
 					if ($updateInfo->plugins !== null)
@@ -114,7 +120,13 @@ class UpdateController extends BaseController
 						{
 							if ($plugin->status == PluginUpdateStatus::UpdateAvailable && count($plugin->releases) > 0)
 							{
-								$return[] = array('handle' => $plugin->class, 'name' => $plugin->displayName, 'version' => $plugin->latestVersion, 'critical' => $plugin->criticalUpdateAvailable, 'releaseDate' => $plugin->latestDate->getTimestamp());
+								$return[] = array(
+									'handle' => $plugin->class,
+									'name' => $plugin->displayName,
+									'version' => $plugin->latestVersion,
+									'critical' => $plugin->criticalUpdateAvailable,
+									'releaseDate' => $plugin->latestDate->getTimestamp(),
+								);
 							}
 						}
 					}
@@ -124,7 +136,13 @@ class UpdateController extends BaseController
 
 				case 'craft':
 				{
-					$return[] = array('handle' => 'Craft', 'name' => 'Craft', 'version' => $updateInfo->app->latestVersion.'.'.$updateInfo->app->latestBuild, 'critical' => $updateInfo->app->criticalUpdateAvailable, 'releaseDate' => $updateInfo->app->latestDate->getTimestamp());
+					$return[] = array(
+						'handle' => 'Craft',
+						'name' => 'Craft',
+						'version' => $updateInfo->app->latestVersion,
+						'critical' => $updateInfo->app->criticalUpdateAvailable,
+						'releaseDate' => $updateInfo->app->latestDate->getTimestamp(),
+					);
 					break;
 				}
 
@@ -135,7 +153,13 @@ class UpdateController extends BaseController
 					{
 						if (isset($updateInfo->plugins[$handle]) && $updateInfo->plugins[$handle]->status == PluginUpdateStatus::UpdateAvailable && count($updateInfo->plugins[$handle]->releases) > 0)
 						{
-							$return[] = array('handle' => $updateInfo->plugins[$handle]->handle, 'name' => $updateInfo->plugins[$handle]->displayName, 'version' => $updateInfo->plugins[$handle]->latestVersion, 'critical' => $updateInfo->plugins[$handle]->criticalUpdateAvailable, 'releaseDate' => $updateInfo->plugins[$handle]->latestDate->getTimestamp());
+							$return[] = array(
+								'handle' => $updateInfo->plugins[$handle]->handle,
+								'name' => $updateInfo->plugins[$handle]->displayName,
+								'version' => $updateInfo->plugins[$handle]->latestVersion,
+								'critical' => $updateInfo->plugins[$handle]->criticalUpdateAvailable,
+								'releaseDate' => $updateInfo->plugins[$handle]->latestDate->getTimestamp(),
+							);
 						}
 						else
 						{

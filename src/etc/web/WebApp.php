@@ -217,11 +217,10 @@ class WebApp extends \CWebApplication
 			if ($this->request->isCpRequest())
 			{
 				$version = $this->getVersion();
-				$build = $this->getBuild();
-				$url = "https://download.craftcdn.com/craft/{$version}/{$version}.{$build}/Craft-{$version}.{$build}.zip";
+                $url = AppHelper::getCraftDownloadUrl($version);
 
 				throw new HttpException(200, Craft::t('Craft CMS does not support backtracking to this version. Please upload Craft CMS {url} or later.', array(
-					'url' => '['.$build.']('.$url.')',
+					'url' => '['.$version.']('.$url.')',
 				)));
 			}
 			else
@@ -243,7 +242,7 @@ class WebApp extends \CWebApplication
 		}
 
 		// If there's a new version, but the schema hasn't changed, just update the info table
-		if ($this->updates->hasCraftBuildChanged())
+		if ($this->updates->hasCraftVersionChanged())
 		{
 			$this->updates->updateCraftVersionInfo();
 
@@ -899,10 +898,11 @@ class WebApp extends \CWebApplication
 			{
 				if ($this->updates->isBreakpointUpdateNeeded())
 				{
-					throw new HttpException(200, Craft::t('You need to be on at least Craft CMS {url} before you can manually update to Craft CMS {targetVersion} build {targetBuild}.', array(
-						'url'           => '[build '.CRAFT_MIN_BUILD_REQUIRED.']('.CRAFT_MIN_BUILD_URL.')',
+					$minVersionUrl = AppHelper::getCraftDownloadUrl(CRAFT_MIN_VERSION_REQUIRED);
+
+					throw new HttpException(200, Craft::t('You need to be on at least Craft CMS {url} before you can manually update to Craft CMS {targetVersion}.', array(
+						'url'           => '['.CRAFT_MIN_VERSION_REQUIRED.']('.$minVersionUrl.')',
 						'targetVersion' => CRAFT_VERSION,
-						'targetBuild'   => CRAFT_BUILD
 					)));
 				}
 				else
