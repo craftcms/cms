@@ -3,7 +3,7 @@ namespace craft\app\volumes;
 
 use Aws\CloudFront\CloudFrontClient;
 use Aws\CloudFront\Exception\CloudFrontException;
-use Aws\S3\Exception\AccessDeniedException;
+use Aws\Exception\CredentialsException;
 use Craft;
 use craft\app\base\Volume;
 use craft\app\cache\adapters\GuzzleCacheAdapter;
@@ -12,7 +12,7 @@ use craft\app\errors\VolumeException;
 use craft\app\helpers\Assets;
 use craft\app\helpers\DateTimeHelper;
 use craft\app\helpers\StringHelper;
-use \League\Flysystem\AwsS3v2\AwsS3Adapter;
+use \League\Flysystem\AwsS3v3\AwsS3Adapter;
 use \Aws\S3\S3Client as S3Client;
 
 /**
@@ -179,7 +179,7 @@ class AwsS3 extends Volume
         foreach ($buckets as $bucket) {
             try {
                 $location = $client->getBucketLocation(['Bucket' => $bucket['Name']]);
-            } catch (AccessDeniedException $exception) {
+            } catch (CredentialsException $exception) {
                 continue;
             }
 
@@ -249,8 +249,6 @@ class AwsS3 extends Volume
      */
     protected static function client($config = [])
     {
-        $config['credentials.cache'] = static::_getCredentialsCacheAdapter();
-
         return S3Client::factory($config);
     }
 
@@ -287,12 +285,14 @@ class AwsS3 extends Volume
                 $cfClient->createInvalidation(
                     [
                         'DistributionId' => $this->cfDistributionId,
-                        'Paths' =>
-                            [
-                                'Quantity' => 1,
-                                'Items' => ['/'.ltrim($path, '/')]
-                            ],
-                        'CallerReference' => 'Craft-'.StringHelper::randomString(24)
+                        'InvalidationBatch' => [
+                            'Paths' =>
+                                [
+                                    'Quantity' => 1,
+                                    'Items' => ['/'.ltrim($path, '/')]
+                                ],
+                            'CallerReference' => 'Craft-'.StringHelper::randomString(24)
+                        ]
                     ]
                 );
             } catch (CloudFrontException $exception) {
@@ -346,13 +346,17 @@ class AwsS3 extends Volume
         if (empty($keyId) || empty($secret)) {
             $config = [];
         } else {
+            // TODO Add support for different credential supply methods
             $config = [
-                'key' => $keyId,
-                'secret' => $secret
+                'credentials' => [
+                    'key' => $keyId,
+                    'secret' => $secret
+                ]
             ];
         }
 
         $config['region'] = $this->region;
+        $config['version'] = 'latest';
 
         return $config;
     }
