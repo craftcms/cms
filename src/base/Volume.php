@@ -297,7 +297,6 @@ abstract class Volume extends SavableComponent implements VolumeInterface
         $stream = $this->getFilesystem()->readStream($uriPath);
         $outputStream = fopen($targetPath, 'wb');
 
-        rewind($stream);
         $bytes = stream_copy_to_stream($stream, $outputStream);
 
         fclose($stream);
