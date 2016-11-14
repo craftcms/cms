@@ -33,7 +33,7 @@
 
 			'<div id="login-fields" class="nested-fields">' +
 			'{{ forms.passwordField({ id: "password", name: "password", placeholder: "Password"|t('app') })|e("js") }}' +
-			'<a id="forgot-password">{{ "Forget your password?"|t('app') }}</a>' +
+			'<a id="forgot-password">{{ "Forgot your password?"|t('app') }}</a>' +
 			{% if craft.app.config.get('rememberedUserSessionDuration') %}
 			'{{ forms.checkboxField({ id: "rememberMe", label: "Keep me logged in"|t('app') })|e("js") }}' +
 			{% endif %}
