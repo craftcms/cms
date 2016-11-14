@@ -194,7 +194,7 @@ class Et
 				$client = new \Guzzle\Http\Client();
 				$client->setUserAgent($this->_userAgent, true);
 
-				if (strcmp($this->_endpoint, 'http') === 0)
+				if (strncmp($this->_endpoint, 'http', 4) === 0)
 				{
 					$endpointUrl = $this->_endpoint;
 				}
