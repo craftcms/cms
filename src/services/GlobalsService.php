@@ -93,6 +93,7 @@ class GlobalsService extends BaseApplicationComponent
 		if (!isset($this->_allGlobalSets))
 		{
 			$criteria = craft()->elements->getCriteria(ElementType::GlobalSet);
+			$criteria->limit = null;
 			$this->_allGlobalSets = $criteria->find();
 
 			// Index them by ID
