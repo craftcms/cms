@@ -16,16 +16,16 @@ class EtService extends BaseApplicationComponent
 	// Constants
 	// =========================================================================
 
-    const ENDPOINT_PING = 'app/ping';
-    const ENDPOINT_CHECK_FOR_UPDATES = 'app/checkForUpdates';
-    const ENDPOINT_TRANSFER_LICENSE = 'app/transferLicenseToCurrentDomain';
-    const ENDPOINT_GET_UPGRADE_INFO = 'app/getUpgradeInfo';
-    const ENDPOINT_GET_COUPON_PRICE = 'app/getCouponPrice';
-    const ENDPOINT_PURCHASE_UPGRADE = 'app/purchaseUpgrade';
-    const ENDPOINT_GET_UPDATE_FILE_INFO = 'app/getUpdateFileInfo';
-    const ENDPOINT_REGISTER_PLUGIN = 'plugins/registerPlugin';
-    const ENDPOINT_UNREGISTER_PLUGIN = 'plugins/unregisterPlugin';
-    const ENDPOINT_TRANSFER_PLUGIN = 'plugins/transferPlugin';
+	const ENDPOINT_PING = 'app/ping';
+	const ENDPOINT_CHECK_FOR_UPDATES = 'app/checkForUpdates';
+	const ENDPOINT_TRANSFER_LICENSE = 'app/transferLicenseToCurrentDomain';
+	const ENDPOINT_GET_UPGRADE_INFO = 'app/getUpgradeInfo';
+	const ENDPOINT_GET_COUPON_PRICE = 'app/getCouponPrice';
+	const ENDPOINT_PURCHASE_UPGRADE = 'app/purchaseUpgrade';
+	const ENDPOINT_GET_UPDATE_FILE_INFO = 'app/getUpdateFileInfo';
+	const ENDPOINT_REGISTER_PLUGIN = 'plugins/registerPlugin';
+	const ENDPOINT_UNREGISTER_PLUGIN = 'plugins/unregisterPlugin';
+	const ENDPOINT_TRANSFER_PLUGIN = 'plugins/transferPlugin';
 
 	// Public Methods
 	// =========================================================================
