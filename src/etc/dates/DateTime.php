@@ -452,6 +452,13 @@ class DateTime extends \DateTime
 		{
 			$spec = 'P';
 
+			// The hour can be -1 if we just crossed DST.
+			if ($interval->h && $interval->h == '-1')
+			{
+				$interval->h = 23;
+				$interval->d--;
+			}
+
 			if ($interval->y) $spec .= $interval->y.'Y';
 			if ($interval->m) $spec .= $interval->m.'M';
 			if ($interval->d) $spec .= $interval->d.'D';
