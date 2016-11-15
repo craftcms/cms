@@ -139,42 +139,79 @@ class EtService extends BaseApplicationComponent
 
 		$updateModel = craft()->updates->getUpdates();
 
+		// Maybe the base CDN URL was overridden for local testing
+		$baseUrl = craft()->config->get('cdnBaseUrl');
+
+		if ($baseUrl === null)
+		{
+			$baseUrl = 'https://download.craftcdn.com/';
+		}
+
 		if ($handle == 'craft')
 		{
-			$latestVersion = $updateModel->app->latestVersion;
-			$latestXY = AppHelper::getMajorMinorVersion($updateModel->app->latestVersion);
 			$localVersion = $updateModel->app->localVersion;
-			$path = "https://download.craftcdn.com/craft/{$latestXY}/{$latestVersion}/Patch/{$localVersion}/{$md5}.zip";
+			$targetVersion = $updateModel->app->latestVersion;
+			$uriPrefix = 'craft';
 		}
 		else
 		{
+			// Find the plugin whose class matches the handle
 			$localVersion = null;
-			$latestVersion = null;
+			$targetVersion = null;
+			$uriPrefix = 'plugins/'.$handle;
 
 			foreach ($updateModel->plugins as $plugin)
 			{
 				if (strtolower($plugin->class) == $handle)
 				{
 					$localVersion = $plugin->localVersion;
-					$latestVersion = $plugin->latestVersion;
-
+					$targetVersion = $plugin->latestVersion;
 					break;
 				}
 			}
 
-			$latestXY = AppHelper::getMajorMinorVersion($latestVersion);
-			$path = 'https://download.craftcdn.com/plugins/'.$handle.'/'.$latestXY.'/'.$latestVersion.'/Patch/'.$localVersion.'/'.$md5.'.zip';
+			if ($localVersion === null)
+			{
+				Craft::log('Couldn’t find the plugin "'.$handle.'" in the update model.', LogLevel::Warning);
+
+				return false;
+			}
 		}
 
-		$et = new Et($path, 240);
-		$et->setDestinationFileName($downloadPath);
+		$xy = AppHelper::getMajorMinorVersion($targetVersion);
+		$uri = "{$uriPrefix}/{$xy}/{$targetVersion}/Patch/{$localVersion}/{$md5}.zip";
 
-		if (($fileName = $et->phoneHome()) !== null)
+		$client = new \Guzzle\Http\Client();
+		$url = $baseUrl.$uri;
+		$request = $client->get($url, null, array(
+			'timeout' => 240,
+			'connect_timeout' => 30,
+		));
+
+		// Potentially long-running request, so close session to prevent session blocking on subsequent requests.
+		craft()->session->close();
+
+		$response = $request->send();
+
+		if (!$response->isSuccessful())
 		{
-			return $fileName;
+			Craft::log('Error in downloading '.$url.' Response: '.$response->getBody(), LogLevel::Warning);
+
+			return false;
 		}
 
-		return false;
+		$body = $response->getBody();
+
+		// Make sure we're at the beginning of the stream.
+		$body->rewind();
+
+		// Write it out to the file
+		IOHelper::writeToFile($downloadPath, $body->getStream(), true);
+
+		// Close the stream.
+		$body->close();
+
+		return IOHelper::getFileName($downloadPath);
 	}
 
 	/**
