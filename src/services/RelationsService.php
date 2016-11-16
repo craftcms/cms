@@ -24,7 +24,7 @@ class RelationsService extends BaseApplicationComponent
 	 * @param array            $targetIds
 	 *
 	 * @throws \Exception
-	 * @return bool
+	 * @return null
 	 */
 	public function saveRelations(FieldModel $field, BaseElementModel $source, $targetIds)
 	{
