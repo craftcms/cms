@@ -32,6 +32,8 @@ Craft.ElementEditor = Garnish.Base.extend(
 		this.setSettings(settings, Craft.ElementEditor.defaults);
 
 		this.loadHud();
+
+		this.addListener(Garnish.$win, 'resize', '_handleWindowResize');
 	},
 
 	setElementAttribute: function(name, value)
@@ -292,6 +294,14 @@ Craft.ElementEditor = Garnish.Base.extend(
 	{
 		this.hud.hide();
 		delete this.hud;
+	},
+
+	_handleWindowResize: function()
+	{
+		if(this.hud)
+		{
+			this.hud.updateSizeAndPosition();
+		}
 	},
 
 	// Events
