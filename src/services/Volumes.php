@@ -120,7 +120,6 @@ class Volumes extends Component
             $volumeTypes = array_merge($volumeTypes, [
                 AwsS3::class,
                 GoogleCloud::class,
-                Rackspace::class,
             ]);
         }
 
