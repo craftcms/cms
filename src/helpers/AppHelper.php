@@ -21,6 +21,11 @@ class AppHelper
 	 */
 	private static $_isPhpDevServer = null;
 
+	/**
+	 * @var null
+	 */
+	private static $_isWindows = null;
+
 	// Public Methods
 	// =========================================================================
 
@@ -45,6 +50,23 @@ class AppHelper
 
 		return static::$_isPhpDevServer;
 	}
+
+	/**
+	 * Returns whether Craft is running on a Windows server.
+	 *
+	 * @return bool Whether Craft is running on a Windows server or not.
+	 */
+	public static function isWindows()
+	{
+		if (!isset(static::$_isWindows))
+		{
+			static::$_isWindows = (strncmp(strtoupper(PHP_OS), 'WIN', 3) == 0);
+		}
+
+		return static::$_isWindows;
+	}
+
+
 
 	/**
 	 * Returns an array of all known Craft editions’ IDs.
@@ -188,7 +210,8 @@ class AppHelper
 	 *
 	 * Used by getPhpConfigValueInBytes() and getByteValueFromPhpSizeString() so long as we have to keep the latter around.
 	 *
-	 * @param mixed $var
+	 * @param $value
+	 *
 	 * @return int
 	 */
 	private static function _normalizePhpConfigValueToBytes($value)
