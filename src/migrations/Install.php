@@ -893,13 +893,16 @@ class Install extends Migration
                     'attribute' => $this->string(25)->notNull(),
                     'fieldId' => $this->integer()->notNull(),
                     'siteId' => $this->integer()->notNull(),
-                    'keywords' => $this->getDb()->getSchema()->createColumnSchemaBuilder('tsvector')->notNull(),
+                    'keywords' => $this->text()->notNull(),
+                    'keywords_vector' => $this->getDb()->getSchema()->createColumnSchemaBuilder('tsvector')->notNull(),
                 ]);
 
                 $this->addPrimaryKey($this->db->getIndexName('{{%searchindex}}', 'elementId,attribute,fieldId,siteId', true), '{{%searchindex}}', 'elementId,attribute,fieldId,siteId');
 
-                $sql = 'CREATE INDEX '.$this->db->quoteTableName($this->db->getIndexName('{{%searchindex}}', 'keywords')).' ON {{%searchindex}} USING GIN([[keywords]] "pg_catalog"."tsvector_ops") WITH (FASTUPDATE=YES)';
+                $sql = 'CREATE INDEX '.$this->db->quoteTableName($this->db->getIndexName('{{%searchindex}}', 'keywords_vector')).' ON {{%searchindex}} USING GIN([[keywords]] "pg_catalog"."tsvector_ops") WITH (FASTUPDATE=YES)';
+                $this->db->createCommand($sql)->execute();
 
+                $sql = 'CREATE INDEX '.$this->db->quoteTableName($this->db->getIndexName('{{%searchindex}}', 'keywords')).' ON {{%searchindex}} USING btree(keywords)';
                 $this->db->createCommand($sql)->execute();
                 break;
         }
