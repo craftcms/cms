@@ -220,7 +220,9 @@ class Et
 				//     xdebug.remote_enable = 1
 				//     xdebug.remote_connect_back = 0
 				//     xdebug.remote_host = 192.168.X.Y
-				// The xdebug config is located at /etc/php5/fpm/conf.d/20-xdebug.ini in Homestead.
+				// The xdebug config is located at /etc/php/7.0/fpm/conf.d/20-xdebug.ini in Homestead.
+                // (Note that is initially just a symlink to /etc/php/7.0/mods-available/xdebug.ini so you will need to
+                // replace the symlink with a copy of the linked file before making changes to it.)
 				$xdebugSessionId = craft()->config->get('elliottXdebugSessionId');
 
 				if ($xdebugSessionId)
