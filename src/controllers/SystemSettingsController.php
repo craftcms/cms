@@ -14,10 +14,7 @@ use craft\app\helpers\MailerHelper;
 use craft\app\helpers\Template;
 use craft\app\helpers\Url;
 use craft\app\mail\transportadapters\BaseTransportAdapter;
-use craft\app\mail\transportadapters\Gmail;
 use craft\app\mail\transportadapters\Php;
-use craft\app\mail\transportadapters\Sendmail;
-use craft\app\mail\transportadapters\Smtp;
 use craft\app\mail\transportadapters\TransportAdapterInterface;
 use craft\app\models\MailSettings;
 use craft\app\elements\GlobalSet;
@@ -30,7 +27,6 @@ use craft\app\tools\SearchIndex;
 use craft\app\web\Controller;
 use yii\base\Exception;
 use yii\helpers\Inflector;
-use yii\httpclient\Transport;
 use yii\web\NotFoundHttpException;
 use yii\web\Response;
 
