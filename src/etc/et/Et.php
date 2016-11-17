@@ -192,15 +192,22 @@ class Et
 				$client = new \Guzzle\Http\Client();
 				$client->setUserAgent($this->_userAgent, true);
 
-				// Maybe the base endpoint URL was overridden for local testing
-				$baseEndpointUrl = craft()->config->get('elliottBaseUrl');
-
-				if ($baseEndpointUrl === null)
+				if (strncmp($this->_endpoint, 'http', 4) === 0)
 				{
-					$baseEndpointUrl = 'https://elliott.craftcms.com/actions/elliott/';
+					$endpointUrl = $this->_endpoint;
 				}
+				else
+				{
+					// Maybe the base endpoint URL was overridden for local testing
+					$baseEndpointUrl = craft()->config->get('elliottBaseUrl');
 
-				$endpointUrl = $baseEndpointUrl.$this->_endpoint;
+					if ($baseEndpointUrl === null)
+					{
+						$baseEndpointUrl = 'https://elliott.craftcms.com/actions/elliott/';
+					}
+
+					$endpointUrl = $baseEndpointUrl.$this->_endpoint;
+				}
 
 				$options = array(
 					'timeout'         => $this->getTimeout(),
