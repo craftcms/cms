@@ -116,13 +116,6 @@ class Volumes extends Component
             Local::class
         ];
 
-        if (Craft::$app->getEdition() == Craft::Pro) {
-            $volumeTypes = array_merge($volumeTypes, [
-                AwsS3::class,
-                GoogleCloud::class,
-            ]);
-        }
-
         $event = new RegisterComponentTypesEvent([
             'types' => $volumeTypes
         ]);
