@@ -49,4 +49,9 @@ class SearchQueryTerm
      * @var null
      */
     public $term = null;
+
+    /**
+     * @var null
+     */
+    public $phrase = null;
 }

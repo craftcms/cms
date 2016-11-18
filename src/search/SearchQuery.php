@@ -141,6 +141,8 @@ class SearchQuery
                 } else {
                     $token = mb_substr($token, 1).' '.strtok(StringHelper::first($token, 1));
                 }
+
+                $term->phrase = true;
             }
 
             // Include sub-word matches?
