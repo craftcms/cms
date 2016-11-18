@@ -58,7 +58,7 @@ class Et
 	 */
 	public function __construct($endpoint, $timeout = 30, $connectTimeout = 30)
 	{
-		$endpoint .= craft()->config->get('endpointSuffix');
+		$endpoint .= craft()->config->get('elliottUrlSuffix');
 
 		$this->_endpoint = $endpoint;
 		$this->_timeout = $timeout;
