@@ -139,14 +139,6 @@ class EtService extends BaseApplicationComponent
 
 		$updateModel = craft()->updates->getUpdates();
 
-		// Maybe the base CDN URL was overridden for local testing
-		$baseUrl = craft()->config->get('cdnBaseUrl');
-
-		if ($baseUrl === null)
-		{
-			$baseUrl = 'https://download.craftcdn.com/';
-		}
-
 		if ($handle == 'craft')
 		{
 			$localVersion = $updateModel->app->localVersion;
@@ -178,11 +170,11 @@ class EtService extends BaseApplicationComponent
 			}
 		}
 
+		$baseUrl = craft()->config->get('downloadBaseUrl') ?: 'https://download.craftcdn.com';
 		$xy = AppHelper::getMajorMinorVersion($targetVersion);
-		$uri = "{$uriPrefix}/{$xy}/{$targetVersion}/Patch/{$localVersion}/{$md5}.zip";
+		$url = "{$baseUrl}/{$uriPrefix}/{$xy}/{$targetVersion}/Patch/{$localVersion}/{$md5}.zip";
 
 		$client = new \Guzzle\Http\Client();
-		$url = $baseUrl.$uri;
 		$request = $client->get($url, null, array(
 			'timeout' => 240,
 			'connect_timeout' => 30,
