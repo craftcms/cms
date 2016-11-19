@@ -11,6 +11,7 @@ return CMap::mergeArray($common, array(
 		'application.*',
 		'application.lib.*',
 		'application.migrations.*',
+		'application.framework.cli.commands.*'
 	),
 
 	'componentAliases' => array(
