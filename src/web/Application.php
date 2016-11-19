@@ -141,8 +141,8 @@ class Application extends \yii\web\Application
             $this->_unregisterDebugModule();
 
             if ($request->getIsCpRequest()) {
-                $version = $this->getInfo('version');
-                $build = $this->getInfo('build');
+                $version = $this->getInfo()->version;
+                $build = $this->getInfo()->build;
                 $url = "https://download.craftcdn.com/craft/{$version}/{$version}.{$build}/Craft-{$version}.{$build}.zip";
 
                 throw new HttpException(200, Craft::t('app', 'Craft CMS does not support backtracking to this version. Please upload Craft CMS {url} or later.',

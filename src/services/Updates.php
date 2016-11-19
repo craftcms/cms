@@ -834,7 +834,7 @@ class Updates extends Component
      */
     public function getHasCraftBuildChanged()
     {
-        $storedBuild = Craft::$app->getInfo('build');
+        $storedBuild = Craft::$app->getInfo()->build;
 
         return (Craft::$app->build != $storedBuild);
     }
@@ -848,7 +848,7 @@ class Updates extends Component
      */
     public function getIsBreakpointUpdateNeeded()
     {
-        $storedBuild = Craft::$app->getInfo('build');
+        $storedBuild = Craft::$app->getInfo()->build;
 
         return (Craft::$app->minBuildRequired > $storedBuild);
     }
@@ -860,7 +860,7 @@ class Updates extends Component
      */
     public function getIsSchemaVersionCompatible()
     {
-        $storedSchemaVersion = Craft::$app->getInfo('schemaVersion');
+        $storedSchemaVersion = Craft::$app->getInfo()->schemaVersion;
 
         return version_compare(Craft::$app->schemaVersion, $storedSchemaVersion, '>=');
     }
@@ -873,7 +873,7 @@ class Updates extends Component
     public function getIsCraftDbMigrationNeeded()
     {
         if ($this->_isCraftDbMigrationNeeded === null) {
-            $storedSchemaVersion = Craft::$app->getInfo('schemaVersion');
+            $storedSchemaVersion = Craft::$app->getInfo()->schemaVersion;
             $this->_isCraftDbMigrationNeeded = version_compare(Craft::$app->schemaVersion, $storedSchemaVersion, '>');
         }
 

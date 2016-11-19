@@ -355,7 +355,7 @@ trait ApplicationTrait
     public function getEdition()
     {
         /** @var \craft\app\web\Application|\craft\app\console\Application $this */
-        return (int)$this->getInfo('edition');
+        return (int)$this->getInfo()->edition;
     }
 
     /**
@@ -510,7 +510,7 @@ trait ApplicationTrait
     public function getSystemUid()
     {
         /** @var \craft\app\web\Application|\craft\app\console\Application $this */
-        return $this->getInfo('uid');
+        return $this->getInfo()->uid;
     }
 
     /**
@@ -525,7 +525,7 @@ trait ApplicationTrait
             return $on;
         }
 
-        return (bool)$this->getInfo('on');
+        return (bool)$this->getInfo()->on;
     }
 
     /**
@@ -536,7 +536,7 @@ trait ApplicationTrait
     public function getIsInMaintenanceMode()
     {
         /** @var \craft\app\web\Application|\craft\app\console\Application $this */
-        return (bool)$this->getInfo('maintenance');
+        return (bool)$this->getInfo()->maintenance;
     }
 
     /**
@@ -564,41 +564,37 @@ trait ApplicationTrait
     /**
      * Returns the info model, or just a particular attribute.
      *
-     * @param string|null $attribute
-     *
-     * @return Info|string
+     * @return Info
      * @throws ServerErrorHttpException if the info table is missing its row
      */
-    public function getInfo($attribute = null)
+    public function getInfo()
     {
         /** @var \craft\app\web\Application|\craft\app\console\Application $this */
-        if (!isset($this->_info)) {
-            if ($this->getIsInstalled()) {
-                $row = (new Query())
-                    ->from(['{{%info}}'])
-                    ->one();
-
-                if (!$row) {
-                    $tableName = $this->getDb()->getSchema()->getRawTableName('{{%info}}');
-                    throw new ServerErrorHttpException("The {$tableName} table is missing its row");
-                }
-
-                // TODO: Remove this after the next breakpoint
-                $this->_storedVersion = $row['version'];
-                unset($row['siteName'], $row['siteUrl']);
-
-                // Prevent an infinite loop in toDateTime.
-                $row['releaseDate'] = DateTimeHelper::toDateTime($row['releaseDate'], false, false);
-
-                $this->_info = new Info($row);
-            } else {
-                $this->_info = new Info();
-            }
+        if (isset($this->_info)) {
+            return $this->_info;
         }
 
-        if ($attribute) {
-            return $this->_info->$attribute;
+        if (!$this->getIsInstalled()) {
+            return new Info();
         }
+
+        $row = (new Query())
+            ->from(['{{%info}}'])
+            ->one();
+
+        if (!$row) {
+            $tableName = $this->getDb()->getSchema()->getRawTableName('{{%info}}');
+            throw new ServerErrorHttpException("The {$tableName} table is missing its row");
+        }
+
+        // TODO: Remove this after the next breakpoint
+        $this->_storedVersion = $row['version'];
+        unset($row['siteName'], $row['siteUrl']);
+
+        // Prevent an infinite loop in toDateTime.
+        $row['releaseDate'] = DateTimeHelper::toDateTime($row['releaseDate'], false, false);
+
+        $this->_info = new Info($row);
 
         return $this->_info;
     }
@@ -1267,7 +1263,7 @@ trait ApplicationTrait
         $timezone = $this->getConfig()->get('timezone');
 
         if (!$timezone) {
-            $timezone = $this->getInfo('timezone');
+            $timezone = $this->getInfo()->timezone;
         }
 
         if ($timezone) {

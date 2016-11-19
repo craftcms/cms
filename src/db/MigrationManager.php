@@ -458,7 +458,7 @@ class MigrationManager extends Component
     private function _createMigrationQuery()
     {
         // TODO: Remove after next breakpoint
-        if (version_compare(Craft::$app->getInfo('version'), '3.0', '<')) {
+        if (version_compare(Craft::$app->getInfo()->version, '3.0', '<')) {
             $query = (new Query())
                 ->select(['version as name', 'applyTime'])
                 ->from([$this->migrationTable])
