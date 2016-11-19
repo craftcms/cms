@@ -155,9 +155,10 @@ Craft.AssetIndex = Craft.BaseElementIndex.extend(
 				{
 					// Make sure it's a volume folder
 					var $source = this.$sources.eq(i);
-					if (this._getFolderIdFromSourceKey($source.data('key'))) {
-						targets.push($source);
+					if (!this._getFolderIdFromSourceKey($source.data('key'))) {
+						continue;
 					}
+					targets.push($source);
 				}
 
 				return targets;
@@ -183,12 +184,14 @@ Craft.AssetIndex = Craft.BaseElementIndex.extend(
 					draggees = [];
 
 				for (var i = 0; i < $selected.length; i++) {
-					if (this._getFolderIdFromSourceKey($selected.data('key'))) {
-						var $source = $selected.eq(i).parent();
+					var $source = $selected.eq(i).parent();
 
-						if ($source.hasClass('sel') && this._getSourceLevel($source) > 1) {
-							draggees.push($source[0]);
-						}
+					if (!this._getFolderIdFromSourceKey($source.data('key'))) {
+						continue;
+					}
+
+					if ($source.hasClass('sel') && this._getSourceLevel($source) > 1) {
+						draggees.push($source[0]);
 					}
 				}
 
@@ -232,7 +235,11 @@ Craft.AssetIndex = Craft.BaseElementIndex.extend(
 					var $source = this.$sources.eq(i),
 						key = $source.data('key');
 
-					if (this._getFolderIdFromSourceKey(key) && !Craft.inArray(key, draggedSourceIds)) {
+					if (!this._getFolderIdFromSourceKey(key)) {
+						continue;
+					}
+
+					if (!Craft.inArray(key, draggedSourceIds)) {
 						targets.push($source);
 					}
 				}
@@ -1268,18 +1275,20 @@ Craft.AssetIndex = Craft.BaseElementIndex.extend(
 	_createFolderContextMenu: function($source)
 	{
 		// Make sure it's a volume folder
-		if (this._getFolderIdFromSourceKey($source.data('key'))) {
-			var menuOptions = [{ label: Craft.t('app', 'New subfolder'), onClick: $.proxy(this, '_createSubfolder', $source) }];
-
-			// For all folders that are not top folders
-			if (this.settings.context == 'index' && this._getSourceLevel($source) > 1)
-			{
-				menuOptions.push({ label: Craft.t('app', 'Rename folder'), onClick: $.proxy(this, '_renameFolder', $source) });
-				menuOptions.push({ label: Craft.t('app', 'Delete folder'), onClick: $.proxy(this, '_deleteFolder', $source) });
-			}
-
-			new Garnish.ContextMenu($source, menuOptions, {menuClass: 'menu'});
+		if (!this._getFolderIdFromSourceKey($source.data('key'))) {
+			return;
 		}
+
+		var menuOptions = [{ label: Craft.t('app', 'New subfolder'), onClick: $.proxy(this, '_createSubfolder', $source) }];
+
+		// For all folders that are not top folders
+		if (this.settings.context == 'index' && this._getSourceLevel($source) > 1)
+		{
+			menuOptions.push({ label: Craft.t('app', 'Rename folder'), onClick: $.proxy(this, '_renameFolder', $source) });
+			menuOptions.push({ label: Craft.t('app', 'Delete folder'), onClick: $.proxy(this, '_deleteFolder', $source) });
+		}
+
+		new Garnish.ContextMenu($source, menuOptions, {menuClass: 'menu'});
 	},
 
 	_createSubfolder: function($parentFolder)
