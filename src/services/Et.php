@@ -9,7 +9,7 @@ namespace craft\app\services;
 
 use Craft;
 use craft\app\base\Plugin;
-use craft\app\et\Et as EtTransport;
+use craft\app\et\EtTransport;
 use craft\app\helpers\Io;
 use craft\app\helpers\Json;
 use craft\app\models\AppNewRelease;
@@ -216,7 +216,7 @@ class Et extends Component
             $path = $this->downloadBaseUrl.'/plugins/'.$handle.'/'.$latestVersion.'/'.$latestVersion.'.'.$latestBuild.'/Patch/'.$localVersion.'.'.$localBuild.'/'.$md5.'.zip';
         }
 
-        $et = new \craft\app\et\Et($path, 240);
+        $et = new EtTransport($path, 240);
         $et->setDestinationFilename($downloadPath);
 
         if (($filename = $et->phoneHome()) !== null) {

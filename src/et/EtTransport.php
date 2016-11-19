@@ -26,7 +26,7 @@ use yii\base\Exception;
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since  3.0
  */
-class Et
+class EtTransport
 {
     // Properties
     // =========================================================================
@@ -69,7 +69,7 @@ class Et
      * @param integer $timeout
      * @param integer $connectTimeout
      *
-     * @return Et
+     * @return EtTransport
      */
     public function __construct($endpoint, $timeout = 30, $connectTimeout = 30)
     {
