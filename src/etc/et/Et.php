@@ -192,47 +192,13 @@ class Et
 				$client = new \Guzzle\Http\Client();
 				$client->setUserAgent($this->_userAgent, true);
 
-				if (strncmp($this->_endpoint, 'http', 4) === 0)
-				{
-					$endpointUrl = $this->_endpoint;
-				}
-				else
-				{
-					// Maybe the base endpoint URL was overridden for local testing
-					$baseEndpointUrl = craft()->config->get('elliottBaseUrl');
-
-					if ($baseEndpointUrl === null)
-					{
-						$baseEndpointUrl = 'https://elliott.craftcms.com/actions/elliott/';
-					}
-
-					$endpointUrl = $baseEndpointUrl.$this->_endpoint;
-				}
-
 				$options = array(
 					'timeout'         => $this->getTimeout(),
 					'connect_timeout' => $this->getConnectTimeout(),
 					'allow_redirects' => $this->getAllowRedirects(),
 				);
 
-				// Add support for xdebug session cookies.
-				// If the request is coming from a different server than the xdebug client, xdebug should have the following config:
-				//     xdebug.remote_enable = 1
-				//     xdebug.remote_connect_back = 0
-				//     xdebug.remote_host = 192.168.X.Y
-				// The xdebug config is located at /etc/php/7.0/fpm/conf.d/20-xdebug.ini in Homestead.
-                // (Note that is initially just a symlink to /etc/php/7.0/mods-available/xdebug.ini so you will need to
-                // replace the symlink with a copy of the linked file before making changes to it.)
-				$xdebugSessionId = craft()->config->get('elliottXdebugSessionId');
-
-				if ($xdebugSessionId)
-				{
-					$options['cookies'] = array(
-						'XDEBUG_SESSION' => $xdebugSessionId,
-					);
-				}
-
-				$request = $client->post($endpointUrl, null, null, $options);
+				$request = $client->post($this->_endpoint, null, null, $options);
 				$request->setBody($data, 'application/json');
 
 				// Potentially long-running request, so close session to prevent session blocking on subsequent requests.
