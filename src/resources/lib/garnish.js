@@ -3,7 +3,7 @@
  *
  * @copyright 2013 Pixel & Tonic, Inc.. All rights reserved.
  * @author    Brandon Kelly <brandon@pixelandtonic.com>
- * @version   0.1.4
+ * @version   0.1.5
  * @license   MIT
  */
 (function($){
@@ -3098,6 +3098,8 @@ Garnish.HUD = Garnish.Base.extend({
 		{
 			this.addListener(this.settings.closeBtn, 'activate', 'hide');
 		}
+
+		this.addListener(Garnish.$win, 'resize', 'updateSizeAndPosition');
 	},
 
 	/**
