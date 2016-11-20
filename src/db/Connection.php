@@ -122,7 +122,7 @@ class Connection extends \yii\db\Connection
         // Determine the backup file path
         $currentVersion = 'v'.Craft::$app->version;
         $siteName = Io::cleanFilename($this->_getFixedSiteName(), true);
-        $filename = ($siteName ? $siteName.'_' : '').gmdate('ymd_His').'_'.$currentVersion.'.sql';
+        $filename = ($siteName ? $siteName.'_' : '').gmdate('ymd_His').'_'.strtolower(StringHelper::randomString(10)).'_'.$currentVersion.'.sql';
         $filePath = Craft::$app->getPath()->getDbBackupPath().'/'.StringHelper::toLowerCase($filename);
 
         // Determine the command that should be executed
