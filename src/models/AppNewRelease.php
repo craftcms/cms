@@ -27,11 +27,6 @@ class AppNewRelease extends Model
     public $version;
 
     /**
-     * @var string Build
-     */
-    public $build;
-
-    /**
      * @var \DateTime Date
      */
     public $date;

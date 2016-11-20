@@ -91,11 +91,9 @@ class EtTransport
             'requestIp'            => Craft::$app->getRequest()->getUserIP(),
             'requestTime'          => DateTimeHelper::currentTimeStamp(),
             'requestPort'          => Craft::$app->getRequest()->getPort(),
-            'localBuild'           => Craft::$app->build,
             'localVersion'         => Craft::$app->version,
             'localEdition'         => Craft::$app->getEdition(),
             'userEmail'            => $userEmail,
-            'track'                => Craft::$app->track,
             'showBeta'             => Craft::$app->getConfig()->get('showBetaUpdates'),
             'serverInfo'           => [
                 'extensions'       => get_loaded_extensions(),
@@ -106,7 +104,7 @@ class EtTransport
             ],
         ]);
 
-        $this->_userAgent = 'Craft/'.Craft::$app->version.'.'.Craft::$app->build;
+        $this->_userAgent = 'Craft/'.Craft::$app->version;
     }
 
     /**
@@ -222,7 +220,7 @@ class EtTransport
                     // Potentially long-running request, so close session to prevent session blocking on subsequent requests.
                     Craft::$app->getSession()->close();
 
-                    $response = $client->post($this->_endpoint, ['json' => ArrayHelper::toArray($this->_model)]);
+                    $response = $client->request('post', $this->_endpoint, ['json' => ArrayHelper::toArray($this->_model)]);
 
                     if ($response->getStatusCode() == 200) {
                         // Clear the connection failure cached item if it exists.

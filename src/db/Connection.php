@@ -120,7 +120,7 @@ class Connection extends \yii\db\Connection
     public function backup()
     {
         // Determine the backup file path
-        $currentVersion = 'v'.Craft::$app->version.'.'.Craft::$app->build;
+        $currentVersion = 'v'.Craft::$app->version;
         $siteName = Io::cleanFilename($this->_getFixedSiteName(), true);
         $filename = ($siteName ? $siteName.'_' : '').gmdate('ymd_His').'_'.$currentVersion.'.sql';
         $filePath = Craft::$app->getPath()->getDbBackupPath().'/'.StringHelper::toLowerCase($filename);
@@ -457,12 +457,12 @@ class Connection extends \yii\db\Connection
      * @return string
      */
     private function _getFixedSiteName() {
-        if (version_compare(Craft::$app->getInfo()->version, '3.0', '<') || Craft::$app->getInfo()->build < 2933) {
+        try {
             return (new Query())
                 ->select(['siteName'])
                 ->from(['{{%info}}'])
                 ->column()[0];
-        } else {
+        } catch (\Exception $e) {
             return Craft::$app->getSites()->getPrimarySite()->name;
         }
     }

@@ -9,6 +9,7 @@ namespace craft\app\web;
 
 use Craft;
 use craft\app\base\ApplicationTrait;
+use craft\app\helpers\App;
 use craft\app\helpers\Header;
 use craft\app\helpers\Io;
 use craft\app\helpers\Json;
@@ -142,13 +143,11 @@ class Application extends \yii\web\Application
 
             if ($request->getIsCpRequest()) {
                 $version = $this->getInfo()->version;
-                $build = $this->getInfo()->build;
-                $url = "https://download.craftcdn.com/craft/{$version}/{$version}.{$build}/Craft-{$version}.{$build}.zip";
+                $url = App::craftDownloadUrl($version);
 
-                throw new HttpException(200, Craft::t('app', 'Craft CMS does not support backtracking to this version. Please upload Craft CMS {url} or later.',
-                    [
-                        'url' => '['.$build.']('.$url.')',
-                    ]));
+                throw new HttpException(200, Craft::t('app', 'Craft CMS does not support backtracking to this version. Please upload Craft CMS {url} or later.', [
+                    'url' => "[{$version}]({$url})",
+                ]));
             } else {
                 throw new ServiceUnavailableHttpException();
             }
@@ -161,7 +160,7 @@ class Application extends \yii\web\Application
         }
 
         // If there's a new version, but the schema hasn't changed, just update the info table
-        if ($this->getUpdates()->getHasCraftBuildChanged()) {
+        if ($this->getUpdates()->getHasCraftVersionChanged()) {
             $this->getUpdates()->updateCraftVersionInfo();
 
             // Clear the template caches in case they've been compiled since this release was cut.
@@ -554,12 +553,11 @@ class Application extends \yii\web\Application
             }
 
             if ($this->getUpdates()->getIsBreakpointUpdateNeeded()) {
-                throw new HttpException(200, Craft::t('app', 'You need to be on at least Craft CMS {url} before you can manually update to Craft CMS {targetVersion} build {targetBuild}.',
-                    [
-                        'url' => '[build '.Craft::$app->minBuildRequired.']('.Craft::$app->minBuildUrl.')',
-                        'targetVersion' => Craft::$app->version,
-                        'targetBuild' => Craft::$app->build
-                    ]));
+                $minVersionUrl = App::craftDownloadUrl($this->minVersionRequired);
+                throw new HttpException(200, Craft::t('app', 'You need to be on at least Craft CMS {url} before you can manually update to Craft CMS {targetVersion}.', [
+                    'url' => "[{$this->minVersionRequired}]($minVersionUrl)",
+                    'targetVersion' => Craft::$app->version,
+                ]));
             } else {
                 if (!$request->getIsAjax()) {
                     if ($request->getPathInfo() !== '') {

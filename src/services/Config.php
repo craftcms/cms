@@ -672,20 +672,14 @@ class Config extends Component
             return $configVal;
         }
 
-        if ($configVal === 'build-only') {
-            // Return whether the version number has changed at all
-            return ($updateInfo->app->latestVersion === Craft::$app->version);
+        if ($configVal === 'patch-only') {
+            // Return true if the major and minor versions are still the same
+            return (App::majorMinorVersion($updateInfo->app->latestVersion) == App::majorMinorVersion(Craft::$app->version));
         }
 
         if ($configVal === 'minor-only') {
-            // Return whether the major version number has changed
-            $versionParts = explode('.', Craft::$app->version);
-            $majorVersionParts = explode('.', $updateInfo->app->latestVersion);
-
-            $localMajorVersion = array_shift($versionParts);
-            $updateMajorVersion = array_shift($majorVersionParts);
-
-            return ($localMajorVersion === $updateMajorVersion);
+            // Return true if the major version is still the same
+            return (App::majorVersion($updateInfo->app->latestVersion) == App::majorVersion(Craft::$app->version));
         }
 
         return false;

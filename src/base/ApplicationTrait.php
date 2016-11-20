@@ -106,6 +106,16 @@ trait ApplicationTrait
     // =========================================================================
 
     /**
+     * @var string Craft’s schema version number.
+     */
+    public $schemaVersion;
+
+    /**
+     * @var string The minimum Craft build number required to update to this build.
+     */
+    public $minVersionRequired;
+
+    /**
      * @var
      */
     private $_isInstalled;
@@ -144,37 +154,6 @@ trait ApplicationTrait
      * @var bool
      */
     private $_gettingLanguage = false;
-
-    /**
-     * @var string Craft’s build number.
-     */
-    public $build;
-
-    /**
-     * @var string Craft’s schema version number.
-     */
-    public $schemaVersion;
-
-    /**
-     * @var DateTime Craft’s release date.
-     */
-    public $releaseDate;
-
-    /**
-     * @var string The minimum Craft build number required to update to this build.
-     */
-    public $minBuildRequired;
-
-    /**
-     * @var string The URL to download the minimum Craft version.
-     * @see $minBuildRequired
-     */
-    public $minBuildUrl;
-
-    /**
-     * @var string The release track Craft is running on.
-     */
-    public $track;
 
     /**
      * @var string The stored version
@@ -589,10 +568,7 @@ trait ApplicationTrait
 
         // TODO: Remove this after the next breakpoint
         $this->_storedVersion = $row['version'];
-        unset($row['siteName'], $row['siteUrl']);
-
-        // Prevent an infinite loop in toDateTime.
-        $row['releaseDate'] = DateTimeHelper::toDateTime($row['releaseDate'], false, false);
+        unset($row['siteName'], $row['siteUrl'], $row['build'], $row['releaseDate'], $row['track']);
 
         $this->_info = new Info($row);
 
@@ -611,6 +587,9 @@ trait ApplicationTrait
         /** @var \craft\app\web\Application|\craft\app\console\Application $this */
         if ($info->validate()) {
             $attributes = Db::prepareValuesForDb($info);
+
+            // TODO: Remove this after the next breakpoint
+            unset($attributes['build'], $attributes['releaseDate'], $attributes['track']);
 
             if (array_key_exists('id', $attributes) && $attributes['id'] === null) {
                 unset($attributes['id']);

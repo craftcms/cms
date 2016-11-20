@@ -1,26 +1,12 @@
 <?php
 
-$config = [
+return [
     'id' => 'CraftCMS',
     'name' => 'Craft CMS',
-    'version' => '3.0',
-    'build' => '@@@build@@@',
-    'schemaVersion' => '3.0.23',
-    'releaseDate' => '@@@releaseDate@@@',
-    'minBuildRequired' => '@@@minBuildRequired@@@',
-    'minBuildUrl' => '@@@minBuildUrl@@@',
-    'track' => '@@@track@@@',
+    'version' => '3.0.0-alpha.2948',
+    'schemaVersion' => '3.0.24',
+    'minVersionRequired' => '2.6.2788',
     'basePath' => '@craft/app',          // Defines the @app alias
     'runtimePath' => '@storage/runtime', // Defines the @runtime alias
     'controllerNamespace' => 'craft\app\controllers',
 ];
-
-/* HIDE */
-// Default version/build values for running Craft directly from the source
-$config['build'] = '9999';
-$config['releaseDate'] = '1429092000';
-$config['minBuildRequired'] = '0';
-$config['minBuildUrl'] = 'http://craftcms.com/';
-$config['track'] = 'stable';
-/* end HIDE */
-return $config;

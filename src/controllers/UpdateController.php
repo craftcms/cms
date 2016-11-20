@@ -111,7 +111,7 @@ class UpdateController extends Controller
                     $return[] = [
                         'handle' => 'craft',
                         'name' => 'Craft',
-                        'version' => $updateInfo->app->latestVersion.'.'.$updateInfo->app->latestBuild,
+                        'version' => $updateInfo->app->latestVersion,
                         'critical' => $updateInfo->app->criticalUpdateAvailable,
                         'releaseDate' => $updateInfo->app->latestDate->getTimestamp()
                     ];
@@ -138,7 +138,7 @@ class UpdateController extends Controller
                     $return[] = [
                         'handle' => 'Craft',
                         'name' => 'Craft',
-                        'version' => $updateInfo->app->latestVersion.'.'.$updateInfo->app->latestBuild,
+                        'version' => $updateInfo->app->latestVersion,
                         'critical' => $updateInfo->app->criticalUpdateAvailable,
                         'releaseDate' => $updateInfo->app->latestDate->getTimestamp()
                     ];

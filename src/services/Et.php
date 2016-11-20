@@ -10,6 +10,7 @@ namespace craft\app\services;
 use Craft;
 use craft\app\base\Plugin;
 use craft\app\et\EtTransport;
+use craft\app\helpers\App;
 use craft\app\helpers\Io;
 use craft\app\helpers\Json;
 use craft\app\models\AppNewRelease;
@@ -20,6 +21,7 @@ use craft\app\models\PluginUpdate;
 use craft\app\models\Update;
 use craft\app\models\UpgradeInfo;
 use craft\app\models\UpgradePurchase;
+use GuzzleHttp\Client;
 use yii\base\Component;
 
 /**
@@ -35,16 +37,16 @@ class Et extends Component
     // Constants
     // =========================================================================
 
-	const ENDPOINT_PING = 'app/ping';
-	const ENDPOINT_CHECK_FOR_UPDATES = 'app/checkForUpdates';
-	const ENDPOINT_TRANSFER_LICENSE = 'app/transferLicenseToCurrentDomain';
-	const ENDPOINT_GET_UPGRADE_INFO = 'app/getUpgradeInfo';
-	const ENDPOINT_GET_COUPON_PRICE = 'app/getCouponPrice';
-	const ENDPOINT_PURCHASE_UPGRADE = 'app/purchaseUpgrade';
-	const ENDPOINT_GET_UPDATE_FILE_INFO = 'app/getUpdateFileInfo';
-	const ENDPOINT_REGISTER_PLUGIN = 'plugins/registerPlugin';
-	const ENDPOINT_UNREGISTER_PLUGIN = 'plugins/unregisterPlugin';
-	const ENDPOINT_TRANSFER_PLUGIN = 'plugins/transferPlugin';
+    const ENDPOINT_PING = 'app/ping';
+    const ENDPOINT_CHECK_FOR_UPDATES = 'app/checkForUpdates';
+    const ENDPOINT_TRANSFER_LICENSE = 'app/transferLicenseToCurrentDomain';
+    const ENDPOINT_GET_UPGRADE_INFO = 'app/getUpgradeInfo';
+    const ENDPOINT_GET_COUPON_PRICE = 'app/getCouponPrice';
+    const ENDPOINT_PURCHASE_UPGRADE = 'app/purchaseUpgrade';
+    const ENDPOINT_GET_UPDATE_FILE_INFO = 'app/getUpdateFileInfo';
+    const ENDPOINT_REGISTER_PLUGIN = 'plugins/registerPlugin';
+    const ENDPOINT_UNREGISTER_PLUGIN = 'plugins/unregisterPlugin';
+    const ENDPOINT_TRANSFER_PLUGIN = 'plugins/transferPlugin';
 
     // Properties
     // =========================================================================
@@ -189,41 +191,63 @@ class Et extends Component
         }
 
         $updateModel = Craft::$app->getUpdates()->getUpdates();
-        $buildVersion = $updateModel->app->latestVersion.'.'.$updateModel->app->latestBuild;
 
         if ($handle == 'craft') {
-            $path = $this->downloadBaseUrl.'/craft/'.$updateModel->app->latestVersion.'/'.$buildVersion.'/Patch/'.($handle == 'craft' ? $updateModel->app->localBuild : $updateModel->app->localVersion.'.'.$updateModel->app->localBuild).'/'.$md5.'.zip';
+            $localVersion = $updateModel->app->localVersion;
+            $targetVersion = $updateModel->app->latestVersion;
+            $uriPrefix = 'craft';
         } else {
+            // Find the plugin whose class matches the handle
             $localVersion = null;
-            $localBuild = null;
-            $latestVersion = null;
-            $latestBuild = null;
+            $targetVersion = null;
+            $uriPrefix = 'plugins/'.$handle;
 
             foreach ($updateModel->plugins as $plugin) {
                 if (strtolower($plugin->class) == $handle) {
-                    $parts = explode('.', $plugin->localVersion);
-                    $localVersion = $parts[0].'.'.$parts[1];
-                    $localBuild = $parts[2];
-
-                    $parts = explode('.', $plugin->latestVersion);
-                    $latestVersion = $parts[0].'.'.$parts[1];
-                    $latestBuild = $parts[2];
-
+                    $localVersion = $plugin->localVersion;
+                    $targetVersion = $plugin->latestVersion;
                     break;
                 }
             }
 
-            $path = $this->downloadBaseUrl.'/plugins/'.$handle.'/'.$latestVersion.'/'.$latestVersion.'.'.$latestBuild.'/Patch/'.$localVersion.'.'.$localBuild.'/'.$md5.'.zip';
+            if ($localVersion === null) {
+                Craft::warning('Couldn’t find the plugin "'.$handle.'" in the update model.');
+
+                return false;
+            }
         }
 
-        $et = new EtTransport($path, 240);
-        $et->setDestinationFilename($downloadPath);
+        $xy = App::majorMinorVersion($targetVersion);
+        $url = "{$this->downloadBaseUrl}/{$uriPrefix}/{$xy}/{$targetVersion}/Patch/{$localVersion}/{$md5}.zip";
 
-        if (($filename = $et->phoneHome()) !== null) {
-            return $filename;
+        $client = new Client([
+            'timeout' => 240,
+            'connect_timeout' => 30,
+        ]);
+
+        // Potentially long-running request, so close session to prevent session blocking on subsequent requests.
+        Craft::$app->getSession()->close();
+
+        $response = $client->request('get', $url);
+
+        if ($response->getStatusCode() != 200) {
+            Craft::warning('Error in downloading '.$url.' Response: '.$response->getBody());
+
+            return false;
         }
 
-        return false;
+        $body = $response->getBody();
+
+        // Make sure we're at the beginning of the stream.
+        $body->rewind();
+
+        // Write it out to the file
+        Io::writeToFile($downloadPath, $body, true);
+
+        // Close the stream.
+        $body->close();
+
+        return Io::getFilename($downloadPath);
     }
 
     /**
@@ -476,8 +500,7 @@ class Et extends Component
             if (is_array($attributes)) {
                 $etModel = new EtModel($attributes);
 
-                // Make sure it's valid. (At a minimum, localBuild and localVersion
-                // should be set.)
+                // Make sure it's valid.
                 if ($etModel->validate()) {
                     return $etModel;
                 }
@@ -501,8 +524,7 @@ class Et extends Component
     {
         $url = $this->elliottBaseUrl.'/actions/elliott/'.$endpoint;
 
-        if ($this->elliottQuery)
-        {
+        if ($this->elliottQuery) {
             $url .= '?'.$this->elliottQuery;
         }
 

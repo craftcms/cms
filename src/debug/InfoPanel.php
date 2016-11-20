@@ -57,8 +57,6 @@ class InfoPanel extends Panel
     {
         return [
             'craftVersion' => Craft::$app->version,
-            'craftBuild' => Craft::$app->build,
-            'craftReleaseDate' => Craft::$app->releaseDate->getTimestamp(),
             'craftEdition' => Craft::$app->getEdition(),
             'packages' => [
                 'Yii' => \Yii::getVersion(),
