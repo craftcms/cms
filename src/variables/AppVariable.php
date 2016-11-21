@@ -106,7 +106,7 @@ class AppVariable
 	 */
 	public function getBuild()
 	{
-		return null;
+		return craft()->getBuild();
 	}
 
 	/**
@@ -118,7 +118,7 @@ class AppVariable
 	 */
 	public function getReleaseDate()
 	{
-		return null;
+		return craft()->getReleaseDate();
 	}
 
 	/**

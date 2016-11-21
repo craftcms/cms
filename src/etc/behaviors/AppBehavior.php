@@ -146,7 +146,10 @@ class AppBehavior extends BaseBehavior
 	 */
 	public function getBuild()
 	{
-        return null;
+        craft()->deprecator->log('getBuild()', 'craft()->getBuild() has been deprecated. As of Craft 2.6.2951, craft()->getVersion() returns the complete version number (X.Y.Z).');
+        preg_match('/^\d+\.\d+\.(\d+)/', $this->getVersion(), $matches);
+
+        return $matches[1];
 	}
 
 	/**
@@ -162,13 +165,15 @@ class AppBehavior extends BaseBehavior
 	/**
 	 * Returns the installed Craft release date.
 	 *
-	 * @return string
+	 * @return DateTime
 	 * @deprecated
 	 * @todo Remove in v3
 	 */
 	public function getReleaseDate()
 	{
-		return null;
+        craft()->deprecator->log('getReleaseDate()', 'craft()->getReleaseDate() has been deprecated.');
+
+		return new DateTime();
 	}
 
 	/**
@@ -180,7 +185,9 @@ class AppBehavior extends BaseBehavior
 	 */
 	public function getTrack()
 	{
-		return null;
+        craft()->deprecator->log('getTrack()', 'craft()->getTrack() has been deprecated.');
+
+		return 'stable';
 	}
 
 	/**
