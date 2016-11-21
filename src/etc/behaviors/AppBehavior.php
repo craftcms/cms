@@ -503,7 +503,26 @@ class AppBehavior extends BaseBehavior
 				}
 
 				// todo: remove after next breakpiont
-				unset($row['build'], $row['releaseDate'], $row['track']);
+                if (isset($row['build']))
+                {
+                    $version = $row['version'];
+
+                    switch ($row['track'])
+                    {
+                        case 'dev':
+                            $version .= '.0-alpha.'.$row['build'];
+                            break;
+                        case 'beta':
+                            $version .= '.0-beta.'.$row['build'];
+                            break;
+                        default:
+                            $version .= '.'.$row['build'];
+                            break;
+                    }
+
+                    $row['version'] = $version;
+                    unset($row['build'], $row['releaseDate'], $row['track']);
+                }
 
 				$this->_info = new InfoModel($row);
 			}
