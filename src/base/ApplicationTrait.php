@@ -568,6 +568,23 @@ trait ApplicationTrait
 
         // TODO: Remove this after the next breakpoint
         $this->_storedVersion = $row['version'];
+        if (isset($row['build'])) {
+            $version = $row['version'];
+
+            switch ($row['track']) {
+                case 'dev':
+                    $version .= '.0-alpha.'.$row['build'];
+                    break;
+                case 'beta':
+                    $version .= '.0-beta.'.$row['build'];
+                    break;
+                default:
+                    $version .= '.'.$row['build'];
+                    break;
+            }
+
+            $row['version'] = $version;
+        }
         unset($row['siteName'], $row['siteUrl'], $row['build'], $row['releaseDate'], $row['track']);
 
         $this->_info = new Info($row);
@@ -613,7 +630,6 @@ trait ApplicationTrait
                     // Set the new id
                     $info->id = $this->getDb()->getLastInsertID('{{%info}}');
                 }
-
             }
 
             // Use this as the new cached Info
@@ -692,7 +708,6 @@ trait ApplicationTrait
             try {
                 $this->getDb()->open();
                 $this->_isDbConnectionValid = true;
-
             } catch (DbConnectException $e) {
                 $this->_isDbConnectionValid = false;
             }
