@@ -129,6 +129,7 @@ class GlobalsController extends BaseController
 
 		$criteria = craft()->elements->getCriteria(ElementType::GlobalSet);
 		$criteria->locale = $variables['localeId'];
+		$criteria->limit = null;
 		$globalSets = $criteria->find();
 
 		foreach ($globalSets as $globalSet)
