@@ -208,7 +208,6 @@ return [
         $config = [
             'class' => craft\app\db\Connection::class,
             'dsn' => $dsn,
-            'emulatePrepare' => true,
             'username' => $configService->get('user', Config::CATEGORY_DB),
             'password' => $configService->get('password', Config::CATEGORY_DB),
             'charset' => $configService->get('charset', Config::CATEGORY_DB),
