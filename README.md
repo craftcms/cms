@@ -1,128 +1,18 @@
-# Craft Source
+<p align="center"><a href="https://craftcms.com/" target="_blank" title="Craft CMS">
+    <svg width="312" height="90" viewBox="0 0 156 45" xmlns="http://www.w3.org/2000/svg"><title>craft cms logo</title><g fill="#DA5A47" fill-rule="evenodd"><path d="M78.372 19.29h6.738l.785-4.084h-6.737l1.147-5.974h-.022l-5.11 3.973-.384 2h-5.293l1.546-8.048c.364-3.037 5.03-2.117 5.725-1.946l.747-3.878c-8.392-3.196-10.84 5.825-10.84 5.825l-1.547 8.05H65.1l-5.255 4.084h4.498L59.403 45h4.368l4.94-25.71h5.294L72.07 29.356c-1.23 7.326 6.173 6.523 8.536 6.052l.74-3.836c-5.654 1.266-4.908-2.215-4.908-2.215l1.934-10.064zM52.53 29.843c-4.546 4.624-7.458 1.597-7.458 1.597-1.97-1.903.208-3.857.208-3.857 3.008-2.723 7.61.27 7.61.27l-.36 1.99zm1.005-5.576s-6.26-3.185-10.64.36c0 0-2.567 1.698-2.567 5.09 0 3.393 3.137 5.216 3.137 5.216s4.718 2.468 8.413-1.476l-.407 1.835h4.132l2.597-12.21c1.948-12.047-12.534-7.777-12.534-7.777l-.79 4.33c10.676-4.612 8.88 3.425 8.88 3.425l-.22 1.207zM41.966 15.22c-3.37.034-6.432 1.897-6.432 1.897l.39-1.828h-4.043l-3.69 20.04h4.133l2.502-13.185c1.85-3.724 6.42-2.566 6.42-2.566l.72-4.36zM26.198 6.63c.21.157.408.323.602.492l3.136-2.44.098-.126a14.27 14.27 0 0 0-1.554-1.353C21.283-2.182 10.407.072 4.188 8.238c-6.215 8.165-5.42 19.147 1.776 24.534 5.877 4.396 14.204 3.698 20.447-1.15l-.005-.012-2.986-2.32c-4.627 2.948-10.366 3.16-14.518.054-5.53-4.136-6.14-12.574-1.363-18.846 4.775-6.273 13.13-8.004 18.658-3.868M106.34 33.743a13.486 13.486 0 0 1-2.907 1.382c-1.057.36-2.2.54-3.428.54-1.45 0-2.79-.258-4.02-.774a9.478 9.478 0 0 1-3.168-2.13 9.97 9.97 0 0 1-2.08-3.188c-.504-1.22-.756-2.53-.756-3.936 0-1.406.245-2.726.733-3.96a9.695 9.695 0 0 1 2.08-3.235 9.85 9.85 0 0 1 3.193-2.177c1.23-.532 2.568-.798 4.02-.798 1.227 0 2.37.18 3.427.54 1.055.358 2.025.82 2.908 1.38l-.804 1.173c-.788-.498-1.63-.913-2.53-1.242-.896-.328-1.897-.49-3-.49-1.262 0-2.413.225-3.454.677a8.264 8.264 0 0 0-2.67 1.83 8.036 8.036 0 0 0-1.726 2.74 9.422 9.422 0 0 0-.614 3.422c0 1.218.204 2.367.614 3.443a8.463 8.463 0 0 0 1.725 2.813 7.885 7.885 0 0 0 2.672 1.876c1.04.455 2.192.68 3.453.68 1.104 0 2.105-.165 3-.49.9-.33 1.743-.744 2.53-1.244l.806 1.17zM137.453 35.29V22.214c0-3.56-1.546-5.343-4.635-5.343-1.418 0-2.773.41-4.065 1.22-1.293.813-2.443 1.89-3.452 3.234V35.29h-1.512V22.214c0-3.56-1.545-5.343-4.633-5.343-1.45 0-2.8.41-4.043 1.22a17.79 17.79 0 0 0-3.476 3v14.2h-1.513V15.84h1.466v3.655c.44-.498.944-.99 1.51-1.475.57-.485 1.175-.915 1.822-1.29.646-.374 1.348-.68 2.105-.914a7.913 7.913 0 0 1 2.365-.35c1.324 0 2.488.36 3.498 1.078 1.008.717 1.686 1.827 2.033 3.327.944-1.186 2.127-2.218 3.546-3.093 1.418-.873 2.946-1.312 4.586-1.312a6.71 6.71 0 0 1 2.246.375c.708.25 1.34.65 1.89 1.195.55.547.985 1.235 1.3 2.063.315.827.473 1.82.473 2.976V35.29h-1.512zM155.56 30.275c0 .72-.14 1.405-.424 2.062a4.923 4.923 0 0 1-1.23 1.712 6.394 6.394 0 0 1-1.914 1.17c-.74.295-1.585.445-2.53.445-1.262 0-2.442-.21-3.545-.632a15.4 15.4 0 0 1-3.168-1.664l.707-1.126a15.69 15.69 0 0 0 2.837 1.546c.977.408 2.034.61 3.167.61 1.42 0 2.555-.376 3.406-1.126.852-.75 1.277-1.67 1.277-2.765 0-.937-.253-1.678-.757-2.227-.504-.545-1.143-1.014-1.914-1.405-.772-.39-1.6-.743-2.482-1.055a15.483 15.483 0 0 1-2.483-1.125 6.26 6.26 0 0 1-1.915-1.64c-.505-.656-.756-1.53-.756-2.625 0-.625.133-1.233.402-1.828a4.9 4.9 0 0 1 1.158-1.592 5.703 5.703 0 0 1 1.843-1.126c.726-.28 1.56-.423 2.506-.423 1.04 0 2.025.158 2.954.47.93.31 1.837.78 2.72 1.405l-.71 1.172c-.85-.625-1.662-1.078-2.434-1.36a7.354 7.354 0 0 0-2.53-.422c-1.514 0-2.64.368-3.38 1.103-.742.734-1.113 1.554-1.113 2.46 0 .937.252 1.68.758 2.226.504.545 1.142 1.007 1.915 1.382.774.373 1.6.718 2.482 1.03.883.313 1.712.68 2.483 1.1.772.423 1.41.963 1.915 1.618.504.657.756 1.533.756 2.625"></path></g></svg>
+</a></p>
 
-Craft is a CMS by Pixel & Tonic, built for people who like to take their time and do things right. You can read more about Craft at [craftcms.com](https://craftcms.com).
+## About Craft CMS
 
-This repo contains the source code, resources, a custom build script and other utilities.
+Craft is a content-first CMS that aims to make life enjoyable for developers and content managers alike. It is optimized for bespoke web and application development, offering developers a clean slate to build out exactly what they want, rather than wrestling with a theme. 
 
+## Learning Craft
 
-## Developing Locally
+Several great learning resources are out there:
 
-Craft 3’s source code can be executed by PHP directly; there is no need to run
-Craft’s build script after making changes.
-
-### Dev Server Setup
-
-To create a dev server on your machine, follow these steps.
-
-1. Create a “craft3.craft.dev” virtual host, and install the latest public
-   version of Craft 2 on it. (Craft 3 is not yet capable of installing itself.)
-2. Delete the craft/app folder.
-3. Create a symlink at craft/app that points to the Source/craft/app folder
-   within the repo:
-
-         > cd path/to/craft3.craft.dev/craft
-         > ln -s path/to/git/Craft/Source/craft/app
-
-4. In your public/index.php file, add this line after setting the `$craftPath`
-   variable:
-
-   ```php
-   define('CRAFT_BASE_PATH', dirname(__DIR__).'/craft/');
-   ```
-
-### PhpStorm Project Setup
-
-To create a PhpStorm project for your dev server, follow these steps:
-
-1. Create a new PhpStorm project in the folder containing the craft/ and
-   public/ folders for craft3.craft.dev.
-2. Go to Run > Edit Configurations…
-3. Create a new “PHP Web Application” and call it “craft3.craft.dev”.
-4. Create a new Server for your application, and call it “craft3.craft.dev”.
-   Configure it with the following options:
-
-   - Use path mappings: **Yes**
-   - **craft/** should map to path/to/craft3.craft.dev/craft
-   - **craft/app/** should map to path/to/git/Craft/Source/craft/app
-   - **public/** should map to path/to/craft3.craft.dev/public
-
-![PhpStorm server config](Resources/PhpStormServerConfig.png)
-
-### Grunt Setup
-
-If you are going to make any changes to Craft’s JavaScript or Sass files, you
-will need to install Grunt and its tasks.
-
-    > cd path/to/git/Craft
-    > sudo npm install
-
-Before making changes, start up the Grunt watcher task:
-
-    > cd path/to/git/Craft
-    > grunt watch
-
-If you forgot to start the `grunt watch` task before making changes, you can just call `grunt` for one-off JS/CSS builds.
-
-
-## Building Craft
-
-Craft has a custom build script that does the following:
-
-* Optionally runs any unit tests found in Source/craft/app/tests/
-* Copies all files from Source/ into a build directory
-* Deletes some unneeded files and folders from the build directory
-* Parses all Craft PHP files for a few tokens (e.g. “@@@build@@@”)
-* Optionally copies the final craft/app/ folder to a destination of your choosing, and sets app/etc/console/yiic.php’s permissions to 777
-
-
-### OS X Environment Setup
-
-To set up your OS X environment to build Craft, follow these instructions:
-
-1. Open ~/.bash_profile in a text editor and add the following:
-
-        # Craft Utils environment variables
-        export CRAFT_REPO_PATH=/path/to/Craft
-        export CRAFT_PHP_PATH=/Applications/MAMP/bin/php/php5.3.20/bin/php
-        export CRAFT_PHPINI_PATH=/Applications/MAMP/bin/php/php5.3.20/conf/php.ini
-        export PATH=$CRAFT_REPO_PATH/Utils:$PATH
-
-    (Set `CRAFT_REPO_PATH`, `CRAFT_PHP_PATH` to the actual paths of your Craft repo and PHP executable.)
-
-2. Give the build script executable permissions by entering the following in Terminal:
-
-        cd /path/to/Craft/Utils
-        chmod 777 buildcraft
-
-3. Restart Terminal, and try entering:
-
-        buildcraft
-
-    You should see a bunch of text fly by. Craft is being built!
-
-Now that your environment is set up, you can build Craft at any time by entering `buildcraft` in Terminal.
-
-
-### Options
-
-The build script supports the following options:
-
-* `--runtests` – Set to ‘1’ to have the build script run any tests before it starts building
-* `--destdir` – Defines the directory that Craft should be built into. Defaults to a Build/ folder within the repo, which is .gitignore’d
-* `--build` – The build number to be saved in craft/app/Info.php
-* `--version` – The version number to be saved in craft/app/Info.php
-* `--compressjs` – Set to ‘1’ to have the build script compress all of the Javascript files in craft/app/resources/js/
-* `--copyappdir` – A path that the build script should copy the craft/app/ folder to once everything else is done
-
-**Note:** Java is required for Javascript compression. If you omit `--compressjs`, you will need to add the following to your Craft install’s craft/config/general.php file:
-
-    'useCompressedJs' => false,
-
-## Development Guidelines
-
-### Accessibility
-
-* If a link is acting as a button, give it a role="button" attribute to avoid confusing screen-readers.
-* Use HTML5 "placeholder" attributes for input and text fields.
-* Make sure to use <label> tags.
-
+- Craft’s [official documentation](https://craftcms.com/docs) is the best place to start.
+- The official [demo site](https://demo.craftcms.com/) offers a quick and effortless way to start exploring a pre-built Craft site.
+- [Mijingo](https://mijingo.com/craft) offers a collection of video courses, covering the full spectrum from beginner to advanced.
+- [Envato Tuts+](https://webdesign.tutsplus.com/categories/craft-cms/courses) offers a collection of video courses as well.
+- You can find helpful guides and recipes on [Straight Up Craft](http://straightupcraft.com/) and [Craft Cookbook](http://craftcookbook.net/).
+- Get help from others in the Craft community on [Craft Slack](https://craftcms.com/community#slack) and [Craft CMS Stack Exchange](http://craftcms.stackexchange.com/). 
