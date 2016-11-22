@@ -20,39 +20,87 @@ class m150403_184729_type_columns extends Migration
      */
     public function safeUp()
     {
-        $map = [
-            'craft\volumes' => ['{{%assetsources}}'],
-            //'craft\volumes'  => ['{{%volumes}}'],
-            'craft\elements' => [
-                '{{%elements}}',
-                '{{%elementindexsettings}}',
-                '{{%fieldlayouts}}',
-                '{{%templatecachecriteria}}'
+        $componentTypes = [
+            [
+                'namespace' => 'craft\volumes',
+                'tables' => [
+                    '{{%assetsources}}',
+                ],
+                'classes' => [
+                    'GoogleCloud',
+                    'Local',
+                    'Rackspace',
+                    'S3',
+                ]
             ],
-            'craft\fields' => ['{{%fields}}'],
-            'craft\tasks' => ['{{%tasks}}'],
-            'craft\widgets' => ['{{%widgets}}'],
+            [
+                'namespace' => 'craft\elements',
+                'tables' => [
+                    '{{%elements}}',
+                    '{{%elementindexsettings}}',
+                    '{{%fieldlayouts}}',
+                    '{{%templatecachecriteria}}',
+                ],
+                'classes' => [
+                    'Asset',
+                    'Category',
+                    'Entry',
+                    'GlobalSet',
+                    'MatrixBlock',
+                    'Tag',
+                    'User',
+                ]
+            ],
+            [
+                'namespace' => 'craft\fields',
+                'tables' => [
+                    '{{%fields}}',
+                ],
+                'classes' => [
+                    'Assets',
+                    'Categories',
+                    'Checkboxes',
+                    'Color',
+                    'Date',
+                    'Dropdown',
+                    'Entries',
+                    'Lightswitch',
+                    'Matrix',
+                    'MultiSelect',
+                    'Number',
+                    'PlainText',
+                    'PositionSelect',
+                    'RadioButtons',
+                    'RichText',
+                    'Table',
+                    'Tags',
+                    'Users',
+                ]
+            ],
+            [
+                'namespace' => 'craft\widgets',
+                'tables' => [
+                    '{{%widgets}}',
+                ],
+                'classes' => [
+                    'Feed',
+                    'GetHelp',
+                    'NewUsers',
+                    'QuickPost',
+                    'RecentEntries',
+                    'Updates',
+                ]
+            ],
         ];
 
-        foreach ($map as $namespace => $tables) {
-            $folderPath = Craft::getAlias('@app/'.substr($namespace, 6));
-            $files = Io::getFolderContents($folderPath, false);
-            $classes = [];
-
-            foreach ($files as $file) {
-                $class = Io::getFilename($file, false);
-                if (strncmp($class, 'Base', 4) !== 0) {
-                    $classes[] = $class;
-                }
-            }
-
+        foreach ($componentTypes as $componentType) {
             $columns = [
-                'type' => new Expression('concat(\''.addslashes($namespace.'\\').'\', type)')
+                'type' => new Expression('concat(\''.addslashes($componentType['namespace'].'\\').'\', type)')
             ];
 
-            $condition = ['type' => $classes];
+            $condition = ['type' => $componentType['classes']];
 
-            foreach ($tables as $table) {
+            foreach ($componentType['tables'] as $table) {
                 $this->alterColumn($table, 'type', $this->string()->notNull());
                 $this->update($table, $columns, $condition, [], false);
             }
@@ -62,6 +110,9 @@ class m150403_184729_type_columns extends Migration
         $this->update('{{%assetsources}}',
             ['type' => 'craft\volumes\AwsS3'],
             ['type' => 'craft\volumes\S3']);
+
+        // Just delete all pending tasks
+        $this->delete('{{%tasks}}');
     }
 
     /**
