@@ -12,6 +12,7 @@ Craft.AssetImageEditor = Garnish.Modal.extend(
 	{
 		// jQuery objects
 		$body: null,
+		$footer: null,
 		$tools: null,
 		$buttons: null,
 		$cancelBtn: null,
@@ -75,21 +76,19 @@ Craft.AssetImageEditor = Garnish.Modal.extend(
 			this.assetId = assetId;
 
 			// Build the modal
-			var $container = $('<div class="modal asset-editor"></div>').appendTo(Garnish.$bod),
-				$body = $('<div class="body"><div class="spinner big"></div></div>').appendTo($container),
-				$footer = $('<div class="footer"/>').appendTo($container);
+			this.$container = $('<form class="modal fitted imageeditor"></form>').appendTo(Garnish.$bod),
+			this.$body = $('<div class="body"></div>').appendTo(this.$container),
+			this.$footer = $('<div class="footer"/>').appendTo(this.$container);
 
-			this.base($container, this.settings);
+			this.base(this.$container, this.settings);
 
-			this.$buttons = $('<div class="buttons rightalign"/>').appendTo($footer);
+			this.$buttons = $('<div class="buttons rightalign"/>').appendTo(this.$footer);
 			this.$cancelBtn = $('<div class="btn cancel">' + Craft.t('app', 'Cancel') + '</div>').appendTo(this.$buttons);
 			this.$replaceBtn = $('<div class="btn submit save replace">' + Craft.t('app', 'Replace Asset') + '</div>').appendTo(this.$buttons);
 
 			if (this.settings.allowSavingAsNew) {
 				this.$saveBtn = $('<div class="btn submit save copy">' + Craft.t('app', 'Save as New Asset') + '</div>').appendTo(this.$buttons);
 			}
-
-			this.$body = $body;
 
 			this.addListener(this.$cancelBtn, 'activate', $.proxy(this, 'hide'));
 			this.removeListener(this.$shade, 'click');
@@ -99,8 +98,22 @@ Craft.AssetImageEditor = Garnish.Modal.extend(
 
 		loadEditor: function (data) {
 			this.$body.html(data.html);
-			this.$tools = $('.image-tools', this.$body);
+			this.$tabs = $('.tabs li', this.$body);
+			this.$viewsContainer = $('.views', this.$body);
+			this.$views = $('> div', this.$viewsContainer);
 
+
+			/*
+			 this.addListener(this.$tabs, 'click', '_handleTabClick');
+			 this.straighteningInput = new SlideRuleInput("slide-rule");
+			 this.ratioMenu = this.$ratioBtn.menubtn().data('menubtn').menu;
+			 this.ratioMenu.on('optionselect', $.proxy(this, '_handleRatioChange'));
+			 this.ratioMenu.$options.first().trigger('click');
+
+
+			 */
+			this.updateSizeAndPosition();
+/*
 			this.canvas = new fabric.StaticCanvas('image-canvas', {backgroundColor: this.backgroundColor, hoverCursor: 'default'});
 			this.canvas.enableRetinaScaling = true;
 
@@ -149,7 +162,46 @@ Craft.AssetImageEditor = Garnish.Modal.extend(
 
 				// Render it, finally
 				this.canvas.renderAll();
-			}, this));
+			}, this));*/
+		},
+
+		updateSizeAndPosition: function()
+		{
+			if (!this.$container)
+			{
+				return;
+			}
+
+
+			// Fullscreen modal
+
+			var innerWidth = window.innerWidth;
+			var innerHeight = window.innerHeight;
+
+			this.$container.css({
+				'width':      innerWidth,
+				'min-width':  innerWidth,
+				'left':       0,
+
+				'height':     innerHeight,
+				'min-height': innerHeight,
+				'top':        0
+			});
+
+			this.$body.css({
+				'height':     innerHeight - 58,
+			});
+
+			if(innerWidth < innerHeight)
+			{
+				this.$container.addClass('vertical');
+			}
+			else
+			{
+				this.$container.removeClass('vertical');
+			}
+
+			//this._scaleAndCenterImage();
 		},
 
 		/**
