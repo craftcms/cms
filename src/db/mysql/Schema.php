@@ -5,12 +5,12 @@
  * @license   https://craftcms.com/license
  */
 
-namespace craft\app\db\mysql;
+namespace craft\db\mysql;
 
 use Craft;
-use craft\app\errors\DbBackupException;
-use craft\app\helpers\Io;
-use craft\app\services\Config;
+use craft\errors\DbBackupException;
+use craft\helpers\Io;
+use craft\services\Config;
 use yii\db\Exception;
 
 /**

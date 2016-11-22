@@ -5,12 +5,12 @@
  * @license   https://craftcms.com/license
  */
 
-namespace craft\app\fields;
+namespace craft\fields;
 
 use Craft;
-use craft\app\base\ElementInterface;
-use craft\app\elements\Category;
-use craft\app\helpers\ElementHelper;
+use craft\base\ElementInterface;
+use craft\elements\Category;
+use craft\helpers\ElementHelper;
 
 /**
  * Categories represents a Categories field.

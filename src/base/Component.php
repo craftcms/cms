@@ -5,7 +5,7 @@
  * @license   https://craftcms.com/license
  */
 
-namespace craft\app\base;
+namespace craft\base;
 
 /**
  * Component is the base class for classes representing Craft components in terms of objects.

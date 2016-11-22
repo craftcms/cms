@@ -5,20 +5,20 @@
  * @license   https://craftcms.com/license
  */
 
-namespace craft\app\helpers;
+namespace craft\helpers;
 
 use Craft;
-use craft\app\errors\MissingComponentException;
-use craft\app\events\Event;
-use craft\app\events\RegisterComponentTypesEvent;
-use craft\app\mail\Mailer;
-use craft\app\mail\transportadapters\BaseTransportAdapter;
-use craft\app\mail\transportadapters\Gmail;
-use craft\app\mail\transportadapters\Php;
-use craft\app\mail\transportadapters\Sendmail;
-use craft\app\mail\transportadapters\Smtp;
-use craft\app\mail\transportadapters\TransportAdapterInterface;
-use craft\app\models\MailSettings;
+use craft\errors\MissingComponentException;
+use craft\events\Event;
+use craft\events\RegisterComponentTypesEvent;
+use craft\mail\Mailer;
+use craft\mail\transportadapters\BaseTransportAdapter;
+use craft\mail\transportadapters\Gmail;
+use craft\mail\transportadapters\Php;
+use craft\mail\transportadapters\Sendmail;
+use craft\mail\transportadapters\Smtp;
+use craft\mail\transportadapters\TransportAdapterInterface;
+use craft\models\MailSettings;
 
 /**
  * Class DateTimeHelper

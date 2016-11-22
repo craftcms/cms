@@ -1,10 +1,10 @@
 <?php
 
-namespace craft\app\migrations;
+namespace craft\migrations;
 
 use Craft;
-use craft\app\db\Migration;
-use craft\app\helpers\Io;
+use craft\db\Migration;
+use craft\helpers\Io;
 use yii\db\Expression;
 
 /**
@@ -21,17 +21,17 @@ class m150403_184729_type_columns extends Migration
     public function safeUp()
     {
         $map = [
-            'craft\app\volumes' => ['{{%assetsources}}'],
-            //'craft\app\volumes'  => ['{{%volumes}}'],
-            'craft\app\elements' => [
+            'craft\volumes' => ['{{%assetsources}}'],
+            //'craft\volumes'  => ['{{%volumes}}'],
+            'craft\elements' => [
                 '{{%elements}}',
                 '{{%elementindexsettings}}',
                 '{{%fieldlayouts}}',
                 '{{%templatecachecriteria}}'
             ],
-            'craft\app\fields' => ['{{%fields}}'],
-            'craft\app\tasks' => ['{{%tasks}}'],
-            'craft\app\widgets' => ['{{%widgets}}'],
+            'craft\fields' => ['{{%fields}}'],
+            'craft\tasks' => ['{{%tasks}}'],
+            'craft\widgets' => ['{{%widgets}}'],
         ];
 
         foreach ($map as $namespace => $tables) {
@@ -60,8 +60,8 @@ class m150403_184729_type_columns extends Migration
 
         // S3 is now AwsS3
         $this->update('{{%assetsources}}',
-            ['type' => 'craft\app\volumes\AwsS3'],
-            ['type' => 'craft\app\volumes\S3']);
+            ['type' => 'craft\volumes\AwsS3'],
+            ['type' => 'craft\volumes\S3']);
     }
 
     /**

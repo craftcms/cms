@@ -5,16 +5,16 @@
  * @license   https://craftcms.com/license
  */
 
-namespace craft\app\services;
+namespace craft\services;
 
 use Craft;
-use craft\app\cache\AppPathDependency;
-use craft\app\dates\DateTime;
-use craft\app\events\ResolveResourcePathEvent;
-use craft\app\helpers\Io;
-use craft\app\helpers\Path as PathHelper;
-use craft\app\helpers\StringHelper;
-use craft\app\helpers\Url;
+use craft\cache\AppPathDependency;
+use craft\dates\DateTime;
+use craft\events\ResolveResourcePathEvent;
+use craft\helpers\Io;
+use craft\helpers\Path as PathHelper;
+use craft\helpers\StringHelper;
+use craft\helpers\Url;
 use Exception;
 use yii\base\Component;
 use yii\helpers\FileHelper;

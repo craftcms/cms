@@ -2,7 +2,7 @@
 {% set docTitle = docTitle is defined ? docTitle : title|striptags -%}
 {% set bodyClass = (bodyClass is defined ? bodyClass~' ' : '') ~ craft.app.locale.getOrientation() -%}
 
-{% registerassetbundle 'craft\\app\\web\\assets\\AppAsset' -%}
+{% registerassetbundle 'craft\\web\\assets\\AppAsset' -%}
 
 <!DOCTYPE html>
 <html xmlns="http://www.w3.org/1999/xhtml" lang="en-US">

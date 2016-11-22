@@ -5,11 +5,11 @@
  * @license   https://craftcms.com/license
  */
 
-namespace craft\app\controllers;
+namespace craft\controllers;
 
 use Craft;
-use craft\app\models\RebrandEmail;
-use craft\app\web\Controller;
+use craft\models\RebrandEmail;
+use craft\web\Controller;
 use yii\web\Response;
 
 Craft::$app->requireEdition(Craft::Client);

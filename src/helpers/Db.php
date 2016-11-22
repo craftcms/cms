@@ -5,14 +5,14 @@
  * @license   https://craftcms.com/license
  */
 
-namespace craft\app\helpers;
+namespace craft\helpers;
 
 use Craft;
-use craft\app\base\Serializable;
-use craft\app\dates\DateTime;
-use craft\app\db\Connection;
-use craft\app\enums\ColumnType;
-use craft\app\services\Config;
+use craft\base\Serializable;
+use craft\dates\DateTime;
+use craft\db\Connection;
+use craft\enums\ColumnType;
+use craft\services\Config;
 use yii\base\Exception;
 use yii\db\Schema;
 
@@ -420,7 +420,7 @@ class Db
             $db = Craft::$app->getDb();
         }
 
-        /** @var \craft\app\db\mysql\Schema|\craft\app\db\pgsql\Schema $schema */
+        /** @var \craft\db\mysql\Schema|\craft\db\pgsql\Schema $schema */
         $schema = $db->getSchema();
 
         return isset($schema->typeMap[$type]);

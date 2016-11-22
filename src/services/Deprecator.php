@@ -5,15 +5,15 @@
  * @license   https://craftcms.com/license
  */
 
-namespace craft\app\services;
+namespace craft\services;
 
 use Craft;
-use craft\app\db\Query;
-use craft\app\helpers\Db;
-use craft\app\helpers\Json;
-use craft\app\helpers\StringHelper;
-use craft\app\models\DeprecationError;
-use craft\app\web\twig\Template;
+use craft\db\Query;
+use craft\helpers\Db;
+use craft\helpers\Json;
+use craft\helpers\StringHelper;
+use craft\models\DeprecationError;
+use craft\web\twig\Template;
 use yii\base\Component;
 
 /**

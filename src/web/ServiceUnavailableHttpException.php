@@ -5,7 +5,7 @@
  * @license   https://craftcms.com/license
  */
 
-namespace craft\app\web;
+namespace craft\web;
 
 use yii\web\HttpException;
 

@@ -5,22 +5,22 @@
  * @license   https://craftcms.com/license
  */
 
-namespace craft\app\controllers;
+namespace craft\controllers;
 
 use Craft;
-use craft\app\errors\AssetConflictException;
-use craft\app\errors\AssetLogicException;
-use craft\app\errors\AssetException;
-use craft\app\errors\UploadFailedException;
-use craft\app\fields\Assets as AssetsField;
-use craft\app\helpers\Assets;
-use craft\app\helpers\Db;
-use craft\app\helpers\Io;
-use craft\app\elements\Asset;
-use craft\app\helpers\StringHelper;
-use craft\app\models\VolumeFolder;
-use craft\app\web\Controller;
-use craft\app\web\UploadedFile;
+use craft\errors\AssetConflictException;
+use craft\errors\AssetLogicException;
+use craft\errors\AssetException;
+use craft\errors\UploadFailedException;
+use craft\fields\Assets as AssetsField;
+use craft\helpers\Assets;
+use craft\helpers\Db;
+use craft\helpers\Io;
+use craft\elements\Asset;
+use craft\helpers\StringHelper;
+use craft\models\VolumeFolder;
+use craft\web\Controller;
+use craft\web\UploadedFile;
 use yii\web\BadRequestHttpException;
 use yii\web\Response;
 

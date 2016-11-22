@@ -5,7 +5,7 @@
  * @license   https://craftcms.com/license
  */
 
-namespace craft\app\cache\adapters;
+namespace craft\cache\adapters;
 
 use Craft;
 use \Guzzle\Cache\CacheAdapterInterface;

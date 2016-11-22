@@ -5,9 +5,9 @@
  * @license   https://craftcms.com/license
  */
 
-namespace craft\app\base;
+namespace craft\base;
 
-use craft\app\helpers\Component as ComponentHelper;
+use craft\helpers\Component as ComponentHelper;
 use yii\base\Arrayable;
 
 /**

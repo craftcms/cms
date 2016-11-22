@@ -5,13 +5,13 @@
  * @license   https://craftcms.com/license
  */
 
-namespace craft\app\web;
+namespace craft\web;
 
 use Craft;
-use craft\app\base\ElementInterface;
-use craft\app\events\RegisterUrlRulesEvent;
-use craft\app\helpers\ArrayHelper;
-use craft\app\helpers\Url;
+use craft\base\ElementInterface;
+use craft\events\RegisterUrlRulesEvent;
+use craft\helpers\ArrayHelper;
+use craft\helpers\Url;
 
 /**
  * @inheritdoc

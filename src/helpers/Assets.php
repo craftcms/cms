@@ -5,15 +5,15 @@
  * @license   https://craftcms.com/license
  */
 
-namespace craft\app\helpers;
+namespace craft\helpers;
 
 use Craft;
-use craft\app\base\Volume;
-use craft\app\elements\Asset;
-use craft\app\enums\PeriodType;
-use craft\app\events\Event;
-use craft\app\events\SetAssetFilenameEvent;
-use craft\app\models\VolumeFolder;
+use craft\base\Volume;
+use craft\elements\Asset;
+use craft\enums\PeriodType;
+use craft\events\Event;
+use craft\events\SetAssetFilenameEvent;
+use craft\models\VolumeFolder;
 
 /**
  * Class Assets

@@ -5,10 +5,10 @@
  * @license   https://craftcms.com/license
  */
 
-namespace craft\app\fields\data;
+namespace craft\fields\data;
 
-use craft\app\base\Serializable;
-use craft\app\helpers\Json;
+use craft\base\Serializable;
+use craft\helpers\Json;
 
 /**
  * Multi-select option field data class.

@@ -5,16 +5,16 @@
  * @license   https://craftcms.com/license
  */
 
-namespace craft\app\migrations;
+namespace craft\migrations;
 
 use Craft;
-use craft\app\db\Connection;
-use craft\app\elements\User;
-use craft\app\db\Migration;
-use craft\app\helpers\StringHelper;
-use craft\app\models\Info;
-use craft\app\models\Site;
-use craft\app\services\Config;
+use craft\db\Connection;
+use craft\elements\User;
+use craft\db\Migration;
+use craft\helpers\StringHelper;
+use craft\models\Info;
+use craft\models\Site;
+use craft\services\Config;
 
 /**
  * Installation Migration
@@ -93,10 +93,10 @@ class Install extends Migration
         Craft::$app->getSystemSettings()->saveSettings('email', [
             'fromEmail' => $this->email,
             'fromName' => $this->site->name,
-            'transportType' => \craft\app\mail\transportadapters\Php::class
+            'transportType' => \craft\mail\transportadapters\Php::class
         ]);
         Craft::$app->getSystemSettings()->saveSettings('mailer', [
-            'class' => \craft\app\mail\Mailer::class,
+            'class' => \craft\mail\Mailer::class,
             'from' => [$this->email => $this->site->name],
             'transport' => [
                 'class' => 'Swift_MailTransport'

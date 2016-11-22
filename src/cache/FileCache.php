@@ -5,10 +5,10 @@
  * @license   https://craftcms.com/license
  */
 
-namespace craft\app\cache;
+namespace craft\cache;
 
 use Craft;
-use craft\app\helpers\Io;
+use craft\helpers\Io;
 
 /**
  * Class FileCache

@@ -5,16 +5,16 @@
  * @license   https://craftcms.com/license
  */
 
-namespace craft\app\services;
+namespace craft\services;
 
 use Craft;
-use craft\app\db\Query;
-use craft\app\errors\TagGroupNotFoundException;
-use craft\app\errors\TagNotFoundException;
-use craft\app\elements\Tag;
-use craft\app\events\TagGroupEvent;
-use craft\app\models\TagGroup;
-use craft\app\records\TagGroup as TagGroupRecord;
+use craft\db\Query;
+use craft\errors\TagGroupNotFoundException;
+use craft\errors\TagNotFoundException;
+use craft\elements\Tag;
+use craft\events\TagGroupEvent;
+use craft\models\TagGroup;
+use craft\records\TagGroup as TagGroupRecord;
 use yii\base\Component;
 
 /**

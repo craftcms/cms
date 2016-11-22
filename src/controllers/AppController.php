@@ -5,17 +5,17 @@
  * @license   https://craftcms.com/license
  */
 
-namespace craft\app\controllers;
+namespace craft\controllers;
 
 use Craft;
-use craft\app\dates\DateInterval;
-use craft\app\enums\LicenseKeyStatus;
-use craft\app\helpers\App;
-use craft\app\helpers\Cp;
-use craft\app\helpers\DateTimeHelper;
-use craft\app\models\UpgradeInfo;
-use craft\app\models\UpgradePurchase;
-use craft\app\web\Controller;
+use craft\dates\DateInterval;
+use craft\enums\LicenseKeyStatus;
+use craft\helpers\App;
+use craft\helpers\Cp;
+use craft\helpers\DateTimeHelper;
+use craft\models\UpgradeInfo;
+use craft\models\UpgradePurchase;
+use craft\web\Controller;
 use yii\web\BadRequestHttpException;
 use yii\web\Response;
 

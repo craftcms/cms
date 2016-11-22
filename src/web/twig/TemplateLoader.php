@@ -5,11 +5,11 @@
  * @license   https://craftcms.com/license
  */
 
-namespace craft\app\web\twig;
+namespace craft\web\twig;
 
 use Craft;
-use craft\app\helpers\Io;
-use craft\app\web\View;
+use craft\helpers\Io;
+use craft\web\View;
 
 /**
  * Loads Craft templates into Twig.

@@ -5,12 +5,12 @@
  * @license   https://craftcms.com/license
  */
 
-namespace craft\app\tasks;
+namespace craft\tasks;
 
 use Craft;
-use craft\app\base\Element;
-use craft\app\base\ElementInterface;
-use craft\app\base\Task;
+use craft\base\Element;
+use craft\base\ElementInterface;
+use craft\base\Task;
 
 /**
  * UpdateElementSlugsAndUris represents an Update Element Slugs and URIs background task.

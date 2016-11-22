@@ -5,10 +5,10 @@
  * @license   https://craftcms.com/license
  */
 
-namespace craft\app\web;
+namespace craft\web;
 
 use Craft;
-use craft\app\helpers\Io;
+use craft\helpers\Io;
 use Exception;
 use yii\web\HttpException;
 

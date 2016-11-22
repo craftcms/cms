@@ -5,11 +5,11 @@
  * @license   https://craftcms.com/license
  */
 
-namespace craft\app\db;
+namespace craft\db;
 
 use Craft;
-use craft\app\helpers\Db;
-use craft\app\helpers\Io;
+use craft\helpers\Db;
+use craft\helpers\Io;
 use yii\base\Component;
 use yii\base\Exception;
 use yii\base\InvalidConfigException;

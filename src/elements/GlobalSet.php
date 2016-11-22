@@ -5,17 +5,17 @@
  * @license   https://craftcms.com/license
  */
 
-namespace craft\app\elements;
+namespace craft\elements;
 
 use Craft;
-use craft\app\base\Element;
-use craft\app\behaviors\FieldLayoutBehavior;
-use craft\app\behaviors\FieldLayoutTrait;
-use craft\app\elements\db\GlobalSetQuery;
-use craft\app\helpers\Url;
-use craft\app\records\GlobalSet as GlobalSetRecord;
-use craft\app\validators\HandleValidator;
-use craft\app\validators\UniqueValidator;
+use craft\base\Element;
+use craft\behaviors\FieldLayoutBehavior;
+use craft\behaviors\FieldLayoutTrait;
+use craft\elements\db\GlobalSetQuery;
+use craft\helpers\Url;
+use craft\records\GlobalSet as GlobalSetRecord;
+use craft\validators\HandleValidator;
+use craft\validators\UniqueValidator;
 
 /**
  * GlobalSet represents a global set element.
@@ -105,8 +105,8 @@ class GlobalSet extends Element
     {
         $behaviors = parent::behaviors();
         $behaviors['fieldLayout'] = [
-            'class' => \craft\app\behaviors\FieldLayoutBehavior::class,
-            'elementType' => \craft\app\elements\GlobalSet::class
+            'class' => \craft\behaviors\FieldLayoutBehavior::class,
+            'elementType' => \craft\elements\GlobalSet::class
         ];
 
         return $behaviors;

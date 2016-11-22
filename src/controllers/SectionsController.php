@@ -5,16 +5,16 @@
  * @license   https://craftcms.com/license
  */
 
-namespace craft\app\controllers;
+namespace craft\controllers;
 
 use Craft;
-use craft\app\elements\Entry;
-use craft\app\helpers\Json;
-use craft\app\helpers\Url;
-use craft\app\models\EntryType;
-use craft\app\models\Section;
-use craft\app\models\Section_SiteSettings;
-use craft\app\web\Controller;
+use craft\elements\Entry;
+use craft\helpers\Json;
+use craft\helpers\Url;
+use craft\models\EntryType;
+use craft\models\Section;
+use craft\models\Section_SiteSettings;
+use craft\web\Controller;
 use yii\web\BadRequestHttpException;
 use yii\web\NotFoundHttpException;
 use yii\web\Response;

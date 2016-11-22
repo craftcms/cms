@@ -5,13 +5,13 @@
  * @license   https://craftcms.com/license
  */
 
-namespace craft\app\controllers;
+namespace craft\controllers;
 
 use Craft;
-use craft\app\base\ToolInterface;
-use craft\app\helpers\Component;
-use craft\app\helpers\Io;
-use craft\app\web\Controller;
+use craft\base\ToolInterface;
+use craft\helpers\Component;
+use craft\helpers\Io;
+use craft\web\Controller;
 use yii\web\Response;
 
 /**
@@ -52,7 +52,7 @@ class ToolsController extends Controller
         $params = Craft::$app->getRequest()->getBodyParam('params', []);
 
         /** @var ToolInterface $tool */
-        $tool = Component::createComponent($class, \craft\app\base\ToolInterface::class);
+        $tool = Component::createComponent($class, \craft\base\ToolInterface::class);
         $response = $tool->performAction($params);
 
         return $this->asJson($response);

@@ -1,19 +1,19 @@
 <?php
-namespace craft\app\services;
+namespace craft\services;
 
 use Craft;
-use craft\app\base\Volume;
-use craft\app\dates\DateTime;
-use craft\app\db\Query;
-use craft\app\elements\Asset;
-use craft\app\errors\VolumeObjectNotFoundException;
-use craft\app\helpers\Assets as AssetsHelper;
-use craft\app\helpers\Db;
-use craft\app\helpers\Image;
-use craft\app\helpers\Io;
-use craft\app\helpers\StringHelper;
-use craft\app\models\AssetIndexData;
-use craft\app\records\AssetIndexData as AssetIndexDataRecord;
+use craft\base\Volume;
+use craft\dates\DateTime;
+use craft\db\Query;
+use craft\elements\Asset;
+use craft\errors\VolumeObjectNotFoundException;
+use craft\helpers\Assets as AssetsHelper;
+use craft\helpers\Db;
+use craft\helpers\Image;
+use craft\helpers\Io;
+use craft\helpers\StringHelper;
+use craft\models\AssetIndexData;
+use craft\records\AssetIndexData as AssetIndexDataRecord;
 use yii\base\Component;
 
 /**

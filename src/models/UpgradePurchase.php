@@ -5,9 +5,9 @@
  * @license   https://craftcms.com/license
  */
 
-namespace craft\app\models;
+namespace craft\models;
 
-use craft\app\base\Model;
+use craft\base\Model;
 
 /**
  * Used to hold edition upgrade purchase order data.

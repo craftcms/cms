@@ -5,10 +5,10 @@
  * @license   https://craftcms.com/license
  */
 
-namespace craft\app\validators;
+namespace craft\validators;
 
 use Craft;
-use craft\app\helpers\ElementHelper;
+use craft\helpers\ElementHelper;
 use yii\validators\Validator;
 
 /**

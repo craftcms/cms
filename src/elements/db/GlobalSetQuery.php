@@ -5,12 +5,12 @@
  * @license   https://craftcms.com/license
  */
 
-namespace craft\app\elements\db;
+namespace craft\elements\db;
 
 use Craft;
-use craft\app\db\QueryAbortedException;
-use craft\app\elements\GlobalSet;
-use craft\app\helpers\Db;
+use craft\db\QueryAbortedException;
+use craft\elements\GlobalSet;
+use craft\helpers\Db;
 
 /**
  * GlobalSetQuery represents a SELECT SQL statement for global sets in a way that is independent of DBMS.

@@ -5,12 +5,12 @@
  * @license   https://craftcms.com/license
  */
 
-namespace craft\app\helpers;
+namespace craft\helpers;
 
 use Craft;
-use craft\app\dates\DateInterval;
-use craft\app\dates\DateTime;
-use craft\app\i18n\Locale;
+use craft\dates\DateInterval;
+use craft\dates\DateTime;
+use craft\i18n\Locale;
 use yii\helpers\FormatConverter;
 
 /**

@@ -54,7 +54,7 @@ body.rtl .widget > .front > .pane > .icon.settings { margin-right: 7px; }
 .recententries .body { overflow: hidden; }
 
 /* New Users Widget */
-.craft\\app\\widgets\\newusers .chart { height: 200px; margin: -10px -24px; }
+.craft\\widgets\\newusers .chart { height: 200px; margin: -10px -24px; }
 
 /* New Widget Menu */
 .newwidgetmenu ul li a { position: relative; }

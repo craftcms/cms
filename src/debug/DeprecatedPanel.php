@@ -5,7 +5,7 @@
  * @license   https://craftcms.com/license
  */
 
-namespace craft\app\debug;
+namespace craft\debug;
 
 use Craft;
 use yii\debug\Panel;

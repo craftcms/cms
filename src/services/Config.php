@@ -5,17 +5,17 @@
  * @license   https://craftcms.com/license
  */
 
-namespace craft\app\services;
+namespace craft\services;
 
 use Craft;
-use craft\app\db\Connection;
-use craft\app\helpers\App;
-use craft\app\helpers\ArrayHelper;
-use craft\app\helpers\DateTimeHelper;
-use craft\app\helpers\Io;
-use craft\app\helpers\StringHelper;
-use craft\app\helpers\Url;
-use craft\app\elements\User;
+use craft\db\Connection;
+use craft\helpers\App;
+use craft\helpers\ArrayHelper;
+use craft\helpers\DateTimeHelper;
+use craft\helpers\Io;
+use craft\helpers\StringHelper;
+use craft\helpers\Url;
+use craft\elements\User;
 use GuzzleHttp\Client;
 use GuzzleHttp\Exception\RequestException;
 use yii\base\Component;

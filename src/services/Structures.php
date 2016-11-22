@@ -5,16 +5,16 @@
  * @license   https://craftcms.com/license
  */
 
-namespace craft\app\services;
+namespace craft\services;
 
 use Craft;
-use craft\app\base\Element;
-use craft\app\base\ElementInterface;
-use craft\app\errors\StructureNotFoundException;
-use craft\app\events\MoveElementEvent;
-use craft\app\models\Structure;
-use craft\app\records\Structure as StructureRecord;
-use craft\app\records\StructureElement;
+use craft\base\Element;
+use craft\base\ElementInterface;
+use craft\errors\StructureNotFoundException;
+use craft\events\MoveElementEvent;
+use craft\models\Structure;
+use craft\records\Structure as StructureRecord;
+use craft\records\StructureElement;
 use yii\base\Component;
 
 /**

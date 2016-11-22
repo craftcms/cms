@@ -5,9 +5,9 @@
  * @license   https://craftcms.com/license
  */
 
-namespace craft\app\web;
+namespace craft\web;
 
-use craft\app\helpers\Io;
+use craft\helpers\Io;
 
 /**
  * @inheritdoc

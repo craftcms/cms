@@ -5,11 +5,11 @@
  * @license   https://craftcms.com/license
  */
 
-namespace craft\app\web\twig\variables;
+namespace craft\web\twig\variables;
 
 use Craft;
-use craft\app\models\EntryDraft;
-use craft\app\models\EntryVersion;
+use craft\models\EntryDraft;
+use craft\models\EntryVersion;
 use yii\base\Exception;
 
 /**

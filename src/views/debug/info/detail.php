@@ -1,9 +1,9 @@
 <?php
 
-use craft\app\dates\DateTime;
-use craft\app\helpers\App;
+use craft\dates\DateTime;
+use craft\helpers\App;
 
-/** @var $panel craft\app\debug\InfoPanel */
+/** @var $panel craft\debug\InfoPanel */
 ?>
     <h1>Info</h1>
 

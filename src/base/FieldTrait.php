@@ -5,7 +5,7 @@
  * @license   https://craftcms.com/license
  */
 
-namespace craft\app\base;
+namespace craft\base;
 
 /**
  * FieldTrait implements the common methods and properties for field classes.

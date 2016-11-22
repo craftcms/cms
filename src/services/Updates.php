@@ -5,25 +5,25 @@
  * @license   https://craftcms.com/license
  */
 
-namespace craft\app\services;
+namespace craft\services;
 
 use Craft;
-use craft\app\base\Plugin;
-use craft\app\base\PluginInterface;
-use craft\app\enums\PluginUpdateStatus;
-use craft\app\enums\VersionUpdateStatus;
-use craft\app\events\UpdateEvent;
-use craft\app\helpers\DateTimeHelper;
-use craft\app\helpers\Io;
-use craft\app\helpers\Json;
-use craft\app\helpers\Update as UpdateHelper;
-use craft\app\i18n\Locale;
-use craft\app\models\AppUpdate;
-use craft\app\models\Et;
-use craft\app\models\PluginNewRelease;
-use craft\app\models\PluginUpdate;
-use craft\app\models\Update;
-use craft\app\updates\Updater;
+use craft\base\Plugin;
+use craft\base\PluginInterface;
+use craft\enums\PluginUpdateStatus;
+use craft\enums\VersionUpdateStatus;
+use craft\events\UpdateEvent;
+use craft\helpers\DateTimeHelper;
+use craft\helpers\Io;
+use craft\helpers\Json;
+use craft\helpers\Update as UpdateHelper;
+use craft\i18n\Locale;
+use craft\models\AppUpdate;
+use craft\models\Et;
+use craft\models\PluginNewRelease;
+use craft\models\PluginUpdate;
+use craft\models\Update;
+use craft\updates\Updater;
 use GuzzleHttp\Client;
 use yii\base\Component;
 use yii\base\Exception;

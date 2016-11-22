@@ -5,12 +5,12 @@
  * @license   https://craftcms.com/license
  */
 
-namespace craft\app\tools;
+namespace craft\tools;
 
 use Craft;
-use craft\app\base\Tool;
-use craft\app\helpers\Io;
-use craft\app\io\Zip;
+use craft\base\Tool;
+use craft\helpers\Io;
+use craft\io\Zip;
 
 /**
  * DbBackup represents a Backup Database tool.

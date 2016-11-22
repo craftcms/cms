@@ -5,10 +5,10 @@
  * @license   https://craftcms.com/license
  */
 
-namespace craft\app\validators;
+namespace craft\validators;
 
 use Craft;
-use craft\app\helpers\StringHelper;
+use craft\helpers\StringHelper;
 use yii\validators\Validator;
 
 /**
@@ -81,7 +81,7 @@ class HandleValidator extends Validator
         if ($handle) {
             $reservedWords = array_merge($this->reservedWords, static::$baseReservedWords);
             $reservedWords = array_map([
-                '\craft\app\helpers\StringHelper',
+                '\craft\helpers\StringHelper',
                 'toLowerCase'
             ], $reservedWords);
             $lcHandle = StringHelper::toLowerCase($handle);

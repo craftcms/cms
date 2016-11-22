@@ -5,18 +5,18 @@
  * @license   https://craftcms.com/license
  */
 
-namespace craft\app\services;
+namespace craft\services;
 
 use Craft;
-use craft\app\db\Query;
-use craft\app\errors\DbConnectException;
-use craft\app\errors\SiteNotFoundException;
-use craft\app\events\DeleteSiteEvent;
-use craft\app\events\ReorderSitesEvent;
-use craft\app\events\SiteEvent;
-use craft\app\models\Site;
-use craft\app\records\Site as SiteRecord;
-use craft\app\tasks\ResaveAllElements;
+use craft\db\Query;
+use craft\errors\DbConnectException;
+use craft\errors\SiteNotFoundException;
+use craft\events\DeleteSiteEvent;
+use craft\events\ReorderSitesEvent;
+use craft\events\SiteEvent;
+use craft\models\Site;
+use craft\records\Site as SiteRecord;
+use craft\tasks\ResaveAllElements;
 use yii\base\Component;
 use yii\base\Exception;
 use yii\base\InvalidConfigException;

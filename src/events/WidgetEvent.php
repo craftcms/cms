@@ -5,9 +5,9 @@
  * @license   https://craftcms.com/license
  */
 
-namespace craft\app\events;
+namespace craft\events;
 
-use craft\app\base\WidgetInterface;
+use craft\base\WidgetInterface;
 
 /**
  * WidgetEvent class.

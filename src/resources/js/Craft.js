@@ -7255,7 +7255,7 @@ Craft.AssetIndex = Craft.BaseElementIndex.extend(
 });
 
 // Register it!
-Craft.registerElementIndexClass('craft\\app\\elements\\Asset', Craft.AssetIndex);
+Craft.registerElementIndexClass('craft\\elements\\Asset', Craft.AssetIndex);
 
 /**
  * Asset Select input
@@ -7693,7 +7693,7 @@ Craft.AssetSelectorModal = Craft.BaseElementSelectorModal.extend(
 });
 
 // Register it!
-Craft.registerElementSelectorModalClass('craft\\app\\elements\\Asset', Craft.AssetSelectorModal);
+Craft.registerElementSelectorModalClass('craft\\elements\\Asset', Craft.AssetSelectorModal);
 
 /**
  * AuthManager class
@@ -8369,7 +8369,7 @@ Craft.CategoryIndex = Craft.BaseElementIndex.extend(
 
 		new Craft.ElementEditor({
 			hudTrigger: this.$newCategoryBtnGroup,
-			elementType: 'craft\\app\\elements\\Category',
+			elementType: 'craft\\elements\\Category',
 			siteId: this.siteId,
 			attributes: {
 				groupId: groupId
@@ -8404,7 +8404,7 @@ Craft.CategoryIndex = Craft.BaseElementIndex.extend(
 });
 
 // Register it!
-Craft.registerElementIndexClass('craft\\app\\elements\\Category', Craft.CategoryIndex);
+Craft.registerElementIndexClass('craft\\elements\\Category', Craft.CategoryIndex);
 
 /**
  * Category Select input
@@ -12974,7 +12974,7 @@ Craft.EntryIndex = Craft.BaseElementIndex.extend(
 
 		new Craft.ElementEditor({
 			hudTrigger: this.$newEntryBtnGroup,
-			elementType: 'craft\\app\\elements\\Entry',
+			elementType: 'craft\\elements\\Entry',
 			siteId: this.siteId,
 			attributes: {
 				sectionId: sectionId,
@@ -13010,7 +13010,7 @@ Craft.EntryIndex = Craft.BaseElementIndex.extend(
 });
 
 // Register it!
-Craft.registerElementIndexClass('craft\\app\\elements\\Entry', Craft.EntryIndex);
+Craft.registerElementIndexClass('craft\\elements\\Entry', Craft.EntryIndex);
 
 Craft.FieldLayoutDesigner = Garnish.Base.extend(
 {

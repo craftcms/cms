@@ -5,10 +5,10 @@
  * @license   https://craftcms.com/license
  */
 
-namespace craft\app\helpers;
+namespace craft\helpers;
 
 use Craft;
-use craft\app\i18n\Locale;
+use craft\i18n\Locale;
 use yii\i18n\MissingTranslationEvent;
 
 /**

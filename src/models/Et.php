@@ -5,13 +5,13 @@
  * @license   https://craftcms.com/license
  */
 
-namespace craft\app\models;
+namespace craft\models;
 
-use craft\app\base\Model;
-use craft\app\helpers\DateTimeHelper;
-use craft\app\helpers\Db;
-use craft\app\helpers\Json;
-use craft\app\validators\DateTimeValidator;
+use craft\base\Model;
+use craft\helpers\DateTimeHelper;
+use craft\helpers\Db;
+use craft\helpers\Json;
+use craft\validators\DateTimeValidator;
 
 /**
  * Class Et model.

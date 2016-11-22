@@ -5,7 +5,7 @@
  * @license   https://craftcms.com/license
  */
 
-namespace craft\app\enums;
+namespace craft\enums;
 
 /**
  * The PeriodType class is an abstract class that defines the various time period lengths that are available in Craft.

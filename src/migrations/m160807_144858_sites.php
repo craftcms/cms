@@ -1,14 +1,14 @@
 <?php
 
-namespace craft\app\migrations;
+namespace craft\migrations;
 
 use Craft;
-use craft\app\db\Migration;
-use craft\app\db\Query;
-use craft\app\helpers\Json;
-use craft\app\helpers\MigrationHelper;
-use craft\app\helpers\StringHelper;
-use craft\app\validators\HandleValidator;
+use craft\db\Migration;
+use craft\db\Query;
+use craft\helpers\Json;
+use craft\helpers\MigrationHelper;
+use craft\helpers\StringHelper;
+use craft\validators\HandleValidator;
 use yii\base\InvalidParamException;
 use yii\db\Expression;
 
@@ -419,12 +419,12 @@ class m160807_144858_sites extends Migration
             ->from(['{{%fields}}'])
             ->where([
                 'type' => [
-                    'craft\app\fields\Matrix',
-                    'craft\app\fields\Assets',
-                    'craft\app\fields\Categories',
-                    'craft\app\fields\Entries',
-                    'craft\app\fields\Tags',
-                    'craft\app\fields\Users'
+                    'craft\fields\Matrix',
+                    'craft\fields\Assets',
+                    'craft\fields\Categories',
+                    'craft\fields\Entries',
+                    'craft\fields\Tags',
+                    'craft\fields\Users'
                 ]
             ])
             ->all();
@@ -439,7 +439,7 @@ class m160807_144858_sites extends Migration
 
             $localized = ($field['translationMethod'] == 'site');
 
-            if ($field['type'] == 'craft\app\fields\Matrix') {
+            if ($field['type'] == 'craft\fields\Matrix') {
                 $settings['localizeBlocks'] = $localized;
             } else {
                 $settings['localizeRelations'] = $localized;

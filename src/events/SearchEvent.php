@@ -5,9 +5,9 @@
  * @license   https://craftcms.com/license
  */
 
-namespace craft\app\events;
+namespace craft\events;
 
-use craft\app\search\SearchQuery;
+use craft\search\SearchQuery;
 use yii\base\Event as BaseEvent;
 
 /**

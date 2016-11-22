@@ -5,12 +5,12 @@
  * @license   https://craftcms.com/license
  */
 
-namespace craft\app\records;
+namespace craft\records;
 
 use yii\db\ActiveQueryInterface;
-use craft\app\db\ActiveRecord;
-use craft\app\validators\SiteIdValidator;
-use craft\app\validators\UriValidator;
+use craft\db\ActiveRecord;
+use craft\validators\SiteIdValidator;
+use craft\validators\UriValidator;
 
 /**
  * Element_SiteSettings record class.

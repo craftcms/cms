@@ -5,7 +5,7 @@
  * @license   https://craftcms.com/license
  */
 
-namespace craft\app\io;
+namespace craft\io;
 
 /**
  * Interface ZipInterface

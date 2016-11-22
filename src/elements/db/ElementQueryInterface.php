@@ -5,10 +5,10 @@
  * @license   https://craftcms.com/license
  */
 
-namespace craft\app\elements\db;
+namespace craft\elements\db;
 
-use craft\app\base\ElementInterface;
-use craft\app\models\Site;
+use craft\base\ElementInterface;
+use craft\models\Site;
 use yii\db\Connection;
 use yii\db\QueryInterface;
 

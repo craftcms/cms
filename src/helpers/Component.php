@@ -5,11 +5,11 @@
  * @license   https://craftcms.com/license
  */
 
-namespace craft\app\helpers;
+namespace craft\helpers;
 
-use craft\app\base\ComponentInterface;
-use craft\app\base\SavableComponentInterface;
-use craft\app\errors\MissingComponentException;
+use craft\base\ComponentInterface;
+use craft\base\SavableComponentInterface;
+use craft\errors\MissingComponentException;
 use yii\base\InvalidConfigException;
 
 /**

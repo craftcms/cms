@@ -5,15 +5,15 @@
  * @license   https://craftcms.com/license
  */
 
-namespace craft\app\services;
+namespace craft\services;
 
 use Craft;
-use craft\app\base\ElementInterface;
-use craft\app\base\Field;
-use craft\app\base\FieldInterface;
-use craft\app\base\PreviewableFieldInterface;
-use craft\app\db\Query;
-use craft\app\helpers\Json;
+use craft\base\ElementInterface;
+use craft\base\Field;
+use craft\base\FieldInterface;
+use craft\base\PreviewableFieldInterface;
+use craft\db\Query;
+use craft\helpers\Json;
 use yii\base\Component;
 
 /**

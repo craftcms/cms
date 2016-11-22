@@ -5,13 +5,13 @@
  * @license   https://craftcms.com/license
  */
 
-namespace craft\app\controllers;
+namespace craft\controllers;
 
 use Craft;
-use craft\app\base\Element;
-use craft\app\helpers\DateTimeHelper;
-use craft\app\models\EntryDraft;
-use craft\app\models\Section;
+use craft\base\Element;
+use craft\helpers\DateTimeHelper;
+use craft\models\EntryDraft;
+use craft\models\Section;
 use yii\web\NotFoundHttpException;
 use yii\web\Response;
 use yii\web\ServerErrorHttpException;

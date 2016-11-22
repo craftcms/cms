@@ -1,11 +1,11 @@
 <?php
 
-namespace craft\app\migrations;
+namespace craft\migrations;
 
 use Craft;
-use craft\app\db\Migration;
-use craft\app\db\Query;
-use craft\app\helpers\MigrationHelper;
+use craft\db\Migration;
+use craft\db\Query;
+use craft\helpers\MigrationHelper;
 
 /**
  * m161108_000000_new_version_format migration.

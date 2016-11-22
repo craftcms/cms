@@ -5,19 +5,19 @@
  * @license   https://craftcms.com/license
  */
 
-namespace craft\app\db;
+namespace craft\db;
 
 use Craft;
-use craft\app\db\mysql\QueryBuilder;
-use craft\app\errors\DbConnectException;
-use craft\app\events\BackupEvent;
-use craft\app\events\BackupFailureEvent;
-use craft\app\events\RestoreEvent;
-use craft\app\events\RestoreFailureEvent;
-use craft\app\helpers\ArrayHelper;
-use craft\app\helpers\Io;
-use craft\app\helpers\StringHelper;
-use craft\app\services\Config;
+use craft\db\mysql\QueryBuilder;
+use craft\errors\DbConnectException;
+use craft\events\BackupEvent;
+use craft\events\BackupFailureEvent;
+use craft\events\RestoreEvent;
+use craft\events\RestoreFailureEvent;
+use craft\helpers\ArrayHelper;
+use craft\helpers\Io;
+use craft\helpers\StringHelper;
+use craft\services\Config;
 use mikehaertl\shellcommand\Command as ShellCommand;
 use yii\db\Exception as DbException;
 

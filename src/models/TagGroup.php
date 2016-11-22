@@ -5,16 +5,16 @@
  * @license   https://craftcms.com/license
  */
 
-namespace craft\app\models;
+namespace craft\models;
 
 use Craft;
-use craft\app\base\Model;
-use craft\app\behaviors\FieldLayoutBehavior;
-use craft\app\behaviors\FieldLayoutTrait;
-use craft\app\elements\Tag;
-use craft\app\records\TagGroup as TagGroupRecord;
-use craft\app\validators\HandleValidator;
-use craft\app\validators\UniqueValidator;
+use craft\base\Model;
+use craft\behaviors\FieldLayoutBehavior;
+use craft\behaviors\FieldLayoutTrait;
+use craft\elements\Tag;
+use craft\records\TagGroup as TagGroupRecord;
+use craft\validators\HandleValidator;
+use craft\validators\UniqueValidator;
 
 /**
  * TagGroup model.

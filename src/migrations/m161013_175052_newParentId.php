@@ -1,9 +1,9 @@
 <?php
 
-namespace craft\app\migrations;
+namespace craft\migrations;
 
 use Craft;
-use craft\app\db\Migration;
+use craft\db\Migration;
 
 /**
  * m161013_175052_newParentId migration.

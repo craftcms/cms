@@ -5,13 +5,13 @@
  * @license   https://craftcms.com/license
  */
 
-namespace craft\app\controllers;
+namespace craft\controllers;
 
 use Craft;
-use craft\app\base\ElementInterface;
-use craft\app\errors\InvalidTypeException;
-use craft\app\services\Elements;
-use craft\app\web\Controller;
+use craft\base\ElementInterface;
+use craft\errors\InvalidTypeException;
+use craft\services\Elements;
+use craft\web\Controller;
 use yii\web\BadRequestHttpException;
 use yii\web\ForbiddenHttpException;
 

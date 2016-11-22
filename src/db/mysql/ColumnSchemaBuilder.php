@@ -5,7 +5,7 @@
  * @license   https://craftcms.com/license
  */
 
-namespace craft\app\db\mysql;
+namespace craft\db\mysql;
 
 use Craft;
 use yii\db\mysql\ColumnSchemaBuilder as YiiColumnSchemaBuilder;

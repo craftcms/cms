@@ -5,18 +5,18 @@
  * @license   https://craftcms.com/license
  */
 
-namespace craft\app\controllers;
+namespace craft\controllers;
 
 use Craft;
-use craft\app\base\Plugin;
-use craft\app\enums\PluginUpdateStatus;
-use craft\app\errors\EtException;
-use craft\app\errors\UpdateValidationException;
-use craft\app\helpers\App;
-use craft\app\helpers\ArrayHelper;
-use craft\app\helpers\Update;
-use craft\app\helpers\Url;
-use craft\app\web\Controller;
+use craft\base\Plugin;
+use craft\enums\PluginUpdateStatus;
+use craft\errors\EtException;
+use craft\errors\UpdateValidationException;
+use craft\helpers\App;
+use craft\helpers\ArrayHelper;
+use craft\helpers\Update;
+use craft\helpers\Url;
+use craft\web\Controller;
 use yii\base\Exception;
 use yii\web\Response;
 use yii\web\ServerErrorHttpException;

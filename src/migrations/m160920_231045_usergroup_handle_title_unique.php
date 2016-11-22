@@ -1,11 +1,11 @@
 <?php
 
-namespace craft\app\migrations;
+namespace craft\migrations;
 
 use Craft;
-use craft\app\db\Migration;
-use craft\app\db\Query;
-use craft\app\helpers\MigrationHelper;
+use craft\db\Migration;
+use craft\db\Query;
+use craft\helpers\MigrationHelper;
 
 /**
  * m160920_231045_usergroup_handle_title_unique migration.

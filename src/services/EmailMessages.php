@@ -5,14 +5,14 @@
  * @license   https://craftcms.com/license
  */
 
-namespace craft\app\services;
+namespace craft\services;
 
 use Craft;
-use craft\app\base\Plugin;
-use craft\app\events\RegisterEmailMessagesEvent;
-use craft\app\helpers\ArrayHelper;
-use craft\app\models\RebrandEmail;
-use craft\app\records\EmailMessage as EmailMessageRecord;
+use craft\base\Plugin;
+use craft\events\RegisterEmailMessagesEvent;
+use craft\helpers\ArrayHelper;
+use craft\models\RebrandEmail;
+use craft\records\EmailMessage as EmailMessageRecord;
 use yii\base\Component;
 use yii\base\Exception;
 

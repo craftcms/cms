@@ -5,20 +5,20 @@
  * @license   https://craftcms.com/license
  */
 
-namespace craft\app\services;
+namespace craft\services;
 
 use Craft;
-use craft\app\base\Task;
-use craft\app\base\TaskInterface;
-use craft\app\db\Query;
-use craft\app\errors\MissingComponentException;
-use craft\app\events\TaskEvent;
-use craft\app\helpers\Component as ComponentHelper;
-use craft\app\helpers\Header;
-use craft\app\helpers\Json;
-use craft\app\helpers\Url;
-use craft\app\records\Task as TaskRecord;
-use craft\app\tasks\MissingTask;
+use craft\base\Task;
+use craft\base\TaskInterface;
+use craft\db\Query;
+use craft\errors\MissingComponentException;
+use craft\events\TaskEvent;
+use craft\helpers\Component as ComponentHelper;
+use craft\helpers\Header;
+use craft\helpers\Json;
+use craft\helpers\Url;
+use craft\records\Task as TaskRecord;
+use craft\tasks\MissingTask;
 use yii\base\Component;
 use yii\web\Response;
 

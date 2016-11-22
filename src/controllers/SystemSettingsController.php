@@ -5,26 +5,26 @@
  * @license   https://craftcms.com/license
  */
 
-namespace craft\app\controllers;
+namespace craft\controllers;
 
 use Craft;
-use craft\app\dates\DateTime;
-use craft\app\errors\MissingComponentException;
-use craft\app\helpers\MailerHelper;
-use craft\app\helpers\Template;
-use craft\app\helpers\Url;
-use craft\app\mail\transportadapters\BaseTransportAdapter;
-use craft\app\mail\transportadapters\Php;
-use craft\app\mail\transportadapters\TransportAdapterInterface;
-use craft\app\models\MailSettings;
-use craft\app\elements\GlobalSet;
-use craft\app\models\Info;
-use craft\app\tools\AssetIndex;
-use craft\app\tools\ClearCaches;
-use craft\app\tools\DbBackup;
-use craft\app\tools\FindAndReplace;
-use craft\app\tools\SearchIndex;
-use craft\app\web\Controller;
+use craft\dates\DateTime;
+use craft\errors\MissingComponentException;
+use craft\helpers\MailerHelper;
+use craft\helpers\Template;
+use craft\helpers\Url;
+use craft\mail\transportadapters\BaseTransportAdapter;
+use craft\mail\transportadapters\Php;
+use craft\mail\transportadapters\TransportAdapterInterface;
+use craft\models\MailSettings;
+use craft\elements\GlobalSet;
+use craft\models\Info;
+use craft\tools\AssetIndex;
+use craft\tools\ClearCaches;
+use craft\tools\DbBackup;
+use craft\tools\FindAndReplace;
+use craft\tools\SearchIndex;
+use craft\web\Controller;
 use yii\base\Exception;
 use yii\helpers\Inflector;
 use yii\web\NotFoundHttpException;

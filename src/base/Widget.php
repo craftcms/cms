@@ -5,10 +5,10 @@
  * @license   https://craftcms.com/license
  */
 
-namespace craft\app\base;
+namespace craft\base;
 
 use Craft;
-use craft\app\helpers\Url;
+use craft\helpers\Url;
 
 /**
  * Widget is the base class for classes representing dashboard widgets in terms of objects.

@@ -5,10 +5,10 @@
  * @license   https://craftcms.com/license
  */
 
-namespace craft\app\records;
+namespace craft\records;
 
-use craft\app\db\ActiveRecord;
-use craft\app\validators\DateTimeValidator;
+use craft\db\ActiveRecord;
+use craft\validators\DateTimeValidator;
 
 /**
  * Token record.

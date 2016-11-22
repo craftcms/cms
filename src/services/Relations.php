@@ -5,12 +5,12 @@
  * @license   https://craftcms.com/license
  */
 
-namespace craft\app\services;
+namespace craft\services;
 
 use Craft;
-use craft\app\base\Element;
-use craft\app\base\ElementInterface;
-use craft\app\fields\BaseRelationField;
+use craft\base\Element;
+use craft\base\ElementInterface;
+use craft\fields\BaseRelationField;
 use yii\base\Component;
 
 /**

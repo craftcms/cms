@@ -5,9 +5,9 @@
  * @license   https://craftcms.com/license
  */
 
-namespace craft\app\web\twig\nodes;
+namespace craft\web\twig\nodes;
 
-use craft\app\web\View;
+use craft\web\View;
 use yii\base\NotSupportedException;
 
 /**

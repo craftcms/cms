@@ -5,7 +5,7 @@
  * @license   https://craftcms.com/license
  */
 
-namespace craft\app\base;
+namespace craft\base;
 
 /**
  * TaskTrait implements the common methods and properties for background task classes.

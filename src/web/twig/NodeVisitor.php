@@ -5,7 +5,7 @@
  * @license   https://craftcms.com/license
  */
 
-namespace craft\app\web\twig;
+namespace craft\web\twig;
 
 /**
  * NodeVisitor adds “head”, “beginBody”, and “endBody” events to the template as it’s being compiled.

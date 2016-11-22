@@ -5,7 +5,7 @@
  * @license   https://craftcms.com/license
  */
 
-namespace craft\app\events;
+namespace craft\events;
 
 /**
  * Draft event class.
@@ -19,7 +19,7 @@ class DraftEvent extends Event
     // =========================================================================
 
     /**
-     * @var \craft\app\models\EntryDraft The draft model associated with the event.
+     * @var \craft\models\EntryDraft The draft model associated with the event.
      */
     public $draft;
 

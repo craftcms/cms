@@ -5,11 +5,11 @@
  * @license   https://craftcms.com/license
  */
 
-namespace craft\app\dates;
+namespace craft\dates;
 
 use Craft;
-use craft\app\helpers\DateTimeHelper;
-use craft\app\i18n\Locale;
+use craft\helpers\DateTimeHelper;
+use craft\i18n\Locale;
 
 /**
  * Class DateTime

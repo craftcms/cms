@@ -5,28 +5,28 @@
  * @license   https://craftcms.com/license
  */
 
-namespace craft\app\controllers;
+namespace craft\controllers;
 
 use Craft;
-use craft\app\base\Plugin;
-use craft\app\base\Widget;
-use craft\app\base\WidgetInterface;
-use craft\app\dates\DateTime;
-use craft\app\helpers\Io;
-use craft\app\helpers\Json;
-use craft\app\helpers\StringHelper;
-use craft\app\i18n\Locale;
-use craft\app\io\Zip;
-use craft\app\models\CraftSupport;
-use craft\app\web\Controller;
-use craft\app\web\UploadedFile;
+use craft\base\Plugin;
+use craft\base\Widget;
+use craft\base\WidgetInterface;
+use craft\dates\DateTime;
+use craft\helpers\Io;
+use craft\helpers\Json;
+use craft\helpers\StringHelper;
+use craft\i18n\Locale;
+use craft\io\Zip;
+use craft\models\CraftSupport;
+use craft\web\Controller;
+use craft\web\UploadedFile;
 use yii\helpers\FileHelper;
 use yii\web\BadRequestHttpException;
 use yii\web\Response;
 
 /**
  * The DashboardController class is a controller that handles various dashboard related actions including managing
- * widgets, getting [[\craft\app\widgets\Feed]] feeds and sending [[\craft\app\widgets\CraftSupport]] support ticket requests.
+ * widgets, getting [[\craft\widgets\Feed]] feeds and sending [[\craft\widgets\CraftSupport]] support ticket requests.
  *
  * Note that all actions in the controller require an authenticated Craft session via [[Controller::allowAnonymous]].
  *

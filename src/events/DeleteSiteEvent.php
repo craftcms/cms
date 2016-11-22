@@ -5,7 +5,7 @@
  * @license   https://craftcms.com/license
  */
 
-namespace craft\app\events;
+namespace craft\events;
 
 /**
  * Delete Site event class.

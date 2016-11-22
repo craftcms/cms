@@ -5,12 +5,12 @@
  * @license   https://craftcms.com/license
  */
 
-namespace craft\app\console\controllers;
+namespace craft\console\controllers;
 
 use Craft;
-use craft\app\base\Plugin;
-use craft\app\db\MigrationManager;
-use craft\app\helpers\Io;
+use craft\base\Plugin;
+use craft\db\MigrationManager;
+use craft\helpers\Io;
 use yii\console\controllers\BaseMigrateController;
 use yii\console\Exception;
 use yii\helpers\Console;

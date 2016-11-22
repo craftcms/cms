@@ -5,7 +5,7 @@
  * @license   https://craftcms.com/license
  */
 
-namespace craft\app\base;
+namespace craft\base;
 
 /**
  * ComponentInterface defines the common interface to be implemented by Craft component classes.

@@ -5,13 +5,13 @@
  * @license   https://craftcms.com/license
  */
 
-namespace craft\app\helpers;
+namespace craft\helpers;
 
 use Craft;
-use craft\app\dates\DateTime;
-use craft\app\errors\ErrorException;
-use craft\app\io\File;
-use craft\app\io\Folder;
+use craft\dates\DateTime;
+use craft\errors\ErrorException;
+use craft\io\File;
+use craft\io\Folder;
 use yii\helpers\FileHelper;
 
 /**

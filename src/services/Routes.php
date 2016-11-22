@@ -5,15 +5,15 @@
  * @license   https://craftcms.com/license
  */
 
-namespace craft\app\services;
+namespace craft\services;
 
 use Craft;
-use craft\app\db\Query;
-use craft\app\errors\RouteNotFoundException;
-use craft\app\events\RouteEvent;
-use craft\app\helpers\Io;
-use craft\app\helpers\Json;
-use craft\app\records\Route as RouteRecord;
+use craft\db\Query;
+use craft\errors\RouteNotFoundException;
+use craft\events\RouteEvent;
+use craft\helpers\Io;
+use craft\helpers\Json;
+use craft\records\Route as RouteRecord;
 use yii\base\Component;
 
 /**

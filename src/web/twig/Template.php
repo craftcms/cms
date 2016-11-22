@@ -5,11 +5,11 @@
  * @license   https://craftcms.com/license
  */
 
-namespace craft\app\web\twig;
+namespace craft\web\twig;
 
 use Craft;
-use craft\app\base\Element;
-use craft\app\base\ElementInterface;
+use craft\base\Element;
+use craft\base\ElementInterface;
 use yii\base\Object;
 
 /**

@@ -5,11 +5,11 @@
  * @license   https://craftcms.com/license
  */
 
-namespace craft\app\helpers;
+namespace craft\helpers;
 
 use Craft;
-use craft\app\db\Migration;
-use craft\app\db\Query;
+use craft\db\Migration;
+use craft\db\Query;
 
 /**
  * Migration utility methods.
@@ -302,7 +302,7 @@ class MigrationHelper
      * @param boolean                 $isLocalized Whether this element type stores data in multiple sites.
      * @param integer[]|null          $siteIds     Which site IDs the elements should store content in. Defaults to the primary site
      *                                             if the element type is not localized, otherwise all sites.
-     * @param \craft\app\db\Migration $migration   The migration instance that should handle the actual query executions.
+     * @param \craft\db\Migration $migration   The migration instance that should handle the actual query executions.
      *
      * @return void
      */

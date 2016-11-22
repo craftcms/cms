@@ -5,11 +5,11 @@
  * @license   https://craftcms.com/license
  */
 
-namespace craft\app\base;
+namespace craft\base;
 
 use Craft;
-use craft\app\helpers\ArrayHelper;
-use craft\app\helpers\DateTimeHelper;
+use craft\helpers\ArrayHelper;
+use craft\helpers\DateTimeHelper;
 use yii\base\UnknownMethodException;
 
 /**

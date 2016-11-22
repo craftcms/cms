@@ -5,9 +5,9 @@
  * @license   https://craftcms.com/license
  */
 
-namespace craft\app\events;
+namespace craft\events;
 
-use craft\app\models\TagGroup;
+use craft\models\TagGroup;
 
 /**
  * Tag group event class.

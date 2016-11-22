@@ -5,10 +5,10 @@
  * @license   https://craftcms.com/license
  */
 
-namespace craft\app\models;
+namespace craft\models;
 
-use craft\app\base\Model;
-use craft\app\validators\DateTimeValidator;
+use craft\base\Model;
+use craft\validators\DateTimeValidator;
 
 /**
  * Class Info model.

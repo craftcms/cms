@@ -5,16 +5,16 @@
  * @license   https://craftcms.com/license
  */
 
-namespace craft\app\et;
+namespace craft\et;
 
 use Craft;
-use craft\app\enums\LicenseKeyStatus;
-use craft\app\errors\EtException;
-use craft\app\helpers\ArrayHelper;
-use craft\app\helpers\DateTimeHelper;
-use craft\app\helpers\Io;
-use craft\app\models\Et as EtModel;
-use craft\app\services\Config;
+use craft\enums\LicenseKeyStatus;
+use craft\errors\EtException;
+use craft\helpers\ArrayHelper;
+use craft\helpers\DateTimeHelper;
+use craft\helpers\Io;
+use craft\models\Et as EtModel;
+use craft\services\Config;
 use GuzzleHttp\Client;
 use GuzzleHttp\Exception\RequestException;
 use PDO;

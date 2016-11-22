@@ -5,10 +5,10 @@
  * @license   https://craftcms.com/license
  */
 
-namespace craft\app\db\pgsql;
+namespace craft\db\pgsql;
 
 use Craft;
-use craft\app\db\Connection;
+use craft\db\Connection;
 use yii\db\Expression;
 
 /**

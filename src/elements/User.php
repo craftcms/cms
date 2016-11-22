@@ -5,29 +5,29 @@
  * @license   https://craftcms.com/license
  */
 
-namespace craft\app\elements;
+namespace craft\elements;
 
 use Craft;
-use craft\app\base\Element;
-use craft\app\base\ElementInterface;
-use craft\app\dates\DateInterval;
-use craft\app\db\Query;
-use craft\app\elements\actions\DeleteUsers;
-use craft\app\elements\actions\Edit;
-use craft\app\elements\actions\SuspendUsers;
-use craft\app\elements\actions\UnsuspendUsers;
-use craft\app\elements\db\ElementQueryInterface;
-use craft\app\elements\db\UserQuery;
-use craft\app\helpers\DateTimeHelper;
-use craft\app\helpers\Html;
-use craft\app\helpers\Url;
-use craft\app\i18n\Locale;
-use craft\app\models\UserGroup;
-use craft\app\records\Session as SessionRecord;
-use craft\app\records\User as UserRecord;
-use craft\app\validators\DateTimeValidator;
-use craft\app\validators\UniqueValidator;
-use craft\app\validators\UserPasswordValidator;
+use craft\base\Element;
+use craft\base\ElementInterface;
+use craft\dates\DateInterval;
+use craft\db\Query;
+use craft\elements\actions\DeleteUsers;
+use craft\elements\actions\Edit;
+use craft\elements\actions\SuspendUsers;
+use craft\elements\actions\UnsuspendUsers;
+use craft\elements\db\ElementQueryInterface;
+use craft\elements\db\UserQuery;
+use craft\helpers\DateTimeHelper;
+use craft\helpers\Html;
+use craft\helpers\Url;
+use craft\i18n\Locale;
+use craft\models\UserGroup;
+use craft\records\Session as SessionRecord;
+use craft\records\User as UserRecord;
+use craft\validators\DateTimeValidator;
+use craft\validators\UniqueValidator;
+use craft\validators\UserPasswordValidator;
 use yii\base\ErrorHandler;
 use yii\base\Exception;
 use yii\base\NotSupportedException;

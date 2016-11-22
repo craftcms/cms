@@ -213,7 +213,7 @@ Craft.EntryIndex = Craft.BaseElementIndex.extend(
 
 		new Craft.ElementEditor({
 			hudTrigger: this.$newEntryBtnGroup,
-			elementType: 'craft\\app\\elements\\Entry',
+			elementType: 'craft\\elements\\Entry',
 			siteId: this.siteId,
 			attributes: {
 				sectionId: sectionId,
@@ -249,4 +249,4 @@ Craft.EntryIndex = Craft.BaseElementIndex.extend(
 });
 
 // Register it!
-Craft.registerElementIndexClass('craft\\app\\elements\\Entry', Craft.EntryIndex);
+Craft.registerElementIndexClass('craft\\elements\\Entry', Craft.EntryIndex);

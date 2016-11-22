@@ -5,9 +5,9 @@
  * @license   https://craftcms.com/license
  */
 
-namespace craft\app\web\twig\variables;
+namespace craft\web\twig\variables;
 
-use craft\app\helpers\Image as ImageHelper;
+use craft\helpers\Image as ImageHelper;
 
 /**
  * Class Image variable.

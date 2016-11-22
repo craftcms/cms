@@ -5,9 +5,9 @@
  * @license   https://craftcms.com/license
  */
 
-namespace craft\app\web\twig\tokenparsers;
+namespace craft\web\twig\tokenparsers;
 
-use craft\app\web\twig\nodes\PaginateNode;
+use craft\web\twig\nodes\PaginateNode;
 use Twig_Node_Expression_AssignName;
 use Twig_Token;
 use Twig_TokenParser;

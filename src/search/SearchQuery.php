@@ -5,9 +5,9 @@
  * @license   https://craftcms.com/license
  */
 
-namespace craft\app\search;
+namespace craft\search;
 
-use craft\app\helpers\StringHelper;
+use craft\helpers\StringHelper;
 
 /**
  * Search Query class.

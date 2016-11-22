@@ -5,10 +5,10 @@
  * @license   https://craftcms.com/license
  */
 
-namespace craft\app\debug;
+namespace craft\debug;
 
 use Craft;
-use craft\app\base\Plugin;
+use craft\base\Plugin;
 use GuzzleHttp\Client;
 use Imagine\Gd\Imagine;
 use yii\debug\Panel;

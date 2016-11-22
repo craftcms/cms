@@ -4,7 +4,7 @@
  * @copyright Copyright (c) Pixel & Tonic, Inc.
  * @license   https://craftcms.com/license
  */
-namespace craft\app\mail\transportadapters;
+namespace craft\mail\transportadapters;
 
 /**
  * Sendmail implements a Sendmail transport adapter into Craft’s mailer.

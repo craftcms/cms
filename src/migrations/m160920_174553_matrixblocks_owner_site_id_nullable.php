@@ -1,9 +1,9 @@
 <?php
 
-namespace craft\app\migrations;
+namespace craft\migrations;
 
 use Craft;
-use craft\app\db\Migration;
+use craft\db\Migration;
 
 /**
  * m160920_174553_matrixblocks_owner_site_id_nullable migration.

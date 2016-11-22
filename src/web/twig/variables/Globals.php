@@ -5,10 +5,10 @@
  * @license   https://craftcms.com/license
  */
 
-namespace craft\app\web\twig\variables;
+namespace craft\web\twig\variables;
 
 use Craft;
-use craft\app\elements\GlobalSet;
+use craft\elements\GlobalSet;
 use yii\base\Exception;
 
 /**

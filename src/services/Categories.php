@@ -5,19 +5,19 @@
  * @license   https://craftcms.com/license
  */
 
-namespace craft\app\services;
+namespace craft\services;
 
 use Craft;
-use craft\app\db\Query;
-use craft\app\errors\CategoryGroupNotFoundException;
-use craft\app\elements\Category;
-use craft\app\events\CategoryGroupEvent;
-use craft\app\models\CategoryGroup;
-use craft\app\models\CategoryGroup_SiteSettings;
-use craft\app\models\FieldLayout;
-use craft\app\models\Structure;
-use craft\app\records\CategoryGroup as CategoryGroupRecord;
-use craft\app\records\CategoryGroup_SiteSettings as CategoryGroup_SiteSettingsRecord;
+use craft\db\Query;
+use craft\errors\CategoryGroupNotFoundException;
+use craft\elements\Category;
+use craft\events\CategoryGroupEvent;
+use craft\models\CategoryGroup;
+use craft\models\CategoryGroup_SiteSettings;
+use craft\models\FieldLayout;
+use craft\models\Structure;
+use craft\records\CategoryGroup as CategoryGroupRecord;
+use craft\records\CategoryGroup_SiteSettings as CategoryGroup_SiteSettingsRecord;
 use yii\base\Component;
 use yii\base\Exception;
 

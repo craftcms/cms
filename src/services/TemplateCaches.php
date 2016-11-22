@@ -5,21 +5,21 @@
  * @license   https://craftcms.com/license
  */
 
-namespace craft\app\services;
+namespace craft\services;
 
 use Craft;
-use craft\app\base\Element;
-use craft\app\base\ElementInterface;
-use craft\app\dates\DateTime;
-use craft\app\db\Query;
-use craft\app\elements\db\ElementQuery;
-use craft\app\events\Event;
-use craft\app\helpers\ArrayHelper;
-use craft\app\helpers\DateTimeHelper;
-use craft\app\helpers\Db;
-use craft\app\helpers\StringHelper;
-use craft\app\helpers\Url;
-use craft\app\tasks\DeleteStaleTemplateCaches;
+use craft\base\Element;
+use craft\base\ElementInterface;
+use craft\dates\DateTime;
+use craft\db\Query;
+use craft\elements\db\ElementQuery;
+use craft\events\Event;
+use craft\helpers\ArrayHelper;
+use craft\helpers\DateTimeHelper;
+use craft\helpers\Db;
+use craft\helpers\StringHelper;
+use craft\helpers\Url;
+use craft\tasks\DeleteStaleTemplateCaches;
 use yii\base\Component;
 
 /**

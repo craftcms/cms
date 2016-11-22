@@ -5,16 +5,16 @@
  * @license   https://craftcms.com/license
  */
 
-namespace craft\app\controllers;
+namespace craft\controllers;
 
 use Craft;
-use craft\app\base\Field;
-use craft\app\base\FieldInterface;
-use craft\app\fields\MissingField;
-use craft\app\fields\PlainText;
-use craft\app\helpers\Url;
-use craft\app\models\FieldGroup;
-use craft\app\web\Controller;
+use craft\base\Field;
+use craft\base\FieldInterface;
+use craft\fields\MissingField;
+use craft\fields\PlainText;
+use craft\helpers\Url;
+use craft\models\FieldGroup;
+use craft\web\Controller;
 use yii\web\NotFoundHttpException;
 use yii\web\Response;
 use yii\web\ServerErrorHttpException;

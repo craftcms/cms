@@ -5,12 +5,12 @@
  * @license   https://craftcms.com/license
  */
 
-namespace craft\app\elements\actions;
+namespace craft\elements\actions;
 
 use Craft;
-use craft\app\base\ElementAction;
-use craft\app\base\ElementInterface;
-use craft\app\helpers\Json;
+use craft\base\ElementAction;
+use craft\base\ElementInterface;
+use craft\helpers\Json;
 
 /**
  * CopyReferenceTag represents a Copy Reference Tag element action.

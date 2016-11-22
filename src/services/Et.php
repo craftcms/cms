@@ -5,22 +5,22 @@
  * @license   https://craftcms.com/license
  */
 
-namespace craft\app\services;
+namespace craft\services;
 
 use Craft;
-use craft\app\base\Plugin;
-use craft\app\et\EtTransport;
-use craft\app\helpers\App;
-use craft\app\helpers\Io;
-use craft\app\helpers\Json;
-use craft\app\models\AppNewRelease;
-use craft\app\models\AppUpdate;
-use craft\app\models\Et as EtModel;
-use craft\app\models\PluginNewRelease;
-use craft\app\models\PluginUpdate;
-use craft\app\models\Update;
-use craft\app\models\UpgradeInfo;
-use craft\app\models\UpgradePurchase;
+use craft\base\Plugin;
+use craft\et\EtTransport;
+use craft\helpers\App;
+use craft\helpers\Io;
+use craft\helpers\Json;
+use craft\models\AppNewRelease;
+use craft\models\AppUpdate;
+use craft\models\Et as EtModel;
+use craft\models\PluginNewRelease;
+use craft\models\PluginUpdate;
+use craft\models\Update;
+use craft\models\UpgradeInfo;
+use craft\models\UpgradePurchase;
 use GuzzleHttp\Client;
 use yii\base\Component;
 

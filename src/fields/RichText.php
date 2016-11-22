@@ -5,23 +5,23 @@
  * @license   https://craftcms.com/license
  */
 
-namespace craft\app\fields;
+namespace craft\fields;
 
 use Craft;
-use craft\app\base\Element;
-use craft\app\base\ElementInterface;
-use craft\app\base\Field;
-use craft\app\base\Volume;
-use craft\app\events\RegisterRichTextLinkOptionsEvent;
-use craft\app\fields\data\RichTextData;
-use craft\app\helpers\Db;
-use craft\app\helpers\Html;
-use craft\app\helpers\HtmlPurifier;
-use craft\app\helpers\Io;
-use craft\app\helpers\Json;
-use craft\app\helpers\StringHelper;
-use craft\app\models\Section;
-use craft\app\validators\HandleValidator;
+use craft\base\Element;
+use craft\base\ElementInterface;
+use craft\base\Field;
+use craft\base\Volume;
+use craft\events\RegisterRichTextLinkOptionsEvent;
+use craft\fields\data\RichTextData;
+use craft\helpers\Db;
+use craft\helpers\Html;
+use craft\helpers\HtmlPurifier;
+use craft\helpers\Io;
+use craft\helpers\Json;
+use craft\helpers\StringHelper;
+use craft\models\Section;
+use craft\validators\HandleValidator;
 use yii\base\Exception;
 use yii\db\Schema;
 use yii\validators\StringValidator;

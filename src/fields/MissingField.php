@@ -5,11 +5,11 @@
  * @license   https://craftcms.com/license
  */
 
-namespace craft\app\fields;
+namespace craft\fields;
 
-use craft\app\base\Field;
-use craft\app\base\MissingComponentInterface;
-use craft\app\base\MissingComponentTrait;
+use craft\base\Field;
+use craft\base\MissingComponentInterface;
+use craft\base\MissingComponentTrait;
 
 /**
  * MissingField represents a field with an invalid class.

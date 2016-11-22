@@ -5,11 +5,11 @@
  * @license   https://craftcms.com/license
  */
 
-namespace craft\app\volumes;
+namespace craft\volumes;
 
-use craft\app\base\Volume;
-use craft\app\base\MissingComponentInterface;
-use craft\app\base\MissingComponentTrait;
+use craft\base\Volume;
+use craft\base\MissingComponentInterface;
+use craft\base\MissingComponentTrait;
 
 /**
  * InvalidSource represents a volume with an invalid class.

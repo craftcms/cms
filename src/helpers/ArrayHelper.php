@@ -5,7 +5,7 @@
  * @license   https://craftcms.com/license
  */
 
-namespace craft\app\helpers;
+namespace craft\helpers;
 
 /**
  * Class ArrayHelper
@@ -114,7 +114,7 @@ class ArrayHelper extends \yii\helpers\ArrayHelper
     public static function filterEmptyStringsFromArray($arr)
     {
         return array_filter($arr,
-            ['\craft\app\helpers\ArrayHelper', '_isNotAnEmptyString']);
+            ['\craft\helpers\ArrayHelper', '_isNotAnEmptyString']);
     }
 
     /**

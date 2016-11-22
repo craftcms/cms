@@ -5,10 +5,10 @@
  * @license   https://craftcms.com/license
  */
 
-namespace craft\app\services;
+namespace craft\services;
 
 use Craft;
-use craft\app\helpers\Io;
+use craft\helpers\Io;
 use yii\base\Component;
 
 /**

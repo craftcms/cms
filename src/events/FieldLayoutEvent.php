@@ -5,9 +5,9 @@
  * @license   https://craftcms.com/license
  */
 
-namespace craft\app\events;
+namespace craft\events;
 
-use craft\app\models\FieldLayout;
+use craft\models\FieldLayout;
 
 /**
  * Field layout Event class.

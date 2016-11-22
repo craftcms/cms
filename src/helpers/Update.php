@@ -5,11 +5,11 @@
  * @license   https://craftcms.com/license
  */
 
-namespace craft\app\helpers;
+namespace craft\helpers;
 
 use Craft;
-use craft\app\db\DbBackup;
-use craft\app\enums\PatchManifestFileAction;
+use craft\db\DbBackup;
+use craft\enums\PatchManifestFileAction;
 use yii\base\Exception;
 
 /**

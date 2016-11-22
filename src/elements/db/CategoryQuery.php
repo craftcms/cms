@@ -5,15 +5,15 @@
  * @license   https://craftcms.com/license
  */
 
-namespace craft\app\elements\db;
+namespace craft\elements\db;
 
 use Craft;
-use craft\app\db\Query;
-use craft\app\db\QueryAbortedException;
-use craft\app\elements\Category;
-use craft\app\helpers\ArrayHelper;
-use craft\app\helpers\Db;
-use craft\app\models\CategoryGroup;
+use craft\db\Query;
+use craft\db\QueryAbortedException;
+use craft\elements\Category;
+use craft\helpers\ArrayHelper;
+use craft\helpers\Db;
+use craft\models\CategoryGroup;
 
 /**
  * CategoryQuery represents a SELECT SQL statement for categories in a way that is independent of DBMS.

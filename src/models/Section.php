@@ -5,13 +5,13 @@
  * @license   https://craftcms.com/license
  */
 
-namespace craft\app\models;
+namespace craft\models;
 
 use Craft;
-use craft\app\base\Model;
-use craft\app\validators\HandleValidator;
-use craft\app\records\Section as SectionRecord;
-use craft\app\validators\UniqueValidator;
+use craft\base\Model;
+use craft\validators\HandleValidator;
+use craft\records\Section as SectionRecord;
+use craft\validators\UniqueValidator;
 
 /**
  * Section model class.

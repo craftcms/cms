@@ -5,11 +5,11 @@
  * @license   https://craftcms.com/license
  */
 
-namespace craft\app\web\twig\variables;
+namespace craft\web\twig\variables;
 
-use craft\app\db\Query;
-use craft\app\helpers\Html;
-use craft\app\helpers\Json;
+use craft\db\Query;
+use craft\helpers\Html;
+use craft\helpers\Json;
 
 /**
  * Route functions.

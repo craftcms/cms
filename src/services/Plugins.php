@@ -5,20 +5,20 @@
  * @license   https://craftcms.com/license
  */
 
-namespace craft\app\services;
+namespace craft\services;
 
 use Craft;
-use craft\app\base\Plugin;
-use craft\app\base\PluginInterface;
-use craft\app\db\MigrationManager;
-use craft\app\db\Query;
-use craft\app\enums\LicenseKeyStatus;
-use craft\app\errors\InvalidLicenseKeyException;
-use craft\app\events\PluginEvent;
-use craft\app\helpers\DateTimeHelper;
-use craft\app\helpers\Db;
-use craft\app\helpers\Io;
-use craft\app\helpers\Json;
+use craft\base\Plugin;
+use craft\base\PluginInterface;
+use craft\db\MigrationManager;
+use craft\db\Query;
+use craft\enums\LicenseKeyStatus;
+use craft\errors\InvalidLicenseKeyException;
+use craft\events\PluginEvent;
+use craft\helpers\DateTimeHelper;
+use craft\helpers\Db;
+use craft\helpers\Io;
+use craft\helpers\Json;
 use yii\base\Component;
 use yii\base\Exception;
 use yii\base\InvalidParamException;
@@ -594,7 +594,7 @@ class Plugins extends Component
         $class = $config['class'];
 
         // Make sure the class exists and it implements PluginInterface
-        if (!is_subclass_of($class, \craft\app\base\PluginInterface::class)) {
+        if (!is_subclass_of($class, \craft\base\PluginInterface::class)) {
             return null;
         }
 

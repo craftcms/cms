@@ -5,17 +5,17 @@
  * @license   https://craftcms.com/license
  */
 
-namespace craft\app\controllers;
+namespace craft\controllers;
 
 use Craft;
-use craft\app\base\Element;
-use craft\app\helpers\Db;
-use craft\app\helpers\Search;
-use craft\app\helpers\StringHelper;
-use craft\app\helpers\Url;
-use craft\app\elements\Tag;
-use craft\app\models\TagGroup;
-use craft\app\web\Controller;
+use craft\base\Element;
+use craft\helpers\Db;
+use craft\helpers\Search;
+use craft\helpers\StringHelper;
+use craft\helpers\Url;
+use craft\elements\Tag;
+use craft\models\TagGroup;
+use craft\web\Controller;
 use yii\web\NotFoundHttpException;
 use yii\web\Response;
 

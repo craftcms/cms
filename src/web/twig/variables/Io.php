@@ -5,11 +5,11 @@
  * @license   https://craftcms.com/license
  */
 
-namespace craft\app\web\twig\variables;
+namespace craft\web\twig\variables;
 
 use Craft;
-use craft\app\helpers\App as AppHelper;
-use craft\app\helpers\Io as IoHelper;
+use craft\helpers\App as AppHelper;
+use craft\helpers\Io as IoHelper;
 
 /**
  * Io variable.

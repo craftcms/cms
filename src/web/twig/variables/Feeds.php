@@ -5,11 +5,11 @@
  * @license   https://craftcms.com/license
  */
 
-namespace craft\app\web\twig\variables;
+namespace craft\web\twig\variables;
 
 use Craft;
-use craft\app\helpers\Number;
-use craft\app\helpers\Template;
+use craft\helpers\Number;
+use craft\helpers\Template;
 
 /**
  * Class Feeds variable.

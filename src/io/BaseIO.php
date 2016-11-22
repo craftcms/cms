@@ -5,10 +5,10 @@
  * @license   https://craftcms.com/license
  */
 
-namespace craft\app\io;
+namespace craft\io;
 
-use craft\app\dates\DateTime;
-use craft\app\helpers\Io;
+use craft\dates\DateTime;
+use craft\helpers\Io;
 
 /**
  * Class BaseIO

@@ -5,10 +5,10 @@
  * @license   https://craftcms.com/license
  */
 
-namespace craft\app\tasks;
+namespace craft\tasks;
 
 use Craft;
-use craft\app\base\Task;
+use craft\base\Task;
 
 /**
  * GeneratePendingTransforms represents a Generate Pending Transforms background task.

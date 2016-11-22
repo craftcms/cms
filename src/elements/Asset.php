@@ -5,31 +5,31 @@
  * @license   https://craftcms.com/license
  */
 
-namespace craft\app\elements;
+namespace craft\elements;
 
 use Craft;
-use craft\app\base\Element;
-use craft\app\base\ElementInterface;
-use craft\app\base\Volume;
-use craft\app\elements\actions\CopyReferenceTag;
-use craft\app\elements\actions\DeleteAssets;
-use craft\app\elements\actions\DownloadAssetFile;
-use craft\app\elements\actions\Edit;
-use craft\app\elements\actions\RenameFile;
-use craft\app\elements\actions\ReplaceFile;
-use craft\app\elements\actions\View;
-use craft\app\elements\db\AssetQuery;
-use craft\app\fields\Assets;
-use craft\app\helpers\Html;
-use craft\app\helpers\Image;
-use craft\app\helpers\Io;
-use craft\app\helpers\StringHelper;
-use craft\app\helpers\Template;
-use craft\app\helpers\Url;
-use craft\app\models\VolumeFolder;
-use craft\app\records\Asset as AssetRecord;
-use craft\app\validators\AssetFilenameValidator;
-use craft\app\validators\DateTimeValidator;
+use craft\base\Element;
+use craft\base\ElementInterface;
+use craft\base\Volume;
+use craft\elements\actions\CopyReferenceTag;
+use craft\elements\actions\DeleteAssets;
+use craft\elements\actions\DownloadAssetFile;
+use craft\elements\actions\Edit;
+use craft\elements\actions\RenameFile;
+use craft\elements\actions\ReplaceFile;
+use craft\elements\actions\View;
+use craft\elements\db\AssetQuery;
+use craft\fields\Assets;
+use craft\helpers\Html;
+use craft\helpers\Image;
+use craft\helpers\Io;
+use craft\helpers\StringHelper;
+use craft\helpers\Template;
+use craft\helpers\Url;
+use craft\models\VolumeFolder;
+use craft\records\Asset as AssetRecord;
+use craft\validators\AssetFilenameValidator;
+use craft\validators\DateTimeValidator;
 use yii\base\ErrorHandler;
 use yii\base\Exception;
 use yii\base\InvalidCallException;

@@ -5,16 +5,16 @@
  * @license   https://craftcms.com/license
  */
 
-namespace craft\app\services;
+namespace craft\services;
 
 use Craft;
-use craft\app\dates\DateInterval;
-use craft\app\dates\DateTime;
-use craft\app\db\Query;
-use craft\app\helpers\DateTimeHelper;
-use craft\app\helpers\Db;
-use craft\app\helpers\Json;
-use craft\app\records\Token as TokenRecord;
+use craft\dates\DateInterval;
+use craft\dates\DateTime;
+use craft\db\Query;
+use craft\helpers\DateTimeHelper;
+use craft\helpers\Db;
+use craft\helpers\Json;
+use craft\records\Token as TokenRecord;
 use yii\base\Component;
 use yii\db\Expression;
 

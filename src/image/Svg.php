@@ -5,13 +5,13 @@
  * @license   https://craftcms.com/license
  */
 
-namespace craft\app\image;
+namespace craft\image;
 
 use Craft;
-use craft\app\base\Image;
-use craft\app\errors\ImageException;
-use craft\app\helpers\Image as ImageHelper;
-use craft\app\helpers\Io;
+use craft\base\Image;
+use craft\errors\ImageException;
+use craft\helpers\Image as ImageHelper;
+use craft\helpers\Io;
 
 /**
  * Svg class is used for SVG file manipulations.
@@ -237,7 +237,7 @@ class Svg extends Image
             Io::writeToFile($targetPath, $this->_svgContent);
         } else {
             throw new ImageException(Craft::t('app',
-                'Manipulated SVG image rasterizing is unreliable. See \craft\app\services\Images::loadImage()'));
+                'Manipulated SVG image rasterizing is unreliable. See \craft\services\Images::loadImage()'));
         }
 
         return true;

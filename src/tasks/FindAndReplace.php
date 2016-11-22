@@ -5,13 +5,13 @@
  * @license   https://craftcms.com/license
  */
 
-namespace craft\app\tasks;
+namespace craft\tasks;
 
 use Craft;
-use craft\app\base\Field;
-use craft\app\base\Task;
-use craft\app\base\FieldInterface;
-use craft\app\fields\Matrix;
+use craft\base\Field;
+use craft\base\Task;
+use craft\base\FieldInterface;
+use craft\fields\Matrix;
 
 /**
  * FindAndReplace represents a Find and Replace background task.

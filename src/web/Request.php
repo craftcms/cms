@@ -5,11 +5,11 @@
  * @license   https://craftcms.com/license
  */
 
-namespace craft\app\web;
+namespace craft\web;
 
 use Craft;
-use craft\app\base\RequestTrait;
-use craft\app\helpers\StringHelper;
+use craft\base\RequestTrait;
+use craft\helpers\StringHelper;
 use yii\base\InvalidConfigException;
 use yii\web\BadRequestHttpException;
 

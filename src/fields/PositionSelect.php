@@ -5,10 +5,10 @@
  * @license   https://craftcms.com/license
  */
 
-namespace craft\app\fields;
+namespace craft\fields;
 
 use Craft;
-use craft\app\base\Field;
+use craft\base\Field;
 use yii\db\Schema;
 
 /**

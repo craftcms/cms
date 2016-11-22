@@ -5,23 +5,23 @@
  * @license   https://craftcms.com/license
  */
 
-namespace craft\app\services;
+namespace craft\services;
 
 use Craft;
-use craft\app\base\Element;
-use craft\app\base\ElementInterface;
-use craft\app\base\Field;
-use craft\app\db\Connection;
-use craft\app\db\pgsql\Schema;
-use craft\app\db\Query;
-use craft\app\enums\ColumnType;
-use craft\app\events\SearchEvent;
-use craft\app\helpers\Db;
-use craft\app\helpers\StringHelper;
-use craft\app\helpers\Search as SearchHelper;
-use craft\app\search\SearchQuery;
-use craft\app\search\SearchQueryTerm;
-use craft\app\search\SearchQueryTermGroup;
+use craft\base\Element;
+use craft\base\ElementInterface;
+use craft\base\Field;
+use craft\db\Connection;
+use craft\db\pgsql\Schema;
+use craft\db\Query;
+use craft\enums\ColumnType;
+use craft\events\SearchEvent;
+use craft\helpers\Db;
+use craft\helpers\StringHelper;
+use craft\helpers\Search as SearchHelper;
+use craft\search\SearchQuery;
+use craft\search\SearchQueryTerm;
+use craft\search\SearchQueryTermGroup;
 use Exception;
 use yii\base\Component;
 

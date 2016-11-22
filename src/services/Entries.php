@@ -5,11 +5,11 @@
  * @license   https://craftcms.com/license
  */
 
-namespace craft\app\services;
+namespace craft\services;
 
 use Craft;
-use craft\app\db\Query;
-use craft\app\elements\Entry;
+use craft\db\Query;
+use craft\elements\Entry;
 use yii\base\Component;
 
 /**

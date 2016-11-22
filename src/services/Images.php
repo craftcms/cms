@@ -5,16 +5,16 @@
  * @license   https://craftcms.com/license
  */
 
-namespace craft\app\services;
+namespace craft\services;
 
 use Craft;
-use craft\app\base\Image;
-use craft\app\helpers\App;
-use craft\app\helpers\Image as ImageHelper;
-use craft\app\helpers\Io;
-use craft\app\helpers\StringHelper;
-use craft\app\image\Raster;
-use craft\app\image\Svg;
+use craft\base\Image;
+use craft\helpers\App;
+use craft\helpers\Image as ImageHelper;
+use craft\helpers\Io;
+use craft\helpers\StringHelper;
+use craft\image\Raster;
+use craft\image\Svg;
 use lsolesen\pel\PelDataWindow;
 use lsolesen\pel\PelJpeg;
 use lsolesen\pel\PelTag;
