@@ -32,20 +32,6 @@ class ColumnSchemaBuilder extends YiiColumnSchemaBuilder
     /**
      * @inheritdoc
      */
-    public function defaultValue($default)
-    {
-        if ($default === true) {
-            $default = 1;
-        } else if ($default === false) {
-            $default = 0;
-        }
-
-        return parent::defaultValue($default);
-    }
-
-    /**
-     * @inheritdoc
-     */
     protected function buildLengthString()
     {
         if ($this->type == Schema::TYPE_ENUM) {
