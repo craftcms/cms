@@ -1,7 +1,7 @@
 {
     "name": "craftcms/craft",
     "homepage": "https://craftcms.com",
-    "minimum-stability": "rc",
+    "minimum-stability": "RC",
     "repositories": [
         {
             "type": "vcs",
