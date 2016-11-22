@@ -321,7 +321,7 @@ class DashboardController extends Controller
             // Add some extra info about this install
             $message = $getHelpModel->message."\n\n".
                 "------------------------------\n\n".
-                'Craft '.Craft::$app->getEditionName().' '.Craft::$app->version.'.'.Craft::$app->build;
+                'Craft '.Craft::$app->getEditionName().' '.Craft::$app->version;
 
             /** @var Plugin[] $plugins */
             $plugins = Craft::$app->getPlugins()->getAllPlugins();

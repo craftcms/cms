@@ -29,6 +29,7 @@ class DateTime extends \DateTime
     public function __toString()
     {
         Craft::$app->getDeprecator()->log('DateTime::__toString()', 'Converting a DateTime object to a string has been deprecated. Use format(\'Y-m-d\') instead.');
+
         return $this->format('Y-m-d');
     }
 
@@ -67,6 +68,7 @@ class DateTime extends \DateTime
     public function atom()
     {
         Craft::$app->getDeprecator()->log('DateTime::atom()', 'DateTime::atom() has been deprecated. Use format(DateTime::ATOM) instead.');
+
         return $this->format(static::ATOM);
     }
 
@@ -77,6 +79,7 @@ class DateTime extends \DateTime
     public function cookie()
     {
         Craft::$app->getDeprecator()->log('DateTime::cookie()', 'DateTime::cookie() has been deprecated. Use format(DateTime::COOKIE) instead.');
+
         return $this->format(static::COOKIE);
     }
 
@@ -87,6 +90,7 @@ class DateTime extends \DateTime
     public function iso8601()
     {
         Craft::$app->getDeprecator()->log('DateTime::iso8601()', 'DateTime::iso8601() has been deprecated. Use format(DateTime::ISO8601) instead.');
+
         return $this->format(static::ISO8601);
     }
 
@@ -97,6 +101,7 @@ class DateTime extends \DateTime
     public function rfc822()
     {
         Craft::$app->getDeprecator()->log('DateTime::rfc822()', 'DateTime::rfc822() has been deprecated. Use format(DateTime::RFC822) instead.');
+
         return $this->format(static::RFC822);
     }
 
@@ -107,6 +112,7 @@ class DateTime extends \DateTime
     public function rfc850()
     {
         Craft::$app->getDeprecator()->log('DateTime::rfc850()', 'DateTime::rfc850() has been deprecated. Use format(DateTime::RFC850) instead.');
+
         return $this->format(static::RFC850);
     }
 
@@ -117,6 +123,7 @@ class DateTime extends \DateTime
     public function rfc1036()
     {
         Craft::$app->getDeprecator()->log('DateTime::rfc1036()', 'DateTime::rfc1036() has been deprecated. Use format(DateTime::RFC1036) instead.');
+
         return $this->format(static::RFC1036);
     }
 
@@ -127,6 +134,7 @@ class DateTime extends \DateTime
     public function rfc1123()
     {
         Craft::$app->getDeprecator()->log('DateTime::rfc1123()', 'DateTime::rfc1123() has been deprecated. Use format(DateTime::RFC1123) instead.');
+
         return $this->format(static::RFC1123);
     }
 
@@ -137,6 +145,7 @@ class DateTime extends \DateTime
     public function rfc2822()
     {
         Craft::$app->getDeprecator()->log('DateTime::rfc2822()', 'DateTime::rfc2822() has been deprecated. Use format(DateTime::RFC2822) instead.');
+
         return $this->format(static::RFC2822);
     }
 
@@ -147,6 +156,7 @@ class DateTime extends \DateTime
     public function rfc3339()
     {
         Craft::$app->getDeprecator()->log('DateTime::rfc3339()', 'DateTime::rfc3339() has been deprecated. Use format(DateTime::RFC3339) instead.');
+
         return $this->format(static::RFC3339);
     }
 
@@ -157,6 +167,7 @@ class DateTime extends \DateTime
     public function rss()
     {
         Craft::$app->getDeprecator()->log('DateTime::rss()', 'DateTime::rss() has been deprecated. Use format(DateTime::RSS) instead.');
+
         return $this->format(static::RSS);
     }
 
@@ -167,6 +178,7 @@ class DateTime extends \DateTime
     public function w3c()
     {
         Craft::$app->getDeprecator()->log('DateTime::w3c()', 'DateTime::w3c() has been deprecated. Use format(DateTime::W3C) instead.');
+
         return $this->format(static::W3C);
     }
 
@@ -177,6 +189,7 @@ class DateTime extends \DateTime
     public function w3cDate()
     {
         Craft::$app->getDeprecator()->log('DateTime::w3cDate()', 'DateTime::w3cDate() has been deprecated. Use format(\'Y-m-d\') instead.');
+
         return $this->format('Y-m-d');
     }
 
@@ -187,6 +200,7 @@ class DateTime extends \DateTime
     public function mySqlDateTime()
     {
         Craft::$app->getDeprecator()->log('DateTime::mySqlDateTime()', 'DateTime::mySqlDateTime() has been deprecated. Use format(\'Y-m-d H:i:s\') instead.');
+
         return $this->format('Y-m-d H:i:s');
     }
 
@@ -197,6 +211,7 @@ class DateTime extends \DateTime
     public function localeDate()
     {
         Craft::$app->getDeprecator()->log('DateTime::localeDate()', 'DateTime::localeDate() has been deprecated. Use Craft::$app->formatter->asDate($date, \'short\') instead.');
+
         return Craft::$app->getFormatter()->asDate($this, Locale::LENGTH_SHORT);
     }
 
@@ -207,6 +222,7 @@ class DateTime extends \DateTime
     public function localeTime()
     {
         Craft::$app->getDeprecator()->log('DateTime::localeTime()', 'DateTime::localeTime() has been deprecated. Use Craft::$app->formatter->asTime($date, \'short\') instead.');
+
         return Craft::$app->getFormatter()->asTime($this, Locale::LENGTH_SHORT);
     }
 
@@ -217,6 +233,7 @@ class DateTime extends \DateTime
     public function year()
     {
         Craft::$app->getDeprecator()->log('DateTime::year()', 'DateTime::year() has been deprecated. Use format(\'Y\') instead.');
+
         return $this->format('Y');
     }
 
@@ -227,6 +244,7 @@ class DateTime extends \DateTime
     public function month()
     {
         Craft::$app->getDeprecator()->log('DateTime::month()', 'DateTime::month() has been deprecated. Use format(\'n\') instead.');
+
         return $this->format('n');
     }
 
@@ -237,6 +255,7 @@ class DateTime extends \DateTime
     public function day()
     {
         Craft::$app->getDeprecator()->log('DateTime::day()', 'DateTime::day() has been deprecated. Use format(\'j\') instead.');
+
         return $this->format('j');
     }
 
@@ -253,6 +272,12 @@ class DateTime extends \DateTime
         // Convert it to a DateInterval in this namespace
         if ($interval instanceof \DateInterval) {
             $spec = 'P';
+
+            // The hour can be -1 if we just crossed DST.
+            if ($interval->h && $interval->h == '-1') {
+                $interval->h = 23;
+                $interval->d--;
+            }
 
             if ($interval->y) {
                 $spec .= $interval->y.'Y';
@@ -304,6 +329,7 @@ class DateTime extends \DateTime
     public function nice()
     {
         Craft::$app->getDeprecator()->log('DateTime::nice()', 'DateTime::nice() has been deprecated. Use Craft::$app->formatter->asDatetime($date) instead.');
+
         return Craft::$app->getFormatter()->asDatetime($this);
     }
 
@@ -321,6 +347,7 @@ class DateTime extends \DateTime
     public function uiTimestamp()
     {
         Craft::$app->getDeprecator()->log('DateTime::uiTimestamp()', 'DateTime::uiTimestamp() has been deprecated. Use Craft::$app->formatter->asTimestamp($date, \'short\') instead.');
+
         return Craft::$app->getFormatter()->asTimestamp($this, Locale::LENGTH_SHORT);
     }
 }

@@ -231,8 +231,6 @@ if (file_exists($configPath.'/app.php')) {
     $config = ArrayHelper::merge($config, require $configPath.'/app.php');
 }
 
-$config['releaseDate'] = new DateTime('@'.$config['releaseDate']);
-
 // Initialize the application
 $class = 'craft\\app\\'.$appType.'\\Application';
 /** @var $app craft\app\web\Application|craft\app\console\Application */

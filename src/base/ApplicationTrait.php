@@ -106,6 +106,16 @@ trait ApplicationTrait
     // =========================================================================
 
     /**
+     * @var string Craft’s schema version number.
+     */
+    public $schemaVersion;
+
+    /**
+     * @var string The minimum Craft build number required to update to this build.
+     */
+    public $minVersionRequired;
+
+    /**
      * @var
      */
     private $_isInstalled;
@@ -144,37 +154,6 @@ trait ApplicationTrait
      * @var bool
      */
     private $_gettingLanguage = false;
-
-    /**
-     * @var string Craft’s build number.
-     */
-    public $build;
-
-    /**
-     * @var string Craft’s schema version number.
-     */
-    public $schemaVersion;
-
-    /**
-     * @var DateTime Craft’s release date.
-     */
-    public $releaseDate;
-
-    /**
-     * @var string The minimum Craft build number required to update to this build.
-     */
-    public $minBuildRequired;
-
-    /**
-     * @var string The URL to download the minimum Craft version.
-     * @see $minBuildRequired
-     */
-    public $minBuildUrl;
-
-    /**
-     * @var string The release track Craft is running on.
-     */
-    public $track;
 
     /**
      * @var string The stored version
@@ -355,7 +334,7 @@ trait ApplicationTrait
     public function getEdition()
     {
         /** @var \craft\app\web\Application|\craft\app\console\Application $this */
-        return (int)$this->getInfo('edition');
+        return (int)$this->getInfo()->edition;
     }
 
     /**
@@ -510,7 +489,7 @@ trait ApplicationTrait
     public function getSystemUid()
     {
         /** @var \craft\app\web\Application|\craft\app\console\Application $this */
-        return $this->getInfo('uid');
+        return $this->getInfo()->uid;
     }
 
     /**
@@ -525,7 +504,7 @@ trait ApplicationTrait
             return $on;
         }
 
-        return (bool)$this->getInfo('on');
+        return (bool)$this->getInfo()->on;
     }
 
     /**
@@ -536,7 +515,7 @@ trait ApplicationTrait
     public function getIsInMaintenanceMode()
     {
         /** @var \craft\app\web\Application|\craft\app\console\Application $this */
-        return (bool)$this->getInfo('maintenance');
+        return (bool)$this->getInfo()->maintenance;
     }
 
     /**
@@ -564,41 +543,51 @@ trait ApplicationTrait
     /**
      * Returns the info model, or just a particular attribute.
      *
-     * @param string|null $attribute
-     *
-     * @return Info|string
+     * @return Info
      * @throws ServerErrorHttpException if the info table is missing its row
      */
-    public function getInfo($attribute = null)
+    public function getInfo()
     {
         /** @var \craft\app\web\Application|\craft\app\console\Application $this */
-        if (!isset($this->_info)) {
-            if ($this->getIsInstalled()) {
-                $row = (new Query())
-                    ->from(['{{%info}}'])
-                    ->one();
+        if (isset($this->_info)) {
+            return $this->_info;
+        }
 
-                if (!$row) {
-                    $tableName = $this->getDb()->getSchema()->getRawTableName('{{%info}}');
-                    throw new ServerErrorHttpException("The {$tableName} table is missing its row");
-                }
+        if (!$this->getIsInstalled()) {
+            return new Info();
+        }
 
-                // TODO: Remove this after the next breakpoint
-                $this->_storedVersion = $row['version'];
-                unset($row['siteName'], $row['siteUrl']);
+        $row = (new Query())
+            ->from(['{{%info}}'])
+            ->one();
 
-                // Prevent an infinite loop in toDateTime.
-                $row['releaseDate'] = DateTimeHelper::toDateTime($row['releaseDate'], false, false);
+        if (!$row) {
+            $tableName = $this->getDb()->getSchema()->getRawTableName('{{%info}}');
+            throw new ServerErrorHttpException("The {$tableName} table is missing its row");
+        }
 
-                $this->_info = new Info($row);
-            } else {
-                $this->_info = new Info();
+        // TODO: Remove this after the next breakpoint
+        $this->_storedVersion = $row['version'];
+        if (isset($row['build'])) {
+            $version = $row['version'];
+
+            switch ($row['track']) {
+                case 'dev':
+                    $version .= '.0-alpha.'.$row['build'];
+                    break;
+                case 'beta':
+                    $version .= '.0-beta.'.$row['build'];
+                    break;
+                default:
+                    $version .= '.'.$row['build'];
+                    break;
             }
-        }
 
-        if ($attribute) {
-            return $this->_info->$attribute;
+            $row['version'] = $version;
         }
+        unset($row['siteName'], $row['siteUrl'], $row['build'], $row['releaseDate'], $row['track']);
+
+        $this->_info = new Info($row);
 
         return $this->_info;
     }
@@ -615,6 +604,9 @@ trait ApplicationTrait
         /** @var \craft\app\web\Application|\craft\app\console\Application $this */
         if ($info->validate()) {
             $attributes = Db::prepareValuesForDb($info);
+
+            // TODO: Remove this after the next breakpoint
+            unset($attributes['build'], $attributes['releaseDate'], $attributes['track']);
 
             if (array_key_exists('id', $attributes) && $attributes['id'] === null) {
                 unset($attributes['id']);
@@ -638,7 +630,6 @@ trait ApplicationTrait
                     // Set the new id
                     $info->id = $this->getDb()->getLastInsertID('{{%info}}');
                 }
-
             }
 
             // Use this as the new cached Info
@@ -717,7 +708,6 @@ trait ApplicationTrait
             try {
                 $this->getDb()->open();
                 $this->_isDbConnectionValid = true;
-
             } catch (DbConnectException $e) {
                 $this->_isDbConnectionValid = false;
             }
@@ -1267,7 +1257,7 @@ trait ApplicationTrait
         $timezone = $this->getConfig()->get('timezone');
 
         if (!$timezone) {
-            $timezone = $this->getInfo('timezone');
+            $timezone = $this->getInfo()->timezone;
         }
 
         if ($timezone) {

@@ -21,12 +21,12 @@ class App
     // =========================================================================
 
     /**
-     * @var null
+     * @var boolean
      */
     private static $_isPhpDevServer = null;
 
     /**
-     * @var
+     * @var boolean
      */
     private static $_iconv;
 
@@ -183,6 +183,39 @@ class App
         return null;
     }
 
+    /**
+     * Returns the major and minor (X.Y) versions from a given version number.
+     *
+     * @param string $version The full version number
+     *
+     * @return string The X.Y parts of the version number
+     */
+    public static function majorMinorVersion($version)
+    {
+        preg_match('/^\d+\.\d+/', $version, $matches);
+
+        return $matches[0];
+    }
+
+    /**
+     * Returns the Craft download URL for a given version.
+     *
+     * @param string $version The Craft version
+     *
+     * @return string The download URL
+     */
+    public static function craftDownloadUrl($version)
+    {
+        $xy = self::majorMinorVersion($version);
+
+        return "https://download.craftcdn.com/craft/{$xy}/{$version}/Craft-{$version}.zip";
+    }
+
+    /**
+     * Returns whether the server has a valid version of the iconv extension installed.
+     *
+     * @return boolean
+     */
     public static function checkForValidIconv()
     {
         if (!isset(static::$_iconv)) {

@@ -15,11 +15,7 @@ use craft\app\helpers\App;
 $values = [
     [
         'Craft Version',
-        $panel->data['craftVersion'].'.'.$panel->data['craftBuild']
-    ],
-    [
-        'Release Date',
-        Craft::$app->getFormatter()->asDate($panel->data['craftReleaseDate'], 'short')
+        $panel->data['craftVersion']
     ],
     [
         'Edition',

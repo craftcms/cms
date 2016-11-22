@@ -382,15 +382,12 @@ class Install extends Migration
         ]);
         $this->createTable('{{%info}}', [
             'id' => $this->primaryKey(),
-            'version' => $this->string(15)->notNull(),
-            'build' => $this->integer()->notNull()->unsigned(),
+            'version' => $this->string(50)->notNull(),
             'schemaVersion' => $this->string(15)->notNull(),
-            'releaseDate' => $this->dateTime()->notNull(),
             'edition' => $this->smallInteger()->unsigned()->notNull(),
             'timezone' => $this->string(30),
             'on' => $this->boolean()->defaultValue(false)->notNull(),
             'maintenance' => $this->boolean()->defaultValue(false)->notNull(),
-            'track' => $this->string(40)->notNull(),
             'fieldVersion' => $this->char(12)->notNull()->defaultValue('1'),
             'dateCreated' => $this->dateTime()->notNull(),
             'dateUpdated' => $this->dateTime()->notNull(),
@@ -1002,13 +999,10 @@ class Install extends Migration
         echo "    > populate the info table ...";
         Craft::$app->saveInfo(new Info([
             'version' => Craft::$app->version,
-            'build' => Craft::$app->build,
             'schemaVersion' => Craft::$app->schemaVersion,
-            'releaseDate' => Craft::$app->releaseDate,
             'edition' => '0',
             'on' => '1',
             'maintenance' => '0',
-            'track' => Craft::$app->track,
             'fieldVersion' => StringHelper::randomString(12),
         ]));
         echo " done\n";

@@ -124,7 +124,7 @@ class Craft extends Yii
             $className === \craft\app\behaviors\ElementQueryBehavior::class ||
             $className === \craft\app\behaviors\ElementQueryTrait::class
         ) {
-            $storedFieldVersion = static::$app->getInfo('fieldVersion');
+            $storedFieldVersion = static::$app->getInfo()->fieldVersion;
             $compiledClassesPath = static::$app->getPath()->getRuntimePath().'/compiled_classes';
 
             $contentBehaviorFile = $compiledClassesPath.'/ContentBehavior.php';

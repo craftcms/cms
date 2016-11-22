@@ -90,11 +90,6 @@ class Et extends Model
     public $localVersion;
 
     /**
-     * @var integer Local build
-     */
-    public $localBuild;
-
-    /**
      * @var string Local edition
      */
     public $localEdition;
@@ -103,11 +98,6 @@ class Et extends Model
      * @var string User email
      */
     public $userEmail;
-
-    /**
-     * @var string Track
-     */
-    public $track;
 
     /**
      * @var boolean Show beta updates

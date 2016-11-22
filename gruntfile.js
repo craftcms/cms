@@ -4,15 +4,15 @@ module.exports = function(grunt) {
 		pkg: grunt.file.readJSON('package.json'),
 		watch: {
 			sass: {
-				files: ['Source/craft/app/resources/sass/*.scss'],
+				files: ['src/resources/sass/*.scss'],
 				tasks: 'sass'
 			},
 			craftjs: {
-				files: ['Source/craft/app/resources/js/Craft/*.js'],
+				files: ['src/resources/js/Craft/*.js'],
 				tasks: ['concat', 'uglify:craft'],
 			},
 			otherjs: {
-				files: ['Source/craft/app/resources/js/*.js', '!Source/craft/app/resources/js/Craft.js'],
+				files: ['src/resources/js/*.js', '!src/resources/js/Craft.js'],
 				tasks: ['uglify:other']
 			}
 		},
@@ -23,9 +23,9 @@ module.exports = function(grunt) {
 			},
 			dist: {
 				expand: true,
-				cwd: 'Source/craft/app/resources/sass',
+				cwd: 'src/resources/sass',
 				src: '*.scss',
-				dest: 'Source/craft/app/resources/css',
+				dest: 'src/resources/css',
 				ext: '.css'
 			}
 		},
@@ -37,12 +37,12 @@ module.exports = function(grunt) {
 					footer: '\n})(jQuery);\n',
 				},
 				src: [
-					'Source/craft/app/resources/js/Craft/Craft.js',
-					'Source/craft/app/resources/js/Craft/Base*.js',
-					'Source/craft/app/resources/js/Craft/*.js',
-					'!(Source/craft/app/resources/js/Craft/Craft.js|Source/craft/app/resources/js/Craft/Base*.js)'
+					'src/resources/js/Craft/Craft.js',
+					'src/resources/js/Craft/Base*.js',
+					'src/resources/js/Craft/*.js',
+					'!(src/resources/js/Craft/Craft.js|src/resources/js/Craft/Base*.js)'
 				],
-				dest: 'Source/craft/app/resources/js/Craft.js'
+				dest: 'src/resources/js/Craft.js'
 			}
 		},
 		uglify: {
@@ -52,14 +52,14 @@ module.exports = function(grunt) {
 				screwIE8: true
 			},
 			craft: {
-				src: 'Source/craft/app/resources/js/Craft.js',
-				dest: 'Source/craft/app/resources/js/compressed/Craft.js'
+				src: 'src/resources/js/Craft.js',
+				dest: 'src/resources/js/compressed/Craft.js'
 			},
 			other: {
 				expand: true,
-				cwd: 'Source/craft/app/resources/js',
+				cwd: 'src/resources/js',
 				src: ['*.js', '!Craft.js'],
-				dest: 'Source/craft/app/resources/js/compressed'
+				dest: 'src/resources/js/compressed'
 			}
 		},
 		jshint: {
@@ -74,12 +74,12 @@ module.exports = function(grunt) {
 			},
 			beforeconcat: [
 				'gruntfile.js',
-				'Source/craft/app/resources/js/*.js',
-				'!Source/craft/app/resources/js/Craft.js',
-				'Source/craft/app/resources/js/Craft/*.js'
+				'src/resources/js/*.js',
+				'!src/resources/js/Craft.js',
+				'src/resources/js/Craft/*.js'
 			],
 			afterconcat: [
-				'Source/craft/app/resources/js/Craft.js'
+				'src/resources/js/Craft.js'
 			]
 		}
 	});

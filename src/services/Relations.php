@@ -34,7 +34,7 @@ class Relations extends Component
      * @param array             $targetIds
      *
      * @throws \Exception
-     * @return boolean
+     * @return void
      */
     public function saveRelations(BaseRelationField $field, ElementInterface $source, $targetIds)
     {

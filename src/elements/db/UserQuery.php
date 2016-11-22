@@ -309,7 +309,7 @@ class UserQuery extends ElementQuery
         ]);
 
         // TODO: remove after next breakpoint
-        if (version_compare(Craft::$app->getInfo('version'), '3.0', '>=') && Craft::$app->getInfo('build') > 2910) {
+        if (version_compare(Craft::$app->getInfo()->version, '3.0.0-alpha.2910', '>=')) {
             $this->query->addSelect(['users.photoId']);
         }
 
