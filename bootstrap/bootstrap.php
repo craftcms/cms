@@ -84,7 +84,7 @@ $ensureFolderIsReadable = function ($path, $writableToo = false) {
 $vendorPath = realpath(defined('CRAFT_VENDOR_PATH') ? CRAFT_VENDOR_PATH : $getArg('vendorPath') ?: dirname(dirname(dirname(__DIR__))));
 
 // Set the app path
-$appPath = dirname(__DIR__).'/cms';
+$appPath = defined('CRAFT_SRC_PATH') ? CRAFT_SRC_PATH : dirname(__DIR__).'/src';
 
 // Set the craft/ folder path. By default assume that it is alongside the vendor/ folder.
 $craftPath = realpath(defined('CRAFT_BASE_PATH') ? CRAFT_BASE_PATH : ($getArg('basePath') ?: dirname($vendorPath).'/craft'));
