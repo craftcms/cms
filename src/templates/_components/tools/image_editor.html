@@ -1,59 +1,58 @@
-<div id="image-holder" style="width: 300px; height: 300px; float: left; position: relative; background-color: #aaa;">
-    <canvas id="image-canvas">
-    </canvas>
-    <canvas id="cropping-canvas">
-    </canvas>
+<div class="tabs">
+    <ul>
+        <li data-view="transform"><i></i>{{ 'Transform'|t('app') }}</li>
+        <li data-view="effects"><i></i>{{ 'Effects'|t('app') }}</li>
+        <li data-view="filters"><i></i>{{ 'Filters'|t('app') }}</li>
+    </ul>
 </div>
-<div class="image-tools" style="margin-left: 340px;">
-    <section>
-        <div class="rotation-tools">
-            <div class="section-title">{{ "Rotation"|t('app') }}</div>
-            <ul>
-                <li><a class="rotate clockwise">{{ "Rotate clockwise"|t('app') }}</a></li>
-                <li><a class="rotate counter-clockwise">{{ "Rotate counterclockwise"|t('app') }}</a></li>
-            </ul>
-            <input class="rotate straighten" type="range" min="-45" max="45" step="1" value="0" /><br />
-            <a class="rotate reset">{{ "Reset" }}</a>
+<div class="views">
+    <div class="transform hidden" data-view="transform" data-image-tools="true">
+        <div class="rotate-buttons buttons">
+            <div class="rotate-left btn icon">{{ 'Rotate Left'|t('app') }}</div>
+            <div class="rotate-right btn icon">{{ 'Rotate Right'|t('app') }}</div>
         </div>
-    </section>
-    <hr />
-    <section>
-        <div class="cropping-tools">
-            <div class="section-title">{{ "Cropping"|t('app') }}</div>
-            <ul class="crop-mode-disabled">
-                <li><a class="crop cropping-tool">{{ "Crop image"|t('app') }}</a></li>
-                <li><a class="crop focal-point">{{ "Set crop focal point"|t('app') }}</a></li>
-            </ul>
-            <ul class="crop-mode-enabled hidden">
-                <li><a class="crop apply-crop">{{ "Apply cropping"|t('app') }}</a></li>
-                <li><a class="crop reset-crop">{{ "Reset cropping"|t('app') }}</a></li>
-            </ul>
-
+        <div class="flip-buttons buttons">
+            <div class="flip-vertical btn icon">{{ 'Flip Vertical'|t('app') }}</div>
+            <div class="flip-horizontal btn icon">{{ 'Flip Horizontal'|t('app') }}</div>
         </div>
-    </section>
-    <hr />
-    {% set filters = craft.app.imageEffects.getAllFilters() %}
-    {% if filters|length %}
-        <section>
-            <div class="filter-tools">
-                <div class="section-title">{{ "Filters"|t('app') }}</div>
-                <div class="filter-select">
-                    <select>
-                        <option value="">---</option>
-                        {% for filter in filters %}
-                            <option value="{{ filter.getType()|replace({'\\' : '-'}) }}">{{ filter }}</option>
-                        {% endfor %}
-                    </select>
-                </div>
-                {% for filter in filters %}
-                    <div class="filter-fields hidden" filter="{{ filter.getType()|replace({'\\' : '-'}) }}">
-                        {{ filter.getFieldHtml()|raw }}
-                    </div>
-                {% endfor %}
-
-                <div class="btn submit apply-filter">{{ 'Apply'|t('app') }}</div>
+        <div class="crop-buttons buttons">
+            <div class="unconstrained btn icon menubtn">{{ 'Unconstrained'|t('app') }}</div>
+            <div class="menu">
+                <ul>
+                    <li><a class="" data-attr="unconstrained">{{ 'Unconstrained'|t('app') }}</a></li>
+                    <li><a class="" data-attr="original">{{ 'Original'|t('app') }}</a></li>
+                    <li><a class="" data-attr="square">{{ 'Square'|t('app') }}</a></li>
+                    <li><a class="" data-attr="16:9">16:9</a></li>
+                    <li><a class="" data-attr="8:10">8:10</a></li>
+                    <li><a class="" data-attr="5:7">5:7</a></li>
+                    <li><a class="" data-attr="4:3">4:3</a></li>
+                    <li><a class="" data-attr="3:5">3:5</a></li>
+                    <li><a class="" data-attr="3:2">3:2</a></li>
+                </ul>
             </div>
-        </section>
-        <hr />
-    {% endif %}
+            <div class="focal-point btn icon">{{ 'Set Focal Point'|t('app') }}</div>
+        </div>
+    </div>
+    <div class="filters hidden" data-view="filters">
+        <ul>
+            <li><img src="http://placehold.it/80x80"><span>{{ 'Original'|t('app') }}</span></li>
+            {% set filters = craft.app.imageEffects.getAllFilters() %}
+            {% for filter in filters %}
+                <li><img src="http://placehold.it/80x80"><span>{{ filter }}</span></li></option>
+            {% endfor %}
+        </ul>
+    </div>
+</div>
+<div class="image-container">
+    <div class="image">
+        <canvas id="image-canvas">
+        </canvas>
+        <canvas id="cropping-canvas">
+        </canvas>
+    </div>
+    <div class="image-tools">
+        <div data-view="transform" class="straightening">
+            <div id="slide-rule" class="slide-rule"></div>
+        </div>
+    </div>
 </div>

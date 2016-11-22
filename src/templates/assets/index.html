@@ -2,6 +2,8 @@
 {% set title = "Assets"|t('app') %}
 {% set elementType = 'craft\\app\\elements\\Asset' %}
 
+{% registercssresource "css/image_editor.css" %}
+
 {% registerjsresource "lib/fabric/fabric.js" %}
 {% registerjsresource "js/AssetImageEditor.js" %}
 {% registerjsresource "lib/fileupload/jquery.ui.widget.js" %}

@@ -436,6 +436,8 @@ Craft.AssetImageEditor = Garnish.Modal.extend(
 		getZoomToFitRatio: function () {
 			// Convert the angle to radians
 			var angleInRadians = Math.abs(this.imageStraightenAngle) * (Math.PI / 180);
+			var scaledHeight;
+			var scaledWidth;
 
 			// Use straight triangles and substitution to get an expression that equates to scaled height
 			if (this.originalWidth > this.originalHeight) {
@@ -754,6 +756,9 @@ Craft.AssetImageEditor = Garnish.Modal.extend(
 			this.hideCropper();
 
 			var cropperBorderThickness = this.settings.cropperBorderThickness;
+			var leftOffset;
+			var topOffset;
+
 			 // If the image has not been straightened, then we probably have some
 			 // space on top/bottom or left/right edges.
 			 if (this.imageStraightenAngle == 0) {
@@ -773,7 +778,7 @@ Craft.AssetImageEditor = Garnish.Modal.extend(
 			 	scaledWidth: this.image.width,
 			 	scaledHeight: this.image.height,
 			 	zoomRatio: this.getZoomToFitRatio()
-			 }
+			 };
 
 			this.isCroppingPerformed = true;
 		},
@@ -1093,7 +1098,7 @@ Craft.AssetImageEditor = Garnish.Modal.extend(
 		},
 
 		_cropperHandleHitTest: function (ev) {
-			var parentOffset = this.$croppingCanvas.offset()
+			var parentOffset = this.$croppingCanvas.offset();
 			var mouseX = ev.pageX - parentOffset.left;
 			var mouseY = ev.pageY - parentOffset.top;
 
@@ -1142,8 +1147,8 @@ Craft.AssetImageEditor = Garnish.Modal.extend(
 			return false;
 		},
 
-		_cropperHitTest(ev) {
-			var parentOffset = this.$croppingCanvas.offset()
+		_cropperHitTest: function (ev) {
+			var parentOffset = this.$croppingCanvas.offset();
 			var mouseX = ev.pageX - parentOffset.left;
 			var mouseY = ev.pageY - parentOffset.top;
 
@@ -1159,7 +1164,7 @@ Craft.AssetImageEditor = Garnish.Modal.extend(
 			return true;
 		},
 
-		_getRectangleVertices(rectangle, offsetX, offsetY) {
+		_getRectangleVertices: function (rectangle, offsetX, offsetY) {
 			if (typeof offsetX == typeof undefined) {
 				offsetX = 0;
 			}

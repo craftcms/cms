@@ -1,4 +1,4 @@
-/*! Craft 3.0.0 - 2016-11-03 */
+/*! Craft 3.0.0 - 2016-11-22 */
 (function($){
 
 // Set all the standard Craft.* stuff
@@ -5134,7 +5134,9 @@ Craft.AssetIndex = Craft.BaseElementIndex.extend(
 		{
 			if (this._folderDrag && this._getSourceLevel($source) > 1)
 			{
-				this._folderDrag.addItems($source.parent());
+				if (this._getFolderIdFromSourceKey($source.data('key'))) {
+					this._folderDrag.addItems($source.parent());
+				}
 			}
 
 			if (this._assetDrag)
@@ -5243,13 +5245,13 @@ Craft.AssetIndex = Craft.BaseElementIndex.extend(
 				var $selected = this.sourceSelect.getSelectedItems(),
 					draggees = [];
 
-				for (var i = 0; i < $selected.length; i++)
-				{
-					var $source = $($selected[i]).parent();
+				for (var i = 0; i < $selected.length; i++) {
+					if (this._getFolderIdFromSourceKey($selected.data('key'))) {
+						var $source = $selected.eq(i).parent();
 
-					if ($source.hasClass('sel') && this._getSourceLevel($source) > 1)
-					{
-						draggees.push($source[0]);
+						if ($source.hasClass('sel') && this._getSourceLevel($source) > 1) {
+							draggees.push($source[0]);
+						}
 					}
 				}
 
@@ -6328,16 +6330,19 @@ Craft.AssetIndex = Craft.BaseElementIndex.extend(
 
 	_createFolderContextMenu: function($source)
 	{
-		var menuOptions = [{ label: Craft.t('app', 'New subfolder'), onClick: $.proxy(this, '_createSubfolder', $source) }];
+		// Make sure it's a volume folder
+		if (this._getFolderIdFromSourceKey($source.data('key'))) {
+			var menuOptions = [{ label: Craft.t('app', 'New subfolder'), onClick: $.proxy(this, '_createSubfolder', $source) }];
 
-		// For all folders that are not top folders
-		if (this.settings.context == 'index' && this._getSourceLevel($source) > 1)
-		{
-			menuOptions.push({ label: Craft.t('app', 'Rename folder'), onClick: $.proxy(this, '_renameFolder', $source) });
-			menuOptions.push({ label: Craft.t('app', 'Delete folder'), onClick: $.proxy(this, '_deleteFolder', $source) });
+			// For all folders that are not top folders
+			if (this.settings.context == 'index' && this._getSourceLevel($source) > 1)
+			{
+				menuOptions.push({ label: Craft.t('app', 'Rename folder'), onClick: $.proxy(this, '_renameFolder', $source) });
+				menuOptions.push({ label: Craft.t('app', 'Delete folder'), onClick: $.proxy(this, '_deleteFolder', $source) });
+			}
+
+			new Garnish.ContextMenu($source, menuOptions, {menuClass: 'menu'});
 		}
-
-		new Garnish.ContextMenu($source, menuOptions, {menuClass: 'menu'});
 	},
 
 	_createSubfolder: function($parentFolder)
@@ -7461,1254 +7466,6 @@ Craft.AuthManager = Garnish.Base.extend(
 	checkInterval: 60,
 	minSafeSessiotTime: 120
 });
-
-/**
- * Category index class
- */
-Craft.CategoryIndex = Craft.BaseElementIndex.extend(
-{
-	editableGroups: null,
-	$newCategoryBtnGroup: null,
-	$newCategoryBtn: null,
-
-	afterInit: function()
-	{
-		// Find which of the visible groups the user has permission to create new categories in
-		this.editableGroups = [];
-
-		for (var i = 0; i < Craft.editableCategoryGroups.length; i++)
-		{
-			var group = Craft.editableCategoryGroups[i];
-
-			if (this.getSourceByKey('group:'+group.id))
-			{
-				this.editableGroups.push(group);
-			}
-		}
-
-		this.base();
-	},
-
-	getDefaultSourceKey: function()
-	{
-		// Did they request a specific category group in the URL?
-		if (this.settings.context == 'index' && typeof defaultGroupHandle != typeof undefined)
-		{
-			for (var i = 0; i < this.$sources.length; i++)
-			{
-				var $source = $(this.$sources[i]);
-
-				if ($source.data('handle') == defaultGroupHandle)
-				{
-					return $source.data('key');
-				}
-			}
-		}
-
-		return this.base();
-	},
-
-	onSelectSource: function()
-	{
-		// Get the handle of the selected source
-		var selectedSourceHandle = this.$source.data('handle');
-
-		// Update the New Category button
-		// ---------------------------------------------------------------------
-
-		if (this.editableGroups.length)
-		{
-			// Remove the old button, if there is one
-			if (this.$newCategoryBtnGroup)
-			{
-				this.$newCategoryBtnGroup.remove();
-			}
-
-			// Determine if they are viewing a group that they have permission to create categories in
-			var selectedGroup;
-
-			if (selectedSourceHandle)
-			{
-				for (var i = 0; i < this.editableGroups.length; i++)
-				{
-					if (this.editableGroups[i].handle == selectedSourceHandle)
-					{
-						selectedGroup = this.editableGroups[i];
-						break;
-					}
-				}
-			}
-
-			this.$newCategoryBtnGroup = $('<div class="btngroup submit"/>');
-			var $menuBtn;
-
-			// If they are, show a primary "New category" button, and a dropdown of the other groups (if any).
-			// Otherwise only show a menu button
-			if (selectedGroup)
-			{
-				var href = this._getGroupTriggerHref(selectedGroup),
-					label = (this.settings.context == 'index' ? Craft.t('app', 'New category') : Craft.t('app', 'New {group} category', {group: selectedGroup.name}));
-				this.$newCategoryBtn = $('<a class="btn submit add icon" '+href+'>'+label+'</a>').appendTo(this.$newCategoryBtnGroup);
-
-				if (this.settings.context != 'index')
-				{
-					this.addListener(this.$newCategoryBtn, 'click', function(ev)
-					{
-						this._openCreateCategoryModal(ev.currentTarget.getAttribute('data-id'));
-					});
-				}
-
-				if (this.editableGroups.length > 1)
-				{
-					$menuBtn = $('<div class="btn submit menubtn"></div>').appendTo(this.$newCategoryBtnGroup);
-				}
-			}
-			else
-			{
-				this.$newCategoryBtn = $menuBtn = $('<div class="btn submit add icon menubtn">'+Craft.t('app', 'New category')+'</div>').appendTo(this.$newCategoryBtnGroup);
-			}
-
-			if ($menuBtn)
-			{
-				var menuHtml = '<div class="menu"><ul>';
-
-				for (var i = 0; i < this.editableGroups.length; i++)
-				{
-					var group = this.editableGroups[i];
-
-					if (this.settings.context == 'index' || group != selectedGroup)
-					{
-						var href = this._getGroupTriggerHref(group),
-							label = (this.settings.context == 'index' ? group.name : Craft.t('app', 'New {group} category', {group: group.name}));
-						menuHtml += '<li><a '+href+'">'+label+'</a></li>';
-					}
-				}
-
-				menuHtml += '</ul></div>';
-
-				var $menu = $(menuHtml).appendTo(this.$newCategoryBtnGroup),
-					menuBtn = new Garnish.MenuBtn($menuBtn);
-
-				if (this.settings.context != 'index')
-				{
-					menuBtn.on('optionSelect', $.proxy(function(ev)
-					{
-						this._openCreateCategoryModal(ev.option.getAttribute('data-id'));
-					}, this));
-				}
-			}
-
-			this.addButton(this.$newCategoryBtnGroup);
-		}
-
-		// Update the URL if we're on the Categories index
-		// ---------------------------------------------------------------------
-
-		if (this.settings.context == 'index' && typeof history != typeof undefined)
-		{
-			var uri = 'categories';
-
-			if (selectedSourceHandle)
-			{
-				uri += '/'+selectedSourceHandle;
-			}
-
-			history.replaceState({}, '', Craft.getUrl(uri));
-		}
-
-		this.base();
-	},
-
-	_getGroupTriggerHref: function(group)
-	{
-		if (this.settings.context == 'index')
-		{
-			return 'href="'+Craft.getUrl('categories/'+group.handle+'/new')+'"';
-		}
-		else
-		{
-			return 'data-id="'+group.id+'"';
-		}
-	},
-
-	_openCreateCategoryModal: function(groupId)
-	{
-		if (this.$newCategoryBtn.hasClass('loading'))
-		{
-			return;
-		}
-
-		// Find the group
-		var group;
-
-		for (var i = 0; i < this.editableGroups.length; i++)
-		{
-			if (this.editableGroups[i].id == groupId)
-			{
-				group = this.editableGroups[i];
-				break;
-			}
-		}
-
-		if (!group)
-		{
-			return;
-		}
-
-		this.$newCategoryBtn.addClass('inactive');
-		var newCategoryBtnText = this.$newCategoryBtn.text();
-		this.$newCategoryBtn.text(Craft.t('app', 'New {group} category', {group: group.name}));
-
-		new Craft.ElementEditor({
-			hudTrigger: this.$newCategoryBtnGroup,
-			elementType: 'craft\\app\\elements\\Category',
-			siteId: this.siteId,
-			attributes: {
-				groupId: groupId
-			},
-			onBeginLoading: $.proxy(function()
-			{
-				this.$newCategoryBtn.addClass('loading');
-			}, this),
-			onEndLoading: $.proxy(function()
-			{
-				this.$newCategoryBtn.removeClass('loading');
-			}, this),
-			onHideHud: $.proxy(function()
-			{
-				this.$newCategoryBtn.removeClass('inactive').text(newCategoryBtnText);
-			}, this),
-			onSaveElement: $.proxy(function(response)
-			{
-				// Make sure the right group is selected
-				var groupSourceKey = 'group:'+groupId;
-
-				if (this.sourceKey != groupSourceKey)
-				{
-					this.selectSourceByKey(groupSourceKey);
-				}
-
-				this.selectElementAfterUpdate(response.id);
-				this.updateElements();
-			}, this)
-		});
-	}
-});
-
-// Register it!
-Craft.registerElementIndexClass('craft\\app\\elements\\Category', Craft.CategoryIndex);
-
-/**
- * Category Select input
- */
-Craft.CategorySelectInput = Craft.BaseElementSelectInput.extend(
-{
-	setSettings: function()
-	{
-		this.base.apply(this, arguments);
-		this.settings.sortable = false;
-	},
-
-	getModalSettings: function()
-	{
-		var settings = this.base();
-		settings.hideOnSelect = false;
-		return settings;
-	},
-
-	getElements: function()
-	{
-		return this.$elementsContainer.find('.element');
-	},
-
-	onModalSelect: function(elements)
-	{
-		// Disable the modal
-		this.modal.disable();
-		this.modal.disableCancelBtn();
-		this.modal.disableSelectBtn();
-		this.modal.showFooterSpinner();
-
-		// Get the new category HTML
-		var selectedCategoryIds = this.getSelectedElementIds();
-
-		for (var i = 0; i < elements.length; i++)
-		{
-			selectedCategoryIds.push(elements[i].id);
-		}
-
-		var data = {
-			categoryIds:    selectedCategoryIds,
-			siteId:         elements[0].siteId,
-			id:             this.settings.id,
-			name:           this.settings.name,
-			limit:          this.settings.limit,
-			selectionLabel: this.settings.selectionLabel
-		};
-
-		Craft.postActionRequest('elements/get-categories-input-html', data, $.proxy(function(response, textStatus)
-		{
-			this.modal.enable();
-			this.modal.enableCancelBtn();
-			this.modal.enableSelectBtn();
-			this.modal.hideFooterSpinner();
-
-			if (textStatus == 'success')
-			{
-				var $newInput = $(response.html),
-					$newElementsContainer = $newInput.children('.elements');
-
-				this.$elementsContainer.replaceWith($newElementsContainer);
-				this.$elementsContainer = $newElementsContainer;
-				this.resetElements();
-
-				for (var i = 0; i < elements.length; i++)
-				{
-					var element = elements[i],
-						$element = this.getElementById(element.id);
-
-					if ($element)
-					{
-						this.animateElementIntoPlace(element.$element, $element);
-					}
-				}
-
-				this.updateDisabledElementsInModal();
-				this.modal.hide();
-				this.onSelectElements();
-			}
-		}, this));
-	},
-
-	removeElement: function($element)
-	{
-		// Find any descendants this category might have
-		var $allCategories = $element.add($element.parent().siblings('ul').find('.element'));
-
-		// Remove our record of them all at once
-		this.removeElements($allCategories);
-
-		// Animate them away one at a time
-		for (var i = 0; i < $allCategories.length; i++)
-		{
-			this._animateCategoryAway($allCategories, i);
-		}
-	},
-
-	_animateCategoryAway: function($allCategories, i)
-	{
-		var callback;
-
-		// Is this the last one?
-		if (i == $allCategories.length - 1)
-		{
-			callback = $.proxy(function()
-			{
-				var $li = $allCategories.first().parent().parent(),
-					$ul = $li.parent();
-
-				if ($ul[0] == this.$elementsContainer[0] || $li.siblings().length)
-				{
-					$li.remove();
-				}
-				else
-				{
-					$ul.remove();
-				}
-			}, this);
-		}
-
-		var func = $.proxy(function() {
-			this.animateElementAway($allCategories.eq(i), callback);
-		}, this);
-
-		if (i == 0)
-		{
-			func();
-		}
-		else
-		{
-			setTimeout(func, 100 * i);
-		}
-	}
-});
-
-/**
- * Craft Charts
- */
-
-Craft.charts = {};
-
-/**
- * Class Craft.charts.DataTable
- */
-Craft.charts.DataTable = Garnish.Base.extend(
-{
-    columns: null,
-    rows: null,
-
-    init: function(data)
-    {
-        columns = data.columns;
-        rows = data.rows;
-
-        rows.forEach($.proxy(function(d)
-        {
-            $.each(d, function(cellIndex, cell)
-            {
-                var column = columns[cellIndex];
-
-                switch(column.type)
-                {
-                    case 'date':
-                        d[cellIndex] = d3.time.format("%Y-%m-%d").parse(d[cellIndex]);
-                    break;
-
-                    case 'datetime':
-                        d[cellIndex] = d3.time.format("%Y-%m-%d %H:00:00").parse(d[cellIndex]);
-                    break;
-
-                    case 'percent':
-                    d[cellIndex] = d[cellIndex] / 100;
-                    break;
-
-                    case 'number':
-                        d[cellIndex] = +d[cellIndex];
-                        break;
-
-                    default:
-                        // do nothing
-                }
-            });
-
-        }, this));
-
-        this.columns = columns;
-        this.rows = rows;
-    }
-});
-
-/**
- * Class Craft.charts.Tip
- */
-Craft.charts.Tip = Garnish.Base.extend(
-{
-    $tip: null,
-
-    init: function($container, settings)
-    {
-        this.setSettings(settings, Craft.charts.Tip.defaults);
-
-        this.$container = $container;
-
-        this.$tip = $('<div class="tooltip"></div>').appendTo(this.$container);
-
-        this.hide();
-    },
-
-    tipContentFormat: function(d)
-    {
-        var locale = this.settings.locale;
-
-
-        if(this.settings.tipContentFormat)
-        {
-            return this.settings.tipContentFormat(locale, d);
-        }
-        else
-        {
-            var $content = $('<div />');
-            var $xValue = $('<div class="x-value" />').appendTo($content);
-            var $yValue = $('<div class="y-value" />').appendTo($content);
-
-            $xValue.html(this.settings.xTickFormat(d[0]));
-            $yValue.html(this.settings.yTickFormat(d[1]));
-
-            return $content.get(0);
-        }
-    },
-
-    show: function(d)
-    {
-        this.$tip.html(this.tipContentFormat(d));
-        this.$tip.css("display", 'block');
-
-        var position = this.settings.getPosition(this.$tip, d);
-
-        this.$tip.css("left", position.left + "px");
-        this.$tip.css("top", position.top + "px");
-    },
-
-    hide: function()
-    {
-        this.$tip.css("display", 'none');
-    },
-},
-{
-    defaults: {
-        locale: null,
-        tipContentFormat: null, // $.noop ?
-        getPosition: null, // $.noop ?
-    }
-});
-
-/**
- * Class Craft.charts.BaseChart
- */
-Craft.charts.BaseChart = Garnish.Base.extend(
-{
-    $container: null,
-    $chart: null,
-
-    chartBaseClass: 'cp-chart',
-    dataTable: null,
-
-    // dataTables: [],
-    // isStacked: true,
-
-    locale: null,
-    orientation: null,
-
-    svg: null,
-    width: null,
-    height: null,
-    x: null,
-    y: null,
-
-    init: function(container)
-    {
-        this.$container = container;
-
-        d3.select(window).on('resize', $.proxy(function() {
-            this.resize();
-        }, this));
-    },
-
-    initLocale: function()
-    {
-        var localeDefinition = window.d3_locale;
-
-        if(this.settings.localeDefinition)
-        {
-            localeDefinition = $.extend(true, {}, localeDefinition, this.settings.localeDefinition);
-        }
-
-        this.locale = d3.locale(localeDefinition);
-    },
-
-    initChartElement: function()
-    {
-        // reset chart element's HTML
-
-        if(this.$chart)
-        {
-            this.$chart.remove();
-        }
-
-        // chart class
-
-        var className = this.chartBaseClass;
-
-        if(this.settings.chartClass)
-        {
-            className += ' '+this.settings.chartClass;
-        }
-
-        this.$chart = $('<div class="'+className+'" />').appendTo(this.$container);
-    },
-
-    draw: function(dataTable, settings, settingsDefaults)
-    {
-        // settings
-
-        this.setSettings(settings, Craft.charts.BaseChart.defaults);
-
-        if(settingsDefaults)
-        {
-            this.setSettings(settings, settingsDefaults);
-        }
-
-
-        // chart
-
-        this.initLocale();
-        this.initChartElement();
-
-        this.orientation = this.settings.orientation;
-
-        this.dataTable = dataTable;
-    },
-
-    xTickFormat: function(locale)
-    {
-        switch(this.settings.dataScale)
-        {
-            case 'year':
-                return locale.timeFormat('%Y');
-
-            case 'month':
-                return locale.timeFormat(this.settings.formats.shortDateFormats.month);
-
-            case 'hour':
-                return locale.timeFormat(this.settings.formats.shortDateFormats.month+" %H:00:00");
-
-            default:
-                return locale.timeFormat(this.settings.formats.shortDateFormats.day);
-        }
-    },
-
-    yTickFormat: function(locale)
-    {
-        switch(this.dataTable.columns[1].type)
-        {
-            case 'currency':
-                return locale.numberFormat(this.settings.formats.currencyFormat);
-
-            case 'percent':
-                return locale.numberFormat(this.settings.formats.percentFormat);
-
-            case 'time':
-                return Craft.charts.utils.getDuration;
-
-            default:
-                return locale.numberFormat("n");
-        }
-    },
-
-    resize: function()
-    {
-        this.draw(this.dataTable, this.settings);
-    },
-
-    onAfterDrawTicks: function()
-    {
-        // White border for ticks' text
-        $('.tick', this.$chart).each(function(tickKey, tick)
-        {
-            var $tickText = $('text', tick);
-
-            var $clone = $tickText.clone();
-            $clone.appendTo(tick);
-
-            $tickText.attr('stroke', '#ffffff');
-            $tickText.attr('stroke-width', 3);
-        });
-    }
-},
-{
-    defaults: {
-        margin: { top: 25, right: 25, bottom: 25, left: 25 },
-        chartClass: null,
-        colors: ["#0594D1", "#DE3800", "#FF9A00", "#009802", "#9B009B"],
-        ticksStyles: {
-            'fill': '#555',
-            'font-size': '11px'
-        }
-    }
-});
-
-
-/**
- * Class Craft.charts.Area
- */
-Craft.charts.Area = Craft.charts.BaseChart.extend(
-{
-    tip: null,
-
-    paddedX: null,
-    paddedY: null,
-
-    draw: function(dataTable, settings)
-    {
-        this.base(dataTable, settings, Craft.charts.Area.defaults);
-
-        if(this.tip)
-        {
-            this.tip = null;
-        }
-
-        this.width = this.$chart.width() - this.settings.margin.left - this.settings.margin.right;
-        this.height = this.$chart.height() - this.settings.margin.top - this.settings.margin.bottom;
-
-        // X & Y Scales & Domains
-        this.x = d3.time.scale().range([0, this.width]);
-        this.y = d3.scale.linear().range([this.height, 0]);
-        this.x.domain(this.xDomain());
-        this.y.domain(this.yDomain());
-
-        // Append SVG to chart element
-
-        var svg = {
-            width: this.width + (this.settings.margin.left + this.settings.margin.right),
-            height: this.height + (this.settings.margin.top + this.settings.margin.bottom),
-            translateX: (this.orientation != 'rtl' ? (this.settings.margin.left) : (this.settings.margin.right)),
-            translateY: this.settings.margin.top
-        };
-
-        this.svg = d3.select(this.$chart.get(0)).append("svg")
-                .attr("width", svg.width)
-                .attr("height", svg.height)
-            .append("g")
-                .attr("transform", "translate(" + svg.translateX + "," + svg.translateY + ")");
-
-        // Draw elements
-        this.drawGridlines();
-        this.drawYTicks();
-
-
-        // Draw padded elements
-        var chartMargin = this.getChartMargin();
-        this.paddedX = d3.time.scale().range([chartMargin.left, (this.width - chartMargin.right)]);
-        this.paddedY = d3.scale.linear().range([this.height, 0]);
-        this.paddedX.domain(this.xDomain());
-        this.paddedY.domain(this.yDomain());
-
-        this.drawXTicks();
-        this.onAfterDrawTicks();
-        this.drawAxes();
-        this.drawChart();
-        this.drawPlots();
-        this.drawTipTriggers();
-    },
-
-    getChartMargin: function()
-    {
-        var left = 0;
-        var right = 0;
-
-
-        // calculate left based on widest Y tick's width
-
-        var yTickMaxWidth = 0;
-
-        $('.y .tick text:last', this.$chart).each(function(tickKey, tick)
-        {
-            var tickWidth = $(tick).get(0).getBoundingClientRect().width;
-
-            if(tickWidth > yTickMaxWidth)
-            {
-                yTickMaxWidth = tickWidth;
-            }
-        });
-
-        left = yTickMaxWidth + 14;
-
-        return {
-            left: (this.orientation != 'rtl' ? left : right),
-            right: (this.orientation != 'rtl' ? right : left)
-        };
-    },
-
-    drawChart: function()
-    {
-        var x = this.paddedX;
-        var y = this.paddedY;
-
-        // Line
-
-        var line = d3.svg.line()
-            .x(function(d) { return x(d[0]); })
-            .y(function(d) { return y(d[1]); });
-
-        this.svg
-            .append("g")
-                .attr("class", "chart-line")
-            .append("path")
-                .datum(this.dataTable.rows)
-                .style({
-                    'fill': 'none',
-                    'stroke': this.settings.colors[0],
-                    'stroke-width': '3px',
-                })
-                .attr("d", line);
-
-        // Area
-        var area = d3.svg.area()
-            .x(function(d) { return x(d[0]); })
-            .y0(this.height)
-            .y1(function(d) { return y(d[1]); });
-
-        // Area
-        this.svg
-            .append("g")
-                .attr("class", "chart-area")
-            .append("path")
-                .datum(this.dataTable.rows)
-                .style({
-                    'fill': this.settings.colors[0],
-                    'fill-opacity': '0.3'
-                })
-                .attr("d", area);
-    },
-
-    drawAxes: function()
-    {
-        var x = d3.time.scale().range([0, this.width]);
-        var y = this.y;
-
-        var xAxis = d3.svg.axis().scale(x).orient("bottom").ticks(0).outerTickSize(0);
-
-        var xTranslateX = - 0;
-        var xTranslateY = this.height;
-
-        this.svg.append("g")
-            .attr("class", "x axis")
-            .attr("transform", "translate("+ xTranslateX +"," + xTranslateY + ")")
-            .call(xAxis);
-
-        var chartMargin = this.getChartMargin();
-
-        if(this.settings.axis.y.show)
-        {
-            if(this.orientation == 'rtl')
-            {
-                var yTranslateX = this.width - chartMargin.right;
-                var yTranslateY = 0;
-
-                var yAxis = d3.svg.axis().scale(y).orient("left").ticks(0);
-
-                this.svg.append("g")
-                    .attr("class", "y axis")
-                    .attr("transform", "translate(" + yTranslateX + ", "+ yTranslateY +")")
-                    .call(yAxis);
-            }
-            else
-            {
-                var yTranslateX = chartMargin.left;
-                var yTranslateY = 0;
-
-                var yAxis = d3.svg.axis().scale(y).orient("right").ticks(0);
-
-                this.svg.append("g")
-                    .attr("class", "y axis")
-                    .attr("transform", "translate(" + yTranslateX + ", "+ yTranslateY +")")
-                    .call(yAxis);
-            }
-        }
-    },
-
-    drawYTicks: function()
-    {
-        var y = this.y;
-
-        if(this.orientation == 'rtl')
-        {
-            var yAxis = d3.svg.axis().scale(y).orient("left")
-                .tickFormat(this.yTickFormat(this.locale))
-                .tickValues(this.yTickValues())
-                .ticks(this.yTicks());
-
-            var translateX = this.width + 10;
-            var translateY = 0;
-
-            this.svg.append("g")
-                .attr("class", "y ticks-axis")
-                .attr("transform", "translate(" + translateX + ",0)")
-                .style(this.settings.ticksStyles)
-                .call(yAxis);
-
-            this.svg.selectAll('.y.ticks-axis text').style({
-                'text-anchor': 'start',
-            });
-        }
-        else
-        {
-            var yAxis = d3.svg.axis().scale(y).orient("right")
-                .tickFormat(this.yTickFormat(this.locale))
-                .tickValues(this.yTickValues())
-                .ticks(this.yTicks());
-
-            var translateX = - (10);
-            var translateY = 0;
-
-            this.svg.append("g")
-                .attr("class", "y ticks-axis")
-                .attr("transform", "translate("+ translateX + ", "+ translateY +")")
-                .style(this.settings.ticksStyles)
-                .call(yAxis);
-        }
-    },
-
-    drawXTicks: function()
-    {
-        var x = this.paddedX;
-
-        var xAxis = d3.svg.axis().scale(x).orient("bottom")
-            .tickFormat(this.xTickFormat(this.locale))
-            .ticks(this.xTicks());
-
-        this.svg.append("g")
-            .attr("class", "x ticks-axis")
-            .attr("transform", "translate(0," + this.height + ")")
-            .style(this.settings.ticksStyles)
-            .call(xAxis);
-    },
-
-    drawGridlines: function()
-    {
-        var x = this.x;
-        var y = this.y;
-
-        if(this.settings.xAxisGridlines)
-        {
-            var xLineAxis = d3.svg.axis().scale(x).orient("bottom");
-
-            // draw x lines
-            this.svg.append("g")
-                .attr("class", "x grid-line")
-                .attr("transform", "translate(0," + this.height + ")")
-                .call(xLineAxis
-                    .tickSize(-this.height, 0, 0)
-                    .tickFormat("")
-                );
-        }
-
-        if(this.settings.yAxisGridlines)
-        {
-            var yLineAxis = d3.svg.axis().scale(y).orient("left");
-
-            var translateX = 0;
-            var translateY = 0;
-
-            var innerTickSize = - (this.width);
-            var outerTickSize = 0;
-
-            this.svg.append("g")
-                .attr("class", "y grid-line")
-                .attr("transform", "translate(-"+ translateX +" , "+ translateY +")")
-                .call(yLineAxis
-                    .tickSize(innerTickSize, outerTickSize)
-                    .tickFormat("")
-                    .tickValues(this.yTickValues())
-                    .ticks(this.yTicks())
-                );
-        }
-    },
-
-    drawPlots: function()
-    {
-        var x = this.paddedX;
-        var y = this.paddedY;
-
-        if(this.settings.enablePlots)
-        {
-            this.svg.append('g')
-                .attr("class", "plots")
-            .selectAll("circle")
-                .data(this.dataTable.rows)
-                .enter()
-                .append("circle")
-                    .style({
-                        'fill': this.settings.colors[0],
-                    })
-                    .attr("class", $.proxy(function(d, index) { return 'plot plot-'+index; }, this))
-                    .attr("r", 4)
-                    .attr("cx", $.proxy(function(d) { return x(d[0]); }, this))
-                    .attr("cy", $.proxy(function(d) { return y(d[1]); }, this));
-        }
-    },
-
-    expandPlot: function(index)
-    {
-        this.svg.select('.plot-'+index).attr("r", 5);
-    },
-
-    unexpandPlot: function(index)
-    {
-        this.svg.select('.plot-'+index).attr("r", 4);
-    },
-
-    getTipTriggerWidth: function () {
-
-        return Math.max(0, this.xAxisTickInterval());
-    },
-
-    xAxisTickInterval: function()
-    {
-        var chartMargin = this.getChartMargin();
-
-        var outerTickSize = 6;
-        var length = this.svg.select('.x path.domain').node().getTotalLength() - chartMargin.left - chartMargin.right - outerTickSize * 2;
-        var interval = length / (this.dataTable.rows.length - 1);
-
-        return interval;
-    },
-
-    drawTipTriggers: function()
-    {
-        var x = this.paddedX;
-
-        if(this.settings.enableTips)
-        {
-            var tipSettings = {
-                chart: this,
-                locale: this.locale,
-                xTickFormat: this.xTickFormat(this.locale),
-                yTickFormat: this.yTickFormat(this.locale),
-                tipContentFormat: $.proxy(this, 'tipContentFormat'),
-                getPosition: $.proxy(this, 'getTipPosition')
-            };
-
-            if(!this.tip)
-            {
-                this.tip = new Craft.charts.Tip(this.$chart, tipSettings);
-            }
-            else
-            {
-                this.tip.setSettings(tipSettings);
-            }
-
-            this.svg.append('g')
-                .attr("class", "tip-triggers")
-            .selectAll("rect")
-                .data(this.dataTable.rows)
-            .enter().append("rect")
-                .attr("class", "tip-trigger")
-                .style({
-                    'fill': 'transparent',
-                    'fill-opacity': '1',
-                })
-                .attr("width", this.getTipTriggerWidth())
-                .attr("height", this.height)
-                .attr("x", $.proxy(function(d) { return x(d[0]) - this.getTipTriggerWidth() / 2; }, this))
-                .on("mouseover", $.proxy(function(d, index)
-                {
-                    this.expandPlot(index);
-                    this.tip.show(d);
-                }, this))
-                .on("mouseout", $.proxy(function(d, index)
-                {
-                    this.unexpandPlot(index);
-                    this.tip.hide();
-                }, this));
-        }
-
-        // Apply shadow filter
-        Craft.charts.utils.applyShadowFilter('drop-shadow', this.svg);
-    },
-
-    getTipPosition: function($tip, d)
-    {
-        var x = this.paddedX;
-        var y = this.paddedY;
-
-        var chartMargin = this.getChartMargin();
-
-        var offset = 24;
-        var top = (y(d[1]) - $tip.height() / 2);
-        var left;
-
-        if(this.orientation != 'rtl')
-        {
-            left = (x(d[0]) + this.settings.margin.left + offset);
-
-            var calcLeft = (this.$chart.offset().left + left + $tip.width());
-            var maxLeft = this.$chart.offset().left + this.$chart.width() - offset;
-
-            if(calcLeft > maxLeft)
-            {
-                left = x(d[0]) - ($tip.width() + offset);
-            }
-        }
-        else
-        {
-            left = (x(d[0]) - ($tip.width() + this.settings.margin.left + offset));
-        }
-
-        if(left < 0)
-        {
-            left = (x(d[0]) + this.settings.margin.left + offset);
-        }
-
-        return {
-            top: top,
-            left: left,
-        };
-    },
-
-    xDomain: function()
-    {
-        var min = d3.min(this.dataTable.rows, function(d) { return d[0]; });
-        var max = d3.max(this.dataTable.rows, function(d) { return d[0]; });
-
-        if(this.orientation == 'rtl')
-        {
-            return [max, min];
-        }
-        else
-        {
-            return [min, max];
-        }
-    },
-
-    xTicks: function()
-    {
-        return 3;
-    },
-
-    yAxisMaxValue: function()
-    {
-        return d3.max(this.dataTable.rows, function(d) { return d[1]; });
-    },
-
-    yDomain: function()
-    {
-        var yDomainMax = $.proxy(function()
-        {
-            return this.yAxisMaxValue();
-
-        }, this);
-
-        return [0, yDomainMax()];
-    },
-
-    yTicks: function()
-    {
-        return 2;
-    },
-
-    yTickValues: function()
-    {
-        return [this.yAxisMaxValue() / 2, this.yAxisMaxValue()];
-    },
-},
-{
-    defaults: {
-        chartClass: 'area',
-        enablePlots: true,
-        enableTips: true,
-        xAxisGridlines: false,
-        yAxisGridlines: true,
-        axis: {
-            y: {
-                show: false
-            }
-        }
-    }
-});
-
-/**
- * Class Craft.charts.Utils
- */
-Craft.charts.utils = {
-
-    getDuration: function(value)
-    {
-        var sec_num = parseInt(value, 10);
-        var hours   = Math.floor(sec_num / 3600);
-        var minutes = Math.floor((sec_num - (hours * 3600)) / 60);
-        var seconds = sec_num - (hours * 3600) - (minutes * 60);
-
-        if (hours < 10)
-        {
-            hours = "0"+hours;
-        }
-
-        if (minutes < 10)
-        {
-            minutes = "0"+minutes;
-        }
-
-        if (seconds < 10)
-        {
-            seconds = "0"+seconds;
-        }
-
-        var time = hours+':'+minutes+':'+seconds;
-
-        return time;
-    },
-
-    /**
-     * arrayToDataTable
-     */
-    arrayToDataTable: function(twoDArray)
-    {
-
-        var data = {
-            columns: [],
-            rows: []
-        };
-
-        $.each(twoDArray, function(k, v) {
-            if(k == 0)
-            {
-                // first row is column definition
-
-                data.columns = [];
-
-                $.each(v, function(k2, v2) {
-
-                    // guess column type from first row
-                    var columnType = typeof(twoDArray[(k + 1)][k2]);
-
-                    var column = {
-                        name: v2,
-                        type: columnType,
-                    };
-
-                    data.columns.push(column);
-                });
-            }
-            else
-            {
-                var row = [];
-
-                $.each(v, function(k2, v2) {
-                    var cell = v2;
-
-                    row.push(cell);
-                });
-
-                data.rows.push(row);
-            }
-        });
-
-        var dataTable = new Craft.charts.DataTable(data);
-
-        return dataTable;
-    },
-
-    applyShadowFilter: function(id, svg)
-    {
-        // filters go in defs element
-        var defs = svg.append("defs");
-
-        // create filter with id #{id}
-        // height=130% so that the shadow is not clipped
-        var filter = defs.append("filter")
-            .attr("id", id)
-            .attr("width", "200%")
-            .attr("height", "200%")
-            .attr("x", "-50%")
-            .attr("y", "-50%");
-
-        // SourceAlpha refers to opacity of graphic that this filter will be applied to
-        // convolve that with a Gaussian with standard deviation 3 and store result
-        // in blur
-        filter.append("feGaussianBlur")
-            .attr("in", "SourceAlpha")
-            .attr("stdDeviation", 1)
-            .attr("result", "blur");
-
-        // translate output of Gaussian blur to the right and downwards with 2px
-        // store result in offsetBlur
-        filter.append("feOffset")
-            .attr("in", "blur")
-            .attr("dx", 0)
-            .attr("dy", 0)
-            .attr("result", "offsetBlur");
-
-        // overlay original SourceGraphic over translated blurred opacity by using
-        // feMerge filter. Order of specifying inputs is important!
-        var feMerge = filter.append("feMerge");
-
-        feMerge.append("feMergeNode")
-            .attr("in", "offsetBlur");
-        feMerge.append("feMergeNode")
-            .attr("in", "SourceGraphic");
-    }
-};
 
 /**
  * CP class
@@ -10198,6 +8955,1254 @@ TaskProgressHUD.Task = Garnish.Base.extend(
 		this.base();
 	}
 });
+
+/**
+ * Category index class
+ */
+Craft.CategoryIndex = Craft.BaseElementIndex.extend(
+{
+	editableGroups: null,
+	$newCategoryBtnGroup: null,
+	$newCategoryBtn: null,
+
+	afterInit: function()
+	{
+		// Find which of the visible groups the user has permission to create new categories in
+		this.editableGroups = [];
+
+		for (var i = 0; i < Craft.editableCategoryGroups.length; i++)
+		{
+			var group = Craft.editableCategoryGroups[i];
+
+			if (this.getSourceByKey('group:'+group.id))
+			{
+				this.editableGroups.push(group);
+			}
+		}
+
+		this.base();
+	},
+
+	getDefaultSourceKey: function()
+	{
+		// Did they request a specific category group in the URL?
+		if (this.settings.context == 'index' && typeof defaultGroupHandle != typeof undefined)
+		{
+			for (var i = 0; i < this.$sources.length; i++)
+			{
+				var $source = $(this.$sources[i]);
+
+				if ($source.data('handle') == defaultGroupHandle)
+				{
+					return $source.data('key');
+				}
+			}
+		}
+
+		return this.base();
+	},
+
+	onSelectSource: function()
+	{
+		// Get the handle of the selected source
+		var selectedSourceHandle = this.$source.data('handle');
+
+		// Update the New Category button
+		// ---------------------------------------------------------------------
+
+		if (this.editableGroups.length)
+		{
+			// Remove the old button, if there is one
+			if (this.$newCategoryBtnGroup)
+			{
+				this.$newCategoryBtnGroup.remove();
+			}
+
+			// Determine if they are viewing a group that they have permission to create categories in
+			var selectedGroup;
+
+			if (selectedSourceHandle)
+			{
+				for (var i = 0; i < this.editableGroups.length; i++)
+				{
+					if (this.editableGroups[i].handle == selectedSourceHandle)
+					{
+						selectedGroup = this.editableGroups[i];
+						break;
+					}
+				}
+			}
+
+			this.$newCategoryBtnGroup = $('<div class="btngroup submit"/>');
+			var $menuBtn;
+
+			// If they are, show a primary "New category" button, and a dropdown of the other groups (if any).
+			// Otherwise only show a menu button
+			if (selectedGroup)
+			{
+				var href = this._getGroupTriggerHref(selectedGroup),
+					label = (this.settings.context == 'index' ? Craft.t('app', 'New category') : Craft.t('app', 'New {group} category', {group: selectedGroup.name}));
+				this.$newCategoryBtn = $('<a class="btn submit add icon" '+href+'>'+label+'</a>').appendTo(this.$newCategoryBtnGroup);
+
+				if (this.settings.context != 'index')
+				{
+					this.addListener(this.$newCategoryBtn, 'click', function(ev)
+					{
+						this._openCreateCategoryModal(ev.currentTarget.getAttribute('data-id'));
+					});
+				}
+
+				if (this.editableGroups.length > 1)
+				{
+					$menuBtn = $('<div class="btn submit menubtn"></div>').appendTo(this.$newCategoryBtnGroup);
+				}
+			}
+			else
+			{
+				this.$newCategoryBtn = $menuBtn = $('<div class="btn submit add icon menubtn">'+Craft.t('app', 'New category')+'</div>').appendTo(this.$newCategoryBtnGroup);
+			}
+
+			if ($menuBtn)
+			{
+				var menuHtml = '<div class="menu"><ul>';
+
+				for (var i = 0; i < this.editableGroups.length; i++)
+				{
+					var group = this.editableGroups[i];
+
+					if (this.settings.context == 'index' || group != selectedGroup)
+					{
+						var href = this._getGroupTriggerHref(group),
+							label = (this.settings.context == 'index' ? group.name : Craft.t('app', 'New {group} category', {group: group.name}));
+						menuHtml += '<li><a '+href+'">'+label+'</a></li>';
+					}
+				}
+
+				menuHtml += '</ul></div>';
+
+				var $menu = $(menuHtml).appendTo(this.$newCategoryBtnGroup),
+					menuBtn = new Garnish.MenuBtn($menuBtn);
+
+				if (this.settings.context != 'index')
+				{
+					menuBtn.on('optionSelect', $.proxy(function(ev)
+					{
+						this._openCreateCategoryModal(ev.option.getAttribute('data-id'));
+					}, this));
+				}
+			}
+
+			this.addButton(this.$newCategoryBtnGroup);
+		}
+
+		// Update the URL if we're on the Categories index
+		// ---------------------------------------------------------------------
+
+		if (this.settings.context == 'index' && typeof history != typeof undefined)
+		{
+			var uri = 'categories';
+
+			if (selectedSourceHandle)
+			{
+				uri += '/'+selectedSourceHandle;
+			}
+
+			history.replaceState({}, '', Craft.getUrl(uri));
+		}
+
+		this.base();
+	},
+
+	_getGroupTriggerHref: function(group)
+	{
+		if (this.settings.context == 'index')
+		{
+			return 'href="'+Craft.getUrl('categories/'+group.handle+'/new')+'"';
+		}
+		else
+		{
+			return 'data-id="'+group.id+'"';
+		}
+	},
+
+	_openCreateCategoryModal: function(groupId)
+	{
+		if (this.$newCategoryBtn.hasClass('loading'))
+		{
+			return;
+		}
+
+		// Find the group
+		var group;
+
+		for (var i = 0; i < this.editableGroups.length; i++)
+		{
+			if (this.editableGroups[i].id == groupId)
+			{
+				group = this.editableGroups[i];
+				break;
+			}
+		}
+
+		if (!group)
+		{
+			return;
+		}
+
+		this.$newCategoryBtn.addClass('inactive');
+		var newCategoryBtnText = this.$newCategoryBtn.text();
+		this.$newCategoryBtn.text(Craft.t('app', 'New {group} category', {group: group.name}));
+
+		new Craft.ElementEditor({
+			hudTrigger: this.$newCategoryBtnGroup,
+			elementType: 'craft\\app\\elements\\Category',
+			siteId: this.siteId,
+			attributes: {
+				groupId: groupId
+			},
+			onBeginLoading: $.proxy(function()
+			{
+				this.$newCategoryBtn.addClass('loading');
+			}, this),
+			onEndLoading: $.proxy(function()
+			{
+				this.$newCategoryBtn.removeClass('loading');
+			}, this),
+			onHideHud: $.proxy(function()
+			{
+				this.$newCategoryBtn.removeClass('inactive').text(newCategoryBtnText);
+			}, this),
+			onSaveElement: $.proxy(function(response)
+			{
+				// Make sure the right group is selected
+				var groupSourceKey = 'group:'+groupId;
+
+				if (this.sourceKey != groupSourceKey)
+				{
+					this.selectSourceByKey(groupSourceKey);
+				}
+
+				this.selectElementAfterUpdate(response.id);
+				this.updateElements();
+			}, this)
+		});
+	}
+});
+
+// Register it!
+Craft.registerElementIndexClass('craft\\app\\elements\\Category', Craft.CategoryIndex);
+
+/**
+ * Category Select input
+ */
+Craft.CategorySelectInput = Craft.BaseElementSelectInput.extend(
+{
+	setSettings: function()
+	{
+		this.base.apply(this, arguments);
+		this.settings.sortable = false;
+	},
+
+	getModalSettings: function()
+	{
+		var settings = this.base();
+		settings.hideOnSelect = false;
+		return settings;
+	},
+
+	getElements: function()
+	{
+		return this.$elementsContainer.find('.element');
+	},
+
+	onModalSelect: function(elements)
+	{
+		// Disable the modal
+		this.modal.disable();
+		this.modal.disableCancelBtn();
+		this.modal.disableSelectBtn();
+		this.modal.showFooterSpinner();
+
+		// Get the new category HTML
+		var selectedCategoryIds = this.getSelectedElementIds();
+
+		for (var i = 0; i < elements.length; i++)
+		{
+			selectedCategoryIds.push(elements[i].id);
+		}
+
+		var data = {
+			categoryIds:    selectedCategoryIds,
+			siteId:         elements[0].siteId,
+			id:             this.settings.id,
+			name:           this.settings.name,
+			limit:          this.settings.limit,
+			selectionLabel: this.settings.selectionLabel
+		};
+
+		Craft.postActionRequest('elements/get-categories-input-html', data, $.proxy(function(response, textStatus)
+		{
+			this.modal.enable();
+			this.modal.enableCancelBtn();
+			this.modal.enableSelectBtn();
+			this.modal.hideFooterSpinner();
+
+			if (textStatus == 'success')
+			{
+				var $newInput = $(response.html),
+					$newElementsContainer = $newInput.children('.elements');
+
+				this.$elementsContainer.replaceWith($newElementsContainer);
+				this.$elementsContainer = $newElementsContainer;
+				this.resetElements();
+
+				for (var i = 0; i < elements.length; i++)
+				{
+					var element = elements[i],
+						$element = this.getElementById(element.id);
+
+					if ($element)
+					{
+						this.animateElementIntoPlace(element.$element, $element);
+					}
+				}
+
+				this.updateDisabledElementsInModal();
+				this.modal.hide();
+				this.onSelectElements();
+			}
+		}, this));
+	},
+
+	removeElement: function($element)
+	{
+		// Find any descendants this category might have
+		var $allCategories = $element.add($element.parent().siblings('ul').find('.element'));
+
+		// Remove our record of them all at once
+		this.removeElements($allCategories);
+
+		// Animate them away one at a time
+		for (var i = 0; i < $allCategories.length; i++)
+		{
+			this._animateCategoryAway($allCategories, i);
+		}
+	},
+
+	_animateCategoryAway: function($allCategories, i)
+	{
+		var callback;
+
+		// Is this the last one?
+		if (i == $allCategories.length - 1)
+		{
+			callback = $.proxy(function()
+			{
+				var $li = $allCategories.first().parent().parent(),
+					$ul = $li.parent();
+
+				if ($ul[0] == this.$elementsContainer[0] || $li.siblings().length)
+				{
+					$li.remove();
+				}
+				else
+				{
+					$ul.remove();
+				}
+			}, this);
+		}
+
+		var func = $.proxy(function() {
+			this.animateElementAway($allCategories.eq(i), callback);
+		}, this);
+
+		if (i == 0)
+		{
+			func();
+		}
+		else
+		{
+			setTimeout(func, 100 * i);
+		}
+	}
+});
+
+/**
+ * Craft Charts
+ */
+
+Craft.charts = {};
+
+/**
+ * Class Craft.charts.DataTable
+ */
+Craft.charts.DataTable = Garnish.Base.extend(
+{
+    columns: null,
+    rows: null,
+
+    init: function(data)
+    {
+        columns = data.columns;
+        rows = data.rows;
+
+        rows.forEach($.proxy(function(d)
+        {
+            $.each(d, function(cellIndex, cell)
+            {
+                var column = columns[cellIndex];
+
+                switch(column.type)
+                {
+                    case 'date':
+                        d[cellIndex] = d3.time.format("%Y-%m-%d").parse(d[cellIndex]);
+                    break;
+
+                    case 'datetime':
+                        d[cellIndex] = d3.time.format("%Y-%m-%d %H:00:00").parse(d[cellIndex]);
+                    break;
+
+                    case 'percent':
+                    d[cellIndex] = d[cellIndex] / 100;
+                    break;
+
+                    case 'number':
+                        d[cellIndex] = +d[cellIndex];
+                        break;
+
+                    default:
+                        // do nothing
+                }
+            });
+
+        }, this));
+
+        this.columns = columns;
+        this.rows = rows;
+    }
+});
+
+/**
+ * Class Craft.charts.Tip
+ */
+Craft.charts.Tip = Garnish.Base.extend(
+{
+    $tip: null,
+
+    init: function($container, settings)
+    {
+        this.setSettings(settings, Craft.charts.Tip.defaults);
+
+        this.$container = $container;
+
+        this.$tip = $('<div class="tooltip"></div>').appendTo(this.$container);
+
+        this.hide();
+    },
+
+    tipContentFormat: function(d)
+    {
+        var locale = this.settings.locale;
+
+
+        if(this.settings.tipContentFormat)
+        {
+            return this.settings.tipContentFormat(locale, d);
+        }
+        else
+        {
+            var $content = $('<div />');
+            var $xValue = $('<div class="x-value" />').appendTo($content);
+            var $yValue = $('<div class="y-value" />').appendTo($content);
+
+            $xValue.html(this.settings.xTickFormat(d[0]));
+            $yValue.html(this.settings.yTickFormat(d[1]));
+
+            return $content.get(0);
+        }
+    },
+
+    show: function(d)
+    {
+        this.$tip.html(this.tipContentFormat(d));
+        this.$tip.css("display", 'block');
+
+        var position = this.settings.getPosition(this.$tip, d);
+
+        this.$tip.css("left", position.left + "px");
+        this.$tip.css("top", position.top + "px");
+    },
+
+    hide: function()
+    {
+        this.$tip.css("display", 'none');
+    },
+},
+{
+    defaults: {
+        locale: null,
+        tipContentFormat: null, // $.noop ?
+        getPosition: null, // $.noop ?
+    }
+});
+
+/**
+ * Class Craft.charts.BaseChart
+ */
+Craft.charts.BaseChart = Garnish.Base.extend(
+{
+    $container: null,
+    $chart: null,
+
+    chartBaseClass: 'cp-chart',
+    dataTable: null,
+
+    // dataTables: [],
+    // isStacked: true,
+
+    locale: null,
+    orientation: null,
+
+    svg: null,
+    width: null,
+    height: null,
+    x: null,
+    y: null,
+
+    init: function(container)
+    {
+        this.$container = container;
+
+        d3.select(window).on('resize', $.proxy(function() {
+            this.resize();
+        }, this));
+    },
+
+    initLocale: function()
+    {
+        var localeDefinition = window.d3_locale;
+
+        if(this.settings.localeDefinition)
+        {
+            localeDefinition = $.extend(true, {}, localeDefinition, this.settings.localeDefinition);
+        }
+
+        this.locale = d3.locale(localeDefinition);
+    },
+
+    initChartElement: function()
+    {
+        // reset chart element's HTML
+
+        if(this.$chart)
+        {
+            this.$chart.remove();
+        }
+
+        // chart class
+
+        var className = this.chartBaseClass;
+
+        if(this.settings.chartClass)
+        {
+            className += ' '+this.settings.chartClass;
+        }
+
+        this.$chart = $('<div class="'+className+'" />').appendTo(this.$container);
+    },
+
+    draw: function(dataTable, settings, settingsDefaults)
+    {
+        // settings
+
+        this.setSettings(settings, Craft.charts.BaseChart.defaults);
+
+        if(settingsDefaults)
+        {
+            this.setSettings(settings, settingsDefaults);
+        }
+
+
+        // chart
+
+        this.initLocale();
+        this.initChartElement();
+
+        this.orientation = this.settings.orientation;
+
+        this.dataTable = dataTable;
+    },
+
+    xTickFormat: function(locale)
+    {
+        switch(this.settings.dataScale)
+        {
+            case 'year':
+                return locale.timeFormat('%Y');
+
+            case 'month':
+                return locale.timeFormat(this.settings.formats.shortDateFormats.month);
+
+            case 'hour':
+                return locale.timeFormat(this.settings.formats.shortDateFormats.month+" %H:00:00");
+
+            default:
+                return locale.timeFormat(this.settings.formats.shortDateFormats.day);
+        }
+    },
+
+    yTickFormat: function(locale)
+    {
+        switch(this.dataTable.columns[1].type)
+        {
+            case 'currency':
+                return locale.numberFormat(this.settings.formats.currencyFormat);
+
+            case 'percent':
+                return locale.numberFormat(this.settings.formats.percentFormat);
+
+            case 'time':
+                return Craft.charts.utils.getDuration;
+
+            default:
+                return locale.numberFormat("n");
+        }
+    },
+
+    resize: function()
+    {
+        this.draw(this.dataTable, this.settings);
+    },
+
+    onAfterDrawTicks: function()
+    {
+        // White border for ticks' text
+        $('.tick', this.$chart).each(function(tickKey, tick)
+        {
+            var $tickText = $('text', tick);
+
+            var $clone = $tickText.clone();
+            $clone.appendTo(tick);
+
+            $tickText.attr('stroke', '#ffffff');
+            $tickText.attr('stroke-width', 3);
+        });
+    }
+},
+{
+    defaults: {
+        margin: { top: 25, right: 25, bottom: 25, left: 25 },
+        chartClass: null,
+        colors: ["#0594D1", "#DE3800", "#FF9A00", "#009802", "#9B009B"],
+        ticksStyles: {
+            'fill': '#555',
+            'font-size': '11px'
+        }
+    }
+});
+
+
+/**
+ * Class Craft.charts.Area
+ */
+Craft.charts.Area = Craft.charts.BaseChart.extend(
+{
+    tip: null,
+
+    paddedX: null,
+    paddedY: null,
+
+    draw: function(dataTable, settings)
+    {
+        this.base(dataTable, settings, Craft.charts.Area.defaults);
+
+        if(this.tip)
+        {
+            this.tip = null;
+        }
+
+        this.width = this.$chart.width() - this.settings.margin.left - this.settings.margin.right;
+        this.height = this.$chart.height() - this.settings.margin.top - this.settings.margin.bottom;
+
+        // X & Y Scales & Domains
+        this.x = d3.time.scale().range([0, this.width]);
+        this.y = d3.scale.linear().range([this.height, 0]);
+        this.x.domain(this.xDomain());
+        this.y.domain(this.yDomain());
+
+        // Append SVG to chart element
+
+        var svg = {
+            width: this.width + (this.settings.margin.left + this.settings.margin.right),
+            height: this.height + (this.settings.margin.top + this.settings.margin.bottom),
+            translateX: (this.orientation != 'rtl' ? (this.settings.margin.left) : (this.settings.margin.right)),
+            translateY: this.settings.margin.top
+        };
+
+        this.svg = d3.select(this.$chart.get(0)).append("svg")
+                .attr("width", svg.width)
+                .attr("height", svg.height)
+            .append("g")
+                .attr("transform", "translate(" + svg.translateX + "," + svg.translateY + ")");
+
+        // Draw elements
+        this.drawGridlines();
+        this.drawYTicks();
+
+
+        // Draw padded elements
+        var chartMargin = this.getChartMargin();
+        this.paddedX = d3.time.scale().range([chartMargin.left, (this.width - chartMargin.right)]);
+        this.paddedY = d3.scale.linear().range([this.height, 0]);
+        this.paddedX.domain(this.xDomain());
+        this.paddedY.domain(this.yDomain());
+
+        this.drawXTicks();
+        this.onAfterDrawTicks();
+        this.drawAxes();
+        this.drawChart();
+        this.drawPlots();
+        this.drawTipTriggers();
+    },
+
+    getChartMargin: function()
+    {
+        var left = 0;
+        var right = 0;
+
+
+        // calculate left based on widest Y tick's width
+
+        var yTickMaxWidth = 0;
+
+        $('.y .tick text:last', this.$chart).each(function(tickKey, tick)
+        {
+            var tickWidth = $(tick).get(0).getBoundingClientRect().width;
+
+            if(tickWidth > yTickMaxWidth)
+            {
+                yTickMaxWidth = tickWidth;
+            }
+        });
+
+        left = yTickMaxWidth + 14;
+
+        return {
+            left: (this.orientation != 'rtl' ? left : right),
+            right: (this.orientation != 'rtl' ? right : left)
+        };
+    },
+
+    drawChart: function()
+    {
+        var x = this.paddedX;
+        var y = this.paddedY;
+
+        // Line
+
+        var line = d3.svg.line()
+            .x(function(d) { return x(d[0]); })
+            .y(function(d) { return y(d[1]); });
+
+        this.svg
+            .append("g")
+                .attr("class", "chart-line")
+            .append("path")
+                .datum(this.dataTable.rows)
+                .style({
+                    'fill': 'none',
+                    'stroke': this.settings.colors[0],
+                    'stroke-width': '3px',
+                })
+                .attr("d", line);
+
+        // Area
+        var area = d3.svg.area()
+            .x(function(d) { return x(d[0]); })
+            .y0(this.height)
+            .y1(function(d) { return y(d[1]); });
+
+        // Area
+        this.svg
+            .append("g")
+                .attr("class", "chart-area")
+            .append("path")
+                .datum(this.dataTable.rows)
+                .style({
+                    'fill': this.settings.colors[0],
+                    'fill-opacity': '0.3'
+                })
+                .attr("d", area);
+    },
+
+    drawAxes: function()
+    {
+        var x = d3.time.scale().range([0, this.width]);
+        var y = this.y;
+
+        var xAxis = d3.svg.axis().scale(x).orient("bottom").ticks(0).outerTickSize(0);
+
+        var xTranslateX = - 0;
+        var xTranslateY = this.height;
+
+        this.svg.append("g")
+            .attr("class", "x axis")
+            .attr("transform", "translate("+ xTranslateX +"," + xTranslateY + ")")
+            .call(xAxis);
+
+        var chartMargin = this.getChartMargin();
+
+        if(this.settings.axis.y.show)
+        {
+            if(this.orientation == 'rtl')
+            {
+                var yTranslateX = this.width - chartMargin.right;
+                var yTranslateY = 0;
+
+                var yAxis = d3.svg.axis().scale(y).orient("left").ticks(0);
+
+                this.svg.append("g")
+                    .attr("class", "y axis")
+                    .attr("transform", "translate(" + yTranslateX + ", "+ yTranslateY +")")
+                    .call(yAxis);
+            }
+            else
+            {
+                var yTranslateX = chartMargin.left;
+                var yTranslateY = 0;
+
+                var yAxis = d3.svg.axis().scale(y).orient("right").ticks(0);
+
+                this.svg.append("g")
+                    .attr("class", "y axis")
+                    .attr("transform", "translate(" + yTranslateX + ", "+ yTranslateY +")")
+                    .call(yAxis);
+            }
+        }
+    },
+
+    drawYTicks: function()
+    {
+        var y = this.y;
+
+        if(this.orientation == 'rtl')
+        {
+            var yAxis = d3.svg.axis().scale(y).orient("left")
+                .tickFormat(this.yTickFormat(this.locale))
+                .tickValues(this.yTickValues())
+                .ticks(this.yTicks());
+
+            var translateX = this.width + 10;
+            var translateY = 0;
+
+            this.svg.append("g")
+                .attr("class", "y ticks-axis")
+                .attr("transform", "translate(" + translateX + ",0)")
+                .style(this.settings.ticksStyles)
+                .call(yAxis);
+
+            this.svg.selectAll('.y.ticks-axis text').style({
+                'text-anchor': 'start',
+            });
+        }
+        else
+        {
+            var yAxis = d3.svg.axis().scale(y).orient("right")
+                .tickFormat(this.yTickFormat(this.locale))
+                .tickValues(this.yTickValues())
+                .ticks(this.yTicks());
+
+            var translateX = - (10);
+            var translateY = 0;
+
+            this.svg.append("g")
+                .attr("class", "y ticks-axis")
+                .attr("transform", "translate("+ translateX + ", "+ translateY +")")
+                .style(this.settings.ticksStyles)
+                .call(yAxis);
+        }
+    },
+
+    drawXTicks: function()
+    {
+        var x = this.paddedX;
+
+        var xAxis = d3.svg.axis().scale(x).orient("bottom")
+            .tickFormat(this.xTickFormat(this.locale))
+            .ticks(this.xTicks());
+
+        this.svg.append("g")
+            .attr("class", "x ticks-axis")
+            .attr("transform", "translate(0," + this.height + ")")
+            .style(this.settings.ticksStyles)
+            .call(xAxis);
+    },
+
+    drawGridlines: function()
+    {
+        var x = this.x;
+        var y = this.y;
+
+        if(this.settings.xAxisGridlines)
+        {
+            var xLineAxis = d3.svg.axis().scale(x).orient("bottom");
+
+            // draw x lines
+            this.svg.append("g")
+                .attr("class", "x grid-line")
+                .attr("transform", "translate(0," + this.height + ")")
+                .call(xLineAxis
+                    .tickSize(-this.height, 0, 0)
+                    .tickFormat("")
+                );
+        }
+
+        if(this.settings.yAxisGridlines)
+        {
+            var yLineAxis = d3.svg.axis().scale(y).orient("left");
+
+            var translateX = 0;
+            var translateY = 0;
+
+            var innerTickSize = - (this.width);
+            var outerTickSize = 0;
+
+            this.svg.append("g")
+                .attr("class", "y grid-line")
+                .attr("transform", "translate(-"+ translateX +" , "+ translateY +")")
+                .call(yLineAxis
+                    .tickSize(innerTickSize, outerTickSize)
+                    .tickFormat("")
+                    .tickValues(this.yTickValues())
+                    .ticks(this.yTicks())
+                );
+        }
+    },
+
+    drawPlots: function()
+    {
+        var x = this.paddedX;
+        var y = this.paddedY;
+
+        if(this.settings.enablePlots)
+        {
+            this.svg.append('g')
+                .attr("class", "plots")
+            .selectAll("circle")
+                .data(this.dataTable.rows)
+                .enter()
+                .append("circle")
+                    .style({
+                        'fill': this.settings.colors[0],
+                    })
+                    .attr("class", $.proxy(function(d, index) { return 'plot plot-'+index; }, this))
+                    .attr("r", 4)
+                    .attr("cx", $.proxy(function(d) { return x(d[0]); }, this))
+                    .attr("cy", $.proxy(function(d) { return y(d[1]); }, this));
+        }
+    },
+
+    expandPlot: function(index)
+    {
+        this.svg.select('.plot-'+index).attr("r", 5);
+    },
+
+    unexpandPlot: function(index)
+    {
+        this.svg.select('.plot-'+index).attr("r", 4);
+    },
+
+    getTipTriggerWidth: function () {
+
+        return Math.max(0, this.xAxisTickInterval());
+    },
+
+    xAxisTickInterval: function()
+    {
+        var chartMargin = this.getChartMargin();
+
+        var outerTickSize = 6;
+        var length = this.svg.select('.x path.domain').node().getTotalLength() - chartMargin.left - chartMargin.right - outerTickSize * 2;
+        var interval = length / (this.dataTable.rows.length - 1);
+
+        return interval;
+    },
+
+    drawTipTriggers: function()
+    {
+        var x = this.paddedX;
+
+        if(this.settings.enableTips)
+        {
+            var tipSettings = {
+                chart: this,
+                locale: this.locale,
+                xTickFormat: this.xTickFormat(this.locale),
+                yTickFormat: this.yTickFormat(this.locale),
+                tipContentFormat: $.proxy(this, 'tipContentFormat'),
+                getPosition: $.proxy(this, 'getTipPosition')
+            };
+
+            if(!this.tip)
+            {
+                this.tip = new Craft.charts.Tip(this.$chart, tipSettings);
+            }
+            else
+            {
+                this.tip.setSettings(tipSettings);
+            }
+
+            this.svg.append('g')
+                .attr("class", "tip-triggers")
+            .selectAll("rect")
+                .data(this.dataTable.rows)
+            .enter().append("rect")
+                .attr("class", "tip-trigger")
+                .style({
+                    'fill': 'transparent',
+                    'fill-opacity': '1',
+                })
+                .attr("width", this.getTipTriggerWidth())
+                .attr("height", this.height)
+                .attr("x", $.proxy(function(d) { return x(d[0]) - this.getTipTriggerWidth() / 2; }, this))
+                .on("mouseover", $.proxy(function(d, index)
+                {
+                    this.expandPlot(index);
+                    this.tip.show(d);
+                }, this))
+                .on("mouseout", $.proxy(function(d, index)
+                {
+                    this.unexpandPlot(index);
+                    this.tip.hide();
+                }, this));
+        }
+
+        // Apply shadow filter
+        Craft.charts.utils.applyShadowFilter('drop-shadow', this.svg);
+    },
+
+    getTipPosition: function($tip, d)
+    {
+        var x = this.paddedX;
+        var y = this.paddedY;
+
+        var chartMargin = this.getChartMargin();
+
+        var offset = 24;
+        var top = (y(d[1]) - $tip.height() / 2);
+        var left;
+
+        if(this.orientation != 'rtl')
+        {
+            left = (x(d[0]) + this.settings.margin.left + offset);
+
+            var calcLeft = (this.$chart.offset().left + left + $tip.width());
+            var maxLeft = this.$chart.offset().left + this.$chart.width() - offset;
+
+            if(calcLeft > maxLeft)
+            {
+                left = x(d[0]) - ($tip.width() + offset);
+            }
+        }
+        else
+        {
+            left = (x(d[0]) - ($tip.width() + this.settings.margin.left + offset));
+        }
+
+        if(left < 0)
+        {
+            left = (x(d[0]) + this.settings.margin.left + offset);
+        }
+
+        return {
+            top: top,
+            left: left,
+        };
+    },
+
+    xDomain: function()
+    {
+        var min = d3.min(this.dataTable.rows, function(d) { return d[0]; });
+        var max = d3.max(this.dataTable.rows, function(d) { return d[0]; });
+
+        if(this.orientation == 'rtl')
+        {
+            return [max, min];
+        }
+        else
+        {
+            return [min, max];
+        }
+    },
+
+    xTicks: function()
+    {
+        return 3;
+    },
+
+    yAxisMaxValue: function()
+    {
+        return d3.max(this.dataTable.rows, function(d) { return d[1]; });
+    },
+
+    yDomain: function()
+    {
+        var yDomainMax = $.proxy(function()
+        {
+            return this.yAxisMaxValue();
+
+        }, this);
+
+        return [0, yDomainMax()];
+    },
+
+    yTicks: function()
+    {
+        return 2;
+    },
+
+    yTickValues: function()
+    {
+        return [this.yAxisMaxValue() / 2, this.yAxisMaxValue()];
+    },
+},
+{
+    defaults: {
+        chartClass: 'area',
+        enablePlots: true,
+        enableTips: true,
+        xAxisGridlines: false,
+        yAxisGridlines: true,
+        axis: {
+            y: {
+                show: false
+            }
+        }
+    }
+});
+
+/**
+ * Class Craft.charts.Utils
+ */
+Craft.charts.utils = {
+
+    getDuration: function(value)
+    {
+        var sec_num = parseInt(value, 10);
+        var hours   = Math.floor(sec_num / 3600);
+        var minutes = Math.floor((sec_num - (hours * 3600)) / 60);
+        var seconds = sec_num - (hours * 3600) - (minutes * 60);
+
+        if (hours < 10)
+        {
+            hours = "0"+hours;
+        }
+
+        if (minutes < 10)
+        {
+            minutes = "0"+minutes;
+        }
+
+        if (seconds < 10)
+        {
+            seconds = "0"+seconds;
+        }
+
+        var time = hours+':'+minutes+':'+seconds;
+
+        return time;
+    },
+
+    /**
+     * arrayToDataTable
+     */
+    arrayToDataTable: function(twoDArray)
+    {
+
+        var data = {
+            columns: [],
+            rows: []
+        };
+
+        $.each(twoDArray, function(k, v) {
+            if(k == 0)
+            {
+                // first row is column definition
+
+                data.columns = [];
+
+                $.each(v, function(k2, v2) {
+
+                    // guess column type from first row
+                    var columnType = typeof(twoDArray[(k + 1)][k2]);
+
+                    var column = {
+                        name: v2,
+                        type: columnType,
+                    };
+
+                    data.columns.push(column);
+                });
+            }
+            else
+            {
+                var row = [];
+
+                $.each(v, function(k2, v2) {
+                    var cell = v2;
+
+                    row.push(cell);
+                });
+
+                data.rows.push(row);
+            }
+        });
+
+        var dataTable = new Craft.charts.DataTable(data);
+
+        return dataTable;
+    },
+
+    applyShadowFilter: function(id, svg)
+    {
+        // filters go in defs element
+        var defs = svg.append("defs");
+
+        // create filter with id #{id}
+        // height=130% so that the shadow is not clipped
+        var filter = defs.append("filter")
+            .attr("id", id)
+            .attr("width", "200%")
+            .attr("height", "200%")
+            .attr("x", "-50%")
+            .attr("y", "-50%");
+
+        // SourceAlpha refers to opacity of graphic that this filter will be applied to
+        // convolve that with a Gaussian with standard deviation 3 and store result
+        // in blur
+        filter.append("feGaussianBlur")
+            .attr("in", "SourceAlpha")
+            .attr("stdDeviation", 1)
+            .attr("result", "blur");
+
+        // translate output of Gaussian blur to the right and downwards with 2px
+        // store result in offsetBlur
+        filter.append("feOffset")
+            .attr("in", "blur")
+            .attr("dx", 0)
+            .attr("dy", 0)
+            .attr("result", "offsetBlur");
+
+        // overlay original SourceGraphic over translated blurred opacity by using
+        // feMerge filter. Order of specifying inputs is important!
+        var feMerge = filter.append("feMerge");
+
+        feMerge.append("feMergeNode")
+            .attr("in", "offsetBlur");
+        feMerge.append("feMergeNode")
+            .attr("in", "SourceGraphic");
+    }
+};
 
 /**
 * Customize Sources modal
