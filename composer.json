@@ -48,7 +48,7 @@
     },
     "autoload": {
         "psr-4": {
-            "craft\\app\\": "./"
+            "craft\\app\\": "src/"
         }
     },
     "extra": {
