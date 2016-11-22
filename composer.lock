@@ -4,21 +4,21 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#composer-lock-the-lock-file",
         "This file is @generated automatically"
     ],
-    "hash": "4d72c0c7b46c47758398d054aaf2b3fb",
-    "content-hash": "f9e6405fc65b02bdb0b3ed6228b8c9b3",
+    "hash": "e5706d031d3f29d7e987c079c8bef493",
+    "content-hash": "686cd9318410b2901288ee94ec7a3f6f",
     "packages": [
         {
             "name": "aws/aws-sdk-php",
-            "version": "3.19.24",
+            "version": "3.19.31",
             "source": {
                 "type": "git",
                 "url": "https://github.com/aws/aws-sdk-php.git",
-                "reference": "fa18e76a05fca7866044b8d4564c8a5d0b161805"
+                "reference": "3b7777e4091f4bf4de1dee19cfdad87249facb0e"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/aws/aws-sdk-php/zipball/fa18e76a05fca7866044b8d4564c8a5d0b161805",
-                "reference": "fa18e76a05fca7866044b8d4564c8a5d0b161805",
+                "url": "https://api.github.com/repos/aws/aws-sdk-php/zipball/3b7777e4091f4bf4de1dee19cfdad87249facb0e",
+                "reference": "3b7777e4091f4bf4de1dee19cfdad87249facb0e",
                 "shasum": ""
             },
             "require": {
@@ -85,7 +85,7 @@
                 "s3",
                 "sdk"
             ],
-            "time": "2016-11-10 22:35:46"
+            "time": "2016-11-21 23:17:16"
         },
         {
             "name": "bower-asset/bootstrap",
@@ -635,16 +635,16 @@
         },
         {
             "name": "guzzlehttp/promises",
-            "version": "1.2.0",
+            "version": "1.3.0",
             "source": {
                 "type": "git",
                 "url": "https://github.com/guzzle/promises.git",
-                "reference": "c10d860e2a9595f8883527fa0021c7da9e65f579"
+                "reference": "2693c101803ca78b27972d84081d027fca790a1e"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/guzzle/promises/zipball/c10d860e2a9595f8883527fa0021c7da9e65f579",
-                "reference": "c10d860e2a9595f8883527fa0021c7da9e65f579",
+                "url": "https://api.github.com/repos/guzzle/promises/zipball/2693c101803ca78b27972d84081d027fca790a1e",
+                "reference": "2693c101803ca78b27972d84081d027fca790a1e",
                 "shasum": ""
             },
             "require": {
@@ -682,7 +682,7 @@
             "keywords": [
                 "promise"
             ],
-            "time": "2016-05-18 16:56:05"
+            "time": "2016-11-18 17:47:58"
         },
         {
             "name": "guzzlehttp/psr7",
@@ -1716,7 +1716,7 @@
         },
         {
             "name": "symfony/event-dispatcher",
-            "version": "v2.8.13",
+            "version": "v2.8.14",
             "source": {
                 "type": "git",
                 "url": "https://github.com/symfony/event-dispatcher.git",
@@ -1835,16 +1835,16 @@
         },
         {
             "name": "twig/twig",
-            "version": "1.24.1.1",
+            "version": "v1.28.1",
             "source": {
                 "type": "git",
-                "url": "https://github.com/pixelandtonic/Twig.git",
-                "reference": "c49d824b19924e99db813a21f058959c4aa9b374"
+                "url": "https://github.com/twigphp/Twig.git",
+                "reference": "fff80c4a7ae1d47a81dfec10c76cbcb939170b45"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/pixelandtonic/Twig/zipball/c49d824b19924e99db813a21f058959c4aa9b374",
-                "reference": "c49d824b19924e99db813a21f058959c4aa9b374",
+                "url": "https://api.github.com/repos/twigphp/Twig/zipball/fff80c4a7ae1d47a81dfec10c76cbcb939170b45",
+                "reference": "fff80c4a7ae1d47a81dfec10c76cbcb939170b45",
                 "shasum": ""
             },
             "require": {
@@ -1857,7 +1857,7 @@
             "type": "library",
             "extra": {
                 "branch-alias": {
-                    "dev-master": "1.24-dev"
+                    "dev-master": "1.28-dev"
                 }
             },
             "autoload": {
@@ -1865,6 +1865,7 @@
                     "Twig_": "lib/"
                 }
             },
+            "notification-url": "https://packagist.org/downloads/",
             "license": [
                 "BSD-3-Clause"
             ],
@@ -1876,14 +1877,14 @@
                     "role": "Lead Developer"
                 },
                 {
-                    "name": "Twig Team",
-                    "homepage": "http://twig.sensiolabs.org/contributors",
-                    "role": "Contributors"
-                },
-                {
                     "name": "Armin Ronacher",
                     "email": "armin.ronacher@active-4.com",
                     "role": "Project Founder"
+                },
+                {
+                    "name": "Twig Team",
+                    "homepage": "http://twig.sensiolabs.org/contributors",
+                    "role": "Contributors"
                 }
             ],
             "description": "Twig, the flexible, fast, and secure template language for PHP",
@@ -1891,11 +1892,7 @@
             "keywords": [
                 "templating"
             ],
-            "support": {
-                "forum": "https://groups.google.com/forum/#!forum/twig-users",
-                "source": "https://github.com/pixelandtonic/Twig/tree/1.24.1.1"
-            },
-            "time": "2016-07-14 23:35:41"
+            "time": "2016-11-19 05:52:49"
         },
         {
             "name": "yiisoft/yii2",
