@@ -63,12 +63,22 @@ class MigrationHelper
     {
         $tableName = Craft::$app->getDb()->getSchema()->getRawTableName($tableName);
         $columns = ArrayHelper::toArray($columns);
-        $table = static::getTable($tableName);
+        $table = Craft::$app->getDb()->getTableSchema($tableName);;
+        $flattenedKeys = [];
 
-        foreach ($table->fks as $i => $fk) {
-            if ($columns == $fk->columns) {
-                return true;
+        foreach ($table->foreignKeys as $i => $fk) {
+            foreach ($fk as $count => $row) {
+                // First one will always be the other of the relationship's table name.
+                // If there is more than one after that, it's a composite key.
+                if ($count !== 0) {
+                    $flattenedKeys[] = $count;
+                }
             }
+        }
+
+            // Could be a composite key, so make sure all required values exist!
+        if(count(array_intersect($flattenedKeys, $columns)) == count($columns)){
+            return true;
         }
 
         return false;
