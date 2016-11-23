@@ -348,7 +348,7 @@ class UpdateController extends BaseController
 		}
 
 		// Hold for a couple seconds in case opcache is enabled or this is a distributed environment
-        sleep(2);
+		sleep(2);
 
 		$this->returnJson(array('alive' => true, 'nextStatus' => Craft::t('Backing-up database…'), 'nextAction' => 'update/backupDatabase', 'data' => $data));
 	}
