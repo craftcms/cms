@@ -1,7 +1,12 @@
 {
-    "name": "craftcms/craft-template",
-    "description": "Craft CMS Starter Template",
-    "keywords": ["craft", "cms", "craftcms", "project template"],
+    "name": "craftcms/project",
+    "description": "Craft CMS Project",
+    "keywords": [
+        "craft",
+        "cms",
+        "craftcms",
+        "project"
+    ],
     "homepage": "https://craftcms.com/",
     "type": "project",
     "support": {
@@ -12,34 +17,30 @@
         "docs": "https://craftcms.com/docs",
         "rss": "https://craftcms.com/changelog.rss"
     },
-    "minimum-stability": "dev",
+    "minimum-stability": "RC",
     "require": {
         "php": ">=5.6.0",
         "craftcms/craft": "dev-master"
     },
     "repositories": [
         {
-            "type": "vcs",
+            "type": "git",
             "url": "https://github.com/pixelandtonic/craft"
         },
         {
-            "type": "vcs",
+            "type": "git",
             "url": "https://github.com/pixelandtonic/flysystem-google-cloud"
         },
         {
-            "type": "vcs",
-            "url": "https://github.com/pixelandtonic/Twig"
-        },
-        {
-            "type": "vcs",
+            "type": "git",
             "url": "https://github.com/pixelandtonic/Imagine"
         },
         {
-            "type": "vcs",
+            "type": "git",
             "url": "https://github.com/pixelandtonic/simplepie"
         },
         {
-            "type": "vcs",
+            "type": "git",
             "url": "https://github.com/pixelandtonic/pel"
         }
     ],
