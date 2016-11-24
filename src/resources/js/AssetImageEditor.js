@@ -140,10 +140,7 @@ Craft.AssetImageEditor = Garnish.Modal.extend(
 					left: 0,
 					top: 0
 				});
-				this.imageHolder = new fabric.Group([this.image], {
-					left: 0,
-					top: 0
-				});
+				this.imageHolder = new fabric.Group([this.image]);
 
 				this.canvas.add(this.imageHolder);
 
@@ -219,6 +216,8 @@ Craft.AssetImageEditor = Garnish.Modal.extend(
 			var imageRatio = this.originalHeight / this.originalWidth;
 			var editorRatio = this.editorHeight / this.editorWidth;
 
+			// TODO take into account rotation.
+			// TODO take into account crop performed
 			if (imageRatio > editorRatio) {
 				this.image.height = this.editorHeight;
 				this.image.width = Math.round(this.originalWidth / (this.originalHeight / this.image.height));
@@ -227,9 +226,21 @@ Craft.AssetImageEditor = Garnish.Modal.extend(
 				this.image.height = Math.round(this.originalHeight * (this.image.width / this.originalWidth));
 			}
 
+			this.image.set({
+				left: - this.imageHolder.width / 2,
+				top: - this.imageHolder.height / 2
+			});
+			this.imageHolder._calcBounds();
+
+			//this.imageHolder.add(new fabric.Rect({width: this.image.width, height: this.image.height, left: 0, top: 0, fill: 'rgba(127,127,127,0.5)'}));
+
+			// Set origin to center and adjust for the offset in coordinates
+			// This centers the image, so probably not a good idea if image is cropped to a corner
 			this.imageHolder.set({
-				left: (this.editorWidth - this.image.width) / 2,
-				top: (this.editorHeight - this.image.height) / 2
+				originX: 'center',
+				originY: 'center',
+				left: (this.editorWidth - this.imageHolder.width) / 2 + this.imageHolder.width / 2,
+				top: (this.editorHeight - this.imageHolder.height) / 2 + this.imageHolder.height / 2
 			});
 
 			this.canvas.renderAll();
@@ -269,8 +280,17 @@ Craft.AssetImageEditor = Garnish.Modal.extend(
 		 */
 		_addControlListeners: function () {
 
-
+			// Tabs
 			this.addListener(this.$tabs, 'click', '_handleTabClick');
+
+			// Controls
+			this.addListener($('.rotate-left'), 'click', function (ev) {
+				this.rotateImage(-90)
+			}.bind(this));
+
+			this.addListener($('.rotate-right'), 'click', function (ev) {
+				this.rotateImage(90)
+			}.bind(this));
 
 			//this.ratioMenu = this.$ratioBtn.menubtn().data('menubtn').menu;
 			//this.ratioMenu.on('optionselect', $.proxy(this, '_handleRatioChange'));
@@ -369,9 +389,8 @@ Craft.AssetImageEditor = Garnish.Modal.extend(
 		 *
 		 * @param integer degrees
 		 */
-		rotateViewport: function (degrees) {
+		rotateImage: function (degrees) {
 			if (!this.animationInProgress) {
-				this.discardCrop();
 				this.animationInProgress = true;
 
 				this.viewportRotation += degrees;
@@ -391,6 +410,7 @@ Craft.AssetImageEditor = Garnish.Modal.extend(
 						this.imageHolder.set({angle: cleanAngle});
 						this.animationInProgress = false;
 
+						this._scaleAndCenterImage();
 						this.getZoomToCoverRatio();
 					}, this)
 				});
