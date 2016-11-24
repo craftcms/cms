@@ -9554,11 +9554,10 @@ Craft.CP = Garnish.Base.extend(
 		this.$sidebarLinks = $('nav a', this.$sidebar);
 		this.addListener(this.$sidebarLinks, 'click', 'selectSidebarItem');
 
-
-		this.addListener(this.$container, 'scroll', 'updateFixedNotifications');
+		this.addListener(Garnish.$win, 'scroll', 'updateFixedNotifications');
 		this.updateFixedNotifications();
 
-		this.addListener(this.$container, 'scroll', 'updateFixedHeader');
+		this.addListener(Garnish.$win, 'scroll', 'updateFixedHeader');
 		this.updateFixedHeader();
 
 		Garnish.$doc.ready($.proxy(function()
@@ -9700,9 +9699,6 @@ Craft.CP = Garnish.Base.extend(
 		// Update the responsive global sidebar
 		this.updateResponsiveGlobalSidebar();
 
-		// Update the responsive container
-		this.updateResponsiveContainer();
-
 		// Update the responsive nav
 		this.updateResponsiveNav();
 
@@ -9718,13 +9714,6 @@ Craft.CP = Garnish.Base.extend(
 		var globalSidebarHeight = window.innerHeight;
 
 		this.$globalSidebar.height(globalSidebarHeight);
-	},
-
-	updateResponsiveContainer: function()
-	{
-		var containerHeight = window.innerHeight;
-
-		this.$container.height(containerHeight);
 	},
 
 	updateResponsiveNav: function()
@@ -9950,7 +9939,7 @@ Craft.CP = Garnish.Base.extend(
 		this.updateFixedHeader._topbarHeight = this.$containerTopbar.height();
 		this.updateFixedHeader._pageHeaderHeight = this.$pageHeader.outerHeight();
 
-		if (this.$container.scrollTop() > this.updateFixedHeader._topbarHeight)
+		if (Garnish.$win.scrollTop() > this.updateFixedHeader._topbarHeight)
 		{
 			if (!this.fixedHeader)
 			{
@@ -9958,7 +9947,7 @@ Craft.CP = Garnish.Base.extend(
 
 				if(Garnish.$bod.hasClass('showing-nav'))
 				{
-					this.$pageHeader.css('top', this.$container.scrollTop());
+					this.$pageHeader.css('top', Garnish.$win.scrollTop());
 				}
 				else
 				{
@@ -9985,7 +9974,7 @@ Craft.CP = Garnish.Base.extend(
 	{
 		this.updateFixedNotifications._headerHeight = this.$globalSidebar.height();
 
-		if (this.$container.scrollTop() > this.updateFixedNotifications._headerHeight)
+		if (Garnish.$win.scrollTop() > this.updateFixedNotifications._headerHeight)
 		{
 			if (!this.fixedNotifications)
 			{
