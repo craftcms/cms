@@ -347,9 +347,6 @@ class UpdateController extends BaseController
 			$this->returnJson(array('alive' => true, 'errorDetails' => $return['message'], 'nextStatus' => Craft::t('An error was encountered. Rolling back…'), 'nextAction' => 'update/rollback'));
 		}
 
-		// Hold for a couple seconds in case opcache is enabled or this is a distributed environment
-		sleep(2);
-
 		$this->returnJson(array('alive' => true, 'nextStatus' => Craft::t('Backing-up database…'), 'nextAction' => 'update/backupDatabase', 'data' => $data));
 	}
 

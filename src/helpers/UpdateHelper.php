@@ -158,6 +158,21 @@ class UpdateHelper
 						{
 							Craft::log('Updating folder: '.$destFile, LogLevel::Info, true);
 
+							// Invalidate any existing files
+							if (function_exists('opcache_invalidate') && IOHelper::folderExists($destFile))
+							{
+								$iterator = new \RecursiveIteratorIterator(new \RecursiveDirectoryIterator($destFile));
+
+								foreach ($iterator as $oldFile)
+								{
+									/** @var \SplFileInfo $file */
+									if ($oldFile->isFile())
+									{
+										opcache_invalidate($oldFile, true);
+									}
+								}
+							}
+
 							$tempFolder = rtrim($destFile, '/').StringHelper::UUID().'/';
 							$tempTempFolder = rtrim($destFile, '/').'-tmp/';
 
@@ -171,6 +186,13 @@ class UpdateHelper
 						else
 						{
 							Craft::log('Updating file: '.$destFile, LogLevel::Info, true);
+
+							// Invalidate opcache
+							if (function_exists('opcache_invalidate') && IOHelper::fileExists($destFile))
+							{
+								opcache_invalidate($destFile, true);
+							}
+
 							IOHelper::copyFile($sourceFile, $destFile);
 						}
 
