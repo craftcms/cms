@@ -15764,7 +15764,15 @@ Craft.Pane = Garnish.Base.extend(
 		else
 		{
 			this.updateSidebarStyles._styles.position = 'absolute';
-			this.updateSidebarStyles._styles.top = 'auto';
+
+			if(Garnish.$win.width() > 768)
+			{
+				this.updateSidebarStyles._styles.top = 'auto';
+			}
+			else
+			{
+				this.updateSidebarStyles._styles.top = '50px';
+			}
 		}
 
 		// Now figure out how tall the sidebar can be

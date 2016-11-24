@@ -2490,7 +2490,7 @@ body.rtl .show-sidebar:after { float: left; }
 body.ltr .show-sidebar:after { margin-right: -24px; }
 body.rtl .show-sidebar:after { margin-left: -24px; }
 
-.sidebar { position: absolute; width: 220px; padding: 24px; overflow: auto; background: #fafafa; -webkit-box-sizing: border-box; -moz-box-sizing: border-box; box-sizing: border-box; }
+.sidebar { position: absolute; top: 0; width: 220px; padding: 24px; overflow: auto; background: #fafafa; -webkit-box-sizing: border-box; -moz-box-sizing: border-box; box-sizing: border-box; }
 
 body.ltr .sidebar { margin: -24px 0 -24px -242px ; }
 body.rtl .sidebar { margin: -24px -242px -24px 0 ; }
