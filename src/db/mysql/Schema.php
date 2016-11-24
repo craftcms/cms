@@ -161,7 +161,40 @@ class Schema extends \yii\db\mysql\Schema
             ' < {file}';
     }
 
-    // Public Methods
+    /**
+     * Returns all indexes for the given table. Each array element is of the following structure:
+     *
+     * ```php
+     * [
+     *     'IndexName1' => ['col1' [, ...]],
+     *     'IndexName2' => ['col2' [, ...]],
+     * ]
+     * ```
+     *
+     * @param string $tableName The name of the table to get the indexes for.
+     *
+     * @return array All indexes for the given table.
+     */
+    public function findIndexes($tableName)
+    {
+        $tableName = Craft::$app->getDb()->getSchema()->getRawTableName($tableName);
+        $table = Craft::$app->getDb()->getSchema()->getTableSchema($tableName);
+        $sql = $this->getCreateTableSql($table);
+        $indexes = [];
+
+        $regexp = '/KEY\s+([^\(\s]+)\s*\(([^\(\)]+)\)/mi';
+        if (preg_match_all($regexp, $sql, $matches, PREG_SET_ORDER)) {
+            foreach ($matches as $match) {
+                $indexName = str_replace('`', '', $match[1]);
+                $indexColumns = array_map('trim', explode(',', str_replace('`', '', $match[2])));
+                $indexes[$indexName] = $indexColumns;
+            }
+        }
+
+        return $indexes;
+    }
+
+    // Private Methods
     // =========================================================================
 
     /**
