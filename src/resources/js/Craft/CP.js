@@ -49,6 +49,7 @@ Craft.CP = Garnish.Base.extend(
 
 	selectedItemLabel: null,
 
+	fixedHeader: false,
 	fixedNotifications: false,
 
 	runningTaskInfo: null,
@@ -136,6 +137,9 @@ Craft.CP = Garnish.Base.extend(
 
 		this.addListener(this.$container, 'scroll', 'updateFixedNotifications');
 		this.updateFixedNotifications();
+
+		this.addListener(this.$container, 'scroll', 'updateFixedHeader');
+		this.updateFixedHeader();
 
 		Garnish.$doc.ready($.proxy(function()
 		{
@@ -276,6 +280,9 @@ Craft.CP = Garnish.Base.extend(
 		// Update the responsive global sidebar
 		this.updateResponsiveGlobalSidebar();
 
+		// Update the responsive container
+		this.updateResponsiveContainer();
+
 		// Update the responsive nav
 		this.updateResponsiveNav();
 
@@ -291,6 +298,13 @@ Craft.CP = Garnish.Base.extend(
 		var globalSidebarHeight = window.innerHeight;
 
 		this.$globalSidebar.height(globalSidebarHeight);
+	},
+
+	updateResponsiveContainer: function()
+	{
+		var containerHeight = window.innerHeight;
+
+		this.$container.height(containerHeight);
 	},
 
 	updateResponsiveNav: function()
@@ -509,6 +523,42 @@ Craft.CP = Garnish.Base.extend(
 	{
 		this.subnavItems[this.visibleSubnavItems].insertBefore(this.$overflowSubnavMenuItem);
 		this.visibleSubnavItems++;
+	},
+
+	updateFixedHeader: function()
+	{
+		this.updateFixedHeader._topbarHeight = this.$containerTopbar.height();
+		this.updateFixedHeader._pageHeaderHeight = this.$pageHeader.outerHeight();
+
+		if (this.$container.scrollTop() > this.updateFixedHeader._topbarHeight)
+		{
+			if (!this.fixedHeader)
+			{
+				this.$pageHeader.addClass('fixed');
+
+				if(Garnish.$bod.hasClass('showing-nav'))
+				{
+					this.$pageHeader.css('top', this.$container.scrollTop());
+				}
+				else
+				{
+					this.$pageHeader.css('top', 0);
+				}
+
+				this.$main.css('margin-top', this.updateFixedHeader._pageHeaderHeight);
+				this.fixedheader = true;
+			}
+		}
+		else
+		{
+			if (this.fixedheader)
+			{
+				this.$pageHeader.removeClass('fixed');
+				this.$pageHeader.css('top', 0);
+				this.$main.css('margin-top', 0);
+				this.fixedheader = false;
+			}
+		}
 	},
 
 	updateFixedNotifications: function()
