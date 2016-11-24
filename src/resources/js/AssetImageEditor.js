@@ -3,10 +3,8 @@
  */
 
 // TODO: When rotating by 90 degrees, the cropping constraint acts like the image has not been rotated
-// TODO: Smooth out the cropping constraints
-// TODO: UI
-// TODO: Handle modal resize
 // TODO: Maybe namespace all the attributes?
+// TODO: Go over each attribute and method to make sure it's used at all.
 
 Craft.AssetImageEditor = Garnish.Modal.extend(
 	{
@@ -111,7 +109,8 @@ Craft.AssetImageEditor = Garnish.Modal.extend(
 			this.$tabs = $('.tabs li', this.$body);
 			this.$viewsContainer = $('.views', this.$body);
 			this.$views = $('> div', this.$viewsContainer);
-			// TODO Create Slider
+			this.$imageTools = $('.image-container .image-tools', this.$body);
+			this.straighteningInput = new SlideRuleInput("slide-rule");
 
 			this.$editorContainer = $('.image-container .image', this.$body);
 			this.editorHeight = this.$editorContainer.innerHeight();
@@ -121,6 +120,10 @@ Craft.AssetImageEditor = Garnish.Modal.extend(
 
 			this.canvas = new fabric.StaticCanvas('image-canvas', {backgroundColor: this.backgroundColor, hoverCursor: 'default'});
 			this.canvas.enableRetinaScaling = true;
+
+			// TODO add loading spinner
+			// TODO make sure small images are not scaled up
+			// TODO Make sure that retina works
 
 			// Load the image from URL
 			var imageUrl = Craft.getActionUrl('assets/edit-image', {assetId: this.assetId, size: this.requestedImageSize, cacheBust: this.cacheBust});
@@ -157,6 +160,7 @@ Craft.AssetImageEditor = Garnish.Modal.extend(
 
 		updateSizeAndPosition: function()
 		{
+			// TODO if sizing up significantly from starting size, load a higher-res image if available
 			if (!this.$container)
 			{
 				return;
@@ -223,13 +227,14 @@ Craft.AssetImageEditor = Garnish.Modal.extend(
 				this.image.height = Math.round(this.originalHeight * (this.image.width / this.originalWidth));
 			}
 
-
 			this.imageHolder.set({
 				left: (this.editorWidth - this.image.width) / 2,
 				top: (this.editorHeight - this.image.height) / 2
 			});
 
 			this.canvas.renderAll();
+
+			this._setImageVerticeCoordinates()
 		},
 
 		/**
@@ -264,78 +269,99 @@ Craft.AssetImageEditor = Garnish.Modal.extend(
 		 */
 		_addControlListeners: function () {
 
-			return;
-			/*
-			 this.addListener(this.$tabs, 'click', '_handleTabClick');
-			 this.straighteningInput = new SlideRuleInput("slide-rule");
-			 this.ratioMenu = this.$ratioBtn.menubtn().data('menubtn').menu;
-			 this.ratioMenu.on('optionselect', $.proxy(this, '_handleRatioChange'));
-			 this.ratioMenu.$options.first().trigger('click');
-			 */
 
+			this.addListener(this.$tabs, 'click', '_handleTabClick');
+
+			//this.ratioMenu = this.$ratioBtn.menubtn().data('menubtn').menu;
+			//this.ratioMenu.on('optionselect', $.proxy(this, '_handleRatioChange'));
+			//this.ratioMenu.$options.first().trigger('click');
+
+			this.$tabs.first().trigger('click');
 			return;
 			// Generate a callback function that checks if the control is active beforehand
-			var _callIfControlActive = function (callback) {
-				return function (ev) {
-					if (this.isActiveControl($(ev.currentTarget))) {
-						callback.call(this, ev);
-					} else {
-						ev.preventDefault();
-						ev.stopPropagation();
-					}
-				}.bind(this);
-			}.bind(this);
+			/*
+			 var _callIfControlActive = function (callback) {
+			 return function (ev) {
+			 if (this.isActiveControl($(ev.currentTarget))) {
+			 callback.call(this, ev);
+			 } else {
+			 ev.preventDefault();
+			 ev.stopPropagation();
+			 }
+			 }.bind(this);
+			 }.bind(this);
 
-			this.addListener($('.rotate.counter-clockwise'), 'click', _callIfControlActive(function (ev) {
-				this.rotateViewport(-90);
-			}));
-			this.addListener($('.rotate.clockwise'),'click', _callIfControlActive(function (ev) {
-				this.rotateViewport(90);
-			}));
+			 this.addListener($('.rotate.counter-clockwise'), 'click', _callIfControlActive(function (ev) {
+			 this.rotateViewport(-90);
+			 }));
+			 this.addListener($('.rotate.clockwise'),'click', _callIfControlActive(function (ev) {
+			 this.rotateViewport(90);
+			 }));
 
-			this.addListener($('.rotate.reset'), 'click', _callIfControlActive(function (ev) {
-				this.resetStraighten(ev);
-			}));
-			this.addListener($('.rotate.straighten'), 'input change mouseup mousedown click', _callIfControlActive(function (ev) {
-				this.straighten(ev);
-			}));
+			 this.addListener($('.rotate.reset'), 'click', _callIfControlActive(function (ev) {
+			 this.resetStraighten(ev);
+			 }));
+			 this.addListener($('.rotate.straighten'), 'input change mouseup mousedown click', _callIfControlActive(function (ev) {
+			 this.straighten(ev);
+			 }));
 
-			this.addListener($('.filter-select select', this.$tools), 'change', _callIfControlActive(function (ev) {
-				$option = $(ev.currentTarget).find('option:selected');
-				$('.filter-fields').addClass('hidden');
-				if ($option.val()) {
-					$('.filter-fields[filter=' + $option.val() + ']').removeClass('hidden');
-				}
-			}));
-			this.addListener($('.filter-tools .btn.apply-filter', this.$tools), 'click', _callIfControlActive(function (ev) {
-				this.applyFilter(ev);
-			}));
+			 this.addListener($('.filter-select select', this.$tools), 'change', _callIfControlActive(function (ev) {
+			 $option = $(ev.currentTarget).find('option:selected');
+			 $('.filter-fields').addClass('hidden');
+			 if ($option.val()) {
+			 $('.filter-fields[filter=' + $option.val() + ']').removeClass('hidden');
+			 }
+			 }));
+			 this.addListener($('.filter-tools .btn.apply-filter', this.$tools), 'click', _callIfControlActive(function (ev) {
+			 this.applyFilter(ev);
+			 }));
 
-			this.addListener($('.cropping-tool', this.$tools), 'click', _callIfControlActive(function (ev) {
-				this.enableCropMode(ev);
-			}));
-			this.addListener($('.reset-crop', this.$tools), 'click', _callIfControlActive(function (ev) {
-				this.cancelCropMode(ev);
-			}));
-			this.addListener($('.apply-crop', this.$tools), 'click', _callIfControlActive(function (ev) {
-				this.applyCrop(ev);
-			}));
+			 this.addListener($('.cropping-tool', this.$tools), 'click', _callIfControlActive(function (ev) {
+			 this.enableCropMode(ev);
+			 }));
+			 this.addListener($('.reset-crop', this.$tools), 'click', _callIfControlActive(function (ev) {
+			 this.cancelCropMode(ev);
+			 }));
+			 this.addListener($('.apply-crop', this.$tools), 'click', _callIfControlActive(function (ev) {
+			 this.applyCrop(ev);
+			 }));
 
-			this.addListener($('.btn.cancel', this.$buttons), 'click', $.proxy(this, 'hide'));
-			this.addListener($('.btn.save', this.$buttons), 'click', $.proxy(this, 'saveImage'));
+			 this.addListener($('.btn.cancel', this.$buttons), 'click', $.proxy(this, 'hide'));
+			 this.addListener($('.btn.save', this.$buttons), 'click', $.proxy(this, 'saveImage'));
 
-			this.addListener(Garnish.$doc, 'keydown', function (ev)
-			{
-				if (ev.keyCode == Garnish.SHIFT_KEY) {
-					this.lockAspectRatio = true;
-				}
-			}.bind(this));
-			this.addListener(Garnish.$doc, 'keyup', function (ev)
-			{
-				if (ev.keyCode == Garnish.SHIFT_KEY) {
-					this.lockAspectRatio = false;
-				}
-			}.bind(this));
+			 this.addListener(Garnish.$doc, 'keydown', function (ev)
+			 {
+			 if (ev.keyCode == Garnish.SHIFT_KEY) {
+			 this.lockAspectRatio = true;
+			 }
+			 }.bind(this));
+			 this.addListener(Garnish.$doc, 'keyup', function (ev)
+			 {
+			 if (ev.keyCode == Garnish.SHIFT_KEY) {
+			 this.lockAspectRatio = false;
+			 }
+			 }.bind(this));*/
+		},
+
+		_handleTabClick: function(ev)
+		{
+			var $tab = $(ev.currentTarget);
+			var view = $tab.data('view');
+			this.$tabs.removeClass('selected');
+			$tab.addClass('selected');
+			this.showView(view);
+		},
+
+		showView: function(view)
+		{
+			this.$views.addClass('hidden');
+			var $view = this.$views.filter('[data-view="'+view+'"]');
+			$view.removeClass('hidden');
+			if ($view.data('transform')) {
+				this.enableTransformMode();
+			} else {
+				this.disableTransformMode();
+			}
 		},
 
 		/**
@@ -682,6 +708,14 @@ Craft.AssetImageEditor = Garnish.Modal.extend(
 
 		isActiveControl: function ($element) {
 			return $element.parents('.disabled').length == 0;
+		},
+
+		enableTransformMode: function () {
+			this.$imageTools.removeClass('hidden');
+		},
+
+		disableTransformMode: function () {
+			this.$imageTools.addClass('hidden');
 		},
 
 		enableCropMode: function () {
@@ -1231,7 +1265,7 @@ Craft.AssetImageEditor = Garnish.Modal.extend(
 			return [topLeft, topRight, bottomRight, bottomLeft];
 		},
 
-		_setTiltedVerticeCoordinates: function () {
+		_setImageVerticeCoordinates: function () {
 
 			var angleInRadians = -1 * this.imageStraightenAngle * (Math.PI / 180);
 
@@ -1252,7 +1286,7 @@ Craft.AssetImageEditor = Garnish.Modal.extend(
 			var horizontalOffset = (this.editorWidth - (leftHorizontalSegment + rightHorizontalSegment)) / 2;
 
 			// Finally, calculate the tilted image vertice coordinates
-			this.tiltedImageVerticeCoords = {
+			this.imageVerticeCoords = {
 				a: {x: horizontalOffset + rightHorizontalSegment, y: verticalOffset},
 				b: {x: this.editorWidth - horizontalOffset, y: verticalOffset + topVerticalSegment},
 				c: {x: horizontalOffset + leftHorizontalSegment, y: this.editorHeight - verticalOffset},

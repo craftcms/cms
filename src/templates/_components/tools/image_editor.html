@@ -6,7 +6,7 @@
     </ul>
 </div>
 <div class="views">
-    <div class="transform hidden" data-view="transform" data-image-tools="true">
+    <div class="transform hidden" data-view="transform" data-transform="true">
         <div class="rotate-buttons buttons">
             <div class="rotate-left btn icon">{{ 'Rotate Left'|t('app') }}</div>
             <div class="rotate-right btn icon">{{ 'Rotate Right'|t('app') }}</div>
@@ -33,6 +33,9 @@
             <div class="focal-point btn icon">{{ 'Set Focal Point'|t('app') }}</div>
         </div>
     </div>
+    <div class="effects hidden" data-view="effects">
+        Brightness and contrast
+    </div>
     <div class="filters hidden" data-view="filters">
         <ul>
             <li><img src="http://placehold.it/80x80"><span>{{ 'Original'|t('app') }}</span></li>
@@ -50,7 +53,7 @@
         <canvas id="cropping-canvas">
         </canvas>
     </div>
-    <div class="image-tools">
+    <div class="image-tools hidden">
         <div data-view="transform" class="straightening">
             <div id="slide-rule" class="slide-rule"></div>
         </div>
