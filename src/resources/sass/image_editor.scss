@@ -42,9 +42,9 @@ html.noscroll, html.noscroll body { overflow: hidden; height: 100%; }
 .imageeditor .body .views .filters ul li:hover { cursor: pointer; }
 .imageeditor .body .views .filters ul li.selected img { border-color: #fff; }
 
-.imageeditor .body .image-container { flex-grow: 1; display: flex; flex-direction: column; position: relative; }
-.imageeditor .body .image-container .image { text-align: center; flex-grow:1; }
-.imageeditor .body .image-container .image img { position: absolute; top: 0; left: 0; }
+.imageeditor .body .image-container { flex-grow: 1; display: flex; flex-direction: column; position: relative; overflow: hidden; }
+.imageeditor .body .image-container .image { text-align: center; flex-grow:1; position: relative;}
+.imageeditor .body .image-container .image canvas { position: absolute; top: 0; left: 0; }
 
 .imageeditor .body .image-container .image-tools { text-align: center; }
 .imageeditor .body .image-container .image-tools .straightening { max-width: 400px; display: block; margin: 0 auto; overflow: hidden; }

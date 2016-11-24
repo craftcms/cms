@@ -27,6 +27,7 @@ Craft.AssetImageEditor = Garnish.Modal.extend(
 		image: null,
 		viewport: null,
 		viewportMask: null,
+		imageHolder: null,
 		assetId: null,
 		cacheBust: null,
 		zoomRatio: 1,
@@ -77,8 +78,8 @@ Craft.AssetImageEditor = Garnish.Modal.extend(
 
 			// Build the modal
 			this.$container = $('<form class="modal fitted imageeditor"></form>').appendTo(Garnish.$bod),
-			this.$body = $('<div class="body"></div>').appendTo(this.$container),
-			this.$footer = $('<div class="footer"/>').appendTo(this.$container);
+				this.$body = $('<div class="body"></div>').appendTo(this.$container),
+				this.$footer = $('<div class="footer"/>').appendTo(this.$container);
 
 			this.base(this.$container, this.settings);
 
@@ -93,7 +94,16 @@ Craft.AssetImageEditor = Garnish.Modal.extend(
 			this.addListener(this.$cancelBtn, 'activate', $.proxy(this, 'hide'));
 			this.removeListener(this.$shade, 'click');
 
+			this.updateRequestedImageSize();
+
 			Craft.postActionRequest('assets/image-editor', $.proxy(this, 'loadEditor'));
+		},
+
+		updateRequestedImageSize: function () {
+			var browserViewportWidth = Garnish.$doc.get(0).documentElement.clientWidth,
+				browserViewportHeight = Garnish.$doc.get(0).documentElement.clientHeight;
+
+			this.requestedImageSize = Math.min(browserViewportHeight, browserViewportWidth);
 		},
 
 		loadEditor: function (data) {
@@ -101,68 +111,48 @@ Craft.AssetImageEditor = Garnish.Modal.extend(
 			this.$tabs = $('.tabs li', this.$body);
 			this.$viewsContainer = $('.views', this.$body);
 			this.$views = $('> div', this.$viewsContainer);
+			// TODO Create Slider
 
-
-			/*
-			 this.addListener(this.$tabs, 'click', '_handleTabClick');
-			 this.straighteningInput = new SlideRuleInput("slide-rule");
-			 this.ratioMenu = this.$ratioBtn.menubtn().data('menubtn').menu;
-			 this.ratioMenu.on('optionselect', $.proxy(this, '_handleRatioChange'));
-			 this.ratioMenu.$options.first().trigger('click');
-
-
-			 */
-			this.updateSizeAndPosition();
-/*
-			this.canvas = new fabric.StaticCanvas('image-canvas', {backgroundColor: this.backgroundColor, hoverCursor: 'default'});
-			this.canvas.enableRetinaScaling = true;
-
-			this.$editorContainer = $('#image-holder');
-			this.$straighten = $('.rotate.straighten');
-
+			this.$editorContainer = $('.image-container .image', this.$body);
 			this.editorHeight = this.$editorContainer.innerHeight();
 			this.editorWidth = this.$editorContainer.innerWidth();
 
+			this.updateSizeAndPosition();
+
+			this.canvas = new fabric.StaticCanvas('image-canvas', {backgroundColor: this.backgroundColor, hoverCursor: 'default'});
+			this.canvas.enableRetinaScaling = true;
+
 			// Load the image from URL
-			var imageUrl = Craft.getActionUrl('assets/edit-image', {assetId: this.assetId, size: this.settings.assetSize, cacheBust: this.cacheBust});
+			var imageUrl = Craft.getActionUrl('assets/edit-image', {assetId: this.assetId, size: this.requestedImageSize, cacheBust: this.cacheBust});
+
 			fabric.Image.fromURL(imageUrl, $.proxy(function (imageObject) {
+
 				this.image = imageObject;
 
-				// Store for later reference
 				this.originalHeight = this.image.getHeight();
 				this.originalWidth = this.image.getWidth();
+				this.zoomRatio = 1;
+
+				this.image.set({
+					left: 0,
+					top: 0
+				});
+				this.imageHolder = new fabric.Group([this.image], {
+					left: 0,
+					top: 0
+				});
+
+				this.canvas.add(this.imageHolder);
 
 				// Scale the image and center it on the canvas
 				this._scaleAndCenterImage();
 
-				this.zoomRatio = this.getZoomToCoverRatio();
-				this._renewImageZoomRatio();
-
-				// Create the viewport mask on the edges so straightening the image looks nice
-				this.viewportMask = this._createViewportMask({
-					width: this.viewportWidth,
-					height: this.viewportHeight,
-					top: this.image.top - 1,
-					left: this.image.left - 1
-				});
-
-				// Set up a cropping viewport
-				this.viewport = new fabric.Group([this.image, this.viewportMask], {
-					originX: 'center',
-					originY: 'center',
-					selectable: false
-				});
-				this.canvas.add(this.viewport);
-
 				// Add listeners to buttons and draw the grid
-				this._addListeners();
-				this._drawGrid();
-
-				this._prepareImageForRotation();
+				this._addControlListeners();
 
 				// Render it, finally
 				this.canvas.renderAll();
-			}, this));*/
+			}, this));
 		},
 
 		updateSizeAndPosition: function()
@@ -171,7 +161,6 @@ Craft.AssetImageEditor = Garnish.Modal.extend(
 			{
 				return;
 			}
-
 
 			// Fullscreen modal
 
@@ -201,7 +190,13 @@ Craft.AssetImageEditor = Garnish.Modal.extend(
 				this.$container.removeClass('vertical');
 			}
 
-			//this._scaleAndCenterImage();
+			// If editor is loaded, update those dimensions
+			if (this.$editorContainer) {
+				// If image is already loaded, make sure it looks pretty.
+				if (this.image) {
+					this._scaleAndCenterImage();
+				}
+			}
 		},
 
 		/**
@@ -209,38 +204,32 @@ Craft.AssetImageEditor = Garnish.Modal.extend(
 		 */
 		_scaleAndCenterImage: function () {
 
-			// The width/height correction by a pixel might seem paranoid, but we really want
-			// to get rid of 0.5 pixels and also make sure that the image is within
-			// the editor or the final image might have a 1px sliver of background
-			if (this.image.height > this.image.width) {
-				this.viewportHeight = this.editorHeight;
-				this.image.height = this.viewportHeight;
-
-				// Never scale to parts of a pixel
-				this.image.width = Math.round(this.originalWidth * (this.image.height / this.originalHeight));
-
-				this.viewportWidth = this.image.width;
-			} else {
-				this.viewportWidth = this.editorWidth;
-				this.image.width = this.viewportWidth;
-
-				// Never scale to parts of a pixel
-				this.image.height = Math.round(this.originalHeight * (this.image.width / this.originalWidth));
-
-				this.viewportHeight = this.image.height;
-			}
-
-			this.image.set({
-				originX: 'left',
-				originY: 'top',
-				left: (this.editorWidth - this.image.width) / 2 + 1,
-				top: (this.editorHeight - this.image.height) / 2 + 1
-			});
+			this.editorHeight = this.$editorContainer.innerHeight();
+			this.editorWidth = this.$editorContainer.innerWidth();
 
 			this.canvas.setDimensions({
 				width: this.editorWidth,
 				height: this.editorHeight
 			});
+
+			var imageRatio = this.originalHeight / this.originalWidth;
+			var editorRatio = this.editorHeight / this.editorWidth;
+
+			if (imageRatio > editorRatio) {
+				this.image.height = this.editorHeight;
+				this.image.width = Math.round(this.originalWidth / (this.originalHeight / this.image.height));
+			} else {
+				this.image.width = this.editorWidth;
+				this.image.height = Math.round(this.originalHeight * (this.image.width / this.originalWidth));
+			}
+
+
+			this.imageHolder.set({
+				left: (this.editorWidth - this.image.width) / 2,
+				top: (this.editorHeight - this.image.height) / 2
+			});
+
+			this.canvas.renderAll();
 		},
 
 		/**
@@ -273,8 +262,18 @@ Craft.AssetImageEditor = Garnish.Modal.extend(
 		/**
 		 * Add listeners to buttons
 		 */
-		_addListeners: function () {
+		_addControlListeners: function () {
 
+			return;
+			/*
+			 this.addListener(this.$tabs, 'click', '_handleTabClick');
+			 this.straighteningInput = new SlideRuleInput("slide-rule");
+			 this.ratioMenu = this.$ratioBtn.menubtn().data('menubtn').menu;
+			 this.ratioMenu.on('optionselect', $.proxy(this, '_handleRatioChange'));
+			 this.ratioMenu.$options.first().trigger('click');
+			 */
+
+			return;
 			// Generate a callback function that checks if the control is active beforehand
 			var _callIfControlActive = function (callback) {
 				return function (ev) {
@@ -354,16 +353,16 @@ Craft.AssetImageEditor = Garnish.Modal.extend(
 				// Normalize the viewport rotation angle so it's between 0 and 359
 				this.viewportRotation = parseInt((this.viewportRotation + 360) % 360, 10);
 
-				var newAngle = this.viewport.getAngle() + degrees;
+				var newAngle = this.imageHolder.getAngle() + degrees;
 
 				// Animate the rotations
-				this.viewport.animate('angle', newAngle, {
+				this.imageHolder.animate('angle', newAngle, {
 					onChange: this.canvas.renderAll.bind(this.canvas),
 					duration: this.settings.animationDuration,
 					onComplete: $.proxy(function () {
 						// Clean up angle
-						var cleanAngle = parseInt((this.viewport.getAngle() + 360) % 360, 10);
-						this.viewport.set({angle: cleanAngle});
+						var cleanAngle = parseInt((this.imageHolder.getAngle() + 360) % 360, 10);
+						this.imageHolder.set({angle: cleanAngle});
 						this.animationInProgress = false;
 
 						this.getZoomToCoverRatio();
@@ -811,26 +810,26 @@ Craft.AssetImageEditor = Garnish.Modal.extend(
 			var leftOffset;
 			var topOffset;
 
-			 // If the image has not been straightened, then we probably have some
-			 // space on top/bottom or left/right edges.
-			 if (this.imageStraightenAngle == 0) {
-				 var leftOffset = Math.round((this.editorWidth - this.image.width) / 2);
-				 var topOffset = Math.round((this.editorHeight - this.image.height) / 2);
-			 } else {
-			 	var leftOffset = 0;
-			 	var topOffset = 0;
-			 }
+			// If the image has not been straightened, then we probably have some
+			// space on top/bottom or left/right edges.
+			if (this.imageStraightenAngle == 0) {
+				var leftOffset = Math.round((this.editorWidth - this.image.width) / 2);
+				var topOffset = Math.round((this.editorHeight - this.image.height) / 2);
+			} else {
+				var leftOffset = 0;
+				var topOffset = 0;
+			}
 
-			 // When passing along the coordinates, take into account the possible excess space on edge of editor
-			 this.cropData = {
-			 	width: this.clipper.width,
-			 	height: this.clipper.height,
-			 	cornerLeft: Math.max(Math.round(this.clipper.left - leftOffset - this.tiltedImageVerticeCoords.c.x), 0),
-			 	cornerTop: Math.max(Math.round(this.clipper.top - topOffset - this.tiltedImageVerticeCoords.d.y), 0),
-			 	scaledWidth: this.image.width,
-			 	scaledHeight: this.image.height,
-			 	zoomRatio: this.getZoomToFitRatio()
-			 };
+			// When passing along the coordinates, take into account the possible excess space on edge of editor
+			this.cropData = {
+				width: this.clipper.width,
+				height: this.clipper.height,
+				cornerLeft: Math.max(Math.round(this.clipper.left - leftOffset - this.tiltedImageVerticeCoords.c.x), 0),
+				cornerTop: Math.max(Math.round(this.clipper.top - topOffset - this.tiltedImageVerticeCoords.d.y), 0),
+				scaledWidth: this.image.width,
+				scaledHeight: this.image.height,
+				zoomRatio: this.getZoomToFitRatio()
+			};
 
 			this.isCroppingPerformed = true;
 		},
@@ -1315,16 +1314,6 @@ Craft.AssetImageEditor = Garnish.Modal.extend(
 			return true;
 		},
 
-		_prepareImageForRotation: function () {
-			this.image.set({
-				originX: 'center',
-				originY: 'center',
-				left: 0,
-				top: 0
-			});
-			this.canvas.renderAll();
-		},
-
 		/**
 		 * Returns an object representing the vector between points a and b.
 		 *
@@ -1367,7 +1356,6 @@ Craft.AssetImageEditor = Garnish.Modal.extend(
 			gridLinePrecision: 2,
 			cropperBorderThickness: 2,
 			animationDuration: 100,
-			assetSize: 400,
 			allowSavingAsNew: true,
 			minimumCropperSize : {
 				width: 30,
