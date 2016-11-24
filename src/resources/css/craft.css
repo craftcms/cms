@@ -1905,7 +1905,7 @@ body.rtl #alerts li:before { margin: -1px 0 0 3px ; }
 #alerts li a.go:hover { border-color: #fff; -webkit-transition: border-color linear 100ms; -moz-transition: border-color linear 100ms; -ms-transition: border-color linear 100ms; transition: border-color linear 100ms; }
 
 /* Shared sidebar/container styles */
-#container, #global-sidebar { transition: all .25s ease-in-out; -webkit-transition: all .25s ease-in-out; overflow-y: scroll; /* has to be scroll, not auto */ -webkit-overflow-scrolling: touch; }
+#container, #global-sidebar { transition: all .25s ease-in-out; -webkit-transition: all .25s ease-in-out; overflow-y: scroll; /* has to be scroll, not auto */ -webkit-overflow-scrolling: touch; z-index: 13; }
 
 .topbar { display: -webkit-box; display: -moz-box; display: -ms-flexbox; display: -webkit-flex; display: flex; -ms-flex-align: stretch; align-items: stretch; }
 
@@ -2127,6 +2127,9 @@ body.rtl #container .topbar .show-nav { margin-right: -24px; }
 /* page header */
 #page-header { display: -webkit-box; display: -moz-box; display: -ms-flexbox; display: -webkit-flex; display: flex; -ms-flex-align: justify; justify-content: space-between; position: relative; z-index: 1; padding: 20px 24px; }
 
+#page-header.fixed { position: fixed; z-index: 12; right: 0; left: 220px; top: 0; background: #ebedef; border-bottom: 1px solid rgba(0, 0, 0, 0.05); }
+
+@media only screen and (max-width: 992px) { #page-header.fixed { left: 0; } }
 #page-header #page-title { flex-grow: 1; -ms-flex: 1; color: #da5a47; }
 
 #page-header #page-title { overflow: hidden; text-overflow: ellipsis; }
@@ -2487,7 +2490,7 @@ body.rtl .show-sidebar:after { float: left; }
 body.ltr .show-sidebar:after { margin-right: -24px; }
 body.rtl .show-sidebar:after { margin-left: -24px; }
 
-.sidebar { position: absolute; width: 220px; padding: 24px; overflow: auto; background: #fafafa; -webkit-box-sizing: border-box; -moz-box-sizing: border-box; box-sizing: border-box; }
+.sidebar { position: absolute; top: 0; width: 220px; padding: 24px; overflow: auto; background: #fafafa; -webkit-box-sizing: border-box; -moz-box-sizing: border-box; box-sizing: border-box; }
 
 body.ltr .sidebar { margin: -24px 0 -24px -242px ; }
 body.rtl .sidebar { margin: -24px -242px -24px 0 ; }

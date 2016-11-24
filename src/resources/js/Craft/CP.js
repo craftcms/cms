@@ -49,6 +49,7 @@ Craft.CP = Garnish.Base.extend(
 
 	selectedItemLabel: null,
 
+	fixedHeader: false,
 	fixedNotifications: false,
 
 	runningTaskInfo: null,
@@ -133,9 +134,11 @@ Craft.CP = Garnish.Base.extend(
 		this.$sidebarLinks = $('nav a', this.$sidebar);
 		this.addListener(this.$sidebarLinks, 'click', 'selectSidebarItem');
 
-
-		this.addListener(this.$container, 'scroll', 'updateFixedNotifications');
+		this.addListener(Garnish.$win, 'scroll', 'updateFixedNotifications');
 		this.updateFixedNotifications();
+
+		this.addListener(Garnish.$win, 'scroll', 'updateFixedHeader');
+		this.updateFixedHeader();
 
 		Garnish.$doc.ready($.proxy(function()
 		{
@@ -511,11 +514,47 @@ Craft.CP = Garnish.Base.extend(
 		this.visibleSubnavItems++;
 	},
 
+	updateFixedHeader: function()
+	{
+		this.updateFixedHeader._topbarHeight = this.$containerTopbar.height();
+		this.updateFixedHeader._pageHeaderHeight = this.$pageHeader.outerHeight();
+
+		if (Garnish.$win.scrollTop() > this.updateFixedHeader._topbarHeight)
+		{
+			if (!this.fixedHeader)
+			{
+				this.$pageHeader.addClass('fixed');
+
+				if(Garnish.$bod.hasClass('showing-nav'))
+				{
+					this.$pageHeader.css('top', Garnish.$win.scrollTop());
+				}
+				else
+				{
+					this.$pageHeader.css('top', 0);
+				}
+
+				this.$main.css('margin-top', this.updateFixedHeader._pageHeaderHeight);
+				this.fixedheader = true;
+			}
+		}
+		else
+		{
+			if (this.fixedheader)
+			{
+				this.$pageHeader.removeClass('fixed');
+				this.$pageHeader.css('top', 0);
+				this.$main.css('margin-top', 0);
+				this.fixedheader = false;
+			}
+		}
+	},
+
 	updateFixedNotifications: function()
 	{
 		this.updateFixedNotifications._headerHeight = this.$globalSidebar.height();
 
-		if (this.$container.scrollTop() > this.updateFixedNotifications._headerHeight)
+		if (Garnish.$win.scrollTop() > this.updateFixedNotifications._headerHeight)
 		{
 			if (!this.fixedNotifications)
 			{

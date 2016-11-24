@@ -41,6 +41,7 @@
 				this.redactorConfig.fileUpload = true;
 				this.redactorConfig.dragImageUpload = false;
 				this.redactorConfig.dragFileUpload = false;
+				this.redactorConfig.toolbarFixedTopOffset = 72;
 
 				// Prevent a JS error when calling core.destroy() when opts.plugins == false
 				if (typeof this.redactorConfig.plugins !== typeof [])
