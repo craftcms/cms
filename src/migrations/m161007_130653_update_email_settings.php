@@ -1,9 +1,9 @@
 <?php
 
-namespace craft\app\migrations;
+namespace craft\migrations;
 
 use Craft;
-use craft\app\db\Migration;
+use craft\db\Migration;
 
 /**
  * m161007_130653_update_email_settings migration.

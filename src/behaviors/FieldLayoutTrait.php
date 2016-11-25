@@ -5,10 +5,10 @@
  * @license   https://craftcms.com/license
  */
 
-namespace craft\app\behaviors;
+namespace craft\behaviors;
 
-use craft\app\base\ElementInterface;
-use craft\app\models\FieldLayout;
+use craft\base\ElementInterface;
+use craft\models\FieldLayout;
 
 /**
  * Field layout trait

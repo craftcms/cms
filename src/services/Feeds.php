@@ -5,12 +5,12 @@
  * @license   https://craftcms.com/license
  */
 
-namespace craft\app\services;
+namespace craft\services;
 
 use Craft;
-use craft\app\dates\DateTime;
-use craft\app\helpers\DateTimeHelper;
-use craft\app\models\Url;
+use craft\dates\DateTime;
+use craft\helpers\DateTimeHelper;
+use craft\models\Url;
 use yii\base\Component;
 
 /**

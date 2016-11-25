@@ -1,11 +1,11 @@
 <?php
 
-namespace craft\app\migrations;
+namespace craft\migrations;
 
 use Craft;
-use craft\app\db\Migration;
-use craft\app\db\Query;
-use craft\app\helpers\Json;
+use craft\db\Migration;
+use craft\db\Query;
+use craft\helpers\Json;
 
 /**
  * m151002_095935_volume_cache_settings migration.

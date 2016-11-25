@@ -5,9 +5,9 @@
  * @license   https://craftcms.com/license
  */
 
-namespace craft\app\web\twig\tokenparsers;
+namespace craft\web\twig\tokenparsers;
 
-use craft\app\web\twig\nodes\CacheNode;
+use craft\web\twig\nodes\CacheNode;
 
 /**
  * Class CacheTokenParser

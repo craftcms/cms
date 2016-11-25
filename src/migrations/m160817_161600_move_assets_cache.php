@@ -1,10 +1,10 @@
 <?php
 
-namespace craft\app\migrations;
+namespace craft\migrations;
 
 use Craft;
-use craft\app\db\Migration;
-use craft\app\helpers\Io;
+use craft\db\Migration;
+use craft\helpers\Io;
 
 /**
  * m160817_161600_move_assets_cache migration.

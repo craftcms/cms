@@ -5,23 +5,23 @@
  * @license   https://craftcms.com/license
  */
 
-namespace craft\app\fields;
+namespace craft\fields;
 
 use Craft;
-use craft\app\base\EagerLoadingFieldInterface;
-use craft\app\base\Element;
-use craft\app\base\ElementInterface;
-use craft\app\base\Field;
-use craft\app\base\FieldInterface;
-use craft\app\db\Query;
-use craft\app\elements\db\ElementQuery;
-use craft\app\elements\db\ElementQueryInterface;
-use craft\app\elements\db\MatrixBlockQuery;
-use craft\app\helpers\Json;
-use craft\app\helpers\StringHelper;
-use craft\app\elements\MatrixBlock;
-use craft\app\models\MatrixBlockType;
-use craft\app\validators\ArrayValidator;
+use craft\base\EagerLoadingFieldInterface;
+use craft\base\Element;
+use craft\base\ElementInterface;
+use craft\base\Field;
+use craft\base\FieldInterface;
+use craft\db\Query;
+use craft\elements\db\ElementQuery;
+use craft\elements\db\ElementQueryInterface;
+use craft\elements\db\MatrixBlockQuery;
+use craft\helpers\Json;
+use craft\helpers\StringHelper;
+use craft\elements\MatrixBlock;
+use craft\models\MatrixBlockType;
+use craft\validators\ArrayValidator;
 
 /**
  * Matrix represents a Matrix field.

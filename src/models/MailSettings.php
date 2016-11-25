@@ -5,11 +5,11 @@
  * @license   https://craftcms.com/license
  */
 
-namespace craft\app\models;
+namespace craft\models;
 
 use Craft;
-use craft\app\base\Model;
-use craft\app\mail\transportadapters\TransportAdapterInterface;
+use craft\base\Model;
+use craft\mail\transportadapters\TransportAdapterInterface;
 
 /**
  * MailSettings Model class.

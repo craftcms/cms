@@ -5,9 +5,9 @@
  * @license   https://craftcms.com/license
  */
 
-namespace craft\app\events;
+namespace craft\events;
 
-use craft\app\elements\Entry;
+use craft\elements\Entry;
 
 /**
  * Entry event class.

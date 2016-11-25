@@ -1,7 +1,7 @@
 <?php
 
-use craft\app\debug\DeprecatedPanel;
-use craft\app\models\DeprecationError;
+use craft\debug\DeprecatedPanel;
+use craft\models\DeprecationError;
 
 /** @var $panel DeprecatedPanel */
 /** @var $caption string */

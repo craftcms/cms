@@ -5,11 +5,11 @@
  * @license   https://craftcms.com/license
  */
 
-namespace craft\app\widgets;
+namespace craft\widgets;
 
 use Craft;
-use craft\app\base\Widget;
-use craft\app\helpers\Json;
+use craft\base\Widget;
+use craft\helpers\Json;
 
 /**
  * NewUsers represents a New Users dashboard widget.

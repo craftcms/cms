@@ -5,15 +5,16 @@
  * @license   https://craftcms.com/license
  */
 
-namespace craft\app\web;
+namespace craft\web;
 
 use Craft;
-use craft\app\base\ApplicationTrait;
-use craft\app\helpers\Header;
-use craft\app\helpers\Io;
-use craft\app\helpers\Json;
-use craft\app\helpers\StringHelper;
-use craft\app\helpers\Url;
+use craft\base\ApplicationTrait;
+use craft\helpers\App;
+use craft\helpers\Header;
+use craft\helpers\Io;
+use craft\helpers\Json;
+use craft\helpers\StringHelper;
+use craft\helpers\Url;
 use yii\base\InvalidRouteException;
 use yii\web\ForbiddenHttpException;
 use yii\web\HttpException;
@@ -24,13 +25,13 @@ use yii\web\Response;
  * Craft Web Application class
  *
  * @property Request                 $request          The request component
- * @property \craft\app\web\Response $response         The response component
+ * @property \craft\web\Response     $response         The response component
  * @property Session                 $session          The session component
  * @property UrlManager              $urlManager       The URL manager for this application
  * @property User                    $user             The user component
  *
  * @method Request                                getRequest()      Returns the request component.
- * @method \craft\app\web\Response                getResponse()     Returns the response component.
+ * @method \craft\web\Response                    getResponse()     Returns the response component.
  * @method Session                                getSession()      Returns the session component.
  * @method UrlManager                             getUrlManager()   Returns the URL manager for this application.
  * @method User                                   getUser()         Returns the user component.
@@ -54,7 +55,7 @@ class Application extends \yii\web\Application
     const EVENT_AFTER_INIT = 'afterInit';
 
     /**
-     * @event \craft\app\events\EditionChangeEvent The event that is triggered after the edition changes
+     * @event \craft\events\EditionChangeEvent The event that is triggered after the edition changes
      */
     const EVENT_AFTER_EDITION_CHANGE = 'afterEditionChange';
 
@@ -92,7 +93,7 @@ class Application extends \yii\web\Application
      * @return Response the resulting response
      * @throws HttpException
      * @throws ServiceUnavailableHttpException
-     * @throws \craft\app\errors\DbConnectException
+     * @throws \craft\errors\DbConnectException
      * @throws ForbiddenHttpException
      * @throws \yii\web\NotFoundHttpException
      */
@@ -141,14 +142,12 @@ class Application extends \yii\web\Application
             $this->_unregisterDebugModule();
 
             if ($request->getIsCpRequest()) {
-                $version = $this->getInfo('version');
-                $build = $this->getInfo('build');
-                $url = "https://download.craftcdn.com/craft/{$version}/{$version}.{$build}/Craft-{$version}.{$build}.zip";
+                $version = $this->getInfo()->version;
+                $url = App::craftDownloadUrl($version);
 
-                throw new HttpException(200, Craft::t('app', 'Craft CMS does not support backtracking to this version. Please upload Craft CMS {url} or later.',
-                    [
-                        'url' => '['.$build.']('.$url.')',
-                    ]));
+                throw new HttpException(200, Craft::t('app', 'Craft CMS does not support backtracking to this version. Please upload Craft CMS {url} or later.', [
+                    'url' => "[{$version}]({$url})",
+                ]));
             } else {
                 throw new ServiceUnavailableHttpException();
             }
@@ -161,7 +160,7 @@ class Application extends \yii\web\Application
         }
 
         // If there's a new version, but the schema hasn't changed, just update the info table
-        if ($this->getUpdates()->getHasCraftBuildChanged()) {
+        if ($this->getUpdates()->getHasCraftVersionChanged()) {
             $this->getUpdates()->updateCraftVersionInfo();
 
             // Clear the template caches in case they've been compiled since this release was cut.
@@ -554,12 +553,11 @@ class Application extends \yii\web\Application
             }
 
             if ($this->getUpdates()->getIsBreakpointUpdateNeeded()) {
-                throw new HttpException(200, Craft::t('app', 'You need to be on at least Craft CMS {url} before you can manually update to Craft CMS {targetVersion} build {targetBuild}.',
-                    [
-                        'url' => '[build '.Craft::$app->minBuildRequired.']('.Craft::$app->minBuildUrl.')',
-                        'targetVersion' => Craft::$app->version,
-                        'targetBuild' => Craft::$app->build
-                    ]));
+                $minVersionUrl = App::craftDownloadUrl($this->minVersionRequired);
+                throw new HttpException(200, Craft::t('app', 'You need to be on at least Craft CMS {url} before you can manually update to Craft CMS {targetVersion}.', [
+                    'url' => "[{$this->minVersionRequired}]($minVersionUrl)",
+                    'targetVersion' => Craft::$app->version,
+                ]));
             } else {
                 if (!$request->getIsAjax()) {
                     if ($request->getPathInfo() !== '') {

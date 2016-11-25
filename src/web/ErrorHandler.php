@@ -5,10 +5,10 @@
  * @license   https://craftcms.com/license
  */
 
-namespace craft\app\web;
+namespace craft\web;
 
 use Craft;
-use craft\app\helpers\StringHelper;
+use craft\helpers\StringHelper;
 use yii\db\Exception as DbException;
 use yii\log\FileTarget;
 use yii\web\HttpException;

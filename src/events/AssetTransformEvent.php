@@ -5,9 +5,9 @@
  * @license   https://craftcms.com/license
  */
 
-namespace craft\app\events;
+namespace craft\events;
 
-use craft\app\models\AssetTransform;
+use craft\models\AssetTransform;
 
 /**
  * Asset transform event class.

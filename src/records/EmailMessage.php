@@ -5,11 +5,11 @@
  * @license   https://craftcms.com/license
  */
 
-namespace craft\app\records;
+namespace craft\records;
 
-use craft\app\validators\LanguageValidator;
+use craft\validators\LanguageValidator;
 use yii\db\ActiveQueryInterface;
-use craft\app\db\ActiveRecord;
+use craft\db\ActiveRecord;
 
 /**
  * Class EmailMessage record.

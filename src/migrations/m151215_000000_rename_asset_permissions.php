@@ -1,9 +1,9 @@
 <?php
 
-namespace craft\app\migrations;
+namespace craft\migrations;
 
-use craft\app\db\Migration;
-use craft\app\db\Query;
+use craft\db\Migration;
+use craft\db\Query;
 
 /**
  * The class name is the UTC timestamp in the format of mYYMMDD_HHMMSS_migrationName

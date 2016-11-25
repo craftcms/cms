@@ -5,9 +5,9 @@
  * @license   https://craftcms.com/license
  */
 
-namespace craft\app\base;
+namespace craft\base;
 
-use craft\app\elements\db\ElementQueryInterface;
+use craft\elements\db\ElementQueryInterface;
 
 /**
  * ElementAction is the base class for classes representing element actions in terms of objects.

@@ -5,18 +5,18 @@
  * @license   https://craftcms.com/license
  */
 
-namespace craft\app\controllers;
+namespace craft\controllers;
 
 use Craft;
-use craft\app\base\Plugin;
-use craft\app\enums\PluginUpdateStatus;
-use craft\app\errors\EtException;
-use craft\app\errors\UpdateValidationException;
-use craft\app\helpers\App;
-use craft\app\helpers\ArrayHelper;
-use craft\app\helpers\Update;
-use craft\app\helpers\Url;
-use craft\app\web\Controller;
+use craft\base\Plugin;
+use craft\enums\PluginUpdateStatus;
+use craft\errors\EtException;
+use craft\errors\UpdateValidationException;
+use craft\helpers\App;
+use craft\helpers\ArrayHelper;
+use craft\helpers\Update;
+use craft\helpers\Url;
+use craft\web\Controller;
 use yii\base\Exception;
 use yii\web\Response;
 use yii\web\ServerErrorHttpException;
@@ -105,62 +105,30 @@ class UpdateController extends Controller
         }
 
         try {
-            switch ($handle) {
-                case 'all': {
-                    // Craft first.
-                    $return[] = [
-                        'handle' => 'craft',
-                        'name' => 'Craft',
-                        'version' => $updateInfo->app->latestVersion.'.'.$updateInfo->app->latestBuild,
-                        'critical' => $updateInfo->app->criticalUpdateAvailable,
-                        'releaseDate' => $updateInfo->app->latestDate->getTimestamp()
-                    ];
+            if ($handle == 'all' || $handle == 'craft') {
+                $return[] = [
+                    'handle' => 'craft',
+                    'name' => 'Craft',
+                    'version' => $updateInfo->app->latestVersion,
+                    'critical' => $updateInfo->app->criticalUpdateAvailable,
+                    'releaseDate' => $updateInfo->app->latestDate->getTimestamp()
+                ];
+            }
 
-                    // Plugins
-                    if ($updateInfo->plugins !== null) {
-                        foreach ($updateInfo->plugins as $plugin) {
-                            if ($plugin->status == PluginUpdateStatus::UpdateAvailable && count($plugin->releases) > 0) {
-                                $return[] = [
-                                    'handle' => $plugin->class,
-                                    'name' => $plugin->displayName,
-                                    'version' => $plugin->latestVersion,
-                                    'critical' => $plugin->criticalUpdateAvailable,
-                                    'releaseDate' => $plugin->latestDate->getTimestamp()
-                                ];
-                            }
-                        }
+            if ($handle != 'craft') {
+                foreach ($updateInfo->plugins as $plugin) {
+                    if ($handle != 'all' && $handle != $plugin->class) {
+                        continue;
                     }
 
-                    break;
-                }
-
-                case 'craft': {
-                    $return[] = [
-                        'handle' => 'Craft',
-                        'name' => 'Craft',
-                        'version' => $updateInfo->app->latestVersion.'.'.$updateInfo->app->latestBuild,
-                        'critical' => $updateInfo->app->criticalUpdateAvailable,
-                        'releaseDate' => $updateInfo->app->latestDate->getTimestamp()
-                    ];
-                    break;
-                }
-
-                // We assume it's a plugin handle.
-                default: {
-                    if (!empty($updateInfo->plugins)) {
-                        if (isset($updateInfo->plugins[$handle]) && $updateInfo->plugins[$handle]->status == PluginUpdateStatus::UpdateAvailable && count($updateInfo->plugins[$handle]->releases) > 0) {
-                            $return[] = [
-                                'handle' => $updateInfo->plugins[$handle]->handle,
-                                'name' => $updateInfo->plugins[$handle]->displayName,
-                                'version' => $updateInfo->plugins[$handle]->latestVersion,
-                                'critical' => $updateInfo->plugins[$handle]->criticalUpdateAvailable,
-                                'releaseDate' => $updateInfo->plugins[$handle]->latestDate->getTimestamp()
-                            ];
-                        } else {
-                            return $this->asErrorJson(Craft::t('app', 'Could not find any update information for the plugin with handle “{handle}”.', ['handle' => $handle]));
-                        }
-                    } else {
-                        return $this->asErrorJson(Craft::t('app', 'Could not find any update information for the plugin with handle “{handle}”.', ['handle' => $handle]));
+                    if ($plugin->status == PluginUpdateStatus::UpdateAvailable && count($plugin->releases) > 0) {
+                        $return[] = [
+                            'handle' => $plugin->class,
+                            'name' => $plugin->displayName,
+                            'version' => $plugin->latestVersion,
+                            'critical' => $plugin->criticalUpdateAvailable,
+                            'releaseDate' => $plugin->latestDate->getTimestamp()
+                        ];
                     }
                 }
             }

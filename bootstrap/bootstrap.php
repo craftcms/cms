@@ -7,9 +7,9 @@
  * @license   https://craftcms.com/license
  */
 
-use craft\app\dates\DateTime;
-use craft\app\helpers\ArrayHelper;
-use craft\app\helpers\Io;
+use craft\dates\DateTime;
+use craft\helpers\ArrayHelper;
+use craft\helpers\Io;
 
 // Setup
 // -----------------------------------------------------------------------------
@@ -198,7 +198,6 @@ require $vendorPath.'/yiisoft/yii2/Yii.php';
 require $appPath.'/Craft.php';
 
 // Set aliases
-Craft::setAlias('@craft/app', $appPath);
 Craft::setAlias('@config', $configPath);
 Craft::setAlias('@contentMigrations', $contentMigrationsPath);
 Craft::setAlias('@plugins', $pluginsPath);
@@ -231,11 +230,9 @@ if (file_exists($configPath.'/app.php')) {
     $config = ArrayHelper::merge($config, require $configPath.'/app.php');
 }
 
-$config['releaseDate'] = new DateTime('@'.$config['releaseDate']);
-
 // Initialize the application
-$class = 'craft\\app\\'.$appType.'\\Application';
-/** @var $app craft\app\web\Application|craft\app\console\Application */
+$class = 'craft\\'.$appType.'\\Application';
+/** @var $app craft\web\Application|craft\console\Application */
 $app = new $class($config);
 
 if ($appType === 'web') {

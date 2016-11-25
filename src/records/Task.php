@@ -5,12 +5,12 @@
  * @license   https://craftcms.com/license
  */
 
-namespace craft\app\records;
+namespace craft\records;
 
 use Craft;
-use craft\app\db\ActiveRecord;
-use craft\app\db\NestedSetsTrait;
-use craft\app\db\TaskQuery;
+use craft\db\ActiveRecord;
+use craft\db\NestedSetsTrait;
+use craft\db\TaskQuery;
 use creocoder\nestedsets\NestedSetsBehavior;
 
 /**

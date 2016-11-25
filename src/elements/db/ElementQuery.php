@@ -5,31 +5,31 @@
  * @license   https://craftcms.com/license
  */
 
-namespace craft\app\elements\db;
+namespace craft\elements\db;
 
 use ArrayAccess;
 use ArrayIterator;
 use Countable;
 use Craft;
-use craft\app\base\Element;
-use craft\app\base\ElementInterface;
-use craft\app\base\Field;
-use craft\app\base\FieldInterface;
+use craft\base\Element;
+use craft\base\ElementInterface;
+use craft\base\Field;
+use craft\base\FieldInterface;
 use /** @noinspection PhpUndefinedClassInspection */
-    craft\app\behaviors\ElementQueryBehavior;
+    craft\behaviors\ElementQueryBehavior;
 use /** @noinspection PhpUndefinedClassInspection */
-    craft\app\behaviors\ElementQueryTrait;
-use craft\app\db\Connection;
-use craft\app\db\FixedOrderExpression;
-use craft\app\db\Query;
-use craft\app\db\QueryAbortedException;
-use craft\app\events\Event;
-use craft\app\events\PopulateElementEvent;
-use craft\app\helpers\ArrayHelper;
-use craft\app\helpers\Db;
-use craft\app\helpers\ElementHelper;
-use craft\app\helpers\StringHelper;
-use craft\app\models\Site;
+    craft\behaviors\ElementQueryTrait;
+use craft\db\Connection;
+use craft\db\FixedOrderExpression;
+use craft\db\Query;
+use craft\db\QueryAbortedException;
+use craft\events\Event;
+use craft\events\PopulateElementEvent;
+use craft\helpers\ArrayHelper;
+use craft\helpers\Db;
+use craft\helpers\ElementHelper;
+use craft\helpers\StringHelper;
+use craft\models\Site;
 use IteratorAggregate;
 use yii\base\Arrayable;
 use yii\base\ArrayableTrait;
@@ -1285,8 +1285,8 @@ class ElementQuery extends Query implements ElementQueryInterface, Arrayable, Co
      * table will be selected by the query (for those that have one).
      *
      * If a field has its own column in the content table, but the column name is prefixed with something besides
-     * “field_”, make sure you set the `columnPrefix` attribute on the [[\craft\app\base\Field]], so
-     * [[\craft\app\services\Elements::buildElementsQuery()]] knows which column to select.
+     * “field_”, make sure you set the `columnPrefix` attribute on the [[\craft\base\Field]], so
+     * [[\craft\services\Elements::buildElementsQuery()]] knows which column to select.
      *
      * @return FieldInterface[] The fields that should take part in the upcoming elements query
      */

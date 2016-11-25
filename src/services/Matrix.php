@@ -5,27 +5,27 @@
  * @license   https://craftcms.com/license
  */
 
-namespace craft\app\services;
+namespace craft\services;
 
 use Craft;
-use craft\app\base\Element;
-use craft\app\base\ElementInterface;
-use craft\app\base\Field;
-use craft\app\db\Query;
-use craft\app\elements\db\MatrixBlockQuery;
-use craft\app\errors\MatrixBlockNotFoundException;
-use craft\app\errors\MatrixBlockTypeNotFoundException;
-use craft\app\fields\Matrix as MatrixField;
-use craft\app\helpers\Html;
-use craft\app\helpers\MigrationHelper;
-use craft\app\helpers\StringHelper;
-use craft\app\migrations\CreateMatrixContentTable;
-use craft\app\models\FieldLayout;
-use craft\app\models\FieldLayoutTab;
-use craft\app\elements\MatrixBlock;
-use craft\app\models\MatrixBlockType;
-use craft\app\records\MatrixBlock as MatrixBlockRecord;
-use craft\app\records\MatrixBlockType as MatrixBlockTypeRecord;
+use craft\base\Element;
+use craft\base\ElementInterface;
+use craft\base\Field;
+use craft\db\Query;
+use craft\elements\db\MatrixBlockQuery;
+use craft\errors\MatrixBlockNotFoundException;
+use craft\errors\MatrixBlockTypeNotFoundException;
+use craft\fields\Matrix as MatrixField;
+use craft\helpers\Html;
+use craft\helpers\MigrationHelper;
+use craft\helpers\StringHelper;
+use craft\migrations\CreateMatrixContentTable;
+use craft\models\FieldLayout;
+use craft\models\FieldLayoutTab;
+use craft\elements\MatrixBlock;
+use craft\models\MatrixBlockType;
+use craft\records\MatrixBlock as MatrixBlockRecord;
+use craft\records\MatrixBlockType as MatrixBlockTypeRecord;
 use yii\base\Component;
 use yii\base\Exception;
 

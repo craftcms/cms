@@ -5,11 +5,11 @@
  * @license   https://craftcms.com/license
  */
 
-namespace craft\app\tasks;
+namespace craft\tasks;
 
 use Craft;
-use craft\app\base\Task;
-use craft\app\db\Query;
+use craft\base\Task;
+use craft\db\Query;
 
 /**
  * LocalizeRelations represents a Localize Relations background task.

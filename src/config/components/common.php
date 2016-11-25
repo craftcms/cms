@@ -1,15 +1,10 @@
 <?php
 
-use craft\app\db\Connection;
-use craft\app\db\MigrationManager;
-use craft\app\errors\MissingComponentException;
-use craft\app\helpers\MailerHelper;
-use craft\app\helpers\Component;
-use craft\app\log\FileTarget;
-use craft\app\mail\transportadapters\Php;
-use craft\app\mail\transportadapters\TransportAdapterInterface;
-use craft\app\models\MailSettings;
-use craft\app\services\Config;
+use craft\db\Connection;
+use craft\db\MigrationManager;
+use craft\helpers\MailerHelper;
+use craft\log\FileTarget;
+use craft\services\Config;
 use yii\base\InvalidConfigException;
 use yii\log\Logger;
 
@@ -17,41 +12,41 @@ return [
     // Non-configured components
     // -------------------------------------------------------------------------
 
-    'assets' => craft\app\services\Assets::class,
-    'assetIndexer' => craft\app\services\AssetIndexer::class,
-    'assetTransforms' => craft\app\services\AssetTransforms::class,
-    'categories' => craft\app\services\Categories::class,
-    'config' => craft\app\services\Config::class,
-    'content' => craft\app\services\Content::class,
-    'dashboard' => craft\app\services\Dashboard::class,
-    'deprecator' => craft\app\services\Deprecator::class,
-    'elementIndexes' => craft\app\services\ElementIndexes::class,
-    'elements' => craft\app\services\Elements::class,
-    'entries' => craft\app\services\Entries::class,
-    'entryRevisions' => craft\app\services\EntryRevisions::class,
-    'et' => craft\app\services\Et::class,
-    'feeds' => craft\app\services\Feeds::class,
-    'fields' => craft\app\services\Fields::class,
-    'globals' => craft\app\services\Globals::class,
-    'images' => craft\app\services\Images::class,
+    'assets' => craft\services\Assets::class,
+    'assetIndexer' => craft\services\AssetIndexer::class,
+    'assetTransforms' => craft\services\AssetTransforms::class,
+    'categories' => craft\services\Categories::class,
+    'config' => craft\services\Config::class,
+    'content' => craft\services\Content::class,
+    'dashboard' => craft\services\Dashboard::class,
+    'deprecator' => craft\services\Deprecator::class,
+    'elementIndexes' => craft\services\ElementIndexes::class,
+    'elements' => craft\services\Elements::class,
+    'entries' => craft\services\Entries::class,
+    'entryRevisions' => craft\services\EntryRevisions::class,
+    'et' => craft\services\Et::class,
+    'feeds' => craft\services\Feeds::class,
+    'fields' => craft\services\Fields::class,
+    'globals' => craft\services\Globals::class,
+    'images' => craft\services\Images::class,
     'imageEffects' => craft\app\services\ImageEffects::class,
-    'matrix' => craft\app\services\Matrix::class,
-    'path' => craft\app\services\Path::class,
-    'plugins' => craft\app\services\Plugins::class,
-    'relations' => craft\app\services\Relations::class,
-    'routes' => craft\app\services\Routes::class,
-    'search' => craft\app\services\Search::class,
-    'sections' => craft\app\services\Sections::class,
-    'security' => craft\app\services\Security::class,
-    'structures' => craft\app\services\Structures::class,
-    'tags' => craft\app\services\Tags::class,
-    'tasks' => craft\app\services\Tasks::class,
-    'templateCaches' => craft\app\services\TemplateCaches::class,
-    'tokens' => craft\app\services\Tokens::class,
-    'updates' => craft\app\services\Updates::class,
-    'users' => craft\app\services\Users::class,
-    'view' => craft\app\web\View::class,
-    'volumes' => craft\app\services\Volumes::class,
+    'matrix' => craft\services\Matrix::class,
+    'path' => craft\services\Path::class,
+    'plugins' => craft\services\Plugins::class,
+    'relations' => craft\services\Relations::class,
+    'routes' => craft\services\Routes::class,
+    'search' => craft\services\Search::class,
+    'sections' => craft\services\Sections::class,
+    'security' => craft\services\Security::class,
+    'structures' => craft\services\Structures::class,
+    'tags' => craft\services\Tags::class,
+    'tasks' => craft\services\Tasks::class,
+    'templateCaches' => craft\services\TemplateCaches::class,
+    'tokens' => craft\services\Tokens::class,
+    'updates' => craft\services\Updates::class,
+    'users' => craft\services\Users::class,
+    'view' => craft\web\View::class,
+    'volumes' => craft\services\Volumes::class,
 
     // Configured components
     // -------------------------------------------------------------------------
@@ -65,19 +60,19 @@ return [
     'migrator' => [
         'class' => MigrationManager::class,
         'type' => MigrationManager::TYPE_APP,
-        'migrationNamespace' => 'craft\app\migrations',
+        'migrationNamespace' => 'craft\migrations',
         'migrationPath' => '@app/migrations',
     ],
     'resources' => [
-        'class' => craft\app\services\Resources::class,
+        'class' => craft\services\Resources::class,
         'dateParam' => 'd',
     ],
     'sites' => [
-        'class' => craft\app\services\Sites::class,
+        'class' => craft\services\Sites::class,
         'currentSite' => null,
     ],
     'systemSettings' => [
-        'class' => craft\app\services\SystemSettings::class,
+        'class' => craft\services\SystemSettings::class,
         'defaults' => [
             'users' => [
                 'requireEmailVerification' => true,
@@ -88,24 +83,24 @@ return [
         ]
     ],
     'i18n' => [
-        'class' => craft\app\i18n\I18N::class,
+        'class' => craft\i18n\I18N::class,
         'translations' => [
             'yii' => [
-                'class' => craft\app\i18n\PhpMessageSource::class,
+                'class' => craft\i18n\PhpMessageSource::class,
                 'sourceLanguage' => 'en-US',
                 'basePath' => '@yii/messages',
                 'forceTranslation' => true,
                 'allowOverrides' => true,
             ],
             'app' => [
-                'class' => craft\app\i18n\PhpMessageSource::class,
+                'class' => craft\i18n\PhpMessageSource::class,
                 'sourceLanguage' => 'en-US',
                 'basePath' => '@app/translations',
                 'forceTranslation' => true,
                 'allowOverrides' => true,
             ],
             'site' => [
-                'class' => craft\app\i18n\PhpMessageSource::class,
+                'class' => craft\i18n\PhpMessageSource::class,
                 'sourceLanguage' => 'en-US',
                 'basePath' => '@translations',
                 'forceTranslation' => true,
@@ -120,7 +115,7 @@ return [
         $configService = Craft::$app->getConfig();
 
         $config = [
-            'class' => craft\app\web\AssetManager::class,
+            'class' => craft\web\AssetManager::class,
             'basePath' => $configService->get('resourceBasePath'),
             'baseUrl' => $configService->get('resourceBaseUrl')
         ];
@@ -148,7 +143,7 @@ return [
                 break;
             case 'file':
                 $config = [
-                    'class' => craft\app\cache\FileCache::class,
+                    'class' => craft\cache\FileCache::class,
                     'cachePath' => $configService->get('cachePath', Config::CATEGORY_FILECACHE),
                     'gcProbability' => $configService->get('gcProbability', Config::CATEGORY_FILECACHE),
                 ];
@@ -207,16 +202,15 @@ return [
         }
 
         $config = [
-            'class' => craft\app\db\Connection::class,
+            'class' => craft\db\Connection::class,
             'dsn' => $dsn,
-            'emulatePrepare' => true,
             'username' => $configService->get('user', Config::CATEGORY_DB),
             'password' => $configService->get('password', Config::CATEGORY_DB),
             'charset' => $configService->get('charset', Config::CATEGORY_DB),
             'tablePrefix' => $configService->getDbTablePrefix(),
             'schemaMap' => [
-                'mysql' => craft\app\db\mysql\Schema::class,
-                'pgsql' => craft\app\db\pgsql\Schema::class,
+                'mysql' => craft\db\mysql\Schema::class,
+                'pgsql' => craft\db\pgsql\Schema::class,
             ],
             'attributes' => $configService->get('attributes', Config::CATEGORY_DB),
         ];

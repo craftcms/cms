@@ -5,14 +5,14 @@
  * @license   https://craftcms.com/license
  */
 
-namespace craft\app\models;
+namespace craft\models;
 
 use Craft;
-use craft\app\base\Model;
-use craft\app\records\AssetTransform as AssetTransformRecord;
-use craft\app\validators\DateTimeValidator;
-use craft\app\validators\HandleValidator;
-use craft\app\validators\UniqueValidator;
+use craft\base\Model;
+use craft\records\AssetTransform as AssetTransformRecord;
+use craft\validators\DateTimeValidator;
+use craft\validators\HandleValidator;
+use craft\validators\UniqueValidator;
 
 /**
  * The AssetTransform model class.

@@ -1,15 +1,15 @@
 <?php
 
-namespace craft\app\migrations;
+namespace craft\migrations;
 
 use Craft;
-use craft\app\db\Migration;
-use craft\app\db\Query;
-use craft\app\helpers\ElementHelper;
-use craft\app\helpers\Image;
-use craft\app\helpers\Io;
-use craft\app\helpers\Json;
-use craft\app\helpers\StringHelper;
+use craft\db\Migration;
+use craft\db\Query;
+use craft\helpers\ElementHelper;
+use craft\helpers\Image;
+use craft\helpers\Io;
+use craft\helpers\Json;
+use craft\helpers\StringHelper;
 
 /**
  * m160804_110002_userphotos_to_assets migration.
@@ -162,7 +162,7 @@ class m160804_110002_userphotos_to_assets extends Migration
             ->max('[[sortOrder]]');
 
         $volumeData = [
-            'type' => 'craft\app\volumes\Local',
+            'type' => 'craft\volumes\Local',
             'name' => $name,
             'handle' => $handle,
             'hasUrls' => null,
@@ -251,7 +251,7 @@ class m160804_110002_userphotos_to_assets extends Migration
 
             if (!$assetExists && Io::fileExists($filePath)) {
                 $elementData = [
-                    'type' => 'craft\app\elements\Asset',
+                    'type' => 'craft\elements\Asset',
                     'enabled' => 1,
                     'archived' => 0
                 ];

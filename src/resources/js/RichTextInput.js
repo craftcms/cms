@@ -41,6 +41,7 @@
 				this.redactorConfig.fileUpload = true;
 				this.redactorConfig.dragImageUpload = false;
 				this.redactorConfig.dragFileUpload = false;
+				this.redactorConfig.toolbarFixedTopOffset = 72;
 
 				// Prevent a JS error when calling core.destroy() when opts.plugins == false
 				if (typeof this.redactorConfig.plugins !== typeof [])
@@ -256,7 +257,7 @@
 
 				if (typeof this.assetSelectionModal == 'undefined')
 				{
-					this.assetSelectionModal = Craft.createElementSelectorModal('craft\\app\\elements\\Asset', {
+					this.assetSelectionModal = Craft.createElementSelectorModal('craft\\elements\\Asset', {
 						storageKey: 'RichTextFieldType.ChooseImage',
 						multiSelect: true,
 						sources: this.volumes,
@@ -298,7 +299,7 @@
 
 				if (typeof this.assetLinkSelectionModal == 'undefined')
 				{
-					this.assetLinkSelectionModal = Craft.createElementSelectorModal('craft\\app\\elements\\Asset', {
+					this.assetLinkSelectionModal = Craft.createElementSelectorModal('craft\\elements\\Asset', {
 						storageKey: 'RichTextFieldType.LinkToAsset',
 						sources: this.volumes,
 						criteria: { siteId: this.elementSiteId },

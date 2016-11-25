@@ -5,7 +5,7 @@
  * @license   https://craftcms.com/license
  */
 
-namespace craft\app\web;
+namespace craft\web;
 
 use Craft;
 
@@ -94,7 +94,7 @@ class Session extends \yii\web\Session
      * Stores a JS file from resources/ in the user’s flash data.
      *
      * The file will be stored on the session, and can be retrieved by calling [[getJsResourceFlashes()]] or
-     * [[\craft\app\web\View::getBodyHtml()]].
+     * [[\craft\web\View::getBodyHtml()]].
      *
      * @param string $resource The resource path to the JS file.
      *
@@ -126,7 +126,7 @@ class Session extends \yii\web\Session
      * Stores JS in the user’s flash data.
      *
      * The Javascript code will be stored on the session, and can be retrieved by calling
-     * [[getJsFlashes()]] or [[\craft\app\web\View::getBodyHtml()]].
+     * [[getJsFlashes()]] or [[\craft\web\View::getBodyHtml()]].
      *
      * @param string $js The Javascript code.
      *

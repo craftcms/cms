@@ -5,17 +5,17 @@
  * @license   https://craftcms.com/license
  */
 
-namespace craft\app\controllers;
+namespace craft\controllers;
 
 use Craft;
-use craft\app\base\Element;
-use craft\app\base\ElementAction;
-use craft\app\base\ElementActionInterface;
-use craft\app\elements\db\ElementQuery;
-use craft\app\elements\db\ElementQueryInterface;
-use craft\app\base\ElementInterface;
-use craft\app\events\ElementActionEvent;
-use craft\app\helpers\ElementHelper;
+use craft\base\Element;
+use craft\base\ElementAction;
+use craft\base\ElementActionInterface;
+use craft\elements\db\ElementQuery;
+use craft\elements\db\ElementQueryInterface;
+use craft\base\ElementInterface;
+use craft\events\ElementActionEvent;
+use craft\helpers\ElementHelper;
 use yii\web\BadRequestHttpException;
 use yii\web\ForbiddenHttpException;
 use yii\web\Response;

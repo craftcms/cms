@@ -5,9 +5,9 @@
  * @license   https://craftcms.com/license
  */
 
-namespace craft\app\events;
+namespace craft\events;
 
-use craft\app\elements\db\ElementQueryInterface;
+use craft\elements\db\ElementQueryInterface;
 
 /**
  * Set Status element action event class.

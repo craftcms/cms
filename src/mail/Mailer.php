@@ -5,12 +5,12 @@
  * @license   https://craftcms.com/license
  */
 
-namespace craft\app\mail;
+namespace craft\mail;
 
 use Craft;
-use craft\app\elements\User;
-use craft\app\errors\SendEmailException;
-use craft\app\events\MailFailureEvent;
+use craft\elements\User;
+use craft\errors\SendEmailException;
+use craft\events\MailFailureEvent;
 use yii\base\InvalidConfigException;
 use yii\helpers\Markdown;
 
@@ -38,7 +38,7 @@ class Mailer extends \yii\swiftmailer\Mailer
     /**
      * @var string The default message class name
      */
-    public $messageClass = \craft\app\mail\Message::class;
+    public $messageClass = \craft\mail\Message::class;
 
     /**
      * @var string The email template that should be used
@@ -79,7 +79,7 @@ class Mailer extends \yii\swiftmailer\Mailer
         $message = $this->createMessage();
 
         if (!$message instanceof Message) {
-            throw new InvalidConfigException('Mailer must be configured to create messages with craft\app\mail\Message (or a subclass).');
+            throw new InvalidConfigException('Mailer must be configured to create messages with craft\mail\Message (or a subclass).');
         }
 
         $message->key = $key;

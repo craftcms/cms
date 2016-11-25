@@ -5,12 +5,12 @@
  * @license   https://craftcms.com/license
  */
 
-namespace craft\app\models;
+namespace craft\models;
 
 use Craft;
-use craft\app\base\Field;
-use craft\app\base\FieldInterface;
-use craft\app\base\Model;
+use craft\base\Field;
+use craft\base\FieldInterface;
+use craft\base\Model;
 
 /**
  * FieldLayoutTab model class.

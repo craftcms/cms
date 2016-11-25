@@ -5,7 +5,7 @@
  * @license   https://craftcms.com/license
  */
 
-namespace craft\app\web\assets;
+namespace craft\web\assets;
 
 use Craft;
 use yii\web\AssetBundle;

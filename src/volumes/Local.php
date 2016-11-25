@@ -1,11 +1,11 @@
 <?php
-namespace craft\app\volumes;
+namespace craft\volumes;
 
 use Craft;
-use craft\app\base\Volume;
-use craft\app\errors\VolumeObjectExistsException;
-use craft\app\errors\VolumeObjectNotFoundException;
-use craft\app\helpers\Io;
+use craft\base\Volume;
+use craft\errors\VolumeObjectExistsException;
+use craft\errors\VolumeObjectNotFoundException;
+use craft\helpers\Io;
 use League\Flysystem\Adapter\Local as LocalAdapter;
 use League\Flysystem\FileExistsException;
 use League\Flysystem\FileNotFoundException;

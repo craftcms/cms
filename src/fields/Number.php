@@ -5,15 +5,15 @@
  * @license   https://craftcms.com/license
  */
 
-namespace craft\app\fields;
+namespace craft\fields;
 
 use Craft;
-use craft\app\base\Element;
-use craft\app\base\Field;
-use craft\app\base\PreviewableFieldInterface;
-use craft\app\helpers\Db;
-use craft\app\helpers\Localization;
-use craft\app\i18n\Locale;
+use craft\base\Element;
+use craft\base\Field;
+use craft\base\PreviewableFieldInterface;
+use craft\helpers\Db;
+use craft\helpers\Localization;
+use craft\i18n\Locale;
 
 /**
  * Number represents a Number field.

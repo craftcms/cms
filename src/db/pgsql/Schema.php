@@ -5,11 +5,12 @@
  * @license   https://craftcms.com/license
  */
 
-namespace craft\app\db\pgsql;
+namespace craft\db\pgsql;
 
 use Craft;
-use craft\app\services\Config;
+use craft\services\Config;
 use yii\db\Exception;
+use yii\db\TableSchema;
 
 /**
  * @inheritdoc
@@ -151,5 +152,72 @@ class Schema extends \yii\db\pgsql\Schema
             ' --username={user}'.
             ' --no-password'.
             ' < {file}';
+    }
+
+    /**
+     * Returns all indexes for the given table. Each array element is of the following structure:
+     *
+     * ```php
+     * [
+     *     'IndexName1' => ['col1' [, ...]],
+     *     'IndexName2' => ['col2' [, ...]],
+     * ]
+     * ```
+     *
+     * @param string $tableName The name of the table to get the indexes for.
+     *
+     * @return array All indexes for the given table.
+     */
+    public function findIndexes($tableName)
+    {
+        $tableName = Craft::$app->getDb()->getSchema()->getRawTableName($tableName);
+        $table = Craft::$app->getDb()->getSchema()->getTableSchema($tableName);
+        $indexes = [];
+
+        $rows = $this->getIndexInformation($table);
+
+        foreach ($rows as $row) {
+            $column = $row['columnname'];
+
+            if (!empty($column) && $column[0] === '"') {
+                // postgres will quote names that are not lowercase-only
+                // https://github.com/yiisoft/yii2/issues/10613
+                $column = substr($column, 1, -1);
+            }
+            $indexes[$row['indexname']][] = $column;
+        }
+
+        return $indexes;
+    }
+
+    /**
+     * Gets information about given table indexes.
+     *
+     * @param TableSchema $table The table metadata
+     *
+     * @return array Index and column names
+     */
+    protected function getIndexInformation($table)
+    {
+        $sql = <<<SQL
+SELECT
+    i.relname as indexname,
+    pg_get_indexdef(idx.indexrelid, k + 1, TRUE) AS columnname
+FROM (
+  SELECT *, generate_subscripts(indkey, 1) AS k
+  FROM pg_index
+) idx
+INNER JOIN pg_class i ON i.oid = idx.indexrelid
+INNER JOIN pg_class c ON c.oid = idx.indrelid
+INNER JOIN pg_namespace ns ON c.relnamespace = ns.oid
+WHERE c.relname = :tableName AND ns.nspname = :schemaName
+AND idx.indisprimary = FALSE 
+ORDER BY i.relname, k
+SQL;
+
+        return $this->db->createCommand($sql, [
+            ':schemaName' => $table->schemaName,
+            ':tableName' => $table->name,
+        ])->queryAll();
     }
 }

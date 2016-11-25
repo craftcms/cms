@@ -5,21 +5,21 @@
  * @license   https://craftcms.com/license
  */
 
-namespace craft\app\elements;
+namespace craft\elements;
 
 use Craft;
-use craft\app\base\Element;
-use craft\app\controllers\ElementIndexesController;
-use craft\app\db\Query;
-use craft\app\elements\actions\Delete;
-use craft\app\elements\actions\Edit;
-use craft\app\elements\actions\NewChild;
-use craft\app\elements\actions\SetStatus;
-use craft\app\elements\actions\View;
-use craft\app\elements\db\CategoryQuery;
-use craft\app\helpers\Url;
-use craft\app\models\CategoryGroup;
-use craft\app\records\Category as CategoryRecord;
+use craft\base\Element;
+use craft\controllers\ElementIndexesController;
+use craft\db\Query;
+use craft\elements\actions\Delete;
+use craft\elements\actions\Edit;
+use craft\elements\actions\NewChild;
+use craft\elements\actions\SetStatus;
+use craft\elements\actions\View;
+use craft\elements\db\CategoryQuery;
+use craft\helpers\Url;
+use craft\models\CategoryGroup;
+use craft\records\Category as CategoryRecord;
 use yii\base\Exception;
 use yii\base\InvalidConfigException;
 

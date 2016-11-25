@@ -5,7 +5,7 @@
  * @license   https://craftcms.com/license
  */
 
-namespace craft\app\base;
+namespace craft\base;
 
 /**
  * Serializable is the interface that should be implemented by classes who want to support customizable representation of their instances

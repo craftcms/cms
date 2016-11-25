@@ -5,11 +5,11 @@
  * @license   https://craftcms.com/license
  */
 
-namespace craft\app\helpers;
+namespace craft\helpers;
 
 use Craft;
-use craft\app\db\DbBackup;
-use craft\app\enums\PatchManifestFileAction;
+use craft\db\DbBackup;
+use craft\enums\PatchManifestFileAction;
 use yii\base\Exception;
 
 /**
@@ -181,31 +181,7 @@ class Update
      */
     public static function isManifestVersionInfoLine($line)
     {
-        if ($line[0] == '#' && $line[1] == '#') {
-            return true;
-        }
-
-        return false;
-    }
-
-    /**
-     * Returns the local build number from the given manifest file.
-     *
-     * @param $manifestData
-     *
-     * @return boolean|string
-     */
-    public static function getLocalBuildFromManifest($manifestData)
-    {
-        if (static::isManifestVersionInfoLine($manifestData[0])) {
-            $parts = explode(';', $manifestData[0]);
-            $index = mb_strrpos($parts[0], '.');
-            $version = mb_substr($parts[0], $index + 1);
-
-            return $version;
-        }
-
-        return false;
+        return strncmp($line, '##', 2) === 0;
     }
 
     /**
@@ -217,15 +193,13 @@ class Update
      */
     public static function getLocalVersionFromManifest($manifestData)
     {
-        if (static::isManifestVersionInfoLine($manifestData[0])) {
-            $parts = explode(';', $manifestData[0]);
-            $index = mb_strrpos($parts[0], '.');
-            $build = mb_substr($parts[0], 2, $index - 2);
-
-            return $build;
+        if (!static::isManifestVersionInfoLine($manifestData[0])) {
+            return false;
         }
 
-        return false;
+        preg_match('/^##(.*);/', $manifestData[0], $matches);
+
+        return $matches[1];
     }
 
     /**
@@ -245,7 +219,7 @@ class Update
     }
 
     /**
-     * Returns the relevant lines from the update manifest file starting with the current local version/build.
+     * Returns the relevant lines from the update manifest file starting with the current local version.
      *
      * @param string $manifestDataPath
      * @param string $handle
@@ -276,7 +250,7 @@ class Update
                 $localVersion = null;
 
                 if ($handle == 'craft') {
-                    $localVersion = $updateModel->app->localVersion.'.'.$updateModel->app->localBuild;
+                    $localVersion = $updateModel->app->localVersion;
                 } else {
                     foreach ($updateModel->plugins as $plugin) {
                         if (strtolower($plugin->class) == $handle) {

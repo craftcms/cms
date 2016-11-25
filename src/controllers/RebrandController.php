@@ -5,14 +5,14 @@
  * @license   https://craftcms.com/license
  */
 
-namespace craft\app\controllers;
+namespace craft\controllers;
 
 use Craft;
-use craft\app\helpers\Assets;
-use craft\app\helpers\Image;
-use craft\app\helpers\Io;
-use craft\app\web\Controller;
-use craft\app\web\UploadedFile;
+use craft\helpers\Assets;
+use craft\helpers\Image;
+use craft\helpers\Io;
+use craft\web\Controller;
+use craft\web\UploadedFile;
 use yii\web\BadRequestHttpException;
 use yii\web\Response;
 

@@ -24,6 +24,7 @@ body { overflow-x: hidden; }
 #global-sidebar { transition: all .25s ease-in-out; -webkit-transition: all .25s ease-in-out;
 	overflow-y: scroll; /* has to be scroll, not auto */
 	-webkit-overflow-scrolling: touch;
+	z-index: 13;
 }
 
 .topbar { @include display-flex; @include align-items(stretch); }
@@ -165,19 +166,9 @@ body.mobile #container {
 #nav li a .icon svg { width: 16px; max-height: 16px; @include svg-mask(#fff); }
 #nav li:not(.has-subnav) a.sel  .icon { opacity: 1; }
 
-/* HIDE */
-#customize-nav-btn span { display: none; }
-#overflow-nav #customize-nav-btn span { display: inline-block; }
-/* end HIDE */
-
 #global-sidebar #nav li a .badge,
 #overflow-nav li a .badge { display: inline-block; position: relative; top: -6px; border-radius: 6px; padding: 0 3px; font-size: 10px; line-height: 12px; color: #fff; background: $submitcolor; }
 #overflow-nav li a:hover .badge { color: $headerBgColor; }
-
-/* HIDE */
-#overflow-nav li a { @include padding-left(30px); }
-#overflow-nav li#customize-nav-btn a:before { @include floatleft; @include margin-left(-21px); }
-/* end HIDE */
 
 /* notifications */
 #notifications-wrapper { position: fixed; z-index: 101; @include left(0); width: 100%; }
@@ -200,6 +191,12 @@ body.mobile #container {
 
 /* page header */
 #page-header { @include display-flex; @include justify-content(space-between); position: relative; z-index: 1; padding: 20px 24px; }
+#page-header.fixed { position: fixed; z-index: 12; right: 0; left: 220px; top: 0; background: $bgcolor; border-bottom: 1px solid rgba(0,0,0,0.05); }
+
+@media only screen and (max-width: 992px)
+{
+	#page-header.fixed { left: 0; }
+}
 
 #page-header #page-title { @include flex-grow(1); color: $submitcolor; }
 #page-header #page-title { overflow: hidden; text-overflow: ellipsis;  }
@@ -442,7 +439,7 @@ $fldGuideColor: #f4f3fb;
 .show-sidebar:hover { text-decoration: none; background: #fcfcfc; }
 .show-sidebar:after { @include icon; font-size: 16px; width: 43px; line-height: 20px; content: '▼'; @include floatright; @include margin-right(-24px); }
 
-.sidebar { position: absolute; width: 220px; padding: 24px; overflow: auto; background: $lightBgColor; @include box-sizing(border-box); }
+.sidebar { position: absolute; top: 0; width: 220px; padding: 24px; overflow: auto; background: $lightBgColor; @include box-sizing(border-box); }
 .sidebar { @include margin(-24px, 0, -24px, -242px); }
 
 .content.has-sidebar:not(.hiding-sidebar) { @include margin-left(218px); }

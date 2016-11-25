@@ -1597,6 +1597,10 @@ body #redactor-modal footer button:first-child { border-bottom-left-radius: 3px;
 
 body #redactor-modal footer button:last-child { border-bottom-right-radius: 3px; }
 
+body .redactor-link-tooltip { z-index: 101; }
+
+body .redactor-toolbar { z-index: 102; }
+
 /** Selects  Waiting on this bug to get fixed before Firefox gets our fancy selects: https://bugzilla.mozilla.org/show_bug.cgi?id=649849 */
 @media screen and (-webkit-min-device-pixel-ratio: 0) { .select:not(.selectize), .select:not(.selectize) select { position: relative; border-radius: 3px; white-space: nowrap; }
   .select:not(.selectize) { display: inline-block; position: relative; background-image: -webkit-linear-gradient(#fff, #fafafa); background-image: -moz-linear-gradient(#fff, #fafafa); background-image: -ms-linear-gradient(#fff, #fafafa); background-image: -o-linear-gradient(#fff, #fafafa); background-image: linear-gradient(#fff, #fafafa); -webkit-box-shadow: inset 0 0 0 1px rgba(0, 0, 0, 0.1), 0 0px 3px rgba(0, 0, 0, 0.07); -moz-box-shadow: inset 0 0 0 1px rgba(0, 0, 0, 0.1), 0 0px 3px rgba(0, 0, 0, 0.07); box-shadow: inset 0 0 0 1px rgba(0, 0, 0, 0.1), 0 0px 3px rgba(0, 0, 0, 0.07); }
@@ -1901,7 +1905,7 @@ body.rtl #alerts li:before { margin: -1px 0 0 3px ; }
 #alerts li a.go:hover { border-color: #fff; -webkit-transition: border-color linear 100ms; -moz-transition: border-color linear 100ms; -ms-transition: border-color linear 100ms; transition: border-color linear 100ms; }
 
 /* Shared sidebar/container styles */
-#container, #global-sidebar { transition: all .25s ease-in-out; -webkit-transition: all .25s ease-in-out; overflow-y: scroll; /* has to be scroll, not auto */ -webkit-overflow-scrolling: touch; }
+#container, #global-sidebar { transition: all .25s ease-in-out; -webkit-transition: all .25s ease-in-out; overflow-y: scroll; /* has to be scroll, not auto */ -webkit-overflow-scrolling: touch; z-index: 13; }
 
 .topbar { display: -webkit-box; display: -moz-box; display: -ms-flexbox; display: -webkit-flex; display: flex; -ms-flex-align: stretch; align-items: stretch; }
 
@@ -2093,26 +2097,10 @@ body.rtl #nav li a .icon { margin-left: 10px; }
 
 #nav li:not(.has-subnav) a.sel .icon { opacity: 1; }
 
-/* HIDE */
-#customize-nav-btn span { display: none; }
-
-#overflow-nav #customize-nav-btn span { display: inline-block; }
-
-/* end HIDE */
 #global-sidebar #nav li a .badge, #overflow-nav li a .badge { display: inline-block; position: relative; top: -6px; border-radius: 6px; padding: 0 3px; font-size: 10px; line-height: 12px; color: #fff; background: #da5a47; }
 
 #overflow-nav li a:hover .badge { color: #333f4d; }
 
-/* HIDE */
-body.ltr #overflow-nav li a { padding-left: 30px; }
-body.rtl #overflow-nav li a { padding-right: 30px; }
-
-body.ltr #overflow-nav li#customize-nav-btn a:before { float: left; }
-body.rtl #overflow-nav li#customize-nav-btn a:before { float: right; }
-body.ltr #overflow-nav li#customize-nav-btn a:before { margin-left: -21px; }
-body.rtl #overflow-nav li#customize-nav-btn a:before { margin-right: -21px; }
-
-/* end HIDE */
 /* notifications */
 #notifications-wrapper { position: fixed; z-index: 101; width: 100%; }
 body.ltr #notifications-wrapper { left: 0; }
@@ -2139,6 +2127,9 @@ body.rtl #container .topbar .show-nav { margin-right: -24px; }
 /* page header */
 #page-header { display: -webkit-box; display: -moz-box; display: -ms-flexbox; display: -webkit-flex; display: flex; -ms-flex-align: justify; justify-content: space-between; position: relative; z-index: 1; padding: 20px 24px; }
 
+#page-header.fixed { position: fixed; z-index: 12; right: 0; left: 220px; top: 0; background: #ebedef; border-bottom: 1px solid rgba(0, 0, 0, 0.05); }
+
+@media only screen and (max-width: 992px) { #page-header.fixed { left: 0; } }
 #page-header #page-title { flex-grow: 1; -ms-flex: 1; color: #da5a47; }
 
 #page-header #page-title { overflow: hidden; text-overflow: ellipsis; }
@@ -2499,7 +2490,7 @@ body.rtl .show-sidebar:after { float: left; }
 body.ltr .show-sidebar:after { margin-right: -24px; }
 body.rtl .show-sidebar:after { margin-left: -24px; }
 
-.sidebar { position: absolute; width: 220px; padding: 24px; overflow: auto; background: #fafafa; -webkit-box-sizing: border-box; -moz-box-sizing: border-box; box-sizing: border-box; }
+.sidebar { position: absolute; top: 0; width: 220px; padding: 24px; overflow: auto; background: #fafafa; -webkit-box-sizing: border-box; -moz-box-sizing: border-box; box-sizing: border-box; }
 
 body.ltr .sidebar { margin: -24px 0 -24px -242px ; }
 body.rtl .sidebar { margin: -24px -242px -24px 0 ; }

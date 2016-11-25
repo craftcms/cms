@@ -5,19 +5,19 @@
  * @license   https://craftcms.com/license
  */
 
-namespace craft\app\elements;
+namespace craft\elements;
 
 use Craft;
-use craft\app\base\Element;
-use craft\app\base\ElementInterface;
-use craft\app\base\Field;
-use craft\app\elements\db\ElementQueryInterface;
-use craft\app\elements\db\MatrixBlockQuery;
-use craft\app\fields\Matrix;
-use craft\app\helpers\ElementHelper;
-use craft\app\models\MatrixBlockType;
-use craft\app\records\MatrixBlock as MatrixBlockRecord;
-use craft\app\validators\SiteIdValidator;
+use craft\base\Element;
+use craft\base\ElementInterface;
+use craft\base\Field;
+use craft\elements\db\ElementQueryInterface;
+use craft\elements\db\MatrixBlockQuery;
+use craft\fields\Matrix;
+use craft\helpers\ElementHelper;
+use craft\models\MatrixBlockType;
+use craft\records\MatrixBlock as MatrixBlockRecord;
+use craft\validators\SiteIdValidator;
 use yii\base\Exception;
 use yii\base\InvalidConfigException;
 

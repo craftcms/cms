@@ -5,12 +5,12 @@
  * @license   https://craftcms.com/license
  */
 
-namespace craft\app\controllers;
+namespace craft\controllers;
 
 use Craft;
-use craft\app\helpers\App;
-use craft\app\helpers\Template;
-use craft\app\web\Controller;
+use craft\helpers\App;
+use craft\helpers\Template;
+use craft\web\Controller;
 use ErrorException;
 use yii\web\HttpException;
 use yii\web\NotFoundHttpException;

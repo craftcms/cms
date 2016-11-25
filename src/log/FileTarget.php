@@ -5,9 +5,9 @@
  * @license   https://craftcms.com/license
  */
 
-namespace craft\app\log;
+namespace craft\log;
 
-use craft\app\helpers\Logging;
+use craft\helpers\Logging;
 
 /**
  * Class FileTarget

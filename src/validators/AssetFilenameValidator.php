@@ -5,13 +5,13 @@
  * @license   https://craftcms.com/license
  */
 
-namespace craft\app\validators;
+namespace craft\validators;
 
 use Craft;
-use craft\app\elements\Asset;
-use craft\app\helpers\Assets as AssetsHelper;
-use craft\app\helpers\Db;
-use craft\app\helpers\Io;
+use craft\elements\Asset;
+use craft\helpers\Assets as AssetsHelper;
+use craft\helpers\Db;
+use craft\helpers\Io;
 use yii\validators\Validator;
 
 /**

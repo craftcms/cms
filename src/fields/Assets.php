@@ -5,25 +5,25 @@
  * @license   https://craftcms.com/license
  */
 
-namespace craft\app\fields;
+namespace craft\fields;
 
 // @TODO asset source -> volume in settings and everywhere.
 
 use Craft;
-use craft\app\base\Element;
-use craft\app\base\ElementInterface;
-use craft\app\elements\Asset;
-use craft\app\elements\db\AssetQuery;
-use craft\app\elements\db\ElementQuery;
-use craft\app\errors\AssetConflictException;
-use craft\app\errors\InvalidSubpathException;
-use craft\app\errors\InvalidVolumeException;
-use craft\app\helpers\Assets as AssetsHelper;
-use craft\app\helpers\Db;
-use craft\app\helpers\Io;
-use craft\app\helpers\StringHelper;
-use craft\app\models\VolumeFolder;
-use craft\app\web\UploadedFile;
+use craft\base\Element;
+use craft\base\ElementInterface;
+use craft\elements\Asset;
+use craft\elements\db\AssetQuery;
+use craft\elements\db\ElementQuery;
+use craft\errors\AssetConflictException;
+use craft\errors\InvalidSubpathException;
+use craft\errors\InvalidVolumeException;
+use craft\helpers\Assets as AssetsHelper;
+use craft\helpers\Db;
+use craft\helpers\Io;
+use craft\helpers\StringHelper;
+use craft\models\VolumeFolder;
+use craft\web\UploadedFile;
 use yii\helpers\FileHelper;
 
 /**

@@ -5,7 +5,7 @@
  * @license   https://craftcms.com/license
  */
 
-namespace craft\app\enums;
+namespace craft\enums;
 
 /**
  * The VersionUpdateStatus class is an abstract class that defines the different update status states available in Craft.

@@ -5,14 +5,14 @@
  * @license   https://craftcms.com/license
  */
 
-namespace craft\app\image;
+namespace craft\image;
 
 use Craft;
-use craft\app\base\Image;
-use craft\app\errors\ImageException;
-use craft\app\helpers\Image as ImageHelper;
-use craft\app\helpers\Io;
-use craft\app\helpers\StringHelper;
+use craft\base\Image;
+use craft\errors\ImageException;
+use craft\helpers\Image as ImageHelper;
+use craft\helpers\Io;
+use craft\helpers\StringHelper;
 use Imagine\Exception\NotSupportedException;
 use Imagine\Exception\RuntimeException;
 use Imagine\Gd\Imagine as GdImagine;

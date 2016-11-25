@@ -5,7 +5,7 @@
  * @license   https://craftcms.com/license
  */
 
-namespace craft\app\web\twig\nodes;
+namespace craft\web\twig\nodes;
 
 /**
  * Class RequirePermissionNode

@@ -5,9 +5,9 @@
  * @license   https://craftcms.com/license
  */
 
-namespace craft\app\web\twig\nodes;
+namespace craft\web\twig\nodes;
 
-use craft\app\helpers\StringHelper;
+use craft\helpers\StringHelper;
 
 /**
  * Cache twig node.

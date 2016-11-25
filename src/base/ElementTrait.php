@@ -5,7 +5,7 @@
  * @license   https://craftcms.com/license
  */
 
-namespace craft\app\base;
+namespace craft\base;
 
 use DateTime;
 
@@ -101,7 +101,7 @@ trait ElementTrait
     public $level;
 
     /**
-     * @var int The element’s search score, if the [[\craft\app\elements\db\ElementQuery::search]] parameter was used when querying for the element
+     * @var int The element’s search score, if the [[\craft\elements\db\ElementQuery::search]] parameter was used when querying for the element
      */
     public $searchScore;
 

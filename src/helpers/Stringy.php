@@ -5,7 +5,7 @@
  * @license   https://craftcms.com/license
  */
 
-namespace craft\app\helpers;
+namespace craft\helpers;
 
 /**
  * The entire purpose of this class is so we can get at the charsArray in Stringy, which is a protected method

@@ -5,7 +5,7 @@
  * @license   https://craftcms.com/license
  */
 
-namespace craft\app\mail\transportadapters;
+namespace craft\mail\transportadapters;
 
 /**
  * Php implements a PHP Mail transport adapter into Craft’s mailer.

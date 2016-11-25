@@ -5,13 +5,13 @@
  * @license   https://craftcms.com/license
  */
 
-namespace craft\app\base;
+namespace craft\base;
 
 use Craft;
-use craft\app\db\Migration;
-use craft\app\db\MigrationManager;
-use craft\app\helpers\Io;
-use craft\app\web\Controller;
+use craft\db\Migration;
+use craft\db\MigrationManager;
+use craft\helpers\Io;
+use craft\web\Controller;
 use yii\base\Module;
 
 /**
@@ -70,7 +70,7 @@ class Plugin extends Module implements PluginInterface
 
         if (!isset($i18n->translations[$handle]) && !isset($i18n->translations[$handle.'*'])) {
             $i18n->translations[$handle] = [
-                'class' => \craft\app\i18n\PhpMessageSource::class,
+                'class' => \craft\i18n\PhpMessageSource::class,
                 'sourceLanguage' => $this->sourceLanguage,
                 'basePath' => "@plugins/$handle/translations",
                 'allowOverrides' => true,

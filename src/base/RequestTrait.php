@@ -5,12 +5,12 @@
  * @license   https://craftcms.com/license
  */
 
-namespace craft\app\base;
+namespace craft\base;
 
 /**
  * Request trait.
  *
- * This provides request methods that are common between craft\app\web\Request and craft\app\console\Request.
+ * This provides request methods that are common between craft\web\Request and craft\console\Request.
  *
  * @property string $scriptFilename The requested script name being used to access Craft (e.g. “index.php”).
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
@@ -28,7 +28,7 @@ trait RequestTrait
      */
     public function getScriptFilename()
     {
-        /** @var $this \craft\app\web\Request|\craft\app\console\Request */
+        /** @var $this \craft\web\Request|\craft\console\Request */
         return basename($this->getScriptFile());
     }
 }

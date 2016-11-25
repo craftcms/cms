@@ -5,11 +5,11 @@
  * @license   https://craftcms.com/license
  */
 
-namespace craft\app\controllers;
+namespace craft\controllers;
 
 use Craft;
-use craft\app\models\UserGroup;
-use craft\app\web\Controller;
+use craft\models\UserGroup;
+use craft\web\Controller;
 use yii\web\NotFoundHttpException;
 use yii\web\Response;
 

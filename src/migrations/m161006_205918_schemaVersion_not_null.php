@@ -1,10 +1,10 @@
 <?php
 
-namespace craft\app\migrations;
+namespace craft\migrations;
 
 use Craft;
-use craft\app\db\Migration;
-use craft\app\services\Config;
+use craft\db\Migration;
+use craft\services\Config;
 
 /**
  * m161006_205918_schemaVersion_not_null migration.

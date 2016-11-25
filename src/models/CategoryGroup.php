@@ -5,14 +5,14 @@
  * @license   https://craftcms.com/license
  */
 
-namespace craft\app\models;
+namespace craft\models;
 
 use Craft;
-use craft\app\base\Model;
-use craft\app\behaviors\FieldLayoutTrait;
-use craft\app\records\CategoryGroup as CategoryGroupRecord;
-use craft\app\validators\HandleValidator;
-use craft\app\validators\UniqueValidator;
+use craft\base\Model;
+use craft\behaviors\FieldLayoutTrait;
+use craft\records\CategoryGroup as CategoryGroupRecord;
+use craft\validators\HandleValidator;
+use craft\validators\UniqueValidator;
 
 /**
  * CategoryGroup model.
@@ -77,8 +77,8 @@ class CategoryGroup extends Model
     {
         return [
             'fieldLayout' => [
-                'class' => \craft\app\behaviors\FieldLayoutBehavior::class,
-                'elementType' => \craft\app\elements\Category::class
+                'class' => \craft\behaviors\FieldLayoutBehavior::class,
+                'elementType' => \craft\elements\Category::class
             ],
         ];
     }

@@ -5,11 +5,11 @@
  * @license   https://craftcms.com/license
  */
 
-namespace craft\app\widgets;
+namespace craft\widgets;
 
-use craft\app\base\Widget;
-use craft\app\base\MissingComponentInterface;
-use craft\app\base\MissingComponentTrait;
+use craft\base\Widget;
+use craft\base\MissingComponentInterface;
+use craft\base\MissingComponentTrait;
 
 /**
  * MissingWidget represents a widget with an invalid class.

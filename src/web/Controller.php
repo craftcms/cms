@@ -5,12 +5,12 @@
  * @license   https://craftcms.com/license
  */
 
-namespace craft\app\web;
+namespace craft\web;
 
 use Craft;
-use craft\app\helpers\Header;
-use craft\app\helpers\Io;
-use craft\app\helpers\Url;
+use craft\helpers\Header;
+use craft\helpers\Io;
+use craft\helpers\Url;
 use yii\base\InvalidParamException;
 use yii\web\BadRequestHttpException;
 use yii\web\ForbiddenHttpException;
@@ -73,7 +73,7 @@ abstract class Controller extends \yii\web\Controller
      * Renders a template.
      *
      * @param mixed $template      The name of the template to load in a format supported by
-     *                             [[\craft\app\web\View::resolveTemplate()]], or a [[\craft\app\web\twig\StringTemplate]] object.
+     *                             [[\craft\web\View::resolveTemplate()]], or a [[\craft\web\twig\StringTemplate]] object.
      * @param array $variables     The variables that should be available to the template.
      *
      * @return string The rendering result

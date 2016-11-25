@@ -1,8 +1,8 @@
 <?php
-namespace craft\app\volumes;
+namespace craft\volumes;
 
 use Craft;
-use craft\app\base\Volume;
+use craft\base\Volume;
 use League\Flysystem\Rackspace\RackspaceAdapter;
 use OpenCloud\Identity\Resource\Token;
 use \OpenCloud\OpenStack;

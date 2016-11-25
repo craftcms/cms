@@ -5,11 +5,11 @@
  * @license   https://craftcms.com/license
  */
 
-namespace craft\app\helpers;
+namespace craft\helpers;
 
 use Craft;
-use craft\app\db\Migration;
-use craft\app\db\Query;
+use craft\db\Migration;
+use craft\db\Query;
 
 /**
  * Migration utility methods.
@@ -63,12 +63,22 @@ class MigrationHelper
     {
         $tableName = Craft::$app->getDb()->getSchema()->getRawTableName($tableName);
         $columns = ArrayHelper::toArray($columns);
-        $table = static::getTable($tableName);
+        $table = Craft::$app->getDb()->getTableSchema($tableName);;
+        $flattenedKeys = [];
 
-        foreach ($table->fks as $i => $fk) {
-            if ($columns == $fk->columns) {
-                return true;
+        foreach ($table->foreignKeys as $i => $fk) {
+            foreach ($fk as $count => $row) {
+                // First one will always be the other of the relationship's table name.
+                // If there is more than one after that, it's a composite key.
+                if ($count !== 0) {
+                    $flattenedKeys[] = $count;
+                }
             }
+        }
+
+            // Could be a composite key, so make sure all required values exist!
+        if(count(array_intersect($flattenedKeys, $columns)) == count($columns)){
+            return true;
         }
 
         return false;
@@ -302,7 +312,7 @@ class MigrationHelper
      * @param boolean                 $isLocalized Whether this element type stores data in multiple sites.
      * @param integer[]|null          $siteIds     Which site IDs the elements should store content in. Defaults to the primary site
      *                                             if the element type is not localized, otherwise all sites.
-     * @param \craft\app\db\Migration $migration   The migration instance that should handle the actual query executions.
+     * @param \craft\db\Migration $migration   The migration instance that should handle the actual query executions.
      *
      * @return void
      */

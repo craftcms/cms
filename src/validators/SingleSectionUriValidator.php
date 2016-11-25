@@ -5,13 +5,13 @@
  * @license   https://craftcms.com/license
  */
 
-namespace craft\app\validators;
+namespace craft\validators;
 
 use Aws\CloudFront\Exception\Exception;
 use Craft;
-use craft\app\db\Query;
-use craft\app\helpers\ElementHelper;
-use craft\app\models\Section_SiteSettings;
+use craft\db\Query;
+use craft\helpers\ElementHelper;
+use craft\models\Section_SiteSettings;
 use yii\base\InvalidConfigException;
 use yii\validators\Validator;
 

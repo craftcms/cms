@@ -11,13 +11,13 @@
  * @since      3.0
  */
 
-namespace craft\app\volumes;
+namespace craft\volumes;
 
 use Craft;
-use craft\app\base\Volume;
-use craft\app\dates\DateTime;
-use craft\app\helpers\Assets;
-use craft\app\helpers\DateTimeHelper;
+use craft\base\Volume;
+use craft\dates\DateTime;
+use craft\helpers\Assets;
+use craft\helpers\DateTimeHelper;
 use \League\Flysystem\GoogleCloud\GoogleCloudAdapter;
 use \Aws\S3\S3Client as S3Client;
 

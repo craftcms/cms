@@ -5,29 +5,29 @@
  * @license   https://craftcms.com/license
  */
 
-namespace craft\app\services;
+namespace craft\services;
 
 use Craft;
-use craft\app\db\Query;
-use craft\app\dates\DateTime;
-use craft\app\elements\Asset;
-use craft\app\errors\VolumeObjectExistsException;
-use craft\app\events\AssetTransformEvent;
-use craft\app\helpers\ArrayHelper;
-use craft\app\helpers\Assets as AssetsHelper;
-use craft\app\helpers\Db;
-use craft\app\helpers\Image;
-use craft\app\helpers\Io;
-use craft\app\helpers\StringHelper;
-use craft\app\image\Raster;
-use craft\app\models\AssetTransformIndex;
-use craft\app\models\AssetTransform;
-use craft\app\records\AssetTransform as AssetTransformRecord;
-use craft\app\errors\AssetTransformException;
-use craft\app\errors\VolumeObjectNotFoundException;
-use craft\app\errors\VolumeException;
-use craft\app\errors\AssetLogicException;
-use craft\app\errors\ValidationException;
+use craft\db\Query;
+use craft\dates\DateTime;
+use craft\elements\Asset;
+use craft\errors\VolumeObjectExistsException;
+use craft\events\AssetTransformEvent;
+use craft\helpers\ArrayHelper;
+use craft\helpers\Assets as AssetsHelper;
+use craft\helpers\Db;
+use craft\helpers\Image;
+use craft\helpers\Io;
+use craft\helpers\StringHelper;
+use craft\image\Raster;
+use craft\models\AssetTransformIndex;
+use craft\models\AssetTransform;
+use craft\records\AssetTransform as AssetTransformRecord;
+use craft\errors\AssetTransformException;
+use craft\errors\VolumeObjectNotFoundException;
+use craft\errors\VolumeException;
+use craft\errors\AssetLogicException;
+use craft\errors\ValidationException;
 use yii\base\Application;
 use yii\base\Component;
 

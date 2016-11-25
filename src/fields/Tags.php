@@ -5,13 +5,13 @@
  * @license   https://craftcms.com/license
  */
 
-namespace craft\app\fields;
+namespace craft\fields;
 
 use Craft;
-use craft\app\base\Element;
-use craft\app\elements\db\ElementQueryInterface;
-use craft\app\elements\Tag;
-use craft\app\models\TagGroup;
+use craft\base\Element;
+use craft\elements\db\ElementQueryInterface;
+use craft\elements\Tag;
+use craft\models\TagGroup;
 
 /**
  * Tags represents a Tags field.

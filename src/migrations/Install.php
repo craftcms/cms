@@ -5,16 +5,16 @@
  * @license   https://craftcms.com/license
  */
 
-namespace craft\app\migrations;
+namespace craft\migrations;
 
 use Craft;
-use craft\app\db\Connection;
-use craft\app\elements\User;
-use craft\app\db\Migration;
-use craft\app\helpers\StringHelper;
-use craft\app\models\Info;
-use craft\app\models\Site;
-use craft\app\services\Config;
+use craft\db\Connection;
+use craft\elements\User;
+use craft\db\Migration;
+use craft\helpers\StringHelper;
+use craft\models\Info;
+use craft\models\Site;
+use craft\services\Config;
 
 /**
  * Installation Migration
@@ -93,10 +93,10 @@ class Install extends Migration
         Craft::$app->getSystemSettings()->saveSettings('email', [
             'fromEmail' => $this->email,
             'fromName' => $this->site->name,
-            'transportType' => \craft\app\mail\transportadapters\Php::class
+            'transportType' => \craft\mail\transportadapters\Php::class
         ]);
         Craft::$app->getSystemSettings()->saveSettings('mailer', [
-            'class' => \craft\app\mail\Mailer::class,
+            'class' => \craft\mail\Mailer::class,
             'from' => [$this->email => $this->site->name],
             'transport' => [
                 'class' => 'Swift_MailTransport'
@@ -382,15 +382,12 @@ class Install extends Migration
         ]);
         $this->createTable('{{%info}}', [
             'id' => $this->primaryKey(),
-            'version' => $this->string(15)->notNull(),
-            'build' => $this->integer()->notNull()->unsigned(),
+            'version' => $this->string(50)->notNull(),
             'schemaVersion' => $this->string(15)->notNull(),
-            'releaseDate' => $this->dateTime()->notNull(),
             'edition' => $this->smallInteger()->unsigned()->notNull(),
             'timezone' => $this->string(30),
             'on' => $this->boolean()->defaultValue(false)->notNull(),
             'maintenance' => $this->boolean()->defaultValue(false)->notNull(),
-            'track' => $this->string(40)->notNull(),
             'fieldVersion' => $this->char(12)->notNull()->defaultValue('1'),
             'dateCreated' => $this->dateTime()->notNull(),
             'dateUpdated' => $this->dateTime()->notNull(),
@@ -893,13 +890,16 @@ class Install extends Migration
                     'attribute' => $this->string(25)->notNull(),
                     'fieldId' => $this->integer()->notNull(),
                     'siteId' => $this->integer()->notNull(),
-                    'keywords' => $this->getDb()->getSchema()->createColumnSchemaBuilder('tsvector')->notNull(),
+                    'keywords' => $this->text()->notNull(),
+                    'keywords_vector' => $this->getDb()->getSchema()->createColumnSchemaBuilder('tsvector')->notNull(),
                 ]);
 
                 $this->addPrimaryKey($this->db->getIndexName('{{%searchindex}}', 'elementId,attribute,fieldId,siteId', true), '{{%searchindex}}', 'elementId,attribute,fieldId,siteId');
 
-                $sql = 'CREATE INDEX '.$this->db->quoteTableName($this->db->getIndexName('{{%searchindex}}', 'keywords')).' ON {{%searchindex}} USING GIN([[keywords]] "pg_catalog"."tsvector_ops") WITH (FASTUPDATE=YES)';
+                $sql = 'CREATE INDEX '.$this->db->quoteTableName($this->db->getIndexName('{{%searchindex}}', 'keywords_vector')).' ON {{%searchindex}} USING GIN([[keywords_vector]] [[pg_catalog]].[[tsvector_ops]]) WITH (FASTUPDATE=YES)';
+                $this->db->createCommand($sql)->execute();
 
+                $sql = 'CREATE INDEX '.$this->db->quoteTableName($this->db->getIndexName('{{%searchindex}}', 'keywords')).' ON {{%searchindex}} USING btree(keywords)';
                 $this->db->createCommand($sql)->execute();
                 break;
         }
@@ -999,13 +999,10 @@ class Install extends Migration
         echo "    > populate the info table ...";
         Craft::$app->saveInfo(new Info([
             'version' => Craft::$app->version,
-            'build' => Craft::$app->build,
             'schemaVersion' => Craft::$app->schemaVersion,
-            'releaseDate' => Craft::$app->releaseDate,
             'edition' => '0',
             'on' => '1',
             'maintenance' => '0',
-            'track' => Craft::$app->track,
             'fieldVersion' => StringHelper::randomString(12),
         ]));
         echo " done\n";

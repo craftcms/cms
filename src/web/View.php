@@ -5,26 +5,26 @@
  * @license   https://craftcms.com/license
  */
 
-namespace craft\app\web;
+namespace craft\web;
 
 use Craft;
-use craft\app\base\Element;
-use craft\app\events\Event;
-use craft\app\helpers\ArrayHelper;
-use craft\app\helpers\ElementHelper;
-use craft\app\helpers\Html as HtmlHelper;
-use craft\app\helpers\Io;
-use craft\app\helpers\Json;
-use craft\app\helpers\Path;
-use craft\app\helpers\StringHelper;
-use craft\app\services\Plugins;
-use craft\app\web\assets\AppAsset;
-use craft\app\web\twig\Environment;
-use craft\app\web\twig\Extension;
-use craft\app\web\twig\Parser;
-use craft\app\web\twig\StringTemplate;
-use craft\app\web\twig\Template;
-use craft\app\web\twig\TemplateLoader;
+use craft\base\Element;
+use craft\events\Event;
+use craft\helpers\ArrayHelper;
+use craft\helpers\ElementHelper;
+use craft\helpers\Html as HtmlHelper;
+use craft\helpers\Io;
+use craft\helpers\Json;
+use craft\helpers\Path;
+use craft\helpers\StringHelper;
+use craft\services\Plugins;
+use craft\web\assets\AppAsset;
+use craft\web\twig\Environment;
+use craft\web\twig\Extension;
+use craft\web\twig\Parser;
+use craft\web\twig\StringTemplate;
+use craft\web\twig\Template;
+use craft\web\twig\TemplateLoader;
 use yii\base\Exception;
 use yii\helpers\Html;
 use yii\web\AssetBundle;
@@ -167,14 +167,14 @@ class View extends \yii\web\View
     public function getTwig($loaderClass = null, $options = [])
     {
         if (!$loaderClass) {
-            $loaderClass = \craft\app\web\twig\TemplateLoader::class;
+            $loaderClass = \craft\web\twig\TemplateLoader::class;
         }
 
         $cacheKey = $loaderClass.':'.md5(serialize($options));
 
         if (!isset($this->_twigs[$cacheKey])) {
             /** @var $loader TemplateLoader */
-            if ($loaderClass === \craft\app\web\twig\TemplateLoader::class) {
+            if ($loaderClass === \craft\web\twig\TemplateLoader::class) {
                 $loader = new $loaderClass($this);
             } else {
                 $loader = new $loaderClass();
@@ -1181,7 +1181,7 @@ class View extends \yii\web\View
     {
         if (!isset($this->_twigOptions)) {
             $this->_twigOptions = [
-                'base_template_class' => '\\craft\\app\\web\\twig\\Template',
+                'base_template_class' => '\\craft\\web\\twig\\Template',
                 // See: https://github.com/twigphp/Twig/issues/1951
                 'cache' => rtrim(Craft::$app->getPath()->getCompiledTemplatesPath(), '/'),
                 'auto_reload' => true,

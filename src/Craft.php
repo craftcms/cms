@@ -5,8 +5,8 @@
  * @license   https://craftcms.com/license
  */
 
-use craft\app\db\Query;
-use craft\app\helpers\Io;
+use craft\db\Query;
+use craft\helpers\Io;
 use yii\helpers\VarDumper;
 use yii\web\Request;
 
@@ -32,9 +32,9 @@ class Craft extends Yii
     // =========================================================================
 
     /**
-     * @var \craft\app\web\Application The application instance.
+     * @var \craft\web\Application The application instance.
      *
-     * This may return a [[\craft\app\console\Application]] instance if this is a console request.
+     * This may return a [[\craft\console\Application]] instance if this is a console request.
      */
     public static $app;
 
@@ -119,12 +119,12 @@ class Craft extends Yii
     public static function autoload($className)
     {
         if (
-            $className === \craft\app\behaviors\ContentBehavior::class ||
-            $className === \craft\app\behaviors\ContentTrait::class ||
-            $className === \craft\app\behaviors\ElementQueryBehavior::class ||
-            $className === \craft\app\behaviors\ElementQueryTrait::class
+            $className === \craft\behaviors\ContentBehavior::class ||
+            $className === \craft\behaviors\ContentTrait::class ||
+            $className === \craft\behaviors\ElementQueryBehavior::class ||
+            $className === \craft\behaviors\ElementQueryTrait::class
         ) {
-            $storedFieldVersion = static::$app->getInfo('fieldVersion');
+            $storedFieldVersion = static::$app->getInfo()->fieldVersion;
             $compiledClassesPath = static::$app->getPath()->getRuntimePath().'/compiled_classes';
 
             $contentBehaviorFile = $compiledClassesPath.'/ContentBehavior.php';

@@ -5,13 +5,13 @@
  * @license   https://craftcms.com/license
  */
 
-namespace craft\app\models;
+namespace craft\models;
 
 use Craft;
-use craft\app\base\FieldInterface;
-use craft\app\base\Model;
-use craft\app\records\FieldGroup as FieldGroupRecord;
-use craft\app\validators\UniqueValidator;
+use craft\base\FieldInterface;
+use craft\base\Model;
+use craft\records\FieldGroup as FieldGroupRecord;
+use craft\validators\UniqueValidator;
 
 /**
  * FieldGroup model class.

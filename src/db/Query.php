@@ -5,9 +5,9 @@
  * @license   https://craftcms.com/license
  */
 
-namespace craft\app\db;
+namespace craft\db;
 
-use craft\app\helpers\ArrayHelper;
+use craft\helpers\ArrayHelper;
 use yii\base\Exception;
 
 /**

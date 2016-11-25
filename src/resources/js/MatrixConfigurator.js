@@ -126,8 +126,8 @@ Craft.MatrixConfigurator = Garnish.Base.extend(
 						'<a class="move icon" title="'+Craft.t('app', 'Reorder')+'"></a>' +
 						'<a class="settings icon" title="'+Craft.t('app', 'Settings')+'"></a>' +
 					'</div>' +
-					'<input class="hidden" name="types[craft\\app\\fields\\Matrix][blockTypes]['+id+'][name]">' +
-					'<input class="hidden" name="types[craft\\app\\fields\\Matrix][blockTypes]['+id+'][handle]">' +
+					'<input class="hidden" name="types[craft\\fields\\Matrix][blockTypes]['+id+'][name]">' +
+					'<input class="hidden" name="types[craft\\fields\\Matrix][blockTypes]['+id+'][handle]">' +
 				'</div>'
 			).appendTo(this.$blockTypeItemsContainer);
 
@@ -553,7 +553,7 @@ var Field = Garnish.Base.extend(
 
 		if (isNew)
 		{
-			this.setFieldType('craft\\app\\fields\\PlainText');
+			this.setFieldType('craft\\fields\\PlainText');
 		}
 		else
 		{
@@ -750,7 +750,7 @@ var Field = Garnish.Base.extend(
 			id: this.inputIdPrefix+'-type',
 			name: this.inputNamePrefix+'[type]',
 			options: fieldTypeOptions,
-			value: 'craft\\app\\fields\\PlainText'
+			value: 'craft\\fields\\PlainText'
 		}).appendTo($container);
 
 		if (Craft.isMultiSite)

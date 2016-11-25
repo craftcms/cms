@@ -5,11 +5,11 @@
  * @license   https://craftcms.com/license
  */
 
-namespace craft\app\services;
+namespace craft\services;
 
 use Craft;
-use craft\app\helpers\Io;
-use craft\app\helpers\StringHelper;
+use craft\helpers\Io;
+use craft\helpers\StringHelper;
 use yii\base\Exception;
 use yii\base\InvalidParamException;
 

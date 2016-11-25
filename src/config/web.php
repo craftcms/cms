@@ -3,38 +3,38 @@
 return [
     'components' => [
         'request' => [
-            'class' => craft\app\web\Request::class,
+            'class' => craft\web\Request::class,
             'enableCookieValidation' => true,
         ],
-        'response' => craft\app\web\Response::class,
-        'session' => craft\app\web\Session::class,
+        'response' => craft\web\Response::class,
+        'session' => craft\web\Session::class,
         'urlManager' => [
-            'class' => craft\app\web\UrlManager::class,
+            'class' => craft\web\UrlManager::class,
             'enablePrettyUrl' => true,
-            'ruleConfig' => ['class' => craft\app\web\UrlRule::class],
+            'ruleConfig' => ['class' => craft\web\UrlRule::class],
         ],
         'user' => [
-            'class' => craft\app\web\User::class,
-            'identityClass' => craft\app\elements\User::class,
+            'class' => craft\web\User::class,
+            'identityClass' => craft\elements\User::class,
             'enableAutoLogin' => true,
             'autoRenewCookie' => true,
         ],
         'errorHandler' => [
-            'class' => craft\app\web\ErrorHandler::class,
+            'class' => craft\web\ErrorHandler::class,
             'errorAction' => 'templates/render-error'
         ]
     ],
-    'controllerNamespace' => 'craft\\app\\controllers',
+    'controllerNamespace' => 'craft\\controllers',
     'modules' => [
         'debug' => [
             'class' => yii\debug\Module::class,
             'allowedIPs' => ['*'],
             'panels' => [
                 'config' => false,
-                'info' => craft\app\debug\InfoPanel::class,
+                'info' => craft\debug\InfoPanel::class,
                 'request' => yii\debug\panels\RequestPanel::class,
                 'log' => yii\debug\panels\LogPanel::class,
-                'deprecated' => craft\app\debug\DeprecatedPanel::class,
+                'deprecated' => craft\debug\DeprecatedPanel::class,
                 'profiling' => yii\debug\panels\ProfilingPanel::class,
                 'db' => yii\debug\panels\DbPanel::class,
                 'assets' => yii\debug\panels\AssetPanel::class,

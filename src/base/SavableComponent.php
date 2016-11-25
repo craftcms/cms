@@ -5,9 +5,9 @@
  * @license   https://craftcms.com/license
  */
 
-namespace craft\app\base;
+namespace craft\base;
 
-use craft\app\events\ModelEvent;
+use craft\events\ModelEvent;
 
 /**
  * SavableComponent is the base class for classes representing savable Craft components in terms of objects.

@@ -1,17 +1,17 @@
 <?php
-namespace craft\app\volumes;
+namespace craft\volumes;
 
 use Aws\CloudFront\CloudFrontClient;
 use Aws\CloudFront\Exception\CloudFrontException;
 use Aws\Exception\CredentialsException;
 use Craft;
-use craft\app\base\Volume;
-use craft\app\cache\adapters\GuzzleCacheAdapter;
-use craft\app\dates\DateTime;
-use craft\app\errors\VolumeException;
-use craft\app\helpers\Assets;
-use craft\app\helpers\DateTimeHelper;
-use craft\app\helpers\StringHelper;
+use craft\base\Volume;
+use craft\cache\adapters\GuzzleCacheAdapter;
+use craft\dates\DateTime;
+use craft\errors\VolumeException;
+use craft\helpers\Assets;
+use craft\helpers\DateTimeHelper;
+use craft\helpers\StringHelper;
 use \League\Flysystem\AwsS3v3\AwsS3Adapter;
 use \Aws\S3\S3Client as S3Client;
 

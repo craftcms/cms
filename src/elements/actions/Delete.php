@@ -5,11 +5,11 @@
  * @license   https://craftcms.com/license
  */
 
-namespace craft\app\elements\actions;
+namespace craft\elements\actions;
 
 use Craft;
-use craft\app\base\ElementAction;
-use craft\app\elements\db\ElementQueryInterface;
+use craft\base\ElementAction;
+use craft\elements\db\ElementQueryInterface;
 
 /**
  * Delete represents a Delete element action.

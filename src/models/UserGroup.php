@@ -5,13 +5,13 @@
  * @license   https://craftcms.com/license
  */
 
-namespace craft\app\models;
+namespace craft\models;
 
 use Craft;
-use craft\app\base\Model;
-use craft\app\records\User as UserRecord;
-use craft\app\validators\HandleValidator;
-use craft\app\validators\UniqueValidator;
+use craft\base\Model;
+use craft\records\User as UserRecord;
+use craft\validators\HandleValidator;
+use craft\validators\UniqueValidator;
 
 Craft::$app->requireEdition(Craft::Pro);
 

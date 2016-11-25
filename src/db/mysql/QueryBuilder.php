@@ -5,11 +5,11 @@
  * @license   https://craftcms.com/license
  */
 
-namespace craft\app\db\mysql;
+namespace craft\db\mysql;
 
 use Craft;
-use craft\app\db\Connection;
-use craft\app\services\Config;
+use craft\db\Connection;
+use craft\services\Config;
 use yii\db\Expression;
 
 /**

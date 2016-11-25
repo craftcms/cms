@@ -5,14 +5,14 @@
  * @license   https://craftcms.com/license
  */
 
-namespace craft\app\tasks;
+namespace craft\tasks;
 
 use Craft;
-use craft\app\base\Element;
-use craft\app\base\Task;
-use craft\app\base\ElementInterface;
-use craft\app\elements\db\ElementQuery;
-use craft\app\helpers\StringHelper;
+use craft\base\Element;
+use craft\base\Task;
+use craft\base\ElementInterface;
+use craft\elements\db\ElementQuery;
+use craft\helpers\StringHelper;
 
 /**
  * ResaveElements represents a Resave Elements background task.

@@ -5,18 +5,18 @@
  * @license   https://craftcms.com/license
  */
 
-namespace craft\app\elements\db;
+namespace craft\elements\db;
 
 use Craft;
-use craft\app\base\Element;
-use craft\app\base\ElementInterface;
-use craft\app\base\Field;
-use craft\app\db\Query;
-use craft\app\elements\MatrixBlock;
-use craft\app\fields\Matrix as MatrixField;
-use craft\app\helpers\Db;
-use craft\app\models\MatrixBlockType;
-use craft\app\models\Site;
+use craft\base\Element;
+use craft\base\ElementInterface;
+use craft\base\Field;
+use craft\db\Query;
+use craft\elements\MatrixBlock;
+use craft\fields\Matrix as MatrixField;
+use craft\helpers\Db;
+use craft\models\MatrixBlockType;
+use craft\models\Site;
 use yii\base\Exception;
 
 /**

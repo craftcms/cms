@@ -5,10 +5,10 @@
  * @license   https://craftcms.com/license
  */
 
-namespace craft\app\events;
+namespace craft\events;
 
-use craft\app\elements\User;
-use craft\app\mail\Message;
+use craft\elements\User;
+use craft\mail\Message;
 
 /**
  * Send Email Error event raised when there was a problem sending an email.

@@ -5,15 +5,15 @@
  * @license   https://craftcms.com/license
  */
 
-namespace craft\app\models;
+namespace craft\models;
 
 use Craft;
-use craft\app\base\Model;
-use craft\app\behaviors\FieldLayoutTrait;
-use craft\app\helpers\Url;
-use craft\app\records\EntryType as EntryTypeRecord;
-use craft\app\validators\HandleValidator;
-use craft\app\validators\UniqueValidator;
+use craft\base\Model;
+use craft\behaviors\FieldLayoutTrait;
+use craft\helpers\Url;
+use craft\records\EntryType as EntryTypeRecord;
+use craft\validators\HandleValidator;
+use craft\validators\UniqueValidator;
 
 /**
  * EntryType model class.
@@ -81,8 +81,8 @@ class EntryType extends Model
     {
         return [
             'fieldLayout' => [
-                'class' => \craft\app\behaviors\FieldLayoutBehavior::class,
-                'elementType' => \craft\app\elements\Entry::class
+                'class' => \craft\behaviors\FieldLayoutBehavior::class,
+                'elementType' => \craft\elements\Entry::class
             ],
         ];
     }

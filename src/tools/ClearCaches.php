@@ -5,13 +5,13 @@
  * @license   https://craftcms.com/license
  */
 
-namespace craft\app\tools;
+namespace craft\tools;
 
 use Craft;
-use craft\app\base\Tool;
-use craft\app\events\Event;
-use craft\app\events\RegisterCacheOptionsEvent;
-use craft\app\helpers\Io;
+use craft\base\Tool;
+use craft\events\Event;
+use craft\events\RegisterCacheOptionsEvent;
+use craft\helpers\Io;
 
 /**
  * ClearCaches represents a Clear Caches tool.

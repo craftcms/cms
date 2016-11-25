@@ -64,7 +64,7 @@
 					</div>
 				{% endfor %}
 			{% else %}
-				{% namespace 'types[craft\\app\\volumes\\Local]' %}
+				{% namespace 'types[craft\\volumes\\Local]' %}
 					{{ volume.getSettingsHtml()|raw }}
 				{% endnamespace %}
 			{% endif %}

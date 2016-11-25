@@ -5,9 +5,9 @@
  * @license   https://craftcms.com/license
  */
 
-namespace craft\app\mail;
+namespace craft\mail;
 
-use craft\app\elements\User;
+use craft\elements\User;
 
 /**
  * Represents an email message.

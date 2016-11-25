@@ -5,9 +5,9 @@
  * @license   https://craftcms.com/license
  */
 
-namespace craft\app\console;
+namespace craft\console;
 
-use craft\app\elements\User as UserElement;
+use craft\elements\User as UserElement;
 use yii\base\Component;
 use yii\base\InvalidValueException;
 use yii\web\IdentityInterface;

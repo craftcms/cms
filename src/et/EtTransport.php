@@ -5,16 +5,16 @@
  * @license   https://craftcms.com/license
  */
 
-namespace craft\app\et;
+namespace craft\et;
 
 use Craft;
-use craft\app\enums\LicenseKeyStatus;
-use craft\app\errors\EtException;
-use craft\app\helpers\ArrayHelper;
-use craft\app\helpers\DateTimeHelper;
-use craft\app\helpers\Io;
-use craft\app\models\Et as EtModel;
-use craft\app\services\Config;
+use craft\enums\LicenseKeyStatus;
+use craft\errors\EtException;
+use craft\helpers\ArrayHelper;
+use craft\helpers\DateTimeHelper;
+use craft\helpers\Io;
+use craft\models\Et as EtModel;
+use craft\services\Config;
 use GuzzleHttp\Client;
 use GuzzleHttp\Exception\RequestException;
 use PDO;
@@ -26,7 +26,7 @@ use yii\base\Exception;
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since  3.0
  */
-class Et
+class EtTransport
 {
     // Properties
     // =========================================================================
@@ -69,7 +69,7 @@ class Et
      * @param integer $timeout
      * @param integer $connectTimeout
      *
-     * @return Et
+     * @return EtTransport
      */
     public function __construct($endpoint, $timeout = 30, $connectTimeout = 30)
     {
@@ -91,11 +91,9 @@ class Et
             'requestIp'            => Craft::$app->getRequest()->getUserIP(),
             'requestTime'          => DateTimeHelper::currentTimeStamp(),
             'requestPort'          => Craft::$app->getRequest()->getPort(),
-            'localBuild'           => Craft::$app->build,
             'localVersion'         => Craft::$app->version,
             'localEdition'         => Craft::$app->getEdition(),
             'userEmail'            => $userEmail,
-            'track'                => Craft::$app->track,
             'showBeta'             => Craft::$app->getConfig()->get('showBetaUpdates'),
             'serverInfo'           => [
                 'extensions'       => get_loaded_extensions(),
@@ -106,7 +104,7 @@ class Et
             ],
         ]);
 
-        $this->_userAgent = 'Craft/'.Craft::$app->version.'.'.Craft::$app->build;
+        $this->_userAgent = 'Craft/'.Craft::$app->version;
     }
 
     /**
@@ -222,7 +220,7 @@ class Et
                     // Potentially long-running request, so close session to prevent session blocking on subsequent requests.
                     Craft::$app->getSession()->close();
 
-                    $response = $client->post($this->_endpoint, ['json' => ArrayHelper::toArray($this->_model)]);
+                    $response = $client->request('post', $this->_endpoint, ['json' => ArrayHelper::toArray($this->_model)]);
 
                     if ($response->getStatusCode() == 200) {
                         // Clear the connection failure cached item if it exists.

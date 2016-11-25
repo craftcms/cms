@@ -5,30 +5,30 @@
  * @license   https://craftcms.com/license
  */
 
-namespace craft\app\elements;
+namespace craft\elements;
 
 use Craft;
-use craft\app\base\Element;
-use craft\app\base\ElementInterface;
-use craft\app\controllers\ElementIndexesController;
-use craft\app\db\Query;
-use craft\app\elements\actions\Delete;
-use craft\app\elements\actions\Edit;
-use craft\app\elements\actions\NewChild;
-use craft\app\elements\actions\SetStatus;
-use craft\app\elements\actions\View;
-use craft\app\elements\db\ElementQuery;
-use craft\app\elements\db\ElementQueryInterface;
-use craft\app\elements\db\EntryQuery;
-use craft\app\events\SetStatusEvent;
-use craft\app\helpers\ArrayHelper;
-use craft\app\helpers\DateTimeHelper;
-use craft\app\helpers\Db;
-use craft\app\helpers\Url;
-use craft\app\models\EntryType;
-use craft\app\models\Section;
-use craft\app\records\Entry as EntryRecord;
-use craft\app\validators\DateTimeValidator;
+use craft\base\Element;
+use craft\base\ElementInterface;
+use craft\controllers\ElementIndexesController;
+use craft\db\Query;
+use craft\elements\actions\Delete;
+use craft\elements\actions\Edit;
+use craft\elements\actions\NewChild;
+use craft\elements\actions\SetStatus;
+use craft\elements\actions\View;
+use craft\elements\db\ElementQuery;
+use craft\elements\db\ElementQueryInterface;
+use craft\elements\db\EntryQuery;
+use craft\events\SetStatusEvent;
+use craft\helpers\ArrayHelper;
+use craft\helpers\DateTimeHelper;
+use craft\helpers\Db;
+use craft\helpers\Url;
+use craft\models\EntryType;
+use craft\models\Section;
+use craft\records\Entry as EntryRecord;
+use craft\validators\DateTimeValidator;
 use yii\base\Exception;
 use yii\base\InvalidConfigException;
 

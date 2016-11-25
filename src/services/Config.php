@@ -5,17 +5,17 @@
  * @license   https://craftcms.com/license
  */
 
-namespace craft\app\services;
+namespace craft\services;
 
 use Craft;
-use craft\app\db\Connection;
-use craft\app\helpers\App;
-use craft\app\helpers\ArrayHelper;
-use craft\app\helpers\DateTimeHelper;
-use craft\app\helpers\Io;
-use craft\app\helpers\StringHelper;
-use craft\app\helpers\Url;
-use craft\app\elements\User;
+use craft\db\Connection;
+use craft\helpers\App;
+use craft\helpers\ArrayHelper;
+use craft\helpers\DateTimeHelper;
+use craft\helpers\Io;
+use craft\helpers\StringHelper;
+use craft\helpers\Url;
+use craft\elements\User;
 use GuzzleHttp\Client;
 use GuzzleHttp\Exception\RequestException;
 use yii\base\Component;
@@ -672,20 +672,14 @@ class Config extends Component
             return $configVal;
         }
 
-        if ($configVal === 'build-only') {
-            // Return whether the version number has changed at all
-            return ($updateInfo->app->latestVersion === Craft::$app->version);
+        if ($configVal === 'patch-only') {
+            // Return true if the major and minor versions are still the same
+            return (App::majorMinorVersion($updateInfo->app->latestVersion) == App::majorMinorVersion(Craft::$app->version));
         }
 
         if ($configVal === 'minor-only') {
-            // Return whether the major version number has changed
-            $versionParts = explode('.', Craft::$app->version);
-            $majorVersionParts = explode('.', $updateInfo->app->latestVersion);
-
-            $localMajorVersion = array_shift($versionParts);
-            $updateMajorVersion = array_shift($majorVersionParts);
-
-            return ($localMajorVersion === $updateMajorVersion);
+            // Return true if the major version is still the same
+            return (App::majorVersion($updateInfo->app->latestVersion) == App::majorVersion(Craft::$app->version));
         }
 
         return false;

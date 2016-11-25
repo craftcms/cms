@@ -1,10 +1,10 @@
 <?php
 
-namespace craft\app\migrations;
+namespace craft\migrations;
 
 use Craft;
-use craft\app\db\Migration;
-use craft\app\helpers\MigrationHelper;
+use craft\db\Migration;
+use craft\helpers\MigrationHelper;
 
 /**
  * m160925_113941_route_uri_parts migration.

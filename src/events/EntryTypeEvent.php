@@ -5,7 +5,7 @@
  * @license   https://craftcms.com/license
  */
 
-namespace craft\app\events;
+namespace craft\events;
 
 /**
  * Entry type event class.
@@ -19,7 +19,7 @@ class EntryTypeEvent extends Event
     // =========================================================================
 
     /**
-     * @var \craft\app\models\EntryType The entry type model associated with the event.
+     * @var \craft\models\EntryType The entry type model associated with the event.
      */
     public $entryType;
 

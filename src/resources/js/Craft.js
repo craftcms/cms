@@ -5062,6 +5062,700 @@ Craft.AdminTable = Garnish.Base.extend(
 });
 
 /**
+ * Asset image editor class
+ */
+
+// TODO: Sometimes the rotation messes up the zoom
+// TODO: Rotating by 0.1 degree kills stuff for non-square images?
+
+Craft.AssetImageEditor = Garnish.Modal.extend(
+	{
+		assetId: 0,
+
+		imageUrl: "",
+
+		// Original parameters for reference
+		originalImageHeight: 0,
+		originalImageWidth: 0,
+		aspectRatio: 0,
+
+		// The currently resized image dimensions
+		imageHeight: 0,
+		imageWidth: 0,
+
+		canvas: null,
+		canvasContext: null,
+		canvasImageHeight: 0,
+		canvasImageWidth: 0,
+
+		// Image and frame rotation degrees
+		rotation: 0,
+		frameRotation: 0,
+
+		// TODO: should this be limited to 50 (or some other arbitrary number)?
+		// Operation stack
+		doneOperations: [],
+		undoneOperations: [],
+
+		// zoom ratio for the image
+		zoomRatio: 1,
+
+		// Used when dragging the slider
+		previousSliderValue: 0,
+		// Used to store values when releasing the slider
+		previousSavedSliderValue: 0,
+
+		paddingSize: 24,
+		imageLoaded: false,
+
+		animationInProgress: false,
+		animationFrames: 20,
+		drawGridLines: false,
+
+		$img: null,
+
+		init: function(assetId)
+		{
+			this.setSettings(Craft.AssetImageEditor.defaults);
+
+			this.assetId = assetId;
+			this.imageHeight = 0;
+			this.imageWidth = 0;
+			this.originalImageHeight = 0;
+			this.originalImageWidth = 0;
+			this.imageUrl = "";
+			this.aspectRatio = 0;
+			this.canvasImageHeight = 0;
+			this.canvasImageWidth = 0;
+			this.imageLoaded = false;
+			this.canvas = null;
+			this.$img = null;
+			this.rotation = 0;
+			this.animationInProgress = false;
+			this.doneOperations = [];
+			this.undoneOperations = [];
+			this.previousSliderValue = 0;
+			this.previousSavedSliderValue = 0;
+
+
+			// Build the modal
+			var $container = $('<div class="modal asset-editor"></div>').appendTo(Garnish.$bod),
+				$body = $('<div class="body"><div class="spinner big"></div></div>').appendTo($container),
+				$footer = $('<div class="footer"/>').appendTo($container);
+
+			this.base($container, this.settings);
+
+			this.$buttons = $('<div class="buttons rightalign"/>').appendTo($footer);
+			this.$cancelBtn = $('<div class="btn">'+Craft.t('app', 'Cancel')+'</div>').appendTo(this.$buttons);
+			this.$selectBtn = $('<div class="btn disabled submit">'+Craft.t('app', 'Replace Image')+'</div>').appendTo(this.$buttons);
+			this.$selectBtn = $('<div class="btn disabled submit">'+Craft.t('app', 'Save as New Image')+'</div>').appendTo(this.$buttons);
+
+			this.$body = $body;
+
+			this.addListener(this.$cancelBtn, 'activate', 'cancel');
+			this.removeListener(this.$shade, 'click');
+
+			Craft.postActionRequest('assets/image-editor', {assetId: this.assetId}, $.proxy(this, 'loadEditor'));
+
+		},
+
+		loadEditor: function (data)
+		{
+			this.$body.html(data.html);
+			this.canvas = this.$body.find('canvas')[0];
+			this.canvasContext = this.canvas.getContext("2d");
+
+			this.imageHeight = this.originalImageHeight = data.imageData.height;
+			this.imageWidth = this.originalImageWidth = data.imageData.width;
+			this.imageUrl = data.imageData.url;
+			this.aspectRatio = this.imageHeight / this.imageWidth;
+			this.initImage($.proxy(this, 'updateSizeAndPosition'));
+			this.addListeners();
+		},
+
+		updateSizeAndPosition: function()
+		{
+			if (!this.imageLoaded)
+			{
+				this.base();
+			}
+			else
+			{
+				this.redrawEditor();
+			}
+		},
+
+		cancel: function ()
+		{
+			this.hide();
+			this.destroy();
+		},
+
+		hide: function ()
+		{
+			this.removeListeners();
+			this.base();
+		},
+
+		initImage: function (callback)
+		{
+			this.$img = $('<img />');
+
+			this.$img.attr('src', this.imageUrl).on('load', $.proxy(function ()
+			{
+				this.imageLoaded = true;
+				callback();
+			}, this));
+		},
+
+		redrawEditor: function ()
+		{
+			var desiredHeight = 600,
+				desiredWidth = 600;
+
+			if (this.imageLoaded)
+			{
+				desiredHeight = this.originalImageHeight;
+				desiredWidth = this.originalImageWidth;
+			}
+
+			var availableHeight = Garnish.$win.height() - (4 * this.paddingSize) - this.$container.find('.footer').outerHeight(),
+				availableWidth = Garnish.$win.width() - (5 * this.paddingSize) - this.$container.find('.image-tools').outerWidth();
+
+			// Make the image area square, so we can rotate it comfortably.
+			var imageHolderSize = Math.max(parseInt(this.$container.find('.image-tools').css('min-height'), 10), Math.min(availableHeight, availableWidth));
+
+			// Set it all up!
+			var containerWidth = imageHolderSize + this.$container.find('.image-tools').outerWidth() + (3 * this.paddingSize),
+				containerHeight = imageHolderSize + this.$container.find('.footer').outerHeight() + (2 * this.paddingSize);
+
+			this.$container.width(containerWidth).height(containerHeight)
+				.find('.image-holder').width(imageHolderSize).height(imageHolderSize);
+
+			this.canvasImageHeight = this.canvasImageWidth = imageHolderSize;
+
+			this.$container.find('.image-tools').height(imageHolderSize + (2 * this.paddingSize));
+
+			// Re-center.
+			this.$container.css('left', Math.round((Garnish.$win.width() - containerWidth) / 2));
+			this.$container.css('top', Math.round((Garnish.$win.height() - containerHeight) / 2));
+
+			if (this.imageLoaded)
+			{
+				this.renderImage(true);
+			}
+		},
+
+		renderImage: function (drawFrame, recalculateZoomRatio)
+		{
+
+			this.canvas.height = this.canvasImageHeight;
+			this.canvas.width = this.canvasImageWidth;
+
+			var yRatio = this.originalImageHeight / this.canvasImageHeight;
+			var xRatio = this.originalImageWidth / this.canvasImageWidth;
+
+			// Figure out the size
+			if (xRatio > 1 || yRatio > 1)
+			{
+				if (xRatio > yRatio)
+				{
+					this.imageWidth = this.canvasImageWidth;
+					this.imageHeight = this.imageWidth * this.aspectRatio;
+				}
+				else
+				{
+					this.imageHeight = this.canvasImageHeight;
+					this.imageWidth = this.imageHeight / this.aspectRatio;
+				}
+			}
+
+			// Clear canvas
+			this.canvasContext.clearRect(0, 0, this.canvasImageWidth, this.canvasImageHeight);
+
+			// Calculate the zoom ratio unless we're in the middle of an animation
+			// or we're forced to (when resetting the straighten slider)
+			if (!this.animationInProgress || recalculateZoomRatio)
+			{
+				// For non-straightened images we know the zoom is going to be 1
+				if (this.rotation % 90 == 0)
+				{
+					this.zoomRatio = 1;
+				}
+				else
+				{
+					var rectangle = this.calculateLargestProportionalRectangle(this.rotation, this.imageWidth, this.imageHeight);
+					this.zoomRatio = Math.max(this.imageWidth / rectangle.w, this.imageHeight / rectangle.h);
+				}
+
+			}
+
+			// Remember the current context
+			this.canvasContext.save();
+
+			// Move (0,0) to center of canvas and rotate around it
+			this.canvasContext.translate(Math.round(this.canvasImageWidth / 2), Math.round(this.canvasImageHeight / 2));
+			this.canvasContext.rotate(this.rotation * Math.PI / 180);
+
+			var adjustedHeight = this.imageHeight * this.zoomRatio,
+				adjustedWidth = this.imageWidth * this.zoomRatio;
+
+			// Draw the rotated image
+			this.canvasContext.drawImage(this.$img[0], 0, 0, this.originalImageWidth, this.originalImageHeight,
+				-(adjustedWidth / 2), -(adjustedHeight / 2), adjustedWidth, adjustedHeight);
+
+			this.canvasContext.restore();
+
+			if (drawFrame)
+			{
+				this.drawFrame();
+			}
+
+			if (this.drawGridLines)
+			{
+				this.drawGrid();
+			}
+
+			this.clipImage();
+		},
+
+		addListeners: function ()
+		{
+			this.$container.find('a.rotate.clockwise').on('click', $.proxy(function ()
+			{
+				if (!this.animationInProgress)
+				{
+					this.addOperation({imageRotation: 90});
+					this.rotate(90);
+				}
+			}, this));
+			this.$container.find('a.rotate.counter-clockwise').on('click', $.proxy(function ()
+			{
+				if (!this.animationInProgress)
+				{
+					this.addOperation({imageRotation: -90});
+					this.rotate(-90);
+				}
+			}, this));
+
+			var straighten = this.$container.find('.straighten')[0];
+
+			straighten.oninput = $.proxy(this, 'straightenImage');
+			straighten.onchange = $.proxy(function (event)
+			{
+				this.straightenImage(event, true);
+			}, this);
+
+
+			straighten.onmousedown = $.proxy(function ()
+			{
+				this.showGridLines();
+				this.renderImage(true);
+			}, this);
+
+			straighten.onmouseup = $.proxy(function ()
+			{
+				this.hideGridLines();
+				this.renderImage(true);
+			}, this);
+
+			$('.rotate.reset').on('click', $.proxy(function ()
+			{
+				this.$container.find('.straighten').val(0);
+				this.setStraightenOffset(0, false, true, true);
+			}, this));
+
+			// TODO: remove magic numbers and move them to Garnish Constants
+			this.addListener(Garnish.$doc, 'keydown', $.proxy(function (ev)
+			{
+				// CMD/CTRL + Y, CMD/CTRL + SHIFT + Z
+				if ((ev.metaKey || ev.ctrlKey) && (ev.keyCode == 89 || (ev.keyCode == 90 && ev.shiftKey)))
+				{
+					this.redo();
+					return false;
+				}
+			}, this));
+
+			this.addListener(Garnish.$doc, 'keydown', $.proxy(function (ev)
+			{
+				if ((ev.metaKey || ev.ctrlKey) && !ev.shiftKey && ev.keyCode == 90)
+				{
+					this.undo();
+					return false;
+				}
+			}, this));
+
+		},
+
+		removeListeners: function ()
+		{
+			this.removeListener(Garnish.$doc, 'keydown');
+		},
+
+		addOperation: function (operation)
+		{
+			this.doneOperations.push(operation);
+
+			// As soon as we do something, the stack of undone operations is gone.
+			this.undoneOperations = [];
+		},
+
+		undo: function ()
+		{
+			if (this.animationInProgress)
+			{
+				return;
+			}
+
+			if (this.doneOperations.length > 0)
+			{
+				var operation = this.doneOperations.pop();
+				this.performOperation(operation, true);
+				this.undoneOperations.push(operation);
+			}
+		},
+
+		redo: function ()
+		{
+			if (this.animationInProgress)
+			{
+				return;
+			}
+			if (this.undoneOperations.length > 0)
+			{
+				var operation = this.undoneOperations.pop();
+				this.performOperation(operation, false);
+				this.doneOperations.push(operation);
+			}
+
+		},
+
+		// TODO: This is a horrible name for this function
+		performOperation: function (operation, reverse)
+		{
+			var modifier = reverse ? -1 : 1;
+
+			if (typeof operation.imageRotation != "undefined")
+			{
+				this.rotation += modifier * operation.imageRotation;
+				this.frameRotation += modifier * operation.imageRotation;
+			}
+
+			if (typeof operation.straightenOffset != "undefined")
+			{
+				var value = modifier * operation.straightenOffset;
+				this.rotation += value;
+
+				var $straighten = this.$container.find('.straighten');
+				var newValue = parseFloat($straighten.val()) + value;
+
+				// TODO: this is the part where we refactor the code a bit to be less confusing.
+				this.previousSavedSliderValue = newValue;
+				this.previousSliderValue = newValue;
+				$straighten.val(newValue);
+			}
+
+			this.renderImage(true);
+		},
+
+		rotate: function (degrees, animateInstantly, preventFrameRotation)
+		{
+			var targetDegrees = this.rotation + degrees;
+
+			if (!animateInstantly)
+			{
+				this.animationInProgress = true;
+				var degreesPerFrame = Math.round(degrees / this.animationFrames * 10) / 10;
+
+				var frameCount = 0;
+
+				var animateCanvas = function ()
+				{
+					frameCount++;
+					this.rotation += degreesPerFrame;
+
+					if (!preventFrameRotation)
+					{
+						this.frameRotation += degreesPerFrame;
+					}
+
+					this.renderImage(true, preventFrameRotation);
+					if (frameCount < this.animationFrames)
+					{
+						setTimeout($.proxy(animateCanvas, this), 1);
+					}
+					else
+					{
+						// Clean up the fractions and whatnot
+						this.rotation = targetDegrees;
+						this.cleanUpRotationDegrees();
+
+						this.renderImage(true, preventFrameRotation);
+						this.animationInProgress = false;
+					}
+				};
+
+				animateCanvas.call(this);
+			}
+			else
+			{
+				this.rotation = targetDegrees;
+				this.cleanUpRotationDegrees();
+				this.renderImage(true);
+			}
+		},
+
+		cleanUpRotationDegrees: function ()
+		{
+			this.rotation = this._cleanUpDegrees(this.rotation);
+			this.frameRotation = this._cleanUpDegrees(this.frameRotation);
+		},
+
+		/**
+		 * Ensure a degree value is within [0..360] and has at most one decimal part.
+		 */
+		_cleanUpDegrees: function (degrees)
+		{
+			if (degrees > 360)
+			{
+				degrees -= 360;
+			}
+			else if (degrees < 0)
+			{
+				degrees += 360;
+			}
+
+			degrees = Math.round(degrees * 10) / 10;
+
+			return degrees;
+		},
+
+		// Trigger operation - whether we're stopping to drag the slider and should trigger a state save
+		straightenImage: function (event, triggerOperation)
+		{
+			if (this.animationInProgress)
+			{
+				return;
+			}
+			this.setStraightenOffset($(event.currentTarget).val(), true, false, triggerOperation);
+		},
+
+		setStraightenOffset: function (degrees, animateInstantly, preventFrameRotation, triggerOperation)
+		{
+			var delta = degrees - this.previousSliderValue;
+
+			this.previousSliderValue = degrees;
+
+			if (triggerOperation)
+			{
+				this.addOperation({straightenOffset: degrees - this.previousSavedSliderValue});
+				this.previousSavedSliderValue = degrees;
+			}
+
+			this.rotate(delta, animateInstantly, preventFrameRotation);
+
+		},
+
+		showGridLines: function ()
+		{
+			this.drawGridLines = true;
+		},
+
+		hideGridLines: function ()
+		{
+			this.drawGridLines = false;
+		},
+
+		/**
+		 * Draw the frame around the image.
+		 */
+		drawFrame: function ()
+		{
+			// Remember the current context
+			this.canvasContext.save();
+
+			this.prepareImageFrameRectangle(this.canvasContext);
+
+			this.canvasContext.lineWidth = 1;
+			this.canvasContext.strokeStyle = 'rgba(0,0,0,0.6)';
+			this.canvasContext.stroke();
+
+			// Restore that context
+			this.canvasContext.restore();
+
+		},
+
+		prepareImageFrameRectangle: function (canvasContext)
+		{
+			canvasContext.translate(Math.round(this.canvasImageWidth / 2), Math.round(this.canvasImageHeight / 2));
+			canvasContext.rotate(this.frameRotation * Math.PI / 180);
+			canvasContext.rect(-(this.imageWidth / 2) + 1, -(this.imageHeight / 2) + 1, this.imageWidth - 2, this.imageHeight - 2);
+		},
+
+		/**
+		 * Draw the grid with guides for straightening.
+		 */
+		drawGrid: function ()
+		{
+			this.canvasContext.lineWidth = 1;
+
+			this.canvasContext.save();
+
+			// Rotate along the frame
+			this.canvasContext.translate(Math.round(this.canvasImageWidth / 2), Math.round(this.canvasImageHeight / 2));
+			this.canvasContext.rotate(this.frameRotation * Math.PI / 180);
+
+			var xStep = (this.imageWidth - 2) / 8;
+			var yStep = (this.imageHeight - 2) / 8;
+
+			for (var step = 0; step < 9; step++)
+			{
+				switch (step)
+				{
+					case 0:
+					case 8:
+					case 4:
+					{
+						this.canvasContext.strokeStyle = 'rgba(0,0,0,0.6)';
+						break;
+					}
+					case 2:
+					case 6:
+					{
+						this.canvasContext.strokeStyle = 'rgba(0,0,0,0.3)';
+						break;
+					}
+					default:
+					{
+						this.canvasContext.strokeStyle = 'rgba(0,0,0,0.15)';
+						break;
+					}
+
+				}
+				this.canvasContext.beginPath();
+				this.canvasContext.moveTo(-(this.imageWidth / 2) + xStep * step + 1, -(this.imageHeight / 2));
+				this.canvasContext.lineTo(-(this.imageWidth / 2) + xStep * step + 1, (this.imageHeight / 2));
+				this.canvasContext.closePath();
+				this.canvasContext.stroke();
+			}
+
+			for (step = 0; step < 9; step++)
+			{
+				switch (step)
+				{
+					case 0:
+					case 8:
+					case 4:
+					{
+						this.canvasContext.strokeStyle = 'rgba(0,0,0,0.6)';
+						break;
+					}
+					case 2:
+					case 6:
+					{
+						this.canvasContext.strokeStyle = 'rgba(0,0,0,0.3)';
+						break;
+					}
+					default:
+					{
+						this.canvasContext.strokeStyle = 'rgba(0,0,0,0.15)';
+						break;
+					}
+
+				}
+				this.canvasContext.beginPath();
+				this.canvasContext.moveTo(-(this.imageWidth / 2), -(this.imageHeight / 2) + yStep * step + 1);
+				this.canvasContext.lineTo((this.imageWidth / 2), -(this.imageHeight / 2) + yStep * step + 1);
+				this.canvasContext.closePath();
+				this.canvasContext.stroke();
+			}
+
+			this.canvasContext.restore();
+		},
+
+		/**
+		 * Add a new clipping canvas on top of the existing canvas.
+		 */
+		clipImage: function ()
+		{
+			var mask = Garnish.$doc[0].createElement('canvas');
+			mask.width = this.canvas.width;
+			mask.height = this.canvas.height;
+
+			var context = mask.getContext('2d');
+			context.fillStyle = 'white';
+			context.fillRect(0, 0, mask.width, mask.height);
+			context.globalCompositeOperation = 'xor';
+			this.prepareImageFrameRectangle(context);
+			context.fill();
+
+			this.canvasContext.drawImage(mask, 0, 0);
+
+		},
+
+		/**
+		 * Calculate the largest possible rectangle within a rotated rectangle.
+		 * Adapted from http://stackoverflow.com/a/18402507/2040791
+		 */
+		calculateLargestProportionalRectangle: function(angle, origWidth, origHeight)
+		{
+
+			var w0, h0;
+
+			if (origWidth <= origHeight)
+			{
+				w0 = origWidth;
+				h0 = origHeight;
+			}
+			else
+			{
+				w0 = origHeight;
+				h0 = origWidth;
+			}
+
+			// Angle normalization in range [-PI..PI)
+			if (angle > 180)
+			{
+				angle = 180 - angle;
+			}
+			if (angle < 0)
+			{
+				angle = angle + 180;
+			}
+			var ang = angle * (Math.PI / 180);
+
+			if (ang > Math.PI / 2)
+			{
+				ang = Math.PI - ang;
+			}
+
+			var c = w0 / (h0 * Math.sin(ang) + w0 * Math.cos(ang)),
+				w, h;
+
+			if (origWidth <= origHeight)
+			{
+				w = w0 * c;
+				h = h0 * c;
+			}
+			else
+			{
+				w = h0 * c;
+				h = w0 * c;
+			}
+
+			return { w: w, h: h};
+		}
+
+	},
+	{
+		defaults: {
+			resizable: false,
+			shadeClass: "assetEditor"
+		}
+	}
+);
+
+/**
  * Asset index class
  */
 Craft.AssetIndex = Craft.BaseElementIndex.extend(
@@ -5218,9 +5912,10 @@ Craft.AssetIndex = Craft.BaseElementIndex.extend(
 				{
 					// Make sure it's a volume folder
 					var $source = this.$sources.eq(i);
-					if (this._getFolderIdFromSourceKey($source.data('key'))) {
-						targets.push($source);
+					if (!this._getFolderIdFromSourceKey($source.data('key'))) {
+						continue;
 					}
+					targets.push($source);
 				}
 
 				return targets;
@@ -5246,12 +5941,14 @@ Craft.AssetIndex = Craft.BaseElementIndex.extend(
 					draggees = [];
 
 				for (var i = 0; i < $selected.length; i++) {
-					if (this._getFolderIdFromSourceKey($selected.data('key'))) {
-						var $source = $selected.eq(i).parent();
+					var $source = $selected.eq(i).parent();
 
-						if ($source.hasClass('sel') && this._getSourceLevel($source) > 1) {
-							draggees.push($source[0]);
-						}
+					if (!this._getFolderIdFromSourceKey($source.data('key'))) {
+						continue;
+					}
+
+					if ($source.hasClass('sel') && this._getSourceLevel($source) > 1) {
+						draggees.push($source[0]);
 					}
 				}
 
@@ -5295,7 +5992,11 @@ Craft.AssetIndex = Craft.BaseElementIndex.extend(
 					var $source = this.$sources.eq(i),
 						key = $source.data('key');
 
-					if (this._getFolderIdFromSourceKey(key) && !Craft.inArray(key, draggedSourceIds)) {
+					if (!this._getFolderIdFromSourceKey(key)) {
+						continue;
+					}
+
+					if (!Craft.inArray(key, draggedSourceIds)) {
 						targets.push($source);
 					}
 				}
@@ -6331,18 +7032,20 @@ Craft.AssetIndex = Craft.BaseElementIndex.extend(
 	_createFolderContextMenu: function($source)
 	{
 		// Make sure it's a volume folder
-		if (this._getFolderIdFromSourceKey($source.data('key'))) {
-			var menuOptions = [{ label: Craft.t('app', 'New subfolder'), onClick: $.proxy(this, '_createSubfolder', $source) }];
-
-			// For all folders that are not top folders
-			if (this.settings.context == 'index' && this._getSourceLevel($source) > 1)
-			{
-				menuOptions.push({ label: Craft.t('app', 'Rename folder'), onClick: $.proxy(this, '_renameFolder', $source) });
-				menuOptions.push({ label: Craft.t('app', 'Delete folder'), onClick: $.proxy(this, '_deleteFolder', $source) });
-			}
-
-			new Garnish.ContextMenu($source, menuOptions, {menuClass: 'menu'});
+		if (!this._getFolderIdFromSourceKey($source.data('key'))) {
+			return;
 		}
+
+		var menuOptions = [{ label: Craft.t('app', 'New subfolder'), onClick: $.proxy(this, '_createSubfolder', $source) }];
+
+		// For all folders that are not top folders
+		if (this.settings.context == 'index' && this._getSourceLevel($source) > 1)
+		{
+			menuOptions.push({ label: Craft.t('app', 'Rename folder'), onClick: $.proxy(this, '_renameFolder', $source) });
+			menuOptions.push({ label: Craft.t('app', 'Delete folder'), onClick: $.proxy(this, '_deleteFolder', $source) });
+		}
+
+		new Garnish.ContextMenu($source, menuOptions, {menuClass: 'menu'});
 	},
 
 	_createSubfolder: function($parentFolder)
@@ -6552,7 +7255,7 @@ Craft.AssetIndex = Craft.BaseElementIndex.extend(
 });
 
 // Register it!
-Craft.registerElementIndexClass('craft\\app\\elements\\Asset', Craft.AssetIndex);
+Craft.registerElementIndexClass('craft\\elements\\Asset', Craft.AssetIndex);
 
 /**
  * Asset Select input
@@ -6990,7 +7693,7 @@ Craft.AssetSelectorModal = Craft.BaseElementSelectorModal.extend(
 });
 
 // Register it!
-Craft.registerElementSelectorModalClass('craft\\app\\elements\\Asset', Craft.AssetSelectorModal);
+Craft.registerElementSelectorModalClass('craft\\elements\\Asset', Craft.AssetSelectorModal);
 
 /**
  * AuthManager class
@@ -7468,1495 +8171,6 @@ Craft.AuthManager = Garnish.Base.extend(
 });
 
 /**
- * CP class
- */
-Craft.CP = Garnish.Base.extend(
-{
-	authManager: null,
-
-	$container: null,
-	$alerts: null,
-	$globalSidebar: null,
-	$globalSidebarTopbar: null,
-	$siteNameLink: null,
-	$siteName: null,
-	$nav: null,
-	$subnav: null,
-	$pageHeader: null,
-	$containerTopbar: null,
-
-	$overflowNavMenuItem: null,
-	$overflowNavMenuBtn: null,
-	$overflowNavMenu: null,
-	$overflowNavMenuList: null,
-
-	$overflowSubnavMenuItem: null,
-	$overflowSubnavMenuBtn: null,
-	$overflowSubnavMenu: null,
-	$overflowSubnavMenuList: null,
-
-	$notificationWrapper: null,
-	$notificationContainer: null,
-	$main: null,
-	$content: null,
-	$collapsibleTables: null,
-	$primaryForm: null,
-
-	navItems: null,
-	totalNavItems: null,
-	visibleNavItems: null,
-	totalNavWidth: null,
-	showingOverflowNavMenu: false,
-	showingNavToggle: null,
-	showingSidebarToggle: null,
-
-	subnavItems: null,
-	totalSubnavItems: null,
-	visibleSubnavItems: null,
-	totalSubnavWidth: null,
-	showingOverflowSubnavMenu: false,
-
-	selectedItemLabel: null,
-
-	fixedNotifications: false,
-
-	runningTaskInfo: null,
-	trackTaskProgressTimeout: null,
-	taskProgressIcon: null,
-
-	$edition: null,
-	upgradeModal: null,
-
-	checkingForUpdates: false,
-	forcingRefreshOnUpdatesCheck: false,
-	checkForUpdatesCallbacks: null,
-
-	init: function()
-	{
-		// Is this session going to expire?
-		if (Craft.remainingSessionTime != 0)
-		{
-			this.authManager = new Craft.AuthManager();
-		}
-
-		// Find all the key elements
-		this.$container = $('#container');
-		this.$alerts = $('#alerts');
-		this.$globalSidebar = $('#global-sidebar');
-		this.$pageHeader = $('#page-header');
-		this.$containerTopbar = $('#container').find('.topbar');
-		this.$globalSidebarTopbar = this.$globalSidebar.children('.topbar');
-		this.$siteNameLink = this.$globalSidebarTopbar.children('a.site-name');
-		this.$siteName = this.$siteNameLink.children('h2');
-		this.$nav = $('#nav');
-		this.$subnav = $('#subnav');
-		this.$sidebar = $('#sidebar');
-		this.$notificationWrapper = $('#notifications-wrapper');
-		this.$notificationContainer = $('#notifications');
-		this.$main = $('#main');
-		this.$content = $('#content');
-		this.$collapsibleTables = $('table.collapsible');
-		this.$edition = $('#edition');
-
-		// global sidebar
-		this.addListener(Garnish.$win, 'touchend', 'updateResponsiveGlobalSidebar');
-
-		// Find all the nav items
-		this.navItems = [];
-		this.totalNavWidth = Craft.CP.baseNavWidth;
-
-		var $navItems = this.$nav.children();
-		this.totalNavItems = $navItems.length;
-		this.visibleNavItems = this.totalNavItems;
-
-		for (var i = 0; i < this.totalNavItems; i++)
-		{
-			var $li = $($navItems[i]),
-				width = $li.width();
-
-			this.navItems.push($li);
-			this.totalNavWidth += width;
-		}
-
-		// Find all the sub nav items
-		this.subnavItems = [];
-		this.totalSubnavWidth = Craft.CP.baseSubnavWidth;
-
-		var $subnavItems = this.$subnav.children();
-		this.totalSubnavItems = $subnavItems.length;
-		this.visibleSubnavItems = this.totalSubnavItems;
-
-		for (var i = 0; i < this.totalSubnavItems; i++)
-		{
-			var $li = $($subnavItems[i]),
-				width = $li.width();
-
-			this.subnavItems.push($li);
-			this.totalSubnavWidth += width;
-		}
-
-		// sidebar
-
-		this.addListener(this.$sidebar.find('nav ul'), 'resize', 'updateResponsiveSidebar');
-
-		this.$sidebarLinks = $('nav a', this.$sidebar);
-		this.addListener(this.$sidebarLinks, 'click', 'selectSidebarItem');
-
-
-		this.addListener(this.$container, 'scroll', 'updateFixedNotifications');
-		this.updateFixedNotifications();
-
-		Garnish.$doc.ready($.proxy(function()
-		{
-			// Set up the window resize listener
-			this.addListener(Garnish.$win, 'resize', 'onWindowResize');
-			this.onWindowResize();
-
-			// Fade the notification out two seconds after page load
-			var $errorNotifications = this.$notificationContainer.children('.error'),
-				$otherNotifications = this.$notificationContainer.children(':not(.error)');
-
-			$errorNotifications.delay(Craft.CP.notificationDuration * 2).velocity('fadeOut');
-			$otherNotifications.delay(Craft.CP.notificationDuration).velocity('fadeOut');
-		}, this));
-
-		// Alerts
-		if (this.$alerts.length)
-		{
-			this.initAlerts();
-		}
-
-		// Does this page have a primary form?
-		if (this.$container.prop('nodeName') == 'FORM')
-		{
-			this.$primaryForm = this.$container;
-		}
-		else
-		{
-			this.$primaryForm = $('form[data-saveshortcut]:first');
-		}
-
-		// Does the primary form support the save shortcut?
-		if (this.$primaryForm.length && Garnish.hasAttr(this.$primaryForm, 'data-saveshortcut'))
-		{
-			this.addListener(Garnish.$doc, 'keydown', function(ev)
-			{
-				if (Garnish.isCtrlKeyPressed(ev) && ev.keyCode == Garnish.S_KEY)
-				{
-					ev.preventDefault();
-					this.submitPrimaryForm();
-				}
-
-				return true;
-			});
-		}
-
-		Garnish.$win.on('load', $.proxy(function()
-		{
-			// Look for forms that we should watch for changes on
-			this.$confirmUnloadForms = $('form[data-confirm-unload]');
-
-			if (this.$confirmUnloadForms.length)
-			{
-				if (!Craft.forceConfirmUnload)
-				{
-					this.initialFormValues = [];
-				}
-
-				for (var i = 0; i < this.$confirmUnloadForms.length; i++)
-				{
-					var $form = $(this.$confirmUnloadForms);
-
-					if (!Craft.forceConfirmUnload)
-					{
-						this.initialFormValues[i] = $form.serialize();
-					}
-
-					this.addListener($form, 'submit', function()
-					{
-						this.removeListener(Garnish.$win, 'beforeunload');
-					});
-				}
-
-				this.addListener(Garnish.$win, 'beforeunload', function(ev)
-				{
-					for (var i = 0; i < this.$confirmUnloadForms.length; i++)
-					{
-						if (
-							Craft.forceConfirmUnload ||
-							this.initialFormValues[i] != $(this.$confirmUnloadForms[i]).serialize()
-						)
-						{
-							var message = Craft.t('app', 'Any changes will be lost if you leave this page.');
-
-							if (ev)
-							{
-								ev.originalEvent.returnValue = message;
-							}
-							else
-							{
-								window.event.returnValue = message;
-							}
-
-							return message;
-						}
-					}
-				});
-			}
-		}, this));
-
-		if (this.$edition.hasClass('hot'))
-		{
-			this.addListener(this.$edition, 'click', 'showUpgradeModal');
-		}
-	},
-
-	submitPrimaryForm: function()
-	{
-		// Give other stuff on the page a chance to prepare
-		this.trigger('beforeSaveShortcut');
-
-		if (this.$primaryForm.data('saveshortcut-redirect'))
-		{
-			$('<input type="hidden" name="redirect" value="'+this.$primaryForm.data('saveshortcut-redirect')+'"/>').appendTo(this.$primaryForm);
-		}
-
-		this.$primaryForm.submit();
-	},
-
-	updateSidebarMenuLabel: function()
-	{
-		Garnish.$win.trigger('resize');
-
-		var $selectedLink = $('a.sel:first', this.$sidebar);
-
-		this.selectedItemLabel = $selectedLink.html();
-	},
-
-	/**
-	 * Handles stuff that should happen when the window is resized.
-	 */
-	onWindowResize: function()
-	{
-		// Get the new window width
-		this.onWindowResize._cpWidth = Math.min(Garnish.$win.width(), Craft.CP.maxWidth);
-
-
-		// Update the responsive global sidebar
-		this.updateResponsiveGlobalSidebar();
-
-		// Update the responsive nav
-		this.updateResponsiveNav();
-
-		// Update the responsive sidebar
-		this.updateResponsiveSidebar();
-
-		// Update any responsive tables
-		this.updateResponsiveTables();
-	},
-
-	updateResponsiveGlobalSidebar: function()
-	{
-		var globalSidebarHeight = window.innerHeight;
-
-		this.$globalSidebar.height(globalSidebarHeight);
-	},
-
-	updateResponsiveNav: function()
-	{
-		if(this.onWindowResize._cpWidth <= 992)
-		{
-			if (!this.showingNavToggle)
-			{
-				this.showNavToggle();
-			}
-		}
-		else
-		{
-			if (this.showingNavToggle)
-			{
-				this.hideNavToggle();
-			}
-		}
-	},
-
-	showNavToggle: function()
-	{
-		this.$navBtn = $('<a class="show-nav" title="'+Craft.t('app', 'Show nav')+'"></a>').prependTo(this.$containerTopbar);
-
-		this.addListener(this.$navBtn, 'click', 'toggleNav');
-
-		this.showingNavToggle = true;
-	},
-
-	hideNavToggle: function()
-	{
-		this.$navBtn.remove();
-		this.showingNavToggle = false;
-	},
-
-	toggleNav: function()
-	{
-		if(Garnish.$bod.hasClass('showing-nav'))
-		{
-			Garnish.$bod.toggleClass('showing-nav');
-		}
-		else
-		{
-			Garnish.$bod.toggleClass('showing-nav');
-		}
-
-	},
-
-	updateResponsiveSidebar: function()
-	{
-		if(this.$sidebar.length > 0)
-		{
-			if(this.onWindowResize._cpWidth < 769)
-			{
-				if (!this.showingSidebarToggle)
-				{
-					this.showSidebarToggle();
-				}
-			}
-			else
-			{
-				if (this.showingSidebarToggle)
-				{
-					this.hideSidebarToggle();
-				}
-			}
-		}
-	},
-
-	showSidebarToggle: function()
-	{
-		var $selectedLink = $('a.sel:first', this.$sidebar);
-
-		this.selectedItemLabel = $selectedLink.html();
-
-		this.$sidebarBtn = $('<a class="show-sidebar" title="'+Craft.t('app', 'Show sidebar')+'">'+this.selectedItemLabel+'</a>').prependTo(this.$content);
-
-		this.addListener(this.$sidebarBtn, 'click', 'toggleSidebar');
-
-		this.showingSidebarToggle = true;
-	},
-
-	selectSidebarItem: function(ev)
-	{
-		var $link = $(ev.currentTarget);
-
-		this.selectedItemLabel = $link.html();
-
-		if (this.$sidebarBtn)
-		{
-			this.$sidebarBtn.html(this.selectedItemLabel);
-
-			this.toggleSidebar();
-		}
-	},
-
-	hideSidebarToggle: function()
-	{
-		if (this.$sidebarBtn)
-		{
-			this.$sidebarBtn.remove();
-		}
-
-		this.showingSidebarToggle = false;
-	},
-
-	toggleSidebar: function()
-	{
-		var $contentWithSidebar = this.$content.filter('.has-sidebar');
-
-		$contentWithSidebar.toggleClass('showing-sidebar');
-
-		this.updateResponsiveContent();
-	},
-	updateResponsiveContent: function()
-	{
-		var $contentWithSidebar = this.$content.filter('.has-sidebar');
-
-		if($contentWithSidebar.hasClass('showing-sidebar'))
-		{
-			var sidebarHeight = $('nav', this.$sidebar).height();
-
-			if($contentWithSidebar.height() <= sidebarHeight)
-			{
-				var newContentHeight = sidebarHeight + 48;
-				$contentWithSidebar.css('height', newContentHeight+'px');
-			}
-		}
-		else
-		{
-			$contentWithSidebar.css('min-height', 0);
-			$contentWithSidebar.css('height', 'auto');
-		}
-	},
-
-	updateResponsiveTables: function()
-	{
-		for (this.updateResponsiveTables._i = 0; this.updateResponsiveTables._i < this.$collapsibleTables.length; this.updateResponsiveTables._i++)
-		{
-			this.updateResponsiveTables._$table = this.$collapsibleTables.eq(this.updateResponsiveTables._i);
-			this.updateResponsiveTables._containerWidth = this.updateResponsiveTables._$table.parent().width();
-			this.updateResponsiveTables._check = false;
-
-			if(this.updateResponsiveTables._containerWidth > 0)
-			{
-				// Is this the first time we've checked this table?
-				if (typeof this.updateResponsiveTables._$table.data('lastContainerWidth') === typeof undefined)
-				{
-					this.updateResponsiveTables._check = true;
-				}
-				else
-				{
-					this.updateResponsiveTables._isCollapsed = this.updateResponsiveTables._$table.hasClass('collapsed');
-
-					// Getting wider?
-					if (this.updateResponsiveTables._containerWidth > this.updateResponsiveTables._$table.data('lastContainerWidth'))
-					{
-						if (this.updateResponsiveTables._isCollapsed)
-						{
-							this.updateResponsiveTables._$table.removeClass('collapsed');
-							this.updateResponsiveTables._check = true;
-						}
-					}
-					else if (!this.updateResponsiveTables._isCollapsed)
-					{
-						this.updateResponsiveTables._check = true;
-					}
-				}
-
-				// Are we checking the table width?
-				if (this.updateResponsiveTables._check)
-				{
-					if (this.updateResponsiveTables._$table.width() > this.updateResponsiveTables._containerWidth)
-					{
-						this.updateResponsiveTables._$table.addClass('collapsed');
-					}
-				}
-
-				// Remember the container width for next time
-				this.updateResponsiveTables._$table.data('lastContainerWidth', this.updateResponsiveTables._containerWidth);
-			}
-		}
-	},
-
-	/**
-	 * Adds the last visible nav item to the overflow menu.
-	 */
-	addLastVisibleNavItemToOverflowMenu: function()
-	{
-		this.navItems[this.visibleNavItems-1].prependTo(this.$overflowNavMenuList);
-		this.visibleNavItems--;
-	},
-
-	/**
-	 * Adds the first overflow nav item back to the main nav menu.
-	 */
-	addFirstOverflowNavItemToMainMenu: function()
-	{
-		this.navItems[this.visibleNavItems].insertBefore(this.$overflowNavMenuItem);
-		this.visibleNavItems++;
-	},
-
-	/**
-	 * Adds the last visible nav item to the overflow menu.
-	 */
-	addLastVisibleSubnavItemToOverflowMenu: function()
-	{
-		this.subnavItems[this.visibleSubnavItems-1].prependTo(this.$overflowSubnavMenuList);
-		this.visibleSubnavItems--;
-	},
-
-	/**
-	 * Adds the first overflow nav item back to the main nav menu.
-	 */
-	addFirstOverflowSubnavItemToMainMenu: function()
-	{
-		this.subnavItems[this.visibleSubnavItems].insertBefore(this.$overflowSubnavMenuItem);
-		this.visibleSubnavItems++;
-	},
-
-	updateFixedNotifications: function()
-	{
-		this.updateFixedNotifications._headerHeight = this.$globalSidebar.height();
-
-		if (this.$container.scrollTop() > this.updateFixedNotifications._headerHeight)
-		{
-			if (!this.fixedNotifications)
-			{
-				this.$notificationWrapper.addClass('fixed');
-				this.fixedNotifications = true;
-			}
-		}
-		else
-		{
-			if (this.fixedNotifications)
-			{
-				this.$notificationWrapper.removeClass('fixed');
-				this.fixedNotifications = false;
-			}
-		}
-	},
-
-	/**
-	 * Dispays a notification.
-	 *
-	 * @param {string} type
-	 * @param {string} message
-	 */
-	displayNotification: function(type, message)
-	{
-		var notificationDuration = Craft.CP.notificationDuration;
-
-		if (type == 'error')
-		{
-			notificationDuration *= 2;
-		}
-
-		var $notification = $('<div class="notification '+type+'">'+message+'</div>')
-			.appendTo(this.$notificationContainer);
-
-		var fadedMargin = -($notification.outerWidth()/2)+'px';
-
-		$notification
-			.hide()
-			.css({ opacity: 0, 'margin-left': fadedMargin, 'margin-right': fadedMargin })
-			.velocity({ opacity: 1, 'margin-left': '2px', 'margin-right': '2px' }, { display: 'inline-block', duration: 'fast' })
-			.delay(notificationDuration)
-			.velocity({ opacity: 0, 'margin-left': fadedMargin, 'margin-right': fadedMargin }, {
-				complete: function() {
-					$notification.remove();
-				}
-			});
-
-		this.trigger('displayNotification', {
-			notificationType: type,
-			message: message
-		});
-	},
-
-	/**
-	 * Displays a notice.
-	 *
-	 * @param {string} message
-	 */
-	displayNotice: function(message)
-	{
-		this.displayNotification('notice', message);
-	},
-
-	/**
-	 * Displays an error.
-	 *
-	 * @param {string} message
-	 */
-	displayError: function(message)
-	{
-		if (!message)
-		{
-			message = Craft.t('app', 'An unknown error occurred.');
-		}
-
-		this.displayNotification('error', message);
-	},
-
-	fetchAlerts: function()
-	{
-		var data = {
-			path: Craft.path
-		};
-
-		Craft.queueActionRequest('app/get-cp-alerts', data, $.proxy(this, 'displayAlerts'));
-	},
-
-	displayAlerts: function(alerts)
-	{
-		if (Garnish.isArray(alerts) && alerts.length)
-		{
-			this.$alerts = $('<ul id="alerts"/>').insertBefore(this.$containerTopbar);
-
-			for (var i = 0; i < alerts.length; i++)
-			{
-				$('<li>'+alerts[i]+'</li>').appendTo(this.$alerts);
-			}
-
-			var height = this.$alerts.outerHeight();
-			this.$alerts.css('margin-top', -height).velocity({ 'margin-top': 0 }, 'fast');
-
-			this.initAlerts();
-		}
-	},
-
-	initAlerts: function()
-	{
-		// Is there a domain mismatch?
-		var $transferDomainLink = this.$alerts.find('.domain-mismatch:first');
-
-		if ($transferDomainLink.length)
-		{
-			this.addListener($transferDomainLink, 'click', $.proxy(function(ev)
-			{
-				ev.preventDefault();
-
-				if (confirm(Craft.t('app', 'Are you sure you want to transfer your license to this domain?')))
-				{
-					Craft.queueActionRequest('app/transfer-license-to-current-domain', $.proxy(function(response, textStatus)
-					{
-						if (textStatus == 'success')
-						{
-							if (response.success)
-							{
-								$transferDomainLink.parent().remove();
-								this.displayNotice(Craft.t('app', 'License transferred.'));
-							}
-							else
-							{
-								this.displayError(response.error);
-							}
-						}
-
-					}, this));
-				}
-			}, this));
-		}
-
-		// Are there any shunnable alerts?
-		var $shunnableAlerts = this.$alerts.find('a[class^="shun:"]');
-
-		for (var i = 0; i < $shunnableAlerts.length; i++)
-		{
-			this.addListener($shunnableAlerts[i], 'click', $.proxy(function(ev)
-			{
-				ev.preventDefault();
-
-				var $link = $(ev.currentTarget);
-
-				var data = {
-					message: $link.prop('className').substr(5)
-				};
-
-				Craft.queueActionRequest('app/shun-cp-alert', data, $.proxy(function(response, textStatus)
-				{
-					if (textStatus == 'success')
-					{
-						if (response.success)
-						{
-							$link.parent().remove();
-						}
-						else
-						{
-							this.displayError(response.error);
-						}
-					}
-
-				}, this));
-
-			}, this));
-		}
-
-		// Is there an edition resolution link?
-		var $editionResolutionLink = this.$alerts.find('.edition-resolution:first');
-
-		if ($editionResolutionLink.length)
-		{
-			this.addListener($editionResolutionLink, 'click', 'showUpgradeModal');
-		}
-	},
-
-	checkForUpdates: function(forceRefresh, callback)
-	{
-		// If forceRefresh == true, we're currently checking for updates, and not currently forcing a refresh,
-		// then just seta new callback that re-checks for updates when the current one is done.
-		if (this.checkingForUpdates && forceRefresh === true && !this.forcingRefreshOnUpdatesCheck)
-		{
-			var realCallback = callback;
-
-			callback = function() {
-				Craft.cp.checkForUpdates(true, realCallback);
-			};
-		}
-
-		// Callback function?
-		if (typeof callback == 'function')
-		{
-			if (!Garnish.isArray(this.checkForUpdatesCallbacks))
-			{
-				this.checkForUpdatesCallbacks = [];
-			}
-
-			this.checkForUpdatesCallbacks.push(callback);
-		}
-
-		if (!this.checkingForUpdates)
-		{
-			this.checkingForUpdates = true;
-			this.forcingRefreshOnUpdatesCheck = (forceRefresh === true);
-
-			var data = {
-				forceRefresh: (forceRefresh === true)
-			};
-
-			Craft.queueActionRequest('app/check-for-updates', data, $.proxy(function(info)
-			{
-				this.displayUpdateInfo(info);
-				this.checkingForUpdates = false;
-
-				if (Garnish.isArray(this.checkForUpdatesCallbacks))
-				{
-					var callbacks = this.checkForUpdatesCallbacks;
-					this.checkForUpdatesCallbacks = null;
-
-					for (var i = 0; i < callbacks.length; i++)
-					{
-						callbacks[i](info);
-					}
-				}
-
-				this.trigger('checkForUpdates', {
-					updateInfo: info
-				});
-			}, this));
-		}
-	},
-
-	displayUpdateInfo: function(info)
-	{
-		// Remove the existing header badge, if any
-		this.$globalSidebarTopbar.children('a.updates').remove();
-
-		if (info.total)
-		{
-			var updateText;
-
-			if (info.total == 1)
-			{
-				updateText = Craft.t('app', '1 update available');
-			}
-			else
-			{
-				updateText = Craft.t('app', '{num} updates available', { num: info.total });
-			}
-
-			// Topbar badge
-			$('<a class="updates'+(info.critical ? ' critical' : '')+'" href="'+Craft.getUrl('updates')+'" title="'+updateText+'">' +
-				'<span data-icon="newstamp">' +
-					'<span>'+info.total+'</span>' +
-				'</span>' +
-			'</span>').insertAfter(this.$siteNameLink);
-
-			// Footer link
-			$('#footer-updates').text(updateText);
-		}
-	},
-
-	runPendingTasks: function()
-	{
-		if (Craft.runTasksAutomatically)
-		{
-			Craft.queueActionRequest('tasks/run-pending-tasks', $.proxy(function(taskInfo, textStatus)
-			{
-				if (textStatus == 'success')
-				{
-					this.trackTaskProgress(0);
-				}
-			}, this));
-		}
-		else
-		{
-			this.trackTaskProgress(0);
-		}
-	},
-
-	trackTaskProgress: function(delay)
-	{
-		// Ignore if we're already tracking tasks
-		if (this.trackTaskProgressTimeout)
-		{
-			return;
-		}
-
-		this.trackTaskProgressTimeout = setTimeout($.proxy(function()
-		{
-			Craft.queueActionRequest('tasks/get-running-task-info', $.proxy(function(response, textStatus)
-			{
-				if (textStatus == 'success')
-				{
-					this.trackTaskProgressTimeout = null;
-					this.setRunningTaskInfo(response.task, true);
-
-					if (response.task)
-					{
-						if (response.task.status == 'running')
-						{
-							// Check again in one second
-							this.trackTaskProgress();
-						}
-						else if (response.task.status == 'pending')
-						{
-							// Check again in 30 seconds
-							this.trackTaskProgress(30000);
-						}
-					}
-				}
-			}, this));
-		}, this), (typeof delay != typeof undefined ? delay : Craft.CP.taskTrackerUpdateInterval));
-	},
-
-	stopTrackingTaskProgress: function()
-	{
-		if (this.trackTaskProgressTimeout)
-		{
-			clearTimeout(this.trackTaskProgressTimeout);
-			this.trackTaskProgressTimeout = null;
-		}
-	},
-
-	setRunningTaskInfo: function(taskInfo, animateIcon)
-	{
-		this.runningTaskInfo = taskInfo;
-
-		if (taskInfo)
-		{
-			if (!this.taskProgressIcon)
-			{
-				this.taskProgressIcon = new TaskProgressIcon();
-			}
-
-			if (taskInfo.status == 'running' || taskInfo.status == 'pending')
-			{
-				this.taskProgressIcon.hideFailMode();
-				this.taskProgressIcon.setDescription(taskInfo.description);
-				this.taskProgressIcon.setProgress(taskInfo.progress, animateIcon);
-			}
-			else if (taskInfo.status == 'error')
-			{
-				this.taskProgressIcon.showFailMode();
-			}
-		}
-		else
-		{
-			if (this.taskProgressIcon)
-			{
-				this.taskProgressIcon.hideFailMode();
-				this.taskProgressIcon.complete();
-				delete this.taskProgressIcon;
-			}
-		}
-	},
-
-	showUpgradeModal: function()
-	{
-		if (!this.upgradeModal)
-		{
-			this.upgradeModal = new Craft.UpgradeModal();
-		}
-		else
-		{
-			this.upgradeModal.show();
-		}
-	}
-},
-{
-	maxWidth: 1051, //1024,
-	navHeight: 38,
-	baseNavWidth: 30,
-	subnavHeight: 38,
-	baseSubnavWidth: 30,
-	notificationDuration: 2000,
-
-	taskTrackerUpdateInterval: 1000,
-	taskTrackerHudUpdateInterval: 500
-});
-
-Craft.cp = new Craft.CP();
-
-
-/**
- * Task progress icon class
- */
-var TaskProgressIcon = Garnish.Base.extend(
-{
-	$li: null,
-	$a: null,
-	$label: null,
-
-	hud: null,
-	completed: false,
-	failMode: false,
-
-	_canvasSupported: null,
-
-	_$bgCanvas: null,
-	_$staticCanvas: null,
-	_$hoverCanvas: null,
-	_$failCanvas: null,
-
-	_staticCtx: null,
-	_hoverCtx: null,
-	_canvasSize: null,
-	_arcPos: null,
-	_arcRadius: null,
-	_lineWidth: null,
-
-	_arcStartPos: 0,
-	_arcEndPos: 0,
-	_arcStartStepSize: null,
-	_arcEndStepSize: null,
-	_arcStep: null,
-	_arcStepTimeout: null,
-	_arcAnimateCallback: null,
-
-	_progressBar: null,
-
-	init: function()
-	{
-		this.$li = $('<li/>').appendTo(Craft.cp.$nav);
-		this.$a = $('<a id="taskicon"/>').appendTo(this.$li);
-		this.$canvasContainer = $('<span class="icon"/>').appendTo(this.$a);
-		this.$label = $('<span class="label"></span>').appendTo(this.$a);
-
-		this._canvasSupported = !!(document.createElement('canvas').getContext);
-
-		if (this._canvasSupported)
-		{
-			var m = (window.devicePixelRatio > 1 ? 2 : 1);
-			this._canvasSize = 18 * m;
-			this._arcPos = this._canvasSize / 2;
-			this._arcRadius = 7 * m;
-			this._lineWidth = 3 * m;
-
-			this._$bgCanvas     = this._createCanvas('bg', '#61666b');
-			this._$staticCanvas = this._createCanvas('static', '#d7d9db');
-			this._$hoverCanvas  = this._createCanvas('hover', '#fff');
-			this._$failCanvas   = this._createCanvas('fail', '#da5a47').hide();
-
-			this._staticCtx = this._$staticCanvas[0].getContext('2d');
-			this._hoverCtx = this._$hoverCanvas[0].getContext('2d');
-
-			this._drawArc(this._$bgCanvas[0].getContext('2d'), 0, 1);
-			this._drawArc(this._$failCanvas[0].getContext('2d'), 0, 1);
-		}
-		else
-		{
-			this._progressBar = new Craft.ProgressBar(this.$canvasContainer);
-			this._progressBar.showProgressBar();
-		}
-
-		this.addListener(this.$a, 'click', 'toggleHud');
-	},
-
-	setDescription: function(description)
-	{
-		this.$a.attr('title', description);
-		this.$label.html(description);
-	},
-
-	setProgress: function(progress, animate)
-	{
-		if (this._canvasSupported)
-		{
-			if (animate)
-			{
-				this._animateArc(0, progress);
-			}
-			else
-			{
-				this._setArc(0, progress);
-			}
-		}
-		else
-		{
-			this._progressBar.setProgressPercentage(progress * 100);
-		}
-	},
-
-	complete: function()
-	{
-		this.completed = true;
-
-		if (this._canvasSupported)
-		{
-			this._animateArc(0, 1, $.proxy(function()
-			{
-				this._$bgCanvas.velocity('fadeOut');
-
-				this._animateArc(1, 1, $.proxy(function()
-				{
-					this.$a.remove();
-					this.destroy();
-				}, this));
-			}, this));
-		}
-		else
-		{
-			this._progressBar.setProgressPercentage(100);
-			this.$a.velocity('fadeOut');
-		}
-	},
-
-	showFailMode: function()
-	{
-		if (this.failMode)
-		{
-			return;
-		}
-
-		this.failMode = true;
-
-		if (this._canvasSupported)
-		{
-			this._$bgCanvas.hide();
-			this._$staticCanvas.hide();
-			this._$hoverCanvas.hide();
-			this._$failCanvas.show();
-		}
-		else
-		{
-			this._progressBar.$progressBar.css('border-color', '#da5a47');
-			this._progressBar.$innerProgressBar.css('background-color', '#da5a47');
-			this._progressBar.setProgressPercentage(50);
-		}
-
-		this.setDescription(Craft.t('app', 'Failed task'));
-	},
-
-	hideFailMode: function()
-	{
-		if (!this.failMode)
-		{
-			return;
-		}
-
-		this.failMode = false;
-
-		if (this._canvasSupported)
-		{
-			this._$bgCanvas.show();
-			this._$staticCanvas.show();
-			this._$hoverCanvas.show();
-			this._$failCanvas.hide();
-		}
-		else
-		{
-			this._progressBar.$progressBar.css('border-color', '');
-			this._progressBar.$innerProgressBar.css('background-color', '');
-			this._progressBar.setProgressPercentage(50);
-		}
-	},
-
-	toggleHud: function()
-	{
-		if (!this.hud)
-		{
-			this.hud = new TaskProgressHUD();
-		}
-		else
-		{
-			this.hud.toggle();
-		}
-	},
-
-	_createCanvas: function(id, color)
-	{
-		var $canvas = $('<canvas id="taskicon-'+id+'" width="'+this._canvasSize+'" height="'+this._canvasSize+'"/>').appendTo(this.$canvasContainer),
-			ctx = $canvas[0].getContext('2d');
-
-		ctx.strokeStyle = color;
-		ctx.lineWidth = this._lineWidth;
-		ctx.lineCap = 'round';
-		return $canvas;
-	},
-
-	_setArc: function(startPos, endPos)
-	{
-		this._arcStartPos = startPos;
-		this._arcEndPos = endPos;
-
-		this._drawArc(this._staticCtx, startPos, endPos);
-		this._drawArc(this._hoverCtx, startPos, endPos);
-	},
-
-	_drawArc: function(ctx, startPos, endPos)
-	{
-		ctx.clearRect(0, 0, this._canvasSize, this._canvasSize);
-		ctx.beginPath();
-		ctx.arc(this._arcPos, this._arcPos, this._arcRadius, (1.5+(startPos*2))*Math.PI, (1.5+(endPos*2))*Math.PI);
-		ctx.stroke();
-		ctx.closePath();
-	},
-
-	_animateArc: function(targetStartPos, targetEndPos, callback)
-	{
-		if (this._arcStepTimeout)
-		{
-			clearTimeout(this._arcStepTimeout);
-		}
-
-		this._arcStep = 0;
-		this._arcStartStepSize = (targetStartPos - this._arcStartPos) / 10;
-		this._arcEndStepSize = (targetEndPos - this._arcEndPos) / 10;
-		this._arcAnimateCallback = callback;
-		this._takeNextArcStep();
-	},
-
-	_takeNextArcStep: function()
-	{
-		this._setArc(this._arcStartPos+this._arcStartStepSize, this._arcEndPos+this._arcEndStepSize);
-
-		this._arcStep++;
-
-		if (this._arcStep < 10)
-		{
-			this._arcStepTimeout = setTimeout($.proxy(this, '_takeNextArcStep'), 50);
-		}
-		else if (this._arcAnimateCallback)
-		{
-			this._arcAnimateCallback();
-		}
-	}
-});
-
-var TaskProgressHUD = Garnish.HUD.extend(
-{
-	icon: null,
-
-	tasksById: null,
-	completedTasks: null,
-	updateTasksTimeout: null,
-
-	completed: false,
-
-	init: function()
-	{
-		this.icon = Craft.cp.taskProgressIcon;
-		this.tasksById = {};
-		this.completedTasks = [];
-
-		this.base(this.icon.$a);
-
-		this.$main.attr('id', 'tasks-hud');
-
-		// Use the known task as a starting point
-		if (Craft.cp.runningTaskInfo && Craft.cp.runningTaskInfo.status != 'error')
-		{
-			this.showTaskInfo([Craft.cp.runningTaskInfo]);
-		}
-
-		this.$main.trigger('resize');
-	},
-
-	onShow: function()
-	{
-		Craft.cp.stopTrackingTaskProgress();
-
-		this.updateTasks();
-		this.base();
-	},
-
-	onHide: function()
-	{
-		if (this.updateTasksTimeout)
-		{
-			clearTimeout(this.updateTasksTimeout);
-		}
-
-		if (!this.completed)
-		{
-			Craft.cp.trackTaskProgress();
-		}
-
-		// Clear out any completed tasks
-		if (this.completedTasks.length)
-		{
-			for (var i = 0; i < this.completedTasks.length; i++)
-			{
-				this.completedTasks[i].destroy();
-			}
-
-			this.completedTasks = [];
-		}
-
-		this.base();
-	},
-
-	updateTasks: function()
-	{
-		this.completed = false;
-
-		Craft.postActionRequest('tasks/get-task-info', $.proxy(function(response, textStatus)
-		{
-			if (textStatus == 'success')
-			{
-				this.showTaskInfo(response.tasks);
-			}
-		}, this));
-	},
-
-	showTaskInfo: function(taskInfo)
-	{
-		// First remove any tasks that have completed
-		var newTaskIds = [];
-
-		if (taskInfo)
-		{
-			for (var i = 0; i < taskInfo.length; i++)
-			{
-				newTaskIds.push(taskInfo[i].id);
-			}
-		}
-
-		for (var id in this.tasksById)
-		{
-			if (!this.tasksById.hasOwnProperty(id)) {
-				continue;
-			}
-
-			if (!Craft.inArray(id, newTaskIds))
-			{
-				this.tasksById[id].complete();
-				this.completedTasks.push(this.tasksById[id]);
-				delete this.tasksById[id];
-			}
-		}
-
-		// Now display the tasks that are still around
-		if (taskInfo && taskInfo.length)
-		{
-			var anyTasksRunning = false,
-				anyTasksFailed = false;
-
-			for (var i = 0; i < taskInfo.length; i++)
-			{
-				var info = taskInfo[i];
-
-				if (!anyTasksRunning && info.status == 'running')
-				{
-					anyTasksRunning = true;
-				}
-				else if (!anyTasksFailed && info.status == 'error')
-				{
-					anyTasksFailed = true;
-				}
-
-				if (this.tasksById[info.id])
-				{
-					this.tasksById[info.id].updateStatus(info);
-				}
-				else
-				{
-					this.tasksById[info.id] = new TaskProgressHUD.Task(this, info);
-
-					// Place it before the next already known task
-					for (var j = i + 1; j < taskInfo.length; j++)
-					{
-						if (this.tasksById[taskInfo[j].id])
-						{
-							this.tasksById[info.id].$container.insertBefore(this.tasksById[taskInfo[j].id].$container);
-							break;
-						}
-					}
-				}
-			}
-
-			if (anyTasksRunning)
-			{
-				this.updateTasksTimeout = setTimeout($.proxy(this, 'updateTasks'), Craft.CP.taskTrackerHudUpdateInterval);
-			}
-			else
-			{
-				this.completed = true;
-
-				if (anyTasksFailed)
-				{
-					Craft.cp.setRunningTaskInfo({ status: 'error' });
-				}
-			}
-		}
-		else
-		{
-			this.completed = true;
-			Craft.cp.setRunningTaskInfo(null);
-			this.hide();
-		}
-	}
-});
-
-TaskProgressHUD.Task = Garnish.Base.extend(
-{
-	hud: null,
-	id: null,
-	level: null,
-	description: null,
-
-	status: null,
-	progress: null,
-
-	$container: null,
-	$statusContainer: null,
-	$descriptionContainer: null,
-
-	_progressBar: null,
-
-	init: function(hud, info)
-	{
-		this.hud = hud;
-
-		this.id = info.id;
-		this.level = info.level;
-		this.description = info.description;
-
-		this.$container = $('<div class="task"/>').appendTo(this.hud.$main);
-		this.$statusContainer = $('<div class="task-status"/>').appendTo(this.$container);
-		this.$descriptionContainer = $('<div class="task-description"/>').appendTo(this.$container).text(info.description);
-
-		this.$container.data('task', this);
-
-		if (this.level != 0)
-		{
-			this.$container.css('padding-'+Craft.left, 24+(this.level*24));
-			$('<div class="indent" data-icon="'+(Craft.orientation == 'ltr' ? 'rarr' : 'larr')+'"/>').appendTo(this.$descriptionContainer);
-		}
-
-		this.updateStatus(info);
-	},
-
-	updateStatus: function(info)
-	{
-		if (this.status != info.status)
-		{
-			this.$statusContainer.empty();
-			this.status = info.status;
-
-			switch (this.status)
-			{
-				case 'pending':
-				{
-					this.$statusContainer.text(Craft.t('app', 'Pending'));
-					break;
-				}
-				case 'running':
-				{
-					this._progressBar = new Craft.ProgressBar(this.$statusContainer);
-					this._progressBar.showProgressBar();
-					break;
-				}
-				case 'error':
-				{
-					$('<span class="error">'+Craft.t('app', 'Failed')+'</span>').appendTo(this.$statusContainer);
-
-					if (this.level == 0)
-					{
-						var $actionBtn = $('<a class="menubtn error" title="'+Craft.t('app', 'Options')+'"/>').appendTo(this.$statusContainer);
-						$(
-							'<div class="menu">' +
-								'<ul>' +
-									'<li><a data-action="rerun">'+Craft.t('app', 'Try again')+'</a></li>' +
-									'<li><a data-action="cancel">'+Craft.t('app', 'Cancel')+'</a></li>' +
-								'</ul>' +
-							'</div>'
-						).appendTo(this.$statusContainer);
-
-						new Garnish.MenuBtn($actionBtn, {
-							onOptionSelect: $.proxy(this, 'performErrorAction')
-						});
-					}
-
-					break;
-				}
-			}
-		}
-
-		if (this.status == 'running')
-		{
-			this._progressBar.setProgressPercentage(info.progress*100);
-
-			if (this.level == 0)
-			{
-				// Update the task icon
-				Craft.cp.setRunningTaskInfo(info, true);
-			}
-		}
-	},
-
-	performErrorAction: function(option)
-	{
-		// Whatever happens, let's remove any following subtasks
-		var $nextTaskContainers = this.$container.nextAll();
-
-		for (var i = 0; i < $nextTaskContainers.length; i++)
-		{
-			var nextTask = $($nextTaskContainers[i]).data('task');
-
-			if (nextTask && nextTask.level != 0)
-			{
-				nextTask.destroy();
-			}
-			else
-			{
-				break;
-			}
-		}
-
-		// What option did they choose?
-		switch ($(option).data('action'))
-		{
-			case 'rerun':
-			{
-				Craft.postActionRequest('tasks/rerun-task', { taskId: this.id }, $.proxy(function(response, textStatus)
-				{
-					if (textStatus == 'success')
-					{
-						this.updateStatus(response.task);
-
-						if (this.hud.completed)
-						{
-							this.hud.updateTasks();
-						}
-					}
-				}, this));
-				break;
-			}
-			case 'cancel':
-			{
-				Craft.postActionRequest('tasks/delete-task', { taskId: this.id }, $.proxy(function(response, textStatus)
-				{
-					if (textStatus == 'success')
-					{
-						this.destroy();
-
-						if (this.hud.completed)
-						{
-							this.hud.updateTasks();
-						}
-					}
-				}, this));
-			}
-		}
-	},
-
-	complete: function()
-	{
-		this.$statusContainer.empty();
-		$('<div data-icon="check"/>').appendTo(this.$statusContainer);
-	},
-
-	destroy: function()
-	{
-		if (this.hud.tasksById[this.id])
-		{
-			delete this.hud.tasksById[this.id];
-		}
-
-		this.$container.remove();
-		this.base();
-	}
-});
-
-/**
  * Category index class
  */
 Craft.CategoryIndex = Craft.BaseElementIndex.extend(
@@ -9155,7 +8369,7 @@ Craft.CategoryIndex = Craft.BaseElementIndex.extend(
 
 		new Craft.ElementEditor({
 			hudTrigger: this.$newCategoryBtnGroup,
-			elementType: 'craft\\app\\elements\\Category',
+			elementType: 'craft\\elements\\Category',
 			siteId: this.siteId,
 			attributes: {
 				groupId: groupId
@@ -9190,7 +8404,7 @@ Craft.CategoryIndex = Craft.BaseElementIndex.extend(
 });
 
 // Register it!
-Craft.registerElementIndexClass('craft\\app\\elements\\Category', Craft.CategoryIndex);
+Craft.registerElementIndexClass('craft\\elements\\Category', Craft.CategoryIndex);
 
 /**
  * Category Select input
@@ -10203,6 +9417,1534 @@ Craft.charts.utils = {
             .attr("in", "SourceGraphic");
     }
 };
+
+/**
+ * CP class
+ */
+Craft.CP = Garnish.Base.extend(
+{
+	authManager: null,
+
+	$container: null,
+	$alerts: null,
+	$globalSidebar: null,
+	$globalSidebarTopbar: null,
+	$siteNameLink: null,
+	$siteName: null,
+	$nav: null,
+	$subnav: null,
+	$pageHeader: null,
+	$containerTopbar: null,
+
+	$overflowNavMenuItem: null,
+	$overflowNavMenuBtn: null,
+	$overflowNavMenu: null,
+	$overflowNavMenuList: null,
+
+	$overflowSubnavMenuItem: null,
+	$overflowSubnavMenuBtn: null,
+	$overflowSubnavMenu: null,
+	$overflowSubnavMenuList: null,
+
+	$notificationWrapper: null,
+	$notificationContainer: null,
+	$main: null,
+	$content: null,
+	$collapsibleTables: null,
+	$primaryForm: null,
+
+	navItems: null,
+	totalNavItems: null,
+	visibleNavItems: null,
+	totalNavWidth: null,
+	showingOverflowNavMenu: false,
+	showingNavToggle: null,
+	showingSidebarToggle: null,
+
+	subnavItems: null,
+	totalSubnavItems: null,
+	visibleSubnavItems: null,
+	totalSubnavWidth: null,
+	showingOverflowSubnavMenu: false,
+
+	selectedItemLabel: null,
+
+	fixedHeader: false,
+	fixedNotifications: false,
+
+	runningTaskInfo: null,
+	trackTaskProgressTimeout: null,
+	taskProgressIcon: null,
+
+	$edition: null,
+	upgradeModal: null,
+
+	checkingForUpdates: false,
+	forcingRefreshOnUpdatesCheck: false,
+	checkForUpdatesCallbacks: null,
+
+	init: function()
+	{
+		// Is this session going to expire?
+		if (Craft.remainingSessionTime != 0)
+		{
+			this.authManager = new Craft.AuthManager();
+		}
+
+		// Find all the key elements
+		this.$container = $('#container');
+		this.$alerts = $('#alerts');
+		this.$globalSidebar = $('#global-sidebar');
+		this.$pageHeader = $('#page-header');
+		this.$containerTopbar = $('#container').find('.topbar');
+		this.$globalSidebarTopbar = this.$globalSidebar.children('.topbar');
+		this.$siteNameLink = this.$globalSidebarTopbar.children('a.site-name');
+		this.$siteName = this.$siteNameLink.children('h2');
+		this.$nav = $('#nav');
+		this.$subnav = $('#subnav');
+		this.$sidebar = $('#sidebar');
+		this.$notificationWrapper = $('#notifications-wrapper');
+		this.$notificationContainer = $('#notifications');
+		this.$main = $('#main');
+		this.$content = $('#content');
+		this.$collapsibleTables = $('table.collapsible');
+		this.$edition = $('#edition');
+
+		// global sidebar
+		this.addListener(Garnish.$win, 'touchend', 'updateResponsiveGlobalSidebar');
+
+		// Find all the nav items
+		this.navItems = [];
+		this.totalNavWidth = Craft.CP.baseNavWidth;
+
+		var $navItems = this.$nav.children();
+		this.totalNavItems = $navItems.length;
+		this.visibleNavItems = this.totalNavItems;
+
+		for (var i = 0; i < this.totalNavItems; i++)
+		{
+			var $li = $($navItems[i]),
+				width = $li.width();
+
+			this.navItems.push($li);
+			this.totalNavWidth += width;
+		}
+
+		// Find all the sub nav items
+		this.subnavItems = [];
+		this.totalSubnavWidth = Craft.CP.baseSubnavWidth;
+
+		var $subnavItems = this.$subnav.children();
+		this.totalSubnavItems = $subnavItems.length;
+		this.visibleSubnavItems = this.totalSubnavItems;
+
+		for (var i = 0; i < this.totalSubnavItems; i++)
+		{
+			var $li = $($subnavItems[i]),
+				width = $li.width();
+
+			this.subnavItems.push($li);
+			this.totalSubnavWidth += width;
+		}
+
+		// sidebar
+
+		this.addListener(this.$sidebar.find('nav ul'), 'resize', 'updateResponsiveSidebar');
+
+		this.$sidebarLinks = $('nav a', this.$sidebar);
+		this.addListener(this.$sidebarLinks, 'click', 'selectSidebarItem');
+
+		this.addListener(Garnish.$win, 'scroll', 'updateFixedNotifications');
+		this.updateFixedNotifications();
+
+		this.addListener(Garnish.$win, 'scroll', 'updateFixedHeader');
+		this.updateFixedHeader();
+
+		Garnish.$doc.ready($.proxy(function()
+		{
+			// Set up the window resize listener
+			this.addListener(Garnish.$win, 'resize', 'onWindowResize');
+			this.onWindowResize();
+
+			// Fade the notification out two seconds after page load
+			var $errorNotifications = this.$notificationContainer.children('.error'),
+				$otherNotifications = this.$notificationContainer.children(':not(.error)');
+
+			$errorNotifications.delay(Craft.CP.notificationDuration * 2).velocity('fadeOut');
+			$otherNotifications.delay(Craft.CP.notificationDuration).velocity('fadeOut');
+		}, this));
+
+		// Alerts
+		if (this.$alerts.length)
+		{
+			this.initAlerts();
+		}
+
+		// Does this page have a primary form?
+		if (this.$container.prop('nodeName') == 'FORM')
+		{
+			this.$primaryForm = this.$container;
+		}
+		else
+		{
+			this.$primaryForm = $('form[data-saveshortcut]:first');
+		}
+
+		// Does the primary form support the save shortcut?
+		if (this.$primaryForm.length && Garnish.hasAttr(this.$primaryForm, 'data-saveshortcut'))
+		{
+			this.addListener(Garnish.$doc, 'keydown', function(ev)
+			{
+				if (Garnish.isCtrlKeyPressed(ev) && ev.keyCode == Garnish.S_KEY)
+				{
+					ev.preventDefault();
+					this.submitPrimaryForm();
+				}
+
+				return true;
+			});
+		}
+
+		Garnish.$win.on('load', $.proxy(function()
+		{
+			// Look for forms that we should watch for changes on
+			this.$confirmUnloadForms = $('form[data-confirm-unload]');
+
+			if (this.$confirmUnloadForms.length)
+			{
+				if (!Craft.forceConfirmUnload)
+				{
+					this.initialFormValues = [];
+				}
+
+				for (var i = 0; i < this.$confirmUnloadForms.length; i++)
+				{
+					var $form = $(this.$confirmUnloadForms);
+
+					if (!Craft.forceConfirmUnload)
+					{
+						this.initialFormValues[i] = $form.serialize();
+					}
+
+					this.addListener($form, 'submit', function()
+					{
+						this.removeListener(Garnish.$win, 'beforeunload');
+					});
+				}
+
+				this.addListener(Garnish.$win, 'beforeunload', function(ev)
+				{
+					for (var i = 0; i < this.$confirmUnloadForms.length; i++)
+					{
+						if (
+							Craft.forceConfirmUnload ||
+							this.initialFormValues[i] != $(this.$confirmUnloadForms[i]).serialize()
+						)
+						{
+							var message = Craft.t('app', 'Any changes will be lost if you leave this page.');
+
+							if (ev)
+							{
+								ev.originalEvent.returnValue = message;
+							}
+							else
+							{
+								window.event.returnValue = message;
+							}
+
+							return message;
+						}
+					}
+				});
+			}
+		}, this));
+
+		if (this.$edition.hasClass('hot'))
+		{
+			this.addListener(this.$edition, 'click', 'showUpgradeModal');
+		}
+	},
+
+	submitPrimaryForm: function()
+	{
+		// Give other stuff on the page a chance to prepare
+		this.trigger('beforeSaveShortcut');
+
+		if (this.$primaryForm.data('saveshortcut-redirect'))
+		{
+			$('<input type="hidden" name="redirect" value="'+this.$primaryForm.data('saveshortcut-redirect')+'"/>').appendTo(this.$primaryForm);
+		}
+
+		this.$primaryForm.submit();
+	},
+
+	updateSidebarMenuLabel: function()
+	{
+		Garnish.$win.trigger('resize');
+
+		var $selectedLink = $('a.sel:first', this.$sidebar);
+
+		this.selectedItemLabel = $selectedLink.html();
+	},
+
+	/**
+	 * Handles stuff that should happen when the window is resized.
+	 */
+	onWindowResize: function()
+	{
+		// Get the new window width
+		this.onWindowResize._cpWidth = Math.min(Garnish.$win.width(), Craft.CP.maxWidth);
+
+
+		// Update the responsive global sidebar
+		this.updateResponsiveGlobalSidebar();
+
+		// Update the responsive nav
+		this.updateResponsiveNav();
+
+		// Update the responsive sidebar
+		this.updateResponsiveSidebar();
+
+		// Update any responsive tables
+		this.updateResponsiveTables();
+	},
+
+	updateResponsiveGlobalSidebar: function()
+	{
+		var globalSidebarHeight = window.innerHeight;
+
+		this.$globalSidebar.height(globalSidebarHeight);
+	},
+
+	updateResponsiveNav: function()
+	{
+		if(this.onWindowResize._cpWidth <= 992)
+		{
+			if (!this.showingNavToggle)
+			{
+				this.showNavToggle();
+			}
+		}
+		else
+		{
+			if (this.showingNavToggle)
+			{
+				this.hideNavToggle();
+			}
+		}
+	},
+
+	showNavToggle: function()
+	{
+		this.$navBtn = $('<a class="show-nav" title="'+Craft.t('app', 'Show nav')+'"></a>').prependTo(this.$containerTopbar);
+
+		this.addListener(this.$navBtn, 'click', 'toggleNav');
+
+		this.showingNavToggle = true;
+	},
+
+	hideNavToggle: function()
+	{
+		this.$navBtn.remove();
+		this.showingNavToggle = false;
+	},
+
+	toggleNav: function()
+	{
+		if(Garnish.$bod.hasClass('showing-nav'))
+		{
+			Garnish.$bod.toggleClass('showing-nav');
+		}
+		else
+		{
+			Garnish.$bod.toggleClass('showing-nav');
+		}
+
+	},
+
+	updateResponsiveSidebar: function()
+	{
+		if(this.$sidebar.length > 0)
+		{
+			if(this.onWindowResize._cpWidth < 769)
+			{
+				if (!this.showingSidebarToggle)
+				{
+					this.showSidebarToggle();
+				}
+			}
+			else
+			{
+				if (this.showingSidebarToggle)
+				{
+					this.hideSidebarToggle();
+				}
+			}
+		}
+	},
+
+	showSidebarToggle: function()
+	{
+		var $selectedLink = $('a.sel:first', this.$sidebar);
+
+		this.selectedItemLabel = $selectedLink.html();
+
+		this.$sidebarBtn = $('<a class="show-sidebar" title="'+Craft.t('app', 'Show sidebar')+'">'+this.selectedItemLabel+'</a>').prependTo(this.$content);
+
+		this.addListener(this.$sidebarBtn, 'click', 'toggleSidebar');
+
+		this.showingSidebarToggle = true;
+	},
+
+	selectSidebarItem: function(ev)
+	{
+		var $link = $(ev.currentTarget);
+
+		this.selectedItemLabel = $link.html();
+
+		if (this.$sidebarBtn)
+		{
+			this.$sidebarBtn.html(this.selectedItemLabel);
+
+			this.toggleSidebar();
+		}
+	},
+
+	hideSidebarToggle: function()
+	{
+		if (this.$sidebarBtn)
+		{
+			this.$sidebarBtn.remove();
+		}
+
+		this.showingSidebarToggle = false;
+	},
+
+	toggleSidebar: function()
+	{
+		var $contentWithSidebar = this.$content.filter('.has-sidebar');
+
+		$contentWithSidebar.toggleClass('showing-sidebar');
+
+		this.updateResponsiveContent();
+	},
+	updateResponsiveContent: function()
+	{
+		var $contentWithSidebar = this.$content.filter('.has-sidebar');
+
+		if($contentWithSidebar.hasClass('showing-sidebar'))
+		{
+			var sidebarHeight = $('nav', this.$sidebar).height();
+
+			if($contentWithSidebar.height() <= sidebarHeight)
+			{
+				var newContentHeight = sidebarHeight + 48;
+				$contentWithSidebar.css('height', newContentHeight+'px');
+			}
+		}
+		else
+		{
+			$contentWithSidebar.css('min-height', 0);
+			$contentWithSidebar.css('height', 'auto');
+		}
+	},
+
+	updateResponsiveTables: function()
+	{
+		for (this.updateResponsiveTables._i = 0; this.updateResponsiveTables._i < this.$collapsibleTables.length; this.updateResponsiveTables._i++)
+		{
+			this.updateResponsiveTables._$table = this.$collapsibleTables.eq(this.updateResponsiveTables._i);
+			this.updateResponsiveTables._containerWidth = this.updateResponsiveTables._$table.parent().width();
+			this.updateResponsiveTables._check = false;
+
+			if(this.updateResponsiveTables._containerWidth > 0)
+			{
+				// Is this the first time we've checked this table?
+				if (typeof this.updateResponsiveTables._$table.data('lastContainerWidth') === typeof undefined)
+				{
+					this.updateResponsiveTables._check = true;
+				}
+				else
+				{
+					this.updateResponsiveTables._isCollapsed = this.updateResponsiveTables._$table.hasClass('collapsed');
+
+					// Getting wider?
+					if (this.updateResponsiveTables._containerWidth > this.updateResponsiveTables._$table.data('lastContainerWidth'))
+					{
+						if (this.updateResponsiveTables._isCollapsed)
+						{
+							this.updateResponsiveTables._$table.removeClass('collapsed');
+							this.updateResponsiveTables._check = true;
+						}
+					}
+					else if (!this.updateResponsiveTables._isCollapsed)
+					{
+						this.updateResponsiveTables._check = true;
+					}
+				}
+
+				// Are we checking the table width?
+				if (this.updateResponsiveTables._check)
+				{
+					if (this.updateResponsiveTables._$table.width() > this.updateResponsiveTables._containerWidth)
+					{
+						this.updateResponsiveTables._$table.addClass('collapsed');
+					}
+				}
+
+				// Remember the container width for next time
+				this.updateResponsiveTables._$table.data('lastContainerWidth', this.updateResponsiveTables._containerWidth);
+			}
+		}
+	},
+
+	/**
+	 * Adds the last visible nav item to the overflow menu.
+	 */
+	addLastVisibleNavItemToOverflowMenu: function()
+	{
+		this.navItems[this.visibleNavItems-1].prependTo(this.$overflowNavMenuList);
+		this.visibleNavItems--;
+	},
+
+	/**
+	 * Adds the first overflow nav item back to the main nav menu.
+	 */
+	addFirstOverflowNavItemToMainMenu: function()
+	{
+		this.navItems[this.visibleNavItems].insertBefore(this.$overflowNavMenuItem);
+		this.visibleNavItems++;
+	},
+
+	/**
+	 * Adds the last visible nav item to the overflow menu.
+	 */
+	addLastVisibleSubnavItemToOverflowMenu: function()
+	{
+		this.subnavItems[this.visibleSubnavItems-1].prependTo(this.$overflowSubnavMenuList);
+		this.visibleSubnavItems--;
+	},
+
+	/**
+	 * Adds the first overflow nav item back to the main nav menu.
+	 */
+	addFirstOverflowSubnavItemToMainMenu: function()
+	{
+		this.subnavItems[this.visibleSubnavItems].insertBefore(this.$overflowSubnavMenuItem);
+		this.visibleSubnavItems++;
+	},
+
+	updateFixedHeader: function()
+	{
+		this.updateFixedHeader._topbarHeight = this.$containerTopbar.height();
+		this.updateFixedHeader._pageHeaderHeight = this.$pageHeader.outerHeight();
+
+		if (Garnish.$win.scrollTop() > this.updateFixedHeader._topbarHeight)
+		{
+			if (!this.fixedHeader)
+			{
+				this.$pageHeader.addClass('fixed');
+
+				if(Garnish.$bod.hasClass('showing-nav') && Garnish.$win.width() <= 992)
+				{
+					this.$pageHeader.css('top', Garnish.$win.scrollTop());
+				}
+				else
+				{
+					this.$pageHeader.css('top', 0);
+				}
+
+				this.$main.css('margin-top', this.updateFixedHeader._pageHeaderHeight);
+				this.fixedheader = true;
+			}
+		}
+		else
+		{
+			if (this.fixedheader)
+			{
+				this.$pageHeader.removeClass('fixed');
+				this.$pageHeader.css('top', 0);
+				this.$main.css('margin-top', 0);
+				this.fixedheader = false;
+			}
+		}
+	},
+
+	updateFixedNotifications: function()
+	{
+		this.updateFixedNotifications._headerHeight = this.$globalSidebar.height();
+
+		if (Garnish.$win.scrollTop() > this.updateFixedNotifications._headerHeight)
+		{
+			if (!this.fixedNotifications)
+			{
+				this.$notificationWrapper.addClass('fixed');
+				this.fixedNotifications = true;
+			}
+		}
+		else
+		{
+			if (this.fixedNotifications)
+			{
+				this.$notificationWrapper.removeClass('fixed');
+				this.fixedNotifications = false;
+			}
+		}
+	},
+
+	/**
+	 * Dispays a notification.
+	 *
+	 * @param {string} type
+	 * @param {string} message
+	 */
+	displayNotification: function(type, message)
+	{
+		var notificationDuration = Craft.CP.notificationDuration;
+
+		if (type == 'error')
+		{
+			notificationDuration *= 2;
+		}
+
+		var $notification = $('<div class="notification '+type+'">'+message+'</div>')
+			.appendTo(this.$notificationContainer);
+
+		var fadedMargin = -($notification.outerWidth()/2)+'px';
+
+		$notification
+			.hide()
+			.css({ opacity: 0, 'margin-left': fadedMargin, 'margin-right': fadedMargin })
+			.velocity({ opacity: 1, 'margin-left': '2px', 'margin-right': '2px' }, { display: 'inline-block', duration: 'fast' })
+			.delay(notificationDuration)
+			.velocity({ opacity: 0, 'margin-left': fadedMargin, 'margin-right': fadedMargin }, {
+				complete: function() {
+					$notification.remove();
+				}
+			});
+
+		this.trigger('displayNotification', {
+			notificationType: type,
+			message: message
+		});
+	},
+
+	/**
+	 * Displays a notice.
+	 *
+	 * @param {string} message
+	 */
+	displayNotice: function(message)
+	{
+		this.displayNotification('notice', message);
+	},
+
+	/**
+	 * Displays an error.
+	 *
+	 * @param {string} message
+	 */
+	displayError: function(message)
+	{
+		if (!message)
+		{
+			message = Craft.t('app', 'An unknown error occurred.');
+		}
+
+		this.displayNotification('error', message);
+	},
+
+	fetchAlerts: function()
+	{
+		var data = {
+			path: Craft.path
+		};
+
+		Craft.queueActionRequest('app/get-cp-alerts', data, $.proxy(this, 'displayAlerts'));
+	},
+
+	displayAlerts: function(alerts)
+	{
+		if (Garnish.isArray(alerts) && alerts.length)
+		{
+			this.$alerts = $('<ul id="alerts"/>').insertBefore(this.$containerTopbar);
+
+			for (var i = 0; i < alerts.length; i++)
+			{
+				$('<li>'+alerts[i]+'</li>').appendTo(this.$alerts);
+			}
+
+			var height = this.$alerts.outerHeight();
+			this.$alerts.css('margin-top', -height).velocity({ 'margin-top': 0 }, 'fast');
+
+			this.initAlerts();
+		}
+	},
+
+	initAlerts: function()
+	{
+		// Is there a domain mismatch?
+		var $transferDomainLink = this.$alerts.find('.domain-mismatch:first');
+
+		if ($transferDomainLink.length)
+		{
+			this.addListener($transferDomainLink, 'click', $.proxy(function(ev)
+			{
+				ev.preventDefault();
+
+				if (confirm(Craft.t('app', 'Are you sure you want to transfer your license to this domain?')))
+				{
+					Craft.queueActionRequest('app/transfer-license-to-current-domain', $.proxy(function(response, textStatus)
+					{
+						if (textStatus == 'success')
+						{
+							if (response.success)
+							{
+								$transferDomainLink.parent().remove();
+								this.displayNotice(Craft.t('app', 'License transferred.'));
+							}
+							else
+							{
+								this.displayError(response.error);
+							}
+						}
+
+					}, this));
+				}
+			}, this));
+		}
+
+		// Are there any shunnable alerts?
+		var $shunnableAlerts = this.$alerts.find('a[class^="shun:"]');
+
+		for (var i = 0; i < $shunnableAlerts.length; i++)
+		{
+			this.addListener($shunnableAlerts[i], 'click', $.proxy(function(ev)
+			{
+				ev.preventDefault();
+
+				var $link = $(ev.currentTarget);
+
+				var data = {
+					message: $link.prop('className').substr(5)
+				};
+
+				Craft.queueActionRequest('app/shun-cp-alert', data, $.proxy(function(response, textStatus)
+				{
+					if (textStatus == 'success')
+					{
+						if (response.success)
+						{
+							$link.parent().remove();
+						}
+						else
+						{
+							this.displayError(response.error);
+						}
+					}
+
+				}, this));
+
+			}, this));
+		}
+
+		// Is there an edition resolution link?
+		var $editionResolutionLink = this.$alerts.find('.edition-resolution:first');
+
+		if ($editionResolutionLink.length)
+		{
+			this.addListener($editionResolutionLink, 'click', 'showUpgradeModal');
+		}
+	},
+
+	checkForUpdates: function(forceRefresh, callback)
+	{
+		// If forceRefresh == true, we're currently checking for updates, and not currently forcing a refresh,
+		// then just seta new callback that re-checks for updates when the current one is done.
+		if (this.checkingForUpdates && forceRefresh === true && !this.forcingRefreshOnUpdatesCheck)
+		{
+			var realCallback = callback;
+
+			callback = function() {
+				Craft.cp.checkForUpdates(true, realCallback);
+			};
+		}
+
+		// Callback function?
+		if (typeof callback == 'function')
+		{
+			if (!Garnish.isArray(this.checkForUpdatesCallbacks))
+			{
+				this.checkForUpdatesCallbacks = [];
+			}
+
+			this.checkForUpdatesCallbacks.push(callback);
+		}
+
+		if (!this.checkingForUpdates)
+		{
+			this.checkingForUpdates = true;
+			this.forcingRefreshOnUpdatesCheck = (forceRefresh === true);
+
+			var data = {
+				forceRefresh: (forceRefresh === true)
+			};
+
+			Craft.queueActionRequest('app/check-for-updates', data, $.proxy(function(info)
+			{
+				this.displayUpdateInfo(info);
+				this.checkingForUpdates = false;
+
+				if (Garnish.isArray(this.checkForUpdatesCallbacks))
+				{
+					var callbacks = this.checkForUpdatesCallbacks;
+					this.checkForUpdatesCallbacks = null;
+
+					for (var i = 0; i < callbacks.length; i++)
+					{
+						callbacks[i](info);
+					}
+				}
+
+				this.trigger('checkForUpdates', {
+					updateInfo: info
+				});
+			}, this));
+		}
+	},
+
+	displayUpdateInfo: function(info)
+	{
+		// Remove the existing header badge, if any
+		this.$globalSidebarTopbar.children('a.updates').remove();
+
+		if (info.total)
+		{
+			var updateText;
+
+			if (info.total == 1)
+			{
+				updateText = Craft.t('app', '1 update available');
+			}
+			else
+			{
+				updateText = Craft.t('app', '{num} updates available', { num: info.total });
+			}
+
+			// Topbar badge
+			$('<a class="updates'+(info.critical ? ' critical' : '')+'" href="'+Craft.getUrl('updates')+'" title="'+updateText+'">' +
+				'<span data-icon="newstamp">' +
+					'<span>'+info.total+'</span>' +
+				'</span>' +
+			'</span>').insertAfter(this.$siteNameLink);
+
+			// Footer link
+			$('#footer-updates').text(updateText);
+		}
+	},
+
+	runPendingTasks: function()
+	{
+		if (Craft.runTasksAutomatically)
+		{
+			Craft.queueActionRequest('tasks/run-pending-tasks', $.proxy(function(taskInfo, textStatus)
+			{
+				if (textStatus == 'success')
+				{
+					this.trackTaskProgress(0);
+				}
+			}, this));
+		}
+		else
+		{
+			this.trackTaskProgress(0);
+		}
+	},
+
+	trackTaskProgress: function(delay)
+	{
+		// Ignore if we're already tracking tasks
+		if (this.trackTaskProgressTimeout)
+		{
+			return;
+		}
+
+		this.trackTaskProgressTimeout = setTimeout($.proxy(function()
+		{
+			Craft.queueActionRequest('tasks/get-running-task-info', $.proxy(function(response, textStatus)
+			{
+				if (textStatus == 'success')
+				{
+					this.trackTaskProgressTimeout = null;
+					this.setRunningTaskInfo(response.task, true);
+
+					if (response.task)
+					{
+						if (response.task.status == 'running')
+						{
+							// Check again in one second
+							this.trackTaskProgress();
+						}
+						else if (response.task.status == 'pending')
+						{
+							// Check again in 30 seconds
+							this.trackTaskProgress(30000);
+						}
+					}
+				}
+			}, this));
+		}, this), (typeof delay != typeof undefined ? delay : Craft.CP.taskTrackerUpdateInterval));
+	},
+
+	stopTrackingTaskProgress: function()
+	{
+		if (this.trackTaskProgressTimeout)
+		{
+			clearTimeout(this.trackTaskProgressTimeout);
+			this.trackTaskProgressTimeout = null;
+		}
+	},
+
+	setRunningTaskInfo: function(taskInfo, animateIcon)
+	{
+		this.runningTaskInfo = taskInfo;
+
+		if (taskInfo)
+		{
+			if (!this.taskProgressIcon)
+			{
+				this.taskProgressIcon = new TaskProgressIcon();
+			}
+
+			if (taskInfo.status == 'running' || taskInfo.status == 'pending')
+			{
+				this.taskProgressIcon.hideFailMode();
+				this.taskProgressIcon.setDescription(taskInfo.description);
+				this.taskProgressIcon.setProgress(taskInfo.progress, animateIcon);
+			}
+			else if (taskInfo.status == 'error')
+			{
+				this.taskProgressIcon.showFailMode();
+			}
+		}
+		else
+		{
+			if (this.taskProgressIcon)
+			{
+				this.taskProgressIcon.hideFailMode();
+				this.taskProgressIcon.complete();
+				delete this.taskProgressIcon;
+			}
+		}
+	},
+
+	showUpgradeModal: function()
+	{
+		if (!this.upgradeModal)
+		{
+			this.upgradeModal = new Craft.UpgradeModal();
+		}
+		else
+		{
+			this.upgradeModal.show();
+		}
+	}
+},
+{
+	maxWidth: 1051, //1024,
+	navHeight: 38,
+	baseNavWidth: 30,
+	subnavHeight: 38,
+	baseSubnavWidth: 30,
+	notificationDuration: 2000,
+
+	taskTrackerUpdateInterval: 1000,
+	taskTrackerHudUpdateInterval: 500
+});
+
+Craft.cp = new Craft.CP();
+
+
+/**
+ * Task progress icon class
+ */
+var TaskProgressIcon = Garnish.Base.extend(
+{
+	$li: null,
+	$a: null,
+	$label: null,
+
+	hud: null,
+	completed: false,
+	failMode: false,
+
+	_canvasSupported: null,
+
+	_$bgCanvas: null,
+	_$staticCanvas: null,
+	_$hoverCanvas: null,
+	_$failCanvas: null,
+
+	_staticCtx: null,
+	_hoverCtx: null,
+	_canvasSize: null,
+	_arcPos: null,
+	_arcRadius: null,
+	_lineWidth: null,
+
+	_arcStartPos: 0,
+	_arcEndPos: 0,
+	_arcStartStepSize: null,
+	_arcEndStepSize: null,
+	_arcStep: null,
+	_arcStepTimeout: null,
+	_arcAnimateCallback: null,
+
+	_progressBar: null,
+
+	init: function()
+	{
+		this.$li = $('<li/>').appendTo(Craft.cp.$nav);
+		this.$a = $('<a id="taskicon"/>').appendTo(this.$li);
+		this.$canvasContainer = $('<span class="icon"/>').appendTo(this.$a);
+		this.$label = $('<span class="label"></span>').appendTo(this.$a);
+
+		this._canvasSupported = !!(document.createElement('canvas').getContext);
+
+		if (this._canvasSupported)
+		{
+			var m = (window.devicePixelRatio > 1 ? 2 : 1);
+			this._canvasSize = 18 * m;
+			this._arcPos = this._canvasSize / 2;
+			this._arcRadius = 7 * m;
+			this._lineWidth = 3 * m;
+
+			this._$bgCanvas     = this._createCanvas('bg', '#61666b');
+			this._$staticCanvas = this._createCanvas('static', '#d7d9db');
+			this._$hoverCanvas  = this._createCanvas('hover', '#fff');
+			this._$failCanvas   = this._createCanvas('fail', '#da5a47').hide();
+
+			this._staticCtx = this._$staticCanvas[0].getContext('2d');
+			this._hoverCtx = this._$hoverCanvas[0].getContext('2d');
+
+			this._drawArc(this._$bgCanvas[0].getContext('2d'), 0, 1);
+			this._drawArc(this._$failCanvas[0].getContext('2d'), 0, 1);
+		}
+		else
+		{
+			this._progressBar = new Craft.ProgressBar(this.$canvasContainer);
+			this._progressBar.showProgressBar();
+		}
+
+		this.addListener(this.$a, 'click', 'toggleHud');
+	},
+
+	setDescription: function(description)
+	{
+		this.$a.attr('title', description);
+		this.$label.html(description);
+	},
+
+	setProgress: function(progress, animate)
+	{
+		if (this._canvasSupported)
+		{
+			if (animate)
+			{
+				this._animateArc(0, progress);
+			}
+			else
+			{
+				this._setArc(0, progress);
+			}
+		}
+		else
+		{
+			this._progressBar.setProgressPercentage(progress * 100);
+		}
+	},
+
+	complete: function()
+	{
+		this.completed = true;
+
+		if (this._canvasSupported)
+		{
+			this._animateArc(0, 1, $.proxy(function()
+			{
+				this._$bgCanvas.velocity('fadeOut');
+
+				this._animateArc(1, 1, $.proxy(function()
+				{
+					this.$a.remove();
+					this.destroy();
+				}, this));
+			}, this));
+		}
+		else
+		{
+			this._progressBar.setProgressPercentage(100);
+			this.$a.velocity('fadeOut');
+		}
+	},
+
+	showFailMode: function()
+	{
+		if (this.failMode)
+		{
+			return;
+		}
+
+		this.failMode = true;
+
+		if (this._canvasSupported)
+		{
+			this._$bgCanvas.hide();
+			this._$staticCanvas.hide();
+			this._$hoverCanvas.hide();
+			this._$failCanvas.show();
+		}
+		else
+		{
+			this._progressBar.$progressBar.css('border-color', '#da5a47');
+			this._progressBar.$innerProgressBar.css('background-color', '#da5a47');
+			this._progressBar.setProgressPercentage(50);
+		}
+
+		this.setDescription(Craft.t('app', 'Failed task'));
+	},
+
+	hideFailMode: function()
+	{
+		if (!this.failMode)
+		{
+			return;
+		}
+
+		this.failMode = false;
+
+		if (this._canvasSupported)
+		{
+			this._$bgCanvas.show();
+			this._$staticCanvas.show();
+			this._$hoverCanvas.show();
+			this._$failCanvas.hide();
+		}
+		else
+		{
+			this._progressBar.$progressBar.css('border-color', '');
+			this._progressBar.$innerProgressBar.css('background-color', '');
+			this._progressBar.setProgressPercentage(50);
+		}
+	},
+
+	toggleHud: function()
+	{
+		if (!this.hud)
+		{
+			this.hud = new TaskProgressHUD();
+		}
+		else
+		{
+			this.hud.toggle();
+		}
+	},
+
+	_createCanvas: function(id, color)
+	{
+		var $canvas = $('<canvas id="taskicon-'+id+'" width="'+this._canvasSize+'" height="'+this._canvasSize+'"/>').appendTo(this.$canvasContainer),
+			ctx = $canvas[0].getContext('2d');
+
+		ctx.strokeStyle = color;
+		ctx.lineWidth = this._lineWidth;
+		ctx.lineCap = 'round';
+		return $canvas;
+	},
+
+	_setArc: function(startPos, endPos)
+	{
+		this._arcStartPos = startPos;
+		this._arcEndPos = endPos;
+
+		this._drawArc(this._staticCtx, startPos, endPos);
+		this._drawArc(this._hoverCtx, startPos, endPos);
+	},
+
+	_drawArc: function(ctx, startPos, endPos)
+	{
+		ctx.clearRect(0, 0, this._canvasSize, this._canvasSize);
+		ctx.beginPath();
+		ctx.arc(this._arcPos, this._arcPos, this._arcRadius, (1.5+(startPos*2))*Math.PI, (1.5+(endPos*2))*Math.PI);
+		ctx.stroke();
+		ctx.closePath();
+	},
+
+	_animateArc: function(targetStartPos, targetEndPos, callback)
+	{
+		if (this._arcStepTimeout)
+		{
+			clearTimeout(this._arcStepTimeout);
+		}
+
+		this._arcStep = 0;
+		this._arcStartStepSize = (targetStartPos - this._arcStartPos) / 10;
+		this._arcEndStepSize = (targetEndPos - this._arcEndPos) / 10;
+		this._arcAnimateCallback = callback;
+		this._takeNextArcStep();
+	},
+
+	_takeNextArcStep: function()
+	{
+		this._setArc(this._arcStartPos+this._arcStartStepSize, this._arcEndPos+this._arcEndStepSize);
+
+		this._arcStep++;
+
+		if (this._arcStep < 10)
+		{
+			this._arcStepTimeout = setTimeout($.proxy(this, '_takeNextArcStep'), 50);
+		}
+		else if (this._arcAnimateCallback)
+		{
+			this._arcAnimateCallback();
+		}
+	}
+});
+
+var TaskProgressHUD = Garnish.HUD.extend(
+{
+	icon: null,
+
+	tasksById: null,
+	completedTasks: null,
+	updateTasksTimeout: null,
+
+	completed: false,
+
+	init: function()
+	{
+		this.icon = Craft.cp.taskProgressIcon;
+		this.tasksById = {};
+		this.completedTasks = [];
+
+		this.base(this.icon.$a);
+
+		this.$main.attr('id', 'tasks-hud');
+
+		// Use the known task as a starting point
+		if (Craft.cp.runningTaskInfo && Craft.cp.runningTaskInfo.status != 'error')
+		{
+			this.showTaskInfo([Craft.cp.runningTaskInfo]);
+		}
+
+		this.$main.trigger('resize');
+	},
+
+	onShow: function()
+	{
+		Craft.cp.stopTrackingTaskProgress();
+
+		this.updateTasks();
+		this.base();
+	},
+
+	onHide: function()
+	{
+		if (this.updateTasksTimeout)
+		{
+			clearTimeout(this.updateTasksTimeout);
+		}
+
+		if (!this.completed)
+		{
+			Craft.cp.trackTaskProgress();
+		}
+
+		// Clear out any completed tasks
+		if (this.completedTasks.length)
+		{
+			for (var i = 0; i < this.completedTasks.length; i++)
+			{
+				this.completedTasks[i].destroy();
+			}
+
+			this.completedTasks = [];
+		}
+
+		this.base();
+	},
+
+	updateTasks: function()
+	{
+		this.completed = false;
+
+		Craft.postActionRequest('tasks/get-task-info', $.proxy(function(response, textStatus)
+		{
+			if (textStatus == 'success')
+			{
+				this.showTaskInfo(response.tasks);
+			}
+		}, this));
+	},
+
+	showTaskInfo: function(taskInfo)
+	{
+		// First remove any tasks that have completed
+		var newTaskIds = [];
+
+		if (taskInfo)
+		{
+			for (var i = 0; i < taskInfo.length; i++)
+			{
+				newTaskIds.push(taskInfo[i].id);
+			}
+		}
+
+		for (var id in this.tasksById)
+		{
+			if (!this.tasksById.hasOwnProperty(id)) {
+				continue;
+			}
+
+			if (!Craft.inArray(id, newTaskIds))
+			{
+				this.tasksById[id].complete();
+				this.completedTasks.push(this.tasksById[id]);
+				delete this.tasksById[id];
+			}
+		}
+
+		// Now display the tasks that are still around
+		if (taskInfo && taskInfo.length)
+		{
+			var anyTasksRunning = false,
+				anyTasksFailed = false;
+
+			for (var i = 0; i < taskInfo.length; i++)
+			{
+				var info = taskInfo[i];
+
+				if (!anyTasksRunning && info.status == 'running')
+				{
+					anyTasksRunning = true;
+				}
+				else if (!anyTasksFailed && info.status == 'error')
+				{
+					anyTasksFailed = true;
+				}
+
+				if (this.tasksById[info.id])
+				{
+					this.tasksById[info.id].updateStatus(info);
+				}
+				else
+				{
+					this.tasksById[info.id] = new TaskProgressHUD.Task(this, info);
+
+					// Place it before the next already known task
+					for (var j = i + 1; j < taskInfo.length; j++)
+					{
+						if (this.tasksById[taskInfo[j].id])
+						{
+							this.tasksById[info.id].$container.insertBefore(this.tasksById[taskInfo[j].id].$container);
+							break;
+						}
+					}
+				}
+			}
+
+			if (anyTasksRunning)
+			{
+				this.updateTasksTimeout = setTimeout($.proxy(this, 'updateTasks'), Craft.CP.taskTrackerHudUpdateInterval);
+			}
+			else
+			{
+				this.completed = true;
+
+				if (anyTasksFailed)
+				{
+					Craft.cp.setRunningTaskInfo({ status: 'error' });
+				}
+			}
+		}
+		else
+		{
+			this.completed = true;
+			Craft.cp.setRunningTaskInfo(null);
+			this.hide();
+		}
+	}
+});
+
+TaskProgressHUD.Task = Garnish.Base.extend(
+{
+	hud: null,
+	id: null,
+	level: null,
+	description: null,
+
+	status: null,
+	progress: null,
+
+	$container: null,
+	$statusContainer: null,
+	$descriptionContainer: null,
+
+	_progressBar: null,
+
+	init: function(hud, info)
+	{
+		this.hud = hud;
+
+		this.id = info.id;
+		this.level = info.level;
+		this.description = info.description;
+
+		this.$container = $('<div class="task"/>').appendTo(this.hud.$main);
+		this.$statusContainer = $('<div class="task-status"/>').appendTo(this.$container);
+		this.$descriptionContainer = $('<div class="task-description"/>').appendTo(this.$container).text(info.description);
+
+		this.$container.data('task', this);
+
+		if (this.level != 0)
+		{
+			this.$container.css('padding-'+Craft.left, 24+(this.level*24));
+			$('<div class="indent" data-icon="'+(Craft.orientation == 'ltr' ? 'rarr' : 'larr')+'"/>').appendTo(this.$descriptionContainer);
+		}
+
+		this.updateStatus(info);
+	},
+
+	updateStatus: function(info)
+	{
+		if (this.status != info.status)
+		{
+			this.$statusContainer.empty();
+			this.status = info.status;
+
+			switch (this.status)
+			{
+				case 'pending':
+				{
+					this.$statusContainer.text(Craft.t('app', 'Pending'));
+					break;
+				}
+				case 'running':
+				{
+					this._progressBar = new Craft.ProgressBar(this.$statusContainer);
+					this._progressBar.showProgressBar();
+					break;
+				}
+				case 'error':
+				{
+					$('<span class="error">'+Craft.t('app', 'Failed')+'</span>').appendTo(this.$statusContainer);
+
+					if (this.level == 0)
+					{
+						var $actionBtn = $('<a class="menubtn error" title="'+Craft.t('app', 'Options')+'"/>').appendTo(this.$statusContainer);
+						$(
+							'<div class="menu">' +
+								'<ul>' +
+									'<li><a data-action="rerun">'+Craft.t('app', 'Try again')+'</a></li>' +
+									'<li><a data-action="cancel">'+Craft.t('app', 'Cancel')+'</a></li>' +
+								'</ul>' +
+							'</div>'
+						).appendTo(this.$statusContainer);
+
+						new Garnish.MenuBtn($actionBtn, {
+							onOptionSelect: $.proxy(this, 'performErrorAction')
+						});
+					}
+
+					break;
+				}
+			}
+		}
+
+		if (this.status == 'running')
+		{
+			this._progressBar.setProgressPercentage(info.progress*100);
+
+			if (this.level == 0)
+			{
+				// Update the task icon
+				Craft.cp.setRunningTaskInfo(info, true);
+			}
+		}
+	},
+
+	performErrorAction: function(option)
+	{
+		// Whatever happens, let's remove any following subtasks
+		var $nextTaskContainers = this.$container.nextAll();
+
+		for (var i = 0; i < $nextTaskContainers.length; i++)
+		{
+			var nextTask = $($nextTaskContainers[i]).data('task');
+
+			if (nextTask && nextTask.level != 0)
+			{
+				nextTask.destroy();
+			}
+			else
+			{
+				break;
+			}
+		}
+
+		// What option did they choose?
+		switch ($(option).data('action'))
+		{
+			case 'rerun':
+			{
+				Craft.postActionRequest('tasks/rerun-task', { taskId: this.id }, $.proxy(function(response, textStatus)
+				{
+					if (textStatus == 'success')
+					{
+						this.updateStatus(response.task);
+
+						if (this.hud.completed)
+						{
+							this.hud.updateTasks();
+						}
+					}
+				}, this));
+				break;
+			}
+			case 'cancel':
+			{
+				Craft.postActionRequest('tasks/delete-task', { taskId: this.id }, $.proxy(function(response, textStatus)
+				{
+					if (textStatus == 'success')
+					{
+						this.destroy();
+
+						if (this.hud.completed)
+						{
+							this.hud.updateTasks();
+						}
+					}
+				}, this));
+			}
+		}
+	},
+
+	complete: function()
+	{
+		this.$statusContainer.empty();
+		$('<div data-icon="check"/>').appendTo(this.$statusContainer);
+	},
+
+	destroy: function()
+	{
+		if (this.hud.tasksById[this.id])
+		{
+			delete this.hud.tasksById[this.id];
+		}
+
+		this.$container.remove();
+		this.base();
+	}
+});
 
 /**
 * Customize Sources modal
@@ -12271,7 +13013,7 @@ Craft.EntryIndex = Craft.BaseElementIndex.extend(
 
 		new Craft.ElementEditor({
 			hudTrigger: this.$newEntryBtnGroup,
-			elementType: 'craft\\app\\elements\\Entry',
+			elementType: 'craft\\elements\\Entry',
 			siteId: this.siteId,
 			attributes: {
 				sectionId: sectionId,
@@ -12307,7 +13049,7 @@ Craft.EntryIndex = Craft.BaseElementIndex.extend(
 });
 
 // Register it!
-Craft.registerElementIndexClass('craft\\app\\elements\\Entry', Craft.EntryIndex);
+Craft.registerElementIndexClass('craft\\elements\\Entry', Craft.EntryIndex);
 
 Craft.FieldLayoutDesigner = Garnish.Base.extend(
 {
@@ -13948,8 +14690,6 @@ Craft.HandleGenerator = Craft.BaseInputGenerator.extend(
 	}
 });
 
-// TODO I'm 999% sure this can be done smarter, better and more good looking.
-
 /**
  * Image upload class for user photos, site icon and logo.
  */
@@ -15013,7 +15753,15 @@ Craft.Pane = Garnish.Base.extend(
 		else
 		{
 			this.updateSidebarStyles._styles.position = 'absolute';
-			this.updateSidebarStyles._styles.top = 'auto';
+
+			if(Garnish.$win.width() > 768)
+			{
+				this.updateSidebarStyles._styles.top = 'auto';
+			}
+			else
+			{
+				this.updateSidebarStyles._styles.top = '50px';
+			}
 		}
 
 		// Now figure out how tall the sidebar can be

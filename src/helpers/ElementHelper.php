@@ -5,13 +5,13 @@
  * @license   https://craftcms.com/license
  */
 
-namespace craft\app\helpers;
+namespace craft\helpers;
 
 use Craft;
-use craft\app\base\Element;
-use craft\app\base\ElementInterface;
-use craft\app\db\Query;
-use craft\app\errors\OperationAbortedException;
+use craft\base\Element;
+use craft\base\ElementInterface;
+use craft\db\Query;
+use craft\errors\OperationAbortedException;
 use yii\base\Exception;
 
 /**

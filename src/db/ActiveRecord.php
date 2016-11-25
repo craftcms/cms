@@ -5,10 +5,10 @@
  * @license   https://craftcms.com/license
  */
 
-namespace craft\app\db;
+namespace craft\db;
 
-use craft\app\helpers\Db;
-use craft\app\helpers\StringHelper;
+use craft\helpers\Db;
+use craft\helpers\StringHelper;
 
 /**
  * Active Record base class.

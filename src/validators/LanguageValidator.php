@@ -5,7 +5,7 @@
  * @license   https://craftcms.com/license
  */
 
-namespace craft\app\validators;
+namespace craft\validators;
 
 use Craft;
 use yii\validators\Validator;

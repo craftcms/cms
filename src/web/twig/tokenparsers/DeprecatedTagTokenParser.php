@@ -5,7 +5,7 @@
  * @license   https://craftcms.com/license
  */
 
-namespace craft\app\web\twig\tokenparsers;
+namespace craft\web\twig\tokenparsers;
 
 /**
  * Class DeprecatedTagTokenParser

@@ -5,25 +5,25 @@
  * @license   https://craftcms.com/license
  */
 
-namespace craft\app\updates;
+namespace craft\updates;
 
 use Craft;
-use craft\app\base\PluginInterface;
-use craft\app\enums\PatchManifestFileAction;
-use craft\app\errors\DbBackupException;
-use craft\app\errors\DbUpdateException;
-use craft\app\errors\DownloadPackageException;
-use craft\app\errors\FileException;
-use craft\app\errors\FilePermissionsException;
-use craft\app\errors\InvalidateCacheException;
-use craft\app\errors\MinimumRequirementException;
-use craft\app\errors\MissingFileException;
-use craft\app\errors\UnpackPackageException;
-use craft\app\errors\ValidatePackageException;
-use craft\app\helpers\Io;
-use craft\app\helpers\StringHelper;
-use craft\app\helpers\Update;
-use craft\app\io\Zip;
+use craft\base\PluginInterface;
+use craft\enums\PatchManifestFileAction;
+use craft\errors\DbBackupException;
+use craft\errors\DbUpdateException;
+use craft\errors\DownloadPackageException;
+use craft\errors\FileException;
+use craft\errors\FilePermissionsException;
+use craft\errors\InvalidateCacheException;
+use craft\errors\MinimumRequirementException;
+use craft\errors\MissingFileException;
+use craft\errors\UnpackPackageException;
+use craft\errors\ValidatePackageException;
+use craft\helpers\Io;
+use craft\helpers\StringHelper;
+use craft\helpers\Update;
+use craft\io\Zip;
 use yii\base\Exception;
 use yii\helpers\Markdown;
 

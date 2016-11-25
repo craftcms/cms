@@ -5,10 +5,10 @@
  * @license   https://craftcms.com/license
  */
 
-namespace craft\app\widgets;
+namespace craft\widgets;
 
 use Craft;
-use craft\app\base\Widget;
+use craft\base\Widget;
 
 /**
  * CraftSupport represents a Craft Support dashboard widget.

@@ -5,7 +5,7 @@
  * @license   https://craftcms.com/license
  */
 
-namespace craft\app\base;
+namespace craft\base;
 
 /**
  * SavableComponentInterface defines the common interface to be implemented by savable Craft component classes.
@@ -77,7 +77,7 @@ interface SavableComponentInterface extends ComponentInterface
      * ```
      *
      * For more complex settings, you might prefer to create a template, and render it via
-     * [[\craft\app\web\View::renderTemplate()]]. For example, the following code would render a template loacated at
+     * [[\craft\web\View::renderTemplate()]]. For example, the following code would render a template loacated at
      * craft/plugins/myplugin/templates/_settings.html, passing the settings to it:
      *
      * ```php
@@ -87,7 +87,7 @@ interface SavableComponentInterface extends ComponentInterface
      * ```
      *
      * If you need to tie any JavaScript code to your settings, it’s important to know that any `name=` and `id=`
-     * attributes within the returned HTML will probably get [[\craft\app\web\View::namespaceInputs() namespaced]],
+     * attributes within the returned HTML will probably get [[\craft\web\View::namespaceInputs() namespaced]],
      * however your JavaScript code will be left untouched.
      *
      * For example, if getSettingsHtml() returns the following HTML:
@@ -117,12 +117,12 @@ interface SavableComponentInterface extends ComponentInterface
      * namespace is going to change depending on the context. Often they are randomly generated. So it’s not quite
      * that simple.
      *
-     * Thankfully, [[\craft\app\web\View]] service provides a couple handy methods that can help you deal
+     * Thankfully, [[\craft\web\View]] service provides a couple handy methods that can help you deal
      * with this:
      *
-     * - [[\craft\app\web\View::namespaceInputId()]] will give you the namespaced version of a given ID.
-     * - [[\craft\app\web\View::namespaceInputName()]] will give you the namespaced version of a given input name.
-     * - [[\craft\app\web\View::formatInputId()]] will format an input name to look more like an ID attribute value.
+     * - [[\craft\web\View::namespaceInputId()]] will give you the namespaced version of a given ID.
+     * - [[\craft\web\View::namespaceInputName()]] will give you the namespaced version of a given input name.
+     * - [[\craft\web\View::formatInputId()]] will format an input name to look more like an ID attribute value.
      *
      * So here’s what a getSettingsHtml() method that includes field-targeting JavaScript code might look like:
      *
@@ -155,7 +155,7 @@ interface SavableComponentInterface extends ComponentInterface
      * ```
      *
      * The same principles also apply if you’re including your JavaScript code with
-     * [[\craft\app\web\View::registerJs()]].
+     * [[\craft\web\View::registerJs()]].
      *
      * @return string|null
      */

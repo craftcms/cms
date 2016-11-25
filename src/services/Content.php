@@ -5,15 +5,15 @@
  * @license   https://craftcms.com/license
  */
 
-namespace craft\app\services;
+namespace craft\services;
 
 use Craft;
-use craft\app\base\Element;
-use craft\app\base\ElementInterface;
-use craft\app\base\Field;
-use craft\app\db\Query;
-use craft\app\events\ElementContentEvent;
-use craft\app\models\FieldLayout;
+use craft\base\Element;
+use craft\base\ElementInterface;
+use craft\base\Field;
+use craft\db\Query;
+use craft\events\ElementContentEvent;
+use craft\models\FieldLayout;
 use yii\base\Component;
 use yii\base\Exception;
 

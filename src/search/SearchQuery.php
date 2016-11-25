@@ -5,9 +5,9 @@
  * @license   https://craftcms.com/license
  */
 
-namespace craft\app\search;
+namespace craft\search;
 
-use craft\app\helpers\StringHelper;
+use craft\helpers\StringHelper;
 
 /**
  * Search Query class.
@@ -141,6 +141,8 @@ class SearchQuery
                 } else {
                     $token = mb_substr($token, 1).' '.strtok(StringHelper::first($token, 1));
                 }
+
+                $term->phrase = true;
             }
 
             // Include sub-word matches?

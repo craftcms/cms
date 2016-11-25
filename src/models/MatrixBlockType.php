@@ -5,11 +5,11 @@
  * @license   https://craftcms.com/license
  */
 
-namespace craft\app\models;
+namespace craft\models;
 
-use craft\app\base\FieldInterface;
-use craft\app\base\Model;
-use craft\app\behaviors\FieldLayoutTrait;
+use craft\base\FieldInterface;
+use craft\base\Model;
+use craft\behaviors\FieldLayoutTrait;
 
 /**
  * MatrixBlockType model class.
@@ -74,8 +74,8 @@ class MatrixBlockType extends Model
     {
         return [
             'fieldLayout' => [
-                'class' => \craft\app\behaviors\FieldLayoutBehavior::class,
-                'elementType' => \craft\app\elements\MatrixBlock::class
+                'class' => \craft\behaviors\FieldLayoutBehavior::class,
+                'elementType' => \craft\elements\MatrixBlock::class
             ],
         ];
     }

@@ -5,10 +5,10 @@
  * @license   https://craftcms.com/license
  */
 
-namespace craft\app\events;
+namespace craft\events;
 
-use craft\app\base\ElementActionInterface;
-use craft\app\elements\db\ElementQueryInterface;
+use craft\base\ElementActionInterface;
+use craft\elements\db\ElementQueryInterface;
 
 /**
  * Element action event class.

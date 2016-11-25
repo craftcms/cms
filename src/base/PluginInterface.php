@@ -5,7 +5,7 @@
  * @license   https://craftcms.com/license
  */
 
-namespace craft\app\base;
+namespace craft\base;
 
 /**
  * PluginInterface defines the common interface to be implemented by plugin classes.
@@ -78,7 +78,7 @@ interface PluginInterface
     public function getSettingsResponse();
 
     /**
-     * Returns the component definition that should be registered on the [[\craft\app\web\twig\variables\CraftVariable]] instance for this plugin’s handle.
+     * Returns the component definition that should be registered on the [[\craft\web\twig\variables\CraftVariable]] instance for this plugin’s handle.
      *
      * @return mixed|null The component definition to be registered.
      * It can be any of the formats supported by [[\yii\di\ServiceLocator::set()]].

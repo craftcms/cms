@@ -5,20 +5,20 @@
  * @license   https://craftcms.com/license
  */
 
-namespace craft\app\controllers;
+namespace craft\controllers;
 
 use Craft;
-use craft\app\dates\DateTime;
-use craft\app\elements\User;
-use craft\app\helpers\ArrayHelper;
-use craft\app\helpers\DateTimeHelper;
-use craft\app\helpers\Json;
-use craft\app\helpers\Url;
-use craft\app\elements\Entry;
-use craft\app\models\EntryDraft;
-use craft\app\models\EntryVersion;
-use craft\app\models\Section;
-use craft\app\models\Site;
+use craft\dates\DateTime;
+use craft\elements\User;
+use craft\helpers\ArrayHelper;
+use craft\helpers\DateTimeHelper;
+use craft\helpers\Json;
+use craft\helpers\Url;
+use craft\elements\Entry;
+use craft\models\EntryDraft;
+use craft\models\EntryVersion;
+use craft\models\Section;
+use craft\models\Site;
 use yii\web\ForbiddenHttpException;
 use yii\web\NotFoundHttpException;
 use yii\web\Response;

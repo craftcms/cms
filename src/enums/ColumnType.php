@@ -5,7 +5,7 @@
  * @license   https://craftcms.com/license
  */
 
-namespace craft\app\enums;
+namespace craft\enums;
 
 /**
  * The ColumnType class is an abstract class that defines all of the abstract column types that will eventually be

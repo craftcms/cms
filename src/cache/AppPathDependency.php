@@ -5,7 +5,7 @@
  * @license   https://craftcms.com/license
  */
 
-namespace craft\app\cache;
+namespace craft\cache;
 
 use Craft;
 use yii\caching\Cache;

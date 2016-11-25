@@ -5,10 +5,10 @@
  * @license   https://craftcms.com/license
  */
 
-namespace craft\app\web\twig\variables;
+namespace craft\web\twig\variables;
 
 use Craft;
-use craft\app\services\Config as ConfigService;
+use craft\services\Config as ConfigService;
 
 /**
  * Class Config variable.

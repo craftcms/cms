@@ -10,8 +10,8 @@
 
 {% set sectionHandle = section.handle %}
 {% set isSingle = section.type == 'single' %}
-{% set isVersion = className(entry) == 'craft\\app\\models\\EntryVersion' %}
-{% set isDraft = entry.id and className(entry) == 'craft\\app\\models\\EntryDraft' %}
+{% set isVersion = className(entry) == 'craft\\models\\EntryVersion' %}
+{% set isDraft = entry.id and className(entry) == 'craft\\models\\EntryDraft' %}
 
 {% set canPublish = currentUser.can('publishEntries'~permissionSuffix) %}
 {% set canSave = (

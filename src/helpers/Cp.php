@@ -5,12 +5,12 @@
  * @license   https://craftcms.com/license
  */
 
-namespace craft\app\helpers;
+namespace craft\helpers;
 
 use Craft;
-use craft\app\enums\LicenseKeyStatus;
-use craft\app\events\Event;
-use craft\app\events\RegisterCpAlertsEvent;
+use craft\enums\LicenseKeyStatus;
+use craft\events\Event;
+use craft\events\RegisterCpAlertsEvent;
 
 /**
  * Class Cp

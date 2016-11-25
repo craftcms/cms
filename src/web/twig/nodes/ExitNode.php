@@ -5,7 +5,7 @@
  * @license   https://craftcms.com/license
  */
 
-namespace craft\app\web\twig\nodes;
+namespace craft\web\twig\nodes;
 
 /**
  * Class ExitNode
@@ -27,7 +27,7 @@ class ExitNode extends \Twig_Node
 
         if ($status = $this->getNode('status')) {
             $compiler
-                ->write('throw new \craft\app\errors\HttpException(')
+                ->write('throw new \craft\errors\HttpException(')
                 ->subcompile($status)
                 ->raw(");\n");
         } else {
