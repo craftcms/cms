@@ -4,8 +4,8 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#composer-lock-the-lock-file",
         "This file is @generated automatically"
     ],
-    "hash": "c58d3a3ac7b57622a5d858253b869406",
-    "content-hash": "3383bfa29d299f989633a381a4daca51",
+    "hash": "9e9f203a7fe483624eb54d6e605955ea",
+    "content-hash": "05bf32665b47bf2bdebe9d38806a2d21",
     "packages": [
         {
             "name": "aws/aws-sdk-php",
@@ -102,7 +102,7 @@
                 "shasum": ""
             },
             "require": {
-                "bower-asset/jquery": ">=1.9.1,<4.0"
+                "bower-asset/jquery": ">=1.9.1,<=3"
             },
             "type": "bower-asset-library",
             "extra": {
@@ -1035,61 +1035,6 @@
             ],
             "description": "Flysystem adapter for ZipArchive's",
             "time": "2015-04-21 12:14:28"
-        },
-        {
-            "name": "lsolesen/pel",
-            "version": "0.9.4.1",
-            "source": {
-                "type": "git",
-                "url": "https://github.com/pixelandtonic/pel.git",
-                "reference": "054b8220207c571df3a6882b895e19c1674fdbf2"
-            },
-            "dist": {
-                "type": "zip",
-                "url": "https://api.github.com/repos/pixelandtonic/pel/zipball/054b8220207c571df3a6882b895e19c1674fdbf2",
-                "reference": "054b8220207c571df3a6882b895e19c1674fdbf2",
-                "shasum": ""
-            },
-            "require": {
-                "php": ">=5.0.0"
-            },
-            "require-dev": {
-                "lastcraft/simpletest": ">=1.1",
-                "squizlabs/php_codesniffer": "2.*"
-            },
-            "type": "library",
-            "autoload": {
-                "psr-4": {
-                    "lsolesen\\pel\\": "src/"
-                }
-            },
-            "license": [
-                "GPL-2.0"
-            ],
-            "authors": [
-                {
-                    "name": "Lars Olesen",
-                    "email": "lars@intraface.dk",
-                    "homepage": "http://intraface.dk",
-                    "role": "Developer"
-                },
-                {
-                    "name": "Martin Geisler",
-                    "email": "martin@geisler.net",
-                    "homepage": "http://geisler.net",
-                    "role": "Developer"
-                }
-            ],
-            "description": "PHP Exif Library. A library for reading and writing Exif headers in JPEG and TIFF images using PHP.",
-            "homepage": "http://lsolesen.github.com/pel/",
-            "keywords": [
-                "exif",
-                "image"
-            ],
-            "support": {
-                "source": "https://github.com/pixelandtonic/pel/tree/0.9.4.1"
-            },
-            "time": "2016-07-18 21:40:02"
         },
         {
             "name": "mikehaertl/php-shellcommand",

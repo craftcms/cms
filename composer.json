@@ -26,7 +26,6 @@
         "yiisoft/yii2-swiftmailer": "2.0.6",
         "simplepie/simplepie": "1.4.2.1",
         "guzzlehttp/guzzle": "6.2.2",
-        "lsolesen/pel": "0.9.4.1",
         "danielstjules/stringy": "2.3.2",
         "creocoder/yii2-nested-sets": "0.9.0",
         "imagine/imagine": "0.6.14.1",
@@ -57,10 +56,6 @@
         {
             "type": "vcs",
             "url": "https://github.com/pixelandtonic/simplepie"
-        },
-        {
-            "type": "vcs",
-            "url": "https://github.com/pixelandtonic/pel"
         }
     ],
     "extra": {
