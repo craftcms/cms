@@ -3,7 +3,7 @@
  *
  * @copyright 2013 Pixel & Tonic, Inc.. All rights reserved.
  * @author    Brandon Kelly <brandon@pixelandtonic.com>
- * @version   0.1.5
+ * @version   0.1.6
  * @license   MIT
  */
 (function($){
@@ -1321,7 +1321,7 @@ Garnish.BaseDrag = Garnish.Base.extend({
 			$.data(item, 'drag', this);
 
 			// Add the listener
-			this.addListener(item, 'mousedown', '_handleMouseDown');
+			this.addListener(item, 'tapstart', '_handleMouseDown');
 		}
 
 		this.$items = this.$items.add(items);
@@ -1417,10 +1417,10 @@ Garnish.BaseDrag = Garnish.Base.extend({
 	/**
 	 * Handle Mouse Down
 	 */
-	_handleMouseDown: function(ev)
+	_handleMouseDown: function(ev, touch)
 	{
 		// Ignore right clicks
-		if (ev.which != Garnish.PRIMARY_CLICK)
+		if (!$.isTouchCapable() && ev.which != Garnish.PRIMARY_CLICK)
 		{
 			return;
 		}
@@ -1463,18 +1463,29 @@ Garnish.BaseDrag = Garnish.Base.extend({
 		// Capture the target
 		this.$targetItem = $(ev.currentTarget);
 
+		if($.isTouchCapable())
+		{
+			var mouseX = touch.position.x;
+			var mouseY = touch.position.y;
+		}
+		else
+		{
+			var mouseX = ev.pageX;
+			var mouseY = ev.pageY;
+		}
+
 		// Capture the current mouse position
-		this.mousedownX = this.mouseX = ev.pageX;
-		this.mousedownY = this.mouseY = ev.pageY;
+		this.mousedownX = this.mouseX = mouseX;
+		this.mousedownY = this.mouseY = mouseY;
 
 		// Capture the difference between the mouse position and the target item's offset
 		var offset = this.$targetItem.offset();
-		this.mouseOffsetX = ev.pageX - offset.left;
-		this.mouseOffsetY = ev.pageY - offset.top;
+		this.mouseOffsetX = mouseX - offset.left;
+		this.mouseOffsetY = mouseY - offset.top;
 
 		// Listen for mousemove, mouseup
-		this.addListener(Garnish.$doc, 'mousemove', '_handleMouseMove');
-		this.addListener(Garnish.$doc, 'mouseup', '_handleMouseUp');
+		this.addListener(Garnish.$bod, 'tapmove', '_handleMouseMove');
+		this.addListener(Garnish.$bod, 'tapend', '_handleMouseUp');
 	},
 
 	_getItemHandle: function(item)
@@ -1503,21 +1514,32 @@ Garnish.BaseDrag = Garnish.Base.extend({
 	/**
 	 * Handle Mouse Move
 	 */
-	_handleMouseMove: function(ev)
+	_handleMouseMove: function(ev, touch)
 	{
 		ev.preventDefault();
 
-		this.realMouseX = ev.pageX;
-		this.realMouseY = ev.pageY;
+		if($.isTouchCapable())
+		{
+			var mouseX = touch.position.x;
+			var mouseY = touch.position.y;
+		}
+		else
+		{
+			var mouseX = ev.pageX;
+			var mouseY = ev.pageY;
+		}
+
+		this.realMouseX = mouseX;
+		this.realMouseY = mouseY;
 
 		if (this.settings.axis != Garnish.Y_AXIS)
 		{
-			this.mouseX = ev.pageX;
+			this.mouseX = mouseX;
 		}
 
 		if (this.settings.axis != Garnish.X_AXIS)
 		{
-			this.mouseY = ev.pageY;
+			this.mouseY = mouseY;
 		}
 
 		this.mouseDistX = this.mouseX - this.mousedownX;
@@ -1546,7 +1568,7 @@ Garnish.BaseDrag = Garnish.Base.extend({
 	_handleMouseUp: function(ev)
 	{
 		// Unbind the document events
-		this.removeAllListeners(Garnish.$doc);
+		this.removeAllListeners(Garnish.$bod);
 
 		if (this.dragging)
 		{

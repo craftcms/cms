@@ -9945,7 +9945,7 @@ Craft.CP = Garnish.Base.extend(
 			{
 				this.$pageHeader.addClass('fixed');
 
-				if(Garnish.$bod.hasClass('showing-nav'))
+				if(Garnish.$bod.hasClass('showing-nav') && Garnish.$win.width() <= 992)
 				{
 					this.$pageHeader.css('top', Garnish.$win.scrollTop());
 				}
