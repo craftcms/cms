@@ -8,9 +8,9 @@
 namespace craft\db\pgsql;
 
 use Craft;
+use craft\db\TableSchema;
 use craft\services\Config;
 use yii\db\Exception;
-use yii\db\TableSchema;
 
 /**
  * @inheritdoc
@@ -188,6 +188,26 @@ class Schema extends \yii\db\pgsql\Schema
         }
 
         return $indexes;
+    }
+
+    /**
+     * Loads the metadata for the specified table.
+     *
+     * @param string $name table name
+     *
+     * @return TableSchema|null driver dependent table metadata. Null if the table does not exist.
+     */
+    public function loadTableSchema($name)
+    {
+        $table = new TableSchema();
+        $this->resolveTableNames($table, $name);
+        if ($this->findColumns($table)) {
+            $this->findConstraints($table);
+
+            return $table;
+        } else {
+            return null;
+        }
     }
 
     /**
