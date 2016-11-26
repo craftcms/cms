@@ -9560,6 +9560,15 @@
 						left: this.core.box().offset().left
 
 					});
+
+					/* BEGIN HACK */
+					this.$toolbar.css({
+
+						width: this.core.box().innerWidth(),
+						left: (this.detect.isDesktop()) ? this.core.box().offset().left : 0
+
+					});
+					/* END HACK */
 				},
 				observeScrollEnable: function(scrollTop, boxTop)
 				{
@@ -9574,6 +9583,9 @@
 
 					var position = (this.detect.isDesktop()) ? 'fixed' : 'absolute';
 					var top = (this.detect.isDesktop()) ? this.opts.toolbarFixedTopOffset : ($(this.opts.toolbarFixedTarget).scrollTop() - boxTop);
+					/* BEGIN HACK */
+					var top = (this.detect.isDesktop()) ? this.opts.toolbarFixedTopOffset : ($(this.opts.toolbarFixedTarget).scrollTop() - boxTop + this.opts.toolbarFixedTopOffset);
+					/* END HACK */
 					var left = (this.detect.isDesktop()) ? this.core.box().offset().left : 0;
 
 					if (this.opts.toolbarFixedTarget !== document)
