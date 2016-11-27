@@ -611,7 +611,13 @@ class Plugins extends Component
      */
     public function createPlugin($handle, $row = null)
     {
-        $config = $this->getConfig($handle, true);
+        $config = $this->getConfig($handle);
+
+        if (isset($config['aliases'])) {
+            foreach ($config['aliases'] as $alias => $path) {
+                Craft::setAlias($alias, $path);
+            }
+        }
 
         // Make sure it was a valid config
         if ($config === null) {
@@ -658,18 +664,17 @@ class Plugins extends Component
     /**
      * Returns the config array for a plugin, based on its handle.
      *
-     * @param string  $handle     The plugin’s handle
-     * @param boolean $setAliases Whether autoload aliases should be created for the plugin (only applies if the plugin wasn't installed via Composer).
+     * @param string $handle The plugin’s handle
      *
      * @return array|null The plugin’s config, if it can be determined
      */
-    public function getConfig($handle, $setAliases = false)
+    public function getConfig($handle)
     {
         // Was this plugin installed via Composer?
         if (isset($this->_composerPluginInfo[$handle])) {
             $config = $this->_composerPluginInfo[$handle];
         } else {
-            $config = $this->_scrapeConfigFromComposerJson($handle, $setAliases);
+            $config = $this->_scrapeConfigFromComposerJson($handle);
         }
 
         // Make sure it's valid
@@ -984,12 +989,11 @@ class Plugins extends Component
     /**
      * Scrapes a plugin’s config from its composer.json file.
      *
-     * @param string  $handle     The plugin’s handle
-     * @param boolean $setAliases Whether autoload aliases should be created for the plugin
+     * @param string $handle The plugin’s handle
      *
      * @return array|null The plugin’s config, if it can be determined
      */
-    private function _scrapeConfigFromComposerJson($handle, $setAliases)
+    private function _scrapeConfigFromComposerJson($handle)
     {
         // Make sure this plugin has a composer.json file
         $pluginPath = Craft::$app->getPath()->getPluginsPath().'/'.$handle;
@@ -1013,15 +1017,10 @@ class Plugins extends Component
         $packageName = isset($composer['name']) ? $composer['name'] : $handle;
 
         // class (required) + possibly set aliases
-        if (isset($composer['autoload']) && (!isset($extra['class']) || $setAliases)) {
-            $this->_processComposerAutoload($handle, $composer['autoload'], $setAliases, $class);
-        }
+        $class = isset($extra['class']) ? $extra['class'] : null;
+        $aliases = $this->_generateDefaultAliasesFromComposer($handle, $composer, $class);
 
-        if (isset($extra['class'])) {
-            $class = $extra['class'];
-        }
-
-        if (empty($class)) {
+        if ($class === null) {
             Craft::warning("Unable to determine the Plugin class for {$handle}.");
 
             return null;
@@ -1030,6 +1029,10 @@ class Plugins extends Component
         $config = [
             'class' => $class,
         ];
+
+        if ($aliases) {
+            $config['aliases'] = $aliases;
+        }
 
         if (strpos($packageName, '/') !== false) {
             list($vendor, $name) = explode('/', $packageName);
@@ -1101,81 +1104,47 @@ class Plugins extends Component
     }
 
     /**
-     * Attempts to locate a Plugin class based on the autoload property in a plugin’s composer.json file.
+     * Returns an array of alias/path mappings that should be set for a plugin based on its Composer config.
      *
-     * @param string  $handle     The plugin handle
-     * @param array   $autoload   The autoload property in the Composer config
-     * @param boolean $setAliases Whether autoload aliases should be created for the plugin
-     * @param boolean &$class     The Plugin class name
+     * It will also set the $class variable to the primary Plugin class, if it can isn't set already and the class can be found.
      *
-     * @return null|string
+     * @param string  $handle   The plugin handle
+     * @param array   $composer The Composer config
+     * @param boolean &$class   The Plugin class name
+     *
+     * @return array|null
      */
-    private function _processComposerAutoload($handle, array $autoload, $setAliases, &$class)
+    private function _generateDefaultAliasesFromComposer($handle, array $composer, &$class)
     {
-        if (!empty($autoload['psr-0'])) {
-            foreach ($autoload['psr-0'] as $name => $path) {
-                $this->_processComposerAutoloadPath($handle, $name, $path, $setAliases, $class);
+        if (empty($composer['autoload']['psr-4'])) {
+            return null;
+        }
 
-                if ($class && !$setAliases) {
-                    return;
-                }
+        $aliases = [];
+
+        foreach ($composer['autoload']['psr-4'] as $namespace => $path) {
+            if (is_array($path)) {
+                // Yii doesn't support aliases that point to multiple base paths
+                continue;
+            }
+
+            // Normalize $path to an absolute path
+            if (!(substr($path, 0, 1) === '/' || substr($path, 1, 1) === ':')) {
+                $pluginPath = Craft::$app->getPath()->getPluginsPath().'/'.$handle;
+                $path = $pluginPath.'/'.$path;
+            }
+
+            $path = rtrim(Io::normalizePathSeparators($path), '/');
+            $alias = '@'.str_replace('\\', '/', trim($namespace, '\\'));
+            $aliases[$alias] = $path;
+
+            // If we're still looking for the primary Plugin class, see if it's in here
+            if ($class === null && Io::fileExists($path.'/Plugin.php')) {
+                $class = $namespace.'Plugin';
             }
         }
 
-        if (!empty($autoload['psr-4'])) {
-            foreach ($autoload['psr-4'] as $name => $path) {
-                if (is_array($path)) {
-                    foreach ($path as $_path) {
-                        // Not possible to set an alias that points to multiple directories
-                        $this->_processComposerAutoloadPath($handle, $name, $_path, false, $class);
-
-                        if ($class && !$setAliases) {
-                            return;
-                        }
-
-                    }
-                } else {
-                    $this->_processComposerAutoloadPath($handle, $name, $path, $setAliases, $class);
-
-                    if ($class && !$setAliases) {
-                        return;
-                    }
-                }
-            }
-        }
-
-        return null;
-    }
-
-    /**
-     * Attempts to locate a Plugin class within a given composer.json autoload path.
-     *
-     * @param string $handle      The plugin handle
-     * @param string $name        The autoload namespace
-     * @param string $path        The autoload path
-     * @param boolean $setAliases Whether autoload aliases should be created for the plugin
-     * @param boolean &$class     The Plugin class name
-     *
-     * @return null|string
-     */
-    private function _processComposerAutoloadPath($handle, $name, $path, $setAliases, &$class)
-    {
-        // Normalize $path to an absolute path
-        if (!(substr($path, 0, 1) === '/' || substr($path, 1, 1) === ':')) {
-            $pluginPath = Craft::$app->getPath()->getPluginsPath().'/'.$handle;
-            $path = $pluginPath.'/'.$path;
-        }
-
-        $path = Io::normalizePathSeparators($path);
-
-        if ($setAliases) {
-            $alias = '@'.str_replace('\\', '/', trim($name, '\\'));
-            Craft::setAlias($alias, $path);
-        }
-
-        if (!$class && ($classPath = Io::fileExists($path.'/Plugin.php')) !== false) {
-            $class = $name.'Plugin';
-        }
+        return $aliases;
     }
 
     /**
