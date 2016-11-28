@@ -30,10 +30,6 @@
         {
             "type": "git",
             "url": "https://github.com/pixelandtonic/flysystem-google-cloud"
-        },
-        {
-            "type": "git",
-            "url": "https://github.com/pixelandtonic/Imagine"
         }
     ],
     "extra": {
