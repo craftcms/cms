@@ -2,24 +2,30 @@ Craft CMS Changelog
 ===================
 
 ## [Unreleased] 
+
 ### Changed
 - OPcache file caches are row cleared during auto-updates, preventing possible PHP/SQL errors from occurring after the new files have been put in place but before OPcache would have cleared its caches on its own. (This will only take effect in future updates, unfortunately. Servers with OPcache enabled may continue to experience unexpected behaviors while auto-updating until they have updated to this release.)
 
 ## [v2.6.2952] - 2016-11-21
+
 ### Changed
 - `craft()->getBuild()`, `craft()->getTrack()`, and `craft()->getReleaseDate()` now somewhat resemble their former behavior, but will now create deprecation logs.
+
 ### Fixed
 - Fixed a JavaScript error that occurred when selecting an element on an element index page.
 - Fixed a bug where the Globals section of the Control Panel was only showing up to 100 global sets.
 
 ## [v2.6.2951] - 2016-11-21
+
 ### Changed
 - Craft no longer has the concept of “update tracks”, and is now capable of auto-updating between stable/beta/alpha releases.
 - Database backups now have a random string at the end of the filename, fixing a bug where if two separate users created a backup on the exact same second, the backups would get woven together into the same file.
 - `craft()->getVersion()` now returns the full version number (e.g. “2.6.2951”) rather than just the X.Y parts.
+
 ### Deprecated
 - `craft()->getBuild()`, `craft()->getReleaseDate()`, and `craft()->getTrack()` are now deprecated, and return `null`.
 - The template functions `craft.getBuild()` and `craft.getReleaseDate()` are now deprecated, and return `null`.
+
 ### Fixed
 - Fixed a bug where [NumberFormatter::formatCurrency()](https://craftcms.com/classreference/etc/i18n/NumberFormatter#formatCurrency-detail) wasn’t respecting the $stripZeroCents argument if the formatted currency string placed the currency symbol at the end.
 - Fixed a bug where the Assets index page was assuming all sources were normal asset volumes, which may not be the case if plugins are registering custom sources with the [modifyAssetSources](https://craftcms.com/docs/plugins/hooks-reference#modifyAssetSources) hook.
@@ -31,13 +37,16 @@ Craft CMS Changelog
 - Fixed a bug where log files were not always rotating out correctly on Windows servers, leading to extremely huge log files.
 
 ## [v2.6.2950] - 2016-10-31
+
 ### Added
 - Added [ElementHelper::setNextPrevOnElements()](https://craftcms.com/classreference/helpers/ElementHelper#setNextPrevOnElements-detail).
+
 ### Changed
 - [getNext()](https://craftcms.com/classreference/models/BaseElementModel#getNext-detail) and [getPrev()](https://craftcms.com/classreference/models/BaseElementModel#getPrev-detail) now work as expected for eager-loaded elements.
 - Sped up template cache queries.
 - Improved the styling of the Plugins index page on smaller screens.
 - Updated Redactor to 1.3.1.
+
 ### Fixed
 - Fixed a PHP notice that was occurring on some environments.
 - Fixed a bug where element titles weren't getting indexed by the Search service for non-current locales when saving a brand new element.
@@ -45,28 +54,35 @@ Craft CMS Changelog
 - Fixed a bug where menu option shortcut hints were not aligned correctly in Firefox.
 
 ## [v2.6.2949] - 2016-10-05
+
 ### Added
 - Added the [deferPublicRegistrationPassword](https://craftcms.com/docs/config-settings#deferPublicRegistrationPassword) config setting.
 - Added the 'initSQLs' DB config setting (set from config/db.php), which will get passed to [CDbConnection::initSQLs](http://www.yiiframework.com/doc/api/1.1/CDbConnection#initSQLs-detail).
 - Added the 'attributes' DB config setting (set from config/db.php), which will get passed to [CDbConnection::attributes](http://www.yiiframework.com/doc/api/1.1/CDbConnection#attributes-detail). This can be used to enable SSL database connections.
+
 ### Changed
 - The Edit User form now has `autocomplete="off"` set, which should prevent LastPass from auto-filling the Email field when Settings → Advanced → "Allow pages to disable autofill" is enabled.
 - Craft.BaseElementSelectorModal and Craft.BaseElementSelectInput now have a 'showLocaleMenu' setting, which controls whether the Locale menu should be visible within element index modals.
+
 ### Fixed
 - Fixed a bug where Rich Text fields weren't loading properly when viewing the Control Panel in Portuguese.
 - Fixed a PHP error that occurred when setting the $ignore argument on [StringHelper::normalizeKeywords()](https://craftcms.com/classreference/helpers/StringHelper#normalizeKeywords-detail).
 
 ## [v2.6.2945] - 2016-09-27
+
 ### Fixed
 - Fixed a bug where [IOHelper::copyFolder()](https://craftcms.com/classreference/helpers/IOHelper#copyFolder-detail) was not working on Windows servers.
 - Fixed a bug where Craft could think that content changes had been made on Edit Entry/Category/etc. pages after opening and closing Live Preview, without making any changes.
+
 ### Security
 - Added the [validateUnsafeRequestParams](https://craftcms.com/docs/config-settings#validateUnsafeRequestParams) config setting, which can be enabled to prevent certain Denial of Service (DoS) attack vectors.
 - Added [HttpRequestService::getValidatedPost()](https://craftcms.com/classreference/services/HttpRequestService#getValidatedPost-detail).
 
 ## [v2.6.2944] - 2016-09-22
+
 ### Added
 - Added [UserModel::setGroups()](https://craftcms.com/classreference/models/UserModel#setGroups-detail).
+
 ### Fixed
 - Fixed a bug where [ChartHelper::getRunChartDataFromQuery()](https://craftcms.com/classreference/helpers/ChartHelper#getRunChartDataFromQuery-detail) wasn't factoring in the system's Timezone setting.
 - Fixed a bug where [UserModel::getGroups()](https://craftcms.com/classreference/models/UserModel#getGroups-detail) was not always respecting the user's latest group assignments.
@@ -74,12 +90,15 @@ Craft CMS Changelog
 - Fixed a bug that broke asset uploading via Assets fields in some cases.
 
 ## [v2.6.2940] - 2016-09-20
+
 ### Added
 - The Control Panel is now translated for Brazilian Portuguese (pt_br).
+
 ### Changed
 - Login forms no longer reveal that a user account is locked, unless the correct username and password was entered.
 - Craft no longer exposes full file paths in some image manipulation-related exceptions.
 - Craft now suppresses the X-Mailer header when sending emails.
+
 ### Fixed
 - Fixed a bug where [NumberFormatter::formatCurrency()](https://craftcms.com/classreference/etc/i18n/NumberFormatter#formatCurrency-detail) was incorrectly formatting currencies with a minor value of less than 10, e.g. $1.05.
 - Fixed a bug where [IOHelper::copyFolder()](https://craftcms.com/classreference/helpers/IOHelper#copyFolder-detail) was not working.
@@ -89,10 +108,12 @@ Craft CMS Changelog
 - Fixed a bug where translatable fields were not always respecting the element's locale's orientation, when it differed from the user's preferred locale's orientation.
 - Fixed a couple bugs related to double-clicking on elements within the Control Panel.
 - Fixed a bug where the "Sensitive Craft folders should not be publicly accessible" requirement at admin/utils/serverinfo would incorrectly report that Craft folders were not accessible if they had been uploaded to a subfolder.
+
 ### Security
 - Added the [preventUserEnumeration](https://craftcms.com/docs/config-settings#preventUserEnumeration) config setting, for the über security-conscious.
 
 ## [v2.6.2931] - 2016-09-08
+
 ### Changed
 - Improved the legibility of light-on-dark text
 - Double tapping the title bar of a Matrix block collapses/expands the block.
@@ -101,20 +122,25 @@ Craft CMS Changelog
 - Tap-holding an element in element index views now shows the Element Editor HUD.
 - The Control Panel now includes jquery.mobile-events.js for touch events support.
 - Updated Redactor to 1.2.6.
+
 ### Fixed
 - Fixed a bug where HTML entities were getting encoded for plain text emails.
 
 ## [v2.6.2930] - 2016-09-01
+
 ### Fixed
 - Fixed a PHP error that occurred when creating a DB backup on environments running PHP 5.3.
 
 ## [v2.6.2929] - 2016-08-31
+
 ### Changed
 - It's now possible to translate Plain Text fields' placeholder messages with [static translations](https://craftcms.com/support/static-translations).
+
 ### Fixed
 - Fixed a bug where the self-updater would display a nondescript error message if the environment didn't meet all of Craft's server requirements, rather than explaining the actual issue(s).
 
 ## [v2.6.2923] - 2016-08-30
+
 ### Fixed
 - Fixed a bug where Craft was not properly indexing assets whose file paths were longer than 255 characters.
 - Fixed a bug where animated GIF loop limits were not being respected.
@@ -123,15 +149,19 @@ Craft CMS Changelog
 - Fixed a bug where textareas with auto-adjusted heights were not accounting for trailing newlines.
 
 ## [v2.6.2922] - 2016-08-26
+
 ### Added
 - Added `cp.categories.edit` and `cp.categories.edit.right-pane` hooks to the categories/_edit template.
 - Added `cp.users.edit` and `cp.users.edit.right-pane` hooks to the users/_edit template.
+
 ### Fixed
 - Fixed a bug where clicking on a menu option would hide the menu before the option had a chance to activate.
+
 ### Security
 - Fixed a vulnerability that made it possible to execute Craft database backups in other contexts besides restoring from a failed update attempt.
 
 ## [v2.6.2916] - 2016-08-25
+
 ### Changed
 - Improved keyboard and accessibility support for the Select All button on element indexes.
 - Improved keyboard and accessibility support for Lightswitch fields.
@@ -142,6 +172,7 @@ Craft CMS Changelog
 - The _includes/forms/field include template now assigns an `id` attribute to the `<label>` if either a `labelId` or `id` variable is passed in.
 - The _includes/forms/lightswitch include template now assigns an `aria-labelledby` attribute to the container `<div>` if a `labelId` variable is passed in.
 - [TemplatesService::namespaceInputs()](https://craftcms.com/classreference/services/TemplatesService#namespaceInputs-detail) now namespaces `aria-labelledby` attributes when $otherAttributes is true.
+
 ### Fixed
 - EmailService no longer has Twig render email messages in safe mode, which was a little heavy-handed and prevented email message templates from accessing global variables and other things.
 - Really, really, really fixed a bug where [ElementsService::getTotalElements()](https://craftcms.com/classreference/services/ElementsService#getTotalElements-detail) was not working correctly for some plugins that were modifying the element query.
@@ -149,12 +180,15 @@ Craft CMS Changelog
 - Fixed a bug where new entry types would get added to the beginning of the section's entry type list, if the order of the list had been customized.
 
 ## [v2.6.2911] - 2016-08-16
+
 ### Added
 - Added [AppPathCacheDependency](https://craftcms.com/classreference/etc/cache/dependencies/AppPathCacheDependency), which can be used in conjunction with [CacheService::set()](https://craftcms.com/classreference/services/CacheService#set-detail) to create data caches that expire when the file system path to the craft/app/ folder changes.
+
 ### Changed
 - Craft no longer flushes the entire data cache when the file system path to the craft/app/ folder changes.
 - Craft no longer sets the Content-Length header when responding to CP resource requests, fixing a potential mismatch between the header value and the actual content size if the response body was compressed its way to the client.
 - Craft now disables PHPMailer's "SMTPAutoTLS" setting, preventing an error on servers that don't support TLS.
+
 ### Fixed
 - Fixed a bug where the [email.onSendEmailError](https://craftcms.com/docs/plugins/events-reference#email-onSendEmailError) event was not firing in some cases.
 - Fixed a bug where transforms that took longer than 120 seconds to generate would get cut off at 120 seconds.
@@ -162,8 +196,10 @@ Craft CMS Changelog
 - Fixed a bug that occurred in some cases.
 
 ## [v2.6.2903] - 2016-08-02
+
 ### Added
 - Added the [getTableAttributesForSource](https://craftcms.com/docs/plugins/hooks-reference#getTableAttributesForSource) hook, making it possible for plugins to override the visible table attributes for a given element index source.
+
 ### Changed
 - Password inputs no longer reveal the password when the Alt key is pressed, since some international keyboards require the Alt key to be pressed to type common symbols.
 - [TemplatesService::render()](https://craftcms.com/classreference/services/TemplatesService#render-detail) and [renderString()](https://craftcms.com/classreference/services/TemplatesService#renderString-detail) now accept a $safeMode argument.
@@ -172,13 +208,16 @@ Craft CMS Changelog
 - Craft now gracefully handles any errors or exceptions that are thrown as a result of a reference tag.
 
 ## [v2.6.2804] - 2016-07-28
+
 ### Fixed
 - Fixed a PHP error that was occuring on servers running PHP 5.3.
 - Fixed a bug where some textareas in the Control Panel were getting some extra padding below them.
 
 ## [v2.6.2798] - 2016-07-27
+
 ### Changed
 - Elevated sessions can now be disabled by setting the [elevatedSessionDuration](https://craftcms.com/docs/config-settings#elevatedSessionDuration) config setting to `false`.
+
 ### Fixed
 - Fixed a bug where eager-loaded relations weren't factoring in the source elements' locale.
 - Fixed a bug where some responsive tables were not collapsing when they should on mobile.
@@ -186,6 +225,7 @@ Craft CMS Changelog
 - Fixed a bug where setting `toolbarFixed: true` in Redactor configs were not working correctly when using the "Redactor I" plugin.
 
 ## [v2.6.2797] - 2016-07-18
+
 ### Fixed
 - Fixed a bug where [TemplatesService::getTwig()](https://craftcms.com/classreference/services/TemplatesService#getTwig-detail) was not instantiating new Twig environments for unique sets of options.
 - Fixed a PHP error that occurred if a base DateTime object was passed into [DateTimeHelper::formatTimeForDb()](https://craftcms.com/classreference/helpers/DateTimeHelper#formatTimeForDb-detail), rather than a Craft\DateTime object.
@@ -193,20 +233,25 @@ Craft CMS Changelog
 - Fixed a bug where element thumbnails were getting distorted in IE.
 
 ## [v2.6.2796] - 2016-07-10
+
 ### Changed
 - Updated Redactor to 1.2.5.
+
 ### Fixed
 - Really, really fixed a bug where [ElementsService::getTotalElements()](https://craftcms.com/classreference/services/ElementsService#getTotalElements-detail) was not working correctly for some plugins that were modifying the element query.
 - Fixed a bug that could have prevented Craft from restoring the site to normal if a problem occurred during an update.
 - Fixed a bug where thumbnails for portrait images were getting stretched into a square.
 
 ## [v2.6.2795] - 2016-07-08
+
 ### Added
 - Added [BaseElementModel::getHasFreshContent()](https://craftcms.com/classreference/models/BaseElementModel#getHasFreshContent-detail), making element models the ones to decide whether their content is fresh or not.
+
 ### Changed
 - HUD headers and footers should now use the classes `.hud-header` and `.hud-footer`, fixing conflicts with `.header` and `.footer` classes.
 - Improved the error messages for asset operations involving an invalid asset source.
 - Updated jQuery Timepicker to 1.11.1, fixing some issues for users Eastern Australia.
+
 ### Fixed
 - Fixed a bug where user suspension and unsuspension actions would set flash messages that indicated the action had completed successfully, even if something went wrong.
 - Fixed a bug where [ElementsService::getTotalElements()](https://craftcms.com/classreference/services/ElementsService#getTotalElements-detail) was not working correctly for some plugins that were modifying the element query.
@@ -214,17 +259,21 @@ Craft CMS Changelog
 - Fixed some bugs with Control Panel grids.
 
 ## [v2.6.2794] - 2016-06-29
+
 ### Fixed
 - Fixed a bug that prevented Asset sources that did not have public URLs from saving.
 
 ## [v2.6.2793] - 2016-06-28
+
 ### Added
 - Added the [useSslOnTokenizedUrls](https://craftcms.com/docs/config-settings#useSslOnTokenizedUrls) config setting, providing an explicit way to define whether tokenized URLs should use https.
 - Craft now supports [APCu](http://pecl.php.net/package/apcu) for data caching, which can be enabled by setting the [cacheMethod](https://craftcms.com/docs/config-settings#cacheMethod) config setting to `'apc'` and creating a craft/config/apc.php config file that returns an array with `useApcu` set to `true`.
 - Added [UrlHelper::getProtocolForTokenizedUrl()](https://craftcms.com/classreference/helpers/UrlHelper#getProtocolForTokenizedUrl-detail).
+
 ### Changed
 - The Twig environment is now registered before plugins have the opportunity to register custom Twig extensions, so calling [TemplatesService::getTwig()](https://craftcms.com/classreference/services/TemplatesService#getTwig-detail) from a plugin's [addTwigExtension](https://craftcms.com/docs/plugins/hooks-reference#addTwigExtension) will work as expected.
 - Updated Imagine to add ImageMagick 7 support.
+
 ### Fixed
 - Fixed a bug where some element types' reference tags within Rich Text fields were not getting stored and parsed correctly on case-sensitive file systems.
 - Fixed a bug where users would get redirected to /dashboard on the front-end after registering their account, in some cases.
@@ -237,14 +286,17 @@ Craft CMS Changelog
 - Fixed a Javascript error that occurred when modifying a field layout in Firefox.
 
 ## [v2.6.2791] - 2016-06-07 [CRITICAL]
+
 ### Added
 - Added the [allowSimilarTags](https://craftcms.com/docs/config-settings#allowSimilarTags) config setting, which can be set to `true` to allow multiple tags to exist with names that would be identical if converted down to ASCII (e.g. Protéines, Proteines).
+
 ### Changed
 - Calling [ConsoleApp::on()](https://craftcms.com/classreference/etc/console/ConsoleApp#on-detail) now lazily-attaches event listeners to uninitialized components the same way [WebApp::on()](https://craftcms.com/classreference/etc/web/WebApp#on-detail) does.
 - When editing an asset, the Filename input will automatically select the entire value, sans extension, when focused, making it easy to rename a filename without changing the extension.
 - When editing an asset, if the file extension is changed in the Filename input, the user will get prompted about it to make sure they intended to do so.
 - When editing an asset, if the Filename input is changed and the file extension is removed in the process, it will automatically be re-appended.
 - When editing an asset, if the file extension is removed from the Filename input, but the rest of the name was left alone, the user will get prompted to make sure they intended to do so.
+
 ### Fixed
 - Fixed a bug where Matrix blocks' action menus were showing "Add [block type] above" options even when the maximum number of blocks was reached.
 - Fixed a bug where using the Ctrl/Command + S shortcut on the My Account page when running Craft Client would result in a 404 error.
@@ -254,16 +306,19 @@ Craft CMS Changelog
 - Fixed a bug where long words in the site name were not breaking properly on the Login page.
 - Fixed a bug where it was not possible to download assets in Firefox. (Oh, Firefox.)
 - Fixed a bug where calling [ElementsService::getTotalElements()](https://craftcms.com/classreference/services/ElementsService#getTotalElements-detail) could result in a PHP memory limit error if there was a very large number of matching elements.
+
 ### Security
 - Fixed a security vulnerability that made it possible for logged-in users to access sensitive information.
 
 ## [v2.6.2789] - 2016-05-26
+
 ### Changed
 - It is now possible to eager-load Structure entries' and categories' descendants using the `'descendants'` handle.
 - It is now possible to eager-load Structure entries' and categories' immediate children using the `'children'` handle.
 - Custom login logos are now center-aligned on the Login page, rather than left-aligned with the form.
 - The global sidebar is now hidden when printing a page in the Control Panel.
 - Updated Redactor to 1.2.4.
+
 ### Fixed
 - Fixed a MySQL error that occurred when updating from Craft 2.2 or earlier.
 - Fixed a race condition where if two requests used the same token at the exact same time, and the token had a usage limit, both requests may have only counted as one usage.
@@ -271,15 +326,18 @@ Craft CMS Changelog
 - Fixed a MySQL error that occurred if an empty array was passed to [FieldsService::deleteLayoutById()](https://craftcms.com/classreference/services/FieldsService#deleteLayoutById-detail).
 
 ## [v2.6.2788] - 2016-05-19
+
 ### Changed
 - The [preserveImageColorProfiles](https://craftcms.com/docs/config-settings#preserveImageColorProfiles) config setting is now set to `true` by default.
 - Email setting tests now wrap any exceptions that occur in the new [EmailTestException](https://craftcms.com/classreference/etc/errors/EmailTestException) class, so they are easier to find in the logs.
+
 ### Fixed
 - Fixed a bug where related elements within a Matrix block would appear to be selected when the block was selected.
 - Fixed a MySQL error that occurred when saving a task with over 64K of settings data.
 - Fixed a validation error that occurred when saving Checkboxes fields from front-end forms if the post data contained empty option values.
 
 ## [v2.6.2785] - 2016-05-06
+
 ### Fixed
 - Fixed a bug where some Control Panel forms were not showing password prompts for actions that required an elevated user session, resulting in 403 errors.
 - Fixed a bug where the Edit User Group page was sometimes showing a password prompt when saving a new user group, even though that action does not require an elevated user session.
@@ -288,13 +346,16 @@ Craft CMS Changelog
 - Fixed a bug where some calls to [IOHelper::fileExists()](https://craftcms.com/classreference/helpers/IOHelper#fileExists-detail) and [folderExists()](https://craftcms.com/classreference/helpers/IOHelper#folderExists-detail) were incorrectly getting set to be case insensitive when the intention was to have them suppress errors.
 
 ## [v2.6.2784] - 2016-05-04
+
 ### Changed
 - The requirements report on admin/utils/serverinfo now checks if the [Fileinfo](http://php.net/manual/en/book.fileinfo.php) extension is installed.
 - Field types that extend [BaseOptionsFieldType](https://craftcms.com/classreference/fieldtypes/BaseOptionsFieldType) now validate that the submitted value is one of the acceptable values.
 - Improved the display of extra-long words in site names in the Control Panel sidebar.
+
 ### Fixed
 - Fixed a bug where email message headings were not getting translated on Settings → Email → Messages.
 - Fixed a bug where Craft was not deleting sections' field layouts when sections were deleted. (Orphaned section field layouts will also be deleted with this update.)
+
 ### Security
 - Added [Elevated User Sessions](https://craftcms.com/news/new-security-features), reducing the window where potential front-end XSS vulnerabilities can be exploited for high-target actions.
 - Added the [elevatedSessionDuration](https://craftcms.com/docs/config-settings#elevatedSessionDuration) config setting.
@@ -307,14 +368,17 @@ Craft CMS Changelog
 - Craft now verifies files have an `image/*` MIME type before attempting to perform image operations on them, mitigating an [ImageMagick vulnerability](https://craftcms.com/news/new-security-features).
 
 ## [v2.6.2783] - 2016-04-29
+
 ### Added
 - Added support for variable frame delays in animated GIFs.
 - Added [JsonHelper::setJsonContentTypeHeader()](https://craftcms.com/classreference/helpers/JsonHelper#setJsonContentTypeHeader-detail).
+
 ### Changed
 - It is now possible for JS classes that extend Craft.EditableTable to customize new rows' HTML by overriding the new getRowHtml() class method.
 - Added an $options argument to [BaseController::returnJson()](https://craftcms.com/classreference/controllers/BaseController#returnJson-detail), which can be set to an array with an 'expires' key, set to the number of seconds that the response should be cached by the client before expiring.
 - Reduced the number of file system reads when searching for missing translations.
 - The 'entries/saveEntry' controller action no longer returns the entry's CP edit URL for site requests, and no longer returns a bunch of irrelevant information about the entry's author.
+
 ### Fixed
 - Fixed a bug where [IOHelper::copyFolder()](https://craftcms.com/classreference/helpers/IOHelper#copyFolder-detail) would incorrectly log that it couldn't copy a folder in some cases where it actually did.
 - Fixed a bug that broke asset uploading when an asset source’s path was set to a UNC network share.
@@ -325,8 +389,10 @@ Craft CMS Changelog
 - Fixed a bug where Craft was not restoring its old application files properly in the event an auto-update failure.
 
 ## [v2.6.2781] - 2016-04-20
+
 ### Added
 - Added a locale menu to the Categories index page.
+
 ### Changed
 - It is now possible to translate custom element index source headings with [static translations](https://craftcms.com/support/static-translations).
 - The `checkboxField` macro in _includes/forms.html now supports a `warning` param, for displaying a warning message alongside the checkbox field.
@@ -336,23 +402,28 @@ Craft CMS Changelog
 - Cookie info is no longer included in the admin/utils/phpinfo page.
 - The Polish characters `ź` and `Ź` are now mapped to `z` and `Z` when converting a string to ASCII.
 - Updated Redactor II to 1.2.3.
+
 ### Fixed
 - Fixed a PHP error that occurred on front-end pages after saving a Route that used the same token twice.
 - Fixed a case sensitivity issue with the reference tags generated by Rich Text fields for plugin-based element types.
 - Fixed a bug where asset filenames would get corrupted in some environments if they contained certain multi-byte characters.
+
 ### Security
 - The "Purify HTML?" Rich Text field setting is now enabled by default for new Rich Text fields, and now emphasizes the security risk of disabling it with a warning message.
 - Fixed a potential XSS vulnerability that could occur when Dev Mode was enabled.
 
 ## [v2.6.2780] - 2016-04-05
+
 ### Added
 - Added the [modifyAssetFilename](https://craftcms.com/docs/plugins/hooks-reference#modifyAssetFilename) hook, giving plugins an opportunity to customize asset filenames as they are being cleansed.
+
 ### Changed
 - The Recent Entries widget now displays entries' creation dates, rather than post dates.
 - [ElementsService::saveElement()](https://craftcms.com/classreference/services/ElementsService#saveElement-detail) now sets the dateCreated and dateUpdated attributes on the passed-in element model.
 - [ElementCriteriaModel::nth()](https://craftcms.com/classreference/models/ElementCriteriaModel#nth-detail) no longer duplicates the ElementCriteriaModel object before executing the query.
 - All table row values get updated after editing an element using the Edit Element action on an index page now, similar to what happens when editing an element by double-clicking on it.
 - The deprecated [PathService::getTemplatesPath()](https://craftcms.com/classreference/services/PathService#getTemplatesPath-detail) and [setTemplatesPath()](https://craftcms.com/classreference/services/PathService#setTemplatesPath-detail) functions no longer cause deprecation logs to show up on the Dashboard.
+
 ### Fixed
 - Fixed a bug where some application files were not being imported with the correct file path on PaaS environments like Heroku.
 - Fixed a PHP error that occurred when performing some asset operations on remote sources from console requests.
@@ -364,23 +435,28 @@ Craft CMS Changelog
 - Fixed a bug where menus within content sidebars (e.g. the Edit Field Group menu on the Settings → Fields page) were not visible in IE 11.
 
 ## [v2.6.2779] - 2016-03-28
+
 ### Fixed
 - Fixed a PHP error that occurred when calling [TemplatesService::getTemplatesPath()](https://craftcms.com/classreference/services/TemplatesService#getTemplatesPath-detail).
 
 ## [v2.6.2778] - 2016-03-28
+
 ### Added
 - It is now possible to eager-load entry authors from an entry query, by including `author` in the `with` param.
 - Field types that implement the [IEagerLoadingFieldType](https://craftcms.com/classreference/fieldtypes/IEagerLoadingFieldType) interface now get their values eager-loaded on element indexes when appropriate.
 - Added [TemplatesService::getTemplateMode()](https://craftcms.com/classreference/services/TemplatesService#getTemplateMode-detail) and [setTemplateMode()](https://craftcms.com/classreference/services/TemplatesService#setTemplateMode-detail) methods along with the [TemplateMode](https://craftcms.com/classreference/enums/TemplateMode) enum, which should be used to switch between CP and Site template modes (rather than the now-deprecated [PathService::getTemplatesPath()](https://craftcms.com/classreference/services/PathService#getTemplatesPath-detail) and [setTemplatesPath()](https://craftcms.com/classreference/services/PathService#setTemplatesPath-detail)).
 - Added [TemplatesService::getTemplatesPath()](https://craftcms.com/classreference/services/TemplatesService#getTemplatesPath-detail) and [setTemplatePath()](https://craftcms.com/classreference/services/TemplatesService#setTemplatesPath-detail).
 - Added [EntryModel::setAuthor()](https://craftcms.com/classreference/models/EntryModel#setAuthor-detail).
+
 ### Changed
 - The `order` criteria param is now respected when used in conjunction with a `with` param to eager-load elements in a specific order.
 - Rich Text fields' "Available Image Sources" setting has been renamed to "Available Asset Sources", and it now affects which sources are available when selecting regular files (in addition to images).
 - Image color-spaces are now preserved when the [preserveImageColorProfiles](https://craftcms.com/docs/config-settings#preserveImageColorProfiles) config setting is set to `true`.
 - Improved Assets performance when loading large folder trees.
+
 ### Removed
 - Removed the redundant "Link to an asset" Link menu option from Rich Text fields. (The `file` toolbar button should be used to create links to files.)
+
 ### Fixed
 - Fixed a bug where relations and Matrix blocks weren't getting eager-loaded in the correct order.
 - Fixed a bug where entries that were created from an element editor HUD were not getting an author set.
@@ -393,20 +469,24 @@ Craft CMS Changelog
 - Fixed a bug where images over 2GB in size were not getting indexed properly.
 
 ## [v2.6.2776] - 2016-03-10
+
 ### Fixed
 - Fixed a bug where image thumbnails/transforms were not getting generated properly on Rackspace sources with the Subfolder setting set.
 - Fixed a bug where tables within modal windows (e.g. element index tables within element selector modals) would get collapsed into a mobile-optimized style when opening the modal a second time.
 - Fixed a bug where some Thai characters were getting treated as punctuation/whitespace when generating slugs or converting strings to kebab/camel/snake/pascal-case.
 
 ## [v2.6.2774] - 2016-03-09
+
 ### Added
 - Added [AssetFileModel::getPath()](https://craftcms.com/classreference/models/AssetFileModel#getPath-detail).
+
 ### Changed
 - All table row values get updated after editing an element on an index page now, rather than just the first column's value.
 - Reduced the number of SQL queries needed when displaying assets.
 - The cog icon next to the Craft edition logo in the Control Panel footer is now clickable (when it's there at all).
 - Entry revision menus are now a little further away from the entry's title on Edit Entry pages.
 - Field labels within "meta" panes are no longer bold.
+
 ### Fixed
 - Fixed a PHP error that occurred on servers running PHP 5.3.
 - Fixed a bug where newly-created widget settings UIs would not always get fully initialized.
@@ -414,13 +494,16 @@ Craft CMS Changelog
 - Fixed a bug where "Eintragsdatum" was getting wrapped mid-word on Edit Entry pages.
 
 ## [v2.6.2773] - 2016-03-08
+
 ### Added
 - Added [JsonHelper::removeComments()](https://craftcms.com/classreference/JsonHelper#removeComments-detail).
+
 ### Fixed
 - Fixed a Javascript error that occurred when showing Rich Text fields if the associated Redactor config file had any comments in it.
 - Fixed a PHP error that occurred on servers running PHP 5.3.
 
 ## [v2.6.2771] - 2016-03-08
+
 ### Added
 - Added [eager-loading support](https://craftcms.com/docs/templating/eager-loading-elements) for elements.
 - Admins can now choose which permissions the Client account has when running Craft Client.
@@ -446,6 +529,7 @@ Craft CMS Changelog
 - Added the [email.onSendEmailError](https://craftcms.com/docs/plugins/events-reference#email-onSendEmailError) event.
 - Added some charting Javascript classes, namespaced under `Craft.charts`.
 - Included d3.js (3.5.16).
+
 ### Changed
 - The installed Craft edition is now displayed in the footer of the Control Panel, along with a “trial” indicator if the edition is being tested but not licensed yet.
 - The Craft edition upgrade modal has been redesigned to make it much more clear which editions are active/licensed, and what actions are available.
@@ -465,6 +549,7 @@ Craft CMS Changelog
 - Updated element-resize-detector.js to 1.1.0.
 - Updated Picturefill to 3.0.2.
 - Updated XRegExp to 3.1.0.
+
 ### Fixed
 - Fixed a bug where the user photo in the sidebar would be updated after uploading a new photo for a different user.
 - Fixed a bug where image thumbnails were not getting vertically centered.
@@ -479,46 +564,57 @@ Craft CMS Changelog
 - Fixed a bug where the [defaultSearchTermOptions](https://craftcms.com/docs/config-settings#defaultSearchTermOptions) config setting wasn’t being respected when passing an object into a ‘search’ criteria param.
 
 ## [v2.5.2767] - 2016-02-24
+
 ### Changed
 - Updated Redactor II to _the new_ 1.2.2 (Redactor II 1.2.2 II?), which is just like last week's 1.2.2 release, except it fixes a bug where the Ordered List button was generating unordered lists.
 - Improved mouseclick detection in several areas of the Control Panel, to better-emulate native OS click detection.
+
 ### Fixed
 - Fixed a bug where clicking the "Add a row" button on editable tables in the Control Panel could add multiple rows at once. 
 - Fixed a MySQL error that would occur when saving a Matrix field with more than 127 blocks.
 
 ## [v2.5.2765] - 2016-02-23
+
 ### Changed
 - Improved the performance of Control Panel pages with several text inputs.
+
 ### Fixed
 - Fixed a JavaScript error that occurred on Edit Field pages.
 - Fixed an error that would occur if a `{% switch %}` tag was used outside of any `{% block %}` tags in a child template, and one of its `{% case %}` tags had no sub-content.
 
 ## [v2.5.2763] - 2016-02-18
+
 ### Added
 - Added [FieldsService::doesFieldWithHandleExist()](https://craftcms.com/classreference/services/FieldsService#doesFieldWithHandleExist-detail).
 - Added [AssetTransformsService::getUrlForTransformByAssetAndTransformIndex()](https://craftcms.com/classreference/services/AssetTransformsService#getUrlForTransformByAssetAndTransformIndex-detail).
+
 ### Changed
 - Updated Redactor to 1.2.2.
 - Reduced the number of SQL queries required to display already-generated image transforms.
 - The Recent Entries widget now caps off at 100 entries if its Limit setting was set to "0".
+
 ### Fixed
 - Fixed a bug where Craft would use the auto-generated validation key when creating new cookies, even if the [validationKey](https://craftcms.com/docs/config-settings#validationKey) config setting was set.
 - Fixed a SQL error what would occur when saving a Category Group if the Max Levels setting was set to 0.
 - Fixed a bug where modals were not showing their sidebars on viewports less than 768px wide.
 
 ## [v2.5.2762] - 2016-02-09
+
 ### Changed
 - The [elements.onBeforeSaveElement](https://craftcms.com/docs/plugins/events-reference#elements-onBeforeSaveElement) event now gets fired a little earlier, giving plugins a chance to make some modifications that will affect the element record.
+
 ### Fixed
 - Fixed a bug where permission checking wasn't working properly on Windows servers during auto updates.
 - Fixed a visual glitch that occurred in Rich Text fields when Redactor's `structure` setting was set to `true`.
 - Fixed a bug where search queries were not being restricted to the same locale as the element query.
 
 ## [v2.5.2761] - 2016-01-28
+
 ### Changed
 - Updated Redactor II to 1.2.1.
 - Message strings within Redactor plugins are now translated.
 - Added `level`, `lft`, `localeEnabled`, `name`, `postDate`, `rgt`, `root`, and `username` to the list of reserved field handles.
+
 ### Fixed
 - Fixed a bug where it was possible for users to edit categories in non-permitted locales if their account’s Preferred Locale was set to a non-permitted locale.
 - Fixed a PHP error on the admin/utils/logs page if any of the logged requests had a `$_FILES` global variable.
@@ -530,18 +626,22 @@ Craft CMS Changelog
 - Fixed a bug where section and category group names within the New Entry/Category menus on the Entries and Categories index pages were not getting translated.
 
 ## [v2.5.2760] - 2016-01-21
+
 ### Fixed
 - Fixed a bug where single sections' field layouts were getting wiped when their main section settings were re-saved.
 - Fixed a bug where deleting a Matrix block type would leave orphaned columns in the Matrix field's content table.
+
 ### Security
 - Fixed a potential XSS vulnerability due to `{{ print }}` tags within `{% switch %}` tags not getting properly escaped.
 
 ## [v2.5.2759] - 2016-01-14
+
 ### Changed
 - Single sections' (non-editable) Entry Type titles are now automatically updated whenever their section's name changes.
 - It is now possible to include custom URL fragments in links to entries within Rich Text fields, alongside the entry's reference fragment (e.g. `href="my-entry#custom-fragment#entry:123"`).
 - Improved the appearance of log entries within admin/utils/logs.
 - Custom field names are now translated properly within element indexes.
+
 ### Fixed
 - Fixed some bugs related to lazy-loading new Structure entries or categories within their element indexes.
 - Fixed a MySQL error that occurred when creating new database backups on rare occasions.
@@ -554,12 +654,14 @@ Craft CMS Changelog
 - Fixed a bug where data caches were getting stored using Yii's auto-generated state key rather than the [appId](https://craftcms.com/docs/config-settings#appId) config setting, if it was set.
 
 ## [v2.5.2757] - 2016-01-06
+
 ### Changed
 - Updated Redactor II to 1.2.
 - Added the Arabic, Italian, and Hungarian translations for Redactor.
 - Improved the readability of Rich Text field contents.
 - Improved PHP 7 support for some dependencies.
 - Added support for running Craft on Windows Azure.
+
 ### Fixed
 - Fixed a bug where some auto-generated asset titles were getting double spaces.
 - Fixed an unclosed `<code>` tag in one of the Slovak translation strings.
@@ -571,9 +673,11 @@ Craft CMS Changelog
 - Fixed a bug where [AssetFileModel::getWidth()](https://craftcms.com/classreference/models/AssetFileModel#getWidth-detail) and [getHeight()](https://craftcms.com/classreference/models/AssetFileModel#getHeight-detail) were not always returning integers.
 
 ## [v2.5.2755] - 2015-12-16
+
 ### Changed
 - It is now possible for plugins to modify the variables that get passed to the email template, by changing the `variables` param on the [email.onBeforeSendEmail](https://craftcms.com/docs/plugins/events-reference#email-onBeforeSendEmail) event.
 - Improved the performance and memory optimization of Craft's database backup script.
+
 ### Fixed
 - Fixed a bug where Multi-select fields were not getting updated when they were saved without any options selected.
 - Fixed a bug where search results were not always getting scored correctly.
@@ -588,35 +692,44 @@ Craft CMS Changelog
 - Fixed a PHP 7 compatibility issue.
 
 ## [v2.5.2754] - 2015-12-08
+
 ### Changed
 - [ElementsService::getTotalElements()](https://craftcms.com/classreference/services/ElementsService#getTotalElements-detail) now sets [buildElementsQuery()](https://craftcms.com/classreference/services/ElementsService#buildElementsQuery-detail)'s $justIds argument to `true` rather than overriding the resulting SELECT clause.
+
 ### Fixed
 - Fixed a bug where element titles were getting double-HTML-encoded in some areas of the Control Panel.
 - Fixed a bug where element indexes could show orphaned source headings for element types whose sources had not been customized yet.
 - Fixed a PHP error that occurred when running really old versions of ImageMagick.
 
 ## [v2.5.2753] - 2015-12-07
+
 ### Added
 - Added [RichTextData::getParsedContent()](https://craftcms.com/classreference/fieldtypes/RichTextData#getParsedContent-detail), for getting a Rich Text field's content with parsed reference tags, without having to resort to manually casting the RichTextData object to a string like an animal.
+
 ### Changed
 - Added backwards compatibility for Redactor "I"-formatted configs, so there is no immediate need to [update your Redactor configs](https://craftcms.com/help/redactor-ii-configs) after updating to Craft 2.5.
 - Added a link to the Server Info utility page in the Control Panel footer, when the current user is an Admin.
 - It is now possible to downgrade to Craft Personal when running Craft Client/Pro on a public domain without being licensed to do so.
 - Updated several Control Panel translation strings.
+
 ### Fixed
 - Fixed a bug where the Dashboard widget manager HUD was always displaying a "You don't have any widgets yet." message.
 - Fixed a bug where the "Show/Hide" link on the Password input on the Login page was not visible when the input had user focus.
 - Fixed a bug where relational fields within Matrix fields that were set to relate elements with the same locale as the source element were not showing elements in the correct locale for brand new Matrix blocks, if the Matrix field's owner element was being edited in a locale other than the user's preferred locale.
 - Fixed a bug where user profile photos that were uploaded from the front-end were not getting cleansed filenames.
+
 ### Security
 - Fixed an XSS vulnerability in the Control Panel due to element titles not getting properly HTML-encoded.
 
 ## [v2.5.2752] - 2015-12-03
+
 ### Added
 - Added a "Save" button to Live Preview.
+
 ### Changed
 - Made several subtle UI improvements, improving cross-browser and responsive support.
 - Reverted to the pre-2.5 behavior where a CP user must manually trigger a plugin's migrations via the "Finish up" button each time a plugin's version changes if the plugin's [getSchemaVersion()](https://craftcms.com/classreference/etc/plugins/IPlugin#getSchemaVersion-detail) method returns `null`.
+
 ### Fixed
 - Fixed a PHP 5.3 compatibility issue that could cause a PHP error on some Control Panel pages.
 - Fixed a bug that could potentially cause PHP to crash when attempting to process an image on some servers when PHP was running as a FastCGI process.
@@ -634,6 +747,7 @@ Craft CMS Changelog
 - Fixed a bug where customizations to element type sources were not getting applied to element selector modals when specific sources were not requested.
 
 ## [v2.5.2750] - 2015-12-01
+
 ### Added
 - It is now possible to create unlimited Single, Channel, and Structure sections with Craft Personal.
 - It is now possible to upload user photos with Craft Personal and Craft Client.
@@ -753,6 +867,7 @@ Craft CMS Changelog
 - Added the [preserveImageColorProfiles](https://craftcms.com/docs/config-settings#preserveImageColorProfiles) config setting, which prevents Craft from optimizing image color profiles on upload.
 - Rich Text fields now encode 4-byte UTF-8 characters (like emojis), allowing them to be saved without causing a MySQL error due to 3-byte character restraints.
 - Included the [Source Code](https://imperavi.com/redactor/plugins/source/) plugin for Redactor II.
+
 ### Changed
 - Craft Client → Pro upgrades cost $100 now, rather than $129.
 - The Craft edition upgrade promo now shows in all Control Panel pages’ footers for installs that are testing Craft Client/Pro but still only licensed to use Craft Personal.
@@ -815,9 +930,11 @@ Craft CMS Changelog
 - Updated Twig to 1.23.1.
 - Updated Velocity to 1.2.3
 - Updated xRegExp to 3.0.0
+
 ### Removed
 - Removed the ‘video’ and ‘image’ buttons from the ‘Standard.json’ example Redactor config.
 - Removed PHPUnit
+
 ### Fixed
 - Fixed a bug where [TemplatesService::renderMacro()](https://craftcms.com/classreference/services/TemplatesService#renderMacro-detail) would return a Twig_Markup object rather than a string.
 - Fixed a bug where element editors were ordering custom fields by their inner-tab sort orders, but ignoring the actual tab sort orders. (So all of the tabs’ first sub-fields would get displayed first, followed by all of the tabs’ second sub-fields, etc.)
@@ -839,14 +956,17 @@ Craft CMS Changelog
 - Fixed some UI bugs that affected RTL languages.
 
 ## [v2.4.2726] - 2015-11-20
+
 ### Added
 - Added support for using Live Preview across multiple subdomains. (Requires some [server configuration changes](http://buildwithcraft.com/help/cross-domain-live-preview) as well.)
+
 ### Fixed
 - Fixed a bug where time-picker inputs would always convert times to "AM" when first initialized for locales whose "AM"/"PM" symbols are made up of multi-byte unicode characters.
 - Fixed a bug where entry drafts would not remember changes to the "Parent Entry" field.
 - Fixed a bug where `{% cache %}` tags that output an empty string would get duplicated caches in the database on each new request.
 
 ## [v2.4.2725] - 2015-11-17
+
 ### Fixed
 - Fixed a PHP error that occurred when attempting to open the Edition Upgrade Modal when Craft was having problems connecting to its licensing web service.
 - Fixed a PHP error that occurred when updating Craft from an old version, if the user session was lost during the update.
@@ -855,18 +975,23 @@ Craft CMS Changelog
 - Fixed a bug where calls to Craft's updates and licensing web server were timing out after 2 seconds.
 
 ## [v2.4.2723] - 2015-11-11
+
 ### Added
 - It is now possible to access the front end login page when the site is offline.
+
 ### Changed
 - Craft now sets a validation error on the UserModel when someone attempts to upload a non-image file as their user photo from a front end form.
+
 ### Fixed
 - Fixed a MySQL error that occurred when [MigrationHelper::renameTable()](https://craftcms.com/classreference/helpers/MigrationHelper#renameTable-detail) was used on a table that had a foreign key to itself.
 
 ## [v2.4.2702] - 2015-10-28
+
 ### Fixed
 - Fixed a bug where Assets fields weren’t visible in publish forms.
 
 ## [v2.4.2701] - 2015-10-28
+
 ### Fixed
 - Fixed a bug where 8-bit indexed PNGs with transparency would lose quality when uploaded to Craft, or when an image transform was applied.
 - Fixed a bug where Assets fields would sometimes move files around for no apparent reason.
@@ -877,30 +1002,37 @@ Craft CMS Changelog
 - Fixed a bug that prevented the image cropping modal from being opened twice in a row, without reloading the page.
 
 ## [v2.4.2700] - 2015-10-19
+
 ### Added
 - Added [ArrayHelper::getFirstKey()](https://craftcms.com/classreference/helpers/ArrayHelper#getFirstKey-detail).
+
 ### Fixed
 - Fixed an error that occurred when converting a Channel section to a Structure.
 - Fixed a bug where menu buttons within modal windows would collapse just as soon as they had been expanded.
 - Fixed a protruding shadow next to the Save button on Edit Category pages.
 
 ## [v2.4.2699] - 2015-10-16
+
 ### Fixed
 - Fixed a PHP error that could occur when saving a category.
 
 ## [v2.4.2698] - 2015-10-15
+
 ### Fixed
 - Fixed a PHP error that occurred in environments running PHP 5.3.
 
 ## [v2.4.2697] - 2015-10-15
+
 ### Added
 - Added PHP 7 compatibility.
 - Added support for `es_mx` and `es_ve` site locales.
 - Added [AssetsService::getRootFolderBySourceId()](https://craftcms.com/classreference/services/AssetsService#getRootFolderBySourceId-detail).
 - Added [IOHelper::cleanPath()](https://craftcms.com/classreference/helpers/IOHelper#cleanPath-detail)
+
 ### Changed
 - Assets fields that are restricted to a single folder, and have dynamic subfolder paths, will now show previously-uploaded assets that live within that folder even for brand new elements (most of the time).
 - Images uploaded from iOS now get renamed to “image_YYYYMMDD_HHMMSS.ext” (from “image.ext”), fixing a bug where iOS uploads would fail after the 51st image due to Craft’s limit on allowed same-name uploads.
+
 ### Fixed
 - Fixed a bug where saving a nested entry in a Structure section that wasn’t enabled for the current locale would bump the entry to the last position among its siblings.
 - Fixed a bug where [craft()->getTimezone()](https://craftcms.com/classreference/etc/behaviors/AppBehavior#getTimezone-detail) would always return “UTC” on console requests, rather than the system’s timezone.
@@ -909,18 +1041,22 @@ Craft CMS Changelog
 - Fixed the alignment of “info” icons on the Requirement Report on /admin/utils/serverinfo.
 
 ## [v2.4.2696] - 2015-10-08
+
 ### Changed
 - Added ‘vob’ to the default [allowedFileExtensions](https://craftcms.com/docs/config-settings#allowedFileExtensions) config setting value.
+
 ### Fixed
 - Fixed a bug where tables would always get collapsed, even when there’s plenty of room for them to be expanded, on certain pages.
 - Fixed the styling of input placeholder text in IE 10.
 - Fixed some layout issues in Assets/Users thumbnail views and other areas of the Control Panel in IE 10.
 
 ## [v2.4.2695] - 2015-10-07
+
 ### Changed
 - Craft now recognizes .vob files as videos.
 - Craft will now collapse Control Panel tables that are too wide for their content container on desktop browsers, in the same way it already did for mobile browsers.
 - Plugins can now modify the duration of the Control Panel’s task tracking interval by overriding Craft.cp.taskTrackerUpdateInterval and Craft.cp.taskTrackerHudUpdateInterval.
+
 ### Fixed
 - Fixed a bug where Matrix fields’ settings would get saved even if one of their block type fields’ settings had validation errors.
 - Fixed a bug where [DateTime::createFromString()](https://craftcms.com/classreference/etc/dates/DateTime#createFromString-detail) wouldn’t recognize Unix timestamps less than 10 digits long.
@@ -928,8 +1064,10 @@ Craft CMS Changelog
 - Fixed a bug where the Craft edition upgrade banner was being displayed on non-public domains even if Craft was already running (and licensed for) Craft Pro.
 
 ## [v2.4.2693] - 2015-09-24
+
 ### Changed
 - Craft now logs whether emails are sent successfully while in Dev Mode.
+
 ### Fixed
 - Fixed a bug where some requests that created new background tasks would hang until the task completed, on some PHP-FPM FastCGI configurations.
 - Fixed a bug where exceptions thrown by Twig on the front end were not getting sent to the site’s custom 500.html template.
@@ -937,10 +1075,12 @@ Craft CMS Changelog
 - Fixed a bug where Craft was not ensuring that AM/PM strings had the correct casing when outputting dates with `a` or `A` date formatting characters.
 
 ## [v2.4.2692] - 2015-09-11
+
 ### Changed
 - Craft now warns you before leaving an Edit Field page with unsaved changes.
 - Craft now verifies that newly-generated image transforms were actually saved successfully before updating the index.
 - Improved SVG support.
+
 ### Fixed
 - Fixed a bug where the [testToEmailAddress](https://craftcms.com/docs/config-settings#testToEmailAddress) config setting was not applying to CC’d and BCC’d recipients.
 - Fixed a bug where [ElementsService::parseRefs()](https://craftcms.com/classreference/services/ElementsService#parseRefs-detail) was only parsing up to 100 reference tags on the given string.
@@ -948,6 +1088,7 @@ Craft CMS Changelog
 - Fixed a bug where CP notice/error notifications were not sticking around for the intended duration (two/four seconds) on slow internet connections.
 
 ## [v2.4.2691] - 2015-09-03
+
 ### Fixed
 - Fixed a bug where the [postCpLoginRedirect](https://craftcms.com/docs/config-settings#postCpLoginRedirect) and [activateAccountSuccessPath](https://craftcms.com/docs/config-settings#activateAccountSuccessPath) config settings weren’t being respected during public registration on sites where the “Verify Email Addresses?” user setting was unchecked.
 - Fixed a bug where moving images on remote sources didn’t work as expected in some circumstances.
@@ -956,18 +1097,22 @@ Craft CMS Changelog
 - Fixed a “Safari cannot open this page because the address is invalid” notice that would appear in the Control Panel on iPads running iOS 7.
 
 ## [v2.4.2688] - 2015-08-24
+
 ### Added
 - Added the [showBetaUpdates](https://craftcms.com/docs/config-settings#showBetaUpdates) config setting.
+
 ### Changed
 - Added support for some Polish ASCII character mappings.
 - The browser window no longer scrolls when selectables are clicked on.
 - It is now possible to access Craft.Grid objects from their container elements, via `.data('grid')`.
 - It is now possible to access Craft.BaseElementSelectInput objects from their container elements, via `.data('elementSelect')`.
+
 ### Fixed
 - Fixed an issue where Control Panel icons weren’t getting positioned correctly in Chrome/Windows.
 - Fixed an error that would occur when the [rotateImagesOnUploadByExifData](https://craftcms.com/docs/config-settings#rotateImagesOnUploadByExifData) config setting was set to `false`.
 
 ## [v2.4.2684] - 2015-08-12
+
 ### Changed
 - Craft now responds with a 503 status code when there is a database connection error or Craft is not yet installed, rather than 404.
 - Rich Text fields will no longer set the `lang` and `direction` Redactor settings if they are already set in the site’s Redactor config.
@@ -975,6 +1120,7 @@ Craft CMS Changelog
 - Craft is now forgiving of plugin config filename casing on case-sensitive file systems.
 - Craft’s record classes that are meant for Craft Client/Pro-based functionality no longer require Craft Client/Pro to instantiate the class.
 - Updated Twig to 1.20.0.
+
 ### Fixed
 - Fixed a bug where some servers would add a white border to images on upload.
 - Fixed a bug where translatable field inputs were not respecting the locale of the element currently being edited.
@@ -986,24 +1132,30 @@ Craft CMS Changelog
 - Fixed a MySQL error that would occur if ordering an element query based on multiple custom fields.
 
 ## [v2.4.2682] - 2015-07-29
+
 ### Changed
 - Updated Redactor to 10.2.2.
 
 ## [v2.4.2679] - 2015-07-22
+
 ### Fixed
 - Fixed yet another issue with assets that had uppercased file extensions.
 
 ## [v2.4.2677] - 2015-07-21
+
 ### Changed
 - Made it possible to initialize more than one Matrix Configurator on a single page.
+
 ### Fixed
 - Fixed a bug where Craft wasn’t saving drafts’ Post and Expiry Dates in the system timezone.
 - Fixed a bug where image transforms weren’t getting generated properly for images with uppercase file extensions.
 - Fixed a bug where images weren’t getting cleansed when uploaded.
+
 ### Security
 - Craft now requires the [CRYPT_BLOWFISH security fix](https://secure.php.net/security/crypt_blowfish.php) introduced in PHP 5.3.7. Servers without it will need to upgrade PHP before they can update Craft.
 
 ## [v2.4.2675] - 2015-07-16
+
 ### Changed
 - Reduced the number of database queries executed when outputting Matrix field content.
 - Slugs and other auto-populated fields will now get updated on form submit, so for example, it is no longer possible to submit an entry with an incomplete Slug if the Save button is clicked quickly after the Title is edited.
@@ -1013,6 +1165,7 @@ Craft CMS Changelog
 - Improved Craft’s SVG thumbnail support for a broader range of SVG files.
 - User photos and login page logos can now be uploaded as SVGs.
 - Updated Redactor to 10.2.
+
 ### Fixed
 - Fixed a bug where users were getting group-based permissions assigned directly to them when their account was edited.
 - Fixed a bug where it was possible for users to have a nested permission without its parent permissions, if the parent permissions had been granted via a group assignment, and the group assignment had been removed.
@@ -1023,20 +1176,24 @@ Craft CMS Changelog
 - Fixed a bug where PHP warnings, notices, and errors could display the full file path to the error even when Dev Mode was disabled.
 
 ## [v2.4.2670] - 2015-06-16
+
 ### Changed
 - The `now` global templating variable is now set to the system’s timezone.
 - Added [static translation support](http://buildwithcraft.com/help/static-translations) to even more user-defined strings in the Control Panel.
 - [FieldLayoutBehavior](https://craftcms.com/classreference/etc/behaviors/FieldLayoutBehavior) now has an `$idAttribute` constructor argument, making it possible to customize the name of the field layout’s ID attribute on the owner class.
 - Newly-created asset sources are now immediately available from [AssetSourcesService::getAllSources()](https://craftcms.com/classreference/services/AssetSourcesService#getAllSources-detail), etc.
 - Updated Redactor to 10.1.3.
+
 ### Fixed
 - Fixed a couple PHP errors that could occur when calling [DateTime::createFromString()](https://craftcms.com/classreference/etc/dates/DateTime#createFromString-detail).
 - Fixed a PHP error that occurred when visiting an Edit Entry page for an entry ID that doesn’t exist.
 - Fixed a MySQL error that occurred when updating from pre-Craft 2.3 if there were any asset sources without any ASCII-like characters in their names.
 
 ## [v2.4.2669] - 2015-06-03
+
 ### Changed
 - Relational fields’ Selection Label settings can now be translated using Craft’s [static translation support](http://buildwithcraft.com/help/static-translations).
+
 ### Fixed
 - Fixed a bug that broke non-query-string-based pagination links.
 - Fixed a bug that resulted in some assets losing their file content.
@@ -1044,26 +1201,32 @@ Craft CMS Changelog
 - Fixed a bug where Matrix configuration UI would not resize itself after the Field Type settings changed when using Firefox.
 
 ## [v2.4.2668] - 2015-06-02
+
 ### Changed
 - The “Link to an entry/category/asset” Rich Text field options are now only shown if the Craft site actually has entries/categories/assets to choose from.
+
 ### Fixed
 - Fixed a bug where Date/Time fields were saving their values with the wrong timezone.
 - Fixed an error that occurred when attempting to select new categories within Categories fields.
 - Fixed an error that occurred when Craft attempted to load an SVG image without a proper XML DTD.
 
 ## [v2.4.2667] - 2015-06-02
+
 ### Fixed
 - Really fixed an error that occurred when uploading some images.
 - Fixed a bug where less specific translation files (e.g. fr.php) would override more specific ones (e.g. fr_ca.php).
 
 ## [v2.4.2666] - 2015-06-02
+
 ### Added
 - Added the [sendPoweredByHeader](https://craftcms.com/docs/config-settings#sendPoweredByHeader) config setting, which can disable the `X-Powered-By: Craft CMS` header.
+
 ### Fixed
 - Fixed an error that occurred on servers running PHP 5.3.1 and 5.3.3.
 - Fixed an error that occurred when uploading some images.
 
 ## [v2.4.2664] - 2015-06-02
+
 ### Added
 - Added support for SVG transforms and thumbnails on servers with ImageMagick installed.
 - Added the “Selection Label” setting to [Assets](http://buildwithcraft.com/docs/assets-fields), [Categories](http://buildwithcraft.com/docs/categories-fields), [Entries](http://buildwithcraft.com/docs/entries-fields), [Tags](http://buildwithcraft.com/docs/tags-fields), and [Users](http://buildwithcraft.com/docs/users-fields) fields, enabling customization of the selection inputs’ labels.
@@ -1095,6 +1258,7 @@ Craft CMS Changelog
 - Added the [onEditionChange](https://craftcms.com/docs/plugins/events-reference#onEditionChange) event.
 - Source definitions returned by [IElementType::getSources()](https://craftcms.com/classreference/elementtypes/IElementType#getSources-detail) can now include a `defaultSort` key, specifying the default sort attribute for the source.
 - Added [BaseElementModel::createContent()](https://craftcms.com/classreference/models/BaseElementModel#createContent-detail), enabling elements to hook into their ContentModel creation.
+
 ### Changed
 - Improved the performance of saving entries/categories with lots of descendants.
 - “contentTable”, “next”, and “prev” are reserved field handles now.
@@ -1133,6 +1297,7 @@ Craft CMS Changelog
 - Updated Redactor to 10.1.2.
 - Updated Velocity to 1.2.2.
 - Updated Qunit to 1.18.0.
+
 ### Fixed
 - Fixed a bug where some dates were being output with the wrong timezone.
 - Fixed a PHP error that occurred when using Date/Time fields configured to only show the timepicker.
@@ -1156,6 +1321,7 @@ Craft CMS Changelog
 - Fixed a bug where passing `0` to [DateTimeHelper::formatTimeForDb()](https://craftcms.com/classreference/helpers/DateTimeHelper#formatTimeForDb-detail) would return the current date/time instead of `1970-01-01 00:00:00`.
 
 ## [v2.3.2644] - 2015-04-22
+
 ### Fixed
 - Fixed a bug where the Assets page could hang if the user attempted to move the same asset multiple times.
 - Fixed a bug where assets would disappear when moving them to a different source or subfolder if there was a conflict and the user chose to cancel the move.
@@ -1168,27 +1334,33 @@ Craft CMS Changelog
 - Fixed a PHP error that could occur when logging in with a user account that had been locked, but whose `lockoutDate` column was set to `null`.
 
 ## [v2.3.2643] - 2015-04-06
+
 ### Fixed
 - Fixed a CSS issue that made it impossible to interact with some Rich Text field modals.
 - Fixed a bug where the “Download” button was not interactive on the Updates page when the [allowAutoUpdates](https://craftcms.com/docs/config-settings#allowAutoUpdates) config setting was disabled.
 
 ## [v2.3.2642] - 2015-04-03
+
 ### Changed
 - Norwegian Bokmål (nb) and Norwegian Nynorsk (nn) translations now fall back to plain ol’ Norwegian (no) if they aren’t available.
 - Reduced the risk of a long-running request locking up the PHP session for other requests from the same browser.
 - The [assets.onBeforeDeleteAsset](https://craftcms.com/docs/plugins/events-reference#assets-onBeforeDeleteAsset) now supports setting its `$performAction` property to `false` to prevent the asset from getting deleted.
 - Updated Redactor to 10.0.9.
+
 ### Fixed
 - Fixed a JavaScript error that occurred if there was a validation error when creating a new field group.
 - Fixed a bug where an asset transform URL could be set to the generated transform URL before the transform was finished being generated.
 
 ## [v2.3.2641] - 2015-03-26
+
 ### Added
 - Added [BaseElementModel::setRawPostContent()](https://craftcms.com/classreference/models/BaseElementModel#setRawPostContent-detail).
+
 ### Changed
 - ‘slug’ is now a reserved field handle.
 - ‘sortOrder’ is now a reserved field handle, fixing a column name conflict that would prevent relational fields from showing the related elements in the user-defined order.
 - Added support for a couple of Hungarian ASCII character mappings.
+
 ### Fixed
 - Fixed a bug where Craft would not allow the auto-updater to run on servers without the iconv extension installed, even though that is an optional dependency.
 - Fixed a PHP error that could occur when uploading an image with an invalid EXIF timestamp.
@@ -1206,10 +1378,13 @@ Craft CMS Changelog
 - Fixed a bug where saving an entry using the Command/Control + S keyboard shortcut while editing a Rich Text field in fullscreen mode would lose any changes made to the Rich Text field.
 
 ## [v2.3.2640] - 2015-03-12
+
 ### Added
 - Added the [modifyCpNav](https://craftcms.com/docs/plugins/hooks-reference#modifyCpNav) hook, making it possible for plugins to customize the Control Panel navigation.
+
 ### Changed
 - When changing an existing relational field to Translatable, Craft will now update all existing relations for that field, preventing a bug where relations could get deleted unexpectedly.
+
 ### Fixed
 - Fixed a bug where HTML entities in element titles were getting double-encoded on the index pages.
 - Fixed a bug where users could disappear when deleting the primary locale.
@@ -1217,15 +1392,18 @@ Craft CMS Changelog
 - Fixed a bug where `<sub>` tags within Rich Text fields did not get subscript styling.
 
 ## [v2.3.2639] - 2015-03-11
+
 ### Added
 - Added the [useSecureCookies](https://craftcms.com/docs/config-settings#useSecureCookies) config setting, which determines whether Craft should set the secure flag on its cookies. (Default value is ‘auto’, which is resolved depending on whether the current request is over SSL).
 - Added [HtmlHelper::encodeParams()](https://craftcms.com/classreference/helpers/HtmlHelper#encodeParams-detail), for concatenating HTML strings and dynamic, untrusted strings together.
+
 ### Changed
 - Improved the cryptographic strength of user verification codes, user session tokens, as well as the tokens used in entry draft/version Share URLs.
 - All Control Panel requests are now served with a `X-Frame-Options: SAMEORIGIN` header, which prevents browsers from rendering the Control Panel within an iframe.
 - Password Reset emails now always link to the Control Panel for users that have access to it, even if requested from a front-end form.
 - Users with Control Panel access now get redirected to the CP’s login form after resetting their password, even if they did it on a front-end form.
 - Updated Redactor to 10.0.8.
+
 ### Fixed
 - Fixed a bug where [TemplateCacheService::deleteCachesByElementType()](https://craftcms.com/classreference/services/TemplateCacheService#deleteCachesByElementType-detail) was deleting all template caches.
 - Fixed a PHP error that could occur when [TasksService::deleteTaskById()](https://craftcms.com/classreference/services/TasksService#deleteTaskById-detail) was called with a task ID that didn’t exist.
@@ -1233,6 +1411,7 @@ Craft CMS Changelog
 - Fixed a bug where Yii-based error messages were showing up in English when the active locale was nb_no.
 - Fixed a JavaScript error that would occur when unlinking an existing hyperlink from a Rich Text field.
 - Fixed a bug where some edition-specific services wouldn’t be available for scripts that loaded Craft via craft/app/bootstrap.php but didn’t call `$app->run()`.
+
 ### Security
 - Improved CSRF token security, especially for logged-in users, reducing the risk of a man-in-the-middle attack.
 - All Control Panel requests are now served with a `X-Content-Type-Options: nosniff` header, which fixes some XSS attack vectors in IE/Ajax requests.
@@ -1242,9 +1421,11 @@ Craft CMS Changelog
 - Fixed a possible attack vector where a user could use a timing attack on a stale session to figure out the new PHP session ID’s value.
 
 ## [v2.3.2636] - 2015-02-26
+
 ### Changed
 - The [addEntryActions](https://craftcms.com/docs/plugins/hooks-reference#addEntryActions), [addCategoryActions](https://craftcms.com/docs/plugins/hooks-reference#addCategoryActions), and [addAssetActions](https://craftcms.com/docs/plugins/hooks-reference#addAssetActions) hooks now get called for custom sources added from the [modifyEntrySources](https://craftcms.com/docs/plugins/hooks-reference#modifyEntrySources), [modifyCategorySources](https://craftcms.com/docs/plugins/hooks-reference#modifyCategorySources), and [modifyAssetSources](https://craftcms.com/docs/plugins/hooks-reference#modifyAssetSources) hooks.
 - [AssetFileModel::getWidth()](https://craftcms.com/classreference/models/AssetFileModel#getWidth-detail) and [getHeight()](https://craftcms.com/classreference/models/AssetFileModel#getHeight-detail) no longer check the $transform argument if called on a non-manipulatable asset.
+
 ### Fixed
 - Fixed a PHP error that could occur when a user attempted to log in after their account had become locked and the cooldown duration had passed.
 - Fixed a PHP error that could occur when a user with permission to edit other users, but not permission to edit other users’ emails, attempted to edit other users.
@@ -1255,25 +1436,31 @@ Craft CMS Changelog
 - Fixed a JavaScript error that could occur in the Control Panel in astronomically rare circumstances (therefore, it occurred).
 
 ## [v2.3.2635] - 2015-02-19
+
 ### Added
 - Added the [db.onBackup](https://craftcms.com/docs/plugins/events-reference#db-onBackup) event.
+
 ### Changed
 - The [allowAutoUpdates](https://craftcms.com/docs/config-settings#allowAutoUpdates) config setting now supports `'minor-only'` and `'build-only'` values.
 - The [allowedFileExtensions](https://craftcms.com/docs/config-settings#allowedFileExtensions) and [extraAllowedFileExtensions](https://craftcms.com/docs/config-settings#extraAllowedFileExtensions) config settings are now taken into account when renaming assets.
 - [UsersController::actionSendActivationEmail()](https://craftcms.com/classreference/controllers/UsersController#actionSendActivationEmail-detail) now responds with `{'success': true}` when called over Ajax.
+
 ### Fixed
 - Fixed a PHP notice that could occur if the [cacheMethod](https://craftcms.com/docs/config-settings#cacheMethod) config setting was set to a driver that wasn’t supported by the server.
 - Fixed a bug where the Delete Stale Template Caches task created when structured elements were reordered wasn’t getting run until the next Control Panel request.
 
 ## [v2.3.2632] - 2015-02-12
+
 ### Added
 - Added the [runTasksAutomatically](https://craftcms.com/docs/config-settings#runTasksAutomatically) config setting, which can be set to `false` to prevent Craft from running tasks automatically, instead relying on a Cron job.
 - Added [UrlHelper::stripQueryString()](https://craftcms.com/classreference/helpers/UrlHelper#stripQueryString-detail).
+
 ### Changed
 - Entry indexes now show entries sorted by Post Date in descending order by default.
 - Plugins’ primary Variable classes are no longer re-instantiated each time `craft.pluginName` is called.
 - Database backups no longer include data from the `assettransformindex` or `sessions` tables.
 - Added support for uploading user photos with filenames up to 100 characters long, rather than 50.
+
 ### Fixed
 - Fixed a bug where background tasks created by element actions weren’t getting run until the next Control Panel request.
 - Fixed a bug where the DeleteStaleTemplateCaches task could overlook some template caches that should have been deleted.
@@ -1286,10 +1473,13 @@ Craft CMS Changelog
 - Fixed a bug where the [users.onBeforeActivateUser](https://craftcms.com/docs/plugins/events-reference#users-onBeforeActivateUser) and [users.onActivateUser](https://craftcms.com/docs/plugins/events-reference#users-onActivateUser) events weren’t getting fired during new user registration on sites where the “Verify email addresses?” setting wasn’t enabled.
 
 ## [v2.3.2629] - 2015-02-05
+
 ### Added
 - Added the [modifyAssetSources](https://craftcms.com/docs/plugins/hooks-reference#modifyAssetSources), [modifyCategorySources](https://craftcms.com/docs/plugins/hooks-reference#modifyCategorySources), [modifyEntrySources](https://craftcms.com/docs/plugins/hooks-reference#modifyEntrySources), and [modifyUserSources](https://craftcms.com/docs/plugins/hooks-reference#modifyUserSources) hooks, making it possible for plugins to customize the available sources for assets, categories, entries, and users.
+
 ### Changed
 - [entries.onBeforeDeleteEntry](https://craftcms.com/docs/plugins/events-reference#entries-onBeforeDeleteEntry) event handlers can now cancel the entry deletion.
+
 ### Fixed
 - Fixed a bug where HTTP requests that triggered a new background task could hang until the task had completed, if Apache’s mod_deflate module was installed.
 - Fixed a bug where template caches weren’t getting cleared when changing elements’ statuses from the index pages.
@@ -1298,8 +1488,10 @@ Craft CMS Changelog
 - Fixed a PHP error that could occur when uploading assets in certain circumstances.
 
 ## [v2.3.2627] - 2015-01-29
+
 ### Added
 - Added support for the “French - Morocco” (fr_ma) locale.
+
 ### Changed
 - When an entry/category/global is unable to save due to validation errors, a confirmation message will now be displayed if the user attempts to leave the subsequent edit page, even if they haven’t made any new changes.
 - When a new site locale is added, the new locale’s initial category/tag/asset/block content is now copied from the site’s primary locale, rather than the user’s preferred locale.
@@ -1307,16 +1499,19 @@ Craft CMS Changelog
 - When a new Matrix block is added, Craft will now scroll the window so that the block is fully visible.
 - Improved the `toolbarFixed` behavior in Redactor for Rich Text fields.
 - Updated Velocity to 1.2.1.
+
 ### Fixed
 - Fixed `attribute:*` searches.
 - Fixed a couple PHP errors that occurred during public user registration.
 - Fixed a Twig error that occurred on CP edit pages when a field type wasn’t installed.
 
 ## [v2.3.2626] - 2015-01-27
+
 ### Added
 - The Control Panel is now translated into Russian.
 - Added [AppBehavior::getTargetLanguage()](https://craftcms.com/classreference/etc/behaviors/AppBehavior#getTargetLanguage-detail).
 - Added [UsersService::getEmailVerifyUrl()](https://craftcms.com/classreference/services/UsersService#getEmailVerifyUrl-detail).
+
 ### Changed
 - Newly registered users who still need to set their passwords now receive the same activation email as newly registered users who already have a password, rather than a password reset email.
 - When a user changes their own username, Craft now updates the cookie that’s responsible for remembering it for the Login page.
@@ -1324,6 +1519,7 @@ Craft CMS Changelog
 - The [limitAutoSlugsToAscii](https://craftcms.com/docs/config-settings#limitAutoSlugsToAscii) config setting is now enforced when submitting entries and categories with a blank Slug value.
 - Added ‘potx’, ‘pps’, ‘ppsm’, ‘ppsx’, and ‘pptm’ to the default [allowedFileExtensions](https://craftcms.com/docs/config-settings#allowedFileExtensions) config setting value, and Craft now recognizes these extensions as PowerPoint files.
 - Updated Redactor to 10.0.6.
+
 ### Fixed
 - Fixed a bug where some search terms would result in zero matching elements when they shouldn’t have.
 - Fixed a bug where Table fields’ Default Values setting would show a single row, even for fields that had been saved without any rows in that setting.
@@ -1334,6 +1530,7 @@ Craft CMS Changelog
 - Fixed a bug where the “New block type” button within Matrix fields’ settings was getting sorted along with the block types.
 
 ## [v2.3.2625] - 2015-01-06
+
 ### Changed
 - When setting a new password on an account, Craft will only automatically log the user in per the [autoLoginAfterAccountActivation](https://craftcms.com/docs/config-settings#autoLoginAfterAccountActivation) config setting if the account was actually just activated.
 - After activating an account, Craft will now redirect the user per the [postCpLoginRedirect](https://craftcms.com/docs/config-settings#postCpLoginRedirect) or [activateAccountSuccessPath](https://craftcms.com/docs/config-settings#activateAccountSuccessPath) config settings, depending on whether the user has access to the Control Panel.
@@ -1341,6 +1538,7 @@ Craft CMS Changelog
 - After verifying a new email address on an already-activated account, Craft will redirect the user to the site or Control Panel root, depending on whether the user has access to the Control Panel.
 - Pending users will now get a meaningful error message when attempting to log into the Control Panel.
 - [TemplatesService::includeJs()](https://craftcms.com/classreference/services/TemplatesService#includeJs-detail) now ensures that all scripts passed to it will end in a semicolon, preventing possible script conflicts.
+
 ### Fixed
 - Fixed a JavaScript error that occurred when editing an email message from Settings → Email → Messages when [CSRF protection](https://craftcms.com/docs/config-settings#enableCsrfProtection) was enabled.
 - Fixed an error that occurred when large amounts of data needed to be logged within a single request.
@@ -1365,16 +1563,20 @@ Craft CMS Changelog
 - Fixed a typo in the user deletion confirmation modal.
 
 ## [v2.3.2624] - 2014-12-30
+
 ### Fixed
 - Fixed a PHP error that could occur on the Dashboard in certain circumstances.
 
 ## [v2.3.2623] - 2014-12-30
+
 ### Added
 - Added Craft.appendHeadHtml() and Craft.appendFootHtml() for appending new head/foot nodes to the CP’s DOM, pruning out any redundant `<link>`/`<script>` tags.
+
 ### Changed
 - When submitting an entry without a slug, the PHP-generated slug will replace periods, hyphens, and underscores with the [slugWordSeparator](https://craftcms.com/docs/config-settings#slugWordSeparator) config setting value, to mimic the JavaScript-based slug generator.
 - Renamed “Asset resources” to “Asset caches” in the Clear Caches tool.
 - `$this->element` will now be set for field types when Matrix is calling their [getInputHtml()](https://craftcms.com/classreference/fieldtypes/IFieldType#getInputHtml-detail) method for nonexistent blocks, providing an avenue for getting information about the block type (`$this->element->getType()`) and owner element (`$this->element->getOwner()`), if there is one.
+
 ### Fixed
 - Fixed an “Invalid Byte Sequence” MySQL error that could occur when saving certain Chinese characters.
 - Fixed a bug where [DateTime::localeTime()](https://craftcms.com/classreference/etc/dates/DateTime#localeTime-detail) was not using the locale’s “AM” and “PM” translations.
@@ -1385,14 +1587,17 @@ Craft CMS Changelog
 - Fixed a bug where Categories and Tags fields were outputting existing relations even if their Source setting had been changed to a different Category/Tag Group.
 
 ## [v2.3.2621] - 2014-12-22
+
 ### Added
 - Added [UserGroupsService::assignUserToDefaultGroup()](https://craftcms.com/classreference/services/UserGroupsService#assignUserToDefaultGroup-detail).
 - Added the [assets.onBeforeReplaceFile](https://craftcms.com/docs/plugins/events-reference#assets-onBeforeReplaceFile) and [assets.onReplaceFile](https://craftcms.com/docs/plugins/events-reference#assets-onReplaceFile) events.
+
 ### Changed
 - Increased the spacing between element status icons and their labels.
 - Included Redactor’s [Table](http://imperavi.com/redactor/plugins/table/) plugin.
 - The tool HUDs on the Settings page now each prefer to open above the tool icon if there’s room.
 - Assets fields no longer create dynamic subfolders if there weren’t any files selected by the field.
+
 ### Fixed
 - Fixed a bug where un-generated image transform URLs were getting cached by the `{% cache %}` tag.
 - Fixed a bug where deleting a Structure section’s entry or a category from the index page would result in its descendants losing their positioning data within the hierarchy.
@@ -1416,9 +1621,11 @@ Craft CMS Changelog
 - Fixed a bug where the Install/Uninstall buttons on the Plugins index page were getting clipped in Firefox.
 
 ## [v2.3.2620] - 2014-12-11
+
 ### Changed
 - Drastically improved the performance of the element index pages when loading additional batches of elements.
 - The Updates page now shows the Download button when [allowAutoUpdates](https://craftcms.com/docs/config-settings#allowAutoUpdates) is set to `false`.
+
 ### Fixed
 - Fixed a couple bugs that could result in entries/categories appearing out of order in Structure view.
 - Fixed a bug that could result in an incomplete list of entries/categories getting loaded in Structure view.
@@ -1429,11 +1636,13 @@ Craft CMS Changelog
 - Fixed some incompatibilities with PHP 5.3.
 
 ## [v2.3.2618] - 2014-12-10
+
 ### Added
 - Added the ability to expand/collapse Structure section entries and categories with descendants within their index views.
 - Added [BaseElementModel::getTotalDescendants()](https://craftcms.com/classreference/models/BaseElementModel#getTotalDescendants-detail).
 - Added the [SetStatusElementAction::onSetStatus()](https://craftcms.com/classreference/elementactions/SetStatusElementAction#onSetStatus-detail) event.
 - Added support for Portuguese (pt).
+
 ### Changed
 - Element status icons are positioned to the left of their title, once again.
 - Timestamp values in element index views now reveal the full timestamp in a tooltip when hovering over them.
@@ -1441,8 +1650,10 @@ Craft CMS Changelog
 - When a request’s URI includes `..%2F`s in an attempt to load files outside of the template or resource folders, Craft now responds with a 404 status code, rather than 500 or 403, respectively.
 - Email verification URLs will now activate the respective user if they still have a pending status.
 - Database backups now support custom views.
+
 ### Removed
 - Removed ConfigService::getCpActivateAccountPath(), as it served no purpose.
+
 ### Fixed
 - Fixed a bug where front-end user registrations where incorrectly getting the Set Password email instead of the Email Verification email, so they had to set their password twice.
 - Fixed a bug where email verification and password reset URLs could have included the CP trigger for users that didn’t actually have access to the Control Panel.
@@ -1468,10 +1679,12 @@ Craft CMS Changelog
 - Fixed a Twig error that occurred on the default homepage template that comes with Craft.
 
 ## [v2.3.2617] - 2014-12-04
+
 ### Added
 - Added the [addUserAdministrationOptions](https://craftcms.com/docs/plugins/hooks-reference#addUserAdministrationOptions) hook.
 - Added [StringHelper::lowercaseFirst()](https://craftcms.com/classreference/helpers/StringHelper#lowercaseFirst-detail).
 - Added [StringHelper::uppercaseFirst()](https://craftcms.com/classreference/helpers/StringHelper#uppercaseFirst-detail).
+
 ### Changed
 - Element reference tag parsing (`{entry:section/slug}`) now finds the referenced elements regardless of their statuses.
 - When editing an entry within a single-level Structure section, or a category within a single-level category group, the Parent Entry/Category setting is now hidden.
@@ -1481,6 +1694,7 @@ Craft CMS Changelog
 - [BaseModel::setAttributes()](https://craftcms.com/classreference/models/BaseModel#setAttributes-detail) (and methods that call it, like [BaseModel::populateModel()](https://craftcms.com/classreference/models/BaseModel#populateModel-detail)) will now copy any _eager-loaded_ relations from passed-in records. (Meaning, if that’s the behavior you want you need to make use of [`with()`](http://www.yiiframework.com/doc/api/1.1/CActiveRecord#with-detail) when loading the records).
 - The default Homepage single no longer has a custom “Heading” field. Now it just shows a dynamic Title field instead.
 - Updated the default [Redactor config files](http://buildwithcraft.com/docs/rich-text-fields#redactor-configs) to set `toolbarFixed: true` rather than `toolbarFixedBox: true`, for Redactor 10 compatibility.
+
 ### Fixed
 - Fixed a MySQL error that occurred when ordering tags by `name`, which is no longer technically a column as of Craft 2.3.
 - Fixed a bug where multi-byte characters in slugs were failing validation.
@@ -1493,6 +1707,7 @@ Craft CMS Changelog
 - Fixed a bug where [WebApp](https://craftcms.com/classreference/etc/web/WebApp) was getting initialized with config settings for ‘fieldTypes’ and ‘file’ components that don’t actually exist.
 
 ## [v2.3.2616] - 2014-12-03
+
 ### Added
 - It is now possible to double-click on entries’, categories’, and users’ status icons/thumbnails to open an editor modal from their respective index pages, the same way it works on the Assets index page.
 - Added [ElementsService::setPlaceholderElement()](https://craftcms.com/classreference/services/ElementsService#setPlaceholderElement-detail).
@@ -1501,9 +1716,11 @@ Craft CMS Changelog
 - Added the [modifyCategorySortableAttributes](https://craftcms.com/docs/plugins/hooks-reference#modifyCategorySortableAttributes) hook.
 - Added the [modifyAssetSortableAttributes](https://craftcms.com/docs/plugins/hooks-reference#modifyAssetSortableAttributes) hook.
 - Added the [modifyUserSortableAttributes](https://craftcms.com/docs/plugins/hooks-reference#modifyUserSortableAttributes) hook.
+
 ### Changed
 - Live Preview and Share links will now show the unpublished entry/category changes wherever the entry/category are being referenced in the templates (even areas where the entry/category was fetched from the database).
 - Moved [TestApplication](https://craftcms.com/classreference/tests/TestApplication)’s PHP environment normalization code to craft/app/tests/bootstrap.php.
+
 ### Fixed
 - Fixed a bug where Checkboxes and Multi-select fields weren’t showing their saved values.
 - Fixed a bug where Checkboxes and Multi-select fields were always causing validation errors when saved.
@@ -1518,6 +1735,7 @@ Craft CMS Changelog
 - Fixed a bug where Craft Client/Pro-only components were not getting initialized when running Craft from its CLI.
 
 ## [v2.3.2615] - 2014-12-02
+
 ### Added
 - Added Control Panel translations for Simplified Chinese, Hebrew, Korean, Spanish, and Swedish.
 - When deleting a locale, it is now possible to transfer that locale’s content to another locale.
@@ -1657,6 +1875,7 @@ Craft CMS Changelog
 - It is now possible to create divs that are styled like checkboxes by giving them a ‘checkbox’ class. They can also mimic the indeterminate checkbox look with an ‘indeterminate’ class.
 - Added new “minus”, “asc”, and “desc” icons to Craft’s icon font.
 - Added the PEL library.
+
 ### Changed
 - Craft now automatically clears its data caches when it detects that the craft/app/ folder has been moved.
 - Craft now responds with a 503 response code whenever one of its early initialization checks fail, to prevent things like Varnish from caching them.
@@ -1753,12 +1972,14 @@ Craft CMS Changelog
 - Updated Velocity.js to 1.1.0.
 - Updated Redactor to 10.0.5.
 - Updated Imagine to 0.6.2.
+
 ### Deprecated
 - [UserSessionService::impersonate()](https://craftcms.com/classreference/services/UserSessionService#impersonate-detail) is now deprecated. Use [loginByUserId()](https://craftcms.com/classreference/services/UserSessionService#loginByUserId-detail) instead.
 - [UsersController::actionForgotPassword()](https://craftcms.com/classreference/controllers/UsersController#actionForgotPassword-detail) is now deprecated. Use [actionSendPasswordResetEmail()](https://craftcms.com/classreference/controllers/UsersController#actionSendPasswordResetEmail-detail) instead.
 - [UsersController::actionValidate()](https://craftcms.com/classreference/controllers/UsersController#actionValidate-detail) is now deprecated. Use [actionSetPassword()](https://craftcms.com/classreference/controllers/UsersController#actionSetPassword-detail) instead.
 - [UsersService::sendForgotPasswordEmail()](https://craftcms.com/classreference/services/UsersService#sendForgotPasswordEmail-detail) is now deprecated. Use [sendPasswordResetEmail()](https://craftcms.com/classreference/services/UsersService#sendPasswordResetEmail-detail) instead.
 - The entryRevisions.onAfterDeleteDraft event is now deprecated. Use [onDeleteDraft](https://craftcms.com/docs/plugins/events-reference#entryRevisions-onDeleteDraft) instead.
+
 ### Fixed
 - Fixed a bug where non-admins could access various Admin-restricted areas of the Control Panel (though they couldn’t actually make any changes).
 - Fixed a bug where requests to an action URL could have the specified action route overwritten if the request URI matched a special user path.
@@ -1785,13 +2006,16 @@ Craft CMS Changelog
 - Fixed a PHP error that could occur if an invalid path was passed to IOHelper::getRealPath().
 
 ## [v2.2.2607] - 2014-11-21
+
 ### Fixed
 - Fixed a JavaScript error that occurred when linking to an entry or asset from a Rich Text field.
 - Fixed a bug where error messages that occurred when updating Craft could show up with unparsed Markdown formatting.
 
 ## [v2.2.2604] - 2014-11-20
+
 ### Changed
 - Craft now refers to its full list of known MIME types when determining the MIME type to identify an asset as when uploading it to Amazon S3 or Google Cloud.
+
 ### Fixed
 - Fixed a bug where moving an asset between folders in the same source would not move its transforms.
 - Fixed a bug where moving an asset between two sources would break the transform index for that asset.
@@ -1804,9 +2028,11 @@ Craft CMS Changelog
 - Fixed a bug where if an admin with a Get Help widget had their admin status revoked, they would still be able to edit the widget’s settings, and get a fatal error when saving them.
 
 ## [v2.2.2601] - 2014-11-04
+
 ### Changed
 - When dragging a subfolder or file, the asset index will now always make it clear where the subfolder/file will end up when dropped.
 - Transform names are now HTML-encoded in the “Select transform” menu within asset selector modals.
+
 ### Fixed
 - Fixed a PHP error that occurred on the Plugins page when two plugins had the same handle but different casing.
 - Fixed a JavaScript error that occurred when opening asset selector modals.
@@ -1820,6 +2046,7 @@ Craft CMS Changelog
 - Fixed a MySQL error that occurred after changing the ‘cacheMethod’ config setting to ‘db’.
 
 ## [v2.2.2598] - 2014-10-27
+
 ### Changed
 - Page titles are now HTML-encoded by default in the Control Panel.
 - Element index pages in the Control Panel now HTML-encode the element attributes by default.
@@ -1828,6 +2055,7 @@ Craft CMS Changelog
 - The Delete Stale Template Caches task now deletes template caches that may involve pending or expired entries.
 - Improved the performance of the Edit Entry page on sites with a large number of eligible authors.
 - If an error occurs when drag-n-drop uploading to an Assets field, the error message is now displayed.
+
 ### Fixed
 - Fixed a bug where the Asset Index page would be unable to perform some file actions after moving a file to a different source or subfolder, until a new source/subfolder had been manually selected.
 - Fixed a bug where drag-n-drop uploading to Assets fields was not working on sites with CSRF protection enabled.
@@ -1837,16 +2065,19 @@ Craft CMS Changelog
 - Fixed the positioning of spinners that are floated alongside buttons in the Control Panel for RTL languages.
 - Fixed a bug where grid items within the Control Panel might not be positioned correctly on page load in Safari.
 - Fixed the height of dropdown menus in the Control Panel in Safari.
+
 ### Security
 - Fixed several minor security vulnerabilities throughout the Control Panel.
 
 ## [v2.2.2596] - 2014-10-21
+
 ### Changed
 - Craft no longer automatically creates Quick Post widgets for each section when users visit the Dashboard for the first time.
 - Improved the JavaScript initialization performance on the Assets index page for sites with several hundreds of subfolders in their asset sources.
 - Windows now auto-scroll at variable speeds when dragging an item close to the window’s edges, depending on how close the item is to the edge.
 - Improved the element dragging behavior for relational fields.
 - Craft’s bootstrap script now ensures that the craft/config/ folder is writable if the license.key file doesn’t exist yet.
+
 ### Fixed
 - Fixed a bug where assets were getting timestamps appended to their filenames when they were moved within a source that had cache headers enabled.
 - Fixed a bug where relative time strings were reporting inaccurate times for durations greater than 23 minutes.
@@ -1855,11 +2086,13 @@ Craft CMS Changelog
 - Fixed a JavaScript error that was breaking the Control Panel when running Craft from a private window in Safari 8.
 
 ## [v2.2.2593] - 2014-10-10
+
 ### Changed
 - Rich Text fields with the “Clean up HTML?” setting enabled will now remove &lt;a&gt; tags that don’t have any attributes or inner HTML.
 - Rich Text fields with the “Purify HTML?” setting enabled no longer remove target="_blank" attributes on &lt;a&gt; tags.
 - The IPlugin interface no longer requires that plugins have a static log() method.
 - Improved the reliability of drag-n-drop-based interactions.
+
 ### Fixed
 - Fixed a PHP error that would occur when passing “:empty:” or “:notempty:” into a date/time parameter.
 - Fixed a bug where all assets would appear to be selected after uploding a new file from the Assets index page.
@@ -1875,6 +2108,7 @@ Craft CMS Changelog
 - Fixed a bug where the onBeforeVerifyUser event wasn’t getting fired.
 
 ## [v2.2.2592] - 2014-10-02
+
 ### Fixed
 - Fixed a bug where images with uppercase extensions were not being considered web-safe.
 - Fixed a PHP error that could occur when generating an image transform for a non-web-safe image.
@@ -1885,19 +2119,23 @@ Craft CMS Changelog
 - Fixed a bug where PHP functions that were called from Twig could receive strings as Twig_Markup objects.
 
 ## [v2.2.2591] - 2014-09-26
+
 ### Fixed
 - Fixed a Javascript error in the Control Panel.
 
 ## [v2.2.2590] - 2014-09-26
+
 ### Fixed
 - Fixed a bug where the Control Panel could cause Chrome to crash in rare situations.
 
 ## [v2.2.2589] - 2014-09-25
+
 ### Changed
 - The Control Panel is a little zippier now.
 - Live Preview now shows the ‘col-resize’ cursor style when the cursor is hovering between editor and preview panes.
 - The Find and Replace tool is now a little more defensive against the possibility that its settings are stored as invalid JSON.
 - Plugins are no longer required to extend [BasePlugin](http://buildwithcraft.com/classreference/etc/plugins/BasePlugin), so long as they are implementing the [IPlugin](http://buildwithcraft.com/classreference/etc/plugins/IPlugin) interface.
+
 ### Fixed
 - Fixed a bug where Chrome would get random scrollbars in the Control Panel.
 - Fixed a bug where you couldn’t install Craft on MySQL 5.7.
@@ -1906,10 +2144,12 @@ Craft CMS Changelog
 - Fixed a bug where asset index records would not be updated in some cases.
 
 ## [v2.2.2588] - 2014-09-23
+
 ### Fixed
 - Fixed a MySQL error that could occur when saving elements on sites that have Lightswitch fields.
 
 ## [v2.2.2587] - 2014-09-23
+
 ### Changed
 - All Control Panel requests are now served with a “X-Robots-Tag: none” header, which tells Google/Yahoo/Bing to not index the page or follow any links on it.
 - The Password input on Edit User pages now gets Show/Hide links like the other password fields in the Control Panel.
@@ -1918,6 +2158,7 @@ Craft CMS Changelog
 - Improved the performance of CP resource requests.
 - The Control Panel no longer checks the user’s authentication status every 5 seconds when they are logged out. (Now just every 60 seconds.)
 - The onBeforeSaveEntry and onSaveEntry events now get fired when editing an entry from an Entries field.
+
 ### Fixed
 - Fixed a bug where the Find and Replace tool could inadvertently delete all of your textual content if its settings somehow got stored as invalid JSON.
 - Fixed a bug where some actions that should only be available to admins were not being enforced properly.
@@ -1931,15 +2172,18 @@ Craft CMS Changelog
 - Fixed a PHP error that occurred if the local copy of a remotely-stored image had not been saved successfully.
 
 ## [v2.2.2586] - 2014-09-18
+
 ### Added
 - Added [StringHelper::escapeCommas()](http://buildwithcraft.com/classreference/helpers/StringHelper#escapeCommas-detail).
 - Added [UserSessionService::shouldExtendSession()](http://buildwithcraft.com/classreference/services/UserSessionService#shouldExtendSession-detail).
 - Added [BaseOptionsFieldType::getDefaultValue()](http://buildwithcraft.com/classreference/fieldtypes/BaseOptionsFieldType#getDefaultValue-detail).
+
 ### Changed
 - IOHelper::getExtension() no longer converts the file extension to lowercase.
 - ArrayHelper::stringToArray() now removes the comma-escaping backslashes before returning the array.
 - The CP’s user session timeout-checking Ajax requests no longer get logged in craft/storage/runtime/logs/craft.log when Craft is running in Dev Mode.
 - Improved the performance of some animations in the Control Panel.
+
 ### Fixed
 - Fixed a bug where the Page Break button in Rich Text fields wasn’t saving page breaks properly.
 - Fixed a bug where publishing a draft of a nested Structure section entry would result in the entry having the URL Format of top level entries.
@@ -1956,9 +2200,11 @@ Craft CMS Changelog
 - Fixed some broken links on the “What’s New” page.
 
 ## [v2.2.2582] - 2014-09-08
+
 ### Changed
 - Entry and category search results now place a 5X weight on search term matches within Title fields.
 - Included the latest and greatest Control Panel translations.
+
 ### Fixed
 - Fixed a bug that broke asset moving between two sources.
 - Fixed a PHP error that would occur if the defaultImageQuality config setting was set to ‘0’.
@@ -1968,11 +2214,13 @@ Craft CMS Changelog
 - Fixed a bug where the words “Title”, “URI”, and “Slug” were not getting translated within validation errors.
 
 ## [v2.2.2581] - 2014-09-04
+
 ### Changed
 - Improved the look and usability of the Fatal Error screen in Craft’s updater.
 - Craft no longer enforces auto-update permissions during an auto-update once the new files have been put into place.
 - Craft no longer throws an exception if the {% requireLogin %} tag is called from the Login page. It will vent silently in the logs instead.
 - [UserSessionService::getReturnUrl()](http://buildwithcraft.com/classreference/services/UserSessionService#getReturnUrl-detail) will now strip out any curly braces that may have made it into the Return URL.
+
 ### Fixed
 - Fixed a bug where one of the 2.2 migrations could have changed the wrong Entry Types’ Title-related settings. **If you have already updated to Craft 2.2, you should verify that each of your sections’ Entry Type settings are correct**, lest you find yourself with unexpected entry titles.
 - Fixed a bug where users couldn’t log in when Remember Me was checked if the userSessionDuration config setting was empty.
@@ -1984,6 +2232,7 @@ Craft CMS Changelog
 - Fixed some PHP deprecation warnings when running Craft from PHP 6+.
 
 ## [v2.2.2579] - 2014-09-02
+
 ### Added
 - Added [CSRF Protection](http://buildwithcraft.com/help/csrf-protection).
 - Added logout notifications to the Control Panel.
@@ -2061,6 +2310,7 @@ Craft CMS Changelog
 - Added ‘autoShow’, ‘hideOnEsc’, ‘hideOnShadeClick’, and ‘shadeClass’ settings to Garnish.Modal.
 - Added ‘showCharsLeft’, ‘charsLeftClass’, and ‘negativeCharsLeftClass’ settings to Garnish.NiceText.
 - The CP now uses [Velocity.js](http://julian.com/research/velocity/) for all of its animations.
+
 ### Changed
 - HTTP 503 errors now check for an offline.html template before falling back on 503.html.
 - When the system is offline, Craft now responds to front-end site requests with a HTTP 503 error.
@@ -2128,11 +2378,13 @@ Craft CMS Changelog
 - Updated jQuery Timepicker to 1.4.6.
 - Updated jQuery UI to 1.11.1.
 - Updated Redactor to 9.2.6.
+
 ### Deprecated
 - [HttpRequestService::getMimeType()](http://buildwithcraft.com/classreference/services/HttpRequestService#getMimeType-detail) is now deprecated. Use [HeaderHelper::getMimeType()](http://buildwithcraft.com/classreference/helpers/HeaderHelper#getMimeType-detail) instead.
 - [IOHelper::getDefaultFolderPermissions()](http://buildwithcraft.com/classreference/helpers/IOHelper#getDefaultFolderPermissions-detail) is now deprecated. Use `craft()->config->get('defaultFolderPermissions')` instead.
 - [IOHelper::getWritableFilePermissions()](http://buildwithcraft.com/classreference/helpers/IOHelper#getWritableFilePermissions-detail) is now deprecated. Use `craft()->config->get('defaultFilePermissions')` instead.
 - [IOHelper::getWritableFolderPermissions()](http://buildwithcraft.com/classreference/helpers/IOHelper#getWritableFolderPermissions-detail) is now deprecated. Use `craft()->config->get('defaultFolderPermissions')` instead.
+
 ### Fixed
 - Fixed a bug where Quick Post widgets would only show the first entry type, regardless of what the Entry Type setting was set to.
 - Fixed a bug where searching for “field:term1 OR field:term2” would return results where *any* field had a matching value.
@@ -2168,8 +2420,10 @@ Craft CMS Changelog
 - Fixed a PHP error that could occur when calling [ArrayHelper::getFirstValue()](http://buildwithcraft.com/classreference/helpers/ArrayHelper#getFirstValue-detail) because it wasn’t static.
 
 ## [v2.1.2570] - 2014-08-26
+
 ### Changed
 - Prevented redundant DB queries when calling [UserModel::getGroups()](http://buildwithcraft.com/classreference/models/UserModel#getGroups-detail) multiple times on the same UserModel instance.
+
 ### Fixed
 - Fixed a bug where asset indexing was broken for non-image files.
 - Fixed a bug where asset indexing session data would not be deleted if only one session was in progress.
@@ -2178,6 +2432,7 @@ Craft CMS Changelog
 - Fixed a PHP error that would occur when [FeedsService::getFeedItems()](http://buildwithcraft.com/classreference/services/FeedsService#getFeedItems-detail) would encounter a feed that SimplePie couldn’t parse.
 
 ## [v2.1.2569] - 2014-08-18
+
 ### Fixed
 - Fixed a bug where setting the imageDriver config setting to `'gd'` would not work.
 - Fixed a Javascript error that could occur if size values in php.ini were specified with lowercase units (e.g. `memory_limit = 128m`).
@@ -2185,10 +2440,12 @@ Craft CMS Changelog
 - Fixed a bug that broke Asset uploading on front end forms.
 
 ## [v2.1.2568] - 2014-08-14
+
 ### Changed
 - Drastically improved the DocBlock comments throughout all of Craft’s PHP files.
 - AssetsService::insertFileByLocalPath() now takes an optional argument defining how the function should deal with filename conflicts.
 - Added the AssetConflictResolution enum class, replacing some constants in AssetsHelper.
+
 ### Fixed
 - Fixed a bug where Assets fields were not disabling the “Add an asset” buttons after they had reached their limit via drag-n-drop file uploading.
 - Fixed a bug where the delete buttons in Settings → Fields were not clickable in Safari from time to time.
@@ -2200,12 +2457,15 @@ Craft CMS Changelog
 - Fixed a bug where user groups weren’t being ordered alphabetically.
 
 ## [v2.1.2566] - 2014-07-23
+
 ### Added
 - Added a new ‘useWriteFileLock’ config setting, which can be set to ‘false’ on servers running NFS, fixing a PHP error that could occur.
+
 ### Changed
 - Section names now get translated in the Recent Entries widget.
 - User custom field validation now occurs at the same time as the regular fields, so all validation errors will be set at the same time.
 - Lightswitch inputs in the Control Panel now support ‘toggle’ and ‘reverseToggle’ field-toggling params, like checkboxes and selects.
+
 ### Fixed
 - Fixed a “Division by zero” PHP warning that could occur when using the ‘search’ element param in some cases.
 - Fixed a couple bugs that broke drag-n-drop uploading to Assets fields in certain conditions.
@@ -2220,10 +2480,13 @@ Craft CMS Changelog
 - Fixed a bug where HTML entities were getting double-encoded in the page &lt;title&gt; on the Edit Entry page.
 
 ## [v2.1.2564] - 2014-07-15
+
 ### Added
 - Added support for the ‘cy_gb’ locale.
+
 ### Changed
 - {% requireLogin %} and craft()->userSession->requireLogin() now throw an exception if called from the actual Login page, rather than creating an infinite redirect loop.
+
 ### Fixed
 - Fixed a couple bugs that occurred when working with entries in a Structure section that was not enabled for the current locale.
 - Fixed a bug where craft.users would return no results if the ‘can’ param was set to a permission that hadn’t been assigned before, rather than returning a list of the admins.
@@ -2235,11 +2498,14 @@ Craft CMS Changelog
 - Worked around a bug in legacy versions of IE affecting craft()->request->sendFile() over SSL.
 
 ## [v2.1.2563] - 2014-07-07
+
 ### Added
 - Added StringHelper::getCharAt().
 - Added IOHelper::getLastModifiedFiles().
+
 ### Changed
 - Yii’s Arabic translations are now included.
+
 ### Fixed
 - Fixed a bug where relational fields were returning search keywords for the previously-selected elements rather than the new ones.
 - Fixed a bug where it was not possible to assign permissions directly to a user which were nested under other permissions the user already had via a group they were assigned to.
@@ -2249,6 +2515,7 @@ Craft CMS Changelog
 - Fixed a PHP exception that could occur when updating Craft if a plugin was installed that added its own Twig extension.
 
 ## [v2.1.2562] - 2014-07-01
+
 ### Changed
 - Added ‘js’ to the default [allowedFileExtensions](https://buildwithcraft.com/docs/config-settings#allowedFileExtensions) config setting value.
 - craft.request.getQuery() and craft.request.getPost() can now be used to return the entire GET and POST param arrays, if a param name is not passed as the first argument.
@@ -2256,6 +2523,7 @@ Craft CMS Changelog
 - Craft now shows a confirmation dialog when leaving a Global Edit page with unsaved changes.
 - Disabled the “Clear” buttons on text fields and the “Reveal” buttons on password fields, in Internet Explorer.
 - “sortOrder” is now a reserved field handle.
+
 ### Fixed
 - Fixed a bug where it was not possible to upload files to newly-created asset subfolders.
 - Fixed a bug where it was possible to select image transforms on non-images when linking to assets in Rich Text fields.
@@ -2270,8 +2538,10 @@ Craft CMS Changelog
 - Fixed a couple UI glitches on field layout designers.
 
 ## [v2.1.2561] - 2014-06-19
+
 ### Changed
 - Users with permission to edit entries in a section, but not create new ones, are now allowed to be selected as the author of entries.
+
 ### Fixed
 - Fixed a bug where Craft could incorrectly determine the amount of bytes available from PHP’s memory_limit setting if it was set to a size in gigabytes.
 - Fixed a PHP that could occur when an admin attempted to log in as a pending user.
@@ -2287,11 +2557,13 @@ Craft CMS Changelog
 - Fixed a MySQL error that could occur when ordering elements by a MySQL function that included custom field names.
 
 ## [v2.1.2559] - 2014-06-09
+
 ### Changed
 - Setting the 'id' criteria parameter to any empty value besides ‘null’ will now return 0 results.
 - Added support for the ‘offset’ parameter in conjunction with the {% paginate %} tag.
 - Invalid asset source path errors now include the invalid path.
 - Improved the Javascript performance on most CP pages.
+
 ### Fixed
 - Fixed a bug where asset subfolders weren’t getting indexed on Windows servers.
 - Fixed a bug where it was not possible to move assets between folders on Rackspace sources.
@@ -2304,8 +2576,10 @@ Craft CMS Changelog
 - Fixed some minor styling issues.
 
 ## [v2.1.2557] - 2014-06-04
+
 ### Changed
 - Plugin classes are now imported before their getSettingsModel() function is called, making it possible for plugins to provide their own settings models without manually importing them.
+
 ### Fixed
 - Fixed a bug where asset content wasn’t saving.
 - Fixed a PHP error that occurred when publishing a draft in a section that wasn’t enabled for the current application locale.
@@ -2315,16 +2589,19 @@ Craft CMS Changelog
 - Fixed a couple minor CSS glitches.
 
 ## [v2.1.2556] - 2014-06-03
+
 ### Fixed
 - Fixed a bug that broke entry type switching when Dev Mode was enabled.
 
 ## [v2.1.2555] - 2014-06-03
+
 ### Fixed
 - Fixed a bug that caused an unknown validation error when attempting to save Assets fields.
 - Corrected some of the CP's Norwegian translations.
 - Fixed a bug where Craft would leave some user data behind when purging stale users.
 
 ## [v2.1.2554] - 2014-06-03
+
 ### Added
 - Admins can now manually activate pending users.
 - Craft will now automatically purge users that have been in a pending state for a certain amount of time, determined by the new [purgePendingUsersDuration](http://buildwithcraft.com/docs/config-settings#purgePendingUsersDuration) config setting.
@@ -2379,6 +2656,7 @@ Craft CMS Changelog
 - CP forms can now include `data-confirm-unload="1"`, which will show a confirmation dialog if the user tries to leave the form with unsaved changes.
 - It is now possible to provide custom instructional text when including the Field Layout Designer in a template.
 - The _layouts/cp.html template now supports a ‘docTitle’ variable, which can be used to set the document title and page heading separately.
+
 ### Changed
 - Made several subtle CP UI improvements.
 - Matrix blocks now have alternating colored backgrounds.
@@ -2418,25 +2696,31 @@ Craft CMS Changelog
 - Updated PHPUnit to 4.1.1.
 - Updated Mockery to 0.9.1.
 - Updated DBUnit to 1.3.1.
+
 ### Fixed
 - Fixed some styling glitches and other UI issues.
 - Fixed a bug where Assets fields created before Craft 2.0 could have stopped working until re-saved.
 - EntryRevisionsService::getDraftByOffset() and getVersionByOffset() are now deprecated, as they should have been long, long ago.
+
 ### Security
 - Assets’ filenames can now be made up of almost any characters, except those which are known to cause issues on file systems or pose security risks.
 
 ## [v2.0.2551] - 2014-06-01
+
 ### Changed
 - Craft now respects the ‘defaultTemplateExtensions’ and ‘indexTemplateFilenames’ config settings when rendering the ‘offline’ template.
+
 ### Fixed
 - Fixed a PHP error that would occur when generating a transform using the Scale-to-Fit mode
 
 ## [v2.0.2549] - 2014-05-30
+
 ### Fixed
 - Fixed a couple bugs that could prevent asset selection modals from displaying anything in some cases.
 - Fixed a CSS glitch.
 
 ## [v2.0.2548] - 2014-05-29
+
 ### Fixed
 - Fixed a bug that could break edit pages that contained Assets fields when no Assets sources existed.
 - Fixed an error that could occur when saving a Matrix field with a long block type handle or field handle.
@@ -2448,9 +2732,11 @@ Craft CMS Changelog
 - Fixed some minor CSS issues.
 
 ## [v2.0.2543] - 2014-05-23
+
 ### Changed
 - Made major performance improvements to the Users index, Edit Entry pages, and any templates using the ‘can’, ‘group’, and ‘groupId’ params when fetching users, for sites with hundreds of thousands of users.
 - The ‘Delete’ buttons next to each selected element in Entries, Assets, Tags, and Users fields no longer no longer serve as part of the drag handle.
+
 ### Fixed
 - Fixed a bug where Assets fields that were restricted to certain file types would only allow the first file type to save.
 - Fixed a bug where the entry revision dropdown would show revisions in chronological order rather than reverse-chronological order.
@@ -2460,11 +2746,14 @@ Craft CMS Changelog
 - Fixed some CSS glitches here and there.
 
 ## [v2.0.2542] - 2014-05-20
+
 ### Added
 - Added ArrayHelper::getFirstValue(), for getting the first value in an array.
+
 ### Changed
 - The PHP session ID cookie is now HTTP-only for better PCI compliance.
 - Made performance improvements to the “DeleteStaleTemplateCaches” task, fixing a possible MySQL deadlock error.
+
 ### Fixed
 - Fixed a bug where it was possible to register a new user account on the front end without setting a password.
 - Fixed a bug where asset indexing would skip folders that had commas in their name.
@@ -2472,12 +2761,15 @@ Craft CMS Changelog
 - Fixed a PHP error in DbHelper::parseParam() that could occur if $values was an associative array.
 
 ## [v2.0.2541] - 2014-05-15
+
 ### Added
 - Singles once again have permissions for publishing live changes and editing/publishing/deleting other authors’ drafts.
+
 ### Changed
 - The Entries index and Recent Entries widget no longer show entries that the user doesn’t have permission to edit due to the “Edit other authors’ entries” permission.
 - It is now possible to save an Assets field from a front-end form with both existing asset IDs and new file uploads at the same time.
 - TemplatesService::namespaceInputs() now namespaces list= attributes.
+
 ### Fixed
 - Fixed a bug where element selector modals wouldn’t lazy-load any additional elements if the modal had a horizontal scrollbar.
 - Fixed a bug where test emails would get sent out with incorrect subject and body content when Craft was not running in the ‘en_us’ locale.
@@ -2487,6 +2779,7 @@ Craft CMS Changelog
 - Fixed a bug where users could get an authentication error when saving a Single.
 
 ## [v2.0.2540] - 2014-05-13
+
 ### Changed
 - It is now possible to get the *Nth*-last URL segment by passing a negative number to [craft.request.getSegment()](http://buildwithcraft.com/docs/templating/craft.request#getSegment). (‘-2’ will return the second-to-last URL segment, for example.)
 - ArrayHelper::stringToArray() will no longer split strings on escaped commas, e.g. `"foo\, bar"`.
@@ -2495,6 +2788,7 @@ Craft CMS Changelog
 - You can now pass ‘0’ to ElementCriteriaModel’s ‘id’ params to force zero results (in addition to ‘false’.)
 - Updated Redactor’s translation files, and included new translation files for Arabic and Norwegian.
 - Section titles, Global Set names, Category Group names, Table field labels, and field option labels are now translatable in several areas of the CP.
+
 ### Fixed
 - Fixed some bugs in the image cropping modals for user photos and login page logos.
 - Fixed a bug where non-admins were not allowed to publish edits to Singles.
@@ -2509,8 +2803,10 @@ Craft CMS Changelog
 - Fixed various CSS glitches throughout the CP.
 
 ## [v2.0.2539] - 2014-05-08
+
 ### Changed
 - Number fields now default to the minimum allowed value if ‘0’ is outside of the allowed range.
+
 ### Fixed
 - Fixed a bug where users couldn’t edit Singles created by other users.
 - Fixed a bug where Craft Client was not saving entry versions.
@@ -2520,8 +2816,10 @@ Craft CMS Changelog
 - Fixed a PHP warning that could occur when calling IOHelper::clearFolder() if the folder contents could not be read.
 
 ## [v2.0.2538] - 2014-05-01
+
 ### Changed
 - The link to Redactor’s settings now opens in a new window.
+
 ### Fixed
 - Fixed a bug where new (non-Single) entry permissions weren’t getting saved correctly.
 - Fixed a PHP warning that could occur when rendering templates in rare conditions.
@@ -2529,12 +2827,15 @@ Craft CMS Changelog
 - Fixed a bug where the Login button wouldn’t become clickable if you entered your username/password with Chrome’s autofill feature.
 
 ## [v2.0.2537] - 2014-04-30
+
 ### Added
 - Added ElementsService::getElementByUri() for fetching an element by a given URI.
+
 ### Changed
 - All singles’ permissions are now grouped together in the permission lists, and no longer have any permissions besides "Edit”, since that’s the only entry permission that makes sense for singles.
 - Color fields now default to #000000, fixing an inconsistency between Chrome (which supports HTML5 color inputs) and every other browser.
 - Added “webm” to the ‘video’ asset file kind extension list.
+
 ### Fixed
 - Fixed a bug where it wasn’t possible to publish drafts on a Single.
 - Fixed a bug that broke prefixing ‘relatedTo’ param values with “and” in some cases.
@@ -2551,11 +2852,14 @@ Craft CMS Changelog
 - Made some CP strings translatable that weren’t.
 
 ## [v2.0.2536] - 2014-04-18
+
 ### Added
 - Added caching options for Google Cloud Storage sources.
+
 ### Changed
 - Lightened the shadow surrounding the Update button on the Updates page.
 - IOHelper::getMimeType() can now handle file paths that don’t map to a real file on the server, by looking at the extension instead.
+
 ### Fixed
 - Fixed a Twig error that occurred when editing an element that had a Categories field set to a deleted category group.
 - Fixed a bug in Craft Pro where users without permission to edit users were getting redirected to the user index after editing their own account settings.
@@ -2565,16 +2869,19 @@ Craft CMS Changelog
 - Fixed a couple Redis cache connection bugs.
 
 ## [v2.0.2535] - 2014-04-14
+
 ### Added
 - Added ElementsService::deleteElementsByType().
 - Added TasksService::getPendingTasks().
 - Added an optional $type param to TasksService::areTasksPending() and getNextPendingTask().
+
 ### Changed
 - The upgrade promo is now only shown on the Settings page if you’re running Craft Client.
 - Craft no longer creates additional Delete Stale Template Caches tasks if one is already pending, when saving and deleting elements.
 - Craft no longer creates additional Resave All Elements tasks if one is already pending, when adding new site locales.
 - The default error message templates will now show the actual error message, if one is provided.
 - Updated MigrationHelper::makeElemental for Craft 2, and gave it $hasContent, $isLocalized, and $locales arguments.
+
 ### Fixed
 - Fixed a bug where the {% redirect %} tag would not immediately end the request.
 - Fixed a bug where Matrix block type settings could get cut off.
@@ -2585,12 +2892,15 @@ Craft CMS Changelog
 - Fixed a bug where uninstalling a plugin that has element types would leave its element’s rows around in the database.
 
 ## [v2.0.2533] - 2014-04-11
+
 ### Fixed
 - Fixed a very serious bug where an extra 14px of padding was getting added to the top of some elements in the CP.
 
 ## [v2.0.2532] - 2014-04-11
+
 ### Added
 - Added a ‘slug’ route token.
+
 ### Changed
 - The date-picker for CP date fields is now localized for the same locales the CP is translated into.
 - The time-picker for CP time fields is now localized for the same locales the CP is translated into.
@@ -2607,6 +2917,7 @@ Craft CMS Changelog
 - Entry URI validation errors are now exposed below the Slug field.
 - Cleaned up button styles throughout the CP.
 - Improved credit card error handling in the upgrade modal.
+
 ### Fixed
 - Fixed a PHP error that broke the Feed widget and craft.feeds in the templates on servers with openbase_dir restrictions in effect *and* the idna_convert class installed in the server’s path.
 - Fixed a PHP error that could occur when editing Rackspace asset source settings.
@@ -2626,8 +2937,10 @@ Craft CMS Changelog
 - Fixed some references to Craft 1.x packages in the code.
 
 ## [v2.0.2528] - 2014-04-07
+
 ### Changed
 - Updated Craft’s CP translations to include all the new edition-related strings.
+
 ### Fixed
 - Fixed a 404 error when loading entry drafts or versions on Craft Pro.
 - Fixed a CSS glitch on the Client-to-Pro upgrade purchase screen.
@@ -2638,17 +2951,21 @@ Craft CMS Changelog
 - Fixed a z-index issue with Rich Text fields that have fixed toolbars.
 - Fixed a bug where non-admins could still see the Get Help widget if they already had it selected.
 - Re-disabled Twig’s C extension, which causes issues.
+
 ### Security
 - Passwords can no longer be more than 160 characters, preventing a [potential DDOS attack vector](http://arstechnica.com/security/2013/09/long-passwords-are-good-but-too-much-length-can-be-bad-for-security/) with blowfish hashing.
 
 ## [v2.0.2527] - 2014-04-04
+
 ### Changed
 - “section” is now a reserved field handle.
 - Lightened up the box shadow around submit buttons so they don’t look blurry.
 - It is now possible to zoom in on the Control Panel from mobile devices.
 - Added “`toolbarFixedBox: true`” to the default Simple.json and Standard.json Redactor configs in craft/config/redactor/. (Note this will only affect new installs.)
+
 ### Removed
 - Removed any empty `action=""` attributes from `&lt;form&gt;`s, which it turns out is against HTML spec.
+
 ### Fixed
 - Fixed a bug where saving an element on a non-primary locale would override the element’s search keywords for the primary locale.
 - Fixed the Rebuild Search Indexes tool.
@@ -2669,8 +2986,10 @@ Craft CMS Changelog
 - Fixed a bug where manually updating Craft or a plugin while logged out and while the system was offline would make it impossible to complete the update, leaving you stuck at the “Finish Up” screen forever.
 
 ## [v2.0.2525] - 2014-04-02
+
 ### Changed
 - Craft is now a little more graceful when running its “Resaving all elements” task, if it encounters an entry that doesn’t have a title set.
+
 ### Fixed
 - Fixed a MySQL error about a missing “craft_{{users}}” table that occurred when some people attempted to update to Craft 2.
 - Fixed a bug where a migration might fail during an update if Craft was set to not use a database table prefix.
@@ -2691,6 +3010,7 @@ Craft CMS Changelog
 - Fixed the page title on the /admin/whats-new page, which still said, “What’s new in Craft 1.3”.
 
 ## [v2.0.2524] - 2014-04-01
+
 ### Added
 - Craft is now available in three editions: Personal, Client, and Pro. See [buildwithcraft.com/pricing](http://buildwithcraft.com/pricing) for the details and a FAQ.
 - Craft’s Control Panel has been redesigned, featuring a wider max width, a new layout system that offers more modularity and responsiveness, full right-to-left language support, and countless subtle improvements.
@@ -2841,6 +3161,7 @@ Craft CMS Changelog
 - Added craft()->db->getNormalizedTablePrefix().
 - Added the Craft.Structure Javascript class.
 - Added Craft.BaseElementSelectorModal::addButton() for adding new buttons to element-selecting Javascript modals.
+
 ### Changed
 - The Date field type has been renamed to [Date/Time](http://buildwithcraft.com/docs/date-time-fields), and now has options to show the date only, time only, or date and time.
 - Craft now checks [routes](http://buildwithcraft.com/docs/routing#dynamic-routes) defined in both craft/config/routes.php and Settings → Routes on front-end site requests (so no more ‘siteRoutesSource’ config setting).
@@ -2942,10 +3263,13 @@ Craft CMS Changelog
 - Updated PHPUnit to 4.0.9.
 - Updated PHPUnit dependencies to their latest versions.
 - Updated Mockery to 0.9.
+
 ### Deprecated
 - Entries within a Structure section now have a “level” instead of a “depth”. (Referring to it as “depth” will still work, but it has been deprecated.)
+
 ### Removed
 - Removed the `$category` argument from `Craft::log()`.
+
 ### Fixed
 - Fixed a bug where relational fields’ Limit settings weren’t getting enforced at the PHP level.
 - Fixed a bug where entry versions weren’t saving Matrix field data properly.
@@ -2971,6 +3295,7 @@ Craft CMS Changelog
 - Fixed a bug where if you specified more than 3 digits in a Number field types decimal settings, only 3 would be displayed in the input.
 
 ## [v1.3.2507] - 2014-03-14
+
 ### Fixed
 - Fixed a bug where the current user would not be available in the Author menu for entries that were authored by someone else.
 - Fixed a PHP error when Craft is connected to Amazon S3 and open_basedir restrictions are in place.
@@ -2979,9 +3304,11 @@ Craft CMS Changelog
 - Fixed a MySQL error that could occur due to ordering by an ambiguous ‘dateCreated’ column.
 
 ## [v1.3.2496] - 2014-02-27
+
 ### Changed
 - Made it possible for users to validate their accounts through the CP when the site is offline.
 - craft->on() now works when running Craft from the command line.
+
 ### Fixed
 - Fixed a bug where removing a locale from a section would remove that locale from all the sections.
 - Fixed infinite scrolling on the Entries, Users, and Assets indexes in some browsers.
@@ -2990,8 +3317,10 @@ Craft CMS Changelog
 - Fixed a bug where anyone could access the front end login page when the site was offline.
 
 ## [v1.3.2494] - 2014-02-24
+
 ### Added
 - The ‘entries/saveEntry’ action now supports passing a “fieldsLocation” GET/POST param, specifying where the fields’ post data can be found. (It’s “fields” by default.)
+
 ### Changed
 - Number field inputs no longer show group symbols (e.g. commas every 3 digits in English).
 - Exact match searching is now case insensitive.
@@ -2999,6 +3328,7 @@ Craft CMS Changelog
 - Element selector modals and element indexes now scroll back to the top when loading a fresh batch of elements.
 - Updated Craft’s Amazon S3 library to the latest version, which fixed bucket fetching on PHP 5.5.
 - craft()->numberFormatter now points to an extended NumberFormatter class, which overrides formatDecimal() to add a new $withGroupSymbol argument (defaults to true).
+
 ### Fixed
 - Fixed a bug where tags that were first created within a Matrix field would be inaccessible, and result in MySQL errors when used.
 - Fixed a bug where tag search results would look beyond just the tag names if multiple words were searched for.
@@ -3011,14 +3341,17 @@ Craft CMS Changelog
 - Fixed some box shadow styles for Firefox.
 
 ## [v1.3.2487] - 2014-02-13
+
 ### Added
 - The search syntax now supports using asterisks in combination with double colons, for fuzzy searching against an attribute’s full value. For example, a search for “`title::a*`” will give you entries where the *entire* title begins with ‘a’, not just any word within the title.
 - Added EntriesService::deleteEntry() and deleteEntryById().
 - Added ‘beforeShowPreviewMode’, ‘showPreviewMode’, ‘beforeHidePreviewMode’, and ‘hidePreviewMode’ JS events to Craft.entryPreviewMode.
+
 ### Changed
 - Rich Text fields now disable Redactor’s code view when entering/exiting Live Preview, due to a visual glitch that could occur if code view remained open.
 - Added a migration to clean up any potential gaps in structures.
 - Models’ and records’ “Number” attributes are no longer automatically converted to the English number format when calling `validate()` or `save()`. It is now up to the business logic to pass localized numbers through LocalizationHelper::normalizeNumber() on their own.
+
 ### Fixed
 - Fixed a bug where search results would get returned with the lowest-scoring elements listed first, when setting the ‘order’ parameter to “score”.
 - Fixed a bug where the Field Layout Designer wouldn’t get the right font when the CP was loaded over SSL.
@@ -3029,18 +3362,22 @@ Craft CMS Changelog
 - Fixed a bug where you couldn’t delete a field if it used a custom field type provided by a plugin that was no longer installed.
 
 ## [v1.3.2486] - 2014-02-10
+
 ### Fixed
 - Fixed a PHP error that could occur if Craft was trying to serve a resource which had been moved or deleted.
 
 ## [v1.3.2485] - 2014-02-07
+
 ### Added
 - Added HeaderHelper::isHeaderSet().
+
 ### Changed
 - Made major CP performance improvements when Dev Mode is disabled.
 - Number fields now use the user’s preferred locale’s number format.
 - Users with permission to administrate other users are no longer allowed to delete, suspend, unsuspend or unlock others’ Admin accounts.
 - If the Content-Type header is already set when rendering a template, Craft will no longer override it.
 - Included some improved CP translations.
+
 ### Fixed
 - Fixed a MySQL error that could occur when adding new Dashboard widgets.
 - Fixed a bug where HeaderHelper::removeHeader() would literally not do anything.
@@ -3057,8 +3394,10 @@ Craft CMS Changelog
 - Wired up some CP translations that were previously MIA.
 
 ## [v1.3.2473] - 2014-01-21
+
 ### Changed
 - Field instructions are no longer HTML-encoded.
+
 ### Fixed
 - Fixed a bug where certain authors might not be excluded in the entry Author menu.
 - Fixed a bug where EntryModel’s [getNextSibling()](http://buildwithcraft.com/docs/templating/entrymodel#getNextSibling), [getPrevSibling()](http://buildwithcraft.com/docs/templating/entrymodel#getPrevSibling), [isNextSiblingOf()](http://buildwithcraft.com/docs/templating/entrymodel#isNextSiblingOf), and [isPrevSiblingOf()](http://buildwithcraft.com/docs/templating/entrymodel#isPrevSiblingOf) could return incorrect results.
@@ -3067,6 +3406,7 @@ Craft CMS Changelog
 - Fixed a bug in admin/utils/phpinfo where some values were being displayed as “Array” instead of their actual values.
 
 ## [v1.3.2465] - 2014-01-13
+
 ### Changed
 - Craft will now attempt to max out PHP’s memory limit if it thinks it needs to in order to load an image.
 - ImagesService::setMemoryForImage() has been renamed to checkMemoryForImage().
@@ -3074,6 +3414,7 @@ Craft CMS Changelog
 - HttpRequestService::getQuery(), getRequiredQuery(), and getParam() (as well as their craft.request.* counterparts) can now return arrays, and support the dot notation for fetching nested array values.
 - Updated the ‘month’ and ‘day’ route token regular expressions so that 1-9 no longer require a ‘0’ prefix. (Note that existing routes with a ‘month’ or ‘day’ token will need to be edited, with the tokens removed and re-added, before the change will take effect.)
 - Updated Redactor to 9.1.9.
+
 ### Fixed
 - Fixed a bug where if a Matrix field had two block type fields with the same handle, only the last one saved would ever be able to remember its content values.
 - Fixed a bug where Lightswitch fields wouldn’t work immediately after switching an Entry Type; you had to re-save the entry and come back to it.
@@ -3084,9 +3425,11 @@ Craft CMS Changelog
 - Fixed a bug where a &lt;td class="right"&gt; wouldn’t get right-aligned text if it was within a &lt;table class="data"&gt;
 
 ## [v1.3.2462] - 2013-12-30
+
 ### Added
 - Added an ‘admin’ user criteria parameter for filtering users by whether they are admins.
 - Added a ‘can’ user criteria parameter for filtering users by whether they have a given permission.
+
 ### Changed
 - Entries’ “Author” settings now only list users that have permission to create entries in current section.
 - Rich Text fields now remove &lt;font&gt; tags if the “Clean up HTML?” setting is enabled.
@@ -3096,6 +3439,7 @@ Craft CMS Changelog
 - Craft now displays a more helpful error message on servers without PDO installed.
 - Timestamps are no longer a factor when Craft is determining which application/plugin migrations need to be run, fixing a race condition with plugin migrations.
 - When adding new entries to an Entries field that’s attached to an entry, the source entry is now visible (but disabled) in the modal, rather than removed altogether. (Ditto for users, tags, and assets.)
+
 ### Fixed
 - Fixed a style conflict that occurred when a Date field was displayed right before an Entries/Users/Assets/Tags field.
 - Fixed Color fields within Matrix blocks and Asset/Tag content modals for browsers that don't support &lt;input type="color"&gt;.
@@ -3111,11 +3455,14 @@ Craft CMS Changelog
 - Fixed the vertical spacing of instructions on Checkbox fields.
 
 ## [v1.3.2461] - 2013-12-08
+
 ### Added
 - Added Craft.getText().
+
 ### Changed
 - Live Preview now gets refreshed after updating an asset or tag’s contents.
 - Craft now reattempts to generate image transforms if more than 30 seconds have passed since the previous attempt.
+
 ### Fixed
 - Fixed a bug that prevented image transforms from getting generated.
 - Fixed a PHP notice that would occur when uninstalling a disabled plugin.
@@ -3123,10 +3470,12 @@ Craft CMS Changelog
 - Fixed a bug where Rich Text field contents weren’t showing up in collapsed Matrix block previews.
 
 ## [v1.3.2459] - 2013-12-06
+
 ### Changed
 - Improved the way Craft keeps track of database migrations.
 - IOHelper::getFolderContents() now accepts a parameter for including hidden files.
 - Plugin developer links now open in a new window.
+
 ### Fixed
 - Fixed a bug where Craft wouldn't remember the default parent entry when clicking an “Add child” link within a Structure section.
 - Fixed a bug where cURL requests that originated from a PHP script would require a user agent string to be set.
@@ -3134,13 +3483,16 @@ Craft CMS Changelog
 - Fixed a bug where the craft/plugins/ and craft/storage/ folders weren't getting included in the release.
 
 ## [v1.3.2456] - 2013-12-02
+
 ### Added
 - Added Craft.encodeUriComponent() for a JS-facing replica of PHP’s rawurlencode().
 - Added a ‘readonly’ option to _includes/forms/text.html.
+
 ### Changed
 - If Imagick is installed, but has a version less than 6.2.9, Craft will now try to use GD instead of throwing an error.
 - Twig’s date() function and date/date_modify filters now use the site’s timezone.
 - The Quick Post widget no longer shows the Entry Type setting if there’s only one entry type.
+
 ### Fixed
 - This update patches missing locale-specific rows in the elements_i18n and content tables.
 - Fixed a bug where editing a Structure entry with a disabled parent would lose its parent on save.
@@ -3155,22 +3507,27 @@ Craft CMS Changelog
 - Fixed a FOUC bug with Firefox on pages with an autofocussed input.
 
 ## [v1.3.2422] - 2013-11-15
+
 ### Changed
 - The Revision dropdown on the Edit Entry page only shows the last 10 versions now, preventing the page from getting too memory hungry on entries with lots of past versions.
+
 ### Fixed
 - Fixed a bug where some textareas throughout the CP could lose their data when saved.
 - Fixed a bug where Rich Text fields could lose their changes if the Command/Ctrl+S shortcut was used while editing one in fullscreen mode.
 - Fixed a bug where Rich Text field menus were being cut off within Matrix fields.
 
 ## [v1.3.2420] - 2013-11-14
+
 ### Changed
 - The Assets index and Asset modals now show filenames with inner-word line breaks, so things don’t get too crazy.
 - The current template $context array is now passed by reference to template hooks.
+
 ### Fixed
 - Fixed a PHP error that could occur when running Craft in PHP 5.4 or later.
 - Fixed a DB connection error that could occur on servers where ‘localhost’ does not point to 127.0.0.1.
 
 ## [v1.3.2419] - 2013-11-14
+
 ### Fixed
 - Fixed a couple issues with Matrix in Safari.
 - Fixed a bug where id= attribute values within Plain/Rich Text field content could get prepended with “field-.
@@ -3182,17 +3539,20 @@ Craft CMS Changelog
 - Fixed a PHP error that would occur when switching the Entry Type on an entry that had a Matrix field.
 
 ## [v1.3.2418] - 2013-11-13
+
 ### Added
 - Added the ability to disable Matrix blocks.
 - Added the ability to collapse and expand Matrix blocks.
 - It is now possible to use the ‘search’ parameter on a Matrix field to find specific blocks using Craft’s [search support](http://buildwithcraft.com/docs/searching).
 - Custom field instructions now support Markdown.
+
 ### Changed
 - Matrix fields now store search keywords based on their blocks’ content.
 - Button menus are now at least as wide as their buttons.
 - When saving a revision, if there is no logged in user, Craft now defaults the revision creator to the entry’s author.
 - Filenames are now shown when viewing assets in the table view.
 - If a PHP error is directly caused by something a template is doing, Craft now shows the offending template in the error report when Dev Mode is enabled.
+
 ### Fixed
 - Fixed a MySQL error that could have occurred when adding a new block type field to a Matrix field, which has the same handle as a field that previously existed on the same block type.
 - Fixed a bug where Matrix fields would only show the first 100 blocks in the CP.
@@ -3205,20 +3565,24 @@ Craft CMS Changelog
 - Re-disabled Twig’s C extension, which causes issues.
 
 ## [v1.3.2416] - 2013-11-07
+
 ### Fixed
 - Fixed a bug that broke the entry edit page for sites without the Localize package installed.
 
 ## [v1.3.2415] - 2013-11-07
+
 ### Added
 - Replaced the Delete icon within Matrix blocks with a Settings menu icon, which has options to create new blocks directly above the current block, and delete the current block.
 - Added Command/Ctrl+S support to the Globals section.
 - Added a new 'beforeSaveShortcut' event to Craft.cp.
+
 ### Changed
 - The “Add block” buttons in Matrix fields now collapse into a menu button if there’s not enough room for them all on the page.
 - Added some missing translations.
 - Added ContentService::validateElementContent().
 - Cleaned up the asset file icons.
 - Failed model validations now get logged.
+
 ### Fixed
 - Fixed a bug that broke Live Preview.
 - Fixed a bug where assets wouldn’t show up anywhere after being uploaded in some cases.
@@ -3235,10 +3599,12 @@ Craft CMS Changelog
 - Fixed a bug where a plugins’ services wouldn't be available if they were listening to the onAfterInstall and onBeforeUninstall events.
 
 ## [v1.3.2410] - 2013-11-06
+
 ### Changed
 - Reversed the priority order that translation files are loaded, so more specific locales take precedence.
 - Added ‘size’ to the list of reserved field handle words.
 - Garnish.PasswordInput is now Craft.PasswordInput.
+
 ### Fixed
 - Fixed a bug where Craft’s requirement checker would not display the failed requirements list when attempting to install Craft.
 - Fixed some bugs with loading revisions for entries with Matrix fields.
@@ -3251,6 +3617,7 @@ Craft CMS Changelog
 - Fixed a PHP warning that could occur in IOHelper::getFolders() if glob() returned false.
 
 ## [v1.3.2409] - 2013-11-05
+
 ### Added
 - [Matrix](http://buildwithcraft.com/features/matrix).
 - Added the ability to deep-link directly to a specific section on the Entries index page.
@@ -3303,6 +3670,7 @@ Craft CMS Changelog
 - Added a ‘namespaceInputId’ Twig filter, which points to TemplatesService::namespaceInputId().
 - Added BaseElementType::getTableAttributeHtml(), which defines the HTML that should occupy the table cell for the given element and attribute.
 - Added BaseElementType::hasContent(), which determines whether ElementsService::buildElementsQuery() should join in the content table.
+
 ### Changed
 - Clicking on the Globals tab will now take you to the first global set’s full URL, rather than just /globals.
 - Editing global set content for a new locale now defaults to the primary locale’s content.
@@ -3355,10 +3723,13 @@ Craft CMS Changelog
 - Updated PHPUnit to 3.7.28.
 - Updated Redactor to 9.1.6.
 - Updated jQuery Timepicker to 1.2.9.
+
 ### Deprecated
 - Deprecated BaseElementModel::getRawContent() in favor of getContent()->getAttribute().
+
 ### Removed
 - Removed the free disk space requirement, since some hosts allocate disk space on demand. And then they sell out to GoDaddy.
+
 ### Fixed
 - Fixed a PHP error that could occur if an entry or asset didn’t have a title for some reason.
 - Fixed a bug where assets with an .ai file extension were getting stored with the Kind value “illustrato” rather than “illustrator”.
@@ -3367,17 +3738,21 @@ Craft CMS Changelog
 - Fixed a MySQL error when saving a Number field without a value when MySQL is running in Strict Mode.
 
 ## [v1.2.2399] - 2013-10-31
+
 ### Added
 - Added a new requirement check for 20MB of free disk space.
+
 ### Fixed
 - Fixed a bug where Craft was incorrectly returning that MySQL’s InnoDB storage engine was available when it was not.
 - Fixed a bug where Mcrypt was listed as required in the docs, but optional in the code. It is now required in the code.
 
 ## [v1.2.2396] - 2013-10-30
+
 ### Fixed
 - Fixed a bug where the new requirements checker wouldn’t output any messages when a requirement did not pass.
 
 ## [v1.2.2392] - 2013-10-29
+
 ### Fixed
 - Fixed a bug where the new requirement checker would output all requirements, not just the ones that failed.
 - Fixed a bug where only the first 100 authors would show up in the Author dropdown on an entry’s Settings tab.
@@ -3385,6 +3760,7 @@ Craft CMS Changelog
 - Added some missing translations.
 
 ## [v1.2.2387] - 2013-10-28
+
 ### Changed
 - The updater now checks for any new requirements before applying the update.
 - The updater is now much smarter about when to roll back and when not to if something goes wrong during an update.
@@ -3393,6 +3769,7 @@ Craft CMS Changelog
 - The methods in IOHelper now have the option to suppress any PHP errors that might occur during file operations.
 - When a logged-in user goes to the path specified by the ‘actionLogin’ config setting, Craft now redirects them to the Dashboard or the site’s homepage depending on whether they have CP access.
 - The Update Asset Indexes tool is now only visible if there is at least one asset source.
+
 ### Fixed
 - Fixed a bug where Craft would run system requirements checks on front end requests, when it only should have run them for CP requests.
 - Fixed a PHP error that would occur when Craft made calls to its web service, but the web service was unavailable.
@@ -3402,8 +3779,10 @@ Craft CMS Changelog
 - Fixed various strings that weren’t being translated.
 
 ## [v1.2.2375] - 2013-10-18
+
 ### Changed
 - Made it possible to access environment-specific config variables from templates via craft.config.environmentVariables.
+
 ### Fixed
 - Fixed a bug where Craft wouldn’t check to make sure the craft/storage/userphotos folder was writable before generating user photo thumbnails.
 - Fixed a bug where Asset modals were not taking user/group permissions into account when deciding what Asset sources to display.
@@ -3413,8 +3792,10 @@ Craft CMS Changelog
 - Fixed a timezone bug when displaying dates/times.
 
 ## [v1.2.2371] - 2013-10-14
+
 ### Added
 - max_packet_size setting.
+
 ### Changed
 - Entries, Assets, and Users fields no longer auto-select elements after they were chosen from the modals.
 - Singles are now selectable in Rich Text fields’ “Link to an entry” modals.
@@ -3424,22 +3805,27 @@ Craft CMS Changelog
 - The “smtpPassword” property now gets redacted from the logs when Dev Mode is enabled.
 - Made improvements to the database backup and restoration scripts so there's now a much smaller chance of running into fatal errors due to queries that are too large for MySQL’s 
 - Reduced the memory footprint of the database backup and restoration scripts.
+
 ### Fixed
 - Fix a bug where strings with unrecognized non-ASCII characters would get truncated, causing various problems such as file upload errors.
 - Fixed a bug where public user registration forms might not save the password properly.
 
 ## [v1.2.2367] - 2013-10-09
+
 ### Changed
 - It is now possible to pass Entries, Assets, Tags, and Users field values directly into ‘parentOf’ and ‘childOf’ params.
 - All pages of the CP are now capable of checking for Craft updates when the info isn’t cached, and update notifications are immediately added to the CP header and footer if an update is available.
+
 ### Fixed
 - Fixed a bug where user sessions weren’t being restored from cookies properly.
 - Fixed a bug where the “Current Password” input on the account settings page was broken.
 
 ## [v1.2.2363] - 2013-10-07
+
 ### Changed
 - Improved the performance of the ‘search’ param when searching against a specific field or attribute.
 - Added translations for a few Javascript-based strings that had been missed.
+
 ### Fixed
 - Fixed a bug where the “Delete” button would show up for brand new entries.
 - Fixed a bug that prevented entry saving on some servers because the slug would always be blank.
@@ -3448,6 +3834,7 @@ Craft CMS Changelog
 - Fixed a Twig error caused by the Recent Entries widget when Publish Pro is installed and all sections are Singles.
 
 ## [v1.2.2358] - 2013-10-01
+
 ### Added
 - Added paginate.firstUrl, lastUrl, getPageUrl(), getPrevUrls(), getNextUrls(), and getRangeUrls() to the [{% paginate %}](http://buildwithcraft.com/docs/templating/tags#paginate) tag, making it much easier to build [common pagination navigations](http://buildwithcraft.com/help/pagination-nav).
 - Added [EntryModel::isAncestorOf()](http://buildwithcraft.com/docs/templating/entrymodel#isAncestorOf).
@@ -3459,6 +3846,7 @@ Craft CMS Changelog
 - Added [EntryModel::isNextSiblingOf()](http://buildwithcraft.com/docs/templating/entrymodel#isNextSiblingOf).
 - Added HttpRequestService::getScriptName() and craft.request.getScriptName().
 - Added UrlHelper::getUrlWithProtocol().
+
 ### Changed
 - Added support for root-relative Site URLs.
 - The {% nav %} tag now sets entries’ parents for them, potentially saving lots of DB queries
@@ -3468,8 +3856,10 @@ Craft CMS Changelog
 - UsersService::saveUser() now updates the user’s status based on the status set on the passed-in UserModel.
 - Updated Redactor to 9.1.5.
 - Updated the translations.
+
 ### Deprecated
 - Many of the `Craft` static methods have been moved to `craft()`, e.g. `Craft::getSiteUrl()` is now `craft()->getSiteUrl()`. The old methods are still around, but deprecated.
+
 ### Fixed
 - Fixed a PHP notice caused by the Recent Entries widget when Publish Pro is not installed and Dev Mode is enabled.
 - Fixed a PHP notice that would occurr when saving a top-level entry within a Structure section with Dev Mode enabled.
@@ -3484,10 +3874,12 @@ Craft CMS Changelog
 - Tweaked the style of element thumbnails a little bit to work around a Firefox rendering glitch that occurred on some PCs.
 
 ## [v1.2.2339] - 2013-09-24
+
 ### Changed
 - You can now create Singles that map to the same URIs used by your Login, Set Password, and Forgot Password pages, and the ‘entry’ variable will be available to the templates as expected.
 - Improved the wording of the Entry Template setting instructions for Singles.
 - The Entry Template section setting is now auto-populated based on the section name for new sections, just like Handle and URL Format.
+
 ### Fixed
 - Fixed a bug that broke new user account validation.
 - Fixed a bug that could cause long page load times when Craft is attempting to determine whether the server supports PATH_INFO and script name redirects.
@@ -3498,11 +3890,14 @@ Craft CMS Changelog
 - Fixed a bug where auto-updating was broken for users on Craft 1.2 build 2337.
 
 ## [v1.2.2337] - 2013-09-23
+
 ### Added
 - Added Craft.BaseInputGenerator::setNewSource().
+
 ### Changed
 - Relaxed username validation to allow any non-whitespace character.
 - It is no longer necessary to pass the output of the ‘parseRefs’ filter through the ‘raw’ filter.
+
 ### Fixed
 - Fixed a bug where Rich Text fields could lose data on save if they contained links or images that were selected from the entry/asset/selection modals.
 - Fixed a bug that prevented Craft from indexing brand new asset sources.
@@ -3511,6 +3906,7 @@ Craft CMS Changelog
 - Fixed a PHP error that occurred on servers that don't allow calling set_time_limit().
 
 ## [v1.2.2336] - 2013-09-20
+
 ### Changed
 - Moved the Homepage icon to the left of the site name in the CP header, and made the icon and the site name a link to the site’s homepage.
 - Replaced the ‘Slug’ column with ‘URI’ in the Entries index, and now Singles get it too.
@@ -3525,6 +3921,7 @@ Craft CMS Changelog
 - Refactored Craft.AdminTable JS class a bit, making it easier to read and extend.
 - Moved the id="nav-whatever" attributes in the main CP nav up to the &lt;li&gt; rather than the &lt;a&gt;.
 - Inner-word punctuation symbols are now removed completely from auto-generated slugs, rather than hyphenated. (“it’s” would now become “its” rather than “it-s”, for example.)
+
 ### Fixed
 - Fixed a bug where editing a Single section’s entry would give you the option to “Save and add another”.
 - Fixed a bug where the Field edit form would not display inline validation errors.
@@ -3536,15 +3933,18 @@ Craft CMS Changelog
 - Fixed a bug where “Entry Types” column heading in the Sections index wasn’t getting translated.
 
 ## [v1.2.2335] - 2013-09-18
+
 ### Added
 - Added the radioGroupField macro to the CP’s _includes/forms.html template.
 - Added ConfigService::getResourceTrigger(), which now always returns 'resources' for CP requests, and the custom ‘resourceTrigger’ config setting for front end requests.
+
 ### Changed
 - The Slug, Section, Post Date, and Expiry Date columns are no longer visible when viewing Singles in the Entries index.
 - iconv is now a recommended dependency; no longer a mandatory requirement.
 - It’s possible to set the CRAFT_BASE_PATH constant without also setting CRAFT_APP_PATH.
 - HttpRequestService no longer checks whether the current request is a resource/action request until isResourceRequest(), isActionRequest(), or getActionSegments() is actually called.
 - Craft no longer adds Twig’s Debug extension when running in Dev Mode, since it was deprecated as of Twig 1.5 in favor of the now-built-in dump() function.
+
 ### Fixed
 - Fixed a “You have a buggy version of iconv” error on servers with… a buggy version of iconv, by falling back on mb_detect(), mb_convert_encoding().
 - Fixed a PHP notice on servers that don’t have the CURLOPT_TIMEOUT_MS and CURLOPT_CONNECTTIMEOUT_MS constants predefined.
@@ -3554,6 +3954,7 @@ Craft CMS Changelog
 - Fixed a bug where setting the ‘resourceTrigger’ config setting to ‘assets’ (or any other top-level CP template folder/file name) would prevent access to that section of the CP.
 
 ## [v1.2.2333] - 2013-09-17
+
 ### Added
 - There are now three types of sections: [Singles](http://buildwithcraft.com/docs/sections-and-entries#sections), [Channels](http://buildwithcraft.com/docs/sections-and-entries#sections), and [Structures](http://buildwithcraft.com/docs/sections-and-entries#sections).
 - Channel and Structure sections can now have multiple [Entry Types](http://buildwithcraft.com/docs/sections-and-entries#entry-types).
@@ -3607,6 +4008,7 @@ Craft CMS Changelog
 - Added a new ‘registerCachePaths’ plugin hook to the Clear Caches tool, enabling plugins to provide custom cache paths.
 - Added a new ‘ref’ param to ElementCriteriaModel.
 - Added support for a ‘.hover’ CSS class to buttons, used to simulate :hover.
+
 ### Changed
 - Iterated over the entire CP design.
 - The Settings and Updates links are now presented as icons on the right-hand side of the header nav, to the left of the My Account menu, and Updates only shows up when an update is available.
@@ -3665,6 +4067,7 @@ Craft CMS Changelog
 - Updated jQuery Timepicker to 1.2.7
 - Updated Redactor to 9.1.4
 - Updated PHPMailer to 5.2.7
+
 ### Fixed
 - Fixed auto-height sizing on Plain Text fields.
 - Fixed a bug where images added to a Rich Text field via the “Choose image” option were not immediately editable.
@@ -3686,6 +4089,7 @@ Craft CMS Changelog
 - Fixed a PHP warning that could occur on servers with openbase_dir restrictions in place.
 
 ## [v1.1.2321] - 2013-09-10
+
 ### Fixed
 - Fixed a few bugs related to Tags fields when there is more than one Tag Set.
 - Fixed a MySQL error when deleting a user who created any entry versions or drafts on an entry that was not authored by the user.
@@ -3693,6 +4097,7 @@ Craft CMS Changelog
 - Fixed a bug where no entires would show up in the recent entries widget if you had “All” selected in the widget settings.
 
 ## [v1.1.2314] - 2013-09-05
+
 ### Fixed
 - Fixed a bug where you could not remove already-selected tags in Tags fields.
 - Fixed a bug where validation errors would incorrectly be added to required Tags fields that did in fact have selected tags.
@@ -3701,10 +4106,12 @@ Craft CMS Changelog
 - Fixed the position of the email icon on the confirmation dialog when a user forgets their password.
 
 ## [v1.1.2313] - 2013-09-04
+
 ### Changed
 - Element fields now support ArrayAccess
 - Model attributes now support ArrayAccess
 - Craft now checks if the asset source folder exists when uploading and throws an exception if not.
+
 ### Fixed
 - Fixed a bug where all yiic plugin migration commands were failing.
 - Fixed a bug where the Get Help widget might fail to attach logs if you had less than three log files.
@@ -3712,21 +4119,26 @@ Craft CMS Changelog
 - Fixed a bug where Entries > All Entries would include entries in sections that the user did’t have permission to edit.
 
 ## [v1.1.2305] - 2013-08-27
+
 ### Changed
 - Improved the handling of failed asset uploads.
+
 ### Fixed
 - Fixed a bug where entry URLs would not get routed properly if a Route existed that conflicted with the section’s URL Format.
 - Fixed a PHP notice that may have occurred if you had a Quick Post widget that was set to a deleted section.
 - Fixed a bug where PHP fatal errors would not get logged properly when Dev Mode wasn’t enabled.
 
 ## [v1.1.2304] - 2013-08-19
+
 ### Added
 - Added MigrationHelper::dropForeignKeyIfExists() and dropIndexIfExists().
 - Added Help links to each page in Settings, which take you to the docs for that page.
+
 ### Changed
 - Added the cURL extension as a requirement to run Craft, due to issues with the fallback HTTP client.
 - Tweaked the release note icons.
 - If Craft cannot connect to its web services, it will not try again for five minutes.
+
 ### Fixed
 - Fixed a bug where Craft was not verifying that the current user is an admin before allowing them to make changes to a section.
 - Fixed a Twig error when saving a tag set with validation errors.
@@ -3735,8 +4147,10 @@ Craft CMS Changelog
 - Fixed a bug in EmailService where the From address might be used instead of the ReplyTo address when replying in some email clients.
 
 ## [v1.1.2302] - 2013-08-13
+
 ### Changed
 - The asset and tag content modals will now shake when you attempt to save them but there are validation errors.
+
 ### Fixed
 - Fixed a bug that would prevent Craft from being able to update to 1.1.2298 or later if the craft_relations table’s foreign keys did not have cascade deletes.
 - Fixed a PHP error that would occur when non-admin users with CP access would attempt to log into the CP while the system was off.
@@ -3746,6 +4160,7 @@ Craft CMS Changelog
 - Fixed a bug where asset uploading would not work if you were using PHP’s built-in development web server.
 
 ## [v1.1.2300] - 2013-08-09
+
 ### Fixed
 - Fixed a PHP notice that could occur during the cleanup stage of an update.
 - Fixed a bug that caused Craft to hang if an error occurred during a manual update when the user was not logged in.
@@ -3754,6 +4169,7 @@ Craft CMS Changelog
 - Fixed a bug where DB connection error messages would not be styled.
 
 ## [v1.1.2298] - 2013-08-08
+
 ### Fixed
 - Fixed some wonkiness with sidebar scrolling.
 - Fixed a bug where Users fields wouldn’t output anything.
@@ -3764,6 +4180,7 @@ Craft CMS Changelog
 - Fixed a bug where all of the cells in the last table row would get a bottom border when the table is collapsed for small screens.
 
 ## [v1.1.2293] - 2013-08-05
+
 ### Changed
 - Craft now supports Twig’s ‘ignore missing’ [include](http://twig.sensiolabs.org/doc/tags/include.html) tag param.
 - Craft now supports Twig’s [include](http://twig.sensiolabs.org/doc/tags/include.html) tag’s template list syntax.
@@ -3771,6 +4188,7 @@ Craft CMS Changelog
 - Added ‘.svg’ to the default ‘allowedFileExtensions’ config setting value.
 - Emails sent through the EmailService now get the ‘sender’ attribute set.
 - Craft now includes jquery.min.map for easier jQuery debugging when the ‘useCompressedJs’ config setting is set to ‘true’.
+
 ### Fixed
 - Fixed a bug where Live Preview would use the primary site locale when previewing a non-primary locale’s content.
 - Fixed a bug where deleting a section, global set, or tag set wouldn’t delete its field layout in the database.
@@ -3790,6 +4208,7 @@ Craft CMS Changelog
 - Fixed a bug in the installer when MySQL strict mode was enabled.
 
 ## [v1.1.2291] - 2013-07-29
+
 ### Added
 - Added the concept of [Tag Sets](http://docs.buildwithcraft.com/diving-in/tag-sets.html), which are collections (or *sets*) of [Tags](http://docs.buildwithcraft.com/diving-in/tags.html)! Each Tag Set gets its own field layout, similar to Sections.
 - Added a new [Tags field type](http://docs.buildwithcraft.com/diving-in/fields/types/tags.html), which replaces the old Tags entry setting, and can be applied to entries, users, assets, global sets, and even other tags.
@@ -3815,6 +4234,7 @@ Craft CMS Changelog
 - Added new users.onBeforeDeleteUser, users.onDeleteUser, tags.onSaveTag, and tags.onSaveTagContent events.
 - Added LocalizationService::getAppLocaleIds().
 - Added MigrationHelper with some handy methods for migrations.
+
 ### Changed
 - Gave the installer an awesome new background illustration created by Paul Burton of [Vile, Inc.](http://www.vileinc.com/).
 - The CP login screen now uses the new Craft logo by default.
@@ -3845,9 +4265,11 @@ Craft CMS Changelog
 - Added the $includeAuditColumns params to BaseMigration::insertAll(), insert(), and update().
 - All image manipulation functions are now handled by the Imagine PHP library.
 - Updated Redactor to 9.0.4.
+
 ### Deprecated
 - TemplatesService::includeHeadNode() and includeFootNode() have been renamed to includeHeadHtml() and includeFootHtml(). (The old functions still exist, but are now deprecated, and will be removed in Craft 2.0.)
 - Added a new prepValueFromPost() function to field types, which replaced prepPostData(). (prepPostData() still exists and is used, but has been deprecated and will be removed in Craft 2.0.)
+
 ### Fixed
 - Fixed some issues with asset PNG transparency.
 - Fixed a bug that prevented Live Preview from working on some browsers if the CP is loaded over SSL but the main site URL is not.
@@ -3858,10 +4280,12 @@ Craft CMS Changelog
 - Fixed a PHP error when installing Craft via the console.
 
 ## [v1.0.2280] - 2013-07-12
+
 ### Changed
 - Added a new “powerpoint” file kind that consists of .ppt and .pptx files.
 - ‘@’ symbols are row allowed in asset filenames.
 - Resource requests now get a 304 Not Modified response when appropriate.
+
 ### Fixed
 - Fixed a bug where Craft would display a completely uninformative error during installation if the craft/config/ folder isn’t writable.
 - Fixed a bug where some cells in Table fields wouldn’t auto-expand to their proper height on page load.
@@ -3869,12 +4293,15 @@ Craft CMS Changelog
 - Fixed a bug where the Last-Modified header was always set to ‘0’.
 
 ## [v1.0.2278] - 2013-06-24
+
 ### Added
 - Added craft()->urlManager->getMatchedElement().
+
 ### Changed
 - Craft now attempts to match the original image’s quality and file size when saving a cleansed uploaded image.
 - Requesting an empty CP resource no longer returns a 404 error.
 - The CP now gets redirected to Settings > Globals after saving a global set.
+
 ### Fixed
 - Fixed a bug where the Get Help widget would not send the logs and DB backup even if instructed to do so.
 - Fixed a bug where DateTime::diff() would not pass the ‘invert’ property to the returned DateInterval instance.
@@ -3886,9 +4313,11 @@ Craft CMS Changelog
 - Fixed a bug where radio buttons would lose their selections when toggling Live Preview.
 
 ## [v1.0.2277] - 2013-06-21
+
 ### Changed
 - Craft now only checks to make sure the craft/config/ folder is writable if the license.key file doesn’t exist already.
 - Updated Redactor to 9.0.1.
+
 ### Fixed
 - Fixed a bug where the Get Help widget would always send the DB backup and log files, even when instructed not to.
 - Fixed a PHP warning that would occur when using the `|datetime` Twig filter on a DateTime object.
@@ -3898,17 +4327,21 @@ Craft CMS Changelog
 - Fixed a bug that broke the User Photo and Logo cropping modals.
 
 ## [v1.0.2275] - 2013-06-17
+
 ### Fixed
 - Fixed the |length filter for Entries, Assets, Users, Checkboxes, and Multi-select fields.
 
 ## [v1.0.2274] - 2013-06-17
+
 ### Fixed
 - Fixed a PHP error when outputting assets in a template.
 
 ## [v1.0.2273] - 2013-06-17
+
 ### Changed
 - Added .webm to the default list of allowed upload file extensions.
 - Tightened transform settings validation to prevent invalid transform handles from being saved.
+
 ### Fixed
 - Fixed a MySQL error that would occur when deleting elements that were related to other elements via an Entries, Users,  or Assets field.
 - Fixed a bug where relation fields wouldn’t remember selected elements that were disabled/not-live.
@@ -3916,14 +4349,17 @@ Craft CMS Changelog
 - Fixed a bug where deleting an asset wouldn't delete its row in craft_elements.
 
 ## [v1.0.2270] - 2013-06-11
+
 ### Added
 - Added ArrayHelper::filterEmptyStringsFromArray().
+
 ### Changed
 - Increased PHP’s timeout duration for installing and updating to 120 seconds.
 - Craft now auto-focusses the first column’s input when creating a new row in Table fields (and other Table-based settings).
 - Login error codes are now returned for non-Ajax login requests.
 - Updated the translations.
 - Made it possible for plugins to extend UserSessionService and call their own extended login() method successfully.
+
 ### Fixed
 - Fixed a PHP error that broke the control panel for the fr_fr locale.
 - Fixed a bug where slug segments consisting of “0” would get removed when saving an entry.
@@ -3936,11 +4372,14 @@ Craft CMS Changelog
 - Fixed a bug where 404 requests would still get a MIME type based on the request’s URL, rather than text/html.
 
 ## [v1.0.2267] - 2013-06-06
+
 ### Added
 - Added the ‘users.beforeSaveUser’ event.
+
 ### Changed
 - Craft now displays a more user-friendly error page if it cannot connect to the database.
 - Updated the CP translations with some strings that were missed initially.
+
 ### Fixed
 - Fixed a bug where the ‘cpTrigger’ config setting could become exposed on the front-end of your website.
 - Fixed a bug where default field values were not getting applied when editing new content.
@@ -3955,6 +4394,7 @@ Craft CMS Changelog
 - Fixed a bug where clicking the “Choose image” or “Link to an entry” dropdown menu options within a Rich Text field within an Asset content modal would close the Asset content modal.
 
 ## [v1.0.2266] - 2013-06-04
+
 ### Added
 - Added [Live Preview](http://docs.buildwithcraft.com/diving-in/livepreview.html).
 - Added [search support](http://docs.buildwithcraft.com/diving-in/search.html).
@@ -3976,6 +4416,7 @@ Craft CMS Changelog
 - Added a Craft.initUiElements() JS function.
 - Added new Craft.ElementSelectorModal JS class for initializing element selection modals.
 - Added CP translations for German, UK English, French, Italian, and Dutch.
+
 ### Changed
 - Craft now ships with much more helpful default templates, and the installer actually creates a little content, so you can get a better sense of how the system works.
 - Refreshed the CP design.
@@ -3989,30 +4430,38 @@ Craft CMS Changelog
 - When submitting entry/user/asset content on the front-end, any fields that are omitted from the POST data entirely will retain their previous values.
 - Text “hints” in the CP are now “placeholders”, and use the HTML5 ‘placeholder’ attribute. A Javascript fallback is in place for browsers that don’t support them yet.
 - The Field Layout pages now use a custom font rather than Times New Roman.
+
 ### Deprecated
 - Added [PluginsService::call()](http://docs.buildwithcraft.com/plugins/apis/plugins.html) to replace the now-deprecated callHook(), and deprecated the “hook” method name prefix requirement from the plugin methods called by the function.
+
 ### Removed
 - Removed the Plain Text field type’s Max Length setting as it doesn’t have any effect yet.
 - Removed the Plugin Updates section from the Updates page since we aren’t actually checking for plugin updates yet.
 - Removed some old code and DB migrations that are no longer needed thanks to the previous release being a breakpoint release.
+
 ### Fixed
 - Fixed several IE 8 and 9 issues.
 
 ## [v0.9.2262] - 2013-06-03
+
 ### Fixed
 - Fixed a bug that broke the installer.
 
 ## [v0.9.2260] - 2013-06-02
+
 ### Added
 - Added `craft.request.isAjax()`.
+
 ### Changed
 - `ArrayHelper::StringToArray()` now removes any empty array elements.
 - Updater enhancements.
+
 ### Fixed
 - Fixed email settings validation.
 - Fixed a PHP error when deleting a field that has a non-existent field type.
 
 ## [v0.9.2246] - 2013-05-21
+
 ### Changed
 - Admins are now allowed to change other users’ passwords.
 - Now only admins are allowed to change other users’ email addresses.
@@ -4020,6 +4469,7 @@ Craft CMS Changelog
 - CP access permissions are now enforced earlier in the request cycle, preventing an error message that did not reveal the real issue when a non-permitted user attempted to access a page in the CP.
 - The ESC key now closes active modal windows.
 - Apostrophes are now removed, rather than replaced with a dash, when generating entry slugs.
+
 ### Fixed
 - Fixed a bug that prevented emails from being rendered correctly when the site locale is set to something besides ‘en_us’.
 - Fixed a bug preventing accurate account cooldown time calculation when your account is locked.
@@ -4027,10 +4477,12 @@ Craft CMS Changelog
 - Fixed a few minor front-end registration bugs.
 
 ## [v0.9.2243] - 2013-05-15
+
 ### Changed
 - Date fields now support two-digit years.
 - Added the current version’s release date to the CP footer.
 - Made minor visual improvements and fixes.
+
 ### Fixed
 - Fixed a bug that would cause a PHP error on many form submissions and the `group` filter on some versions of PHP.
 - Fixed a bug when trying to automatically detect whether the file system supports file locking when writing to a file.
@@ -4038,17 +4490,20 @@ Craft CMS Changelog
 - Fixed a bug where sections and global sets would be ordered by date modified rather than alphabetically.
 
 ## [v0.9.2240] - 2013-05-13
+
 ### Added
 - Added `UserModel::isInGroup()` to check if a user belongs to a particular group.
 - Added `TemplatesService::renderObjectTemplate()`, powering entry URI generation, the `group` filter, and all `redirect` params.
 - Added `DateTime::localeDate()` and `DateTime::localeTime()` for accessing the date/time in the current locale’s preferred formats.
 - Added a new `group` Twig filter for grouping the items in an array into sub-arrays, indexed by a common property among all the items.
+
 ### Changed
 - Added the full power of Twig to section URL Format settings, so you can access any entry property, apply filters, etc..
 - `redirect` params when saving entries, etc., also get the full power of Twig.
 - `DateTime->__toString()` now returns the W3C date rather than a U.S. date format.
 - `redirectToPostedUrl()` now accepts objects and passes the URLs through `renderObjectTemplate()`
 - Disabled entries no longer get to reserve a system URL.
+
 ### Fixed
 - Fixed a regression bug in `IOHelper::writeToFile()` where it would generate a PHP Error.
 - Fixed a bug that broke on-demand image transforms when the site has a protocol-relative URL.
@@ -4058,14 +4513,17 @@ Craft CMS Changelog
 - Fixed a bug that could cause a PHP notice when logging out on rare occasions.
 
 ## [v0.9.2235] - 2013-05-09
+
 ### Added
 - Added support for protocol-relative URLs.
 - Added the 'testToEmailAddress' config variable. If set, EmailService will send to it instead of the supplied email address.
 - Added config variables 'defaultFolderPermissions', 'writableFolderPermissions' and 'writableFilePermissions'.  Craft will use these when creating files and folders.
+
 ### Changed
 - If using the date/time picker and you only select time, Craft will now default to the current date.
 - If Craft isn’t installed yet and it is a control panel request, we will pretend like it is in devMode so that you can easily see any installation error stack traces and messages.
 - Craft now supports automagic detection if your file system supports file locking when writing to a file (looking at you NFS!). Removed the 'useLockWhenWritingToFile' config variable.
+
 ### Fixed
 - Fixed a bug where the last page of a paginated list of elements would suggest it’s showing more elements than there actually are.
 - Fixed a bug where times entered via the timepicker wouldn’t be saved in the system timezone.
@@ -4076,8 +4534,10 @@ Craft CMS Changelog
 - Fixed a bug where the entry Save context menu options wouldn’t trigger if an input on the page had focus.
 
 ## [v0.9.2222] - 2013-04-30
+
 ### Changed
 - The updater now cleans all .bak files and folders from the app folder after running an update.
+
 ### Fixed
 - Fixed the installer.
 - Fixed a edge case where the installer would break if it happened to find a SomethingRecord.php.bak file in the app/records folder.
@@ -4085,15 +4545,19 @@ Craft CMS Changelog
 - Fixed a bug where auto-redirection after logging in was broken if the config variable 'loginPath' had more than one segment in it.
 
 ## [v0.9.2219] - 2013-04-29 [CRITICAL]
+
 ### Added
 - Added a new “Default User Group” setting to Settings > Users > Settings for choosing which group new users should be added to by default.
+
 ### Changed
 - The “Forgot your password?” link is now visible right away on the Login page.
 - Renamed some config settings: ‘validateAccountPath’ to  ‘activateAccountPath’, ‘validateSuccessPath’ to ‘activateSuccessPath’,  ‘validateFailurePath’ to ‘activateFailurePath’ and ‘resetPasswordPath’ to ‘setPasswordPath’
 - When attempting to log in with a user account that’s temporarily locked, the cooldown time duration now includes the number of seconds if it’s less than one minute.
 - Increased the max length of entry slugs to 255 characters.
+
 ### Removed
 - Removed the ability to set other users’ passwords, even if you’re an admin. All new users must now go through account activation and set their own password.
+
 ### Fixed
 - Fixed a bug where a non-admin with create/administer user permissions was able to modify sensitive admin account details.
 - Fixed a permissions error when checking to see if the current user has create/edit entry privileges.
@@ -4101,21 +4565,25 @@ Craft CMS Changelog
 - Fixed some template errors if the system email settings get deleted for some reason, and you go to Settings > Email.
 
 ## [v0.9.2218] - 2013-04-25
+
 ### Added
 - Added new `forms.time()` and `forms.dateTimeField()` macros.
 - Added the ‘useLockWhenWritingToFile’ config setting, which is taken into account whenever the LOCK_EX flag is set when calling IOHelper::writeToFile(). This fixes PHP warnings when using Craft on NFS filesystems.
+
 ### Changed
 - Date and time selection now take place in separate inputs
 - Date and time formats are now fully localized within date/time fields (e.g. MM/DD/YY for en_us, DD/MM/YY for en_gb).
 - Date fields now have a “Show time?” setting (disabled by default).
 - The Timezone setting in Settings > General now lists all known timezones, not just the ones with unique abbreviations.
 - The `forms.date()` and `forms.dateField()` macros only show the date input once again.
+
 ### Fixed
 - Fixed a bug where escaped HTML entities in Rich Text fields would not continue to be escaped when re-editing.
 - Fixed a bug where query strings were dropped when redirecting the user back to the requested page after logging in.
 - Fixed a bug where requests would not get routed to the requested controller action if the URL path was equal to the ‘loginPath’ config setting (“login” by default).
 
 ## [v0.9.2216] - 2013-04-24
+
 ### Added
 - Added the ability to set the time of day within entry Post/Expiration Date settings as well as Date fields.
 - Added [page break support](http://docs.buildwithcraft.com/components/fieldtypes/richtext.html#working-with-page-breaks) to the Rich Text fieldtype.
@@ -4123,10 +4591,12 @@ Craft CMS Changelog
 - Craft now comes with two default Redactor configs (Simple and Standard).
 - Added a “Clean up HTML?” setting to the Rich Text fieldtype, which is enabled by default.
 - Added the ‘validateAccountPath’, ‘validateSuccessPath’, and ‘validateFailurePath’ config settings.
+
 ### Changed
 - Asset field modals are now scrollable.
 - User registration no longer requires a ‘username’ input. If it’s not present in the POST data, Craft will default to using the email.
 - Updated to Redactor 8.2.6.
+
 ### Fixed
 - Fixed a bug that prevented public user registration from saving the submitted password correctly.
 - Fixed a bug where user account validation was incorrectly going through the Reset Password template.
@@ -4136,13 +4606,16 @@ Craft CMS Changelog
 - Fixed a bug where the Get Help widget might not be able to send a support request on certain server configurations.
 
 ## [v0.9.2214] - 2013-04-16
+
 ### Added
 - Added crop position selection support for asset image transformations.
+
 ### Changed
 - If you log in and have an existing PHP CraftSessionId, we no longer manually generate a new one.
 - If you log out, we no longer manually destroy your PHP CraftSessionId.
 - Remove emailFormat settings from users and htmlBody from emailMessages. If only text and no HTML is supplied for an email, we generate the HTML body automatically.
 - Redirect back to settings/assets/transforms after saving an asset transformation.
+
 ### Fixed
 - Fixed a bug where sending HTML emails would generate an incorrect body.
 - Fixed a bug where the returnUrl was not getting saved to session when prompted to login thereby always redirecting you to the dashboard.
@@ -4151,11 +4624,14 @@ Craft CMS Changelog
 - Fixed a bug where the config variable 'overridePHPSessionLocation' was not getting respected.
 
 ## [v0.9.2213] - 2013-04-10
+
 ### Added
 - Added the ability to force log messages in `Craft::log()` so that they will get logged regardless of `devMode` status or log levels.
+
 ### Changed
 - All updates now get their diagnostic messages logged regardless of `devMode` status.
 - When adding default widgets to the dashboard, Craft takes into account if the user has create entry permissions for the Quick Post widget and update Craft permissions for the Updates widget.
+
 ### Fixed
 - Fixed a bug that broke Craft on Windows.
 - Fixed a bug that prevented nested section permissions from expanding until the user/group was saved and re-edited.
@@ -4167,13 +4643,16 @@ Craft CMS Changelog
 - Fixed a bug where, if you had the Users package installed, but not the Publish Pro package and you were logged in with a user that had create entry permissions, you would be missing a "New Entry" button on the entry index page.
 
 ## [v0.9.2211] - 2013-04-09
+
 ### Added
 - Added Rackspace Cloud Files and Google Cloud Storage support to the Cloud package
+
 ### Changed
 - Updates will now suppress any PHP errors when clearing the cache and compiled templates.
 - A friendly error message is now displayed when creating a new user with “Require verification” checked and the email settings are invalid.
 - Added .m4a and .m4v to the default list of allowed file extensions.
 - Numbers are not automatically localized when set on a model, fixing a few bugs.
+
 ### Fixed
 - Fixed a bug that made it impossible to edit entries in non-primary locales.
 - Fixed a PHP error if config/storage/runtime/ does not have executable permissions
@@ -4182,14 +4661,17 @@ Craft CMS Changelog
 - Fixed a few edge case PHP errors.
 
 ## [v0.9.2205] - 2013-04-02
+
 ### Added
 - Added a new Timezone setting in Settings > General for setting the system timezone.
 - Added a new ‘postDate’ parameter to EntryCriteriaModel (for use in craft.entries, etc.).
+
 ### Changed
 - The system timezone is now factored into entry Post Date and Expiration Date settings before they are saved to the database.
 - The system timezone is now factored into date criteria parameters, such as craft.entries.before(), after(), and postDate().
 - Added a $timezone argument to DateTime::createFromString(), for specifying the timezone the resulting DateTime object should be set to (defaults to UTC).
 - Added a $timezone argument to DateTime::format(), for specifying the timezone the returned string should be set to (defaults to the system timezone).
+
 ### Fixed
 - Fixed a “userId is not defined” error when creating a new entry.
 - Fixed a one-click updating bug where the contents of updated files would get duplicated if the user attempts the update more than once.
@@ -4197,14 +4679,17 @@ Craft CMS Changelog
 - Fixed some errors on servers that don't have the BCMath extension installed.
 
 ## [v0.9.2204] - 2013-04-01
+
 ### Added
 - Added a new `last()` function to ElementCriteriaModel, as an alternative to `first()`
 - Added the ‘phpMaxMemoryLimit’ config setting (defaults to 256MB), which is taken into account when updating Craft.
+
 ### Changed
 - Improved the performance of the entry edit page.
 - Emails are now sent with a UTF-8 character set by default.
 - `craft()->fileCache->set()` now uses the duration specified by the ‘cacheDuration’ config setting by default.
 - Added OpenSSL to the installer’s list of system requirements.
+
 ### Fixed
 - Fixed a bug where `{% if entry.richTextField %}` conditionals would always return true, regardless of whether the field had a value.
 - Fixed a bug where the entry ‘order’ parameter wasn't being respected when calling `first()`.
@@ -4216,16 +4701,19 @@ Craft CMS Changelog
 - Fixed a bug where updating might run out of memory on certain server configurations.
 
 ## [v0.9.2202] - 2013-03-28
+
 ### Fixed
 - Fixed an error when creating or editing a field that occurred if the Users package is installed and at least one user group had been created
 
 ## [v0.9.2201] - 2013-03-27
+
 ### Added
 - Added a new “Default Values” setting to Table fields, which gives you a live preview of your table field as you edit its columns, and lets you set the default rows and values.
 - Added a Checkbox column type to Table fields.
 - Added the ability to specify default options for the Checkboxes, Dropdown, multi-select, and Radio Buttons fieldtypes
 - Added a new forms.hidden() Twig CP macro
 - Added a new Craft.expandPostArray() Javascript function
+
 ### Changed
 - The Checkboxes, Dropdown, Multi-select, and Radio Buttons fieldtypes now use tabular UIs for their Options settings
 - Table column handles are now auto-generated in the same way all other Handle settings get auto-generated based on the Name setting.
@@ -4234,22 +4722,26 @@ Craft CMS Changelog
 - Added an `initJs` config option to the forms.editableTable() Twig CP macro (defaults to true)
 - The forms.select(), multiselect(), checkboxGroup(), checkboxSelect(), and radioGroup() Twig CP macros now support specifying options’ `label`s and `value`s explicitly.
 - UserModel now has a getName() which returns the user’s full name, or their username as a fallback
+
 ### Fixed
 - Fixed a bug that prevented numeric Table field columns from receiving input
 - Fixed an error that occurred when editing an entry with pre-saved Table field data after adding a new column to the Table field
 - Fixed a bug where the input names in newly-created Table field rows would get an extra “]” appended to the end.
 
 ## [v0.9.2200] - 2013-03-26
+
 ### Fixed
 - Fixed a bug where Links fields would always get a “field required” validation error if they marked as required.
 - Fixed a bug where packages would get badged with “UNDEFINED DAYS LEFT” right after initiating their trial.
 - Fixed a typo on field settings pages.
 
 ## [v0.9.2199] - 2013-03-26
+
 ### Added
 - Added a Table fieldtype.
 - Added a Date fieldtype. 
 - Added 30-day free package trials.
+
 ### Changed
 - Improved error reporting for the Get Help widget.
 - The Get Help widget now creates and includes a new database backup in the event that “Include error logs and database backup” is checked.
@@ -4265,6 +4757,7 @@ Craft CMS Changelog
 - Added DateTime::createFromString().
 - The forms.date() and forms.dateField() template macros now set ‘autocomplete’ to ‘false’ by default.
 - Added a new `--configPath` option to yiic in the event that the craft/config/ folder has been moved outside of craft/.
+
 ### Fixed
 - Fixed a bug where the entry revision menu would show drafts and versions from the primary site locale, rather than the selected one.
 - Fixed a bug where globals would show content in the site’s primary locale when CRAFT_LOCALE was set to a different one.
@@ -4275,15 +4768,18 @@ Craft CMS Changelog
 - Fixed a PHP error that could occur in the PluginsService when determining the components a plugin has available.
 
 ## [v0.9.2194] - 2013-03-18
+
 ### Added
 - Added a new ‘unixSocket’ DB config setting that forces the console app to ignore the database server and port settings and connect via the socket.
 - Added new ‘requireMatchingUserAgentForSession’ and ‘requireUserAgentAndIpForSession’ config settings.
+
 ### Changed
 - Added support for all of the English language locales not previously supported (e.g. en_IE).
 - The table on Settings > Assets > Image Transforms now includes the transform handles.
 - Added support for `{slug}`, `{url}`, and `{cpEditUrl}` tags in the ‘redirect’ param for the entries/saveEntry controller action.
 - Updated PhpMailer to version 5.2.5.
 - Added attachment support to the EmailService.
+
 ### Fixed
 - Fixed Asset indexing.
 - Fixed a PHP error that occurred after deleting a field that had been used by entry versions or drafts.
@@ -4295,12 +4791,14 @@ Craft CMS Changelog
 - Fixed a bug where the `model` column of the `assettransforms` table might not have the correct value.
 
 ## [v0.9.2193] - 2013-03-14
+
 ### Changed
 - Added a setTransform() function to AssetFileModel for applying a default transform to be used by getUrl(), getWidth(), and getHeight()
 - AssetFileModel’s magic getter now checks if the property name matches a transform handle. If it does, a new AssetFileModel instance is returned, pre-set with the matched transform.
 - Updated to Twig 1.12.2
 - Twig now gets initialized with the Twig_extension_StringLoader extension, so the [`template_from_string()`](http://twig.sensiolabs.org/doc/functions/template_from_string.html) function is available to all templates.
 - The craft/ folder now comes with .htaccess and web.config files that prevent direct HTTP access in the event that the folder is in the web root.
+
 ### Fixed
 - Fixed a bug where fresh installations of Craft did not get the assettransformindex table created in the database.
 - Fixed a bug where Assets didn’t know what to do if a transform was requested but a transform mode was not specified. It now defaults to “crop”.
@@ -4313,12 +4811,14 @@ Craft CMS Changelog
 - In Assets, fixed JS errors where the context menu would not work for lazy-loaded page items.
 
 ## [v0.9.2189] - 2013-03-12
+
 ### Added
 - Added Global Set translations.
 - Added locale user permissions.
 - Added the `|intersect` Twig filter.
 - Added support for `CRAFT_SITE_URL` constant.
 - Added a web.config file to the craft/ folder that prohibits HTTP traffic to the directory.
+
 ### Changed
 - Asset transforms are now created on demand.
 - Asset transforms can now be defined right from the templates.
@@ -4326,26 +4826,32 @@ Craft CMS Changelog
 - Improved error handling when Craft cannot connect to the database.
 - Craft now adds any queued-up head/foot HTML to the page in the event that `getHeadNodes()` or `getFootNodes()` is not present in the template.
 - Improved the Twig `|replace` filter.
+
 ### Fixed
 - Fixed a JS bug where checking “All” wouldn't make all the checkboxes appear checked when disabling them.
 - Fixed a bug where accessing the login page before installing might give you the "Manual Update Required" template instead of the installer.
 - Fixed a bug in IOHelper::normalizePathSeperators() that could cause a PHP Notice when open_basedir restrictions were in place.
 
 ## [v0.9.2184] - 2013-03-08
+
 ### Changed
 - CP resource URLs are now always set to https:// if the current request is served over SSL.
+
 ### Removed
 - Removed the Links' Reverse Handle setting for now.
+
 ### Fixed
 - Fixed a bug where a plugin's custom fieldtypes would not load... at all.
 - Fixed a JS error that prevented Links' modal window from functioning... at all.
 - Fixed a bug when saving a section that previously supported URIs, but no longer does.
 
 ## [v0.9.2181] - 2013-03-08 [CRITICAL]
+
 ### Changed
 - Your credit card information now gets cleared out in Settings > Packages after the modal window has been hidden for five minutes.
 - Refactored EmailService and added support for CC and BCC recipients.
 - Increased the default timeout for calls to Craft’s web service to 30 seconds.
+
 ### Fixed
 - Fixed file renaming for Assets.
 - Fixed a bug where missing S3 image transforms would break file CRUD operations.
@@ -4353,14 +4859,17 @@ Craft CMS Changelog
 - Fixed a couple of issues with the Quick Post widget if you delete the default section and create a new one.
 - Fixed a CSS issue with Redactor dropdown menus when it is being displayed in a modal.
 - Fixed a bug where some backup files might not get cleaned up during an auto-update.
+
 ### Security
 - Security improvements.
 
 ## [v0.9.2177] - 2013-03-05 [CRITICAL]
+
 ### Added
 - In-app package purchasing
 - Global Sets (replaces Singletons/Pages and the former Globals implementation)
 - Added a “wildcard” URL routing token
+
 ### Changed
 - Blocks is now [Craft](http://buildwithcraft.com)
 - Major Assets UI cleanup
@@ -4373,28 +4882,34 @@ Craft CMS Changelog
 - Fixed some CSS glitches in Firefox and IE 9/10
 - Some subtle CP CSS improvements
 - The jQuery UI Date Picker is now included on each page of the CP
+
 ### Fixed
 - Fixed several bugs related to Assets
 - Fixed some bugs with entry templating
 - Fixed a JS error on Settings > Fields
 - Fixed a PHP error when a user had attempted to log in too many times
 - Fixed a bug that prevented the Asset Sources Link setting from actually doing anything
+
 ### Security
 - Overhauled how licensing works with several critical security improvements
 
 ## [v0.9.2168] - 2013-03-01
+
 ### Changed
 - Now including jQuery UI DatePicker on each page.
 - Disabled autocomplete for Post and Expiry Date settings.
+
 ### Fixed
 - Fixed a JS error when viewing Assets in list view.
 - Fixed a bug where the Post and Expiry Date settings would get set to the current time of day when saving an entry.
 - Fixed a bug where entries were sorted by Creation Date rather than Post Date in the Content section.
 
 ## [v0.9.2167] - 2013-02-25
+
 ### Changed
 - Added the ability to rename subfolders within Assets.
 - `id=`, `for=`, and a couple other attributes within plugin settings HTML are no longer getting prefixed with “settings-”.
+
 ### Fixed
 - Fixed a MySQL error in The Big Migration when there were orphaned rows in the craft_links table.
 - Fixed a couple bugs with `craft.entries` and `craft.users` and entry/user statuses.
@@ -4407,19 +4922,23 @@ Craft CMS Changelog
 - Fixed a bug that prevented some Get Help widget submissions from going through.
 
 ## [v0.9.2165] - 2013-02-23
+
 ### Changed
 - Widgets and fieldtypes are now required to implement the new IWidget and IFieldType interfaces, rather than extend BaseWidget and BaseFieldType. (Extending those base classes will still get the job done though, as they implement their respective interfaces.)
 - Blocks now resets PHP’s time limit to 2 minutes before running each DB migration during a Blocks or plugin update
+
 ### Fixed
 - Fixed a bug where plugin components weren’t getting loaded
 - Fixed a bug where Quick Post widgets wouldn’t show a title if their associated section doesn’t exist anymore
 
 ## [v0.9.2164] - 2013-02-22
+
 ### Fixed
 - Fixed an issue with The Big Migration when Blocks shares its database with another app
 - Fixed a PHP error when saving a new entry
 
 ## [v0.9.2163] - 2013-02-22
+
 ### Changed
 - Renamed Pages to Singletons.
 - Singleton settings are now managed in Settings > Singletons, rather than in Content.
@@ -4442,6 +4961,7 @@ Craft CMS Changelog
 - Normalized the DB schema regardless of which Blocks packages are installed.
 - Minor performance improvements.
 - Minor CP design iterations.
+
 ### Fixed
 - Fixed a SimplePie autoload error on some versions of PHP.
 - Fixed a PHP error in the FeedsService when loading a feed that has missing or malformed item dates.
@@ -4450,27 +4970,33 @@ Craft CMS Changelog
 - Fixed an auto-update errorwhen Blocks was instructed to delete a file that it was dependent on.
 - Fixed a bug where database backups had invalid SQL in some scenarios.
 - Fixed a CSS glitch in the Route settings modal.
+
 ### Security
 - Blocks now offers better protection against session hijacking, XSS attacks, account theft via DB read access, and other common attacks.
 
 ## [v0.9.2157] - 2013-02-15
+
 ### Changed
 - The web.config file that comes with Blocks for IIS servers now hides “index.php” from the URL
 - Improved the wording of the error if blocks/storage/ or blocks/storage/runtime/ doesn’t exist or isn’t writable
 - blocks/config/blocks.php has been renamed to general.php, however Blocks will still look for blocks.php as a fallback if general.php doesn't exist
 - Dropped the craft_activity table
+
 ### Fixed
 - Fixed a bug on the Content, Assets, and Users indexes that prevented all links from being clicked on when the page had been scrolled down far enough to trigger fixed sidebar positioning
 - Fixed an error when renaming Assets folders
 
 ## [v0.9.2151] - 2013-02-07
+
 ### Added
 - Added a craft()->isConsole() to determine if the current "request" is from a web app or a console app.
+
 ### Changed
 - More Assets improvements including subfolder support, deleting folders, fixing an error where stale database records weren't getting deleted and displaying an icon for files with no thumbnails.
 - Blocks::hasPackage() now checks the file system *and* the database to determine if a package is installed.
 - Migrations run from the console now get echo'd out to the console as well as added to blocks.log.
 - Remove DbHelper::getTableNames() and use MySqlSchema->getTableNames() instead.
+
 ### Fixed
 - Fixed a error in the [FeedsService](https://beta.blockscms.com/docs/plugins/apis/feeds.html) if the feed item's date or updated date was null.
 - Fixed a bug where the SQL generated when backing up and restoring the database during an update wasn't being quoted properly preventing people with a '-' in their database name from running updates.
@@ -4478,10 +5004,12 @@ Craft CMS Changelog
 - Fixed a bug in the updater where if a PHP fatal error occurred, the database and any files that might have been updated up until that point did not get rolled back properly.
 
 ## [v0.9.2146] - 2013-02-04
+
 ### Added
 - Added [craft.feeds](https://beta.blockscms.com/docs/templating/reference/variables/craft.feeds.html) for displaying RSS and Atom feeds on your website
 - Added the [FeedsService](https://beta.blockscms.com/docs/plugins/apis/feeds.html)
 - Added support for [plugin migrations](http://beta.blockscms.com/docs/plugins/db/migrations.html)
+
 ### Changed
 - Tons of enhancements and bugfixes for iOS
 - Sidebars are now hidden, and their elements moved up above the content, when the browser window is less than 768px wide
@@ -4493,6 +5021,7 @@ Craft CMS Changelog
 - craft()->request->isMobileBrowser() and craft.request.isMobileBrowser now return ‘true’ for tablets
 - Other minor CSS, JS, and accessibility enhancements
 - Blocks now checks to make sure you’re updating from at least the last breakpoint during a manual update
+
 ### Fixed
 - Fixed a MySQL error when renaming a section’s handle
 - Fixed a bug that prevented Global link blocks from showing their previously-linked entries
@@ -4502,10 +5031,12 @@ Craft CMS Changelog
 - Removed a 404’d request for pages.css from Content > Pages
 
 ## [v0.9.2137] - 2013-02-01
+
 ### Changed
 - Updated the mobile browser detection script
 - Added `craft.request.isMobileBrowser`
 - Setting the ‘rememberUserNameDuration’ to ‘0’ now takes effect immediately
+
 ### Fixed
 - Fixed a JS error when adding new links to a Links block when there were already 3 or more links saved on the entry
 - Fixed a bug where Assets was attempting to create image transformations on non-image files
@@ -4513,11 +5044,13 @@ Craft CMS Changelog
 - Fixed a bug where tapping on the field hint text on the login page on a mobile browser would do nothing
 
 ## [v0.9.2136] - 2013-01-31 [CRITICAL]
+
 ### Fixed
 - Fixed a bug with the release patch script that was preventing some files from getting updated
 - Fixed a bug where “Show/Hide” labels weren’t getting right-aligned with password inputs when the input’s width didn’t span the full width of the container
 
 ## [v0.9.2135] - 2013-01-30
+
 ### Changed
 - Added breadcrumbs to all nested pages in the CP
 - Added user prompts when uploading files in Assets
@@ -4531,6 +5064,7 @@ Craft CMS Changelog
 - DbCommand->where(), andWhere(), and orWhere() now accept an empty `$conditions` argument
 - DbMigration now has wrappers for most of DbCommand’s methods
 - Added a new `yiic querygen all` command for getting the full PHP required to create a record’s table at once
+
 ### Fixed
 - Fixed a bug where Links blocks wouldn’t pass the linktype-specific settings off to the linktype when displaying its block settings
 - Fixed a bug where all previous links would get flushed out whenever a Links block was re-saved
@@ -4540,23 +5074,28 @@ Craft CMS Changelog
 - Fixed an error when using the `yiic querygen addForeignKeysForRecord` command on a record with relative records whose table doesn’t exist yet
 
 ## [v0.9.2133] - 2013-01-28
+
 ### Changed
 - Added a context menu to the Save button when editing entries, with options to save and continue editing, or save and create a new entry.
 - Normal (non-submit) buttons are now white rather than blue
 - Other subtle CSS tweaks
 
 ## [v0.9.2131] - 2013-01-28
+
 ### Changed
 - More work on the CP redesign.
 - Updated jQuery UI to 1.10.0, fixing the entry date fields
 - Blocks now uses the uncompressed version of jQuery UI when useCompressedJs is set to 'false'
+
 ### Fixed
 - Fixed a Twig syntax error in Content > Pages
 - Fixed some JS errors within Settings > Assets
 
 ## [v0.9.2127] - 2013-01-25
+
 ### Added
 - Added access permissions for plugin CP sections
+
 ### Changed
 - Redesigned the CP layout
 - Redesigned the Dashboard
@@ -4568,15 +5107,18 @@ Craft CMS Changelog
 - Added a new parameter to `yiic migrate create` for specifying the plugin name
 - The craft_migrations table is now created during installation, rather than when first needed
 - New users will now get the default set of Dashboard widgets the first time they visit the Dashboard
+
 ### Fixed
 - Fixed a bug where passing 'true' to a BaseCriteria class’ magic setter methods would have no effect
 
 ## [v0.9.2124] - 2013-01-20
+
 ### Fixed
 - Fixed a bug where a failed migration might not get logged in blocks.log.
 - Blocks now plays nice with other applications that are sharing the same database.
 
 ## [v0.9.2123] - 2013-01-18
+
 ### Added
 - Added support for asset transformations with the options "scaleToFit", "scaleAndCrop" and "stretchToFit".
 - Added the concept for a 'non-patchable' update, in the case that so many files have changed, the entire 'app' folder will get downloaded and auto-updated.
@@ -4591,6 +5133,7 @@ Craft CMS Changelog
 - Added the concept of "Maintenance Mode" for the updater.
 - Added a new 'querygen' command to the CLI yiic command that generates querybuilder code for a given record.
 - Added support for more mime types in mimetypes.php.
+
 ### Changed
 - New and improved AJAXified updater. Should prevent the need for the majority of manual updates from this point forward.
 - Updated to Yii 1.1.13
@@ -4604,6 +5147,7 @@ Craft CMS Changelog
 - Database index and foreign key names are no longer MD5 hashed.
 - Dropped the $name param from the index/foreign key methods in DbCommand.
 - Assets validates that the source path exists and returns more accurate error messages.
+
 ### Fixed
 - Fixed a bug where Blocks couldn’t log in with web hosts that were storing PHP sessions in memcached.
 - Fixed a bug in two migrations that would occur if you were upgrading to the latest from a release before 0.9.2090.
@@ -4620,13 +5164,16 @@ Craft CMS Changelog
 - Fixed some logic errors when refreshing the bucket list for a new source in assets.
 
 ## [v0.9.2117] - 2012-12-24
+
 ### Fixed
 - Fixed a PHP error when accessing the CP while the site is turned off
 
 ## [v0.9.2116] - 2012-12-24
+
 ### Changed
 - You can now get the URL of an asset’s resized file using `{{asset.getUrl('sizeHandle')}}`
 - Service name and API tweaks
+
 ### Fixed
 - Fixed an auto-updating error on some versions of PHP
 - Fixed an issue where CP resources were getting corrupted on delivery
@@ -4634,23 +5181,28 @@ Craft CMS Changelog
 - Fixed the remaining bugs around selecting content based on the current language
 
 ## [v0.9.2115] - 2012-12-21
+
 ### Added
 - Added RTE compatibility for Asset blocks.
 - Added additional parameters to DbCommand->createTable() for defining whether the ID and audit columns should get added to the table.
+
 ### Changed
 - CP logo changes and user profile image changes no longer reload the whole page.
 - Moved addTablePrefix() to DbHelper.
+
 ### Fixed
 - Twig no longer captures an underlying Exception and wraps it in it's own Twig_Error_Runtime exception hiding the original error.
 - Fixed several Assets bugs.
 - Fixed a syntax error in the backup SQL generated before any database migrations are ran.
 
 ## [v0.9.2114] - 2012-12-19
+
 ### Fixed
 - Fixed an error when editing/creating a user group, or administering a user
 - Fixed an error in the Assets section when an asset source exists but has not been indexed yet
 
 ## [v0.9.2112] - 2012-12-19
+
 ### Added
 - Added user permissions
 - Added support for public user registration, logging in, and password resetting from the front end of the site
@@ -4662,6 +5214,7 @@ Craft CMS Changelog
 - Added Settings &gt; Assets &gt; Sizes for defining sizes that your uploaded images should be cropped to
 - Added Settings &gt; Assets &gt; Operations where you can manually trigger asset indexing and size updating
 - Added the list view for assets
+
 ### Changed
 - HTTP error templates are no longer prefixed with “error” (e.g. “404.html” rather than “error404.html”)
 - All dates are now stored as DATETIMEs rather than Unix timestamps
@@ -4672,20 +5225,24 @@ Craft CMS Changelog
 - Users are now automatically logged in after resetting their password
 - CP routes provided by plugins can nowow include {handle} tokens for matching handles in URLs
 - Section content tables are now named in all lowercase letters, regardless of the section’s handle’s casing
+
 ### Fixed
 - Fixed an error when accessing the Assets section
 - Fixed a bug that prevented entries’ Author settings from saving
 - Fixed some bugs around selecting content based on the current language
 - Fixed PATH_INFO support for Nginx
+
 ### Security
 - Security improvements
 
 ## [v0.9.2106] - 2012-12-03
+
 ### Added
 - Added a new “Reverse Link Handle” setting to the Links blocktype for accessing reverse links
 - Added a new [paginate](https://beta.blockscms.com/docs/templating/reference/tags.html#paginate) tag for paginating entries, users, and sections
 - Added a new [includeHiResCss](https://beta.blockscms.com/docs/templating/reference/tags.html#includehirescss) tag for including CSS targeted at hi-res displays
 - Added new `'siteRoutesSource'` config option, which when set to `'file'` tells Blocks to pull routes from blocks/config/routes.php and removes the Settings > Routes page
+
 ### Changed
 - Included the section name in the page title when authoring a new entry
 - Handles now have much more comprehensive reserved word validation
@@ -4693,32 +5250,40 @@ Craft CMS Changelog
 - Blocks now supports a new config file format, where the config files just return an array of values, rather than defining `$blocksConfig`. Config files now come with this new format out of the box.
 - Beefed up the BaseCriteria class and simplified the criteria classes that extend it
 - ArrayHelper::stringToArray() now returns an empty array when passing in an empty value
+
 ### Removed
 - Removed Blocks’ custom ‘text’ filter since it was doing the same thing as Twig’s included (and better-named) ‘striptags’ filter
+
 ### Fixed
 - Fixed a bug in the automatic updater that was causing updates to fail with newly added files.
 - Fixed a bug where some HTML would get encoded  in the installer if the server didn’t meet Blocks’ minimum requirements
 
 ## [v0.9.2104] - 2012-11-30
+
 ### Fixed
 - Fixed a regression bug introduced in 0.9.2102 that would cause entries with empty tags to not be published.
 - Fixed error notification text color.
 
 ## [v0.9.2103] - 2012-11-30
+
 ### Changed
 - Renamed `craft.request.uri` to `craft.request.path` to better mimic the HttpRequestService
+
 ### Fixed
 - Fixed a bug where the “System Status” setting in Settings > General wouldn’t have any effect when turning the system from Off to On
 
 ## [v0.9.2102] - 2012-11-30
+
 ### Added
 - The ability to toggle the System Status under General Settings
 - Add the Updates widget to the dashboard by default for a new install.
 - Added a lightswitch input and added forms.lightswitch / forms.lightswitchField
+
 ### Changed
 - Set UserCriteria->status to 'active' by default
 - Renamed global 'date' variable to 'now'
 - entry.tags is always an array now
+
 ### Fixed
 - Suppress the PHP warning that is generated in IOHelper when checking if a file is writable and it is not
 - Fixed a bug where entry.getCpUrl() wouldn’t bring you to the CP from the front-end
@@ -4728,17 +5293,21 @@ Craft CMS Changelog
 - Fixed a bug when decoding an Elliott response and there are no new releases
 
 ## [v0.9.2101] - 2012-11-29
+
 ### Changed
 - Don’t show the Suspend/Archive buttons in the user admin settings for the current user.
+
 ### Fixed
 - Fixed a bug when trying to access the properties of an empty blockType that was occurring in the build 2100 migration.
 - Fixed a bug that was causing performance issues on certain host configurations when detecting if PATH_INFO is supported and if the script name should be omitted from the URL.
 
 ## [v0.9.2100] - 2012-11-28
+
 ### Added
 - Auto-updating! (for updates going forward)
 - Entry deletion
 - Added a new 'getResourcePath' hook so plugins can listen for additional resource paths
+
 ### Changed
 - You no longer need to click on a section in the Content index before a “New Entry” button will show up
 - Added 'authorId', 'authorGroupId', 'authorGroup', 'before', and 'after' params to `craft.entries`
@@ -4757,6 +5326,7 @@ Craft CMS Changelog
 - The Javascript method `Blocks.postActionRequest()` now accepts a 4th parameter: an onError() callback function
 - Updated several API methods to stop returning arrays indexed by the entity IDs, unless explicitly requested
 - Records now have the ability to specify what happens when a BELONGS_TO related row gets deleted (e.g. CASCADE)
+
 ### Fixed
 - Fixed the Updates widget
 - Fixed a bug that prevented entries from showing up on the site when logged out
@@ -4764,32 +5334,40 @@ Craft CMS Changelog
 - Fixed a bug where the logo cropping modal window would show up in General Settings before it was needed
 - Fixed several errors when deleting things throughout the system
 - Fixed a PHP error when uninstalling and reinstalling a plugin in the same request
+
 ### Security
 - Added safeguards against some security vulnerabilities when uploading images
 
 ## [v0.9.2094] - 2012-11-22
+
 ### Changed
 - Nicer default error templates.
 - Just throw a 503 exception when the site is offline rather than loading an _offline template.
+
 ### Fixed
 - A blocking bug in the installer where it would throw a foreign key constraint violation.
 - A bug when CP error templates include/extend another CP template.
 
 ## [v0.9.2092] - 2012-11-21
+
 ### Added
 - Added Plugin icon support
 - Added `craft()->templates->includeHiResCss()` for including CSS targeted at hi-res displays
+
 ### Changed
 - Upgraded Twig to 1.11.1
+
 ### Fixed
 - Fixed some text layout issues in Firefox
 - Fixed the height of filler rows in Links blocks
 - Fixed image uploading (again)
 
 ## [v0.9.2090] - 2012-11-20
+
 ### Added
 - Added a new “Get Help” widget, for quickly posting to Blocks Support
 - Gave sections a new setting for customizing the “Title” field’s label for their entries
+
 ### Changed
 - Templates no longer need to use the `|raw` filter when outputting Rich Text blocks
 - Handles now get auto-generated in camelCase
@@ -4799,8 +5377,10 @@ Craft CMS Changelog
 - The bundled htaccess file no longer assumes that Blocks is going to be installed in the web root
 - Improved the installer’s PDO driver requirement checking
 - BaseModel’s static `populateModels()` method now always returns an array
+
 ### Removed
 - Removed a couple out-of-place “entry” references
+
 ### Fixed
 - Fixed page routing
 - Fixed some wonkiness caused by the jQuery UI Datepicker
@@ -4809,44 +5389,55 @@ Craft CMS Changelog
 - Fixed a bug where unchecking the section setting “Entries in this section have their own URLs” would have no effect on save
 
 ## [v0.9.2084] - 2012-11-18
+
 ### Fixed
 - phperrors.log path to storage/logs/phperrors.log
 - Empty HttpException status codes are now allowed which will resolve to the generic error.html template.
 
 ## [v0.9.2083] - 2012-11-18
+
 ### Changed
 - Changed "URL" to "URI" in the routes UI.
 - Checks for PDO and PDO_MYSQL now display a more appropriate error message if they are not available.
 - In config/defaults/db.php, set default collation to utf8_unicode_ci instead of utf8_general_ci.
+
 ### Fixed
 - An exception that was getting thrown when adding a UserLinkType to a section's blocks.
 
 ## [v0.9.2081] - 2012-11-17
+
 ### Added
 - Entry drafts and versions
+
 ### Changed
 - Other minor improvements
+
 ### Fixed
 - Fixed a bug where Blocks would route requests without any URI to the first entry in the database, when there’s no homepage set
 
 ## [v0.9.2080] - 2012-11-16
+
 ### Changed
 - Email setting testing can now be performed without actually saving the new email settings, via a new “Test” button
+
 ### Fixed
 - Fixed a Twig error on any template using {{ forms.textarea() }} or {{ forms.textareaField() }}
 - `UrlHelper::getActionUrl()` now includes the script name (e.g. index.php) even if Blocks is configured to omit it from URLs, so that multipart form data is not lost in POST requests
 
 ## [v0.9.2079] - 2012-11-16
+
 ### Fixed
 - Fixed an “unknown error” when updating Blocks
 
 ## [v0.9.2078] - 2012-11-16
+
 ### Added
 - Added a new 'omitScriptNameInUrls' config setting
 - Added `{{ craft.session.hasFlash(messageKey) }}` to the templates
 - Added `UrlHelper::getCpUrl()` and `UrlHelper::getSiteUrl()` for generating URLs explicitely to the CP or front-end site.
 - Added `craft()->request->getCookie($name)`
 - Added a new `addTwigExtension` plugin hook
+
 ### Changed
 - The CP is now accessed via a trigger segment in the URL path (“admin” by default), rather than the BLOCKS_CP_REQUEST constant (previously found in admin.php)
 - Renamed the 'logoutTriggerWord' config setting to 'logoutTrigger'
@@ -4856,11 +5447,13 @@ Craft CMS Changelog
 - Plugin hook methods must now begin with “hook”
 - Moved automatic table creation/deletion for plugins into `BasePlugin->createTables()` and `dropTables()`
 - Text fields in the CP are now sized using `box-sizing: border-box`, and are made to span the full width of their container using a `.fullwidth` class, rather than `&lt;div class="textwrapper"&gt;`
+
 ### Removed
 - Removed the 'urlFormat' config setting in favor of the new 'usePathInfo' setting
 - `craft()->request->getType()` has been removed in favor of `isCpRequest()`, `isSiteRequest()`, `isResourceRequest()`, `isActionRequest()`, and `isTemplateRequest()`
 - Renamed `craft()->config->getItem()` to `get()`, and the magic getter has been removed from the ConfigService (so `craft()->config->itemName` is no longer possible)
 - Removed 'urlFormat' and 'useCompressedJs' settings from blocks/config/blocks.php
+
 ### Fixed
 - Fixed URL validation for URLs that don’t have a TLD
 - Got rid of that rogue ‘R’ next to the ‘Delete’ button when editing a route
@@ -4872,25 +5465,30 @@ Craft CMS Changelog
 - `requirePostRequest()` and `requireAjaxRequest()` controller methods no longer get any special treatment when Blocks is in Dev Mode
 
 ## [v0.9.2071] - 2012-11-13
+
 ### Fixed
 - PHP error when saving a Links block
 - PHP error when PHP < 5.3 is running; now a friendly "PHP 5.3+ is required" message displays instead. Requires that you update index.php and admin.php in your web root.
 
 ## [v0.9.2068] - 2012-11-13
+
 ### Fixed
 - Url route input focussing in Chrome.
 - Missing package class errors.
 
 ## [v0.9.2065] - 2012-11-13
+
 ### Fixed
 - Entry URLs were relative to the CP URL when outputting them from within the CP
 - an error when editing a page block
 
 ## [v0.9.2064] - 2012-11-13
+
 ### Fixed
 - Delete buttons for Sections and Content Blocks
 
 ## v0.9.2063 - 2012-11-13
+
 ### Added
 - Private Beta kickoff!
 
