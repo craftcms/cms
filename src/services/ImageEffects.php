@@ -1,11 +1,11 @@
 <?php
-namespace craft\app\services;
+namespace craft\services;
 
 use Craft;
 
-use craft\app\base\Component;
-use craft\app\base\ImageFilterInterface;
-use craft\app\helpers\Component as ComponentHelper;
+use craft\base\Component;
+use craft\base\ImageFilterInterface;
+use craft\helpers\Component as ComponentHelper;
 use craft\app\image\filters\Grayscale;
 use craft\app\image\filters\Sepia;
 use craft\app\image\filters\Brightness;

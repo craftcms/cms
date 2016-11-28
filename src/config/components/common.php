@@ -29,7 +29,7 @@ return [
     'fields' => craft\services\Fields::class,
     'globals' => craft\services\Globals::class,
     'images' => craft\services\Images::class,
-    'imageEffects' => craft\app\services\ImageEffects::class,
+    'imageEffects' => craft\services\ImageEffects::class,
     'matrix' => craft\services\Matrix::class,
     'path' => craft\services\Path::class,
     'plugins' => craft\services\Plugins::class,

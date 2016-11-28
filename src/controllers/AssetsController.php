@@ -18,7 +18,7 @@ use craft\helpers\Db;
 use craft\helpers\Io;
 use craft\elements\Asset;
 use craft\helpers\StringHelper;
-use craft\app\image\Raster ;
+use craft\image\Raster ;
 use craft\models\VolumeFolder;
 use craft\web\Controller;
 use craft\web\UploadedFile;

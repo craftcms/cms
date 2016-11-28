@@ -245,7 +245,7 @@ Craft.AssetImageEditor = Garnish.Modal.extend(
 
 			this.canvas.renderAll();
 
-			this._setImageVerticeCoordinates()
+			this._setImageVerticeCoordinates();
 		},
 
 		/**
@@ -285,11 +285,11 @@ Craft.AssetImageEditor = Garnish.Modal.extend(
 
 			// Controls
 			this.addListener($('.rotate-left'), 'click', function (ev) {
-				this.rotateImage(-90)
+				this.rotateImage(-90);
 			}.bind(this));
 
 			this.addListener($('.rotate-right'), 'click', function (ev) {
-				this.rotateImage(90)
+				this.rotateImage(90);
 			}.bind(this));
 
 			//this.ratioMenu = this.$ratioBtn.menubtn().data('menubtn').menu;

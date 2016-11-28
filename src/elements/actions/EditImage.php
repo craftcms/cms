@@ -5,11 +5,11 @@
  * @license   https://craftcms.com/license
  */
 
-namespace craft\app\elements\actions;
+namespace craft\elements\actions;
 
 use Craft;
-use craft\app\base\ElementAction;
-use craft\app\helpers\Json;
+use craft\base\ElementAction;
+use craft\helpers\Json;
 
 /**
  * EditImage represents an Edit Image action
