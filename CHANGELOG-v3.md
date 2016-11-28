@@ -341,6 +341,7 @@ Craft CMS 3.0 Working Changelog
 - Fixed authorization error that occurred when editing an entry in a section that’s not enabled for the current site.
 - Fixed a PHP error when using the {% cache %} tag.
 - Fixed an error that occurred when clicking on an email message to edit it.
+- Fixed an error that occurred when helpers\Io\FileCache::setValue() was called and the destination folder already existed.
 - Fixed support for the testToEmailAddress config setting.
 - Fixed a bug where the ‘tasks/run-pending-tasks’ controller action was requiring an authenticated session.
 - Fixed a PHP error that occurred when saving a Recent Entries widget.
