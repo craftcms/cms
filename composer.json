@@ -28,7 +28,7 @@
         "guzzlehttp/guzzle": "6.2.2",
         "danielstjules/stringy": "2.3.2",
         "creocoder/yii2-nested-sets": "0.9.0",
-        "imagine/imagine": "0.6.14.1",
+        "pixelandtonic/imagine": "0.6.3.1",
         "league/flysystem": "1.0.32",
         "league/flysystem-aws-s3-v3": "1.0.13",
         "league/flysystem-rackspace": "1.0.5",
@@ -48,10 +48,6 @@
         {
             "type": "vcs",
             "url": "https://github.com/pixelandtonic/flysystem-google-cloud"
-        },
-        {
-            "type": "vcs",
-            "url": "https://github.com/pixelandtonic/Imagine"
         }
     ],
     "extra": {
