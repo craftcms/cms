@@ -5,6 +5,7 @@
 // TODO: When rotating by 90 degrees, the cropping constraint acts like the image has not been rotated
 // TODO: Maybe namespace all the attributes?
 // TODO: Go over each attribute and method to make sure it's used at all.
+// TODO: Rename and maybe refactor misleading names for methods. _scaleAndCenterImage(), for example. It does other stuff too.
 
 Craft.AssetImageEditor = Garnish.Modal.extend(
 	{
@@ -25,7 +26,6 @@ Craft.AssetImageEditor = Garnish.Modal.extend(
 		image: null,
 		viewport: null,
 		viewportMask: null,
-		imageHolder: null,
 		assetId: null,
 		cacheBust: null,
 		zoomRatio: 1,
@@ -137,12 +137,11 @@ Craft.AssetImageEditor = Garnish.Modal.extend(
 				this.zoomRatio = 1;
 
 				this.image.set({
-					left: 0,
-					top: 0
+					originX: 'center',
+					originY: 'center'
 				});
-				this.imageHolder = new fabric.Group([this.image]);
 
-				this.canvas.add(this.imageHolder);
+				this.canvas.add(this.image);
 
 				// Scale the image and center it on the canvas
 				this._scaleAndCenterImage();
@@ -213,39 +212,51 @@ Craft.AssetImageEditor = Garnish.Modal.extend(
 				height: this.editorHeight
 			});
 
-			var imageRatio = this.originalHeight / this.originalWidth;
-			var editorRatio = this.editorHeight / this.editorWidth;
+			var imageDimensions = this.getScaledImageDimensions();
 
-			// TODO take into account rotation.
+			this.image.height = imageDimensions.height;
+			this.image.width = imageDimensions.width;
+
 			// TODO take into account crop performed
-			if (imageRatio > editorRatio) {
-				this.image.height = this.editorHeight;
-				this.image.width = Math.round(this.originalWidth / (this.originalHeight / this.image.height));
-			} else {
-				this.image.width = this.editorWidth;
-				this.image.height = Math.round(this.originalHeight * (this.image.width / this.originalWidth));
-			}
-
 			this.image.set({
-				left: - this.imageHolder.width / 2,
-				top: - this.imageHolder.height / 2
-			});
-			this.imageHolder._calcBounds();
-
-			//this.imageHolder.add(new fabric.Rect({width: this.image.width, height: this.image.height, left: 0, top: 0, fill: 'rgba(127,127,127,0.5)'}));
-
-			// Set origin to center and adjust for the offset in coordinates
-			// This centers the image, so probably not a good idea if image is cropped to a corner
-			this.imageHolder.set({
-				originX: 'center',
-				originY: 'center',
-				left: (this.editorWidth - this.imageHolder.width) / 2 + this.imageHolder.width / 2,
-				top: (this.editorHeight - this.imageHolder.height) / 2 + this.imageHolder.height / 2
+				left: this.editorWidth / 2,
+				top: this.editorHeight / 2
 			});
 
 			this.canvas.renderAll();
 
 			this._setImageVerticeCoordinates();
+		},
+
+		hasOrientationChanged: function () {
+			return this.viewportRotation % 180 != 0;
+		},
+
+		getScaledImageDimensions: function () {
+			var imageRatio = this.originalHeight / this.originalWidth;
+			var editorRatio = this.editorHeight / this.editorWidth;
+
+			var dimensions = {};
+			if (this.hasOrientationChanged()) {
+				imageRatio = 1 / imageRatio;
+				if (imageRatio > editorRatio) {
+					dimensions.width = this.editorHeight;
+					dimensions.height = Math.round(this.originalHeight * (this.editorHeight / this.originalWidth));
+				} else {
+					dimensions.height = this.editorWidth;
+					dimensions.width = Math.round(this.originalWidth / (this.originalHeight / this.editorWidth));
+				}
+			} else {
+				if (imageRatio > editorRatio) {
+					dimensions.height = this.editorHeight;
+					dimensions.width = Math.round(this.originalWidth / (this.originalHeight / this.editorHeight));
+				} else {
+					dimensions.width = this.editorWidth;
+					dimensions.height = Math.round(this.originalHeight * (this.editorWidth / this.originalWidth));
+				}
+			}
+
+			return dimensions;
 		},
 
 		/**
@@ -291,6 +302,16 @@ Craft.AssetImageEditor = Garnish.Modal.extend(
 			this.addListener($('.rotate-right'), 'click', function (ev) {
 				this.rotateImage(90);
 			}.bind(this));
+
+			// Controls
+			this.addListener($('.flip-vertical'), 'click', function (ev) {
+				this.flipImage('y');
+			}.bind(this));
+
+			this.addListener($('.flip-horizontal'), 'click', function (ev) {
+				this.flipImage('x');
+			}.bind(this));
+
 
 			//this.ratioMenu = this.$ratioBtn.menubtn().data('menubtn').menu;
 			//this.ratioMenu.on('optionselect', $.proxy(this, '_handleRatioChange'));
@@ -391,6 +412,10 @@ Craft.AssetImageEditor = Garnish.Modal.extend(
 		 */
 		rotateImage: function (degrees) {
 			if (!this.animationInProgress) {
+				if (degrees % 90 != 0) {
+					return false;
+				}
+
 				this.animationInProgress = true;
 
 				this.viewportRotation += degrees;
@@ -398,20 +423,51 @@ Craft.AssetImageEditor = Garnish.Modal.extend(
 				// Normalize the viewport rotation angle so it's between 0 and 359
 				this.viewportRotation = parseInt((this.viewportRotation + 360) % 360, 10);
 
-				var newAngle = this.imageHolder.getAngle() + degrees;
+				var imageDimensions = this.getScaledImageDimensions();
+				var newAngle = this.image.getAngle() + degrees;
 
 				// Animate the rotations
-				this.imageHolder.animate('angle', newAngle, {
+				this.image.animate({
+					angle: newAngle,
+					width: imageDimensions.width,
+					height: imageDimensions.height
+				}, {
 					onChange: this.canvas.renderAll.bind(this.canvas),
 					duration: this.settings.animationDuration,
 					onComplete: $.proxy(function () {
 						// Clean up angle
-						var cleanAngle = parseInt((this.imageHolder.getAngle() + 360) % 360, 10);
-						this.imageHolder.set({angle: cleanAngle});
+						var cleanAngle = parseInt((this.image.getAngle() + 360) % 360, 10);
+						this.image.set({angle: cleanAngle});
 						this.animationInProgress = false;
 
 						this._scaleAndCenterImage();
-						this.getZoomToCoverRatio();
+					}, this)
+				});
+			}
+		},
+
+		flipImage: function (scale) {
+			if (!this.animationInProgress) {
+				if (this.hasOrientationChanged()) {
+					scale = scale == 'y' ? 'x' : 'y';
+				}
+
+				if (scale == 'y') {
+					var properties = {
+						scaleY: this.image.scaleY * -1
+					}
+				} else {
+					var properties = {
+						scaleX: this.image.scaleX * -1
+					}
+				}
+
+				this.image.animate(properties, {
+					onChange: this.canvas.renderAll.bind(this.canvas),
+					duration: this.settings.animationDuration,
+					onComplete: $.proxy(function () {
+						this.animationInProgress = false;
+						this._scaleAndCenterImage();
 					}, this)
 				});
 			}
