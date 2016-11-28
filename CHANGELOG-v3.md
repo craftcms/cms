@@ -1,6 +1,351 @@
 Craft CMS Changelog
 ===================
 
+## [Unreleased]
+### Added
+- Ported all recent changes from Craft 2, inluding chart-related things added in Craft 2.6.
+- Craft can now be installed via Composer: `composer require craftcms/craft`.
+- Craft now supports installing plugins via Composer, with the help [Craft CMS Composer Installer](https://github.com/craftcms/composer-installer).
+- Craft now checks for plugin info in a composer.json file, rather than plugin.json, for plugins that were manually installed in craft/plugins/. (See the [Craft CMS Composer Installer](https://github.com/craftcms/composer-installer) readme for details on how the info should be formatted.)
+- Added the bootstrap/ folder alongside the src/ folder, with new web.php and console.php bootstrap files.
+- Added PostgreSQL support, which can be enabled by setting the ‘driver’ setting in craft/config/db.pgp to “pgsql”.
+- Added the ‘update/run-pending-migrations’ controller action, which can be used as a post-deploy hook for deployment services like DeployBot, to get Craft to automatically run any pending migrations, minimizing site downtime.
+- Added the ‘backupCommand’ config setting, which can be used to override the command Craft executes when creating a database backup.
+- Added the ‘restoreCommand’ config setting, which can be used to override the command Craft executes when restoring a database backup.
+- Added the ‘dsn’ DB config setting, which can be used to manually specify the DSN string, ignoring most other DB config settings.
+- Added the ‘schema’ DB config setting, which can be used to assign the default schema used when connecting to a PostgreSQL database.
+- Added the className() global Twig function, which returns the class name of a given object.
+- Added the JavaScript method BaseElementIndex::refreshSources().
+- Added db\pgsql\QueryBuilder.
+- Added db\pgsql\Schema.
+- Added db\TableSchema.
+- Added events\BackupFailureEvent.
+- Added events\RegisterCacheOptionsEvent.
+- Added events\RegisterComponentTypesEvent.
+- Added events\RegisterCpAlertsEvent.
+- Added events\RegisterCpNavItemsEvent.
+- Added events\RegisterElementSortableAttributesEvent.
+- Added events\RegisterElementSourcesEvent.
+- Added events\RegisterElementTableAttributesEvent.
+- Added events\RegisterEmailMessagesEvent.
+- Added events\RegisterRichTextLinkOptionsEvent.
+- Added events\RegisterUrlRulesEvent.
+- Added events\RegisterUserActionsEvent.
+- Added events\RegisterUserPermissionsEvent.
+- Added events\ResolveResourcePathEvent.
+- Added events\SetAssetFilenameEvent.
+- Added events\SetElementRouteEvent.
+- Added events\SetElementTableAttributeHtmlEvent.
+- Added heplers\MailerHelper.
+- Added validators\ArrayValidator.
+- Added validators\AssetFilenameValidator.
+- Added validators\UserPasswordValidator.
+- Added base\Element::$validateCustomFields, which can be set to true or false to explicitly require/prevent custom field validation.
+- Added base\Element::afterDelete(), which is called after an element is deleted.
+- Added base\Element::afterMoveInStructure(), which is called after an element is moved within a structure.
+- Added base\Element::beforeDelete(), which is called before the element is deleted.
+- Added base\Element::defineActions().
+- Added base\Element::defineSortableAttributes().
+- Added base\Element::defineSources().
+- Added base\Element::defineTableAttributes().
+- Added base\Element::getHtmlAttributes(), which gives elements a chance to define any HTML attributes that should be included when rendering an element node for the Control Panel.
+- Added base\Element::getSerializedFieldValues().
+- Added base\Element::route().
+- Added base\Element::tableAttributeHtml().
+- Added base\Field::afterElementDelete(), which is called by an element after it is deleted.
+- Added base\Field::beforeElementDelete(), which is called by an element before it is deleted.
+- Added base\Field::getElementValidationRules(), which field types can override to return their element-level validation rules.
+- Added base\MissingComponentTrait::createFallback().
+- Added db\mysql\Schema::findIndexes().
+- Added elements\Asset::$keepFileOnDelete, which can be set to true if the corresponding file should not be deleted when deleting the asset.
+- Added elements\Asset::$newFilename, which can be set befere savin an asset to rename its file.
+- Added helpers\App::craftDownloadUrl().
+- Added helpers\App::isComposerInstall().
+- Added helpers\App::majorMinorVersion().
+- Added helpers\Db::isTypeSupported().
+- Added services\Config::getDbPort().
+- Added services\Elements::deleteElement().
+- Added the ‘beforeDelete’, ‘afterDelete’, ‘beforeMoveInStructure’, and ‘afterMoveInStructure’,  events to base\Element.
+- Added the ‘beforeElementSave’, ‘afterElementSave’, ‘beforeElementDelete’, and ‘afterElementDelete’ events to base\Field.
+- Added the ‘beforeRestoreBackup’, ‘afterRestoreBackup’, and ‘restoreFailure’ events to db\Connection.
+- Added the ‘registerActions’ event to base\Element.
+- Added the ‘registerAlerts’ event to helpers\Cp.
+- Added the ‘registerCacheOptions’ event to tools\ClearCaches.
+- Added the ‘registerCpNavItems’ event to variables\Cp.
+- Added the ‘registerCpUrlRules’ and ‘registerSiteUrlRules’ events to web\UrlManager.
+- Added the ‘registerElementTypes’ event to services\Elements.
+- Added the ‘registerFieldTypes’ event to services\Fields.
+- Added the ‘registerLinkOptions’ event to fields\RichText.
+- Added the ‘registerMailerTransportTypes’ event to helpers\MailerHelper.
+- Added the ‘registerMessages’ event to services\EmailMessages.
+- Added the ‘registerPermissions’ event to services\UserPermissions.
+- Added the ‘registerSortableAttributes’ event to base\Element.
+- Added the ‘registerSources’ event to base\Element.
+- Added the ‘registerTableAttributes’ event to base\Element.
+- Added the ‘registerUserActions’ event to controllers\UsersController.
+- Added the ‘registerVolumeTypes’ event to serices\Volumes.
+- Added the ‘registerWidgetTypes’ event to services\Dashboard.
+- Added the ‘resolveResourcePath’ event to services\Resources.
+- Added the ‘setFilename’ event to helpers\Assets.
+- Added the ‘setRoute’ event to base\Element.
+- Added the ‘setTableAttributeHtml’ event to base\Element.
+- Added Guzzle 6 HTTP Adapter.
+- Added php-shellcommand.
+### Changed
+- The bootstrap script now assumes that the vendor/ folder is 3 levels up from the bootstrap/ directory by default (e.g. vendor/craftcms/craft/bootstrap/). If that is not the case (most likely because Craft had been symlinked into place), the `CRAFT_VENDOR_PATH` PHP constant can be used to correct that.
+- The default ‘port’ DB config value is now either 3306 (if MySQL) or 5432 (if PostgreSQL).
+- The default ‘tablePrefix’ DB config value is now empty.
+- When a category is deleted, its nested categories are no longer deleted with it.
+- Renamed the “Get Help” widget to “Craft Support”.
+- When editing a field whose type class cannot be fonud, Craft will now select Plain Text as a fallback and display a validation error on the Field Type setting.
+- When editing a volume whose type class cannot be fonud, Craft will now select Local as a fallback and display a validation error on the Volume Type setting.
+- When editing email settings and the previously-selected transport type class cannot be fonud, Craft will now select PHP Mail as a fallback and display a validation error on the Transport Type setting.
+- The Feed widget is now limited to show 5 articles by default.
+- Element queries’ ‘status’ params must now always be set to valid statuses, or the query won’t return any results.
+- Craft now relies on command line tools to create database backups (mysqldump and pg_dump).
+- Test emails now mask the values for any Mailer transport type settings that include “key” or “password” in their setting name.
+- The Control Panel page header is now fixed when scrolling down.
+- Translatable fields are no longer marked as translatable when editing an element type that isn’t localizable (e.g. user accounts).
+- Custom email messages are now stored on o per-language basis rather than per-site basis.
+- Element indexes now remember which sources were expanded across multiple requests.
+- Element indexes now remember if a nested source was selected across multiple requests.
+- The ‘backupDbOnUpdate’ config setting has been renamed to ‘backupOnUpdate’. Note that performance should no longer be a major factor when setting this to false, since the backup is no longer generated by PHP.
+- The ‘restoreDbOnUpdateFailure’ config setting has been renamed to ‘restoreOnUpdateFailure’.
+- Plugin schema versions now default to “1.0.0”, and plugins absolutely must increment their schema version if they want any pending migrations to be noticed.
+- base\Plugin no longer automatically registers field types in the plugin’s fields/ subfolder.
+- base\Plugin no longer automatically registers widget types in the plugin’s widgets/ subfolder.
+- base\Plugin no longer automatically registers volume types in the plugin’s volumes/ subfolder.
+- Mailer Transport Adapters’ getTransportConfig() methods are now called at runtime when configuring the Mailer app component, rather than only when email settigs are saved.
+- elements\User now supports a ‘password’ validation scenario, which only validates the $newPassword property.
+- It is no longer possible to chage a user’s locked/suspended/pending/archived status when saving the User element normally.
+- elements\db\MatrixBlockQuery::owner() and ownerSiteId() now set the $siteId property when appropriate.
+- The source keys that are passed into element methods’ $source arguments now reflect the full path to the source, if it is a nested source (e.g. “folder:1/folder:2”).
+- The ‘Craft.publishableSections’ Javascript array now includes info about each section’s entry types.
+- db\mysql\Schema::getTableNames() no longer only returns the table names with the right table prefix.
+- services\Elements::deleteElementById() no longer accepts an array of element IDs.
+- base\Element::afterSave() now has an $isNew argument, which will indicate whether the element is brand new.
+- base\Element::beforeSave() now has an $isNew argument, which will indicate whether the element is brand new.
+- base\Field::afterElementSave() now has an $isNew argument, which will indicate whether the element is brand new.
+- base\Field::beforeElementSave() now has an $isNew argument, which will indicate whether the element is brand new.
+- base\SavableComponent::afterSave() now has an $isNew argument, which will indicate whether the element is brand new.
+- base\SavableComponent::beforeSave() now has an $isNew argument, which will indicate whether the element is brand new.
+- services\Elements::deleteElementById() now has $elementType and $siteId arguments.
+- The ‘beforeElementSave’ and ‘afterElementSave’ events triggered by base\Element now have $isNew properties, which indicate whether the element is brand new.
+- The ‘beforeSave’ and ‘afterSave’ events triggered by base\Element now have $isNew properties, which indicate whether the element is brand new.
+- The ‘beforeSave’ and ‘afterSave’ events triggered by base\SavableComponent now have $isNew properties, which indicate whether the component is brand new.
+- Renamed literally every Craft class’ namespace from `craft\app\*` to `craft\*`.
+- Renamed base\Savable to Serializable, and its getSavableValue() method was renamed to serialize().
+- Renamed et\Et to EtTransport.
+- Renamed events\DbBackupEvent to BackupEvent.
+- Renamed events\EntryEvent to VersionEvent.
+- Renamed mail\transportadaptors\BaseTransportAdaptor to mail\transportadapters\BaseTransportAdapter.
+- Renamed mail\transportadaptors\Gmail to mail\transportadapters\Gmail.
+- Renamed mail\transportadaptors\Php to mail\transportadapters\Php.
+- Renamed mail\transportadaptors\Sendmail to mail\transportadapters\Sendmail.
+- Renamed mail\transportadaptors\Smtp to mail\transportadapters\Smtp.
+- Renamed mail\transportadaptors\TransportAdaptorInterface to mail\transportadapters\TransportAdapterInterface.
+- Renamed base\Element::defineAvailableTableAttributes() to tableAttributes().
+- Renamed base\Element::defineSearchableAttributes() to searchableAttributes().
+- Renamed base\Element::defineSortableAttributes() to sortableAttributes().
+- Renamed base\Element::getAvailableActions() to actions().
+- Renamed base\Element::getContentPostLocation() to getFieldParamNamespace().
+- Renamed base\Element::getDefaultTableAttributes() to defaultTableAttributes().
+- Renamed base\Element::getEagerLoadingMap() to eagerLoadingMap().
+- Renamed base\Element::getIndexHtml() to indexHtml().
+- Renamed base\Element::getSources() to sources().
+- Renamed base\Element::getStatuses() to statuses().
+- Renamed base\Element::setContentPostLocation() to setFieldParamNamespace().
+- Renamed base\Element::setFieldValuesFromPost() to setFieldValuesFromRequest(), and the method no longer accepts an array of field values. Only call this method as a shortcut for setFieldParamNamespace() and setFieldValues(), passing in the param namespace the field values sholud be extracted from on the request body.
+- Renamed base\Field::getContentPostLocation() to getRequestParamName().
+- Renamed base\Field::prepareValue() to normalizeValue().
+- Renamed base\Field::prepareValueForDb() to serializeValue().
+- Renamed Craft::getCookieConfig() to cookieConfig()
+- Renamed db\Command::insertOrUpdate() to upsert().
+- Renamed db\Migration::insertOrUpdate() to upsert().
+- Renamed db\mysql\QueryBuilder::insertOrUpdate() to upsert().
+- Renamed elements\User::getAuthData() to authData()
+- Renamed helpers\App::getEditionName() to editionName().
+- Renamed helpers\App::getEditions() to editions().
+- Renamed helpers\App::getMajorVersion() to majorVersion().
+- Renamed helpers\App::getPhpConfigValueAsBool() to phpConfigValueAsBool().
+- Renamed helpers\App::getPhpConfigValueInBytes() to phpConfigValueInBytes().
+- Renamed helpers\ArrayHelper::getFirstKey() to firstKey().
+- Renamed helpers\ArrayHelper::getFirstValue() to firstValue().
+- Renamed helpers\Assets::getFileTransferList() to fileTransferList().
+- Renamed helpers\Assets::getPeriodList() to periodList().
+- Renamed helpers\Assets::getTempFilePath() to tempFilePath().
+- Renamed helpers\Assets::getUrlAppendix to urlAppendix().
+- Renamed helpers\ChartHelper::getCurrencyFormat() to currencyFormat().
+- Renamed helpers\ChartHelper::getDateRanges() =>dateRanges()
+- Renamed helpers\ChartHelper::getDecimalFormat() =>decimalFormat()
+- Renamed helpers\ChartHelper::getFormats() to formats().
+- Renamed helpers\ChartHelper::getPercentFormat() to percentFormat().
+- Renamed helpers\ChartHelper::getShortDateFormats() to shortDateFormats().
+- Renamed helpers\Cp::getAlerts() to alerts().
+- Renamed helpers\ElementHelper::getEditableSiteIdsForElement() to editableSiteIdsForElement().
+- Renamed helpers\ElementHelper::getSupportedSitesForElement() to supportedSitesForElement().
+- Renamed helpers\Image::getImageSize() to imageSize().
+- Renamed helpers\Image::getPngImageInfo() to pngImageInfo().
+- Renamed helpers\Image::getWebSafeFormats() to webSafeFormats().
+- Renamed helpers\Localization::getLocaleData() to localeData().
+- Renamed helpers\MailerHelper::getAllMailerTransportTypes() to allMailerTransportTypes().
+- Renamed helpers\Search::getMinWordLength() to minWordLength().
+- Renamed helpers\Search::getStopWords() to stopWords().
+- Renamed helpers\StringHelper::getAsciiCharMap() to asciiCharMap().
+- Renamed helpers\StringHelper::getCharAt() to charAt().
+- Renamed helpers\StringHelper::getEncoding() to encoding().
+- Renamed helpers\StringHelper::uppercaseFirst() to upperCaseFirst().
+- Renamed helpers\Template::getRaw() to raw().
+- Renamed helpers\Url::getUrl() to url().
+- Renamed helpers\Url::getUrlWithParams() to urlWithParams().
+- Renamed helpers\Url::getUrlWithProtocol() to urlWithProtocol().
+- Renamed helpers\Url::getUrlWithToken() to urlWithToken().
+- Renamed models\AssetTransform::getTransformModes() to modes().
+- Renamed services\Assets::renameAsset() to renameFile(), and replaced its $newFilename argument with $runValidation.
+- Renamed services\Resources::getResourcePath() to resolveResourcePath().
+- Renamed volumes\AwsS3::getClient() to client().
+- Renamed volumes\AwsS3::getStorageClasses() to storageClasses().
+- Renamed volumes\GoogleCloud::getClient() to client().
+- Renamed volumes\Rackspace::getClient() to client().
+- base\Element::getEditorHtml() is no longer static, and no longer has an $element argument.
+- base\Element::getElementRoute() is no longer static, no longer has an $element argument, and has been renamed to getRoute().
+- base\Element::getElementQueryStatusCondition() has been moved to elements\db\ElementQuery::statusCondition(), and no longer has a $query argument.
+- base\Element::getFieldsForElementQuery() has been moved to elements\db\ElementQuery::customFields(), and no longer has a $query argument.
+- base\Element::getTableAttributeHtml() is no longer static, and no longer has an $element argument.
+- base\Element::onAfterMoveElementInStructure() is no longer static, no longer has an $element argument, and has been renamed to afterMoveInStructure().
+- Updated Yii to 2.0.10.
+- Updated Yii 2 Debug Extension to 2.0.7.
+- Updated Yii 2 Auth Client to 2.1.1.
+- Updated Yii 2 SwiftMailer to 2.0.6.
+- Updated SimplePie to 1.4.3.
+- Updated Guzzle to 6.2.2.
+- Updated Imagine to the new `pixelandtonic/imagine` fork at 0.6.3.1.
+- Updated Twig to 1.28.2.
+### Deprecated
+- The getTranslations() global Twig function has been deprecated. Use craft.app.view.getTranslations() instead.
+### Removed
+- Removed support for the `CRAFT_FRAMEWORK_PATH` PHP constant in the bootstrap script. It is now expected Yii is located alongside Craft and other dependencies in the vendor/ folder.
+- Removed the ‘collation’ DB config setting.
+- Removed the ‘initSQLs’ DB config setting.
+- Removed the PEL library.
+- Removed support for EXIF data removal and automatic image rotating for servers without ImageMagick installed.
+- Removed db\DbBackup.
+- Removed enums\BaseEnum.
+- Removed events\CategoryEvent.
+- Removed events\DeleteUserEvent.
+- Removed events\EntryDeleteEvent.
+- Removed events\UserEvent.
+- Removed models\LogEntry.
+- Removed models\Password.
+- Removed base\Component::getType(). It was only really there for objects that implement base\MissingComponentInterface, and now they have an $expectedType property.
+- Removed base\Element::getContentFromPost().
+- Removed base\Element::getSourceByKey().
+- Removed base\Element::saveElement().
+- Removed base\Element::setRawPostValueForField().
+- Removed base\FieldInterface::validateValue(). Fields should start implementing getElementValidationRules() if they want to customize how their values get validated.
+- Removed base\Model::create().
+- Removed base\Model::getAllErrors().
+- Removed base\Model::populateModel().
+- Removed base\Plugin::getClassesInSubpath().
+- Removed base\Plugin::getFieldTypes().
+- Removed base\Plugin::getVolumeTypes().
+- Removed base\Plugin::getWidgetTypes().
+- Removed db\Command::addColumnAfter().
+- Removed db\Command::addColumnBefore().
+- Removed db\Command::addColumnFirst().
+- Removed db\Migration::addColumnAfter().
+- Removed db\Migration::addColumnBefore().
+- Removed db\Migration::addColumnFirst().
+- Removed db\mysql\QueryBuilder::addColumnAfter().
+- Removed db\mysql\QueryBuilder::addColumnBefore().
+- Removed db\mysql\QueryBuilder::addColumnFirst().
+- Removed services\Assets::deleteAssetsByIds().
+- Removed services\Assets::deleteCategory().
+- Removed services\Assets::deleteCategoryById().
+- Removed services\Assets::findAsset().
+- Removed services\Assets::findAssets().
+- Removed services\Categories::saveCategory().
+- Removed services\Content::validateContent().
+- Removed services\Entries::deleteEntry().
+- Removed services\Entries::deleteEntryById().
+- Removed services\Entries::saveEntry().
+- Removed services\Globals::deleteSetById().
+- Removed services\Globals::saveContent().
+- Removed services\Matrix::deleteBlockById().
+- Removed services\Matrix::saveBlock().
+- Removed services\Matrix::validateBlock().
+- Removed services\Plugins::call().
+- Removed services\Plugins::callFirst().
+- Removed services\Tags::saveTag().
+- Removed services\Users::changePassword().
+- Removed services\Users::deleteUser().
+- Removed the $attribute argument from base\ApplicationTrait::getInfo().
+- Removed the $except argument from base\Element::getFieldValues().
+- Removed the $newName and $after arguments from db\Command::alterColumn().
+- Removed the $newName and $after arguments from db\Migration::alterColumn().
+- Removed the $newName and $after arguments from db\mysql\QueryBuilder::alterColumn().
+- Removed the $runValidation argument from services\Content::saveContent().
+- Removed the &$params argument from helpers\Db::parseDateParam().
+- Removed the &$params argument from helpers\Db::parseParam().
+- Removed the ‘beforeDeleteAsset’, ‘afterDeleteAsset’, ‘beforeSaveAsset’ and ‘afterSaveAsset’ events from services\Assets.
+- Removed the ‘beforeDeleteCategory’, ‘afterDeleteCategory’, ‘beforeSaveCategory’ and ‘afterSaveCategory’ events from services\Categories.
+- Removed the ‘beforeDeleteEntry’, ‘afterDeleteEntry’, ‘beforeSaveEntry’ and ‘afterSaveEntry’ events from services\Entry.
+- Removed the ‘beforeDeleteGlobalSet’, ‘beforeDeleteGlobalSet’, ‘beforeSaveGlobalContent’ and ‘afterSaveGlobalContent’ events from services\Globals.
+- Removed the ‘beforeDeleteUser’, ‘afterDeleteUser’, ‘beforeSaveUser’, ‘afterSaveUser’, ‘beforeSetPassword’, and ‘afterSetPassword’ events from services\Users.
+- Removed the ‘beforeSaveTag’ and ‘afterSaveTag’ events from services\Tags.
+- Removed the ‘addRichTextLinkOptions’ plugin hook. Custom Rich Text field link options should be registered using the ‘registerLinkOptions’ event on fields\RichText now.
+- Removed the ‘addTwigExtension’ plugin hook. Custom Twig extensions should be added by calling `Craft::$app->view->twig->addExtension()` directly.
+- Removed the ‘addUserAdministrationOptions’ plugin hook. Custom actions for the Edit User page should be registered using the ‘registerUserActions’ event on controllers\UsersController now.
+- Removed the ‘defineAdditionalAssetTableAttributes’, ‘defineAdditionalCategoryTableAttributes’, ‘defineAdditionalEntryTableAttributes’, and ‘defineAdditionalUserTableAttributes’ plugin hooks. Custom table attributes should be registered using the ‘registerTableAttributes’ event on base\Element or one of its subclasses now.
+- Removed the ‘defineAssetActions’, ‘defineCategoryActions’, ‘defineEntryActions’, and ‘defineUserActions’ plugin hooks. Custom element actions should be registered using the ‘registerActions’ event on base\Element or one of its subclasses now.
+- Removed the ‘getAssetTableAttributeHtml’, ‘getCategoryTableAttributeHtml’, ‘getEntryTableAttributeHtml’, and ‘getUserTableAttributeHtml’ plugin hooks. Table attribute HTML should be overridden using the ‘setTableAttributeHtml’ event on base\Element or one of its subclasses now.
+- Removed the ‘getCpAlerts’ plugin hook. Custom Control Panel alerts should be registered using the ‘registerAlerts’ event on helpers\Cp now.
+- Removed the ‘getElementRoute’ plugin hook. Element routes should be overridden using the ‘setRoute’ event on base\Element or one of its subclasses now.
+- Removed the ‘getFieldTypes’ plugin hook. Custom field types should be registered using the ‘registerFieldTypes’ event on services\Fields now.
+- Removed the ‘getMailTransportAdapters’ plugin hook. Custom transport types should be registered using the ‘registerMailerTransportTypes’ event on helpers\MailerHelper now.
+- Removed the ‘getResourcePath’ plugin hook. Custom resource URIs should be resolved to file paths using the ‘resolveResourcePath’ event on services\Resources now.
+- Removed the ‘getTableAttributesForSource’ plugin hook.
+- Removed the ‘getVolumeTypes’ plugin hook. Custom volume types should be registered using the ‘registerVolumeTypes’ event on serices\Volumes now.
+- Removed the ‘getWidgetTypes’ plugin hook. Custom widget types should be registered using the ‘registerWidgetTypes’ event on services\Dashboard now.
+- Removed the ‘modifyAssetFilename’ plugin hook. Asset filenames should be overridden using the ‘setFilename’ event on helpers\Assets now.
+- Removed the ‘modifyAssetSortableAttributes’, ‘modifyCategorySortableAttributes’, ‘modifyEntrySortableAttributes’, and ‘modifyUserSortableAttributes’ plugin hooks. Sortable attribute modifications should be made using the ‘registerSortableAttributes’ event on base\Element or one of its subclasses now.
+- Removed the ‘modifyAssetSources’, ‘modifyCategorySources’, ‘modifyEntrySources’, and ‘modifyUserSources’ plugin hooks. Element source modifications should be made using the ‘registerSources’ event on base\Element or one of its subclasses now.
+- Removed the ‘modifyCpNav’ plugin hook. Control Panel nav modifications should be made using the ‘registerCpNavItems’ event on variables\Cp now.
+- Removed the ‘registerCachePaths’ plugin hook. Custom options for the Clear Caches tool (which can be set to callbacks now in addition to file paths) should be registered using the ‘registerCacheOptions’ event on tools\ClearCaches now.
+- Removed the ‘registerCpRoutes’ and ‘registerSiteRoutes’ plugin hooks. Custom URL rules for the Control Panel and front-end site should be registered using the ‘registerCpUrlRules’ and ‘registerSiteUrlRules’ events on web\UrlManager now.
+- Removed the ‘registerEmailMessages’ plugin hook. Custom email messages should be registered using the ‘registerMessages’ event on services\EmailMessages now.
+- Removed the ‘registerUserPermissions’ plugin hook. Custom user permissions should be registered using the ‘registerPermissions’ event on services\UserPermissions now.
+### Fixed
+- Fixed a bug where custom 503 templates weren’t rendering when Craft was in the middle of updating from an earlier version than 3.0.2933.
+- Fixed a validation error that occurred when saving a field.
+- Fixed a PHP error that occurred when using the {% header %} Twig tag.
+- Fixed the GeneratePendingTransforms task creation that occurs in services\Assets::getUrlForAsset().
+- Fixed a PHP error that occurred when viewing entry revisions that were created before updating to Craft 3.
+- Fixed a bug where brand new elements were not getting their $uid property set on them after getting saved.
+- Fixed a bug where user activation emails that were sent immediately after creating the user account were getting an invalid activation URL.
+- Fixed a PHP error that occurred when saving a Structure section entry with a new parent.
+- Fixed a bug where entry titles were required for validation even if the entry type didn’t opt to show the title field.
+- Fixed a bug where the ‘users/edit-user’ controller action wasn’t respecting the passed in User object, if there was one, so validation errors weren’t getting reported.
+- Fixed an error that occurred when the Control Panel attempted to start running background tasks if there were no tasks queued up.
+- Fixed a bug where Recent Entries widgets would lose their “Locale” (now “Site”) setting values when upgrading from an older version of Craft.
+- Fixed a bug where the Dashboard was allowing users to add widgets that were calling themselves unselectable.
+- Fixed a bug where sessions table rows weren’t getting deleted after users logged out.
+- Fixed a bug where the ‘fixedOrder’ parameter wasn’t being respected for entry queries.
+- Fixed a bug where plugin-supplied custom fields weren’t working.
+- Fixed a PHP error that occurred when opening an element editor.
+- Fixed authorization error that occurred when editing an entry in a section that’s not enabled for the current site.
+- Fixed a PHP error when using the {% cache %} tag.
+- Fixed an error that occurred when clicking on an email message to edit it.
+- Fixed support for the testToEmailAddress config setting.
+- Fixed a bug where the ‘tasks/run-pending-tasks’ controller action was requiring an authenticated session.
+- Fixed a PHP error that occurred when saving a Recent Entries widget.
+- Fixed a bug where Recent Entries widgets’ Site and Limit settings weren’t being validated correctly.
+- Fixed a bug where widget settings errors were getting reported twice.
+- Fixed a bug where console requests were only working when running the Pro edition.
+- Fixed a bug where the Instructions setting within newly-created sub-fields in a Matrix field’s settings were getting marked as required.
+- Fixed a bug where custom nested element sources registered by plugins were not getting Admin-defined custom table attributes.
+- Fixed a bug where searching by an `"exact phrase"` wasn’t working.
+
 ## [v3.0.0-alpha.2948] - 2016-09-29
 ### Added
 - Added i18n\Locale::getNumberPattern().
@@ -591,6 +936,7 @@ Craft CMS Changelog
 - It is now possibly to customize the SQL of element queries, and there are more choices on how the data should be returned.
 - Included the [Yii 2 Debug Extension](http://www.yiiframework.com/doc-2.0/guide-tool-debugger.html).
 
+[Unreleased]: https://github.com/craftcms/craft/compare/v3.0.0-alpha.2948...develop
 [v3.0.0-alpha.2948]: https://github.com/craftcms/craft/compare/3.0.0-alpha.2942...3.0.0-alpha.2948
 [v3.0.0-alpha.2942]: https://github.com/craftcms/craft/compare/3.0.0-alpha.2939...3.0.0-alpha.2942
 [v3.0.0-alpha.2939]: https://github.com/craftcms/craft/compare/3.0.0-alpha.2937...3.0.0-alpha.2939
