@@ -4,7 +4,7 @@ Craft CMS Changelog
 ## [Unreleased]
 
 ### Added
-- Ported all recent changes from Craft 2, inluding chart-related things added in Craft 2.6.
+- Ported all recent changes from Craft 2, including chart-related things added in Craft 2.6.
 - Craft can now be installed via Composer: `composer require craftcms/craft`.
 - Craft now supports installing plugins via Composer, with the help [Craft CMS Composer Installer](https://github.com/craftcms/composer-installer).
 - Craft now checks for plugin info in a composer.json file, rather than plugin.json, for plugins that were manually installed in craft/plugins/. (See the [Craft CMS Composer Installer](https://github.com/craftcms/composer-installer) readme for details on how the info should be formatted.)
@@ -37,7 +37,7 @@ Craft CMS Changelog
 - Added events\SetAssetFilenameEvent.
 - Added events\SetElementRouteEvent.
 - Added events\SetElementTableAttributeHtmlEvent.
-- Added heplers\MailerHelper.
+- Added helpers\MailerHelper.
 - Added validators\ArrayValidator.
 - Added validators\AssetFilenameValidator.
 - Added validators\UserPasswordValidator.
@@ -59,7 +59,7 @@ Craft CMS Changelog
 - Added base\MissingComponentTrait::createFallback().
 - Added db\mysql\Schema::findIndexes().
 - Added elements\Asset::$keepFileOnDelete, which can be set to true if the corresponding file should not be deleted when deleting the asset.
-- Added elements\Asset::$newFilename, which can be set befere savin an asset to rename its file.
+- Added elements\Asset::$newFilename, which can be set before saving an asset to rename its file.
 - Added helpers\App::craftDownloadUrl().
 - Added helpers\App::isComposerInstall().
 - Added helpers\App::majorMinorVersion().
@@ -84,7 +84,7 @@ Craft CMS Changelog
 - Added the ‘registerSources’ event to base\Element.
 - Added the ‘registerTableAttributes’ event to base\Element.
 - Added the ‘registerUserActions’ event to controllers\UsersController.
-- Added the ‘registerVolumeTypes’ event to serices\Volumes.
+- Added the ‘registerVolumeTypes’ event to services\Volumes.
 - Added the ‘registerWidgetTypes’ event to services\Dashboard.
 - Added the ‘resolveResourcePath’ event to services\Resources.
 - Added the ‘setFilename’ event to helpers\Assets.
@@ -99,9 +99,9 @@ Craft CMS Changelog
 - The default ‘tablePrefix’ DB config value is now empty.
 - When a category is deleted, its nested categories are no longer deleted with it.
 - Renamed the “Get Help” widget to “Craft Support”.
-- When editing a field whose type class cannot be fonud, Craft will now select Plain Text as a fallback and display a validation error on the Field Type setting.
-- When editing a volume whose type class cannot be fonud, Craft will now select Local as a fallback and display a validation error on the Volume Type setting.
-- When editing email settings and the previously-selected transport type class cannot be fonud, Craft will now select PHP Mail as a fallback and display a validation error on the Transport Type setting.
+- When editing a field whose type class cannot be found, Craft will now select Plain Text as a fallback and display a validation error on the Field Type setting.
+- When editing a volume whose type class cannot be found, Craft will now select Local as a fallback and display a validation error on the Volume Type setting.
+- When editing email settings and the previously-selected transport type class cannot be found, Craft will now select PHP Mail as a fallback and display a validation error on the Transport Type setting.
 - The Feed widget is now limited to show 5 articles by default.
 - Element queries’ ‘status’ params must now always be set to valid statuses, or the query won’t return any results.
 - Craft now relies on command line tools to create database backups (mysqldump and pg_dump).
@@ -117,9 +117,9 @@ Craft CMS Changelog
 - base\Plugin no longer automatically registers field types in the plugin’s fields/ subfolder.
 - base\Plugin no longer automatically registers widget types in the plugin’s widgets/ subfolder.
 - base\Plugin no longer automatically registers volume types in the plugin’s volumes/ subfolder.
-- Mailer Transport Adapters’ getTransportConfig() methods are now called at runtime when configuring the Mailer app component, rather than only when email settigs are saved.
+- Mailer Transport Adapters’ getTransportConfig() methods are now called at runtime when configuring the Mailer app component, rather than only when email settings are saved.
 - elements\User now supports a ‘password’ validation scenario, which only validates the $newPassword property.
-- It is no longer possible to chage a user’s locked/suspended/pending/archived status when saving the User element normally.
+- It is no longer possible to change a user’s locked/suspended/pending/archived status when saving the User element normally.
 - elements\db\MatrixBlockQuery::owner() and ownerSiteId() now set the $siteId property when appropriate.
 - The source keys that are passed into element methods’ $source arguments now reflect the full path to the source, if it is a nested source (e.g. “folder:1/folder:2”).
 - The ‘Craft.publishableSections’ Javascript array now includes info about each section’s entry types.
@@ -157,7 +157,7 @@ Craft CMS Changelog
 - Renamed base\Element::getSources() to sources().
 - Renamed base\Element::getStatuses() to statuses().
 - Renamed base\Element::setContentPostLocation() to setFieldParamNamespace().
-- Renamed base\Element::setFieldValuesFromPost() to setFieldValuesFromRequest(), and the method no longer accepts an array of field values. Only call this method as a shortcut for setFieldParamNamespace() and setFieldValues(), passing in the param namespace the field values sholud be extracted from on the request body.
+- Renamed base\Element::setFieldValuesFromPost() to setFieldValuesFromRequest(), and the method no longer accepts an array of field values. Only call this method as a shortcut for setFieldParamNamespace() and setFieldValues(), passing in the param namespace the field values should be extracted from on the request body.
 - Renamed base\Field::getContentPostLocation() to getRequestParamName().
 - Renamed base\Field::prepareValue() to normalizeValue().
 - Renamed base\Field::prepareValueForDb() to serializeValue().
@@ -309,7 +309,7 @@ Craft CMS Changelog
 - Removed the ‘getMailTransportAdapters’ plugin hook. Custom transport types should be registered using the ‘registerMailerTransportTypes’ event on helpers\MailerHelper now.
 - Removed the ‘getResourcePath’ plugin hook. Custom resource URIs should be resolved to file paths using the ‘resolveResourcePath’ event on services\Resources now.
 - Removed the ‘getTableAttributesForSource’ plugin hook.
-- Removed the ‘getVolumeTypes’ plugin hook. Custom volume types should be registered using the ‘registerVolumeTypes’ event on serices\Volumes now.
+- Removed the ‘getVolumeTypes’ plugin hook. Custom volume types should be registered using the ‘registerVolumeTypes’ event on services\Volumes now.
 - Removed the ‘getWidgetTypes’ plugin hook. Custom widget types should be registered using the ‘registerWidgetTypes’ event on services\Dashboard now.
 - Removed the ‘modifyAssetFilename’ plugin hook. Asset filenames should be overridden using the ‘setFilename’ event on helpers\Assets now.
 - Removed the ‘modifyAssetSortableAttributes’, ‘modifyCategorySortableAttributes’, ‘modifyEntrySortableAttributes’, and ‘modifyUserSortableAttributes’ plugin hooks. Sortable attribute modifications should be made using the ‘registerSortableAttributes’ event on base\Element or one of its subclasses now.
@@ -462,7 +462,7 @@ Craft CMS Changelog
 - The |date filter can be passed “short”, “medium”, “long”, and “full”, which will format the date with a localized date format.
 - The {% cache %} tag no longer includes the query string when storing the cache URL.
 - DateTimeHelper::isToday(), isYesterday(), isThisYear(), isThisWeek(), isThisMonth(), isWithinLast(), isInThePast(), and timeAgoInWords() now support all the same types of $date values as DateTimeHelper::toDateTime().
-- MigrationHelper::dropForeignKeyIfExists() and dropIndexIfExistst() now allow the $columns argument to be a string.
+- MigrationHelper::dropForeignKeyIfExists() and dropIndexIfExists() now allow the $columns argument to be a string.
 - The services\EntryRevisions::beforeSaveDraft event’s $isValid property is no longer respected. To prevent a draft from saving, set `$isValid = false` on the EntryDraft::beforeValidate event.
 - The services\EntryRevisions::beforePublishDraft event’s $isValid property is no longer respected. To prevent a draft from publishing, set `$isValid = false` on the EntryDraft::beforeValidate event.
 - The services\EntryRevisions::beforeDeleteDraft event’s $isValid property is no longer respected.
@@ -519,7 +519,7 @@ Craft CMS Changelog
 - Fixed a bug where the $isNew property on entry draft events wasn’t getting set correctly.
 - Fixed the default email settings.
 - Fixed a PHP error that occurred when installing/updating/uninstalling a plugin that didn’t have a migrations/ folder.
-- Fixeda bug where files that were registered via an asset bundle weren’t getting included when calling web\View::getHeadHtml().
+- Fixed a bug where files that were registered via an asset bundle weren’t getting included when calling web\View::getHeadHtml().
 - Fixed a bug where localized datepicker resources weren’t getting included properly.
 - Fixed a bug where matrixblocks.ownerSiteId was getting set to NOT NULL for new Craft installs, resulting in MySQL errors when saving non-localized Matrix fields.
 - Fixed a PHP error that occurred when saving a category.
@@ -870,7 +870,7 @@ Craft CMS Changelog
 - Added the ability for plugins to provide custom SwiftMailer transport options.
 - Added DateTimeHelper::toIso8601(), for converting a date (or date-formatted string) into an ISO-8601-formatted string.
 - Added DateTimeHelper::isIso8601(), for determining if a given variable is an ISO-8601-formatted string.
-- Added DateTimeHelper::translateDate(), for translating month and weekday names from English to the active application langauge.
+- Added DateTimeHelper::translateDate(), for translating month and weekday names from English to the active application language.
 - Added DbHeleper::prepareDateForDb(), which replaces the old DateTimeHelper::formatTimeForDb().
 - Added FieldLayoutBehavior, which replaces FieldLayoutTrait, enabling a single class to have more than one field layout associated with it.
 - The localized date format used by JavaScript date pickers is now available from `Craft.datepickerFormat`.
@@ -941,7 +941,7 @@ Craft CMS Changelog
 - URL validation now accounts for URLs that include environment variables.
 - URL validation now allows international domain names.
 - ‘contentTable’ is now a reserved field handle.
-- Craft is now distributed with a pubilc/cpresources folder, which should be set with writable permissions.
+- Craft is now distributed with a public/cpresources folder, which should be set with writable permissions.
 - Craft now ensures that the public Resources folder exists and is writable at a much earlier stage so it can give a more helpful error message.
 
 ### Fixed
