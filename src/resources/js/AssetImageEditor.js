@@ -411,13 +411,14 @@ Craft.AssetImageEditor = Garnish.Modal.extend(
 		 * @param integer degrees
 		 */
 		rotateImage: function (degrees) {
+
+			// TODO Since more than one method is using this, maybe make it a "reguestAnimationSlot" or something.
 			if (!this.animationInProgress) {
 				if (degrees % 90 != 0) {
 					return false;
 				}
 
 				this.animationInProgress = true;
-
 				this.viewportRotation += degrees;
 
 				// Normalize the viewport rotation angle so it's between 0 and 359
@@ -448,18 +449,22 @@ Craft.AssetImageEditor = Garnish.Modal.extend(
 
 		flipImage: function (scale) {
 			if (!this.animationInProgress) {
+				this.animationInProgress = true;
+
 				if (this.hasOrientationChanged()) {
 					scale = scale == 'y' ? 'x' : 'y';
 				}
 
+				var properties = {};
+
 				if (scale == 'y') {
 					var properties = {
 						scaleY: this.image.scaleY * -1
-					}
+					};
 				} else {
 					var properties = {
 						scaleX: this.image.scaleX * -1
-					}
+					};
 				}
 
 				this.image.animate(properties, {
