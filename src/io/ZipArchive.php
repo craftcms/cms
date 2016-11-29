@@ -24,24 +24,6 @@ class ZipArchive
     /**
      * @inheritdoc
      */
-    public function zip($sourceFolder, $destZip)
-    {
-        $zip = new \ZipArchive();
-
-        $zipContents = $zip->open($destZip, \ZipArchive::CREATE);
-
-        if ($zipContents !== true) {
-            Craft::error('Unable to create zip file: '.$destZip, __METHOD__);
-
-            return false;
-        }
-
-        return $this->add($destZip, $sourceFolder, $sourceFolder);
-    }
-
-    /**
-     * @inheritdoc
-     */
     public function unzip($srcZip, $destFolder)
     {
         Craft::$app->getConfig()->maxPowerCaptain();

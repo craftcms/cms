@@ -22,36 +22,6 @@ class Zip
     // =========================================================================
 
     /**
-     * @param $source
-     * @param $destZip
-     *
-     * @return boolean 'true' if the zip was successfully created, 'false' if not.
-     */
-    public static function compress($source, $destZip)
-    {
-        $source = Io::normalizePathSeparators($source);
-        $destZip = Io::normalizePathSeparators($destZip);
-
-        if (!Io::folderExists($source) && !Io::fileExists($destZip)) {
-            Craft::error('Tried to zip the contents of '.$source.' to '.$destZip.', but the source path does not exist.', __METHOD__);
-
-            return false;
-        }
-
-        if (Io::fileExists($destZip)) {
-            Io::deleteFile($destZip);
-        }
-
-        Io::createFile($destZip);
-
-        Craft::$app->getConfig()->maxPowerCaptain();
-
-        $zip = new ZipArchive();
-
-        return $zip->zip(Io::getRealPath($source), Io::getRealPath($destZip));
-    }
-
-    /**
      * @param $srcZip
      * @param $destFolder
      *
