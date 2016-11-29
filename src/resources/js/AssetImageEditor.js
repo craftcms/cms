@@ -804,9 +804,17 @@ Craft.AssetImageEditor = Garnish.Modal.extend(
 			return filterParams;
 		},
 
+        show: function()
+        {
+            this.base();
+
+            $('html').addClass('noscroll');
+        },
+
 		hide: function () {
 			this.removeAllListeners();
 			this.straighteningInput.removeAllListeners();
+            $('html').removeClass('noscroll');
 			this.base();
 		},
 
