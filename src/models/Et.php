@@ -145,8 +145,7 @@ class Et extends Model
         return [
             [['licensedEdition'], 'in', 'range' => [0, 1, 2]],
             [['requestTime'], DateTimeValidator::class],
-            [['localBuild'], 'number', 'integerOnly' => true],
-            [['localVersion', 'localBuild', 'localEdition', 'handle'], 'required'],
+            [['localVersion', 'localEdition', 'handle'], 'required'],
             [['userEmail'], 'email'],
         ];
     }

@@ -23,7 +23,12 @@ class App
     /**
      * @var boolean
      */
-    private static $_isPhpDevServer = null;
+    private static $_isComposerInstall;
+
+    /**
+     * @var boolean
+     */
+    private static $_isPhpDevServer;
 
     /**
      * @var boolean
@@ -32,6 +37,22 @@ class App
 
     // Public Methods
     // =========================================================================
+
+    /**
+     * Returns whether Craft was installed via Composer.
+     *
+     * @return boolean
+     */
+    public static function isComposerInstall()
+    {
+        if (!isset(static::$_isComposerInstall)) {
+            // If this was installed via a craftcms.com zip, there will be an index.php file
+            // at the root of the vendor directory.
+            static::$_isComposerInstall = !Io::fileExists(Craft::$app->getVendorPath().'/index.php');
+        }
+
+        return static::$_isComposerInstall;
+    }
 
     /**
      * Returns whether Craft is running on the dev server bundled with PHP 5.4+.

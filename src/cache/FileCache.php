@@ -83,13 +83,14 @@ class FileCache extends \yii\caching\FileCache
         $cacheFile = $this->getCacheFile($key);
 
         if ($this->directoryLevel > 0) {
-            Io::createFolder(Io::getFolderName($cacheFile));
+            $folder = Io::getFolderName($cacheFile);
+            if (!Io::folderExists($folder)) {
+                Io::createFolder($folder);
+            }
         }
 
         if ($this->_originalKey == 'useWriteFileLock') {
-            if (Io::writeToFile($cacheFile, $value, true, false,
-                    true) !== false
-            ) {
+            if (Io::writeToFile($cacheFile, $value, true, false, true) !== false) {
                 Io::changePermissions($cacheFile, Craft::$app->getConfig()->get('defaultFilePermissions'));
 
                 return Io::touch($cacheFile, $expire);

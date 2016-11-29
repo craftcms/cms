@@ -83,9 +83,6 @@ $ensureFolderIsReadable = function ($path, $writableToo = false) {
 // Set the vendor path. By default assume that Craft is located as a Composer dependency.
 $vendorPath = realpath(defined('CRAFT_VENDOR_PATH') ? CRAFT_VENDOR_PATH : $getArg('vendorPath') ?: dirname(dirname(dirname(__DIR__))));
 
-// Set the app path
-$appPath = defined('CRAFT_SRC_PATH') ? CRAFT_SRC_PATH : dirname(__DIR__).'/src';
-
 // Set the craft/ folder path. By default assume that it is alongside the vendor/ folder.
 $craftPath = realpath(defined('CRAFT_BASE_PATH') ? CRAFT_BASE_PATH : ($getArg('basePath') ?: dirname($vendorPath).'/craft'));
 
@@ -194,8 +191,9 @@ defined('CURLOPT_TIMEOUT_MS') || define('CURLOPT_TIMEOUT_MS', 155);
 defined('CURLOPT_CONNECTTIMEOUT_MS') || define('CURLOPT_CONNECTTIMEOUT_MS', 156);
 
 // Load the files
+$srcPath = $vendorPath.'/craftcms/craft/src';
 require $vendorPath.'/yiisoft/yii2/Yii.php';
-require $appPath.'/Craft.php';
+require $srcPath.'/Craft.php';
 
 // Set aliases
 Craft::setAlias('@config', $configPath);
@@ -207,9 +205,9 @@ Craft::setAlias('@translations', $translationsPath);
 
 // Load the config
 $config = ArrayHelper::merge(
-    require $appPath.'/config/main.php',
-    require $appPath.'/config/common.php',
-    require $appPath.'/config/'.$appType.'.php'
+    require $srcPath.'/config/main.php',
+    require $srcPath.'/config/common.php',
+    require $srcPath.'/config/'.$appType.'.php'
 );
 
 $config['vendorPath'] = $vendorPath;

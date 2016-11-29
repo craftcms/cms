@@ -8,6 +8,7 @@
 namespace craft\db\mysql;
 
 use Craft;
+use craft\db\TableSchema;
 use craft\errors\DbBackupException;
 use craft\helpers\Io;
 use craft\services\Config;
@@ -192,6 +193,27 @@ class Schema extends \yii\db\mysql\Schema
         }
 
         return $indexes;
+    }
+
+    /**
+     * Loads the metadata for the specified table.
+     *
+     * @param string $name table name
+     *
+     * @return TableSchema driver dependent table metadata. Null if the table does not exist.
+     */
+    protected function loadTableSchema($name)
+    {
+        $table = new TableSchema;
+        $this->resolveTableNames($table, $name);
+
+        if ($this->findColumns($table)) {
+            $this->findConstraints($table);
+
+            return $table;
+        } else {
+            return null;
+        }
     }
 
     // Private Methods

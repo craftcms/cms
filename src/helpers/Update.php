@@ -145,8 +145,19 @@ class Update
                         if ($folder) {
                             Craft::info('Updating folder: '.$destFile, __METHOD__);
 
-                            $tempFolder = rtrim($destFile,
-                                    '/').StringHelper::UUID();
+                            // Invalidate any existing files
+                            if (function_exists('opcache_invalidate') && Io::folderExists($destFile)) {
+                                $iterator = new \RecursiveIteratorIterator(new \RecursiveDirectoryIterator($destFile));
+
+                                foreach ($iterator as $oldFile) {
+                                    /** @var \SplFileInfo $file */
+                                    if ($oldFile->isFile()) {
+                                        opcache_invalidate($oldFile, true);
+                                    }
+                                }
+                            }
+
+                            $tempFolder = rtrim($destFile, '/').StringHelper::UUID();
                             $tempTempFolder = rtrim($destFile, '/').'-tmp';
 
                             Io::createFolder($tempFolder);
@@ -157,6 +168,12 @@ class Update
                             Io::deleteFolder($tempTempFolder);
                         } else {
                             Craft::info('Updating file: '.$destFile, __METHOD__);
+
+                            // Invalidate opcache
+                            if (function_exists('opcache_invalidate') && Io::fileExists($destFile)) {
+                                opcache_invalidate($destFile, true);
+                            }
+
                             Io::copyFile($sourceFile, $destFile);
                         }
 

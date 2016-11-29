@@ -14,6 +14,7 @@ use craft\errors\EtException;
 use craft\errors\UpdateValidationException;
 use craft\helpers\App;
 use craft\helpers\ArrayHelper;
+use craft\helpers\Json;
 use craft\helpers\Update;
 use craft\helpers\Url;
 use craft\web\Controller;
@@ -51,6 +52,62 @@ class UpdateController extends Controller
 
     // Public Methods
     // =========================================================================
+
+    /**
+     * Update Index
+     *
+     * @return Response
+     */
+    public function actionIndex()
+    {
+        $view = $this->getView();
+        $view->registerCssResource('css/updates.css');
+        $view->registerJsResource('js/UpdatesPage.js');
+        $view->registerTranslations('app', [
+            'You’ve got updates!',
+            'You’re all up-to-date!',
+            'Critical',
+            'Update',
+            'Download',
+            'Craft’s <a href="http://craftcms.com/license" target="_blank">Terms and Conditions</a> have changed.',
+            'I agree.',
+            'Seriously, download.',
+            'Seriously, update.',
+            'Install',
+            '{app} update required',
+            'Released on {date}',
+            'Show more',
+            'Added',
+            'Improved',
+            'Fixed',
+            'Download',
+            'Use Composer to get this update.',
+        ]);
+
+        $isComposerInstallJs = Json::encode(App::isComposerInstall());
+        $js = <<<JS
+new Craft.UpdatesPage({
+    isComposerInstall: $isComposerInstallJs
+});
+JS;
+        $view->registerJs($js);
+        
+        return $this->renderTemplate('_special/updates/index');
+    }
+
+    /**
+     * Update kickoff
+     *
+     * @param string $handle The update handle ("craft" or a plugin handle)
+     *
+     * @return Response
+     */
+    public function actionGo($handle)
+    {
+        return $this->renderTemplate('_special/updates/go', [
+            'handle' => $handle
+        ]);
+    }
 
     // Auto Updates
     // -------------------------------------------------------------------------

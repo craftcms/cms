@@ -21,6 +21,7 @@ use yii\web\Response as YiiResponse;
  *
  * It extends Yii’s [[\yii\web\Controller]], overwriting specific methods as required.
  *
+ * @property View $view The view object that can be used to render views or view files
  * @method View getView() Returns the view object that can be used to render views or view files
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
