@@ -1017,6 +1017,11 @@ class Io
         $path = static::normalizePathSeparators($path);
         $destination = static::normalizePathSeparators($destination);
 
+        // Create the destination folder if it doesn't exist yet
+        if (!static::folderExists($destination, false, $suppressErrors)) {
+            static::createFolder($destination, null, $suppressErrors);
+        }
+
         if (static::folderExists($path, $suppressErrors)) {
             $folderContents = static::getFolderContents($path, true, null, true, $suppressErrors);
 
