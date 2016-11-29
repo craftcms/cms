@@ -168,7 +168,16 @@ class Io
         $path = static::normalizePathSeparators($path);
 
         if (static::folderExists($path, false, $suppressErrors)) {
-            return $suppressErrors ? @glob($path.'*.*') : glob($path.'*');
+            $glob = $suppressErrors ? @glob($path.'/*') : glob($path.'/*');
+            $files = [];
+
+            foreach ($glob as $file) {
+                if ($suppressErrors ? @is_file($file) : is_file($file)) {
+                    $files[] = static::normalizePathSeparators($file);
+                }
+            }
+
+            return $files;
         }
 
         return false;
