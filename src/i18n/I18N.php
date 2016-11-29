@@ -107,7 +107,7 @@ class I18N extends \yii\i18n\I18N
 				$customLocaleFiles = Io::getFolderContents($customLocalesPath, false, '\.php$');
 
 				if ($localeFiles === false) {
-					$localeFiles = array();
+					$localeFiles = [];
 				}
 
 				if ($customLocaleFiles !== false) {

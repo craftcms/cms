@@ -1044,10 +1044,7 @@ class Io
             }
 
             if ($validate) {
-                if (static::getFolderSize($path,
-                        $suppressErrors) !== static::getFolderSize($destination,
-                        $suppressErrors)
-                ) {
+                if (static::getFolderSize($path, $suppressErrors) !== static::getFolderSize($destination, $suppressErrors)) {
                     return false;
                 }
             }

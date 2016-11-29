@@ -326,7 +326,7 @@ class m160804_110002_userphotos_to_assets extends Migration
     }
 
     /**
-     * Remove all the subfolders in the userphoto folder.
+     * Remove all the subfolders in the userphotos folder.
      */
     private function _removeSubfolders()
     {

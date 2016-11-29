@@ -333,8 +333,6 @@ class Update
      */
     public static function cleanManifestFolderLine($line)
     {
-        $line = rtrim($line, '*');
-
-        return rtrim($line, '/');
+        return rtrim($line, '/*');
     }
 }

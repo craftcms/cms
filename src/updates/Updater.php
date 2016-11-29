@@ -256,10 +256,10 @@ class Updater
 		$path = ($handle == 'craft' ? $pathService->getAppPath() : $pathService->getPluginsPath().'/'.$handle);
 
 		// Get rid of all the .bak files/folders.
-		$filesToDelete = Io::getFolderContents($path, true, ".*\.bak$");
+		$filesToDelete = Io::getFolderContents($path, true, ".bak$");
 
 		if ($filesToDelete === false) {
-			$filesToDelete = array();
+			$filesToDelete = [];
 		}
 
 		// Now delete any files/folders that were marked for deletion in the manifest file.
