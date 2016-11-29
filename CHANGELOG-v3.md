@@ -251,6 +251,8 @@ Craft CMS 3.0 Working Changelog
 - Removed events\DeleteUserEvent.
 - Removed events\EntryDeleteEvent.
 - Removed events\UserEvent.
+- Removed io\PclZip.
+- Removed io\ZipInterface.
 - Removed models\LogEntry.
 - Removed models\Password.
 - Removed base\Component::getType(). It was only really there for objects that implement base\MissingComponentInterface, and now they have an $expectedType property.

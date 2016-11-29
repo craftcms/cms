@@ -16,7 +16,7 @@ use craft\helpers\Io;
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since  3.0
  */
-class ZipArchive implements ZipInterface
+class ZipArchive
 {
     // Public Methods
     // =========================================================================
