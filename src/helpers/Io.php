@@ -75,7 +75,7 @@ class Io
      * @param boolean $caseInsensitive Whether to perform a case insensitive check or not
      * @param boolean $suppressErrors  Whether to suppress any PHP Notices/Warnings/Errors (usually permissions related)
      *
-     * @return boolean Whether the folder exists
+     * @return string|false The resolved path to the folder if it exists, otherwise false
      */
     public static function folderExists($path, $caseInsensitive = false, $suppressErrors = false)
     {
