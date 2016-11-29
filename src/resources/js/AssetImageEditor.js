@@ -6,6 +6,7 @@
 // TODO: Maybe namespace all the attributes?
 // TODO: Go over each attribute and method to make sure it's used at all.
 // TODO: Rename and maybe refactor misleading names for methods. _scaleAndCenterImage(), for example. It does other stuff too.
+// TODO: Condense all the var statements, where applicable in a single `var` list.
 
 Craft.AssetImageEditor = Garnish.Modal.extend(
 	{
@@ -110,7 +111,11 @@ Craft.AssetImageEditor = Garnish.Modal.extend(
 			this.$viewsContainer = $('.views', this.$body);
 			this.$views = $('> div', this.$viewsContainer);
 			this.$imageTools = $('.image-container .image-tools', this.$body);
-			this.straighteningInput = new SlideRuleInput("slide-rule");
+			this.straighteningInput = new SlideRuleInput("slide-rule", {
+				onChange: function (slider) {
+					this.straighten(slider)
+				}.bind(this)
+			});
 
 			this.$editorContainer = $('.image-container .image', this.$body);
 			this.editorHeight = this.$editorContainer.innerHeight();
@@ -212,12 +217,10 @@ Craft.AssetImageEditor = Garnish.Modal.extend(
 				height: this.editorHeight
 			});
 
-			var imageDimensions = this.getScaledImageDimensions();
-
-			this.image.height = imageDimensions.height;
-			this.image.width = imageDimensions.width;
-
 			// TODO take into account crop performed
+			this.zoomRatio = this.getZoomToFitRatio();
+			this._enforceImageZoomRatio();
+
 			this.image.set({
 				left: this.editorWidth / 2,
 				top: this.editorHeight / 2
@@ -260,11 +263,15 @@ Craft.AssetImageEditor = Garnish.Modal.extend(
 		},
 
 		/**
-		 * Renew the image's zoom ratio.
+		 * Enforce the image's zoom ratio.
 		 * @private
 		 */
-		_renewImageZoomRatio: function () {
-			this.image.scale(this.zoomRatio);
+		_enforceImageZoomRatio: function () {
+			var imageDimensions = this.getScaledImageDimensions();
+			this.image.set({
+				width: imageDimensions.width * this.zoomRatio,
+				height: imageDimensions.height * this.zoomRatio,
+			});
 		},
 
 		/**
@@ -483,31 +490,21 @@ Craft.AssetImageEditor = Garnish.Modal.extend(
 		 *
 		 * @param Event ev
 		 */
-		straighten: function (ev) {
+		straighten: function (slider) {
 			if (!this.animationInProgress) {
 				this.discardCrop();
 				this.animationInProgress = true;
 
-				if (ev) {
-					if (ev.type == 'change' || ev.type == 'click') {
-						this.hideGrid();
-					} else {
-						this.showGrid();
-					}
-				}
-
-				this.imageStraightenAngle = parseInt(this.$straighten.val(), 10) % 360;
-
-				this._prepareImageForRotation();
+				this.imageStraightenAngle = parseInt(slider.value, 10) % 360;
 
 				// Straighten the image
 				this.image.set({
-					angle: this.imageStraightenAngle
+					angle: this.viewportRotation + this.imageStraightenAngle
 				});
 
-				this.zoomRatio = this.getZoomToCoverRatio();
-				this._renewImageZoomRatio();
-				this._destroyCropper();
+				this.zoomRatio = this.getZoomToFitRatio();
+
+				this._enforceImageZoomRatio();
 
 				this.canvas.renderAll();
 
@@ -597,19 +594,43 @@ Craft.AssetImageEditor = Garnish.Modal.extend(
 			var scaledHeight;
 			var scaledWidth;
 
-			// Use straight triangles and substitution to get an expression that equates to scaled height
-			if (this.originalWidth > this.originalHeight) {
-				var proportion = this.originalWidth / this.originalHeight;
-				var scaledHeight = this.editorWidth / (Math.cos(angleInRadians) * proportion + Math.sin(angleInRadians));
-				var scaledWidth = scaledHeight * proportion;
-			} else {
-				var proportion = this.originalHeight / this.originalWidth;
-				var scaledWidth = this.editorHeight / (Math.sin(angleInRadians) + Math.cos(angleInRadians) * proportion);
-				var scaledHeight = scaledWidth * proportion;
+			var dimensions = this.getScaledImageDimensions();
+
+			// Calculate the bounding box for the rotated image.
+			var proportion = dimensions.height / dimensions.width;
+			var boundingBoxHeight = dimensions.width * (Math.sin(angleInRadians) + Math.cos(angleInRadians) * proportion);
+			var boundingBoxWidth = dimensions.width * (Math.cos(angleInRadians) + Math.sin(angleInRadians) * proportion);
+
+			if (this.hasOrientationChanged()) {
+				var temp = boundingBoxWidth;
+				boundingBoxWidth = boundingBoxHeight
+				boundingBoxHeight = temp;
 			}
 
-			// Calculate the ratio using the longest edge against editor width, since editor always will be square
-			return Math.max(scaledWidth, scaledHeight) / this.editorWidth;
+			// Scale the bounding box to fit!
+			var scale = 1;
+			if (boundingBoxHeight > this.editorHeight || boundingBoxWidth > this.editorWidth) {
+				var vertScale = this.editorHeight / boundingBoxHeight,
+					horiScale = this.editorWidth / boundingBoxWidth;
+				scale = Math.min(horiScale, vertScale);
+			}
+
+			// TODO remove debugger
+			/*
+			 this._debug(new fabric.Rect({
+			 stroke: '#fff',
+			 strokeWidth: 2,
+			 width: boundingBoxWidth * scale,
+			 height: boundingBoxHeight * scale,
+			 originX: 'center',
+			 originY: 'center',
+			 left: this.editorWidth / 2,
+			 top: this.editorHeight / 2,
+			 fill: 'rgba(127,0,0,0.5)'
+			 }));
+			 */
+
+			return scale;
 		},
 
 		/**
@@ -781,6 +802,12 @@ Craft.AssetImageEditor = Garnish.Modal.extend(
 			});
 
 			return filterParams;
+		},
+
+		hide: function () {
+			this.removeAllListeners();
+			this.straighteningInput.removeAllListeners();
+			this.base();
 		},
 
 		onSave: function () {
@@ -1386,6 +1413,12 @@ Craft.AssetImageEditor = Garnish.Modal.extend(
 			$('#cropping-canvas').parent('.canvas-container').before($('#cropping-canvas'));
 			$('.canvas-container').remove();
 
+		},
+
+		_debug(fabricObj) {
+			this.canvas.remove(this.debugger);
+			this.debugger = fabricObj
+			this.canvas.add(this.debugger);
 		},
 
 		/**
