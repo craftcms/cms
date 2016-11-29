@@ -46,7 +46,7 @@ class Zip
 
         Craft::$app->getConfig()->maxPowerCaptain();
 
-        $zip = static::_getZipInstance();
+        $zip = new ZipArchive();
 
         return $zip->zip(Io::getRealPath($source), Io::getRealPath($destZip));
     }
@@ -81,7 +81,7 @@ class Zip
                     }
                 }
 
-                $zip = static::_getZipInstance();
+                $zip = new ZipArchive();
                 $result = $zip->unzip($srcZip, $destFolder);
 
                 if ($result === true) {
@@ -125,23 +125,12 @@ class Zip
 
         Craft::$app->getConfig()->maxPowerCaptain();
 
-        $zip = static::_getZipInstance();
+        $zip = new ZipArchive();
 
         if ($zip->add($sourceZip, $pathToAdd, $basePath, $pathPrefix)) {
             return true;
         }
 
         return false;
-    }
-
-    // Private Methods
-    // =========================================================================
-
-    /**
-     * @return ZipArchive
-     */
-    private static function _getZipInstance()
-    {
-        return new ZipArchive();
     }
 }
