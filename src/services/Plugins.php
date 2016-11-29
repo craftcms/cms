@@ -735,7 +735,6 @@ class Plugins extends Component
                     continue;
                 }
 
-                $folder = Io::normalizePathSeparators($folder);
                 $handle = strtolower(Io::getFolderName($folder, false));
 
                 if (!in_array($handle, $handles)) {
