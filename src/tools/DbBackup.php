@@ -11,6 +11,8 @@ use Craft;
 use craft\base\Tool;
 use craft\helpers\Io;
 use craft\io\Zip;
+use yii\web\ServerErrorHttpException;
+use ZipArchive;
 
 /**
  * DbBackup represents a Backup Database tool.
@@ -57,26 +59,40 @@ class DbBackup extends Tool
 
     /**
      * @inheritdoc
+     * @throws ServerErrorHttpException
      */
     public function performAction($params = [])
     {
-        if (($file = Craft::$app->getDb()->backup()) !== false) {
-
-            if (Io::fileExists($file) && isset($params['downloadBackup']) && (bool)$params['downloadBackup']) {
-                $destZip = Craft::$app->getPath()->getTempPath().'/'.Io::getFilename($file, false).'.zip';
-
-                if (Io::fileExists($destZip)) {
-                    Io::deleteFile($destZip, true);
-                }
-
-                Io::createFile($destZip);
-
-                if (Zip::add($destZip, $file, Craft::$app->getPath()->getDbBackupPath())) {
-                    return ['backupFile' => Io::getFilename($destZip, false)];
-                }
-            }
+        if (($backupPath = Craft::$app->getDb()->backup()) === false) {
+            return null;
         }
 
-        return null;
+        if (!Io::fileExists($backupPath)) {
+            throw new ServerErrorHttpException('Could not create backup');
+        }
+
+        if (empty($params['downloadBackup'])) {
+            return null;
+        }
+
+        $zipPath = Craft::$app->getPath()->getTempPath().'/'.Io::getFilename($backupPath, false).'.zip';
+
+        if (Io::fileExists($zipPath)) {
+            Io::deleteFile($zipPath, true);
+        }
+
+        $zip = new ZipArchive();
+
+        if (!$zip->open($zipPath, ZipArchive::CREATE)) {
+            throw new ServerErrorHttpException('Cannot create zip at '.$zipPath);
+        }
+
+        $filename = Io::getFilename($backupPath);
+        $zip->addFile($backupPath, $filename);
+        $zip->close();
+
+        return [
+            'backupFile' => Io::getFilename($filename, false)
+        ];
     }
 }
