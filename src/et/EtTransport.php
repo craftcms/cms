@@ -374,6 +374,6 @@ class EtTransport
      */
     private function _isConfigFolderWritable()
     {
-        return Io::isWritable(Io::getFolderName(Craft::$app->getPath()->getLicenseKeyPath()));
+        return Io::isWritable(Craft::$app->getPath()->getConfigPath());
     }
 }
