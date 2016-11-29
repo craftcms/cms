@@ -22,9 +22,8 @@ machine:
 # Customize checkout
 checkout:
   post:
-    - composer install --no-dev -d Source/craft/app
-    - composer dumpautoload -o -d Source/craft/app
-    - php ./Utils/buildci.php
+    - composer install --no-dev
+    - composer dumpautoload -a
 
 ## Customize dependencies
 # dependencies:
@@ -73,7 +72,7 @@ checkout:
     # A list of hashes representing hooks. Only the url field is supported.
 #    - url: https://someurl.com/hooks/circle
 
-general:
-  branches:
-    only:
-      - release/dev
+# general:
+#  branches:
+#    only:
+#      - release/dev
