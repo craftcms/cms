@@ -1152,7 +1152,7 @@ class Io
         if (static::folderExists($path, false, $suppressErrors)) {
             $folderContents = static::getFolderContents($path, true, null, true, $suppressErrors);
 
-            if ($folderContents) {
+            if ($folderContents !== false) {
                 foreach ($folderContents as $item) {
                     $item = static::normalizePathSeparators($item);
 
