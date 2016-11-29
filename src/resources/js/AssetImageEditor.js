@@ -113,7 +113,7 @@ Craft.AssetImageEditor = Garnish.Modal.extend(
 			this.$imageTools = $('.image-container .image-tools', this.$body);
 			this.straighteningInput = new SlideRuleInput("slide-rule", {
 				onChange: function (slider) {
-					this.straighten(slider)
+					this.straighten(slider);
 				}.bind(this)
 			});
 
@@ -603,7 +603,7 @@ Craft.AssetImageEditor = Garnish.Modal.extend(
 
 			if (this.hasOrientationChanged()) {
 				var temp = boundingBoxWidth;
-				boundingBoxWidth = boundingBoxHeight
+				boundingBoxWidth = boundingBoxHeight;
 				boundingBoxHeight = temp;
 			}
 
@@ -1415,9 +1415,9 @@ Craft.AssetImageEditor = Garnish.Modal.extend(
 
 		},
 
-		_debug(fabricObj) {
+		_debug: function (fabricObj) {
 			this.canvas.remove(this.debugger);
-			this.debugger = fabricObj
+			this.debugger = fabricObj;
 			this.canvas.add(this.debugger);
 		},
 
