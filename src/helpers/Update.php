@@ -157,8 +157,8 @@ class Update
                                 }
                             }
 
-                            $tempFolder = rtrim($destFile, '/').StringHelper::UUID();
-                            $tempTempFolder = rtrim($destFile, '/').'-tmp';
+                            $tempFolder = $destFile.StringHelper::UUID();
+                            $tempTempFolder = $destFile.'-tmp';
 
                             Io::createFolder($tempFolder);
                             Io::copyFolder($sourceFile, $tempFolder);

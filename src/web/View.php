@@ -1138,7 +1138,7 @@ class View extends \yii\web\View
     private function _resolveTemplate($basePath, $name)
     {
         // Normalize the path and name
-        $basePath = rtrim(Io::normalizePathSeparators($basePath), '/\\');
+        $basePath = Io::normalizePathSeparators($basePath);
         $name = trim(Io::normalizePathSeparators($name), '/');
 
         // $name could be an empty string (e.g. to load the homepage template)

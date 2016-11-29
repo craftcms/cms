@@ -91,7 +91,7 @@ class m160804_110002_userphotos_to_assets extends Migration
                     ->where(['username' => $usernameOrEmail])
                     ->one();
 
-                $sourcePath = $subfolder.'original/'.$user['photo'];
+                $sourcePath = $subfolder.'/original/'.$user['photo'];
 
                 // If the file actually exists
                 if (Io::fileExists($sourcePath)) {
@@ -330,7 +330,7 @@ class m160804_110002_userphotos_to_assets extends Migration
      */
     private function _removeSubfolders()
     {
-        $folders = Io::getFolders($this->_basePath.'/');
+        $folders = Io::getFolders($this->_basePath);
 
         if (is_array($folders)) {
             foreach ($folders as $folder) {

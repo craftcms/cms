@@ -71,7 +71,7 @@ class Zip
                     }
                 } else {
                     // If the destination folder exists and it has contents, clear them.
-                    if (($conents = Io::getFolderContents($destFolder)) !== false) {
+                    if (Io::getFolderContents($destFolder) !== false) {
                         // Begin the great purge.
                         if (!Io::clearFolder($destFolder)) {
                             Craft::error('Tried to clear the contents of the unzip destination folder, but could not: '.$destFolder, __METHOD__);

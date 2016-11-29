@@ -139,7 +139,7 @@ class Io
         $path = static::normalizePathSeparators($path);
 
         if (static::folderExists($path, false, $suppressErrors)) {
-            $folders = $suppressErrors ? @glob($path.'*', GLOB_ONLYDIR) : glob($path.'*', GLOB_ONLYDIR);
+            $folders = $suppressErrors ? @glob($path.'/*', GLOB_ONLYDIR) : glob($path.'/*', GLOB_ONLYDIR);
 
             if ($folders) {
                 foreach ($folders as $key => $folder) {
@@ -166,7 +166,7 @@ class Io
         $path = static::normalizePathSeparators($path);
 
         if (static::folderExists($path, false, $suppressErrors)) {
-            $glob = $suppressErrors ? @glob($path.'*') : glob($path.'*');
+            $glob = $suppressErrors ? @glob($path.'/*') : glob($path.'/*');
             $files = [];
 
             foreach ($glob as $file) {
@@ -198,10 +198,6 @@ class Io
         // it's returning an empty string instead
         if (!$path) {
             return false;
-        }
-
-        if ($suppressErrors ? @is_dir($path) : is_dir($path)) {
-            $path = $path.'/';
         }
 
         // Normalize again, because realpath probably screwed things up again.
@@ -238,7 +234,7 @@ class Io
         $path = static::normalizePathSeparators($path);
 
         if (static::folderExists($path, false, $suppressErrors)) {
-            return static::isWritable($path.uniqid(mt_rand()).'.tmp', $suppressErrors);
+            return static::isWritable($path.'/'.uniqid(mt_rand()).'.tmp', $suppressErrors);
         }
 
         // Check tmp file for read/write capabilities
@@ -293,11 +289,7 @@ class Io
         $path = static::normalizePathSeparators($path);
 
         if ($fullPath) {
-            $folder = static::normalizePathSeparators($suppressErrors ? @pathinfo($path, PATHINFO_DIRNAME) : pathinfo($path, PATHINFO_DIRNAME));
-
-            // normalizePathSeparators() only enforces the trailing slash for known directories so let's be sure
-            // that it'll be there.
-            return rtrim($folder, '/').'/';
+            return static::normalizePathSeparators($suppressErrors ? @pathinfo($path, PATHINFO_DIRNAME) : pathinfo($path, PATHINFO_DIRNAME));
         }
 
         if ($suppressErrors ? !@is_dir($path) : !is_dir($path)) {
@@ -421,8 +413,7 @@ class Io
     }
 
     /**
-     * Will take a given path and normalize it to use single forward slashes for path separators.  If it is a folder, it
-     * will append a trailing forward slash to the end of the path.
+     * Normalizes a path by replacing backslashes with forward-slashes and removing trailing slashes.
      *
      * @param string $path The path to normalize
      *
@@ -455,11 +446,8 @@ class Io
         // Check if the path is just a slash.  If the server has openbase_dir restrictions in place calling is_dir on it
         // will complain.
         if ($path !== '/') {
-            // Use is_dir here to prevent an endless recursive loop.
-            // Always suppress errors here because of openbase_dir, too.
-            if (@is_dir($path)) {
-                $path = rtrim($path, '\/').'/';
-            }
+            // Remove trailing slashes
+            $path = rtrim($path, '/');
         }
 
         return $path;
@@ -1021,12 +1009,12 @@ class Io
 
             if ($folderContents) {
                 foreach ($folderContents as $item) {
-                    $itemDest = static::normalizePathSeparators($destination.'/'.str_replace($path, '', $item));
+                    $itemDest = static::normalizePathSeparators($destination.str_replace($path, '', $item));
 
                     $destFolder = static::getFolderName($itemDest, true, $suppressErrors);
 
                     if (!static::folderExists($destFolder, false, $suppressErrors)) {
-                        static::createFolder($destFolder, Craft::$app->getConfig()->get('defaultFolderPermissions'), $suppressErrors);
+                        static::createFolder($destFolder, null, $suppressErrors);
                     }
 
                     if (static::fileExists($item, false, $suppressErrors)) {
@@ -1494,27 +1482,23 @@ class Io
     }
 
     /**
-     * Returns a parent folder’s path for a given path.
+     * Returns the path to the parent folder of a given path.
      *
-     * @param string $fullPath The path to get the parent folder path for
+     * @param string $path The starting point
      *
-     * @return string The parent folder’s path
+     * @return string|false The parent folder’s path, or false if $path is the root path
      */
-    public static function getParentFolderPath($fullPath)
+    public static function getParentFolderPath($path)
     {
-        $fullPath = static::normalizePathSeparators($fullPath);
+        $path = static::normalizePathSeparators($path);
+        $parentPath = dirname($path);
 
-        // Drop the trailing slash and split it by slash
-        $parts = explode('/', rtrim($fullPath, '/'));
-
-        // Drop the last part and return the part leading up to it
-        array_pop($parts);
-
-        if (empty($parts)) {
-            return '';
+        // Was this already the root path?
+        if ($parentPath == $path || $parentPath == '.') {
+            return false;
         }
 
-        return join('/', $parts).'/';
+        return $parentPath;
     }
 
     /**
@@ -1626,7 +1610,7 @@ class Io
     {
         $descendants = [];
 
-        $path = static::normalizePathSeparators(static::getRealPath($path, $suppressErrors));
+        $path = static::getRealPath($path, $suppressErrors);
 
         if ($filter !== null) {
             if (is_string($filter)) {
@@ -1636,7 +1620,7 @@ class Io
 
         if (($contents = $suppressErrors ? @scandir($path) : scandir($path)) !== false) {
             foreach ($contents as $key => $item) {
-                $fullItem = $path.$item;
+                $fullItem = $path.'/'.$item;
                 $contents[$key] = $fullItem;
 
                 if ($item == '.' || $item == '..') {

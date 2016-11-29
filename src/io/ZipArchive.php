@@ -95,7 +95,7 @@ class ZipArchive implements ZipInterface
 
                     if ($pathPrefix) {
                         $pathPrefix = Io::normalizePathSeparators($pathPrefix);
-                        $relFilePath = $pathPrefix.$relFilePath;
+                        $relFilePath = $pathPrefix.'/'.$relFilePath;
                     }
 
                     if (Io::folderExists($itemToZip)) {

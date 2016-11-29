@@ -66,11 +66,10 @@ class PclZip implements ZipInterface
             }
 
             $folderName = Io::getFolderName($zipFile['filename']);
-            if ($folderName == './') {
-                $tempDestFolders[] = $destFolder.'/';
+            if ($folderName == '.') {
+                $tempDestFolders[] = $destFolder;
             } else {
-                $tempDestFolders[] = $destFolder.'/'.rtrim(Io::getFolderName($zipFile['filename']),
-                        '/');
+                $tempDestFolders[] = $destFolder.'/'.Io::getFolderName($zipFile['filename']);
             }
         }
 
@@ -79,12 +78,12 @@ class PclZip implements ZipInterface
 
         foreach ($tempDestFolders as $tempDestFolder) {
             // Skip over the working directory
-            if (rtrim($destFolder, '/') == rtrim($tempDestFolder, '/')) {
+            if (rtrim($destFolder, '/') == $tempDestFolder) {
                 continue;
             }
 
             // Make sure the current directory is within the working directory
-            if (strpos($tempDestFolder, $destFolder) === false) {
+            if (strpos($tempDestFolder.'/', $destFolder) === false) {
                 continue;
             }
 

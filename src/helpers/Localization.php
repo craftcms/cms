@@ -138,7 +138,7 @@ class Localization
         $frameworkMessagePath = Io::normalizePathSeparators(Craft::getAlias('@app/framework/messages'));
 
         foreach ($translationFiles as $translationFile) {
-            $path = $frameworkMessagePath.$translationFile.'/yii.php';
+            $path = $frameworkMessagePath.'/'.$translationFile.'/yii.php';
 
             if (Io::fileExists($path)) {
                 // Load it up.

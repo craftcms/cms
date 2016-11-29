@@ -285,7 +285,7 @@ class Updater
 
 				// In case we did the whole app folder
 				if ($rowData[0][0] == '*') {
-					$filesToDelete[] = rtrim(Io::normalizePathSeparators($path), '/').'.bak/';
+					$filesToDelete[] = Io::normalizePathSeparators($path).'.bak';
 				}
 			}
 
@@ -296,8 +296,9 @@ class Updater
 						Io::deleteFile($fileToDelete, true);
 
 						// If that was the last file in this folder, nuke the folder.
-						if (Io::isFolderEmpty(Io::getFolderName($fileToDelete))) {
-							Io::deleteFolder(Io::getFolderName($fileToDelete));
+                        $folder = Io::getFolderName($fileToDelete);
+						if (Io::isFolderEmpty($folder)) {
+							Io::deleteFolder($folder);
 						}
 					}
 				} else {
@@ -433,7 +434,7 @@ class Updater
 					if (Io::folderExists($folderPath)) {
 						Craft::info('Backing up folder '.$folderPath, __METHOD__);
 						Io::createFolder($folderPath.'.bak');
-						Io::copyFolder($folderPath.'/', $folderPath.'.bak/');
+						Io::copyFolder($folderPath, $folderPath.'.bak');
 					}
 				} // It's a file.
 				else {

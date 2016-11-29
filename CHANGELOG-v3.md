@@ -216,6 +216,16 @@ Craft CMS 3.0 Working Changelog
 - base\Element::getFieldsForElementQuery() has been moved to elements\db\ElementQuery::customFields(), and no longer has a $query argument.
 - base\Element::getTableAttributeHtml() is no longer static, and no longer has an $element argument.
 - base\Element::onAfterMoveElementInStructure() is no longer static, no longer has an $element argument, and has been renamed to afterMoveInStructure().
+- helpers\Io::folderExists() now returns the folder path without a trailing slash, if the folder exists.
+- helpers\Io::getFolderContents() now returns nested folder paths without trailing slashes.
+- helpers\Io::getFolderName() now returns the folder path without a trailing slash when the `$fullPath` argument is `true`.
+- helpers\Io::getFolders() now returns the child folder paths without trailing slashes.
+- helpers\Io::getParentFolderPath() now returns the parent folder path without a trailing slash, or `false` if `$path` is already a root.
+- helpers\Io::getRealPath() now returns the path without a trailing slash, if the given `$path` is for a folder.
+- helpers\Io::normalizePathSeparators() now return the normalized path without a trailing slash.
+- io\File::getFolderName() and io\Folder::getFolderName() now return the folder path without a trailing slash when the `$fullPath` argument is `true`.
+- io\Folder::getContents() now returns nested folder paths without trailing slashes.
+- services\Updates::getUnwritableFolders() now returns folder paths without trailing slashes.
 - Updated Yii to 2.0.10.
 - Updated Yii 2 Debug Extension to 2.0.7.
 - Updated Yii 2 Auth Client to 2.1.1.
