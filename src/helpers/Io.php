@@ -54,8 +54,6 @@ class Io
 
             if (is_array($files) && count($files) > 0) {
                 foreach ($files as $file) {
-                    $file = static::normalizePathSeparators($file);
-
                     if ($suppressErrors ? @is_file($file) : is_file($file)) {
                         if (StringHelper::toLowerCase($file) === $lcaseFilename) {
                             return $file;
@@ -865,8 +863,6 @@ class Io
 
                 if ($contents) {
                     foreach ($contents as $path) {
-                        $path = static::normalizePathSeparators($path);
-
                         if ($suppressErrors ? !@chown($path, $owner) : chown($path, $owner)) {
                             $success = false;
                         }
@@ -917,8 +913,6 @@ class Io
 
                 if ($contents) {
                     foreach ($contents as $path) {
-                        $path = static::normalizePathSeparators($path);
-
                         if ($suppressErrors ? !@chgrp($path, $group) : chgrp($path, $group)) {
                             $success = false;
                         }
@@ -1159,8 +1153,6 @@ class Io
 
             if ($folderContents !== false) {
                 foreach ($folderContents as $item) {
-                    $item = static::normalizePathSeparators($item);
-
                     if (static::fileExists($item, false, $suppressErrors)) {
                         static::deleteFile($item, $suppressErrors);
                     } else if (static::folderExists($item, false, $suppressErrors)) {
@@ -1616,8 +1608,6 @@ class Io
         $folderContents = static::getFolderContents($path, true, null, true, $suppressErrors);
 
         foreach ($folderContents as $item) {
-            $item = static::normalizePathSeparators($item);
-
             if (static::fileExists($item, false, $suppressErrors)) {
                 $size += sprintf("%u", $suppressErrors ? @filesize($item) : filesize($item));
             }
