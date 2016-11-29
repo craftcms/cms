@@ -117,6 +117,7 @@ Craft CMS 3.0 Working Changelog
 - base\Plugin no longer automatically registers field types in the plugin’s fields/ subfolder.
 - base\Plugin no longer automatically registers widget types in the plugin’s widgets/ subfolder.
 - base\Plugin no longer automatically registers volume types in the plugin’s volumes/ subfolder.
+- helpers\Io::copyFolder() now creates the destination folder if it didn’t already exist.
 - Mailer Transport Adapters’ getTransportConfig() methods are now called at runtime when configuring the Mailer app component, rather than only when email settings are saved.
 - elements\User now supports a ‘password’ validation scenario, which only validates the $newPassword property.
 - It is no longer possible to change a user’s locked/suspended/pending/archived status when saving the User element normally.
@@ -351,6 +352,7 @@ Craft CMS 3.0 Working Changelog
 - Fixed a bug where the Instructions setting within newly-created sub-fields in a Matrix field’s settings were getting marked as required.
 - Fixed a bug where custom nested element sources registered by plugins were not getting Admin-defined custom table attributes.
 - Fixed a bug where searching by an `"exact phrase"` wasn’t working.
+- Fixed a bug where helpers\Io::clearFolder() was returning `false` for folders that existed but had no contents.
 
 ## [v3.0.0-alpha.2948] - 2016-09-29
 
