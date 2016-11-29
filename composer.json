@@ -33,7 +33,6 @@
         "league/flysystem-aws-s3-v3": "1.0.13",
         "league/flysystem-rackspace": "1.0.5",
         "league/flysystem-ziparchive": "1.0.2",
-        "pclzip/pclzip": "2.8.2",
         "pixelandtonic/flysystem-google-cloud": "1.0.1",
         "php-http/guzzle6-adapter": "^1.1",
         "mikehaertl/php-shellcommand": "1.2.2",

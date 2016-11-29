@@ -138,14 +138,10 @@ class Zip
     // =========================================================================
 
     /**
-     * @return PclZip|ZipArchive
+     * @return ZipArchive
      */
     private static function _getZipInstance()
     {
-        if (class_exists('ZipArchive')) {
-            return new ZipArchive();
-        }
-
-        return new PclZip();
+        return new ZipArchive();
     }
 }
