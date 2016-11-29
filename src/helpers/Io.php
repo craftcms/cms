@@ -862,8 +862,8 @@ class Io
                 $contents = static::getFolderContents($path, true, null, false, $suppressErrors);
 
                 if ($contents) {
-                    foreach ($contents as $path) {
-                        if ($suppressErrors ? !@chown($path, $owner) : chown($path, $owner)) {
+                    foreach ($contents as $subPath) {
+                        if ($suppressErrors ? !@chown($subPath, $owner) : chown($subPath, $owner)) {
                             $success = false;
                         }
                     }
@@ -912,8 +912,8 @@ class Io
                 $contents = static::getFolderContents($path, true, null, false, $suppressErrors);
 
                 if ($contents) {
-                    foreach ($contents as $path) {
-                        if ($suppressErrors ? !@chgrp($path, $group) : chgrp($path, $group)) {
+                    foreach ($contents as $subPath) {
+                        if ($suppressErrors ? !@chgrp($subPath, $group) : chgrp($subPath, $group)) {
                             $success = false;
                         }
                     }
