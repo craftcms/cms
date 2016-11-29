@@ -7,8 +7,8 @@ Craft CMS Changelog
 - OPcache file caches are row cleared during auto-updates, preventing possible PHP/SQL errors from occurring after the new files have been put in place but before OPcache would have cleared its caches on its own. (This will only take effect in future updates, unfortunately. Servers with OPcache enabled may continue to experience unexpected behaviors while auto-updating until they have updated to this release.)
 
 ### Fixed
-- Fixed a bug where [IoHelper::getFiles()](https://craftcms.com/classreference/helpers/IOHelper#getFiles-detail) wasn’t returning files without extensions if `$suppressErrors == true`.
-- Fixed a bug where [IoHelper::getFiles()](https://craftcms.com/classreference/helpers/IOHelper#getFiles-detail) was returning subfolder paths if `$suppressErrors == false`.
+- Fixed a bug where [IoHelper::getFiles()](https://craftcms.com/classreference/helpers/IOHelper#getFiles-detail) wasn’t returning files without extensions when the `$suppressErrors` argument was `true`.
+- Fixed a bug where [IoHelper::getFiles()](https://craftcms.com/classreference/helpers/IOHelper#getFiles-detail) was returning subfolder paths when the `$suppressErrors` argument was `false`.
 - Fixed a bug where [IoHelper::getFiles()](https://craftcms.com/classreference/helpers/IOHelper#getFiles-detail) wasn’t normalizing the returned file paths.
 
 ## [v2.6.2952] - 2016-11-21
