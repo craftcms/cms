@@ -55,43 +55,14 @@ class ZipArchive implements ZipInterface
             return false;
         }
 
-        for ($i = 0; $i < $zip->numFiles; $i++) {
-            if (!$info = $zip->statIndex($i)) {
-                Craft::error('Could not retrieve a file from the zip archive '.$srcZip, __METHOD__);
-
-                return false;
-            }
-
-            // normalize directory separators
-            $info = Io::normalizePathSeparators($info['name']);
-
-            // found a directory
-            if (mb_substr($info, -1) === '/') {
-                Io::createFolder($destFolder.'/'.$info);
-                continue;
-            }
-
-            // Don't extract the OSX __MACOSX directory
-            if (mb_substr($info, 0, 9) === '__MACOSX/') {
-                continue;
-            }
-
-            $contents = $zip->getFromIndex($i);
-
-            if ($contents === false) {
-                Craft::error('Could not extract file from zip archive '.$srcZip, __METHOD__);
-
-                return false;
-            }
-
-            if (!Io::writeToFile($destFolder.'/'.$info, $contents, true, true)) {
-                Craft::error('Could not copy file to '.$destFolder.'/'.$info.' while unzipping from '.$srcZip, __METHOD__);
-
-                return false;
-            }
-        }
-
+        $success = $zip->extractTo($destFolder);
         $zip->close();
+
+        if (!$success) {
+            Craft::error('Could not extract the zip file at '.$srcZip.' to '.$destFolder, __METHOD__);
+
+            return false;
+        }
 
         return true;
     }
