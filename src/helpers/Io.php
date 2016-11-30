@@ -408,7 +408,7 @@ class Io
     {
         $path = FileHelper::normalizePath($path);
 
-        if ((static::folderExists($path, false, $suppressErrors) && static::getFolderSize($path, $suppressErrors) == 0)) {
+        if (static::folderExists($path, false, $suppressErrors) && empty(FileHelper::findFiles($path))) {
             return true;
         }
 
