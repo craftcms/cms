@@ -358,25 +358,6 @@ class Io
     }
 
     /**
-     * Returns the folder size in bytes for the given path or false if the folder does not exist.
-     *
-     * @param string  $path           The path to test
-     * @param boolean $suppressErrors Whether to suppress any PHP Notices/Warnings/Errors (usually permissions related)
-     *
-     * @return string|false The folder size in bytes or false if the folder does not exist
-     */
-    public static function getFolderSize($path, $suppressErrors = false)
-    {
-        $path = FileHelper::normalizePath($path);
-
-        if (static::folderExists($path, false, $suppressErrors)) {
-            return sprintf("%u", static::_folderSize($path, $suppressErrors));
-        }
-
-        return false;
-    }
-
-    /**
      * Will take a path, make sure the file exists and if the size of the file is 0 bytes, return true.  Otherwise false.
      *
      * @param string  $path           The path to test
@@ -1381,29 +1362,6 @@ class Io
         }
 
         return false;
-    }
-
-    /**
-     * Used by [[getFolderSize]] to calculate the size of a folder.
-     *
-     * @param string  $path           The path of the folder
-     * @param boolean $suppressErrors Whether to suppress any PHP Notices/Warnings/Errors (usually permissions related)
-     *
-     * @return integer The size of the folder in bytes
-     */
-    private static function _folderSize($path, $suppressErrors = false)
-    {
-        $size = 0;
-
-        $folderContents = static::getFolderContents($path, true, null, true, $suppressErrors);
-
-        foreach ($folderContents as $item) {
-            if (static::fileExists($item, false, $suppressErrors)) {
-                $size += sprintf("%u", $suppressErrors ? @filesize($item) : filesize($item));
-            }
-        }
-
-        return $size;
     }
 
     /**
