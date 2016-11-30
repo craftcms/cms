@@ -716,55 +716,6 @@ class Io
     }
 
     /**
-     * Will attempt to change the owner of the given file system path (*nix only)
-     *
-     * @param string  $path           The path to change the owner of
-     * @param string  $owner          The new owner's name
-     * @param boolean $recursive      If the path is a folder, whether to change the owner of all of the folder's children
-     * @param boolean $suppressErrors Whether to suppress any PHP Notices/Warnings/Errors (usually permissions related)
-     *
-     * @return boolean Whether the ownership change was successful
-     */
-    public static function changeOwner($path, $owner, $recursive = false, $suppressErrors = false)
-    {
-        $path = FileHelper::normalizePath($path);
-
-        if (posix_getpwnam($owner) == false xor (is_numeric($owner) && posix_getpwuid($owner) == false)) {
-            Craft::error('Tried to change the owner of '.$path.', but the owner name "'.$owner.'" does not exist.', __METHOD__);
-
-            return false;
-        }
-
-        if (static::fileExists($path, false, $suppressErrors) || static::folderExists($path, false, $suppressErrors)) {
-            $success = $suppressErrors ? @chown($path, $owner) : chown($path, $owner);
-
-            if ($success && static::folderExists($path, false, $suppressErrors) && $recursive) {
-                $contents = static::getFolderContents($path, true, null, false, $suppressErrors);
-
-                if ($contents) {
-                    foreach ($contents as $subPath) {
-                        if ($suppressErrors ? !@chown($subPath, $owner) : chown($subPath, $owner)) {
-                            $success = false;
-                        }
-                    }
-                }
-            }
-
-            if (!$success) {
-                Craft::error('Tried to change the own of '.$path.', but could not.', __METHOD__);
-
-                return false;
-            }
-
-            return true;
-        }
-
-        Craft::error('Tried to change owner of '.$path.', but that path does not exist.', __METHOD__);
-
-        return false;
-    }
-
-    /**
      * Will attempt to change the permission of the given file system path (*nix only).
      *
      * @param string  $path           The path to change the permissions of
