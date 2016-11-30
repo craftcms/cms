@@ -30,12 +30,10 @@
         {
             "type": "git",
             "url": "https://github.com/pixelandtonic/flysystem-google-cloud"
+        },
+        {
+            "type": "composer",
+            "url": "https://asset-packagist.org"
         }
-    ],
-    "extra": {
-        "asset-installer-paths": {
-            "npm-asset-library": "vendor/npm",
-            "bower-asset-library": "vendor/bower"
-        }
-    }
+    ]
 }
