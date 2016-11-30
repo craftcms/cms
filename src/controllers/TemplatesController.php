@@ -91,7 +91,7 @@ class TemplatesController extends Controller
      */
     public function actionManualUpdate()
     {
-        return $this->renderTemplate('updates/_go', [
+        return $this->renderTemplate('_special/updates/go', [
             'handle' => Craft::$app->getRequest()->getSegment(2)
         ]);
     }

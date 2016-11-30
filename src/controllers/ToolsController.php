@@ -12,6 +12,7 @@ use craft\base\ToolInterface;
 use craft\helpers\Component;
 use craft\helpers\Io;
 use craft\web\Controller;
+use yii\web\NotFoundHttpException;
 use yii\web\Response;
 
 /**
@@ -61,14 +62,17 @@ class ToolsController extends Controller
     /**
      * Returns a database backup zip file to the browser.
      *
-     * @return void
+     * @return Response
+     * @throws NotFoundHttpException
      */
     public function actionDownloadBackupFile()
     {
         $filename = Craft::$app->getRequest()->getRequiredQueryParam('filename');
 
-        if (($filePath = Io::fileExists(Craft::$app->getPath()->getTempPath().'/'.$filename.'.zip')) == true) {
-            Craft::$app->getResponse()->sendFile(Io::getFilename($filePath), Io::getFileContents($filePath), ['forceDownload' => true]);
+        if (($filePath = Io::fileExists(Craft::$app->getPath()->getTempPath().'/'.$filename.'.zip')) === false) {
+            throw new NotFoundHttpException('Invalid backup name: '.$filename);
         }
+
+        return Craft::$app->getResponse()->sendFile($filePath);
     }
 }

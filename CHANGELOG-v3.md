@@ -351,6 +351,7 @@ Craft CMS 3.0 Working Changelog
 - Fixed a bug where the Instructions setting within newly-created sub-fields in a Matrix field’s settings were getting marked as required.
 - Fixed a bug where custom nested element sources registered by plugins were not getting Admin-defined custom table attributes.
 - Fixed a bug where searching by an `"exact phrase"` wasn’t working.
+- Fixed a bug where the Backup Database tool wasn’t downloading the DB backup if the “Download backup?” checkbox was checked.
 
 ## [v3.0.0-alpha.2948] - 2016-09-29
 
