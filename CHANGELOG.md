@@ -5,6 +5,7 @@ Craft CMS Changelog
 
 ### Changed
 - OPcache file caches are row cleared during auto-updates, preventing possible PHP/SQL errors from occurring after the new files have been put in place but before OPcache would have cleared its caches on its own. (This will only take effect in future updates, unfortunately. Servers with OPcache enabled may continue to experience unexpected behaviors while auto-updating until they have updated to this release.)
+- Updated Redactor to 1.3.2.
 
 ### Fixed
 - Fixed a bug where [IoHelper::getFiles()](https://craftcms.com/classreference/helpers/IOHelper#getFiles-detail) wasn’t returning files without extensions when the `$suppressErrors` argument was `true`.
