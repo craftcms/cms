@@ -83,7 +83,7 @@ class DbBackup extends Tool
 
         $zip = new ZipArchive();
 
-        if (!$zip->open($zipPath, ZipArchive::CREATE)) {
+        if ($zip->open($zipPath, ZipArchive::CREATE) !== true) {
             throw new ServerErrorHttpException('Cannot create zip at '.$zipPath);
         }
 

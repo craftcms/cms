@@ -359,7 +359,7 @@ class DashboardController extends Controller
             // Create the zip
             $zip = new ZipArchive();
 
-            if (!$zip->open($zipPath, ZipArchive::CREATE)) {
+            if ($zip->open($zipPath, ZipArchive::CREATE) !== true) {
                 throw new \Exception('Cannot create zip at '.$zipPath);
             }
 
