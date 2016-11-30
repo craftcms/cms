@@ -252,6 +252,8 @@ Craft CMS 3.0 Working Changelog
 - Removed events\EntryDeleteEvent.
 - Removed events\UserEvent.
 - Removed io\PclZip.
+- Removed io\Zip.
+- Removed io\ZipArchive.
 - Removed io\ZipInterface.
 - Removed models\LogEntry.
 - Removed models\Password.
