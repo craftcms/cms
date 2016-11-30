@@ -24,7 +24,7 @@ use craft\helpers\Io;
 use craft\helpers\StringHelper;
 use craft\models\VolumeFolder;
 use craft\web\UploadedFile;
-use yii\helpers\FileHelper;
+use craft\helpers\FileHelper;
 
 /**
  * Assets represents an Assets field.

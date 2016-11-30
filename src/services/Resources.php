@@ -17,7 +17,7 @@ use craft\helpers\StringHelper;
 use craft\helpers\Url;
 use Exception;
 use yii\base\Component;
-use yii\helpers\FileHelper;
+use craft\helpers\FileHelper;
 use yii\web\ForbiddenHttpException;
 use yii\web\NotFoundHttpException;
 use yii\web\ServerErrorHttpException;

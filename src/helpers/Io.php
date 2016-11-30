@@ -11,7 +11,7 @@ use Craft;
 use craft\dates\DateTime;
 use craft\errors\ErrorException;
 use yii\base\Exception;
-use yii\helpers\FileHelper;
+use craft\helpers\FileHelper;
 
 /**
  * Class Io

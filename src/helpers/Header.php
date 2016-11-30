@@ -8,7 +8,7 @@
 namespace craft\helpers;
 
 use Craft;
-use yii\helpers\FileHelper;
+use craft\helpers\FileHelper;
 
 /**
  * Class Header

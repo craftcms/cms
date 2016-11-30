@@ -25,7 +25,7 @@ use Imagine\Image\Palette\RGB;
 use Imagine\Image\Point;
 use Imagine\Imagick\Imagine as ImagickImagine;
 use Imagine\Imagick\Image as ImagickImage;
-use yii\helpers\FileHelper;
+use craft\helpers\FileHelper;
 
 /**
  * Raster class is used for raster image manipulations.

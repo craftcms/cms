@@ -37,6 +37,7 @@ Craft CMS 3.0 Working Changelog
 - Added events\SetAssetFilenameEvent.
 - Added events\SetElementRouteEvent.
 - Added events\SetElementTableAttributeHtmlEvent.
+- Added helpers\FileHelper.
 - Added helpers\MailerHelper.
 - Added validators\ArrayValidator.
 - Added validators\AssetFilenameValidator.

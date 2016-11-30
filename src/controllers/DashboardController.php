@@ -19,7 +19,7 @@ use craft\i18n\Locale;
 use craft\models\CraftSupport;
 use craft\web\Controller;
 use craft\web\UploadedFile;
-use yii\helpers\FileHelper;
+use craft\helpers\FileHelper;
 use yii\web\BadRequestHttpException;
 use yii\web\Response;
 use ZipArchive;

@@ -24,7 +24,7 @@ use craft\helpers\Json;
 use yii\base\Component;
 use yii\base\Exception;
 use yii\base\InvalidParamException;
-use yii\helpers\FileHelper;
+use craft\helpers\FileHelper;
 
 /**
  * The Plugins service provides APIs for managing plugins.
