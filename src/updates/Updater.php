@@ -24,6 +24,7 @@ use craft\helpers\FileHelper;
 use craft\helpers\Io;
 use craft\helpers\StringHelper;
 use craft\helpers\Update;
+use yii\base\ErrorException;
 use yii\base\Exception;
 use yii\helpers\Markdown;
 use ZipArchive;
@@ -299,15 +300,18 @@ class Updater
 						// If that was the last file in this folder, nuke the folder.
                         $folder = Io::getFolderName($fileToDelete);
 						if (Io::isFolderEmpty($folder)) {
-							Io::deleteFolder($folder);
+                            FileHelper::removeDirectory($folder);
 						}
 					}
 				} else {
 					if (Io::folderExists($fileToDelete)) {
 						if (Io::isWritable($fileToDelete)) {
 							Craft::info('Deleting .bak folder:'.$fileToDelete, __METHOD__);
-							Io::clearFolder($fileToDelete, true);
-							Io::deleteFolder($fileToDelete, true);
+							try {
+                                FileHelper::removeDirectory($fileToDelete);
+                            } catch(ErrorException $e) {
+                                Craft::error('Could not delete the folder '.$fileToDelete.'.', __METHOD__);
+                            }
 						}
 					}
 				}

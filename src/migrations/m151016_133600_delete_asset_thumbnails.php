@@ -4,7 +4,7 @@ namespace craft\migrations;
 
 use Craft;
 use craft\db\Migration;
-use craft\helpers\Io;
+use craft\helpers\FileHelper;
 
 /**
  * m151016_133600_delete_asset_thumbnails migration.
@@ -21,7 +21,7 @@ class m151016_133600_delete_asset_thumbnails extends Migration
     {
         Craft::info("Deleting Asset thumbnails");
         $folder = Craft::$app->getPath()->getAssetsPath().'/thumbs';
-        Io::deleteFolder($folder);
+        FileHelper::removeDirectory($folder);
     }
 
     /**

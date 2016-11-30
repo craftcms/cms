@@ -978,6 +978,7 @@ class Io
      * @param boolean $suppressErrors Whether to suppress any PHP Notices/Warnings/Errors (usually permissions related)
      *
      * @return boolean Whether the folder purge was successful
+     * @throws ErrorException
      */
     public static function clearFolder($path, $suppressErrors = false)
     {
@@ -991,7 +992,17 @@ class Io
                     if (static::fileExists($item, false, $suppressErrors)) {
                         static::deleteFile($item, $suppressErrors);
                     } else if (static::folderExists($item, false, $suppressErrors)) {
-                        static::deleteFolder($item, $suppressErrors);
+                        try {
+                            FileHelper::removeDirectory($item);
+                        } catch (ErrorException $e) {
+                            Craft::error('Could not delete the folder '.$path.'.', __METHOD__);
+
+                            if (!$suppressErrors) {
+                                throw $e;
+                            }
+
+                            return false;
+                        }
                     }
                 }
 
@@ -1030,39 +1041,6 @@ class Io
             }
         } else {
             Craft::error('Could not delete the file '.$path.' because the file does not exist.', __METHOD__);
-        }
-
-        return false;
-    }
-
-    /**
-     * Deletes a folder from the file system.
-     *
-     * @param string  $path           The path of the folder to delete
-     * @param boolean $suppressErrors Whether to suppress any PHP Notices/Warnings/Errors (usually permissions related)
-     *
-     * @return boolean Whether the folder deletion was successful
-     */
-    public static function deleteFolder($path, $suppressErrors = false)
-    {
-        $path = FileHelper::normalizePath($path);
-
-        if (static::folderExists($path, false, $suppressErrors)) {
-            if (static::isWritable($path, $suppressErrors)) {
-                // Empty the folder contents first.
-                static::clearFolder($path, $suppressErrors);
-
-                // Delete the folder.
-                if ($suppressErrors ? @rmdir($path) : rmdir($path)) {
-                    return true;
-                }
-
-                Craft::error('Could not delete the folder '.$path.'.', __METHOD__);
-            } else {
-                Craft::error('Could not delete the folder '.$path.' because it is not writable.', __METHOD__);
-            }
-        } else {
-            Craft::error('Could not delete the folder '.$path.' because the folder does not exist.', __METHOD__);
         }
 
         return false;

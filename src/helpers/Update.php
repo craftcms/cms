@@ -65,8 +65,7 @@ class Update
                 if (Io::folderExists($folderPath.'.bak')) {
                     Io::rename($folderPath, $folderPath.'-tmp');
                     Io::rename($folderPath.'.bak', $folderPath);
-                    Io::clearFolder($folderPath.'-tmp');
-                    Io::deleteFolder($folderPath.'-tmp');
+                    FileHelper::removeDirectory($folderPath.'-tmp');
                 }
             } // It's a file.
             else {
@@ -163,8 +162,7 @@ class Update
                             FileHelper::copyDirectory($sourceFile, $tempFolder);
                             Io::rename($destFile, $tempTempFolder);
                             Io::rename($tempFolder, $destFile);
-                            Io::clearFolder($tempTempFolder);
-                            Io::deleteFolder($tempTempFolder);
+                            FileHelper::removeDirectory($tempTempFolder);
                         } else {
                             Craft::info('Updating file: '.$destFile, __METHOD__);
 

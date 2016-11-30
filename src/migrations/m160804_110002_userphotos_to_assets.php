@@ -6,6 +6,7 @@ use Craft;
 use craft\db\Migration;
 use craft\db\Query;
 use craft\helpers\ElementHelper;
+use craft\helpers\FileHelper;
 use craft\helpers\Image;
 use craft\helpers\Io;
 use craft\helpers\Json;
@@ -28,7 +29,7 @@ class m160804_110002_userphotos_to_assets extends Migration
     {
         $this->_basePath = Craft::$app->getPath()->getStoragePath().'/'.'userphotos';
         Craft::info('Removing __default__ folder');
-        Io::deleteFolder($this->_basePath.'/__default__');
+        FileHelper::removeDirectory($this->_basePath.'/__default__');
 
         Craft::info('Changing the relative path from username/original.ext to original.ext');
         $affectedUsers = $this->_moveUserphotos();
@@ -334,7 +335,7 @@ class m160804_110002_userphotos_to_assets extends Migration
 
         if (is_array($folders)) {
             foreach ($folders as $folder) {
-                Io::deleteFolder($folder);
+                FileHelper::removeDirectory($folder);
             }
         }
     }
