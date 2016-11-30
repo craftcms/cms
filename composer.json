@@ -41,7 +41,10 @@
     "autoload": {
         "psr-4": {
             "craft\\": "src/"
-        }
+        },
+        "classmap": [
+            "lib/"
+        ]
     },
     "repositories": [
         {
