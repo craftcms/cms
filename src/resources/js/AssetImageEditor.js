@@ -216,7 +216,7 @@ Craft.AssetImageEditor = Garnish.Modal.extend(
 			});
 
 			// TODO take into account crop performed
-			this.zoomRatio = this.getZoomToFitRatio();
+			this.zoomRatio = this.getZoomToCoverRatio(this.getScaledImageDimensions());
 			this._enforceImageZoomRatio();
 
 			this.image.set({
@@ -227,14 +227,14 @@ Craft.AssetImageEditor = Garnish.Modal.extend(
 			this._repositionViewportMask();
 			this.canvas.renderAll();
 
-			this._setImageVerticeCoordinates();
+			//this._setImageVerticeCoordinates();
 		},
 
 		_createViewportMask: function () {
 			this.viewportMask = new fabric.Rect({
 				width: this.image.width,
 				height: this.image.height,
-				fill: 'rgba(127,0,0,0.5)',
+				fill: 'rgba(127,0,0,1)',
 				originX: 'center',
 				originY: 'center',
 				globalCompositeOperation: 'destination-in',
@@ -516,7 +516,7 @@ Craft.AssetImageEditor = Garnish.Modal.extend(
 					angle: this.viewportRotation + this.imageStraightenAngle
 				});
 
-				this.zoomRatio = this.getZoomToFitRatio();
+				this.zoomRatio = this.getZoomToCoverRatio(this.getScaledImageDimensions());
 
 				this._enforceImageZoomRatio();
 
@@ -585,30 +585,28 @@ Craft.AssetImageEditor = Garnish.Modal.extend(
 		},
 
 		/**
-		 * Return image zoom ratio depending on the straighten angle to cover the viewport fully
+		 * Return image zoom ratio depending on the straighten angle to cover a viewport by given dimensions
 		 */
-		getZoomToCoverRatio: function () {
+		getZoomToCoverRatio: function (dimensions) {
 			// Convert the angle to radians
 			var angleInRadians = Math.abs(this.imageStraightenAngle) * (Math.PI / 180);
 
 			// Calculate the dimensions of the scaled image using the magic of math
-			var scaledWidth = Math.sin(angleInRadians) * this.viewportHeight + Math.cos(angleInRadians) * this.viewportWidth;
-			var scaledHeight = Math.sin(angleInRadians) * this.viewportWidth + Math.cos(angleInRadians) * this.viewportHeight;
+			var scaledWidth = Math.sin(angleInRadians) * dimensions.height + Math.cos(angleInRadians) * dimensions.width;
+			var scaledHeight = Math.sin(angleInRadians) * dimensions.width + Math.cos(angleInRadians) * dimensions.height;
 
 			// Calculate the ratio
-			return Math.max(scaledWidth /  this.viewportWidth, scaledHeight / this.viewportHeight);
+			return Math.max(scaledWidth / dimensions.width, scaledHeight / dimensions.height);
 		},
 
 		/**
-		 * Return image zoom ratio depending on the straighten angle to fit inside the viewport
+		 * Return image zoom ratio depending on the straighten angle to fit inside a viewport by given dimensions
 		 */
-		getZoomToFitRatio: function () {
+		getZoomToFitRatio: function (dimensions) {
 			// Convert the angle to radians
 			var angleInRadians = Math.abs(this.imageStraightenAngle) * (Math.PI / 180);
 			var scaledHeight;
 			var scaledWidth;
-
-			var dimensions = this.getScaledImageDimensions();
 
 			// Calculate the bounding box for the rotated image.
 			var proportion = dimensions.height / dimensions.width;
