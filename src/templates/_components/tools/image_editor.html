@@ -1,12 +1,13 @@
 <div class="tabs">
     <ul>
-        <li data-view="transform"><i></i>{{ 'Transform'|t('app') }}</li>
+        <li data-view="rotate"><i></i>{{ 'Rotate'|t('app') }}</li>
+        <li data-view="crop"><i></i>{{ 'Crop'|t('app') }}</li>
         <li data-view="effects"><i></i>{{ 'Effects'|t('app') }}</li>
         <li data-view="filters"><i></i>{{ 'Filters'|t('app') }}</li>
     </ul>
 </div>
 <div class="views">
-    <div class="transform hidden" data-view="transform" data-transform="true">
+    <div class="rotate hidden" data-view="rotate" data-transform="true">
         <div class="rotate-buttons buttons">
             <div class="rotate-left btn icon">{{ 'Rotate Left'|t('app') }}</div>
             <div class="rotate-right btn icon">{{ 'Rotate Right'|t('app') }}</div>
@@ -15,6 +16,8 @@
             <div class="flip-vertical btn icon">{{ 'Flip Vertical'|t('app') }}</div>
             <div class="flip-horizontal btn icon">{{ 'Flip Horizontal'|t('app') }}</div>
         </div>
+    </div>
+    <div class="crop hidden" data-view="crop" data-transform="true">
         <div class="crop-buttons buttons">
             <div class="unconstrained btn icon menubtn">{{ 'Unconstrained'|t('app') }}</div>
             <div class="menu">
@@ -30,11 +33,10 @@
                     <li><a class="" data-attr="3:2">3:2</a></li>
                 </ul>
             </div>
-            <div class="focal-point btn icon">{{ 'Set Focal Point'|t('app') }}</div>
         </div>
     </div>
     <div class="effects hidden" data-view="effects">
-        Brightness and contrast
+        <div class="focal-point btn icon">{{ 'Set Focal Point'|t('app') }}</div>
     </div>
     <div class="filters hidden" data-view="filters">
         <ul>
