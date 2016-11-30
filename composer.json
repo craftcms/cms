@@ -51,6 +51,10 @@
         {
             "type": "vcs",
             "url": "https://github.com/pixelandtonic/flysystem-google-cloud"
+        },
+        {
+            "type": "composer",
+            "url": "https://asset-packagist.org"
         }
     ],
     "extra": {
