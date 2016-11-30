@@ -410,11 +410,13 @@ Craft.AssetImageEditor = Garnish.Modal.extend(
 
 		_handleTabClick: function(ev)
 		{
-			var $tab = $(ev.currentTarget);
-			var view = $tab.data('view');
-			this.$tabs.removeClass('selected');
-			$tab.addClass('selected');
-			this.showView(view);
+			if (!this.animationInProgress) {
+				var $tab = $(ev.currentTarget);
+				var view = $tab.data('view');
+				this.$tabs.removeClass('selected');
+				$tab.addClass('selected');
+				this.showView(view);
+			}
 		},
 
 		showView: function(view)
@@ -422,10 +424,17 @@ Craft.AssetImageEditor = Garnish.Modal.extend(
 			this.$views.addClass('hidden');
 			var $view = this.$views.filter('[data-view="'+view+'"]');
 			$view.removeClass('hidden');
-			if ($view.data('transform')) {
-				this.enableTransformMode();
+
+			if ($view.data('rotate')) {
+				this.enableSlider();
 			} else {
-				this.disableTransformMode();
+				this.disableSlider();
+			}
+
+			if ($view.data('crop')) {
+				this.enableCropMode();
+			} else {
+				this.disableCropMode();
 			}
 		},
 
@@ -813,36 +822,41 @@ Craft.AssetImageEditor = Garnish.Modal.extend(
 			return $element.parents('.disabled').length == 0;
 		},
 
-		enableTransformMode: function () {
+		enableSlider: function () {
 			this.$imageTools.removeClass('hidden');
 		},
 
-		disableTransformMode: function () {
+		disableSlider: function () {
 			this.$imageTools.addClass('hidden');
 		},
 
 		enableCropMode: function () {
+			if (!this.animationInProgress) {
 
-			this.zoomRatio = this.getZoomToFitRatio();
+				this.animationInProgress = true;
+				var imageDimensions = this.getScaledImageDimensions();
+				this.zoomRatio = this.getZoomToFitRatio(imageDimensions);
 
-			var callback = function () {
-				$('.cropping-tools .crop-mode-enabled', this.$tools).removeClass('hidden');
-				$('.cropping-tools .crop-mode-disabled', this.$tools).addClass('hidden');
+
+				this.image.animate({
+					width: imageDimensions.width * this.zoomRatio,
+					height: imageDimensions.height * this.zoomRatio,
+				}, {
+					onChange: this.canvas.renderAll.bind(this.canvas),
+					duration: this.settings.animationDuration,
+					onComplete: function () {this.animationInProgress = false;}.bind(this)
+				});
+
+				this.viewportMask.animate({
+					width: this.editorWidth,
+					height: this.editorHeight
+				}, {
+					duration: this.settings.animationDuration
+				});
+
+				//this.showCropper();
 				this.canvas.renderAll();
-			}.bind(this);
-
-			this.discardCrop(true);
-			this.showCropper();
-			this._switchEditingMode({mode: 'crop', onFinish: callback});
-
-			this.viewportMask.animate({
-				width: this.editorWidth,
-				height: this.editorHeight
-			}, {
-				duration: this.settings.animationDuration
-			});
-
-			this.canvas.renderAll();
+			}
 		},
 
 		cancelCropMode: function () {
