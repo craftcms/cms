@@ -72,6 +72,7 @@ SlideRuleInput = Garnish.Base.extend({
 		this.startLeft = this.$graduationsUl.position().left;
 
 		this.dragging = true;
+		this.onStart();
 	},
 
 	_handleTapMove: function(ev, touch)
@@ -126,7 +127,6 @@ SlideRuleInput = Garnish.Base.extend({
 			}
 
 			this.value = value;
-
 			this.onChange();
 		}
 	},
@@ -137,6 +137,7 @@ SlideRuleInput = Garnish.Base.extend({
 		{
 			ev.preventDefault();
 			this.dragging = false;
+			this.onEnd();
 		}
 	},
 
@@ -156,13 +157,27 @@ SlideRuleInput = Garnish.Base.extend({
 		return -((value + scaleMin) * this.graduationsCalculatedWidth / scaleMax - this.$graduations.width() / 2);
 	},
 
+	onStart: function () {
+		if (typeof this.settings.onChange == "function") {
+			this.settings.onStart(this);
+		}
+	},
+
 	onChange: function () {
 		if (typeof this.settings.onChange == "function") {
 			this.settings.onChange(this);
 		}
 	},
 
+	onEnd: function () {
+		if (typeof this.settings.onChange == "function") {
+			this.settings.onEnd(this);
+		}
+	},
+
 	defaultSettings: {
-		onChange: $.noop
+		onStart: $.noop,
+		onChange: $.noop,
+		onEnd: $.noop
 	}
 });

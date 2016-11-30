@@ -29,6 +29,7 @@ Craft.AssetImageEditor = Garnish.Modal.extend(
 		assetId: null,
 		cacheBust: null,
 		zoomRatio: 1,
+		grid: null,
 
 		// Cropping references
 		croppingCanvas: null,
@@ -108,9 +109,16 @@ Craft.AssetImageEditor = Garnish.Modal.extend(
 			this.$viewsContainer = $('.views', this.$body);
 			this.$views = $('> div', this.$viewsContainer);
 			this.$imageTools = $('.image-container .image-tools', this.$body);
+
 			this.straighteningInput = new SlideRuleInput("slide-rule", {
+				onStart: function () {
+					this._showGrid();
+				}.bind(this),
 				onChange: function (slider) {
 					this.straighten(slider);
+				}.bind(this),
+				onEnd: function () {
+					this._hideGrid();
 				}.bind(this)
 			});
 
@@ -120,7 +128,7 @@ Craft.AssetImageEditor = Garnish.Modal.extend(
 
 			this.updateSizeAndPosition();
 
-			this.canvas = new fabric.StaticCanvas('image-canvas', {backgroundColor: this.backgroundColor, hoverCursor: 'default'});
+			this.canvas = new fabric.StaticCanvas('image-canvas');
 			this.canvas.enableRetinaScaling = true;
 
 			// TODO add loading spinner
@@ -149,7 +157,7 @@ Craft.AssetImageEditor = Garnish.Modal.extend(
 				this._scaleAndCenterImage();
 				this._createViewportMask();
 
-				// Add listeners to buttons and draw the grid
+				// Add listeners to buttons
 				this._addControlListeners();
 
 				// Render it, finally
@@ -642,75 +650,58 @@ Craft.AssetImageEditor = Garnish.Modal.extend(
 		 *
 		 * @private
 		 */
-		_drawGrid: function () {
+		_showGrid: function () {
+			console.log('...');
 			var strokeOptions = {
-				strokeWidth: this.settings.gridLineThickness,
-				opacity: 1,
-				stroke: this.settings.gridLineColor
+				strokeWidth: 1,
+				stroke: 'rgba(255,255,255,0.5)'
 			};
 
-			var imageWidth = this.viewportWidth,
-				imageHeight = this.viewportHeight;
+			var lineCount = 8,
+				gridWidth = this.viewportMask.width,
+				gridHeight = this.viewportMask.height,
+				xStep = gridWidth / (lineCount + 1),
+				yStep = gridHeight / (lineCount + 1);
 
-			// draw Frame;
-			var gridLines = [
-				new fabric.Line([0, 0, imageWidth - 1, 0], strokeOptions),
-				new fabric.Line([0, imageHeight - 1, 0, 0], strokeOptions),
-				new fabric.Line([imageWidth - 1, 0, imageWidth - 1, imageHeight - 1], strokeOptions),
-				new fabric.Line([imageWidth, imageHeight - 1, 0, imageHeight - 1], strokeOptions)
-			];
+			// TODO account for cropped image
+			var grid = [
+				new fabric.Rect({
+					strokeWidth: 2,
+					stroke: 'rgba(255,255,255,1)',
+					originX: 'center',
+					originY: 'center',
+					width: gridWidth,
+					height: gridHeight,
+					left: gridWidth / 2,
+					top: gridHeight / 2,
+					fill: 'rgba(255,255,255,0)'
+				})];
 
-			/**
-			 * This function takes a length of a dimension, divides it in two, draws a line and recursively calls
-			 * itself on both of the new segments.
-			 */
-			var divideAndDraw = $.proxy(function (divisionLevel, dimensionToDivide, offset, lineLength, axis) {
+			for (var i = 1; i <= lineCount; i++) {
+				grid.push(new fabric.Line([i * xStep, 0, i * xStep, gridHeight], strokeOptions));
+			}
+			for (var i = 1; i <= lineCount; i++) {
+				grid.push(new fabric.Line([0, i * yStep, gridWidth, i * yStep], strokeOptions));
+			}
 
-				var divisionPoint = Math.ceil(dimensionToDivide / 2 - this.settings.gridLineThickness / 2 + offset);
-
-				// Set the start/end points depending on the axis we're drawing along
-				if (axis == 'x') {
-					pointOptions = [0, divisionPoint, lineLength, divisionPoint];
-				} else {
-					pointOptions = [divisionPoint, 0, divisionPoint, lineLength];
-				}
-
-				// Ensure the opacity gradually decreases
-				strokeOptions.opacity = 1 - ((divisionLevel - 1) * (1 / this.settings.gridLinePrecision));
-
-				gridLines.push(new fabric.Line(pointOptions, strokeOptions));
-
-				// If we're not done yet, divide and conquer both new segments
-				if (divisionLevel < this.settings.gridLinePrecision) {
-					divideAndDraw(divisionLevel + 1, dimensionToDivide / 2, offset, lineLength, axis);
-					divideAndDraw(divisionLevel + 1, dimensionToDivide / 2, offset + dimensionToDivide / 2, lineLength, axis);
-				}
-			}, this);
-
-			divideAndDraw(1, imageWidth, 0, imageHeight, 'y');
-			divideAndDraw(1, imageHeight, 0, imageWidth, 'x');
-
-			this.grid = new fabric.Group(gridLines, {
-				left: this.image.left - this.settings.gridLineThickness,
-				top: this.image.top - this.settings.gridLineThickness,
-				opacity: 0
+			this.grid = new fabric.Group(grid, {
+				left: this.editorWidth / 2,
+				top: this.editorHeight / 2,
+				originX: 'center',
+				originY: 'center',
+				angle: this.viewportMask.angle
 			});
 
-			this.viewport.add(this.grid);
-		},
-
-		/**
-		 * Show the grid
-		 */
-		showGrid: function () {
-			this.grid.set({opacity: 1});
+			this.canvas.add(this.grid);
+			this.canvas.renderAll();
 		},
 
 		/**
 		 * Hide the grid
 		 */
-		hideGrid: function () {
-			this.grid.set({opacity: 0});
+		_hideGrid: function () {
+			this.canvas.remove(this.grid);
+			this.canvas.renderAll();
 		},
 
 		onFadeOut: function () {
