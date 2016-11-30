@@ -56,7 +56,7 @@ class Update
                 $directory = Craft::$app->getPath()->getPluginsPath().'/'.$handle;
             }
 
-            $file = Io::normalizePathSeparators($directory.'/'.$rowData[0]);
+            $file = FileHelper::normalizePath($directory.'/'.$rowData[0]);
 
             // It's a folder
             if (static::isManifestLineAFolder($file)) {
@@ -136,8 +136,8 @@ class Update
                     $tempPath = $rowData[0];
                 }
 
-                $destFile = Io::normalizePathSeparators($destDirectory.'/'.$tempPath);
-                $sourceFile = Io::getRealPath(Io::normalizePathSeparators(rtrim($sourceTempFolder, '/').$sourceFileDirectory.'/'.$tempPath));
+                $destFile = FileHelper::normalizePath($destDirectory.'/'.$tempPath);
+                $sourceFile = Io::getRealPath(FileHelper::normalizePath(rtrim($sourceTempFolder, '/').$sourceFileDirectory.'/'.$tempPath));
 
                 switch (trim($rowData[1])) {
                     // update the file

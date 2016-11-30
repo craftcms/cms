@@ -20,6 +20,7 @@ use craft\errors\MinimumRequirementException;
 use craft\errors\MissingFileException;
 use craft\errors\UnpackPackageException;
 use craft\errors\ValidatePackageException;
+use craft\helpers\FileHelper;
 use craft\helpers\Io;
 use craft\helpers\StringHelper;
 use craft\helpers\Update;
@@ -285,7 +286,7 @@ class Updater
 
 				// In case we did the whole app folder
 				if ($rowData[0][0] == '*') {
-					$filesToDelete[] = Io::normalizePathSeparators($path).'.bak';
+					$filesToDelete[] = FileHelper::normalizePath($path).'.bak';
 				}
 			}
 
@@ -399,7 +400,7 @@ class Updater
 			}
 
 			$rowData = explode(';', $row);
-			$filePath = Io::normalizePathSeparators(($handle == 'craft' ? $pathService->getAppPath() : $pathService->getPluginsPath().'/'.$handle).'/'.$rowData[0]);
+			$filePath = FileHelper::normalizePath(($handle == 'craft' ? $pathService->getAppPath() : $pathService->getPluginsPath().'/'.$handle).'/'.$rowData[0]);
 
 			if (Update::isManifestLineAFolder($filePath)) {
 				$filePath = Update::cleanManifestFolderLine($filePath);
@@ -448,7 +449,7 @@ class Updater
 				}
 
 				$rowData = explode(';', $row);
-				$filePath = Io::normalizePathSeparators(($handle == 'craft' ? $pathService->getAppPath() : $pathService->getPluginsPath().'/'.$handle).'/'.$rowData[0]);
+				$filePath = FileHelper::normalizePath(($handle == 'craft' ? $pathService->getAppPath() : $pathService->getPluginsPath().'/'.$handle).'/'.$rowData[0]);
 
 				// It's a folder
 				if (Update::isManifestLineAFolder($filePath)) {

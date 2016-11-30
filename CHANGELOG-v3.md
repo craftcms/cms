@@ -287,6 +287,7 @@ Craft CMS 3.0 Working Changelog
 - Removed db\mysql\QueryBuilder::addColumnFirst().
 - Removed helpers\Io::getFile().
 - Removed helpers\Io::getFolder().
+- Removed helpers\Io::normalizePathSeparators(). Use helpers\FileHelper::normalizePath() instead.
 - Removed services\Assets::deleteAssetsByIds().
 - Removed services\Assets::deleteCategory().
 - Removed services\Assets::deleteCategoryById().

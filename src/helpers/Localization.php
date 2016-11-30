@@ -135,7 +135,7 @@ class Localization
         }
 
         // No luck in cache, check the file system.
-        $frameworkMessagePath = Io::normalizePathSeparators(Craft::getAlias('@app/framework/messages'));
+        $frameworkMessagePath = FileHelper::normalizePath(Craft::getAlias('@app/framework/messages'));
 
         foreach ($translationFiles as $translationFile) {
             $path = $frameworkMessagePath.'/'.$translationFile.'/yii.php';

@@ -1133,7 +1133,7 @@ class Plugins extends Component
                 $path = $pluginPath.'/'.$path;
             }
 
-            $path = Io::normalizePathSeparators($path);
+            $path = FileHelper::normalizePath($path);
             $alias = '@'.str_replace('\\', '/', trim($namespace, '\\'));
             $aliases[$alias] = $path;
 

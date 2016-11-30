@@ -12,6 +12,7 @@ use craft\base\Element;
 use craft\events\Event;
 use craft\helpers\ArrayHelper;
 use craft\helpers\ElementHelper;
+use craft\helpers\FileHelper;
 use craft\helpers\Html as HtmlHelper;
 use craft\helpers\Io;
 use craft\helpers\Json;
@@ -1138,8 +1139,8 @@ class View extends \yii\web\View
     private function _resolveTemplate($basePath, $name)
     {
         // Normalize the path and name
-        $basePath = Io::normalizePathSeparators($basePath);
-        $name = trim(Io::normalizePathSeparators($name), '/');
+        $basePath = FileHelper::normalizePath($basePath);
+        $name = trim(FileHelper::normalizePath($name), '/');
 
         // $name could be an empty string (e.g. to load the homepage template)
         if ($name) {
