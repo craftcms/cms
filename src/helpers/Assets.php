@@ -14,6 +14,7 @@ use craft\enums\PeriodType;
 use craft\events\Event;
 use craft\events\SetAssetFilenameEvent;
 use craft\models\VolumeFolder;
+use yii\base\Exception;
 
 /**
  * Class Assets
@@ -41,14 +42,20 @@ class Assets
      *
      * @param string $extension extension to use. "tmp" by default.
      *
-     * @return mixed
+     * @return string The temporary file path
+     * @throws Exception
      */
     public static function tempFilePath($extension = 'tmp')
     {
         $extension = strpos($extension, '.') !== false ? pathinfo($extension, PATHINFO_EXTENSION) : $extension;
         $filename = uniqid('assets', true).'.'.$extension;
+        $path = Craft::$app->getPath()->getTempPath().'/'.$filename;
 
-        return Io::createFile(Craft::$app->getPath()->getTempPath().'/'.$filename)->getRealPath();
+        if (!Io::createFile($path)) {
+            throw new Exception('Could not create temp file: '.$path);
+        }
+
+        return Io::getRealPath($path);
     }
 
     /**

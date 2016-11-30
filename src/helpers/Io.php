@@ -11,6 +11,7 @@ use Craft;
 use craft\dates\DateTime;
 use craft\errors\ErrorException;
 use craft\io\File;
+use yii\base\Exception;
 use yii\helpers\FileHelper;
 
 /**
@@ -621,7 +622,7 @@ class Io
      * @param string  $path           The path of the file to create
      * @param boolean $suppressErrors Whether to suppress any PHP Notices/Warnings/Errors (usually permissions related)
      *
-     * @return File|false The newly created file as a [[File]] object or false if we don't have write permissions
+     * @return boolean Whether the file was created successfully
      */
     public static function createFile($path, $suppressErrors = false)
     {
@@ -636,7 +637,7 @@ class Io
 
             @fclose($handle);
 
-            return new File($path);
+            return true;
         }
 
         return false;
@@ -1513,13 +1514,19 @@ class Io
      * @param string $extension The extension to use (defaults to "tmp")
      *
      * @return string The temporary file path
+     * @throws Exception
      */
     public static function getTempFilePath($extension = "tmp")
     {
         $extension = strpos($extension, '.') !== false ? pathinfo($extension, PATHINFO_EXTENSION) : $extension;
         $fileName = uniqid('craft', true).'.'.$extension;
+        $path = Craft::$app->getPath()->getTempPath().'/'.$fileName;
 
-        return static::createFile(Craft::$app->getPath()->getTempPath().'/'.$fileName)->getRealPath();
+        if (!static::createFile($path)) {
+            throw new Exception('Could not create temp file: '.$path);
+        }
+
+        return static::getRealPath($path);
     }
 
     // Private Methods
