@@ -72,35 +72,4 @@ class Zip
 
         return false;
     }
-
-    /**
-     * @param      $sourceZip
-     * @param      $pathToAdd
-     * @param      $basePath
-     * @param null $pathPrefix
-     *
-     * @return boolean
-     */
-    public static function add($sourceZip, $pathToAdd, $basePath, $pathPrefix = null)
-    {
-        $sourceZip = Io::normalizePathSeparators($sourceZip);
-        $pathToAdd = Io::normalizePathSeparators($pathToAdd);
-        $basePath = Io::normalizePathSeparators($basePath);
-
-        if (!Io::fileExists($sourceZip) || (!Io::fileExists($pathToAdd) && !Io::folderExists($pathToAdd))) {
-            Craft::error('Tried to add '.$pathToAdd.' to the zip file '.$sourceZip.', but one of them does not exist.', __METHOD__);
-
-            return false;
-        }
-
-        Craft::$app->getConfig()->maxPowerCaptain();
-
-        $zip = new ZipArchive();
-
-        if ($zip->add($sourceZip, $pathToAdd, $basePath, $pathPrefix)) {
-            return true;
-        }
-
-        return false;
-    }
 }
