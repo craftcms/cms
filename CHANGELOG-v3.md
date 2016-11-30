@@ -216,6 +216,7 @@ Craft CMS 3.0 Working Changelog
 - base\Element::getFieldsForElementQuery() has been moved to elements\db\ElementQuery::customFields(), and no longer has a $query argument.
 - base\Element::getTableAttributeHtml() is no longer static, and no longer has an $element argument.
 - base\Element::onAfterMoveElementInStructure() is no longer static, no longer has an $element argument, and has been renamed to afterMoveInStructure().
+- helpers\Io::createFolder() now returns `true` on success rather than an io\Folder object.
 - helpers\Io::folderExists() now returns the folder path without a trailing slash, if the folder exists.
 - helpers\Io::getFolderContents() now returns nested folder paths without trailing slashes.
 - helpers\Io::getFolderName() now returns the folder path without a trailing slash when the `$fullPath` argument is `true`.

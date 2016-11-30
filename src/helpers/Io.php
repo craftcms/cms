@@ -668,8 +668,7 @@ class Io
      * @param integer $permissions    The permissions to set the folder to
      * @param boolean $suppressErrors Whether to suppress any PHP Notices/Warnings/Errors (usually permissions related)
      *
-     * @return Folder|false The newly created folder as a [[Folder]] object or false if we don't have write
-     *                      permissions.
+     * @return boolean Whether the folder was created successfully
      */
     public static function createFolder($path, $permissions = null, $suppressErrors = false)
     {
@@ -692,7 +691,7 @@ class Io
             $suppressErrors ? @chmod($path, $permissions) : chmod($path, $permissions);
             $suppressErrors ? @umask($oldumask) : umask($oldumask);
 
-            return new Folder($path);
+            return true;
         }
 
         Craft::warning('Tried to create a folder at '.$path.', but the folder already exists.', __METHOD__);
