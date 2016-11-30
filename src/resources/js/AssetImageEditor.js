@@ -25,7 +25,6 @@ Craft.AssetImageEditor = Garnish.Modal.extend(
 		// References and parameters
 		canvas: null,
 		image: null,
-		viewport: null,
 		viewportMask: null,
 		assetId: null,
 		cacheBust: null,
@@ -55,8 +54,6 @@ Craft.AssetImageEditor = Garnish.Modal.extend(
 		// Editor parameters
 		editorHeight: 0,
 		editorWidth: 0,
-		viewportWidth: 0,
-		viewportHeight: 0,
 
 		// Image attributes
 		imageAngle: 0,
@@ -150,6 +147,7 @@ Craft.AssetImageEditor = Garnish.Modal.extend(
 
 				// Scale the image and center it on the canvas
 				this._scaleAndCenterImage();
+				this._createViewportMask();
 
 				// Add listeners to buttons and draw the grid
 				this._addControlListeners();
@@ -226,9 +224,39 @@ Craft.AssetImageEditor = Garnish.Modal.extend(
 				top: this.editorHeight / 2
 			});
 
+			this._repositionViewportMask();
 			this.canvas.renderAll();
 
 			this._setImageVerticeCoordinates();
+		},
+
+		_createViewportMask: function () {
+			this.viewportMask = new fabric.Rect({
+				width: this.image.width,
+				height: this.image.height,
+				fill: 'rgba(127,0,0,0.5)',
+				originX: 'center',
+				originY: 'center',
+				globalCompositeOperation: 'destination-in',
+				left: this.image.left,
+				top: this.image.top
+			});
+			this.canvas.add(this.viewportMask);
+			this.canvas.renderAll();
+		},
+
+		_repositionViewportMask: function () {
+			// TODO Take into account cropping performed
+			if (this.viewportMask) {
+				var dimensions = this.getScaledImageDimensions();
+				this.viewportMask.set({
+					width: dimensions.width,
+					height: dimensions.height,
+					left: this.editorWidth / 2,
+					top: this.editorHeight / 2
+				});
+				this.canvas.renderAll();
+			}
 		},
 
 		hasOrientationChanged: function () {
@@ -272,25 +300,6 @@ Craft.AssetImageEditor = Garnish.Modal.extend(
 				width: imageDimensions.width * this.zoomRatio,
 				height: imageDimensions.height * this.zoomRatio,
 			});
-		},
-
-		/**
-		 * Create the cropping mask so that the image is cropped to viewport when rotating
-		 *
-		 * @returns fabric.Rect
-		 */
-		_createViewportMask: function (dimensions) {
-			var mask = new fabric.Rect({
-				width: dimensions.width,
-				height: dimensions.height,
-				fill: '#000',
-				left: dimensions.left + (dimensions.width / 2),
-				top: dimensions.top + (dimensions.height / 2),
-				originX: 'center',
-				originY: 'center'
-			});
-			mask.globalCompositeOperation = 'destination-in';
-			return mask;
 		},
 
 		/**
@@ -434,6 +443,11 @@ Craft.AssetImageEditor = Garnish.Modal.extend(
 				var imageDimensions = this.getScaledImageDimensions();
 				var newAngle = this.image.getAngle() + degrees;
 
+				this.viewportMask.animate({
+					angle: this.viewportRotation
+				}, {
+					duration: this.settings.animationDuration
+				});
 				// Animate the rotations
 				this.image.animate({
 					angle: newAngle,
@@ -615,21 +629,6 @@ Craft.AssetImageEditor = Garnish.Modal.extend(
 				scale = Math.min(horiScale, vertScale);
 			}
 
-			// TODO remove debugger
-			/*
-			 this._debug(new fabric.Rect({
-			 stroke: '#fff',
-			 strokeWidth: 2,
-			 width: boundingBoxWidth * scale,
-			 height: boundingBoxHeight * scale,
-			 originX: 'center',
-			 originY: 'center',
-			 left: this.editorWidth / 2,
-			 top: this.editorHeight / 2,
-			 fill: 'rgba(127,0,0,0.5)'
-			 }));
-			 */
-
 			return scale;
 		},
 
@@ -804,17 +803,17 @@ Craft.AssetImageEditor = Garnish.Modal.extend(
 			return filterParams;
 		},
 
-        show: function()
-        {
-            this.base();
+		show: function()
+		{
+			this.base();
 
-            $('html').addClass('noscroll');
-        },
+			$('html').addClass('noscroll');
+		},
 
 		hide: function () {
 			this.removeAllListeners();
 			this.straighteningInput.removeAllListeners();
-            $('html').removeClass('noscroll');
+			$('html').removeClass('noscroll');
 			this.base();
 		},
 
