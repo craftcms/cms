@@ -456,8 +456,7 @@ class Updater
 					$folderPath = Update::cleanManifestFolderLine($filePath);
 					if (Io::folderExists($folderPath)) {
 						Craft::info('Backing up folder '.$folderPath, __METHOD__);
-						Io::createFolder($folderPath.'.bak');
-						Io::copyFolder($folderPath, $folderPath.'.bak');
+						FileHelper::copyDirectory($folderPath, $folderPath.'.bak');
 					}
 				} // It's a file.
 				else {

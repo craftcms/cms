@@ -907,67 +907,6 @@ class Io
     }
 
     /**
-     * Will copy the contents of one folder to another.
-     *
-     * @param string  $path           The source path to copy
-     * @param string  $destination    The destination path to copy to
-     * @param boolean $validate       Whether to compare the size of the folders after the copy is complete
-     * @param boolean $suppressErrors Whether to suppress any PHP Notices/Warnings/Errors (usually permissions related)
-     *
-     * @return boolean Whether the copy was successful
-     */
-    public static function copyFolder($path, $destination, $validate = false, $suppressErrors = false)
-    {
-        $path = FileHelper::normalizePath($path);
-        $destination = FileHelper::normalizePath($destination);
-
-        // Create the destination folder if it doesn't exist yet
-        if (!static::folderExists($destination, false, $suppressErrors)) {
-            static::createFolder($destination, null, $suppressErrors);
-        }
-
-        if (static::folderExists($path, $suppressErrors)) {
-            $folderContents = static::getFolderContents($path, true, null, true, $suppressErrors);
-
-            if ($folderContents) {
-                foreach ($folderContents as $item) {
-                    $itemDest = FileHelper::normalizePath($destination.str_replace($path, '', $item));
-
-                    $destFolder = static::getFolderName($itemDest, true, $suppressErrors);
-
-                    if (!static::folderExists($destFolder, false, $suppressErrors)) {
-                        static::createFolder($destFolder, null, $suppressErrors);
-                    }
-
-                    if (static::fileExists($item, false, $suppressErrors)) {
-                        $result = $suppressErrors ? @copy($item, $itemDest) : copy($item, $itemDest);
-
-                        if ($result) {
-                            Craft::error('Could not copy file from '.$item.' to '.$itemDest.'.', __METHOD__);
-                        }
-                    } else if (static::folderExists($item, false, $suppressErrors)) {
-                        if (!static::createFolder($itemDest, $suppressErrors)) {
-                            Craft::error('Could not create destination folder '.$itemDest, __METHOD__);
-                        }
-                    }
-                }
-            }
-
-            if ($validate) {
-                if (static::getFolderSize($path, $suppressErrors) !== static::getFolderSize($destination, $suppressErrors)) {
-                    return false;
-                }
-            }
-
-            return true;
-        }
-
-        Craft::error('Cannot copy folder '.$path.' to '.$destination.' because the source path does not exist.', __METHOD__);
-
-        return false;
-    }
-
-    /**
      * Renames a given file or folder to a new name.
      *
      * @param string  $path           The original path of the file or folder

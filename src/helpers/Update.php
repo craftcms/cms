@@ -160,8 +160,7 @@ class Update
                             $tempFolder = $destFile.StringHelper::UUID();
                             $tempTempFolder = $destFile.'-tmp';
 
-                            Io::createFolder($tempFolder);
-                            Io::copyFolder($sourceFile, $tempFolder);
+                            FileHelper::copyDirectory($sourceFile, $tempFolder);
                             Io::rename($destFile, $tempTempFolder);
                             Io::rename($tempFolder, $destFile);
                             Io::clearFolder($tempTempFolder);
