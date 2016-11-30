@@ -39,6 +39,12 @@
         "mikehaertl/php-shellcommand": "1.2.2",
         "twig/twig": "1.28.2"
     },
+    "require-dev": {
+      "codeception/codeception": "*",
+      "codeception/verify": "*",
+      "codeception/specify": "*",
+      "codeception/mockery-module": "*"
+    },
     "autoload": {
         "psr-4": {
             "craft\\": "src/"
