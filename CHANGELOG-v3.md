@@ -286,6 +286,7 @@ Craft CMS 3.0 Working Changelog
 - Removed db\mysql\QueryBuilder::addColumnAfter().
 - Removed db\mysql\QueryBuilder::addColumnBefore().
 - Removed db\mysql\QueryBuilder::addColumnFirst().
+- Removed helpers\Io::changeGroup().
 - Removed helpers\Io::copyFolder(). Use helpers\FileHelper::copyDirectory() instead.
 - Removed helpers\Io::deleteFolder(). Use helpers\FileHelper::removeDirectory() instead.
 - Removed helpers\Io::getFolderSize().

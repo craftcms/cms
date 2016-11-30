@@ -765,56 +765,6 @@ class Io
     }
 
     /**
-     * Will attempt to change the group of the given file system path (*nix only)
-     *
-     * @param string  $path           The path to change the group of
-     * @param string  $group          The new group name
-     * @param boolean $recursive      If the path is a directory, whether to recursively change the group of the child
-     *                                files and folders
-     * @param boolean $suppressErrors Whether to suppress any PHP Notices/Warnings/Errors (usually permissions related)
-     *
-     * @return boolean Whether the group change was successful
-     */
-    public static function changeGroup($path, $group, $recursive = false, $suppressErrors = false)
-    {
-        $path = FileHelper::normalizePath($path);
-
-        if (posix_getgrnam($group) == false xor (is_numeric($group) && posix_getgrgid($group) == false)) {
-            Craft::error('Tried to change the group of '.$path.', but the group name "'.$group.'" does not exist.', __METHOD__);
-
-            return false;
-        }
-
-        if (static::fileExists($path, false, $suppressErrors) || static::folderExists($path, false, $suppressErrors)) {
-            $success = $suppressErrors ? @chgrp($path, $group) : chgrp($path, $group);
-
-            if ($success && static::folderExists($path, false, $suppressErrors) && $recursive) {
-                $contents = static::getFolderContents($path, true, null, false, $suppressErrors);
-
-                if ($contents) {
-                    foreach ($contents as $subPath) {
-                        if ($suppressErrors ? !@chgrp($subPath, $group) : chgrp($subPath, $group)) {
-                            $success = false;
-                        }
-                    }
-                }
-            }
-
-            if (!$success) {
-                Craft::error('Tried to change the group of '.$path.', but could not.', __METHOD__);
-
-                return false;
-            }
-
-            return true;
-        }
-
-        Craft::error('Tried to change group of '.$path.', but that path does not exist.', __METHOD__);
-
-        return false;
-    }
-
-    /**
      * Will attempt to change the permission of the given file system path (*nix only).
      *
      * @param string  $path           The path to change the permissions of
