@@ -651,7 +651,6 @@ Craft.AssetImageEditor = Garnish.Modal.extend(
 		 * @private
 		 */
 		_showGrid: function () {
-			console.log('...');
 			var strokeOptions = {
 				strokeWidth: 1,
 				stroke: 'rgba(255,255,255,0.5)'
