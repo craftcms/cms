@@ -23,9 +23,9 @@ use craft\errors\ValidatePackageException;
 use craft\helpers\Io;
 use craft\helpers\StringHelper;
 use craft\helpers\Update;
-use craft\io\Zip;
 use yii\base\Exception;
 use yii\helpers\Markdown;
+use ZipArchive;
 
 /**
  * Class Updater
@@ -349,11 +349,33 @@ class Updater
 	{
 		Craft::info('Unzipping package to '.$unzipFolder, __METHOD__);
 
-		if (Zip::unzip($downloadFilePath, $unzipFolder)) {
-			return true;
-		}
+        Craft::$app->getConfig()->maxPowerCaptain();
 
-		return false;
+        Io::ensureFolderExists($unzipFolder);
+
+        if (!Io::clearFolder($unzipFolder)) {
+            Craft::error('Tried to clear the contents of the unzip destination folder, but could not: '.$unzipFolder, __METHOD__);
+
+            return false;
+        }
+
+        $zip = new ZipArchive();
+        if ($zip->open($downloadFilePath, \ZipArchive::CHECKCONS) !== true) {
+            Craft::error('Could not open the zip file: '.$downloadFilePath, __METHOD__);
+
+            return false;
+        }
+
+        $success = $zip->extractTo($unzipFolder);
+        $zip->close();
+
+        if (!$success) {
+            Craft::error('There was an error unzipping the file: '.$downloadFilePath, __METHOD__);
+
+            return false;
+        }
+
+        return true;
 	}
 
 	/**
