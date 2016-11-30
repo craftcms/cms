@@ -578,15 +578,4 @@ class DashboardController extends Controller
             ]);
         }
     }
-
-    /**
-     * @return string
-     */
-    private function _createZip()
-    {
-        $zipFile = Craft::$app->getPath()->getTempPath().'/'.StringHelper::UUID().'.zip';
-        Io::createFile($zipFile);
-
-        return $zipFile;
-    }
 }
