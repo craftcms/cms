@@ -10,7 +10,6 @@ namespace craft\helpers;
 use Craft;
 use craft\dates\DateTime;
 use craft\errors\ErrorException;
-use craft\io\File;
 use yii\base\Exception;
 use yii\helpers\FileHelper;
 
@@ -87,23 +86,6 @@ class Io
             if ($caseInsensitive) {
                 return StringHelper::toLowerCase(static::getFolderName($path, true, $suppressErrors)) === StringHelper::toLowerCase($path);
             }
-        }
-
-        return false;
-    }
-
-    /**
-     * If the file exists on the file system will return a new File instance, otherwise false.
-     *
-     * @param string  $path           The path to the file
-     * @param boolean $suppressErrors Whether to suppress any PHP Notices/Warnings/Errors (usually permissions related)
-     *
-     * @return File|false The file, or false if it doesn’t exist
-     */
-    public static function getFile($path, $suppressErrors = false)
-    {
-        if (static::fileExists($path, false, $suppressErrors)) {
-            return new File($path);
         }
 
         return false;

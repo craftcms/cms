@@ -253,6 +253,8 @@ Craft CMS 3.0 Working Changelog
 - Removed events\DeleteUserEvent.
 - Removed events\EntryDeleteEvent.
 - Removed events\UserEvent.
+- Removed io\BaseIO.
+- Removed io\File.
 - Removed io\Folder.
 - Removed io\PclZip.
 - Removed io\Zip.
@@ -282,6 +284,7 @@ Craft CMS 3.0 Working Changelog
 - Removed db\mysql\QueryBuilder::addColumnAfter().
 - Removed db\mysql\QueryBuilder::addColumnBefore().
 - Removed db\mysql\QueryBuilder::addColumnFirst().
+- Removed helpers\Io::getFile().
 - Removed helpers\Io::getFolder().
 - Removed services\Assets::deleteAssetsByIds().
 - Removed services\Assets::deleteCategory().
