@@ -9,7 +9,7 @@ namespace craft\helpers;
 
 use Craft;
 use craft\dates\DateTime;
-use ErrorException;
+use yii\base\ErrorException;
 use yii\base\Exception;
 
 /**
