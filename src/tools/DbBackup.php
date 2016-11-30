@@ -10,7 +10,6 @@ namespace craft\tools;
 use Craft;
 use craft\base\Tool;
 use craft\helpers\Io;
-use craft\io\Zip;
 use yii\web\ServerErrorHttpException;
 use ZipArchive;
 
