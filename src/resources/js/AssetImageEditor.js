@@ -660,48 +660,50 @@ Craft.AssetImageEditor = Garnish.Modal.extend(
 		 * @private
 		 */
 		_showGrid: function () {
-			var strokeOptions = {
-				strokeWidth: 1,
-				stroke: 'rgba(255,255,255,0.5)'
-			};
+			if (!this.grid) {
+				var strokeOptions = {
+					strokeWidth: 1,
+					stroke: 'rgba(255,255,255,0.5)'
+				};
 
-			var lineCount = 8,
-				gridWidth = this.viewportMask.width,
-				gridHeight = this.viewportMask.height,
-				xStep = gridWidth / (lineCount + 1),
-				yStep = gridHeight / (lineCount + 1);
+				var lineCount = 8,
+					gridWidth = this.viewportMask.width,
+					gridHeight = this.viewportMask.height,
+					xStep = gridWidth / (lineCount + 1),
+					yStep = gridHeight / (lineCount + 1);
 
-			// TODO account for cropped image
-			var grid = [
-				new fabric.Rect({
-					strokeWidth: 2,
-					stroke: 'rgba(255,255,255,1)',
+				// TODO account for cropped image
+				var grid = [
+					new fabric.Rect({
+						strokeWidth: 2,
+						stroke: 'rgba(255,255,255,1)',
+						originX: 'center',
+						originY: 'center',
+						width: gridWidth,
+						height: gridHeight,
+						left: gridWidth / 2,
+						top: gridHeight / 2,
+						fill: 'rgba(255,255,255,0)'
+					})];
+
+				for (var i = 1; i <= lineCount; i++) {
+					grid.push(new fabric.Line([i * xStep, 0, i * xStep, gridHeight], strokeOptions));
+				}
+				for (var i = 1; i <= lineCount; i++) {
+					grid.push(new fabric.Line([0, i * yStep, gridWidth, i * yStep], strokeOptions));
+				}
+
+				this.grid = new fabric.Group(grid, {
+					left: this.editorWidth / 2,
+					top: this.editorHeight / 2,
 					originX: 'center',
 					originY: 'center',
-					width: gridWidth,
-					height: gridHeight,
-					left: gridWidth / 2,
-					top: gridHeight / 2,
-					fill: 'rgba(255,255,255,0)'
-				})];
+					angle: this.viewportMask.angle
+				});
 
-			for (var i = 1; i <= lineCount; i++) {
-				grid.push(new fabric.Line([i * xStep, 0, i * xStep, gridHeight], strokeOptions));
+				this.canvas.add(this.grid);
+				this.canvas.renderAll();
 			}
-			for (var i = 1; i <= lineCount; i++) {
-				grid.push(new fabric.Line([0, i * yStep, gridWidth, i * yStep], strokeOptions));
-			}
-
-			this.grid = new fabric.Group(grid, {
-				left: this.editorWidth / 2,
-				top: this.editorHeight / 2,
-				originX: 'center',
-				originY: 'center',
-				angle: this.viewportMask.angle
-			});
-
-			this.canvas.add(this.grid);
-			this.canvas.renderAll();
 		},
 
 		/**
@@ -709,6 +711,7 @@ Craft.AssetImageEditor = Garnish.Modal.extend(
 		 */
 		_hideGrid: function () {
 			this.canvas.remove(this.grid);
+			this.grid = null;
 			this.canvas.renderAll();
 		},
 
@@ -859,7 +862,9 @@ Craft.AssetImageEditor = Garnish.Modal.extend(
 			}
 		},
 
-		cancelCropMode: function () {
+		disableCropMode: function () {
+			console.log('l');
+			return;
 			this.zoomRatio = this.getZoomToCoverRatio();
 
 			var callback = function () {
