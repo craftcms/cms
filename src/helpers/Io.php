@@ -9,7 +9,7 @@ namespace craft\helpers;
 
 use Craft;
 use craft\dates\DateTime;
-use craft\errors\ErrorException;
+use ErrorException;
 use yii\base\Exception;
 
 /**
@@ -659,14 +659,9 @@ class Io
                 // We haven't cached file lock information yet and this is not a noFileLock request.
                 if (($useFileLock = Craft::$app->getCache()->get('useWriteFileLock')) === false && !$noFileLock) {
                     // For file systems that don't support file locking... LOOKING AT YOU NFS!!!
-                    set_error_handler([new Io(), 'handleError']);
-
                     try {
                         Craft::info('Trying to write to file at '.$path.' using LOCK_EX.', __METHOD__);
                         if (static::_writeToFile($path, $contents, true, $append, $suppressErrors)) {
-                            // Restore quickly.
-                            restore_error_handler();
-
                             // Cache the file lock info to use LOCK_EX for 2 months.
                             Craft::info('Successfully wrote to file at '.$path.' using LOCK_EX. Saving in cache.', __METHOD__);
                             Craft::$app->getCache()->set('useWriteFileLock', 'yes', 5184000);
@@ -684,9 +679,6 @@ class Io
                             return true;
                         }
                     } catch (ErrorException $e) {
-                        // Restore here before we attempt to write again.
-                        restore_error_handler();
-
                         // Try again without the lock flag.
                         Craft::info('Trying to write to file at '.$path.' without LOCK_EX.', __METHOD__);
                         if (static::_writeToFile($path, $contents, false, $append, $suppressErrors)) {
@@ -697,9 +689,6 @@ class Io
                             return true;
                         }
                     }
-
-                    // Make sure we're really restored
-                    restore_error_handler();
                 } else {
                     // If cache says use LOCK_X and this is not a noFileLock request.
                     if ($useFileLock == 'yes' && !$noFileLock) {
@@ -1360,31 +1349,6 @@ class Io
         }
 
         return $parentPath;
-    }
-
-    /**
-     * Custom error handler used in Io used for detecting if the file system
-     * supports exclusive locks when writing.
-     *
-     * @param       $errNo
-     * @param       $errStr
-     * @param       $errFile
-     * @param       $errLine
-     * @param array $errContext
-     *
-     * @throws ErrorException
-     * @return boolean
-     */
-    public function handleError($errNo, $errStr, $errFile, $errLine, array $errContext)
-    {
-        // The error was suppressed with the @-operator
-        if (0 === error_reporting()) {
-            return false;
-        }
-
-        $message = 'ErrNo: '.$errNo.': '.$errStr.' in file: '.$errFile.' on line: '.$errLine.'.';
-
-        throw new ErrorException($message, 0);
     }
 
     /**

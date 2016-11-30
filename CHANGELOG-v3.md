@@ -250,6 +250,7 @@ Craft CMS 3.0 Working Changelog
 - Removed support for EXIF data removal and automatic image rotating for servers without ImageMagick installed.
 - Removed db\DbBackup.
 - Removed enums\BaseEnum.
+- Removed errors\ErrorException.
 - Removed events\CategoryEvent.
 - Removed events\DeleteUserEvent.
 - Removed events\EntryDeleteEvent.
