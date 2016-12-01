@@ -41,6 +41,29 @@ class FileHelper extends \yii\helpers\FileHelper
     }
 
     /**
+     * Removes a file.
+     *
+     * @param string $file the file to be deleted
+     *
+     * @throws ErrorException in case of failure
+     */
+    public static function removeFile($file)
+    {
+        // Copied from [[removeDirectory()]]
+        try {
+            unlink($file);
+        } catch (ErrorException $e) {
+            if (DIRECTORY_SEPARATOR === '\\') {
+                // last resort measure for Windows
+                $lines = [];
+                exec("DEL /F/Q \"$file\"", $lines, $deleteError);
+            } else {
+                throw $e;
+            }
+        }
+    }
+
+    /**
      * Removes all of a directory’s contents recursively.
      *
      * @param string $dir     the directory to be deleted recursively.
@@ -72,17 +95,7 @@ class FileHelper extends \yii\helpers\FileHelper
             if (is_dir($path)) {
                 static::removeDirectory($path, $options);
             } else {
-                try {
-                    unlink($path);
-                } catch (ErrorException $e) {
-                    if (DIRECTORY_SEPARATOR === '\\') {
-                        // last resort measure for Windows
-                        $lines = [];
-                        exec("DEL /F/Q \"$path\"", $lines, $deleteError);
-                    } else {
-                        throw $e;
-                    }
-                }
+                static::removeFile($path);
             }
         }
         closedir($handle);
