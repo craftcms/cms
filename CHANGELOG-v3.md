@@ -312,6 +312,7 @@ Craft CMS 3.0 Working Changelog
 - Removed services\Plugins::call().
 - Removed services\Plugins::callFirst().
 - Removed services\Tags::saveTag().
+- Removed services\Updates::flushUpdateInfoFromCache().
 - Removed services\Users::changePassword().
 - Removed services\Users::deleteUser().
 - Removed the $attribute argument from base\ApplicationTrait::getInfo().

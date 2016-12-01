@@ -15,7 +15,6 @@ use craft\errors\DbUpdateException;
 use craft\errors\DownloadPackageException;
 use craft\errors\FileException;
 use craft\errors\FilePermissionsException;
-use craft\errors\InvalidateCacheException;
 use craft\errors\MinimumRequirementException;
 use craft\errors\MissingFileException;
 use craft\errors\UnpackPackageException;
@@ -26,6 +25,7 @@ use craft\helpers\StringHelper;
 use craft\helpers\Update;
 use yii\base\ErrorException;
 use yii\base\Exception;
+use yii\base\UserException;
 use yii\helpers\Markdown;
 use ZipArchive;
 
@@ -217,15 +217,26 @@ class Updater
 	 * @param string $handle
 	 *
 	 * @return boolean
-	 * @throws InvalidateCacheException
+	 * @throws UserException
 	 */
 	public function cleanUp($uid, $handle)
 	{
-		// Clear the updates cache.
-		Craft::info('Clearing the update cache.', __METHOD__);
-		if (!Craft::$app->getUpdates()->flushUpdateInfoFromCache()) {
-			throw new InvalidateCacheException(Craft::t('app', 'The update was performed successfully, but there was a problem invalidating the update cache.'));
-		}
+		// Clear the update info cache
+		Craft::info('Flushing update info from cache.', __METHOD__);
+        if (!Craft::$app->getCache()->flush()) {
+            Craft::error('Could not flush the update info from cache.', __METHOD__);
+        }
+
+        // Clear the compiled templates
+        Craft::info('Deleting compiled templates.', __METHOD__);
+        $compiledTemplatesPath = Craft::$app->getPath()->getCompiledTemplatesPath();
+        if (is_dir($compiledTemplatesPath)) {
+            try {
+                FileHelper::clearDirectory($compiledTemplatesPath);
+            } catch (\Exception $e) {
+                Craft::error('Could not delete compiled templates: '.$e->getMessage(), __METHOD__);
+            }
+        }
 
 		// If uid !== false, then it's an auto-update.
 		if ($uid !== false) {

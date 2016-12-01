@@ -236,22 +236,6 @@ class Updates extends Component
     }
 
     /**
-     * @return boolean
-     */
-    public function flushUpdateInfoFromCache()
-    {
-        Craft::info('Flushing update info from cache.', __METHOD__);
-
-        if (Io::clearFolder(Craft::$app->getPath()->getCompiledTemplatesPath(),
-                true) && Craft::$app->getCache()->flush()
-        ) {
-            return true;
-        }
-
-        return false;
-    }
-
-    /**
      * @param PluginInterface $plugin
      *
      * @return boolean
