@@ -155,7 +155,7 @@ Craft.AssetImageEditor = Garnish.Modal.extend(
 				this.canvas.add(this.image);
 
 				// Scale the image and center it on the canvas
-				this._scaleAndCenterImage();
+				this._repositionImage();
 				this._createViewportMask();
 
 				// Add listeners to buttons
@@ -206,7 +206,7 @@ Craft.AssetImageEditor = Garnish.Modal.extend(
 			if (this.$editorContainer) {
 				// If image is already loaded, make sure it looks pretty.
 				if (this.image) {
-					this._scaleAndCenterImage();
+					this._repositionImage();
 				}
 			}
 		},
@@ -214,7 +214,7 @@ Craft.AssetImageEditor = Garnish.Modal.extend(
 		/**
 		 * Scale and center the image in the editor
 		 */
-		_scaleAndCenterImage: function () {
+		_repositionImage: function () {
 
 			this.editorHeight = this.$editorContainer.innerHeight();
 			this.editorWidth = this.$editorContainer.innerWidth();
@@ -224,19 +224,26 @@ Craft.AssetImageEditor = Garnish.Modal.extend(
 				height: this.editorHeight
 			});
 
-			// TODO take into account crop performed
-			this.zoomRatio = this.getZoomToCoverRatio(this.getScaledImageDimensions());
-			this._enforceImageZoomRatio();
+			if (this.currentView == 'crop') {
+				this.zoomRatio = this.getZoomToFitRatio(this.getScaledImageDimensions());
+				this._setImageVerticeCoordinates();
+			} else {
+				this.zoomRatio = this.getZoomToCoverRatio(this.getScaledImageDimensions());
+			}
 
+			this._calculateViewportMask();
+			this._calculateImagePosition();
+			this._zoomImage();
+
+			this.canvas.renderAll();
+		},
+
+		_calculateImagePosition: function () {
+			// TODO take into account crop performed
 			this.image.set({
 				left: this.editorWidth / 2,
 				top: this.editorHeight / 2
 			});
-
-			this._repositionViewportMask();
-			this.canvas.renderAll();
-
-			//this._setImageVerticeCoordinates();
 		},
 
 		_createViewportMask: function () {
@@ -254,16 +261,24 @@ Craft.AssetImageEditor = Garnish.Modal.extend(
 			this.canvas.renderAll();
 		},
 
-		_repositionViewportMask: function () {
+		_calculateViewportMask: function () {
 			// TODO Take into account cropping performed
 			if (this.viewportMask) {
-				var dimensions = this.getScaledImageDimensions();
-				this.viewportMask.set({
-					width: dimensions.width,
-					height: dimensions.height,
+				var dimensions = {};
+				if (this.currentView == 'crop') {
+					dimensions = {
+						width: this.editorWidth,
+						height: this.editorHeight
+					};
+				} else {
+					dimensions = this.getScaledImageDimensions();
+				}
+
+				this.viewportMask.set($.extend({}, dimensions, {
 					left: this.editorWidth / 2,
 					top: this.editorHeight / 2
-				});
+				}));
+
 				this.canvas.renderAll();
 			}
 		},
@@ -303,7 +318,7 @@ Craft.AssetImageEditor = Garnish.Modal.extend(
 		 * Enforce the image's zoom ratio.
 		 * @private
 		 */
-		_enforceImageZoomRatio: function () {
+		_zoomImage: function () {
 			var imageDimensions = this.getScaledImageDimensions();
 			this.image.set({
 				width: imageDimensions.width * this.zoomRatio,
@@ -485,7 +500,7 @@ Craft.AssetImageEditor = Garnish.Modal.extend(
 						this.image.set({angle: cleanAngle});
 						this.animationInProgress = false;
 
-						this._scaleAndCenterImage();
+						this._repositionImage();
 					}, this)
 				});
 			}
@@ -516,7 +531,7 @@ Craft.AssetImageEditor = Garnish.Modal.extend(
 					duration: this.settings.animationDuration,
 					onComplete: $.proxy(function () {
 						this.animationInProgress = false;
-						this._scaleAndCenterImage();
+						this._repositionImage();
 					}, this)
 				});
 			}
@@ -540,7 +555,7 @@ Craft.AssetImageEditor = Garnish.Modal.extend(
 
 				this.zoomRatio = this.getZoomToCoverRatio(this.getScaledImageDimensions());
 
-				this._enforceImageZoomRatio();
+				this._zoomImage();
 
 				this.canvas.renderAll();
 
@@ -766,7 +781,7 @@ Craft.AssetImageEditor = Garnish.Modal.extend(
 			imageUrl = Craft.getActionUrl('assets/edit-image', getParams);
 
 			this.image.setSrc(imageUrl, $.proxy(function (imageObject) {
-				this._scaleAndCenterImage();
+				this._repositionImage();
 				this._prepareImageForRotation();
 				$spinner.remove();
 				$button.removeClass('disabled');
