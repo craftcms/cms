@@ -22,50 +22,40 @@ Craft.AssetImageEditor = Garnish.Modal.extend(
 		$straighten: null,
 		$croppingCanvas: null,
 
-		// References and parameters
+		// FabricJS objects
 		canvas: null,
 		image: null,
 		viewportMask: null,
-		assetId: null,
-		cacheBust: null,
-		zoomRatio: 1,
 		grid: null,
-
-		// Cropping references
 		croppingCanvas: null,
 		clipper: null,
 		croppingRectangle: null,
 		cropperHandles: null,
 		croppingShade: null,
-		tiltedImageVerticeCoords: null,
-		isCroppingPerformed: false,
-		cropData: {},
 
-		// Cropping event-related references
-		draggingCropper: false,
-		scalingCropper: false,
-		previousMouseX: 0,
-		previousMouseY: 0,
-		lockAspectRatio: false,
-
-		// Filters
-		appliedFilter: null,
-		appliedFilterOptions: {},
-
-		// Editor parameters
-		editorHeight: 0,
-		editorWidth: 0,
-
-		// Image attributes
+		// Image state attributes
 		imageAngle: 0,
 		imageStraightenAngle: 0,
 		viewportRotation: 0,
 		originalWidth: 0,
 		originalHeight: 0,
+		tiltedImageVerticeCoords: null,
+		zoomRatio: 1,
 
-		// State
+		// Editor state attributes
 		animationInProgress: false,
 		currentView: 'rotate',
+		assetId: null,
+		cacheBust: null,
+		draggingCropper: false,
+		scalingCropper: false,
+		previousMouseX: 0,
+		previousMouseY: 0,
+		lockAspectRatio: false,
+		cropData: {},
+		editorHeight: 0,
+		editorWidth: 0,
+		isCroppingPerformed: false,
 
 		init: function (assetId, settings) {
 			this.cacheBust = Date.now();
@@ -841,42 +831,37 @@ Craft.AssetImageEditor = Garnish.Modal.extend(
 		},
 
 		enableCropMode: function () {
-			if (!this.animationInProgress) {
-				this.animationInProgress = true;
-
-				var imageDimensions = this.getScaledImageDimensions();
-				this.zoomRatio = this.getZoomToFitRatio(imageDimensions);
-
-				this.image.animate({
-					width: imageDimensions.width * this.zoomRatio,
-					height: imageDimensions.height * this.zoomRatio,
-				}, {
-					onChange: this.canvas.renderAll.bind(this.canvas),
-					duration: this.settings.animationDuration,
-					onComplete: function () {
-						this._setImageVerticeCoordinates();
-						//this.showCropper();
-						this.animationInProgress = false;
-					}.bind(this)
-				});
-
-				this.viewportMask.animate({
-					width: this.editorWidth,
-					height: this.editorHeight
-				}, {
-					duration: this.settings.animationDuration
-				});
-
-				this.canvas.renderAll();
-			}
+			this._setImageMode('crop');
 		},
 
 		disableCropMode: function () {
+			this._setImageMode('regular');
+		},
+
+		_setImageMode: function (mode) {
 			if (!this.animationInProgress) {
 				this.animationInProgress = true;
 
 				var imageDimensions = this.getScaledImageDimensions();
-				this.zoomRatio = this.getZoomToCoverRatio(imageDimensions);
+				var viewportDimensions = $.extend({}, imageDimensions);
+
+				if (mode == 'crop') {
+					this.zoomRatio = this.getZoomToFitRatio(imageDimensions);
+					viewportDimensions = {
+						width: this.editorWidth,
+						height: this.editorHeight
+					};
+					var callback = function () {
+						this._setImageVerticeCoordinates();
+						//this._showCropper();
+					}.bind(this);
+				} else {
+					this.zoomRatio = this.getZoomToCoverRatio(imageDimensions);
+					var callback = function () {
+						this.updateSizeAndPosition();
+						//this._hideCropper();
+					}.bind(this);
+				}
 
 				this.image.animate({
 					width: imageDimensions.width * this.zoomRatio,
@@ -885,16 +870,15 @@ Craft.AssetImageEditor = Garnish.Modal.extend(
 					onChange: this.canvas.renderAll.bind(this.canvas),
 					duration: this.settings.animationDuration,
 					onComplete: function () {
-						this._setImageVerticeCoordinates();
-						//this.hideCropper();
+						callback();
 						this.animationInProgress = false;
 						this.canvas.renderAll();
 					}.bind(this)
 				});
 
 				this.viewportMask.animate({
-					width: imageDimensions.width,
-					height: imageDimensions.height
+					width: viewportDimensions.width,
+					height: viewportDimensions.height
 				}, {
 					duration: this.settings.animationDuration
 				});
