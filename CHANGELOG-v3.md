@@ -251,6 +251,7 @@ Craft CMS 3.0 Working Changelog
 - Removed db\DbBackup.
 - Removed enums\BaseEnum.
 - Removed errors\ErrorException.
+- Removed errors\InvalidateCacheException.
 - Removed events\CategoryEvent.
 - Removed events\DeleteUserEvent.
 - Removed events\EntryDeleteEvent.
