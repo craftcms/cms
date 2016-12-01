@@ -20,6 +20,7 @@ Craft CMS 3.0 Working Changelog
 - Added db\pgsql\QueryBuilder.
 - Added db\pgsql\Schema.
 - Added db\TableSchema.
+- Added errors\InvalidPluginException.
 - Added events\BackupFailureEvent.
 - Added events\RegisterCacheOptionsEvent.
 - Added events\RegisterComponentTypesEvent.

@@ -14,6 +14,7 @@ use craft\db\MigrationManager;
 use craft\db\Query;
 use craft\enums\LicenseKeyStatus;
 use craft\errors\InvalidLicenseKeyException;
+use craft\errors\InvalidPluginException;
 use craft\events\PluginEvent;
 use craft\helpers\App;
 use craft\helpers\ArrayHelper;
@@ -258,14 +259,14 @@ class Plugins extends Component
      * @param string $handle The plugin’s handle
      *
      * @return boolean Whether the plugin was enabled successfully
-     * @throws Exception if the plugin isn't installed
+     * @throws InvalidPluginException if the plugin isn't installed
      */
     public function enablePlugin($handle)
     {
         $this->loadPlugins();
 
         if (!isset($this->_installedPluginInfo[$handle])) {
-            $this->_noPluginExists($handle);
+            throw new InvalidPluginException($handle);
         }
 
         if ($this->_installedPluginInfo[$handle]['enabled'] === true) {
@@ -276,7 +277,7 @@ class Plugins extends Component
         $plugin = $this->createPlugin($handle, $this->_installedPluginInfo[$handle]);
 
         if ($plugin === null) {
-            $this->_noPluginExists($handle);
+            throw new InvalidPluginException($handle);
         }
 
         // Fire a 'beforeEnablePlugin' event
@@ -308,14 +309,14 @@ class Plugins extends Component
      * @param string $handle The plugin’s handle
      *
      * @return boolean Whether the plugin was disabled successfully
-     * @throws Exception if the plugin isn’t installed
+     * @throws InvalidPluginException if the plugin isn’t installed
      */
     public function disablePlugin($handle)
     {
         $this->loadPlugins();
 
         if (!isset($this->_installedPluginInfo[$handle])) {
-            $this->_noPluginExists($handle);
+            throw new InvalidPluginException($handle);
         }
 
         if ($this->_installedPluginInfo[$handle]['enabled'] === false) {
@@ -326,7 +327,7 @@ class Plugins extends Component
         $plugin = $this->getPlugin($handle);
 
         if ($plugin === null) {
-            $this->_noPluginExists($handle);
+            throw new InvalidPluginException($handle);
         }
 
         // Fire a 'beforeDisablePlugin' event
@@ -374,7 +375,7 @@ class Plugins extends Component
         $plugin = $this->createPlugin($handle);
 
         if ($plugin === null) {
-            $this->_noPluginExists($handle);
+            throw new InvalidPluginException($handle);
         }
 
         // Fire a 'beforeInstallPlugin' event
@@ -451,7 +452,7 @@ class Plugins extends Component
         }
 
         if ($plugin === null) {
-            $this->_noPluginExists($handle);
+            throw new InvalidPluginException($handle);
         }
 
         // Fire a 'beforeUninstallPlugin' event
@@ -795,13 +796,14 @@ class Plugins extends Component
      * @param string $pluginHandle The plugin’s class handle
      *
      * @return string|null The plugin’s license key, or null if it isn’t known
+     * @throws InvalidPluginException if the plugin isn't installed
      */
     public function getPluginLicenseKey($pluginHandle)
     {
         $plugin = $this->getPlugin($pluginHandle);
 
         if (!$plugin) {
-            $this->_noPluginExists($pluginHandle);
+            throw new InvalidPluginException($pluginHandle);
         }
 
         if (isset($this->_installedPluginInfo[$pluginHandle]['licenseKey'])) {
@@ -821,6 +823,7 @@ class Plugins extends Component
      *
      * @return boolean Whether the license key was updated successfully
      *
+     * @throws InvalidPluginException if the plugin isn't installed
      * @throws InvalidLicenseKeyException if $licenseKey is invalid
      */
     public function setPluginLicenseKey($pluginHandle, $licenseKey)
@@ -828,7 +831,7 @@ class Plugins extends Component
         $plugin = $this->getPlugin($pluginHandle);
 
         if (!$plugin) {
-            $this->_noPluginExists($pluginHandle);
+            throw new InvalidPluginException($pluginHandle);
         }
 
         // Validate the license key
@@ -874,13 +877,14 @@ class Plugins extends Component
      * @param string $pluginHandle The plugin’s class handle
      *
      * @return string|false
+     * @throws InvalidPluginException if the plugin isn't installed
      */
     public function getPluginLicenseKeyStatus($pluginHandle)
     {
         $plugin = $this->getPlugin($pluginHandle);
 
         if (!$plugin) {
-            $this->_noPluginExists($pluginHandle);
+            throw new InvalidPluginException($pluginHandle);
         }
 
         if (isset($this->_installedPluginInfo[$pluginHandle]['licenseKeyStatus'])) {
@@ -897,13 +901,14 @@ class Plugins extends Component
      * @param string|null $licenseKeyStatus The plugin’s license key status
      *
      * @return void
+     * @throws InvalidPluginException if the plugin isn't installed
      */
     public function setPluginLicenseKeyStatus($pluginHandle, $licenseKeyStatus)
     {
         $plugin = $this->getPlugin($pluginHandle);
 
         if (!$plugin) {
-            $this->_noPluginExists($pluginHandle);
+            throw new InvalidPluginException($pluginHandle);
         }
 
         // Ignore the plugin handle they sent us in case its casing is wrong
@@ -950,19 +955,6 @@ class Plugins extends Component
     {
         unset($this->_plugins[$handle]);
         Craft::$app->setModule($handle, null);
-    }
-
-    /**
-     * Throws a "no plugin exists" exception.
-     *
-     * @param string $handle
-     *
-     * @return void
-     * @throws Exception
-     */
-    private function _noPluginExists($handle)
-    {
-        throw new Exception("No plugin exists with the handle '$handle'.");
     }
 
     /**
