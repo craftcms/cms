@@ -63,8 +63,9 @@ Craft.AssetImageEditor = Garnish.Modal.extend(
 		originalWidth: 0,
 		originalHeight: 0,
 
-		// Animation
+		// State
 		animationInProgress: false,
+		currentView: 'rotate',
 
 		init: function (assetId, settings) {
 			this.cacheBust = Date.now();
@@ -425,17 +426,22 @@ Craft.AssetImageEditor = Garnish.Modal.extend(
 			var $view = this.$views.filter('[data-view="'+view+'"]');
 			$view.removeClass('hidden');
 
-			if ($view.data('rotate')) {
+			if (view == 'rotate') {
 				this.enableSlider();
 			} else {
 				this.disableSlider();
 			}
 
-			if ($view.data('crop')) {
+			if (this.currentView == 'crop' && view != 'crop') {
+				this.disableCropMode();
+			} else if (this.currentView != 'crop' && view == 'crop') {
+				this.updateSizeAndPosition();
 				this.enableCropMode();
 			} else {
-				this.disableCropMode();
+				this.updateSizeAndPosition();
 			}
+
+			this.currentView = view;
 		},
 
 		/**
@@ -523,7 +529,6 @@ Craft.AssetImageEditor = Garnish.Modal.extend(
 		 */
 		straighten: function (slider) {
 			if (!this.animationInProgress) {
-				this.discardCrop();
 				this.animationInProgress = true;
 
 				this.imageStraightenAngle = parseInt(slider.value, 10) % 360;
@@ -620,27 +625,14 @@ Craft.AssetImageEditor = Garnish.Modal.extend(
 		 * Return image zoom ratio depending on the straighten angle to fit inside a viewport by given dimensions
 		 */
 		getZoomToFitRatio: function (dimensions) {
-			// Convert the angle to radians
-			var angleInRadians = Math.abs(this.imageStraightenAngle) * (Math.PI / 180);
-			var scaledHeight;
-			var scaledWidth;
 
-			// Calculate the bounding box for the rotated image.
-			var proportion = dimensions.height / dimensions.width;
-			var boundingBoxHeight = dimensions.width * (Math.sin(angleInRadians) + Math.cos(angleInRadians) * proportion);
-			var boundingBoxWidth = dimensions.width * (Math.cos(angleInRadians) + Math.sin(angleInRadians) * proportion);
-
-			if (this.hasOrientationChanged()) {
-				var temp = boundingBoxWidth;
-				boundingBoxWidth = boundingBoxHeight;
-				boundingBoxHeight = temp;
-			}
+			boundingBox = this._getImageBoundingBox(dimensions);
 
 			// Scale the bounding box to fit!
 			var scale = 1;
-			if (boundingBoxHeight > this.editorHeight || boundingBoxWidth > this.editorWidth) {
-				var vertScale = this.editorHeight / boundingBoxHeight,
-					horiScale = this.editorWidth / boundingBoxWidth;
+			if (boundingBox.height > this.editorHeight || boundingBox.width > this.editorWidth) {
+				var vertScale = this.editorHeight / boundingBox.height,
+					horiScale = this.editorWidth / boundingBox.width;
 				scale = Math.min(horiScale, vertScale);
 			}
 
@@ -835,11 +827,10 @@ Craft.AssetImageEditor = Garnish.Modal.extend(
 
 		enableCropMode: function () {
 			if (!this.animationInProgress) {
-
 				this.animationInProgress = true;
+
 				var imageDimensions = this.getScaledImageDimensions();
 				this.zoomRatio = this.getZoomToFitRatio(imageDimensions);
-
 
 				this.image.animate({
 					width: imageDimensions.width * this.zoomRatio,
@@ -847,7 +838,11 @@ Craft.AssetImageEditor = Garnish.Modal.extend(
 				}, {
 					onChange: this.canvas.renderAll.bind(this.canvas),
 					duration: this.settings.animationDuration,
-					onComplete: function () {this.animationInProgress = false;}.bind(this)
+					onComplete: function () {
+						this._setImageVerticeCoordinates();
+						//this.showCropper();
+						this.animationInProgress = false;
+					}.bind(this)
 				});
 
 				this.viewportMask.animate({
@@ -857,71 +852,37 @@ Craft.AssetImageEditor = Garnish.Modal.extend(
 					duration: this.settings.animationDuration
 				});
 
-				//this.showCropper();
 				this.canvas.renderAll();
 			}
 		},
 
 		disableCropMode: function () {
-			console.log('l');
-			return;
-			this.zoomRatio = this.getZoomToCoverRatio();
+			if (!this.animationInProgress) {
+				this.animationInProgress = true;
 
-			var callback = function () {
-				$('.rotation-tools, .filter-tools', this.$tools).removeClass('disabled');
-				$('.cropping-tools .crop-mode-enabled', this.$tools).addClass('hidden');
-				$('.cropping-tools .crop-mode-disabled', this.$tools).removeClass('hidden');
+				var imageDimensions = this.getScaledImageDimensions();
+				this.zoomRatio = this.getZoomToCoverRatio(imageDimensions);
 
-				this.canvas.renderAll();
-			}.bind(this);
+				this.image.animate({
+					width: imageDimensions.width * this.zoomRatio,
+					height: imageDimensions.height * this.zoomRatio,
+				}, {
+					onChange: this.canvas.renderAll.bind(this.canvas),
+					duration: this.settings.animationDuration,
+					onComplete: function () {
+						this._setImageVerticeCoordinates();
+						//this.hideCropper();
+						this.animationInProgress = false;
+						this.canvas.renderAll();
+					}.bind(this)
+				});
 
-			this.hideCropper();
-			this._switchEditingMode({mode: 'edit', onFinish: callback});
-
-			this.viewportMask.animate({
-				width: this.viewportWidth,
-				height: this.viewportHeight
-			}, {
-				duration: this.settings.animationDuration
-			});
-
-			this.canvas.renderAll();
-		},
-
-		discardCrop: function (skipAnimation) {
-			if (this.isCroppingPerformed) {
-
-				// Reset image position
-				this._scaleAndCenterImage();
-
-				// Reset rotation origin
-				this._prepareImageForRotation();
-
-				// Re-set the viewport mask size
-				var properties = {
-					width: this.viewportWidth,
-					height: this.viewportHeight,
-					top: this.image.top - 1,
-					left: this.image.left - 1
-				};
-
-				// A special case is when discarding crop info and going straight
-				// to crop mode. The switching to crop mode animates the viewport,
-				// so we don't so we do not interfere.
-				if (skipAnimation) {
-					this.viewportMask.set(properties);
-				} else {
-					this.viewportMask.animate(properties,{
-						duration: this.settings.animationDuration,
-						onChange: this.canvas.renderAll.bind(this.canvas)
-					});
-				}
-
-				this.canvas.renderAll();
-
-				this.cropData = {};
-
-				this.isCroppingPerformed = false;
+				this.viewportMask.animate({
+					width: imageDimensions.width,
+					height: imageDimensions.height
+				}, {
+					duration: this.settings.animationDuration
+				});
 			}
 		},
 
@@ -1391,9 +1352,12 @@ Craft.AssetImageEditor = Garnish.Modal.extend(
 
 			var angleInRadians = -1 * this.imageStraightenAngle * (Math.PI / 180);
 
+			var imageDimensions = this.getScaledImageDimensions();
+			var ratio = this.getZoomToFitRatio(imageDimensions);
+
 			// Get the dimensions of the scaled image
-			var scaledHeight = this.image.height  * this.getZoomToFitRatio();
-			var scaledWidth = this.image.width  * this.getZoomToFitRatio();
+			var scaledHeight = imageDimensions.height  * ratio;
+			var scaledWidth = imageDimensions.width  * ratio;
 
 			// Calculate the segments of the containing box for the image.
 			// When referring to top/bottom or right/left segments, these are on the
@@ -1414,6 +1378,8 @@ Craft.AssetImageEditor = Garnish.Modal.extend(
 				c: {x: horizontalOffset + leftHorizontalSegment, y: this.editorHeight - verticalOffset},
 				d: {x: horizontalOffset, y: verticalOffset + bottomVerticalSegment}
 			};
+
+			this.canvas.renderAll();
 		},
 
 		_destroyCropper: function () {
@@ -1509,6 +1475,28 @@ Craft.AssetImageEditor = Garnish.Modal.extend(
 		 */
 		_getMagnitude: function (vector) {
 			return Math.sqrt(vector.x * vector.x + vector.y * vector.y);
+		},
+
+		_getImageBoundingBox: function (dimensions) {
+
+			var box = {};
+
+			// Convert the angle to radians
+			var angleInRadians = Math.abs(this.imageStraightenAngle) * (Math.PI / 180);
+			var scaledHeight;
+			var scaledWidth;
+
+			var proportion = dimensions.height / dimensions.width;
+			box.height = dimensions.width * (Math.sin(angleInRadians) + Math.cos(angleInRadians) * proportion);
+			box.width = dimensions.width * (Math.cos(angleInRadians) + Math.sin(angleInRadians) * proportion);
+
+			if (this.hasOrientationChanged()) {
+				var temp = box.width;
+				box.width = box.height;
+				box.height = temp;
+			}
+
+			return box;
 		}
 	},
 	{
