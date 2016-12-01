@@ -10,6 +10,7 @@ namespace craft\web;
 use Craft;
 use craft\base\ApplicationTrait;
 use craft\helpers\App;
+use craft\helpers\FileHelper;
 use craft\helpers\Header;
 use craft\helpers\Io;
 use craft\helpers\Json;
@@ -164,7 +165,7 @@ class Application extends \yii\web\Application
             $this->getUpdates()->updateCraftVersionInfo();
 
             // Clear the template caches in case they've been compiled since this release was cut.
-            Io::clearFolder($this->getPath()->getCompiledTemplatesPath());
+            FileHelper::clearDirectory($this->getPath()->getCompiledTemplatesPath());
         }
 
         // If the system is offline, make sure they have permission to be here
@@ -588,7 +589,7 @@ class Application extends \yii\web\Application
                 }
 
                 // Clear the template caches in case they've been compiled since this release was cut.
-                Io::clearFolder($this->getPath()->getCompiledTemplatesPath());
+                FileHelper::clearDirectory($this->getPath()->getCompiledTemplatesPath());
 
                 // Show the manual update notification template
                 return $this->runAction('templates/manual-update-notification');

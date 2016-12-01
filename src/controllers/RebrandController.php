@@ -9,6 +9,7 @@ namespace craft\controllers;
 
 use Craft;
 use craft\helpers\Assets;
+use craft\helpers\FileHelper;
 use craft\helpers\Image;
 use craft\helpers\Io;
 use craft\web\Controller;
@@ -69,7 +70,7 @@ class RebrandController extends Controller
                 $targetPath = Craft::$app->getPath()->getRebrandPath().'/'.$type.'/';
 
                 Io::ensureFolderExists($targetPath);
-                Io::clearFolder($targetPath);
+                FileHelper::clearDirectory($targetPath);
 
                 $fileDestination = $targetPath.'/'.$filename;
 
@@ -102,7 +103,7 @@ class RebrandController extends Controller
             $this->asErrorJson(Craft::t('app', 'That is not an allowed image type.'));
         }
 
-        Io::clearFolder(Craft::$app->getPath()->getRebrandPath().'/'.$type.'/');
+        FileHelper::clearDirectory(Craft::$app->getPath()->getRebrandPath().'/'.$type);
 
         $html = Craft::$app->getView()->renderTemplate('settings/general/_images/'.$type);
 

@@ -329,8 +329,13 @@ class Updater
 			}
 		}
 
-		// Clear the temp folder.
-		Io::clearFolder(Craft::$app->getPath()->getTempPath(), true);
+		// Clear the temp directory
+        $tempDir = Craft::$app->getPath()->getTempPath();
+        try {
+            FileHelper::clearDirectory($tempDir);
+        } catch (\Exception $e) {
+            Craft::warning("Could not clear the directory {$tempDir}: ".$e->getMessage());
+        }
 	}
 
 	/**
@@ -369,8 +374,10 @@ class Updater
 
         Io::ensureFolderExists($unzipFolder);
 
-        if (!Io::clearFolder($unzipFolder)) {
-            Craft::error('Tried to clear the contents of the unzip destination folder, but could not: '.$unzipFolder, __METHOD__);
+        try {
+            FileHelper::clearDirectory($unzipFolder);
+        } catch (\Exception $e) {
+            Craft::error("Could not clear the directory {$unzipFolder}: ".$e->getMessage());
 
             return false;
         }

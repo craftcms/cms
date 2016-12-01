@@ -854,52 +854,6 @@ class Io
     }
 
     /**
-     * Purges the contents of a folder while leaving the folder itself.
-     *
-     * @param string  $path           The path of the folder to clear
-     * @param boolean $suppressErrors Whether to suppress any PHP Notices/Warnings/Errors (usually permissions related)
-     *
-     * @return boolean Whether the folder purge was successful
-     * @throws ErrorException
-     */
-    public static function clearFolder($path, $suppressErrors = false)
-    {
-        $path = FileHelper::normalizePath($path);
-
-        if (static::folderExists($path, false, $suppressErrors)) {
-            $folderContents = static::getFolderContents($path, true, null, true, $suppressErrors);
-
-            if ($folderContents !== false) {
-                foreach ($folderContents as $item) {
-                    if (static::fileExists($item, false, $suppressErrors)) {
-                        static::deleteFile($item, $suppressErrors);
-                    } else if (static::folderExists($item, false, $suppressErrors)) {
-                        try {
-                            FileHelper::removeDirectory($item);
-                        } catch (ErrorException $e) {
-                            Craft::error('Could not delete the folder '.$path.'.', __METHOD__);
-
-                            if (!$suppressErrors) {
-                                throw $e;
-                            }
-
-                            return false;
-                        }
-                    }
-                }
-
-                return true;
-            }
-
-            Craft::error('Tried to read the folder contents of '.$path.', but could not.', __METHOD__);
-        } else {
-            Craft::error('Could not clear the contents of '.$path.' because the source folder does not exist.', __METHOD__);
-        }
-
-        return false;
-    }
-
-    /**
      * Deletes a file from the file system.
      *
      * @param string  $path           The path of the file to delete

@@ -15,6 +15,7 @@ use craft\events\BackupFailureEvent;
 use craft\events\RestoreEvent;
 use craft\events\RestoreFailureEvent;
 use craft\helpers\ArrayHelper;
+use craft\helpers\FileHelper;
 use craft\helpers\Io;
 use craft\helpers\StringHelper;
 use craft\services\Config;
@@ -151,7 +152,7 @@ class Connection extends \yii\db\Connection
         $success = $command->execute();
 
         // Nuke any temp connection files that might have been created.
-        Io::clearFolder(Craft::$app->getPath()->getTempPath());
+        FileHelper::clearDirectory(Craft::$app->getPath()->getTempPath());
 
         if (!$success) {
             $errorMessage = $command->getError();
@@ -212,7 +213,7 @@ class Connection extends \yii\db\Connection
         $success = $command->execute();
 
         // Nuke any temp connection files that might have been created.
-        Io::clearFolder(Craft::$app->getPath()->getTempPath());
+        FileHelper::clearDirectory(Craft::$app->getPath()->getTempPath());
 
         if (!$success) {
             $errorMessage = $command->getError();

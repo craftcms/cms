@@ -11,6 +11,7 @@ use Craft;
 use craft\base\Tool;
 use craft\events\Event;
 use craft\events\RegisterCacheOptionsEvent;
+use craft\helpers\FileHelper;
 use craft\helpers\Io;
 
 /**
@@ -165,7 +166,11 @@ class ClearCaches extends Tool
             $action = $cacheOption['action'];
 
             if (is_string($action)) {
-                Io::clearFolder($action, true);
+                try {
+                    FileHelper::clearDirectory($action);
+                } catch (\Exception $e) {
+                    Craft::warning("Could not clear the directory {$action}: ".$e->getMessage());
+                }
             } else if (isset($cacheOption['params'])) {
                 call_user_func_array($action, $cacheOption['params']);
             } else {
