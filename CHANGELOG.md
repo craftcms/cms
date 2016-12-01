@@ -11,7 +11,7 @@ Craft CMS Changelog
 - Fixed a bug where [IoHelper::getFiles()](https://craftcms.com/classreference/helpers/IOHelper#getFiles-detail) wasn’t returning files without extensions when the `$suppressErrors` argument was `true`.
 - Fixed a bug where [IoHelper::getFiles()](https://craftcms.com/classreference/helpers/IOHelper#getFiles-detail) was returning subfolder paths when the `$suppressErrors` argument was `false`.
 - Fixed a bug where [IoHelper::getFiles()](https://craftcms.com/classreference/helpers/IOHelper#getFiles-detail) wasn’t normalizing the returned file paths.
-- Fixed a bug where you would get a MySQL data truncation error if you had a template that used a `{% cache %}` tag and there were more than 250 characters in the query string.
+- Fixed a bug where you would get a MySQL data truncation error if you had a template that used a `{% cache %}` tag and there were more than 250 characters in the request path.
 
 ## [v2.6.2952] - 2016-11-21
 
