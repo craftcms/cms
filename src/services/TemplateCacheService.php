@@ -105,6 +105,12 @@ class TemplateCacheService extends BaseApplicationComponent
 			return;
 		}
 
+		// Don't return anything if it's not a global request and the path > 255 characters.
+		if (!$global && strlen($this->_getPath()) > 255)
+		{
+			return;
+		}
+
 		// Take the opportunity to delete any expired caches
 		$this->deleteExpiredCachesIfOverdue();
 
@@ -232,6 +238,12 @@ class TemplateCacheService extends BaseApplicationComponent
 		// Can't use getResourceUrl() here because that will append ?d= or ?x= to the URL.
 		if (strpos(stripslashes($body), UrlHelper::getSiteUrl(craft()->config->getResourceTrigger().'/transforms')))
 		{
+			return;
+		}
+
+		if (!$global && (strlen($path = $this->_getPath()) > 255))
+		{
+			Craft::log('Skipped adding '.$key.' to template cache table because the path is > 255 characters: '.$path, LogLevel::Warning);
 			return;
 		}
 
