@@ -211,18 +211,6 @@ class Io
     }
 
     /**
-     * A wrapper for [[FileHelper::getMimeTypeByExtension]].
-     *
-     * @param  string $path The path to test
-     *
-     * @return string       The mime type
-     */
-    public static function getMimeTypeByExtension($path)
-    {
-        return FileHelper::getMimeTypeByExtension($path);
-    }
-
-    /**
      * Returns the last modified time for the given path in DateTime format or false if the file or folder does not
      * exist.
      *
