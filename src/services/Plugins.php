@@ -689,35 +689,6 @@ class Plugins extends Component
     }
 
     /**
-     * Returns the base path for a plugin, based on its handle.
-     *
-     * @param string $handle The plugin’s handle
-     *
-     * @return string The plugin’s base path
-     * @throws InvalidPluginException if the plugin isn't installed
-     */
-    public function getBasePath($handle)
-    {
-        // If plugins are loaded and this one is installed, let the plugin tell us
-        if ($this->arePluginsLoaded() && ($plugin = $this->getPlugin($handle))) {
-            /** @var Plugin $plugin */
-            return $plugin->getBasePath();
-        }
-
-        // Otherwise get the Plugin class from its config
-        $config = $this->getConfig($handle);
-
-        if ($config === null) {
-            throw new InvalidPluginException($handle);
-        }
-
-        // todo: add support for a basePath config property, which can be set as relative from the package path
-        $ref = new \ReflectionClass($config['class']);
-
-        return dirname($ref->getFileName());
-    }
-
-    /**
      * Validates a plugin's config by ensuring it has a valid class, name, and version
      *
      * @param array &$config

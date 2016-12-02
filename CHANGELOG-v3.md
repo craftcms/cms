@@ -70,7 +70,6 @@ Craft CMS 3.0 Working Changelog
 - Added helpers\Update::parseManifestLine().
 - Added services\Config::getDbPort().
 - Added services\Elements::deleteElement().
-- Added services\Plugins::getBasePath().
 - Added the ‘beforeDelete’, ‘afterDelete’, ‘beforeMoveInStructure’, and ‘afterMoveInStructure’,  events to base\Element.
 - Added the ‘beforeElementSave’, ‘afterElementSave’, ‘beforeElementDelete’, and ‘afterElementDelete’ events to base\Field.
 - Added the ‘beforeRestoreBackup’, ‘afterRestoreBackup’, and ‘restoreFailure’ events to db\Connection.
