@@ -159,7 +159,7 @@ class Image
      */
     public static function canHaveExifData($filePath)
     {
-        $extension = Io::getExtension($filePath);
+        $extension = pathinfo($filePath, PATHINFO_EXTENSION);
 
         return in_array(
             StringHelper::toLowerCase($extension),
@@ -176,7 +176,7 @@ class Image
      */
     public static function cleanImageByPath($imagePath)
     {
-        $extension = Io::getExtension($imagePath);
+        $extension = pathinfo($imagePath, PATHINFO_EXTENSION);
 
         if ($extension == 'svg') {
             // No cleanup in the classic sense.
@@ -197,7 +197,7 @@ class Image
      */
     public static function imageSize($filePath)
     {
-        if (Io::getExtension($filePath) == 'svg') {
+        if (pathinfo($filePath, PATHINFO_EXTENSION) == 'svg') {
             $svg = Io::getFileContents($filePath);
 
             return static::parseSvgSize($svg);

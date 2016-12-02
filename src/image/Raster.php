@@ -178,7 +178,7 @@ class Raster extends Image
         }
 
         $this->_imageSourcePath = $path;
-        $this->_extension = Io::getExtension($path);
+        $this->_extension = pathinfo($path, PATHINFO_EXTENSION);
 
         if ($this->_extension == 'gif') {
             if (!$imageService->getIsGd() && $this->_image->layers()) {
@@ -382,10 +382,10 @@ class Raster extends Image
      */
     public function saveAs($targetPath, $autoQuality = false)
     {
-        $extension = StringHelper::toLowerCase(Io::getExtension($targetPath));
+        $extension = StringHelper::toLowerCase(pathinfo($targetPath, PATHINFO_EXTENSION));
 
         $options = $this->_getSaveOptions(false, $extension);
-        $targetPath = pathinfo($targetPath, PATHINFO_DIRNAME).DIRECTORY_SEPARATOR.pathinfo($targetPath, PATHINFO_FILENAME).'.'.Io::getExtension($targetPath);
+        $targetPath = pathinfo($targetPath, PATHINFO_DIRNAME).DIRECTORY_SEPARATOR.pathinfo($targetPath, PATHINFO_FILENAME).'.'.pathinfo($targetPath, PATHINFO_EXTENSION);
 
         try {
             if ($autoQuality && in_array($extension, ['jpeg', 'jpg', 'png'])) {

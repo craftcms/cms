@@ -959,7 +959,7 @@ class AssetTransforms extends Component
         $maxCachedImageSize = $this->getCachedCloudImageSize();
 
         // Resize if constrained by maxCachedImageSizes setting
-        if ($maxCachedImageSize > 0 && Image::isImageManipulatable(Io::getExtension($source))) {
+        if ($maxCachedImageSize > 0 && Image::isImageManipulatable(pathinfo($source, PATHINFO_EXTENSION))) {
 
             $image = Craft::$app->getImages()->loadImage($source);
 
@@ -1093,8 +1093,7 @@ class AssetTransforms extends Component
         $this->deleteCreatedTransformsForAsset($asset);
         $this->deleteTransformIndexDataByAssetId($asset->id);
 
-        Io::deleteFile(Craft::$app->getPath()->getAssetsImageSourcePath().'/'.$asset->id.'.'.Io::getExtension($asset->filename),
-            true);
+        Io::deleteFile(Craft::$app->getPath()->getAssetsImageSourcePath().DIRECTORY_SEPARATOR.$asset->id.'.'.pathinfo($asset->filename, PATHINFO_EXTENSION), true);
     }
 
     /**
@@ -1277,7 +1276,7 @@ class AssetTransforms extends Component
      */
     private function _createTransformForAsset(Asset $asset, AssetTransformIndex $index)
     {
-        if (!Image::isImageManipulatable(Io::getExtension($asset->filename))) {
+        if (!Image::isImageManipulatable(pathinfo($asset->filename, PATHINFO_EXTENSION))) {
             return;
         }
 
@@ -1382,7 +1381,7 @@ class AssetTransforms extends Component
     private function _getThumbExtension(Asset $asset)
     {
         // For non-web-safe formats we go with jpg.
-        if (!in_array(mb_strtolower(Io::getExtension($asset->filename)), Image::webSafeFormats())) {
+        if (!in_array(mb_strtolower(pathinfo($asset->filename, PATHINFO_EXTENSION)), Image::webSafeFormats())) {
             return 'jpg';
         }
 

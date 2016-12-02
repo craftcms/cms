@@ -233,7 +233,7 @@ class Svg extends Image
      */
     public function saveAs($targetPath, $autoQuality = false)
     {
-        if (Io::getExtension($targetPath) == 'svg') {
+        if (pathinfo($targetPath, PATHINFO_EXTENSION) == 'svg') {
             Io::writeToFile($targetPath, $this->_svgContent);
         } else {
             throw new ImageException(Craft::t('app',

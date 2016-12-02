@@ -413,7 +413,7 @@ class DashboardController extends Controller
                     array_splice($backupFiles, 3);
 
                     foreach ($backupFiles as $backupFile) {
-                        if (Io::getExtension($backupFile) != 'sql') {
+                        if (pathinfo($backupFile, PATHINFO_EXTENSION) != 'sql') {
                             continue;
                         }
                         $zip->addFile($backupFile, 'backups/'.pathinfo($backupFile, PATHINFO_BASENAME));

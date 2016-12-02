@@ -200,7 +200,7 @@ class Assets extends Component
         }
 
         if (!empty($asset->newFilePath)) {
-            if (Io::getFileKind(Io::getExtension($asset->newFilePath)) == 'image') {
+            if (Io::getFileKind(pathinfo($asset->newFilePath, PATHINFO_EXTENSION)) == 'image') {
                 Image::cleanImageByPath($asset->newFilePath);
             }
 
@@ -338,7 +338,7 @@ class Assets extends Component
      */
     public function replaceAssetFile(Asset $asset, $pathOnServer, $filename)
     {
-        if (Io::getFileKind(Io::getExtension($pathOnServer)) == 'image') {
+        if (Io::getFileKind(pathinfo($pathOnServer, PATHINFO_EXTENSION)) == 'image') {
             Image::cleanImageByPath($pathOnServer);
         }
 
@@ -393,7 +393,7 @@ class Assets extends Component
             $asset->newFilename = $filename;
             $volume->createFileByStream($asset->getUri(), $stream);
 
-            $asset->kind = Io::getFileKind(Io::getExtension($filename));
+            $asset->kind = Io::getFileKind(pathinfo($filename, PATHINFO_EXTENSION));
         }
 
         if (is_resource($stream)) {
@@ -841,7 +841,7 @@ class Assets extends Component
      */
     public function getUrlForAsset(Asset $asset, $transform = null)
     {
-        if (!$transform || !Image::isImageManipulatable(Io::getExtension($asset->filename))) {
+        if (!$transform || !Image::isImageManipulatable(pathinfo($asset->filename, PATHINFO_EXTENSION))) {
             $volume = $asset->getVolume();
 
             return AssetsHelper::generateUrl($volume, $asset);
@@ -917,7 +917,7 @@ class Assets extends Component
             return $originalFilename;
         }
 
-        $extension = Io::getExtension($originalFilename);
+        $extension = pathinfo($originalFilename, PATHINFO_EXTENSION);
         $filename = pathinfo($originalFilename, PATHINFO_FILENAME);
 
 
@@ -970,7 +970,7 @@ class Assets extends Component
     {
         $filename = $newFilename ?: $asset->filename;
 
-        $extension = Io::getExtension($filename);
+        $extension = pathinfo($filename, PATHINFO_EXTENSION);
 
         if (!Io::isExtensionAllowed($extension)) {
             throw new AssetDisallowedExtensionException(Craft::t('app',
@@ -1170,7 +1170,7 @@ class Assets extends Component
                 // In case we're changing the filename, make sure that we're not missing that.
                 $parts = explode("/", $toTransformPath);
                 $transformName = array_pop($parts);
-                $toTransformPath = join("/", $parts).'/'.pathinfo($filename, PATHINFO_FILENAME).'.'.Io::getExtension($transformName);
+                $toTransformPath = join("/", $parts).'/'.pathinfo($filename, PATHINFO_FILENAME).'.'.pathinfo($transformName, PATHINFO_EXTENSION);
 
                 $baseFrom = $asset->getFolder()->path;
                 $baseTo = $targetFolder->path;

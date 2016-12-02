@@ -362,7 +362,7 @@ class AssetIndexer extends Component
      */
     private function _indexFile($volume, $uriPath)
     {
-        $extension = Io::getExtension($uriPath);
+        $extension = pathinfo($uriPath, PATHINFO_EXTENSION);
 
         if (Io::isExtensionAllowed($extension)) {
             $parts = explode('/', $uriPath);

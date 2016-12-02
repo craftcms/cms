@@ -100,7 +100,7 @@ class m160804_110002_userphotos_to_assets extends Migration
                     $counter = 0;
 
                     $baseFilename = pathinfo($user['photo'], PATHINFO_FILENAME);
-                    $extension = Io::getExtension($user['photo']);
+                    $extension = pathinfo($user['photo'], PATHINFO_EXTENSION);
                     $filename = $baseFilename.'.'.$extension;
 
                     while (is_file($this->_basePath.DIRECTORY_SEPARATOR.$filename)) {

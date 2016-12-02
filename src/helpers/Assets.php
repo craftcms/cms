@@ -110,7 +110,7 @@ class Assets
     {
         if ($isFilename) {
             $baseName = pathinfo($name, PATHINFO_FILENAME);
-            $extension = '.'.Io::getExtension($name);
+            $extension = '.'.pathinfo($name, PATHINFO_EXTENSION);
         } else {
             $baseName = $name;
             $extension = '';

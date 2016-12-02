@@ -74,7 +74,7 @@ class AssetFilenameValidator extends Validator
         $value = $model->$attribute;
 
         // Make sure the new filename has a valid extension
-        $extension = strtolower(Io::getExtension($value));
+        $extension = strtolower(pathinfo($value, PATHINFO_EXTENSION));
         if (!in_array($extension, $this->allowedExtensions)) {
             $this->addError($model, $attribute, $this->badExtension, ['extension' => $extension]);
         }

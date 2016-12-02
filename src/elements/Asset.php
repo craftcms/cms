@@ -671,7 +671,7 @@ class Asset extends Element
      */
     public function getExtension()
     {
-        return Io::getExtension($this->filename);
+        return pathinfo($this->filename, PATHINFO_EXTENSION);
     }
 
     /**

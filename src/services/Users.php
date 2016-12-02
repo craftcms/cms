@@ -466,7 +466,7 @@ class Users extends Component
     {
         $filenameToUse = AssetsHelper::prepareAssetName($filename ?: pathinfo($fileLocation, PATHINFO_FILENAME), true, true);
 
-        if(!Image::isImageManipulatable(Io::getExtension($fileLocation))) {
+        if(!Image::isImageManipulatable(pathinfo($fileLocation, PATHINFO_EXTENSION))) {
             throw new ImageException(Craft::t('app', 'User photo must be an image that Craft can manipulate.'));
         }
 
