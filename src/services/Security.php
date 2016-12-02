@@ -8,6 +8,7 @@
 namespace craft\services;
 
 use Craft;
+use craft\helpers\FileHelper;
 use craft\helpers\Io;
 use craft\helpers\StringHelper;
 use yii\base\Exception;
@@ -96,7 +97,7 @@ class Security extends \yii\base\Security
             return StringHelper::trim(Io::getFileContents($validationKeyPath));
         }
 
-        if (!Io::isWritable($validationKeyPath)) {
+        if (!FileHelper::isWritable($validationKeyPath)) {
             throw new Exception("Tried to write the validation key to {$validationKeyPath}, but could not.");
         }
 

@@ -12,6 +12,7 @@ use craft\enums\LicenseKeyStatus;
 use craft\errors\EtException;
 use craft\helpers\ArrayHelper;
 use craft\helpers\DateTimeHelper;
+use craft\helpers\FileHelper;
 use craft\helpers\Io;
 use craft\models\Et as EtModel;
 use craft\services\Config;
@@ -379,6 +380,6 @@ class EtTransport
      */
     private function _isConfigFolderWritable()
     {
-        return Io::isWritable(Craft::$app->getPath()->getConfigPath());
+        return FileHelper::isWritable(Craft::$app->getPath()->getConfigPath());
     }
 }

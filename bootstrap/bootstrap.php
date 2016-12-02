@@ -7,8 +7,8 @@
  * @license   https://craftcms.com/license
  */
 
-use craft\dates\DateTime;
 use craft\helpers\ArrayHelper;
+use craft\helpers\FileHelper;
 use craft\helpers\Io;
 
 // Setup
@@ -238,7 +238,7 @@ if ($appType === 'web') {
     $resourceBasePath = Craft::getAlias($app->config->get('resourceBasePath'));
     Io::ensureFolderExists($resourceBasePath, true);
 
-    if (!is_dir($resourceBasePath) || !Io::isWritable($resourceBasePath)) {
+    if (!is_dir($resourceBasePath) || !FileHelper::isWritable($resourceBasePath)) {
         exit($resourceBasePath.' doesn\'t exist or isn\'t writable by PHP. Please fix that.');
     }
 

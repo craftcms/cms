@@ -14,6 +14,7 @@ use craft\enums\PluginUpdateStatus;
 use craft\enums\VersionUpdateStatus;
 use craft\events\UpdateEvent;
 use craft\helpers\DateTimeHelper;
+use craft\helpers\FileHelper;
 use craft\helpers\Io;
 use craft\helpers\Json;
 use craft\helpers\Update as UpdateHelper;
@@ -510,7 +511,7 @@ class Updates extends Component
         $errorPath = null;
 
         foreach ($checkPaths as $writablePath) {
-            if (!Io::isWritable($writablePath)) {
+            if (!FileHelper::isWritable($writablePath)) {
                 $errorPath[] = $writablePath;
             }
         }

@@ -404,7 +404,7 @@ class Updater
 
 			// If the file/folder already exists, make sure it's writable
 			if (file_exists($path)) {
-				if (!Io::isWritable($path)) {
+				if (!FileHelper::isWritable($path)) {
 					$writableErrors[] = $path;
 				}
 			} else {
@@ -413,7 +413,7 @@ class Updater
                 $basePathDir = dirname($basePath);
                 while ($dir != $basePathDir && !empty($dir) && $dir != '.') {
                     if (is_dir($dir)) {
-                        if (!Io::isWritable($dir)) {
+                        if (!FileHelper::isWritable($dir)) {
                             $writableErrors[] = $path;
                         }
                         break;
@@ -485,7 +485,7 @@ class Updater
 		}
 
 		// Make sure we can write to craft/app/requirements
-		if (!Io::isWritable(Craft::$app->getPath()->getAppPath().'/requirements')) {
+		if (!FileHelper::isWritable(Craft::$app->getPath()->getAppPath().DIRECTORY_SEPARATOR.'requirements')) {
 			throw new FilePermissionsException(Markdown::process(Craft::t('app', 'Craft CMS needs to be able to write to your craft/app/requirements folder and cannot. Please check your [permissions]({url}).', ['url' => 'http://craftcms.com/docs/updating#one-click-updating'])));
 		}
 
