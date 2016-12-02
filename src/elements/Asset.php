@@ -19,6 +19,7 @@ use craft\elements\actions\ReplaceFile;
 use craft\elements\actions\View;
 use craft\elements\db\AssetQuery;
 use craft\fields\Assets;
+use craft\helpers\FileHelper;
 use craft\helpers\Html;
 use craft\helpers\Image;
 use craft\helpers\Io;
@@ -678,7 +679,9 @@ class Asset extends Element
      */
     public function getMimeType()
     {
-        return Io::getMimeType($this->filename);
+        // todo: maybe we should be passing this off to volume types
+        // so Local volumes can call FileHelper::getMimeType() (uses magic file instead of ext)
+        return FileHelper::getMimeTypeByExtension($this->filename);
     }
 
     /**

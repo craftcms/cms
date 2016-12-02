@@ -211,23 +211,6 @@ class Io
     }
 
     /**
-     * If the path points to a real file, we call [[FileHelper::getMimeType()]], otherwise
-     * [[FileHelper::getMimeTypeByExtension()]].
-     *
-     * @param string $path The path to test
-     *
-     * @return string The MIME type
-     */
-    public static function getMimeType($path)
-    {
-        if (@file_exists($path)) {
-            return FileHelper::getMimeType($path);
-        }
-
-        return FileHelper::getMimeTypeByExtension($path);
-    }
-
-    /**
      * A wrapper for [[FileHelper::getMimeTypeByExtension]].
      *
      * @param  string $path The path to test
