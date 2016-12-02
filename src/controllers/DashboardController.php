@@ -375,14 +375,17 @@ class DashboardController extends Controller
                 $logPath = Craft::$app->getPath()->getLogPath();
                 if (is_dir($logPath)) {
                     // Grab it all.
-                    $logFiles = Io::getFiles($logPath, true);
+                    try {
+                        $logFiles = FileHelper::findFiles($logPath, [
+                            'recursive' => false
+                        ]);
+                    } catch (ErrorException $e) {
+                        Craft::warning("Unable to find log files in \"{$logPath}\": ".$e->getMessage());
+                        $logFiles = [];
+                    }
 
-                    if ($logFiles === false) {
-                        Craft::warning('Could not send log files with the Craft support request.');
-                    } else {
-                        foreach ($logFiles as $logFile) {
-                            $zip->addFile($logFile, 'logs/'.Io::getFilename($logFile));
-                        }
+                    foreach ($logFiles as $logFile) {
+                        $zip->addFile($logFile, 'logs/'.Io::getFilename($logFile));
                     }
                 }
             }
