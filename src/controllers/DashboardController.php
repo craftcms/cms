@@ -395,10 +395,21 @@ class DashboardController extends Controller
 
                 $backupPath = Craft::$app->getPath()->getDbBackupPath();
                 if (is_dir($backupPath)) {
-                    // todo: would be nice to be able to get the last 3 modified *.sql* files
-                    $backupsFiles = Io::getLastModifiedFiles($backupPath, 3);
+                    // Get the SQL files in there
+                    $backupFiles = FileHelper::findFiles($backupPath, [
+                        'only' => ['*.sql'],
+                        'recursive' => false
+                    ]);
 
-                    foreach ($backupsFiles as $backupFile) {
+                    // Get the 3 most recent ones
+                    $backupTimes = [];
+                    foreach ($backupFiles as $backupFile) {
+                        $backupTimes[] = filemtime($backupFile);
+                    }
+                    array_multisort($backupTimes, SORT_DESC, $backupFiles);
+                    array_splice($backupFiles, 3);
+
+                    foreach ($backupFiles as $backupFile) {
                         if (Io::getExtension($backupFile) != 'sql') {
                             continue;
                         }

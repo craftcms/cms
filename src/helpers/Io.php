@@ -1090,35 +1090,6 @@ class Io
     }
 
     /**
-     * Returns the paths to the last-modified files from a given folder, in descending order by modification date.
-     *
-     * @param string  $folder         The folder to get the files from
-     * @param integer $limit          The number of files to return (defaults to no limit)
-     * @param boolean $suppressErrors Whether to suppress any PHP Notices/Warnings/Errors (usually permissions related)
-     *
-     * @return string[] The paths to the last-modified files
-     */
-    public static function getLastModifiedFiles($folder, $limit = null, $suppressErrors = false)
-    {
-        $fileResults = [];
-
-        $files = static::getFiles($folder, $suppressErrors);
-
-        foreach ($files as $file) {
-            $lastModifiedTime = Io::getLastTimeModified($file, $suppressErrors);
-            $fileResults[$lastModifiedTime->getTimestamp()] = $file;
-        }
-
-        krsort($fileResults);
-
-        if ($limit !== null) {
-            $fileResults = array_slice($fileResults, 0, $limit, true);
-        }
-
-        return $fileResults;
-    }
-
-    /**
      * Returns the path to the parent folder of a given path.
      *
      * @param string $path The starting point
