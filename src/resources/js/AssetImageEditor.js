@@ -659,83 +659,7 @@ Craft.AssetImageEditor = Garnish.Modal.extend(
 		 */
 		applyFilter: function (ev) {
 
-			$button = $(ev.currentTarget);
-			if ($button.hasClass('disabled')) {
-				return false;
-			}
-
-			$button.addClass('disabled');
-
-			$spinner = $('<div class="spinner filter-spinner"></div>').insertAfter($button);
-
-			var getParams = {
-				assetId: this.assetId,
-				size: this.settings.assetSize
-			};
-
-			var filterHandle = this.getSelectedFilter();
-
-			if (filterHandle) {
-				var filterOptions = this.getFilterOptions(filterHandle);
-
-				// No use in requesting same image again.
-				if (filterHandle == this.appliedFilter && JSON.stringify(this.appliedFilterOptions) == JSON.stringify(filterOptions)) {
-					$spinner.remove();
-					$button.removeClass('disabled');
-					return;
-				}
-
-				this.appliedFilter = filterHandle;
-				this.appliedFilterOptions = filterOptions;
-
-				getParams.filter = filterHandle;
-
-				for (var option in filterOptions) {
-					getParams['filterOptions[' + option + ']'] = encodeURIComponent(filterOptions[option]);
-				}
-
-			} else {
-				// No use in requesting same image again.
-				if (this.appliedFilter == null) {
-					$spinner.remove();
-					$button.removeClass('disabled');
-					return;
-				}
-
-				this.appliedFilterOptions = {};
-				this.appliedFilter = null;
-			}
-
-			imageUrl = Craft.getActionUrl('assets/edit-image', getParams);
-
-			this.image.setSrc(imageUrl, $.proxy(function (imageObject) {
-				this._repositionImage();
-				this._prepareImageForRotation();
-				$spinner.remove();
-				$button.removeClass('disabled');
-			}, this));
-		},
-
-		/**
-		 * Get the currently selected filter's handle
-		 */
-		getSelectedFilter: function () {
-			return $('.filter-select', this.$tools).find('option:selected').val();
-		},
-
-		/**
-		 * Get the filter options by a filter handle
-		 * @param filterHandle
-		 */
-		getFilterOptions: function (filterHandle) {
-			var filterParams = {};
-			$filterFields = $('.filter-fields[filter=' + filterHandle + ']').find('input, select, textarea');
-			$filterFields.each(function () {
-				$input = $(this);
-				filterParams[$input.prop('name')] = encodeURIComponent($input.val());
-			});
-
-			return filterParams;
+			// TODO
 		},
 
 		show: function()
@@ -754,10 +678,6 @@ Craft.AssetImageEditor = Garnish.Modal.extend(
 
 		onSave: function () {
 			this.settings.onSave();
-		},
-
-		isActiveControl: function ($element) {
-			return $element.parents('.disabled').length == 0;
 		},
 
 		enableSlider: function () {
