@@ -8,9 +8,11 @@
 namespace craft\services;
 
 use Craft;
+use craft\helpers\App;
 use craft\helpers\FileHelper;
 use craft\helpers\Io;
 use yii\base\Component;
+use yii\base\Exception;
 
 /**
  * The Path service provides APIs for getting server paths that are used by Craft.
@@ -62,12 +64,21 @@ class Path extends Component
      * Returns the path to the craft/app/ folder.
      *
      * @return string The path to the craft/app/ folder.
+     * @throws Exception if Craft was installed via Composer
      */
     public function getAppPath()
     {
-        if (!isset($this->_appPath)) {
-            $this->_appPath = FileHelper::normalizePath(Craft::getAlias('@app'));
+        if (isset($this->_appPath)) {
+            return $this->_appPath;
         }
+
+        // "craft/app" is only a thing for manual installs
+        if (App::isComposerInstall()) {
+            throw new Exception('There is no "app" folder when Craft is installed via Composer.');
+        }
+
+        $basePath = Craft::$app->getBasePath();
+        $this->_appPath = dirname(dirname(dirname($basePath)));
 
         return $this->_appPath;
     }
