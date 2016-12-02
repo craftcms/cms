@@ -178,7 +178,7 @@ class Volumes extends Component
      *
      * @param string|null $indexBy
      *
-     * @return Volume[]
+     * @return VolumeInterface[]
      */
     public function getViewableVolumes($indexBy = null)
     {
@@ -231,7 +231,7 @@ class Volumes extends Component
      *
      * @param string|null $indexBy
      *
-     * @return Volume[]
+     * @return VolumeInterface[]
      */
     public function getPublicVolumes($indexBy = null)
     {
@@ -283,7 +283,7 @@ class Volumes extends Component
      *
      * @param string|null $indexBy
      *
-     * @return Volume[]
+     * @return VolumeInterface[]
      */
     public function getAllVolumes($indexBy = null)
     {
@@ -324,7 +324,7 @@ class Volumes extends Component
      *
      * @param integer $volumeId
      *
-     * @return Volume|null
+     * @return VolumeInterface|null
      */
     public function getVolumeById($volumeId)
     {
@@ -359,7 +359,7 @@ class Volumes extends Component
     /**
      * Saves an asset volume.
      *
-     * @param VolumeInterface $volume        the Volume to be saved.
+     * @param VolumeInterface $volume        the volume to be saved.
      * @param boolean         $runValidation Whether the volume should be validated
      *
      * @return boolean Whether the field was saved successfully
@@ -584,7 +584,7 @@ class Volumes extends Component
     /**
      * Deletes an asset volume.
      *
-     * @param Volume $volume The volume to delete
+     * @param VolumeInterface $volume The volume to delete
      *
      * @throws \Exception
      * @return boolean
@@ -672,7 +672,7 @@ class Volumes extends Component
      *
      * @param integer $volumeId
      *
-     * @throws VolumeException If the Volume does not exist.
+     * @throws VolumeException If the volume does not exist.
      * @return AssetVolumeRecord
      */
     private function _getVolumeRecordById($volumeId = null)

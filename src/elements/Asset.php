@@ -9,8 +9,7 @@ namespace craft\elements;
 
 use Craft;
 use craft\base\Element;
-use craft\base\ElementInterface;
-use craft\base\Volume;
+use craft\base\VolumeInterface;
 use craft\elements\actions\CopyReferenceTag;
 use craft\elements\actions\DeleteAssets;
 use craft\elements\actions\DownloadAssetFile;
@@ -364,7 +363,7 @@ class Asset extends Element
     private $_transformSource = '';
 
     /**
-     * @var Volume
+     * @var VolumeInterface
      */
     private $_volume = null;
 
@@ -568,7 +567,7 @@ class Asset extends Element
     }
 
     /**
-     * @return Volume|null
+     * @return VolumeInterface|null
      */
     public function getVolume()
     {
