@@ -388,14 +388,12 @@ Craft.AssetImageEditor = Garnish.Modal.extend(
 			} else {
 				this.disableSlider();
 			}
+			this.updateSizeAndPosition();
 
 			if (this.currentView == 'crop' && view != 'crop') {
 				this.disableCropMode();
 			} else if (this.currentView != 'crop' && view == 'crop') {
-				this.updateSizeAndPosition();
 				this.enableCropMode();
-			} else {
-				this.updateSizeAndPosition();
 			}
 
 			this.currentView = view;
@@ -717,7 +715,7 @@ Craft.AssetImageEditor = Garnish.Modal.extend(
 					this.zoomRatio = this.getZoomToCoverRatio(imageDimensions);
 					var callback = function () {
 						this.updateSizeAndPosition();
-						//this._hideCropper();
+						this._hideCropper();
 					}.bind(this);
 				}
 
@@ -817,7 +815,7 @@ Craft.AssetImageEditor = Garnish.Modal.extend(
 			this.addListener(this.$croppingCanvas, 'mouseup', this._handleMouseUp.bind(this));
 		},
 
-		hideCropper: function () {
+		_hideCropper: function () {
 			if (this.clipper) {
 				this.croppingCanvas.remove(this.clipper);
 				this.croppingCanvas.remove(this.croppingShade);
@@ -890,69 +888,58 @@ Craft.AssetImageEditor = Garnish.Modal.extend(
 			this.croppingCanvas.add(this.clipper);
 		},
 
-		_calculateCropperBoundaries: function (redraw) {
-			if (redraw || !this.cropperHandles) {
-				if (this.cropperHandles) {
-					this.croppingCanvas.remove(this.cropperHandles);
-					this.croppingCanvas.remove(this.croppingRectangle);
-				}
-				var lineOptions = {
-					strokeWidth: 2,
-					stroke: 'rgb(255,255,255)',
-					fill: false
-				};
-
-				var pathGroup = [];
-				var path = new fabric.Path('M 0,10 L 0,0 L 10,0');
-				path.set(lineOptions);
-				pathGroup.push(path);
-				var path = new fabric.Path('M '+(this.clipper.width-8)+',0 L '+(this.clipper.width+4)+',0 L '+(this.clipper.width+4)+',10');
-				path.set(lineOptions);
-				pathGroup.push(path);
-				var path = new fabric.Path('M '+(this.clipper.width+4)+','+(this.clipper.height-8)+' L'+(this.clipper.width+4)+','+(this.clipper.height+4)+' L '+(this.clipper.width-8)+','+(this.clipper.height+4));
-				path.set(lineOptions);
-				pathGroup.push(path);
-				var path = new fabric.Path('M 10,'+(this.clipper.height+4)+' L 0,'+(this.clipper.height+4)+' L 0,'+(this.clipper.height-8));
-				path.set(lineOptions);
-				pathGroup.push(path);
-
-				this.cropperHandles = new fabric.Group(pathGroup, {
-					left: this.clipper.left,
-					top: this.clipper.top,
-					originX: 'center',
-					originY: 'center',
-					hasBorders: false,
-					hasControls: false,
-					selectable: false
-				});
-
-				this.croppingRectangle = new fabric.Rect({
-					left: this.clipper.left,
-					top: this.clipper.top,
-					width: this.clipper.width,
-					height: this.clipper.height,
-					fill: 'rgba(0,0,0,0)',
-					stroke: 'rgba(255,255,255,0.8)',
-					strokeWidth: 2,
-					hasBorders: false,
-					hasControls: false,
-					selectable: false,
-					originX: 'center',
-					originY: 'center',
-				});
-
-				this.croppingCanvas.add(this.cropperHandles);
-				this.croppingCanvas.add(this.croppingRectangle);
-			} else {
-				this.cropperHandles.set({
-					left: this.clipper.left,
-					top: this.clipper.top
-				});
-				this.croppingRectangle.set({
-					left: this.clipper.left,
-					top: this.clipper.top
-				});
+		_calculateCropperBoundaries: function () {
+			if (this.cropperHandles) {
+				this.croppingCanvas.remove(this.cropperHandles);
+				this.croppingCanvas.remove(this.croppingRectangle);
 			}
+			var lineOptions = {
+				strokeWidth: 2,
+				stroke: 'rgb(255,255,255)',
+				fill: false
+			};
+
+			var pathGroup = [];
+			var path = new fabric.Path('M 0,10 L 0,0 L 10,0');
+			path.set(lineOptions);
+			pathGroup.push(path);
+			var path = new fabric.Path('M '+(this.clipper.width-8)+',0 L '+(this.clipper.width+4)+',0 L '+(this.clipper.width+4)+',10');
+			path.set(lineOptions);
+			pathGroup.push(path);
+			var path = new fabric.Path('M '+(this.clipper.width+4)+','+(this.clipper.height-8)+' L'+(this.clipper.width+4)+','+(this.clipper.height+4)+' L '+(this.clipper.width-8)+','+(this.clipper.height+4));
+			path.set(lineOptions);
+			pathGroup.push(path);
+			var path = new fabric.Path('M 10,'+(this.clipper.height+4)+' L 0,'+(this.clipper.height+4)+' L 0,'+(this.clipper.height-8));
+			path.set(lineOptions);
+			pathGroup.push(path);
+
+			this.cropperHandles = new fabric.Group(pathGroup, {
+				left: this.clipper.left,
+				top: this.clipper.top,
+				originX: 'center',
+				originY: 'center',
+				hasBorders: false,
+				hasControls: false,
+				selectable: false
+			});
+
+			this.croppingRectangle = new fabric.Rect({
+				left: this.clipper.left,
+				top: this.clipper.top,
+				width: this.clipper.width,
+				height: this.clipper.height,
+				fill: 'rgba(0,0,0,0)',
+				stroke: 'rgba(255,255,255,0.8)',
+				strokeWidth: 2,
+				hasBorders: false,
+				hasControls: false,
+				selectable: false,
+				originX: 'center',
+				originY: 'center',
+			});
+
+			this.croppingCanvas.add(this.cropperHandles);
+			this.croppingCanvas.add(this.croppingRectangle);
 		},
 
 		_handleMouseDown: function (ev) {
@@ -981,7 +968,7 @@ Craft.AssetImageEditor = Garnish.Modal.extend(
 
 				this.previousMouseX = ev.pageX;
 				this.previousMouseY = ev.pageY;
-				this._calculateCropperBoundaries(this.scalingCropper);
+				this._calculateCropperBoundaries();
 				this.renderCropper();
 			} else {
 				this._setMouseCursor(ev);
