@@ -732,7 +732,7 @@ class Plugins extends Component
         if ($folders !== false) {
             foreach ($folders as $folder) {
                 // Skip if it's not a folder
-                if (Io::folderExists($folder) === false) {
+                if (!is_dir($folder)) {
                     continue;
                 }
 

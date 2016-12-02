@@ -373,11 +373,11 @@ class Application extends \yii\web\Application
         $altBowerPath = $this->getVendorPath().'/bower-asset';
         $altNpmPath = $this->getVendorPath().'/npm-asset';
 
-        if (Io::folderExists($altBowerPath)) {
+        if (is_dir($altBowerPath)) {
             Craft::setAlias('@bower', $altBowerPath);
         }
 
-        if (Io::folderExists($altNpmPath)) {
+        if (is_dir($altNpmPath)) {
             Craft::setAlias('@npm', $altNpmPath);
         }
     }

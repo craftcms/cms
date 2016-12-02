@@ -508,7 +508,7 @@ class View extends \yii\web\View
         $request = Craft::$app->getRequest();
         if (!$request->getIsConsoleRequest() && $request->getIsSiteRequest() && Craft::$app->getIsInstalled()) {
             $sitePath = $this->_templatesPath.'/'.Craft::$app->getSites()->currentSite->handle;
-            if (Io::folderExists($sitePath)) {
+            if (is_dir($sitePath)) {
                 $basePaths[] = $sitePath;
             }
         }

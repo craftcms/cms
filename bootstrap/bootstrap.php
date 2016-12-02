@@ -238,7 +238,7 @@ if ($appType === 'web') {
     $resourceBasePath = Craft::getAlias($app->config->get('resourceBasePath'));
     Io::ensureFolderExists($resourceBasePath, true);
 
-    if (!Io::folderExists($resourceBasePath) || !Io::isWritable($resourceBasePath)) {
+    if (!is_dir($resourceBasePath) || !Io::isWritable($resourceBasePath)) {
         exit($resourceBasePath.' doesn\'t exist or isn\'t writable by PHP. Please fix that.');
     }
 

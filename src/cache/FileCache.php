@@ -84,7 +84,7 @@ class FileCache extends \yii\caching\FileCache
 
         if ($this->directoryLevel > 0) {
             $folder = Io::getFolderName($cacheFile);
-            if (!Io::folderExists($folder)) {
+            if (!is_dir($folder)) {
                 Io::createFolder($folder);
             }
         }

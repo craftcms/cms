@@ -372,8 +372,8 @@ class DashboardController extends Controller
 
             // Logs
             if ($getHelpModel->attachLogs) {
-                $logPath = Io::folderExists(Craft::$app->getPath()->getLogPath());
-                if ($logPath !== false) {
+                $logPath = Craft::$app->getPath()->getLogPath();
+                if (is_dir($logPath)) {
                     // Grab it all.
                     $logFiles = Io::getFiles($logPath, true);
 
@@ -393,8 +393,8 @@ class DashboardController extends Controller
                 // for debugging.
                 Craft::$app->getDb()->backup();
 
-                $backupPath = Io::folderExists(Craft::$app->getPath()->getDbBackupPath());
-                if ($backupPath !== false) {
+                $backupPath = Craft::$app->getPath()->getDbBackupPath();
+                if (is_dir($backupPath)) {
                     // todo: would be nice to be able to get the last 3 modified *.sql* files
                     $backupsFiles = Io::getLastModifiedFiles($backupPath, 3);
 
@@ -409,8 +409,8 @@ class DashboardController extends Controller
 
             // Templates
             if ($getHelpModel->attachTemplates) {
-                $templatesPath = Io::folderExists(Craft::$app->getPath()->getSiteTemplatesPath());
-                if ($templatesPath !== false) {
+                $templatesPath = Craft::$app->getPath()->getSiteTemplatesPath();
+                if (is_dir($templatesPath)) {
                     $templateFiles = FileHelper::findFiles($templatesPath);
                     foreach ($templateFiles as $templateFile) {
                         // Preserve the directory structure within the templates folder

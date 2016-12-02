@@ -87,7 +87,7 @@ class MigrationManager extends Component
 
         $migrationPath = FileHelper::normalizePath(Craft::getAlias($this->migrationPath));
 
-        if (!$migrationPath || !Io::folderExists($migrationPath)) {
+        if (!$migrationPath || !is_dir($migrationPath)) {
             Craft::warning('Migration folder doesn\'t exist: '.$migrationPath);
             $this->migrationPath = false;
         } else {

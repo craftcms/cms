@@ -101,9 +101,9 @@ class RichText extends Field
     public function getSettingsHtml()
     {
         $configOptions = ['' => Craft::t('app', 'Default')];
-        $configPath = Craft::$app->getPath()->getConfigPath().'/redactor';
+        $configPath = Craft::$app->getPath()->getConfigPath().DIRECTORY_SEPARATOR.'redactor';
 
-        if (Io::folderExists($configPath)) {
+        if (is_dir($configPath)) {
             $configFiles = FileHelper::findFiles($configPath, [
                 'only' => ['*.json'],
                 'recursive' => false

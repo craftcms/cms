@@ -186,8 +186,8 @@ class Et extends Component
      */
     public function downloadUpdate($downloadPath, $md5, $handle)
     {
-        if (Io::folderExists($downloadPath)) {
-            $downloadPath .= '/'.$md5.'.zip';
+        if (is_dir($downloadPath)) {
+            $downloadPath .= DIRECTORY_SEPARATOR.$md5.'.zip';
         }
 
         $updateModel = Craft::$app->getUpdates()->getUpdates();
