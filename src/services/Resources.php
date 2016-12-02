@@ -317,7 +317,7 @@ class Resources extends Component
         }
 
         // Clean up any relative folders at the beginning of the CSS URL
-        $requestFolder = Io::getFolderName(Craft::$app->getRequest()->getPathInfo());
+        $requestFolder = pathinfo(Craft::$app->getRequest()->getPathInfo(), PATHINFO_DIRNAME);
         $requestFolderParts = array_filter(explode('/', $requestFolder));
         $cssUrlParts = array_filter(explode('/', $match[3]));
 

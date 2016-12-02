@@ -736,7 +736,7 @@ class Plugins extends Component
                     continue;
                 }
 
-                $handle = strtolower(Io::getFolderName($folder, false));
+                $handle = strtolower(pathinfo($folder, PATHINFO_BASENAME));
 
                 if (!in_array($handle, $handles)) {
                     $handles[] = $handle;

@@ -385,7 +385,7 @@ class Raster extends Image
         $extension = StringHelper::toLowerCase(Io::getExtension($targetPath));
 
         $options = $this->_getSaveOptions(false, $extension);
-        $targetPath = Io::getFolderName($targetPath).'/'.pathinfo($targetPath, PATHINFO_FILENAME).'.'.Io::getExtension($targetPath);
+        $targetPath = pathinfo($targetPath, PATHINFO_DIRNAME).DIRECTORY_SEPARATOR.pathinfo($targetPath, PATHINFO_FILENAME).'.'.Io::getExtension($targetPath);
 
         try {
             if ($autoQuality && in_array($extension, ['jpeg', 'jpg', 'png'])) {
@@ -544,7 +544,7 @@ class Raster extends Image
         @set_time_limit(30);
 
         if ($step == 0) {
-            $tempFileName = Io::getFolderName($tempFileName).'/'.pathinfo($tempFileName, PATHINFO_FILENAME).'-temp.'.$extension;
+            $tempFileName = pathinfo($tempFileName, PATHINFO_DIRNAME).DIRECTORY_SEPARATOR.pathinfo($tempFileName, PATHINFO_FILENAME).'-temp.'.$extension;
         }
 
         // Find our target quality by splitting the min and max qualities
