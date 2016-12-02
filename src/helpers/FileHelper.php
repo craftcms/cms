@@ -41,6 +41,44 @@ class FileHelper extends \yii\helpers\FileHelper
     }
 
     /**
+     * Returns whether a given directory is empty (has no files) recursively.
+     *
+     * @param string $dir the directory to be checked
+     *
+     * @return boolean whether the directory is empty
+     * @throws InvalidParamException if the dir is invalid
+     * @throws ErrorException in case of failure
+     */
+    public static function isDirectoryEmpty($dir)
+    {
+        if (!is_dir($dir)) {
+            throw new InvalidParamException("The dir argument must be a directory: $dir");
+        }
+
+        if (!($handle = opendir($dir))) {
+            throw new ErrorException("Unable to open the directory: $dir");
+        }
+
+        // It's empty until we find a file
+        $empty = true;
+
+        while (($file = readdir($handle)) !== false) {
+            if ($file === '.' || $file === '..') {
+                continue;
+            }
+            $path = $dir.DIRECTORY_SEPARATOR.$file;
+            if (is_file($path) || !static::isDirectoryEmpty($path)) {
+                $empty = false;
+                break;
+            }
+        }
+
+        closedir($handle);
+
+        return $empty;
+    }
+
+    /**
      * Removes a file.
      *
      * @param string $file the file to be deleted
@@ -74,7 +112,7 @@ class FileHelper extends \yii\helpers\FileHelper
      *   Only symlink would be removed in that default case.
      *
      * @return void
-     * @throws InvalidParamException if the dir is invalid.
+     * @throws InvalidParamException if the dir is invalid
      * @throws ErrorException in case of failure
      */
     public static function clearDirectory($dir, $options = [])
