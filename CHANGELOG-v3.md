@@ -66,6 +66,8 @@ Craft CMS 3.0 Working Changelog
 - Added helpers\App::isComposerInstall().
 - Added helpers\App::majorMinorVersion().
 - Added helpers\Db::isTypeSupported().
+- Added helpers\Update::getBasePath().
+- Added helpers\Update::parseManifestLine().
 - Added services\Config::getDbPort().
 - Added services\Elements::deleteElement().
 - Added services\Plugins::getBasePath().
@@ -299,6 +301,8 @@ Craft CMS 3.0 Working Changelog
 - Removed helpers\Io::getFile().
 - Removed helpers\Io::getFolder().
 - Removed helpers\Io::normalizePathSeparators(). Use helpers\FileHelper::normalizePath() instead.
+- Removed helpers\Update::cleanManifestFolderLine().
+- Removed helpers\Update::isManifestLineAFolder().
 - Removed services\Assets::deleteAssetsByIds().
 - Removed services\Assets::deleteCategory().
 - Removed services\Assets::deleteCategoryById().

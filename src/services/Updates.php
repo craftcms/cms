@@ -511,7 +511,7 @@ class Updates extends Component
 
         foreach ($checkPaths as $writablePath) {
             if (!Io::isWritable($writablePath)) {
-                $errorPath[] = Io::getRealPath($writablePath);
+                $errorPath[] = $writablePath;
             }
         }
 
@@ -720,7 +720,7 @@ class Updates extends Component
      * @param string $uid
      * @param string $handle
      *
-     * @return array
+     * @return void
      */
     public function updateCleanUp($uid, $handle)
     {
