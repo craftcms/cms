@@ -91,33 +91,6 @@ class Io
     }
 
     /**
-     * If the path exists on the file system, will return the paths of any folders that are contained within it.
-     *
-     * @param string  $path           The folder path to check
-     * @param boolean $suppressErrors Whether to suppress any PHP Notices/Warnings/Errors (usually permissions related)
-     *
-     * @return string[]|false The paths of the subfolders, or false if the parent folder doesn’t exist
-     */
-    public static function getFolders($path, $suppressErrors = false)
-    {
-        $path = FileHelper::normalizePath($path);
-
-        if (static::folderExists($path, false, $suppressErrors)) {
-            $folders = $suppressErrors ? @glob($path.'/*', GLOB_ONLYDIR) : glob($path.'/*', GLOB_ONLYDIR);
-
-            if ($folders) {
-                foreach ($folders as $key => $folder) {
-                    $folders[$key] = FileHelper::normalizePath($folder);
-                }
-
-                return $folders;
-            }
-        }
-
-        return false;
-    }
-
-    /**
      * If the path exists on the file system, will return the paths of any files that are contained within it.
      *
      * @param string  $path           The folder path to check

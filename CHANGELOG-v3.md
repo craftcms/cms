@@ -299,6 +299,7 @@ Craft CMS 3.0 Working Changelog
 - Removed helpers\Io::getFolderSize().
 - Removed helpers\Io::getFile().
 - Removed helpers\Io::getFolder().
+- Removed helpers\Io::getFolders().
 - Removed helpers\Io::normalizePathSeparators(). Use helpers\FileHelper::normalizePath() instead.
 - Removed helpers\Update::cleanManifestFolderLine().
 - Removed helpers\Update::isManifestLineAFolder().

@@ -52,7 +52,7 @@ class m160804_110002_userphotos_to_assets extends Migration
         $this->_setPhotoIdValues($affectedUsers);
 
         Craft::info('Removing all the subfolders.');
-        $this->_removeSubfolders();
+        $this->_removeSubdirectories();
 
         Craft::info('All done');
 
@@ -327,16 +327,14 @@ class m160804_110002_userphotos_to_assets extends Migration
     }
 
     /**
-     * Remove all the subfolders in the userphotos folder.
+     * Remove all the subdirectories in the userphotos folder.
      */
-    private function _removeSubfolders()
+    private function _removeSubdirectories()
     {
-        $folders = Io::getFolders($this->_basePath);
+        $subDirs = glob($this->_basePath.DIRECTORY_SEPARATOR.'*', GLOB_ONLYDIR);
 
-        if (is_array($folders)) {
-            foreach ($folders as $folder) {
-                FileHelper::removeDirectory($folder);
-            }
+        foreach ($subDirs as $dir) {
+            FileHelper::removeDirectory($dir);
         }
     }
 }
