@@ -531,18 +531,15 @@ class Application extends \yii\web\Application
             $update = true;
         }
 
-        if (($data = $request->getBodyParam('data',
-                null)) !== null && isset($data['handle'])
-        ) {
+        if (($data = $request->getBodyParam('data', null)) !== null && isset($data['handle'])) {
             $update = true;
         }
 
         // Only run for CP requests and if we're not in the middle of an update.
         if ($request->getIsCpRequest() && !$update) {
-            $cachedAppPath = $this->getCache()->get('appPath');
-            $appPath = $this->getPath()->getAppPath();
+            $cachedBasePath = $this->getCache()->get('basePath');
 
-            if ($cachedAppPath === false || $cachedAppPath !== $appPath) {
+            if ($cachedBasePath === false || $cachedBasePath !== $this->getBasePath()) {
                 return $this->runAction('templates/requirements-check');
             }
         }

@@ -125,8 +125,8 @@ class TemplatesController extends Controller
                     ['reqCheck' => $reqCheck]);
             }
         } else {
-            // Cache the app path.
-            Craft::$app->getCache()->set('appPath', Craft::$app->getBasePath());
+            // Cache the base path.
+            Craft::$app->getCache()->set('basePath', Craft::$app->getBasePath());
         }
 
         return null;
