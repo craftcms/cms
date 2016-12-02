@@ -359,6 +359,28 @@ class Application extends \yii\web\Application
         return null;
     }
 
+    /**
+     * @inheritdoc
+     *
+     * @todo Remove this whenever Yii is updated with support for asset-packagist.org.
+     */
+    public function setVendorPath($path)
+    {
+        parent::setVendorPath($path);
+
+        // Override the @bower and @npm aliases if using asset-packagist.org
+        $altBowerPath = $this->getVendorPath().'/bower-asset';
+        $altNpmPath = $this->getVendorPath().'/npm-asset';
+
+        if (Io::folderExists($altBowerPath)) {
+            Craft::setAlias('@bower', $altBowerPath);
+        }
+
+        if (Io::folderExists($altNpmPath)) {
+            Craft::setAlias('@npm', $altNpmPath);
+        }
+    }
+
     // Private Methods
     // =========================================================================
 
