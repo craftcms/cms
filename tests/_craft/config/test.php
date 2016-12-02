@@ -23,14 +23,6 @@ $config = ArrayHelper::merge($config, [
     'components' => [
         'sites' => [
             'currentSite' => 'default'
-        ],
-        'db' => [
-         'class' => '\yii\db\Connection',
-         'dsn' => 'mysql:host=localhost;dbname=craft3test',
-         'username' => 'root',
-         'password' => 'password',
-         'charset' => 'utf8',
-         'tablePrefix' =>'craft_'
         ]
     ],
 ]);
