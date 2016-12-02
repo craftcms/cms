@@ -622,7 +622,7 @@ class RequirementsChecker
             'storage' => $pathService->getStoragePath(),
             'plugins' => $pathService->getPluginsPath(),
             'config' => $pathService->getConfigPath(),
-            'app' => $pathService->getAppPath(),
+            'app' => Craft::$app->getBasePath(),
             'templates' => $pathService->getSiteTemplatesPath(),
             'translations' => $pathService->getSiteTranslationsPath(),
         );

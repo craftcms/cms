@@ -100,7 +100,7 @@ class I18N extends \yii\i18n\I18N
 			if ($this->getIsIntlLoaded()) {
 				$this->_allLocaleIds = ResourceBundle::getLocales(null);
 			} else {
-				$appLocalesPath = Craft::$app->getPath()->getAppPath().'/config/locales';
+				$appLocalesPath = Craft::$app->getBasePath().DIRECTORY_SEPARATOR.'config'.DIRECTORY_SEPARATOR.'locales';
 				$customLocalesPath = Craft::$app->getPath()->getConfigPath().'/locales';
 
 				$localeFiles = Io::getFolderContents($appLocalesPath, false, '\.php$');

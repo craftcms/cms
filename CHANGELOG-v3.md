@@ -136,6 +136,7 @@ Craft CMS 3.0 Working Changelog
 - base\SavableComponent::afterSave() now has an $isNew argument, which will indicate whether the element is brand new.
 - base\SavableComponent::beforeSave() now has an $isNew argument, which will indicate whether the element is brand new.
 - services\Elements::deleteElementById() now has $elementType and $siteId arguments.
+- services\Path::getAppPath() now throws an exception if it is called within a Composer install, as there is no “app path”.
 - The ‘beforeElementSave’ and ‘afterElementSave’ events triggered by base\Element now have $isNew properties, which indicate whether the element is brand new.
 - The ‘beforeSave’ and ‘afterSave’ events triggered by base\Element now have $isNew properties, which indicate whether the element is brand new.
 - The ‘beforeSave’ and ‘afterSave’ events triggered by base\SavableComponent now have $isNew properties, which indicate whether the component is brand new.

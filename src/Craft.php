@@ -179,28 +179,28 @@ EOD;
             }
 
             static::_writeFieldAttributesFile(
-                static::$app->getPath()->getAppPath().'/behaviors/ContentBehavior.php.template',
+                static::$app->getBasePath().'/behaviors/ContentBehavior.php.template',
                 ['{VERSION}', '/* PROPERTIES */'],
                 [$storedFieldVersion, implode("\n\n", $properties)],
                 $contentBehaviorFile
             );
 
             static::_writeFieldAttributesFile(
-                static::$app->getPath()->getAppPath().'/behaviors/ContentTrait.php.template',
+                static::$app->getBasePath().'/behaviors/ContentTrait.php.template',
                 ['{VERSION}', '{PROPERTIES}'],
                 [$storedFieldVersion, implode("\n", $propertyDocs)],
                 $contentTraitFile
             );
 
             static::_writeFieldAttributesFile(
-                static::$app->getPath()->getAppPath().'/behaviors/ElementQueryBehavior.php.template',
+                static::$app->getBasePath().'/behaviors/ElementQueryBehavior.php.template',
                 ['{VERSION}', '/* METHODS */'],
                 [$storedFieldVersion, implode("\n\n", $methods)],
                 $elementQueryBehaviorFile
             );
 
             static::_writeFieldAttributesFile(
-                static::$app->getPath()->getAppPath().'/behaviors/ElementQueryTrait.php.template',
+                static::$app->getBasePath().'/behaviors/ElementQueryTrait.php.template',
                 ['{VERSION}', '{METHODS}'],
                 [$storedFieldVersion, implode("\n", $methodDocs)],
                 $elementQueryTraitFile

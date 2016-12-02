@@ -102,7 +102,7 @@ class TemplatesController extends Controller
      */
     public function actionRequirementsCheck()
     {
-        require_once(Craft::$app->getPath()->getAppPath().'/requirements/RequirementsChecker.php');
+        require_once(Craft::$app->getBasePath().'/requirements/RequirementsChecker.php');
 
         // Run the requirements checker
         $reqCheck = new \RequirementsChecker();
@@ -126,7 +126,7 @@ class TemplatesController extends Controller
             }
         } else {
             // Cache the app path.
-            Craft::$app->getCache()->set('appPath', Craft::$app->getPath()->getAppPath());
+            Craft::$app->getCache()->set('appPath', Craft::$app->getBasePath());
         }
 
         return null;

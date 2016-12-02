@@ -69,8 +69,8 @@ class Localization
         $data = null;
 
         // Load the locale data
-        $appDataPath = Craft::$app->getPath()->getAppPath().'/config/locales/'.$localeId.'.php';
-        $customDataPath = Craft::$app->getPath()->getConfigPath().'/locales/'.$localeId.'.php';
+        $appDataPath = Craft::$app->getBasePath().DIRECTORY_SEPARATOR.'config'.DIRECTORY_SEPARATOR.'locales'.DIRECTORY_SEPARATOR.$localeId.'.php';
+        $customDataPath = Craft::$app->getPath()->getConfigPath().DIRECTORY_SEPARATOR.'locales'.DIRECTORY_SEPARATOR.$localeId.'.php';
 
         if (Io::fileExists($appDataPath)) {
             $data = require($appDataPath);

@@ -310,7 +310,7 @@ class Path extends Component
      */
     public function getResourcesPath()
     {
-        return $this->getAppPath().DIRECTORY_SEPARATOR.'resources';
+        return Craft::$app->getBasePath().DIRECTORY_SEPARATOR.'resources';
     }
 
     /**
@@ -326,7 +326,7 @@ class Path extends Component
             return $this->getPluginsPath().DIRECTORY_SEPARATOR.$pluginHandle.DIRECTORY_SEPARATOR.'migrations';
         }
 
-        return $this->getAppPath().DIRECTORY_SEPARATOR.'migrations';
+        return Craft::$app->getBasePath().DIRECTORY_SEPARATOR.'migrations';
     }
 
     /**
@@ -336,7 +336,7 @@ class Path extends Component
      */
     public function getCpTranslationsPath()
     {
-        return $this->getAppPath().DIRECTORY_SEPARATOR.'translations';
+        return Craft::$app->getBasePath().DIRECTORY_SEPARATOR.'translations';
     }
 
     /**
@@ -360,7 +360,7 @@ class Path extends Component
      */
     public function getCpTemplatesPath()
     {
-        return $this->getAppPath().DIRECTORY_SEPARATOR.'templates';
+        return Craft::$app->getBasePath().DIRECTORY_SEPARATOR.'templates';
     }
 
     /**

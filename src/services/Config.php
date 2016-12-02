@@ -753,7 +753,7 @@ class Config extends Component
 
         // Is this a valid Craft config category?
         if (in_array($category, [self::CATEGORY_FILECACHE, self::CATEGORY_GENERAL, self::CATEGORY_DB, self::CATEGORY_DBCACHE, self::CATEGORY_MEMCACHE, self::CATEGORY_APC])) {
-            $defaultsPath = $pathService->getAppPath().'/config/defaults/'.$category.'.php';
+            $defaultsPath = Craft::$app->getBasePath().'/config/defaults/'.$category.'.php';
         } else {
             $defaultsPath = $pathService->getPluginsPath().'/'.$category.'/config.php';
         }

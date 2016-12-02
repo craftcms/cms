@@ -51,7 +51,7 @@ class Update
             $rowData = explode(';', $row);
 
             if ($handle == 'craft') {
-                $directory = Craft::$app->getPath()->getAppPath();
+                $directory = Craft::$app->getBasePath();
             } else {
                 $directory = Craft::$app->getPath()->getPluginsPath().'/'.$handle;
             }
@@ -112,7 +112,7 @@ class Update
     public static function doFileUpdate($manifestData, $sourceTempFolder, $handle)
     {
         if ($handle == 'craft') {
-            $destDirectory = Craft::$app->getPath()->getAppPath();
+            $destDirectory = Craft::$app->getBasePath();
             $sourceFileDirectory = '/app';
         } else {
             $destDirectory = Craft::$app->getPath()->getPluginsPath().'/'.$handle;

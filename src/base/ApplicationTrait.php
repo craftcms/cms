@@ -1316,12 +1316,12 @@ trait ApplicationTrait
         $edition = $this->getEdition();
 
         if ($edition == Craft::Client || $edition == Craft::Pro) {
-            $pathService = $this->getPath();
+            $basePath = $this->getBasePath();
 
-            $this->setComponents(require $pathService->getAppPath().'/config/components/client.php');
+            $this->setComponents(require $basePath.'/config/components/client.php');
 
             if ($edition == Craft::Pro) {
-                $this->setComponents(require $pathService->getAppPath().'/config/components/pro.php');
+                $this->setComponents(require $basePath.'/config/components/pro.php');
             }
         }
     }

@@ -99,7 +99,7 @@ class InfoPanel extends Panel
      */
     private function _getRequirementResults()
     {
-        require_once(Craft::$app->getPath()->getAppPath().'/requirements/RequirementsChecker.php');
+        require_once(Craft::$app->getBasePath().'/requirements/RequirementsChecker.php');
         $reqCheck = new \RequirementsChecker();
         $reqCheck->checkCraft();
 
