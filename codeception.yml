@@ -9,12 +9,15 @@ settings:
     bootstrap: _bootstrap.php
     colors: true
 modules:
-   enabled:
-      - Db:
-         dsn: 'mysql:host=localhost;dbname=craft3test'
-         user: 'root'
-         password: 'password'
-         dump: 'tests/_data/dump.sql'
-         populate: true
-         cleanup: true
-         reconnect: true
+  config:
+    Yii2:
+      configFile: 'tests/_craft/config/test.php'
+  enabled:
+    - Db:
+        dsn: 'mysql:host=localhost;dbname=craft3test'
+        user: 'root'
+        password: 'password'
+        dump: 'tests/_data/dump.sql'
+        populate: true
+        cleanup: true
+        reconnect: true

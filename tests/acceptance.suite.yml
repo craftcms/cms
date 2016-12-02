@@ -7,3 +7,10 @@
 class_name: AcceptanceTester
 modules:
     enabled:
+        - WebDriver:
+            url: http://craft3.dev
+            browser: firefox
+        - Yii2:
+            part: init
+            cleanup: false # don't wrap test in transaction
+            entryScript: index-test.php

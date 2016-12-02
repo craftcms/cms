@@ -12,7 +12,9 @@ class LoginCest
     }
 
     // tests
-    public function tryToTest(FunctionalTester $I)
+    public function seeTemplateHomepageTest(FunctionalTester $I)
     {
+        $I->amOnPage('/');
+        $I->see('Hello','h1');
     }
 }

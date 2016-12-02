@@ -6,7 +6,6 @@
 
 class_name: FunctionalTester
 modules:
-  enabled:
-     - \Helper\Functional
-     - Yii2:
-         configFile: 'tests/_craft/config/test.php'
+    enabled:
+        - Yii2
+        - \Helper\Functional

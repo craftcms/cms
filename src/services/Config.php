@@ -793,7 +793,7 @@ class Config extends Component
 
             if (Io::fileExists($filePath)) {
                 // Originally db.php defined a $dbConfig variable, and later returned an array directly.
-                if (is_array($customConfig = require_once($filePath))) {
+                if (is_array($customConfig = require($filePath))) {
                     $this->_mergeConfigs($configSettings, $customConfig);
                 } else if ($category == self::CATEGORY_DB && isset($dbConfig)) {
                     $configSettings = array_merge($configSettings, $dbConfig);

@@ -7,12 +7,12 @@ use FunctionalTester;
 
 class LoginCest
 {
-    public function _checkOpen(FunctionalTester $I)
+    public function checkOpen(FunctionalTester $I)
     {
-        $I->amOnPage(Yii::$app->homeUrl);
-        $I->see('My Company');
-        $I->seeLink('About');
-        $I->click('About');
-        $I->see('This is the About page.');
+//        $I->amOnPage(Yii::$app->homeUrl);
+//        $I->see('My Company');
+//        $I->seeLink('About');
+//        $I->click('About');
+//        $I->see('This is the About page.');
     }
 }
