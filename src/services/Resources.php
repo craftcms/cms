@@ -8,6 +8,7 @@
 namespace craft\services;
 
 use Craft;
+use craft\base\Plugin;
 use craft\cache\AppPathDependency;
 use craft\dates\DateTime;
 use craft\events\ResolveResourcePathEvent;
@@ -59,11 +60,11 @@ class Resources extends Component
     {
         $path = Craft::$app->getCache()->get('resourcePath:'.$uri);
 
-        if ($path && Io::fileExists($path)) {
-            return $path;
+        if ($path === false || !file_exists($path)) {
+            return null;
         }
 
-        return null;
+        return $path;
     }
 
     /**
@@ -184,18 +185,18 @@ class Resources extends Component
         }
 
         // Check app/resources folder first.
-        $appResourcePath = Craft::$app->getPath()->getResourcesPath().'/'.$uri;
+        $appResourcePath = Craft::$app->getPath()->getResourcesPath().DIRECTORY_SEPARATOR.$uri;
 
-        if (Io::fileExists($appResourcePath)) {
+        if (file_exists($appResourcePath)) {
             return $appResourcePath;
         }
 
         // See if the first segment is a plugin handle.
-        if (isset($segs[0])) {
-            $pluginResourcePath = Craft::$app->getPath()->getPluginsPath().'/'.$segs[0].'/'.'resources/'.implode('/',
-                    array_splice($segs, 1));
+        if (isset($segs[0]) && ($plugin = Craft::$app->getPlugins()->getPlugin($segs[0])) !== null) {
+            /** @var Plugin $plugin */
+            $pluginResourcePath = $plugin->getBasePath().DIRECTORY_SEPARATOR.'resources'.DIRECTORY_SEPARATOR.implode(DIRECTORY_SEPARATOR, array_splice($segs, 1));
 
-            if (Io::fileExists($pluginResourcePath)) {
+            if (is_file($pluginResourcePath)) {
                 return $pluginResourcePath;
             }
         }
@@ -207,7 +208,7 @@ class Resources extends Component
         ]);
         $this->trigger(self::EVENT_RESOLVE_RESOURCE_PATH, $event);
 
-        if ($event->path !== null && Io::fileExists($event->path)) {
+        if ($event->path !== null && is_file($event->path)) {
             return $event->path;
         }
 
@@ -248,7 +249,7 @@ class Resources extends Component
             $this->cacheResourcePath($uri, $path);
         }
 
-        if ($path === false || !Io::fileExists($path)) {
+        if ($path === false || !is_file($path)) {
             throw new NotFoundHttpException(Craft::t('app', 'Resource not found'));
         }
 
@@ -366,7 +367,7 @@ class Resources extends Component
         // See if the icon already exists
         $iconPath = $pathService->getAssetsIconsPath().'/'.StringHelper::toLowerCase($ext).'.svg';
 
-        if (Io::fileExists($iconPath)) {
+        if (file_exists($iconPath)) {
             return $iconPath;
         }
 

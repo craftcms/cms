@@ -187,10 +187,7 @@ class AssetIndexer extends Component
             if ($asset->kind == 'image') {
                 $targetPath = $asset->getImageTransformSourcePath();
 
-                if ($asset->dateModified != $timeModified || !Io::fileExists(
-                        $targetPath
-                    )
-                ) {
+                if ($asset->dateModified != $timeModified || !is_file($targetPath)) {
                     if (!$volume::isLocal()) {
                         $volume->saveFileLocally($uriPath, $targetPath);
 

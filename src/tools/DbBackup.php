@@ -66,7 +66,7 @@ class DbBackup extends Tool
             return null;
         }
 
-        if (!Io::fileExists($backupPath)) {
+        if (!is_file($backupPath)) {
             throw new ServerErrorHttpException('Could not create backup');
         }
 
@@ -76,7 +76,7 @@ class DbBackup extends Tool
 
         $zipPath = Craft::$app->getPath()->getTempPath().'/'.Io::getFilename($backupPath, false).'.zip';
 
-        if (Io::fileExists($zipPath)) {
+        if (is_file($zipPath)) {
             Io::deleteFile($zipPath, true);
         }
 

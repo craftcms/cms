@@ -15,6 +15,7 @@ use craft\base\Volume;
 use craft\events\RegisterRichTextLinkOptionsEvent;
 use craft\fields\data\RichTextData;
 use craft\helpers\Db;
+use craft\helpers\FileHelper;
 use craft\helpers\Html;
 use craft\helpers\HtmlPurifier;
 use craft\helpers\Io;
@@ -103,12 +104,13 @@ class RichText extends Field
         $configPath = Craft::$app->getPath()->getConfigPath().'/redactor';
 
         if (Io::folderExists($configPath)) {
-            $configFiles = Io::getFolderContents($configPath, false, '\.json$');
+            $configFiles = FileHelper::findFiles($configPath, [
+                'only' => ['*.json'],
+                'recursive' => false
+            ]);
 
-            if (is_array($configFiles)) {
-                foreach ($configFiles as $file) {
-                    $configOptions[Io::getFilename($file)] = Io::getFilename($file, false);
-                }
+            foreach ($configFiles as $file) {
+                $configOptions[Io::getFilename($file)] = Io::getFilename($file, false);
             }
         }
 
@@ -648,15 +650,16 @@ class RichText extends Field
      */
     private function _includeRedactorLangFile($lang)
     {
-        $path = 'lib/redactor/lang/'.$lang.'.js';
+        $resourcePath = "lib/redactor/lang/{$lang}.js";
+        $fullPath = FileHelper::normalizePath(Craft::$app->getPath()->getResourcesPath().'/'.$resourcePath);
 
-        if (Io::fileExists(Craft::$app->getPath()->getResourcesPath().'/'.$path)) {
-            Craft::$app->getView()->registerJsResource($path);
-            static::$_redactorLang = $lang;
-
-            return true;
+        if (!is_file($fullPath)) {
+            return false;
         }
 
-        return false;
+        Craft::$app->getView()->registerJsResource($resourcePath);
+        static::$_redactorLang = $lang;
+
+        return true;
     }
 }

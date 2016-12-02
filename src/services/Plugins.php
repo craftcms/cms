@@ -778,13 +778,19 @@ class Plugins extends Component
      * @param string $handle The plugin’s class handle
      *
      * @return string The given plugin’s SVG icon
+     * @throws InvalidPluginException if the plugin isn't installed
      */
     public function getPluginIconSvg($handle)
     {
-        $iconPath = Craft::$app->getPath()->getPluginsPath().'/'.$handle.'/resources/icon.svg';
+        if (($plugin = $this->getPlugin($handle)) === null) {
+            throw new InvalidPluginException($handle);
+        }
 
-        if (!$iconPath || !Io::fileExists($iconPath) || FileHelper::getMimeType($iconPath) != 'image/svg+xml') {
-            $iconPath = Craft::$app->getPath()->getResourcesPath().'/images/default_plugin.svg';
+        /** @var Plugin $plugin */
+        $iconPath = $plugin->getBasePath().DIRECTORY_SEPARATOR.'resources'.DIRECTORY_SEPARATOR.'icon.svg';
+
+        if (!is_file($iconPath) || FileHelper::getMimeType($iconPath) != 'image/svg+xml') {
+            $iconPath = Craft::$app->getPath()->getResourcesPath().DIRECTORY_SEPARATOR.'images'.DIRECTORY_SEPARATOR.'default_plugin.svg';
         }
 
         return Io::getFileContents($iconPath);
@@ -987,10 +993,10 @@ class Plugins extends Component
     private function _scrapeConfigFromComposerJson($handle)
     {
         // Make sure this plugin has a composer.json file
-        $pluginPath = Craft::$app->getPath()->getPluginsPath().'/'.$handle;
-        $composerPath = $pluginPath.'/composer.json';
+        $pluginPath = Craft::$app->getPath()->getPluginsPath().DIRECTORY_SEPARATOR.$handle;
+        $composerPath = $pluginPath.DIRECTORY_SEPARATOR.'composer.json';
 
-        if (($composerPath = Io::fileExists($composerPath)) === false) {
+        if (!is_file($composerPath)) {
             Craft::warning("Could not find a composer.json file for the plugin '$handle'.");
 
             return null;
@@ -1130,7 +1136,7 @@ class Plugins extends Component
             $aliases[$alias] = $path;
 
             // If we're still looking for the primary Plugin class, see if it's in here
-            if ($class === null && Io::fileExists($path.'/Plugin.php')) {
+            if ($class === null && is_file($path.DIRECTORY_SEPARATOR.'Plugin.php')) {
                 $class = $namespace.'Plugin';
             }
         }

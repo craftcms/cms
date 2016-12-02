@@ -20,6 +20,7 @@ use craft\models\CraftSupport;
 use craft\web\Controller;
 use craft\web\UploadedFile;
 use craft\helpers\FileHelper;
+use yii\base\ErrorException;
 use yii\web\BadRequestHttpException;
 use yii\web\Response;
 use ZipArchive;
@@ -364,8 +365,8 @@ class DashboardController extends Controller
             }
 
             // License key
-            $licenseKeyPath = Io::fileExists(Craft::$app->getPath()->getLicenseKeyPath());
-            if ($licenseKeyPath !== false) {
+            $licenseKeyPath = Craft::$app->getPath()->getLicenseKeyPath();
+            if (is_file($licenseKeyPath)) {
                 $zip->addFile($licenseKeyPath, 'license.key');
             }
 
@@ -410,18 +411,10 @@ class DashboardController extends Controller
             if ($getHelpModel->attachTemplates) {
                 $templatesPath = Io::folderExists(Craft::$app->getPath()->getSiteTemplatesPath());
                 if ($templatesPath !== false) {
-                    $templateFiles = Io::getFolderContents($templatesPath);
-                    if ($templateFiles === false) {
-                        Craft::warning('Could not send template files with the Craft support request.');
-                    } else {
-                        foreach ($templateFiles as $templateFile) {
-                            // Skip if it's a directory
-                            if (!Io::fileExists($templateFile)) {
-                                continue;
-                            }
-                            // Preserve the directory structure within the templates folder
-                            $zip->addFile($templateFile, 'templates'.substr($templateFile, strlen($templatesPath)));
-                        }
+                    $templateFiles = FileHelper::findFiles($templatesPath);
+                    foreach ($templateFiles as $templateFile) {
+                        // Preserve the directory structure within the templates folder
+                        $zip->addFile($templateFile, 'templates'.substr($templateFile, strlen($templatesPath)));
                     }
                 }
             }
@@ -450,8 +443,8 @@ class DashboardController extends Controller
         $result = $api->requestCreate($requestParams);
 
         // Delete the zip file
-        if (Io::fileExists($zipPath)) {
-            Io::deleteFile($zipPath);
+        if (is_file($zipPath)) {
+            FileHelper::removeFile($zipPath);
         }
 
         if (!$result) {
@@ -533,10 +526,34 @@ class DashboardController extends Controller
     {
         $iconPath = $widget->getIconPath();
 
-        if ($iconPath && Io::fileExists($iconPath) && FileHelper::getMimeType($iconPath) == 'image/svg+xml') {
-            return Io::getFileContents($iconPath);
+        if (!$iconPath) {
+            return $this->_getDefaultWidgetIconSvg($widget);
         }
 
+        if (!is_file($iconPath)) {
+            Craft::warning("Widget icon file doesn't exist: {$iconPath}");
+
+            return $this->_getDefaultWidgetIconSvg($widget);
+        }
+
+        if (FileHelper::getMimeType($iconPath) != 'image/svg+xml') {
+            Craft::warning("Widget icon file is not an SVG: {$iconPath}");
+
+            return $this->_getDefaultWidgetIconSvg($widget);
+        }
+
+        return Io::getFileContents($iconPath);
+    }
+
+    /**
+     * Returns the default icon SVG for a given widget type.
+     *
+     * @param WidgetInterface $widget
+     *
+     * @return string
+     */
+    private function _getDefaultWidgetIconSvg(WidgetInterface $widget)
+    {
         return Craft::$app->getView()->renderTemplate('_includes/defaulticon.svg', [
             'label' => $widget::displayName()
         ]);

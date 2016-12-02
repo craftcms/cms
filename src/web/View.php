@@ -1147,14 +1147,14 @@ class View extends \yii\web\View
             // Maybe $name is already the full file path
             $testPath = $basePath.'/'.$name;
 
-            if (Io::fileExists($testPath)) {
+            if (is_file($testPath)) {
                 return $testPath;
             }
 
             foreach ($this->_defaultTemplateExtensions as $extension) {
                 $testPath = $basePath.'/'.$name.'.'.$extension;
 
-                if (Io::fileExists($testPath)) {
+                if (is_file($testPath)) {
                     return $testPath;
                 }
             }
@@ -1164,7 +1164,7 @@ class View extends \yii\web\View
             foreach ($this->_defaultTemplateExtensions as $extension) {
                 $testPath = $basePath.'/'.($name ? $name.'/' : '').$filename.'.'.$extension;
 
-                if (Io::fileExists($testPath)) {
+                if (is_file($testPath)) {
                     return $testPath;
                 }
             }
@@ -1218,7 +1218,7 @@ class View extends \yii\web\View
         $sourcePath = Craft::getAlias('@app/resources');
 
         // If the resource doesn't exist in craft/app/resources, check plugins' resources/ subfolders
-        if (!Io::fileExists($sourcePath.'/'.$path)) {
+        if (!is_file($sourcePath.'/'.$path)) {
             $pathParts = explode('/', $path);
 
             if (count($pathParts) > 1) {
@@ -1226,7 +1226,7 @@ class View extends \yii\web\View
                 $pluginSourcePath = Craft::getAlias('@craft/plugins/'.$pluginHandle.'/resources');
                 $pluginSubpath = implode('/', $pathParts);
 
-                if (Io::fileExists($pluginSourcePath.'/'.$pluginSubpath)) {
+                if (is_file($pluginSourcePath.'/'.$pluginSubpath)) {
                     $sourcePath = $pluginSourcePath;
                     $path = $pluginSubpath;
                 }

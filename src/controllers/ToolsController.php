@@ -10,7 +10,6 @@ namespace craft\controllers;
 use Craft;
 use craft\base\ToolInterface;
 use craft\helpers\Component;
-use craft\helpers\Io;
 use craft\web\Controller;
 use yii\web\NotFoundHttpException;
 use yii\web\Response;
@@ -68,9 +67,12 @@ class ToolsController extends Controller
     public function actionDownloadBackupFile()
     {
         $filename = Craft::$app->getRequest()->getRequiredQueryParam('filename');
+        $filePath = Craft::$app->getPath()->getTempPath().DIRECTORY_SEPARATOR.$filename.'.zip';
 
-        if (($filePath = Io::fileExists(Craft::$app->getPath()->getTempPath().'/'.$filename.'.zip')) === false) {
-            throw new NotFoundHttpException('Invalid backup name: '.$filename);
+        if (!is_file($filePath)) {
+            throw new NotFoundHttpException(Craft::t('app', 'Invalid backup name: {filename}', [
+                'filename' => $filename
+            ]));
         }
 
         return Craft::$app->getResponse()->sendFile($filePath);

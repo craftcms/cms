@@ -48,7 +48,7 @@ class App
         if (!isset(static::$_isComposerInstall)) {
             // If this was installed via a craftcms.com zip, there will be an index.php file
             // at the root of the vendor directory.
-            static::$_isComposerInstall = !Io::fileExists(Craft::$app->getVendorPath().'/index.php');
+            static::$_isComposerInstall = !is_file(Craft::$app->getVendorPath().DIRECTORY_SEPARATOR.'index.php');
         }
 
         return static::$_isComposerInstall;

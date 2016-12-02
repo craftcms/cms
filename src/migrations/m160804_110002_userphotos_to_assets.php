@@ -95,7 +95,7 @@ class m160804_110002_userphotos_to_assets extends Migration
                 $sourcePath = $subfolder.'/original/'.$user['photo'];
 
                 // If the file actually exists
-                if (Io::fileExists($sourcePath)) {
+                if (is_file($sourcePath)) {
                     // Make sure that the filename is unique
                     $counter = 0;
 
@@ -103,7 +103,7 @@ class m160804_110002_userphotos_to_assets extends Migration
                     $extension = Io::getExtension($user['photo']);
                     $filename = $baseFilename.'.'.$extension;
 
-                    while (Io::fileExists($this->_basePath.'/'.$filename)) {
+                    while (is_file($this->_basePath.DIRECTORY_SEPARATOR.$filename)) {
                         $filename = $baseFilename.'_'.++$counter.'.'.$extension;
                     }
 
@@ -250,7 +250,7 @@ class m160804_110002_userphotos_to_assets extends Migration
                 ])
                 ->one();
 
-            if (!$assetExists && Io::fileExists($filePath)) {
+            if (!$assetExists && is_file($filePath)) {
                 $elementData = [
                     'type' => 'craft\elements\Asset',
                     'enabled' => 1,

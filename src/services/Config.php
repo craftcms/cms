@@ -758,7 +758,7 @@ class Config extends Component
             $defaultsPath = $pathService->getPluginsPath().'/'.$category.'/config.php';
         }
 
-        if (Io::fileExists($defaultsPath)) {
+        if (is_file($defaultsPath)) {
             $configSettings = @require_once($defaultsPath);
         }
 
@@ -791,7 +791,7 @@ class Config extends Component
         } else {
             $filePath = $pathService->getConfigPath().'/'.$category.'.php';
 
-            if (Io::fileExists($filePath)) {
+            if (is_file($filePath)) {
                 // Originally db.php defined a $dbConfig variable, and later returned an array directly.
                 if (is_array($customConfig = require_once($filePath))) {
                     $this->_mergeConfigs($configSettings, $customConfig);

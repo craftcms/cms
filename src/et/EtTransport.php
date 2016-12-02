@@ -18,6 +18,7 @@ use craft\services\Config;
 use GuzzleHttp\Client;
 use GuzzleHttp\Exception\RequestException;
 use PDO;
+use yii\base\ErrorException;
 use yii\base\Exception;
 
 /**
@@ -316,11 +317,16 @@ class EtTransport
         $keyFile = Craft::$app->getPath()->getLicenseKeyPath();
 
         // Check to see if the key exists and it's not a temp one.
-        if (Io::fileExists($keyFile) && Io::getFileContents($keyFile) !== 'temp') {
-            return trim(preg_replace('/[\r\n]+/', '', Io::getFileContents($keyFile)));
+        if (!is_file($keyFile)) {
+            return null;
         }
 
-        return null;
+        $contents = file_get_contents($keyFile);
+        if (empty($contents) || $contents == 'temp') {
+            return null;
+        }
+
+        return trim(preg_replace('/[\r\n]+/', '', $contents));
     }
 
     /**
@@ -347,26 +353,25 @@ class EtTransport
      */
     private function _setLicenseKey($key)
     {
-        $keyFile = Craft::$app->getPath()->getLicenseKeyPath();
-
         // Make sure the key file does not exist first, or if it exists it is a temp key file.
         // ET should never overwrite a valid license key.
-        if (!Io::fileExists($keyFile) || (Io::fileExists($keyFile) && Io::getFileContents($keyFile) == 'temp')) {
-            if ($this->_isConfigFolderWritable()) {
-                preg_match_all("/.{50}/", $key, $matches);
+        if ($this->_getLicenseKey() !== null) {
+            throw new Exception('Cannot overwrite an existing valid license.key file.');
+        }
 
-                $formattedKey = '';
-                foreach ($matches[0] as $segment) {
-                    $formattedKey .= $segment.PHP_EOL;
-                }
-
-                return Io::writeToFile($keyFile, $formattedKey);
-            }
-
+        // Make sure we can write to the file
+        if (!$this->_isConfigFolderWritable()) {
             throw new EtException('Craft needs to be able to write to your “craft/config” folder and it can’t.', 10001);
         }
 
-        throw new Exception('Cannot overwrite an existing valid license.key file.');
+        // Format the license key into lines of 50 chars
+        preg_match_all("/.{50}/", $key, $matches);
+        $formattedKey = '';
+        foreach ($matches[0] as $segment) {
+            $formattedKey .= $segment.PHP_EOL;
+        }
+
+        return Io::writeToFile(Craft::$app->getPath()->getLicenseKeyPath(), $formattedKey);
     }
 
     /**

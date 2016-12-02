@@ -851,7 +851,7 @@ class AssetTransforms extends Component
 
         $thumbPath = $thumbFolder.$asset->id.'.'.$extension;
 
-        if (!Io::fileExists($thumbPath)) {
+        if (!is_file($thumbPath)) {
             $imageSource = $this->getLocalImageSource($asset);
 
             Craft::$app->getImages()->loadImage($imageSource, false, $size)
@@ -884,7 +884,7 @@ class AssetTransforms extends Component
         $imageSourcePath = $asset->getImageTransformSourcePath();
 
         if (!$volume::isLocal()) {
-            if (!Io::fileExists($imageSourcePath) || Io::getFileSize($imageSourcePath) == 0) {
+            if (!is_file($imageSourcePath) || Io::getFileSize($imageSourcePath) == 0) {
 
                 // Delete it just in case it's a 0-byter
                 Io::deleteFile($imageSourcePath, true);
@@ -893,7 +893,7 @@ class AssetTransforms extends Component
 
                 $volume->saveFileLocally($asset->getUri(), $localCopy);
 
-                if (!Io::fileExists($localCopy) || Io::getFileSize($localCopy) == 0) {
+                if (!is_file($localCopy) || Io::getFileSize($localCopy) == 0) {
                     Io::deleteFile($localCopy, true);
                     throw new VolumeException(Craft::t('Tried to download the source file for image “{file}”, but it was 0 bytes long.',
                         ['file' => $asset->filename]));

@@ -104,7 +104,7 @@ class Cp extends Component
                     $lcHandle = StringHelper::toLowerCase($pluginHandle);
                     $iconPath = Craft::$app->getPath()->getPluginsPath().'/'.$lcHandle.'/resources/icon-mask.svg';
 
-                    if (IoHelper::fileExists($iconPath)) {
+                    if (is_file($iconPath)) {
                         $iconSvg = IoHelper::getFileContents($iconPath);
                     } else {
                         $iconSvg = false;
