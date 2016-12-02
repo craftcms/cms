@@ -117,7 +117,7 @@ class I18N extends \yii\i18n\I18N
 				$this->_allLocaleIds = [];
 
 				foreach ($localeFiles as $file) {
-					$this->_allLocaleIds[] = Io::getFilename($file, false);
+					$this->_allLocaleIds[] = pathinfo($file, PATHINFO_FILENAME);
 				}
 			}
 
@@ -167,7 +167,7 @@ class I18N extends \yii\i18n\I18N
 
 			if (is_array($folders) && count($folders) > 0) {
 				foreach ($folders as $dir) {
-					$localeId = Io::getFilename($dir, false);
+					$localeId = pathinfo($dir, PATHINFO_FILENAME);
 
 					if ($localeId != 'en-US') {
 						$this->_appLocales[] = new Locale($localeId);

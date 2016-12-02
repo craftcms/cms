@@ -74,7 +74,7 @@ class DbBackup extends Tool
             return null;
         }
 
-        $zipPath = Craft::$app->getPath()->getTempPath().'/'.Io::getFilename($backupPath, false).'.zip';
+        $zipPath = Craft::$app->getPath()->getTempPath().'/'.pathinfo($backupPath, PATHINFO_FILENAME).'.zip';
 
         if (is_file($zipPath)) {
             Io::deleteFile($zipPath, true);
@@ -86,12 +86,12 @@ class DbBackup extends Tool
             throw new ServerErrorHttpException('Cannot create zip at '.$zipPath);
         }
 
-        $filename = Io::getFilename($backupPath);
+        $filename = pathinfo($backupPath, PATHINFO_BASENAME);
         $zip->addFile($backupPath, $filename);
         $zip->close();
 
         return [
-            'backupFile' => Io::getFilename($filename, false)
+            'backupFile' => pathinfo($filename, PATHINFO_FILENAME)
         ];
     }
 }

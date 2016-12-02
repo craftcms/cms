@@ -99,7 +99,7 @@ class m160804_110002_userphotos_to_assets extends Migration
                     // Make sure that the filename is unique
                     $counter = 0;
 
-                    $baseFilename = Io::getFilename($user['photo'], false);
+                    $baseFilename = pathinfo($user['photo'], PATHINFO_FILENAME);
                     $extension = Io::getExtension($user['photo']);
                     $filename = $baseFilename.'.'.$extension;
 
@@ -277,7 +277,7 @@ class m160804_110002_userphotos_to_assets extends Migration
                     $contentData = [
                         'elementId' => $elementId,
                         'locale' => $locale,
-                        'title' => StringHelper::toTitleCase(Io::getFilename($user['photo'], false))
+                        'title' => StringHelper::toTitleCase(pathinfo($user['photo'], PATHINFO_FILENAME))
                     ];
                     $db->createCommand()
                         ->insert('{{%content}}', $contentData)

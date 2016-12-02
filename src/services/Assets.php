@@ -918,7 +918,7 @@ class Assets extends Component
         }
 
         $extension = Io::getExtension($originalFilename);
-        $filename = Io::getFilename($originalFilename, false);
+        $filename = pathinfo($originalFilename, PATHINFO_FILENAME);
 
 
         // If the file already ends with something that looks like a timestamp, use that instead.
@@ -1170,9 +1170,7 @@ class Assets extends Component
                 // In case we're changing the filename, make sure that we're not missing that.
                 $parts = explode("/", $toTransformPath);
                 $transformName = array_pop($parts);
-                $toTransformPath = join("/",
-                        $parts).'/'.Io::getFilename($filename,
-                        false).'.'.Io::getExtension($transformName);
+                $toTransformPath = join("/", $parts).'/'.pathinfo($filename, PATHINFO_FILENAME).'.'.Io::getExtension($transformName);
 
                 $baseFrom = $asset->getFolder()->path;
                 $baseTo = $targetFolder->path;

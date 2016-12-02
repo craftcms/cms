@@ -154,6 +154,6 @@ class Rebrand
      */
     private function _getImageUrl($path, $type)
     {
-        return Url::getResourceUrl('rebrand/'.$type.'/'.IoHelper::getFilename($path));
+        return Url::getResourceUrl('rebrand/'.$type.'/'.pathinfo($path, PATHINFO_BASENAME));
     }
 }

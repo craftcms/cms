@@ -239,7 +239,7 @@ class EtTransport
                             // Close the stream.
                             $body->close();
 
-                            return Io::getFilename($this->_destinationFilename);
+                            return pathinfo($this->_destinationFilename, PATHINFO_BASENAME);
                         }
 
                         $responseBody = (string)$response->getBody();

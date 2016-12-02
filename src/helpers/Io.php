@@ -164,26 +164,6 @@ class Io
     }
 
     /**
-     * Will return the file name of the given path with or without the extension.
-     *
-     * @param string  $path             The path to test
-     * @param boolean $includeExtension Whether to include the extension in the file name
-     * @param boolean $suppressErrors   Whether to suppress any PHP Notices/Warnings/Errors (usually permissions related)
-     *
-     * @return string The file name with or without the extension
-     */
-    public static function getFilename($path, $includeExtension = true, $suppressErrors = false)
-    {
-        $path = FileHelper::normalizePath($path);
-
-        if ($includeExtension) {
-            return $suppressErrors ? @pathinfo($path, PATHINFO_BASENAME) : pathinfo($path, PATHINFO_BASENAME);
-        }
-
-        return $suppressErrors ? @pathinfo($path, PATHINFO_FILENAME) : pathinfo($path, PATHINFO_FILENAME);
-    }
-
-    /**
      * Will return the folder name of the given path either as the full path or
      * only the single top level folder.
      *

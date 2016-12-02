@@ -875,7 +875,7 @@ class Asset extends Element
     {
         if ($isNew && !$this->title) {
             // Give it a default title based on the file name
-            $this->title = StringHelper::toTitleCase(Io::getFilename($this->filename, false));
+            $this->title = StringHelper::toTitleCase(pathinfo($this->filename, PATHINFO_FILENAME));
         }
 
         return parent::beforeSave($isNew);

@@ -156,7 +156,7 @@ class Raster extends Image
         $mimeType = FileHelper::getMimeType($path, null, false);
 
         if ($mimeType !== null && strncmp($mimeType, 'image/', 6) !== 0) {
-            throw new ImageException(Craft::t('app', 'The file “{name}” does not appear to be an image.', ['name' => Io::getFilename($path)]));
+            throw new ImageException(Craft::t('app', 'The file “{name}” does not appear to be an image.', ['name' => pathinfo($path, PATHINFO_BASENAME)]));
         }
 
         try {
@@ -385,7 +385,7 @@ class Raster extends Image
         $extension = StringHelper::toLowerCase(Io::getExtension($targetPath));
 
         $options = $this->_getSaveOptions(false, $extension);
-        $targetPath = Io::getFolderName($targetPath).'/'.Io::getFilename($targetPath, false).'.'.Io::getExtension($targetPath);
+        $targetPath = Io::getFolderName($targetPath).'/'.pathinfo($targetPath, PATHINFO_FILENAME).'.'.Io::getExtension($targetPath);
 
         try {
             if ($autoQuality && in_array($extension, ['jpeg', 'jpg', 'png'])) {
@@ -544,7 +544,7 @@ class Raster extends Image
         @set_time_limit(30);
 
         if ($step == 0) {
-            $tempFileName = Io::getFolderName($tempFileName).'/'.Io::getFilename($tempFileName, false).'-temp.'.$extension;
+            $tempFileName = Io::getFolderName($tempFileName).'/'.pathinfo($tempFileName, PATHINFO_FILENAME).'-temp.'.$extension;
         }
 
         // Find our target quality by splitting the min and max qualities

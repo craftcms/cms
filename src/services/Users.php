@@ -464,7 +464,7 @@ class Users extends Component
      */
     public function saveUserPhoto($fileLocation, User $user, $filename = "")
     {
-        $filenameToUse = AssetsHelper::prepareAssetName($filename ?: Io::getFilename($fileLocation, false), true, true);
+        $filenameToUse = AssetsHelper::prepareAssetName($filename ?: pathinfo($fileLocation, PATHINFO_FILENAME), true, true);
 
         if(!Image::isImageManipulatable(Io::getExtension($fileLocation))) {
             throw new ImageException(Craft::t('app', 'User photo must be an image that Craft can manipulate.'));
@@ -489,7 +489,7 @@ class Users extends Component
             $filenameToUse = $assets->getNameReplacementInFolder($filenameToUse, $folderId);
 
             $photo = new Asset();
-            $photo->title = StringHelper::toTitleCase(Io::getFilename($filenameToUse, false));
+            $photo->title = StringHelper::toTitleCase(pathinfo($filenameToUse, PATHINFO_FILENAME));
             $photo->newFilePath = $fileLocation;
             $photo->filename = $filenameToUse;
             $photo->folderId = $folderId;

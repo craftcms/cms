@@ -78,7 +78,7 @@ class Cp
             if ($licenseKeyStatus == LicenseKeyStatus::Mismatched) {
                 $licensedDomain = Craft::$app->getEt()->getLicensedDomain();
                 $licenseKeyPath = Craft::$app->getPath()->getLicenseKeyPath();
-                $licenseKeyFile = Io::getFolderName($licenseKeyPath, false).'/'.Io::getFilename($licenseKeyPath);
+                $licenseKeyFile = Io::getFolderName($licenseKeyPath, false).DIRECTORY_SEPARATOR.pathinfo($licenseKeyPath, PATHINFO_BASENAME);
 
                 $message = Craft::t('app', 'The license located at {file} belongs to {domain}.',
                     [

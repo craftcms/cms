@@ -385,7 +385,7 @@ class DashboardController extends Controller
                     }
 
                     foreach ($logFiles as $logFile) {
-                        $zip->addFile($logFile, 'logs/'.Io::getFilename($logFile));
+                        $zip->addFile($logFile, 'logs/'.pathinfo($logFile, PATHINFO_BASENAME));
                     }
                 }
             }
@@ -416,7 +416,7 @@ class DashboardController extends Controller
                         if (Io::getExtension($backupFile) != 'sql') {
                             continue;
                         }
-                        $zip->addFile($backupFile, 'backups/'.Io::getFilename($backupFile));
+                        $zip->addFile($backupFile, 'backups/'.pathinfo($backupFile, PATHINFO_BASENAME));
                     }
                 }
             }

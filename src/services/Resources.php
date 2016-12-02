@@ -271,7 +271,7 @@ class Resources extends Component
             }
         }
 
-        $filename = Io::getFilename($path);
+        $filename = pathinfo($path, PATHINFO_BASENAME);
         $mimeType = FileHelper::getMimeTypeByExtension($path);
         $response = Craft::$app->getResponse();
 

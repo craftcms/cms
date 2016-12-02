@@ -161,7 +161,7 @@ class AssetsController extends Controller
 
                 // Make sure there are no double spaces, if the filename had a space followed by a
                 // capital letter because of Yii's "word" logic.
-                $asset->title = str_replace('  ', ' ', StringHelper::toTitleCase(Io::getFilename($filename, false)));
+                $asset->title = str_replace('  ', ' ', StringHelper::toTitleCase(pathinfo($filename, PATHINFO_FILENAME)));
 
                 $asset->newFilePath = $pathOnServer;
                 $asset->filename = $filename;

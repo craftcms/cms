@@ -247,7 +247,7 @@ class Et extends Component
         // Close the stream.
         $body->close();
 
-        return Io::getFilename($downloadPath);
+        return pathinfo($downloadPath, PATHINFO_BASENAME);
     }
 
     /**

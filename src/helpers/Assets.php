@@ -109,7 +109,7 @@ class Assets
     public static function prepareAssetName($name, $isFilename = true, $preventPluginModifications = false)
     {
         if ($isFilename) {
-            $baseName = Io::getFilename($name, false);
+            $baseName = pathinfo($name, PATHINFO_FILENAME);
             $extension = '.'.Io::getExtension($name);
         } else {
             $baseName = $name;

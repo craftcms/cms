@@ -562,7 +562,7 @@ class AssetTransforms extends Component
         $volume = $asset->getVolume();
         $index->detectedFormat = !empty($index->format) ? $index->format : $this->detectAutoTransformFormat($asset);
 
-        $transformFilename = Io::getFilename($asset->filename, false).'.'.$index->detectedFormat;
+        $transformFilename = pathinfo($asset->filename, PATHINFO_FILENAME).'.'.$index->detectedFormat;
         $index->filename = $transformFilename;
 
         $matchFound = false;

@@ -110,7 +110,7 @@ class RichText extends Field
             ]);
 
             foreach ($configFiles as $file) {
-                $configOptions[Io::getFilename($file)] = Io::getFilename($file, false);
+                $configOptions[pathinfo($file, PATHINFO_BASENAME)] = pathinfo($file, PATHINFO_FILENAME);
             }
         }
 
