@@ -8,5 +8,5 @@ class_name: FunctionalTester
 modules:
   enabled:
      - \Helper\Functional
-#     - Yii2:
-#         configFile: 'tests/_craft/config/general.php'
+     - Yii2:
+         configFile: 'tests/_craft/config/test.php'

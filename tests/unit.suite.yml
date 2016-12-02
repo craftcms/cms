@@ -7,6 +7,3 @@ modules:
     enabled:
         - Asserts
         - \Helper\Unit
-#        - Yii2:
-#           configFile: 'tests/_craft/config/general.php'
-#           part: init

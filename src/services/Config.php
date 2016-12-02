@@ -759,7 +759,7 @@ class Config extends Component
         }
 
         if (Io::fileExists($defaultsPath)) {
-            $configSettings = @require_once($defaultsPath);
+            $configSettings = @require($defaultsPath);
         }
 
         if (!isset($configSettings) || !is_array($configSettings)) {

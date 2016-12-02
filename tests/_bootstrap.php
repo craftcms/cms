@@ -1,9 +1,11 @@
 <?php
 
-define('YII_ENV', 'dev');
+$_SERVER['REMOTE_ADDR'] = '1.1.1.1';
+$_SERVER['REMOTE_PORT'] = 654321;
+
+define('YII_ENV', 'test');
 
 // Use the current installation of Craft
-define('CRAFT_BASE_PATH', __DIR__.'/src/');
 define('CRAFT_STORAGE_PATH', __DIR__.'/_craft/storage');
 define('CRAFT_TEMPLATES_PATH', __DIR__.'/_craft/templates');
 define('CRAFT_CONFIG_PATH', __DIR__.'/_craft/config');
@@ -12,7 +14,7 @@ define('CRAFT_VENDOR_PATH', __DIR__.'/../vendor');
 $devMode = true;
 
 $vendorPath = realpath(CRAFT_VENDOR_PATH);
-$craftPath = realpath(CRAFT_BASE_PATH);
+$craftPath = __DIR__.'/_craft';
 
 $configPath = realpath($craftPath.'/config');
 $contentMigrationsPath = realpath($craftPath.'/migrations');
@@ -36,7 +38,7 @@ defined('CURLOPT_TIMEOUT_MS') || define('CURLOPT_TIMEOUT_MS', 155);
 defined('CURLOPT_CONNECTTIMEOUT_MS') || define('CURLOPT_CONNECTTIMEOUT_MS', 156);
 
 // Load the files
-$srcPath = __DIR__.'/../src';
+$srcPath = dirname(__DIR__).'/src';
 require $vendorPath.'/yiisoft/yii2/Yii.php';
 require $srcPath.'/Craft.php';
 
