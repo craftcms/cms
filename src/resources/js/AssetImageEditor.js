@@ -57,6 +57,10 @@ Craft.AssetImageEditor = Garnish.Modal.extend(
 		editorWidth: 0,
 		isCroppingPerformed: false,
 
+		// Misc
+		renderImage: null,
+		renderCropper: null,
+
 		init: function (assetId, settings) {
 			this.cacheBust = Date.now();
 
@@ -120,6 +124,10 @@ Craft.AssetImageEditor = Garnish.Modal.extend(
 			this.updateSizeAndPosition();
 
 			this.canvas = new fabric.StaticCanvas('image-canvas');
+			this.renderImage = function () {
+				Garnish.requestAnimationFrame(this.canvas.renderAll.bind(this.canvas));
+			}.bind(this);
+
 			this.canvas.enableRetinaScaling = true;
 
 			// TODO add loading spinner
@@ -152,7 +160,7 @@ Craft.AssetImageEditor = Garnish.Modal.extend(
 				this._addControlListeners();
 
 				// Render it, finally
-				this.canvas.renderAll();
+				this.renderImage();
 
 				this.showView('rotate');
 			}, this));
@@ -227,7 +235,7 @@ Craft.AssetImageEditor = Garnish.Modal.extend(
 			this._calculateImagePosition();
 			this._zoomImage();
 
-			this.canvas.renderAll();
+			this.renderImage();
 		},
 
 		_calculateImagePosition: function () {
@@ -250,7 +258,7 @@ Craft.AssetImageEditor = Garnish.Modal.extend(
 				top: this.image.top
 			});
 			this.canvas.add(this.viewportMask);
-			this.canvas.renderAll();
+			this.renderImage();
 		},
 
 		_calculateViewportMask: function () {
@@ -271,7 +279,7 @@ Craft.AssetImageEditor = Garnish.Modal.extend(
 					top: this.editorHeight / 2
 				}));
 
-				this.canvas.renderAll();
+				this.renderImage();
 			}
 		},
 
@@ -491,24 +499,10 @@ Craft.AssetImageEditor = Garnish.Modal.extend(
 
 				this._zoomImage();
 
-				this.canvas.renderAll();
+				this.renderImage();
 
 				this.animationInProgress = false;
 			}
-		},
-
-		/**
-		 * Reset the straighten degrees
-		 *
-		 * @param Event ev
-		 */
-		resetStraighten: function (ev) {
-			if (this.animationInProgress) {
-				return;
-			}
-
-			this.$straighten.val(0);
-			this.straighten();
 		},
 
 		/**
@@ -643,7 +637,7 @@ Craft.AssetImageEditor = Garnish.Modal.extend(
 				});
 
 				this.canvas.add(this.grid);
-				this.canvas.renderAll();
+				this.renderImage();
 			}
 		},
 
@@ -653,7 +647,7 @@ Craft.AssetImageEditor = Garnish.Modal.extend(
 		_hideGrid: function () {
 			this.canvas.remove(this.grid);
 			this.grid = null;
-			this.canvas.renderAll();
+			this.renderImage();
 		},
 
 		onFadeOut: function () {
@@ -816,7 +810,7 @@ Craft.AssetImageEditor = Garnish.Modal.extend(
 					onComplete: function () {
 						callback();
 						this.animationInProgress = false;
-						this.canvas.renderAll();
+						this.renderImage();
 					}.bind(this)
 				});
 
@@ -896,6 +890,7 @@ Craft.AssetImageEditor = Garnish.Modal.extend(
 		_showCropper: function () {
 			this._drawCropper();
 			this._calculateCropperBoundaries();
+			this.renderCropper();
 
 			this.addListener(this.$croppingCanvas, 'mousemove', this._handleMouseMove.bind(this));
 			this.addListener(this.$croppingCanvas, 'mousedown', this._handleMouseDown.bind(this));
@@ -908,11 +903,11 @@ Craft.AssetImageEditor = Garnish.Modal.extend(
 				this.croppingCanvas.remove(this.croppingShade);
 				this.croppingCanvas.remove(this.cropperHandles);
 				this.croppingCanvas.remove(this.croppingRectangle);
-				this.croppingCanvas.off({
-					'mouse:down': this._handleMouseDown.bind(this),
-					'mouse:move': this._handleMouseMove.bind(this),
-					'mouse:up': this._handleMouseUp.bind(this)
-				});
+				this.removeListener(this.$croppingCanvas, 'mousemove', this._handleMouseMove.bind(this));
+				this.removeListener(this.$croppingCanvas, 'mousedown', this._handleMouseDown.bind(this));
+				this.removeListener(this.$croppingCanvas, 'mouseup', this._handleMouseUp.bind(this));
+				this.croppingCanvas = null;
+				this.renderCropper = null;
 			}
 		},
 
@@ -924,6 +919,11 @@ Craft.AssetImageEditor = Garnish.Modal.extend(
 				width: this.editorWidth,
 				height: this.editorHeight
 			});
+
+			this.renderCropper = function () {
+				Garnish.requestAnimationFrame(this.croppingCanvas.renderAll.bind(this.croppingCanvas));
+			}.bind(this);
+
 
 			$('#cropping-canvas', this.$editorContainer).css({position: 'absolute', top: 0, left: 0});
 
@@ -1033,7 +1033,6 @@ Craft.AssetImageEditor = Garnish.Modal.extend(
 					top: this.clipper.top
 				});
 			}
-			this.croppingCanvas.renderAll();
 		},
 
 		_handleMouseDown: function (ev) {
@@ -1063,7 +1062,7 @@ Craft.AssetImageEditor = Garnish.Modal.extend(
 				this.previousMouseX = ev.pageX;
 				this.previousMouseY = ev.pageY;
 				this._calculateCropperBoundaries(this.scalingCropper);
-				this.croppingCanvas.renderAll();
+				this.renderCropper();
 			} else {
 				this._setMouseCursor(ev);
 			}
@@ -1187,8 +1186,6 @@ Craft.AssetImageEditor = Garnish.Modal.extend(
 			});
 
 			this._calculateCropperBoundaries();
-			this.croppingCanvas.renderAll();
-
 		},
 
 		_setMouseCursor: function (ev) {
@@ -1328,7 +1325,7 @@ Craft.AssetImageEditor = Garnish.Modal.extend(
 				d: {x: horizontalOffset, y: verticalOffset + bottomVerticalSegment}
 			};
 
-			this.canvas.renderAll();
+			this.renderImage();
 		},
 
 		_destroyCropper: function () {
