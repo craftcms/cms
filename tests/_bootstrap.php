@@ -1,8 +1,5 @@
 <?php
 
-$_SERVER['REMOTE_ADDR'] = '1.1.1.1';
-$_SERVER['REMOTE_PORT'] = 654321;
-
 define('YII_ENV', 'test');
 
 // Use the current installation of Craft

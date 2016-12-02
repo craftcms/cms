@@ -2,6 +2,9 @@
 
 use craft\helpers\ArrayHelper;
 
+$_SERVER['REMOTE_ADDR'] = '1.1.1.1';
+$_SERVER['REMOTE_PORT'] = 654321;
+
 $basePath = dirname(dirname(dirname(__DIR__)));
 
 $srcPath = $basePath.'/src';
