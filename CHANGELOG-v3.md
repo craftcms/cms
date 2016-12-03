@@ -68,6 +68,7 @@ Craft CMS 3.0 Working Changelog
 - Added helpers\Db::isTypeSupported().
 - Added helpers\Update::getBasePath().
 - Added helpers\Update::parseManifestLine().
+- Added services\Config::getAllowedFileExtensions().
 - Added services\Config::getDbPort().
 - Added services\Config::getUseWriteFileLock().
 - Added services\Elements::deleteElement().
@@ -302,6 +303,7 @@ Craft CMS 3.0 Working Changelog
 - Removed helpers\Io::copyFolder(). Use helpers\FileHelper::copyDirectory() instead.
 - Removed helpers\Io::deleteFile().
 - Removed helpers\Io::deleteFolder(). Use helpers\FileHelper::removeDirectory() instead.
+- Removed helpers\Io::getAllowedFileExtensions().
 - Removed helpers\Io::getFolderSize().
 - Removed helpers\Io::getFile().
 - Removed helpers\Io::getFileContents().

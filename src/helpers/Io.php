@@ -308,23 +308,6 @@ class Io
     }
 
     /**
-     * Get a list of allowed file extensions.
-     *
-     * @return string[] The allowed file extensions
-     */
-    public static function getAllowedFileExtensions()
-    {
-        $allowedFileExtensions = ArrayHelper::toArray(Craft::$app->getConfig()->get('allowedFileExtensions'));
-
-        if (($extraExtensions = Craft::$app->getConfig()->get('extraAllowedFileExtensions')) !== '') {
-            $extraExtensions = ArrayHelper::toArray($extraExtensions);
-            $allowedFileExtensions = array_merge($allowedFileExtensions, $extraExtensions);
-        }
-
-        return $allowedFileExtensions;
-    }
-
-    /**
      * Returns whether the given extension is allowed.
      *
      * @param string $extension The extension to check
@@ -336,7 +319,7 @@ class Io
         static $extensions = null;
 
         if (is_null($extensions)) {
-            $extensions = array_map('mb_strtolower', static::getAllowedFileExtensions());
+            $extensions = array_map('mb_strtolower', Craft::$app->getConfig()->getAllowedFileExtensions());
         }
 
         return in_array(mb_strtolower($extension), $extensions);

@@ -68,6 +68,11 @@ class Config extends Component
     /**
      * @var array
      */
+    private $_allowedFileExtensions;
+
+    /**
+     * @var array
+     */
     private $_configSettings = [];
 
     // Public Methods
@@ -731,6 +736,30 @@ class Config extends Component
         Craft::$app->getCache()->set('useWriteFileLock', $cachedValue, 5184000);
 
         return $value;
+    }
+
+    /**
+     * Returns an array of allowed file extensions.
+     *
+     * @return string[] The allowed file extensions
+     */
+    public function getAllowedFileExtensions()
+    {
+        if (isset($this->_allowedFileExtensions)) {
+            return $this->_allowedFileExtensions;
+        }
+
+        $this->_allowedFileExtensions = ArrayHelper::toArray(Craft::$app->getConfig()->get('allowedFileExtensions'));
+        $extra = Craft::$app->getConfig()->get('extraAllowedFileExtensions');
+
+        if (!empty($extra)) {
+            $extra = ArrayHelper::toArray($extra);
+            $this->_allowedFileExtensions = array_merge($this->_allowedFileExtensions, $extra);
+        }
+
+        $this->_allowedFileExtensions = array_map('strtolower', $this->_allowedFileExtensions);
+
+        return $this->_allowedFileExtensions;
     }
 
     /**

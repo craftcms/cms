@@ -51,10 +51,8 @@ class AssetFilenameValidator extends Validator
         parent::init();
 
         if ($this->allowedExtensions === null) {
-            $this->allowedExtensions = Io::getAllowedFileExtensions();
+            $this->allowedExtensions = Craft::$app->getConfig()->getAllowedFileExtensions();
         }
-
-        $this->allowedExtensions = array_map('strtolower', $this->allowedExtensions);
 
         if ($this->badExtension === null) {
             $this->badExtension = Craft::t('app', '“{extension}” is not an allowed file extension.');
