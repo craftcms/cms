@@ -724,25 +724,10 @@ class Plugins extends Component
         $this->loadPlugins();
 
         // Get all the plugin handles
-        $handles = array_keys($this->_composerPluginInfo);
-
-        $pluginsPath = Craft::$app->getPath()->getPluginsPath();
-        $folders = Io::getFolderContents($pluginsPath, false);
-
-        if ($folders !== false) {
-            foreach ($folders as $folder) {
-                // Skip if it's not a folder
-                if (!is_dir($folder)) {
-                    continue;
-                }
-
-                $handle = strtolower(pathinfo($folder, PATHINFO_BASENAME));
-
-                if (!in_array($handle, $handles)) {
-                    $handles[] = $handle;
-                }
-            }
-        }
+        $handles = array_unique(array_merge(
+            array_keys($this->_composerPluginInfo),
+            $this->_getManualPluginHandles()
+        ));
 
         // Get the info arrays
         $info = [];
@@ -982,6 +967,38 @@ class Plugins extends Component
         ]);
     }
 
+    /**
+     * Returns an array of folder names that live within the craft/plugins/ folder.
+     *
+     * @return string[]
+     * @throws Exception in case of failure
+     */
+    private function _getManualPluginHandles()
+    {
+        $dir = Craft::$app->getPath()->getPluginsPath();
+        if (!is_dir($dir)) {
+            return [];
+        }
+
+        $pluginHandles = [];
+        $handle = opendir($dir);
+        if ($handle === false) {
+            throw new Exception("Unable to open directory: $dir");
+        }
+        while (($subDir = readdir($handle)) !== false) {
+            if ($subDir === '.' || $subDir === '..') {
+                continue;
+            }
+            $path = $dir.DIRECTORY_SEPARATOR.$subDir;
+            if (is_file($path)) {
+                continue;
+            }
+            $pluginHandles[] = $subDir;
+        }
+        closedir($handle);
+
+        return $pluginHandles;
+    }
 
     /**
      * Scrapes a plugin’s config from its composer.json file.
@@ -1152,7 +1169,7 @@ class Plugins extends Component
      *
      * @return string|null
      */
-    protected function _getAuthorPropertyFromComposer(array $composer, $property)
+    private function _getAuthorPropertyFromComposer(array $composer, $property)
     {
         if (empty($composer['authors'])) {
             return null;

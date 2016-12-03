@@ -224,9 +224,9 @@ class Path extends Component
     }
 
     /**
-     * Returns the path to the craft/storage/runtime/cache/assets/ folder.
+     * Returns the path to the craft/storage/runtime/assets/cache/ folder.
      *
-     * @return string The path to the craft/storage/runtime/cache/assets/ folder.
+     * @return string The path to the craft/storage/runtime/assets/cache/ folder.
      */
     public function getAssetsCachePath()
     {
@@ -263,9 +263,9 @@ class Path extends Component
     }
 
     /**
-     * Returns the path to the craft/storage/runtime/assets/resized/ folder.
+     * Returns the path to the craft/storage/runtime/assets/cache/resized/ folder.
      *
-     * @return string The path to the craft/storage/runtime/assets/resized/ folder.
+     * @return string The path to the craft/storage/runtime/assets/cache/resized/ folder.
      */
     public function getResizedAssetsPath()
     {

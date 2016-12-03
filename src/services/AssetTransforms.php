@@ -16,6 +16,7 @@ use craft\events\AssetTransformEvent;
 use craft\helpers\ArrayHelper;
 use craft\helpers\Assets as AssetsHelper;
 use craft\helpers\Db;
+use craft\helpers\FileHelper;
 use craft\helpers\Image;
 use craft\helpers\Io;
 use craft\helpers\StringHelper;
@@ -30,6 +31,7 @@ use craft\errors\AssetLogicException;
 use craft\errors\ValidationException;
 use yii\base\Application;
 use yii\base\Component;
+use yii\base\ErrorException;
 
 /**
  * Class AssetTransforms service.
@@ -1105,15 +1107,28 @@ class AssetTransforms extends Component
      */
     public function deleteResizedAssetVersion(Asset $asset)
     {
-        $thumbFolders = Io::getFolderContents(Craft::$app->getPath()->getResizedAssetsPath());
+        $thumbFilename = $asset->id.'.'.$this->_getThumbExtension($asset);
+        $dir = Craft::$app->getPath()->getResizedAssetsPath();
 
-        if ($thumbFolders) {
-            foreach ($thumbFolders as $folder) {
-                if (is_dir($folder)) {
-                    Io::deleteFile($folder.'/'.$asset->id.'.'.$this->_getThumbExtension($asset),
-                        true);
-                }
+        try {
+            $handle = opendir($dir);
+            if ($handle === false) {
+                Craft::warning("Unable to open directory: $dir");
+                return;
             }
+            while (($subDir = readdir($handle)) !== false) {
+                if ($subDir === '.' || $subDir === '..') {
+                    continue;
+                }
+                $path = $dir.DIRECTORY_SEPARATOR.$subDir.DIRECTORY_SEPARATOR.$thumbFilename;
+                if (!is_file($path)) {
+                    continue;
+                }
+                FileHelper::removeFile($path);
+            }
+            closedir($handle);
+        } catch (ErrorException $e) {
+            Craft::warning('Unable to delete asset thumbnails: '.$e->getMessage());
         }
     }
 
