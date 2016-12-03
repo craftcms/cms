@@ -211,26 +211,6 @@ class Io
     }
 
     /**
-     * Returns permissions of current filesystem object (UNIX systems).
-     *
-     * @param string  $path           The path to check
-     * @param boolean $suppressErrors Whether to suppress any PHP Notices/Warnings/Errors (usually permissions related)
-     *
-     * @return string|false Filesystem object permissions in octal format (i.e. '0755'), false if the file or folder doesn't
-     *                      exist
-     */
-    public static function getPermissions($path, $suppressErrors = false)
-    {
-        $path = FileHelper::normalizePath($path);
-
-        if (static::fileExists($path, false, $suppressErrors) || static::folderExists($path, false, $suppressErrors)) {
-            return mb_substr(sprintf('%o', $suppressErrors ? @fileperms($path) : fileperms($path)), -4);
-        }
-
-        return false;
-    }
-
-    /**
      * Returns the contents of a folder as an array of file and folder paths, or false if the folder does not exist or
      * is not readable.
      *
