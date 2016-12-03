@@ -533,16 +533,19 @@ class RichText extends Field
      */
     private function _getConfigJson()
     {
-        if ($this->configFile) {
-            $configPath = Craft::$app->getPath()->getConfigPath().'/redactor/'.$this->configFile;
-            $json = Json::removeComments(Io::getFileContents($configPath));
+        if (!$this->configFile) {
+            return '{}';
         }
 
-        if (empty($json)) {
-            $json = '{}';
+        $configPath = Craft::$app->getPath()->getConfigPath().DIRECTORY_SEPARATOR.'redactor'.DIRECTORY_SEPARATOR.$this->configFile;
+
+        if (!is_file($configPath)) {
+            Craft::warning("Redactor config file doesn't exist: {$configPath}", __METHOD__);
+
+            return '{}';
         }
 
-        return $json;
+        return Json::removeComments(file_get_contents($configPath));
     }
 
     /**

@@ -89,12 +89,10 @@ class Svg extends Image
 
         list($width, $height) = ImageHelper::imageSize($path);
 
-        $svg = Io::getFileContents($path);
+        $svg = file_get_contents($path);
 
         // If the size is defined by viewbox only, add in width and height attributes
-        if (!preg_match(static::SVG_WIDTH_RE,
-                $svg) && preg_match(static::SVG_HEIGHT_RE, $svg)
-        ) {
+        if (!preg_match(static::SVG_WIDTH_RE, $svg) && preg_match(static::SVG_HEIGHT_RE, $svg)) {
             $svg = preg_replace(static::SVG_TAG_RE,
                 "<svg width=\"{$width}px\" height=\"{$height}px\" ", $svg);
         }

@@ -285,9 +285,8 @@ class Resources extends Component
         // Is this a CSS file?
         if ($mimeType == 'text/css') {
             // Normalize the URLs
-            $contents = Io::getFileContents($path);
-            $contents = preg_replace_callback('/(url\(([\'"]?))(.+?)(\2\))/',
-                [&$this, '_normalizeCssUrl'], $contents);
+            $contents = file_get_contents($path);
+            $contents = preg_replace_callback('/(url\(([\'"]?))(.+?)(\2\))/', [&$this, '_normalizeCssUrl'], $contents);
 
             $response->sendContentAsFile($contents, $filename, $options);
         } else {
@@ -353,7 +352,7 @@ class Resources extends Component
     private function _getIconPath($ext)
     {
         $pathService = Craft::$app->getPath();
-        $sourceIconPath = $pathService->getResourcesPath().'/images/file.svg';
+        $sourceIconPath = $pathService->getResourcesPath().DIRECTORY_SEPARATOR.'images'.DIRECTORY_SEPARATOR.'file.svg';
         $extLength = mb_strlen($ext);
 
         if ($extLength > 5) {
@@ -369,7 +368,7 @@ class Resources extends Component
         }
 
         // Create a new one
-        $svgContents = Io::getFileContents($sourceIconPath);
+        $svgContents = file_get_contents($sourceIconPath);
         $textSize = ($extLength <= 3 ? '26' : ($extLength == 4 ? '22' : '18'));
         $textNode = '<text x="50" y="73" text-anchor="middle" font-family="sans-serif" fill="#8F98A3" '.
             'font-size="'.$textSize.'">'.

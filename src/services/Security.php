@@ -94,7 +94,7 @@ class Security extends \yii\base\Security
         $validationKeyPath = Craft::$app->getPath()->getRuntimePath().'/validation.key';
 
         if (is_file($validationKeyPath)) {
-            return StringHelper::trim(Io::getFileContents($validationKeyPath));
+            return StringHelper::trim(file_get_contents($validationKeyPath));
         }
 
         if (!FileHelper::isWritable($validationKeyPath)) {

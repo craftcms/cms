@@ -198,7 +198,7 @@ class Image
     public static function imageSize($filePath)
     {
         if (pathinfo($filePath, PATHINFO_EXTENSION) == 'svg') {
-            $svg = Io::getFileContents($filePath);
+            $svg = file_get_contents($filePath);
 
             return static::parseSvgSize($svg);
         }

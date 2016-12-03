@@ -241,41 +241,6 @@ class Io
     }
 
     /**
-     * Will return the contents of the file as a string or an array if it exists and is readable, otherwise false.
-     *
-     * @param string  $path           The path of the file
-     * @param boolean $array          Whether to return the contents of the file as an array or not
-     * @param boolean $suppressErrors Whether to suppress any PHP Notices/Warnings/Errors (usually permissions related)
-     *
-     * @return string|false The contents of the file as a string, an array, or false if the file does not exist or
-     *                      is not readable
-     */
-    public static function getFileContents($path, $array = false, $suppressErrors = false)
-    {
-        $path = FileHelper::normalizePath($path);
-
-        if (static::fileExists($path, false, $suppressErrors) && static::isReadable($path, $suppressErrors)) {
-            if ($array) {
-                if (($contents = $suppressErrors ? @file($path) : file($path)) !== false) {
-                    return $contents;
-                }
-            } else {
-                if (($contents = $suppressErrors ? @file_get_contents($path) : file_get_contents($path)) !== false) {
-                    return $contents;
-                }
-            }
-
-            Craft::error('Tried to read the file contents at '.$path.' and could not.', __METHOD__);
-
-            return false;
-        }
-
-        Craft::error('Tried to read the file contents at '.$path.', but either the file does not exist or is it not readable.', __METHOD__);
-
-        return false;
-    }
-
-    /**
      * Will create a file on the file system at the given path and return a [[File]] object or false if we don't
      * have write permissions.
      *

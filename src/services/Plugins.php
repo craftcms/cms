@@ -24,7 +24,6 @@ use craft\helpers\Io;
 use craft\helpers\Json;
 use yii\base\Component;
 use yii\base\Exception;
-use yii\base\InvalidParamException;
 use craft\helpers\FileHelper;
 
 /**
@@ -778,7 +777,7 @@ class Plugins extends Component
             $iconPath = Craft::$app->getPath()->getResourcesPath().DIRECTORY_SEPARATOR.'images'.DIRECTORY_SEPARATOR.'default_plugin.svg';
         }
 
-        return Io::getFileContents($iconPath);
+        return file_get_contents($iconPath);
     }
 
     /**
@@ -1020,8 +1019,8 @@ class Plugins extends Component
         }
 
         try {
-            $composer = Json::decode(Io::getFileContents($composerPath));
-        } catch (InvalidParamException $e) {
+            $composer = Json::decode(file_get_contents($composerPath));
+        } catch (\Exception $e) {
             Craft::warning("Could not decode {$composerPath}: ".$e->getMessage());
 
             return null;

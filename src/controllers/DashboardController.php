@@ -442,7 +442,7 @@ class DashboardController extends Controller
             $zip->close();
             $requestParams['File1_sFilename'] = 'SupportAttachment-'.Io::cleanFilename(Craft::$app->getSites()->getPrimarySite()->name).'.zip';
             $requestParams['File1_sFileMimeType'] = 'application/zip';
-            $requestParams['File1_bFileBody'] = base64_encode(Io::getFileContents($zipPath));
+            $requestParams['File1_bFileBody'] = base64_encode(file_get_contents($zipPath));
 
             // Bump the default timeout because of the attachment.
             $hsParams['callTimeout'] = 120;
@@ -556,7 +556,7 @@ class DashboardController extends Controller
             return $this->_getDefaultWidgetIconSvg($widget);
         }
 
-        return Io::getFileContents($iconPath);
+        return file_get_contents($iconPath);
     }
 
     /**

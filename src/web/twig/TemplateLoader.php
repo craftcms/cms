@@ -72,7 +72,7 @@ class TemplateLoader implements \Twig_LoaderInterface, \Twig_ExistsLoaderInterfa
             throw new TemplateLoaderException($name, Craft::t('app', 'Tried to read the template at {path}, but could not. Check the permissions.', ['path' => $template]));
         }
 
-        return Io::getFileContents($template);
+        return file_get_contents($template);
     }
 
     /**

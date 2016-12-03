@@ -246,7 +246,7 @@ EOD;
      */
     private static function _writeFieldAttributesFile($templatePath, $search, $replace, $destinationPath)
     {
-        $fileContents = Io::getFileContents($templatePath);
+        $fileContents = file_get_contents($templatePath);
         $fileContents = str_replace($search, $replace, $fileContents);
         Io::writeToFile($destinationPath, $fileContents);
         include($destinationPath);
