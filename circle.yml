@@ -22,7 +22,7 @@ machine:
 # Customize checkout
 checkout:
   post:
-    - composer install --no-dev
+    - composer install --dev
     - composer dumpautoload -a
 
 ## Customize dependencies
