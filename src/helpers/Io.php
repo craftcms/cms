@@ -308,33 +308,6 @@ class Io
     }
 
     /**
-     * Purges the contents of a file.
-     *
-     * @param string  $path           The path of the file to clear
-     * @param boolean $suppressErrors Whether to suppress any PHP Notices/Warnings/Errors (usually permissions related)
-     *
-     * @return boolean Whether the file purge was successful
-     */
-    public static function clearFile($path, $suppressErrors = false)
-    {
-        $path = FileHelper::normalizePath($path);
-
-        if (static::fileExists($path, false, $suppressErrors)) {
-            if (static::isWritable($path, $suppressErrors)) {
-                FileHelper::writeToFile($path, '');
-
-                return true;
-            }
-
-            Craft::error('Could not clear the contents of '.$path.' because the source file is not writable.', __METHOD__);
-        } else {
-            Craft::error('Could not clear the contents of '.$path.' because the source file does not exist.', __METHOD__);
-        }
-
-        return false;
-    }
-
-    /**
      * Deletes a file from the file system.
      *
      * @param string  $path           The path of the file to delete
