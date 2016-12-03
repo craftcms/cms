@@ -8,6 +8,7 @@
 namespace craft\cache;
 
 use Craft;
+use craft\helpers\FileHelper;
 use craft\helpers\Io;
 
 /**
@@ -85,7 +86,7 @@ class FileCache extends \yii\caching\FileCache
         if ($this->directoryLevel > 0) {
             $folder = pathinfo($cacheFile, PATHINFO_DIRNAME);
             if (!is_dir($folder)) {
-                Io::createFolder($folder);
+                FileHelper::createDirectory($folder);
             }
         }
 
