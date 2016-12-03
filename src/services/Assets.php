@@ -239,7 +239,7 @@ class Assets extends Component
             }
 
             $asset->dateModified = new DateTime();
-            $asset->size = Io::getFileSize($asset->newFilePath);
+            $asset->size = filesize($asset->newFilePath);
             $asset->kind = Io::getFileKind($asset->getExtension());
 
             if ($asset->kind == 'image' && !empty($asset->newFilePath)) {
@@ -407,7 +407,7 @@ class Assets extends Component
             $asset->height = null;
         }
 
-        $asset->size = Io::getFileSize($pathOnServer);
+        $asset->size = filesize($pathOnServer);
         $asset->dateModified = new DateTime('@'.filemtime($pathOnServer));
 
         $this->saveAsset($asset);

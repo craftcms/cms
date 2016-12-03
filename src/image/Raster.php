@@ -390,9 +390,8 @@ class Raster extends Image
         try {
             if ($autoQuality && in_array($extension, ['jpeg', 'jpg', 'png'])) {
                 clearstatcache();
-                $originalSize = Io::getFileSize($this->_imageSourcePath);
-                $tempFile = $this->_autoGuessImageQuality($targetPath,
-                    $originalSize, $extension, 0, 200);
+                $originalSize = filesize($this->_imageSourcePath);
+                $tempFile = $this->_autoGuessImageQuality($targetPath, $originalSize, $extension, 0, 200);
                 Io::move($tempFile, $targetPath, true);
             } else {
                 $this->_image->save($targetPath, $options);
@@ -556,9 +555,8 @@ class Raster extends Image
         clearstatcache();
 
         // Generate a new temp image and get it's file size.
-        $this->_image->save($tempFileName,
-            $this->_getSaveOptions($midQuality, $extension));
-        $newFileSize = Io::getFileSize($tempFileName);
+        $this->_image->save($tempFileName, $this->_getSaveOptions($midQuality, $extension));
+        $newFileSize = filesize($tempFileName);
 
         // If we're on step 10 OR we're within our acceptable range threshold OR midQuality = maxQuality (1 == 1),
         // let's use the current image.

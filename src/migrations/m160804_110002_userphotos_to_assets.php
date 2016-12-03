@@ -293,7 +293,7 @@ class m160804_110002_userphotos_to_assets extends Migration
                     'folderId' => $folderId,
                     'filename' => $user['photo'],
                     'kind' => 'image',
-                    'size' => Io::getFileSize($filePath),
+                    'size' => filesize($filePath),
                     'width' => $imageSize[0],
                     'height' => $imageSize[1],
                     'dateModified' => Db::prepareDateForDb(filemtime($filePath))
