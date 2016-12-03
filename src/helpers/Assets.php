@@ -43,17 +43,17 @@ class Assets
      * @param string $extension extension to use. "tmp" by default.
      *
      * @return string The temporary file path
-     * @throws Exception
+     * @throws Exception in case of failure
      */
     public static function tempFilePath($extension = 'tmp')
     {
         $extension = strpos($extension, '.') !== false ? pathinfo($extension, PATHINFO_EXTENSION) : $extension;
         $filename = uniqid('assets', true).'.'.$extension;
         $path = Craft::$app->getPath()->getTempPath().DIRECTORY_SEPARATOR.$filename;
-
-        if (!Io::createFile($path)) {
+        if (($handle = fopen($path, 'w')) === false) {
             throw new Exception('Could not create temp file: '.$path);
         }
+        fclose($handle);
 
         return $path;
     }
