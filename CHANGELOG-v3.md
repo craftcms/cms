@@ -303,6 +303,7 @@ Craft CMS 3.0 Working Changelog
 - Removed helpers\Io::getFileSize().
 - Removed helpers\Io::getFolder().
 - Removed helpers\Io::getFolders().
+- Removed helpers\Io::getGroup().
 - Removed helpers\Io::getLastModifiedFiles().
 - Removed helpers\Io::getLastTimeModified().
 - Removed helpers\Io::getMimeType().

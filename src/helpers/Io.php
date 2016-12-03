@@ -211,34 +211,6 @@ class Io
     }
 
     /**
-     * Returns group of current filesystem object (UNIX systems). Returned value
-     * depends upon $getName parameter value.
-     *
-     * @param string  $path           The path to check
-     * @param boolean $getName        Defaults to 'true', meaning that group name instead of ID should be returned
-     * @param boolean $suppressErrors Whether to suppress any PHP Notices/Warnings/Errors (usually permissions related)
-     *
-     * @return string|integer|false Group name, or ID if $getName set to 'false' or false if the file or folder does not exist
-     */
-    public static function getGroup($path, $getName = true, $suppressErrors = false)
-    {
-        $path = FileHelper::normalizePath($path);
-
-        if (static::fileExists($path, false, $suppressErrors) || static::folderExists($path, false, $suppressErrors)) {
-            $group = $suppressErrors ? @filegroup($path) : filegroup($path);
-        } else {
-            $group = false;
-        }
-
-        if (is_int($group) && function_exists('posix_getgrgid') && $getName == true) {
-            $group = posix_getgrgid($group);
-            $group = $group['name'];
-        }
-
-        return $group;
-    }
-
-    /**
      * Returns permissions of current filesystem object (UNIX systems).
      *
      * @param string  $path           The path to check
