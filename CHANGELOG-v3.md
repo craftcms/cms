@@ -69,6 +69,7 @@ Craft CMS 3.0 Working Changelog
 - Added helpers\Update::getBasePath().
 - Added helpers\Update::parseManifestLine().
 - Added services\Config::getDbPort().
+- Added services\Config::getUseWriteFileLock().
 - Added services\Elements::deleteElement().
 - Added the ‘beforeDelete’, ‘afterDelete’, ‘beforeMoveInStructure’, and ‘afterMoveInStructure’,  events to base\Element.
 - Added the ‘beforeElementSave’, ‘afterElementSave’, ‘beforeElementDelete’, and ‘afterElementDelete’ events to base\Field.
@@ -94,6 +95,7 @@ Craft CMS 3.0 Working Changelog
 - Added the ‘setFilename’ event to helpers\Assets.
 - Added the ‘setRoute’ event to base\Element.
 - Added the ‘setTableAttributeHtml’ event to base\Element.
+- Added the Symfony Filesystem component.
 - Added Guzzle 6 HTTP Adapter.
 - Added php-shellcommand.
 

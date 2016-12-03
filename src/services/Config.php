@@ -18,6 +18,7 @@ use craft\helpers\Url;
 use craft\elements\User;
 use GuzzleHttp\Client;
 use GuzzleHttp\Exception\RequestException;
+use Symfony\Component\Filesystem\LockHandler;
 use yii\base\Component;
 
 /**
@@ -58,6 +59,11 @@ class Config extends Component
      * @var
      */
     private $_usePathInfo;
+
+    /**
+     * @var boolean
+     */
+    private $_useWriteFileLock;
 
     /**
      * @var array
@@ -685,6 +691,47 @@ class Config extends Component
         return false;
     }
 
+    /**
+     * Returns whether to use file locks when writing to files.
+     *
+     * @return boolean
+     */
+    public function getUseWriteFileLock()
+    {
+        if (isset($this->_useWriteFileLock)) {
+            return $this->_useWriteFileLock;
+        }
+
+        $value = $this->get('useWriteFileLock');
+        if (is_bool($value)) {
+            return ($this->_useWriteFileLock = $value);
+        }
+
+        // Do we have it cached?
+        if (($cachedValue = Craft::$app->getCache()->get('useWriteFileLock')) !== false) {
+            return ($this->_useWriteFileLock = ($cachedValue == 'yes'));
+        }
+
+        // Try a test lock
+        try {
+            $lockHandler = new LockHandler(uniqid('test').'.lock');
+            $lockHandler->lock();
+            $lockHandler->release();
+            $value = true;
+        } catch (\Exception $e) {
+            Craft::warning('Write lock test failed: '.$e->getMessage());
+            $value = false;
+        }
+
+        // Memoize it before caching, so we know the value if FileCache::setValue() needs it
+        $this->_useWriteFileLock = $value;
+
+        // Cache for two months
+        $cachedValue = $value ? 'yes' : 'no';
+        Craft::$app->getCache()->set('useWriteFileLock', $cachedValue, 5184000);
+
+        return $value;
+    }
 
     /**
      * Returns the application’s configured DB table prefix.

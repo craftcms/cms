@@ -36,7 +36,8 @@
         "pixelandtonic/flysystem-google-cloud": "1.0.1",
         "php-http/guzzle6-adapter": "^1.1",
         "mikehaertl/php-shellcommand": "1.2.2",
-        "twig/twig": "1.28.2"
+        "twig/twig": "1.28.2",
+        "symfony/filesystem": "3.2.0"
     },
     "autoload": {
         "psr-4": {
