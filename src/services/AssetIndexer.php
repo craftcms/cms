@@ -364,7 +364,7 @@ class AssetIndexer extends Component
     {
         $extension = pathinfo($uriPath, PATHINFO_EXTENSION);
 
-        if (Io::isExtensionAllowed($extension)) {
+        if (Craft::$app->getConfig()->isExtensionAllowed($extension)) {
             $parts = explode('/', $uriPath);
             $filename = array_pop($parts);
 

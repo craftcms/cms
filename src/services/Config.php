@@ -763,6 +763,19 @@ class Config extends Component
     }
 
     /**
+     * Returns whether a given extension is allowed to be uploaded, per the
+     * allowedFileExtensions and extraAllowedFileExtensions config settings.
+     *
+     * @param string $extension The extension in question
+     *
+     * @return boolean Whether the extension is allowed
+     */
+    public function isExtensionAllowed($extension)
+    {
+        return in_array(strtolower($extension), $this->getAllowedFileExtensions());
+    }
+
+    /**
      * Returns the application’s configured DB table prefix.
      *
      * @return string

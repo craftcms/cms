@@ -71,6 +71,7 @@ Craft CMS 3.0 Working Changelog
 - Added services\Config::getAllowedFileExtensions().
 - Added services\Config::getDbPort().
 - Added services\Config::getUseWriteFileLock().
+- Added services\Config::isExtensionAllowed().
 - Added services\Elements::deleteElement().
 - Added the ‘beforeDelete’, ‘afterDelete’, ‘beforeMoveInStructure’, and ‘afterMoveInStructure’,  events to base\Element.
 - Added the ‘beforeElementSave’, ‘afterElementSave’, ‘beforeElementDelete’, and ‘afterElementDelete’ events to base\Field.
@@ -320,6 +321,7 @@ Craft CMS 3.0 Working Changelog
 - Removed helpers\Io::getMimeTypeByExtension().
 - Removed helpers\Io::getOwner().
 - Removed helpers\Io::getPermissions().
+- Removed helpers\Io::isExtensionAllowed().
 - Removed helpers\Io::isFileEmpty().
 - Removed helpers\Io::isFolderEmpty().
 - Removed helpers\Io::move().

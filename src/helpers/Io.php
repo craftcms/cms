@@ -308,24 +308,6 @@ class Io
     }
 
     /**
-     * Returns whether the given extension is allowed.
-     *
-     * @param string $extension The extension to check
-     *
-     * @return boolean Whether the given extension is allowed
-     */
-    public static function isExtensionAllowed($extension)
-    {
-        static $extensions = null;
-
-        if (is_null($extensions)) {
-            $extensions = array_map('mb_strtolower', Craft::$app->getConfig()->getAllowedFileExtensions());
-        }
-
-        return in_array(mb_strtolower($extension), $extensions);
-    }
-
-    /**
      * Returns a list of the supported file kinds.
      *
      * @return array The supported file kinds

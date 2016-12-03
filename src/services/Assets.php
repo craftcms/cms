@@ -175,7 +175,7 @@ class Assets extends Component
 
         $extension = $asset->getExtension();
 
-        if (!Io::isExtensionAllowed($extension)) {
+        if (!Craft::$app->getConfig()->isExtensionAllowed($extension)) {
             throw new AssetDisallowedExtensionException(Craft::t('app',
                 'The extension “{extension}” is not allowed.',
                 ['extension' => $extension]));
@@ -973,7 +973,7 @@ class Assets extends Component
 
         $extension = pathinfo($filename, PATHINFO_EXTENSION);
 
-        if (!Io::isExtensionAllowed($extension)) {
+        if (!Craft::$app->getConfig()->isExtensionAllowed($extension)) {
             throw new AssetDisallowedExtensionException(Craft::t('app',
                 'The extension “{extension}” is not allowed.',
                 ['extension' => $extension]));
