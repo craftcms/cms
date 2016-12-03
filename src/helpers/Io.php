@@ -308,27 +308,6 @@ class Io
     }
 
     /**
-     * Calculates the MD5 hash for a given file path or false if one could not be calculated or the file does not exist.
-     *
-     * @param string  $path           The path of the file to calculate
-     * @param boolean $suppressErrors Whether to suppress any PHP Notices/Warnings/Errors (usually permissions related)
-     *
-     * @return string|false The MD5 hash or false if it does not exist, isn't readable or could not be calculated
-     */
-    public static function getFileMD5($path, $suppressErrors = false)
-    {
-        $path = FileHelper::normalizePath($path);
-
-        if (static::fileExists($path, false, $suppressErrors) && static::isReadable($path, $suppressErrors)) {
-            return $suppressErrors ? @md5_file($path) : md5_file($path);
-        }
-
-        Craft::error('Could not calculate the MD5 for the file '.$path.' because the file does not exist.', __METHOD__);
-
-        return false;
-    }
-
-    /**
      * Get a list of allowed file extensions.
      *
      * @return string[] The allowed file extensions
