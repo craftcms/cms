@@ -308,55 +308,6 @@ class Io
     }
 
     /**
-     * Renames a given file or folder to a new name.
-     *
-     * @param string  $path           The original path of the file or folder
-     * @param string  $newName        The new name of the file or folder
-     * @param boolean $suppressErrors Whether to suppress any PHP Notices/Warnings/Errors (usually permissions related)
-     *
-     * @return boolean Whether the folder/file rename was successful
-     */
-    public static function rename($path, $newName, $suppressErrors = false)
-    {
-        $path = FileHelper::normalizePath($path);
-
-        if (static::fileExists($path, false, $suppressErrors) || static::folderExists($path, false, $suppressErrors)) {
-            // If we're renaming a file and there is no extension on the new name, default to the old extension
-            if (static::fileExists($path, false, $suppressErrors) && !static::getExtension($newName, null, $suppressErrors)) {
-                $newName .= '.'.static::getExtension($path, null, $suppressErrors);
-            }
-
-            if (static::isWritable($path, $suppressErrors)) {
-                if ($suppressErrors ? @rename($path, $newName) : rename($path, $newName)) {
-                    return true;
-                }
-
-                Craft::error('Could not rename '.$path.' to '.$newName.'.', __METHOD__);
-            } else {
-                Craft::error('Could not rename '.$path.' to '.$newName.' because the source file or folder is not writable.', __METHOD__);
-            }
-        } else {
-            Craft::error('Could not rename '.$path.' to '.$newName.' because the source file or folder does not exist.', __METHOD__);
-        }
-
-        return false;
-    }
-
-    /**
-     * Moves a file from one location on disk to another.
-     *
-     * @param string  $path           The original path of the file/folder to move
-     * @param string  $newPath        The new path the file/folder should be moved to
-     * @param boolean $suppressErrors Whether to suppress any PHP Notices/Warnings/Errors (usually permissions related)
-     *
-     * @return boolean Whether the file move was successful
-     */
-    public static function move($path, $newPath, $suppressErrors = false)
-    {
-        return static::rename($path, $newPath, $suppressErrors);
-    }
-
-    /**
      * Purges the contents of a file.
      *
      * @param string  $path           The path of the file to clear

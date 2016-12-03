@@ -317,7 +317,9 @@ Craft CMS 3.0 Working Changelog
 - Removed helpers\Io::getPermissions().
 - Removed helpers\Io::isFileEmpty().
 - Removed helpers\Io::isFolderEmpty().
+- Removed helpers\Io::move().
 - Removed helpers\Io::normalizePathSeparators(). Use helpers\FileHelper::normalizePath() instead.
+- Removed helpers\Io::rename().
 - Removed helpers\Io::writeToFile().
 - Removed helpers\Update::cleanManifestFolderLine().
 - Removed helpers\Update::isManifestLineAFolder().

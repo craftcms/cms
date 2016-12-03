@@ -26,6 +26,7 @@ use Imagine\Image\Point;
 use Imagine\Imagick\Imagine as ImagickImagine;
 use Imagine\Imagick\Image as ImagickImage;
 use craft\helpers\FileHelper;
+use yii\base\ErrorException;
 
 /**
  * Raster class is used for raster image manipulations.
@@ -392,7 +393,11 @@ class Raster extends Image
                 clearstatcache();
                 $originalSize = filesize($this->_imageSourcePath);
                 $tempFile = $this->_autoGuessImageQuality($targetPath, $originalSize, $extension, 0, 200);
-                Io::move($tempFile, $targetPath, true);
+                try {
+                    rename($tempFile, $targetPath);
+                } catch (ErrorException $e) {
+                    Craft::warning("Unable to rename \"{$tempFile}\" to \"{$targetPath}\": ".$e->getMessage());
+                }
             } else {
                 $this->_image->save($targetPath, $options);
             }

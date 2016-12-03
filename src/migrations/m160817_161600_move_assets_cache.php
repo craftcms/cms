@@ -27,7 +27,7 @@ class m160817_161600_move_assets_cache extends Migration
 
         foreach ($folders as $folder)
         {
-            Io::move($basePath.'/'.$folder, $targetPath.'/'.$folder);
+            rename($basePath.DIRECTORY_SEPARATOR.$folder, $targetPath.DIRECTORY_SEPARATOR.$folder);
         }
 
         Craft::info('All done');
