@@ -25,6 +25,7 @@ use craft\helpers\StringHelper;
 use craft\models\VolumeFolder;
 use craft\web\UploadedFile;
 use craft\helpers\FileHelper;
+use yii\base\ErrorException;
 
 /**
  * Assets represents an Assets field.
@@ -406,7 +407,11 @@ class Assets extends BaseRelationField
                     Craft::$app->getAssets()->saveAsset($asset);
 
                     $assetIds[] = $asset->id;
-                    Io::deleteFile($tempPath, true);
+                    try {
+                        FileHelper::removeFile($tempPath);
+                    } catch (ErrorException $e) {
+                        Craft::warning("Unable to delete the file \"{$tempPath}\": ".$e->getMessage());
+                    }
                 }
 
                 $assetIds = array_unique(array_merge($value, $assetIds));

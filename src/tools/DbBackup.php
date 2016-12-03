@@ -9,7 +9,9 @@ namespace craft\tools;
 
 use Craft;
 use craft\base\Tool;
+use craft\helpers\FileHelper;
 use craft\helpers\Io;
+use yii\base\ErrorException;
 use yii\web\ServerErrorHttpException;
 use ZipArchive;
 
@@ -77,7 +79,11 @@ class DbBackup extends Tool
         $zipPath = Craft::$app->getPath()->getTempPath().'/'.pathinfo($backupPath, PATHINFO_FILENAME).'.zip';
 
         if (is_file($zipPath)) {
-            Io::deleteFile($zipPath, true);
+            try {
+                FileHelper::removeFile($zipPath);
+            } catch (ErrorException $e) {
+                Craft::warning("Unable to delete the file \"{$zipPath}\": ".$e->getMessage());
+            }
         }
 
         $zip = new ZipArchive();

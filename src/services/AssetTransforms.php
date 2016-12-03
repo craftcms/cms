@@ -889,14 +889,22 @@ class AssetTransforms extends Component
             if (!is_file($imageSourcePath) || filesize($imageSourcePath) == 0) {
 
                 // Delete it just in case it's a 0-byter
-                Io::deleteFile($imageSourcePath, true);
+                try {
+                    FileHelper::removeFile($imageSourcePath);
+                } catch (ErrorException $e) {
+                    Craft::warning("Unable to delete the file \"{$imageSourcePath}\": ".$e->getMessage());
+                }
 
                 $localCopy = Io::getTempFilePath($asset->getExtension());
 
                 $volume->saveFileLocally($asset->getUri(), $localCopy);
 
                 if (!is_file($localCopy) || filesize($localCopy) == 0) {
-                    Io::deleteFile($localCopy, true);
+                    try {
+                        FileHelper::removeFile($localCopy);
+                    } catch (ErrorException $e) {
+                        Craft::warning("Unable to delete the file \"{$localCopy}\": ".$e->getMessage());
+                    }
                     throw new VolumeException(Craft::t('Tried to download the source file for image “{file}”, but it was 0 bytes long.',
                         ['file' => $asset->filename]));
                 }
@@ -905,7 +913,11 @@ class AssetTransforms extends Component
 
                 // Delete the leftover data.
                 $this->queueSourceForDeletingIfNecessary($imageSourcePath);
-                Io::deleteFile($localCopy, true);
+                try {
+                    FileHelper::removeFile($localCopy);
+                } catch (ErrorException $e) {
+                    Craft::warning("Unable to delete the file \"{$localCopy}\": ".$e->getMessage());
+                }
             }
         }
 
@@ -1022,7 +1034,7 @@ class AssetTransforms extends Component
                 $this->queueSourceForDeletingIfNecessary($localCopy);
             } else {
                 // For local, though, we just delete the temp file.
-                Io::deleteFile($localCopy);
+                FileHelper::removeFile($localCopy);
             }
 
             return $format;
@@ -1095,7 +1107,7 @@ class AssetTransforms extends Component
         $this->deleteCreatedTransformsForAsset($asset);
         $this->deleteTransformIndexDataByAssetId($asset->id);
 
-        Io::deleteFile(Craft::$app->getPath()->getAssetsImageSourcePath().DIRECTORY_SEPARATOR.$asset->id.'.'.pathinfo($asset->filename, PATHINFO_EXTENSION), true);
+        FileHelper::removeFile(Craft::$app->getPath()->getAssetsImageSourcePath().DIRECTORY_SEPARATOR.$asset->id.'.'.pathinfo($asset->filename, PATHINFO_EXTENSION), true);
     }
 
     /**
@@ -1375,7 +1387,7 @@ class AssetTransforms extends Component
             // We're fine with that.
         }
 
-        Io::deleteFile($createdTransform);
+        FileHelper::removeFile($createdTransform);
 
         $volume = $asset->getVolume();
 

@@ -32,6 +32,7 @@ use craft\events\ReplaceAssetEvent;
 use craft\helpers\Assets as AssetsHelper;
 use craft\helpers\DateTimeHelper;
 use craft\helpers\Db;
+use craft\helpers\FileHelper;
 use craft\helpers\Image;
 use craft\helpers\Io;
 use craft\helpers\Json;
@@ -1196,7 +1197,7 @@ class Assets extends Component
             $stream = fopen($localPath, 'r');
 
             if (!$stream) {
-                Io::deleteFile($localPath);
+                FileHelper::removeFile($localPath);
                 throw new FileException(Craft::t('app',
                     'Could not open file for streaming at {path}',
                     ['path' => $asset->newFilePath]));
@@ -1209,7 +1210,7 @@ class Assets extends Component
                 fclose($stream);
             }
 
-            Io::deleteFile($localPath);
+            FileHelper::removeFile($localPath);
 
             // Nuke the transforms
             $assetTransforms->deleteAllTransformData($asset);

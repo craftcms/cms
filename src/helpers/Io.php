@@ -308,35 +308,6 @@ class Io
     }
 
     /**
-     * Deletes a file from the file system.
-     *
-     * @param string  $path           The path of the file to delete
-     * @param boolean $suppressErrors Whether to suppress any PHP Notices/Warnings/Errors (usually permissions related)
-     *
-     * @return boolean Whether the file deletion was successful
-     */
-    public static function deleteFile($path, $suppressErrors = false)
-    {
-        $path = FileHelper::normalizePath($path);
-
-        if (static::fileExists($path, false, $suppressErrors)) {
-            if (static::isWritable($path, $suppressErrors)) {
-                if ($suppressErrors ? @unlink($path) : unlink($path)) {
-                    return true;
-                }
-
-                Craft::error('Could not delete the file '.$path.'.', __METHOD__);
-            } else {
-                Craft::error('Could not delete the file '.$path.' because it is not writable.', __METHOD__);
-            }
-        } else {
-            Craft::error('Could not delete the file '.$path.' because the file does not exist.', __METHOD__);
-        }
-
-        return false;
-    }
-
-    /**
      * Calculates the MD5 hash for a given file path or false if one could not be calculated or the file does not exist.
      *
      * @param string  $path           The path of the file to calculate

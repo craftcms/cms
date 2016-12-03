@@ -15,12 +15,14 @@ use craft\errors\UploadFailedException;
 use craft\fields\Assets as AssetsField;
 use craft\helpers\Assets;
 use craft\helpers\Db;
+use craft\helpers\FileHelper;
 use craft\helpers\Io;
 use craft\elements\Asset;
 use craft\helpers\StringHelper;
 use craft\models\VolumeFolder;
 use craft\web\Controller;
 use craft\web\UploadedFile;
+use yii\base\ErrorException;
 use yii\web\BadRequestHttpException;
 use yii\web\Response;
 
@@ -151,7 +153,11 @@ class AssetsController extends Controller
                 $result = $uploadedFile->saveAs($pathOnServer);
 
                 if (!$result) {
-                    Io::deleteFile($pathOnServer, true);
+                    try {
+                        FileHelper::removeFile($pathOnServer);
+                    } catch (ErrorException $e) {
+                        Craft::warning("Unable to delete the file \"{$pathOnServer}\": ".$e->getMessage());
+                    }
                     throw new UploadFailedException(UPLOAD_ERR_CANT_WRITE);
                 }
 
@@ -170,7 +176,11 @@ class AssetsController extends Controller
 
                 try {
                     $assets->saveAsset($asset);
-                    Io::deleteFile($pathOnServer, true);
+                    try {
+                        FileHelper::removeFile($pathOnServer);
+                    } catch (ErrorException $e) {
+                        Craft::warning("Unable to delete the file \"{$pathOnServer}\": ".$e->getMessage());
+                    }
                 } catch (AssetConflictException $exception) {
                     // Okay, get a replacement name and re-save Asset.
                     $replacementName = $assets->getNameReplacementInFolder($asset->filename,
@@ -178,7 +188,11 @@ class AssetsController extends Controller
                     $asset->filename = $replacementName;
 
                     $assets->saveAsset($asset);
-                    Io::deleteFile($pathOnServer, true);
+                    try {
+                        FileHelper::removeFile($pathOnServer);
+                    } catch (ErrorException $e) {
+                        Craft::warning("Unable to delete the file \"{$pathOnServer}\": ".$e->getMessage());
+                    }
 
                     return $this->asJson([
                         'prompt' => true,
@@ -187,7 +201,11 @@ class AssetsController extends Controller
                     ]);
                 } // No matter what happened, delete the file on server.
                 catch (\Exception $exception) {
-                    Io::deleteFile($pathOnServer, true);
+                    try {
+                        FileHelper::removeFile($pathOnServer);
+                    } catch (ErrorException $e) {
+                        Craft::warning("Unable to delete the file \"{$pathOnServer}\": ".$e->getMessage());
+                    }
                     throw $exception;
                 }
 
@@ -232,12 +250,15 @@ class AssetsController extends Controller
             $result = $uploadedFile->saveAs($pathOnServer);
 
             if (!$result) {
-                Io::deleteFile($pathOnServer, true);
+                try {
+                    FileHelper::removeFile($pathOnServer);
+                } catch (ErrorException $e) {
+                    Craft::warning("Unable to delete the file \"{$pathOnServer}\": ".$e->getMessage());
+                }
                 throw new UploadFailedException(UPLOAD_ERR_CANT_WRITE);
             }
 
-            $assets->replaceAssetFile($asset, $pathOnServer,
-                $fileName);
+            $assets->replaceAssetFile($asset, $pathOnServer, $fileName);
         } catch (\Exception $exception) {
             return $this->asErrorJson($exception->getMessage());
         }
@@ -575,7 +596,7 @@ class AssetsController extends Controller
         $localPath = $asset->getCopyOfFile();
 
         Craft::$app->getResponse()->sendFile($localPath, $asset->filename, false);
-        Io::deleteFile($localPath);
+        FileHelper::removeFile($localPath);
         Craft::$app->end();
     }
 
