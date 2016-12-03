@@ -211,26 +211,6 @@ class Io
     }
 
     /**
-     * Will take a path, make sure the folder exists and if the size of the folder is 0 bytes, return true.
-     * Otherwise false.
-     *
-     * @param string  $path           The path to test
-     * @param boolean $suppressErrors Whether to suppress any PHP Notices/Warnings/Errors (usually permissions related)
-     *
-     * @return boolean Whether the folder is empty or not
-     */
-    public static function isFolderEmpty($path, $suppressErrors = false)
-    {
-        $path = FileHelper::normalizePath($path);
-
-        if (static::folderExists($path, false, $suppressErrors) && empty(FileHelper::findFiles($path))) {
-            return true;
-        }
-
-        return false;
-    }
-
-    /**
      * Returns owner of current filesystem object (UNIX systems). Returned value depends upon $getName parameter value.
      *
      * @param string  $path           The path to check

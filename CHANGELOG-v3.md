@@ -308,6 +308,7 @@ Craft CMS 3.0 Working Changelog
 - Removed helpers\Io::getMimeType().
 - Removed helpers\Io::getMimeTypeByExtension().
 - Removed helpers\Io::isFileEmpty().
+- Removed helpers\Io::isFolderEmpty().
 - Removed helpers\Io::normalizePathSeparators(). Use helpers\FileHelper::normalizePath() instead.
 - Removed helpers\Update::cleanManifestFolderLine().
 - Removed helpers\Update::isManifestLineAFolder().
