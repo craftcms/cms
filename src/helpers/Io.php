@@ -211,28 +211,6 @@ class Io
     }
 
     /**
-     * Returns the last modified time for the given path in DateTime format or false if the file or folder does not
-     * exist.
-     *
-     * @param string  $path           The path to test
-     * @param boolean $suppressErrors Whether to suppress any PHP Notices/Warnings/Errors (usually permissions related)
-     *
-     * @return DateTime|false The last modified timestamp or false if the file or folder does not exist
-     */
-    public static function getLastTimeModified($path, $suppressErrors = false)
-    {
-        $path = FileHelper::normalizePath($path);
-
-        if (static::fileExists($path, false, $suppressErrors) || static::folderExists($path, false, $suppressErrors)) {
-            $timeStamp = $suppressErrors ? @filemtime($path) : filemtime($path);
-
-            return new DateTime('@'.$timeStamp);
-        }
-
-        return false;
-    }
-
-    /**
      * Returns the file size in bytes for the given path or false if the file does not exist.
      *
      * @param string  $path           The path to test

@@ -49,10 +49,10 @@ class Response extends \yii\web\Response
      */
     public function setLastModifiedHeader($path)
     {
-        $modifiedTime = Io::getLastTimeModified($path);
+        $modifiedTime = filemtime($path);
 
         if ($modifiedTime) {
-            $this->getHeaders()->set('Last-Modified', gmdate("D, d M Y H:i:s", $modifiedTime->getTimestamp()).' GMT');
+            $this->getHeaders()->set('Last-Modified', gmdate("D, d M Y H:i:s", $modifiedTime).' GMT');
         }
 
         return $this;

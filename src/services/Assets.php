@@ -408,7 +408,7 @@ class Assets extends Component
         }
 
         $asset->size = Io::getFileSize($pathOnServer);
-        $asset->dateModified = Io::getLastTimeModified($pathOnServer);
+        $asset->dateModified = new DateTime('@'.filemtime($pathOnServer));
 
         $this->saveAsset($asset);
 

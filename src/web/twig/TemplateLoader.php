@@ -111,9 +111,9 @@ class TemplateLoader implements \Twig_LoaderInterface, \Twig_ExistsLoaderInterfa
         }
 
         if (is_string($name)) {
-            $sourceModifiedTime = Io::getLastTimeModified($this->_resolveTemplate($name));
+            $sourceModifiedTime = filemtime($this->_resolveTemplate($name));
 
-            return $sourceModifiedTime->getTimestamp() <= $time;
+            return $sourceModifiedTime <= $time;
         }
 
         return false;

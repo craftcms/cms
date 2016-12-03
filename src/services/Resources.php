@@ -258,13 +258,10 @@ class Resources extends Component
         // browser serve it from cache.
         $timestamp = Craft::$app->getRequest()->getParam($this->dateParam, null);
 
-        if ($timestamp !== null && array_key_exists('HTTP_IF_MODIFIED_SINCE',
-                $_SERVER)
-        ) {
-            $requestDate = DateTime::createFromFormat('U', $timestamp);
-            $lastModifiedFileDate = Io::getLastTimeModified($path);
+        if ($timestamp !== null && array_key_exists('HTTP_IF_MODIFIED_SINCE', $_SERVER)) {
+            $lastModifiedFileDate = filemtime($path);
 
-            if ($lastModifiedFileDate && $lastModifiedFileDate <= $requestDate) {
+            if ($lastModifiedFileDate && $lastModifiedFileDate <= $timestamp) {
                 // Let the browser serve it from cache.
                 Craft::$app->getResponse()->setStatusCode(304);
                 Craft::$app->end();

@@ -3,8 +3,10 @@
 namespace craft\migrations;
 
 use Craft;
+use craft\dates\DateTime;
 use craft\db\Migration;
 use craft\db\Query;
+use craft\helpers\Db;
 use craft\helpers\ElementHelper;
 use craft\helpers\FileHelper;
 use craft\helpers\Image;
@@ -294,7 +296,7 @@ class m160804_110002_userphotos_to_assets extends Migration
                     'size' => Io::getFileSize($filePath),
                     'width' => $imageSize[0],
                     'height' => $imageSize[1],
-                    'dateModified' => Io::getLastTimeModified($filePath)
+                    'dateModified' => Db::prepareDateForDb(filemtime($filePath))
                 ];
                 $db->createCommand()
                     ->insert('{{%assets}}', $assetData)
