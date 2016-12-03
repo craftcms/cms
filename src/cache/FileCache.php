@@ -91,7 +91,10 @@ class FileCache extends \yii\caching\FileCache
         }
 
         FileHelper::writeToFile($cacheFile, $value);
-        Io::changePermissions($cacheFile, Craft::$app->getConfig()->get('defaultFilePermissions'));
+
+        if ($this->fileMode !== null) {
+            @chmod($cacheFile, $this->fileMode);
+        }
 
         return Io::touch($cacheFile, $expire);
     }

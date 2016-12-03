@@ -308,32 +308,6 @@ class Io
     }
 
     /**
-     * Will attempt to change the permission of the given file system path (*nix only).
-     *
-     * @param string  $path           The path to change the permissions of
-     * @param integer $permissions    The new permissions
-     * @param boolean $suppressErrors Whether to suppress any PHP Notices/Warnings/Errors (usually permissions related)
-     *
-     * @return boolean Whether the permission change was successful
-     */
-    public static function changePermissions($path, $permissions, $suppressErrors = false)
-    {
-        $path = FileHelper::normalizePath($path);
-
-        if (static::fileExists($path, false, $suppressErrors) || static::folderExists($path, false, $suppressErrors)) {
-            if ($suppressErrors ? @chmod($path, $permissions) : chmod($path, $permissions)) {
-                return true;
-            }
-
-            Craft::error('Tried to change the permissions of '.$path.', but could not.', __METHOD__);
-        } else {
-            Craft::error('Tried to change permissions of '.$path.', but that path does not exist.', __METHOD__);
-        }
-
-        return false;
-    }
-
-    /**
      * Will copy a file from one path to another and create folders if necessary.
      *
      * @param string  $path           The source path of the file
