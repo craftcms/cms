@@ -361,15 +361,17 @@
 				}
 			},
 
-			onEditorFocus: function()
-			{
-				this.redactor.core.box().addClass('focus');
-			},
+            onEditorFocus: function()
+            {
+                this.redactor.core.box().addClass('focus');
+                this.redactor.core.box().trigger('focus');
+            },
 
-			onEditorBlur: function()
-			{
-				this.redactor.core.box().removeClass('focus');
-			},
+            onEditorBlur: function()
+            {
+                this.redactor.core.box().removeClass('focus');
+                this.redactor.core.box().trigger('blur');
+            },
 
 			leaveFullscreetOnSaveShortcut: function()
 			{

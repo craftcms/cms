@@ -1,4 +1,4 @@
-/*! Craft 3.0.0 - 2016-11-24 */
+/*! Craft 3.0.0 - 2016-12-02 */
 (function($){
 
 // Set all the standard Craft.* stuff
@@ -9663,6 +9663,26 @@ Craft.CP = Garnish.Base.extend(
 		{
 			this.addListener(this.$edition, 'click', 'showUpgradeModal');
 		}
+
+        if($.isTouchCapable())
+        {
+            this.$container.on('focus', 'input, textarea, div.redactor-box', $.proxy(this, '_handleInputFocus'));
+            this.$container.on('blur', 'input, textarea, div.redactor-box', $.proxy(this, '_handleInputBlur'));
+        }
+	},
+
+    _handleInputFocus: function()
+	{
+		Garnish.$bod.addClass('focused');
+        this.updateFixedHeader();
+        this.updateResponsiveGlobalSidebar();
+	},
+
+    _handleInputBlur: function()
+	{
+        Garnish.$bod.removeClass('focused');
+        this.updateFixedHeader();
+        this.updateResponsiveGlobalSidebar();
 	},
 
 	submitPrimaryForm: function()
@@ -9711,9 +9731,16 @@ Craft.CP = Garnish.Base.extend(
 
 	updateResponsiveGlobalSidebar: function()
 	{
-		var globalSidebarHeight = window.innerHeight;
+		if(Garnish.$bod.hasClass('focused'))
+		{
+            this.$globalSidebar.height(this.$container.height());
+		}
+		else
+		{
+            var globalSidebarHeight = window.innerHeight;
 
-		this.$globalSidebar.height(globalSidebarHeight);
+            this.$globalSidebar.height(globalSidebarHeight);
+		}
 	},
 
 	updateResponsiveNav: function()
@@ -9951,7 +9978,14 @@ Craft.CP = Garnish.Base.extend(
 				}
 				else
 				{
-					this.$pageHeader.css('top', 0);
+					if(Garnish.$bod.hasClass('focused'))
+					{
+                        this.$pageHeader.css('top', Garnish.$win.scrollTop());
+					}
+					else
+					{
+                        this.$pageHeader.css('top', 0);
+					}
 				}
 
 				this.$main.css('margin-top', this.updateFixedHeader._pageHeaderHeight);

@@ -780,7 +780,7 @@ class Config extends Component
 
                 if (file_exists($filePath)) {
                     // Originally blocks.php defined a $blocksConfig variable, and then later returned an array directly.
-                    if (is_array($customConfig = require_once($filePath))) {
+                    if (is_array($customConfig = require($filePath))) {
                         $this->_mergeConfigs($configSettings, $customConfig);
                     } else if (isset($blocksConfig)) {
                         $configSettings = array_merge($configSettings, $blocksConfig);
