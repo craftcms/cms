@@ -973,7 +973,7 @@ class AssetTransforms extends Component
                 $maxCachedImageSize)->saveAs($destination);
         } else {
             if ($source != $destination) {
-                Io::copyFile($source, $destination);
+                copy($source, $destination);
             }
         }
     }

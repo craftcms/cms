@@ -297,6 +297,7 @@ Craft CMS 3.0 Working Changelog
 - Removed helpers\Io::changeOwner().
 - Removed helpers\Io::changePermissions().
 - Removed helpers\Io::clearFolder().
+- Removed helpers\Io::copyFile().
 - Removed helpers\Io::copyFolder(). Use helpers\FileHelper::copyDirectory() instead.
 - Removed helpers\Io::deleteFolder(). Use helpers\FileHelper::removeDirectory() instead.
 - Removed helpers\Io::getFolderSize().

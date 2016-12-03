@@ -308,42 +308,6 @@ class Io
     }
 
     /**
-     * Will copy a file from one path to another and create folders if necessary.
-     *
-     * @param string  $path           The source path of the file
-     * @param string  $destination    The destination path to copy the file to
-     * @param boolean $suppressErrors Whether to suppress any PHP Notices/Warnings/Errors (usually permissions related)
-     *
-     * @return boolean Whether the copy was successful
-     */
-    public static function copyFile($path, $destination, $suppressErrors = false)
-    {
-        $path = FileHelper::normalizePath($path);
-
-        if (static::fileExists($path, false, $suppressErrors)) {
-            $destFolder = static::getFolderName($destination, true, $suppressErrors);
-
-            if (!static::folderExists($destFolder, false, $suppressErrors)) {
-                static::createFolder($destFolder, Craft::$app->getConfig()->get('defaultFolderPermissions'), $suppressErrors);
-            }
-
-            if (static::isReadable($path, $suppressErrors)) {
-                if ($suppressErrors ? @copy($path, $destination) : copy($path, $destination)) {
-                    return true;
-                }
-
-                Craft::error('Tried to copy '.$path.' to '.$destination.', but could not.', __METHOD__);
-            } else {
-                Craft::error('Tried to copy '.$path.' to '.$destination.', but could not read the source file.', __METHOD__);
-            }
-        } else {
-            Craft::error('Tried to copy '.$path.' to '.$destination.', but the source file does not exist.', __METHOD__);
-        }
-
-        return false;
-    }
-
-    /**
      * Renames a given file or folder to a new name.
      *
      * @param string  $path           The original path of the file or folder
