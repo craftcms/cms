@@ -3,16 +3,15 @@
 namespace craft\migrations;
 
 use Craft;
-use craft\dates\DateTime;
 use craft\db\Migration;
 use craft\db\Query;
 use craft\helpers\Db;
 use craft\helpers\ElementHelper;
 use craft\helpers\FileHelper;
 use craft\helpers\Image;
-use craft\helpers\Io;
 use craft\helpers\Json;
 use craft\helpers\StringHelper;
+use yii\base\Exception;
 
 /**
  * m160804_110002_userphotos_to_assets migration.
@@ -29,7 +28,11 @@ class m160804_110002_userphotos_to_assets extends Migration
      */
     public function safeUp()
     {
-        $this->_basePath = Craft::$app->getPath()->getStoragePath().'/'.'userphotos';
+        $this->_basePath = Craft::$app->getPath()->getStoragePath().DIRECTORY_SEPARATOR.'userphotos';
+
+        // Make sure the userphotos folder actually exists
+        FileHelper::createDirectory($this->_basePath);
+
         Craft::info('Removing __default__ folder');
         FileHelper::removeDirectory($this->_basePath.'/__default__');
 
@@ -77,50 +80,65 @@ class m160804_110002_userphotos_to_assets extends Migration
      * Move user photos from subfolders to root.
      *
      * @return array
+     * @throws Exception in case of failure
      */
     private function _moveUserphotos()
     {
+        $handle = opendir($this->_basePath);
+        if ($handle === false) {
+            throw new Exception("Unable to open directory: {$this->_basePath}");
+        }
+
         $affectedUsers = [];
-        $subfolders = Io::getFolderContents($this->_basePath, false);
 
-        if ($subfolders) {
-            // Grab the users with photos
-            foreach ($subfolders as $subfolder) {
-                $usernameOrEmail = trim(StringHelper::replace($subfolder, $this->_basePath, ''), '/');
-
-                $user = (new Query())
-                    ->select(['id', 'photo'])
-                    ->from(['{{%users}}'])
-                    ->where(['username' => $usernameOrEmail])
-                    ->one();
-
-                $sourcePath = $subfolder.'/original/'.$user['photo'];
-
-                // If the file actually exists
-                if (is_file($sourcePath)) {
-                    // Make sure that the filename is unique
-                    $counter = 0;
-
-                    $baseFilename = pathinfo($user['photo'], PATHINFO_FILENAME);
-                    $extension = pathinfo($user['photo'], PATHINFO_EXTENSION);
-                    $filename = $baseFilename.'.'.$extension;
-
-                    while (is_file($this->_basePath.DIRECTORY_SEPARATOR.$filename)) {
-                        $filename = $baseFilename.'_'.++$counter.'.'.$extension;
-                    }
-
-                    // In case the filename changed
-                    $user['photo'] = $filename;
-
-                    // Store for reference
-                    $affectedUsers[] = $user;
-
-                    $targetPath = $this->_basePath.'/'.$filename;
-
-                    // Move the file to the new location
-                    Io::move($sourcePath, $targetPath);
-                }
+        // Grab the users with photos
+        while (($subDir = readdir($handle)) !== false) {
+            if ($subDir === '.' || $subDir === '..') {
+                continue;
             }
+            $path = $this->_basePath.DIRECTORY_SEPARATOR.$subDir;
+            if (is_file($path)) {
+                continue;
+            }
+
+            $user = (new Query())
+                ->select(['id', 'photo'])
+                ->from(['{{%users}}'])
+                ->where(['username' => $subDir])
+                ->one();
+
+            // Make sure the user still exists and has a photo
+            if (!$user || empty($user['photo'])) {
+                continue;
+            }
+
+            // Make sure the original file still exists
+            $sourcePath = $this->_basePath.DIRECTORY_SEPARATOR.$subDir.DIRECTORY_SEPARATOR.'original'.DIRECTORY_SEPARATOR.$user['photo'];
+            if (!is_file($sourcePath)) {
+                continue;
+            }
+
+            // Make sure that the filename is unique
+            $counter = 0;
+
+            $baseFilename = pathinfo($user['photo'], PATHINFO_FILENAME);
+            $extension = pathinfo($user['photo'], PATHINFO_EXTENSION);
+            $filename = $baseFilename.'.'.$extension;
+
+            while (is_file($this->_basePath.DIRECTORY_SEPARATOR.$filename)) {
+                $filename = $baseFilename.'_'.++$counter.'.'.$extension;
+            }
+
+            // In case the filename changed
+            $user['photo'] = $filename;
+
+            // Store for reference
+            $affectedUsers[] = $user;
+
+            $targetPath = $this->_basePath.DIRECTORY_SEPARATOR.$filename;
+
+            // Move the file to the new location
+            rename($sourcePath, $targetPath);
         }
 
         return $affectedUsers;
@@ -240,7 +258,7 @@ class m160804_110002_userphotos_to_assets extends Migration
         $changes = [];
 
         foreach ($userList as $user) {
-            $filePath = $this->_basePath.'/'.$user['photo'];
+            $filePath = $this->_basePath.DIRECTORY_SEPARATOR.$user['photo'];
 
             $assetExists = (new Query())
                 ->select(['assets.id'])
