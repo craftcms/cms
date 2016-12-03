@@ -24,10 +24,13 @@ checkout:
   post:
     - composer install --dev
     - composer dumpautoload -a
+    - mv codeception.yml.example codeception.yml
+
 
 ## Customize dependencies
-# dependencies:
-#  pre:
+ dependencies:
+  pre:
+    - mysql -u root -e 'CREATE DATABASE craft3test;';
 #    - npm install coffeescript # install from a different package manager
 #    - gem uninstall bundler # use a custom version of bundler
 #    - gem install bundler --pre
@@ -52,7 +55,7 @@ checkout:
 ## Customize test commands
  test:
   override:
-    - php codeception.php run
+    - ./vendor/bin/codecept run
 #  post:
 #    - bundle exec rake jasmine:ci: # add an extra test type
 #        environment:
