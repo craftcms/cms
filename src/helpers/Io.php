@@ -211,33 +211,6 @@ class Io
     }
 
     /**
-     * Returns owner of current filesystem object (UNIX systems). Returned value depends upon $getName parameter value.
-     *
-     * @param string  $path           The path to check
-     * @param boolean $getName        Defaults to 'true', meaning that owner name instead of ID should be returned
-     * @param boolean $suppressErrors Whether to suppress any PHP Notices/Warnings/Errors (usually permissions related)
-     *
-     * @return string|integer|false Owner name, or ID if $getName set to 'false' or false if the file or folder does not exist
-     */
-    public static function getOwner($path, $getName = true, $suppressErrors = false)
-    {
-        $path = FileHelper::normalizePath($path);
-
-        if (static::fileExists($path, false, $suppressErrors) || static::folderExists($path, false, $suppressErrors)) {
-            $owner = $suppressErrors ? @fileowner($path) : fileowner($path);
-        } else {
-            $owner = false;
-        }
-
-        if (is_int($owner) && function_exists('posix_getpwuid') && $getName == true) {
-            $owner = posix_getpwuid($owner);
-            $owner = $owner['name'];
-        }
-
-        return $owner;
-    }
-
-    /**
      * Returns group of current filesystem object (UNIX systems). Returned value
      * depends upon $getName parameter value.
      *
