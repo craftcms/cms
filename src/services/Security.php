@@ -103,11 +103,9 @@ class Security extends \yii\base\Security
 
         $key = $this->generateRandomString();
 
-        if (Io::writeToFile($validationKeyPath, $key)) {
-            return $key;
-        }
+        FileHelper::writeToFile($validationKeyPath, $key);
 
-        throw new Exception("Tried to write the validation key to {$validationKeyPath}, but could not.");
+        return $key;
     }
 
     /**

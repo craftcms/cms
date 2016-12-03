@@ -90,22 +90,9 @@ class FileCache extends \yii\caching\FileCache
             }
         }
 
-        if ($this->_originalKey == 'useWriteFileLock') {
-            if (Io::writeToFile($cacheFile, $value, true, false, true) !== false) {
-                Io::changePermissions($cacheFile, Craft::$app->getConfig()->get('defaultFilePermissions'));
+        FileHelper::writeToFile($cacheFile, $value);
+        Io::changePermissions($cacheFile, Craft::$app->getConfig()->get('defaultFilePermissions'));
 
-                return Io::touch($cacheFile, $expire);
-            }
-
-            return false;
-        }
-
-        if (Io::writeToFile($cacheFile, $value) !== false) {
-            Io::changePermissions($cacheFile, Craft::$app->getConfig()->get('defaultFilePermissions'));
-
-            return Io::touch($cacheFile, $expire);
-        }
-
-        return false;
+        return Io::touch($cacheFile, $expire);
     }
 }

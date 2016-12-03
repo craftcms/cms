@@ -308,118 +308,6 @@ class Io
     }
 
     /**
-     * Will write $contents to a file.
-     *
-     * @param string       $path           The path of the file to write to
-     * @param string       $contents       The contents to be written to the file
-     * @param boolean      $autoCreate     Whether or not to auto-create the file if it does not exist
-     * @param boolean      $append         If true, will append the data to the contents of the file, otherwise it will
-     *                                     overwrite the contents
-     * @param boolean|null $noFileLock     Whether to use file locking when writing to the file
-     * @param boolean      $suppressErrors Whether to suppress any PHP Notices/Warnings/Errors (usually permissions related)
-     *
-     * @return boolean Whether the file contents were updated
-     */
-    public static function writeToFile($path, $contents, $autoCreate = true, $append = false, $noFileLock = null, $suppressErrors = false)
-    {
-        $path = FileHelper::normalizePath($path);
-
-        if (!static::fileExists($path, false, $suppressErrors) && $autoCreate) {
-            $folderName = static::getFolderName($path, true, $suppressErrors);
-
-            if (!static::folderExists($folderName, false, $suppressErrors)) {
-                if (!static::createFolder($folderName, $suppressErrors)) {
-                    return false;
-                }
-            }
-
-            if ((!static::createFile($path, $suppressErrors)) !== false) {
-                return false;
-            }
-        }
-
-        if (static::isWritable($path, $suppressErrors)) {
-            // Let's try to use our auto-magic detection.
-            if (Craft::$app->getConfig()->get('useWriteFileLock') === 'auto') {
-                // We haven't cached file lock information yet and this is not a noFileLock request.
-                if (($useFileLock = Craft::$app->getCache()->get('useWriteFileLock')) === false && !$noFileLock) {
-                    // For file systems that don't support file locking... LOOKING AT YOU NFS!!!
-                    try {
-                        Craft::info('Trying to write to file at '.$path.' using LOCK_EX.', __METHOD__);
-                        if (static::_writeToFile($path, $contents, true, $append, $suppressErrors)) {
-                            // Cache the file lock info to use LOCK_EX for 2 months.
-                            Craft::info('Successfully wrote to file at '.$path.' using LOCK_EX. Saving in cache.', __METHOD__);
-                            Craft::$app->getCache()->set('useWriteFileLock', 'yes', 5184000);
-
-                            return true;
-                        }
-
-                        // Try again without the lock flag.
-                        Craft::info('Trying to write to file at '.$path.' without LOCK_EX.', __METHOD__);
-                        if (static::_writeToFile($path, $contents, false, $append, $suppressErrors)) {
-                            // Cache the file lock info to not use LOCK_EX for 2 months.
-                            Craft::info('Successfully wrote to file at '.$path.' without LOCK_EX. Saving in cache.', __METHOD__);
-                            Craft::$app->getCache()->set('useWriteFileLock', 'no', 5184000);
-
-                            return true;
-                        }
-                    } catch (ErrorException $e) {
-                        // Try again without the lock flag.
-                        Craft::info('Trying to write to file at '.$path.' without LOCK_EX.', __METHOD__);
-                        if (static::_writeToFile($path, $contents, false, $append, $suppressErrors)) {
-                            // Cache the file lock info to not use LOCK_EX for 2 months.
-                            Craft::info('Successfully wrote to file at '.$path.' without LOCK_EX. Saving in cache.', __METHOD__);
-                            Craft::$app->getCache()->set('useWriteFileLock', 'no', 5184000);
-
-                            return true;
-                        }
-                    }
-                } else {
-                    // If cache says use LOCK_X and this is not a noFileLock request.
-                    if ($useFileLock == 'yes' && !$noFileLock) {
-                        // Write with LOCK_EX
-                        if (static::_writeToFile($path, $contents, true, $append, $suppressErrors)) {
-                            return true;
-                        }
-                    } else {
-                        // Write without LOCK_EX
-                        if (static::_writeToFile($path, $contents, false, $append, $suppressErrors)) {
-                            return true;
-                        }
-
-                        Craft::error('Tried to write to file at '.$path.' and could not.', __METHOD__);
-
-                        return false;
-                    }
-                }
-            } // We were explicitly told not to use LOCK_EX
-            else if (Craft::$app->getConfig()->get('useWriteFileLock') === false) {
-                if (static::_writeToFile($path, $contents, false, $append, $suppressErrors)) {
-                    return true;
-                }
-
-                Craft::error('Tried to write to file at '.$path.' with no LOCK_EX and could not.', __METHOD__);
-
-                return false;
-            }
-
-            // Not 'auto', not false, so default to using LOCK_EX
-            if (static::_writeToFile($path, $contents, true, $append, $suppressErrors)) {
-                return true;
-            }
-
-            Craft::error('Tried to write to file at '.$path.' with LOCK_EX and could not.', __METHOD__);
-
-            return false;
-        }
-
-        Craft::error('Tried to write to file at '.$path.', but the file is not writable.', __METHOD__);
-
-
-        return false;
-    }
-
-    /**
      * Will attempt to change the permission of the given file system path (*nix only).
      *
      * @param string  $path           The path to change the permissions of
@@ -544,7 +432,7 @@ class Io
 
         if (static::fileExists($path, false, $suppressErrors)) {
             if (static::isWritable($path, $suppressErrors)) {
-                static::writeToFile($path, '', false, $suppressErrors);
+                FileHelper::writeToFile($path, '');
 
                 return true;
             }
@@ -863,36 +751,6 @@ class Io
 
     // Private Methods
     // =========================================================================
-
-    /**
-     * @param string  $path
-     * @param string  $contents
-     * @param boolean $lock
-     * @param boolean $append
-     * @param boolean $suppressErrors Whether to suppress any PHP Notices/Warnings/Errors (usually permissions related)
-     *
-     * @return boolean
-     */
-    private static function _writeToFile($path, $contents, $lock = true, $append = true, $suppressErrors = false)
-    {
-        $flags = 0;
-
-        if ($lock) {
-            $flags |= LOCK_EX;
-        }
-
-        if ($append) {
-            $flags |= FILE_APPEND;
-        }
-
-        if (($suppressErrors ? @file_put_contents($path, $contents,
-                $flags) : file_put_contents($path, $contents, $flags)) !== false
-        ) {
-            return true;
-        }
-
-        return false;
-    }
 
     /**
      * @param string  $path

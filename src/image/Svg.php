@@ -10,6 +10,7 @@ namespace craft\image;
 use Craft;
 use craft\base\Image;
 use craft\errors\ImageException;
+use craft\helpers\FileHelper;
 use craft\helpers\Image as ImageHelper;
 use craft\helpers\Io;
 
@@ -232,7 +233,7 @@ class Svg extends Image
     public function saveAs($targetPath, $autoQuality = false)
     {
         if (pathinfo($targetPath, PATHINFO_EXTENSION) == 'svg') {
-            Io::writeToFile($targetPath, $this->_svgContent);
+            FileHelper::writeToFile($targetPath, $this->_svgContent);
         } else {
             throw new ImageException(Craft::t('app',
                 'Manipulated SVG image rasterizing is unreliable. See \craft\services\Images::loadImage()'));

@@ -7,6 +7,8 @@
 
 namespace craft\helpers;
 
+use Craft;
+use Symfony\Component\Filesystem\LockHandler;
 use yii\base\ErrorException;
 use yii\base\InvalidParamException;
 
@@ -108,6 +110,49 @@ class FileHelper extends \yii\helpers\FileHelper
         }
 
         return true;
+    }
+
+    /**
+     * Writes contents to a file.
+     *
+     * @param string $file     the file path
+     * @param string $contents the new file contents
+     * @param array $options   options for file write. Valid options are:
+     *
+     * - append: boolean, whether the contents should be appended to the
+     *   existing contents.
+     * - lock: boolean, whether a file lock should be used. Defaults to the
+     *   "useWriteFileLock" config setting.
+     *
+     * @throws ErrorException in case of failure
+     */
+    public static function writeToFile($file, $contents, $options = [])
+    {
+        $file = static::normalizePath($file);
+
+        if (isset($options['lock'])) {
+            $lock = (bool) $options['lock'];
+        } else {
+            $lock = Craft::$app->getConfig()->getUseWriteFileLock();
+        }
+
+        if ($lock) {
+            $lockHandler = new LockHandler($file.'.lock');
+            $lockHandler->lock();
+        }
+
+        $flags = 0;
+        if (!empty($options['append'])) {
+            $flags |= FILE_APPEND;
+        }
+
+        if (file_put_contents($file, $contents, $flags) === false) {
+            throw new ErrorException("Unable to write new contents to \"{$file}\".");
+        }
+
+        if (isset($lockHandler)) {
+            $lockHandler->release();
+        }
     }
 
     /**

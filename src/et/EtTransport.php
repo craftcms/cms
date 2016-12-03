@@ -234,7 +234,7 @@ class EtTransport
                             $body = $response->getBody();
 
                             // Write it out to the file
-                            Io::writeToFile($this->_destinationFilename, $body, true);
+                            FileHelper::writeToFile($this->_destinationFilename, $body);
 
                             // Close the stream.
                             $body->close();
@@ -372,7 +372,9 @@ class EtTransport
             $formattedKey .= $segment.PHP_EOL;
         }
 
-        return Io::writeToFile(Craft::$app->getPath()->getLicenseKeyPath(), $formattedKey);
+        FileHelper::writeToFile(Craft::$app->getPath()->getLicenseKeyPath(), $formattedKey);
+
+        return true;
     }
 
     /**

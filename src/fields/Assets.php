@@ -393,7 +393,7 @@ class Assets extends BaseRelationField
                         move_uploaded_file($file['location'], $tempPath);
                     }
                     if ($file['type'] == 'data') {
-                        Io::writeToFile($tempPath, $file['data']);
+                        FileHelper::writeToFile($tempPath, $file['data']);
                     }
 
                     $folder = Craft::$app->getAssets()->getFolderById($targetFolderId);

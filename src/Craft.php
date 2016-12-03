@@ -6,6 +6,7 @@
  */
 
 use craft\db\Query;
+use craft\helpers\FileHelper;
 use craft\helpers\Io;
 use yii\helpers\VarDumper;
 use yii\web\Request;
@@ -248,7 +249,7 @@ EOD;
     {
         $fileContents = file_get_contents($templatePath);
         $fileContents = str_replace($search, $replace, $fileContents);
-        Io::writeToFile($destinationPath, $fileContents);
+        FileHelper::writeToFile($destinationPath, $fileContents);
         include($destinationPath);
     }
 }

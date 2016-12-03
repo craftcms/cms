@@ -165,7 +165,7 @@ class Path extends Component
         // Add a .gitignore file in there if there isn't one
         $gitignorePath = $path.DIRECTORY_SEPARATOR.'.gitignore';
         if (!is_file($gitignorePath)) {
-            Io::writeToFile($gitignorePath, "*\n!.gitignore\n", true);
+            FileHelper::writeToFile($gitignorePath, "*\n!.gitignore\n");
         }
 
         return $path;

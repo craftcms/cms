@@ -11,6 +11,7 @@ use Craft;
 use craft\base\Plugin;
 use craft\et\EtTransport;
 use craft\helpers\App;
+use craft\helpers\FileHelper;
 use craft\helpers\Io;
 use craft\helpers\Json;
 use craft\models\AppNewRelease;
@@ -242,7 +243,7 @@ class Et extends Component
         $body->rewind();
 
         // Write it out to the file
-        Io::writeToFile($downloadPath, $body, true);
+        FileHelper::writeToFile($downloadPath, $body);
 
         // Close the stream.
         $body->close();

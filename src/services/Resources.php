@@ -375,7 +375,7 @@ class Resources extends Component
             StringHelper::toUpperCase($ext).
             '</text>';
         $svgContents = str_replace('<!-- EXT -->', $textNode, $svgContents);
-        Io::writeToFile($iconPath, $svgContents);
+        FileHelper::writeToFile($iconPath, $svgContents);
 
         return $iconPath;
     }
