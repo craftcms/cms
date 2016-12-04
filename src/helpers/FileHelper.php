@@ -193,7 +193,7 @@ class FileHelper extends \yii\helpers\FileHelper
      * @param array $options   options for file write. Valid options are:
      *
      * - append: boolean, whether the contents should be appended to the
-     *   existing contents.
+     *   existing contents. Defaults to false.
      * - lock: boolean, whether a file lock should be used. Defaults to the
      *   "useWriteFileLock" config setting.
      *
