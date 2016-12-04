@@ -36,7 +36,8 @@ return array(
 	'database' => '',
 
 	/**
-	 * The prefix to use when naming tables. This can be no more than 5 characters.
+	 * The prefix to use when naming tables. This can be no more than 5 characters
+	 * and must be all lowercase.
 	 */
 	'tablePrefix' => 'craft',
 
