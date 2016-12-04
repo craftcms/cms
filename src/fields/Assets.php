@@ -600,7 +600,14 @@ class Assets extends BaseRelationField
                 throw new InvalidSubpathException($subpath);
             }
 
-            $subpath = Io::cleanPath($renderedSubpath, Craft::$app->getConfig()->get('convertFilenamesToAscii'));
+            // Sanitize the subpath
+            $segments = explode('/', $renderedSubpath);
+            foreach ($segments as &$segment) {
+                $segment = FileHelper::sanitizeFilename($segment, [
+                    'asciiOnly' => Craft::$app->getConfig()->get('convertFilenamesToAscii')
+                ]);
+            }
+            $subpath = implode('/', $segments);
 
             $folder = Craft::$app->getAssets()->findFolder([
                 'volumeId' => $volumeId,

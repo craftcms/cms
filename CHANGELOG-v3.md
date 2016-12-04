@@ -301,7 +301,8 @@ Craft CMS 3.0 Working Changelog
 - Removed helpers\Io::changeGroup().
 - Removed helpers\Io::changeOwner().
 - Removed helpers\Io::changePermissions().
-- Removed helpers\Io::cleanFilename().
+- Removed helpers\Io::cleanFilename()
+- Removed helpers\Io::cleanPath().
 - Removed helpers\Io::clearFile().
 - Removed helpers\Io::clearFolder().
 - Removed helpers\Io::copyFile().
