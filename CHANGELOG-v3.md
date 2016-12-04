@@ -68,6 +68,9 @@ Craft CMS 3.0 Working Changelog
 - Added helpers\Db::isTypeSupported().
 - Added helpers\Update::getBasePath().
 - Added helpers\Update::parseManifestLine().
+- Added helpers\Assets::getFileKindByExtension().
+- Added helpers\Assets::getFileKindLabel().
+- Added helpers\Assets::getFileKinds().
 - Added services\Config::getAllowedFileExtensions().
 - Added services\Config::getDbPort().
 - Added services\Config::getUseWriteFileLock().
@@ -310,6 +313,9 @@ Craft CMS 3.0 Working Changelog
 - Removed helpers\Io::getFileContents().
 - Removed helpers\Io::getFileMD5().
 - Removed helpers\Io::getFilename().
+- Removed helpers\Io::getFileKind().
+- Removed helpers\Io::getFileKindLabel().
+- Removed helpers\Io::getFileKinds().
 - Removed helpers\Io::getFiles().
 - Removed helpers\Io::getFileSize().
 - Removed helpers\Io::getFolder().

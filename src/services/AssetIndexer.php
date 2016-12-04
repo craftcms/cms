@@ -400,7 +400,7 @@ class AssetIndexer extends Component
                 $assetModel->volumeId = $volume->id;
                 $assetModel->folderId = $folderId;
                 $assetModel->filename = $filename;
-                $assetModel->kind = Io::getFileKind($extension);
+                $assetModel->kind = AssetsHelper::getFileKindByExtension($uriPath);
                 $assetModel->indexInProgress = true;
                 $assets->saveAsset($assetModel);
             }

@@ -19,6 +19,7 @@ use craft\elements\actions\ReplaceFile;
 use craft\elements\actions\View;
 use craft\elements\db\AssetQuery;
 use craft\fields\Assets;
+use craft\helpers\Assets as AssetsHelper;
 use craft\helpers\FileHelper;
 use craft\helpers\Html;
 use craft\helpers\Image;
@@ -813,7 +814,7 @@ class Asset extends Element
                 ]);
 
             case 'kind':
-                return Io::getFileKindLabel($this->kind);
+                return AssetsHelper::getFileKindLabel($this->kind);
 
             case 'size':
                 return $this->size ? Craft::$app->getFormatter()->asShortSize($this->size) : '';

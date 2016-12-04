@@ -156,7 +156,7 @@ class Assets extends BaseRelationField
 
         $fileKindOptions = [];
 
-        foreach (Io::getFileKinds() as $value => $kind) {
+        foreach (AssetsHelper::getFileKinds() as $value => $kind) {
             $fileKindOptions[] = ['value' => $value, 'label' => $kind['label']];
         }
 
@@ -677,7 +677,7 @@ class Assets extends BaseRelationField
         }
 
         $extensions = [];
-        $allKinds = Io::getFileKinds();
+        $allKinds = AssetsHelper::getFileKinds();
 
         foreach ($allowedKinds as $allowedKind) {
             $extensions = array_merge($extensions,

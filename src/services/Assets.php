@@ -201,7 +201,7 @@ class Assets extends Component
         }
 
         if (!empty($asset->newFilePath)) {
-            if (Io::getFileKind(pathinfo($asset->newFilePath, PATHINFO_EXTENSION)) == 'image') {
+            if (AssetsHelper::getFileKindByExtension($asset->newFilePath) == 'image') {
                 Image::cleanImageByPath($asset->newFilePath);
             }
 
@@ -241,7 +241,7 @@ class Assets extends Component
 
             $asset->dateModified = new DateTime();
             $asset->size = filesize($asset->newFilePath);
-            $asset->kind = Io::getFileKind($asset->getExtension());
+            $asset->kind = AssetsHelper::getFileKindByExtension($asset->filename);
 
             if ($asset->kind == 'image' && !empty($asset->newFilePath)) {
 
@@ -339,7 +339,7 @@ class Assets extends Component
      */
     public function replaceAssetFile(Asset $asset, $pathOnServer, $filename)
     {
-        if (Io::getFileKind(pathinfo($pathOnServer, PATHINFO_EXTENSION)) == 'image') {
+        if (AssetsHelper::getFileKindByExtension($pathOnServer) == 'image') {
             Image::cleanImageByPath($pathOnServer);
         }
 
@@ -394,7 +394,7 @@ class Assets extends Component
             $asset->newFilename = $filename;
             $volume->createFileByStream($asset->getUri(), $stream);
 
-            $asset->kind = Io::getFileKind(pathinfo($filename, PATHINFO_EXTENSION));
+            $asset->kind = AssetsHelper::getFileKindByExtension($filename);
         }
 
         if (is_resource($stream)) {
