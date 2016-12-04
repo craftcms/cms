@@ -241,7 +241,7 @@ return [
         $configService = Craft::$app->getConfig();
 
         $config = [
-            'class' => yii\mutex\FileMutex::class,
+            'class' => craft\mutex\FileMutex::class,
             'fileMode' => $configService->get('defaultFileMode'),
             'dirMode' => $configService->get('defaultDirMode'),
         ];
