@@ -31,7 +31,7 @@ body { overflow-x: hidden; }
 
 /* global sidebar */
 #global-sidebar { @include display-flex; @include flex-direction(column); position: fixed; top: 0; @include left(0); width: 220px; height: 100vh; @include light-on-dark-text; background: $headerBgColor; z-index: 100; overflow: auto; }
-
+body.focused #global-sidebar { position: absolute; height: 100%; }
 #global-sidebar nav { @include flex-grow(1); -ms-flex-preferred-size: auto; }
 
 #global-sidebar #devmode { width: 100%; height: 4px; background: url(../images/dev-mode.svg) repeat-x 15px 0; cursor: help; }
@@ -192,6 +192,7 @@ body.mobile #container {
 /* page header */
 #page-header { @include display-flex; @include justify-content(space-between); position: relative; z-index: 1; padding: 20px 24px; }
 #page-header.fixed { position: fixed; z-index: 12; right: 0; left: 220px; top: 0; background: $bgcolor; border-bottom: 1px solid rgba(0,0,0,0.05); }
+body.focused #page-header.fixed { position: absolute; }
 
 @media only screen and (max-width: 992px)
 {

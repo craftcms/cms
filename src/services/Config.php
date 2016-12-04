@@ -852,7 +852,7 @@ class Config extends Component
         }
 
         if (is_file($defaultsPath)) {
-            $configSettings = @require_once($defaultsPath);
+            $configSettings = @require($defaultsPath);
         }
 
         if (!isset($configSettings) || !is_array($configSettings)) {
@@ -873,7 +873,7 @@ class Config extends Component
 
                 if (file_exists($filePath)) {
                     // Originally blocks.php defined a $blocksConfig variable, and then later returned an array directly.
-                    if (is_array($customConfig = require_once($filePath))) {
+                    if (is_array($customConfig = require($filePath))) {
                         $this->_mergeConfigs($configSettings, $customConfig);
                     } else if (isset($blocksConfig)) {
                         $configSettings = array_merge($configSettings, $blocksConfig);
@@ -886,7 +886,7 @@ class Config extends Component
 
             if (is_file($filePath)) {
                 // Originally db.php defined a $dbConfig variable, and later returned an array directly.
-                if (is_array($customConfig = require_once($filePath))) {
+                if (is_array($customConfig = require($filePath))) {
                     $this->_mergeConfigs($configSettings, $customConfig);
                 } else if ($category == self::CATEGORY_DB && isset($dbConfig)) {
                     $configSettings = array_merge($configSettings, $dbConfig);
