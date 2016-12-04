@@ -43,6 +43,34 @@ class FileHelper extends \yii\helpers\FileHelper
     }
 
     /**
+     * @inheritdoc
+     */
+    public static function copyDirectory($src, $dst, $options = [])
+    {
+        if (!isset($options['fileMode'])) {
+            $options['fileMode'] = Craft::$app->getConfig()->get('defaultFileMode');
+        }
+
+        if (!isset($options['dirMode'])) {
+            $options['dirMode'] = Craft::$app->getConfig()->get('defaultDirMode');
+        }
+
+        parent::copyDirectory($src, $dst, $options);
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public static function createDirectory($path, $mode = null, $recursive = true)
+    {
+        if ($mode === null) {
+            $mode = Craft::$app->getConfig()->get('defaultDirMode');
+        }
+
+        return parent::createDirectory($path, $mode, $recursive);
+    }
+
+    /**
      * Sanitizes a filename.
      *
      * @param string $filename the filename to sanitize
