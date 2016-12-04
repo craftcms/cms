@@ -192,16 +192,28 @@ class FileHelper extends \yii\helpers\FileHelper
      * @param string $contents the new file contents
      * @param array $options   options for file write. Valid options are:
      *
+     * - createDirs: boolean, whether to create parent directories if they do
+     *   not exist. Defaults to true.
      * - append: boolean, whether the contents should be appended to the
      *   existing contents. Defaults to false.
      * - lock: boolean, whether a file lock should be used. Defaults to the
      *   "useWriteFileLock" config setting.
      *
+     * @throws InvalidParamException if the parent directory doesn't exist and options[createDirs] is false
      * @throws ErrorException in case of failure
      */
     public static function writeToFile($file, $contents, $options = [])
     {
         $file = static::normalizePath($file);
+        $dir = dirname($file);
+
+        if (!is_dir($dir)) {
+            if (!isset($options['createDirs']) || $options['createDirs']) {
+                static::createDirectory($dir);
+            } else {
+                throw new InvalidParamException("Cannot write to \"{$file}\" because the parent directory doesn't exist.");
+            }
+        }
 
         if (isset($options['lock'])) {
             $lock = (bool) $options['lock'];
