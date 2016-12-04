@@ -116,7 +116,9 @@ return [
         $config = [
             'class' => craft\web\AssetManager::class,
             'basePath' => $configService->get('resourceBasePath'),
-            'baseUrl' => $configService->get('resourceBaseUrl')
+            'baseUrl' => $configService->get('resourceBaseUrl'),
+            'fileMode' => $configService->get('defaultFileMode'),
+            'dirMode' => $configService->get('defaultDirMode'),
         ];
 
         return Craft::createObject($config);
