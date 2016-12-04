@@ -303,75 +303,6 @@ class Io
     }
 
     /**
-     * Cleans a filename.
-     *
-     * @param string  $filename  The filename to clea
-     * @param boolean $onlyAscii Whether to only allow ASCII characters in the filename
-     * @param string  $separator The separator to use for any whitespace (defaults to '-')
-     *
-     * @return string The cleansed filename
-     */
-    public static function cleanFilename($filename, $onlyAscii = false, $separator = '-')
-    {
-        $disallowedChars = [
-            'â€”',
-            'â€“',
-            '&#8216;',
-            '&#8217;',
-            '&#8220;',
-            '&#8221;',
-            '&#8211;',
-            '&#8212;',
-            '+',
-            '%',
-            '^',
-            '~',
-            '?',
-            '[',
-            ']',
-            '/',
-            '\\',
-            '=',
-            '<',
-            '>',
-            ':',
-            ';',
-            ',',
-            '\'',
-            '"',
-            '&',
-            '$',
-            '#',
-            '*',
-            '(',
-            ')',
-            '|',
-            '~',
-            '`',
-            '!',
-            '{',
-            '}'
-        ];
-
-        // Replace any control characters in the name with a space.
-        $filename = preg_replace("#\x{00a0}#siu", ' ', $filename);
-
-        // Strip any characters not allowed.
-        $filename = str_replace($disallowedChars, '', strip_tags($filename));
-
-        if (!is_null($separator)) {
-            $filename = preg_replace('/(\s|'.preg_quote($separator, '/').')+/u', $separator, $filename);
-        }
-
-        // Nuke any trailing or leading .-_
-        $filename = trim($filename, '.-_');
-
-        $filename = ($onlyAscii) ? StringHelper::toAscii($filename) : $filename;
-
-        return $filename;
-    }
-
-    /**
      * Cleans a path.
      *
      * @param string $path      The path to clean
@@ -385,7 +316,10 @@ class Io
         $segments = explode('/', $path);
 
         foreach ($segments as &$segment) {
-            $segment = static::cleanFilename($segment, $onlyAscii, $separator);
+            $segment = FileHelper::sanitizeFilename($segment, [
+                'asciiOnly' => $onlyAscii,
+                'separator' => $separator
+            ]);
         }
 
         return implode('/', $segments);

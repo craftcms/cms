@@ -440,7 +440,7 @@ class DashboardController extends Controller
 
             // Close and attach the zip
             $zip->close();
-            $requestParams['File1_sFilename'] = 'SupportAttachment-'.Io::cleanFilename(Craft::$app->getSites()->getPrimarySite()->name).'.zip';
+            $requestParams['File1_sFilename'] = 'SupportAttachment-'.FileHelper::sanitizeFilename(Craft::$app->getSites()->getPrimarySite()->name).'.zip';
             $requestParams['File1_sFileMimeType'] = 'application/zip';
             $requestParams['File1_bFileBody'] = base64_encode(file_get_contents($zipPath));
 

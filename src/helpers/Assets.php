@@ -136,7 +136,10 @@ class Assets
             $baseName = $event->filename;
         }
 
-        $baseName = Io::cleanFilename($baseName, $config->get('convertFilenamesToAscii'), $separator);
+        $baseName = FileHelper::sanitizeFilename($baseName, [
+            'asciiOnly' => $config->get('convertFilenamesToAscii'),
+            'separator' => $separator
+        ]);
 
         if ($isFilename && empty($baseName)) {
             $baseName = '-';

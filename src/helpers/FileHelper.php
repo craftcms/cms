@@ -43,6 +43,79 @@ class FileHelper extends \yii\helpers\FileHelper
     }
 
     /**
+     * Sanitizes a filename.
+     *
+     * @param string $filename the filename to sanitize
+     * @param array  $options  options for sanitization. Valid options are:
+     *
+     * - asciiOnly: boolean, whether only ASCII characters should be allowed. Defaults to false.
+     * - separator: string|null, the separator character to use in place of whitespace. defaults to '-'. If set to null, whitespace will be preserved.
+     *
+     * @return string The cleansed filename
+     */
+    public static function sanitizeFilename($filename, $options = [])
+    {
+        $asciiOnly = isset($options['asciiOnly']) ? $options['asciiOnly'] : false;
+        $separator = array_key_exists('separator', $options['separator']) ? $options['separator'] : '-';
+        $disallowedChars = [
+            'â€”',
+            'â€“',
+            '&#8216;',
+            '&#8217;',
+            '&#8220;',
+            '&#8221;',
+            '&#8211;',
+            '&#8212;',
+            '+',
+            '%',
+            '^',
+            '~',
+            '?',
+            '[',
+            ']',
+            '/',
+            '\\',
+            '=',
+            '<',
+            '>',
+            ':',
+            ';',
+            ',',
+            '\'',
+            '"',
+            '&',
+            '$',
+            '#',
+            '*',
+            '(',
+            ')',
+            '|',
+            '~',
+            '`',
+            '!',
+            '{',
+            '}'
+        ];
+
+        // Replace any control characters in the name with a space.
+        $filename = preg_replace("#\\x{00a0}#siu", ' ', $filename);
+
+        // Strip any characters not allowed.
+        $filename = str_replace($disallowedChars, '', strip_tags($filename));
+
+        if (!is_null($separator)) {
+            $filename = preg_replace('/(\s|'.preg_quote($separator, '/').')+/u', $separator, $filename);
+        }
+
+        // Nuke any trailing or leading .-_
+        $filename = trim($filename, '.-_');
+
+        $filename = ($asciiOnly) ? StringHelper::toAscii($filename) : $filename;
+
+        return $filename;
+    }
+
+    /**
      * Returns whether a given directory is empty (has no files) recursively.
      *
      * @param string $dir the directory to be checked
