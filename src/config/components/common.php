@@ -145,8 +145,8 @@ return [
                     'class' => \yii\caching\FileCache::class,
                     'cachePath' => $configService->get('cachePath', Config::CATEGORY_FILECACHE),
                     'gcProbability' => $configService->get('gcProbability', Config::CATEGORY_FILECACHE),
-                    'fileMode' => $configService->get('defaultFilePermissions'),
-                    'dirMode' => $configService->get('defaultFolderPermissions'),
+                    'fileMode' => $configService->get('defaultFileMode'),
+                    'dirMode' => $configService->get('defaultDirMode'),
                 ];
                 break;
             case 'memcache':
@@ -260,8 +260,8 @@ return [
             }
         }
 
-        $fileTarget->fileMode = $configService->get('defaultFilePermissions');
-        $fileTarget->dirMode = $configService->get('defaultFolderPermissions');
+        $fileTarget->fileMode = $configService->get('defaultFileMode');
+        $fileTarget->dirMode = $configService->get('defaultDirMode');
 
         $config = [
             'class' => yii\log\Dispatcher::class,

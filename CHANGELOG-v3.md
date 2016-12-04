@@ -109,7 +109,9 @@ Craft CMS 3.0 Working Changelog
 - The bootstrap script now assumes that the vendor/ folder is 3 levels up from the bootstrap/ directory by default (e.g. vendor/craftcms/craft/bootstrap/). If that is not the case (most likely because Craft had been symlinked into place), the `CRAFT_VENDOR_PATH` PHP constant can be used to correct that.
 - The default ‘port’ DB config value is now either 3306 (if MySQL) or 5432 (if PostgreSQL).
 - The default ‘tablePrefix’ DB config value is now empty.
-- File-based data caching now respects the ‘defaultFolderPermissions’ config setting.
+- Renamed the ‘defaultFilePermissions’ config setting to ‘defaultFileMode’, and it is now `null` by default.
+- Renamed the ‘defaultFolderPermissions’ config setting to ‘defaultDirMode’.
+- File-based data caching now respects the ‘defaultDirMode’ config setting.
 - When a category is deleted, its nested categories are no longer deleted with it.
 - Renamed the “Get Help” widget to “Craft Support”.
 - When editing a field whose type class cannot be found, Craft will now select Plain Text as a fallback and display a validation error on the Field Type setting.
