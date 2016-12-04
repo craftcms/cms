@@ -329,6 +329,7 @@ Craft CMS 3.0 Working Changelog
 - Removed helpers\Io::getMimeType().
 - Removed helpers\Io::getMimeTypeByExtension().
 - Removed helpers\Io::getOwner().
+- Removed helpers\Io::getParentFolderPath().
 - Removed helpers\Io::getPermissions().
 - Removed helpers\Io::isExtensionAllowed().
 - Removed helpers\Io::isFileEmpty().

@@ -548,8 +548,8 @@ class Assets extends Component
         $volume->renameDir(rtrim($folder->path, '/'), $newName);
 
         $descendantFolders = $this->getAllDescendantFolders($folder);
-        $parentPath = Io::getParentFolderPath($folder->path);
-        $newFullPath = ($parentPath ? $parentPath.'/' : '').$newName;
+        $parentPath = dirname($folder->path);
+        $newFullPath = ($parentPath && $parentPath != '.' ? $parentPath.'/' : '').$newName;
 
         foreach ($descendantFolders as $descendantFolder) {
             $descendantFolder->path = preg_replace('#^'.$folder->path.'#', $newFullPath.'/', $descendantFolder->path);

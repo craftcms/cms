@@ -303,26 +303,6 @@ class Io
     }
 
     /**
-     * Returns the path to the parent folder of a given path.
-     *
-     * @param string $path The starting point
-     *
-     * @return string|false The parent folder’s path, or false if $path is the root path
-     */
-    public static function getParentFolderPath($path)
-    {
-        $path = FileHelper::normalizePath($path);
-        $parentPath = dirname($path);
-
-        // Was this already the root path?
-        if ($parentPath == $path || $parentPath == '.') {
-            return false;
-        }
-
-        return $parentPath;
-    }
-
-    /**
      * Get a temporary file path.
      *
      * @param string $extension The extension to use (defaults to "tmp")
