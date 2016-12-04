@@ -893,28 +893,29 @@ class AssetTransforms extends Component
                     Craft::warning("Unable to delete the file \"{$imageSourcePath}\": ".$e->getMessage());
                 }
 
-                $localCopy = Io::getTempFilePath($asset->getExtension());
+                $tempFilename = uniqid(pathinfo($asset->filename, PATHINFO_FILENAME), true).'.'.$asset->getExtension();
+                $tempPath = Craft::$app->getPath()->getTempPath().DIRECTORY_SEPARATOR.$tempFilename;
 
-                $volume->saveFileLocally($asset->getUri(), $localCopy);
+                $volume->saveFileLocally($asset->getUri(), $tempPath);
 
-                if (!is_file($localCopy) || filesize($localCopy) == 0) {
+                if (!is_file($tempPath) || filesize($tempPath) == 0) {
                     try {
-                        FileHelper::removeFile($localCopy);
+                        FileHelper::removeFile($tempPath);
                     } catch (ErrorException $e) {
-                        Craft::warning("Unable to delete the file \"{$localCopy}\": ".$e->getMessage());
+                        Craft::warning("Unable to delete the file \"{$tempPath}\": ".$e->getMessage());
                     }
                     throw new VolumeException(Craft::t('Tried to download the source file for image “{file}”, but it was 0 bytes long.',
                         ['file' => $asset->filename]));
                 }
 
-                $this->storeLocalSource($localCopy, $imageSourcePath);
+                $this->storeLocalSource($tempPath, $imageSourcePath);
 
                 // Delete the leftover data.
                 $this->queueSourceForDeletingIfNecessary($imageSourcePath);
                 try {
-                    FileHelper::removeFile($localCopy);
+                    FileHelper::removeFile($tempPath);
                 } catch (ErrorException $e) {
-                    Craft::warning("Unable to delete the file \"{$localCopy}\": ".$e->getMessage());
+                    Craft::warning("Unable to delete the file \"{$tempPath}\": ".$e->getMessage());
                 }
             }
         }
@@ -1015,10 +1016,11 @@ class AssetTransforms extends Component
 
             $volume = $asset->getVolume();
 
-            $path = Io::getTempFilePath($asset->getExtension());
-            $localCopy = $volume->saveFileLocally($asset->getUri(), $path);
+            $tempFilename = uniqid(pathinfo($asset->filename, PATHINFO_FILENAME), true).'.'.$asset->getExtension();
+            $tempPath = Craft::$app->getPath()->getTempPath().DIRECTORY_SEPARATOR.$tempFilename;
+            $volume->saveFileLocally($asset->getUri(), $tempPath);
 
-            $image = $images->loadImage($localCopy);
+            $image = $images->loadImage($tempPath);
 
             if ($image->getIsTransparent()) {
                 $format = 'png';
@@ -1028,11 +1030,11 @@ class AssetTransforms extends Component
 
             if (!$volume::isLocal()) {
                 // Store for potential later use and queue for deletion if needed.
-                $asset->setTransformSource($localCopy);
-                $this->queueSourceForDeletingIfNecessary($localCopy);
+                $asset->setTransformSource($tempPath);
+                $this->queueSourceForDeletingIfNecessary($tempPath);
             } else {
                 // For local, though, we just delete the temp file.
-                FileHelper::removeFile($localCopy);
+                FileHelper::removeFile($tempPath);
             }
 
             return $format;
@@ -1372,12 +1374,13 @@ class AssetTransforms extends Component
             }
         }
 
-        $createdTransform = Io::getTempFilePath($index->detectedFormat);
-        $image->saveAs($createdTransform);
+        $tempFilename = uniqid(pathinfo($index->filename, PATHINFO_FILENAME), true).'.'.pathinfo($index->filename, PATHINFO_FILENAME);
+        $tempPath = Craft::$app->getPath()->getTempPath().DIRECTORY_SEPARATOR.$tempFilename;
+        $image->saveAs($tempPath);
 
-        clearstatcache(true, $createdTransform);
+        clearstatcache(true, $tempPath);
 
-        $stream = fopen($createdTransform, "r");
+        $stream = fopen($tempPath, "r");
 
         try {
             $volume->createFileByStream($transformPath, $stream);
@@ -1385,7 +1388,7 @@ class AssetTransforms extends Component
             // We're fine with that.
         }
 
-        FileHelper::removeFile($createdTransform);
+        FileHelper::removeFile($tempPath);
 
         $volume = $asset->getVolume();
 

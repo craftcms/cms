@@ -302,27 +302,6 @@ class Io
         return false;
     }
 
-    /**
-     * Get a temporary file path.
-     *
-     * @param string $extension The extension to use (defaults to "tmp")
-     *
-     * @return string The temporary file path
-     * @throws Exception
-     */
-    public static function getTempFilePath($extension = "tmp")
-    {
-        $extension = strpos($extension, '.') !== false ? pathinfo($extension, PATHINFO_EXTENSION) : $extension;
-        $fileName = uniqid('craft', true).'.'.$extension;
-        $path = Craft::$app->getPath()->getTempPath().'/'.$fileName;
-
-        if (!static::createFile($path)) {
-            throw new Exception('Could not create temp file: '.$path);
-        }
-
-        return static::getRealPath($path);
-    }
-
     // Private Methods
     // =========================================================================
 

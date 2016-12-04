@@ -1191,13 +1191,14 @@ class Assets extends Component
             }
         } // Move between volumes
         else {
-            $localPath = Io::getTempFilePath($asset->getExtension());
-            $sourceVolume->saveFileLocally($asset->getUri(), $localPath);
+            $tempFilename = uniqid(pathinfo($asset->filename, PATHINFO_FILENAME), true).'.'.$asset->getExtension();
+            $tempPath = Craft::$app->getPath()->getTempPath().DIRECTORY_SEPARATOR.$tempFilename;
+            $sourceVolume->saveFileLocally($asset->getUri(), $tempPath);
             $targetVolume = $targetFolder->getVolume();
-            $stream = fopen($localPath, 'r');
+            $stream = fopen($tempPath, 'r');
 
             if (!$stream) {
-                FileHelper::removeFile($localPath);
+                FileHelper::removeFile($tempPath);
                 throw new FileException(Craft::t('app',
                     'Could not open file for streaming at {path}',
                     ['path' => $asset->newFilePath]));
@@ -1210,7 +1211,7 @@ class Assets extends Component
                 fclose($stream);
             }
 
-            FileHelper::removeFile($localPath);
+            FileHelper::removeFile($tempPath);
 
             // Nuke the transforms
             $assetTransforms->deleteAllTransformData($asset);

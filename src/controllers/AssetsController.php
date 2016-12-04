@@ -146,30 +146,21 @@ class AssetsController extends Controller
                 }
 
                 // Check the permissions to upload in the resolved folder.
-                $this->_requirePermissionByFolder('saveAssetInVolume',
-                    $folder);
+                $this->_requirePermissionByFolder('saveAssetInVolume', $folder);
 
-                $pathOnServer = Io::getTempFilePath($uploadedFile->name);
-                $result = $uploadedFile->saveAs($pathOnServer);
-
-                if (!$result) {
-                    try {
-                        FileHelper::removeFile($pathOnServer);
-                    } catch (ErrorException $e) {
-                        Craft::warning("Unable to delete the file \"{$pathOnServer}\": ".$e->getMessage());
-                    }
+                // Move the uploaded file to the temp folder
+                if (($tempPath = $uploadedFile->saveAsTempFile()) === false) {
                     throw new UploadFailedException(UPLOAD_ERR_CANT_WRITE);
                 }
 
                 $filename = Assets::prepareAssetName($uploadedFile->name);
-
                 $asset = new Asset();
 
                 // Make sure there are no double spaces, if the filename had a space followed by a
                 // capital letter because of Yii's "word" logic.
                 $asset->title = str_replace('  ', ' ', StringHelper::toTitleCase(pathinfo($filename, PATHINFO_FILENAME)));
 
-                $asset->newFilePath = $pathOnServer;
+                $asset->newFilePath = $tempPath;
                 $asset->filename = $filename;
                 $asset->folderId = $folder->id;
                 $asset->volumeId = $folder->volumeId;
@@ -177,9 +168,9 @@ class AssetsController extends Controller
                 try {
                     $assets->saveAsset($asset);
                     try {
-                        FileHelper::removeFile($pathOnServer);
+                        FileHelper::removeFile($tempPath);
                     } catch (ErrorException $e) {
-                        Craft::warning("Unable to delete the file \"{$pathOnServer}\": ".$e->getMessage());
+                        Craft::warning("Unable to delete the file \"{$tempPath}\": ".$e->getMessage());
                     }
                 } catch (AssetConflictException $exception) {
                     // Okay, get a replacement name and re-save Asset.
@@ -189,9 +180,9 @@ class AssetsController extends Controller
 
                     $assets->saveAsset($asset);
                     try {
-                        FileHelper::removeFile($pathOnServer);
+                        FileHelper::removeFile($tempPath);
                     } catch (ErrorException $e) {
-                        Craft::warning("Unable to delete the file \"{$pathOnServer}\": ".$e->getMessage());
+                        Craft::warning("Unable to delete the file \"{$tempPath}\": ".$e->getMessage());
                     }
 
                     return $this->asJson([
@@ -202,9 +193,9 @@ class AssetsController extends Controller
                 } // No matter what happened, delete the file on server.
                 catch (\Exception $exception) {
                     try {
-                        FileHelper::removeFile($pathOnServer);
+                        FileHelper::removeFile($tempPath);
                     } catch (ErrorException $e) {
-                        Craft::warning("Unable to delete the file \"{$pathOnServer}\": ".$e->getMessage());
+                        Craft::warning("Unable to delete the file \"{$tempPath}\": ".$e->getMessage());
                     }
                     throw $exception;
                 }
@@ -245,20 +236,13 @@ class AssetsController extends Controller
                 throw new UploadFailedException($uploadedFile->error);
             }
 
-            $fileName = Assets::prepareAssetName($uploadedFile->name);
-            $pathOnServer = Io::getTempFilePath($uploadedFile->name);
-            $result = $uploadedFile->saveAs($pathOnServer);
-
-            if (!$result) {
-                try {
-                    FileHelper::removeFile($pathOnServer);
-                } catch (ErrorException $e) {
-                    Craft::warning("Unable to delete the file \"{$pathOnServer}\": ".$e->getMessage());
-                }
+            // Move the uploaded file to the temp folder
+            if (($tempPath = $uploadedFile->saveAsTempFile()) === false) {
                 throw new UploadFailedException(UPLOAD_ERR_CANT_WRITE);
             }
 
-            $assets->replaceAssetFile($asset, $pathOnServer, $fileName);
+            $fileName = Assets::prepareAssetName($uploadedFile->name);
+            $assets->replaceAssetFile($asset, $tempPath, $fileName);
         } catch (\Exception $exception) {
             return $this->asErrorJson($exception->getMessage());
         }

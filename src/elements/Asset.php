@@ -781,10 +781,11 @@ class Asset extends Element
      */
     public function getCopyOfFile()
     {
-        $copyPath = Io::getTempFilePath($this->getExtension());
-        $this->getVolume()->saveFileLocally($this->getUri(), $copyPath);
+        $tempFilename = uniqid(pathinfo($this->filename, PATHINFO_FILENAME), true).'.'.$this->getExtension();
+        $tempPath = Craft::$app->getPath()->getTempPath().DIRECTORY_SEPARATOR.$tempFilename;
+        $this->getVolume()->saveFileLocally($this->getUri(), $tempPath);
 
-        return $copyPath;
+        return $tempPath;
     }
 
     /**
