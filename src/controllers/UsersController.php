@@ -1114,7 +1114,7 @@ class UsersController extends Controller
         try {
             // Make sure a file was uploaded
             if ($file) {
-                if ($file->hasError) {
+                if ($file->getHasError()) {
                     throw new UploadFailedException($file->error);
                 }
 

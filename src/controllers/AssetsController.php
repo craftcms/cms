@@ -116,7 +116,7 @@ class AssetsController extends Controller
             }
 
             if ($newFile) {
-                if ($uploadedFile->hasError) {
+                if ($uploadedFile->getHasError()) {
                     throw new UploadFailedException($uploadedFile->error);
                 }
 
@@ -241,7 +241,7 @@ class AssetsController extends Controller
             $asset);
 
         try {
-            if ($uploadedFile->hasError) {
+            if ($uploadedFile->getHasError()) {
                 throw new UploadFailedException($uploadedFile->error);
             }
 
