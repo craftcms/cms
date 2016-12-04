@@ -16,7 +16,6 @@ use craft\fields\Assets as AssetsField;
 use craft\helpers\Assets;
 use craft\helpers\Db;
 use craft\helpers\FileHelper;
-use craft\helpers\Io;
 use craft\elements\Asset;
 use craft\helpers\StringHelper;
 use craft\models\VolumeFolder;

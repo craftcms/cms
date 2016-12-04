@@ -11,7 +11,6 @@ use Craft;
 use craft\db\TableSchema;
 use craft\errors\DbBackupException;
 use craft\helpers\FileHelper;
-use craft\helpers\Io;
 use craft\services\Config;
 use yii\db\Exception;
 

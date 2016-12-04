@@ -7,8 +7,6 @@
 
 namespace craft\web;
 
-use craft\helpers\Io;
-
 /**
  * @inheritdoc
  *

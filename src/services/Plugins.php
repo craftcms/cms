@@ -20,7 +20,6 @@ use craft\helpers\App;
 use craft\helpers\ArrayHelper;
 use craft\helpers\DateTimeHelper;
 use craft\helpers\Db;
-use craft\helpers\Io;
 use craft\helpers\Json;
 use yii\base\Component;
 use yii\base\Exception;

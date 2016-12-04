@@ -12,7 +12,6 @@ use craft\base\Plugin;
 use craft\base\Widget;
 use craft\base\WidgetInterface;
 use craft\dates\DateTime;
-use craft\helpers\Io;
 use craft\helpers\Json;
 use craft\helpers\StringHelper;
 use craft\i18n\Locale;

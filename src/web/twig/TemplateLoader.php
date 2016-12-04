@@ -8,7 +8,6 @@
 namespace craft\web\twig;
 
 use Craft;
-use craft\helpers\Io;
 use craft\web\View;
 
 /**

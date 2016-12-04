@@ -18,7 +18,6 @@ use craft\helpers\Assets as AssetsHelper;
 use craft\helpers\Db;
 use craft\helpers\FileHelper;
 use craft\helpers\Image;
-use craft\helpers\Io;
 use craft\helpers\StringHelper;
 use craft\image\Raster;
 use craft\models\AssetTransformIndex;

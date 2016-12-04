@@ -4,7 +4,6 @@ namespace craft\migrations;
 
 use Craft;
 use craft\db\Migration;
-use craft\helpers\Io;
 
 /**
  * m160817_161600_move_assets_cache migration.

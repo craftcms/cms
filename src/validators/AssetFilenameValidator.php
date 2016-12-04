@@ -11,7 +11,6 @@ use Craft;
 use craft\elements\Asset;
 use craft\helpers\Assets as AssetsHelper;
 use craft\helpers\Db;
-use craft\helpers\Io;
 use yii\validators\Validator;
 
 /**

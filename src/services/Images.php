@@ -11,13 +11,9 @@ use Craft;
 use craft\base\Image;
 use craft\helpers\App;
 use craft\helpers\Image as ImageHelper;
-use craft\helpers\Io;
 use craft\helpers\StringHelper;
 use craft\image\Raster;
 use craft\image\Svg;
-use lsolesen\pel\PelDataWindow;
-use lsolesen\pel\PelJpeg;
-use lsolesen\pel\PelTag;
 use yii\base\Component;
 
 /**

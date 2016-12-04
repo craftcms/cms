@@ -12,7 +12,6 @@ use craft\base\Tool;
 use craft\events\Event;
 use craft\events\RegisterCacheOptionsEvent;
 use craft\helpers\FileHelper;
-use craft\helpers\Io;
 
 /**
  * ClearCaches represents a Clear Caches tool.

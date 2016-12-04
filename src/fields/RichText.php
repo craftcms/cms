@@ -18,12 +18,10 @@ use craft\helpers\Db;
 use craft\helpers\FileHelper;
 use craft\helpers\Html;
 use craft\helpers\HtmlPurifier;
-use craft\helpers\Io;
 use craft\helpers\Json;
 use craft\helpers\StringHelper;
 use craft\models\Section;
 use craft\validators\HandleValidator;
-use yii\base\Exception;
 use yii\db\Schema;
 use yii\validators\StringValidator;
 

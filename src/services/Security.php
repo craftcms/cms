@@ -9,7 +9,6 @@ namespace craft\services;
 
 use Craft;
 use craft\helpers\FileHelper;
-use craft\helpers\Io;
 use craft\helpers\StringHelper;
 use yii\base\Exception;
 use yii\base\InvalidParamException;

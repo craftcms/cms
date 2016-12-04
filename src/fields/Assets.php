@@ -20,7 +20,6 @@ use craft\errors\InvalidSubpathException;
 use craft\errors\InvalidVolumeException;
 use craft\helpers\Assets as AssetsHelper;
 use craft\helpers\Db;
-use craft\helpers\Io;
 use craft\helpers\StringHelper;
 use craft\models\VolumeFolder;
 use craft\web\UploadedFile;

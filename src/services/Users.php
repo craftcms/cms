@@ -24,7 +24,6 @@ use craft\events\UserUnsuspendEvent;
 use craft\helpers\Assets as AssetsHelper;
 use craft\helpers\DateTimeHelper;
 use craft\helpers\Db;
-use craft\helpers\Io;
 use craft\helpers\Image;
 use craft\helpers\Json;
 use craft\helpers\StringHelper;

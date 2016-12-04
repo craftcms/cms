@@ -129,7 +129,6 @@ Craft CMS 3.0 Working Changelog
 - base\Plugin no longer automatically registers field types in the plugin’s fields/ subfolder.
 - base\Plugin no longer automatically registers widget types in the plugin’s widgets/ subfolder.
 - base\Plugin no longer automatically registers volume types in the plugin’s volumes/ subfolder.
-- helpers\Io::copyFolder() now creates the destination folder if it didn’t already exist.
 - Mailer Transport Adapters’ getTransportConfig() methods are now called at runtime when configuring the Mailer app component, rather than only when email settings are saved.
 - elements\User now supports a ‘password’ validation scenario, which only validates the $newPassword property.
 - It is no longer possible to change a user’s locked/suspended/pending/archived status when saving the User element normally.
@@ -229,17 +228,6 @@ Craft CMS 3.0 Working Changelog
 - base\Element::getFieldsForElementQuery() has been moved to elements\db\ElementQuery::customFields(), and no longer has a $query argument.
 - base\Element::getTableAttributeHtml() is no longer static, and no longer has an $element argument.
 - base\Element::onAfterMoveElementInStructure() is no longer static, no longer has an $element argument, and has been renamed to afterMoveInStructure().
-- helpers\Io::createFile() now returns `true` on success rather than an io\File object.
-- helpers\Io::createFolder() now returns `true` on success rather than an io\Folder object.
-- helpers\Io::folderExists() now returns the folder path without a trailing slash, if the folder exists.
-- helpers\Io::getFolderContents() now returns nested folder paths without trailing slashes.
-- helpers\Io::getFolderName() now returns the folder path without a trailing slash when the `$fullPath` argument is `true`.
-- helpers\Io::getFolders() now returns the child folder paths without trailing slashes.
-- helpers\Io::getParentFolderPath() now returns the parent folder path without a trailing slash, or `false` if `$path` is already a root.
-- helpers\Io::getRealPath() now returns the path without a trailing slash, if the given `$path` is for a folder.
-- helpers\Io::normalizePathSeparators() now return the normalized path without a trailing slash.
-- io\File::getFolderName() and io\Folder::getFolderName() now return the folder path without a trailing slash when the `$fullPath` argument is `true`.
-- io\Folder::getContents() now returns nested folder paths without trailing slashes.
 - services\Updates::getUnwritableFolders() now returns folder paths without trailing slashes.
 - Updated Yii to 2.0.10.
 - Updated Yii 2 Debug Extension to 2.0.7.
@@ -268,6 +256,7 @@ Craft CMS 3.0 Working Changelog
 - Removed events\DeleteUserEvent.
 - Removed events\EntryDeleteEvent.
 - Removed events\UserEvent.
+- Removed helpers\Io.
 - Removed io\BaseIO.
 - Removed io\File.
 - Removed io\Folder.
@@ -299,48 +288,6 @@ Craft CMS 3.0 Working Changelog
 - Removed db\mysql\QueryBuilder::addColumnAfter().
 - Removed db\mysql\QueryBuilder::addColumnBefore().
 - Removed db\mysql\QueryBuilder::addColumnFirst().
-- Removed helpers\Io::changeGroup().
-- Removed helpers\Io::changeOwner().
-- Removed helpers\Io::changePermissions().
-- Removed helpers\Io::cleanFilename()
-- Removed helpers\Io::cleanPath().
-- Removed helpers\Io::clearFile().
-- Removed helpers\Io::clearFolder().
-- Removed helpers\Io::copyFile().
-- Removed helpers\Io::copyFolder(). Use helpers\FileHelper::copyDirectory() instead.
-- Removed helpers\Io::deleteFile().
-- Removed helpers\Io::deleteFolder(). Use helpers\FileHelper::removeDirectory() instead.
-- Removed helpers\Io::ensureFolderExists().
-- Removed helpers\Io::getAllowedFileExtensions().
-- Removed helpers\Io::getFolderSize().
-- Removed helpers\Io::getFile().
-- Removed helpers\Io::getFileContents().
-- Removed helpers\Io::getFileMD5().
-- Removed helpers\Io::getFilename().
-- Removed helpers\Io::getFileKind().
-- Removed helpers\Io::getFileKindLabel().
-- Removed helpers\Io::getFileKinds().
-- Removed helpers\Io::getFiles().
-- Removed helpers\Io::getFileSize().
-- Removed helpers\Io::getFolder().
-- Removed helpers\Io::getFolders().
-- Removed helpers\Io::getGroup().
-- Removed helpers\Io::getLastModifiedFiles().
-- Removed helpers\Io::getLastTimeModified().
-- Removed helpers\Io::getMimeType().
-- Removed helpers\Io::getMimeTypeByExtension().
-- Removed helpers\Io::getOwner().
-- Removed helpers\Io::getParentFolderPath().
-- Removed helpers\Io::getPermissions().
-- Removed helpers\Io::getTempFilePath().
-- Removed helpers\Io::isExtensionAllowed().
-- Removed helpers\Io::isFileEmpty().
-- Removed helpers\Io::isFolderEmpty().
-- Removed helpers\Io::move().
-- Removed helpers\Io::normalizePathSeparators(). Use helpers\FileHelper::normalizePath() instead.
-- Removed helpers\Io::rename().
-- Removed helpers\Io::touch().
-- Removed helpers\Io::writeToFile().
 - Removed helpers\Update::cleanManifestFolderLine().
 - Removed helpers\Update::isManifestLineAFolder().
 - Removed services\Assets::deleteAssetsByIds().
@@ -422,7 +369,7 @@ Craft CMS 3.0 Working Changelog
 - Fixed authorization error that occurred when editing an entry in a section that’s not enabled for the current site.
 - Fixed a PHP error when using the {% cache %} tag.
 - Fixed an error that occurred when clicking on an email message to edit it.
-- Fixed an error that occurred when helpers\Io\FileCache::setValue() was called and the destination folder already existed.
+- Fixed an error that occurred when cache\FileCache::setValue() was called and the destination folder already existed.
 - Fixed support for the testToEmailAddress config setting.
 - Fixed a bug where the ‘tasks/run-pending-tasks’ controller action was requiring an authenticated session.
 - Fixed a PHP error that occurred when saving a Recent Entries widget.
@@ -433,7 +380,6 @@ Craft CMS 3.0 Working Changelog
 - Fixed a bug where custom nested element sources registered by plugins were not getting Admin-defined custom table attributes.
 - Fixed a bug where searching by an `"exact phrase"` wasn’t working.
 - Fixed a bug where the Backup Database tool wasn’t downloading the DB backup if the “Download backup?” checkbox was checked.
-- Fixed a bug where helpers\Io::clearFolder() was returning `false` for folders that existed but had no contents.
 
 ## [v3.0.0-alpha.2948] - 2016-09-29
 

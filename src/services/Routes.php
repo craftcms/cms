@@ -11,7 +11,6 @@ use Craft;
 use craft\db\Query;
 use craft\errors\RouteNotFoundException;
 use craft\events\RouteEvent;
-use craft\helpers\Io;
 use craft\helpers\Json;
 use craft\records\Route as RouteRecord;
 use yii\base\Component;

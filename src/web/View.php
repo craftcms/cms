@@ -9,16 +9,12 @@ namespace craft\web;
 
 use Craft;
 use craft\base\Element;
-use craft\events\Event;
 use craft\helpers\ArrayHelper;
 use craft\helpers\ElementHelper;
 use craft\helpers\FileHelper;
 use craft\helpers\Html as HtmlHelper;
-use craft\helpers\Io;
-use craft\helpers\Json;
 use craft\helpers\Path;
 use craft\helpers\StringHelper;
-use craft\services\Plugins;
 use craft\web\assets\AppAsset;
 use craft\web\twig\Environment;
 use craft\web\twig\Extension;

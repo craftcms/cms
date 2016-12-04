@@ -12,7 +12,6 @@ use craft\db\Connection;
 use craft\helpers\App;
 use craft\helpers\ArrayHelper;
 use craft\helpers\DateTimeHelper;
-use craft\helpers\Io;
 use craft\helpers\StringHelper;
 use craft\helpers\Url;
 use craft\elements\User;

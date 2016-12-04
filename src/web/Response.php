@@ -8,7 +8,6 @@
 namespace craft\web;
 
 use Craft;
-use craft\helpers\Io;
 use Exception;
 use yii\web\HttpException;
 

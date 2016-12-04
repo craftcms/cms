@@ -9,7 +9,6 @@
 
 use craft\helpers\ArrayHelper;
 use craft\helpers\FileHelper;
-use craft\helpers\Io;
 
 // Setup
 // -----------------------------------------------------------------------------

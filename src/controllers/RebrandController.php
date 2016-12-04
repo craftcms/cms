@@ -11,7 +11,6 @@ use Craft;
 use craft\helpers\Assets;
 use craft\helpers\FileHelper;
 use craft\helpers\Image;
-use craft\helpers\Io;
 use craft\web\Controller;
 use craft\web\UploadedFile;
 use yii\web\BadRequestHttpException;

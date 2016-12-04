@@ -10,7 +10,6 @@ namespace craft\db;
 use Craft;
 use craft\helpers\Db;
 use craft\helpers\FileHelper;
-use craft\helpers\Io;
 use yii\base\Component;
 use yii\base\Exception;
 use yii\base\InvalidConfigException;

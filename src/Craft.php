@@ -7,7 +7,6 @@
 
 use craft\db\Query;
 use craft\helpers\FileHelper;
-use craft\helpers\Io;
 use yii\helpers\VarDumper;
 use yii\web\Request;
 

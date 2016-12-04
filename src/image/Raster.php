@@ -11,7 +11,6 @@ use Craft;
 use craft\base\Image;
 use craft\errors\ImageException;
 use craft\helpers\Image as ImageHelper;
-use craft\helpers\Io;
 use craft\helpers\StringHelper;
 use Imagine\Exception\NotSupportedException;
 use Imagine\Exception\RuntimeException;

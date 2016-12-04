@@ -8,7 +8,6 @@
 namespace craft\web\twig\variables;
 
 use Craft;
-use craft\helpers\Io as IoHelper;
 use craft\helpers\Url;
 use yii\base\Exception;
 

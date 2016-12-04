@@ -12,7 +12,6 @@ use craft\base\Image;
 use craft\errors\ImageException;
 use craft\helpers\FileHelper;
 use craft\helpers\Image as ImageHelper;
-use craft\helpers\Io;
 
 /**
  * Svg class is used for SVG file manipulations.

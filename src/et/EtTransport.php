@@ -13,13 +13,11 @@ use craft\errors\EtException;
 use craft\helpers\ArrayHelper;
 use craft\helpers\DateTimeHelper;
 use craft\helpers\FileHelper;
-use craft\helpers\Io;
 use craft\models\Et as EtModel;
 use craft\services\Config;
 use GuzzleHttp\Client;
 use GuzzleHttp\Exception\RequestException;
 use PDO;
-use yii\base\ErrorException;
 use yii\base\Exception;
 
 /**

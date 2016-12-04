@@ -9,7 +9,6 @@ namespace craft\cache;
 
 use Craft;
 use craft\helpers\FileHelper;
-use craft\helpers\Io;
 use yii\base\ErrorException;
 
 /**

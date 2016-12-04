@@ -16,17 +16,13 @@ use craft\elements\User;
 use craft\errors\ActionCancelledException;
 use craft\errors\AssetConflictException;
 use craft\errors\AssetDisallowedExtensionException;
-use craft\errors\AssetException;
 use craft\errors\AssetLogicException;
-use craft\errors\AssetMissingException;
 use craft\errors\ImageException;
 use craft\errors\UploadFailedException;
 use craft\errors\VolumeException;
 use craft\errors\VolumeObjectExistsException;
 use craft\errors\VolumeObjectNotFoundException;
-use craft\errors\ElementSaveException;
 use craft\errors\FileException;
-use craft\errors\ValidationException;
 use craft\events\AssetEvent;
 use craft\events\ReplaceAssetEvent;
 use craft\helpers\Assets as AssetsHelper;
@@ -34,7 +30,6 @@ use craft\helpers\DateTimeHelper;
 use craft\helpers\Db;
 use craft\helpers\FileHelper;
 use craft\helpers\Image;
-use craft\helpers\Io;
 use craft\helpers\Json;
 use craft\helpers\StringHelper;
 use craft\helpers\Url;
@@ -46,7 +41,6 @@ use craft\records\VolumeFolder as VolumeFolderRecord;
 use craft\tasks\GeneratePendingTransforms;
 use craft\volumes\Temp;
 use yii\base\Component;
-use yii\base\Exception;
 
 /**
  * Class Assets service.

@@ -12,7 +12,6 @@ use craft\base\Plugin;
 use craft\et\EtTransport;
 use craft\helpers\App;
 use craft\helpers\FileHelper;
-use craft\helpers\Io;
 use craft\helpers\Json;
 use craft\models\AppNewRelease;
 use craft\models\AppUpdate;

@@ -15,7 +15,6 @@ use craft\enums\VersionUpdateStatus;
 use craft\events\UpdateEvent;
 use craft\helpers\DateTimeHelper;
 use craft\helpers\FileHelper;
-use craft\helpers\Io;
 use craft\helpers\Json;
 use craft\helpers\Update as UpdateHelper;
 use craft\i18n\Locale;

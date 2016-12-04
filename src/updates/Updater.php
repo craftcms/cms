@@ -20,7 +20,6 @@ use craft\errors\MissingFileException;
 use craft\errors\UnpackPackageException;
 use craft\errors\ValidatePackageException;
 use craft\helpers\FileHelper;
-use craft\helpers\Io;
 use craft\helpers\StringHelper;
 use craft\helpers\Update;
 use yii\base\ErrorException;

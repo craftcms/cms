@@ -17,7 +17,6 @@ use craft\events\UserTokenEvent;
 use craft\helpers\Assets;
 use craft\helpers\FileHelper;
 use craft\helpers\Image;
-use craft\helpers\Io;
 use craft\helpers\Json;
 use craft\helpers\Url;
 use craft\elements\User;

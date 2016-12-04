@@ -9,7 +9,6 @@ namespace craft\web;
 
 use Craft;
 use craft\helpers\Header;
-use craft\helpers\Io;
 use craft\helpers\Url;
 use yii\base\InvalidParamException;
 use yii\web\BadRequestHttpException;

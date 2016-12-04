@@ -11,7 +11,6 @@ use Craft;
 use craft\base\Plugin;
 use craft\events\RegisterCpNavItemsEvent;
 use craft\helpers\Cp as CpHelper;
-use craft\helpers\Io as IoHelper;
 use craft\helpers\StringHelper;
 use craft\helpers\Url;
 use yii\base\Component;

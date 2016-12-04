@@ -8,9 +8,7 @@
 namespace craft\i18n;
 
 use Craft;
-use craft\db\Query;
 use craft\helpers\FileHelper;
-use craft\helpers\Io;
 use ResourceBundle;
 use yii\base\Exception;
 
