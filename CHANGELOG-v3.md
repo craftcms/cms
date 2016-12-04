@@ -76,6 +76,7 @@ Craft CMS 3.0 Working Changelog
 - Added services\Config::getUseWriteFileLock().
 - Added services\Config::isExtensionAllowed().
 - Added services\Elements::deleteElement().
+- Added web\UploadedFile::saveAsTempFile().
 - Added the ‘beforeDelete’, ‘afterDelete’, ‘beforeMoveInStructure’, and ‘afterMoveInStructure’,  events to base\Element.
 - Added the ‘beforeElementSave’, ‘afterElementSave’, ‘beforeElementDelete’, and ‘afterElementDelete’ events to base\Field.
 - Added the ‘beforeRestoreBackup’, ‘afterRestoreBackup’, and ‘restoreFailure’ events to db\Connection.
