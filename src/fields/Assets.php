@@ -734,7 +734,7 @@ class Assets extends BaseRelationField
                     $folder = $elementFolder;
                 }
 
-                Io::ensureFolderExists(Craft::$app->getPath()->getAssetsTempVolumePath().'/'.$folderName);
+                FileHelper::createDirectory(Craft::$app->getPath()->getAssetsTempVolumePath().DIRECTORY_SEPARATOR.$folderName);
                 $folderId = $folder->id;
             } else {
                 // Existing element, so this is just a bad subpath

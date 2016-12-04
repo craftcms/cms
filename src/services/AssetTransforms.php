@@ -846,12 +846,10 @@ class AssetTransforms extends Component
      */
     public function getResizedAssetServerPath(Asset $asset, $size)
     {
-        $thumbFolder = Craft::$app->getPath()->getResizedAssetsPath().'/'.$size.'/';
-        Io::ensureFolderExists($thumbFolder);
-
+        $thumbFolder = Craft::$app->getPath()->getResizedAssetsPath().DIRECTORY_SEPARATOR.$size;
+        FileHelper::createDirectory($thumbFolder);
         $extension = $this->_getThumbExtension($asset);
-
-        $thumbPath = $thumbFolder.$asset->id.'.'.$extension;
+        $thumbPath = $thumbFolder.DIRECTORY_SEPARATOR.$asset->id.'.'.$extension;
 
         if (!is_file($thumbPath)) {
             $imageSource = $this->getLocalImageSource($asset);

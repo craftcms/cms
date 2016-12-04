@@ -307,6 +307,7 @@ Craft CMS 3.0 Working Changelog
 - Removed helpers\Io::copyFolder(). Use helpers\FileHelper::copyDirectory() instead.
 - Removed helpers\Io::deleteFile().
 - Removed helpers\Io::deleteFolder(). Use helpers\FileHelper::removeDirectory() instead.
+- Removed helpers\Io::ensureFolderExists().
 - Removed helpers\Io::getAllowedFileExtensions().
 - Removed helpers\Io::getFolderSize().
 - Removed helpers\Io::getFile().

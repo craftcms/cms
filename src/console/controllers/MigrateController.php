@@ -132,7 +132,7 @@ class MigrateController extends BaseMigrateController
         }
 
         $this->migrationPath = $this->getMigrator()->migrationPath;
-        Io::ensureFolderExists($this->migrationPath);
+        FileHelper::createDirectory($this->migrationPath);
 
         return true;
     }

@@ -133,7 +133,7 @@ class Path extends Component
     public function getRebrandPath()
     {
         $path = $this->getStoragePath().DIRECTORY_SEPARATOR.'rebrand';
-        Io::ensureFolderExists($path);
+        FileHelper::createDirectory($path);
 
         return $path;
     }
@@ -160,7 +160,7 @@ class Path extends Component
     public function getRuntimePath()
     {
         $path = $this->getStoragePath().DIRECTORY_SEPARATOR.'runtime';
-        Io::ensureFolderExists($path);
+        FileHelper::createDirectory($path);
 
         // Add a .gitignore file in there if there isn't one
         $gitignorePath = $path.DIRECTORY_SEPARATOR.'.gitignore';
@@ -179,7 +179,7 @@ class Path extends Component
     public function getDbBackupPath()
     {
         $path = $this->getStoragePath().DIRECTORY_SEPARATOR.'backups';
-        Io::ensureFolderExists($path);
+        FileHelper::createDirectory($path);
 
         return $path;
     }
@@ -192,7 +192,7 @@ class Path extends Component
     public function getTempPath()
     {
         $path = $this->getRuntimePath().DIRECTORY_SEPARATOR.'temp';
-        Io::ensureFolderExists($path);
+        FileHelper::createDirectory($path);
 
         return $path;
     }
@@ -205,7 +205,7 @@ class Path extends Component
     public function getTempUploadsPath()
     {
         $path = $this->getTempPath().DIRECTORY_SEPARATOR.'uploads';
-        Io::ensureFolderExists($path);
+        FileHelper::createDirectory($path);
 
         return $path;
     }
@@ -218,7 +218,7 @@ class Path extends Component
     public function getAssetsPath()
     {
         $path = $this->getRuntimePath().DIRECTORY_SEPARATOR.'assets';
-        Io::ensureFolderExists($path);
+        FileHelper::createDirectory($path);
 
         return $path;
     }
@@ -231,7 +231,7 @@ class Path extends Component
     public function getAssetsCachePath()
     {
         $path = $this->getAssetsPath().DIRECTORY_SEPARATOR.'cache';
-        Io::ensureFolderExists($path);
+        FileHelper::createDirectory($path);
 
         return $path;
     }
@@ -244,7 +244,7 @@ class Path extends Component
     public function getAssetsTempVolumePath()
     {
         $path = $this->getAssetsPath().DIRECTORY_SEPARATOR.'tempuploads';
-        Io::ensureFolderExists($path);
+        FileHelper::createDirectory($path);
 
         return $path;
     }
@@ -257,7 +257,7 @@ class Path extends Component
     public function getAssetsImageSourcePath()
     {
         $path = $this->getAssetsCachePath().DIRECTORY_SEPARATOR.'sources';
-        Io::ensureFolderExists($path);
+        FileHelper::createDirectory($path);
 
         return $path;
     }
@@ -270,7 +270,7 @@ class Path extends Component
     public function getResizedAssetsPath()
     {
         $path = $this->getAssetsCachePath().DIRECTORY_SEPARATOR.'resized';
-        Io::ensureFolderExists($path);
+        FileHelper::createDirectory($path);
 
         return $path;
     }
@@ -283,7 +283,7 @@ class Path extends Component
     public function getAssetsIconsPath()
     {
         $path = $this->getAssetsCachePath().DIRECTORY_SEPARATOR.'icons';
-        Io::ensureFolderExists($path);
+        FileHelper::createDirectory($path);
 
         return $path;
     }
@@ -296,7 +296,7 @@ class Path extends Component
     public function getPluginIconsPath()
     {
         $path = $this->getRuntimePath().DIRECTORY_SEPARATOR.'pluginicons';
-        Io::ensureFolderExists($path);
+        FileHelper::createDirectory($path);
 
         return $path;
     }
@@ -309,7 +309,7 @@ class Path extends Component
     public function getLogPath()
     {
         $path = $this->getStoragePath().DIRECTORY_SEPARATOR.'logs';
-        Io::ensureFolderExists($path);
+        FileHelper::createDirectory($path);
 
         return $path;
     }
@@ -392,7 +392,7 @@ class Path extends Component
     public function getCompiledTemplatesPath()
     {
         $path = $this->getRuntimePath().DIRECTORY_SEPARATOR.'compiled_templates';
-        Io::ensureFolderExists($path);
+        FileHelper::createDirectory($path);
 
         return $path;
     }
@@ -405,7 +405,7 @@ class Path extends Component
     public function getSessionPath()
     {
         $path = $this->getRuntimePath().DIRECTORY_SEPARATOR.'sessions';
-        Io::ensureFolderExists($path);
+        FileHelper::createDirectory($path);
 
         return $path;
     }
@@ -427,7 +427,7 @@ class Path extends Component
             $path = $this->getRuntimePath().DIRECTORY_SEPARATOR.'cache';
         }
 
-        Io::ensureFolderExists($path);
+        FileHelper::createDirectory($path);
 
         return $path;
     }

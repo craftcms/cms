@@ -236,7 +236,7 @@ $app = new $class($config);
 if ($appType === 'web') {
     // See if the resource base path exists and is writable
     $resourceBasePath = Craft::getAlias($app->config->get('resourceBasePath'));
-    Io::ensureFolderExists($resourceBasePath, true);
+    @FileHelper::createDirectory($resourceBasePath);
 
     if (!is_dir($resourceBasePath) || !FileHelper::isWritable($resourceBasePath)) {
         exit($resourceBasePath.' doesn\'t exist or isn\'t writable by PHP. Please fix that.');

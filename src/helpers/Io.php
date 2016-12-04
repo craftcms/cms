@@ -303,21 +303,6 @@ class Io
     }
 
     /**
-     * Ensures that a folder exists, creating it if it doesn’t.
-     *
-     * @param string  $folderPath     The path to the folder
-     * @param boolean $suppressErrors Whether to suppress any PHP Notices/Warnings/Errors (usually permissions related)
-     *
-     * @return void
-     */
-    public static function ensureFolderExists($folderPath, $suppressErrors = false)
-    {
-        if (!Io::folderExists($folderPath, false, $suppressErrors)) {
-            Io::createFolder($folderPath, Craft::$app->getConfig()->get('defaultFolderPermissions'), $suppressErrors);
-        }
-    }
-
-    /**
      * Cleans a filename.
      *
      * @param string  $filename  The filename to clea

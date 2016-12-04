@@ -69,8 +69,11 @@ class RebrandController extends Controller
 
                 $targetPath = Craft::$app->getPath()->getRebrandPath().'/'.$type.'/';
 
-                Io::ensureFolderExists($targetPath);
-                FileHelper::clearDirectory($targetPath);
+                if (!is_dir($targetPath)) {
+                    FileHelper::createDirectory($targetPath);
+                } else {
+                    FileHelper::clearDirectory($targetPath);
+                }
 
                 $fileDestination = $targetPath.'/'.$filename;
 
