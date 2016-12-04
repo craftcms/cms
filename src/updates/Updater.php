@@ -256,7 +256,7 @@ class Updater
 	// =========================================================================
 
 	/**
-	 * Remove any temp files and/or folders that might have been created.
+	 * Remove any temp files that might have been created.
 	 *
 	 * @param string $unzipFolder
 	 * @param string $handle
@@ -399,21 +399,21 @@ class Updater
 			}
 
 			list($relPath) = Update::parseManifestLine($line);
-            $path = $basePath.DIRECTORY_SEPARATOR.FileHelper::normalizePath($relPath);
+            $file = $basePath.DIRECTORY_SEPARATOR.FileHelper::normalizePath($relPath);
 
-			// If the file/folder already exists, make sure it's writable
-			if (file_exists($path)) {
-				if (!FileHelper::isWritable($path)) {
-					$writableErrors[] = $path;
+			// If the file already exists, make sure it's writable
+			if (is_file($file)) {
+				if (!FileHelper::isWritable($file)) {
+					$writableErrors[] = $file;
 				}
 			} else {
                 // Find the closest parent folder that exists and see if it's writable
-                $dir = dirname($path);
+                $dir = dirname($file);
                 $basePathDir = dirname($basePath);
                 while ($dir != $basePathDir && !empty($dir) && $dir != '.') {
                     if (is_dir($dir)) {
                         if (!FileHelper::isWritable($dir)) {
-                            $writableErrors[] = $path;
+                            $writableErrors[] = $file;
                         }
                         break;
                     }
