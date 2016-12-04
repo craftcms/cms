@@ -145,6 +145,8 @@ return [
                     'class' => \yii\caching\FileCache::class,
                     'cachePath' => $configService->get('cachePath', Config::CATEGORY_FILECACHE),
                     'gcProbability' => $configService->get('gcProbability', Config::CATEGORY_FILECACHE),
+                    'fileMode' => $configService->get('defaultFilePermissions'),
+                    'dirMode' => $configService->get('defaultFolderPermissions'),
                 ];
                 break;
             case 'memcache':
