@@ -142,7 +142,7 @@ return [
                 break;
             case 'file':
                 $config = [
-                    'class' => craft\cache\FileCache::class,
+                    'class' => \yii\caching\FileCache::class,
                     'cachePath' => $configService->get('cachePath', Config::CATEGORY_FILECACHE),
                     'gcProbability' => $configService->get('gcProbability', Config::CATEGORY_FILECACHE),
                 ];
