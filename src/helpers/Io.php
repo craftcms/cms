@@ -303,29 +303,6 @@ class Io
     }
 
     /**
-     * Sets the access and modification times of the given file to the given
-     * time, or the current time if it is not supplied.
-     *
-     * @param string  $filename       The path to the file/folder to touch
-     * @param null    $time           The time to set on the file/folder (defaults to the current time)
-     * @param boolean $suppressErrors Whether to suppress any PHP Notices/Warnings/Errors (usually permissions related)
-     *
-     * @return boolean Whether the file was touched successfully
-     */
-    public static function touch($filename, $time = null, $suppressErrors = false)
-    {
-        if (!$time) {
-            $time = time();
-        }
-
-        if ($suppressErrors ? @touch($filename, $time) : touch($filename, $time)) {
-            return true;
-        }
-
-        return false;
-    }
-
-    /**
      * Returns the path to the parent folder of a given path.
      *
      * @param string $path The starting point

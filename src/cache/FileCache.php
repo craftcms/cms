@@ -10,6 +10,7 @@ namespace craft\cache;
 use Craft;
 use craft\helpers\FileHelper;
 use craft\helpers\Io;
+use yii\base\ErrorException;
 
 /**
  * Class FileCache
@@ -59,27 +60,18 @@ class FileCache extends \yii\caching\FileCache
     // =========================================================================
 
     /**
-     * Stores a value identified by a key in cache. This is the implementation of the method declared in the parent
-     * class.
-     *
-     * @param string  $key    The key identifying the value to be cached
-     * @param string  $value  The value to be cached
-     * @param integer $expire The number of seconds in which the cached value will expire. 0 means never expire.
-     *
-     * @return boolean true if the value is successfully stored into cache, false otherwise.
+     * @inheritdoc
      */
-    protected function setValue($key, $value, $expire)
+    protected function setValue($key, $value, $duration)
     {
         if (!$this->_gced && mt_rand(0, 1000000) < $this->gcProbability) {
             $this->gc();
             $this->_gced = true;
         }
 
-        if ($expire <= 0) {
-            $expire = 31536000; // 1 year
+        if ($duration <= 0) {
+            $duration = 31536000; // 1 year
         }
-
-        $expire += time();
 
         $cacheFile = $this->getCacheFile($key);
 
@@ -90,12 +82,18 @@ class FileCache extends \yii\caching\FileCache
             }
         }
 
-        FileHelper::writeToFile($cacheFile, $value);
+        try {
+            FileHelper::writeToFile($cacheFile, $value);
 
-        if ($this->fileMode !== null) {
-            @chmod($cacheFile, $this->fileMode);
+            if ($this->fileMode !== null) {
+                @chmod($cacheFile, $this->fileMode);
+            }
+
+            return @touch($cacheFile, $duration + time());
+        } catch (ErrorException $e) {
+            Craft::warning("Unable to write cache file '{$cacheFile}': ".$e->getMessage(), __METHOD__);
+
+            return false;
         }
-
-        return Io::touch($cacheFile, $expire);
     }
 }
