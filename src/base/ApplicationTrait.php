@@ -27,6 +27,7 @@ use craft\services\Security;
 use craft\web\Application as WebApplication;
 use craft\web\AssetManager;
 use craft\web\View;
+use yii\mutex\FileMutex;
 use yii\web\BadRequestHttpException;
 use yii\web\ServerErrorHttpException;
 
@@ -981,6 +982,17 @@ trait ApplicationTrait
     {
         /** @var \craft\web\Application|\craft\console\Application $this */
         return $this->get('migrator');
+    }
+
+    /**
+     * Returns the application’s mutex service.
+     *
+     * @return FileMutex The application’s mutex service
+     */
+    public function getMutex()
+    {
+        /** @var \craft\web\Application|\craft\console\Application $this */
+        return $this->get('mutex');
     }
 
     /**

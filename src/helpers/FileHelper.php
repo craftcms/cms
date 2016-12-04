@@ -8,7 +8,6 @@
 namespace craft\helpers;
 
 use Craft;
-use Symfony\Component\Filesystem\LockHandler;
 use yii\base\ErrorException;
 use yii\base\InvalidParamException;
 
@@ -250,8 +249,7 @@ class FileHelper extends \yii\helpers\FileHelper
         }
 
         if ($lock) {
-            $lockHandler = new LockHandler($file.'.lock');
-            $lockHandler->lock();
+            Craft::$app->getMutex()->acquire($file);
         }
 
         $flags = 0;
@@ -263,8 +261,8 @@ class FileHelper extends \yii\helpers\FileHelper
             throw new ErrorException("Unable to write new contents to \"{$file}\".");
         }
 
-        if (isset($lockHandler)) {
-            $lockHandler->release();
+        if ($lock) {
+            Craft::$app->getMutex()->release($file);
         }
     }
 

@@ -17,8 +17,8 @@ use craft\helpers\Url;
 use craft\elements\User;
 use GuzzleHttp\Client;
 use GuzzleHttp\Exception\RequestException;
-use Symfony\Component\Filesystem\LockHandler;
 use yii\base\Component;
+use yii\base\Exception;
 
 /**
  * The Config service provides APIs for retrieving the values of Craft’s [config settings](http://craftcms.com/docs/config-settings),
@@ -718,9 +718,14 @@ class Config extends Component
 
         // Try a test lock
         try {
-            $lockHandler = new LockHandler(uniqid('test').'.lock');
-            $lockHandler->lock();
-            $lockHandler->release();
+            $mutex = Craft::$app->getMutex();
+            $name = uniqid('test');
+            if (!$mutex->acquire($name)) {
+                throw new Exception('Unable to acquire test lock.');
+            }
+            if (!$mutex->release($name)) {
+                throw new Exception('Unable to release test lock.');
+            }
             $value = true;
         } catch (\Exception $e) {
             Craft::warning('Write lock test failed: '.$e->getMessage());

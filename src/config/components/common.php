@@ -237,6 +237,18 @@ return [
         return Craft::$app->getI18n()->getLocaleById(Craft::$app->language);
     },
 
+    'mutex' => function() {
+        $configService = Craft::$app->getConfig();
+
+        $config = [
+            'class' => yii\mutex\FileMutex::class,
+            'fileMode' => $configService->get('defaultFileMode'),
+            'dirMode' => $configService->get('defaultDirMode'),
+        ];
+
+        return Craft::createObject($config);
+    },
+
     'formatter' => function() {
         return Craft::$app->getLocale()->getFormatter();
     },
