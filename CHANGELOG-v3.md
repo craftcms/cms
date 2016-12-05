@@ -9,7 +9,7 @@ Craft CMS 3.0 Working Changelog
 - Craft now supports installing plugins via Composer, with the help [Craft CMS Composer Installer](https://github.com/craftcms/composer-installer).
 - Craft now checks for plugin info in a composer.json file, rather than plugin.json, for plugins that were manually installed in craft/plugins/. (See the [Craft CMS Composer Installer](https://github.com/craftcms/composer-installer) readme for details on how the info should be formatted.)
 - Added the bootstrap/ folder alongside the src/ folder, with new web.php and console.php bootstrap files.
-- Added PostgreSQL support, which can be enabled by setting the ‘driver’ setting in craft/config/db.pgp to “pgsql”.
+- Added PostgreSQL support, which can be enabled by setting the ‘driver’ setting in craft/config/db.php to “pgsql”.
 - Added the ‘update/run-pending-migrations’ controller action, which can be used as a post-deploy hook for deployment services like DeployBot, to get Craft to automatically run any pending migrations, minimizing site downtime.
 - Added the ‘backupCommand’ config setting, which can be used to override the command Craft executes when creating a database backup.
 - Added the ‘restoreCommand’ config setting, which can be used to override the command Craft executes when restoring a database backup.
@@ -352,6 +352,11 @@ Craft CMS 3.0 Working Changelog
 - Removed the ‘registerCpRoutes’ and ‘registerSiteRoutes’ plugin hooks. Custom URL rules for the Control Panel and front-end site should be registered using the ‘registerCpUrlRules’ and ‘registerSiteUrlRules’ events on web\UrlManager now.
 - Removed the ‘registerEmailMessages’ plugin hook. Custom email messages should be registered using the ‘registerMessages’ event on services\EmailMessages now.
 - Removed the ‘registerUserPermissions’ plugin hook. Custom user permissions should be registered using the ‘registerPermissions’ event on services\UserPermissions now.
+- Removed helpers/MigrationHelper::refresh().
+- Removed helpers/MigrationHelper::makeElemental().
+- Removed helpers/MigrationHelper::restoreAllIndexesOnTable().
+- Removed helpers/MigrationHelper::restoreAllUniqueIndexesOnTable().
+- Removed helpers/MigrationHelper::restoreAllForeignKeysOnTable().
 
 ### Fixed
 - Fixed a bug where custom 503 templates weren’t rendering when Craft was in the middle of updating from an earlier version than 3.0.2933.

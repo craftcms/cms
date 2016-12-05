@@ -518,12 +518,14 @@ class Search extends Component
             if (is_numeric($term->attribute)) {
                 $siteId = $term->attribute;
             } else {
-                $site = Craft::$app->getSites()->getSiteByHandle($term->attribute);
-                if ($site) {
-                    $siteId = $site->id;
-                } else {
-                    $siteId = 0;
+                $site = Craft::$app->getSites()->getSiteByHandle($term->term);
+
+                if (!$site) {
+                    // Fall back to primary site ID if we can't find what they asked for.
+                    $site = Craft::$app->getSites()->getPrimarySite();
                 }
+
+                $siteId = $site->id;
             }
             $oper = $term->exclude ? '!=' : '=';
 
@@ -598,24 +600,7 @@ class Search extends Component
                         if ($term->exact) {
                             // Create exact clause from term
                             $operator = $term->exclude ? 'NOT LIKE' : 'LIKE';
-
-                            switch ($driver) {
-                                case Connection::DRIVER_MYSQL:
-                                    $keywords = ($term->subLeft ? '%' : ' ').$keywords.($term->subRight ? '%' : ' ');
-                                    break;
-                                case Connection::DRIVER_PGSQL:
-                                    if ($term->subLeft) {
-                                        $keywords = '%'.$keywords;
-                                    }
-
-                                    if ($term->subRight) {
-                                        $keywords = $keywords.'%';
-                                    }
-                                    break;
-                                    break;
-                                default:
-                                    throw new Exception('Unsupported connection type: '.$driver);
-                            }
+                            $keywords = ($term->subLeft ? '%' : ' ').$keywords.($term->subRight ? '%' : ' ');
                         } else {
                             // Create LIKE clause from term
                             $operator = $term->exclude ? 'NOT LIKE' : 'LIKE';

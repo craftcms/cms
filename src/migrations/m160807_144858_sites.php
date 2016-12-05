@@ -296,7 +296,7 @@ class m160807_144858_sites extends Migration
         // Add site FKs to third party tables
         // ---------------------------------------------------------------------
 
-        MigrationHelper::refresh();
+        Craft::$app->getDb()->getSchema()->refresh();
         $fks = MigrationHelper::findForeignKeysTo('{{%locales}}', 'locale');
 
         foreach ($fks as $fkInfo) {
