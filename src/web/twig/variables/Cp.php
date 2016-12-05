@@ -100,8 +100,7 @@ class Cp extends Component
                 $pluginHandle = $plugin->getHandle();
 
                 if (Craft::$app->getUser()->checkPermission('accessPlugin-'.$pluginHandle)) {
-                    $lcHandle = StringHelper::toLowerCase($pluginHandle);
-                    $iconPath = Craft::$app->getPath()->getPluginsPath().DIRECTORY_SEPARATOR.$lcHandle.DIRECTORY_SEPARATOR.'resources'.DIRECTORY_SEPARATOR.'icon-mask.svg';
+                    $iconPath = $plugin->getBasePath().DIRECTORY_SEPARATOR.'resources'.DIRECTORY_SEPARATOR.'icon-mask.svg';
 
                     if (is_file($iconPath)) {
                         $iconSvg = file_get_contents($iconPath);
@@ -111,7 +110,7 @@ class Cp extends Component
 
                     $navItems[] = [
                         'label' => $plugin->name,
-                        'url' => $lcHandle,
+                        'url' => StringHelper::toLowerCase($pluginHandle),
                         'iconSvg' => $iconSvg
                     ];
                 }

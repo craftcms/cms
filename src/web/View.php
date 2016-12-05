@@ -9,6 +9,7 @@ namespace craft\web;
 
 use Craft;
 use craft\base\Element;
+use craft\base\Plugin;
 use craft\helpers\ArrayHelper;
 use craft\helpers\ElementHelper;
 use craft\helpers\FileHelper;
@@ -530,14 +531,13 @@ class View extends \yii\web\View
 
             if ($pluginHandle && ($plugin = Craft::$app->getPlugins()->getPlugin($pluginHandle)) !== null) {
                 // Get the template path for the plugin.
-                $basePath = Craft::$app->getPath()->getPluginsPath().DIRECTORY_SEPARATOR.StringHelper::toLowerCase($plugin->getHandle()).DIRECTORY_SEPARATOR.'templates';
+                /** @var Plugin $plugin */
+                $basePath = $plugin->getBasePath().DIRECTORY_SEPARATOR.'templates';
 
                 // Get the new template name to look for within the plugin's templates folder
                 $tempName = implode('/', $parts);
 
-                if (($path = $this->_resolveTemplate($basePath,
-                        $tempName)) !== null
-                ) {
+                if (($path = $this->_resolveTemplate($basePath, $tempName)) !== null) {
                     return $this->_templatePaths[$key] = $path;
                 }
             }

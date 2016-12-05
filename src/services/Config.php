@@ -8,6 +8,7 @@
 namespace craft\services;
 
 use Craft;
+use craft\base\Plugin;
 use craft\db\Connection;
 use craft\helpers\App;
 use craft\helpers\ArrayHelper;
@@ -19,6 +20,7 @@ use GuzzleHttp\Client;
 use GuzzleHttp\Exception\RequestException;
 use yii\base\Component;
 use yii\base\Exception;
+use yii\base\InvalidParamException;
 
 /**
  * The Config service provides APIs for retrieving the values of Craft’s [config settings](http://craftcms.com/docs/config-settings),
@@ -833,6 +835,7 @@ class Config extends Component
 
     /**
      * @param $category
+     * @throws InvalidParamException if $category is not supported
      */
     private function _loadConfigSettings($category)
     {
@@ -846,8 +849,11 @@ class Config extends Component
         // Is this a valid Craft config category?
         if (in_array($category, [self::CATEGORY_FILECACHE, self::CATEGORY_GENERAL, self::CATEGORY_DB, self::CATEGORY_DBCACHE, self::CATEGORY_MEMCACHE, self::CATEGORY_APC])) {
             $defaultsPath = Craft::$app->getBasePath().DIRECTORY_SEPARATOR.'config'.DIRECTORY_SEPARATOR.'defaults'.DIRECTORY_SEPARATOR.$category.'.php';
+        } else if (($plugin = Craft::$app->getPlugins()->getPlugin(($category))) !== null) {
+            /** @var Plugin $plugin */
+            $defaultsPath = $plugin->getBasePath().DIRECTORY_SEPARATOR.'config.php';
         } else {
-            $defaultsPath = $pathService->getPluginsPath().DIRECTORY_SEPARATOR.$category.DIRECTORY_SEPARATOR.'config.php';
+            throw new InvalidParamException("Unsupported config category: {$category}");
         }
 
         if (is_file($defaultsPath)) {
