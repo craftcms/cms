@@ -309,6 +309,7 @@ Craft CMS 3.0 Working Changelog
 - Removed services\Matrix::deleteBlockById().
 - Removed services\Matrix::saveBlock().
 - Removed services\Matrix::validateBlock().
+- Removed services\Path::getMigrationsPath().
 - Removed services\Plugins::call().
 - Removed services\Plugins::callFirst().
 - Removed services\Tags::saveTag().

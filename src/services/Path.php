@@ -324,22 +324,6 @@ class Path extends Component
     }
 
     /**
-     * Returns the path to the craft/app/migrations/ folder, or the path to a plugin’s migrations/ folder.
-     *
-     * @param string $pluginHandle The plugin handle whose migrations/ folder should be returned. Defaults to `null`.
-     *
-     * @return string The path to the migrations/ folder.
-     */
-    public function getMigrationsPath($pluginHandle = null)
-    {
-        if ($pluginHandle) {
-            return $this->getPluginsPath().DIRECTORY_SEPARATOR.$pluginHandle.DIRECTORY_SEPARATOR.'migrations';
-        }
-
-        return Craft::$app->getBasePath().DIRECTORY_SEPARATOR.'migrations';
-    }
-
-    /**
      * Returns the path to the craft/app/translations/ folder.
      *
      * @return string The path to the craft/app/translations/ folder.
