@@ -83,7 +83,7 @@ class FileHelper extends \yii\helpers\FileHelper
     public static function sanitizeFilename($filename, $options = [])
     {
         $asciiOnly = isset($options['asciiOnly']) ? $options['asciiOnly'] : false;
-        $separator = array_key_exists('separator', $options['separator']) ? $options['separator'] : '-';
+        $separator = array_key_exists('separator', $options) ? $options['separator'] : '-';
         $disallowedChars = [
             'â€”',
             'â€“',
