@@ -34,18 +34,18 @@ class InvalidTypeException extends Exception
     /**
      * Constructor.
      *
-     * @param string  $class        The class that doesn’t exist or doesn’t extend/implement $requiredType
+     * @param string  $handle       The class that doesn’t exist or doesn’t extend/implement $requiredType
      * @param string  $requiredType The base class or interface that $class was supposed to be
      * @param string  $message      The error message
      * @param integer $code         The error code
      */
-    public function __construct($class, $requiredType, $message = null, $code = 0)
+    public function __construct($handle, $requiredType, $message = null, $code = 0)
     {
-        $this->class = $class;
+        $this->class = $handle;
         $this->requiredType = $requiredType;
 
         if ($message === null) {
-            $message = "{$class} doesn’t exist or doesn’t extend/implement {$requiredType}";
+            $message = "{$handle} doesn’t exist or doesn’t extend/implement {$requiredType}";
         }
 
         parent::__construct($message, $code);

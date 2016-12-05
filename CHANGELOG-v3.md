@@ -20,6 +20,7 @@ Craft CMS 3.0 Working Changelog
 - Added db\pgsql\QueryBuilder.
 - Added db\pgsql\Schema.
 - Added db\TableSchema.
+- Added errors\InvalidPluginException.
 - Added events\BackupFailureEvent.
 - Added events\RegisterCacheOptionsEvent.
 - Added events\RegisterComponentTypesEvent.
@@ -37,6 +38,7 @@ Craft CMS 3.0 Working Changelog
 - Added events\SetAssetFilenameEvent.
 - Added events\SetElementRouteEvent.
 - Added events\SetElementTableAttributeHtmlEvent.
+- Added helpers\FileHelper.
 - Added helpers\MailerHelper.
 - Added validators\ArrayValidator.
 - Added validators\AssetFilenameValidator.
@@ -64,8 +66,17 @@ Craft CMS 3.0 Working Changelog
 - Added helpers\App::isComposerInstall().
 - Added helpers\App::majorMinorVersion().
 - Added helpers\Db::isTypeSupported().
+- Added helpers\Update::getBasePath().
+- Added helpers\Update::parseManifestLine().
+- Added helpers\Assets::getFileKindByExtension().
+- Added helpers\Assets::getFileKindLabel().
+- Added helpers\Assets::getFileKinds().
+- Added services\Config::getAllowedFileExtensions().
 - Added services\Config::getDbPort().
+- Added services\Config::getUseWriteFileLock().
+- Added services\Config::isExtensionAllowed().
 - Added services\Elements::deleteElement().
+- Added web\UploadedFile::saveAsTempFile().
 - Added the ‘beforeDelete’, ‘afterDelete’, ‘beforeMoveInStructure’, and ‘afterMoveInStructure’,  events to base\Element.
 - Added the ‘beforeElementSave’, ‘afterElementSave’, ‘beforeElementDelete’, and ‘afterElementDelete’ events to base\Field.
 - Added the ‘beforeRestoreBackup’, ‘afterRestoreBackup’, and ‘restoreFailure’ events to db\Connection.
@@ -90,6 +101,7 @@ Craft CMS 3.0 Working Changelog
 - Added the ‘setFilename’ event to helpers\Assets.
 - Added the ‘setRoute’ event to base\Element.
 - Added the ‘setTableAttributeHtml’ event to base\Element.
+- Added the Symfony Filesystem component.
 - Added Guzzle 6 HTTP Adapter.
 - Added php-shellcommand.
 
@@ -97,6 +109,9 @@ Craft CMS 3.0 Working Changelog
 - The bootstrap script now assumes that the vendor/ folder is 3 levels up from the bootstrap/ directory by default (e.g. vendor/craftcms/craft/bootstrap/). If that is not the case (most likely because Craft had been symlinked into place), the `CRAFT_VENDOR_PATH` PHP constant can be used to correct that.
 - The default ‘port’ DB config value is now either 3306 (if MySQL) or 5432 (if PostgreSQL).
 - The default ‘tablePrefix’ DB config value is now empty.
+- Renamed the ‘defaultFilePermissions’ config setting to ‘defaultFileMode’, and it is now `null` by default.
+- Renamed the ‘defaultFolderPermissions’ config setting to ‘defaultDirMode’.
+- File-based data caching now respects the ‘defaultDirMode’ config setting.
 - When a category is deleted, its nested categories are no longer deleted with it.
 - Renamed the “Get Help” widget to “Craft Support”.
 - When editing a field whose type class cannot be found, Craft will now select Plain Text as a fallback and display a validation error on the Field Type setting.
@@ -132,6 +147,7 @@ Craft CMS 3.0 Working Changelog
 - base\SavableComponent::afterSave() now has an $isNew argument, which will indicate whether the element is brand new.
 - base\SavableComponent::beforeSave() now has an $isNew argument, which will indicate whether the element is brand new.
 - services\Elements::deleteElementById() now has $elementType and $siteId arguments.
+- services\Path::getAppPath() now throws an exception if it is called within a Composer install, as there is no “app path”.
 - The ‘beforeElementSave’ and ‘afterElementSave’ events triggered by base\Element now have $isNew properties, which indicate whether the element is brand new.
 - The ‘beforeSave’ and ‘afterSave’ events triggered by base\Element now have $isNew properties, which indicate whether the element is brand new.
 - The ‘beforeSave’ and ‘afterSave’ events triggered by base\SavableComponent now have $isNew properties, which indicate whether the component is brand new.
@@ -215,6 +231,7 @@ Craft CMS 3.0 Working Changelog
 - base\Element::getFieldsForElementQuery() has been moved to elements\db\ElementQuery::customFields(), and no longer has a $query argument.
 - base\Element::getTableAttributeHtml() is no longer static, and no longer has an $element argument.
 - base\Element::onAfterMoveElementInStructure() is no longer static, no longer has an $element argument, and has been renamed to afterMoveInStructure().
+- services\Updates::getUnwritableFolders() now returns folder paths without trailing slashes.
 - Updated Yii to 2.0.10.
 - Updated Yii 2 Debug Extension to 2.0.7.
 - Updated Yii 2 Auth Client to 2.1.1.
@@ -232,13 +249,26 @@ Craft CMS 3.0 Working Changelog
 - Removed the ‘collation’ DB config setting.
 - Removed the ‘initSQLs’ DB config setting.
 - Removed the PEL library.
+- Removed the PclZip library.
 - Removed support for EXIF data removal and automatic image rotating for servers without ImageMagick installed.
+- Removed the automatic creation of `@craft/plugins/HANDLE` aliases for installed plugins.
+- Removed cache\FileCache.
 - Removed db\DbBackup.
 - Removed enums\BaseEnum.
+- Removed errors\ErrorException.
+- Removed errors\InvalidateCacheException.
 - Removed events\CategoryEvent.
 - Removed events\DeleteUserEvent.
 - Removed events\EntryDeleteEvent.
 - Removed events\UserEvent.
+- Removed helpers\Io.
+- Removed io\BaseIO.
+- Removed io\File.
+- Removed io\Folder.
+- Removed io\PclZip.
+- Removed io\Zip.
+- Removed io\ZipArchive.
+- Removed io\ZipInterface.
 - Removed models\LogEntry.
 - Removed models\Password.
 - Removed base\Component::getType(). It was only really there for objects that implement base\MissingComponentInterface, and now they have an $expectedType property.
@@ -263,6 +293,8 @@ Craft CMS 3.0 Working Changelog
 - Removed db\mysql\QueryBuilder::addColumnAfter().
 - Removed db\mysql\QueryBuilder::addColumnBefore().
 - Removed db\mysql\QueryBuilder::addColumnFirst().
+- Removed helpers\Update::cleanManifestFolderLine().
+- Removed helpers\Update::isManifestLineAFolder().
 - Removed services\Assets::deleteAssetsByIds().
 - Removed services\Assets::deleteCategory().
 - Removed services\Assets::deleteCategoryById().
@@ -278,9 +310,11 @@ Craft CMS 3.0 Working Changelog
 - Removed services\Matrix::deleteBlockById().
 - Removed services\Matrix::saveBlock().
 - Removed services\Matrix::validateBlock().
+- Removed services\Path::getMigrationsPath().
 - Removed services\Plugins::call().
 - Removed services\Plugins::callFirst().
 - Removed services\Tags::saveTag().
+- Removed services\Updates::flushUpdateInfoFromCache().
 - Removed services\Users::changePassword().
 - Removed services\Users::deleteUser().
 - Removed the $attribute argument from base\ApplicationTrait::getInfo().
@@ -341,7 +375,7 @@ Craft CMS 3.0 Working Changelog
 - Fixed authorization error that occurred when editing an entry in a section that’s not enabled for the current site.
 - Fixed a PHP error when using the {% cache %} tag.
 - Fixed an error that occurred when clicking on an email message to edit it.
-- Fixed an error that occurred when helpers\Io\FileCache::setValue() was called and the destination folder already existed.
+- Fixed an error that occurred when cache\FileCache::setValue() was called and the destination folder already existed.
 - Fixed support for the testToEmailAddress config setting.
 - Fixed a bug where the ‘tasks/run-pending-tasks’ controller action was requiring an authenticated session.
 - Fixed a PHP error that occurred when saving a Recent Entries widget.

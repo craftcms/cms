@@ -12,17 +12,17 @@ use craft\base\Plugin;
 use craft\base\Widget;
 use craft\base\WidgetInterface;
 use craft\dates\DateTime;
-use craft\helpers\Io;
 use craft\helpers\Json;
 use craft\helpers\StringHelper;
 use craft\i18n\Locale;
-use craft\io\Zip;
 use craft\models\CraftSupport;
 use craft\web\Controller;
 use craft\web\UploadedFile;
-use yii\helpers\FileHelper;
+use craft\helpers\FileHelper;
+use yii\base\ErrorException;
 use yii\web\BadRequestHttpException;
 use yii\web\Response;
+use ZipArchive;
 
 /**
  * The DashboardController class is a controller that handles various dashboard related actions including managing
@@ -297,13 +297,8 @@ class DashboardController extends Controller
 
         Craft::$app->getConfig()->maxPowerCaptain();
 
-        $success = false;
-        $errors = [];
-        $zipFile = null;
-        $tempFolder = null;
         $request = Craft::$app->getRequest();
         $widgetId = $request->getBodyParam('widgetId');
-
         $namespace = $request->getBodyParam('namespace');
         $namespace = $namespace ? $namespace.'.' : '';
 
@@ -315,176 +310,171 @@ class DashboardController extends Controller
         $getHelpModel->attachTemplates = (bool)$request->getBodyParam($namespace.'attachTemplates');
         $getHelpModel->attachment = UploadedFile::getInstanceByName($namespace.'attachAdditionalFile');
 
-        if ($getHelpModel->validate()) {
-            $user = Craft::$app->getUser()->getIdentity();
+        if (!$getHelpModel->validate()) {
+            return $this->renderTemplate('_components/widgets/CraftSupport/response', [
+                'widgetId' => $widgetId,
+                'success' => false,
+                'errors' => $getHelpModel->getErrors()
+            ]);
+        }
 
-            // Add some extra info about this install
-            $message = $getHelpModel->message."\n\n".
-                "------------------------------\n\n".
-                'Craft '.Craft::$app->getEditionName().' '.Craft::$app->version;
+        $user = Craft::$app->getUser()->getIdentity();
 
-            /** @var Plugin[] $plugins */
-            $plugins = Craft::$app->getPlugins()->getAllPlugins();
+        // Add some extra info about this install
+        $message = $getHelpModel->message."\n\n".
+            "------------------------------\n\n".
+            'Craft '.Craft::$app->getEditionName().' '.Craft::$app->version;
 
-            if ($plugins) {
-                $pluginNames = [];
+        /** @var Plugin[] $plugins */
+        $plugins = Craft::$app->getPlugins()->getAllPlugins();
 
-                foreach ($plugins as $plugin) {
-                    $pluginNames[] = $plugin->name.' '.$plugin->version.' ('.$plugin->developer.')';
-                }
+        if ($plugins) {
+            $pluginNames = [];
 
-                $message .= "\nPlugins: ".implode(', ', $pluginNames);
+            foreach ($plugins as $plugin) {
+                $pluginNames[] = $plugin->name.' '.$plugin->version.' ('.$plugin->developer.')';
             }
 
-            $message .= "\nDomain: ".Craft::$app->getRequest()->getHostInfo();
+            $message .= "\nPlugins: ".implode(', ', $pluginNames);
+        }
 
-            $requestParamDefaults = [
-                'sFirstName' => $user->getFriendlyName(),
-                'sLastName' => ($user->lastName ? $user->lastName : 'Doe'),
-                'sEmail' => $getHelpModel->fromEmail,
-                'tNote' => $message,
-            ];
+        $message .= "\nDomain: ".Craft::$app->getRequest()->getHostInfo();
 
+        $requestParamDefaults = [
+            'sFirstName' => $user->getFriendlyName(),
+            'sLastName' => ($user->lastName ? $user->lastName : 'Doe'),
+            'sEmail' => $getHelpModel->fromEmail,
+            'tNote' => $message,
+        ];
+
+        $requestParams = $requestParamDefaults;
+
+        $hsParams = [
+            'helpSpotApiURL' => 'https://support.pixelandtonic.com/api/index.php'
+        ];
+
+        // Create the SupportAttachment zip
+        $zipPath = Craft::$app->getPath()->getTempPath().'/'.StringHelper::UUID().'.zip';
+        try {
+            // Create the zip
+            $zip = new ZipArchive();
+
+            if ($zip->open($zipPath, ZipArchive::CREATE) !== true) {
+                throw new \Exception('Cannot create zip at '.$zipPath);
+            }
+
+            // License key
+            $licenseKeyPath = Craft::$app->getPath()->getLicenseKeyPath();
+            if (is_file($licenseKeyPath)) {
+                $zip->addFile($licenseKeyPath, 'license.key');
+            }
+
+            // Logs
+            if ($getHelpModel->attachLogs) {
+                $logPath = Craft::$app->getPath()->getLogPath();
+                if (is_dir($logPath)) {
+                    // Grab it all.
+                    try {
+                        $logFiles = FileHelper::findFiles($logPath, [
+                            'recursive' => false
+                        ]);
+                    } catch (ErrorException $e) {
+                        Craft::warning("Unable to find log files in \"{$logPath}\": ".$e->getMessage());
+                        $logFiles = [];
+                    }
+
+                    foreach ($logFiles as $logFile) {
+                        $zip->addFile($logFile, 'logs/'.pathinfo($logFile, PATHINFO_BASENAME));
+                    }
+                }
+            }
+
+            // DB backups
+            if ($getHelpModel->attachDbBackup) {
+                // Make a fresh database backup of the current schema/data. We want all data from all tables
+                // for debugging.
+                Craft::$app->getDb()->backup();
+
+                $backupPath = Craft::$app->getPath()->getDbBackupPath();
+                if (is_dir($backupPath)) {
+                    // Get the SQL files in there
+                    $backupFiles = FileHelper::findFiles($backupPath, [
+                        'only' => ['*.sql'],
+                        'recursive' => false
+                    ]);
+
+                    // Get the 3 most recent ones
+                    $backupTimes = [];
+                    foreach ($backupFiles as $backupFile) {
+                        $backupTimes[] = filemtime($backupFile);
+                    }
+                    array_multisort($backupTimes, SORT_DESC, $backupFiles);
+                    array_splice($backupFiles, 3);
+
+                    foreach ($backupFiles as $backupFile) {
+                        if (pathinfo($backupFile, PATHINFO_EXTENSION) != 'sql') {
+                            continue;
+                        }
+                        $zip->addFile($backupFile, 'backups/'.pathinfo($backupFile, PATHINFO_BASENAME));
+                    }
+                }
+            }
+
+            // Templates
+            if ($getHelpModel->attachTemplates) {
+                $templatesPath = Craft::$app->getPath()->getSiteTemplatesPath();
+                if (is_dir($templatesPath)) {
+                    $templateFiles = FileHelper::findFiles($templatesPath);
+                    foreach ($templateFiles as $templateFile) {
+                        // Preserve the directory structure within the templates folder
+                        $zip->addFile($templateFile, 'templates'.substr($templateFile, strlen($templatesPath)));
+                    }
+                }
+            }
+
+            // Uploaded attachment
+            if ($getHelpModel->attachment) {
+                $zip->addFile($getHelpModel->attachment->tempName, $getHelpModel->attachment->name);
+            }
+
+            // Close and attach the zip
+            $zip->close();
+            $requestParams['File1_sFilename'] = 'SupportAttachment-'.FileHelper::sanitizeFilename(Craft::$app->getSites()->getPrimarySite()->name).'.zip';
+            $requestParams['File1_sFileMimeType'] = 'application/zip';
+            $requestParams['File1_bFileBody'] = base64_encode(file_get_contents($zipPath));
+
+            // Bump the default timeout because of the attachment.
+            $hsParams['callTimeout'] = 120;
+        } catch (\Exception $e) {
+            Craft::warning('Tried to attach debug logs to a support request and something went horribly wrong: '.$e->getMessage(), __METHOD__);
+
+            // There was a problem zipping, so reset the params and just send the email without the attachment.
             $requestParams = $requestParamDefaults;
+        }
 
-            $hsParams = [
-                'helpSpotApiURL' => 'https://support.pixelandtonic.com/api/index.php'
-            ];
+        $api = new \HelpSpotAPI($hsParams);
+        $result = $api->requestCreate($requestParams);
 
-            try {
-                if ($getHelpModel->attachLogs || $getHelpModel->attachDbBackup) {
-                    if (!$zipFile) {
-                        $zipFile = $this->_createZip();
-                    }
+        // Delete the zip file
+        if (is_file($zipPath)) {
+            FileHelper::removeFile($zipPath);
+        }
 
-                    if ($getHelpModel->attachLogs && Io::folderExists(Craft::$app->getPath()->getLogPath())) {
-                        // Grab it all.
-                        $logFolderContents = Io::getFolderContents(Craft::$app->getPath()->getLogPath());
-
-                        if ($logFolderContents) {
-                            foreach ($logFolderContents as $file) {
-                                // Make sure it's a file.
-                                if (Io::fileExists($file)) {
-                                    Zip::add($zipFile, $file, Craft::$app->getPath()->getStoragePath());
-                                }
-                            }
-                        }
-
-                    }
-
-                    if ($getHelpModel->attachDbBackup && Io::folderExists(Craft::$app->getPath()->getDbBackupPath())) {
-                        // Make a fresh database backup of the current schema/data. We want all data from all tables
-                        // for debugging.
-                        Craft::$app->getDb()->backup();
-
-                        $backups = Io::getLastModifiedFiles(Craft::$app->getPath()->getDbBackupPath(), 3);
-
-                        foreach ($backups as $backup) {
-                            if (Io::getExtension($backup) == 'sql') {
-                                Zip::add($zipFile, $backup, Craft::$app->getPath()->getStoragePath());
-                            }
-                        }
-                    }
-                }
-
-                if ($getHelpModel->attachment) {
-                    // If we don't have a zip file yet, create one now.
-                    if (!$zipFile) {
-                        $zipFile = $this->_createZip();
-                    }
-
-                    $tempFolder = Craft::$app->getPath()->getTempPath().'/'.StringHelper::UUID();
-
-                    if (!Io::folderExists($tempFolder)) {
-                        Io::createFolder($tempFolder);
-                    }
-
-                    $tempFile = $tempFolder.'/'.$getHelpModel->attachment->name;
-                    $getHelpModel->attachment->saveAs($tempFile);
-
-                    // Make sure it actually saved.
-                    if (Io::fileExists($tempFile)) {
-                        Zip::add($zipFile, $tempFile, $tempFolder);
-                    }
-                }
-
-                if ($getHelpModel->attachTemplates) {
-                    // If we don't have a zip file yet, create one now.
-                    if (!$zipFile) {
-                        $zipFile = $this->_createZip();
-                    }
-
-                    if (Io::folderExists(Craft::$app->getPath()->getLogPath())) {
-                        // Grab it all.
-                        $templateFolderContents = Io::getFolderContents(Craft::$app->getPath()->getSiteTemplatesPath());
-
-                        if ($templateFolderContents) {
-                            foreach ($templateFolderContents as $file) {
-                                // Make sure it's a file.
-                                if (Io::fileExists($file)) {
-                                    $templateFolderName = Io::getFolderName(Craft::$app->getPath()->getSiteTemplatesPath(), false);
-                                    $siteTemplatePath = Craft::$app->getPath()->getSiteTemplatesPath();
-                                    $tempPath = substr($siteTemplatePath, 0, (StringHelper::length($siteTemplatePath) - StringHelper::length($templateFolderName)) - 1);
-                                    Zip::add($zipFile, $file, $tempPath);
-                                }
-                            }
-                        }
-
-                    }
-                }
-
-                if ($zipFile) {
-                    $requestParams['File1_sFilename'] = 'SupportAttachment-'.Io::cleanFilename(Craft::$app->getSites()->getPrimarySite()->name).'.zip';
-                    $requestParams['File1_sFileMimeType'] = 'application/zip';
-                    $requestParams['File1_bFileBody'] = base64_encode(Io::getFileContents($zipFile));
-
-                    // Bump the default timeout because of the attachment.
-                    $hsParams['callTimeout'] = 120;
-                }
-
-                // Grab the license.key file.
-                $licenseKeyPath = Craft::$app->getPath()->getLicenseKeyPath();
-                if (Io::fileExists($licenseKeyPath)) {
-                    $requestParams['File2_sFilename'] = 'license.key';
-                    $requestParams['File2_sFileMimeType'] = 'text/plain';
-                    $requestParams['File2_bFileBody'] = base64_encode(Io::getFileContents($licenseKeyPath));
-                }
-            } catch (\Exception $e) {
-                Craft::warning('Tried to attach debug logs to a support request and something went horribly wrong: '.$e->getMessage(), __METHOD__);
-
-                // There was a problem zipping, so reset the params and just send the email without the attachment.
-                $requestParams = $requestParamDefaults;
-            }
-
-            $hsapi = new \HelpSpotAPI($hsParams);
-
-            $result = $hsapi->requestCreate($requestParams);
-
-            if ($result) {
-                if ($zipFile) {
-                    if (Io::fileExists($zipFile)) {
-                        Io::deleteFile($zipFile);
-                    }
-                }
-
-                if ($tempFolder) {
-                    Io::clearFolder($tempFolder);
-                    Io::deleteFolder($tempFolder);
-                }
-
-                $success = true;
-            } else {
-                $hsErrors = array_filter(preg_split("/(\r\n|\n|\r)/", $hsapi->errors));
-                $errors = ['Support' => $hsErrors];
-            }
-        } else {
-            $errors = $getHelpModel->getErrors();
+        if (!$result) {
+            $errors = array_filter(preg_split("/(\r\n|\n|\r)/", $api->errors));
+            return $this->renderTemplate('_components/widgets/CraftSupport/response', [
+                'widgetId' => $widgetId,
+                'success' => false,
+                'errors' => [
+                    'Support' => $errors
+                ]
+            ]);
         }
 
         return $this->renderTemplate('_components/widgets/CraftSupport/response', [
-            'success' => $success,
-            'errors' => Json::encode($errors),
-            'widgetId' => $widgetId
+            'widgetId' => $widgetId,
+            'success' => true,
+            'errors' => []
         ]);
     }
 
@@ -549,10 +539,34 @@ class DashboardController extends Controller
     {
         $iconPath = $widget->getIconPath();
 
-        if ($iconPath && Io::fileExists($iconPath) && FileHelper::getMimeType($iconPath) == 'image/svg+xml') {
-            return Io::getFileContents($iconPath);
+        if (!$iconPath) {
+            return $this->_getDefaultWidgetIconSvg($widget);
         }
 
+        if (!is_file($iconPath)) {
+            Craft::warning("Widget icon file doesn't exist: {$iconPath}");
+
+            return $this->_getDefaultWidgetIconSvg($widget);
+        }
+
+        if (FileHelper::getMimeType($iconPath) != 'image/svg+xml') {
+            Craft::warning("Widget icon file is not an SVG: {$iconPath}");
+
+            return $this->_getDefaultWidgetIconSvg($widget);
+        }
+
+        return file_get_contents($iconPath);
+    }
+
+    /**
+     * Returns the default icon SVG for a given widget type.
+     *
+     * @param WidgetInterface $widget
+     *
+     * @return string
+     */
+    private function _getDefaultWidgetIconSvg(WidgetInterface $widget)
+    {
         return Craft::$app->getView()->renderTemplate('_includes/defaulticon.svg', [
             'label' => $widget::displayName()
         ]);
@@ -593,16 +607,5 @@ class DashboardController extends Controller
                 'errors' => $allErrors
             ]);
         }
-    }
-
-    /**
-     * @return string
-     */
-    private function _createZip()
-    {
-        $zipFile = Craft::$app->getPath()->getTempPath().'/'.StringHelper::UUID().'.zip';
-        Io::createFile($zipFile);
-
-        return $zipFile;
     }
 }

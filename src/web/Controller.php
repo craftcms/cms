@@ -9,7 +9,6 @@ namespace craft\web;
 
 use Craft;
 use craft\helpers\Header;
-use craft\helpers\Io;
 use craft\helpers\Url;
 use yii\base\InvalidParamException;
 use yii\web\BadRequestHttpException;
@@ -86,7 +85,7 @@ abstract class Controller extends \yii\web\Controller
         // Content-Type header was already set, perhaps by the template via the {% header %} tag)
         if (!Header::isHeaderSet('Content-Type')) {
             $templateFile = Craft::$app->getView()->resolveTemplate($template);
-            $extension = Io::getExtension($templateFile, 'html');
+            $extension = pathinfo($templateFile, PATHINFO_EXTENSION) ?: 'html';
 
             if ($extension == 'twig') {
                 $extension = 'html';

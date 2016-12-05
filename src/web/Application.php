@@ -10,8 +10,8 @@ namespace craft\web;
 use Craft;
 use craft\base\ApplicationTrait;
 use craft\helpers\App;
+use craft\helpers\FileHelper;
 use craft\helpers\Header;
-use craft\helpers\Io;
 use craft\helpers\Json;
 use craft\helpers\StringHelper;
 use craft\helpers\Url;
@@ -164,7 +164,7 @@ class Application extends \yii\web\Application
             $this->getUpdates()->updateCraftVersionInfo();
 
             // Clear the template caches in case they've been compiled since this release was cut.
-            Io::clearFolder($this->getPath()->getCompiledTemplatesPath());
+            FileHelper::clearDirectory($this->getPath()->getCompiledTemplatesPath());
         }
 
         // If the system is offline, make sure they have permission to be here
@@ -369,14 +369,14 @@ class Application extends \yii\web\Application
         parent::setVendorPath($path);
 
         // Override the @bower and @npm aliases if using asset-packagist.org
-        $altBowerPath = $this->getVendorPath().'/bower-asset';
-        $altNpmPath = $this->getVendorPath().'/npm-asset';
+        $altBowerPath = $this->getVendorPath().DIRECTORY_SEPARATOR.'bower-asset';
+        $altNpmPath = $this->getVendorPath().DIRECTORY_SEPARATOR.'npm-asset';
 
-        if (Io::folderExists($altBowerPath)) {
+        if (is_dir($altBowerPath)) {
             Craft::setAlias('@bower', $altBowerPath);
         }
 
-        if (Io::folderExists($altNpmPath)) {
+        if (is_dir($altNpmPath)) {
             Craft::setAlias('@npm', $altNpmPath);
         }
     }
@@ -530,18 +530,15 @@ class Application extends \yii\web\Application
             $update = true;
         }
 
-        if (($data = $request->getBodyParam('data',
-                null)) !== null && isset($data['handle'])
-        ) {
+        if (($data = $request->getBodyParam('data', null)) !== null && isset($data['handle'])) {
             $update = true;
         }
 
         // Only run for CP requests and if we're not in the middle of an update.
         if ($request->getIsCpRequest() && !$update) {
-            $cachedAppPath = $this->getCache()->get('appPath');
-            $appPath = $this->getPath()->getAppPath();
+            $cachedBasePath = $this->getCache()->get('basePath');
 
-            if ($cachedAppPath === false || $cachedAppPath !== $appPath) {
+            if ($cachedBasePath === false || $cachedBasePath !== $this->getBasePath()) {
                 return $this->runAction('templates/requirements-check');
             }
         }
@@ -588,7 +585,7 @@ class Application extends \yii\web\Application
                 }
 
                 // Clear the template caches in case they've been compiled since this release was cut.
-                Io::clearFolder($this->getPath()->getCompiledTemplatesPath());
+                FileHelper::clearDirectory($this->getPath()->getCompiledTemplatesPath());
 
                 // Show the manual update notification template
                 return $this->runAction('templates/manual-update-notification');

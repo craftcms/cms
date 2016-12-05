@@ -11,7 +11,7 @@ use Craft;
 use craft\base\Plugin;
 use craft\et\EtTransport;
 use craft\helpers\App;
-use craft\helpers\Io;
+use craft\helpers\FileHelper;
 use craft\helpers\Json;
 use craft\models\AppNewRelease;
 use craft\models\AppUpdate;
@@ -186,8 +186,8 @@ class Et extends Component
      */
     public function downloadUpdate($downloadPath, $md5, $handle)
     {
-        if (Io::folderExists($downloadPath)) {
-            $downloadPath .= '/'.$md5.'.zip';
+        if (is_dir($downloadPath)) {
+            $downloadPath .= DIRECTORY_SEPARATOR.$md5.'.zip';
         }
 
         $updateModel = Craft::$app->getUpdates()->getUpdates();
@@ -242,12 +242,12 @@ class Et extends Component
         $body->rewind();
 
         // Write it out to the file
-        Io::writeToFile($downloadPath, $body, true);
+        FileHelper::writeToFile($downloadPath, $body);
 
         // Close the stream.
         $body->close();
 
-        return Io::getFilename($downloadPath);
+        return pathinfo($downloadPath, PATHINFO_BASENAME);
     }
 
     /**

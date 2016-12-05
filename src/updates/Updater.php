@@ -15,17 +15,18 @@ use craft\errors\DbUpdateException;
 use craft\errors\DownloadPackageException;
 use craft\errors\FileException;
 use craft\errors\FilePermissionsException;
-use craft\errors\InvalidateCacheException;
 use craft\errors\MinimumRequirementException;
 use craft\errors\MissingFileException;
 use craft\errors\UnpackPackageException;
 use craft\errors\ValidatePackageException;
-use craft\helpers\Io;
+use craft\helpers\FileHelper;
 use craft\helpers\StringHelper;
 use craft\helpers\Update;
-use craft\io\Zip;
+use yii\base\ErrorException;
 use yii\base\Exception;
+use yii\base\UserException;
 use yii\helpers\Markdown;
+use ZipArchive;
 
 /**
  * Class Updater
@@ -77,7 +78,7 @@ class Updater
 		// Download the package from ET.
 		Craft::info('Downloading patch file to '.$tempPath, __METHOD__);
 		if (($filename = Craft::$app->getEt()->downloadUpdate($tempPath, $md5, $handle)) !== false) {
-			$downloadFilePath = $tempPath.'/'.$filename;
+			$downloadFilePath = $tempPath.DIRECTORY_SEPARATOR.$filename;
 		} else {
 			throw new DownloadPackageException(Craft::t('app', 'There was a problem downloading the package.'));
 		}
@@ -93,7 +94,7 @@ class Updater
 
 		// Unpack the downloaded package.
 		Craft::info('Unpacking the downloaded package.', __METHOD__);
-		$unzipFolder = Craft::$app->getPath()->getTempPath().'/'.$uid;
+		$unzipFolder = Craft::$app->getPath()->getTempPath().DIRECTORY_SEPARATOR.$uid;
 
 		if (!$this->_unpackPackage($downloadFilePath, $unzipFolder)) {
 			throw new UnpackPackageException(Craft::t('app', 'There was a problem unpacking the downloaded package.'));
@@ -167,11 +168,12 @@ class Updater
 	public function backupDatabase()
 	{
 		Craft::info('Starting to backup database.', __METHOD__);
-		if (($dbBackupPath = Craft::$app->getDb()->backup()) === false) {
+
+		if (($path = Craft::$app->getDb()->backup()) === false) {
 			throw new DbBackupException(Craft::t('app', 'There was a problem backing up your database.'));
-		} else {
-			return Io::getFilename($dbBackupPath, false);
 		}
+
+        return pathinfo($path, PATHINFO_FILENAME);
 	}
 
 	/**
@@ -215,15 +217,26 @@ class Updater
 	 * @param string $handle
 	 *
 	 * @return boolean
-	 * @throws InvalidateCacheException
+	 * @throws UserException
 	 */
 	public function cleanUp($uid, $handle)
 	{
-		// Clear the updates cache.
-		Craft::info('Clearing the update cache.', __METHOD__);
-		if (!Craft::$app->getUpdates()->flushUpdateInfoFromCache()) {
-			throw new InvalidateCacheException(Craft::t('app', 'The update was performed successfully, but there was a problem invalidating the update cache.'));
-		}
+		// Clear the update info cache
+		Craft::info('Flushing update info from cache.', __METHOD__);
+        if (!Craft::$app->getCache()->flush()) {
+            Craft::error('Could not flush the update info from cache.', __METHOD__);
+        }
+
+        // Clear the compiled templates
+        Craft::info('Deleting compiled templates.', __METHOD__);
+        $compiledTemplatesPath = Craft::$app->getPath()->getCompiledTemplatesPath();
+        if (is_dir($compiledTemplatesPath)) {
+            try {
+                FileHelper::clearDirectory($compiledTemplatesPath);
+            } catch (\Exception $e) {
+                Craft::error('Could not delete compiled templates: '.$e->getMessage(), __METHOD__);
+            }
+        }
 
 		// If uid !== false, then it's an auto-update.
 		if ($uid !== false) {
@@ -243,7 +256,7 @@ class Updater
 	// =========================================================================
 
 	/**
-	 * Remove any temp files and/or folders that might have been created.
+	 * Remove any temp files that might have been created.
 	 *
 	 * @param string $unzipFolder
 	 * @param string $handle
@@ -252,68 +265,53 @@ class Updater
 	 */
 	private function _cleanTempFiles($unzipFolder, $handle)
 	{
-		$pathService = Craft::$app->getPath();
-		$path = ($handle == 'craft' ? $pathService->getAppPath() : $pathService->getPluginsPath().'/'.$handle);
-
-		// Get rid of all the .bak files/folders.
-		$filesToDelete = Io::getFolderContents($path, true, ".*\.bak$");
-
-		if ($filesToDelete === false) {
-			$filesToDelete = array();
-		}
-
-		// Now delete any files/folders that were marked for deletion in the manifest file.
+		$basePath = Update::getBasePath($handle);
 		$manifestData = Update::getManifestData($unzipFolder, $handle);
 
 		if ($manifestData) {
-			foreach ($manifestData as $row) {
-				if (Update::isManifestVersionInfoLine($row)) {
+            // Find all the .bak files
+            $filesToDelete = FileHelper::findFiles($basePath, ['only' => ['*.bak']]);
+
+            // Add all the files that were marked for deletion in the manifest file
+			foreach ($manifestData as $line) {
+				if (Update::isManifestVersionInfoLine($line)) {
 					continue;
 				}
-
-				$rowData = explode(';', $row);
-
-				if ($rowData[1] == PatchManifestFileAction::Remove) {
-					if (Update::isManifestLineAFolder($rowData[0])) {
-						$tempFilePath = Update::cleanManifestFolderLine($rowData[0]);
-					} else {
-						$tempFilePath = $rowData[0];
-					}
-
-					$filesToDelete[] = $path.'/'.$tempFilePath;
+				list($relPath, $action) = Update::parseManifestLine($line);
+				if ($action != PatchManifestFileAction::Remove) {
+					continue;
 				}
-
-				// In case we did the whole app folder
-				if ($rowData[0][0] == '*') {
-					$filesToDelete[] = rtrim(Io::normalizePathSeparators($path), '/').'.bak/';
-				}
+                $filesToDelete[] = $basePath.DIRECTORY_SEPARATOR.FileHelper::normalizePath($relPath);
 			}
 
 			foreach ($filesToDelete as $fileToDelete) {
-				if (Io::fileExists($fileToDelete)) {
-					if (Io::isWritable($fileToDelete)) {
-						Craft::info('Deleting file: '.$fileToDelete, __METHOD__);
-						Io::deleteFile($fileToDelete, true);
+				if (!is_file($fileToDelete)) {
+                    continue;
+                }
 
-						// If that was the last file in this folder, nuke the folder.
-						if (Io::isFolderEmpty(Io::getFolderName($fileToDelete))) {
-							Io::deleteFolder(Io::getFolderName($fileToDelete));
-						}
-					}
-				} else {
-					if (Io::folderExists($fileToDelete)) {
-						if (Io::isWritable($fileToDelete)) {
-							Craft::info('Deleting .bak folder:'.$fileToDelete, __METHOD__);
-							Io::clearFolder($fileToDelete, true);
-							Io::deleteFolder($fileToDelete, true);
-						}
-					}
-				}
+                Craft::info('Deleting file: '.$fileToDelete, __METHOD__);
+                try {
+                    FileHelper::removeFile($fileToDelete);
+                } catch (ErrorException $e) {
+                    Craft::warning("Unable to delete the file \"{$fileToDelete}\": ".$e->getMessage());
+                }
+
+                // Delete empty directories
+                $dir = dirname($filesToDelete);
+                while ($dir != $basePath && FileHelper::isDirectoryEmpty($dir)) {
+                    FileHelper::removeDirectory($dir);
+                    $dir = dirname($dir);
+                }
 			}
 		}
 
-		// Clear the temp folder.
-		Io::clearFolder(Craft::$app->getPath()->getTempPath(), true);
+		// Clear the temp directory
+        $tempDir = Craft::$app->getPath()->getTempPath();
+        try {
+            FileHelper::clearDirectory($tempDir);
+        } catch (\Exception $e) {
+            Craft::warning("Could not clear the directory {$tempDir}: ".$e->getMessage());
+        }
 	}
 
 	/**
@@ -327,7 +325,7 @@ class Updater
 	private function _validateUpdate($downloadFilePath, $sourceMD5)
 	{
 		Craft::info('Validating MD5 for '.$downloadFilePath, __METHOD__);
-		$localMD5 = Io::getFileMD5($downloadFilePath);
+		$localMD5 = md5_file($downloadFilePath);
 
 		if ($localMD5 === $sourceMD5) {
 			return true;
@@ -348,11 +346,37 @@ class Updater
 	{
 		Craft::info('Unzipping package to '.$unzipFolder, __METHOD__);
 
-		if (Zip::unzip($downloadFilePath, $unzipFolder)) {
-			return true;
-		}
+        Craft::$app->getConfig()->maxPowerCaptain();
 
-		return false;
+        // Create the source folder if it doesn't exist yet
+        FileHelper::createDirectory($unzipFolder);
+
+        try {
+            // Clear out any existing files in the source directory
+            FileHelper::clearDirectory($unzipFolder);
+        } catch (\Exception $e) {
+            Craft::error("Could not clear the directory {$unzipFolder}: ".$e->getMessage());
+
+            return false;
+        }
+
+        $zip = new ZipArchive();
+        if ($zip->open($downloadFilePath, \ZipArchive::CHECKCONS) !== true) {
+            Craft::error('Could not open the zip file: '.$downloadFilePath, __METHOD__);
+
+            return false;
+        }
+
+        $success = $zip->extractTo($unzipFolder);
+        $zip->close();
+
+        if (!$success) {
+            Craft::error('There was an error unzipping the file: '.$downloadFilePath, __METHOD__);
+
+            return false;
+        }
+
+        return true;
 	}
 
 	/**
@@ -366,33 +390,36 @@ class Updater
 	private function _validateManifestPathsWritable($unzipFolder, $handle)
 	{
 		$manifestData = Update::getManifestData($unzipFolder, $handle);
+        $basePath = Update::getBasePath($handle);
 		$writableErrors = [];
 
-		$pathService = Craft::$app->getPath();
-
-		foreach ($manifestData as $row) {
-			if (Update::isManifestVersionInfoLine($row)) {
+		foreach ($manifestData as $line) {
+			if (Update::isManifestVersionInfoLine($line)) {
 				continue;
 			}
 
-			$rowData = explode(';', $row);
-			$filePath = Io::normalizePathSeparators(($handle == 'craft' ? $pathService->getAppPath() : $pathService->getPluginsPath().'/'.$handle).'/'.$rowData[0]);
+			list($relPath) = Update::parseManifestLine($line);
+            $file = $basePath.DIRECTORY_SEPARATOR.FileHelper::normalizePath($relPath);
 
-			if (Update::isManifestLineAFolder($filePath)) {
-				$filePath = Update::cleanManifestFolderLine($filePath);
-			}
-
-			// Check to see if the file/folder we need to update is writable.
-			if (Io::fileExists($filePath) || Io::folderExists($filePath)) {
-				if (!Io::isWritable($filePath)) {
-					$writableErrors[] = $filePath;
+			// If the file already exists, make sure it's writable
+			if (is_file($file)) {
+				if (!FileHelper::isWritable($file)) {
+					$writableErrors[] = $file;
 				}
-			} // In this case, it's an 'added' update file.
-			else if (($folderPath = Io::folderExists(Io::getFolderName($filePath))) == true) {
-				if (!Io::isWritable($folderPath)) {
-					$writableErrors[] = $filePath;
-				}
-			}
+			} else {
+                // Find the closest parent folder that exists and see if it's writable
+                $dir = dirname($file);
+                $basePathDir = dirname($basePath);
+                while ($dir != $basePathDir && !empty($dir) && $dir != '.') {
+                    if (is_dir($dir)) {
+                        if (!FileHelper::isWritable($dir)) {
+                            $writableErrors[] = $file;
+                        }
+                        break;
+                    }
+                    $dir = dirname($dir);
+                }
+            }
 		}
 
 		return $writableErrors;
@@ -411,38 +438,24 @@ class Updater
 	{
 		$manifestData = Update::getManifestData($unzipFolder, $handle);
 
-		$pathService = Craft::$app->getPath();
-
 		try {
-			foreach ($manifestData as $row) {
-				if (Update::isManifestVersionInfoLine($row)) {
+			foreach ($manifestData as $line) {
+				if (Update::isManifestVersionInfoLine($line)) {
 					continue;
 				}
 
 				// No need to back up migration files.
-				if (Update::isManifestMigrationLine($row)) {
+				if (Update::isManifestMigrationLine($line)) {
 					continue;
 				}
 
-				$rowData = explode(';', $row);
-				$filePath = Io::normalizePathSeparators(($handle == 'craft' ? $pathService->getAppPath() : $pathService->getPluginsPath().'/'.$handle).'/'.$rowData[0]);
+				list($relPath) = Update::parseManifestLine($line);
+                $path = Update::getBasePath($handle).DIRECTORY_SEPARATOR.FileHelper::normalizePath($relPath);
 
-				// It's a folder
-				if (Update::isManifestLineAFolder($filePath)) {
-					$folderPath = Update::cleanManifestFolderLine($filePath);
-					if (Io::folderExists($folderPath)) {
-						Craft::info('Backing up folder '.$folderPath, __METHOD__);
-						Io::createFolder($folderPath.'.bak');
-						Io::copyFolder($folderPath.'/', $folderPath.'.bak/');
-					}
-				} // It's a file.
-				else {
-					// If the file doesn't exist, it's probably a new file.
-					if (Io::fileExists($filePath)) {
-						Craft::info('Backing up file '.$filePath, __METHOD__);
-						Io::copyFile($filePath, $filePath.'.bak');
-					}
-				}
+                if (is_file($path)) {
+                    Craft::info('Backing up file '.$path, __METHOD__);
+                    copy($path, $path.'.bak');
+                }
 			}
 		} catch (\Exception $e) {
 			Craft::error('Error updating files: '.$e->getMessage(), __METHOD__);
@@ -462,31 +475,29 @@ class Updater
 	 */
 	private function _validateNewRequirements($unzipFolder)
 	{
-		$requirementsFolderPath = $unzipFolder.'/app/requirements';
-		$requirementsFile = $requirementsFolderPath.'/requirements.php';
+		$requirementsFolderPath = FileHelper::normalizePath($unzipFolder.DIRECTORY_SEPARATOR.'app'.DIRECTORY_SEPARATOR.'requirements');
+		$requirementsFile = FileHelper::normalizePath($requirementsFolderPath.DIRECTORY_SEPARATOR.'requirements.php');
 		$errors = [];
 
-		if (!Io::fileExists($requirementsFile)) {
+		if (!is_file($requirementsFile)) {
 			throw new MissingFileException(Craft::t('app', 'The requirements file is required and it does not exist at {path}.', ['path' => $requirementsFile]));
 		}
 
 		// Make sure we can write to craft/app/requirements
-		if (!Io::isWritable(Craft::$app->getPath()->getAppPath().'/requirements')) {
+		if (!FileHelper::isWritable(Craft::$app->getPath()->getAppPath().DIRECTORY_SEPARATOR.'requirements')) {
 			throw new FilePermissionsException(Markdown::process(Craft::t('app', 'Craft CMS needs to be able to write to your craft/app/requirements folder and cannot. Please check your [permissions]({url}).', ['url' => 'http://craftcms.com/docs/updating#one-click-updating'])));
 		}
 
-		$tempFilename = StringHelper::UUID().'.php';
-
 		// Make a dupe of the requirements file and give it a random file name.
-		Io::copyFile($requirementsFile, $requirementsFolderPath.'/'.$tempFilename);
-
-		$newTempFilePath = Craft::$app->getPath()->getAppPath().'/requirements/'.$tempFilename;
+        $tempFilename = StringHelper::UUID().'.php';
+		copy($requirementsFile, $requirementsFolderPath.DIRECTORY_SEPARATOR.$tempFilename);
 
 		// Copy the random file name requirements to the requirements folder.
 		// We don't want to execute any PHP from the storage folder.
-		Io::copyFile($requirementsFolderPath.'/'.$tempFilename, $newTempFilePath);
+        $newTempFilePath = Craft::$app->getBasePath().DIRECTORY_SEPARATOR.'requirements'.DIRECTORY_SEPARATOR.$tempFilename;
+		copy($requirementsFolderPath.DIRECTORY_SEPARATOR.$tempFilename, $newTempFilePath);
 
-		require_once(Craft::$app->getPath()->getAppPath().'/requirements/RequirementsChecker.php');
+		require_once Craft::$app->getBasePath().DIRECTORY_SEPARATOR.'requirements'.DIRECTORY_SEPARATOR.'RequirementsChecker.php';
 
 		// Run the requirements checker
 		$reqCheck = new \RequirementsChecker();
@@ -502,7 +513,7 @@ class Updater
 		}
 
 		// Cleanup
-		Io::deleteFile($newTempFilePath);
+		FileHelper::removeFile($newTempFilePath);
 
 		return $errors;
 	}

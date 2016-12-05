@@ -27,6 +27,7 @@ use craft\services\Security;
 use craft\web\Application as WebApplication;
 use craft\web\AssetManager;
 use craft\web\View;
+use yii\mutex\FileMutex;
 use yii\web\BadRequestHttpException;
 use yii\web\ServerErrorHttpException;
 
@@ -984,6 +985,17 @@ trait ApplicationTrait
     }
 
     /**
+     * Returns the application’s mutex service.
+     *
+     * @return FileMutex The application’s mutex service
+     */
+    public function getMutex()
+    {
+        /** @var \craft\web\Application|\craft\console\Application $this */
+        return $this->get('mutex');
+    }
+
+    /**
      * Returns the path service.
      *
      * @return \craft\services\Path The path service
@@ -1316,12 +1328,12 @@ trait ApplicationTrait
         $edition = $this->getEdition();
 
         if ($edition == Craft::Client || $edition == Craft::Pro) {
-            $pathService = $this->getPath();
+            $basePath = $this->getBasePath();
 
-            $this->setComponents(require $pathService->getAppPath().'/config/components/client.php');
+            $this->setComponents(require $basePath.DIRECTORY_SEPARATOR.'config'.DIRECTORY_SEPARATOR.'components'.DIRECTORY_SEPARATOR.'client.php');
 
             if ($edition == Craft::Pro) {
-                $this->setComponents(require $pathService->getAppPath().'/config/components/pro.php');
+                $this->setComponents(require $basePath.DIRECTORY_SEPARATOR.'config'.DIRECTORY_SEPARATOR.'components'.DIRECTORY_SEPARATOR.'pro.php');
             }
         }
     }

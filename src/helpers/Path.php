@@ -30,7 +30,7 @@ class Path
         // Sanitize
         $path = StringHelper::convertToUtf8($path);
 
-        $segs = explode('/', $path);
+        $segs = preg_split('/[\\/\\\\]/', $path);
         $level = 0;
 
         foreach ($segs as $seg) {

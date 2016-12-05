@@ -14,7 +14,7 @@ use craft\enums\PluginUpdateStatus;
 use craft\enums\VersionUpdateStatus;
 use craft\events\UpdateEvent;
 use craft\helpers\DateTimeHelper;
-use craft\helpers\Io;
+use craft\helpers\FileHelper;
 use craft\helpers\Json;
 use craft\helpers\Update as UpdateHelper;
 use craft\i18n\Locale;
@@ -233,22 +233,6 @@ class Updates extends Component
         }
 
         return $this->_updateModel;
-    }
-
-    /**
-     * @return boolean
-     */
-    public function flushUpdateInfoFromCache()
-    {
-        Craft::info('Flushing update info from cache.', __METHOD__);
-
-        if (Io::clearFolder(Craft::$app->getPath()->getCompiledTemplatesPath(),
-                true) && Craft::$app->getCache()->flush()
-        ) {
-            return true;
-        }
-
-        return false;
     }
 
     /**
@@ -526,8 +510,8 @@ class Updates extends Component
         $errorPath = null;
 
         foreach ($checkPaths as $writablePath) {
-            if (!Io::isWritable($writablePath)) {
-                $errorPath[] = Io::getRealPath($writablePath);
+            if (!FileHelper::isWritable($writablePath)) {
+                $errorPath[] = $writablePath;
             }
         }
 
@@ -736,7 +720,7 @@ class Updates extends Component
      * @param string $uid
      * @param string $handle
      *
-     * @return array
+     * @return void
      */
     public function updateCleanUp($uid, $handle)
     {

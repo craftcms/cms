@@ -69,14 +69,14 @@ class Localization
         $data = null;
 
         // Load the locale data
-        $appDataPath = Craft::$app->getPath()->getAppPath().'/config/locales/'.$localeId.'.php';
-        $customDataPath = Craft::$app->getPath()->getConfigPath().'/locales/'.$localeId.'.php';
+        $appDataPath = Craft::$app->getBasePath().DIRECTORY_SEPARATOR.'config'.DIRECTORY_SEPARATOR.'locales'.DIRECTORY_SEPARATOR.$localeId.'.php';
+        $customDataPath = Craft::$app->getPath()->getConfigPath().DIRECTORY_SEPARATOR.'locales'.DIRECTORY_SEPARATOR.$localeId.'.php';
 
-        if (Io::fileExists($appDataPath)) {
+        if (is_file($appDataPath)) {
             $data = require($appDataPath);
         }
 
-        if (Io::fileExists($customDataPath)) {
+        if (is_file($customDataPath)) {
             if ($data !== null) {
                 $data = ArrayHelper::merge($data, require($customDataPath));
             } else {
@@ -135,12 +135,12 @@ class Localization
         }
 
         // No luck in cache, check the file system.
-        $frameworkMessagePath = Io::normalizePathSeparators(Craft::getAlias('@app/framework/messages'));
+        $frameworkMessagePath = FileHelper::normalizePath(Craft::getAlias('@app/framework/messages'));
 
         foreach ($translationFiles as $translationFile) {
-            $path = $frameworkMessagePath.$translationFile.'/yii.php';
+            $path = $frameworkMessagePath.DIRECTORY_SEPARATOR.$translationFile.DIRECTORY_SEPARATOR.'yii.php';
 
-            if (Io::fileExists($path)) {
+            if (is_file($path)) {
                 // Load it up.
                 static::$_translations[$translationFile] = include($path);
 

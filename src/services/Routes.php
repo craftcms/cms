@@ -11,7 +11,6 @@ use Craft;
 use craft\db\Query;
 use craft\errors\RouteNotFoundException;
 use craft\events\RouteEvent;
-use craft\helpers\Io;
 use craft\helpers\Json;
 use craft\records\Route as RouteRecord;
 use yii\base\Component;
@@ -59,9 +58,9 @@ class Routes extends Component
      */
     public function getConfigFileRoutes()
     {
-        $path = Craft::$app->getPath()->getConfigPath().'/routes.php';
+        $path = Craft::$app->getPath()->getConfigPath().DIRECTORY_SEPARATOR.'routes.php';
 
-        if (Io::fileExists($path)) {
+        if (file_exists($path)) {
             $routes = require_once($path);
 
             if (is_array($routes)) {

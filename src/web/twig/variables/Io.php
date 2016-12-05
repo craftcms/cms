@@ -9,7 +9,7 @@ namespace craft\web\twig\variables;
 
 use Craft;
 use craft\helpers\App as AppHelper;
-use craft\helpers\Io as IoHelper;
+use craft\helpers\Assets;
 
 /**
  * Io variable.
@@ -55,6 +55,6 @@ class Io
      */
     public function getFileKinds()
     {
-        return IoHelper::getFileKinds();
+        return Assets::getFileKinds();
     }
 }

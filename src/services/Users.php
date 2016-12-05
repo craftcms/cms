@@ -24,7 +24,6 @@ use craft\events\UserUnsuspendEvent;
 use craft\helpers\Assets as AssetsHelper;
 use craft\helpers\DateTimeHelper;
 use craft\helpers\Db;
-use craft\helpers\Io;
 use craft\helpers\Image;
 use craft\helpers\Json;
 use craft\helpers\StringHelper;
@@ -464,9 +463,9 @@ class Users extends Component
      */
     public function saveUserPhoto($fileLocation, User $user, $filename = "")
     {
-        $filenameToUse = AssetsHelper::prepareAssetName($filename ?: Io::getFilename($fileLocation, false), true, true);
+        $filenameToUse = AssetsHelper::prepareAssetName($filename ?: pathinfo($fileLocation, PATHINFO_FILENAME), true, true);
 
-        if(!Image::isImageManipulatable(Io::getExtension($fileLocation))) {
+        if(!Image::isImageManipulatable(pathinfo($fileLocation, PATHINFO_EXTENSION))) {
             throw new ImageException(Craft::t('app', 'User photo must be an image that Craft can manipulate.'));
         }
 
@@ -489,7 +488,7 @@ class Users extends Component
             $filenameToUse = $assets->getNameReplacementInFolder($filenameToUse, $folderId);
 
             $photo = new Asset();
-            $photo->title = StringHelper::toTitleCase(Io::getFilename($filenameToUse, false));
+            $photo->title = StringHelper::toTitleCase(pathinfo($filenameToUse, PATHINFO_FILENAME));
             $photo->newFilePath = $fileLocation;
             $photo->filename = $filenameToUse;
             $photo->folderId = $folderId;

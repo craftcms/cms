@@ -10,7 +10,7 @@ namespace craft\db\mysql;
 use Craft;
 use craft\db\TableSchema;
 use craft\errors\DbBackupException;
-use craft\helpers\Io;
+use craft\helpers\FileHelper;
 use craft\services\Config;
 use yii\db\Exception;
 
@@ -227,7 +227,7 @@ class Schema extends \yii\db\mysql\Schema
      */
     private function _createDumpConfigFile()
     {
-        $filePath = Craft::$app->getPath()->getTempPath().'/my.cnf';
+        $filePath = Craft::$app->getPath()->getTempPath().DIRECTORY_SEPARATOR.'my.cnf';
 
         $config = Craft::$app->getConfig();
         $contents = '[client]'.PHP_EOL.
@@ -236,9 +236,7 @@ class Schema extends \yii\db\mysql\Schema
             'host='.$config->get('server', Config::CATEGORY_DB).PHP_EOL.
             'port='.$config->getDbPort();
 
-        if (!Io::writeToFile($filePath, $contents)) {
-            throw new DbBackupException('Could not write the my.cnf file for mysqldump to use to connect to the database.');
-        }
+        FileHelper::writeToFile($filePath, $contents);
 
         return $filePath;
     }

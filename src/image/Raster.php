@@ -11,7 +11,6 @@ use Craft;
 use craft\base\Image;
 use craft\errors\ImageException;
 use craft\helpers\Image as ImageHelper;
-use craft\helpers\Io;
 use craft\helpers\StringHelper;
 use Imagine\Exception\NotSupportedException;
 use Imagine\Exception\RuntimeException;
@@ -25,7 +24,8 @@ use Imagine\Image\Palette\RGB;
 use Imagine\Image\Point;
 use Imagine\Imagick\Imagine as ImagickImagine;
 use Imagine\Imagick\Image as ImagickImage;
-use yii\helpers\FileHelper;
+use craft\helpers\FileHelper;
+use yii\base\ErrorException;
 
 /**
  * Raster class is used for raster image manipulations.
@@ -142,7 +142,7 @@ class Raster extends Image
     {
         $imageService = Craft::$app->getImages();
 
-        if (!Io::fileExists($path)) {
+        if (!is_file($path)) {
             Craft::error('Tried to load an image at '.$path.', but the file does not exist.');
             throw new ImageException(Craft::t('app', 'No file exists at the given path.'));
         }
@@ -156,7 +156,7 @@ class Raster extends Image
         $mimeType = FileHelper::getMimeType($path, null, false);
 
         if ($mimeType !== null && strncmp($mimeType, 'image/', 6) !== 0) {
-            throw new ImageException(Craft::t('app', 'The file “{name}” does not appear to be an image.', ['name' => Io::getFilename($path)]));
+            throw new ImageException(Craft::t('app', 'The file “{name}” does not appear to be an image.', ['name' => pathinfo($path, PATHINFO_BASENAME)]));
         }
 
         try {
@@ -178,7 +178,7 @@ class Raster extends Image
         }
 
         $this->_imageSourcePath = $path;
-        $this->_extension = Io::getExtension($path);
+        $this->_extension = pathinfo($path, PATHINFO_EXTENSION);
 
         if ($this->_extension == 'gif') {
             if (!$imageService->getIsGd() && $this->_image->layers()) {
@@ -382,19 +382,21 @@ class Raster extends Image
      */
     public function saveAs($targetPath, $autoQuality = false)
     {
-        $extension = StringHelper::toLowerCase(Io::getExtension($targetPath));
+        $extension = StringHelper::toLowerCase(pathinfo($targetPath, PATHINFO_EXTENSION));
 
         $options = $this->_getSaveOptions(false, $extension);
-        $targetPath = Io::getFolderName($targetPath).Io::getFilename($targetPath,
-                false).'.'.Io::getExtension($targetPath);
+        $targetPath = pathinfo($targetPath, PATHINFO_DIRNAME).DIRECTORY_SEPARATOR.pathinfo($targetPath, PATHINFO_FILENAME).'.'.pathinfo($targetPath, PATHINFO_EXTENSION);
 
         try {
             if ($autoQuality && in_array($extension, ['jpeg', 'jpg', 'png'])) {
                 clearstatcache();
-                $originalSize = Io::getFileSize($this->_imageSourcePath);
-                $tempFile = $this->_autoGuessImageQuality($targetPath,
-                    $originalSize, $extension, 0, 200);
-                Io::move($tempFile, $targetPath, true);
+                $originalSize = filesize($this->_imageSourcePath);
+                $tempFile = $this->_autoGuessImageQuality($targetPath, $originalSize, $extension, 0, 200);
+                try {
+                    rename($tempFile, $targetPath);
+                } catch (ErrorException $e) {
+                    Craft::warning("Unable to rename \"{$tempFile}\" to \"{$targetPath}\": ".$e->getMessage());
+                }
             } else {
                 $this->_image->save($targetPath, $options);
             }
@@ -545,8 +547,7 @@ class Raster extends Image
         @set_time_limit(30);
 
         if ($step == 0) {
-            $tempFileName = Io::getFolderName($tempFileName).Io::getFilename($tempFileName,
-                    false).'-temp.'.$extension;
+            $tempFileName = pathinfo($tempFileName, PATHINFO_DIRNAME).DIRECTORY_SEPARATOR.pathinfo($tempFileName, PATHINFO_FILENAME).'-temp.'.$extension;
         }
 
         // Find our target quality by splitting the min and max qualities
@@ -558,9 +559,8 @@ class Raster extends Image
         clearstatcache();
 
         // Generate a new temp image and get it's file size.
-        $this->_image->save($tempFileName,
-            $this->_getSaveOptions($midQuality, $extension));
-        $newFileSize = Io::getFileSize($tempFileName);
+        $this->_image->save($tempFileName, $this->_getSaveOptions($midQuality, $extension));
+        $newFileSize = filesize($tempFileName);
 
         // If we're on step 10 OR we're within our acceptable range threshold OR midQuality = maxQuality (1 == 1),
         // let's use the current image.

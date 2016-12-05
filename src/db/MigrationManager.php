@@ -9,7 +9,7 @@ namespace craft\db;
 
 use Craft;
 use craft\helpers\Db;
-use craft\helpers\Io;
+use craft\helpers\FileHelper;
 use yii\base\Component;
 use yii\base\Exception;
 use yii\base\InvalidConfigException;
@@ -84,9 +84,9 @@ class MigrationManager extends Component
             throw new InvalidConfigException('Invalid migration type: '.$this->type);
         }
 
-        $migrationPath = Craft::getAlias($this->migrationPath);
+        $migrationPath = FileHelper::normalizePath(Craft::getAlias($this->migrationPath));
 
-        if (!$migrationPath || !Io::folderExists($migrationPath)) {
+        if (!$migrationPath || !is_dir($migrationPath)) {
             Craft::warning('Migration folder doesn\'t exist: '.$migrationPath);
             $this->migrationPath = false;
         } else {

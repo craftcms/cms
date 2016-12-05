@@ -10,7 +10,6 @@ use craft\errors\VolumeObjectNotFoundException;
 use craft\helpers\Assets as AssetsHelper;
 use craft\helpers\Db;
 use craft\helpers\Image;
-use craft\helpers\Io;
 use craft\helpers\StringHelper;
 use craft\models\AssetIndexData;
 use craft\records\AssetIndexData as AssetIndexDataRecord;
@@ -187,10 +186,7 @@ class AssetIndexer extends Component
             if ($asset->kind == 'image') {
                 $targetPath = $asset->getImageTransformSourcePath();
 
-                if ($asset->dateModified != $timeModified || !Io::fileExists(
-                        $targetPath
-                    )
-                ) {
+                if ($asset->dateModified != $timeModified || !is_file($targetPath)) {
                     if (!$volume::isLocal()) {
                         $volume->saveFileLocally($uriPath, $targetPath);
 
@@ -365,9 +361,9 @@ class AssetIndexer extends Component
      */
     private function _indexFile($volume, $uriPath)
     {
-        $extension = Io::getExtension($uriPath);
+        $extension = pathinfo($uriPath, PATHINFO_EXTENSION);
 
-        if (Io::isExtensionAllowed($extension)) {
+        if (Craft::$app->getConfig()->isExtensionAllowed($extension)) {
             $parts = explode('/', $uriPath);
             $filename = array_pop($parts);
 
@@ -403,7 +399,7 @@ class AssetIndexer extends Component
                 $assetModel->volumeId = $volume->id;
                 $assetModel->folderId = $folderId;
                 $assetModel->filename = $filename;
-                $assetModel->kind = Io::getFileKind($extension);
+                $assetModel->kind = AssetsHelper::getFileKindByExtension($uriPath);
                 $assetModel->indexInProgress = true;
                 $assets->saveAsset($assetModel);
             }

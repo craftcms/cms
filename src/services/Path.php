@@ -8,8 +8,10 @@
 namespace craft\services;
 
 use Craft;
-use craft\helpers\Io;
+use craft\helpers\App;
+use craft\helpers\FileHelper;
 use yii\base\Component;
+use yii\base\Exception;
 
 /**
  * The Path service provides APIs for getting server paths that are used by Craft.
@@ -61,12 +63,21 @@ class Path extends Component
      * Returns the path to the craft/app/ folder.
      *
      * @return string The path to the craft/app/ folder.
+     * @throws Exception if Craft was installed via Composer
      */
     public function getAppPath()
     {
-        if (!isset($this->_appPath)) {
-            $this->_appPath = Craft::getAlias('@app');
+        if (isset($this->_appPath)) {
+            return $this->_appPath;
         }
+
+        // "craft/app" is only a thing for manual installs
+        if (App::isComposerInstall()) {
+            throw new Exception('There is no "app" folder when Craft is installed via Composer.');
+        }
+
+        $basePath = Craft::$app->getBasePath();
+        $this->_appPath = dirname(dirname(dirname($basePath)));
 
         return $this->_appPath;
     }
@@ -79,7 +90,7 @@ class Path extends Component
     public function getConfigPath()
     {
         if (!isset($this->_configPath)) {
-            $this->_configPath = Craft::getAlias('@config');
+            $this->_configPath = FileHelper::normalizePath(Craft::getAlias('@config'));
         }
 
         return $this->_configPath;
@@ -93,7 +104,7 @@ class Path extends Component
     public function getPluginsPath()
     {
         if (!isset($this->_pluginsPath)) {
-            $this->_pluginsPath = Craft::getAlias('@plugins');
+            $this->_pluginsPath = FileHelper::normalizePath(Craft::getAlias('@plugins'));
         }
 
         return $this->_pluginsPath;
@@ -107,7 +118,7 @@ class Path extends Component
     public function getStoragePath()
     {
         if (!isset($this->_storagePath)) {
-            $this->_storagePath = Craft::getAlias('@storage');
+            $this->_storagePath = FileHelper::normalizePath(Craft::getAlias('@storage'));
         }
 
         return $this->_storagePath;
@@ -120,8 +131,8 @@ class Path extends Component
      */
     public function getRebrandPath()
     {
-        $path = $this->getStoragePath().'/rebrand';
-        Io::ensureFolderExists($path);
+        $path = $this->getStoragePath().DIRECTORY_SEPARATOR.'rebrand';
+        FileHelper::createDirectory($path);
 
         return $path;
     }
@@ -134,7 +145,7 @@ class Path extends Component
     public function getVendorPath()
     {
         if (!isset($this->_vendorPath)) {
-            $this->_vendorPath = Craft::getAlias('@vendor');
+            $this->_vendorPath = FileHelper::normalizePath(Craft::getAlias('@vendor'));
         }
 
         return $this->_vendorPath;
@@ -147,11 +158,13 @@ class Path extends Component
      */
     public function getRuntimePath()
     {
-        $path = $this->getStoragePath().'/runtime';
-        Io::ensureFolderExists($path);
+        $path = $this->getStoragePath().DIRECTORY_SEPARATOR.'runtime';
+        FileHelper::createDirectory($path);
 
-        if (!Io::fileExists($path.'/.gitignore')) {
-            Io::writeToFile($path.'/.gitignore', "*\n!.gitignore\n\n", true);
+        // Add a .gitignore file in there if there isn't one
+        $gitignorePath = $path.DIRECTORY_SEPARATOR.'.gitignore';
+        if (!is_file($gitignorePath)) {
+            FileHelper::writeToFile($gitignorePath, "*\n!.gitignore\n");
         }
 
         return $path;
@@ -164,8 +177,8 @@ class Path extends Component
      */
     public function getDbBackupPath()
     {
-        $path = $this->getStoragePath().'/backups';
-        Io::ensureFolderExists($path);
+        $path = $this->getStoragePath().DIRECTORY_SEPARATOR.'backups';
+        FileHelper::createDirectory($path);
 
         return $path;
     }
@@ -177,8 +190,8 @@ class Path extends Component
      */
     public function getTempPath()
     {
-        $path = $this->getRuntimePath().'/temp';
-        Io::ensureFolderExists($path);
+        $path = $this->getRuntimePath().DIRECTORY_SEPARATOR.'temp';
+        FileHelper::createDirectory($path);
 
         return $path;
     }
@@ -190,8 +203,8 @@ class Path extends Component
      */
     public function getTempUploadsPath()
     {
-        $path = $this->getTempPath().'/uploads';
-        Io::ensureFolderExists($path);
+        $path = $this->getTempPath().DIRECTORY_SEPARATOR.'uploads';
+        FileHelper::createDirectory($path);
 
         return $path;
     }
@@ -203,21 +216,21 @@ class Path extends Component
      */
     public function getAssetsPath()
     {
-        $path = $this->getRuntimePath().'/assets';
-        Io::ensureFolderExists($path);
+        $path = $this->getRuntimePath().DIRECTORY_SEPARATOR.'assets';
+        FileHelper::createDirectory($path);
 
         return $path;
     }
 
     /**
-     * Returns the path to the craft/storage/runtime/cache/assets/ folder.
+     * Returns the path to the craft/storage/runtime/assets/cache/ folder.
      *
-     * @return string The path to the craft/storage/runtime/cache/assets/ folder.
+     * @return string The path to the craft/storage/runtime/assets/cache/ folder.
      */
     public function getAssetsCachePath()
     {
-        $path = $this->getAssetsPath().'/cache';
-        Io::ensureFolderExists($path);
+        $path = $this->getAssetsPath().DIRECTORY_SEPARATOR.'cache';
+        FileHelper::createDirectory($path);
 
         return $path;
     }
@@ -229,8 +242,8 @@ class Path extends Component
      */
     public function getAssetsTempVolumePath()
     {
-        $path = $this->getAssetsPath().'/tempuploads';
-        Io::ensureFolderExists($path);
+        $path = $this->getAssetsPath().DIRECTORY_SEPARATOR.'tempuploads';
+        FileHelper::createDirectory($path);
 
         return $path;
     }
@@ -242,21 +255,21 @@ class Path extends Component
      */
     public function getAssetsImageSourcePath()
     {
-        $path = $this->getAssetsCachePath().'/sources';
-        Io::ensureFolderExists($path);
+        $path = $this->getAssetsCachePath().DIRECTORY_SEPARATOR.'sources';
+        FileHelper::createDirectory($path);
 
         return $path;
     }
 
     /**
-     * Returns the path to the craft/storage/runtime/assets/resized/ folder.
+     * Returns the path to the craft/storage/runtime/assets/cache/resized/ folder.
      *
-     * @return string The path to the craft/storage/runtime/assets/resized/ folder.
+     * @return string The path to the craft/storage/runtime/assets/cache/resized/ folder.
      */
     public function getResizedAssetsPath()
     {
-        $path = $this->getAssetsCachePath().'/resized';
-        Io::ensureFolderExists($path);
+        $path = $this->getAssetsCachePath().DIRECTORY_SEPARATOR.'resized';
+        FileHelper::createDirectory($path);
 
         return $path;
     }
@@ -268,8 +281,8 @@ class Path extends Component
      */
     public function getAssetsIconsPath()
     {
-        $path = $this->getAssetsCachePath().'/icons';
-        Io::ensureFolderExists($path);
+        $path = $this->getAssetsCachePath().DIRECTORY_SEPARATOR.'icons';
+        FileHelper::createDirectory($path);
 
         return $path;
     }
@@ -281,8 +294,8 @@ class Path extends Component
      */
     public function getPluginIconsPath()
     {
-        $path = $this->getRuntimePath().'/pluginicons';
-        Io::ensureFolderExists($path);
+        $path = $this->getRuntimePath().DIRECTORY_SEPARATOR.'pluginicons';
+        FileHelper::createDirectory($path);
 
         return $path;
     }
@@ -294,8 +307,8 @@ class Path extends Component
      */
     public function getLogPath()
     {
-        $path = $this->getStoragePath().'/logs';
-        Io::ensureFolderExists($path);
+        $path = $this->getStoragePath().DIRECTORY_SEPARATOR.'logs';
+        FileHelper::createDirectory($path);
 
         return $path;
     }
@@ -307,23 +320,7 @@ class Path extends Component
      */
     public function getResourcesPath()
     {
-        return $this->getAppPath().'/resources';
-    }
-
-    /**
-     * Returns the path to the craft/app/migrations/ folder, or the path to a plugin’s migrations/ folder.
-     *
-     * @param string $pluginHandle The plugin handle whose migrations/ folder should be returned. Defaults to `null`.
-     *
-     * @return string The path to the migrations/ folder.
-     */
-    public function getMigrationsPath($pluginHandle = null)
-    {
-        if ($pluginHandle) {
-            return $this->getPluginsPath()."/$pluginHandle/migrations";
-        }
-
-        return $this->getAppPath().'/migrations';
+        return Craft::$app->getBasePath().DIRECTORY_SEPARATOR.'resources';
     }
 
     /**
@@ -333,7 +330,7 @@ class Path extends Component
      */
     public function getCpTranslationsPath()
     {
-        return $this->getAppPath().'/translations';
+        return Craft::$app->getBasePath().DIRECTORY_SEPARATOR.'translations';
     }
 
     /**
@@ -357,7 +354,7 @@ class Path extends Component
      */
     public function getCpTemplatesPath()
     {
-        return $this->getAppPath().'/templates';
+        return Craft::$app->getBasePath().DIRECTORY_SEPARATOR.'templates';
     }
 
     /**
@@ -367,7 +364,7 @@ class Path extends Component
      */
     public function getSiteTemplatesPath()
     {
-        return Craft::getAlias('@templates');
+        return FileHelper::normalizePath(Craft::getAlias('@templates'));
     }
 
     /**
@@ -377,8 +374,8 @@ class Path extends Component
      */
     public function getCompiledTemplatesPath()
     {
-        $path = $this->getRuntimePath().'/compiled_templates';
-        Io::ensureFolderExists($path);
+        $path = $this->getRuntimePath().DIRECTORY_SEPARATOR.'compiled_templates';
+        FileHelper::createDirectory($path);
 
         return $path;
     }
@@ -390,8 +387,8 @@ class Path extends Component
      */
     public function getSessionPath()
     {
-        $path = $this->getRuntimePath().'/sessions';
-        Io::ensureFolderExists($path);
+        $path = $this->getRuntimePath().DIRECTORY_SEPARATOR.'sessions';
+        FileHelper::createDirectory($path);
 
         return $path;
     }
@@ -406,13 +403,14 @@ class Path extends Component
      */
     public function getCachePath()
     {
-        $path = Craft::getAlias(Craft::$app->getConfig()->get('cachePath', Config::CATEGORY_FILECACHE));
+        $path = Craft::$app->getConfig()->get('cachePath', Config::CATEGORY_FILECACHE);
+        $path = FileHelper::normalizePath(Craft::getAlias($path));
 
         if (!$path) {
-            $path = $this->getRuntimePath().'/cache';
+            $path = $this->getRuntimePath().DIRECTORY_SEPARATOR.'cache';
         }
 
-        Io::ensureFolderExists($path);
+        FileHelper::createDirectory($path);
 
         return $path;
     }
@@ -424,6 +422,6 @@ class Path extends Component
      */
     public function getLicenseKeyPath()
     {
-        return $this->getConfigPath().'/license.key';
+        return $this->getConfigPath().DIRECTORY_SEPARATOR.'license.key';
     }
 }

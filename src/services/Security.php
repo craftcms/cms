@@ -8,7 +8,7 @@
 namespace craft\services;
 
 use Craft;
-use craft\helpers\Io;
+use craft\helpers\FileHelper;
 use craft\helpers\StringHelper;
 use yii\base\Exception;
 use yii\base\InvalidParamException;
@@ -90,23 +90,21 @@ class Security extends \yii\base\Security
             return $key;
         }
 
-        $validationKeyPath = Craft::$app->getPath()->getRuntimePath().'/validation.key';
+        $validationKeyPath = Craft::$app->getPath()->getRuntimePath().DIRECTORY_SEPARATOR.'validation.key';
 
-        if (Io::fileExists($validationKeyPath)) {
-            return StringHelper::trim(Io::getFileContents($validationKeyPath));
+        if (is_file($validationKeyPath)) {
+            return StringHelper::trim(file_get_contents($validationKeyPath));
         }
 
-        if (!Io::isWritable($validationKeyPath)) {
+        if (!FileHelper::isWritable($validationKeyPath)) {
             throw new Exception("Tried to write the validation key to {$validationKeyPath}, but could not.");
         }
 
         $key = $this->generateRandomString();
 
-        if (Io::writeToFile($validationKeyPath, $key)) {
-            return $key;
-        }
+        FileHelper::writeToFile($validationKeyPath, $key);
 
-        throw new Exception("Tried to write the validation key to {$validationKeyPath}, but could not.");
+        return $key;
     }
 
     /**

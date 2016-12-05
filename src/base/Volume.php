@@ -174,8 +174,7 @@ abstract class Volume extends SavableComponent implements VolumeInterface
      */
     public function folderExists($path)
     {
-        return $this->getAdapter()->has(rtrim($path,
-                '/').($this->foldersHaveTrailingSlashes ? '/' : ''));
+        return $this->getAdapter()->has(rtrim($path, '/').($this->foldersHaveTrailingSlashes ? '/' : ''));
     }
 
     /**

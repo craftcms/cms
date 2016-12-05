@@ -15,7 +15,7 @@ use craft\events\BackupFailureEvent;
 use craft\events\RestoreEvent;
 use craft\events\RestoreFailureEvent;
 use craft\helpers\ArrayHelper;
-use craft\helpers\Io;
+use craft\helpers\FileHelper;
 use craft\helpers\StringHelper;
 use craft\services\Config;
 use mikehaertl\shellcommand\Command as ShellCommand;
@@ -121,7 +121,7 @@ class Connection extends \yii\db\Connection
     {
         // Determine the backup file path
         $currentVersion = 'v'.Craft::$app->version;
-        $siteName = Io::cleanFilename($this->_getFixedSiteName(), true);
+        $siteName = FileHelper::sanitizeFilename($this->_getFixedSiteName(), ['asciiOnly' => true]);
         $filename = ($siteName ? $siteName.'_' : '').gmdate('ymd_His').'_'.strtolower(StringHelper::randomString(10)).'_'.$currentVersion.'.sql';
         $filePath = Craft::$app->getPath()->getDbBackupPath().'/'.StringHelper::toLowerCase($filename);
 
@@ -151,7 +151,7 @@ class Connection extends \yii\db\Connection
         $success = $command->execute();
 
         // Nuke any temp connection files that might have been created.
-        Io::clearFolder(Craft::$app->getPath()->getTempPath());
+        FileHelper::clearDirectory(Craft::$app->getPath()->getTempPath());
 
         if (!$success) {
             $errorMessage = $command->getError();
@@ -212,7 +212,7 @@ class Connection extends \yii\db\Connection
         $success = $command->execute();
 
         // Nuke any temp connection files that might have been created.
-        Io::clearFolder(Craft::$app->getPath()->getTempPath());
+        FileHelper::clearDirectory(Craft::$app->getPath()->getTempPath());
 
         if (!$success) {
             $errorMessage = $command->getError();

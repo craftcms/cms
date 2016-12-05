@@ -11,13 +11,9 @@ use Craft;
 use craft\base\Image;
 use craft\helpers\App;
 use craft\helpers\Image as ImageHelper;
-use craft\helpers\Io;
 use craft\helpers\StringHelper;
 use craft\image\Raster;
 use craft\image\Svg;
-use lsolesen\pel\PelDataWindow;
-use lsolesen\pel\PelJpeg;
-use lsolesen\pel\PelTag;
 use yii\base\Component;
 
 /**
@@ -140,7 +136,7 @@ class Images extends Component
      */
     public function loadImage($path, $rasterize = false, $svgSize = 1000)
     {
-        if (StringHelper::toLowerCase(Io::getExtension($path)) == 'svg') {
+        if (StringHelper::toLowerCase(pathinfo($path, PATHINFO_EXTENSION)) == 'svg') {
             $image = new Svg();
             $image->loadImage($path);
 
@@ -173,7 +169,7 @@ class Images extends Component
      */
     public function checkMemoryForImage($filePath, $toTheMax = false)
     {
-        if (StringHelper::toLowerCase(Io::getExtension($filePath)) == 'svg') {
+        if (StringHelper::toLowerCase(pathinfo($filePath, PATHINFO_EXTENSION)) == 'svg') {
             return true;
         }
 
