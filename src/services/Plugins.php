@@ -398,7 +398,7 @@ class Plugins extends Component
             $info['installDate'] = DateTimeHelper::toDateTime($info['installDate']);
             $info['id'] = Craft::$app->getDb()->getLastInsertID('{{%plugins}}');
 
-            $this->_setPluginMigrator($plugin, $handle, $info['id']);
+            $this->_setPluginMigrator($plugin, $info['id']);
 
             if ($plugin->install() === false) {
                 $transaction->rollBack();
@@ -640,7 +640,7 @@ class Plugins extends Component
         }
 
         if (isset($row['id'])) {
-            $this->_setPluginMigrator($plugin, $handle, $row['id']);
+            $this->_setPluginMigrator($plugin, $row['id']);
         }
 
         // If we're not updating, check if the plugin's version number changed, but not its schema version.
@@ -947,18 +947,19 @@ class Plugins extends Component
      * Sets the 'migrator' component on a plugin.
      *
      * @param PluginInterface $plugin The plugin
-     * @param string          $handle The plugin’s handle
      * @param integer         $id     The plugin’s ID
      */
-    private function _setPluginMigrator(PluginInterface $plugin, $handle, $id)
+    private function _setPluginMigrator(PluginInterface $plugin, $id)
     {
+        $ref = new \ReflectionClass($plugin);
+        $ns = $ref->getNamespaceName();
         /** @var Plugin $plugin */
         $plugin->set('migrator', [
             'class' => MigrationManager::class,
             'type' => MigrationManager::TYPE_PLUGIN,
             'pluginId' => $id,
-            'migrationNamespace' => "craft\\plugins\\$handle\\migrations",
-            'migrationPath' => "@plugins/$handle/migrations",
+            'migrationNamespace' => ($ns ? $ns.'\\' : '').'migrations',
+            'migrationPath' => $plugin->getBasePath().DIRECTORY_SEPARATOR.'migrations',
         ]);
     }
 
