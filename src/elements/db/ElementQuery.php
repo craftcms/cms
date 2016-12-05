@@ -521,19 +521,6 @@ class ElementQuery extends Query implements ElementQueryInterface, Arrayable, Co
     /**
      * @inheritdoc
      */
-    public function configure($criteria)
-    {
-        // Be forgiving of empty params
-        if (!empty($criteria)) {
-            Craft::configure($this, $criteria);
-        }
-
-        return $this;
-    }
-
-    /**
-     * @inheritdoc
-     */
     public function asArray($value = true)
     {
         $this->asArray = $value;

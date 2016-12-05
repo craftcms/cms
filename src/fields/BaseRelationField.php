@@ -223,7 +223,7 @@ abstract class BaseRelationField extends Field implements PreviewableFieldInterf
 
                 // Does the source specify any criteria attributes?
                 if (isset($source['criteria'])) {
-                    $query->configure($source['criteria']);
+                    Craft::configure($query, $source['criteria']);
                 }
             }
         } else {

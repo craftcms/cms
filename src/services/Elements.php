@@ -1305,17 +1305,16 @@ class Elements extends Component
                         }
 
                         // Get the target elements
-                        $customParams = array_merge(
+                        /** @var Element $targetElementType */
+                        $targetElementType = $map['elementType'];
+                        /** @var ElementQuery $query */
+                        $query = $targetElementType::find();
+                        Craft::configure($query, array_merge(
                         // Default to no order and limit, but allow the element type/path criteria to override
                             ['orderBy' => null, 'limit' => null],
                             (isset($map['criteria']) ? $map['criteria'] : []),
                             (isset($pathCriterias[$targetPath]) ? $pathCriterias[$targetPath] : [])
-                        );
-                        /** @var Element $targetElementType */
-                        $targetElementType = $map['elementType'];
-                        /** @var ElementQuery $query */
-                        $query = $targetElementType::find()
-                            ->configure($customParams);
+                        ));
                         $query->id = $uniqueTargetElementIds;
                         /** @var Element[] $targetElements */
                         $targetElements = $query->all();

@@ -458,12 +458,12 @@ class Assets extends BaseRelationField
                 }
 
                 // Find the files with temp sources and just move those.
-                $criteria = [
+                $query = Asset::find();
+                Craft::configure($query, [
                     'id' => array_merge(['in'], $assetIds),
                     'volumeId' => ':empty:'
-                ];
-
-                $assetsToMove = Asset::find()->configure($criteria)->all();
+                ]);
+                $assetsToMove = $query->all();
 
                 // If we have some files to move, make sure the folder exists.
                 if (!empty($assetsToMove)) {

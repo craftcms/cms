@@ -297,11 +297,13 @@ class ElementIndexesController extends BaseElementsController
 
         // Does the source specify any criteria attributes?
         if (isset($this->_source['criteria'])) {
-            $query->configure($this->_source['criteria']);
+            Craft::configure($query, $this->_source['criteria']);
         }
 
         // Override with the request's params
-        $query->configure($request->getBodyParam('criteria'));
+        if ($criteria = $request->getBodyParam('criteria')) {
+            Craft::configure($query, $criteria);
+        }
 
         // Exclude descendants of the collapsed element IDs
         $collapsedElementIds = $request->getParam('collapsedElementIds');

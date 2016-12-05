@@ -127,7 +127,10 @@ class Assets extends Component
         if ($criteria instanceof AssetQuery) {
             $query = $criteria;
         } else {
-            $query = Asset::find()->configure($criteria);
+            $query = Asset::find();
+            if ($criteria) {
+                Craft::configure($query, $criteria);
+            }
         }
 
         return $query->count();

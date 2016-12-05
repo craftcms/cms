@@ -214,7 +214,12 @@ class CraftVariable extends ServiceLocator
      */
     public function getAssets($criteria = null)
     {
-        return Asset::find()->configure($criteria);
+        $query = Asset::find();
+        if ($criteria) {
+            Craft::configure($query, $criteria);
+        }
+
+        return $query;
     }
 
     /**
@@ -226,7 +231,12 @@ class CraftVariable extends ServiceLocator
      */
     public function getCategories($criteria = null)
     {
-        return Category::find()->configure($criteria);
+        $query = Category::find();
+        if ($criteria) {
+            Craft::configure($query, $criteria);
+        }
+
+        return $query;
     }
 
     /**
@@ -238,7 +248,12 @@ class CraftVariable extends ServiceLocator
      */
     public function getEntries($criteria = null)
     {
-        return Entry::find()->configure($criteria);
+        $query = Entry::find();
+        if ($criteria) {
+            Craft::configure($query, $criteria);
+        }
+
+        return $query;
     }
 
     /**
@@ -250,7 +265,12 @@ class CraftVariable extends ServiceLocator
      */
     public function getTags($criteria = null)
     {
-        return Tag::find()->configure($criteria);
+        $query = Tag::find();
+        if ($criteria) {
+            Craft::configure($query, $criteria);
+        }
+
+        return $query;
     }
 
     /**
@@ -262,6 +282,11 @@ class CraftVariable extends ServiceLocator
      */
     public function getUsers($criteria = null)
     {
-        return User::find()->configure($criteria);
+        $query = User::find();
+        if ($criteria) {
+            Craft::configure($query, $criteria);
+        }
+
+        return $query;
     }
 }

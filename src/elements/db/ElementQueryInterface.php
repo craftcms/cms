@@ -23,15 +23,6 @@ use yii\db\QueryInterface;
 interface ElementQueryInterface extends QueryInterface
 {
     /**
-     * Configures the element query instance with a given set of parameters.
-     *
-     * @param array $criteria The criteria parameters to configure the element query with
-     *
-     * @return $this self reference
-     */
-    public function configure($criteria);
-
-    /**
      * Sets the [[asArray]] property.
      *
      * @param boolean $value The property value (defaults to true)

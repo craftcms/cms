@@ -60,8 +60,11 @@ class ResaveElements extends Task
 
         // Now find the affected element IDs
         /** @var ElementQuery $query */
-        $query = $class::find()
-            ->configure($this->criteria)
+        $query = $class::find();
+        if ($this->criteria) {
+            Craft::configure($query, $this->criteria);
+        }
+        $query
             ->offset(null)
             ->limit(null)
             ->orderBy(null);

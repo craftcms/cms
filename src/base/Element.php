@@ -1713,12 +1713,15 @@ abstract class Element extends Component implements ElementInterface
      */
     protected static function findByCondition($criteria, $one)
     {
-        if ($criteria !== null && !ArrayHelper::isAssociative($criteria)) {
-            $criteria = ['id' => $criteria];
-        }
-
         /** @var ElementQueryInterface $query */
-        $query = static::find()->configure($criteria);
+        $query = static::find();
+
+        if ($criteria !== null) {
+            if (!ArrayHelper::isAssociative($criteria)) {
+                $criteria = ['id' => $criteria];
+            }
+            Craft::configure($query, $criteria);
+        }
 
         if ($one) {
             /** @var Element $result */
@@ -1938,8 +1941,11 @@ abstract class Element extends Component implements ElementInterface
                 $query = $criteria;
             } else {
                 $query = static::find()
-                    ->siteId($this->siteId)
-                    ->configure($criteria);
+                    ->siteId($this->siteId);
+
+                if ($criteria) {
+                    Craft::configure($query, $criteria);
+                }
             }
 
             /** @var ElementQuery $query */
