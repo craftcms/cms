@@ -18,7 +18,7 @@ class m151209_000000_move_logo extends Migration
     {
         $pathService = Craft::$app->getPath();
         try {
-            rename($pathService->getStoragePath().'/logo', $pathService->getRebrandPath().'/logo');
+            rename($pathService->getStoragePath().DIRECTORY_SEPARATOR.'logo', $pathService->getRebrandPath().DIRECTORY_SEPARATOR.'logo');
         } catch (ErrorException $e) {
             Craft::warning('Unable to rename the logo path: '.$e->getMessage());
         }

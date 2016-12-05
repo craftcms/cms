@@ -1056,7 +1056,7 @@ class AssetTransforms extends Component
         $path = $index->location;
 
         if (!empty($index->filename) && $index->filename != $asset->filename) {
-            $path .= '/'.$asset->id;
+            $path .= DIRECTORY_SEPARATOR.$asset->id;
         }
 
         return $path;
@@ -1089,8 +1089,7 @@ class AssetTransforms extends Component
      */
     public function getTransformSubpath(Asset $asset, AssetTransformIndex $index)
     {
-        return $this->getTransformSubfolder($asset,
-            $index).'/'.$this->getTransformFilename($asset, $index);
+        return $this->getTransformSubfolder($asset, $index).DIRECTORY_SEPARATOR.$this->getTransformFilename($asset, $index);
     }
 
     /**

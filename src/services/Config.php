@@ -320,8 +320,7 @@ class Config extends Component
                         // Test the server for it
                         try {
                             $baseUrl = Craft::$app->getRequest()->getHostInfo().Craft::$app->getRequest()->getScriptUrl();
-                            $url = mb_substr($baseUrl, 0, mb_strrpos($baseUrl,
-                                    '/')).'/testScriptNameRedirect';
+                            $url = mb_substr($baseUrl, 0, mb_strrpos($baseUrl, '/')).'/testScriptNameRedirect';
 
                             $response = (new Client())->get($url,
                                 ['connect_timeout' => 2, 'timeout' => 4]);
@@ -846,9 +845,9 @@ class Config extends Component
 
         // Is this a valid Craft config category?
         if (in_array($category, [self::CATEGORY_FILECACHE, self::CATEGORY_GENERAL, self::CATEGORY_DB, self::CATEGORY_DBCACHE, self::CATEGORY_MEMCACHE, self::CATEGORY_APC])) {
-            $defaultsPath = Craft::$app->getBasePath().'/config/defaults/'.$category.'.php';
+            $defaultsPath = Craft::$app->getBasePath().DIRECTORY_SEPARATOR.'config'.DIRECTORY_SEPARATOR.'defaults'.DIRECTORY_SEPARATOR.$category.'.php';
         } else {
-            $defaultsPath = $pathService->getPluginsPath().'/'.$category.'/config.php';
+            $defaultsPath = $pathService->getPluginsPath().DIRECTORY_SEPARATOR.$category.DIRECTORY_SEPARATOR.'config.php';
         }
 
         if (is_file($defaultsPath)) {
@@ -862,14 +861,14 @@ class Config extends Component
         // Little extra logic for the general config category.
         if ($category == self::CATEGORY_GENERAL) {
             // Does craft/config/general.php exist? (It used to be called blocks.php so maybe not.)
-            $filePath = $pathService->getConfigPath().'/general.php';
+            $filePath = $pathService->getConfigPath().DIRECTORY_SEPARATOR.'general.php';
 
             if (file_exists($filePath)) {
                 if (is_array($customConfig = @include($filePath))) {
                     $this->_mergeConfigs($configSettings, $customConfig);
                 }
             } else {
-                $filePath = $pathService->getConfigPath().'/blocks.php';
+                $filePath = $pathService->getConfigPath().DIRECTORY_SEPARATOR.'blocks.php';
 
                 if (file_exists($filePath)) {
                     // Originally blocks.php defined a $blocksConfig variable, and then later returned an array directly.
@@ -882,7 +881,7 @@ class Config extends Component
                 }
             }
         } else {
-            $filePath = $pathService->getConfigPath().'/'.$category.'.php';
+            $filePath = $pathService->getConfigPath().DIRECTORY_SEPARATOR.$category.'.php';
 
             if (is_file($filePath)) {
                 // Originally db.php defined a $dbConfig variable, and later returned an array directly.

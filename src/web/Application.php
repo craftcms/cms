@@ -369,8 +369,8 @@ class Application extends \yii\web\Application
         parent::setVendorPath($path);
 
         // Override the @bower and @npm aliases if using asset-packagist.org
-        $altBowerPath = $this->getVendorPath().'/bower-asset';
-        $altNpmPath = $this->getVendorPath().'/npm-asset';
+        $altBowerPath = $this->getVendorPath().DIRECTORY_SEPARATOR.'bower-asset';
+        $altNpmPath = $this->getVendorPath().DIRECTORY_SEPARATOR.'npm-asset';
 
         if (is_dir($altBowerPath)) {
             Craft::setAlias('@bower', $altBowerPath);

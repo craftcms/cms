@@ -227,7 +227,7 @@ class Schema extends \yii\db\mysql\Schema
      */
     private function _createDumpConfigFile()
     {
-        $filePath = Craft::$app->getPath()->getTempPath().'/my.cnf';
+        $filePath = Craft::$app->getPath()->getTempPath().DIRECTORY_SEPARATOR.'my.cnf';
 
         $config = Craft::$app->getConfig();
         $contents = '[client]'.PHP_EOL.

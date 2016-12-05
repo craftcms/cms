@@ -95,22 +95,22 @@ class ClearCaches extends Tool
             [
                 'key' => 'asset',
                 'label' => Craft::t('app', 'Asset caches'),
-                'action' => $runtimePath.'/assets/cache'
+                'action' => $runtimePath.DIRECTORY_SEPARATOR.'assets'.DIRECTORY_SEPARATOR.'cache'
             ],
             [
                 'key' => 'rss',
                 'label' => Craft::t('app', 'RSS caches'),
-                'action' => $runtimePath.'/cache'
+                'action' => $runtimePath.DIRECTORY_SEPARATOR.'cache'
             ],
             [
                 'key' => 'compiled-templates',
                 'label' => Craft::t('app', 'Compiled templates'),
-                'action' => $runtimePath.'/compiled_templates'
+                'action' => $runtimePath.DIRECTORY_SEPARATOR.'compiled_templates'
             ],
             [
                 'key' => 'temp-files',
                 'label' => Craft::t('app', 'Temp files'),
-                'action' => $runtimePath.'/temp'
+                'action' => $runtimePath.DIRECTORY_SEPARATOR.'temp'
             ],
             [
                 'key' => 'transform-indexes',

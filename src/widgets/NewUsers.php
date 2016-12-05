@@ -109,6 +109,6 @@ class NewUsers extends Widget
      */
     public function getIconPath()
     {
-        return Craft::$app->getPath()->getResourcesPath().'/images/widgets/new-users.svg';
+        return Craft::$app->getPath()->getResourcesPath().DIRECTORY_SEPARATOR.'images'.DIRECTORY_SEPARATOR.'widgets'.DIRECTORY_SEPARATOR.'new-users.svg';
     }
 }

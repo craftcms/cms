@@ -138,7 +138,7 @@ class Plugins extends Component
 
         if (App::isComposerInstall()) {
             // See if any plugins were installed via Composer, too
-            $path = Craft::$app->getVendorPath().'/craftcms/plugins.php';
+            $path = Craft::$app->getVendorPath().DIRECTORY_SEPARATOR.'craftcms'.DIRECTORY_SEPARATOR.'plugins.php';
 
             if (file_exists($path)) {
                 $plugins = require $path;
@@ -1141,12 +1141,12 @@ class Plugins extends Component
             }
 
             // Normalize $path to an absolute path
-            if (!(substr($path, 0, 1) === '/' || substr($path, 1, 1) === ':')) {
-                $pluginPath = Craft::$app->getPath()->getPluginsPath().'/'.$handle;
-                $path = $pluginPath.'/'.$path;
+            $path = FileHelper::normalizePath($path);
+            if (!(substr($path, 0, 1) === DIRECTORY_SEPARATOR || substr($path, 1, 1) === ':')) {
+                $pluginPath = Craft::$app->getPath()->getPluginsPath().DIRECTORY_SEPARATOR.$handle;
+                $path = $pluginPath.DIRECTORY_SEPARATOR.$path;
             }
 
-            $path = FileHelper::normalizePath($path);
             $alias = '@'.str_replace('\\', '/', trim($namespace, '\\'));
             $aliases[$alias] = $path;
 

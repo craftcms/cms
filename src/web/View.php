@@ -228,7 +228,7 @@ class View extends \yii\web\View
                 $template = $this->resolveTemplate($this->_renderingTemplate);
 
                 if (!$template) {
-                    $template = $this->_templatesPath.'/'.$this->_renderingTemplate;
+                    $template = $this->_templatesPath.DIRECTORY_SEPARATOR.$this->_renderingTemplate;
                 }
             }
 
@@ -503,7 +503,7 @@ class View extends \yii\web\View
         // Should we be looking for a localized version of the template?
         $request = Craft::$app->getRequest();
         if (!$request->getIsConsoleRequest() && $request->getIsSiteRequest() && Craft::$app->getIsInstalled()) {
-            $sitePath = $this->_templatesPath.'/'.Craft::$app->getSites()->currentSite->handle;
+            $sitePath = $this->_templatesPath.DIRECTORY_SEPARATOR.Craft::$app->getSites()->currentSite->handle;
             if (is_dir($sitePath)) {
                 $basePaths[] = $sitePath;
             }
@@ -530,7 +530,7 @@ class View extends \yii\web\View
 
             if ($pluginHandle && ($plugin = Craft::$app->getPlugins()->getPlugin($pluginHandle)) !== null) {
                 // Get the template path for the plugin.
-                $basePath = Craft::$app->getPath()->getPluginsPath().'/'.StringHelper::toLowerCase($plugin->getHandle()).'/templates';
+                $basePath = Craft::$app->getPath()->getPluginsPath().DIRECTORY_SEPARATOR.StringHelper::toLowerCase($plugin->getHandle()).DIRECTORY_SEPARATOR.'templates';
 
                 // Get the new template name to look for within the plugin's templates folder
                 $tempName = implode('/', $parts);
@@ -1141,14 +1141,14 @@ class View extends \yii\web\View
         // $name could be an empty string (e.g. to load the homepage template)
         if ($name) {
             // Maybe $name is already the full file path
-            $testPath = $basePath.'/'.$name;
+            $testPath = $basePath.DIRECTORY_SEPARATOR.$name;
 
             if (is_file($testPath)) {
                 return $testPath;
             }
 
             foreach ($this->_defaultTemplateExtensions as $extension) {
-                $testPath = $basePath.'/'.$name.'.'.$extension;
+                $testPath = $basePath.DIRECTORY_SEPARATOR.$name.'.'.$extension;
 
                 if (is_file($testPath)) {
                     return $testPath;
@@ -1158,7 +1158,7 @@ class View extends \yii\web\View
 
         foreach ($this->_indexTemplateFilenames as $filename) {
             foreach ($this->_defaultTemplateExtensions as $extension) {
-                $testPath = $basePath.'/'.($name ? $name.'/' : '').$filename.'.'.$extension;
+                $testPath = $basePath.($name ? DIRECTORY_SEPARATOR.$name : '').DIRECTORY_SEPARATOR.$filename.'.'.$extension;
 
                 if (is_file($testPath)) {
                     return $testPath;
@@ -1180,7 +1180,7 @@ class View extends \yii\web\View
             $this->_twigOptions = [
                 'base_template_class' => '\\craft\\web\\twig\\Template',
                 // See: https://github.com/twigphp/Twig/issues/1951
-                'cache' => rtrim(Craft::$app->getPath()->getCompiledTemplatesPath(), '/'),
+                'cache' => Craft::$app->getPath()->getCompiledTemplatesPath(),
                 'auto_reload' => true,
                 'charset' => Craft::$app->charset,
             ];
@@ -1214,15 +1214,15 @@ class View extends \yii\web\View
         $sourcePath = Craft::getAlias('@app/resources');
 
         // If the resource doesn't exist in craft/app/resources, check plugins' resources/ subfolders
-        if (!is_file($sourcePath.'/'.$path)) {
+        if (!is_file($sourcePath.DIRECTORY_SEPARATOR.$path)) {
             $pathParts = explode('/', $path);
 
             if (count($pathParts) > 1) {
                 $pluginHandle = array_shift($pathParts);
                 $pluginSourcePath = Craft::getAlias('@craft/plugins/'.$pluginHandle.'/resources');
-                $pluginSubpath = implode('/', $pathParts);
+                $pluginSubpath = implode(DIRECTORY_SEPARATOR, $pathParts);
 
-                if (is_file($pluginSourcePath.'/'.$pluginSubpath)) {
+                if (is_file($pluginSourcePath.DIRECTORY_SEPARATOR.$pluginSubpath)) {
                     $sourcePath = $pluginSourcePath;
                     $path = $pluginSubpath;
                 }
@@ -1353,8 +1353,7 @@ class View extends \yii\web\View
 
         if ($context['context'] == 'field' && isset($context['name'])) {
             $html .= '<input type="hidden" name="'.$context['name'].'[]" value="'.$element->id.'">';
-            $html .= '<a class="delete icon" title="'.Craft::t('app',
-                    'Remove').'"></a> ';
+            $html .= '<a class="delete icon" title="'.Craft::t('app', 'Remove').'"></a> ';
         }
 
         if ($element::hasStatuses()) {

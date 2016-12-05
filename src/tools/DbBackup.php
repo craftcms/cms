@@ -75,7 +75,7 @@ class DbBackup extends Tool
             return null;
         }
 
-        $zipPath = Craft::$app->getPath()->getTempPath().'/'.pathinfo($backupPath, PATHINFO_FILENAME).'.zip';
+        $zipPath = Craft::$app->getPath()->getTempPath().DIRECTORY_SEPARATOR.pathinfo($backupPath, PATHINFO_FILENAME).'.zip';
 
         if (is_file($zipPath)) {
             try {

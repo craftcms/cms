@@ -125,12 +125,12 @@ class Craft extends Yii
             $className === \craft\behaviors\ElementQueryTrait::class
         ) {
             $storedFieldVersion = static::$app->getInfo()->fieldVersion;
-            $compiledClassesPath = static::$app->getPath()->getRuntimePath().'/compiled_classes';
+            $compiledClassesPath = static::$app->getPath()->getRuntimePath().DIRECTORY_SEPARATOR.'compiled_classes';
 
-            $contentBehaviorFile = $compiledClassesPath.'/ContentBehavior.php';
-            $contentTraitFile = $compiledClassesPath.'/ContentTrait.php';
-            $elementQueryBehaviorFile = $compiledClassesPath.'/ElementQueryBehavior.php';
-            $elementQueryTraitFile = $compiledClassesPath.'/ElementQueryTrait.php';
+            $contentBehaviorFile = $compiledClassesPath.DIRECTORY_SEPARATOR.'ContentBehavior.php';
+            $contentTraitFile = $compiledClassesPath.DIRECTORY_SEPARATOR.'ContentTrait.php';
+            $elementQueryBehaviorFile = $compiledClassesPath.DIRECTORY_SEPARATOR.'ElementQueryBehavior.php';
+            $elementQueryTraitFile = $compiledClassesPath.DIRECTORY_SEPARATOR.'ElementQueryTrait.php';
 
             if (
                 static::_isFieldAttributesFileValid($contentBehaviorFile, $storedFieldVersion) &&
@@ -179,28 +179,28 @@ EOD;
             }
 
             static::_writeFieldAttributesFile(
-                static::$app->getBasePath().'/behaviors/ContentBehavior.php.template',
+                static::$app->getBasePath().DIRECTORY_SEPARATOR.'behaviors'.DIRECTORY_SEPARATOR.'ContentBehavior.php.template',
                 ['{VERSION}', '/* PROPERTIES */'],
                 [$storedFieldVersion, implode("\n\n", $properties)],
                 $contentBehaviorFile
             );
 
             static::_writeFieldAttributesFile(
-                static::$app->getBasePath().'/behaviors/ContentTrait.php.template',
+                static::$app->getBasePath().DIRECTORY_SEPARATOR.'behaviors'.DIRECTORY_SEPARATOR.'ContentTrait.php.template',
                 ['{VERSION}', '{PROPERTIES}'],
                 [$storedFieldVersion, implode("\n", $propertyDocs)],
                 $contentTraitFile
             );
 
             static::_writeFieldAttributesFile(
-                static::$app->getBasePath().'/behaviors/ElementQueryBehavior.php.template',
+                static::$app->getBasePath().DIRECTORY_SEPARATOR.'behaviors'.DIRECTORY_SEPARATOR.'ElementQueryBehavior.php.template',
                 ['{VERSION}', '/* METHODS */'],
                 [$storedFieldVersion, implode("\n\n", $methods)],
                 $elementQueryBehaviorFile
             );
 
             static::_writeFieldAttributesFile(
-                static::$app->getBasePath().'/behaviors/ElementQueryTrait.php.template',
+                static::$app->getBasePath().DIRECTORY_SEPARATOR.'behaviors'.DIRECTORY_SEPARATOR.'ElementQueryTrait.php.template',
                 ['{VERSION}', '{METHODS}'],
                 [$storedFieldVersion, implode("\n", $methodDocs)],
                 $elementQueryTraitFile

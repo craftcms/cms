@@ -99,19 +99,19 @@ class Resources extends Component
         if (isset($segs[0])) {
             switch ($segs[0]) {
                 case 'defaultuserphoto': {
-                    return Craft::$app->getPath()->getResourcesPath().'/images/user.svg';
+                    return Craft::$app->getPath()->getResourcesPath().DIRECTORY_SEPARATOR.'images'.DIRECTORY_SEPARATOR.'user.svg';
                 }
 
                 case 'tempuploads': {
                     array_shift($segs);
 
-                    return Craft::$app->getPath()->getTempUploadsPath().'/'.implode('/', $segs);
+                    return Craft::$app->getPath()->getTempUploadsPath().DIRECTORY_SEPARATOR.implode(DIRECTORY_SEPARATOR, $segs);
                 }
 
                 case 'tempassets': {
                     array_shift($segs);
 
-                    return Craft::$app->getPath()->getAssetsTempVolumePath().'/'.implode('/', $segs);
+                    return Craft::$app->getPath()->getAssetsTempVolumePath().DIRECTORY_SEPARATOR.implode(DIRECTORY_SEPARATOR, $segs);
                 }
 
                 case 'resized': {
@@ -150,7 +150,7 @@ class Resources extends Component
                         return false;
                     }
 
-                    return Craft::$app->getPath()->getRebrandPath().'/'.$segs[1]."/".$segs[2];
+                    return Craft::$app->getPath()->getRebrandPath().DIRECTORY_SEPARATOR.$segs[1].DIRECTORY_SEPARATOR.$segs[2];
                 }
 
                 case 'transforms': {
@@ -359,7 +359,7 @@ class Resources extends Component
         }
 
         // See if the icon already exists
-        $iconPath = $pathService->getAssetsIconsPath().'/'.StringHelper::toLowerCase($ext).'.svg';
+        $iconPath = $pathService->getAssetsIconsPath().DIRECTORY_SEPARATOR.StringHelper::toLowerCase($ext).'.svg';
 
         if (file_exists($iconPath)) {
             return $iconPath;
@@ -386,6 +386,6 @@ class Resources extends Component
     private function _getBrokenImageThumbPath()
     {
         //http_response_code(404);
-        return Craft::$app->getPath()->getResourcesPath().'/images/brokenimage.svg';
+        return Craft::$app->getPath()->getResourcesPath().DIRECTORY_SEPARATOR.'images'.DIRECTORY_SEPARATOR.'brokenimage.svg';
     }
 }

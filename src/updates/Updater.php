@@ -78,7 +78,7 @@ class Updater
 		// Download the package from ET.
 		Craft::info('Downloading patch file to '.$tempPath, __METHOD__);
 		if (($filename = Craft::$app->getEt()->downloadUpdate($tempPath, $md5, $handle)) !== false) {
-			$downloadFilePath = $tempPath.'/'.$filename;
+			$downloadFilePath = $tempPath.DIRECTORY_SEPARATOR.$filename;
 		} else {
 			throw new DownloadPackageException(Craft::t('app', 'There was a problem downloading the package.'));
 		}
@@ -94,7 +94,7 @@ class Updater
 
 		// Unpack the downloaded package.
 		Craft::info('Unpacking the downloaded package.', __METHOD__);
-		$unzipFolder = Craft::$app->getPath()->getTempPath().'/'.$uid;
+		$unzipFolder = Craft::$app->getPath()->getTempPath().DIRECTORY_SEPARATOR.$uid;
 
 		if (!$this->_unpackPackage($downloadFilePath, $unzipFolder)) {
 			throw new UnpackPackageException(Craft::t('app', 'There was a problem unpacking the downloaded package.'));
@@ -475,8 +475,8 @@ class Updater
 	 */
 	private function _validateNewRequirements($unzipFolder)
 	{
-		$requirementsFolderPath = FileHelper::normalizePath($unzipFolder.'/app/requirements');
-		$requirementsFile = FileHelper::normalizePath($requirementsFolderPath.'/requirements.php');
+		$requirementsFolderPath = FileHelper::normalizePath($unzipFolder.DIRECTORY_SEPARATOR.'app'.DIRECTORY_SEPARATOR.'requirements');
+		$requirementsFile = FileHelper::normalizePath($requirementsFolderPath.DIRECTORY_SEPARATOR.'requirements.php');
 		$errors = [];
 
 		if (!is_file($requirementsFile)) {

@@ -80,7 +80,7 @@ class Feed extends Widget
      */
     public function getIconPath()
     {
-        return Craft::$app->getPath()->getResourcesPath().'/images/widgets/feed.svg';
+        return Craft::$app->getPath()->getResourcesPath().DIRECTORY_SEPARATOR.'images'.DIRECTORY_SEPARATOR.'widgets'.DIRECTORY_SEPARATOR.'feed.svg';
     }
 
     /**

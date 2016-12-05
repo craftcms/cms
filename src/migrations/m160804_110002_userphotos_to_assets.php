@@ -34,7 +34,7 @@ class m160804_110002_userphotos_to_assets extends Migration
         FileHelper::createDirectory($this->_basePath);
 
         Craft::info('Removing __default__ folder');
-        FileHelper::removeDirectory($this->_basePath.'/__default__');
+        FileHelper::removeDirectory($this->_basePath.DIRECTORY_SEPARATOR.'__default__');
 
         Craft::info('Changing the relative path from username/original.ext to original.ext');
         $affectedUsers = $this->_moveUserphotos();

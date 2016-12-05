@@ -1330,10 +1330,10 @@ trait ApplicationTrait
         if ($edition == Craft::Client || $edition == Craft::Pro) {
             $basePath = $this->getBasePath();
 
-            $this->setComponents(require $basePath.'/config/components/client.php');
+            $this->setComponents(require $basePath.DIRECTORY_SEPARATOR.'config'.DIRECTORY_SEPARATOR.'components'.DIRECTORY_SEPARATOR.'client.php');
 
             if ($edition == Craft::Pro) {
-                $this->setComponents(require $basePath.'/config/components/pro.php');
+                $this->setComponents(require $basePath.DIRECTORY_SEPARATOR.'config'.DIRECTORY_SEPARATOR.'components'.DIRECTORY_SEPARATOR.'pro.php');
             }
         }
     }

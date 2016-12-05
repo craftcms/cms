@@ -102,7 +102,7 @@ class TemplatesController extends Controller
      */
     public function actionRequirementsCheck()
     {
-        require_once(Craft::$app->getBasePath().'/requirements/RequirementsChecker.php');
+        require_once(Craft::$app->getBasePath().DIRECTORY_SEPARATOR.'requirements'.DIRECTORY_SEPARATOR.'RequirementsChecker.php');
 
         // Run the requirements checker
         $reqCheck = new \RequirementsChecker();
@@ -121,8 +121,9 @@ class TemplatesController extends Controller
 
                 throw new ServerErrorHttpException(Craft::t('app', 'The update can’t be installed :( {message}', ['message' => $message]));
             } else {
-                return $this->renderTemplate('_special/cantrun',
-                    ['reqCheck' => $reqCheck]);
+                return $this->renderTemplate('_special/cantrun', [
+                    'reqCheck' => $reqCheck
+                ]);
             }
         } else {
             // Cache the base path.
