@@ -10,6 +10,7 @@ namespace craft\db\pgsql;
 use Craft;
 use craft\db\TableSchema;
 use craft\services\Config;
+use yii\db\BaseActiveRecord;
 use yii\db\Exception;
 
 /**
@@ -207,6 +208,74 @@ class Schema extends \yii\db\pgsql\Schema
             return $table;
         } else {
             return null;
+        }
+    }
+
+    /**
+     * Collects extra foreign key information details for the given table.
+     *
+     * @param TableSchema $table the table metadata
+     */
+    protected function findConstraints($table)
+    {
+        parent::findConstraints($table);
+
+        // Modified from parent to get extended FK information.
+        $tableName = $this->quoteValue($table->name);
+        $tableSchema = $this->quoteValue($table->schemaName);
+
+        $sql = <<<SQL
+select
+    ct.conname as constraint_name,
+    a.attname as column_name,
+    fc.relname as foreign_table_name,
+    fns.nspname as foreign_table_schema,
+    fa.attname as foreign_column_name,
+    ct.confupdtype as update_type,
+    ct.confdeltype as delete_type
+from
+    (SELECT ct.conname, ct.conrelid, ct.confrelid, ct.conkey, ct.contype, ct.confkey, generate_subscripts(ct.conkey, 1) AS s, ct.confupdtype, ct.confdeltype
+       FROM pg_constraint ct
+    ) AS ct
+    inner join pg_class c on c.oid=ct.conrelid
+    inner join pg_namespace ns on c.relnamespace=ns.oid
+    inner join pg_attribute a on a.attrelid=ct.conrelid and a.attnum = ct.conkey[ct.s]
+    left join pg_class fc on fc.oid=ct.confrelid
+    left join pg_namespace fns on fc.relnamespace=fns.oid
+    left join pg_attribute fa on fa.attrelid=ct.confrelid and fa.attnum = ct.confkey[ct.s]
+where
+    ct.contype='f'
+    and c.relname={$tableName}
+    and ns.nspname={$tableSchema}
+order by
+    fns.nspname, fc.relname, a.attnum
+SQL;
+
+        $extendedConstraints = $this->db->createCommand($sql)->queryAll();
+
+        foreach ($extendedConstraints as $count => $extendedConstraint) {
+            // Find out what to do on update.
+            switch ($extendedConstraint['update_type']) {
+                case 'a': $updateAction = 'NO ACTION'; break;
+                case 'r': $updateAction = 'RESTRICT'; break;
+                case 'c': $updateAction = 'CASCADE'; break;
+                case 'n': $updateAction = 'SET NULL'; break;
+                default: $updateAction = 'DEFAULT'; break;
+            }
+
+            // Find out what to do on update.
+            switch ($extendedConstraint['delete_type']) {
+                case 'a': $deleteAction = 'NO ACTION'; break;
+                case 'r': $deleteAction = 'RESTRICT'; break;
+                case 'c': $deleteAction = 'CASCADE'; break;
+                case 'n': $deleteAction = 'SET NULL'; break;
+                default: $deleteAction = 'DEFAULT'; break;
+            }
+
+            $table->addExtendedForeignKey([
+                'updateType' => $updateAction,
+                'deleteType' => $deleteAction,
+            ]);
         }
     }
 
