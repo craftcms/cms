@@ -102,11 +102,12 @@ class MigrationManager extends Component
      * @param string $name The migration name
      *
      * @return MigrationInterface|\yii\db\Migration The migration instance
+     * @throws Exception if the migration folder doesn't exist
      */
     public function createMigration($name)
     {
         if ($this->migrationPath === false) {
-            throw new Exception('Can\'t create new migrations because the migration folder doesn\'t exist');
+            throw new Exception("Can't create new migrations because the migration folder doesn't exist");
         }
 
         $file = $this->migrationPath."/$name.php";
