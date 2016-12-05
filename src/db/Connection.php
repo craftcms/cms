@@ -102,11 +102,11 @@ class Connection extends \yii\db\Connection
                 throw new DbConnectException(Craft::t('app', 'Craft CMS requires the PDO_MYSQL driver to operate.'));
             } else {
                 Craft::error($e->getMessage(), __METHOD__);
-                throw new DbConnectException(Craft::t('app', 'Craft CMS can’t connect to the database with the credentials in '.Craft::$app->getPath()->getConfigPath().'/db.php.'));
+                throw new DbConnectException(Craft::t('app', 'Craft CMS can’t connect to the database with the credentials in config/db.php.'));
             }
         } catch (\Exception $e) {
             Craft::error($e->getMessage(), __METHOD__);
-            throw new DbConnectException(Craft::t('app', 'Craft CMS can’t connect to the database with the credentials in '.Craft::$app->getPath()->getConfigPath().'/db.php.'));
+            throw new DbConnectException(Craft::t('app', 'Craft CMS can’t connect to the database with the credentials in config/db.php.'));
         }
     }
 
