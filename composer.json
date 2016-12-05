@@ -30,10 +30,7 @@
         "creocoder/yii2-nested-sets": "0.9.0",
         "pixelandtonic/imagine": "0.6.3.1",
         "league/flysystem": "1.0.32",
-        "league/flysystem-aws-s3-v3": "1.0.13",
-        "league/flysystem-rackspace": "1.0.5",
         "league/flysystem-ziparchive": "1.0.2",
-        "pixelandtonic/flysystem-google-cloud": "1.0.1",
         "php-http/guzzle6-adapter": "^1.1",
         "mikehaertl/php-shellcommand": "1.2.2",
         "twig/twig": "1.28.2"
@@ -47,10 +44,6 @@
         ]
     },
     "repositories": [
-        {
-            "type": "vcs",
-            "url": "https://github.com/pixelandtonic/flysystem-google-cloud"
-        },
         {
             "type": "composer",
             "url": "https://asset-packagist.org"
