@@ -28,10 +28,6 @@
             "url": "https://github.com/pixelandtonic/craft"
         },
         {
-            "type": "git",
-            "url": "https://github.com/pixelandtonic/flysystem-google-cloud"
-        },
-        {
             "type": "composer",
             "url": "https://asset-packagist.org"
         }
