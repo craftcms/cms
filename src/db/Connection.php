@@ -5,19 +5,19 @@
  * @license   https://craftcms.com/license
  */
 
-namespace craft\app\db;
+namespace craft\db;
 
 use Craft;
-use craft\app\db\mysql\QueryBuilder;
-use craft\app\errors\DbConnectException;
-use craft\app\events\BackupEvent;
-use craft\app\events\BackupFailureEvent;
-use craft\app\events\RestoreEvent;
-use craft\app\events\RestoreFailureEvent;
-use craft\app\helpers\ArrayHelper;
-use craft\app\helpers\Io;
-use craft\app\helpers\StringHelper;
-use craft\app\services\Config;
+use craft\db\mysql\QueryBuilder;
+use craft\errors\DbConnectException;
+use craft\events\BackupEvent;
+use craft\events\BackupFailureEvent;
+use craft\events\RestoreEvent;
+use craft\events\RestoreFailureEvent;
+use craft\helpers\ArrayHelper;
+use craft\helpers\FileHelper;
+use craft\helpers\StringHelper;
+use craft\services\Config;
 use mikehaertl\shellcommand\Command as ShellCommand;
 use yii\db\Exception as DbException;
 
@@ -102,11 +102,11 @@ class Connection extends \yii\db\Connection
                 throw new DbConnectException(Craft::t('app', 'Craft CMS requires the PDO_MYSQL driver to operate.'));
             } else {
                 Craft::error($e->getMessage(), __METHOD__);
-                throw new DbConnectException(Craft::t('app', 'Craft CMS can’t connect to the database with the credentials in craft/config/db.php.'));
+                throw new DbConnectException(Craft::t('app', 'Craft CMS can’t connect to the database with the credentials in config/db.php.'));
             }
         } catch (\Exception $e) {
             Craft::error($e->getMessage(), __METHOD__);
-            throw new DbConnectException(Craft::t('app', 'Craft CMS can’t connect to the database with the credentials in craft/config/db.php.'));
+            throw new DbConnectException(Craft::t('app', 'Craft CMS can’t connect to the database with the credentials in config/db.php.'));
         }
     }
 
@@ -120,9 +120,9 @@ class Connection extends \yii\db\Connection
     public function backup()
     {
         // Determine the backup file path
-        $currentVersion = 'v'.Craft::$app->version.'.'.Craft::$app->build;
-        $siteName = Io::cleanFilename($this->_getFixedSiteName(), true);
-        $filename = ($siteName ? $siteName.'_' : '').gmdate('ymd_His').'_'.$currentVersion.'.sql';
+        $currentVersion = 'v'.Craft::$app->version;
+        $siteName = FileHelper::sanitizeFilename($this->_getFixedSiteName(), ['asciiOnly' => true]);
+        $filename = ($siteName ? $siteName.'_' : '').gmdate('ymd_His').'_'.strtolower(StringHelper::randomString(10)).'_'.$currentVersion.'.sql';
         $filePath = Craft::$app->getPath()->getDbBackupPath().'/'.StringHelper::toLowerCase($filename);
 
         // Determine the command that should be executed
@@ -151,7 +151,7 @@ class Connection extends \yii\db\Connection
         $success = $command->execute();
 
         // Nuke any temp connection files that might have been created.
-        Io::clearFolder(Craft::$app->getPath()->getTempPath());
+        FileHelper::clearDirectory(Craft::$app->getPath()->getTempPath());
 
         if (!$success) {
             $errorMessage = $command->getError();
@@ -212,7 +212,7 @@ class Connection extends \yii\db\Connection
         $success = $command->execute();
 
         // Nuke any temp connection files that might have been created.
-        Io::clearFolder(Craft::$app->getPath()->getTempPath());
+        FileHelper::clearDirectory(Craft::$app->getPath()->getTempPath());
 
         if (!$success) {
             $errorMessage = $command->getError();
@@ -457,12 +457,12 @@ class Connection extends \yii\db\Connection
      * @return string
      */
     private function _getFixedSiteName() {
-        if (version_compare(Craft::$app->getInfo('version'), '3.0', '<') || Craft::$app->getInfo('build') < 2933) {
+        try {
             return (new Query())
                 ->select(['siteName'])
                 ->from(['{{%info}}'])
                 ->column()[0];
-        } else {
+        } catch (\Exception $e) {
             return Craft::$app->getSites()->getPrimarySite()->name;
         }
     }

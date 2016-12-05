@@ -5,9 +5,9 @@
  * @license   https://craftcms.com/license
  */
 
-namespace craft\app\fields\data;
+namespace craft\fields\data;
 
-use craft\app\base\Serializable;
+use craft\base\Serializable;
 
 /**
  * Class OptionData

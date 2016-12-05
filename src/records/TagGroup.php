@@ -5,10 +5,10 @@
  * @license   https://craftcms.com/license
  */
 
-namespace craft\app\records;
+namespace craft\records;
 
 use yii\db\ActiveQueryInterface;
-use craft\app\db\ActiveRecord;
+use craft\db\ActiveRecord;
 
 /**
  * Class TagGroup record.

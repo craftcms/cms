@@ -5,6 +5,8 @@
  * @license   https://craftcms.com/license
  */
 
+use craft\helpers\FileHelper;
+
 if (version_compare(PHP_VERSION, '4.3', '<')) {
     echo 'At least PHP 4.3 is required to run this script!';
     exit(1);
@@ -620,7 +622,7 @@ class RequirementsChecker
             'storage' => $pathService->getStoragePath(),
             'plugins' => $pathService->getPluginsPath(),
             'config' => $pathService->getConfigPath(),
-            'app' => $pathService->getAppPath(),
+            'app' => Craft::$app->getBasePath(),
             'templates' => $pathService->getSiteTemplatesPath(),
             'translations' => $pathService->getSiteTranslationsPath(),
         );
@@ -679,12 +681,15 @@ class RequirementsChecker
      */
     function isPathInsideWebroot($pathToTest)
     {
-        $pathToTest = \Craft\app\helpers\Io::normalizePathSeparators($pathToTest);
+        $pathToTest = FileHelper::normalizePath($pathToTest);
 
         // Get the base path without the script name.
-        $subBasePath = \Craft\app\helpers\Io::normalizePathSeparators(mb_substr(Craft::$app->getRequest()->getScriptFile(), 0, -mb_strlen(Craft::$app->getRequest()->getScriptUrl())));
+        $request = Craft::$app->getRequest();
+        $scriptFile = $request->getScriptFile();
+        $scriptUrl = $request->getScriptUrl();
+        $subBasePath = FileHelper::normalizePath(mb_substr($scriptFile, 0, -mb_strlen($scriptUrl)));
 
-        if (mb_strpos($pathToTest, $subBasePath) !== false) {
+        if (mb_strpos($pathToTest.DIRECTORY_SEPARATOR, $subBasePath) !== false) {
             return true;
         }
 

@@ -5,11 +5,11 @@
  * @license   https://craftcms.com/license
  */
 
-namespace craft\app\models;
+namespace craft\models;
 
 use Craft;
-use craft\app\base\Model;
-use craft\app\fields\Matrix;
+use craft\base\Model;
+use craft\fields\Matrix;
 
 /**
  * MatrixSettings model class.

@@ -5,14 +5,14 @@
  * @license   https://craftcms.com/license
  */
 
-namespace craft\app\elements\db;
+namespace craft\elements\db;
 
 use Craft;
-use craft\app\db\Query;
-use craft\app\db\QueryAbortedException;
-use craft\app\elements\User;
-use craft\app\helpers\Db;
-use craft\app\models\UserGroup;
+use craft\db\Query;
+use craft\db\QueryAbortedException;
+use craft\elements\User;
+use craft\helpers\Db;
+use craft\models\UserGroup;
 
 /**
  * UserQuery represents a SELECT SQL statement for users in a way that is independent of DBMS.
@@ -309,7 +309,7 @@ class UserQuery extends ElementQuery
         ]);
 
         // TODO: remove after next breakpoint
-        if (version_compare(Craft::$app->getInfo('version'), '3.0', '>=') && Craft::$app->getInfo('build') > 2910) {
+        if (version_compare(Craft::$app->getInfo()->version, '3.0.0-alpha.2910', '>=')) {
             $this->query->addSelect(['users.photoId']);
         }
 

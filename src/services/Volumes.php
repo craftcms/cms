@@ -1,24 +1,24 @@
 <?php
-namespace craft\app\services;
+namespace craft\services;
 
 use Craft;
-use craft\app\base\Volume;
-use craft\app\base\VolumeInterface;
-use craft\app\db\Query;
-use craft\app\elements\Asset;
-use craft\app\errors\VolumeException;
-use craft\app\errors\MissingComponentException;
-use craft\app\events\RegisterComponentTypesEvent;
-use craft\app\events\VolumeEvent;
-use craft\app\helpers\Component as ComponentHelper;
-use craft\app\records\Volume as AssetVolumeRecord;
-use craft\app\records\VolumeFolder;
-use craft\app\volumes\AwsS3;
-use craft\app\volumes\GoogleCloud;
-use craft\app\volumes\MissingVolume;
-use craft\app\volumes\Local;
-use craft\app\volumes\Rackspace;
-use craft\app\volumes\Temp;
+use craft\base\Volume;
+use craft\base\VolumeInterface;
+use craft\db\Query;
+use craft\elements\Asset;
+use craft\errors\VolumeException;
+use craft\errors\MissingComponentException;
+use craft\events\RegisterComponentTypesEvent;
+use craft\events\VolumeEvent;
+use craft\helpers\Component as ComponentHelper;
+use craft\records\Volume as AssetVolumeRecord;
+use craft\records\VolumeFolder;
+use craft\volumes\AwsS3;
+use craft\volumes\GoogleCloud;
+use craft\volumes\MissingVolume;
+use craft\volumes\Local;
+use craft\volumes\Rackspace;
+use craft\volumes\Temp;
 use yii\base\Component;
 
 /**
@@ -170,7 +170,7 @@ class Volumes extends Component
      *
      * @param string|null $indexBy
      *
-     * @return Volume[]
+     * @return VolumeInterface[]
      */
     public function getViewableVolumes($indexBy = null)
     {
@@ -223,7 +223,7 @@ class Volumes extends Component
      *
      * @param string|null $indexBy
      *
-     * @return Volume[]
+     * @return VolumeInterface[]
      */
     public function getPublicVolumes($indexBy = null)
     {
@@ -275,7 +275,7 @@ class Volumes extends Component
      *
      * @param string|null $indexBy
      *
-     * @return Volume[]
+     * @return VolumeInterface[]
      */
     public function getAllVolumes($indexBy = null)
     {
@@ -316,7 +316,7 @@ class Volumes extends Component
      *
      * @param integer $volumeId
      *
-     * @return Volume|null
+     * @return VolumeInterface|null
      */
     public function getVolumeById($volumeId)
     {
@@ -351,7 +351,7 @@ class Volumes extends Component
     /**
      * Saves an asset volume.
      *
-     * @param VolumeInterface $volume        the Volume to be saved.
+     * @param VolumeInterface $volume        the volume to be saved.
      * @param boolean         $runValidation Whether the volume should be validated
      *
      * @return boolean Whether the field was saved successfully
@@ -576,7 +576,7 @@ class Volumes extends Component
     /**
      * Deletes an asset volume.
      *
-     * @param Volume $volume The volume to delete
+     * @param VolumeInterface $volume The volume to delete
      *
      * @throws \Exception
      * @return boolean
@@ -664,7 +664,7 @@ class Volumes extends Component
      *
      * @param integer $volumeId
      *
-     * @throws VolumeException If the Volume does not exist.
+     * @throws VolumeException If the volume does not exist.
      * @return AssetVolumeRecord
      */
     private function _getVolumeRecordById($volumeId = null)

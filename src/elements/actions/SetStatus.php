@@ -5,14 +5,14 @@
  * @license   https://craftcms.com/license
  */
 
-namespace craft\app\elements\actions;
+namespace craft\elements\actions;
 
 use Craft;
-use craft\app\base\ElementAction;
-use craft\app\base\Element;
-use craft\app\elements\db\ElementQuery;
-use craft\app\elements\db\ElementQueryInterface;
-use craft\app\events\SetStatusEvent;
+use craft\base\ElementAction;
+use craft\base\Element;
+use craft\elements\db\ElementQuery;
+use craft\elements\db\ElementQueryInterface;
+use craft\events\SetStatusEvent;
 
 /**
  * SetStatus represents a Set Status element action.

@@ -5,12 +5,12 @@
  * @license   https://craftcms.com/license
  */
 
-namespace craft\app\i18n;
+namespace craft\i18n;
 
 use Craft;
-use craft\app\db\Query;
-use craft\app\helpers\Io;
+use craft\helpers\FileHelper;
 use ResourceBundle;
+use yii\base\Exception;
 
 /**
  * @inheritdoc
@@ -100,24 +100,24 @@ class I18N extends \yii\i18n\I18N
 			if ($this->getIsIntlLoaded()) {
 				$this->_allLocaleIds = ResourceBundle::getLocales(null);
 			} else {
-				$appLocalesPath = Craft::$app->getPath()->getAppPath().'/config/locales';
+				$appLocalesPath = Craft::$app->getBasePath().DIRECTORY_SEPARATOR.'config'.DIRECTORY_SEPARATOR.'locales';
 				$customLocalesPath = Craft::$app->getPath()->getConfigPath().'/locales';
 
-				$localeFiles = Io::getFolderContents($appLocalesPath, false, '\.php$');
-				$customLocaleFiles = Io::getFolderContents($customLocalesPath, false, '\.php$');
-
-				if ($localeFiles === false) {
-					$localeFiles = array();
-				}
-
-				if ($customLocaleFiles !== false) {
-					$localeFiles = array_merge($localeFiles, $customLocaleFiles);
-				}
+                $localeFiles = array_merge(
+                    FileHelper::findFiles($appLocalesPath, [
+                        'only' => ['*.php'],
+                        'recursive' => false
+                    ]),
+                    FileHelper::findFiles($customLocalesPath, [
+                        'only' => ['*.php'],
+                        'recursive' => false
+                    ])
+                );
 
 				$this->_allLocaleIds = [];
 
 				foreach ($localeFiles as $file) {
-					$this->_allLocaleIds[] = Io::getFilename($file, false);
+					$this->_allLocaleIds[] = pathinfo($file, PATHINFO_FILENAME);
 				}
 			}
 
@@ -156,25 +156,33 @@ class I18N extends \yii\i18n\I18N
 	 * in craft/app/translations/.
 	 *
 	 * @return Locale[] An array of [[Locale]] objects.
+     * @throws Exception in case of failure
 	 */
 	public function getAppLocales()
 	{
-		if ($this->_appLocales === null) {
-			$this->_appLocales = [new Locale('en-US')];
+        if ($this->_appLocales !== null) {
+            return $this->_appLocales;
+        }
 
-			$path = Craft::$app->getPath()->getCpTranslationsPath();
-			$folders = Io::getFolderContents($path, false);
+        $this->_appLocales = [new Locale('en-US')];
 
-			if (is_array($folders) && count($folders) > 0) {
-				foreach ($folders as $dir) {
-					$localeId = Io::getFilename($dir, false);
-
-					if ($localeId != 'en-US') {
-						$this->_appLocales[] = new Locale($localeId);
-					}
-				}
-			}
-		}
+        // Scan the translations/ dir for the others
+        $dir = Craft::$app->getPath()->getCpTranslationsPath();
+        $handle = opendir($dir);
+        if ($handle === false) {
+            throw new Exception("Unable to open directory: $dir");
+        }
+        while (($subDir = readdir($handle)) !== false) {
+            if ($subDir === '.' || $subDir === '..' || $subDir == 'en-US') {
+                continue;
+            }
+            $path = $dir.DIRECTORY_SEPARATOR.$subDir;
+            if (is_file($path)) {
+                continue;
+            }
+            $this->_appLocales[] = new Locale($subDir);
+        }
+        closedir($handle);
 
 		return $this->_appLocales;
 	}

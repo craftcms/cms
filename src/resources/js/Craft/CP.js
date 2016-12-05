@@ -49,6 +49,7 @@ Craft.CP = Garnish.Base.extend(
 
 	selectedItemLabel: null,
 
+	fixedHeader: false,
 	fixedNotifications: false,
 
 	runningTaskInfo: null,
@@ -133,9 +134,11 @@ Craft.CP = Garnish.Base.extend(
 		this.$sidebarLinks = $('nav a', this.$sidebar);
 		this.addListener(this.$sidebarLinks, 'click', 'selectSidebarItem');
 
-
-		this.addListener(this.$container, 'scroll', 'updateFixedNotifications');
+		this.addListener(Garnish.$win, 'scroll', 'updateFixedNotifications');
 		this.updateFixedNotifications();
+
+		this.addListener(Garnish.$win, 'scroll', 'updateFixedHeader');
+		this.updateFixedHeader();
 
 		Garnish.$doc.ready($.proxy(function()
 		{
@@ -240,6 +243,26 @@ Craft.CP = Garnish.Base.extend(
 		{
 			this.addListener(this.$edition, 'click', 'showUpgradeModal');
 		}
+
+        if($.isTouchCapable())
+        {
+            this.$container.on('focus', 'input, textarea, div.redactor-box', $.proxy(this, '_handleInputFocus'));
+            this.$container.on('blur', 'input, textarea, div.redactor-box', $.proxy(this, '_handleInputBlur'));
+        }
+	},
+
+    _handleInputFocus: function()
+	{
+		Garnish.$bod.addClass('focused');
+        this.updateFixedHeader();
+        this.updateResponsiveGlobalSidebar();
+	},
+
+    _handleInputBlur: function()
+	{
+        Garnish.$bod.removeClass('focused');
+        this.updateFixedHeader();
+        this.updateResponsiveGlobalSidebar();
 	},
 
 	submitPrimaryForm: function()
@@ -288,9 +311,16 @@ Craft.CP = Garnish.Base.extend(
 
 	updateResponsiveGlobalSidebar: function()
 	{
-		var globalSidebarHeight = window.innerHeight;
+		if(Garnish.$bod.hasClass('focused'))
+		{
+            this.$globalSidebar.height(this.$container.height());
+		}
+		else
+		{
+            var globalSidebarHeight = window.innerHeight;
 
-		this.$globalSidebar.height(globalSidebarHeight);
+            this.$globalSidebar.height(globalSidebarHeight);
+		}
 	},
 
 	updateResponsiveNav: function()
@@ -511,11 +541,54 @@ Craft.CP = Garnish.Base.extend(
 		this.visibleSubnavItems++;
 	},
 
+	updateFixedHeader: function()
+	{
+		this.updateFixedHeader._topbarHeight = this.$containerTopbar.height();
+		this.updateFixedHeader._pageHeaderHeight = this.$pageHeader.outerHeight();
+
+		if (Garnish.$win.scrollTop() > this.updateFixedHeader._topbarHeight)
+		{
+			if (!this.fixedHeader)
+			{
+				this.$pageHeader.addClass('fixed');
+
+				if(Garnish.$bod.hasClass('showing-nav') && Garnish.$win.width() <= 992)
+				{
+					this.$pageHeader.css('top', Garnish.$win.scrollTop());
+				}
+				else
+				{
+					if(Garnish.$bod.hasClass('focused'))
+					{
+                        this.$pageHeader.css('top', Garnish.$win.scrollTop());
+					}
+					else
+					{
+                        this.$pageHeader.css('top', 0);
+					}
+				}
+
+				this.$main.css('margin-top', this.updateFixedHeader._pageHeaderHeight);
+				this.fixedheader = true;
+			}
+		}
+		else
+		{
+			if (this.fixedheader)
+			{
+				this.$pageHeader.removeClass('fixed');
+				this.$pageHeader.css('top', 0);
+				this.$main.css('margin-top', 0);
+				this.fixedheader = false;
+			}
+		}
+	},
+
 	updateFixedNotifications: function()
 	{
 		this.updateFixedNotifications._headerHeight = this.$globalSidebar.height();
 
-		if (this.$container.scrollTop() > this.updateFixedNotifications._headerHeight)
+		if (Garnish.$win.scrollTop() > this.updateFixedNotifications._headerHeight)
 		{
 			if (!this.fixedNotifications)
 			{

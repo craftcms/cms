@@ -5,7 +5,7 @@
  * @license   https://craftcms.com/license
  */
 
-namespace craft\app\migrations;
+namespace craft\migrations;
 
 /**
  * This view is used by app/console/controllers/MigrateController.php.
@@ -22,7 +22,7 @@ echo "<?php\n";
 namespace <?= $namespace ?>;
 
 use Craft;
-use craft\app\db\Migration;
+use craft\db\Migration;
 
 /**
  * <?= $className ?> migration.

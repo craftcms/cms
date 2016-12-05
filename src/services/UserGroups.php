@@ -5,14 +5,14 @@
  * @license   https://craftcms.com/license
  */
 
-namespace craft\app\services;
+namespace craft\services;
 
 use Craft;
-use craft\app\db\Query;
-use craft\app\errors\UserGroupNotFoundException;
-use craft\app\events\UserGroupEvent;
-use craft\app\models\UserGroup;
-use craft\app\records\UserGroup as UserGroupRecord;
+use craft\db\Query;
+use craft\errors\UserGroupNotFoundException;
+use craft\events\UserGroupEvent;
+use craft\models\UserGroup;
+use craft\records\UserGroup as UserGroupRecord;
 use yii\base\Component;
 
 Craft::$app->requireEdition(Craft::Pro);

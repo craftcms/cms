@@ -1,8 +1,8 @@
 <?php
-namespace craft\app\volumes;
+namespace craft\volumes;
 
 use Craft;
-use craft\app\helpers\Url;
+use craft\helpers\Url;
 
 /**
  * The temporary volume class. Handles the implementation of a temporary volume

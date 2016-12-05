@@ -5,10 +5,10 @@
  * @license   https://craftcms.com/license
  */
 
-namespace craft\app\debug;
+namespace craft\debug;
 
 use Craft;
-use craft\app\base\Plugin;
+use craft\base\Plugin;
 use GuzzleHttp\Client;
 use Imagine\Gd\Imagine;
 use yii\debug\Panel;
@@ -57,8 +57,6 @@ class InfoPanel extends Panel
     {
         return [
             'craftVersion' => Craft::$app->version,
-            'craftBuild' => Craft::$app->build,
-            'craftReleaseDate' => Craft::$app->releaseDate->getTimestamp(),
             'craftEdition' => Craft::$app->getEdition(),
             'packages' => [
                 'Yii' => \Yii::getVersion(),
@@ -101,7 +99,7 @@ class InfoPanel extends Panel
      */
     private function _getRequirementResults()
     {
-        require_once(Craft::$app->getPath()->getAppPath().'/requirements/RequirementsChecker.php');
+        require_once(Craft::$app->getBasePath().DIRECTORY_SEPARATOR.'requirements'.DIRECTORY_SEPARATOR.'RequirementsChecker.php');
         $reqCheck = new \RequirementsChecker();
         $reqCheck->checkCraft();
 

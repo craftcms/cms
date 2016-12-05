@@ -1,10 +1,10 @@
 <?php
 
-namespace craft\app\migrations;
+namespace craft\migrations;
 
 use Craft;
-use craft\app\db\Migration;
-use craft\app\helpers\Io;
+use craft\db\Migration;
+use yii\base\ErrorException;
 
 /**
  * The class name is the UTC timestamp in the format of mYYMMDD_HHMMSS_migrationName
@@ -17,7 +17,11 @@ class m151209_000000_move_logo extends Migration
     public function safeUp()
     {
         $pathService = Craft::$app->getPath();
-        Io::rename($pathService->getStoragePath().'/logo', $pathService->getRebrandPath().'/logo', true);
+        try {
+            rename($pathService->getStoragePath().DIRECTORY_SEPARATOR.'logo', $pathService->getRebrandPath().DIRECTORY_SEPARATOR.'logo');
+        } catch (ErrorException $e) {
+            Craft::warning('Unable to rename the logo path: '.$e->getMessage());
+        }
     }
 
     /**

@@ -5,12 +5,13 @@
  * @license   https://craftcms.com/license
  */
 
-namespace craft\app\db\mysql;
+namespace craft\db\mysql;
 
 use Craft;
-use craft\app\errors\DbBackupException;
-use craft\app\helpers\Io;
-use craft\app\services\Config;
+use craft\db\TableSchema;
+use craft\errors\DbBackupException;
+use craft\helpers\FileHelper;
+use craft\services\Config;
 use yii\db\Exception;
 
 /**
@@ -161,7 +162,106 @@ class Schema extends \yii\db\mysql\Schema
             ' < {file}';
     }
 
-    // Public Methods
+    /**
+     * Returns all indexes for the given table. Each array element is of the following structure:
+     *
+     * ```php
+     * [
+     *     'IndexName1' => ['col1' [, ...]],
+     *     'IndexName2' => ['col2' [, ...]],
+     * ]
+     * ```
+     *
+     * @param string $tableName The name of the table to get the indexes for.
+     *
+     * @return array All indexes for the given table.
+     */
+    public function findIndexes($tableName)
+    {
+        $tableName = Craft::$app->getDb()->getSchema()->getRawTableName($tableName);
+        $table = Craft::$app->getDb()->getSchema()->getTableSchema($tableName);
+        $sql = $this->getCreateTableSql($table);
+        $indexes = [];
+
+        $regexp = '/KEY\s+([^\(\s]+)\s*\(([^\(\)]+)\)/mi';
+        if (preg_match_all($regexp, $sql, $matches, PREG_SET_ORDER)) {
+            foreach ($matches as $match) {
+                $indexName = str_replace('`', '', $match[1]);
+                $indexColumns = array_map('trim', explode(',', str_replace('`', '', $match[2])));
+                $indexes[$indexName] = $indexColumns;
+            }
+        }
+
+        return $indexes;
+    }
+
+    // Protected Methods
+    // =========================================================================
+
+    /**
+     * Loads the metadata for the specified table.
+     *
+     * @param string $name table name
+     *
+     * @return TableSchema driver dependent table metadata. Null if the table does not exist.
+     */
+    protected function loadTableSchema($name)
+    {
+        $table = new TableSchema;
+        $this->resolveTableNames($table, $name);
+
+        if ($this->findColumns($table)) {
+            $this->findConstraints($table);
+
+            return $table;
+        } else {
+            return null;
+        }
+    }
+
+    /**
+     * Collects extra foreign key information details for the given table.
+     *
+     * @param TableSchema $table the table metadata
+     */
+    protected function findConstraints($table)
+    {
+        parent::findConstraints($table);
+
+        // Modified from parent to get extended FK information.
+        $tableName = $this->quoteValue($table->name);
+
+        $sql = <<<SQL
+SELECT
+    kcu.constraint_name,
+    kcu.column_name,
+    kcu.referenced_table_name,
+    kcu.referenced_column_name,
+    rc.UPDATE_RULE,
+    rc.DELETE_RULE
+FROM information_schema.referential_constraints AS rc
+JOIN information_schema.key_column_usage AS kcu ON
+    (
+        kcu.constraint_catalog = rc.constraint_catalog OR
+        (kcu.constraint_catalog IS NULL AND rc.constraint_catalog IS NULL)
+    ) AND
+    kcu.constraint_schema = rc.constraint_schema AND
+    kcu.constraint_name = rc.constraint_name
+WHERE rc.constraint_schema = database() AND kcu.table_schema = database()
+AND rc.table_name = {$tableName} AND kcu.table_name = {$tableName}
+SQL;
+
+        $extendedConstraints = $this->db->createCommand($sql)->queryAll();
+
+        foreach ($extendedConstraints as $count => $extendedConstraint) {
+            $table->addExtendedForeignKey([
+                'updateType' => $extendedConstraint['UPDATE_RULE'],
+                'deleteType' => $extendedConstraint['DELETE_RULE']
+            ]);
+        }
+    }
+
+    // Private Methods
     // =========================================================================
 
     /**
@@ -172,7 +272,7 @@ class Schema extends \yii\db\mysql\Schema
      */
     private function _createDumpConfigFile()
     {
-        $filePath = Craft::$app->getPath()->getTempPath().'/my.cnf';
+        $filePath = Craft::$app->getPath()->getTempPath().DIRECTORY_SEPARATOR.'my.cnf';
 
         $config = Craft::$app->getConfig();
         $contents = '[client]'.PHP_EOL.
@@ -181,9 +281,7 @@ class Schema extends \yii\db\mysql\Schema
             'host='.$config->get('server', Config::CATEGORY_DB).PHP_EOL.
             'port='.$config->getDbPort();
 
-        if (!Io::writeToFile($filePath, $contents)) {
-            throw new DbBackupException('Could not write the my.cnf file for mysqldump to use to connect to the database.');
-        }
+        FileHelper::writeToFile($filePath, $contents);
 
         return $filePath;
     }

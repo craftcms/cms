@@ -5,33 +5,32 @@
  * @license   https://craftcms.com/license
  */
 
-namespace craft\app\services;
+namespace craft\services;
 
 use Craft;
-use craft\app\dates\DateInterval;
-use craft\app\dates\DateTime;
-use craft\app\db\Query;
-use craft\app\elements\Asset;
-use craft\app\errors\ImageException;
-use craft\app\errors\UserNotFoundException;
-use craft\app\errors\VolumeException;
-use craft\app\events\UserActivateEvent;
-use craft\app\events\UserAssignGroupEvent;
-use craft\app\events\UserGroupsAssignEvent;
-use craft\app\events\UserSuspendEvent;
-use craft\app\events\UserUnlockEvent;
-use craft\app\events\UserUnsuspendEvent;
-use craft\app\helpers\Assets as AssetsHelper;
-use craft\app\helpers\DateTimeHelper;
-use craft\app\helpers\Db;
-use craft\app\helpers\Io;
-use craft\app\helpers\Image;
-use craft\app\helpers\Json;
-use craft\app\helpers\StringHelper;
-use craft\app\helpers\Template;
-use craft\app\helpers\Url;
-use craft\app\elements\User;
-use craft\app\records\User as UserRecord;
+use craft\dates\DateInterval;
+use craft\dates\DateTime;
+use craft\db\Query;
+use craft\elements\Asset;
+use craft\errors\ImageException;
+use craft\errors\UserNotFoundException;
+use craft\errors\VolumeException;
+use craft\events\UserActivateEvent;
+use craft\events\UserAssignGroupEvent;
+use craft\events\UserGroupsAssignEvent;
+use craft\events\UserSuspendEvent;
+use craft\events\UserUnlockEvent;
+use craft\events\UserUnsuspendEvent;
+use craft\helpers\Assets as AssetsHelper;
+use craft\helpers\DateTimeHelper;
+use craft\helpers\Db;
+use craft\helpers\Image;
+use craft\helpers\Json;
+use craft\helpers\StringHelper;
+use craft\helpers\Template;
+use craft\helpers\Url;
+use craft\elements\User;
+use craft\records\User as UserRecord;
 use yii\base\Component;
 use yii\db\Exception;
 
@@ -464,9 +463,9 @@ class Users extends Component
      */
     public function saveUserPhoto($fileLocation, User $user, $filename = "")
     {
-        $filenameToUse = AssetsHelper::prepareAssetName($filename ?: Io::getFilename($fileLocation, false), true, true);
+        $filenameToUse = AssetsHelper::prepareAssetName($filename ?: pathinfo($fileLocation, PATHINFO_FILENAME), true, true);
 
-        if(!Image::isImageManipulatable(Io::getExtension($fileLocation))) {
+        if(!Image::isImageManipulatable(pathinfo($fileLocation, PATHINFO_EXTENSION))) {
             throw new ImageException(Craft::t('app', 'User photo must be an image that Craft can manipulate.'));
         }
 
@@ -489,7 +488,7 @@ class Users extends Component
             $filenameToUse = $assets->getNameReplacementInFolder($filenameToUse, $folderId);
 
             $photo = new Asset();
-            $photo->title = StringHelper::toTitleCase(Io::getFilename($filenameToUse, false));
+            $photo->title = StringHelper::toTitleCase(pathinfo($filenameToUse, PATHINFO_FILENAME));
             $photo->newFilePath = $fileLocation;
             $photo->filename = $filenameToUse;
             $photo->folderId = $folderId;

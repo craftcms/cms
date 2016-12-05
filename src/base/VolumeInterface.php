@@ -5,10 +5,10 @@
  * @license   https://craftcms.com/license
  */
 
-namespace craft\app\base;
+namespace craft\base;
 
-use craft\app\errors\VolumeObjectExistsException;
-use craft\app\errors\VolumeObjectNotFoundException;
+use craft\errors\VolumeObjectExistsException;
+use craft\errors\VolumeObjectNotFoundException;
 
 /**
  * VolumeInterface defines the common interface to be implemented by volume classes.

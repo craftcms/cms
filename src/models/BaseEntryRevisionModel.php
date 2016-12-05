@@ -5,13 +5,13 @@
  * @license   https://craftcms.com/license
  */
 
-namespace craft\app\models;
+namespace craft\models;
 
 use Craft;
-use craft\app\base\Field;
-use craft\app\helpers\ElementHelper;
-use craft\app\elements\Entry;
-use craft\app\elements\User;
+use craft\base\Field;
+use craft\helpers\ElementHelper;
+use craft\elements\Entry;
+use craft\elements\User;
 
 /**
  * Class BaseEntryRevision model.

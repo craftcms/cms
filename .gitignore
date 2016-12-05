@@ -11,3 +11,4 @@ Build/*
 *.sass-cache
 node_modules/
 vendor/
+/composer.lock

@@ -5,11 +5,11 @@
  * @license   https://craftcms.com/license
  */
 
-namespace craft\app\models;
+namespace craft\models;
 
 use Craft;
-use craft\app\base\Model;
-use craft\app\base\Volume;
+use craft\base\Model;
+use craft\base\Volume;
 
 /**
  * The VolumeFolder model class.

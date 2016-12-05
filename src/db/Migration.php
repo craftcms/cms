@@ -5,9 +5,9 @@
  * @license   https://craftcms.com/license
  */
 
-namespace craft\app\db;
+namespace craft\db;
 
-use craft\app\helpers\Db;
+use craft\helpers\Db;
 use yii\db\ColumnSchemaBuilder;
 
 /**

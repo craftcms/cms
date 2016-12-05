@@ -5,7 +5,7 @@
  * @license   https://craftcms.com/license
  */
 
-namespace craft\app\i18n;
+namespace craft\i18n;
 
 use Craft;
 

@@ -5,7 +5,7 @@
  * @license   https://craftcms.com/license
  */
 
-namespace craft\app\errors;
+namespace craft\errors;
 
 /**
  * Class VolumeFileNotFoundException

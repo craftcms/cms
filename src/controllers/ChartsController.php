@@ -5,13 +5,13 @@
  * @license   https://craftcms.com/license
  */
 
-namespace craft\app\controllers;
+namespace craft\controllers;
 
 use Craft;
-use craft\app\web\Controller;
-use craft\app\helpers\DateTimeHelper;
-use craft\app\helpers\ChartHelper;
-use craft\app\db\Query;
+use craft\web\Controller;
+use craft\helpers\DateTimeHelper;
+use craft\helpers\ChartHelper;
+use craft\db\Query;
 use yii\base\Response;
 
 /**

@@ -5,11 +5,11 @@
  * @license   https://craftcms.com/license
  */
 
-namespace craft\app\widgets;
+namespace craft\widgets;
 
 use Craft;
-use craft\app\base\Widget;
-use craft\app\helpers\Json;
+use craft\base\Widget;
+use craft\helpers\Json;
 
 /**
  * NewUsers represents a New Users dashboard widget.
@@ -109,6 +109,6 @@ class NewUsers extends Widget
      */
     public function getIconPath()
     {
-        return Craft::$app->getPath()->getResourcesPath().'/images/widgets/new-users.svg';
+        return Craft::$app->getPath()->getResourcesPath().DIRECTORY_SEPARATOR.'images'.DIRECTORY_SEPARATOR.'widgets'.DIRECTORY_SEPARATOR.'new-users.svg';
     }
 }

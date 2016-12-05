@@ -5,10 +5,10 @@
  * @license   https://craftcms.com/license
  */
 
-namespace craft\app\controllers;
+namespace craft\controllers;
 
 use Craft;
-use craft\app\web\Controller;
+use craft\web\Controller;
 use yii\web\Response;
 
 /**

@@ -6,14 +6,14 @@
  * @license   https://craftcms.com/license
  */
 
-namespace craft\app\services;
+namespace craft\services;
 
 use Craft;
-use craft\app\base\Plugin;
-use craft\app\db\Query;
-use craft\app\events\RegisterUserPermissionsEvent;
-use craft\app\models\Section;
-use craft\app\records\UserPermission as UserPermissionRecord;
+use craft\base\Plugin;
+use craft\db\Query;
+use craft\events\RegisterUserPermissionsEvent;
+use craft\models\Section;
+use craft\records\UserPermission as UserPermissionRecord;
 use yii\base\Component;
 
 Craft::$app->requireEdition(Craft::Client);

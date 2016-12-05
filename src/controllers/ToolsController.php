@@ -5,13 +5,13 @@
  * @license   https://craftcms.com/license
  */
 
-namespace craft\app\controllers;
+namespace craft\controllers;
 
 use Craft;
-use craft\app\base\ToolInterface;
-use craft\app\helpers\Component;
-use craft\app\helpers\Io;
-use craft\app\web\Controller;
+use craft\base\ToolInterface;
+use craft\helpers\Component;
+use craft\web\Controller;
+use yii\web\NotFoundHttpException;
 use yii\web\Response;
 
 /**
@@ -52,7 +52,7 @@ class ToolsController extends Controller
         $params = Craft::$app->getRequest()->getBodyParam('params', []);
 
         /** @var ToolInterface $tool */
-        $tool = Component::createComponent($class, \craft\app\base\ToolInterface::class);
+        $tool = Component::createComponent($class, \craft\base\ToolInterface::class);
         $response = $tool->performAction($params);
 
         return $this->asJson($response);
@@ -61,14 +61,20 @@ class ToolsController extends Controller
     /**
      * Returns a database backup zip file to the browser.
      *
-     * @return void
+     * @return Response
+     * @throws NotFoundHttpException
      */
     public function actionDownloadBackupFile()
     {
         $filename = Craft::$app->getRequest()->getRequiredQueryParam('filename');
+        $filePath = Craft::$app->getPath()->getTempPath().DIRECTORY_SEPARATOR.$filename.'.zip';
 
-        if (($filePath = Io::fileExists(Craft::$app->getPath()->getTempPath().'/'.$filename.'.zip')) == true) {
-            Craft::$app->getResponse()->sendFile(Io::getFilename($filePath), Io::getFileContents($filePath), ['forceDownload' => true]);
+        if (!is_file($filePath)) {
+            throw new NotFoundHttpException(Craft::t('app', 'Invalid backup name: {filename}', [
+                'filename' => $filename
+            ]));
         }
+
+        return Craft::$app->getResponse()->sendFile($filePath);
     }
 }

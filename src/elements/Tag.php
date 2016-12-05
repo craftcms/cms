@@ -5,14 +5,14 @@
  * @license   https://craftcms.com/license
  */
 
-namespace craft\app\elements;
+namespace craft\elements;
 
 use Craft;
-use craft\app\base\Element;
-use craft\app\base\ElementInterface;
-use craft\app\elements\db\TagQuery;
-use craft\app\models\TagGroup;
-use craft\app\records\Tag as TagRecord;
+use craft\base\Element;
+use craft\base\ElementInterface;
+use craft\elements\db\TagQuery;
+use craft\models\TagGroup;
+use craft\records\Tag as TagRecord;
 use yii\base\Exception;
 
 /**

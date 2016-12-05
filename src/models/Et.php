@@ -5,13 +5,13 @@
  * @license   https://craftcms.com/license
  */
 
-namespace craft\app\models;
+namespace craft\models;
 
-use craft\app\base\Model;
-use craft\app\helpers\DateTimeHelper;
-use craft\app\helpers\Db;
-use craft\app\helpers\Json;
-use craft\app\validators\DateTimeValidator;
+use craft\base\Model;
+use craft\helpers\DateTimeHelper;
+use craft\helpers\Db;
+use craft\helpers\Json;
+use craft\validators\DateTimeValidator;
 
 /**
  * Class Et model.
@@ -90,11 +90,6 @@ class Et extends Model
     public $localVersion;
 
     /**
-     * @var integer Local build
-     */
-    public $localBuild;
-
-    /**
      * @var string Local edition
      */
     public $localEdition;
@@ -103,11 +98,6 @@ class Et extends Model
      * @var string User email
      */
     public $userEmail;
-
-    /**
-     * @var string Track
-     */
-    public $track;
 
     /**
      * @var boolean Show beta updates
@@ -155,8 +145,7 @@ class Et extends Model
         return [
             [['licensedEdition'], 'in', 'range' => [0, 1, 2]],
             [['requestTime'], DateTimeValidator::class],
-            [['localBuild'], 'number', 'integerOnly' => true],
-            [['localVersion', 'localBuild', 'localEdition', 'handle'], 'required'],
+            [['localVersion', 'localEdition', 'handle'], 'required'],
             [['userEmail'], 'email'],
         ];
     }

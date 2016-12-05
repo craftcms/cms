@@ -5,16 +5,16 @@
  * @license   https://craftcms.com/license
  */
 
-namespace craft\app\elements\db;
+namespace craft\elements\db;
 
 use Craft;
-use craft\app\base\ElementInterface;
-use craft\app\base\Field;
-use craft\app\db\Query;
-use craft\app\fields\Matrix;
-use craft\app\helpers\ArrayHelper;
-use craft\app\helpers\Db;
-use craft\app\models\Site;
+use craft\base\ElementInterface;
+use craft\base\Field;
+use craft\db\Query;
+use craft\fields\Matrix;
+use craft\helpers\ArrayHelper;
+use craft\helpers\Db;
+use craft\models\Site;
 
 /**
  * Parses a relatedTo param on an ElementQuery.

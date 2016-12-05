@@ -197,7 +197,7 @@ Craft.CategoryIndex = Craft.BaseElementIndex.extend(
 
 		new Craft.ElementEditor({
 			hudTrigger: this.$newCategoryBtnGroup,
-			elementType: 'craft\\app\\elements\\Category',
+			elementType: 'craft\\elements\\Category',
 			siteId: this.siteId,
 			attributes: {
 				groupId: groupId
@@ -232,4 +232,4 @@ Craft.CategoryIndex = Craft.BaseElementIndex.extend(
 });
 
 // Register it!
-Craft.registerElementIndexClass('craft\\app\\elements\\Category', Craft.CategoryIndex);
+Craft.registerElementIndexClass('craft\\elements\\Category', Craft.CategoryIndex);

@@ -5,13 +5,13 @@
  * @license   https://craftcms.com/license
  */
 
-namespace craft\app\controllers;
+namespace craft\controllers;
 
 use Craft;
-use craft\app\migrations\Install;
-use craft\app\models\AccountSettings;
-use craft\app\models\Site;
-use craft\app\web\Controller;
+use craft\migrations\Install;
+use craft\models\AccountSettings;
+use craft\models\Site;
+use craft\web\Controller;
 use yii\base\Response;
 use yii\web\BadRequestHttpException;
 

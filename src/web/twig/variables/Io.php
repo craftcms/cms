@@ -5,11 +5,11 @@
  * @license   https://craftcms.com/license
  */
 
-namespace craft\app\web\twig\variables;
+namespace craft\web\twig\variables;
 
 use Craft;
-use craft\app\helpers\App as AppHelper;
-use craft\app\helpers\Io as IoHelper;
+use craft\helpers\App as AppHelper;
+use craft\helpers\Assets;
 
 /**
  * Io variable.
@@ -55,6 +55,6 @@ class Io
      */
     public function getFileKinds()
     {
-        return IoHelper::getFileKinds();
+        return Assets::getFileKinds();
     }
 }

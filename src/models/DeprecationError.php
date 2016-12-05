@@ -5,12 +5,12 @@
  * @license   https://craftcms.com/license
  */
 
-namespace craft\app\models;
+namespace craft\models;
 
-use craft\app\base\Model;
-use craft\app\dates\DateTime;
-use craft\app\helpers\Json;
-use craft\app\validators\DateTimeValidator;
+use craft\base\Model;
+use craft\dates\DateTime;
+use craft\helpers\Json;
+use craft\validators\DateTimeValidator;
 
 /**
  * DeprecationError model.

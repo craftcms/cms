@@ -5,13 +5,13 @@
  * @license   https://craftcms.com/license
  */
 
-namespace craft\app\controllers;
+namespace craft\controllers;
 
 use Craft;
-use craft\app\elements\Entry;
-use craft\app\models\EntryDraft;
-use craft\app\models\Section;
-use craft\app\web\Controller;
+use craft\elements\Entry;
+use craft\models\EntryDraft;
+use craft\models\Section;
+use craft\web\Controller;
 
 /**
  * BaseEntriesController is a base class that any entry-related controllers, such as [[EntriesController]] and

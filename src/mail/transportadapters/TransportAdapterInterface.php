@@ -5,9 +5,9 @@
  * @license   https://craftcms.com/license
  */
 
-namespace craft\app\mail\transportadapters;
+namespace craft\mail\transportadapters;
 
-use craft\app\base\SavableComponentInterface;
+use craft\base\SavableComponentInterface;
 
 /**
  * TransportAdapterInterface defines the common interface to be implemented by SwiftMailer transport adapter classes.
@@ -21,7 +21,7 @@ interface TransportAdapterInterface extends SavableComponentInterface
     // =========================================================================
 
     /**
-     * Returns the config array that should be passed to [[\craft\app\mail\Mailer::setTransport()]].
+     * Returns the config array that should be passed to [[\craft\mail\Mailer::setTransport()]].
      *
      * Note that the return value will be stored in the database as JSON,
      * so you cannot create an actual \Swift_Transport object here.

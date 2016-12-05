@@ -1,9 +1,9 @@
 <?php
 
-use craft\app\models\DeprecationError;
+use craft\models\DeprecationError;
 
 /** @var $log DeprecationError */
-/** @var $panel craft\app\debug\DeprecatedPanel */
+/** @var $panel craft\debug\DeprecatedPanel */
 ?>
     <h1><?= $log->key ?></h1>
 

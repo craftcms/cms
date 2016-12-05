@@ -5,7 +5,7 @@
  * @license   https://craftcms.com/license
  */
 
-namespace craft\app\events;
+namespace craft\events;
 
 /**
  * Site event class.
@@ -19,7 +19,7 @@ class SiteEvent extends Event
     // =========================================================================
 
     /**
-     * @var \craft\app\models\Site The site model associated with the event.
+     * @var \craft\models\Site The site model associated with the event.
      */
     public $site;
 

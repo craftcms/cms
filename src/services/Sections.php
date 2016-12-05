@@ -5,25 +5,25 @@
  * @license   https://craftcms.com/license
  */
 
-namespace craft\app\services;
+namespace craft\services;
 
 use Craft;
-use craft\app\db\Query;
-use craft\app\elements\Entry;
-use craft\app\errors\EntryTypeNotFoundException;
-use craft\app\errors\SectionNotFoundException;
-use craft\app\events\EntryTypeEvent;
-use craft\app\events\SectionEvent;
-use craft\app\helpers\ArrayHelper;
-use craft\app\helpers\Db;
-use craft\app\models\EntryType;
-use craft\app\models\Section;
-use craft\app\models\Section_SiteSettings;
-use craft\app\models\Structure;
-use craft\app\records\EntryType as EntryTypeRecord;
-use craft\app\records\Section as SectionRecord;
-use craft\app\records\Section_SiteSettings as Section_SiteSettingsRecord;
-use craft\app\tasks\ResaveElements;
+use craft\db\Query;
+use craft\elements\Entry;
+use craft\errors\EntryTypeNotFoundException;
+use craft\errors\SectionNotFoundException;
+use craft\events\EntryTypeEvent;
+use craft\events\SectionEvent;
+use craft\helpers\ArrayHelper;
+use craft\helpers\Db;
+use craft\models\EntryType;
+use craft\models\Section;
+use craft\models\Section_SiteSettings;
+use craft\models\Structure;
+use craft\records\EntryType as EntryTypeRecord;
+use craft\records\Section as SectionRecord;
+use craft\records\Section_SiteSettings as Section_SiteSettingsRecord;
+use craft\tasks\ResaveElements;
 use yii\base\Component;
 use yii\base\Exception;
 

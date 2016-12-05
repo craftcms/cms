@@ -5,10 +5,10 @@
  * @license   https://craftcms.com/license
  */
 
-namespace craft\app\web\twig\variables;
+namespace craft\web\twig\variables;
 
 use Craft;
-use craft\app\helpers\Url;
+use craft\helpers\Url;
 use yii\web\Cookie;
 
 /**

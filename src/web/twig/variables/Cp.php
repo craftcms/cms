@@ -5,15 +5,14 @@
  * @license   https://craftcms.com/license
  */
 
-namespace craft\app\web\twig\variables;
+namespace craft\web\twig\variables;
 
 use Craft;
-use craft\app\base\Plugin;
-use craft\app\events\RegisterCpNavItemsEvent;
-use craft\app\helpers\Cp as CpHelper;
-use craft\app\helpers\Io as IoHelper;
-use craft\app\helpers\StringHelper;
-use craft\app\helpers\Url;
+use craft\base\Plugin;
+use craft\events\RegisterCpNavItemsEvent;
+use craft\helpers\Cp as CpHelper;
+use craft\helpers\StringHelper;
+use craft\helpers\Url;
 use yii\base\Component;
 
 /**
@@ -101,18 +100,17 @@ class Cp extends Component
                 $pluginHandle = $plugin->getHandle();
 
                 if (Craft::$app->getUser()->checkPermission('accessPlugin-'.$pluginHandle)) {
-                    $lcHandle = StringHelper::toLowerCase($pluginHandle);
-                    $iconPath = Craft::$app->getPath()->getPluginsPath().'/'.$lcHandle.'/resources/icon-mask.svg';
+                    $iconPath = $plugin->getBasePath().DIRECTORY_SEPARATOR.'resources'.DIRECTORY_SEPARATOR.'icon-mask.svg';
 
-                    if (IoHelper::fileExists($iconPath)) {
-                        $iconSvg = IoHelper::getFileContents($iconPath);
+                    if (is_file($iconPath)) {
+                        $iconSvg = file_get_contents($iconPath);
                     } else {
                         $iconSvg = false;
                     }
 
                     $navItems[] = [
                         'label' => $plugin->name,
-                        'url' => $lcHandle,
+                        'url' => StringHelper::toLowerCase($pluginHandle),
                         'iconSvg' => $iconSvg
                     ];
                 }

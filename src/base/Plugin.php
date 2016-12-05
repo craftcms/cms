@@ -5,13 +5,13 @@
  * @license   https://craftcms.com/license
  */
 
-namespace craft\app\base;
+namespace craft\base;
 
 use Craft;
-use craft\app\db\Migration;
-use craft\app\db\MigrationManager;
-use craft\app\helpers\Io;
-use craft\app\web\Controller;
+use craft\db\Migration;
+use craft\db\MigrationManager;
+use craft\helpers\FileHelper;
+use craft\web\Controller;
 use yii\base\Module;
 
 /**
@@ -70,7 +70,7 @@ class Plugin extends Module implements PluginInterface
 
         if (!isset($i18n->translations[$handle]) && !isset($i18n->translations[$handle.'*'])) {
             $i18n->translations[$handle] = [
-                'class' => \craft\app\i18n\PhpMessageSource::class,
+                'class' => \craft\i18n\PhpMessageSource::class,
                 'sourceLanguage' => $this->sourceLanguage,
                 'basePath' => "@plugins/$handle/translations",
                 'allowOverrides' => true,
@@ -200,24 +200,9 @@ class Plugin extends Module implements PluginInterface
     /**
      * @inheritdoc
      */
-    public function getVariableDefinition()
+    public function defineTemplateComponent()
     {
         return null;
-    }
-
-    /**
-     * Returns the root directory of the module.
-     * It defaults to the directory containing the module class file.
-     *
-     * @return string the root directory of the module.
-     */
-    public function getBasePath()
-    {
-        if ($this->_basePath === null) {
-            $this->_basePath = Craft::$app->getPath()->getPluginsPath().'/'.$this->id;
-        }
-
-        return $this->_basePath;
     }
 
     // Protected Methods
@@ -232,17 +217,16 @@ class Plugin extends Module implements PluginInterface
     {
         // See if there's an Install migration in the plugin’s migrations folder
         $migrator = $this->getMigrator();
-        $path = $migrator->migrationPath.'/Install.php';
+        $path = $migrator->migrationPath.DIRECTORY_SEPARATOR.'Install.php';
 
-        if (Io::fileExists($path)) {
-            require_once($path);
-
-            $class = $migrator->migrationNamespace.'\\Install';
-
-            return new $class;
+        if (!is_file($path)) {
+            return null;
         }
 
-        return null;
+        require_once $path;
+        $class = $migrator->migrationNamespace.'\\Install';
+
+        return new $class;
     }
 
     /**

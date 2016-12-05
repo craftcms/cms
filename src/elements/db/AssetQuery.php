@@ -5,14 +5,14 @@
  * @license   https://craftcms.com/license
  */
 
-namespace craft\app\elements\db;
+namespace craft\elements\db;
 
 use Craft;
-use craft\app\base\Volume;
-use craft\app\db\Query;
-use craft\app\elements\Asset;
-use craft\app\helpers\ArrayHelper;
-use craft\app\helpers\Db;
+use craft\base\Volume;
+use craft\db\Query;
+use craft\elements\Asset;
+use craft\helpers\ArrayHelper;
+use craft\helpers\Db;
 
 /**
  * AssetQuery represents a SELECT SQL statement for assets in a way that is independent of DBMS.

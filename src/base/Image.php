@@ -5,10 +5,10 @@
  * @license   https://craftcms.com/license
  */
 
-namespace craft\app\base;
+namespace craft\base;
 
-use craft\app\errors\ImageException;
-use craft\app\helpers\Image as ImageHelper;
+use craft\errors\ImageException;
+use craft\helpers\Image as ImageHelper;
 use yii\base\Object;
 
 /**

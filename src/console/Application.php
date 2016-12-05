@@ -5,10 +5,10 @@
  * @license   https://craftcms.com/license
  */
 
-namespace craft\app\console;
+namespace craft\console;
 
 use Craft;
-use craft\app\base\ApplicationTrait;
+use craft\base\ApplicationTrait;
 
 /**
  * Craft Console Application class

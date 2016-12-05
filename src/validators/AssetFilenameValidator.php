@@ -5,13 +5,12 @@
  * @license   https://craftcms.com/license
  */
 
-namespace craft\app\validators;
+namespace craft\validators;
 
 use Craft;
-use craft\app\elements\Asset;
-use craft\app\helpers\Assets as AssetsHelper;
-use craft\app\helpers\Db;
-use craft\app\helpers\Io;
+use craft\elements\Asset;
+use craft\helpers\Assets as AssetsHelper;
+use craft\helpers\Db;
 use yii\validators\Validator;
 
 /**
@@ -51,10 +50,8 @@ class AssetFilenameValidator extends Validator
         parent::init();
 
         if ($this->allowedExtensions === null) {
-            $this->allowedExtensions = Io::getAllowedFileExtensions();
+            $this->allowedExtensions = Craft::$app->getConfig()->getAllowedFileExtensions();
         }
-
-        $this->allowedExtensions = array_map('strtolower', $this->allowedExtensions);
 
         if ($this->badExtension === null) {
             $this->badExtension = Craft::t('app', '“{extension}” is not an allowed file extension.');
@@ -74,7 +71,7 @@ class AssetFilenameValidator extends Validator
         $value = $model->$attribute;
 
         // Make sure the new filename has a valid extension
-        $extension = strtolower(Io::getExtension($value));
+        $extension = strtolower(pathinfo($value, PATHINFO_EXTENSION));
         if (!in_array($extension, $this->allowedExtensions)) {
             $this->addError($model, $attribute, $this->badExtension, ['extension' => $extension]);
         }

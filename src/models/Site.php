@@ -5,14 +5,14 @@
  * @license   https://craftcms.com/license
  */
 
-namespace craft\app\models;
+namespace craft\models;
 
 use Craft;
-use craft\app\base\Model;
-use craft\app\records\Site as SiteRecord;
-use craft\app\validators\HandleValidator;
-use craft\app\validators\UniqueValidator;
-use craft\app\validators\UrlValidator;
+use craft\base\Model;
+use craft\records\Site as SiteRecord;
+use craft\validators\HandleValidator;
+use craft\validators\UniqueValidator;
+use craft\validators\UrlValidator;
 
 /**
  * Site model class.

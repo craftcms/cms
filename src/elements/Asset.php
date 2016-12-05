@@ -5,31 +5,31 @@
  * @license   https://craftcms.com/license
  */
 
-namespace craft\app\elements;
+namespace craft\elements;
 
 use Craft;
-use craft\app\base\Element;
-use craft\app\base\ElementInterface;
-use craft\app\base\Volume;
-use craft\app\elements\actions\CopyReferenceTag;
-use craft\app\elements\actions\DeleteAssets;
-use craft\app\elements\actions\DownloadAssetFile;
-use craft\app\elements\actions\Edit;
-use craft\app\elements\actions\RenameFile;
-use craft\app\elements\actions\ReplaceFile;
-use craft\app\elements\actions\View;
-use craft\app\elements\db\AssetQuery;
-use craft\app\fields\Assets;
-use craft\app\helpers\Html;
-use craft\app\helpers\Image;
-use craft\app\helpers\Io;
-use craft\app\helpers\StringHelper;
-use craft\app\helpers\Template;
-use craft\app\helpers\Url;
-use craft\app\models\VolumeFolder;
-use craft\app\records\Asset as AssetRecord;
-use craft\app\validators\AssetFilenameValidator;
-use craft\app\validators\DateTimeValidator;
+use craft\base\Element;
+use craft\base\VolumeInterface;
+use craft\elements\actions\CopyReferenceTag;
+use craft\elements\actions\DeleteAssets;
+use craft\elements\actions\DownloadAssetFile;
+use craft\elements\actions\Edit;
+use craft\elements\actions\RenameFile;
+use craft\elements\actions\ReplaceFile;
+use craft\elements\actions\View;
+use craft\elements\db\AssetQuery;
+use craft\fields\Assets;
+use craft\helpers\Assets as AssetsHelper;
+use craft\helpers\FileHelper;
+use craft\helpers\Html;
+use craft\helpers\Image;
+use craft\helpers\StringHelper;
+use craft\helpers\Template;
+use craft\helpers\Url;
+use craft\models\VolumeFolder;
+use craft\records\Asset as AssetRecord;
+use craft\validators\AssetFilenameValidator;
+use craft\validators\DateTimeValidator;
 use yii\base\ErrorHandler;
 use yii\base\Exception;
 use yii\base\InvalidCallException;
@@ -364,7 +364,7 @@ class Asset extends Element
     private $_transformSource = '';
 
     /**
-     * @var Volume
+     * @var VolumeInterface
      */
     private $_volume = null;
 
@@ -568,7 +568,7 @@ class Asset extends Element
     }
 
     /**
-     * @return Volume|null
+     * @return VolumeInterface|null
      */
     public function getVolume()
     {
@@ -671,7 +671,7 @@ class Asset extends Element
      */
     public function getExtension()
     {
-        return Io::getExtension($this->filename);
+        return pathinfo($this->filename, PATHINFO_EXTENSION);
     }
 
     /**
@@ -679,7 +679,9 @@ class Asset extends Element
      */
     public function getMimeType()
     {
-        return Io::getMimeType($this->filename);
+        // todo: maybe we should be passing this off to volume types
+        // so Local volumes can call FileHelper::getMimeType() (uses magic file instead of ext)
+        return FileHelper::getMimeTypeByExtension($this->filename);
     }
 
     /**
@@ -778,10 +780,11 @@ class Asset extends Element
      */
     public function getCopyOfFile()
     {
-        $copyPath = Io::getTempFilePath($this->getExtension());
-        $this->getVolume()->saveFileLocally($this->getUri(), $copyPath);
+        $tempFilename = uniqid(pathinfo($this->filename, PATHINFO_FILENAME), true).'.'.$this->getExtension();
+        $tempPath = Craft::$app->getPath()->getTempPath().DIRECTORY_SEPARATOR.$tempFilename;
+        $this->getVolume()->saveFileLocally($this->getUri(), $tempPath);
 
-        return $copyPath;
+        return $tempPath;
     }
 
     /**
@@ -811,7 +814,7 @@ class Asset extends Element
                 ]);
 
             case 'kind':
-                return Io::getFileKindLabel($this->kind);
+                return AssetsHelper::getFileKindLabel($this->kind);
 
             case 'size':
                 return $this->size ? Craft::$app->getFormatter()->asShortSize($this->size) : '';
@@ -875,7 +878,7 @@ class Asset extends Element
     {
         if ($isNew && !$this->title) {
             // Give it a default title based on the file name
-            $this->title = StringHelper::toTitleCase(Io::getFilename($this->filename, false));
+            $this->title = StringHelper::toTitleCase(pathinfo($this->filename, PATHINFO_FILENAME));
         }
 
         return parent::beforeSave($isNew);

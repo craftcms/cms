@@ -5,10 +5,10 @@
  * @license   https://craftcms.com/license
  */
 
-namespace craft\app\web\twig\variables;
+namespace craft\web\twig\variables;
 
 use Craft;
-use craft\app\models\CategoryGroup;
+use craft\models\CategoryGroup;
 
 /**
  * Class CategoryGroupsVariable

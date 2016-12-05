@@ -5,13 +5,13 @@
  * @license   https://craftcms.com/license
  */
 
-namespace craft\app\elements\db;
+namespace craft\elements\db;
 
 use Craft;
-use craft\app\db\Query;
-use craft\app\elements\Tag;
-use craft\app\helpers\Db;
-use craft\app\models\TagGroup;
+use craft\db\Query;
+use craft\elements\Tag;
+use craft\helpers\Db;
+use craft\models\TagGroup;
 
 /**
  * TagQuery represents a SELECT SQL statement for tags in a way that is independent of DBMS.

@@ -5,12 +5,12 @@
  * @license   https://craftcms.com/license
  */
 
-namespace craft\app\web\twig\variables;
+namespace craft\web\twig\variables;
 
 use Craft;
-use craft\app\base\FieldInterface;
-use craft\app\models\FieldGroup;
-use craft\app\models\FieldLayout;
+use craft\base\FieldInterface;
+use craft\models\FieldGroup;
+use craft\models\FieldLayout;
 
 /**
  * Fields provides an API for accessing information about fields. It is accessible from templates via `craft.fields`.

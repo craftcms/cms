@@ -5,13 +5,13 @@
  * @license   https://craftcms.com/license
  */
 
-namespace craft\app\elements\actions;
+namespace craft\elements\actions;
 
 use Craft;
-use craft\app\base\ElementAction;
-use craft\app\elements\db\ElementQueryInterface;
-use craft\app\elements\User;
-use craft\app\helpers\Json;
+use craft\base\ElementAction;
+use craft\elements\db\ElementQueryInterface;
+use craft\elements\User;
+use craft\helpers\Json;
 use yii\base\Exception;
 
 /**

@@ -5,12 +5,12 @@
  * @license   https://craftcms.com/license
  */
 
-namespace craft\app\console\controllers;
+namespace craft\console\controllers;
 
 use Craft;
-use craft\app\base\Plugin;
-use craft\app\db\MigrationManager;
-use craft\app\helpers\Io;
+use craft\base\Plugin;
+use craft\db\MigrationManager;
+use craft\helpers\FileHelper;
 use yii\console\controllers\BaseMigrateController;
 use yii\console\Exception;
 use yii\helpers\Console;
@@ -131,7 +131,7 @@ class MigrateController extends BaseMigrateController
         }
 
         $this->migrationPath = $this->getMigrator()->migrationPath;
-        Io::ensureFolderExists($this->migrationPath);
+        FileHelper::createDirectory($this->migrationPath);
 
         return true;
     }
@@ -154,7 +154,7 @@ class MigrateController extends BaseMigrateController
                 'className' => $name
             ]);
 
-            Io::writeToFile($file, $content);
+            FileHelper::writeToFile($file, $content);
             $this->stdout("New migration created successfully.\n", Console::FG_GREEN);
         }
     }

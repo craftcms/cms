@@ -1,53 +1,52 @@
 {
     "name": "craftcms/craft",
-    "homepage": "https://craftcms.com",
-    "minimum-stability": "rc",
-    "repositories": [
-        {
-            "type": "vcs",
-            "url": "https://github.com/pixelandtonic/Twig"
-        },
-        {
-            "type": "vcs",
-            "url": "https://github.com/pixelandtonic/Imagine"
-        },
-        {
-            "type": "vcs",
-            "url": "https://github.com/pixelandtonic/simplepie"
-        },
-        {
-            "type": "vcs",
-            "url": "https://github.com/pixelandtonic/pel"
-        }
+    "description": "Craft CMS",
+    "keywords": [
+        "craft",
+        "cms",
+        "craftcms",
+        "content management system"
     ],
+    "homepage": "https://craftcms.com",
+    "license": "proprietary",
+    "support": {
+        "email": "support@craftcms.com",
+        "issues": "https://github.com/craftcms/craft/issues?state=open",
+        "forum": "https://craftcms.stackexchange.com/",
+        "source": "https://github.com/craftcms/craft",
+        "docs": "https://craftcms.com/docs",
+        "rss": "https://craftcms.com/changelog.rss"
+    },
+    "minimum-stability": "stable",
     "require": {
         "php": ">=5.6.0",
         "yiisoft/yii2": "2.0.10",
-        "yiisoft/yii2-debug": "dev-master",
+        "yiisoft/yii2-debug": "2.0.7",
         "yiisoft/yii2-authclient": "2.1.1",
         "yiisoft/yii2-swiftmailer": "2.0.6",
-        "simplepie/simplepie": "1.4.2.1",
+        "simplepie/simplepie": "1.4.3",
         "guzzlehttp/guzzle": "6.2.2",
-        "twig/twig": "1.24.1.1",
-        "lsolesen/pel": "0.9.4.1",
         "danielstjules/stringy": "2.3.2",
         "creocoder/yii2-nested-sets": "0.9.0",
-        "imagine/imagine": "0.6.14.1",
+        "pixelandtonic/imagine": "0.6.3.1",
         "league/flysystem": "1.0.32",
         "league/flysystem-ziparchive": "1.0.2",
-        "pclzip/pclzip": "2.8.2",
         "php-http/guzzle6-adapter": "^1.1",
-        "mikehaertl/php-shellcommand": "1.2.2"
+        "mikehaertl/php-shellcommand": "1.2.2",
+        "twig/twig": "1.28.2"
     },
     "autoload": {
         "psr-4": {
-            "craft\\app\\": "./"
-        }
+            "craft\\": "src/"
+        },
+        "classmap": [
+            "lib/"
+        ]
     },
-    "extra": {
-        "asset-installer-paths": {
-            "npm-asset-library": "vendor/npm",
-            "bower-asset-library": "vendor/bower"
+    "repositories": [
+        {
+            "type": "composer",
+            "url": "https://asset-packagist.org"
         }
-    }
+    ]
 }

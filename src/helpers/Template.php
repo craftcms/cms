@@ -5,12 +5,12 @@
  * @license   https://craftcms.com/license
  */
 
-namespace craft\app\helpers;
+namespace craft\helpers;
 
 use Craft;
-use craft\app\elements\db\ElementQuery;
-use craft\app\elements\db\ElementQueryInterface;
-use craft\app\web\twig\variables\Paginate;
+use craft\elements\db\ElementQuery;
+use craft\elements\db\ElementQueryInterface;
+use craft\web\twig\variables\Paginate;
 
 /**
  * Class Template

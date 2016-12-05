@@ -5,11 +5,10 @@
  * @license   https://craftcms.com/license
  */
 
-namespace craft\app\web\twig;
+namespace craft\web\twig;
 
 use Craft;
-use craft\app\helpers\Io;
-use craft\app\web\View;
+use craft\web\View;
 
 /**
  * Loads Craft templates into Twig.
@@ -68,11 +67,11 @@ class TemplateLoader implements \Twig_LoaderInterface, \Twig_ExistsLoaderInterfa
 
         $template = $this->_resolveTemplate($name);
 
-        if (Io::isReadable($template)) {
-            return Io::getFileContents($template);
+        if (!is_readable($template)) {
+            throw new TemplateLoaderException($name, Craft::t('app', 'Tried to read the template at {path}, but could not. Check the permissions.', ['path' => $template]));
         }
 
-        throw new TemplateLoaderException($name, Craft::t('app', 'Tried to read the template at {path}, but could not. Check the permissions.', ['path' => $template]));
+        return file_get_contents($template);
     }
 
     /**
@@ -111,9 +110,9 @@ class TemplateLoader implements \Twig_LoaderInterface, \Twig_ExistsLoaderInterfa
         }
 
         if (is_string($name)) {
-            $sourceModifiedTime = Io::getLastTimeModified($this->_resolveTemplate($name));
+            $sourceModifiedTime = filemtime($this->_resolveTemplate($name));
 
-            return $sourceModifiedTime->getTimestamp() <= $time;
+            return $sourceModifiedTime <= $time;
         }
 
         return false;

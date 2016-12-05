@@ -5,13 +5,13 @@
  * @license   https://craftcms.com/license
  */
 
-namespace craft\app\helpers;
+namespace craft\helpers;
 
 use Craft;
-use craft\app\db\Connection;
-use craft\app\db\Query;
-use craft\app\dates\DateTime;
-use craft\app\services\Config;
+use craft\db\Connection;
+use craft\db\Query;
+use craft\dates\DateTime;
+use craft\services\Config;
 use yii\base\Exception;
 
 

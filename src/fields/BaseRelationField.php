@@ -5,21 +5,21 @@
  * @license   https://craftcms.com/license
  */
 
-namespace craft\app\fields;
+namespace craft\fields;
 
 use Craft;
-use craft\app\base\EagerLoadingFieldInterface;
-use craft\app\base\ElementInterface;
-use craft\app\base\Field;
-use craft\app\base\Element;
-use craft\app\base\PreviewableFieldInterface;
-use craft\app\db\Query;
-use craft\app\elements\db\ElementQuery;
-use craft\app\elements\db\ElementQueryInterface;
-use craft\app\helpers\ElementHelper;
-use craft\app\helpers\StringHelper;
-use craft\app\tasks\LocalizeRelations;
-use craft\app\validators\ArrayValidator;
+use craft\base\EagerLoadingFieldInterface;
+use craft\base\ElementInterface;
+use craft\base\Field;
+use craft\base\Element;
+use craft\base\PreviewableFieldInterface;
+use craft\db\Query;
+use craft\elements\db\ElementQuery;
+use craft\elements\db\ElementQueryInterface;
+use craft\helpers\ElementHelper;
+use craft\helpers\StringHelper;
+use craft\tasks\LocalizeRelations;
+use craft\validators\ArrayValidator;
 use yii\base\NotSupportedException;
 
 /**
@@ -223,7 +223,7 @@ abstract class BaseRelationField extends Field implements PreviewableFieldInterf
 
                 // Does the source specify any criteria attributes?
                 if (isset($source['criteria'])) {
-                    $query->configure($source['criteria']);
+                    Craft::configure($query, $source['criteria']);
                 }
             }
         } else {

@@ -5,11 +5,11 @@
  * @license   https://craftcms.com/license
  */
 
-namespace craft\app\behaviors;
+namespace craft\behaviors;
 
 use Craft;
-use craft\app\base\ElementInterface;
-use craft\app\models\FieldLayout;
+use craft\base\ElementInterface;
+use craft\models\FieldLayout;
 use yii\base\Behavior;
 use yii\base\InvalidConfigException;
 

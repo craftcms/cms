@@ -5,13 +5,13 @@
  * @license   https://craftcms.com/license
  */
 
-namespace craft\app\widgets;
+namespace craft\widgets;
 
 use Craft;
-use craft\app\base\Widget;
-use craft\app\helpers\ArrayHelper;
-use craft\app\helpers\Json;
-use craft\app\models\Section;
+use craft\base\Widget;
+use craft\helpers\ArrayHelper;
+use craft\helpers\Json;
+use craft\models\Section;
 
 /**
  * QuickPost represents a Quick Post dashboard widget.
@@ -118,7 +118,7 @@ class QuickPost extends Widget
      */
     public function getIconPath()
     {
-        return Craft::$app->getPath()->getResourcesPath().'/images/widgets/quick-post.svg';
+        return Craft::$app->getPath()->getResourcesPath().DIRECTORY_SEPARATOR.'images'.DIRECTORY_SEPARATOR.'widgets'.DIRECTORY_SEPARATOR.'quick-post.svg';
     }
 
     /**

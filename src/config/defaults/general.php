@@ -33,8 +33,8 @@ return [
      * Possible values are:
      *
      * - `true` (all updates are allowed)
-     * - `'minor-only'` (only minor and build updates are allowed)
-     * - `'build-only'` (only build updates are allowed)
+     * - `'minor-only'` (only minor and patch updates are allowed - the "Y" and "Z" in X.Y.Z)
+     * - `'patch-only'` (only patch updates are allowed - the "Z" in X.Y.Z)
      * - `false` (no updates are allowed)
      */
     'allowAutoUpdates' => true,
@@ -175,13 +175,15 @@ return [
      */
     'defaultCpLanguage' => null,
     /**
-     * The default permissions Craft will use when creating a file on the file system.
+     * The default permission to be set for newly generated directories.
+     * If set to null, the permission will be determined by the current environment.
      */
-    'defaultFilePermissions' => 0664,
+    'defaultDirMode' => 0775,
     /**
-     * The default permissions Craft will use when creating a folder on the file system.
+     * The default permission to be set for newly generated files.
+     * If set to null, the permission will be determined by the current environment.
      */
-    'defaultFolderPermissions' => 0775,
+    'defaultFileMode' => null,
     /**
      * The quality level Craft will use when saving JPG and PNG files. Ranges from 0 (worst quality, smallest file) to
      * 100 (best quality, biggest file).

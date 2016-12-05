@@ -5,18 +5,18 @@
  * @license   https://craftcms.com/license
  */
 
-namespace craft\app\base;
+namespace craft\base;
 
 use Craft;
-use craft\app\elements\db\ElementQuery;
-use craft\app\elements\db\ElementQueryInterface;
-use craft\app\events\FieldElementEvent;
-use craft\app\helpers\Db;
-use craft\app\helpers\Html;
-use craft\app\helpers\StringHelper;
-use craft\app\records\Field as FieldRecord;
-use craft\app\validators\HandleValidator;
-use craft\app\validators\UniqueValidator;
+use craft\elements\db\ElementQuery;
+use craft\elements\db\ElementQueryInterface;
+use craft\events\FieldElementEvent;
+use craft\helpers\Db;
+use craft\helpers\Html;
+use craft\helpers\StringHelper;
+use craft\records\Field as FieldRecord;
+use craft\validators\HandleValidator;
+use craft\validators\UniqueValidator;
 use Exception;
 use yii\base\ErrorHandler;
 use yii\db\Schema;

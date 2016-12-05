@@ -5,12 +5,12 @@
  * @license   https://craftcms.com/license
  */
 
-namespace craft\app\tools;
+namespace craft\tools;
 
 use Craft;
-use craft\app\base\Tool;
-use craft\app\db\Query;
-use craft\app\elements\Asset;
+use craft\base\Tool;
+use craft\db\Query;
+use craft\elements\Asset;
 
 /**
  * AssetIndex represents an Update Asset Indexes tool.

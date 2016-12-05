@@ -1,8 +1,8 @@
 <?php
 
-namespace craft\app\migrations;
+namespace craft\migrations;
 
-use craft\app\db\Migration;
+use craft\db\Migration;
 
 /**
  * m150403_184533_field_version migration.

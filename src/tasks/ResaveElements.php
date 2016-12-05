@@ -5,14 +5,14 @@
  * @license   https://craftcms.com/license
  */
 
-namespace craft\app\tasks;
+namespace craft\tasks;
 
 use Craft;
-use craft\app\base\Element;
-use craft\app\base\Task;
-use craft\app\base\ElementInterface;
-use craft\app\elements\db\ElementQuery;
-use craft\app\helpers\StringHelper;
+use craft\base\Element;
+use craft\base\Task;
+use craft\base\ElementInterface;
+use craft\elements\db\ElementQuery;
+use craft\helpers\StringHelper;
 
 /**
  * ResaveElements represents a Resave Elements background task.
@@ -60,8 +60,11 @@ class ResaveElements extends Task
 
         // Now find the affected element IDs
         /** @var ElementQuery $query */
-        $query = $class::find()
-            ->configure($this->criteria)
+        $query = $class::find();
+        if ($this->criteria) {
+            Craft::configure($query, $this->criteria);
+        }
+        $query
             ->offset(null)
             ->limit(null)
             ->orderBy(null);

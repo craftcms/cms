@@ -5,10 +5,10 @@
  * @license   https://craftcms.com/license
  */
 
-namespace craft\app\widgets;
+namespace craft\widgets;
 
 use Craft;
-use craft\app\base\Widget;
+use craft\base\Widget;
 
 /**
  * Updates represents an Updates dashboard widget.
@@ -54,7 +54,7 @@ class Updates extends Widget
      */
     public function getIconPath()
     {
-        return Craft::$app->getPath()->getResourcesPath().'/images/widgets/updates.svg';
+        return Craft::$app->getPath()->getResourcesPath().DIRECTORY_SEPARATOR.'images'.DIRECTORY_SEPARATOR.'widgets'.DIRECTORY_SEPARATOR.'updates.svg';
     }
 
     /**

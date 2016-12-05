@@ -5,10 +5,10 @@
  * @license   https://craftcms.com/license
  */
 
-namespace craft\app\models;
+namespace craft\models;
 
-use craft\app\base\Model;
-use craft\app\validators\DateTimeValidator;
+use craft\base\Model;
+use craft\validators\DateTimeValidator;
 
 /**
  * Class Info model.
@@ -29,12 +29,7 @@ class Info extends Model
     /**
      * @var string Version
      */
-    public $version = '0';
-
-    /**
-     * @var integer Build
-     */
-    public $build = '0';
+    public $version;
 
     /**
      * @var string Schema version
@@ -44,12 +39,7 @@ class Info extends Model
     /**
      * @var integer Edition
      */
-    public $edition = 0;
-
-    /**
-     * @var \DateTime Release date
-     */
-    public $releaseDate;
+    public $edition = \Craft::Personal;
 
     /**
      * @var string Timezone
@@ -65,11 +55,6 @@ class Info extends Model
      * @var boolean Maintenance
      */
     public $maintenance = false;
-
-    /**
-     * @var string Track
-     */
-    public $track;
 
     /**
      * @var string Uid
@@ -110,25 +95,12 @@ class Info extends Model
     /**
      * @inheritdoc
      */
-    public function datetimeAttributes()
-    {
-        $names = parent::datetimeAttributes();
-        $names[] = 'releaseDate';
-
-        return $names;
-    }
-
-    /**
-     * @inheritdoc
-     */
     public function rules()
     {
         return [
-            [['id', 'build', 'edition'], 'number', 'integerOnly' => true],
-            [['releaseDate'], DateTimeValidator::class],
-            [['version', 'build', 'schemaVersion', 'edition', 'releaseDate', 'track'], 'required'],
+            [['id', 'edition'], 'number', 'integerOnly' => true],
+            [['version', 'schemaVersion', 'edition'], 'required'],
             [['timezone'], 'string', 'max' => 30],
-            [['track'], 'string', 'max' => 40],
         ];
     }
 }

@@ -5,7 +5,7 @@
  * @license   https://craftcms.com/license
  */
 
-namespace craft\app\fields\data;
+namespace craft\fields\data;
 
 /**
  * Single-select option field data class.

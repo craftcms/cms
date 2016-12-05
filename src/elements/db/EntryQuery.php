@@ -5,17 +5,17 @@
  * @license   https://craftcms.com/license
  */
 
-namespace craft\app\elements\db;
+namespace craft\elements\db;
 
 use Craft;
-use craft\app\db\Query;
-use craft\app\db\QueryAbortedException;
-use craft\app\elements\Entry;
-use craft\app\helpers\ArrayHelper;
-use craft\app\helpers\Db;
-use craft\app\models\EntryType;
-use craft\app\models\Section;
-use craft\app\models\UserGroup;
+use craft\db\Query;
+use craft\db\QueryAbortedException;
+use craft\elements\Entry;
+use craft\helpers\ArrayHelper;
+use craft\helpers\Db;
+use craft\models\EntryType;
+use craft\models\Section;
+use craft\models\UserGroup;
 use DateTime;
 
 /**

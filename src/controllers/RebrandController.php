@@ -5,14 +5,14 @@
  * @license   https://craftcms.com/license
  */
 
-namespace craft\app\controllers;
+namespace craft\controllers;
 
 use Craft;
-use craft\app\helpers\Assets;
-use craft\app\helpers\Image;
-use craft\app\helpers\Io;
-use craft\app\web\Controller;
-use craft\app\web\UploadedFile;
+use craft\helpers\Assets;
+use craft\helpers\FileHelper;
+use craft\helpers\Image;
+use craft\web\Controller;
+use craft\web\UploadedFile;
 use yii\web\BadRequestHttpException;
 use yii\web\Response;
 
@@ -68,8 +68,11 @@ class RebrandController extends Controller
 
                 $targetPath = Craft::$app->getPath()->getRebrandPath().'/'.$type.'/';
 
-                Io::ensureFolderExists($targetPath);
-                Io::clearFolder($targetPath);
+                if (!is_dir($targetPath)) {
+                    FileHelper::createDirectory($targetPath);
+                } else {
+                    FileHelper::clearDirectory($targetPath);
+                }
 
                 $fileDestination = $targetPath.'/'.$filename;
 
@@ -102,7 +105,7 @@ class RebrandController extends Controller
             $this->asErrorJson(Craft::t('app', 'That is not an allowed image type.'));
         }
 
-        Io::clearFolder(Craft::$app->getPath()->getRebrandPath().'/'.$type.'/');
+        FileHelper::clearDirectory(Craft::$app->getPath()->getRebrandPath().'/'.$type);
 
         $html = Craft::$app->getView()->renderTemplate('settings/general/_images/'.$type);
 

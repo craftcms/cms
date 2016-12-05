@@ -5,7 +5,7 @@
  * @license   https://craftcms.com/license
  */
 
-namespace craft\app\enums;
+namespace craft\enums;
 
 /**
  * The LicenseKeyStatus class is an abstract class that defines all of the license key status states that are available

@@ -5,15 +5,15 @@
  * @license   https://craftcms.com/license
  */
 
-namespace craft\app\web;
+namespace craft\web;
 
 use Craft;
-use craft\app\dates\DateInterval;
-use craft\app\helpers\DateTimeHelper;
-use craft\app\elements\User as UserElement;
-use craft\app\helpers\Db;
-use craft\app\helpers\Url;
-use craft\app\validators\UserPasswordValidator;
+use craft\dates\DateInterval;
+use craft\helpers\DateTimeHelper;
+use craft\elements\User as UserElement;
+use craft\helpers\Db;
+use craft\helpers\Url;
+use craft\validators\UserPasswordValidator;
 use yii\web\Cookie;
 use yii\web\IdentityInterface;
 
@@ -356,7 +356,7 @@ class User extends \yii\web\User
      */
     protected function afterLogin($identity, $cookieBased, $duration)
     {
-        /** @var \craft\app\elements\User $identity */
+        /** @var \craft\elements\User $identity */
         // Save the username cookie
         $this->sendUsernameCookie($identity);
 

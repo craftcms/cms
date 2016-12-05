@@ -5,13 +5,13 @@
  * @license   https://craftcms.com/license
  */
 
-namespace craft\app\models;
+namespace craft\models;
 
 use Craft;
-use craft\app\base\Model;
-use craft\app\validators\SingleSectionUriValidator;
-use craft\app\validators\SiteIdValidator;
-use craft\app\validators\UriFormatValidator;
+use craft\base\Model;
+use craft\validators\SingleSectionUriValidator;
+use craft\validators\SiteIdValidator;
+use craft\validators\UriFormatValidator;
 use yii\base\InvalidConfigException;
 
 /**

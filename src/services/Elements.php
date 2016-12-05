@@ -5,38 +5,38 @@
  * @license   https://craftcms.com/license
  */
 
-namespace craft\app\services;
+namespace craft\services;
 
 use Craft;
-use craft\app\base\Element;
-use craft\app\base\ElementAction;
-use craft\app\base\Field;
-use craft\app\db\Query;
-use craft\app\base\ElementActionInterface;
-use craft\app\elements\Asset;
-use craft\app\elements\Category;
-use craft\app\base\ElementInterface;
-use craft\app\elements\db\ElementQuery;
-use craft\app\elements\Entry;
-use craft\app\elements\GlobalSet;
-use craft\app\elements\MatrixBlock;
-use craft\app\elements\Tag;
-use craft\app\elements\User;
-use craft\app\errors\ElementNotFoundException;
-use craft\app\errors\MissingComponentException;
-use craft\app\events\ElementEvent;
-use craft\app\events\MergeElementsEvent;
-use craft\app\events\RegisterComponentTypesEvent;
-use craft\app\helpers\ArrayHelper;
-use craft\app\helpers\Component as ComponentHelper;
-use craft\app\helpers\DateTimeHelper;
-use craft\app\helpers\ElementHelper;
-use craft\app\helpers\StringHelper;
-use craft\app\records\Element as ElementRecord;
-use craft\app\records\Element_SiteSettings as Element_SiteSettingsRecord;
-use craft\app\records\StructureElement as StructureElementRecord;
-use craft\app\tasks\FindAndReplace;
-use craft\app\tasks\UpdateElementSlugsAndUris;
+use craft\base\Element;
+use craft\base\ElementAction;
+use craft\base\Field;
+use craft\db\Query;
+use craft\base\ElementActionInterface;
+use craft\elements\Asset;
+use craft\elements\Category;
+use craft\base\ElementInterface;
+use craft\elements\db\ElementQuery;
+use craft\elements\Entry;
+use craft\elements\GlobalSet;
+use craft\elements\MatrixBlock;
+use craft\elements\Tag;
+use craft\elements\User;
+use craft\errors\ElementNotFoundException;
+use craft\errors\MissingComponentException;
+use craft\events\ElementEvent;
+use craft\events\MergeElementsEvent;
+use craft\events\RegisterComponentTypesEvent;
+use craft\helpers\ArrayHelper;
+use craft\helpers\Component as ComponentHelper;
+use craft\helpers\DateTimeHelper;
+use craft\helpers\ElementHelper;
+use craft\helpers\StringHelper;
+use craft\records\Element as ElementRecord;
+use craft\records\Element_SiteSettings as Element_SiteSettingsRecord;
+use craft\records\StructureElement as StructureElementRecord;
+use craft\tasks\FindAndReplace;
+use craft\tasks\UpdateElementSlugsAndUris;
 use yii\base\Component;
 use yii\base\Exception;
 
@@ -1305,17 +1305,16 @@ class Elements extends Component
                         }
 
                         // Get the target elements
-                        $customParams = array_merge(
+                        /** @var Element $targetElementType */
+                        $targetElementType = $map['elementType'];
+                        /** @var ElementQuery $query */
+                        $query = $targetElementType::find();
+                        Craft::configure($query, array_merge(
                         // Default to no order and limit, but allow the element type/path criteria to override
                             ['orderBy' => null, 'limit' => null],
                             (isset($map['criteria']) ? $map['criteria'] : []),
                             (isset($pathCriterias[$targetPath]) ? $pathCriterias[$targetPath] : [])
-                        );
-                        /** @var Element $targetElementType */
-                        $targetElementType = $map['elementType'];
-                        /** @var ElementQuery $query */
-                        $query = $targetElementType::find()
-                            ->configure($customParams);
+                        ));
                         $query->id = $uniqueTargetElementIds;
                         /** @var Element[] $targetElements */
                         $targetElements = $query->all();

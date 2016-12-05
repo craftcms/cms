@@ -5,31 +5,32 @@
  * @license   https://craftcms.com/license
  */
 
-namespace craft\app\services;
+namespace craft\services;
 
 use Craft;
-use craft\app\db\Query;
-use craft\app\dates\DateTime;
-use craft\app\elements\Asset;
-use craft\app\errors\VolumeObjectExistsException;
-use craft\app\events\AssetTransformEvent;
-use craft\app\helpers\ArrayHelper;
-use craft\app\helpers\Assets as AssetsHelper;
-use craft\app\helpers\Db;
-use craft\app\helpers\Image;
-use craft\app\helpers\Io;
-use craft\app\helpers\StringHelper;
-use craft\app\image\Raster;
-use craft\app\models\AssetTransformIndex;
-use craft\app\models\AssetTransform;
-use craft\app\records\AssetTransform as AssetTransformRecord;
-use craft\app\errors\AssetTransformException;
-use craft\app\errors\VolumeObjectNotFoundException;
-use craft\app\errors\VolumeException;
-use craft\app\errors\AssetLogicException;
-use craft\app\errors\ValidationException;
+use craft\db\Query;
+use craft\dates\DateTime;
+use craft\elements\Asset;
+use craft\errors\VolumeObjectExistsException;
+use craft\events\AssetTransformEvent;
+use craft\helpers\ArrayHelper;
+use craft\helpers\Assets as AssetsHelper;
+use craft\helpers\Db;
+use craft\helpers\FileHelper;
+use craft\helpers\Image;
+use craft\helpers\StringHelper;
+use craft\image\Raster;
+use craft\models\AssetTransformIndex;
+use craft\models\AssetTransform;
+use craft\records\AssetTransform as AssetTransformRecord;
+use craft\errors\AssetTransformException;
+use craft\errors\VolumeObjectNotFoundException;
+use craft\errors\VolumeException;
+use craft\errors\AssetLogicException;
+use craft\errors\ValidationException;
 use yii\base\Application;
 use yii\base\Component;
+use yii\base\ErrorException;
 
 /**
  * Class AssetTransforms service.
@@ -562,7 +563,7 @@ class AssetTransforms extends Component
         $volume = $asset->getVolume();
         $index->detectedFormat = !empty($index->format) ? $index->format : $this->detectAutoTransformFormat($asset);
 
-        $transformFilename = Io::getFilename($asset->filename, false).'.'.$index->detectedFormat;
+        $transformFilename = pathinfo($asset->filename, PATHINFO_FILENAME).'.'.$index->detectedFormat;
         $index->filename = $transformFilename;
 
         $matchFound = false;
@@ -844,14 +845,12 @@ class AssetTransforms extends Component
      */
     public function getResizedAssetServerPath(Asset $asset, $size)
     {
-        $thumbFolder = Craft::$app->getPath()->getResizedAssetsPath().'/'.$size.'/';
-        Io::ensureFolderExists($thumbFolder);
-
+        $thumbFolder = Craft::$app->getPath()->getResizedAssetsPath().DIRECTORY_SEPARATOR.$size;
+        FileHelper::createDirectory($thumbFolder);
         $extension = $this->_getThumbExtension($asset);
+        $thumbPath = $thumbFolder.DIRECTORY_SEPARATOR.$asset->id.'.'.$extension;
 
-        $thumbPath = $thumbFolder.$asset->id.'.'.$extension;
-
-        if (!Io::fileExists($thumbPath)) {
+        if (!is_file($thumbPath)) {
             $imageSource = $this->getLocalImageSource($asset);
 
             Craft::$app->getImages()->loadImage($imageSource, false, $size)
@@ -884,26 +883,39 @@ class AssetTransforms extends Component
         $imageSourcePath = $asset->getImageTransformSourcePath();
 
         if (!$volume::isLocal()) {
-            if (!Io::fileExists($imageSourcePath) || Io::getFileSize($imageSourcePath) == 0) {
+            if (!is_file($imageSourcePath) || filesize($imageSourcePath) == 0) {
 
                 // Delete it just in case it's a 0-byter
-                Io::deleteFile($imageSourcePath, true);
+                try {
+                    FileHelper::removeFile($imageSourcePath);
+                } catch (ErrorException $e) {
+                    Craft::warning("Unable to delete the file \"{$imageSourcePath}\": ".$e->getMessage());
+                }
 
-                $localCopy = Io::getTempFilePath($asset->getExtension());
+                $tempFilename = uniqid(pathinfo($asset->filename, PATHINFO_FILENAME), true).'.'.$asset->getExtension();
+                $tempPath = Craft::$app->getPath()->getTempPath().DIRECTORY_SEPARATOR.$tempFilename;
 
-                $volume->saveFileLocally($asset->getUri(), $localCopy);
+                $volume->saveFileLocally($asset->getUri(), $tempPath);
 
-                if (!Io::fileExists($localCopy) || Io::getFileSize($localCopy) == 0) {
-                    Io::deleteFile($localCopy, true);
+                if (!is_file($tempPath) || filesize($tempPath) == 0) {
+                    try {
+                        FileHelper::removeFile($tempPath);
+                    } catch (ErrorException $e) {
+                        Craft::warning("Unable to delete the file \"{$tempPath}\": ".$e->getMessage());
+                    }
                     throw new VolumeException(Craft::t('Tried to download the source file for image “{file}”, but it was 0 bytes long.',
                         ['file' => $asset->filename]));
                 }
 
-                $this->storeLocalSource($localCopy, $imageSourcePath);
+                $this->storeLocalSource($tempPath, $imageSourcePath);
 
                 // Delete the leftover data.
                 $this->queueSourceForDeletingIfNecessary($imageSourcePath);
-                Io::deleteFile($localCopy, true);
+                try {
+                    FileHelper::removeFile($tempPath);
+                } catch (ErrorException $e) {
+                    Craft::warning("Unable to delete the file \"{$tempPath}\": ".$e->getMessage());
+                }
             }
         }
 
@@ -959,7 +971,7 @@ class AssetTransforms extends Component
         $maxCachedImageSize = $this->getCachedCloudImageSize();
 
         // Resize if constrained by maxCachedImageSizes setting
-        if ($maxCachedImageSize > 0 && Image::isImageManipulatable(Io::getExtension($source))) {
+        if ($maxCachedImageSize > 0 && Image::isImageManipulatable(pathinfo($source, PATHINFO_EXTENSION))) {
 
             $image = Craft::$app->getImages()->loadImage($source);
 
@@ -971,7 +983,7 @@ class AssetTransforms extends Component
                 $maxCachedImageSize)->saveAs($destination);
         } else {
             if ($source != $destination) {
-                Io::copyFile($source, $destination);
+                copy($source, $destination);
             }
         }
     }
@@ -1003,10 +1015,11 @@ class AssetTransforms extends Component
 
             $volume = $asset->getVolume();
 
-            $path = Io::getTempFilePath($asset->getExtension());
-            $localCopy = $volume->saveFileLocally($asset->getUri(), $path);
+            $tempFilename = uniqid(pathinfo($asset->filename, PATHINFO_FILENAME), true).'.'.$asset->getExtension();
+            $tempPath = Craft::$app->getPath()->getTempPath().DIRECTORY_SEPARATOR.$tempFilename;
+            $volume->saveFileLocally($asset->getUri(), $tempPath);
 
-            $image = $images->loadImage($localCopy);
+            $image = $images->loadImage($tempPath);
 
             if ($image->getIsTransparent()) {
                 $format = 'png';
@@ -1016,11 +1029,11 @@ class AssetTransforms extends Component
 
             if (!$volume::isLocal()) {
                 // Store for potential later use and queue for deletion if needed.
-                $asset->setTransformSource($localCopy);
-                $this->queueSourceForDeletingIfNecessary($localCopy);
+                $asset->setTransformSource($tempPath);
+                $this->queueSourceForDeletingIfNecessary($tempPath);
             } else {
                 // For local, though, we just delete the temp file.
-                Io::deleteFile($localCopy);
+                FileHelper::removeFile($tempPath);
             }
 
             return $format;
@@ -1043,7 +1056,7 @@ class AssetTransforms extends Component
         $path = $index->location;
 
         if (!empty($index->filename) && $index->filename != $asset->filename) {
-            $path .= '/'.$asset->id;
+            $path .= DIRECTORY_SEPARATOR.$asset->id;
         }
 
         return $path;
@@ -1076,8 +1089,7 @@ class AssetTransforms extends Component
      */
     public function getTransformSubpath(Asset $asset, AssetTransformIndex $index)
     {
-        return $this->getTransformSubfolder($asset,
-            $index).'/'.$this->getTransformFilename($asset, $index);
+        return $this->getTransformSubfolder($asset, $index).DIRECTORY_SEPARATOR.$this->getTransformFilename($asset, $index);
     }
 
     /**
@@ -1093,8 +1105,7 @@ class AssetTransforms extends Component
         $this->deleteCreatedTransformsForAsset($asset);
         $this->deleteTransformIndexDataByAssetId($asset->id);
 
-        Io::deleteFile(Craft::$app->getPath()->getAssetsImageSourcePath().'/'.$asset->id.'.'.Io::getExtension($asset->filename),
-            true);
+        FileHelper::removeFile(Craft::$app->getPath()->getAssetsImageSourcePath().DIRECTORY_SEPARATOR.$asset->id.'.'.pathinfo($asset->filename, PATHINFO_EXTENSION), true);
     }
 
     /**
@@ -1106,15 +1117,28 @@ class AssetTransforms extends Component
      */
     public function deleteResizedAssetVersion(Asset $asset)
     {
-        $thumbFolders = Io::getFolderContents(Craft::$app->getPath()->getResizedAssetsPath());
+        $thumbFilename = $asset->id.'.'.$this->_getThumbExtension($asset);
+        $dir = Craft::$app->getPath()->getResizedAssetsPath();
 
-        if ($thumbFolders) {
-            foreach ($thumbFolders as $folder) {
-                if (is_dir($folder)) {
-                    Io::deleteFile($folder.'/'.$asset->id.'.'.$this->_getThumbExtension($asset),
-                        true);
-                }
+        try {
+            $handle = opendir($dir);
+            if ($handle === false) {
+                Craft::warning("Unable to open directory: $dir");
+                return;
             }
+            while (($subDir = readdir($handle)) !== false) {
+                if ($subDir === '.' || $subDir === '..') {
+                    continue;
+                }
+                $path = $dir.DIRECTORY_SEPARATOR.$subDir.DIRECTORY_SEPARATOR.$thumbFilename;
+                if (!is_file($path)) {
+                    continue;
+                }
+                FileHelper::removeFile($path);
+            }
+            closedir($handle);
+        } catch (ErrorException $e) {
+            Craft::warning('Unable to delete asset thumbnails: '.$e->getMessage());
         }
     }
 
@@ -1277,7 +1301,7 @@ class AssetTransforms extends Component
      */
     private function _createTransformForAsset(Asset $asset, AssetTransformIndex $index)
     {
-        if (!Image::isImageManipulatable(Io::getExtension($asset->filename))) {
+        if (!Image::isImageManipulatable(pathinfo($asset->filename, PATHINFO_EXTENSION))) {
             return;
         }
 
@@ -1348,12 +1372,13 @@ class AssetTransforms extends Component
             }
         }
 
-        $createdTransform = Io::getTempFilePath($index->detectedFormat);
-        $image->saveAs($createdTransform);
+        $tempFilename = uniqid(pathinfo($index->filename, PATHINFO_FILENAME), true).'.'.pathinfo($index->filename, PATHINFO_FILENAME);
+        $tempPath = Craft::$app->getPath()->getTempPath().DIRECTORY_SEPARATOR.$tempFilename;
+        $image->saveAs($tempPath);
 
-        clearstatcache(true, $createdTransform);
+        clearstatcache(true, $tempPath);
 
-        $stream = fopen($createdTransform, "r");
+        $stream = fopen($tempPath, "r");
 
         try {
             $volume->createFileByStream($transformPath, $stream);
@@ -1361,7 +1386,7 @@ class AssetTransforms extends Component
             // We're fine with that.
         }
 
-        Io::deleteFile($createdTransform);
+        FileHelper::removeFile($tempPath);
 
         $volume = $asset->getVolume();
 
@@ -1382,7 +1407,7 @@ class AssetTransforms extends Component
     private function _getThumbExtension(Asset $asset)
     {
         // For non-web-safe formats we go with jpg.
-        if (!in_array(mb_strtolower(Io::getExtension($asset->filename)), Image::webSafeFormats())) {
+        if (!in_array(mb_strtolower(pathinfo($asset->filename, PATHINFO_EXTENSION)), Image::webSafeFormats())) {
             return 'jpg';
         }
 

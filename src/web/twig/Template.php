@@ -5,11 +5,11 @@
  * @license   https://craftcms.com/license
  */
 
-namespace craft\app\web\twig;
+namespace craft\web\twig;
 
 use Craft;
-use craft\app\base\Element;
-use craft\app\base\ElementInterface;
+use craft\base\Element;
+use craft\base\ElementInterface;
 use yii\base\Object;
 
 /**
@@ -83,9 +83,16 @@ abstract class Template extends \Twig_Template
             $this->_includeElementInTemplateCaches($object);
         }
 
-        if ($type !== \Twig_Template::METHOD_CALL && $object instanceof Object) {
+        if ($type !== self::METHOD_CALL && $object instanceof Object) {
             if ($object->canGetProperty($item)) {
                 return $isDefinedTest ? true : $object->$item;
+            }
+        }
+
+        // Convert any Twig_Markup arguments back to strings (unless the class *extends* Twig_Markup)
+        foreach ($arguments as $key => $value) {
+            if (is_object($value) && get_class($value) === \Twig_Markup::class) {
+                $arguments[$key] = (string)$value;
             }
         }
 

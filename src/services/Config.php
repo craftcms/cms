@@ -5,20 +5,22 @@
  * @license   https://craftcms.com/license
  */
 
-namespace craft\app\services;
+namespace craft\services;
 
 use Craft;
-use craft\app\db\Connection;
-use craft\app\helpers\App;
-use craft\app\helpers\ArrayHelper;
-use craft\app\helpers\DateTimeHelper;
-use craft\app\helpers\Io;
-use craft\app\helpers\StringHelper;
-use craft\app\helpers\Url;
-use craft\app\elements\User;
+use craft\base\Plugin;
+use craft\db\Connection;
+use craft\helpers\App;
+use craft\helpers\ArrayHelper;
+use craft\helpers\DateTimeHelper;
+use craft\helpers\StringHelper;
+use craft\helpers\Url;
+use craft\elements\User;
 use GuzzleHttp\Client;
 use GuzzleHttp\Exception\RequestException;
 use yii\base\Component;
+use yii\base\Exception;
+use yii\base\InvalidParamException;
 
 /**
  * The Config service provides APIs for retrieving the values of Craft’s [config settings](http://craftcms.com/docs/config-settings),
@@ -58,6 +60,16 @@ class Config extends Component
      * @var
      */
     private $_usePathInfo;
+
+    /**
+     * @var boolean
+     */
+    private $_useWriteFileLock;
+
+    /**
+     * @var array
+     */
+    private $_allowedFileExtensions;
 
     /**
      * @var array
@@ -310,8 +322,7 @@ class Config extends Component
                         // Test the server for it
                         try {
                             $baseUrl = Craft::$app->getRequest()->getHostInfo().Craft::$app->getRequest()->getScriptUrl();
-                            $url = mb_substr($baseUrl, 0, mb_strrpos($baseUrl,
-                                    '/')).'/testScriptNameRedirect';
+                            $url = mb_substr($baseUrl, 0, mb_strrpos($baseUrl, '/')).'/testScriptNameRedirect';
 
                             $response = (new Client())->get($url,
                                 ['connect_timeout' => 2, 'timeout' => 4]);
@@ -672,25 +683,102 @@ class Config extends Component
             return $configVal;
         }
 
-        if ($configVal === 'build-only') {
-            // Return whether the version number has changed at all
-            return ($updateInfo->app->latestVersion === Craft::$app->version);
+        if ($configVal === 'patch-only') {
+            // Return true if the major and minor versions are still the same
+            return (App::majorMinorVersion($updateInfo->app->latestVersion) == App::majorMinorVersion(Craft::$app->version));
         }
 
         if ($configVal === 'minor-only') {
-            // Return whether the major version number has changed
-            $versionParts = explode('.', Craft::$app->version);
-            $majorVersionParts = explode('.', $updateInfo->app->latestVersion);
-
-            $localMajorVersion = array_shift($versionParts);
-            $updateMajorVersion = array_shift($majorVersionParts);
-
-            return ($localMajorVersion === $updateMajorVersion);
+            // Return true if the major version is still the same
+            return (App::majorVersion($updateInfo->app->latestVersion) == App::majorVersion(Craft::$app->version));
         }
 
         return false;
     }
 
+    /**
+     * Returns whether to use file locks when writing to files.
+     *
+     * @return boolean
+     */
+    public function getUseWriteFileLock()
+    {
+        if (isset($this->_useWriteFileLock)) {
+            return $this->_useWriteFileLock;
+        }
+
+        $value = $this->get('useWriteFileLock');
+        if (is_bool($value)) {
+            return ($this->_useWriteFileLock = $value);
+        }
+
+        // Do we have it cached?
+        if (($cachedValue = Craft::$app->getCache()->get('useWriteFileLock')) !== false) {
+            return ($this->_useWriteFileLock = ($cachedValue == 'yes'));
+        }
+
+        // Try a test lock
+        try {
+            $mutex = Craft::$app->getMutex();
+            $name = uniqid('test');
+            if (!$mutex->acquire($name)) {
+                throw new Exception('Unable to acquire test lock.');
+            }
+            if (!$mutex->release($name)) {
+                throw new Exception('Unable to release test lock.');
+            }
+            $value = true;
+        } catch (\Exception $e) {
+            Craft::warning('Write lock test failed: '.$e->getMessage());
+            $value = false;
+        }
+
+        // Memoize it before caching, so we know the value if FileCache::setValue() needs it
+        $this->_useWriteFileLock = $value;
+
+        // Cache for two months
+        $cachedValue = $value ? 'yes' : 'no';
+        Craft::$app->getCache()->set('useWriteFileLock', $cachedValue, 5184000);
+
+        return $value;
+    }
+
+    /**
+     * Returns an array of allowed file extensions.
+     *
+     * @return string[] The allowed file extensions
+     */
+    public function getAllowedFileExtensions()
+    {
+        if (isset($this->_allowedFileExtensions)) {
+            return $this->_allowedFileExtensions;
+        }
+
+        $this->_allowedFileExtensions = ArrayHelper::toArray(Craft::$app->getConfig()->get('allowedFileExtensions'));
+        $extra = Craft::$app->getConfig()->get('extraAllowedFileExtensions');
+
+        if (!empty($extra)) {
+            $extra = ArrayHelper::toArray($extra);
+            $this->_allowedFileExtensions = array_merge($this->_allowedFileExtensions, $extra);
+        }
+
+        $this->_allowedFileExtensions = array_map('strtolower', $this->_allowedFileExtensions);
+
+        return $this->_allowedFileExtensions;
+    }
+
+    /**
+     * Returns whether a given extension is allowed to be uploaded, per the
+     * allowedFileExtensions and extraAllowedFileExtensions config settings.
+     *
+     * @param string $extension The extension in question
+     *
+     * @return boolean Whether the extension is allowed
+     */
+    public function isExtensionAllowed($extension)
+    {
+        return in_array(strtolower($extension), $this->getAllowedFileExtensions());
+    }
 
     /**
      * Returns the application’s configured DB table prefix.
@@ -747,6 +835,7 @@ class Config extends Component
 
     /**
      * @param $category
+     * @throws InvalidParamException if $category is not supported
      */
     private function _loadConfigSettings($category)
     {
@@ -759,13 +848,16 @@ class Config extends Component
 
         // Is this a valid Craft config category?
         if (in_array($category, [self::CATEGORY_FILECACHE, self::CATEGORY_GENERAL, self::CATEGORY_DB, self::CATEGORY_DBCACHE, self::CATEGORY_MEMCACHE, self::CATEGORY_APC])) {
-            $defaultsPath = $pathService->getAppPath().'/config/defaults/'.$category.'.php';
+            $defaultsPath = Craft::$app->getBasePath().DIRECTORY_SEPARATOR.'config'.DIRECTORY_SEPARATOR.'defaults'.DIRECTORY_SEPARATOR.$category.'.php';
+        } else if (($plugin = Craft::$app->getPlugins()->getPlugin(($category))) !== null) {
+            /** @var Plugin $plugin */
+            $defaultsPath = $plugin->getBasePath().DIRECTORY_SEPARATOR.'config.php';
         } else {
-            $defaultsPath = $pathService->getPluginsPath().'/'.$category.'/config.php';
+            throw new InvalidParamException("Unsupported config category: {$category}");
         }
 
-        if (Io::fileExists($defaultsPath)) {
-            $configSettings = @require_once($defaultsPath);
+        if (is_file($defaultsPath)) {
+            $configSettings = @require($defaultsPath);
         }
 
         if (!isset($configSettings) || !is_array($configSettings)) {
@@ -775,18 +867,18 @@ class Config extends Component
         // Little extra logic for the general config category.
         if ($category == self::CATEGORY_GENERAL) {
             // Does craft/config/general.php exist? (It used to be called blocks.php so maybe not.)
-            $filePath = $pathService->getConfigPath().'/general.php';
+            $filePath = $pathService->getConfigPath().DIRECTORY_SEPARATOR.'general.php';
 
             if (file_exists($filePath)) {
                 if (is_array($customConfig = @include($filePath))) {
                     $this->_mergeConfigs($configSettings, $customConfig);
                 }
             } else {
-                $filePath = $pathService->getConfigPath().'/blocks.php';
+                $filePath = $pathService->getConfigPath().DIRECTORY_SEPARATOR.'blocks.php';
 
                 if (file_exists($filePath)) {
                     // Originally blocks.php defined a $blocksConfig variable, and then later returned an array directly.
-                    if (is_array($customConfig = require_once($filePath))) {
+                    if (is_array($customConfig = require($filePath))) {
                         $this->_mergeConfigs($configSettings, $customConfig);
                     } else if (isset($blocksConfig)) {
                         $configSettings = array_merge($configSettings, $blocksConfig);
@@ -795,11 +887,11 @@ class Config extends Component
                 }
             }
         } else {
-            $filePath = $pathService->getConfigPath().'/'.$category.'.php';
+            $filePath = $pathService->getConfigPath().DIRECTORY_SEPARATOR.$category.'.php';
 
-            if (Io::fileExists($filePath)) {
+            if (is_file($filePath)) {
                 // Originally db.php defined a $dbConfig variable, and later returned an array directly.
-                if (is_array($customConfig = require_once($filePath))) {
+                if (is_array($customConfig = require($filePath))) {
                     $this->_mergeConfigs($configSettings, $customConfig);
                 } else if ($category == self::CATEGORY_DB && isset($dbConfig)) {
                     $configSettings = array_merge($configSettings, $dbConfig);

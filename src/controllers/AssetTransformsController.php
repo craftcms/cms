@@ -5,12 +5,12 @@
  * @license   https://craftcms.com/license
  */
 
-namespace craft\app\controllers;
+namespace craft\controllers;
 
 use Craft;
-use craft\app\helpers\Image;
-use craft\app\models\AssetTransform;
-use craft\app\web\Controller;
+use craft\helpers\Image;
+use craft\models\AssetTransform;
+use craft\web\Controller;
 use yii\web\NotFoundHttpException;
 use yii\web\Response;
 

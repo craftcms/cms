@@ -5,9 +5,9 @@
  * @license   https://craftcms.com/license
  */
 
-namespace craft\app\errors;
+namespace craft\errors;
 
-use craft\app\base\Model;
+use craft\base\Model;
 use yii\base\Exception;
 
 /**

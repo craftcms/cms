@@ -5,10 +5,10 @@
  * @license   https://craftcms.com/license
  */
 
-namespace craft\app\i18n;
+namespace craft\i18n;
 
 use Craft;
-use craft\app\helpers\Localization;
+use craft\helpers\Localization;
 use DateTime;
 use IntlDateFormatter;
 use NumberFormatter;

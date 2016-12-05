@@ -5,37 +5,37 @@
  * @license   https://craftcms.com/license
  */
 
-namespace craft\app\base;
+namespace craft\base;
 
 use Craft;
 use /** @noinspection PhpUndefinedClassInspection */
-    craft\app\behaviors\ContentBehavior;
+    craft\behaviors\ContentBehavior;
 use /** @noinspection PhpUndefinedClassInspection */
-    craft\app\behaviors\ContentTrait;
-use craft\app\dates\DateTime;
-use craft\app\db\Query;
-use craft\app\elements\db\ElementQuery;
-use craft\app\elements\db\ElementQueryInterface;
-use craft\app\events\ElementStructureEvent;
-use craft\app\events\Event;
-use craft\app\events\ModelEvent;
-use craft\app\events\RegisterElementActionsEvent;
-use craft\app\events\RegisterElementSortableAttributesEvent;
-use craft\app\events\RegisterElementSourcesEvent;
-use craft\app\events\RegisterElementTableAttributesEvent;
-use craft\app\events\SetElementRouteEvent;
-use craft\app\events\SetElementTableAttributeHtmlEvent;
-use craft\app\helpers\ArrayHelper;
-use craft\app\helpers\ElementHelper;
-use craft\app\helpers\Html;
-use craft\app\helpers\Template;
-use craft\app\helpers\Url;
-use craft\app\i18n\Locale;
-use craft\app\models\FieldLayout;
-use craft\app\models\Site;
-use craft\app\validators\DateTimeValidator;
-use craft\app\validators\SiteIdValidator;
-use craft\app\web\UploadedFile;
+    craft\behaviors\ContentTrait;
+use craft\dates\DateTime;
+use craft\db\Query;
+use craft\elements\db\ElementQuery;
+use craft\elements\db\ElementQueryInterface;
+use craft\events\ElementStructureEvent;
+use craft\events\Event;
+use craft\events\ModelEvent;
+use craft\events\RegisterElementActionsEvent;
+use craft\events\RegisterElementSortableAttributesEvent;
+use craft\events\RegisterElementSourcesEvent;
+use craft\events\RegisterElementTableAttributesEvent;
+use craft\events\SetElementRouteEvent;
+use craft\events\SetElementTableAttributeHtmlEvent;
+use craft\helpers\ArrayHelper;
+use craft\helpers\ElementHelper;
+use craft\helpers\Html;
+use craft\helpers\Template;
+use craft\helpers\Url;
+use craft\i18n\Locale;
+use craft\models\FieldLayout;
+use craft\models\Site;
+use craft\validators\DateTimeValidator;
+use craft\validators\SiteIdValidator;
+use craft\web\UploadedFile;
 use yii\base\Exception;
 use yii\base\InvalidCallException;
 use yii\base\InvalidConfigException;
@@ -1713,12 +1713,15 @@ abstract class Element extends Component implements ElementInterface
      */
     protected static function findByCondition($criteria, $one)
     {
-        if ($criteria !== null && !ArrayHelper::isAssociative($criteria)) {
-            $criteria = ['id' => $criteria];
-        }
-
         /** @var ElementQueryInterface $query */
-        $query = static::find()->configure($criteria);
+        $query = static::find();
+
+        if ($criteria !== null) {
+            if (!ArrayHelper::isAssociative($criteria)) {
+                $criteria = ['id' => $criteria];
+            }
+            Craft::configure($query, $criteria);
+        }
 
         if ($one) {
             /** @var Element $result */
@@ -1938,8 +1941,11 @@ abstract class Element extends Component implements ElementInterface
                 $query = $criteria;
             } else {
                 $query = static::find()
-                    ->siteId($this->siteId)
-                    ->configure($criteria);
+                    ->siteId($this->siteId);
+
+                if ($criteria) {
+                    Craft::configure($query, $criteria);
+                }
             }
 
             /** @var ElementQuery $query */

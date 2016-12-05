@@ -5,9 +5,9 @@
  * @license   https://craftcms.com/license
  */
 
-namespace craft\app\events;
+namespace craft\events;
 
-use craft\app\elements\User;
+use craft\elements\User;
 
 /**
  * User assign group event class.

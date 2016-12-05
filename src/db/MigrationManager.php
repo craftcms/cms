@@ -5,11 +5,11 @@
  * @license   https://craftcms.com/license
  */
 
-namespace craft\app\db;
+namespace craft\db;
 
 use Craft;
-use craft\app\helpers\Db;
-use craft\app\helpers\Io;
+use craft\helpers\Db;
+use craft\helpers\FileHelper;
 use yii\base\Component;
 use yii\base\Exception;
 use yii\base\InvalidConfigException;
@@ -52,7 +52,7 @@ class MigrationManager extends Component
     public $migrationNamespace;
 
     /**
-     * @var string|false The path of the migrations folder, or false if it doesn't exist
+     * @var string The path to the migrations directory
      */
     public $migrationPath;
 
@@ -84,14 +84,15 @@ class MigrationManager extends Component
             throw new InvalidConfigException('Invalid migration type: '.$this->type);
         }
 
-        $migrationPath = Craft::getAlias($this->migrationPath);
-
-        if (!$migrationPath || !Io::folderExists($migrationPath)) {
-            Craft::warning('Migration folder doesn\'t exist: '.$migrationPath);
-            $this->migrationPath = false;
-        } else {
-            $this->migrationPath = $migrationPath;
+        if ($this->type == self::TYPE_PLUGIN && $this->pluginId === null) {
+            throw new InvalidConfigException('The plugin ID has not been set.');
         }
+
+        if ($this->migrationPath === null) {
+            throw new InvalidConfigException('The migration path has not been set.');
+        }
+
+        $this->migrationPath = FileHelper::normalizePath(Craft::getAlias($this->migrationPath));
 
         $this->db = Instance::ensure($this->db, Connection::class);
     }
@@ -102,15 +103,16 @@ class MigrationManager extends Component
      * @param string $name The migration name
      *
      * @return MigrationInterface|\yii\db\Migration The migration instance
+     * @throws Exception if the migration folder doesn't exist
      */
     public function createMigration($name)
     {
-        if ($this->migrationPath === false) {
-            throw new Exception('Can\'t create new migrations because the migration folder doesn\'t exist');
+        if (!is_dir($this->migrationPath)) {
+            throw new Exception("Can't instantiate migrations because the migration folder doesn't exist");
         }
 
-        $file = $this->migrationPath."/$name.php";
-        $class = $this->migrationNamespace."\\$name";
+        $file = $this->migrationPath.DIRECTORY_SEPARATOR.$name.'.php';
+        $class = $this->migrationNamespace.'\\'.$name;
         require_once($file);
 
         return new $class;
@@ -400,7 +402,7 @@ class MigrationManager extends Component
         $migrations = [];
 
         // Ignore if the migrations folder doesn't exist
-        if ($this->migrationPath === false) {
+        if (!is_dir($this->migrationPath)) {
             return $migrations;
         }
 
@@ -414,9 +416,7 @@ class MigrationManager extends Component
 
             $path = $this->migrationPath.DIRECTORY_SEPARATOR.$file;
 
-            if (preg_match('/^(m\d{6}_\d{6}_.*?)\.php$/', $file,
-                    $matches) && is_file($path) && !isset($history[$matches[1]])
-            ) {
+            if (preg_match('/^(m\d{6}_\d{6}_.*?)\.php$/', $file, $matches) && is_file($path) && !isset($history[$matches[1]])) {
                 $migrations[] = $matches[1];
             }
         }
@@ -458,7 +458,7 @@ class MigrationManager extends Component
     private function _createMigrationQuery()
     {
         // TODO: Remove after next breakpoint
-        if (version_compare(Craft::$app->getInfo('version'), '3.0', '<')) {
+        if (version_compare(Craft::$app->getInfo()->version, '3.0', '<')) {
             $query = (new Query())
                 ->select(['version as name', 'applyTime'])
                 ->from([$this->migrationTable])

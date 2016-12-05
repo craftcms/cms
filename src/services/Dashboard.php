@@ -5,25 +5,25 @@
  * @license   https://craftcms.com/license
  */
 
-namespace craft\app\services;
+namespace craft\services;
 
 use Craft;
-use craft\app\base\WidgetInterface;
-use craft\app\db\Query;
-use craft\app\errors\MissingComponentException;
-use craft\app\errors\WidgetNotFoundException;
-use craft\app\events\RegisterComponentTypesEvent;
-use craft\app\events\WidgetEvent;
-use craft\app\helpers\Component as ComponentHelper;
-use craft\app\records\Widget as WidgetRecord;
-use craft\app\base\Widget;
-use craft\app\widgets\Feed as FeedWidget;
-use craft\app\widgets\CraftSupport as CraftSupportWidget;
-use craft\app\widgets\MissingWidget;
-use craft\app\widgets\NewUsers as NewUsersWidget;
-use craft\app\widgets\QuickPost as QuickPostWidget;
-use craft\app\widgets\RecentEntries as RecentEntriesWidget;
-use craft\app\widgets\Updates as UpdatesWidget;
+use craft\base\WidgetInterface;
+use craft\db\Query;
+use craft\errors\MissingComponentException;
+use craft\errors\WidgetNotFoundException;
+use craft\events\RegisterComponentTypesEvent;
+use craft\events\WidgetEvent;
+use craft\helpers\Component as ComponentHelper;
+use craft\records\Widget as WidgetRecord;
+use craft\base\Widget;
+use craft\widgets\Feed as FeedWidget;
+use craft\widgets\CraftSupport as CraftSupportWidget;
+use craft\widgets\MissingWidget;
+use craft\widgets\NewUsers as NewUsersWidget;
+use craft\widgets\QuickPost as QuickPostWidget;
+use craft\widgets\RecentEntries as RecentEntriesWidget;
+use craft\widgets\Updates as UpdatesWidget;
 use yii\base\Component;
 use yii\base\Exception;
 

@@ -5,7 +5,7 @@
  * @license   https://craftcms.com/license
  */
 
-namespace craft\app\helpers;
+namespace craft\helpers;
 
 use Craft;
 use Stringy\Stringy;
@@ -929,7 +929,7 @@ class StringHelper extends \yii\helpers\StringHelper
     {
         if (!isset(static::$_asciiCharMap)) {
             // Get the map from Stringy.
-            static::$_asciiCharMap = (new \craft\app\helpers\Stringy(''))->getAsciiCharMap();
+            static::$_asciiCharMap = (new \craft\helpers\Stringy(''))->getAsciiCharMap();
 
             foreach (Craft::$app->getConfig()->get('customAsciiCharMappings') as $asciiChar => $values) {
                 static::$_asciiCharMap[$asciiChar] = $values;

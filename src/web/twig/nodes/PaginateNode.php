@@ -5,7 +5,7 @@
  * @license   https://craftcms.com/license
  */
 
-namespace craft\app\web\twig\nodes;
+namespace craft\web\twig\nodes;
 
 /**
  * Represents a paginate node.
@@ -31,7 +31,7 @@ class PaginateNode extends \Twig_Node
             ->subcompile($this->getNode('paginateTarget'))
             ->raw(', ')
             ->subcompile($this->getNode('elementsTarget'))
-            ->raw(') = \craft\app\helpers\Template::paginateCriteria(')
+            ->raw(') = \craft\helpers\Template::paginateCriteria(')
             ->subcompile($this->getNode('criteria'))
             ->raw(");\n");
     }

@@ -5,12 +5,11 @@
  * @license   https://craftcms.com/license
  */
 
-namespace craft\app\web;
+namespace craft\web;
 
 use Craft;
-use craft\app\helpers\Header;
-use craft\app\helpers\Io;
-use craft\app\helpers\Url;
+use craft\helpers\Header;
+use craft\helpers\Url;
 use yii\base\InvalidParamException;
 use yii\web\BadRequestHttpException;
 use yii\web\ForbiddenHttpException;
@@ -21,6 +20,7 @@ use yii\web\Response as YiiResponse;
  *
  * It extends Yii’s [[\yii\web\Controller]], overwriting specific methods as required.
  *
+ * @property View $view The view object that can be used to render views or view files
  * @method View getView() Returns the view object that can be used to render views or view files
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
@@ -73,7 +73,7 @@ abstract class Controller extends \yii\web\Controller
      * Renders a template.
      *
      * @param mixed $template      The name of the template to load in a format supported by
-     *                             [[\craft\app\web\View::resolveTemplate()]], or a [[\craft\app\web\twig\StringTemplate]] object.
+     *                             [[\craft\web\View::resolveTemplate()]], or a [[\craft\web\twig\StringTemplate]] object.
      * @param array $variables     The variables that should be available to the template.
      *
      * @return string The rendering result
@@ -85,7 +85,7 @@ abstract class Controller extends \yii\web\Controller
         // Content-Type header was already set, perhaps by the template via the {% header %} tag)
         if (!Header::isHeaderSet('Content-Type')) {
             $templateFile = Craft::$app->getView()->resolveTemplate($template);
-            $extension = Io::getExtension($templateFile, 'html');
+            $extension = pathinfo($templateFile, PATHINFO_EXTENSION) ?: 'html';
 
             if ($extension == 'twig') {
                 $extension = 'html';

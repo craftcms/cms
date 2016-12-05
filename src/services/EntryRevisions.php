@@ -5,21 +5,21 @@
  * @license   https://craftcms.com/license
  */
 
-namespace craft\app\services;
+namespace craft\services;
 
 use Craft;
-use craft\app\base\Field;
-use craft\app\db\Query;
-use craft\app\errors\EntryDraftNotFoundException;
-use craft\app\events\DraftEvent;
-use craft\app\events\VersionEvent;
-use craft\app\helpers\Json;
-use craft\app\elements\Entry;
-use craft\app\models\EntryDraft;
-use craft\app\models\EntryVersion;
-use craft\app\models\Section;
-use craft\app\records\EntryDraft as EntryDraftRecord;
-use craft\app\records\EntryVersion as EntryVersionRecord;
+use craft\base\Field;
+use craft\db\Query;
+use craft\errors\EntryDraftNotFoundException;
+use craft\events\DraftEvent;
+use craft\events\VersionEvent;
+use craft\helpers\Json;
+use craft\elements\Entry;
+use craft\models\EntryDraft;
+use craft\models\EntryVersion;
+use craft\models\Section;
+use craft\records\EntryDraft as EntryDraftRecord;
+use craft\records\EntryVersion as EntryVersionRecord;
 use yii\base\Component;
 
 /**

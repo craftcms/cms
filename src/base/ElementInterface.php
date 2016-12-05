@@ -5,10 +5,10 @@
  * @license   https://craftcms.com/license
  */
 
-namespace craft\app\base;
+namespace craft\base;
 
-use craft\app\elements\db\ElementQueryInterface;
-use craft\app\models\FieldLayout;
+use craft\elements\db\ElementQueryInterface;
+use craft\models\FieldLayout;
 
 
 /**
@@ -119,7 +119,7 @@ interface ElementInterface extends ComponentInterface
      *    matching all of them (or null if not found).
      *
      * Note that this method will automatically call the `one()` method and return an
-     * [[ElementInterface|\craft\app\base\Element]] instance. For example,
+     * [[ElementInterface|\craft\base\Element]] instance. For example,
      *
      * ```php
      * // find a single entry whose ID is 10
@@ -156,7 +156,7 @@ interface ElementInterface extends ComponentInterface
      *    matching all of them (or an empty array if none was found).
      *
      * Note that this method will automatically call the `all()` method and return an array of
-     * [[ElementInterface|\craft\app\base\Element]] instances. For example,
+     * [[ElementInterface|\craft\base\Element]] instances. For example,
      *
      * ```php
      * // find the entries whose ID is 10
@@ -188,7 +188,7 @@ interface ElementInterface extends ComponentInterface
      * Returns all of the possible statuses that elements of this type may have.
      *
      * This method will be called when populating the Status menu on element indexes, for element types whose
-     * [[hasStatuses()]] method returns `true`. It will also be called when [[\craft\app\elements\ElementQuery]] is querying for
+     * [[hasStatuses()]] method returns `true`. It will also be called when [[\craft\elements\ElementQuery]] is querying for
      * elements, to ensure that its “status” parameter is set to a valid status.
      *
      * It should return an array whose keys are the status values, and values are the human-facing status labels.
@@ -249,7 +249,7 @@ interface ElementInterface extends ComponentInterface
      * Defines which element attributes should be searchable.
      *
      * This method should return an array of attribute names that can be accessed on your elements.
-     * [[\craft\app\services\Search]] will call this method when it is indexing keywords for one of your elements,
+     * [[\craft\services\Search]] will call this method when it is indexing keywords for one of your elements,
      * and for each attribute it returns, it will fetch the corresponding property’s value on the element.
      *
      * For example, if your elements have a “color” attribute which you want to be indexed, this method could return:
@@ -371,7 +371,7 @@ interface ElementInterface extends ComponentInterface
      *
      * @return integer|null
      * @internal This method is required by [[\yii\web\IdentityInterface]], but might as well
-     * go here rather than only in [[\craft\app\elements\User]].
+     * go here rather than only in [[\craft\elements\User]].
      */
     public function getId();
 

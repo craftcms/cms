@@ -5,12 +5,12 @@
  * @license   https://craftcms.com/license
  */
 
-namespace craft\app\services;
+namespace craft\services;
 
-use craft\app\dates\DateTime;
-use craft\app\helpers\Json;
-use craft\app\models\MailSettings;
-use craft\app\records\SystemSettings as SystemSettingsRecord;
+use craft\dates\DateTime;
+use craft\helpers\Json;
+use craft\models\MailSettings;
+use craft\records\SystemSettings as SystemSettingsRecord;
 use yii\base\Component;
 
 /**

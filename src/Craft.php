@@ -5,8 +5,8 @@
  * @license   https://craftcms.com/license
  */
 
-use craft\app\db\Query;
-use craft\app\helpers\Io;
+use craft\db\Query;
+use craft\helpers\FileHelper;
 use yii\helpers\VarDumper;
 use yii\web\Request;
 
@@ -32,9 +32,9 @@ class Craft extends Yii
     // =========================================================================
 
     /**
-     * @var \craft\app\web\Application The application instance.
+     * @var \craft\web\Application The application instance.
      *
-     * This may return a [[\craft\app\console\Application]] instance if this is a console request.
+     * This may return a [[\craft\console\Application]] instance if this is a console request.
      */
     public static $app;
 
@@ -119,18 +119,18 @@ class Craft extends Yii
     public static function autoload($className)
     {
         if (
-            $className === \craft\app\behaviors\ContentBehavior::class ||
-            $className === \craft\app\behaviors\ContentTrait::class ||
-            $className === \craft\app\behaviors\ElementQueryBehavior::class ||
-            $className === \craft\app\behaviors\ElementQueryTrait::class
+            $className === \craft\behaviors\ContentBehavior::class ||
+            $className === \craft\behaviors\ContentTrait::class ||
+            $className === \craft\behaviors\ElementQueryBehavior::class ||
+            $className === \craft\behaviors\ElementQueryTrait::class
         ) {
-            $storedFieldVersion = static::$app->getInfo('fieldVersion');
-            $compiledClassesPath = static::$app->getPath()->getRuntimePath().'/compiled_classes';
+            $storedFieldVersion = static::$app->getInfo()->fieldVersion;
+            $compiledClassesPath = static::$app->getPath()->getRuntimePath().DIRECTORY_SEPARATOR.'compiled_classes';
 
-            $contentBehaviorFile = $compiledClassesPath.'/ContentBehavior.php';
-            $contentTraitFile = $compiledClassesPath.'/ContentTrait.php';
-            $elementQueryBehaviorFile = $compiledClassesPath.'/ElementQueryBehavior.php';
-            $elementQueryTraitFile = $compiledClassesPath.'/ElementQueryTrait.php';
+            $contentBehaviorFile = $compiledClassesPath.DIRECTORY_SEPARATOR.'ContentBehavior.php';
+            $contentTraitFile = $compiledClassesPath.DIRECTORY_SEPARATOR.'ContentTrait.php';
+            $elementQueryBehaviorFile = $compiledClassesPath.DIRECTORY_SEPARATOR.'ElementQueryBehavior.php';
+            $elementQueryTraitFile = $compiledClassesPath.DIRECTORY_SEPARATOR.'ElementQueryTrait.php';
 
             if (
                 static::_isFieldAttributesFileValid($contentBehaviorFile, $storedFieldVersion) &&
@@ -179,28 +179,28 @@ EOD;
             }
 
             static::_writeFieldAttributesFile(
-                static::$app->getPath()->getAppPath().'/behaviors/ContentBehavior.php.template',
+                static::$app->getBasePath().DIRECTORY_SEPARATOR.'behaviors'.DIRECTORY_SEPARATOR.'ContentBehavior.php.template',
                 ['{VERSION}', '/* PROPERTIES */'],
                 [$storedFieldVersion, implode("\n\n", $properties)],
                 $contentBehaviorFile
             );
 
             static::_writeFieldAttributesFile(
-                static::$app->getPath()->getAppPath().'/behaviors/ContentTrait.php.template',
+                static::$app->getBasePath().DIRECTORY_SEPARATOR.'behaviors'.DIRECTORY_SEPARATOR.'ContentTrait.php.template',
                 ['{VERSION}', '{PROPERTIES}'],
                 [$storedFieldVersion, implode("\n", $propertyDocs)],
                 $contentTraitFile
             );
 
             static::_writeFieldAttributesFile(
-                static::$app->getPath()->getAppPath().'/behaviors/ElementQueryBehavior.php.template',
+                static::$app->getBasePath().DIRECTORY_SEPARATOR.'behaviors'.DIRECTORY_SEPARATOR.'ElementQueryBehavior.php.template',
                 ['{VERSION}', '/* METHODS */'],
                 [$storedFieldVersion, implode("\n\n", $methods)],
                 $elementQueryBehaviorFile
             );
 
             static::_writeFieldAttributesFile(
-                static::$app->getPath()->getAppPath().'/behaviors/ElementQueryTrait.php.template',
+                static::$app->getBasePath().DIRECTORY_SEPARATOR.'behaviors'.DIRECTORY_SEPARATOR.'ElementQueryTrait.php.template',
                 ['{VERSION}', '{METHODS}'],
                 [$storedFieldVersion, implode("\n", $methodDocs)],
                 $elementQueryTraitFile
@@ -246,9 +246,9 @@ EOD;
      */
     private static function _writeFieldAttributesFile($templatePath, $search, $replace, $destinationPath)
     {
-        $fileContents = Io::getFileContents($templatePath);
+        $fileContents = file_get_contents($templatePath);
         $fileContents = str_replace($search, $replace, $fileContents);
-        Io::writeToFile($destinationPath, $fileContents);
+        FileHelper::writeToFile($destinationPath, $fileContents);
         include($destinationPath);
     }
 }

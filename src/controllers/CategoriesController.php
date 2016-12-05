@@ -5,18 +5,18 @@
  * @license   https://craftcms.com/license
  */
 
-namespace craft\app\controllers;
+namespace craft\controllers;
 
 use Craft;
-use craft\app\base\Element;
-use craft\app\base\Field;
-use craft\app\helpers\Json;
-use craft\app\helpers\Url;
-use craft\app\elements\Category;
-use craft\app\models\CategoryGroup;
-use craft\app\models\CategoryGroup_SiteSettings;
-use craft\app\models\Site;
-use craft\app\web\Controller;
+use craft\base\Element;
+use craft\base\Field;
+use craft\helpers\Json;
+use craft\helpers\Url;
+use craft\elements\Category;
+use craft\models\CategoryGroup;
+use craft\models\CategoryGroup_SiteSettings;
+use craft\models\Site;
+use craft\web\Controller;
 use yii\web\ForbiddenHttpException;
 use yii\web\NotFoundHttpException;
 use yii\web\Response;

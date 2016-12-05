@@ -5,9 +5,9 @@
  * @license   https://craftcms.com/license
  */
 
-namespace craft\app\validators;
+namespace craft\validators;
 
-use craft\app\helpers\DateTimeHelper;
+use craft\helpers\DateTimeHelper;
 use yii\validators\Validator;
 
 /**

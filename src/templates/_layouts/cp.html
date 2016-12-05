@@ -180,11 +180,8 @@
 
 		<nav>
 			<ul id="nav">
-
 				{% for item in craft.cp.nav() %}
-
 					{% set hasSubnav = (subnav is defined and subnav) %}
-
 					<li id="{{ item.id }}"{% if item.sel and hasSubnav %} class="has-subnav"{% endif %}>
 						<a{% if item.sel %} class="sel"{% endif %} href="{{ item.url }}">
 							<span class="icon">
@@ -205,7 +202,6 @@
 								<span class="badge">{{ item.badge }}</span>
 							{%- endif -%}
 						</a>
-
 						{% if item.sel and hasSubnav  %}
 				            <ul class="subnav">
 				                {% for itemId, item in subnav %}
@@ -221,15 +217,8 @@
 				                {% endfor %}
 				            </ul>
 						{% endif %}
-
 					</li>
 				{% endfor %}
-
-				{#
-				<!-- HIDE -->
-				<li id="customize-nav-btn"><a class="settings icon" title="{{ 'Customize…'|t('app') }}"><span>{{ "Customize…"|t('app') }}</span></a></li>
-				<!-- end HIDE -->
-				#}
 			</ul>
 		</nav>
 
@@ -386,14 +375,10 @@
 			{% endspaceless -%}
 
 			<ul>
-				<li>Craft CMS {{ craft.app.version }}.{{ craft.app.build }}</li>
-				<li>{{ craft.app.releaseDate|date('short') }}</li>
+				<li>Craft CMS {{ craft.app.version }}</li>
 				<li>© Pixel &amp; Tonic</li>
 				{% if currentUser.can('performUpdates') %}
 					<li><a id="footer-updates" href="{{ url('updates') }}">{{ craft.app.updates.getIsUpdateInfoCached() and totalUpdates is defined and totalUpdates ? updateText : "Check for updates"|t('app') }}</a></li>
-				{% endif %}
-				{% if currentUser.admin %}
-					<li><a href="{{ url('utils/serverinfo') }}">{{ "Server Info"|t('app') }}</a></li>
 				{% endif %}
 			</ul>
 		</div>

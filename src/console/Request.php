@@ -5,9 +5,9 @@
  * @license   https://craftcms.com/license
  */
 
-namespace craft\app\console;
+namespace craft\console;
 
-use craft\app\base\RequestTrait;
+use craft\base\RequestTrait;
 
 /**
  * @inheritdoc

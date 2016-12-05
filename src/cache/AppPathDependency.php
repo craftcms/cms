@@ -5,7 +5,7 @@
  * @license   https://craftcms.com/license
  */
 
-namespace craft\app\cache;
+namespace craft\cache;
 
 use Craft;
 use yii\caching\Cache;
@@ -43,6 +43,6 @@ class AppPathDependency extends Dependency
      */
     protected function generateDependencyData($cache)
     {
-        return $this->appPath = Craft::$app->getPath()->getAppPath();
+        return $this->appPath = Craft::$app->getBasePath();
     }
 }

@@ -5,15 +5,15 @@
  * @license   https://craftcms.com/license
  */
 
-namespace craft\app\services;
+namespace craft\services;
 
 use Craft;
-use craft\app\db\Query;
-use craft\app\errors\GlobalSetNotFoundException;
-use craft\app\events\GlobalSetContentEvent;
-use craft\app\events\GlobalSetEvent;
-use craft\app\elements\GlobalSet;
-use craft\app\records\GlobalSet as GlobalSetRecord;
+use craft\db\Query;
+use craft\errors\GlobalSetNotFoundException;
+use craft\events\GlobalSetContentEvent;
+use craft\events\GlobalSetEvent;
+use craft\elements\GlobalSet;
+use craft\records\GlobalSet as GlobalSetRecord;
 use yii\base\Component;
 
 /**

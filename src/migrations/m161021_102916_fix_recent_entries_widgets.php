@@ -1,12 +1,12 @@
 <?php
 
-namespace craft\app\migrations;
+namespace craft\migrations;
 
 use Craft;
-use craft\app\db\Migration;
-use craft\app\db\Query;
-use craft\app\helpers\ArrayHelper;
-use craft\app\helpers\Json;
+use craft\db\Migration;
+use craft\db\Query;
+use craft\helpers\ArrayHelper;
+use craft\helpers\Json;
 
 /**
  * m161021_102916_fix_recent_entries_widgets migration.

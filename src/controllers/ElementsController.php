@@ -5,16 +5,16 @@
  * @license   https://craftcms.com/license
  */
 
-namespace craft\app\controllers;
+namespace craft\controllers;
 
 use Craft;
-use craft\app\base\Element;
-use craft\app\base\ElementInterface;
-use craft\app\elements\Category;
-use craft\app\errors\InvalidTypeException;
-use craft\app\helpers\ArrayHelper;
-use craft\app\helpers\ElementHelper;
-use craft\app\helpers\StringHelper;
+use craft\base\Element;
+use craft\base\ElementInterface;
+use craft\elements\Category;
+use craft\errors\InvalidTypeException;
+use craft\helpers\ArrayHelper;
+use craft\helpers\ElementHelper;
+use craft\helpers\StringHelper;
 use yii\web\BadRequestHttpException;
 use yii\web\ForbiddenHttpException;
 use yii\web\NotFoundHttpException;

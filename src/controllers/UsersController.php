@@ -5,25 +5,25 @@
  * @license   https://craftcms.com/license
  */
 
-namespace craft\app\controllers;
+namespace craft\controllers;
 
 use Craft;
-use craft\app\elements\Asset;
-use craft\app\errors\SendEmailException;
-use craft\app\errors\UploadFailedException;
-use craft\app\events\LoginFailureEvent;
-use craft\app\events\RegisterUserActionsEvent;
-use craft\app\events\UserTokenEvent;
-use craft\app\helpers\Assets;
-use craft\app\helpers\Image;
-use craft\app\helpers\Io;
-use craft\app\helpers\Json;
-use craft\app\helpers\Url;
-use craft\app\elements\User;
-use craft\app\services\Users;
-use craft\app\web\Controller;
-use craft\app\web\UploadedFile;
-use craft\app\web\View;
+use craft\elements\Asset;
+use craft\errors\SendEmailException;
+use craft\errors\UploadFailedException;
+use craft\events\LoginFailureEvent;
+use craft\events\RegisterUserActionsEvent;
+use craft\events\UserTokenEvent;
+use craft\helpers\Assets;
+use craft\helpers\FileHelper;
+use craft\helpers\Image;
+use craft\helpers\Json;
+use craft\helpers\Url;
+use craft\elements\User;
+use craft\services\Users;
+use craft\web\Controller;
+use craft\web\UploadedFile;
+use craft\web\View;
 use Exception;
 use yii\web\BadRequestHttpException;
 use yii\web\ForbiddenHttpException;
@@ -1113,7 +1113,7 @@ class UsersController extends Controller
         try {
             // Make sure a file was uploaded
             if ($file) {
-                if ($file->hasError) {
+                if ($file->getHasError()) {
                     throw new UploadFailedException($file->error);
                 }
 
@@ -1124,14 +1124,14 @@ class UsersController extends Controller
                 $fileLocation = Assets::tempFilePath($file->getExtension());
                 move_uploaded_file($file->tempName, $fileLocation);
                 $users->saveUserPhoto($fileLocation, $user, $file->name);
-                Io::deleteFile($fileLocation);
+                FileHelper::removeFile($fileLocation);
 
                 $html = Craft::$app->getView()->renderTemplate('users/_photo', ['account' => $user]);
                 return $this->asJson(['html' => $html]);
             }
         } catch (Exception $exception) {
             if (isset($fileLocation)) {
-                Io::deleteFile($fileLocation);
+                FileHelper::removeFile($fileLocation);
             }
 
             Craft::error('There was an error uploading the photo: '.$exception->getMessage());
@@ -1648,7 +1648,7 @@ class UsersController extends Controller
             $fileLocation = Assets::tempFilePath($photo->getExtension());
             move_uploaded_file($photo->tempName, $fileLocation);
             $users->saveUserPhoto($fileLocation, $user, $photo->name);
-            Io::deleteFile($fileLocation);
+            FileHelper::removeFile($fileLocation);
         }
     }
 

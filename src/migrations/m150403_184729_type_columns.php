@@ -1,10 +1,8 @@
 <?php
 
-namespace craft\app\migrations;
+namespace craft\migrations;
 
-use Craft;
-use craft\app\db\Migration;
-use craft\app\helpers\Io;
+use craft\db\Migration;
 use yii\db\Expression;
 
 /**
@@ -20,39 +18,87 @@ class m150403_184729_type_columns extends Migration
      */
     public function safeUp()
     {
-        $map = [
-            'craft\app\volumes' => ['{{%assetsources}}'],
-            //'craft\app\volumes'  => ['{{%volumes}}'],
-            'craft\app\elements' => [
-                '{{%elements}}',
-                '{{%elementindexsettings}}',
-                '{{%fieldlayouts}}',
-                '{{%templatecachecriteria}}'
+        $componentTypes = [
+            [
+                'namespace' => 'craft\volumes',
+                'tables' => [
+                    '{{%assetsources}}',
+                ],
+                'classes' => [
+                    'GoogleCloud',
+                    'Local',
+                    'Rackspace',
+                    'S3',
+                ]
             ],
-            'craft\app\fields' => ['{{%fields}}'],
-            'craft\app\tasks' => ['{{%tasks}}'],
-            'craft\app\widgets' => ['{{%widgets}}'],
+            [
+                'namespace' => 'craft\elements',
+                'tables' => [
+                    '{{%elements}}',
+                    '{{%elementindexsettings}}',
+                    '{{%fieldlayouts}}',
+                    '{{%templatecachecriteria}}',
+                ],
+                'classes' => [
+                    'Asset',
+                    'Category',
+                    'Entry',
+                    'GlobalSet',
+                    'MatrixBlock',
+                    'Tag',
+                    'User',
+                ]
+            ],
+            [
+                'namespace' => 'craft\fields',
+                'tables' => [
+                    '{{%fields}}',
+                ],
+                'classes' => [
+                    'Assets',
+                    'Categories',
+                    'Checkboxes',
+                    'Color',
+                    'Date',
+                    'Dropdown',
+                    'Entries',
+                    'Lightswitch',
+                    'Matrix',
+                    'MultiSelect',
+                    'Number',
+                    'PlainText',
+                    'PositionSelect',
+                    'RadioButtons',
+                    'RichText',
+                    'Table',
+                    'Tags',
+                    'Users',
+                ]
+            ],
+            [
+                'namespace' => 'craft\widgets',
+                'tables' => [
+                    '{{%widgets}}',
+                ],
+                'classes' => [
+                    'Feed',
+                    'GetHelp',
+                    'NewUsers',
+                    'QuickPost',
+                    'RecentEntries',
+                    'Updates',
+                ]
+            ],
         ];
 
-        foreach ($map as $namespace => $tables) {
-            $folderPath = Craft::getAlias('@app/'.substr($namespace, 10));
-            $files = Io::getFolderContents($folderPath, false);
-            $classes = [];
-
-            foreach ($files as $file) {
-                $class = Io::getFilename($file, false);
-                if (strncmp($class, 'Base', 4) !== 0) {
-                    $classes[] = $class;
-                }
-            }
-
+        foreach ($componentTypes as $componentType) {
             $columns = [
-                'type' => new Expression('concat(\''.addslashes($namespace.'\\').'\', type)')
+                'type' => new Expression('concat(\''.addslashes($componentType['namespace'].'\\').'\', type)')
             ];
 
-            $condition = ['type' => $classes];
+            $condition = ['type' => $componentType['classes']];
 
-            foreach ($tables as $table) {
+            foreach ($componentType['tables'] as $table) {
                 $this->alterColumn($table, 'type', $this->string()->notNull());
                 $this->update($table, $columns, $condition, [], false);
             }
@@ -60,8 +106,11 @@ class m150403_184729_type_columns extends Migration
 
         // S3 is now AwsS3
         $this->update('{{%assetsources}}',
-            ['type' => 'craft\app\volumes\AwsS3'],
-            ['type' => 'craft\app\volumes\S3']);
+            ['type' => 'craft\volumes\AwsS3'],
+            ['type' => 'craft\volumes\S3']);
+
+        // Just delete all pending tasks
+        $this->delete('{{%tasks}}');
     }
 
     /**

@@ -5,9 +5,9 @@
  * @license   https://craftcms.com/license
  */
 
-namespace craft\app\web\twig;
+namespace craft\web\twig;
 
-use craft\app\web\twig\nodes\RegisterResourceNode;
+use craft\web\twig\nodes\RegisterResourceNode;
 
 /**
  * Class Parser

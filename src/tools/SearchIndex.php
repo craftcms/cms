@@ -5,14 +5,14 @@
  * @license   https://craftcms.com/license
  */
 
-namespace craft\app\tools;
+namespace craft\tools;
 
 use Craft;
-use craft\app\base\Element;
-use craft\app\base\Field;
-use craft\app\base\Tool;
-use craft\app\base\ElementInterface;
-use craft\app\db\Query;
+use craft\base\Element;
+use craft\base\Field;
+use craft\base\Tool;
+use craft\base\ElementInterface;
+use craft\db\Query;
 
 /**
  * SearchIndex represents a Rebuild Search Indexes tool.

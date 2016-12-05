@@ -1,4 +1,4 @@
-/*! Craft 3.0.0 - 2016-11-03 */
+/*! Craft 3.0.0 - 2016-12-02 */
 (function($){
 
 // Set all the standard Craft.* stuff
@@ -5828,7 +5828,9 @@ Craft.AssetIndex = Craft.BaseElementIndex.extend(
 		{
 			if (this._folderDrag && this._getSourceLevel($source) > 1)
 			{
-				this._folderDrag.addItems($source.parent());
+				if (this._getFolderIdFromSourceKey($source.data('key'))) {
+					this._folderDrag.addItems($source.parent());
+				}
 			}
 
 			if (this._assetDrag)
@@ -5910,9 +5912,10 @@ Craft.AssetIndex = Craft.BaseElementIndex.extend(
 				{
 					// Make sure it's a volume folder
 					var $source = this.$sources.eq(i);
-					if (this._getFolderIdFromSourceKey($source.data('key'))) {
-						targets.push($source);
+					if (!this._getFolderIdFromSourceKey($source.data('key'))) {
+						continue;
 					}
+					targets.push($source);
 				}
 
 				return targets;
@@ -5937,12 +5940,14 @@ Craft.AssetIndex = Craft.BaseElementIndex.extend(
 				var $selected = this.sourceSelect.getSelectedItems(),
 					draggees = [];
 
-				for (var i = 0; i < $selected.length; i++)
-				{
-					var $source = $($selected[i]).parent();
+				for (var i = 0; i < $selected.length; i++) {
+					var $source = $selected.eq(i).parent();
 
-					if ($source.hasClass('sel') && this._getSourceLevel($source) > 1)
-					{
+					if (!this._getFolderIdFromSourceKey($source.data('key'))) {
+						continue;
+					}
+
+					if ($source.hasClass('sel') && this._getSourceLevel($source) > 1) {
 						draggees.push($source[0]);
 					}
 				}
@@ -5987,7 +5992,11 @@ Craft.AssetIndex = Craft.BaseElementIndex.extend(
 					var $source = this.$sources.eq(i),
 						key = $source.data('key');
 
-					if (this._getFolderIdFromSourceKey(key) && !Craft.inArray(key, draggedSourceIds)) {
+					if (!this._getFolderIdFromSourceKey(key)) {
+						continue;
+					}
+
+					if (!Craft.inArray(key, draggedSourceIds)) {
 						targets.push($source);
 					}
 				}
@@ -7022,6 +7031,11 @@ Craft.AssetIndex = Craft.BaseElementIndex.extend(
 
 	_createFolderContextMenu: function($source)
 	{
+		// Make sure it's a volume folder
+		if (!this._getFolderIdFromSourceKey($source.data('key'))) {
+			return;
+		}
+
 		var menuOptions = [{ label: Craft.t('app', 'New subfolder'), onClick: $.proxy(this, '_createSubfolder', $source) }];
 
 		// For all folders that are not top folders
@@ -7241,7 +7255,7 @@ Craft.AssetIndex = Craft.BaseElementIndex.extend(
 });
 
 // Register it!
-Craft.registerElementIndexClass('craft\\app\\elements\\Asset', Craft.AssetIndex);
+Craft.registerElementIndexClass('craft\\elements\\Asset', Craft.AssetIndex);
 
 /**
  * Asset Select input
@@ -7679,7 +7693,7 @@ Craft.AssetSelectorModal = Craft.BaseElementSelectorModal.extend(
 });
 
 // Register it!
-Craft.registerElementSelectorModalClass('craft\\app\\elements\\Asset', Craft.AssetSelectorModal);
+Craft.registerElementSelectorModalClass('craft\\elements\\Asset', Craft.AssetSelectorModal);
 
 /**
  * AuthManager class
@@ -8355,7 +8369,7 @@ Craft.CategoryIndex = Craft.BaseElementIndex.extend(
 
 		new Craft.ElementEditor({
 			hudTrigger: this.$newCategoryBtnGroup,
-			elementType: 'craft\\app\\elements\\Category',
+			elementType: 'craft\\elements\\Category',
 			siteId: this.siteId,
 			attributes: {
 				groupId: groupId
@@ -8390,7 +8404,7 @@ Craft.CategoryIndex = Craft.BaseElementIndex.extend(
 });
 
 // Register it!
-Craft.registerElementIndexClass('craft\\app\\elements\\Category', Craft.CategoryIndex);
+Craft.registerElementIndexClass('craft\\elements\\Category', Craft.CategoryIndex);
 
 /**
  * Category Select input
@@ -9455,6 +9469,7 @@ Craft.CP = Garnish.Base.extend(
 
 	selectedItemLabel: null,
 
+	fixedHeader: false,
 	fixedNotifications: false,
 
 	runningTaskInfo: null,
@@ -9539,9 +9554,11 @@ Craft.CP = Garnish.Base.extend(
 		this.$sidebarLinks = $('nav a', this.$sidebar);
 		this.addListener(this.$sidebarLinks, 'click', 'selectSidebarItem');
 
-
-		this.addListener(this.$container, 'scroll', 'updateFixedNotifications');
+		this.addListener(Garnish.$win, 'scroll', 'updateFixedNotifications');
 		this.updateFixedNotifications();
+
+		this.addListener(Garnish.$win, 'scroll', 'updateFixedHeader');
+		this.updateFixedHeader();
 
 		Garnish.$doc.ready($.proxy(function()
 		{
@@ -9646,6 +9663,26 @@ Craft.CP = Garnish.Base.extend(
 		{
 			this.addListener(this.$edition, 'click', 'showUpgradeModal');
 		}
+
+        if($.isTouchCapable())
+        {
+            this.$container.on('focus', 'input, textarea, div.redactor-box', $.proxy(this, '_handleInputFocus'));
+            this.$container.on('blur', 'input, textarea, div.redactor-box', $.proxy(this, '_handleInputBlur'));
+        }
+	},
+
+    _handleInputFocus: function()
+	{
+		Garnish.$bod.addClass('focused');
+        this.updateFixedHeader();
+        this.updateResponsiveGlobalSidebar();
+	},
+
+    _handleInputBlur: function()
+	{
+        Garnish.$bod.removeClass('focused');
+        this.updateFixedHeader();
+        this.updateResponsiveGlobalSidebar();
 	},
 
 	submitPrimaryForm: function()
@@ -9694,9 +9731,16 @@ Craft.CP = Garnish.Base.extend(
 
 	updateResponsiveGlobalSidebar: function()
 	{
-		var globalSidebarHeight = window.innerHeight;
+		if(Garnish.$bod.hasClass('focused'))
+		{
+            this.$globalSidebar.height(this.$container.height());
+		}
+		else
+		{
+            var globalSidebarHeight = window.innerHeight;
 
-		this.$globalSidebar.height(globalSidebarHeight);
+            this.$globalSidebar.height(globalSidebarHeight);
+		}
 	},
 
 	updateResponsiveNav: function()
@@ -9917,11 +9961,54 @@ Craft.CP = Garnish.Base.extend(
 		this.visibleSubnavItems++;
 	},
 
+	updateFixedHeader: function()
+	{
+		this.updateFixedHeader._topbarHeight = this.$containerTopbar.height();
+		this.updateFixedHeader._pageHeaderHeight = this.$pageHeader.outerHeight();
+
+		if (Garnish.$win.scrollTop() > this.updateFixedHeader._topbarHeight)
+		{
+			if (!this.fixedHeader)
+			{
+				this.$pageHeader.addClass('fixed');
+
+				if(Garnish.$bod.hasClass('showing-nav') && Garnish.$win.width() <= 992)
+				{
+					this.$pageHeader.css('top', Garnish.$win.scrollTop());
+				}
+				else
+				{
+					if(Garnish.$bod.hasClass('focused'))
+					{
+                        this.$pageHeader.css('top', Garnish.$win.scrollTop());
+					}
+					else
+					{
+                        this.$pageHeader.css('top', 0);
+					}
+				}
+
+				this.$main.css('margin-top', this.updateFixedHeader._pageHeaderHeight);
+				this.fixedheader = true;
+			}
+		}
+		else
+		{
+			if (this.fixedheader)
+			{
+				this.$pageHeader.removeClass('fixed');
+				this.$pageHeader.css('top', 0);
+				this.$main.css('margin-top', 0);
+				this.fixedheader = false;
+			}
+		}
+	},
+
 	updateFixedNotifications: function()
 	{
 		this.updateFixedNotifications._headerHeight = this.$globalSidebar.height();
 
-		if (this.$container.scrollTop() > this.updateFixedNotifications._headerHeight)
+		if (Garnish.$win.scrollTop() > this.updateFixedNotifications._headerHeight)
 		{
 			if (!this.fixedNotifications)
 			{
@@ -12960,7 +13047,7 @@ Craft.EntryIndex = Craft.BaseElementIndex.extend(
 
 		new Craft.ElementEditor({
 			hudTrigger: this.$newEntryBtnGroup,
-			elementType: 'craft\\app\\elements\\Entry',
+			elementType: 'craft\\elements\\Entry',
 			siteId: this.siteId,
 			attributes: {
 				sectionId: sectionId,
@@ -12996,7 +13083,7 @@ Craft.EntryIndex = Craft.BaseElementIndex.extend(
 });
 
 // Register it!
-Craft.registerElementIndexClass('craft\\app\\elements\\Entry', Craft.EntryIndex);
+Craft.registerElementIndexClass('craft\\elements\\Entry', Craft.EntryIndex);
 
 Craft.FieldLayoutDesigner = Garnish.Base.extend(
 {
@@ -15700,7 +15787,15 @@ Craft.Pane = Garnish.Base.extend(
 		else
 		{
 			this.updateSidebarStyles._styles.position = 'absolute';
-			this.updateSidebarStyles._styles.top = 'auto';
+
+			if(Garnish.$win.width() > 768)
+			{
+				this.updateSidebarStyles._styles.top = 'auto';
+			}
+			else
+			{
+				this.updateSidebarStyles._styles.top = '50px';
+			}
 		}
 
 		// Now figure out how tall the sidebar can be

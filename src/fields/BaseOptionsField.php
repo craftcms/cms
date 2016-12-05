@@ -5,16 +5,16 @@
  * @license   https://craftcms.com/license
  */
 
-namespace craft\app\fields;
+namespace craft\fields;
 
 use Craft;
-use craft\app\base\Field;
-use craft\app\base\PreviewableFieldInterface;
-use craft\app\fields\data\MultiOptionsFieldData;
-use craft\app\fields\data\OptionData;
-use craft\app\fields\data\SingleOptionFieldData;
-use craft\app\helpers\ArrayHelper;
-use craft\app\helpers\Db;
+use craft\base\Field;
+use craft\base\PreviewableFieldInterface;
+use craft\fields\data\MultiOptionsFieldData;
+use craft\fields\data\OptionData;
+use craft\fields\data\SingleOptionFieldData;
+use craft\helpers\ArrayHelper;
+use craft\helpers\Db;
 use yii\db\Schema;
 
 /**

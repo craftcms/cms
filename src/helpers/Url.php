@@ -5,7 +5,7 @@
  * @license   https://craftcms.com/license
  */
 
-namespace craft\app\helpers;
+namespace craft\helpers;
 
 use Craft;
 use yii\base\Exception;
@@ -278,8 +278,7 @@ class Url
                         $params = [$params];
                     }
 
-                    $timeModified = Io::getLastTimeModified($path);
-                    $params[$dateParam] = $timeModified->getTimestamp();
+                    $params[$dateParam] = filemtime($path);
                 } else {
                     // Just set a random query string param on there, so even if the browser decides to cache it,
                     // the next time this happens, the cache won't be used.

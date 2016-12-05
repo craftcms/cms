@@ -5,36 +5,36 @@
  * @license   https://craftcms.com/license
  */
 
-namespace craft\app\web\twig;
+namespace craft\web\twig;
 
 use Craft;
-use craft\app\base\MissingComponentInterface;
-use craft\app\dates\DateTime;
-use craft\app\helpers\DateTimeHelper;
-use craft\app\helpers\Db;
-use craft\app\helpers\Header;
-use craft\app\helpers\Json;
-use craft\app\helpers\StringHelper;
-use craft\app\helpers\Template;
-use craft\app\helpers\Url;
-use craft\app\i18n\Locale;
-use craft\app\web\twig\tokenparsers\CacheTokenParser;
-use craft\app\web\twig\tokenparsers\DeprecatedTagTokenParser;
-use craft\app\web\twig\tokenparsers\ExitTokenParser;
-use craft\app\web\twig\tokenparsers\HeaderTokenParser;
-use craft\app\web\twig\tokenparsers\HookTokenParser;
-use craft\app\web\twig\tokenparsers\RegisterResourceTokenParser;
-use craft\app\web\twig\tokenparsers\NamespaceTokenParser;
-use craft\app\web\twig\tokenparsers\NavTokenParser;
-use craft\app\web\twig\tokenparsers\PaginateTokenParser;
-use craft\app\web\twig\tokenparsers\RedirectTokenParser;
-use craft\app\web\twig\tokenparsers\RequireAdminTokenParser;
-use craft\app\web\twig\tokenparsers\RequireEditionTokenParser;
-use craft\app\web\twig\tokenparsers\RequireLoginTokenParser;
-use craft\app\web\twig\tokenparsers\RequirePermissionTokenParser;
-use craft\app\web\twig\tokenparsers\SwitchTokenParser;
-use craft\app\web\twig\variables\CraftVariable;
-use craft\app\web\View;
+use craft\base\MissingComponentInterface;
+use craft\dates\DateTime;
+use craft\helpers\DateTimeHelper;
+use craft\helpers\Db;
+use craft\helpers\Header;
+use craft\helpers\Json;
+use craft\helpers\StringHelper;
+use craft\helpers\Template;
+use craft\helpers\Url;
+use craft\i18n\Locale;
+use craft\web\twig\tokenparsers\CacheTokenParser;
+use craft\web\twig\tokenparsers\DeprecatedTagTokenParser;
+use craft\web\twig\tokenparsers\ExitTokenParser;
+use craft\web\twig\tokenparsers\HeaderTokenParser;
+use craft\web\twig\tokenparsers\HookTokenParser;
+use craft\web\twig\tokenparsers\RegisterResourceTokenParser;
+use craft\web\twig\tokenparsers\NamespaceTokenParser;
+use craft\web\twig\tokenparsers\NavTokenParser;
+use craft\web\twig\tokenparsers\PaginateTokenParser;
+use craft\web\twig\tokenparsers\RedirectTokenParser;
+use craft\web\twig\tokenparsers\RequireAdminTokenParser;
+use craft\web\twig\tokenparsers\RequireEditionTokenParser;
+use craft\web\twig\tokenparsers\RequireLoginTokenParser;
+use craft\web\twig\tokenparsers\RequirePermissionTokenParser;
+use craft\web\twig\tokenparsers\SwitchTokenParser;
+use craft\web\twig\variables\CraftVariable;
+use craft\web\View;
 use yii\base\InvalidConfigException;
 use yii\helpers\Markdown;
 
@@ -575,8 +575,8 @@ class Extension extends \Twig_Extension implements \Twig_Extension_GlobalsInterf
     public function getFunctions()
     {
         return [
-            new \Twig_SimpleFunction('actionUrl', '\\craft\\app\\helpers\\Url::getActionUrl'),
-            new \Twig_SimpleFunction('cpUrl', '\\craft\\app\\helpers\\Url::getCpUrl'),
+            new \Twig_SimpleFunction('actionUrl', '\\craft\\helpers\\Url::getActionUrl'),
+            new \Twig_SimpleFunction('cpUrl', '\\craft\\helpers\\Url::getCpUrl'),
             new \Twig_SimpleFunction('ceil', 'ceil'),
             new \Twig_SimpleFunction('className', 'get_class'),
             new \Twig_SimpleFunction('csrfInput', [$this, 'csrfInputFunction']),
@@ -584,10 +584,10 @@ class Extension extends \Twig_Extension implements \Twig_Extension_GlobalsInterf
             new \Twig_SimpleFunction('redirectInput', [$this, 'redirectInputFunction']),
             new \Twig_SimpleFunction('renderObjectTemplate', [$this, 'renderObjectTemplate']),
             new \Twig_SimpleFunction('round', [$this, 'roundFunction']),
-            new \Twig_SimpleFunction('resourceUrl', '\\craft\\app\\helpers\\Url::getResourceUrl'),
+            new \Twig_SimpleFunction('resourceUrl', '\\craft\\helpers\\Url::getResourceUrl'),
             new \Twig_SimpleFunction('shuffle', [$this, 'shuffleFunction']),
-            new \Twig_SimpleFunction('siteUrl', '\\craft\\app\\helpers\\Url::getSiteUrl'),
-            new \Twig_SimpleFunction('url', '\\craft\\app\\helpers\\Url::url'),
+            new \Twig_SimpleFunction('siteUrl', '\\craft\\helpers\\Url::getSiteUrl'),
+            new \Twig_SimpleFunction('url', '\\craft\\helpers\\Url::url'),
             // DOM event functions
             new \Twig_SimpleFunction('head', [$this->view, 'head']),
             new \Twig_SimpleFunction('beginBody', [$this->view, 'beginBody']),

@@ -5,10 +5,10 @@
  * @license   https://craftcms.com/license
  */
 
-namespace craft\app\web\twig\variables;
+namespace craft\web\twig\variables;
 
 use Craft;
-use craft\app\i18n\Locale;
+use craft\i18n\Locale;
 
 /**
  * Localization functions.

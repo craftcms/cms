@@ -5,13 +5,13 @@
  * @license   https://craftcms.com/license
  */
 
-namespace craft\app\web;
+namespace craft\web;
 
 use Craft;
-use craft\app\base\ElementInterface;
-use craft\app\events\RegisterUrlRulesEvent;
-use craft\app\helpers\ArrayHelper;
-use craft\app\helpers\Url;
+use craft\base\ElementInterface;
+use craft\events\RegisterUrlRulesEvent;
+use craft\helpers\ArrayHelper;
+use craft\helpers\Url;
 
 /**
  * @inheritdoc
@@ -218,14 +218,14 @@ class UrlManager extends \yii\web\UrlManager
 
         // Load the config file rules
         if ($request->getIsCpRequest()) {
-            $baseCpRoutesPath = Craft::$app->getPath()->getAppPath().'/config/cproutes';
-            $rules = require($baseCpRoutesPath.'/common.php');
+            $baseCpRoutesPath = Craft::$app->getBasePath().DIRECTORY_SEPARATOR.'config'.DIRECTORY_SEPARATOR.'cproutes';
+            $rules = require($baseCpRoutesPath.DIRECTORY_SEPARATOR.'common.php');
 
             if (Craft::$app->getEdition() >= Craft::Client) {
-                $rules = array_merge($rules, require($baseCpRoutesPath.'/client.php'));
+                $rules = array_merge($rules, require($baseCpRoutesPath.DIRECTORY_SEPARATOR.'client.php'));
 
                 if (Craft::$app->getEdition() == Craft::Pro) {
-                    $rules = array_merge($rules, require($baseCpRoutesPath.'/pro.php'));
+                    $rules = array_merge($rules, require($baseCpRoutesPath.DIRECTORY_SEPARATOR.'pro.php'));
                 }
             }
 

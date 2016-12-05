@@ -5,9 +5,9 @@
  * @license   https://craftcms.com/license
  */
 
-namespace craft\app\migrations;
+namespace craft\migrations;
 
-use craft\app\db\Migration;
+use craft\db\Migration;
 
 /**
  * CreateMatrixContentTable Migration

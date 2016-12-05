@@ -5,12 +5,12 @@
  * @license   https://craftcms.com/license
  */
 
-namespace craft\app\controllers;
+namespace craft\controllers;
 
 use Craft;
-use craft\app\helpers\App;
-use craft\app\helpers\Template;
-use craft\app\web\Controller;
+use craft\helpers\App;
+use craft\helpers\Template;
+use craft\web\Controller;
 use ErrorException;
 use yii\web\HttpException;
 use yii\web\NotFoundHttpException;
@@ -91,7 +91,7 @@ class TemplatesController extends Controller
      */
     public function actionManualUpdate()
     {
-        return $this->renderTemplate('updates/_go', [
+        return $this->renderTemplate('_special/updates/go', [
             'handle' => Craft::$app->getRequest()->getSegment(2)
         ]);
     }
@@ -102,7 +102,7 @@ class TemplatesController extends Controller
      */
     public function actionRequirementsCheck()
     {
-        require_once(Craft::$app->getPath()->getAppPath().'/requirements/RequirementsChecker.php');
+        require_once(Craft::$app->getBasePath().DIRECTORY_SEPARATOR.'requirements'.DIRECTORY_SEPARATOR.'RequirementsChecker.php');
 
         // Run the requirements checker
         $reqCheck = new \RequirementsChecker();
@@ -121,12 +121,13 @@ class TemplatesController extends Controller
 
                 throw new ServerErrorHttpException(Craft::t('app', 'The update can’t be installed :( {message}', ['message' => $message]));
             } else {
-                return $this->renderTemplate('_special/cantrun',
-                    ['reqCheck' => $reqCheck]);
+                return $this->renderTemplate('_special/cantrun', [
+                    'reqCheck' => $reqCheck
+                ]);
             }
         } else {
-            // Cache the app path.
-            Craft::$app->getCache()->set('appPath', Craft::$app->getPath()->getAppPath());
+            // Cache the base path.
+            Craft::$app->getCache()->set('basePath', Craft::$app->getBasePath());
         }
 
         return null;

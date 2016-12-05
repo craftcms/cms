@@ -5,10 +5,10 @@
  * @license   https://craftcms.com/license
  */
 
-namespace craft\app\elements\db;
+namespace craft\elements\db;
 
-use craft\app\base\ElementInterface;
-use craft\app\models\Site;
+use craft\base\ElementInterface;
+use craft\models\Site;
 use yii\db\Connection;
 use yii\db\QueryInterface;
 
@@ -22,15 +22,6 @@ use yii\db\QueryInterface;
  */
 interface ElementQueryInterface extends QueryInterface
 {
-    /**
-     * Configures the element query instance with a given set of parameters.
-     *
-     * @param array $criteria The criteria parameters to configure the element query with
-     *
-     * @return $this self reference
-     */
-    public function configure($criteria);
-
     /**
      * Sets the [[asArray]] property.
      *

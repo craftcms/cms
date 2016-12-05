@@ -5,7 +5,7 @@
  * @license   https://craftcms.com/license
  */
 
-namespace craft\app\dates;
+namespace craft\dates;
 
 use Craft;
 

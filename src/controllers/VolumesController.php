@@ -5,16 +5,16 @@
  * @license   https://craftcms.com/license
  */
 
-namespace craft\app\controllers;
+namespace craft\controllers;
 
 use Craft;
-use craft\app\base\Volume;
-use craft\app\elements\Asset;
-use craft\app\helpers\Json;
-use craft\app\helpers\Url;
-use craft\app\volumes\Local;
-use craft\app\volumes\MissingVolume;
-use craft\app\web\Controller;
+use craft\base\Volume;
+use craft\elements\Asset;
+use craft\helpers\Json;
+use craft\helpers\Url;
+use craft\volumes\Local;
+use craft\volumes\MissingVolume;
+use craft\web\Controller;
 use Exception;
 use yii\web\NotFoundHttpException;
 use yii\web\Response;
@@ -267,7 +267,7 @@ class VolumesController extends Controller
         $dataType = $request->getRequiredBodyParam('dataType');
         $params = $request->getBodyParam('params');
 
-        $volumeType = 'craft\app\volumes\\'.$volumeType;
+        $volumeType = 'craft\volumes\\'.$volumeType;
 
         if (!class_exists($volumeType)) {
             return $this->asErrorJson(Craft::t('app', 'The volume type specified does not exist!'));

@@ -5,25 +5,25 @@
  * @license   https://craftcms.com/license
  */
 
-namespace craft\app\services;
+namespace craft\services;
 
 use Craft;
-use craft\app\base\Plugin;
-use craft\app\base\PluginInterface;
-use craft\app\enums\PluginUpdateStatus;
-use craft\app\enums\VersionUpdateStatus;
-use craft\app\events\UpdateEvent;
-use craft\app\helpers\DateTimeHelper;
-use craft\app\helpers\Io;
-use craft\app\helpers\Json;
-use craft\app\helpers\Update as UpdateHelper;
-use craft\app\i18n\Locale;
-use craft\app\models\AppUpdate;
-use craft\app\models\Et;
-use craft\app\models\PluginNewRelease;
-use craft\app\models\PluginUpdate;
-use craft\app\models\Update;
-use craft\app\updates\Updater;
+use craft\base\Plugin;
+use craft\base\PluginInterface;
+use craft\enums\PluginUpdateStatus;
+use craft\enums\VersionUpdateStatus;
+use craft\events\UpdateEvent;
+use craft\helpers\DateTimeHelper;
+use craft\helpers\FileHelper;
+use craft\helpers\Json;
+use craft\helpers\Update as UpdateHelper;
+use craft\i18n\Locale;
+use craft\models\AppUpdate;
+use craft\models\Et;
+use craft\models\PluginNewRelease;
+use craft\models\PluginUpdate;
+use craft\models\Update;
+use craft\updates\Updater;
 use GuzzleHttp\Client;
 use yii\base\Component;
 use yii\base\Exception;
@@ -236,22 +236,6 @@ class Updates extends Component
     }
 
     /**
-     * @return boolean
-     */
-    public function flushUpdateInfoFromCache()
-    {
-        Craft::info('Flushing update info from cache.', __METHOD__);
-
-        if (Io::clearFolder(Craft::$app->getPath()->getCompiledTemplatesPath(),
-                true) && Craft::$app->getCache()->flush()
-        ) {
-            return true;
-        }
-
-        return false;
-    }
-
-    /**
      * @param PluginInterface $plugin
      *
      * @return boolean
@@ -284,7 +268,6 @@ class Updates extends Component
         $updateModel = new Update();
         $updateModel->app = new AppUpdate();
         $updateModel->app->localVersion = Craft::$app->version;
-        $updateModel->app->localBuild = Craft::$app->build;
 
         /** @var Plugin[] $plugins */
         $plugins = Craft::$app->getPlugins()->getAllPlugins();
@@ -315,7 +298,7 @@ class Updates extends Component
      */
     public function checkPluginReleaseFeeds(Update $updateModel)
     {
-        $userAgent = 'Craft/'.Craft::$app->version.'.'.Craft::$app->build;
+        $userAgent = 'Craft/'.Craft::$app->version;
 
         foreach ($updateModel->plugins as $pluginUpdateModel) {
             // Only check plugins where the update status isn't already known from the ET response
@@ -527,8 +510,8 @@ class Updates extends Component
         $errorPath = null;
 
         foreach ($checkPaths as $writablePath) {
-            if (!Io::isWritable($writablePath)) {
-                $errorPath[] = Io::getRealPath($writablePath);
+            if (!FileHelper::isWritable($writablePath)) {
+                $errorPath[] = $writablePath;
             }
         }
 
@@ -562,7 +545,7 @@ class Updates extends Component
                 $updateModel = $this->getUpdates();
 
                 if ($handle == 'craft') {
-                    Craft::info('Updating from '.$updateModel->app->localVersion.'.'.$updateModel->app->localBuild.' to '.$updateModel->app->latestVersion.'.'.$updateModel->app->latestBuild.'.');
+                    Craft::info('Updating from '.$updateModel->app->localVersion.' to '.$updateModel->app->latestVersion.'.');
                 } else {
                     $latestVersion = null;
                     $localVersion = null;
@@ -737,7 +720,7 @@ class Updates extends Component
      * @param string $uid
      * @param string $handle
      *
-     * @return array
+     * @return void
      */
     public function updateCleanUp($uid, $handle)
     {
@@ -828,19 +811,17 @@ class Updates extends Component
     }
 
     /**
-     * Returns whether a different Craft build has been uploaded.
+     * Returns whether a different Craft version has been uploaded.
      *
      * @return boolean
      */
-    public function getHasCraftBuildChanged()
+    public function getHasCraftVersionChanged()
     {
-        $storedBuild = Craft::$app->getInfo('build');
-
-        return (Craft::$app->build != $storedBuild);
+        return (Craft::$app->version != Craft::$app->getInfo()->version);
     }
 
     /**
-     * Returns whether the build stored in craft_info is less than the minimum required build on the file system.
+     * Returns true if the version stored in craft_info is less than the minimum required version on the file system. This
      *
      * This effectively makes sure that a user cannot manually update past a manual breakpoint.
      *
@@ -848,9 +829,7 @@ class Updates extends Component
      */
     public function getIsBreakpointUpdateNeeded()
     {
-        $storedBuild = Craft::$app->getInfo('build');
-
-        return (Craft::$app->minBuildRequired > $storedBuild);
+        return version_compare(Craft::$app->minVersionRequired, Craft::$app->getInfo()->version, '>');
     }
 
     /**
@@ -860,7 +839,7 @@ class Updates extends Component
      */
     public function getIsSchemaVersionCompatible()
     {
-        $storedSchemaVersion = Craft::$app->getInfo('schemaVersion');
+        $storedSchemaVersion = Craft::$app->getInfo()->schemaVersion;
 
         return version_compare(Craft::$app->schemaVersion, $storedSchemaVersion, '>=');
     }
@@ -873,7 +852,7 @@ class Updates extends Component
     public function getIsCraftDbMigrationNeeded()
     {
         if ($this->_isCraftDbMigrationNeeded === null) {
-            $storedSchemaVersion = Craft::$app->getInfo('schemaVersion');
+            $storedSchemaVersion = Craft::$app->getInfo()->schemaVersion;
             $this->_isCraftDbMigrationNeeded = version_compare(Craft::$app->schemaVersion, $storedSchemaVersion, '>');
         }
 
@@ -889,10 +868,7 @@ class Updates extends Component
     {
         $info = Craft::$app->getInfo();
         $info->version = Craft::$app->version;
-        $info->build = Craft::$app->build;
         $info->schemaVersion = Craft::$app->schemaVersion;
-        $info->track = Craft::$app->track;
-        $info->releaseDate = Craft::$app->releaseDate;
 
         return Craft::$app->saveInfo($info);
     }

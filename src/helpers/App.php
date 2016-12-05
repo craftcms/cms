@@ -5,7 +5,7 @@
  * @license   https://craftcms.com/license
  */
 
-namespace craft\app\helpers;
+namespace craft\helpers;
 
 use Craft;
 
@@ -21,17 +21,38 @@ class App
     // =========================================================================
 
     /**
-     * @var null
+     * @var boolean
      */
-    private static $_isPhpDevServer = null;
+    private static $_isComposerInstall;
 
     /**
-     * @var
+     * @var boolean
+     */
+    private static $_isPhpDevServer;
+
+    /**
+     * @var boolean
      */
     private static $_iconv;
 
     // Public Methods
     // =========================================================================
+
+    /**
+     * Returns whether Craft was installed via Composer.
+     *
+     * @return boolean
+     */
+    public static function isComposerInstall()
+    {
+        if (!isset(static::$_isComposerInstall)) {
+            // If this was installed via a craftcms.com zip, there will be an index.php file
+            // at the root of the vendor directory.
+            static::$_isComposerInstall = !is_file(Craft::$app->getVendorPath().DIRECTORY_SEPARATOR.'index.php');
+        }
+
+        return static::$_isComposerInstall;
+    }
 
     /**
      * Returns whether Craft is running on the dev server bundled with PHP 5.4+.
@@ -183,6 +204,39 @@ class App
         return null;
     }
 
+    /**
+     * Returns the major and minor (X.Y) versions from a given version number.
+     *
+     * @param string $version The full version number
+     *
+     * @return string The X.Y parts of the version number
+     */
+    public static function majorMinorVersion($version)
+    {
+        preg_match('/^\d+\.\d+/', $version, $matches);
+
+        return $matches[0];
+    }
+
+    /**
+     * Returns the Craft download URL for a given version.
+     *
+     * @param string $version The Craft version
+     *
+     * @return string The download URL
+     */
+    public static function craftDownloadUrl($version)
+    {
+        $xy = self::majorMinorVersion($version);
+
+        return "https://download.craftcdn.com/craft/{$xy}/{$version}/Craft-{$version}.zip";
+    }
+
+    /**
+     * Returns whether the server has a valid version of the iconv extension installed.
+     *
+     * @return boolean
+     */
     public static function checkForValidIconv()
     {
         if (!isset(static::$_iconv)) {

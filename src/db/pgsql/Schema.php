@@ -5,10 +5,12 @@
  * @license   https://craftcms.com/license
  */
 
-namespace craft\app\db\pgsql;
+namespace craft\db\pgsql;
 
 use Craft;
-use craft\app\services\Config;
+use craft\db\TableSchema;
+use craft\services\Config;
+use yii\db\BaseActiveRecord;
 use yii\db\Exception;
 
 /**
@@ -151,5 +153,160 @@ class Schema extends \yii\db\pgsql\Schema
             ' --username={user}'.
             ' --no-password'.
             ' < {file}';
+    }
+
+    /**
+     * Returns all indexes for the given table. Each array element is of the following structure:
+     *
+     * ```php
+     * [
+     *     'IndexName1' => ['col1' [, ...]],
+     *     'IndexName2' => ['col2' [, ...]],
+     * ]
+     * ```
+     *
+     * @param string $tableName The name of the table to get the indexes for.
+     *
+     * @return array All indexes for the given table.
+     */
+    public function findIndexes($tableName)
+    {
+        $tableName = Craft::$app->getDb()->getSchema()->getRawTableName($tableName);
+        $table = Craft::$app->getDb()->getSchema()->getTableSchema($tableName);
+        $indexes = [];
+
+        $rows = $this->getIndexInformation($table);
+
+        foreach ($rows as $row) {
+            $column = $row['columnname'];
+
+            if (!empty($column) && $column[0] === '"') {
+                // postgres will quote names that are not lowercase-only
+                // https://github.com/yiisoft/yii2/issues/10613
+                $column = substr($column, 1, -1);
+            }
+            $indexes[$row['indexname']][] = $column;
+        }
+
+        return $indexes;
+    }
+
+    /**
+     * Loads the metadata for the specified table.
+     *
+     * @param string $name table name
+     *
+     * @return TableSchema|null driver dependent table metadata. Null if the table does not exist.
+     */
+    public function loadTableSchema($name)
+    {
+        $table = new TableSchema();
+        $this->resolveTableNames($table, $name);
+        if ($this->findColumns($table)) {
+            $this->findConstraints($table);
+
+            return $table;
+        } else {
+            return null;
+        }
+    }
+
+    /**
+     * Collects extra foreign key information details for the given table.
+     *
+     * @param TableSchema $table the table metadata
+     */
+    protected function findConstraints($table)
+    {
+        parent::findConstraints($table);
+
+        // Modified from parent to get extended FK information.
+        $tableName = $this->quoteValue($table->name);
+        $tableSchema = $this->quoteValue($table->schemaName);
+
+        $sql = <<<SQL
+SELECT
+    ct.conname AS constraint_name,
+    a.attname AS column_name,
+    fc.relname AS foreign_table_name,
+    fns.nspname AS foreign_table_schema,
+    fa.attname AS foreign_column_name,
+    ct.confupdtype AS update_type,
+    ct.confdeltype AS delete_type
+from
+    (SELECT ct.conname, ct.conrelid, ct.confrelid, ct.conkey, ct.contype, ct.confkey, generate_subscripts(ct.conkey, 1) AS s, ct.confupdtype, ct.confdeltype
+       FROM pg_constraint ct
+    ) AS ct
+    INNER JOIN pg_class c ON c.oid=ct.conrelid
+    INNER JOIN pg_namespace ns ON c.relnamespace=ns.oid
+    INNER JOIN pg_attribute a ON a.attrelid=ct.conrelid AND a.attnum = ct.conkey[ct.s]
+    LEFT JOIN pg_class fc ON fc.oid=ct.confrelid
+    LEFT JOIN pg_namespace fns ON fc.relnamespace=fns.oid
+    LEFT JOIN pg_attribute fa ON fa.attrelid=ct.confrelid AND fa.attnum = ct.confkey[ct.s]
+WHERE
+    ct.contype='f'
+    AND c.relname={$tableName}
+    AND ns.nspname={$tableSchema}
+ORDER BY 
+    fns.nspname, fc.relname, a.attnum
+SQL;
+
+        $extendedConstraints = $this->db->createCommand($sql)->queryAll();
+
+        foreach ($extendedConstraints as $count => $extendedConstraint) {
+            // Find out what to do on update.
+            switch ($extendedConstraint['update_type']) {
+                case 'a': $updateAction = 'NO ACTION'; break;
+                case 'r': $updateAction = 'RESTRICT'; break;
+                case 'c': $updateAction = 'CASCADE'; break;
+                case 'n': $updateAction = 'SET NULL'; break;
+                default: $updateAction = 'DEFAULT'; break;
+            }
+
+            // Find out what to do on update.
+            switch ($extendedConstraint['delete_type']) {
+                case 'a': $deleteAction = 'NO ACTION'; break;
+                case 'r': $deleteAction = 'RESTRICT'; break;
+                case 'c': $deleteAction = 'CASCADE'; break;
+                case 'n': $deleteAction = 'SET NULL'; break;
+                default: $deleteAction = 'DEFAULT'; break;
+            }
+
+            $table->addExtendedForeignKey([
+                'updateType' => $updateAction,
+                'deleteType' => $deleteAction,
+            ]);
+        }
+    }
+
+    /**
+     * Gets information about given table indexes.
+     *
+     * @param TableSchema $table The table metadata
+     *
+     * @return array Index and column names
+     */
+    protected function getIndexInformation($table)
+    {
+        $sql = <<<SQL
+SELECT
+    i.relname as indexname,
+    pg_get_indexdef(idx.indexrelid, k + 1, TRUE) AS columnname
+FROM (
+  SELECT *, generate_subscripts(indkey, 1) AS k
+  FROM pg_index
+) idx
+INNER JOIN pg_class i ON i.oid = idx.indexrelid
+INNER JOIN pg_class c ON c.oid = idx.indrelid
+INNER JOIN pg_namespace ns ON c.relnamespace = ns.oid
+WHERE c.relname = :tableName AND ns.nspname = :schemaName
+AND idx.indisprimary = FALSE 
+ORDER BY i.relname, k
+SQL;
+
+        return $this->db->createCommand($sql, [
+            ':schemaName' => $table->schemaName,
+            ':tableName' => $table->name,
+        ])->queryAll();
     }
 }

@@ -5,10 +5,10 @@
  * @license   https://craftcms.com/license
  */
 
-namespace craft\app\models;
+namespace craft\models;
 
-use craft\app\base\Model;
-use craft\app\validators\DateTimeValidator;
+use craft\base\Model;
+use craft\validators\DateTimeValidator;
 
 /**
  * Stores the available Craft update info.
@@ -22,11 +22,6 @@ class AppUpdate extends Model
     // =========================================================================
 
     /**
-     * @var string Local build
-     */
-    public $localBuild;
-
-    /**
      * @var string Local version
      */
     public $localVersion;
@@ -35,11 +30,6 @@ class AppUpdate extends Model
      * @var string Latest version
      */
     public $latestVersion;
-
-    /**
-     * @var string Latest build
-     */
-    public $latestBuild;
 
     /**
      * @var \DateTime Latest date
@@ -52,19 +42,9 @@ class AppUpdate extends Model
     public $targetVersion;
 
     /**
-     * @var string Target build
-     */
-    public $targetBuild;
-
-    /**
      * @var string Real latest version
      */
     public $realLatestVersion;
-
-    /**
-     * @var string Real latest build
-     */
-    public $realLatestBuild;
 
     /**
      * @var \DateTime Real latest date

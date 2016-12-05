@@ -1,11 +1,10 @@
 <?php
-namespace craft\app\volumes;
+namespace craft\volumes;
 
 use Craft;
-use craft\app\base\Volume;
-use craft\app\errors\VolumeObjectExistsException;
-use craft\app\errors\VolumeObjectNotFoundException;
-use craft\app\helpers\Io;
+use craft\base\Volume;
+use craft\errors\VolumeObjectExistsException;
+use craft\errors\VolumeObjectNotFoundException;
 use League\Flysystem\Adapter\Local as LocalAdapter;
 use League\Flysystem\FileExistsException;
 use League\Flysystem\FileNotFoundException;
@@ -110,7 +109,8 @@ class Local extends Volume
      */
     public function renameDir($path, $newName)
     {
-        $newPath = Io::getParentFolderPath($path).$newName;
+        $parentDir = dirname($path);
+        $newPath = ($parentDir && $parentDir != '.' ? $parentDir.'/' : '').$newName;
 
         try {
             return $this->getFilesystem()->rename($path, $newPath);

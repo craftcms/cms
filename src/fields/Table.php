@@ -5,12 +5,12 @@
  * @license   https://craftcms.com/license
  */
 
-namespace craft\app\fields;
+namespace craft\fields;
 
 use Craft;
-use craft\app\base\ElementInterface;
-use craft\app\base\Field;
-use craft\app\helpers\Json;
+use craft\base\ElementInterface;
+use craft\base\Field;
+use craft\helpers\Json;
 use yii\db\Schema;
 
 /**

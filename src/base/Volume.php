@@ -10,15 +10,15 @@
  * @since      1.0
  */
 
-namespace craft\app\base;
+namespace craft\base;
 
 use Craft;
-use craft\app\behaviors\FieldLayoutTrait;
-use craft\app\errors\VolumeObjectExistsException;
-use craft\app\errors\VolumeObjectNotFoundException;
-use craft\app\records\Volume as VolumeRecord;
-use craft\app\validators\HandleValidator;
-use craft\app\validators\UniqueValidator;
+use craft\behaviors\FieldLayoutTrait;
+use craft\errors\VolumeObjectExistsException;
+use craft\errors\VolumeObjectNotFoundException;
+use craft\records\Volume as VolumeRecord;
+use craft\validators\HandleValidator;
+use craft\validators\UniqueValidator;
 use League\Flysystem\AdapterInterface;
 use League\Flysystem\FileExistsException;
 use League\Flysystem\FileNotFoundException;
@@ -76,8 +76,8 @@ abstract class Volume extends SavableComponent implements VolumeInterface
     {
         return [
             'fieldLayout' => [
-                'class' => \craft\app\behaviors\FieldLayoutBehavior::class,
-                'elementType' => \craft\app\elements\Asset::class
+                'class' => \craft\behaviors\FieldLayoutBehavior::class,
+                'elementType' => \craft\elements\Asset::class
             ],
         ];
     }
@@ -174,8 +174,7 @@ abstract class Volume extends SavableComponent implements VolumeInterface
      */
     public function folderExists($path)
     {
-        return $this->getAdapter()->has(rtrim($path,
-                '/').($this->foldersHaveTrailingSlashes ? '/' : ''));
+        return $this->getAdapter()->has(rtrim($path, '/').($this->foldersHaveTrailingSlashes ? '/' : ''));
     }
 
     /**

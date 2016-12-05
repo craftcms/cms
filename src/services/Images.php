@@ -5,19 +5,15 @@
  * @license   https://craftcms.com/license
  */
 
-namespace craft\app\services;
+namespace craft\services;
 
 use Craft;
-use craft\app\base\Image;
-use craft\app\helpers\App;
-use craft\app\helpers\Image as ImageHelper;
-use craft\app\helpers\Io;
-use craft\app\helpers\StringHelper;
-use craft\app\image\Raster;
-use craft\app\image\Svg;
-use lsolesen\pel\PelDataWindow;
-use lsolesen\pel\PelJpeg;
-use lsolesen\pel\PelTag;
+use craft\base\Image;
+use craft\helpers\App;
+use craft\helpers\Image as ImageHelper;
+use craft\helpers\StringHelper;
+use craft\image\Raster;
+use craft\image\Svg;
 use yii\base\Component;
 
 /**
@@ -140,7 +136,7 @@ class Images extends Component
      */
     public function loadImage($path, $rasterize = false, $svgSize = 1000)
     {
-        if (StringHelper::toLowerCase(Io::getExtension($path)) == 'svg') {
+        if (StringHelper::toLowerCase(pathinfo($path, PATHINFO_EXTENSION)) == 'svg') {
             $image = new Svg();
             $image->loadImage($path);
 
@@ -173,7 +169,7 @@ class Images extends Component
      */
     public function checkMemoryForImage($filePath, $toTheMax = false)
     {
-        if (StringHelper::toLowerCase(Io::getExtension($filePath)) == 'svg') {
+        if (StringHelper::toLowerCase(pathinfo($filePath, PATHINFO_EXTENSION)) == 'svg') {
             return true;
         }
 
@@ -251,23 +247,28 @@ class Images extends Component
             return false;
         }
 
-        $exif = $this->getExifData($filePath);
+        // Quick and dirty, if possible
+        if (!($this->getIsImagick() && method_exists('Imagick', 'getImageOrientation'))) {
+            return false;
+        }
+
+        $image = new \Imagick($filePath);
+        $orientation = $image->getImageOrientation();
+
         $degrees = false;
 
-        if (!empty($exif['ifd0.Orientation'])) {
-            switch ($exif['ifd0.Orientation']) {
-                case ImageHelper::EXIF_IFD0_ROTATE_180: {
-                    $degrees = 180;
-                    break;
-                }
-                case ImageHelper::EXIF_IFD0_ROTATE_90: {
-                    $degrees = 90;
-                    break;
-                }
-                case ImageHelper::EXIF_IFD0_ROTATE_270: {
-                    $degrees = 270;
-                    break;
-                }
+        switch ($orientation) {
+            case ImageHelper::EXIF_IFD0_ROTATE_180: {
+                $degrees = 180;
+                break;
+            }
+            case ImageHelper::EXIF_IFD0_ROTATE_90: {
+                $degrees = 90;
+                break;
+            }
+            case ImageHelper::EXIF_IFD0_ROTATE_270: {
+                $degrees = 270;
+                break;
             }
         }
 
@@ -310,39 +311,18 @@ class Images extends Component
     public function stripOrientationFromExifData($filePath)
     {
         if (!ImageHelper::canHaveExifData($filePath)) {
-            return null;
+            return false;
         }
 
         // Quick and dirty, if possible
-        if ($this->getIsImagick() && method_exists('Imagick', 'setImageProperty')) {
-            $image = new \Imagick($filePath);
-            $image->setImageOrientation(\Imagick::ORIENTATION_UNDEFINED);
-            $image->writeImages($filePath, true);
-
-            return true;
+        if (!($this->getIsImagick() && method_exists('Imagick', 'setImageOrientation'))) {
+            return false;
         }
 
-        $data = new PelDataWindow(Io::getFileContents($filePath));
+        $image = new \Imagick($filePath);
+        $image->setImageOrientation(\Imagick::ORIENTATION_UNDEFINED);
+        $image->writeImages($filePath, true);
 
-        // Is this a valid JPEG?
-        if (PelJpeg::isValid($data)) {
-            $jpeg = $file = new PelJpeg();
-            $jpeg->load($data);
-            $exif = $jpeg->getExif();
-
-            if ($exif) {
-                $tiff = $exif->getTiff();
-                $ifd0 = $tiff->getIfd();
-
-                // Delete the Orientation entry and re-save the file
-                /** @noinspection PhpParamsInspection */
-                $ifd0->offsetUnset(PelTag::ORIENTATION);
-                $file->saveFile($filePath);
-
-                return true;
-            }
-        }
-
-        return false;
+        return true;
     }
 }

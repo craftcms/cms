@@ -1,14 +1,16 @@
 (function($) {
 
 
-var UpdatesPage = Garnish.Base.extend(
+Craft.UpdatesPage = Garnish.Base.extend(
 {
 	totalAvailableUpdates: 0,
 	criticalUpdateAvailable: false,
 	allowAutoUpdates: null,
 
-	init: function()
+	init: function(settings)
 	{
+		this.setSettings(settings, Craft.UpdatesPage.defaults);
+
 		var $graphic = $('#graphic'),
 			$status = $('#status');
 
@@ -83,7 +85,12 @@ var UpdatesPage = Garnish.Base.extend(
 
 		this.totalAvailableUpdates++;
 
-		var update = new Update(updateInfo, isPlugin);
+		new Update(this, updateInfo, isPlugin);
+	}
+},
+{
+	defaults: {
+		isComposerInstall: false
 	}
 });
 
@@ -103,12 +110,13 @@ var Update = Garnish.Base.extend(
 	$licenseSubmitBtn: null,
 	licenseSubmitAction: null,
 
-	init: function(updateInfo, isPlugin)
+	init: function(updatesPage, updateInfo, isPlugin)
 	{
+		this.updatesPage = updatesPage;
 		this.updateInfo = updateInfo;
 		this.isPlugin = isPlugin;
 		this.displayName = this.isPlugin ? this.updateInfo.displayName : 'Craft CMS';
-		this.manualUpdateRequired = (!updatesPage.allowAutoUpdates || this.updateInfo.manualUpdateRequired);
+		this.manualUpdateRequired = (!this.updatesPage.allowAutoUpdates || this.updateInfo.manualUpdateRequired);
 
 		this.createPane();
 		this.createHeading();
@@ -131,6 +139,12 @@ var Update = Garnish.Base.extend(
 	{
 		var $buttonContainer = $('<div class="buttons right"/>').appendTo(this.$paneHeader),
 			$updateBtn;
+
+		// Are auto updates disabled because this is a Composer install?
+		if (this.updatesPage.settings.isComposerInstall) {
+			$('<div class="btn submit disabled" title="'+Craft.t('app', 'Use Composer to get this update.')+'">'+Craft.t('app', 'Update')+'</div>').appendTo($buttonContainer);
+			return;
+		}
 
 		// Is a manual update required?
 		if (this.manualUpdateRequired)
@@ -323,10 +337,6 @@ var Release = Garnish.Base.extend(
 {
 	maxInitialReleaseNotes: 5
 });
-
-
-// Init the updates page!
-var updatesPage = new UpdatesPage();
 
 
 })(jQuery);

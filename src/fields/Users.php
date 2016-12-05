@@ -5,10 +5,10 @@
  * @license   https://craftcms.com/license
  */
 
-namespace craft\app\fields;
+namespace craft\fields;
 
 use Craft;
-use craft\app\elements\User;
+use craft\elements\User;
 
 /**
  * Users represents a Users field.

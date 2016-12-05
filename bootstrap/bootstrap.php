@@ -7,9 +7,8 @@
  * @license   https://craftcms.com/license
  */
 
-use craft\app\dates\DateTime;
-use craft\app\helpers\ArrayHelper;
-use craft\app\helpers\Io;
+use craft\helpers\ArrayHelper;
+use craft\helpers\FileHelper;
 
 // Setup
 // -----------------------------------------------------------------------------
@@ -82,9 +81,6 @@ $ensureFolderIsReadable = function ($path, $writableToo = false) {
 
 // Set the vendor path. By default assume that Craft is located as a Composer dependency.
 $vendorPath = realpath(defined('CRAFT_VENDOR_PATH') ? CRAFT_VENDOR_PATH : $getArg('vendorPath') ?: dirname(dirname(dirname(__DIR__))));
-
-// Set the app path
-$appPath = defined('CRAFT_SRC_PATH') ? CRAFT_SRC_PATH : dirname(__DIR__).'/src';
 
 // Set the craft/ folder path. By default assume that it is alongside the vendor/ folder.
 $craftPath = realpath(defined('CRAFT_BASE_PATH') ? CRAFT_BASE_PATH : ($getArg('basePath') ?: dirname($vendorPath).'/craft'));
@@ -194,11 +190,11 @@ defined('CURLOPT_TIMEOUT_MS') || define('CURLOPT_TIMEOUT_MS', 155);
 defined('CURLOPT_CONNECTTIMEOUT_MS') || define('CURLOPT_CONNECTTIMEOUT_MS', 156);
 
 // Load the files
+$srcPath = $vendorPath.'/craftcms/craft/src';
 require $vendorPath.'/yiisoft/yii2/Yii.php';
-require $appPath.'/Craft.php';
+require $srcPath.'/Craft.php';
 
 // Set aliases
-Craft::setAlias('@craft/app', $appPath);
 Craft::setAlias('@config', $configPath);
 Craft::setAlias('@contentMigrations', $contentMigrationsPath);
 Craft::setAlias('@plugins', $pluginsPath);
@@ -208,9 +204,9 @@ Craft::setAlias('@translations', $translationsPath);
 
 // Load the config
 $config = ArrayHelper::merge(
-    require $appPath.'/config/main.php',
-    require $appPath.'/config/common.php',
-    require $appPath.'/config/'.$appType.'.php'
+    require $srcPath.'/config/main.php',
+    require $srcPath.'/config/common.php',
+    require $srcPath.'/config/'.$appType.'.php'
 );
 
 $config['vendorPath'] = $vendorPath;
@@ -231,19 +227,17 @@ if (file_exists($configPath.'/app.php')) {
     $config = ArrayHelper::merge($config, require $configPath.'/app.php');
 }
 
-$config['releaseDate'] = new DateTime('@'.$config['releaseDate']);
-
 // Initialize the application
-$class = 'craft\\app\\'.$appType.'\\Application';
-/** @var $app craft\app\web\Application|craft\app\console\Application */
+$class = 'craft\\'.$appType.'\\Application';
+/** @var $app craft\web\Application|craft\console\Application */
 $app = new $class($config);
 
 if ($appType === 'web') {
     // See if the resource base path exists and is writable
     $resourceBasePath = Craft::getAlias($app->config->get('resourceBasePath'));
-    Io::ensureFolderExists($resourceBasePath, true);
+    @FileHelper::createDirectory($resourceBasePath);
 
-    if (!Io::folderExists($resourceBasePath) || !Io::isWritable($resourceBasePath)) {
+    if (!is_dir($resourceBasePath) || !FileHelper::isWritable($resourceBasePath)) {
         exit($resourceBasePath.' doesn\'t exist or isn\'t writable by PHP. Please fix that.');
     }
 

@@ -5,24 +5,25 @@
  * @license   https://craftcms.com/license
  */
 
-namespace craft\app\services;
+namespace craft\services;
 
 use Craft;
-use craft\app\base\Plugin;
-use craft\app\base\PluginInterface;
-use craft\app\db\MigrationManager;
-use craft\app\db\Query;
-use craft\app\enums\LicenseKeyStatus;
-use craft\app\errors\InvalidLicenseKeyException;
-use craft\app\events\PluginEvent;
-use craft\app\helpers\DateTimeHelper;
-use craft\app\helpers\Db;
-use craft\app\helpers\Io;
-use craft\app\helpers\Json;
+use craft\base\Plugin;
+use craft\base\PluginInterface;
+use craft\db\MigrationManager;
+use craft\db\Query;
+use craft\enums\LicenseKeyStatus;
+use craft\errors\InvalidLicenseKeyException;
+use craft\errors\InvalidPluginException;
+use craft\events\PluginEvent;
+use craft\helpers\App;
+use craft\helpers\ArrayHelper;
+use craft\helpers\DateTimeHelper;
+use craft\helpers\Db;
+use craft\helpers\Json;
 use yii\base\Component;
 use yii\base\Exception;
-use yii\base\InvalidParamException;
-use yii\helpers\FileHelper;
+use craft\helpers\FileHelper;
 
 /**
  * The Plugins service provides APIs for managing plugins.
@@ -116,12 +117,40 @@ class Plugins extends Component
     private $_plugins = [];
 
     /**
+     * @var array Info for Composer-installed plugins, indexed by the plugins’ handles
+     */
+    private $_composerPluginInfo;
+
+    /**
      * @var array All of the stored info for enabled plugins, indexed by the plugins’ handles
      */
     private $_installedPluginInfo;
 
     // Public Methods
     // =========================================================================
+
+    /**
+     * @inheritdoc
+     */
+    public function init()
+    {
+        $this->_composerPluginInfo = [];
+
+        if (App::isComposerInstall()) {
+            // See if any plugins were installed via Composer, too
+            $path = Craft::$app->getVendorPath().DIRECTORY_SEPARATOR.'craftcms'.DIRECTORY_SEPARATOR.'plugins.php';
+
+            if (file_exists($path)) {
+                $plugins = require $path;
+
+                foreach ($plugins as $plugin) {
+                    $handle = strtolower($plugin['handle']);
+                    unset($plugin['handle']);
+                    $this->_composerPluginInfo[$handle] = $plugin;
+                }
+            }
+        }
+    }
 
     /**
      * Loads the enabled plugins.
@@ -228,14 +257,14 @@ class Plugins extends Component
      * @param string $handle The plugin’s handle
      *
      * @return boolean Whether the plugin was enabled successfully
-     * @throws Exception if the plugin isn't installed
+     * @throws InvalidPluginException if the plugin isn't installed
      */
     public function enablePlugin($handle)
     {
         $this->loadPlugins();
 
         if (!isset($this->_installedPluginInfo[$handle])) {
-            $this->_noPluginExists($handle);
+            throw new InvalidPluginException($handle);
         }
 
         if ($this->_installedPluginInfo[$handle]['enabled'] === true) {
@@ -246,7 +275,7 @@ class Plugins extends Component
         $plugin = $this->createPlugin($handle, $this->_installedPluginInfo[$handle]);
 
         if ($plugin === null) {
-            $this->_noPluginExists($handle);
+            throw new InvalidPluginException($handle);
         }
 
         // Fire a 'beforeEnablePlugin' event
@@ -278,14 +307,14 @@ class Plugins extends Component
      * @param string $handle The plugin’s handle
      *
      * @return boolean Whether the plugin was disabled successfully
-     * @throws Exception if the plugin isn’t installed
+     * @throws InvalidPluginException if the plugin isn’t installed
      */
     public function disablePlugin($handle)
     {
         $this->loadPlugins();
 
         if (!isset($this->_installedPluginInfo[$handle])) {
-            $this->_noPluginExists($handle);
+            throw new InvalidPluginException($handle);
         }
 
         if ($this->_installedPluginInfo[$handle]['enabled'] === false) {
@@ -296,7 +325,7 @@ class Plugins extends Component
         $plugin = $this->getPlugin($handle);
 
         if ($plugin === null) {
-            $this->_noPluginExists($handle);
+            throw new InvalidPluginException($handle);
         }
 
         // Fire a 'beforeDisablePlugin' event
@@ -344,7 +373,7 @@ class Plugins extends Component
         $plugin = $this->createPlugin($handle);
 
         if ($plugin === null) {
-            $this->_noPluginExists($handle);
+            throw new InvalidPluginException($handle);
         }
 
         // Fire a 'beforeInstallPlugin' event
@@ -369,7 +398,7 @@ class Plugins extends Component
             $info['installDate'] = DateTimeHelper::toDateTime($info['installDate']);
             $info['id'] = Craft::$app->getDb()->getLastInsertID('{{%plugins}}');
 
-            $this->_setPluginMigrator($plugin, $handle, $info['id']);
+            $this->_setPluginMigrator($plugin, $info['id']);
 
             if ($plugin->install() === false) {
                 $transaction->rollBack();
@@ -421,7 +450,7 @@ class Plugins extends Component
         }
 
         if ($plugin === null) {
-            $this->_noPluginExists($handle);
+            throw new InvalidPluginException($handle);
         }
 
         // Fire a 'beforeUninstallPlugin' event
@@ -583,18 +612,21 @@ class Plugins extends Component
     {
         $config = $this->getConfig($handle);
 
+        if (isset($config['aliases'])) {
+            foreach ($config['aliases'] as $alias => $path) {
+                Craft::setAlias($alias, $path);
+            }
+        }
+
         // Make sure it was a valid config
         if ($config === null) {
             return null;
         }
 
-        // Make this plugin's classes autoloadable
-        Craft::setAlias("@craft/plugins/$handle", "@plugins/$handle");
-
         $class = $config['class'];
 
         // Make sure the class exists and it implements PluginInterface
-        if (!is_subclass_of($class, \craft\app\base\PluginInterface::class)) {
+        if (!is_subclass_of($class, PluginInterface::class)) {
             return null;
         }
 
@@ -608,7 +640,7 @@ class Plugins extends Component
         }
 
         if (isset($row['id'])) {
-            $this->_setPluginMigrator($plugin, $handle, $row['id']);
+            $this->_setPluginMigrator($plugin, $row['id']);
         }
 
         // If we're not updating, check if the plugin's version number changed, but not its schema version.
@@ -626,57 +658,55 @@ class Plugins extends Component
     }
 
     /**
-     * Returns the config array for a plugin, based on its class handle.
+     * Returns the config array for a plugin, based on its handle.
      *
      * @param string $handle The plugin’s handle
      *
-     * @return array|null The plugin’s config, if it exists
+     * @return array|null The plugin’s config, if it can be determined
      */
     public function getConfig($handle)
     {
-        // Make sure this plugin has a plugin.json file
-        $basePath = Craft::$app->getPath()->getPluginsPath().'/'.$handle;
-        $configPath = $basePath.'/plugin.json';
-
-        if (($configPath = Io::fileExists($configPath)) === false) {
-            Craft::warning("Could not find a plugin.json file for the plugin '$handle'.");
-
-            return null;
-        }
-
-        try {
-            $config = array_merge([
-                'developer' => null,
-                'developerUrl' => null,
-                'description' => null,
-                'documentationUrl' => null,
-                'schemaVersion' => '1.0.0',
-            ], Json::decode(Io::getFileContents($configPath)));
-        } catch (InvalidParamException $e) {
-            Craft::warning("Could not decode $configPath: ".$e->getMessage());
-
-            return null;
+        // Was this plugin installed via Composer?
+        if (isset($this->_composerPluginInfo[$handle])) {
+            $config = $this->_composerPluginInfo[$handle];
+        } else {
+            $config = $this->_scrapeConfigFromComposerJson($handle);
         }
 
         // Make sure it's valid
-        if (!isset($config['name'], $config['version'])) {
-            Craft::warning("Missing 'name' or 'version' keys in $configPath.");
+        if (!$this->validateConfig($config)) {
+            Craft::warning("Missing 'class', 'name', or 'version' keys for plugin \"{$handle}\".");
 
             return null;
         }
 
-        // Set the class
-        if (empty($config['class'])) {
-            // Do they have a custom Plugin class?
-            if (Io::fileExists($basePath.'/Plugin.php')) {
-                $config['class'] = "\\craft\\plugins\\$handle\\Plugin";
-            } else {
-                // Just use the base one
-                $config['class'] = Plugin::class;
-            }
+        return $config;
+    }
+
+    /**
+     * Validates a plugin's config by ensuring it has a valid class, name, and version
+     *
+     * @param array &$config
+     *
+     * @return boolean Whether the config validates.
+     */
+    public function validateConfig(&$config)
+    {
+        // Make sure it has the essentials
+        if (!is_array($config) || !isset($config['class'], $config['name'], $config['version'])) {
+            return false;
         }
 
-        return $config;
+        // Add any missing properties
+        $config = array_merge([
+            'developer' => null,
+            'developerUrl' => null,
+            'description' => null,
+            'documentationUrl' => null,
+            'schemaVersion' => '1.0.0',
+        ], $config);
+
+        return true;
     }
 
     /**
@@ -688,37 +718,32 @@ class Plugins extends Component
     {
         $this->loadPlugins();
 
+        // Get all the plugin handles
+        $handles = array_unique(array_merge(
+            array_keys($this->_composerPluginInfo),
+            $this->_getManualPluginHandles()
+        ));
+
+        // Get the info arrays
         $info = [];
         $names = [];
 
-        $pluginsPath = Craft::$app->getPath()->getPluginsPath();
-        $folders = Io::getFolderContents($pluginsPath, false);
+        foreach ($handles as $handle) {
+            $config = $this->getConfig($handle);
 
-        if ($folders !== false) {
-            foreach ($folders as $folder) {
-                // Skip if it's not a folder
-                if (Io::folderExists($folder) === false) {
-                    continue;
-                }
-
-                $folder = Io::normalizePathSeparators($folder);
-                $handle = Io::getFolderName($folder, false);
-                $config = $this->getConfig($handle);
-
-                // Skip if it doesn't have a valid config file
-                if ($config === null) {
-                    continue;
-                }
-
-                $plugin = $this->getPlugin($handle);
-
-                $config['isInstalled'] = isset($this->_installedPluginInfo[$handle]);
-                $config['isEnabled'] = ($plugin !== null);
-                $config['hasSettings'] = ($plugin !== null && $plugin->getSettings() !== null);
-
-                $info[$handle] = $config;
-                $names[] = $config['name'];
+            // Skip if it doesn't have a valid config file
+            if ($config === null) {
+                continue;
             }
+
+            $plugin = $this->getPlugin($handle);
+
+            $config['isInstalled'] = isset($this->_installedPluginInfo[$handle]);
+            $config['isEnabled'] = ($plugin !== null);
+            $config['hasSettings'] = ($plugin !== null && $plugin->getSettings() !== null);
+
+            $info[$handle] = $config;
+            $names[] = $config['name'];
         }
 
         // Sort plugins by their names
@@ -733,16 +758,22 @@ class Plugins extends Component
      * @param string $handle The plugin’s class handle
      *
      * @return string The given plugin’s SVG icon
+     * @throws InvalidPluginException if the plugin isn't installed
      */
     public function getPluginIconSvg($handle)
     {
-        $iconPath = Craft::$app->getPath()->getPluginsPath().'/'.$handle.'/resources/icon.svg';
-
-        if (!$iconPath || !Io::fileExists($iconPath) || FileHelper::getMimeType($iconPath) != 'image/svg+xml') {
-            $iconPath = Craft::$app->getPath()->getResourcesPath().'/images/default_plugin.svg';
+        if (($plugin = $this->getPlugin($handle)) === null) {
+            throw new InvalidPluginException($handle);
         }
 
-        return Io::getFileContents($iconPath);
+        /** @var Plugin $plugin */
+        $iconPath = $plugin->getBasePath().DIRECTORY_SEPARATOR.'resources'.DIRECTORY_SEPARATOR.'icon.svg';
+
+        if (!is_file($iconPath) || FileHelper::getMimeType($iconPath) != 'image/svg+xml') {
+            $iconPath = Craft::$app->getPath()->getResourcesPath().DIRECTORY_SEPARATOR.'images'.DIRECTORY_SEPARATOR.'default_plugin.svg';
+        }
+
+        return file_get_contents($iconPath);
     }
 
     /**
@@ -751,13 +782,14 @@ class Plugins extends Component
      * @param string $pluginHandle The plugin’s class handle
      *
      * @return string|null The plugin’s license key, or null if it isn’t known
+     * @throws InvalidPluginException if the plugin isn't installed
      */
     public function getPluginLicenseKey($pluginHandle)
     {
         $plugin = $this->getPlugin($pluginHandle);
 
         if (!$plugin) {
-            $this->_noPluginExists($pluginHandle);
+            throw new InvalidPluginException($pluginHandle);
         }
 
         if (isset($this->_installedPluginInfo[$pluginHandle]['licenseKey'])) {
@@ -777,6 +809,7 @@ class Plugins extends Component
      *
      * @return boolean Whether the license key was updated successfully
      *
+     * @throws InvalidPluginException if the plugin isn't installed
      * @throws InvalidLicenseKeyException if $licenseKey is invalid
      */
     public function setPluginLicenseKey($pluginHandle, $licenseKey)
@@ -784,7 +817,7 @@ class Plugins extends Component
         $plugin = $this->getPlugin($pluginHandle);
 
         if (!$plugin) {
-            $this->_noPluginExists($pluginHandle);
+            throw new InvalidPluginException($pluginHandle);
         }
 
         // Validate the license key
@@ -830,13 +863,14 @@ class Plugins extends Component
      * @param string $pluginHandle The plugin’s class handle
      *
      * @return string|false
+     * @throws InvalidPluginException if the plugin isn't installed
      */
     public function getPluginLicenseKeyStatus($pluginHandle)
     {
         $plugin = $this->getPlugin($pluginHandle);
 
         if (!$plugin) {
-            $this->_noPluginExists($pluginHandle);
+            throw new InvalidPluginException($pluginHandle);
         }
 
         if (isset($this->_installedPluginInfo[$pluginHandle]['licenseKeyStatus'])) {
@@ -853,13 +887,14 @@ class Plugins extends Component
      * @param string|null $licenseKeyStatus The plugin’s license key status
      *
      * @return void
+     * @throws InvalidPluginException if the plugin isn't installed
      */
     public function setPluginLicenseKeyStatus($pluginHandle, $licenseKeyStatus)
     {
         $plugin = $this->getPlugin($pluginHandle);
 
         if (!$plugin) {
-            $this->_noPluginExists($pluginHandle);
+            throw new InvalidPluginException($pluginHandle);
         }
 
         // Ignore the plugin handle they sent us in case its casing is wrong
@@ -909,34 +944,239 @@ class Plugins extends Component
     }
 
     /**
-     * Throws a "no plugin exists" exception.
-     *
-     * @param string $handle
-     *
-     * @return void
-     * @throws Exception
-     */
-    private function _noPluginExists($handle)
-    {
-        throw new Exception("No plugin exists with the handle '$handle'.");
-    }
-
-    /**
      * Sets the 'migrator' component on a plugin.
      *
      * @param PluginInterface $plugin The plugin
-     * @param string          $handle The plugin’s handle
      * @param integer         $id     The plugin’s ID
      */
-    private function _setPluginMigrator(PluginInterface $plugin, $handle, $id)
+    private function _setPluginMigrator(PluginInterface $plugin, $id)
     {
+        $ref = new \ReflectionClass($plugin);
+        $ns = $ref->getNamespaceName();
         /** @var Plugin $plugin */
         $plugin->set('migrator', [
             'class' => MigrationManager::class,
             'type' => MigrationManager::TYPE_PLUGIN,
             'pluginId' => $id,
-            'migrationNamespace' => "craft\\plugins\\$handle\\migrations",
-            'migrationPath' => "@plugins/$handle/migrations",
+            'migrationNamespace' => ($ns ? $ns.'\\' : '').'migrations',
+            'migrationPath' => $plugin->getBasePath().DIRECTORY_SEPARATOR.'migrations',
         ]);
+    }
+
+    /**
+     * Returns an array of folder names that live within the craft/plugins/ folder.
+     *
+     * @return string[]
+     * @throws Exception in case of failure
+     */
+    private function _getManualPluginHandles()
+    {
+        $dir = Craft::$app->getPath()->getPluginsPath();
+        if (!is_dir($dir)) {
+            return [];
+        }
+
+        $pluginHandles = [];
+        $handle = opendir($dir);
+        if ($handle === false) {
+            throw new Exception("Unable to open directory: $dir");
+        }
+        while (($subDir = readdir($handle)) !== false) {
+            if ($subDir === '.' || $subDir === '..') {
+                continue;
+            }
+            $path = $dir.DIRECTORY_SEPARATOR.$subDir;
+            if (is_file($path)) {
+                continue;
+            }
+            $pluginHandles[] = $subDir;
+        }
+        closedir($handle);
+
+        return $pluginHandles;
+    }
+
+    /**
+     * Scrapes a plugin’s config from its composer.json file.
+     *
+     * @param string $handle The plugin’s handle
+     *
+     * @return array|null The plugin’s config, if it can be determined
+     */
+    private function _scrapeConfigFromComposerJson($handle)
+    {
+        // Make sure this plugin has a composer.json file
+        $pluginPath = Craft::$app->getPath()->getPluginsPath().DIRECTORY_SEPARATOR.$handle;
+        $composerPath = $pluginPath.DIRECTORY_SEPARATOR.'composer.json';
+
+        if (!is_file($composerPath)) {
+            Craft::warning("Could not find a composer.json file for the plugin '$handle'.");
+
+            return null;
+        }
+
+        try {
+            $composer = Json::decode(file_get_contents($composerPath));
+        } catch (\Exception $e) {
+            Craft::warning("Could not decode {$composerPath}: ".$e->getMessage());
+
+            return null;
+        }
+
+        $extra = isset($composer['extra']) ? $composer['extra'] : [];
+        $packageName = isset($composer['name']) ? $composer['name'] : $handle;
+
+        // class (required) + possibly set aliases
+        $class = isset($extra['class']) ? $extra['class'] : null;
+        $aliases = $this->_generateDefaultAliasesFromComposer($handle, $composer, $class);
+
+        if ($class === null) {
+            Craft::warning("Unable to determine the Plugin class for {$handle}.");
+
+            return null;
+        }
+
+        $config = [
+            'class' => $class,
+        ];
+
+        if ($aliases) {
+            $config['aliases'] = $aliases;
+        }
+
+        if (strpos($packageName, '/') !== false) {
+            list($vendor, $name) = explode('/', $packageName);
+        } else {
+            $vendor = null;
+            $name = $packageName;
+        }
+
+        // name
+        if (isset($extra['name'])) {
+            $config['name'] = $extra['name'];
+        } else {
+            $config['name'] = $name;
+        }
+
+        // version
+        if (isset($extra['version'])) {
+            $config['version'] = $extra['version'];
+        } else if (isset($composer['version'])) {
+            $config['version'] = $composer['version'];
+        } else {
+            // Might as well be consistent with what Composer will default to
+            $config['version'] = 'dev-master';
+        }
+
+        // schemaVersion
+        if (isset($extra['schemaVersion'])) {
+            $config['schemaVersion'] = $extra['schemaVersion'];
+        }
+
+        // description
+        if (isset($extra['description'])) {
+            $config['description'] = $extra['description'];
+        } else if (isset($composer['description'])) {
+            $config['description'] = $composer['description'];
+        }
+
+        // developer
+        if (isset($extra['developer'])) {
+            $config['developer'] = $extra['developer'];
+        } else if ($authorName = $this->_getAuthorPropertyFromComposer($composer, 'name')) {
+            $config['developer'] = $authorName;
+        } else if ($vendor !== null) {
+            $config['developer'] = $vendor;
+        }
+
+        // developerUrl
+        if (isset($extra['developerUrl'])) {
+            $config['developerUrl'] = $extra['developerUrl'];
+        } else if (isset($composer['homepage'])) {
+            $config['developerUrl'] = $composer['homepage'];
+        } else if ($authorHomepage = $this->_getAuthorPropertyFromComposer($composer, 'homepage')) {
+            $config['developerUrl'] = $authorHomepage;
+        }
+
+        // documentationUrl
+        if (isset($extra['documentationUrl'])) {
+            $config['documentationUrl'] = $extra['documentationUrl'];
+        } else if (isset($composer['support']['docs'])) {
+            $config['documentationUrl'] = $composer['support']['docs'];
+        }
+
+        // components
+        if (isset($extra['components'])) {
+            $config['components'] = $extra['components'];
+        }
+
+        return $config;
+    }
+
+    /**
+     * Returns an array of alias/path mappings that should be set for a plugin based on its Composer config.
+     *
+     * It will also set the $class variable to the primary Plugin class, if it can isn't set already and the class can be found.
+     *
+     * @param string  $handle   The plugin handle
+     * @param array   $composer The Composer config
+     * @param boolean &$class   The Plugin class name
+     *
+     * @return array|null
+     */
+    private function _generateDefaultAliasesFromComposer($handle, array $composer, &$class)
+    {
+        if (empty($composer['autoload']['psr-4'])) {
+            return null;
+        }
+
+        $aliases = [];
+
+        foreach ($composer['autoload']['psr-4'] as $namespace => $path) {
+            if (is_array($path)) {
+                // Yii doesn't support aliases that point to multiple base paths
+                continue;
+            }
+
+            // Normalize $path to an absolute path
+            $path = FileHelper::normalizePath($path);
+            if (!(substr($path, 0, 1) === DIRECTORY_SEPARATOR || substr($path, 1, 1) === ':')) {
+                $pluginPath = Craft::$app->getPath()->getPluginsPath().DIRECTORY_SEPARATOR.$handle;
+                $path = $pluginPath.DIRECTORY_SEPARATOR.$path;
+            }
+
+            $alias = '@'.str_replace('\\', '/', trim($namespace, '\\'));
+            $aliases[$alias] = $path;
+
+            // If we're still looking for the primary Plugin class, see if it's in here
+            if ($class === null && is_file($path.DIRECTORY_SEPARATOR.'Plugin.php')) {
+                $class = $namespace.'Plugin';
+            }
+        }
+
+        return $aliases;
+    }
+
+    /**
+     * Attempts to return an author property from a given composer.json file.
+     *
+     * @param array  $composer
+     * @param string $property
+     *
+     * @return string|null
+     */
+    private function _getAuthorPropertyFromComposer(array $composer, $property)
+    {
+        if (empty($composer['authors'])) {
+            return null;
+        }
+
+        $firstAuthor = ArrayHelper::firstValue($composer['authors']);
+
+        if (!isset($firstAuthor[$property])) {
+            return null;
+        }
+
+        return $firstAuthor[$property];
     }
 }

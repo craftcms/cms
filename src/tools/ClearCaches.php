@@ -5,13 +5,13 @@
  * @license   https://craftcms.com/license
  */
 
-namespace craft\app\tools;
+namespace craft\tools;
 
 use Craft;
-use craft\app\base\Tool;
-use craft\app\events\Event;
-use craft\app\events\RegisterCacheOptionsEvent;
-use craft\app\helpers\Io;
+use craft\base\Tool;
+use craft\events\Event;
+use craft\events\RegisterCacheOptionsEvent;
+use craft\helpers\FileHelper;
 
 /**
  * ClearCaches represents a Clear Caches tool.
@@ -95,22 +95,22 @@ class ClearCaches extends Tool
             [
                 'key' => 'asset',
                 'label' => Craft::t('app', 'Asset caches'),
-                'action' => $runtimePath.'/assets/cache'
+                'action' => $runtimePath.DIRECTORY_SEPARATOR.'assets'.DIRECTORY_SEPARATOR.'cache'
             ],
             [
                 'key' => 'rss',
                 'label' => Craft::t('app', 'RSS caches'),
-                'action' => $runtimePath.'/cache'
+                'action' => $runtimePath.DIRECTORY_SEPARATOR.'cache'
             ],
             [
                 'key' => 'compiled-templates',
                 'label' => Craft::t('app', 'Compiled templates'),
-                'action' => $runtimePath.'/compiled_templates'
+                'action' => $runtimePath.DIRECTORY_SEPARATOR.'compiled_templates'
             ],
             [
                 'key' => 'temp-files',
                 'label' => Craft::t('app', 'Temp files'),
-                'action' => $runtimePath.'/temp'
+                'action' => $runtimePath.DIRECTORY_SEPARATOR.'temp'
             ],
             [
                 'key' => 'transform-indexes',
@@ -165,7 +165,11 @@ class ClearCaches extends Tool
             $action = $cacheOption['action'];
 
             if (is_string($action)) {
-                Io::clearFolder($action, true);
+                try {
+                    FileHelper::clearDirectory($action);
+                } catch (\Exception $e) {
+                    Craft::warning("Could not clear the directory {$action}: ".$e->getMessage());
+                }
             } else if (isset($cacheOption['params'])) {
                 call_user_func_array($action, $cacheOption['params']);
             } else {

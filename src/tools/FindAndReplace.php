@@ -5,11 +5,11 @@
  * @license   https://craftcms.com/license
  */
 
-namespace craft\app\tools;
+namespace craft\tools;
 
 use Craft;
-use craft\app\base\Tool;
-use craft\app\tasks\FindAndReplace as FindAndReplaceTask;
+use craft\base\Tool;
+use craft\tasks\FindAndReplace as FindAndReplaceTask;
 
 /**
  * FindAndReplace represents a Find and Replace tool.
