@@ -1219,12 +1219,15 @@ class View extends \yii\web\View
 
             if (count($pathParts) > 1) {
                 $pluginHandle = array_shift($pathParts);
-                $pluginSourcePath = Craft::getAlias('@craft/plugins/'.$pluginHandle.'/resources');
-                $pluginSubpath = implode(DIRECTORY_SEPARATOR, $pathParts);
-
-                if (is_file($pluginSourcePath.DIRECTORY_SEPARATOR.$pluginSubpath)) {
-                    $sourcePath = $pluginSourcePath;
-                    $path = $pluginSubpath;
+                $plugin = Craft::$app->getPlugins()->getPlugin($pluginHandle);
+                if ($plugin) {
+                    /** @var Plugin $plugin */
+                    $pluginSourcePath = $plugin->getBasePath().DIRECTORY_SEPARATOR.'resources';
+                    $pluginSubpath = implode(DIRECTORY_SEPARATOR, $pathParts);
+                    if (is_file($pluginSourcePath.DIRECTORY_SEPARATOR.$pluginSubpath)) {
+                        $sourcePath = $pluginSourcePath;
+                        $path = $pluginSubpath;
+                    }
                 }
             }
         }

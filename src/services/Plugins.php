@@ -623,9 +623,6 @@ class Plugins extends Component
             return null;
         }
 
-        // Make this plugin's classes autoloadable
-        Craft::setAlias("@craft/plugins/$handle", "@plugins/$handle");
-
         $class = $config['class'];
 
         // Make sure the class exists and it implements PluginInterface
