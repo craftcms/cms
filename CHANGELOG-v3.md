@@ -231,6 +231,11 @@ Craft CMS 3.0 Working Changelog
 - base\Element::getTableAttributeHtml() is no longer static, and no longer has an $element argument.
 - base\Element::onAfterMoveElementInStructure() is no longer static, no longer has an $element argument, and has been renamed to afterMoveInStructure().
 - services\Updates::getUnwritableFolders() now returns folder paths without trailing slashes.
+- Renamed `craft.getAssets()` back to `craft.assets()`.
+- Renamed `craft.getCategories()` back to `craft.categories()`.
+- Renamed `craft.getEntries()` back to `craft.entries()`.
+- Renamed `craft.getTags()` back to `craft.tags()`.
+- Renamed `craft.getUsers()` back to `craft.users()`.
 - Updated Yii to 2.0.10.
 - Updated Yii 2 Debug Extension to 2.0.7.
 - Updated Yii 2 Auth Client to 2.1.1.

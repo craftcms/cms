@@ -212,7 +212,7 @@ class CraftVariable extends ServiceLocator
      *
      * @return AssetQuery
      */
-    public function getAssets($criteria = null)
+    public function assets($criteria = null)
     {
         $query = Asset::find();
         if ($criteria) {
@@ -229,7 +229,7 @@ class CraftVariable extends ServiceLocator
      *
      * @return CategoryQuery
      */
-    public function getCategories($criteria = null)
+    public function categories($criteria = null)
     {
         $query = Category::find();
         if ($criteria) {
@@ -246,7 +246,7 @@ class CraftVariable extends ServiceLocator
      *
      * @return EntryQuery
      */
-    public function getEntries($criteria = null)
+    public function entries($criteria = null)
     {
         $query = Entry::find();
         if ($criteria) {
@@ -263,7 +263,7 @@ class CraftVariable extends ServiceLocator
      *
      * @return TagQuery
      */
-    public function getTags($criteria = null)
+    public function tags($criteria = null)
     {
         $query = Tag::find();
         if ($criteria) {
@@ -280,7 +280,7 @@ class CraftVariable extends ServiceLocator
      *
      * @return UserQuery
      */
-    public function getUsers($criteria = null)
+    public function users($criteria = null)
     {
         $query = User::find();
         if ($criteria) {
