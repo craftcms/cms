@@ -56,11 +56,6 @@ class EtTransport
      */
     private $_userAgent;
 
-    /**
-     * @var string
-     */
-    private $_destinationFilename;
-
     // Public Methods
     // =========================================================================
 
@@ -149,16 +144,6 @@ class EtTransport
     }
 
     /**
-     * @param $destinationFilename
-     *
-     * @return void
-     */
-    public function setDestinationFilename($destinationFilename)
-    {
-        $this->_destinationFilename = $destinationFilename;
-    }
-
-    /**
      * @return EtModel
      */
     public function getModel()
@@ -226,18 +211,6 @@ class EtTransport
                         // Clear the connection failure cached item if it exists.
                         if ($cacheService->get('etConnectFailure')) {
                             $cacheService->delete('etConnectFailure');
-                        }
-
-                        if ($this->_destinationFilename) {
-                            $body = $response->getBody();
-
-                            // Write it out to the file
-                            FileHelper::writeToFile($this->_destinationFilename, $body);
-
-                            // Close the stream.
-                            $body->close();
-
-                            return pathinfo($this->_destinationFilename, PATHINFO_BASENAME);
                         }
 
                         $responseBody = (string)$response->getBody();
