@@ -101,7 +101,6 @@ Craft CMS 3.0 Working Changelog
 - Added the ‘setFilename’ event to helpers\Assets.
 - Added the ‘setRoute’ event to base\Element.
 - Added the ‘setTableAttributeHtml’ event to base\Element.
-- Added the Symfony Filesystem component.
 - Added Guzzle 6 HTTP Adapter.
 - Added php-shellcommand.
 
