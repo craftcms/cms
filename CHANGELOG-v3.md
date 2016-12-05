@@ -241,7 +241,8 @@ Craft CMS 3.0 Working Changelog
 - Updated Twig to 1.28.2.
 
 ### Deprecated
-- The getTranslations() global Twig function has been deprecated. Use craft.app.view.getTranslations() instead.
+- The `getTranslations()` global Twig function has been deprecated. Use `craft.app.view.getTranslations()` instead.
+- `craft.getTimeZone()` has been deprecated. Use `craft.app.getTimeZone()` instead.
 
 ### Removed
 - Removed support for the `CRAFT_FRAMEWORK_PATH` PHP constant in the bootstrap script. It is now expected Yii is located alongside Craft and other dependencies in the vendor/ folder.
