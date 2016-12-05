@@ -139,7 +139,13 @@ class MigrationHelper
                     continue;
                 }
 
-                $columns = static::_getColumnsForFK($fkInfo);
+                $columns = [];
+                foreach ($fkInfo as $count => $value) {
+                    if ($count !== 0) {
+                        $columns[] = $count;
+                    }
+                }
+
                 static::dropForeignKey($sourceTable, $columns, $migration);
             }
         }
@@ -335,7 +341,12 @@ class MigrationHelper
                 $allOtherTableFks[$refTableName][$number]['updateType'] = $extendedForeignKeys[$index]['updateType'];
                 $allOtherTableFks[$refTableName][$number]['deleteType'] = $extendedForeignKeys[$index]['deleteType'];
 
-                $columns = static::_getColumnsForFK($fk);
+                $columns = [];
+                foreach ($fk as $count => $row) {
+                    if ($count !== 0) {
+                        $columns[] = $count;
+                    }
+                }
 
                 static::dropForeignKey($refTableName, $columns, $migration);
             }

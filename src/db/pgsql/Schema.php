@@ -225,29 +225,29 @@ class Schema extends \yii\db\pgsql\Schema
         $tableSchema = $this->quoteValue($table->schemaName);
 
         $sql = <<<SQL
-select
-    ct.conname as constraint_name,
-    a.attname as column_name,
-    fc.relname as foreign_table_name,
-    fns.nspname as foreign_table_schema,
-    fa.attname as foreign_column_name,
-    ct.confupdtype as update_type,
-    ct.confdeltype as delete_type
+SELECT
+    ct.conname AS constraint_name,
+    a.attname AS column_name,
+    fc.relname AS foreign_table_name,
+    fns.nspname AS foreign_table_schema,
+    fa.attname AS foreign_column_name,
+    ct.confupdtype AS update_type,
+    ct.confdeltype AS delete_type
 from
     (SELECT ct.conname, ct.conrelid, ct.confrelid, ct.conkey, ct.contype, ct.confkey, generate_subscripts(ct.conkey, 1) AS s, ct.confupdtype, ct.confdeltype
        FROM pg_constraint ct
     ) AS ct
-    inner join pg_class c on c.oid=ct.conrelid
-    inner join pg_namespace ns on c.relnamespace=ns.oid
-    inner join pg_attribute a on a.attrelid=ct.conrelid and a.attnum = ct.conkey[ct.s]
-    left join pg_class fc on fc.oid=ct.confrelid
-    left join pg_namespace fns on fc.relnamespace=fns.oid
-    left join pg_attribute fa on fa.attrelid=ct.confrelid and fa.attnum = ct.confkey[ct.s]
-where
+    INNER JOIN pg_class c ON c.oid=ct.conrelid
+    INNER JOIN pg_namespace ns ON c.relnamespace=ns.oid
+    INNER JOIN pg_attribute a ON a.attrelid=ct.conrelid AND a.attnum = ct.conkey[ct.s]
+    LEFT JOIN pg_class fc ON fc.oid=ct.confrelid
+    LEFT JOIN pg_namespace fns ON fc.relnamespace=fns.oid
+    LEFT JOIN pg_attribute fa ON fa.attrelid=ct.confrelid AND fa.attnum = ct.confkey[ct.s]
+WHERE
     ct.contype='f'
-    and c.relname={$tableName}
-    and ns.nspname={$tableSchema}
-order by
+    AND c.relname={$tableName}
+    AND ns.nspname={$tableSchema}
+ORDER BY 
     fns.nspname, fc.relname, a.attnum
 SQL;
 
