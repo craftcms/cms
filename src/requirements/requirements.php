@@ -112,12 +112,6 @@ $requirements = array_merge($requirements, array(
         'memo' => 'Craft CMS requires the <a href="http://www.php.net/manual/en/book.mbstring.php">Multibyte String</a> extension with <a href="http://php.net/manual/en/mbstring.overload.php">Function Overloading</a> disabled in order to run.'
     ),
     array(
-        'name' => 'Mcrypt extension',
-        'mandatory' => true,
-        'condition' => extension_loaded('mcrypt'),
-        'memo' => 'The <a href="http://php.net/manual/en/book.mcrypt.php">Mcrypt</a> extension is required.',
-    ),
-    array(
         'name' => 'GD extension or ImageMagick extension',
         'mandatory' => true,
         'condition' => (extension_loaded('gd') || extension_loaded('imagick')),

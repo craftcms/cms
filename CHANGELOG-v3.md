@@ -245,6 +245,7 @@ Craft CMS 3.0 Working Changelog
 - Updated Guzzle to 6.2.2.
 - Updated Imagine to the new `pixelandtonic/imagine` fork at 0.6.3.1.
 - Updated Twig to 1.28.2.
+- Craft no longer requires the mcrypt PHP extension.
 
 ### Deprecated
 - The `getTranslations()` global Twig function has been deprecated. Use `craft.app.view.getTranslations()` instead.
