@@ -111,7 +111,7 @@ class CraftVariable extends ServiceLocator
         // Add plugin components
         foreach (Craft::$app->getPlugins()->getAllPlugins() as $handle => $plugin) {
             if (!isset($config['components'][$handle])) {
-                $component = $plugin->getVariableDefinition();
+                $component = $plugin->defineTemplateComponent();
 
                 if ($component !== null) {
                     $config['components'][$handle] = $component;

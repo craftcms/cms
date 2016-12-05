@@ -200,7 +200,7 @@ class Plugin extends Module implements PluginInterface
     /**
      * @inheritdoc
      */
-    public function getVariableDefinition()
+    public function defineTemplateComponent()
     {
         return null;
     }

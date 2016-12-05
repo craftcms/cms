@@ -176,6 +176,7 @@ Craft CMS 3.0 Working Changelog
 - Renamed base\Field::getContentPostLocation() to getRequestParamName().
 - Renamed base\Field::prepareValue() to normalizeValue().
 - Renamed base\Field::prepareValueForDb() to serializeValue().
+- Renamed base\PluginInterface::getVariableDefinition() to defineTemplateComponent().
 - Renamed Craft::getCookieConfig() to cookieConfig()
 - Renamed db\Command::insertOrUpdate() to upsert().
 - Renamed db\Migration::insertOrUpdate() to upsert().
