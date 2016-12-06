@@ -861,12 +861,12 @@ Craft.AssetIndex = Craft.BaseElementIndex.extend(
 	{
 		if(sourceKey)
 		{
-            var parts = sourceKey.split(':');
+			var parts = sourceKey.split(':');
 
-            if (parts.length > 1 && parts[0] == 'folder')
-            {
-                return parts[1];
-            }
+			if (parts.length > 1 && parts[0] == 'folder')
+			{
+				return parts[1];
+			}
 		}
 
 		return null;
