@@ -4972,7 +4972,7 @@ Craft.AssetIndex = Craft.BaseElementIndex.extend(
 
 				for (var i = 0; i < $selected.length; i++)
 				{
-					var $source = $selected.eq(i).parent();
+					var	$source = $selected.eq(i);
 
 					if (!this._getFolderIdFromSourceKey($source.data('key'))) {
 						continue;
@@ -5677,14 +5677,11 @@ Craft.AssetIndex = Craft.BaseElementIndex.extend(
 
 	_getFolderIdFromSourceKey: function(sourceKey)
 	{
-		if(sourceKey)
-		{
-            var parts = sourceKey.split(':');
+		var parts = sourceKey.split(':');
 
-            if (parts.length > 1 && parts[0] == 'folder')
-            {
-                return parts[1];
-            }
+		if (parts.length > 1 && parts[0] == 'folder')
+		{
+			return parts[1];
 		}
 
 		return null;
