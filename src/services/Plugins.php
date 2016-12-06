@@ -623,6 +623,14 @@ class Plugins extends Component
             return null;
         }
 
+        // If the plugin was manually installed, see if it has a Composer autoloader
+        if (!isset($this->_composerPluginInfo[$handle])) {
+            $autoloadPath = Craft::$app->getPath()->getPluginsPath().DIRECTORY_SEPARATOR.$handle.DIRECTORY_SEPARATOR.'vendor'.DIRECTORY_SEPARATOR.'autoload.php';
+            if (is_file($autoloadPath)) {
+                require_once $autoloadPath;
+            }
+        }
+
         $class = $config['class'];
 
         // Make sure the class exists and it implements PluginInterface
