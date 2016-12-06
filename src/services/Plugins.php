@@ -762,14 +762,19 @@ class Plugins extends Component
      */
     public function getPluginIconSvg($handle)
     {
-        if (($plugin = $this->getPlugin($handle)) === null) {
+        if (($plugin = $this->getPlugin($handle)) !== null) {
+            /** @var Plugin $plugin */
+            $basePath = $plugin->getBasePath();
+        } else if (($config = $this->getConfig($handle)) !== null) {
+            // It exists, but isn't installed yet
+            $basePath = isset($config['basePath']) ? Craft::getAlias($config['basePath']) : false;
+        } else {
             throw new InvalidPluginException($handle);
         }
 
-        /** @var Plugin $plugin */
-        $iconPath = $plugin->getBasePath().DIRECTORY_SEPARATOR.'resources'.DIRECTORY_SEPARATOR.'icon.svg';
+        $iconPath = ($basePath !== false) ? $basePath.DIRECTORY_SEPARATOR.'resources'.DIRECTORY_SEPARATOR.'icon.svg' : false;
 
-        if (!is_file($iconPath) || FileHelper::getMimeType($iconPath) != 'image/svg+xml') {
+        if ($iconPath === false || !is_file($iconPath) || FileHelper::getMimeType($iconPath) != 'image/svg+xml') {
             $iconPath = Craft::$app->getPath()->getResourcesPath().DIRECTORY_SEPARATOR.'images'.DIRECTORY_SEPARATOR.'default_plugin.svg';
         }
 
