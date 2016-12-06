@@ -2,9 +2,9 @@
  * Asset image editor class
  */
 
-// TODO: When rotating by 90 degrees, the cropping constraint acts like the image has not been rotated
 // TODO: Maybe namespace all the attributes?
 // TODO: Go over each attribute and method to make sure it's used at all.
+// TODO: document and comment every method
 // TODO: Rename and maybe refactor misleading names for methods. _scaleAndCenterImage(), for example. It does other stuff too.
 // TODO: Condense all the var statements, where applicable in a single `var` list.
 
@@ -878,6 +878,12 @@ Craft.AssetImageEditor = Garnish.Modal.extend(
 				rectWidth = imageDimensions.width / rectangleRatio,
 				rectHeight = imageDimensions.height / rectangleRatio;
 
+			if (this.hasOrientationChanged()) {
+				var temp = rectHeight;
+				rectHeight = rectWidth;
+				rectWidth = temp;
+			}
+
 			// Set up the cropping viewport rectangle.
 			this.clipper = new fabric.Rect({
 				left: Math.floor(this.editorWidth / 2),
@@ -1268,7 +1274,8 @@ Craft.AssetImageEditor = Garnish.Modal.extend(
 
 		_setImageVerticeCoordinates: function () {
 
-			var angleInRadians = -1 * this.imageStraightenAngle * (Math.PI / 180);
+
+			var angleInRadians = -1 * ((this.hasOrientationChanged() ? 90 : 0) + this.imageStraightenAngle)* (Math.PI / 180);
 
 			var imageDimensions = this.getScaledImageDimensions();
 			var ratio = this.getZoomToFitRatio(imageDimensions);
