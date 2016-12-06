@@ -1,4 +1,4 @@
-/*! Craft  - 2016-11-21 */
+/*! Craft  - 2016-12-06 */
 (function($){
 
 // Set all the standard Craft.* stuff
@@ -5677,9 +5677,14 @@ Craft.AssetIndex = Craft.BaseElementIndex.extend(
 
 	_getFolderIdFromSourceKey: function(sourceKey)
 	{
-		var parts = sourceKey.split(':');
-		if (parts.length > 1 && parts[0] == 'folder') {
-			return parts[1];
+		if(sourceKey)
+		{
+            var parts = sourceKey.split(':');
+
+            if (parts.length > 1 && parts[0] == 'folder')
+            {
+                return parts[1];
+            }
 		}
 
 		return null;
