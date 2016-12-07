@@ -8,3 +8,4 @@
 *aspnet_client/
 vendor/
 node_modules/
+/composer.lock
