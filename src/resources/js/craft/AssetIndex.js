@@ -780,12 +780,7 @@ Craft.AssetIndex = Craft.BaseElementIndex.extend(
 			}
 		}
 
-		this.sourceSelect.selectItem($targetSource);
-
-		this.$source = $targetSource;
-		this.sourceKey = $targetSource.data('key');
-		this.setInstanceState('selectedSource', this.sourceKey);
-
+		this.selectSource($targetSource);
 		this.updateElements();
 	},
 
