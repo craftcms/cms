@@ -623,6 +623,14 @@ class Plugins extends Component
             return null;
         }
 
+        // If the plugin was manually installed, see if it has a Composer autoloader
+        if (!isset($this->_composerPluginInfo[$handle])) {
+            $autoloadPath = Craft::$app->getPath()->getPluginsPath().DIRECTORY_SEPARATOR.$handle.DIRECTORY_SEPARATOR.'vendor'.DIRECTORY_SEPARATOR.'autoload.php';
+            if (is_file($autoloadPath)) {
+                require_once $autoloadPath;
+            }
+        }
+
         $class = $config['class'];
 
         // Make sure the class exists and it implements PluginInterface
@@ -762,14 +770,19 @@ class Plugins extends Component
      */
     public function getPluginIconSvg($handle)
     {
-        if (($plugin = $this->getPlugin($handle)) === null) {
+        if (($plugin = $this->getPlugin($handle)) !== null) {
+            /** @var Plugin $plugin */
+            $basePath = $plugin->getBasePath();
+        } else if (($config = $this->getConfig($handle)) !== null) {
+            // It exists, but isn't installed yet
+            $basePath = isset($config['basePath']) ? Craft::getAlias($config['basePath']) : false;
+        } else {
             throw new InvalidPluginException($handle);
         }
 
-        /** @var Plugin $plugin */
-        $iconPath = $plugin->getBasePath().DIRECTORY_SEPARATOR.'resources'.DIRECTORY_SEPARATOR.'icon.svg';
+        $iconPath = ($basePath !== false) ? $basePath.DIRECTORY_SEPARATOR.'resources'.DIRECTORY_SEPARATOR.'icon.svg' : false;
 
-        if (!is_file($iconPath) || FileHelper::getMimeType($iconPath) != 'image/svg+xml') {
+        if ($iconPath === false || !is_file($iconPath) || FileHelper::getMimeType($iconPath) != 'image/svg+xml') {
             $iconPath = Craft::$app->getPath()->getResourcesPath().DIRECTORY_SEPARATOR.'images'.DIRECTORY_SEPARATOR.'default_plugin.svg';
         }
 
@@ -1026,9 +1039,10 @@ class Plugins extends Component
         $extra = isset($composer['extra']) ? $composer['extra'] : [];
         $packageName = isset($composer['name']) ? $composer['name'] : $handle;
 
-        // class (required) + possibly set aliases
+        // class (required) + basePath + possibly set aliases
         $class = isset($extra['class']) ? $extra['class'] : null;
-        $aliases = $this->_generateDefaultAliasesFromComposer($handle, $composer, $class);
+        $basePath = isset($extra['basePath']) ? $extra['basePath'] : null;
+        $aliases = $this->_generateDefaultAliasesFromComposer($handle, $composer, $class, $basePath);
 
         if ($class === null) {
             Craft::warning("Unable to determine the Plugin class for {$handle}.");
@@ -1039,6 +1053,10 @@ class Plugins extends Component
         $config = [
             'class' => $class,
         ];
+
+        if ($basePath !== null) {
+            $config['basePath'] = $basePath;
+        }
 
         if ($aliases) {
             $config['aliases'] = $aliases;
@@ -1118,13 +1136,14 @@ class Plugins extends Component
      *
      * It will also set the $class variable to the primary Plugin class, if it can isn't set already and the class can be found.
      *
-     * @param string  $handle   The plugin handle
-     * @param array   $composer The Composer config
-     * @param boolean &$class   The Plugin class name
+     * @param string  $handle    The plugin handle
+     * @param array   $composer  The Composer config
+     * @param boolean &$class    The Plugin class name
+     * @param boolean &$basePath The plugin's base path
      *
      * @return array|null
      */
-    private function _generateDefaultAliasesFromComposer($handle, array $composer, &$class)
+    private function _generateDefaultAliasesFromComposer($handle, array $composer, &$class, &$basePath)
     {
         if (empty($composer['autoload']['psr-4'])) {
             return null;
@@ -1151,6 +1170,19 @@ class Plugins extends Component
             // If we're still looking for the primary Plugin class, see if it's in here
             if ($class === null && is_file($path.DIRECTORY_SEPARATOR.'Plugin.php')) {
                 $class = $namespace.'Plugin';
+            }
+
+            // If we're still looking for the base path but we know the primary Plugin class,
+            // see if the class namespace matches up, and the file is in here.
+            // If so, set the base path to whatever directory contains the plugin class.
+            if ($basePath === null && $class !== null) {
+                $n = strlen($namespace);
+                if (strncmp($namespace, $class, $n) === 0) {
+                    $testClassPath = $path.DIRECTORY_SEPARATOR.str_replace('\\', DIRECTORY_SEPARATOR, substr($class, $n)).'.php';
+                    if (file_exists($testClassPath)) {
+                        $basePath = dirname($testClassPath);
+                    }
+                }
             }
         }
 

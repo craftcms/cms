@@ -8,6 +8,7 @@ Craft CMS 3.0 Working Changelog
 - Craft can now be installed via Composer: `composer require craftcms/craft`.
 - Craft now supports installing plugins via Composer, with the help [Craft CMS Composer Installer](https://github.com/craftcms/composer-installer).
 - Craft now checks for plugin info in a composer.json file, rather than plugin.json, for plugins that were manually installed in craft/plugins/. (See the [Craft CMS Composer Installer](https://github.com/craftcms/composer-installer) readme for details on how the info should be formatted.)
+- Craft now automatically loads the vendor/autoload.php file (if it exists) for plugins that were manually installed.
 - Added the bootstrap/ folder alongside the src/ folder, with new web.php and console.php bootstrap files.
 - Added PostgreSQL support, which can be enabled by setting the ‘driver’ setting in craft/config/db.php to “pgsql”.
 - Added the ‘update/run-pending-migrations’ controller action, which can be used as a post-deploy hook for deployment services like DeployBot, to get Craft to automatically run any pending migrations, minimizing site downtime.

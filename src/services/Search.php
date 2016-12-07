@@ -75,6 +75,7 @@ class Search extends Component
      * @param ElementInterface $element
      *
      * @return boolean Whether the indexing was a success.
+     * @throws \craft\errors\SiteNotFoundException
      */
     public function indexElementAttributes(ElementInterface $element)
     {
@@ -105,6 +106,7 @@ class Search extends Component
      * @param array   $fields    The field values, indexed by field ID.
      *
      * @return boolean  Whether the indexing was a success.
+     * @throws \craft\errors\SiteNotFoundException
      */
     public function indexElementFields($elementId, $siteId, $fields)
     {
@@ -243,6 +245,7 @@ class Search extends Component
      * @param string       $dirtyKeywords
      *
      * @return void
+     * @throws \craft\errors\SiteNotFoundException
      */
     private function _indexElementKeywords($elementId, $attribute, $fieldId, $siteId, $dirtyKeywords)
     {
@@ -294,7 +297,7 @@ class Search extends Component
         $keywordColumns = ['keywords' => $cleanKeywords];
 
         // PostgreSQL?
-        if (Craft::$app->getDb()->getDriverName() == Connection::DRIVER_PGSQL) {
+        if (Craft::$app->getDb()->getDriverName() === Connection::DRIVER_PGSQL) {
             $keywordColumns['keywords_vector'] = $cleanKeywords;
         }
 
@@ -350,10 +353,9 @@ class Search extends Component
      */
     private function _scoreTerm($term, $row, $weight = 1)
     {
-        // Skip these terms: siteId and exact filtering is just that, no weighted search applies since all elements will
+        // Skip these terms: exact filtering is just that, no weighted search applies since all elements will
         // already apply for these filters.
         if (
-            $term->attribute == 'site' ||
             $term->exact ||
             !($keywords = $this->_normalizeTerm($term->term))
         ) {
@@ -366,7 +368,7 @@ class Search extends Component
         }
 
         if (!$term->subRight) {
-            $keywords = $keywords.' ';
+            $keywords .= ' ';
         }
 
         // Get haystack and safe word count
@@ -378,7 +380,7 @@ class Search extends Component
 
         if ($score) {
             // Exact match
-            if (trim($keywords) == trim($haystack)) {
+            if (trim($keywords) === trim($haystack)) {
                 $mod = 100;
             } // Don't scale up for substring matches
             else if ($term->subLeft || $term->subRight) {
@@ -443,8 +445,9 @@ class Search extends Component
      * @param integer|null $siteId
      *
      * @return string|false
+     * @throws \Exception
      */
-    private function _processTokens($tokens = [], $inclusive = true, $siteId = null)
+    private function _processTokens(array $tokens = [], $inclusive = true, $siteId = null)
     {
         $andOr = $inclusive ? ' AND ' : ' OR ';
         $where = [];
@@ -464,7 +467,7 @@ class Search extends Component
             } // No SQL but keywords, save them for later
             else if ($keywords) {
                 if ($inclusive) {
-                    if (Craft::$app->getDb()->getDriverName() == Connection::DRIVER_MYSQL) {
+                    if (Craft::$app->getDb()->getDriverName() === Connection::DRIVER_MYSQL) {
                         $keywords = '+'.$keywords;
                     }
                 }
@@ -513,27 +516,6 @@ class Search extends Component
         $keywords = null;
         $driver = Craft::$app->getDb()->getDriverName();
 
-        // Check for site first
-        if ($term->attribute == 'site') {
-            if (is_numeric($term->attribute)) {
-                $siteId = $term->attribute;
-            } else {
-                $site = Craft::$app->getSites()->getSiteByHandle($term->term);
-
-                if (!$site) {
-                    // Fall back to primary site ID if we can't find what they asked for.
-                    $site = Craft::$app->getSites()->getPrimarySite();
-                }
-
-                $siteId = $site->id;
-            }
-            $oper = $term->exclude ? '!=' : '=';
-
-            return [
-                $this->_sqlWhere($siteId, $oper, $term->term), $keywords
-            ];
-        }
-
         // Check for other attributes
         if (!is_null($term->attribute)) {
             // Is attribute a valid fieldId?
@@ -561,8 +543,8 @@ class Search extends Component
             // unless it's meant to search for *anything* (e.g. if they entered 'attribute:*').
             if ($keywords !== '' || $term->subLeft) {
                 // If we're on PostgreSQL and this is a phrase or exact match, we have to special case it.
-                if ($driver == Connection::DRIVER_PGSQL && $term->phrase) {
-                    $sql = $this->_sqlPhraseExactMatch($keywords);
+                if ($driver === Connection::DRIVER_PGSQL && $term->phrase) {
+                    $sql = $this->_sqlPhraseExactMatch($keywords, $term->exact);
                 } else {
 
                     // Create fulltext clause from term
@@ -581,7 +563,7 @@ class Search extends Component
                         }
 
                         // Add quotes for exact match
-                        if ($driver == Connection::DRIVER_MYSQL && StringHelper::contains($keywords, ' ')) {
+                        if ($driver === Connection::DRIVER_MYSQL && StringHelper::contains($keywords, ' ')) {
                             $keywords = '"'.$keywords.'"';
                         }
 
@@ -772,15 +754,17 @@ class Search extends Component
     /**
      * This method will return PostgreSQL specific SQL necessary to find an exact phrase search.
      *
-     * @param string $val The phrase or exact value to search for.
+     * @param string $val   The phrase or exact value to search for.
+     * @param bool   $exact Whether this should be an exact match or not.
      *
      * @return string The SQL to perform the search.
      */
-    private function _sqlPhraseExactMatch($val)
+    private function _sqlPhraseExactMatch($val, $exact = false)
     {
         $ftVal = explode(' ', $val);
         $ftVal = implode(' & ', $ftVal);
-        $likeVal = '%'.$val.'%';
+
+        $likeVal = !$exact ? '%'.$val.'%' : $val;
 
         return sprintf("%s @@ '%s'::tsquery AND %s LIKE '%s'", Craft::$app->getDb()->quoteColumnName('keywords_vector'), $ftVal, Craft::$app->getDb()->quoteColumnName('keywords'), $likeVal);
     }
