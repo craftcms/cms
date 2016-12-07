@@ -1,7 +1,7 @@
 Craft CMS Changelog
 ===================
 
-## [Unreleased] 
+## [v2.6.2953] - 2016-12-07
 
 ### Changed
 - OPcache file caches are row cleared during auto-updates, preventing possible PHP/SQL errors from occurring after the new files have been put in place but before OPcache would have cleared its caches on its own. (This will only take effect in future updates, unfortunately. Servers with OPcache enabled may continue to experience unexpected behaviors while auto-updating until they have updated to this release.)
@@ -5500,7 +5500,7 @@ Craft CMS Changelog
 ### Added
 - Private Beta kickoff!
 
-[Unreleased]: https://github.com/craftcms/craft/compare/2.6.2952...develop
+[v2.6.2953]: https://github.com/craftcms/craft/compare/2.6.2952...2.6.2953
 [v2.6.2952]: https://github.com/craftcms/craft/compare/2.6.2951...2.6.2952
 [v2.6.2951]: https://github.com/craftcms/craft/compare/2.6.2950...2.6.2951
 [v2.6.2950]: https://github.com/craftcms/craft/compare/2.6.2949...2.6.2950
