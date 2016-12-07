@@ -154,7 +154,7 @@ Craft.AssetIndex = Craft.BaseElementIndex.extend(
 
 				for (var i = 0; i < $selected.length; i++)
 				{
-					var	$source = $selected.eq(i).parent();
+					var	$source = $selected.eq(i);
 
 					if (!this._getFolderIdFromSourceKey($source.data('key'))) {
 						continue;
@@ -162,7 +162,7 @@ Craft.AssetIndex = Craft.BaseElementIndex.extend(
 
 					if ($source.hasClass('sel') && this._getSourceLevel($source) > 1)
 					{
-						draggees.push($source[0]);
+						draggees.push($source.parent()[0]);
 					}
 				}
 

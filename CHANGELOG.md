@@ -12,6 +12,7 @@ Craft CMS Changelog
 - Fixed a bug where [IoHelper::getFiles()](https://craftcms.com/classreference/helpers/IOHelper#getFiles-detail) was returning subfolder paths when the `$suppressErrors` argument was `false`.
 - Fixed a bug where [IoHelper::getFiles()](https://craftcms.com/classreference/helpers/IOHelper#getFiles-detail) wasn’t normalizing the returned file paths.
 - Fixed a bug where you would get a MySQL data truncation error if you had a template that used a `{% cache %}` tag and there were more than 250 characters in the request path.
+- Fixed a bug where it was not possible to drag Asset folders.
 
 ## [v2.6.2952] - 2016-11-21
 
