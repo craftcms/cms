@@ -1,4 +1,4 @@
-/*! Craft 3.0.0 - 2016-12-02 */
+/*! Craft 3.0.0 - 2016-12-07 */
 (function($){
 
 // Set all the standard Craft.* stuff
@@ -2067,9 +2067,11 @@ Craft.BaseElementIndex = Garnish.Base.extend(
 
 	updateFixedToolbar: function()
 	{
+		this.updateFixedToolbar._pageHeaderHeight = $('#page-header').outerHeight();
+
 		if (!this.toolbarOffset)
 		{
-			this.toolbarOffset = this.$toolbar.offset().top;
+			this.toolbarOffset = this.$toolbar.offset().top - this.updateFixedToolbar._pageHeaderHeight;
 
 			if (!this.toolbarOffset)
 			{
@@ -2085,6 +2087,7 @@ Craft.BaseElementIndex = Garnish.Base.extend(
 			{
 				this.$elements.css('padding-top', (this.$toolbar.outerHeight() + 24));
 				this.$toolbar.addClass('fixed');
+				this.$toolbar.css('top', this.updateFixedToolbar._pageHeaderHeight);
 			}
 
 			this.$toolbar.css('width', this.$main.width());
@@ -2096,6 +2099,7 @@ Craft.BaseElementIndex = Garnish.Base.extend(
 				this.$toolbar.removeClass('fixed');
 				this.$toolbar.css('width', '');
 				this.$elements.css('padding-top', '');
+				this.$toolbar.css('top', '0');
 			}
 		}
 	},
@@ -15773,8 +15777,9 @@ Craft.Pane = Garnish.Base.extend(
 		this.updateSidebarStyles._styles = {};
 
 		this.updateSidebarStyles._scrollTop = Garnish.$win.scrollTop();
+		this.updateSidebarStyles._pageHeaderHeight = $('#page-header').outerHeight();
 		this.updateSidebarStyles._paneOffset = this.$pane.offset().top + this.$tabsContainer.height();
-		this.updateSidebarStyles._paneHeight = this.$pane.outerHeight() - this.$tabsContainer.height();
+		this.updateSidebarStyles._paneHeight = this.$pane.outerHeight() - this.$tabsContainer.height() - this.updateSidebarStyles._pageHeaderHeight;
 		this.updateSidebarStyles._windowHeight = Garnish.$win.height();
 
 		// Have we scrolled passed the top of the pane?
@@ -15782,7 +15787,7 @@ Craft.Pane = Garnish.Base.extend(
 		{
 			// Set the top position to the difference
 			this.updateSidebarStyles._styles.position = 'fixed';
-			this.updateSidebarStyles._styles.top = '24px';
+			this.updateSidebarStyles._styles.top = (24 + this.updateSidebarStyles._pageHeaderHeight)+'px';
 		}
 		else
 		{

@@ -172,8 +172,9 @@ Craft.Pane = Garnish.Base.extend(
 		this.updateSidebarStyles._styles = {};
 
 		this.updateSidebarStyles._scrollTop = Garnish.$win.scrollTop();
+		this.updateSidebarStyles._pageHeaderHeight = $('#page-header').outerHeight();
 		this.updateSidebarStyles._paneOffset = this.$pane.offset().top + this.$tabsContainer.height();
-		this.updateSidebarStyles._paneHeight = this.$pane.outerHeight() - this.$tabsContainer.height();
+		this.updateSidebarStyles._paneHeight = this.$pane.outerHeight() - this.$tabsContainer.height() - this.updateSidebarStyles._pageHeaderHeight;
 		this.updateSidebarStyles._windowHeight = Garnish.$win.height();
 
 		// Have we scrolled passed the top of the pane?
@@ -181,7 +182,7 @@ Craft.Pane = Garnish.Base.extend(
 		{
 			// Set the top position to the difference
 			this.updateSidebarStyles._styles.position = 'fixed';
-			this.updateSidebarStyles._styles.top = '24px';
+			this.updateSidebarStyles._styles.top = (24 + this.updateSidebarStyles._pageHeaderHeight)+'px';
 		}
 		else
 		{

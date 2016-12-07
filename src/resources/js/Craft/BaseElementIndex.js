@@ -392,9 +392,11 @@ Craft.BaseElementIndex = Garnish.Base.extend(
 
 	updateFixedToolbar: function()
 	{
+		this.updateFixedToolbar._pageHeaderHeight = $('#page-header').outerHeight();
+
 		if (!this.toolbarOffset)
 		{
-			this.toolbarOffset = this.$toolbar.offset().top;
+			this.toolbarOffset = this.$toolbar.offset().top - this.updateFixedToolbar._pageHeaderHeight;
 
 			if (!this.toolbarOffset)
 			{
@@ -410,6 +412,7 @@ Craft.BaseElementIndex = Garnish.Base.extend(
 			{
 				this.$elements.css('padding-top', (this.$toolbar.outerHeight() + 24));
 				this.$toolbar.addClass('fixed');
+				this.$toolbar.css('top', this.updateFixedToolbar._pageHeaderHeight);
 			}
 
 			this.$toolbar.css('width', this.$main.width());
@@ -421,6 +424,7 @@ Craft.BaseElementIndex = Garnish.Base.extend(
 				this.$toolbar.removeClass('fixed');
 				this.$toolbar.css('width', '');
 				this.$elements.css('padding-top', '');
+				this.$toolbar.css('top', '0');
 			}
 		}
 	},
