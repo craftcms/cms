@@ -1,4 +1,4 @@
-/*! Craft  - 2016-11-21 */
+/*! Craft  - 2016-12-07 */
 (function($){
 
 // Set all the standard Craft.* stuff
@@ -2347,7 +2347,7 @@ Craft.BaseElementIndex = Garnish.Base.extend(
 			return false;
 		}
 
-		if (this.$source && this.$source[0] && this.$source[0] == $source[0])
+		if (this.$source && this.$source[0] && this.$source[0] == $source[0] && $source.data('key') == this.sourceKey)
 		{
 			return false;
 		}
@@ -2355,11 +2355,7 @@ Craft.BaseElementIndex = Garnish.Base.extend(
 		this.$source = $source;
 		this.sourceKey = $source.data('key');
 		this.setInstanceState('selectedSource', this.sourceKey);
-
-		if ($source[0] != this.sourceSelect.$selectedItems[0])
-		{
-			this.sourceSelect.selectItem($source);
-		}
+		this.sourceSelect.selectItem($source);
 
 		Craft.cp.updateSidebarMenuLabel();
 
@@ -4972,7 +4968,7 @@ Craft.AssetIndex = Craft.BaseElementIndex.extend(
 
 				for (var i = 0; i < $selected.length; i++)
 				{
-					var $source = $selected.eq(i).parent();
+					var	$source = $selected.eq(i);
 
 					if (!this._getFolderIdFromSourceKey($source.data('key'))) {
 						continue;
@@ -4980,7 +4976,7 @@ Craft.AssetIndex = Craft.BaseElementIndex.extend(
 
 					if ($source.hasClass('sel') && this._getSourceLevel($source) > 1)
 					{
-						draggees.push($source[0]);
+						draggees.push($source.parent()[0]);
 					}
 				}
 
@@ -5453,28 +5449,30 @@ Craft.AssetIndex = Craft.BaseElementIndex.extend(
 		var moveCallback = $.proxy(function(folderDeleteList, changedFolderIds, removeFromTree)
 		{
 			//Move the folders around in the tree
-			var topFolderLi = $();
-			var folderToMove = $();
-			var topMovedFolderId = 0;
+			var $topFolderLi,
+				$folderToMove;
 
 			// Change the folder ids
 			for (var previousFolderId in changedFolderIds)
 			{
-				folderToMove = this._getSourceByFolderId(previousFolderId);
+				$folderToMove = this._getSourceByFolderId(previousFolderId);
 
-				// Change the id and select the containing element as the folder element.
-				folderToMove = folderToMove
-									.attr('data-key', 'folder:' + changedFolderIds[previousFolderId].newId)
-									.data('key', 'folder:' + changedFolderIds[previousFolderId].newId).parent();
+				// Change the folder ID
+				$folderToMove
+					.attr('data-key', 'folder:' + changedFolderIds[previousFolderId].newId)
+					.data('key', 'folder:' + changedFolderIds[previousFolderId].newId);
 
-				if (topFolderLi.length == 0 || topFolderLi.parents().filter(folderToMove).length > 0)
+				// Select the containing element as the folder element
+				$folderToMove = $folderToMove.parent();
+
+				if (!$topFolderLi || $topFolderLi.parents().filter($folderToMove).length > 0)
 				{
-					topFolderLi = folderToMove;
+					$topFolderLi = $folderToMove;
 					topFolderMovedId = changedFolderIds[previousFolderId].newId;
 				}
 			}
 
-			if (topFolderLi.length == 0)
+			if ($topFolderLi.length == 0)
 			{
 				this.setIndexAvailable();
 				this.progressBar.hideProgressBar();
@@ -5483,15 +5481,15 @@ Craft.AssetIndex = Craft.BaseElementIndex.extend(
 				return;
 			}
 
-			var topFolder = topFolderLi.children('a');
+			var topFolder = $topFolderLi.children('a');
 
 			// Now move the uppermost node.
-			var siblings = topFolderLi.siblings('ul, .toggle');
+			var siblings = $topFolderLi.siblings('ul, .toggle');
 			var parentSource = this._getParentSource(topFolder);
 
 			var newParent = this._getSourceByFolderId(targetFolderId);
 			this._prepareParentForChildren(newParent);
-			this._appendSubfolder(newParent, topFolderLi);
+			this._appendSubfolder(newParent, $topFolderLi);
 
 			topFolder.after(siblings);
 
@@ -5598,12 +5596,7 @@ Craft.AssetIndex = Craft.BaseElementIndex.extend(
 			}
 		}
 
-		this.sourceSelect.selectItem($targetSource);
-
-		this.$source = $targetSource;
-		this.sourceKey = $targetSource.data('key');
-		this.setInstanceState('selectedSource', this.sourceKey);
-
+		this.selectSource($targetSource);
 		this.updateElements();
 	},
 
@@ -5678,7 +5671,9 @@ Craft.AssetIndex = Craft.BaseElementIndex.extend(
 	_getFolderIdFromSourceKey: function(sourceKey)
 	{
 		var parts = sourceKey.split(':');
-		if (parts.length > 1 && parts[0] == 'folder') {
+
+		if (parts.length > 1 && parts[0] == 'folder')
+		{
 			return parts[1];
 		}
 

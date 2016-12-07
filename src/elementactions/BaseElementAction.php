@@ -151,7 +151,7 @@ abstract class BaseElementAction extends BaseComponentType implements IElementAc
 	/**
 	 * Sets the message that should be displayed to the user after the action is performed.
 	 *
-	 * @param array The message that should be displayed to the user after the action is performed.
+	 * @param string The message that should be displayed to the user after the action is performed.
 	 *
 	 * @return null
 	 */

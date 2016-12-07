@@ -261,7 +261,7 @@ class Et
 					}
 					else
 					{
-						Craft::log('Error in calling '.$endpointUrl.' Response: '.$response->getBody(), LogLevel::Warning);
+						Craft::log('Error in calling '.$this->_endpoint.' Response: '.$response->getBody(), LogLevel::Warning);
 
 						if (craft()->cache->get('etConnectFailure'))
 						{
@@ -272,7 +272,7 @@ class Et
 				}
 				else
 				{
-					Craft::log('Error in calling '.$endpointUrl.' Response: '.$response->getBody(), LogLevel::Warning);
+					Craft::log('Error in calling '.$this->_endpoint.' Response: '.$response->getBody(), LogLevel::Warning);
 
 					if (craft()->cache->get('etConnectFailure'))
 					{

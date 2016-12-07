@@ -142,7 +142,7 @@ class IOHelper
 	 */
 	public static function getFolders($path, $suppressErrors = false)
 	{
-		$path = static::normalizePathSeparators($path, $suppressErrors);
+		$path = static::normalizePathSeparators($path);
 
 		if (static::folderExists($path, false, $suppressErrors))
 		{
@@ -152,7 +152,7 @@ class IOHelper
 			{
 				foreach ($folders as $key => $folder)
 				{
-					$folders[$key] = static::normalizePathSeparators($folder, $suppressErrors);
+					$folders[$key] = static::normalizePathSeparators($folder);
 				}
 
 				return $folders;
@@ -172,11 +172,22 @@ class IOHelper
 	 */
 	public static function getFiles($path, $suppressErrors = false)
 	{
-		$path = static::normalizePathSeparators($path, $suppressErrors);
+		$path = static::normalizePathSeparators($path);
 
 		if (static::folderExists($path, false, $suppressErrors))
 		{
-			return $suppressErrors ? @glob($path.'*.*') : glob($path.'*');
+			$glob = $suppressErrors ? @glob($path.'*') : glob($path.'*');
+			$files = [];
+
+			foreach ($glob as $file)
+			{
+				if ($suppressErrors ? @is_file($file) : is_file($file))
+				{
+					$files[] = static::normalizePathSeparators($file);
+				}
+			}
+
+			return $files;
 		}
 
 		return false;

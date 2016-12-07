@@ -261,6 +261,7 @@ class InstallService extends BaseApplicationComponent
 	 * Creates the searchindex table.
 	 *
 	 * @return null
+	 * @throws \CDbException
 	 */
 	private function _createSearchIndexTable()
 	{
