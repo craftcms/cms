@@ -1044,7 +1044,7 @@ Voici les paramètres que vous avez utilisés :
 	'The file system path “{folder}” set for this source does not exist.' => 'Le chemin d’accès “{folder}” défini pour cet emplacement n’existe pas.',
 	'The file to be replaced cannot be found.' => 'Le fichier à remplacer est introuvable.',
 	'The file upload was cancelled.' => 'Le téléchargement du fichier a été annulé.',
-	'The file “{name}” does not appear to be an image.' => 'Le fichier « {name} » seble être une image.',
+	'The file “{name}” does not appear to be an image.' => 'Le fichier « {name} » ne semble pas être une image.',
 	'The folder “{folder}” cannot be read.' => 'Le dossier « {folder} » ne peut pas être lu.',
 	'The folder “{folder}” does not exist.' => 'Le dossier « {folder} » n’existe pas.',
 	'The folder “{folder}” is not writable.' => 'Le dossier « {folder} » n’est pas inscriptible.',
