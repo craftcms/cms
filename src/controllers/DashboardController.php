@@ -376,6 +376,8 @@ class DashboardController extends Controller
                     // Grab it all.
                     try {
                         $logFiles = FileHelper::findFiles($logPath, [
+                            'only' => ['*.log'],
+                            'except' => ['web-404s.log'],
                             'recursive' => false
                         ]);
                     } catch (ErrorException $e) {
