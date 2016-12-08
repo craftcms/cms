@@ -271,6 +271,7 @@ Craft CMS 3.0 Working Changelog
 - Removed events\EntryDeleteEvent.
 - Removed events\UserEvent.
 - Removed helpers\Io.
+- Removed log\EmailTarget.
 - Removed io\BaseIO.
 - Removed io\File.
 - Removed io\Folder.
