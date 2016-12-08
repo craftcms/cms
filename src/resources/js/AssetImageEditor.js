@@ -151,7 +151,9 @@ Craft.AssetImageEditor = Garnish.Modal.extend(
 
 				this.image.set({
 					originX: 'center',
-					originY: 'center'
+					originY: 'center',
+					left: this.editorWidth / 2,
+					top: this.editorHeight / 2
 				});
 
 				this.canvas.add(this.image);
@@ -216,9 +218,10 @@ Craft.AssetImageEditor = Garnish.Modal.extend(
 		 */
 		_repositionEditorElements: function () {
 
-			if (this.currentView == 'crop') {
-				var previousDimensions = this.getScaledImageDimensions();
-			}
+			var previousEditorDimensions = {
+				width: this.editorWidth,
+				height: this.editorHeight
+			};
 
 			this.editorHeight = this.$editorContainer.innerHeight();
 			this.editorWidth = this.$editorContainer.innerWidth();
@@ -238,17 +241,21 @@ Craft.AssetImageEditor = Garnish.Modal.extend(
 			}
 
 			this._calculateViewportMask();
-			this._setImagePosition();
+			this._setImagePosition(previousEditorDimensions);
 			this._zoomImage();
 
 			this.renderImage();
 		},
 
-		_setImagePosition: function () {
-			// TODO take into account crop performed
+		/**
+		 * Set the image position based on how the editor has changed
+		 * @param previousEditorDimensions
+		 * @private
+		 */
+		_setImagePosition: function (previousEditorDimensions) {
 			this.image.set({
-				left: this.editorWidth / 2,
-				top: this.editorHeight / 2
+				left: this.image.left - (previousEditorDimensions.width - this.editorWidth) / 2,
+				top: this.image.top - (previousEditorDimensions.height - this.editorHeight) / 2
 			});
 		},
 
@@ -390,6 +397,7 @@ Craft.AssetImageEditor = Garnish.Modal.extend(
 			} else {
 				this.disableSlider();
 			}
+
 			this.updateSizeAndPosition();
 
 			if (this.currentView == 'crop' && view != 'crop') {
@@ -652,6 +660,10 @@ Craft.AssetImageEditor = Garnish.Modal.extend(
 		},
 
 		onFadeOut: function () {
+			this.removeListener(this.$croppingCanvas, 'mousemove', this._handleMouseMove.bind(this));
+			this.removeListener(this.$croppingCanvas, 'mousedown', this._handleMouseDown.bind(this));
+			this.removeListener(this.$croppingCanvas, 'mouseup', this._handleMouseUp.bind(this));
+			this.removeListener(this.$croppingCanvas, 'mouseout', function (ev) {this._handleMouseUp(ev); this._handleMouseMove(ev);}.bind(this));
 			this.destroy();
 		},
 
@@ -693,6 +705,7 @@ Craft.AssetImageEditor = Garnish.Modal.extend(
 		},
 
 		disableCropMode: function () {
+
 			this._setImageMode('regular');
 		},
 
@@ -702,6 +715,10 @@ Craft.AssetImageEditor = Garnish.Modal.extend(
 
 				var imageDimensions = this.getScaledImageDimensions();
 				var viewportDimensions = $.extend({}, imageDimensions);
+				var imageCoords = {
+					left: this.editorWidth / 2,
+					top: this.editorHeight / 2
+				}
 
 				if (mode == 'crop') {
 					this.zoomRatio = this.getZoomToFitRatio(imageDimensions);
@@ -714,16 +731,29 @@ Craft.AssetImageEditor = Garnish.Modal.extend(
 						this._showCropper();
 					}.bind(this);
 				} else {
+					this._hideCropper();
+
+					clipperDeltaX = this.clipper.left - this.image.left;
+					clipperDeltaY = this.clipper.top - this.image.top;
+
+					// Currently the image is zoomed out, but we're going all the way to being zoomed in
+					imageDeltaX = clipperDeltaX * this.getCombinedZoomRatio(imageDimensions);
+					imageDeltaY = clipperDeltaY * this.getCombinedZoomRatio(imageDimensions);
+
 					this.zoomRatio = this.getZoomToCoverRatio(imageDimensions);
-					var callback = function () {
-						this.updateSizeAndPosition();
-						this._hideCropper();
-					}.bind(this);
+					imageCoords.left = (this.editorWidth / 2) - imageDeltaX;
+					imageCoords.top = (this.editorHeight / 2) - imageDeltaY;
+
+					viewportDimensions.height = this.clipper.height * this.getCombinedZoomRatio(imageDimensions);
+					viewportDimensions.width = this.clipper.width * this.getCombinedZoomRatio(imageDimensions);
+					var callback = $.noop;
 				}
 
 				this.image.animate({
 					width: imageDimensions.width * this.zoomRatio,
 					height: imageDimensions.height * this.zoomRatio,
+					left: imageCoords.left,
+					top: imageCoords.top
 				}, {
 					onChange: this.canvas.renderAll.bind(this.canvas),
 					duration: this.settings.animationDuration,
@@ -816,6 +846,7 @@ Craft.AssetImageEditor = Garnish.Modal.extend(
 			this.addListener(this.$croppingCanvas, 'mousemove', this._handleMouseMove.bind(this));
 			this.addListener(this.$croppingCanvas, 'mousedown', this._handleMouseDown.bind(this));
 			this.addListener(this.$croppingCanvas, 'mouseup', this._handleMouseUp.bind(this));
+			this.addListener(this.$croppingCanvas, 'mouseout', function (ev) {this._handleMouseUp(ev); this._handleMouseMove(ev);}.bind(this));
 		},
 
 		_hideCropper: function () {
@@ -827,6 +858,8 @@ Craft.AssetImageEditor = Garnish.Modal.extend(
 				this.removeListener(this.$croppingCanvas, 'mousemove', this._handleMouseMove.bind(this));
 				this.removeListener(this.$croppingCanvas, 'mousedown', this._handleMouseDown.bind(this));
 				this.removeListener(this.$croppingCanvas, 'mouseup', this._handleMouseUp.bind(this));
+				this.removeListener(this.$croppingCanvas, 'mouseout', function (ev) {this._handleMouseUp(ev); this._handleMouseMove(ev);}.bind(this));
+
 				this.croppingCanvas = null;
 				this.renderCropper = null;
 			}
@@ -1037,6 +1070,10 @@ Craft.AssetImageEditor = Garnish.Modal.extend(
 				this.previousMouseX = ev.pageX;
 				this.previousMouseY = ev.pageY;
 				this._calculateCropperBoundaries();
+				clipperDeltaX = this.clipper.left - this.image.left;
+				clipperDeltaY = this.clipper.top - this.image.top;
+				console.log(clipperDeltaX + ' - ' + clipperDeltaY);
+
 				this.renderCropper();
 			} else {
 				this._setMouseCursor(ev);
@@ -1073,6 +1110,7 @@ Craft.AssetImageEditor = Garnish.Modal.extend(
 				left: this.clipper.left + deltaX,
 				top: this.clipper.top + deltaY
 			});
+
 		},
 
 		_handleCropperScale: function (ev) {
