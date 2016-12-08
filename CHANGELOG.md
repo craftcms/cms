@@ -1,6 +1,11 @@
 Craft CMS Changelog
 ===================
 
+## [v2.6.2954] - 2016-12-07
+
+### Fixed
+- Fixed a PHP error that occurred on servers running PHP 5.3.
+
 ## [v2.6.2953] - 2016-12-07
 
 ### Changed
@@ -5500,6 +5505,7 @@ Craft CMS Changelog
 ### Added
 - Private Beta kickoff!
 
+[v2.6.2954]: https://github.com/craftcms/craft/compare/2.6.2953...2.6.2954
 [v2.6.2953]: https://github.com/craftcms/craft/compare/2.6.2952...2.6.2953
 [v2.6.2952]: https://github.com/craftcms/craft/compare/2.6.2951...2.6.2952
 [v2.6.2951]: https://github.com/craftcms/craft/compare/2.6.2950...2.6.2951

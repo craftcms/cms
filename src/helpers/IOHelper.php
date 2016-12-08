@@ -177,7 +177,7 @@ class IOHelper
 		if (static::folderExists($path, false, $suppressErrors))
 		{
 			$glob = $suppressErrors ? @glob($path.'*') : glob($path.'*');
-			$files = [];
+			$files = array();
 
 			foreach ($glob as $file)
 			{
