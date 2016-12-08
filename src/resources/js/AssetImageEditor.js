@@ -55,7 +55,7 @@ Craft.AssetImageEditor = Garnish.Modal.extend(
 		cropData: {},
 		editorHeight: 0,
 		editorWidth: 0,
-		isCroppingPerformed: false,
+		cropperState: false,
 
 		// Misc
 		renderImage: null,
@@ -388,6 +388,7 @@ Craft.AssetImageEditor = Garnish.Modal.extend(
 		},
 
 		showView: function (view) {
+			this.onBeforeViewChange(view);
 			this.$views.addClass('hidden');
 			var $view = this.$views.filter('[data-view="' + view + '"]');
 			$view.removeClass('hidden');
@@ -407,6 +408,24 @@ Craft.AssetImageEditor = Garnish.Modal.extend(
 			}
 
 			this.currentView = view;
+		},
+
+		onBeforeViewChange: function (view) {
+			if (this.currentView == 'crop' && view != 'crop') {
+				this.storeCropperState();
+			}
+		},
+
+		storeCropperState: function () {
+			this.cropperState = {
+				clipperData: {
+					deltaX: this.clipper.left - this.image.left,
+					deltaY: this.clipper.top - this.image.top,
+					height: this.clipper.height,
+					width: this.clipper.width
+				},
+				imageArea: this._getImageOccupiedArea()
+			};
 		},
 
 		/**
@@ -544,10 +563,6 @@ Craft.AssetImageEditor = Garnish.Modal.extend(
 				for (var option in filterOptions) {
 					postData['filterOptions[' + option + ']'] = encodeURIComponent(filterOptions[option]);
 				}
-			}
-
-			if (this.isCroppingPerformed) {
-				postData.cropData = this.cropData;
 			}
 
 			Craft.postActionRequest('assets/save-image', postData, function (data) {
@@ -726,26 +741,45 @@ Craft.AssetImageEditor = Garnish.Modal.extend(
 						width: this.editorWidth,
 						height: this.editorHeight
 					};
+
 					var callback = function () {
 						this._setImageVerticeCoordinates();
-						this._showCropper();
+
+						// Restore cropper
+						var clipperData = null;
+						if (this.cropperState) {
+							var state = this.cropperState;
+							var currentArea = this._getImageOccupiedArea();
+							var areaFactor = currentArea.width / state.imageArea.width;
+
+							// Restore based on the stored offset and multiply by area factor.
+							// This is needed if the editor was resized inbetween storing and restoring the cropper
+							clipperData = {
+								left: this.image.left + (state.clipperData.deltaX * areaFactor),
+								top: this.image.top + (state.clipperData.deltaY * areaFactor),
+								width: state.clipperData.width * areaFactor,
+								height: state.clipperData.height * areaFactor
+							}
+						}
+						this._showCropper(clipperData);
 					}.bind(this);
 				} else {
 					this._hideCropper();
+					this.zoomRatio = this.getZoomToCoverRatio(imageDimensions);
 
+					// Currently the image is zoomed out, so we have to calcualate what the offset is going to be
+					// after it is zoomed in.
 					clipperDeltaX = this.clipper.left - this.image.left;
 					clipperDeltaY = this.clipper.top - this.image.top;
-
-					// Currently the image is zoomed out, but we're going all the way to being zoomed in
 					imageDeltaX = clipperDeltaX * this.getCombinedZoomRatio(imageDimensions);
 					imageDeltaY = clipperDeltaY * this.getCombinedZoomRatio(imageDimensions);
-
-					this.zoomRatio = this.getZoomToCoverRatio(imageDimensions);
 					imageCoords.left = (this.editorWidth / 2) - imageDeltaX;
 					imageCoords.top = (this.editorHeight / 2) - imageDeltaY;
 
+					// Calculate the cropper dimensions after all the zoomage
 					viewportDimensions.height = this.clipper.height * this.getCombinedZoomRatio(imageDimensions);
 					viewportDimensions.width = this.clipper.width * this.getCombinedZoomRatio(imageDimensions);
+
 					var callback = $.noop;
 				}
 
@@ -773,73 +807,8 @@ Craft.AssetImageEditor = Garnish.Modal.extend(
 			}
 		},
 
-		applyCrop: function () {
-
-			var clipperWidth = this.clipper.width;
-			var clipperHeight = this.clipper.height;
-
-			// Compensate for frame stroke thickness
-			var clipperCenter = {
-				x: this.clipper.left + (clipperWidth / 2) + 2,
-				y: this.clipper.top + (clipperHeight / 2) + 2,
-			};
-
-
-			var deltaX = clipperCenter.x - this.editorWidth / 2;
-			var deltaY = clipperCenter.y - this.editorHeight / 2;
-
-			// Morph the viewport to match the clipper
-			this.viewportMask.animate({
-				width: clipperWidth,
-				height: clipperHeight
-			}, {
-				duration: this.settings.animationDuration
-			});
-
-			this.image.animate({
-				left: this.image.left - deltaX,
-				top: this.image.top - deltaY
-			}, {
-				onComplete: function () {
-					$('.rotation-tools, .filter-tools', this.$tools).removeClass('disabled');
-					$('.cropping-tools .crop-mode-enabled', this.$tools).addClass('hidden');
-					$('.cropping-tools .crop-mode-disabled', this.$tools).removeClass('hidden');
-				}.bind(this),
-				onChange: this.canvas.renderAll.bind(this.canvas),
-				duration: this.settings.animationDuration
-			});
-
-			this.hideCropper();
-
-			var leftOffset;
-			var topOffset;
-
-			// If the image has not been straightened, then we probably have some
-			// space on top/bottom or left/right edges.
-			if (this.imageStraightenAngle == 0) {
-				var leftOffset = Math.round((this.editorWidth - this.image.width) / 2);
-				var topOffset = Math.round((this.editorHeight - this.image.height) / 2);
-			} else {
-				var leftOffset = 0;
-				var topOffset = 0;
-			}
-
-			// When passing along the coordinates, take into account the possible excess space on edge of editor
-			this.cropData = {
-				width: this.clipper.width,
-				height: this.clipper.height,
-				cornerLeft: Math.max(Math.round(this.clipper.left - leftOffset - this.imageVerticeCoords.c.x), 0),
-				cornerTop: Math.max(Math.round(this.clipper.top - topOffset - this.imageVerticeCoords.d.y), 0),
-				scaledWidth: this.image.width,
-				scaledHeight: this.image.height,
-				zoomRatio: this.getZoomToFitRatio()
-			};
-
-			this.isCroppingPerformed = true;
-		},
-
-		_showCropper: function () {
-			this._drawCropper();
+		_showCropper: function (clipperData) {
+			this._drawCropper(clipperData);
 			this._calculateCropperBoundaries();
 			this.renderCropper();
 
@@ -865,7 +834,7 @@ Craft.AssetImageEditor = Garnish.Modal.extend(
 			}
 		},
 
-		_drawCropper: function () {
+		_drawCropper: function (clipperData) {
 			this.croppingCanvas = new fabric.StaticCanvas('cropping-canvas', {
 				backgroundColor: 'rgba(0,0,0,0)',
 				hoverCursor: 'default',
@@ -899,12 +868,6 @@ Craft.AssetImageEditor = Garnish.Modal.extend(
 				fill: 'rgba(0,0,0,0.4)'
 			});
 
-			this.croppingShade.set({
-				hasBorders: false,
-				hasControls: false,
-				selectable: false
-			});
-
 			// calculate the cropping rectangle size.
 			var imageDimensions = this.getScaledImageDimensions();
 			var rectangleRatio = this.imageStraightenAngle == 0 ? 1.2 : this.getCombinedZoomRatio(imageDimensions) * 1.2,
@@ -927,11 +890,12 @@ Craft.AssetImageEditor = Garnish.Modal.extend(
 				height: rectHeight,
 				stroke: 'black',
 				fill: 'rgba(128,0,0,1)',
-				strokeWidth: 0,
-				hasBorders: false,
-				hasControls: false,
-				selectable: false
+				strokeWidth: 0
 			});
+
+			if (clipperData) {
+				this.clipper.set(clipperData);
+			}
 
 			this.clipper.globalCompositeOperation = 'destination-out';
 			this.croppingCanvas.add(this.croppingShade);
@@ -1072,7 +1036,6 @@ Craft.AssetImageEditor = Garnish.Modal.extend(
 				this._calculateCropperBoundaries();
 				clipperDeltaX = this.clipper.left - this.image.left;
 				clipperDeltaY = this.clipper.top - this.image.top;
-				console.log(clipperDeltaX + ' - ' + clipperDeltaY);
 
 				this.renderCropper();
 			} else {
