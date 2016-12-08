@@ -33,7 +33,15 @@
     "league/flysystem-ziparchive": "1.0.2",
     "php-http/guzzle6-adapter": "1.1.1",
     "mikehaertl/php-shellcommand": "1.2.2",
-    "twig/twig": "1.28.2"
+    "twig/twig": "1.28.2",
+    "bower-asset/d3": "3.5.17",
+    "bower-asset/element-resize-detector": "1.1.9",
+    "bower-asset/garnishjs": "0.1.8",
+    "bower-asset/jquery.payment": "3.0.0",
+    "bower-asset/picturefill": "3.0.2",
+    "bower-asset/selectize": "0.12.4",
+    "bower-asset/timepicker": "1.11.8",
+    "bower-asset/velocity": "1.4.0"
   },
   "autoload": {
     "psr-4": {

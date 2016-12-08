@@ -9,6 +9,7 @@ namespace craft\web\assets;
 
 use Craft;
 use yii\web\AssetBundle;
+use yii\web\JqueryAsset;
 
 /**
  * Application asset bundle.
@@ -24,7 +25,14 @@ class AppAsset extends AssetBundle
      * @inheritdoc
      */
     public $depends = [
-        \yii\web\JqueryAsset::class,
+        D3Asset::class,
+        ElementResizeDetectorAsset::class,
+        GarnishAsset::class,
+        JqueryAsset::class,
+        JqueryTouchEventsAsset::class,
+        PicturefillAsset::class,
+        SelectizeAsset::class,
+        VelocityAsset::class,
     ];
 
     /**
@@ -33,7 +41,6 @@ class AppAsset extends AssetBundle
     public $css = [
         'css/craft.css',
         'css/charts.css',
-        'lib/selectize/selectize.css',
     ];
 
     /**
@@ -111,15 +118,8 @@ class AppAsset extends AssetBundle
         $this->js[] = "lib/d3-i18n/{$d3Language}.js";
 
         $this->js = array_merge($this->js, [
-            'lib/velocity'.($useCompressedJs ? '.min' : '').'.js',
-            'lib/selectize/selectize'.($useCompressedJs ? '.min' : '').'.js',
             'lib/fileupload/jquery.ui.widget.js',
-            'lib/jquery.mobile-events'.($useCompressedJs ? '.min' : '').'.js',
             'lib/fileupload/jquery.fileupload.js',
-            'lib/picturefill'.($useCompressedJs ? '.min' : '').'.js',
-            'lib/element-resize-detector'.($useCompressedJs ? '.min' : '').'.js',
-            'lib/garnish'.($useCompressedJs ? '.min' : '').'.js',
-            'lib/d3/d3'.($useCompressedJs ? '.min' : '').'.js',
             'js/'.($useCompressedJs ? 'compressed/' : '').'Craft.js',
         ]);
     }
