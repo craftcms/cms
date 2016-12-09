@@ -42,6 +42,7 @@ class UpdateController extends Controller
      * @inheritdoc
      */
     protected $allowAnonymous = [
+        'go',
         'prepare',
         'backup-database',
         'update-database',
