@@ -259,19 +259,7 @@ JS;
         }
 
         if ($manual) {
-            if ($this->_shouldBackupDb()) {
-                return $this->asJson([
-                    'nextStatus' => Craft::t('app', 'Backing-up database…'),
-                    'nextAction' => 'update/backup-database',
-                    'data' => $data
-                ]);
-            }
-
-            return $this->asJson([
-                'nextStatus' => Craft::t('app', 'Updating database…'),
-                'nextAction' => 'update/update-database',
-                'data' => $data
-            ]);
+            return $this->_getFirstDbUpdateResponse($data);
         }
 
         $data['md5'] = Craft::$app->getSecurity()->hashData($return['md5']);
@@ -420,11 +408,7 @@ JS;
             ]);
         }
 
-        return $this->asJson([
-            'nextStatus' => Craft::t('app', 'Backing-up database…'),
-            'nextAction' => 'update/backup-database',
-            'data' => $data
-        ]);
+        return $this->_getFirstDbUpdateResponse($data);
     }
 
     /**
@@ -440,7 +424,7 @@ JS;
         $data = Craft::$app->getRequest()->getRequiredBodyParam('data');
         $handle = $this->_getFixedHandle($data);
 
-        if ($this->_shouldBackupDb()) {
+        if (true || $this->_shouldBackupDb()) {
             if ($handle !== 'craft') {
                 /** @var Plugin $plugin */
                 $plugin = Craft::$app->getPlugins()->getPlugin($handle);
@@ -760,5 +744,31 @@ JS;
         $config = Craft::$app->getConfig();
 
         return ($config->get('backupOnUpdate') && $config->get('backupCommand') !== false);
+    }
+
+    /**
+     * Returns the response to initiate the first "update database" step (either backup or update).
+     *
+     * @param array $data
+     *
+     * @return Response
+     */
+    private function _getFirstDbUpdateResponse($data)
+    {
+        if ($this->_shouldBackupDb()) {
+            $response = [
+                'nextStatus' => Craft::t('app', 'Backing-up database…'),
+                'nextAction' => 'update/backup-database',
+                'data' => $data
+            ];
+        } else {
+            $response = [
+                'nextStatus' => Craft::t('app', 'Updating database…'),
+                'nextAction' => 'update/update-database',
+                'data' => $data
+            ];
+        }
+
+        return $this->asJson($response);
     }
 }
