@@ -641,7 +641,7 @@ JS;
             $config = Craft::$app->getConfig();
 
             // See if we're allowed to backup the database.
-            if ($config->get('backupOnUpdate') && $config->get('backupCommand') !== false) {
+            if ($this->_shouldBackupDb()) {
                 // DO it.
                 $return = $updatesService->backupDatabase();
 
