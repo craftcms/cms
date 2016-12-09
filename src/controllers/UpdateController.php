@@ -105,9 +105,30 @@ JS;
      */
     public function actionGo($handle)
     {
-        return $this->renderTemplate('_special/updates/go', [
-            'handle' => $handle
+        $this->getView()->registerCssResource('css/update.css');
+        $this->getView()->registerJsResource('js/Updater.js');
+
+        $this->getView()->registerTranslations('app', [
+            'Unable to determine what to update.',
+            'An unknown error occurred. Rolling back…',
+            'All done!',
+            'Craft CMS was unable to install this update :(',
+            'The site has been restored to the state it was in before the attempted update.',
+            'An error has occurred.  Please contact {email}.',
+            'No files have been updated and the database has not been touched.',
         ]);
+
+        $dataJs = Json::encode([
+            'handle' => Craft::$app->getSecurity()->hashData($handle),
+	        'manualUpdate' => (Craft::$app->getRequest()->getSegment(1) == 'manualupdate') ? 1 : 0
+        ]);
+        $js = <<<JS
+new Craft.Updater({$dataJs});
+JS;
+
+        $this->getView()->registerJs($js);
+
+        return $this->renderTemplate('_special/updates/go');
     }
 
     // Auto Updates
@@ -217,7 +238,6 @@ JS;
 
             if (!Craft::$app->getConfig()->allowAutoUpdates()) {
                 return $this->asJson([
-                    'alive' => true,
                     'errorDetails' => Craft::t('app', 'Auto-updating is disabled on this system.'),
                     'finished' => true
                 ]);
@@ -231,29 +251,34 @@ JS;
 
         if (!$return['success']) {
             return $this->asJson([
-                'alive' => true,
                 'errorDetails' => $return['message'],
                 'finished' => true
             ]);
         }
 
         if ($manual) {
-            return $this->asJson([
-                'alive' => true,
-                'nextStatus' => Craft::t('app', 'Backing-up database…'),
-                'nextAction' => 'update/backup-database',
-                'data' => $data
-            ]);
-        } else {
-            $data['md5'] = Craft::$app->getSecurity()->hashData($return['md5']);
+            if ($this->_shouldBackupDb()) {
+                return $this->asJson([
+                    'nextStatus' => Craft::t('app', 'Backing-up database…'),
+                    'nextAction' => 'update/backup-database',
+                    'data' => $data
+                ]);
+            }
 
             return $this->asJson([
-                'alive' => true,
-                'nextStatus' => Craft::t('app', 'Downloading update…'),
-                'nextAction' => 'update/process-download',
+                'nextStatus' => Craft::t('app', 'Updating database…'),
+                'nextAction' => 'update/update-database',
                 'data' => $data
             ]);
         }
+
+        $data['md5'] = Craft::$app->getSecurity()->hashData($return['md5']);
+
+        return $this->asJson([
+            'nextStatus' => Craft::t('app', 'Downloading update…'),
+            'nextAction' => 'update/process-download',
+            'data' => $data
+        ]);
     }
 
     /**
@@ -272,7 +297,6 @@ JS;
 
         if (!Craft::$app->getConfig()->allowAutoUpdates()) {
             return $this->asJson([
-                'alive' => true,
                 'errorDetails' => Craft::t('app', 'Auto-updating is disabled on this system.'),
                 'finished' => true
             ]);
@@ -291,7 +315,6 @@ JS;
 
         if (!$return['success']) {
             return $this->asJson([
-                'alive' => true,
                 'errorDetails' => $return['message'],
                 'finished' => true
             ]);
@@ -303,7 +326,6 @@ JS;
         );
 
         return $this->asJson([
-            'alive' => true,
             'nextStatus' => Craft::t('app', 'Backing-up files…'),
             'nextAction' => 'update/backup-files',
             'data' => $data
@@ -326,7 +348,6 @@ JS;
 
         if (!Craft::$app->getConfig()->allowAutoUpdates()) {
             return $this->asJson([
-                'alive' => true,
                 'errorDetails' => Craft::t('app', 'Auto-updating is disabled on this system.'),
                 'finished' => true
             ]);
@@ -345,14 +366,12 @@ JS;
 
         if (!$return['success']) {
             return $this->asJson([
-                'alive' => true,
                 'errorDetails' => $return['message'],
                 'finished' => true
             ]);
         }
 
         return $this->asJson([
-            'alive' => true,
             'nextStatus' => Craft::t('app', 'Updating files…'),
             'nextAction' => 'update/update-files',
             'data' => $data
@@ -375,7 +394,6 @@ JS;
 
         if (!Craft::$app->getConfig()->allowAutoUpdates()) {
             return $this->asJson([
-                'alive' => true,
                 'errorDetails' => Craft::t('app', 'Auto-updating is disabled on this system.'),
                 'finished' => true
             ]);
@@ -394,15 +412,13 @@ JS;
 
         if (!$return['success']) {
             return $this->asJson([
-                'alive' => true,
                 'errorDetails' => $return['message'],
-                'nextStatus' => Craft::t('app', 'An error was encountered. Rolling back…'),
+                'nextStatus' => Craft::t('app', 'An error occurred. Rolling back…'),
                 'nextAction' => 'update/rollback'
             ]);
         }
 
         return $this->asJson([
-            'alive' => true,
             'nextStatus' => Craft::t('app', 'Backing-up database…'),
             'nextAction' => 'update/backup-database',
             'data' => $data
@@ -422,9 +438,7 @@ JS;
         $data = Craft::$app->getRequest()->getRequiredBodyParam('data');
         $handle = $this->_getFixedHandle($data);
 
-        $config = Craft::$app->getConfig();
-
-        if ($config->get('backupOnUpdate') && $config->get('backupCommand') !== false) {
+        if ($this->_shouldBackupDb()) {
             if ($handle !== 'craft') {
                 /** @var Plugin $plugin */
                 $plugin = Craft::$app->getPlugins()->getPlugin($handle);
@@ -436,10 +450,19 @@ JS;
 
                 if (!$return['success']) {
                     return $this->asJson([
-                        'alive' => true,
-                        'errorDetails' => $return['message'],
-                        'nextStatus' => Craft::t('app', 'An error was encountered. Rolling back…'),
-                        'nextAction' => 'update/rollback'
+                        'nextStatus' => Craft::t('app', 'Couldn’t backup the database. How would you like to proceed?'),
+                        'junction' => [
+                            [
+                                'label' => Craft::t('app', 'Cancel the update'),
+                                'nextStatus' => Craft::t('app', 'Rolling back…'),
+                                'nextAction' => 'update/rollback'
+                            ],
+                            [
+                                'label' => Craft::t('app', 'Continue anyway'),
+                                'nextStatus' => Craft::t('app', 'Updating database…'),
+                                'nextAction' => 'update/update-database'
+                            ],
+                        ]
                     ]);
                 }
 
@@ -450,7 +473,6 @@ JS;
         }
 
         return $this->asJson([
-            'alive' => true,
             'nextStatus' => Craft::t('app', 'Updating database…'),
             'nextAction' => 'update/update-database',
             'data' => $data
@@ -475,7 +497,6 @@ JS;
 
         if (!$return['success']) {
             return $this->asJson([
-                'alive' => true,
                 'errorDetails' => $return['message'],
                 'nextStatus' => Craft::t('app', 'An error was encountered. Rolling back…'),
                 'nextAction' => 'update/rollback'
@@ -483,7 +504,6 @@ JS;
         }
 
         return $this->asJson([
-            'alive' => true,
             'nextStatus' => Craft::t('app', 'Cleaning up…'),
             'nextAction' => 'update/clean-up',
             'data' => $data
@@ -536,7 +556,6 @@ JS;
         }
 
         return $this->asJson([
-            'alive' => true,
             'finished' => true,
             'returnUrl' => $returnUrl
         ]);
@@ -585,7 +604,6 @@ JS;
         }
 
         return $this->asJson([
-            'alive' => true,
             'finished' => true,
             'rollBack' => true
         ]);
@@ -728,5 +746,17 @@ JS;
         }
 
         throw new UpdateValidationException('Could not validate the update handle.');
+    }
+
+    /**
+     * Returns whether the DB should be backed up, per the config.
+     *
+     * @return boolean
+     */
+    private function _shouldBackupDb()
+    {
+        $config = Craft::$app->getConfig();
+
+        return ($config->get('backupOnUpdate') && $config->get('backupCommand') !== false);
     }
 }
