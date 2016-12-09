@@ -6,6 +6,7 @@ Craft CMS Changelog
 ### Fixed
 
 - Fixed a bug where Craft would sometimes ignore the [maxCachedCloudImageSize](https://craftcms.com/docs/config-settings#maxCachedCloudImageSize) config setting.
+- Fixed a bug where some messages on the self-update page were not getting translated.
 
 ## [v2.6.2954] - 2016-12-07
 
