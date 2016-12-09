@@ -500,7 +500,7 @@ JS;
         if (!$return['success']) {
             return $this->asJson([
                 'errorDetails' => $return['message'],
-                'nextStatus' => Craft::t('app', 'An error was encountered. Rolling back…'),
+                'nextStatus' => Craft::t('app', 'An error occurred. Rolling back…'),
                 'nextAction' => 'update/rollback'
             ]);
         }

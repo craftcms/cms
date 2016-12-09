@@ -24,15 +24,15 @@ Craft.Updater = Garnish.Base.extend(
 		this.postActionRequest('update/prepare');
 	},
 
-	updateStatus: function(msg)
+	updateStatus: function(html)
 	{
-		this.$status.html(msg);
+		this.$status.html(html);
 	},
 
 	showError: function(msg)
 	{
-		this.updateStatus(msg);
 		this.$graphic.addClass('error');
+        this.updateStatus('<p>'+msg+'</p>');
 	},
 
 	postActionRequest: function(action)
@@ -43,13 +43,13 @@ Craft.Updater = Garnish.Base.extend(
 
 		Craft.postActionRequest(action, data, $.proxy(function(response, textStatus, jqXHR)
 		{
-			if (textStatus == 'success' && response.alive)
+			if (textStatus == 'success')
 			{
-				this.onSuccessResponse(response);
+				this.processResponse(response);
 			}
 			else
 			{
-				this.onErrorResponse(jqXHR);
+				this.showFatalError(jqXHR);
 			}
 
 		}, this), {
@@ -57,7 +57,7 @@ Craft.Updater = Garnish.Base.extend(
 		});
 	},
 
-	onSuccessResponse: function(response)
+	processResponse: function(response)
 	{
 		if (response.data)
 		{
@@ -71,7 +71,12 @@ Craft.Updater = Garnish.Base.extend(
 
 		if (response.nextStatus)
 		{
-			this.updateStatus(response.nextStatus);
+			this.updateStatus('<p>'+response.nextStatus+'</p>');
+		}
+
+		if (response.junction)
+		{
+            this.showJunction(response.junction);
 		}
 
 		if (response.nextAction)
@@ -81,21 +86,36 @@ Craft.Updater = Garnish.Base.extend(
 
 		if (response.finished)
 		{
-			var rollBack = false;
-
-			if (response.rollBack)
-			{
-				rollBack = true;
-			}
-
-			this.onFinish(response.returnUrl, rollBack);
+			this.onFinish(response.returnUrl, !!response.rollBack);
 		}
 	},
 
-	onErrorResponse: function(jqXHR)
+	showJunction: function(options)
 	{
 		this.$graphic.addClass('error');
-		var errorText =
+		var $buttonContainer = $('<div id="junction-buttons"/>').appendTo(this.$status);
+
+		for (var i = 0; i < options.length; i++) {
+			var option = options[i],
+				$button = $('<div/>', {
+					'class': 'btn big',
+					text: option.label
+				}).appendTo($buttonContainer);
+
+			this.addListener($button, 'click', option, 'onJunctionSelection');
+		}
+    },
+
+    onJunctionSelection: function(ev)
+	{
+        this.$graphic.removeClass('error');
+		this.processResponse(ev.data);
+	},
+
+	showFatalError: function(jqXHR)
+	{
+		this.$graphic.addClass('error');
+		var statusHtml =
 			'<p>'+Craft.t('app', 'A fatal error has occurred:')+'</p>' +
 			'<div id="error" class="code">' +
 				'<p><strong class="code">'+Craft.t('app', 'Status:')+'</strong> '+Craft.escapeHtml(jqXHR.statusText)+'</p>' +
@@ -113,7 +133,7 @@ Craft.Updater = Garnish.Base.extend(
 				Craft.t('app', 'Send for help') +
 			'</a>';
 
-		this.updateStatus(errorText);
+		this.updateStatus(statusHtml);
 	},
 
 	onFinish: function(returnUrl, rollBack)
@@ -133,11 +153,11 @@ Craft.Updater = Garnish.Base.extend(
 			}
 
 			errorText += this.errorDetails + '</p>';
-			this.updateStatus(errorText);
+			this.updateStatus('<p>'+errorText+'</p>');
 		}
 		else
 		{
-			this.updateStatus(Craft.t('app', 'All done!'));
+			this.updateStatus('<p>'+Craft.t('app', 'All done!')+'</p>');
 			this.$graphic.addClass('success');
 
 			// Redirect to the Dashboard in half a second
