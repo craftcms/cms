@@ -110,11 +110,13 @@ JS;
 
         $this->getView()->registerTranslations('app', [
             'Unable to determine what to update.',
-            'An unknown error occurred. Rolling back…',
+            'A fatal error has occurred:',
+            'Status:',
+            'Response:',
+            'Send for help',
             'All done!',
             'Craft CMS was unable to install this update :(',
             'The site has been restored to the state it was in before the attempted update.',
-            'An error has occurred.  Please contact {email}.',
             'No files have been updated and the database has not been touched.',
         ]);
 
