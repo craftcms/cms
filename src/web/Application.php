@@ -568,7 +568,9 @@ class Application extends \yii\web\Application
         ) {
             // If this is a request to actually manually update Craft, do it
             if ($request->getSegment(1) == 'manualupdate') {
-                return $this->runAction('templates/manual-update');
+                return $this->runAction('update/go', [
+                    'handle' => Craft::$app->getRequest()->getSegment(2)
+                ]);
             }
 
             if ($this->getUpdates()->getIsBreakpointUpdateNeeded()) {

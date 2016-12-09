@@ -85,18 +85,6 @@ class TemplatesController extends Controller
     }
 
     /**
-     * Renders the Manual Update template.
-     *
-     * @return string The rendering result
-     */
-    public function actionManualUpdate()
-    {
-        return $this->renderTemplate('_special/updates/go', [
-            'handle' => Craft::$app->getRequest()->getSegment(2)
-        ]);
-    }
-
-    /**
      * @return string The rendering result
      * @throws ServerErrorHttpException if it's an Ajax request and the server doesn’t meet Craft’s requirements
      */
