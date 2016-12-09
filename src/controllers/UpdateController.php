@@ -100,7 +100,7 @@ JS;
      *
      * @param string $handle The update handle ("craft" or a plugin handle)
      *
-     * @return Response
+     * @return string
      */
     public function actionGo($handle)
     {
