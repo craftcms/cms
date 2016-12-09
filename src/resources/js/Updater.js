@@ -5,7 +5,7 @@ Craft.Updater = Garnish.Base.extend(
 {
 	$graphic: null,
 	$status: null,
-	$errorDetails: null,
+	errorDetails: null,
 	data: null,
 
 	init: function(data)
@@ -66,7 +66,7 @@ Craft.Updater = Garnish.Base.extend(
 
 		if (response.errorDetails)
 		{
-			this.$errorDetails = response.errorDetails;
+			this.errorDetails = response.errorDetails;
 		}
 
 		if (response.nextStatus)
@@ -118,7 +118,7 @@ Craft.Updater = Garnish.Base.extend(
 
 	onFinish: function(returnUrl, rollBack)
 	{
-		if (this.$errorDetails)
+		if (this.errorDetails)
 		{
 			this.$graphic.addClass('error');
 			var errorText = Craft.t('app', 'Craft CMS was unable to install this update :(') + '<br /><p>';
@@ -132,7 +132,7 @@ Craft.Updater = Garnish.Base.extend(
 				errorText += Craft.t('app', 'No files have been updated and the database has not been touched.') + '</p><br /><p>';
 			}
 
-			errorText += this.$errorDetails + '</p>';
+			errorText += this.errorDetails + '</p>';
 			this.updateStatus(errorText);
 		}
 		else
