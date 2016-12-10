@@ -165,14 +165,14 @@ class View extends \yii\web\View
     public function getTwig($loaderClass = null, $options = [])
     {
         if (!$loaderClass) {
-            $loaderClass = \craft\web\twig\TemplateLoader::class;
+            $loaderClass = TemplateLoader::class;
         }
 
         $cacheKey = $loaderClass.':'.md5(serialize($options));
 
         if (!isset($this->_twigs[$cacheKey])) {
             /** @var $loader TemplateLoader */
-            if ($loaderClass === \craft\web\twig\TemplateLoader::class) {
+            if ($loaderClass === TemplateLoader::class) {
                 $loader = new $loaderClass($this);
             } else {
                 $loader = new $loaderClass();
