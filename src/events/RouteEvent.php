@@ -8,7 +8,6 @@
 namespace craft\events;
 
 use yii\base\Event;
-use yii\base\Event;
 
 /**
  * RouteEvent class.
