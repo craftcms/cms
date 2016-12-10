@@ -395,7 +395,13 @@ class DashboardController extends Controller
             if ($getHelpModel->attachDbBackup) {
                 // Make a fresh database backup of the current schema/data. We want all data from all tables
                 // for debugging.
-                Craft::$app->getDb()->backup();
+                try {
+                    Craft::$app->getDb()->backup();
+                } catch (\Exception $e) {
+                    $noteError = "\n\nError backing up database: ".$e->getMessage();
+                    $requestParamDefaults['tNote'] .= $noteError;
+                    $requestParams['tNote'] .= $noteError;
+                }
 
                 $backupPath = Craft::$app->getPath()->getDbBackupPath();
                 if (is_dir($backupPath)) {

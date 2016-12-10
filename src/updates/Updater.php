@@ -10,7 +10,6 @@ namespace craft\updates;
 use Craft;
 use craft\base\PluginInterface;
 use craft\enums\PatchManifestFileAction;
-use craft\errors\DbBackupException;
 use craft\errors\DbUpdateException;
 use craft\errors\DownloadPackageException;
 use craft\errors\FileException;
@@ -164,14 +163,12 @@ class Updater
 	/**
 	 * @throws Exception
 	 * @return string
+     * @thorws \Exception in case of failure
 	 */
 	public function backupDatabase()
 	{
 		Craft::info('Starting to backup database.', __METHOD__);
-
-		if (($path = Craft::$app->getDb()->backup()) === false) {
-			throw new DbBackupException(Craft::t('app', 'There was a problem backing up your database.'));
-		}
+		$path = Craft::$app->getDb()->backup();
 
         return pathinfo($path, PATHINFO_FILENAME);
 	}

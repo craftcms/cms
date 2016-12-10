@@ -11,7 +11,7 @@ use Craft;
 use craft\base\Tool;
 use craft\helpers\FileHelper;
 use yii\base\ErrorException;
-use yii\web\ServerErrorHttpException;
+use yii\base\Exception;
 use ZipArchive;
 
 /**
@@ -59,16 +59,18 @@ class DbBackup extends Tool
 
     /**
      * @inheritdoc
-     * @throws ServerErrorHttpException
+     * @throws Exception
      */
     public function performAction($params = [])
     {
-        if (($backupPath = Craft::$app->getDb()->backup()) === false) {
-            return null;
+        try {
+            $backupPath = Craft::$app->getDb()->backup();
+        } catch (\Exception $e) {
+            throw new Exception('Could not create backup: '.$e->getMessage());
         }
 
         if (!is_file($backupPath)) {
-            throw new ServerErrorHttpException('Could not create backup');
+            throw new Exception("Could not create backup: the backup file doesn't exist.");
         }
 
         if (empty($params['downloadBackup'])) {
@@ -88,7 +90,7 @@ class DbBackup extends Tool
         $zip = new ZipArchive();
 
         if ($zip->open($zipPath, ZipArchive::CREATE) !== true) {
-            throw new ServerErrorHttpException('Cannot create zip at '.$zipPath);
+            throw new Exception('Cannot create zip at '.$zipPath);
         }
 
         $filename = pathinfo($backupPath, PATHINFO_BASENAME);

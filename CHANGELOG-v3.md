@@ -22,7 +22,6 @@ Craft CMS 3.0 Working Changelog
 - Added db\pgsql\Schema.
 - Added db\TableSchema.
 - Added errors\InvalidPluginException.
-- Added events\BackupFailureEvent.
 - Added errors\ShellCommandException.
 - Added events\RegisterCacheOptionsEvent.
 - Added events\RegisterComponentTypesEvent.
@@ -61,6 +60,7 @@ Craft CMS 3.0 Working Changelog
 - Added base\Field::beforeElementDelete(), which is called by an element before it is deleted.
 - Added base\Field::getElementValidationRules(), which field types can override to return their element-level validation rules.
 - Added base\MissingComponentTrait::createFallback().
+- Added db\Connection::backupTo().
 - Added db\mysql\Schema::findIndexes().
 - Added elements\Asset::$keepFileOnDelete, which can be set to true if the corresponding file should not be deleted when deleting the asset.
 - Added elements\Asset::$newFilename, which can be set before saving an asset to rename its file.
@@ -81,7 +81,7 @@ Craft CMS 3.0 Working Changelog
 - Added web\UploadedFile::saveAsTempFile().
 - Added the ‘beforeDelete’, ‘afterDelete’, ‘beforeMoveInStructure’, and ‘afterMoveInStructure’,  events to base\Element.
 - Added the ‘beforeElementSave’, ‘afterElementSave’, ‘beforeElementDelete’, and ‘afterElementDelete’ events to base\Field.
-- Added the ‘beforeRestoreBackup’, ‘afterRestoreBackup’, and ‘restoreFailure’ events to db\Connection.
+- Added the ‘beforeRestoreBackup’ and ‘afterRestoreBackup’ events to db\Connection.
 - Added the ‘registerActions’ event to base\Element.
 - Added the ‘registerAlerts’ event to helpers\Cp.
 - Added the ‘registerCacheOptions’ event to tools\ClearCaches.
@@ -139,6 +139,7 @@ Craft CMS 3.0 Working Changelog
 - elements\db\MatrixBlockQuery::owner() and ownerSiteId() now set the $siteId property when appropriate.
 - The source keys that are passed into element methods’ $source arguments now reflect the full path to the source, if it is a nested source (e.g. “folder:1/folder:2”).
 - The ‘Craft.publishableSections’ Javascript array now includes info about each section’s entry types.
+- db\Connection::backup() now throws an exception if something goes wrong, rather than returning `true` or `false`. If no exception is thrown, it worked.
 - db\mysql\Schema::getTableNames() no longer only returns the table names with the right table prefix.
 - services\Elements::deleteElementById() no longer accepts an array of element IDs.
 - base\Element::afterSave() now has an $isNew argument, which will indicate whether the element is brand new.
@@ -266,11 +267,14 @@ Craft CMS 3.0 Working Changelog
 - Removed cache\adapters\GuzzleCacheAdapter.
 - Removed db\DbBackup.
 - Removed enums\BaseEnum.
+- Removed errors\DbBackupException.
 - Removed errors\ErrorException.
 - Removed errors\InvalidateCacheException.
 - Removed events\CategoryEvent.
+- Removed events\BackupFailureEvent.
 - Removed events\DeleteUserEvent.
 - Removed events\EntryDeleteEvent.
+- Removed events\RestoreFailureEvent.
 - Removed events\UserEvent.
 - Removed helpers\Io.
 - Removed log\EmailTarget.
@@ -343,6 +347,7 @@ Craft CMS 3.0 Working Changelog
 - Removed the ‘beforeDeleteEntry’, ‘afterDeleteEntry’, ‘beforeSaveEntry’ and ‘afterSaveEntry’ events from services\Entry.
 - Removed the ‘beforeDeleteGlobalSet’, ‘beforeDeleteGlobalSet’, ‘beforeSaveGlobalContent’ and ‘afterSaveGlobalContent’ events from services\Globals.
 - Removed the ‘beforeDeleteUser’, ‘afterDeleteUser’, ‘beforeSaveUser’, ‘afterSaveUser’, ‘beforeSetPassword’, and ‘afterSetPassword’ events from services\Users.
+- Removed the ‘backupFailure’ event from db\Connection.
 - Removed the ‘beforeSaveTag’ and ‘afterSaveTag’ events from services\Tags.
 - Removed the ‘addRichTextLinkOptions’ plugin hook. Custom Rich Text field link options should be registered using the ‘registerLinkOptions’ event on fields\RichText now.
 - Removed the ‘addTwigExtension’ plugin hook. Custom Twig extensions should be added by calling `Craft::$app->view->twig->addExtension()` directly.

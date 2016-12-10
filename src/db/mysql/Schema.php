@@ -9,7 +9,6 @@ namespace craft\db\mysql;
 
 use Craft;
 use craft\db\TableSchema;
-use craft\errors\DbBackupException;
 use craft\helpers\FileHelper;
 use craft\services\Config;
 use yii\db\Exception;
@@ -152,7 +151,6 @@ class Schema extends \yii\db\mysql\Schema
      * Returns the default database restore command to execute.
      *
      * @return string The command to execute
-     * @throws DbBackupException
      */
     public function getDefaultRestoreCommand()
     {
@@ -268,7 +266,6 @@ SQL;
      * Creates a temporary my.cnf file based on the DB config settings.
      *
      * @return string The path to the my.cnf file
-     * @throws DbBackupException if the file cannot be created
      */
     private function _createDumpConfigFile()
     {

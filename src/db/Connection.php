@@ -10,15 +10,15 @@ namespace craft\db;
 use Craft;
 use craft\db\mysql\QueryBuilder;
 use craft\errors\DbConnectException;
+use craft\errors\ShellCommandException;
 use craft\events\BackupEvent;
-use craft\events\BackupFailureEvent;
 use craft\events\RestoreEvent;
-use craft\events\RestoreFailureEvent;
 use craft\helpers\ArrayHelper;
 use craft\helpers\FileHelper;
 use craft\helpers\StringHelper;
 use craft\services\Config;
 use mikehaertl\shellcommand\Command as ShellCommand;
+use yii\base\Exception;
 use yii\db\Exception as DbException;
 
 /**
@@ -47,11 +47,6 @@ class Connection extends \yii\db\Connection
     const EVENT_AFTER_CREATE_BACKUP = 'afterCreateBackup';
 
     /**
-     * @event BackupFailureEvent The event that is triggered when a failed backup occurred.
-     */
-    const EVENT_BACKUP_FAILURE = 'backupFailure';
-
-    /**
      * @event RestoreEvent The event that is triggered before the restore is started.
      */
     const EVENT_BEFORE_RESTORE_BACKUP = 'beforeRestoreBackup';
@@ -60,11 +55,6 @@ class Connection extends \yii\db\Connection
      * @event RestoreEvent The event that is triggered after the restore occurred.
      */
     const EVENT_AFTER_RESTORE_BACKUP = 'afterRestoreBackup';
-
-    /**
-     * @event RestoreFailureEvent The event that is triggered when a failed restore occurred.
-     */
-    const EVENT_RESTORE_FAILURE = 'restoreFailure';
 
     const DRIVER_MYSQL = 'mysql';
     const DRIVER_PGSQL = 'pgsql';
@@ -115,7 +105,9 @@ class Connection extends \yii\db\Connection
      * will execute the default database schema specific backup defined in `getDefaultBackupCommand()`, which uses
      * `pg_dump` for PostgreSQL and `mysqldump` for MySQL.
      *
-     * @return boolean|string The file path to the database backup, or false if something went wrong.
+     * @return string The file path to the database backup
+     * @throws Exception if the backupCommand config setting is false
+     * @throws ShellCommandException in case of failure
      */
     public function backup()
     {
@@ -123,8 +115,26 @@ class Connection extends \yii\db\Connection
         $currentVersion = 'v'.Craft::$app->version;
         $siteName = FileHelper::sanitizeFilename($this->_getFixedSiteName(), ['asciiOnly' => true]);
         $filename = ($siteName ? $siteName.'_' : '').gmdate('ymd_His').'_'.strtolower(StringHelper::randomString(10)).'_'.$currentVersion.'.sql';
-        $filePath = Craft::$app->getPath()->getDbBackupPath().'/'.StringHelper::toLowerCase($filename);
+        $file = Craft::$app->getPath()->getDbBackupPath().'/'.StringHelper::toLowerCase($filename);
 
+        $this->backupTo($file);
+
+        return $file;
+    }
+
+    /**
+     * Performs a backup operation. If a `backupCommand` config setting has been set, will execute it. If not,
+     * will execute the default database schema specific backup defined in `getDefaultBackupCommand()`, which uses
+     * `pg_dump` for PostgreSQL and `mysqldump` for MySQL.
+     *
+     * @param string $file The file path the database backup should be saved at
+     *
+     * @return void
+     * @throws Exception if the backupCommand config setting is false
+     * @throws ShellCommandException in case of failure
+     */
+    public function backupTo($file)
+    {
         // Determine the command that should be executed
         $backupCommand = Craft::$app->getConfig()->get('backupCommand');
 
@@ -135,17 +145,15 @@ class Connection extends \yii\db\Connection
         }
 
         if ($backupCommand === false) {
-            Craft::info('Database not backed up because the backup command is false.', __METHOD__);
-
-            return false;
+            throw new Exception('Database not backed up because the backup command is false.');
         }
 
         // Create the shell command
-        $command = $this->_createShellCommand($backupCommand, $filePath);
+        $command = $this->_createShellCommand($backupCommand, $file);
 
         // Fire a 'beforeCreateBackup' event
         $this->trigger(self::EVENT_BEFORE_CREATE_BACKUP, new BackupEvent([
-            'file' => $filePath
+            'file' => $file
         ]));
 
         $success = $command->execute();
@@ -154,27 +162,13 @@ class Connection extends \yii\db\Connection
         FileHelper::clearDirectory(Craft::$app->getPath()->getTempPath());
 
         if (!$success) {
-            $errorMessage = $command->getError();
-            $exitCode = $command->getExitCode();
-
-            // Fire a 'backupFailure' event
-            $this->trigger(self::EVENT_BACKUP_FAILURE, new BackupFailureEvent([
-                'exitCode' => $exitCode,
-                'errorMessage' => $errorMessage,
-                'file' => $filePath,
-            ]));
-
-            Craft::error('Could not perform backup. Error: '.$errorMessage.'. Exit Code:'.$exitCode, __METHOD__);
-
-            return false;
+            throw ShellCommandException::createFromCommand($command);
         }
 
         // Fire an 'afterCreateBackup' event
         $this->trigger(self::EVENT_AFTER_CREATE_BACKUP, new BackupEvent([
-            'file' => $filePath
+            'file' => $file
         ]));
-
-        return $filePath;
     }
 
     /**
@@ -182,7 +176,9 @@ class Connection extends \yii\db\Connection
      *
      * @param string $filePath The path of the database backup to restore.
      *
-     * @return bool Whether the restore was successful or not.
+     * @return void
+     * @throws Exception if the restoreCommand config setting is false
+     * @throws ShellCommandException in case of failure
      */
     public function restore($filePath)
     {
@@ -196,9 +192,7 @@ class Connection extends \yii\db\Connection
         }
 
         if ($restoreCommand === false) {
-            Craft::info('Database not restored because the restore command is false.', __METHOD__);
-
-            return false;
+            throw new Exception('Database not restored because the restore command is false.');
         }
 
         // Create the shell command
@@ -215,27 +209,13 @@ class Connection extends \yii\db\Connection
         FileHelper::clearDirectory(Craft::$app->getPath()->getTempPath());
 
         if (!$success) {
-            $errorMessage = $command->getError();
-            $exitCode = $command->getExitCode();
-
-            // Fire a 'restoreFailure' event
-            $this->trigger(self::EVENT_RESTORE_FAILURE, new RestoreFailureEvent([
-                'exitCode' => $exitCode,
-                'errorMessage' => $errorMessage,
-                'file' => $filePath,
-            ]));
-
-            Craft::error('Could not perform restore. Error: '.$errorMessage.'. Exit Code:'.$exitCode, __METHOD__);
-
-            return false;
+            throw ShellCommandException::createFromCommand($command);
         }
 
         // Fire an 'afterRestoreBackup' event
         $this->trigger(self::EVENT_AFTER_RESTORE_BACKUP, new BackupEvent([
             'file' => $filePath
         ]));
-
-        return true;
     }
 
     /**
