@@ -452,6 +452,7 @@ class DashboardController extends Controller
 
             // There was a problem zipping, so reset the params and just send the email without the attachment.
             $requestParams = $requestParamDefaults;
+            $requestParams['tNote'] .= "\n\nError attaching zip: ".$e->getMessage();
         }
 
         $api = new \HelpSpotAPI($hsParams);
