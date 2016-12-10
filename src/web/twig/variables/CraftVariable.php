@@ -67,6 +67,7 @@ class CraftVariable extends ServiceLocator
     public function __construct($config = [])
     {
         // Set the core components
+        /** @noinspection PhpDeprecationInspection */
         $config['components'] = [
             'cp' => Cp::class,
             'io' => Io::class,
@@ -92,12 +93,14 @@ class CraftVariable extends ServiceLocator
         switch (Craft::$app->getEdition()) {
             /** @noinspection PhpMissingBreakStatementInspection */
             case Craft::Pro: {
+                /** @noinspection PhpDeprecationInspection */
                 $config['components'] = array_merge($config['components'], [
                     // Deprecated
                     'userGroups' => UserGroups::class,
                 ]);
             }
             case Craft::Client: {
+                /** @noinspection PhpDeprecationInspection */
                 $config['components'] = array_merge($config['components'], [
                     'rebrand' => Rebrand::class,
 

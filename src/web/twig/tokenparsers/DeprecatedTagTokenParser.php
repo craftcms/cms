@@ -55,6 +55,9 @@ class DeprecatedTagTokenParser extends \Twig_TokenParser
 
         $stream->expect(\Twig_Token::BLOCK_END_TYPE);
 
+        // todo: replace with $stream->getSourceContext()->getName() for Twig 2.0
+        //       (assuming getSourceContext() is no longer marked @internal)
+        /** @noinspection PhpDeprecationInspection */
         $filename = $stream->getFilename();
         \Craft::$app->getDeprecator()->log("{% {$this->_tag} %}", "The {% {$this->_tag} %} tag is no longer necessary. You can remove it from your ‘{$filename}’ template on line {$lineno}.");
 

@@ -90,7 +90,7 @@ class ErrorHandler extends \yii\web\ErrorHandler
 
                 // $templateLine could be null or -1
                 if (is_int($templateLine) && $templateLine > 0) {
-                    $templateFile = $this->exception->getTemplateFile();
+                    $templateFile = $this->exception->getTemplateName();
                     $resolvedTemplate = Craft::$app->getView()->resolveTemplate($templateFile);
 
                     if ($resolvedTemplate !== false) {

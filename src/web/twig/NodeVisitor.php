@@ -142,7 +142,7 @@ class NodeVisitor implements \Twig_NodeVisitorInterface
 
                         if ($node instanceof \Twig_Node_Print) {
                             // Switch it to a {% do %} tag
-                            $node = new \Twig_Node_Do($expression, $expression->getLine());
+                            $node = new \Twig_Node_Do($expression, $expression->getTemplateLine());
                         }
                     }
                 }
@@ -177,7 +177,7 @@ class NodeVisitor implements \Twig_NodeVisitorInterface
     {
         $preSplitHtml = substr($data, 0, $pos);
         $postSplitHtml = substr($data, $pos);
-        $startLine = $node->getLine();
+        $startLine = $node->getTemplateLine();
         $splitLine = $startLine + substr_count($preSplitHtml, "\n");
 
         return new \Twig_Node([
