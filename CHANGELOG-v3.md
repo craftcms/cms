@@ -23,6 +23,7 @@ Craft CMS 3.0 Working Changelog
 - Added db\TableSchema.
 - Added errors\InvalidPluginException.
 - Added events\BackupFailureEvent.
+- Added errors\ShellCommandException.
 - Added events\RegisterCacheOptionsEvent.
 - Added events\RegisterComponentTypesEvent.
 - Added events\RegisterCpAlertsEvent.
