@@ -577,9 +577,11 @@ class AssetsController extends Controller
         Craft::$app->getConfig()->maxPowerCaptain();
         $localPath = $asset->getCopyOfFile();
 
-        Craft::$app->getResponse()->sendFile($localPath, $asset->filename, false);
+        $response = Craft::$app->getResponse()
+            ->sendFile($localPath, $asset->filename);
         FileHelper::removeFile($localPath);
-        Craft::$app->end();
+
+        return $response;
     }
 
     /**
