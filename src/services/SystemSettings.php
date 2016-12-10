@@ -64,27 +64,6 @@ class SystemSettings extends Component
     }
 
     /**
-     * Return the DateTime for when the category was last updated.
-     *
-     * @param $category
-     *
-     * @return null|DateTime
-     */
-    public function getCategoryTimeUpdated($category)
-    {
-        // Ensure fresh data.
-        unset($this->_settingsRecords[$category]);
-
-        $record = $this->_getSettingsRecord($category);
-
-        if ($record !== null) {
-            return $record->dateUpdated;
-        }
-
-        return null;
-    }
-
-    /**
      * Returns an individual system setting.
      *
      * @param string $category

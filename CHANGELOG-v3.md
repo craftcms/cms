@@ -335,6 +335,7 @@ Craft CMS 3.0 Working Changelog
 - Removed services\Path::getMigrationsPath().
 - Removed services\Plugins::call().
 - Removed services\Plugins::callFirst().
+- Removed services\SystemSettings::getCategoryTimeUpdated().
 - Removed services\Tags::saveTag().
 - Removed services\Updates::flushUpdateInfoFromCache().
 - Removed services\Users::changePassword().
