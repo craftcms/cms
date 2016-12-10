@@ -686,7 +686,19 @@ class Extension extends \Twig_Extension implements \Twig_Extension_GlobalsInterf
         $request = Craft::$app->getRequest();
 
         $globals = [
+            // View
             'view' => $this->view,
+
+            // Constants
+            'SORT_ASC' => SORT_ASC,
+            'SORT_DESC' => SORT_DESC,
+            'POS_HEAD' => View::POS_HEAD,
+            'POS_BEGIN' => View::POS_BEGIN,
+            'POS_END' => View::POS_END,
+            'POS_READY' => View::POS_READY,
+            'POS_LOAD' => View::POS_LOAD,
+
+            // User
             'user' => null,
             'currentUser' => null,
         ];
