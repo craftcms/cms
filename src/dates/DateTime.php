@@ -10,6 +10,7 @@ namespace craft\dates;
 use Craft;
 use craft\helpers\DateTimeHelper;
 use craft\i18n\Locale;
+use DateTimeZone;
 
 /**
  * Class DateTime
@@ -42,7 +43,7 @@ class DateTime extends \DateTime
      *
      * @return DateTime|false
      */
-    public static function createFromFormat($format, $time, $timezone = null)
+    public static function createFromFormat($format, $time, DateTimeZone $timezone = null)
     {
         if ($timezone !== null) {
             $dateTime = parent::createFromFormat($format, $time, $timezone);
