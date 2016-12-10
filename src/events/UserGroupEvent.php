@@ -15,7 +15,7 @@ use craft\models\UserGroup;
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since  3.0
  */
-class UserGroupEvent extends Event
+class UserGroupEvent extends \yii\base\Event
 {
     // Properties
     // =========================================================================

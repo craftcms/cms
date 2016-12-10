@@ -15,7 +15,7 @@ use craft\elements\Entry;
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since  3.0
  */
-class VersionEvent extends Event
+class VersionEvent extends \yii\base\Event
 {
     // Properties
     // =========================================================================

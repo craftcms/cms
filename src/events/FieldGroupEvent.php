@@ -15,7 +15,7 @@ use craft\models\FieldGroup;
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since  3.0
  */
-class FieldGroupEvent extends Event
+class FieldGroupEvent extends \yii\base\Event
 {
     // Properties
     // =========================================================================

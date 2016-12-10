@@ -15,7 +15,7 @@ use craft\elements\db\ElementQueryInterface;
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since  3.0
  */
-class SetStatusEvent extends Event
+class SetStatusEvent extends \yii\base\Event
 {
     // Properties
     // =========================================================================

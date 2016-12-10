@@ -13,7 +13,7 @@ namespace craft\events;
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since  3.0
  */
-class RegisterUserPermissionsEvent extends Event
+class RegisterUserPermissionsEvent extends \yii\base\Event
 {
     // Properties
     // =========================================================================

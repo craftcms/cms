@@ -15,7 +15,7 @@ use craft\base\ElementInterface;
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since  3.0
  */
-class ElementContentEvent extends Event
+class ElementContentEvent extends \yii\base\Event
 {
     // Properties
     // =========================================================================

@@ -15,7 +15,7 @@ use craft\models\TagGroup;
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since  3.0
  */
-class TagGroupEvent extends Event
+class TagGroupEvent extends \yii\base\Event
 {
     // Properties
     // =========================================================================

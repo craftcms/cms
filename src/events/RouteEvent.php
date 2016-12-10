@@ -15,7 +15,7 @@ use yii\base\Event;
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since  3.0
  */
-class RouteEvent extends Event
+class RouteEvent extends \yii\base\Event
 {
     // Properties
     // =========================================================================

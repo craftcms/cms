@@ -15,7 +15,7 @@ use craft\base\VolumeInterface;
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since  3.0
  */
-class VolumeEvent extends Event
+class VolumeEvent extends \yii\base\Event
 {
     // Properties
     // =========================================================================

@@ -15,7 +15,7 @@ use craft\base\WidgetInterface;
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since  3.0
  */
-class WidgetEvent extends Event
+class WidgetEvent extends \yii\base\Event
 {
     // Properties
     // =========================================================================

@@ -15,7 +15,7 @@ use craft\elements\User;
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since  3.0
  */
-class RegisterUserActionsEvent extends Event
+class RegisterUserActionsEvent extends \yii\base\Event
 {
     // Properties
     // =========================================================================

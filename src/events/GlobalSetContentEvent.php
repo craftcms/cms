@@ -15,7 +15,7 @@ use craft\elements\GlobalSet;
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since  3.0
  */
-class GlobalSetContentEvent extends Event
+class GlobalSetContentEvent extends \yii\base\Event
 {
     // Properties
     // =========================================================================

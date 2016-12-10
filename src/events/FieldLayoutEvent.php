@@ -15,7 +15,7 @@ use craft\models\FieldLayout;
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since  3.0
  */
-class FieldLayoutEvent extends Event
+class FieldLayoutEvent extends \yii\base\Event
 {
     // Properties
     // =========================================================================

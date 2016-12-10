@@ -15,7 +15,7 @@ use craft\models\AssetTransform;
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since  3.0
  */
-class AssetTransformEvent extends Event
+class AssetTransformEvent extends \yii\base\Event
 {
     // Properties
     // =========================================================================

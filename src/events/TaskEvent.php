@@ -15,7 +15,7 @@ use craft\base\TaskInterface;
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since  3.0
  */
-class TaskEvent extends Event
+class TaskEvent extends \yii\base\Event
 {
     // Properties
     // =========================================================================

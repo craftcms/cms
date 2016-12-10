@@ -13,7 +13,7 @@ namespace craft\events;
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since  3.0
  */
-class SetAssetFilenameEvent extends Event
+class SetAssetFilenameEvent extends \yii\base\Event
 {
     // Properties
     // =========================================================================

@@ -15,7 +15,7 @@ use craft\base\FieldInterface;
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since  3.0
  */
-class FieldEvent extends Event
+class FieldEvent extends \yii\base\Event
 {
     // Properties
     // =========================================================================

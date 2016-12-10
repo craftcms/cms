@@ -13,7 +13,7 @@ namespace craft\events;
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since  3.0
  */
-class RegisterCpNavItemsEvent extends Event
+class RegisterCpNavItemsEvent extends \yii\base\Event
 {
     // Properties
     // =========================================================================

@@ -15,7 +15,7 @@ use craft\models\CategoryGroup;
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since  3.0
  */
-class CategoryGroupEvent extends Event
+class CategoryGroupEvent extends \yii\base\Event
 {
     // Properties
     // =========================================================================

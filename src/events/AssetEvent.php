@@ -15,7 +15,7 @@ use craft\elements\Asset;
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since  3.0
  */
-class AssetEvent extends Event
+class AssetEvent extends \yii\base\Event
 {
     // Properties
     // =========================================================================

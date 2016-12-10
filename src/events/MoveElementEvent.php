@@ -15,7 +15,7 @@ use craft\base\ElementInterface;
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since  3.0
  */
-class MoveElementEvent extends Event
+class MoveElementEvent extends \yii\base\Event
 {
     // Properties
     // =========================================================================

@@ -16,7 +16,7 @@ use craft\mail\Message;
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since  3.0
  */
-class MailFailureEvent extends Event
+class MailFailureEvent extends \yii\base\Event
 {
     // Properties
     // =========================================================================

@@ -13,7 +13,7 @@ namespace craft\events;
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since  3.0
  */
-class RegisterEmailMessagesEvent extends Event
+class RegisterEmailMessagesEvent extends \yii\base\Event
 {
     // Properties
     // =========================================================================
