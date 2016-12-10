@@ -19,6 +19,10 @@ use craft\models\CraftSupport;
 use craft\web\Controller;
 use craft\web\UploadedFile;
 use craft\helpers\FileHelper;
+use GuzzleHttp\Client;
+use GuzzleHttp\Exception\TransferException;
+use HelpSpot\HelpSpot;
+use HelpSpot\HelpSpotGuzzleClient;
 use yii\base\ErrorException;
 use yii\web\BadRequestHttpException;
 use yii\web\Response;
@@ -342,16 +346,12 @@ class DashboardController extends Controller
 
         $requestParamDefaults = [
             'sFirstName' => $user->getFriendlyName(),
-            'sLastName' => ($user->lastName ? $user->lastName : 'Doe'),
+            'sLastName' => $user->lastName ?: 'Doe',
             'sEmail' => $getHelpModel->fromEmail,
             'tNote' => $message,
         ];
 
         $requestParams = $requestParamDefaults;
-
-        $hsParams = [
-            'helpSpotApiURL' => 'https://support.pixelandtonic.com/api/index.php'
-        ];
 
         // Create the SupportAttachment zip
         $zipPath = Craft::$app->getPath()->getTempPath().'/'.StringHelper::UUID().'.zip';
@@ -450,9 +450,6 @@ class DashboardController extends Controller
             $requestParams['File1_sFilename'] = 'SupportAttachment-'.FileHelper::sanitizeFilename(Craft::$app->getSites()->getPrimarySite()->name).'.zip';
             $requestParams['File1_sFileMimeType'] = 'application/zip';
             $requestParams['File1_bFileBody'] = base64_encode(file_get_contents($zipPath));
-
-            // Bump the default timeout because of the attachment.
-            $hsParams['callTimeout'] = 120;
         } catch (\Exception $e) {
             Craft::warning('Tried to attach debug logs to a support request and something went horribly wrong: '.$e->getMessage(), __METHOD__);
 
@@ -461,23 +458,40 @@ class DashboardController extends Controller
             $requestParams['tNote'] .= "\n\nError attaching zip: ".$e->getMessage();
         }
 
-        $api = new \HelpSpotAPI($hsParams);
-        $result = $api->requestCreate($requestParams);
+        $guzzleClient = new Client([
+            'headers' => [
+                'User-Agent' => 'Craft/'.Craft::$app->version.' '.\GuzzleHttp\default_user_agent()
+            ],
+            'timeout' => 120,
+            'connect_timeout' => 120,
+            'allow_redirects' => false,
+            'base_uri' => 'https://support.pixelandtonic.com/api/index.php',
+        ]);
 
-        // Delete the zip file
-        if (is_file($zipPath)) {
-            FileHelper::removeFile($zipPath);
-        }
+        $requestParams = array_merge($requestParams, ['method' => 'request.create', 'output' => 'xml']);
 
-        if (!$result) {
-            $errors = array_filter(preg_split("/(\r\n|\n|\r)/", $api->errors));
+        // HelpSpot requires form encoded POST params and Guzzles requires this key to do that.
+        $requestParams = [
+            'form_params' => $requestParams
+        ];
+
+        $helpSpotGuzzleClient = new HelpSpotGuzzleClient($guzzleClient, ' ', ' ');
+
+        try {
+            $result = $helpSpotGuzzleClient->getClient()->post('', $requestParams);
+        } catch (\Exception $e) {
             return $this->renderTemplate('_components/widgets/CraftSupport/response', [
                 'widgetId' => $widgetId,
                 'success' => false,
                 'errors' => [
-                    'Support' => $errors
+                    'Support' => $e->getMessage()
                 ]
             ]);
+        }
+
+        // Delete the zip file
+        if (is_file($zipPath)) {
+            FileHelper::removeFile($zipPath);
         }
 
         return $this->renderTemplate('_components/widgets/CraftSupport/response', [
