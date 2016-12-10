@@ -210,7 +210,7 @@ class RichText extends Field
         if (StringHelper::contains($value, '{')) {
             // Preserve the ref tags with hashes {type:id:url} => {type:id:url}#type:id
             $value = preg_replace_callback('/(href=|src=)([\'"])(\{(\w+\:\d+\:'.HandleValidator::$handlePattern.')\})(#[^\'"#]+)?\2/',
-                function ($matches) {
+                function($matches) {
                     return $matches[1].$matches[2].$matches[3].(!empty($matches[5]) ? $matches[5] : '').'#'.$matches[4].$matches[2];
                 }, $value);
 
@@ -321,7 +321,7 @@ class RichText extends Field
         // Find any element URLs and swap them with ref tags
         $value = preg_replace_callback(
             '/(href=|src=)([\'"])[^\'"#]+?(#[^\'"#]+)?(?:#|%23)(\w+):(\d+)(:'.HandleValidator::$handlePattern.')?\2/',
-            function ($matches) {
+            function($matches) {
                 $refTag = '{'.$matches[4].':'.$matches[5].(!empty($matches[6]) ? $matches[6] : ':url').'}';
                 $hash = (!empty($matches[3]) ? $matches[3] : '');
 

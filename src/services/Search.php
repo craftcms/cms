@@ -12,13 +12,12 @@ use craft\base\Element;
 use craft\base\ElementInterface;
 use craft\base\Field;
 use craft\db\Connection;
-use craft\db\pgsql\Schema;
 use craft\db\Query;
 use craft\enums\ColumnType;
 use craft\events\SearchEvent;
 use craft\helpers\Db;
-use craft\helpers\StringHelper;
 use craft\helpers\Search as SearchHelper;
+use craft\helpers\StringHelper;
 use craft\search\SearchQuery;
 use craft\search\SearchQueryTerm;
 use craft\search\SearchQueryTermGroup;
@@ -676,8 +675,7 @@ class Search extends Component
     private function _sqlFullText($val, $bool = true, $andOr = ' AND ')
     {
         $driver = Craft::$app->getDb()->getDriverName();
-        switch ($driver)
-        {
+        switch ($driver) {
             case Connection::DRIVER_MYSQL:
                 return sprintf("MATCH(%s) AGAINST('%s'%s)", Craft::$app->getDb()->quoteColumnName('keywords'), (is_array($val) ? implode(' ', $val) : $val), ($bool ? ' IN BOOLEAN MODE' : ''));
 
@@ -703,7 +701,6 @@ class Search extends Component
             default:
                 throw new Exception('Unsupported connection type: '.$driver);
         }
-
     }
 
     /**

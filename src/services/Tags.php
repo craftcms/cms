@@ -9,9 +9,8 @@ namespace craft\services;
 
 use Craft;
 use craft\db\Query;
-use craft\errors\TagGroupNotFoundException;
-use craft\errors\TagNotFoundException;
 use craft\elements\Tag;
+use craft\errors\TagGroupNotFoundException;
 use craft\events\TagGroupEvent;
 use craft\models\TagGroup;
 use craft\records\TagGroup as TagGroupRecord;

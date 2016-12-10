@@ -9,6 +9,7 @@ namespace craft\controllers;
 
 use Craft;
 use craft\dates\DateTime;
+use craft\elements\GlobalSet;
 use craft\errors\MissingComponentException;
 use craft\helpers\MailerHelper;
 use craft\helpers\Template;
@@ -16,9 +17,8 @@ use craft\helpers\Url;
 use craft\mail\transportadapters\BaseTransportAdapter;
 use craft\mail\transportadapters\Php;
 use craft\mail\transportadapters\TransportAdapterInterface;
-use craft\models\MailSettings;
-use craft\elements\GlobalSet;
 use craft\models\Info;
+use craft\models\MailSettings;
 use craft\tools\AssetIndex;
 use craft\tools\ClearCaches;
 use craft\tools\DbBackup;

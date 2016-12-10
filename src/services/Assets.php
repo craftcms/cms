@@ -17,12 +17,12 @@ use craft\errors\ActionCancelledException;
 use craft\errors\AssetConflictException;
 use craft\errors\AssetDisallowedExtensionException;
 use craft\errors\AssetLogicException;
+use craft\errors\FileException;
 use craft\errors\ImageException;
 use craft\errors\UploadFailedException;
 use craft\errors\VolumeException;
 use craft\errors\VolumeObjectExistsException;
 use craft\errors\VolumeObjectNotFoundException;
-use craft\errors\FileException;
 use craft\events\AssetEvent;
 use craft\events\ReplaceAssetEvent;
 use craft\helpers\Assets as AssetsHelper;
@@ -905,7 +905,7 @@ class Assets extends Component
         }
 
         // Shorthand.
-        $canUse = function ($filenameToTest) use ($existingFiles) {
+        $canUse = function($filenameToTest) use ($existingFiles) {
             return !isset($existingFiles[StringHelper::toLowerCase($filenameToTest)]);
         };
 

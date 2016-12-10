@@ -9,8 +9,6 @@ namespace craft\validators;
 
 use Craft;
 use yii\validators\StringValidator;
-use yii\validators\ValidationAsset;
-use yii\validators\Validator;
 
 /**
  * Class UserPasswordValidator.

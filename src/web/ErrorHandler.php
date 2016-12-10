@@ -8,8 +8,6 @@
 namespace craft\web;
 
 use Craft;
-use craft\helpers\StringHelper;
-use yii\db\Exception as DbException;
 use yii\log\FileTarget;
 use yii\web\HttpException;
 

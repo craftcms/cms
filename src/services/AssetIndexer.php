@@ -58,7 +58,7 @@ class AssetIndexer extends Component
 
             $fileList = array_filter(
                 $fileList,
-                function ($value) {
+                function($value) {
                     $path = $value['path'];
                     $segments = explode('/', $path);
 
@@ -75,7 +75,7 @@ class AssetIndexer extends Component
             // Sort by number of slashes to ensure that parent folders are listed earlier than their children
             usort(
                 $fileList,
-                function ($a, $b) {
+                function($a, $b) {
                     $a = substr_count($a['path'], '/');
                     $b = substr_count($b['path'], '/');
 
@@ -304,7 +304,7 @@ class AssetIndexer extends Component
                 ['sessionId' => $sessionId],
                 ['not', ['recordId' => null]]
             ])
-           ->column();
+            ->column();
 
         // Flip for faster lookup
         $processedFiles = array_flip($processedFiles);

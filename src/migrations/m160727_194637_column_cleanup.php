@@ -66,6 +66,7 @@ class m160727_194637_column_cleanup extends Migration
     public function safeDown()
     {
         echo "m160727_194637_column_cleanup cannot be reverted.\n";
+
         return false;
     }
 }

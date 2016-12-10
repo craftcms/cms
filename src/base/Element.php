@@ -8,10 +8,8 @@
 namespace craft\base;
 
 use Craft;
-use /** @noinspection PhpUndefinedClassInspection */
-    craft\behaviors\ContentBehavior;
-use /** @noinspection PhpUndefinedClassInspection */
-    craft\behaviors\ContentTrait;
+use craft\behaviors\ContentBehavior;
+use craft\behaviors\ContentTrait;
 use craft\dates\DateTime;
 use craft\db\Query;
 use craft\elements\db\ElementQuery;

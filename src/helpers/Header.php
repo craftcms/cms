@@ -8,7 +8,6 @@
 namespace craft\helpers;
 
 use Craft;
-use craft\helpers\FileHelper;
 
 /**
  * Class Header

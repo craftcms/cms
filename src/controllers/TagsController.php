@@ -8,12 +8,11 @@
 namespace craft\controllers;
 
 use Craft;
-use craft\base\Element;
+use craft\elements\Tag;
 use craft\helpers\Db;
 use craft\helpers\Search;
 use craft\helpers\StringHelper;
 use craft\helpers\Url;
-use craft\elements\Tag;
 use craft\models\TagGroup;
 use craft\web\Controller;
 use yii\web\NotFoundHttpException;

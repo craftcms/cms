@@ -9,9 +9,9 @@ namespace craft\models;
 
 use Craft;
 use craft\base\Field;
-use craft\helpers\ElementHelper;
 use craft\elements\Entry;
 use craft\elements\User;
+use craft\helpers\ElementHelper;
 
 /**
  * Class BaseEntryRevision model.

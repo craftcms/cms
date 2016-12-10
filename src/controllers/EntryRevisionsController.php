@@ -8,7 +8,6 @@
 namespace craft\controllers;
 
 use Craft;
-use craft\base\Element;
 use craft\helpers\DateTimeHelper;
 use craft\models\EntryDraft;
 use craft\models\Section;

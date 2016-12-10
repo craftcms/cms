@@ -501,7 +501,7 @@ return [
      *     * `{schema}` - Swapped with the current database schema (if any).
      *
      * This can also be set to `false` to disable database restores completely.
-    */
+     */
     'restoreCommand' => null,
     /**
      * Whether Craft should attempt to restore the backup in the event that there was an error.

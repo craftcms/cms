@@ -92,7 +92,7 @@ new Craft.UpdatesPage({
 });
 JS;
         $view->registerJs($js);
-        
+
         return $this->renderTemplate('_special/updates/index');
     }
 
@@ -122,7 +122,7 @@ JS;
 
         $dataJs = Json::encode([
             'handle' => Craft::$app->getSecurity()->hashData($handle),
-	        'manualUpdate' => (Craft::$app->getRequest()->getSegment(1) == 'manualupdate') ? 1 : 0
+            'manualUpdate' => (Craft::$app->getRequest()->getSegment(1) == 'manualupdate') ? 1 : 0
         ]);
         $js = <<<JS
 new Craft.Updater({$dataJs});
@@ -310,10 +310,10 @@ JS;
             ]);
         }
 
-        $data = array(
+        $data = [
             'handle' => Craft::$app->getSecurity()->hashData($handle),
-            'uid'    => Craft::$app->getSecurity()->hashData($return['uid']),
-        );
+            'uid' => Craft::$app->getSecurity()->hashData($return['uid']),
+        ];
 
         return $this->asJson([
             'nextStatus' => Craft::t('app', 'Backing-up files…'),

@@ -8,7 +8,6 @@
 namespace craft\records;
 
 use craft\db\ActiveRecord;
-use craft\validators\HandleValidator;
 use yii\db\ActiveQueryInterface;
 
 /**

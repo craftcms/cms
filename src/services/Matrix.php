@@ -13,6 +13,7 @@ use craft\base\ElementInterface;
 use craft\base\Field;
 use craft\db\Query;
 use craft\elements\db\MatrixBlockQuery;
+use craft\elements\MatrixBlock;
 use craft\errors\MatrixBlockNotFoundException;
 use craft\errors\MatrixBlockTypeNotFoundException;
 use craft\fields\Matrix as MatrixField;
@@ -22,7 +23,6 @@ use craft\helpers\StringHelper;
 use craft\migrations\CreateMatrixContentTable;
 use craft\models\FieldLayout;
 use craft\models\FieldLayoutTab;
-use craft\elements\MatrixBlock;
 use craft\models\MatrixBlockType;
 use craft\records\MatrixBlock as MatrixBlockRecord;
 use craft\records\MatrixBlockType as MatrixBlockTypeRecord;
@@ -469,7 +469,7 @@ class Matrix extends Component
             foreach ($uniqueAttributes as $attribute) {
                 $value = $blockType->$attribute;
 
-                if ($value && (!isset($uniqueAttributeValues[$attribute]) || !in_array($value,     $uniqueAttributeValues[$attribute]))) {
+                if ($value && (!isset($uniqueAttributeValues[$attribute]) || !in_array($value, $uniqueAttributeValues[$attribute]))) {
                     $uniqueAttributeValues[$attribute][] = $value;
                 } else {
                     $blockType->addError($attribute, Craft::t('app', '{attribute} "{value}" has already been taken.',
@@ -635,8 +635,8 @@ class Matrix extends Component
     /**
      * Returns a block by its ID.
      *
-     * @param integer $blockId  The Matrix block’s ID.
-     * @param integer $siteId   The site ID to return. Defaults to the current site.
+     * @param integer $blockId The Matrix block’s ID.
+     * @param integer $siteId  The site ID to return. Defaults to the current site.
      *
      * @return MatrixBlock|null The Matrix block, or `null` if it didn’t exist.
      */

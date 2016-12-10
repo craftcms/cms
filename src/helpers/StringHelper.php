@@ -165,8 +165,8 @@ class StringHelper extends \yii\helpers\StringHelper
     /**
      * Ensures that a string ends with a given substring.
      *
-     * @param string &$str The string to amend
-     * @param string $substring The substring to look for
+     * @param string  &$str          The string to amend
+     * @param string  $substring     The substring to look for
      * @param boolean $caseSensitive Whether or not to enforce case-sensitivity.
      *
      * @return void
@@ -754,8 +754,8 @@ class StringHelper extends \yii\helpers\StringHelper
     /**
      * Ensures that a string starts with a given substring.
      *
-     * @param string &$str The string to amend
-     * @param string $substring The substring to look for
+     * @param string  &$str          The string to amend
+     * @param string  $substring     The substring to look for
      * @param boolean $caseSensitive Whether or not to enforce case-sensitivity.
      *
      * @return void
@@ -1024,7 +1024,7 @@ class StringHelper extends \yii\helpers\StringHelper
     {
         // Does this string have any 4+ byte Unicode chars?
         if (max(array_map('ord', str_split($string))) >= 240) {
-            $string = preg_replace_callback('/./u', function (array $match) {
+            $string = preg_replace_callback('/./u', function(array $match) {
                 if (strlen($match[0]) >= 4) {
                     // (Logic pulled from WP's wp_encode_emoji() function)
                     // UTF-32's hex encoding is the same as HTML's hex encoding.

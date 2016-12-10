@@ -7,9 +7,9 @@
 
 namespace craft\volumes;
 
-use craft\base\Volume;
 use craft\base\MissingComponentInterface;
 use craft\base\MissingComponentTrait;
+use craft\base\Volume;
 
 /**
  * InvalidSource represents a volume with an invalid class.

@@ -8,15 +8,15 @@
 namespace craft\controllers;
 
 use Craft;
+use craft\elements\Asset;
 use craft\errors\AssetConflictException;
-use craft\errors\AssetLogicException;
 use craft\errors\AssetException;
+use craft\errors\AssetLogicException;
 use craft\errors\UploadFailedException;
 use craft\fields\Assets as AssetsField;
 use craft\helpers\Assets;
 use craft\helpers\Db;
 use craft\helpers\FileHelper;
-use craft\elements\Asset;
 use craft\helpers\StringHelper;
 use craft\models\VolumeFolder;
 use craft\web\Controller;
@@ -521,7 +521,6 @@ class AssetsController extends Controller
                         $targetTreeMap[substr($existingFolder->path,
                             $targetPrefixLength)] = $existingFolder->id;
                     }
-
                 } // When replacing, just nuke everything that's in our way
                 else {
                     if ($conflictResolution == 'replace') {

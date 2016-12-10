@@ -9,8 +9,8 @@ namespace craft\migrations;
 
 use Craft;
 use craft\db\Connection;
-use craft\elements\User;
 use craft\db\Migration;
+use craft\elements\User;
 use craft\helpers\StringHelper;
 use craft\models\Info;
 use craft\models\Site;
@@ -864,15 +864,14 @@ class Install extends Migration
         $this->createIndex($this->db->getIndexName('{{%widgets}}', 'userId', false), '{{%widgets}}', 'userId', false);
 
         // If we're using MySQL, add the FULLTEXT index on searchindex.keywords
-        switch ($this->driver)
-        {
+        switch ($this->driver) {
             case Connection::DRIVER_MYSQL:
                 $this->createTable('{{%searchindex}}', [
                     'elementId' => $this->integer()->notNull(),
                     'attribute' => $this->string(25)->notNull(),
                     'fieldId' => $this->integer()->notNull(),
                     'siteId' => $this->integer()->notNull(),
-                    'keywords' => $this-> text()->notNull(),
+                    'keywords' => $this->text()->notNull(),
                 ], ' ENGINE=MyISAM');
 
                 $this->addPrimaryKey($this->db->getIndexName('{{%searchindex}}', 'elementId,attribute,fieldId,siteId', true), '{{%searchindex}}', 'elementId,attribute,fieldId,siteId');

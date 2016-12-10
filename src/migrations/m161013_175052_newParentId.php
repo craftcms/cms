@@ -2,7 +2,6 @@
 
 namespace craft\migrations;
 
-use Craft;
 use craft\db\Migration;
 
 /**
@@ -25,6 +24,7 @@ class m161013_175052_newParentId extends Migration
     public function safeDown()
     {
         echo "m161013_175052_newParentId cannot be reverted.\n";
+
         return false;
     }
 }

@@ -7,9 +7,9 @@
 
 namespace craft\records;
 
-use yii\db\ActiveQueryInterface;
 use craft\db\ActiveRecord;
 use craft\validators\DateTimeValidator;
+use yii\db\ActiveQueryInterface;
 
 /**
  * Class Plugin record.

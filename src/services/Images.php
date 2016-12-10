@@ -104,13 +104,11 @@ class Images extends Component
      */
     public function getIsImagickAtLeast($requiredVersion)
     {
-        if (!extension_loaded('imagick'))
-        {
+        if (!extension_loaded('imagick')) {
             return false;
         }
 
-        if (is_null($this->_imagickVersion))
-        {
+        if (is_null($this->_imagickVersion)) {
             // Taken from Imagick\Imagine() constructor.
             // Imagick::getVersion() is static only since Imagick PECL extension 3.2.0b1, so instantiate it.
             $imagick = new \Imagick();

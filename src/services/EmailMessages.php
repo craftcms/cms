@@ -8,13 +8,11 @@
 namespace craft\services;
 
 use Craft;
-use craft\base\Plugin;
 use craft\events\RegisterEmailMessagesEvent;
 use craft\helpers\ArrayHelper;
 use craft\models\RebrandEmail;
 use craft\records\EmailMessage as EmailMessageRecord;
 use yii\base\Component;
-use yii\base\Exception;
 
 Craft::$app->requireEdition(Craft::Client);
 

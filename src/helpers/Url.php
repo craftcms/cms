@@ -385,6 +385,7 @@ class Url
         } else {
             // Figure it out for ourselves, then
             $request = Craft::$app->getRequest();
+
             return $request->getHostInfo().$request->getBaseUrl();
         }
 

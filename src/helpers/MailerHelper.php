@@ -7,7 +7,6 @@
 
 namespace craft\helpers;
 
-use Craft;
 use craft\errors\MissingComponentException;
 use craft\events\Event;
 use craft\events\RegisterComponentTypesEvent;

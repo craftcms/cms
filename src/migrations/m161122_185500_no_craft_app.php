@@ -2,7 +2,6 @@
 
 namespace craft\migrations;
 
-use Craft;
 use craft\db\Migration;
 
 /**
@@ -37,6 +36,7 @@ class m161122_185500_no_craft_app extends Migration
     public function safeDown()
     {
         echo "m161122_185500_no_craft_app cannot be reverted.\n";
+
         return false;
     }
 }

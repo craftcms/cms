@@ -9,8 +9,8 @@ namespace craft\web;
 
 use Craft;
 use craft\dates\DateInterval;
-use craft\helpers\DateTimeHelper;
 use craft\elements\User as UserElement;
+use craft\helpers\DateTimeHelper;
 use craft\helpers\Db;
 use craft\helpers\Url;
 use craft\validators\UserPasswordValidator;

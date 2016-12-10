@@ -217,7 +217,7 @@ class FileHelper extends \yii\helpers\FileHelper
      *
      * @param string $file     the file path
      * @param string $contents the new file contents
-     * @param array $options   options for file write. Valid options are:
+     * @param array  $options  options for file write. Valid options are:
      *
      * - createDirs: boolean, whether to create parent directories if they do
      *   not exist. Defaults to true.
@@ -243,7 +243,7 @@ class FileHelper extends \yii\helpers\FileHelper
         }
 
         if (isset($options['lock'])) {
-            $lock = (bool) $options['lock'];
+            $lock = (bool)$options['lock'];
         } else {
             $lock = Craft::$app->getConfig()->getUseWriteFileLock();
         }

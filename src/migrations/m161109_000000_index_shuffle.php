@@ -31,6 +31,7 @@ class m161109_000000_index_shuffle extends Migration
     public function safeDown()
     {
         echo "m161109_000000_index_shuffle cannot be reverted.\n";
+
         return false;
     }
 }

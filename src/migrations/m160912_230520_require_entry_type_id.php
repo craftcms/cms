@@ -7,7 +7,6 @@ use craft\db\Migration;
 use craft\db\Query;
 use craft\helpers\MigrationHelper;
 use yii\db\Expression;
-use yii\helpers\ArrayHelper;
 
 /**
  * m160912_230520_require_entry_type_id migration.
@@ -79,6 +78,7 @@ class m160912_230520_require_entry_type_id extends Migration
     public function safeDown()
     {
         echo "m160912_230520_require_entry_type_id cannot be reverted.\n";
+
         return false;
     }
 }

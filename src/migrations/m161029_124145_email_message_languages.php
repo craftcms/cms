@@ -2,12 +2,10 @@
 
 namespace craft\migrations;
 
-use Craft;
 use craft\db\Migration;
 use craft\db\Query;
 use craft\helpers\ArrayHelper;
 use craft\helpers\MigrationHelper;
-use yii\db\Expression;
 
 /**
  * m161029_124145_email_message_languages migration.
@@ -70,6 +68,7 @@ class m161029_124145_email_message_languages extends Migration
     public function safeDown()
     {
         echo "m161029_124145_email_message_languages cannot be reverted.\n";
+
         return false;
     }
 }

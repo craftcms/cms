@@ -44,19 +44,19 @@ class FindAndReplace extends Tool
     public static function optionsHtml()
     {
         return Craft::$app->getView()->renderTemplateMacro('_includes/forms', 'textField',
-            [
                 [
-                    'name' => 'find',
-                    'placeholder' => Craft::t('app', 'Find'),
-                ]
-            ]).
-        Craft::$app->getView()->renderTemplateMacro('_includes/forms', 'textField',
-            [
+                    [
+                        'name' => 'find',
+                        'placeholder' => Craft::t('app', 'Find'),
+                    ]
+                ]).
+            Craft::$app->getView()->renderTemplateMacro('_includes/forms', 'textField',
                 [
-                    'name' => 'replace',
-                    'placeholder' => Craft::t('app', 'Replace'),
-                ]
-            ]);
+                    [
+                        'name' => 'replace',
+                        'placeholder' => Craft::t('app', 'Replace'),
+                    ]
+                ]);
     }
 
     // Public Methods

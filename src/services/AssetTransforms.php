@@ -8,10 +8,15 @@
 namespace craft\services;
 
 use Craft;
-use craft\db\Query;
 use craft\dates\DateTime;
+use craft\db\Query;
 use craft\elements\Asset;
+use craft\errors\AssetLogicException;
+use craft\errors\AssetTransformException;
+use craft\errors\ValidationException;
+use craft\errors\VolumeException;
 use craft\errors\VolumeObjectExistsException;
+use craft\errors\VolumeObjectNotFoundException;
 use craft\events\AssetTransformEvent;
 use craft\helpers\ArrayHelper;
 use craft\helpers\Assets as AssetsHelper;
@@ -20,14 +25,9 @@ use craft\helpers\FileHelper;
 use craft\helpers\Image;
 use craft\helpers\StringHelper;
 use craft\image\Raster;
-use craft\models\AssetTransformIndex;
 use craft\models\AssetTransform;
+use craft\models\AssetTransformIndex;
 use craft\records\AssetTransform as AssetTransformRecord;
-use craft\errors\AssetTransformException;
-use craft\errors\VolumeObjectNotFoundException;
-use craft\errors\VolumeException;
-use craft\errors\AssetLogicException;
-use craft\errors\ValidationException;
 use yii\base\Application;
 use yii\base\Component;
 use yii\base\ErrorException;
@@ -802,7 +802,7 @@ class AssetTransforms extends Component
         $appendix = AssetsHelper::urlAppendix($volume, $asset);
 
         return $baseUrl.$asset->getFolder()->path.$this->getTransformSubpath($asset,
-            $transformIndexModel).$appendix;
+                $transformIndexModel).$appendix;
     }
 
     /**
@@ -1120,6 +1120,7 @@ class AssetTransforms extends Component
             $handle = opendir($dir);
             if ($handle === false) {
                 Craft::warning("Unable to open directory: $dir");
+
                 return;
             }
             while (($subDir = readdir($handle)) !== false) {
@@ -1280,9 +1281,9 @@ class AssetTransforms extends Component
     private function _getUnnamedTransformFolderName(AssetTransform $transform)
     {
         return '_'.($transform->width ? $transform->width : 'AUTO').'x'.($transform->height ? $transform->height : 'AUTO').
-        '_'.($transform->mode).
-        '_'.($transform->position).
-        ($transform->quality ? '_'.$transform->quality : '');
+            '_'.($transform->mode).
+            '_'.($transform->position).
+            ($transform->quality ? '_'.$transform->quality : '');
     }
 
     /**

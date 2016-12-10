@@ -23,11 +23,11 @@ use craft\web\twig\tokenparsers\DeprecatedTagTokenParser;
 use craft\web\twig\tokenparsers\ExitTokenParser;
 use craft\web\twig\tokenparsers\HeaderTokenParser;
 use craft\web\twig\tokenparsers\HookTokenParser;
-use craft\web\twig\tokenparsers\RegisterResourceTokenParser;
 use craft\web\twig\tokenparsers\NamespaceTokenParser;
 use craft\web\twig\tokenparsers\NavTokenParser;
 use craft\web\twig\tokenparsers\PaginateTokenParser;
 use craft\web\twig\tokenparsers\RedirectTokenParser;
+use craft\web\twig\tokenparsers\RegisterResourceTokenParser;
 use craft\web\twig\tokenparsers\RequireAdminTokenParser;
 use craft\web\twig\tokenparsers\RequireEditionTokenParser;
 use craft\web\twig\tokenparsers\RequireLoginTokenParser;
@@ -191,7 +191,7 @@ class Extension extends \Twig_Extension implements \Twig_Extension_GlobalsInterf
     public function getTests()
     {
         return [
-            new \Twig_SimpleTest('missing', function ($obj) {
+            new \Twig_SimpleTest('missing', function($obj) {
                 return $obj instanceof MissingComponentInterface;
             }),
         ];
@@ -629,8 +629,8 @@ class Extension extends \Twig_Extension implements \Twig_Extension_GlobalsInterf
      * Rounds the given value.
      *
      * @param integer|float $value
-     * @param integer $precision
-     * @param integer $mode
+     * @param integer       $precision
+     * @param integer       $mode
      *
      * @return integer|float
      * @deprecated in 3.0. Use Twig's |round filter instead.
@@ -638,6 +638,7 @@ class Extension extends \Twig_Extension implements \Twig_Extension_GlobalsInterf
     public function roundFunction($value, $precision = 0, $mode = PHP_ROUND_HALF_UP)
     {
         Craft::$app->getDeprecator()->log('round()', 'The round() function has been deprecated. Use Twig’s |round filter instead.');
+
         return round($value, $precision, $mode);
     }
 

@@ -10,7 +10,6 @@ namespace craft\base;
 use Craft;
 use craft\db\Migration;
 use craft\db\MigrationManager;
-use craft\helpers\FileHelper;
 use craft\web\Controller;
 use yii\base\Module;
 

@@ -8,7 +8,6 @@
 namespace craft\base;
 
 use Craft;
-use craft\helpers\ArrayHelper;
 use craft\helpers\DateTimeHelper;
 use yii\base\UnknownMethodException;
 
@@ -106,7 +105,7 @@ abstract class Model extends \yii\base\Model
 
         // Have all DateTime attributes converted to ISO-8601 strings
         foreach ($this->datetimeAttributes() as $attribute) {
-            $fields[$attribute] = function ($model, $attribute) {
+            $fields[$attribute] = function($model, $attribute) {
                 if (!empty($model->$attribute)) {
                     return DateTimeHelper::toIso8601($model->$attribute);
                 }

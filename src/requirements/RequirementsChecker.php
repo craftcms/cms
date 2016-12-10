@@ -78,14 +78,14 @@ class RequirementsChecker
         }
 
         if (!isset($this->result) || !is_array($this->result)) {
-            $this->result = array(
-                'summary' => array(
+            $this->result = [
+                'summary' => [
                     'total' => 0,
                     'errors' => 0,
                     'warnings' => 0,
-                ),
-                'requirements' => array(),
-            );
+                ],
+                'requirements' => [],
+            ];
         }
 
         foreach ($requirements as $key => $rawRequirement) {
@@ -449,7 +449,7 @@ class RequirementsChecker
 
         if (function_exists('iconv')) {
             // Let's see what happens.
-            set_error_handler(array($this, 'muteErrorHandler'));
+            set_error_handler([$this, 'muteErrorHandler']);
             $r = iconv('utf-8', 'ascii//IGNORE', "\xCE\xB1".str_repeat('a', 9000));
             restore_error_handler();
 
@@ -552,7 +552,7 @@ class RequirementsChecker
     {
         $oldValue = ini_get('memory_limit');
 
-        set_error_handler(array($this, 'muteErrorHandler'));
+        set_error_handler([$this, 'muteErrorHandler']);
         $result = ini_set('memory_limit', '442M');
         restore_error_handler();
 
@@ -574,7 +574,7 @@ class RequirementsChecker
         }
 
         // Resetting should work, but might as well be extra careful.
-        set_error_handler(array($this, 'muteErrorHandler'));
+        set_error_handler([$this, 'muteErrorHandler']);
         ini_set('memory_limit', $oldValue);
         restore_error_handler();
 
@@ -615,17 +615,17 @@ class RequirementsChecker
     function checkWebRoot()
     {
         $pathService = Craft::$app->getPath();
-        $publicFolders = array();
+        $publicFolders = [];
 
         // The paths to check.
-        $folders = array(
+        $folders = [
             'storage' => $pathService->getStoragePath(),
             'plugins' => $pathService->getPluginsPath(),
             'config' => $pathService->getConfigPath(),
             'app' => Craft::$app->getBasePath(),
             'templates' => $pathService->getSiteTemplatesPath(),
             'translations' => $pathService->getSiteTranslationsPath(),
-        );
+        ];
 
         foreach ($folders as $key => $path) {
             if ($realPath = realpath($path)) {

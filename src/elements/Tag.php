@@ -9,7 +9,6 @@ namespace craft\elements;
 
 use Craft;
 use craft\base\Element;
-use craft\base\ElementInterface;
 use craft\elements\db\TagQuery;
 use craft\models\TagGroup;
 use craft\records\Tag as TagRecord;

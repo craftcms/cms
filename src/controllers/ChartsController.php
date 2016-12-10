@@ -8,10 +8,10 @@
 namespace craft\controllers;
 
 use Craft;
-use craft\web\Controller;
-use craft\helpers\DateTimeHelper;
-use craft\helpers\ChartHelper;
 use craft\db\Query;
+use craft\helpers\ChartHelper;
+use craft\helpers\DateTimeHelper;
+use craft\web\Controller;
 use yii\base\Response;
 
 /**

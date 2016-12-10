@@ -4,7 +4,6 @@ namespace craft\migrations;
 
 use Craft;
 use craft\db\Migration;
-use craft\services\Config;
 
 /**
  * m161006_205918_schemaVersion_not_null migration.
@@ -41,6 +40,7 @@ class m161006_205918_schemaVersion_not_null extends Migration
     public function safeDown()
     {
         echo "m161006_205918_schemaVersion_not_null cannot be reverted.\n";
+
         return false;
     }
 }

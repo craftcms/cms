@@ -71,7 +71,7 @@ class UploadedFile extends \yii\web\UploadedFile
      * Saves the uploaded file to a temp location.
      *
      * @param boolean $deleteTempFile whether to delete the temporary file after saving.
-     * If true, you will not be able to save the uploaded file again in the current request.
+     *                                If true, you will not be able to save the uploaded file again in the current request.
      *
      * @return string|false the path to the temp file, or false if the file wasn't saved successfully
      * @see error

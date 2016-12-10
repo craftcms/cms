@@ -9,7 +9,6 @@ namespace craft\helpers;
 
 use Craft;
 use craft\db\Migration;
-use craft\db\Query;
 
 /**
  * Migration utility methods.
@@ -50,7 +49,6 @@ class MigrationHelper
                 return true;
             }
         }
-
 
 
         return false;
@@ -571,7 +569,6 @@ class MigrationHelper
      * @param           $tableName
      * @param           $columns
      * @param Migration $migration
-
      */
     public static function dropForeignKey($tableName, $columns, Migration $migration = null)
     {

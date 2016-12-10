@@ -48,7 +48,7 @@ class ElementsController extends BaseElementsController
         $showSiteMenu = Craft::$app->getRequest()->getParam('showSiteMenu', 'auto');
 
         if ($showSiteMenu !== 'auto') {
-            $showSiteMenu = (bool) $showSiteMenu;
+            $showSiteMenu = (bool)$showSiteMenu;
         }
 
         if (is_array($sourceKeys)) {

@@ -10,21 +10,21 @@ namespace craft\image;
 use Craft;
 use craft\base\Image;
 use craft\errors\ImageException;
+use craft\helpers\FileHelper;
 use craft\helpers\Image as ImageHelper;
 use craft\helpers\StringHelper;
 use Imagine\Exception\NotSupportedException;
 use Imagine\Exception\RuntimeException;
-use Imagine\Gd\Imagine as GdImagine;
 use Imagine\Gd\Image as GdImage;
-use Imagine\Image\Box;
+use Imagine\Gd\Imagine as GdImagine;
 use Imagine\Image\AbstractFont as Font;
+use Imagine\Image\Box;
 use Imagine\Image\ImageInterface as Imagine;
 use Imagine\Image\Metadata\ExifMetadataReader;
 use Imagine\Image\Palette\RGB;
 use Imagine\Image\Point;
-use Imagine\Imagick\Imagine as ImagickImagine;
 use Imagine\Imagick\Image as ImagickImage;
-use craft\helpers\FileHelper;
+use Imagine\Imagick\Imagine as ImagickImagine;
 use yii\base\ErrorException;
 
 /**

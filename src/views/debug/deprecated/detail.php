@@ -8,7 +8,7 @@ use craft\models\DeprecationError;
 
 <?php
 
-array_walk($panel->data, function (&$log) {
+array_walk($panel->data, function(&$log) {
     $log = new DeprecationError($log);
 });
 

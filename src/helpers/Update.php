@@ -42,6 +42,7 @@ class Update
         if ($handle == 'craft') {
             return Craft::$app->getPath()->getAppPath();
         }
+
         return Craft::$app->getPath()->getPluginsPath().DIRECTORY_SEPARATOR.$handle;
     }
 
@@ -50,6 +51,7 @@ class Update
      * from a given line in the manifest.
      *
      * @param string $line
+     *
      * @return array
      */
     public static function parseManifestLine($line)
@@ -226,6 +228,7 @@ class Update
 
         if (!is_file($fullPath)) {
             static::$_manifestData = false;
+
             return null;
         }
 
@@ -259,6 +262,7 @@ class Update
 
         if (empty($manifestData)) {
             static::$_manifestData = false;
+
             return null;
         }
 

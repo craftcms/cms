@@ -7,7 +7,6 @@
 
 namespace craft\validators;
 
-use Craft;
 use craft\helpers\ArrayHelper;
 use yii\base\Model;
 use yii\db\ActiveRecord;

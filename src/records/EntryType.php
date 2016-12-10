@@ -7,8 +7,8 @@
 
 namespace craft\records;
 
-use yii\db\ActiveQueryInterface;
 use craft\db\ActiveRecord;
+use yii\db\ActiveQueryInterface;
 
 /**
  * Class EntryType record.

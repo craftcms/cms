@@ -9,7 +9,6 @@ namespace craft\elements;
 
 use Craft;
 use craft\base\Element;
-use craft\base\ElementInterface;
 use craft\controllers\ElementIndexesController;
 use craft\db\Query;
 use craft\elements\actions\Delete;
@@ -21,7 +20,6 @@ use craft\elements\db\ElementQuery;
 use craft\elements\db\ElementQueryInterface;
 use craft\elements\db\EntryQuery;
 use craft\events\SetStatusEvent;
-use craft\helpers\ArrayHelper;
 use craft\helpers\DateTimeHelper;
 use craft\helpers\Db;
 use craft\helpers\Url;
@@ -262,7 +260,7 @@ class Entry extends Element
                 /** @var SetStatus $setStatusAction */
                 $setStatusAction = Craft::$app->getElements()->createAction(SetStatus::class);
                 $setStatusAction->on(SetStatus::EVENT_AFTER_SET_STATUS,
-                    function (SetStatusEvent $event) {
+                    function(SetStatusEvent $event) {
                         if ($event->status == self::STATUS_ENABLED) {
                             // Set a Post Date as well
                             Craft::$app->getDb()->createCommand()
@@ -623,12 +621,14 @@ class Entry extends Element
             return null;
         }
 
-        return ['templates/render', [
-            'template' => $sectionSiteSettings[$siteId]->template,
-            'variables' => [
-                'entry' => $this,
+        return [
+            'templates/render', [
+                'template' => $sectionSiteSettings[$siteId]->template,
+                'variables' => [
+                    'entry' => $this,
+                ]
             ]
-        ]];
+        ];
     }
 
     /**

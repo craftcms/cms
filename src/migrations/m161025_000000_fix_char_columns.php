@@ -2,7 +2,6 @@
 
 namespace craft\migrations;
 
-use Craft;
 use craft\db\Migration;
 
 /**
@@ -34,6 +33,7 @@ class m161025_000000_fix_char_columns extends Migration
     public function safeDown()
     {
         echo "m161021_182140_rename_get_help_widget cannot be reverted.\n";
+
         return false;
     }
 }

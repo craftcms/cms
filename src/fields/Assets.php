@@ -20,10 +20,10 @@ use craft\errors\InvalidSubpathException;
 use craft\errors\InvalidVolumeException;
 use craft\helpers\Assets as AssetsHelper;
 use craft\helpers\Db;
+use craft\helpers\FileHelper;
 use craft\helpers\StringHelper;
 use craft\models\VolumeFolder;
 use craft\web\UploadedFile;
-use craft\helpers\FileHelper;
 use yii\base\ErrorException;
 
 /**
@@ -186,18 +186,18 @@ class Assets extends BaseRelationField
             return parent::getInputHtml($value, $element);
         } catch (InvalidSubpathException $e) {
             return '<p class="warning">'.
-            '<span data-icon="alert"></span> '.
-            Craft::t('app', 'This field’s target subfolder path is invalid: {path}', [
-                'path' => '<code>'.$this->singleUploadLocationSubpath.'</code>'
-            ]).
-            '</p>';
+                '<span data-icon="alert"></span> '.
+                Craft::t('app', 'This field’s target subfolder path is invalid: {path}', [
+                    'path' => '<code>'.$this->singleUploadLocationSubpath.'</code>'
+                ]).
+                '</p>';
         } catch (InvalidVolumeException $e) {
             $message = $this->useSingleFolder ? Craft::t('app', 'This field’s single upload location Volume is missing') : Craft::t('app', 'This field’s default upload location Volume is missing');
 
             return '<p class="warning">'.
-            '<span data-icon="alert"></span> '.
-            $message.
-            '</p>';
+                '<span data-icon="alert"></span> '.
+                $message.
+                '</p>';
         }
     }
 

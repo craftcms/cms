@@ -20,10 +20,10 @@ use craft\helpers\App;
 use craft\helpers\ArrayHelper;
 use craft\helpers\DateTimeHelper;
 use craft\helpers\Db;
+use craft\helpers\FileHelper;
 use craft\helpers\Json;
 use yii\base\Component;
 use yii\base\Exception;
-use craft\helpers\FileHelper;
 
 /**
  * The Plugins service provides APIs for managing plugins.

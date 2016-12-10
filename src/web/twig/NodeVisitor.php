@@ -30,10 +30,10 @@ class NodeVisitor implements \Twig_NodeVisitorInterface
      * @inheritdoc
      */
     public function enterNode(
-        /** @noinspection PhpDeprecationInspection */ \Twig_NodeInterface $node,
+        /** @noinspection PhpDeprecationInspection */
+        \Twig_NodeInterface $node,
         \Twig_Environment $env
-    )
-    {
+    ) {
         // Is this the top-level template node?
         if ($node instanceof \Twig_Node_Module) {
             $node = $this->_findEventTags($node);
@@ -80,10 +80,10 @@ class NodeVisitor implements \Twig_NodeVisitorInterface
      * @inheritdoc
      */
     public function leaveNode(
-        /** @noinspection PhpDeprecationInspection */ \Twig_NodeInterface $node,
+        /** @noinspection PhpDeprecationInspection */
+        \Twig_NodeInterface $node,
         \Twig_Environment $env
-    )
-    {
+    ) {
         return $node;
     }
 
@@ -116,9 +116,9 @@ class NodeVisitor implements \Twig_NodeVisitorInterface
      * @return \Twig_NodeInterface|null
      */
     private function _findEventTags(
-        /** @noinspection PhpDeprecationInspection */ \Twig_NodeInterface $node = null
-    )
-    {
+        /** @noinspection PhpDeprecationInspection */
+        \Twig_NodeInterface $node = null
+    ) {
         if (null === $node) {
             return null;
         }

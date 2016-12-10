@@ -142,6 +142,7 @@ abstract class Volume extends SavableComponent implements VolumeInterface
     {
         try {
             $config = $this->addFileMetadataToConfig($config);
+
             return $this->getFilesystem()->writeStream($path, $stream, $config);
         } catch (FileExistsException $exception) {
             throw new VolumeObjectExistsException($exception->getMessage());
@@ -155,6 +156,7 @@ abstract class Volume extends SavableComponent implements VolumeInterface
     {
         try {
             $config = $this->addFileMetadataToConfig($config);
+
             return $this->getFilesystem()->updateStream($path, $stream, $config);
         } catch (FileNotFoundException $exception) {
             throw new VolumeObjectNotFoundException($exception->getMessage());

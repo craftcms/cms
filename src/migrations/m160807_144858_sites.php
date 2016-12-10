@@ -287,7 +287,7 @@ class m160807_144858_sites extends Migration
 
                 // Delete the old FK, indexes, and column
                 MigrationHelper::dropForeignKeyIfExists($tableName, ['locale'], $this);
-                MigrationHelper::dropIndexIfExists($tableName, ['elementId','locale'], true, $this);
+                MigrationHelper::dropIndexIfExists($tableName, ['elementId', 'locale'], true, $this);
                 MigrationHelper::dropIndexIfExists($tableName, ['locale'], false, $this);
                 $this->dropColumn($tableName, 'locale');
             }
@@ -553,7 +553,7 @@ class m160807_144858_sites extends Migration
             $localeParts = array_filter(preg_split('/[^a-zA-Z0-9]/', $locale));
 
             // Prefix with a random string so there's no chance of a conflict with other locales
-            return StringHelper::randomStringWithChars('abcdefghijklmnopqrstuvwxyz', 7) . ($localeParts ? '_'.implode('_', $localeParts) : '');
+            return StringHelper::randomStringWithChars('abcdefghijklmnopqrstuvwxyz', 7).($localeParts ? '_'.implode('_', $localeParts) : '');
         }
 
         return $locale;

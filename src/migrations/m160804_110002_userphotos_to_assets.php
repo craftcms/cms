@@ -70,6 +70,7 @@ class m160804_110002_userphotos_to_assets extends Migration
     public function safeDown()
     {
         echo 'm160804_110002_userphotos_to_assets cannot be reverted.\n';
+
         return false;
     }
 
@@ -233,7 +234,7 @@ class m160804_110002_userphotos_to_assets extends Migration
      * to the array passed in.
      *
      * @param integer $volumeId
-     * @param array $userList
+     * @param array   $userList
      *
      * @return array $userList
      */

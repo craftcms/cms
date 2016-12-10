@@ -9,8 +9,8 @@ namespace craft\tasks;
 
 use Craft;
 use craft\base\Field;
-use craft\base\Task;
 use craft\base\FieldInterface;
+use craft\base\Task;
 use craft\fields\Matrix;
 
 /**

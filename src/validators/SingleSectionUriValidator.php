@@ -10,7 +10,6 @@ namespace craft\validators;
 use Aws\CloudFront\Exception\Exception;
 use Craft;
 use craft\db\Query;
-use craft\helpers\ElementHelper;
 use craft\models\Section_SiteSettings;
 use yii\base\InvalidConfigException;
 use yii\validators\Validator;

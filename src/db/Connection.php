@@ -400,7 +400,7 @@ class Connection extends \yii\db\Connection
      * Creates a shell command set to the given string. The string can contain tokens.
      *
      * @param string $command The tokenized command to be executed
-     * @param string $file The path to the backup file
+     * @param string $file    The path to the backup file
      *
      * @return ShellCommand
      */
@@ -435,7 +435,8 @@ class Connection extends \yii\db\Connection
      *
      * @return string
      */
-    private function _getFixedSiteName() {
+    private function _getFixedSiteName()
+    {
         try {
             return (new Query())
                 ->select(['siteName'])

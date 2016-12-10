@@ -10,12 +10,12 @@ namespace craft\services;
 use Craft;
 use craft\base\Plugin;
 use craft\db\Connection;
+use craft\elements\User;
 use craft\helpers\App;
 use craft\helpers\ArrayHelper;
 use craft\helpers\DateTimeHelper;
 use craft\helpers\StringHelper;
 use craft\helpers\Url;
-use craft\elements\User;
 use GuzzleHttp\Client;
 use GuzzleHttp\Exception\RequestException;
 use yii\base\Component;
@@ -835,6 +835,7 @@ class Config extends Component
 
     /**
      * @param $category
+     *
      * @throws InvalidParamException if $category is not supported
      */
     private function _loadConfigSettings($category)

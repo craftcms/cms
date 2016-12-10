@@ -112,9 +112,9 @@ class QueryBuilder extends \yii\db\mysql\QueryBuilder
         }
 
         return 'INSERT INTO '.$schema->quoteTableName($table).
-        ' ('.implode(', ', $names).') VALUES ('.
-        implode(', ', $placeholders).') ON DUPLICATE KEY UPDATE '.
-        implode(', ', $updates);
+            ' ('.implode(', ', $names).') VALUES ('.
+            implode(', ', $placeholders).') ON DUPLICATE KEY UPDATE '.
+            implode(', ', $updates);
     }
 
     /**
@@ -144,7 +144,7 @@ class QueryBuilder extends \yii\db\mysql\QueryBuilder
         $sql = "UPDATE {$table} SET {$column} = REPLACE({$column}, {$findPhName}, {$replacePhName})";
         $where = $this->buildWhere($condition, $params);
 
-        return $where === '' ? $sql : $sql . ' ' . $where;
+        return $where === '' ? $sql : $sql.' '.$where;
     }
 
     /**

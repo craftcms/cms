@@ -17,9 +17,9 @@ use craft\db\Query;
 use craft\elements\db\ElementQuery;
 use craft\elements\db\ElementQueryInterface;
 use craft\elements\db\MatrixBlockQuery;
+use craft\elements\MatrixBlock;
 use craft\helpers\Json;
 use craft\helpers\StringHelper;
-use craft\elements\MatrixBlock;
 use craft\models\MatrixBlockType;
 use craft\validators\ArrayValidator;
 

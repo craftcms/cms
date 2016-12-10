@@ -41,6 +41,7 @@ class m160913_134730_require_matrix_block_type_id extends Migration
     public function safeDown()
     {
         echo "m160913_134730_require_matrix_block_type_id cannot be reverted.\n";
+
         return false;
     }
 }

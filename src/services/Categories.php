@@ -9,8 +9,8 @@ namespace craft\services;
 
 use Craft;
 use craft\db\Query;
-use craft\errors\CategoryGroupNotFoundException;
 use craft\elements\Category;
+use craft\errors\CategoryGroupNotFoundException;
 use craft\events\CategoryGroupEvent;
 use craft\models\CategoryGroup;
 use craft\models\CategoryGroup_SiteSettings;

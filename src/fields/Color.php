@@ -82,7 +82,7 @@ class Color extends Field implements PreviewableFieldInterface
     {
         if ($value && $value != '#000000') {
             return '<div class="color small static"><div class="colorpreview" style="background-color: '.$value.';"></div></div>'.
-            '<div class="colorhex code">'.$value.'</div>';
+                '<div class="colorhex code">'.$value.'</div>';
         } else {
             return '';
         }

@@ -20,88 +20,88 @@ use yii\base\Exception;
  */
 class I18N extends \yii\i18n\I18N
 {
-	// Properties
-	// =========================================================================
+    // Properties
+    // =========================================================================
 
-	/**
-	 * @var boolean Whether the [PHP intl extension](http://php.net/manual/en/book.intl.php) is loaded.
-	 */
-	private $_intlLoaded = false;
+    /**
+     * @var boolean Whether the [PHP intl extension](http://php.net/manual/en/book.intl.php) is loaded.
+     */
+    private $_intlLoaded = false;
 
-	/**
-	 * @var array All of the known locales
-	 * @see getAllLocales()
-	 */
-	private $_allLocaleIds;
+    /**
+     * @var array All of the known locales
+     * @see getAllLocales()
+     */
+    private $_allLocaleIds;
 
-	/**
-	 * @var
-	 */
-	private $_appLocales;
+    /**
+     * @var
+     */
+    private $_appLocales;
 
-	/**
-	 * @var
-	 */
-	private $_siteLocales;
+    /**
+     * @var
+     */
+    private $_siteLocales;
 
-	/**
-	 * @var boolean Whether [[translate()]] should wrap translations with `@` characters
-	 */
-	private $_translationDebugOutput;
+    /**
+     * @var boolean Whether [[translate()]] should wrap translations with `@` characters
+     */
+    private $_translationDebugOutput;
 
-	// Public Methods
-	// =========================================================================
+    // Public Methods
+    // =========================================================================
 
-	/**
-	 * @inheritdoc
-	 */
-	public function init()
-	{
-		parent::init();
+    /**
+     * @inheritdoc
+     */
+    public function init()
+    {
+        parent::init();
 
-		$this->_intlLoaded = extension_loaded('intl');
-	}
+        $this->_intlLoaded = extension_loaded('intl');
+    }
 
-	/**
-	 * Returns whether the [Intl extension](http://php.net/manual/en/book.intl.php) is loaded.
-	 *
-	 * @return boolean Whether the Intl extension is loaded.
-	 */
-	public function getIsIntlLoaded()
-	{
-		return $this->_intlLoaded;
-	}
+    /**
+     * Returns whether the [Intl extension](http://php.net/manual/en/book.intl.php) is loaded.
+     *
+     * @return boolean Whether the Intl extension is loaded.
+     */
+    public function getIsIntlLoaded()
+    {
+        return $this->_intlLoaded;
+    }
 
-	/**
-	 * Returns a locale by its ID.
-	 *
-	 * @param string $localeId
-	 *
-	 * @return Locale
-	 */
-	public function getLocaleById($localeId)
-	{
-		return new Locale($localeId);
-	}
+    /**
+     * Returns a locale by its ID.
+     *
+     * @param string $localeId
+     *
+     * @return Locale
+     */
+    public function getLocaleById($localeId)
+    {
+        return new Locale($localeId);
+    }
 
-	/**
-	 * Returns an array of all known locale IDs.
-	 *
-	 * If the [PHP intl extension](http://php.net/manual/en/book.intl.php) is loaded, then this will be based on
-	 * all of the locale IDs it knows about. Otherwise, it will be based on the locale data files located in
-	 * craft/app/config/locales/ and craft/config/locales/.
-	 *
-	 * @return array An array of locale IDs.
-	 * @link http://php.net/manual/en/resourcebundle.locales.php
-	 */
-	public function getAllLocaleIds()
-	{
-		if ($this->_allLocaleIds === null) {
-			if ($this->getIsIntlLoaded()) {
-				$this->_allLocaleIds = ResourceBundle::getLocales(null);
-			} else {
-				$appLocalesPath = Craft::$app->getBasePath().DIRECTORY_SEPARATOR.'config'.DIRECTORY_SEPARATOR.'locales';
-				$customLocalesPath = Craft::$app->getPath()->getConfigPath().'/locales';
+    /**
+     * Returns an array of all known locale IDs.
+     *
+     * If the [PHP intl extension](http://php.net/manual/en/book.intl.php) is loaded, then this will be based on
+     * all of the locale IDs it knows about. Otherwise, it will be based on the locale data files located in
+     * craft/app/config/locales/ and craft/config/locales/.
+     *
+     * @return array An array of locale IDs.
+     * @link http://php.net/manual/en/resourcebundle.locales.php
+     */
+    public function getAllLocaleIds()
+    {
+        if ($this->_allLocaleIds === null) {
+            if ($this->getIsIntlLoaded()) {
+                $this->_allLocaleIds = ResourceBundle::getLocales(null);
+            } else {
+                $appLocalesPath = Craft::$app->getBasePath().DIRECTORY_SEPARATOR.'config'.DIRECTORY_SEPARATOR.'locales';
+                $customLocalesPath = Craft::$app->getPath()->getConfigPath().'/locales';
 
                 $localeFiles = array_merge(
                     FileHelper::findFiles($appLocalesPath, [
@@ -114,52 +114,52 @@ class I18N extends \yii\i18n\I18N
                     ])
                 );
 
-				$this->_allLocaleIds = [];
+                $this->_allLocaleIds = [];
 
-				foreach ($localeFiles as $file) {
-					$this->_allLocaleIds[] = pathinfo($file, PATHINFO_FILENAME);
-				}
-			}
+                foreach ($localeFiles as $file) {
+                    $this->_allLocaleIds[] = pathinfo($file, PATHINFO_FILENAME);
+                }
+            }
 
-			// Hyphens, not underscores
-			foreach ($this->_allLocaleIds as $i => $locale) {
-				$this->_allLocaleIds[$i] = str_replace('_', '-', $locale);
-			}
-		}
+            // Hyphens, not underscores
+            foreach ($this->_allLocaleIds as $i => $locale) {
+                $this->_allLocaleIds[$i] = str_replace('_', '-', $locale);
+            }
+        }
 
-		return $this->_allLocaleIds;
-	}
+        return $this->_allLocaleIds;
+    }
 
-	/**
-	 * Returns an array of all known locales.
-	 *
-	 * @return Locale[] An array of [[Locale]] objects.
-	 * @see getAllLocaleIds()
-	 */
-	public function getAllLocales()
-	{
-		$locales = [];
-		$localeIds = $this->getAllLocaleIds();
+    /**
+     * Returns an array of all known locales.
+     *
+     * @return Locale[] An array of [[Locale]] objects.
+     * @see getAllLocaleIds()
+     */
+    public function getAllLocales()
+    {
+        $locales = [];
+        $localeIds = $this->getAllLocaleIds();
 
-		foreach ($localeIds as $localeId) {
-			$locales[] = new Locale($localeId);
-		}
+        foreach ($localeIds as $localeId) {
+            $locales[] = new Locale($localeId);
+        }
 
-		return $locales;
-	}
+        return $locales;
+    }
 
-	// Application Locales
-	// -------------------------------------------------------------------------
+    // Application Locales
+    // -------------------------------------------------------------------------
 
-	/**
-	 * Returns an array of locales that Craft is translated into. The list of locales is based on whatever files exist
-	 * in craft/app/translations/.
-	 *
-	 * @return Locale[] An array of [[Locale]] objects.
+    /**
+     * Returns an array of locales that Craft is translated into. The list of locales is based on whatever files exist
+     * in craft/app/translations/.
+     *
+     * @return Locale[] An array of [[Locale]] objects.
      * @throws Exception in case of failure
-	 */
-	public function getAppLocales()
-	{
+     */
+    public function getAppLocales()
+    {
         if ($this->_appLocales !== null) {
             return $this->_appLocales;
         }
@@ -184,167 +184,167 @@ class I18N extends \yii\i18n\I18N
         }
         closedir($handle);
 
-		return $this->_appLocales;
-	}
+        return $this->_appLocales;
+    }
 
-	/**
-	 * Returns an array of the locale IDs which Craft has been translated into. The list of locales is based on whatever
-	 * files exist in craft/app/translations/.
-	 *
-	 * @return array An array of locale IDs.
-	 */
-	public function getAppLocaleIds()
-	{
-		$locales = $this->getAppLocales();
-		$localeIds = [];
+    /**
+     * Returns an array of the locale IDs which Craft has been translated into. The list of locales is based on whatever
+     * files exist in craft/app/translations/.
+     *
+     * @return array An array of locale IDs.
+     */
+    public function getAppLocaleIds()
+    {
+        $locales = $this->getAppLocales();
+        $localeIds = [];
 
-		foreach ($locales as $locale) {
-			$localeIds[] = $locale->id;
-		}
+        foreach ($locales as $locale) {
+            $localeIds[] = $locale->id;
+        }
 
-		return $localeIds;
-	}
+        return $localeIds;
+    }
 
-	// Site Locales
-	// -------------------------------------------------------------------------
+    // Site Locales
+    // -------------------------------------------------------------------------
 
-	/**
-	 * Returns an array of the site locales.
-	 *
-	 * @return Locale[] An array of [[Locale]] objects.
-	 */
-	public function getSiteLocales()
-	{
-		$locales = [];
+    /**
+     * Returns an array of the site locales.
+     *
+     * @return Locale[] An array of [[Locale]] objects.
+     */
+    public function getSiteLocales()
+    {
+        $locales = [];
 
-		foreach ($this->getSiteLocaleIds() as $localeId) {
-			$locales[] = new Locale($localeId);
-		}
+        foreach ($this->getSiteLocaleIds() as $localeId) {
+            $locales[] = new Locale($localeId);
+        }
 
-		return $locales;
-	}
+        return $locales;
+    }
 
-	/**
-	 * Returns the site's primary locale. The primary locale is whatever is listed first in Settings > Locales in the
-	 * control panel.
-	 *
-	 * @return Locale A [[Locale]] object representing the primary locale.
-	 */
-	public function getPrimarySiteLocale()
-	{
-		$locales = $this->getSiteLocales();
+    /**
+     * Returns the site's primary locale. The primary locale is whatever is listed first in Settings > Locales in the
+     * control panel.
+     *
+     * @return Locale A [[Locale]] object representing the primary locale.
+     */
+    public function getPrimarySiteLocale()
+    {
+        $locales = $this->getSiteLocales();
 
-		return $locales[0];
-	}
+        return $locales[0];
+    }
 
-	/**
-	 * Returns the site's primary locale ID. The primary locale is whatever is listed first in Settings > Locales in the
-	 * control panel.
-	 *
-	 * @return string The primary locale ID.
-	 */
-	public function getPrimarySiteLocaleId()
-	{
-		return $this->getPrimarySiteLocale()->id;
-	}
+    /**
+     * Returns the site's primary locale ID. The primary locale is whatever is listed first in Settings > Locales in the
+     * control panel.
+     *
+     * @return string The primary locale ID.
+     */
+    public function getPrimarySiteLocaleId()
+    {
+        return $this->getPrimarySiteLocale()->id;
+    }
 
-	/**
-	 * Returns an array of the site locale IDs.
-	 *
-	 * @return array An array of locale IDs.
-	 */
-	public function getSiteLocaleIds()
-	{
-		$localeIds = [];
+    /**
+     * Returns an array of the site locale IDs.
+     *
+     * @return array An array of locale IDs.
+     */
+    public function getSiteLocaleIds()
+    {
+        $localeIds = [];
 
-		foreach (Craft::$app->getSites()->getAllSites() as $site) {
-			// Make sure it's unique
-			if (!in_array($site->language, $localeIds)) {
-				$localeIds[] = $site->language;
-			}
-		}
+        foreach (Craft::$app->getSites()->getAllSites() as $site) {
+            // Make sure it's unique
+            if (!in_array($site->language, $localeIds)) {
+                $localeIds[] = $site->language;
+            }
+        }
 
-		return $localeIds;
-	}
+        return $localeIds;
+    }
 
-	/**
-	 * Returns a list of locales that are editable by the current user.
-	 *
-	 * @return array
-	 */
-	public function getEditableLocales()
-	{
-		if (Craft::$app->getIsMultiSite()) {
-			$locales = $this->getSiteLocales();
-			$editableLocales = [];
+    /**
+     * Returns a list of locales that are editable by the current user.
+     *
+     * @return array
+     */
+    public function getEditableLocales()
+    {
+        if (Craft::$app->getIsMultiSite()) {
+            $locales = $this->getSiteLocales();
+            $editableLocales = [];
 
-			foreach ($locales as $locale) {
-				if (Craft::$app->getUser()->checkPermission('editLocale:'.$locale->id)) {
-					$editableLocales[] = $locale;
-				}
-			}
+            foreach ($locales as $locale) {
+                if (Craft::$app->getUser()->checkPermission('editLocale:'.$locale->id)) {
+                    $editableLocales[] = $locale;
+                }
+            }
 
-			return $editableLocales;
-		}
+            return $editableLocales;
+        }
 
-		return $this->getSiteLocales();
-	}
+        return $this->getSiteLocales();
+    }
 
-	/**
-	 * Returns an array of the editable locale IDs.
-	 *
-	 * @return array
-	 */
-	public function getEditableLocaleIds()
-	{
-		$locales = $this->getEditableLocales();
-		$localeIds = [];
+    /**
+     * Returns an array of the editable locale IDs.
+     *
+     * @return array
+     */
+    public function getEditableLocaleIds()
+    {
+        $locales = $this->getEditableLocales();
+        $localeIds = [];
 
-		foreach ($locales as $locale) {
-			$localeIds[] = $locale->id;
-		}
+        foreach ($locales as $locale) {
+            $localeIds[] = $locale->id;
+        }
 
-		return $localeIds;
-	}
+        return $localeIds;
+    }
 
-	/**
-	 * @inheritdoc
-	 */
-	public function translate($category, $message, $params, $language)
-	{
-		$translation = parent::translate($category, $message, $params, $language);
+    /**
+     * @inheritdoc
+     */
+    public function translate($category, $message, $params, $language)
+    {
+        $translation = parent::translate($category, $message, $params, $language);
 
-		if ($this->_shouldAddTranslationDebugOutput()) {
-			switch ($category) {
-				case 'site':
-					$char = '$';
-					break;
-				case 'app':
-					$char = '@';
-					break;
-				default:
-					$char = '%';
-			}
+        if ($this->_shouldAddTranslationDebugOutput()) {
+            switch ($category) {
+                case 'site':
+                    $char = '$';
+                    break;
+                case 'app':
+                    $char = '@';
+                    break;
+                default:
+                    $char = '%';
+            }
 
-			$translation = $char.$translation.$char;
-		}
+            $translation = $char.$translation.$char;
+        }
 
-		return $translation;
-	}
+        return $translation;
+    }
 
-	// Private Methods
-	// =========================================================================
+    // Private Methods
+    // =========================================================================
 
-	/**
-	 * Returns whether [[translate()]] should wrap translations with `@` characters,
-	 * per the `translationDebugOutput` config setting.
-	 */
-	private function _shouldAddTranslationDebugOutput()
-	{
-		if ($this->_translationDebugOutput === null) {
-			$this->_translationDebugOutput = (bool)Craft::$app->getConfig()->get('translationDebugOutput');
-		}
+    /**
+     * Returns whether [[translate()]] should wrap translations with `@` characters,
+     * per the `translationDebugOutput` config setting.
+     */
+    private function _shouldAddTranslationDebugOutput()
+    {
+        if ($this->_translationDebugOutput === null) {
+            $this->_translationDebugOutput = (bool)Craft::$app->getConfig()->get('translationDebugOutput');
+        }
 
-		return $this->_translationDebugOutput;
-	}
+        return $this->_translationDebugOutput;
+    }
 }

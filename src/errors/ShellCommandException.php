@@ -48,7 +48,7 @@ class ShellCommandException extends Exception
     /**
      * Constructor.
      *
-     * @param string $command   The command that was executed
+     * @param string  $command  The command that was executed
      * @param integer $exitCode The command’s exit code
      * @param string  $error    The command’s error output
      * @param string  $message  The error message

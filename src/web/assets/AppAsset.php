@@ -77,12 +77,9 @@ class AppAsset extends AssetBundle
 
         // Figure out which D3 i18n script to load
 
-        if(in_array($language, ['ca-ES', 'de-CH', 'de-DE', 'en-CA', 'en-GB', 'en-US', 'es-ES', 'fi-FI', 'fr-CA', 'fr-FR', 'he-IL', 'hu-HU', 'it-IT', 'ja-JP', 'ko-KR', 'nl-NL', 'pl-PL', 'pt-BR', 'ru-RU', 'sv-SE', 'zh-CN']))
-        {
+        if (in_array($language, ['ca-ES', 'de-CH', 'de-DE', 'en-CA', 'en-GB', 'en-US', 'es-ES', 'fi-FI', 'fr-CA', 'fr-FR', 'he-IL', 'hu-HU', 'it-IT', 'ja-JP', 'ko-KR', 'nl-NL', 'pl-PL', 'pt-BR', 'ru-RU', 'sv-SE', 'zh-CN'])) {
             $d3Language = $language;
-        }
-        else
-        {
+        } else {
             $languageId = Craft::$app->getLocale()->getLanguageID();
 
             $d3LanguageIds = [
@@ -105,12 +102,9 @@ class AppAsset extends AssetBundle
                 'zh' => 'zh-CN',
             ];
 
-            if(array_key_exists($languageId, $d3LanguageIds))
-            {
+            if (array_key_exists($languageId, $d3LanguageIds)) {
                 $d3Language = $d3LanguageIds[$languageId];
-            }
-            else
-            {
+            } else {
                 $d3Language = 'en-US';
             }
         }

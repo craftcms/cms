@@ -2,7 +2,6 @@
 
 namespace craft\migrations;
 
-use Craft;
 use craft\db\Migration;
 
 /**
@@ -27,6 +26,7 @@ class m160920_174553_matrixblocks_owner_site_id_nullable extends Migration
     public function safeDown()
     {
         echo "m160920_174553_matrixblocks_owner_site_id_nullable cannot be reverted.\n";
+
         return false;
     }
 }

@@ -2,7 +2,6 @@
 
 namespace craft\migrations;
 
-use Craft;
 use craft\db\Migration;
 use craft\helpers\MigrationHelper;
 
@@ -30,6 +29,7 @@ class m160925_113941_route_uri_parts extends Migration
     public function safeDown()
     {
         echo "m160925_113941_route_uri_parts cannot be reverted.\n";
+
         return false;
     }
 }

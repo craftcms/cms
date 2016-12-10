@@ -9,8 +9,8 @@ namespace craft\tasks;
 
 use Craft;
 use craft\base\Element;
-use craft\base\Task;
 use craft\base\ElementInterface;
+use craft\base\Task;
 use craft\elements\db\ElementQuery;
 use craft\helpers\StringHelper;
 
@@ -104,6 +104,7 @@ class ResaveElements extends Task
             return true;
         } catch (\Exception $e) {
             $class = $this->elementType;
+
             return 'An exception was thrown while trying to save the '.StringHelper::toLowerCase($class::displayName()).' with the ID “'.$this->_elementIds[$step].'”: '.$e->getMessage();
         }
     }
