@@ -96,7 +96,6 @@ class Extension extends \Twig_Extension implements \Twig_Extension_GlobalsInterf
             new ExitTokenParser(),
             new HeaderTokenParser(),
             new HookTokenParser(),
-            new RegisterResourceTokenParser('registerassetbundle', 'registerAssetBundle', false, true, false, false),
             new RegisterResourceTokenParser('registercss', 'registerCss', true, false, false, true),
             new RegisterResourceTokenParser('registerhirescss', 'registerHiResCss', true, false, false, true),
             new RegisterResourceTokenParser('registercssfile', 'registerCssFile', false, false, false, true),
