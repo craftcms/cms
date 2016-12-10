@@ -686,6 +686,7 @@ class Extension extends \Twig_Extension implements \Twig_Extension_GlobalsInterf
         $request = Craft::$app->getRequest();
 
         $globals = [
+            'view' => $this->view,
             'user' => null,
             'currentUser' => null,
         ];
