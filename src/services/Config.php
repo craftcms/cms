@@ -918,9 +918,7 @@ class Config extends Component
             $mergedCustomConfig = [];
 
             foreach ($customConfig as $env => $envConfig) {
-                if ($env == '*' || StringHelper::contains(CRAFT_ENVIRONMENT,
-                        $env)
-                ) {
+                if ($env == '*' || StringHelper::contains(CRAFT_ENVIRONMENT, $env)) {
                     $mergedCustomConfig = ArrayHelper::merge($mergedCustomConfig, $envConfig);
                 }
             }

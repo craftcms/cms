@@ -899,9 +899,7 @@ class Assets extends Component
         $existingFiles = [];
 
         foreach ($fileList as $file) {
-            if (StringHelper::toLowerCase(rtrim($folder->path,
-                    '/')) == StringHelper::toLowerCase($file['dirname'])
-            ) {
+            if (StringHelper::toLowerCase(rtrim($folder->path, '/')) == StringHelper::toLowerCase($file['dirname'])) {
                 $existingFiles[StringHelper::toLowerCase($file['basename'])] = true;
             }
         }

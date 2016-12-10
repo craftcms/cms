@@ -181,9 +181,7 @@ class UrlManager extends \yii\web\UrlManager
                 ) {
                     $rule['verb'] = explode(',', $matches[1]);
 
-                    if (!isset($rule['mode']) && !in_array('GET',
-                            $rule['verb'])
-                    ) {
+                    if (!isset($rule['mode']) && !in_array('GET', $rule['verb'])) {
                         $rule['mode'] = UrlRule::PARSING_ONLY;
                     }
 

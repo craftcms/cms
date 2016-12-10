@@ -256,9 +256,7 @@ class Content extends Component
         $fieldColumnPrefixLength = strlen($this->fieldColumnPrefix);
 
         foreach ($row as $column => $value) {
-            if (strncmp($column, $this->fieldColumnPrefix,
-                    $fieldColumnPrefixLength) === 0
-            ) {
+            if (strncmp($column, $this->fieldColumnPrefix, $fieldColumnPrefixLength) === 0) {
                 $fieldHandle = substr($column, $fieldColumnPrefixLength);
                 $row[$fieldHandle] = $value;
                 unset($row[$column]);

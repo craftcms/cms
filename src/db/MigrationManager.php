@@ -303,12 +303,10 @@ class MigrationManager extends Component
         $time = microtime(true) - $start;
 
         if ($success) {
-            Craft::info("Reverted $migrationName (time: ".sprintf("%.3f",
-                    $time)."s)");
+            Craft::info("Reverted $migrationName (time: ".sprintf("%.3f", $time)."s)");
             $this->removeMigrationHistory($migrationName);
         } else {
-            Craft::error("Failed to revert $migrationName (time: ".sprintf("%.3f",
-                    $time)."s)");
+            Craft::error("Failed to revert $migrationName (time: ".sprintf("%.3f", $time)."s)");
         }
 
         if (!$isConsoleRequest) {

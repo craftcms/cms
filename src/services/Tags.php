@@ -158,9 +158,7 @@ class Tags extends Component
      */
     public function getTagGroupById($groupId)
     {
-        if (!isset($this->_tagGroupsById) || !array_key_exists($groupId,
-                $this->_tagGroupsById)
-        ) {
+        if (!isset($this->_tagGroupsById) || !array_key_exists($groupId, $this->_tagGroupsById)) {
             $groupRecord = TagGroupRecord::findOne($groupId);
 
             if ($groupRecord) {

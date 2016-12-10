@@ -108,8 +108,7 @@ class UploadedFile extends \yii\web\UploadedFile
     {
         if (($pos = strpos($name, '.')) !== false) {
             // Convert dot notation to the normal format ex: fields.assetsField => fields[assetsField]
-            $name = substr($name, 0, $pos).'['.str_replace('.', '][',
-                    substr($name, $pos + 1)).']';
+            $name = substr($name, 0, $pos).'['.str_replace('.', '][', substr($name, $pos + 1)).']';
         }
 
         return $name;

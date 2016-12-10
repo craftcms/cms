@@ -306,8 +306,7 @@ class Connection extends \yii\db\Connection
     {
         $table = $this->_getTableNameWithoutPrefix($table);
         $columns = ArrayHelper::toArray($columns);
-        $name = $this->tablePrefix.$table.'_'.implode('_',
-                $columns).($unique ? '_unq' : '').'_idx';
+        $name = $this->tablePrefix.$table.'_'.implode('_', $columns).($unique ? '_unq' : '').'_idx';
 
         return $this->trimObjectName($name);
     }

@@ -160,8 +160,7 @@ class Assets extends BaseRelationField
         }
 
         $namespace = Craft::$app->getView()->getNamespace();
-        $isMatrix = (strncmp($namespace, 'types[Matrix][blockTypes][',
-                26) === 0);
+        $isMatrix = (strncmp($namespace, 'types[Matrix][blockTypes][', 26) === 0);
 
         return Craft::$app->getView()->renderTemplate('_components/fieldtypes/Assets/settings',
             [

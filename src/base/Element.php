@@ -344,8 +344,7 @@ abstract class Element extends Component implements ElementInterface
 
             if ($sortableAttributes) {
                 $order = (!empty($viewState['order']) && isset($sortableAttributes[$viewState['order']])) ? $viewState['order'] : ArrayHelper::firstKey($sortableAttributes);
-                $sort = (!empty($viewState['sort']) && in_array($viewState['sort'],
-                        ['asc', 'desc'])) ? $viewState['sort'] : 'asc';
+                $sort = (!empty($viewState['sort']) && in_array($viewState['sort'], ['asc', 'desc'])) ? $viewState['sort'] : 'asc';
 
                 // Combine them, accounting for the possibility that $order could contain multiple values,
                 // and be defensive about the possibility that the first value actually has "asc" or "desc"
@@ -1743,8 +1742,7 @@ abstract class Element extends Component implements ElementInterface
      */
     protected function getFieldByHandle($handle)
     {
-        if (!isset($this->_fieldsByHandle) || !array_key_exists($handle,
-                $this->_fieldsByHandle)
+        if (!isset($this->_fieldsByHandle) || !array_key_exists($handle, $this->_fieldsByHandle)
         ) {
             $contentService = Craft::$app->getContent();
 

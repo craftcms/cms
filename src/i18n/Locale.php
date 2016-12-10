@@ -539,8 +539,7 @@ class Locale extends Object
                     break;  // September
             }
 
-            return $formatter->format(new DateTime('1970-'.sprintf("%02d",
-                    $month).'-01'));
+            return $formatter->format(new DateTime('1970-'.sprintf("%02d", $month).'-01'));
         } else {
             $which = $standAlone ? 'standAloneMonthNames' : 'monthNames';
 

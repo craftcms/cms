@@ -59,17 +59,14 @@ class UrlRule extends \yii\web\UrlRule
                 $slugChars = ['.', '_', '-'];
                 $slugWordSeparator = Craft::$app->getConfig()->get('slugWordSeparator');
 
-                if ($slugWordSeparator != '/' && !in_array($slugWordSeparator,
-                        $slugChars)
-                ) {
+                if ($slugWordSeparator != '/' && !in_array($slugWordSeparator, $slugChars)) {
                     $slugChars[] = $slugWordSeparator;
                 }
 
                 // Reference: http://www.regular-expressions.info/unicode.html
                 static::$_regexTokens = [
                     '{handle}' => '(?:[a-zA-Z][a-zA-Z0-9_]*)',
-                    '{slug}' => '(?:[\p{L}\p{N}\p{M}'.preg_quote(implode($slugChars),
-                            '/').']+)',
+                    '{slug}' => '(?:[\p{L}\p{N}\p{M}'.preg_quote(implode($slugChars), '/').']+)',
                 ];
             }
 

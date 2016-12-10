@@ -63,8 +63,7 @@ class App
     {
         if (!isset(static::$_isPhpDevServer)) {
             if (isset($_SERVER['SERVER_SOFTWARE'])) {
-                static::$_isPhpDevServer = (strncmp($_SERVER['SERVER_SOFTWARE'],
-                        'PHP', 3) == 0);
+                static::$_isPhpDevServer = (strncmp($_SERVER['SERVER_SOFTWARE'], 'PHP', 3) == 0);
             } else {
                 static::$_isPhpDevServer = false;
             }
@@ -111,8 +110,7 @@ class App
      */
     public static function isValidEdition($edition)
     {
-        return (is_numeric($edition) && in_array($edition,
-                static::editions()));
+        return (is_numeric($edition) && in_array($edition, static::editions()));
     }
 
     /**

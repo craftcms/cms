@@ -206,23 +206,19 @@ class DateInterval extends \DateInterval
         $timeComponents = [];
 
         if ($this->y) {
-            $timeComponents[] = $this->y.' '.($this->y > 1 ? Craft::t('app',
-                    'years') : Craft::t('app', 'year'));
+            $timeComponents[] = $this->y.' '.($this->y > 1 ? Craft::t('app', 'years') : Craft::t('app', 'year'));
         }
 
         if ($this->m) {
-            $timeComponents[] = $this->m.' '.($this->m > 1 ? Craft::t('app',
-                    'months') : Craft::t('app', 'month'));
+            $timeComponents[] = $this->m.' '.($this->m > 1 ? Craft::t('app', 'months') : Craft::t('app', 'month'));
         }
 
         if ($this->d) {
-            $timeComponents[] = $this->d.' '.($this->d > 1 ? Craft::t('app',
-                    'days') : Craft::t('app', 'day'));
+            $timeComponents[] = $this->d.' '.($this->d > 1 ? Craft::t('app', 'days') : Craft::t('app', 'day'));
         }
 
         if ($this->h) {
-            $timeComponents[] = $this->h.' '.($this->h > 1 ? Craft::t('app',
-                    'hours') : Craft::t('app', 'hour'));
+            $timeComponents[] = $this->h.' '.($this->h > 1 ? Craft::t('app', 'hours') : Craft::t('app', 'hour'));
         }
 
         $minutes = $this->i;
@@ -236,13 +232,11 @@ class DateInterval extends \DateInterval
         }
 
         if ($minutes) {
-            $timeComponents[] = $minutes.' '.($minutes > 1 ? Craft::t('app',
-                    'minutes') : Craft::t('app', 'minute'));
+            $timeComponents[] = $minutes.' '.($minutes > 1 ? Craft::t('app', 'minutes') : Craft::t('app', 'minute'));
         }
 
         if ($showSeconds && $this->s) {
-            $timeComponents[] = $this->s.' '.($this->s > 1 ? Craft::t('app',
-                    'seconds') : Craft::t('app', 'second'));
+            $timeComponents[] = $this->s.' '.($this->s > 1 ? Craft::t('app', 'seconds') : Craft::t('app', 'second'));
         }
 
         return implode(', ', $timeComponents);

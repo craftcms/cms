@@ -753,9 +753,7 @@ class Fields extends Component
             } else {
                 // Did the old field have a column we need to remove?
                 if (!$isNewField) {
-                    if ($fieldRecord->getOldHandle() && Craft::$app->getDb()->columnExists($contentTable,
-                            $oldColumnName)
-                    ) {
+                    if ($fieldRecord->getOldHandle() && Craft::$app->getDb()->columnExists($contentTable, $oldColumnName)) {
                         Craft::$app->getDb()->createCommand()
                             ->dropColumn($contentTable, $oldColumnName)
                             ->execute();
@@ -1347,9 +1345,7 @@ class Fields extends Component
     {
         /** @var Field $field */
         if (!$field->getIsNew()) {
-            if (!isset($this->_fieldRecordsById) || !array_key_exists($field->id,
-                    $this->_fieldRecordsById)
-            ) {
+            if (!isset($this->_fieldRecordsById) || !array_key_exists($field->id, $this->_fieldRecordsById)) {
                 $this->_fieldRecordsById[$field->id] = FieldRecord::findOne($field->id);
 
                 if (!$this->_fieldRecordsById[$field->id]) {

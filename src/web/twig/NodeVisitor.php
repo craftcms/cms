@@ -50,9 +50,7 @@ class NodeVisitor implements \Twig_NodeVisitorInterface
                 }
             }
 
-            if ($this->_foundHead === false && ($headPos = stripos($data,
-                    '</head>')) !== false
-            ) {
+            if ($this->_foundHead === false && ($headPos = stripos($data, '</head>')) !== false) {
                 $this->_foundHead = true;
 
                 return $this->_splitTextNode($node, $data, $headPos, 'head');
@@ -68,9 +66,7 @@ class NodeVisitor implements \Twig_NodeVisitorInterface
 
                     return $this->_splitTextNode($node, $data, $beginBodyPos, 'beginBody');
                 }
-            } else if ($this->_foundEndBody === false && ($endBodyPos = stripos($data,
-                    '</body>')) !== false
-            ) {
+            } else if ($this->_foundEndBody === false && ($endBodyPos = stripos($data, '</body>')) !== false) {
                 $this->_foundEndBody = true;
 
                 return $this->_splitTextNode($node, $data, $endBodyPos, 'endBody');

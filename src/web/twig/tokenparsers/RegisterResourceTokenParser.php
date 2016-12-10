@@ -111,16 +111,12 @@ class RegisterResourceTokenParser extends \Twig_TokenParser
         }
 
         // Is there a position param?
-        if ($this->_allowPosition && $stream->test(\Twig_Token::NAME_TYPE,
-                'at')
-        ) {
+        if ($this->_allowPosition && $stream->test(\Twig_Token::NAME_TYPE, 'at')) {
             $stream->next();
             $nameToken = $stream->expect(\Twig_Token::NAME_TYPE,
                 ['head', 'beginBody', 'endBody']);
             $position = $nameToken->getValue();
-        } else if ($this->_allowRuntimePosition && $stream->test(\Twig_Token::NAME_TYPE,
-                'on')
-        ) {
+        } else if ($this->_allowRuntimePosition && $stream->test(\Twig_Token::NAME_TYPE, 'on')) {
             $stream->next();
             $nameToken = $stream->expect(\Twig_Token::NAME_TYPE,
                 ['ready', 'load']);
@@ -130,9 +126,7 @@ class RegisterResourceTokenParser extends \Twig_TokenParser
         }
 
         // Is there an options param?
-        if ($this->_allowOptions && $stream->test(\Twig_Token::NAME_TYPE,
-                'with')
-        ) {
+        if ($this->_allowOptions && $stream->test(\Twig_Token::NAME_TYPE, 'with')) {
             $stream->next();
             $options = $expressionParser->parseExpression();
         } else {
@@ -200,10 +194,8 @@ class RegisterResourceTokenParser extends \Twig_TokenParser
     private function _testPositionParam(\Twig_TokenStream $stream)
     {
         return (
-            ($this->_allowPosition && $stream->test(\Twig_Token::NAME_TYPE,
-                    'at')) ||
-            ($this->_allowRuntimePosition && $stream->test(\Twig_Token::NAME_TYPE,
-                    'on'))
+            ($this->_allowPosition && $stream->test(\Twig_Token::NAME_TYPE, 'at')) ||
+            ($this->_allowRuntimePosition && $stream->test(\Twig_Token::NAME_TYPE, 'on'))
         );
     }
 
@@ -216,8 +208,7 @@ class RegisterResourceTokenParser extends \Twig_TokenParser
      */
     private function _testOptionsParam(\Twig_TokenStream $stream)
     {
-        return ($this->_allowOptions && $stream->test(\Twig_Token::NAME_TYPE,
-                'with'));
+        return ($this->_allowOptions && $stream->test(\Twig_Token::NAME_TYPE, 'with'));
     }
 
     /**
@@ -229,8 +220,7 @@ class RegisterResourceTokenParser extends \Twig_TokenParser
      */
     private function _testFirstParam(\Twig_TokenStream $stream)
     {
-        return ($this->_newTag !== null && $first = $stream->test(\Twig_Token::NAME_TYPE,
-                'first'));
+        return ($this->_newTag !== null && $first = $stream->test(\Twig_Token::NAME_TYPE, 'first'));
     }
 
     /**

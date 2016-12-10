@@ -705,9 +705,7 @@ class Matrix extends Field implements EagerLoadingFieldInterface
             $blockType = $blockTypes[$blockData['type']];
 
             // Is this new? (Or has it been deleted?)
-            if (strncmp($blockId, 'new',
-                    3) === 0 || !isset($oldBlocksById[$blockId])
-            ) {
+            if (strncmp($blockId, 'new', 3) === 0 || !isset($oldBlocksById[$blockId])) {
                 $block = new MatrixBlock();
                 $block->fieldId = $this->id;
                 $block->typeId = $blockType->id;

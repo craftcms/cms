@@ -469,9 +469,7 @@ class Matrix extends Component
             foreach ($uniqueAttributes as $attribute) {
                 $value = $blockType->$attribute;
 
-                if ($value && (!isset($uniqueAttributeValues[$attribute]) || !in_array($value,
-                            $uniqueAttributeValues[$attribute]))
-                ) {
+                if ($value && (!isset($uniqueAttributeValues[$attribute]) || !in_array($value,     $uniqueAttributeValues[$attribute]))) {
                     $uniqueAttributeValues[$attribute][] = $value;
                 } else {
                     $blockType->addError($attribute, Craft::t('app', '{attribute} "{value}" has already been taken.',

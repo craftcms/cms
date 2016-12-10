@@ -374,8 +374,7 @@ class EntriesController extends BaseEntriesController
 
         $this->_prepEditEntryVariables($variables);
 
-        $paneHtml = Craft::$app->getView()->renderTemplate('_includes/tabs',
-                $variables).
+        $paneHtml = Craft::$app->getView()->renderTemplate('_includes/tabs', $variables).
             Craft::$app->getView()->renderTemplate('entries/_fields', $variables);
 
         $view = Craft::$app->getView();

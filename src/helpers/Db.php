@@ -456,9 +456,7 @@ class Db
             // Does the value start with this operator?
             $operatorLength = strlen($testOperator);
 
-            if (strncmp(StringHelper::toLowerCase($value), $testOperator,
-                    $operatorLength) == 0
-            ) {
+            if (strncmp(StringHelper::toLowerCase($value), $testOperator, $operatorLength) == 0) {
                 $value = mb_substr($value, $operatorLength);
 
                 if ($testOperator == 'not ') {

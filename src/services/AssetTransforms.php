@@ -609,8 +609,7 @@ class AssetTransforms extends Component
         if ($matchFound) {
             /** @var array $matchFound */
             $from = $asset->getFolder()->path.$this->getTransformSubpath($asset, new AssetTransformIndex($matchFound));
-            $to = $asset->getFolder()->path.$this->getTransformSubpath($asset,
-                    $index);
+            $to = $asset->getFolder()->path.$this->getTransformSubpath($asset, $index);
 
             // Sanity check
             if ($volume->fileExists($to)) {
@@ -622,8 +621,7 @@ class AssetTransforms extends Component
             $this->_createTransformForAsset($asset, $index);
         }
 
-        return $volume->fileExists($asset->getFolder()->path.$this->getTransformSubpath($asset,
-                $index));
+        return $volume->fileExists($asset->getFolder()->path.$this->getTransformSubpath($asset, $index));
     }
 
     /**
@@ -1007,9 +1005,7 @@ class AssetTransforms extends Component
             // The only reasonable way to check for transparency is with Imagick. If Imagick is not present, then
             // we fallback to jpg
             $images = Craft::$app->getImages();
-            if ($images->getIsGd() || !method_exists('Imagick',
-                    'getImageAlphaChannel')
-            ) {
+            if ($images->getIsGd() || !method_exists('Imagick', 'getImageAlphaChannel')) {
                 return 'jpg';
             }
 
@@ -1154,8 +1150,7 @@ class AssetTransforms extends Component
         $volume = $asset->getVolume();
 
         foreach ($transformIndexes as $transformIndex) {
-            $volume->deleteFile($asset->getFolder()->path.$this->getTransformSubpath($asset,
-                    $transformIndex));
+            $volume->deleteFile($asset->getFolder()->path.$this->getTransformSubpath($asset, $transformIndex));
         }
     }
 
@@ -1322,8 +1317,7 @@ class AssetTransforms extends Component
         }
 
         $volume = $asset->getVolume();
-        $transformPath = $asset->getFolder()->path.$this->getTransformSubpath($asset,
-                $index);
+        $transformPath = $asset->getFolder()->path.$this->getTransformSubpath($asset, $index);
 
         // Already created. Relax, grasshopper!
         if ($volume->fileExists($transformPath)) {

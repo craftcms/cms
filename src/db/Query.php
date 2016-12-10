@@ -33,9 +33,7 @@ class Query extends \yii\db\Query
         $tableLength = strlen($table);
 
         foreach ($this->join as $join) {
-            if ($join[1] === $table || strncmp($join[1], $table,
-                    $tableLength) === 0
-            ) {
+            if ($join[1] === $table || strncmp($join[1], $table, $tableLength) === 0) {
                 return true;
             }
         }
