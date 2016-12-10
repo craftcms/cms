@@ -8,6 +8,7 @@
 namespace craft\events;
 
 use craft\models\FieldGroup;
+use yii\base\Event;
 
 /**
  * FieldGroupEvent class.
@@ -15,7 +16,7 @@ use craft\models\FieldGroup;
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since  3.0
  */
-class FieldGroupEvent extends \yii\base\Event
+class FieldGroupEvent extends Event
 {
     // Properties
     // =========================================================================

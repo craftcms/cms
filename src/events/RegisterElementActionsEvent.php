@@ -7,13 +7,15 @@
 
 namespace craft\events;
 
+use yii\base\Event;
+
 /**
  * RegisterElementActionsEvent class.
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since  3.0
  */
-class RegisterElementActionsEvent extends \yii\base\Event
+class RegisterElementActionsEvent extends Event
 {
     // Properties
     // =========================================================================

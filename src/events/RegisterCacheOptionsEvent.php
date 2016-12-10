@@ -7,13 +7,15 @@
 
 namespace craft\events;
 
+use yii\base\Event;
+
 /**
  * RegisterCacheOptionsEvent class.
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since  3.0
  */
-class RegisterCacheOptionsEvent extends \yii\base\Event
+class RegisterCacheOptionsEvent extends Event
 {
     // Properties
     // =========================================================================

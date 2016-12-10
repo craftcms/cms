@@ -8,6 +8,7 @@
 namespace craft\events;
 
 use yii\base\Event;
+use yii\base\Event;
 
 /**
  * RouteEvent class.
@@ -15,7 +16,7 @@ use yii\base\Event;
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since  3.0
  */
-class RouteEvent extends \yii\base\Event
+class RouteEvent extends Event
 {
     // Properties
     // =========================================================================

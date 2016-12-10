@@ -8,6 +8,7 @@
 namespace craft\events;
 
 use craft\base\FieldInterface;
+use yii\base\Event;
 
 /**
  * FieldEvent class.
@@ -15,7 +16,7 @@ use craft\base\FieldInterface;
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since  3.0
  */
-class FieldEvent extends \yii\base\Event
+class FieldEvent extends Event
 {
     // Properties
     // =========================================================================

@@ -8,6 +8,7 @@
 namespace craft\events;
 
 use craft\base\TaskInterface;
+use yii\base\Event;
 
 /**
  * TaskEvent class.
@@ -15,7 +16,7 @@ use craft\base\TaskInterface;
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since  3.0
  */
-class TaskEvent extends \yii\base\Event
+class TaskEvent extends Event
 {
     // Properties
     // =========================================================================

@@ -7,13 +7,15 @@
 
 namespace craft\events;
 
+use yii\base\Event;
+
 /**
  * Reorder Sites event class.
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since  3.0
  */
-class ReorderSitesEvent extends \yii\base\Event
+class ReorderSitesEvent extends Event
 {
     // Properties
     // =========================================================================

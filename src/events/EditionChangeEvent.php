@@ -7,13 +7,15 @@
 
 namespace craft\events;
 
+use yii\base\Event;
+
 /**
  * Edition Change event class.
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since  3.0
  */
-class EditionChangeEvent extends \yii\base\Event
+class EditionChangeEvent extends Event
 {
     // Properties
     // =========================================================================

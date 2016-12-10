@@ -68,25 +68,25 @@ class CraftVariable extends ServiceLocator
     {
         // Set the core components
         $config['components'] = [
-            'cp' => \craft\web\twig\variables\Cp::class,
-            'io' => \craft\web\twig\variables\Io::class,
-            'routes' => \craft\web\twig\variables\Routes::class,
+            'cp' => Cp::class,
+            'io' => Io::class,
+            'routes' => Routes::class,
 
             // Deprecated
-            'categoryGroups' => \craft\web\twig\variables\CategoryGroups::class,
-            'config' => \craft\web\twig\variables\Config::class,
-            'deprecator' => \craft\web\twig\variables\Deprecator::class,
-            'elementIndexes' => \craft\web\twig\variables\ElementIndexes::class,
-            'entryRevisions' => \craft\web\twig\variables\EntryRevisions::class,
-            'feeds' => \craft\web\twig\variables\Feeds::class,
-            'fields' => \craft\web\twig\variables\Fields::class,
-            'globals' => \craft\web\twig\variables\Globals::class,
-            'i18n' => \craft\web\twig\variables\I18N::class,
-            'request' => \craft\web\twig\variables\Request::class,
-            'sections' => \craft\web\twig\variables\Sections::class,
-            'systemSettings' => \craft\web\twig\variables\SystemSettings::class,
-            'tasks' => \craft\web\twig\variables\Tasks::class,
-            'session' => \craft\web\twig\variables\UserSession::class,
+            'categoryGroups' => CategoryGroups::class,
+            'config' => Config::class,
+            'deprecator' => Deprecator::class,
+            'elementIndexes' => ElementIndexes::class,
+            'entryRevisions' => EntryRevisions::class,
+            'feeds' => Feeds::class,
+            'fields' => Fields::class,
+            'globals' => Globals::class,
+            'i18n' => I18N::class,
+            'request' => Request::class,
+            'sections' => Sections::class,
+            'systemSettings' => SystemSettings::class,
+            'tasks' => Tasks::class,
+            'session' => UserSession::class,
         ];
 
         switch (Craft::$app->getEdition()) {
@@ -94,16 +94,16 @@ class CraftVariable extends ServiceLocator
             case Craft::Pro: {
                 $config['components'] = array_merge($config['components'], [
                     // Deprecated
-                    'userGroups' => \craft\web\twig\variables\UserGroups::class,
+                    'userGroups' => UserGroups::class,
                 ]);
             }
             case Craft::Client: {
                 $config['components'] = array_merge($config['components'], [
-                    'rebrand' => \craft\web\twig\variables\Rebrand::class,
+                    'rebrand' => Rebrand::class,
 
                     // Deprecated
-                    'emailMessages' => \craft\web\twig\variables\EmailMessages::class,
-                    'userPermissions' => \craft\web\twig\variables\UserPermissions::class,
+                    'emailMessages' => EmailMessages::class,
+                    'userPermissions' => UserPermissions::class,
                 ]);
             }
         }

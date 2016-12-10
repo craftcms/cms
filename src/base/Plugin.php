@@ -10,6 +10,7 @@ namespace craft\base;
 use Craft;
 use craft\db\Migration;
 use craft\db\MigrationManager;
+use craft\i18n\PhpMessageSource;
 use craft\web\Controller;
 use yii\base\Module;
 
@@ -69,7 +70,7 @@ class Plugin extends Module implements PluginInterface
 
         if (!isset($i18n->translations[$handle]) && !isset($i18n->translations[$handle.'*'])) {
             $i18n->translations[$handle] = [
-                'class' => \craft\i18n\PhpMessageSource::class,
+                'class' => PhpMessageSource::class,
                 'sourceLanguage' => $this->sourceLanguage,
                 'basePath' => "@plugins/$handle/translations",
                 'allowOverrides' => true,

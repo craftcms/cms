@@ -7,13 +7,15 @@
 
 namespace craft\events;
 
+use yii\base\Event;
+
 /**
  * Merged elements event class.
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since  3.0
  */
-class MergeElementsEvent extends \yii\base\Event
+class MergeElementsEvent extends Event
 {
     // Properties
     // =========================================================================

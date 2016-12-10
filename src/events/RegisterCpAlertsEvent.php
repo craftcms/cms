@@ -7,13 +7,15 @@
 
 namespace craft\events;
 
+use yii\base\Event;
+
 /**
  * RegisterCpAlertsEvent class.
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since  3.0
  */
-class RegisterCpAlertsEvent extends \yii\base\Event
+class RegisterCpAlertsEvent extends Event
 {
     // Properties
     // =========================================================================

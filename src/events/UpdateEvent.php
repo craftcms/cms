@@ -7,13 +7,15 @@
 
 namespace craft\events;
 
+use yii\base\Event;
+
 /**
  * Update event class.
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since  3.0
  */
-class UpdateEvent extends \yii\base\Event
+class UpdateEvent extends Event
 {
     // Properties
     // =========================================================================

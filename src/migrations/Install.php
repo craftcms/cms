@@ -12,6 +12,8 @@ use craft\db\Connection;
 use craft\db\Migration;
 use craft\elements\User;
 use craft\helpers\StringHelper;
+use craft\mail\Mailer;
+use craft\mail\transportadapters\Php;
 use craft\models\Info;
 use craft\models\Site;
 use craft\services\Config;
@@ -93,10 +95,10 @@ class Install extends Migration
         Craft::$app->getSystemSettings()->saveSettings('email', [
             'fromEmail' => $this->email,
             'fromName' => $this->site->name,
-            'transportType' => \craft\mail\transportadapters\Php::class
+            'transportType' => Php::class
         ]);
         Craft::$app->getSystemSettings()->saveSettings('mailer', [
-            'class' => \craft\mail\Mailer::class,
+            'class' => Mailer::class,
             'from' => [$this->email => $this->site->name],
             'transport' => [
                 'class' => 'Swift_MailTransport'

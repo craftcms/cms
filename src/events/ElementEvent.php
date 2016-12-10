@@ -8,6 +8,7 @@
 namespace craft\events;
 
 use craft\base\ElementInterface;
+use yii\base\Event;
 
 /**
  * Element event class.
@@ -15,7 +16,7 @@ use craft\base\ElementInterface;
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since  3.0
  */
-class ElementEvent extends \yii\base\Event
+class ElementEvent extends Event
 {
     // Properties
     // =========================================================================

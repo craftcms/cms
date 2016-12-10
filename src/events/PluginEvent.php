@@ -8,6 +8,7 @@
 namespace craft\events;
 
 use craft\base\PluginInterface;
+use yii\base\Event;
 
 /**
  * PluginEvent class.
@@ -15,7 +16,7 @@ use craft\base\PluginInterface;
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since  3.0
  */
-class PluginEvent extends \yii\base\Event
+class PluginEvent extends Event
 {
     // Properties
     // =========================================================================

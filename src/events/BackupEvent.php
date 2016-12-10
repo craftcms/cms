@@ -7,13 +7,15 @@
 
 namespace craft\events;
 
+use yii\base\Event;
+
 /**
  * Backup event class.
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since  3.0
  */
-class BackupEvent extends \yii\base\Event
+class BackupEvent extends Event
 {
     // Properties
     // =========================================================================

@@ -8,6 +8,7 @@
 namespace craft\events;
 
 use craft\elements\Entry;
+use yii\base\Event;
 
 /**
  * Entry event class.
@@ -15,7 +16,7 @@ use craft\elements\Entry;
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since  3.0
  */
-class VersionEvent extends \yii\base\Event
+class VersionEvent extends Event
 {
     // Properties
     // =========================================================================

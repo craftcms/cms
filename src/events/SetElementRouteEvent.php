@@ -7,13 +7,15 @@
 
 namespace craft\events;
 
+use yii\base\Event;
+
 /**
  * SetElementRouteEvent class.
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since  3.0
  */
-class SetElementRouteEvent extends \yii\base\Event
+class SetElementRouteEvent extends Event
 {
     // Properties
     // =========================================================================

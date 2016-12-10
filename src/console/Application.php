@@ -9,6 +9,9 @@ namespace craft\console;
 
 use Craft;
 use craft\base\ApplicationTrait;
+use yii\console\controllers\CacheController;
+use yii\console\controllers\HelpController;
+use yii\console\controllers\MigrateController;
 
 /**
  * Craft Console Application class
@@ -66,9 +69,9 @@ class Application extends \yii\console\Application
     public function coreCommands()
     {
         return [
-            'help' => \yii\console\controllers\HelpController::class,
-            'migrate' => \yii\console\controllers\MigrateController::class,
-            'cache' => \yii\console\controllers\CacheController::class,
+            'help' => HelpController::class,
+            'migrate' => MigrateController::class,
+            'cache' => CacheController::class,
         ];
     }
 }

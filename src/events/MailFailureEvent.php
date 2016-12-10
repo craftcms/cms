@@ -9,6 +9,7 @@ namespace craft\events;
 
 use craft\elements\User;
 use craft\mail\Message;
+use yii\base\Event;
 
 /**
  * Send Email Error event raised when there was a problem sending an email.
@@ -16,7 +17,7 @@ use craft\mail\Message;
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since  3.0
  */
-class MailFailureEvent extends \yii\base\Event
+class MailFailureEvent extends Event
 {
     // Properties
     // =========================================================================

@@ -8,6 +8,7 @@
 namespace craft\events;
 
 use craft\base\WidgetInterface;
+use yii\base\Event;
 
 /**
  * WidgetEvent class.
@@ -15,7 +16,7 @@ use craft\base\WidgetInterface;
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since  3.0
  */
-class WidgetEvent extends \yii\base\Event
+class WidgetEvent extends Event
 {
     // Properties
     // =========================================================================

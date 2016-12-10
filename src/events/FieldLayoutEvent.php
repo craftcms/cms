@@ -8,6 +8,7 @@
 namespace craft\events;
 
 use craft\models\FieldLayout;
+use yii\base\Event;
 
 /**
  * Field layout Event class.
@@ -15,7 +16,7 @@ use craft\models\FieldLayout;
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since  3.0
  */
-class FieldLayoutEvent extends \yii\base\Event
+class FieldLayoutEvent extends Event
 {
     // Properties
     // =========================================================================

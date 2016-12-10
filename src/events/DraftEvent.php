@@ -7,13 +7,15 @@
 
 namespace craft\events;
 
+use yii\base\Event;
+
 /**
  * Draft event class.
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since  3.0
  */
-class DraftEvent extends \yii\base\Event
+class DraftEvent extends Event
 {
     // Properties
     // =========================================================================

@@ -8,6 +8,7 @@
 namespace craft\events;
 
 use craft\elements\User;
+use yii\base\Event;
 
 /**
  * User token event class.
@@ -15,7 +16,7 @@ use craft\elements\User;
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since  3.0
  */
-class UserTokenEvent extends \yii\base\Event
+class UserTokenEvent extends Event
 {
     // Properties
     // =========================================================================

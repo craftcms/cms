@@ -8,6 +8,7 @@
 namespace craft\events;
 
 use craft\models\CategoryGroup;
+use yii\base\Event;
 
 /**
  * Category group event class.
@@ -15,7 +16,7 @@ use craft\models\CategoryGroup;
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since  3.0
  */
-class CategoryGroupEvent extends \yii\base\Event
+class CategoryGroupEvent extends Event
 {
     // Properties
     // =========================================================================

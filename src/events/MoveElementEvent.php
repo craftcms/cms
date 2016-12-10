@@ -8,6 +8,7 @@
 namespace craft\events;
 
 use craft\base\ElementInterface;
+use yii\base\Event;
 
 /**
  * Move element event class.
@@ -15,7 +16,7 @@ use craft\base\ElementInterface;
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since  3.0
  */
-class MoveElementEvent extends \yii\base\Event
+class MoveElementEvent extends Event
 {
     // Properties
     // =========================================================================

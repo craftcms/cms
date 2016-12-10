@@ -8,6 +8,7 @@
 namespace craft\events;
 
 use craft\base\VolumeInterface;
+use yii\base\Event;
 
 /**
  * VolumeEvent class.
@@ -15,7 +16,7 @@ use craft\base\VolumeInterface;
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since  3.0
  */
-class VolumeEvent extends \yii\base\Event
+class VolumeEvent extends Event
 {
     // Properties
     // =========================================================================

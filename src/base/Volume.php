@@ -13,7 +13,9 @@
 namespace craft\base;
 
 use Craft;
+use craft\behaviors\FieldLayoutBehavior;
 use craft\behaviors\FieldLayoutTrait;
+use craft\elements\Asset;
 use craft\errors\VolumeObjectExistsException;
 use craft\errors\VolumeObjectNotFoundException;
 use craft\records\Volume as VolumeRecord;
@@ -76,8 +78,8 @@ abstract class Volume extends SavableComponent implements VolumeInterface
     {
         return [
             'fieldLayout' => [
-                'class' => \craft\behaviors\FieldLayoutBehavior::class,
-                'elementType' => \craft\elements\Asset::class
+                'class' => FieldLayoutBehavior::class,
+                'elementType' => Asset::class
             ],
         ];
     }

@@ -8,6 +8,7 @@
 namespace craft\events;
 
 use craft\elements\db\ElementQueryInterface;
+use yii\base\Event;
 
 /**
  * Set Status element action event class.
@@ -15,7 +16,7 @@ use craft\elements\db\ElementQueryInterface;
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since  3.0
  */
-class SetStatusEvent extends \yii\base\Event
+class SetStatusEvent extends Event
 {
     // Properties
     // =========================================================================

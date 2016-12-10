@@ -7,13 +7,15 @@
 
 namespace craft\events;
 
+use yii\base\Event;
+
 /**
  * ResolveResourcePathEvent class.
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since  3.0
  */
-class ResolveResourcePathEvent extends \yii\base\Event
+class ResolveResourcePathEvent extends Event
 {
     // Properties
     // =========================================================================

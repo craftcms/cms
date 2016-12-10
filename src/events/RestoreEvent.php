@@ -7,13 +7,15 @@
 
 namespace craft\events;
 
+use yii\base\Event;
+
 /**
  * Restore event class.
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since  3.0
  */
-class RestoreEvent extends \yii\base\Event
+class RestoreEvent extends Event
 {
     // Properties
     // =========================================================================

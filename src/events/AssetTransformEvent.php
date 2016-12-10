@@ -8,6 +8,7 @@
 namespace craft\events;
 
 use craft\models\AssetTransform;
+use yii\base\Event;
 
 /**
  * Asset transform event class.
@@ -15,7 +16,7 @@ use craft\models\AssetTransform;
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since  3.0
  */
-class AssetTransformEvent extends \yii\base\Event
+class AssetTransformEvent extends Event
 {
     // Properties
     // =========================================================================

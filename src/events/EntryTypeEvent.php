@@ -7,13 +7,15 @@
 
 namespace craft\events;
 
+use yii\base\Event;
+
 /**
  * Entry type event class.
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since  3.0
  */
-class EntryTypeEvent extends \yii\base\Event
+class EntryTypeEvent extends Event
 {
     // Properties
     // =========================================================================

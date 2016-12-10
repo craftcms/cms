@@ -9,7 +9,9 @@ namespace craft\models;
 
 use craft\base\FieldInterface;
 use craft\base\Model;
+use craft\behaviors\FieldLayoutBehavior;
 use craft\behaviors\FieldLayoutTrait;
+use craft\elements\MatrixBlock;
 
 /**
  * MatrixBlockType model class.
@@ -74,8 +76,8 @@ class MatrixBlockType extends Model
     {
         return [
             'fieldLayout' => [
-                'class' => \craft\behaviors\FieldLayoutBehavior::class,
-                'elementType' => \craft\elements\MatrixBlock::class
+                'class' => FieldLayoutBehavior::class,
+                'elementType' => MatrixBlock::class
             ],
         ];
     }

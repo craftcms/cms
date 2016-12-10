@@ -7,13 +7,15 @@
 
 namespace craft\events;
 
+use yii\base\Event;
+
 /**
  * RegisterRichTextLinkOptionsEvent class.
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since  3.0
  */
-class RegisterRichTextLinkOptionsEvent extends \yii\base\Event
+class RegisterRichTextLinkOptionsEvent extends Event
 {
     // Properties
     // =========================================================================

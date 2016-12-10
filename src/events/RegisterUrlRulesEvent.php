@@ -7,13 +7,15 @@
 
 namespace craft\events;
 
+use yii\base\Event;
+
 /**
  * RegisterUrlRulesEvent class.
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since  3.0
  */
-class RegisterUrlRulesEvent extends \yii\base\Event
+class RegisterUrlRulesEvent extends Event
 {
     // Properties
     // =========================================================================

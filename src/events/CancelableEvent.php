@@ -7,13 +7,15 @@
 
 namespace craft\events;
 
+use yii\base\Event;
+
 /**
  * CancelableEvent class.
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since  3.0
  */
-class CancelableEvent extends \yii\base\Event
+class CancelableEvent extends Event
 {
     // Properties
     // =========================================================================

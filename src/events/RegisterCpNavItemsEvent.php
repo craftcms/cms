@@ -7,13 +7,15 @@
 
 namespace craft\events;
 
+use yii\base\Event;
+
 /**
  * RegisterCpNavItemsEvent class.
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since  3.0
  */
-class RegisterCpNavItemsEvent extends \yii\base\Event
+class RegisterCpNavItemsEvent extends Event
 {
     // Properties
     // =========================================================================
