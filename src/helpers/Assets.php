@@ -11,9 +11,9 @@ use Craft;
 use craft\base\Volume;
 use craft\elements\Asset;
 use craft\enums\PeriodType;
-use craft\events\Event;
 use craft\events\SetAssetFilenameEvent;
 use craft\models\VolumeFolder;
+use yii\base\Event;
 use yii\base\Exception;
 
 /**

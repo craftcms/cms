@@ -21,7 +21,7 @@ use craft\db\Connection;
 use craft\db\FixedOrderExpression;
 use craft\db\Query;
 use craft\db\QueryAbortedException;
-use craft\events\Event;
+use craft\events\CancelableEvent;
 use craft\events\PopulateElementEvent;
 use craft\helpers\ArrayHelper;
 use craft\helpers\Db;
@@ -1239,7 +1239,7 @@ class ElementQuery extends Query implements ElementQueryInterface, Arrayable, Co
      */
     protected function beforePrepare()
     {
-        $event = new Event();
+        $event = new CancelableEvent();
         $this->trigger(self::EVENT_BEFORE_PREPARE, $event);
 
         return $event->isValid;
@@ -1257,7 +1257,7 @@ class ElementQuery extends Query implements ElementQueryInterface, Arrayable, Co
      */
     protected function afterPrepare()
     {
-        $event = new Event();
+        $event = new CancelableEvent();
         $this->trigger(self::EVENT_AFTER_PREPARE, $event);
 
         return $event->isValid;

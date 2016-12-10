@@ -9,8 +9,8 @@ namespace craft\helpers;
 
 use Craft;
 use craft\enums\LicenseKeyStatus;
-use craft\events\Event;
 use craft\events\RegisterCpAlertsEvent;
+use yii\base\Event;
 
 /**
  * Class Cp

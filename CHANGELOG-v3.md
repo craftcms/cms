@@ -161,6 +161,7 @@ Craft CMS 3.0 Working Changelog
 - Renamed et\Et to EtTransport.
 - Renamed events\DbBackupEvent to BackupEvent.
 - Renamed events\EntryEvent to VersionEvent.
+- Renamed events\Event to CancelableEvent.
 - Renamed mail\transportadaptors\BaseTransportAdaptor to mail\transportadapters\BaseTransportAdapter.
 - Renamed mail\transportadaptors\Gmail to mail\transportadapters\Gmail.
 - Renamed mail\transportadaptors\Php to mail\transportadapters\Php.

@@ -8,7 +8,6 @@
 namespace craft\helpers;
 
 use craft\errors\MissingComponentException;
-use craft\events\Event;
 use craft\events\RegisterComponentTypesEvent;
 use craft\mail\Mailer;
 use craft\mail\transportadapters\BaseTransportAdapter;
@@ -18,6 +17,7 @@ use craft\mail\transportadapters\Sendmail;
 use craft\mail\transportadapters\Smtp;
 use craft\mail\transportadapters\TransportAdapterInterface;
 use craft\models\MailSettings;
+use yii\base\Event;
 
 /**
  * Class DateTimeHelper

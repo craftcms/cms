@@ -9,9 +9,9 @@ namespace craft\tools;
 
 use Craft;
 use craft\base\Tool;
-use craft\events\Event;
 use craft\events\RegisterCacheOptionsEvent;
 use craft\helpers\FileHelper;
+use yii\base\Event;
 
 /**
  * ClearCaches represents a Clear Caches tool.

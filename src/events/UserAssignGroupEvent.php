@@ -15,7 +15,7 @@ use craft\elements\User;
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since  3.0
  */
-class UserAssignGroupEvent extends Event
+class UserAssignGroupEvent extends CancelableEvent
 {
     // Properties
     // =========================================================================
