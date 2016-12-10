@@ -8,6 +8,7 @@
 namespace craft\controllers;
 
 use Craft;
+use craft\base\Tool;
 use craft\base\ToolInterface;
 use craft\helpers\Component;
 use craft\web\Controller;
@@ -51,9 +52,16 @@ class ToolsController extends Controller
         $class = Craft::$app->getRequest()->getRequiredBodyParam('tool');
         $params = Craft::$app->getRequest()->getBodyParam('params', []);
 
-        /** @var ToolInterface $tool */
-        $tool = Component::createComponent($class, \craft\base\ToolInterface::class);
-        $response = $tool->performAction($params);
+        /** @var Tool $tool */
+        $tool = Component::createComponent($class, ToolInterface::class);
+        try {
+            $response = $tool->performAction($params);
+        } catch (\Exception $e) {
+            Craft::error("An error occurred when executing the \"{$tool::displayName()}\" tool: ".$e->getMessage(), __METHOD__);
+            $response = [
+                'error' => $e->getMessage()
+            ];
+        }
 
         return $this->asJson($response);
     }
