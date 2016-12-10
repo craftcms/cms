@@ -88,7 +88,7 @@ class UpdateController extends Controller
         $isComposerInstallJs = Json::encode(App::isComposerInstall());
         $js = <<<JS
 new Craft.UpdatesPage({
-    isComposerInstall: $isComposerInstallJs
+    isComposerInstall: {$isComposerInstallJs}
 });
 JS;
         $view->registerJs($js);
