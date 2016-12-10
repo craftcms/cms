@@ -57,7 +57,7 @@ class UpdateController extends Controller
     /**
      * Update Index
      *
-     * @return Response
+     * @return string
      */
     public function actionIndex()
     {

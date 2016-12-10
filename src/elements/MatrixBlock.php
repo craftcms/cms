@@ -385,6 +385,9 @@ class MatrixBlock extends Element
      */
     private function _getField()
     {
-        return Craft::$app->getFields()->getFieldById($this->fieldId);
+        /** @var Matrix $field */
+        $field = Craft::$app->getFields()->getFieldById($this->fieldId);
+
+        return $field;
     }
 }

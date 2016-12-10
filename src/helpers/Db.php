@@ -122,7 +122,7 @@ class Db
      * @param integer $max
      * @param integer $decimals
      *
-     * @return array
+     * @return string
      */
     public static function getNumericalColumnType($min = null, $max = null, $decimals = null)
     {

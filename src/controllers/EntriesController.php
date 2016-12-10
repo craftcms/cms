@@ -619,7 +619,7 @@ class EntriesController extends BaseEntriesController
      * @param integer $draftId
      * @param integer $versionId
      *
-     * @return Response
+     * @return string
      * @throws NotFoundHttpException if the requested category cannot be found
      */
     public function actionViewSharedEntry($entryId = null, $siteId = null, $draftId = null, $versionId = null)

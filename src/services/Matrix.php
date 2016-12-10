@@ -642,7 +642,10 @@ class Matrix extends Component
      */
     public function getBlockById($blockId, $siteId = null)
     {
-        return Craft::$app->getElements()->getElementById($blockId, MatrixBlock::class, $siteId);
+        /** @var MatrixBlock|null $block */
+        $block = Craft::$app->getElements()->getElementById($blockId, MatrixBlock::class, $siteId);
+
+        return $block;
     }
 
     /**

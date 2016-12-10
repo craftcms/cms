@@ -52,11 +52,11 @@ class StringHelper extends \yii\helpers\StringHelper
      *
      * @param string $str
      *
-     * @return array An array of string chars
+     * @return string[] An array of string chars
      */
     public static function charsAsArray($str)
     {
-        return (string)Stringy::create($str)->chars();
+        return Stringy::create($str)->chars();
     }
 
     /**
@@ -423,6 +423,7 @@ class StringHelper extends \yii\helpers\StringHelper
             $lines[$i] = (string)$line;
         }
 
+        /** @var string[] $lines */
         return $lines;
     }
 

@@ -194,7 +194,10 @@ class Plugin extends Module implements PluginInterface
      */
     public function getMigrator()
     {
-        return $this->get('migrator');
+        /** @var MigrationManager $migrator */
+        $migrator = $this->get('migrator');
+
+        return $migrator;
     }
 
     /**

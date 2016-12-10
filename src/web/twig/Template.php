@@ -12,6 +12,8 @@ use craft\base\Element;
 use craft\base\ElementInterface;
 use yii\base\Object;
 
+/** @noinspection PhpInternalEntityUsedInspection */
+
 /**
  * Base Twig template class.
  *

@@ -228,7 +228,7 @@ class Elements extends Component
      *
      * @param integer|array $elementId The element’s ID, or an array of element IDs.
      *
-     * @return ElementInterface|ElementInterface[]|Element|Element[]|null The element class(es).
+     * @return ElementInterface|ElementInterface[]|Element|Element[]|false The element class(es).
      */
     public function getElementTypeById($elementId)
     {
@@ -239,13 +239,13 @@ class Elements extends Component
                 ->from(['{{%elements}}'])
                 ->where(['id' => $elementId])
                 ->column();
-        } else {
-            return (new Query())
-                ->select(['type'])
-                ->from(['{{%elements}}'])
-                ->where(['id' => $elementId])
-                ->scalar();
         }
+
+        return (new Query())
+            ->select(['type'])
+            ->from(['{{%elements}}'])
+            ->where(['id' => $elementId])
+            ->scalar();
     }
 
     /**
@@ -1044,11 +1044,12 @@ class Elements extends Component
      *
      * @param string $handle The element class handle
      *
-     * @return ElementInterface|null The element class, or null if it could not be found
+     * @return string|null The element class, or null if it could not be found
      */
     public function getElementTypeByHandle($handle)
     {
         foreach ($this->getAllElementTypes() as $class) {
+            /** @var string|Element $class */
             if (strcasecmp($class::classHandle(), $handle) === 0) {
                 return $class;
             }

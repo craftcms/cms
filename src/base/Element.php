@@ -1109,7 +1109,7 @@ abstract class Element extends Component implements ElementInterface
     /**
      * @inheritdoc
      *
-     * @return ElementQueryInterface
+     * @return ElementInterface[]|ElementQueryInterface|null
      */
     public function getDescendants($dist = null)
     {
@@ -1128,7 +1128,7 @@ abstract class Element extends Component implements ElementInterface
     /**
      * @inheritdoc
      *
-     * @return ElementQueryInterface
+     * @return ElementInterface[]|ElementQueryInterface|null
      */
     public function getChildren()
     {

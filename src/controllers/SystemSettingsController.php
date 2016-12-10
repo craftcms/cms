@@ -171,7 +171,7 @@ class SystemSettingsController extends Controller
      * @param MailSettings|null         $settings The posted email settings, if there were any validation errors
      * @param TransportAdapterInterface $adapter  The transport adapter, if there were any validation errors
      *
-     * @return Response
+     * @return string
      * @throws Exception if a plugin returns an invalid mail transport type
      */
     public function actionEditEmailSettings(MailSettings $settings = null, TransportAdapterInterface $adapter = null)

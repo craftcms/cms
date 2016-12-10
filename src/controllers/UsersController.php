@@ -1565,7 +1565,7 @@ class UsersController extends Controller
      * @param User  $user
      * @param array $variables
      *
-     * @return Response
+     * @return string
      */
     private function _renderSetPasswordTemplate(User $user, $variables)
     {

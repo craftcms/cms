@@ -111,8 +111,10 @@ class Assets extends Component
      */
     public function getAssetById($assetId, $siteId = null)
     {
-        return Craft::$app->getElements()->getElementById($assetId,
-            Asset::class, $siteId);
+        /** @var Asset|null $asset */
+        $asset = Craft::$app->getElements()->getElementById($assetId, Asset::class, $siteId);
+
+        return $asset;
     }
 
     /**
@@ -677,7 +679,7 @@ class Assets extends Component
      *
      * @param mixed $criteria
      *
-     * @return array
+     * @return VolumeFolder[]
      */
     public function findFolders($criteria = null)
     {

@@ -160,7 +160,7 @@ class Fields
     /**
      * Returns all available field type classes.
      *
-     * @return FieldInterface[] The available field type classes
+     * @return string[] The available field type classes
      */
     public function getAllFieldTypes()
     {

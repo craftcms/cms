@@ -146,7 +146,10 @@ class Users extends Component
      */
     public function getUserById($userId)
     {
-        return Craft::$app->getElements()->getElementById($userId, User::class);
+        /** @var User|null $user */
+        $user = Craft::$app->getElements()->getElementById($userId, User::class);
+
+        return $user;
     }
 
     /**
