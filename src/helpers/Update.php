@@ -101,17 +101,20 @@ class Update
         $fullBackupPath = Craft::$app->getPath()->getDbBackupPath().'/'.$fileName;
 
         // Make sure we're constrained to the backups folder.
-        if (Path::ensurePathIsContained($fileName)) {
-            if (Craft::$app->getDb()->restore($fullBackupPath)) {
-                return true;
-            } else {
-                Craft::error('There was a problem restoring the database backup.', __METHOD__);
-            }
-        } else {
+        if (!Path::ensurePathIsContained($fileName)) {
             Craft::warning('Someone tried to restore a database from outside of the Craft backups folder: '.$fullBackupPath, __METHOD__);
+
+            return false;
+        }
+        try {
+            Craft::$app->getDb()->restore($fullBackupPath);
+        } catch (\Exception $e) {
+            Craft::error("There was a problem restoring the database backup file \"{$fullBackupPath}\": ".$e->getMessage(), __METHOD__);
+
+            return false;
         }
 
-        return false;
+        return true;
     }
 
     /**
