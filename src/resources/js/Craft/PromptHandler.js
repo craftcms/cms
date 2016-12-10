@@ -8,7 +8,7 @@ Craft.PromptHandler = Garnish.Base.extend({
     $promptApplyToRemainingContainer: null,
     $promptApplyToRemainingCheckbox: null,
     $promptApplyToRemainingLabel: null,
-	$pomptChoices: null,
+    $pomptChoices: null,
 
 
     _prompts: [],
@@ -16,31 +16,26 @@ Craft.PromptHandler = Garnish.Base.extend({
     _promptBatchReturnData: [],
     _promptBatchNum: 0,
 
-    init: function()
-    {
+    init: function() {
 
     },
 
-    resetPrompts: function()
-    {
+    resetPrompts: function() {
         this._prompts = [];
         this._promptBatchCallback = $.noop;
         this._promptBatchReturnData = [];
         this._promptBatchNum = 0;
     },
 
-    addPrompt: function(prompt)
-    {
+    addPrompt: function(prompt) {
         this._prompts.push(prompt);
     },
 
-    getPromptCount: function()
-    {
+    getPromptCount: function() {
         return this._prompts.length;
     },
 
-    showBatchPrompts: function(callback)
-    {
+    showBatchPrompts: function(callback) {
         this._promptBatchCallback = callback;
         this._promptBatchReturnData = [];
         this._promptBatchNum = 0;
@@ -48,8 +43,7 @@ Craft.PromptHandler = Garnish.Base.extend({
         this._showNextPromptInBatch();
     },
 
-    _showNextPromptInBatch: function()
-    {
+    _showNextPromptInBatch: function() {
         var prompt = this._prompts[this._promptBatchNum].prompt,
             remainingInBatch = this._prompts.length - (this._promptBatchNum + 1);
 
@@ -63,8 +57,7 @@ Craft.PromptHandler = Garnish.Base.extend({
      * @param applyToRemaining
      * @private
      */
-    _handleBatchPromptSelection: function(choice, applyToRemaining)
-    {
+    _handleBatchPromptSelection: function(choice, applyToRemaining) {
         var prompt = this._prompts[this._promptBatchNum],
             remainingInBatch = this._prompts.length - (this._promptBatchNum + 1);
 
@@ -73,27 +66,22 @@ Craft.PromptHandler = Garnish.Base.extend({
         this._promptBatchReturnData.push(choiceData);
 
         // Are there any remaining items in the batch?
-        if (remainingInBatch)
-        {
+        if (remainingInBatch) {
             // Get ready to deal with the next prompt
             this._promptBatchNum++;
 
             // Apply the same choice to the remaining items?
-            if (applyToRemaining)
-            {
+            if (applyToRemaining) {
                 this._handleBatchPromptSelection(choice, true);
             }
-            else
-            {
+            else {
                 // Show the next prompt
                 this._showNextPromptInBatch();
             }
         }
-        else
-        {
+        else {
             // All done! Call the callback
-            if (typeof this._promptBatchCallback == 'function')
-            {
+            if (typeof this._promptBatchCallback == 'function') {
                 this._promptBatchCallback(this._promptBatchReturnData);
             }
         }
@@ -107,8 +95,7 @@ Craft.PromptHandler = Garnish.Base.extend({
      * @param {function} callback
      * @param {number} itemsToGo
      */
-    _showPrompt: function(message, choices, callback, itemsToGo)
-    {
+    _showPrompt: function(message, choices, callback, itemsToGo) {
         this._promptCallback = callback;
 
         if (this.modal == null) {
@@ -123,50 +110,45 @@ Craft.PromptHandler = Garnish.Base.extend({
 
         this.$promptMessage = $('<p class="prompt-msg"/>').appendTo(this.$prompt);
 
-		this.$promptChoices = $('<div class="options"></div>').appendTo(this.$prompt);
+        this.$promptChoices = $('<div class="options"></div>').appendTo(this.$prompt);
 
-		this.$promptApplyToRemainingContainer = $('<label class="assets-applytoremaining"/>').appendTo(this.$prompt).hide();
-		this.$promptApplyToRemainingCheckbox = $('<input type="checkbox"/>').appendTo(this.$promptApplyToRemainingContainer);
-		this.$promptApplyToRemainingLabel = $('<span/>').appendTo(this.$promptApplyToRemainingContainer);
+        this.$promptApplyToRemainingContainer = $('<label class="assets-applytoremaining"/>').appendTo(this.$prompt).hide();
+        this.$promptApplyToRemainingCheckbox = $('<input type="checkbox"/>').appendTo(this.$promptApplyToRemainingContainer);
+        this.$promptApplyToRemainingLabel = $('<span/>').appendTo(this.$promptApplyToRemainingContainer);
 
-		this.$promptButtons = $('<div class="buttons right"/>').appendTo(this.$prompt);
+        this.$promptButtons = $('<div class="buttons right"/>').appendTo(this.$prompt);
 
         this.modal.setContainer(this.$modalContainerDiv);
 
         this.$promptMessage.html(message);
 
-		var $cancelButton = $('<div class="btn">'+Craft.t('app', 'Cancel')+'</div>').appendTo(this.$promptButtons),
-			$submitBtn = $('<input type="submit" class="btn submit disabled" value="'+Craft.t('app', 'OK')+'" />').appendTo(this.$promptButtons);
+        var $cancelButton = $('<div class="btn">' + Craft.t('app', 'Cancel') + '</div>').appendTo(this.$promptButtons),
+            $submitBtn = $('<input type="submit" class="btn submit disabled" value="' + Craft.t('app', 'OK') + '" />').appendTo(this.$promptButtons);
 
-        for (var i = 0; i < choices.length; i++)
-        {
-            var $radioButtonHtml = $('<div><label><input type="radio" name="promptAction" value="'+choices[i].value+'"/> '+choices[i].title+'</label></div>').appendTo(this.$promptChoices),
-				$radioButton = $radioButtonHtml.find('input');
+        for (var i = 0; i < choices.length; i++) {
+            var $radioButtonHtml = $('<div><label><input type="radio" name="promptAction" value="' + choices[i].value + '"/> ' + choices[i].title + '</label></div>').appendTo(this.$promptChoices),
+                $radioButton = $radioButtonHtml.find('input');
 
-			this.addListener($radioButton, 'click', function(ev)
-			{
-				$submitBtn.removeClass('disabled');
-			});
+            this.addListener($radioButton, 'click', function(ev) {
+                $submitBtn.removeClass('disabled');
+            });
         }
 
-		this.addListener($submitBtn, 'activate', function(ev)
-		{
-			var choice = $(ev.currentTarget).parents('.modal').find('input[name=promptAction]:checked').val(),
-				applyToRemaining = this.$promptApplyToRemainingCheckbox.prop('checked');
+        this.addListener($submitBtn, 'activate', function(ev) {
+            var choice = $(ev.currentTarget).parents('.modal').find('input[name=promptAction]:checked').val(),
+                applyToRemaining = this.$promptApplyToRemainingCheckbox.prop('checked');
 
-			this._selectPromptChoice(choice, applyToRemaining);
-		});
+            this._selectPromptChoice(choice, applyToRemaining);
+        });
 
-		this.addListener($cancelButton, 'activate', function(ev)
-		{
-			var choice = 'cancel',
-				applyToRemaining = this.$promptApplyToRemainingCheckbox.prop('checked');
+        this.addListener($cancelButton, 'activate', function(ev) {
+            var choice = 'cancel',
+                applyToRemaining = this.$promptApplyToRemainingCheckbox.prop('checked');
 
-			this._selectPromptChoice(choice, applyToRemaining);
-		});
+            this._selectPromptChoice(choice, applyToRemaining);
+        });
 
-		if (itemsToGo)
-        {
+        if (itemsToGo) {
             this.$promptApplyToRemainingContainer.show();
             this.$promptApplyToRemainingLabel.html(' ' + Craft.t('app', 'Apply this to the {number} remaining conflicts?', {number: itemsToGo}));
         }
@@ -184,8 +166,7 @@ Craft.PromptHandler = Garnish.Base.extend({
      * @param applyToRemaining
      * @private
      */
-    _selectPromptChoice: function(choice, applyToRemaining)
-    {
+    _selectPromptChoice: function(choice, applyToRemaining) {
         this.$prompt.fadeOut('fast', $.proxy(function() {
             this.modal.hide();
             this._promptCallback(choice, applyToRemaining);
@@ -195,8 +176,7 @@ Craft.PromptHandler = Garnish.Base.extend({
     /**
      * Cancels the prompt.
      */
-    _cancelPrompt: function()
-    {
+    _cancelPrompt: function() {
         this._selectPromptChoice('cancel', true);
     }
 });

@@ -2,99 +2,85 @@
  * File Manager.
  */
 Craft.ProgressBar = Garnish.Base.extend(
-{
-    $progressBar: null,
-    $innerProgressBar: null,
-
-    _itemCount: 0,
-    _processedItemCount: 0,
-
-    init: function($element)
     {
-		this.$progressBar = $('<div class="progressbar pending hidden"/>').appendTo($element);
-		this.$innerProgressBar = $('<div class="progressbar-inner"/>').appendTo(this.$progressBar);
+        $progressBar: null,
+        $innerProgressBar: null,
 
-        this.resetProgressBar();
-    },
+        _itemCount: 0,
+        _processedItemCount: 0,
 
-    /**
-     * Reset the progress bar
-     */
-    resetProgressBar: function()
-    {
-		// Since setting the progress percentage implies that there is progress to be shown
-		// It removes the pending class - we must add it back.
-		this.setProgressPercentage(100);
-		this.$progressBar.addClass('pending');
+        init: function($element) {
+            this.$progressBar = $('<div class="progressbar pending hidden"/>').appendTo($element);
+            this.$innerProgressBar = $('<div class="progressbar-inner"/>').appendTo(this.$progressBar);
 
-		// Reset all the counters
-		this.setItemCount(1);
-        this.setProcessedItemCount(0);
-    },
+            this.resetProgressBar();
+        },
 
-    /**
-     * Fade to invisible, hide it using a class and reset opacity to visible
-     */
-    hideProgressBar: function()
-    {
-        this.$progressBar.fadeTo('fast', 0.01, $.proxy(function() {
-            this.$progressBar.addClass('hidden').fadeTo(1, 1, $.noop);
-        }, this));
-    },
+        /**
+         * Reset the progress bar
+         */
+        resetProgressBar: function() {
+            // Since setting the progress percentage implies that there is progress to be shown
+            // It removes the pending class - we must add it back.
+            this.setProgressPercentage(100);
+            this.$progressBar.addClass('pending');
 
-    showProgressBar: function()
-    {
-        this.$progressBar.removeClass('hidden');
-    },
+            // Reset all the counters
+            this.setItemCount(1);
+            this.setProcessedItemCount(0);
+        },
 
-    setItemCount: function(count)
-    {
-        this._itemCount = count;
-    },
+        /**
+         * Fade to invisible, hide it using a class and reset opacity to visible
+         */
+        hideProgressBar: function() {
+            this.$progressBar.fadeTo('fast', 0.01, $.proxy(function() {
+                this.$progressBar.addClass('hidden').fadeTo(1, 1, $.noop);
+            }, this));
+        },
 
-    incrementItemCount: function(count)
-    {
-        this._itemCount += count;
-    },
+        showProgressBar: function() {
+            this.$progressBar.removeClass('hidden');
+        },
 
-    setProcessedItemCount: function(count)
-    {
-        this._processedItemCount = count;
-    },
+        setItemCount: function(count) {
+            this._itemCount = count;
+        },
 
-    incrementProcessedItemCount: function(count)
-    {
-        this._processedItemCount += count;
-    },
+        incrementItemCount: function(count) {
+            this._itemCount += count;
+        },
 
-    updateProgressBar: function()
-    {
-        // Only fools would allow accidental division by zero.
-        this._itemCount = Math.max(this._itemCount, 1);
+        setProcessedItemCount: function(count) {
+            this._processedItemCount = count;
+        },
 
-        var width = Math.min(100, Math.round(100 * this._processedItemCount / this._itemCount));
+        incrementProcessedItemCount: function(count) {
+            this._processedItemCount += count;
+        },
 
-        this.setProgressPercentage(width);
-    },
+        updateProgressBar: function() {
+            // Only fools would allow accidental division by zero.
+            this._itemCount = Math.max(this._itemCount, 1);
 
-    setProgressPercentage: function(percentage, animate)
-    {
-		if (percentage == 0)
-		{
-			this.$progressBar.addClass('pending');
-		}
-		else
-		{
-			this.$progressBar.removeClass('pending');
+            var width = Math.min(100, Math.round(100 * this._processedItemCount / this._itemCount));
 
-            if (animate)
-            {
-                this.$innerProgressBar.velocity('stop').velocity({ width: percentage+'%' }, 'fast');
+            this.setProgressPercentage(width);
+        },
+
+        setProgressPercentage: function(percentage, animate) {
+            if (percentage == 0) {
+                this.$progressBar.addClass('pending');
             }
-            else
-            {
-                this.$innerProgressBar.velocity('stop').width(percentage+'%');
+            else {
+                this.$progressBar.removeClass('pending');
+
+                if (animate) {
+                    this.$innerProgressBar.velocity('stop').velocity({width: percentage + '%'}, 'fast');
+                }
+                else {
+                    this.$innerProgressBar.velocity('stop').width(percentage + '%');
+                }
             }
-		}
-    }
-});
+        }
+    });

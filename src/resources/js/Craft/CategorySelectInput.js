@@ -2,133 +2,115 @@
  * Category Select input
  */
 Craft.CategorySelectInput = Craft.BaseElementSelectInput.extend(
-{
-	setSettings: function()
-	{
-		this.base.apply(this, arguments);
-		this.settings.sortable = false;
-	},
+    {
+        setSettings: function() {
+            this.base.apply(this, arguments);
+            this.settings.sortable = false;
+        },
 
-	getModalSettings: function()
-	{
-		var settings = this.base();
-		settings.hideOnSelect = false;
-		return settings;
-	},
+        getModalSettings: function() {
+            var settings = this.base();
+            settings.hideOnSelect = false;
+            return settings;
+        },
 
-	getElements: function()
-	{
-		return this.$elementsContainer.find('.element');
-	},
+        getElements: function() {
+            return this.$elementsContainer.find('.element');
+        },
 
-	onModalSelect: function(elements)
-	{
-		// Disable the modal
-		this.modal.disable();
-		this.modal.disableCancelBtn();
-		this.modal.disableSelectBtn();
-		this.modal.showFooterSpinner();
+        onModalSelect: function(elements) {
+            // Disable the modal
+            this.modal.disable();
+            this.modal.disableCancelBtn();
+            this.modal.disableSelectBtn();
+            this.modal.showFooterSpinner();
 
-		// Get the new category HTML
-		var selectedCategoryIds = this.getSelectedElementIds();
+            // Get the new category HTML
+            var selectedCategoryIds = this.getSelectedElementIds();
 
-		for (var i = 0; i < elements.length; i++)
-		{
-			selectedCategoryIds.push(elements[i].id);
-		}
+            for (var i = 0; i < elements.length; i++) {
+                selectedCategoryIds.push(elements[i].id);
+            }
 
-		var data = {
-			categoryIds:    selectedCategoryIds,
-			siteId:         elements[0].siteId,
-			id:             this.settings.id,
-			name:           this.settings.name,
-			limit:          this.settings.limit,
-			selectionLabel: this.settings.selectionLabel
-		};
+            var data = {
+                categoryIds: selectedCategoryIds,
+                siteId: elements[0].siteId,
+                id: this.settings.id,
+                name: this.settings.name,
+                limit: this.settings.limit,
+                selectionLabel: this.settings.selectionLabel
+            };
 
-		Craft.postActionRequest('elements/get-categories-input-html', data, $.proxy(function(response, textStatus)
-		{
-			this.modal.enable();
-			this.modal.enableCancelBtn();
-			this.modal.enableSelectBtn();
-			this.modal.hideFooterSpinner();
+            Craft.postActionRequest('elements/get-categories-input-html', data, $.proxy(function(response, textStatus) {
+                this.modal.enable();
+                this.modal.enableCancelBtn();
+                this.modal.enableSelectBtn();
+                this.modal.hideFooterSpinner();
 
-			if (textStatus == 'success')
-			{
-				var $newInput = $(response.html),
-					$newElementsContainer = $newInput.children('.elements');
+                if (textStatus == 'success') {
+                    var $newInput = $(response.html),
+                        $newElementsContainer = $newInput.children('.elements');
 
-				this.$elementsContainer.replaceWith($newElementsContainer);
-				this.$elementsContainer = $newElementsContainer;
-				this.resetElements();
+                    this.$elementsContainer.replaceWith($newElementsContainer);
+                    this.$elementsContainer = $newElementsContainer;
+                    this.resetElements();
 
-				for (var i = 0; i < elements.length; i++)
-				{
-					var element = elements[i],
-						$element = this.getElementById(element.id);
+                    for (var i = 0; i < elements.length; i++) {
+                        var element = elements[i],
+                            $element = this.getElementById(element.id);
 
-					if ($element)
-					{
-						this.animateElementIntoPlace(element.$element, $element);
-					}
-				}
+                        if ($element) {
+                            this.animateElementIntoPlace(element.$element, $element);
+                        }
+                    }
 
-				this.updateDisabledElementsInModal();
-				this.modal.hide();
-				this.onSelectElements();
-			}
-		}, this));
-	},
+                    this.updateDisabledElementsInModal();
+                    this.modal.hide();
+                    this.onSelectElements();
+                }
+            }, this));
+        },
 
-	removeElement: function($element)
-	{
-		// Find any descendants this category might have
-		var $allCategories = $element.add($element.parent().siblings('ul').find('.element'));
+        removeElement: function($element) {
+            // Find any descendants this category might have
+            var $allCategories = $element.add($element.parent().siblings('ul').find('.element'));
 
-		// Remove our record of them all at once
-		this.removeElements($allCategories);
+            // Remove our record of them all at once
+            this.removeElements($allCategories);
 
-		// Animate them away one at a time
-		for (var i = 0; i < $allCategories.length; i++)
-		{
-			this._animateCategoryAway($allCategories, i);
-		}
-	},
+            // Animate them away one at a time
+            for (var i = 0; i < $allCategories.length; i++) {
+                this._animateCategoryAway($allCategories, i);
+            }
+        },
 
-	_animateCategoryAway: function($allCategories, i)
-	{
-		var callback;
+        _animateCategoryAway: function($allCategories, i) {
+            var callback;
 
-		// Is this the last one?
-		if (i == $allCategories.length - 1)
-		{
-			callback = $.proxy(function()
-			{
-				var $li = $allCategories.first().parent().parent(),
-					$ul = $li.parent();
+            // Is this the last one?
+            if (i == $allCategories.length - 1) {
+                callback = $.proxy(function() {
+                    var $li = $allCategories.first().parent().parent(),
+                        $ul = $li.parent();
 
-				if ($ul[0] == this.$elementsContainer[0] || $li.siblings().length)
-				{
-					$li.remove();
-				}
-				else
-				{
-					$ul.remove();
-				}
-			}, this);
-		}
+                    if ($ul[0] == this.$elementsContainer[0] || $li.siblings().length) {
+                        $li.remove();
+                    }
+                    else {
+                        $ul.remove();
+                    }
+                }, this);
+            }
 
-		var func = $.proxy(function() {
-			this.animateElementAway($allCategories.eq(i), callback);
-		}, this);
+            var func = $.proxy(function() {
+                this.animateElementAway($allCategories.eq(i), callback);
+            }, this);
 
-		if (i == 0)
-		{
-			func();
-		}
-		else
-		{
-			setTimeout(func, 100 * i);
-		}
-	}
-});
+            if (i == 0) {
+                func();
+            }
+            else {
+                setTimeout(func, 100 * i);
+            }
+        }
+    });
