@@ -26,6 +26,7 @@ class Environment extends \Twig_Environment
     public function loadTemplate($name, $index = null)
     {
         try {
+            /** @noinspection PhpInternalEntityUsedInspection */
             return parent::loadTemplate($name, $index);
         } catch (\Twig_Error $e) {
             if (Craft::$app->getConfig()->get('suppressTemplateErrors')) {
