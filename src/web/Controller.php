@@ -238,7 +238,7 @@ abstract class Controller extends \yii\web\Controller
         }
 
         if ($object) {
-            $url = Craft::$app->getView()->renderObjectTemplate($url, $object, true);
+            $url = Craft::$app->getView()->renderObjectTemplate($url, $object);
         }
 
         return $this->redirect($url);

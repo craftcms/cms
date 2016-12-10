@@ -1101,7 +1101,13 @@ class AssetTransforms extends Component
         $this->deleteCreatedTransformsForAsset($asset);
         $this->deleteTransformIndexDataByAssetId($asset->id);
 
-        FileHelper::removeFile(Craft::$app->getPath()->getAssetsImageSourcePath().DIRECTORY_SEPARATOR.$asset->id.'.'.pathinfo($asset->filename, PATHINFO_EXTENSION), true);
+        $file = Craft::$app->getPath()->getAssetsImageSourcePath().DIRECTORY_SEPARATOR.$asset->id.'.'.pathinfo($asset->filename, PATHINFO_EXTENSION);
+
+        try {
+            FileHelper::removeFile($file);
+        } catch (ErrorException $e) {
+            Craft::warning("Unable to delete the file \"{$file}\": ".$e->getMessage(), __METHOD__);
+        }
     }
 
     /**

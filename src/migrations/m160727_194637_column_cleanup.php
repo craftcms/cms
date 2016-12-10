@@ -41,7 +41,7 @@ class m160727_194637_column_cleanup extends Migration
         $this->alterColumn('{{%assetindexdata}}', 'volumeId', $this->integer()->notNull());
         $this->alterColumn('{{%assetindexdata}}', 'offset', $this->integer()->notNull());
         $this->alterColumn('{{%assetindexdata}}', 'recordId', $this->integer());
-        $this->alterColumn('{{%assettransforms}}', 'height', $this->integer()->unsigned(), null, 'width');
+        $this->alterColumn('{{%assettransforms}}', 'height', $this->integer()->unsigned());
         $this->alterColumn('{{%assettransforms}}', 'width', $this->integer()->unsigned());
         $this->alterColumn('{{%deprecationerrors}}', 'template', $this->string(500));
         $this->alterColumn('{{%emailmessages}}', 'key', $this->string()->notNull());
