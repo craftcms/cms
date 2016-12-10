@@ -98,7 +98,7 @@ class Update
     public static function rollBackDatabaseChanges($backupPath)
     {
         $fileName = $backupPath.'.sql';
-        $fullBackupPath = Craft::$app->getPath()->getDbBackupPath().'/'.$fileName;
+        $fullBackupPath = Craft::$app->getPath()->getDbBackupPath().DIRECTORY_SEPARATOR.$fileName;
 
         // Make sure we're constrained to the backups folder.
         if (!Path::ensurePathIsContained($fileName)) {
