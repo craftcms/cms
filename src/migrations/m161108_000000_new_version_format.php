@@ -54,6 +54,8 @@ class m161108_000000_new_version_format extends Migration
         // Update the info model
         $info = Craft::$app->getInfo();
         $info->version = $version;
+
+        return true;
     }
 
     /**

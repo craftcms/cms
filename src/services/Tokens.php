@@ -154,6 +154,8 @@ class Tokens extends Component
         Craft::$app->getDb()->createCommand()
             ->delete('{{%tokens}}', ['id' => $tokenId])
             ->execute();
+
+        return true;
     }
 
     /**

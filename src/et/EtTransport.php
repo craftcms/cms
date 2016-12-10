@@ -63,8 +63,6 @@ class EtTransport
      * @param         $endpoint
      * @param integer $timeout
      * @param integer $connectTimeout
-     *
-     * @return EtTransport
      */
     public function __construct($endpoint, $timeout = 30, $connectTimeout = 30)
     {

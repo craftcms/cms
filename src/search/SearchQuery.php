@@ -43,8 +43,6 @@ class SearchQuery
      *
      * @param string $query
      * @param array  $termOptions
-     *
-     * @return SearchQuery
      */
     public function __construct($query, $termOptions = [])
     {

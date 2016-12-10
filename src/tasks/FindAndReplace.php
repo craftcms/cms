@@ -163,7 +163,7 @@ class FindAndReplace extends Task
      * @param FieldInterface $field
      * @param string         $fieldColumnPrefix
      *
-     * @return boolean
+     * @return void
      */
     private function _checkField(FieldInterface $field, $fieldColumnPrefix)
     {

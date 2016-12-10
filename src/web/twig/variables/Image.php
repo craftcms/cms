@@ -43,8 +43,6 @@ class Image
      *
      * @param string $path
      * @param string $url
-     *
-     * @return Image
      */
     public function __construct($path, $url = "")
     {

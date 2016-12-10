@@ -39,7 +39,7 @@ class Updater
     // =========================================================================
 
     /**
-     * @return Updater
+     * Constructor
      */
     public function __construct()
     {

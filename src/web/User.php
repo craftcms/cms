@@ -449,7 +449,7 @@ class User extends \yii\web\User
     /**
      * Statically sets the identity in the event that this request should not be extending it.
      *
-     * @return boolean
+     * @return void
      */
     private function _setStaticIdentity()
     {

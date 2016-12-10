@@ -23,7 +23,7 @@ class Parser extends \Twig_Parser
     /**
      * @param \Twig_NodeInterface $node
      *
-     * @return \Twig_NodeInterface|void
+     * @return \Twig_NodeInterface|null
      */
     protected function filterBodyNodes(
         /** @noinspection PhpDeprecationInspection */
