@@ -42,6 +42,8 @@ trait MissingComponentTrait
     /**
      * Creates a new component of a given type based on this one’s properties.
      *
+     * @param string $type The component class that should be used as the fallback
+     *
      * @return ComponentInterface
      */
     public function createFallback($type)

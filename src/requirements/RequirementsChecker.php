@@ -503,6 +503,8 @@ class RequirementsChecker
 
     /**
      * @return boolean|mixed
+     *
+     * @throws Exception in case of failure
      */
     function checkDatabaseServerVersion()
     {
