@@ -87,6 +87,7 @@ class UpdateController extends Controller
 
         $isComposerInstallJs = Json::encode(App::isComposerInstall());
         $js = <<<JS
+//noinspection JSUnresolvedVariable
 new Craft.UpdatesPage({
     isComposerInstall: {$isComposerInstallJs}
 });
@@ -125,6 +126,7 @@ JS;
             'manualUpdate' => (Craft::$app->getRequest()->getSegment(1) == 'manualupdate') ? 1 : 0
         ]);
         $js = <<<JS
+//noinspection JSUnresolvedVariable
 new Craft.Updater({$dataJs});
 JS;
 
