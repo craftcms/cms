@@ -126,7 +126,7 @@ abstract class Image extends Object
      */
     protected function normalizeDimensions(&$width, &$height = null)
     {
-        if (preg_match('/^(?P<width>[0-9]+|AUTO)x(?P<height>[0-9]+|AUTO)/', $width, $matches)) {
+        if (preg_match('/^(?P<width>[\d]+|AUTO)x(?P<height>[\d]+|AUTO)/', $width, $matches)) {
             $width = $matches['width'] != 'AUTO' ? $matches['width'] : null;
             $height = $matches['height'] != 'AUTO' ? $matches['height'] : null;
         }
