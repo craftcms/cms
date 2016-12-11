@@ -43,7 +43,7 @@ class DateTime extends \DateTime
      *
      * @return DateTime|false
      */
-    public static function createFromFormat($format, $time, DateTimeZone $timezone = null)
+    public static function createFromFormat($format, $time, $timezone = null)
     {
         if ($timezone !== null) {
             $dateTime = parent::createFromFormat($format, $time, $timezone);
