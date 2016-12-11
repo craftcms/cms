@@ -20,6 +20,7 @@ use craft\services\Config;
 use mikehaertl\shellcommand\Command as ShellCommand;
 use yii\base\Exception;
 use yii\db\Exception as DbException;
+use yii\db\TableSchema;
 
 /**
  * @inheritdoc
@@ -251,9 +252,9 @@ class Connection extends \yii\db\Connection
     /**
      * Checks if a column exists in a table.
      *
-     * @param string       $table
-     * @param string       $column
-     * @param boolean|null $refresh
+     * @param TableSchema|string $table
+     * @param string             $column
+     * @param boolean|null       $refresh
      *
      * @return boolean
      */
@@ -264,15 +265,13 @@ class Connection extends \yii\db\Connection
             $this->getSchema()->refresh();
         }
 
-        $table = $this->getTableSchema('{{'.$table.'}}');
-
-        if ($table) {
-            if (($column = $table->getColumn($column)) !== null) {
-                return true;
+        if (!$table instanceof TableSchema) {
+            if (($table = $this->getTableSchema('{{'.$table.'}}')) === null) {
+                return false;
             }
         }
 
-        return false;
+        return ($table->getColumn($column) !== null);
     }
 
     /**
