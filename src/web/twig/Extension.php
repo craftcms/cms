@@ -242,7 +242,7 @@ class Extension extends \Twig_Extension implements \Twig_Extension_GlobalsInterf
      */
     public function ucfirstFilter($string)
     {
-        return StringHelper::uppercaseFirst($string);
+        return StringHelper::upperCaseFirst($string);
     }
 
     /**
