@@ -215,6 +215,7 @@ return [
                 'mysql' => craft\db\mysql\Schema::class,
                 'pgsql' => craft\db\pgsql\Schema::class,
             ],
+            'commandClass' => \craft\db\Command::class,
             'attributes' => $configService->get('attributes', Config::CATEGORY_DB),
         ];
 
