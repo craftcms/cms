@@ -79,7 +79,11 @@ class AssetIndexer extends Component
                     $a = substr_count($a['path'], '/');
                     $b = substr_count($b['path'], '/');
 
-                    return ($a == $b ? 0 : ($a < $b ? -1 : 1));
+                    if ($a === $b) {
+                        return 0;
+                    }
+
+                    return $a < $b ? -1 : 1;
                 }
             );
 

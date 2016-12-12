@@ -367,7 +367,11 @@ class Resources extends Component
 
         // Create a new one
         $svgContents = file_get_contents($sourceIconPath);
-        $textSize = ($extLength <= 3 ? '26' : ($extLength == 4 ? '22' : '18'));
+        if ($extLength <= 3) {
+            $textSize = '26';
+        } else {
+            $textSize = $extLength === 4 ? '22' : '18';
+        }
         $textNode = '<text x="50" y="73" text-anchor="middle" font-family="sans-serif" fill="#8F98A3" '.
             'font-size="'.$textSize.'">'.
             StringHelper::toUpperCase($ext).
