@@ -17,7 +17,6 @@
 		}
 	};
 
-        }
 	new Craft.ImageUpload(settings);
 
 	var settings = {
