@@ -289,12 +289,12 @@ class Deprecator extends Component
 
         foreach ($traces as $trace) {
             $logTrace = [
-                'objectClass' => (!empty($trace['object']) ? get_class($trace['object']) : null),
-                'file' => (!empty($trace['file']) ? $trace['file'] : null),
-                'line' => (!empty($trace['line']) ? $trace['line'] : null),
-                'class' => (!empty($trace['class']) ? $trace['class'] : null),
-                'method' => (!empty($trace['function']) ? $trace['function'] : null),
-                'args' => (!empty($trace['args']) ? $this->_argsToString($trace['args']) : null),
+                'objectClass' => !empty($trace['object']) ? get_class($trace['object']) : null,
+                'file' => !empty($trace['file']) ? $trace['file'] : null,
+                'line' => !empty($trace['line']) ? $trace['line'] : null,
+                'class' => !empty($trace['class']) ? $trace['class'] : null,
+                'method' => !empty($trace['function']) ? $trace['function'] : null,
+                'args' => !empty($trace['args']) ? $this->_argsToString($trace['args']) : null,
             ];
 
             // Is this a template?

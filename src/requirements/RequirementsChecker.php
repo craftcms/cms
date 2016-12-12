@@ -70,7 +70,7 @@ class RequirementsChecker
     public function check($requirements)
     {
         if (is_string($requirements)) {
-            $requirements = require($requirements);
+            $requirements = require $requirements;
         }
 
         if (!is_array($requirements)) {
@@ -315,12 +315,12 @@ class RequirementsChecker
             ob_start();
             ob_implicit_flush(false);
 
-            require($_viewFile_);
+            require $_viewFile_;
 
             return ob_get_clean();
         }
 
-        require($_viewFile_);
+        require $_viewFile_;
 
         return null;
     }
@@ -406,7 +406,7 @@ class RequirementsChecker
         $dbConfigPath = dirname(__FILE__).DIRECTORY_SEPARATOR.'..'.DIRECTORY_SEPARATOR.'config'.DIRECTORY_SEPARATOR.'db.php';
 
         if (is_file($dbConfigPath)) {
-            $dbCreds = @require_once(dirname(__FILE__).DIRECTORY_SEPARATOR.'..'.DIRECTORY_SEPARATOR.'config'.DIRECTORY_SEPARATOR.'db.php');
+            $dbCreds = @require_once dirname(__FILE__).DIRECTORY_SEPARATOR.'..'.DIRECTORY_SEPARATOR.'config'.DIRECTORY_SEPARATOR.'db.php';
 
             if (is_array($dbCreds) && $dbCreds['server'] && $dbCreds['user'] && $dbCreds['password'] && $dbCreds['database'] && $dbCreds['driver']) {
                 $this->dbCreds = $dbCreds;

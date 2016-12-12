@@ -137,7 +137,7 @@ class FileHelper extends \yii\helpers\FileHelper
         // Nuke any trailing or leading .-_
         $filename = trim($filename, '.-_');
 
-        $filename = ($asciiOnly) ? StringHelper::toAscii($filename) : $filename;
+        $filename = $asciiOnly ? StringHelper::toAscii($filename) : $filename;
 
         return $filename;
     }

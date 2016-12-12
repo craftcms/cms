@@ -283,7 +283,7 @@ class EntriesController extends BaseEntriesController
                         'sectionId' => $section->id,
                         'entryId' => $entry->id,
                         'siteId' => $entry->siteId,
-                        'versionId' => ($entry instanceof EntryVersion ? $entry->versionId : null),
+                        'versionId' => $entry instanceof EntryVersion ? $entry->versionId : null,
                     ]
                 ]).');');
 
@@ -788,7 +788,7 @@ class EntriesController extends BaseEntriesController
             $variables['tabs'][] = [
                 'label' => Craft::t('site', $tab->name),
                 'url' => '#tab'.($index + 1),
-                'class' => ($hasErrors ? 'error' : null)
+                'class' => $hasErrors ? 'error' : null
             ];
         }
     }

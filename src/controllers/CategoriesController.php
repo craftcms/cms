@@ -663,7 +663,7 @@ class CategoriesController extends Controller
             $variables['tabs'][] = [
                 'label' => Craft::t('site', $tab->name),
                 'url' => '#tab'.($index + 1),
-                'class' => ($hasErrors ? 'error' : null)
+                'class' => $hasErrors ? 'error' : null
             ];
         }
     }

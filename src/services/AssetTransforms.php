@@ -1289,8 +1289,8 @@ class AssetTransforms extends Component
     private function _getUnnamedTransformFolderName(AssetTransform $transform)
     {
         return '_'.($transform->width ? $transform->width : 'AUTO').'x'.($transform->height ? $transform->height : 'AUTO').
-            '_'.($transform->mode).
-            '_'.($transform->position).
+            '_'.$transform->mode.
+            '_'.$transform->position.
             ($transform->quality ? '_'.$transform->quality : '');
     }
 

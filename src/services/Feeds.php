@@ -37,7 +37,7 @@ class Feeds extends Component
 
         // Import this here to ensure that libs like SimplePie are using our version of the class and not any server's
         // random version.
-        require_once(Craft::getAlias('@vendor/simplepie/simplepie/idn/idna_convert.class.php'));
+        require_once Craft::getAlias('@vendor/simplepie/simplepie/idn/idna_convert.class.php');
     }
 
     /**
@@ -132,8 +132,8 @@ class Feeds extends Component
                 'categories' => $this->_getItemCategories($item->get_categories()),
                 'content' => $item->get_content(true),
                 'contributors' => $this->_getItemAuthors($item->get_contributors()),
-                'date' => ($date ? new DateTime('@'.$date) : null),
-                'dateUpdated' => ($dateUpdated ? new DateTime('@'.$dateUpdated) : null),
+                'date' => $date ? new DateTime('@'.$date) : null,
+                'dateUpdated' => $dateUpdated ? new DateTime('@'.$dateUpdated) : null,
                 'permalink' => $item->get_permalink(),
                 'summary' => $item->get_description(true),
                 'title' => $item->get_title(),

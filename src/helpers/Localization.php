@@ -73,14 +73,14 @@ class Localization
         $customDataPath = Craft::$app->getPath()->getConfigPath().DIRECTORY_SEPARATOR.'locales'.DIRECTORY_SEPARATOR.$localeId.'.php';
 
         if (is_file($appDataPath)) {
-            $data = require($appDataPath);
+            $data = require $appDataPath;
         }
 
         if (is_file($customDataPath)) {
             if ($data !== null) {
-                $data = ArrayHelper::merge($data, require($customDataPath));
+                $data = ArrayHelper::merge($data, require $customDataPath);
             } else {
-                $data = require($customDataPath);
+                $data = require $customDataPath;
             }
         }
 
@@ -142,7 +142,7 @@ class Localization
 
             if (is_file($path)) {
                 // Load it up.
-                static::$_translations[$translationFile] = include($path);
+                static::$_translations[$translationFile] = include $path;
 
                 if (isset(static::$_translations[$translationFile][$event->message])) {
                     $event->message = static::$_translations[$translationFile][$event->message];

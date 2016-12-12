@@ -92,7 +92,7 @@ class TemplatesController extends Controller
      */
     public function actionRequirementsCheck()
     {
-        require_once(Craft::$app->getBasePath().DIRECTORY_SEPARATOR.'requirements'.DIRECTORY_SEPARATOR.'RequirementsChecker.php');
+        require_once Craft::$app->getBasePath().DIRECTORY_SEPARATOR.'requirements'.DIRECTORY_SEPARATOR.'RequirementsChecker.php';
 
         // Run the requirements checker
         $reqCheck = new \RequirementsChecker();

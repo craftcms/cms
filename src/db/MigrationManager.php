@@ -113,7 +113,7 @@ class MigrationManager extends Component
 
         $file = $this->migrationPath.DIRECTORY_SEPARATOR.$name.'.php';
         $class = $this->migrationNamespace.'\\'.$name;
-        require_once($file);
+        require_once $file;
 
         return new $class;
     }

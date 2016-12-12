@@ -174,7 +174,7 @@ class Assets
                 $folder = new VolumeFolder();
                 $folder->name = $sourceFolder->name;
                 $folder->volumeId = $destinationFolder->volumeId;
-                $folder->path = ltrim(rtrim($destinationFolder->path, '/').('/').$relativePath, '/');
+                $folder->path = ltrim(rtrim($destinationFolder->path, '/').'/'.$relativePath, '/');
 
                 // Any and all parent folders should be already mirrored
                 $folder->parentId = (isset($folderIdChanges[$sourceFolder->parentId]) ? $folderIdChanges[$sourceFolder->parentId] : $destinationFolder->id);

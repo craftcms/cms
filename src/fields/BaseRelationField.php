@@ -182,8 +182,8 @@ abstract class BaseRelationField extends Field implements PreviewableFieldInterf
         return [
             [
                 ArrayValidator::class,
-                'min' => ($this->required ? 1 : null),
-                'max' => ($this->allowLimit && $this->limit ? $this->limit : null),
+                'min' => $this->required ? 1 : null,
+                'max' => $this->allowLimit && $this->limit ? $this->limit : null,
                 'tooFew' => Craft::t('app', '{attribute} should contain at least {min, number} {min, plural, one{selection} other{selections}}.'),
                 'tooMany' => Craft::t('app', '{attribute} should contain at most {max, number} {max, plural, one{selection} other{selections}}.'),
             ],
@@ -362,7 +362,7 @@ abstract class BaseRelationField extends Field implements PreviewableFieldInterf
                 ],
                 [
                     'or',
-                    ['sourceSiteId' => ($firstElement ? $firstElement->siteId : null)],
+                    ['sourceSiteId' => $firstElement ? $firstElement->siteId : null],
                     ['sourceSiteId' => null]
                 ]
             ])
@@ -474,10 +474,10 @@ abstract class BaseRelationField extends Field implements PreviewableFieldInterf
             'elements' => $selectedElementsQuery,
             'sources' => $this->getInputSources($element),
             'criteria' => $selectionCriteria,
-            'sourceElementId' => (!empty($element->id) ? $element->id : null),
-            'limit' => ($this->allowLimit ? $this->limit : null),
+            'sourceElementId' => !empty($element->id) ? $element->id : null,
+            'limit' => $this->allowLimit ? $this->limit : null,
             'viewMode' => $this->getViewMode(),
-            'selectionLabel' => ($this->selectionLabel ? Craft::t('site', $this->selectionLabel) : static::defaultSelectionLabel()),
+            'selectionLabel' => $this->selectionLabel ? Craft::t('site', $this->selectionLabel) : static::defaultSelectionLabel(),
         ];
     }
 

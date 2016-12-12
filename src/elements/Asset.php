@@ -267,7 +267,7 @@ class Asset extends Element
     {
         $source = [
             'key' => 'folder:'.$folder->id,
-            'label' => ($folder->parentId ? $folder->name : Craft::t('site', $folder->name)),
+            'label' => $folder->parentId ? $folder->name : Craft::t('site', $folder->name),
             'hasThumbs' => true,
             'criteria' => ['folderId' => $folder->id],
             'data' => [

@@ -333,7 +333,7 @@ class UsersController extends Controller
                 return $this->_renderSetPasswordTemplate($userToProcess, [
                     'code' => $code,
                     'id' => $id,
-                    'newUser' => ($userToProcess->password ? false : true),
+                    'newUser' => $userToProcess->password ? false : true,
                 ]);
             }
         } else {
@@ -385,7 +385,7 @@ class UsersController extends Controller
                 'errors' => $errors,
                 'code' => $code,
                 'id' => $id,
-                'newUser' => ($userToProcess->password ? false : true),
+                'newUser' => $userToProcess->password ? false : true,
             ]);
         }
 
@@ -766,7 +766,7 @@ class UsersController extends Controller
         return $this->renderTemplate('users/_edit', [
             'account' => $user,
             'isNewAccount' => $isNewAccount,
-            'statusLabel' => (isset($statusLabel) ? $statusLabel : null),
+            'statusLabel' => isset($statusLabel) ? $statusLabel : null,
             'actions' => $actions,
             'title' => $title,
             'tabs' => $tabs,

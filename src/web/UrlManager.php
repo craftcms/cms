@@ -217,13 +217,13 @@ class UrlManager extends \yii\web\UrlManager
         // Load the config file rules
         if ($request->getIsCpRequest()) {
             $baseCpRoutesPath = Craft::$app->getBasePath().DIRECTORY_SEPARATOR.'config'.DIRECTORY_SEPARATOR.'cproutes';
-            $rules = require($baseCpRoutesPath.DIRECTORY_SEPARATOR.'common.php');
+            $rules = require $baseCpRoutesPath.DIRECTORY_SEPARATOR.'common.php';
 
             if (Craft::$app->getEdition() >= Craft::Client) {
-                $rules = array_merge($rules, require($baseCpRoutesPath.DIRECTORY_SEPARATOR.'client.php'));
+                $rules = array_merge($rules, require $baseCpRoutesPath.DIRECTORY_SEPARATOR.'client.php');
 
                 if (Craft::$app->getEdition() == Craft::Pro) {
-                    $rules = array_merge($rules, require($baseCpRoutesPath.DIRECTORY_SEPARATOR.'pro.php'));
+                    $rules = array_merge($rules, require $baseCpRoutesPath.DIRECTORY_SEPARATOR.'pro.php');
                 }
             }
 
