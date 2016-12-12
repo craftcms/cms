@@ -330,17 +330,17 @@ class DateTimeHelper
         $secondsInMinute = 60;
 
         $weeks = floor($seconds / $secondsInWeek);
-        $seconds = $seconds % $secondsInWeek;
+        $seconds %= $secondsInWeek;
 
         $days = floor($seconds / $secondsInDay);
-        $seconds = $seconds % $secondsInDay;
+        $seconds %= $secondsInDay;
 
         $hours = floor($seconds / $secondsInHour);
-        $seconds = $seconds % $secondsInHour;
+        $seconds %= $secondsInHour;
 
         if ($showSeconds) {
             $minutes = floor($seconds / $secondsInMinute);
-            $seconds = $seconds % $secondsInMinute;
+            $seconds %= $secondsInMinute;
         } else {
             $minutes = round($seconds / $secondsInMinute);
             $seconds = 0;
@@ -468,7 +468,7 @@ class DateTimeHelper
     public static function isWithinLast($date, $timeInterval)
     {
         if (is_numeric($timeInterval)) {
-            $timeInterval = $timeInterval.' days';
+            $timeInterval .= ' days';
         }
 
         $date = self::toDateTime($date);

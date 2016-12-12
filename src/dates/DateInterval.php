@@ -113,7 +113,7 @@ class DateInterval extends \DateInterval
             if ($seconds === $increment || $seconds > $increment) {
                 $count = (int)floor($seconds / $increment);
                 $interval->$property = $count;
-                $seconds = $seconds - ($count * $increment);
+                $seconds -= ($count * $increment);
             }
         }
 
@@ -138,23 +138,23 @@ class DateInterval extends \DateInterval
         $seconds = (int)$interval->s;
 
         if ($interval->i) {
-            $seconds = $seconds + ((int)$interval->i * self::SECONDS_MINUTE);
+            $seconds += ((int)$interval->i * self::SECONDS_MINUTE);
         }
 
         if ($interval->h) {
-            $seconds = $seconds + ((int)$interval->h * self::SECONDS_HOUR);
+            $seconds += ((int)$interval->h * self::SECONDS_HOUR);
         }
 
         if ($interval->d) {
-            $seconds = $seconds + ((int)$interval->d * self::SECONDS_DAY);
+            $seconds += ((int)$interval->d * self::SECONDS_DAY);
         }
 
         if ($interval->m) {
-            $seconds = $seconds + ((int)$interval->m * self::SECONDS_MONTH);
+            $seconds += ((int)$interval->m * self::SECONDS_MONTH);
         }
 
         if ($interval->y) {
-            $seconds = $seconds + ((int)$interval->y * self::SECONDS_YEAR);
+            $seconds += ((int)$interval->y * self::SECONDS_YEAR);
         }
 
         return (string)$seconds;

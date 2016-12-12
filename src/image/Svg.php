@@ -126,10 +126,10 @@ class Svg extends Image
 
         $this->resize($width, $height);
 
-        $x1 = $x1 / $viewBoxXFactor;
-        $y1 = $y1 / $viewBoxYFactor;
-        $width = $width / $viewBoxXFactor;
-        $height = $height / $viewBoxYFactor;
+        $x1 /= $viewBoxXFactor;
+        $y1 /= $viewBoxYFactor;
+        $width /= $viewBoxXFactor;
+        $height /= $viewBoxYFactor;
 
         $value = "{$x1} {$y1} {$width} {$height}";
 
