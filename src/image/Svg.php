@@ -74,7 +74,7 @@ class Svg extends Image
      */
     public function getExtension()
     {
-        return "svg";
+        return 'svg';
     }
 
     /**
@@ -174,17 +174,17 @@ class Svg extends Image
             $this->resize($targetWidth, $targetHeight);
 
             // Reverse the components
-            $cropPositions = join("-",
-                array_reverse(explode("-", $cropPositions)));
+            $cropPositions = join('-',
+                array_reverse(explode('-', $cropPositions)));
 
-            $value = "x".strtr($cropPositions, [
+            $value = 'x'.strtr($cropPositions, [
                     'left' => 'Min',
                     'center' => 'Mid',
                     'right' => 'Max',
                     'top' => 'Min',
                     'bottom' => 'Max',
                     '-' => 'Y'
-                ])." slice";
+                ]).' slice';
 
             // Add/modify aspect ratio information
             if (preg_match(static::SVG_ASPECT_RE, $this->_svgContent)) {

@@ -539,7 +539,7 @@ class Locale extends Object
                     break;  // September
             }
 
-            return $formatter->format(new DateTime('1970-'.sprintf("%02d", $month).'-01'));
+            return $formatter->format(new DateTime('1970-'.sprintf('%02d', $month).'-01'));
         } else {
             $which = $standAlone ? 'standAloneMonthNames' : 'monthNames';
 
@@ -621,7 +621,7 @@ class Locale extends Object
             // 1970-01-08 => Thursday (4 + 4)
             // 1970-01-09 => Friday (5 + 4)
             // 1970-01-10 => Saturday (6 + 4)
-            return $formatter->format(new DateTime('1970-01-'.sprintf("%02d", $day + 4)));
+            return $formatter->format(new DateTime('1970-01-'.sprintf('%02d', $day + 4)));
         } else {
             $which = $standAlone ? 'standAloneWeekDayNames' : 'weekDayNames';
 

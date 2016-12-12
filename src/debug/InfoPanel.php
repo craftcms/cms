@@ -125,7 +125,7 @@ class InfoPanel extends Panel
                 '#<h2>PHP License</h2>.*$#ms',
                 '#<h1>Configuration</h1>#',
                 "#\r?\n#",
-                "#</(h1|h2|h3|tr)>#",
+                '#</(h1|h2|h3|tr)>#',
                 '# +<#',
                 "#[ \t]+#",
                 '#&nbsp;#',
@@ -135,7 +135,7 @@ class InfoPanel extends Panel
                 '#<tr>(?:.*?)"src="(?:.*?)=(.*?)" alt="PHP Logo" /></a><h1>PHP Version (.*?)</h1>(?:\n+?)</td></tr>#',
                 '#<h1><a href="(?:.*?)\?=(.*?)">PHP Credits</a></h1>#',
                 '#<tr>(?:.*?)" src="(?:.*?)=(.*?)"(?:.*?)Zend Engine (.*?),(?:.*?)</tr>#',
-                "# +#",
+                '# +#',
                 '#<tr>#',
                 '#</tr>#'
             ],

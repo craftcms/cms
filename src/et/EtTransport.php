@@ -357,7 +357,7 @@ class EtTransport
         }
 
         // Format the license key into lines of 50 chars
-        preg_match_all("/.{50}/", $key, $matches);
+        preg_match_all('/.{50}/', $key, $matches);
         $formattedKey = '';
         foreach ($matches[0] as $segment) {
             $formattedKey .= $segment.PHP_EOL;

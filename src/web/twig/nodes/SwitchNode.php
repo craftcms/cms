@@ -49,7 +49,7 @@ class SwitchNode extends Twig_Node
     {
         $compiler
             ->addDebugInfo($this)
-            ->write("switch (")
+            ->write('switch (')
             ->subcompile($this->getNode('value'))
             ->raw(") {\n")
             ->indent();

@@ -400,7 +400,7 @@ class Assets extends Component
             fclose($stream);
         }
 
-        if ($asset->kind == "image") {
+        if ($asset->kind == 'image') {
             list ($asset->width, $asset->height) = Image::imageSize($pathOnServer);
         } else {
             $asset->width = null;
@@ -923,7 +923,7 @@ class Assets extends Component
         if (preg_match('/.*_([0-9]{6}_[0-9]{6})$/', $filename, $matches)) {
             $base = $filename;
         } else {
-            $timestamp = DateTimeHelper::currentUTCDateTime()->format("ymd_His");
+            $timestamp = DateTimeHelper::currentUTCDateTime()->format('ymd_His');
             $base = $filename.'_'.$timestamp;
         }
 
@@ -964,7 +964,7 @@ class Assets extends Component
      * @throws AssetLogicException               If the target folder does not exist.
      * @return void
      */
-    public function moveAsset(Asset $asset, $folderId, $newFilename = "")
+    public function moveAsset(Asset $asset, $folderId, $newFilename = '')
     {
         $filename = $newFilename ?: $asset->filename;
 
@@ -1166,9 +1166,9 @@ class Assets extends Component
                 $toTransformPath = $fromTransformPath;
 
                 // In case we're changing the filename, make sure that we're not missing that.
-                $parts = explode("/", $toTransformPath);
+                $parts = explode('/', $toTransformPath);
                 $transformName = array_pop($parts);
-                $toTransformPath = join("/", $parts).'/'.pathinfo($filename, PATHINFO_FILENAME).'.'.pathinfo($transformName, PATHINFO_EXTENSION);
+                $toTransformPath = join('/', $parts).'/'.pathinfo($filename, PATHINFO_FILENAME).'.'.pathinfo($transformName, PATHINFO_EXTENSION);
 
                 $baseFrom = $asset->getFolder()->path;
                 $baseTo = $targetFolder->path;

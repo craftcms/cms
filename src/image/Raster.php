@@ -245,7 +245,7 @@ class Raster extends Image
     {
         $this->normalizeDimensions($targetWidth, $targetHeight);
 
-        list($verticalPosition, $horizontalPosition) = explode("-", $cropPositions);
+        list($verticalPosition, $horizontalPosition) = explode('-', $cropPositions);
 
         if ($scaleIfSmaller || $this->getWidth() > $targetWidth || $this->getHeight() > $targetHeight) {
             // Scale first.

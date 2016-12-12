@@ -60,7 +60,7 @@ class Search
         $str = str_replace(['&nbsp;', '&#160;', '&#xa0;'], ' ', $str);
 
         // Get rid of entities
-        $str = preg_replace("/&#?[a-z0-9]{2,8};/i", "", $str);
+        $str = preg_replace('/&#?[a-z0-9]{2,8};/i', '', $str);
 
         // Normalize to lowercase
         $str = StringHelper::toLowerCase($str);

@@ -573,7 +573,7 @@ class AssetsController extends Controller
             throw new BadRequestHttpException(Craft::t('app', 'The Asset you\'re trying to download does not exist.'));
         }
 
-        $this->_requirePermissionByAsset("viewAssetSource", $asset);
+        $this->_requirePermissionByAsset('viewAssetSource', $asset);
 
         // All systems go, engage hyperdrive! (so PHP doesn't interrupt our stream)
         Craft::$app->getConfig()->maxPowerCaptain();

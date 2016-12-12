@@ -51,7 +51,7 @@ class Response extends \yii\web\Response
         $modifiedTime = filemtime($path);
 
         if ($modifiedTime) {
-            $this->getHeaders()->set('Last-Modified', gmdate("D, d M Y H:i:s", $modifiedTime).' GMT');
+            $this->getHeaders()->set('Last-Modified', gmdate('D, d M Y H:i:s', $modifiedTime).' GMT');
         }
 
         return $this;

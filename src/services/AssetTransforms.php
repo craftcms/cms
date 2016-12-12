@@ -1381,7 +1381,7 @@ class AssetTransforms extends Component
 
         clearstatcache(true, $tempPath);
 
-        $stream = fopen($tempPath, "r");
+        $stream = fopen($tempPath, 'r');
 
         try {
             $volume->createFileByStream($transformPath, $stream);

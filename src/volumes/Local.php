@@ -60,7 +60,7 @@ class Local extends Volume
      *
      * @var string
      */
-    public $path = "";
+    public $path = '';
 
     // Public Methods
     // =========================================================================
