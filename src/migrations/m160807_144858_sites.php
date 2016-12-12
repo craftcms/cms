@@ -17,13 +17,13 @@ use yii\db\Expression;
  */
 class m160807_144858_sites extends Migration
 {
-    // Properties
+    // Static
     // =========================================================================
 
     /**
      * @var array The site FK columns ([table, column, not null?, locale column])
      */
-    protected $siteColumns = [
+    protected static $siteColumns = [
         ['{{%categorygroups_i18n}}', 'siteId', true, 'locale'],
         ['{{%content}}', 'siteId', true, 'locale'],
         ['{{%elements_i18n}}', 'siteId', true, 'locale'],
@@ -36,6 +36,9 @@ class m160807_144858_sites extends Migration
         ['{{%sections_i18n}}', 'siteId', true, 'locale'],
         ['{{%templatecaches}}', 'siteId', true, 'locale'],
     ];
+
+    // Properties
+    // =========================================================================
 
     /**
      * @var string The CASE SQL used to set site column values
@@ -133,7 +136,7 @@ class m160807_144858_sites extends Migration
         // Create the FK columns
         // ---------------------------------------------------------------------
 
-        foreach ($this->siteColumns as $columnInfo) {
+        foreach (self::$siteColumns as $columnInfo) {
             list($table, $column, $isNotNull, $localeColumn) = $columnInfo;
             $this->addSiteColumn($table, $column, $isNotNull, $localeColumn);
         }
@@ -257,7 +260,7 @@ class m160807_144858_sites extends Migration
         // Drop the locale columns
         // ---------------------------------------------------------------------
 
-        foreach ($this->siteColumns as $columnInfo) {
+        foreach (self::$siteColumns as $columnInfo) {
             list($table, , , $localeColumn) = $columnInfo;
             $this->dropColumn($table, $localeColumn);
         }
