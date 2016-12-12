@@ -10,6 +10,7 @@ namespace craft\helpers;
 use craft\errors\MissingComponentException;
 use craft\events\RegisterComponentTypesEvent;
 use craft\mail\Mailer;
+use craft\mail\Message;
 use craft\mail\transportadapters\BaseTransportAdapter;
 use craft\mail\transportadapters\Gmail;
 use craft\mail\transportadapters\Php;
@@ -97,6 +98,7 @@ class MailerHelper
         }
 
         $mailer = new Mailer([
+            'messageClass' => Message::class,
             'from' => [$settings->fromEmail => $settings->fromName],
             'template' => $settings->template,
             'transport' => $adapter->getTransportConfig(),
