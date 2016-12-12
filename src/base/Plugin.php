@@ -49,11 +49,6 @@ class Plugin extends Module implements PluginInterface
      */
     private $_settingsModel;
 
-    /**
-     * @var string The plugin’s base path
-     */
-    private $_basePath;
-
     // Public Methods
     // =========================================================================
 
