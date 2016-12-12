@@ -158,7 +158,14 @@ JS;
         }
 
         if ($updates) {
-            $response = ArrayHelper::toArray($updates);
+            $response = $updates->toArray();
+
+            // responseErrors => errors
+            if (isset($response['responseErrors'])) {
+                $response['errors'] = $response['responseErrors'];
+                unset($response['responseErrors']);
+            }
+
             $response['allowAutoUpdates'] = Craft::$app->getConfig()->allowAutoUpdates();
 
             return $this->asJson($response);

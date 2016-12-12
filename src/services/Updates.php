@@ -215,8 +215,9 @@ class Updates extends Component
 
                 if ($etModel == null) {
                     $updateModel = new Update();
-                    $errors[] = Craft::t('app', 'Craft is unable to determine if an update is available at this time.');
-                    $updateModel->errors = $errors;
+                    $updateModel->responseErrors = [
+                        Craft::t('app', 'Craft is unable to determine if an update is available at this time.')
+                    ];
                 } else {
                     /** @var Update $updateModel */
                     $updateModel = $etModel->data;
