@@ -752,12 +752,14 @@ class Fields extends Component
                 }
             } else {
                 // Did the old field have a column we need to remove?
-                if (!$isNewField) {
-                    if ($fieldRecord->getOldHandle() && Craft::$app->getDb()->columnExists($contentTable, $oldColumnName)) {
-                        Craft::$app->getDb()->createCommand()
-                            ->dropColumn($contentTable, $oldColumnName)
-                            ->execute();
-                    }
+                if (
+                    !$isNewField &&
+                    $fieldRecord->getOldHandle() &&
+                    Craft::$app->getDb()->columnExists($contentTable, $oldColumnName)
+                ) {
+                    Craft::$app->getDb()->createCommand()
+                        ->dropColumn($contentTable, $oldColumnName)
+                        ->execute();
                 }
 
                 // Fields without a content column don't get translated

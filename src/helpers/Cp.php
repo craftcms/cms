@@ -65,13 +65,14 @@ class Cp
                     ' <a class="go edition-resolution">'.Craft::t('app', 'Resolve').'</a>';
             }
 
-            if ($path != 'updates' && $user->can('performUpdates')) {
-                if (!empty($updateModel->app->releases)) {
-                    if (Craft::$app->getUpdates()->criticalCraftUpdateAvailable($updateModel->app->releases)) {
-                        $alerts[] = Craft::t('app', 'There’s a critical Craft CMS update available.').
-                            ' <a class="go nowrap" href="'.Url::url('updates').'">'.Craft::t('app', 'Go to Updates').'</a>';
-                    }
-                }
+            if (
+                $path != 'updates' &&
+                $user->can('performUpdates') &&
+                !empty($updateModel->app->releases) &&
+                Craft::$app->getUpdates()->criticalCraftUpdateAvailable($updateModel->app->releases)
+            ) {
+                $alerts[] = Craft::t('app', 'There’s a critical Craft CMS update available.').
+                    ' <a class="go nowrap" href="'.Url::url('updates').'">'.Craft::t('app', 'Go to Updates').'</a>';
             }
 
             // Domain mismatch?

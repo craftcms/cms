@@ -95,10 +95,8 @@ class Plugin extends Module implements PluginInterface
         // Run the install migration, if there is one
         $migration = $this->createInstallMigration();
 
-        if ($migration !== null) {
-            if ($migrator->migrateUp($migration) === false) {
-                return false;
-            }
+        if ($migration !== null && $migrator->migrateUp($migration) === false) {
+            return false;
         }
 
         // Mark all existing migrations as applied

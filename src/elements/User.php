@@ -530,10 +530,8 @@ class User extends Element implements IdentityInterface
         if ($this->locked) {
             $cooldownDuration = Craft::$app->getConfig()->get('cooldownDuration');
 
-            if ($cooldownDuration) {
-                if (!$this->getRemainingCooldownTime()) {
-                    Craft::$app->getUsers()->unlockUser($this);
-                }
+            if ($cooldownDuration && !$this->getRemainingCooldownTime()) {
+                Craft::$app->getUsers()->unlockUser($this);
             }
         }
     }

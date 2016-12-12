@@ -408,12 +408,10 @@ class RequirementsChecker
         if (is_file($dbConfigPath)) {
             $dbCreds = @require_once(dirname(__FILE__).DIRECTORY_SEPARATOR.'..'.DIRECTORY_SEPARATOR.'config'.DIRECTORY_SEPARATOR.'db.php');
 
-            if (is_array($dbCreds)) {
-                if ($dbCreds['server'] && $dbCreds['user'] && $dbCreds['password'] && $dbCreds['database'] && $dbCreds['driver']) {
-                    $this->dbCreds = $dbCreds;
+            if (is_array($dbCreds) && $dbCreds['server'] && $dbCreds['user'] && $dbCreds['password'] && $dbCreds['database'] && $dbCreds['driver']) {
+                $this->dbCreds = $dbCreds;
 
-                    return true;
-                }
+                return true;
             }
         } else if ($this->isCraftRunning()) {
             $configService = Craft::$app->getConfig();
