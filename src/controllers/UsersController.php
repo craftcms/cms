@@ -31,6 +31,8 @@ use yii\web\HttpException;
 use yii\web\NotFoundHttpException;
 use yii\web\Response;
 
+/** @noinspection ClassOverridesFieldOfSuperClassInspection */
+
 /**
  * The UsersController class is a controller that handles various user account related tasks such as logging-in,
  * impersonating a user, logging out, forgetting passwords, setting passwords, validating accounts, activating

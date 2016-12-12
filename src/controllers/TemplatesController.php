@@ -16,6 +16,8 @@ use yii\web\HttpException;
 use yii\web\NotFoundHttpException;
 use yii\web\ServerErrorHttpException;
 
+/** @noinspection ClassOverridesFieldOfSuperClassInspection */
+
 /**
  * The TemplatesController class is a controller that handles various template rendering related tasks for both the
  * control panel and front-end of a Craft site.

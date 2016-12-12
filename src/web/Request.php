@@ -13,6 +13,8 @@ use craft\helpers\StringHelper;
 use yii\base\InvalidConfigException;
 use yii\web\BadRequestHttpException;
 
+/** @noinspection ClassOverridesFieldOfSuperClassInspection */
+
 /**
  * @inheritdoc
  *

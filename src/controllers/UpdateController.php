@@ -22,6 +22,8 @@ use yii\base\Exception;
 use yii\web\Response;
 use yii\web\ServerErrorHttpException;
 
+/** @noinspection ClassOverridesFieldOfSuperClassInspection */
+
 /**
  * The UpdateController class is a controller that handles various update related tasks such as checking for available
  * updates and running manual and auto-updates.

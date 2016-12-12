@@ -25,6 +25,8 @@ use yii\base\ErrorException;
 use yii\web\BadRequestHttpException;
 use yii\web\Response;
 
+/** @noinspection ClassOverridesFieldOfSuperClassInspection */
+
 /**
  * The AssetsController class is a controller that handles various actions related to asset tasks, such as uploading
  * files and creating/deleting/renaming files and folders.

@@ -15,6 +15,8 @@ use craft\web\Controller;
 use yii\base\Response;
 use yii\web\BadRequestHttpException;
 
+/** @noinspection ClassOverridesFieldOfSuperClassInspection */
+
 /**
  * The InstallController class is a controller that directs all installation related tasks such as creating the database
  * schema and default content for a Craft installation.

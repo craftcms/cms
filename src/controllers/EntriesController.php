@@ -24,6 +24,8 @@ use yii\web\NotFoundHttpException;
 use yii\web\Response;
 use yii\web\ServerErrorHttpException;
 
+/** @noinspection ClassOverridesFieldOfSuperClassInspection */
+
 /**
  * The EntriesController class is a controller that handles various entry related tasks such as retrieving, saving,
  * swapping between entry types, previewing, deleting and sharing entries.
