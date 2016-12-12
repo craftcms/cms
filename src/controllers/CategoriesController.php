@@ -383,7 +383,7 @@ class CategoriesController extends Controller
 
         if (Craft::$app->getIsMultiSite() && Craft::$app->getSites()->currentSite->id != $site->id) {
             $variables['continueEditingUrl'] .= '/'.$site->handle;
-        };
+        }
 
         // Render the template!
         Craft::$app->getView()->registerCssResource('css/category.css');
