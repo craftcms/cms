@@ -104,8 +104,7 @@ class Updater
             $errors = $this->_validateNewRequirements($unzipFolder);
 
             if (!empty($errors)) {
-                throw new MinimumRequirementException(Markdown::process(Craft::t('app',
-                        'Your server does not meet the following minimum requirements for Craft CMS to run:')."\n\n".$this->_markdownList($errors)));
+                throw new MinimumRequirementException(Markdown::process(Craft::t('app', 'Your server does not meet the following minimum requirements for Craft CMS to run:')."\n\n".$this->_markdownList($errors)));
             }
         }
 
