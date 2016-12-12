@@ -40,9 +40,9 @@ class Search
     /**
      * Normalizes search keywords.
      *
-     * @param string  $str            The dirty keywords
-     * @param array   $ignore         Ignore words to strip out
-     * @param boolean $processCharMap Whether to remove punctuation and diacritics (default is true)
+     * @param string[]|string $str            The dirty keywords
+     * @param array           $ignore         Ignore words to strip out
+     * @param boolean         $processCharMap Whether to remove punctuation and diacritics (default is true)
      *
      * @return string The cleansed keywords.
      */

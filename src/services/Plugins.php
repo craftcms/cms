@@ -520,12 +520,12 @@ class Plugins extends Component
         ]));
 
         // JSON-encode them and save the plugin row
-        $settings = Json::encode($plugin->getSettings());
+        $jsSettings = Json::encode($plugin->getSettings());
 
         $affectedRows = Craft::$app->getDb()->createCommand()
             ->update(
                 '{{%plugins}}',
-                ['settings' => $settings],
+                ['settings' => $jsSettings],
                 ['handle' => $plugin->getHandle()])
             ->execute();
 
@@ -1136,10 +1136,10 @@ class Plugins extends Component
      *
      * It will also set the $class variable to the primary Plugin class, if it can isn't set already and the class can be found.
      *
-     * @param string  $handle    The plugin handle
-     * @param array   $composer  The Composer config
-     * @param boolean &$class    The Plugin class name
-     * @param boolean &$basePath The plugin's base path
+     * @param string      $handle    The plugin handle
+     * @param array       $composer  The Composer config
+     * @param string|null &$class    The Plugin class name
+     * @param string|null &$basePath The plugin's base path
      *
      * @return array|null
      */

@@ -53,8 +53,8 @@ class AssetTransformsController extends Controller
     /**
      * Edit an asset transform.
      *
-     * @param string         $transformHandle The transform’s handle, if any.
-     * @param AssetTransform $transform       The transform being edited, if there were any validation errors.
+     * @param string|null         $transformHandle The transform’s handle, if any.
+     * @param AssetTransform|null $transform       The transform being edited, if there were any validation errors.
      *
      * @return string The rendering result
      * @throws NotFoundHttpException if the requested transform cannot be found

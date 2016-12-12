@@ -86,8 +86,10 @@ class Feeds extends Component
         }
 
         if (!$cacheDuration) {
+            /** @noinspection CallableParameterUseCaseInTypeContextInspection */
             $cacheDuration = Craft::$app->getConfig()->getCacheDuration();
         } else {
+            /** @noinspection CallableParameterUseCaseInTypeContextInspection */
             $cacheDuration = DateTimeHelper::timeFormatToSeconds($cacheDuration);
         }
 

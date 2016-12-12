@@ -240,7 +240,7 @@ class Header
     /**
      * Called to output a header.
      *
-     * @param array $header Use key => value
+     * @param array|string $header Use key => value
      *
      * @return boolean
      */

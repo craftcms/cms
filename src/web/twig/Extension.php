@@ -211,8 +211,11 @@ class Extension extends \Twig_Extension implements \Twig_Extension_GlobalsInterf
     public function translateFilter($message, $category = null, $params = null, $language = null)
     {
         // The front end site doesn't need to specify the category
+        /** @noinspection CallableParameterUseCaseInTypeContextInspection */
         if (is_array($category)) {
+            /** @noinspection CallableParameterUseCaseInTypeContextInspection */
             $language = $params;
+            /** @noinspection CallableParameterUseCaseInTypeContextInspection */
             $params = $category;
             $category = 'site';
         } else if ($category === null) {

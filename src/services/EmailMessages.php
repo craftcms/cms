@@ -48,7 +48,7 @@ class EmailMessages extends Component
     /**
      * Returns all of the system email messages.
      *
-     * @param integer|null $language
+     * @param string|null $language
      *
      * @return RebrandEmail[]
      */

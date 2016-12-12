@@ -19,6 +19,7 @@ use craft\helpers\StringHelper;
 use craft\services\Config;
 use mikehaertl\shellcommand\Command as ShellCommand;
 use yii\base\Exception;
+use yii\base\NotSupportedException;
 use yii\db\Exception as DbException;
 use yii\db\TableSchema;
 
@@ -257,6 +258,7 @@ class Connection extends \yii\db\Connection
      * @param boolean|null       $refresh
      *
      * @return boolean
+     * @throws NotSupportedException if there is no support for the current driver type
      */
     public function columnExists($table, $column, $refresh = null)
     {

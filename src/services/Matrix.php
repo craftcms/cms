@@ -615,6 +615,7 @@ class Matrix extends Component
     {
         $name = '';
 
+        /** @noinspection CallableParameterUseCaseInTypeContextInspection */
         do {
             if ($useOldHandle) {
                 if (!$matrixField->oldHandle) {

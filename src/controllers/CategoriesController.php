@@ -58,8 +58,8 @@ class CategoriesController extends Controller
     /**
      * Edit a category group.
      *
-     * @param integer       $groupId       The category group’s ID, if editing an existing group.
-     * @param CategoryGroup $categoryGroup The category group being edited, if there were any validation errors.
+     * @param integer|null       $groupId       The category group’s ID, if editing an existing group.
+     * @param CategoryGroup|null $categoryGroup The category group being edited, if there were any validation errors.
      *
      * @return string The rendering result
      * @throws NotFoundHttpException if the requested category group cannot be found

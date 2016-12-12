@@ -450,8 +450,8 @@ class UsersController extends Controller
     /**
      * Edit a user account.
      *
-     * @param integer|string $userId The user’s ID, if any, or a string that indicates the user to be edited ('current' or 'client').
-     * @param User           $user   The user being edited, if there were any validation errors.
+     * @param integer|string|null $userId The user’s ID, if any, or a string that indicates the user to be edited ('current' or 'client').
+     * @param User|null           $user   The user being edited, if there were any validation errors.
      *
      * @return string The rendering result
      * @throws NotFoundHttpException if the requested user cannot be found

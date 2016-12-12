@@ -961,7 +961,7 @@ class StringHelper extends \yii\helpers\StringHelper
      *
      * @param string $string
      *
-     * @return boolean|string
+     * @return string
      */
     public static function convertToUtf8($string)
     {

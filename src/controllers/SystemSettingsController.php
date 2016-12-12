@@ -327,8 +327,8 @@ class SystemSettingsController extends Controller
     /**
      * Global Set edit form.
      *
-     * @param integer   $globalSetId The global set’s ID, if any.
-     * @param GlobalSet $globalSet   The global set being edited, if there were any validation errors.
+     * @param integer|null   $globalSetId The global set’s ID, if any.
+     * @param GlobalSet|null $globalSet   The global set being edited, if there were any validation errors.
      *
      * @return string The rendering result
      * @throws NotFoundHttpException if the requested global set cannot be found

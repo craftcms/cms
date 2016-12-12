@@ -113,16 +113,12 @@ class NodeVisitor implements \Twig_NodeVisitorInterface
      *
      * @param \Twig_NodeInterface $node The current node to traverse
      *
-     * @return \Twig_NodeInterface|null
+     * @return \Twig_NodeInterface
      */
     private function _findEventTags(
         /** @noinspection PhpDeprecationInspection */
-        \Twig_NodeInterface $node = null
+        \Twig_NodeInterface $node
     ) {
-        if (null === $node) {
-            return null;
-        }
-
         // Check to see if this is a template event tag
         if ($node instanceof \Twig_Node_Print || $node instanceof \Twig_Node_Do) {
             $expression = $node->getNode('expr');
@@ -152,10 +148,9 @@ class NodeVisitor implements \Twig_NodeVisitorInterface
         // Should we keep looking?
         if ($this->_foundAllEventTags() === false) {
             foreach ($node as $k => $n) {
-                if (false !== $n = $this->_findEventTags($n)) {
-                    $node->setNode($k, $n);
-                } else {
-                    $node->removeNode($k);
+                // todo: we can remove this condition for Twig 2
+                if ($n instanceof \Twig_NodeInterface) {
+                    $node->setNode($k, $this->_findEventTags($n));
                 }
             }
         }

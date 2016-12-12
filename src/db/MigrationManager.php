@@ -121,8 +121,8 @@ class MigrationManager extends Component
     /**
      * Upgrades the application by applying new migrations.
      *
-     * @param integer $limit The number of new migrations to be applied. If 0, it means
-     *                       applying all available new migrations.
+     * @param integer|null $limit The number of new migrations to be applied. If 0 or null, it means
+     *                            applying all available new migrations.
      *
      * @return boolean Whether the migrations were applied successfully
      */
@@ -140,9 +140,9 @@ class MigrationManager extends Component
         }
 
         $total = count($migrationNames);
-        $limit = (int)$limit;
 
-        if ($limit > 0) {
+        $this->_normalizeLimit($limit);
+        if ($limit !== null) {
             $migrationNames = array_slice($migrationNames, 0, $limit);
         }
 
@@ -176,8 +176,8 @@ class MigrationManager extends Component
     /**
      * Downgrades the application by reverting old migrations.
      *
-     * @param integer|string $limit The number of migrations to be reverted. Defaults to 1,
-     *                              meaning the last applied migration will be reverted. If set to "all", all migrations will be reverted.
+     * @param integer|null $limit The number of migrations to be reverted. Defaults to 1,
+     *                            meaning the last applied migration will be reverted. If set to 0 or null, all migrations will be reverted.
      *
      * @return boolean Whether the migrations were reverted successfully
      */
@@ -186,12 +186,7 @@ class MigrationManager extends Component
         // This might take a while
         Craft::$app->getConfig()->maxPowerCaptain();
 
-        if ($limit === 'all' || $limit < 1) {
-            $limit = null;
-        } else {
-            $limit = (int)$limit;
-        }
-
+        $this->_normalizeLimit($limit);
         $migrationNames = array_keys($this->getMigrationHistory($limit));
 
         if (empty($migrationNames)) {
@@ -228,6 +223,7 @@ class MigrationManager extends Component
      * @param string|MigrationInterface|\yii\db\Migration $migration The name of the migration to apply, or the migration itself
      *
      * @return boolean Whether the migration was applied successfully
+     * @throws InvalidConfigException if $migration is invalid
      */
     public function migrateUp($migration)
     {
@@ -238,6 +234,7 @@ class MigrationManager extends Component
         }
 
         /** @var \yii\db\Migration $migration */
+        /** @noinspection CallableParameterUseCaseInTypeContextInspection */
         $migration = Instance::ensure($migration, MigrationInterface::class);
 
         Craft::info("Applying $migrationName");
@@ -278,6 +275,7 @@ class MigrationManager extends Component
      * @param string|MigrationInterface|\yii\db\Migration $migration The name of the migration to revert, or the migration itself
      *
      * @return boolean Whether the migration was reverted successfully
+     * @throws InvalidConfigException if $migration is invalid
      */
     public function migrateDown($migration)
     {
@@ -288,6 +286,7 @@ class MigrationManager extends Component
         }
 
         /** @var \yii\db\Migration $migration */
+        /** @noinspection CallableParameterUseCaseInTypeContextInspection */
         $migration = Instance::ensure($migration, MigrationInterface::class);
 
         Craft::info("Reverting $migrationName");
@@ -427,6 +426,20 @@ class MigrationManager extends Component
 
     // Private Methods
     // =========================================================================
+
+    /**
+     * Normalizes the $limit argument passed to [[up()]] and [[down()]]
+     *
+     * @param integer|null &$limit
+     */
+    private function _normalizeLimit(&$limit)
+    {
+        if (is_numeric($limit) && $limit >= 1) {
+            $limit = (int)$limit;
+        } else {
+            $limit = null;
+        }
+    }
 
     /**
      * Normalizes the $migration argument passed to [[migrateUp()]] and [[migrateDown()]].

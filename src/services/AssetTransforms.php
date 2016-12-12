@@ -390,10 +390,11 @@ class AssetTransforms extends Component
     /**
      * Get a transform index row. If it doesn't exist - create one.
      *
-     * @param Asset  $asset
-     * @param string $transform
+     * @param Asset                            $asset
+     * @param AssetTransform|string|array|null $transform
      *
      * @return AssetTransformIndex
+     * @throws AssetTransformException if the transform cannot be found by the handle
      */
     public function getTransformIndex(Asset $asset, $transform)
     {
@@ -492,6 +493,7 @@ class AssetTransforms extends Component
                 sleep(1);
                 Craft::$app->getConfig()->maxPowerCaptain();
 
+                /** @noinspection CallableParameterUseCaseInTypeContextInspection */
                 $index = $this->getTransformIndexModelById($index->id);
 
                 // Is it being worked on right now?
@@ -627,9 +629,9 @@ class AssetTransforms extends Component
     /**
      * Normalize a transform from handle or a set of properties to an AssetTransform.
      *
-     * @param mixed $transform
+     * @param AssetTransform|string|array|null $transform
      *
-     * @throws AssetTransformException If the transform cannot be found by the handle.
+     * @throws AssetTransformException if the transform cannot be found by the handle
      * @return AssetTransform|null
      */
     public function normalizeTransform($transform)

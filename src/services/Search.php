@@ -119,11 +119,11 @@ class Search extends Component
     /**
      * Filters a list of element IDs by a given search query.
      *
-     * @param integer[]          $elementIds   The list of element IDs to filter by the search query.
-     * @param string|SearchQuery $query        The search query (either a string or a SearchQuery instance)
-     * @param boolean            $scoreResults Whether to order the results based on how closely they match the query.
-     * @param integer            $siteId       The site ID to filter by.
-     * @param boolean            $returnScores Whether the search scores should be included in the results. If true, results will be returned as `element ID => score`.
+     * @param integer[]                $elementIds   The list of element IDs to filter by the search query.
+     * @param string|array|SearchQuery $query        The search query (either a string or a SearchQuery instance)
+     * @param boolean                  $scoreResults Whether to order the results based on how closely they match the query.
+     * @param integer                  $siteId       The site ID to filter by.
+     * @param boolean                  $returnScores Whether the search scores should be included in the results. If true, results will be returned as `element ID => score`.
      *
      * @return array The filtered list of element IDs.
      */

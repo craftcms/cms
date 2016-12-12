@@ -151,6 +151,7 @@ class Elements extends Component
         }
 
         if ($elementType === null) {
+            /** @noinspection CallableParameterUseCaseInTypeContextInspection */
             $elementType = $this->getElementTypeById($elementId);
 
             if (!$elementType) {
@@ -885,6 +886,7 @@ class Elements extends Component
     public function deleteElementById($elementId, $elementType = null, $siteId = null)
     {
         if ($elementType === null) {
+            /** @noinspection CallableParameterUseCaseInTypeContextInspection */
             $elementType = $this->getElementTypeById($elementId);
 
             if (!$elementType) {
@@ -894,13 +896,13 @@ class Elements extends Component
 
         if ($siteId === null && $elementType::isLocalized() && Craft::$app->getIsMultiSite()) {
             // Get a site this element is enabled in
-            $siteId = (new Query())
+            $siteId = (int)(new Query())
                 ->select('siteId')
                 ->from('{{%elements_i18n}}')
                 ->where(['elementId' => $elementId])
                 ->scalar();
 
-            if (!$siteId) {
+            if ($siteId === 0) {
                 return false;
             }
         }
