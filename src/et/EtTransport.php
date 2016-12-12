@@ -203,7 +203,29 @@ class EtTransport
                     // Potentially long-running request, so close session to prevent session blocking on subsequent requests.
                     Craft::$app->getSession()->close();
 
-                    $response = $client->request('post', $this->_endpoint, ['json' => ArrayHelper::toArray($this->_model)]);
+                    $response = $client->request('post', $this->_endpoint, [
+                        'json' => $this->_model->toArray([
+                            // No need to include responseErrors here
+                            'licenseKey',
+                            'licenseKeyStatus',
+                            'licensedEdition',
+                            'licensedDomain',
+                            'editionTestableDomain',
+                            'pluginLicenseKeys',
+                            'pluginLicenseKeyStatuses',
+                            'data',
+                            'requestUrl',
+                            'requestIp',
+                            'requestTime',
+                            'requestPort',
+                            'localVersion',
+                            'localEdition',
+                            'userEmail',
+                            'showBeta',
+                            'serverInfo',
+                            'handle',
+                        ])
+                    ]);
 
                     if ($response->getStatusCode() == 200) {
                         // Clear the connection failure cached item if it exists.

@@ -265,8 +265,8 @@ class Et extends Component
         }
 
         // Did they at least say why?
-        if (!empty($etResponse->errors)) {
-            switch ($etResponse->errors[0]) {
+        if (!empty($etResponse->responseErrors)) {
+            switch ($etResponse->responseErrors[0]) {
                 // Validation errors
                 case 'not_public_domain': {
                     // So...
@@ -340,8 +340,8 @@ class Et extends Component
             }
 
             // Did they at least say why?
-            if (!empty($etResponse->errors)) {
-                switch ($etResponse->errors[0]) {
+            if (!empty($etResponse->responseErrors)) {
+                switch ($etResponse->responseErrors[0]) {
                     // Validation errors
                     case 'edition_doesnt_exist':
                         $error = Craft::t('app', 'The selected edition doesn’t exist anymore.');
@@ -392,7 +392,7 @@ class Et extends Component
                         break;
 
                     default:
-                        $error = $etResponse->errors[0];
+                        $error = $etResponse->responseErrors[0];
                 }
             } else {
                 // Something terrible must have happened!
@@ -498,6 +498,12 @@ class Et extends Component
             $attributes = Json::decode($attributes);
 
             if (is_array($attributes)) {
+                // errors => responseErrors
+                if (isset($attributes['errors'])) {
+                    $attributes['responseErrors'] = $attributes['errors'];
+                    unset($attributes['errors']);
+                }
+
                 $etModel = new EtModel($attributes);
 
                 // Make sure it's valid.
