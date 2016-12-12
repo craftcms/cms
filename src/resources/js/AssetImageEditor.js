@@ -733,7 +733,7 @@ Craft.AssetImageEditor = Garnish.Modal.extend(
 				var imageCoords = {
 					left: this.editorWidth / 2,
 					top: this.editorHeight / 2
-				}
+				};
 
 				if (mode == 'crop') {
 					this.zoomRatio = this.getZoomToFitRatio(imageDimensions);
@@ -759,7 +759,7 @@ Craft.AssetImageEditor = Garnish.Modal.extend(
 								top: this.image.top + (state.clipperData.deltaY * areaFactor),
 								width: state.clipperData.width * areaFactor,
 								height: state.clipperData.height * areaFactor
-							}
+							};
 						}
 						this._showCropper(clipperData);
 					}.bind(this);
@@ -1004,7 +1004,7 @@ Craft.AssetImageEditor = Garnish.Modal.extend(
 			return {
 				width: Math.max(coords.a.x, coords.b.x, coords.c.x, coords.d.x) - Math.min(coords.a.x, coords.b.x, coords.c.x, coords.d.x),
 				height: Math.max(coords.a.y, coords.b.y, coords.c.y, coords.d.y) - Math.min(coords.a.y, coords.b.y, coords.c.y, coords.d.y)
-			}
+			};
 		},
 
 		_handleMouseDown: function (ev) {
