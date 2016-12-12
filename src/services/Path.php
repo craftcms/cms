@@ -230,7 +230,7 @@ class Path extends Component
     public function getImageEditorSourcesPath()
     {
         $path = $this->getAssetsPath().'/imageeditor';
-        Io::ensureFolderExists($path);
+        FileHelper::createDirectory($path);
 
         return $path;
     }

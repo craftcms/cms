@@ -542,4 +542,77 @@ class Assets
             ];
         }
     }
+
+    /**
+     * Return an image path to use in Image Editor for an Asset by id and size.
+     *
+     * @param integer $assetId
+     * @param integer $size
+     *
+     * @return false|string
+     */
+    public static function getEditorImagePath($assetId, $size)
+    {
+        $asset = Craft::$app->getAssets()->getAssetById($assetId);
+
+        if (!$asset || !Image::isImageManipulatable($asset->getExtension())) {
+            return false;
+        }
+
+        $volume = $asset->getVolume();
+
+        $imagePath = Craft::$app->getPath()->getImageEditorSourcesPath();
+        $assetSourcesDirectory = $imagePath.'/'.$assetId;
+        $targetSizedPath = $assetSourcesDirectory.'/'.$size;
+        $targetFilePath = $targetSizedPath.'/'.$assetId.'.'.$asset->getExtension();
+        FileHelper::createDirectory($targetSizedPath);
+
+        // You never know.
+        if (is_file($targetFilePath)) {
+            return $targetFilePath;
+        }
+
+        // Maybe we have larger sources available we can use.
+        if (FileHelper::createDirectory($assetSourcesDirectory)) {
+            $handle = opendir($assetSourcesDirectory);
+
+            if ($handle === false) {
+                throw new Exception("Unable to open directory: $assetSourcesDirectory");
+            }
+
+            while (($subDir = readdir($handle)) !== false) {
+                if ($subDir === '.' || $subDir === '..') {
+                    continue;
+                }
+                $existingSize = $subDir;
+                $existingAsset = $assetSourcesDirectory.DIRECTORY_SEPARATOR.$subDir.'/'.$assetId.'.'.$asset->getExtension();
+                if ($existingSize >= $size && is_file($existingAsset)) {
+                    Craft::$app->getImages()->loadImage($existingAsset)
+                        ->scaleToFit($size, $size)
+                        ->saveAs($targetFilePath);
+
+                    return $targetFilePath;
+                }
+            }
+            closedir($handle);
+        }
+
+        // No existing resources we could use.
+
+        // For remote files, check if maxCachedImageSizes setting would work for us.
+        $maxCachedSize = Craft::$app->getAssetTransforms()->getCachedCloudImageSize();
+
+        if (!$volume::isLocal() && $maxCachedSize > $size) {
+            // For remote sources we get a transform source, if maxCachedImageSizes is not smaller than that.
+            $localSource = $asset->getTransformSource();
+            Craft::$app->getImages()->loadImage($localSource)->scaleToFit($size, $size)->saveAs($targetFilePath);
+        } else {
+            // For local source or if cached versions are smaller or not allowed, get a copy, size it and delete afterwards
+            $localSource = $asset->getCopyOfFile();
+            Craft::$app->getImages()->loadImage($localSource)->scaleToFit($size, $size)->saveAs($targetFilePath);
+            FileHelper::removeFile($localSource);
+        }
+
+        return $targetFilePath;
+    }
 }
