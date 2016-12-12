@@ -454,10 +454,8 @@ class Volumes extends Component
             $this->_volumesById[$volume->id] = $volume;
         }
 
-        if (isset($this->_viewableVolumeIds)) {
-            if (Craft::$app->user->checkPermission('viewVolume:'.$volume->id)) {
-                $this->_viewableVolumeIds[] = $volume->id;
-            }
+        if (isset($this->_viewableVolumeIds) && Craft::$app->user->checkPermission('viewVolume:'.$volume->id)) {
+            $this->_viewableVolumeIds[] = $volume->id;
         }
 
         // Fire an 'afterSaveVolume' event

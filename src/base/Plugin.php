@@ -138,10 +138,8 @@ class Plugin extends Module implements PluginInterface
 
         $migration = $this->createInstallMigration();
 
-        if ($migration !== null) {
-            if ($this->getMigrator()->migrateDown($migration) === false) {
-                return false;
-            }
+        if ($migration !== null && $this->getMigrator()->migrateDown($migration) === false) {
+            return false;
         }
 
         $this->afterUninstall();

@@ -438,17 +438,15 @@ class EntriesController extends BaseEntriesController
         $this->enforceEditEntryPermissions($entry);
         $currentUser = Craft::$app->getUser()->getIdentity();
 
-        if ($entry->id) {
-            // Is this another user's entry (and it's not a Single)?
-            if (
-                $entry->authorId != $currentUser->id &&
-                $entry->getSection()->type != Section::TYPE_SINGLE
-            ) {
-                if ($entry->enabled) {
-                    // Make sure they have permission to make live changes to those
-                    $this->requirePermission('publishPeerEntries:'.$entry->sectionId);
-                }
-            }
+        // Is this another user's entry (and it's not a Single)?
+        if (
+            $entry->id &&
+            $entry->authorId != $currentUser->id &&
+            $entry->getSection()->type != Section::TYPE_SINGLE &&
+            $entry->enabled
+        ) {
+            // Make sure they have permission to make live changes to those
+            $this->requirePermission('publishPeerEntries:'.$entry->sectionId);
         }
 
         // Populate the entry with post data

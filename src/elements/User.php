@@ -733,22 +733,24 @@ class User extends Element implements IdentityInterface
 
                 if (!$request->getIsConsoleRequest()) {
                     if ($request->getIsCpRequest()) {
-                        if (!$this->can('accessCp')) {
-                            if (!$this->authError) {
-                                $this->authError = self::AUTH_NO_CP_ACCESS;
-                            }
+                        if (!$this->can('accessCp') && !$this->authError) {
+                            $this->authError = self::AUTH_NO_CP_ACCESS;
                         }
 
-                        if (!Craft::$app->getIsSystemOn() && !$this->can('accessCpWhenSystemIsOff')) {
-                            if (!$this->authError) {
-                                $this->authError = self::AUTH_NO_CP_OFFLINE_ACCESS;
-                            }
+                        if (
+                            !Craft::$app->getIsSystemOn() &&
+                            !$this->can('accessCpWhenSystemIsOff') &&
+                            !$this->authError
+                        ) {
+                            $this->authError = self::AUTH_NO_CP_OFFLINE_ACCESS;
                         }
                     } else {
-                        if (!Craft::$app->getIsSystemOn() && !$this->can('accessSiteWhenSystemIsOff')) {
-                            if (!$this->authError) {
-                                $this->authError = self::AUTH_NO_SITE_OFFLINE_ACCESS;
-                            }
+                        if (
+                            !Craft::$app->getIsSystemOn() &&
+                            !$this->can('accessSiteWhenSystemIsOff') &&
+                            !$this->authError
+                        ) {
+                            $this->authError = self::AUTH_NO_SITE_OFFLINE_ACCESS;
                         }
                     }
                 }
@@ -1037,16 +1039,14 @@ class User extends Element implements IdentityInterface
      */
     public function getCooldownEndTime()
     {
-        if ($this->locked) {
-            // There was an old bug that where a user's lockoutDate could be null if they've
-            // passed their cooldownDuration already, but there account status is still locked.
-            // If that's the case, just let it return null as if they are past the cooldownDuration.
-            if ($this->lockoutDate) {
-                $cooldownEnd = clone $this->lockoutDate;
-                $cooldownEnd->add(new DateInterval(Craft::$app->getConfig()->get('cooldownDuration')));
+        // There was an old bug that where a user's lockoutDate could be null if they've
+        // passed their cooldownDuration already, but there account status is still locked.
+        // If that's the case, just let it return null as if they are past the cooldownDuration.
+        if ($this->locked && $this->lockoutDate) {
+            $cooldownEnd = clone $this->lockoutDate;
+            $cooldownEnd->add(new DateInterval(Craft::$app->getConfig()->get('cooldownDuration')));
 
-                return $cooldownEnd;
-            }
+            return $cooldownEnd;
         }
 
         return null;

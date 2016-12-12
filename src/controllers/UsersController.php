@@ -912,13 +912,13 @@ class UsersController extends Controller
 
         // If editing an existing user and either of these properties are being changed,
         // require the user's current password for additional security
-        if (!$isNewUser && (!empty($newEmail) || $user->newPassword !== null)) {
-            if (!$this->_verifyElevatedSession()) {
-                Craft::warning('Tried to change the email or password for userId: '.$user->id.', but the current password does not match what the user supplied.',
-                    __METHOD__);
-                $user->addError('currentPassword',
-                    Craft::t('app', 'Incorrect current password.'));
-            }
+        if (
+            !$isNewUser &&
+            (!empty($newEmail) || $user->newPassword !== null) &&
+            !$this->_verifyElevatedSession()
+        ) {
+            Craft::warning('Tried to change the email or password for userId: '.$user->id.', but the current password does not match what the user supplied.', __METHOD__);
+            $user->addError('currentPassword', Craft::t('app', 'Incorrect current password.'));
         }
 
         // Handle the rest of the user properties

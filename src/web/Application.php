@@ -194,10 +194,8 @@ class Application extends \yii\web\Application
             if ($firstSeg) {
                 $plugin = $plugin = $this->getPlugins()->getPlugin($firstSeg);
 
-                if ($plugin) {
-                    if (!$user->checkPermission('accessPlugin-'.$plugin->getHandle())) {
-                        throw new ForbiddenHttpException();
-                    }
+                if ($plugin && !$user->checkPermission('accessPlugin-'.$plugin->getHandle())) {
+                    throw new ForbiddenHttpException();
                 }
             }
         }
