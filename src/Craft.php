@@ -220,7 +220,7 @@ EOD;
     {
         if (file_exists($path)) {
             // Make sure it's up-to-date
-            $f = fopen($path, 'r');
+            $f = fopen($path, 'rb');
             $line = fgets($f);
             fclose($f);
 

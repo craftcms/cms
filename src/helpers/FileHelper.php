@@ -198,7 +198,7 @@ class FileHelper extends \yii\helpers\FileHelper
         // Remember whether the file already existed
         $exists = file_exists($path);
 
-        if (($f = @fopen($path, 'a')) === false) {
+        if (($f = @fopen($path, 'ab')) === false) {
             return false;
         }
 

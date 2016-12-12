@@ -204,7 +204,7 @@ class Assets extends Component
                 Image::cleanImageByPath($asset->newFilePath);
             }
 
-            $stream = fopen($asset->newFilePath, 'r');
+            $stream = fopen($asset->newFilePath, 'rb');
 
             if (!$stream) {
                 throw new FileException(Craft::t('app',
@@ -364,7 +364,7 @@ class Assets extends Component
         }
 
         // Open the stream for, uhh, streaming
-        $stream = fopen($pathOnServer, 'r');
+        $stream = fopen($pathOnServer, 'rb');
 
         if (!$stream) {
             throw new FileException(Craft::t('app',
@@ -1192,7 +1192,7 @@ class Assets extends Component
             $tempPath = Craft::$app->getPath()->getTempPath().DIRECTORY_SEPARATOR.$tempFilename;
             $sourceVolume->saveFileLocally($asset->getUri(), $tempPath);
             $targetVolume = $targetFolder->getVolume();
-            $stream = fopen($tempPath, 'r');
+            $stream = fopen($tempPath, 'rb');
 
             if (!$stream) {
                 FileHelper::removeFile($tempPath);
