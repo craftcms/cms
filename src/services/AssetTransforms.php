@@ -1396,8 +1396,6 @@ class AssetTransforms extends Component
         if (!$volume::isLocal()) {
             $this->queueSourceForDeletingIfNecessary($imageSource);
         }
-
-        return;
     }
 
     /**

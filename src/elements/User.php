@@ -963,7 +963,7 @@ class User extends Element implements IdentityInterface
             );
         }
 
-        return $url = Url::getResourceUrl('defaultuserphoto');
+        return Url::getResourceUrl('defaultuserphoto');
     }
 
     /**
