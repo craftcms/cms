@@ -670,6 +670,6 @@ abstract class BaseRelationField extends Field implements PreviewableFieldInterf
      */
     protected function getAvailableSources()
     {
-        return Craft::$app->getElementIndexes()->getSources($this::elementType(), 'modal');
+        return Craft::$app->getElementIndexes()->getSources(static::elementType(), 'modal');
     }
 }
