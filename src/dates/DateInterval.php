@@ -86,7 +86,7 @@ class DateInterval extends \DateInterval
      */
     public function __toString()
     {
-        return self::toSpec($this);
+        return $this->toSpec($this);
     }
 
     /**
