@@ -435,7 +435,7 @@ class Elements extends Component
             }
 
             // Make sure the element actually supports this site
-            if (array_search($element->siteId, $supportedSiteIds) === false) {
+            if (!in_array($element->siteId, $supportedSiteIds)) {
                 throw new Exception('Attempting to save an element in an unsupported site.');
             }
 

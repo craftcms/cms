@@ -234,7 +234,7 @@ class TemplateCaches extends Component
 
         if (!empty($this->_cacheElementIds)) {
             foreach (array_keys($this->_cacheElementIds) as $cacheKey) {
-                if (array_search($elementId, $this->_cacheElementIds[$cacheKey]) === false) {
+                if (!in_array($elementId, $this->_cacheElementIds[$cacheKey])) {
                     $this->_cacheElementIds[$cacheKey][] = $elementId;
                 }
             }
