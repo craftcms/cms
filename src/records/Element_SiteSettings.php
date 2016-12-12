@@ -7,10 +7,10 @@
 
 namespace craft\records;
 
-use yii\db\ActiveQueryInterface;
 use craft\db\ActiveRecord;
 use craft\validators\SiteIdValidator;
 use craft\validators\UriValidator;
+use yii\db\ActiveQueryInterface;
 
 /**
  * Element_SiteSettings record class.

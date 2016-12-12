@@ -159,7 +159,7 @@ class Request extends \yii\web\Request
         $path = $this->getFullPath();
 
         // Get the path segments
-        $this->_segments = array_filter(explode('/', $path), function ($value) {
+        $this->_segments = array_filter(explode('/', $path), function($value) {
             // Explicitly check in case there is a 0 in a segment (i.e. foo/0 or foo/0/bar)
             return $value !== '';
         });
@@ -1071,9 +1071,9 @@ class Request extends \yii\web\Request
      */
     private function _validateIp($ip)
     {
-        if (filter_var($ip, FILTER_VALIDATE_IP,
-                FILTER_FLAG_IPV4) === false && filter_var($ip,
-                FILTER_VALIDATE_IP, FILTER_FLAG_IPV6) === false
+        if (
+            filter_var($ip, FILTER_VALIDATE_IP, FILTER_FLAG_IPV4) === false &&
+            filter_var($ip, FILTER_VALIDATE_IP, FILTER_FLAG_IPV6) === false
         ) {
             return false;
         }

@@ -14,7 +14,7 @@ use craft\enums\PluginUpdateStatus;
 use craft\enums\VersionUpdateStatus;
 use craft\events\UpdateEvent;
 use craft\helpers\DateTimeHelper;
-use craft\helpers\Io;
+use craft\helpers\FileHelper;
 use craft\helpers\Json;
 use craft\helpers\Update as UpdateHelper;
 use craft\i18n\Locale;
@@ -215,8 +215,9 @@ class Updates extends Component
 
                 if ($etModel == null) {
                     $updateModel = new Update();
-                    $errors[] = Craft::t('app', 'Craft is unable to determine if an update is available at this time.');
-                    $updateModel->errors = $errors;
+                    $updateModel->responseErrors = [
+                        Craft::t('app', 'Craft is unable to determine if an update is available at this time.')
+                    ];
                 } else {
                     /** @var Update $updateModel */
                     $updateModel = $etModel->data;
@@ -233,22 +234,6 @@ class Updates extends Component
         }
 
         return $this->_updateModel;
-    }
-
-    /**
-     * @return boolean
-     */
-    public function flushUpdateInfoFromCache()
-    {
-        Craft::info('Flushing update info from cache.', __METHOD__);
-
-        if (Io::clearFolder(Craft::$app->getPath()->getCompiledTemplatesPath(),
-                true) && Craft::$app->getCache()->flush()
-        ) {
-            return true;
-        }
-
-        return false;
     }
 
     /**
@@ -526,8 +511,8 @@ class Updates extends Component
         $errorPath = null;
 
         foreach ($checkPaths as $writablePath) {
-            if (!Io::isWritable($writablePath)) {
-                $errorPath[] = Io::getRealPath($writablePath);
+            if (!FileHelper::isWritable($writablePath)) {
+                $errorPath[] = $writablePath;
             }
         }
 
@@ -613,9 +598,11 @@ class Updates extends Component
             return $result;
         } catch (UserException $e) {
             Craft::error('Error processing the update download: '.$e->getMessage());
+
             return ['success' => false, 'message' => $e->getMessage()];
         } catch (\Exception $e) {
             Craft::error('Error processing the update download: '.$e->getMessage());
+
             return [
                 'success' => false,
                 'message' => Craft::t('app', 'There was a problem during the update.')
@@ -736,7 +723,7 @@ class Updates extends Component
      * @param string $uid
      * @param string $handle
      *
-     * @return array
+     * @return void
      */
     public function updateCleanUp($uid, $handle)
     {

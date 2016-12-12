@@ -43,6 +43,6 @@ class AppPathDependency extends Dependency
      */
     protected function generateDependencyData($cache)
     {
-        return $this->appPath = Craft::$app->getPath()->getAppPath();
+        return $this->appPath = Craft::$app->getBasePath();
     }
 }

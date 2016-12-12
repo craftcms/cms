@@ -9,8 +9,8 @@ namespace craft\models;
 
 use Craft;
 use craft\base\Model;
-use craft\validators\HandleValidator;
 use craft\records\Section as SectionRecord;
+use craft\validators\HandleValidator;
 use craft\validators\UniqueValidator;
 
 /**

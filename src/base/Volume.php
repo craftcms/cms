@@ -13,7 +13,9 @@
 namespace craft\base;
 
 use Craft;
+use craft\behaviors\FieldLayoutBehavior;
 use craft\behaviors\FieldLayoutTrait;
+use craft\elements\Asset;
 use craft\errors\VolumeObjectExistsException;
 use craft\errors\VolumeObjectNotFoundException;
 use craft\records\Volume as VolumeRecord;
@@ -76,8 +78,8 @@ abstract class Volume extends SavableComponent implements VolumeInterface
     {
         return [
             'fieldLayout' => [
-                'class' => \craft\behaviors\FieldLayoutBehavior::class,
-                'elementType' => \craft\elements\Asset::class
+                'class' => FieldLayoutBehavior::class,
+                'elementType' => Asset::class
             ],
         ];
     }
@@ -142,6 +144,7 @@ abstract class Volume extends SavableComponent implements VolumeInterface
     {
         try {
             $config = $this->addFileMetadataToConfig($config);
+
             return $this->getFilesystem()->writeStream($path, $stream, $config);
         } catch (FileExistsException $exception) {
             throw new VolumeObjectExistsException($exception->getMessage());
@@ -155,6 +158,7 @@ abstract class Volume extends SavableComponent implements VolumeInterface
     {
         try {
             $config = $this->addFileMetadataToConfig($config);
+
             return $this->getFilesystem()->updateStream($path, $stream, $config);
         } catch (FileNotFoundException $exception) {
             throw new VolumeObjectNotFoundException($exception->getMessage());
@@ -174,8 +178,7 @@ abstract class Volume extends SavableComponent implements VolumeInterface
      */
     public function folderExists($path)
     {
-        return $this->getAdapter()->has(rtrim($path,
-                '/').($this->foldersHaveTrailingSlashes ? '/' : ''));
+        return $this->getAdapter()->has(rtrim($path, '/').($this->foldersHaveTrailingSlashes ? '/' : ''));
     }
 
     /**

@@ -9,8 +9,7 @@ namespace craft\db\mysql;
 
 use Craft;
 use craft\db\TableSchema;
-use craft\errors\DbBackupException;
-use craft\helpers\Io;
+use craft\helpers\FileHelper;
 use craft\services\Config;
 use yii\db\Exception;
 
@@ -152,7 +151,6 @@ class Schema extends \yii\db\mysql\Schema
      * Returns the default database restore command to execute.
      *
      * @return string The command to execute
-     * @throws DbBackupException
      */
     public function getDefaultRestoreCommand()
     {
@@ -195,6 +193,9 @@ class Schema extends \yii\db\mysql\Schema
         return $indexes;
     }
 
+    // Protected Methods
+    // =========================================================================
+
     /**
      * Loads the metadata for the specified table.
      *
@@ -216,6 +217,48 @@ class Schema extends \yii\db\mysql\Schema
         }
     }
 
+    /**
+     * Collects extra foreign key information details for the given table.
+     *
+     * @param TableSchema $table the table metadata
+     */
+    protected function findConstraints($table)
+    {
+        parent::findConstraints($table);
+
+        // Modified from parent to get extended FK information.
+        $tableName = $this->quoteValue($table->name);
+
+        $sql = <<<SQL
+SELECT
+    kcu.constraint_name,
+    kcu.column_name,
+    kcu.referenced_table_name,
+    kcu.referenced_column_name,
+    rc.UPDATE_RULE,
+    rc.DELETE_RULE
+FROM information_schema.referential_constraints AS rc
+JOIN information_schema.key_column_usage AS kcu ON
+    (
+        kcu.constraint_catalog = rc.constraint_catalog OR
+        (kcu.constraint_catalog IS NULL AND rc.constraint_catalog IS NULL)
+    ) AND
+    kcu.constraint_schema = rc.constraint_schema AND
+    kcu.constraint_name = rc.constraint_name
+WHERE rc.constraint_schema = database() AND kcu.table_schema = database()
+AND rc.table_name = {$tableName} AND kcu.table_name = {$tableName}
+SQL;
+
+        $extendedConstraints = $this->db->createCommand($sql)->queryAll();
+
+        foreach ($extendedConstraints as $count => $extendedConstraint) {
+            $table->addExtendedForeignKey([
+                'updateType' => $extendedConstraint['UPDATE_RULE'],
+                'deleteType' => $extendedConstraint['DELETE_RULE']
+            ]);
+        }
+    }
+
     // Private Methods
     // =========================================================================
 
@@ -223,11 +266,10 @@ class Schema extends \yii\db\mysql\Schema
      * Creates a temporary my.cnf file based on the DB config settings.
      *
      * @return string The path to the my.cnf file
-     * @throws DbBackupException if the file cannot be created
      */
     private function _createDumpConfigFile()
     {
-        $filePath = Craft::$app->getPath()->getTempPath().'/my.cnf';
+        $filePath = Craft::$app->getPath()->getTempPath().DIRECTORY_SEPARATOR.'my.cnf';
 
         $config = Craft::$app->getConfig();
         $contents = '[client]'.PHP_EOL.
@@ -236,9 +278,7 @@ class Schema extends \yii\db\mysql\Schema
             'host='.$config->get('server', Config::CATEGORY_DB).PHP_EOL.
             'port='.$config->getDbPort();
 
-        if (!Io::writeToFile($filePath, $contents)) {
-            throw new DbBackupException('Could not write the my.cnf file for mysqldump to use to connect to the database.');
-        }
+        FileHelper::writeToFile($filePath, $contents);
 
         return $filePath;
     }

@@ -8,16 +8,13 @@
 namespace craft\base;
 
 use Craft;
-use /** @noinspection PhpUndefinedClassInspection */
-    craft\behaviors\ContentBehavior;
-use /** @noinspection PhpUndefinedClassInspection */
-    craft\behaviors\ContentTrait;
+use craft\behaviors\ContentBehavior;
+use craft\behaviors\ContentTrait;
 use craft\dates\DateTime;
 use craft\db\Query;
 use craft\elements\db\ElementQuery;
 use craft\elements\db\ElementQueryInterface;
 use craft\events\ElementStructureEvent;
-use craft\events\Event;
 use craft\events\ModelEvent;
 use craft\events\RegisterElementActionsEvent;
 use craft\events\RegisterElementSortableAttributesEvent;
@@ -36,6 +33,7 @@ use craft\models\Site;
 use craft\validators\DateTimeValidator;
 use craft\validators\SiteIdValidator;
 use craft\web\UploadedFile;
+use yii\base\Event;
 use yii\base\Exception;
 use yii\base\InvalidCallException;
 use yii\base\InvalidConfigException;
@@ -344,8 +342,7 @@ abstract class Element extends Component implements ElementInterface
 
             if ($sortableAttributes) {
                 $order = (!empty($viewState['order']) && isset($sortableAttributes[$viewState['order']])) ? $viewState['order'] : ArrayHelper::firstKey($sortableAttributes);
-                $sort = (!empty($viewState['sort']) && in_array($viewState['sort'],
-                        ['asc', 'desc'])) ? $viewState['sort'] : 'asc';
+                $sort = (!empty($viewState['sort']) && in_array($viewState['sort'], ['asc', 'desc'])) ? $viewState['sort'] : 'asc';
 
                 // Combine them, accounting for the possibility that $order could contain multiple values,
                 // and be defensive about the possibility that the first value actually has "asc" or "desc"
@@ -1112,7 +1109,7 @@ abstract class Element extends Component implements ElementInterface
     /**
      * @inheritdoc
      *
-     * @return ElementQueryInterface
+     * @return ElementInterface[]|ElementQueryInterface|null
      */
     public function getDescendants($dist = null)
     {
@@ -1131,7 +1128,7 @@ abstract class Element extends Component implements ElementInterface
     /**
      * @inheritdoc
      *
-     * @return ElementQueryInterface
+     * @return ElementInterface[]|ElementQueryInterface|null
      */
     public function getChildren()
     {
@@ -1713,12 +1710,15 @@ abstract class Element extends Component implements ElementInterface
      */
     protected static function findByCondition($criteria, $one)
     {
-        if ($criteria !== null && !ArrayHelper::isAssociative($criteria)) {
-            $criteria = ['id' => $criteria];
-        }
-
         /** @var ElementQueryInterface $query */
-        $query = static::find()->configure($criteria);
+        $query = static::find();
+
+        if ($criteria !== null) {
+            if (!ArrayHelper::isAssociative($criteria)) {
+                $criteria = ['id' => $criteria];
+            }
+            Craft::configure($query, $criteria);
+        }
 
         if ($one) {
             /** @var Element $result */
@@ -1740,8 +1740,7 @@ abstract class Element extends Component implements ElementInterface
      */
     protected function getFieldByHandle($handle)
     {
-        if (!isset($this->_fieldsByHandle) || !array_key_exists($handle,
-                $this->_fieldsByHandle)
+        if (!isset($this->_fieldsByHandle) || !array_key_exists($handle, $this->_fieldsByHandle)
         ) {
             $contentService = Craft::$app->getContent();
 
@@ -1938,8 +1937,11 @@ abstract class Element extends Component implements ElementInterface
                 $query = $criteria;
             } else {
                 $query = static::find()
-                    ->siteId($this->siteId)
-                    ->configure($criteria);
+                    ->siteId($this->siteId);
+
+                if ($criteria) {
+                    Craft::configure($query, $criteria);
+                }
             }
 
             /** @var ElementQuery $query */

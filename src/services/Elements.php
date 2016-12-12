@@ -10,12 +10,12 @@ namespace craft\services;
 use Craft;
 use craft\base\Element;
 use craft\base\ElementAction;
+use craft\base\ElementActionInterface;
+use craft\base\ElementInterface;
 use craft\base\Field;
 use craft\db\Query;
-use craft\base\ElementActionInterface;
 use craft\elements\Asset;
 use craft\elements\Category;
-use craft\base\ElementInterface;
 use craft\elements\db\ElementQuery;
 use craft\elements\Entry;
 use craft\elements\GlobalSet;
@@ -23,7 +23,6 @@ use craft\elements\MatrixBlock;
 use craft\elements\Tag;
 use craft\elements\User;
 use craft\errors\ElementNotFoundException;
-use craft\errors\MissingComponentException;
 use craft\events\ElementEvent;
 use craft\events\MergeElementsEvent;
 use craft\events\RegisterComponentTypesEvent;
@@ -152,6 +151,7 @@ class Elements extends Component
         }
 
         if ($elementType === null) {
+            /** @noinspection CallableParameterUseCaseInTypeContextInspection */
             $elementType = $this->getElementTypeById($elementId);
 
             if (!$elementType) {
@@ -229,7 +229,7 @@ class Elements extends Component
      *
      * @param integer|array $elementId The element’s ID, or an array of element IDs.
      *
-     * @return ElementInterface|ElementInterface[]|Element|Element[]|null The element class(es).
+     * @return ElementInterface|ElementInterface[]|Element|Element[]|false The element class(es).
      */
     public function getElementTypeById($elementId)
     {
@@ -240,13 +240,13 @@ class Elements extends Component
                 ->from(['{{%elements}}'])
                 ->where(['id' => $elementId])
                 ->column();
-        } else {
-            return (new Query())
-                ->select(['type'])
-                ->from(['{{%elements}}'])
-                ->where(['id' => $elementId])
-                ->scalar();
         }
+
+        return (new Query())
+            ->select(['type'])
+            ->from(['{{%elements}}'])
+            ->where(['id' => $elementId])
+            ->scalar();
     }
 
     /**
@@ -886,6 +886,7 @@ class Elements extends Component
     public function deleteElementById($elementId, $elementType = null, $siteId = null)
     {
         if ($elementType === null) {
+            /** @noinspection CallableParameterUseCaseInTypeContextInspection */
             $elementType = $this->getElementTypeById($elementId);
 
             if (!$elementType) {
@@ -895,13 +896,13 @@ class Elements extends Component
 
         if ($siteId === null && $elementType::isLocalized() && Craft::$app->getIsMultiSite()) {
             // Get a site this element is enabled in
-            $siteId = (new Query())
+            $siteId = (int)(new Query())
                 ->select('siteId')
                 ->from('{{%elements_i18n}}')
                 ->where(['elementId' => $elementId])
                 ->scalar();
 
-            if (!$siteId) {
+            if ($siteId === 0) {
                 return false;
             }
         }
@@ -1045,11 +1046,12 @@ class Elements extends Component
      *
      * @param string $handle The element class handle
      *
-     * @return ElementInterface|null The element class, or null if it could not be found
+     * @return string|null The element class, or null if it could not be found
      */
     public function getElementTypeByHandle($handle)
     {
         foreach ($this->getAllElementTypes() as $class) {
+            /** @var string|Element $class */
             if (strcasecmp($class::classHandle(), $handle) === 0) {
                 return $class;
             }
@@ -1305,17 +1307,16 @@ class Elements extends Component
                         }
 
                         // Get the target elements
-                        $customParams = array_merge(
+                        /** @var Element $targetElementType */
+                        $targetElementType = $map['elementType'];
+                        /** @var ElementQuery $query */
+                        $query = $targetElementType::find();
+                        Craft::configure($query, array_merge(
                         // Default to no order and limit, but allow the element type/path criteria to override
                             ['orderBy' => null, 'limit' => null],
                             (isset($map['criteria']) ? $map['criteria'] : []),
                             (isset($pathCriterias[$targetPath]) ? $pathCriterias[$targetPath] : [])
-                        );
-                        /** @var Element $targetElementType */
-                        $targetElementType = $map['elementType'];
-                        /** @var ElementQuery $query */
-                        $query = $targetElementType::find()
-                            ->configure($customParams);
+                        ));
                         $query->id = $uniqueTargetElementIds;
                         /** @var Element[] $targetElements */
                         $targetElements = $query->all();

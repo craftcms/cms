@@ -10,8 +10,6 @@ namespace craft\elements;
 use Craft;
 use craft\base\Element;
 use craft\base\ElementInterface;
-use craft\base\Field;
-use craft\elements\db\ElementQueryInterface;
 use craft\elements\db\MatrixBlockQuery;
 use craft\fields\Matrix;
 use craft\helpers\ElementHelper;
@@ -387,6 +385,9 @@ class MatrixBlock extends Element
      */
     private function _getField()
     {
-        return Craft::$app->getFields()->getFieldById($this->fieldId);
+        /** @var Matrix $field */
+        $field = Craft::$app->getFields()->getFieldById($this->fieldId);
+
+        return $field;
     }
 }

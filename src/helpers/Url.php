@@ -35,8 +35,7 @@ class Url
      */
     public static function isAbsoluteUrl($url)
     {
-        return (strncmp('http://', $url, 7) === 0 || strncmp('https://', $url,
-                8) === 0);
+        return (strncmp('http://', $url, 7) === 0 || strncmp('https://', $url, 8) === 0);
     }
 
     /**
@@ -60,8 +59,7 @@ class Url
      */
     public static function isRootRelativeUrl($url)
     {
-        return (strncmp('/', $url,
-                1) === 0 && !static::isProtocolRelativeUrl($url));
+        return (strncmp('/', $url, 1) === 0 && !static::isProtocolRelativeUrl($url));
     }
 
     /**
@@ -278,8 +276,7 @@ class Url
                         $params = [$params];
                     }
 
-                    $timeModified = Io::getLastTimeModified($path);
-                    $params[$dateParam] = $timeModified->getTimestamp();
+                    $params[$dateParam] = filemtime($path);
                 } else {
                     // Just set a random query string param on there, so even if the browser decides to cache it,
                     // the next time this happens, the cache won't be used.
@@ -308,8 +305,7 @@ class Url
      */
     public static function getActionUrl($path = '', $params = null, $protocol = null)
     {
-        $path = Craft::$app->getConfig()->get('actionTrigger').'/'.trim($path,
-                '/');
+        $path = Craft::$app->getConfig()->get('actionTrigger').'/'.trim($path, '/');
 
         return static::url($path, $params, $protocol, true);
     }
@@ -389,6 +385,7 @@ class Url
         } else {
             // Figure it out for ourselves, then
             $request = Craft::$app->getRequest();
+
             return $request->getHostInfo().$request->getBaseUrl();
         }
 

@@ -42,7 +42,7 @@
 	{% registerjs %}
 		new Craft.EntryDraftEditor({{ entry.draftId }}, '{{ revisionLabel|e("js") }}', '{{ entry.revisionNotes|e("js") }}');
 	{% endregisterjs %}
-	{% do craft.app.view.registerTranslations('app', [
+	{% do view.registerTranslations('app', [
 		"Draft Name",
 		"Notes",
 	]) %}

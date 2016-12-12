@@ -20,11 +20,11 @@ use craft\errors\InvalidSubpathException;
 use craft\errors\InvalidVolumeException;
 use craft\helpers\Assets as AssetsHelper;
 use craft\helpers\Db;
-use craft\helpers\Io;
+use craft\helpers\FileHelper;
 use craft\helpers\StringHelper;
 use craft\models\VolumeFolder;
 use craft\web\UploadedFile;
-use yii\helpers\FileHelper;
+use yii\base\ErrorException;
 
 /**
  * Assets represents an Assets field.
@@ -100,21 +100,6 @@ class Assets extends BaseRelationField
     public $allowedKinds;
 
     /**
-     * @inheritdoc
-     */
-    protected $allowLargeThumbsView = true;
-
-    /**
-     * @inheritdoc
-     */
-    protected $inputJsClass = 'Craft.AssetSelectInput';
-
-    /**
-     * @inheritdoc
-     */
-    protected $inputTemplate = '_components/fieldtypes/Assets/input';
-
-    /**
      * Uploaded files that failed validation.
      *
      * @var UploadedFile[]
@@ -123,6 +108,17 @@ class Assets extends BaseRelationField
 
     // Public Methods
     // =========================================================================
+
+    /**
+     * @inheritdoc
+     */
+    public function init()
+    {
+        parent::init();
+        $this->allowLargeThumbsView = true;
+        $this->inputTemplate = '_components/fieldtypes/Assets/input';
+        $this->inputJsClass = 'Craft.AssetSelectInput';
+    }
 
     /**
      * @inheritdoc
@@ -155,13 +151,12 @@ class Assets extends BaseRelationField
 
         $fileKindOptions = [];
 
-        foreach (Io::getFileKinds() as $value => $kind) {
+        foreach (AssetsHelper::getFileKinds() as $value => $kind) {
             $fileKindOptions[] = ['value' => $value, 'label' => $kind['label']];
         }
 
         $namespace = Craft::$app->getView()->getNamespace();
-        $isMatrix = (strncmp($namespace, 'types[Matrix][blockTypes][',
-                26) === 0);
+        $isMatrix = (strncmp($namespace, 'types[Matrix][blockTypes][', 26) === 0);
 
         return Craft::$app->getView()->renderTemplate('_components/fieldtypes/Assets/settings',
             [
@@ -187,18 +182,18 @@ class Assets extends BaseRelationField
             return parent::getInputHtml($value, $element);
         } catch (InvalidSubpathException $e) {
             return '<p class="warning">'.
-            '<span data-icon="alert"></span> '.
-            Craft::t('app', 'This field’s target subfolder path is invalid: {path}', [
-                'path' => '<code>'.$this->singleUploadLocationSubpath.'</code>'
-            ]).
-            '</p>';
+                '<span data-icon="alert"></span> '.
+                Craft::t('app', 'This field’s target subfolder path is invalid: {path}', [
+                    'path' => '<code>'.$this->singleUploadLocationSubpath.'</code>'
+                ]).
+                '</p>';
         } catch (InvalidVolumeException $e) {
             $message = $this->useSingleFolder ? Craft::t('app', 'This field’s single upload location Volume is missing') : Craft::t('app', 'This field’s default upload location Volume is missing');
 
             return '<p class="warning">'.
-            '<span data-icon="alert"></span> '.
-            $message.
-            '</p>';
+                '<span data-icon="alert"></span> '.
+                $message.
+                '</p>';
         }
     }
 
@@ -233,7 +228,7 @@ class Assets extends BaseRelationField
             foreach ($value as $assetId) {
                 $file = Craft::$app->getAssets()->getAssetById($assetId);
 
-                if ($file && !in_array(mb_strtolower(Io::getExtension($file->filename)), $allowedExtensions)) {
+                if ($file && !in_array(mb_strtolower(pathinfo($file->filename, PATHINFO_EXTENSION)), $allowedExtensions)) {
                     $element->addError($this->handle, Craft::t('app', '"{filename}" is not allowed in this field.', ['filename' => $file->filename]));
                 }
             }
@@ -368,7 +363,7 @@ class Assets extends BaseRelationField
 
         if (is_array($allowedExtensions)) {
             foreach ($incomingFiles as $file) {
-                $extension = StringHelper::toLowerCase(Io::getExtension($file['filename']));
+                $extension = StringHelper::toLowerCase(pathinfo($file['filename'], PATHINFO_EXTENSION));
 
                 if (!in_array($extension, $allowedExtensions)) {
                     $this->_failedFiles[] = $file['filename'];
@@ -393,12 +388,12 @@ class Assets extends BaseRelationField
                         move_uploaded_file($file['location'], $tempPath);
                     }
                     if ($file['type'] == 'data') {
-                        Io::writeToFile($tempPath, $file['data']);
+                        FileHelper::writeToFile($tempPath, $file['data']);
                     }
 
                     $folder = Craft::$app->getAssets()->getFolderById($targetFolderId);
                     $asset = new Asset();
-                    $asset->title = StringHelper::toTitleCase(Io::getFilename($file['filename'], false));
+                    $asset->title = StringHelper::toTitleCase(pathinfo($file['filename'], PATHINFO_FILENAME));
                     $asset->newFilePath = $tempPath;
                     $asset->filename = $file['filename'];
                     $asset->folderId = $targetFolderId;
@@ -406,7 +401,11 @@ class Assets extends BaseRelationField
                     Craft::$app->getAssets()->saveAsset($asset);
 
                     $assetIds[] = $asset->id;
-                    Io::deleteFile($tempPath, true);
+                    try {
+                        FileHelper::removeFile($tempPath);
+                    } catch (ErrorException $e) {
+                        Craft::warning("Unable to delete the file \"{$tempPath}\": ".$e->getMessage());
+                    }
                 }
 
                 $assetIds = array_unique(array_merge($value, $assetIds));
@@ -454,12 +453,12 @@ class Assets extends BaseRelationField
                 }
 
                 // Find the files with temp sources and just move those.
-                $criteria = [
+                $query = Asset::find();
+                Craft::configure($query, [
                     'id' => array_merge(['in'], $assetIds),
                     'volumeId' => ':empty:'
-                ];
-
-                $assetsToMove = Asset::find()->configure($criteria)->all();
+                ]);
+                $assetsToMove = $query->all();
 
                 // If we have some files to move, make sure the folder exists.
                 if (!empty($assetsToMove)) {
@@ -595,7 +594,14 @@ class Assets extends BaseRelationField
                 throw new InvalidSubpathException($subpath);
             }
 
-            $subpath = Io::cleanPath($renderedSubpath, Craft::$app->getConfig()->get('convertFilenamesToAscii'));
+            // Sanitize the subpath
+            $segments = explode('/', $renderedSubpath);
+            foreach ($segments as &$segment) {
+                $segment = FileHelper::sanitizeFilename($segment, [
+                    'asciiOnly' => Craft::$app->getConfig()->get('convertFilenamesToAscii')
+                ]);
+            }
+            $subpath = implode('/', $segments);
 
             $folder = Craft::$app->getAssets()->findFolder([
                 'volumeId' => $volumeId,
@@ -672,7 +678,7 @@ class Assets extends BaseRelationField
         }
 
         $extensions = [];
-        $allKinds = Io::getFileKinds();
+        $allKinds = AssetsHelper::getFileKinds();
 
         foreach ($allowedKinds as $allowedKind) {
             $extensions = array_merge($extensions,
@@ -729,7 +735,7 @@ class Assets extends BaseRelationField
                     $folder = $elementFolder;
                 }
 
-                Io::ensureFolderExists(Craft::$app->getPath()->getAssetsTempVolumePath().'/'.$folderName);
+                FileHelper::createDirectory(Craft::$app->getPath()->getAssetsTempVolumePath().DIRECTORY_SEPARATOR.$folderName);
                 $folderId = $folder->id;
             } else {
                 // Existing element, so this is just a bad subpath

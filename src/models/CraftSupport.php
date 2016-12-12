@@ -9,6 +9,7 @@ namespace craft\models;
 
 use Craft;
 use craft\base\Model;
+use craft\web\UploadedFile;
 
 /**
  * Class CraftSupport model.
@@ -47,7 +48,7 @@ class CraftSupport extends Model
     public $attachTemplates = false;
 
     /**
-     * @var array Attachment
+     * @var UploadedFile|null Attachment
      */
     public $attachment;
 

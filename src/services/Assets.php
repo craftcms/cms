@@ -16,24 +16,20 @@ use craft\elements\User;
 use craft\errors\ActionCancelledException;
 use craft\errors\AssetConflictException;
 use craft\errors\AssetDisallowedExtensionException;
-use craft\errors\AssetException;
 use craft\errors\AssetLogicException;
-use craft\errors\AssetMissingException;
+use craft\errors\FileException;
 use craft\errors\ImageException;
 use craft\errors\UploadFailedException;
 use craft\errors\VolumeException;
 use craft\errors\VolumeObjectExistsException;
 use craft\errors\VolumeObjectNotFoundException;
-use craft\errors\ElementSaveException;
-use craft\errors\FileException;
-use craft\errors\ValidationException;
 use craft\events\AssetEvent;
 use craft\events\ReplaceAssetEvent;
 use craft\helpers\Assets as AssetsHelper;
 use craft\helpers\DateTimeHelper;
 use craft\helpers\Db;
+use craft\helpers\FileHelper;
 use craft\helpers\Image;
-use craft\helpers\Io;
 use craft\helpers\Json;
 use craft\helpers\StringHelper;
 use craft\helpers\Url;
@@ -45,7 +41,6 @@ use craft\records\VolumeFolder as VolumeFolderRecord;
 use craft\tasks\GeneratePendingTransforms;
 use craft\volumes\Temp;
 use yii\base\Component;
-use yii\base\Exception;
 
 /**
  * Class Assets service.
@@ -116,8 +111,10 @@ class Assets extends Component
      */
     public function getAssetById($assetId, $siteId = null)
     {
-        return Craft::$app->getElements()->getElementById($assetId,
-            Asset::class, $siteId);
+        /** @var Asset|null $asset */
+        $asset = Craft::$app->getElements()->getElementById($assetId, Asset::class, $siteId);
+
+        return $asset;
     }
 
     /**
@@ -132,7 +129,10 @@ class Assets extends Component
         if ($criteria instanceof AssetQuery) {
             $query = $criteria;
         } else {
-            $query = Asset::find()->configure($criteria);
+            $query = Asset::find();
+            if ($criteria) {
+                Craft::configure($query, $criteria);
+            }
         }
 
         return $query->count();
@@ -174,7 +174,7 @@ class Assets extends Component
 
         $extension = $asset->getExtension();
 
-        if (!Io::isExtensionAllowed($extension)) {
+        if (!Craft::$app->getConfig()->isExtensionAllowed($extension)) {
             throw new AssetDisallowedExtensionException(Craft::t('app',
                 'The extension “{extension}” is not allowed.',
                 ['extension' => $extension]));
@@ -200,7 +200,7 @@ class Assets extends Component
         }
 
         if (!empty($asset->newFilePath)) {
-            if (Io::getFileKind(Io::getExtension($asset->newFilePath)) == 'image') {
+            if (AssetsHelper::getFileKindByExtension($asset->newFilePath) == 'image') {
                 Image::cleanImageByPath($asset->newFilePath);
             }
 
@@ -239,8 +239,8 @@ class Assets extends Component
             }
 
             $asset->dateModified = new DateTime();
-            $asset->size = Io::getFileSize($asset->newFilePath);
-            $asset->kind = Io::getFileKind($asset->getExtension());
+            $asset->size = filesize($asset->newFilePath);
+            $asset->kind = AssetsHelper::getFileKindByExtension($asset->filename);
 
             if ($asset->kind == 'image' && !empty($asset->newFilePath)) {
 
@@ -338,7 +338,7 @@ class Assets extends Component
      */
     public function replaceAssetFile(Asset $asset, $pathOnServer, $filename)
     {
-        if (Io::getFileKind(Io::getExtension($pathOnServer)) == 'image') {
+        if (AssetsHelper::getFileKindByExtension($pathOnServer) == 'image') {
             Image::cleanImageByPath($pathOnServer);
         }
 
@@ -393,7 +393,7 @@ class Assets extends Component
             $asset->newFilename = $filename;
             $volume->createFileByStream($asset->getUri(), $stream);
 
-            $asset->kind = Io::getFileKind(Io::getExtension($filename));
+            $asset->kind = AssetsHelper::getFileKindByExtension($filename);
         }
 
         if (is_resource($stream)) {
@@ -407,8 +407,8 @@ class Assets extends Component
             $asset->height = null;
         }
 
-        $asset->size = Io::getFileSize($pathOnServer);
-        $asset->dateModified = Io::getLastTimeModified($pathOnServer);
+        $asset->size = filesize($pathOnServer);
+        $asset->dateModified = new DateTime('@'.filemtime($pathOnServer));
 
         $this->saveAsset($asset);
 
@@ -547,11 +547,11 @@ class Assets extends Component
         $volume->renameDir(rtrim($folder->path, '/'), $newName);
 
         $descendantFolders = $this->getAllDescendantFolders($folder);
-        $newFullPath = Io::getParentFolderPath($folder->path).$newName.'/';
+        $parentPath = dirname($folder->path);
+        $newFullPath = ($parentPath && $parentPath != '.' ? $parentPath.'/' : '').$newName;
 
         foreach ($descendantFolders as $descendantFolder) {
-            $descendantFolder->path = preg_replace('#^'.$folder->path.'#',
-                $newFullPath, $descendantFolder->path);
+            $descendantFolder->path = preg_replace('#^'.$folder->path.'#', $newFullPath.'/', $descendantFolder->path);
             $this->storeFolderRecord($descendantFolder);
         }
 
@@ -679,7 +679,7 @@ class Assets extends Component
      *
      * @param mixed $criteria
      *
-     * @return array
+     * @return VolumeFolder[]
      */
     public function findFolders($criteria = null)
     {
@@ -841,7 +841,7 @@ class Assets extends Component
      */
     public function getUrlForAsset(Asset $asset, $transform = null)
     {
-        if (!$transform || !Image::isImageManipulatable(Io::getExtension($asset->filename))) {
+        if (!$transform || !Image::isImageManipulatable(pathinfo($asset->filename, PATHINFO_EXTENSION))) {
             $volume = $asset->getVolume();
 
             return AssetsHelper::generateUrl($volume, $asset);
@@ -901,15 +901,13 @@ class Assets extends Component
         $existingFiles = [];
 
         foreach ($fileList as $file) {
-            if (StringHelper::toLowerCase(rtrim($folder->path,
-                    '/')) == StringHelper::toLowerCase($file['dirname'])
-            ) {
+            if (StringHelper::toLowerCase(rtrim($folder->path, '/')) == StringHelper::toLowerCase($file['dirname'])) {
                 $existingFiles[StringHelper::toLowerCase($file['basename'])] = true;
             }
         }
 
         // Shorthand.
-        $canUse = function ($filenameToTest) use ($existingFiles) {
+        $canUse = function($filenameToTest) use ($existingFiles) {
             return !isset($existingFiles[StringHelper::toLowerCase($filenameToTest)]);
         };
 
@@ -917,8 +915,8 @@ class Assets extends Component
             return $originalFilename;
         }
 
-        $extension = Io::getExtension($originalFilename);
-        $filename = Io::getFilename($originalFilename, false);
+        $extension = pathinfo($originalFilename, PATHINFO_EXTENSION);
+        $filename = pathinfo($originalFilename, PATHINFO_FILENAME);
 
 
         // If the file already ends with something that looks like a timestamp, use that instead.
@@ -970,9 +968,9 @@ class Assets extends Component
     {
         $filename = $newFilename ?: $asset->filename;
 
-        $extension = Io::getExtension($filename);
+        $extension = pathinfo($filename, PATHINFO_EXTENSION);
 
-        if (!Io::isExtensionAllowed($extension)) {
+        if (!Craft::$app->getConfig()->isExtensionAllowed($extension)) {
             throw new AssetDisallowedExtensionException(Craft::t('app',
                 'The extension “{extension}” is not allowed.',
                 ['extension' => $extension]));
@@ -1170,9 +1168,7 @@ class Assets extends Component
                 // In case we're changing the filename, make sure that we're not missing that.
                 $parts = explode("/", $toTransformPath);
                 $transformName = array_pop($parts);
-                $toTransformPath = join("/",
-                        $parts).'/'.Io::getFilename($filename,
-                        false).'.'.Io::getExtension($transformName);
+                $toTransformPath = join("/", $parts).'/'.pathinfo($filename, PATHINFO_FILENAME).'.'.pathinfo($transformName, PATHINFO_EXTENSION);
 
                 $baseFrom = $asset->getFolder()->path;
                 $baseTo = $targetFolder->path;
@@ -1192,13 +1188,14 @@ class Assets extends Component
             }
         } // Move between volumes
         else {
-            $localPath = Io::getTempFilePath($asset->getExtension());
-            $sourceVolume->saveFileLocally($asset->getUri(), $localPath);
+            $tempFilename = uniqid(pathinfo($asset->filename, PATHINFO_FILENAME), true).'.'.$asset->getExtension();
+            $tempPath = Craft::$app->getPath()->getTempPath().DIRECTORY_SEPARATOR.$tempFilename;
+            $sourceVolume->saveFileLocally($asset->getUri(), $tempPath);
             $targetVolume = $targetFolder->getVolume();
-            $stream = fopen($localPath, 'r');
+            $stream = fopen($tempPath, 'r');
 
             if (!$stream) {
-                Io::deleteFile($localPath);
+                FileHelper::removeFile($tempPath);
                 throw new FileException(Craft::t('app',
                     'Could not open file for streaming at {path}',
                     ['path' => $asset->newFilePath]));
@@ -1211,7 +1208,7 @@ class Assets extends Component
                 fclose($stream);
             }
 
-            Io::deleteFile($localPath);
+            FileHelper::removeFile($tempPath);
 
             // Nuke the transforms
             $assetTransforms->deleteAllTransformData($asset);

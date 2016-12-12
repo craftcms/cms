@@ -7,26 +7,10 @@
 
 namespace craft\web;
 
+use Craft;
+
 /**
  * UploadedFile represents the information for an uploaded file.
- *
- * Call [[getInstance]] to retrieve the instance of an uploaded file, and then use [[saveAs]] to save it on the
- * server. You may also query other information about the file, including [[name]], [[tempName]], [[type]],
- * [[size]] and [[error]].
- *
- * @property string $name          The original name of the file being uploaded.
- * @property string $tempName      The path of the uploaded file on the server. Note, this is a temporary file which
- *                                 will be automatically deleted by PHP after the current request is processed.
- * @property string $type          The MIME-type of the uploaded file (such as "image/gif"). Since this MIME type is not
- *                                 checked on the server side, do not take this value for granted. Instead, use
- *                                 [[\yii\helpers\FileHelper::getMimeType()]] to determine the exact MIME type.
- * @property int    $size          The actual size of the uploaded file in bytes.
- * @property int    $error         The error code.
- * @property bool   $hasError      Whether there is an error with the uploaded file. Check [[error]] for the
- *                                 detailed error code information.
- * @property string $extensionName The file extension name for [[name]]. The extension name does not include the dot
- *                                 character. An empty string is returned if [[name]] does not have an extension
- *                                 name.
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since  3.0
@@ -48,8 +32,10 @@ class UploadedFile extends \yii\web\UploadedFile
     public static function getInstanceByName($name)
     {
         $name = static::_normalizeName($name);
+        /** @var UploadedFile $file */
+        $file = parent::getInstanceByName($name);
 
-        return parent::getInstanceByName($name);
+        return $file;
     }
 
     /**
@@ -81,6 +67,31 @@ class UploadedFile extends \yii\web\UploadedFile
         return $instances;
     }
 
+    /**
+     * Saves the uploaded file to a temp location.
+     *
+     * @param boolean $deleteTempFile whether to delete the temporary file after saving.
+     *                                If true, you will not be able to save the uploaded file again in the current request.
+     *
+     * @return string|false the path to the temp file, or false if the file wasn't saved successfully
+     * @see error
+     */
+    public function saveAsTempFile($deleteTempFile = true)
+    {
+        if ($this->error != UPLOAD_ERR_OK) {
+            return false;
+        }
+
+        $tempFilename = uniqid(pathinfo($this->name, PATHINFO_FILENAME), true).'.'.pathinfo($this->name, PATHINFO_EXTENSION);
+        $tempPath = Craft::$app->getPath()->getTempPath().DIRECTORY_SEPARATOR.$tempFilename;
+
+        if (!$this->saveAs($tempPath, $deleteTempFile)) {
+            return false;
+        }
+
+        return $tempPath;
+    }
+
     // Private Methods
     // =========================================================================
 
@@ -97,8 +108,7 @@ class UploadedFile extends \yii\web\UploadedFile
     {
         if (($pos = strpos($name, '.')) !== false) {
             // Convert dot notation to the normal format ex: fields.assetsField => fields[assetsField]
-            $name = substr($name, 0, $pos).'['.str_replace('.', '][',
-                    substr($name, $pos + 1)).']';
+            $name = substr($name, 0, $pos).'['.str_replace('.', '][', substr($name, $pos + 1)).']';
         }
 
         return $name;

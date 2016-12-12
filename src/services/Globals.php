@@ -9,10 +9,9 @@ namespace craft\services;
 
 use Craft;
 use craft\db\Query;
-use craft\errors\GlobalSetNotFoundException;
-use craft\events\GlobalSetContentEvent;
-use craft\events\GlobalSetEvent;
 use craft\elements\GlobalSet;
+use craft\errors\GlobalSetNotFoundException;
+use craft\events\GlobalSetEvent;
 use craft\records\GlobalSet as GlobalSetRecord;
 use yii\base\Component;
 
@@ -205,7 +204,10 @@ class Globals extends Component
                 return $this->_globalSetsById[$globalSetId];
             }
         } else {
-            return Craft::$app->getElements()->getElementById($globalSetId, GlobalSet::class, $siteId);
+            /** @var GlobalSet|null $globalSet */
+            $globalSet = Craft::$app->getElements()->getElementById($globalSetId, GlobalSet::class, $siteId);
+
+            return $globalSet;
         }
 
         return null;
@@ -332,8 +334,7 @@ class Globals extends Component
                         $transaction->commit();
                     }
                     $success = false;
-                }
-                else {
+                } else {
                     $success = false;
                 }
             } catch (\Exception $e) {

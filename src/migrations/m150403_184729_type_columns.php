@@ -2,9 +2,7 @@
 
 namespace craft\migrations;
 
-use Craft;
 use craft\db\Migration;
-use craft\helpers\Io;
 use yii\db\Expression;
 
 /**

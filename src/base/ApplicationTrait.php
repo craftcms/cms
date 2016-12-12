@@ -8,14 +8,12 @@
 namespace craft\base;
 
 use Craft;
-use craft\dates\DateTime;
 use craft\db\Connection;
 use craft\db\MigrationManager;
 use craft\db\Query;
 use craft\errors\DbConnectException;
 use craft\events\EditionChangeEvent;
 use craft\helpers\App;
-use craft\helpers\DateTimeHelper;
 use craft\helpers\Db;
 use craft\helpers\StringHelper;
 use craft\i18n\Formatter;
@@ -27,69 +25,69 @@ use craft\services\Security;
 use craft\web\Application as WebApplication;
 use craft\web\AssetManager;
 use craft\web\View;
+use yii\mutex\FileMutex;
 use yii\web\BadRequestHttpException;
 use yii\web\ServerErrorHttpException;
 
 /**
  * ApplicationTrait
  *
- * @property AssetManager                        $assetManager       The asset manager component
- * @property \craft\services\Assets              $assets             The assets service
- * @property \craft\services\AssetIndexer        $assetIndexing      The asset indexer service
- * @property \craft\services\AssetTransforms     $assetTransforms    The asset transforms service
- * @property boolean                             $canTestEditions    Whether Craft is running on a domain that is eligible to test out the editions
- * @property boolean                             $canUpgradeEdition  Whether Craft is eligible to be upgraded to a different edition
- * @property \craft\services\Categories          $categories         The categories service
- * @property \craft\services\Config              $config             The config service
- * @property \craft\services\Content             $content            The content service
- * @property \craft\db\MigrationManager          $contentMigrator    The content migration manager
- * @property \craft\services\Dashboard           $dashboard          The dashboard service
- * @property Connection                          $db                 The database connection component
- * @property \craft\services\Deprecator          $deprecator         The deprecator service
- * @property \craft\services\ElementIndexes      $elementIndexes     The element indexes service
- * @property \craft\services\Elements            $elements           The elements service
- * @property \craft\services\EmailMessages       $emailMessages      The email messages service
- * @property \craft\services\Entries             $entries            The entries service
- * @property \craft\services\EntryRevisions      $entryRevisions     The entry revisions service
- * @property \craft\services\Et                  $et                 The E.T. service
- * @property \craft\services\Feeds               $feeds              The feeds service
- * @property \craft\services\Fields              $fields             The fields service
- * @property Formatter                           $formatter          The formatter component
- * @property \craft\services\Globals             $globals            The globals service
- * @property boolean                             $hasWrongEdition    Whether Craft is running with the wrong edition
- * @property I18N                                $i18n               The internationalization (i18n) component
- * @property \craft\app\services\ImageEffects    $imageEffects       The image effects service
- * @property \craft\services\Images              $images             The images service
- * @property boolean                             $sInMaintenanceMode Whether the system is in maintenance mode
- * @property boolean                             $isInstalled        Whether Craft is installed
- * @property boolean                             $sMultiSite         Whether this site has multiple sites
- * @property boolean                             $isUpdating         Whether Craft is in the middle of updating itself
- * @property boolean                             $isSystemOn         Whether the front end is accepting HTTP requests
- * @property \craft\i18n\Locale                  $locale             The Locale object for the target language
- * @property \craft\mail\Mailer                  $mailer             The mailer component
- * @property \craft\services\Matrix              $matrix             The matrix service
- * @property \craft\db\MigrationManager          $migrator           The application’s migration manager
- * @property \craft\services\Path                $path               The path service
- * @property \craft\services\Plugins             $plugins            The plugins service
- * @property \craft\services\Relations           $relations          The relations service
- * @property \craft\services\Resources           $resources          The resources service
- * @property \craft\services\Routes              $routes             The routes service
- * @property \craft\services\Search              $search             The search service
- * @property Security                            $security           The security component
- * @property \craft\services\Sections            $sections           The sections service
- * @property \craft\services\Sites               $sites              The sites service
- * @property \craft\services\Structures          $structures         The structures service
- * @property \craft\services\SystemSettings      $systemSettings     The system settings service
- * @property \craft\services\Tags                $tags               The tags service
- * @property \craft\services\Tasks               $tasks              The tasks service
- * @property \craft\services\TemplateCaches      $templateCaches     The template caches service
- * @property \craft\services\Tokens              $tokens             The tokens service
- * @property \craft\services\Updates             $updates            The updates service
- * @property \craft\services\UserGroups          $userGroups         The user groups service
- * @property \craft\services\UserPermissions     $userPermissions    The user permissions service
- * @property \craft\services\Users               $users              The users service
- * @property View                                $view               The view component
- * @property \craft\services\Volumes             $volumes            The volumes service
+ * @property AssetManager                    $assetManager       The asset manager component
+ * @property \craft\services\Assets          $assets             The assets service
+ * @property \craft\services\AssetIndexer    $assetIndexing      The asset indexer service
+ * @property \craft\services\AssetTransforms $assetTransforms    The asset transforms service
+ * @property boolean                         $canTestEditions    Whether Craft is running on a domain that is eligible to test out the editions
+ * @property boolean                         $canUpgradeEdition  Whether Craft is eligible to be upgraded to a different edition
+ * @property \craft\services\Categories      $categories         The categories service
+ * @property \craft\services\Config          $config             The config service
+ * @property \craft\services\Content         $content            The content service
+ * @property \craft\db\MigrationManager      $contentMigrator    The content migration manager
+ * @property \craft\services\Dashboard       $dashboard          The dashboard service
+ * @property Connection                      $db                 The database connection component
+ * @property \craft\services\Deprecator      $deprecator         The deprecator service
+ * @property \craft\services\ElementIndexes  $elementIndexes     The element indexes service
+ * @property \craft\services\Elements        $elements           The elements service
+ * @property \craft\services\EmailMessages   $emailMessages      The email messages service
+ * @property \craft\services\Entries         $entries            The entries service
+ * @property \craft\services\EntryRevisions  $entryRevisions     The entry revisions service
+ * @property \craft\services\Et              $et                 The E.T. service
+ * @property \craft\services\Feeds           $feeds              The feeds service
+ * @property \craft\services\Fields          $fields             The fields service
+ * @property Formatter                       $formatter          The formatter component
+ * @property \craft\services\Globals         $globals            The globals service
+ * @property boolean                         $hasWrongEdition    Whether Craft is running with the wrong edition
+ * @property I18N                            $i18n               The internationalization (i18n) component
+ * @property \craft\services\Images          $images             The images service
+ * @property boolean                         $sInMaintenanceMode Whether the system is in maintenance mode
+ * @property boolean                         $isInstalled        Whether Craft is installed
+ * @property boolean                         $sMultiSite         Whether this site has multiple sites
+ * @property boolean                         $isUpdating         Whether Craft is in the middle of updating itself
+ * @property boolean                         $isSystemOn         Whether the front end is accepting HTTP requests
+ * @property \craft\i18n\Locale              $locale             The Locale object for the target language
+ * @property \craft\mail\Mailer              $mailer             The mailer component
+ * @property \craft\services\Matrix          $matrix             The matrix service
+ * @property \craft\db\MigrationManager      $migrator           The application’s migration manager
+ * @property \craft\services\Path            $path               The path service
+ * @property \craft\services\Plugins         $plugins            The plugins service
+ * @property \craft\services\Relations       $relations          The relations service
+ * @property \craft\services\Resources       $resources          The resources service
+ * @property \craft\services\Routes          $routes             The routes service
+ * @property \craft\services\Search          $search             The search service
+ * @property Security                        $security           The security component
+ * @property \craft\services\Sections        $sections           The sections service
+ * @property \craft\services\Sites           $sites              The sites service
+ * @property \craft\services\Structures      $structures         The structures service
+ * @property \craft\services\SystemSettings  $systemSettings     The system settings service
+ * @property \craft\services\Tags            $tags               The tags service
+ * @property \craft\services\Tasks           $tasks              The tasks service
+ * @property \craft\services\TemplateCaches  $templateCaches     The template caches service
+ * @property \craft\services\Tokens          $tokens             The tokens service
+ * @property \craft\services\Updates         $updates            The updates service
+ * @property \craft\services\UserGroups      $userGroups         The user groups service
+ * @property \craft\services\UserPermissions $userPermissions    The user permissions service
+ * @property \craft\services\Users           $users              The users service
+ * @property View                            $view               The view component
+ * @property \craft\services\Volumes         $volumes            The volumes service
  *
  * @method AssetManager getAssetManager() Returns the asset manager component.
  * @method Connection   getDb()           Returns the database connection component.
@@ -930,17 +928,6 @@ trait ApplicationTrait
     }
 
     /**
-     * Returns the image effects service.
-     *
-     * @return \craft\app\services\ImageEffects The image effects service
-     */
-    public function getImageEffects()
-    {
-        /** @var \craft\app\web\Application|\craft\app\console\Application $this */
-        return $this->get('imageEffects');
-    }
-
-    /**
      * Returns the images service.
      *
      * @return \craft\services\Images The images service
@@ -993,6 +980,17 @@ trait ApplicationTrait
     {
         /** @var \craft\web\Application|\craft\console\Application $this */
         return $this->get('migrator');
+    }
+
+    /**
+     * Returns the application’s mutex service.
+     *
+     * @return FileMutex The application’s mutex service
+     */
+    public function getMutex()
+    {
+        /** @var \craft\web\Application|\craft\console\Application $this */
+        return $this->get('mutex');
     }
 
     /**
@@ -1328,12 +1326,12 @@ trait ApplicationTrait
         $edition = $this->getEdition();
 
         if ($edition == Craft::Client || $edition == Craft::Pro) {
-            $pathService = $this->getPath();
+            $basePath = $this->getBasePath();
 
-            $this->setComponents(require $pathService->getAppPath().'/config/components/client.php');
+            $this->setComponents(require $basePath.DIRECTORY_SEPARATOR.'config'.DIRECTORY_SEPARATOR.'components'.DIRECTORY_SEPARATOR.'client.php');
 
             if ($edition == Craft::Pro) {
-                $this->setComponents(require $pathService->getAppPath().'/config/components/pro.php');
+                $this->setComponents(require $basePath.DIRECTORY_SEPARATOR.'config'.DIRECTORY_SEPARATOR.'components'.DIRECTORY_SEPARATOR.'pro.php');
             }
         }
     }

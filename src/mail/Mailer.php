@@ -11,6 +11,7 @@ use Craft;
 use craft\elements\User;
 use craft\errors\SendEmailException;
 use craft\events\MailFailureEvent;
+use craft\mail\Message;
 use yii\base\InvalidConfigException;
 use yii\helpers\Markdown;
 
@@ -34,11 +35,6 @@ class Mailer extends \yii\swiftmailer\Mailer
 
     // Properties
     // =========================================================================
-
-    /**
-     * @var string The default message class name
-     */
-    public $messageClass = \craft\mail\Message::class;
 
     /**
      * @var string The email template that should be used

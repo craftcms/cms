@@ -32,8 +32,6 @@ class SearchQueryTermGroup
      * Constructor
      *
      * @param array $terms
-     *
-     * @return SearchQueryTermGroup
      */
     public function __construct($terms = [])
     {

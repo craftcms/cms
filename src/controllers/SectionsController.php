@@ -59,8 +59,8 @@ class SectionsController extends Controller
     /**
      * Edit a section.
      *
-     * @param integer $sectionId The section’s id, if any.
-     * @param Section $section   The section being edited, if there were any validation errors.
+     * @param integer|null $sectionId The section’s id, if any.
+     * @param Section|null $section   The section being edited, if there were any validation errors.
      *
      * @return string The rendering result
      * @throws NotFoundHttpException if the requested section cannot be found
@@ -274,9 +274,9 @@ class SectionsController extends Controller
     /**
      * Edit an entry type
      *
-     * @param integer   $sectionId   The section’s ID.
-     * @param integer   $entryTypeId The entry type’s ID, if any.
-     * @param EntryType $entryType   The entry type being edited, if there were any validation errors.
+     * @param integer        $sectionId   The section’s ID.
+     * @param integer|null   $entryTypeId The entry type’s ID, if any.
+     * @param EntryType|null $entryType   The entry type being edited, if there were any validation errors.
      *
      * @return string The rendering result
      * @throws NotFoundHttpException if the requested section/entry type cannot be found

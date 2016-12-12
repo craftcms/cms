@@ -71,17 +71,17 @@ class NavTokenParser extends \Twig_TokenParser
 
         if (count($targets) > 1) {
             $keyTarget = $targets->getNode(0);
-            $keyTarget = new \Twig_Node_Expression_AssignName($keyTarget->getAttribute('name'), $keyTarget->getLine());
+            $keyTarget = new \Twig_Node_Expression_AssignName($keyTarget->getAttribute('name'), $keyTarget->getTemplateLine());
             $valueTarget = $targets->getNode(1);
-            $valueTarget = new \Twig_Node_Expression_AssignName($valueTarget->getAttribute('name'), $valueTarget->getLine());
+            $valueTarget = new \Twig_Node_Expression_AssignName($valueTarget->getAttribute('name'), $valueTarget->getTemplateLine());
         } else {
             /** @noinspection PhpParamsInspection */
             $keyTarget = new \Twig_Node_Expression_AssignName('_key', $lineno);
             $valueTarget = $targets->getNode(0);
-            $valueTarget = new \Twig_Node_Expression_AssignName($valueTarget->getAttribute('name'), $valueTarget->getLine());
+            $valueTarget = new \Twig_Node_Expression_AssignName($valueTarget->getAttribute('name'), $valueTarget->getTemplateLine());
         }
 
-        return new NavNode($keyTarget, $valueTarget, $seq, $upperBody, $lowerBody, $indent, $outdent, $lineno, $this->getTag());
+        return new NavNode($keyTarget, $valueTarget, $seq, $upperBody, $lowerBody, $indent, $outdent, $lineno, $this->getTemplateLine());
     }
 
     /**

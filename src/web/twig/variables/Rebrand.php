@@ -8,8 +8,8 @@
 namespace craft\web\twig\variables;
 
 use Craft;
-use craft\helpers\Io as IoHelper;
 use craft\helpers\Url;
+use yii\base\Exception;
 
 Craft::$app->requireEdition(Craft::Client);
 
@@ -66,10 +66,7 @@ class Rebrand
      */
     public function isImageUploaded($type)
     {
-        return in_array($type, [
-            'logo',
-            'icon'
-        ]) && ($this->_getImagePath($type) !== false);
+        return in_array($type, ['logo', 'icon']) && ($this->_getImagePath($type) !== false);
     }
 
     /**
@@ -127,21 +124,47 @@ class Rebrand
      *
      * @param string $type logo or image.
      *
-     * @return string
+     * @return string|false
+     * @throws Exception in case of failure
      */
     private function _getImagePath($type)
     {
-        if (!isset($this->_paths[$type])) {
-            $files = IoHelper::getFolderContents(Craft::$app->getPath()->getRebrandPath().'/'.$type.'/', false);
-
-            if (!empty($files)) {
-                $this->_paths[$type] = $files[0];
-            } else {
-                $this->_paths[$type] = false;
-            }
+        if (isset($this->_paths[$type])) {
+            return $this->_paths[$type];
         }
 
-        return $this->_paths[$type];
+        $dir = Craft::$app->getPath()->getRebrandPath().DIRECTORY_SEPARATOR.$type;
+
+        if (!is_dir($dir)) {
+            $this->_paths[$type] = false;
+
+            return false;
+        }
+
+        $handle = opendir($dir);
+        if ($handle === false) {
+            throw new Exception("Unable to open directory: $dir");
+        }
+        while (($subDir = readdir($handle)) !== false) {
+            if ($subDir === '.' || $subDir === '..') {
+                continue;
+            }
+            $path = $dir.DIRECTORY_SEPARATOR.$subDir;
+            if (is_dir($path)) {
+                continue;
+            }
+
+            // Found a file - cache and return.
+            $this->_paths[$type] = $path;
+
+            return $path;
+        }
+        closedir($handle);
+
+        // Couldn't find a file
+        $this->_paths[$type] = false;
+
+        return false;
     }
 
     /**
@@ -154,6 +177,6 @@ class Rebrand
      */
     private function _getImageUrl($path, $type)
     {
-        return Url::getResourceUrl('rebrand/'.$type.'/'.IoHelper::getFilename($path));
+        return Url::getResourceUrl('rebrand/'.$type.'/'.pathinfo($path, PATHINFO_BASENAME));
     }
 }

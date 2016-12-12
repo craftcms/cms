@@ -7,11 +7,10 @@
 
 namespace craft\helpers;
 
-use Craft;
 use craft\errors\MissingComponentException;
-use craft\events\Event;
 use craft\events\RegisterComponentTypesEvent;
 use craft\mail\Mailer;
+use craft\mail\Message;
 use craft\mail\transportadapters\BaseTransportAdapter;
 use craft\mail\transportadapters\Gmail;
 use craft\mail\transportadapters\Php;
@@ -19,6 +18,7 @@ use craft\mail\transportadapters\Sendmail;
 use craft\mail\transportadapters\Smtp;
 use craft\mail\transportadapters\TransportAdapterInterface;
 use craft\models\MailSettings;
+use yii\base\Event;
 
 /**
  * Class DateTimeHelper
@@ -98,6 +98,7 @@ class MailerHelper
         }
 
         $mailer = new Mailer([
+            'messageClass' => Message::class,
             'from' => [$settings->fromEmail => $settings->fromName],
             'template' => $settings->template,
             'transport' => $adapter->getTransportConfig(),

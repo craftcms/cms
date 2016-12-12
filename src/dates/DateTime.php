@@ -10,6 +10,7 @@ namespace craft\dates;
 use Craft;
 use craft\helpers\DateTimeHelper;
 use craft\i18n\Locale;
+use DateTimeZone;
 
 /**
  * Class DateTime
@@ -263,7 +264,7 @@ class DateTime extends \DateTime
      * @param \DateTime $datetime2
      * @param boolean   $absolute
      *
-     * @return DateInterval
+     * @return DateInterval|\DateInterval|boolean
      */
     public function diff($datetime2, $absolute = false)
     {

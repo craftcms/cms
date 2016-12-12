@@ -10,7 +10,7 @@
 		value: (value ? value|date('short') : '')
 	} -%}
 	{% if name -%}
-		<input type="hidden" name="{{ name }}[timezone]" value="{{ craft.getTimeZone() }}">
+		<input type="hidden" name="{{ name }}[timezone]" value="{{ craft.app.getTimeZone() }}">
 	{%- endif -%}
 </div>
 

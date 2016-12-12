@@ -23,12 +23,12 @@ class Parser extends \Twig_Parser
     /**
      * @param \Twig_NodeInterface $node
      *
-     * @return \Twig_NodeInterface|void
+     * @return \Twig_NodeInterface|null
      */
     protected function filterBodyNodes(
-        /** @noinspection PhpDeprecationInspection */ \Twig_NodeInterface $node
-    )
-    {
+        /** @noinspection PhpDeprecationInspection */
+        \Twig_NodeInterface $node
+    ) {
         // Bypass "include" nodes as they "capture" the output
         if ($node instanceof RegisterResourceNode) {
             return $node;

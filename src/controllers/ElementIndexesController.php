@@ -11,9 +11,9 @@ use Craft;
 use craft\base\Element;
 use craft\base\ElementAction;
 use craft\base\ElementActionInterface;
+use craft\base\ElementInterface;
 use craft\elements\db\ElementQuery;
 use craft\elements\db\ElementQueryInterface;
-use craft\base\ElementInterface;
 use craft\events\ElementActionEvent;
 use craft\helpers\ElementHelper;
 use yii\web\BadRequestHttpException;
@@ -297,11 +297,13 @@ class ElementIndexesController extends BaseElementsController
 
         // Does the source specify any criteria attributes?
         if (isset($this->_source['criteria'])) {
-            $query->configure($this->_source['criteria']);
+            Craft::configure($query, $this->_source['criteria']);
         }
 
         // Override with the request's params
-        $query->configure($request->getBodyParam('criteria'));
+        if ($criteria = $request->getBodyParam('criteria')) {
+            Craft::configure($query, $criteria);
+        }
 
         // Exclude descendants of the collapsed element IDs
         $collapsedElementIds = $request->getParam('collapsedElementIds');

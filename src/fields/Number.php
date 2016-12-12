@@ -8,7 +8,6 @@
 namespace craft\fields;
 
 use Craft;
-use craft\base\Element;
 use craft\base\Field;
 use craft\base\PreviewableFieldInterface;
 use craft\helpers\Db;

@@ -8,6 +8,7 @@
 namespace craft\events;
 
 use craft\base\WidgetInterface;
+use yii\base\Event;
 
 /**
  * WidgetEvent class.

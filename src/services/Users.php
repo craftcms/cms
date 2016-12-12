@@ -12,6 +12,7 @@ use craft\dates\DateInterval;
 use craft\dates\DateTime;
 use craft\db\Query;
 use craft\elements\Asset;
+use craft\elements\User;
 use craft\errors\ImageException;
 use craft\errors\UserNotFoundException;
 use craft\errors\VolumeException;
@@ -24,13 +25,11 @@ use craft\events\UserUnsuspendEvent;
 use craft\helpers\Assets as AssetsHelper;
 use craft\helpers\DateTimeHelper;
 use craft\helpers\Db;
-use craft\helpers\Io;
 use craft\helpers\Image;
 use craft\helpers\Json;
 use craft\helpers\StringHelper;
 use craft\helpers\Template;
 use craft\helpers\Url;
-use craft\elements\User;
 use craft\records\User as UserRecord;
 use yii\base\Component;
 use yii\db\Exception;
@@ -147,7 +146,10 @@ class Users extends Component
      */
     public function getUserById($userId)
     {
-        return Craft::$app->getElements()->getElementById($userId, User::class);
+        /** @var User|null $user */
+        $user = Craft::$app->getElements()->getElementById($userId, User::class);
+
+        return $user;
     }
 
     /**
@@ -454,9 +456,9 @@ class Users extends Component
     /**
      * Crops and saves a user’s photo.
      *
-     * @param User $user the user.
+     * @param User   $user         the user.
      * @param string $fileLocation the local image path on server
-     * @param string $filename name of the file to use, defaults to filename of $imagePath
+     * @param string $filename     name of the file to use, defaults to filename of $imagePath
      *
      * @return boolean Whether the photo was saved successfully.
      * @throws ImageException if the file provided is not a manipulatable image
@@ -464,9 +466,9 @@ class Users extends Component
      */
     public function saveUserPhoto($fileLocation, User $user, $filename = "")
     {
-        $filenameToUse = AssetsHelper::prepareAssetName($filename ?: Io::getFilename($fileLocation, false), true, true);
+        $filenameToUse = AssetsHelper::prepareAssetName($filename ?: pathinfo($fileLocation, PATHINFO_FILENAME), true, true);
 
-        if(!Image::isImageManipulatable(Io::getExtension($fileLocation))) {
+        if (!Image::isImageManipulatable(pathinfo($fileLocation, PATHINFO_EXTENSION))) {
             throw new ImageException(Craft::t('app', 'User photo must be an image that Craft can manipulate.'));
         }
 
@@ -489,7 +491,7 @@ class Users extends Component
             $filenameToUse = $assets->getNameReplacementInFolder($filenameToUse, $folderId);
 
             $photo = new Asset();
-            $photo->title = StringHelper::toTitleCase(Io::getFilename($filenameToUse, false));
+            $photo->title = StringHelper::toTitleCase(pathinfo($filenameToUse, PATHINFO_FILENAME));
             $photo->newFilePath = $fileLocation;
             $photo->filename = $filenameToUse;
             $photo->folderId = $folderId;
@@ -1016,6 +1018,7 @@ class Users extends Component
             }
 
             $user->setGroups($userGroups);
+
             return true;
         }
 

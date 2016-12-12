@@ -10,6 +10,7 @@ namespace craft\models;
 use Craft;
 use craft\base\Model;
 use craft\base\Volume;
+use craft\base\VolumeInterface;
 
 /**
  * The VolumeFolder model class.
@@ -49,7 +50,7 @@ class VolumeFolder extends Model
 
 
     /**
-     * @var array
+     * @var VolumeFolder[]
      */
     private $_children = null;
 
@@ -77,7 +78,7 @@ class VolumeFolder extends Model
     }
 
     /**
-     * @return Volume|null
+     * @return VolumeInterface|null
      */
     public function getVolume()
     {
@@ -87,7 +88,7 @@ class VolumeFolder extends Model
     /**
      * Set the child folders.
      *
-     * @param array $children
+     * @param VolumeFolder[] $children
      */
     public function setChildren(array $children)
     {
@@ -97,7 +98,7 @@ class VolumeFolder extends Model
     /**
      * Get this folder's children.
      *
-     * @return array|null
+     * @return VolumeFolder[]
      */
     public function getChildren()
     {

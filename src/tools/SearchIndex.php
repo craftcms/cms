@@ -9,9 +9,9 @@ namespace craft\tools;
 
 use Craft;
 use craft\base\Element;
+use craft\base\ElementInterface;
 use craft\base\Field;
 use craft\base\Tool;
-use craft\base\ElementInterface;
 use craft\db\Query;
 
 /**

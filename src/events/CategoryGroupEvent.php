@@ -8,6 +8,7 @@
 namespace craft\events;
 
 use craft\models\CategoryGroup;
+use yii\base\Event;
 
 /**
  * Category group event class.

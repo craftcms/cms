@@ -37,8 +37,6 @@ class RichTextData extends \Twig_Markup
      * Constructor
      *
      * @param string $content
-     *
-     * @return RichTextData
      */
     public function __construct($content)
     {

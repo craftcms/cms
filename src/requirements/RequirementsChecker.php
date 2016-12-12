@@ -5,6 +5,8 @@
  * @license   https://craftcms.com/license
  */
 
+use craft\helpers\FileHelper;
+
 if (version_compare(PHP_VERSION, '4.3', '<')) {
     echo 'At least PHP 4.3 is required to run this script!';
     exit(1);
@@ -76,14 +78,14 @@ class RequirementsChecker
         }
 
         if (!isset($this->result) || !is_array($this->result)) {
-            $this->result = array(
-                'summary' => array(
+            $this->result = [
+                'summary' => [
                     'total' => 0,
                     'errors' => 0,
                     'warnings' => 0,
-                ),
-                'requirements' => array(),
-            );
+                ],
+                'requirements' => [],
+            ];
         }
 
         foreach ($requirements as $key => $rawRequirement) {
@@ -447,7 +449,7 @@ class RequirementsChecker
 
         if (function_exists('iconv')) {
             // Let's see what happens.
-            set_error_handler(array($this, 'muteErrorHandler'));
+            set_error_handler([$this, 'muteErrorHandler']);
             $r = iconv('utf-8', 'ascii//IGNORE', "\xCE\xB1".str_repeat('a', 9000));
             restore_error_handler();
 
@@ -501,6 +503,8 @@ class RequirementsChecker
 
     /**
      * @return boolean|mixed
+     *
+     * @throws Exception in case of failure
      */
     function checkDatabaseServerVersion()
     {
@@ -550,7 +554,7 @@ class RequirementsChecker
     {
         $oldValue = ini_get('memory_limit');
 
-        set_error_handler(array($this, 'muteErrorHandler'));
+        set_error_handler([$this, 'muteErrorHandler']);
         $result = ini_set('memory_limit', '442M');
         restore_error_handler();
 
@@ -572,7 +576,7 @@ class RequirementsChecker
         }
 
         // Resetting should work, but might as well be extra careful.
-        set_error_handler(array($this, 'muteErrorHandler'));
+        set_error_handler([$this, 'muteErrorHandler']);
         ini_set('memory_limit', $oldValue);
         restore_error_handler();
 
@@ -613,17 +617,17 @@ class RequirementsChecker
     function checkWebRoot()
     {
         $pathService = Craft::$app->getPath();
-        $publicFolders = array();
+        $publicFolders = [];
 
         // The paths to check.
-        $folders = array(
+        $folders = [
             'storage' => $pathService->getStoragePath(),
             'plugins' => $pathService->getPluginsPath(),
             'config' => $pathService->getConfigPath(),
-            'app' => $pathService->getAppPath(),
+            'app' => Craft::$app->getBasePath(),
             'templates' => $pathService->getSiteTemplatesPath(),
             'translations' => $pathService->getSiteTranslationsPath(),
-        );
+        ];
 
         foreach ($folders as $key => $path) {
             if ($realPath = realpath($path)) {
@@ -679,12 +683,15 @@ class RequirementsChecker
      */
     function isPathInsideWebroot($pathToTest)
     {
-        $pathToTest = craft\helpers\Io::normalizePathSeparators($pathToTest);
+        $pathToTest = FileHelper::normalizePath($pathToTest);
 
         // Get the base path without the script name.
-        $subBasePath = craft\helpers\Io::normalizePathSeparators(mb_substr(Craft::$app->getRequest()->getScriptFile(), 0, -mb_strlen(Craft::$app->getRequest()->getScriptUrl())));
+        $request = Craft::$app->getRequest();
+        $scriptFile = $request->getScriptFile();
+        $scriptUrl = $request->getScriptUrl();
+        $subBasePath = FileHelper::normalizePath(mb_substr($scriptFile, 0, -mb_strlen($scriptUrl)));
 
-        if (mb_strpos($pathToTest, $subBasePath) !== false) {
+        if (mb_strpos($pathToTest.DIRECTORY_SEPARATOR, $subBasePath) !== false) {
             return true;
         }
 

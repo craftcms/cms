@@ -85,24 +85,12 @@ class TemplatesController extends Controller
     }
 
     /**
-     * Renders the Manual Update template.
-     *
-     * @return string The rendering result
-     */
-    public function actionManualUpdate()
-    {
-        return $this->renderTemplate('_special/updates/go', [
-            'handle' => Craft::$app->getRequest()->getSegment(2)
-        ]);
-    }
-
-    /**
      * @return string The rendering result
      * @throws ServerErrorHttpException if it's an Ajax request and the server doesn’t meet Craft’s requirements
      */
     public function actionRequirementsCheck()
     {
-        require_once(Craft::$app->getPath()->getAppPath().'/requirements/RequirementsChecker.php');
+        require_once(Craft::$app->getBasePath().DIRECTORY_SEPARATOR.'requirements'.DIRECTORY_SEPARATOR.'RequirementsChecker.php');
 
         // Run the requirements checker
         $reqCheck = new \RequirementsChecker();
@@ -121,12 +109,13 @@ class TemplatesController extends Controller
 
                 throw new ServerErrorHttpException(Craft::t('app', 'The update can’t be installed :( {message}', ['message' => $message]));
             } else {
-                return $this->renderTemplate('_special/cantrun',
-                    ['reqCheck' => $reqCheck]);
+                return $this->renderTemplate('_special/cantrun', [
+                    'reqCheck' => $reqCheck
+                ]);
             }
         } else {
-            // Cache the app path.
-            Craft::$app->getCache()->set('appPath', Craft::$app->getPath()->getAppPath());
+            // Cache the base path.
+            Craft::$app->getCache()->set('basePath', Craft::$app->getBasePath());
         }
 
         return null;

@@ -8,6 +8,7 @@
 namespace craft\services;
 
 use Craft;
+use craft\base\Widget;
 use craft\base\WidgetInterface;
 use craft\db\Query;
 use craft\errors\MissingComponentException;
@@ -16,9 +17,8 @@ use craft\events\RegisterComponentTypesEvent;
 use craft\events\WidgetEvent;
 use craft\helpers\Component as ComponentHelper;
 use craft\records\Widget as WidgetRecord;
-use craft\base\Widget;
-use craft\widgets\Feed as FeedWidget;
 use craft\widgets\CraftSupport as CraftSupportWidget;
+use craft\widgets\Feed as FeedWidget;
 use craft\widgets\MissingWidget;
 use craft\widgets\NewUsers as NewUsersWidget;
 use craft\widgets\QuickPost as QuickPostWidget;

@@ -41,7 +41,7 @@ class UserSettingsController extends Controller
     /**
      * Saves a user group.
      *
-     * @return Response|void
+     * @return Response|null
      * @throws NotFoundHttpException if the requested user group cannot be found
      */
     public function actionSaveGroup()

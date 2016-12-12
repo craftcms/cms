@@ -47,39 +47,20 @@ class Categories extends BaseRelationField
         return Craft::t('app', 'Add a category');
     }
 
-    // Properties
-    // =========================================================================
-
-    /**
-     * Whether to allow multiple source selection in the settings.
-     *
-     * @var boolean $allowMultipleSources
-     */
-    protected $allowMultipleSources = false;
-
-    /**
-     * The JS class that should be initialized for the input.
-     *
-     * @var string|null $inputJsClass
-     */
-    protected $inputJsClass = 'Craft.CategorySelectInput';
-
-    /**
-     * Template to use for field rendering
-     *
-     * @var string
-     */
-    protected $inputTemplate = '_components/fieldtypes/Categories/input';
-
-    /**
-     * Whether the elements have a custom sort order.
-     *
-     * @var boolean $sortable
-     */
-    protected $sortable = false;
-
     // Public Methods
     // =========================================================================
+
+    /**
+     * @inheritdoc
+     */
+    public function init()
+    {
+        parent::init();
+        $this->allowMultipleSources = false;
+        $this->inputTemplate = '_components/fieldtypes/Categories/input';
+        $this->inputJsClass = 'Craft.CategorySelectInput';
+        $this->sortable = false;
+    }
 
     /**
      * @inheritdoc

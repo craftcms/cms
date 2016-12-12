@@ -2,7 +2,7 @@
 {% set name = name is defined ? name -%}
 {% set value = value is defined ? value -%}
 
-{% registerjsresource 'lib/jquery.timepicker/jquery.timepicker'~(craft.app.config.get('useCompressedJs') ? '.min' : '')~'.js' -%}
+{% do view.registerAssetBundle('craft\\web\\assets\\TimepickerAsset') -%}
 
 <div class="timewrapper">
 	{%- include "_includes/forms/text" with {
@@ -12,7 +12,7 @@
 		value: (value ? value|time('short') : '')
 	} -%}
 	{% if name -%}
-		<input type="hidden" name="{{ name }}[timezone]" value="{{ craft.getTimeZone() }}">
+		<input type="hidden" name="{{ name }}[timezone]" value="{{ craft.app.getTimeZone() }}">
 	{%- endif -%}
 </div>
 

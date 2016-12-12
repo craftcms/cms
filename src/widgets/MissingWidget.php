@@ -7,9 +7,9 @@
 
 namespace craft\widgets;
 
-use craft\base\Widget;
 use craft\base\MissingComponentInterface;
 use craft\base\MissingComponentTrait;
+use craft\base\Widget;
 
 /**
  * MissingWidget represents a widget with an invalid class.

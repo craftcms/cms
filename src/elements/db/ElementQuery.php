@@ -15,15 +15,13 @@ use craft\base\Element;
 use craft\base\ElementInterface;
 use craft\base\Field;
 use craft\base\FieldInterface;
-use /** @noinspection PhpUndefinedClassInspection */
-    craft\behaviors\ElementQueryBehavior;
-use /** @noinspection PhpUndefinedClassInspection */
-    craft\behaviors\ElementQueryTrait;
+use craft\behaviors\ElementQueryBehavior;
+use craft\behaviors\ElementQueryTrait;
 use craft\db\Connection;
 use craft\db\FixedOrderExpression;
 use craft\db\Query;
 use craft\db\QueryAbortedException;
-use craft\events\Event;
+use craft\events\CancelableEvent;
 use craft\events\PopulateElementEvent;
 use craft\helpers\ArrayHelper;
 use craft\helpers\Db;
@@ -517,19 +515,6 @@ class ElementQuery extends Query implements ElementQueryInterface, Arrayable, Co
 
     // Element criteria parameter setters
     // -------------------------------------------------------------------------
-
-    /**
-     * @inheritdoc
-     */
-    public function configure($criteria)
-    {
-        // Be forgiving of empty params
-        if (!empty($criteria)) {
-            Craft::configure($this, $criteria);
-        }
-
-        return $this;
-    }
 
     /**
      * @inheritdoc
@@ -1103,6 +1088,7 @@ class ElementQuery extends Query implements ElementQueryInterface, Arrayable, Co
         // Make sure the criteria hasn't changed
         if ($this->_resultCriteria !== $this->toArray([], [], false)) {
             $this->_result = null;
+
             return null;
         }
 
@@ -1253,7 +1239,7 @@ class ElementQuery extends Query implements ElementQueryInterface, Arrayable, Co
      */
     protected function beforePrepare()
     {
-        $event = new Event();
+        $event = new CancelableEvent();
         $this->trigger(self::EVENT_BEFORE_PREPARE, $event);
 
         return $event->isValid;
@@ -1271,7 +1257,7 @@ class ElementQuery extends Query implements ElementQueryInterface, Arrayable, Co
      */
     protected function afterPrepare()
     {
-        $event = new Event();
+        $event = new CancelableEvent();
         $this->trigger(self::EVENT_AFTER_PREPARE, $event);
 
         return $event->isValid;
@@ -1324,8 +1310,7 @@ class ElementQuery extends Query implements ElementQueryInterface, Arrayable, Co
      */
     protected function statusCondition($status)
     {
-        switch ($status)
-        {
+        switch ($status) {
             case Element::STATUS_ENABLED:
                 return ['elements.enabled' => '1'];
             case Element::STATUS_DISABLED:

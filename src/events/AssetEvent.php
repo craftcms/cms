@@ -8,6 +8,7 @@
 namespace craft\events;
 
 use craft\elements\Asset;
+use yii\base\Event;
 
 /**
  * Asset event class.

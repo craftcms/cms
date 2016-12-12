@@ -16,7 +16,7 @@ use craft\elements\db\ElementQueryInterface;
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since  3.0
  */
-class ElementActionEvent extends Event
+class ElementActionEvent extends CancelableEvent
 {
     // Properties
     // =========================================================================

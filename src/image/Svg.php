@@ -10,8 +10,8 @@ namespace craft\image;
 use Craft;
 use craft\base\Image;
 use craft\errors\ImageException;
+use craft\helpers\FileHelper;
 use craft\helpers\Image as ImageHelper;
-use craft\helpers\Io;
 
 /**
  * Svg class is used for SVG file manipulations.
@@ -82,19 +82,17 @@ class Svg extends Image
      */
     public function loadImage($path)
     {
-        if (!Io::fileExists($path)) {
+        if (!is_file($path)) {
             Craft::error('Tried to load an image at '.$path.', but the file does not exist.');
             throw new ImageException(Craft::t('app', 'No file exists at the given path.'));
         }
 
         list($width, $height) = ImageHelper::imageSize($path);
 
-        $svg = Io::getFileContents($path);
+        $svg = file_get_contents($path);
 
         // If the size is defined by viewbox only, add in width and height attributes
-        if (!preg_match(static::SVG_WIDTH_RE,
-                $svg) && preg_match(static::SVG_HEIGHT_RE, $svg)
-        ) {
+        if (!preg_match(static::SVG_WIDTH_RE, $svg) && preg_match(static::SVG_HEIGHT_RE, $svg)) {
             $svg = preg_replace(static::SVG_TAG_RE,
                 "<svg width=\"{$width}px\" height=\"{$height}px\" ", $svg);
         }
@@ -233,8 +231,8 @@ class Svg extends Image
      */
     public function saveAs($targetPath, $autoQuality = false)
     {
-        if (Io::getExtension($targetPath) == 'svg') {
-            Io::writeToFile($targetPath, $this->_svgContent);
+        if (pathinfo($targetPath, PATHINFO_EXTENSION) == 'svg') {
+            FileHelper::writeToFile($targetPath, $this->_svgContent);
         } else {
             throw new ImageException(Craft::t('app',
                 'Manipulated SVG image rasterizing is unreliable. See \craft\services\Images::loadImage()'));

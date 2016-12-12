@@ -9,6 +9,7 @@ namespace craft\controllers;
 
 use Craft;
 use craft\dates\DateTime;
+use craft\elements\GlobalSet;
 use craft\errors\MissingComponentException;
 use craft\helpers\MailerHelper;
 use craft\helpers\Template;
@@ -16,9 +17,8 @@ use craft\helpers\Url;
 use craft\mail\transportadapters\BaseTransportAdapter;
 use craft\mail\transportadapters\Php;
 use craft\mail\transportadapters\TransportAdapterInterface;
-use craft\models\MailSettings;
-use craft\elements\GlobalSet;
 use craft\models\Info;
+use craft\models\MailSettings;
 use craft\tools\AssetIndex;
 use craft\tools\ClearCaches;
 use craft\tools\DbBackup;
@@ -171,7 +171,7 @@ class SystemSettingsController extends Controller
      * @param MailSettings|null         $settings The posted email settings, if there were any validation errors
      * @param TransportAdapterInterface $adapter  The transport adapter, if there were any validation errors
      *
-     * @return Response
+     * @return string
      * @throws Exception if a plugin returns an invalid mail transport type
      */
     public function actionEditEmailSettings(MailSettings $settings = null, TransportAdapterInterface $adapter = null)
@@ -327,8 +327,8 @@ class SystemSettingsController extends Controller
     /**
      * Global Set edit form.
      *
-     * @param integer   $globalSetId The global set’s ID, if any.
-     * @param GlobalSet $globalSet   The global set being edited, if there were any validation errors.
+     * @param integer|null   $globalSetId The global set’s ID, if any.
+     * @param GlobalSet|null $globalSet   The global set being edited, if there were any validation errors.
      *
      * @return string The rendering result
      * @throws NotFoundHttpException if the requested global set cannot be found

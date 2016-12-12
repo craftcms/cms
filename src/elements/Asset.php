@@ -9,8 +9,7 @@ namespace craft\elements;
 
 use Craft;
 use craft\base\Element;
-use craft\base\ElementInterface;
-use craft\base\Volume;
+use craft\base\VolumeInterface;
 use craft\elements\actions\CopyReferenceTag;
 use craft\elements\actions\DeleteAssets;
 use craft\elements\actions\DownloadAssetFile;
@@ -21,9 +20,10 @@ use craft\elements\actions\ReplaceFile;
 use craft\elements\actions\View;
 use craft\elements\db\AssetQuery;
 use craft\fields\Assets;
+use craft\helpers\Assets as AssetsHelper;
+use craft\helpers\FileHelper;
 use craft\helpers\Html;
 use craft\helpers\Image;
-use craft\helpers\Io;
 use craft\helpers\StringHelper;
 use craft\helpers\Template;
 use craft\helpers\Url;
@@ -375,7 +375,7 @@ class Asset extends Element
     private $_transformSource = '';
 
     /**
-     * @var Volume
+     * @var VolumeInterface
      */
     private $_volume = null;
 
@@ -594,7 +594,7 @@ class Asset extends Element
     }
 
     /**
-     * @return Volume|null
+     * @return VolumeInterface|null
      */
     public function getVolume()
     {
@@ -697,7 +697,7 @@ class Asset extends Element
      */
     public function getExtension()
     {
-        return Io::getExtension($this->filename);
+        return pathinfo($this->filename, PATHINFO_EXTENSION);
     }
 
     /**
@@ -705,7 +705,9 @@ class Asset extends Element
      */
     public function getMimeType()
     {
-        return Io::getMimeType($this->filename);
+        // todo: maybe we should be passing this off to volume types
+        // so Local volumes can call FileHelper::getMimeType() (uses magic file instead of ext)
+        return FileHelper::getMimeTypeByExtension($this->filename);
     }
 
     /**
@@ -804,10 +806,11 @@ class Asset extends Element
      */
     public function getCopyOfFile()
     {
-        $copyPath = Io::getTempFilePath($this->getExtension());
-        $this->getVolume()->saveFileLocally($this->getUri(), $copyPath);
+        $tempFilename = uniqid(pathinfo($this->filename, PATHINFO_FILENAME), true).'.'.$this->getExtension();
+        $tempPath = Craft::$app->getPath()->getTempPath().DIRECTORY_SEPARATOR.$tempFilename;
+        $this->getVolume()->saveFileLocally($this->getUri(), $tempPath);
 
-        return $copyPath;
+        return $tempPath;
     }
 
     /**
@@ -837,7 +840,7 @@ class Asset extends Element
                 ]);
 
             case 'kind':
-                return Io::getFileKindLabel($this->kind);
+                return AssetsHelper::getFileKindLabel($this->kind);
 
             case 'size':
                 return $this->size ? Craft::$app->getFormatter()->asShortSize($this->size) : '';
@@ -901,7 +904,7 @@ class Asset extends Element
     {
         if ($isNew && !$this->title) {
             // Give it a default title based on the file name
-            $this->title = StringHelper::toTitleCase(Io::getFilename($this->filename, false));
+            $this->title = StringHelper::toTitleCase(pathinfo($this->filename, PATHINFO_FILENAME));
         }
 
         return parent::beforeSave($isNew);

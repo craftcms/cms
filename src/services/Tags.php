@@ -9,9 +9,8 @@ namespace craft\services;
 
 use Craft;
 use craft\db\Query;
-use craft\errors\TagGroupNotFoundException;
-use craft\errors\TagNotFoundException;
 use craft\elements\Tag;
+use craft\errors\TagGroupNotFoundException;
 use craft\events\TagGroupEvent;
 use craft\models\TagGroup;
 use craft\records\TagGroup as TagGroupRecord;
@@ -158,9 +157,7 @@ class Tags extends Component
      */
     public function getTagGroupById($groupId)
     {
-        if (!isset($this->_tagGroupsById) || !array_key_exists($groupId,
-                $this->_tagGroupsById)
-        ) {
+        if (!isset($this->_tagGroupsById) || !array_key_exists($groupId, $this->_tagGroupsById)) {
             $groupRecord = TagGroupRecord::findOne($groupId);
 
             if ($groupRecord) {
@@ -377,6 +374,9 @@ class Tags extends Component
      */
     public function getTagById($tagId, $siteId)
     {
-        return Craft::$app->getElements()->getElementById($tagId, Tag::class, $siteId);
+        /** @var Tag $tag */
+        $tag = Craft::$app->getElements()->getElementById($tagId, Tag::class, $siteId);
+
+        return $tag;
     }
 }

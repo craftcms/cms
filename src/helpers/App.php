@@ -48,7 +48,7 @@ class App
         if (!isset(static::$_isComposerInstall)) {
             // If this was installed via a craftcms.com zip, there will be an index.php file
             // at the root of the vendor directory.
-            static::$_isComposerInstall = !Io::fileExists(Craft::$app->getVendorPath().'/index.php');
+            static::$_isComposerInstall = !is_file(Craft::$app->getVendorPath().DIRECTORY_SEPARATOR.'index.php');
         }
 
         return static::$_isComposerInstall;
@@ -63,8 +63,7 @@ class App
     {
         if (!isset(static::$_isPhpDevServer)) {
             if (isset($_SERVER['SERVER_SOFTWARE'])) {
-                static::$_isPhpDevServer = (strncmp($_SERVER['SERVER_SOFTWARE'],
-                        'PHP', 3) == 0);
+                static::$_isPhpDevServer = (strncmp($_SERVER['SERVER_SOFTWARE'], 'PHP', 3) == 0);
             } else {
                 static::$_isPhpDevServer = false;
             }
@@ -111,8 +110,7 @@ class App
      */
     public static function isValidEdition($edition)
     {
-        return (is_numeric($edition) && in_array($edition,
-                static::editions()));
+        return (is_numeric($edition) && in_array($edition, static::editions()));
     }
 
     /**

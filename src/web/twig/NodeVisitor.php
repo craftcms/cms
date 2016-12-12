@@ -30,10 +30,10 @@ class NodeVisitor implements \Twig_NodeVisitorInterface
      * @inheritdoc
      */
     public function enterNode(
-        /** @noinspection PhpDeprecationInspection */ \Twig_NodeInterface $node,
+        /** @noinspection PhpDeprecationInspection */
+        \Twig_NodeInterface $node,
         \Twig_Environment $env
-    )
-    {
+    ) {
         // Is this the top-level template node?
         if ($node instanceof \Twig_Node_Module) {
             $node = $this->_findEventTags($node);
@@ -50,9 +50,7 @@ class NodeVisitor implements \Twig_NodeVisitorInterface
                 }
             }
 
-            if ($this->_foundHead === false && ($headPos = stripos($data,
-                    '</head>')) !== false
-            ) {
+            if ($this->_foundHead === false && ($headPos = stripos($data, '</head>')) !== false) {
                 $this->_foundHead = true;
 
                 return $this->_splitTextNode($node, $data, $headPos, 'head');
@@ -68,9 +66,7 @@ class NodeVisitor implements \Twig_NodeVisitorInterface
 
                     return $this->_splitTextNode($node, $data, $beginBodyPos, 'beginBody');
                 }
-            } else if ($this->_foundEndBody === false && ($endBodyPos = stripos($data,
-                    '</body>')) !== false
-            ) {
+            } else if ($this->_foundEndBody === false && ($endBodyPos = stripos($data, '</body>')) !== false) {
                 $this->_foundEndBody = true;
 
                 return $this->_splitTextNode($node, $data, $endBodyPos, 'endBody');
@@ -84,10 +80,10 @@ class NodeVisitor implements \Twig_NodeVisitorInterface
      * @inheritdoc
      */
     public function leaveNode(
-        /** @noinspection PhpDeprecationInspection */ \Twig_NodeInterface $node,
+        /** @noinspection PhpDeprecationInspection */
+        \Twig_NodeInterface $node,
         \Twig_Environment $env
-    )
-    {
+    ) {
         return $node;
     }
 
@@ -117,16 +113,12 @@ class NodeVisitor implements \Twig_NodeVisitorInterface
      *
      * @param \Twig_NodeInterface $node The current node to traverse
      *
-     * @return \Twig_NodeInterface|null
+     * @return \Twig_NodeInterface
      */
     private function _findEventTags(
-        /** @noinspection PhpDeprecationInspection */ \Twig_NodeInterface $node = null
-    )
-    {
-        if (null === $node) {
-            return null;
-        }
-
+        /** @noinspection PhpDeprecationInspection */
+        \Twig_NodeInterface $node
+    ) {
         // Check to see if this is a template event tag
         if ($node instanceof \Twig_Node_Print || $node instanceof \Twig_Node_Do) {
             $expression = $node->getNode('expr');
@@ -146,7 +138,7 @@ class NodeVisitor implements \Twig_NodeVisitorInterface
 
                         if ($node instanceof \Twig_Node_Print) {
                             // Switch it to a {% do %} tag
-                            $node = new \Twig_Node_Do($expression, $expression->getLine());
+                            $node = new \Twig_Node_Do($expression, $expression->getTemplateLine());
                         }
                     }
                 }
@@ -156,10 +148,9 @@ class NodeVisitor implements \Twig_NodeVisitorInterface
         // Should we keep looking?
         if ($this->_foundAllEventTags() === false) {
             foreach ($node as $k => $n) {
-                if (false !== $n = $this->_findEventTags($n)) {
-                    $node->setNode($k, $n);
-                } else {
-                    $node->removeNode($k);
+                // todo: we can remove this condition for Twig 2
+                if ($n instanceof \Twig_NodeInterface) {
+                    $node->setNode($k, $this->_findEventTags($n));
                 }
             }
         }
@@ -181,7 +172,7 @@ class NodeVisitor implements \Twig_NodeVisitorInterface
     {
         $preSplitHtml = substr($data, 0, $pos);
         $postSplitHtml = substr($data, $pos);
-        $startLine = $node->getLine();
+        $startLine = $node->getTemplateLine();
         $splitLine = $startLine + substr_count($preSplitHtml, "\n");
 
         return new \Twig_Node([

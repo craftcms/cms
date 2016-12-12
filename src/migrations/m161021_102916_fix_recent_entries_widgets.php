@@ -2,11 +2,9 @@
 
 namespace craft\migrations;
 
-use Craft;
 use craft\db\Migration;
 use craft\db\Query;
 use craft\helpers\ArrayHelper;
-use craft\helpers\Json;
 
 /**
  * m161021_102916_fix_recent_entries_widgets migration.
@@ -36,6 +34,7 @@ class m161021_102916_fix_recent_entries_widgets extends Migration
     public function safeDown()
     {
         echo "m161021_102916_fix_recent_entries_widgets cannot be reverted.\n";
+
         return false;
     }
 }

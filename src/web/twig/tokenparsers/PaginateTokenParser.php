@@ -37,7 +37,7 @@ class PaginateTokenParser extends Twig_TokenParser
 
         if (count($targets) > 1) {
             $paginateTarget = $targets->getNode(0);
-            $nodes['paginateTarget'] = new Twig_Node_Expression_AssignName($paginateTarget->getAttribute('name'), $paginateTarget->getLine());
+            $nodes['paginateTarget'] = new Twig_Node_Expression_AssignName($paginateTarget->getAttribute('name'), $paginateTarget->getTemplateLine());
             $elementsTarget = $targets->getNode(1);
         } else {
             /** @noinspection PhpParamsInspection */
@@ -45,7 +45,7 @@ class PaginateTokenParser extends Twig_TokenParser
             $elementsTarget = $targets->getNode(0);
         }
 
-        $nodes['elementsTarget'] = new Twig_Node_Expression_AssignName($elementsTarget->getAttribute('name'), $elementsTarget->getLine());
+        $nodes['elementsTarget'] = new Twig_Node_Expression_AssignName($elementsTarget->getAttribute('name'), $elementsTarget->getTemplateLine());
 
         return new PaginateNode($nodes, [], $lineno, $this->getTag());
     }

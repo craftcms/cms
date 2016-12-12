@@ -8,19 +8,12 @@
 namespace craft\controllers;
 
 use Craft;
-use craft\base\Element;
-use craft\base\Field;
 use craft\helpers\Json;
 use craft\helpers\Url;
-use craft\elements\Category;
-use craft\models\CategoryGroup;
-use craft\models\CategoryGroup_SiteSettings;
 use craft\models\Site;
 use craft\web\Controller;
-use yii\web\ForbiddenHttpException;
 use yii\web\NotFoundHttpException;
 use yii\web\Response;
-use yii\web\ServerErrorHttpException;
 
 /**
  * The SitesController class is a controller that handles various actions related to categories and category
@@ -62,8 +55,8 @@ class SitesController extends Controller
     /**
      * Edit a category group.
      *
-     * @param integer $siteId The site’s ID, if editing an existing site
-     * @param Site    $site   The site being edited, if there were any validation errors
+     * @param integer   $siteId The site’s ID, if editing an existing site
+     * @param Site|null $site   The site being edited, if there were any validation errors
      *
      * @return string The rendering result
      * @throws NotFoundHttpException if the requested site cannot be found

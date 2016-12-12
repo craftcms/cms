@@ -28,7 +28,7 @@ class HtmlPurifier extends \yii\helpers\HtmlPurifier
     }
 
     /**
-     * @param string $string
+     * @param string              $string
      * @param HTMLPurifier_Config $config
      *
      * @return string

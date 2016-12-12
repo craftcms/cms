@@ -47,21 +47,11 @@ class Temp extends Local
         return true;
     }
 
-    // Properties
-    // =========================================================================
-
-    /**
-     * Path to the root of this sources local folder.
-     *
-     * @var string
-     */
-    public $path = "";
-
     // Public Methods
     // =========================================================================
 
     /**
-     * Constructor
+     * @inheritdoc
      */
     public function init()
     {

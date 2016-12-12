@@ -8,21 +8,21 @@
 namespace craft\controllers;
 
 use Craft;
+use craft\elements\Asset;
 use craft\errors\AssetConflictException;
-use craft\errors\AssetLogicException;
 use craft\errors\AssetException;
+use craft\errors\AssetLogicException;
 use craft\errors\UploadFailedException;
 use craft\fields\Assets as AssetsField;
 use craft\helpers\Assets;
 use craft\helpers\Db;
-use craft\helpers\Io;
-use craft\elements\Asset;
+use craft\helpers\FileHelper;
 use craft\helpers\StringHelper;
 use craft\image\Raster ;
 use craft\models\VolumeFolder;
 use craft\web\Controller;
 use craft\web\UploadedFile;
-use yii\helpers\FileHelper;
+use yii\base\ErrorException;
 use yii\web\BadRequestHttpException;
 use yii\web\Response;
 
@@ -114,7 +114,7 @@ class AssetsController extends Controller
             }
 
             if ($newFile) {
-                if ($uploadedFile->hasError) {
+                if ($uploadedFile->getHasError()) {
                     throw new UploadFailedException($uploadedFile->error);
                 }
 
@@ -144,33 +144,32 @@ class AssetsController extends Controller
                 }
 
                 // Check the permissions to upload in the resolved folder.
-                $this->_requirePermissionByFolder('saveAssetInVolume',
-                    $folder);
+                $this->_requirePermissionByFolder('saveAssetInVolume', $folder);
 
-                $pathOnServer = Io::getTempFilePath($uploadedFile->name);
-                $result = $uploadedFile->saveAs($pathOnServer);
-
-                if (!$result) {
-                    Io::deleteFile($pathOnServer, true);
+                // Move the uploaded file to the temp folder
+                if (($tempPath = $uploadedFile->saveAsTempFile()) === false) {
                     throw new UploadFailedException(UPLOAD_ERR_CANT_WRITE);
                 }
 
                 $filename = Assets::prepareAssetName($uploadedFile->name);
-
                 $asset = new Asset();
 
                 // Make sure there are no double spaces, if the filename had a space followed by a
                 // capital letter because of Yii's "word" logic.
-                $asset->title = str_replace('  ', ' ', StringHelper::toTitleCase(Io::getFilename($filename, false)));
+                $asset->title = str_replace('  ', ' ', StringHelper::toTitleCase(pathinfo($filename, PATHINFO_FILENAME)));
 
-                $asset->newFilePath = $pathOnServer;
+                $asset->newFilePath = $tempPath;
                 $asset->filename = $filename;
                 $asset->folderId = $folder->id;
                 $asset->volumeId = $folder->volumeId;
 
                 try {
                     $assets->saveAsset($asset);
-                    Io::deleteFile($pathOnServer, true);
+                    try {
+                        FileHelper::removeFile($tempPath);
+                    } catch (ErrorException $e) {
+                        Craft::warning("Unable to delete the file \"{$tempPath}\": ".$e->getMessage());
+                    }
                 } catch (AssetConflictException $exception) {
                     // Okay, get a replacement name and re-save Asset.
                     $replacementName = $assets->getNameReplacementInFolder($asset->filename,
@@ -178,7 +177,11 @@ class AssetsController extends Controller
                     $asset->filename = $replacementName;
 
                     $assets->saveAsset($asset);
-                    Io::deleteFile($pathOnServer, true);
+                    try {
+                        FileHelper::removeFile($tempPath);
+                    } catch (ErrorException $e) {
+                        Craft::warning("Unable to delete the file \"{$tempPath}\": ".$e->getMessage());
+                    }
 
                     return $this->asJson([
                         'prompt' => true,
@@ -187,7 +190,11 @@ class AssetsController extends Controller
                     ]);
                 } // No matter what happened, delete the file on server.
                 catch (\Exception $exception) {
-                    Io::deleteFile($pathOnServer, true);
+                    try {
+                        FileHelper::removeFile($tempPath);
+                    } catch (ErrorException $e) {
+                        Craft::warning("Unable to delete the file \"{$tempPath}\": ".$e->getMessage());
+                    }
                     throw $exception;
                 }
 
@@ -223,21 +230,17 @@ class AssetsController extends Controller
             $asset);
 
         try {
-            if ($uploadedFile->hasError) {
+            if ($uploadedFile->getHasError()) {
                 throw new UploadFailedException($uploadedFile->error);
             }
 
-            $fileName = Assets::prepareAssetName($uploadedFile->name);
-            $pathOnServer = Io::getTempFilePath($uploadedFile->name);
-            $result = $uploadedFile->saveAs($pathOnServer);
-
-            if (!$result) {
-                Io::deleteFile($pathOnServer, true);
+            // Move the uploaded file to the temp folder
+            if (($tempPath = $uploadedFile->saveAsTempFile()) === false) {
                 throw new UploadFailedException(UPLOAD_ERR_CANT_WRITE);
             }
 
-            $assets->replaceAssetFile($asset, $pathOnServer,
-                $fileName);
+            $fileName = Assets::prepareAssetName($uploadedFile->name);
+            $assets->replaceAssetFile($asset, $tempPath, $fileName);
         } catch (\Exception $exception) {
             return $this->asErrorJson($exception->getMessage());
         }
@@ -518,7 +521,6 @@ class AssetsController extends Controller
                         $targetTreeMap[substr($existingFolder->path,
                             $targetPrefixLength)] = $existingFolder->id;
                     }
-
                 } // When replacing, just nuke everything that's in our way
                 else {
                     if ($conflictResolution == 'replace') {
@@ -765,9 +767,11 @@ class AssetsController extends Controller
         Craft::$app->getConfig()->maxPowerCaptain();
         $localPath = $asset->getCopyOfFile();
 
-        Craft::$app->getResponse()->sendFile($localPath, $asset->filename, false);
-        Io::deleteFile($localPath);
-        Craft::$app->end();
+        $response = Craft::$app->getResponse()
+            ->sendFile($localPath, $asset->filename);
+        FileHelper::removeFile($localPath);
+
+        return $response;
     }
 
     /**

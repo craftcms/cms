@@ -9,7 +9,7 @@ namespace craft\db;
 
 use Craft;
 use craft\helpers\Db;
-use craft\helpers\Io;
+use craft\helpers\FileHelper;
 use yii\base\Component;
 use yii\base\Exception;
 use yii\base\InvalidConfigException;
@@ -52,7 +52,7 @@ class MigrationManager extends Component
     public $migrationNamespace;
 
     /**
-     * @var string|false The path of the migrations folder, or false if it doesn't exist
+     * @var string The path to the migrations directory
      */
     public $migrationPath;
 
@@ -84,14 +84,15 @@ class MigrationManager extends Component
             throw new InvalidConfigException('Invalid migration type: '.$this->type);
         }
 
-        $migrationPath = Craft::getAlias($this->migrationPath);
-
-        if (!$migrationPath || !Io::folderExists($migrationPath)) {
-            Craft::warning('Migration folder doesn\'t exist: '.$migrationPath);
-            $this->migrationPath = false;
-        } else {
-            $this->migrationPath = $migrationPath;
+        if ($this->type == self::TYPE_PLUGIN && $this->pluginId === null) {
+            throw new InvalidConfigException('The plugin ID has not been set.');
         }
+
+        if ($this->migrationPath === null) {
+            throw new InvalidConfigException('The migration path has not been set.');
+        }
+
+        $this->migrationPath = FileHelper::normalizePath(Craft::getAlias($this->migrationPath));
 
         $this->db = Instance::ensure($this->db, Connection::class);
     }
@@ -102,15 +103,16 @@ class MigrationManager extends Component
      * @param string $name The migration name
      *
      * @return MigrationInterface|\yii\db\Migration The migration instance
+     * @throws Exception if the migration folder doesn't exist
      */
     public function createMigration($name)
     {
-        if ($this->migrationPath === false) {
-            throw new Exception('Can\'t create new migrations because the migration folder doesn\'t exist');
+        if (!is_dir($this->migrationPath)) {
+            throw new Exception("Can't instantiate migrations because the migration folder doesn't exist");
         }
 
-        $file = $this->migrationPath."/$name.php";
-        $class = $this->migrationNamespace."\\$name";
+        $file = $this->migrationPath.DIRECTORY_SEPARATOR.$name.'.php';
+        $class = $this->migrationNamespace.'\\'.$name;
         require_once($file);
 
         return new $class;
@@ -119,8 +121,8 @@ class MigrationManager extends Component
     /**
      * Upgrades the application by applying new migrations.
      *
-     * @param integer $limit The number of new migrations to be applied. If 0, it means
-     *                       applying all available new migrations.
+     * @param integer|null $limit The number of new migrations to be applied. If 0 or null, it means
+     *                            applying all available new migrations.
      *
      * @return boolean Whether the migrations were applied successfully
      */
@@ -138,9 +140,9 @@ class MigrationManager extends Component
         }
 
         $total = count($migrationNames);
-        $limit = (int)$limit;
 
-        if ($limit > 0) {
+        $this->_normalizeLimit($limit);
+        if ($limit !== null) {
             $migrationNames = array_slice($migrationNames, 0, $limit);
         }
 
@@ -174,8 +176,8 @@ class MigrationManager extends Component
     /**
      * Downgrades the application by reverting old migrations.
      *
-     * @param integer|string $limit The number of migrations to be reverted. Defaults to 1,
-     *                              meaning the last applied migration will be reverted. If set to "all", all migrations will be reverted.
+     * @param integer|null $limit The number of migrations to be reverted. Defaults to 1,
+     *                            meaning the last applied migration will be reverted. If set to 0 or null, all migrations will be reverted.
      *
      * @return boolean Whether the migrations were reverted successfully
      */
@@ -184,12 +186,7 @@ class MigrationManager extends Component
         // This might take a while
         Craft::$app->getConfig()->maxPowerCaptain();
 
-        if ($limit === 'all' || $limit < 1) {
-            $limit = null;
-        } else {
-            $limit = (int)$limit;
-        }
-
+        $this->_normalizeLimit($limit);
         $migrationNames = array_keys($this->getMigrationHistory($limit));
 
         if (empty($migrationNames)) {
@@ -226,6 +223,7 @@ class MigrationManager extends Component
      * @param string|MigrationInterface|\yii\db\Migration $migration The name of the migration to apply, or the migration itself
      *
      * @return boolean Whether the migration was applied successfully
+     * @throws InvalidConfigException if $migration is invalid
      */
     public function migrateUp($migration)
     {
@@ -236,7 +234,8 @@ class MigrationManager extends Component
         }
 
         /** @var \yii\db\Migration $migration */
-        $migration = Instance::ensure($migration, \yii\db\MigrationInterface::class);
+        /** @noinspection CallableParameterUseCaseInTypeContextInspection */
+        $migration = Instance::ensure($migration, MigrationInterface::class);
 
         Craft::info("Applying $migrationName");
 
@@ -276,6 +275,7 @@ class MigrationManager extends Component
      * @param string|MigrationInterface|\yii\db\Migration $migration The name of the migration to revert, or the migration itself
      *
      * @return boolean Whether the migration was reverted successfully
+     * @throws InvalidConfigException if $migration is invalid
      */
     public function migrateDown($migration)
     {
@@ -286,7 +286,8 @@ class MigrationManager extends Component
         }
 
         /** @var \yii\db\Migration $migration */
-        $migration = Instance::ensure($migration, \yii\db\MigrationInterface::class);
+        /** @noinspection CallableParameterUseCaseInTypeContextInspection */
+        $migration = Instance::ensure($migration, MigrationInterface::class);
 
         Craft::info("Reverting $migrationName");
 
@@ -301,12 +302,10 @@ class MigrationManager extends Component
         $time = microtime(true) - $start;
 
         if ($success) {
-            Craft::info("Reverted $migrationName (time: ".sprintf("%.3f",
-                    $time)."s)");
+            Craft::info("Reverted $migrationName (time: ".sprintf("%.3f", $time)."s)");
             $this->removeMigrationHistory($migrationName);
         } else {
-            Craft::error("Failed to revert $migrationName (time: ".sprintf("%.3f",
-                    $time)."s)");
+            Craft::error("Failed to revert $migrationName (time: ".sprintf("%.3f", $time)."s)");
         }
 
         if (!$isConsoleRequest) {
@@ -400,7 +399,7 @@ class MigrationManager extends Component
         $migrations = [];
 
         // Ignore if the migrations folder doesn't exist
-        if ($this->migrationPath === false) {
+        if (!is_dir($this->migrationPath)) {
             return $migrations;
         }
 
@@ -414,9 +413,7 @@ class MigrationManager extends Component
 
             $path = $this->migrationPath.DIRECTORY_SEPARATOR.$file;
 
-            if (preg_match('/^(m\d{6}_\d{6}_.*?)\.php$/', $file,
-                    $matches) && is_file($path) && !isset($history[$matches[1]])
-            ) {
+            if (preg_match('/^(m\d{6}_\d{6}_.*?)\.php$/', $file, $matches) && is_file($path) && !isset($history[$matches[1]])) {
                 $migrations[] = $matches[1];
             }
         }
@@ -429,6 +426,20 @@ class MigrationManager extends Component
 
     // Private Methods
     // =========================================================================
+
+    /**
+     * Normalizes the $limit argument passed to [[up()]] and [[down()]]
+     *
+     * @param integer|null &$limit
+     */
+    private function _normalizeLimit(&$limit)
+    {
+        if (is_numeric($limit) && $limit >= 1) {
+            $limit = (int)$limit;
+        } else {
+            $limit = null;
+        }
+    }
 
     /**
      * Normalizes the $migration argument passed to [[migrateUp()]] and [[migrateDown()]].

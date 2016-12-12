@@ -8,6 +8,7 @@
 namespace craft\events;
 
 use craft\base\VolumeInterface;
+use yii\base\Event;
 
 /**
  * VolumeEvent class.

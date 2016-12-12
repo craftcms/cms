@@ -33,14 +33,17 @@ class NavNode extends \Twig_Node_For
         \Twig_Node_Expression_AssignName $keyTarget,
         \Twig_Node_Expression_AssignName $valueTarget,
         \Twig_Node_Expression $seq,
-        /** @noinspection PhpDeprecationInspection */ \Twig_NodeInterface $upperBody,
-        /** @noinspection PhpDeprecationInspection */ \Twig_NodeInterface $lowerBody = null,
-        /** @noinspection PhpDeprecationInspection */ \Twig_NodeInterface $indent = null,
-        /** @noinspection PhpDeprecationInspection */ \Twig_NodeInterface $outdent = null,
+        /** @noinspection PhpDeprecationInspection */
+        \Twig_NodeInterface $upperBody,
+        /** @noinspection PhpDeprecationInspection */
+        \Twig_NodeInterface $lowerBody = null,
+        /** @noinspection PhpDeprecationInspection */
+        \Twig_NodeInterface $indent = null,
+        /** @noinspection PhpDeprecationInspection */
+        \Twig_NodeInterface $outdent = null,
         $lineno,
         $tag = null
-    )
-    {
+    ) {
         $this->navItemNode = new NavItem_Node($valueTarget, $indent, $outdent, $lowerBody, $lineno, $tag);
         $body = new \Twig_Node([$this->navItemNode, $upperBody]);
 

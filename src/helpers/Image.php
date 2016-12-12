@@ -61,7 +61,7 @@ class Image
     public static function isImageManipulatable($extension)
     {
         $path = Craft::$app->getPath()->getResourcesPath();
-        $file = $path."/images/samples/sample.".StringHelper::toLowerCase($extension);
+        $file = $path.DIRECTORY_SEPARATOR.'images'.DIRECTORY_SEPARATOR.'samples'.DIRECTORY_SEPARATOR.'sample.'.StringHelper::toLowerCase($extension);
 
         try {
             Craft::$app->getImages()->loadImage($file);
@@ -159,7 +159,7 @@ class Image
      */
     public static function canHaveExifData($filePath)
     {
-        $extension = Io::getExtension($filePath);
+        $extension = pathinfo($filePath, PATHINFO_EXTENSION);
 
         return in_array(
             StringHelper::toLowerCase($extension),
@@ -176,7 +176,7 @@ class Image
      */
     public static function cleanImageByPath($imagePath)
     {
-        $extension = Io::getExtension($imagePath);
+        $extension = pathinfo($imagePath, PATHINFO_EXTENSION);
 
         if ($extension == 'svg') {
             // No cleanup in the classic sense.
@@ -197,8 +197,8 @@ class Image
      */
     public static function imageSize($filePath)
     {
-        if (Io::getExtension($filePath) == 'svg') {
-            $svg = Io::getFileContents($filePath);
+        if (pathinfo($filePath, PATHINFO_EXTENSION) == 'svg') {
+            $svg = file_get_contents($filePath);
 
             return static::parseSvgSize($svg);
         }

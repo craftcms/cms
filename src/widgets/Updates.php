@@ -54,7 +54,7 @@ class Updates extends Widget
      */
     public function getIconPath()
     {
-        return Craft::$app->getPath()->getResourcesPath().'/images/widgets/updates.svg';
+        return Craft::$app->getPath()->getResourcesPath().DIRECTORY_SEPARATOR.'images'.DIRECTORY_SEPARATOR.'widgets'.DIRECTORY_SEPARATOR.'updates.svg';
     }
 
     /**

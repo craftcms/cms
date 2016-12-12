@@ -31,9 +31,9 @@ class Update extends Model
     public $plugins = [];
 
     /**
-     * @var array Errors
+     * @var array Response errors
      */
-    public $errors;
+    public $responseErrors;
 
     // Public Methods
     // =========================================================================

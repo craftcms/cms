@@ -15,7 +15,7 @@ use craft\elements\GlobalSet;
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since  3.0
  */
-class GlobalSetEvent extends Event
+class GlobalSetEvent extends CancelableEvent
 {
     // Properties
     // =========================================================================

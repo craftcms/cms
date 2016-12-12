@@ -7,12 +7,12 @@
 
 namespace craft\records;
 
-use craft\db\NestedSetsTrait;
-use yii\db\ActiveQueryInterface;
 use Craft;
 use craft\db\ActiveRecord;
+use craft\db\NestedSetsTrait;
 use craft\db\StructuredElementQuery;
 use creocoder\nestedsets\NestedSetsBehavior;
+use yii\db\ActiveQueryInterface;
 
 /**
  * Class StructureElement record.

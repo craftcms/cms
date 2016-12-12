@@ -9,6 +9,7 @@ namespace craft\web\assets;
 
 use Craft;
 use yii\web\AssetBundle;
+use yii\web\JqueryAsset;
 
 /**
  * Application asset bundle.
@@ -18,30 +19,23 @@ class AppAsset extends AssetBundle
     /**
      * @inheritdoc
      */
-    public $sourcePath = '@app/resources';
-
-    /**
-     * @inheritdoc
-     */
-    public $depends = [
-        \yii\web\JqueryAsset::class,
-    ];
-
-    /**
-     * @inheritdoc
-     */
-    public $css = [
-        'css/craft.css',
-        'css/charts.css',
-        'lib/selectize/selectize.css',
-    ];
-
-    /**
-     * @inheritdoc
-     */
     public function init()
     {
-        parent::init();
+        $this->sourcePath = '@app/resources';
+        $this->depends = [
+            D3Asset::class,
+            ElementResizeDetectorAsset::class,
+            GarnishAsset::class,
+            JqueryAsset::class,
+            JqueryTouchEventsAsset::class,
+            PicturefillAsset::class,
+            SelectizeAsset::class,
+            VelocityAsset::class,
+        ];
+        $this->css = [
+            'css/craft.css',
+            'css/charts.css',
+        ];
 
         $useCompressedJs = (bool)Craft::$app->getConfig()->get('useCompressedJs');
 
@@ -70,12 +64,9 @@ class AppAsset extends AssetBundle
 
         // Figure out which D3 i18n script to load
 
-        if(in_array($language, ['ca-ES', 'de-CH', 'de-DE', 'en-CA', 'en-GB', 'en-US', 'es-ES', 'fi-FI', 'fr-CA', 'fr-FR', 'he-IL', 'hu-HU', 'it-IT', 'ja-JP', 'ko-KR', 'nl-NL', 'pl-PL', 'pt-BR', 'ru-RU', 'sv-SE', 'zh-CN']))
-        {
+        if (in_array($language, ['ca-ES', 'de-CH', 'de-DE', 'en-CA', 'en-GB', 'en-US', 'es-ES', 'fi-FI', 'fr-CA', 'fr-FR', 'he-IL', 'hu-HU', 'it-IT', 'ja-JP', 'ko-KR', 'nl-NL', 'pl-PL', 'pt-BR', 'ru-RU', 'sv-SE', 'zh-CN'])) {
             $d3Language = $language;
-        }
-        else
-        {
+        } else {
             $languageId = Craft::$app->getLocale()->getLanguageID();
 
             $d3LanguageIds = [
@@ -98,12 +89,9 @@ class AppAsset extends AssetBundle
                 'zh' => 'zh-CN',
             ];
 
-            if(array_key_exists($languageId, $d3LanguageIds))
-            {
+            if (array_key_exists($languageId, $d3LanguageIds)) {
                 $d3Language = $d3LanguageIds[$languageId];
-            }
-            else
-            {
+            } else {
                 $d3Language = 'en-US';
             }
         }
@@ -111,16 +99,11 @@ class AppAsset extends AssetBundle
         $this->js[] = "lib/d3-i18n/{$d3Language}.js";
 
         $this->js = array_merge($this->js, [
-            'lib/velocity'.($useCompressedJs ? '.min' : '').'.js',
-            'lib/selectize/selectize'.($useCompressedJs ? '.min' : '').'.js',
             'lib/fileupload/jquery.ui.widget.js',
-            'lib/jquery.mobile-events'.($useCompressedJs ? '.min' : '').'.js',
             'lib/fileupload/jquery.fileupload.js',
-            'lib/picturefill'.($useCompressedJs ? '.min' : '').'.js',
-            'lib/element-resize-detector'.($useCompressedJs ? '.min' : '').'.js',
-            'lib/garnish'.($useCompressedJs ? '.min' : '').'.js',
-            'lib/d3/d3'.($useCompressedJs ? '.min' : '').'.js',
             'js/'.($useCompressedJs ? 'compressed/' : '').'Craft.js',
         ]);
+
+        parent::init();
     }
 }

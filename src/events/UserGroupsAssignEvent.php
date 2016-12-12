@@ -13,7 +13,7 @@ namespace craft\events;
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since  3.0
  */
-class UserGroupsAssignEvent extends Event
+class UserGroupsAssignEvent extends CancelableEvent
 {
     // Properties
     // =========================================================================

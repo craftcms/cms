@@ -9,7 +9,9 @@ namespace craft\models;
 
 use Craft;
 use craft\base\Model;
+use craft\behaviors\FieldLayoutBehavior;
 use craft\behaviors\FieldLayoutTrait;
+use craft\elements\Entry;
 use craft\helpers\Url;
 use craft\records\EntryType as EntryTypeRecord;
 use craft\validators\HandleValidator;
@@ -81,8 +83,8 @@ class EntryType extends Model
     {
         return [
             'fieldLayout' => [
-                'class' => \craft\behaviors\FieldLayoutBehavior::class,
-                'elementType' => \craft\elements\Entry::class
+                'class' => FieldLayoutBehavior::class,
+                'elementType' => Entry::class
             ],
         ];
     }

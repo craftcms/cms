@@ -9,12 +9,12 @@ namespace craft\controllers;
 
 use Craft;
 use craft\dates\DateTime;
+use craft\elements\Entry;
 use craft\elements\User;
 use craft\helpers\ArrayHelper;
 use craft\helpers\DateTimeHelper;
 use craft\helpers\Json;
 use craft\helpers\Url;
-use craft\elements\Entry;
 use craft\models\EntryDraft;
 use craft\models\EntryVersion;
 use craft\models\Section;
@@ -374,8 +374,7 @@ class EntriesController extends BaseEntriesController
 
         $this->_prepEditEntryVariables($variables);
 
-        $paneHtml = Craft::$app->getView()->renderTemplate('_includes/tabs',
-                $variables).
+        $paneHtml = Craft::$app->getView()->renderTemplate('_includes/tabs', $variables).
             Craft::$app->getView()->renderTemplate('entries/_fields', $variables);
 
         $view = Craft::$app->getView();
@@ -620,7 +619,7 @@ class EntriesController extends BaseEntriesController
      * @param integer $draftId
      * @param integer $versionId
      *
-     * @return Response
+     * @return string
      * @throws NotFoundHttpException if the requested category cannot be found
      */
     public function actionViewSharedEntry($entryId = null, $siteId = null, $draftId = null, $versionId = null)

@@ -7,10 +7,9 @@
 
 namespace craft\records;
 
-use yii\db\ActiveQueryInterface;
 use Craft;
 use craft\db\ActiveRecord;
-use craft\validators\DateTimeValidator;
+use yii\db\ActiveQueryInterface;
 
 /**
  * Class User record.

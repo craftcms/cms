@@ -9,8 +9,8 @@ namespace craft\tasks;
 
 use Craft;
 use craft\base\Field;
-use craft\base\Task;
 use craft\base\FieldInterface;
+use craft\base\Task;
 use craft\fields\Matrix;
 
 /**
@@ -163,7 +163,7 @@ class FindAndReplace extends Task
      * @param FieldInterface $field
      * @param string         $fieldColumnPrefix
      *
-     * @return boolean
+     * @return void
      */
     private function _checkField(FieldInterface $field, $fieldColumnPrefix)
     {

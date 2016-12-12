@@ -23,11 +23,11 @@ use craft\web\twig\tokenparsers\DeprecatedTagTokenParser;
 use craft\web\twig\tokenparsers\ExitTokenParser;
 use craft\web\twig\tokenparsers\HeaderTokenParser;
 use craft\web\twig\tokenparsers\HookTokenParser;
-use craft\web\twig\tokenparsers\RegisterResourceTokenParser;
 use craft\web\twig\tokenparsers\NamespaceTokenParser;
 use craft\web\twig\tokenparsers\NavTokenParser;
 use craft\web\twig\tokenparsers\PaginateTokenParser;
 use craft\web\twig\tokenparsers\RedirectTokenParser;
+use craft\web\twig\tokenparsers\RegisterResourceTokenParser;
 use craft\web\twig\tokenparsers\RequireAdminTokenParser;
 use craft\web\twig\tokenparsers\RequireEditionTokenParser;
 use craft\web\twig\tokenparsers\RequireLoginTokenParser;
@@ -96,7 +96,6 @@ class Extension extends \Twig_Extension implements \Twig_Extension_GlobalsInterf
             new ExitTokenParser(),
             new HeaderTokenParser(),
             new HookTokenParser(),
-            new RegisterResourceTokenParser('registerassetbundle', 'registerAssetBundle', false, true, false, false),
             new RegisterResourceTokenParser('registercss', 'registerCss', true, false, false, true),
             new RegisterResourceTokenParser('registerhirescss', 'registerHiResCss', true, false, false, true),
             new RegisterResourceTokenParser('registercssfile', 'registerCssFile', false, false, false, true),
@@ -192,7 +191,7 @@ class Extension extends \Twig_Extension implements \Twig_Extension_GlobalsInterf
     public function getTests()
     {
         return [
-            new \Twig_SimpleTest('missing', function ($obj) {
+            new \Twig_SimpleTest('missing', function($obj) {
                 return $obj instanceof MissingComponentInterface;
             }),
         ];
@@ -212,8 +211,11 @@ class Extension extends \Twig_Extension implements \Twig_Extension_GlobalsInterf
     public function translateFilter($message, $category = null, $params = null, $language = null)
     {
         // The front end site doesn't need to specify the category
+        /** @noinspection CallableParameterUseCaseInTypeContextInspection */
         if (is_array($category)) {
+            /** @noinspection CallableParameterUseCaseInTypeContextInspection */
             $language = $params;
+            /** @noinspection CallableParameterUseCaseInTypeContextInspection */
             $params = $category;
             $category = 'site';
         } else if ($category === null) {
@@ -320,9 +322,7 @@ class Extension extends \Twig_Extension implements \Twig_Extension_GlobalsInterf
      */
     public function jsonEncodeFilter($value, $options = null)
     {
-        if ($options === null && (in_array(Header::getMimeType(),
-                ['text/html', 'application/xhtml+xml']))
-        ) {
+        if ($options === null && (in_array(Header::getMimeType(), ['text/html', 'application/xhtml+xml']))) {
             $options = JSON_HEX_TAG | JSON_HEX_AMP | JSON_HEX_QUOT;
         }
 
@@ -632,8 +632,8 @@ class Extension extends \Twig_Extension implements \Twig_Extension_GlobalsInterf
      * Rounds the given value.
      *
      * @param integer|float $value
-     * @param integer $precision
-     * @param integer $mode
+     * @param integer       $precision
+     * @param integer       $mode
      *
      * @return integer|float
      * @deprecated in 3.0. Use Twig's |round filter instead.
@@ -641,6 +641,7 @@ class Extension extends \Twig_Extension implements \Twig_Extension_GlobalsInterf
     public function roundFunction($value, $precision = 0, $mode = PHP_ROUND_HALF_UP)
     {
         Craft::$app->getDeprecator()->log('round()', 'The round() function has been deprecated. Use Twig’s |round filter instead.');
+
         return round($value, $precision, $mode);
     }
 
@@ -686,6 +687,19 @@ class Extension extends \Twig_Extension implements \Twig_Extension_GlobalsInterf
         $request = Craft::$app->getRequest();
 
         $globals = [
+            // View
+            'view' => $this->view,
+
+            // Constants
+            'SORT_ASC' => SORT_ASC,
+            'SORT_DESC' => SORT_DESC,
+            'POS_HEAD' => View::POS_HEAD,
+            'POS_BEGIN' => View::POS_BEGIN,
+            'POS_END' => View::POS_END,
+            'POS_READY' => View::POS_READY,
+            'POS_LOAD' => View::POS_LOAD,
+
+            // User
             'user' => null,
             'currentUser' => null,
         ];

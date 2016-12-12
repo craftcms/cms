@@ -118,7 +118,7 @@ class QuickPost extends Widget
      */
     public function getIconPath()
     {
-        return Craft::$app->getPath()->getResourcesPath().'/images/widgets/quick-post.svg';
+        return Craft::$app->getPath()->getResourcesPath().DIRECTORY_SEPARATOR.'images'.DIRECTORY_SEPARATOR.'widgets'.DIRECTORY_SEPARATOR.'quick-post.svg';
     }
 
     /**

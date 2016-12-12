@@ -13,7 +13,6 @@ use craft\base\ElementInterface;
 use craft\dates\DateTime;
 use craft\db\Query;
 use craft\elements\db\ElementQuery;
-use craft\events\Event;
 use craft\helpers\ArrayHelper;
 use craft\helpers\DateTimeHelper;
 use craft\helpers\Db;
@@ -21,6 +20,7 @@ use craft\helpers\StringHelper;
 use craft\helpers\Url;
 use craft\tasks\DeleteStaleTemplateCaches;
 use yii\base\Component;
+use yii\base\Event;
 
 /**
  * Class TemplateCaches service.
@@ -234,9 +234,7 @@ class TemplateCaches extends Component
 
         if (!empty($this->_cacheElementIds)) {
             foreach (array_keys($this->_cacheElementIds) as $cacheKey) {
-                if (array_search($elementId,
-                        $this->_cacheElementIds[$cacheKey]) === false
-                ) {
+                if (array_search($elementId, $this->_cacheElementIds[$cacheKey]) === false) {
                     $this->_cacheElementIds[$cacheKey][] = $elementId;
                 }
             }
@@ -248,7 +246,7 @@ class TemplateCaches extends Component
      *
      * @param string      $key        The template cache key.
      * @param boolean     $global     Whether the cache should be stored globally.
-     * @param string|null $duration   How long the cache should be stored for.
+     * @param string|null $duration   How long the cache should be stored for. Should be a [relative time format](http://php.net/manual/en/datetime.formats.relative.php).
      * @param mixed|null  $expiration When the cache should expire.
      * @param string      $body       The contents of the cache.
      *
@@ -278,15 +276,15 @@ class TemplateCaches extends Component
         }
 
         if (!$expiration) {
-            $duration = Craft::$app->getConfig()->getCacheDuration();
+            $cacheDuration = Craft::$app->getConfig()->getCacheDuration();
 
-            if ($duration <= 0) {
-                $duration = 31536000; // 1 year
+            if ($cacheDuration <= 0) {
+                $cacheDuration = 31536000; // 1 year
             }
 
-            $duration += time();
+            $cacheDuration += time();
 
-            $expiration = new DateTime('@'.$duration);
+            $expiration = new DateTime('@'.$cacheDuration);
         }
 
         // Save it

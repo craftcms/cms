@@ -37,7 +37,7 @@ class TasksController extends Controller
     /**
      * Runs any pending tasks.
      *
-     * @return void
+     * @return string
      */
     public function actionRunPendingTasks()
     {

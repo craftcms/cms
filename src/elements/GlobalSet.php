@@ -105,8 +105,8 @@ class GlobalSet extends Element
     {
         $behaviors = parent::behaviors();
         $behaviors['fieldLayout'] = [
-            'class' => \craft\behaviors\FieldLayoutBehavior::class,
-            'elementType' => \craft\elements\GlobalSet::class
+            'class' => FieldLayoutBehavior::class,
+            'elementType' => GlobalSet::class
         ];
 
         return $behaviors;

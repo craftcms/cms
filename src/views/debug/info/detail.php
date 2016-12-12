@@ -1,6 +1,5 @@
 <?php
 
-use craft\dates\DateTime;
 use craft\helpers\App;
 
 /** @var $panel craft\debug\InfoPanel */
@@ -35,7 +34,7 @@ echo $this->render('../table', [
 // Plugins
 // -----------------------------------------------------------------------------
 
-array_walk($panel->data['plugins'], function (&$value) {
+array_walk($panel->data['plugins'], function(&$value) {
     $value = [
         $value['name'],
         $value['version'],
@@ -52,7 +51,7 @@ echo $this->render('../table', [
 // Server Requirements Report
 // -----------------------------------------------------------------------------
 
-array_walk($panel->data['requirements'], function (&$value) {
+array_walk($panel->data['requirements'], function(&$value) {
     if ($value['warning']) {
         $result = 'FAIL';
 
@@ -92,7 +91,7 @@ echo $this->render('../table', [
 foreach ($panel->data['phpInfo'] as $section => $values) {
     echo '<h4 id="'.str_replace(' ', '-', $section).'">'.$section.'</h4>';
 
-    array_walk($values, function (&$value, $key) {
+    array_walk($values, function(&$value, $key) {
         if (is_array($value)) {
             $value = implode(', ', $value);
         }

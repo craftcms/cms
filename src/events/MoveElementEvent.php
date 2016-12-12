@@ -8,6 +8,7 @@
 namespace craft\events;
 
 use craft\base\ElementInterface;
+use yii\base\Event;
 
 /**
  * Move element event class.

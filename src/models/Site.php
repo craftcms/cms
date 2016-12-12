@@ -116,7 +116,7 @@ class Site extends Model
      */
     public function overrideBaseUrl($baseUrl)
     {
-        $this->originalBaseUrl = (string) $this->baseUrl;
+        $this->originalBaseUrl = (string)$this->baseUrl;
         $this->baseUrl = rtrim($baseUrl, '/').'/';
     }
 }

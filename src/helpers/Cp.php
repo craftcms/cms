@@ -9,8 +9,8 @@ namespace craft\helpers;
 
 use Craft;
 use craft\enums\LicenseKeyStatus;
-use craft\events\Event;
 use craft\events\RegisterCpAlertsEvent;
+use yii\base\Event;
 
 /**
  * Class Cp
@@ -77,13 +77,10 @@ class Cp
             // Domain mismatch?
             if ($licenseKeyStatus == LicenseKeyStatus::Mismatched) {
                 $licensedDomain = Craft::$app->getEt()->getLicensedDomain();
-                $licenseKeyPath = Craft::$app->getPath()->getLicenseKeyPath();
-                $licenseKeyFile = Io::getFolderName($licenseKeyPath,
-                        false).'/'.Io::getFilename($licenseKeyPath);
 
                 $message = Craft::t('app', 'The license located at {file} belongs to {domain}.',
                     [
-                        'file' => $licenseKeyFile,
+                        'file' => 'config/license.key',
                         'domain' => '<a href="http://'.$licensedDomain.'" target="_blank">'.$licensedDomain.'</a>'
                     ]);
 

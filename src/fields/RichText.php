@@ -15,14 +15,13 @@ use craft\base\Volume;
 use craft\events\RegisterRichTextLinkOptionsEvent;
 use craft\fields\data\RichTextData;
 use craft\helpers\Db;
+use craft\helpers\FileHelper;
 use craft\helpers\Html;
 use craft\helpers\HtmlPurifier;
-use craft\helpers\Io;
 use craft\helpers\Json;
 use craft\helpers\StringHelper;
 use craft\models\Section;
 use craft\validators\HandleValidator;
-use yii\base\Exception;
 use yii\db\Schema;
 use yii\validators\StringValidator;
 
@@ -100,15 +99,16 @@ class RichText extends Field
     public function getSettingsHtml()
     {
         $configOptions = ['' => Craft::t('app', 'Default')];
-        $configPath = Craft::$app->getPath()->getConfigPath().'/redactor';
+        $configPath = Craft::$app->getPath()->getConfigPath().DIRECTORY_SEPARATOR.'redactor';
 
-        if (Io::folderExists($configPath)) {
-            $configFiles = Io::getFolderContents($configPath, false, '\.json$');
+        if (is_dir($configPath)) {
+            $configFiles = FileHelper::findFiles($configPath, [
+                'only' => ['*.json'],
+                'recursive' => false
+            ]);
 
-            if (is_array($configFiles)) {
-                foreach ($configFiles as $file) {
-                    $configOptions[Io::getFilename($file)] = Io::getFilename($file, false);
-                }
+            foreach ($configFiles as $file) {
+                $configOptions[pathinfo($file, PATHINFO_BASENAME)] = pathinfo($file, PATHINFO_FILENAME);
             }
         }
 
@@ -210,7 +210,7 @@ class RichText extends Field
         if (StringHelper::contains($value, '{')) {
             // Preserve the ref tags with hashes {type:id:url} => {type:id:url}#type:id
             $value = preg_replace_callback('/(href=|src=)([\'"])(\{(\w+\:\d+\:'.HandleValidator::$handlePattern.')\})(#[^\'"#]+)?\2/',
-                function ($matches) {
+                function($matches) {
                     return $matches[1].$matches[2].$matches[3].(!empty($matches[5]) ? $matches[5] : '').'#'.$matches[4].$matches[2];
                 }, $value);
 
@@ -321,7 +321,7 @@ class RichText extends Field
         // Find any element URLs and swap them with ref tags
         $value = preg_replace_callback(
             '/(href=|src=)([\'"])[^\'"#]+?(#[^\'"#]+)?(?:#|%23)(\w+):(\d+)(:'.HandleValidator::$handlePattern.')?\2/',
-            function ($matches) {
+            function($matches) {
                 $refTag = '{'.$matches[4].':'.$matches[5].(!empty($matches[6]) ? $matches[6] : ':url').'}';
                 $hash = (!empty($matches[3]) ? $matches[3] : '');
 
@@ -531,16 +531,19 @@ class RichText extends Field
      */
     private function _getConfigJson()
     {
-        if ($this->configFile) {
-            $configPath = Craft::$app->getPath()->getConfigPath().'/redactor/'.$this->configFile;
-            $json = Json::removeComments(Io::getFileContents($configPath));
+        if (!$this->configFile) {
+            return '{}';
         }
 
-        if (empty($json)) {
-            $json = '{}';
+        $configPath = Craft::$app->getPath()->getConfigPath().DIRECTORY_SEPARATOR.'redactor'.DIRECTORY_SEPARATOR.$this->configFile;
+
+        if (!is_file($configPath)) {
+            Craft::warning("Redactor config file doesn't exist: {$configPath}", __METHOD__);
+
+            return '{}';
         }
 
-        return $json;
+        return Json::removeComments(file_get_contents($configPath));
     }
 
     /**
@@ -648,15 +651,16 @@ class RichText extends Field
      */
     private function _includeRedactorLangFile($lang)
     {
-        $path = 'lib/redactor/lang/'.$lang.'.js';
+        $resourcePath = "lib/redactor/lang/{$lang}.js";
+        $fullPath = FileHelper::normalizePath(Craft::$app->getPath()->getResourcesPath().'/'.$resourcePath);
 
-        if (Io::fileExists(Craft::$app->getPath()->getResourcesPath().'/'.$path)) {
-            Craft::$app->getView()->registerJsResource($path);
-            static::$_redactorLang = $lang;
-
-            return true;
+        if (!is_file($fullPath)) {
+            return false;
         }
 
-        return false;
+        Craft::$app->getView()->registerJsResource($resourcePath);
+        static::$_redactorLang = $lang;
+
+        return true;
     }
 }

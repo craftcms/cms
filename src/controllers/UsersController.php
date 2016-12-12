@@ -9,17 +9,17 @@ namespace craft\controllers;
 
 use Craft;
 use craft\elements\Asset;
+use craft\elements\User;
 use craft\errors\SendEmailException;
 use craft\errors\UploadFailedException;
 use craft\events\LoginFailureEvent;
 use craft\events\RegisterUserActionsEvent;
 use craft\events\UserTokenEvent;
 use craft\helpers\Assets;
+use craft\helpers\FileHelper;
 use craft\helpers\Image;
-use craft\helpers\Io;
 use craft\helpers\Json;
 use craft\helpers\Url;
-use craft\elements\User;
 use craft\services\Users;
 use craft\web\Controller;
 use craft\web\UploadedFile;
@@ -255,6 +255,7 @@ class UsersController extends Controller
             if (!$loginName) {
                 // If they didn't even enter a username/email, just bail now.
                 $errors[] = Craft::t('app', 'Username or email is required.');
+
                 return $this->_handleSendPasswordResetError($errors);
             }
 
@@ -449,8 +450,8 @@ class UsersController extends Controller
     /**
      * Edit a user account.
      *
-     * @param integer|string $userId The user’s ID, if any, or a string that indicates the user to be edited ('current' or 'client').
-     * @param User $user The user being edited, if there were any validation errors.
+     * @param integer|string|null $userId The user’s ID, if any, or a string that indicates the user to be edited ('current' or 'client').
+     * @param User|null           $user   The user being edited, if there were any validation errors.
      *
      * @return string The rendering result
      * @throws NotFoundHttpException if the requested user cannot be found
@@ -1113,7 +1114,7 @@ class UsersController extends Controller
         try {
             // Make sure a file was uploaded
             if ($file) {
-                if ($file->hasError) {
+                if ($file->getHasError()) {
                     throw new UploadFailedException($file->error);
                 }
 
@@ -1124,17 +1125,19 @@ class UsersController extends Controller
                 $fileLocation = Assets::tempFilePath($file->getExtension());
                 move_uploaded_file($file->tempName, $fileLocation);
                 $users->saveUserPhoto($fileLocation, $user, $file->name);
-                Io::deleteFile($fileLocation);
+                FileHelper::removeFile($fileLocation);
 
                 $html = Craft::$app->getView()->renderTemplate('users/_photo', ['account' => $user]);
+
                 return $this->asJson(['html' => $html]);
             }
         } catch (Exception $exception) {
             if (isset($fileLocation)) {
-                Io::deleteFile($fileLocation);
+                FileHelper::removeFile($fileLocation);
             }
 
             Craft::error('There was an error uploading the photo: '.$exception->getMessage());
+
             return $this->asErrorJson(Craft::t('app',
                 'There was an error uploading your photo: {error}', ['error' => $exception->getMessage()]));
         }
@@ -1423,7 +1426,7 @@ class UsersController extends Controller
      * Handles a failed login attempt.
      *
      * @param string|null $authError
-     * @param User|null $user
+     * @param User|null   $user
      *
      * @return Response|null
      */
@@ -1559,10 +1562,10 @@ class UsersController extends Controller
     /**
      * Renders the Set Password template for a given user.
      *
-     * @param User $user
+     * @param User  $user
      * @param array $variables
      *
-     * @return Response
+     * @return string
      */
     private function _renderSetPasswordTemplate(User $user, $variables)
     {
@@ -1648,7 +1651,7 @@ class UsersController extends Controller
             $fileLocation = Assets::tempFilePath($photo->getExtension());
             move_uploaded_file($photo->tempName, $fileLocation);
             $users->saveUserPhoto($fileLocation, $user, $photo->name);
-            Io::deleteFile($fileLocation);
+            FileHelper::removeFile($fileLocation);
         }
     }
 
@@ -1871,7 +1874,7 @@ class UsersController extends Controller
         } else {
             // Send the data back to the template
             Craft::$app->getUrlManager()->setRouteParams([
-                'errors'    => $errors,
+                'errors' => $errors,
                 'loginName' => $loginName,
             ]);
         }

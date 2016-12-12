@@ -7,9 +7,8 @@
 
 namespace craft\records;
 
-use yii\db\ActiveQueryInterface;
 use craft\db\ActiveRecord;
-use craft\validators\SiteIdValidator;
+use yii\db\ActiveQueryInterface;
 
 /**
  * Class EntryVersion record.

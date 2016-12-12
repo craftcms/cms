@@ -36,8 +36,6 @@ class StringTemplate
      *
      * @param string $cacheKey
      * @param string $template
-     *
-     * @return StringTemplate
      */
     public function __construct($cacheKey = null, $template = null)
     {

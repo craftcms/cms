@@ -52,11 +52,11 @@ class StringHelper extends \yii\helpers\StringHelper
      *
      * @param string $str
      *
-     * @return array An array of string chars
+     * @return string[] An array of string chars
      */
     public static function charsAsArray($str)
     {
-        return (string)Stringy::create($str)->chars();
+        return Stringy::create($str)->chars();
     }
 
     /**
@@ -165,8 +165,8 @@ class StringHelper extends \yii\helpers\StringHelper
     /**
      * Ensures that a string ends with a given substring.
      *
-     * @param string &$str The string to amend
-     * @param string $substring The substring to look for
+     * @param string  &$str          The string to amend
+     * @param string  $substring     The substring to look for
      * @param boolean $caseSensitive Whether or not to enforce case-sensitivity.
      *
      * @return void
@@ -423,6 +423,7 @@ class StringHelper extends \yii\helpers\StringHelper
             $lines[$i] = (string)$line;
         }
 
+        /** @var string[] $lines */
         return $lines;
     }
 
@@ -754,8 +755,8 @@ class StringHelper extends \yii\helpers\StringHelper
     /**
      * Ensures that a string starts with a given substring.
      *
-     * @param string &$str The string to amend
-     * @param string $substring The substring to look for
+     * @param string  &$str          The string to amend
+     * @param string  $substring     The substring to look for
      * @param boolean $caseSensitive Whether or not to enforce case-sensitivity.
      *
      * @return void
@@ -960,7 +961,7 @@ class StringHelper extends \yii\helpers\StringHelper
      *
      * @param string $string
      *
-     * @return boolean|string
+     * @return string
      */
     public static function convertToUtf8($string)
     {
@@ -1024,7 +1025,7 @@ class StringHelper extends \yii\helpers\StringHelper
     {
         // Does this string have any 4+ byte Unicode chars?
         if (max(array_map('ord', str_split($string))) >= 240) {
-            $string = preg_replace_callback('/./u', function (array $match) {
+            $string = preg_replace_callback('/./u', function(array $match) {
                 if (strlen($match[0]) >= 4) {
                     // (Logic pulled from WP's wp_encode_emoji() function)
                     // UTF-32's hex encoding is the same as HTML's hex encoding.

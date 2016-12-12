@@ -9,8 +9,8 @@ namespace craft\web;
 
 use Craft;
 use craft\dates\DateInterval;
-use craft\helpers\DateTimeHelper;
 use craft\elements\User as UserElement;
+use craft\helpers\DateTimeHelper;
 use craft\helpers\Db;
 use craft\helpers\Url;
 use craft\validators\UserPasswordValidator;
@@ -449,7 +449,7 @@ class User extends \yii\web\User
     /**
      * Statically sets the identity in the event that this request should not be extending it.
      *
-     * @return boolean
+     * @return void
      */
     private function _setStaticIdentity()
     {

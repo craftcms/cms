@@ -12,7 +12,7 @@ use craft\enums\LicenseKeyStatus;
 use craft\errors\EtException;
 use craft\helpers\ArrayHelper;
 use craft\helpers\DateTimeHelper;
-use craft\helpers\Io;
+use craft\helpers\FileHelper;
 use craft\models\Et as EtModel;
 use craft\services\Config;
 use GuzzleHttp\Client;
@@ -56,11 +56,6 @@ class EtTransport
      */
     private $_userAgent;
 
-    /**
-     * @var string
-     */
-    private $_destinationFilename;
-
     // Public Methods
     // =========================================================================
 
@@ -68,8 +63,6 @@ class EtTransport
      * @param         $endpoint
      * @param integer $timeout
      * @param integer $connectTimeout
-     *
-     * @return EtTransport
      */
     public function __construct($endpoint, $timeout = 30, $connectTimeout = 30)
     {
@@ -85,22 +78,22 @@ class EtTransport
         $userEmail = $user ? $user->email : '';
 
         $this->_model = new EtModel([
-            'licenseKey'           => $this->_getLicenseKey(),
-            'pluginLicenseKeys'    => $this->_getPluginLicenseKeys(),
-            'requestUrl'           => Craft::$app->getRequest()->getAbsoluteUrl(),
-            'requestIp'            => Craft::$app->getRequest()->getUserIP(),
-            'requestTime'          => DateTimeHelper::currentTimeStamp(),
-            'requestPort'          => Craft::$app->getRequest()->getPort(),
-            'localVersion'         => Craft::$app->version,
-            'localEdition'         => Craft::$app->getEdition(),
-            'userEmail'            => $userEmail,
-            'showBeta'             => Craft::$app->getConfig()->get('showBetaUpdates'),
-            'serverInfo'           => [
-                'extensions'       => get_loaded_extensions(),
-                'phpVersion'       => PHP_VERSION,
-                'databaseType'     => Craft::$app->getConfig()->get('driver', Config::CATEGORY_DB),
-                'databaseVersion'  => Craft::$app->getDb()->pdo->getAttribute(PDO::ATTR_SERVER_VERSION),
-                'proc'             => function_exists('proc_open') ? 1 : 0,
+            'licenseKey' => $this->_getLicenseKey(),
+            'pluginLicenseKeys' => $this->_getPluginLicenseKeys(),
+            'requestUrl' => Craft::$app->getRequest()->getAbsoluteUrl(),
+            'requestIp' => Craft::$app->getRequest()->getUserIP(),
+            'requestTime' => DateTimeHelper::currentTimeStamp(),
+            'requestPort' => Craft::$app->getRequest()->getPort(),
+            'localVersion' => Craft::$app->version,
+            'localEdition' => Craft::$app->getEdition(),
+            'userEmail' => $userEmail,
+            'showBeta' => Craft::$app->getConfig()->get('showBetaUpdates'),
+            'serverInfo' => [
+                'extensions' => get_loaded_extensions(),
+                'phpVersion' => PHP_VERSION,
+                'databaseType' => Craft::$app->getConfig()->get('driver', Config::CATEGORY_DB),
+                'databaseVersion' => Craft::$app->getDb()->pdo->getAttribute(PDO::ATTR_SERVER_VERSION),
+                'proc' => function_exists('proc_open') ? 1 : 0,
             ],
         ]);
 
@@ -146,16 +139,6 @@ class EtTransport
     public function getAllowRedirects()
     {
         return $this->_allowRedirects;
-    }
-
-    /**
-     * @param $destinationFilename
-     *
-     * @return void
-     */
-    public function setDestinationFilename($destinationFilename)
-    {
-        $this->_destinationFilename = $destinationFilename;
     }
 
     /**
@@ -220,24 +203,34 @@ class EtTransport
                     // Potentially long-running request, so close session to prevent session blocking on subsequent requests.
                     Craft::$app->getSession()->close();
 
-                    $response = $client->request('post', $this->_endpoint, ['json' => ArrayHelper::toArray($this->_model)]);
+                    $response = $client->request('post', $this->_endpoint, [
+                        'json' => $this->_model->toArray([
+                            // No need to include responseErrors here
+                            'licenseKey',
+                            'licenseKeyStatus',
+                            'licensedEdition',
+                            'licensedDomain',
+                            'editionTestableDomain',
+                            'pluginLicenseKeys',
+                            'pluginLicenseKeyStatuses',
+                            'data',
+                            'requestUrl',
+                            'requestIp',
+                            'requestTime',
+                            'requestPort',
+                            'localVersion',
+                            'localEdition',
+                            'userEmail',
+                            'showBeta',
+                            'serverInfo',
+                            'handle',
+                        ])
+                    ]);
 
                     if ($response->getStatusCode() == 200) {
                         // Clear the connection failure cached item if it exists.
                         if ($cacheService->get('etConnectFailure')) {
                             $cacheService->delete('etConnectFailure');
-                        }
-
-                        if ($this->_destinationFilename) {
-                            $body = $response->getBody();
-
-                            // Write it out to the file
-                            Io::writeToFile($this->_destinationFilename, $body, true);
-
-                            // Close the stream.
-                            $body->close();
-
-                            return Io::getFilename($this->_destinationFilename);
                         }
 
                         $responseBody = (string)$response->getBody();
@@ -316,11 +309,16 @@ class EtTransport
         $keyFile = Craft::$app->getPath()->getLicenseKeyPath();
 
         // Check to see if the key exists and it's not a temp one.
-        if (Io::fileExists($keyFile) && Io::getFileContents($keyFile) !== 'temp') {
-            return trim(preg_replace('/[\r\n]+/', '', Io::getFileContents($keyFile)));
+        if (!is_file($keyFile)) {
+            return null;
         }
 
-        return null;
+        $contents = file_get_contents($keyFile);
+        if (empty($contents) || $contents == 'temp') {
+            return null;
+        }
+
+        return trim(preg_replace('/[\r\n]+/', '', $contents));
     }
 
     /**
@@ -347,26 +345,27 @@ class EtTransport
      */
     private function _setLicenseKey($key)
     {
-        $keyFile = Craft::$app->getPath()->getLicenseKeyPath();
-
         // Make sure the key file does not exist first, or if it exists it is a temp key file.
         // ET should never overwrite a valid license key.
-        if (!Io::fileExists($keyFile) || (Io::fileExists($keyFile) && Io::getFileContents($keyFile) == 'temp')) {
-            if ($this->_isConfigFolderWritable()) {
-                preg_match_all("/.{50}/", $key, $matches);
+        if ($this->_getLicenseKey() !== null) {
+            throw new Exception('Cannot overwrite an existing valid license.key file.');
+        }
 
-                $formattedKey = '';
-                foreach ($matches[0] as $segment) {
-                    $formattedKey .= $segment.PHP_EOL;
-                }
-
-                return Io::writeToFile($keyFile, $formattedKey);
-            }
-
+        // Make sure we can write to the file
+        if (!$this->_isConfigFolderWritable()) {
             throw new EtException('Craft needs to be able to write to your “craft/config” folder and it can’t.', 10001);
         }
 
-        throw new Exception('Cannot overwrite an existing valid license.key file.');
+        // Format the license key into lines of 50 chars
+        preg_match_all("/.{50}/", $key, $matches);
+        $formattedKey = '';
+        foreach ($matches[0] as $segment) {
+            $formattedKey .= $segment.PHP_EOL;
+        }
+
+        FileHelper::writeToFile(Craft::$app->getPath()->getLicenseKeyPath(), $formattedKey);
+
+        return true;
     }
 
     /**
@@ -374,6 +373,6 @@ class EtTransport
      */
     private function _isConfigFolderWritable()
     {
-        return Io::isWritable(Io::getFolderName(Craft::$app->getPath()->getLicenseKeyPath()));
+        return FileHelper::isWritable(Craft::$app->getPath()->getConfigPath());
     }
 }

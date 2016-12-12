@@ -8,6 +8,7 @@
 namespace craft\events;
 
 use craft\elements\Entry;
+use yii\base\Event;
 
 /**
  * Entry event class.

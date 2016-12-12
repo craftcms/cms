@@ -11,7 +11,7 @@ use Craft;
 use craft\base\Plugin;
 use craft\et\EtTransport;
 use craft\helpers\App;
-use craft\helpers\Io;
+use craft\helpers\FileHelper;
 use craft\helpers\Json;
 use craft\models\AppNewRelease;
 use craft\models\AppUpdate;
@@ -186,8 +186,8 @@ class Et extends Component
      */
     public function downloadUpdate($downloadPath, $md5, $handle)
     {
-        if (Io::folderExists($downloadPath)) {
-            $downloadPath .= '/'.$md5.'.zip';
+        if (is_dir($downloadPath)) {
+            $downloadPath .= DIRECTORY_SEPARATOR.$md5.'.zip';
         }
 
         $updateModel = Craft::$app->getUpdates()->getUpdates();
@@ -242,12 +242,12 @@ class Et extends Component
         $body->rewind();
 
         // Write it out to the file
-        Io::writeToFile($downloadPath, $body, true);
+        FileHelper::writeToFile($downloadPath, $body);
 
         // Close the stream.
         $body->close();
 
-        return Io::getFilename($downloadPath);
+        return pathinfo($downloadPath, PATHINFO_BASENAME);
     }
 
     /**
@@ -265,8 +265,8 @@ class Et extends Component
         }
 
         // Did they at least say why?
-        if (!empty($etResponse->errors)) {
-            switch ($etResponse->errors[0]) {
+        if (!empty($etResponse->responseErrors)) {
+            switch ($etResponse->responseErrors[0]) {
                 // Validation errors
                 case 'not_public_domain': {
                     // So...
@@ -340,8 +340,8 @@ class Et extends Component
             }
 
             // Did they at least say why?
-            if (!empty($etResponse->errors)) {
-                switch ($etResponse->errors[0]) {
+            if (!empty($etResponse->responseErrors)) {
+                switch ($etResponse->responseErrors[0]) {
                     // Validation errors
                     case 'edition_doesnt_exist':
                         $error = Craft::t('app', 'The selected edition doesn’t exist anymore.');
@@ -392,7 +392,7 @@ class Et extends Component
                         break;
 
                     default:
-                        $error = $etResponse->errors[0];
+                        $error = $etResponse->responseErrors[0];
                 }
             } else {
                 // Something terrible must have happened!
@@ -498,6 +498,12 @@ class Et extends Component
             $attributes = Json::decode($attributes);
 
             if (is_array($attributes)) {
+                // errors => responseErrors
+                if (isset($attributes['errors'])) {
+                    $attributes['responseErrors'] = $attributes['errors'];
+                    unset($attributes['errors']);
+                }
+
                 $etModel = new EtModel($attributes);
 
                 // Make sure it's valid.

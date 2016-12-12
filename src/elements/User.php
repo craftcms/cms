@@ -9,14 +9,12 @@ namespace craft\elements;
 
 use Craft;
 use craft\base\Element;
-use craft\base\ElementInterface;
 use craft\dates\DateInterval;
 use craft\db\Query;
 use craft\elements\actions\DeleteUsers;
 use craft\elements\actions\Edit;
 use craft\elements\actions\SuspendUsers;
 use craft\elements\actions\UnsuspendUsers;
-use craft\elements\db\ElementQueryInterface;
 use craft\elements\db\UserQuery;
 use craft\helpers\DateTimeHelper;
 use craft\helpers\Html;
@@ -807,19 +805,18 @@ class User extends Element implements IdentityInterface
     }
 
     /**
-      * Sets an array of User element objects on the user.
-      *
-      * @param array $groups An array of User element objects.
-      *
-      * @return void
-      */
-     public function setGroups($groups)
-     {
-        if (Craft::$app->getEdition() == Craft::Pro)
-        {
+     * Sets an array of User element objects on the user.
+     *
+     * @param array $groups An array of User element objects.
+     *
+     * @return void
+     */
+    public function setGroups($groups)
+    {
+        if (Craft::$app->getEdition() == Craft::Pro) {
             $this->_groups = $groups;
         }
-     }
+    }
 
     /**
      * Returns whether the user is in a specific group.

@@ -9,7 +9,9 @@ namespace craft\models;
 
 use Craft;
 use craft\base\Model;
+use craft\behaviors\FieldLayoutBehavior;
 use craft\behaviors\FieldLayoutTrait;
+use craft\elements\Category;
 use craft\records\CategoryGroup as CategoryGroupRecord;
 use craft\validators\HandleValidator;
 use craft\validators\UniqueValidator;
@@ -77,8 +79,8 @@ class CategoryGroup extends Model
     {
         return [
             'fieldLayout' => [
-                'class' => \craft\behaviors\FieldLayoutBehavior::class,
-                'elementType' => \craft\elements\Category::class
+                'class' => FieldLayoutBehavior::class,
+                'elementType' => Category::class
             ],
         ];
     }

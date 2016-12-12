@@ -2,7 +2,6 @@
 
 namespace craft\migrations;
 
-use Craft;
 use craft\db\Migration;
 
 /**
@@ -31,6 +30,7 @@ class m161021_182140_rename_get_help_widget extends Migration
     public function safeDown()
     {
         echo "m161021_182140_rename_get_help_widget cannot be reverted.\n";
+
         return false;
     }
 }

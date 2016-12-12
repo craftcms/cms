@@ -10,8 +10,8 @@ namespace craft\web;
 use Craft;
 use craft\base\ApplicationTrait;
 use craft\helpers\App;
+use craft\helpers\FileHelper;
 use craft\helpers\Header;
-use craft\helpers\Io;
 use craft\helpers\Json;
 use craft\helpers\StringHelper;
 use craft\helpers\Url;
@@ -24,11 +24,11 @@ use yii\web\Response;
 /**
  * Craft Web Application class
  *
- * @property Request                 $request          The request component
- * @property \craft\web\Response     $response         The response component
- * @property Session                 $session          The session component
- * @property UrlManager              $urlManager       The URL manager for this application
- * @property User                    $user             The user component
+ * @property Request             $request          The request component
+ * @property \craft\web\Response $response         The response component
+ * @property Session             $session          The session component
+ * @property UrlManager          $urlManager       The URL manager for this application
+ * @property User                $user             The user component
  *
  * @method Request                                getRequest()      Returns the request component.
  * @method \craft\web\Response                    getResponse()     Returns the response component.
@@ -164,7 +164,7 @@ class Application extends \yii\web\Application
             $this->getUpdates()->updateCraftVersionInfo();
 
             // Clear the template caches in case they've been compiled since this release was cut.
-            Io::clearFolder($this->getPath()->getCompiledTemplatesPath());
+            FileHelper::clearDirectory($this->getPath()->getCompiledTemplatesPath());
         }
 
         // If the system is offline, make sure they have permission to be here
@@ -359,6 +359,28 @@ class Application extends \yii\web\Application
         return null;
     }
 
+    /**
+     * @inheritdoc
+     *
+     * @todo Remove this whenever Yii is updated with support for asset-packagist.org.
+     */
+    public function setVendorPath($path)
+    {
+        parent::setVendorPath($path);
+
+        // Override the @bower and @npm aliases if using asset-packagist.org
+        $altBowerPath = $this->getVendorPath().DIRECTORY_SEPARATOR.'bower-asset';
+        $altNpmPath = $this->getVendorPath().DIRECTORY_SEPARATOR.'npm-asset';
+
+        if (is_dir($altBowerPath)) {
+            Craft::setAlias('@bower', $altBowerPath);
+        }
+
+        if (is_dir($altNpmPath)) {
+            Craft::setAlias('@npm', $altNpmPath);
+        }
+    }
+
     // Private Methods
     // =========================================================================
 
@@ -508,18 +530,15 @@ class Application extends \yii\web\Application
             $update = true;
         }
 
-        if (($data = $request->getBodyParam('data',
-                null)) !== null && isset($data['handle'])
-        ) {
+        if (($data = $request->getBodyParam('data', null)) !== null && isset($data['handle'])) {
             $update = true;
         }
 
         // Only run for CP requests and if we're not in the middle of an update.
         if ($request->getIsCpRequest() && !$update) {
-            $cachedAppPath = $this->getCache()->get('appPath');
-            $appPath = $this->getPath()->getAppPath();
+            $cachedBasePath = $this->getCache()->get('basePath');
 
-            if ($cachedAppPath === false || $cachedAppPath !== $appPath) {
+            if ($cachedBasePath === false || $cachedBasePath !== $this->getBasePath()) {
                 return $this->runAction('templates/requirements-check');
             }
         }
@@ -549,7 +568,9 @@ class Application extends \yii\web\Application
         ) {
             // If this is a request to actually manually update Craft, do it
             if ($request->getSegment(1) == 'manualupdate') {
-                return $this->runAction('templates/manual-update');
+                return $this->runAction('update/go', [
+                    'handle' => Craft::$app->getRequest()->getSegment(2)
+                ]);
             }
 
             if ($this->getUpdates()->getIsBreakpointUpdateNeeded()) {
@@ -566,7 +587,7 @@ class Application extends \yii\web\Application
                 }
 
                 // Clear the template caches in case they've been compiled since this release was cut.
-                Io::clearFolder($this->getPath()->getCompiledTemplatesPath());
+                FileHelper::clearDirectory($this->getPath()->getCompiledTemplatesPath());
 
                 // Show the manual update notification template
                 return $this->runAction('templates/manual-update-notification');

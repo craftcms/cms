@@ -9,6 +9,7 @@ namespace craft\events;
 
 use craft\elements\User;
 use craft\mail\Message;
+use yii\base\Event;
 
 /**
  * Send Email Error event raised when there was a problem sending an email.

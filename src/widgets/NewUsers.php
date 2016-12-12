@@ -61,12 +61,10 @@ class NewUsers extends Widget
      */
     public function getTitle()
     {
-        if ($groupId = $this->userGroupId)
-        {
+        if ($groupId = $this->userGroupId) {
             $userGroup = Craft::$app->getUserGroups()->getGroupById($groupId);
 
-            if ($userGroup)
-            {
+            if ($userGroup) {
                 return Craft::t('app', 'New Users').' – '.Craft::t('app', $userGroup->name);
             }
         }
@@ -79,8 +77,7 @@ class NewUsers extends Widget
      */
     public function getBodyHtml()
     {
-        if (Craft::$app->getEdition() != Craft::Pro)
-        {
+        if (Craft::$app->getEdition() != Craft::Pro) {
             return false;
         }
 
@@ -109,6 +106,6 @@ class NewUsers extends Widget
      */
     public function getIconPath()
     {
-        return Craft::$app->getPath()->getResourcesPath().'/images/widgets/new-users.svg';
+        return Craft::$app->getPath()->getResourcesPath().DIRECTORY_SEPARATOR.'images'.DIRECTORY_SEPARATOR.'widgets'.DIRECTORY_SEPARATOR.'new-users.svg';
     }
 }

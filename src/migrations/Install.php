@@ -9,9 +9,11 @@ namespace craft\migrations;
 
 use Craft;
 use craft\db\Connection;
-use craft\elements\User;
 use craft\db\Migration;
+use craft\elements\User;
 use craft\helpers\StringHelper;
+use craft\mail\Mailer;
+use craft\mail\transportadapters\Php;
 use craft\models\Info;
 use craft\models\Site;
 use craft\services\Config;
@@ -93,10 +95,10 @@ class Install extends Migration
         Craft::$app->getSystemSettings()->saveSettings('email', [
             'fromEmail' => $this->email,
             'fromName' => $this->site->name,
-            'transportType' => \craft\mail\transportadapters\Php::class
+            'transportType' => Php::class
         ]);
         Craft::$app->getSystemSettings()->saveSettings('mailer', [
-            'class' => \craft\mail\Mailer::class,
+            'class' => Mailer::class,
             'from' => [$this->email => $this->site->name],
             'transport' => [
                 'class' => 'Swift_MailTransport'
@@ -864,15 +866,14 @@ class Install extends Migration
         $this->createIndex($this->db->getIndexName('{{%widgets}}', 'userId', false), '{{%widgets}}', 'userId', false);
 
         // If we're using MySQL, add the FULLTEXT index on searchindex.keywords
-        switch ($this->driver)
-        {
+        switch ($this->driver) {
             case Connection::DRIVER_MYSQL:
                 $this->createTable('{{%searchindex}}', [
                     'elementId' => $this->integer()->notNull(),
                     'attribute' => $this->string(25)->notNull(),
                     'fieldId' => $this->integer()->notNull(),
                     'siteId' => $this->integer()->notNull(),
-                    'keywords' => $this-> text()->notNull(),
+                    'keywords' => $this->text()->notNull(),
                 ], ' ENGINE=MyISAM');
 
                 $this->addPrimaryKey($this->db->getIndexName('{{%searchindex}}', 'elementId,attribute,fieldId,siteId', true), '{{%searchindex}}', 'elementId,attribute,fieldId,siteId');

@@ -8,16 +8,15 @@
 namespace craft\services;
 
 use Craft;
+use craft\base\Plugin;
 use craft\cache\AppPathDependency;
-use craft\dates\DateTime;
 use craft\events\ResolveResourcePathEvent;
-use craft\helpers\Io;
+use craft\helpers\FileHelper;
 use craft\helpers\Path as PathHelper;
 use craft\helpers\StringHelper;
 use craft\helpers\Url;
 use Exception;
 use yii\base\Component;
-use yii\helpers\FileHelper;
 use yii\web\ForbiddenHttpException;
 use yii\web\NotFoundHttpException;
 use yii\web\ServerErrorHttpException;
@@ -59,11 +58,11 @@ class Resources extends Component
     {
         $path = Craft::$app->getCache()->get('resourcePath:'.$uri);
 
-        if ($path && Io::fileExists($path)) {
-            return $path;
+        if ($path === false || !file_exists($path)) {
+            return null;
         }
 
-        return null;
+        return $path;
     }
 
     /**
@@ -100,19 +99,19 @@ class Resources extends Component
         if (isset($segs[0])) {
             switch ($segs[0]) {
                 case 'defaultuserphoto': {
-                    return Craft::$app->getPath()->getResourcesPath().'/images/user.svg';
+                    return Craft::$app->getPath()->getResourcesPath().DIRECTORY_SEPARATOR.'images'.DIRECTORY_SEPARATOR.'user.svg';
                 }
 
                 case 'tempuploads': {
                     array_shift($segs);
 
-                    return Craft::$app->getPath()->getTempUploadsPath().'/'.implode('/', $segs);
+                    return Craft::$app->getPath()->getTempUploadsPath().DIRECTORY_SEPARATOR.implode(DIRECTORY_SEPARATOR, $segs);
                 }
 
                 case 'tempassets': {
                     array_shift($segs);
 
-                    return Craft::$app->getPath()->getAssetsTempVolumePath().'/'.implode('/', $segs);
+                    return Craft::$app->getPath()->getAssetsTempVolumePath().DIRECTORY_SEPARATOR.implode(DIRECTORY_SEPARATOR, $segs);
                 }
 
                 case 'resized': {
@@ -151,7 +150,7 @@ class Resources extends Component
                         return false;
                     }
 
-                    return Craft::$app->getPath()->getRebrandPath().'/'.$segs[1]."/".$segs[2];
+                    return Craft::$app->getPath()->getRebrandPath().DIRECTORY_SEPARATOR.$segs[1].DIRECTORY_SEPARATOR.$segs[2];
                 }
 
                 case 'transforms': {
@@ -184,18 +183,18 @@ class Resources extends Component
         }
 
         // Check app/resources folder first.
-        $appResourcePath = Craft::$app->getPath()->getResourcesPath().'/'.$uri;
+        $appResourcePath = Craft::$app->getPath()->getResourcesPath().DIRECTORY_SEPARATOR.$uri;
 
-        if (Io::fileExists($appResourcePath)) {
+        if (file_exists($appResourcePath)) {
             return $appResourcePath;
         }
 
         // See if the first segment is a plugin handle.
-        if (isset($segs[0])) {
-            $pluginResourcePath = Craft::$app->getPath()->getPluginsPath().'/'.$segs[0].'/'.'resources/'.implode('/',
-                    array_splice($segs, 1));
+        if (isset($segs[0]) && ($plugin = Craft::$app->getPlugins()->getPlugin($segs[0])) !== null) {
+            /** @var Plugin $plugin */
+            $pluginResourcePath = $plugin->getBasePath().DIRECTORY_SEPARATOR.'resources'.DIRECTORY_SEPARATOR.implode(DIRECTORY_SEPARATOR, array_splice($segs, 1));
 
-            if (Io::fileExists($pluginResourcePath)) {
+            if (is_file($pluginResourcePath)) {
                 return $pluginResourcePath;
             }
         }
@@ -207,7 +206,7 @@ class Resources extends Component
         ]);
         $this->trigger(self::EVENT_RESOLVE_RESOURCE_PATH, $event);
 
-        if ($event->path !== null && Io::fileExists($event->path)) {
+        if ($event->path !== null && is_file($event->path)) {
             return $event->path;
         }
 
@@ -248,7 +247,7 @@ class Resources extends Component
             $this->cacheResourcePath($uri, $path);
         }
 
-        if ($path === false || !Io::fileExists($path)) {
+        if ($path === false || !is_file($path)) {
             throw new NotFoundHttpException(Craft::t('app', 'Resource not found'));
         }
 
@@ -257,20 +256,17 @@ class Resources extends Component
         // browser serve it from cache.
         $timestamp = Craft::$app->getRequest()->getParam($this->dateParam, null);
 
-        if ($timestamp !== null && array_key_exists('HTTP_IF_MODIFIED_SINCE',
-                $_SERVER)
-        ) {
-            $requestDate = DateTime::createFromFormat('U', $timestamp);
-            $lastModifiedFileDate = Io::getLastTimeModified($path);
+        if ($timestamp !== null && array_key_exists('HTTP_IF_MODIFIED_SINCE', $_SERVER)) {
+            $lastModifiedFileDate = filemtime($path);
 
-            if ($lastModifiedFileDate && $lastModifiedFileDate <= $requestDate) {
+            if ($lastModifiedFileDate && $lastModifiedFileDate <= $timestamp) {
                 // Let the browser serve it from cache.
                 Craft::$app->getResponse()->setStatusCode(304);
                 Craft::$app->end();
             }
         }
 
-        $filename = Io::getFilename($path);
+        $filename = pathinfo($path, PATHINFO_BASENAME);
         $mimeType = FileHelper::getMimeTypeByExtension($path);
         $response = Craft::$app->getResponse();
 
@@ -287,9 +283,8 @@ class Resources extends Component
         // Is this a CSS file?
         if ($mimeType == 'text/css') {
             // Normalize the URLs
-            $contents = Io::getFileContents($path);
-            $contents = preg_replace_callback('/(url\(([\'"]?))(.+?)(\2\))/',
-                [&$this, '_normalizeCssUrl'], $contents);
+            $contents = file_get_contents($path);
+            $contents = preg_replace_callback('/(url\(([\'"]?))(.+?)(\2\))/', [&$this, '_normalizeCssUrl'], $contents);
 
             $response->sendContentAsFile($contents, $filename, $options);
         } else {
@@ -316,7 +311,7 @@ class Resources extends Component
         }
 
         // Clean up any relative folders at the beginning of the CSS URL
-        $requestFolder = Io::getFolderName(Craft::$app->getRequest()->getPathInfo());
+        $requestFolder = pathinfo(Craft::$app->getRequest()->getPathInfo(), PATHINFO_DIRNAME);
         $requestFolderParts = array_filter(explode('/', $requestFolder));
         $cssUrlParts = array_filter(explode('/', $match[3]));
 
@@ -355,7 +350,7 @@ class Resources extends Component
     private function _getIconPath($ext)
     {
         $pathService = Craft::$app->getPath();
-        $sourceIconPath = $pathService->getResourcesPath().'/images/file.svg';
+        $sourceIconPath = $pathService->getResourcesPath().DIRECTORY_SEPARATOR.'images'.DIRECTORY_SEPARATOR.'file.svg';
         $extLength = mb_strlen($ext);
 
         if ($extLength > 5) {
@@ -364,21 +359,21 @@ class Resources extends Component
         }
 
         // See if the icon already exists
-        $iconPath = $pathService->getAssetsIconsPath().'/'.StringHelper::toLowerCase($ext).'.svg';
+        $iconPath = $pathService->getAssetsIconsPath().DIRECTORY_SEPARATOR.StringHelper::toLowerCase($ext).'.svg';
 
-        if (Io::fileExists($iconPath)) {
+        if (file_exists($iconPath)) {
             return $iconPath;
         }
 
         // Create a new one
-        $svgContents = Io::getFileContents($sourceIconPath);
+        $svgContents = file_get_contents($sourceIconPath);
         $textSize = ($extLength <= 3 ? '26' : ($extLength == 4 ? '22' : '18'));
         $textNode = '<text x="50" y="73" text-anchor="middle" font-family="sans-serif" fill="#8F98A3" '.
             'font-size="'.$textSize.'">'.
             StringHelper::toUpperCase($ext).
             '</text>';
         $svgContents = str_replace('<!-- EXT -->', $textNode, $svgContents);
-        Io::writeToFile($iconPath, $svgContents);
+        FileHelper::writeToFile($iconPath, $svgContents);
 
         return $iconPath;
     }
@@ -391,6 +386,6 @@ class Resources extends Component
     private function _getBrokenImageThumbPath()
     {
         //http_response_code(404);
-        return Craft::$app->getPath()->getResourcesPath().'/images/brokenimage.svg';
+        return Craft::$app->getPath()->getResourcesPath().DIRECTORY_SEPARATOR.'images'.DIRECTORY_SEPARATOR.'brokenimage.svg';
     }
 }

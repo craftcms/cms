@@ -10,7 +10,6 @@ use craft\errors\VolumeObjectNotFoundException;
 use craft\helpers\Assets as AssetsHelper;
 use craft\helpers\Db;
 use craft\helpers\Image;
-use craft\helpers\Io;
 use craft\helpers\StringHelper;
 use craft\models\AssetIndexData;
 use craft\records\AssetIndexData as AssetIndexDataRecord;
@@ -59,7 +58,7 @@ class AssetIndexer extends Component
 
             $fileList = array_filter(
                 $fileList,
-                function ($value) {
+                function($value) {
                     $path = $value['path'];
                     $segments = explode('/', $path);
 
@@ -76,7 +75,7 @@ class AssetIndexer extends Component
             // Sort by number of slashes to ensure that parent folders are listed earlier than their children
             usort(
                 $fileList,
-                function ($a, $b) {
+                function($a, $b) {
                     $a = substr_count($a['path'], '/');
                     $b = substr_count($b['path'], '/');
 
@@ -187,10 +186,7 @@ class AssetIndexer extends Component
             if ($asset->kind == 'image') {
                 $targetPath = $asset->getImageTransformSourcePath();
 
-                if ($asset->dateModified != $timeModified || !Io::fileExists(
-                        $targetPath
-                    )
-                ) {
+                if ($asset->dateModified != $timeModified || !is_file($targetPath)) {
                     if (!$volume::isLocal()) {
                         $volume->saveFileLocally($uriPath, $targetPath);
 
@@ -308,7 +304,7 @@ class AssetIndexer extends Component
                 ['sessionId' => $sessionId],
                 ['not', ['recordId' => null]]
             ])
-           ->column();
+            ->column();
 
         // Flip for faster lookup
         $processedFiles = array_flip($processedFiles);
@@ -365,9 +361,9 @@ class AssetIndexer extends Component
      */
     private function _indexFile($volume, $uriPath)
     {
-        $extension = Io::getExtension($uriPath);
+        $extension = pathinfo($uriPath, PATHINFO_EXTENSION);
 
-        if (Io::isExtensionAllowed($extension)) {
+        if (Craft::$app->getConfig()->isExtensionAllowed($extension)) {
             $parts = explode('/', $uriPath);
             $filename = array_pop($parts);
 
@@ -403,7 +399,7 @@ class AssetIndexer extends Component
                 $assetModel->volumeId = $volume->id;
                 $assetModel->folderId = $folderId;
                 $assetModel->filename = $filename;
-                $assetModel->kind = Io::getFileKind($extension);
+                $assetModel->kind = AssetsHelper::getFileKindByExtension($uriPath);
                 $assetModel->indexInProgress = true;
                 $assets->saveAsset($assetModel);
             }

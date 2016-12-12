@@ -103,9 +103,9 @@ class FieldsController extends Controller
     /**
      * Edits a field.
      *
-     * @param integer        $fieldId The field’s ID, if editing an existing field
-     * @param FieldInterface $field   The field being edited, if there were any validation errors
-     * @param integer        $groupId The default group ID that the field should be saved in
+     * @param integer             $fieldId The field’s ID, if editing an existing field
+     * @param FieldInterface|null $field   The field being edited, if there were any validation errors
+     * @param integer             $groupId The default group ID that the field should be saved in
      *
      * @return string The rendering result
      * @throws NotFoundHttpException if the requested field/field group cannot be found
@@ -130,6 +130,7 @@ class FieldsController extends Controller
 
             if ($field instanceof MissingField) {
                 $expectedType = $field->expectedType;
+                /** @noinspection CallableParameterUseCaseInTypeContextInspection */
                 $field = $field->createFallback(PlainText::class);
                 $field->addError('type', Craft::t('app', 'The field type “{type}” could not be found.', [
                     'type' => $expectedType

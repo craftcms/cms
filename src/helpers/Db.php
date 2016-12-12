@@ -9,10 +9,8 @@ namespace craft\helpers;
 
 use Craft;
 use craft\base\Serializable;
-use craft\dates\DateTime;
 use craft\db\Connection;
 use craft\enums\ColumnType;
-use craft\services\Config;
 use yii\base\Exception;
 use yii\db\Schema;
 
@@ -107,7 +105,7 @@ class Db
     /**
      * Integer column sizes.
      *
-     * @var array
+     * @var integer[]
      */
     private static $_intColumnSizes = [
         ColumnType::TinyInt => 128,
@@ -120,18 +118,22 @@ class Db
     /**
      * Returns a number column type, taking the min, max, and number of decimal points into account.
      *
-     * @param integer $min
-     * @param integer $max
-     * @param integer $decimals
+     * @param integer|null $min
+     * @param integer|null $max
+     * @param integer|null $decimals
      *
-     * @return array
+     * @return string
      */
     public static function getNumericalColumnType($min = null, $max = null, $decimals = null)
     {
         // Normalize the arguments
-        $min = is_numeric($min) ? $min : -static::$_intColumnSizes[ColumnType::Int];
-        $max = is_numeric($max) ? $max : static::$_intColumnSizes[ColumnType::Int] - 1;
-        $decimals = is_numeric($decimals) && $decimals > 0 ? intval($decimals) : 0;
+        if (!is_numeric($min)) {
+            $min = -static::$_intColumnSizes[ColumnType::Int];
+        }
+        if (!is_numeric($max)) {
+            $max = static::$_intColumnSizes[ColumnType::Int] - 1;
+        }
+        $decimals = is_numeric($decimals) && $decimals > 0 ? (int)$decimals : 0;
 
         // Unsigned?
         $unsigned = ($min >= 0);
@@ -456,9 +458,7 @@ class Db
             // Does the value start with this operator?
             $operatorLength = strlen($testOperator);
 
-            if (strncmp(StringHelper::toLowerCase($value), $testOperator,
-                    $operatorLength) == 0
-            ) {
+            if (strncmp(StringHelper::toLowerCase($value), $testOperator, $operatorLength) == 0) {
                 $value = mb_substr($value, $operatorLength);
 
                 if ($testOperator == 'not ') {

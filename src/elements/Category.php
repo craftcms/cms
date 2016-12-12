@@ -276,12 +276,14 @@ class Category extends Element
             return null;
         }
 
-        return ['templates/render', [
-            'template' => $categoryGroupSiteSettings[$siteId]->template,
-            'variables' => [
-                'category' => $this,
+        return [
+            'templates/render', [
+                'template' => $categoryGroupSiteSettings[$siteId]->template,
+                'variables' => [
+                    'category' => $this,
+                ]
             ]
-        ]];
+        ];
     }
 
     /**

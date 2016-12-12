@@ -105,9 +105,9 @@ class Et extends Model
     public $showBeta = false;
 
     /**
-     * @var array Errors
+     * @var array Response errors
      */
-    public $errors;
+    public $responseErrors;
 
     /**
      * @var array Server info

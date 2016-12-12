@@ -9,8 +9,10 @@ namespace craft\tools;
 
 use Craft;
 use craft\base\Tool;
-use craft\helpers\Io;
-use craft\io\Zip;
+use craft\helpers\FileHelper;
+use yii\base\ErrorException;
+use yii\base\Exception;
+use ZipArchive;
 
 /**
  * DbBackup represents a Backup Database tool.
@@ -57,26 +59,46 @@ class DbBackup extends Tool
 
     /**
      * @inheritdoc
+     * @throws Exception
      */
     public function performAction($params = [])
     {
-        if (($file = Craft::$app->getDb()->backup()) !== false) {
+        try {
+            $backupPath = Craft::$app->getDb()->backup();
+        } catch (\Exception $e) {
+            throw new Exception('Could not create backup: '.$e->getMessage());
+        }
 
-            if (Io::fileExists($file) && isset($params['downloadBackup']) && (bool)$params['downloadBackup']) {
-                $destZip = Craft::$app->getPath()->getTempPath().'/'.Io::getFilename($file, false).'.zip';
+        if (!is_file($backupPath)) {
+            throw new Exception("Could not create backup: the backup file doesn't exist.");
+        }
 
-                if (Io::fileExists($destZip)) {
-                    Io::deleteFile($destZip, true);
-                }
+        if (empty($params['downloadBackup'])) {
+            return null;
+        }
 
-                Io::createFile($destZip);
+        $zipPath = Craft::$app->getPath()->getTempPath().DIRECTORY_SEPARATOR.pathinfo($backupPath, PATHINFO_FILENAME).'.zip';
 
-                if (Zip::add($destZip, $file, Craft::$app->getPath()->getDbBackupPath())) {
-                    return ['backupFile' => Io::getFilename($destZip, false)];
-                }
+        if (is_file($zipPath)) {
+            try {
+                FileHelper::removeFile($zipPath);
+            } catch (ErrorException $e) {
+                Craft::warning("Unable to delete the file \"{$zipPath}\": ".$e->getMessage());
             }
         }
 
-        return null;
+        $zip = new ZipArchive();
+
+        if ($zip->open($zipPath, ZipArchive::CREATE) !== true) {
+            throw new Exception('Cannot create zip at '.$zipPath);
+        }
+
+        $filename = pathinfo($backupPath, PATHINFO_BASENAME);
+        $zip->addFile($backupPath, $filename);
+        $zip->close();
+
+        return [
+            'backupFile' => pathinfo($filename, PATHINFO_FILENAME)
+        ];
     }
 }

@@ -8,6 +8,7 @@
 namespace craft\events;
 
 use craft\models\AssetTransform;
+use yii\base\Event;
 
 /**
  * Asset transform event class.

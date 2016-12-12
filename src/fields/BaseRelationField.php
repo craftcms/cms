@@ -9,9 +9,9 @@ namespace craft\fields;
 
 use Craft;
 use craft\base\EagerLoadingFieldInterface;
+use craft\base\Element;
 use craft\base\ElementInterface;
 use craft\base\Field;
-use craft\base\Element;
 use craft\base\PreviewableFieldInterface;
 use craft\db\Query;
 use craft\elements\db\ElementQuery;
@@ -223,7 +223,7 @@ abstract class BaseRelationField extends Field implements PreviewableFieldInterf
 
                 // Does the source specify any criteria attributes?
                 if (isset($source['criteria'])) {
-                    $query->configure($source['criteria']);
+                    Craft::configure($query, $source['criteria']);
                 }
             }
         } else {

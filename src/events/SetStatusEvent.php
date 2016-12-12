@@ -8,6 +8,7 @@
 namespace craft\events;
 
 use craft\elements\db\ElementQueryInterface;
+use yii\base\Event;
 
 /**
  * Set Status element action event class.

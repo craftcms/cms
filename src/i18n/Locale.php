@@ -186,27 +186,27 @@ class Locale extends Object
     const SYMBOL_MONETARY_GROUPING_SEPARATOR = 17;
 
     /**
-     * @var int The abbreviated date/time format.
+     * @var string The abbreviated date/time format.
      */
     const LENGTH_ABBREVIATED = 'abbreviated';
 
     /**
-     * @var int The short date/time format.
+     * @var string The short date/time format.
      */
     const LENGTH_SHORT = 'short';
 
     /**
-     * @var int The medium date/time format.
+     * @var string The medium date/time format.
      */
     const LENGTH_MEDIUM = 'medium';
 
     /**
-     * @var int The long date/time format.
+     * @var string The long date/time format.
      */
     const LENGTH_LONG = 'long';
 
     /**
-     * @var int The full date/time format.
+     * @var string The full date/time format.
      */
     const LENGTH_FULL = 'full';
 
@@ -539,8 +539,7 @@ class Locale extends Object
                     break;  // September
             }
 
-            return $formatter->format(new DateTime('1970-'.sprintf("%02d",
-                    $month).'-01'));
+            return $formatter->format(new DateTime('1970-'.sprintf("%02d", $month).'-01'));
         } else {
             $which = $standAlone ? 'standAloneMonthNames' : 'monthNames';
 
@@ -950,15 +949,19 @@ class Locale extends Object
             // Convert length to IntlDateFormatter constants
             switch ($length) {
                 case self::LENGTH_FULL:
+                    /** @noinspection CallableParameterUseCaseInTypeContextInspection */
                     $length = IntlDateFormatter::FULL;
                     break;
                 case self::LENGTH_LONG:
+                    /** @noinspection CallableParameterUseCaseInTypeContextInspection */
                     $length = IntlDateFormatter::LONG;
                     break;
                 case self::LENGTH_MEDIUM:
+                    /** @noinspection CallableParameterUseCaseInTypeContextInspection */
                     $length = IntlDateFormatter::MEDIUM;
                     break;
                 case self::LENGTH_SHORT:
+                    /** @noinspection CallableParameterUseCaseInTypeContextInspection */
                     $length = IntlDateFormatter::SHORT;
                     break;
                 default:

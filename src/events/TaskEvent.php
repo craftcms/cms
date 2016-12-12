@@ -8,6 +8,7 @@
 namespace craft\events;
 
 use craft\base\TaskInterface;
+use yii\base\Event;
 
 /**
  * TaskEvent class.

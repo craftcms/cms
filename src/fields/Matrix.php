@@ -17,9 +17,9 @@ use craft\db\Query;
 use craft\elements\db\ElementQuery;
 use craft\elements\db\ElementQueryInterface;
 use craft\elements\db\MatrixBlockQuery;
+use craft\elements\MatrixBlock;
 use craft\helpers\Json;
 use craft\helpers\StringHelper;
-use craft\elements\MatrixBlock;
 use craft\models\MatrixBlockType;
 use craft\validators\ArrayValidator;
 
@@ -705,9 +705,7 @@ class Matrix extends Field implements EagerLoadingFieldInterface
             $blockType = $blockTypes[$blockData['type']];
 
             // Is this new? (Or has it been deleted?)
-            if (strncmp($blockId, 'new',
-                    3) === 0 || !isset($oldBlocksById[$blockId])
-            ) {
+            if (strncmp($blockId, 'new', 3) === 0 || !isset($oldBlocksById[$blockId])) {
                 $block = new MatrixBlock();
                 $block->fieldId = $this->id;
                 $block->typeId = $blockType->id;

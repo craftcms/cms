@@ -9,6 +9,7 @@ namespace craft\controllers;
 
 use Craft;
 use craft\base\Volume;
+use craft\base\VolumeInterface;
 use craft\elements\Asset;
 use craft\helpers\Json;
 use craft\helpers\Url;
@@ -16,6 +17,7 @@ use craft\volumes\Local;
 use craft\volumes\MissingVolume;
 use craft\web\Controller;
 use Exception;
+use yii\web\ForbiddenHttpException;
 use yii\web\NotFoundHttpException;
 use yii\web\Response;
 
@@ -57,13 +59,14 @@ class VolumesController extends Controller
     /**
      * Edit an asset volume.
      *
-     * @param integer $volumeId The volume’s ID, if editing an existing volume.
-     * @param Volume  $volume   The volume being edited, if there were any validation errors.
+     * @param integer|null         $volumeId The volume’s ID, if editing an existing volume.
+     * @param VolumeInterface|null $volume   The volume being edited, if there were any validation errors.
      *
      * @return string The rendering result
+     * @throws ForbiddenHttpException if the user is not an admin
      * @throws NotFoundHttpException if the requested volume cannot be found
      */
-    public function actionEditVolume($volumeId = null, Volume $volume = null)
+    public function actionEditVolume($volumeId = null, VolumeInterface $volume = null)
     {
         $this->requireAdmin();
 
@@ -80,6 +83,7 @@ class VolumesController extends Controller
 
                 if ($volume instanceof MissingVolume) {
                     $expectedType = $volume->expectedType;
+                    /** @noinspection CallableParameterUseCaseInTypeContextInspection */
                     $volume = $volume->createFallback(Local::class);
                     $volume->addError('type', Craft::t('app', 'The volume type “{type}” could not be found.', [
                         'type' => $expectedType

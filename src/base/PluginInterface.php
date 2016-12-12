@@ -83,5 +83,5 @@ interface PluginInterface
      * @return mixed|null The component definition to be registered.
      * It can be any of the formats supported by [[\yii\di\ServiceLocator::set()]].
      */
-    public function getVariableDefinition();
+    public function defineTemplateComponent();
 }
