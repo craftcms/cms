@@ -18,17 +18,16 @@ class TimepickerAsset extends AssetBundle
     /**
      * @inheritdoc
      */
-    public $sourcePath = '@bower/timepicker';
-
-    /**
-     * @inheritdoc
-     */
     public function init()
     {
+        $this->sourcePath = '@bower/timepicker';
+
         if (Craft::$app->getConfig()->get('useCompressedJs')) {
             $this->js[] = 'jquery.timepicker.min.js';
         } else {
             $this->js[] = 'jquery.timepicker.js';
         }
+
+        parent::init();
     }
 }

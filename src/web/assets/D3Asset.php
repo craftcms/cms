@@ -18,17 +18,16 @@ class D3Asset extends AssetBundle
     /**
      * @inheritdoc
      */
-    public $sourcePath = '@bower/d3';
-
-    /**
-     * @inheritdoc
-     */
     public function init()
     {
+        $this->sourcePath = '@bower/d3';
+
         if (Craft::$app->getConfig()->get('useCompressedJs')) {
             $this->js[] = 'd3.min.js';
         } else {
             $this->js[] = 'd3.js';
         }
+
+        parent::init();
     }
 }

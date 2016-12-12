@@ -100,21 +100,6 @@ class Assets extends BaseRelationField
     public $allowedKinds;
 
     /**
-     * @inheritdoc
-     */
-    protected $allowLargeThumbsView = true;
-
-    /**
-     * @inheritdoc
-     */
-    protected $inputJsClass = 'Craft.AssetSelectInput';
-
-    /**
-     * @inheritdoc
-     */
-    protected $inputTemplate = '_components/fieldtypes/Assets/input';
-
-    /**
      * Uploaded files that failed validation.
      *
      * @var UploadedFile[]
@@ -123,6 +108,17 @@ class Assets extends BaseRelationField
 
     // Public Methods
     // =========================================================================
+
+    /**
+     * @inheritdoc
+     */
+    public function init()
+    {
+        parent::init();
+        $this->allowLargeThumbsView = true;
+        $this->inputTemplate = '_components/fieldtypes/Assets/input';
+        $this->inputJsClass = 'Craft.AssetSelectInput';
+    }
 
     /**
      * @inheritdoc

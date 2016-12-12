@@ -18,17 +18,16 @@ class JqueryTouchEventsAsset extends AssetBundle
     /**
      * @inheritdoc
      */
-    public $sourcePath = '@bower/jquery-touch-events/src';
-
-    /**
-     * @inheritdoc
-     */
     public function init()
     {
+        $this->sourcePath = '@bower/jquery-touch-events/src';
+
         if (Craft::$app->getConfig()->get('useCompressedJs')) {
             $this->js[] = 'jquery.mobile-events.min.js';
         } else {
             $this->js[] = 'jquery.mobile-events.js';
         }
+
+        parent::init();
     }
 }

@@ -35,16 +35,6 @@ class UserQuery extends ElementQuery
     // -------------------------------------------------------------------------
 
     /**
-     * @inheritdoc
-     */
-    public $orderBy = 'users.username';
-
-    /**
-     * @inheritdoc
-     */
-    public $status = User::STATUS_ACTIVE;
-
-    /**
      * @var boolean Whether to only return users that are admins.
      */
     public $admin;
@@ -96,6 +86,24 @@ class UserQuery extends ElementQuery
 
     // Public Methods
     // =========================================================================
+
+    /**
+     * @inheritdoc
+     */
+    public function __construct($elementType, array $config = [])
+    {
+        // Default orderBy
+        if (!isset($config['orderBy'])) {
+            $config['orderBy'] = 'users.username';
+        }
+
+        // Default status
+        if (!isset($config['status'])) {
+            $config['status'] = User::STATUS_ACTIVE;
+        }
+
+        parent::__construct($elementType, $config);
+    }
 
     /**
      * @inheritdoc

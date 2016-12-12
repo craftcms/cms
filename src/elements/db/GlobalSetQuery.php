@@ -31,11 +31,6 @@ class GlobalSetQuery extends ElementQuery
     // -------------------------------------------------------------------------
 
     /**
-     * @inheritdoc
-     */
-    public $orderBy = 'name';
-
-    /**
      * @var boolean Whether to only return global sets that the user has permission to edit.
      */
     public $editable;
@@ -47,6 +42,19 @@ class GlobalSetQuery extends ElementQuery
 
     // Public Methods
     // =========================================================================
+
+    /**
+     * @inheritdoc
+     */
+    public function __construct($elementType, array $config = [])
+    {
+        // Default orderBy
+        if (!isset($config['orderBy'])) {
+            $config['orderBy'] = 'name';
+        }
+
+        parent::__construct($elementType, $config);
+    }
 
     /**
      * Sets the [[editable]] property.

@@ -52,26 +52,22 @@ class Tags extends BaseRelationField
     // =========================================================================
 
     /**
-     * Whether the field settings should allow multiple sources to be selected.
-     *
-     * @var boolean $allowMultipleSources
-     */
-    protected $allowMultipleSources = false;
-
-    /**
-     * Whether to allow the Limit setting.
-     *
-     * @var boolean $allowLimit
-     */
-    protected $allowLimit = false;
-
-    /**
      * @var
      */
     private $_tagGroupId;
 
     // Public Methods
     // =========================================================================
+
+    /**
+     * @inheritdoc
+     */
+    public function init()
+    {
+        parent::init();
+        $this->allowMultipleSources = false;
+        $this->allowLimit = false;
+    }
 
     /**
      * @inheritdoc

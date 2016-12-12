@@ -43,11 +43,6 @@ class EntryQuery extends ElementQuery
     // -------------------------------------------------------------------------
 
     /**
-     * @inheritdoc
-     */
-    public $status = 'live';
-
-    /**
      * @var boolean Whether to only return entries that the user has permission to edit.
      */
     public $editable;
@@ -84,6 +79,19 @@ class EntryQuery extends ElementQuery
 
     // Public Methods
     // =========================================================================
+
+    /**
+     * @inheritdoc
+     */
+    public function __construct($elementType, array $config = [])
+    {
+        // Default status
+        if (!isset($config['status'])) {
+            $config['status'] = 'live';
+        }
+
+        parent::__construct($elementType, $config);
+    }
 
     /**
      * @inheritdoc

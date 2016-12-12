@@ -19,27 +19,22 @@ class GarnishAsset extends AssetBundle
     /**
      * @inheritdoc
      */
-    public $sourcePath = '@bower/garnishjs/dist';
-
-    /**
-     * @inheritdoc
-     */
-    public $depends = [
-        ElementResizeDetectorAsset::class,
-        JqueryAsset::class,
-        JqueryTouchEventsAsset::class,
-        VelocityAsset::class,
-    ];
-
-    /**
-     * @inheritdoc
-     */
     public function init()
     {
+        $this->sourcePath = '@bower/garnishjs/dist';
+        $this->depends = [
+            ElementResizeDetectorAsset::class,
+            JqueryAsset::class,
+            JqueryTouchEventsAsset::class,
+            VelocityAsset::class,
+        ];
+
         if (Craft::$app->getConfig()->get('useCompressedJs')) {
             $this->js[] = 'garnish.min.js';
         } else {
             $this->js[] = 'garnish.js';
         }
+
+        parent::init();
     }
 }

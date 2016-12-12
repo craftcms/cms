@@ -41,11 +41,6 @@ class MatrixBlockQuery extends ElementQuery
     // -------------------------------------------------------------------------
 
     /**
-     * @inheritdoc
-     */
-    public $orderBy = 'matrixblocks.sortOrder';
-
-    /**
      * @var integer|integer[] The field ID(s) that the resulting Matrix blocks must belong to.
      */
     public $fieldId;
@@ -67,6 +62,19 @@ class MatrixBlockQuery extends ElementQuery
 
     // Public Methods
     // =========================================================================
+
+    /**
+     * @inheritdoc
+     */
+    public function __construct($elementType, array $config = [])
+    {
+        // Default orderBy
+        if (!isset($config['orderBy'])) {
+            $config['orderBy'] = 'matrixblocks.sortOrder';
+        }
+
+        parent::__construct($elementType, $config);
+    }
 
     /**
      * @inheritdoc

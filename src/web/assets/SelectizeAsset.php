@@ -18,24 +18,19 @@ class SelectizeAsset extends AssetBundle
     /**
      * @inheritdoc
      */
-    public $sourcePath = '@bower/selectize/dist';
-
-    /**
-     * @inheritdoc
-     */
-    public $css = [
-        'css/selectize.css',
-    ];
-
-    /**
-     * @inheritdoc
-     */
     public function init()
     {
+        $this->sourcePath = '@bower/selectize/dist';
+        $this->css = [
+            'css/selectize.css',
+        ];
+
         if (Craft::$app->getConfig()->get('useCompressedJs')) {
             $this->js[] = 'js/standalone/selectize.min.js';
         } else {
             $this->js[] = 'js/standalone/selectize.js';
         }
+
+        parent::init();
     }
 }

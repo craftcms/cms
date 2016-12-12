@@ -18,17 +18,16 @@ class ElementResizeDetectorAsset extends AssetBundle
     /**
      * @inheritdoc
      */
-    public $sourcePath = '@bower/element-resize-detector/dist';
-
-    /**
-     * @inheritdoc
-     */
     public function init()
     {
+        $this->sourcePath = '@bower/element-resize-detector/dist';
+
         if (Craft::$app->getConfig()->get('useCompressedJs')) {
             $this->js[] = 'element-resize-detector.min.js';
         } else {
             $this->js[] = 'element-resize-detector.js';
         }
+
+        parent::init();
     }
 }

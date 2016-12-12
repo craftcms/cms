@@ -28,16 +28,17 @@ class Checkboxes extends BaseOptionsField
         return Craft::t('app', 'Checkboxes');
     }
 
-    // Properties
+    // Public Methods
     // =========================================================================
 
     /**
-     * @var bool
+     * @inheritdoc
      */
-    protected $multi = true;
-
-    // Public Methods
-    // =========================================================================
+    public function init()
+    {
+        parent::init();
+        $this->multi = true;
+    }
 
     /**
      * @inheritdoc

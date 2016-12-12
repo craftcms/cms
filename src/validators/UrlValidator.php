@@ -19,30 +19,25 @@ use yii\validators\UrlValidator as YiiUrlValidator;
  */
 class UrlValidator extends YiiUrlValidator
 {
-    // Properties
-    // =========================================================================
-
-    /**
-     * Override the $pattern regex so that a TLD is not required, and the protocol may be relative.
-     *
-     * @var string
-     */
-    public $pattern = '/^(?:(?:{schemes}:)?\/\/(([A-Z0-9][A-Z0-9_-]*)(\.[A-Z0-9][A-Z0-9_-]*)+)?|\/)[^\s]*$/i';
-
     // Public Methods
     // =========================================================================
 
     /**
      * @inheritdoc
      */
-    public function init()
+    public function __construct(array $config = [])
     {
-        parent::init();
+        // Override the $pattern regex so that a TLD is not required, and the protocol may be relative.
+        if (!isset($config['pattern'])) {
+            $config['pattern'] = '/^(?:(?:{schemes}:)?\/\/(([A-Z0-9][A-Z0-9_-]*)(\.[A-Z0-9][A-Z0-9_-]*)+)?|\/)[^\s]*$/i';
+        }
 
         // Enable support for validating international domain names if the intl extension is available.
-        if (Craft::$app->getI18n()->getIsIntlLoaded()) {
-            $this->enableIDN = true;
+        if (!isset($config['enableIDN']) && Craft::$app->getI18n()->getIsIntlLoaded()) {
+            $config['enableIDN'] = true;
         }
+
+        parent::__construct($config);
     }
 
     /**

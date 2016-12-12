@@ -19,36 +19,23 @@ class AppAsset extends AssetBundle
     /**
      * @inheritdoc
      */
-    public $sourcePath = '@app/resources';
-
-    /**
-     * @inheritdoc
-     */
-    public $depends = [
-        D3Asset::class,
-        ElementResizeDetectorAsset::class,
-        GarnishAsset::class,
-        JqueryAsset::class,
-        JqueryTouchEventsAsset::class,
-        PicturefillAsset::class,
-        SelectizeAsset::class,
-        VelocityAsset::class,
-    ];
-
-    /**
-     * @inheritdoc
-     */
-    public $css = [
-        'css/craft.css',
-        'css/charts.css',
-    ];
-
-    /**
-     * @inheritdoc
-     */
     public function init()
     {
-        parent::init();
+        $this->sourcePath = '@app/resources';
+        $this->depends = [
+            D3Asset::class,
+            ElementResizeDetectorAsset::class,
+            GarnishAsset::class,
+            JqueryAsset::class,
+            JqueryTouchEventsAsset::class,
+            PicturefillAsset::class,
+            SelectizeAsset::class,
+            VelocityAsset::class,
+        ];
+        $this->css = [
+            'css/craft.css',
+            'css/charts.css',
+        ];
 
         $useCompressedJs = (bool)Craft::$app->getConfig()->get('useCompressedJs');
 
@@ -116,5 +103,7 @@ class AppAsset extends AssetBundle
             'lib/fileupload/jquery.fileupload.js',
             'js/'.($useCompressedJs ? 'compressed/' : '').'Craft.js',
         ]);
+
+        parent::init();
     }
 }

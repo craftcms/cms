@@ -32,22 +32,30 @@ class UserPasswordValidator extends StringValidator
     public $currentPassword;
 
     /**
-     * @inheritdoc
-     */
-    public $min = 6;
-
-    /**
-     * @inheritdoc
-     */
-    public $max = 160;
-
-    /**
      * @var string User-defined error message used when the new password is the same as [[currentPassword]].
      */
     public $sameAsCurrent;
 
     // Public Methods
     // =========================================================================
+
+    /**
+     * @inheritdoc
+     */
+    public function __construct(array $config = [])
+    {
+        // Default min
+        if (!isset($config['min'])) {
+            $config['min'] = 6;
+        }
+
+        // Default max
+        if (!isset($config['max'])) {
+            $config['max'] = 160;
+        }
+
+        parent::__construct($config);
+    }
 
     /**
      * @inheritdoc

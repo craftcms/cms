@@ -34,17 +34,25 @@ class TagQuery extends ElementQuery
     // -------------------------------------------------------------------------
 
     /**
-     * @inheritdoc
-     */
-    public $orderBy = 'content.title';
-
-    /**
      * @var integer|integer[] The tag group ID(s) that the resulting tags must be in.
      */
     public $groupId;
 
     // Public Methods
     // =========================================================================
+
+    /**
+     * @inheritdoc
+     */
+    public function __construct($elementType, array $config = [])
+    {
+        // Default orderBy
+        if (!isset($config['orderBy'])) {
+            $config['orderBy'] = 'content.title';
+        }
+
+        parent::__construct($elementType, $config);
+    }
 
     /**
      * @inheritdoc

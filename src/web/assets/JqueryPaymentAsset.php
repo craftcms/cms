@@ -18,17 +18,16 @@ class JqueryPaymentAsset extends AssetBundle
     /**
      * @inheritdoc
      */
-    public $sourcePath = '@bower/jquery.payment';
-
-    /**
-     * @inheritdoc
-     */
     public function init()
     {
+        $this->sourcePath = '@bower/jquery.payment';
+
         if (Craft::$app->getConfig()->get('useCompressedJs')) {
             $this->js[] = 'query.payment.min.js';
         } else {
             $this->js[] = 'query.payment.js';
         }
+
+        parent::init();
     }
 }

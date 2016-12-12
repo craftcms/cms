@@ -18,17 +18,16 @@ class VelocityAsset extends AssetBundle
     /**
      * @inheritdoc
      */
-    public $sourcePath = '@bower/velocity';
-
-    /**
-     * @inheritdoc
-     */
     public function init()
     {
+        $this->sourcePath = '@bower/velocity';
+
         if (Craft::$app->getConfig()->get('useCompressedJs')) {
             $this->js[] = 'velocity.min.js';
         } else {
             $this->js[] = 'velocity.js';
         }
+
+        parent::init();
     }
 }
