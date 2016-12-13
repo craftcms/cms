@@ -459,14 +459,14 @@ abstract class Field extends SavableComponent implements FieldInterface
      */
     protected function isFresh($element)
     {
-        if (!isset($this->_isFresh)) {
-            if ($element) {
-                $this->_isFresh = $element->getHasFreshContent();
-            } else {
-                $this->_isFresh = true;
-            }
+        if ($this->_isFresh !== null) {
+            return $this->_isFresh;
         }
 
-        return $this->_isFresh;
+        if ($element) {
+            return $this->_isFresh = $element->getHasFreshContent();
+        }
+
+        return true;
     }
 }
