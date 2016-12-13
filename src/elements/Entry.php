@@ -687,11 +687,20 @@ class Entry extends Element
      * Returns the entry's author.
      *
      * @return User|null
+     * @throws InvalidConfigException if [[authorId]] is set but invalid
      */
     public function getAuthor()
     {
-        if (!isset($this->_author) && $this->authorId) {
-            $this->_author = Craft::$app->getUsers()->getUserById($this->authorId);
+        if ($this->_author !== null) {
+            return $this->_author;
+        }
+
+        if (!$this->authorId) {
+            return null;
+        }
+
+        if (($this->_author = Craft::$app->getUsers()->getUserById($this->authorId)) === null) {
+            throw new InvalidConfigException('Invalid author ID: '.$this->authorId);
         }
 
         return $this->_author;
