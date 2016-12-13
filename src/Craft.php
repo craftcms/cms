@@ -7,6 +7,7 @@
 
 use craft\db\Query;
 use craft\helpers\FileHelper;
+use yii\base\ExitException;
 use yii\helpers\VarDumper;
 use yii\web\Request;
 
@@ -68,6 +69,7 @@ class Craft extends Yii
      * @param boolean $highlight Whether the result should be syntax-highlighted. Defaults to true.
      *
      * @return void
+     * @throws ExitException if the application is in testing mode
      */
     public static function dd($var, $depth = 10, $highlight = true)
     {
