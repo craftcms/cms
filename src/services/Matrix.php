@@ -802,34 +802,6 @@ class Matrix extends Component
     }
 
     /**
-     * Returns a block record by its ID or creates a new one.
-     *
-     * @param MatrixBlock $block
-     *
-     * @return MatrixBlockRecord
-     * @throws MatrixBlockNotFoundException if $block->id is invalid
-     */
-    private function _getBlockRecord(MatrixBlock $block)
-    {
-        if ($block->id) {
-            if (!isset($this->_blockRecordsById) || !array_key_exists($block->id, $this->_blockRecordsById)) {
-                $this->_blockRecordsById[$block->id] = MatrixBlockRecord::find()
-                    ->where(['id' => $block->id])
-                    ->with('element')
-                    ->one();
-
-                if (!$this->_blockRecordsById[$block->id]) {
-                    throw new MatrixBlockNotFoundException("No Matrix block exists with the ID '{$block->id}'");
-                }
-            }
-
-            return $this->_blockRecordsById[$block->id];
-        }
-
-        return new MatrixBlockRecord();
-    }
-
-    /**
      * Creates the content table for a Matrix field.
      *
      * @param string $tableName
