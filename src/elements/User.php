@@ -28,6 +28,7 @@ use craft\validators\UniqueValidator;
 use craft\validators\UserPasswordValidator;
 use yii\base\ErrorHandler;
 use yii\base\Exception;
+use yii\base\InvalidConfigException;
 use yii\base\NotSupportedException;
 use yii\web\IdentityInterface;
 
@@ -1189,11 +1190,20 @@ class User extends Element implements IdentityInterface
      * Returns the user's photo.
      *
      * @return Asset|null
+     * @throws InvalidConfigException if [[photoId]] is set but invalid
      */
     public function getPhoto()
     {
-        if (!isset($this->_photo) && $this->photoId) {
-            $this->_photo = Craft::$app->getAssets()->getAssetById($this->photoId);
+        if ($this->_photo !== null) {
+            return $this->_photo;
+        }
+
+        if (!$this->photoId) {
+            return null;
+        }
+
+        if (($this->_photo = Craft::$app->getAssets()->getAssetById($this->photoId)) === null) {
+            throw new InvalidConfigException('Invalid photo ID: '.$this->photoId);
         }
 
         return $this->_photo;
