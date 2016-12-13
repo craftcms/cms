@@ -137,7 +137,7 @@ class FileHelper extends \yii\helpers\FileHelper
         // Nuke any trailing or leading .-_
         $filename = trim($filename, '.-_');
 
-        $filename = ($asciiOnly) ? StringHelper::toAscii($filename) : $filename;
+        $filename = $asciiOnly ? StringHelper::toAscii($filename) : $filename;
 
         return $filename;
     }
@@ -198,7 +198,7 @@ class FileHelper extends \yii\helpers\FileHelper
         // Remember whether the file already existed
         $exists = file_exists($path);
 
-        if (($f = @fopen($path, 'a')) === false) {
+        if (($f = @fopen($path, 'ab')) === false) {
             return false;
         }
 

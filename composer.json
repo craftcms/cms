@@ -23,7 +23,6 @@
     "yiisoft/yii2": "2.0.10",
     "yiisoft/yii2-debug": "2.0.7",
     "yiisoft/yii2-swiftmailer": "2.0.6",
-    "simplepie/simplepie": "1.4.3",
     "guzzlehttp/guzzle": "6.2.2",
     "danielstjules/stringy": "2.3.2",
     "creocoder/yii2-nested-sets": "0.9.0",
@@ -41,7 +40,8 @@
     "bower-asset/selectize": "0.12.4",
     "bower-asset/timepicker": "1.11.8",
     "bower-asset/velocity": "1.4.0",
-    "hampel/helpspot": "0.1.0"
+    "hampel/helpspot": "0.1.0",
+    "zendframework/zend-feed": "2.7.0"
   },
   "autoload": {
     "psr-4": {

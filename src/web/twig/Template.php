@@ -85,10 +85,12 @@ abstract class Template extends \Twig_Template
             $this->_includeElementInTemplateCaches($object);
         }
 
-        if ($type !== self::METHOD_CALL && $object instanceof Object) {
-            if ($object->canGetProperty($item)) {
-                return $isDefinedTest ? true : $object->$item;
-            }
+        if (
+            $type !== self::METHOD_CALL &&
+            $object instanceof Object &&
+            $object->canGetProperty($item)
+        ) {
+            return $isDefinedTest ? true : $object->$item;
         }
 
         // Convert any Twig_Markup arguments back to strings (unless the class *extends* Twig_Markup)
@@ -116,11 +118,9 @@ abstract class Template extends \Twig_Template
         /** @var Element $element */
         $elementId = $element->id;
 
-        if ($elementId) {
-            // Don't initialize the TemplateCaches service if we don't have to
-            if (Craft::$app->has('templateCaches', true)) {
-                Craft::$app->getTemplateCaches()->includeElementInTemplateCaches($elementId);
-            }
+        // Don't initialize the TemplateCaches service if we don't have to
+        if ($elementId && Craft::$app->has('templateCaches', true)) {
+            Craft::$app->getTemplateCaches()->includeElementInTemplateCaches($elementId);
         }
     }
 }

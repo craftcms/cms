@@ -113,7 +113,7 @@ class MigrationManager extends Component
 
         $file = $this->migrationPath.DIRECTORY_SEPARATOR.$name.'.php';
         $class = $this->migrationNamespace.'\\'.$name;
-        require_once($file);
+        require_once $file;
 
         return new $class;
     }
@@ -149,9 +149,9 @@ class MigrationManager extends Component
         $n = count($migrationNames);
 
         if ($n === $total) {
-            $logMessage = "Total $n new ".($n === 1 ? 'migration' : 'migrations')." to be applied:";
+            $logMessage = "Total $n new ".($n === 1 ? 'migration' : 'migrations').' to be applied:';
         } else {
-            $logMessage = "Total $n out of $total new ".($total === 1 ? 'migration' : 'migrations')." to be applied:";
+            $logMessage = "Total $n out of $total new ".($total === 1 ? 'migration' : 'migrations').' to be applied:';
         }
 
         foreach ($migrationNames as $migrationName) {
@@ -196,7 +196,7 @@ class MigrationManager extends Component
         }
 
         $n = count($migrationNames);
-        $logMessage = "Total $n ".($n === 1 ? 'migration' : 'migrations')." to be reverted:";
+        $logMessage = "Total $n ".($n === 1 ? 'migration' : 'migrations').' to be reverted:';
 
         foreach ($migrationNames as $migrationName) {
             $logMessage .= "\n\t$migrationName";
@@ -250,10 +250,10 @@ class MigrationManager extends Component
         $time = microtime(true) - $start;
 
         if ($success) {
-            Craft::info("Applied $migrationName (time: ".sprintf("%.3f", $time)."s)");
+            Craft::info("Applied $migrationName (time: ".sprintf('%.3f', $time).'s)');
             $this->addMigrationHistory($migrationName);
         } else {
-            Craft::error("Failed to apply $migrationName (time: ".sprintf("%.3f", $time)."s)");
+            Craft::error("Failed to apply $migrationName (time: ".sprintf('%.3f', $time).'s)');
         }
 
         if (!$isConsoleRequest) {
@@ -302,10 +302,10 @@ class MigrationManager extends Component
         $time = microtime(true) - $start;
 
         if ($success) {
-            Craft::info("Reverted $migrationName (time: ".sprintf("%.3f", $time)."s)");
+            Craft::info("Reverted $migrationName (time: ".sprintf('%.3f', $time).'s)');
             $this->removeMigrationHistory($migrationName);
         } else {
-            Craft::error("Failed to revert $migrationName (time: ".sprintf("%.3f", $time)."s)");
+            Craft::error("Failed to revert $migrationName (time: ".sprintf('%.3f', $time).'s)');
         }
 
         if (!$isConsoleRequest) {

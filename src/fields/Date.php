@@ -131,7 +131,7 @@ class Date extends Field implements PreviewableFieldInterface
     public function getSettingsHtml()
     {
         // If they are both selected or nothing is selected, the select showBoth.
-        if (($this->showDate && $this->showTime)) {
+        if ($this->showDate && $this->showTime) {
             $dateTimeValue = 'showBoth';
         } else if ($this->showDate) {
             $dateTimeValue = 'showDate';

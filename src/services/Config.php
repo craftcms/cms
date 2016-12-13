@@ -850,7 +850,7 @@ class Config extends Component
         // Is this a valid Craft config category?
         if (in_array($category, [self::CATEGORY_FILECACHE, self::CATEGORY_GENERAL, self::CATEGORY_DB, self::CATEGORY_DBCACHE, self::CATEGORY_MEMCACHE, self::CATEGORY_APC])) {
             $defaultsPath = Craft::$app->getBasePath().DIRECTORY_SEPARATOR.'config'.DIRECTORY_SEPARATOR.'defaults'.DIRECTORY_SEPARATOR.$category.'.php';
-        } else if (($plugin = Craft::$app->getPlugins()->getPlugin(($category))) !== null) {
+        } else if (($plugin = Craft::$app->getPlugins()->getPlugin($category)) !== null) {
             /** @var Plugin $plugin */
             $defaultsPath = $plugin->getBasePath().DIRECTORY_SEPARATOR.'config.php';
         } else {
@@ -858,7 +858,7 @@ class Config extends Component
         }
 
         if (is_file($defaultsPath)) {
-            $configSettings = @require($defaultsPath);
+            $configSettings = @require $defaultsPath;
         }
 
         if (!isset($configSettings) || !is_array($configSettings)) {
@@ -871,7 +871,7 @@ class Config extends Component
             $filePath = $pathService->getConfigPath().DIRECTORY_SEPARATOR.'general.php';
 
             if (file_exists($filePath)) {
-                if (is_array($customConfig = @include($filePath))) {
+                if (is_array($customConfig = @include $filePath)) {
                     $this->_mergeConfigs($configSettings, $customConfig);
                 }
             } else {
@@ -879,7 +879,7 @@ class Config extends Component
 
                 if (file_exists($filePath)) {
                     // Originally blocks.php defined a $blocksConfig variable, and then later returned an array directly.
-                    if (is_array($customConfig = require($filePath))) {
+                    if (is_array($customConfig = require $filePath)) {
                         $this->_mergeConfigs($configSettings, $customConfig);
                     } else if (isset($blocksConfig)) {
                         $configSettings = array_merge($configSettings, $blocksConfig);
@@ -892,7 +892,7 @@ class Config extends Component
 
             if (is_file($filePath)) {
                 // Originally db.php defined a $dbConfig variable, and later returned an array directly.
-                if (is_array($customConfig = require($filePath))) {
+                if (is_array($customConfig = require $filePath)) {
                     $this->_mergeConfigs($configSettings, $customConfig);
                 } else if ($category == self::CATEGORY_DB && isset($dbConfig)) {
                     $configSettings = array_merge($configSettings, $dbConfig);

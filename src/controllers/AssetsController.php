@@ -25,6 +25,8 @@ use yii\base\ErrorException;
 use yii\web\BadRequestHttpException;
 use yii\web\Response;
 
+/** @noinspection ClassOverridesFieldOfSuperClassInspection */
+
 /**
  * The AssetsController class is a controller that handles various actions related to asset tasks, such as uploading
  * files and creating/deleting/renaming files and folders.
@@ -571,7 +573,7 @@ class AssetsController extends Controller
             throw new BadRequestHttpException(Craft::t('app', 'The Asset you\'re trying to download does not exist.'));
         }
 
-        $this->_requirePermissionByAsset("viewAssetSource", $asset);
+        $this->_requirePermissionByAsset('viewAssetSource', $asset);
 
         // All systems go, engage hyperdrive! (so PHP doesn't interrupt our stream)
         Craft::$app->getConfig()->maxPowerCaptain();

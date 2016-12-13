@@ -138,7 +138,7 @@ class ElementHelper
                     $element->slug = $testSlug;
 
                     // Let's try this again.
-                    $i -= 1;
+                    $i--;
                     continue;
                 } else {
                     // We're screwed, blow things up.

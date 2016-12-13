@@ -499,7 +499,7 @@ class Url
      *
      * @return string
      */
-    private static function _normalizeParams($params, &$anchor = '')
+    private static function _normalizeParams($params, &$anchor)
     {
         if (is_array($params)) {
             // See if there's an anchor

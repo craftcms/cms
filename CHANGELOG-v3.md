@@ -108,6 +108,7 @@ Craft CMS 3.0 Working Changelog
 - Added the ‘setTableAttributeHtml’ event to base\Element.
 - Added Guzzle 6 HTTP Adapter.
 - Added php-shellcommand.
+- Added the ZendFeed library.
 
 ### Changed
 - The bootstrap script now assumes that the vendor/ folder is 3 levels up from the bootstrap/ directory by default (e.g. vendor/craftcms/craft/bootstrap/). If that is not the case (most likely because Craft had been symlinked into place), the `CRAFT_VENDOR_PATH` PHP constant can be used to correct that.
@@ -249,7 +250,6 @@ Craft CMS 3.0 Working Changelog
 - Updated Yii 2 Debug Extension to 2.0.7.
 - Updated Yii 2 Auth Client to 2.1.1.
 - Updated Yii 2 SwiftMailer to 2.0.6.
-- Updated SimplePie to 1.4.3.
 - Updated Guzzle to 6.2.2.
 - Updated Imagine to the new `pixelandtonic/imagine` fork at 0.6.3.1.
 - Updated Twig to 1.28.2.
@@ -267,6 +267,7 @@ Craft CMS 3.0 Working Changelog
 - Removed the {% registerassetbundle %} Twig tag. Use `{% do view.registerAssetBundle('class\\name') %}` instead.
 - Removed the PEL library.
 - Removed the PclZip library.
+- Removed the SimplePie library.
 - Removed support for EXIF data removal and automatic image rotating for servers without ImageMagick installed.
 - Removed the automatic creation of `@craft/plugins/HANDLE` aliases for installed plugins.
 - Removed cache\FileCache.

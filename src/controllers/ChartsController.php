@@ -65,7 +65,7 @@ class ChartsController extends Controller
         $total = 0;
 
         foreach ($dataTable['rows'] as $row) {
-            $total = $total + $row[1];
+            $total += $row[1];
         }
 
         // Return everything

@@ -45,16 +45,16 @@ if (version_compare(PHP_VERSION, '4.3', '<')) {
  */
 class RequirementsChecker
 {
-    var $dbCreds;
-    var $iconvMessage;
-    var $dbConnectionError;
-    var $iniSetMessage;
-    var $memoryMessage;
-    var $webRootFolderMessage;
-    var $result;
+    public $dbCreds;
+    public $iconvMessage;
+    public $dbConnectionError;
+    public $iniSetMessage;
+    public $memoryMessage;
+    public $webRootFolderMessage;
+    public $result;
 
-    var $requiredMySqlVersion = '5.5.0';
-    var $requiredPgSqlVersion = '9.5';
+    public $requiredMySqlVersion = '5.5.0';
+    public $requiredPgSqlVersion = '9.5';
 
     /**
      * Check the given requirements, collecting results into internal field.
@@ -67,10 +67,10 @@ class RequirementsChecker
      *
      * @return static The instance of the class.
      */
-    function check($requirements)
+    public function check($requirements)
     {
         if (is_string($requirements)) {
-            $requirements = require($requirements);
+            $requirements = require $requirements;
         }
 
         if (!is_array($requirements)) {
@@ -118,7 +118,7 @@ class RequirementsChecker
      *
      * @return RequirementsChecker The instance of the class.
      */
-    function checkCraft()
+    public function checkCraft()
     {
         return $this->check(dirname(__FILE__).DIRECTORY_SEPARATOR.'requirements.php');
     }
@@ -126,7 +126,7 @@ class RequirementsChecker
     /**
      * @return boolean Returns if we're running in the context of Craft or as a standalone PHP script.
      */
-    function isCraftRunning()
+    public function isCraftRunning()
     {
         return class_exists('Craft');
     }
@@ -154,7 +154,7 @@ class RequirementsChecker
      * )
      * ```
      */
-    function getResult()
+    public function getResult()
     {
         if (isset($this->result)) {
             return $this->result;
@@ -166,7 +166,7 @@ class RequirementsChecker
     /**
      * Renders the requirements check result. The output will vary depending is a script running from web or from console.
      */
-    function render()
+    public function render()
     {
         if (!isset($this->result)) {
             $this->usageError('Nothing to render!');
@@ -192,7 +192,7 @@ class RequirementsChecker
      *
      * @return boolean If the PHP extension version matches or not.
      */
-    function checkPhpExtensionVersion($extensionName, $version, $compare = '>=')
+    public function checkPhpExtensionVersion($extensionName, $version, $compare = '>=')
     {
         if (!extension_loaded($extensionName)) {
             return false;
@@ -218,7 +218,7 @@ class RequirementsChecker
      *
      * @return boolean If the option is on or not.
      */
-    function checkPhpIniOn($name)
+    public function checkPhpIniOn($name)
     {
         $value = ini_get($name);
 
@@ -236,7 +236,7 @@ class RequirementsChecker
      *
      * @return boolean If the option is off or not.
      */
-    function checkPhpIniOff($name)
+    public function checkPhpIniOff($name)
     {
         $value = ini_get($name);
 
@@ -254,7 +254,7 @@ class RequirementsChecker
      *
      * @return integer The actual size in bytes.
      */
-    function getByteSize($verboseSize)
+    public function getByteSize($verboseSize)
     {
         if (empty($verboseSize)) {
             return 0;
@@ -304,7 +304,7 @@ class RequirementsChecker
      *
      * @return string The rendering result. Null if the rendering result is not required.
      */
-    function renderViewFile($_viewFile_, $_data_ = null, $_return_ = false)
+    public function renderViewFile($_viewFile_, $_data_ = null, $_return_ = false)
     {
         // we use special variable names here to avoid conflict when extracting data
         if (is_array($_data_)) {
@@ -315,12 +315,12 @@ class RequirementsChecker
             ob_start();
             ob_implicit_flush(false);
 
-            require($_viewFile_);
+            require $_viewFile_;
 
             return ob_get_clean();
         }
 
-        require($_viewFile_);
+        require $_viewFile_;
 
         return null;
     }
@@ -333,7 +333,7 @@ class RequirementsChecker
      *
      * @return array normalized requirement.
      */
-    function normalizeRequirement($requirement, $requirementKey = 0)
+    public function normalizeRequirement($requirement, $requirementKey = 0)
     {
         if (!is_array($requirement)) {
             $this->usageError('Requirement must be an array!');
@@ -367,7 +367,7 @@ class RequirementsChecker
      *
      * @param string $message the error message
      */
-    function usageError($message)
+    public function usageError($message)
     {
         echo "Error: $message\n\n";
         exit(1);
@@ -378,7 +378,7 @@ class RequirementsChecker
      *
      * @return string The server information.
      */
-    function getServerInfo()
+    public function getServerInfo()
     {
         $info = isset($_SERVER['SERVER_SOFTWARE']) ? $_SERVER['SERVER_SOFTWARE'] : '';
 
@@ -390,7 +390,7 @@ class RequirementsChecker
      *
      * @return string The current date.
      */
-    function getCurrentDate()
+    public function getCurrentDate()
     {
         $nowDate = @strftime('%Y-%m-%d %H:%M', time());
 
@@ -400,20 +400,18 @@ class RequirementsChecker
     /**
      * @return boolean
      */
-    function checkDatabaseCreds()
+    public function checkDatabaseCreds()
     {
         // Check if we're running as a standalone script.
         $dbConfigPath = dirname(__FILE__).DIRECTORY_SEPARATOR.'..'.DIRECTORY_SEPARATOR.'config'.DIRECTORY_SEPARATOR.'db.php';
 
         if (is_file($dbConfigPath)) {
-            $dbCreds = @require_once(dirname(__FILE__).DIRECTORY_SEPARATOR.'..'.DIRECTORY_SEPARATOR.'config'.DIRECTORY_SEPARATOR.'db.php');
+            $dbCreds = @require_once dirname(__FILE__).DIRECTORY_SEPARATOR.'..'.DIRECTORY_SEPARATOR.'config'.DIRECTORY_SEPARATOR.'db.php';
 
-            if (is_array($dbCreds)) {
-                if ($dbCreds['server'] && $dbCreds['user'] && $dbCreds['password'] && $dbCreds['database'] && $dbCreds['driver']) {
-                    $this->dbCreds = $dbCreds;
+            if (is_array($dbCreds) && $dbCreds['server'] && $dbCreds['user'] && $dbCreds['password'] && $dbCreds['database'] && $dbCreds['driver']) {
+                $this->dbCreds = $dbCreds;
 
-                    return true;
-                }
+                return true;
             }
         } else if ($this->isCraftRunning()) {
             $configService = Craft::$app->getConfig();
@@ -434,14 +432,14 @@ class RequirementsChecker
     /**
      * Error-handler that mutes errors.
      */
-    function muteErrorHandler()
+    public function muteErrorHandler()
     {
     }
 
     /**
      * @return boolean
      */
-    function testIconvTruncateBug()
+    public function testIconvTruncateBug()
     {
         $warningMessage = 'You have a buggy version of iconv installed. (See <a href="https://bugs.php.net/bug.php?id=48147">PHP bug #48147</a> and <a href="http://sourceware.org/bugzilla/show_bug.cgi?id=13541">iconv bug #13541</a>.)';
         $ignoreMessage = 'The version of iconv you have installed does not support //IGNORE, making it unusable for transcoding purposes.';
@@ -486,7 +484,7 @@ class RequirementsChecker
      *
      * @return boolean
      */
-    function isInnoDbSupported()
+    public function isInnoDbSupported()
     {
         if (($conn = $this->getDbConnection()) !== false) {
             $results = $conn->query('SHOW ENGINES');
@@ -506,7 +504,7 @@ class RequirementsChecker
      *
      * @throws Exception in case of failure
      */
-    function checkDatabaseServerVersion()
+    public function checkDatabaseServerVersion()
     {
         if (($conn = $this->getDbConnection()) !== false) {
             switch ($this->dbCreds['driver']) {
@@ -529,7 +527,7 @@ class RequirementsChecker
     /**
      * @return boolean|PDO
      */
-    function getDbConnection()
+    public function getDbConnection()
     {
         static $conn;
 
@@ -550,7 +548,7 @@ class RequirementsChecker
     /**
      * @return boolean
      */
-    function checkIniSet()
+    public function checkIniSet()
     {
         $oldValue = ini_get('memory_limit');
 
@@ -588,7 +586,7 @@ class RequirementsChecker
     /**
      * @return boolean
      */
-    function checkMemory()
+    public function checkMemory()
     {
         $memoryLimit = ini_get('memory_limit');
         $memoryLimitInBytes = $this->getByteSize($memoryLimit);
@@ -614,7 +612,7 @@ class RequirementsChecker
     /**
      * @return boolean
      */
-    function checkWebRoot()
+    public function checkWebRoot()
     {
         $pathService = Craft::$app->getPath();
         $publicFolders = [];
@@ -681,7 +679,7 @@ class RequirementsChecker
      *
      * @return boolean
      */
-    function isPathInsideWebroot($pathToTest)
+    public function isPathInsideWebroot($pathToTest)
     {
         $pathToTest = FileHelper::normalizePath($pathToTest);
 

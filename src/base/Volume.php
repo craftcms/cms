@@ -232,7 +232,7 @@ abstract class Volume extends SavableComponent implements VolumeInterface
     {
         if ($this->folderExists($path)) {
             throw new VolumeObjectExistsException(Craft::t('app',
-                "Folder “{folder}” already exists on the volume!",
+                'Folder “{folder}” already exists on the volume!',
                 ['folder' => $path]));
         }
 
@@ -259,7 +259,7 @@ abstract class Volume extends SavableComponent implements VolumeInterface
     {
         if (!$this->folderExists($path)) {
             throw new VolumeObjectNotFoundException(Craft::t('app',
-                "Folder “{folder}” cannot be found on the volume.",
+                'Folder “{folder}” cannot be found on the volume.',
                 ['folder' => $path]));
         }
 
@@ -267,12 +267,12 @@ abstract class Volume extends SavableComponent implements VolumeInterface
         $fileList = $this->getFileList($path);
         $directoryList = [];
 
-        $parts = explode("/", $path);
+        $parts = explode('/', $path);
 
         array_pop($parts);
         array_push($parts, $newName);
 
-        $newPath = join("/", $parts);
+        $newPath = join('/', $parts);
 
         $pattern = '/^'.preg_quote($path, '/').'/';
 

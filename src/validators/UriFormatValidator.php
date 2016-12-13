@@ -44,10 +44,10 @@ class UriFormatValidator extends Validator
             $uriFormat = trim($uriFormat, '/ ');
             $model->$attribute = $uriFormat;
 
-            if ($this->requireSlug) {
-                if (!ElementHelper::doesUriFormatHaveSlugTag($uriFormat)) {
-                    $this->addError($model, $attribute, Craft::t('app', '{attribute} must contain “{slug}”', ['attribute' => $model->$attribute]));
-                }
+            if ($this->requireSlug && !ElementHelper::doesUriFormatHaveSlugTag($uriFormat)) {
+                $this->addError($model, $attribute, Craft::t('app', '{attribute} must contain “{slug}”', [
+                    'attribute' => $model->$attribute
+                ]));
             }
         }
     }

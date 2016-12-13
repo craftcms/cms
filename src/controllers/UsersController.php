@@ -31,6 +31,8 @@ use yii\web\HttpException;
 use yii\web\NotFoundHttpException;
 use yii\web\Response;
 
+/** @noinspection ClassOverridesFieldOfSuperClassInspection */
+
 /**
  * The UsersController class is a controller that handles various user account related tasks such as logging-in,
  * impersonating a user, logging out, forgetting passwords, setting passwords, validating accounts, activating
@@ -266,10 +268,8 @@ class UsersController extends Controller
             }
         }
 
-        if (!empty($user)) {
-            if (!Craft::$app->getUsers()->sendPasswordResetEmail($user)) {
-                $errors[] = Craft::t('app', 'There was a problem sending the password reset email.');
-            }
+        if (!empty($user) && !Craft::$app->getUsers()->sendPasswordResetEmail($user)) {
+            $errors[] = Craft::t('app', 'There was a problem sending the password reset email.');
         }
 
         // If there haven't been any errors, or there were, and it's not one logged in user editing another
@@ -333,7 +333,7 @@ class UsersController extends Controller
                 return $this->_renderSetPasswordTemplate($userToProcess, [
                     'code' => $code,
                     'id' => $id,
-                    'newUser' => ($userToProcess->password ? false : true),
+                    'newUser' => $userToProcess->password ? false : true,
                 ]);
             }
         } else {
@@ -385,7 +385,7 @@ class UsersController extends Controller
                 'errors' => $errors,
                 'code' => $code,
                 'id' => $id,
-                'newUser' => ($userToProcess->password ? false : true),
+                'newUser' => $userToProcess->password ? false : true,
             ]);
         }
 
@@ -766,7 +766,7 @@ class UsersController extends Controller
         return $this->renderTemplate('users/_edit', [
             'account' => $user,
             'isNewAccount' => $isNewAccount,
-            'statusLabel' => (isset($statusLabel) ? $statusLabel : null),
+            'statusLabel' => isset($statusLabel) ? $statusLabel : null,
             'actions' => $actions,
             'title' => $title,
             'tabs' => $tabs,
@@ -912,13 +912,13 @@ class UsersController extends Controller
 
         // If editing an existing user and either of these properties are being changed,
         // require the user's current password for additional security
-        if (!$isNewUser && (!empty($newEmail) || $user->newPassword !== null)) {
-            if (!$this->_verifyElevatedSession()) {
-                Craft::warning('Tried to change the email or password for userId: '.$user->id.', but the current password does not match what the user supplied.',
-                    __METHOD__);
-                $user->addError('currentPassword',
-                    Craft::t('app', 'Incorrect current password.'));
-            }
+        if (
+            !$isNewUser &&
+            (!empty($newEmail) || $user->newPassword !== null) &&
+            !$this->_verifyElevatedSession()
+        ) {
+            Craft::warning('Tried to change the email or password for userId: '.$user->id.', but the current password does not match what the user supplied.', __METHOD__);
+            $user->addError('currentPassword', Craft::t('app', 'Incorrect current password.'));
         }
 
         // Handle the rest of the user properties

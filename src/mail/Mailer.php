@@ -103,12 +103,10 @@ class Mailer extends \yii\swiftmailer\Mailer
             $view = Craft::$app->getView();
             $oldTemplateMode = $view->getTemplateMode();
 
-            if (Craft::$app->getEdition() >= Craft::Client) {
-                // Is there a custom HTML template set?
-                if ($this->template !== null) {
-                    $view->setTemplateMode($view::TEMPLATE_MODE_SITE);
-                    $parentTemplate = $this->template;
-                }
+            // Is there a custom HTML template set?
+            if (Craft::$app->getEdition() >= Craft::Client && $this->template !== null) {
+                $view->setTemplateMode($view::TEMPLATE_MODE_SITE);
+                $parentTemplate = $this->template;
             }
 
             if (empty($parentTemplate)) {

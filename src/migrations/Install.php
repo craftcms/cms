@@ -75,7 +75,7 @@ class Install extends Migration
         Craft::$app->language = $this->site->language;
 
         // Save the first user
-        echo "    > save the first user ...";
+        echo '    > save the first user ...';
         $user = new User([
             'username' => $this->username,
             'newPassword' => $this->password,
@@ -91,7 +91,7 @@ class Install extends Migration
         }
 
         // Save the default email settings
-        echo "    > save the email settings ...";
+        echo '    > save the email settings ...';
         Craft::$app->getSystemSettings()->saveSettings('email', [
             'fromEmail' => $this->email,
             'fromName' => $this->site->name,
@@ -997,7 +997,7 @@ class Install extends Migration
     protected function insertDefaultData()
     {
         // Populate the info table
-        echo "    > populate the info table ...";
+        echo '    > populate the info table ...';
         Craft::$app->saveInfo(new Info([
             'version' => Craft::$app->version,
             'schemaVersion' => Craft::$app->schemaVersion,

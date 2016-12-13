@@ -643,7 +643,7 @@ class Search extends Component
         $field = Craft::$app->getFields()->getFieldByHandle($attribute);
 
         // Fallback to 0
-        return ($field) ? $field->id : 0;
+        return $field ? $field->id : 0;
     }
 
     /**

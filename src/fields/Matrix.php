@@ -353,8 +353,8 @@ class Matrix extends Field implements EagerLoadingFieldInterface
             'validateBlocks',
             [
                 ArrayValidator::class,
-                'min' => ($this->required ? 1 : null),
-                'max' => ($this->maxBlocks ? $this->maxBlocks : null),
+                'min' => $this->required ? 1 : null,
+                'max' => $this->maxBlocks ? $this->maxBlocks : null,
                 'tooFew' => Craft::t('app', '{attribute} should contain at least {min, number} {min, plural, one{block} other{blocks}}.'),
                 'tooMany' => Craft::t('app', '{attribute} should contain at most {max, number} {max, plural, one{block} other{blocks}}.'),
             ],

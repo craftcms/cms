@@ -54,7 +54,7 @@ return [
         'class' => MigrationManager::class,
         'type' => MigrationManager::TYPE_CONTENT,
         'migrationNamespace' => 'craft\contentmigrations',
-        'migrationPath' => "@contentMigrations",
+        'migrationPath' => '@contentMigrations',
     ],
     'migrator' => [
         'class' => MigrationManager::class,

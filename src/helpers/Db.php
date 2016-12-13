@@ -345,7 +345,7 @@ class Db
 
                 if ($like) {
                     $condition[] = [
-                        ($operator == '=' ? 'like' : 'not like'),
+                        $operator == '=' ? 'like' : 'not like',
                         $column,
                         $val,
                         false

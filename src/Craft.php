@@ -220,13 +220,13 @@ EOD;
     {
         if (file_exists($path)) {
             // Make sure it's up-to-date
-            $f = fopen($path, 'r');
+            $f = fopen($path, 'rb');
             $line = fgets($f);
             fclose($f);
 
             if (preg_match('/\/\/ v([a-zA-Z0-9]{12})/', $line, $matches)) {
                 if ($matches[1] == $storedFieldVersion) {
-                    include($path);
+                    include $path;
 
                     return true;
                 }
@@ -249,7 +249,7 @@ EOD;
         $fileContents = file_get_contents($templatePath);
         $fileContents = str_replace($search, $replace, $fileContents);
         FileHelper::writeToFile($destinationPath, $fileContents);
-        include($destinationPath);
+        include $destinationPath;
     }
 }
 

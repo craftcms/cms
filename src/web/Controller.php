@@ -198,7 +198,7 @@ abstract class Controller extends \yii\web\Controller
     public function requireAcceptsJson()
     {
         if (!Craft::$app->getRequest()->getAcceptsJson()) {
-            //throw new BadRequestHttpException('Request must accept JSON in response');
+            throw new BadRequestHttpException('Request must accept JSON in response');
         }
     }
 

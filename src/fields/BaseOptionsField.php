@@ -97,9 +97,7 @@ abstract class BaseOptionsField extends Field implements PreviewableFieldInterfa
             }
 
             // Add +2 for the outer brackets and -1 for the last comma.
-            $length += 1;
-
-            return Db::getTextualColumnTypeByContentLength($length);
+            return Db::getTextualColumnTypeByContentLength($length + 1);
         }
 
         return Schema::TYPE_STRING;

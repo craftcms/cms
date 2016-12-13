@@ -242,7 +242,7 @@ class Extension extends \Twig_Extension implements \Twig_Extension_GlobalsInterf
      */
     public function ucfirstFilter($string)
     {
-        return StringHelper::uppercaseFirst($string);
+        return StringHelper::upperCaseFirst($string);
     }
 
     /**
@@ -322,7 +322,7 @@ class Extension extends \Twig_Extension implements \Twig_Extension_GlobalsInterf
      */
     public function jsonEncodeFilter($value, $options = null)
     {
-        if ($options === null && (in_array(Header::getMimeType(), ['text/html', 'application/xhtml+xml']))) {
+        if ($options === null && in_array(Header::getMimeType(), ['text/html', 'application/xhtml+xml'])) {
             $options = JSON_HEX_TAG | JSON_HEX_AMP | JSON_HEX_QUOT;
         }
 

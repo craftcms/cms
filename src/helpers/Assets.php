@@ -55,7 +55,7 @@ class Assets
         $extension = strpos($extension, '.') !== false ? pathinfo($extension, PATHINFO_EXTENSION) : $extension;
         $filename = uniqid('assets', true).'.'.$extension;
         $path = Craft::$app->getPath()->getTempPath().DIRECTORY_SEPARATOR.$filename;
-        if (($handle = fopen($path, 'w')) === false) {
+        if (($handle = fopen($path, 'wb')) === false) {
             throw new Exception('Could not create temp file: '.$path);
         }
         fclose($handle);
@@ -94,7 +94,7 @@ class Assets
         $appendix = '';
 
         if (!empty($volume->expires) && DateTimeHelper::isValidIntervalString($volume->expires)) {
-            $appendix = '?mtime='.$file->dateModified->format("YmdHis");
+            $appendix = '?mtime='.$file->dateModified->format('YmdHis');
         }
 
         return $appendix;
@@ -174,7 +174,7 @@ class Assets
                 $folder = new VolumeFolder();
                 $folder->name = $sourceFolder->name;
                 $folder->volumeId = $destinationFolder->volumeId;
-                $folder->path = ltrim(rtrim($destinationFolder->path, '/').('/').$relativePath, '/');
+                $folder->path = ltrim(rtrim($destinationFolder->path, '/').'/'.$relativePath, '/');
 
                 // Any and all parent folders should be already mirrored
                 $folder->parentId = (isset($folderIdChanges[$sourceFolder->parentId]) ? $folderIdChanges[$sourceFolder->parentId] : $destinationFolder->id);

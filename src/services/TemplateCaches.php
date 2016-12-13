@@ -297,7 +297,7 @@ class TemplateCaches extends Component
                     [
                         'cacheKey' => $key,
                         'siteId' => Craft::$app->getSites()->currentSite->id,
-                        'path' => ($global ? null : $this->_getPath()),
+                        'path' => $global ? null : $this->_getPath(),
                         'expiryDate' => Db::prepareDateForDb($expiration),
                         'body' => $body
                     ],

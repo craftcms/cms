@@ -199,7 +199,7 @@ class ChartHelper
         return [
             'columns' => [
                 [
-                    'type' => ($intervalUnit == 'hour' ? 'datetime' : 'date'),
+                    'type' => $intervalUnit == 'hour' ? 'datetime' : 'date',
                     'label' => $options['categoryLabel']
                 ],
                 [

@@ -464,7 +464,7 @@ class Users extends Component
      * @throws ImageException if the file provided is not a manipulatable image
      * @throws VolumeException if the user photo Volume is not provided or is invalid
      */
-    public function saveUserPhoto($fileLocation, User $user, $filename = "")
+    public function saveUserPhoto($fileLocation, User $user, $filename = '')
     {
         $filenameToUse = AssetsHelper::prepareAssetName($filename ?: pathinfo($fileLocation, PATHINFO_FILENAME), true, true);
 
