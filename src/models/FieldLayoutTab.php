@@ -11,6 +11,7 @@ use Craft;
 use craft\base\Field;
 use craft\base\FieldInterface;
 use craft\base\Model;
+use yii\base\InvalidConfigException;
 
 /**
  * FieldLayoutTab model class.
@@ -72,22 +73,23 @@ class FieldLayoutTab extends Model
      * Returns the tab’s layout.
      *
      * @return FieldLayout|null The tab’s layout.
+     * @throws InvalidConfigException if [[groupId]] is set but invalid
      */
     public function getLayout()
     {
-        if (!isset($this->_layout)) {
-            if ($this->layoutId) {
-                $this->_layout = Craft::$app->getFields()->getLayoutById($this->layoutId);
-            } else {
-                $this->_layout = false;
-            }
-        }
-
-        if ($this->_layout) {
+        if ($this->_layout !== null) {
             return $this->_layout;
         }
 
-        return null;
+        if (!$this->layoutId) {
+            return null;
+        }
+
+        if (($this->_layout = Craft::$app->getFields()->getLayoutById($this->layoutId)) === null) {
+            throw new InvalidConfigException('Invalid layout ID: '.$this->layoutId);
+        }
+
+        return $this->_layout;
     }
 
     /**

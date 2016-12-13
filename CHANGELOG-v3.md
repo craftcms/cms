@@ -154,6 +154,7 @@ Craft CMS 3.0 Working Changelog
 - db\Connection::columnExists()’s $table argument can now be a \yii\db\TableSchema object.
 - elements\User::getAuthor() now throws an InvalidConfigException if its $authorId property is set to an invalid user ID.
 - elements\User::getPhoto() now throws an InvalidConfigException if its $photoId property is set to an invalid asset ID.
+- models\FieldLayoutTab::getLayout() now throws an InvalidConfigException if its $layoutId property is set to an invalid field layout ID.
 - services\Elements::deleteElementById() now has $elementType and $siteId arguments.
 - services\Path::getAppPath() now throws an exception if it is called within a Composer install, as there is no “app path”.
 - The ‘beforeElementSave’ and ‘afterElementSave’ events triggered by base\Element now have $isNew properties, which indicate whether the element is brand new.
