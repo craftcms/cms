@@ -515,6 +515,7 @@ class RequirementsChecker
                     $requiredVersion = $this->requiredPgSqlVersion;
                     break;
                 default:
+                    /** @noinspection ThrowRawExceptionInspection */
                     throw new Exception('Unsupported connection type: '.$this->dbCreds['driver']);
             }
 

@@ -23,6 +23,7 @@ use craft\search\SearchQueryTerm;
 use craft\search\SearchQueryTermGroup;
 use Exception;
 use yii\base\Component;
+use yii\db\Exception as DbException;
 
 /**
  * Handles search operations.
@@ -557,7 +558,7 @@ class Search extends Component
                                     $keywords .= ':*';
                                     break;
                                 default:
-                                    throw new Exception('Unsupported connection type: '.$driver);
+                                    throw new DbException('Unsupported connection type: '.$driver);
                             }
                         }
 
@@ -699,7 +700,7 @@ class Search extends Component
                 return sprintf("%s @@ '%s'::tsquery", Craft::$app->getDb()->quoteColumnName('keywords_vector'), (is_array($val) ? implode($andOr, $val) : $val));
 
             default:
-                throw new Exception('Unsupported connection type: '.$driver);
+                throw new DbException('Unsupported connection type: '.$driver);
         }
     }
 

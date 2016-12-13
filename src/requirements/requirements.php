@@ -45,6 +45,7 @@ if ($this->checkDatabaseCreds()) {
             }
             break;
         default:
+            /** @noinspection ThrowRawExceptionInspection */
             throw new Exception('Unsupported connection type: '.$this->dbCreds['driver']);
     }
 }
@@ -77,6 +78,7 @@ switch ($this->dbCreds['driver']) {
         ];
         break;
     default:
+        /** @noinspection ThrowRawExceptionInspection */
         throw new Exception('Unsupported connection type: '.$this->dbCreds['driver']);
 }
 

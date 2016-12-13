@@ -23,6 +23,7 @@ use GuzzleHttp\Client;
 use HelpSpot\HelpSpot;
 use HelpSpot\HelpSpotGuzzleClient;
 use yii\base\ErrorException;
+use yii\base\Exception;
 use yii\web\BadRequestHttpException;
 use yii\web\Response;
 use ZipArchive;
@@ -359,7 +360,7 @@ class DashboardController extends Controller
             $zip = new ZipArchive();
 
             if ($zip->open($zipPath, ZipArchive::CREATE) !== true) {
-                throw new \Exception('Cannot create zip at '.$zipPath);
+                throw new Exception('Cannot create zip at '.$zipPath);
             }
 
             // License key

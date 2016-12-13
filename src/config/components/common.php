@@ -6,6 +6,7 @@ use craft\helpers\MailerHelper;
 use craft\log\FileTarget;
 use craft\services\Config;
 use yii\base\InvalidConfigException;
+use yii\db\Exception as DbException;
 use yii\log\Logger;
 
 return [
@@ -188,7 +189,7 @@ return [
             Connection::DRIVER_PGSQL
         ])
         ) {
-            throw new Exception('Unsupported connection type: '.$driver);
+            throw new DbException('Unsupported connection type: '.$driver);
         }
 
         if ($dsn === '') {
