@@ -379,7 +379,7 @@ class Asset extends Element
     {
         try {
             if (isset($this->_transform)) {
-                return $this->getUrl();
+                return (string)$this->getUrl();
             }
 
             return parent::__toString();
