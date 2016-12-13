@@ -690,10 +690,6 @@ class RequirementsChecker
         $scriptUrl = $request->getScriptUrl();
         $subBasePath = FileHelper::normalizePath(mb_substr($scriptFile, 0, -mb_strlen($scriptUrl)));
 
-        if (mb_strpos($pathToTest.DIRECTORY_SEPARATOR, $subBasePath) !== false) {
-            return true;
-        }
-
-        return false;
+        return mb_strpos($pathToTest.DIRECTORY_SEPARATOR, $subBasePath) !== false;
     }
 }

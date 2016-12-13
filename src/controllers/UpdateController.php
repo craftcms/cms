@@ -719,11 +719,7 @@ JS;
      */
     private function _isManualUpdate($data)
     {
-        if (isset($data['manualUpdate']) && $data['manualUpdate'] == 1) {
-            return true;
-        }
-
-        return false;
+        return isset($data['manualUpdate']) && $data['manualUpdate'] == 1;
     }
 
     /**

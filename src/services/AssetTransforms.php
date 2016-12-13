@@ -469,11 +469,7 @@ class AssetTransforms extends Component
                 || ($transform->getIsNamedTransform()
                     && $result['dateIndexed'] >= Db::prepareDateForDb($transform->dimensionChangeTime)));
 
-        if ($indexedAfterFileModified && $indexedAfterTransformParameterChange) {
-            return true;
-        }
-
-        return false;
+        return $indexedAfterFileModified && $indexedAfterTransformParameterChange;
     }
 
     /**

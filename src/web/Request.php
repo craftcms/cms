@@ -1073,14 +1073,8 @@ class Request extends \yii\web\Request
      */
     private function _validateIp($ip)
     {
-        if (
-            filter_var($ip, FILTER_VALIDATE_IP, FILTER_FLAG_IPV4) === false &&
-            filter_var($ip, FILTER_VALIDATE_IP, FILTER_FLAG_IPV6) === false
-        ) {
-            return false;
-        }
-
-        return true;
+        return !(filter_var($ip, FILTER_VALIDATE_IP, FILTER_FLAG_IPV4) === false &&
+            filter_var($ip, FILTER_VALIDATE_IP, FILTER_FLAG_IPV6) === false);
     }
 
     /**

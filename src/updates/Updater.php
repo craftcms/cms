@@ -323,11 +323,7 @@ class Updater
         Craft::info('Validating MD5 for '.$downloadFilePath, __METHOD__);
         $localMD5 = md5_file($downloadFilePath);
 
-        if ($localMD5 === $sourceMD5) {
-            return true;
-        }
-
-        return false;
+        return $localMD5 === $sourceMD5;
     }
 
     /**

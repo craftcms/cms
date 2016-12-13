@@ -402,12 +402,7 @@ class Asset extends Element
      */
     public function __isset($name)
     {
-        if (parent::__isset($name) || Craft::$app->getAssetTransforms()->getTransformByHandle($name)
-        ) {
-            return true;
-        }
-
-        return false;
+        return parent::__isset($name) || Craft::$app->getAssetTransforms()->getTransformByHandle($name);
     }
 
     /**
@@ -646,22 +641,12 @@ class Asset extends Element
      */
     public function getHasThumb()
     {
-        if ($this->kind == 'image') {
-            if ($this->getHeight() && $this->getWidth()) {
-                // Gd doesn't process bitmaps or SVGs
-                if (in_array(
-                        $this->getExtension(),
-                        ['svg', 'bmp']
-                    ) && Craft::$app->getImages()->getIsGd()
-                ) {
-                    return false;
-                }
-
-                return true;
-            }
-        }
-
-        return false;
+        return (
+            $this->kind === 'image' &&
+            $this->getHeight() &&
+            $this->getWidth() &&
+            (!in_array($this->getExtension(), ['svg', 'bmp']) || Craft::$app->getImages()->getIsImagick())
+        );
     }
 
     /**

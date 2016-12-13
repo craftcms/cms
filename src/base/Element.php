@@ -661,11 +661,7 @@ abstract class Element extends Component implements ElementInterface
      */
     public function __isset($name)
     {
-        if ($name == 'title' || $this->hasEagerLoadedElements($name) || parent::__isset($name) || $this->getFieldByHandle($name)) {
-            return true;
-        }
-
-        return false;
+        return $name == 'title' || $this->hasEagerLoadedElements($name) || parent::__isset($name) || $this->getFieldByHandle($name);
     }
 
     /**
@@ -1303,11 +1299,7 @@ abstract class Element extends Component implements ElementInterface
      */
     public function offsetExists($offset)
     {
-        if ($offset == 'title' || $this->hasEagerLoadedElements($offset) || parent::offsetExists($offset) || $this->getFieldByHandle($offset)) {
-            return true;
-        }
-
-        return false;
+        return $offset == 'title' || $this->hasEagerLoadedElements($offset) || parent::offsetExists($offset) || $this->getFieldByHandle($offset);
     }
 
     /**

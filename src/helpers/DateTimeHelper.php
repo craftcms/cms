@@ -249,11 +249,7 @@ class DateTimeHelper
      */
     public static function isIso8601($value)
     {
-        if (is_string($value) && preg_match('/^\d\d\d\d-\d\d-\d\dT\d\d:\d\d:\d\d[\+\-]\d\d\:?\d\d$/', $value)) {
-            return true;
-        }
-
-        return false;
+        return is_string($value) && preg_match('/^\d\d\d\d-\d\d-\d\dT\d\d:\d\d:\d\d[\+\-]\d\d\:?\d\d$/', $value);
     }
 
     /**
@@ -524,11 +520,7 @@ class DateTimeHelper
     {
         $interval = DateInterval::createFromDateString($intervalString);
 
-        if ($interval->s != 0 || $interval->i != 0 || $interval->h != 0 || $interval->d != 0 || $interval->m != 0 || $interval->y != 0) {
-            return true;
-        }
-
-        return false;
+        return $interval->s != 0 || $interval->i != 0 || $interval->h != 0 || $interval->d != 0 || $interval->m != 0 || $interval->y != 0;
     }
 
     // Private Methods

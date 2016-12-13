@@ -742,11 +742,7 @@ class Search extends Component
      */
     private function _doFullTextSearch($keywords, SearchQueryTerm $term)
     {
-        if ($keywords !== '' && !$term->subLeft && !$term->exact && !$term->exclude) {
-            return true;
-        }
-
-        return false;
+        return $keywords !== '' && !$term->subLeft && !$term->exact && !$term->exclude;
     }
 
     /**

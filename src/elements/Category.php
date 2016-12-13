@@ -556,11 +556,6 @@ class Category extends Element
             ->select('elements.id')
             ->scalar();
 
-        if ($this->newParentId != $oldParentId) {
-            return true;
-        }
-
-        // Must be set to the same one then
-        return false;
+        return $this->newParentId != $oldParentId;
     }
 }
