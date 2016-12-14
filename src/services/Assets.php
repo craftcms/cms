@@ -222,7 +222,7 @@ class Assets extends Component
                 $result = $volume->createFileByStream($uriPath, $stream);
             } catch (VolumeObjectExistsException $exception) {
                 // Replace the file if this is the temporary Volume.
-                if (is_null($asset->volumeId)) {
+                if ($asset->volumeId === null) {
                     $volume->deleteFile($uriPath);
                     $result = $volume->createFileByStream($uriPath, $stream);
                 } else {
@@ -496,7 +496,7 @@ class Assets extends Component
             $volume->createDir(rtrim($folder->path, '/'));
         } catch (VolumeObjectExistsException $exception) {
             // Rethrow exception unless this is a temporary Volume.
-            if (!is_null($folder->volumeId)) {
+            if ($folder->volumeId !== null) {
                 throw $exception;
             }
         }
@@ -639,9 +639,7 @@ class Assets extends Component
      */
     public function getFolderTreeByFolderId($folderId)
     {
-        $folder = $this->getFolderById($folderId);
-
-        if (is_null($folder)) {
+        if (($folder = $this->getFolderById($folderId)) === null) {
             return [];
         }
 
@@ -1017,38 +1015,38 @@ class Assets extends Component
             'volumeId' => $volumeId
         ]);
 
-        $folderModel = $this->findFolder($parameters);
+        if (($folderModel = $this->findFolder($parameters)) !== null) {
+            return $folderModel->id;
+        }
 
         // If we don't have a folder matching these, create a new one
-        if (is_null($folderModel)) {
-            $parts = explode('/', rtrim($fullPath, '/'));
-            $folderName = array_pop($parts);
+        $parts = explode('/', rtrim($fullPath, '/'));
+        $folderName = array_pop($parts);
 
-            if (empty($parts)) {
-                // Looking for a top level folder, apparently.
-                $parameters->path = '';
-                $parameters->parentId = ':empty:';
-            } else {
-                $parameters->path = implode('/', $parts).'/';
-            }
-
-            // Look up the parent folder
-            $parentFolder = $this->findFolder($parameters);
-
-            if (is_null($parentFolder)) {
-                $parentId = ':empty:';
-            } else {
-                $parentId = $parentFolder->id;
-            }
-
-            $folderModel = new VolumeFolder();
-            $folderModel->volumeId = $volumeId;
-            $folderModel->parentId = $parentId;
-            $folderModel->name = $folderName;
-            $folderModel->path = $fullPath;
-
-            $this->storeFolderRecord($folderModel);
+        if (empty($parts)) {
+            // Looking for a top level folder, apparently.
+            $parameters->path = '';
+            $parameters->parentId = ':empty:';
+        } else {
+            $parameters->path = implode('/', $parts).'/';
         }
+
+        // Look up the parent folder
+        $parentFolder = $this->findFolder($parameters);
+
+        if ($parentFolder === null) {
+            $parentId = ':empty:';
+        } else {
+            $parentId = $parentFolder->id;
+        }
+
+        $folderModel = new VolumeFolder();
+        $folderModel->volumeId = $volumeId;
+        $folderModel->parentId = $parentId;
+        $folderModel->name = $folderName;
+        $folderModel->path = $fullPath;
+
+        $this->storeFolderRecord($folderModel);
 
         return $folderModel->id;
     }
@@ -1280,7 +1278,7 @@ class Assets extends Component
             $query->andWhere(Db::parseParam('name', $criteria->name));
         }
 
-        if (!is_null($criteria->path)) {
+        if ($criteria->path !== null) {
             // Does the path have a comma in it?
             if (strpos($criteria->path, ',') !== false) {
                 // Escape the comma.

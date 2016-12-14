@@ -88,14 +88,14 @@ class RequirementsChecker
         }
 
         if (!is_array($this->result)) {
-            $this->result = [
-                'summary' => [
+            $this->result = array(
+                'summary' => array(
                     'total' => 0,
                     'errors' => 0,
                     'warnings' => 0,
-                ],
-                'requirements' => [],
-            ];
+                ),
+                'requirements' => array(),
+            );
         }
 
         foreach ($requirements as $key => $rawRequirement) {

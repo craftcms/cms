@@ -398,7 +398,7 @@ class AssetIndexer extends Component
                 ->folderId($folderId)
                 ->one();
 
-            if (is_null($assetModel)) {
+            if ($assetModel === null) {
                 $assetModel = new Asset();
                 $assetModel->volumeId = $volume->id;
                 $assetModel->folderId = $folderId;

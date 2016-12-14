@@ -318,7 +318,7 @@ class AssetTransforms extends Component
 
             $transformCondition = ['and', ['location' => $location]];
 
-            if (is_null($transform->format)) {
+            if ($transform->format === null) {
                 $transformCondition[] = ['format' => null];
             } else {
                 $transformCondition[] = ['format' => $transform->format];
@@ -400,7 +400,7 @@ class AssetTransforms extends Component
         $transformLocation = $this->_getTransformFolderName($transform);
 
         // Was it eager-loaded?
-        $fingerprint = $asset->id.':'.$transformLocation.(is_null($transform->format) ? '' : ':'.$transform->format);
+        $fingerprint = $asset->id.':'.$transformLocation.($transform->format === null ? '' : ':'.$transform->format);
 
         if (isset($this->_eagerLoadedTransformIndexes[$fingerprint])) {
             $entry = $this->_eagerLoadedTransformIndexes[$fingerprint];
@@ -416,7 +416,7 @@ class AssetTransforms extends Component
                 'location' => $transformLocation
             ]);
 
-        if (is_null($transform->format)) {
+        if ($transform->format === null) {
             // A generated auto-transform will have it's format set to null, but the filename will be populated.
             $query->andWhere(['format' => null]);
         } else {

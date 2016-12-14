@@ -517,7 +517,7 @@ class Search extends Component
         $driver = Craft::$app->getDb()->getDriverName();
 
         // Check for other attributes
-        if (!is_null($term->attribute)) {
+        if ($term->attribute !== null) {
             // Is attribute a valid fieldId?
             $fieldId = $this->_getFieldIdFromAttribute($term->attribute);
 

@@ -102,11 +102,11 @@ class VolumeFolder extends Model
      */
     public function getChildren()
     {
-        if (is_null($this->_children)) {
-            $this->_children = Craft::$app->getAssets()->findFolders(['parentId' => $this->id]);
+        if ($this->_children !== null) {
+            return $this->_children;
         }
 
-        return $this->_children;
+        return $this->_children = Craft::$app->getAssets()->findFolders(['parentId' => $this->id]);
     }
 
     /**
@@ -130,7 +130,7 @@ class VolumeFolder extends Model
      */
     public function addChild(VolumeFolder $folder)
     {
-        if (is_null($this->_children)) {
+        if ($this->_children === null) {
             $this->_children = [];
         }
 

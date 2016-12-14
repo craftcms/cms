@@ -272,7 +272,7 @@ class Asset extends Element
             'hasThumbs' => true,
             'criteria' => ['folderId' => $folder->id],
             'data' => [
-                'upload' => is_null($folder->volumeId) ? true : Craft::$app->getUser()->checkPermission('uploadToVolume:'.$folder->volumeId)
+                'upload' => $folder->volumeId === null ? true : Craft::$app->getUser()->checkPermission('uploadToVolume:'.$folder->volumeId)
             ]
         ];
 
@@ -568,11 +568,11 @@ class Asset extends Element
      */
     public function getVolume()
     {
-        if (is_null($this->_volume)) {
-            $this->_volume = Craft::$app->getVolumes()->getVolumeById($this->volumeId);
+        if ($this->_volume !== null) {
+            return $this->_volume;
         }
 
-        return $this->_volume;
+        return $this->_volume = Craft::$app->getVolumes()->getVolumeById($this->volumeId);
     }
 
     /**
