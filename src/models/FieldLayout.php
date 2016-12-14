@@ -72,7 +72,7 @@ class FieldLayout extends Model
             return [];
         }
 
-        $this->_tabs = Craft::$app->getFields()->getLayoutTabsById($this->id);
+        return $this->_tabs = Craft::$app->getFields()->getLayoutTabsById($this->id);
     }
 
     /**
