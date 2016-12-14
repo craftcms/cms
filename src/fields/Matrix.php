@@ -648,7 +648,7 @@ class Matrix extends Field implements EagerLoadingFieldInterface
     /**
      * Creates an array of blocks based on the given serialized data.
      *
-     * @param mixed                 $value   The raw field value
+     * @param array                 $value   The raw field value
      * @param ElementInterface|null $element The element the field is associated with, if there is one
      *
      * @return MatrixBlock[]
@@ -671,11 +671,12 @@ class Matrix extends Field implements EagerLoadingFieldInterface
 
             $ids = [];
 
-            foreach (array_keys($value) as $blockId) {
+            foreach ($value as $blockId => &$block) {
                 if (is_numeric($blockId) && $blockId != 0) {
                     $ids[] = $blockId;
                 }
             }
+            unset($block);
 
             if ($ids) {
                 $oldBlocksById = MatrixBlock::find()

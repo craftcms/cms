@@ -753,8 +753,8 @@ class View extends \yii\web\View
      */
     protected function registerAllAssetFiles()
     {
-        foreach (array_keys($this->assetBundles) as $bundle) {
-            $this->registerAssetFiles($bundle);
+        foreach ($this->assetBundles as $bundleName => $bundle) {
+            $this->registerAssetFiles($bundleName);
         }
     }
 

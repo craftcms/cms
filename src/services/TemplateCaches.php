@@ -209,12 +209,13 @@ class TemplateCaches extends Component
             $elementQuery->subQuery = $subQuery;
             $hash = md5($serialized);
 
-            foreach (array_keys($this->_cachedQueries) as $cacheKey) {
-                $this->_cachedQueries[$cacheKey][$hash] = [
+            foreach ($this->_cachedQueries as &$queries) {
+                $queries[$hash] = [
                     $elementQuery->elementType,
                     $serialized
                 ];
             }
+            unset($queries);
         }
     }
 
@@ -233,11 +234,12 @@ class TemplateCaches extends Component
         }
 
         if (!empty($this->_cacheElementIds)) {
-            foreach (array_keys($this->_cacheElementIds) as $cacheKey) {
-                if (!in_array($elementId, $this->_cacheElementIds[$cacheKey])) {
-                    $this->_cacheElementIds[$cacheKey][] = $elementId;
+            foreach ($this->_cacheElementIds as &$elementIds) {
+                if (!in_array($elementId, $elementIds, false)) {
+                    $elementIds[] = $elementId;
                 }
             }
+            unset($elementIds);
         }
     }
 
