@@ -543,7 +543,7 @@ class RichText extends Field
             return '{}';
         }
 
-        return Json::removeComments(file_get_contents($configPath));
+        return file_get_contents($configPath);
     }
 
     /**
