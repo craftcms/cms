@@ -5,10 +5,11 @@ Craft CMS Changelog
 
 ### Fixed
 
+- Use Imagick if available to manipulate image EXIF rotation data.
 - Fixed a bug where Craft would sometimes ignore the [maxCachedCloudImageSize](https://craftcms.com/docs/config-settings#maxCachedCloudImageSize) config setting.
 - Fixed a bug where some messages on the self-update page were not getting translated.
 
-## [v2.6.2954] - 2016-12-07
+## [v2.6.2954] - 2016-12-08
 
 ### Fixed
 - Fixed a PHP error that occurred on servers running PHP 5.3.
