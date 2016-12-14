@@ -110,14 +110,10 @@ class UserQuery extends ElementQuery
      */
     public function __set($name, $value)
     {
-        switch ($name) {
-            case 'group': {
-                $this->group($value);
-                break;
-            }
-            default: {
-                parent::__set($name, $value);
-            }
+        if ($name === 'group') {
+            $this->group($value);
+        } else {
+            parent::__set($name, $value);
         }
     }
 

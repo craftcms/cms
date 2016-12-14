@@ -265,17 +265,13 @@ class Et extends Component
 
         // Did they at least say why?
         if (!empty($etResponse->responseErrors)) {
-            switch ($etResponse->responseErrors[0]) {
-                // Validation errors
-                case 'not_public_domain': {
-                    // So...
-                    return true;
-                }
-
-                default: {
-                    $error = $etResponse->data['error'];
-                }
+            // If the domain isn't considered public in the first place,
+            // pretend everything worked out
+            if ($etResponse->responseErrors[0] === 'not_public_domain') {
+                return true;
             }
+
+            $error = $etResponse->data['error'];
         } else {
             $error = Craft::t('app', 'Craft is unable to transfer your license to this domain at this time.');
         }

@@ -92,14 +92,10 @@ class AssetQuery extends ElementQuery
      */
     public function __set($name, $value)
     {
-        switch ($name) {
-            case 'volume': {
-                $this->volume($value);
-                break;
-            }
-            default: {
-                parent::__set($name, $value);
-            }
+        if ($name === 'volume') {
+            $this->volume($value);
+        } else {
+            parent::__set($name, $value);
         }
     }
 
