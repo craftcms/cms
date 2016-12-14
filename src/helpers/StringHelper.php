@@ -997,7 +997,7 @@ class StringHelper extends \yii\helpers\StringHelper
      */
     public static function isUtf8($string)
     {
-        return static::encoding($string) == 'utf-8' ? true : false;
+        return static::encoding($string) === 'utf-8';
     }
 
     /**
