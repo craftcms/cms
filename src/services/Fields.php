@@ -460,11 +460,12 @@ class Fields extends Component
         if ($context === null) {
             $context = [Craft::$app->getContent()->fieldContext];
         } else if (!is_array($context)) {
-            $context = [$context];
+            $context = (array)$context;
         }
 
         $missingContexts = [];
 
+        /** @noinspection ForeachSourceInspection - FP */
         foreach ($context as $c) {
             if (!isset($this->_allFieldsInContext[$c])) {
                 $missingContexts[] = $c;
@@ -489,6 +490,7 @@ class Fields extends Component
 
         $fields = [];
 
+        /** @noinspection ForeachSourceInspection - FP */
         foreach ($context as $c) {
             if (!$indexBy) {
                 $fields = array_merge($fields, $this->_allFieldsInContext[$c]);
@@ -1173,11 +1175,7 @@ class Fields extends Component
             return false;
         }
 
-        if (!is_array($layoutId)) {
-            $layoutId = [$layoutId];
-        }
-
-        foreach ($layoutId as $thisLayoutId) {
+        foreach ((array)$layoutId as $thisLayoutId) {
             $layout = $this->getLayoutById($thisLayoutId);
 
             if ($layout) {

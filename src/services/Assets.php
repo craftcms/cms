@@ -574,11 +574,7 @@ class Assets extends Component
      */
     public function deleteFoldersByIds($folderIds, $deleteFolder = true)
     {
-        if (!is_array($folderIds)) {
-            $folderIds = [$folderIds];
-        }
-
-        foreach ($folderIds as $folderId) {
+        foreach ((array)$folderIds as $folderId) {
             $folder = $this->getFolderById($folderId);
 
             if ($folder) {

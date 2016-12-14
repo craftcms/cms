@@ -470,7 +470,7 @@ class TemplateCaches extends Component
 
             if ($task) {
                 if (!is_array($task->elementId)) {
-                    $task->elementId = [$task->elementId];
+                    $task->elementId = (array)$task->elementId;
                 }
 
                 if (is_array($elementId)) {

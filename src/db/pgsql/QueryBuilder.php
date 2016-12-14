@@ -85,11 +85,7 @@ class QueryBuilder extends \yii\db\pgsql\QueryBuilder
             }
         }
 
-        $primaryKeys = $schema->getTableSchema($table)->primaryKey;
-
-        if (!is_array($primaryKeys)) {
-            $primaryKeys = [$primaryKeys];
-        }
+        $primaryKeys = (array)$schema->getTableSchema($table)->primaryKey;
 
         $sql = 'INSERT INTO '.$schema->quoteTableName($table).
             ' ('.implode(', ', $names).') VALUES ('.implode(', ', $placeholders).')'.

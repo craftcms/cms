@@ -342,7 +342,7 @@ class Extension extends \Twig_Extension implements \Twig_Extension_GlobalsInterf
         $filteredArray = [];
 
         if (!is_array($exclude)) {
-            $exclude = [$exclude];
+            $exclude = (array)$exclude;
         }
 
         foreach ($arr as $key => $value) {

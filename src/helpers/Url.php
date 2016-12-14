@@ -274,7 +274,7 @@ class Url
 
                 if ($path) {
                     if (!is_array($params)) {
-                        $params = [$params];
+                        $params = (array)$params;
                     }
 
                     $params[$dateParam] = filemtime($path);

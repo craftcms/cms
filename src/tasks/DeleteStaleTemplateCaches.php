@@ -75,7 +75,7 @@ class DeleteStaleTemplateCaches extends Task
 
         // Normalize $elementId
         if (!is_array($this->elementId)) {
-            $this->elementId = [$this->elementId];
+            $this->elementId = (array)$this->elementId;
         }
 
         // Figure out how many rows we're dealing with
