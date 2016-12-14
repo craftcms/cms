@@ -806,8 +806,7 @@ class Fields extends Component
                 $this->_allFieldHandlesByContext[$field->context][] = $field->handle;
             }
 
-            unset($this->_allFieldsInContext[$field->context]);
-            unset($this->_fieldsWithContent[$field->context]);
+            unset($this->_allFieldsInContext[$field->context], $this->_fieldsWithContent[$field->context]);
 
             $field->afterSave($isNewField);
 
