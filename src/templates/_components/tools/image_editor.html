@@ -41,10 +41,6 @@
     <div class="filters hidden" data-view="filters">
         <ul>
             <li><img src="http://placehold.it/80x80"><span>{{ 'Original'|t('app') }}</span></li>
-            {% set filters = craft.app.imageEffects.getAllFilters() %}
-            {% for filter in filters %}
-                <li><img src="http://placehold.it/80x80"><span>{{ filter }}</span></li></option>
-            {% endfor %}
         </ul>
     </div>
 </div>
