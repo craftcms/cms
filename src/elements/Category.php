@@ -203,9 +203,9 @@ class Category extends Element
      */
     public static function defaultTableAttributes($source = null)
     {
-        $attributes = ['link'];
-
-        return $attributes;
+        return [
+            'link',
+        ];
     }
 
     // Properties

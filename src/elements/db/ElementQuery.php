@@ -1004,9 +1004,7 @@ class ElementQuery extends Query implements ElementQueryInterface, Arrayable, Co
             }
         }
 
-        $elements = $this->_createElements($rows);
-
-        return $elements;
+        return $this->_createElements($rows);
     }
 
     /**

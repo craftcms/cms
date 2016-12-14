@@ -26,9 +26,8 @@ abstract class Component extends Model implements ComponentInterface
     public static function displayName()
     {
         $classNameParts = explode('\\', static::class);
-        $displayName = array_pop($classNameParts);
 
-        return $displayName;
+        return array_pop($classNameParts);
     }
 
     /**

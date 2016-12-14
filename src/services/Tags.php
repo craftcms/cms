@@ -376,9 +376,6 @@ class Tags extends Component
      */
     public function getTagById($tagId, $siteId)
     {
-        /** @var Tag $tag */
-        $tag = Craft::$app->getElements()->getElementById($tagId, Tag::class, $siteId);
-
-        return $tag;
+        return Craft::$app->getElements()->getElementById($tagId, Tag::class, $siteId);
     }
 }

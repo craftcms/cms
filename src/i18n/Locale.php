@@ -837,9 +837,8 @@ class Locale extends Object
             $formatter->setAttribute(NumberFormatter::MAX_SIGNIFICANT_DIGITS, 0);
             $formattedPrice = $formatter->formatCurrency(0, $currency);
             $zero = $formatter->getSymbol(NumberFormatter::ZERO_DIGIT_SYMBOL);
-            $currencySymbol = str_replace($zero, '', $formattedPrice);
 
-            return $currencySymbol;
+            return str_replace($zero, '', $formattedPrice);
         }
 
         if (isset($this->data['currencySymbols'][$currency])) {

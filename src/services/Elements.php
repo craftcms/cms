@@ -120,10 +120,7 @@ class Elements extends Component
             $config = ['type' => $config];
         }
 
-        /** @var Element $element */
-        $element = ComponentHelper::createComponent($config, ElementInterface::class);
-
-        return $element;
+        return ComponentHelper::createComponent($config, ElementInterface::class);
     }
 
     // Finding Elements

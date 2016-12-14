@@ -32,10 +32,8 @@ class UploadedFile extends \yii\web\UploadedFile
     public static function getInstanceByName($name)
     {
         $name = static::_normalizeName($name);
-        /** @var UploadedFile $file */
-        $file = parent::getInstanceByName($name);
 
-        return $file;
+        return parent::getInstanceByName($name);
     }
 
     /**

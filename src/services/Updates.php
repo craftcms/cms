@@ -257,9 +257,7 @@ class Updates extends Component
                 ['handle' => $plugin->getHandle()])
             ->execute();
 
-        $success = (bool)$affectedRows;
-
-        return $success;
+        return (bool)$affectedRows;
     }
 
     /**
@@ -288,9 +286,7 @@ class Updates extends Component
 
         $updateModel->plugins = $pluginUpdateModels;
 
-        $etModel = Craft::$app->getEt()->checkForUpdates($updateModel);
-
-        return $etModel;
+        return Craft::$app->getEt()->checkForUpdates($updateModel);
     }
 
     /**

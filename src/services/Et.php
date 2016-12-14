@@ -75,9 +75,8 @@ class Et extends Component
     public function ping()
     {
         $et = $this->_createEtTransport(static::ENDPOINT_PING);
-        $etResponse = $et->phoneHome();
 
-        return $etResponse;
+        return $et->phoneHome();
     }
 
     /**
@@ -313,9 +312,8 @@ class Et extends Component
     {
         $et = $this->_createEtTransport(static::ENDPOINT_GET_COUPON_PRICE);
         $et->setData(['edition' => $edition, 'couponCode' => $couponCode]);
-        $etResponse = $et->phoneHome();
 
-        return $etResponse;
+        return $et->phoneHome();
     }
 
     /**
@@ -418,9 +416,8 @@ class Et extends Component
         $et->setData([
             'pluginHandle' => $pluginHandle
         ]);
-        $etResponse = $et->phoneHome();
 
-        return $etResponse;
+        return $et->phoneHome();
     }
 
     /**
@@ -436,9 +433,8 @@ class Et extends Component
         $et->setData([
             'pluginHandle' => $pluginHandle
         ]);
-        $etResponse = $et->phoneHome();
 
-        return $etResponse;
+        return $et->phoneHome();
     }
 
     /**

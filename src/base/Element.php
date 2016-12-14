@@ -909,9 +909,8 @@ abstract class Element extends Component implements ElementInterface
     {
         if ($this->uri !== null) {
             $path = ($this->uri == '__home__') ? '' : $this->uri;
-            $url = Url::getSiteUrl($path, null, null, $this->siteId);
 
-            return $url;
+            return Url::getSiteUrl($path, null, null, $this->siteId);
         }
 
         return null;
@@ -1355,9 +1354,7 @@ abstract class Element extends Component implements ElementInterface
             $this->normalizeFieldValue($fieldHandle);
         }
 
-        $behavior = $this->getBehavior('customFields');
-
-        return $behavior->$fieldHandle;
+        return $this->getBehavior('customFields')->$fieldHandle;
     }
 
     /**

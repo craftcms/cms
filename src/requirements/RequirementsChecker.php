@@ -376,9 +376,7 @@ class RequirementsChecker
      */
     public function getServerInfo()
     {
-        $info = isset($_SERVER['SERVER_SOFTWARE']) ? $_SERVER['SERVER_SOFTWARE'] : '';
-
-        return $info;
+        return isset($_SERVER['SERVER_SOFTWARE']) ? $_SERVER['SERVER_SOFTWARE'] : '';
     }
 
     /**
@@ -388,9 +386,7 @@ class RequirementsChecker
      */
     public function getCurrentDate()
     {
-        $nowDate = @strftime('%Y-%m-%d %H:%M', time());
-
-        return $nowDate;
+        return @strftime('%Y-%m-%d %H:%M', time());
     }
 
     /**

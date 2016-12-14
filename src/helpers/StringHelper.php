@@ -456,9 +456,8 @@ class StringHelper extends \yii\helpers\StringHelper
     public static function toKebabCase($string, $glue = '-', $lower = true, $removePunctuation = true)
     {
         $words = self::_prepStringForCasing($string, $lower, $removePunctuation);
-        $string = implode($glue, $words);
 
-        return $string;
+        return implode($glue, $words);
     }
 
     /**
@@ -524,9 +523,8 @@ class StringHelper extends \yii\helpers\StringHelper
     public static function toSnakeCase($string)
     {
         $words = self::_prepStringForCasing($string);
-        $string = implode('_', $words);
 
-        return $string;
+        return implode('_', $words);
     }
 
     /**

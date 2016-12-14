@@ -111,9 +111,8 @@ class Asset extends Element
 
         $additionalCriteria = $context == 'settings' ? ['parentId' => ':empty:'] : [];
         $tree = Craft::$app->getAssets()->getFolderTreeByVolumeIds($sourceIds, $additionalCriteria);
-        $sources = static::_assembleSourceList($tree, $context != 'settings');
 
-        return $sources;
+        return static::_assembleSourceList($tree, $context != 'settings');
     }
 
     /**
@@ -231,9 +230,11 @@ class Asset extends Element
      */
     public static function defaultTableAttributes($source = null)
     {
-        $attributes = ['filename', 'size', 'dateModified'];
-
-        return $attributes;
+        return [
+            'filename',
+            'size',
+            'dateModified',
+        ];
     }
 
     /**
