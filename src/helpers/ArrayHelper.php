@@ -100,7 +100,7 @@ class ArrayHelper extends \yii\helpers\ArrayHelper
         if ($prepend) {
             array_unshift($arr, $value);
         } else {
-            array_push($arr, $value);
+            $arr[] = $value;
         }
     }
 

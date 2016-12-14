@@ -270,7 +270,7 @@ abstract class Volume extends SavableComponent implements VolumeInterface
         $parts = explode('/', $path);
 
         array_pop($parts);
-        array_push($parts, $newName);
+        $parts[] = $newName;
 
         $newPath = implode('/', $parts);
 
