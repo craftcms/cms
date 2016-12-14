@@ -16,6 +16,7 @@ if ($this->checkDatabaseCreds()) {
     switch ($this->dbCreds['driver']) {
         case 'mysql':
             if (extension_loaded('pdo') && extension_loaded('pdo_mysql')) {
+                /** @noinspection ElvisOperatorCanBeUsedInspection */
                 $requirements[] = [
                     'name' => "MySQL {$this->requiredMySqlVersion}+",
                     'mandatory' => true,
@@ -25,6 +26,7 @@ if ($this->checkDatabaseCreds()) {
 
                 // If we know we already can't connect to the database, don't both running this one so we don't get double error messages.
                 if (!$this->dbConnectionError) {
+                    /** @noinspection ElvisOperatorCanBeUsedInspection */
                     $requirements[] = [
                         'name' => 'MySQL InnoDB support',
                         'mandatory' => true,
@@ -36,6 +38,7 @@ if ($this->checkDatabaseCreds()) {
             break;
         case 'pgsql':
             if (extension_loaded('pdo') && extension_loaded('pdo_pgsql')) {
+                /** @noinspection ElvisOperatorCanBeUsedInspection */
                 $requirements[] = [
                     'name' => "PostgreSQL {$this->requiredPgSqlVersion}+",
                     'mandatory' => true,

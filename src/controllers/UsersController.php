@@ -929,8 +929,7 @@ class UsersController extends Controller
         if (Craft::$app->getConfig()->get('useEmailAsUsername')) {
             $user->username = $user->email;
         } else {
-            $user->username = $request->getBodyParam('username',
-                ($user->username ? $user->username : $user->email));
+            $user->username = $request->getBodyParam('username', ($user->username ?: $user->email));
         }
 
         $user->firstName = $request->getBodyParam('firstName', $user->firstName);

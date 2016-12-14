@@ -313,7 +313,7 @@ class EntryRevisionsController extends BaseEntriesController
         $draft->title = Craft::$app->getRequest()->getBodyParam('title');
 
         // Author
-        $authorId = Craft::$app->getRequest()->getBodyParam('author', ($draft->authorId ? $draft->authorId : Craft::$app->getUser()->getIdentity()->id));
+        $authorId = Craft::$app->getRequest()->getBodyParam('author', ($draft->authorId ?: Craft::$app->getUser()->getIdentity()->id));
 
         if (is_array($authorId)) {
             $authorId = isset($authorId[0]) ? $authorId[0] : null;

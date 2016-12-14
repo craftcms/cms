@@ -310,7 +310,7 @@ class Matrix extends Field implements EagerLoadingFieldInterface
             '"'.Craft::$app->getView()->namespaceInputId($id).'", '.
             Json::encode($blockTypeInfo, JSON_UNESCAPED_UNICODE).', '.
             '"'.Craft::$app->getView()->namespaceInputName($this->handle).'", '.
-            ($this->maxBlocks ? $this->maxBlocks : 'null').
+            ($this->maxBlocks ?: 'null').
             ');');
 
         Craft::$app->getView()->registerTranslations('app', [
@@ -354,7 +354,7 @@ class Matrix extends Field implements EagerLoadingFieldInterface
             [
                 ArrayValidator::class,
                 'min' => $this->required ? 1 : null,
-                'max' => $this->maxBlocks ? $this->maxBlocks : null,
+                'max' => $this->maxBlocks ?: null,
                 'tooFew' => Craft::t('app', '{attribute} should contain at least {min, number} {min, plural, one{block} other{blocks}}.'),
                 'tooMany' => Craft::t('app', '{attribute} should contain at most {max, number} {max, plural, one{block} other{blocks}}.'),
             ],

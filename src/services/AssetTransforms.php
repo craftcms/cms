@@ -1282,7 +1282,7 @@ class AssetTransforms extends Component
      */
     private function _getUnnamedTransformFolderName(AssetTransform $transform)
     {
-        return '_'.($transform->width ? $transform->width : 'AUTO').'x'.($transform->height ? $transform->height : 'AUTO').
+        return '_'.($transform->width ?: 'AUTO').'x'.($transform->height ?: 'AUTO').
             '_'.$transform->mode.
             '_'.$transform->position.
             ($transform->quality ? '_'.$transform->quality : '');
@@ -1328,7 +1328,7 @@ class AssetTransforms extends Component
         }
 
         $imageSource = $asset->getTransformSource();
-        $quality = $transform->quality ? $transform->quality : Craft::$app->getConfig()->get('defaultImageQuality');
+        $quality = $transform->quality ?: Craft::$app->getConfig()->get('defaultImageQuality');
 
         $images = Craft::$app->getImages();
         if (StringHelper::toLowerCase($asset->getExtension()) == 'svg' && $index->detectedFormat != 'svg') {

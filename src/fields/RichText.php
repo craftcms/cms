@@ -272,7 +272,7 @@ class RichText extends Field
     public function getStaticHtml($value, $element)
     {
         /** @var RichTextData|null $value */
-        return '<div class="text">'.($value ? $value : '&nbsp;').'</div>';
+        return '<div class="text">'.($value ?: '&nbsp;').'</div>';
     }
 
     /**
