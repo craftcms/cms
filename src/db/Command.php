@@ -81,6 +81,7 @@ class Command extends \yii\db\Command
                 $row[] = $date;
                 $row[] = StringHelper::UUID();
             }
+            unset($row);
         }
 
         parent::batchInsert($table, $columns, $rows);

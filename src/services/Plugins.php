@@ -203,6 +203,7 @@ class Plugins extends Component
                 $this->_registerPlugin($handle, $plugin);
             }
         }
+        unset($row);
 
         $this->_loadingPlugins = false;
         $this->_pluginsLoaded = true;

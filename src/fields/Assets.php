@@ -597,6 +597,7 @@ class Assets extends BaseRelationField
                     'asciiOnly' => Craft::$app->getConfig()->get('convertFilenamesToAscii')
                 ]);
             }
+            unset($segment);
             $subpath = implode('/', $segments);
 
             $folder = Craft::$app->getAssets()->findFolder([

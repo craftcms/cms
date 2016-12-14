@@ -157,6 +157,7 @@ abstract class BaseOptionsField extends Field implements PreviewableFieldInterfa
                     $label = $this->getOptionLabel($val);
                     $val = new OptionData($label, $val, true);
                 }
+                unset($val);
             } else {
                 $value = [];
             }
