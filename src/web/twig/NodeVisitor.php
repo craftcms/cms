@@ -149,6 +149,7 @@ class NodeVisitor implements \Twig_NodeVisitorInterface
         if ($this->_foundAllEventTags() === false) {
             foreach ($node as $k => $n) {
                 // todo: we can remove this condition for Twig 2
+                /** @noinspection PhpDeprecationInspection */
                 if ($n instanceof \Twig_NodeInterface) {
                     $node->setNode($k, $this->_findEventTags($n));
                 }
