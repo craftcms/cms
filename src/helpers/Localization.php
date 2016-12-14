@@ -47,11 +47,8 @@ class Localization
             $decimalSymbol = $locale->getNumberSymbol(Locale::SYMBOL_DECIMAL_SEPARATOR);
             $groupSymbol = $locale->getNumberSymbol(Locale::SYMBOL_GROUPING_SEPARATOR);
 
-            // Remove any group symbols
-            $number = str_replace($groupSymbol, '', $number);
-
-            // Use a period for the decimal symbol
-            $number = str_replace($decimalSymbol, '.', $number);
+            // Remove any group symbols and use a period for the decimal symbol
+            $number = str_replace([$groupSymbol, $decimalSymbol], ['', '.'], $number);
         }
 
         return $number;
