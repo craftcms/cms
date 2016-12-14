@@ -1029,7 +1029,7 @@ class Assets extends Component
                 $parameters->path = '';
                 $parameters->parentId = ':empty:';
             } else {
-                $parameters->path = join('/', $parts).'/';
+                $parameters->path = implode('/', $parts).'/';
             }
 
             // Look up the parent folder
@@ -1166,7 +1166,7 @@ class Assets extends Component
                 // In case we're changing the filename, make sure that we're not missing that.
                 $parts = explode('/', $toTransformPath);
                 $transformName = array_pop($parts);
-                $toTransformPath = join('/', $parts).'/'.pathinfo($filename, PATHINFO_FILENAME).'.'.pathinfo($transformName, PATHINFO_EXTENSION);
+                $toTransformPath = implode('/', $parts).'/'.pathinfo($filename, PATHINFO_FILENAME).'.'.pathinfo($transformName, PATHINFO_EXTENSION);
 
                 $baseFrom = $asset->getFolder()->path;
                 $baseTo = $targetFolder->path;

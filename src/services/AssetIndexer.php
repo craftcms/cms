@@ -371,7 +371,7 @@ class AssetIndexer extends Component
             $parts = explode('/', $uriPath);
             $filename = array_pop($parts);
 
-            $searchFullPath = join('/', $parts).(empty($parts) ? '' : '/');
+            $searchFullPath = implode('/', $parts).(empty($parts) ? '' : '/');
 
             if (empty($searchFullPath)) {
                 $parentId = ':empty:';
