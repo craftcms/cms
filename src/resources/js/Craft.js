@@ -1,4 +1,4 @@
-/*! Craft 3.0.0 - 2016-12-10 */
+/*! Craft 3.0.0 - 2016-12-13 */
 (function($){
 
 // Set all the standard Craft.* stuff
@@ -13845,16 +13845,25 @@ Craft.Pane = Garnish.Base.extend(
         },
 
         updateSidebarStyles: function() {
+
+            var $pageHeader = $('#page-header');
+
             this.updateSidebarStyles._styles = {};
 
             this.updateSidebarStyles._scrollTop = Garnish.$win.scrollTop();
-            this.updateSidebarStyles._pageHeaderHeight = $('#page-header').outerHeight();
+            this.updateSidebarStyles._pageHeaderHeight = $pageHeader.outerHeight();
             this.updateSidebarStyles._paneOffset = this.$pane.offset().top + this.$tabsContainer.height();
-            this.updateSidebarStyles._paneHeight = this.$pane.outerHeight() - this.$tabsContainer.height() - this.updateSidebarStyles._pageHeaderHeight;
+            this.updateSidebarStyles._paneHeight = this.$pane.outerHeight() - this.$tabsContainer.height();
+
+			if($pageHeader.hasClass('fixed'))
+            {
+				this.updateSidebarStyles._paneHeight -= this.updateSidebarStyles._pageHeaderHeight;
+            }
+
             this.updateSidebarStyles._windowHeight = Garnish.$win.height();
 
             // Have we scrolled passed the top of the pane?
-            if (Garnish.$win.width() > 992 && this.updateSidebarStyles._scrollTop > this.updateSidebarStyles._paneOffset) {
+            if (Garnish.$win.width() > 768 && this.updateSidebarStyles._scrollTop > this.updateSidebarStyles._paneOffset) {
                 // Set the top position to the difference
                 this.updateSidebarStyles._styles.position = 'fixed';
                 this.updateSidebarStyles._styles.top = (24 + this.updateSidebarStyles._pageHeaderHeight) + 'px';

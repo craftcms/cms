@@ -8,10 +8,13 @@
 namespace craft\services;
 
 use Craft;
+use craft\base\GuzzleClient;
 use craft\dates\DateTime;
 use craft\helpers\DateTimeHelper;
 use craft\models\Url;
 use yii\base\Component;
+use Zend\Feed\Reader\Exception\RuntimeException;
+use Zend\Feed\Reader\Reader;
 
 /**
  * The Feeds service provides APIs for fetching remote RSS and Atom feeds.
@@ -25,20 +28,6 @@ class Feeds extends Component
 {
     // Public Methods
     // =========================================================================
-
-    /**
-     * Initializes the application component.
-     *
-     * @return void
-     */
-    public function init()
-    {
-        parent::init();
-
-        // Import this here to ensure that libs like SimplePie are using our version of the class and not any server's
-        // random version.
-        require_once Craft::getAlias('@vendor/simplepie/simplepie/idn/idna_convert.class.php');
-    }
 
     /**
      * Fetches and parses an RSS or Atom feed, and returns its items.
@@ -70,6 +59,7 @@ class Feeds extends Component
      * @param string  $cacheDuration Any valid [PHP time format](http://www.php.net/manual/en/datetime.formats.time.php).
      *
      * @return array|string The list of feed items.
+     * @throws \Zend\Feed\Reader\Exception\RuntimeException
      */
     public function getFeedItems($url, $limit = null, $offset = null, $cacheDuration = null)
     {
@@ -77,238 +67,90 @@ class Feeds extends Component
         $limit = ($limit ?: 0);
         $offset = ($offset ?: 0);
 
-        $items = [];
+        $return = [];
 
-        if (!extension_loaded('dom')) {
-            Craft::warning('Craft needs the PHP DOM extension (http://www.php.net/manual/en/book.dom.php) enabled to parse feeds.', __METHOD__);
+        // Key based on the classname, url, limit and offset.
+        $key = md5(Feeds::className().'.'.$url.'.'.$limit.'.'.$offset);
 
-            return $items;
-        }
+        // See if we have this cached already.
+        if (Craft::$app->getCache()->get($key) === false) {
 
-        if (!$cacheDuration) {
-            /** @noinspection CallableParameterUseCaseInTypeContextInspection */
-            $cacheDuration = Craft::$app->getConfig()->getCacheDuration();
-        } else {
-            /** @noinspection CallableParameterUseCaseInTypeContextInspection */
-            $cacheDuration = DateTimeHelper::timeFormatToSeconds($cacheDuration);
-        }
-
-        // Potentially long-running request, so close session to prevent session blocking on subsequent requests.
-        Craft::$app->getSession()->close();
-
-        $feed = new \SimplePie();
-        $feed->set_feed_url($url);
-        $feed->set_cache_location(Craft::$app->getPath()->getCachePath());
-        $feed->set_cache_duration($cacheDuration);
-        $feed->init();
-
-        // Something went wrong.
-        if ($feed->error()) {
-            Craft::warning('There was a problem parsing the feed: '.$feed->error(), __METHOD__);
-
-            return [];
-        }
-
-        foreach ($feed->get_items($offset, $limit) as $item) {
-            /** @var \SimplePie_Item $item */
-            // Validate the permalink
-            $permalink = $item->get_permalink();
-
-            if ($permalink) {
-                $urlModel = new Url();
-                $urlModel->url = $permalink;
-
-                if (!$urlModel->validate()) {
-                    Craft::info('An item was omitted from the feed ('.$url.') because its permalink was an invalid URL: '.$permalink, 'application');
-                    continue;
-                }
+            if (!$cacheDuration) {
+                /** @noinspection CallableParameterUseCaseInTypeContextInspection */
+                $cacheDuration = Craft::$app->getConfig()->getCacheDuration();
+            } else {
+                /** @noinspection CallableParameterUseCaseInTypeContextInspection */
+                $cacheDuration = DateTimeHelper::timeFormatToSeconds($cacheDuration);
             }
 
-            $date = $item->get_date('U');
-            $dateUpdated = $item->get_updated_date('U');
+            // Potentially long-running request, so close session to prevent session blocking on subsequent requests.
+            Craft::$app->getSession()->close();
 
-            $items[] = [
-                'authors' => $this->_getItemAuthors($item->get_authors()),
-                'categories' => $this->_getItemCategories($item->get_categories()),
-                'content' => $item->get_content(true),
-                'contributors' => $this->_getItemAuthors($item->get_contributors()),
-                'date' => $date ? new DateTime('@'.$date) : null,
-                'dateUpdated' => $dateUpdated ? new DateTime('@'.$dateUpdated) : null,
-                'permalink' => $item->get_permalink(),
-                'summary' => $item->get_description(true),
-                'title' => $item->get_title(),
-                'enclosures' => $this->_getEnclosures($item->get_enclosures()),
-            ];
+            $guzzleClient = new GuzzleClient();
+
+            Reader::setHttpClient($guzzleClient);
+
+            try {
+                $items = Reader::import($url);
+            } catch (RuntimeException $e) {
+                Craft::warning('There was a problem parsing the feed: '.$e->getMessage(), __METHOD__);
+
+                return [];
+            }
+
+            foreach ($items as $item) {
+                /** @var \Zend\Feed\Reader\Entry\EntryInterface $item */
+                // Validate the permalink
+                $permalink = $item->getPermalink();
+
+                if ($permalink) {
+                    $urlModel = new Url();
+                    $urlModel->url = $permalink;
+
+                    if (!$urlModel->validate()) {
+                        Craft::info('An item was omitted from the feed ('.$url.') because its permalink was an invalid URL: '.$permalink, 'application');
+                        continue;
+                    }
+                }
+
+                $date = $item->getDateCreated()->format('U');
+                $dateUpdated = $item->getDateModified()->format('U');
+
+                $return[] = [
+                    'authors' => $this->_getItemAuthors($item->getAuthors()),
+                    'categories' => $this->_getItemCategories($item->getCategories()),
+                    'content' => $item->getContent(),
+                    // See: https://github.com/zendframework/zendframework/issues/2969
+                    // and https://github.com/zendframework/zendframework/pull/3570
+                    'contributors' => $this->_getItemAuthors($item->getAuthors()),
+                    'date' => $date ? new DateTime('@'.$date) : null,
+                    'dateUpdated' => $dateUpdated ? new DateTime('@'.$dateUpdated) : null,
+                    'permalink' => $item->getPermalink(),
+                    'summary' => $item->getDescription(),
+                    'title' => $item->getTitle(),
+                    'enclosures' => $item->getEnclosure(),
+                ];
+            }
+
+            if ($limit === 0) {
+                $return = array_slice($return, $offset);
+            } else {
+                $return = array_slice($return, $offset, $limit);
+            }
+
+            Craft::$app->getCache()->set($key, $return, $cacheDuration);
         }
 
-        return $items;
+        return $return;
     }
 
     // Private Methods
-    // =========================================================================
-
-    /**
-     * @param \SimplePie_Enclosure[] $objects
-     *
-     * @return array
-     */
-    private function _getEnclosures($objects)
-    {
-        $enclosures = [];
-
-        if ($objects) {
-            foreach ($objects as $object) {
-                $enclosures[] = [
-                    'bitrate' => $object->get_bitrate(),
-                    'captions' => $this->_getCaptions($object->get_captions()),
-                    'categories' => $this->_getCategories($object->get_categories()),
-                    'channels' => $object->get_channels(),
-                    'copyright' => $object->get_copyright(),
-                    'credits' => $this->_getCredits($object->get_credits()),
-                    'description' => $object->get_description(),
-                    'duration' => $object->get_duration(),
-                    'expression' => $object->get_expression(),
-                    'extension' => $object->get_extension(),
-                    'framerate' => $object->get_framerate(),
-                    'handler' => $object->get_handler(),
-                    'hashes' => $object->get_hashes(),
-                    'height' => $object->get_height(),
-                    'language' => $object->get_language(),
-                    'keywords' => $object->get_keywords(),
-                    'length' => $object->get_length(),
-                    'link' => $object->get_link(),
-                    'medium' => $object->get_medium(),
-                    'player' => $object->get_player(),
-                    'ratings' => $this->_getRatings($object->get_ratings()),
-                    'restrictions' => $this->_getRestrictions($object->get_restrictions()),
-                    'samplingRate' => $object->get_sampling_rate(),
-                    'size' => $object->get_size(),
-                    'thumbnails' => $object->get_thumbnails(),
-                    'title' => $object->get_title(),
-                    'type' => $object->get_type(),
-                    'width' => $object->get_width(),
-                ];
-            }
-        }
-
-        return $enclosures;
-    }
-
-    /**
-     * @param \SimplePie_Rating[] $objects
-     *
-     * @return array
-     */
-    private function _getRatings($objects)
-    {
-        $ratings = [];
-
-        if ($objects) {
-            foreach ($objects as $object) {
-                $ratings[] = [
-                    'scheme' => $object->get_scheme(),
-                    'value' => $object->get_value(),
-                ];
-            }
-        }
-
-        return $ratings;
-    }
-
-    /**
-     * @param \SimplePie_Restriction[] $objects
-     *
-     * @return array
-     */
-    private function _getRestrictions($objects)
-    {
-        $restrictions = [];
-
-        if ($objects) {
-            foreach ($objects as $object) {
-                $restrictions[] = [
-                    'relationship' => $object->get_relationship(),
-                    'type' => $object->get_type(),
-                    'value' => $object->get_value(),
-                ];
-            }
-        }
-
-        return $restrictions;
-    }
-
-    /**
-     * @param \SimplePie_Caption[] $objects
-     *
-     * @return array
-     */
-    private function _getCaptions($objects)
-    {
-        $captions = [];
-
-        if ($objects) {
-            foreach ($objects as $object) {
-                $captions[] = [
-                    'endtime' => $object->get_endtime(),
-                    'language' => $object->get_language(),
-                    'starttime' => $object->get_starttime(),
-                    'text' => $object->get_text(),
-                    'type' => $object->get_type(),
-                ];
-            }
-        }
-
-        return $captions;
-    }
-
-    /**
-     * @param \SimplePie_Credit[] $objects
-     *
-     * @return array
-     */
-    private function _getCredits($objects)
-    {
-        $credits = [];
-
-        if ($objects) {
-            foreach ($objects as $object) {
-                $credits[] = [
-                    'role' => $object->get_role(),
-                    'scheme' => $object->get_scheme(),
-                    'name' => $object->get_name(),
-                ];
-            }
-        }
-
-        return $credits;
-    }
-
-    /**
-     * @param \SimplePie_Category[] $objects
-     *
-     * @return array
-     */
-    private function _getCategories($objects)
-    {
-        $categories = [];
-
-        if ($objects) {
-            foreach ($objects as $object) {
-                $categories[] = [
-                    'term' => $object->get_term(),
-                    'scheme' => $object->get_scheme(),
-                    'label' => $object->get_label(),
-                ];
-            }
-        }
-
-        return $categories;
-    }
+    // =========================================================================\
 
     /**
      * Returns an array of authors.
      *
-     * @param \SimplePie_Author[] $objects
+     * @param \stdClass[] $objects
      *
      * @return array
      */
@@ -319,9 +161,9 @@ class Feeds extends Component
         if ($objects) {
             foreach ($objects as $object) {
                 $authors[] = [
-                    'name' => $object->get_name(),
-                    'url' => $object->get_link(),
-                    'email' => $object->get_email(),
+                    'name' => isset($object['name']) ? $object['name'] : '',
+                    'url' => isset($object['uri']) ? $object['uri'] : '',
+                    'email' => isset($object['email']) ? $object['email'] : '',
                 ];
             }
         }
@@ -332,7 +174,7 @@ class Feeds extends Component
     /**
      * Returns an array of categories.
      *
-     * @param \SimplePie_Category[] $objects
+     * @param \stdClass[] $objects
      *
      * @return array
      */
@@ -343,9 +185,9 @@ class Feeds extends Component
         if ($objects) {
             foreach ($objects as $object) {
                 $categories[] = [
-                    'term' => $object->get_term(),
-                    'scheme' => $object->get_scheme(),
-                    'label' => $object->get_label(),
+                    'term' => isset($object['term']) ? $object['term'] : '',
+                    'scheme' => isset($object['scheme']) ? $object['scheme'] : '',
+                    'label' => isset($object['label']) ? $object['label'] : '',
                 ];
             }
         }

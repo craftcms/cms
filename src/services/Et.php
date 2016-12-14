@@ -499,7 +499,7 @@ class Et extends Component
 
             if (is_array($attributes)) {
                 // errors => responseErrors
-                if (isset($attributes['errors'])) {
+                if (array_key_exists('errors', $attributes)) {
                     $attributes['responseErrors'] = $attributes['errors'];
                     unset($attributes['errors']);
                 }

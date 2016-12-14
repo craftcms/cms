@@ -20,7 +20,6 @@ use craft\models\CraftSupport;
 use craft\web\Controller;
 use craft\web\UploadedFile;
 use GuzzleHttp\Client;
-use HelpSpot\HelpSpot;
 use HelpSpot\HelpSpotGuzzleClient;
 use yii\base\ErrorException;
 use yii\base\Exception;
@@ -294,6 +293,9 @@ class DashboardController extends Controller
      * Creates a new support ticket for the CraftSupport widget.
      *
      * @return string
+     * @throws \yii\base\ErrorException
+     * @throws \yii\web\BadRequestHttpException
+     * @throws \yii\base\InvalidParamException
      */
     public function actionSendSupportRequest()
     {
@@ -420,7 +422,7 @@ class DashboardController extends Controller
                     array_splice($backupFiles, 3);
 
                     foreach ($backupFiles as $backupFile) {
-                        if (pathinfo($backupFile, PATHINFO_EXTENSION) != 'sql') {
+                        if (pathinfo($backupFile, PATHINFO_EXTENSION) !== 'sql') {
                             continue;
                         }
                         $zip->addFile($backupFile, 'backups/'.pathinfo($backupFile, PATHINFO_BASENAME));
@@ -478,7 +480,7 @@ class DashboardController extends Controller
         $helpSpotGuzzleClient = new HelpSpotGuzzleClient($guzzleClient, ' ', ' ');
 
         try {
-            $result = $helpSpotGuzzleClient->getClient()->post('', $requestParams);
+            $helpSpotGuzzleClient->getClient()->post('', $requestParams);
         } catch (\Exception $e) {
             return $this->renderTemplate('_components/widgets/CraftSupport/response', [
                 'widgetId' => $widgetId,

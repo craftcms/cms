@@ -163,7 +163,7 @@ JS;
             $response = $updates->toArray();
 
             // responseErrors => errors
-            if (isset($response['responseErrors'])) {
+            if (array_key_exists('responseErrors', $response)) {
                 $response['errors'] = $response['responseErrors'];
                 unset($response['responseErrors']);
             }
