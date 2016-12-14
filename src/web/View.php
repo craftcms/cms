@@ -486,7 +486,7 @@ class View extends \yii\web\View
     public function resolveTemplate($name)
     {
         // Normalize the template name
-        $name = trim(preg_replace('#/{2,}#', '/', strtr($name, '\\', '/')), '/');
+        $name = trim(preg_replace('#/{2,}#', '/', str_replace('\\', '/', $name)), '/');
 
         $key = $this->_templatesPath.':'.$name;
 
