@@ -131,6 +131,7 @@ class RequirementsChecker
      */
     function checkCraft()
     {
+        /** @noinspection dirnameCallOnFileConstantInspection */
         return $this->check(dirname(__FILE__).DIRECTORY_SEPARATOR.'requirements.php');
     }
 
@@ -182,6 +183,7 @@ class RequirementsChecker
             $this->usageError('Nothing to render!');
         }
 
+        /** @noinspection dirnameCallOnFileConstantInspection */
         $baseViewFilePath = dirname(__FILE__).DIRECTORY_SEPARATOR.'..'.DIRECTORY_SEPARATOR.'views';
 
         if (!empty($_SERVER['argv'])) {
@@ -419,9 +421,11 @@ class RequirementsChecker
     function checkDatabaseCreds()
     {
         // Check if we're running as a standalone script.
+        /** @noinspection dirnameCallOnFileConstantInspection */
         $dbConfigPath = dirname(__FILE__).DIRECTORY_SEPARATOR.'..'.DIRECTORY_SEPARATOR.'config'.DIRECTORY_SEPARATOR.'db.php';
 
         if (is_file($dbConfigPath)) {
+            /** @noinspection dirnameCallOnFileConstantInspection */
             $dbCreds = @require_once dirname(__FILE__).DIRECTORY_SEPARATOR.'..'.DIRECTORY_SEPARATOR.'config'.DIRECTORY_SEPARATOR.'db.php';
 
             if (is_array($dbCreds) && $dbCreds['server'] && $dbCreds['user'] && $dbCreds['password'] && $dbCreds['database'] && $dbCreds['driver']) {
