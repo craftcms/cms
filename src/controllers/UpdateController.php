@@ -88,12 +88,12 @@ class UpdateController extends Controller
         ]);
 
         $isComposerInstallJs = Json::encode(App::isComposerInstall());
-        $js = <<<JS
+        $js = <<<EOD
 //noinspection JSUnresolvedVariable
 new Craft.UpdatesPage({
     isComposerInstall: {$isComposerInstallJs}
 });
-JS;
+EOD;
         $view->registerJs($js);
 
         return $this->renderTemplate('_special/updates/index');
@@ -127,10 +127,10 @@ JS;
             'handle' => Craft::$app->getSecurity()->hashData($handle),
             'manualUpdate' => (Craft::$app->getRequest()->getSegment(1) == 'manualupdate') ? 1 : 0
         ]);
-        $js = <<<JS
+        $js = <<<EOD
 //noinspection JSUnresolvedVariable
 new Craft.Updater({$dataJs});
-JS;
+EOD;
 
         $this->getView()->registerJs($js);
 

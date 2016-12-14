@@ -157,23 +157,23 @@ class Craft extends Yii
 
             foreach ($fieldHandles as $handle) {
                 $properties[] = <<<EOD
-	/**
-	 * @var mixed Value for field with the handle “{$handle}”.
-	 */
-	public \${$handle};
+    /**
+     * @var mixed Value for field with the handle “{$handle}”.
+     */
+    public \${$handle};
 EOD;
 
                 $methods[] = <<<EOD
-	/**
-	 * Sets the [[{$handle}]] property.
-	 * @param mixed \$value The property value
-	 * @return \\yii\\base\\Component The behavior’s owner component
-	 */
-	public function {$handle}(\$value)
-	{
-		\$this->{$handle} = \$value;
-		return \$this->owner;
-	}
+    /**
+     * Sets the [[{$handle}]] property.
+     * @param mixed \$value The property value
+     * @return \\yii\\base\\Component The behavior’s owner component
+     */
+    public function {$handle}(\$value)
+    {
+        \$this->{$handle} = \$value;
+        return \$this->owner;
+    }
 EOD;
 
                 $propertyDocs[] = " * @property mixed \${$handle} Value for the field with the handle “{$handle}”.";

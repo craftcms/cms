@@ -38,80 +38,80 @@ class RenameFile extends ElementAction
         $type = Json::encode(static::class);
         $prompt = Json::encode(Craft::t('app', 'Enter the new filename'));
 
-        $js = <<<EOT
+        $js = <<<EOD
 (function()
 {
-	var trigger = new Craft.ElementActionTrigger({
-		type: {$type},
-		batch: false,
-		activate: function(\$selectedItems)
-		{
-			var \$element = \$selectedItems.find('.element'),
-				assetId = \$element.data('id'),
-				oldName = \$element.data('url').split('/').pop();
+    var trigger = new Craft.ElementActionTrigger({
+        type: {$type},
+        batch: false,
+        activate: function(\$selectedItems)
+        {
+            var \$element = \$selectedItems.find('.element'),
+                assetId = \$element.data('id'),
+                oldName = \$element.data('url').split('/').pop();
 
-			if (oldName.indexOf('?') !== -1)
-			{
-				oldName = oldName.split('?').shift();
-			}
+            if (oldName.indexOf('?') !== -1)
+            {
+                oldName = oldName.split('?').shift();
+            }
 
-			var newName = prompt({$prompt}, oldName);
+            var newName = prompt({$prompt}, oldName);
 
-			if (!newName || newName == oldName)
-			{
-				return;
-			}
+            if (!newName || newName == oldName)
+            {
+                return;
+            }
 
-			Craft.elementIndex.setIndexBusy();
+            Craft.elementIndex.setIndexBusy();
 
-			var data = {
-				assetId:   assetId,
-				folderId: Craft.elementIndex.\$source.data('key').split(':')[1],
-				filename: newName
-			};
+            var data = {
+                assetId:   assetId,
+                folderId: Craft.elementIndex.\$source.data('key').split(':')[1],
+                filename: newName
+            };
 
-			var handleRename = function(response, textStatus)
-			{
-				Craft.elementIndex.setIndexAvailable();
-				Craft.elementIndex.promptHandler.resetPrompts();
+            var handleRename = function(response, textStatus)
+            {
+                Craft.elementIndex.setIndexAvailable();
+                Craft.elementIndex.promptHandler.resetPrompts();
 
-				if (textStatus == 'success')
-				{
-					if (response.prompt)
-					{
-						Craft.elementIndex.promptHandler.addPrompt(data);
-						Craft.elementIndex.promptHandler.showBatchPrompts(function(choice)
-						{
-							choice = choice[0].choice;
+                if (textStatus == 'success')
+                {
+                    if (response.prompt)
+                    {
+                        Craft.elementIndex.promptHandler.addPrompt(data);
+                        Craft.elementIndex.promptHandler.showBatchPrompts(function(choice)
+                        {
+                            choice = choice[0].choice;
 
-							if (choice != 'cancel')
-							{
-								data.action = choice;
-								Craft.postActionRequest('assets/move-asset', data, handleRename);
-							}
-						});
-					}
+                            if (choice != 'cancel')
+                            {
+                                data.action = choice;
+                                Craft.postActionRequest('assets/move-asset', data, handleRename);
+                            }
+                        });
+                    }
 
-					if (response.success)
-					{
-						Craft.elementIndex.updateElements();
+                    if (response.success)
+                    {
+                        Craft.elementIndex.updateElements();
 
-						// If assets were just merged we should get the reference tags updated right away
-						Craft.cp.runPendingTasks();
-					}
+                        // If assets were just merged we should get the reference tags updated right away
+                        Craft.cp.runPendingTasks();
+                    }
 
-					if (response.error)
-					{
-						alert(response.error);
-					}
-				}
-			};
+                    if (response.error)
+                    {
+                        alert(response.error);
+                    }
+                }
+            };
 
-			Craft.postActionRequest('assets/move-asset', data, handleRename);
-		}
-	});
+            Craft.postActionRequest('assets/move-asset', data, handleRename);
+        }
+    });
 })();
-EOT;
+EOD;
 
         Craft::$app->getView()->registerJs($js);
     }

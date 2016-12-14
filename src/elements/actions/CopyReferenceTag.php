@@ -49,23 +49,23 @@ class CopyReferenceTag extends ElementAction
         $elementType = $this->elementType;
         $elementTypeHandle = Json::encode($elementType::classHandle());
 
-        $js = <<<EOT
+        $js = <<<EOD
 (function()
 {
-	var trigger = new Craft.ElementActionTrigger({
-		type: {$type},
-		batch: false,
-		activate: function(\$selectedItems)
-		{
-			var message = Craft.t('app', {$prompt}, {
-				ctrl: (navigator.appVersion.indexOf('Mac') ? '⌘' : 'Ctrl-')
-			});
+    var trigger = new Craft.ElementActionTrigger({
+        type: {$type},
+        batch: false,
+        activate: function(\$selectedItems)
+        {
+            var message = Craft.t('app', {$prompt}, {
+                ctrl: (navigator.appVersion.indexOf('Mac') ? '⌘' : 'Ctrl-')
+            });
 
-			prompt(message, '{'+{$elementTypeHandle}+':'+\$selectedItems.find('.element').data('id')+'}');
-		}
-	});
+            prompt(message, '{'+{$elementTypeHandle}+':'+\$selectedItems.find('.element').data('id')+'}');
+        }
+    });
 })();
-EOT;
+EOD;
 
         Craft::$app->getView()->registerJs($js);
     }

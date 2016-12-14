@@ -842,12 +842,12 @@ class Entry extends Element
                 $typeInputId = $view->namespaceInputId('entryType');
                 $js = <<<EOD
 $('#{$typeInputId}').on('change', function(ev) {
-	var \$typeInput = $(this),
-		editor = \$typeInput.closest('.hud').data('elementEditor');
-	if (editor) {
-		editor.setElementAttribute('typeId', \$typeInput.val());
-		editor.loadHud();
-	}
+    var \$typeInput = $(this),
+        editor = \$typeInput.closest('.hud').data('elementEditor');
+    if (editor) {
+        editor.setElementAttribute('typeId', \$typeInput.val());
+        editor.loadHud();
+    }
 });
 EOD;
                 $view->registerJs($js);
