@@ -223,7 +223,7 @@ class Assets extends BaseRelationField
 
         // Check if this field restricts files and if files are passed at all.
         if ($this->restrictFiles && $this->allowedKinds && is_array($value) && !empty($value)) {
-            $allowedExtensions = $this->_getAllowedExtensions($this->allowedKinds);
+            $allowedExtensions = $this->_getAllowedExtensions();
 
             foreach ($value as $assetId) {
                 $file = Craft::$app->getAssets()->getAssetById($assetId);
@@ -356,7 +356,7 @@ class Assets extends BaseRelationField
         }
 
         if ($this->restrictFiles && $this->allowedKinds) {
-            $allowedExtensions = $this->_getAllowedExtensions($this->allowedKinds);
+            $allowedExtensions = $this->_getAllowedExtensions();
         } else {
             $allowedExtensions = false;
         }
@@ -664,22 +664,22 @@ class Assets extends BaseRelationField
     /**
      * Get a list of allowed extensions for a list of file kinds.
      *
-     * @param array $allowedKinds
-     *
      * @return array
      */
-    private function _getAllowedExtensions($allowedKinds)
+    private function _getAllowedExtensions()
     {
-        if (!is_array($allowedKinds)) {
+        if (!is_array($this->allowedKinds)) {
             return [];
         }
 
         $extensions = [];
         $allKinds = AssetsHelper::getFileKinds();
 
-        foreach ($allowedKinds as $allowedKind) {
-            $extensions = array_merge($extensions,
-                $allKinds[$allowedKind]['extensions']);
+        foreach ($this->allowedKinds as $allowedKind) {
+            /** @noinspection ForeachSourceInspection */
+            foreach ($allKinds[$allowedKind]['extensions'] as $ext) {
+                $extensions[] = $ext;
+            }
         }
 
         return $extensions;

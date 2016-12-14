@@ -492,11 +492,11 @@ class Fields extends Component
 
         /** @noinspection ForeachSourceInspection - FP */
         foreach ($context as $c) {
-            if (!$indexBy) {
-                $fields = array_merge($fields, $this->_allFieldsInContext[$c]);
-            } else {
-                foreach ($this->_allFieldsInContext[$c] as $field) {
+            foreach ($this->_allFieldsInContext[$c] as $field) {
+                if ($indexBy) {
                     $fields[$field->$indexBy] = $field;
+                } else {
+                    $fields[] = $field;
                 }
             }
         }
@@ -1053,7 +1053,9 @@ class Fields extends Component
         $allFieldIds = [];
 
         foreach ($postedFieldLayout as $fieldIds) {
-            $allFieldIds = array_merge($allFieldIds, $fieldIds);
+            foreach ($fieldIds as $fieldId) {
+                $allFieldIds[] = $fieldId;
+            }
         }
 
         if ($allFieldIds) {

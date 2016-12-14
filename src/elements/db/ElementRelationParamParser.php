@@ -213,7 +213,9 @@ class ElementRelationParamParser
                     } else if ($element instanceof ElementInterface) {
                         $relElementIds[] = $element->id;
                     } else if ($element instanceof ElementQueryInterface) {
-                        $relElementIds = array_merge($relElementIds, $element->ids());
+                        foreach ($element->ids() as $id) {
+                            $relElementIds[] = $id;
+                        }
                     }
                 }
 

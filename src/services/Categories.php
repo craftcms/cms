@@ -705,6 +705,7 @@ class Categories extends Component
                 ) {
                     // Merge in all of the entry's ancestors
                     $ancestorIds = $category->getAncestors()->ids();
+                    /** @noinspection SlowArrayOperationsInLoopInspection */
                     $completeIds = array_merge($completeIds, $ancestorIds);
                 }
 

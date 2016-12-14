@@ -340,7 +340,9 @@ class ElementIndexesController extends BaseElementsController
                     }
 
                     $descendantQuery->descendantOf($element);
-                    $descendantIds = array_merge($descendantIds, $descendantQuery->ids());
+                    foreach ($descendantQuery->ids() as $id) {
+                        $descendantIds[] = $id;
+                    }
                 }
 
                 if ($descendantIds) {

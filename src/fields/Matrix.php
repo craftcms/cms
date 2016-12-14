@@ -125,6 +125,7 @@ class Matrix extends Field implements EagerLoadingFieldInterface
 
                 if (!empty($config['fields'])) {
                     foreach ($config['fields'] as $fieldId => $fieldConfig) {
+                        /** @noinspection SlowArrayOperationsInLoopInspection */
                         $fieldConfig = array_merge($defaultFieldConfig, $fieldConfig);
 
                         $fields[] = Craft::$app->getFields()->createField([
@@ -672,7 +673,7 @@ class Matrix extends Field implements EagerLoadingFieldInterface
             $ids = [];
 
             foreach ($value as $blockId => &$block) {
-                if (is_numeric($blockId) && $blockId != 0) {
+                if (is_numeric($blockId) && $blockId !== 0) {
                     $ids[] = $blockId;
                 }
             }
