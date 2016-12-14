@@ -127,6 +127,7 @@ class ArrayHelper extends \yii\helpers\ArrayHelper
     public static function firstKey($arr)
     {
         if (is_array($arr)) {
+            /** @noinspection LoopWhichDoesNotLoopInspection */
             foreach ($arr as $key => $value) {
                 return $key;
             }
@@ -145,6 +146,7 @@ class ArrayHelper extends \yii\helpers\ArrayHelper
     public static function firstValue($arr)
     {
         if (is_array($arr)) {
+            /** @noinspection LoopWhichDoesNotLoopInspection */
             foreach ($arr as $value) {
                 return $value;
             }

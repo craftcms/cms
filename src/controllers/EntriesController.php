@@ -742,6 +742,7 @@ class EntriesController extends BaseEntriesController
                     }
                 } else {
                     // Set the default entry status based on the section's settings
+                    /** @noinspection LoopWhichDoesNotLoopInspection */
                     foreach ($variables['section']->getSiteSettings() as $siteSettings) {
                         if (!$siteSettings->enabledByDefault) {
                             $variables['entry']->enabled = false;

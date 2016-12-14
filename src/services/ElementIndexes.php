@@ -250,6 +250,7 @@ class ElementIndexes extends Component
         // Start with the first available attribute, no matter what
         $firstKey = null;
 
+        /** @noinspection LoopWhichDoesNotLoopInspection */
         foreach ($availableAttributes as $key => $attributeInfo) {
             $firstKey = $key;
             $attributes[] = [$key, $attributeInfo];
