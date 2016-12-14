@@ -912,7 +912,7 @@ class Assets extends Component
 
 
         // If the file already ends with something that looks like a timestamp, use that instead.
-        if (preg_match('/.*_([0-9]{6}_[0-9]{6})$/', $filename, $matches)) {
+        if (preg_match('/.*_(\d{6}_\d{6})$/', $filename, $matches)) {
             $base = $filename;
         } else {
             $timestamp = DateTimeHelper::currentUTCDateTime()->format('ymd_His');

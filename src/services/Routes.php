@@ -168,7 +168,7 @@ class Routes extends Component
                 $uriPattern .= $this->_escapeRegexChars($part);
             } else if (is_array($part)) {
                 // Is the name a valid handle?
-                if (preg_match('/^[a-zA-Z][a-zA-Z0-9_]*$/', $part[0])) {
+                if (preg_match('/^[a-zA-Z]\w*$/', $part[0])) {
                     $subpatternName = $part[0];
 
                     // Make sure it's unique

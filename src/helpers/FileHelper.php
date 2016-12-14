@@ -125,7 +125,7 @@ class FileHelper extends \yii\helpers\FileHelper
         ];
 
         // Replace any control characters in the name with a space.
-        $filename = preg_replace("#\\x{00a0}#siu", ' ', $filename);
+        $filename = preg_replace("/\\x{00a0}/iu", ' ', $filename);
 
         // Strip any characters not allowed.
         $filename = str_replace($disallowedChars, '', strip_tags($filename));

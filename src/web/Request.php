@@ -747,15 +747,15 @@ class Request extends \yii\web\Request
     {
         $userAgent = $this->getUserAgent();
 
-        if (preg_match('/Linux/', $userAgent)) {
+        if (strpos($userAgent, 'Linux') !== false) {
             return 'Linux';
         }
 
-        if (preg_match('/Win/', $userAgent)) {
+        if (strpos($userAgent, 'Win') !== false) {
             return 'Windows';
         }
 
-        if (preg_match('/Mac/', $userAgent)) {
+        if (strpos($userAgent, 'Mac') !== false) {
             return 'Mac';
         }
 

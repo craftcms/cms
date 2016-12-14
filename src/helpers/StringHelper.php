@@ -380,7 +380,7 @@ class StringHelper extends \yii\helpers\StringHelper
      */
     public static function isUUID($uuid)
     {
-        return !empty($uuid) && preg_match('/[A-Z0-9]{8}-[A-Z0-9]{4}-[A-Z0-9]{4}-[A-Z0-9]{4}-[A-Z0-9]{12}/uis', $uuid);
+        return !empty($uuid) && preg_match('/[A-Z0-9]{8}-[A-Z0-9]{4}-[A-Z0-9]{4}-[A-Z0-9]{4}-[A-Z0-9]{12}/ui', $uuid);
     }
 
     /**

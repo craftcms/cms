@@ -140,7 +140,7 @@ class App
         $value = ini_get($var);
 
         // See if we can recognize that.
-        if (!preg_match('/[0-9]+(K|M|G|T)/i', $value, $matches)) {
+        if (!preg_match('/\d+(K|M|G|T)/i', $value, $matches)) {
             return (int)$value;
         }
 
@@ -172,7 +172,7 @@ class App
     public static function normalizeVersionNumber($version)
     {
         // Periods before/after non-numeric sequences
-        $version = preg_replace('/[^0-9]+/', '.$0.', $version);
+        $version = preg_replace('/\D+/', '.$0.', $version);
 
         // Convert sequences of ./-/+'s into single periods
         $version = preg_replace('/[\._\-\+]+/', '.', $version);

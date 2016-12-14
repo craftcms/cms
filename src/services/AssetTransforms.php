@@ -539,7 +539,7 @@ class AssetTransforms extends Component
     private function _generateTransform(AssetTransformIndex $index)
     {
         // For _widthxheight_mode
-        if (preg_match('/_(?P<width>[0-9]+|AUTO)x(?P<height>[0-9]+|AUTO)_(?P<mode>[a-z]+)_(?P<position>[a-z\-]+)(_(?P<quality>[0-9]+))?/i',
+        if (preg_match('/_(?P<width>\d+|AUTO)x(?P<height>\d+|AUTO)_(?P<mode>[a-z]+)_(?P<position>[a-z\-]+)(_(?P<quality>\d+))?/i',
             $index->location, $matches)) {
             $transform = new AssetTransform();
             $transform->width = ($matches['width'] != 'AUTO' ? $matches['width'] : null);

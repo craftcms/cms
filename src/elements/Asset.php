@@ -506,7 +506,7 @@ class Asset extends Element
 
         $folder = $this->getFolder();
 
-        if (preg_match('/field_([0-9]+)/', $folder->name, $matches)) {
+        if (preg_match('/field_(\d+)/', $folder->name, $matches)) {
             $fieldId = $matches[1];
             /** @var Assets $field */
             $field = Craft::$app->getFields()->getFieldById($fieldId);
