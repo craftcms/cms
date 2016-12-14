@@ -131,6 +131,7 @@ class DateInterval extends \DateInterval
      */
     public function toSeconds(\DateInterval $interval = null)
     {
+        /** @noinspection UnSafeIsSetOverArrayInspection */
         if (($interval === null) && isset($this)) {
             $interval = $this;
         }
@@ -169,6 +170,7 @@ class DateInterval extends \DateInterval
      */
     public function toSpec(\DateInterval $interval = null)
     {
+        /** @noinspection UnSafeIsSetOverArrayInspection */
         if (($interval === null) && isset($this)) {
             $interval = $this;
         }

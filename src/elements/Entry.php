@@ -653,9 +653,7 @@ class Entry extends Element
             throw new InvalidConfigException('Entry is missing its section ID');
         }
 
-        $section = Craft::$app->getSections()->getSectionById($this->sectionId);
-
-        if (!$section) {
+        if (($section = Craft::$app->getSections()->getSectionById($this->sectionId)) === null) {
             throw new InvalidConfigException('Invalid section ID: '.$this->sectionId);
         }
 
@@ -1006,11 +1004,11 @@ EOD;
      */
     private function _hasNewParent()
     {
-        if (!isset($this->_hasNewParent)) {
-            $this->_hasNewParent = $this->_checkForNewParent();
+        if ($this->_hasNewParent !== null) {
+            return $this->_hasNewParent;
         }
 
-        return $this->_hasNewParent;
+        return $this->_hasNewParent = $this->_checkForNewParent();
     }
 
     /**

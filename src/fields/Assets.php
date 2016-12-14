@@ -222,7 +222,7 @@ class Assets extends BaseRelationField
         $value = $element->getFieldValue($this->handle);
 
         // Check if this field restricts files and if files are passed at all.
-        if (isset($this->restrictFiles) && !empty($this->restrictFiles) && !empty($this->allowedKinds) && is_array($value) && !empty($value)) {
+        if ($this->restrictFiles && $this->allowedKinds && is_array($value) && !empty($value)) {
             $allowedExtensions = $this->_getAllowedExtensions($this->allowedKinds);
 
             foreach ($value as $assetId) {
@@ -355,7 +355,7 @@ class Assets extends BaseRelationField
             }
         }
 
-        if (isset($this->restrictFiles) && !empty($this->restrictFiles) && !empty($this->allowedKinds)) {
+        if ($this->restrictFiles && $this->allowedKinds) {
             $allowedExtensions = $this->_getAllowedExtensions($this->allowedKinds);
         } else {
             $allowedExtensions = false;
@@ -536,13 +536,9 @@ class Assets extends BaseRelationField
      */
     protected function getInputSelectionCriteria()
     {
-        $allowedKinds = [];
-
-        if (isset($this->restrictFiles) && !empty($this->restrictFiles) && !empty($this->allowedKinds)) {
-            $allowedKinds = $this->allowedKinds;
-        }
-
-        return ['kind' => $allowedKinds];
+        return [
+            'kind' => ($this->restrictFiles && $this->allowedKinds) ? $this->allowedKinds : [],
+        ];
     }
 
     // Private Methods

@@ -160,17 +160,19 @@ class Deprecator extends Component
      */
     public function getLogs($limit = 100)
     {
-        if (!isset($this->_allLogs)) {
-            $this->_allLogs = [];
+        if ($this->_allLogs !== null) {
+            return $this->_allLogs;
+        }
 
-            $results = $this->_createDeprecationErrorQuery()
-                ->limit($limit)
-                ->orderBy(['lastOccurrence' => SORT_DESC])
-                ->all();
+        $this->_allLogs = [];
 
-            foreach ($results as $result) {
-                $this->_allLogs[] = new DeprecationError($result);
-            }
+        $results = $this->_createDeprecationErrorQuery()
+            ->limit($limit)
+            ->orderBy(['lastOccurrence' => SORT_DESC])
+            ->all();
+
+        foreach ($results as $result) {
+            $this->_allLogs[] = new DeprecationError($result);
         }
 
         return $this->_allLogs;

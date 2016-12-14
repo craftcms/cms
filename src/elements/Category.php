@@ -512,11 +512,11 @@ class Category extends Element
      */
     private function _hasNewParent()
     {
-        if (!isset($this->_hasNewParent)) {
-            $this->_hasNewParent = $this->_checkForNewParent();
+        if ($this->_hasNewParent !== null) {
+            return $this->_hasNewParent;
         }
 
-        return $this->_hasNewParent;
+        return $this->_hasNewParent = $this->_checkForNewParent();
     }
 
     /**

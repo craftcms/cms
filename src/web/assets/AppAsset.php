@@ -58,6 +58,7 @@ class AppAsset extends AssetBundle
             'lib/jquery-ui'.($useCompressedJs ? '.min' : '').'.js',
         ];
 
+        /** @noinspection UnSafeIsSetOverArrayInspection - FP */
         if (isset($datepickerLanguage)) {
             $this->js[] = "lib/datepicker-i18n/datepicker-{$datepickerLanguage}.js";
         }

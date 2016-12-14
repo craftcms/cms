@@ -984,15 +984,15 @@ abstract class Element extends Component implements ElementInterface
      */
     public function getNext($criteria = false)
     {
-        if ($criteria !== false || !isset($this->_nextElement)) {
+        if ($criteria !== false || $this->_nextElement === null) {
             return $this->_getRelativeElement($criteria, 1);
         }
 
-        if ($this->_nextElement !== false) {
-            return $this->_nextElement;
+        if ($this->_nextElement === false) {
+            return null;
         }
 
-        return null;
+        return $this->_nextElement;
     }
 
     /**
@@ -1000,15 +1000,15 @@ abstract class Element extends Component implements ElementInterface
      */
     public function getPrev($criteria = false)
     {
-        if ($criteria !== false || !isset($this->_prevElement)) {
+        if ($criteria !== false || $this->_prevElement === null) {
             return $this->_getRelativeElement($criteria, -1);
         }
 
-        if ($this->_prevElement !== false) {
-            return $this->_prevElement;
+        if ($this->_prevElement === false) {
+            return null;
         }
 
-        return null;
+        return $this->_prevElement;
     }
 
     /**
@@ -1732,17 +1732,15 @@ abstract class Element extends Component implements ElementInterface
      */
     protected function getFieldByHandle($handle)
     {
-        if (!isset($this->_fieldsByHandle) || !array_key_exists($handle, $this->_fieldsByHandle)
-        ) {
-            $contentService = Craft::$app->getContent();
-
-            $originalFieldContext = $contentService->fieldContext;
-            $contentService->fieldContext = $this->getFieldContext();
-
-            $this->_fieldsByHandle[$handle] = Craft::$app->getFields()->getFieldByHandle($handle);
-
-            $contentService->fieldContext = $originalFieldContext;
+        if ($this->_fieldsByHandle !== null && array_key_exists($handle, $this->_fieldsByHandle)) {
+            return $this->_fieldsByHandle[$handle];
         }
+
+        $contentService = Craft::$app->getContent();
+        $originalFieldContext = $contentService->fieldContext;
+        $contentService->fieldContext = $this->getFieldContext();
+        $this->_fieldsByHandle[$handle] = Craft::$app->getFields()->getFieldByHandle($handle);
+        $contentService->fieldContext = $originalFieldContext;
 
         return $this->_fieldsByHandle[$handle];
     }

@@ -9,6 +9,7 @@ namespace craft\models;
 
 use Craft;
 use craft\base\Model;
+use craft\helpers\ArrayHelper;
 use craft\records\Section as SectionRecord;
 use craft\validators\HandleValidator;
 use craft\validators\UniqueValidator;
@@ -131,16 +132,16 @@ class Section extends Model
      */
     public function getSiteSettings()
     {
-        if (!isset($this->_siteSettings)) {
-            if ($this->id) {
-                $siteSettings = Craft::$app->getSections()->getSectionSiteSettings($this->id, 'siteId');
-            } else {
-                $siteSettings = [];
-            }
-
-            // Set them with setSiteSettings() so setSection() gets called on them
-            $this->setSiteSettings($siteSettings);
+        if ($this->_siteSettings !== null) {
+            return $this->_siteSettings;
         }
+
+        if (!$this->id) {
+            return [];
+        }
+
+        // Set them with setSiteSettings() so setSection() gets called on them
+        $this->setSiteSettings(Craft::$app->getSections()->getSectionSiteSettings($this->id, 'siteId'));
 
         return $this->_siteSettings;
     }
@@ -188,24 +189,16 @@ class Section extends Model
      */
     public function getEntryTypes($indexBy = null)
     {
-        if (!isset($this->_entryTypes)) {
-            if ($this->id) {
-                $this->_entryTypes = Craft::$app->getSections()->getEntryTypesBySectionId($this->id);
-            } else {
-                $this->_entryTypes = [];
-            }
+        if ($this->_entryTypes !== null) {
+            return $indexBy ? ArrayHelper::index($this->_entryTypes, $indexBy) : $this->_entryTypes;
         }
 
-        if (!$indexBy) {
-            return $this->_entryTypes;
+        if (!$this->id) {
+            return [];
         }
 
-        $entryTypes = [];
+        $this->_entryTypes = Craft::$app->getSections()->getEntryTypesBySectionId($this->id);
 
-        foreach ($this->_entryTypes as $entryType) {
-            $entryTypes[$entryType->$indexBy] = $entryType;
-        }
-
-        return $entryTypes;
+        return $indexBy ? ArrayHelper::index($this->_entryTypes, $indexBy) : $this->_entryTypes;
     }
 }

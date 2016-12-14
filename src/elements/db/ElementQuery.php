@@ -333,7 +333,7 @@ class ElementQuery extends Query implements ElementQueryInterface, Arrayable, Co
         if ($name === 'order') {
             Craft::$app->getDeprecator()->log('ElementQuery::order()', 'The “order” element parameter has been deprecated. Use “orderBy” instead.');
 
-            return isset($this->orderBy);
+            return $this->orderBy !== null;
         }
 
         return parent::__isset($name);
@@ -1901,6 +1901,7 @@ class ElementQuery extends Query implements ElementQueryInterface, Arrayable, Co
         }
 
         // Set the custom field values
+        /** @noinspection UnSafeIsSetOverArrayInspection - FP */
         if (isset($fieldValues)) {
             $element->setFieldValues($fieldValues);
         }

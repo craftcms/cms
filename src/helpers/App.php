@@ -45,13 +45,13 @@ class App
      */
     public static function isComposerInstall()
     {
-        if (!isset(static::$_isComposerInstall)) {
-            // If this was installed via a craftcms.com zip, there will be an index.php file
-            // at the root of the vendor directory.
-            static::$_isComposerInstall = !is_file(Craft::$app->getVendorPath().DIRECTORY_SEPARATOR.'index.php');
+        if (static::$_isComposerInstall !== null) {
+            return static::$_isComposerInstall;
         }
 
-        return static::$_isComposerInstall;
+        // If this was installed via a craftcms.com zip, there will be an index.php file
+        // at the root of the vendor directory.
+        return static::$_isComposerInstall = !is_file(Craft::$app->getVendorPath().DIRECTORY_SEPARATOR.'index.php');
     }
 
     /**
@@ -61,15 +61,15 @@ class App
      */
     public static function isPhpDevServer()
     {
-        if (!isset(static::$_isPhpDevServer)) {
-            if (isset($_SERVER['SERVER_SOFTWARE'])) {
-                static::$_isPhpDevServer = (strncmp($_SERVER['SERVER_SOFTWARE'], 'PHP', 3) == 0);
-            } else {
-                static::$_isPhpDevServer = false;
-            }
+        if (static::$_isPhpDevServer !== null) {
+            return static::$_isPhpDevServer;
         }
 
-        return static::$_isPhpDevServer;
+        if (isset($_SERVER['SERVER_SOFTWARE'])) {
+            return static::$_isPhpDevServer = (strpos($_SERVER['SERVER_SOFTWARE'], 'PHP') === 0);
+        }
+
+        return static::$_isPhpDevServer = false;
     }
 
     /**
@@ -237,16 +237,12 @@ class App
      */
     public static function checkForValidIconv()
     {
-        if (!isset(static::$_iconv)) {
-            // Check if iconv is installed. Note we can't just use HTMLPurifier_Encoder::iconvAvailable() because they
-            // don't consider iconv "installed" if it's there but "unusable".
-            if (function_exists('iconv') && \HTMLPurifier_Encoder::testIconvTruncateBug() === \HTMLPurifier_Encoder::ICONV_OK) {
-                static::$_iconv = true;
-            } else {
-                static::$_iconv = false;
-            }
+        if (static::$_iconv !== null) {
+            return static::$_iconv;
         }
 
-        return static::$_iconv;
+        // Check if iconv is installed. Note we can't just use HTMLPurifier_Encoder::iconvAvailable() because they
+        // don't consider iconv "installed" if it's there but "unusable".
+        return static::$_iconv = (function_exists('iconv') && \HTMLPurifier_Encoder::testIconvTruncateBug() === \HTMLPurifier_Encoder::ICONV_OK);
     }
 }

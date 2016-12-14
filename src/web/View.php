@@ -211,7 +211,7 @@ class View extends \yii\web\View
      */
     public function getIsRenderingTemplate()
     {
-        return isset($this->_renderingTemplate);
+        return $this->_renderingTemplate !== null;
     }
 
     /**
@@ -1176,19 +1176,21 @@ class View extends \yii\web\View
      */
     private function _getTwigOptions()
     {
-        if (!isset($this->_twigOptions)) {
-            $this->_twigOptions = [
-                'base_template_class' => '\\craft\\web\\twig\\Template',
-                // See: https://github.com/twigphp/Twig/issues/1951
-                'cache' => Craft::$app->getPath()->getCompiledTemplatesPath(),
-                'auto_reload' => true,
-                'charset' => Craft::$app->charset,
-            ];
+        if ($this->_twigOptions !== null) {
+            return $this->_twigOptions;
+        }
 
-            if (Craft::$app->getConfig()->get('devMode')) {
-                $this->_twigOptions['debug'] = true;
-                $this->_twigOptions['strict_variables'] = true;
-            }
+        $this->_twigOptions = [
+            'base_template_class' => Template::class,
+            // See: https://github.com/twigphp/Twig/issues/1951
+            'cache' => Craft::$app->getPath()->getCompiledTemplatesPath(),
+            'auto_reload' => true,
+            'charset' => Craft::$app->charset,
+        ];
+
+        if (Craft::$app->getConfig()->get('devMode')) {
+            $this->_twigOptions['debug'] = true;
+            $this->_twigOptions['strict_variables'] = true;
         }
 
         return $this->_twigOptions;

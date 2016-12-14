@@ -144,27 +144,25 @@ class AssetTransforms extends Component
      */
     public function getTransformByHandle($handle)
     {
-        // If we've already fetched all transforms we can save ourselves a trip to the DB for transform handles that
-        // don't exist
-        if (!$this->_fetchedAllTransforms && (!isset($this->_transformsByHandle) || !array_key_exists($handle, $this->_transformsByHandle))) {
-            $result = $this->_createTransformQuery()
-                ->where(['handle' => $handle])
-                ->one();
-
-            if ($result) {
-                $transform = new AssetTransform($result);
-            } else {
-                $transform = null;
-            }
-
-            $this->_transformsByHandle[$handle] = $transform;
-        }
-
-        if (isset($this->_transformsByHandle[$handle])) {
+        if ($this->_transformsByHandle !== null && array_key_exists($handle, $this->_transformsByHandle)) {
             return $this->_transformsByHandle[$handle];
         }
 
-        return null;
+        // If we've already fetched all transforms we can save ourselves a trip to the DB for transform handles that
+        // don't exist
+        if ($this->_fetchedAllTransforms) {
+            return null;
+        }
+
+        $result = $this->_createTransformQuery()
+            ->where(['handle' => $handle])
+            ->one();
+
+        if (!$result) {
+            return $this->_transformsByHandle[$handle] = null;
+        }
+
+        return $this->_transformsByHandle[$handle] = $transform = new AssetTransform($result);
     }
 
     /**
@@ -1317,7 +1315,7 @@ class AssetTransforms extends Component
             $transform = $index->transform;
         }
 
-        if (!isset($index->detectedFormat)) {
+        if ($index->detectedFormat === null) {
             $index->detectedFormat = !empty($index->format) ? $index->format : $this->detectAutoTransformFormat($asset);
         }
 

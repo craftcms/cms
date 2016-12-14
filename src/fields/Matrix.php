@@ -81,15 +81,15 @@ class Matrix extends Field implements EagerLoadingFieldInterface
      */
     public function getBlockTypes()
     {
-        if (!isset($this->_blockTypes)) {
-            if (!empty($this->id)) {
-                $this->_blockTypes = Craft::$app->getMatrix()->getBlockTypesByFieldId($this->id);
-            } else {
-                $this->_blockTypes = [];
-            }
+        if ($this->_blockTypes !== null) {
+            return $this->_blockTypes;
         }
 
-        return $this->_blockTypes;
+        if (!$this->id) {
+            return [];
+        }
+
+        return $this->_blockTypes = Craft::$app->getMatrix()->getBlockTypesByFieldId($this->id);
     }
 
     /**

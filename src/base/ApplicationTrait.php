@@ -247,23 +247,23 @@ trait ApplicationTrait
     public function getIsInstalled()
     {
         /** @var \craft\web\Application|\craft\console\Application $this */
-        if (!isset($this->_isInstalled)) {
-            try {
-                // Initialize the DB connection
-                $this->getDb();
-
-                // If the db config isn't valid, then we'll assume it's not installed.
-                if (!$this->getIsDbConnectionValid()) {
-                    return false;
-                }
-            } catch (DbConnectException $e) {
-                return false;
-            }
-
-            $this->_isInstalled = (bool)($this->getRequest()->getIsConsoleRequest() || $this->getDb()->tableExists('{{%info}}', false));
+        if ($this->_isInstalled !== null) {
+            return $this->_isInstalled;
         }
 
-        return $this->_isInstalled;
+        try {
+            // Initialize the DB connection
+            $this->getDb();
+
+            // If the db config isn't valid, then we'll assume it's not installed.
+            if (!$this->getIsDbConnectionValid()) {
+                return false;
+            }
+        } catch (DbConnectException $e) {
+            return false;
+        }
+
+        return $this->_isInstalled = (bool)($this->getRequest()->getIsConsoleRequest() || $this->getDb()->tableExists('{{%info}}', false));
     }
 
     /**
@@ -318,11 +318,11 @@ trait ApplicationTrait
     public function getIsMultiSite()
     {
         /** @var \craft\web\Application|\craft\console\Application $this */
-        if (!isset($this->_isMultiSite)) {
-            $this->_isMultiSite = (count($this->getSites()->getAllSites()) > 1);
+        if ($this->_isMultiSite !== null) {
+            return $this->_isMultiSite;
         }
 
-        return $this->_isMultiSite;
+        return $this->_isMultiSite = (count($this->getSites()->getAllSites()) > 1);;
     }
 
     /**
@@ -548,7 +548,7 @@ trait ApplicationTrait
     public function getInfo()
     {
         /** @var \craft\web\Application|\craft\console\Application $this */
-        if (isset($this->_info)) {
+        if ($this->_info !== null) {
             return $this->_info;
         }
 
@@ -586,9 +586,7 @@ trait ApplicationTrait
         }
         unset($row['siteName'], $row['siteUrl'], $row['build'], $row['releaseDate'], $row['track']);
 
-        $this->_info = new Info($row);
-
-        return $this->_info;
+        return $this->_info = new Info($row);
     }
 
     /**
@@ -703,16 +701,16 @@ trait ApplicationTrait
     public function getIsDbConnectionValid()
     {
         /** @var \craft\web\Application|\craft\console\Application $this */
-        if (!isset($this->_isDbConnectionValid)) {
-            try {
-                $this->getDb()->open();
-                $this->_isDbConnectionValid = true;
-            } catch (DbConnectException $e) {
-                $this->_isDbConnectionValid = false;
-            }
+        if ($this->_isDbConnectionValid !== null) {
+            return $this->_isDbConnectionValid;
         }
 
-        return $this->_isDbConnectionValid;
+        try {
+            $this->getDb()->open();
+            return $this->_isDbConnectionValid = true;
+        } catch (DbConnectException $e) {
+            return $this->_isDbConnectionValid = false;
+        }
     }
 
     /**

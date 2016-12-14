@@ -126,14 +126,14 @@ class Tags extends BaseRelationField
      */
     private function _getTagGroupId()
     {
-        if (!isset($this->_tagGroupId)) {
-            if (strncmp($this->source, 'taggroup:', 9) == 0) {
-                $this->_tagGroupId = (int)mb_substr($this->source, 9);
-            } else {
-                $this->_tagGroupId = false;
-            }
+        if ($this->_tagGroupId !== null) {
+            return $this->_tagGroupId;
         }
 
-        return $this->_tagGroupId;
+        if (!preg_match('/^taggroup:(\d+)$/', $this->source, $matches)) {
+            return $this->_tagGroupId = false;
+        }
+
+        return $this->_tagGroupId = (int)$matches[1];
     }
 }

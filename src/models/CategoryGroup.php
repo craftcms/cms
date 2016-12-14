@@ -134,16 +134,16 @@ class CategoryGroup extends Model
      */
     public function getSiteSettings()
     {
-        if (!isset($this->_siteSettings)) {
-            if ($this->id) {
-                $siteSettings = Craft::$app->getCategories()->getGroupSiteSettings($this->id, 'siteId');
-            } else {
-                $siteSettings = [];
-            }
-
-            // Set them with setSiteSettings() so setGroup() gets called on them
-            $this->setSiteSettings($siteSettings);
+        if ($this->_siteSettings !== null) {
+            return $this->_siteSettings;
         }
+
+        if (!$this->id) {
+            return [];
+        }
+
+        // Set them with setSiteSettings() so setGroup() gets called on them
+        $this->setSiteSettings(Craft::$app->getCategories()->getGroupSiteSettings($this->id, 'siteId'));
 
         return $this->_siteSettings;
     }

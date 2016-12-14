@@ -326,7 +326,7 @@ class Assets
      */
     private static function _buildFileKinds()
     {
-        if (!isset(self::$_fileKinds)) {
+        if (self::$_fileKinds === null) {
             self::$_fileKinds = [
                 'access' => [
                     'label' => Craft::t('app', 'Access'),

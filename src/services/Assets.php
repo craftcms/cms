@@ -657,21 +657,19 @@ class Assets extends Component
      */
     public function getFolderById($folderId)
     {
-        if (!isset($this->_foldersById) || !array_key_exists($folderId, $this->_foldersById)) {
-            $result = $this->_createFolderQuery()
-                ->where(['id' => $folderId])
-                ->one();
-
-            if ($result) {
-                $folder = new VolumeFolder($result);
-            } else {
-                $folder = null;
-            }
-
-            $this->_foldersById[$folderId] = $folder;
+        if ($this->_foldersById !== null && array_key_exists($folderId, $this->_foldersById)) {
+            return $this->_foldersById[$folderId];
         }
 
-        return $this->_foldersById[$folderId];
+        $result = $this->_createFolderQuery()
+            ->where(['id' => $folderId])
+            ->one();
+
+        if (!$result) {
+            return $this->_foldersById[$folderId] = null;
+        }
+
+        return $this->_foldersById[$folderId] = new VolumeFolder($result);
     }
 
     /**

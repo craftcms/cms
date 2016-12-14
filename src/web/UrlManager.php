@@ -146,16 +146,17 @@ class UrlManager extends \yii\web\UrlManager
      */
     public function getMatchedElement()
     {
-        if (!isset($this->_matchedElement)) {
-            $request = Craft::$app->getRequest();
-
-            if ($request->getIsSiteRequest()) {
-                $path = $request->getPathInfo();
-                $this->_getMatchedElementRoute($path);
-            } else {
-                $this->_matchedElement = false;
-            }
+        if ($this->_matchedElement !== null) {
+            return $this->_matchedElement;
         }
+
+        $request = Craft::$app->getRequest();
+
+        if (!$request->getIsSiteRequest()) {
+            return $this->_matchedElement = false;
+        }
+
+        $this->_getMatchedElementRoute($request->getPathInfo());
 
         return $this->_matchedElement;
     }
@@ -290,20 +291,22 @@ class UrlManager extends \yii\web\UrlManager
      */
     private function _getMatchedElementRoute($path)
     {
-        if (!isset($this->_matchedElementRoute)) {
-            $this->_matchedElement = false;
-            $this->_matchedElementRoute = false;
+        if ($this->_matchedElementRoute !== null) {
+            return $this->_matchedElementRoute;
+        }
 
-            if (Craft::$app->getIsInstalled() && Craft::$app->getRequest()->getIsSiteRequest()) {
-                $element = Craft::$app->getElements()->getElementByUri($path, Craft::$app->getSites()->currentSite->id, true);
+        $this->_matchedElement = false;
+        $this->_matchedElementRoute = false;
 
-                if ($element) {
-                    $route = $element->getRoute();
+        if (Craft::$app->getIsInstalled() && Craft::$app->getRequest()->getIsSiteRequest()) {
+            $element = Craft::$app->getElements()->getElementByUri($path, Craft::$app->getSites()->currentSite->id, true);
 
-                    if ($route) {
-                        $this->_matchedElement = $element;
-                        $this->_matchedElementRoute = $route;
-                    }
+            if ($element) {
+                $route = $element->getRoute();
+
+                if ($route) {
+                    $this->_matchedElement = $element;
+                    $this->_matchedElementRoute = $route;
                 }
             }
         }

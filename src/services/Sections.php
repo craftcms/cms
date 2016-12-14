@@ -117,16 +117,18 @@ class Sections extends Component
     /**
      * Returns all of the section IDs.
      *
-     * @return array All the sections’ IDs.
+     * @return integer[] All the sections’ IDs.
      */
     public function getAllSectionIds()
     {
-        if (!isset($this->_allSectionIds)) {
-            $this->_allSectionIds = [];
+        if ($this->_allSectionIds !== null) {
+            return $this->_allSectionIds;
+        }
 
-            foreach ($this->getAllSections() as $section) {
-                $this->_allSectionIds[] = $section->id;
-            }
+        $this->_allSectionIds = [];
+
+        foreach ($this->getAllSections() as $section) {
+            $this->_allSectionIds[] = $section->id;
         }
 
         return $this->_allSectionIds;
@@ -139,13 +141,15 @@ class Sections extends Component
      */
     public function getEditableSectionIds()
     {
-        if (!isset($this->_editableSectionIds)) {
-            $this->_editableSectionIds = [];
+        if ($this->_editableSectionIds !== null) {
+            return $this->_editableSectionIds;
+        }
 
-            foreach ($this->getAllSectionIds() as $sectionId) {
-                if (Craft::$app->getUser()->checkPermission('editEntries:'.$sectionId)) {
-                    $this->_editableSectionIds[] = $sectionId;
-                }
+        $this->_editableSectionIds = [];
+
+        foreach ($this->getAllSectionIds() as $sectionId) {
+            if (Craft::$app->getUser()->checkPermission('editEntries:'.$sectionId)) {
+                $this->_editableSectionIds[] = $sectionId;
             }
         }
 
@@ -269,26 +273,25 @@ class Sections extends Component
             return null;
         }
 
-        // If we've already fetched all sections we can save ourselves a trip to the DB for section IDs that don't exist
-        if (!$this->_fetchedAllSections && (!isset($this->_sectionsById) || !array_key_exists($sectionId, $this->_sectionsById))) {
-            $result = $this->_createSectionQuery()
-                ->where(['sections.id' => $sectionId])
-                ->one();
-
-            if ($result) {
-                $section = new Section($result);
-            } else {
-                $section = null;
-            }
-
-            $this->_sectionsById[$sectionId] = $section;
-        }
-
-        if (isset($this->_sectionsById[$sectionId])) {
+        if ($this->_sectionsById !== null && array_key_exists($sectionId, $this->_sectionsById)) {
             return $this->_sectionsById[$sectionId];
         }
 
-        return null;
+        // If we've already fetched all sections we can save ourselves a trip to
+        // the DB for section IDs that don't exist
+        if ($this->_fetchedAllSections) {
+            return null;
+        }
+
+        $result = $this->_createSectionQuery()
+            ->where(['sections.id' => $sectionId])
+            ->one();
+
+        if (!$result) {
+            return $this->_sectionsById[$sectionId] = null;
+        }
+
+        return $this->_sectionsById[$sectionId] = new Section($result);
     }
 
     /**
@@ -874,26 +877,24 @@ class Sections extends Component
             return null;
         }
 
-        if (!isset($this->_entryTypesById) || !array_key_exists($entryTypeId, $this->_entryTypesById)) {
-            $entryTypeRecord = EntryTypeRecord::findOne($entryTypeId);
-
-            if ($entryTypeRecord) {
-                $this->_entryTypesById[$entryTypeId] = new EntryType($entryTypeRecord->toArray([
-                    'id',
-                    'sectionId',
-                    'fieldLayoutId',
-                    'name',
-                    'handle',
-                    'hasTitleField',
-                    'titleLabel',
-                    'titleFormat',
-                ]));
-            } else {
-                $this->_entryTypesById[$entryTypeId] = null;
-            }
+        if ($this->_entryTypesById !== null && array_key_exists($entryTypeId, $this->_entryTypesById)) {
+            return $this->_entryTypesById[$entryTypeId];
         }
 
-        return $this->_entryTypesById[$entryTypeId];
+        if (($entryTypeRecord = EntryTypeRecord::findOne($entryTypeId)) === null) {
+            return $this->_entryTypesById[$entryTypeId] = null;
+        }
+
+        return $this->_entryTypesById[$entryTypeId] = new EntryType($entryTypeRecord->toArray([
+            'id',
+            'sectionId',
+            'fieldLayoutId',
+            'name',
+            'handle',
+            'hasTitleField',
+            'titleLabel',
+            'titleFormat',
+        ]));
     }
 
     /**

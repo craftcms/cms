@@ -240,6 +240,7 @@ class Url
         $path = trim($path, '/');
         $url = static::_getUrl($path, $params, $protocol, false, false);
 
+        /** @noinspection UnSafeIsSetOverArrayInspection - FP */
         if (isset($currentSite)) {
             // Restore the original current site
             $sites->currentSite = $currentSite;
@@ -283,11 +284,11 @@ class Url
 
                     // Use a consistent param for all resource requests with uncached paths, in case the same resource
                     // URL is requested multiple times in the same request
-                    if (!isset(static::$_x)) {
-                        static::$_x = StringHelper::randomString(9);
+                    if (self::$_x === null) {
+                        self::$_x = StringHelper::randomString(9);
                     }
 
-                    $params['x'] = static::$_x;
+                    $params['x'] = self::$_x;
                 }
             }
         }

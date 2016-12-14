@@ -636,18 +636,20 @@ class TemplateCaches extends Component
      */
     private function _getPath()
     {
-        if (!isset($this->_path)) {
-            if (Craft::$app->getRequest()->getIsCpRequest()) {
-                $this->_path = 'cp:';
-            } else {
-                $this->_path = 'site:';
-            }
+        if ($this->_path !== null) {
+            return $this->_path;
+        }
 
-            $this->_path .= Craft::$app->getRequest()->getPathInfo();
+        if (Craft::$app->getRequest()->getIsCpRequest()) {
+            $this->_path = 'cp:';
+        } else {
+            $this->_path = 'site:';
+        }
 
-            if (($pageNum = Craft::$app->getRequest()->getPageNum()) != 1) {
-                $this->_path .= '/'.Craft::$app->getConfig()->get('pageTrigger').$pageNum;
-            }
+        $this->_path .= Craft::$app->getRequest()->getPathInfo();
+
+        if (($pageNum = Craft::$app->getRequest()->getPageNum()) != 1) {
+            $this->_path .= '/'.Craft::$app->getConfig()->get('pageTrigger').$pageNum;
         }
 
         return $this->_path;

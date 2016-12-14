@@ -80,18 +80,18 @@ class Tags extends Component
      */
     public function getAllTagGroupIds()
     {
-        if (!isset($this->_allTagGroupIds)) {
-            if ($this->_fetchedAllTagGroups) {
-                $this->_allTagGroupIds = array_keys($this->_tagGroupsById);
-            } else {
-                $this->_allTagGroupIds = (new Query())
-                    ->select(['id'])
-                    ->from(['{{%taggroups}}'])
-                    ->column();
-            }
+        if ($this->_allTagGroupIds !== null) {
+            return $this->_allTagGroupIds;
         }
 
-        return $this->_allTagGroupIds;
+        if ($this->_fetchedAllTagGroups) {
+            return $this->_allTagGroupIds = array_keys($this->_tagGroupsById);
+        }
+
+        return $this->_allTagGroupIds = (new Query())
+            ->select(['id'])
+            ->from(['{{%taggroups}}'])
+            ->column();
     }
 
     /**
@@ -157,22 +157,24 @@ class Tags extends Component
      */
     public function getTagGroupById($groupId)
     {
-        if (!isset($this->_tagGroupsById) || !array_key_exists($groupId, $this->_tagGroupsById)) {
-            $groupRecord = TagGroupRecord::findOne($groupId);
-
-            if ($groupRecord) {
-                $this->_tagGroupsById[$groupId] = new TagGroup($groupRecord->toArray([
-                    'id',
-                    'name',
-                    'handle',
-                    'fieldLayoutId',
-                ]));
-            } else {
-                $this->_tagGroupsById[$groupId] = null;
-            }
+        if ($this->_tagGroupsById !== null && array_key_exists($groupId, $this->_tagGroupsById)) {
+            return $this->_tagGroupsById;
         }
 
-        return $this->_tagGroupsById[$groupId];
+        if ($this->_fetchedAllTagGroups) {
+            return null;
+        }
+
+        if (($groupRecord = TagGroupRecord::findOne($groupId)) === null) {
+            return $this->_tagGroupsById[$groupId] = null;
+        }
+
+        return $this->_tagGroupsById[$groupId] = new TagGroup($groupRecord->toArray([
+            'id',
+            'name',
+            'handle',
+            'fieldLayoutId',
+        ]));
     }
 
     /**

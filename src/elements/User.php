@@ -16,6 +16,7 @@ use craft\elements\actions\Edit;
 use craft\elements\actions\SuspendUsers;
 use craft\elements\actions\UnsuspendUsers;
 use craft\elements\db\UserQuery;
+use craft\helpers\ArrayHelper;
 use craft\helpers\DateTimeHelper;
 use craft\helpers\Html;
 use craft\helpers\Url;
@@ -784,25 +785,17 @@ class User extends Element implements IdentityInterface
      */
     public function getGroups($indexBy = null)
     {
-        if (!isset($this->_groups)) {
-            if (Craft::$app->getEdition() == Craft::Pro) {
-                $this->_groups = Craft::$app->getUserGroups()->getGroupsByUserId($this->id);
-            } else {
-                $this->_groups = [];
-            }
+        if ($this->_groups !== null) {
+            return $indexBy ? ArrayHelper::index($this->_groups, $indexBy) : $this->_groups;
         }
 
-        if (!$indexBy) {
-            $groups = $this->_groups;
-        } else {
-            $groups = [];
-
-            foreach ($this->_groups as $group) {
-                $groups[$group->$indexBy] = $group;
-            }
+        if (Craft::$app->getEdition() !== Craft::Pro) {
+            return [];
         }
 
-        return $groups;
+        $this->_groups = Craft::$app->getUserGroups()->getGroupsByUserId($this->id);
+
+        return $indexBy ? ArrayHelper::index($this->_groups, $indexBy) : $this->_groups;
     }
 
     /**

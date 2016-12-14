@@ -45,12 +45,12 @@ class FieldLayoutTab extends Model
     public $sortOrder;
 
     /**
-     * @var
+     * @var FieldLayout
      */
     private $_layout;
 
     /**
-     * @var
+     * @var FieldInterface[]
      */
     private $_fields;
 
@@ -111,19 +111,18 @@ class FieldLayoutTab extends Model
      */
     public function getFields()
     {
-        if (!isset($this->_fields)) {
-            $this->_fields = [];
+        if ($this->_fields !== null) {
+            return $this->_fields;
+        }
 
-            $layout = $this->getLayout();
+        $this->_fields = [];
 
-            if ($layout) {
-                /** @var Field[] $fields */
-                $fields = $layout->getFields();
-
-                foreach ($fields as $field) {
-                    if ($field->tabId == $this->id) {
-                        $this->_fields[] = $field;
-                    }
+        if ($layout = $this->getLayout()) {
+            foreach ($layout->getFields() as $field) {
+                /** @var Field $field */
+                /** @noinspection TypeUnsafeComparisonInspection */
+                if ($field->tabId == $this->id) {
+                    $this->_fields[] = $field;
                 }
             }
         }

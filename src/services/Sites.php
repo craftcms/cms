@@ -133,7 +133,7 @@ class Sites extends Component
 
         // Set $this->currentSite to an actual Site model if it's not already
         if (!($this->currentSite instanceof Site)) {
-            if (isset($this->currentSite)) {
+            if ($this->currentSite !== null) {
                 if (is_numeric($this->currentSite)) {
                     $site = $this->getSiteById($this->currentSite);
                 } else {
@@ -203,7 +203,7 @@ class Sites extends Component
     {
         $this->_loadAllSites();
 
-        if (!isset($this->_primarySite)) {
+        if ($this->_primarySite === null) {
             throw new SiteNotFoundException('No sites exist');
         }
 
@@ -217,13 +217,15 @@ class Sites extends Component
      */
     public function getEditableSiteIds()
     {
-        if (!isset($this->_editableSiteIds)) {
-            $this->_editableSiteIds = [];
+        if ($this->_editableSiteIds !== null) {
+            return $this->_editableSiteIds;
+        }
 
-            foreach ($this->getAllSiteIds() as $siteId) {
-                if (Craft::$app->getUser()->checkPermission('editSite:'.$siteId)) {
-                    $this->_editableSiteIds[] = $siteId;
-                }
+        $this->_editableSiteIds = [];
+
+        foreach ($this->getAllSiteIds() as $siteId) {
+            if (Craft::$app->getUser()->checkPermission('editSite:'.$siteId)) {
+                $this->_editableSiteIds[] = $siteId;
             }
         }
 

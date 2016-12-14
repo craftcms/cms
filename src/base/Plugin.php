@@ -63,6 +63,7 @@ class Plugin extends Module implements PluginInterface
         $i18n = Craft::$app->getI18n();
         $handle = $this->getHandle();
 
+        /** @noinspection UnSafeIsSetOverArrayInspection */
         if (!isset($i18n->translations[$handle]) && !isset($i18n->translations[$handle.'*'])) {
             $i18n->translations[$handle] = [
                 'class' => PhpMessageSource::class,

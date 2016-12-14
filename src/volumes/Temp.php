@@ -57,17 +57,17 @@ class Temp extends Local
     {
         parent::init();
 
-        if (isset($this->path)) {
+        if ($this->path !== null) {
             $this->path = rtrim($this->path, '/');
         } else {
             $this->path = Craft::$app->getPath()->getAssetsTempVolumePath();
         }
 
-        if (!isset($this->url)) {
+        if ($this->url === null) {
             $this->url = rtrim(Url::getResourceUrl(), '/').'/tempassets/';
         }
 
-        if (!isset($this->name)) {
+        if ($this->name === null) {
             $this->name = Craft::t('app', 'Temporary source');
         }
     }

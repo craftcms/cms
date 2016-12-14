@@ -160,6 +160,7 @@ class ElementIndexesController extends BaseElementsController
             }
         }
 
+        /** @noinspection UnSafeIsSetOverArrayInspection - FP */
         if (!isset($action)) {
             throw new BadRequestHttpException('Element action is not supported by the element type');
         }

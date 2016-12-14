@@ -251,6 +251,7 @@ class UsersController extends Controller
             }
         }
 
+        /** @noinspection UnSafeIsSetOverArrayInspection - FP */
         if (!isset($user)) {
             $loginName = Craft::$app->getRequest()->getBodyParam('loginName');
 
@@ -1132,6 +1133,7 @@ class UsersController extends Controller
                 return $this->asJson(['html' => $html]);
             }
         } catch (Exception $exception) {
+            /** @noinspection UnSafeIsSetOverArrayInspection - FP */
             if (isset($fileLocation)) {
                 FileHelper::removeFile($fileLocation);
             }

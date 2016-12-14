@@ -928,16 +928,18 @@ class StringHelper extends \yii\helpers\StringHelper
      */
     public static function asciiCharMap()
     {
-        if (!isset(static::$_asciiCharMap)) {
-            // Get the map from Stringy.
-            static::$_asciiCharMap = (new \craft\helpers\Stringy(''))->getAsciiCharMap();
-
-            foreach (Craft::$app->getConfig()->get('customAsciiCharMappings') as $asciiChar => $values) {
-                static::$_asciiCharMap[$asciiChar] = $values;
-            }
+        if (self::$_asciiCharMap !== null) {
+            return self::$_asciiCharMap;
         }
 
-        return static::$_asciiCharMap;
+        // Get the map from Stringy.
+        self::$_asciiCharMap = (new \craft\helpers\Stringy(''))->getAsciiCharMap();
+
+        foreach (Craft::$app->getConfig()->get('customAsciiCharMappings') as $asciiChar => $values) {
+            self::$_asciiCharMap[$asciiChar] = $values;
+        }
+
+        return self::$_asciiCharMap;
     }
 
     /**

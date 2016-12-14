@@ -76,25 +76,25 @@ class MatrixSettings extends Model
     /**
      * Returns the block types.
      *
-     * @return array
+     * @return MatrixBlockType[]
      */
     public function getBlockTypes()
     {
-        if (!isset($this->_blockTypes)) {
-            if (!empty($this->_matrixField->id)) {
-                $this->_blockTypes = Craft::$app->getMatrix()->getBlockTypesByFieldId($this->_matrixField->id);
-            } else {
-                $this->_blockTypes = [];
-            }
+        if ($this->_blockTypes !== null) {
+            return $this->_blockTypes;
         }
 
-        return $this->_blockTypes;
+        if (empty($this->_matrixField->id)) {
+            return [];
+        }
+
+        return $this->_blockTypes = Craft::$app->getMatrix()->getBlockTypesByFieldId($this->_matrixField->id);
     }
 
     /**
      * Sets the block types.
      *
-     * @param array $blockTypes
+     * @param MatrixBlockType[] $blockTypes
      *
      * @return void
      */

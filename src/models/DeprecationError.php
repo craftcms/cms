@@ -93,7 +93,7 @@ class DeprecationError extends Model
     {
         parent::init();
 
-        if (isset($this->traces) && is_string($this->traces)) {
+        if (is_string($this->traces)) {
             $this->traces = Json::decode($this->traces);
         }
     }

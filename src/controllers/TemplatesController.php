@@ -152,6 +152,7 @@ class TemplatesController extends Controller
             }
         }
 
+        /** @noinspection UnSafeIsSetOverArrayInspection - FP */
         if (!isset($template)) {
             $view = Craft::$app->getView();
             $view->setTemplateMode($view::TEMPLATE_MODE_CP);

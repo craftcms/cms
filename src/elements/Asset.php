@@ -378,7 +378,7 @@ class Asset extends Element
     public function __toString()
     {
         try {
-            if (isset($this->_transform)) {
+            if ($this->_transform !== null) {
                 return (string)$this->getUrl();
             }
 
@@ -610,7 +610,7 @@ class Asset extends Element
             }
         }
 
-        if ($transform === null && isset($this->_transform)) {
+        if ($transform === null && $this->_transform !== null) {
             $transform = $this->_transform;
         }
 
@@ -942,7 +942,7 @@ class Asset extends Element
             return null;
         }
 
-        if ($transform === null && isset($this->_transform)) {
+        if ($transform === null && $this->_transform !== null) {
             $transform = $this->_transform;
         }
 

@@ -87,7 +87,7 @@ class Craft extends Yii
      */
     public static function cookieConfig($config = [], $request = null)
     {
-        if (!isset(static::$_baseCookieConfig)) {
+        if (static::$_baseCookieConfig === null) {
             $configService = static::$app->getConfig();
 
             $defaultCookieDomain = $configService->get('defaultCookieDomain');

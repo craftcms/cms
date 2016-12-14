@@ -77,7 +77,7 @@ class RequirementsChecker
             $this->usageError('Requirements must be an array, "'.gettype($requirements).'" has been given!');
         }
 
-        if (!isset($this->result) || !is_array($this->result)) {
+        if (!is_array($this->result)) {
             $this->result = [
                 'summary' => [
                     'total' => 0,
@@ -156,11 +156,7 @@ class RequirementsChecker
      */
     public function getResult()
     {
-        if (isset($this->result)) {
-            return $this->result;
-        }
-
-        return null;
+        return $this->result;
     }
 
     /**
@@ -168,7 +164,7 @@ class RequirementsChecker
      */
     public function render()
     {
-        if (!isset($this->result)) {
+        if ($this->result === null) {
             $this->usageError('Nothing to render!');
         }
 

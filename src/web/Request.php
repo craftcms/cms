@@ -431,7 +431,7 @@ class Request extends \yii\web\Request
             $property = &$this->_isMobileBrowser;
         }
 
-        if (!isset($property)) {
+        if ($property === null) {
             if ($this->getUserAgent()) {
                 $property = (
                     preg_match(

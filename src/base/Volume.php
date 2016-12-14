@@ -325,11 +325,11 @@ abstract class Volume extends SavableComponent implements VolumeInterface
      */
     protected function getAdapter()
     {
-        if (!isset($this->_adapter)) {
-            $this->_adapter = $this->createAdapter();
+        if ($this->_adapter !== null) {
+            return $this->_adapter;
         }
 
-        return $this->_adapter;
+        return $this->_adapter = $this->createAdapter();
     }
 
     /**
@@ -339,11 +339,11 @@ abstract class Volume extends SavableComponent implements VolumeInterface
      */
     protected function getFilesystem()
     {
-        if (!isset($this->_filesystem)) {
-            $this->_filesystem = new Filesystem($this->getAdapter());
+        if ($this->_filesystem !== null) {
+            return $this->_filesystem;
         }
 
-        return $this->_filesystem;
+        return $this->_filesystem = new Filesystem($this->getAdapter());
     }
 
     /**

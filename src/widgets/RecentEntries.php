@@ -110,6 +110,7 @@ class RecentEntries extends Widget
             }
         }
 
+        /** @noinspection UnSafeIsSetOverArrayInspection - FP */
         if (!isset($title)) {
             $title = Craft::t('app', 'Recent Entries');
         }

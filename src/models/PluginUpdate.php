@@ -89,7 +89,7 @@ class PluginUpdate extends Model
     {
         parent::init();
 
-        if (isset($this->releases)) {
+        if ($this->releases !== null) {
             foreach ($this->releases as $key => $value) {
                 if (!$value instanceof PluginNewRelease) {
                     $this->releases[$key] = new PluginNewRelease($value);

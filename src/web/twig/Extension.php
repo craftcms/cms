@@ -525,6 +525,7 @@ class Extension extends \Twig_Extension implements \Twig_Extension_GlobalsInterf
             }
         }
 
+        /** @noinspection UnSafeIsSetOverArrayInspection - FP */
         if (isset($index) && $index !== false) {
             return $index;
         }

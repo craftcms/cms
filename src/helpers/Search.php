@@ -96,11 +96,11 @@ class Search
      */
     public static function minWordLength()
     {
-        if (!isset(static::$_ftMinWordLength)) {
-            static::$_ftMinWordLength = 4;
+        if (self::$_ftMinWordLength !== null) {
+            return self::$_ftMinWordLength;
         }
 
-        return static::$_ftMinWordLength;
+        return self::$_ftMinWordLength = 4;
     }
 
     /**
@@ -111,17 +111,16 @@ class Search
      */
     public static function stopWords()
     {
-        if (!isset(static::$_ftStopWords)) {
-            $words = explode(' ', static::DEFAULT_STOP_WORDS);
-
-            foreach ($words as &$word) {
-                $word = static::normalizeKeywords($word);
-            }
-
-            static::$_ftStopWords = $words;
+        if (self::$_ftStopWords !== null) {
+            return self::$_ftStopWords;
         }
 
-        return static::$_ftStopWords;
+        $words = explode(' ', self::DEFAULT_STOP_WORDS);
+        foreach ($words as &$word) {
+            $word = self::normalizeKeywords($word);
+        }
+
+        return self::$_ftStopWords = $words;
     }
 
     // Private Methods
