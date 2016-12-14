@@ -139,7 +139,7 @@ class Db
         $unsigned = ($min >= 0);
 
         // Figure out the max length
-        $maxAbsSize = intval($unsigned ? $max : max(abs($min), abs($max)));
+        $maxAbsSize = (int)($unsigned ? $max : max(abs($min), abs($max)));
         $length = ($maxAbsSize ? mb_strlen($maxAbsSize) : 0) + $decimals;
 
         // Decimal or int?
