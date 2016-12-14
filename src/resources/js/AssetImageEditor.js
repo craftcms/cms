@@ -25,7 +25,7 @@ Craft.AssetImageEditor = Garnish.Modal.extend(
 		// FabricJS objects
 		canvas: null,
 		image: null,
-		viewportMask: null,
+		viewport: null,
 		grid: null,
 		croppingCanvas: null,
 		clipper: null,
@@ -110,6 +110,7 @@ Craft.AssetImageEditor = Garnish.Modal.extend(
 					this._showGrid();
 				}.bind(this),
 				onChange: function (slider) {
+					this.cropperState = false;
 					this.straighten(slider);
 				}.bind(this),
 				onEnd: function () {
@@ -158,9 +159,11 @@ Craft.AssetImageEditor = Garnish.Modal.extend(
 
 				this.canvas.add(this.image);
 
+				this._setImageVerticeCoordinates();
+
+				this._createViewport();
 				// Scale the image and center it on the canvas
 				this._repositionEditorElements();
-				this._createViewportMask();
 
 				// Add listeners to buttons
 				this._addControlListeners();
@@ -218,6 +221,7 @@ Craft.AssetImageEditor = Garnish.Modal.extend(
 		 */
 		_repositionEditorElements: function () {
 
+			// Set up canvas dimensions
 			var previousEditorDimensions = {
 				width: this.editorWidth,
 				height: this.editorHeight
@@ -231,6 +235,8 @@ Craft.AssetImageEditor = Garnish.Modal.extend(
 				height: this.editorHeight
 			});
 
+			var previouslyOccupiedArea = this._getImageOccupiedArea();
+
 			if (this.currentView == 'crop') {
 				this.zoomRatio = this.getZoomToFitRatio(this.getScaledImageDimensions());
 				var previouslyOccupiedArea = this._getImageOccupiedArea();
@@ -240,27 +246,27 @@ Craft.AssetImageEditor = Garnish.Modal.extend(
 				this.zoomRatio = this.getZoomToCoverRatio(this.getScaledImageDimensions());
 			}
 
-			this._calculateViewportMask();
-			this._setImagePosition(previousEditorDimensions);
+			this._repositionImage(previousEditorDimensions);
+			this._calculateViewport();
 			this._zoomImage();
 
 			this.renderImage();
 		},
 
 		/**
-		 * Set the image position based on how the editor has changed
+		 * Reposition image based on how the editor dimensions have changed
 		 * @param previousEditorDimensions
 		 * @private
 		 */
-		_setImagePosition: function (previousEditorDimensions) {
+		_repositionImage: function (previousEditorDimensions) {
 			this.image.set({
 				left: this.image.left - (previousEditorDimensions.width - this.editorWidth) / 2,
 				top: this.image.top - (previousEditorDimensions.height - this.editorHeight) / 2
 			});
 		},
 
-		_createViewportMask: function () {
-			this.viewportMask = new fabric.Rect({
+		_createViewport: function () {
+			this.viewport = new fabric.Rect({
 				width: this.image.width,
 				height: this.image.height,
 				fill: 'rgba(127,0,0,1)',
@@ -270,29 +276,43 @@ Craft.AssetImageEditor = Garnish.Modal.extend(
 				left: this.image.left,
 				top: this.image.top
 			});
-			this.canvas.add(this.viewportMask);
+			this.canvas.add(this.viewport);
 			this.renderImage();
 		},
 
-		_calculateViewportMask: function () {
-			// TODO Take into account cropping performed
-			if (this.viewportMask) {
-				var dimensions = {};
-				if (this.currentView == 'crop') {
-					dimensions = {
-						width: this.editorWidth,
-						height: this.editorHeight
-					};
-				} else {
-					dimensions = this.getScaledImageDimensions();
-				}
-
-				this.viewportMask.set($.extend({}, dimensions, {
+		_calculateViewport: function () {
+			if (this.viewport) {
+				var dimensions = {
 					left: this.editorWidth / 2,
 					top: this.editorHeight / 2
-				}));
+				};
 
-				this.renderImage();
+				if (this.currentView == 'crop') {
+					dimensions.width = this.editorWidth;
+					dimensions.height = this.editorHeight;
+				} else {
+					if (this.cropperState) {
+						var state = this.cropperState;
+
+						// Make sure we have the correct current image size
+						this._setImageVerticeCoordinates();
+						var currentArea = this._getImageOccupiedArea();
+
+						// Calculate by what factor the stored cropper state has to be adjusted
+						var areaFactor = currentArea.width / state.imageArea.width * this.getCombinedZoomRatio(this.getScaledImageDimensions());
+
+						dimensions.width = state.clipperData.width * areaFactor;
+						dimensions.height = state.clipperData.height * areaFactor;
+						// Move the image to show the right area in the viewport
+						this.image.set({
+							left: (this.editorWidth / 2) - (state.clipperData.deltaX * areaFactor),
+							top: (this.editorHeight / 2) - (state.clipperData.deltaY * areaFactor)
+						});
+					} else {
+						$.extend(dimensions, this.getScaledImageDimensions());
+					}
+				}
+				this.viewport.set(dimensions);
 			}
 		},
 
@@ -450,7 +470,7 @@ Craft.AssetImageEditor = Garnish.Modal.extend(
 				var imageDimensions = this.getScaledImageDimensions();
 				var newAngle = this.image.getAngle() + degrees;
 
-				this.viewportMask.animate({
+				this.viewport.animate({
 					angle: this.viewportRotation
 				}, {
 					duration: this.settings.animationDuration
@@ -626,8 +646,8 @@ Craft.AssetImageEditor = Garnish.Modal.extend(
 				};
 
 				var lineCount = 8,
-					gridWidth = this.viewportMask.width,
-					gridHeight = this.viewportMask.height,
+					gridWidth = this.viewport.width,
+					gridHeight = this.viewport.height,
 					xStep = gridWidth / (lineCount + 1),
 					yStep = gridHeight / (lineCount + 1);
 
@@ -657,7 +677,7 @@ Craft.AssetImageEditor = Garnish.Modal.extend(
 					top: this.editorHeight / 2,
 					originX: 'center',
 					originY: 'center',
-					angle: this.viewportMask.angle
+					angle: this.viewport.angle
 				});
 
 				this.canvas.add(this.grid);
@@ -798,7 +818,7 @@ Craft.AssetImageEditor = Garnish.Modal.extend(
 					}.bind(this)
 				});
 
-				this.viewportMask.animate({
+				this.viewport.animate({
 					width: viewportDimensions.width,
 					height: viewportDimensions.height
 				}, {
@@ -866,11 +886,11 @@ Craft.AssetImageEditor = Garnish.Modal.extend(
 				width: this.editorWidth,
 				height: this.editorHeight,
 				fill: 'rgba(0,0,0,0.4)'
-			});
+			})
 
 			// calculate the cropping rectangle size.
 			var imageDimensions = this.getScaledImageDimensions();
-			var rectangleRatio = this.imageStraightenAngle == 0 ? 1.2 : this.getCombinedZoomRatio(imageDimensions) * 1.2,
+			var rectangleRatio = this.imageStraightenAngle == 0 ? 1 : this.getCombinedZoomRatio(imageDimensions) * 1.2,
 				rectWidth = imageDimensions.width / rectangleRatio,
 				rectHeight = imageDimensions.height / rectangleRatio;
 
