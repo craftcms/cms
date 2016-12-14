@@ -2,7 +2,7 @@
 html.noscroll, html.noscroll body { overflow: hidden; height: 100%; }
 
 /* Image Editor */
-.imageeditor { background: #222; color: #fff; opacity: 1; }
+.imageeditor { background: #222; color: #fff; opacity: 1; user-select: none; }
 
 .imageeditor.modal { border-radius: 0; }
 
