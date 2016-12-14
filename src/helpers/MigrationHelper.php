@@ -398,10 +398,9 @@ class MigrationHelper
         }
 
         // Restore indexes.
-        foreach ($columnIndexes as $indexData) {
-            list($columns, $unique) = $indexData;
-
-            foreach ($columns as $key => $column) {
+        foreach ($columnIndexes as list($indexColumns, $unique)) {
+            /** @noinspection ForeachSourceInspection */
+            foreach ($indexColumns as $key => $column) {
                 if ($column === $oldName) {
                     $columns[$key] = $newName;
                 }
@@ -411,9 +410,7 @@ class MigrationHelper
         }
 
         // Restore FK's the column was linking to.
-        foreach ($columnFks as $fkData) {
-            list($fk, $key) = $fkData;
-
+        foreach ($columnFks as list($fk, $key)) {
             // Get the reference table.
             $refTable = $fk[0];
 

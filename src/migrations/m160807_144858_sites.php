@@ -136,8 +136,7 @@ class m160807_144858_sites extends Migration
         // Create the FK columns
         // ---------------------------------------------------------------------
 
-        foreach (self::$siteColumns as $columnInfo) {
-            list($table, $column, $isNotNull, $localeColumn) = $columnInfo;
+        foreach (self::$siteColumns as list($table, $column, $isNotNull, $localeColumn)) {
             $this->addSiteColumn($table, $column, $isNotNull, $localeColumn);
         }
 
@@ -260,8 +259,7 @@ class m160807_144858_sites extends Migration
         // Drop the locale columns
         // ---------------------------------------------------------------------
 
-        foreach (self::$siteColumns as $columnInfo) {
-            list($table, , , $localeColumn) = $columnInfo;
+        foreach (self::$siteColumns as list($table, , , $localeColumn)) {
             $this->dropColumn($table, $localeColumn);
         }
 

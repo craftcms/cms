@@ -164,9 +164,7 @@ class ElementIndexes extends Component
             // Assemble the customized source list
             $pendingHeading = null;
 
-            foreach ($settings['sourceOrder'] as $source) {
-                list($type, $value) = $source;
-
+            foreach ($settings['sourceOrder'] as list($type, $value)) {
                 if ($type == 'heading') {
                     // Queue it up. We'll only add it if a real source follows
                     $pendingHeading = $value;
