@@ -570,7 +570,7 @@ class Assets extends BaseRelationField
         }
 
 
-        if (strlen($subpath) === 0) {
+        if ($subpath === '') {
             // Get the root folder in the source
             $folder = $rootFolder;
         } else {
@@ -583,7 +583,7 @@ class Assets extends BaseRelationField
 
             // Did any of the tokens return null?
             if (
-                strlen($renderedSubpath) === 0 ||
+                $renderedSubpath === '' ||
                 trim($renderedSubpath, '/') != $renderedSubpath ||
                 strpos($renderedSubpath, '//') !== false
             ) {

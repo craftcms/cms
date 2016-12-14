@@ -65,7 +65,7 @@ class Paginate
             if ($page != 1) {
                 $pageTrigger = Craft::$app->getConfig()->get('pageTrigger');
 
-                if (!is_string($pageTrigger) || !strlen($pageTrigger)) {
+                if (!is_string($pageTrigger) || $pageTrigger === '') {
                     $pageTrigger = 'p';
                 }
 

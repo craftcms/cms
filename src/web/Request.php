@@ -177,7 +177,7 @@ class Request extends \yii\web\Request
         // Is this a paginated request?
         $pageTrigger = Craft::$app->getConfig()->get('pageTrigger');
 
-        if (!is_string($pageTrigger) || !strlen($pageTrigger)) {
+        if (!is_string($pageTrigger) || $pageTrigger === '') {
             $pageTrigger = 'p';
         }
 
