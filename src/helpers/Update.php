@@ -256,11 +256,14 @@ class Update
         }
 
         // Only use the manifest data starting from the local version
-        for ($counter = 0; $counter < count($manifestData); $counter++) {
-            if (StringHelper::contains($manifestData[$counter], '##'.$localVersion)) {
+        $counter = 0;
+        /** @noinspection ForeachSourceInspection - FP */
+        foreach ($manifestData as $counter => &$line) {
+            if (StringHelper::contains($line, '##'.$localVersion)) {
                 break;
             }
         }
+        unset($line);
         $manifestData = array_slice($manifestData, $counter);
 
         if (empty($manifestData)) {
