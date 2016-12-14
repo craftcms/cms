@@ -873,10 +873,12 @@ class Config extends Component
                     // Originally blocks.php defined a $blocksConfig variable, and then later returned an array directly.
                     if (is_array($customConfig = require $filePath)) {
                         $this->_mergeConfigs($configSettings, $customConfig);
-                    } else /** @noinspection UnSafeIsSetOverArrayInspection - FP */
+                    } else {
+                        /** @noinspection UnSafeIsSetOverArrayInspection - FP */
                         if (isset($blocksConfig)) {
-                        $configSettings = array_merge($configSettings, $blocksConfig);
-                        unset($blocksConfig);
+                            $configSettings = array_merge($configSettings, $blocksConfig);
+                            unset($blocksConfig);
+                        }
                     }
                 }
             }
@@ -887,10 +889,12 @@ class Config extends Component
                 // Originally db.php defined a $dbConfig variable, and later returned an array directly.
                 if (is_array($customConfig = require $filePath)) {
                     $this->_mergeConfigs($configSettings, $customConfig);
-                } else /** @noinspection UnSafeIsSetOverArrayInspection - FP */
-                    if ($category == self::CATEGORY_DB && isset($dbConfig)) {
-                    $configSettings = array_merge($configSettings, $dbConfig);
-                    unset($dbConfig);
+                } else {
+                    /** @noinspection UnSafeIsSetOverArrayInspection - FP */
+                    if ($category === self::CATEGORY_DB && isset($dbConfig)) {
+                        $configSettings = array_merge($configSettings, $dbConfig);
+                        unset($dbConfig);
+                    }
                 }
             }
         }
