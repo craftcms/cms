@@ -222,7 +222,7 @@ class ChartHelper
     public static function getRunChartIntervalUnit(DateTime $startDate, DateTime $endDate)
     {
         // Get the total number of days between the two dates
-        $days = floor(($endDate->getTimestamp() - $startDate->getTimestamp()) / 86400);
+        $days = $endDate->diff($startDate)->format('%a');
 
         if ($days >= 730) {
             return 'year';
