@@ -128,7 +128,7 @@ class TemplateCaches extends Component
 
         $query = (new Query())
             ->select(['body'])
-            ->from([static::$_templateCachesTable])
+            ->from([self::$_templateCachesTable])
             ->where([
                 'and',
                 [
@@ -295,7 +295,7 @@ class TemplateCaches extends Component
         try {
             Craft::$app->getDb()->createCommand()
                 ->insert(
-                    static::$_templateCachesTable,
+                    self::$_templateCachesTable,
                     [
                         'cacheKey' => $key,
                         'siteId' => Craft::$app->getSites()->currentSite->id,
@@ -306,7 +306,7 @@ class TemplateCaches extends Component
                     false)
                 ->execute();
 
-            $cacheId = Craft::$app->getDb()->getLastInsertID(static::$_templateCachesTable);
+            $cacheId = Craft::$app->getDb()->getLastInsertID(self::$_templateCachesTable);
 
             // Tag it with any element queries that were executed within the cache
             if (!empty($this->_cachedQueries[$key])) {
@@ -319,7 +319,7 @@ class TemplateCaches extends Component
                     ];
                 }
                 Craft::$app->getDb()->createCommand()
-                    ->batchInsert(static::$_templateCacheQueriesTable, [
+                    ->batchInsert(self::$_templateCacheQueriesTable, [
                         'cacheId',
                         'type',
                         'query'
@@ -338,7 +338,7 @@ class TemplateCaches extends Component
 
                 Craft::$app->getDb()->createCommand()
                     ->batchInsert(
-                        static::$_templateCacheElementsTable,
+                        self::$_templateCacheElementsTable,
                         ['cacheId', 'elementId'],
                         $values,
                         false)
@@ -369,7 +369,7 @@ class TemplateCaches extends Component
         }
 
         $affectedRows = Craft::$app->getDb()->createCommand()
-            ->delete(static::$_templateCachesTable, ['id' => $cacheId])
+            ->delete(self::$_templateCachesTable, ['id' => $cacheId])
             ->execute();
 
         return (bool)$affectedRows;
@@ -392,14 +392,14 @@ class TemplateCaches extends Component
 
         $cacheIds = (new Query())
             ->select(['cacheId'])
-            ->from([static::$_templateCacheQueriesTable])
+            ->from([self::$_templateCacheQueriesTable])
             ->where(['type' => $elementType])
             ->column();
 
         if ($cacheIds) {
             Craft::$app->getDb()->createCommand()
                 ->delete(
-                    static::$_templateCachesTable,
+                    self::$_templateCachesTable,
                     ['id' => $cacheIds])
                 ->execute();
         }
@@ -495,7 +495,7 @@ class TemplateCaches extends Component
         $cacheIds = (new Query())
             ->select(['cacheId'])
             ->distinct(true)
-            ->from([static::$_templateCacheElementsTable])
+            ->from([self::$_templateCacheElementsTable])
             ->where(['elementId' => $elementId])
             ->column();
 
@@ -542,7 +542,7 @@ class TemplateCaches extends Component
         }
 
         $affectedRows = Craft::$app->getDb()->createCommand()
-            ->delete(static::$_templateCachesTable, ['cacheKey' => $key])
+            ->delete(self::$_templateCachesTable, ['cacheKey' => $key])
             ->execute();
 
         return (bool)$affectedRows;
@@ -560,7 +560,7 @@ class TemplateCaches extends Component
         }
 
         $affectedRows = Craft::$app->getDb()->createCommand()
-            ->delete(static::$_templateCachesTable, ['<=', 'expiryDate', Db::prepareDateForDb(new \DateTime())])
+            ->delete(self::$_templateCachesTable, ['<=', 'expiryDate', Db::prepareDateForDb(new \DateTime())])
             ->execute();
 
         $this->_deletedExpiredCaches = true;
@@ -582,9 +582,9 @@ class TemplateCaches extends Component
 
         $lastCleanupDate = Craft::$app->getCache()->get('lastTemplateCacheCleanupDate');
 
-        if ($lastCleanupDate === false || DateTimeHelper::currentTimeStamp() - $lastCleanupDate > static::$_lastCleanupDateCacheDuration) {
+        if ($lastCleanupDate === false || DateTimeHelper::currentTimeStamp() - $lastCleanupDate > self::$_lastCleanupDateCacheDuration) {
             // Don't do it again for a while
-            Craft::$app->getCache()->set('lastTemplateCacheCleanupDate', DateTimeHelper::currentTimeStamp(), static::$_lastCleanupDateCacheDuration);
+            Craft::$app->getCache()->set('lastTemplateCacheCleanupDate', DateTimeHelper::currentTimeStamp(), self::$_lastCleanupDateCacheDuration);
 
             return $this->deleteExpiredCaches();
         }
@@ -608,7 +608,7 @@ class TemplateCaches extends Component
         $this->_deletedAllCaches = true;
 
         $affectedRows = Craft::$app->getDb()->createCommand()
-            ->delete(static::$_templateCachesTable)
+            ->delete(self::$_templateCachesTable)
             ->execute();
 
         return (bool)$affectedRows;

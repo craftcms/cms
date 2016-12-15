@@ -110,13 +110,13 @@ class Localization
             $loadedAlready = false;
 
             // We've loaded the translation file already, just check for the translation.
-            if (isset(static::$_translations[$translationFile])) {
+            if (isset(self::$_translations[$translationFile])) {
                 /** @noinspection PhpUnusedLocalVariableInspection */
                 $loadedAlready = true;
 
-                if (isset(static::$_translations[$translationFile][$event->message])) {
+                if (isset(self::$_translations[$translationFile][$event->message])) {
                     // Found a match... grab it and go.
-                    $event->message = static::$_translations[$translationFile][$event->message];
+                    $event->message = self::$_translations[$translationFile][$event->message];
 
                     return;
                 }
@@ -139,15 +139,15 @@ class Localization
 
             if (is_file($path)) {
                 // Load it up.
-                static::$_translations[$translationFile] = include $path;
+                self::$_translations[$translationFile] = include $path;
 
-                if (isset(static::$_translations[$translationFile][$event->message])) {
-                    $event->message = static::$_translations[$translationFile][$event->message];
+                if (isset(self::$_translations[$translationFile][$event->message])) {
+                    $event->message = self::$_translations[$translationFile][$event->message];
 
                     return;
                 }
             } else {
-                static::$_translations[$translationFile] = [];
+                self::$_translations[$translationFile] = [];
             }
         }
     }

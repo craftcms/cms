@@ -87,7 +87,7 @@ class Craft extends Yii
      */
     public static function cookieConfig($config = [], $request = null)
     {
-        if (static::$_baseCookieConfig === null) {
+        if (self::$_baseCookieConfig === null) {
             $configService = static::$app->getConfig();
 
             $defaultCookieDomain = $configService->get('defaultCookieDomain');
@@ -101,14 +101,14 @@ class Craft extends Yii
                 $useSecureCookies = $request->getIsSecureConnection();
             }
 
-            static::$_baseCookieConfig = [
+            self::$_baseCookieConfig = [
                 'domain' => $defaultCookieDomain,
                 'secure' => $useSecureCookies,
                 'httpOnly' => true
             ];
         }
 
-        return array_merge(static::$_baseCookieConfig, $config);
+        return array_merge(self::$_baseCookieConfig, $config);
     }
 
     /**

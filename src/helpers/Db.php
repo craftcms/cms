@@ -128,10 +128,10 @@ class Db
     {
         // Normalize the arguments
         if (!is_numeric($min)) {
-            $min = -static::$_intColumnSizes[ColumnType::Int];
+            $min = -self::$_intColumnSizes[ColumnType::Int];
         }
         if (!is_numeric($max)) {
-            $max = static::$_intColumnSizes[ColumnType::Int] - 1;
+            $max = self::$_intColumnSizes[ColumnType::Int] - 1;
         }
         $decimals = is_numeric($decimals) && $decimals > 0 ? (int)$decimals : 0;
 
@@ -147,7 +147,7 @@ class Db
             $type = Schema::TYPE_DECIMAL."($length,$decimals)";
         } else {
             // Figure out the smallest possible int column type that will fit our min/max
-            foreach (static::$_intColumnSizes as $type => $size) {
+            foreach (self::$_intColumnSizes as $type => $size) {
                 if ($unsigned) {
                     if ($max < $size * 2) {
                         break;
@@ -454,7 +454,7 @@ class Db
      */
     private static function _parseParamOperator(&$value)
     {
-        foreach (static::$_operators as $testOperator) {
+        foreach (self::$_operators as $testOperator) {
             // Does the value start with this operator?
             if (strpos(StringHelper::toLowerCase($value), $testOperator) === 0) {
                 $value = mb_substr($value, strlen($testOperator));

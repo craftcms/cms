@@ -96,7 +96,7 @@ class Deprecator extends Component
             // Do we already have this one logged?
             $existingId = (new Query())
                 ->select(['id'])
-                ->from([static::$_tableName])
+                ->from([self::$_tableName])
                 ->where([
                     'key' => $log->key,
                     'fingerprint' => $log->fingerprint
@@ -106,17 +106,17 @@ class Deprecator extends Component
             if ($existingId === false) {
                 $db->createCommand()
                     ->insert(
-                        static::$_tableName,
+                        self::$_tableName,
                         array_merge($values, [
                             'key' => $log->key,
                             'fingerprint' => $log->fingerprint
                         ]))
                     ->execute();
-                $log->id = $db->getLastInsertID(static::$_tableName);
+                $log->id = $db->getLastInsertID(self::$_tableName);
             } else {
                 $db->createCommand()
                     ->update(
-                        static::$_tableName,
+                        self::$_tableName,
                         $values,
                         ['id' => $existingId])
                     ->execute();
@@ -147,7 +147,7 @@ class Deprecator extends Component
     public function getTotalLogs()
     {
         return (new Query())
-            ->from([static::$_tableName])
+            ->from([self::$_tableName])
             ->count('[[id]]');
     }
 
@@ -208,7 +208,7 @@ class Deprecator extends Component
     public function deleteLogById($id)
     {
         $affectedRows = Craft::$app->getDb()->createCommand()
-            ->delete(static::$_tableName, ['id' => $id])
+            ->delete(self::$_tableName, ['id' => $id])
             ->execute();
 
         return (bool)$affectedRows;
@@ -222,7 +222,7 @@ class Deprecator extends Component
     public function deleteAllLogs()
     {
         $affectedRows = Craft::$app->getDb()->createCommand()
-            ->delete(static::$_tableName)
+            ->delete(self::$_tableName)
             ->execute();
 
         return (bool)$affectedRows;
@@ -253,7 +253,7 @@ class Deprecator extends Component
                 'message',
                 'traces',
             ])
-            ->from([static::$_tableName]);
+            ->from([self::$_tableName]);
     }
 
     /**

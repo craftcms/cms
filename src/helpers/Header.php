@@ -74,7 +74,7 @@ class Header
 
         if (static::setHeader(['Content-Type' => $mimeType.'; charset=utf-8'])) {
             // Save the MIME type for getMimeType()
-            static::$_mimeType = $mimeType;
+            self::$_mimeType = $mimeType;
 
             return true;
         }
@@ -252,7 +252,7 @@ class Header
         }
 
         // Clear out our stored MIME type in case its about to be overridden
-        static::$_mimeType = null;
+        self::$_mimeType = null;
 
         if (is_string($header)) {
             $header = [$header];

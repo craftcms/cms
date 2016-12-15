@@ -535,7 +535,7 @@ class DateTimeHelper
      */
     private static function _getDateTranslations($language)
     {
-        if (!isset(static::$_translationPairs[$language])) {
+        if (!isset(self::$_translationPairs[$language])) {
             if (strpos(Craft::$app->language, 'en') === 0) {
                 $sourceLocale = Craft::$app->getLocale();
             } else {
@@ -547,7 +547,7 @@ class DateTimeHelper
             $amName = $targetLocale->getAMName();
             $pmName = $targetLocale->getPMName();
 
-            static::$_translationPairs[$language] = array_merge(
+            self::$_translationPairs[$language] = array_merge(
                 array_combine($sourceLocale->getMonthNames(Locale::LENGTH_FULL), $targetLocale->getMonthNames(Locale::LENGTH_FULL)),
                 array_combine($sourceLocale->getWeekDayNames(Locale::LENGTH_FULL), $targetLocale->getWeekDayNames(Locale::LENGTH_FULL)),
                 array_combine($sourceLocale->getMonthNames(Locale::LENGTH_MEDIUM), $targetLocale->getMonthNames(Locale::LENGTH_MEDIUM)),
@@ -561,6 +561,6 @@ class DateTimeHelper
             );
         }
 
-        return static::$_translationPairs[$language];
+        return self::$_translationPairs[$language];
     }
 }

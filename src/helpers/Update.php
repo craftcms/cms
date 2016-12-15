@@ -223,14 +223,14 @@ class Update
      */
     public static function getManifestData($manifestDataPath, $handle)
     {
-        if (static::$_manifestData !== null) {
-            return static::$_manifestData ?: null;
+        if (self::$_manifestData !== null) {
+            return self::$_manifestData ?: null;
         }
 
         $fullPath = FileHelper::normalizePath(rtrim($manifestDataPath, '/\\').DIRECTORY_SEPARATOR.$handle.'_manifest');
 
         if (!is_file($fullPath)) {
-            static::$_manifestData = false;
+            self::$_manifestData = false;
 
             return null;
         }
@@ -267,12 +267,12 @@ class Update
         $manifestData = array_slice($manifestData, $counter);
 
         if (empty($manifestData)) {
-            static::$_manifestData = false;
+            self::$_manifestData = false;
 
             return null;
         }
 
-        static::$_manifestData = $manifestData;
+        self::$_manifestData = $manifestData;
 
         return $manifestData;
     }

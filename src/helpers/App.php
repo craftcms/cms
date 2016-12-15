@@ -45,13 +45,13 @@ class App
      */
     public static function isComposerInstall()
     {
-        if (static::$_isComposerInstall !== null) {
-            return static::$_isComposerInstall;
+        if (self::$_isComposerInstall !== null) {
+            return self::$_isComposerInstall;
         }
 
         // If this was installed via a craftcms.com zip, there will be an index.php file
         // at the root of the vendor directory.
-        return static::$_isComposerInstall = !is_file(Craft::$app->getVendorPath().DIRECTORY_SEPARATOR.'index.php');
+        return self::$_isComposerInstall = !is_file(Craft::$app->getVendorPath().DIRECTORY_SEPARATOR.'index.php');
     }
 
     /**
@@ -61,15 +61,15 @@ class App
      */
     public static function isPhpDevServer()
     {
-        if (static::$_isPhpDevServer !== null) {
-            return static::$_isPhpDevServer;
+        if (self::$_isPhpDevServer !== null) {
+            return self::$_isPhpDevServer;
         }
 
         if (isset($_SERVER['SERVER_SOFTWARE'])) {
-            return static::$_isPhpDevServer = (strpos($_SERVER['SERVER_SOFTWARE'], 'PHP') === 0);
+            return self::$_isPhpDevServer = (strpos($_SERVER['SERVER_SOFTWARE'], 'PHP') === 0);
         }
 
-        return static::$_isPhpDevServer = false;
+        return self::$_isPhpDevServer = false;
     }
 
     /**
@@ -237,12 +237,12 @@ class App
      */
     public static function checkForValidIconv()
     {
-        if (static::$_iconv !== null) {
-            return static::$_iconv;
+        if (self::$_iconv !== null) {
+            return self::$_iconv;
         }
 
         // Check if iconv is installed. Note we can't just use HTMLPurifier_Encoder::iconvAvailable() because they
         // don't consider iconv "installed" if it's there but "unusable".
-        return static::$_iconv = (function_exists('iconv') && \HTMLPurifier_Encoder::testIconvTruncateBug() === \HTMLPurifier_Encoder::ICONV_OK);
+        return self::$_iconv = (function_exists('iconv') && \HTMLPurifier_Encoder::testIconvTruncateBug() === \HTMLPurifier_Encoder::ICONV_OK);
     }
 }
