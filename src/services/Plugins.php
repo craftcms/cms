@@ -1160,7 +1160,7 @@ class Plugins extends Component
 
             // Normalize $path to an absolute path
             $path = FileHelper::normalizePath($path);
-            if (!(substr($path, 0, 1) === DIRECTORY_SEPARATOR || substr($path, 1, 1) === ':')) {
+            if (strpos($path, DIRECTORY_SEPARATOR) !== 0 && substr($path, 1, 1) !== ':') {
                 $pluginPath = Craft::$app->getPath()->getPluginsPath().DIRECTORY_SEPARATOR.$handle;
                 $path = $pluginPath.DIRECTORY_SEPARATOR.$path;
             }
