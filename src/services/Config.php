@@ -715,7 +715,7 @@ class Config extends Component
 
         try {
             $mutex = Craft::$app->getMutex();
-            $name = uniqid('test', false);
+            $name = uniqid('test_lock', true);
             if (!$mutex->acquire($name)) {
                 throw new Exception('Unable to acquire test lock.');
             }

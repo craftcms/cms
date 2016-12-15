@@ -192,7 +192,7 @@ class FileHelper extends \yii\helpers\FileHelper
     {
         // If it's a directory, test on a temp sub file
         if (is_dir($path)) {
-            return static::isWritable($path.DIRECTORY_SEPARATOR.uniqid(mt_rand()).'.tmp');
+            return static::isWritable($path.DIRECTORY_SEPARATOR.uniqid('test_writable', true).'.tmp');
         }
 
         // Remember whether the file already existed
