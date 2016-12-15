@@ -123,6 +123,7 @@ class DeleteStaleTemplateCaches extends Task
         } else {
             // See if any of the updated elements would get fetched by this query
             /** @var ElementQuery|false $query */
+            /** @noinspection UnserializeExploitsInspection - $row['query'] is not user-supplied */
             $query = @unserialize(base64_decode($row['query']));
             if ($query === false || array_intersect($query->ids(), $this->elementId)) {
                 // Delete this cache
