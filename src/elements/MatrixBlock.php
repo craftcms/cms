@@ -389,6 +389,7 @@ class MatrixBlock extends Element
      */
     private function _getField()
     {
+        /** @noinspection PhpIncompatibleReturnTypeInspection */
         return Craft::$app->getFields()->getFieldById($this->fieldId);
     }
 }

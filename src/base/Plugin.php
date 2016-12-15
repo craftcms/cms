@@ -186,6 +186,7 @@ class Plugin extends Module implements PluginInterface
      */
     public function getMigrator()
     {
+        /** @noinspection PhpIncompatibleReturnTypeInspection */
         return $this->get('migrator');
     }
 

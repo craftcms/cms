@@ -120,6 +120,7 @@ class Elements extends Component
             $config = ['type' => $config];
         }
 
+        /** @noinspection PhpIncompatibleReturnTypeInspection */
         return ComponentHelper::createComponent($config, ElementInterface::class);
     }
 
