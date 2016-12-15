@@ -287,8 +287,8 @@ abstract class Volume extends SavableComponent implements VolumeInterface
         }
 
         // The files are moved, but the directories remain. Delete them.
-        foreach ($directoryList as $path) {
-            $this->deleteDir($path);
+        foreach ($directoryList as $dir) {
+            $this->deleteDir($dir);
         }
     }
 

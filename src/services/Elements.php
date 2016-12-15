@@ -1137,14 +1137,14 @@ class Elements extends Component
                                     $elementsByThing[$element->$thing] = $element;
                                 }
 
-                                foreach ($refTagsByThing as $thingVal => $refTags) {
+                                foreach ($refTagsByThing as $thingVal => $thingRefTags) {
                                     if (isset($elementsByThing[$thingVal])) {
                                         $element = $elementsByThing[$thingVal];
                                     } else {
                                         $element = false;
                                     }
 
-                                    foreach ($refTags as $refTag) {
+                                    foreach ($thingRefTags as $refTag) {
                                         $search[] = $refTag['token'];
 
                                         if ($element) {

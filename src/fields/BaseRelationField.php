@@ -284,8 +284,8 @@ abstract class BaseRelationField extends Field implements PreviewableFieldInterf
         /** @var ElementQuery $value */
         $titles = [];
 
-        foreach ($value->all() as $element) {
-            $titles[] = (string)$element;
+        foreach ($value->all() as $relatedElement) {
+            $titles[] = (string)$relatedElement;
         }
 
         return parent::getSearchKeywords($titles, $element);
