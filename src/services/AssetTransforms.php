@@ -634,42 +634,38 @@ class AssetTransforms extends Component
             return null;
         }
 
-        if (is_string($transform)) {
-            $transformModel = $this->getTransformByHandle($transform);
-
-            if ($transformModel) {
-                return $transformModel;
-            }
-
-            throw new AssetTransformException(Craft::t('app',
-                'The transform “{handle}” cannot be found!',
-                ['handle' => $transform]));
-        } else {
-            if ($transform instanceof AssetTransform) {
-                return $transform;
-            }
-
-            if (is_object($transform)) {
-                return new AssetTransform(ArrayHelper::toArray($transform, [
-                    'id',
-                    'name',
-                    'handle',
-                    'width',
-                    'height',
-                    'format',
-                    'dimensionChangeTime',
-                    'mode',
-                    'position',
-                    'quality',
-                ]));
-            }
-
-            if (is_array($transform)) {
-                return new AssetTransform($transform);
-            }
-
-            return null;
+        if ($transform instanceof AssetTransform) {
+            return $transform;
         }
+
+        if (is_array($transform)) {
+            return new AssetTransform($transform);
+        }
+
+        if (is_object($transform)) {
+            return new AssetTransform(ArrayHelper::toArray($transform, [
+                'id',
+                'name',
+                'handle',
+                'width',
+                'height',
+                'format',
+                'dimensionChangeTime',
+                'mode',
+                'position',
+                'quality',
+            ]));
+        }
+
+        if (is_string($transform)) {
+            if (($transformModel = $this->getTransformByHandle($transform)) === null) {
+                throw new AssetTransformException(Craft::t('app', 'Invalid transform handle: {handle}', ['handle' => $transform]));
+            }
+
+            return $transformModel;
+        }
+
+        return null;
     }
 
     /**
@@ -1304,12 +1300,8 @@ class AssetTransforms extends Component
         }
 
         if (empty($index->transform)) {
-            $transform = $this->normalizeTransform(mb_substr($index->location,
-                1));
-
-            if (empty($transform)) {
-                throw new AssetTransformException(Craft::t('app',
-                    'Unable to recognize the transform for this transform index!'));
+            if (($transform = $this->normalizeTransform(mb_substr($index->location, 1))) === null) {
+                throw new AssetTransformException(Craft::t('app', 'Unable to recognize the transform for this transform index!'));
             }
         } else {
             $transform = $index->transform;

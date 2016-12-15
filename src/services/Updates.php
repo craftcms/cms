@@ -141,7 +141,7 @@ class Updates extends Component
 
             // Could be false!
             if ($updateModel) {
-                if (!empty($updateModel->app)) {
+                if ($updateModel->app) {
                     if ($updateModel->app->versionUpdateStatus == VersionUpdateStatus::UpdateAvailable) {
                         /** @noinspection UnSafeIsSetOverArrayInspection - FP */
                         if (isset($updateModel->app->releases) && count($updateModel->app->releases) > 0) {

@@ -524,7 +524,7 @@ abstract class BaseRelationField extends Field implements PreviewableFieldInterf
                 return $this->targetSiteId;
             }
 
-            if (!empty($element)) {
+            if ($element !== null) {
                 return $element->siteId;
             }
         }

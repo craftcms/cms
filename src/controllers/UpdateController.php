@@ -439,10 +439,12 @@ EOD;
             if ($handle !== 'craft') {
                 /** @var Plugin $plugin */
                 $plugin = Craft::$app->getPlugins()->getPlugin($handle);
+            } else {
+                $plugin = null;
             }
 
             // If this a plugin, make sure it actually has new migrations before backing up the database.
-            if ($handle === 'craft' || (!empty($plugin) && $plugin->getMigrator()->getNewMigrations())) {
+            if ($handle === 'craft' || ($plugin !== null && $plugin->getMigrator()->getNewMigrations())) {
                 $return = Craft::$app->getUpdates()->backupDatabase();
 
                 if (!$return['success']) {
