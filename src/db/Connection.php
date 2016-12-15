@@ -376,10 +376,8 @@ class Connection extends \yii\db\Connection
         $table = $this->getSchema()->getRawTableName($table);
 
         if ($this->tablePrefix) {
-            $prefixLength = strlen($this->tablePrefix);
-
-            if (strncmp($table, $this->tablePrefix, $prefixLength) === 0) {
-                $table = substr($table, $prefixLength);
+            if (strpos($table, $this->tablePrefix) === 0) {
+                $table = substr($table, strlen($this->tablePrefix));
             }
         }
 

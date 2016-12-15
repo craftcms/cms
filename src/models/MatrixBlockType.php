@@ -109,7 +109,7 @@ class MatrixBlockType extends Model
      */
     public function getIsNew()
     {
-        return (!$this->id || strncmp($this->id, 'new', 3) === 0);
+        return (!$this->id || strpos($this->id, 'new') === 0);
     }
 
     /**

@@ -351,10 +351,9 @@ class UrlManager extends \yii\web\UrlManager
         } else {
             $trigger = Craft::$app->getConfig()->get('privateTemplateTrigger');
         }
-        $length = strlen($trigger);
 
         foreach (Craft::$app->getRequest()->getSegments() as $requestPathSeg) {
-            if (strncmp($requestPathSeg, $trigger, $length) === 0) {
+            if (strpos($requestPathSeg, $trigger) === 0) {
                 return false;
             }
         }

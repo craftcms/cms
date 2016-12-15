@@ -130,7 +130,7 @@ class DeprecationError extends Model
         if ($this->template) {
             $file = $this->template;
 
-            if (strncmp($file, 'string:', 7) === 0) {
+            if (strpos($file, 'string:') === 0) {
                 $file = substr($file, 7);
                 $line = null;
             } else {

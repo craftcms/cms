@@ -118,11 +118,11 @@ class ErrorHandler extends \yii\web\ErrorHandler
         $url = parent::getTypeUrl($class, $method);
 
         if ($url === null) {
-            if (strncmp($class, '__TwigTemplate_', 15) === 0) {
+            if (strpos($class, '__TwigTemplate_') === 0) {
                 $class = 'Twig_Template';
             }
 
-            if (strncmp($class, 'Twig_', 5) === 0) {
+            if (strpos($class, 'Twig_') === 0) {
                 $url = "http://twig.sensiolabs.org/api/master/$class.html";
 
                 if ($method) {

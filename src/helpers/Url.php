@@ -35,7 +35,7 @@ class Url
      */
     public static function isAbsoluteUrl($url)
     {
-        return (strncmp('http://', $url, 7) === 0 || strncmp('https://', $url, 8) === 0);
+        return (strpos($url, 'http://') === 0 || strpos($url, 'https://') === 0);
     }
 
     /**
@@ -47,7 +47,7 @@ class Url
      */
     public static function isProtocolRelativeUrl($url)
     {
-        return (strncmp('//', $url, 2) === 0);
+        return (strpos($url, '//') === 0);
     }
 
     /**
@@ -59,7 +59,7 @@ class Url
      */
     public static function isRootRelativeUrl($url)
     {
-        return (strncmp('/', $url, 1) === 0 && !static::isProtocolRelativeUrl($url));
+        return (strpos($url, '/') === 0 && !static::isProtocolRelativeUrl($url));
     }
 
     /**

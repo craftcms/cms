@@ -217,7 +217,7 @@ class RequirementsChecker
             return false;
         }
 
-        if (strncasecmp($extensionVersion, 'PECL-', 5) == 0) {
+        if (stripos($extensionVersion, 'PECL-') === 0) {
             $extensionVersion = substr($extensionVersion, 5);
         }
 

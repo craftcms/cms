@@ -316,7 +316,7 @@ class Updates extends Component
             }
 
             // Make sure it's HTTPS
-            if (strncmp($plugin->releaseFeedUrl, 'https://', 8) !== 0) {
+            if (strpos($plugin->releaseFeedUrl, 'https://') !== 0) {
                 Craft::warning('The “'.$plugin->name.'” plugin has a release feed URL, but it doesn’t begin with https://, so it’s getting skipped ('.$plugin->releaseFeedUrl.').');
                 continue;
             }
@@ -379,7 +379,7 @@ class Updates extends Component
                     // downloadUrl could be missing.
                     if (!empty($release['downloadUrl'])) {
                         // Invalid URL?
-                        if (strncmp($release['downloadUrl'], 'https://', 8) !== 0) {
+                        if (strpos($release['downloadUrl'], 'https://') !== 0) {
                             $errors[] = 'Download URL doesn’t begin with https:// ('.$release['downloadUrl'].')';
                         }
                     }

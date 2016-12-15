@@ -315,7 +315,7 @@ class MatrixBlock extends Element
     {
         // See if this was eager-loaded with a block type-specific handle
         $blockTypeHandlePrefix = $this->getType()->handle.':';
-        if (strncmp($handle, $blockTypeHandlePrefix, strlen($blockTypeHandlePrefix)) === 0) {
+        if (strpos($handle, $blockTypeHandlePrefix) === 0) {
             $this->_eagerLoadedBlockTypeElements[$handle] = $elements;
         } else {
             parent::setEagerLoadedElements($handle, $elements);

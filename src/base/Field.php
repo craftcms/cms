@@ -182,7 +182,7 @@ abstract class Field extends SavableComponent implements FieldInterface
         ];
 
         // Only validate the ID if it's not a new field
-        if ($this->id !== null && strncmp($this->id, 'new', 3) !== 0) {
+        if ($this->id !== null && strpos($this->id, 'new') !== 0) {
             $rules[] = [['id'], 'number', 'integerOnly' => true];
         }
 

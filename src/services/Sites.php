@@ -714,7 +714,7 @@ class Sites extends Component
                         $tablePrefixLength = strlen(Craft::$app->getDb()->tablePrefix);
 
                         foreach (Craft::$app->getDb()->getSchema()->getTableNames() as $tableName) {
-                            if (strncmp($tableName, $matrixTablePrefix, $matrixTablePrefixLength) === 0) {
+                            if (strpos($tableName, $matrixTablePrefix) === 0) {
                                 $tableName = substr($tableName, $tablePrefixLength);
 
                                 Craft::$app->getDb()->createCommand()

@@ -223,7 +223,7 @@ class View extends \yii\web\View
     public function getRenderingTemplate()
     {
         if ($this->getIsRenderingTemplate()) {
-            if (strncmp($this->_renderingTemplate, 'string:', 7) === 0) {
+            if (strpos($this->_renderingTemplate, 'string:') === 0) {
                 $template = $this->_renderingTemplate;
             } else {
                 $template = $this->resolveTemplate($this->_renderingTemplate);

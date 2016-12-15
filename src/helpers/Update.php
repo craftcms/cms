@@ -175,7 +175,7 @@ class Update
      */
     public static function isManifestVersionInfoLine($line)
     {
-        return strncmp($line, '##', 2) === 0;
+        return strpos($line, '##') === 0;
     }
 
     /**

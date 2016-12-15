@@ -326,11 +326,10 @@ class Resources extends Component
 
         // Is this going to be a resource URL?
         $rootResourceUrl = Url::url(Craft::$app->getConfig()->getResourceTrigger()).'/';
-        $rootResourceUrlLength = strlen($rootResourceUrl);
 
-        if (strncmp($rootResourceUrl, $url, $rootResourceUrlLength) === 0) {
+        if (strpos($url, $rootResourceUrl) === 0) {
             // Isolate the relative resource path
-            $resourcePath = substr($url, $rootResourceUrlLength);
+            $resourcePath = substr($url, strlen($rootResourceUrl));
 
             // Give Url a chance to add the timestamp
             $url = Url::getResourceUrl($resourcePath);

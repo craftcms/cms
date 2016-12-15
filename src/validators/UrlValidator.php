@@ -55,7 +55,7 @@ class UrlValidator extends YiiUrlValidator
         }
 
         // Add support for protocol-relative URLs
-        if ($this->defaultScheme !== null && strncmp($value, '/', 1) === 0) {
+        if ($this->defaultScheme !== null && strpos($value, '/') === 0) {
             $this->defaultScheme = null;
         }
 

@@ -156,7 +156,7 @@ class Assets extends BaseRelationField
         }
 
         $namespace = Craft::$app->getView()->getNamespace();
-        $isMatrix = (strncmp($namespace, 'types[Matrix][blockTypes][', 26) === 0);
+        $isMatrix = (strpos($namespace, 'types[Matrix][blockTypes][') === 0);
 
         return Craft::$app->getView()->renderTemplate('_components/fieldtypes/Assets/settings',
             [
@@ -518,7 +518,7 @@ class Assets extends BaseRelationField
         // If it's a list of source IDs, we need to convert them to their folder counterparts
         if (is_array($this->sources)) {
             foreach ($this->sources as $source) {
-                if (strncmp($source, 'folder:', 7) === 0) {
+                if (strpos($source, 'folder:') === 0) {
                     $sources[] = $source;
                 }
             }

@@ -303,7 +303,7 @@ class DateTimeHelper
             $language = Craft::$app->language;
         }
 
-        if (strncmp($language, 'en', 2) === 0) {
+        if (strpos($language, 'en') === 0) {
             return $str;
         }
 
@@ -536,7 +536,7 @@ class DateTimeHelper
     private static function _getDateTranslations($language)
     {
         if (!isset(static::$_translationPairs[$language])) {
-            if (strncmp(Craft::$app->language, 'en', 2) === 0) {
+            if (strpos(Craft::$app->language, 'en') === 0) {
                 $sourceLocale = Craft::$app->getLocale();
             } else {
                 $sourceLocale = Craft::$app->getI18n()->getLocaleById('en-US');

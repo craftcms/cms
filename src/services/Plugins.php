@@ -1177,9 +1177,8 @@ class Plugins extends Component
             // see if the class namespace matches up, and the file is in here.
             // If so, set the base path to whatever directory contains the plugin class.
             if ($basePath === null && $class !== null) {
-                $n = strlen($namespace);
-                if (strncmp($namespace, $class, $n) === 0) {
-                    $testClassPath = $path.DIRECTORY_SEPARATOR.str_replace('\\', DIRECTORY_SEPARATOR, substr($class, $n)).'.php';
+                if (strpos($class, $namespace) === 0) {
+                    $testClassPath = $path.DIRECTORY_SEPARATOR.str_replace('\\', DIRECTORY_SEPARATOR, substr($class, strlen($namespace))).'.php';
                     if (file_exists($testClassPath)) {
                         $basePath = dirname($testClassPath);
                     }
