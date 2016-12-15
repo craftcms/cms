@@ -449,6 +449,7 @@ class ElementQuery extends Query implements ElementQueryInterface, Arrayable, Co
             return $exists;
         }
 
+        /** @noinspection ImplicitMagicMethodCallInspection */
         return $this->__isset($name);
     }
 
@@ -465,6 +466,7 @@ class ElementQuery extends Query implements ElementQueryInterface, Arrayable, Co
             return $this->nth($name);
         }
 
+        /** @noinspection ImplicitMagicMethodCallInspection */
         return $this->__get($name);
     }
 
@@ -482,6 +484,7 @@ class ElementQuery extends Query implements ElementQueryInterface, Arrayable, Co
         if (is_numeric($name)) {
             throw new NotSupportedException('ElementQuery does not support setting an element using array syntax.');
         } else {
+            /** @noinspection ImplicitMagicMethodCallInspection */
             $this->__set($name, $value);
         }
     }
@@ -498,6 +501,7 @@ class ElementQuery extends Query implements ElementQueryInterface, Arrayable, Co
         if (is_numeric($name)) {
             throw new NotSupportedException('ElementQuery does not support unsetting an element using array syntax.');
         } else {
+            /** @noinspection ImplicitMagicMethodCallInspection */
             return $this->__unset($name);
         }
     }
