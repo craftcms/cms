@@ -239,11 +239,11 @@ interface ElementInterface extends ComponentInterface
      * The actions can either be represented by their class handle (e.g. 'SetStatus'), or by an
      * [[ElementActionInterface]] instance.
      *
-     * @param string|null $source The selected source’s key, if any.
+     * @param string $source The selected source’s key.
      *
      * @return array|null The available element actions.
      */
-    public static function actions($source = null);
+    public static function actions($source);
 
     /**
      * Defines which element attributes should be searchable.
