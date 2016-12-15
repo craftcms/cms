@@ -426,7 +426,7 @@ class RequirementsChecker
 
         if (is_file($dbConfigPath)) {
             /** @noinspection dirnameCallOnFileConstantInspection */
-            $dbCreds = @require_once dirname(__FILE__).DIRECTORY_SEPARATOR.'..'.DIRECTORY_SEPARATOR.'config'.DIRECTORY_SEPARATOR.'db.php';
+            $dbCreds = @require dirname(__FILE__).DIRECTORY_SEPARATOR.'..'.DIRECTORY_SEPARATOR.'config'.DIRECTORY_SEPARATOR.'db.php';
 
             if (is_array($dbCreds) && $dbCreds['server'] && $dbCreds['user'] && $dbCreds['password'] && $dbCreds['database'] && $dbCreds['driver']) {
                 $this->dbCreds = $dbCreds;

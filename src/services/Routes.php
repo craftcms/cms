@@ -61,7 +61,7 @@ class Routes extends Component
         $path = Craft::$app->getPath()->getConfigPath().DIRECTORY_SEPARATOR.'routes.php';
 
         if (file_exists($path)) {
-            $routes = require_once $path;
+            $routes = require $path;
 
             if (is_array($routes)) {
                 // Check for any site-specific routes
