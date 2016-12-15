@@ -1757,7 +1757,7 @@ class ElementQuery extends Query implements ElementQueryInterface, Arrayable, Co
 
             foreach ($orderColumnMap as $orderValue => $columnName) {
                 // Are we ordering by this column name?
-                $pos = array_search($orderValue, $orderByColumns);
+                $pos = array_search($orderValue, $orderByColumns, true);
 
                 if ($pos !== false) {
                     // Swap it with the mapped column name

@@ -148,7 +148,7 @@ class FieldsController extends Controller
         $allFieldTypes = $fieldsService->getAllFieldTypes();
 
         // Make sure the selected field class is in there
-        if (!in_array(get_class($field), $allFieldTypes)) {
+        if (!in_array(get_class($field), $allFieldTypes, true)) {
             $allFieldTypes[] = get_class($field);
         }
 

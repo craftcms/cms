@@ -335,7 +335,7 @@ class ElementIndexesController extends BaseElementsController
 
                 foreach ($collapsedElements as $element) {
                     // Make sure we haven't already excluded this one, because its ancestor is collapsed as well
-                    if (in_array($element->id, $descendantIds)) {
+                    if (in_array($element->id, $descendantIds, false)) {
                         continue;
                     }
 

@@ -550,7 +550,7 @@ class m160807_144858_sites extends Migration
     protected function locale2handle($locale)
     {
         // Make sure it's a valid handle
-        if (!preg_match('/^'.HandleValidator::$handlePattern.'$/', $locale) || in_array(StringHelper::toLowerCase($locale), HandleValidator::$baseReservedWords)) {
+        if (!preg_match('/^'.HandleValidator::$handlePattern.'$/', $locale) || in_array(StringHelper::toLowerCase($locale), HandleValidator::$baseReservedWords, true)) {
             $localeParts = array_filter(preg_split('/[^a-zA-Z0-9]/', $locale));
 
             // Prefix with a random string so there's no chance of a conflict with other locales
@@ -578,7 +578,7 @@ class m160807_144858_sites extends Migration
             $language = $localeParts[0].(isset($localeParts[1]) ? '-'.strtoupper($localeParts[1]) : '');
             $allLanguages = Craft::$app->getI18n()->getAllLocaleIds();
 
-            if (in_array($language, $allLanguages)) {
+            if (in_array($language, $allLanguages, true)) {
                 $foundMatch = true;
             } else {
                 // Find the closest one

@@ -856,7 +856,7 @@ class View extends \yii\web\View
         if (!in_array($templateMode, [
             self::TEMPLATE_MODE_CP,
             self::TEMPLATE_MODE_SITE
-        ])
+        ], true)
         ) {
             throw new Exception('"'.$templateMode.'" is not a valid template mode');
         }

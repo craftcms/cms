@@ -146,7 +146,7 @@ class Resources extends Component
                 }
 
                 case 'rebrand': {
-                    if (!in_array($segs[1], ['logo', 'icon'])) {
+                    if (!in_array($segs[1], ['logo', 'icon'], true)) {
                         return false;
                     }
 

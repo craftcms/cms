@@ -130,7 +130,7 @@ class NodeVisitor implements \Twig_NodeVisitorInterface
             if ($expression instanceof \Twig_Node_Expression_Function) {
                 $name = $expression->getAttribute('name');
 
-                if (in_array($name, ['head', 'beginBody', 'endBody'])) {
+                if (in_array($name, ['head', 'beginBody', 'endBody'], true)) {
                     $property = '_found'.ucfirst($name);
 
                     if ($this->$property === false) {

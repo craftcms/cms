@@ -307,7 +307,7 @@ class Assets
             $ext = strtolower($ext);
 
             foreach (static::getFileKinds() as $kind => $info) {
-                if (in_array($ext, $info['extensions'])) {
+                if (in_array($ext, $info['extensions'], true)) {
                     return $kind;
                 }
             }

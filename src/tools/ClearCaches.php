@@ -158,7 +158,7 @@ class ClearCaches extends Tool
         }
 
         foreach (self::_getAllCacheOptions() as $cacheOption) {
-            if (is_array($params['caches']) && !in_array($cacheOption['key'], $params['caches'])) {
+            if (is_array($params['caches']) && !in_array($cacheOption['key'], $params['caches'], true)) {
                 continue;
             }
 

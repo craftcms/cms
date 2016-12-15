@@ -322,7 +322,7 @@ class Extension extends \Twig_Extension implements \Twig_Extension_GlobalsInterf
      */
     public function jsonEncodeFilter($value, $options = null)
     {
-        if ($options === null && in_array(Header::getMimeType(), ['text/html', 'application/xhtml+xml'])) {
+        if ($options === null && in_array(Header::getMimeType(), ['text/html', 'application/xhtml+xml'], true)) {
             $options = JSON_HEX_TAG | JSON_HEX_AMP | JSON_HEX_QUOT;
         }
 
@@ -346,7 +346,7 @@ class Extension extends \Twig_Extension implements \Twig_Extension_GlobalsInterf
         }
 
         foreach ($arr as $key => $value) {
-            if (!in_array($value, $exclude)) {
+            if (!in_array($value, $exclude, false)) {
                 $filteredArray[$key] = $value;
             }
         }
@@ -408,7 +408,7 @@ class Extension extends \Twig_Extension implements \Twig_Extension_GlobalsInterf
     public function dateFilter(\Twig_Environment $env, $date, $format = null, $timezone = null, $translate = true)
     {
         // Should we be using the app's formatter?
-        if (!($date instanceof \DateInterval) && ($format === null || in_array($format, [Locale::LENGTH_SHORT, Locale::LENGTH_MEDIUM, Locale::LENGTH_LONG, Locale::LENGTH_FULL]))) {
+        if (!($date instanceof \DateInterval) && ($format === null || in_array($format, [Locale::LENGTH_SHORT, Locale::LENGTH_MEDIUM, Locale::LENGTH_LONG, Locale::LENGTH_FULL], true))) {
             $date = \twig_date_converter($env, $date, $timezone);
             $value = Craft::$app->getFormatter()->asDate($date, $format);
         } else {
@@ -436,7 +436,7 @@ class Extension extends \Twig_Extension implements \Twig_Extension_GlobalsInterf
     public function timeFilter(\Twig_Environment $env, $date, $format = null, $timezone = null, $translate = true)
     {
         // Is this a custom PHP date format?
-        if ($format !== null && !in_array($format, [Locale::LENGTH_SHORT, Locale::LENGTH_MEDIUM, Locale::LENGTH_LONG, Locale::LENGTH_FULL])) {
+        if ($format !== null && !in_array($format, [Locale::LENGTH_SHORT, Locale::LENGTH_MEDIUM, Locale::LENGTH_LONG, Locale::LENGTH_FULL], true)) {
             StringHelper::ensureStartsWith($format, 'php:');
         }
 
@@ -464,7 +464,7 @@ class Extension extends \Twig_Extension implements \Twig_Extension_GlobalsInterf
     public function datetimeFilter(\Twig_Environment $env, $date, $format = null, $timezone = null, $translate = true)
     {
         // Is this a custom PHP date format?
-        if ($format !== null && !in_array($format, [Locale::LENGTH_SHORT, Locale::LENGTH_MEDIUM, Locale::LENGTH_LONG, Locale::LENGTH_FULL])) {
+        if ($format !== null && !in_array($format, [Locale::LENGTH_SHORT, Locale::LENGTH_MEDIUM, Locale::LENGTH_LONG, Locale::LENGTH_FULL], true)) {
             StringHelper::ensureStartsWith($format, 'php:');
         }
 
@@ -513,7 +513,7 @@ class Extension extends \Twig_Extension implements \Twig_Extension_GlobalsInterf
         if (is_string($haystack)) {
             $index = strpos($haystack, $needle);
         } else if (is_array($haystack)) {
-            $index = array_search($needle, $haystack);
+            $index = array_search($needle, $haystack, false);
         } else if (is_object($haystack) && $haystack instanceof \IteratorAggregate) {
             $index = false;
 

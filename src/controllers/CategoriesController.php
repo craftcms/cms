@@ -609,7 +609,7 @@ class CategoriesController extends Controller
         if (empty($variables['site'])) {
             $variables['site'] = Craft::$app->getSites()->currentSite;
 
-            if (!in_array($variables['site']->id, $variables['siteIds'])) {
+            if (!in_array($variables['site']->id, $variables['siteIds'], false)) {
                 $variables['site'] = Craft::$app->getSites()->getSiteById($variables['siteIds'][0]);
             }
 
@@ -618,7 +618,7 @@ class CategoriesController extends Controller
             // Make sure they were requesting a valid site
             /** @var Site $site */
             $site = $variables['site'];
-            if (!in_array($site->id, $variables['siteIds'])) {
+            if (!in_array($site->id, $variables['siteIds'], false)) {
                 throw new ForbiddenHttpException('User not permitted to edit content in this site');
             }
         }

@@ -214,7 +214,7 @@ class DateTimeHelper
     public static function normalizeTimeZone($timeZone)
     {
         // Is it already a PHP time zone identifier?
-        if (in_array($timeZone, timezone_identifiers_list())) {
+        if (in_array($timeZone, timezone_identifiers_list(), true)) {
             return $timeZone;
         }
 

@@ -551,7 +551,7 @@ class Entry extends Element
 
         if (!$this->getType()->hasTitleField) {
             // Don't validate the title
-            $key = array_search([['title'], 'required'], $rules);
+            $key = array_search([['title'], 'required'], $rules, true);
             if ($key !== -1) {
                 array_splice($rules, $key, 1);
             }

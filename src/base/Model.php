@@ -60,7 +60,7 @@ abstract class Model extends \yii\base\Model
             return parent::__call($name, $arguments);
         } catch (UnknownMethodException $e) {
             // Is this one of our attributes?
-            if (in_array($name, $this->attributes())) {
+            if (in_array($name, $this->attributes(), true)) {
                 $copy = $this->copy();
 
                 if (count($arguments) == 1) {

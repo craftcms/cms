@@ -140,7 +140,7 @@ class Globals extends Component
         $editableGlobalSets = [];
 
         foreach ($globalSets as $globalSet) {
-            if (in_array($globalSet->id, $editableGlobalSetIds)) {
+            if (in_array($globalSet->id, $editableGlobalSetIds, false)) {
                 if ($indexBy) {
                     $editableGlobalSets[$globalSet->$indexBy] = $globalSet;
                 } else {

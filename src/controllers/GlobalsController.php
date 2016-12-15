@@ -125,12 +125,12 @@ class GlobalsController extends Controller
             }
 
             // Make sure the user has permission to edit that site
-            if (!in_array($site->id, $editableSiteIds)) {
+            if (!in_array($site->id, $editableSiteIds, false)) {
                 throw new ForbiddenHttpException('User not permitted to edit content in this site');
             }
         } else {
             // Are they allowed to edit the current site?
-            if (in_array(Craft::$app->getSites()->currentSite->id, $editableSiteIds)) {
+            if (in_array(Craft::$app->getSites()->currentSite->id, $editableSiteIds, false)) {
                 $site = Craft::$app->getSites()->currentSite;
             } else {
                 // Just use the first site they are allowed to edit

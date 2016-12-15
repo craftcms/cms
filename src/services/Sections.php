@@ -207,7 +207,7 @@ class Sections extends Component
         $editableSections = [];
 
         foreach ($this->getAllSections() as $section) {
-            if (in_array($section->id, $editableSectionIds)) {
+            if (in_array($section->id, $editableSectionIds, false)) {
                 if ($indexBy) {
                     $editableSections[$section->$indexBy] = $section;
                 } else {
@@ -497,7 +497,7 @@ class Sections extends Component
 
                 /** @noinspection PhpUndefinedVariableInspection */
                 foreach ($allOldSiteSettingsRecords as $siteId => $siteSettingsRecord) {
-                    if (!in_array($siteId, $siteIds)) {
+                    if (!in_array($siteId, $siteIds, false)) {
                         $siteSettingsRecord->delete();
                     }
                 }

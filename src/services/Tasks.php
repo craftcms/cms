@@ -705,10 +705,7 @@ class Tasks extends Component
         else if (
             $request->getIsSiteRequest() &&
             !$request->getIsAjax() &&
-            in_array(Header::getMimeType(), [
-                'text/html',
-                'application/xhtml+xml'
-            ])
+            in_array(Header::getMimeType(), ['text/html', 'application/xhtml+xml'], true)
         ) {
             // Just output JS that tells the browser to fire an Ajax request to kick off task running
             $url = Json::encode(Url::getActionUrl('tasks/run-pending-tasks'));

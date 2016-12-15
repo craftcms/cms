@@ -735,7 +735,7 @@ class UsersController extends Controller
                 ];
 
                 foreach ($errors as $attribute => $error) {
-                    if (isset($tabs['account']) && in_array($attribute, $accountFields)) {
+                    if (isset($tabs['account']) && in_array($attribute, $accountFields, true)) {
                         $tabs['account']['class'] = 'error';
                     } else {
                         if (isset($tabs['profile'])) {
@@ -1683,7 +1683,7 @@ class UsersController extends Controller
                         }
 
                         foreach ($groupIds as $groupId) {
-                            if (!in_array($groupId, $oldGroupIds)) {
+                            if (!in_array($groupId, $oldGroupIds, false)) {
                                 // Yep. This will require an elevated session
                                 $this->requireElevatedSession();
                                 break;

@@ -617,7 +617,7 @@ class Fields extends Component
             }
         }
 
-        return (isset($this->_allFieldHandlesByContext[$context]) && in_array($handle, $this->_allFieldHandlesByContext[$context]));
+        return (isset($this->_allFieldHandlesByContext[$context]) && in_array($handle, $this->_allFieldHandlesByContext[$context], true));
     }
 
     /**
@@ -794,7 +794,7 @@ class Fields extends Component
                 if (
                     isset($this->_allFieldHandlesByContext[$field->context]) &&
                     $field->oldHandle != $field->handle &&
-                    ($oldHandleIndex = array_search($field->oldHandle, $this->_allFieldHandlesByContext[$field->context])) !== false
+                    ($oldHandleIndex = array_search($field->oldHandle, $this->_allFieldHandlesByContext[$field->context], true)) !== false
                 ) {
                     array_splice($this->_allFieldHandlesByContext[$field->context], $oldHandleIndex, 1);
                 }
@@ -1080,7 +1080,7 @@ class Fields extends Component
                 }
 
                 $field = $allFieldsById[$fieldId];
-                $field->required = in_array($fieldId, $requiredFields);
+                $field->required = in_array($fieldId, $requiredFields, false);
                 $field->sortOrder = ($fieldSortOrder + 1);
 
                 $fields[] = $field;

@@ -273,7 +273,7 @@ class Sites extends Component
         $editableSites = [];
 
         foreach ($this->getAllSites() as $site) {
-            if (in_array($site->id, $editableSiteIds)) {
+            if (in_array($site->id, $editableSiteIds, false)) {
                 if ($indexBy) {
                     $editableSites[$site->$indexBy] = $site;
                 } else {

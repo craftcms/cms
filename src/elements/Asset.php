@@ -467,7 +467,7 @@ class Asset extends Element
 
         if (!$this->id && !$this->title) {
             // Don't validate the title
-            $key = array_search([['title'], 'required'], $rules);
+            $key = array_search([['title'], 'required'], $rules, true);
             if ($key !== -1) {
                 array_splice($rules, $key, 1);
             }
@@ -646,7 +646,7 @@ class Asset extends Element
             $this->kind === 'image' &&
             $this->getHeight() &&
             $this->getWidth() &&
-            (!in_array($this->getExtension(), ['svg', 'bmp']) || Craft::$app->getImages()->getIsImagick())
+            (!in_array($this->getExtension(), ['svg', 'bmp'], true) || Craft::$app->getImages()->getIsImagick())
         );
     }
 

@@ -236,7 +236,7 @@ class Connection extends \yii\db\Connection
 
         $table = $this->getSchema()->getRawTableName($table);
 
-        return in_array($table, $this->getSchema()->getTableNames());
+        return in_array($table, $this->getSchema()->getTableNames(), true);
     }
 
     /**

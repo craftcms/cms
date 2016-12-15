@@ -118,7 +118,7 @@ class DeleteStaleTemplateCaches extends Task
         $row = array_shift($this->_batchRows);
 
         // Have we already deleted this cache?
-        if (in_array($row['cacheId'], $this->_deletedCacheIds)) {
+        if (in_array($row['cacheId'], $this->_deletedCacheIds, false)) {
             $this->_totalDeletedCriteriaRows++;
         } else {
             // See if any of the updated elements would get fetched by this query

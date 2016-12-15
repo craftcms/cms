@@ -104,7 +104,7 @@ class Section extends Model
     {
         $validates = parent::validate($attributeNames, $clearErrors);
 
-        if ($attributeNames === null || in_array('siteSettings', $attributeNames)) {
+        if ($attributeNames === null || in_array('siteSettings', $attributeNames, true)) {
             foreach ($this->getSiteSettings() as $siteSettings) {
                 if (!$siteSettings->validate(null, $clearErrors)) {
                     $validates = false;

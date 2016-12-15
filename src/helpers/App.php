@@ -110,7 +110,7 @@ class App
      */
     public static function isValidEdition($edition)
     {
-        return (is_numeric($edition) && in_array($edition, static::editions()));
+        return (is_numeric($edition) && in_array($edition, static::editions(), true));
     }
 
     /**

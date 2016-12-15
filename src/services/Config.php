@@ -768,7 +768,7 @@ class Config extends Component
      */
     public function isExtensionAllowed($extension)
     {
-        return in_array(strtolower($extension), $this->getAllowedFileExtensions());
+        return in_array(strtolower($extension), $this->getAllowedFileExtensions(), true);
     }
 
     /**
@@ -839,7 +839,7 @@ class Config extends Component
         $pathService = Craft::$app->getPath();
 
         // Is this a valid Craft config category?
-        if (in_array($category, [self::CATEGORY_FILECACHE, self::CATEGORY_GENERAL, self::CATEGORY_DB, self::CATEGORY_DBCACHE, self::CATEGORY_MEMCACHE, self::CATEGORY_APC])) {
+        if (in_array($category, [self::CATEGORY_FILECACHE, self::CATEGORY_GENERAL, self::CATEGORY_DB, self::CATEGORY_DBCACHE, self::CATEGORY_MEMCACHE, self::CATEGORY_APC], true)) {
             $defaultsPath = Craft::$app->getBasePath().DIRECTORY_SEPARATOR.'config'.DIRECTORY_SEPARATOR.'defaults'.DIRECTORY_SEPARATOR.$category.'.php';
         } else if (($plugin = Craft::$app->getPlugins()->getPlugin($category)) !== null) {
             /** @var Plugin $plugin */

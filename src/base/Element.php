@@ -342,7 +342,7 @@ abstract class Element extends Component implements ElementInterface
 
             if ($sortableAttributes) {
                 $order = (!empty($viewState['order']) && isset($sortableAttributes[$viewState['order']])) ? $viewState['order'] : ArrayHelper::firstKey($sortableAttributes);
-                $sort = (!empty($viewState['sort']) && in_array($viewState['sort'], ['asc', 'desc'])) ? $viewState['sort'] : 'asc';
+                $sort = (!empty($viewState['sort']) && in_array($viewState['sort'], ['asc', 'desc'], true)) ? $viewState['sort'] : 'asc';
 
                 // Combine them, accounting for the possibility that $order could contain multiple values,
                 // and be defensive about the possibility that the first value actually has "asc" or "desc"
@@ -737,7 +737,7 @@ abstract class Element extends Component implements ElementInterface
         foreach ($class->getProperties(\ReflectionProperty::IS_PUBLIC) as $property) {
             $name = $property->getName();
 
-            if ($name !== 'owner' && !in_array($name, $names)) {
+            if ($name !== 'owner' && !in_array($name, $names, true)) {
                 $names[] = $name;
             }
         }
@@ -1309,7 +1309,7 @@ abstract class Element extends Component implements ElementInterface
         $values = [];
 
         foreach ($this->getFields() as $field) {
-            if ($fieldHandles === null || in_array($field->handle, $fieldHandles)) {
+            if ($fieldHandles === null || in_array($field->handle, $fieldHandles, true)) {
                 $values[$field->handle] = $this->getFieldValue($field->handle);
             }
         }
@@ -1325,7 +1325,7 @@ abstract class Element extends Component implements ElementInterface
         $serializedValues = [];
 
         foreach ($this->getFields() as $field) {
-            if ($fieldHandles === null || in_array($field->handle, $fieldHandles)) {
+            if ($fieldHandles === null || in_array($field->handle, $fieldHandles, true)) {
                 $value = $this->getFieldValue($field->handle);
                 $serializedValues[$field->handle] = $field->serializeValue($value, $this);
             }
@@ -1933,7 +1933,7 @@ abstract class Element extends Component implements ElementInterface
 
             /** @var ElementQuery $query */
             $elementIds = $query->ids();
-            $key = array_search($this->id, $elementIds);
+            $key = array_search($this->id, $elementIds, false);
 
             if ($key !== false && isset($elementIds[$key + $dir])) {
                 return static::find()

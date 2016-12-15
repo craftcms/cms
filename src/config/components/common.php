@@ -187,7 +187,7 @@ return [
         if (!in_array($driver, [
             Connection::DRIVER_MYSQL,
             Connection::DRIVER_PGSQL
-        ])
+        ], true)
         ) {
             throw new DbException('Unsupported connection type: '.$driver);
         }

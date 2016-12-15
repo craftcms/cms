@@ -388,7 +388,7 @@ class Raster extends Image
         $targetPath = pathinfo($targetPath, PATHINFO_DIRNAME).DIRECTORY_SEPARATOR.pathinfo($targetPath, PATHINFO_FILENAME).'.'.pathinfo($targetPath, PATHINFO_EXTENSION);
 
         try {
-            if ($autoQuality && in_array($extension, ['jpeg', 'jpg', 'png'])) {
+            if ($autoQuality && in_array($extension, ['jpeg', 'jpg', 'png'], true)) {
                 clearstatcache();
                 $originalSize = filesize($this->_imageSourcePath);
                 $tempFile = $this->_autoGuessImageQuality($targetPath, $originalSize, $extension, 0, 200);

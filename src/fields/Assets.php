@@ -228,7 +228,7 @@ class Assets extends BaseRelationField
             foreach ($value as $assetId) {
                 $file = Craft::$app->getAssets()->getAssetById($assetId);
 
-                if ($file && !in_array(mb_strtolower(pathinfo($file->filename, PATHINFO_EXTENSION)), $allowedExtensions)) {
+                if ($file && !in_array(mb_strtolower(pathinfo($file->filename, PATHINFO_EXTENSION)), $allowedExtensions, true)) {
                     $element->addError($this->handle, Craft::t('app', '"{filename}" is not allowed in this field.', ['filename' => $file->filename]));
                 }
             }
@@ -365,7 +365,7 @@ class Assets extends BaseRelationField
             foreach ($incomingFiles as $file) {
                 $extension = StringHelper::toLowerCase(pathinfo($file['filename'], PATHINFO_EXTENSION));
 
-                if (!in_array($extension, $allowedExtensions)) {
+                if (!in_array($extension, $allowedExtensions, true)) {
                     $this->_failedFiles[] = $file['filename'];
                 }
             }
@@ -676,7 +676,6 @@ class Assets extends BaseRelationField
         $allKinds = AssetsHelper::getFileKinds();
 
         foreach ($this->allowedKinds as $allowedKind) {
-            /** @noinspection ForeachSourceInspection */
             foreach ($allKinds[$allowedKind]['extensions'] as $ext) {
                 $extensions[] = $ext;
             }

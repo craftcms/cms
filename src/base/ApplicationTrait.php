@@ -207,7 +207,7 @@ trait ApplicationTrait
                         // Make sure it's one of the site languages
                         $defaultCpLanguage = StringHelper::toLowerCase($defaultCpLanguage);
 
-                        if (in_array($defaultCpLanguage, $siteLanguages)) {
+                        if (in_array($defaultCpLanguage, $siteLanguages, true)) {
                             return $defaultCpLanguage;
                         }
                     }
@@ -218,14 +218,14 @@ trait ApplicationTrait
 
                         if ($browserLanguages) {
                             foreach ($browserLanguages as $browserLanguage) {
-                                if (in_array($browserLanguage, $siteLanguages)) {
+                                if (in_array($browserLanguage, $siteLanguages, true)) {
                                     return $browserLanguage;
                                 }
                             }
                         }
                     }
                 } // Is it set to a valid site language?
-                else if (in_array($language, $siteLanguages)) {
+                else if (in_array($language, $siteLanguages, true)) {
                     return $language;
                 }
             }

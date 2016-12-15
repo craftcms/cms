@@ -62,7 +62,7 @@ class ChartHelper
 
         $craftTimezone = new \DateTimeZone(Craft::$app->getTimeZone());
 
-        if ($options['intervalUnit'] && in_array($options['intervalUnit'], ['year', 'month', 'day', 'hour'])) {
+        if ($options['intervalUnit'] && in_array($options['intervalUnit'], ['year', 'month', 'day', 'hour'], true)) {
             $intervalUnit = $options['intervalUnit'];
         } else {
             $intervalUnit = self::getRunChartIntervalUnit($startDate, $endDate);

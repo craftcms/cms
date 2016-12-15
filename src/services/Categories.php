@@ -178,7 +178,7 @@ class Categories extends Component
         $editableGroups = [];
 
         foreach ($this->getAllGroups() as $group) {
-            if (in_array($group->id, $editableGroupIds)) {
+            if (in_array($group->id, $editableGroupIds, false)) {
                 if ($indexBy) {
                     $editableGroups[$group->$indexBy] = $group;
                 } else {
@@ -444,7 +444,7 @@ class Categories extends Component
 
                 /** @noinspection PhpUndefinedVariableInspection */
                 foreach ($allOldSiteSettingsRecords as $siteId => $siteSettingsRecord) {
-                    if (!in_array($siteId, $siteIds)) {
+                    if (!in_array($siteId, $siteIds, false)) {
                         $siteSettingsRecord->delete();
                     }
                 }

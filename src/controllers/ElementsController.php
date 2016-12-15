@@ -267,7 +267,7 @@ class ElementsController extends BaseElementsController
             }
 
             foreach (Craft::$app->getSites()->getAllSiteIds() as $siteId) {
-                if (in_array($siteId, $elementSiteIds) && $userService->checkPermission('editSite:'.$siteId)) {
+                if (in_array($siteId, $elementSiteIds, false) && $userService->checkPermission('editSite:'.$siteId)) {
                     $newSiteId = $siteId;
                     break;
                 }

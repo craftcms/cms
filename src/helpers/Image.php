@@ -161,10 +161,7 @@ class Image
     {
         $extension = pathinfo($filePath, PATHINFO_EXTENSION);
 
-        return in_array(
-            StringHelper::toLowerCase($extension),
-            ['jpg', 'jpeg', 'tiff']
-        );
+        return in_array(StringHelper::toLowerCase($extension), ['jpg', 'jpeg', 'tiff'], true);
     }
 
     /**

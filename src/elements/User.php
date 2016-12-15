@@ -815,29 +815,25 @@ class User extends Element implements IdentityInterface
     /**
      * Returns whether the user is in a specific group.
      *
-     * @param mixed $group The user group model, its handle, or ID.
+     * @param UserGroup|integer|string $group The user group model, its handle, or ID.
      *
      * @return boolean
      */
     public function isInGroup($group)
     {
-        if (Craft::$app->getEdition() == Craft::Pro) {
-            if (is_object($group) && $group instanceof UserGroup) {
-                $group = $group->id;
-            }
-
-            if (is_numeric($group)) {
-                $groups = array_keys($this->getGroups('id'));
-            } else if (is_string($group)) {
-                $groups = array_keys($this->getGroups('handle'));
-            }
-
-            if (!empty($groups)) {
-                return in_array($group, $groups);
-            }
+        if (Craft::$app->getEdition() !== Craft::Pro) {
+            return false;
         }
 
-        return false;
+        if (is_object($group) && $group instanceof UserGroup) {
+            $group = $group->id;
+        }
+
+        if (is_numeric($group)) {
+            return in_array($group, ArrayHelper::getColumn($this->getGroups(), 'id'), false);
+        }
+
+        return in_array($group, ArrayHelper::getColumn($this->getGroups(), 'handle'), true);
     }
 
     /**
@@ -1145,7 +1141,7 @@ class User extends Element implements IdentityInterface
         $language = $this->getPreference('language');
 
         // Make sure it's valid
-        if ($language !== null && in_array($language, Craft::$app->getI18n()->getSiteLocaleIds())) {
+        if ($language !== null && in_array($language, Craft::$app->getI18n()->getSiteLocaleIds(), true)) {
             return $language;
         }
 

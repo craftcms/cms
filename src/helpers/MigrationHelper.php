@@ -306,7 +306,7 @@ class MigrationHelper
         // Check on any indexes
         foreach ($allIndexes as $indexName => $indexColumns) {
             // Is there an index that references our old column name?
-            $key = array_search($oldName, $indexColumns);
+            $key = array_search($oldName, $indexColumns, true);
 
             // Found a match.
             if ($key !== false) {
@@ -399,7 +399,6 @@ class MigrationHelper
 
         // Restore indexes.
         foreach ($columnIndexes as list($indexColumns, $unique)) {
-            /** @noinspection ForeachSourceInspection */
             foreach ($indexColumns as $key => $column) {
                 if ($column === $oldName) {
                     $columns[$key] = $newName;
@@ -464,7 +463,7 @@ class MigrationHelper
 
         foreach ($allTables as $otherTable) {
             foreach ($otherTable->foreignKeys as $fk) {
-                if ($fk[0] === $tableName && in_array($column, $fk) !== false) {
+                if ($fk[0] === $tableName && in_array($column, $fk, true) !== false) {
                     $fks[$otherTable->name][] = $fk;
                 }
             }

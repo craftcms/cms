@@ -99,7 +99,7 @@ class VolumesController extends Controller
             $allVolumeTypes = $volumes->getAllVolumeTypes();
 
             // Make sure the selected volume class is in there
-            if (!in_array(get_class($volume), $allVolumeTypes)) {
+            if (!in_array(get_class($volume), $allVolumeTypes, true)) {
                 $allVolumeTypes[] = get_class($volume);
             }
 

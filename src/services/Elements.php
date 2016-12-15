@@ -432,7 +432,7 @@ class Elements extends Component
             }
 
             // Make sure the element actually supports this site
-            if (!in_array($element->siteId, $supportedSiteIds)) {
+            if (!in_array($element->siteId, $supportedSiteIds, false)) {
                 throw new Exception('Attempting to save an element in an unsupported site.');
             }
 
@@ -1296,7 +1296,7 @@ class Elements extends Component
                         $targetElementIdsBySourceIds = [];
 
                         foreach ($map['map'] as $mapping) {
-                            if (!in_array($mapping['target'], $uniqueTargetElementIds)) {
+                            if (!in_array($mapping['target'], $uniqueTargetElementIds, false)) {
                                 $uniqueTargetElementIds[] = $mapping['target'];
                             }
 
@@ -1343,7 +1343,7 @@ class Elements extends Component
                             if ($useCustomOrder) {
                                 // Assign the elements in the order they were returned from the query
                                 foreach ($targetElements as $targetElement) {
-                                    if (in_array($targetElement->id, $targetElementIdsBySourceIds[$sourceElementId])) {
+                                    if (in_array($targetElement->id, $targetElementIdsBySourceIds[$sourceElementId], false)) {
                                         $targetElementsForSource[] = $targetElement;
                                     }
                                 }

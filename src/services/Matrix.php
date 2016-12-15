@@ -197,7 +197,7 @@ class Matrix extends Component
             if ($blockType->handle && $field->handle) {
                 $blockTypeAndFieldHandle = $blockType->handle.'_'.$field->handle;
 
-                if (in_array($blockTypeAndFieldHandle, $this->_uniqueBlockTypeAndFieldHandles)) {
+                if (in_array($blockTypeAndFieldHandle, $this->_uniqueBlockTypeAndFieldHandles, true)) {
                     // This error *might* not be entirely accurate, but it's such an edge case that it's probably better
                     // for the error to be worded for the common problem (two duplicate handles within the same block
                     // type).
@@ -468,7 +468,7 @@ class Matrix extends Component
             foreach ($uniqueAttributes as $attribute) {
                 $value = $blockType->$attribute;
 
-                if ($value && (!isset($uniqueAttributeValues[$attribute]) || !in_array($value, $uniqueAttributeValues[$attribute]))) {
+                if ($value && (!isset($uniqueAttributeValues[$attribute]) || !in_array($value, $uniqueAttributeValues[$attribute], true))) {
                     $uniqueAttributeValues[$attribute][] = $value;
                 } else {
                     $blockType->addError($attribute, Craft::t('app', '{attribute} "{value}" has already been taken.',
@@ -964,7 +964,7 @@ class Matrix extends Component
             foreach ($blocksInOtherSites as $blocksInOtherSite) {
                 foreach ($blocksInOtherSite as $blockInOtherSite) {
                     // Have we already deleted this block?
-                    if (in_array($blockInOtherSite->id, $deletedBlockIds)) {
+                    if (in_array($blockInOtherSite->id, $deletedBlockIds, false)) {
                         continue;
                     }
 

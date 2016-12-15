@@ -988,8 +988,7 @@ class AssetTransforms extends Component
      */
     public function detectAutoTransformFormat(Asset $asset)
     {
-        if (in_array(mb_strtolower($asset->getExtension()),
-            Image::webSafeFormats())) {
+        if (in_array(mb_strtolower($asset->getExtension()), Image::webSafeFormats(), true)) {
             return $asset->getExtension();
         }
 
@@ -1394,7 +1393,7 @@ class AssetTransforms extends Component
     private function _getThumbExtension(Asset $asset)
     {
         // For non-web-safe formats we go with jpg.
-        if (!in_array(mb_strtolower(pathinfo($asset->filename, PATHINFO_EXTENSION)), Image::webSafeFormats())) {
+        if (!in_array(mb_strtolower(pathinfo($asset->filename, PATHINFO_EXTENSION)), Image::webSafeFormats(), true)) {
             return 'jpg';
         }
 

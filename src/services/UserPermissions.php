@@ -245,7 +245,7 @@ class UserPermissions extends Component
         $allPermissions = $this->getPermissionsByGroupId($groupId);
         $checkPermission = strtolower($checkPermission);
 
-        return in_array($checkPermission, $allPermissions);
+        return in_array($checkPermission, $allPermissions, true);
     }
 
     /**
@@ -323,7 +323,7 @@ class UserPermissions extends Component
         $allPermissions = $this->getPermissionsByUserId($userId);
         $checkPermission = strtolower($checkPermission);
 
-        return in_array($checkPermission, $allPermissions);
+        return in_array($checkPermission, $allPermissions, true);
     }
 
     /**
@@ -563,7 +563,7 @@ class UserPermissions extends Component
 
         foreach ($permissionsGroup as $name => $data) {
             // Should the user have this permission (either directly or via their group)?
-            if (($inPostedPermissions = in_array($name, $postedPermissions)) || in_array(strtolower($name), $groupPermissions)) {
+            if (($inPostedPermissions = in_array($name, $postedPermissions, true)) || in_array(strtolower($name), $groupPermissions, true)) {
                 // First assign any nested permissions
                 if (!empty($data['nested'])) {
                     $hasAssignedNestedPermissions = $this->_findSelectedPermissions($data['nested'], $postedPermissions, $groupPermissions, $filteredPermissions);

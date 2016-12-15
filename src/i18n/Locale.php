@@ -404,7 +404,7 @@ class Locale extends Object
      */
     public function getOrientation()
     {
-        if (in_array($this->getLanguageID(), self::$_rtlLanguages)) {
+        if (in_array($this->getLanguageID(), self::$_rtlLanguages, true)) {
             return 'rtl';
         }
 

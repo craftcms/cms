@@ -958,7 +958,7 @@ class Request extends \yii\web\Request
                         $logoutPath,
                         $setPasswordPath,
                         $verifyEmailPath
-                    ]))
+                    ], true))
                 ) {
                     $this->_isActionRequest = true;
 

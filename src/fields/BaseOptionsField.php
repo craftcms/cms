@@ -172,7 +172,7 @@ abstract class BaseOptionsField extends Field implements PreviewableFieldInterfa
         $options = [];
 
         foreach ($this->options as $option) {
-            $selected = in_array($option['value'], $selectedValues);
+            $selected = in_array($option['value'], $selectedValues, true);
             $options[] = new OptionData($option['label'], $option['value'], $selected);
         }
 

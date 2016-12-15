@@ -180,7 +180,7 @@ class RecentEntries extends Widget
         $editableSectionIds = $this->_getEditableSectionIds();
         $targetSectionId = $this->section;
 
-        if (!$targetSectionId || $targetSectionId == '*' || !in_array($targetSectionId, $editableSectionIds)) {
+        if (!$targetSectionId || $targetSectionId == '*' || !in_array($targetSectionId, $editableSectionIds, false)) {
             $targetSectionId = array_merge($editableSectionIds);
         }
 
@@ -240,7 +240,7 @@ class RecentEntries extends Widget
 
         // Only use that site if it still exists and they're allowed to edit it.
         // Otherwise go with the first site that they are allowed to edit.
-        if (!in_array($targetSiteId, $editableSiteIds)) {
+        if (!in_array($targetSiteId, $editableSiteIds, false)) {
             $targetSiteId = $editableSiteIds[0];
         }
 
