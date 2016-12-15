@@ -231,7 +231,7 @@ interface ElementInterface extends ComponentInterface
      *
      * @return array The sources.
      */
-    public static function sources($context = null);
+    public static function sources($context);
 
     /**
      * Returns the available element actions for a given source (if one is provided).

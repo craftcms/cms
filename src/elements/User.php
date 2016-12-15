@@ -136,7 +136,7 @@ class User extends Element implements IdentityInterface
     /**
      * @inheritdoc
      */
-    protected static function defineSources($context = null)
+    protected static function defineSources($context)
     {
         $sources = [
             [

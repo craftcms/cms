@@ -236,7 +236,7 @@ abstract class Element extends Component implements ElementInterface
     /**
      * @inheritdoc
      */
-    public static function sources($context = null)
+    public static function sources($context)
     {
         $sources = static::defineSources($context);
 
@@ -283,7 +283,7 @@ abstract class Element extends Component implements ElementInterface
      * @return array The sources.
      * @see sources()
      */
-    protected static function defineSources($context = null)
+    protected static function defineSources($context)
     {
         return [];
     }
