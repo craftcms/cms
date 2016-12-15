@@ -412,7 +412,7 @@ abstract class Element extends Component implements ElementInterface
     /**
      * @inheritdoc
      */
-    public static function defaultTableAttributes($source = null)
+    public static function defaultTableAttributes($source)
     {
         $availableTableAttributes = static::tableAttributes();
 

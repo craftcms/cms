@@ -341,11 +341,11 @@ interface ElementInterface extends ComponentInterface
      * This method should return an array where each element in the array maps to one of the keys of the array returned
      * by [[tableAttributes()]].
      *
-     * @param string|null $source The selected source’s key, if any.
+     * @param string $source The selected source’s key
      *
      * @return array The table attribute keys
      */
-    public static function defaultTableAttributes($source = null);
+    public static function defaultTableAttributes($source);
 
     /**
      * Returns an array that maps source-to-target element IDs based on the given sub-property handle.
