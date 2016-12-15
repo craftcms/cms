@@ -621,7 +621,7 @@ class Asset extends Element
     /**
      * @inheritdoc
      */
-    public function getThumbUrl($size = 125)
+    public function getThumbUrl($size)
     {
         if ($this->getHasThumb()) {
             return Url::getResourceUrl(

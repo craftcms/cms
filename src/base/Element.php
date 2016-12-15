@@ -957,7 +957,7 @@ abstract class Element extends Component implements ElementInterface
     /**
      * @inheritdoc
      */
-    public function getThumbUrl($size = null)
+    public function getThumbUrl($size)
     {
         return null;
     }

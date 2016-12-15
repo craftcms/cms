@@ -445,11 +445,11 @@ interface ElementInterface extends ComponentInterface
     /**
      * Returns the URL to the element’s thumbnail, if there is one.
      *
-     * @param integer|null $size
+     * @param integer $size
      *
      * @return string|null
      */
-    public function getThumbUrl($size = null);
+    public function getThumbUrl($size);
 
     /**
      * Returns the element’s status.

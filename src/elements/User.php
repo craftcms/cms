@@ -940,7 +940,7 @@ class User extends Element implements IdentityInterface
     /**
      * @inheritdoc
      */
-    public function getThumbUrl($size = 100)
+    public function getThumbUrl($size)
     {
         $photo = $this->getPhoto();
 
