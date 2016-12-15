@@ -244,6 +244,7 @@ Craft CMS 3.0 Working Changelog
 - base\Element::getFieldsForElementQuery() has been moved to elements\db\ElementQuery::customFields(), and no longer has a $query argument.
 - base\Element::getTableAttributeHtml() is no longer static, and no longer has an $element argument.
 - base\Element::onAfterMoveElementInStructure() is no longer static, no longer has an $element argument, and has been renamed to afterMoveInStructure().
+- services\AssetIndexer::getIndexEntry() now returns `null` if the index doesn’t exist, instead of `false`.
 - services\Updates::getUnwritableFolders() now returns folder paths without trailing slashes.
 - Renamed `craft.getAssets()` back to `craft.assets()`.
 - Renamed `craft.getCategories()` back to `craft.categories()`.

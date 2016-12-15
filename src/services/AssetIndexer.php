@@ -172,9 +172,7 @@ class AssetIndexer extends Component
     {
         $volume = Craft::$app->getVolumes()->getVolumeById($volumeId);
 
-        $indexEntryModel = $this->getIndexEntry($volumeId, $sessionId, $offset);
-
-        if (empty($indexEntryModel)) {
+        if (($indexEntryModel = $this->getIndexEntry($volumeId, $sessionId, $offset)) === null) {
             return false;
         }
 
@@ -242,7 +240,7 @@ class AssetIndexer extends Component
      * @param $sessionId
      * @param $offset
      *
-     * @return AssetIndexData|bool
+     * @return AssetIndexData|null
      */
     public function getIndexEntry($volumeId, $sessionId, $offset)
     {
@@ -254,20 +252,20 @@ class AssetIndexer extends Component
             ]
         );
 
-        if ($record) {
-            return new AssetIndexData($record->toArray([
-                'id',
-                'volumeId',
-                'sessionId',
-                'offset',
-                'uri',
-                'size',
-                'recordId',
-                'timestamp',
-            ]));
+        if (!$record) {
+            return null;
         }
 
-        return false;
+        return new AssetIndexData($record->toArray([
+            'id',
+            'volumeId',
+            'sessionId',
+            'offset',
+            'uri',
+            'size',
+            'recordId',
+            'timestamp',
+        ]));
     }
 
     /**
