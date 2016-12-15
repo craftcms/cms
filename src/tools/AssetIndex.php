@@ -67,7 +67,7 @@ class AssetIndex extends Tool
     /**
      * @inheritdoc
      */
-    public function performAction($params = [])
+    public function performAction(array $params)
     {
         // Initial request
         if (!empty($params['start'])) {

@@ -47,7 +47,7 @@ class SearchIndex extends Tool
     /**
      * @inheritdoc
      */
-    public function performAction($params = [])
+    public function performAction(array $params)
     {
         if (!empty($params['start'])) {
             // Truncate the searchindex table

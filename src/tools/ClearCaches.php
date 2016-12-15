@@ -151,7 +151,7 @@ class ClearCaches extends Tool
     /**
      * @inheritdoc
      */
-    public function performAction($params = [])
+    public function performAction(array $params)
     {
         if (!isset($params['caches'])) {
             return;

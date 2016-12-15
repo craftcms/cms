@@ -65,7 +65,7 @@ class FindAndReplace extends Tool
     /**
      * @inheritdoc
      */
-    public function performAction($params = [])
+    public function performAction(array $params)
     {
         if (!empty($params['find']) && !empty($params['replace'])) {
             Craft::$app->getTasks()->queueTask([
