@@ -285,7 +285,7 @@ class Locale extends Object
      */
     public function __toString()
     {
-        return $this->id;
+        return (string)$this->id;
     }
 
     /**
