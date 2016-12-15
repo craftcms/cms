@@ -219,12 +219,12 @@ class Assets extends Component
 
             // Explicitly re-throw VolumeFileExistsException
             try {
-                $result = $volume->createFileByStream($uriPath, $stream);
+                $result = $volume->createFileByStream($uriPath, $stream, []);
             } catch (VolumeObjectExistsException $exception) {
                 // Replace the file if this is the temporary Volume.
                 if ($asset->volumeId === null) {
                     $volume->deleteFile($uriPath);
-                    $result = $volume->createFileByStream($uriPath, $stream);
+                    $result = $volume->createFileByStream($uriPath, $stream, []);
                 } else {
                     throw $exception;
                 }
@@ -379,9 +379,9 @@ class Assets extends Component
                 // Delete old, change the name, upload the new
                 $volume->deleteFile($asset->getUri());
                 $asset->newFilename = $filename;
-                $volume->createFileByStream($asset->getUri(), $stream);
+                $volume->createFileByStream($asset->getUri(), $stream, []);
             } else {
-                $volume->updateFileByStream($asset->getUri(), $stream);
+                $volume->updateFileByStream($asset->getUri(), $stream, []);
             }
         } else {
             // Get an available name to avoid conflicts and upload the file
@@ -391,7 +391,7 @@ class Assets extends Component
             // Delete old, change the name, upload the new
             $volume->deleteFile($asset->getUri());
             $asset->newFilename = $filename;
-            $volume->createFileByStream($asset->getUri(), $stream);
+            $volume->createFileByStream($asset->getUri(), $stream, []);
 
             $asset->kind = AssetsHelper::getFileKindByExtension($filename);
         }
@@ -1193,7 +1193,7 @@ class Assets extends Component
                     ['path' => $asset->newFilePath]));
             }
 
-            $targetVolume->createFileByStream($toPath, $stream);
+            $targetVolume->createFileByStream($toPath, $stream, []);
             $sourceVolume->deleteFile($asset->getUri());
 
             if (is_resource($stream)) {

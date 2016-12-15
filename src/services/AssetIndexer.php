@@ -54,7 +54,7 @@ class AssetIndexer extends Component
         try {
             $volume = Craft::$app->getVolumes()->getVolumeById($volumeId);
 
-            $fileList = $volume->getFileList($directory);
+            $fileList = $volume->getFileList($directory, true);
 
             $fileList = array_filter(
                 $fileList,

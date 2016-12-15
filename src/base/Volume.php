@@ -132,7 +132,7 @@ abstract class Volume extends SavableComponent implements VolumeInterface
     /**
      * @inheritdoc
      */
-    public function getFileList($directory, $recursive = true)
+    public function getFileList($directory, $recursive)
     {
         return $this->getFilesystem()->listContents($directory, $recursive);
     }
@@ -140,7 +140,7 @@ abstract class Volume extends SavableComponent implements VolumeInterface
     /**
      * @inheritdoc
      */
-    public function createFileByStream($path, $stream, $config = [])
+    public function createFileByStream($path, $stream, array $config)
     {
         try {
             $config = $this->addFileMetadataToConfig($config);
@@ -154,7 +154,7 @@ abstract class Volume extends SavableComponent implements VolumeInterface
     /**
      * @inheritdoc
      */
-    public function updateFileByStream($path, $stream, $config = [])
+    public function updateFileByStream($path, $stream, array $config)
     {
         try {
             $config = $this->addFileMetadataToConfig($config);
@@ -264,7 +264,7 @@ abstract class Volume extends SavableComponent implements VolumeInterface
         }
 
         // Get the list of dir contents
-        $fileList = $this->getFileList($path);
+        $fileList = $this->getFileList($path, true);
         $directoryList = [];
 
         $parts = explode('/', $path);

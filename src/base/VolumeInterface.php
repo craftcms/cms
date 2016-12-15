@@ -55,7 +55,7 @@ interface VolumeInterface extends SavableComponentInterface
      *
      * @return array
      */
-    public function getFileList($directory, $recursive = true);
+    public function getFileList($directory, $recursive);
 
     /**
      * Creates a file.
@@ -67,7 +67,7 @@ interface VolumeInterface extends SavableComponentInterface
      * @throws VolumeObjectExistsException if a file already exists at the path on the Volume.
      * @return boolean Whether the operation was successful.
      */
-    public function createFileByStream($path, $stream, $config = []);
+    public function createFileByStream($path, $stream, array $config);
 
     /**
      * Updates a file.
@@ -78,7 +78,7 @@ interface VolumeInterface extends SavableComponentInterface
      *
      * @return boolean Whether the operation was successful.
      */
-    public function updateFileByStream($path, $stream, $config = []);
+    public function updateFileByStream($path, $stream, array $config);
 
     /**
      * Returns whether a file exists.
