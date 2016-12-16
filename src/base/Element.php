@@ -10,7 +10,6 @@ namespace craft\base;
 use Craft;
 use craft\behaviors\ContentBehavior;
 use craft\behaviors\ContentTrait;
-use craft\dates\DateTime;
 use craft\db\Query;
 use craft\elements\db\ElementQuery;
 use craft\elements\db\ElementQueryInterface;
@@ -33,6 +32,7 @@ use craft\models\Site;
 use craft\validators\DateTimeValidator;
 use craft\validators\SiteIdValidator;
 use craft\web\UploadedFile;
+use DateTime;
 use yii\base\Event;
 use yii\base\Exception;
 use yii\base\InvalidCallException;
@@ -575,11 +575,6 @@ abstract class Element extends Component implements ElementInterface
      * Any value besides `true` or `false` will be treated as "auto", meaning that custom fields will only be validated if the element is enabled.
      */
     public $validateCustomFields;
-
-    /**
-     * @var array
-     */
-    private static $_sourcesByContext;
 
     /**
      * @var
@@ -1695,7 +1690,7 @@ abstract class Element extends Component implements ElementInterface
      * @param mixed   $criteria Refer to [[findOne()]] and [[findAll()]] for the explanation of this parameter
      * @param boolean $one      Whether this method is called by [[findOne()]] or [[findAll()]]
      *
-     * @return $this|$this[]
+     * @return static|static[]
      */
     protected static function findByCondition($criteria, $one)
     {

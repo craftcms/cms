@@ -14,7 +14,6 @@ use craft\base\Field;
 use craft\db\Query;
 use craft\elements\db\MatrixBlockQuery;
 use craft\elements\MatrixBlock;
-use craft\errors\MatrixBlockNotFoundException;
 use craft\errors\MatrixBlockTypeNotFoundException;
 use craft\fields\Matrix as MatrixField;
 use craft\helpers\Html;
@@ -24,7 +23,6 @@ use craft\migrations\CreateMatrixContentTable;
 use craft\models\FieldLayout;
 use craft\models\FieldLayoutTab;
 use craft\models\MatrixBlockType;
-use craft\records\MatrixBlock as MatrixBlockRecord;
 use craft\records\MatrixBlockType as MatrixBlockTypeRecord;
 use yii\base\Component;
 use yii\base\Exception;
@@ -61,11 +59,6 @@ class Matrix extends Component
      * @var
      */
     private $_blockTypeRecordsById;
-
-    /**
-     * @var
-     */
-    private $_blockRecordsById;
 
     /**
      * @var

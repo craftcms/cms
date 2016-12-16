@@ -8,7 +8,6 @@
 namespace craft\services;
 
 use Craft;
-use craft\dates\DateTime;
 use craft\db\Query;
 use craft\elements\Asset;
 use craft\elements\db\AssetQuery;
@@ -40,6 +39,7 @@ use craft\records\Asset as AssetRecord;
 use craft\records\VolumeFolder as VolumeFolderRecord;
 use craft\tasks\GeneratePendingTransforms;
 use craft\volumes\Temp;
+use DateTime;
 use yii\base\Component;
 
 /**

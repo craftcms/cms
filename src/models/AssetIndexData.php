@@ -8,7 +8,7 @@
 namespace craft\models;
 
 use craft\base\Model;
-use craft\dates\DateTime;
+use DateTime;
 
 /**
  * AssetIndexData model class.

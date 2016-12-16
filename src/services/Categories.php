@@ -665,13 +665,14 @@ class Categories extends Component
             return null;
         }
 
-        return Category::find()
-            ->id($categoryId)
-            ->structureId($structureId)
-            ->siteId($siteId)
-            ->status(null)
-            ->enabledForSite(false)
-            ->one();
+        $query = Category::find();
+        $query->id($categoryId);
+        $query->structureId($structureId);
+        $query->siteId($siteId);
+        $query->status(null);
+        $query->enabledForSite(false);
+
+        return $query->one();
     }
 
     /**
@@ -687,12 +688,12 @@ class Categories extends Component
 
         if ($ids) {
             // Make sure that for each selected category, all of its parents are also selected.
-            $categories = Category::find()
-                ->id($ids)
-                ->status(null)
-                ->enabledForSite(false)
-                ->limit(null)
-                ->all();
+            $categoryQuery = Category::find();
+            $categoryQuery->id($ids);
+            $categoryQuery->status(null);
+            $categoryQuery->enabledForSite(false);
+            $categoryQuery->limit(null);
+            $categories = $categoryQuery->all();
 
             $prevCategory = null;
 

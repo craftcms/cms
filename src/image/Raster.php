@@ -354,7 +354,7 @@ class Raster extends Image
      *
      * @param integer $degrees
      *
-     * @return $this Self reference
+     * @return static Self reference
      */
     public function rotate($degrees)
     {
@@ -368,7 +368,7 @@ class Raster extends Image
      *
      * @param integer $quality
      *
-     * @return $this Self reference
+     * @return static Self reference
      */
     public function setQuality($quality)
     {
@@ -412,7 +412,7 @@ class Raster extends Image
      *
      * @param $svgContent
      *
-     * @return $this Self reference
+     * @return static Self reference
      * @throws ImageException if the SVG string cannot be loaded.
      */
     public function loadFromSVG($svgContent)

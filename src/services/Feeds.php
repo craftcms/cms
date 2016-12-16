@@ -9,9 +9,9 @@ namespace craft\services;
 
 use Craft;
 use craft\base\GuzzleClient;
-use craft\dates\DateTime;
 use craft\helpers\DateTimeHelper;
 use craft\models\Url;
+use DateTime;
 use yii\base\Component;
 use Zend\Feed\Reader\Exception\RuntimeException;
 use Zend\Feed\Reader\Reader;

@@ -207,7 +207,8 @@ class Matrix extends Field implements EagerLoadingFieldInterface
 
         foreach (Craft::$app->getFields()->getAllFieldTypes() as $class) {
             // No Matrix-Inception, sorry buddy.
-            if ($class !== static::class) {
+            /** @var Field|string $class */
+            if ($class !== self::class) {
                 $fieldTypeOptions[] = [
                     'value' => $class,
                     'label' => $class::displayName()
@@ -515,12 +516,14 @@ class Matrix extends Field implements EagerLoadingFieldInterface
     {
         // Delete any Matrix blocks that belong to this element(s)
         foreach (Craft::$app->getSites()->getAllSiteIds() as $siteId) {
-            $matrixBlocks = MatrixBlock::find()
-                ->status(null)
-                ->enabledForSite(false)
-                ->siteId($siteId)
-                ->owner($element)
-                ->all();
+            $matrixBlocksQuery = MatrixBlock::find();
+            $matrixBlocksQuery->status(null);
+            $matrixBlocksQuery->enabledForSite(false);
+            $matrixBlocksQuery->siteId($siteId);
+            $matrixBlocksQuery->owner($element);
+
+            /** @var MatrixBlock[] $matrixBlocks */
+            $matrixBlocks = $matrixBlocksQuery->all();
 
             foreach ($matrixBlocks as $matrixBlock) {
                 Craft::$app->getElements()->deleteElement($matrixBlock);
@@ -560,8 +563,9 @@ class Matrix extends Field implements EagerLoadingFieldInterface
         Craft::$app->getView()->setNamespace($namespace);
 
         foreach (Craft::$app->getFields()->getAllFieldTypes() as $class) {
+            /** @var Field|string $class */
             // No Matrix-Inception, sorry buddy.
-            if ($class === static::class) {
+            if ($class === self::class) {
                 continue;
             }
 
@@ -680,16 +684,16 @@ class Matrix extends Field implements EagerLoadingFieldInterface
             unset($block);
 
             if ($ids) {
-                $oldBlocksById = MatrixBlock::find()
-                    ->fieldId($this->id)
-                    ->ownerId($ownerId)
-                    ->id($ids)
-                    ->limit(null)
-                    ->status(null)
-                    ->enabledForSite(false)
-                    ->siteId($element->siteId)
-                    ->indexBy('id')
-                    ->all();
+                $oldBlocksQuery = MatrixBlock::find();
+                $oldBlocksQuery->fieldId($this->id);
+                $oldBlocksQuery->ownerId($ownerId);
+                $oldBlocksQuery->id($ids);
+                $oldBlocksQuery->limit(null);
+                $oldBlocksQuery->status(null);
+                $oldBlocksQuery->enabledForSite(false);
+                $oldBlocksQuery->siteId($element->siteId);
+                $oldBlocksQuery->indexBy('id');
+                $oldBlocksById = $oldBlocksQuery->all();
             }
         } else {
             $ownerId = null;

@@ -10,7 +10,6 @@ namespace craft\et;
 use Craft;
 use craft\enums\LicenseKeyStatus;
 use craft\errors\EtException;
-use craft\helpers\ArrayHelper;
 use craft\helpers\DateTimeHelper;
 use craft\helpers\FileHelper;
 use craft\models\Et as EtModel;

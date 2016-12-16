@@ -130,7 +130,7 @@ class EntryQuery extends ElementQuery
      *
      * @param boolean $value The property value (defaults to true)
      *
-     * @return $this self reference
+     * @return static self reference
      */
     public function editable($value = true)
     {
@@ -144,7 +144,7 @@ class EntryQuery extends ElementQuery
      *
      * @param string|string[]|Section $value The property value
      *
-     * @return $this self reference
+     * @return static self reference
      */
     public function section($value)
     {
@@ -168,7 +168,7 @@ class EntryQuery extends ElementQuery
      *
      * @param integer|integer[] $value The property value
      *
-     * @return $this self reference
+     * @return static self reference
      */
     public function sectionId($value)
     {
@@ -182,7 +182,7 @@ class EntryQuery extends ElementQuery
      *
      * @param string|string[]|EntryType $value The property value
      *
-     * @return $this self reference
+     * @return static self reference
      */
     public function type($value)
     {
@@ -205,7 +205,7 @@ class EntryQuery extends ElementQuery
      *
      * @param integer|integer[] $value The property value
      *
-     * @return $this self reference
+     * @return static self reference
      */
     public function typeId($value)
     {
@@ -219,7 +219,7 @@ class EntryQuery extends ElementQuery
      *
      * @param integer|integer[] $value The property value
      *
-     * @return $this self reference
+     * @return static self reference
      */
     public function authorId($value)
     {
@@ -233,7 +233,7 @@ class EntryQuery extends ElementQuery
      *
      * @param string|string[]| $value The property value
      *
-     * @return $this self reference
+     * @return static self reference
      */
     public function authorGroup($value)
     {
@@ -256,7 +256,7 @@ class EntryQuery extends ElementQuery
      *
      * @param integer|integer[] $value The property value
      *
-     * @return $this self reference
+     * @return static self reference
      */
     public function authorGroupId($value)
     {
@@ -270,7 +270,7 @@ class EntryQuery extends ElementQuery
      *
      * @param mixed $value The property value
      *
-     * @return $this self reference
+     * @return static self reference
      */
     public function postDate($value)
     {
@@ -284,7 +284,7 @@ class EntryQuery extends ElementQuery
      *
      * @param DateTime|string $value The property value
      *
-     * @return $this self reference
+     * @return static self reference
      */
     public function before($value)
     {
@@ -303,7 +303,7 @@ class EntryQuery extends ElementQuery
      *
      * @param DateTime|string $value The property value
      *
-     * @return $this self reference
+     * @return static self reference
      */
     public function after($value)
     {
@@ -322,7 +322,7 @@ class EntryQuery extends ElementQuery
      *
      * @param mixed $value The property value
      *
-     * @return $this self reference
+     * @return static self reference
      */
     public function expiryDate($value)
     {

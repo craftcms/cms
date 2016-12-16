@@ -40,11 +40,6 @@ class I18N extends \yii\i18n\I18N
     private $_appLocales;
 
     /**
-     * @var
-     */
-    private $_siteLocales;
-
-    /**
      * @var boolean Whether [[translate()]] should wrap translations with `@` characters
      */
     private $_translationDebugOutput;

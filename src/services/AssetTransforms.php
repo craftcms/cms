@@ -8,7 +8,6 @@
 namespace craft\services;
 
 use Craft;
-use craft\dates\DateTime;
 use craft\db\Query;
 use craft\elements\Asset;
 use craft\errors\AssetLogicException;
@@ -28,6 +27,7 @@ use craft\image\Raster;
 use craft\models\AssetTransform;
 use craft\models\AssetTransformIndex;
 use craft\records\AssetTransform as AssetTransformRecord;
+use DateTime;
 use yii\base\Application;
 use yii\base\Component;
 use yii\base\ErrorException;

@@ -636,7 +636,7 @@ class ElementQuery extends Query implements ElementQueryInterface, Arrayable, Co
      *
      * @param string $value The property value
      *
-     * @return $this self reference
+     * @return static self reference
      * @deprecated in 3.0. Use [[site]] or [[siteId]] instead.
      */
     public function locale($value)
@@ -662,7 +662,7 @@ class ElementQuery extends Query implements ElementQueryInterface, Arrayable, Co
      *
      * @param mixed $value The property value (defaults to true)
      *
-     * @return $this self reference
+     * @return static self reference
      * @deprecated in 3.0. Use [[enabledForSite]] instead.
      */
     public function localeEnabled($value = true)
@@ -1139,7 +1139,7 @@ class ElementQuery extends Query implements ElementQueryInterface, Arrayable, Co
      *
      * @param string $value The property value
      *
-     * @return $this self reference
+     * @return static self reference
      * @deprecated in Craft 3.0. Use [[orderBy()]] instead.
      */
     public function order($value)

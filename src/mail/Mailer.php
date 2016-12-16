@@ -11,7 +11,6 @@ use Craft;
 use craft\elements\User;
 use craft\errors\SendEmailException;
 use craft\events\MailFailureEvent;
-use craft\mail\Message;
 use yii\base\InvalidConfigException;
 use yii\helpers\Markdown;
 
@@ -134,9 +133,11 @@ class Mailer extends \yii\swiftmailer\Mailer
             $message->setHtmlBody(Craft::$app->getView()->renderString($htmlBodyTemplate, $variables));
 
             // Don't let Twig use the HTML escaping strategy on the plain text portion body of the email.
-            Craft::$app->getView()->getTwig()->getExtension('escaper')->setDefaultStrategy(false);
+            /** @var \Twig_Extension_Escaper $ext */
+            $ext = Craft::$app->getView()->getTwig()->getExtension('escaper');
+            $ext->setDefaultStrategy(false);
             $message->setTextBody(Craft::$app->getView()->renderString($textBodyTemplate, $variables));
-            Craft::$app->getView()->getTwig()->getExtension('escaper')->setDefaultStrategy('html');
+            $ext->setDefaultStrategy('html');
 
             Craft::$app->language = $language;
 

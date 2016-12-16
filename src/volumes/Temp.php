@@ -23,28 +23,9 @@ class Temp extends Local
     /**
      * @inheritdoc
      */
-    public function rules()
-    {
-        $rules = parent::rules();
-        $rules[] = [['path'], 'required'];
-
-        return $rules;
-    }
-
-    /**
-     * @inheritdoc
-     */
     public static function displayName()
     {
-        return Craft::t('app', 'Local Folder');
-    }
-
-    /**
-     * @inheritdoc
-     */
-    public static function isLocal()
-    {
-        return true;
+        return Craft::t('app', 'Temp Folder');
     }
 
     // Public Methods

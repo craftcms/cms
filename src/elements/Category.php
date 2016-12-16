@@ -547,14 +547,14 @@ class Category extends Element
         }
 
         // Is the newParentId set to a different category ID than its previous parent?
-        $oldParentId = Category::find()
-            ->ancestorOf($this)
-            ->ancestorDist(1)
-            ->status(null)
-            ->siteId($this->siteId)
-            ->enabledForSite(false)
-            ->select('elements.id')
-            ->scalar();
+        $oldParentQuery = Category::find();
+        $oldParentQuery->ancestorOf($this);
+        $oldParentQuery->ancestorDist(1);
+        $oldParentQuery->status(null);
+        $oldParentQuery->siteId($this->siteId);
+        $oldParentQuery->enabledForSite(false);
+        $oldParentQuery->select('elements.id');
+        $oldParentId = $oldParentQuery->scalar();
 
         return $this->newParentId != $oldParentId;
     }

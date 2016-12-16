@@ -235,6 +235,7 @@ class UsersController extends Controller
 
         $errors = [];
         $existingUser = false;
+        $loginName = null;
 
         // If someone's logged in and they're allowed to edit other users, then see if a userId was submitted
         if (Craft::$app->getUser()->checkPermission('editUsers')) {
@@ -307,7 +308,7 @@ class UsersController extends Controller
         $user = Craft::$app->getUsers()->getUserById($userId);
 
         if (!$user) {
-            $this->_noUserExists($userId);
+            $this->_noUserExists();
         }
 
         echo Craft::$app->getUsers()->getPasswordResetUrl($user);
@@ -436,7 +437,7 @@ class UsersController extends Controller
         $user = Craft::$app->getUsers()->getUserById($userId);
 
         if (!$user) {
-            $this->_noUserExists($userId);
+            $this->_noUserExists();
         }
 
         if (Craft::$app->getUsers()->activateUser($user)) {
@@ -472,6 +473,7 @@ class UsersController extends Controller
                 switch ($userId) {
                     case 'current': {
                         if ($user) {
+                            /** @var User $user */
                             // Make sure it's actually the current user
                             if (!$user->getIsCurrent()) {
                                 throw new BadRequestHttpException('Not the current user');
@@ -824,6 +826,7 @@ class UsersController extends Controller
                 throw new NotFoundHttpException('User not found');
             }
 
+            /** @var User $user */
             if (!$user->getIsCurrent()) {
                 // Make sure they have permission to edit other users
                 $this->requirePermission('editUsers');
@@ -1200,10 +1203,11 @@ class UsersController extends Controller
             ->one();
 
         if (!$user) {
-            $this->_noUserExists($userId);
+            $this->_noUserExists();
         }
 
         // Only allow activation emails to be send to pending users.
+        /** @var User $user */
         if ($user->getStatus() !== User::STATUS_PENDING) {
             throw new BadRequestHttpException('Activation emails can only be sent to pending users');
         }
@@ -1235,7 +1239,7 @@ class UsersController extends Controller
         $user = Craft::$app->getUsers()->getUserById($userId);
 
         if (!$user) {
-            $this->_noUserExists($userId);
+            $this->_noUserExists();
         }
 
         // Even if you have administrateUsers permissions, only and admin should be able to unlock another admin.
@@ -1269,7 +1273,7 @@ class UsersController extends Controller
         $user = Craft::$app->getUsers()->getUserById($userId);
 
         if (!$user) {
-            $this->_noUserExists($userId);
+            $this->_noUserExists();
         }
 
         // Even if you have administrateUsers permissions, only and admin should be able to suspend another admin.
@@ -1304,7 +1308,7 @@ class UsersController extends Controller
         $user = Craft::$app->getUsers()->getUserById($userId);
 
         if (!$user) {
-            $this->_noUserExists($userId);
+            $this->_noUserExists();
         }
 
         // Even if you have deleteUser permissions, only and admin should be able to delete another admin.
@@ -1323,7 +1327,7 @@ class UsersController extends Controller
             $transferContentTo = Craft::$app->getUsers()->getUserById($transferContentToId);
 
             if (!$transferContentTo) {
-                $this->_noUserExists($transferContentToId);
+                $this->_noUserExists();
             }
         } else {
             $transferContentTo = null;
@@ -1359,7 +1363,7 @@ class UsersController extends Controller
         $user = Craft::$app->getUsers()->getUserById($userId);
 
         if (!$user) {
-            $this->_noUserExists($userId);
+            $this->_noUserExists();
         }
 
         // Even if you have administrateUsers permissions, only and admin should be able to un-suspend another admin.
@@ -1595,12 +1599,10 @@ class UsersController extends Controller
     /**
      * Throws a "no user exists" exception
      *
-     * @param integer $userId
-     *
      * @return void
      * @throws NotFoundHttpException
      */
-    private function _noUserExists($userId)
+    private function _noUserExists()
     {
         throw new NotFoundHttpException('User not found');
     }
