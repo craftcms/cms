@@ -193,6 +193,8 @@ class MigrationHelper
                     continue;
                 }
 
+                $index = 0;
+
                 foreach ($sourceTableSchema->foreignKeys as $index => $value) {
                     if ($value[0] === $rawOldName) {
                         $value[0] = $rawNewName;
@@ -247,6 +249,8 @@ class MigrationHelper
                 $refColumns = [];
                 $onUpdate = $droppedExtendedForeignKeys[$num]['updateType'];
                 $onDelete = $droppedExtendedForeignKeys[$num]['deleteType'];
+
+                $refTableName = '';
 
                 foreach ($fk as $count => $value) {
                     if ($count === 0) {
@@ -326,6 +330,8 @@ class MigrationHelper
             // Load up extended FK information for the reference table.
             $refTable = Craft::$app->getDb()->getSchema()->getTableSchema($refTableName);
 
+            $index = 0;
+
             // Figure out the reference columns.
             foreach ($fkInfo as $number => $fk) {
 
@@ -362,6 +368,12 @@ class MigrationHelper
         // Restore FKs linking to the column.
         foreach ($allOtherTableFks as $sourceTableName => $fkInfo) {
 
+            $columns = [];
+            $refColumns = [];
+            $refTableName = '';
+            $onUpdate = '';
+            $onDelete = '';
+
             // Figure out the reference columns.
             foreach ($fkInfo as $num => $fk) {
                 $refColumns = [];
@@ -396,6 +408,8 @@ class MigrationHelper
 
             static::restoreForeignKey($sourceTableName, $columns, $refTableName, $refColumns, $onUpdate, $onDelete);
         }
+
+        $columns = [];
 
         // Restore indexes.
         foreach ($columnIndexes as list($indexColumns, $unique)) {
@@ -539,14 +553,13 @@ class MigrationHelper
     {
         $rawTableName = Craft::$app->getDb()->getSchema()->getRawTableName($tableName);
         $table = Craft::$app->getDb()->getTableSchema($rawTableName);
+        $otherColumns = [];
 
         foreach ($table->getColumnNames() as $columnName) {
             $fks = static::findForeignKeysTo($rawTableName, $columnName);
 
             foreach ($fks as $otherTable => $row) {
                 foreach ($row as $columnInfo) {
-                    $otherColumns = [];
-
                     foreach ($columnInfo as $count => $value) {
                         if ($count !== 0) {
                             $otherColumns[] = $count;
