@@ -130,7 +130,7 @@ class UserGroups extends Component
      * @param integer     $userId
      * @param string|null $indexBy
      *
-     * @return array
+     * @return UserGroup[]
      */
     public function getGroupsByUserId($userId, $indexBy = null)
     {

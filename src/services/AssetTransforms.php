@@ -69,12 +69,12 @@ class AssetTransforms extends Component
     // =========================================================================
 
     /**
-     * @var
+     * @var AssetTransform[]
      */
     private $_transformsByHandle;
 
     /**
-     * @var bool
+     * @var boolean
      */
     private $_fetchedAllTransforms = false;
 
@@ -848,7 +848,7 @@ class AssetTransforms extends Component
      *
      * @throws VolumeObjectNotFoundException If the file cannot be found.
      * @throws VolumeException               If there was an error downloading the remote file.
-     * @return mixed
+     * @return string
      */
     public function getLocalImageSource(Asset $asset)
     {
