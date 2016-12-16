@@ -641,7 +641,7 @@ return [
      *
      * @see http://php.net/manual/en/function.file-put-contents.php
      */
-    'useWriteFileLock' => 'auto',
+    'useFileLocks' => 'auto',
     /**
      * Whether Craft should use XSendFile to serve files when possible.
      */
