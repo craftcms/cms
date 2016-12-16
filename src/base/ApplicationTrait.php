@@ -707,6 +707,7 @@ trait ApplicationTrait
 
         try {
             $this->getDb()->open();
+
             return $this->_isDbConnectionValid = true;
         } catch (DbConnectException $e) {
             return $this->_isDbConnectionValid = false;
