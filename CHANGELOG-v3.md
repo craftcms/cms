@@ -520,9 +520,9 @@ Craft CMS 3.0 Working Changelog
 
 ### Added
 - Added [Content Migrations](https://craftcms.com/news/craft-3-content-migrations) support.
-- Added the |timestamp filter, for formatting a date as a user-friendly timestamp.
-- Added the |datetime filter, for formatting a date with a localized date+time format.
-- Added the |time filter, for formatting a date with a localized time format.
+- Added the `|timestamp` filter, for formatting a date as a user-friendly timestamp.
+- Added the `|datetime` filter, for formatting a date with a localized date+time format.
+- Added the `|time` filter, for formatting a date with a localized time format.
 - Added `craft\web\Request::getAcceptsJson()`, which returns whether the HTTP request accepts a JSON response.
 - Added `craft\web\Controller::requireAcceptsJson()`, which mandates that the HTTP request accepts a JSON response.
 - Added `craft\i18n\Formatter::asTimestamp()`, for formatting a date as a user-friendly timestamp.
@@ -551,7 +551,7 @@ Craft CMS 3.0 Working Changelog
 - The `$day` argument of `craft\i18n\Locale::getWeekDayName()` should now be 0-6 instead of 1-7, where `0` represents Sunday.
 
 ### Deprecated
-- Deprecated the `round()` Twig function. Use the |round filter instead.
+- Deprecated the `round()` Twig function. Use the `|round` filter instead.
 - Deprecated `craft\craft\app\dates\DateTime::__toString()`. Use `format('Y-m-d')` instead.
 - Deprecated `craft\craft\app\dates\DateTime::atom()`. Use `format(DateTime::ATOM)` instead.
 - Deprecated `craft\craft\app\dates\DateTime::cookie()`. Use `format(DateTime::COOKIE)` instead.
