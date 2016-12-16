@@ -147,6 +147,7 @@ class Extension extends \Twig_Extension implements \Twig_Extension_GlobalsInterf
 
         return [
             new \Twig_SimpleFilter('camel', [$this, 'camelFilter']),
+            new \Twig_SimpleFilter('column', [ArrayHelper::class, 'getColumn']),
             new \Twig_SimpleFilter('currency', [$formatter, 'asCurrency']),
             new \Twig_SimpleFilter('date', [$this, 'dateFilter'], ['needs_environment' => true]),
             new \Twig_SimpleFilter('datetime', [$this, 'datetimeFilter'], ['needs_environment' => true]),

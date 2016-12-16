@@ -20,6 +20,7 @@ Craft CMS 3.0 Working Changelog
 - Added the `SORT_ASC` and `SORT_DESC` global Twig variables, which can be used to define query sorting in element queries.
 - Added the `POS_HEAD`, `POS_BEGIN`, `POS_END`, `POS_READY`, and `POS_LOAD` global Twig variables, which can be used to define the placement of registered scripts.
 - Added the `className()` global Twig function, which returns the class name of a given object.
+- Added the `|column` Twig filter, for capturing the key/property values of a series of arrays/objects.
 - Added the `|index` Twig filter, for indexing an array of arrays/objects by one of their keys/values.
 - Added the JavaScript method `BaseElementIndex::refreshSources()`.
 - Added `craft\db\pgsql\QueryBuilder`.
