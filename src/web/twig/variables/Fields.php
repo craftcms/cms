@@ -131,7 +131,9 @@ class Fields
     {
         Craft::$app->getDeprecator()->log('craft.fields.getFieldsByGroupId()', 'craft.fields.getFieldsByGroupId() has been deprecated. Use craft.app.fields.getFieldsByGroupId() instead.');
 
-        return Craft::$app->getFields()->getFieldsByGroupId($groupId, $indexBy);
+        $fields = Craft::$app->getFields()->getFieldsByGroupId($groupId);
+
+        return $indexBy ? ArrayHelper::index($fields, $indexBy) : $fields;
     }
 
     /**

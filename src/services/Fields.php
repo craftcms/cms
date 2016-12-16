@@ -38,7 +38,6 @@ use craft\fields\RichText as RichTextField;
 use craft\fields\Table as TableField;
 use craft\fields\Tags as TagsField;
 use craft\fields\Users as UsersField;
-use craft\helpers\ArrayHelper;
 use craft\helpers\Component as ComponentHelper;
 use craft\helpers\StringHelper;
 use craft\models\FieldGroup;
@@ -609,12 +608,11 @@ class Fields extends Component
     /**
      * Returns all the fields in a given group.
      *
-     * @param integer     $groupId The field group’s ID
-     * @param string|null $indexBy The attribute to index the fields by
+     * @param integer $groupId The field group’s ID
      *
      * @return FieldInterface[] The fields
      */
-    public function getFieldsByGroupId($groupId, $indexBy = null)
+    public function getFieldsByGroupId($groupId)
     {
         $results = $this->_createFieldQuery()
             ->where(['fields.groupId' => $groupId])
@@ -623,13 +621,7 @@ class Fields extends Component
         $fields = [];
 
         foreach ($results as $result) {
-            $field = $this->createField($result);
-
-            if ($indexBy) {
-                $fields[$field->$indexBy] = $field;
-            } else {
-                $fields[] = $field;
-            }
+            $fields[] = $this->createField($result);
         }
 
         return $fields;
