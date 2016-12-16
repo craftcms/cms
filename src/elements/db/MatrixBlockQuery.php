@@ -311,7 +311,7 @@ class MatrixBlockQuery extends ElementQuery
         foreach ($blockTypes as $blockType) {
             $contexts[] = 'matrixBlockType:'.$blockType->id;
         }
-        Craft::$app->getFields()->getAllFields(null, $contexts);
+        Craft::$app->getFields()->getAllFields($contexts);
 
         // Now assemble the actual fields list
         $fields = [];

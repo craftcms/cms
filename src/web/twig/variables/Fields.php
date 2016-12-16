@@ -114,7 +114,9 @@ class Fields
     {
         Craft::$app->getDeprecator()->log('craft.fields.getAllFields()', 'craft.fields.getAllFields() has been deprecated. Use craft.app.fields.getAllFields() instead.');
 
-        return Craft::$app->getFields()->getAllFields($indexBy);
+        $fields = Craft::$app->getFields()->getAllFields();
+
+        return $indexBy ? ArrayHelper::index($fields, $indexBy) : $fields;
     }
 
     /**

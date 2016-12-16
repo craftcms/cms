@@ -441,12 +441,11 @@ class Fields extends Component
     /**
      * Returns all fields within a field context(s).
      *
-     * @param string|null          $indexBy The field property to index the resulting fields by
      * @param string|string[]|null $context The field context(s) to fetch fields from. Defaults to {@link ContentService::$fieldContext}.
      *
      * @return FieldInterface[] The fields
      */
-    public function getAllFields($indexBy = null, $context = null)
+    public function getAllFields($context = null)
     {
         if ($context === null) {
             $context = [Craft::$app->getContent()->fieldContext];
@@ -484,11 +483,7 @@ class Fields extends Component
         /** @noinspection ForeachSourceInspection - FP */
         foreach ($context as $c) {
             foreach ($this->_allFieldsInContext[$c] as $field) {
-                if ($indexBy) {
-                    $fields[$field->$indexBy] = $field;
-                } else {
-                    $fields[] = $field;
-                }
+                $fields[] = $field;
             }
         }
 
