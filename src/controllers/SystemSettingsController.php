@@ -8,7 +8,6 @@
 namespace craft\controllers;
 
 use Craft;
-use craft\dates\DateTime;
 use craft\elements\GlobalSet;
 use craft\errors\MissingComponentException;
 use craft\helpers\MailerHelper;
@@ -25,6 +24,7 @@ use craft\tools\DbBackup;
 use craft\tools\FindAndReplace;
 use craft\tools\SearchIndex;
 use craft\web\Controller;
+use DateTime;
 use yii\base\Exception;
 use yii\helpers\Inflector;
 use yii\web\NotFoundHttpException;

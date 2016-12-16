@@ -277,6 +277,7 @@ Craft CMS 3.0 Working Changelog
 - Removed the automatic creation of `@craft/plugins/HANDLE` aliases for installed plugins.
 - Removed cache\FileCache.
 - Removed cache\adapters\GuzzleCacheAdapter.
+- Removed dates\DateTime.
 - Removed db\DbBackup.
 - Removed enums\BaseEnum.
 - Removed errors\DbBackupException.

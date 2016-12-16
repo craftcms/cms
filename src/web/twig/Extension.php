@@ -9,7 +9,6 @@ namespace craft\web\twig;
 
 use Craft;
 use craft\base\MissingComponentInterface;
-use craft\dates\DateTime;
 use craft\helpers\DateTimeHelper;
 use craft\helpers\Db;
 use craft\helpers\Header;
@@ -35,6 +34,7 @@ use craft\web\twig\tokenparsers\RequirePermissionTokenParser;
 use craft\web\twig\tokenparsers\SwitchTokenParser;
 use craft\web\twig\variables\CraftVariable;
 use craft\web\View;
+use DateTime;
 use yii\base\InvalidConfigException;
 use yii\helpers\Markdown;
 

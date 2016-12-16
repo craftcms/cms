@@ -8,10 +8,10 @@
 namespace craft\helpers;
 
 use Craft;
-use craft\dates\DateTime;
 use craft\db\Connection;
 use craft\db\Query;
 use craft\services\Config;
+use DateTime;
 use yii\base\Exception;
 
 

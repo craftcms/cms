@@ -3,7 +3,6 @@ namespace craft\services;
 
 use Craft;
 use craft\base\Volume;
-use craft\dates\DateTime;
 use craft\db\Query;
 use craft\elements\Asset;
 use craft\errors\VolumeObjectNotFoundException;
@@ -13,6 +12,7 @@ use craft\helpers\Image;
 use craft\helpers\StringHelper;
 use craft\models\AssetIndexData;
 use craft\records\AssetIndexData as AssetIndexDataRecord;
+use DateTime;
 use yii\base\Component;
 
 /**

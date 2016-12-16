@@ -8,9 +8,9 @@
 namespace craft\models;
 
 use craft\base\Model;
-use craft\dates\DateTime;
 use craft\helpers\Json;
 use craft\validators\DateTimeValidator;
+use DateTime;
 
 /**
  * DeprecationError model.

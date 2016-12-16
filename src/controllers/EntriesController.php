@@ -9,7 +9,6 @@ namespace craft\controllers;
 
 use Craft;
 use craft\base\Field;
-use craft\dates\DateTime;
 use craft\elements\Entry;
 use craft\elements\User;
 use craft\helpers\ArrayHelper;
@@ -20,6 +19,7 @@ use craft\models\EntryDraft;
 use craft\models\EntryVersion;
 use craft\models\Section;
 use craft\models\Site;
+use DateTime;
 use yii\web\ForbiddenHttpException;
 use yii\web\NotFoundHttpException;
 use yii\web\Response;
