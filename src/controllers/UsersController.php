@@ -235,6 +235,7 @@ class UsersController extends Controller
 
         $errors = [];
         $existingUser = false;
+        $loginName = null;
 
         // If someone's logged in and they're allowed to edit other users, then see if a userId was submitted
         if (Craft::$app->getUser()->checkPermission('editUsers')) {

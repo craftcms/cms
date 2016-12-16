@@ -146,8 +146,8 @@ class QueryBuilder extends \yii\db\pgsql\QueryBuilder
     public function fixedOrder($column, $values)
     {
         $schema = $this->db->getSchema();
-
         $sql = 'CASE';
+        $key = -1;
 
         foreach ($values as $key => $value) {
             $sql .= ' WHEN '.$schema->quoteColumnName($column).'='.$schema->quoteValue($value).' THEN '.$schema->quoteValue($key);

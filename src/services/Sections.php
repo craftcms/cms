@@ -642,8 +642,8 @@ class Sections extends Component
                     /** @noinspection PhpUndefinedVariableInspection */
                     if (!$isNewSection && $isNewStructure) {
                         // Add all of the entries to the structure
-                        /** @noinspection PhpUndefinedVariableInspection */
                         $query = Entry::find();
+                        /** @noinspection PhpUndefinedVariableInspection */
                         $query->siteId(ArrayHelper::firstKey($allOldSiteSettingsRecords));
                         $query->sectionId($section->id);
                         $query->status(null);
