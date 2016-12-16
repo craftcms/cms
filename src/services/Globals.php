@@ -110,20 +110,18 @@ class Globals extends Component
     /**
      * Returns all global sets.
      *
-     * @param string|null $indexBy
-     *
      * @return array
      */
-    public function getAllSets($indexBy = null)
+    public function getAllSets()
     {
         if ($this->_allGlobalSets !== null) {
-            return $indexBy ? ArrayHelper::index($this->_allGlobalSets, $indexBy) : $this->_allGlobalSets;
+            return $this->_allGlobalSets;
         }
 
         $this->_allGlobalSets = GlobalSet::findAll();
         $this->_globalSetsById = ArrayHelper::index($this->_allGlobalSets, 'id');
 
-        return $indexBy ? ArrayHelper::index($this->_allGlobalSets, $indexBy) : $this->_allGlobalSets;
+        return $this->_allGlobalSets;
     }
 
     /**
