@@ -10,7 +10,6 @@ namespace craft\dates;
 use Craft;
 use craft\helpers\DateTimeHelper;
 use craft\i18n\Locale;
-use DateTimeZone;
 
 /**
  * Class DateTime

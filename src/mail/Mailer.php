@@ -11,7 +11,6 @@ use Craft;
 use craft\elements\User;
 use craft\errors\SendEmailException;
 use craft\events\MailFailureEvent;
-use craft\mail\Message;
 use yii\base\InvalidConfigException;
 use yii\helpers\Markdown;
 

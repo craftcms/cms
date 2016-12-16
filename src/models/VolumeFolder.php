@@ -9,7 +9,6 @@ namespace craft\models;
 
 use Craft;
 use craft\base\Model;
-use craft\base\Volume;
 use craft\base\VolumeInterface;
 
 /**
