@@ -103,7 +103,7 @@ class AssetTransforms extends Component
      */
     public function getAllTransforms()
     {
-        if ($this->_fetchedAllTransforms !== null) {
+        if ($this->_fetchedAllTransforms) {
             return array_values($this->_transformsByHandle);
         }
 
