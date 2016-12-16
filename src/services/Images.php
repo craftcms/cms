@@ -64,11 +64,11 @@ class Images extends Component
     public function init()
     {
         if (strtolower(Craft::$app->getConfig()->get('imageDriver')) == 'gd') {
-            $this->_driver = static::DRIVER_GD;
-        } else if ($this->getIsImagickAtLeast(static::MINIMUM_IMAGICK_VERSION)) {
-            $this->_driver = static::DRIVER_IMAGICK;
+            $this->_driver = self::DRIVER_GD;
+        } else if ($this->getIsImagickAtLeast(self::MINIMUM_IMAGICK_VERSION)) {
+            $this->_driver = self::DRIVER_IMAGICK;
         } else {
-            $this->_driver = static::DRIVER_GD;
+            $this->_driver = self::DRIVER_GD;
         }
 
         parent::init();
@@ -81,7 +81,7 @@ class Images extends Component
      */
     public function getIsGd()
     {
-        return $this->_driver == static::DRIVER_GD;
+        return $this->_driver == self::DRIVER_GD;
     }
 
 
@@ -92,7 +92,7 @@ class Images extends Component
      */
     public function getIsImagick()
     {
-        return $this->_driver == static::DRIVER_IMAGICK;
+        return $this->_driver == self::DRIVER_IMAGICK;
     }
 
     /**

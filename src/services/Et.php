@@ -74,7 +74,7 @@ class Et extends Component
      */
     public function ping()
     {
-        $et = $this->_createEtTransport(static::ENDPOINT_PING);
+        $et = $this->_createEtTransport(self::ENDPOINT_PING);
 
         return $et->phoneHome();
     }
@@ -88,7 +88,7 @@ class Et extends Component
      */
     public function checkForUpdates($updateInfo)
     {
-        $et = $this->_createEtTransport(static::ENDPOINT_CHECK_FOR_UPDATES);
+        $et = $this->_createEtTransport(self::ENDPOINT_CHECK_FOR_UPDATES);
         $et->setData($updateInfo);
         $etResponse = $et->phoneHome();
 
@@ -151,7 +151,7 @@ class Et extends Component
      */
     public function getUpdateFileInfo($handle)
     {
-        $et = $this->_createEtTransport(static::ENDPOINT_GET_UPDATE_FILE_INFO);
+        $et = $this->_createEtTransport(self::ENDPOINT_GET_UPDATE_FILE_INFO);
 
         if ($handle !== 'craft') {
             $et->setHandle($handle);
@@ -256,7 +256,7 @@ class Et extends Component
      */
     public function transferLicenseToCurrentDomain()
     {
-        $et = $this->_createEtTransport(static::ENDPOINT_TRANSFER_LICENSE);
+        $et = $this->_createEtTransport(self::ENDPOINT_TRANSFER_LICENSE);
         $etResponse = $et->phoneHome();
 
         if (!empty($etResponse->data['success'])) {
@@ -286,7 +286,7 @@ class Et extends Component
      */
     public function fetchUpgradeInfo()
     {
-        $et = $this->_createEtTransport(static::ENDPOINT_GET_UPGRADE_INFO);
+        $et = $this->_createEtTransport(self::ENDPOINT_GET_UPGRADE_INFO);
         $etResponse = $et->phoneHome();
 
         if ($etResponse) {
@@ -306,7 +306,7 @@ class Et extends Component
      */
     public function fetchCouponPrice($edition, $couponCode)
     {
-        $et = $this->_createEtTransport(static::ENDPOINT_GET_COUPON_PRICE);
+        $et = $this->_createEtTransport(self::ENDPOINT_GET_COUPON_PRICE);
         $et->setData(['edition' => $edition, 'couponCode' => $couponCode]);
 
         return $et->phoneHome();
@@ -322,7 +322,7 @@ class Et extends Component
     public function purchaseUpgrade(UpgradePurchase $model)
     {
         if ($model->validate()) {
-            $et = $this->_createEtTransport(static::ENDPOINT_PURCHASE_UPGRADE);
+            $et = $this->_createEtTransport(self::ENDPOINT_PURCHASE_UPGRADE);
             $et->setData($model);
             $etResponse = $et->phoneHome();
 
@@ -408,7 +408,7 @@ class Et extends Component
      */
     public function registerPlugin($pluginHandle)
     {
-        $et = $this->_createEtTransport(static::ENDPOINT_REGISTER_PLUGIN);
+        $et = $this->_createEtTransport(self::ENDPOINT_REGISTER_PLUGIN);
         $et->setData([
             'pluginHandle' => $pluginHandle
         ]);
@@ -425,7 +425,7 @@ class Et extends Component
      */
     public function transferPlugin($pluginHandle)
     {
-        $et = $this->_createEtTransport(static::ENDPOINT_TRANSFER_PLUGIN);
+        $et = $this->_createEtTransport(self::ENDPOINT_TRANSFER_PLUGIN);
         $et->setData([
             'pluginHandle' => $pluginHandle
         ]);
@@ -442,7 +442,7 @@ class Et extends Component
      */
     public function unregisterPlugin($pluginHandle)
     {
-        $et = $this->_createEtTransport(static::ENDPOINT_UNREGISTER_PLUGIN);
+        $et = $this->_createEtTransport(self::ENDPOINT_UNREGISTER_PLUGIN);
         $et->setData([
             'pluginHandle' => $pluginHandle
         ]);
