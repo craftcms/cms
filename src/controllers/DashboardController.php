@@ -459,16 +459,6 @@ class DashboardController extends Controller
             $requestParams['tNote'] .= "\n\nError attaching zip: ".$e->getMessage();
         }
 
-        $guzzleClient = new Client([
-            'headers' => [
-                'User-Agent' => 'Craft/'.Craft::$app->version.' '.\GuzzleHttp\default_user_agent()
-            ],
-            'timeout' => 120,
-            'connect_timeout' => 120,
-            'allow_redirects' => false,
-            'base_uri' => 'https://support.pixelandtonic.com/api/index.php',
-        ]);
-
         $requestParams = array_merge($requestParams, ['method' => 'request.create', 'output' => 'xml']);
 
         // HelpSpot requires form encoded POST params and Guzzles requires this key to do that.
@@ -476,10 +466,10 @@ class DashboardController extends Controller
             'form_params' => $requestParams
         ];
 
-        $helpSpotGuzzleClient = new HelpSpotGuzzleClient($guzzleClient, ' ', ' ');
+        $helpSpotGuzzleClient = new HelpSpotGuzzleClient(Craft::$app->getHttpClient(), ' ', ' ');
 
         try {
-            $helpSpotGuzzleClient->getClient()->post('', $requestParams);
+            $helpSpotGuzzleClient->getClient()->post('https://support.pixelandtonic.com/api/index.php', $requestParams);
         } catch (\Exception $e) {
             return $this->renderTemplate('_components/widgets/CraftSupport/response', [
                 'widgetId' => $widgetId,
