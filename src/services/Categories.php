@@ -158,22 +158,16 @@ class Categories extends Component
     /**
      * Returns all editable groups.
      *
-     * @param string|null $indexBy
-     *
      * @return CategoryGroup[]
      */
-    public function getEditableGroups($indexBy = null)
+    public function getEditableGroups()
     {
         $editableGroupIds = $this->getEditableGroupIds();
         $editableGroups = [];
 
         foreach ($this->getAllGroups() as $group) {
             if (in_array($group->id, $editableGroupIds, false)) {
-                if ($indexBy) {
-                    $editableGroups[$group->$indexBy] = $group;
-                } else {
-                    $editableGroups[] = $group;
-                }
+                $editableGroups[] = $group;
             }
         }
 
