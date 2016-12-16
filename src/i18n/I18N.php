@@ -98,16 +98,17 @@ class I18N extends \yii\i18n\I18N
                 $appLocalesPath = Craft::$app->getBasePath().DIRECTORY_SEPARATOR.'config'.DIRECTORY_SEPARATOR.'locales';
                 $customLocalesPath = Craft::$app->getPath()->getConfigPath().'/locales';
 
-                $localeFiles = array_merge(
-                    FileHelper::findFiles($appLocalesPath, [
+                $localeFiles = FileHelper::findFiles($appLocalesPath, [
+                    'only' => ['*.php'],
+                    'recursive' => false
+                ]);
+
+                if (is_dir($customLocalesPath)) {
+                    $localeFiles = array_merge($localeFiles, FileHelper::findFiles($customLocalesPath, [
                         'only' => ['*.php'],
                         'recursive' => false
-                    ]),
-                    FileHelper::findFiles($customLocalesPath, [
-                        'only' => ['*.php'],
-                        'recursive' => false
-                    ])
-                );
+                    ]));
+                }
 
                 $this->_allLocaleIds = [];
 
