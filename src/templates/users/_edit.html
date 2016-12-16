@@ -201,7 +201,7 @@
                             <h2>{{ "User Groups"|t('app') }}</h2>
 
                             {% set allGroups = craft.app.userGroups.getAllGroups() %}
-                            {% set userGroups = account.getGroups('id') %}
+                            {% set userGroupIds = account.getGroups()|column('id') %}
 
                             {% set userGroupsInput %}
                                 <input type="hidden" name="groups" value="">
@@ -214,7 +214,7 @@
                                                     label: group.name|t('site'),
                                                     name: 'groups[]',
                                                     value: group.id,
-                                                    checked: (group.id in userGroups|keys)
+                                                    checked: (group.id in userGroupIds)
                                                 }) }}
                                             </li>
                                         {% endfor %}

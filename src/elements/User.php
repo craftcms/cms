@@ -509,7 +509,7 @@ class User extends Element implements IdentityInterface
     private $_photo;
 
     /**
-     * @var array The cached list of groups the user belongs to. Set by [[getGroups()]].
+     * @var UserGroup[] The cached list of groups the user belongs to. Set by [[getGroups()]].
      */
     private $_groups;
 
@@ -779,23 +779,19 @@ class User extends Element implements IdentityInterface
     /**
      * Returns the user's groups.
      *
-     * @param string|null $indexBy
-     *
-     * @return array
+     * @return UserGroup[]
      */
-    public function getGroups($indexBy = null)
+    public function getGroups()
     {
         if ($this->_groups !== null) {
-            return $indexBy ? ArrayHelper::index($this->_groups, $indexBy) : $this->_groups;
+            return $this->_groups;
         }
 
         if (Craft::$app->getEdition() !== Craft::Pro) {
             return [];
         }
 
-        $this->_groups = Craft::$app->getUserGroups()->getGroupsByUserId($this->id);
-
-        return $indexBy ? ArrayHelper::index($this->_groups, $indexBy) : $this->_groups;
+        return $this->_groups = Craft::$app->getUserGroups()->getGroupsByUserId($this->id);
     }
 
     /**
