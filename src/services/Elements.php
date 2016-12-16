@@ -1126,11 +1126,12 @@ class Elements extends Component
                             $refTagsByThing = ${'refTagsBy'.ucfirst($thing)};
 
                             if ($refTagsByThing) {
-                                $elements = $elementType::find()
-                                    ->status(null)
-                                    ->limit(null)
-                                    ->$thing(array_keys($refTagsByThing))
-                                    ->all();
+                                /** @var Element|string $elementType */
+                                $elementQuery = $elementType::find();
+                                $elementQuery->status(null);
+                                $elementQuery->limit(null);
+                                $elementQuery->$thing(array_keys($refTagsByThing));
+                                $elements = $elementQuery->all();
 
                                 $elementsByThing = [];
 

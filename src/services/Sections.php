@@ -643,12 +643,12 @@ class Sections extends Component
                     if (!$isNewSection && $isNewStructure) {
                         // Add all of the entries to the structure
                         /** @noinspection PhpUndefinedVariableInspection */
-                        $query = Entry::find()
-                            ->siteId(ArrayHelper::firstKey($allOldSiteSettingsRecords))
-                            ->sectionId($section->id)
-                            ->status(null)
-                            ->enabledForSite(false)
-                            ->orderBy('elements.id');
+                        $query = Entry::find();
+                        $query->siteId(ArrayHelper::firstKey($allOldSiteSettingsRecords));
+                        $query->sectionId($section->id);
+                        $query->status(null);
+                        $query->enabledForSite(false);
+                        $query->orderBy('elements.id');
 
                         /** @var Entry $entry */
                         foreach ($query->each() as $entry) {

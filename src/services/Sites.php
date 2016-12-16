@@ -8,6 +8,7 @@
 namespace craft\services;
 
 use Craft;
+use craft\base\Element;
 use craft\db\Query;
 use craft\errors\DbConnectException;
 use craft\errors\SiteNotFoundException;
@@ -879,7 +880,7 @@ class Sites extends Component
         $nonLocalizedElementTypes = [];
 
         foreach (Craft::$app->getElements()->getAllElementTypes() as $elementType) {
-            /** Element $elementType */
+            /** @var Element|string $elementType */
             if (!$elementType::isLocalized()) {
                 $nonLocalizedElementTypes[] = $elementType;
             }

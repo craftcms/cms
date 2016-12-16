@@ -51,7 +51,7 @@ abstract class Model extends \yii\base\Model
      * @param string $name
      * @param array  $arguments
      *
-     * @return $this
+     * @return static
      * @throws UnknownMethodException when calling an unknown method
      */
     public function __call($name, $arguments)
@@ -120,7 +120,7 @@ abstract class Model extends \yii\base\Model
     /**
      * Returns a copy of this model.
      *
-     * @return $this
+     * @return static
      */
     public function copy()
     {

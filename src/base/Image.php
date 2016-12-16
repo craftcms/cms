@@ -47,7 +47,7 @@ abstract class Image extends Object
      *
      * @param string $path
      *
-     * @return $this Self reference
+     * @return static Self reference
      * @throws ImageException if the file cannot be loaded
      */
     abstract public function loadImage($path);
@@ -60,7 +60,7 @@ abstract class Image extends Object
      * @param integer $y1
      * @param integer $y2
      *
-     * @return $this Self reference
+     * @return static Self reference
      */
     abstract public function crop($x1, $x2, $y1, $y2);
 
@@ -71,7 +71,7 @@ abstract class Image extends Object
      * @param integer|null $targetHeight
      * @param boolean      $scaleIfSmaller
      *
-     * @return $this Self reference
+     * @return static Self reference
      */
     abstract public function scaleToFit($targetWidth, $targetHeight = null, $scaleIfSmaller = true);
 
@@ -83,7 +83,7 @@ abstract class Image extends Object
      * @param boolean      $scaleIfSmaller
      * @param string       $cropPositions
      *
-     * @return $this Self reference
+     * @return static Self reference
      */
     abstract public function scaleAndCrop($targetWidth, $targetHeight = null, $scaleIfSmaller = true, $cropPositions = 'center-center');
 
@@ -93,7 +93,7 @@ abstract class Image extends Object
      * @param integer      $targetWidth  The target width
      * @param integer|null $targetHeight The target height. Defaults to $targetWidth if omitted, creating a square.
      *
-     * @return $this Self reference
+     * @return static Self reference
      */
     abstract public function resize($targetWidth, $targetHeight = null);
 

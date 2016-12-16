@@ -412,6 +412,7 @@ class Fields extends Component
         $fieldTypes = [];
 
         foreach ($this->getAllFieldTypes() as $fieldType) {
+            /** @var Field|string $fieldType */
             if ($fieldType::hasContentColumn()) {
                 $fieldTypes[] = $fieldType;
             }

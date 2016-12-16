@@ -472,6 +472,7 @@ class UsersController extends Controller
                 switch ($userId) {
                     case 'current': {
                         if ($user) {
+                            /** @var User $user */
                             // Make sure it's actually the current user
                             if (!$user->getIsCurrent()) {
                                 throw new BadRequestHttpException('Not the current user');
@@ -824,6 +825,7 @@ class UsersController extends Controller
                 throw new NotFoundHttpException('User not found');
             }
 
+            /** @var User $user */
             if (!$user->getIsCurrent()) {
                 // Make sure they have permission to edit other users
                 $this->requirePermission('editUsers');
@@ -1204,6 +1206,7 @@ class UsersController extends Controller
         }
 
         // Only allow activation emails to be send to pending users.
+        /** @var User $user */
         if ($user->getStatus() !== User::STATUS_PENDING) {
             throw new BadRequestHttpException('Activation emails can only be sent to pending users');
         }

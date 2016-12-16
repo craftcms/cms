@@ -1045,14 +1045,14 @@ EOD;
         }
 
         // Is the parentId set to a different entry ID than its previous parent?
-        $oldParentId = Entry::find()
-            ->ancestorOf($this)
-            ->ancestorDist(1)
-            ->status(null)
-            ->siteId($this->siteId)
-            ->enabledForSite(false)
-            ->select('elements.id')
-            ->scalar();
+        $oldParentQuery = Entry::find();
+        $oldParentQuery->ancestorOf($this);
+        $oldParentQuery->ancestorDist(1);
+        $oldParentQuery->status(null);
+        $oldParentQuery->siteId($this->siteId);
+        $oldParentQuery->enabledForSite(false);
+        $oldParentQuery->select('elements.id');
+        $oldParentId = $oldParentQuery->scalar();
 
         return $this->newParentId != $oldParentId;
     }
