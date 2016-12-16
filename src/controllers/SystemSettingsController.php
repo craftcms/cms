@@ -96,7 +96,6 @@ class SystemSettingsController extends Controller
         $utc = new DateTime();
         $offsets = [];
         $timezoneIds = [];
-        $includedAbbrs = [];
 
         foreach (\DateTimeZone::listIdentifiers() as $timezoneId) {
             $timezone = new \DateTimeZone($timezoneId);
@@ -120,7 +119,6 @@ class SystemSettingsController extends Controller
 
             $offsets[] = $offset;
             $timezoneIds[] = $timezoneId;
-            $includedAbbrs[] = $abbr;
             $timezoneOptions[] = [
                 'value' => $timezoneId,
                 'label' => 'UTC'.$format.($abbr != 'UTC' ? " ({$abbr})" : '').($timezoneId != 'UTC' ? ' – '.$timezoneId : '')

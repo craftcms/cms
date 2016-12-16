@@ -1125,7 +1125,7 @@ class Elements extends Component
 
                         // Things are about to get silly...
                         foreach ($things as $thing) {
-                            $refTagsByThing = ${'refTagsBy'.ucfirst($thing)};
+                            $refTagsByThing = $thing === 'id' ? $refTagsById : $refTagsByRef;
 
                             if ($refTagsByThing) {
                                 /** @var Element|string $elementType */

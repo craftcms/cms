@@ -651,8 +651,6 @@ EOD;
 
             $dbBackupPath = false;
 
-            $config = Craft::$app->getConfig();
-
             // See if we're allowed to backup the database.
             if ($this->_shouldBackupDb()) {
                 // DO it.
