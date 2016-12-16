@@ -9,6 +9,7 @@ namespace craft\web\twig\variables;
 
 use Craft;
 use craft\base\FieldInterface;
+use craft\helpers\ArrayHelper;
 use craft\models\FieldGroup;
 use craft\models\FieldLayout;
 
@@ -38,7 +39,9 @@ class Fields
     {
         Craft::$app->getDeprecator()->log('craft.fields.getAllGroups()', 'craft.fields.getAllGroups() has been deprecated. Use craft.app.fields.getAllGroups() instead.');
 
-        return Craft::$app->getFields()->getAllGroups($indexBy);
+        $groups = Craft::$app->getFields()->getAllGroups();
+
+        return $indexBy ? ArrayHelper::index($groups, $indexBy) : $indexBy;
     }
 
     /**

@@ -19,7 +19,7 @@
 ] %}
 
 
-{% set groups = craft.app.fields.getAllGroups('id') %}
+{% set groups = craft.app.fields.getAllGroups()|index('id') %}
 
 {% if groupId is defined %}
 	{% if groups[groupId] is not defined %}

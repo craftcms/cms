@@ -196,18 +196,12 @@ class Fields extends Component
     /**
      * Returns all field groups.
      *
-     * @param string|null $indexBy The attribute to index the field groups by
-     *
      * @return FieldGroup[] The field groups
      */
-    public function getAllGroups($indexBy = null)
+    public function getAllGroups()
     {
         if ($this->_fetchedAllGroups) {
-            if ($indexBy === 'id') {
-                return $this->_groupsById;
-            }
-
-            return $indexBy ? ArrayHelper::index($this->_groupsById, $indexBy) : array_values($this->_groupsById);
+            return array_values($this->_groupsById);
         }
 
         $this->_groupsById = [];
@@ -220,11 +214,7 @@ class Fields extends Component
 
         $this->_fetchedAllGroups = true;
 
-        if ($indexBy === 'id') {
-            return $this->_groupsById;
-        }
-
-        return $indexBy ? ArrayHelper::index($this->_groupsById, $indexBy) : array_values($this->_groupsById);
+        return array_values($this->_groupsById);
     }
 
     /**
