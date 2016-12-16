@@ -14,11 +14,8 @@ use craft\helpers\ArrayHelper;
 use craft\helpers\Component as ComponentHelper;
 use craft\records\Volume as AssetVolumeRecord;
 use craft\records\VolumeFolder;
-use craft\volumes\AwsS3;
-use craft\volumes\GoogleCloud;
 use craft\volumes\Local;
 use craft\volumes\MissingVolume;
-use craft\volumes\Rackspace;
 use craft\volumes\Temp;
 use yii\base\Component;
 
