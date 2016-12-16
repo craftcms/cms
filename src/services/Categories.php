@@ -12,7 +12,6 @@ use craft\db\Query;
 use craft\elements\Category;
 use craft\errors\CategoryGroupNotFoundException;
 use craft\events\CategoryGroupEvent;
-use craft\helpers\ArrayHelper;
 use craft\models\CategoryGroup;
 use craft\models\CategoryGroup_SiteSettings;
 use craft\models\FieldLayout;
@@ -240,20 +239,19 @@ class Categories extends Component
     /**
      * Returns a group's site settings.
      *
-     * @param integer     $groupId
-     * @param string|null $indexBy
+     * @param integer $groupId
      *
      * @return CategoryGroup_SiteSettings[]
      */
-    public function getGroupSiteSettings($groupId, $indexBy = null)
+    public function getGroupSiteSettings($groupId)
     {
-        $siteSettings = CategoryGroup_SiteSettingsRecord::find()
+        $results = CategoryGroup_SiteSettingsRecord::find()
             ->where(['groupId' => $groupId])
-            ->indexBy($indexBy)
             ->all();
+        $siteSettings = [];
 
-        foreach ($siteSettings as $key => $value) {
-            $siteSettings[$key] = new CategoryGroup_SiteSettings($value->toArray([
+        foreach ($results as $result) {
+            $siteSettings[] = new CategoryGroup_SiteSettings($result->toArray([
                 'id',
                 'groupId',
                 'siteId',
