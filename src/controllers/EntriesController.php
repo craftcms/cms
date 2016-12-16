@@ -8,6 +8,7 @@
 namespace craft\controllers;
 
 use Craft;
+use craft\base\Field;
 use craft\dates\DateTime;
 use craft\elements\Entry;
 use craft\elements\User;
@@ -779,6 +780,7 @@ class EntriesController extends BaseEntriesController
 
             if ($variables['entry']->hasErrors()) {
                 foreach ($tab->getFields() as $field) {
+                    /** @var Field $field */
                     if ($variables['entry']->getErrors($field->handle)) {
                         $hasErrors = true;
                         break;

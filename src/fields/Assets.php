@@ -12,6 +12,7 @@ namespace craft\fields;
 use Craft;
 use craft\base\Element;
 use craft\base\ElementInterface;
+use craft\base\Volume;
 use craft\elements\Asset;
 use craft\elements\db\AssetQuery;
 use craft\elements\db\ElementQuery;
@@ -133,19 +134,20 @@ class Assets extends BaseRelationField
         /** @var Asset $class */
         $class = static::elementType();
 
-        foreach ($class::sources('settings') as $key => $source) {
-            if (!isset($source['heading'])) {
+        foreach ($class::sources('settings') as $key => $volume) {
+            if (!isset($volume['heading'])) {
                 $folderOptions[] = [
-                    'label' => $source['label'],
+                    'label' => $volume['label'],
                     'value' => $key
                 ];
             }
         }
 
-        foreach (Craft::$app->getVolumes()->getAllVolumes() as $source) {
+        foreach (Craft::$app->getVolumes()->getAllVolumes() as $volume) {
+            /** @var Volume $volume */
             $sourceOptions[] = [
-                'label' => $source->name,
-                'value' => $source->id
+                'label' => $volume->name,
+                'value' => $volume->id
             ];
         }
 

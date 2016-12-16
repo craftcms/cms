@@ -10,6 +10,7 @@ namespace craft\services;
 
 use Craft;
 use craft\base\Plugin;
+use craft\base\Volume;
 use craft\db\Query;
 use craft\events\RegisterUserPermissionsEvent;
 use craft\models\Section;
@@ -172,11 +173,11 @@ class UserPermissions extends Component
         // Volumes
         // ---------------------------------------------------------------------
 
+        /** @var Volume[] $volumes */
         $volumes = Craft::$app->getVolumes()->getAllVolumes();
 
         foreach ($volumes as $volume) {
-            $label = Craft::t('app', 'Volume - {volume}',
-                ['volume' => Craft::t('site', $volume->name)]);
+            $label = Craft::t('app', 'Volume - {volume}', ['volume' => Craft::t('site', $volume->name)]);
             $permissions[$label] = $this->_getVolumePermissions($volume->id);
         }
 

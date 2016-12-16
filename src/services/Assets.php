@@ -338,7 +338,7 @@ class Assets extends Component
      */
     public function replaceAssetFile(Asset $asset, $pathOnServer, $filename)
     {
-        if (AssetsHelper::getFileKindByExtension($pathOnServer) == 'image') {
+        if (AssetsHelper::getFileKindByExtension($pathOnServer) === 'image') {
             Image::cleanImageByPath($pathOnServer);
         }
 
@@ -352,8 +352,7 @@ class Assets extends Component
 
         // Is the event preventing this from happening?
         if (!$event->isValid) {
-            throw new ActionCancelledException(Craft::t('app',
-                'Something prevented the Asset file from being replaced.'));
+            throw new ActionCancelledException(Craft::t('app', 'Something prevented the Asset file from being replaced.'));
         }
 
         $volume = $asset->getVolume();

@@ -9,6 +9,7 @@ namespace craft\elements;
 
 use Craft;
 use craft\base\Element;
+use craft\base\Volume;
 use craft\base\VolumeInterface;
 use craft\elements\actions\CopyReferenceTag;
 use craft\elements\actions\DeleteAssets;
@@ -126,6 +127,7 @@ class Asset extends Element
             $folderId = $matches[1];
 
             $folder = Craft::$app->getAssets()->getFolderById($folderId);
+            /** @var Volume $volume */
             $volume = $folder->getVolume();
 
             // View for public URLs
@@ -498,6 +500,7 @@ class Asset extends Element
      */
     public function getFieldLayout()
     {
+        /** @var Volume $volume */
         $volume = $this->getVolume();
 
         if ($volume->id) {
@@ -780,6 +783,7 @@ class Asset extends Element
      */
     public function getHasUrls()
     {
+        /** @var Volume $volume */
         $volume = $this->getVolume();
 
         return $volume && $volume->hasUrls;

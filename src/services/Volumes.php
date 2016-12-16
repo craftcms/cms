@@ -181,6 +181,7 @@ class Volumes extends Component
         $this->_viewableVolumes = [];
 
         foreach ($this->getAllVolumes() as $volume) {
+            /** @var Volume $volume */
             if (Craft::$app->user->checkPermission('viewVolume:'.$volume->id)) {
                 $this->_viewableVolumes[] = $volume;
             }
@@ -560,6 +561,7 @@ class Volumes extends Component
      */
     public function deleteVolume($volume)
     {
+        /** @var Volume $volume */
         // Fire a 'beforeDeleteVolume' event
         $this->trigger(self::EVENT_BEFORE_DELETE_VOLUME, new VolumeEvent([
             'volume' => $volume

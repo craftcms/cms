@@ -488,6 +488,7 @@ class UsersController extends Controller
 
                         if ($user) {
                             // Make sure it's the client account
+                            /** @var User $user */
                             if (!$user->client) {
                                 throw new BadRequestHttpException('Not the client account');
                             }
@@ -507,6 +508,7 @@ class UsersController extends Controller
                     default: {
                         if ($user) {
                             // Make sure they have the right ID
+                            /** @var User $user */
                             if ($user->id != $userId) {
                                 throw new BadRequestHttpException('Not the right user ID');
                             }

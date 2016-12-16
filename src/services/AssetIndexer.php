@@ -52,6 +52,7 @@ class AssetIndexer extends Component
     public function prepareIndexList($sessionId, $volumeId, $directory = '')
     {
         try {
+            /** @var Volume $volume */
             $volume = Craft::$app->getVolumes()->getVolumeById($volumeId);
 
             $fileList = $volume->getFileList($directory, true);
@@ -63,7 +64,7 @@ class AssetIndexer extends Component
                     $segments = explode('/', $path);
 
                     foreach ($segments as $segment) {
-                        if (isset($segment[0]) && $segment[0] == '_') {
+                        if (isset($segment[0]) && $segment[0] === '_') {
                             return false;
                         }
                     }
