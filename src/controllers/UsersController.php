@@ -308,7 +308,7 @@ class UsersController extends Controller
         $user = Craft::$app->getUsers()->getUserById($userId);
 
         if (!$user) {
-            $this->_noUserExists($userId);
+            $this->_noUserExists();
         }
 
         echo Craft::$app->getUsers()->getPasswordResetUrl($user);
@@ -437,7 +437,7 @@ class UsersController extends Controller
         $user = Craft::$app->getUsers()->getUserById($userId);
 
         if (!$user) {
-            $this->_noUserExists($userId);
+            $this->_noUserExists();
         }
 
         if (Craft::$app->getUsers()->activateUser($user)) {
@@ -1203,7 +1203,7 @@ class UsersController extends Controller
             ->one();
 
         if (!$user) {
-            $this->_noUserExists($userId);
+            $this->_noUserExists();
         }
 
         // Only allow activation emails to be send to pending users.
@@ -1239,7 +1239,7 @@ class UsersController extends Controller
         $user = Craft::$app->getUsers()->getUserById($userId);
 
         if (!$user) {
-            $this->_noUserExists($userId);
+            $this->_noUserExists();
         }
 
         // Even if you have administrateUsers permissions, only and admin should be able to unlock another admin.
@@ -1273,7 +1273,7 @@ class UsersController extends Controller
         $user = Craft::$app->getUsers()->getUserById($userId);
 
         if (!$user) {
-            $this->_noUserExists($userId);
+            $this->_noUserExists();
         }
 
         // Even if you have administrateUsers permissions, only and admin should be able to suspend another admin.
@@ -1308,7 +1308,7 @@ class UsersController extends Controller
         $user = Craft::$app->getUsers()->getUserById($userId);
 
         if (!$user) {
-            $this->_noUserExists($userId);
+            $this->_noUserExists();
         }
 
         // Even if you have deleteUser permissions, only and admin should be able to delete another admin.
@@ -1327,7 +1327,7 @@ class UsersController extends Controller
             $transferContentTo = Craft::$app->getUsers()->getUserById($transferContentToId);
 
             if (!$transferContentTo) {
-                $this->_noUserExists($transferContentToId);
+                $this->_noUserExists();
             }
         } else {
             $transferContentTo = null;
@@ -1363,7 +1363,7 @@ class UsersController extends Controller
         $user = Craft::$app->getUsers()->getUserById($userId);
 
         if (!$user) {
-            $this->_noUserExists($userId);
+            $this->_noUserExists();
         }
 
         // Even if you have administrateUsers permissions, only and admin should be able to un-suspend another admin.
@@ -1599,12 +1599,10 @@ class UsersController extends Controller
     /**
      * Throws a "no user exists" exception
      *
-     * @param integer $userId
-     *
      * @return void
      * @throws NotFoundHttpException
      */
-    private function _noUserExists($userId)
+    private function _noUserExists()
     {
         throw new NotFoundHttpException('User not found');
     }
