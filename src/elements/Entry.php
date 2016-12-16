@@ -20,6 +20,7 @@ use craft\elements\db\ElementQuery;
 use craft\elements\db\ElementQueryInterface;
 use craft\elements\db\EntryQuery;
 use craft\events\SetStatusEvent;
+use craft\helpers\ArrayHelper;
 use craft\helpers\DateTimeHelper;
 use craft\helpers\Db;
 use craft\helpers\Url;
@@ -672,7 +673,7 @@ class Entry extends Element
             throw new InvalidConfigException('Entry is missing its type ID');
         }
 
-        $sectionEntryTypes = $this->getSection()->getEntryTypes('id');
+        $sectionEntryTypes = ArrayHelper::index($this->getSection()->getEntryTypes(), 'id');
 
         if (!isset($sectionEntryTypes[$this->typeId])) {
             throw new InvalidConfigException('Invalid entry type ID: '.$this->typeId);

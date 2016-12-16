@@ -762,7 +762,7 @@ class EntriesController extends BaseEntriesController
 
         if (!$typeId) {
             // Default to the section's first entry type
-            $typeId = ArrayHelper::firstKey($variables['section']->getEntryTypes('id'));
+            $typeId = $variables['section']->getEntryTypes()[0]->id;
         }
 
         $variables['entry']->typeId = $typeId;
@@ -845,7 +845,7 @@ class EntriesController extends BaseEntriesController
 
         if (!$entry->typeId) {
             // Default to the section's first entry type
-            $entry->typeId = ArrayHelper::firstKey($entry->getSection()->getEntryTypes('id'));
+            $entry->typeId = $entry->getSection()->getEntryTypes()[0]->id;
         }
 
         $fieldsLocation = Craft::$app->getRequest()->getParam('fieldsLocation', 'fields');

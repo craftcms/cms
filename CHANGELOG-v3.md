@@ -356,6 +356,7 @@ Craft CMS 3.0 Working Changelog
 - Removed the `$attribute` argument from `craft\base\ApplicationTrait::getInfo()`.
 - Removed the `$except` argument from `craft\base\Element::getFieldValues()`.
 - Removed the `$indexBy` argument from `craft\elements\User::getGroups()`.
+- Removed the `$indexBy` argument from `craft\models\Section::getEntryTypes()`.
 - Removed the `$indexBy` argument from `craft\services\AssetTransforms::getAllTransforms()`.
 - Removed the `$indexBy` argument from `craft\services\Categories::getGroupSiteSettings()`.
 - Removed the `$indexBy` argument from `craft\services\CategoryGroups::getAllGroups()`.
