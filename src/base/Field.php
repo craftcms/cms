@@ -186,7 +186,7 @@ abstract class Field extends SavableComponent implements FieldInterface
             $rules[] = [['id'], 'number', 'integerOnly' => true];
         }
 
-        if ($this->translationMethod == self::TRANSLATION_METHOD_CUSTOM) {
+        if ($this->translationMethod === self::TRANSLATION_METHOD_CUSTOM) {
             $rules[] = [['translationKeyFormat'], 'required'];
         }
 

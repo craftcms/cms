@@ -87,7 +87,7 @@ class ElementIndexesController extends BaseElementsController
         $this->_viewState = $this->_getViewState();
         $this->_elementQuery = $this->_getElementQuery();
 
-        if ($this->_context == 'index') {
+        if ($this->_context === 'index') {
             $this->_actions = $this->_getAvailableActions();
         }
     }
@@ -115,7 +115,7 @@ class ElementIndexesController extends BaseElementsController
      */
     public function actionGetElements()
     {
-        $includeActions = ($this->_context == 'index');
+        $includeActions = ($this->_context === 'index');
         $responseData = $this->_getElementResponseData(true, $includeActions);
 
         return $this->asJson($responseData);
@@ -153,7 +153,7 @@ class ElementIndexesController extends BaseElementsController
         if ($this->_actions) {
             /** @var ElementAction $availableAction */
             foreach ($this->_actions as $availableAction) {
-                if ($actionClass == get_class($availableAction)) {
+                if ($actionClass === get_class($availableAction)) {
                     $action = $availableAction;
                     break;
                 }

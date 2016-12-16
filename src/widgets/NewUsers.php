@@ -36,7 +36,7 @@ class NewUsers extends Widget
     public static function isSelectable()
     {
         // This widget is only available for Craft Pro
-        return (Craft::$app->getEdition() == Craft::Pro);
+        return (Craft::$app->getEdition() === Craft::Pro);
     }
 
     // Properties
@@ -77,7 +77,7 @@ class NewUsers extends Widget
      */
     public function getBodyHtml()
     {
-        if (Craft::$app->getEdition() != Craft::Pro) {
+        if (Craft::$app->getEdition() !== Craft::Pro) {
             return false;
         }
 

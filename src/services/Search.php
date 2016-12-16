@@ -345,9 +345,9 @@ class Search extends Component
     /**
      * Calculate score for a row/term combination.
      *
-     * @param  object    $term   The SearchQueryTerm to score.
-     * @param  array     $row    The result row to score against.
-     * @param  float|int $weight Optional weight for this term.
+     * @param  SearchQueryTerm $term   The SearchQueryTerm to score.
+     * @param  array           $row    The result row to score against.
+     * @param  float|int       $weight Optional weight for this term.
      *
      * @return float The total score for this term/row combination.
      */

@@ -265,7 +265,7 @@ class Users extends Component
      * An exception will be thrown if this function is called from Craft Personal or Pro.
      *
      * ```php
-     * if (Craft::$app->getEdition() == Craft::Client)
+     * if (Craft::$app->getEdition() === Craft::Client)
      * {
      *     $clientAccount = Craft::$app->getUsers()->getClient();
      * }

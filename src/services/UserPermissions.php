@@ -93,7 +93,7 @@ class UserPermissions extends Component
         // Users
         // ---------------------------------------------------------------------
 
-        if (Craft::$app->getEdition() == Craft::Pro) {
+        if (Craft::$app->getEdition() === Craft::Pro) {
             $permissions[Craft::t('app', 'Users')] = [
                 'editUsers' => [
                     'label' => Craft::t('app', 'Edit users'),

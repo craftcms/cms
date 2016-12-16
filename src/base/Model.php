@@ -63,7 +63,7 @@ abstract class Model extends \yii\base\Model
             if (in_array($name, $this->attributes(), true)) {
                 $copy = $this->copy();
 
-                if (count($arguments) == 1) {
+                if (count($arguments) === 1) {
                     $copy->$name = $arguments[0];
                 } else {
                     $copy->$name = $arguments;

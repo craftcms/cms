@@ -213,8 +213,8 @@ EOD;
     /**
      * Determines if a field attribute file is valid.
      *
-     * @param $path
-     * @param $storedFieldVersion
+     * @param string $path
+     * @param string $storedFieldVersion
      *
      * @return boolean
      */
@@ -227,7 +227,7 @@ EOD;
             fclose($f);
 
             if (preg_match('/\/\/ v([a-zA-Z0-9]{12})/', $line, $matches)) {
-                if ($matches[1] == $storedFieldVersion) {
+                if ($matches[1] === $storedFieldVersion) {
                     include $path;
 
                     return true;

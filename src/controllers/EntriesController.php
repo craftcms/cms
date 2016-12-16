@@ -96,7 +96,7 @@ class EntriesController extends BaseEntriesController
 
         $variables['permissionSuffix'] = ':'.$entry->sectionId;
 
-        if (Craft::$app->getEdition() == Craft::Pro && $section->type != Section::TYPE_SINGLE) {
+        if (Craft::$app->getEdition() === Craft::Pro && $section->type !== Section::TYPE_SINGLE) {
             // Author selector variables
             // ---------------------------------------------------------------------
 
@@ -120,7 +120,7 @@ class EntriesController extends BaseEntriesController
         // ---------------------------------------------------------------------
 
         if (
-            $section->type == Section::TYPE_STRUCTURE &&
+            $section->type === Section::TYPE_STRUCTURE &&
             $section->maxLevels != 1
         ) {
             $variables['elementType'] = Entry::class;
@@ -218,7 +218,7 @@ class EntriesController extends BaseEntriesController
         } else {
             $variables['docTitle'] = $variables['title'] = $entry->title;
 
-            if (get_class($entry) != Entry::class) {
+            if (get_class($entry) !== Entry::class) {
                 $variables['docTitle'] .= ' ('.$variables['revisionLabel'].')';
             }
         }
@@ -231,7 +231,7 @@ class EntriesController extends BaseEntriesController
             ]
         ];
 
-        if ($section->type == Section::TYPE_SINGLE) {
+        if ($section->type === Section::TYPE_SINGLE) {
             $variables['crumbs'][] = [
                 'label' => Craft::t('app', 'Singles'),
                 'url' => Url::url('entries/singles')
@@ -242,7 +242,7 @@ class EntriesController extends BaseEntriesController
                 'url' => Url::url('entries/'.$section->handle)
             ];
 
-            if ($section->type == Section::TYPE_STRUCTURE) {
+            if ($section->type === Section::TYPE_STRUCTURE) {
                 /** @var Entry $ancestor */
                 foreach ($entry->getAncestors() as $ancestor) {
                     $variables['crumbs'][] = [
@@ -295,7 +295,7 @@ class EntriesController extends BaseEntriesController
 
                 // If we're looking at the live version of an entry, just use
                 // the entry's main URL as its share URL
-                if ($className == Entry::class && $entry->getStatus() == Entry::STATUS_LIVE) {
+                if ($className === Entry::class && $entry->getStatus() === Entry::STATUS_LIVE) {
                     $variables['shareUrl'] = $entry->getUrl();
                 } else {
                     switch ($className) {
@@ -442,7 +442,7 @@ class EntriesController extends BaseEntriesController
         if (
             $entry->id &&
             $entry->authorId != $currentUser->id &&
-            $entry->getSection()->type != Section::TYPE_SINGLE &&
+            $entry->getSection()->type !== Section::TYPE_SINGLE &&
             $entry->enabled
         ) {
             // Make sure they have permission to make live changes to those

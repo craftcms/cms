@@ -193,7 +193,7 @@ return [
         }
 
         if ($dsn === '') {
-            if ($driver == Connection::DRIVER_MYSQL && !empty($unixSocket)) {
+            if ($driver === Connection::DRIVER_MYSQL && !empty($unixSocket)) {
                 $dsn = $driver.':unix_socket='.strtolower($unixSocket).';dbname='.$database.';';
             } else {
                 $server = $configService->get('server', Config::CATEGORY_DB);

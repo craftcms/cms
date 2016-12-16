@@ -318,7 +318,7 @@ abstract class Element extends Component implements ElementInterface
         ];
 
         // Special case for sorting by structure
-        if (isset($viewState['order']) && $viewState['order'] == 'structure') {
+        if (isset($viewState['order']) && $viewState['order'] === 'structure') {
             $source = ElementHelper::findSource(static::class, $sourceKey, $context);
 
             if (isset($source['structureId'])) {
@@ -326,7 +326,7 @@ abstract class Element extends Component implements ElementInterface
                 $variables['structure'] = Craft::$app->getStructures()->getStructureById($source['structureId']);
 
                 // Are they allowed to make changes to this structure?
-                if ($context == 'index' && $variables['structure'] && !empty($source['structureEditable'])) {
+                if ($context === 'index' && $variables['structure'] && !empty($source['structureEditable'])) {
                     $variables['structureEditable'] = true;
 
                     // Let StructuresController know that this user can make changes to the structure
@@ -335,7 +335,7 @@ abstract class Element extends Component implements ElementInterface
             } else {
                 unset($viewState['order']);
             }
-        } else if (!empty($viewState['order']) && $viewState['order'] == 'score') {
+        } else if (!empty($viewState['order']) && $viewState['order'] === 'score') {
             $elementQuery->orderBy('score');
         } else {
             $sortableAttributes = static::sortableAttributes();
@@ -457,7 +457,7 @@ abstract class Element extends Component implements ElementInterface
     public static function eagerLoadingMap($sourceElements, $handle)
     {
         // Eager-loading descendants or direct children?
-        if ($handle == 'descendants' || $handle == 'children') {
+        if ($handle === 'descendants' || $handle === 'children') {
             // Get the source element IDs
             $sourceElementIds = [];
 
@@ -468,7 +468,7 @@ abstract class Element extends Component implements ElementInterface
             // Get the structure data for these elements
             $selectColumns = ['structureId', 'elementId', 'lft', 'rgt'];
 
-            if ($handle == 'children') {
+            if ($handle === 'children') {
                 $selectColumns[] = 'level';
             }
 
@@ -492,7 +492,7 @@ abstract class Element extends Component implements ElementInterface
                     ['<', 'rgt', $elementStructureData['rgt']],
                 ];
 
-                if ($handle == 'children') {
+                if ($handle === 'children') {
                     $thisElementCondition[] = ['level' => $elementStructureData['level'] + 1];
                 }
 
@@ -661,7 +661,7 @@ abstract class Element extends Component implements ElementInterface
      */
     public function __isset($name)
     {
-        return $name == 'title' || $this->hasEagerLoadedElements($name) || parent::__isset($name) || $this->getFieldByHandle($name);
+        return $name === 'title' || $this->hasEagerLoadedElements($name) || parent::__isset($name) || $this->getFieldByHandle($name);
     }
 
     /**
@@ -680,7 +680,7 @@ abstract class Element extends Component implements ElementInterface
      */
     public function __get($name)
     {
-        if ($name == 'locale') {
+        if ($name === 'locale') {
             Craft::$app->getDeprecator()->log('Element::locale', 'The “locale” element property has been deprecated. Use “siteId” instead.');
 
             return $this->getSite()->handle;
@@ -908,7 +908,7 @@ abstract class Element extends Component implements ElementInterface
     public function getUrl()
     {
         if ($this->uri !== null) {
-            $path = ($this->uri == '__home__') ? '' : $this->uri;
+            $path = ($this->uri === '__home__') ? '' : $this->uri;
 
             return Url::getSiteUrl($path, null, null, $this->siteId);
         }
@@ -1298,7 +1298,7 @@ abstract class Element extends Component implements ElementInterface
      */
     public function offsetExists($offset)
     {
-        return $offset == 'title' || $this->hasEagerLoadedElements($offset) || parent::offsetExists($offset) || $this->getFieldByHandle($offset);
+        return $offset === 'title' || $this->hasEagerLoadedElements($offset) || parent::offsetExists($offset) || $this->getFieldByHandle($offset);
     }
 
     /**
@@ -1814,7 +1814,7 @@ abstract class Element extends Component implements ElementInterface
                 if ($url) {
                     $value = $this->uri;
 
-                    if ($value == '__home__') {
+                    if ($value === '__home__') {
                         $value = '<span data-icon="home" title="'.Craft::t('app', 'Homepage').'"></span>';
                     } else {
                         // Add some <wbr> tags in there so it doesn't all have to be on one line

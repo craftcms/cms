@@ -146,7 +146,7 @@ class User extends Element implements IdentityInterface
             ]
         ];
 
-        if (Craft::$app->getEdition() == Craft::Pro) {
+        if (Craft::$app->getEdition() === Craft::Pro) {
             // Admin source
             $sources[] = [
                 'key' => 'admins',
@@ -625,7 +625,7 @@ class User extends Element implements IdentityInterface
      */
     public function getFieldLayout()
     {
-        if (Craft::$app->getEdition() == Craft::Pro) {
+        if (Craft::$app->getEdition() === Craft::Pro) {
             return Craft::$app->getFields()->getLayoutByType(static::class);
         }
 
@@ -807,7 +807,7 @@ class User extends Element implements IdentityInterface
      */
     public function setGroups($groups)
     {
-        if (Craft::$app->getEdition() == Craft::Pro) {
+        if (Craft::$app->getEdition() === Craft::Pro) {
             $this->_groups = $groups;
         }
     }
@@ -1070,11 +1070,11 @@ class User extends Element implements IdentityInterface
             return Url::getCpUrl('myaccount');
         }
 
-        if (Craft::$app->getEdition() == Craft::Client && $this->client) {
+        if (Craft::$app->getEdition() === Craft::Client && $this->client) {
             return Url::getCpUrl('clientaccount');
         }
 
-        if (Craft::$app->getEdition() == Craft::Pro) {
+        if (Craft::$app->getEdition() === Craft::Pro) {
             return Url::getCpUrl('users/'.$this->id);
         }
 

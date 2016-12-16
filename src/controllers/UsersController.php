@@ -525,7 +525,7 @@ class UsersController extends Controller
                     }
                 }
             } else {
-                if ($edition == Craft::Pro) {
+                if ($edition === Craft::Pro) {
                     // Registering a new user
                     $user = new User();
                 } else {
@@ -696,7 +696,7 @@ class UsersController extends Controller
         ];
 
         // No need to show the Profile tab if it's a new user (can't have an avatar yet) and there's no user fields.
-        if (!$isNewAccount || ($edition == Craft::Pro && $user->getFieldLayout()->getFields())) {
+        if (!$isNewAccount || ($edition === Craft::Pro && $user->getFieldLayout()->getFields())) {
             $tabs['profile'] = [
                 'label' => Craft::t('app', 'Profile'),
                 'url' => '#profile',
@@ -706,8 +706,8 @@ class UsersController extends Controller
         // Show the permission tab for the users that can change them on Craft Client+ editions (unless
         // you're on Client and you're the admin account. No need to show since we always need an admin on Client)
         if (
-            ($edition == Craft::Pro && Craft::$app->getUser()->checkPermission('assignUserPermissions')) ||
-            ($edition == Craft::Client && $isClientAccount && Craft::$app->getUser()->getIsAdmin())
+            ($edition === Craft::Pro && Craft::$app->getUser()->checkPermission('assignUserPermissions')) ||
+            ($edition === Craft::Client && $isClientAccount && Craft::$app->getUser()->getIsAdmin())
         ) {
             $tabs['perms'] = [
                 'label' => Craft::t('app', 'Permissions'),
@@ -755,7 +755,7 @@ class UsersController extends Controller
         $userIdJs = Json::encode($user->id);
         $isCurrentJs = ($user->getIsCurrent() ? 'true' : 'false');
         $settingsJs = Json::encode([
-            'deleteModalRedirect' => Craft::$app->getSecurity()->hashData(Craft::$app->getEdition() == Craft::Pro ? 'users' : 'dashboard'),
+            'deleteModalRedirect' => Craft::$app->getSecurity()->hashData(Craft::$app->getEdition() === Craft::Pro ? 'users' : 'dashboard'),
         ]);
         Craft::$app->getView()->registerJs('new Craft.AccountSettingsForm('.$userIdJs.', '.$isCurrentJs.', '.$settingsJs.');', View::POS_END);
 
@@ -827,7 +827,7 @@ class UsersController extends Controller
                 $this->requirePermission('editUsers');
             }
         } else {
-            if ($edition == Craft::Client) {
+            if ($edition === Craft::Client) {
                 // Make sure they're logged in
                 $this->requireAdmin();
 
@@ -957,7 +957,7 @@ class UsersController extends Controller
         }
 
         // If this is Craft Pro, grab any profile content from post
-        if ($edition == Craft::Pro) {
+        if ($edition === Craft::Pro) {
             $user->setFieldValuesFromRequest('fields');
         }
 
@@ -1669,7 +1669,7 @@ class UsersController extends Controller
         // Make sure there are assignUserPermissions
         if (Craft::$app->getUser()->checkPermission('assignUserPermissions')) {
             // Only Craft Pro has user groups
-            if ($edition == Craft::Pro) {
+            if ($edition === Craft::Pro) {
                 // Save any user groups
                 $groupIds = $request->getBodyParam('groups');
 

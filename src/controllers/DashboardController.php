@@ -574,7 +574,7 @@ class DashboardController extends Controller
             return $this->_getDefaultWidgetIconSvg($widget);
         }
 
-        if (FileHelper::getMimeType($iconPath) != 'image/svg+xml') {
+        if (FileHelper::getMimeType($iconPath) !== 'image/svg+xml') {
             Craft::warning("Widget icon file is not an SVG: {$iconPath}");
 
             return $this->_getDefaultWidgetIconSvg($widget);

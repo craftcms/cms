@@ -189,7 +189,7 @@ trait ApplicationTrait
                 $siteLanguages = $this->getI18n()->getSiteLocaleIds();
 
                 // Is it set to "auto"?
-                if ($language == 'auto') {
+                if ($language === 'auto') {
                     // Place this within a try/catch in case userSession is being fussy.
                     try {
                         // If the user is logged in *and* has a primary language set, use that
@@ -300,8 +300,8 @@ trait ApplicationTrait
             $actionSegments = $request->getActionSegments();
 
             if (
-                $actionSegments == ['update', 'cleanUp'] ||
-                $actionSegments == ['update', 'rollback']
+                $actionSegments === ['update', 'cleanUp'] ||
+                $actionSegments === ['update', 'rollback']
             ) {
                 return true;
             }
@@ -391,7 +391,7 @@ trait ApplicationTrait
         /** @var \craft\web\Application|\craft\console\Application $this */
         $licensedEdition = $this->getLicensedEdition();
 
-        return ($licensedEdition !== null && $licensedEdition != $this->getEdition() && !$this->getCanTestEditions());
+        return ($licensedEdition !== null && $licensedEdition !== $this->getEdition() && !$this->getCanTestEditions());
     }
 
     /**
@@ -477,7 +477,7 @@ trait ApplicationTrait
         /** @var \craft\web\Application|\craft\console\Application $this */
         $request = $this->getRequest();
 
-        return (!$request->getIsConsoleRequest() && $this->getCache()->get('editionTestableDomain@'.$request->getHostName()) == 1);
+        return (!$request->getIsConsoleRequest() && $this->getCache()->get('editionTestableDomain@'.$request->getHostName()) === 1);
     }
 
     /**
@@ -1323,12 +1323,12 @@ trait ApplicationTrait
         // Set the appropriate edition components
         $edition = $this->getEdition();
 
-        if ($edition == Craft::Client || $edition == Craft::Pro) {
+        if ($edition === Craft::Client || $edition === Craft::Pro) {
             $basePath = $this->getBasePath();
 
             $this->setComponents(require $basePath.DIRECTORY_SEPARATOR.'config'.DIRECTORY_SEPARATOR.'components'.DIRECTORY_SEPARATOR.'client.php');
 
-            if ($edition == Craft::Pro) {
+            if ($edition === Craft::Pro) {
                 $this->setComponents(require $basePath.DIRECTORY_SEPARATOR.'config'.DIRECTORY_SEPARATOR.'components'.DIRECTORY_SEPARATOR.'pro.php');
             }
         }

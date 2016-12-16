@@ -223,7 +223,7 @@ class UrlManager extends \yii\web\UrlManager
             if (Craft::$app->getEdition() >= Craft::Client) {
                 $rules = array_merge($rules, require $baseCpRoutesPath.DIRECTORY_SEPARATOR.'client.php');
 
-                if (Craft::$app->getEdition() == Craft::Pro) {
+                if (Craft::$app->getEdition() === Craft::Pro) {
                     $rules = array_merge($rules, require $baseCpRoutesPath.DIRECTORY_SEPARATOR.'pro.php');
                 }
             }

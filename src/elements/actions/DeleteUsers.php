@@ -56,7 +56,7 @@ class DeleteUsers extends ElementAction
     {
         $type = Json::encode(static::class);
         $undeletableIds = Json::encode($this->_getUndeletableUserIds());
-        $redirect = Json::encode(Craft::$app->getSecurity()->hashData(Craft::$app->getEdition() == Craft::Pro ? 'users' : 'dashboard'));
+        $redirect = Json::encode(Craft::$app->getSecurity()->hashData(Craft::$app->getEdition() === Craft::Pro ? 'users' : 'dashboard'));
 
         $js = <<<EOD
 (function()

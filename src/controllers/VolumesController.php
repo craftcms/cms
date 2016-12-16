@@ -94,7 +94,7 @@ class VolumesController extends Controller
             }
         }
 
-        if (Craft::$app->getEdition() == Craft::Pro) {
+        if (Craft::$app->getEdition() === Craft::Pro) {
             /** @var Volume[] $allVolumeTypes */
             $allVolumeTypes = $volumes->getAllVolumeTypes();
 
@@ -181,7 +181,7 @@ class VolumesController extends Controller
         $request = Craft::$app->getRequest();
         $volumes = Craft::$app->getVolumes();
 
-        if (Craft::$app->getEdition() == Craft::Pro) {
+        if (Craft::$app->getEdition() === Craft::Pro) {
             $type = $request->getBodyParam('type');
         } else {
             $type = Local::class;

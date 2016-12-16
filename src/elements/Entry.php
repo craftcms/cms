@@ -381,7 +381,7 @@ class Entry extends Element
         ];
 
         // Hide Author from Craft Personal/Client
-        if (Craft::$app->getEdition() != Craft::Pro) {
+        if (Craft::$app->getEdition() !== Craft::Pro) {
             unset($attributes['author']);
         }
 

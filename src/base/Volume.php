@@ -278,7 +278,7 @@ abstract class Volume extends SavableComponent implements VolumeInterface
 
         // Rename every file and build a list of directories
         foreach ($fileList as $object) {
-            if ($object['type'] != 'dir') {
+            if ($object['type'] !== 'dir') {
                 $objectPath = preg_replace($pattern, $newPath, $object['path']);
                 $this->renameFile($object['path'], $objectPath);
             } else {

@@ -120,7 +120,6 @@ class FieldLayoutTab extends Model
         if ($layout = $this->getLayout()) {
             foreach ($layout->getFields() as $field) {
                 /** @var Field $field */
-                /** @noinspection TypeUnsafeComparisonInspection */
                 if ($field->tabId == $this->id) {
                     $this->_fields[] = $field;
                 }

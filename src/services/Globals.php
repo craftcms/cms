@@ -186,7 +186,6 @@ class Globals extends Component
             $siteId = Craft::$app->getSites()->currentSite->id;
         }
 
-        /** @noinspection TypeUnsafeComparisonInspection */
         if ($siteId == Craft::$app->getSites()->currentSite->id) {
             if ($this->_allGlobalSets === null) {
                 $this->getAllSets();
