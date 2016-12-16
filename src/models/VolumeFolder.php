@@ -52,7 +52,7 @@ class VolumeFolder extends Model
     /**
      * @var VolumeFolder[]
      */
-    private $_children = null;
+    private $_children;
 
     // Public Methods
     // =========================================================================

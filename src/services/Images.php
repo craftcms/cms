@@ -51,7 +51,7 @@ class Images extends Component
      *
      * @var string
      */
-    private $_imagickVersion = null;
+    private $_imagickVersion;
 
     // Public Methods
     // =========================================================================
