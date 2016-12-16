@@ -577,11 +577,6 @@ abstract class Element extends Component implements ElementInterface
     public $validateCustomFields;
 
     /**
-     * @var array
-     */
-    private static $_sourcesByContext;
-
-    /**
      * @var
      */
     private $_fieldsByHandle;
