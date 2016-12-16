@@ -8,6 +8,7 @@
 namespace craft\web\twig\variables;
 
 use Craft;
+use craft\helpers\ArrayHelper;
 use craft\models\CategoryGroup;
 
 /**
@@ -57,7 +58,9 @@ class CategoryGroups
     {
         Craft::$app->getDeprecator()->log('craft.categoryGroups.getAllGroups()', 'craft.categoryGroups.getAllGroups() has been deprecated. Use craft.app.categories.getAllGroups() instead.');
 
-        return Craft::$app->getCategories()->getAllGroups($indexBy);
+        $groups = Craft::$app->getCategories()->getAllGroups();
+
+        return $indexBy ? ArrayHelper::index($groups, $indexBy) : $groups;
     }
 
     /**

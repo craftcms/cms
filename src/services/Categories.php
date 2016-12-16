@@ -130,18 +130,12 @@ class Categories extends Component
     /**
      * Returns all category groups.
      *
-     * @param string|null $indexBy
-     *
      * @return CategoryGroup[]
      */
-    public function getAllGroups($indexBy = null)
+    public function getAllGroups()
     {
         if ($this->_fetchedAllCategoryGroups) {
-            if ($indexBy === 'id') {
-                return $this->_categoryGroupsById;
-            }
-
-            return $indexBy ? ArrayHelper::index($this->_categoryGroupsById, $indexBy) : array_values($this->_categoryGroupsById);
+            return array_values($this->_categoryGroupsById);
         }
 
         $this->_categoryGroupsById = [];
@@ -158,11 +152,7 @@ class Categories extends Component
 
         $this->_fetchedAllCategoryGroups = true;
 
-        if ($indexBy === 'id') {
-            return $this->_categoryGroupsById;
-        }
-
-        return $indexBy ? ArrayHelper::index($this->_categoryGroupsById, $indexBy) : array_values($this->_categoryGroupsById);
+        return array_values($this->_categoryGroupsById);
     }
 
     /**
