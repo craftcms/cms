@@ -332,6 +332,7 @@ Craft CMS 3.0 Working Changelog
 - Removed `craft\services\Assets::deleteCategoryById()`.
 - Removed `craft\services\Assets::findAsset()`.
 - Removed `craft\services\Assets::findAssets()`.
+- Removed `craft\services\Assets::getFilesByVolumeId()`.
 - Removed `craft\services\Categories::saveCategory()`.
 - Removed `craft\services\Content::validateContent()`.
 - Removed `craft\services\Entries::deleteEntry()`.

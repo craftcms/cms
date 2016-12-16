@@ -86,22 +86,6 @@ class Assets extends Component
     // =========================================================================
 
     /**
-     * Returns all top-level files in a volume.
-     *
-     * @param integer     $volumeId
-     * @param string|null $indexBy
-     *
-     * @return array
-     */
-    public function getFilesByVolumeId($volumeId, $indexBy = null)
-    {
-        return Asset::find()
-            ->volumeId($volumeId)
-            ->indexBy($indexBy)
-            ->all();
-    }
-
-    /**
      * Returns a file by its ID.
      *
      * @param integer      $assetId
