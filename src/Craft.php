@@ -7,6 +7,7 @@
 
 use craft\db\Query;
 use craft\helpers\FileHelper;
+use yii\base\ExitException;
 use yii\helpers\VarDumper;
 use yii\web\Request;
 
@@ -68,6 +69,7 @@ class Craft extends Yii
      * @param boolean $highlight Whether the result should be syntax-highlighted. Defaults to true.
      *
      * @return void
+     * @throws ExitException if the application is in testing mode
      */
     public static function dd($var, $depth = 10, $highlight = true)
     {
@@ -78,14 +80,14 @@ class Craft extends Yii
     /**
      * Generates and returns a cookie config.
      *
-     * @param array|null $config  Any config options that should be included in the config.
-     * @param Request    $request The request object
+     * @param array        $config  Any config options that should be included in the config.
+     * @param Request|null $request The request object
      *
      * @return array The cookie config array.
      */
-    public static function cookieConfig($config = [], $request = null)
+    public static function cookieConfig(array $config = [], $request = null)
     {
-        if (!isset(static::$_baseCookieConfig)) {
+        if (self::$_baseCookieConfig === null) {
             $configService = static::$app->getConfig();
 
             $defaultCookieDomain = $configService->get('defaultCookieDomain');
@@ -99,14 +101,14 @@ class Craft extends Yii
                 $useSecureCookies = $request->getIsSecureConnection();
             }
 
-            static::$_baseCookieConfig = [
+            self::$_baseCookieConfig = [
                 'domain' => $defaultCookieDomain,
                 'secure' => $useSecureCookies,
                 'httpOnly' => true
             ];
         }
 
-        return array_merge(static::$_baseCookieConfig, $config);
+        return array_merge(self::$_baseCookieConfig, $config);
     }
 
     /**
@@ -155,23 +157,23 @@ class Craft extends Yii
 
             foreach ($fieldHandles as $handle) {
                 $properties[] = <<<EOD
-	/**
-	 * @var mixed Value for field with the handle “{$handle}”.
-	 */
-	public \${$handle};
+    /**
+     * @var mixed Value for field with the handle “{$handle}”.
+     */
+    public \${$handle};
 EOD;
 
                 $methods[] = <<<EOD
-	/**
-	 * Sets the [[{$handle}]] property.
-	 * @param mixed \$value The property value
-	 * @return \\yii\\base\\Component The behavior’s owner component
-	 */
-	public function {$handle}(\$value)
-	{
-		\$this->{$handle} = \$value;
-		return \$this->owner;
-	}
+    /**
+     * Sets the [[{$handle}]] property.
+     * @param mixed \$value The property value
+     * @return \\yii\\base\\Component The behavior’s owner component
+     */
+    public function {$handle}(\$value)
+    {
+        \$this->{$handle} = \$value;
+        return \$this->owner;
+    }
 EOD;
 
                 $propertyDocs[] = " * @property mixed \${$handle} Value for the field with the handle “{$handle}”.";
@@ -211,8 +213,8 @@ EOD;
     /**
      * Determines if a field attribute file is valid.
      *
-     * @param $path
-     * @param $storedFieldVersion
+     * @param string $path
+     * @param string $storedFieldVersion
      *
      * @return boolean
      */
@@ -225,7 +227,7 @@ EOD;
             fclose($f);
 
             if (preg_match('/\/\/ v([a-zA-Z0-9]{12})/', $line, $matches)) {
-                if ($matches[1] == $storedFieldVersion) {
+                if ($matches[1] === $storedFieldVersion) {
                     include $path;
 
                     return true;

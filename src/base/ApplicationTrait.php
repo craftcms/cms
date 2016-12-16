@@ -190,7 +190,7 @@ trait ApplicationTrait
                 $siteLanguages = $this->getI18n()->getSiteLocaleIds();
 
                 // Is it set to "auto"?
-                if ($language == 'auto') {
+                if ($language === 'auto') {
                     // Place this within a try/catch in case userSession is being fussy.
                     try {
                         // If the user is logged in *and* has a primary language set, use that
@@ -208,7 +208,7 @@ trait ApplicationTrait
                         // Make sure it's one of the site languages
                         $defaultCpLanguage = StringHelper::toLowerCase($defaultCpLanguage);
 
-                        if (in_array($defaultCpLanguage, $siteLanguages)) {
+                        if (in_array($defaultCpLanguage, $siteLanguages, true)) {
                             return $defaultCpLanguage;
                         }
                     }
@@ -219,14 +219,14 @@ trait ApplicationTrait
 
                         if ($browserLanguages) {
                             foreach ($browserLanguages as $browserLanguage) {
-                                if (in_array($browserLanguage, $siteLanguages)) {
+                                if (in_array($browserLanguage, $siteLanguages, true)) {
                                     return $browserLanguage;
                                 }
                             }
                         }
                     }
                 } // Is it set to a valid site language?
-                else if (in_array($language, $siteLanguages)) {
+                else if (in_array($language, $siteLanguages, true)) {
                     return $language;
                 }
             }
@@ -248,23 +248,23 @@ trait ApplicationTrait
     public function getIsInstalled()
     {
         /** @var \craft\web\Application|\craft\console\Application $this */
-        if (!isset($this->_isInstalled)) {
-            try {
-                // Initialize the DB connection
-                $this->getDb();
-
-                // If the db config isn't valid, then we'll assume it's not installed.
-                if (!$this->getIsDbConnectionValid()) {
-                    return false;
-                }
-            } catch (DbConnectException $e) {
-                return false;
-            }
-
-            $this->_isInstalled = (bool)($this->getRequest()->getIsConsoleRequest() || $this->getDb()->tableExists('{{%info}}', false));
+        if ($this->_isInstalled !== null) {
+            return $this->_isInstalled;
         }
 
-        return $this->_isInstalled;
+        try {
+            // Initialize the DB connection
+            $this->getDb();
+
+            // If the db config isn't valid, then we'll assume it's not installed.
+            if (!$this->getIsDbConnectionValid()) {
+                return false;
+            }
+        } catch (DbConnectException $e) {
+            return false;
+        }
+
+        return $this->_isInstalled = (bool)($this->getRequest()->getIsConsoleRequest() || $this->getDb()->tableExists('{{%info}}', false));
     }
 
     /**
@@ -301,8 +301,8 @@ trait ApplicationTrait
             $actionSegments = $request->getActionSegments();
 
             if (
-                $actionSegments == ['update', 'cleanUp'] ||
-                $actionSegments == ['update', 'rollback']
+                $actionSegments === ['update', 'cleanUp'] ||
+                $actionSegments === ['update', 'rollback']
             ) {
                 return true;
             }
@@ -319,11 +319,11 @@ trait ApplicationTrait
     public function getIsMultiSite()
     {
         /** @var \craft\web\Application|\craft\console\Application $this */
-        if (!isset($this->_isMultiSite)) {
-            $this->_isMultiSite = (count($this->getSites()->getAllSites()) > 1);
+        if ($this->_isMultiSite !== null) {
+            return $this->_isMultiSite;
         }
 
-        return $this->_isMultiSite;
+        return $this->_isMultiSite = (count($this->getSites()->getAllSites()) > 1);
     }
 
     /**
@@ -392,7 +392,7 @@ trait ApplicationTrait
         /** @var \craft\web\Application|\craft\console\Application $this */
         $licensedEdition = $this->getLicensedEdition();
 
-        return ($licensedEdition !== null && $licensedEdition != $this->getEdition() && !$this->getCanTestEditions());
+        return ($licensedEdition !== null && $licensedEdition !== $this->getEdition() && !$this->getCanTestEditions());
     }
 
     /**
@@ -478,7 +478,7 @@ trait ApplicationTrait
         /** @var \craft\web\Application|\craft\console\Application $this */
         $request = $this->getRequest();
 
-        return (!$request->getIsConsoleRequest() && $this->getCache()->get('editionTestableDomain@'.$request->getHostName()) == 1);
+        return (!$request->getIsConsoleRequest() && $this->getCache()->get('editionTestableDomain@'.$request->getHostName()) === 1);
     }
 
     /**
@@ -549,7 +549,7 @@ trait ApplicationTrait
     public function getInfo()
     {
         /** @var \craft\web\Application|\craft\console\Application $this */
-        if (isset($this->_info)) {
+        if ($this->_info !== null) {
             return $this->_info;
         }
 
@@ -587,9 +587,7 @@ trait ApplicationTrait
         }
         unset($row['siteName'], $row['siteUrl'], $row['build'], $row['releaseDate'], $row['track']);
 
-        $this->_info = new Info($row);
-
-        return $this->_info;
+        return $this->_info = new Info($row);
     }
 
     /**
@@ -704,16 +702,16 @@ trait ApplicationTrait
     public function getIsDbConnectionValid()
     {
         /** @var \craft\web\Application|\craft\console\Application $this */
-        if (!isset($this->_isDbConnectionValid)) {
-            try {
-                $this->getDb()->open();
-                $this->_isDbConnectionValid = true;
-            } catch (DbConnectException $e) {
-                $this->_isDbConnectionValid = false;
-            }
+        if ($this->_isDbConnectionValid !== null) {
+            return $this->_isDbConnectionValid;
         }
 
-        return $this->_isDbConnectionValid;
+        try {
+            $this->getDb()->open();
+            return $this->_isDbConnectionValid = true;
+        } catch (DbConnectException $e) {
+            return $this->_isDbConnectionValid = false;
+        }
     }
 
     /**
@@ -1337,12 +1335,12 @@ trait ApplicationTrait
         // Set the appropriate edition components
         $edition = $this->getEdition();
 
-        if ($edition == Craft::Client || $edition == Craft::Pro) {
+        if ($edition === Craft::Client || $edition === Craft::Pro) {
             $basePath = $this->getBasePath();
 
             $this->setComponents(require $basePath.DIRECTORY_SEPARATOR.'config'.DIRECTORY_SEPARATOR.'components'.DIRECTORY_SEPARATOR.'client.php');
 
-            if ($edition == Craft::Pro) {
+            if ($edition === Craft::Pro) {
                 $this->setComponents(require $basePath.DIRECTORY_SEPARATOR.'config'.DIRECTORY_SEPARATOR.'components'.DIRECTORY_SEPARATOR.'pro.php');
             }
         }

@@ -87,7 +87,7 @@ class Category extends Element
     /**
      * @inheritdoc
      */
-    protected static function defineSources($context = null)
+    protected static function defineSources($context)
     {
         $sources = [];
 
@@ -114,7 +114,7 @@ class Category extends Element
     /**
      * @inheritdoc
      */
-    protected static function defineActions($source = null)
+    protected static function defineActions($source)
     {
         // Get the group we need to check permissions on
         if (preg_match('/^group:(\d+)$/', $source, $matches)) {
@@ -201,11 +201,11 @@ class Category extends Element
     /**
      * @inheritdoc
      */
-    public static function defaultTableAttributes($source = null)
+    public static function defaultTableAttributes($source)
     {
-        $attributes = ['link'];
-
-        return $attributes;
+        return [
+            'link',
+        ];
     }
 
     // Properties
@@ -512,11 +512,11 @@ class Category extends Element
      */
     private function _hasNewParent()
     {
-        if (!isset($this->_hasNewParent)) {
-            $this->_hasNewParent = $this->_checkForNewParent();
+        if ($this->_hasNewParent !== null) {
+            return $this->_hasNewParent;
         }
 
-        return $this->_hasNewParent;
+        return $this->_hasNewParent = $this->_checkForNewParent();
     }
 
     /**
@@ -556,11 +556,6 @@ class Category extends Element
             ->select('elements.id')
             ->scalar();
 
-        if ($this->newParentId != $oldParentId) {
-            return true;
-        }
-
-        // Must be set to the same one then
-        return false;
+        return $this->newParentId != $oldParentId;
     }
 }

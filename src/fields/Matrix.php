@@ -81,15 +81,15 @@ class Matrix extends Field implements EagerLoadingFieldInterface
      */
     public function getBlockTypes()
     {
-        if (!isset($this->_blockTypes)) {
-            if (!empty($this->id)) {
-                $this->_blockTypes = Craft::$app->getMatrix()->getBlockTypesByFieldId($this->id);
-            } else {
-                $this->_blockTypes = [];
-            }
+        if ($this->_blockTypes !== null) {
+            return $this->_blockTypes;
         }
 
-        return $this->_blockTypes;
+        if (!$this->id) {
+            return [];
+        }
+
+        return $this->_blockTypes = Craft::$app->getMatrix()->getBlockTypesByFieldId($this->id);
     }
 
     /**
@@ -125,6 +125,7 @@ class Matrix extends Field implements EagerLoadingFieldInterface
 
                 if (!empty($config['fields'])) {
                     foreach ($config['fields'] as $fieldId => $fieldConfig) {
+                        /** @noinspection SlowArrayOperationsInLoopInspection */
                         $fieldConfig = array_merge($defaultFieldConfig, $fieldConfig);
 
                         $fields[] = Craft::$app->getFields()->createField([
@@ -310,7 +311,7 @@ class Matrix extends Field implements EagerLoadingFieldInterface
             '"'.Craft::$app->getView()->namespaceInputId($id).'", '.
             Json::encode($blockTypeInfo, JSON_UNESCAPED_UNICODE).', '.
             '"'.Craft::$app->getView()->namespaceInputName($this->handle).'", '.
-            ($this->maxBlocks ? $this->maxBlocks : 'null').
+            ($this->maxBlocks ?: 'null').
             ');');
 
         Craft::$app->getView()->registerTranslations('app', [
@@ -354,7 +355,7 @@ class Matrix extends Field implements EagerLoadingFieldInterface
             [
                 ArrayValidator::class,
                 'min' => $this->required ? 1 : null,
-                'max' => $this->maxBlocks ? $this->maxBlocks : null,
+                'max' => $this->maxBlocks ?: null,
                 'tooFew' => Craft::t('app', '{attribute} should contain at least {min, number} {min, plural, one{block} other{blocks}}.'),
                 'tooMany' => Craft::t('app', '{attribute} should contain at most {max, number} {max, plural, one{block} other{blocks}}.'),
             ],
@@ -648,7 +649,7 @@ class Matrix extends Field implements EagerLoadingFieldInterface
     /**
      * Creates an array of blocks based on the given serialized data.
      *
-     * @param mixed                 $value   The raw field value
+     * @param array                 $value   The raw field value
      * @param ElementInterface|null $element The element the field is associated with, if there is one
      *
      * @return MatrixBlock[]
@@ -671,11 +672,12 @@ class Matrix extends Field implements EagerLoadingFieldInterface
 
             $ids = [];
 
-            foreach (array_keys($value) as $blockId) {
-                if (is_numeric($blockId) && $blockId != 0) {
+            foreach ($value as $blockId => &$block) {
+                if (is_numeric($blockId) && $blockId !== 0) {
                     $ids[] = $blockId;
                 }
             }
+            unset($block);
 
             if ($ids) {
                 $oldBlocksById = MatrixBlock::find()
@@ -705,7 +707,7 @@ class Matrix extends Field implements EagerLoadingFieldInterface
             $blockType = $blockTypes[$blockData['type']];
 
             // Is this new? (Or has it been deleted?)
-            if (strncmp($blockId, 'new', 3) === 0 || !isset($oldBlocksById[$blockId])) {
+            if (strpos($blockId, 'new') === 0 || !isset($oldBlocksById[$blockId])) {
                 $block = new MatrixBlock();
                 $block->fieldId = $this->id;
                 $block->typeId = $blockType->id;

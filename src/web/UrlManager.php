@@ -146,16 +146,17 @@ class UrlManager extends \yii\web\UrlManager
      */
     public function getMatchedElement()
     {
-        if (!isset($this->_matchedElement)) {
-            $request = Craft::$app->getRequest();
-
-            if ($request->getIsSiteRequest()) {
-                $path = $request->getPathInfo();
-                $this->_getMatchedElementRoute($path);
-            } else {
-                $this->_matchedElement = false;
-            }
+        if ($this->_matchedElement !== null) {
+            return $this->_matchedElement;
         }
+
+        $request = Craft::$app->getRequest();
+
+        if (!$request->getIsSiteRequest()) {
+            return $this->_matchedElement = false;
+        }
+
+        $this->_getMatchedElementRoute($request->getPathInfo());
 
         return $this->_matchedElement;
     }
@@ -181,7 +182,7 @@ class UrlManager extends \yii\web\UrlManager
                 ) {
                     $rule['verb'] = explode(',', $matches[1]);
 
-                    if (!isset($rule['mode']) && !in_array('GET', $rule['verb'])) {
+                    if (!isset($rule['mode']) && !in_array('GET', $rule['verb'], true)) {
                         $rule['mode'] = UrlRule::PARSING_ONLY;
                     }
 
@@ -222,7 +223,7 @@ class UrlManager extends \yii\web\UrlManager
             if (Craft::$app->getEdition() >= Craft::Client) {
                 $rules = array_merge($rules, require $baseCpRoutesPath.DIRECTORY_SEPARATOR.'client.php');
 
-                if (Craft::$app->getEdition() == Craft::Pro) {
+                if (Craft::$app->getEdition() === Craft::Pro) {
                     $rules = array_merge($rules, require $baseCpRoutesPath.DIRECTORY_SEPARATOR.'pro.php');
                 }
             }
@@ -290,20 +291,22 @@ class UrlManager extends \yii\web\UrlManager
      */
     private function _getMatchedElementRoute($path)
     {
-        if (!isset($this->_matchedElementRoute)) {
-            $this->_matchedElement = false;
-            $this->_matchedElementRoute = false;
+        if ($this->_matchedElementRoute !== null) {
+            return $this->_matchedElementRoute;
+        }
 
-            if (Craft::$app->getIsInstalled() && Craft::$app->getRequest()->getIsSiteRequest()) {
-                $element = Craft::$app->getElements()->getElementByUri($path, Craft::$app->getSites()->currentSite->id, true);
+        $this->_matchedElement = false;
+        $this->_matchedElementRoute = false;
 
-                if ($element) {
-                    $route = $element->getRoute();
+        if (Craft::$app->getIsInstalled() && Craft::$app->getRequest()->getIsSiteRequest()) {
+            $element = Craft::$app->getElements()->getElementByUri($path, Craft::$app->getSites()->currentSite->id, true);
 
-                    if ($route) {
-                        $this->_matchedElement = $element;
-                        $this->_matchedElementRoute = $route;
-                    }
+            if ($element) {
+                $route = $element->getRoute();
+
+                if ($route) {
+                    $this->_matchedElement = $element;
+                    $this->_matchedElementRoute = $route;
                 }
             }
         }
@@ -348,10 +351,9 @@ class UrlManager extends \yii\web\UrlManager
         } else {
             $trigger = Craft::$app->getConfig()->get('privateTemplateTrigger');
         }
-        $length = strlen($trigger);
 
         foreach (Craft::$app->getRequest()->getSegments() as $requestPathSeg) {
-            if (strncmp($requestPathSeg, $trigger, $length) === 0) {
+            if (strpos($requestPathSeg, $trigger) === 0) {
                 return false;
             }
         }

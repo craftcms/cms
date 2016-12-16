@@ -144,27 +144,25 @@ class AssetTransforms extends Component
      */
     public function getTransformByHandle($handle)
     {
-        // If we've already fetched all transforms we can save ourselves a trip to the DB for transform handles that
-        // don't exist
-        if (!$this->_fetchedAllTransforms && (!isset($this->_transformsByHandle) || !array_key_exists($handle, $this->_transformsByHandle))) {
-            $result = $this->_createTransformQuery()
-                ->where(['handle' => $handle])
-                ->one();
-
-            if ($result) {
-                $transform = new AssetTransform($result);
-            } else {
-                $transform = null;
-            }
-
-            $this->_transformsByHandle[$handle] = $transform;
-        }
-
-        if (isset($this->_transformsByHandle[$handle])) {
+        if ($this->_transformsByHandle !== null && array_key_exists($handle, $this->_transformsByHandle)) {
             return $this->_transformsByHandle[$handle];
         }
 
-        return null;
+        // If we've already fetched all transforms we can save ourselves a trip to the DB for transform handles that
+        // don't exist
+        if ($this->_fetchedAllTransforms) {
+            return null;
+        }
+
+        $result = $this->_createTransformQuery()
+            ->where(['handle' => $handle])
+            ->one();
+
+        if (!$result) {
+            return $this->_transformsByHandle[$handle] = null;
+        }
+
+        return $this->_transformsByHandle[$handle] = $transform = new AssetTransform($result);
     }
 
     /**
@@ -320,7 +318,7 @@ class AssetTransforms extends Component
 
             $transformCondition = ['and', ['location' => $location]];
 
-            if (is_null($transform->format)) {
+            if ($transform->format === null) {
                 $transformCondition[] = ['format' => null];
             } else {
                 $transformCondition[] = ['format' => $transform->format];
@@ -402,7 +400,7 @@ class AssetTransforms extends Component
         $transformLocation = $this->_getTransformFolderName($transform);
 
         // Was it eager-loaded?
-        $fingerprint = $asset->id.':'.$transformLocation.(is_null($transform->format) ? '' : ':'.$transform->format);
+        $fingerprint = $asset->id.':'.$transformLocation.($transform->format === null ? '' : ':'.$transform->format);
 
         if (isset($this->_eagerLoadedTransformIndexes[$fingerprint])) {
             $entry = $this->_eagerLoadedTransformIndexes[$fingerprint];
@@ -418,7 +416,7 @@ class AssetTransforms extends Component
                 'location' => $transformLocation
             ]);
 
-        if (is_null($transform->format)) {
+        if ($transform->format === null) {
             // A generated auto-transform will have it's format set to null, but the filename will be populated.
             $query->andWhere(['format' => null]);
         } else {
@@ -469,11 +467,7 @@ class AssetTransforms extends Component
                 || ($transform->getIsNamedTransform()
                     && $result['dateIndexed'] >= Db::prepareDateForDb($transform->dimensionChangeTime)));
 
-        if ($indexedAfterFileModified && $indexedAfterTransformParameterChange) {
-            return true;
-        }
-
-        return false;
+        return $indexedAfterFileModified && $indexedAfterTransformParameterChange;
     }
 
     /**
@@ -545,7 +539,7 @@ class AssetTransforms extends Component
     private function _generateTransform(AssetTransformIndex $index)
     {
         // For _widthxheight_mode
-        if (preg_match('/_(?P<width>[0-9]+|AUTO)x(?P<height>[0-9]+|AUTO)_(?P<mode>[a-z]+)_(?P<position>[a-z\-]+)(_(?P<quality>[0-9]+))?/i',
+        if (preg_match('/_(?P<width>\d+|AUTO)x(?P<height>\d+|AUTO)_(?P<mode>[a-z]+)_(?P<position>[a-z\-]+)(_(?P<quality>\d+))?/i',
             $index->location, $matches)) {
             $transform = new AssetTransform();
             $transform->width = ($matches['width'] != 'AUTO' ? $matches['width'] : null);
@@ -640,42 +634,38 @@ class AssetTransforms extends Component
             return null;
         }
 
-        if (is_string($transform)) {
-            $transformModel = $this->getTransformByHandle($transform);
-
-            if ($transformModel) {
-                return $transformModel;
-            }
-
-            throw new AssetTransformException(Craft::t('app',
-                'The transform “{handle}” cannot be found!',
-                ['handle' => $transform]));
-        } else {
-            if ($transform instanceof AssetTransform) {
-                return $transform;
-            }
-
-            if (is_object($transform)) {
-                return new AssetTransform(ArrayHelper::toArray($transform, [
-                    'id',
-                    'name',
-                    'handle',
-                    'width',
-                    'height',
-                    'format',
-                    'dimensionChangeTime',
-                    'mode',
-                    'position',
-                    'quality',
-                ]));
-            }
-
-            if (is_array($transform)) {
-                return new AssetTransform($transform);
-            }
-
-            return null;
+        if ($transform instanceof AssetTransform) {
+            return $transform;
         }
+
+        if (is_array($transform)) {
+            return new AssetTransform($transform);
+        }
+
+        if (is_object($transform)) {
+            return new AssetTransform(ArrayHelper::toArray($transform, [
+                'id',
+                'name',
+                'handle',
+                'width',
+                'height',
+                'format',
+                'dimensionChangeTime',
+                'mode',
+                'position',
+                'quality',
+            ]));
+        }
+
+        if (is_string($transform)) {
+            if (($transformModel = $this->getTransformByHandle($transform)) === null) {
+                throw new AssetTransformException(Craft::t('app', 'Invalid transform handle: {handle}', ['handle' => $transform]));
+            }
+
+            return $transformModel;
+        }
+
+        return null;
     }
 
     /**
@@ -998,8 +988,7 @@ class AssetTransforms extends Component
      */
     public function detectAutoTransformFormat(Asset $asset)
     {
-        if (in_array(mb_strtolower($asset->getExtension()),
-            Image::webSafeFormats())) {
+        if (in_array(mb_strtolower($asset->getExtension()), Image::webSafeFormats(), true)) {
             return $asset->getExtension();
         }
 
@@ -1288,7 +1277,7 @@ class AssetTransforms extends Component
      */
     private function _getUnnamedTransformFolderName(AssetTransform $transform)
     {
-        return '_'.($transform->width ? $transform->width : 'AUTO').'x'.($transform->height ? $transform->height : 'AUTO').
+        return '_'.($transform->width ?: 'AUTO').'x'.($transform->height ?: 'AUTO').
             '_'.$transform->mode.
             '_'.$transform->position.
             ($transform->quality ? '_'.$transform->quality : '');
@@ -1310,18 +1299,14 @@ class AssetTransforms extends Component
         }
 
         if (empty($index->transform)) {
-            $transform = $this->normalizeTransform(mb_substr($index->location,
-                1));
-
-            if (empty($transform)) {
-                throw new AssetTransformException(Craft::t('app',
-                    'Unable to recognize the transform for this transform index!'));
+            if (($transform = $this->normalizeTransform(mb_substr($index->location, 1))) === null) {
+                throw new AssetTransformException(Craft::t('app', 'Unable to recognize the transform for this transform index!'));
             }
         } else {
             $transform = $index->transform;
         }
 
-        if (!isset($index->detectedFormat)) {
+        if ($index->detectedFormat === null) {
             $index->detectedFormat = !empty($index->format) ? $index->format : $this->detectAutoTransformFormat($asset);
         }
 
@@ -1334,7 +1319,7 @@ class AssetTransforms extends Component
         }
 
         $imageSource = $asset->getTransformSource();
-        $quality = $transform->quality ? $transform->quality : Craft::$app->getConfig()->get('defaultImageQuality');
+        $quality = $transform->quality ?: Craft::$app->getConfig()->get('defaultImageQuality');
 
         $images = Craft::$app->getImages();
         if (StringHelper::toLowerCase($asset->getExtension()) == 'svg' && $index->detectedFormat != 'svg') {
@@ -1384,7 +1369,7 @@ class AssetTransforms extends Component
         $stream = fopen($tempPath, 'rb');
 
         try {
-            $volume->createFileByStream($transformPath, $stream);
+            $volume->createFileByStream($transformPath, $stream, []);
         } catch (VolumeObjectExistsException $e) {
             // We're fine with that.
         }
@@ -1408,7 +1393,7 @@ class AssetTransforms extends Component
     private function _getThumbExtension(Asset $asset)
     {
         // For non-web-safe formats we go with jpg.
-        if (!in_array(mb_strtolower(pathinfo($asset->filename, PATHINFO_EXTENSION)), Image::webSafeFormats())) {
+        if (!in_array(mb_strtolower(pathinfo($asset->filename, PATHINFO_EXTENSION)), Image::webSafeFormats(), true)) {
             return 'jpg';
         }
 

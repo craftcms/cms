@@ -157,6 +157,7 @@ abstract class BaseOptionsField extends Field implements PreviewableFieldInterfa
                     $label = $this->getOptionLabel($val);
                     $val = new OptionData($label, $val, true);
                 }
+                unset($val);
             } else {
                 $value = [];
             }
@@ -171,7 +172,7 @@ abstract class BaseOptionsField extends Field implements PreviewableFieldInterfa
         $options = [];
 
         foreach ($this->options as $option) {
-            $selected = in_array($option['value'], $selectedValues);
+            $selected = in_array($option['value'], $selectedValues, true);
             $options[] = new OptionData($option['label'], $option['value'], $selected);
         }
 

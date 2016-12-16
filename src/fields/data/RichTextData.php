@@ -72,17 +72,19 @@ class RichTextData extends \Twig_Markup
     /**
      * Returns an array of the individual page contents.
      *
-     * @return array
+     * @return \Twig_Markup[]
      */
     public function getPages()
     {
-        if (!isset($this->_pages)) {
-            $this->_pages = [];
-            $pages = explode('<!--pagebreak-->', $this->content);
+        if ($this->_pages !== null) {
+            return $this->_pages;
+        }
 
-            foreach ($pages as $page) {
-                $this->_pages[] = new \Twig_Markup($page, $this->charset);
-            }
+        $this->_pages = [];
+        $pages = explode('<!--pagebreak-->', $this->content);
+
+        foreach ($pages as $page) {
+            $this->_pages[] = new \Twig_Markup($page, $this->charset);
         }
 
         return $this->_pages;

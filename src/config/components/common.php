@@ -7,6 +7,7 @@ use craft\log\FileTarget;
 use craft\services\Config;
 use Http\Adapter\Guzzle6\Client;
 use yii\base\InvalidConfigException;
+use yii\db\Exception as DbException;
 use yii\log\Logger;
 
 return [
@@ -187,13 +188,13 @@ return [
         if (!in_array($driver, [
             Connection::DRIVER_MYSQL,
             Connection::DRIVER_PGSQL
-        ])
+        ], true)
         ) {
-            throw new Exception('Unsupported connection type: '.$driver);
+            throw new DbException('Unsupported connection type: '.$driver);
         }
 
         if ($dsn === '') {
-            if ($driver == Connection::DRIVER_MYSQL && !empty($unixSocket)) {
+            if ($driver === Connection::DRIVER_MYSQL && !empty($unixSocket)) {
                 $dsn = $driver.':unix_socket='.strtolower($unixSocket).';dbname='.$database.';';
             } else {
                 $server = $configService->get('server', Config::CATEGORY_DB);

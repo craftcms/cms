@@ -126,7 +126,7 @@ class Updates extends Component
      */
     public function getIsUpdateInfoCached()
     {
-        return (isset($this->_updateModel) || Craft::$app->getCache()->get('updateinfo') !== false);
+        return ($this->_updateModel !== null || Craft::$app->getCache()->get('updateinfo') !== false);
     }
 
     /**
@@ -141,8 +141,9 @@ class Updates extends Component
 
             // Could be false!
             if ($updateModel) {
-                if (!empty($updateModel->app)) {
+                if ($updateModel->app) {
                     if ($updateModel->app->versionUpdateStatus == VersionUpdateStatus::UpdateAvailable) {
+                        /** @noinspection UnSafeIsSetOverArrayInspection - FP */
                         if (isset($updateModel->app->releases) && count($updateModel->app->releases) > 0) {
                             $count++;
                         }
@@ -152,7 +153,7 @@ class Updates extends Component
                 if (!empty($updateModel->plugins)) {
                     foreach ($updateModel->plugins as $plugin) {
                         if ($plugin->status == PluginUpdateStatus::UpdateAvailable) {
-                            if (isset($plugin->releases) && count($plugin->releases) > 0) {
+                            if ($plugin->releases !== null && count($plugin->releases) > 0) {
                                 $count++;
                             }
                         }
@@ -201,37 +202,39 @@ class Updates extends Component
      */
     public function getUpdates($forceRefresh = false)
     {
-        if (!isset($this->_updateModel) || $forceRefresh) {
-            $updateModel = false;
+        if ($this->_updateModel !== null && !$forceRefresh) {
+            return $this->_updateModel;
+    }
 
-            if (!$forceRefresh) {
-                // get the update info from the cache if it's there
-                $updateModel = Craft::$app->getCache()->get('updateinfo');
-            }
+        $updateModel = false;
 
-            // fetch it if it wasn't cached, or if we're forcing a refresh
-            if ($forceRefresh || $updateModel === false) {
-                $etModel = $this->check();
-
-                if ($etModel == null) {
-                    $updateModel = new Update();
-                    $updateModel->responseErrors = [
-                        Craft::t('app', 'Craft is unable to determine if an update is available at this time.')
-                    ];
-                } else {
-                    /** @var Update $updateModel */
-                    $updateModel = $etModel->data;
-
-                    // Search for any missing plugin updates based on their feeds
-                    $this->checkPluginReleaseFeeds($updateModel);
-
-                    // cache it and set it to expire according to config
-                    Craft::$app->getCache()->set('updateinfo', $updateModel);
-                }
-            }
-
-            $this->_updateModel = $updateModel;
+        if (!$forceRefresh) {
+            // get the update info from the cache if it's there
+            $updateModel = Craft::$app->getCache()->get('updateinfo');
         }
+
+        // fetch it if it wasn't cached, or if we're forcing a refresh
+        if ($forceRefresh || $updateModel === false) {
+            $etModel = $this->check();
+
+            if ($etModel == null) {
+                $updateModel = new Update();
+                $updateModel->responseErrors = [
+                    Craft::t('app', 'Craft is unable to determine if an update is available at this time.')
+                ];
+            } else {
+                /** @var Update $updateModel */
+                $updateModel = $etModel->data;
+
+                // Search for any missing plugin updates based on their feeds
+                $this->checkPluginReleaseFeeds($updateModel);
+
+                // cache it and set it to expire according to config
+                Craft::$app->getCache()->set('updateinfo', $updateModel);
+            }
+        }
+
+        $this->_updateModel = $updateModel;
 
         return $this->_updateModel;
     }
@@ -254,9 +257,7 @@ class Updates extends Component
                 ['handle' => $plugin->getHandle()])
             ->execute();
 
-        $success = (bool)$affectedRows;
-
-        return $success;
+        return (bool)$affectedRows;
     }
 
     /**
@@ -285,9 +286,7 @@ class Updates extends Component
 
         $updateModel->plugins = $pluginUpdateModels;
 
-        $etModel = Craft::$app->getEt()->checkForUpdates($updateModel);
-
-        return $etModel;
+        return Craft::$app->getEt()->checkForUpdates($updateModel);
     }
 
     /**
@@ -317,7 +316,7 @@ class Updates extends Component
             }
 
             // Make sure it's HTTPS
-            if (strncmp($plugin->releaseFeedUrl, 'https://', 8) !== 0) {
+            if (strpos($plugin->releaseFeedUrl, 'https://') !== 0) {
                 Craft::warning('The “'.$plugin->name.'” plugin has a release feed URL, but it doesn’t begin with https://, so it’s getting skipped ('.$plugin->releaseFeedUrl.').');
                 continue;
             }
@@ -380,7 +379,7 @@ class Updates extends Component
                     // downloadUrl could be missing.
                     if (!empty($release['downloadUrl'])) {
                         // Invalid URL?
-                        if (strncmp($release['downloadUrl'], 'https://', 8) !== 0) {
+                        if (strpos($release['downloadUrl'], 'https://') !== 0) {
                             $errors[] = 'Download URL doesn’t begin with https:// ('.$release['downloadUrl'].')';
                         }
                     }
@@ -451,6 +450,7 @@ class Updates extends Component
 
                     $critical = !empty($release['critical']);
 
+                    /** @noinspection UnSafeIsSetOverArrayInspection - FP */
                     if (!isset($date)) {
                         $date = new \DateTime();
                     }

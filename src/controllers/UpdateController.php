@@ -88,12 +88,12 @@ class UpdateController extends Controller
         ]);
 
         $isComposerInstallJs = Json::encode(App::isComposerInstall());
-        $js = <<<JS
+        $js = <<<EOD
 //noinspection JSUnresolvedVariable
 new Craft.UpdatesPage({
     isComposerInstall: {$isComposerInstallJs}
 });
-JS;
+EOD;
         $view->registerJs($js);
 
         return $this->renderTemplate('_special/updates/index');
@@ -127,10 +127,10 @@ JS;
             'handle' => Craft::$app->getSecurity()->hashData($handle),
             'manualUpdate' => (Craft::$app->getRequest()->getSegment(1) == 'manualupdate') ? 1 : 0
         ]);
-        $js = <<<JS
+        $js = <<<EOD
 //noinspection JSUnresolvedVariable
 new Craft.Updater({$dataJs});
-JS;
+EOD;
 
         $this->getView()->registerJs($js);
 
@@ -439,10 +439,12 @@ JS;
             if ($handle !== 'craft') {
                 /** @var Plugin $plugin */
                 $plugin = Craft::$app->getPlugins()->getPlugin($handle);
+            } else {
+                $plugin = null;
             }
 
             // If this a plugin, make sure it actually has new migrations before backing up the database.
-            if ($handle === 'craft' || (!empty($plugin) && $plugin->getMigrator()->getNewMigrations())) {
+            if ($handle === 'craft' || ($plugin !== null && $plugin->getMigrator()->getNewMigrations())) {
                 $return = Craft::$app->getUpdates()->backupDatabase();
 
                 if (!$return['success']) {
@@ -719,11 +721,7 @@ JS;
      */
     private function _isManualUpdate($data)
     {
-        if (isset($data['manualUpdate']) && $data['manualUpdate'] == 1) {
-            return true;
-        }
-
-        return false;
+        return isset($data['manualUpdate']) && $data['manualUpdate'] == 1;
     }
 
     /**

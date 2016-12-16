@@ -58,10 +58,8 @@ class Task extends ActiveRecord
      */
     public static function find()
     {
-        /** @var TaskQuery $query */
-        $query = Craft::createObject(TaskQuery::class, [get_called_class()]);
-
-        return $query;
+        /** @noinspection PhpIncompatibleReturnTypeInspection */
+        return Craft::createObject(TaskQuery::class, [get_called_class()]);
     }
 
     /**

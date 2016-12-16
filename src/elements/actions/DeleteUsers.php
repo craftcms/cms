@@ -56,42 +56,42 @@ class DeleteUsers extends ElementAction
     {
         $type = Json::encode(static::class);
         $undeletableIds = Json::encode($this->_getUndeletableUserIds());
-        $redirect = Json::encode(Craft::$app->getSecurity()->hashData(Craft::$app->getEdition() == Craft::Pro ? 'users' : 'dashboard'));
+        $redirect = Json::encode(Craft::$app->getSecurity()->hashData(Craft::$app->getEdition() === Craft::Pro ? 'users' : 'dashboard'));
 
-        $js = <<<EOT
+        $js = <<<EOD
 (function()
 {
-	var trigger = new Craft.ElementActionTrigger({
-		type: {$type},
-		batch: true,
-		validateSelection: function(\$selectedItems)
-		{
-			for (var i = 0; i < \$selectedItems.length; i++)
-			{
-				if ($.inArray(\$selectedItems.eq(i).find('.element').data('id').toString(), $undeletableIds) != -1)
-				{
-					return false;
-				}
-			}
+    var trigger = new Craft.ElementActionTrigger({
+        type: {$type},
+        batch: true,
+        validateSelection: function(\$selectedItems)
+        {
+            for (var i = 0; i < \$selectedItems.length; i++)
+            {
+                if ($.inArray(\$selectedItems.eq(i).find('.element').data('id').toString(), $undeletableIds) != -1)
+                {
+                    return false;
+                }
+            }
 
-			return true;
-		},
-		activate: function(\$selectedItems)
-		{
-			var modal = new Craft.DeleteUserModal(Craft.elementIndex.getSelectedElementIds(), {
-				onSubmit: function()
-				{
-					Craft.elementIndex.submitAction({$type}, Garnish.getPostData(modal.\$container));
-					modal.hide();
+            return true;
+        },
+        activate: function(\$selectedItems)
+        {
+            var modal = new Craft.DeleteUserModal(Craft.elementIndex.getSelectedElementIds(), {
+                onSubmit: function()
+                {
+                    Craft.elementIndex.submitAction({$type}, Garnish.getPostData(modal.\$container));
+                    modal.hide();
 
-					return false;
-				},
-				redirect: {$redirect}
-			});
-		}
-	});
+                    return false;
+                },
+                redirect: {$redirect}
+            });
+        }
+    });
 })();
-EOT;
+EOD;
 
         Craft::$app->getView()->registerJs($js);
     }
@@ -122,7 +122,7 @@ EOT;
 
         // Delete the users
         foreach ($users as $user) {
-            if (!in_array($user->id, $undeletableIds)) {
+            if (!in_array($user->id, $undeletableIds, false)) {
                 $user->inheritorOnDelete = $transferContentTo;
                 Craft::$app->getElements()->deleteElement($user);
             }

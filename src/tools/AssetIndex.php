@@ -9,6 +9,7 @@ namespace craft\tools;
 
 use Craft;
 use craft\base\Tool;
+use craft\base\Volume;
 use craft\db\Query;
 use craft\elements\Asset;
 
@@ -44,13 +45,14 @@ class AssetIndex extends Tool
      */
     public static function optionsHtml()
     {
-        $sources = Craft::$app->getVolumes()->getAllVolumes();
+        /** @var Volume[] $volumes */
+        $volumes = Craft::$app->getVolumes()->getAllVolumes();
         $sourceOptions = [];
 
-        foreach ($sources as $source) {
+        foreach ($volumes as $volume) {
             $sourceOptions[] = [
-                'label' => $source->name,
-                'value' => $source->id
+                'label' => $volume->name,
+                'value' => $volume->id
             ];
         }
 
@@ -67,7 +69,7 @@ class AssetIndex extends Tool
     /**
      * @inheritdoc
      */
-    public function performAction($params = [])
+    public function performAction(array $params)
     {
         // Initial request
         if (!empty($params['start'])) {

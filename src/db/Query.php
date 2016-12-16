@@ -30,10 +30,8 @@ class Query extends \yii\db\Query
      */
     public function isJoined($table)
     {
-        $tableLength = strlen($table);
-
         foreach ($this->join as $join) {
-            if ($join[1] === $table || strncmp($join[1], $table, $tableLength) === 0) {
+            if ($join[1] === $table || strpos($join[1], $table) === 0) {
                 return true;
             }
         }

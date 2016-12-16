@@ -45,13 +45,13 @@ class App
      */
     public static function isComposerInstall()
     {
-        if (!isset(static::$_isComposerInstall)) {
-            // If this was installed via a craftcms.com zip, there will be an index.php file
-            // at the root of the vendor directory.
-            static::$_isComposerInstall = !is_file(Craft::$app->getVendorPath().DIRECTORY_SEPARATOR.'index.php');
+        if (self::$_isComposerInstall !== null) {
+            return self::$_isComposerInstall;
         }
 
-        return static::$_isComposerInstall;
+        // If this was installed via a craftcms.com zip, there will be an index.php file
+        // at the root of the vendor directory.
+        return self::$_isComposerInstall = !is_file(Craft::$app->getVendorPath().DIRECTORY_SEPARATOR.'index.php');
     }
 
     /**
@@ -61,15 +61,15 @@ class App
      */
     public static function isPhpDevServer()
     {
-        if (!isset(static::$_isPhpDevServer)) {
-            if (isset($_SERVER['SERVER_SOFTWARE'])) {
-                static::$_isPhpDevServer = (strncmp($_SERVER['SERVER_SOFTWARE'], 'PHP', 3) == 0);
-            } else {
-                static::$_isPhpDevServer = false;
-            }
+        if (self::$_isPhpDevServer !== null) {
+            return self::$_isPhpDevServer;
         }
 
-        return static::$_isPhpDevServer;
+        if (isset($_SERVER['SERVER_SOFTWARE'])) {
+            return self::$_isPhpDevServer = (strpos($_SERVER['SERVER_SOFTWARE'], 'PHP') === 0);
+        }
+
+        return self::$_isPhpDevServer = false;
     }
 
     /**
@@ -110,7 +110,7 @@ class App
      */
     public static function isValidEdition($edition)
     {
-        return (is_numeric($edition) && in_array($edition, static::editions()));
+        return (is_numeric($edition) && in_array($edition, static::editions(), true));
     }
 
     /**
@@ -140,7 +140,7 @@ class App
         $value = ini_get($var);
 
         // See if we can recognize that.
-        if (!preg_match('/[0-9]+(K|M|G|T)/i', $value, $matches)) {
+        if (!preg_match('/\d+(K|M|G|T)/i', $value, $matches)) {
             return (int)$value;
         }
 
@@ -172,7 +172,7 @@ class App
     public static function normalizeVersionNumber($version)
     {
         // Periods before/after non-numeric sequences
-        $version = preg_replace('/[^0-9]+/', '.$0.', $version);
+        $version = preg_replace('/\D+/', '.$0.', $version);
 
         // Convert sequences of ./-/+'s into single periods
         $version = preg_replace('/[\._\-\+]+/', '.', $version);
@@ -237,16 +237,12 @@ class App
      */
     public static function checkForValidIconv()
     {
-        if (!isset(static::$_iconv)) {
-            // Check if iconv is installed. Note we can't just use HTMLPurifier_Encoder::iconvAvailable() because they
-            // don't consider iconv "installed" if it's there but "unusable".
-            if (function_exists('iconv') && \HTMLPurifier_Encoder::testIconvTruncateBug() === \HTMLPurifier_Encoder::ICONV_OK) {
-                static::$_iconv = true;
-            } else {
-                static::$_iconv = false;
-            }
+        if (self::$_iconv !== null) {
+            return self::$_iconv;
         }
 
-        return static::$_iconv;
+        // Check if iconv is installed. Note we can't just use HTMLPurifier_Encoder::iconvAvailable() because they
+        // don't consider iconv "installed" if it's there but "unusable".
+        return self::$_iconv = (function_exists('iconv') && \HTMLPurifier_Encoder::testIconvTruncateBug() === \HTMLPurifier_Encoder::ICONV_OK);
     }
 }

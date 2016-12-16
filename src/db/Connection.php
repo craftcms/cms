@@ -27,7 +27,9 @@ use yii\db\TableSchema;
  * @inheritdoc
  *
  * @property QueryBuilder $queryBuilder The query builder for the current DB connection.
+ * @property mysql\Schema|pgsql\Schema $schema The schema information for the database opened by this connection.
  * @method QueryBuilder getQueryBuilder() Returns the query builder for the current DB connection.
+ * @method mysql\Schema|pgsql\Schema getSchema() Returns the schema information for the database opened by this connection.
  * @method Command createCommand($sql = null, $params = []) Creates a command for execution.
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
@@ -130,7 +132,6 @@ class Connection extends \yii\db\Connection
         $backupCommand = Craft::$app->getConfig()->get('backupCommand');
 
         if ($backupCommand === null) {
-            /** @var mysql\Schema|pgsql\Schema $schema */
             $schema = $command = $this->getSchema();
             $backupCommand = $schema->getDefaultBackupCommand();
         }
@@ -177,7 +178,6 @@ class Connection extends \yii\db\Connection
         $restoreCommand = Craft::$app->getConfig()->get('restoreCommand');
 
         if ($restoreCommand === null) {
-            /** @var mysql\Schema|pgsql\Schema $schema */
             $schema = $command = $this->getSchema();
             $restoreCommand = $schema->getDefaultRestoreCommand();
         }
@@ -236,7 +236,7 @@ class Connection extends \yii\db\Connection
 
         $table = $this->getSchema()->getRawTableName($table);
 
-        return in_array($table, $this->getSchema()->getTableNames());
+        return in_array($table, $this->getSchema()->getTableNames(), true);
     }
 
     /**
@@ -376,10 +376,8 @@ class Connection extends \yii\db\Connection
         $table = $this->getSchema()->getRawTableName($table);
 
         if ($this->tablePrefix) {
-            $prefixLength = strlen($this->tablePrefix);
-
-            if (strncmp($table, $this->tablePrefix, $prefixLength) === 0) {
-                $table = substr($table, $prefixLength);
+            if (strpos($table, $this->tablePrefix) === 0) {
+                $table = substr($table, strlen($this->tablePrefix));
             }
         }
 

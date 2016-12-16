@@ -333,7 +333,7 @@ class ElementQuery extends Query implements ElementQueryInterface, Arrayable, Co
         if ($name === 'order') {
             Craft::$app->getDeprecator()->log('ElementQuery::order()', 'The “order” element parameter has been deprecated. Use “orderBy” instead.');
 
-            return isset($this->orderBy);
+            return $this->orderBy !== null;
         }
 
         return parent::__isset($name);
@@ -449,6 +449,7 @@ class ElementQuery extends Query implements ElementQueryInterface, Arrayable, Co
             return $exists;
         }
 
+        /** @noinspection ImplicitMagicMethodCallInspection */
         return $this->__isset($name);
     }
 
@@ -465,6 +466,7 @@ class ElementQuery extends Query implements ElementQueryInterface, Arrayable, Co
             return $this->nth($name);
         }
 
+        /** @noinspection ImplicitMagicMethodCallInspection */
         return $this->__get($name);
     }
 
@@ -482,6 +484,7 @@ class ElementQuery extends Query implements ElementQueryInterface, Arrayable, Co
         if (is_numeric($name)) {
             throw new NotSupportedException('ElementQuery does not support setting an element using array syntax.');
         } else {
+            /** @noinspection ImplicitMagicMethodCallInspection */
             $this->__set($name, $value);
         }
     }
@@ -498,6 +501,7 @@ class ElementQuery extends Query implements ElementQueryInterface, Arrayable, Co
         if (is_numeric($name)) {
             throw new NotSupportedException('ElementQuery does not support unsetting an element using array syntax.');
         } else {
+            /** @noinspection ImplicitMagicMethodCallInspection */
             return $this->__unset($name);
         }
     }
@@ -1004,9 +1008,7 @@ class ElementQuery extends Query implements ElementQueryInterface, Arrayable, Co
             }
         }
 
-        $elements = $this->_createElements($rows);
-
-        return $elements;
+        return $this->_createElements($rows);
     }
 
     /**
@@ -1755,7 +1757,7 @@ class ElementQuery extends Query implements ElementQueryInterface, Arrayable, Co
 
             foreach ($orderColumnMap as $orderValue => $columnName) {
                 // Are we ordering by this column name?
-                $pos = array_search($orderValue, $orderByColumns);
+                $pos = array_search($orderValue, $orderByColumns, true);
 
                 if ($pos !== false) {
                     // Swap it with the mapped column name
@@ -1901,6 +1903,7 @@ class ElementQuery extends Query implements ElementQueryInterface, Arrayable, Co
         }
 
         // Set the custom field values
+        /** @noinspection UnSafeIsSetOverArrayInspection - FP */
         if (isset($fieldValues)) {
             $element->setFieldValues($fieldValues);
         }

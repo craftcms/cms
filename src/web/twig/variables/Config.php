@@ -22,6 +22,7 @@ class Config
     // Public Methods
     // =========================================================================
 
+    /** @noinspection MagicMethodsValidityInspection */
     /**
      * Returns whether a config item exists.
      *
@@ -34,6 +35,7 @@ class Config
         return Craft::$app->getConfig()->exists($name, ConfigService::CATEGORY_GENERAL);
     }
 
+    /** @noinspection MagicMethodsValidityInspection */
     /**
      * Returns a config item.
      *

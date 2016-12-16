@@ -104,7 +104,7 @@ class Session extends \yii\web\Session
     {
         $resources = $this->getJsResourceFlashes(false);
 
-        if (!in_array($resource, $resources)) {
+        if (!in_array($resource, $resources, true)) {
             $resources[] = $resource;
             $this->setFlash('jsResources', $resources);
         }
@@ -165,7 +165,7 @@ class Session extends \yii\web\Session
     {
         $access = $this->get($this->authAccessParam, []);
 
-        if (!in_array($action, $access)) {
+        if (!in_array($action, $access, true)) {
             $access[] = $action;
             $this->set($this->authAccessParam, $access);
         }
@@ -181,7 +181,7 @@ class Session extends \yii\web\Session
     public function deauthorize($action)
     {
         $access = $this->get($this->authAccessParam, []);
-        $index = array_search($action, $access);
+        $index = array_search($action, $access, true);
 
         if ($index !== false) {
             array_splice($access, $index, 1);
@@ -200,6 +200,6 @@ class Session extends \yii\web\Session
     {
         $access = $this->get($this->authAccessParam, []);
 
-        return in_array($action, $access);
+        return in_array($action, $access, true);
     }
 }

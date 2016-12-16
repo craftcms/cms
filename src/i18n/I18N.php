@@ -259,7 +259,7 @@ class I18N extends \yii\i18n\I18N
 
         foreach (Craft::$app->getSites()->getAllSites() as $site) {
             // Make sure it's unique
-            if (!in_array($site->language, $localeIds)) {
+            if (!in_array($site->language, $localeIds, true)) {
                 $localeIds[] = $site->language;
             }
         }

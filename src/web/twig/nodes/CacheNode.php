@@ -33,7 +33,7 @@ class CacheNode extends \Twig_Node
      */
     public function compile(\Twig_Compiler $compiler)
     {
-        $n = static::$_cacheCount++;
+        $n = self::$_cacheCount++;
 
         $conditions = $this->getNode('conditions');
         $ignoreConditions = $this->getNode('ignoreConditions');

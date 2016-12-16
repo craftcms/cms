@@ -247,6 +247,7 @@ class Table extends Field
                     $column['heading'] = Craft::t('site', $column['heading']);
                 }
             }
+            unset($column);
 
             if ($this->isFresh($element)) {
                 $defaults = $this->defaults;

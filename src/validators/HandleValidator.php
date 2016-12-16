@@ -86,7 +86,7 @@ class HandleValidator extends Validator
             ], $reservedWords);
             $lcHandle = StringHelper::toLowerCase($handle);
 
-            if (in_array($lcHandle, $reservedWords)) {
+            if (in_array($lcHandle, $reservedWords, true)) {
                 $message = Craft::t('app', '“{handle}” is a reserved word.',
                     ['handle' => $handle]);
                 $this->addError($object, $attribute, $message);

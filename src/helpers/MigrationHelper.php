@@ -306,7 +306,7 @@ class MigrationHelper
         // Check on any indexes
         foreach ($allIndexes as $indexName => $indexColumns) {
             // Is there an index that references our old column name?
-            $key = array_search($oldName, $indexColumns);
+            $key = array_search($oldName, $indexColumns, true);
 
             // Found a match.
             if ($key !== false) {
@@ -398,10 +398,8 @@ class MigrationHelper
         }
 
         // Restore indexes.
-        foreach ($columnIndexes as $indexData) {
-            list($columns, $unique) = $indexData;
-
-            foreach ($columns as $key => $column) {
+        foreach ($columnIndexes as list($indexColumns, $unique)) {
+            foreach ($indexColumns as $key => $column) {
                 if ($column === $oldName) {
                     $columns[$key] = $newName;
                 }
@@ -411,9 +409,7 @@ class MigrationHelper
         }
 
         // Restore FK's the column was linking to.
-        foreach ($columnFks as $fkData) {
-            list($fk, $key) = $fkData;
-
+        foreach ($columnFks as list($fk, $key)) {
             // Get the reference table.
             $refTable = $fk[0];
 
@@ -467,7 +463,7 @@ class MigrationHelper
 
         foreach ($allTables as $otherTable) {
             foreach ($otherTable->foreignKeys as $fk) {
-                if ($fk[0] === $tableName && in_array($column, $fk) !== false) {
+                if ($fk[0] === $tableName && in_array($column, $fk, true) !== false) {
                     $fks[$otherTable->name][] = $fk;
                 }
             }

@@ -72,16 +72,20 @@ class Section_SiteSettings extends Model
      * Returns the section.
      *
      * @return Section
-     * @throws InvalidConfigException if the section is invalid
+     * @throws InvalidConfigException if [[sectionId]] is missing or invalid
      */
     public function getSection()
     {
-        if (!isset($this->_section) && $this->sectionId) {
-            $this->_section = Craft::$app->getSections()->getSectionById($this->sectionId);
+        if ($this->_section !== null) {
+            return $this->_section;
         }
 
-        if (!$this->_section) {
-            throw new InvalidConfigException('Invalid section');
+        if (!$this->sectionId) {
+            throw new InvalidConfigException('Section site settings model is missing its section ID');
+        }
+
+        if (($this->_section = Craft::$app->getSections()->getSectionById($this->sectionId)) === null) {
+            throw new InvalidConfigException('Invalid section ID: '.$this->sectionId);
         }
 
         return $this->_section;

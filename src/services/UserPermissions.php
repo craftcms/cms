@@ -10,6 +10,7 @@ namespace craft\services;
 
 use Craft;
 use craft\base\Plugin;
+use craft\base\Volume;
 use craft\db\Query;
 use craft\events\RegisterUserPermissionsEvent;
 use craft\models\Section;
@@ -93,7 +94,7 @@ class UserPermissions extends Component
         // Users
         // ---------------------------------------------------------------------
 
-        if (Craft::$app->getEdition() == Craft::Pro) {
+        if (Craft::$app->getEdition() === Craft::Pro) {
             $permissions[Craft::t('app', 'Users')] = [
                 'editUsers' => [
                     'label' => Craft::t('app', 'Edit users'),
@@ -172,11 +173,11 @@ class UserPermissions extends Component
         // Volumes
         // ---------------------------------------------------------------------
 
+        /** @var Volume[] $volumes */
         $volumes = Craft::$app->getVolumes()->getAllVolumes();
 
         foreach ($volumes as $volume) {
-            $label = Craft::t('app', 'Volume - {volume}',
-                ['volume' => Craft::t('site', $volume->name)]);
+            $label = Craft::t('app', 'Volume - {volume}', ['volume' => Craft::t('site', $volume->name)]);
             $permissions[$label] = $this->_getVolumePermissions($volume->id);
         }
 
@@ -245,7 +246,7 @@ class UserPermissions extends Component
         $allPermissions = $this->getPermissionsByGroupId($groupId);
         $checkPermission = strtolower($checkPermission);
 
-        return in_array($checkPermission, $allPermissions);
+        return in_array($checkPermission, $allPermissions, true);
     }
 
     /**
@@ -323,7 +324,7 @@ class UserPermissions extends Component
         $allPermissions = $this->getPermissionsByUserId($userId);
         $checkPermission = strtolower($checkPermission);
 
-        return in_array($checkPermission, $allPermissions);
+        return in_array($checkPermission, $allPermissions, true);
     }
 
     /**
@@ -534,7 +535,7 @@ class UserPermissions extends Component
      *
      * @return array The permissions we'll actually let them save.
      */
-    private function _filterOrphanedPermissions($postedPermissions, $groupPermissions = [])
+    private function _filterOrphanedPermissions($postedPermissions, array $groupPermissions = [])
     {
         $filteredPermissions = [];
 
@@ -563,7 +564,7 @@ class UserPermissions extends Component
 
         foreach ($permissionsGroup as $name => $data) {
             // Should the user have this permission (either directly or via their group)?
-            if (($inPostedPermissions = in_array($name, $postedPermissions)) || in_array(strtolower($name), $groupPermissions)) {
+            if (($inPostedPermissions = in_array($name, $postedPermissions, true)) || in_array(strtolower($name), $groupPermissions, true)) {
                 // First assign any nested permissions
                 if (!empty($data['nested'])) {
                     $hasAssignedNestedPermissions = $this->_findSelectedPermissions($data['nested'], $postedPermissions, $groupPermissions, $filteredPermissions);

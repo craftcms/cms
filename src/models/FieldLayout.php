@@ -64,15 +64,15 @@ class FieldLayout extends Model
      */
     public function getTabs()
     {
-        if (!isset($this->_tabs)) {
-            if ($this->id) {
-                $this->_tabs = Craft::$app->getFields()->getLayoutTabsById($this->id);
-            } else {
-                $this->_tabs = [];
-            }
+        if ($this->_tabs !== null) {
+            return $this->_tabs;
         }
 
-        return $this->_tabs;
+        if (!$this->id) {
+            return [];
+        }
+
+        return $this->_tabs = Craft::$app->getFields()->getLayoutTabsById($this->id);
     }
 
     /**
@@ -82,15 +82,15 @@ class FieldLayout extends Model
      */
     public function getFields()
     {
-        if (!isset($this->_fields)) {
-            if ($this->id) {
-                $this->_fields = Craft::$app->getFields()->getFieldsByLayoutId($this->id);
-            } else {
-                $this->_fields = [];
-            }
+        if ($this->_fields !== null) {
+            return $this->_fields;
         }
 
-        return $this->_fields;
+        if (!$this->id) {
+            return [];
+        }
+
+        return $this->_fields = Craft::$app->getFields()->getFieldsByLayoutId($this->id);
     }
 
     /**

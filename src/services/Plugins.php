@@ -203,6 +203,7 @@ class Plugins extends Component
                 $this->_registerPlugin($handle, $plugin);
             }
         }
+        unset($row);
 
         $this->_loadingPlugins = false;
         $this->_pluginsLoaded = true;
@@ -1159,7 +1160,7 @@ class Plugins extends Component
 
             // Normalize $path to an absolute path
             $path = FileHelper::normalizePath($path);
-            if (!(substr($path, 0, 1) === DIRECTORY_SEPARATOR || substr($path, 1, 1) === ':')) {
+            if ((!isset($path[0]) || $path[0] !== DIRECTORY_SEPARATOR) && (!isset($path[1]) || $path[1] !== ':')) {
                 $pluginPath = Craft::$app->getPath()->getPluginsPath().DIRECTORY_SEPARATOR.$handle;
                 $path = $pluginPath.DIRECTORY_SEPARATOR.$path;
             }
@@ -1176,9 +1177,8 @@ class Plugins extends Component
             // see if the class namespace matches up, and the file is in here.
             // If so, set the base path to whatever directory contains the plugin class.
             if ($basePath === null && $class !== null) {
-                $n = strlen($namespace);
-                if (strncmp($namespace, $class, $n) === 0) {
-                    $testClassPath = $path.DIRECTORY_SEPARATOR.str_replace('\\', DIRECTORY_SEPARATOR, substr($class, $n)).'.php';
+                if (strpos($class, $namespace) === 0) {
+                    $testClassPath = $path.DIRECTORY_SEPARATOR.str_replace('\\', DIRECTORY_SEPARATOR, substr($class, strlen($namespace))).'.php';
                     if (file_exists($testClassPath)) {
                         $basePath = dirname($testClassPath);
                     }

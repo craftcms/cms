@@ -705,43 +705,40 @@ class Tasks extends Component
         else if (
             $request->getIsSiteRequest() &&
             !$request->getIsAjax() &&
-            in_array(Header::getMimeType(), [
-                'text/html',
-                'application/xhtml+xml'
-            ])
+            in_array(Header::getMimeType(), ['text/html', 'application/xhtml+xml'], true)
         ) {
             // Just output JS that tells the browser to fire an Ajax request to kick off task running
             $url = Json::encode(Url::getActionUrl('tasks/run-pending-tasks'));
 
             // Ajax request code adapted from http://www.quirksmode.org/js/xmlhttp.html - thanks ppk!
-            $js = <<<EOT
+            $js = <<<EOD
 <script type="text/javascript">
 /*<![CDATA[*/
 (function(){
-	var XMLHttpFactories = [
-		function () {return new XMLHttpRequest()},
-		function () {return new ActiveXObject("Msxml2.XMLHTTP")},
-		function () {return new ActiveXObject("Msxml3.XMLHTTP")},
-		function () {return new ActiveXObject("Microsoft.XMLHTTP")}
-	];
-	var req = false;
-	for (var i = 0; i < XMLHttpFactories.length; i++) {
-		try {
-			req = XMLHttpFactories[i]();
-		}
-		catch (e) {
-			continue;
-		}
-		break;
-	}
-	if (!req) return;
-	req.open('GET', $url, true);
-	if (req.readyState == 4) return;
-	req.send();
+    var XMLHttpFactories = [
+        function () {return new XMLHttpRequest()},
+        function () {return new ActiveXObject("Msxml2.XMLHTTP")},
+        function () {return new ActiveXObject("Msxml3.XMLHTTP")},
+        function () {return new ActiveXObject("Microsoft.XMLHTTP")}
+    ];
+    var req = false;
+    for (var i = 0; i < XMLHttpFactories.length; i++) {
+        try {
+            req = XMLHttpFactories[i]();
+        }
+        catch (e) {
+            continue;
+        }
+        break;
+    }
+    if (!req) return;
+    req.open('GET', $url, true);
+    if (req.readyState == 4) return;
+    req.send();
 })();
 /*]]>*/
 </script>
-EOT;
+EOD;
 
             if ($response->content === null) {
                 $response->content = $js;

@@ -72,7 +72,7 @@ class Local extends Volume
     {
         parent::init();
 
-        if (isset($this->path)) {
+        if ($this->path !== null) {
             $this->path = rtrim($this->path, '/');
         }
     }

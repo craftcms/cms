@@ -38,6 +38,7 @@ use craft\fields\RichText as RichTextField;
 use craft\fields\Table as TableField;
 use craft\fields\Tags as TagsField;
 use craft\fields\Users as UsersField;
+use craft\helpers\ArrayHelper;
 use craft\helpers\Component as ComponentHelper;
 use craft\helpers\StringHelper;
 use craft\models\FieldGroup;
@@ -201,32 +202,29 @@ class Fields extends Component
      */
     public function getAllGroups($indexBy = null)
     {
-        if (!$this->_fetchedAllGroups) {
-            $this->_groupsById = [];
-
-            $results = $this->_createGroupQuery()->all();
-
-            foreach ($results as $result) {
-                $group = new FieldGroup($result);
-                $this->_groupsById[$group->id] = $group;
+        if ($this->_fetchedAllGroups) {
+            if ($indexBy === 'id') {
+                return $this->_groupsById;
             }
 
-            $this->_fetchedAllGroups = true;
+            return $indexBy ? ArrayHelper::index($this->_groupsById, $indexBy) : array_values($this->_groupsById);
         }
 
-        if ($indexBy == 'id') {
-            $groups = $this->_groupsById;
-        } else if (!$indexBy) {
-            $groups = array_values($this->_groupsById);
-        } else {
-            $groups = [];
+        $this->_groupsById = [];
+        $results = $this->_createGroupQuery()->all();
 
-            foreach ($this->_groupsById as $group) {
-                $groups[$group->$indexBy] = $group;
-            }
+        foreach ($results as $result) {
+            $group = new FieldGroup($result);
+            $this->_groupsById[$group->id] = $group;
         }
 
-        return $groups;
+        $this->_fetchedAllGroups = true;
+
+        if ($indexBy === 'id') {
+            return $this->_groupsById;
+        }
+
+        return $indexBy ? ArrayHelper::index($this->_groupsById, $indexBy) : array_values($this->_groupsById);
     }
 
     /**
@@ -238,21 +236,23 @@ class Fields extends Component
      */
     public function getGroupById($groupId)
     {
-        if (!isset($this->_groupsById) || !array_key_exists($groupId, $this->_groupsById)) {
-            $result = $this->_createGroupQuery()
-                ->where(['id' => $groupId])
-                ->one();
-
-            if ($result) {
-                $group = new FieldGroup($result);
-            } else {
-                $group = null;
-            }
-
-            $this->_groupsById[$groupId] = $group;
+        if ($this->_groupsById !== null && array_key_exists($groupId, $this->_groupsById)) {
+            return $this->_groupsById[$groupId];
         }
 
-        return $this->_groupsById[$groupId];
+        if ($this->_fetchedAllGroups) {
+            return null;
+        }
+
+        $result = $this->_createGroupQuery()
+            ->where(['id' => $groupId])
+            ->one();
+
+        if (!$result) {
+            return $this->_groupsById[$groupId] = null;
+        }
+
+        return $this->_groupsById[$groupId] = new FieldGroup($result);
     }
 
     /**
@@ -460,11 +460,12 @@ class Fields extends Component
         if ($context === null) {
             $context = [Craft::$app->getContent()->fieldContext];
         } else if (!is_array($context)) {
-            $context = [$context];
+            $context = (array)$context;
         }
 
         $missingContexts = [];
 
+        /** @noinspection ForeachSourceInspection - FP */
         foreach ($context as $c) {
             if (!isset($this->_allFieldsInContext[$c])) {
                 $missingContexts[] = $c;
@@ -489,12 +490,13 @@ class Fields extends Component
 
         $fields = [];
 
+        /** @noinspection ForeachSourceInspection - FP */
         foreach ($context as $c) {
-            if (!$indexBy) {
-                $fields = array_merge($fields, $this->_allFieldsInContext[$c]);
-            } else {
-                foreach ($this->_allFieldsInContext[$c] as $field) {
+            foreach ($this->_allFieldsInContext[$c] as $field) {
+                if ($indexBy) {
                     $fields[$field->$indexBy] = $field;
+                } else {
+                    $fields[] = $field;
                 }
             }
         }
@@ -533,23 +535,24 @@ class Fields extends Component
      */
     public function getFieldById($fieldId)
     {
-        if (!isset($this->_fieldsById) || !array_key_exists($fieldId, $this->_fieldsById)) {
-            $result = $this->_createFieldQuery()
-                ->where(['fields.id' => $fieldId])
-                ->one();
-
-            if ($result) {
-                /** @var Field $field */
-                $field = $this->createField($result);
-
-                $this->_fieldsById[$fieldId] = $field;
-                $this->_fieldsByContextAndHandle[$field->context][$field->handle] = $field;
-            } else {
-                return null;
-            }
+        if ($this->_fieldsById !== null && array_key_exists($fieldId, $this->_fieldsById)) {
+            return $this->_fieldsById[$fieldId];
         }
 
-        return $this->_fieldsById[$fieldId];
+        $result = $this->_createFieldQuery()
+            ->where(['fields.id' => $fieldId])
+            ->one();
+
+        if (!$result) {
+            return $this->_fieldsById[$fieldId] = null;
+        }
+
+        /** @var Field $field */
+        $field = $this->createField($result);
+        $this->_fieldsById[$fieldId] = $field;
+        $this->_fieldsByContextAndHandle[$field->context][$field->handle] = $field;
+
+        return $field;
     }
 
     /**
@@ -601,7 +604,7 @@ class Fields extends Component
             $context = Craft::$app->getContent()->fieldContext;
         }
 
-        if (!isset($this->_allFieldHandlesByContext)) {
+        if ($this->_allFieldHandlesByContext === null) {
             $this->_allFieldHandlesByContext = [];
 
             $results = (new Query())
@@ -614,7 +617,7 @@ class Fields extends Component
             }
         }
 
-        return (isset($this->_allFieldHandlesByContext[$context]) && in_array($handle, $this->_allFieldHandlesByContext[$context]));
+        return (isset($this->_allFieldHandlesByContext[$context]) && in_array($handle, $this->_allFieldHandlesByContext[$context], true));
     }
 
     /**
@@ -791,7 +794,7 @@ class Fields extends Component
                 if (
                     isset($this->_allFieldHandlesByContext[$field->context]) &&
                     $field->oldHandle != $field->handle &&
-                    ($oldHandleIndex = array_search($field->oldHandle, $this->_allFieldHandlesByContext[$field->context])) !== false
+                    ($oldHandleIndex = array_search($field->oldHandle, $this->_allFieldHandlesByContext[$field->context], true)) !== false
                 ) {
                     array_splice($this->_allFieldHandlesByContext[$field->context], $oldHandleIndex, 1);
                 }
@@ -801,12 +804,11 @@ class Fields extends Component
             $this->_fieldsById[$field->id] = $field;
             $this->_fieldsByContextAndHandle[$field->context][$field->handle] = $field;
 
-            if (isset($this->_allFieldHandlesByContext)) {
+            if ($this->_allFieldHandlesByContext !== null) {
                 $this->_allFieldHandlesByContext[$field->context][] = $field->handle;
             }
 
-            unset($this->_allFieldsInContext[$field->context]);
-            unset($this->_fieldsWithContent[$field->context]);
+            unset($this->_allFieldsInContext[$field->context], $this->_fieldsWithContent[$field->context]);
 
             $field->afterSave($isNewField);
 
@@ -921,21 +923,19 @@ class Fields extends Component
      */
     public function getLayoutById($layoutId)
     {
-        if (!isset($this->_layoutsById) || !array_key_exists($layoutId, $this->_layoutsById)) {
-            $result = $this->_createLayoutQuery()
-                ->where(['id' => $layoutId])
-                ->one();
-
-            if ($result) {
-                $layout = new FieldLayout($result);
-            } else {
-                $layout = null;
-            }
-
-            $this->_layoutsById[$layoutId] = $layout;
+        if ($this->_layoutsById !== null && array_key_exists($layoutId, $this->_layoutsById)) {
+            return $this->_layoutsById[$layoutId];
         }
 
-        return $this->_layoutsById[$layoutId];
+        $result = $this->_createLayoutQuery()
+            ->where(['id' => $layoutId])
+            ->one();
+
+        if (!$result) {
+            return $this->_layoutsById[$layoutId] = null;
+        }
+
+        return $this->_layoutsById[$layoutId] = new FieldLayout($result);
     }
 
     /**
@@ -947,27 +947,24 @@ class Fields extends Component
      */
     public function getLayoutByType($type)
     {
-        if (!isset($this->_layoutsByType) || !array_key_exists($type, $this->_layoutsByType)) {
-            $result = $this->_createLayoutQuery()
-                ->where(['type' => $type])
-                ->one();
-
-            if ($result) {
-                $id = $result['id'];
-
-                if (!isset($this->_layoutsById[$id])) {
-                    $this->_layoutsById[$id] = new FieldLayout($result);
-                }
-
-                $layout = $this->_layoutsById[$id];
-            } else {
-                $layout = new FieldLayout();
-            }
-
-            $this->_layoutsByType[$type] = $layout;
+        if ($this->_layoutsByType !== null && array_key_exists($type, $this->_layoutsByType)) {
+            return $this->_layoutsByType[$type];
         }
 
-        return $this->_layoutsByType[$type];
+        $result = $this->_createLayoutQuery()
+            ->where(['type' => $type])
+            ->one();
+
+        if (!$result) {
+            return $this->_layoutsByType[$type] = new FieldLayout();
+        }
+
+        $id = $result['id'];
+        if (!isset($this->_layoutsById[$id])) {
+            $this->_layoutsById[$id] = new FieldLayout($result);
+        }
+
+        return $this->_layoutsByType[$type] = $this->_layoutsById[$id];
     }
 
     /**
@@ -1045,7 +1042,7 @@ class Fields extends Component
      *
      * @return FieldLayout The field layout
      */
-    public function assembleLayout($postedFieldLayout, $requiredFields = [])
+    public function assembleLayout($postedFieldLayout, array $requiredFields = [])
     {
         $tabs = [];
         $fields = [];
@@ -1056,7 +1053,9 @@ class Fields extends Component
         $allFieldIds = [];
 
         foreach ($postedFieldLayout as $fieldIds) {
-            $allFieldIds = array_merge($allFieldIds, $fieldIds);
+            foreach ($fieldIds as $fieldId) {
+                $allFieldIds[] = $fieldId;
+            }
         }
 
         if ($allFieldIds) {
@@ -1081,7 +1080,7 @@ class Fields extends Component
                 }
 
                 $field = $allFieldsById[$fieldId];
-                $field->required = in_array($fieldId, $requiredFields);
+                $field->required = in_array($fieldId, $requiredFields, false);
                 $field->sortOrder = ($fieldSortOrder + 1);
 
                 $fields[] = $field;
@@ -1178,11 +1177,7 @@ class Fields extends Component
             return false;
         }
 
-        if (!is_array($layoutId)) {
-            $layoutId = [$layoutId];
-        }
-
-        foreach ($layoutId as $thisLayoutId) {
+        foreach ((array)$layoutId as $thisLayoutId) {
             $layout = $this->getLayoutById($thisLayoutId);
 
             if ($layout) {
@@ -1346,19 +1341,19 @@ class Fields extends Component
     private function _getFieldRecord(FieldInterface $field)
     {
         /** @var Field $field */
-        if (!$field->getIsNew()) {
-            if (!isset($this->_fieldRecordsById) || !array_key_exists($field->id, $this->_fieldRecordsById)) {
-                $this->_fieldRecordsById[$field->id] = FieldRecord::findOne($field->id);
+        if ($field->getIsNew()) {
+            return new FieldRecord();
+        }
 
-                if (!$this->_fieldRecordsById[$field->id]) {
-                    throw new FieldNotFoundException("No field exists with the ID '{$field->id}'");
-                }
-            }
-
+        if ($this->_fieldRecordsById !== null && array_key_exists($field->id, $this->_fieldRecordsById)) {
             return $this->_fieldRecordsById[$field->id];
         }
 
-        return new FieldRecord();
+        if (($this->_fieldRecordsById[$field->id] = FieldRecord::findOne($field->id)) === null) {
+            throw new FieldNotFoundException('Invalid field ID: '.$field->id);
+        }
+
+        return $this->_fieldRecordsById[$field->id];
     }
 
     /**

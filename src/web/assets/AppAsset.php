@@ -42,13 +42,12 @@ class AppAsset extends AssetBundle
         // Figure out which Datepicker i18n script to load
         $language = Craft::$app->language;
 
-        if (in_array($language, ['en-GB', 'fr-CA'])) {
+        if (in_array($language, ['en-GB', 'fr-CA'], true)) {
             $datepickerLanguage = $language;
         } else {
             $languageId = Craft::$app->getLocale()->getLanguageID();
 
-            if (in_array($languageId,
-                ['ar', 'de', 'fr', 'it', 'ja', 'nb', 'nl', 'nn', 'no'])) {
+            if (in_array($languageId, ['ar', 'de', 'fr', 'it', 'ja', 'nb', 'nl', 'nn', 'no'], true)) {
                 $datepickerLanguage = $languageId;
             }
         }
@@ -58,13 +57,14 @@ class AppAsset extends AssetBundle
             'lib/jquery-ui'.($useCompressedJs ? '.min' : '').'.js',
         ];
 
+        /** @noinspection UnSafeIsSetOverArrayInspection - FP */
         if (isset($datepickerLanguage)) {
             $this->js[] = "lib/datepicker-i18n/datepicker-{$datepickerLanguage}.js";
         }
 
         // Figure out which D3 i18n script to load
 
-        if (in_array($language, ['ca-ES', 'de-CH', 'de-DE', 'en-CA', 'en-GB', 'en-US', 'es-ES', 'fi-FI', 'fr-CA', 'fr-FR', 'he-IL', 'hu-HU', 'it-IT', 'ja-JP', 'ko-KR', 'nl-NL', 'pl-PL', 'pt-BR', 'ru-RU', 'sv-SE', 'zh-CN'])) {
+        if (in_array($language, ['ca-ES', 'de-CH', 'de-DE', 'en-CA', 'en-GB', 'en-US', 'es-ES', 'fi-FI', 'fr-CA', 'fr-FR', 'he-IL', 'hu-HU', 'it-IT', 'ja-JP', 'ko-KR', 'nl-NL', 'pl-PL', 'pt-BR', 'ru-RU', 'sv-SE', 'zh-CN'], true)) {
             $d3Language = $language;
         } else {
             $languageId = Craft::$app->getLocale()->getLanguageID();

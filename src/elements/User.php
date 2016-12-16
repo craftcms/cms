@@ -16,6 +16,7 @@ use craft\elements\actions\Edit;
 use craft\elements\actions\SuspendUsers;
 use craft\elements\actions\UnsuspendUsers;
 use craft\elements\db\UserQuery;
+use craft\helpers\ArrayHelper;
 use craft\helpers\DateTimeHelper;
 use craft\helpers\Html;
 use craft\helpers\Url;
@@ -28,6 +29,7 @@ use craft\validators\UniqueValidator;
 use craft\validators\UserPasswordValidator;
 use yii\base\ErrorHandler;
 use yii\base\Exception;
+use yii\base\InvalidConfigException;
 use yii\base\NotSupportedException;
 use yii\web\IdentityInterface;
 
@@ -134,7 +136,7 @@ class User extends Element implements IdentityInterface
     /**
      * @inheritdoc
      */
-    protected static function defineSources($context = null)
+    protected static function defineSources($context)
     {
         $sources = [
             [
@@ -144,7 +146,7 @@ class User extends Element implements IdentityInterface
             ]
         ];
 
-        if (Craft::$app->getEdition() == Craft::Pro) {
+        if (Craft::$app->getEdition() === Craft::Pro) {
             // Admin source
             $sources[] = [
                 'key' => 'admins',
@@ -175,7 +177,7 @@ class User extends Element implements IdentityInterface
     /**
      * @inheritdoc
      */
-    protected static function defineActions($source = null)
+    protected static function defineActions($source)
     {
         $actions = [];
 
@@ -275,7 +277,7 @@ class User extends Element implements IdentityInterface
     /**
      * @inheritdoc
      */
-    public static function defaultTableAttributes($source = null)
+    public static function defaultTableAttributes($source)
     {
         if (Craft::$app->getConfig()->get('useEmailAsUsername')) {
             $attributes = ['fullName', 'dateCreated', 'lastLoginDate'];
@@ -623,7 +625,7 @@ class User extends Element implements IdentityInterface
      */
     public function getFieldLayout()
     {
-        if (Craft::$app->getEdition() == Craft::Pro) {
+        if (Craft::$app->getEdition() === Craft::Pro) {
             return Craft::$app->getFields()->getLayoutByType(static::class);
         }
 
@@ -783,25 +785,17 @@ class User extends Element implements IdentityInterface
      */
     public function getGroups($indexBy = null)
     {
-        if (!isset($this->_groups)) {
-            if (Craft::$app->getEdition() == Craft::Pro) {
-                $this->_groups = Craft::$app->getUserGroups()->getGroupsByUserId($this->id);
-            } else {
-                $this->_groups = [];
-            }
+        if ($this->_groups !== null) {
+            return $indexBy ? ArrayHelper::index($this->_groups, $indexBy) : $this->_groups;
         }
 
-        if (!$indexBy) {
-            $groups = $this->_groups;
-        } else {
-            $groups = [];
-
-            foreach ($this->_groups as $group) {
-                $groups[$group->$indexBy] = $group;
-            }
+        if (Craft::$app->getEdition() !== Craft::Pro) {
+            return [];
         }
 
-        return $groups;
+        $this->_groups = Craft::$app->getUserGroups()->getGroupsByUserId($this->id);
+
+        return $indexBy ? ArrayHelper::index($this->_groups, $indexBy) : $this->_groups;
     }
 
     /**
@@ -813,7 +807,7 @@ class User extends Element implements IdentityInterface
      */
     public function setGroups($groups)
     {
-        if (Craft::$app->getEdition() == Craft::Pro) {
+        if (Craft::$app->getEdition() === Craft::Pro) {
             $this->_groups = $groups;
         }
     }
@@ -821,29 +815,25 @@ class User extends Element implements IdentityInterface
     /**
      * Returns whether the user is in a specific group.
      *
-     * @param mixed $group The user group model, its handle, or ID.
+     * @param UserGroup|integer|string $group The user group model, its handle, or ID.
      *
      * @return boolean
      */
     public function isInGroup($group)
     {
-        if (Craft::$app->getEdition() == Craft::Pro) {
-            if (is_object($group) && $group instanceof UserGroup) {
-                $group = $group->id;
-            }
-
-            if (is_numeric($group)) {
-                $groups = array_keys($this->getGroups('id'));
-            } else if (is_string($group)) {
-                $groups = array_keys($this->getGroups('handle'));
-            }
-
-            if (!empty($groups)) {
-                return in_array($group, $groups);
-            }
+        if (Craft::$app->getEdition() !== Craft::Pro) {
+            return false;
         }
 
-        return false;
+        if (is_object($group) && $group instanceof UserGroup) {
+            $group = $group->id;
+        }
+
+        if (is_numeric($group)) {
+            return in_array($group, ArrayHelper::getColumn($this->getGroups(), 'id'), false);
+        }
+
+        return in_array($group, ArrayHelper::getColumn($this->getGroups(), 'handle'), true);
     }
 
     /**
@@ -950,7 +940,7 @@ class User extends Element implements IdentityInterface
     /**
      * @inheritdoc
      */
-    public function getThumbUrl($size = 100)
+    public function getThumbUrl($size)
     {
         $photo = $this->getPhoto();
 
@@ -1080,11 +1070,11 @@ class User extends Element implements IdentityInterface
             return Url::getCpUrl('myaccount');
         }
 
-        if (Craft::$app->getEdition() == Craft::Client && $this->client) {
+        if (Craft::$app->getEdition() === Craft::Client && $this->client) {
             return Url::getCpUrl('clientaccount');
         }
 
-        if (Craft::$app->getEdition() == Craft::Pro) {
+        if (Craft::$app->getEdition() === Craft::Pro) {
             return Url::getCpUrl('users/'.$this->id);
         }
 
@@ -1151,7 +1141,7 @@ class User extends Element implements IdentityInterface
         $language = $this->getPreference('language');
 
         // Make sure it's valid
-        if ($language !== null && in_array($language, Craft::$app->getI18n()->getSiteLocaleIds())) {
+        if ($language !== null && in_array($language, Craft::$app->getI18n()->getSiteLocaleIds(), true)) {
             return $language;
         }
 
@@ -1189,11 +1179,20 @@ class User extends Element implements IdentityInterface
      * Returns the user's photo.
      *
      * @return Asset|null
+     * @throws InvalidConfigException if [[photoId]] is set but invalid
      */
     public function getPhoto()
     {
-        if (!isset($this->_photo) && $this->photoId) {
-            $this->_photo = Craft::$app->getAssets()->getAssetById($this->photoId);
+        if ($this->_photo !== null) {
+            return $this->_photo;
+        }
+
+        if (!$this->photoId) {
+            return null;
+        }
+
+        if (($this->_photo = Craft::$app->getAssets()->getAssetById($this->photoId)) === null) {
+            throw new InvalidConfigException('Invalid photo ID: '.$this->photoId);
         }
 
         return $this->_photo;

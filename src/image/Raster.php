@@ -155,7 +155,7 @@ class Raster extends Image
         // Make sure the image says it's an image
         $mimeType = FileHelper::getMimeType($path, null, false);
 
-        if ($mimeType !== null && strncmp($mimeType, 'image/', 6) !== 0) {
+        if ($mimeType !== null && strpos($mimeType, 'image/') !== 0) {
             throw new ImageException(Craft::t('app', 'The file “{name}” does not appear to be an image.', ['name' => pathinfo($path, PATHINFO_BASENAME)]));
         }
 
@@ -388,7 +388,7 @@ class Raster extends Image
         $targetPath = pathinfo($targetPath, PATHINFO_DIRNAME).DIRECTORY_SEPARATOR.pathinfo($targetPath, PATHINFO_FILENAME).'.'.pathinfo($targetPath, PATHINFO_EXTENSION);
 
         try {
-            if ($autoQuality && in_array($extension, ['jpeg', 'jpg', 'png'])) {
+            if ($autoQuality && in_array($extension, ['jpeg', 'jpg', 'png'], true)) {
                 clearstatcache();
                 $originalSize = filesize($this->_imageSourcePath);
                 $tempFile = $this->_autoGuessImageQuality($targetPath, $originalSize, $extension, 0, 200);
@@ -477,12 +477,11 @@ class Raster extends Image
      */
     public function setFontProperties($fontFile, $size, $color)
     {
-        if (empty($this->_palette)) {
+        if ($this->_palette === null) {
             $this->_palette = new RGB();
         }
 
-        $this->_font = $this->_instance->font($fontFile, $size,
-            $this->_palette->color($color));
+        $this->_font = $this->_instance->font($fontFile, $size, $this->_palette->color($color));
     }
 
     /**
@@ -496,9 +495,8 @@ class Raster extends Image
      */
     public function getTextBox($text, $angle = 0)
     {
-        if (empty($this->_font)) {
-            throw new ImageException(Craft::t('app',
-                'No font properties have been set. Call Raster::setFontProperties() first.'));
+        if ($this->_font === null) {
+            throw new ImageException(Craft::t('app', 'No font properties have been set. Call Raster::setFontProperties() first.'));
         }
 
         return $this->_font->box($text, $angle);
@@ -518,13 +516,11 @@ class Raster extends Image
     public function writeText($text, $x, $y, $angle = 0)
     {
 
-        if (empty($this->_font)) {
-            throw new ImageException(Craft::t('app',
-                'No font properties have been set. Call ImageHelper::setFontProperties() first.'));
+        if ($this->_font === null) {
+            throw new ImageException(Craft::t('app', 'No font properties have been set. Call ImageHelper::setFontProperties() first.'));
         }
 
         $point = new Point($x, $y);
-
         $this->_image->draw()->text($text, $this->_font, $point, $angle);
     }
 

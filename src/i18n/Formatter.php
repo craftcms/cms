@@ -303,7 +303,7 @@ class Formatter extends \yii\i18n\Formatter
             return $this->nullDisplay;
         }
 
-        if (strncmp($format, 'php:', 4) === 0) {
+        if (strpos($format, 'php:') === 0) {
             $format = substr($format, 4);
             $format = FormatConverter::convertDatePhpToIcu($format);
         }

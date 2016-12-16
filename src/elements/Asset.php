@@ -9,6 +9,7 @@ namespace craft\elements;
 
 use Craft;
 use craft\base\Element;
+use craft\base\Volume;
 use craft\base\VolumeInterface;
 use craft\elements\actions\CopyReferenceTag;
 use craft\elements\actions\DeleteAssets;
@@ -101,7 +102,7 @@ class Asset extends Element
     /**
      * @inheritdoc
      */
-    protected static function defineSources($context = null)
+    protected static function defineSources($context)
     {
         if ($context == 'index') {
             $sourceIds = Craft::$app->getVolumes()->getViewableVolumeIds();
@@ -111,15 +112,14 @@ class Asset extends Element
 
         $additionalCriteria = $context == 'settings' ? ['parentId' => ':empty:'] : [];
         $tree = Craft::$app->getAssets()->getFolderTreeByVolumeIds($sourceIds, $additionalCriteria);
-        $sources = static::_assembleSourceList($tree, $context != 'settings');
 
-        return $sources;
+        return static::_assembleSourceList($tree, $context != 'settings');
     }
 
     /**
      * @inheritdoc
      */
-    protected static function defineActions($source = null)
+    protected static function defineActions($source)
     {
         $actions = [];
 
@@ -127,6 +127,7 @@ class Asset extends Element
             $folderId = $matches[1];
 
             $folder = Craft::$app->getAssets()->getFolderById($folderId);
+            /** @var Volume $volume */
             $volume = $folder->getVolume();
 
             // View for public URLs
@@ -229,11 +230,13 @@ class Asset extends Element
     /**
      * @inheritdoc
      */
-    public static function defaultTableAttributes($source = null)
+    public static function defaultTableAttributes($source)
     {
-        $attributes = ['filename', 'size', 'dateModified'];
-
-        return $attributes;
+        return [
+            'filename',
+            'size',
+            'dateModified',
+        ];
     }
 
     /**
@@ -271,7 +274,7 @@ class Asset extends Element
             'hasThumbs' => true,
             'criteria' => ['folderId' => $folder->id],
             'data' => [
-                'upload' => is_null($folder->volumeId) ? true : Craft::$app->getUser()->checkPermission('uploadToVolume:'.$folder->volumeId)
+                'upload' => $folder->volumeId === null ? true : Craft::$app->getUser()->checkPermission('uploadToVolume:'.$folder->volumeId)
             ]
         ];
 
@@ -378,8 +381,8 @@ class Asset extends Element
     public function __toString()
     {
         try {
-            if (isset($this->_transform)) {
-                return $this->getUrl();
+            if ($this->_transform !== null) {
+                return (string)$this->getUrl();
             }
 
             return parent::__toString();
@@ -402,12 +405,7 @@ class Asset extends Element
      */
     public function __isset($name)
     {
-        if (parent::__isset($name) || Craft::$app->getAssetTransforms()->getTransformByHandle($name)
-        ) {
-            return true;
-        }
-
-        return false;
+        return parent::__isset($name) || Craft::$app->getAssetTransforms()->getTransformByHandle($name);
     }
 
     /**
@@ -471,7 +469,7 @@ class Asset extends Element
 
         if (!$this->id && !$this->title) {
             // Don't validate the title
-            $key = array_search([['title'], 'required'], $rules);
+            $key = array_search([['title'], 'required'], $rules, true);
             if ($key !== -1) {
                 array_splice($rules, $key, 1);
             }
@@ -502,6 +500,7 @@ class Asset extends Element
      */
     public function getFieldLayout()
     {
+        /** @var Volume $volume */
         $volume = $this->getVolume();
 
         if ($volume->id) {
@@ -510,7 +509,7 @@ class Asset extends Element
 
         $folder = $this->getFolder();
 
-        if (preg_match('/field_([0-9]+)/', $folder->name, $matches)) {
+        if (preg_match('/field_(\d+)/', $folder->name, $matches)) {
             $fieldId = $matches[1];
             /** @var Assets $field */
             $field = Craft::$app->getFields()->getFieldById($fieldId);
@@ -572,11 +571,11 @@ class Asset extends Element
      */
     public function getVolume()
     {
-        if (is_null($this->_volume)) {
-            $this->_volume = Craft::$app->getVolumes()->getVolumeById($this->volumeId);
+        if ($this->_volume !== null) {
+            return $this->_volume;
         }
 
-        return $this->_volume;
+        return $this->_volume = Craft::$app->getVolumes()->getVolumeById($this->volumeId);
     }
 
     /**
@@ -615,7 +614,7 @@ class Asset extends Element
             }
         }
 
-        if ($transform === null && isset($this->_transform)) {
+        if ($transform === null && $this->_transform !== null) {
             $transform = $this->_transform;
         }
 
@@ -625,7 +624,7 @@ class Asset extends Element
     /**
      * @inheritdoc
      */
-    public function getThumbUrl($size = 125)
+    public function getThumbUrl($size)
     {
         if ($this->getHasThumb()) {
             return Url::getResourceUrl(
@@ -646,22 +645,12 @@ class Asset extends Element
      */
     public function getHasThumb()
     {
-        if ($this->kind == 'image') {
-            if ($this->getHeight() && $this->getWidth()) {
-                // Gd doesn't process bitmaps or SVGs
-                if (in_array(
-                        $this->getExtension(),
-                        ['svg', 'bmp']
-                    ) && Craft::$app->getImages()->getIsGd()
-                ) {
-                    return false;
-                }
-
-                return true;
-            }
-        }
-
-        return false;
+        return (
+            $this->kind === 'image' &&
+            $this->getHeight() &&
+            $this->getWidth() &&
+            (!in_array($this->getExtension(), ['svg', 'bmp'], true) || Craft::$app->getImages()->getIsImagick())
+        );
     }
 
     /**
@@ -794,6 +783,7 @@ class Asset extends Element
      */
     public function getHasUrls()
     {
+        /** @var Volume $volume */
         $volume = $this->getVolume();
 
         return $volume && $volume->hasUrls;
@@ -809,6 +799,7 @@ class Asset extends Element
     {
         switch ($attribute) {
             case 'filename':
+                /** @noinspection CssInvalidPropertyValue - FP */
                 return Html::encodeParams('<span style="word-break: break-word;">{filename}</span>', [
                     'filename' => $this->filename,
                 ]);
@@ -957,7 +948,7 @@ class Asset extends Element
             return null;
         }
 
-        if ($transform === null && isset($this->_transform)) {
+        if ($transform === null && $this->_transform !== null) {
             $transform = $this->_transform;
         }
 

@@ -75,9 +75,8 @@ class Et extends Component
     public function ping()
     {
         $et = $this->_createEtTransport(static::ENDPOINT_PING);
-        $etResponse = $et->phoneHome();
 
-        return $etResponse;
+        return $et->phoneHome();
     }
 
     /**
@@ -266,17 +265,13 @@ class Et extends Component
 
         // Did they at least say why?
         if (!empty($etResponse->responseErrors)) {
-            switch ($etResponse->responseErrors[0]) {
-                // Validation errors
-                case 'not_public_domain': {
-                    // So...
-                    return true;
-                }
-
-                default: {
-                    $error = $etResponse->data['error'];
-                }
+            // If the domain isn't considered public in the first place,
+            // pretend everything worked out
+            if ($etResponse->responseErrors[0] === 'not_public_domain') {
+                return true;
             }
+
+            $error = $etResponse->data['error'];
         } else {
             $error = Craft::t('app', 'Craft is unable to transfer your license to this domain at this time.');
         }
@@ -313,9 +308,8 @@ class Et extends Component
     {
         $et = $this->_createEtTransport(static::ENDPOINT_GET_COUPON_PRICE);
         $et->setData(['edition' => $edition, 'couponCode' => $couponCode]);
-        $etResponse = $et->phoneHome();
 
-        return $etResponse;
+        return $et->phoneHome();
     }
 
     /**
@@ -418,9 +412,8 @@ class Et extends Component
         $et->setData([
             'pluginHandle' => $pluginHandle
         ]);
-        $etResponse = $et->phoneHome();
 
-        return $etResponse;
+        return $et->phoneHome();
     }
 
     /**
@@ -436,9 +429,8 @@ class Et extends Component
         $et->setData([
             'pluginHandle' => $pluginHandle
         ]);
-        $etResponse = $et->phoneHome();
 
-        return $etResponse;
+        return $et->phoneHome();
     }
 
     /**

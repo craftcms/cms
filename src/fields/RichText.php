@@ -192,7 +192,7 @@ class RichText extends Field
             'transforms' => $this->_getTransforms(),
             'elementSiteId' => $site->id,
             'redactorConfig' => Json::decode($configJs),
-            'redactorLang' => static::$_redactorLang,
+            'redactorLang' => self::$_redactorLang,
         ];
 
         if ($this->translationMethod != self::TRANSLATION_METHOD_NONE) {
@@ -272,7 +272,7 @@ class RichText extends Field
     public function getStaticHtml($value, $element)
     {
         /** @var RichTextData|null $value */
-        return '<div class="text">'.($value ? $value : '&nbsp;').'</div>';
+        return '<div class="text">'.($value ?: '&nbsp;').'</div>';
     }
 
     /**
@@ -543,7 +543,7 @@ class RichText extends Field
             return '{}';
         }
 
-        return Json::removeComments(file_get_contents($configPath));
+        return file_get_contents($configPath);
     }
 
     /**
@@ -612,7 +612,7 @@ class RichText extends Field
         ];
 
         $view->registerJs(
-            '$.extend($.Redactor.opts.langs["'.static::$_redactorLang.'"], '.
+            '$.extend($.Redactor.opts.langs["'.self::$_redactorLang.'"], '.
             Json::encode($customTranslations).
             ');');
     }
@@ -659,7 +659,7 @@ class RichText extends Field
         }
 
         Craft::$app->getView()->registerJsResource($resourcePath);
-        static::$_redactorLang = $lang;
+        self::$_redactorLang = $lang;
 
         return true;
     }

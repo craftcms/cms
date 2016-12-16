@@ -80,7 +80,7 @@ class MigrationManager extends Component
             throw new InvalidConfigException('The migration folder path has not been set.');
         }
 
-        if (!in_array($this->type, [self::TYPE_APP, self::TYPE_PLUGIN, self::TYPE_CONTENT])) {
+        if (!in_array($this->type, [self::TYPE_APP, self::TYPE_PLUGIN, self::TYPE_CONTENT], true)) {
             throw new InvalidConfigException('Invalid migration type: '.$this->type);
         }
 

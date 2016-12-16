@@ -8,7 +8,6 @@
 namespace craft\events;
 
 use craft\elements\Asset;
-use yii\base\Event;
 
 /**
  * Asset event class.
@@ -16,7 +15,7 @@ use yii\base\Event;
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since  3.0
  */
-class AssetEvent extends Event
+class AssetEvent extends CancelableEvent
 {
     // Properties
     // =========================================================================

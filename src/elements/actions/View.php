@@ -55,28 +55,28 @@ class View extends ElementAction
     {
         $type = Json::encode(static::class);
 
-        $js = <<<EOT
+        $js = <<<EOD
 (function()
 {
-	var trigger = new Craft.ElementActionTrigger({
-		type: {$type},
-		batch: false,
-		validateSelection: function(\$selectedItems)
-		{
-			var \$element = \$selectedItems.find('.element');
+    var trigger = new Craft.ElementActionTrigger({
+        type: {$type},
+        batch: false,
+        validateSelection: function(\$selectedItems)
+        {
+            var \$element = \$selectedItems.find('.element');
 
-			return (
-				\$element.data('url') &&
-				(\$element.data('status') == 'enabled' || \$element.data('status') == 'live')
-			);
-		},
-		activate: function(\$selectedItems)
-		{
-			window.open(\$selectedItems.find('.element').data('url'));
-		}
-	});
+            return (
+                \$element.data('url') &&
+                (\$element.data('status') == 'enabled' || \$element.data('status') == 'live')
+            );
+        },
+        activate: function(\$selectedItems)
+        {
+            window.open(\$selectedItems.find('.element').data('url'));
+        }
+    });
 })();
-EOT;
+EOD;
 
         Craft::$app->getView()->registerJs($js);
     }

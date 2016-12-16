@@ -47,27 +47,27 @@ class Config extends Component
     // =========================================================================
 
     /**
-     * @var
+     * @var integer|null
      */
     private $_cacheDuration;
 
     /**
-     * @var
+     * @var boolean|null
      */
     private $_omitScriptNameInUrls;
 
     /**
-     * @var
+     * @var boolean|null
      */
     private $_usePathInfo;
 
     /**
      * @var boolean
      */
-    private $_useWriteFileLock;
+    private $_useWriteFileLocks;
 
     /**
-     * @var array
+     * @var string[]
      */
     private $_allowedFileExtensions;
 
@@ -262,17 +262,17 @@ class Config extends Component
      */
     public function getCacheDuration()
     {
-        if (!isset($this->_cacheDuration)) {
-            $duration = $this->get('cacheDuration');
-
-            if ($duration) {
-                $this->_cacheDuration = DateTimeHelper::timeFormatToSeconds($duration);
-            } else {
-                $this->_cacheDuration = 0;
-            }
+        if ($this->_cacheDuration !== null) {
+            return $this->_cacheDuration;
         }
 
-        return $this->_cacheDuration;
+        $duration = $this->get('cacheDuration');
+
+        if (!$duration) {
+            return $this->_cacheDuration = 0;
+        }
+
+        return $this->_cacheDuration = DateTimeHelper::timeFormatToSeconds($duration);
     }
 
     /**
@@ -296,52 +296,49 @@ class Config extends Component
      */
     public function omitScriptNameInUrls()
     {
-        if (!isset($this->_omitScriptNameInUrls)) {
-            $this->_omitScriptNameInUrls = 'n';
-
-            // Check if the config value has actually been set to true/false
-            $configVal = $this->get('omitScriptNameInUrls');
-
-            if (is_bool($configVal)) {
-                $this->_omitScriptNameInUrls = ($configVal === true ? 'y' : 'n');
-            } else {
-                // Check if it's cached
-                $cachedVal = Craft::$app->getCache()->get('omitScriptNameInUrls');
-
-                if ($cachedVal !== false) {
-                    $this->_omitScriptNameInUrls = $cachedVal;
-                } else {
-                    // PHP Dev Server does omit the script name from 404s without any help from a redirect script,
-                    // *unless* the URI looks like a file, in which case it'll just throw a 404.
-                    if (App::isPhpDevServer()) {
-                        $this->_omitScriptNameInUrls = false;
-                    } else {
-                        // Cache it early so the testScriptNameRedirect request isn't checking for it too
-                        Craft::$app->getCache()->set('omitScriptNameInUrls', 'n');
-
-                        // Test the server for it
-                        try {
-                            $baseUrl = Craft::$app->getRequest()->getHostInfo().Craft::$app->getRequest()->getScriptUrl();
-                            $url = mb_substr($baseUrl, 0, mb_strrpos($baseUrl, '/')).'/testScriptNameRedirect';
-
-                            $response = (new Client())->get($url,
-                                ['connect_timeout' => 2, 'timeout' => 4]);
-
-                            if ((string)$response->getBody() === 'success') {
-                                $this->_omitScriptNameInUrls = 'y';
-                            }
-                        } catch (RequestException $e) {
-                            Craft::error('Unable to determine if a script name redirect is in place on the server: '.$e->getMessage(), __METHOD__);
-                        }
-                    }
-
-                    // Cache it
-                    Craft::$app->getCache()->set('omitScriptNameInUrls', $this->_omitScriptNameInUrls);
-                }
-            }
+        if ($this->_omitScriptNameInUrls !== null) {
+            return $this->_omitScriptNameInUrls;
         }
 
-        return ($this->_omitScriptNameInUrls == 'y');
+        // Check if the config value has actually been set to true/false
+        if (is_bool($configVal = $this->get('omitScriptNameInUrls'))) {
+            return $this->_omitScriptNameInUrls = $configVal;
+        }
+
+        // PHP Dev Server does omit the script name from 404s without any help from a redirect script,
+        // *unless* the URI looks like a file, in which case it'll just throw a 404.
+        if (App::isPhpDevServer()) {
+            return $this->_omitScriptNameInUrls = false;
+        }
+
+        // Check if it's cached
+        if (($cachedVal = Craft::$app->getCache()->get('omitScriptNameInUrls')) !== false) {
+            return $this->_omitScriptNameInUrls = ($cachedVal === 'y');
+        }
+
+        // Cache it early so the testScriptNameRedirect request isn't checking for it too
+        Craft::$app->getCache()->set('omitScriptNameInUrls', 'n');
+
+        // Test the server for it
+        $this->_omitScriptNameInUrls = false;
+
+        try {
+            $baseUrl = Craft::$app->getRequest()->getHostInfo().Craft::$app->getRequest()->getScriptUrl();
+            $url = mb_substr($baseUrl, 0, mb_strrpos($baseUrl, '/')).'/testScriptNameRedirect';
+
+            $response = (new Client())->get($url, ['connect_timeout' => 2, 'timeout' => 4]);
+
+            if ((string)$response->getBody() === 'success') {
+                $this->_omitScriptNameInUrls = true;
+            }
+        } catch (RequestException $e) {
+            Craft::error('Unable to determine if a script name redirect is in place on the server: '.$e->getMessage(), __METHOD__);
+        }
+
+        // Cache it
+        Craft::$app->getCache()->set('omitScriptNameInUrls', $this->_omitScriptNameInUrls ? 'y' : 'n');
+
+        return $this->_omitScriptNameInUrls;
     }
 
     /**
@@ -371,55 +368,52 @@ class Config extends Component
      */
     public function usePathInfo()
     {
-        if (!isset($this->_usePathInfo)) {
-            $this->_usePathInfo = 'n';
-
-            // Check if the config value has actually been set to true/false
-            $configVal = $this->get('usePathInfo');
-
-            if (is_bool($configVal)) {
-                $this->_usePathInfo = ($configVal === true ? 'y' : 'n');
-            } else {
-                // Check if it's cached
-                $cachedVal = Craft::$app->getCache()->get('usePathInfo');
-
-                if ($cachedVal !== false) {
-                    $this->_usePathInfo = $cachedVal;
-                } else {
-                    // If there is already a PATH_INFO var available, we know it supports it.
-                    // Added the !empty() check for nginx.
-                    if (!empty($_SERVER['PATH_INFO'])) {
-                        $this->_usePathInfo = 'y';
-                    }
-                    // PHP Dev Server supports path info, and doesn't support simultaneous requests, so we need to
-                    // explicitly check for that.
-                    else if (App::isPhpDevServer()) {
-                        $this->_usePathInfo = 'y';
-                    } else {
-                        // Cache it early so the testPathInfo request isn't checking for it too
-                        Craft::$app->getCache()->set('usePathInfo', 'n');
-
-                        // Test the server for it
-                        try {
-                            $url = Craft::$app->getRequest()->getHostInfo().Craft::$app->getRequest()->getScriptUrl().'/testPathInfo';
-                            $response = (new Client())->get($url,
-                                ['connect_timeout' => 2, 'timeout' => 4]);
-
-                            if ((string)$response->getBody() === 'success') {
-                                $this->_usePathInfo = 'y';
-                            }
-                        } catch (RequestException $e) {
-                            Craft::error('Unable to determine if PATH_INFO is enabled on the server: '.$e->getMessage(), __METHOD__);
-                        }
-                    }
-
-                    // Cache it
-                    Craft::$app->getCache()->set('usePathInfo', $this->_usePathInfo);
-                }
-            }
+        if ($this->_usePathInfo !== null) {
+            return $this->_usePathInfo;
         }
 
-        return ($this->_usePathInfo == 'y');
+        // Check if the config value has actually been set to true/false
+        if (is_bool($configVal = $this->get('usePathInfo'))) {
+            return $this->_usePathInfo = $configVal;
+        }
+
+        // If there is already a PATH_INFO var available, we know it supports it.
+        if (!empty($_SERVER['PATH_INFO'])) {
+            return $this->_usePathInfo = true;
+        }
+
+        // PHP Dev Server supports path info, and doesn't support simultaneous
+        //requests, so we need to explicitly check for that.
+        if (App::isPhpDevServer()) {
+            return $this->_usePathInfo = true;
+        }
+
+        // Check if it's cached
+        if (($cachedVal = Craft::$app->getCache()->get('usePathInfo')) !== false) {
+            return $this->_usePathInfo = ($cachedVal === 'y');
+        }
+
+        // Cache it early so the testPathInfo request isn't checking for it too
+        Craft::$app->getCache()->set('usePathInfo', 'n');
+
+        // Test the server for it
+        $this->_usePathInfo = false;
+
+        try {
+            $url = Craft::$app->getRequest()->getHostInfo().Craft::$app->getRequest()->getScriptUrl().'/testPathInfo';
+            $response = (new Client())->get($url, ['connect_timeout' => 2, 'timeout' => 4]);
+
+            if ((string)$response->getBody() === 'success') {
+                $this->_usePathInfo = true;
+            }
+        } catch (RequestException $e) {
+            Craft::error('Unable to determine if PATH_INFO is enabled on the server: '.$e->getMessage(), __METHOD__);
+        }
+
+        // Cache it
+        Craft::$app->getCache()->set('usePathInfo', $this->_usePathInfo ? 'y' : 'n');
+
+        return $this->_usePathInfo;
     }
 
     /**
@@ -703,44 +697,41 @@ class Config extends Component
      */
     public function getUseWriteFileLock()
     {
-        if (isset($this->_useWriteFileLock)) {
-            return $this->_useWriteFileLock;
+        if ($this->_useWriteFileLocks !== null) {
+            return $this->_useWriteFileLocks;
         }
 
-        $value = $this->get('useWriteFileLock');
-        if (is_bool($value)) {
-            return ($this->_useWriteFileLock = $value);
+        if (is_bool($configVal = $this->get('useWriteFileLock'))) {
+            return $this->_useWriteFileLocks = $configVal;
         }
 
         // Do we have it cached?
-        if (($cachedValue = Craft::$app->getCache()->get('useWriteFileLock')) !== false) {
-            return ($this->_useWriteFileLock = ($cachedValue == 'yes'));
+        if (($cachedVal = Craft::$app->getCache()->get('useWriteFileLocks')) !== false) {
+            return $this->_useWriteFileLocks = ($cachedVal === 'y');
         }
 
         // Try a test lock
+        $this->_useWriteFileLocks = false;
+
         try {
             $mutex = Craft::$app->getMutex();
-            $name = uniqid('test');
+            $name = uniqid('test_lock', true);
             if (!$mutex->acquire($name)) {
                 throw new Exception('Unable to acquire test lock.');
             }
             if (!$mutex->release($name)) {
                 throw new Exception('Unable to release test lock.');
             }
-            $value = true;
+            $this->_useWriteFileLocks = true;
         } catch (\Exception $e) {
             Craft::warning('Write lock test failed: '.$e->getMessage());
-            $value = false;
         }
 
-        // Memoize it before caching, so we know the value if FileCache::setValue() needs it
-        $this->_useWriteFileLock = $value;
-
         // Cache for two months
-        $cachedValue = $value ? 'yes' : 'no';
-        Craft::$app->getCache()->set('useWriteFileLock', $cachedValue, 5184000);
+        $cachedValue = $this->_useWriteFileLocks ? 'y' : 'n';
+        Craft::$app->getCache()->set('useWriteFileLocks', $cachedValue, 5184000);
 
-        return $value;
+        return $this->_useWriteFileLocks;
     }
 
     /**
@@ -750,7 +741,7 @@ class Config extends Component
      */
     public function getAllowedFileExtensions()
     {
-        if (isset($this->_allowedFileExtensions)) {
+        if ($this->_allowedFileExtensions !== null) {
             return $this->_allowedFileExtensions;
         }
 
@@ -777,7 +768,7 @@ class Config extends Component
      */
     public function isExtensionAllowed($extension)
     {
-        return in_array(strtolower($extension), $this->getAllowedFileExtensions());
+        return in_array(strtolower($extension), $this->getAllowedFileExtensions(), true);
     }
 
     /**
@@ -848,7 +839,7 @@ class Config extends Component
         $pathService = Craft::$app->getPath();
 
         // Is this a valid Craft config category?
-        if (in_array($category, [self::CATEGORY_FILECACHE, self::CATEGORY_GENERAL, self::CATEGORY_DB, self::CATEGORY_DBCACHE, self::CATEGORY_MEMCACHE, self::CATEGORY_APC])) {
+        if (in_array($category, [self::CATEGORY_FILECACHE, self::CATEGORY_GENERAL, self::CATEGORY_DB, self::CATEGORY_DBCACHE, self::CATEGORY_MEMCACHE, self::CATEGORY_APC], true)) {
             $defaultsPath = Craft::$app->getBasePath().DIRECTORY_SEPARATOR.'config'.DIRECTORY_SEPARATOR.'defaults'.DIRECTORY_SEPARATOR.$category.'.php';
         } else if (($plugin = Craft::$app->getPlugins()->getPlugin($category)) !== null) {
             /** @var Plugin $plugin */
@@ -861,6 +852,7 @@ class Config extends Component
             $configSettings = @require $defaultsPath;
         }
 
+        /** @noinspection UnSafeIsSetOverArrayInspection - FP */
         if (!isset($configSettings) || !is_array($configSettings)) {
             $configSettings = [];
         }
@@ -881,9 +873,12 @@ class Config extends Component
                     // Originally blocks.php defined a $blocksConfig variable, and then later returned an array directly.
                     if (is_array($customConfig = require $filePath)) {
                         $this->_mergeConfigs($configSettings, $customConfig);
-                    } else if (isset($blocksConfig)) {
-                        $configSettings = array_merge($configSettings, $blocksConfig);
-                        unset($blocksConfig);
+                    } else {
+                        /** @noinspection UnSafeIsSetOverArrayInspection - FP */
+                        if (isset($blocksConfig)) {
+                            $configSettings = array_merge($configSettings, $blocksConfig);
+                            unset($blocksConfig);
+                        }
                     }
                 }
             }
@@ -894,9 +889,12 @@ class Config extends Component
                 // Originally db.php defined a $dbConfig variable, and later returned an array directly.
                 if (is_array($customConfig = require $filePath)) {
                     $this->_mergeConfigs($configSettings, $customConfig);
-                } else if ($category == self::CATEGORY_DB && isset($dbConfig)) {
-                    $configSettings = array_merge($configSettings, $dbConfig);
-                    unset($dbConfig);
+                } else {
+                    /** @noinspection UnSafeIsSetOverArrayInspection - FP */
+                    if ($category === self::CATEGORY_DB && isset($dbConfig)) {
+                        $configSettings = array_merge($configSettings, $dbConfig);
+                        unset($dbConfig);
+                    }
                 }
             }
         }

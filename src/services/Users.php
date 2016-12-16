@@ -146,10 +146,8 @@ class Users extends Component
      */
     public function getUserById($userId)
     {
-        /** @var User|null $user */
-        $user = Craft::$app->getElements()->getElementById($userId, User::class);
-
-        return $user;
+        /** @noinspection PhpIncompatibleReturnTypeInspection */
+        return Craft::$app->getElements()->getElementById($userId, User::class);
     }
 
     /**
@@ -267,7 +265,7 @@ class Users extends Component
      * An exception will be thrown if this function is called from Craft Personal or Pro.
      *
      * ```php
-     * if (Craft::$app->getEdition() == Craft::Client)
+     * if (Craft::$app->getEdition() === Craft::Client)
      * {
      *     $clientAccount = Craft::$app->getUsers()->getClient();
      * }

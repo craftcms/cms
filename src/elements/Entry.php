@@ -114,7 +114,7 @@ class Entry extends Element
     /**
      * @inheritdoc
      */
-    protected static function defineSources($context = null)
+    protected static function defineSources($context)
     {
         if ($context == 'index') {
             $sections = Craft::$app->getSections()->getEditableSections();
@@ -204,7 +204,7 @@ class Entry extends Element
     /**
      * @inheritdoc
      */
-    protected static function defineActions($source = null)
+    protected static function defineActions($source)
     {
         // Get the section(s) we need to check permissions on
         switch ($source) {
@@ -381,7 +381,7 @@ class Entry extends Element
         ];
 
         // Hide Author from Craft Personal/Client
-        if (Craft::$app->getEdition() != Craft::Pro) {
+        if (Craft::$app->getEdition() !== Craft::Pro) {
             unset($attributes['author']);
         }
 
@@ -391,7 +391,7 @@ class Entry extends Element
     /**
      * @inheritdoc
      */
-    public static function defaultTableAttributes($source = null)
+    public static function defaultTableAttributes($source)
     {
         $attributes = [];
 
@@ -551,7 +551,7 @@ class Entry extends Element
 
         if (!$this->getType()->hasTitleField) {
             // Don't validate the title
-            $key = array_search([['title'], 'required'], $rules);
+            $key = array_search([['title'], 'required'], $rules, true);
             if ($key !== -1) {
                 array_splice($rules, $key, 1);
             }
@@ -653,9 +653,7 @@ class Entry extends Element
             throw new InvalidConfigException('Entry is missing its section ID');
         }
 
-        $section = Craft::$app->getSections()->getSectionById($this->sectionId);
-
-        if (!$section) {
+        if (($section = Craft::$app->getSections()->getSectionById($this->sectionId)) === null) {
             throw new InvalidConfigException('Invalid section ID: '.$this->sectionId);
         }
 
@@ -687,11 +685,20 @@ class Entry extends Element
      * Returns the entry's author.
      *
      * @return User|null
+     * @throws InvalidConfigException if [[authorId]] is set but invalid
      */
     public function getAuthor()
     {
-        if (!isset($this->_author) && $this->authorId) {
-            $this->_author = Craft::$app->getUsers()->getUserById($this->authorId);
+        if ($this->_author !== null) {
+            return $this->_author;
+        }
+
+        if (!$this->authorId) {
+            return null;
+        }
+
+        if (($this->_author = Craft::$app->getUsers()->getUserById($this->authorId)) === null) {
+            throw new InvalidConfigException('Invalid author ID: '.$this->authorId);
         }
 
         return $this->_author;
@@ -835,12 +842,12 @@ class Entry extends Element
                 $typeInputId = $view->namespaceInputId('entryType');
                 $js = <<<EOD
 $('#{$typeInputId}').on('change', function(ev) {
-	var \$typeInput = $(this),
-		editor = \$typeInput.closest('.hud').data('elementEditor');
-	if (editor) {
-		editor.setElementAttribute('typeId', \$typeInput.val());
-		editor.loadHud();
-	}
+    var \$typeInput = $(this),
+        editor = \$typeInput.closest('.hud').data('elementEditor');
+    if (editor) {
+        editor.setElementAttribute('typeId', \$typeInput.val());
+        editor.loadHud();
+    }
 });
 EOD;
                 $view->registerJs($js);
@@ -997,11 +1004,11 @@ EOD;
      */
     private function _hasNewParent()
     {
-        if (!isset($this->_hasNewParent)) {
-            $this->_hasNewParent = $this->_checkForNewParent();
+        if ($this->_hasNewParent !== null) {
+            return $this->_hasNewParent;
         }
 
-        return $this->_hasNewParent;
+        return $this->_hasNewParent = $this->_checkForNewParent();
     }
 
     /**
@@ -1047,11 +1054,6 @@ EOD;
             ->select('elements.id')
             ->scalar();
 
-        if ($this->newParentId != $oldParentId) {
-            return true;
-        }
-
-        // Must be set to the same one then
-        return false;
+        return $this->newParentId != $oldParentId;
     }
 }

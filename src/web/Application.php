@@ -304,7 +304,7 @@ class Application extends \yii\web\Application
             $appLanguages = $this->getI18n()->getAppLocaleIds();
 
             foreach ($browserLanguages as $language) {
-                if (in_array($language, $appLanguages)) {
+                if (in_array($language, $appLanguages, true)) {
                     return $language;
                 }
             }

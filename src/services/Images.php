@@ -108,7 +108,7 @@ class Images extends Component
             return false;
         }
 
-        if (is_null($this->_imagickVersion)) {
+        if ($this->_imagickVersion === null) {
             // Taken from Imagick\Imagine() constructor.
             // Imagick::getVersion() is static only since Imagick PECL extension 3.2.0b1, so instantiate it.
             $imagick = new \Imagick();

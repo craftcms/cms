@@ -61,7 +61,7 @@ class DbBackup extends Tool
      * @inheritdoc
      * @throws Exception
      */
-    public function performAction($params = [])
+    public function performAction(array $params)
     {
         try {
             $backupPath = Craft::$app->getDb()->backup();

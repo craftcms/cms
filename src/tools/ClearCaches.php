@@ -151,14 +151,14 @@ class ClearCaches extends Tool
     /**
      * @inheritdoc
      */
-    public function performAction($params = [])
+    public function performAction(array $params)
     {
         if (!isset($params['caches'])) {
             return;
         }
 
         foreach (self::_getAllCacheOptions() as $cacheOption) {
-            if (is_array($params['caches']) && !in_array($cacheOption['key'], $params['caches'])) {
+            if (is_array($params['caches']) && !in_array($cacheOption['key'], $params['caches'], true)) {
                 continue;
             }
 

@@ -75,11 +75,7 @@ abstract class ElementAction extends SavableComponent implements ElementActionIn
      */
     public function getMessage()
     {
-        if (isset($this->_message)) {
-            return $this->_message;
-        }
-
-        return null;
+        return $this->_message;
     }
 
     // Protected Methods

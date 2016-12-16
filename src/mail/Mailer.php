@@ -70,7 +70,7 @@ class Mailer extends \yii\swiftmailer\Mailer
      * @return Message The new email message
      * @throws InvalidConfigException if [[messageConfig]] or [[class]] is not configured to use [[Message]]
      */
-    public function composeFromKey($key, $variables = [])
+    public function composeFromKey($key, array $variables = [])
     {
         $message = $this->createMessage();
 

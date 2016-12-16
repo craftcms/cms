@@ -53,6 +53,7 @@ class ElementIndexSettingsController extends BaseElementsController
                 ];
             }
         }
+        unset($source);
 
         // Get the available table attributes
         $availableTableAttributes = [];
@@ -98,6 +99,7 @@ class ElementIndexSettingsController extends BaseElementsController
         foreach ($sources as &$source) {
             $source['tableAttributes'] = array_filter($source['tableAttributes']);
         }
+        unset($source);
 
         $settings = [
             'sourceOrder' => $sourceOrder,

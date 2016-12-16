@@ -36,9 +36,7 @@ class Application extends \yii\console\Application
     // =========================================================================
 
     /**
-     * Constructor.
-     *
-     * @param array $config
+     * @inheritdoc
      */
     public function __construct($config = [])
     {

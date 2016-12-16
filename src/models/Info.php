@@ -86,7 +86,7 @@ class Info extends Model
         parent::init();
 
         // Make sure $edition is going to be an integer
-        if (isset($this->edition)) {
+        if (is_string($this->edition)) {
             $this->edition = (int)$this->edition;
         }
     }

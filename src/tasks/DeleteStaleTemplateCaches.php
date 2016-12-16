@@ -75,7 +75,7 @@ class DeleteStaleTemplateCaches extends Task
 
         // Normalize $elementId
         if (!is_array($this->elementId)) {
-            $this->elementId = [$this->elementId];
+            $this->elementId = (array)$this->elementId;
         }
 
         // Figure out how many rows we're dealing with
@@ -118,11 +118,12 @@ class DeleteStaleTemplateCaches extends Task
         $row = array_shift($this->_batchRows);
 
         // Have we already deleted this cache?
-        if (in_array($row['cacheId'], $this->_deletedCacheIds)) {
+        if (in_array($row['cacheId'], $this->_deletedCacheIds, false)) {
             $this->_totalDeletedCriteriaRows++;
         } else {
             // See if any of the updated elements would get fetched by this query
             /** @var ElementQuery|false $query */
+            /** @noinspection UnserializeExploitsInspection - $row['query'] is not user-supplied */
             $query = @unserialize(base64_decode($row['query']));
             if ($query === false || array_intersect($query->ids(), $this->elementId)) {
                 // Delete this cache

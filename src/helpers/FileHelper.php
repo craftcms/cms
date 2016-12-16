@@ -28,7 +28,7 @@ class FileHelper extends \yii\helpers\FileHelper
     public static function normalizePath($path, $ds = DIRECTORY_SEPARATOR)
     {
         // Is this a UNC network share path?
-        $isUnc = (strncmp($path, '//', 2) === 0 || strncmp($path, '\\\\', 2) === 0);
+        $isUnc = (strpos($path, '//') === 0 || strpos($path, '\\\\') === 0);
 
         // Normalize the path
         $path = parent::normalizePath($path, $ds);
@@ -80,7 +80,7 @@ class FileHelper extends \yii\helpers\FileHelper
      *
      * @return string The cleansed filename
      */
-    public static function sanitizeFilename($filename, $options = [])
+    public static function sanitizeFilename($filename, array $options = [])
     {
         $asciiOnly = isset($options['asciiOnly']) ? $options['asciiOnly'] : false;
         $separator = array_key_exists('separator', $options) ? $options['separator'] : '-';
@@ -125,12 +125,12 @@ class FileHelper extends \yii\helpers\FileHelper
         ];
 
         // Replace any control characters in the name with a space.
-        $filename = preg_replace("#\\x{00a0}#siu", ' ', $filename);
+        $filename = preg_replace("/\\x{00a0}/iu", ' ', $filename);
 
         // Strip any characters not allowed.
         $filename = str_replace($disallowedChars, '', strip_tags($filename));
 
-        if (!is_null($separator)) {
+        if ($separator !== null) {
             $filename = preg_replace('/(\s|'.preg_quote($separator, '/').')+/u', $separator, $filename);
         }
 
@@ -192,7 +192,7 @@ class FileHelper extends \yii\helpers\FileHelper
     {
         // If it's a directory, test on a temp sub file
         if (is_dir($path)) {
-            return static::isWritable($path.DIRECTORY_SEPARATOR.uniqid(mt_rand()).'.tmp');
+            return static::isWritable($path.DIRECTORY_SEPARATOR.uniqid('test_writable', true).'.tmp');
         }
 
         // Remember whether the file already existed
@@ -229,7 +229,7 @@ class FileHelper extends \yii\helpers\FileHelper
      * @throws InvalidParamException if the parent directory doesn't exist and options[createDirs] is false
      * @throws ErrorException in case of failure
      */
-    public static function writeToFile($file, $contents, $options = [])
+    public static function writeToFile($file, $contents, array $options = [])
     {
         $file = static::normalizePath($file);
         $dir = dirname($file);
@@ -303,7 +303,7 @@ class FileHelper extends \yii\helpers\FileHelper
      * @throws InvalidParamException if the dir is invalid
      * @throws ErrorException in case of failure
      */
-    public static function clearDirectory($dir, $options = [])
+    public static function clearDirectory($dir, array $options = [])
     {
         if (!is_dir($dir)) {
             throw new InvalidParamException("The dir argument must be a directory: $dir");

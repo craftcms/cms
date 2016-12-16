@@ -253,11 +253,9 @@ class Content extends Component
      */
     private function _removeColumnPrefixesFromRow($row)
     {
-        $fieldColumnPrefixLength = strlen($this->fieldColumnPrefix);
-
         foreach ($row as $column => $value) {
-            if (strncmp($column, $this->fieldColumnPrefix, $fieldColumnPrefixLength) === 0) {
-                $fieldHandle = substr($column, $fieldColumnPrefixLength);
+            if (strpos($column, $this->fieldColumnPrefix) === 0) {
+                $fieldHandle = substr($column, strlen($this->fieldColumnPrefix));
                 $row[$fieldHandle] = $value;
                 unset($row[$column]);
             }

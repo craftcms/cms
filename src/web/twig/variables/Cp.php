@@ -83,7 +83,7 @@ class Cp extends Component
             ];
         }
 
-        if (Craft::$app->getEdition() == Craft::Pro && Craft::$app->getUser()->checkPermission('editUsers')) {
+        if (Craft::$app->getEdition() === Craft::Pro && Craft::$app->getUser()->checkPermission('editUsers')) {
             $navItems[] = [
                 'label' => Craft::t('app', 'Users'),
                 'url' => 'users',
@@ -181,7 +181,7 @@ class Cp extends Component
             'label' => Craft::t('app', 'Routes')
         ];
 
-        if (Craft::$app->getEdition() == Craft::Pro) {
+        if (Craft::$app->getEdition() === Craft::Pro) {
             $settings[$label]['users'] = [
                 'icon' => 'users',
                 'label' => Craft::t('app', 'Users')

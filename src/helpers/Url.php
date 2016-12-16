@@ -35,7 +35,7 @@ class Url
      */
     public static function isAbsoluteUrl($url)
     {
-        return (strncmp('http://', $url, 7) === 0 || strncmp('https://', $url, 8) === 0);
+        return (strpos($url, 'http://') === 0 || strpos($url, 'https://') === 0);
     }
 
     /**
@@ -47,7 +47,7 @@ class Url
      */
     public static function isProtocolRelativeUrl($url)
     {
-        return (strncmp('//', $url, 2) === 0);
+        return (strpos($url, '//') === 0);
     }
 
     /**
@@ -59,7 +59,7 @@ class Url
      */
     public static function isRootRelativeUrl($url)
     {
-        return (strncmp('/', $url, 1) === 0 && !static::isProtocolRelativeUrl($url));
+        return (strpos($url, '/') === 0 && !static::isProtocolRelativeUrl($url));
     }
 
     /**
@@ -240,6 +240,7 @@ class Url
         $path = trim($path, '/');
         $url = static::_getUrl($path, $params, $protocol, false, false);
 
+        /** @noinspection UnSafeIsSetOverArrayInspection - FP */
         if (isset($currentSite)) {
             // Restore the original current site
             $sites->currentSite = $currentSite;
@@ -273,7 +274,7 @@ class Url
 
                 if ($path) {
                     if (!is_array($params)) {
-                        $params = [$params];
+                        $params = (array)$params;
                     }
 
                     $params[$dateParam] = filemtime($path);
@@ -283,11 +284,11 @@ class Url
 
                     // Use a consistent param for all resource requests with uncached paths, in case the same resource
                     // URL is requested multiple times in the same request
-                    if (!isset(static::$_x)) {
-                        static::$_x = StringHelper::randomString(9);
+                    if (self::$_x === null) {
+                        self::$_x = StringHelper::randomString(9);
                     }
 
-                    $params['x'] = static::$_x;
+                    $params['x'] = self::$_x;
                 }
             }
         }

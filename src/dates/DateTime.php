@@ -34,6 +34,7 @@ class DateTime extends \DateTime
         return $this->format('Y-m-d');
     }
 
+    /** @noinspection PhpSignatureMismatchDuringInheritanceInspection */
     /**
      * Creates a new [[DateTime]] object (rather than \DateTime)
      *

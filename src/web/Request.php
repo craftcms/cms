@@ -177,7 +177,7 @@ class Request extends \yii\web\Request
         // Is this a paginated request?
         $pageTrigger = Craft::$app->getConfig()->get('pageTrigger');
 
-        if (!is_string($pageTrigger) || !strlen($pageTrigger)) {
+        if (!is_string($pageTrigger) || $pageTrigger === '') {
             $pageTrigger = 'p';
         }
 
@@ -431,7 +431,7 @@ class Request extends \yii\web\Request
             $property = &$this->_isMobileBrowser;
         }
 
-        if (!isset($property)) {
+        if ($property === null) {
             if ($this->getUserAgent()) {
                 $property = (
                     preg_match(
@@ -747,15 +747,15 @@ class Request extends \yii\web\Request
     {
         $userAgent = $this->getUserAgent();
 
-        if (preg_match('/Linux/', $userAgent)) {
+        if (strpos($userAgent, 'Linux') !== false) {
             return 'Linux';
         }
 
-        if (preg_match('/Win/', $userAgent)) {
+        if (strpos($userAgent, 'Win') !== false) {
             return 'Windows';
         }
 
-        if (preg_match('/Mac/', $userAgent)) {
+        if (strpos($userAgent, 'Mac') !== false) {
             return 'Mac';
         }
 
@@ -958,7 +958,7 @@ class Request extends \yii\web\Request
                         $logoutPath,
                         $setPasswordPath,
                         $verifyEmailPath
-                    ]))
+                    ], true))
                 ) {
                     $this->_isActionRequest = true;
 
@@ -1073,14 +1073,8 @@ class Request extends \yii\web\Request
      */
     private function _validateIp($ip)
     {
-        if (
-            filter_var($ip, FILTER_VALIDATE_IP, FILTER_FLAG_IPV4) === false &&
-            filter_var($ip, FILTER_VALIDATE_IP, FILTER_FLAG_IPV6) === false
-        ) {
-            return false;
-        }
-
-        return true;
+        return !(filter_var($ip, FILTER_VALIDATE_IP, FILTER_FLAG_IPV4) === false &&
+            filter_var($ip, FILTER_VALIDATE_IP, FILTER_FLAG_IPV6) === false);
     }
 
     /**

@@ -126,7 +126,7 @@ class AppController extends Controller
         $this->requireAcceptsJson();
 
         // Make it so Craft Client accounts can perform the upgrade.
-        if (Craft::$app->getEdition() == Craft::Pro) {
+        if (Craft::$app->getEdition() === Craft::Pro) {
             $this->requireAdmin();
         }
 
@@ -137,7 +137,7 @@ class AppController extends Controller
         }
 
         // Make sure we've got a valid license key (mismatched domain is OK for these purposes)
-        if ($etResponse->licenseKeyStatus == LicenseKeyStatus::Invalid) {
+        if ($etResponse->licenseKeyStatus === LicenseKeyStatus::Invalid) {
             return $this->asErrorJson(Craft::t('app', 'Your license key is invalid.'));
         }
 
@@ -195,7 +195,7 @@ class AppController extends Controller
         $this->requireAcceptsJson();
 
         // Make it so Craft Client accounts can perform the upgrade.
-        if (Craft::$app->getEdition() == Craft::Pro) {
+        if (Craft::$app->getEdition() === Craft::Pro) {
             $this->requireAdmin();
         }
 
@@ -232,7 +232,7 @@ class AppController extends Controller
         $this->requireAcceptsJson();
 
         // Make it so Craft Client accounts can perform the upgrade.
-        if (Craft::$app->getEdition() == Craft::Pro) {
+        if (Craft::$app->getEdition() === Craft::Pro) {
             $this->requireAdmin();
         }
 

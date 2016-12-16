@@ -120,10 +120,8 @@ class Elements extends Component
             $config = ['type' => $config];
         }
 
-        /** @var Element $element */
-        $element = ComponentHelper::createComponent($config, ElementInterface::class);
-
-        return $element;
+        /** @noinspection PhpIncompatibleReturnTypeInspection */
+        return ComponentHelper::createComponent($config, ElementInterface::class);
     }
 
     // Finding Elements
@@ -435,7 +433,7 @@ class Elements extends Component
             }
 
             // Make sure the element actually supports this site
-            if (array_search($element->siteId, $supportedSiteIds) === false) {
+            if (!in_array($element->siteId, $supportedSiteIds, false)) {
                 throw new Exception('Attempting to save an element in an unsupported site.');
             }
 
@@ -1140,14 +1138,14 @@ class Elements extends Component
                                     $elementsByThing[$element->$thing] = $element;
                                 }
 
-                                foreach ($refTagsByThing as $thingVal => $refTags) {
+                                foreach ($refTagsByThing as $thingVal => $thingRefTags) {
                                     if (isset($elementsByThing[$thingVal])) {
                                         $element = $elementsByThing[$thingVal];
                                     } else {
                                         $element = false;
                                     }
 
-                                    foreach ($refTags as $refTag) {
+                                    foreach ($thingRefTags as $refTag) {
                                         $search[] = $refTag['token'];
 
                                         if ($element) {
@@ -1299,7 +1297,7 @@ class Elements extends Component
                         $targetElementIdsBySourceIds = [];
 
                         foreach ($map['map'] as $mapping) {
-                            if (!in_array($mapping['target'], $uniqueTargetElementIds)) {
+                            if (!in_array($mapping['target'], $uniqueTargetElementIds, false)) {
                                 $uniqueTargetElementIds[] = $mapping['target'];
                             }
 
@@ -1346,7 +1344,7 @@ class Elements extends Component
                             if ($useCustomOrder) {
                                 // Assign the elements in the order they were returned from the query
                                 foreach ($targetElements as $targetElement) {
-                                    if (in_array($targetElement->id, $targetElementIdsBySourceIds[$sourceElementId])) {
+                                    if (in_array($targetElement->id, $targetElementIdsBySourceIds[$sourceElementId], false)) {
                                         $targetElementsForSource[] = $targetElement;
                                     }
                                 }

@@ -184,7 +184,7 @@ class FindAndReplace extends Task
                     'varchar',
                     'string',
                     'char'
-                ])) {
+                ], true)) {
                     $this->_textColumns[] = $fieldColumnPrefix.$field->handle;
                 }
             }

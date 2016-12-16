@@ -156,7 +156,7 @@ class Assets
      *
      * @return array map of original folder id => new folder id
      */
-    public static function mirrorFolderStructure(VolumeFolder $sourceParentFolder, VolumeFolder $destinationFolder, $targetTreeMap = [])
+    public static function mirrorFolderStructure(VolumeFolder $sourceParentFolder, VolumeFolder $destinationFolder, array $targetTreeMap = [])
     {
         $assets = Craft::$app->getAssets();
         $sourceTree = $assets->getAllDescendantFolders($sourceParentFolder);
@@ -248,17 +248,16 @@ class Assets
     /**
      * Sorts a folder tree by Volume sort order.
      *
-     * @param array &$tree array passed by reference of the sortable folders.
+     * @param VolumeFolder[] &$tree array passed by reference of the sortable folders.
      */
     public static function sortFolderTree(&$tree)
     {
         $sort = [];
 
         foreach ($tree as $topFolder) {
-            /**
-             * @var VolumeFolder $topFolder
-             */
-            $sort[] = $topFolder->getVolume()->sortOrder;
+            /** @var Volume $volume */
+            $volume = $topFolder->getVolume();
+            $sort[] = $volume->sortOrder;
         }
 
         array_multisort($sort, $tree);
@@ -307,7 +306,7 @@ class Assets
             $ext = strtolower($ext);
 
             foreach (static::getFileKinds() as $kind => $info) {
-                if (in_array($ext, $info['extensions'])) {
+                if (in_array($ext, $info['extensions'], true)) {
                     return $kind;
                 }
             }
@@ -326,7 +325,7 @@ class Assets
      */
     private static function _buildFileKinds()
     {
-        if (!isset(self::$_fileKinds)) {
+        if (self::$_fileKinds === null) {
             self::$_fileKinds = [
                 'access' => [
                     'label' => Craft::t('app', 'Access'),

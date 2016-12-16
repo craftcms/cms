@@ -52,9 +52,10 @@ class AssetIndexer extends Component
     public function prepareIndexList($sessionId, $volumeId, $directory = '')
     {
         try {
+            /** @var Volume $volume */
             $volume = Craft::$app->getVolumes()->getVolumeById($volumeId);
 
-            $fileList = $volume->getFileList($directory);
+            $fileList = $volume->getFileList($directory, true);
 
             $fileList = array_filter(
                 $fileList,
@@ -63,7 +64,7 @@ class AssetIndexer extends Component
                     $segments = explode('/', $path);
 
                     foreach ($segments as $segment) {
-                        if (isset($segment[0]) && $segment[0] == '_') {
+                        if (isset($segment[0]) && $segment[0] === '_') {
                             return false;
                         }
                     }
@@ -172,9 +173,7 @@ class AssetIndexer extends Component
     {
         $volume = Craft::$app->getVolumes()->getVolumeById($volumeId);
 
-        $indexEntryModel = $this->getIndexEntry($volumeId, $sessionId, $offset);
-
-        if (empty($indexEntryModel)) {
+        if (($indexEntryModel = $this->getIndexEntry($volumeId, $sessionId, $offset)) === null) {
             return false;
         }
 
@@ -242,7 +241,7 @@ class AssetIndexer extends Component
      * @param $sessionId
      * @param $offset
      *
-     * @return AssetIndexData|bool
+     * @return AssetIndexData|null
      */
     public function getIndexEntry($volumeId, $sessionId, $offset)
     {
@@ -254,20 +253,20 @@ class AssetIndexer extends Component
             ]
         );
 
-        if ($record) {
-            return new AssetIndexData($record->toArray([
-                'id',
-                'volumeId',
-                'sessionId',
-                'offset',
-                'uri',
-                'size',
-                'recordId',
-                'timestamp',
-            ]));
+        if (!$record) {
+            return null;
         }
 
-        return false;
+        return new AssetIndexData($record->toArray([
+            'id',
+            'volumeId',
+            'sessionId',
+            'offset',
+            'uri',
+            'size',
+            'recordId',
+            'timestamp',
+        ]));
     }
 
     /**
@@ -371,7 +370,7 @@ class AssetIndexer extends Component
             $parts = explode('/', $uriPath);
             $filename = array_pop($parts);
 
-            $searchFullPath = join('/', $parts).(empty($parts) ? '' : '/');
+            $searchFullPath = implode('/', $parts).(empty($parts) ? '' : '/');
 
             if (empty($searchFullPath)) {
                 $parentId = ':empty:';
@@ -398,7 +397,7 @@ class AssetIndexer extends Component
                 ->folderId($folderId)
                 ->one();
 
-            if (is_null($assetModel)) {
+            if ($assetModel === null) {
                 $assetModel = new Asset();
                 $assetModel->volumeId = $volume->id;
                 $assetModel->folderId = $folderId;

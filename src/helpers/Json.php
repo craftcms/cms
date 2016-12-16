@@ -58,24 +58,4 @@ class Json extends \yii\helpers\Json
     {
         Header::setContentTypeByExtension('json');
     }
-
-    /**
-     * Removes single-line, multi-line, //, /*, comments from JSON
-     * (since comments technically product invalid JSON).
-     *
-     * @param string $json
-     *
-     * @return string
-     */
-    public static function removeComments($json)
-    {
-        // Remove any comments from the JSON.
-        // Adapted from http://stackoverflow.com/a/31907095/684
-        $pattern = '/(?:(?:\/\*(?:[^*]|(?:\*+[^*\/]))*\*+\/)|(?:(?<!\:|\\\|\'|\")\/\/.*))/';
-
-        $json = preg_replace($pattern, '', $json);
-        $json = trim($json, PHP_EOL);
-
-        return $json;
-    }
 }

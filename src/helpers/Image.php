@@ -161,10 +161,7 @@ class Image
     {
         $extension = pathinfo($filePath, PATHINFO_EXTENSION);
 
-        return in_array(
-            StringHelper::toLowerCase($extension),
-            ['jpg', 'jpeg', 'tiff']
-        );
+        return in_array(StringHelper::toLowerCase($extension), ['jpg', 'jpeg', 'tiff'], true);
     }
 
     /**
@@ -220,8 +217,8 @@ class Image
         if (
             preg_match(Svg::SVG_WIDTH_RE, $svg, $widthMatch) &&
             preg_match(Svg::SVG_HEIGHT_RE, $svg, $heightMatch) &&
-            ($matchedWidth = floatval($widthMatch[2])) &&
-            ($matchedHeight = floatval($heightMatch[2]))
+            ($matchedWidth = (float)$widthMatch[2]) &&
+            ($matchedHeight = (float)$heightMatch[2])
         ) {
             $width = round(
                 $matchedWidth * self::_getSizeUnitMultiplier($widthMatch[3])

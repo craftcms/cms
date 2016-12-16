@@ -182,11 +182,11 @@ abstract class Field extends SavableComponent implements FieldInterface
         ];
 
         // Only validate the ID if it's not a new field
-        if ($this->id !== null && strncmp($this->id, 'new', 3) !== 0) {
+        if ($this->id !== null && strpos($this->id, 'new') !== 0) {
             $rules[] = [['id'], 'number', 'integerOnly' => true];
         }
 
-        if ($this->translationMethod == self::TRANSLATION_METHOD_CUSTOM) {
+        if ($this->translationMethod === self::TRANSLATION_METHOD_CUSTOM) {
             $rules[] = [['translationKeyFormat'], 'required'];
         }
 
@@ -459,14 +459,14 @@ abstract class Field extends SavableComponent implements FieldInterface
      */
     protected function isFresh($element)
     {
-        if (!isset($this->_isFresh)) {
-            if ($element) {
-                $this->_isFresh = $element->getHasFreshContent();
-            } else {
-                $this->_isFresh = true;
-            }
+        if ($this->_isFresh !== null) {
+            return $this->_isFresh;
         }
 
-        return $this->_isFresh;
+        if ($element) {
+            return $this->_isFresh = $element->getHasFreshContent();
+        }
+
+        return true;
     }
 }

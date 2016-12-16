@@ -22,6 +22,7 @@ use craft\web\UploadedFile;
 use GuzzleHttp\Client;
 use HelpSpot\HelpSpotGuzzleClient;
 use yii\base\ErrorException;
+use yii\base\Exception;
 use yii\web\BadRequestHttpException;
 use yii\web\Response;
 use ZipArchive;
@@ -361,7 +362,7 @@ class DashboardController extends Controller
             $zip = new ZipArchive();
 
             if ($zip->open($zipPath, ZipArchive::CREATE) !== true) {
-                throw new \Exception('Cannot create zip at '.$zipPath);
+                throw new Exception('Cannot create zip at '.$zipPath);
             }
 
             // License key
@@ -563,7 +564,7 @@ class DashboardController extends Controller
             return $this->_getDefaultWidgetIconSvg($widget);
         }
 
-        if (FileHelper::getMimeType($iconPath) != 'image/svg+xml') {
+        if (FileHelper::getMimeType($iconPath) !== 'image/svg+xml') {
             Craft::warning("Widget icon file is not an SVG: {$iconPath}");
 
             return $this->_getDefaultWidgetIconSvg($widget);

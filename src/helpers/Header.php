@@ -37,22 +37,22 @@ class Header
      */
     public static function getMimeType()
     {
-        if (!isset(static::$_mimeType)) {
-            // Has it been explicitly set?
-            static::$_mimeType = static::getHeader('Content-Type');
-
-            if (static::$_mimeType !== null) {
-                // Drop the charset, if it's there
-                if (($pos = strpos(static::$_mimeType, ';')) !== false) {
-                    static::$_mimeType = rtrim(substr(static::$_mimeType, 0, $pos));
-                }
-            } else {
-                // Then it's whatever's in php.ini
-                static::$_mimeType = ini_get('default_mimetype');
-            }
+        if (self::$_mimeType !== null) {
+            return self::$_mimeType;
         }
 
-        return static::$_mimeType;
+        // Has it been explicitly set?
+        if ((self::$_mimeType = static::getHeader('Content-Type')) !== null) {
+            // Drop the charset, if it's there
+            if (($pos = strpos(self::$_mimeType, ';')) !== false) {
+                self::$_mimeType = rtrim(substr(self::$_mimeType, 0, $pos));
+            }
+        } else {
+            // Then it's whatever's in php.ini
+            self::$_mimeType = ini_get('default_mimetype');
+        }
+
+        return self::$_mimeType;
     }
 
     /**
@@ -74,7 +74,7 @@ class Header
 
         if (static::setHeader(['Content-Type' => $mimeType.'; charset=utf-8'])) {
             // Save the MIME type for getMimeType()
-            static::$_mimeType = $mimeType;
+            self::$_mimeType = $mimeType;
 
             return true;
         }
@@ -252,7 +252,7 @@ class Header
         }
 
         // Clear out our stored MIME type in case its about to be overridden
-        static::$_mimeType = null;
+        self::$_mimeType = null;
 
         if (is_string($header)) {
             $header = [$header];
