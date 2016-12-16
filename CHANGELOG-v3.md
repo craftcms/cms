@@ -354,6 +354,7 @@ Craft CMS 3.0 Working Changelog
 - Removed `craft\services\Users::deleteUser()`.
 - Removed the `$attribute` argument from `craft\base\ApplicationTrait::getInfo()`.
 - Removed the `$except` argument from `craft\base\Element::getFieldValues()`.
+- Removed the `$indexBy` argument from `craft\services\AssetTransforms::getAllTransforms()`.
 - Removed the `$indexBy` argument from `craft\services\Categories::getAllGroups()`.
 - Removed the `$newName` and `$after` arguments from `craft\db\Command::alterColumn()`.
 - Removed the `$newName` and `$after` arguments from `craft\db\Migration::alterColumn()`.

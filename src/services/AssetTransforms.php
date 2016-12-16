@@ -99,40 +99,24 @@ class AssetTransforms extends Component
     /**
      * Returns all named asset transforms.
      *
-     * @param string|null $indexBy
-     *
-     * @return array
+     * @return AssetTransform[]
      */
-    public function getAllTransforms($indexBy = null)
+    public function getAllTransforms()
     {
-        if (!$this->_fetchedAllTransforms) {
-            $results = $this->_createTransformQuery()->all();
-
-            $this->_transformsByHandle = [];
-
-            foreach ($results as $result) {
-                $transform = new AssetTransform($result);
-                $this->_transformsByHandle[$transform->handle] = $transform;
-            }
-
-            $this->_fetchedAllTransforms = true;
+        if ($this->_fetchedAllTransforms !== null) {
+            return array_values($this->_transformsByHandle);
         }
 
-        if ($indexBy == 'handle') {
-            $transforms = $this->_transformsByHandle;
-        } else {
-            if (!$indexBy) {
-                $transforms = array_values($this->_transformsByHandle);
-            } else {
-                $transforms = [];
+        $this->_transformsByHandle = [];
 
-                foreach ($this->_transformsByHandle as $transform) {
-                    $transforms[$transform->$indexBy] = $transform;
-                }
-            }
+        foreach ($this->_createTransformQuery()->all() as $result) {
+            $transform = new AssetTransform($result);
+            $this->_transformsByHandle[$transform->handle] = $transform;
         }
 
-        return $transforms;
+        $this->_fetchedAllTransforms = true;
+
+        return array_values($this->_transformsByHandle);
     }
 
     /**
