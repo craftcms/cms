@@ -44,7 +44,7 @@ class SearchQuery
      * @param string $query
      * @param array  $termOptions
      */
-    public function __construct($query, $termOptions = [])
+    public function __construct($query, array $termOptions = [])
     {
         $this->_query = $query;
         $this->_termOptions = $termOptions;

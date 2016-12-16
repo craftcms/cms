@@ -162,7 +162,7 @@ class View extends \yii\web\View
      *
      * @return Environment The Twig Environment instance.
      */
-    public function getTwig($loaderClass = null, $options = [])
+    public function getTwig($loaderClass = null, array $options = [])
     {
         if (!$loaderClass) {
             $loaderClass = TemplateLoader::class;
@@ -252,7 +252,7 @@ class View extends \yii\web\View
      * @return string the rendering result
      * @throws \Twig_Error_Loader if the template doesn’t exist
      */
-    public function renderTemplate($template, $variables = [])
+    public function renderTemplate($template, array $variables = [])
     {
         Craft::trace("Rendering template: $template", __METHOD__);
 
@@ -275,7 +275,7 @@ class View extends \yii\web\View
      *
      * @return string the rendering result
      */
-    public function renderPageTemplate($template, $variables = [])
+    public function renderPageTemplate($template, array $variables = [])
     {
         ob_start();
         ob_implicit_flush(false);
@@ -301,7 +301,7 @@ class View extends \yii\web\View
      *
      * @return string The rendered macro output.
      */
-    public function renderTemplateMacro($template, $macro, $args = [])
+    public function renderTemplateMacro($template, $macro, array $args = [])
     {
         $twig = $this->getTwig();
         $twigTemplate = $twig->loadTemplate($template);
@@ -322,7 +322,7 @@ class View extends \yii\web\View
      *
      * @return string The rendered template.
      */
-    public function renderString($template, $variables = [])
+    public function renderString($template, array $variables = [])
     {
         $stringTemplate = new StringTemplate(md5($template), $template);
 
@@ -559,7 +559,7 @@ class View extends \yii\web\View
      *                        $url as the key. If two CSS files are registered with the same key, the latter
      *                        will overwrite the former.
      */
-    public function registerCssResource($path, $options = [], $key = null)
+    public function registerCssResource($path, array $options = [], $key = null)
     {
         $this->_registerResource($path, $options, $key, 'css');
     }
@@ -583,7 +583,7 @@ class View extends \yii\web\View
      *                        $url as the key. If two JS files are registered with the same key, the latter
      *                        will overwrite the former.
      */
-    public function registerJsResource($path, $options = [], $key = null)
+    public function registerJsResource($path, array $options = [], $key = null)
     {
         $this->_registerResource($path, $options, $key, 'js');
     }
@@ -597,7 +597,7 @@ class View extends \yii\web\View
      *                        $css as the key. If two CSS code blocks are registered with the same key, the latter
      *                        will overwrite the former.
      */
-    public function registerHiResCss($css, $options = [], $key = null)
+    public function registerHiResCss($css, array $options = [], $key = null)
     {
         $css = "@media only screen and (-webkit-min-device-pixel-ratio: 1.5),\n".
             "only screen and (   -moz-min-device-pixel-ratio: 1.5),\n".

@@ -1042,7 +1042,7 @@ class Fields extends Component
      *
      * @return FieldLayout The field layout
      */
-    public function assembleLayout($postedFieldLayout, $requiredFields = [])
+    public function assembleLayout($postedFieldLayout, array $requiredFields = [])
     {
         $tabs = [];
         $fields = [];

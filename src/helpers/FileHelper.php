@@ -80,7 +80,7 @@ class FileHelper extends \yii\helpers\FileHelper
      *
      * @return string The cleansed filename
      */
-    public static function sanitizeFilename($filename, $options = [])
+    public static function sanitizeFilename($filename, array $options = [])
     {
         $asciiOnly = isset($options['asciiOnly']) ? $options['asciiOnly'] : false;
         $separator = array_key_exists('separator', $options) ? $options['separator'] : '-';
@@ -229,7 +229,7 @@ class FileHelper extends \yii\helpers\FileHelper
      * @throws InvalidParamException if the parent directory doesn't exist and options[createDirs] is false
      * @throws ErrorException in case of failure
      */
-    public static function writeToFile($file, $contents, $options = [])
+    public static function writeToFile($file, $contents, array $options = [])
     {
         $file = static::normalizePath($file);
         $dir = dirname($file);
@@ -303,7 +303,7 @@ class FileHelper extends \yii\helpers\FileHelper
      * @throws InvalidParamException if the dir is invalid
      * @throws ErrorException in case of failure
      */
-    public static function clearDirectory($dir, $options = [])
+    public static function clearDirectory($dir, array $options = [])
     {
         if (!is_dir($dir)) {
             throw new InvalidParamException("The dir argument must be a directory: $dir");

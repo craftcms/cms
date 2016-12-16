@@ -534,7 +534,7 @@ class UserPermissions extends Component
      *
      * @return array The permissions we'll actually let them save.
      */
-    private function _filterOrphanedPermissions($postedPermissions, $groupPermissions = [])
+    private function _filterOrphanedPermissions($postedPermissions, array $groupPermissions = [])
     {
         $filteredPermissions = [];
 

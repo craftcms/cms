@@ -596,7 +596,7 @@ class Assets extends Component
      *
      * @return array
      */
-    public function getFolderTreeByVolumeIds($allowedVolumeIds, $additionalCriteria = [])
+    public function getFolderTreeByVolumeIds($allowedVolumeIds, array $additionalCriteria = [])
     {
         static $volumeFolders = [];
 

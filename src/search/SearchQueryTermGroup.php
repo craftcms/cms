@@ -33,7 +33,7 @@ class SearchQueryTermGroup
      *
      * @param array $terms
      */
-    public function __construct($terms = [])
+    public function __construct(array $terms = [])
     {
         $this->terms = $terms;
     }

@@ -153,7 +153,7 @@ class Command extends \yii\db\Command
      *
      * @return Command The command object itself.
      */
-    public function replace($table, $column, $find, $replace, $condition = '', $params = [])
+    public function replace($table, $column, $find, $replace, $condition = '', array $params = [])
     {
         $sql = $this->db->getQueryBuilder()->replace($table, $column, $find, $replace, $condition, $params);
 

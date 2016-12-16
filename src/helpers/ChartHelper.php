@@ -39,16 +39,16 @@ class ChartHelper
      *  - `valueLabel`    - The label to use for the chart values. Defaults to "Value".
      *  - `valueType`     - The type of values that are being plotted ('number', 'currency', 'percent', 'time'). Defaults to 'number'.
      *
-     * @param Query      $query      The DB query that should be used
-     * @param DateTime   $startDate  The start of the time duration to select (inclusive)
-     * @param DateTime   $endDate    The end of the time duration to select (exclusive)
-     * @param string     $dateColumn The column that represents the date
-     * @param array|null $options    Any customizations that should be made over the default options
+     * @param Query    $query      The DB query that should be used
+     * @param DateTime $startDate  The start of the time duration to select (inclusive)
+     * @param DateTime $endDate    The end of the time duration to select (exclusive)
+     * @param string   $dateColumn The column that represents the date
+     * @param array    $options    Any customizations that should be made over the default options
      *
      * @return array
      * @throws Exception
      */
-    public static function getRunChartDataFromQuery(Query $query, DateTime $startDate, DateTime $endDate, $dateColumn, $options = [])
+    public static function getRunChartDataFromQuery(Query $query, DateTime $startDate, DateTime $endDate, $dateColumn, array $options = [])
     {
         // Setup
         $options = array_merge([
