@@ -55,7 +55,6 @@ use yii\web\ServerErrorHttpException;
  * @property \craft\services\Fields          $fields             The fields service
  * @property Formatter                       $formatter          The formatter component
  * @property \craft\services\Globals         $globals            The globals service
- * @property \Http\Adapter\Guzzle6\Client    $httpClient         The Guzzle HTTP client
  * @property boolean                         $hasWrongEdition    Whether Craft is running with the wrong edition
  * @property I18N                            $i18n               The internationalization (i18n) component
  * @property \craft\services\Images          $images             The images service
@@ -924,17 +923,6 @@ trait ApplicationTrait
     {
         /** @var \craft\web\Application|\craft\console\Application $this */
         return $this->get('globals');
-    }
-
-    /**
-     * Returns the Guzzle HTTP client.
-     *
-     * @return \Http\Adapter\Guzzle6\Client The Guzzle HTTP client
-     */
-    public function getHttpClient()
-    {
-        /** @var \craft\web\Application|\craft\console\Application $this */
-        return $this->get('httpClient');
     }
 
     /**

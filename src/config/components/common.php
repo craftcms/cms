@@ -5,7 +5,6 @@ use craft\db\MigrationManager;
 use craft\helpers\MailerHelper;
 use craft\log\FileTarget;
 use craft\services\Config;
-use Http\Adapter\Guzzle6\Client;
 use yii\base\InvalidConfigException;
 use yii\db\Exception as DbException;
 use yii\log\Logger;
@@ -228,17 +227,6 @@ return [
         $db->setDriverName($driver);
 
         return $db;
-    },
-
-    'httpClient' => function() {
-        return new Client([
-            'headers' => [
-                'User-Agent' => 'Craft/'.Craft::$app->version.' '.\GuzzleHttp\default_user_agent()
-            ],
-            'timeout' => 120,
-            'connect_timeout' => 120,
-            'allow_redirects' => false,
-        ]);
     },
 
     'mailer' => function() {

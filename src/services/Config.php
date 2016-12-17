@@ -42,6 +42,7 @@ class Config extends Component
     const CATEGORY_DBCACHE = 'dbcache';
     const CATEGORY_MEMCACHE = 'memcache';
     const CATEGORY_APC = 'apc';
+    const CATEGORY_GUZZLE = 'guzzle';
 
     // Properties
     // =========================================================================
