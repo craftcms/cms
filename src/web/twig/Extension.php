@@ -9,7 +9,7 @@ namespace craft\web\twig;
 
 use Craft;
 use craft\base\MissingComponentInterface;
-use craft\dates\DateTime;
+use craft\helpers\ArrayHelper;
 use craft\helpers\DateTimeHelper;
 use craft\helpers\Db;
 use craft\helpers\Header;
@@ -35,6 +35,7 @@ use craft\web\twig\tokenparsers\RequirePermissionTokenParser;
 use craft\web\twig\tokenparsers\SwitchTokenParser;
 use craft\web\twig\variables\CraftVariable;
 use craft\web\View;
+use DateTime;
 use yii\base\InvalidConfigException;
 use yii\helpers\Markdown;
 
@@ -146,6 +147,7 @@ class Extension extends \Twig_Extension implements \Twig_Extension_GlobalsInterf
 
         return [
             new \Twig_SimpleFilter('camel', [$this, 'camelFilter']),
+            new \Twig_SimpleFilter('column', [ArrayHelper::class, 'getColumn']),
             new \Twig_SimpleFilter('currency', [$formatter, 'asCurrency']),
             new \Twig_SimpleFilter('date', [$this, 'dateFilter'], ['needs_environment' => true]),
             new \Twig_SimpleFilter('datetime', [$this, 'datetimeFilter'], ['needs_environment' => true]),
@@ -155,6 +157,7 @@ class Extension extends \Twig_Extension implements \Twig_Extension_GlobalsInterf
             new \Twig_SimpleFilter('group', [$this, 'groupFilter']),
             new \Twig_SimpleFilter('hash', [$security, 'hashData']),
             new \Twig_SimpleFilter('id', [$this->view, 'formatInputId']),
+            new \Twig_SimpleFilter('index', [ArrayHelper::class, 'index']),
             new \Twig_SimpleFilter('indexOf', [$this, 'indexOfFilter']),
             new \Twig_SimpleFilter('intersect', 'array_intersect'),
             new \Twig_SimpleFilter('json_encode', [$this, 'jsonEncodeFilter']),

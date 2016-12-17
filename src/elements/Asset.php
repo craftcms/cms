@@ -369,7 +369,7 @@ class Asset extends Element
     /**
      * @var VolumeInterface
      */
-    private $_volume = null;
+    private $_volume;
 
     // Public Methods
     // =========================================================================

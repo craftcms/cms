@@ -183,14 +183,12 @@ class Section extends Model
     /**
      * Returns the section's entry types.
      *
-     * @param string|null $indexBy
-     *
      * @return EntryType[]
      */
-    public function getEntryTypes($indexBy = null)
+    public function getEntryTypes()
     {
         if ($this->_entryTypes !== null) {
-            return $indexBy ? ArrayHelper::index($this->_entryTypes, $indexBy) : $this->_entryTypes;
+            return $this->_entryTypes;
         }
 
         if (!$this->id) {
@@ -199,6 +197,6 @@ class Section extends Model
 
         $this->_entryTypes = Craft::$app->getSections()->getEntryTypesBySectionId($this->id);
 
-        return $indexBy ? ArrayHelper::index($this->_entryTypes, $indexBy) : $this->_entryTypes;
+        return $this->_entryTypes;
     }
 }

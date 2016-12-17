@@ -30,7 +30,7 @@ class Command extends \yii\db\Command
      * @param array   $columns             The column data (name => value) to be inserted into the table.
      * @param boolean $includeAuditColumns Whether `dateCreated`, `dateUpdated`, and `uid` values should be added to $columns.
      *
-     * @return $this the command object itself
+     * @return static the command object itself
      */
     public function insert($table, $columns, $includeAuditColumns = true)
     {
@@ -61,7 +61,7 @@ class Command extends \yii\db\Command
      * @param array   $rows                The rows to be batch inserted into the table.
      * @param boolean $includeAuditColumns Whether `dateCreated`, `dateUpdated`, and `uid` values should be added to $columns.
      *
-     * @return $this The command object itself.
+     * @return static The command object itself.
      */
     public function batchInsert($table, $columns, $rows, $includeAuditColumns = true)
     {
@@ -127,7 +127,7 @@ class Command extends \yii\db\Command
      * @param array        $params              The parameters to be bound to the command.
      * @param boolean      $includeAuditColumns Whether the `dateUpdated` value should be added to $columns.
      *
-     * @return $this The command object itself.
+     * @return static The command object itself.
      */
     public function update($table, $columns, $condition = '', $params = [], $includeAuditColumns = true)
     {

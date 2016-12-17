@@ -286,7 +286,6 @@ class EntryRevisions extends Component
         Craft::$app->getElements()->saveElement($draft, false);
 
         // Delete the draft
-        $success = false;
         $this->deleteDraft($draft);
 
         // Fire an 'afterPublishDraft' event

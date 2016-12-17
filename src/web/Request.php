@@ -785,7 +785,7 @@ class Request extends \yii\web\Request
 
             // the mask doesn't need to be very random
             $chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789_-.';
-            $mask = substr(str_shuffle(str_repeat($chars, 5)), 0, static::CSRF_MASK_LENGTH);
+            $mask = substr(str_shuffle(str_repeat($chars, 5)), 0, self::CSRF_MASK_LENGTH);
             // The + sign may be decoded as blank space later, which will fail the validation
             $this->_csrfToken = str_replace('+', '.', base64_encode($mask.$this->_xorTokens($token, $mask)));
         }

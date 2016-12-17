@@ -46,7 +46,7 @@ class Message extends \yii\swiftmailer\Message
      *                                       You may also specify sender name in addition to email address using format:
      *                                       `[email => name]`.
      *
-     * @return $this self reference
+     * @return static self reference
      */
     public function setFrom($from)
     {
@@ -64,7 +64,7 @@ class Message extends \yii\swiftmailer\Message
      *                                     You may also specify receiver name in addition to email address using format:
      *                                     `[email => name]`.
      *
-     * @return $this self reference
+     * @return static self reference
      */
     public function setTo($to)
     {
@@ -90,7 +90,7 @@ class Message extends \yii\swiftmailer\Message
      *                                     You may also specify receiver name in addition to email address using format:
      *                                     `[email => name]`.
      *
-     * @return $this self reference
+     * @return static self reference
      */
     public function setCc($cc)
     {
@@ -108,7 +108,7 @@ class Message extends \yii\swiftmailer\Message
      *                                      You may also specify receiver name in addition to email address using format:
      *                                      `[email => name]`.
      *
-     * @return $this self reference
+     * @return static self reference
      */
     public function setBcc($bcc)
     {

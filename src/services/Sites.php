@@ -8,6 +8,7 @@
 namespace craft\services;
 
 use Craft;
+use craft\base\Element;
 use craft\db\Query;
 use craft\errors\DbConnectException;
 use craft\errors\SiteNotFoundException;
@@ -710,7 +711,6 @@ class Sites extends Component
                             ->execute();
 
                         $matrixTablePrefix = Craft::$app->getDb()->getSchema()->getRawTableName('{{%matrixcontent_}}');
-                        $matrixTablePrefixLength = strlen($matrixTablePrefix);
                         $tablePrefixLength = strlen(Craft::$app->getDb()->tablePrefix);
 
                         foreach (Craft::$app->getDb()->getSchema()->getTableNames() as $tableName) {
@@ -879,7 +879,7 @@ class Sites extends Component
         $nonLocalizedElementTypes = [];
 
         foreach (Craft::$app->getElements()->getAllElementTypes() as $elementType) {
-            /** Element $elementType */
+            /** @var Element|string $elementType */
             if (!$elementType::isLocalized()) {
                 $nonLocalizedElementTypes[] = $elementType;
             }

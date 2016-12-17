@@ -9,7 +9,6 @@ namespace craft\services;
 
 use Craft;
 use craft\dates\DateInterval;
-use craft\dates\DateTime;
 use craft\db\Query;
 use craft\elements\Asset;
 use craft\elements\User;
@@ -31,6 +30,7 @@ use craft\helpers\StringHelper;
 use craft\helpers\Template;
 use craft\helpers\Url;
 use craft\records\User as UserRecord;
+use DateTime;
 use yii\base\Component;
 use yii\db\Exception;
 

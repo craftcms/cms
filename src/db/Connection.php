@@ -21,15 +21,17 @@ use mikehaertl\shellcommand\Command as ShellCommand;
 use yii\base\Exception;
 use yii\base\NotSupportedException;
 use yii\db\Exception as DbException;
-use yii\db\TableSchema;
+use yii\db\TableSchema as BaseTableSchema;
 
 /**
  * @inheritdoc
  *
- * @property QueryBuilder $queryBuilder The query builder for the current DB connection.
- * @property mysql\Schema|pgsql\Schema $schema The schema information for the database opened by this connection.
+ * @property QueryBuilder              $queryBuilder The query builder for the current DB connection.
+ * @property mysql\Schema|pgsql\Schema $schema       The schema information for the database opened by this connection.
+ *
  * @method QueryBuilder getQueryBuilder() Returns the query builder for the current DB connection.
  * @method mysql\Schema|pgsql\Schema getSchema() Returns the schema information for the database opened by this connection.
+ * @method TableSchema getTableSchema($name, $refresh = false) Obtains the schema information for the named table.
  * @method Command createCommand($sql = null, $params = []) Creates a command for execution.
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
@@ -242,9 +244,9 @@ class Connection extends \yii\db\Connection
     /**
      * Checks if a column exists in a table.
      *
-     * @param TableSchema|string $table
-     * @param string             $column
-     * @param boolean|null       $refresh
+     * @param BaseTableSchema|string $table
+     * @param string                 $column
+     * @param boolean|null           $refresh
      *
      * @return boolean
      * @throws NotSupportedException if there is no support for the current driver type
@@ -256,7 +258,7 @@ class Connection extends \yii\db\Connection
             $this->getSchema()->refresh();
         }
 
-        if (!$table instanceof TableSchema) {
+        if (!$table instanceof BaseTableSchema) {
             if (($table = $this->getTableSchema('{{'.$table.'}}')) === null) {
                 return false;
             }

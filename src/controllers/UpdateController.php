@@ -13,7 +13,6 @@ use craft\enums\PluginUpdateStatus;
 use craft\errors\EtException;
 use craft\errors\UpdateValidationException;
 use craft\helpers\App;
-use craft\helpers\ArrayHelper;
 use craft\helpers\Json;
 use craft\helpers\Update;
 use craft\helpers\Url;
@@ -650,8 +649,6 @@ EOD;
             }
 
             $dbBackupPath = false;
-
-            $config = Craft::$app->getConfig();
 
             // See if we're allowed to backup the database.
             if ($this->_shouldBackupDb()) {

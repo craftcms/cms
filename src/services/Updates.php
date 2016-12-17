@@ -204,7 +204,7 @@ class Updates extends Component
     {
         if ($this->_updateModel !== null && !$forceRefresh) {
             return $this->_updateModel;
-    }
+        }
 
         $updateModel = false;
 

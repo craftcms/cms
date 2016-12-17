@@ -9,8 +9,8 @@ namespace craft\helpers;
 
 use Craft;
 use craft\dates\DateInterval;
-use craft\dates\DateTime;
 use craft\i18n\Locale;
+use DateTime;
 use yii\helpers\FormatConverter;
 
 /**

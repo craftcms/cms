@@ -12,6 +12,7 @@ use craft\base\Model;
 use craft\behaviors\FieldLayoutBehavior;
 use craft\behaviors\FieldLayoutTrait;
 use craft\elements\Category;
+use craft\helpers\ArrayHelper;
 use craft\records\CategoryGroup as CategoryGroupRecord;
 use craft\validators\HandleValidator;
 use craft\validators\UniqueValidator;
@@ -143,7 +144,7 @@ class CategoryGroup extends Model
         }
 
         // Set them with setSiteSettings() so setGroup() gets called on them
-        $this->setSiteSettings(Craft::$app->getCategories()->getGroupSiteSettings($this->id, 'siteId'));
+        $this->setSiteSettings(ArrayHelper::index(Craft::$app->getCategories()->getGroupSiteSettings($this->id), 'siteId'));
 
         return $this->_siteSettings;
     }

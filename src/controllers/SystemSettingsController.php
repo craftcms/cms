@@ -8,7 +8,6 @@
 namespace craft\controllers;
 
 use Craft;
-use craft\dates\DateTime;
 use craft\elements\GlobalSet;
 use craft\errors\MissingComponentException;
 use craft\helpers\MailerHelper;
@@ -25,6 +24,7 @@ use craft\tools\DbBackup;
 use craft\tools\FindAndReplace;
 use craft\tools\SearchIndex;
 use craft\web\Controller;
+use DateTime;
 use yii\base\Exception;
 use yii\helpers\Inflector;
 use yii\web\NotFoundHttpException;
@@ -96,7 +96,6 @@ class SystemSettingsController extends Controller
         $utc = new DateTime();
         $offsets = [];
         $timezoneIds = [];
-        $includedAbbrs = [];
 
         foreach (\DateTimeZone::listIdentifiers() as $timezoneId) {
             $timezone = new \DateTimeZone($timezoneId);
@@ -120,7 +119,6 @@ class SystemSettingsController extends Controller
 
             $offsets[] = $offset;
             $timezoneIds[] = $timezoneId;
-            $includedAbbrs[] = $abbr;
             $timezoneOptions[] = [
                 'value' => $timezoneId,
                 'label' => 'UTC'.$format.($abbr != 'UTC' ? " ({$abbr})" : '').($timezoneId != 'UTC' ? ' – '.$timezoneId : '')

@@ -245,7 +245,7 @@ class FileHelper extends \yii\helpers\FileHelper
         if (isset($options['lock'])) {
             $lock = (bool)$options['lock'];
         } else {
-            $lock = Craft::$app->getConfig()->getUseWriteFileLock();
+            $lock = Craft::$app->getConfig()->getUseFileLocks();
         }
 
         if ($lock) {

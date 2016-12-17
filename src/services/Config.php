@@ -65,7 +65,7 @@ class Config extends Component
     /**
      * @var boolean
      */
-    private $_useWriteFileLocks;
+    private $_useFileLocks;
 
     /**
      * @var string[]
@@ -696,23 +696,23 @@ class Config extends Component
      *
      * @return boolean
      */
-    public function getUseWriteFileLock()
+    public function getUseFileLocks()
     {
-        if ($this->_useWriteFileLocks !== null) {
-            return $this->_useWriteFileLocks;
+        if ($this->_useFileLocks !== null) {
+            return $this->_useFileLocks;
         }
 
-        if (is_bool($configVal = $this->get('useWriteFileLock'))) {
-            return $this->_useWriteFileLocks = $configVal;
+        if (is_bool($configVal = $this->get('useFileLocks'))) {
+            return $this->_useFileLocks = $configVal;
         }
 
         // Do we have it cached?
-        if (($cachedVal = Craft::$app->getCache()->get('useWriteFileLocks')) !== false) {
-            return $this->_useWriteFileLocks = ($cachedVal === 'y');
+        if (($cachedVal = Craft::$app->getCache()->get('useFileLocks')) !== false) {
+            return $this->_useFileLocks = ($cachedVal === 'y');
         }
 
         // Try a test lock
-        $this->_useWriteFileLocks = false;
+        $this->_useFileLocks = false;
 
         try {
             $mutex = Craft::$app->getMutex();
@@ -723,16 +723,16 @@ class Config extends Component
             if (!$mutex->release($name)) {
                 throw new Exception('Unable to release test lock.');
             }
-            $this->_useWriteFileLocks = true;
+            $this->_useFileLocks = true;
         } catch (\Exception $e) {
             Craft::warning('Write lock test failed: '.$e->getMessage());
         }
 
         // Cache for two months
-        $cachedValue = $this->_useWriteFileLocks ? 'y' : 'n';
-        Craft::$app->getCache()->set('useWriteFileLocks', $cachedValue, 5184000);
+        $cachedValue = $this->_useFileLocks ? 'y' : 'n';
+        Craft::$app->getCache()->set('useFileLocks', $cachedValue, 5184000);
 
-        return $this->_useWriteFileLocks;
+        return $this->_useFileLocks;
     }
 
     /**

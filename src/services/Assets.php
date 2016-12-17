@@ -8,7 +8,6 @@
 namespace craft\services;
 
 use Craft;
-use craft\dates\DateTime;
 use craft\db\Query;
 use craft\elements\Asset;
 use craft\elements\db\AssetQuery;
@@ -40,6 +39,7 @@ use craft\records\Asset as AssetRecord;
 use craft\records\VolumeFolder as VolumeFolderRecord;
 use craft\tasks\GeneratePendingTransforms;
 use craft\volumes\Temp;
+use DateTime;
 use yii\base\Component;
 
 /**
@@ -84,22 +84,6 @@ class Assets extends Component
 
     // Public Methods
     // =========================================================================
-
-    /**
-     * Returns all top-level files in a volume.
-     *
-     * @param integer     $volumeId
-     * @param string|null $indexBy
-     *
-     * @return array
-     */
-    public function getFilesByVolumeId($volumeId, $indexBy = null)
-    {
-        return Asset::find()
-            ->volumeId($volumeId)
-            ->indexBy($indexBy)
-            ->all();
-    }
 
     /**
      * Returns a file by its ID.

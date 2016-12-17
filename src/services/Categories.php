@@ -12,7 +12,6 @@ use craft\db\Query;
 use craft\elements\Category;
 use craft\errors\CategoryGroupNotFoundException;
 use craft\events\CategoryGroupEvent;
-use craft\helpers\ArrayHelper;
 use craft\models\CategoryGroup;
 use craft\models\CategoryGroup_SiteSettings;
 use craft\models\FieldLayout;
@@ -130,18 +129,12 @@ class Categories extends Component
     /**
      * Returns all category groups.
      *
-     * @param string|null $indexBy
-     *
      * @return CategoryGroup[]
      */
-    public function getAllGroups($indexBy = null)
+    public function getAllGroups()
     {
         if ($this->_fetchedAllCategoryGroups) {
-            if ($indexBy === 'id') {
-                return $this->_categoryGroupsById;
-            }
-
-            return $indexBy ? ArrayHelper::index($this->_categoryGroupsById, $indexBy) : array_values($this->_categoryGroupsById);
+            return array_values($this->_categoryGroupsById);
         }
 
         $this->_categoryGroupsById = [];
@@ -158,32 +151,22 @@ class Categories extends Component
 
         $this->_fetchedAllCategoryGroups = true;
 
-        if ($indexBy === 'id') {
-            return $this->_categoryGroupsById;
-        }
-
-        return $indexBy ? ArrayHelper::index($this->_categoryGroupsById, $indexBy) : array_values($this->_categoryGroupsById);
+        return array_values($this->_categoryGroupsById);
     }
 
     /**
      * Returns all editable groups.
      *
-     * @param string|null $indexBy
-     *
      * @return CategoryGroup[]
      */
-    public function getEditableGroups($indexBy = null)
+    public function getEditableGroups()
     {
         $editableGroupIds = $this->getEditableGroupIds();
         $editableGroups = [];
 
         foreach ($this->getAllGroups() as $group) {
             if (in_array($group->id, $editableGroupIds, false)) {
-                if ($indexBy) {
-                    $editableGroups[$group->$indexBy] = $group;
-                } else {
-                    $editableGroups[] = $group;
-                }
+                $editableGroups[] = $group;
             }
         }
 
@@ -256,20 +239,19 @@ class Categories extends Component
     /**
      * Returns a group's site settings.
      *
-     * @param integer     $groupId
-     * @param string|null $indexBy
+     * @param integer $groupId
      *
      * @return CategoryGroup_SiteSettings[]
      */
-    public function getGroupSiteSettings($groupId, $indexBy = null)
+    public function getGroupSiteSettings($groupId)
     {
-        $siteSettings = CategoryGroup_SiteSettingsRecord::find()
+        $results = CategoryGroup_SiteSettingsRecord::find()
             ->where(['groupId' => $groupId])
-            ->indexBy($indexBy)
             ->all();
+        $siteSettings = [];
 
-        foreach ($siteSettings as $key => $value) {
-            $siteSettings[$key] = new CategoryGroup_SiteSettings($value->toArray([
+        foreach ($results as $result) {
+            $siteSettings[] = new CategoryGroup_SiteSettings($result->toArray([
                 'id',
                 'groupId',
                 'siteId',
@@ -665,13 +647,14 @@ class Categories extends Component
             return null;
         }
 
-        return Category::find()
-            ->id($categoryId)
-            ->structureId($structureId)
-            ->siteId($siteId)
-            ->status(null)
-            ->enabledForSite(false)
-            ->one();
+        $query = Category::find();
+        $query->id($categoryId);
+        $query->structureId($structureId);
+        $query->siteId($siteId);
+        $query->status(null);
+        $query->enabledForSite(false);
+
+        return $query->one();
     }
 
     /**
@@ -687,12 +670,12 @@ class Categories extends Component
 
         if ($ids) {
             // Make sure that for each selected category, all of its parents are also selected.
-            $categories = Category::find()
-                ->id($ids)
-                ->status(null)
-                ->enabledForSite(false)
-                ->limit(null)
-                ->all();
+            $categoryQuery = Category::find();
+            $categoryQuery->id($ids);
+            $categoryQuery->status(null);
+            $categoryQuery->enabledForSite(false);
+            $categoryQuery->limit(null);
+            $categories = $categoryQuery->all();
 
             $prevCategory = null;
 

@@ -14,6 +14,7 @@ use craft\base\Field;
 use craft\base\Volume;
 use craft\events\RegisterRichTextLinkOptionsEvent;
 use craft\fields\data\RichTextData;
+use craft\helpers\ArrayHelper;
 use craft\helpers\Db;
 use craft\helpers\FileHelper;
 use craft\helpers\Html;
@@ -506,15 +507,13 @@ class RichText extends Field
      */
     private function _getTransforms()
     {
-        $transforms = Craft::$app->getAssetTransforms()->getAllTransforms('id');
-
-        $transformIds = array_flip(!empty($this->availableTransforms) && is_array($this->availableTransforms) ? $this->availableTransforms : []);
-        if (!empty($transformIds)) {
-            $transforms = array_intersect_key($transforms, $transformIds);
-        }
-
+        $allTransforms = Craft::$app->getAssetTransforms()->getAllTransforms();
         $transformList = [];
-        foreach ($transforms as $transform) {
+
+        foreach ($allTransforms as $transform) {
+            if ($this->availableTransforms && !in_array($transform->id, $this->availableTransforms, false)) {
+                continue;
+            }
             $transformList[] = (object)[
                 'handle' => Html::encode($transform->handle),
                 'name' => Html::encode($transform->name)

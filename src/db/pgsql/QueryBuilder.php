@@ -72,7 +72,7 @@ class QueryBuilder extends \yii\db\pgsql\QueryBuilder
                     $params[$n] = $v;
                 }
             } else {
-                $phName = static::PARAM_PREFIX.count($params);
+                $phName = self::PARAM_PREFIX.count($params);
                 $placeholder = $phName;
                 $params[$phName] = !is_array($value) && isset($columnSchemas[$name]) ? $columnSchemas[$name]->dbTypecast($value) : $value;
             }
@@ -120,10 +120,10 @@ class QueryBuilder extends \yii\db\pgsql\QueryBuilder
     {
         $column = $this->db->quoteColumnName($column);
 
-        $findPhName = static::PARAM_PREFIX.count($params);
+        $findPhName = self::PARAM_PREFIX.count($params);
         $params[$findPhName] = $find;
 
-        $replacePhName = static::PARAM_PREFIX.count($params);
+        $replacePhName = self::PARAM_PREFIX.count($params);
         $params[$replacePhName] = $replace;
 
         $sql = 'UPDATE '.$table.
@@ -146,8 +146,8 @@ class QueryBuilder extends \yii\db\pgsql\QueryBuilder
     public function fixedOrder($column, $values)
     {
         $schema = $this->db->getSchema();
-
         $sql = 'CASE';
+        $key = -1;
 
         foreach ($values as $key => $value) {
             $sql .= ' WHEN '.$schema->quoteColumnName($column).'='.$schema->quoteValue($value).' THEN '.$schema->quoteValue($key);

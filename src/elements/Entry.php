@@ -20,6 +20,7 @@ use craft\elements\db\ElementQuery;
 use craft\elements\db\ElementQueryInterface;
 use craft\elements\db\EntryQuery;
 use craft\events\SetStatusEvent;
+use craft\helpers\ArrayHelper;
 use craft\helpers\DateTimeHelper;
 use craft\helpers\Db;
 use craft\helpers\Url;
@@ -672,7 +673,7 @@ class Entry extends Element
             throw new InvalidConfigException('Entry is missing its type ID');
         }
 
-        $sectionEntryTypes = $this->getSection()->getEntryTypes('id');
+        $sectionEntryTypes = ArrayHelper::index($this->getSection()->getEntryTypes(), 'id');
 
         if (!isset($sectionEntryTypes[$this->typeId])) {
             throw new InvalidConfigException('Invalid entry type ID: '.$this->typeId);
@@ -1045,14 +1046,14 @@ EOD;
         }
 
         // Is the parentId set to a different entry ID than its previous parent?
-        $oldParentId = Entry::find()
-            ->ancestorOf($this)
-            ->ancestorDist(1)
-            ->status(null)
-            ->siteId($this->siteId)
-            ->enabledForSite(false)
-            ->select('elements.id')
-            ->scalar();
+        $oldParentQuery = Entry::find();
+        $oldParentQuery->ancestorOf($this);
+        $oldParentQuery->ancestorDist(1);
+        $oldParentQuery->status(null);
+        $oldParentQuery->siteId($this->siteId);
+        $oldParentQuery->enabledForSite(false);
+        $oldParentQuery->select('elements.id');
+        $oldParentId = $oldParentQuery->scalar();
 
         return $this->newParentId != $oldParentId;
     }

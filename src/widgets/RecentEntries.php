@@ -188,15 +188,16 @@ class RecentEntries extends Widget
             return [];
         }
 
-        return Entry::find()
-            ->status(null)
-            ->enabledForSite(false)
-            ->siteId($targetSiteId)
-            ->sectionId($targetSectionId)
-            ->editable(true)
-            ->limit($this->limit ?: 100)
-            ->orderBy('elements.dateCreated desc')
-            ->all();
+        $query = Entry::find();
+        $query->status(null);
+        $query->enabledForSite(false);
+        $query->siteId($targetSiteId);
+        $query->sectionId($targetSectionId);
+        $query->editable(true);
+        $query->limit($this->limit ?: 100);
+        $query->orderBy('elements.dateCreated desc');
+
+        return $query->all();
     }
 
     /**

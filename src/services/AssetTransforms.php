@@ -8,7 +8,6 @@
 namespace craft\services;
 
 use Craft;
-use craft\dates\DateTime;
 use craft\db\Query;
 use craft\elements\Asset;
 use craft\errors\AssetLogicException;
@@ -28,6 +27,7 @@ use craft\image\Raster;
 use craft\models\AssetTransform;
 use craft\models\AssetTransformIndex;
 use craft\records\AssetTransform as AssetTransformRecord;
+use DateTime;
 use yii\base\Application;
 use yii\base\Component;
 use yii\base\ErrorException;
@@ -69,12 +69,12 @@ class AssetTransforms extends Component
     // =========================================================================
 
     /**
-     * @var
+     * @var AssetTransform[]
      */
     private $_transformsByHandle;
 
     /**
-     * @var bool
+     * @var boolean
      */
     private $_fetchedAllTransforms = false;
 
@@ -99,40 +99,24 @@ class AssetTransforms extends Component
     /**
      * Returns all named asset transforms.
      *
-     * @param string|null $indexBy
-     *
-     * @return array
+     * @return AssetTransform[]
      */
-    public function getAllTransforms($indexBy = null)
+    public function getAllTransforms()
     {
-        if (!$this->_fetchedAllTransforms) {
-            $results = $this->_createTransformQuery()->all();
-
-            $this->_transformsByHandle = [];
-
-            foreach ($results as $result) {
-                $transform = new AssetTransform($result);
-                $this->_transformsByHandle[$transform->handle] = $transform;
-            }
-
-            $this->_fetchedAllTransforms = true;
+        if ($this->_fetchedAllTransforms) {
+            return array_values($this->_transformsByHandle);
         }
 
-        if ($indexBy == 'handle') {
-            $transforms = $this->_transformsByHandle;
-        } else {
-            if (!$indexBy) {
-                $transforms = array_values($this->_transformsByHandle);
-            } else {
-                $transforms = [];
+        $this->_transformsByHandle = [];
 
-                foreach ($this->_transformsByHandle as $transform) {
-                    $transforms[$transform->$indexBy] = $transform;
-                }
-            }
+        foreach ($this->_createTransformQuery()->all() as $result) {
+            $transform = new AssetTransform($result);
+            $this->_transformsByHandle[$transform->handle] = $transform;
         }
 
-        return $transforms;
+        $this->_fetchedAllTransforms = true;
+
+        return array_values($this->_transformsByHandle);
     }
 
     /**
@@ -864,7 +848,7 @@ class AssetTransforms extends Component
      *
      * @throws VolumeObjectNotFoundException If the file cannot be found.
      * @throws VolumeException               If there was an error downloading the remote file.
-     * @return mixed
+     * @return string
      */
     public function getLocalImageSource(Asset $asset)
     {

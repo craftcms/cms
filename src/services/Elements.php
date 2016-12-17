@@ -432,6 +432,8 @@ class Elements extends Component
                 $supportedSiteIds[] = $siteInfo['siteId'];
             }
 
+            $translateContent = false;
+
             // Make sure the element actually supports this site
             if (!in_array($element->siteId, $supportedSiteIds, false)) {
                 throw new Exception('Attempting to save an element in an unsupported site.');
@@ -451,8 +453,6 @@ class Elements extends Component
                             $masterFieldTranslationKeys[$field->id] = $field->getTranslationKey($element);
                         }
                     }
-                } else {
-                    $translateContent = false;
                 }
 
                 $masterFieldValues = $element->getFieldValues();
@@ -512,8 +512,9 @@ class Elements extends Component
                                             // Does this field produce the same translation key as it did for the master element?
                                             $fieldTranslationKey = $field->getTranslationKey($localizedElement);
 
-                                            if ($fieldTranslationKey == $masterFieldTranslationKeys[$field->id]) {
+                                            if ($fieldTranslationKey === $masterFieldTranslationKeys[$field->id]) {
                                                 // Copy the master element's value over
+                                                /** @noinspection PhpUndefinedVariableInspection */
                                                 $fieldValues[$field->handle] = $masterFieldValues[$field->handle];
                                             }
                                         }
@@ -524,6 +525,7 @@ class Elements extends Component
 
                         if ($fieldValues === false) {
                             // Just default to whatever's on the master element we're saving here
+                            /** @noinspection PhpUndefinedVariableInspection */
                             $fieldValues = $masterFieldValues;
                         }
 
@@ -1123,14 +1125,15 @@ class Elements extends Component
 
                         // Things are about to get silly...
                         foreach ($things as $thing) {
-                            $refTagsByThing = ${'refTagsBy'.ucfirst($thing)};
+                            $refTagsByThing = $thing === 'id' ? $refTagsById : $refTagsByRef;
 
                             if ($refTagsByThing) {
-                                $elements = $elementType::find()
-                                    ->status(null)
-                                    ->limit(null)
-                                    ->$thing(array_keys($refTagsByThing))
-                                    ->all();
+                                /** @var Element|string $elementType */
+                                $elementQuery = $elementType::find();
+                                $elementQuery->status(null);
+                                $elementQuery->limit(null);
+                                $elementQuery->$thing(array_keys($refTagsByThing));
+                                $elements = $elementQuery->all();
 
                                 $elementsByThing = [];
 

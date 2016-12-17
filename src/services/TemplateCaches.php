@@ -10,7 +10,6 @@ namespace craft\services;
 use Craft;
 use craft\base\Element;
 use craft\base\ElementInterface;
-use craft\dates\DateTime;
 use craft\db\Query;
 use craft\elements\db\ElementQuery;
 use craft\helpers\ArrayHelper;
@@ -19,6 +18,7 @@ use craft\helpers\Db;
 use craft\helpers\StringHelper;
 use craft\helpers\Url;
 use craft\tasks\DeleteStaleTemplateCaches;
+use DateTime;
 use yii\base\Component;
 use yii\base\Event;
 
