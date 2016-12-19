@@ -51,7 +51,7 @@ use yii\web\ServerErrorHttpException;
  * @property \craft\services\Entries         $entries            The entries service
  * @property \craft\services\EntryRevisions  $entryRevisions     The entry revisions service
  * @property \craft\services\Et              $et                 The E.T. service
- * @property \craft\services\Feeds           $feeds              The feeds service
+ * @property \craft\feeds\Feeds              $feeds              The feeds service
  * @property \craft\services\Fields          $fields             The fields service
  * @property Formatter                       $formatter          The formatter component
  * @property \craft\services\Globals         $globals            The globals service
@@ -896,7 +896,7 @@ trait ApplicationTrait
     /**
      * Returns the feeds service.
      *
-     * @return \craft\services\Feeds The feeds service
+     * @return \craft\feeds\Feeds The feeds service
      */
     public function getFeeds()
     {
