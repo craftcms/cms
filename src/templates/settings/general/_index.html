@@ -50,8 +50,8 @@
 		{% registerjsresource "lib/fileupload/jquery.fileupload.js" %}
 		{% registerjsresource "lib/jcrop/jquery.Jcrop.min.js" %}
 		{% registerjsresource "js/rebrand.js" %}
-		{% registercssresource "lib/jcrop/jquery.Jcrop.min.css" %}
-		{% registercssresource "css/rebrand.css" %}
+		{% do view.registerCssResource("lib/jcrop/jquery.Jcrop.min.css") %}
+		{% do view.registerCssResource("css/rebrand.css") %}
 
 		{{ forms.field({
 			label: "Login Page Logo"|t

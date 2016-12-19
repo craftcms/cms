@@ -3,7 +3,7 @@
 
 
 {% block content %}
-	{% registercssresource 'css/settings.css' %}
+	{% do view.registerCssResource("css/settings.css") %}
 	{% registerjsresource 'js/settings.js' %}
 
 	{% for category, items in craft.cp.settings(80) %}

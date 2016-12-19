@@ -2,7 +2,7 @@
 
 {% extends "_layouts/cp" %}
 {% set title = "Plugins"|t('app') %}
-{% registercssresource "css/plugins.css" %}
+{% do view.registerCssResource("css/plugins.css") %}
 
 {% set crumbs = [
 	{ label: "Settings"|t('app'), url: url('settings') }

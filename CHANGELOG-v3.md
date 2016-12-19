@@ -274,6 +274,7 @@ Craft CMS 3.0 Working Changelog
 - Removed the `initSQLs` DB config setting.
 - Removed the {% registerassetbundle %} Twig tag. Use `{% do view.registerAssetBundle("class\\name") %}` instead.
 - Removed the {% registercssfile %} Twig tag. Use `{% do view.registerCssFile("/url/to/file.css") %}` instead.
+- Removed the {% registercssresource %} Twig tag. Use `{% do view.registerCssResource("path/to/resource.css") %}` instead.
 - Removed the PEL library.
 - Removed the PclZip library.
 - Removed the SimplePie library.

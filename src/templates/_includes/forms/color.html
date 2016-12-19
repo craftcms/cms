@@ -10,7 +10,7 @@
 	{%- if disabled is defined and disabled %} disabled {% endif %}>
 
 {%- registerjsresource "lib/colorpicker/js/colorpicker.js" -%}
-{%- registercssresource "lib/colorpicker/css/colorpicker.css" -%}
+{%- do view.registerCssResource("lib/colorpicker/css/colorpicker.css") -%}
 {%- registerjs %}
 	new Craft.ColorPicker('{{ id|namespaceInputId }}');
 {% endregisterjs %}

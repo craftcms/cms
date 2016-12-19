@@ -16,8 +16,8 @@
 {% registerjsresource "lib/fileupload/jquery.fileupload.js" %}
 {% registerjsresource "lib/jcrop/jquery.Jcrop.min.js" %}
 {% registerjsresource "js/profile.js" %}
-{% registercssresource "lib/jcrop/jquery.Jcrop.min.css" %}
-{% registercssresource "css/profile.css" %}
+{% do view.registerCssResource("lib/jcrop/jquery.Jcrop.min.css") %}
+{% do view.registerCssResource("css/profile.css") %}
 
 {% set photoInput %}
     {% include 'users/_photo' with {account: account} only %}

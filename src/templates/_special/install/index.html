@@ -7,7 +7,7 @@
 ]) %}
 
 {% block body %}
-	{% registercssresource "css/install.css" %}
+	{% do view.registerCssResource("css/install.css") %}
 	{% registerjsresource "js/install.js" %}
 
 	<div id="bg"></div>
