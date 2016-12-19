@@ -214,14 +214,12 @@ class Volumes extends Component
     /**
      * Returns all volumes that have public URLs.
      *
-     * @param string|null $indexBy
-     *
      * @return VolumeInterface[]
      */
-    public function getPublicVolumes($indexBy = null)
+    public function getPublicVolumes()
     {
         if ($this->_publicVolumes !== null) {
-            return $indexBy ? ArrayHelper::index($this->_publicVolumes, $indexBy) : $this->_publicVolumes;
+            return $this->_publicVolumes;
         }
 
         $this->_publicVolumes = [];
@@ -233,7 +231,7 @@ class Volumes extends Component
             }
         }
 
-        return $indexBy ? ArrayHelper::index($this->_publicVolumes, $indexBy) : $this->_publicVolumes;
+        return $this->_publicVolumes;
     }
 
     /**
