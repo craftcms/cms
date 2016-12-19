@@ -35,9 +35,9 @@
 
 {# Hide "Add child" menu buttons beyond the max level #}
 {% if structure.maxLevels %}
-	{% registercss %}
+	{% css %}
 		#{{ id }}{% for i in 2 .. structure.maxLevels if structure.maxLevels >= 2 %} ul{% endfor %} .add { display: none; }
-	{% endregistercss %}
+	{% endcss %}
 {% endif %}
 
 {% registerjs %}
