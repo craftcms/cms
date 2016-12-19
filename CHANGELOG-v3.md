@@ -380,6 +380,7 @@ Craft CMS 3.0 Working Changelog
 - Removed the `$indexBy` argument from `craft\services\UserGroups::getGroupsByUserId()`.
 - Removed the `$indexBy` argument from `craft\services\Volumes::getViewableVolumes()`.
 - Removed the `$indexBy` argument from `craft\services\Volumes::getPublicVolumes()`.
+- Removed the `$indexBy` argument from `craft\services\Volumes::getAllVolumes()`.
 - Removed the `$newName` and `$after` arguments from `craft\db\Command::alterColumn()`.
 - Removed the `$newName` and `$after` arguments from `craft\db\Migration::alterColumn()`.
 - Removed the `$newName` and `$after` arguments from `craft\db\mysql\QueryBuilder::alterColumn()`.

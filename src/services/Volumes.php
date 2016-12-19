@@ -257,18 +257,12 @@ class Volumes extends Component
     /**
      * Returns all volumes.
      *
-     * @param string|null $indexBy
-     *
      * @return VolumeInterface[]
      */
-    public function getAllVolumes($indexBy = null)
+    public function getAllVolumes()
     {
         if ($this->_fetchedAllVolumes) {
-            if ($indexBy === 'id') {
-                return $this->_volumesById;
-            }
-
-            return $indexBy ? ArrayHelper::index($this->_volumesById, $indexBy) : array_values($this->_volumesById);
+            return array_values($this->_volumesById);
         }
 
         $this->_volumesById = [];
@@ -283,11 +277,7 @@ class Volumes extends Component
 
         $this->_fetchedAllVolumes = true;
 
-        if ($indexBy === 'id') {
-            return $this->_volumesById;
-        }
-
-        return $indexBy ? ArrayHelper::index($this->_volumesById, $indexBy) : array_values($this->_volumesById);
+        return array_values($this->_volumesById);
     }
 
     /**
