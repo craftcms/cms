@@ -97,11 +97,9 @@ class Tags extends Component
     /**
      * Returns all tag groups.
      *
-     * @param string|null $indexBy
-     *
-     * @return array
+     * @return TagGroup[]
      */
-    public function getAllTagGroups($indexBy = null)
+    public function getAllTagGroups()
     {
         if (!$this->_fetchedAllTagGroups) {
             $this->_tagGroupsById = TagGroupRecord::find()
