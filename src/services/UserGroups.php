@@ -56,15 +56,12 @@ class UserGroups extends Component
     /**
      * Returns all user groups.
      *
-     * @param string|null $indexBy
-     *
-     * @return array
+     * @return UserGroup[]
      */
-    public function getAllGroups($indexBy = null)
+    public function getAllGroups()
     {
         $groups = UserGroupRecord::find()
             ->orderBy(['name' => SORT_ASC])
-            ->indexBy($indexBy)
             ->all();
 
         foreach ($groups as $key => $value) {
