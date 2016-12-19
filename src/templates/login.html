@@ -3,7 +3,7 @@
 {% set title = "Login"|t('app') %}
 {% set bodyClass = 'login' %}
 {% do view.registerCssResource("css/login.css") %}
-{% registerjsresource "js/login.js" %}
+{% do view.registerJsResource("js/login.js") %}
 {% do view.registerTranslations('app', [
 	"Reset Password",
 	"Check your email for instructions to reset your password.",

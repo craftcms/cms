@@ -46,10 +46,10 @@
 			"Are you sure you want to delete the logo?",
 		]) %}
 
-		{% registerjsresource "lib/fileupload/jquery.ui.widget.js" %}
-		{% registerjsresource "lib/fileupload/jquery.fileupload.js" %}
-		{% registerjsresource "lib/jcrop/jquery.Jcrop.min.js" %}
-		{% registerjsresource "js/rebrand.js" %}
+		{% do view.registerJsResource("lib/fileupload/jquery.ui.widget.js") %}
+		{% do view.registerJsResource("lib/fileupload/jquery.fileupload.js") %}
+		{% do view.registerJsResource("lib/jcrop/jquery.Jcrop.min.js") %}
+		{% do view.registerJsResource("js/rebrand.js") %}
 		{% do view.registerCssResource("lib/jcrop/jquery.Jcrop.min.css") %}
 		{% do view.registerCssResource("css/rebrand.css") %}
 

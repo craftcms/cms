@@ -100,7 +100,6 @@ class Extension extends \Twig_Extension implements \Twig_Extension_GlobalsInterf
             new RegisterResourceTokenParser('registercss', 'registerCss', true, false, false, true),
             new RegisterResourceTokenParser('registerhirescss', 'registerHiResCss', true, false, false, true),
             new RegisterResourceTokenParser('registerjs', 'registerJs', true, true, true, false),
-            new RegisterResourceTokenParser('registerjsresource', 'registerJsResource', false, true, false, true),
             new NamespaceTokenParser(),
             new NavTokenParser(),
             new PaginateTokenParser(),
@@ -118,7 +117,7 @@ class Extension extends \Twig_Extension implements \Twig_Extension_GlobalsInterf
             new RegisterResourceTokenParser('includeCssResource', 'registerCssResource', false, false, false, true, '{% do view.registerCssResource("path/to/resource.css") %}'),
             new RegisterResourceTokenParser('includeJs', 'registerJs', false, true, true, false, '{% registerjs %}'),
             new RegisterResourceTokenParser('includeJsFile', 'registerJsFile', true, true, false, true, '{% do view.registerJsFile("/url/to/file.js") %}'),
-            new RegisterResourceTokenParser('includeJsResource', 'registerJsResource', false, true, false, true, '{% registerjsresource %}'),
+            new RegisterResourceTokenParser('includeJsResource', 'registerJsResource', false, true, false, true, '{% do view.registerJsResource("path/to/resource.js") %}'),
 
             new RegisterResourceTokenParser('includecss', 'registerCss', false, false, false, true, '{% registercss %}'),
             new RegisterResourceTokenParser('includehirescss', 'registerHiResCss', true, false, false, true, '{% registerhirescss %}'),
@@ -126,7 +125,7 @@ class Extension extends \Twig_Extension implements \Twig_Extension_GlobalsInterf
             new RegisterResourceTokenParser('includecssresource', 'registerCssResource', false, false, false, true, '{% do view.registerCssResource("path/to/resource.css") %}'),
             new RegisterResourceTokenParser('includejs', 'registerJs', false, true, true, false, '{% registerjs %}'),
             new RegisterResourceTokenParser('includejsfile', 'registerJsFile', true, true, false, true, '{% do view.registerJsFile("/url/to/file.js") %}'),
-            new RegisterResourceTokenParser('includejsresource', 'registerJsResource', false, true, false, true, '{% registerjsresource %}'),
+            new RegisterResourceTokenParser('includejsresource', 'registerJsResource', false, true, false, true, '{% do view.registerJsResource("path/to/resource.js") %}'),
 
             new DeprecatedTagTokenParser('endpaginate'),
         ];

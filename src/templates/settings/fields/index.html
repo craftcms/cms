@@ -69,7 +69,7 @@
 
 
 {% block content %}
-	{% registerjsresource "js/fields.js" %}
+	{% do view.registerJsResource("js/fields.js") %}
 
 	<p id="nofields"{% if fields %} class="hidden"{% endif %}>
 		{% if groupId is defined %}

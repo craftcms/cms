@@ -36,7 +36,7 @@
 
 {% block content %}
 	{% do view.registerCssResource("css/routes.css") %}
-	{% registerjsresource "js/routes.js" %}
+	{% do view.registerJsResource("js/routes.js") %}
 
 	<p id="noroutes"{% if routes %} class="hidden"{% endif %}>
 		{{ "No routes exist yet."|t('app') }}

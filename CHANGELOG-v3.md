@@ -276,6 +276,7 @@ Craft CMS 3.0 Working Changelog
 - Removed the {% registercssfile %} Twig tag. Use `{% do view.registerCssFile("/url/to/file.css") %}` instead.
 - Removed the {% registercssresource %} Twig tag. Use `{% do view.registerCssResource("path/to/resource.css") %}` instead.
 - Removed the {% registerjsfile %} Twig tag. Use `{% do view.registerJsFile("/url/to/file.js") %}` instead.
+- Removed the {% registerjsresource %} Twig tag. Use `{% do view.registerJsResource("path/to/resource.js") %}` instead.
 - Removed the PEL library.
 - Removed the PclZip library.
 - Removed the SimplePie library.
