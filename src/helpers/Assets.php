@@ -11,6 +11,7 @@ use Craft;
 use craft\base\Volume;
 use craft\elements\Asset;
 use craft\enums\PeriodType;
+use craft\events\RegisterAssetFileKindsEvent;
 use craft\events\SetAssetFilenameEvent;
 use craft\models\VolumeFolder;
 use yii\base\Event;
@@ -33,6 +34,11 @@ class Assets
      * @event SetElementTableAttributeHtmlEvent The event that is triggered when defining an asset’s filename.
      */
     const EVENT_SET_FILENAME = 'setFilename';
+
+    /**
+     * @event RegisterAssetFileKindsEvent The event that is triggered when registering asset file kinds.
+     */
+    const EVENT_REGISTER_ASSET_FILE_KINDS = 'registerAssetFileKinds';
 
     // Properties
     // =========================================================================
@@ -539,6 +545,14 @@ class Assets
                     ]
                 ],
             ];
+
+            // Allow plugins to modify file kinds
+            $event = new RegisterAssetFileKindsEvent([
+                'fileKinds' => self::$_fileKinds,
+            ]);
+
+            Event::trigger(self::class, self::EVENT_REGISTER_ASSET_FILE_KINDS, $event);
+            self::$_fileKinds = $event->fileKinds;
         }
     }
 }
