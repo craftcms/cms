@@ -596,9 +596,13 @@ class View extends \yii\web\View
      * @param string $key     the key that identifies the CSS code block. If null, it will use
      *                        $css as the key. If two CSS code blocks are registered with the same key, the latter
      *                        will overwrite the former.
+     *
+     * @deprecated in 3.0. Use [[registerCss()]] and type your own media selector.
      */
     public function registerHiResCss($css, array $options = [], $key = null)
     {
+        Craft::$app->getDeprecator()->log('registerHiResCss', 'craft\\web\\View::registerHiResCss() has been deprecated. Use registerCss() instead, and type your own media selector.');
+
         $css = "@media only screen and (-webkit-min-device-pixel-ratio: 1.5),\n".
             "only screen and (   -moz-min-device-pixel-ratio: 1.5),\n".
             "only screen and (     -o-min-device-pixel-ratio: 3/2),\n".

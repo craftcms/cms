@@ -269,6 +269,7 @@ Craft CMS 3.0 Working Changelog
 ### Deprecated
 - The `getTranslations()` global Twig function has been deprecated. Use `craft.app.view.getTranslations()` instead.
 - `craft.getTimeZone()` has been deprecated. Use `craft.app.getTimeZone()` instead.
+- `craft\web\View::registerHiResCss()` has been deprecated. Use `registerCss()` instead, and type your own media selector.
 
 ### Removed
 - Removed support for the `CRAFT_FRAMEWORK_PATH` PHP constant in the bootstrap script. It is now expected Yii is located alongside Craft and other dependencies in the vendor/ folder.
@@ -277,6 +278,7 @@ Craft CMS 3.0 Working Changelog
 - Removed the `{% registerassetbundle %}` Twig tag. Use `{% do view.registerAssetBundle("class\\name") %}` instead.
 - Removed the `{% registercssfile %}` Twig tag. Use `{% do view.registerCssFile("/url/to/file.css") %}` instead.
 - Removed the `{% registercssresource %}` Twig tag. Use `{% do view.registerCssResource("path/to/resource.css") %}` instead.
+- Removed the `{% registerhirescss %}` Twig tag. Use `{% css %}` instead, and type your own media selector.
 - Removed the `{% registerjsfile %}` Twig tag. Use `{% do view.registerJsFile("/url/to/file.js") %}` instead.
 - Removed the `{% registerjsresource %}` Twig tag. Use `{% do view.registerJsResource("path/to/resource.js") %}` instead.
 - Removed the PEL library.
