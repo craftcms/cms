@@ -151,7 +151,7 @@
 {% endblock %}
 
 
-{% registerjs %}
+{% js %}
 	{% if transform is not defined or not transform.handle %}new Craft.HandleGenerator('#name', '#handle');{% endif %}
 
 	$('#mode input').change(function()
@@ -165,4 +165,4 @@
 			$('#position-container').addClass('hidden');
 		}
 	})
-{% endregisterjs %}
+{% endjs %}

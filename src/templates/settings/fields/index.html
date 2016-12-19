@@ -112,10 +112,10 @@
 {% endblock %}
 
 
-{% registerjs %}
+{% js %}
 	new Craft.AdminTable({
 		tableSelector: '#fields',
 		noItemsSelector: '#nofields',
 		deleteAction: 'fields/delete-field'
 	});
-{% endregisterjs %}
+{% endjs %}

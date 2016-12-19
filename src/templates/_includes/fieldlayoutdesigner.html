@@ -97,7 +97,7 @@
 
 </div>
 
-{% registerjs %}
+{% js %}
 	var initFLD = function() {
 		new Craft.FieldLayoutDesigner('#{{ "fieldlayoutform"|namespaceInputId }}', {
 			customizableTabs: {{ customizableTabs ? 'true' : 'false' }},
@@ -127,4 +127,4 @@
 		initFLD();
 
 	{% endif %}
-{% endregisterjs %}
+{% endjs %}

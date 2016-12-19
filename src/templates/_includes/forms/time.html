@@ -18,7 +18,7 @@
 
 {%-	set localeData = craft.app.locale %}
 
-{%- registerjs %}
+{%- js %}
 	var $timePicker = $('#{{ id|namespaceInputId|e('js') }}');
 	$timePicker.timepicker({
 		timeFormat: '{{ craft.app.locale.getTimeFormat('short', 'php') }}',
@@ -36,4 +36,4 @@
 	{% if value and value.format is defined %}
 		$timePicker.timepicker('setTime', {{ value|date('G') }}*3600 + {{ value|date('i') }}*60 + {{ value|date('s') }});
 	{% endif %}
-{%- endregisterjs %}
+{%- endjs %}

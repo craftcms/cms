@@ -341,7 +341,7 @@
     </div><!--/grid-->
 {% endblock %}
 
-{% registerjs %}
+{% js %}
     {% if account.getIsCurrent() %}
         var changeSidebarPicture = true;
     {% else %}
@@ -355,4 +355,4 @@
         '#user-groups input[type="checkbox"]:not(:checked)',
         '#permissions input[type="checkbox"]:not(:checked)'
     ]);
-{% endregisterjs %}
+{% endjs %}

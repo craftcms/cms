@@ -22,7 +22,7 @@
 		</div>
 	</noscript>
 
-	{% registerjs at head %}
+	{% js at head %}
 		// Create the Craft object
 		window.Craft = {
 			systemUid:             "{{ craft.app.getSystemUid()|e('js') }}",
@@ -112,5 +112,5 @@
 
 		// Picture element HTML5 shiv
 		document.createElement('picture');
-	{% endregisterjs %}
+	{% endjs %}
 {% endblock %}

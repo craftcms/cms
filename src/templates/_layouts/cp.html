@@ -101,18 +101,18 @@
 
 {% set task = craft.app.tasks.getRunningTask() %}
 {% if task %}
-	{% registerjs %}
+	{% js %}
 		Craft.cp.setRunningTaskInfo('~task.getInfo()|json_encode|raw~');
 		Craft.cp.trackTaskProgress();
-	{% endregisterjs %}
+	{% endjs %}
 {% elseif craft.app.tasks.areTasksPending() %}
-	{% registerjs %}
+	{% js %}
 		Craft.cp.runPendingTasks();
-	{% endregisterjs %}
+	{% endjs %}
 {% elseif craft.app.tasks.getHaveTasksFailed() %}
-	{% registerjs %}
+	{% js %}
 		Craft.cp.setRunningTaskInfo({ status: "error" });
-	{% endregisterjs %}
+	{% endjs %}
 {% endif %}
 
 
@@ -171,9 +171,9 @@
 						</a>
 					{% endif %}
 				{% else %}
-					{% registerjs %}
+					{% js %}
 						Craft.cp.checkForUpdates();
-					{% endregisterjs %}
+					{% endjs %}
 				{% endif %}
 			{% endif %}
 		</div>
@@ -274,9 +274,9 @@
 				</ul>
 			{% endif %}
 		{% else %}
-			{% registerjs %}
+			{% js %}
 				Craft.cp.fetchAlerts();
-			{% endregisterjs %}
+			{% endjs %}
 		{% endif %}
 
 		<div class="topbar">

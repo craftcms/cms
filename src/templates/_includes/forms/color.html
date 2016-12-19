@@ -11,6 +11,6 @@
 
 {%- do view.registerJsResource("lib/colorpicker/js/colorpicker.js") -%}
 {%- do view.registerCssResource("lib/colorpicker/css/colorpicker.css") -%}
-{%- registerjs %}
+{%- js %}
 	new Craft.ColorPicker('{{ id|namespaceInputId }}');
-{% endregisterjs %}
+{% endjs %}

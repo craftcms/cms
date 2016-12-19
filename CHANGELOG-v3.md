@@ -139,6 +139,7 @@ Craft CMS 3.0 Working Changelog
 - Element indexes now remember if a nested source was selected across multiple requests.
 - Plugin schema versions now default to `'1.0.0'`, and plugins absolutely must increment their schema version if they want any pending migrations to be noticed.
 - Renamed the `{% registercss %}` Twig tag to `{% css %}`.
+- Renamed the `{% registerjs %}` Twig tag to `{% js %}`.
 - `craft\base\Plugin` no longer automatically registers field types in the plugin’s fields/ subfolder.
 - `craft\base\Plugin` no longer automatically registers widget types in the plugin’s widgets/ subfolder.
 - `craft\base\Plugin` no longer automatically registers volume types in the plugin’s volumes/ subfolder.

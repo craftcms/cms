@@ -33,9 +33,9 @@
 		{% for tool in tools %}
 			{% set triggerId = 'tool-' ~ className(tool)|id %}
 			<li><a id="{{ triggerId }}" data-icon="{{ tool.iconValue() }}">{{ tool.displayName() }}</a></li>
-			{% registerjs %}
+			{% js %}
 				new Craft.Tool('{{ triggerId|e("js") }}', '{{ className(tool)|e("js") }}', {{ tool.optionsHtml()|json_encode|raw }}, '{{ tool.buttonLabel()|e("js") }}');
-			{% endregisterjs %}
+			{% endjs %}
 		{% endfor %}
 	</ul>
 {% endblock %}

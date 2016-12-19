@@ -101,7 +101,7 @@
 
 
 {% if volume is not defined or not volume.handle %}
-    {% registerjs %}
+    {% js %}
 		new Craft.HandleGenerator('#name', '#handle');
-	{% endregisterjs %}
+	{% endjs %}
 {% endif %}
