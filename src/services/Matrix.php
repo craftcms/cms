@@ -82,7 +82,7 @@ class Matrix extends Component
      */
     public function getBlockTypesByFieldId($fieldId)
     {
-        if (isset($this->_blockTypesByFieldId[$fieldId])) {
+        if (!empty($this->_fetchedAllBlockTypesForFieldId[$fieldId])) {
             return $this->_blockTypesByFieldId[$fieldId];
         }
 
