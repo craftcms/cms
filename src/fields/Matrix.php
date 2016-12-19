@@ -18,6 +18,7 @@ use craft\elements\db\ElementQuery;
 use craft\elements\db\ElementQueryInterface;
 use craft\elements\db\MatrixBlockQuery;
 use craft\elements\MatrixBlock;
+use craft\helpers\ArrayHelper;
 use craft\helpers\Json;
 use craft\helpers\StringHelper;
 use craft\models\MatrixBlockType;
@@ -662,7 +663,7 @@ class Matrix extends Field implements EagerLoadingFieldInterface
     {
         /** @var Element $element */
         // Get the possible block types for this field
-        $blockTypes = Craft::$app->getMatrix()->getBlockTypesByFieldId($this->id, 'handle');
+        $blockTypes = ArrayHelper::index(Craft::$app->getMatrix()->getBlockTypesByFieldId($this->id), 'handle');
 
         if (!is_array($value)) {
             return [];

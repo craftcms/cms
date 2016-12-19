@@ -12,6 +12,7 @@ use craft\base\Element;
 use craft\base\ElementInterface;
 use craft\elements\db\MatrixBlockQuery;
 use craft\fields\Matrix;
+use craft\helpers\ArrayHelper;
 use craft\helpers\ElementHelper;
 use craft\models\MatrixBlockType;
 use craft\records\MatrixBlock as MatrixBlockRecord;
@@ -80,7 +81,7 @@ class MatrixBlock extends Element
 
         // Get the block type
         $matrixFieldId = $sourceElements[0]->fieldId;
-        $blockTypes = Craft::$app->getMatrix()->getBlockTypesByFieldId($matrixFieldId, 'handle');
+        $blockTypes = ArrayHelper::index(Craft::$app->getMatrix()->getBlockTypesByFieldId($matrixFieldId), 'handle');
 
         if (!isset($blockTypes[$blockTypeHandle])) {
             // Not a valid block type handle (assuming all $sourceElements are blocks from the same Matrix field)

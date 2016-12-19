@@ -77,39 +77,30 @@ class Matrix extends Component
      * Returns the block types for a given Matrix field.
      *
      * @param integer $fieldId The Matrix field ID.
-     * @param string  $indexBy The property the block types should be indexed by. Defaults to `null`.
      *
      * @return MatrixBlockType[] An array of block types.
      */
-    public function getBlockTypesByFieldId($fieldId, $indexBy = null)
+    public function getBlockTypesByFieldId($fieldId)
     {
-        if (empty($this->_fetchedAllBlockTypesForFieldId[$fieldId])) {
-            $this->_blockTypesByFieldId[$fieldId] = [];
-
-            $results = $this->_createBlockTypeQuery()
-                ->where(['fieldId' => $fieldId])
-                ->all();
-
-            foreach ($results as $result) {
-                $blockType = new MatrixBlockType($result);
-                $this->_blockTypesById[$blockType->id] = $blockType;
-                $this->_blockTypesByFieldId[$fieldId][] = $blockType;
-            }
-
-            $this->_fetchedAllBlockTypesForFieldId[$fieldId] = true;
-        }
-
-        if (!$indexBy) {
+        if (isset($this->_blockTypesByFieldId[$fieldId])) {
             return $this->_blockTypesByFieldId[$fieldId];
         }
 
-        $blockTypes = [];
+        $this->_blockTypesByFieldId[$fieldId] = [];
 
-        foreach ($this->_blockTypesByFieldId[$fieldId] as $blockType) {
-            $blockTypes[$blockType->$indexBy] = $blockType;
+        $results = $this->_createBlockTypeQuery()
+            ->where(['fieldId' => $fieldId])
+            ->all();
+
+        foreach ($results as $result) {
+            $blockType = new MatrixBlockType($result);
+            $this->_blockTypesById[$blockType->id] = $blockType;
+            $this->_blockTypesByFieldId[$fieldId][] = $blockType;
         }
 
-        return $blockTypes;
+        $this->_fetchedAllBlockTypesForFieldId[$fieldId] = true;
+
+        return $this->_blockTypesByFieldId[$fieldId];
     }
 
     /**
