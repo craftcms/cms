@@ -124,12 +124,11 @@ class UserGroups extends Component
     /**
      * Gets user groups by a user ID.
      *
-     * @param integer     $userId
-     * @param string|null $indexBy
+     * @param integer $userId
      *
      * @return UserGroup[]
      */
-    public function getGroupsByUserId($userId, $indexBy = null)
+    public function getGroupsByUserId($userId)
     {
         $groups = (new Query())
             ->select([
@@ -140,7 +139,6 @@ class UserGroups extends Component
             ->from(['{{%usergroups}} g'])
             ->innerJoin('{{%usergroups_users}} gu', '[[gu.groupId]] = [[g.id]]')
             ->where(['gu.userId' => $userId])
-            ->indexBy($indexBy)
             ->all();
 
         foreach ($groups as $key => $value) {
