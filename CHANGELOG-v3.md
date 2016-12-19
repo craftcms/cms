@@ -272,11 +272,11 @@ Craft CMS 3.0 Working Changelog
 - Removed support for the `CRAFT_FRAMEWORK_PATH` PHP constant in the bootstrap script. It is now expected Yii is located alongside Craft and other dependencies in the vendor/ folder.
 - Removed the `collation` DB config setting.
 - Removed the `initSQLs` DB config setting.
-- Removed the {% registerassetbundle %} Twig tag. Use `{% do view.registerAssetBundle("class\\name") %}` instead.
-- Removed the {% registercssfile %} Twig tag. Use `{% do view.registerCssFile("/url/to/file.css") %}` instead.
-- Removed the {% registercssresource %} Twig tag. Use `{% do view.registerCssResource("path/to/resource.css") %}` instead.
-- Removed the {% registerjsfile %} Twig tag. Use `{% do view.registerJsFile("/url/to/file.js") %}` instead.
-- Removed the {% registerjsresource %} Twig tag. Use `{% do view.registerJsResource("path/to/resource.js") %}` instead.
+- Removed the `{% registerassetbundle %}` Twig tag. Use `{% do view.registerAssetBundle("class\\name") %}` instead.
+- Removed the `{% registercssfile %}` Twig tag. Use `{% do view.registerCssFile("/url/to/file.css") %}` instead.
+- Removed the `{% registercssresource %}` Twig tag. Use `{% do view.registerCssResource("path/to/resource.css") %}` instead.
+- Removed the `{% registerjsfile %}` Twig tag. Use `{% do view.registerJsFile("/url/to/file.js") %}` instead.
+- Removed the `{% registerjsresource %}` Twig tag. Use `{% do view.registerJsResource("path/to/resource.js") %}` instead.
 - Removed the PEL library.
 - Removed the PclZip library.
 - Removed the SimplePie library.
@@ -429,7 +429,7 @@ Craft CMS 3.0 Working Changelog
 ### Fixed
 - Fixed a bug where custom 503 templates weren’t rendering when Craft was in the middle of updating from an earlier version than 3.0.2933.
 - Fixed a validation error that occurred when saving a field.
-- Fixed a PHP error that occurred when using the {% header %} Twig tag.
+- Fixed a PHP error that occurred when using the `{% header %}` Twig tag.
 - Fixed the Generate Pending Transforms task creation that occurs in `craft\services\Assets::getUrlForAsset()`.
 - Fixed a PHP error that occurred when viewing entry revisions that were created before updating to Craft 3.
 - Fixed a bug where brand new elements were not getting their `$uid` property set on them after getting saved.
@@ -445,7 +445,7 @@ Craft CMS 3.0 Working Changelog
 - Fixed a bug where plugin-supplied custom fields weren’t working.
 - Fixed a PHP error that occurred when opening an element editor.
 - Fixed authorization error that occurred when editing an entry in a section that’s not enabled for the current site.
-- Fixed a PHP error when using the {% cache %} tag.
+- Fixed a PHP error when using the `{% cache %}` tag.
 - Fixed an error that occurred when clicking on an email message to edit it.
 - Fixed an error that occurred when `craft\cache\FileCache::setValue()` was called and the destination folder already existed.
 - Fixed support for the `testToEmailAddress` config setting.
@@ -568,7 +568,7 @@ Craft CMS 3.0 Working Changelog
 - Improved the error message when a Migrate action was called with an invalid --plugin arg.
 - Ported all recent changes from Craft 2.
 - The `|date` filter can be passed `'short'`, `'medium'`, `'long'`, and `'full'`, which will format the date with a localized date format.
-- The {% cache %} tag no longer includes the query string when storing the cache URL.
+- The `{% cache %}` tag no longer includes the query string when storing the cache URL.
 - `craft\helpers\DateTimeHelper::isToday()`, `isYesterday()`, `isThisYear()`, `isThisWeek()`, `isThisMonth()`, `isWithinLast()`, `isInThePast()`, and `timeAgoInWords()` now support all the same types of `$date` values as `craft\helpers\DateTimeHelper::toDateTime()`.
 - `craft\helpers\MigrationHelper::dropForeignKeyIfExists()` and `dropIndexIfExists()` now allow the `$columns` argument to be a string.
 - The `craft\services\EntryRevisions::beforeSaveDraft` event’s `$isValid` property is no longer respected. To prevent a draft from saving, set `$isValid = false` on the `craft\models\EntryDraft::beforeValidate` event.
@@ -777,7 +777,7 @@ Craft CMS 3.0 Working Changelog
 - Fixed a bug where element queries were not respecting the `offset` property.
 - Fixed a MySQL error that occurred when querying users with the `can` property.
 - Fixed a MySQL error that occurred when executing an element query that had custom query params.
-- Fixed a PHP error that occurred when rendering templates with a {% paginate %} tag. (Note that you may need to delete your craft/storage/runtime/compiled_templates/ folder.)
+- Fixed a PHP error that occurred when rendering templates with a `{% paginate %}` tag. (Note that you may need to delete your craft/storage/runtime/compiled_templates/ folder.)
 - Fixed a PHP warning that occurred when using `craft\services\Feeds` on a server running PHP 7.
 - Fixed a few bugs related to saving elements on localized sites.
 - Fixed tag group saving and deleting.
