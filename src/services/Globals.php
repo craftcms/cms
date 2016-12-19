@@ -110,7 +110,7 @@ class Globals extends Component
     /**
      * Returns all global sets.
      *
-     * @return array
+     * @return GlobalSet[]
      */
     public function getAllSets()
     {
@@ -127,11 +127,9 @@ class Globals extends Component
     /**
      * Returns all global sets that are editable by the current user.
      *
-     * @param string|null $indexBy
-     *
-     * @return array
+     * @return GlobalSet[]
      */
-    public function getEditableSets($indexBy = null)
+    public function getEditableSets()
     {
         $globalSets = $this->getAllSets();
         $editableGlobalSetIds = $this->getEditableSetIds();
@@ -139,11 +137,7 @@ class Globals extends Component
 
         foreach ($globalSets as $globalSet) {
             if (in_array($globalSet->id, $editableGlobalSetIds, false)) {
-                if ($indexBy) {
-                    $editableGlobalSets[$globalSet->$indexBy] = $globalSet;
-                } else {
-                    $editableGlobalSets[] = $globalSet;
-                }
+                $editableGlobalSets[] = $globalSet;
             }
         }
 

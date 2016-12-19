@@ -51,7 +51,9 @@ class Globals
     {
         Craft::$app->getDeprecator()->log('craft.globals.getEditableSets()', 'craft.globals.getEditableSets() has been deprecated. Use craft.app.globals.getEditableSets() instead.');
 
-        return Craft::$app->getGlobals()->getEditableSets($indexBy);
+        $globalSets = Craft::$app->getGlobals()->getEditableSets();
+
+        return $indexBy ? ArrayHelper::index($globalSets, $indexBy) : $globalSets;
     }
 
     /**

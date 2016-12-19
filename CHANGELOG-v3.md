@@ -367,6 +367,7 @@ Craft CMS 3.0 Working Changelog
 - Removed the `$indexBy` argument from `craft\services\Fields::getFieldsByElementType()`.
 - Removed the `$indexBy` argument from `craft\services\Fields::getFieldsByGroupId()`.
 - Removed the `$indexBy` argument from `craft\services\Globals::getAllSets()`.
+- Removed the `$indexBy` argument from `craft\services\Globals::getEditableSets()`.
 - Removed the `$newName` and `$after` arguments from `craft\db\Command::alterColumn()`.
 - Removed the `$newName` and `$after` arguments from `craft\db\Migration::alterColumn()`.
 - Removed the `$newName` and `$after` arguments from `craft\db\mysql\QueryBuilder::alterColumn()`.
