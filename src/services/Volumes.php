@@ -168,14 +168,12 @@ class Volumes extends Component
     /**
      * Returns all volumes that are viewable by the current user.
      *
-     * @param string|null $indexBy
-     *
      * @return VolumeInterface[]
      */
-    public function getViewableVolumes($indexBy = null)
+    public function getViewableVolumes()
     {
         if ($this->_viewableVolumes !== null) {
-            return $indexBy ? ArrayHelper::index($this->_viewableVolumes, $indexBy) : $this->_viewableVolumes;
+            return $this->_viewableVolumes;
         }
 
         $this->_viewableVolumes = [];
@@ -187,7 +185,7 @@ class Volumes extends Component
             }
         }
 
-        return $indexBy ? ArrayHelper::index($this->_viewableVolumes, $indexBy) : $this->_viewableVolumes;
+        return $this->_viewableVolumes;
     }
 
     /**
