@@ -185,22 +185,16 @@ class Sections extends Component
     /**
      * Returns all editable sections.
      *
-     * @param string|null $indexBy
-     *
      * @return Section[] All the editable sections.
      */
-    public function getEditableSections($indexBy = null)
+    public function getEditableSections()
     {
         $editableSectionIds = $this->getEditableSectionIds();
         $editableSections = [];
 
         foreach ($this->getAllSections() as $section) {
             if (in_array($section->id, $editableSectionIds, false)) {
-                if ($indexBy) {
-                    $editableSections[$section->$indexBy] = $section;
-                } else {
-                    $editableSections[] = $section;
-                }
+                $editableSections[] = $section;
             }
         }
 

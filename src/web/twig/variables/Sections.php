@@ -50,7 +50,9 @@ class Sections
     {
         Craft::$app->getDeprecator()->log('craft.sections.getEditableSections()', 'craft.sections.getEditableSections() has been deprecated. Use craft.app.sections.getEditableSections() instead.');
 
-        return Craft::$app->getSections()->getEditableSections($indexBy);
+        $sections = Craft::$app->getSections()->getEditableSections();
+
+        return $indexBy ? ArrayHelper::index($sections, $indexBy) : $sections;
     }
 
     /**
