@@ -3,7 +3,7 @@
  *
  * @copyright 2013 Pixel & Tonic, Inc.. All rights reserved.
  * @author    Brandon Kelly <brandon@pixelandtonic.com>
- * @version   0.1.5
+ * @version   0.1.9
  * @license   MIT
  */
 (function($){
@@ -3328,11 +3328,11 @@ Garnish.HUD = Garnish.Base.extend({
 		if (this.orientation == 'top' || this.orientation == 'bottom')
 		{
 			maxHudBodyWidth = windowWidth - this.settings.windowSpacing * 2;
-			maxHudBodyHeight = clearances[this.orientation];
+			maxHudBodyHeight = clearances[this.orientation] - this.settings.windowSpacing - this.settings.triggerSpacing;
 		}
 		else
 		{
-			maxHudBodyWidth = clearances[this.orientation];
+			maxHudBodyWidth = clearances[this.orientation] - this.settings.windowSpacing - this.settings.triggerSpacing;
 			maxHudBodyHeight = windowHeight - this.settings.windowSpacing * 2;
 		}
 
