@@ -28,7 +28,7 @@ Craft CMS 3.0 Working Changelog
 - Added `craft\db\TableSchema`.
 - Added `craft\errors\InvalidPluginException`.
 - Added `craft\errors\ShellCommandException`.
-- Added `craft\events\RegisterAssetsFileKindEvent`.
+- Added `craft\events\RegisterAssetFileKindsEvent`.
 - Added `craft\events\RegisterCacheOptionsEvent`.
 - Added `craft\events\RegisterComponentTypesEvent`.
 - Added `craft\events\RegisterCpAlertsEvent`.
@@ -90,7 +90,7 @@ Craft CMS 3.0 Working Changelog
 - Added the `beforeRestoreBackup` and `afterRestoreBackup` events to `craft\db\Connection`.
 - Added the `registerActions` event to `craft\base\Element`.
 - Added the `registerAlerts` event to `craft\helpers\Cp`.
-- Added the `registerAssetsFileKind` event to `craft\helpers\Assets`.
+- Added the `registerAssetFileKinds` event to `craft\helpers\Assets`.
 - Added the `registerCacheOptions` event to `craft\tools\ClearCaches`.
 - Added the `registerCpNavItems` event to `craft\variables\Cp`.
 - Added the `registerCpUrlRules` and `registerSiteUrlRules` events to `craft\web\UrlManager`.
