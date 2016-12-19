@@ -90,7 +90,7 @@ Craft CMS 3.0 Working Changelog
 - Added the `beforeRestoreBackup` and `afterRestoreBackup` events to `craft\db\Connection`.
 - Added the `registerActions` event to `craft\base\Element`.
 - Added the `registerAlerts` event to `craft\helpers\Cp`.
-- Added the `registerAssetFileKinds` event to `craft\helpers\Assets`.
+- Added the `registerFileKinds` event to `craft\helpers\Assets`.
 - Added the `registerCacheOptions` event to `craft\tools\ClearCaches`.
 - Added the `registerCpNavItems` event to `craft\variables\Cp`.
 - Added the `registerCpUrlRules` and `registerSiteUrlRules` events to `craft\web\UrlManager`.

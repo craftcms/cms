@@ -38,7 +38,7 @@ class Assets
     /**
      * @event RegisterAssetFileKindsEvent The event that is triggered when registering asset file kinds.
      */
-    const EVENT_REGISTER_ASSET_FILE_KINDS = 'registerAssetFileKinds';
+    const EVENT_REGISTER_FILE_KINDS = 'registerFileKinds';
 
     // Properties
     // =========================================================================
