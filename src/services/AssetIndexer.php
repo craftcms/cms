@@ -2,6 +2,7 @@
 namespace craft\services;
 
 use Craft;
+use craft\base\LocalVolumeInterface;
 use craft\base\Volume;
 use craft\db\Query;
 use craft\elements\Asset;
@@ -190,7 +191,7 @@ class AssetIndexer extends Component
                 $targetPath = $asset->getImageTransformSourcePath();
 
                 if ($asset->dateModified != $timeModified || !is_file($targetPath)) {
-                    if (!$volume::isLocal()) {
+                    if (!$volume instanceof LocalVolumeInterface) {
                         $volume->saveFileLocally($uriPath, $targetPath);
 
                         // Store the local source for now and set it up for deleting, if needed

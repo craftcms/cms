@@ -8,6 +8,7 @@
 namespace craft\services;
 
 use Craft;
+use craft\base\LocalVolumeInterface;
 use craft\db\Query;
 use craft\elements\Asset;
 use craft\elements\db\AssetQuery;
@@ -235,11 +236,10 @@ class Assets extends Component
         Craft::$app->getElements()->saveElement($asset);
 
         // Now that we have an ID, store the source
-        if (!$volume::isLocal() && $asset->kind == 'image' && !empty($asset->newFilePath)) {
+        if (!$volume instanceof LocalVolumeInterface && $asset->kind === 'image' && !empty($asset->newFilePath)) {
             // Store the local source for now and set it up for deleting, if needed
             $assetTransforms = Craft::$app->getAssetTransforms();
-            $assetTransforms->storeLocalSource($asset->newFilePath,
-                $asset->getImageTransformSourcePath());
+            $assetTransforms->storeLocalSource($asset->newFilePath, $asset->getImageTransformSourcePath());
             $assetTransforms->queueSourceForDeletingIfNecessary($asset->getImageTransformSourcePath());
         }
     }

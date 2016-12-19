@@ -9,6 +9,7 @@ namespace craft\elements;
 
 use Craft;
 use craft\base\Element;
+use craft\base\LocalVolumeInterface;
 use craft\base\Volume;
 use craft\base\VolumeInterface;
 use craft\elements\actions\CopyReferenceTag;
@@ -755,11 +756,11 @@ class Asset extends Element
     {
         $volume = Craft::$app->getVolumes()->getVolumeById($this->volumeId);
 
-        if ($volume::isLocal()) {
-            return $volume->getRootPath().'/'.$this->getUri();
+        if ($volume instanceof LocalVolumeInterface) {
+            return FileHelper::normalizePath($volume->getRootPath().DIRECTORY_SEPARATOR.$this->getUri());
         }
 
-        return Craft::$app->getPath()->getAssetsImageSourcePath().'/'.$this->id.'.'.$this->getExtension();
+        return Craft::$app->getPath()->getAssetsImageSourcePath().DIRECTORY_SEPARATOR.$this->id.'.'.$this->getExtension();
     }
 
     /**

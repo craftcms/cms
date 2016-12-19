@@ -42,12 +42,4 @@ class MissingVolume extends Volume implements MissingComponentInterface
     {
         return null;
     }
-
-    /**
-     * @inheritdoc
-     */
-    public function getRootPath()
-    {
-        return null;
-    }
 }

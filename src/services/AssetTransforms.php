@@ -8,6 +8,7 @@
 namespace craft\services;
 
 use Craft;
+use craft\base\LocalVolumeInterface;
 use craft\db\Query;
 use craft\elements\Asset;
 use craft\errors\AssetLogicException;
@@ -833,7 +834,7 @@ class AssetTransforms extends Component
 
             $volume = $asset->getVolume();
 
-            if (!$volume::isLocal()) {
+            if (!$volume instanceof LocalVolumeInterface) {
                 $this->queueSourceForDeletingIfNecessary($imageSource);
             }
         }
@@ -856,7 +857,7 @@ class AssetTransforms extends Component
 
         $imageSourcePath = $asset->getImageTransformSourcePath();
 
-        if (!$volume::isLocal()) {
+        if (!$volume instanceof LocalVolumeInterface) {
             if (!is_file($imageSourcePath) || filesize($imageSourcePath) == 0) {
 
                 // Delete it just in case it's a 0-byter
@@ -998,7 +999,7 @@ class AssetTransforms extends Component
                 $format = 'jpg';
             }
 
-            if (!$volume::isLocal()) {
+            if (!$volume instanceof LocalVolumeInterface) {
                 // Store for potential later use and queue for deletion if needed.
                 $asset->setTransformSource($tempPath);
                 $this->queueSourceForDeletingIfNecessary($tempPath);
@@ -1362,7 +1363,7 @@ class AssetTransforms extends Component
 
         $volume = $asset->getVolume();
 
-        if (!$volume::isLocal()) {
+        if (!$volume instanceof LocalVolumeInterface) {
             $this->queueSourceForDeletingIfNecessary($imageSource);
         }
     }

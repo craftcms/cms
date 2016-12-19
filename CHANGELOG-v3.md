@@ -23,6 +23,7 @@ Craft CMS 3.0 Working Changelog
 - Added the `|column` Twig filter, for capturing the key/property values of a series of arrays/objects.
 - Added the `|index` Twig filter, for indexing an array of arrays/objects by one of their keys/values.
 - Added the JavaScript method `BaseElementIndex::refreshSources()`.
+- Added `craft\base\LocalVolumeInterface`.
 - Added `craft\db\pgsql\QueryBuilder`.
 - Added `craft\db\pgsql\Schema`.
 - Added `craft\db\TableSchema`.
@@ -245,6 +246,7 @@ Craft CMS 3.0 Working Changelog
 - Renamed `craft\volumes\AwsS3::getStorageClasses()` to `storageClasses()`.
 - Renamed `craft\volumes\GoogleCloud::getClient()` to `client()`.
 - Renamed `craft\volumes\Rackspace::getClient()` to `client()`.
+- Moved `craft\volumes\VolumeInterface::getRootPath()` to `craft\volumes\LocalVolumeInterface::getRootPath()`.
 - `craft\base\Element::getEditorHtml()` is no longer static, and no longer has an `$element` argument.
 - `craft\base\Element::getElementRoute()` is no longer static, no longer has an `$element` argument, and has been renamed to `getRoute()`.
 - `craft\base\Element::getElementQueryStatusCondition()` has been moved to `craft\elements\db\ElementQuery::statusCondition()`, and no longer has a `$query` argument.
@@ -326,6 +328,7 @@ Craft CMS 3.0 Working Changelog
 - Removed `craft\base\Plugin::getFieldTypes()`.
 - Removed `craft\base\Plugin::getVolumeTypes()`.
 - Removed `craft\base\Plugin::getWidgetTypes()`.
+- Removed `craft\base\VolumeInterface::isLocal()`. Local volumes should implement `craft\base\LocalVolumeInterface` instead.
 - Removed `craft\db\Command::addColumnAfter()`.
 - Removed `craft\db\Command::addColumnBefore()`.
 - Removed `craft\db\Command::addColumnFirst()`.

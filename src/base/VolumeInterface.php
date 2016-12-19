@@ -20,16 +20,6 @@ use craft\errors\VolumeObjectNotFoundException;
  */
 interface VolumeInterface extends SavableComponentInterface
 {
-    // Static
-    // =========================================================================
-
-    /**
-     * Returns whether this source stores files locally on the server.
-     *
-     * @return boolean Whether files are stored locally.
-     */
-    public static function isLocal();
-
     // Public Methods
     // =========================================================================
 
@@ -39,13 +29,6 @@ interface VolumeInterface extends SavableComponentInterface
      * @return string|null The root URL, or `false` if there isn’t one.
      */
     public function getRootUrl();
-
-    /**
-     * Returns the root path for the source.
-     *
-     * @return string|null The root URL, or `false` if there isn’t one.
-     */
-    public function getRootPath();
 
     /**
      * List files.
