@@ -14,7 +14,7 @@
 	"Give your tab a name.",
 ]) %}
 
-{% registercssfile "//fonts.googleapis.com/css?family=Coming+Soon" %}
+{% do view.registerCssFile("//fonts.googleapis.com/css?family=Coming+Soon") %}
 
 {% macro tab(customizableTabs, tabName, tabFields) %}
 	<div class="fld-tab">
