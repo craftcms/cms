@@ -141,7 +141,7 @@ class Section extends Model
         }
 
         // Set them with setSiteSettings() so setSection() gets called on them
-        $this->setSiteSettings(Craft::$app->getSections()->getSectionSiteSettings($this->id, 'siteId'));
+        $this->setSiteSettings(ArrayHelper::index(Craft::$app->getSections()->getSectionSiteSettings($this->id), 'siteId'));
 
         return $this->_siteSettings;
     }

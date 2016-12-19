@@ -302,12 +302,11 @@ class Sections extends Component
     /**
      * Returns a section’s site-specific settings.
      *
-     * @param integer     $sectionId
-     * @param string|null $indexBy
+     * @param integer $sectionId
      *
      * @return Section_SiteSettings[] The section’s site-specific settings.
      */
-    public function getSectionSiteSettings($sectionId, $indexBy = null)
+    public function getSectionSiteSettings($sectionId)
     {
         $siteSettings = (new Query())
             ->select([
@@ -323,7 +322,6 @@ class Sections extends Component
             ->innerJoin('{{%sites}} sites', '[[sites.id]] = [[sections_i18n.siteId]]')
             ->where(['sections_i18n.sectionId' => $sectionId])
             ->orderBy(['sites.sortOrder' => SORT_ASC])
-            ->indexBy($indexBy)
             ->all();
 
         foreach ($siteSettings as $key => $value) {
