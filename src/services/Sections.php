@@ -159,39 +159,27 @@ class Sections extends Component
     /**
      * Returns all sections.
      *
-     * @param string|null $indexBy
-     *
      * @return Section[] All the sections.
      */
-    public function getAllSections($indexBy = null)
+    public function getAllSections()
     {
-        if (!$this->_fetchedAllSections) {
-            $results = $this->_createSectionQuery()
-                ->all();
-
-            $this->_sectionsById = [];
-
-            foreach ($results as $result) {
-                $section = new Section($result);
-                $this->_sectionsById[$section->id] = $section;
-            }
-
-            $this->_fetchedAllSections = true;
+        if ($this->_fetchedAllSections) {
+            return array_values($this->_sectionsById);
         }
 
-        if ($indexBy == 'id') {
-            $sections = $this->_sectionsById;
-        } else if (!$indexBy) {
-            $sections = array_values($this->_sectionsById);
-        } else {
-            $sections = [];
+        $results = $this->_createSectionQuery()
+            ->all();
 
-            foreach ($this->_sectionsById as $section) {
-                $sections[$section->$indexBy] = $section;
-            }
+        $this->_sectionsById = [];
+
+        foreach ($results as $result) {
+            $section = new Section($result);
+            $this->_sectionsById[$section->id] = $section;
         }
 
-        return $sections;
+        $this->_fetchedAllSections = true;
+
+        return array_values($this->_sectionsById);
     }
 
     /**

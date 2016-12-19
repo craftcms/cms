@@ -8,6 +8,7 @@
 namespace craft\web\twig\variables;
 
 use Craft;
+use craft\helpers\ArrayHelper;
 use craft\models\Section;
 
 /**
@@ -33,7 +34,9 @@ class Sections
     {
         Craft::$app->getDeprecator()->log('craft.sections.getAllSections()', 'craft.sections.getAllSections() has been deprecated. Use craft.app.sections.getAllSections() instead.');
 
-        return Craft::$app->getSections()->getAllSections($indexBy);
+        $sections = Craft::$app->getSections()->getAllSections();
+
+        return $indexBy ? ArrayHelper::index($sections, $indexBy) : $sections;
     }
 
     /**
