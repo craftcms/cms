@@ -272,8 +272,8 @@ Craft CMS 3.0 Working Changelog
 - Removed support for the `CRAFT_FRAMEWORK_PATH` PHP constant in the bootstrap script. It is now expected Yii is located alongside Craft and other dependencies in the vendor/ folder.
 - Removed the `collation` DB config setting.
 - Removed the `initSQLs` DB config setting.
-- Removed the {% registerassetbundle %} Twig tag. Use `{% do view.registerAssetBundle('class\\name') %}` instead.
-- Removed the {% registercssfile %} Twig tag. Use `{% do view.registerCssFile('/file.css') %}` instead.
+- Removed the {% registerassetbundle %} Twig tag. Use `{% do view.registerAssetBundle("class\\name") %}` instead.
+- Removed the {% registercssfile %} Twig tag. Use `{% do view.registerCssFile("/url/to/file.css") %}` instead.
 - Removed the PEL library.
 - Removed the PclZip library.
 - Removed the SimplePie library.
