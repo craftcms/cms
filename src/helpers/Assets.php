@@ -551,7 +551,7 @@ class Assets
                 'fileKinds' => self::$_fileKinds,
             ]);
 
-            Event::trigger(self::class, self::EVENT_REGISTER_ASSET_FILE_KINDS, $event);
+            Event::trigger(self::class, self::EVENT_REGISTER_FILE_KINDS, $event);
             self::$_fileKinds = $event->fileKinds;
         }
     }
