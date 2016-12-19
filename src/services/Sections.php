@@ -815,17 +815,15 @@ class Sections extends Component
     /**
      * Returns a section’s entry types.
      *
-     * @param integer     $sectionId
-     * @param string|null $indexBy
+     * @param integer $sectionId
      *
      * @return EntryType[]
      */
-    public function getEntryTypesBySectionId($sectionId, $indexBy = null)
+    public function getEntryTypesBySectionId($sectionId)
     {
         $entryTypeRecords = EntryTypeRecord::find()
             ->where(['sectionId' => $sectionId])
             ->orderBy(['sortOrder' => SORT_ASC])
-            ->indexBy($indexBy)
             ->all();
 
         foreach ($entryTypeRecords as $key => $entryTypeRecord) {
