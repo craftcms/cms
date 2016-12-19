@@ -374,6 +374,7 @@ Craft CMS 3.0 Working Changelog
 - Removed the `$indexBy` argument from `craft\services\Sections::getSectionSiteSettings()`.
 - Removed the `$indexBy` argument from `craft\services\Sections::getEntryTypesBySectionId()`.
 - Removed the `$indexBy` argument from `craft\services\Sites::getAllSites()`.
+- Removed the `$indexBy` argument from `craft\services\Sites::getEditableSites()`.
 - Removed the `$newName` and `$after` arguments from `craft\db\Command::alterColumn()`.
 - Removed the `$newName` and `$after` arguments from `craft\db\Migration::alterColumn()`.
 - Removed the `$newName` and `$after` arguments from `craft\db\mysql\QueryBuilder::alterColumn()`.

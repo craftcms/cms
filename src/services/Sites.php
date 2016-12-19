@@ -248,22 +248,16 @@ class Sites extends Component
     /**
      * Returns all editable sites.
      *
-     * @param string|null $indexBy
-     *
      * @return Site[] All the editable sites
      */
-    public function getEditableSites($indexBy = null)
+    public function getEditableSites()
     {
         $editableSiteIds = $this->getEditableSiteIds();
         $editableSites = [];
 
         foreach ($this->getAllSites() as $site) {
             if (in_array($site->id, $editableSiteIds, false)) {
-                if ($indexBy) {
-                    $editableSites[$site->$indexBy] = $site;
-                } else {
-                    $editableSites[] = $site;
-                }
+                $editableSites[] = $site;
             }
         }
 
