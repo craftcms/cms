@@ -3,9 +3,13 @@ Craft CMS Changelog
 
 ## [Unreleased] 
 
-### Fixed
+### Changed
 
 - Use Imagick if available to manipulate image EXIF rotation data.
+
+### Fixed
+
+- Fixed a bug where files rarely might get inadvertedly deleted on remote Asset sources.
 - Fixed a bug where Craft would sometimes ignore the [maxCachedCloudImageSize](https://craftcms.com/docs/config-settings#maxCachedCloudImageSize) config setting.
 - Fixed a bug where some messages on the self-update page were not getting translated.
 

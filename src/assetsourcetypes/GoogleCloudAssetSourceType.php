@@ -631,7 +631,7 @@ class GoogleCloudAssetSourceType extends BaseAssetSourceType
 	{
 		$this->_prepareForRequests();
 		$bucket = $this->getSettings()->bucket;
-		$objectsToDelete = $this->_googleCloud->getBucket($bucket, $this->_getPathPrefix().$parentFolder->path.$folderName);
+		$objectsToDelete = $this->_googleCloud->getBucket($bucket, $this->_getPathPrefix().$parentFolder->path.$folderName.'/');
 
 		foreach ($objectsToDelete as $uri)
 		{

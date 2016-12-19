@@ -661,7 +661,7 @@ class S3AssetSourceType extends BaseAssetSourceType
 	{
 		$this->_prepareForRequests();
 		$bucket = $this->getSettings()->bucket;
-		$objectsToDelete = $this->_s3->getBucket($bucket, $this->_getPathPrefix().$parentFolder->path.$folderName);
+		$objectsToDelete = $this->_s3->getBucket($bucket, $this->_getPathPrefix().$parentFolder->path.$folderName.'/');
 
 		foreach ($objectsToDelete as $uri)
 		{
