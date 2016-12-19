@@ -236,29 +236,13 @@ class Sites extends Component
     /**
      * Returns all sites.
      *
-     * @param string|null $indexBy
-     *
      * @return Site[] All the sites
      */
-    public function getAllSites($indexBy = null)
+    public function getAllSites()
     {
         $this->_loadAllSites();
 
-        if ($indexBy == 'id') {
-            $sites = $this->_sitesById;
-        } else if ($indexBy == 'handle') {
-            $sites = $this->_sitesByHandle;
-        } else if (!$indexBy) {
-            $sites = array_values($this->_sitesById);
-        } else {
-            $sites = [];
-
-            foreach ($this->_sitesById as $site) {
-                $sites[$site->$indexBy] = $site;
-            }
-        }
-
-        return $sites;
+        return array_values($this->_sitesById);
     }
 
     /**
