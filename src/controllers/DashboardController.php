@@ -19,8 +19,6 @@ use craft\models\CraftSupport;
 use craft\web\Controller;
 use craft\web\UploadedFile;
 use DateTime;
-use GuzzleHttp\Client;
-use HelpSpot\HelpSpotGuzzleClient;
 use yii\base\ErrorException;
 use yii\base\Exception;
 use yii\web\BadRequestHttpException;
@@ -467,10 +465,10 @@ class DashboardController extends Controller
             'form_params' => $requestParams
         ];
 
-        $helpSpotGuzzleClient = new HelpSpotGuzzleClient(Craft::$app->getHttpClient(), ' ', ' ');
+        $guzzleClient = Craft::createGuzzleClient(['timeout' => 120, 'connect_timeout' => 120]);
 
         try {
-            $helpSpotGuzzleClient->getClient()->post('https://support.pixelandtonic.com/api/index.php', $requestParams);
+            $guzzleClient->post('https://support.pixelandtonic.com/api/index.php', $requestParams);
         } catch (\Exception $e) {
             return $this->renderTemplate('_components/widgets/CraftSupport/response', [
                 'widgetId' => $widgetId,
