@@ -472,6 +472,7 @@ Craft CMS 3.0 Working Changelog
 - Fixed a bug where custom nested element sources registered by plugins were not getting Admin-defined custom table attributes.
 - Fixed a bug where searching by an `"exact phrase"` wasn’t working.
 - Fixed a bug where the Backup Database tool wasn’t downloading the DB backup if the “Download backup?” checkbox was checked.
+- Fixed a bug where the requirements checker wasn’t taking into account MySQL/PostgreSQL installs running on non-standard ports.
 
 ## [v3.0.0-alpha.2948] - 2016-09-29
 
