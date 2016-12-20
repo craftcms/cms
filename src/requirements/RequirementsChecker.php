@@ -442,7 +442,7 @@ class RequirementsChecker
             $this->dbCreds['password'] = $configService->get('password', 'db');
             $this->dbCreds['database'] = $configService->get('database', 'db');
             $this->dbCreds['driver'] = $configService->get('driver', 'db');
-            $this->dbCreds['port'] = $configService->get('port', 'db');
+            $this->dbCreds['port'] = $configService->getDbPort();
 
             return true;
         }
