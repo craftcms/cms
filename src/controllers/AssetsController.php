@@ -60,8 +60,6 @@ class AssetsController extends Controller
      */
     public function actionSaveAsset()
     {
-        $this->requireAcceptsJson();
-
         $uploadedFile = UploadedFile::getInstanceByName('assets-upload');
         $request = Craft::$app->getRequest();
         $assetId = $request->getBodyParam('assetId');
