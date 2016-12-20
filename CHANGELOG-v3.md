@@ -114,7 +114,7 @@ Craft CMS 3.0 Working Changelog
 - Added Guzzle 6 HTTP Adapter.
 - Added php-shellcommand.
 - Added the ZendFeed library.
-- Added `craft\config\guzzle.php` config settings and a `Config::Guzzle` category so you can config Guzzle properties.
+- It is now possible to override the default Guzzle settings from craft/config/guzzle.php.
 - Added `Craft::createGuzzleInstance()` to get a Guzzle instance that takes into account default and per request options.
 
 ### Changed

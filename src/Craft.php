@@ -213,9 +213,9 @@ EOD;
     }
 
     /**
-     * Returns a PSR-7 Guzzle client created with config options merged.
+     * Creates a Guzzle client configured with the given array merged with any default values in craft/config/guzzle.php.
      *
-     * @param array $config Any request specific config options to merge in.
+     * @param array $config Guzzle client config settings
      *
      * @return Client
      */
