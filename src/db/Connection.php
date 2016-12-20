@@ -72,6 +72,7 @@ class Connection extends \yii\db\Connection
      * @inheritdoc
      *
      * @throws DbConnectException if there are any issues
+     * @throws \Exception
      */
     public function open()
     {
@@ -80,15 +81,34 @@ class Connection extends \yii\db\Connection
         } catch (DbException $e) {
             Craft::error($e->getMessage(), __METHOD__);
 
-            // TODO: Multi-db driver check.
-            if (!extension_loaded('pdo')) {
-                throw new DbConnectException(Craft::t('app', 'Craft CMS requires the PDO extension to operate.'));
-            } else if (!extension_loaded('pdo_mysql')) {
-                throw new DbConnectException(Craft::t('app', 'Craft CMS requires the PDO_MYSQL driver to operate.'));
-            } else {
-                Craft::error($e->getMessage(), __METHOD__);
-                throw new DbConnectException(Craft::t('app', 'Craft CMS can’t connect to the database with the credentials in config/db.php.'));
+            $driverName = $this->getDriverName();
+
+            switch ($driverName) {
+                case static::DRIVER_MYSQL:
+                    if (!extension_loaded('pdo')) {
+                        throw new DbConnectException(Craft::t('app', 'Craft CMS requires the PDO extension to operate.'));
+                    } else if (!extension_loaded('pdo_mysql')) {
+                        throw new DbConnectException(Craft::t('app', 'Craft CMS requires the PDO_MYSQL driver to operate.'));
+                    }
+
+                    break;
+
+                case static::DRIVER_PGSQL:
+                    if (!extension_loaded('pdo')) {
+                        throw new DbConnectException(Craft::t('app', 'Craft CMS requires the PDO extension to operate.'));
+                    } else if (!extension_loaded('pdo_pgsql')) {
+                        throw new DbConnectException(Craft::t('app', 'Craft CMS requires the PDO_PGSQL driver to operate.'));
+                    }
+
+                    break;
+
+                default:
+                    /** @noinspection ThrowRawExceptionInspection */
+                    throw new \Exception('Unsupported connection type: '.$driverName);
             }
+
+            Craft::error($e->getMessage(), __METHOD__);
+            throw new DbConnectException(Craft::t('app', 'Craft CMS can’t connect to the database with the credentials in config/db.php.'));
         } catch (\Exception $e) {
             Craft::error($e->getMessage(), __METHOD__);
             throw new DbConnectException(Craft::t('app', 'Craft CMS can’t connect to the database with the credentials in config/db.php.'));
