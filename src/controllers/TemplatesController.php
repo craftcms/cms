@@ -104,7 +104,7 @@ class TemplatesController extends Controller
                 $message = '<br /><br />';
 
                 foreach ($reqCheck->getResult()['requirements'] as $req) {
-                    if ($req['failed'] === true) {
+                    if ($req['error'] === true) {
                         $message .= $req['memo'].'<br />';
                     }
                 }

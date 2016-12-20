@@ -442,6 +442,7 @@ class RequirementsChecker
             $this->dbCreds['password'] = $configService->get('password', 'db');
             $this->dbCreds['database'] = $configService->get('database', 'db');
             $this->dbCreds['driver'] = $configService->get('driver', 'db');
+            $this->dbCreds['port'] = $configService->getDbPort();
 
             return true;
         }
@@ -559,7 +560,13 @@ class RequirementsChecker
 
         if (!$conn) {
             try {
-                $conn = new PDO("{$this->dbCreds['driver']}:host={$this->dbCreds['server']};dbname={$this->dbCreds['database']}", $this->dbCreds['user'], $this->dbCreds['password']);
+                $dsn = "{$this->dbCreds['driver']}:host={$this->dbCreds['server']};dbname={$this->dbCreds['database']};";
+
+                if (array_key_exists('port', $this->dbCreds)) {
+                    $dsn .= "port={$this->dbCreds['port']};";
+                }
+
+                $conn = new PDO($dsn, $this->dbCreds['user'], $this->dbCreds['password']);
                 $conn->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
             } catch (PDOException $e) {
                 $this->dbConnectionError = "Can't connect to the database with the credentials supplied in db.php. Please double check them and try again.";
