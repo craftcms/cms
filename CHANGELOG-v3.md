@@ -111,6 +111,8 @@ Craft CMS 3.0 Working Changelog
 - Added Guzzle 6 HTTP Adapter.
 - Added php-shellcommand.
 - Added the ZendFeed library.
+- Added `craft\config\guzzle.php` config settings and a `Config::Guzzle` category so you can config Guzzle properties.
+- Added `Craft::createGuzzleInstance()` to get a Guzzle instance that takes into account default and per request options.
 
 ### Changed
 - The bootstrap script now assumes that the vendor/ folder is 3 levels up from the bootstrap/ directory by default (e.g. vendor/craftcms/craft/bootstrap/). If that is not the case (most likely because Craft had been symlinked into place), the `CRAFT_VENDOR_PATH` PHP constant can be used to correct that.
@@ -254,6 +256,8 @@ Craft CMS 3.0 Working Changelog
 - Renamed `craft.getEntries()` back to `craft.entries()`.
 - Renamed `craft.getTags()` back to `craft.tags()`.
 - Renamed `craft.getUsers()` back to `craft.users()`.
+- Moved `craft\services\Feeds` to `craft\feeds\Feeds`.
+- All Craft and library dependencies that make remote calls use Craft's centralized Guzzle instance.
 - Updated Yii to 2.0.10.
 - Updated Yii 2 Debug Extension to 2.0.7.
 - Updated Yii 2 Auth Client to 2.1.1.
