@@ -40,7 +40,6 @@
     "bower-asset/selectize": "0.12.4",
     "bower-asset/timepicker": "1.11.8",
     "bower-asset/velocity": "1.4.0",
-    "hampel/helpspot": "0.1.0",
     "zendframework/zend-feed": "2.7.0"
   },
   "autoload": {
