@@ -23,6 +23,7 @@ Craft CMS 3.0 Working Changelog
 - Added the `|column` Twig filter, for capturing the key/property values of a series of arrays/objects.
 - Added the `|index` Twig filter, for indexing an array of arrays/objects by one of their keys/values.
 - Added the JavaScript method `BaseElementIndex::refreshSources()`.
+- Added `Craft::createGuzzleClient()`, which creates a Guzzle client instance with any custom config settings merged in with the site default settings.
 - Added `craft\base\LocalVolumeInterface`.
 - Added `craft\db\pgsql\QueryBuilder`.
 - Added `craft\db\pgsql\Schema`.
@@ -115,7 +116,6 @@ Craft CMS 3.0 Working Changelog
 - Added php-shellcommand.
 - Added the ZendFeed library.
 - It is now possible to override the default Guzzle settings from craft/config/guzzle.php.
-- Added `Craft::createGuzzleInstance()` to get a Guzzle instance that takes into account default and per request options.
 
 ### Changed
 - The bootstrap script now assumes that the vendor/ folder is 3 levels up from the bootstrap/ directory by default (e.g. vendor/craftcms/craft/bootstrap/). If that is not the case (most likely because Craft had been symlinked into place), the `CRAFT_VENDOR_PATH` PHP constant can be used to correct that.
