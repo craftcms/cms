@@ -7,6 +7,8 @@
 
 use craft\db\Query;
 use craft\helpers\FileHelper;
+use craft\services\Config;
+use GuzzleHttp\Client;
 use yii\base\ExitException;
 use yii\helpers\VarDumper;
 use yii\web\Request;
@@ -208,6 +210,36 @@ EOD;
                 $elementQueryTraitFile
             );
         }
+    }
+
+    /**
+     * Returns a PSR-7 Guzzle client created with config options merged.
+     *
+     * @param array $config Any request specific config options to merge in.
+     *
+     * @return Client
+     */
+    public static function createGuzzleClient(array $config = [])
+    {
+        // Set the Craft header by default.
+        $defaultConfig = [
+            'headers' => [
+                'User-Agent' => 'Craft/'.Craft::$app->version.' '.\GuzzleHttp\default_user_agent()
+            ],
+        ];
+
+        // Grab the config from craft/config/guzzle.php that is used on every Guzzle request.
+        $guzzleConfig = Craft::$app->getConfig()->getConfigSettings(Config::CATEGORY_GUZZLE);
+
+        // Merge default into guzzle config.
+        $guzzleConfig = array_replace_recursive($guzzleConfig, $defaultConfig);
+
+        // Maybe they want to set some config options specifically for this request.
+        $guzzleConfig = array_replace_recursive($guzzleConfig, $config);
+
+        return new Client([
+            $guzzleConfig
+        ]);
     }
 
     /**
