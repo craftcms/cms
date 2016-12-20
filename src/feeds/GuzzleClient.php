@@ -8,8 +8,6 @@
 namespace craft\feeds;
 
 use Craft;
-use craft\base\GuzzleFactory;
-use GuzzleHttp\Client;
 use GuzzleHttp\ClientInterface as GuzzleClientInterface;
 use Zend\Feed\Reader\Http\ClientInterface as FeedReaderHttpClientInterface;
 use Zend\Feed\Reader\Http\Psr7ResponseDecorator;
@@ -32,7 +30,7 @@ class GuzzleClient implements FeedReaderHttpClientInterface
      */
     public function __construct(GuzzleClientInterface $client = null)
     {
-        $this->_client = $client ?: GuzzleFactory::create();
+        $this->_client = $client ?: Craft::createGuzzleClient();
     }
 
     /**
