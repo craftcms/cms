@@ -5,10 +5,9 @@
  * @license   https://craftcms.com/license
  */
 
-namespace craft\services;
+namespace craft\feeds;
 
 use Craft;
-use craft\base\GuzzleClient;
 use craft\helpers\DateTimeHelper;
 use craft\models\Url;
 use DateTime;
@@ -86,9 +85,7 @@ class Feeds extends Component
             // Potentially long-running request, so close session to prevent session blocking on subsequent requests.
             Craft::$app->getSession()->close();
 
-            $guzzleClient = new GuzzleClient();
-
-            Reader::setHttpClient($guzzleClient);
+            Reader::setHttpClient(new GuzzleClient());
 
             try {
                 $items = Reader::import($url);

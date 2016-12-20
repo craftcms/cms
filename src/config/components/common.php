@@ -26,7 +26,7 @@ return [
     'entries' => craft\services\Entries::class,
     'entryRevisions' => craft\services\EntryRevisions::class,
     'et' => craft\services\Et::class,
-    'feeds' => craft\services\Feeds::class,
+    'feeds' => craft\feeds\Feeds::class,
     'fields' => craft\services\Fields::class,
     'globals' => craft\services\Globals::class,
     'images' => craft\services\Images::class,

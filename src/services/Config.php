@@ -42,6 +42,7 @@ class Config extends Component
     const CATEGORY_DBCACHE = 'dbcache';
     const CATEGORY_MEMCACHE = 'memcache';
     const CATEGORY_APC = 'apc';
+    const CATEGORY_GUZZLE = 'guzzle';
 
     // Properties
     // =========================================================================
@@ -839,7 +840,7 @@ class Config extends Component
         $pathService = Craft::$app->getPath();
 
         // Is this a valid Craft config category?
-        if (in_array($category, [self::CATEGORY_FILECACHE, self::CATEGORY_GENERAL, self::CATEGORY_DB, self::CATEGORY_DBCACHE, self::CATEGORY_MEMCACHE, self::CATEGORY_APC], true)) {
+        if (in_array($category, [self::CATEGORY_FILECACHE, self::CATEGORY_GENERAL, self::CATEGORY_DB, self::CATEGORY_DBCACHE, self::CATEGORY_MEMCACHE, self::CATEGORY_APC, self::CATEGORY_GUZZLE], true)) {
             $defaultsPath = Craft::$app->getBasePath().DIRECTORY_SEPARATOR.'config'.DIRECTORY_SEPARATOR.'defaults'.DIRECTORY_SEPARATOR.$category.'.php';
         } else if (($plugin = Craft::$app->getPlugins()->getPlugin($category)) !== null) {
             /** @var Plugin $plugin */

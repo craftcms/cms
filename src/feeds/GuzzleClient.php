@@ -5,16 +5,15 @@
  * @license   https://craftcms.com/license
  */
 
-namespace craft\base;
+namespace craft\feeds;
 
 use Craft;
-use GuzzleHttp\Client;
 use GuzzleHttp\ClientInterface as GuzzleClientInterface;
 use Zend\Feed\Reader\Http\ClientInterface as FeedReaderHttpClientInterface;
 use Zend\Feed\Reader\Http\Psr7ResponseDecorator;
 
 /**
- * Craft PSR-7 Guzzle client.
+ * PSR-7 Guzzle client for the Feeds service.
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since  3.0
@@ -31,11 +30,7 @@ class GuzzleClient implements FeedReaderHttpClientInterface
      */
     public function __construct(GuzzleClientInterface $client = null)
     {
-        $this->_client = $client ?: new Client([
-            'headers' => [
-                'User-Agent' => 'Craft/'.Craft::$app->version.' '.\GuzzleHttp\default_user_agent()
-            ],
-        ]);
+        $this->_client = $client ?: Craft::createGuzzleClient();
     }
 
     /**
