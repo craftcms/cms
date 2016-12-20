@@ -40,7 +40,8 @@
     "bower-asset/selectize": "0.12.4",
     "bower-asset/timepicker": "1.11.8",
     "bower-asset/velocity": "1.4.1",
-    "zendframework/zend-feed": "2.7.0"
+    "zendframework/zend-feed": "2.7.0",
+    "roave/security-advisories": "dev-master"
   },
   "autoload": {
     "psr-4": {
