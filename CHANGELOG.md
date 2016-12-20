@@ -7,6 +7,7 @@ Craft CMS Changelog
 
 - Use Imagick if available to manipulate image EXIF rotation data.
 - Updated Garnish to 0.1.9.
+- Updated Velocity to 1.4.1.
 
 ### Fixed
 
