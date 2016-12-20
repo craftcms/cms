@@ -319,7 +319,9 @@ class ElementsService extends BaseApplicationComponent
 
 			if ($indexBy)
 			{
-				$elements[$element->$indexBy] = $element;
+				// Cast to a string in the case of SingleOptionFieldData, so its
+				// __toString() method gets invoked.
+				$elements[(string)$element->$indexBy] = $element;
 			}
 			else
 			{
