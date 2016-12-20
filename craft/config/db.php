@@ -8,16 +8,8 @@
  */
 
 return [
-
-    // The database server name or IP address. Usually this is 'localhost' or '127.0.0.1'.
-    'server' => 'localhost',
-
-    // The database username to connect with.
-    'user' => 'root',
-
-    // The database password to connect with.
-    'password' => '',
-
-    // The name of the database to select.
-    'database' => '',
+    'server' => getenv('DB_SERVER'),
+    'user' => getenv('DB_USER'),
+    'password' => getenv('DB_PASSWORD'),
+    'database' => getenv('DB_DATABASE'),
 ];

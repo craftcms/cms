@@ -20,7 +20,8 @@
     "minimum-stability": "beta",
     "require": {
         "php": ">=5.6.0",
-        "craftcms/craft": "dev-master"
+        "craftcms/craft": "dev-master",
+        "vlucas/phpdotenv": "^2.4.0"
     },
     "repositories": [
         {
