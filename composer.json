@@ -1,6 +1,6 @@
 {
-    "name": "craftcms/project",
-    "description": "Craft CMS Project",
+    "name": "craftcms/craft",
+    "description": "Craft CMS",
     "keywords": [
         "craft",
         "cms",
@@ -20,7 +20,7 @@
     "minimum-stability": "beta",
     "require": {
         "php": ">=5.6.0",
-        "craftcms/craft": "dev-master",
+        "craftcms/cms": "dev-master",
         "vlucas/phpdotenv": "^2.4.0",
         "roave/security-advisories": "dev-master"
     },
