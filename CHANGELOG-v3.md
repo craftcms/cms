@@ -1,7 +1,7 @@
 Craft CMS 3.0 Working Changelog
 ===============================
 
-## [Unreleased]
+## Unreleased
 
 ### Added
 - Ported all recent changes from Craft 2, including chart-related things added in Craft 2.6.
@@ -476,7 +476,7 @@ Craft CMS 3.0 Working Changelog
 - Fixed a bug where you’d get a fatal PHP error during an update if you didn’t meet one of Craft’s requirements.
 - Fixed a bug where you’d get a database error when saving a private Assets Volume.
 
-## [v3.0.0-alpha.2948] - 2016-09-29
+## v3.0.0-alpha.2948 - 2016-09-29
 
 ### Added
 - Added `craft\i18n\Locale::getNumberPattern()`.
@@ -565,7 +565,7 @@ Craft CMS 3.0 Working Changelog
 - Fixed a PHP error that occurred when deleting an entry.
 - Fixed a bug where Craft wasn’t renaming content table columns when a field’s handle was renamed; instead it was just adding a new column based on the new handle.
 
-## [v3.0.0-alpha.2942] - 2016-09-21
+## v3.0.0-alpha.2942 - 2016-09-21
 
 ### Added
 - Added [Content Migrations](https://craftcms.com/news/craft-3-content-migrations) support.
@@ -651,7 +651,7 @@ Craft CMS 3.0 Working Changelog
 - Fixed a JavaScript error in `Craft.compare()` that affected Live Preview.
 - Fixed a bug where changes to tags’ titles made from the inline editor within Tags fields would not be reflected in the Tags field, for newly-selected tags.
 
-## [v3.0.0-alpha.2939] - 2016-09-15
+## v3.0.0-alpha.2939 - 2016-09-15
 
 ### Fixed
 - Fixed a bug where `craft\helpers\Io::copyFolder()` was not working.
@@ -664,7 +664,7 @@ Craft CMS 3.0 Working Changelog
 - Fixed a bug where element queries were not always respecting the 'limit' and 'offset' params when the 'search' param was applied.
 - Fixed a bug where element queries were non respecting the 'orderBy' param if it was set to "score" and the 'search' param was applied.
 
-## [v3.0.0-alpha.2937] - 2016-09-13
+## v3.0.0-alpha.2937 - 2016-09-13
 
 ### Changed
 - It is now possible to override 'assetManager', 'cache', 'db', 'mailer', 'locale', 'formatter', and 'log' application components' configurations from craft/config/app.php.
@@ -679,7 +679,7 @@ Craft CMS 3.0 Working Changelog
 - Fixed a PHP error that occurred when executing `migrate` commands from the CLI.
 - Fixed a bug where craft/config/db.php was not getting validated before attempting to establish a DB connection.
 
-## [v3.0.0-alpha.2933] - 2016-09-12
+## v3.0.0-alpha.2933 - 2016-09-12
 
 ### Added
 - [Multi-site management!](https://craftcms.com/news/craft-3-multi-site)
@@ -719,7 +719,7 @@ Craft CMS 3.0 Working Changelog
 - Fixed a bug where users without Control Panel access weren't getting redirected correctly after account activation.
 - Fixed a JavaScript error that occurred when calling `Craft.ui.createCheckboxField()`.
 
-## [v3.0.0-alpha.2928] - 2016-08-31
+## v3.0.0-alpha.2928 - 2016-08-31
 
 ### Added
 - Table fields now have a "Lightswitch" column type option.
@@ -738,7 +738,7 @@ Craft CMS 3.0 Working Changelog
 - Fixed bug where `&nbsp;` was getting output for editable table headings that should have been empty.
 - Fixed a bug where xregexp-all.js was not getting included properly when the `useCompressedJs` config setting was set to `true` (as it is by default).
 
-## [v3.0.0-alpha.2918] - 2016-08-25
+## v3.0.0-alpha.2918 - 2016-08-25
 
 ### Added
 - Added `$flavor` and `$inlineOnly` arguments to the `|markdown` filter, making it possible to choose which Markdown flavor should be used, and whether it should parse paragraphs or treat the whole thing as inline elements.
@@ -766,7 +766,7 @@ Craft CMS 3.0 Working Changelog
 - Fixed a bug where setting custom field attributes on an element query would prevent the query from executing.
 - Fixed a bug where plugin Control Panel nav items were getting the full plugin class name in the URL instead of just handle.
 
-## [v3.0.0-alpha.2915] - 2016-08-17
+## v3.0.0-alpha.2915 - 2016-08-17
 
 ### Added
 - User photos are now assets. (Note that the craft/storage/userphotos/ folder must be manually moved to a publicly accessible location, and the User Photos asset volume’s settings must be updated accordingly, for user photos to work properly.)
@@ -816,7 +816,7 @@ Craft CMS 3.0 Working Changelog
 ### Security
 - `craft\services\Security::hashData` and `validateData()` no longer require a `$key` argument.
 
-## [v3.0.0-alpha.2910] - 2016-08-04
+## v3.0.0-alpha.2910 - 2016-08-04
 
 ### Added
 - Ported all the changes from Craft 2.
@@ -909,7 +909,7 @@ Craft CMS 3.0 Working Changelog
 ### Fixed
 - Fixed a lot of bugs. OK?
 
-## [v3.0.0-alpha.2687] - 2015-08-20
+## v3.0.0-alpha.2687 - 2015-08-20
 
 ### Added
 - Ported all improvements and bug fixes from the latest Craft 2.4 builds.
@@ -942,7 +942,7 @@ Craft CMS 3.0 Working Changelog
 - Fixed a bug where `craft\helpers\MigrationHelper` would forget that it had dropped a table after `dropTable()` was called.
 - Fixed an error that would occur if another error occurred during a MySQL transaction that included savepoints, and the savepoints had already been implicitly committed.
 
-## [v3.0.0-alpha.2681] - 2015-07-22
+## v3.0.0-alpha.2681 - 2015-07-22
 
 ### Added
 - Ported all improvements and bug fixes from the latest Craft 2.4 builds.
@@ -983,7 +983,7 @@ Craft CMS 3.0 Working Changelog
 ### Fixed
 - Fixed many, many bugs.
 
-## [v3.0.0-alpha.2671] - 2015-06-18
+## v3.0.0-alpha.2671 - 2015-06-18
 
 ### Added
 - Ported all new features and improvements that were introduced in [Craft 2.4](http://buildwithcraft.com/updates#build2664).
@@ -1046,7 +1046,7 @@ Craft CMS 3.0 Working Changelog
 - Fixed a bug that prevented user and email settings from being remembered.
 - Fixed a JavaScript error that occurred on pages with fields that could be toggled by a checkbox.
 
-## [v3.0.0-alpha.2663] - 2015-05-27
+## v3.0.0-alpha.2663 - 2015-05-27
 
 ### Changed
 - Plugins can now add an array of Twig extensions from the `addTwigExtension` hook.
@@ -1054,7 +1054,7 @@ Craft CMS 3.0 Working Changelog
 ### Fixed
 - Fixed a PHP error that occurred when installing Craft or validating URLs if the Intl extension wasn’t loaded.
 
-## [v3.0.0-alpha.2661] - 2015-05-22
+## v3.0.0-alpha.2661 - 2015-05-22
 
 ### Added
 - Added a `withPassword` criteria parameter to User queries, which includes the users’ hashed passwords in the query and sets them on the resulting User models.
@@ -1086,7 +1086,7 @@ Craft CMS 3.0 Working Changelog
 - Corrected the default config paths in the comments of config/db.php and config/general.php.
 - Fixed a bug that resulted in the Updates page never getting past the “Checking for updates” step when an update was available.
 
-## [v3.0.0-alpha.2659] - 2015-05-19
+## v3.0.0-alpha.2659 - 2015-05-19
 
 ### Added
 - Added support for registering plugin resources via `craft\web\View::registerCssResource()` and `registerJsResource()`.
@@ -1117,20 +1117,3 @@ Craft CMS 3.0 Working Changelog
 - Asset Sources are now called Volumes, and plugins can supply their own Volume Types (made easy with [Flysystem](http://flysystem.thephpleague.com/)).
 - It is now possibly to customize the SQL of element queries, and there are more choices on how the data should be returned.
 - Included the [Yii 2 Debug Extension](http://www.yiiframework.com/doc-2.0/guide-tool-debugger.html).
-
-[Unreleased]: https://github.com/craftcms/craft/compare/v3.0.0-alpha.2948...develop
-[v3.0.0-alpha.2948]: https://github.com/craftcms/craft/compare/3.0.0-alpha.2942...3.0.0-alpha.2948
-[v3.0.0-alpha.2942]: https://github.com/craftcms/craft/compare/3.0.0-alpha.2939...3.0.0-alpha.2942
-[v3.0.0-alpha.2939]: https://github.com/craftcms/craft/compare/3.0.0-alpha.2937...3.0.0-alpha.2939
-[v3.0.0-alpha.2937]: https://github.com/craftcms/craft/compare/3.0.0-alpha.2933...3.0.0-alpha.2937
-[v3.0.0-alpha.2933]: https://github.com/craftcms/craft/compare/3.0.0-alpha.2928...3.0.0-alpha.2933
-[v3.0.0-alpha.2928]: https://github.com/craftcms/craft/compare/3.0.0-alpha.2918...3.0.0-alpha.2928
-[v3.0.0-alpha.2918]: https://github.com/craftcms/craft/compare/3.0.0-alpha.2915...3.0.0-alpha.2918
-[v3.0.0-alpha.2915]: https://github.com/craftcms/craft/compare/3.0.0-alpha.2910...3.0.0-alpha.2915
-[v3.0.0-alpha.2910]: https://github.com/craftcms/craft/compare/3.0.0-alpha.2687...3.0.0-alpha.2910
-[v3.0.0-alpha.2687]: https://github.com/craftcms/craft/compare/3.0.0-alpha.2681...3.0.0-alpha.2687
-[v3.0.0-alpha.2681]: https://github.com/craftcms/craft/compare/3.0.0-alpha.2671...3.0.0-alpha.2681
-[v3.0.0-alpha.2671]: https://github.com/craftcms/craft/compare/3.0.0-alpha.2663...3.0.0-alpha.2671
-[v3.0.0-alpha.2663]: https://github.com/craftcms/craft/compare/3.0.0-alpha.2661...3.0.0-alpha.2663
-[v3.0.0-alpha.2661]: https://github.com/craftcms/craft/compare/3.0.0-alpha.2659...3.0.0-alpha.2661
-[v3.0.0-alpha.2659]: https://github.com/craftcms/craft/compare/3.0.0-alpha.2657...3.0.0-alpha.2659
