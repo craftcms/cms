@@ -22,7 +22,7 @@ class m161220_000000_volumes_hasurl_notnull extends Migration
             $this->alterColumn('{{%volumes}}', 'hasUrls', 'SET DEFAULT FALSE');
 
         } else {
-            $this->alterColumn('{{%volumes}}', 'hasUrls', $this->defaultValue(false)->notNull());
+            $this->alterColumn('{{%volumes}}', 'hasUrls', $this->boolean()->defaultValue(false)->notNull());
         }
 
     }
