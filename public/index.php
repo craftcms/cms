@@ -12,5 +12,5 @@ $dotenv->required(['DB_SERVER', 'DB_USER', 'DB_PASSWORD', 'DB_DATABASE']);
 
 // Craft
 define('CRAFT_BASE_PATH', $root.'/craft');
-$app = require $root.'/vendor/craftcms/craft/bootstrap/web.php';
+$app = require $root.'/vendor/craftcms/cms/bootstrap/web.php';
 $app->run();
