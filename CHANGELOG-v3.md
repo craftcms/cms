@@ -474,7 +474,7 @@ Craft CMS 3.0 Working Changelog
 - Fixed a bug where the Backup Database tool wasn’t downloading the DB backup if the “Download backup?” checkbox was checked.
 - Fixed a bug where the requirements checker wasn’t taking into account MySQL/PostgreSQL installs running on non-standard ports.
 - Fixed a bug where you’d get a fatal PHP error during an update if you didn’t meet one of Craft’s requirements.
-- Fixed a bug where you’d get a database error trying to save a S3 Volume with non-public Assets set.
+- Fixed a bug where you’d get a database error when saving a private Assets Volume.
 
 ## [v3.0.0-alpha.2948] - 2016-09-29
 
