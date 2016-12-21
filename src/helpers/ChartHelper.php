@@ -8,10 +8,10 @@
 namespace craft\helpers;
 
 use Craft;
-use craft\dates\DateTime;
 use craft\db\Connection;
 use craft\db\Query;
 use craft\services\Config;
+use DateTime;
 use yii\base\Exception;
 
 
@@ -39,16 +39,16 @@ class ChartHelper
      *  - `valueLabel`    - The label to use for the chart values. Defaults to "Value".
      *  - `valueType`     - The type of values that are being plotted ('number', 'currency', 'percent', 'time'). Defaults to 'number'.
      *
-     * @param Query      $query      The DB query that should be used
-     * @param DateTime   $startDate  The start of the time duration to select (inclusive)
-     * @param DateTime   $endDate    The end of the time duration to select (exclusive)
-     * @param string     $dateColumn The column that represents the date
-     * @param array|null $options    Any customizations that should be made over the default options
+     * @param Query    $query      The DB query that should be used
+     * @param DateTime $startDate  The start of the time duration to select (inclusive)
+     * @param DateTime $endDate    The end of the time duration to select (exclusive)
+     * @param string   $dateColumn The column that represents the date
+     * @param array    $options    Any customizations that should be made over the default options
      *
      * @return array
      * @throws Exception
      */
-    public static function getRunChartDataFromQuery(Query $query, DateTime $startDate, DateTime $endDate, $dateColumn, $options = [])
+    public static function getRunChartDataFromQuery(Query $query, DateTime $startDate, DateTime $endDate, $dateColumn, array $options = [])
     {
         // Setup
         $options = array_merge([
@@ -62,7 +62,7 @@ class ChartHelper
 
         $craftTimezone = new \DateTimeZone(Craft::$app->getTimeZone());
 
-        if ($options['intervalUnit'] && in_array($options['intervalUnit'], ['year', 'month', 'day', 'hour'])) {
+        if ($options['intervalUnit'] && in_array($options['intervalUnit'], ['year', 'month', 'day', 'hour'], true)) {
             $intervalUnit = $options['intervalUnit'];
         } else {
             $intervalUnit = self::getRunChartIntervalUnit($startDate, $endDate);
@@ -199,7 +199,7 @@ class ChartHelper
         return [
             'columns' => [
                 [
-                    'type' => ($intervalUnit == 'hour' ? 'datetime' : 'date'),
+                    'type' => $intervalUnit == 'hour' ? 'datetime' : 'date',
                     'label' => $options['categoryLabel']
                 ],
                 [
@@ -222,7 +222,7 @@ class ChartHelper
     public static function getRunChartIntervalUnit(DateTime $startDate, DateTime $endDate)
     {
         // Get the total number of days between the two dates
-        $days = floor(($endDate->getTimestamp() - $startDate->getTimestamp()) / 86400);
+        $days = $endDate->diff($startDate)->format('%a');
 
         if ($days >= 730) {
             return 'year';

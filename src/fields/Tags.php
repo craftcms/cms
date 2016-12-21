@@ -92,8 +92,8 @@ class Tags extends BaseRelationField
                     'elements' => $value,
                     'tagGroupId' => $this->_getTagGroupId(),
                     'targetSiteId' => $this->getTargetSiteId($element),
-                    'sourceElementId' => (!empty($element) ? $element->id : null),
-                    'selectionLabel' => ($this->selectionLabel ? Craft::t('site', $this->selectionLabel) : static::defaultSelectionLabel()),
+                    'sourceElementId' => !empty($element) ? $element->id : null,
+                    'selectionLabel' => $this->selectionLabel ? Craft::t('site', $this->selectionLabel) : static::defaultSelectionLabel(),
                 ]);
         } else {
             return '<p class="error">'.Craft::t('app', 'This field is not set to a valid source.').'</p>';
@@ -126,14 +126,14 @@ class Tags extends BaseRelationField
      */
     private function _getTagGroupId()
     {
-        if (!isset($this->_tagGroupId)) {
-            if (strncmp($this->source, 'taggroup:', 9) == 0) {
-                $this->_tagGroupId = (int)mb_substr($this->source, 9);
-            } else {
-                $this->_tagGroupId = false;
-            }
+        if ($this->_tagGroupId !== null) {
+            return $this->_tagGroupId;
         }
 
-        return $this->_tagGroupId;
+        if (!preg_match('/^taggroup:(\d+)$/', $this->source, $matches)) {
+            return $this->_tagGroupId = false;
+        }
+
+        return $this->_tagGroupId = (int)$matches[1];
     }
 }

@@ -23,6 +23,7 @@ use craft\search\SearchQueryTerm;
 use craft\search\SearchQueryTermGroup;
 use Exception;
 use yii\base\Component;
+use yii\db\Exception as DbException;
 
 /**
  * Handles search operations.
@@ -344,9 +345,9 @@ class Search extends Component
     /**
      * Calculate score for a row/term combination.
      *
-     * @param  object    $term   The SearchQueryTerm to score.
-     * @param  array     $row    The result row to score against.
-     * @param  float|int $weight Optional weight for this term.
+     * @param  SearchQueryTerm $term   The SearchQueryTerm to score.
+     * @param  array           $row    The result row to score against.
+     * @param  float|int       $weight Optional weight for this term.
      *
      * @return float The total score for this term/row combination.
      */
@@ -516,7 +517,7 @@ class Search extends Component
         $driver = Craft::$app->getDb()->getDriverName();
 
         // Check for other attributes
-        if (!is_null($term->attribute)) {
+        if ($term->attribute !== null) {
             // Is attribute a valid fieldId?
             $fieldId = $this->_getFieldIdFromAttribute($term->attribute);
 
@@ -557,7 +558,7 @@ class Search extends Component
                                     $keywords .= ':*';
                                     break;
                                 default:
-                                    throw new Exception('Unsupported connection type: '.$driver);
+                                    throw new DbException('Unsupported connection type: '.$driver);
                             }
                         }
 
@@ -643,7 +644,7 @@ class Search extends Component
         $field = Craft::$app->getFields()->getFieldByHandle($attribute);
 
         // Fallback to 0
-        return ($field) ? $field->id : 0;
+        return $field ? $field->id : 0;
     }
 
     /**
@@ -699,7 +700,7 @@ class Search extends Component
                 return sprintf("%s @@ '%s'::tsquery", Craft::$app->getDb()->quoteColumnName('keywords_vector'), (is_array($val) ? implode($andOr, $val) : $val));
 
             default:
-                throw new Exception('Unsupported connection type: '.$driver);
+                throw new DbException('Unsupported connection type: '.$driver);
         }
     }
 
@@ -741,11 +742,7 @@ class Search extends Component
      */
     private function _doFullTextSearch($keywords, SearchQueryTerm $term)
     {
-        if ($keywords !== '' && !$term->subLeft && !$term->exact && !$term->exclude) {
-            return true;
-        }
-
-        return false;
+        return $keywords !== '' && !$term->subLeft && !$term->exact && !$term->exclude;
     }
 
     /**

@@ -105,7 +105,7 @@ class MatrixBlockQuery extends ElementQuery
      *
      * @param integer|integer[] $value The property value
      *
-     * @return $this self reference
+     * @return static self reference
      */
     public function fieldId($value)
     {
@@ -119,7 +119,7 @@ class MatrixBlockQuery extends ElementQuery
      *
      * @param integer|integer[] $value The property value
      *
-     * @return $this self reference
+     * @return static self reference
      */
     public function ownerId($value)
     {
@@ -133,7 +133,7 @@ class MatrixBlockQuery extends ElementQuery
      *
      * @param integer $value The property value
      *
-     * @return $this self reference
+     * @return static self reference
      */
     public function ownerSiteId($value)
     {
@@ -153,7 +153,7 @@ class MatrixBlockQuery extends ElementQuery
      *
      * @param string|string[]|Site $value The property value
      *
-     * @return $this self reference
+     * @return static self reference
      * @throws Exception if $value is an invalid site handle
      */
     public function ownerSite($value)
@@ -178,7 +178,7 @@ class MatrixBlockQuery extends ElementQuery
      *
      * @param string|string[] $value The property value
      *
-     * @return $this self reference
+     * @return static self reference
      * @deprecated in 3.0. Use [[ownerSiteId()]] instead.
      */
     public function ownerLocale($value)
@@ -194,7 +194,7 @@ class MatrixBlockQuery extends ElementQuery
      *
      * @param ElementInterface $owner The owner element
      *
-     * @return $this self reference
+     * @return static self reference
      */
     public function owner(ElementInterface $owner)
     {
@@ -210,7 +210,7 @@ class MatrixBlockQuery extends ElementQuery
      *
      * @param string|string[]|MatrixBlockType $value The property value
      *
-     * @return $this self reference
+     * @return static self reference
      */
     public function type($value)
     {
@@ -233,7 +233,7 @@ class MatrixBlockQuery extends ElementQuery
      *
      * @param integer|integer[] $value The property value
      *
-     * @return $this self reference
+     * @return static self reference
      */
     public function typeId($value)
     {
@@ -311,7 +311,7 @@ class MatrixBlockQuery extends ElementQuery
         foreach ($blockTypes as $blockType) {
             $contexts[] = 'matrixBlockType:'.$blockType->id;
         }
-        Craft::$app->getFields()->getAllFields(null, $contexts);
+        Craft::$app->getFields()->getAllFields($contexts);
 
         // Now assemble the actual fields list
         $fields = [];

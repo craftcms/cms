@@ -100,7 +100,7 @@ class TagQuery extends ElementQuery
      *
      * @param string|string[]|TagGroup $value The property value
      *
-     * @return $this self reference
+     * @return static self reference
      */
     public function group($value)
     {
@@ -123,7 +123,7 @@ class TagQuery extends ElementQuery
      *
      * @param integer|integer[] $value The property value
      *
-     * @return $this self reference
+     * @return static self reference
      */
     public function groupId($value)
     {

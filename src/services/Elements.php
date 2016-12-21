@@ -120,10 +120,8 @@ class Elements extends Component
             $config = ['type' => $config];
         }
 
-        /** @var Element $element */
-        $element = ComponentHelper::createComponent($config, ElementInterface::class);
-
-        return $element;
+        /** @noinspection PhpIncompatibleReturnTypeInspection */
+        return ComponentHelper::createComponent($config, ElementInterface::class);
     }
 
     // Finding Elements
@@ -434,8 +432,10 @@ class Elements extends Component
                 $supportedSiteIds[] = $siteInfo['siteId'];
             }
 
+            $translateContent = false;
+
             // Make sure the element actually supports this site
-            if (array_search($element->siteId, $supportedSiteIds) === false) {
+            if (!in_array($element->siteId, $supportedSiteIds, false)) {
                 throw new Exception('Attempting to save an element in an unsupported site.');
             }
 
@@ -453,8 +453,6 @@ class Elements extends Component
                             $masterFieldTranslationKeys[$field->id] = $field->getTranslationKey($element);
                         }
                     }
-                } else {
-                    $translateContent = false;
                 }
 
                 $masterFieldValues = $element->getFieldValues();
@@ -514,8 +512,9 @@ class Elements extends Component
                                             // Does this field produce the same translation key as it did for the master element?
                                             $fieldTranslationKey = $field->getTranslationKey($localizedElement);
 
-                                            if ($fieldTranslationKey == $masterFieldTranslationKeys[$field->id]) {
+                                            if ($fieldTranslationKey === $masterFieldTranslationKeys[$field->id]) {
                                                 // Copy the master element's value over
+                                                /** @noinspection PhpUndefinedVariableInspection */
                                                 $fieldValues[$field->handle] = $masterFieldValues[$field->handle];
                                             }
                                         }
@@ -526,6 +525,7 @@ class Elements extends Component
 
                         if ($fieldValues === false) {
                             // Just default to whatever's on the master element we're saving here
+                            /** @noinspection PhpUndefinedVariableInspection */
                             $fieldValues = $masterFieldValues;
                         }
 
@@ -1125,14 +1125,15 @@ class Elements extends Component
 
                         // Things are about to get silly...
                         foreach ($things as $thing) {
-                            $refTagsByThing = ${'refTagsBy'.ucfirst($thing)};
+                            $refTagsByThing = $thing === 'id' ? $refTagsById : $refTagsByRef;
 
                             if ($refTagsByThing) {
-                                $elements = $elementType::find()
-                                    ->status(null)
-                                    ->limit(null)
-                                    ->$thing(array_keys($refTagsByThing))
-                                    ->all();
+                                /** @var Element|string $elementType */
+                                $elementQuery = $elementType::find();
+                                $elementQuery->status(null);
+                                $elementQuery->limit(null);
+                                $elementQuery->$thing(array_keys($refTagsByThing));
+                                $elements = $elementQuery->all();
 
                                 $elementsByThing = [];
 
@@ -1140,14 +1141,14 @@ class Elements extends Component
                                     $elementsByThing[$element->$thing] = $element;
                                 }
 
-                                foreach ($refTagsByThing as $thingVal => $refTags) {
+                                foreach ($refTagsByThing as $thingVal => $thingRefTags) {
                                     if (isset($elementsByThing[$thingVal])) {
                                         $element = $elementsByThing[$thingVal];
                                     } else {
                                         $element = false;
                                     }
 
-                                    foreach ($refTags as $refTag) {
+                                    foreach ($thingRefTags as $refTag) {
                                         $search[] = $refTag['token'];
 
                                         if ($element) {
@@ -1299,7 +1300,7 @@ class Elements extends Component
                         $targetElementIdsBySourceIds = [];
 
                         foreach ($map['map'] as $mapping) {
-                            if (!in_array($mapping['target'], $uniqueTargetElementIds)) {
+                            if (!in_array($mapping['target'], $uniqueTargetElementIds, false)) {
                                 $uniqueTargetElementIds[] = $mapping['target'];
                             }
 
@@ -1346,7 +1347,7 @@ class Elements extends Component
                             if ($useCustomOrder) {
                                 // Assign the elements in the order they were returned from the query
                                 foreach ($targetElements as $targetElement) {
-                                    if (in_array($targetElement->id, $targetElementIdsBySourceIds[$sourceElementId])) {
+                                    if (in_array($targetElement->id, $targetElementIdsBySourceIds[$sourceElementId], false)) {
                                         $targetElementsForSource[] = $targetElement;
                                     }
                                 }

@@ -13,6 +13,8 @@ use craft\helpers\StringHelper;
 use yii\base\InvalidConfigException;
 use yii\web\BadRequestHttpException;
 
+/** @noinspection ClassOverridesFieldOfSuperClassInspection */
+
 /**
  * @inheritdoc
  *
@@ -175,7 +177,7 @@ class Request extends \yii\web\Request
         // Is this a paginated request?
         $pageTrigger = Craft::$app->getConfig()->get('pageTrigger');
 
-        if (!is_string($pageTrigger) || !strlen($pageTrigger)) {
+        if (!is_string($pageTrigger) || $pageTrigger === '') {
             $pageTrigger = 'p';
         }
 
@@ -429,7 +431,7 @@ class Request extends \yii\web\Request
             $property = &$this->_isMobileBrowser;
         }
 
-        if (!isset($property)) {
+        if ($property === null) {
             if ($this->getUserAgent()) {
                 $property = (
                     preg_match(
@@ -745,15 +747,15 @@ class Request extends \yii\web\Request
     {
         $userAgent = $this->getUserAgent();
 
-        if (preg_match('/Linux/', $userAgent)) {
+        if (strpos($userAgent, 'Linux') !== false) {
             return 'Linux';
         }
 
-        if (preg_match('/Win/', $userAgent)) {
+        if (strpos($userAgent, 'Win') !== false) {
             return 'Windows';
         }
 
-        if (preg_match('/Mac/', $userAgent)) {
+        if (strpos($userAgent, 'Mac') !== false) {
             return 'Mac';
         }
 
@@ -783,7 +785,7 @@ class Request extends \yii\web\Request
 
             // the mask doesn't need to be very random
             $chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789_-.';
-            $mask = substr(str_shuffle(str_repeat($chars, 5)), 0, static::CSRF_MASK_LENGTH);
+            $mask = substr(str_shuffle(str_repeat($chars, 5)), 0, self::CSRF_MASK_LENGTH);
             // The + sign may be decoded as blank space later, which will fail the validation
             $this->_csrfToken = str_replace('+', '.', base64_encode($mask.$this->_xorTokens($token, $mask)));
         }
@@ -956,7 +958,7 @@ class Request extends \yii\web\Request
                         $logoutPath,
                         $setPasswordPath,
                         $verifyEmailPath
-                    ]))
+                    ], true))
                 ) {
                     $this->_isActionRequest = true;
 
@@ -1071,14 +1073,8 @@ class Request extends \yii\web\Request
      */
     private function _validateIp($ip)
     {
-        if (
-            filter_var($ip, FILTER_VALIDATE_IP, FILTER_FLAG_IPV4) === false &&
-            filter_var($ip, FILTER_VALIDATE_IP, FILTER_FLAG_IPV6) === false
-        ) {
-            return false;
-        }
-
-        return true;
+        return !(filter_var($ip, FILTER_VALIDATE_IP, FILTER_FLAG_IPV4) === false &&
+            filter_var($ip, FILTER_VALIDATE_IP, FILTER_FLAG_IPV6) === false);
     }
 
     /**

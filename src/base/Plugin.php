@@ -63,6 +63,7 @@ class Plugin extends Module implements PluginInterface
         $i18n = Craft::$app->getI18n();
         $handle = $this->getHandle();
 
+        /** @noinspection UnSafeIsSetOverArrayInspection */
         if (!isset($i18n->translations[$handle]) && !isset($i18n->translations[$handle.'*'])) {
             $i18n->translations[$handle] = [
                 'class' => PhpMessageSource::class,
@@ -95,10 +96,8 @@ class Plugin extends Module implements PluginInterface
         // Run the install migration, if there is one
         $migration = $this->createInstallMigration();
 
-        if ($migration !== null) {
-            if ($migrator->migrateUp($migration) === false) {
-                return false;
-            }
+        if ($migration !== null && $migrator->migrateUp($migration) === false) {
+            return false;
         }
 
         // Mark all existing migrations as applied
@@ -140,10 +139,8 @@ class Plugin extends Module implements PluginInterface
 
         $migration = $this->createInstallMigration();
 
-        if ($migration !== null) {
-            if ($this->getMigrator()->migrateDown($migration) === false) {
-                return false;
-            }
+        if ($migration !== null && $this->getMigrator()->migrateDown($migration) === false) {
+            return false;
         }
 
         $this->afterUninstall();
@@ -189,10 +186,8 @@ class Plugin extends Module implements PluginInterface
      */
     public function getMigrator()
     {
-        /** @var MigrationManager $migrator */
-        $migrator = $this->get('migrator');
-
-        return $migrator;
+        /** @noinspection PhpIncompatibleReturnTypeInspection */
+        return $this->get('migrator');
     }
 
     /**

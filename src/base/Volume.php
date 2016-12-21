@@ -132,7 +132,7 @@ abstract class Volume extends SavableComponent implements VolumeInterface
     /**
      * @inheritdoc
      */
-    public function getFileList($directory, $recursive = true)
+    public function getFileList($directory, $recursive)
     {
         return $this->getFilesystem()->listContents($directory, $recursive);
     }
@@ -140,7 +140,7 @@ abstract class Volume extends SavableComponent implements VolumeInterface
     /**
      * @inheritdoc
      */
-    public function createFileByStream($path, $stream, $config = [])
+    public function createFileByStream($path, $stream, array $config)
     {
         try {
             $config = $this->addFileMetadataToConfig($config);
@@ -154,7 +154,7 @@ abstract class Volume extends SavableComponent implements VolumeInterface
     /**
      * @inheritdoc
      */
-    public function updateFileByStream($path, $stream, $config = [])
+    public function updateFileByStream($path, $stream, array $config)
     {
         try {
             $config = $this->addFileMetadataToConfig($config);
@@ -232,7 +232,7 @@ abstract class Volume extends SavableComponent implements VolumeInterface
     {
         if ($this->folderExists($path)) {
             throw new VolumeObjectExistsException(Craft::t('app',
-                "Folder “{folder}” already exists on the volume!",
+                'Folder “{folder}” already exists on the volume!',
                 ['folder' => $path]));
         }
 
@@ -259,26 +259,26 @@ abstract class Volume extends SavableComponent implements VolumeInterface
     {
         if (!$this->folderExists($path)) {
             throw new VolumeObjectNotFoundException(Craft::t('app',
-                "Folder “{folder}” cannot be found on the volume.",
+                'Folder “{folder}” cannot be found on the volume.',
                 ['folder' => $path]));
         }
 
         // Get the list of dir contents
-        $fileList = $this->getFileList($path);
+        $fileList = $this->getFileList($path, true);
         $directoryList = [];
 
-        $parts = explode("/", $path);
+        $parts = explode('/', $path);
 
         array_pop($parts);
-        array_push($parts, $newName);
+        $parts[] = $newName;
 
-        $newPath = join("/", $parts);
+        $newPath = implode('/', $parts);
 
         $pattern = '/^'.preg_quote($path, '/').'/';
 
         // Rename every file and build a list of directories
         foreach ($fileList as $object) {
-            if ($object['type'] != 'dir') {
+            if ($object['type'] !== 'dir') {
                 $objectPath = preg_replace($pattern, $newPath, $object['path']);
                 $this->renameFile($object['path'], $objectPath);
             } else {
@@ -287,8 +287,8 @@ abstract class Volume extends SavableComponent implements VolumeInterface
         }
 
         // The files are moved, but the directories remain. Delete them.
-        foreach ($directoryList as $path) {
-            $this->deleteDir($path);
+        foreach ($directoryList as $dir) {
+            $this->deleteDir($dir);
         }
     }
 
@@ -325,11 +325,11 @@ abstract class Volume extends SavableComponent implements VolumeInterface
      */
     protected function getAdapter()
     {
-        if (!isset($this->_adapter)) {
-            $this->_adapter = $this->createAdapter();
+        if ($this->_adapter !== null) {
+            return $this->_adapter;
         }
 
-        return $this->_adapter;
+        return $this->_adapter = $this->createAdapter();
     }
 
     /**
@@ -339,11 +339,11 @@ abstract class Volume extends SavableComponent implements VolumeInterface
      */
     protected function getFilesystem()
     {
-        if (!isset($this->_filesystem)) {
-            $this->_filesystem = new Filesystem($this->getAdapter());
+        if ($this->_filesystem !== null) {
+            return $this->_filesystem;
         }
 
-        return $this->_filesystem;
+        return $this->_filesystem = new Filesystem($this->getAdapter());
     }
 
     /**

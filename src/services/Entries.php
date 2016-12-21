@@ -50,12 +50,13 @@ class Entries extends Component
             ->where(['entries.id' => $entryId])
             ->scalar();
 
-        return Entry::find()
-            ->id($entryId)
-            ->structureId($structureId)
-            ->siteId($siteId)
-            ->status(null)
-            ->enabledForSite(false)
-            ->one();
+        $query = Entry::find();
+        $query->id($entryId);
+        $query->structureId($structureId);
+        $query->siteId($siteId);
+        $query->status(null);
+        $query->enabledForSite(false);
+
+        return $query->one();
     }
 }

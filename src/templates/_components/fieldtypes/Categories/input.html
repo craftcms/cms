@@ -22,7 +22,7 @@
 </div>
 
 {% if jsClass is defined %}
-	{% registerjs %}
+	{% js %}
 		new {{ jsClass }}({
 			id: "{{ id   | namespaceInputId   | e('js') }}",
 			name: "{{ name | namespaceInputName | e('js') }}",
@@ -34,5 +34,5 @@
 			modalStorageKey: "{{ storageKey|e('js') }}",
 			selectionLabel: "{{ selectionLabel|e('js') }}"
 		});
-	{% endregisterjs %}
+	{% endjs %}
 {% endif %}

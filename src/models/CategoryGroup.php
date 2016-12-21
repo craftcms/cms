@@ -12,6 +12,7 @@ use craft\base\Model;
 use craft\behaviors\FieldLayoutBehavior;
 use craft\behaviors\FieldLayoutTrait;
 use craft\elements\Category;
+use craft\helpers\ArrayHelper;
 use craft\records\CategoryGroup as CategoryGroupRecord;
 use craft\validators\HandleValidator;
 use craft\validators\UniqueValidator;
@@ -106,7 +107,7 @@ class CategoryGroup extends Model
     {
         $validates = parent::validate($attributeNames, $clearErrors);
 
-        if ($attributeNames === null || in_array('siteSettings', $attributeNames)) {
+        if ($attributeNames === null || in_array('siteSettings', $attributeNames, true)) {
             foreach ($this->getSiteSettings() as $siteSettings) {
                 if (!$siteSettings->validate(null, $clearErrors)) {
                     $validates = false;
@@ -134,16 +135,16 @@ class CategoryGroup extends Model
      */
     public function getSiteSettings()
     {
-        if (!isset($this->_siteSettings)) {
-            if ($this->id) {
-                $siteSettings = Craft::$app->getCategories()->getGroupSiteSettings($this->id, 'siteId');
-            } else {
-                $siteSettings = [];
-            }
-
-            // Set them with setSiteSettings() so setGroup() gets called on them
-            $this->setSiteSettings($siteSettings);
+        if ($this->_siteSettings !== null) {
+            return $this->_siteSettings;
         }
+
+        if (!$this->id) {
+            return [];
+        }
+
+        // Set them with setSiteSettings() so setGroup() gets called on them
+        $this->setSiteSettings(ArrayHelper::index(Craft::$app->getCategories()->getGroupSiteSettings($this->id), 'siteId'));
 
         return $this->_siteSettings;
     }

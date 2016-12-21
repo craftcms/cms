@@ -152,7 +152,7 @@ class QuickPost extends Widget
             return '<p>'.Craft::t('app', 'No section has been selected yet.').'</p>';
         }
 
-        $entryTypes = $section->getEntryTypes('id');
+        $entryTypes = ArrayHelper::index($section->getEntryTypes(), 'id');
 
         if (!$entryTypes) {
             return '<p>'.Craft::t('app', 'No entry types exist for this section.').'</p>';

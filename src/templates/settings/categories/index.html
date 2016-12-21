@@ -42,11 +42,11 @@
 {% endblock %}
 
 
-{% registerjs %}
+{% js %}
 	new Craft.AdminTable({
 		tableSelector: '#categorygroups',
 		noItemsSelector: '#nocategorygroups',
 		deleteAction: 'categories/delete-category-group',
 		confirmDeleteMessage: '{{ "Are you sure you want to delete “{name}” and all its categories?"|t('app') }}',
 	});
-{% endregisterjs %}
+{% endjs %}

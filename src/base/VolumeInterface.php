@@ -20,16 +20,6 @@ use craft\errors\VolumeObjectNotFoundException;
  */
 interface VolumeInterface extends SavableComponentInterface
 {
-    // Static
-    // =========================================================================
-
-    /**
-     * Returns whether this source stores files locally on the server.
-     *
-     * @return boolean Whether files are stored locally.
-     */
-    public static function isLocal();
-
     // Public Methods
     // =========================================================================
 
@@ -41,13 +31,6 @@ interface VolumeInterface extends SavableComponentInterface
     public function getRootUrl();
 
     /**
-     * Returns the root path for the source.
-     *
-     * @return string|null The root URL, or `false` if there isn’t one.
-     */
-    public function getRootPath();
-
-    /**
      * List files.
      *
      * @param string  $directory The path of the directory to list files of.
@@ -55,7 +38,7 @@ interface VolumeInterface extends SavableComponentInterface
      *
      * @return array
      */
-    public function getFileList($directory, $recursive = true);
+    public function getFileList($directory, $recursive);
 
     /**
      * Creates a file.
@@ -67,7 +50,7 @@ interface VolumeInterface extends SavableComponentInterface
      * @throws VolumeObjectExistsException if a file already exists at the path on the Volume.
      * @return boolean Whether the operation was successful.
      */
-    public function createFileByStream($path, $stream, $config = []);
+    public function createFileByStream($path, $stream, array $config);
 
     /**
      * Updates a file.
@@ -78,7 +61,7 @@ interface VolumeInterface extends SavableComponentInterface
      *
      * @return boolean Whether the operation was successful.
      */
-    public function updateFileByStream($path, $stream, $config = []);
+    public function updateFileByStream($path, $stream, array $config);
 
     /**
      * Returns whether a file exists.

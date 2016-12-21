@@ -122,7 +122,7 @@ abstract class Migration extends \yii\db\Migration
         $this->db->createCommand()
             ->insert($table, $columns, $includeAuditColumns)
             ->execute();
-        echo " done (time: ".sprintf('%.3f', microtime(true) - $time)."s)\n";
+        echo ' done (time: '.sprintf('%.3f', microtime(true) - $time)."s)\n";
     }
 
     /**
@@ -140,7 +140,7 @@ abstract class Migration extends \yii\db\Migration
         $this->db->createCommand()
             ->batchInsert($table, $columns, $rows, $includeAuditColumns)
             ->execute();
-        echo " done (time: ".sprintf('%.3f', microtime(true) - $time)."s)\n";
+        echo ' done (time: '.sprintf('%.3f', microtime(true) - $time)."s)\n";
     }
 
     /**
@@ -161,7 +161,7 @@ abstract class Migration extends \yii\db\Migration
         $this->db->createCommand()
             ->upsert($table, $keyColumns, $updateColumns, $includeAuditColumns)
             ->execute();
-        echo " done (time: ".sprintf('%.3f', microtime(true) - $time)."s)\n";
+        echo ' done (time: '.sprintf('%.3f', microtime(true) - $time)."s)\n";
     }
 
     /**
@@ -181,7 +181,7 @@ abstract class Migration extends \yii\db\Migration
         $this->db->createCommand()
             ->update($table, $columns, $condition, $params, $includeAuditColumns)
             ->execute();
-        echo " done (time: ".sprintf('%.3f', microtime(true) - $time)."s)\n";
+        echo ' done (time: '.sprintf('%.3f', microtime(true) - $time)."s)\n";
     }
 
     /**
@@ -195,14 +195,14 @@ abstract class Migration extends \yii\db\Migration
      *                                refer to [[Query::where()]] on how to specify condition.
      * @param array        $params    The parameters to be bound to the command.
      */
-    public function replace($table, $column, $find, $replace, $condition = '', $params = [])
+    public function replace($table, $column, $find, $replace, $condition = '', array $params = [])
     {
         echo "    > replace \"$find\" with \"$replace\" in $table.$column ...";
         $time = microtime(true);
         $this->db->createCommand()
             ->replace($table, $column, $find, $replace, $condition, $params)
             ->execute();
-        echo " done (time: ".sprintf('%.3f', microtime(true) - $time)."s)\n";
+        echo ' done (time: '.sprintf('%.3f', microtime(true) - $time)."s)\n";
     }
 
     // Schema Manipulation Methods
@@ -220,6 +220,6 @@ abstract class Migration extends \yii\db\Migration
         $this->db->createCommand()
             ->dropTableIfExists($table)
             ->execute();
-        echo " done (time: ".sprintf('%.3f', microtime(true) - $time)."s)\n";
+        echo ' done (time: '.sprintf('%.3f', microtime(true) - $time)."s)\n";
     }
 }

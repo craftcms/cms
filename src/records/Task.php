@@ -58,10 +58,8 @@ class Task extends ActiveRecord
      */
     public static function find()
     {
-        /** @var TaskQuery $query */
-        $query = Craft::createObject(TaskQuery::class, [get_called_class()]);
-
-        return $query;
+        /** @noinspection PhpIncompatibleReturnTypeInspection */
+        return Craft::createObject(TaskQuery::class, [get_called_class()]);
     }
 
     /**
@@ -86,7 +84,7 @@ class Task extends ActiveRecord
     public function transactions()
     {
         return [
-            static::SCENARIO_DEFAULT => static::OP_ALL,
+            self::SCENARIO_DEFAULT => self::OP_ALL,
         ];
     }
 }

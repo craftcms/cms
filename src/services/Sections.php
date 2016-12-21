@@ -117,16 +117,18 @@ class Sections extends Component
     /**
      * Returns all of the section IDs.
      *
-     * @return array All the sections’ IDs.
+     * @return integer[] All the sections’ IDs.
      */
     public function getAllSectionIds()
     {
-        if (!isset($this->_allSectionIds)) {
-            $this->_allSectionIds = [];
+        if ($this->_allSectionIds !== null) {
+            return $this->_allSectionIds;
+        }
 
-            foreach ($this->getAllSections() as $section) {
-                $this->_allSectionIds[] = $section->id;
-            }
+        $this->_allSectionIds = [];
+
+        foreach ($this->getAllSections() as $section) {
+            $this->_allSectionIds[] = $section->id;
         }
 
         return $this->_allSectionIds;
@@ -139,13 +141,15 @@ class Sections extends Component
      */
     public function getEditableSectionIds()
     {
-        if (!isset($this->_editableSectionIds)) {
-            $this->_editableSectionIds = [];
+        if ($this->_editableSectionIds !== null) {
+            return $this->_editableSectionIds;
+        }
 
-            foreach ($this->getAllSectionIds() as $sectionId) {
-                if (Craft::$app->getUser()->checkPermission('editEntries:'.$sectionId)) {
-                    $this->_editableSectionIds[] = $sectionId;
-                }
+        $this->_editableSectionIds = [];
+
+        foreach ($this->getAllSectionIds() as $sectionId) {
+            if (Craft::$app->getUser()->checkPermission('editEntries:'.$sectionId)) {
+                $this->_editableSectionIds[] = $sectionId;
             }
         }
 
@@ -155,60 +159,42 @@ class Sections extends Component
     /**
      * Returns all sections.
      *
-     * @param string|null $indexBy
-     *
      * @return Section[] All the sections.
      */
-    public function getAllSections($indexBy = null)
+    public function getAllSections()
     {
-        if (!$this->_fetchedAllSections) {
-            $results = $this->_createSectionQuery()
-                ->all();
-
-            $this->_sectionsById = [];
-
-            foreach ($results as $result) {
-                $section = new Section($result);
-                $this->_sectionsById[$section->id] = $section;
-            }
-
-            $this->_fetchedAllSections = true;
+        if ($this->_fetchedAllSections) {
+            return array_values($this->_sectionsById);
         }
 
-        if ($indexBy == 'id') {
-            $sections = $this->_sectionsById;
-        } else if (!$indexBy) {
-            $sections = array_values($this->_sectionsById);
-        } else {
-            $sections = [];
+        $results = $this->_createSectionQuery()
+            ->all();
 
-            foreach ($this->_sectionsById as $section) {
-                $sections[$section->$indexBy] = $section;
-            }
+        $this->_sectionsById = [];
+
+        foreach ($results as $result) {
+            $section = new Section($result);
+            $this->_sectionsById[$section->id] = $section;
         }
 
-        return $sections;
+        $this->_fetchedAllSections = true;
+
+        return array_values($this->_sectionsById);
     }
 
     /**
      * Returns all editable sections.
      *
-     * @param string|null $indexBy
-     *
      * @return Section[] All the editable sections.
      */
-    public function getEditableSections($indexBy = null)
+    public function getEditableSections()
     {
         $editableSectionIds = $this->getEditableSectionIds();
         $editableSections = [];
 
         foreach ($this->getAllSections() as $section) {
-            if (in_array($section->id, $editableSectionIds)) {
-                if ($indexBy) {
-                    $editableSections[$section->$indexBy] = $section;
-                } else {
-                    $editableSections[] = $section;
-                }
+            if (in_array($section->id, $editableSectionIds, false)) {
+                $editableSections[] = $section;
             }
         }
 
@@ -269,26 +255,25 @@ class Sections extends Component
             return null;
         }
 
-        // If we've already fetched all sections we can save ourselves a trip to the DB for section IDs that don't exist
-        if (!$this->_fetchedAllSections && (!isset($this->_sectionsById) || !array_key_exists($sectionId, $this->_sectionsById))) {
-            $result = $this->_createSectionQuery()
-                ->where(['sections.id' => $sectionId])
-                ->one();
-
-            if ($result) {
-                $section = new Section($result);
-            } else {
-                $section = null;
-            }
-
-            $this->_sectionsById[$sectionId] = $section;
-        }
-
-        if (isset($this->_sectionsById[$sectionId])) {
+        if ($this->_sectionsById !== null && array_key_exists($sectionId, $this->_sectionsById)) {
             return $this->_sectionsById[$sectionId];
         }
 
-        return null;
+        // If we've already fetched all sections we can save ourselves a trip to
+        // the DB for section IDs that don't exist
+        if ($this->_fetchedAllSections) {
+            return null;
+        }
+
+        $result = $this->_createSectionQuery()
+            ->where(['sections.id' => $sectionId])
+            ->one();
+
+        if (!$result) {
+            return $this->_sectionsById[$sectionId] = null;
+        }
+
+        return $this->_sectionsById[$sectionId] = new Section($result);
     }
 
     /**
@@ -317,12 +302,11 @@ class Sections extends Component
     /**
      * Returns a section’s site-specific settings.
      *
-     * @param integer     $sectionId
-     * @param string|null $indexBy
+     * @param integer $sectionId
      *
      * @return Section_SiteSettings[] The section’s site-specific settings.
      */
-    public function getSectionSiteSettings($sectionId, $indexBy = null)
+    public function getSectionSiteSettings($sectionId)
     {
         $siteSettings = (new Query())
             ->select([
@@ -338,7 +322,6 @@ class Sections extends Component
             ->innerJoin('{{%sites}} sites', '[[sites.id]] = [[sections_i18n.siteId]]')
             ->where(['sections_i18n.sectionId' => $sectionId])
             ->orderBy(['sites.sortOrder' => SORT_ASC])
-            ->indexBy($indexBy)
             ->all();
 
         foreach ($siteSettings as $key => $value) {
@@ -494,7 +477,7 @@ class Sections extends Component
 
                 /** @noinspection PhpUndefinedVariableInspection */
                 foreach ($allOldSiteSettingsRecords as $siteId => $siteSettingsRecord) {
-                    if (!in_array($siteId, $siteIds)) {
+                    if (!in_array($siteId, $siteIds, false)) {
                         $siteSettingsRecord->delete();
                     }
                 }
@@ -639,13 +622,13 @@ class Sections extends Component
                     /** @noinspection PhpUndefinedVariableInspection */
                     if (!$isNewSection && $isNewStructure) {
                         // Add all of the entries to the structure
+                        $query = Entry::find();
                         /** @noinspection PhpUndefinedVariableInspection */
-                        $query = Entry::find()
-                            ->siteId(ArrayHelper::firstKey($allOldSiteSettingsRecords))
-                            ->sectionId($section->id)
-                            ->status(null)
-                            ->enabledForSite(false)
-                            ->orderBy('elements.id');
+                        $query->siteId(ArrayHelper::firstKey($allOldSiteSettingsRecords));
+                        $query->sectionId($section->id);
+                        $query->status(null);
+                        $query->enabledForSite(false);
+                        $query->orderBy('elements.id');
 
                         /** @var Entry $entry */
                         foreach ($query->each() as $entry) {
@@ -832,17 +815,15 @@ class Sections extends Component
     /**
      * Returns a section’s entry types.
      *
-     * @param integer     $sectionId
-     * @param string|null $indexBy
+     * @param integer $sectionId
      *
      * @return EntryType[]
      */
-    public function getEntryTypesBySectionId($sectionId, $indexBy = null)
+    public function getEntryTypesBySectionId($sectionId)
     {
         $entryTypeRecords = EntryTypeRecord::find()
             ->where(['sectionId' => $sectionId])
             ->orderBy(['sortOrder' => SORT_ASC])
-            ->indexBy($indexBy)
             ->all();
 
         foreach ($entryTypeRecords as $key => $entryTypeRecord) {
@@ -874,26 +855,24 @@ class Sections extends Component
             return null;
         }
 
-        if (!isset($this->_entryTypesById) || !array_key_exists($entryTypeId, $this->_entryTypesById)) {
-            $entryTypeRecord = EntryTypeRecord::findOne($entryTypeId);
-
-            if ($entryTypeRecord) {
-                $this->_entryTypesById[$entryTypeId] = new EntryType($entryTypeRecord->toArray([
-                    'id',
-                    'sectionId',
-                    'fieldLayoutId',
-                    'name',
-                    'handle',
-                    'hasTitleField',
-                    'titleLabel',
-                    'titleFormat',
-                ]));
-            } else {
-                $this->_entryTypesById[$entryTypeId] = null;
-            }
+        if ($this->_entryTypesById !== null && array_key_exists($entryTypeId, $this->_entryTypesById)) {
+            return $this->_entryTypesById[$entryTypeId];
         }
 
-        return $this->_entryTypesById[$entryTypeId];
+        if (($entryTypeRecord = EntryTypeRecord::findOne($entryTypeId)) === null) {
+            return $this->_entryTypesById[$entryTypeId] = null;
+        }
+
+        return $this->_entryTypesById[$entryTypeId] = new EntryType($entryTypeRecord->toArray([
+            'id',
+            'sectionId',
+            'fieldLayoutId',
+            'name',
+            'handle',
+            'hasTitleField',
+            'titleLabel',
+            'titleFormat',
+        ]));
     }
 
     /**

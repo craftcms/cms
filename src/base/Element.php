@@ -10,7 +10,6 @@ namespace craft\base;
 use Craft;
 use craft\behaviors\ContentBehavior;
 use craft\behaviors\ContentTrait;
-use craft\dates\DateTime;
 use craft\db\Query;
 use craft\elements\db\ElementQuery;
 use craft\elements\db\ElementQueryInterface;
@@ -33,6 +32,7 @@ use craft\models\Site;
 use craft\validators\DateTimeValidator;
 use craft\validators\SiteIdValidator;
 use craft\web\UploadedFile;
+use DateTime;
 use yii\base\Event;
 use yii\base\Exception;
 use yii\base\InvalidCallException;
@@ -236,7 +236,7 @@ abstract class Element extends Component implements ElementInterface
     /**
      * @inheritdoc
      */
-    public static function sources($context = null)
+    public static function sources($context)
     {
         $sources = static::defineSources($context);
 
@@ -253,7 +253,7 @@ abstract class Element extends Component implements ElementInterface
     /**
      * @inheritdoc
      */
-    public static function actions($source = null)
+    public static function actions($source)
     {
         $actions = static::defineActions($source);
 
@@ -283,7 +283,7 @@ abstract class Element extends Component implements ElementInterface
      * @return array The sources.
      * @see sources()
      */
-    protected static function defineSources($context = null)
+    protected static function defineSources($context)
     {
         return [];
     }
@@ -296,7 +296,7 @@ abstract class Element extends Component implements ElementInterface
      * @return array|null The available element actions.
      * @see actions()
      */
-    protected static function defineActions($source = null)
+    protected static function defineActions($source)
     {
         return [];
     }
@@ -318,7 +318,7 @@ abstract class Element extends Component implements ElementInterface
         ];
 
         // Special case for sorting by structure
-        if (isset($viewState['order']) && $viewState['order'] == 'structure') {
+        if (isset($viewState['order']) && $viewState['order'] === 'structure') {
             $source = ElementHelper::findSource(static::class, $sourceKey, $context);
 
             if (isset($source['structureId'])) {
@@ -326,7 +326,7 @@ abstract class Element extends Component implements ElementInterface
                 $variables['structure'] = Craft::$app->getStructures()->getStructureById($source['structureId']);
 
                 // Are they allowed to make changes to this structure?
-                if ($context == 'index' && $variables['structure'] && !empty($source['structureEditable'])) {
+                if ($context === 'index' && $variables['structure'] && !empty($source['structureEditable'])) {
                     $variables['structureEditable'] = true;
 
                     // Let StructuresController know that this user can make changes to the structure
@@ -335,14 +335,14 @@ abstract class Element extends Component implements ElementInterface
             } else {
                 unset($viewState['order']);
             }
-        } else if (!empty($viewState['order']) && $viewState['order'] == 'score') {
+        } else if (!empty($viewState['order']) && $viewState['order'] === 'score') {
             $elementQuery->orderBy('score');
         } else {
             $sortableAttributes = static::sortableAttributes();
 
             if ($sortableAttributes) {
                 $order = (!empty($viewState['order']) && isset($sortableAttributes[$viewState['order']])) ? $viewState['order'] : ArrayHelper::firstKey($sortableAttributes);
-                $sort = (!empty($viewState['sort']) && in_array($viewState['sort'], ['asc', 'desc'])) ? $viewState['sort'] : 'asc';
+                $sort = (!empty($viewState['sort']) && in_array($viewState['sort'], ['asc', 'desc'], true)) ? $viewState['sort'] : 'asc';
 
                 // Combine them, accounting for the possibility that $order could contain multiple values,
                 // and be defensive about the possibility that the first value actually has "asc" or "desc"
@@ -412,7 +412,7 @@ abstract class Element extends Component implements ElementInterface
     /**
      * @inheritdoc
      */
-    public static function defaultTableAttributes($source = null)
+    public static function defaultTableAttributes($source)
     {
         $availableTableAttributes = static::tableAttributes();
 
@@ -457,7 +457,7 @@ abstract class Element extends Component implements ElementInterface
     public static function eagerLoadingMap($sourceElements, $handle)
     {
         // Eager-loading descendants or direct children?
-        if ($handle == 'descendants' || $handle == 'children') {
+        if ($handle === 'descendants' || $handle === 'children') {
             // Get the source element IDs
             $sourceElementIds = [];
 
@@ -468,7 +468,7 @@ abstract class Element extends Component implements ElementInterface
             // Get the structure data for these elements
             $selectColumns = ['structureId', 'elementId', 'lft', 'rgt'];
 
-            if ($handle == 'children') {
+            if ($handle === 'children') {
                 $selectColumns[] = 'level';
             }
 
@@ -492,7 +492,7 @@ abstract class Element extends Component implements ElementInterface
                     ['<', 'rgt', $elementStructureData['rgt']],
                 ];
 
-                if ($handle == 'children') {
+                if ($handle === 'children') {
                     $thisElementCondition[] = ['level' => $elementStructureData['level'] + 1];
                 }
 
@@ -577,11 +577,6 @@ abstract class Element extends Component implements ElementInterface
     public $validateCustomFields;
 
     /**
-     * @var array
-     */
-    private static $_sourcesByContext;
-
-    /**
      * @var
      */
     private $_fieldsByHandle;
@@ -661,11 +656,7 @@ abstract class Element extends Component implements ElementInterface
      */
     public function __isset($name)
     {
-        if ($name == 'title' || $this->hasEagerLoadedElements($name) || parent::__isset($name) || $this->getFieldByHandle($name)) {
-            return true;
-        }
-
-        return false;
+        return $name === 'title' || $this->hasEagerLoadedElements($name) || parent::__isset($name) || $this->getFieldByHandle($name);
     }
 
     /**
@@ -684,7 +675,7 @@ abstract class Element extends Component implements ElementInterface
      */
     public function __get($name)
     {
-        if ($name == 'locale') {
+        if ($name === 'locale') {
             Craft::$app->getDeprecator()->log('Element::locale', 'The “locale” element property has been deprecated. Use “siteId” instead.');
 
             return $this->getSite()->handle;
@@ -741,7 +732,7 @@ abstract class Element extends Component implements ElementInterface
         foreach ($class->getProperties(\ReflectionProperty::IS_PUBLIC) as $property) {
             $name = $property->getName();
 
-            if ($name !== 'owner' && !in_array($name, $names)) {
+            if ($name !== 'owner' && !in_array($name, $names, true)) {
                 $names[] = $name;
             }
         }
@@ -779,7 +770,7 @@ abstract class Element extends Component implements ElementInterface
         ];
 
         // Require the title?
-        if ($this::hasTitles()) {
+        if (static::hasTitles()) {
             $rules[] = [['title'], 'required'];
         }
 
@@ -813,7 +804,7 @@ abstract class Element extends Component implements ElementInterface
                                     'params' => [
                                         $field,
                                         $rule[1],
-                                        (isset($rule['params']) ? $rule['params'] : null),
+                                        isset($rule['params']) ? $rule['params'] : null,
                                     ]
                                 ];
                             }
@@ -912,10 +903,9 @@ abstract class Element extends Component implements ElementInterface
     public function getUrl()
     {
         if ($this->uri !== null) {
-            $path = ($this->uri == '__home__') ? '' : $this->uri;
-            $url = Url::getSiteUrl($path, null, null, $this->siteId);
+            $path = ($this->uri === '__home__') ? '' : $this->uri;
 
-            return $url;
+            return Url::getSiteUrl($path, null, null, $this->siteId);
         }
 
         return null;
@@ -962,7 +952,7 @@ abstract class Element extends Component implements ElementInterface
     /**
      * @inheritdoc
      */
-    public function getThumbUrl($size = null)
+    public function getThumbUrl($size)
     {
         return null;
     }
@@ -988,15 +978,15 @@ abstract class Element extends Component implements ElementInterface
      */
     public function getNext($criteria = false)
     {
-        if ($criteria !== false || !isset($this->_nextElement)) {
+        if ($criteria !== false || $this->_nextElement === null) {
             return $this->_getRelativeElement($criteria, 1);
         }
 
-        if ($this->_nextElement !== false) {
-            return $this->_nextElement;
+        if ($this->_nextElement === false) {
+            return null;
         }
 
-        return null;
+        return $this->_nextElement;
     }
 
     /**
@@ -1004,15 +994,15 @@ abstract class Element extends Component implements ElementInterface
      */
     public function getPrev($criteria = false)
     {
-        if ($criteria !== false || !isset($this->_prevElement)) {
+        if ($criteria !== false || $this->_prevElement === null) {
             return $this->_getRelativeElement($criteria, -1);
         }
 
-        if ($this->_prevElement !== false) {
-            return $this->_prevElement;
+        if ($this->_prevElement === false) {
+            return null;
         }
 
-        return null;
+        return $this->_prevElement;
     }
 
     /**
@@ -1303,11 +1293,7 @@ abstract class Element extends Component implements ElementInterface
      */
     public function offsetExists($offset)
     {
-        if ($offset == 'title' || $this->hasEagerLoadedElements($offset) || parent::offsetExists($offset) || $this->getFieldByHandle($offset)) {
-            return true;
-        }
-
-        return false;
+        return $offset === 'title' || $this->hasEagerLoadedElements($offset) || parent::offsetExists($offset) || $this->getFieldByHandle($offset);
     }
 
     /**
@@ -1318,7 +1304,7 @@ abstract class Element extends Component implements ElementInterface
         $values = [];
 
         foreach ($this->getFields() as $field) {
-            if ($fieldHandles === null || in_array($field->handle, $fieldHandles)) {
+            if ($fieldHandles === null || in_array($field->handle, $fieldHandles, true)) {
                 $values[$field->handle] = $this->getFieldValue($field->handle);
             }
         }
@@ -1334,7 +1320,7 @@ abstract class Element extends Component implements ElementInterface
         $serializedValues = [];
 
         foreach ($this->getFields() as $field) {
-            if ($fieldHandles === null || in_array($field->handle, $fieldHandles)) {
+            if ($fieldHandles === null || in_array($field->handle, $fieldHandles, true)) {
                 $value = $this->getFieldValue($field->handle);
                 $serializedValues[$field->handle] = $field->serializeValue($value, $this);
             }
@@ -1363,9 +1349,7 @@ abstract class Element extends Component implements ElementInterface
             $this->normalizeFieldValue($fieldHandle);
         }
 
-        $behavior = $this->getBehavior('customFields');
-
-        return $behavior->$fieldHandle;
+        return $this->getBehavior('customFields')->$fieldHandle;
     }
 
     /**
@@ -1706,7 +1690,7 @@ abstract class Element extends Component implements ElementInterface
      * @param mixed   $criteria Refer to [[findOne()]] and [[findAll()]] for the explanation of this parameter
      * @param boolean $one      Whether this method is called by [[findOne()]] or [[findAll()]]
      *
-     * @return $this|$this[]
+     * @return static|static[]
      */
     protected static function findByCondition($criteria, $one)
     {
@@ -1740,17 +1724,15 @@ abstract class Element extends Component implements ElementInterface
      */
     protected function getFieldByHandle($handle)
     {
-        if (!isset($this->_fieldsByHandle) || !array_key_exists($handle, $this->_fieldsByHandle)
-        ) {
-            $contentService = Craft::$app->getContent();
-
-            $originalFieldContext = $contentService->fieldContext;
-            $contentService->fieldContext = $this->getFieldContext();
-
-            $this->_fieldsByHandle[$handle] = Craft::$app->getFields()->getFieldByHandle($handle);
-
-            $contentService->fieldContext = $originalFieldContext;
+        if ($this->_fieldsByHandle !== null && array_key_exists($handle, $this->_fieldsByHandle)) {
+            return $this->_fieldsByHandle[$handle];
         }
+
+        $contentService = Craft::$app->getContent();
+        $originalFieldContext = $contentService->fieldContext;
+        $contentService->fieldContext = $this->getFieldContext();
+        $this->_fieldsByHandle[$handle] = Craft::$app->getFields()->getFieldByHandle($handle);
+        $contentService->fieldContext = $originalFieldContext;
 
         return $this->_fieldsByHandle[$handle];
     }
@@ -1827,7 +1809,7 @@ abstract class Element extends Component implements ElementInterface
                 if ($url) {
                     $value = $this->uri;
 
-                    if ($value == '__home__') {
+                    if ($value === '__home__') {
                         $value = '<span data-icon="home" title="'.Craft::t('app', 'Homepage').'"></span>';
                     } else {
                         // Add some <wbr> tags in there so it doesn't all have to be on one line
@@ -1946,7 +1928,7 @@ abstract class Element extends Component implements ElementInterface
 
             /** @var ElementQuery $query */
             $elementIds = $query->ids();
-            $key = array_search($this->id, $elementIds);
+            $key = array_search($this->id, $elementIds, false);
 
             if ($key !== false && isset($elementIds[$key + $dir])) {
                 return static::find()

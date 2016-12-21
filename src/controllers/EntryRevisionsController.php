@@ -193,12 +193,11 @@ class EntryRevisionsController extends BaseEntriesController
         // Is this another user's entry (and it's not a Single)?
         if (
             $entry->authorId != $userSessionService->getIdentity()->id &&
-            $entry->getSection()->type != Section::TYPE_SINGLE
+            $entry->getSection()->type != Section::TYPE_SINGLE &&
+            $entry->enabled
         ) {
-            if ($entry->enabled) {
-                // Make sure they have permission to make live changes to those
-                $this->requirePermission('publishPeerEntries:'.$entry->sectionId);
-            }
+            // Make sure they have permission to make live changes to those
+            $this->requirePermission('publishPeerEntries:'.$entry->sectionId);
         }
 
         // Is this another user's draft?
@@ -266,12 +265,11 @@ class EntryRevisionsController extends BaseEntriesController
         // Is this another user's entry (and it's not a Single)?
         if (
             $entry->authorId != $userSessionService->getIdentity()->id &&
-            $entry->getSection()->type != Section::TYPE_SINGLE
+            $entry->getSection()->type != Section::TYPE_SINGLE &&
+            $entry->enabled
         ) {
-            if ($entry->enabled) {
-                // Make sure they have permission to make live changes to those
-                $this->requirePermission('publishPeerEntries:'.$entry->sectionId);
-            }
+            // Make sure they have permission to make live changes to those
+            $this->requirePermission('publishPeerEntries:'.$entry->sectionId);
         }
 
         if ($entry->enabled) {
@@ -315,7 +313,7 @@ class EntryRevisionsController extends BaseEntriesController
         $draft->title = Craft::$app->getRequest()->getBodyParam('title');
 
         // Author
-        $authorId = Craft::$app->getRequest()->getBodyParam('author', ($draft->authorId ? $draft->authorId : Craft::$app->getUser()->getIdentity()->id));
+        $authorId = Craft::$app->getRequest()->getBodyParam('author', ($draft->authorId ?: Craft::$app->getUser()->getIdentity()->id));
 
         if (is_array($authorId)) {
             $authorId = isset($authorId[0]) ? $authorId[0] : null;

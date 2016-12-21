@@ -66,10 +66,8 @@ class Security extends \yii\base\Security
     {
         $hash = $this->generatePasswordHash($password, $this->_blowFishHashCost);
 
-        if ($validateHash) {
-            if (!$this->validatePassword($password, $hash)) {
-                throw new InvalidParamException('Could not hash the given string.');
-            }
+        if ($validateHash && !$this->validatePassword($password, $hash)) {
+            throw new InvalidParamException('Could not hash the given string.');
         }
 
         return $hash;

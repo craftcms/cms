@@ -14,8 +14,8 @@
 	{%- endif -%}
 </div>
 
-{%- registerjs %}
+{%- js %}
 	$('#{{ id|namespaceInputId|e('js') }}').datepicker($.extend({
 	defaultDate: new Date({% if value %}{{ value|date('Y') }}, {{ value|date('n')-1 }}, {{ value|date('j') }}{% endif %})
 	}, Craft.datepickerOptions));
-{%- endregisterjs %}
+{%- endjs %}

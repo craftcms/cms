@@ -122,7 +122,7 @@ class AssetTransformsController extends Controller
             $transform->quality = null;
         }
 
-        if (!empty($transform->format) && !in_array($transform->format, Image::webSafeFormats())) {
+        if (!empty($transform->format) && !in_array($transform->format, Image::webSafeFormats(), true)) {
             $session->setError(Craft::t('app', 'That is not an allowed format.'));
             $errors = true;
         }

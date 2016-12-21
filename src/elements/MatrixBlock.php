@@ -12,6 +12,7 @@ use craft\base\Element;
 use craft\base\ElementInterface;
 use craft\elements\db\MatrixBlockQuery;
 use craft\fields\Matrix;
+use craft\helpers\ArrayHelper;
 use craft\helpers\ElementHelper;
 use craft\models\MatrixBlockType;
 use craft\records\MatrixBlock as MatrixBlockRecord;
@@ -80,7 +81,7 @@ class MatrixBlock extends Element
 
         // Get the block type
         $matrixFieldId = $sourceElements[0]->fieldId;
-        $blockTypes = Craft::$app->getMatrix()->getBlockTypesByFieldId($matrixFieldId, 'handle');
+        $blockTypes = ArrayHelper::index(Craft::$app->getMatrix()->getBlockTypesByFieldId($matrixFieldId), 'handle');
 
         if (!isset($blockTypes[$blockTypeHandle])) {
             // Not a valid block type handle (assuming all $sourceElements are blocks from the same Matrix field)
@@ -135,7 +136,7 @@ class MatrixBlock extends Element
     public $collapsed = false;
 
     /**
-     * @var ElementInterface The owner element
+     * @var ElementInterface|false The owner element, or false if [[ownerId]] is invalid
      */
     private $_owner;
 
@@ -223,19 +224,23 @@ class MatrixBlock extends Element
      */
     public function getOwner()
     {
-        if (!isset($this->_owner) && $this->ownerId) {
-            $this->_owner = Craft::$app->getElements()->getElementById($this->ownerId, null, $this->siteId);
-
-            if (!$this->_owner) {
-                $this->_owner = false;
-            }
+        if ($this->_owner !== null) {
+            return $this->_owner !== false ? $this->_owner : null;
         }
 
-        if ($this->_owner) {
-            return $this->_owner;
+        if (!$this->ownerId) {
+            return null;
         }
 
-        return null;
+        if (($this->_owner = Craft::$app->getElements()->getElementById($this->ownerId, null, $this->siteId)) === null) {
+            // Be forgiving of invalid ownerId's in this case, since the field
+            // could be in the process of being saved to a new element/site
+            $this->_owner = false;
+
+            return null;
+        }
+
+        return $this->_owner;
     }
 
     /**
@@ -311,7 +316,7 @@ class MatrixBlock extends Element
     {
         // See if this was eager-loaded with a block type-specific handle
         $blockTypeHandlePrefix = $this->getType()->handle.':';
-        if (strncmp($handle, $blockTypeHandlePrefix, strlen($blockTypeHandlePrefix)) === 0) {
+        if (strpos($handle, $blockTypeHandlePrefix) === 0) {
             $this->_eagerLoadedBlockTypeElements[$handle] = $elements;
         } else {
             parent::setEagerLoadedElements($handle, $elements);
@@ -385,9 +390,7 @@ class MatrixBlock extends Element
      */
     private function _getField()
     {
-        /** @var Matrix $field */
-        $field = Craft::$app->getFields()->getFieldById($this->fieldId);
-
-        return $field;
+        /** @noinspection PhpIncompatibleReturnTypeInspection */
+        return Craft::$app->getFields()->getFieldById($this->fieldId);
     }
 }

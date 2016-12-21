@@ -9,7 +9,6 @@ namespace craft\models;
 
 use Craft;
 use craft\base\Model;
-use craft\base\Volume;
 use craft\base\VolumeInterface;
 
 /**
@@ -52,7 +51,7 @@ class VolumeFolder extends Model
     /**
      * @var VolumeFolder[]
      */
-    private $_children = null;
+    private $_children;
 
     // Public Methods
     // =========================================================================
@@ -102,11 +101,11 @@ class VolumeFolder extends Model
      */
     public function getChildren()
     {
-        if (is_null($this->_children)) {
-            $this->_children = Craft::$app->getAssets()->findFolders(['parentId' => $this->id]);
+        if ($this->_children !== null) {
+            return $this->_children;
         }
 
-        return $this->_children;
+        return $this->_children = Craft::$app->getAssets()->findFolders(['parentId' => $this->id]);
     }
 
     /**
@@ -130,7 +129,7 @@ class VolumeFolder extends Model
      */
     public function addChild(VolumeFolder $folder)
     {
-        if (is_null($this->_children)) {
+        if ($this->_children === null) {
             $this->_children = [];
         }
 

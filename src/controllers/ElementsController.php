@@ -11,6 +11,7 @@ use Craft;
 use craft\base\Element;
 use craft\base\ElementInterface;
 use craft\elements\Category;
+use craft\elements\db\CategoryQuery;
 use craft\errors\InvalidTypeException;
 use craft\helpers\ArrayHelper;
 use craft\helpers\ElementHelper;
@@ -124,17 +125,18 @@ class ElementsController extends BaseElementsController
         $element = $this->_getEditorElement();
         $namespace = Craft::$app->getRequest()->getRequiredBodyParam('namespace');
         $params = Craft::$app->getRequest()->getBodyParam($namespace, []);
+        $element->setFieldParamNamespace($namespace.'.fields');
 
         if (isset($params['fields'])) {
             $fields = $params['fields'];
-            $element->setFieldValuesFromPost($fields);
+            $element->setFieldValues($fields);
             unset($params['fields']);
         }
 
         Craft::configure($element, $params);
 
         // Either way, at least tell the element where its content comes from
-        $element->setContentPostLocation($namespace.'.fields');
+        $element->setFieldValuesFromRequest($namespace.'.fields');
 
         // Now save it
         if (Craft::$app->getElements()->saveElement($element)) {
@@ -180,13 +182,14 @@ class ElementsController extends BaseElementsController
         $categoryIds = Craft::$app->getCategories()->fillGapsInCategoryIds($categoryIds);
 
         if ($categoryIds) {
-            $categories = Category::find()
+            /** @var CategoryQuery $categoryQuery */
+            $categoryQuery = Category::find()
                 ->id($categoryIds)
                 ->siteId($request->getParam('siteId'))
                 ->status(null)
                 ->enabledForSite(false)
-                ->limit($request->getParam('limit'))
-                ->all();
+                ->limit($request->getParam('limit'));
+            $categories = $categoryQuery->all();
         } else {
             $categories = [];
         }
@@ -267,7 +270,7 @@ class ElementsController extends BaseElementsController
             }
 
             foreach (Craft::$app->getSites()->getAllSiteIds() as $siteId) {
-                if (in_array($siteId, $elementSiteIds) && $userService->checkPermission('editSite:'.$siteId)) {
+                if (in_array($siteId, $elementSiteIds, false) && $userService->checkPermission('editSite:'.$siteId)) {
                     $newSiteId = $siteId;
                     break;
                 }

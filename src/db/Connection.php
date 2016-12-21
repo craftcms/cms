@@ -21,13 +21,17 @@ use mikehaertl\shellcommand\Command as ShellCommand;
 use yii\base\Exception;
 use yii\base\NotSupportedException;
 use yii\db\Exception as DbException;
-use yii\db\TableSchema;
+use yii\db\TableSchema as BaseTableSchema;
 
 /**
  * @inheritdoc
  *
- * @property QueryBuilder $queryBuilder The query builder for the current DB connection.
+ * @property QueryBuilder              $queryBuilder The query builder for the current DB connection.
+ * @property mysql\Schema|pgsql\Schema $schema       The schema information for the database opened by this connection.
+ *
  * @method QueryBuilder getQueryBuilder() Returns the query builder for the current DB connection.
+ * @method mysql\Schema|pgsql\Schema getSchema() Returns the schema information for the database opened by this connection.
+ * @method TableSchema getTableSchema($name, $refresh = false) Obtains the schema information for the named table.
  * @method Command createCommand($sql = null, $params = []) Creates a command for execution.
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
@@ -68,6 +72,7 @@ class Connection extends \yii\db\Connection
      * @inheritdoc
      *
      * @throws DbConnectException if there are any issues
+     * @throws \Exception
      */
     public function open()
     {
@@ -76,15 +81,34 @@ class Connection extends \yii\db\Connection
         } catch (DbException $e) {
             Craft::error($e->getMessage(), __METHOD__);
 
-            // TODO: Multi-db driver check.
-            if (!extension_loaded('pdo')) {
-                throw new DbConnectException(Craft::t('app', 'Craft CMS requires the PDO extension to operate.'));
-            } else if (!extension_loaded('pdo_mysql')) {
-                throw new DbConnectException(Craft::t('app', 'Craft CMS requires the PDO_MYSQL driver to operate.'));
-            } else {
-                Craft::error($e->getMessage(), __METHOD__);
-                throw new DbConnectException(Craft::t('app', 'Craft CMS can’t connect to the database with the credentials in config/db.php.'));
+            $driverName = $this->getDriverName();
+
+            switch ($driverName) {
+                case static::DRIVER_MYSQL:
+                    if (!extension_loaded('pdo')) {
+                        throw new DbConnectException(Craft::t('app', 'Craft CMS requires the PDO extension to operate.'));
+                    } else if (!extension_loaded('pdo_mysql')) {
+                        throw new DbConnectException(Craft::t('app', 'Craft CMS requires the PDO_MYSQL driver to operate.'));
+                    }
+
+                    break;
+
+                case static::DRIVER_PGSQL:
+                    if (!extension_loaded('pdo')) {
+                        throw new DbConnectException(Craft::t('app', 'Craft CMS requires the PDO extension to operate.'));
+                    } else if (!extension_loaded('pdo_pgsql')) {
+                        throw new DbConnectException(Craft::t('app', 'Craft CMS requires the PDO_PGSQL driver to operate.'));
+                    }
+
+                    break;
+
+                default:
+                    /** @noinspection ThrowRawExceptionInspection */
+                    throw new \Exception('Unsupported connection type: '.$driverName);
             }
+
+            Craft::error($e->getMessage(), __METHOD__);
+            throw new DbConnectException(Craft::t('app', 'Craft CMS can’t connect to the database with the credentials in config/db.php.'));
         } catch (\Exception $e) {
             Craft::error($e->getMessage(), __METHOD__);
             throw new DbConnectException(Craft::t('app', 'Craft CMS can’t connect to the database with the credentials in config/db.php.'));
@@ -130,7 +154,6 @@ class Connection extends \yii\db\Connection
         $backupCommand = Craft::$app->getConfig()->get('backupCommand');
 
         if ($backupCommand === null) {
-            /** @var mysql\Schema|pgsql\Schema $schema */
             $schema = $command = $this->getSchema();
             $backupCommand = $schema->getDefaultBackupCommand();
         }
@@ -177,7 +200,6 @@ class Connection extends \yii\db\Connection
         $restoreCommand = Craft::$app->getConfig()->get('restoreCommand');
 
         if ($restoreCommand === null) {
-            /** @var mysql\Schema|pgsql\Schema $schema */
             $schema = $command = $this->getSchema();
             $restoreCommand = $schema->getDefaultRestoreCommand();
         }
@@ -236,15 +258,15 @@ class Connection extends \yii\db\Connection
 
         $table = $this->getSchema()->getRawTableName($table);
 
-        return in_array($table, $this->getSchema()->getTableNames());
+        return in_array($table, $this->getSchema()->getTableNames(), true);
     }
 
     /**
      * Checks if a column exists in a table.
      *
-     * @param TableSchema|string $table
-     * @param string             $column
-     * @param boolean|null       $refresh
+     * @param BaseTableSchema|string $table
+     * @param string                 $column
+     * @param boolean|null           $refresh
      *
      * @return boolean
      * @throws NotSupportedException if there is no support for the current driver type
@@ -256,7 +278,7 @@ class Connection extends \yii\db\Connection
             $this->getSchema()->refresh();
         }
 
-        if (!$table instanceof TableSchema) {
+        if (!$table instanceof BaseTableSchema) {
             if (($table = $this->getTableSchema('{{'.$table.'}}')) === null) {
                 return false;
             }
@@ -376,10 +398,8 @@ class Connection extends \yii\db\Connection
         $table = $this->getSchema()->getRawTableName($table);
 
         if ($this->tablePrefix) {
-            $prefixLength = strlen($this->tablePrefix);
-
-            if (strncmp($table, $this->tablePrefix, $prefixLength) === 0) {
-                $table = substr($table, $prefixLength);
+            if (strpos($table, $this->tablePrefix) === 0) {
+                $table = substr($table, strlen($this->tablePrefix));
             }
         }
 

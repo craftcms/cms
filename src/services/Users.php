@@ -9,7 +9,6 @@ namespace craft\services;
 
 use Craft;
 use craft\dates\DateInterval;
-use craft\dates\DateTime;
 use craft\db\Query;
 use craft\elements\Asset;
 use craft\elements\User;
@@ -31,6 +30,7 @@ use craft\helpers\StringHelper;
 use craft\helpers\Template;
 use craft\helpers\Url;
 use craft\records\User as UserRecord;
+use DateTime;
 use yii\base\Component;
 use yii\db\Exception;
 
@@ -146,10 +146,8 @@ class Users extends Component
      */
     public function getUserById($userId)
     {
-        /** @var User|null $user */
-        $user = Craft::$app->getElements()->getElementById($userId, User::class);
-
-        return $user;
+        /** @noinspection PhpIncompatibleReturnTypeInspection */
+        return Craft::$app->getElements()->getElementById($userId, User::class);
     }
 
     /**
@@ -267,7 +265,7 @@ class Users extends Component
      * An exception will be thrown if this function is called from Craft Personal or Pro.
      *
      * ```php
-     * if (Craft::$app->getEdition() == Craft::Client)
+     * if (Craft::$app->getEdition() === Craft::Client)
      * {
      *     $clientAccount = Craft::$app->getUsers()->getClient();
      * }
@@ -464,7 +462,7 @@ class Users extends Component
      * @throws ImageException if the file provided is not a manipulatable image
      * @throws VolumeException if the user photo Volume is not provided or is invalid
      */
-    public function saveUserPhoto($fileLocation, User $user, $filename = "")
+    public function saveUserPhoto($fileLocation, User $user, $filename = '')
     {
         $filenameToUse = AssetsHelper::prepareAssetName($filename ?: pathinfo($fileLocation, PATHINFO_FILENAME), true, true);
 

@@ -9,7 +9,7 @@ namespace craft\web\twig;
 
 use Craft;
 use craft\base\MissingComponentInterface;
-use craft\dates\DateTime;
+use craft\helpers\ArrayHelper;
 use craft\helpers\DateTimeHelper;
 use craft\helpers\Db;
 use craft\helpers\Header;
@@ -35,6 +35,7 @@ use craft\web\twig\tokenparsers\RequirePermissionTokenParser;
 use craft\web\twig\tokenparsers\SwitchTokenParser;
 use craft\web\twig\variables\CraftVariable;
 use craft\web\View;
+use DateTime;
 use yii\base\InvalidConfigException;
 use yii\helpers\Markdown;
 
@@ -96,13 +97,8 @@ class Extension extends \Twig_Extension implements \Twig_Extension_GlobalsInterf
             new ExitTokenParser(),
             new HeaderTokenParser(),
             new HookTokenParser(),
-            new RegisterResourceTokenParser('registercss', 'registerCss', true, false, false, true),
-            new RegisterResourceTokenParser('registerhirescss', 'registerHiResCss', true, false, false, true),
-            new RegisterResourceTokenParser('registercssfile', 'registerCssFile', false, false, false, true),
-            new RegisterResourceTokenParser('registercssresource', 'registerCssResource', false, false, false, true),
-            new RegisterResourceTokenParser('registerjs', 'registerJs', true, true, true, false),
-            new RegisterResourceTokenParser('registerjsfile', 'registerJsFile', false, true, false, true),
-            new RegisterResourceTokenParser('registerjsresource', 'registerJsResource', false, true, false, true),
+            new RegisterResourceTokenParser('css', 'registerCss', true, false, false, true),
+            new RegisterResourceTokenParser('js', 'registerJs', true, true, true, false),
             new NamespaceTokenParser(),
             new NavTokenParser(),
             new PaginateTokenParser(),
@@ -114,21 +110,21 @@ class Extension extends \Twig_Extension implements \Twig_Extension_GlobalsInterf
             new SwitchTokenParser(),
 
             // Deprecated tags
-            new RegisterResourceTokenParser('includeCss', 'registerCss', false, false, false, true, 'registercss'),
-            new RegisterResourceTokenParser('includeHiResCss', 'registerHiResCss', true, false, false, true, 'registerhirescss'),
-            new RegisterResourceTokenParser('includeCssFile', 'registerCssFile', true, false, false, true, 'registercssfile'),
-            new RegisterResourceTokenParser('includeCssResource', 'registerCssResource', false, false, false, true, 'registercssresource'),
-            new RegisterResourceTokenParser('includeJs', 'registerJs', false, true, true, false, 'registerjs'),
-            new RegisterResourceTokenParser('includeJsFile', 'registerJsFile', true, true, false, true, 'registerjsfile'),
-            new RegisterResourceTokenParser('includeJsResource', 'registerJsResource', false, true, false, true, 'registerjsresource'),
+            new RegisterResourceTokenParser('includeCss', 'registerCss', false, false, false, true, '{% css %}'),
+            new RegisterResourceTokenParser('includeHiResCss', 'registerHiResCss', true, false, false, true, '{% css %}'),
+            new RegisterResourceTokenParser('includeCssFile', 'registerCssFile', true, false, false, true, '{% do view.registerCssFile("/url/to/file.css") %}'),
+            new RegisterResourceTokenParser('includeCssResource', 'registerCssResource', false, false, false, true, '{% do view.registerCssResource("path/to/resource.css") %}'),
+            new RegisterResourceTokenParser('includeJs', 'registerJs', false, true, true, false, '{% js %}'),
+            new RegisterResourceTokenParser('includeJsFile', 'registerJsFile', true, true, false, true, '{% do view.registerJsFile("/url/to/file.js") %}'),
+            new RegisterResourceTokenParser('includeJsResource', 'registerJsResource', false, true, false, true, '{% do view.registerJsResource("path/to/resource.js") %}'),
 
-            new RegisterResourceTokenParser('includecss', 'registerCss', false, false, false, true, 'registercss'),
-            new RegisterResourceTokenParser('includehirescss', 'registerHiResCss', true, false, false, true, 'registerhirescss'),
-            new RegisterResourceTokenParser('includecssfile', 'registerCssFile', true, false, false, true, 'registercssfile'),
-            new RegisterResourceTokenParser('includecssresource', 'registerCssResource', false, false, false, true, 'registercssresource'),
-            new RegisterResourceTokenParser('includejs', 'registerJs', false, true, true, false, 'registerjs'),
-            new RegisterResourceTokenParser('includejsfile', 'registerJsFile', true, true, false, true, 'registerjsfile'),
-            new RegisterResourceTokenParser('includejsresource', 'registerJsResource', false, true, false, true, 'registerjsresource'),
+            new RegisterResourceTokenParser('includecss', 'registerCss', false, false, false, true, '{% css %}'),
+            new RegisterResourceTokenParser('includehirescss', 'registerHiResCss', true, false, false, true, '{% css %}'),
+            new RegisterResourceTokenParser('includecssfile', 'registerCssFile', true, false, false, true, '{% do view.registerCssFile("/url/to/file.css") %}'),
+            new RegisterResourceTokenParser('includecssresource', 'registerCssResource', false, false, false, true, '{% do view.registerCssResource("path/to/resource.css") %}'),
+            new RegisterResourceTokenParser('includejs', 'registerJs', false, true, true, false, '{% js %}'),
+            new RegisterResourceTokenParser('includejsfile', 'registerJsFile', true, true, false, true, '{% do view.registerJsFile("/url/to/file.js") %}'),
+            new RegisterResourceTokenParser('includejsresource', 'registerJsResource', false, true, false, true, '{% do view.registerJsResource("path/to/resource.js") %}'),
 
             new DeprecatedTagTokenParser('endpaginate'),
         ];
@@ -146,6 +142,7 @@ class Extension extends \Twig_Extension implements \Twig_Extension_GlobalsInterf
 
         return [
             new \Twig_SimpleFilter('camel', [$this, 'camelFilter']),
+            new \Twig_SimpleFilter('column', [ArrayHelper::class, 'getColumn']),
             new \Twig_SimpleFilter('currency', [$formatter, 'asCurrency']),
             new \Twig_SimpleFilter('date', [$this, 'dateFilter'], ['needs_environment' => true]),
             new \Twig_SimpleFilter('datetime', [$this, 'datetimeFilter'], ['needs_environment' => true]),
@@ -155,6 +152,7 @@ class Extension extends \Twig_Extension implements \Twig_Extension_GlobalsInterf
             new \Twig_SimpleFilter('group', [$this, 'groupFilter']),
             new \Twig_SimpleFilter('hash', [$security, 'hashData']),
             new \Twig_SimpleFilter('id', [$this->view, 'formatInputId']),
+            new \Twig_SimpleFilter('index', [ArrayHelper::class, 'index']),
             new \Twig_SimpleFilter('indexOf', [$this, 'indexOfFilter']),
             new \Twig_SimpleFilter('intersect', 'array_intersect'),
             new \Twig_SimpleFilter('json_encode', [$this, 'jsonEncodeFilter']),
@@ -242,7 +240,7 @@ class Extension extends \Twig_Extension implements \Twig_Extension_GlobalsInterf
      */
     public function ucfirstFilter($string)
     {
-        return StringHelper::uppercaseFirst($string);
+        return StringHelper::upperCaseFirst($string);
     }
 
     /**
@@ -322,7 +320,7 @@ class Extension extends \Twig_Extension implements \Twig_Extension_GlobalsInterf
      */
     public function jsonEncodeFilter($value, $options = null)
     {
-        if ($options === null && (in_array(Header::getMimeType(), ['text/html', 'application/xhtml+xml']))) {
+        if ($options === null && in_array(Header::getMimeType(), ['text/html', 'application/xhtml+xml'], true)) {
             $options = JSON_HEX_TAG | JSON_HEX_AMP | JSON_HEX_QUOT;
         }
 
@@ -342,11 +340,11 @@ class Extension extends \Twig_Extension implements \Twig_Extension_GlobalsInterf
         $filteredArray = [];
 
         if (!is_array($exclude)) {
-            $exclude = [$exclude];
+            $exclude = (array)$exclude;
         }
 
         foreach ($arr as $key => $value) {
-            if (!in_array($value, $exclude)) {
+            if (!in_array($value, $exclude, false)) {
                 $filteredArray[$key] = $value;
             }
         }
@@ -408,7 +406,7 @@ class Extension extends \Twig_Extension implements \Twig_Extension_GlobalsInterf
     public function dateFilter(\Twig_Environment $env, $date, $format = null, $timezone = null, $translate = true)
     {
         // Should we be using the app's formatter?
-        if (!($date instanceof \DateInterval) && ($format === null || in_array($format, [Locale::LENGTH_SHORT, Locale::LENGTH_MEDIUM, Locale::LENGTH_LONG, Locale::LENGTH_FULL]))) {
+        if (!($date instanceof \DateInterval) && ($format === null || in_array($format, [Locale::LENGTH_SHORT, Locale::LENGTH_MEDIUM, Locale::LENGTH_LONG, Locale::LENGTH_FULL], true))) {
             $date = \twig_date_converter($env, $date, $timezone);
             $value = Craft::$app->getFormatter()->asDate($date, $format);
         } else {
@@ -436,7 +434,7 @@ class Extension extends \Twig_Extension implements \Twig_Extension_GlobalsInterf
     public function timeFilter(\Twig_Environment $env, $date, $format = null, $timezone = null, $translate = true)
     {
         // Is this a custom PHP date format?
-        if ($format !== null && !in_array($format, [Locale::LENGTH_SHORT, Locale::LENGTH_MEDIUM, Locale::LENGTH_LONG, Locale::LENGTH_FULL])) {
+        if ($format !== null && !in_array($format, [Locale::LENGTH_SHORT, Locale::LENGTH_MEDIUM, Locale::LENGTH_LONG, Locale::LENGTH_FULL], true)) {
             StringHelper::ensureStartsWith($format, 'php:');
         }
 
@@ -464,7 +462,7 @@ class Extension extends \Twig_Extension implements \Twig_Extension_GlobalsInterf
     public function datetimeFilter(\Twig_Environment $env, $date, $format = null, $timezone = null, $translate = true)
     {
         // Is this a custom PHP date format?
-        if ($format !== null && !in_array($format, [Locale::LENGTH_SHORT, Locale::LENGTH_MEDIUM, Locale::LENGTH_LONG, Locale::LENGTH_FULL])) {
+        if ($format !== null && !in_array($format, [Locale::LENGTH_SHORT, Locale::LENGTH_MEDIUM, Locale::LENGTH_LONG, Locale::LENGTH_FULL], true)) {
             StringHelper::ensureStartsWith($format, 'php:');
         }
 
@@ -513,7 +511,7 @@ class Extension extends \Twig_Extension implements \Twig_Extension_GlobalsInterf
         if (is_string($haystack)) {
             $index = strpos($haystack, $needle);
         } else if (is_array($haystack)) {
-            $index = array_search($needle, $haystack);
+            $index = array_search($needle, $haystack, false);
         } else if (is_object($haystack) && $haystack instanceof \IteratorAggregate) {
             $index = false;
 
@@ -525,6 +523,7 @@ class Extension extends \Twig_Extension implements \Twig_Extension_GlobalsInterf
             }
         }
 
+        /** @noinspection UnSafeIsSetOverArrayInspection - FP */
         if (isset($index) && $index !== false) {
             return $index;
         }

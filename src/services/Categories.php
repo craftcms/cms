@@ -58,22 +58,22 @@ class Categories extends Component
     // =========================================================================
 
     /**
-     * @var
+     * @var integer[]
      */
     private $_allGroupIds;
 
     /**
-     * @var
+     * @var integer[]
      */
     private $_editableGroupIds;
 
     /**
-     * @var
+     * @var CategoryGroup[]
      */
     private $_categoryGroupsById;
 
     /**
-     * @var bool
+     * @var boolean
      */
     private $_fetchedAllCategoryGroups = false;
 
@@ -90,18 +90,18 @@ class Categories extends Component
      */
     public function getAllGroupIds()
     {
-        if (!isset($this->_allGroupIds)) {
-            if ($this->_fetchedAllCategoryGroups) {
-                $this->_allGroupIds = array_keys($this->_categoryGroupsById);
-            } else {
-                $this->_allGroupIds = (new Query())
-                    ->select(['id'])
-                    ->from(['{{%categorygroups}}'])
-                    ->column();
-            }
+        if ($this->_allGroupIds !== null) {
+            return $this->_allGroupIds;
         }
 
-        return $this->_allGroupIds;
+        if ($this->_fetchedAllCategoryGroups) {
+            return $this->_allGroupIds = array_keys($this->_categoryGroupsById);
+        }
+
+        return $this->_allGroupIds = (new Query())
+            ->select(['id'])
+            ->from(['{{%categorygroups}}'])
+            ->column();
     }
 
     /**
@@ -111,13 +111,15 @@ class Categories extends Component
      */
     public function getEditableGroupIds()
     {
-        if (!isset($this->_editableGroupIds)) {
-            $this->_editableGroupIds = [];
+        if ($this->_editableGroupIds !== null) {
+            return $this->_editableGroupIds;
+        }
 
-            foreach ($this->getAllGroupIds() as $groupId) {
-                if (Craft::$app->getUser()->checkPermission('editCategories:'.$groupId)) {
-                    $this->_editableGroupIds[] = $groupId;
-                }
+        $this->_editableGroupIds = [];
+
+        foreach ($this->getAllGroupIds() as $groupId) {
+            if (Craft::$app->getUser()->checkPermission('editCategories:'.$groupId)) {
+                $this->_editableGroupIds[] = $groupId;
             }
         }
 
@@ -127,66 +129,44 @@ class Categories extends Component
     /**
      * Returns all category groups.
      *
-     * @param string|null $indexBy
-     *
      * @return CategoryGroup[]
      */
-    public function getAllGroups($indexBy = null)
+    public function getAllGroups()
     {
-        if (!$this->_fetchedAllCategoryGroups) {
-            /** @var CategoryGroupRecord[] $groupRecords */
-            $groupRecords = CategoryGroupRecord::find()
-                ->orderBy(['name' => SORT_ASC])
-                ->with('structure')
-                ->all();
-
-            if (!isset($this->_categoryGroupsById)) {
-                $this->_categoryGroupsById = [];
-            }
-
-            foreach ($groupRecords as $groupRecord) {
-                $this->_categoryGroupsById[$groupRecord->id] = $this->_createCategoryGroupFromRecord($groupRecord);
-            }
-
-            $this->_fetchedAllCategoryGroups = true;
-        }
-
-        if ($indexBy == 'id') {
-            return $this->_categoryGroupsById;
-        }
-
-        if (!$indexBy) {
+        if ($this->_fetchedAllCategoryGroups) {
             return array_values($this->_categoryGroupsById);
         }
 
-        $groups = [];
+        $this->_categoryGroupsById = [];
 
-        foreach ($this->_categoryGroupsById as $group) {
-            $groups[$group->$indexBy] = $group;
+        /** @var CategoryGroupRecord[] $groupRecords */
+        $groupRecords = CategoryGroupRecord::find()
+            ->orderBy(['name' => SORT_ASC])
+            ->with('structure')
+            ->all();
+
+        foreach ($groupRecords as $groupRecord) {
+            $this->_categoryGroupsById[$groupRecord->id] = $this->_createCategoryGroupFromRecord($groupRecord);
         }
 
-        return $groups;
+        $this->_fetchedAllCategoryGroups = true;
+
+        return array_values($this->_categoryGroupsById);
     }
 
     /**
      * Returns all editable groups.
      *
-     * @param string|null $indexBy
-     *
      * @return CategoryGroup[]
      */
-    public function getEditableGroups($indexBy = null)
+    public function getEditableGroups()
     {
         $editableGroupIds = $this->getEditableGroupIds();
         $editableGroups = [];
 
         foreach ($this->getAllGroups() as $group) {
-            if (in_array($group->id, $editableGroupIds)) {
-                if ($indexBy) {
-                    $editableGroups[$group->$indexBy] = $group;
-                } else {
-                    $editableGroups[] = $group;
-                }
+            if (in_array($group->id, $editableGroupIds, false)) {
+                $editableGroups[] = $group;
             }
         }
 
@@ -212,21 +192,25 @@ class Categories extends Component
      */
     public function getGroupById($groupId)
     {
-        if (!isset($this->_categoryGroupsById) || !array_key_exists($groupId, $this->_categoryGroupsById)) {
-            $groupRecord = CategoryGroupRecord::find()
-                ->where(['id' => $groupId])
-                ->with('structure')
-                ->one();
-
-            if ($groupRecord) {
-                /** @var CategoryGroupRecord $groupRecord */
-                $this->_categoryGroupsById[$groupId] = $this->_createCategoryGroupFromRecord($groupRecord);
-            } else {
-                $this->_categoryGroupsById[$groupId] = null;
-            }
+        if ($this->_categoryGroupsById !== null && array_key_exists($groupId, $this->_categoryGroupsById)) {
+            return $this->_categoryGroupsById[$groupId];
         }
 
-        return $this->_categoryGroupsById[$groupId];
+        if ($this->_fetchedAllCategoryGroups) {
+            return null;
+        }
+
+        $groupRecord = CategoryGroupRecord::find()
+            ->where(['id' => $groupId])
+            ->with('structure')
+            ->one();
+
+        if ($groupRecord === null) {
+            return $this->_categoryGroupsById[$groupId] = null;
+        }
+
+        /** @var CategoryGroupRecord $groupRecord */
+        return $this->_categoryGroupsById[$groupId] = $this->_createCategoryGroupFromRecord($groupRecord);
     }
 
     /**
@@ -255,20 +239,19 @@ class Categories extends Component
     /**
      * Returns a group's site settings.
      *
-     * @param integer     $groupId
-     * @param string|null $indexBy
+     * @param integer $groupId
      *
      * @return CategoryGroup_SiteSettings[]
      */
-    public function getGroupSiteSettings($groupId, $indexBy = null)
+    public function getGroupSiteSettings($groupId)
     {
-        $siteSettings = CategoryGroup_SiteSettingsRecord::find()
+        $results = CategoryGroup_SiteSettingsRecord::find()
             ->where(['groupId' => $groupId])
-            ->indexBy($indexBy)
             ->all();
+        $siteSettings = [];
 
-        foreach ($siteSettings as $key => $value) {
-            $siteSettings[$key] = new CategoryGroup_SiteSettings($value->toArray([
+        foreach ($results as $result) {
+            $siteSettings[] = new CategoryGroup_SiteSettings($result->toArray([
                 'id',
                 'groupId',
                 'siteId',
@@ -443,7 +426,7 @@ class Categories extends Component
 
                 /** @noinspection PhpUndefinedVariableInspection */
                 foreach ($allOldSiteSettingsRecords as $siteId => $siteSettingsRecord) {
-                    if (!in_array($siteId, $siteIds)) {
+                    if (!in_array($siteId, $siteIds, false)) {
                         $siteSettingsRecord->delete();
                     }
                 }
@@ -664,13 +647,14 @@ class Categories extends Component
             return null;
         }
 
-        return Category::find()
-            ->id($categoryId)
-            ->structureId($structureId)
-            ->siteId($siteId)
-            ->status(null)
-            ->enabledForSite(false)
-            ->one();
+        $query = Category::find();
+        $query->id($categoryId);
+        $query->structureId($structureId);
+        $query->siteId($siteId);
+        $query->status(null);
+        $query->enabledForSite(false);
+
+        return $query->one();
     }
 
     /**
@@ -686,12 +670,12 @@ class Categories extends Component
 
         if ($ids) {
             // Make sure that for each selected category, all of its parents are also selected.
-            $categories = Category::find()
-                ->id($ids)
-                ->status(null)
-                ->enabledForSite(false)
-                ->limit(null)
-                ->all();
+            $categoryQuery = Category::find();
+            $categoryQuery->id($ids);
+            $categoryQuery->status(null);
+            $categoryQuery->enabledForSite(false);
+            $categoryQuery->limit(null);
+            $categories = $categoryQuery->all();
 
             $prevCategory = null;
 
@@ -704,6 +688,7 @@ class Categories extends Component
                 ) {
                     // Merge in all of the entry's ancestors
                     $ancestorIds = $category->getAncestors()->ids();
+                    /** @noinspection SlowArrayOperationsInLoopInspection */
                     $completeIds = array_merge($completeIds, $ancestorIds);
                 }
 

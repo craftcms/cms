@@ -162,7 +162,7 @@ class View extends \yii\web\View
      *
      * @return Environment The Twig Environment instance.
      */
-    public function getTwig($loaderClass = null, $options = [])
+    public function getTwig($loaderClass = null, array $options = [])
     {
         if (!$loaderClass) {
             $loaderClass = TemplateLoader::class;
@@ -211,7 +211,7 @@ class View extends \yii\web\View
      */
     public function getIsRenderingTemplate()
     {
-        return isset($this->_renderingTemplate);
+        return $this->_renderingTemplate !== null;
     }
 
     /**
@@ -223,7 +223,7 @@ class View extends \yii\web\View
     public function getRenderingTemplate()
     {
         if ($this->getIsRenderingTemplate()) {
-            if (strncmp($this->_renderingTemplate, 'string:', 7) === 0) {
+            if (strpos($this->_renderingTemplate, 'string:') === 0) {
                 $template = $this->_renderingTemplate;
             } else {
                 $template = $this->resolveTemplate($this->_renderingTemplate);
@@ -252,7 +252,7 @@ class View extends \yii\web\View
      * @return string the rendering result
      * @throws \Twig_Error_Loader if the template doesn’t exist
      */
-    public function renderTemplate($template, $variables = [])
+    public function renderTemplate($template, array $variables = [])
     {
         Craft::trace("Rendering template: $template", __METHOD__);
 
@@ -275,7 +275,7 @@ class View extends \yii\web\View
      *
      * @return string the rendering result
      */
-    public function renderPageTemplate($template, $variables = [])
+    public function renderPageTemplate($template, array $variables = [])
     {
         ob_start();
         ob_implicit_flush(false);
@@ -301,7 +301,7 @@ class View extends \yii\web\View
      *
      * @return string The rendered macro output.
      */
-    public function renderTemplateMacro($template, $macro, $args = [])
+    public function renderTemplateMacro($template, $macro, array $args = [])
     {
         $twig = $this->getTwig();
         $twigTemplate = $twig->loadTemplate($template);
@@ -322,7 +322,7 @@ class View extends \yii\web\View
      *
      * @return string The rendered template.
      */
-    public function renderString($template, $variables = [])
+    public function renderString($template, array $variables = [])
     {
         $stringTemplate = new StringTemplate(md5($template), $template);
 
@@ -486,7 +486,7 @@ class View extends \yii\web\View
     public function resolveTemplate($name)
     {
         // Normalize the template name
-        $name = trim(preg_replace('#/{2,}#', '/', strtr($name, '\\', '/')), '/');
+        $name = trim(preg_replace('#/{2,}#', '/', str_replace('\\', '/', $name)), '/');
 
         $key = $this->_templatesPath.':'.$name;
 
@@ -559,7 +559,7 @@ class View extends \yii\web\View
      *                        $url as the key. If two CSS files are registered with the same key, the latter
      *                        will overwrite the former.
      */
-    public function registerCssResource($path, $options = [], $key = null)
+    public function registerCssResource($path, array $options = [], $key = null)
     {
         $this->_registerResource($path, $options, $key, 'css');
     }
@@ -583,7 +583,7 @@ class View extends \yii\web\View
      *                        $url as the key. If two JS files are registered with the same key, the latter
      *                        will overwrite the former.
      */
-    public function registerJsResource($path, $options = [], $key = null)
+    public function registerJsResource($path, array $options = [], $key = null)
     {
         $this->_registerResource($path, $options, $key, 'js');
     }
@@ -596,9 +596,13 @@ class View extends \yii\web\View
      * @param string $key     the key that identifies the CSS code block. If null, it will use
      *                        $css as the key. If two CSS code blocks are registered with the same key, the latter
      *                        will overwrite the former.
+     *
+     * @deprecated in 3.0. Use [[registerCss()]] and type your own media selector.
      */
-    public function registerHiResCss($css, $options = [], $key = null)
+    public function registerHiResCss($css, array $options = [], $key = null)
     {
+        Craft::$app->getDeprecator()->log('registerHiResCss', 'craft\\web\\View::registerHiResCss() has been deprecated. Use registerCss() instead, and type your own media selector.');
+
         $css = "@media only screen and (-webkit-min-device-pixel-ratio: 1.5),\n".
             "only screen and (   -moz-min-device-pixel-ratio: 1.5),\n".
             "only screen and (     -o-min-device-pixel-ratio: 3/2),\n".
@@ -753,8 +757,8 @@ class View extends \yii\web\View
      */
     protected function registerAllAssetFiles()
     {
-        foreach (array_keys($this->assetBundles) as $bundle) {
-            $this->registerAssetFiles($bundle);
+        foreach ($this->assetBundles as $bundleName => $bundle) {
+            $this->registerAssetFiles($bundleName);
         }
     }
 
@@ -856,7 +860,7 @@ class View extends \yii\web\View
         if (!in_array($templateMode, [
             self::TEMPLATE_MODE_CP,
             self::TEMPLATE_MODE_SITE
-        ])
+        ], true)
         ) {
             throw new Exception('"'.$templateMode.'" is not a valid template mode');
         }
@@ -1176,19 +1180,21 @@ class View extends \yii\web\View
      */
     private function _getTwigOptions()
     {
-        if (!isset($this->_twigOptions)) {
-            $this->_twigOptions = [
-                'base_template_class' => '\\craft\\web\\twig\\Template',
-                // See: https://github.com/twigphp/Twig/issues/1951
-                'cache' => Craft::$app->getPath()->getCompiledTemplatesPath(),
-                'auto_reload' => true,
-                'charset' => Craft::$app->charset,
-            ];
+        if ($this->_twigOptions !== null) {
+            return $this->_twigOptions;
+        }
 
-            if (Craft::$app->getConfig()->get('devMode')) {
-                $this->_twigOptions['debug'] = true;
-                $this->_twigOptions['strict_variables'] = true;
-            }
+        $this->_twigOptions = [
+            'base_template_class' => Template::class,
+            // See: https://github.com/twigphp/Twig/issues/1951
+            'cache' => Craft::$app->getPath()->getCompiledTemplatesPath(),
+            'auto_reload' => true,
+            'charset' => Craft::$app->charset,
+        ];
+
+        if (Craft::$app->getConfig()->get('devMode')) {
+            $this->_twigOptions['debug'] = true;
+            $this->_twigOptions['strict_variables'] = true;
         }
 
         return $this->_twigOptions;

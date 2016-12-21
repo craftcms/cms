@@ -110,6 +110,7 @@ class RecentEntries extends Widget
             }
         }
 
+        /** @noinspection UnSafeIsSetOverArrayInspection - FP */
         if (!isset($title)) {
             $title = Craft::t('app', 'Recent Entries');
         }
@@ -179,7 +180,7 @@ class RecentEntries extends Widget
         $editableSectionIds = $this->_getEditableSectionIds();
         $targetSectionId = $this->section;
 
-        if (!$targetSectionId || $targetSectionId == '*' || !in_array($targetSectionId, $editableSectionIds)) {
+        if (!$targetSectionId || $targetSectionId == '*' || !in_array($targetSectionId, $editableSectionIds, false)) {
             $targetSectionId = array_merge($editableSectionIds);
         }
 
@@ -187,15 +188,16 @@ class RecentEntries extends Widget
             return [];
         }
 
-        return Entry::find()
-            ->status(null)
-            ->enabledForSite(false)
-            ->siteId($targetSiteId)
-            ->sectionId($targetSectionId)
-            ->editable(true)
-            ->limit($this->limit ?: 100)
-            ->orderBy('elements.dateCreated desc')
-            ->all();
+        $query = Entry::find();
+        $query->status(null);
+        $query->enabledForSite(false);
+        $query->siteId($targetSiteId);
+        $query->sectionId($targetSectionId);
+        $query->editable(true);
+        $query->limit($this->limit ?: 100);
+        $query->orderBy('elements.dateCreated desc');
+
+        return $query->all();
     }
 
     /**
@@ -239,7 +241,7 @@ class RecentEntries extends Widget
 
         // Only use that site if it still exists and they're allowed to edit it.
         // Otherwise go with the first site that they are allowed to edit.
-        if (!in_array($targetSiteId, $editableSiteIds)) {
+        if (!in_array($targetSiteId, $editableSiteIds, false)) {
             $targetSiteId = $editableSiteIds[0];
         }
 

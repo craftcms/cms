@@ -7,6 +7,9 @@
 
 use craft\db\Query;
 use craft\helpers\FileHelper;
+use craft\services\Config;
+use GuzzleHttp\Client;
+use yii\base\ExitException;
 use yii\helpers\VarDumper;
 use yii\web\Request;
 
@@ -68,6 +71,7 @@ class Craft extends Yii
      * @param boolean $highlight Whether the result should be syntax-highlighted. Defaults to true.
      *
      * @return void
+     * @throws ExitException if the application is in testing mode
      */
     public static function dd($var, $depth = 10, $highlight = true)
     {
@@ -78,14 +82,14 @@ class Craft extends Yii
     /**
      * Generates and returns a cookie config.
      *
-     * @param array|null $config  Any config options that should be included in the config.
-     * @param Request    $request The request object
+     * @param array        $config  Any config options that should be included in the config.
+     * @param Request|null $request The request object
      *
      * @return array The cookie config array.
      */
-    public static function cookieConfig($config = [], $request = null)
+    public static function cookieConfig(array $config = [], $request = null)
     {
-        if (!isset(static::$_baseCookieConfig)) {
+        if (self::$_baseCookieConfig === null) {
             $configService = static::$app->getConfig();
 
             $defaultCookieDomain = $configService->get('defaultCookieDomain');
@@ -99,14 +103,14 @@ class Craft extends Yii
                 $useSecureCookies = $request->getIsSecureConnection();
             }
 
-            static::$_baseCookieConfig = [
+            self::$_baseCookieConfig = [
                 'domain' => $defaultCookieDomain,
                 'secure' => $useSecureCookies,
                 'httpOnly' => true
             ];
         }
 
-        return array_merge(static::$_baseCookieConfig, $config);
+        return array_merge(self::$_baseCookieConfig, $config);
     }
 
     /**
@@ -155,23 +159,23 @@ class Craft extends Yii
 
             foreach ($fieldHandles as $handle) {
                 $properties[] = <<<EOD
-	/**
-	 * @var mixed Value for field with the handle “{$handle}”.
-	 */
-	public \${$handle};
+    /**
+     * @var mixed Value for field with the handle “{$handle}”.
+     */
+    public \${$handle};
 EOD;
 
                 $methods[] = <<<EOD
-	/**
-	 * Sets the [[{$handle}]] property.
-	 * @param mixed \$value The property value
-	 * @return \\yii\\base\\Component The behavior’s owner component
-	 */
-	public function {$handle}(\$value)
-	{
-		\$this->{$handle} = \$value;
-		return \$this->owner;
-	}
+    /**
+     * Sets the [[{$handle}]] property.
+     * @param mixed \$value The property value
+     * @return \\yii\\base\\Component The behavior’s owner component
+     */
+    public function {$handle}(\$value)
+    {
+        \$this->{$handle} = \$value;
+        return \$this->owner;
+    }
 EOD;
 
                 $propertyDocs[] = " * @property mixed \${$handle} Value for the field with the handle “{$handle}”.";
@@ -209,10 +213,40 @@ EOD;
     }
 
     /**
+     * Creates a Guzzle client configured with the given array merged with any default values in craft/config/guzzle.php.
+     *
+     * @param array $config Guzzle client config settings
+     *
+     * @return Client
+     */
+    public static function createGuzzleClient(array $config = [])
+    {
+        // Set the Craft header by default.
+        $defaultConfig = [
+            'headers' => [
+                'User-Agent' => 'Craft/'.Craft::$app->version.' '.\GuzzleHttp\default_user_agent()
+            ],
+        ];
+
+        // Grab the config from craft/config/guzzle.php that is used on every Guzzle request.
+        $guzzleConfig = Craft::$app->getConfig()->getConfigSettings(Config::CATEGORY_GUZZLE);
+
+        // Merge default into guzzle config.
+        $guzzleConfig = array_replace_recursive($guzzleConfig, $defaultConfig);
+
+        // Maybe they want to set some config options specifically for this request.
+        $guzzleConfig = array_replace_recursive($guzzleConfig, $config);
+
+        return new Client([
+            $guzzleConfig
+        ]);
+    }
+
+    /**
      * Determines if a field attribute file is valid.
      *
-     * @param $path
-     * @param $storedFieldVersion
+     * @param string $path
+     * @param string $storedFieldVersion
      *
      * @return boolean
      */
@@ -220,13 +254,13 @@ EOD;
     {
         if (file_exists($path)) {
             // Make sure it's up-to-date
-            $f = fopen($path, 'r');
+            $f = fopen($path, 'rb');
             $line = fgets($f);
             fclose($f);
 
             if (preg_match('/\/\/ v([a-zA-Z0-9]{12})/', $line, $matches)) {
-                if ($matches[1] == $storedFieldVersion) {
-                    include($path);
+                if ($matches[1] === $storedFieldVersion) {
+                    include $path;
 
                     return true;
                 }
@@ -249,7 +283,7 @@ EOD;
         $fileContents = file_get_contents($templatePath);
         $fileContents = str_replace($search, $replace, $fileContents);
         FileHelper::writeToFile($destinationPath, $fileContents);
-        include($destinationPath);
+        include $destinationPath;
     }
 }
 

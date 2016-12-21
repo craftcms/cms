@@ -8,6 +8,7 @@
 namespace craft\web\twig\variables;
 
 use Craft;
+use craft\helpers\ArrayHelper;
 use craft\models\UserGroup;
 
 Craft::$app->requireEdition(Craft::Pro);
@@ -35,7 +36,9 @@ class UserGroups
     {
         Craft::$app->getDeprecator()->log('craft.userGroups.getAllGroups()', 'craft.userGroups.getAllGroups() has been deprecated. Use craft.app.userGroups.getAllGroups() instead.');
 
-        return Craft::$app->getUserGroups()->getAllGroups($indexBy);
+        $userGroups = Craft::$app->getUserGroups()->getAllGroups();
+
+        return $indexBy ? ArrayHelper::index($userGroups, $indexBy) : $userGroups;
     }
 
     /**

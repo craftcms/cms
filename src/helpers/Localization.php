@@ -47,11 +47,8 @@ class Localization
             $decimalSymbol = $locale->getNumberSymbol(Locale::SYMBOL_DECIMAL_SEPARATOR);
             $groupSymbol = $locale->getNumberSymbol(Locale::SYMBOL_GROUPING_SEPARATOR);
 
-            // Remove any group symbols
-            $number = str_replace($groupSymbol, '', $number);
-
-            // Use a period for the decimal symbol
-            $number = str_replace($decimalSymbol, '.', $number);
+            // Remove any group symbols and use a period for the decimal symbol
+            $number = str_replace([$groupSymbol, $decimalSymbol], ['', '.'], $number);
         }
 
         return $number;
@@ -73,14 +70,14 @@ class Localization
         $customDataPath = Craft::$app->getPath()->getConfigPath().DIRECTORY_SEPARATOR.'locales'.DIRECTORY_SEPARATOR.$localeId.'.php';
 
         if (is_file($appDataPath)) {
-            $data = require($appDataPath);
+            $data = require $appDataPath;
         }
 
         if (is_file($customDataPath)) {
             if ($data !== null) {
-                $data = ArrayHelper::merge($data, require($customDataPath));
+                $data = ArrayHelper::merge($data, require $customDataPath);
             } else {
-                $data = require($customDataPath);
+                $data = require $customDataPath;
             }
         }
 
@@ -113,13 +110,13 @@ class Localization
             $loadedAlready = false;
 
             // We've loaded the translation file already, just check for the translation.
-            if (isset(static::$_translations[$translationFile])) {
+            if (isset(self::$_translations[$translationFile])) {
                 /** @noinspection PhpUnusedLocalVariableInspection */
                 $loadedAlready = true;
 
-                if (isset(static::$_translations[$translationFile][$event->message])) {
+                if (isset(self::$_translations[$translationFile][$event->message])) {
                     // Found a match... grab it and go.
-                    $event->message = static::$_translations[$translationFile][$event->message];
+                    $event->message = self::$_translations[$translationFile][$event->message];
 
                     return;
                 }
@@ -142,15 +139,15 @@ class Localization
 
             if (is_file($path)) {
                 // Load it up.
-                static::$_translations[$translationFile] = include($path);
+                self::$_translations[$translationFile] = include $path;
 
-                if (isset(static::$_translations[$translationFile][$event->message])) {
-                    $event->message = static::$_translations[$translationFile][$event->message];
+                if (isset(self::$_translations[$translationFile][$event->message])) {
+                    $event->message = self::$_translations[$translationFile][$event->message];
 
                     return;
                 }
             } else {
-                static::$_translations[$translationFile] = [];
+                self::$_translations[$translationFile] = [];
             }
         }
     }

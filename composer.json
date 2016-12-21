@@ -1,5 +1,5 @@
 {
-  "name": "craftcms/craft",
+  "name": "craftcms/cms",
   "description": "Craft CMS",
   "keywords": [
     "craft",
@@ -23,7 +23,6 @@
     "yiisoft/yii2": "2.0.10",
     "yiisoft/yii2-debug": "2.0.7",
     "yiisoft/yii2-swiftmailer": "2.0.6",
-    "simplepie/simplepie": "1.4.3",
     "guzzlehttp/guzzle": "6.2.2",
     "danielstjules/stringy": "2.3.2",
     "creocoder/yii2-nested-sets": "0.9.0",
@@ -35,13 +34,14 @@
     "twig/twig": "1.28.2",
     "bower-asset/d3": "3.5.17",
     "bower-asset/element-resize-detector": "1.1.9",
-    "bower-asset/garnishjs": "0.1.8",
+    "bower-asset/garnishjs": "0.1.9",
     "bower-asset/jquery.payment": "3.0.0",
     "bower-asset/picturefill": "3.0.2",
     "bower-asset/selectize": "0.12.4",
     "bower-asset/timepicker": "1.11.8",
-    "bower-asset/velocity": "1.4.0",
-    "hampel/helpspot": "0.1.0"
+    "bower-asset/velocity": "1.4.1",
+    "zendframework/zend-feed": "2.7.0",
+    "roave/security-advisories": "dev-master"
   },
   "autoload": {
     "psr-4": {

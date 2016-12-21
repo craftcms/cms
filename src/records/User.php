@@ -16,7 +16,7 @@ use yii\db\ActiveQueryInterface;
  *
  * @property integer     $id                         ID
  * @property string      $username                   Username
- * @property string      $photoId                    PhotoId
+ * @property integer     $photoId                    Photo ID
  * @property string      $firstName                  First name
  * @property string      $lastName                   Last name
  * @property string      $email                      Email

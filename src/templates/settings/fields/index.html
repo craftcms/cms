@@ -19,7 +19,7 @@
 ] %}
 
 
-{% set groups = craft.app.fields.getAllGroups('id') %}
+{% set groups = craft.app.fields.getAllGroups()|index('id') %}
 
 {% if groupId is defined %}
 	{% if groups[groupId] is not defined %}
@@ -69,7 +69,7 @@
 
 
 {% block content %}
-	{% registerjsresource "js/fields.js" %}
+	{% do view.registerJsResource("js/fields.js") %}
 
 	<p id="nofields"{% if fields %} class="hidden"{% endif %}>
 		{% if groupId is defined %}
@@ -112,10 +112,10 @@
 {% endblock %}
 
 
-{% registerjs %}
+{% js %}
 	new Craft.AdminTable({
 		tableSelector: '#fields',
 		noItemsSelector: '#nofields',
 		deleteAction: 'fields/delete-field'
 	});
-{% endregisterjs %}
+{% endjs %}

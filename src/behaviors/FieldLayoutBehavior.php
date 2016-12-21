@@ -68,8 +68,8 @@ class FieldLayoutBehavior extends Behavior
     public function getFieldLayout()
     {
         if ($this->_fieldLayout === null) {
-            if (!empty($this->owner->{$this->idAttribute})) {
-                $this->_fieldLayout = Craft::$app->getFields()->getLayoutById($this->owner->{$this->idAttribute});
+            if ($id = $this->owner->{$this->idAttribute}) {
+                $this->_fieldLayout = Craft::$app->getFields()->getLayoutById($id);
             }
 
             if ($this->_fieldLayout === null) {

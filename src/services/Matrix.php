@@ -14,7 +14,6 @@ use craft\base\Field;
 use craft\db\Query;
 use craft\elements\db\MatrixBlockQuery;
 use craft\elements\MatrixBlock;
-use craft\errors\MatrixBlockNotFoundException;
 use craft\errors\MatrixBlockTypeNotFoundException;
 use craft\fields\Matrix as MatrixField;
 use craft\helpers\Html;
@@ -24,7 +23,6 @@ use craft\migrations\CreateMatrixContentTable;
 use craft\models\FieldLayout;
 use craft\models\FieldLayoutTab;
 use craft\models\MatrixBlockType;
-use craft\records\MatrixBlock as MatrixBlockRecord;
 use craft\records\MatrixBlockType as MatrixBlockTypeRecord;
 use yii\base\Component;
 use yii\base\Exception;
@@ -65,11 +63,6 @@ class Matrix extends Component
     /**
      * @var
      */
-    private $_blockRecordsById;
-
-    /**
-     * @var
-     */
     private $_uniqueBlockTypeAndFieldHandles;
 
     /**
@@ -84,39 +77,30 @@ class Matrix extends Component
      * Returns the block types for a given Matrix field.
      *
      * @param integer $fieldId The Matrix field ID.
-     * @param string  $indexBy The property the block types should be indexed by. Defaults to `null`.
      *
      * @return MatrixBlockType[] An array of block types.
      */
-    public function getBlockTypesByFieldId($fieldId, $indexBy = null)
+    public function getBlockTypesByFieldId($fieldId)
     {
-        if (empty($this->_fetchedAllBlockTypesForFieldId[$fieldId])) {
-            $this->_blockTypesByFieldId[$fieldId] = [];
-
-            $results = $this->_createBlockTypeQuery()
-                ->where(['fieldId' => $fieldId])
-                ->all();
-
-            foreach ($results as $result) {
-                $blockType = new MatrixBlockType($result);
-                $this->_blockTypesById[$blockType->id] = $blockType;
-                $this->_blockTypesByFieldId[$fieldId][] = $blockType;
-            }
-
-            $this->_fetchedAllBlockTypesForFieldId[$fieldId] = true;
-        }
-
-        if (!$indexBy) {
+        if (!empty($this->_fetchedAllBlockTypesForFieldId[$fieldId])) {
             return $this->_blockTypesByFieldId[$fieldId];
         }
 
-        $blockTypes = [];
+        $this->_blockTypesByFieldId[$fieldId] = [];
 
-        foreach ($this->_blockTypesByFieldId[$fieldId] as $blockType) {
-            $blockTypes[$blockType->$indexBy] = $blockType;
+        $results = $this->_createBlockTypeQuery()
+            ->where(['fieldId' => $fieldId])
+            ->all();
+
+        foreach ($results as $result) {
+            $blockType = new MatrixBlockType($result);
+            $this->_blockTypesById[$blockType->id] = $blockType;
+            $this->_blockTypesByFieldId[$fieldId][] = $blockType;
         }
 
-        return $blockTypes;
+        $this->_fetchedAllBlockTypesForFieldId[$fieldId] = true;
+
+        return $this->_blockTypesByFieldId[$fieldId];
     }
 
     /**
@@ -128,21 +112,19 @@ class Matrix extends Component
      */
     public function getBlockTypeById($blockTypeId)
     {
-        if (!isset($this->_blockTypesById) || !array_key_exists($blockTypeId, $this->_blockTypesById)) {
-            $result = $this->_createBlockTypeQuery()
-                ->where(['id' => $blockTypeId])
-                ->one();
-
-            if ($result) {
-                $blockType = new MatrixBlockType($result);
-            } else {
-                $blockType = null;
-            }
-
-            $this->_blockTypesById[$blockTypeId] = $blockType;
+        if ($this->_blockTypesById !== null && array_key_exists($blockTypeId, $this->_blockTypesById)) {
+            return $this->_blockTypesById[$blockTypeId];
         }
 
-        return $this->_blockTypesById[$blockTypeId];
+        $result = $this->_createBlockTypeQuery()
+            ->where(['id' => $blockTypeId])
+            ->one();
+
+        if (!$result) {
+            return $this->_blockTypesById[$blockTypeId] = null;
+        }
+
+        return $this->_blockTypesById[$blockTypeId] = new MatrixBlockType($result);
     }
 
     /**
@@ -199,7 +181,7 @@ class Matrix extends Component
             if ($blockType->handle && $field->handle) {
                 $blockTypeAndFieldHandle = $blockType->handle.'_'.$field->handle;
 
-                if (in_array($blockTypeAndFieldHandle, $this->_uniqueBlockTypeAndFieldHandles)) {
+                if (in_array($blockTypeAndFieldHandle, $this->_uniqueBlockTypeAndFieldHandles, true)) {
                     // This error *might* not be entirely accurate, but it's such an edge case that it's probably better
                     // for the error to be worded for the common problem (two duplicate handles within the same block
                     // type).
@@ -357,6 +339,7 @@ class Matrix extends Component
                 // Update the block type with the field layout ID
                 $blockTypeRecord->save(false);
 
+                /** @noinspection UnSafeIsSetOverArrayInspection - FP */
                 if (isset($oldBlockType)) {
                     // Delete the old field layout
                     $fieldsService->deleteLayoutById($oldBlockType->fieldLayoutId);
@@ -469,7 +452,7 @@ class Matrix extends Component
             foreach ($uniqueAttributes as $attribute) {
                 $value = $blockType->$attribute;
 
-                if ($value && (!isset($uniqueAttributeValues[$attribute]) || !in_array($value, $uniqueAttributeValues[$attribute]))) {
+                if ($value && (!isset($uniqueAttributeValues[$attribute]) || !in_array($value, $uniqueAttributeValues[$attribute], true))) {
                     $uniqueAttributeValues[$attribute][] = $value;
                 } else {
                     $blockType->addError($attribute, Craft::t('app', '{attribute} "{value}" has already been taken.',
@@ -733,24 +716,27 @@ class Matrix extends Component
      */
     public function getParentMatrixField(MatrixField $matrixField)
     {
-        if (!isset($this->_parentMatrixFields) || !array_key_exists($matrixField->id, $this->_parentMatrixFields)) {
-            // Does this Matrix field belong to another one?
-            $parentMatrixFieldId = (new Query())
-                ->select(['fields.id'])
-                ->from(['{{%fields}} fields'])
-                ->innerJoin('{{%matrixblocktypes}} blocktypes', '[[blocktypes.fieldId]] = [[fields.id]]')
-                ->innerJoin('{{%fieldlayoutfields}} fieldlayoutfields', '[[fieldlayoutfields.layoutId]] = [[blocktypes.fieldLayoutId]]')
-                ->where(['fieldlayoutfields.fieldId' => $matrixField->id])
-                ->scalar();
-
-            if ($parentMatrixFieldId) {
-                $this->_parentMatrixFields[$matrixField->id] = Craft::$app->getFields()->getFieldById($parentMatrixFieldId);
-            } else {
-                $this->_parentMatrixFields[$matrixField->id] = null;
-            }
+        if ($this->_parentMatrixFields !== null && array_key_exists($matrixField->id, $this->_parentMatrixFields)) {
+            return $this->_parentMatrixFields[$matrixField->id];
         }
 
-        return $this->_parentMatrixFields[$matrixField->id];
+        // Does this Matrix field belong to another one?
+        $parentMatrixFieldId = (new Query())
+            ->select(['fields.id'])
+            ->from(['{{%fields}} fields'])
+            ->innerJoin('{{%matrixblocktypes}} blocktypes', '[[blocktypes.fieldId]] = [[fields.id]]')
+            ->innerJoin('{{%fieldlayoutfields}} fieldlayoutfields', '[[fieldlayoutfields.layoutId]] = [[blocktypes.fieldLayoutId]]')
+            ->where(['fieldlayoutfields.fieldId' => $matrixField->id])
+            ->scalar();
+
+        if (!$parentMatrixFieldId) {
+            return $this->_parentMatrixFields[$matrixField->id] = null;
+        }
+
+        /** @var MatrixField $field */
+        $field = $this->_parentMatrixFields[$matrixField->id] = Craft::$app->getFields()->getFieldById($parentMatrixFieldId);
+
+        return $field;
     }
 
     // Private Methods
@@ -786,47 +772,19 @@ class Matrix extends Component
      */
     private function _getBlockTypeRecord(MatrixBlockType $blockType)
     {
-        if (!$blockType->getIsNew()) {
-            if (!isset($this->_blockTypeRecordsById) || !array_key_exists($blockType->id, $this->_blockTypeRecordsById)) {
-                $this->_blockTypeRecordsById[$blockType->id] = MatrixBlockTypeRecord::findOne($blockType->id);
+        if ($blockType->getIsNew()) {
+            return new MatrixBlockTypeRecord();
+        }
 
-                if (!$this->_blockTypeRecordsById[$blockType->id]) {
-                    throw new MatrixBlockTypeNotFoundException("No block type exists with the ID '{$blockType->id}'");
-                }
-            }
-
+        if ($this->_blockTypeRecordsById !== null && array_key_exists($blockType->id, $this->_blockTypeRecordsById)) {
             return $this->_blockTypeRecordsById[$blockType->id];
         }
 
-        return new MatrixBlockTypeRecord();
-    }
-
-    /**
-     * Returns a block record by its ID or creates a new one.
-     *
-     * @param MatrixBlock $block
-     *
-     * @return MatrixBlockRecord
-     * @throws MatrixBlockNotFoundException if $block->id is invalid
-     */
-    private function _getBlockRecord(MatrixBlock $block)
-    {
-        if ($block->id) {
-            if (!isset($this->_blockRecordsById) || !array_key_exists($block->id, $this->_blockRecordsById)) {
-                $this->_blockRecordsById[$block->id] = MatrixBlockRecord::find()
-                    ->where(['id' => $block->id])
-                    ->with('element')
-                    ->one();
-
-                if (!$this->_blockRecordsById[$block->id]) {
-                    throw new MatrixBlockNotFoundException("No Matrix block exists with the ID '{$block->id}'");
-                }
-            }
-
-            return $this->_blockRecordsById[$block->id];
+        if (($this->_blockTypeRecordsById[$blockType->id] = MatrixBlockTypeRecord::findOne($blockType->id)) === null) {
+            throw new MatrixBlockTypeNotFoundException('Invalid block type ID: '.$blockType->id);
         }
 
-        return new MatrixBlockRecord();
+        return $this->_blockTypeRecordsById[$blockType->id];
     }
 
     /**
@@ -990,7 +948,7 @@ class Matrix extends Component
             foreach ($blocksInOtherSites as $blocksInOtherSite) {
                 foreach ($blocksInOtherSite as $blockInOtherSite) {
                     // Have we already deleted this block?
-                    if (in_array($blockInOtherSite->id, $deletedBlockIds)) {
+                    if (in_array($blockInOtherSite->id, $deletedBlockIds, false)) {
                         continue;
                     }
 

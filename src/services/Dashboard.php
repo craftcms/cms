@@ -122,19 +122,17 @@ class Dashboard extends Component
     /**
      * Returns the dashboard widgets for the current user.
      *
-     * @param string|null $indexBy The attribute to index the widgets by
-     *
      * @return WidgetInterface[] The widgets
      */
-    public function getAllWidgets($indexBy = null)
+    public function getAllWidgets()
     {
-        $widgets = $this->_getUserWidgets($indexBy);
+        $widgets = $this->_getUserWidgets();
 
         // If there are no widgets, this is the first time they've hit the dashboard.
         if (!$widgets) {
             // Add the defaults and try again
             $this->_addDefaultUserWidgets();
-            $widgets = $this->_getUserWidgets($indexBy);
+            $widgets = $this->_getUserWidgets();
         }
 
         return $widgets;
@@ -439,12 +437,10 @@ class Dashboard extends Component
     /**
      * Returns the widget records for the current user.
      *
-     * @param string $indexBy
-     *
      * @return WidgetInterface[]
      * @throws Exception if no user is logged-in
      */
-    private function _getUserWidgets($indexBy = null)
+    private function _getUserWidgets()
     {
         $userId = Craft::$app->getUser()->getId();
 
@@ -467,15 +463,8 @@ class Dashboard extends Component
             ->all();
 
         $widgets = [];
-
         foreach ($results as $result) {
-            $widget = $this->createWidget($result);
-
-            if ($indexBy === null) {
-                $widgets[] = $widget;
-            } else {
-                $widgets[$widget->$indexBy] = $widget;
-            }
+            $widgets[] = $this->createWidget($result);
         }
 
         return $widgets;

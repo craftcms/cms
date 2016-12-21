@@ -45,17 +45,27 @@ if (version_compare(PHP_VERSION, '4.3', '<')) {
  */
 class RequirementsChecker
 {
-    var $dbCreds;
-    var $iconvMessage;
-    var $dbConnectionError;
-    var $iniSetMessage;
-    var $memoryMessage;
-    var $webRootFolderMessage;
-    var $result;
+    var /** @noinspection AccessModifierPresentedInspection */
+        $dbCreds;
+    var /** @noinspection AccessModifierPresentedInspection */
+        $iconvMessage;
+    var /** @noinspection AccessModifierPresentedInspection */
+        $dbConnectionError;
+    var /** @noinspection AccessModifierPresentedInspection */
+        $iniSetMessage;
+    var /** @noinspection AccessModifierPresentedInspection */
+        $memoryMessage;
+    var /** @noinspection AccessModifierPresentedInspection */
+        $webRootFolderMessage;
+    var /** @noinspection AccessModifierPresentedInspection */
+        $result;
 
-    var $requiredMySqlVersion = '5.5.0';
-    var $requiredPgSqlVersion = '9.5';
+    var /** @noinspection AccessModifierPresentedInspection */
+        $requiredMySqlVersion = '5.5.0';
+    var /** @noinspection AccessModifierPresentedInspection */
+        $requiredPgSqlVersion = '9.5';
 
+    /** @noinspection AccessModifierPresentedInspection */
     /**
      * Check the given requirements, collecting results into internal field.
      * This method can be invoked several times checking different requirement sets.
@@ -70,22 +80,22 @@ class RequirementsChecker
     function check($requirements)
     {
         if (is_string($requirements)) {
-            $requirements = require($requirements);
+            $requirements = require $requirements;
         }
 
         if (!is_array($requirements)) {
             $this->usageError('Requirements must be an array, "'.gettype($requirements).'" has been given!');
         }
 
-        if (!isset($this->result) || !is_array($this->result)) {
-            $this->result = [
-                'summary' => [
+        if (!is_array($this->result)) {
+            $this->result = array(
+                'summary' => array(
                     'total' => 0,
                     'errors' => 0,
                     'warnings' => 0,
-                ],
-                'requirements' => [],
-            ];
+                ),
+                'requirements' => array(),
+            );
         }
 
         foreach ($requirements as $key => $rawRequirement) {
@@ -113,6 +123,7 @@ class RequirementsChecker
         return $this;
     }
 
+    /** @noinspection AccessModifierPresentedInspection */
     /**
      * Performs the check for the Craft core requirements.
      *
@@ -120,9 +131,11 @@ class RequirementsChecker
      */
     function checkCraft()
     {
+        /** @noinspection dirnameCallOnFileConstantInspection */
         return $this->check(dirname(__FILE__).DIRECTORY_SEPARATOR.'requirements.php');
     }
 
+    /** @noinspection AccessModifierPresentedInspection */
     /**
      * @return boolean Returns if we're running in the context of Craft or as a standalone PHP script.
      */
@@ -131,6 +144,7 @@ class RequirementsChecker
         return class_exists('Craft');
     }
 
+    /** @noinspection AccessModifierPresentedInspection */
     /**
      * Return the check results.
      *
@@ -156,22 +170,20 @@ class RequirementsChecker
      */
     function getResult()
     {
-        if (isset($this->result)) {
-            return $this->result;
-        }
-
-        return null;
+        return $this->result;
     }
 
+    /** @noinspection AccessModifierPresentedInspection */
     /**
      * Renders the requirements check result. The output will vary depending is a script running from web or from console.
      */
     function render()
     {
-        if (!isset($this->result)) {
+        if ($this->result === null) {
             $this->usageError('Nothing to render!');
         }
 
+        /** @noinspection dirnameCallOnFileConstantInspection */
         $baseViewFilePath = dirname(__FILE__).DIRECTORY_SEPARATOR.'..'.DIRECTORY_SEPARATOR.'views';
 
         if (!empty($_SERVER['argv'])) {
@@ -183,6 +195,7 @@ class RequirementsChecker
         $this->renderViewFile($viewFilename, $this->result);
     }
 
+    /** @noinspection AccessModifierPresentedInspection */
     /**
      * Checks if the given PHP extension is available and its version matches the given one.
      *
@@ -204,13 +217,14 @@ class RequirementsChecker
             return false;
         }
 
-        if (strncasecmp($extensionVersion, 'PECL-', 5) == 0) {
+        if (stripos($extensionVersion, 'PECL-') === 0) {
             $extensionVersion = substr($extensionVersion, 5);
         }
 
         return version_compare($extensionVersion, $version, $compare);
     }
 
+    /** @noinspection AccessModifierPresentedInspection */
     /**
      * Checks if the given PHP configuration option (from php.ini) is on.
      *
@@ -229,6 +243,7 @@ class RequirementsChecker
         return ((int)$value == 1 || strtolower($value) == 'on');
     }
 
+    /** @noinspection AccessModifierPresentedInspection */
     /**
      * Checks if the given PHP configuration option (from php.ini) is off.
      *
@@ -247,6 +262,7 @@ class RequirementsChecker
         return (strtolower($value) == 'off');
     }
 
+    /** @noinspection AccessModifierPresentedInspection */
     /**
      * Gets the size in bytes from verbose size representation. For example: '5K' => 5 * 1024
      *
@@ -294,6 +310,7 @@ class RequirementsChecker
         }
     }
 
+    /** @noinspection AccessModifierPresentedInspection */
     /**
      * Renders a view file.
      * This method includes the view file as a PHP script and captures the display result if required.
@@ -315,16 +332,17 @@ class RequirementsChecker
             ob_start();
             ob_implicit_flush(false);
 
-            require($_viewFile_);
+            require $_viewFile_;
 
             return ob_get_clean();
         }
 
-        require($_viewFile_);
+        require $_viewFile_;
 
         return null;
     }
 
+    /** @noinspection AccessModifierPresentedInspection */
     /**
      * Normalizes requirement ensuring it has correct format.
      *
@@ -362,6 +380,7 @@ class RequirementsChecker
         return $requirement;
     }
 
+    /** @noinspection AccessModifierPresentedInspection */
     /**
      * Displays a usage error. This method will then terminate the execution of the current application.
      *
@@ -373,6 +392,7 @@ class RequirementsChecker
         exit(1);
     }
 
+    /** @noinspection AccessModifierPresentedInspection */
     /**
      * Returns the server information.
      *
@@ -380,11 +400,10 @@ class RequirementsChecker
      */
     function getServerInfo()
     {
-        $info = isset($_SERVER['SERVER_SOFTWARE']) ? $_SERVER['SERVER_SOFTWARE'] : '';
-
-        return $info;
+        return isset($_SERVER['SERVER_SOFTWARE']) ? $_SERVER['SERVER_SOFTWARE'] : '';
     }
 
+    /** @noinspection AccessModifierPresentedInspection */
     /**
      * Returns the current date if possible in string representation.
      *
@@ -392,28 +411,27 @@ class RequirementsChecker
      */
     function getCurrentDate()
     {
-        $nowDate = @strftime('%Y-%m-%d %H:%M', time());
-
-        return $nowDate;
+        return @strftime('%Y-%m-%d %H:%M', time());
     }
 
+    /** @noinspection AccessModifierPresentedInspection */
     /**
      * @return boolean
      */
     function checkDatabaseCreds()
     {
         // Check if we're running as a standalone script.
+        /** @noinspection dirnameCallOnFileConstantInspection */
         $dbConfigPath = dirname(__FILE__).DIRECTORY_SEPARATOR.'..'.DIRECTORY_SEPARATOR.'config'.DIRECTORY_SEPARATOR.'db.php';
 
         if (is_file($dbConfigPath)) {
-            $dbCreds = @require_once(dirname(__FILE__).DIRECTORY_SEPARATOR.'..'.DIRECTORY_SEPARATOR.'config'.DIRECTORY_SEPARATOR.'db.php');
+            /** @noinspection dirnameCallOnFileConstantInspection */
+            $dbCreds = @require dirname(__FILE__).DIRECTORY_SEPARATOR.'..'.DIRECTORY_SEPARATOR.'config'.DIRECTORY_SEPARATOR.'db.php';
 
-            if (is_array($dbCreds)) {
-                if ($dbCreds['server'] && $dbCreds['user'] && $dbCreds['password'] && $dbCreds['database'] && $dbCreds['driver']) {
-                    $this->dbCreds = $dbCreds;
+            if (is_array($dbCreds) && $dbCreds['server'] && $dbCreds['user'] && $dbCreds['password'] && $dbCreds['database'] && $dbCreds['driver']) {
+                $this->dbCreds = $dbCreds;
 
-                    return true;
-                }
+                return true;
             }
         } else if ($this->isCraftRunning()) {
             $configService = Craft::$app->getConfig();
@@ -424,6 +442,7 @@ class RequirementsChecker
             $this->dbCreds['password'] = $configService->get('password', 'db');
             $this->dbCreds['database'] = $configService->get('database', 'db');
             $this->dbCreds['driver'] = $configService->get('driver', 'db');
+            $this->dbCreds['port'] = $configService->getDbPort();
 
             return true;
         }
@@ -431,6 +450,7 @@ class RequirementsChecker
         return false;
     }
 
+    /** @noinspection AccessModifierPresentedInspection */
     /**
      * Error-handler that mutes errors.
      */
@@ -438,6 +458,7 @@ class RequirementsChecker
     {
     }
 
+    /** @noinspection AccessModifierPresentedInspection */
     /**
      * @return boolean
      */
@@ -481,6 +502,7 @@ class RequirementsChecker
         return false;
     }
 
+    /** @noinspection AccessModifierPresentedInspection */
     /**
      * Checks to see if the MySQL InnoDB storage engine is installed and enabled.
      *
@@ -501,6 +523,7 @@ class RequirementsChecker
         return false;
     }
 
+    /** @noinspection AccessModifierPresentedInspection */
     /**
      * @return boolean|mixed
      *
@@ -517,6 +540,7 @@ class RequirementsChecker
                     $requiredVersion = $this->requiredPgSqlVersion;
                     break;
                 default:
+                    /** @noinspection ThrowRawExceptionInspection */
                     throw new Exception('Unsupported connection type: '.$this->dbCreds['driver']);
             }
 
@@ -526,6 +550,7 @@ class RequirementsChecker
         return false;
     }
 
+    /** @noinspection AccessModifierPresentedInspection */
     /**
      * @return boolean|PDO
      */
@@ -535,7 +560,13 @@ class RequirementsChecker
 
         if (!$conn) {
             try {
-                $conn = new PDO("{$this->dbCreds['driver']}:host={$this->dbCreds['server']};dbname={$this->dbCreds['database']}", $this->dbCreds['user'], $this->dbCreds['password']);
+                $dsn = "{$this->dbCreds['driver']}:host={$this->dbCreds['server']};dbname={$this->dbCreds['database']};";
+
+                if (array_key_exists('port', $this->dbCreds)) {
+                    $dsn .= "port={$this->dbCreds['port']};";
+                }
+
+                $conn = new PDO($dsn, $this->dbCreds['user'], $this->dbCreds['password']);
                 $conn->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
             } catch (PDOException $e) {
                 $this->dbConnectionError = "Can't connect to the database with the credentials supplied in db.php. Please double check them and try again.";
@@ -547,6 +578,7 @@ class RequirementsChecker
         return $conn;
     }
 
+    /** @noinspection AccessModifierPresentedInspection */
     /**
      * @return boolean
      */
@@ -585,6 +617,7 @@ class RequirementsChecker
         return true;
     }
 
+    /** @noinspection AccessModifierPresentedInspection */
     /**
      * @return boolean
      */
@@ -611,6 +644,7 @@ class RequirementsChecker
         return true;
     }
 
+    /** @noinspection AccessModifierPresentedInspection */
     /**
      * @return boolean
      */
@@ -636,33 +670,35 @@ class RequirementsChecker
         }
 
         foreach ($folders as $key => $result) {
-
             // We were able to connect to one of our exposed folder checks.
             if ($result === true) {
                 $publicFolders[] = $key;
             }
         }
 
-        if (count($publicFolders) > 0) {
+        $totalPublicFolders = count($publicFolders);
+
+        if ($totalPublicFolders !== 0) {
             $folderString = '';
 
-            for ($counter = 0; $counter < count($publicFolders); $counter++) {
-                $folderString .= '“craft/'.$publicFolders[$counter].'”';
+            foreach ($publicFolders as $counter => &$publicFolder) {
+                $folderString .= '“craft/'.$publicFolder.'”';
 
-                if (isset($publicFolders[$counter + 1]) && count($publicFolders) > 2) {
+                if (isset($publicFolders[$counter + 1]) && $totalPublicFolders > 2) {
                     $folderString .= ', ';
                 }
 
-                if (isset($publicFolders[$counter + 1]) && $counter + 2 == count($publicFolders)) {
-                    if (count($publicFolders) == 2) {
+                if (isset($publicFolders[$counter + 1]) && $counter + 2 === $totalPublicFolders) {
+                    if ($totalPublicFolders === 2) {
                         $folderString .= ' and ';
                     } else {
                         $folderString .= 'and ';
                     }
                 }
             }
+            unset($publicFolder);
 
-            if (count($publicFolders) > 1) {
+            if ($totalPublicFolders > 1) {
                 $folderString .= ' folders';
             } else {
                 $folderString .= ' folder';
@@ -676,6 +712,7 @@ class RequirementsChecker
         return true;
     }
 
+    /** @noinspection AccessModifierPresentedInspection */
     /**
      * @param string $pathToTest
      *
@@ -691,10 +728,6 @@ class RequirementsChecker
         $scriptUrl = $request->getScriptUrl();
         $subBasePath = FileHelper::normalizePath(mb_substr($scriptFile, 0, -mb_strlen($scriptUrl)));
 
-        if (mb_strpos($pathToTest.DIRECTORY_SEPARATOR, $subBasePath) !== false) {
-            return true;
-        }
-
-        return false;
+        return mb_strpos($pathToTest.DIRECTORY_SEPARATOR, $subBasePath) !== false;
     }
 }

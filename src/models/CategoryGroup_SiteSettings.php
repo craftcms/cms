@@ -66,16 +66,20 @@ class CategoryGroup_SiteSettings extends Model
      * Returns the group.
      *
      * @return CategoryGroup
-     * @throws InvalidConfigException if the section is invalid
+     * @throws InvalidConfigException if [[groupId]] is missing or invalid
      */
     public function getGroup()
     {
-        if (!isset($this->_group) && $this->groupId) {
-            $this->_group = Craft::$app->getCategories()->getGroupById($this->groupId);
+        if ($this->_group !== null) {
+            return $this->_group;
         }
 
-        if (!$this->_group) {
-            throw new InvalidConfigException('Invalid group');
+        if (!$this->groupId) {
+            throw new InvalidConfigException('Category is missing its group ID');
+        }
+
+        if (($this->_group = Craft::$app->getCategories()->getGroupById($this->groupId)) === null) {
+            throw new InvalidConfigException('Invalid group ID: '.$this->groupId);
         }
 
         return $this->_group;

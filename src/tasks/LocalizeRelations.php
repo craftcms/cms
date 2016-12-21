@@ -81,7 +81,8 @@ class LocalizeRelations extends Task
                     ['id' => $this->_relations[$step]['id']])
                 ->execute();
 
-            for ($counter = 1; $counter < count($this->_allSiteIds); $counter++) {
+            $totalSiteIds = count($this->_allSiteIds);
+            for ($counter = 1; $counter < $totalSiteIds; $counter++) {
                 $this->_workingSiteId = $this->_allSiteIds[$counter];
 
                 $db->createCommand()

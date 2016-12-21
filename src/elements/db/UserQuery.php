@@ -110,14 +110,10 @@ class UserQuery extends ElementQuery
      */
     public function __set($name, $value)
     {
-        switch ($name) {
-            case 'group': {
-                $this->group($value);
-                break;
-            }
-            default: {
-                parent::__set($name, $value);
-            }
+        if ($name === 'group') {
+            $this->group($value);
+        } else {
+            parent::__set($name, $value);
         }
     }
 
@@ -126,7 +122,7 @@ class UserQuery extends ElementQuery
      *
      * @param boolean $value The property value (defaults to true)
      *
-     * @return $this self reference
+     * @return static self reference
      */
     public function admin($value = true)
     {
@@ -140,7 +136,7 @@ class UserQuery extends ElementQuery
      *
      * @param boolean $value The property value (defaults to true)
      *
-     * @return $this self reference
+     * @return static self reference
      */
     public function client($value = true)
     {
@@ -154,7 +150,7 @@ class UserQuery extends ElementQuery
      *
      * @param string|integer $value The property value
      *
-     * @return $this self reference
+     * @return static self reference
      */
     public function can($value)
     {
@@ -168,7 +164,7 @@ class UserQuery extends ElementQuery
      *
      * @param string|string[]|UserGroup $value The property value
      *
-     * @return $this self reference
+     * @return static self reference
      */
     public function group($value)
     {
@@ -191,7 +187,7 @@ class UserQuery extends ElementQuery
      *
      * @param integer|integer[] $value The property value
      *
-     * @return $this self reference
+     * @return static self reference
      */
     public function groupId($value)
     {
@@ -205,7 +201,7 @@ class UserQuery extends ElementQuery
      *
      * @param string|string[] $value The property value
      *
-     * @return $this self reference
+     * @return static self reference
      */
     public function email($value)
     {
@@ -219,7 +215,7 @@ class UserQuery extends ElementQuery
      *
      * @param string|string[] $value The property value
      *
-     * @return $this self reference
+     * @return static self reference
      */
     public function username($value)
     {
@@ -233,7 +229,7 @@ class UserQuery extends ElementQuery
      *
      * @param string|string[] $value The property value
      *
-     * @return $this self reference
+     * @return static self reference
      */
     public function firstName($value)
     {
@@ -247,7 +243,7 @@ class UserQuery extends ElementQuery
      *
      * @param string|string[] $value The property value
      *
-     * @return $this self reference
+     * @return static self reference
      */
     public function lastName($value)
     {
@@ -261,7 +257,7 @@ class UserQuery extends ElementQuery
      *
      * @param mixed $value The property value
      *
-     * @return $this self reference
+     * @return static self reference
      */
     public function lastLoginDate($value)
     {
@@ -275,7 +271,7 @@ class UserQuery extends ElementQuery
      *
      * @param boolean $value The property value (defaults to true)
      *
-     * @return $this self reference
+     * @return static self reference
      */
     public function withPassword($value = true)
     {

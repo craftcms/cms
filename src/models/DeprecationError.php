@@ -8,9 +8,9 @@
 namespace craft\models;
 
 use craft\base\Model;
-use craft\dates\DateTime;
 use craft\helpers\Json;
 use craft\validators\DateTimeValidator;
+use DateTime;
 
 /**
  * DeprecationError model.
@@ -93,7 +93,7 @@ class DeprecationError extends Model
     {
         parent::init();
 
-        if (isset($this->traces) && is_string($this->traces)) {
+        if (is_string($this->traces)) {
             $this->traces = Json::decode($this->traces);
         }
     }
@@ -130,7 +130,7 @@ class DeprecationError extends Model
         if ($this->template) {
             $file = $this->template;
 
-            if (strncmp($file, 'string:', 7) === 0) {
+            if (strpos($file, 'string:') === 0) {
                 $file = substr($file, 7);
                 $line = null;
             } else {

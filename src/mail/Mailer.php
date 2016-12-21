@@ -11,7 +11,6 @@ use Craft;
 use craft\elements\User;
 use craft\errors\SendEmailException;
 use craft\events\MailFailureEvent;
-use craft\mail\Message;
 use yii\base\InvalidConfigException;
 use yii\helpers\Markdown;
 
@@ -70,7 +69,7 @@ class Mailer extends \yii\swiftmailer\Mailer
      * @return Message The new email message
      * @throws InvalidConfigException if [[messageConfig]] or [[class]] is not configured to use [[Message]]
      */
-    public function composeFromKey($key, $variables = [])
+    public function composeFromKey($key, array $variables = [])
     {
         $message = $this->createMessage();
 
@@ -103,12 +102,10 @@ class Mailer extends \yii\swiftmailer\Mailer
             $view = Craft::$app->getView();
             $oldTemplateMode = $view->getTemplateMode();
 
-            if (Craft::$app->getEdition() >= Craft::Client) {
-                // Is there a custom HTML template set?
-                if ($this->template !== null) {
-                    $view->setTemplateMode($view::TEMPLATE_MODE_SITE);
-                    $parentTemplate = $this->template;
-                }
+            // Is there a custom HTML template set?
+            if (Craft::$app->getEdition() >= Craft::Client && $this->template !== null) {
+                $view->setTemplateMode($view::TEMPLATE_MODE_SITE);
+                $parentTemplate = $this->template;
             }
 
             if (empty($parentTemplate)) {
@@ -136,9 +133,11 @@ class Mailer extends \yii\swiftmailer\Mailer
             $message->setHtmlBody(Craft::$app->getView()->renderString($htmlBodyTemplate, $variables));
 
             // Don't let Twig use the HTML escaping strategy on the plain text portion body of the email.
-            Craft::$app->getView()->getTwig()->getExtension('escaper')->setDefaultStrategy(false);
+            /** @var \Twig_Extension_Escaper $ext */
+            $ext = Craft::$app->getView()->getTwig()->getExtension('escaper');
+            $ext->setDefaultStrategy(false);
             $message->setTextBody(Craft::$app->getView()->renderString($textBodyTemplate, $variables));
-            Craft::$app->getView()->getTwig()->getExtension('escaper')->setDefaultStrategy('html');
+            $ext->setDefaultStrategy('html');
 
             Craft::$app->language = $language;
 

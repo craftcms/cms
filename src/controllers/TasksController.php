@@ -12,6 +12,8 @@ use craft\helpers\Json;
 use craft\web\Controller;
 use yii\web\Response;
 
+/** @noinspection ClassOverridesFieldOfSuperClassInspection */
+
 /**
  * The TasksController class is a controller that handles various task related operations such as running, checking task
  * status, re-running and deleting tasks.

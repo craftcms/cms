@@ -53,14 +53,10 @@ class CategoryQuery extends ElementQuery
      */
     public function __set($name, $value)
     {
-        switch ($name) {
-            case 'group': {
-                $this->group($value);
-                break;
-            }
-            default: {
-                parent::__set($name, $value);
-            }
+        if ($name === 'group') {
+            $this->group($value);
+        } else {
+            parent::__set($name, $value);
         }
     }
 
@@ -69,7 +65,7 @@ class CategoryQuery extends ElementQuery
      *
      * @param boolean $value The property value (defaults to true)
      *
-     * @return $this self reference
+     * @return static self reference
      */
     public function editable($value = true)
     {
@@ -83,7 +79,7 @@ class CategoryQuery extends ElementQuery
      *
      * @param string|string[]|CategoryGroup $value The property value
      *
-     * @return $this self reference
+     * @return static self reference
      */
     public function group($value)
     {
@@ -107,7 +103,7 @@ class CategoryQuery extends ElementQuery
      *
      * @param integer|integer[] $value The property value
      *
-     * @return $this self reference
+     * @return static self reference
      */
     public function groupId($value)
     {

@@ -10,12 +10,10 @@ namespace craft\et;
 use Craft;
 use craft\enums\LicenseKeyStatus;
 use craft\errors\EtException;
-use craft\helpers\ArrayHelper;
 use craft\helpers\DateTimeHelper;
 use craft\helpers\FileHelper;
 use craft\models\Et as EtModel;
 use craft\services\Config;
-use GuzzleHttp\Client;
 use GuzzleHttp\Exception\RequestException;
 use PDO;
 use yii\base\Exception;
@@ -122,26 +120,6 @@ class EtTransport
     }
 
     /**
-     * Whether or not to follow redirects on the request.  Defaults to true.
-     *
-     * @param $allowRedirects
-     *
-     * @return void
-     */
-    public function setAllowRedirects($allowRedirects)
-    {
-        $this->_allowRedirects = $allowRedirects;
-    }
-
-    /**
-     * @return boolean
-     */
-    public function getAllowRedirects()
-    {
-        return $this->_allowRedirects;
-    }
-
-    /**
      * @return EtModel
      */
     public function getModel()
@@ -191,14 +169,7 @@ class EtTransport
 
             if (!Craft::$app->getCache()->get('etConnectFailure')) {
                 try {
-                    $client = new Client([
-                        'headers' => [
-                            'User-Agent' => $this->_userAgent.' '.\GuzzleHttp\default_user_agent()
-                        ],
-                        'timeout' => $this->getTimeout(),
-                        'connect_timeout' => $this->getConnectTimeout(),
-                        'allow_redirects' => $this->getAllowRedirects(),
-                    ]);
+                    $client = Craft::createGuzzleClient(['timeout' => 120, 'connect_timeout' => 120]);
 
                     // Potentially long-running request, so close session to prevent session blocking on subsequent requests.
                     Craft::$app->getSession()->close();
@@ -227,7 +198,7 @@ class EtTransport
                         ])
                     ]);
 
-                    if ($response->getStatusCode() == 200) {
+                    if ($response->getStatusCode() === 200) {
                         // Clear the connection failure cached item if it exists.
                         if ($cacheService->get('etConnectFailure')) {
                             $cacheService->delete('etConnectFailure');
@@ -246,7 +217,7 @@ class EtTransport
                             $cacheService->set('licensedEdition', $etModel->licensedEdition);
                             $cacheService->set('editionTestableDomain@'.Craft::$app->getRequest()->getHostName(), $etModel->editionTestableDomain ? 1 : 0);
 
-                            if ($etModel->licenseKeyStatus == LicenseKeyStatus::Mismatched) {
+                            if ($etModel->licenseKeyStatus === LicenseKeyStatus::Mismatched) {
                                 $cacheService->set('licensedDomain', $etModel->licensedDomain);
                             }
 
@@ -357,7 +328,7 @@ class EtTransport
         }
 
         // Format the license key into lines of 50 chars
-        preg_match_all("/.{50}/", $key, $matches);
+        preg_match_all('/.{50}/', $key, $matches);
         $formattedKey = '';
         foreach ($matches[0] as $segment) {
             $formattedKey .= $segment.PHP_EOL;

@@ -51,7 +51,7 @@ class Images extends Component
      *
      * @var string
      */
-    private $_imagickVersion = null;
+    private $_imagickVersion;
 
     // Public Methods
     // =========================================================================
@@ -64,11 +64,11 @@ class Images extends Component
     public function init()
     {
         if (strtolower(Craft::$app->getConfig()->get('imageDriver')) == 'gd') {
-            $this->_driver = static::DRIVER_GD;
-        } else if ($this->getIsImagickAtLeast(static::MINIMUM_IMAGICK_VERSION)) {
-            $this->_driver = static::DRIVER_IMAGICK;
+            $this->_driver = self::DRIVER_GD;
+        } else if ($this->getIsImagickAtLeast(self::MINIMUM_IMAGICK_VERSION)) {
+            $this->_driver = self::DRIVER_IMAGICK;
         } else {
-            $this->_driver = static::DRIVER_GD;
+            $this->_driver = self::DRIVER_GD;
         }
 
         parent::init();
@@ -81,7 +81,7 @@ class Images extends Component
      */
     public function getIsGd()
     {
-        return $this->_driver == static::DRIVER_GD;
+        return $this->_driver == self::DRIVER_GD;
     }
 
 
@@ -92,7 +92,7 @@ class Images extends Component
      */
     public function getIsImagick()
     {
-        return $this->_driver == static::DRIVER_IMAGICK;
+        return $this->_driver == self::DRIVER_IMAGICK;
     }
 
     /**
@@ -108,12 +108,12 @@ class Images extends Component
             return false;
         }
 
-        if (is_null($this->_imagickVersion)) {
+        if ($this->_imagickVersion === null) {
             // Taken from Imagick\Imagine() constructor.
             // Imagick::getVersion() is static only since Imagick PECL extension 3.2.0b1, so instantiate it.
             $imagick = new \Imagick();
             /** @noinspection PhpStaticAsDynamicMethodCallInspection */
-            $v = $imagick->getVersion();
+            $v = $imagick::getVersion();
             /** @noinspection PhpUnusedLocalVariableInspection */
             list($version, $year, $month, $day, $q, $website) = sscanf($v['versionString'], 'ImageMagick %s %04d-%02d-%02d %s %s');
 

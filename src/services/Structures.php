@@ -327,18 +327,20 @@ class Structures extends Component
      */
     private function _doIt($structureId, ElementInterface $element, StructureElement $targetElementRecord, $action, $mode)
     {
+        $elementRecord = null;
+
         /** @var Element $element */
         // Figure out what we're doing
         if ($mode != 'insert') {
             // See if there's an existing structure element record
             $elementRecord = $this->_getElementRecord($structureId, $element);
 
-            if ($elementRecord) {
+            if ($elementRecord !== null) {
                 $mode = 'update';
             }
         }
 
-        if (empty($elementRecord)) {
+        if ($elementRecord === null) {
             $elementRecord = new StructureElement();
             $elementRecord->structureId = $structureId;
             $elementRecord->elementId = $element->id;

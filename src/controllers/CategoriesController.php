@@ -361,7 +361,7 @@ class CategoriesController extends Controller
             // Should we show the Share button too?
             if ($category->id) {
                 // If the category is enabled, use its main URL as its share URL.
-                if ($category->getStatus() == Element::STATUS_ENABLED) {
+                if ($category->getStatus() === Element::STATUS_ENABLED) {
                     $variables['shareUrl'] = $category->getUrl();
                 } else {
                     $variables['shareUrl'] = Url::getActionUrl('categories/share-category',
@@ -383,7 +383,7 @@ class CategoriesController extends Controller
 
         if (Craft::$app->getIsMultiSite() && Craft::$app->getSites()->currentSite->id != $site->id) {
             $variables['continueEditingUrl'] .= '/'.$site->handle;
-        };
+        }
 
         // Render the template!
         Craft::$app->getView()->registerCssResource('css/category.css');
@@ -609,7 +609,7 @@ class CategoriesController extends Controller
         if (empty($variables['site'])) {
             $variables['site'] = Craft::$app->getSites()->currentSite;
 
-            if (!in_array($variables['site']->id, $variables['siteIds'])) {
+            if (!in_array($variables['site']->id, $variables['siteIds'], false)) {
                 $variables['site'] = Craft::$app->getSites()->getSiteById($variables['siteIds'][0]);
             }
 
@@ -618,7 +618,7 @@ class CategoriesController extends Controller
             // Make sure they were requesting a valid site
             /** @var Site $site */
             $site = $variables['site'];
-            if (!in_array($site->id, $variables['siteIds'])) {
+            if (!in_array($site->id, $variables['siteIds'], false)) {
                 throw new ForbiddenHttpException('User not permitted to edit content in this site');
             }
         }
@@ -663,7 +663,7 @@ class CategoriesController extends Controller
             $variables['tabs'][] = [
                 'label' => Craft::t('site', $tab->name),
                 'url' => '#tab'.($index + 1),
-                'class' => ($hasErrors ? 'error' : null)
+                'class' => $hasErrors ? 'error' : null
             ];
         }
     }

@@ -35,47 +35,6 @@ class Field extends ActiveRecord
     // =========================================================================
 
     /**
-     * @var array Reserved field handles
-     *
-     * Some of these are element type-specific, but necessary to prevent 'order' criteria param conflicts
-     */
-    protected $reservedHandleWords = [
-        'archived',
-        'attributeLabel',
-        'children',
-        'contentTable',
-        'dateCreated',
-        'dateUpdated',
-        'enabled',
-        'id',
-        'level',
-        'lft',
-        'link',
-        'enabledForSite',
-        'name', // global set-specific
-        'next',
-        'next',
-        'owner',
-        'parents',
-        'postDate', // entry-specific
-        'prev',
-        'ref',
-        'rgt',
-        'root',
-        'searchScore',
-        'siblings',
-        'site',
-        'slug',
-        'sortOrder',
-        'status',
-        'title',
-        'uid',
-        'uri',
-        'url',
-        'username', // user-specific
-    ];
-
-    /**
      * @var
      */
     private $_oldHandle;

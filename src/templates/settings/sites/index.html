@@ -53,7 +53,7 @@
 {% endblock %}
 
 
-{% registerjs %}
+{% js %}
 	new Craft.SiteAdminTable({
 		tableSelector: '#sites',
 		minItems: 1,
@@ -61,4 +61,4 @@
 		reorderAction: 'sites/reorder-sites',
 		deleteAction: 'sites/delete-site',
 	});
-{% endregisterjs %}
+{% endjs %}

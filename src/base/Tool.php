@@ -50,7 +50,7 @@ abstract class Tool extends Component implements ToolInterface
     /**
      * @inheritdoc
      */
-    public function performAction($params = [])
+    public function performAction(array $params)
     {
         return ['complete' => true];
     }

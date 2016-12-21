@@ -10,12 +10,12 @@ namespace craft\fields;
 use Craft;
 use craft\base\Field;
 use craft\base\PreviewableFieldInterface;
-use craft\dates\DateTime;
 use craft\elements\db\ElementQuery;
 use craft\elements\db\ElementQueryInterface;
 use craft\helpers\DateTimeHelper;
 use craft\helpers\Db;
 use craft\i18n\Locale;
+use DateTime;
 use yii\db\Schema;
 
 /**
@@ -131,7 +131,7 @@ class Date extends Field implements PreviewableFieldInterface
     public function getSettingsHtml()
     {
         // If they are both selected or nothing is selected, the select showBoth.
-        if (($this->showDate && $this->showTime)) {
+        if ($this->showDate && $this->showTime) {
             $dateTimeValue = 'showBoth';
         } else if ($this->showDate) {
             $dateTimeValue = 'showDate';

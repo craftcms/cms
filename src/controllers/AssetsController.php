@@ -26,6 +26,8 @@ use yii\base\ErrorException;
 use yii\web\BadRequestHttpException;
 use yii\web\Response;
 
+/** @noinspection ClassOverridesFieldOfSuperClassInspection */
+
 /**
  * The AssetsController class is a controller that handles various actions related to asset tasks, such as uploading
  * files and creating/deleting/renaming files and folders.
@@ -57,8 +59,6 @@ class AssetsController extends Controller
      */
     public function actionSaveAsset()
     {
-        $this->requireAcceptsJson();
-
         $uploadedFile = UploadedFile::getInstanceByName('assets-upload');
         $request = Craft::$app->getRequest();
         $assetId = $request->getBodyParam('assetId');
@@ -76,7 +76,7 @@ class AssetsController extends Controller
             if ($resolveConflict) {
                 // When resolving a conflict, $assetId is the id of the file that was created
                 // and is conflicting with an existing file.
-                if ($conflictResolution == 'replace') {
+                if ($conflictResolution === 'replace') {
                     $assetToReplaceWith = $assets->getAssetById($assetId);
                     $filename = Assets::prepareAssetName($request->getRequiredBodyParam('filename'));
 
@@ -90,8 +90,7 @@ class AssetsController extends Controller
                     }
 
                     // Check if the user has the permissions to delete files
-                    $this->_requirePermissionByAsset('deleteFilesAndFoldersInVolume',
-                        $assetToReplace);
+                    $this->_requirePermissionByAsset('deleteFilesAndFoldersInVolume', $assetToReplace);
 
                     if ($assetToReplace->volumeId != $assetToReplaceWith->volumeId) {
                         throw new BadRequestHttpException('Asset to be replaced does not live in the same volume as its replacement');
@@ -100,7 +99,7 @@ class AssetsController extends Controller
                     $assets->replaceAsset($assetToReplace,
                         $assetToReplaceWith);
                 } else {
-                    if ($conflictResolution == 'cancel') {
+                    if ($conflictResolution === 'cancel') {
                         $assetToDelete = $assets->getAssetById($assetId);
 
                         if ($assetToDelete) {
@@ -409,10 +408,10 @@ class AssetsController extends Controller
                         ->filename(Db::escapeParam($asset->filename))
                         ->one();
 
-                    if ($conflictResolution == 'replace') {
+                    if ($conflictResolution === 'replace') {
                         $assets->replaceAsset($conflictingAsset, $asset, true);
                     } else {
-                        if ($conflictResolution == 'keepBoth') {
+                        if ($conflictResolution === 'keepBoth') {
                             $newFilename = $assets->getNameReplacementInFolder($asset->filename, $folderId);
                             $assets->moveAsset($asset, $folderId, $newFilename);
                         }
@@ -501,7 +500,7 @@ class AssetsController extends Controller
                         ->folderId($allSourceFolderIds)
                         ->all();
                     $fileTransferList = Assets::fileTransferList($foundAssets,
-                        $folderIdChanges, $conflictResolution == 'merge');
+                        $folderIdChanges, $conflictResolution === 'merge');
                 }
             } else {
                 // Resolving a conflict
@@ -512,7 +511,7 @@ class AssetsController extends Controller
                 $targetTreeMap = [];
 
                 // When merging folders, make sure that we're not overwriting folders
-                if ($conflictResolution == 'merge') {
+                if ($conflictResolution === 'merge') {
                     $targetTree = $assets->getAllDescendantFolders($existingFolder);
                     $targetPrefixLength = strlen($destinationFolder->path);
                     $targetTreeMap = [];
@@ -523,7 +522,7 @@ class AssetsController extends Controller
                     }
                 } // When replacing, just nuke everything that's in our way
                 else {
-                    if ($conflictResolution == 'replace') {
+                    if ($conflictResolution === 'replace') {
                         $assets->deleteFoldersByIds($existingFolder->id);
                     }
                 }
@@ -539,7 +538,7 @@ class AssetsController extends Controller
                     ->folderId($allSourceFolderIds)
                     ->all();
                 $fileTransferList = Assets::fileTransferList($foundAssets,
-                    $folderIdChanges, $conflictResolution == 'merge');
+                    $folderIdChanges, $conflictResolution === 'merge');
             }
         } catch (AssetLogicException $exception) {
             return $this->asErrorJson($exception->getMessage());
@@ -761,7 +760,7 @@ class AssetsController extends Controller
             throw new BadRequestHttpException(Craft::t('app', 'The Asset you\'re trying to download does not exist.'));
         }
 
-        $this->_requirePermissionByAsset("viewAssetSource", $asset);
+        $this->_requirePermissionByAsset('viewAssetSource', $asset);
 
         // All systems go, engage hyperdrive! (so PHP doesn't interrupt our stream)
         Craft::$app->getConfig()->maxPowerCaptain();

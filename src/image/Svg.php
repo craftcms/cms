@@ -24,13 +24,13 @@ class Svg extends Image
     // Constants
     // =========================================================================
 
-    const SVG_WIDTH_RE = '/(<svg[^>]*\swidth=")([\d\.]+)([a-z]*)"/si';
-    const SVG_HEIGHT_RE = '/(<svg[^>]*\sheight=")([\d\.]+)([a-z]*)"/si';
-    const SVG_VIEWBOX_RE = '/(<svg[^>]*\sviewBox=")(\d+(?:,|\s)\d+(?:,|\s)(\d+)(?:,|\s)(\d+))"/si';
-    const SVG_ASPECT_RE = '/(<svg[^>]*\spreserveAspectRatio=")([a-z]+\s[a-z]+)"/si';
-    const SVG_TAG_RE = '/<svg/si';
-    const SVG_CLEANUP_WIDTH_RE = '/(<svg[^>]*\s)width="[\d\.]+%"/si';
-    const SVG_CLEANUP_HEIGHT_RE = '/(<svg[^>]*\s)height="[\d\.]+%"/si';
+    const SVG_WIDTH_RE = '/(<svg[^>]*\swidth=")([\d\.]+)([a-z]*)"/i';
+    const SVG_HEIGHT_RE = '/(<svg[^>]*\sheight=")([\d\.]+)([a-z]*)"/i';
+    const SVG_VIEWBOX_RE = '/(<svg[^>]*\sviewBox=")(\d+(?:,|\s)\d+(?:,|\s)(\d+)(?:,|\s)(\d+))"/i';
+    const SVG_ASPECT_RE = '/(<svg[^>]*\spreserveAspectRatio=")([a-z]+\s[a-z]+)"/i';
+    const SVG_TAG_RE = '/<svg/i';
+    const SVG_CLEANUP_WIDTH_RE = '/(<svg[^>]*\s)width="[\d\.]+%"/i';
+    const SVG_CLEANUP_HEIGHT_RE = '/(<svg[^>]*\s)height="[\d\.]+%"/i';
 
     // Properties
     // =========================================================================
@@ -74,7 +74,7 @@ class Svg extends Image
      */
     public function getExtension()
     {
-        return "svg";
+        return 'svg';
     }
 
     /**
@@ -92,8 +92,8 @@ class Svg extends Image
         $svg = file_get_contents($path);
 
         // If the size is defined by viewbox only, add in width and height attributes
-        if (!preg_match(static::SVG_WIDTH_RE, $svg) && preg_match(static::SVG_HEIGHT_RE, $svg)) {
-            $svg = preg_replace(static::SVG_TAG_RE,
+        if (!preg_match(self::SVG_WIDTH_RE, $svg) && preg_match(self::SVG_HEIGHT_RE, $svg)) {
+            $svg = preg_replace(self::SVG_TAG_RE,
                 "<svg width=\"{$width}px\" height=\"{$height}px\" ", $svg);
         }
 
@@ -114,7 +114,7 @@ class Svg extends Image
         $height = $y2 - $y1;
 
         // If the SVG had a viewbox, it might have been scaled already.
-        if (preg_match(static::SVG_VIEWBOX_RE, $this->_svgContent,
+        if (preg_match(self::SVG_VIEWBOX_RE, $this->_svgContent,
             $viewboxMatch)) {
             $viewBoxXFactor = $this->getWidth() / round($viewboxMatch[3]);
             $viewBoxYFactor = $this->getHeight() / round($viewboxMatch[4]);
@@ -126,19 +126,19 @@ class Svg extends Image
 
         $this->resize($width, $height);
 
-        $x1 = $x1 / $viewBoxXFactor;
-        $y1 = $y1 / $viewBoxYFactor;
-        $width = $width / $viewBoxXFactor;
-        $height = $height / $viewBoxYFactor;
+        $x1 /= $viewBoxXFactor;
+        $y1 /= $viewBoxYFactor;
+        $width /= $viewBoxXFactor;
+        $height /= $viewBoxYFactor;
 
         $value = "{$x1} {$y1} {$width} {$height}";
 
         // Add/modify the viewbox to crop the image.
-        if (preg_match(static::SVG_VIEWBOX_RE, $this->_svgContent)) {
-            $this->_svgContent = preg_replace(static::SVG_VIEWBOX_RE,
+        if (preg_match(self::SVG_VIEWBOX_RE, $this->_svgContent)) {
+            $this->_svgContent = preg_replace(self::SVG_VIEWBOX_RE,
                 "\${1}{$value}\"", $this->_svgContent);
         } else {
-            $this->_svgContent = preg_replace(static::SVG_TAG_RE,
+            $this->_svgContent = preg_replace(self::SVG_TAG_RE,
                 "<svg viewBox=\"{$value}\"", $this->_svgContent);
         }
 
@@ -174,24 +174,23 @@ class Svg extends Image
             $this->resize($targetWidth, $targetHeight);
 
             // Reverse the components
-            $cropPositions = join("-",
-                array_reverse(explode("-", $cropPositions)));
+            $cropPositions = implode('-', array_reverse(explode('-', $cropPositions)));
 
-            $value = "x".strtr($cropPositions, [
+            $value = 'x'.strtr($cropPositions, [
                     'left' => 'Min',
                     'center' => 'Mid',
                     'right' => 'Max',
                     'top' => 'Min',
                     'bottom' => 'Max',
                     '-' => 'Y'
-                ])." slice";
+                ]).' slice';
 
             // Add/modify aspect ratio information
-            if (preg_match(static::SVG_ASPECT_RE, $this->_svgContent)) {
-                $this->_svgContent = preg_replace(static::SVG_ASPECT_RE,
+            if (preg_match(self::SVG_ASPECT_RE, $this->_svgContent)) {
+                $this->_svgContent = preg_replace(self::SVG_ASPECT_RE,
                     "\${1}{$value}\"", $this->_svgContent);
             } else {
-                $this->_svgContent = preg_replace(static::SVG_TAG_RE,
+                $this->_svgContent = preg_replace(self::SVG_TAG_RE,
                     "<svg preserveAspectRatio=\"{$value}\"",
                     $this->_svgContent);
             }
@@ -207,17 +206,17 @@ class Svg extends Image
     {
         $this->normalizeDimensions($targetWidth, $targetHeight);
 
-        if (preg_match(static::SVG_WIDTH_RE, $this->_svgContent) && preg_match(static::SVG_HEIGHT_RE, $this->_svgContent)
+        if (preg_match(self::SVG_WIDTH_RE, $this->_svgContent) && preg_match(self::SVG_HEIGHT_RE, $this->_svgContent)
         ) {
-            $this->_svgContent = preg_replace(static::SVG_WIDTH_RE, "\${1}{$targetWidth}px\"", $this->_svgContent);
-            $this->_svgContent = preg_replace(static::SVG_HEIGHT_RE, "\${1}{$targetHeight}px\"", $this->_svgContent);
+            $this->_svgContent = preg_replace(self::SVG_WIDTH_RE, "\${1}{$targetWidth}px\"", $this->_svgContent);
+            $this->_svgContent = preg_replace(self::SVG_HEIGHT_RE, "\${1}{$targetHeight}px\"", $this->_svgContent);
         } else {
             // In case the root element has dimension attributes set with percentage,
             // weed them out so we don't duplicate them.
-            $this->_svgContent = preg_replace(static::SVG_CLEANUP_WIDTH_RE, "\${1}", $this->_svgContent);
-            $this->_svgContent = preg_replace(static::SVG_CLEANUP_HEIGHT_RE, "\${1}", $this->_svgContent);
+            $this->_svgContent = preg_replace(self::SVG_CLEANUP_WIDTH_RE, "\${1}", $this->_svgContent);
+            $this->_svgContent = preg_replace(self::SVG_CLEANUP_HEIGHT_RE, "\${1}", $this->_svgContent);
 
-            $this->_svgContent = preg_replace(static::SVG_TAG_RE, "<svg width=\"{$targetWidth}px\" height=\"{$targetHeight}px\"", $this->_svgContent);
+            $this->_svgContent = preg_replace(self::SVG_TAG_RE, "<svg width=\"{$targetWidth}px\" height=\"{$targetHeight}px\"", $this->_svgContent);
         }
 
         $this->_width = $targetWidth;

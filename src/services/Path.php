@@ -67,7 +67,7 @@ class Path extends Component
      */
     public function getAppPath()
     {
-        if (isset($this->_appPath)) {
+        if ($this->_appPath !== null) {
             return $this->_appPath;
         }
 
@@ -77,9 +77,8 @@ class Path extends Component
         }
 
         $basePath = Craft::$app->getBasePath();
-        $this->_appPath = dirname(dirname(dirname($basePath)));
 
-        return $this->_appPath;
+        return $this->_appPath = dirname(dirname(dirname($basePath)));
     }
 
     /**
@@ -89,11 +88,11 @@ class Path extends Component
      */
     public function getConfigPath()
     {
-        if (!isset($this->_configPath)) {
-            $this->_configPath = FileHelper::normalizePath(Craft::getAlias('@config'));
+        if ($this->_configPath !== null) {
+            return $this->_configPath;
         }
 
-        return $this->_configPath;
+        return $this->_configPath = FileHelper::normalizePath(Craft::getAlias('@config'));
     }
 
     /**
@@ -103,11 +102,11 @@ class Path extends Component
      */
     public function getPluginsPath()
     {
-        if (!isset($this->_pluginsPath)) {
-            $this->_pluginsPath = FileHelper::normalizePath(Craft::getAlias('@plugins'));
+        if ($this->_pluginsPath !== null) {
+            return $this->_pluginsPath;
         }
 
-        return $this->_pluginsPath;
+        return $this->_pluginsPath = FileHelper::normalizePath(Craft::getAlias('@plugins'));
     }
 
     /**
@@ -117,11 +116,11 @@ class Path extends Component
      */
     public function getStoragePath()
     {
-        if (!isset($this->_storagePath)) {
-            $this->_storagePath = FileHelper::normalizePath(Craft::getAlias('@storage'));
+        if ($this->_storagePath !== null) {
+            return $this->_storagePath;
         }
 
-        return $this->_storagePath;
+        return $this->_storagePath = FileHelper::normalizePath(Craft::getAlias('@storage'));
     }
 
     /**
@@ -144,11 +143,11 @@ class Path extends Component
      */
     public function getVendorPath()
     {
-        if (!isset($this->_vendorPath)) {
-            $this->_vendorPath = FileHelper::normalizePath(Craft::getAlias('@vendor'));
+        if ($this->_vendorPath !== null) {
+            return $this->_vendorPath;
         }
 
-        return $this->_vendorPath;
+        return $this->_vendorPath = FileHelper::normalizePath(Craft::getAlias('@vendor'));
     }
 
     /**
@@ -353,11 +352,11 @@ class Path extends Component
      */
     public function getSiteTranslationsPath()
     {
-        if (!isset($this->_siteTranslationsPath)) {
-            $this->_siteTranslationsPath = Craft::getAlias('@translations');
+        if ($this->_siteTranslationsPath !== null) {
+            return $this->_siteTranslationsPath;
         }
 
-        return $this->_siteTranslationsPath;
+        return $this->_siteTranslationsPath = Craft::getAlias('@translations');
     }
 
     /**

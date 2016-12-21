@@ -99,7 +99,7 @@ class MigrateController extends BaseMigrateController
 
         // Validate $type
         if ($this->type) {
-            if (!in_array($this->type, [MigrationManager::TYPE_APP, MigrationManager::TYPE_PLUGIN, MigrationManager::TYPE_CONTENT])) {
+            if (!in_array($this->type, [MigrationManager::TYPE_APP, MigrationManager::TYPE_PLUGIN, MigrationManager::TYPE_CONTENT], true)) {
                 throw new Exception('Invalid migration type: '.$this->type);
             }
         } else {
@@ -113,7 +113,7 @@ class MigrateController extends BaseMigrateController
         switch ($this->type) {
             case MigrationManager::TYPE_CONTENT:
                 // Verify that a content migrations folder exists
-                if (Craft::getAlias("@contentMigrations") == false) {
+                if (Craft::getAlias('@contentMigrations') === false) {
                     throw new Exception('You must create a migrations/ folder within your craft/ folder before managing content migrations');
                 }
                 break;
@@ -142,7 +142,7 @@ class MigrateController extends BaseMigrateController
     public function actionCreate($name)
     {
         if (!preg_match('/^\w+$/', $name)) {
-            throw new Exception("The migration name should contain letters, digits and/or underscore characters only.");
+            throw new Exception('The migration name should contain letters, digits and/or underscore characters only.');
         }
 
         $name = 'm'.gmdate('ymd_His').'_'.$name;

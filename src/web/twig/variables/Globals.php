@@ -9,6 +9,7 @@ namespace craft\web\twig\variables;
 
 use Craft;
 use craft\elements\GlobalSet;
+use craft\helpers\ArrayHelper;
 use yii\base\Exception;
 
 /**
@@ -34,7 +35,9 @@ class Globals
     {
         Craft::$app->getDeprecator()->log('craft.globals.getAllSets()', 'craft.globals.getAllSets() has been deprecated. Use craft.app.globals.getAllSets() instead.');
 
-        return Craft::$app->getGlobals()->getAllSets($indexBy);
+        $globalSets = Craft::$app->getGlobals()->getAllSets();
+
+        return $indexBy ? ArrayHelper::index($globalSets, $indexBy) : $globalSets;
     }
 
     /**
@@ -48,7 +51,9 @@ class Globals
     {
         Craft::$app->getDeprecator()->log('craft.globals.getEditableSets()', 'craft.globals.getEditableSets() has been deprecated. Use craft.app.globals.getEditableSets() instead.');
 
-        return Craft::$app->getGlobals()->getEditableSets($indexBy);
+        $globalSets = Craft::$app->getGlobals()->getEditableSets();
+
+        return $indexBy ? ArrayHelper::index($globalSets, $indexBy) : $globalSets;
     }
 
     /**

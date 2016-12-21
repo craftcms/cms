@@ -6,6 +6,7 @@ use craft\helpers\MailerHelper;
 use craft\log\FileTarget;
 use craft\services\Config;
 use yii\base\InvalidConfigException;
+use yii\db\Exception as DbException;
 use yii\log\Logger;
 
 return [
@@ -25,7 +26,7 @@ return [
     'entries' => craft\services\Entries::class,
     'entryRevisions' => craft\services\EntryRevisions::class,
     'et' => craft\services\Et::class,
-    'feeds' => craft\services\Feeds::class,
+    'feeds' => craft\feeds\Feeds::class,
     'fields' => craft\services\Fields::class,
     'globals' => craft\services\Globals::class,
     'images' => craft\services\Images::class,
@@ -55,7 +56,7 @@ return [
         'class' => MigrationManager::class,
         'type' => MigrationManager::TYPE_CONTENT,
         'migrationNamespace' => 'craft\contentmigrations',
-        'migrationPath' => "@contentMigrations",
+        'migrationPath' => '@contentMigrations',
     ],
     'migrator' => [
         'class' => MigrationManager::class,
@@ -187,13 +188,13 @@ return [
         if (!in_array($driver, [
             Connection::DRIVER_MYSQL,
             Connection::DRIVER_PGSQL
-        ])
+        ], true)
         ) {
-            throw new Exception('Unsupported connection type: '.$driver);
+            throw new DbException('Unsupported connection type: '.$driver);
         }
 
         if ($dsn === '') {
-            if ($driver == Connection::DRIVER_MYSQL && !empty($unixSocket)) {
+            if ($driver === Connection::DRIVER_MYSQL && !empty($unixSocket)) {
                 $dsn = $driver.':unix_socket='.strtolower($unixSocket).';dbname='.$database.';';
             } else {
                 $server = $configService->get('server', Config::CATEGORY_DB);

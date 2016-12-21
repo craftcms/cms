@@ -79,7 +79,7 @@ abstract class Controller extends \yii\web\Controller
      * @return string The rendering result
      * @throws InvalidParamException if the view file does not exist.
      */
-    public function renderTemplate($template, $variables = [])
+    public function renderTemplate($template, array $variables = [])
     {
         // Set the MIME type for the request based on the matched template's file extension (unless the
         // Content-Type header was already set, perhaps by the template via the {% header %} tag)
@@ -198,7 +198,7 @@ abstract class Controller extends \yii\web\Controller
     public function requireAcceptsJson()
     {
         if (!Craft::$app->getRequest()->getAcceptsJson()) {
-            //throw new BadRequestHttpException('Request must accept JSON in response');
+            throw new BadRequestHttpException('Request must accept JSON in response');
         }
     }
 
@@ -244,6 +244,7 @@ abstract class Controller extends \yii\web\Controller
         return $this->redirect($url);
     }
 
+    /** @noinspection ArrayTypeOfParameterByDefaultValueInspection */
     /**
      * Sets the response format of the given data as JSON.
      *
@@ -260,6 +261,7 @@ abstract class Controller extends \yii\web\Controller
         return $response;
     }
 
+    /** @noinspection ArrayTypeOfParameterByDefaultValueInspection */
     /**
      * Sets the response format of the given data as JSONP.
      *
@@ -276,6 +278,7 @@ abstract class Controller extends \yii\web\Controller
         return $response;
     }
 
+    /** @noinspection ArrayTypeOfParameterByDefaultValueInspection */
     /**
      * Sets the response format of the given data as RAW.
      *
@@ -292,6 +295,7 @@ abstract class Controller extends \yii\web\Controller
         return $response;
     }
 
+    /** @noinspection ArrayTypeOfParameterByDefaultValueInspection */
     /**
      * Sets the response format of the given data as XML.
      *

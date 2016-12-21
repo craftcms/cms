@@ -12,6 +12,7 @@ namespace craft\fields;
 use Craft;
 use craft\base\Element;
 use craft\base\ElementInterface;
+use craft\base\Volume;
 use craft\elements\Asset;
 use craft\elements\db\AssetQuery;
 use craft\elements\db\ElementQuery;
@@ -133,19 +134,20 @@ class Assets extends BaseRelationField
         /** @var Asset $class */
         $class = static::elementType();
 
-        foreach ($class::sources('settings') as $key => $source) {
-            if (!isset($source['heading'])) {
+        foreach ($class::sources('settings') as $key => $volume) {
+            if (!isset($volume['heading'])) {
                 $folderOptions[] = [
-                    'label' => $source['label'],
+                    'label' => $volume['label'],
                     'value' => $key
                 ];
             }
         }
 
-        foreach (Craft::$app->getVolumes()->getAllVolumes() as $source) {
+        foreach (Craft::$app->getVolumes()->getAllVolumes() as $volume) {
+            /** @var Volume $volume */
             $sourceOptions[] = [
-                'label' => $source->name,
-                'value' => $source->id
+                'label' => $volume->name,
+                'value' => $volume->id
             ];
         }
 
@@ -156,7 +158,7 @@ class Assets extends BaseRelationField
         }
 
         $namespace = Craft::$app->getView()->getNamespace();
-        $isMatrix = (strncmp($namespace, 'types[Matrix][blockTypes][', 26) === 0);
+        $isMatrix = (strpos($namespace, 'types[Matrix][blockTypes][') === 0);
 
         return Craft::$app->getView()->renderTemplate('_components/fieldtypes/Assets/settings',
             [
@@ -222,13 +224,13 @@ class Assets extends BaseRelationField
         $value = $element->getFieldValue($this->handle);
 
         // Check if this field restricts files and if files are passed at all.
-        if (isset($this->restrictFiles) && !empty($this->restrictFiles) && !empty($this->allowedKinds) && is_array($value) && !empty($value)) {
-            $allowedExtensions = $this->_getAllowedExtensions($this->allowedKinds);
+        if ($this->restrictFiles && $this->allowedKinds && is_array($value) && !empty($value)) {
+            $allowedExtensions = $this->_getAllowedExtensions();
 
             foreach ($value as $assetId) {
                 $file = Craft::$app->getAssets()->getAssetById($assetId);
 
-                if ($file && !in_array(mb_strtolower(pathinfo($file->filename, PATHINFO_EXTENSION)), $allowedExtensions)) {
+                if ($file && !in_array(mb_strtolower(pathinfo($file->filename, PATHINFO_EXTENSION)), $allowedExtensions, true)) {
                     $element->addError($this->handle, Craft::t('app', '"{filename}" is not allowed in this field.', ['filename' => $file->filename]));
                 }
             }
@@ -355,8 +357,8 @@ class Assets extends BaseRelationField
             }
         }
 
-        if (isset($this->restrictFiles) && !empty($this->restrictFiles) && !empty($this->allowedKinds)) {
-            $allowedExtensions = $this->_getAllowedExtensions($this->allowedKinds);
+        if ($this->restrictFiles && $this->allowedKinds) {
+            $allowedExtensions = $this->_getAllowedExtensions();
         } else {
             $allowedExtensions = false;
         }
@@ -365,7 +367,7 @@ class Assets extends BaseRelationField
             foreach ($incomingFiles as $file) {
                 $extension = StringHelper::toLowerCase(pathinfo($file['filename'], PATHINFO_EXTENSION));
 
-                if (!in_array($extension, $allowedExtensions)) {
+                if (!in_array($extension, $allowedExtensions, true)) {
                     $this->_failedFiles[] = $file['filename'];
                 }
             }
@@ -518,7 +520,7 @@ class Assets extends BaseRelationField
         // If it's a list of source IDs, we need to convert them to their folder counterparts
         if (is_array($this->sources)) {
             foreach ($this->sources as $source) {
-                if (strncmp($source, 'folder:', 7) === 0) {
+                if (strpos($source, 'folder:') === 0) {
                     $sources[] = $source;
                 }
             }
@@ -536,13 +538,9 @@ class Assets extends BaseRelationField
      */
     protected function getInputSelectionCriteria()
     {
-        $allowedKinds = [];
-
-        if (isset($this->restrictFiles) && !empty($this->restrictFiles) && !empty($this->allowedKinds)) {
-            $allowedKinds = $this->allowedKinds;
-        }
-
-        return ['kind' => $allowedKinds];
+        return [
+            'kind' => ($this->restrictFiles && $this->allowedKinds) ? $this->allowedKinds : [],
+        ];
     }
 
     // Private Methods
@@ -574,7 +572,7 @@ class Assets extends BaseRelationField
         }
 
 
-        if (strlen($subpath) === 0) {
+        if ($subpath === '') {
             // Get the root folder in the source
             $folder = $rootFolder;
         } else {
@@ -587,7 +585,7 @@ class Assets extends BaseRelationField
 
             // Did any of the tokens return null?
             if (
-                strlen($renderedSubpath) === 0 ||
+                $renderedSubpath === '' ||
                 trim($renderedSubpath, '/') != $renderedSubpath ||
                 strpos($renderedSubpath, '//') !== false
             ) {
@@ -601,6 +599,7 @@ class Assets extends BaseRelationField
                     'asciiOnly' => Craft::$app->getConfig()->get('convertFilenamesToAscii')
                 ]);
             }
+            unset($segment);
             $subpath = implode('/', $segments);
 
             $folder = Craft::$app->getAssets()->findFolder([
@@ -667,22 +666,21 @@ class Assets extends BaseRelationField
     /**
      * Get a list of allowed extensions for a list of file kinds.
      *
-     * @param array $allowedKinds
-     *
      * @return array
      */
-    private function _getAllowedExtensions($allowedKinds)
+    private function _getAllowedExtensions()
     {
-        if (!is_array($allowedKinds)) {
+        if (!is_array($this->allowedKinds)) {
             return [];
         }
 
         $extensions = [];
         $allKinds = AssetsHelper::getFileKinds();
 
-        foreach ($allowedKinds as $allowedKind) {
-            $extensions = array_merge($extensions,
-                $allKinds[$allowedKind]['extensions']);
+        foreach ($this->allowedKinds as $allowedKind) {
+            foreach ($allKinds[$allowedKind]['extensions'] as $ext) {
+                $extensions[] = $ext;
+            }
         }
 
         return $extensions;

@@ -8,6 +8,7 @@
 namespace craft\services;
 
 use Craft;
+use craft\base\Element;
 use craft\db\Query;
 use craft\errors\DbConnectException;
 use craft\errors\SiteNotFoundException;
@@ -133,7 +134,7 @@ class Sites extends Component
 
         // Set $this->currentSite to an actual Site model if it's not already
         if (!($this->currentSite instanceof Site)) {
-            if (isset($this->currentSite)) {
+            if ($this->currentSite !== null) {
                 if (is_numeric($this->currentSite)) {
                     $site = $this->getSiteById($this->currentSite);
                 } else {
@@ -203,7 +204,7 @@ class Sites extends Component
     {
         $this->_loadAllSites();
 
-        if (!isset($this->_primarySite)) {
+        if ($this->_primarySite === null) {
             throw new SiteNotFoundException('No sites exist');
         }
 
@@ -217,13 +218,15 @@ class Sites extends Component
      */
     public function getEditableSiteIds()
     {
-        if (!isset($this->_editableSiteIds)) {
-            $this->_editableSiteIds = [];
+        if ($this->_editableSiteIds !== null) {
+            return $this->_editableSiteIds;
+        }
 
-            foreach ($this->getAllSiteIds() as $siteId) {
-                if (Craft::$app->getUser()->checkPermission('editSite:'.$siteId)) {
-                    $this->_editableSiteIds[] = $siteId;
-                }
+        $this->_editableSiteIds = [];
+
+        foreach ($this->getAllSiteIds() as $siteId) {
+            if (Craft::$app->getUser()->checkPermission('editSite:'.$siteId)) {
+                $this->_editableSiteIds[] = $siteId;
             }
         }
 
@@ -233,50 +236,28 @@ class Sites extends Component
     /**
      * Returns all sites.
      *
-     * @param string|null $indexBy
-     *
      * @return Site[] All the sites
      */
-    public function getAllSites($indexBy = null)
+    public function getAllSites()
     {
         $this->_loadAllSites();
 
-        if ($indexBy == 'id') {
-            $sites = $this->_sitesById;
-        } else if ($indexBy == 'handle') {
-            $sites = $this->_sitesByHandle;
-        } else if (!$indexBy) {
-            $sites = array_values($this->_sitesById);
-        } else {
-            $sites = [];
-
-            foreach ($this->_sitesById as $site) {
-                $sites[$site->$indexBy] = $site;
-            }
-        }
-
-        return $sites;
+        return array_values($this->_sitesById);
     }
 
     /**
      * Returns all editable sites.
      *
-     * @param string|null $indexBy
-     *
      * @return Site[] All the editable sites
      */
-    public function getEditableSites($indexBy = null)
+    public function getEditableSites()
     {
         $editableSiteIds = $this->getEditableSiteIds();
         $editableSites = [];
 
         foreach ($this->getAllSites() as $site) {
-            if (in_array($site->id, $editableSiteIds)) {
-                if ($indexBy) {
-                    $editableSites[$site->$indexBy] = $site;
-                } else {
-                    $editableSites[] = $site;
-                }
+            if (in_array($site->id, $editableSiteIds, false)) {
+                $editableSites[] = $site;
             }
         }
 
@@ -708,11 +689,10 @@ class Sites extends Component
                             ->execute();
 
                         $matrixTablePrefix = Craft::$app->getDb()->getSchema()->getRawTableName('{{%matrixcontent_}}');
-                        $matrixTablePrefixLength = strlen($matrixTablePrefix);
                         $tablePrefixLength = strlen(Craft::$app->getDb()->tablePrefix);
 
                         foreach (Craft::$app->getDb()->getSchema()->getTableNames() as $tableName) {
-                            if (strncmp($tableName, $matrixTablePrefix, $matrixTablePrefixLength) === 0) {
+                            if (strpos($tableName, $matrixTablePrefix) === 0) {
                                 $tableName = substr($tableName, $tablePrefixLength);
 
                                 Craft::$app->getDb()->createCommand()
@@ -877,7 +857,7 @@ class Sites extends Component
         $nonLocalizedElementTypes = [];
 
         foreach (Craft::$app->getElements()->getAllElementTypes() as $elementType) {
-            /** Element $elementType */
+            /** @var Element|string $elementType */
             if (!$elementType::isLocalized()) {
                 $nonLocalizedElementTypes[] = $elementType;
             }

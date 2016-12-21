@@ -380,7 +380,7 @@ class StringHelper extends \yii\helpers\StringHelper
      */
     public static function isUUID($uuid)
     {
-        return !empty($uuid) && preg_match("/[A-Z0-9]{8}-[A-Z0-9]{4}-[A-Z0-9]{4}-[A-Z0-9]{4}-[A-Z0-9]{12}/uis", $uuid);
+        return !empty($uuid) && preg_match('/[A-Z0-9]{8}-[A-Z0-9]{4}-[A-Z0-9]{4}-[A-Z0-9]{4}-[A-Z0-9]{12}/ui', $uuid);
     }
 
     /**
@@ -456,9 +456,8 @@ class StringHelper extends \yii\helpers\StringHelper
     public static function toKebabCase($string, $glue = '-', $lower = true, $removePunctuation = true)
     {
         $words = self::_prepStringForCasing($string, $lower, $removePunctuation);
-        $string = implode($glue, $words);
 
-        return $string;
+        return implode($glue, $words);
     }
 
     /**
@@ -524,9 +523,8 @@ class StringHelper extends \yii\helpers\StringHelper
     public static function toSnakeCase($string)
     {
         $words = self::_prepStringForCasing($string);
-        $string = implode('_', $words);
 
-        return $string;
+        return implode('_', $words);
     }
 
     /**
@@ -928,16 +926,18 @@ class StringHelper extends \yii\helpers\StringHelper
      */
     public static function asciiCharMap()
     {
-        if (!isset(static::$_asciiCharMap)) {
-            // Get the map from Stringy.
-            static::$_asciiCharMap = (new \craft\helpers\Stringy(''))->getAsciiCharMap();
-
-            foreach (Craft::$app->getConfig()->get('customAsciiCharMappings') as $asciiChar => $values) {
-                static::$_asciiCharMap[$asciiChar] = $values;
-            }
+        if (self::$_asciiCharMap !== null) {
+            return self::$_asciiCharMap;
         }
 
-        return static::$_asciiCharMap;
+        // Get the map from Stringy.
+        self::$_asciiCharMap = (new \craft\helpers\Stringy(''))->getAsciiCharMap();
+
+        foreach (Craft::$app->getConfig()->get('customAsciiCharMappings') as $asciiChar => $values) {
+            self::$_asciiCharMap[$asciiChar] = $values;
+        }
+
+        return self::$_asciiCharMap;
     }
 
     /**
@@ -997,7 +997,7 @@ class StringHelper extends \yii\helpers\StringHelper
      */
     public static function isUtf8($string)
     {
-        return static::encoding($string) == 'utf-8' ? true : false;
+        return static::encoding($string) === 'utf-8';
     }
 
     /**

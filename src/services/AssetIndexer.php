@@ -2,8 +2,8 @@
 namespace craft\services;
 
 use Craft;
+use craft\base\LocalVolumeInterface;
 use craft\base\Volume;
-use craft\dates\DateTime;
 use craft\db\Query;
 use craft\elements\Asset;
 use craft\errors\VolumeObjectNotFoundException;
@@ -13,6 +13,7 @@ use craft\helpers\Image;
 use craft\helpers\StringHelper;
 use craft\models\AssetIndexData;
 use craft\records\AssetIndexData as AssetIndexDataRecord;
+use DateTime;
 use yii\base\Component;
 
 /**
@@ -52,9 +53,10 @@ class AssetIndexer extends Component
     public function prepareIndexList($sessionId, $volumeId, $directory = '')
     {
         try {
+            /** @var Volume $volume */
             $volume = Craft::$app->getVolumes()->getVolumeById($volumeId);
 
-            $fileList = $volume->getFileList($directory);
+            $fileList = $volume->getFileList($directory, true);
 
             $fileList = array_filter(
                 $fileList,
@@ -63,7 +65,7 @@ class AssetIndexer extends Component
                     $segments = explode('/', $path);
 
                     foreach ($segments as $segment) {
-                        if (isset($segment[0]) && $segment[0] == '_') {
+                        if (isset($segment[0]) && $segment[0] === '_') {
                             return false;
                         }
                     }
@@ -79,7 +81,11 @@ class AssetIndexer extends Component
                     $a = substr_count($a['path'], '/');
                     $b = substr_count($b['path'], '/');
 
-                    return ($a == $b ? 0 : ($a < $b ? -1 : 1));
+                    if ($a === $b) {
+                        return 0;
+                    }
+
+                    return $a < $b ? -1 : 1;
                 }
             );
 
@@ -168,9 +174,7 @@ class AssetIndexer extends Component
     {
         $volume = Craft::$app->getVolumes()->getVolumeById($volumeId);
 
-        $indexEntryModel = $this->getIndexEntry($volumeId, $sessionId, $offset);
-
-        if (empty($indexEntryModel)) {
+        if (($indexEntryModel = $this->getIndexEntry($volumeId, $sessionId, $offset)) === null) {
             return false;
         }
 
@@ -187,7 +191,7 @@ class AssetIndexer extends Component
                 $targetPath = $asset->getImageTransformSourcePath();
 
                 if ($asset->dateModified != $timeModified || !is_file($targetPath)) {
-                    if (!$volume::isLocal()) {
+                    if (!$volume instanceof LocalVolumeInterface) {
                         $volume->saveFileLocally($uriPath, $targetPath);
 
                         // Store the local source for now and set it up for deleting, if needed
@@ -238,7 +242,7 @@ class AssetIndexer extends Component
      * @param $sessionId
      * @param $offset
      *
-     * @return AssetIndexData|bool
+     * @return AssetIndexData|null
      */
     public function getIndexEntry($volumeId, $sessionId, $offset)
     {
@@ -250,20 +254,20 @@ class AssetIndexer extends Component
             ]
         );
 
-        if ($record) {
-            return new AssetIndexData($record->toArray([
-                'id',
-                'volumeId',
-                'sessionId',
-                'offset',
-                'uri',
-                'size',
-                'recordId',
-                'timestamp',
-            ]));
+        if (!$record) {
+            return null;
         }
 
-        return false;
+        return new AssetIndexData($record->toArray([
+            'id',
+            'volumeId',
+            'sessionId',
+            'offset',
+            'uri',
+            'size',
+            'recordId',
+            'timestamp',
+        ]));
     }
 
     /**
@@ -367,7 +371,7 @@ class AssetIndexer extends Component
             $parts = explode('/', $uriPath);
             $filename = array_pop($parts);
 
-            $searchFullPath = join('/', $parts).(empty($parts) ? '' : '/');
+            $searchFullPath = implode('/', $parts).(empty($parts) ? '' : '/');
 
             if (empty($searchFullPath)) {
                 $parentId = ':empty:';
@@ -394,7 +398,7 @@ class AssetIndexer extends Component
                 ->folderId($folderId)
                 ->one();
 
-            if (is_null($assetModel)) {
+            if ($assetModel === null) {
                 $assetModel = new Asset();
                 $assetModel->volumeId = $volume->id;
                 $assetModel->folderId = $folderId;

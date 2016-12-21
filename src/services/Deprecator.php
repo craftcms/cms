@@ -96,7 +96,7 @@ class Deprecator extends Component
             // Do we already have this one logged?
             $existingId = (new Query())
                 ->select(['id'])
-                ->from([static::$_tableName])
+                ->from([self::$_tableName])
                 ->where([
                     'key' => $log->key,
                     'fingerprint' => $log->fingerprint
@@ -106,17 +106,17 @@ class Deprecator extends Component
             if ($existingId === false) {
                 $db->createCommand()
                     ->insert(
-                        static::$_tableName,
+                        self::$_tableName,
                         array_merge($values, [
                             'key' => $log->key,
                             'fingerprint' => $log->fingerprint
                         ]))
                     ->execute();
-                $log->id = $db->getLastInsertID(static::$_tableName);
+                $log->id = $db->getLastInsertID(self::$_tableName);
             } else {
                 $db->createCommand()
                     ->update(
-                        static::$_tableName,
+                        self::$_tableName,
                         $values,
                         ['id' => $existingId])
                     ->execute();
@@ -147,7 +147,7 @@ class Deprecator extends Component
     public function getTotalLogs()
     {
         return (new Query())
-            ->from([static::$_tableName])
+            ->from([self::$_tableName])
             ->count('[[id]]');
     }
 
@@ -160,17 +160,19 @@ class Deprecator extends Component
      */
     public function getLogs($limit = 100)
     {
-        if (!isset($this->_allLogs)) {
-            $this->_allLogs = [];
+        if ($this->_allLogs !== null) {
+            return $this->_allLogs;
+        }
 
-            $results = $this->_createDeprecationErrorQuery()
-                ->limit($limit)
-                ->orderBy(['lastOccurrence' => SORT_DESC])
-                ->all();
+        $this->_allLogs = [];
 
-            foreach ($results as $result) {
-                $this->_allLogs[] = new DeprecationError($result);
-            }
+        $results = $this->_createDeprecationErrorQuery()
+            ->limit($limit)
+            ->orderBy(['lastOccurrence' => SORT_DESC])
+            ->all();
+
+        foreach ($results as $result) {
+            $this->_allLogs[] = new DeprecationError($result);
         }
 
         return $this->_allLogs;
@@ -206,7 +208,7 @@ class Deprecator extends Component
     public function deleteLogById($id)
     {
         $affectedRows = Craft::$app->getDb()->createCommand()
-            ->delete(static::$_tableName, ['id' => $id])
+            ->delete(self::$_tableName, ['id' => $id])
             ->execute();
 
         return (bool)$affectedRows;
@@ -220,7 +222,7 @@ class Deprecator extends Component
     public function deleteAllLogs()
     {
         $affectedRows = Craft::$app->getDb()->createCommand()
-            ->delete(static::$_tableName)
+            ->delete(self::$_tableName)
             ->execute();
 
         return (bool)$affectedRows;
@@ -251,7 +253,7 @@ class Deprecator extends Component
                 'message',
                 'traces',
             ])
-            ->from([static::$_tableName]);
+            ->from([self::$_tableName]);
     }
 
     /**
@@ -289,12 +291,12 @@ class Deprecator extends Component
 
         foreach ($traces as $trace) {
             $logTrace = [
-                'objectClass' => (!empty($trace['object']) ? get_class($trace['object']) : null),
-                'file' => (!empty($trace['file']) ? $trace['file'] : null),
-                'line' => (!empty($trace['line']) ? $trace['line'] : null),
-                'class' => (!empty($trace['class']) ? $trace['class'] : null),
-                'method' => (!empty($trace['function']) ? $trace['function'] : null),
-                'args' => (!empty($trace['args']) ? $this->_argsToString($trace['args']) : null),
+                'objectClass' => !empty($trace['object']) ? get_class($trace['object']) : null,
+                'file' => !empty($trace['file']) ? $trace['file'] : null,
+                'line' => !empty($trace['line']) ? $trace['line'] : null,
+                'class' => !empty($trace['class']) ? $trace['class'] : null,
+                'method' => !empty($trace['function']) ? $trace['function'] : null,
+                'args' => !empty($trace['args']) ? $this->_argsToString($trace['args']) : null,
             ];
 
             // Is this a template?

@@ -14,6 +14,7 @@ use craft\base\Field;
 use craft\base\Volume;
 use craft\events\RegisterRichTextLinkOptionsEvent;
 use craft\fields\data\RichTextData;
+use craft\helpers\ArrayHelper;
 use craft\helpers\Db;
 use craft\helpers\FileHelper;
 use craft\helpers\Html;
@@ -192,7 +193,7 @@ class RichText extends Field
             'transforms' => $this->_getTransforms(),
             'elementSiteId' => $site->id,
             'redactorConfig' => Json::decode($configJs),
-            'redactorLang' => static::$_redactorLang,
+            'redactorLang' => self::$_redactorLang,
         ];
 
         if ($this->translationMethod != self::TRANSLATION_METHOD_NONE) {
@@ -272,7 +273,7 @@ class RichText extends Field
     public function getStaticHtml($value, $element)
     {
         /** @var RichTextData|null $value */
-        return '<div class="text">'.($value ? $value : '&nbsp;').'</div>';
+        return '<div class="text">'.($value ?: '&nbsp;').'</div>';
     }
 
     /**
@@ -506,15 +507,13 @@ class RichText extends Field
      */
     private function _getTransforms()
     {
-        $transforms = Craft::$app->getAssetTransforms()->getAllTransforms('id');
-
-        $transformIds = array_flip(!empty($this->availableTransforms) && is_array($this->availableTransforms) ? $this->availableTransforms : []);
-        if (!empty($transformIds)) {
-            $transforms = array_intersect_key($transforms, $transformIds);
-        }
-
+        $allTransforms = Craft::$app->getAssetTransforms()->getAllTransforms();
         $transformList = [];
-        foreach ($transforms as $transform) {
+
+        foreach ($allTransforms as $transform) {
+            if ($this->availableTransforms && !in_array($transform->id, $this->availableTransforms, false)) {
+                continue;
+            }
             $transformList[] = (object)[
                 'handle' => Html::encode($transform->handle),
                 'name' => Html::encode($transform->name)
@@ -543,7 +542,7 @@ class RichText extends Field
             return '{}';
         }
 
-        return Json::removeComments(file_get_contents($configPath));
+        return file_get_contents($configPath);
     }
 
     /**
@@ -612,7 +611,7 @@ class RichText extends Field
         ];
 
         $view->registerJs(
-            '$.extend($.Redactor.opts.langs["'.static::$_redactorLang.'"], '.
+            '$.extend($.Redactor.opts.langs["'.self::$_redactorLang.'"], '.
             Json::encode($customTranslations).
             ');');
     }
@@ -659,7 +658,7 @@ class RichText extends Field
         }
 
         Craft::$app->getView()->registerJsResource($resourcePath);
-        static::$_redactorLang = $lang;
+        self::$_redactorLang = $lang;
 
         return true;
     }

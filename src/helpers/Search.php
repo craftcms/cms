@@ -46,7 +46,7 @@ class Search
      *
      * @return string The cleansed keywords.
      */
-    public static function normalizeKeywords($str, $ignore = [], $processCharMap = true)
+    public static function normalizeKeywords($str, array $ignore = [], $processCharMap = true)
     {
         // Flatten
         if (is_array($str)) {
@@ -60,7 +60,7 @@ class Search
         $str = str_replace(['&nbsp;', '&#160;', '&#xa0;'], ' ', $str);
 
         // Get rid of entities
-        $str = preg_replace("/&#?[a-z0-9]{2,8};/i", "", $str);
+        $str = preg_replace('/&#?[a-z0-9]{2,8};/i', '', $str);
 
         // Normalize to lowercase
         $str = StringHelper::toLowerCase($str);
@@ -96,11 +96,11 @@ class Search
      */
     public static function minWordLength()
     {
-        if (!isset(static::$_ftMinWordLength)) {
-            static::$_ftMinWordLength = 4;
+        if (self::$_ftMinWordLength !== null) {
+            return self::$_ftMinWordLength;
         }
 
-        return static::$_ftMinWordLength;
+        return self::$_ftMinWordLength = 4;
     }
 
     /**
@@ -111,17 +111,16 @@ class Search
      */
     public static function stopWords()
     {
-        if (!isset(static::$_ftStopWords)) {
-            $words = explode(' ', static::DEFAULT_STOP_WORDS);
-
-            foreach ($words as &$word) {
-                $word = static::normalizeKeywords($word);
-            }
-
-            static::$_ftStopWords = $words;
+        if (self::$_ftStopWords !== null) {
+            return self::$_ftStopWords;
         }
 
-        return static::$_ftStopWords;
+        $words = explode(' ', self::DEFAULT_STOP_WORDS);
+        foreach ($words as &$word) {
+            $word = self::normalizeKeywords($word);
+        }
+
+        return self::$_ftStopWords = $words;
     }
 
     // Private Methods

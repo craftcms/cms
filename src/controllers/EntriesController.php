@@ -8,7 +8,7 @@
 namespace craft\controllers;
 
 use Craft;
-use craft\dates\DateTime;
+use craft\base\Field;
 use craft\elements\Entry;
 use craft\elements\User;
 use craft\helpers\ArrayHelper;
@@ -19,10 +19,13 @@ use craft\models\EntryDraft;
 use craft\models\EntryVersion;
 use craft\models\Section;
 use craft\models\Site;
+use DateTime;
 use yii\web\ForbiddenHttpException;
 use yii\web\NotFoundHttpException;
 use yii\web\Response;
 use yii\web\ServerErrorHttpException;
+
+/** @noinspection ClassOverridesFieldOfSuperClassInspection */
 
 /**
  * The EntriesController class is a controller that handles various entry related tasks such as retrieving, saving,
@@ -94,7 +97,7 @@ class EntriesController extends BaseEntriesController
 
         $variables['permissionSuffix'] = ':'.$entry->sectionId;
 
-        if (Craft::$app->getEdition() == Craft::Pro && $section->type != Section::TYPE_SINGLE) {
+        if (Craft::$app->getEdition() === Craft::Pro && $section->type !== Section::TYPE_SINGLE) {
             // Author selector variables
             // ---------------------------------------------------------------------
 
@@ -118,7 +121,7 @@ class EntriesController extends BaseEntriesController
         // ---------------------------------------------------------------------
 
         if (
-            $section->type == Section::TYPE_STRUCTURE &&
+            $section->type === Section::TYPE_STRUCTURE &&
             $section->maxLevels != 1
         ) {
             $variables['elementType'] = Entry::class;
@@ -216,7 +219,7 @@ class EntriesController extends BaseEntriesController
         } else {
             $variables['docTitle'] = $variables['title'] = $entry->title;
 
-            if (get_class($entry) != Entry::class) {
+            if (get_class($entry) !== Entry::class) {
                 $variables['docTitle'] .= ' ('.$variables['revisionLabel'].')';
             }
         }
@@ -229,7 +232,7 @@ class EntriesController extends BaseEntriesController
             ]
         ];
 
-        if ($section->type == Section::TYPE_SINGLE) {
+        if ($section->type === Section::TYPE_SINGLE) {
             $variables['crumbs'][] = [
                 'label' => Craft::t('app', 'Singles'),
                 'url' => Url::url('entries/singles')
@@ -240,7 +243,7 @@ class EntriesController extends BaseEntriesController
                 'url' => Url::url('entries/'.$section->handle)
             ];
 
-            if ($section->type == Section::TYPE_STRUCTURE) {
+            if ($section->type === Section::TYPE_STRUCTURE) {
                 /** @var Entry $ancestor */
                 foreach ($entry->getAncestors() as $ancestor) {
                     $variables['crumbs'][] = [
@@ -281,7 +284,7 @@ class EntriesController extends BaseEntriesController
                         'sectionId' => $section->id,
                         'entryId' => $entry->id,
                         'siteId' => $entry->siteId,
-                        'versionId' => ($entry instanceof EntryVersion ? $entry->versionId : null),
+                        'versionId' => $entry instanceof EntryVersion ? $entry->versionId : null,
                     ]
                 ]).');');
 
@@ -293,7 +296,7 @@ class EntriesController extends BaseEntriesController
 
                 // If we're looking at the live version of an entry, just use
                 // the entry's main URL as its share URL
-                if ($className == Entry::class && $entry->getStatus() == Entry::STATUS_LIVE) {
+                if ($className === Entry::class && $entry->getStatus() === Entry::STATUS_LIVE) {
                     $variables['shareUrl'] = $entry->getUrl();
                 } else {
                     switch ($className) {
@@ -436,17 +439,15 @@ class EntriesController extends BaseEntriesController
         $this->enforceEditEntryPermissions($entry);
         $currentUser = Craft::$app->getUser()->getIdentity();
 
-        if ($entry->id) {
-            // Is this another user's entry (and it's not a Single)?
-            if (
-                $entry->authorId != $currentUser->id &&
-                $entry->getSection()->type != Section::TYPE_SINGLE
-            ) {
-                if ($entry->enabled) {
-                    // Make sure they have permission to make live changes to those
-                    $this->requirePermission('publishPeerEntries:'.$entry->sectionId);
-                }
-            }
+        // Is this another user's entry (and it's not a Single)?
+        if (
+            $entry->id &&
+            $entry->authorId != $currentUser->id &&
+            $entry->getSection()->type !== Section::TYPE_SINGLE &&
+            $entry->enabled
+        ) {
+            // Make sure they have permission to make live changes to those
+            $this->requirePermission('publishPeerEntries:'.$entry->sectionId);
         }
 
         // Populate the entry with post data
@@ -687,7 +688,7 @@ class EntriesController extends BaseEntriesController
         if (empty($variables['site'])) {
             $variables['site'] = Craft::$app->getSites()->currentSite;
 
-            if (!in_array($variables['site']->id, $variables['siteIds'])) {
+            if (!in_array($variables['site']->id, $variables['siteIds'], false)) {
                 $variables['site'] = Craft::$app->getSites()->getSiteById($variables['siteIds'][0]);
             }
 
@@ -696,7 +697,7 @@ class EntriesController extends BaseEntriesController
             // Make sure they were requesting a valid site
             /** @var Site $site */
             $site = $variables['site'];
-            if (!in_array($site->id, $variables['siteIds'])) {
+            if (!in_array($site->id, $variables['siteIds'], false)) {
                 throw new ForbiddenHttpException('User not permitted to edit content in this site');
             }
         }
@@ -742,6 +743,7 @@ class EntriesController extends BaseEntriesController
                     }
                 } else {
                     // Set the default entry status based on the section's settings
+                    /** @noinspection LoopWhichDoesNotLoopInspection */
                     foreach ($variables['section']->getSiteSettings() as $siteSettings) {
                         if (!$siteSettings->enabledByDefault) {
                             $variables['entry']->enabled = false;
@@ -760,7 +762,7 @@ class EntriesController extends BaseEntriesController
 
         if (!$typeId) {
             // Default to the section's first entry type
-            $typeId = ArrayHelper::firstKey($variables['section']->getEntryTypes('id'));
+            $typeId = $variables['section']->getEntryTypes()[0]->id;
         }
 
         $variables['entry']->typeId = $typeId;
@@ -778,6 +780,7 @@ class EntriesController extends BaseEntriesController
 
             if ($variables['entry']->hasErrors()) {
                 foreach ($tab->getFields() as $field) {
+                    /** @var Field $field */
                     if ($variables['entry']->getErrors($field->handle)) {
                         $hasErrors = true;
                         break;
@@ -788,7 +791,7 @@ class EntriesController extends BaseEntriesController
             $variables['tabs'][] = [
                 'label' => Craft::t('site', $tab->name),
                 'url' => '#tab'.($index + 1),
-                'class' => ($hasErrors ? 'error' : null)
+                'class' => $hasErrors ? 'error' : null
             ];
         }
     }
@@ -842,14 +845,14 @@ class EntriesController extends BaseEntriesController
 
         if (!$entry->typeId) {
             // Default to the section's first entry type
-            $entry->typeId = ArrayHelper::firstKey($entry->getSection()->getEntryTypes('id'));
+            $entry->typeId = $entry->getSection()->getEntryTypes()[0]->id;
         }
 
         $fieldsLocation = Craft::$app->getRequest()->getParam('fieldsLocation', 'fields');
         $entry->setFieldValuesFromRequest($fieldsLocation);
 
         // Author
-        $authorId = Craft::$app->getRequest()->getBodyParam('author', ($entry->authorId ? $entry->authorId : Craft::$app->getUser()->getIdentity()->id));
+        $authorId = Craft::$app->getRequest()->getBodyParam('author', ($entry->authorId ?: Craft::$app->getUser()->getIdentity()->id));
 
         if (is_array($authorId)) {
             $authorId = isset($authorId[0]) ? $authorId[0] : null;

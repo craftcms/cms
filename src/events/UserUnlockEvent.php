@@ -8,7 +8,6 @@
 namespace craft\events;
 
 use craft\elements\User;
-use yii\base\Event;
 
 /**
  * User unlock event class.
@@ -16,7 +15,7 @@ use yii\base\Event;
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since  3.0
  */
-class UserUnlockEvent extends Event
+class UserUnlockEvent extends CancelableEvent
 {
     // Properties
     // =========================================================================

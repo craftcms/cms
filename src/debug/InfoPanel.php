@@ -99,7 +99,7 @@ class InfoPanel extends Panel
      */
     private function _getRequirementResults()
     {
-        require_once(Craft::$app->getBasePath().DIRECTORY_SEPARATOR.'requirements'.DIRECTORY_SEPARATOR.'RequirementsChecker.php');
+        require_once Craft::$app->getBasePath().DIRECTORY_SEPARATOR.'requirements'.DIRECTORY_SEPARATOR.'RequirementsChecker.php';
         $reqCheck = new \RequirementsChecker();
         $reqCheck->checkCraft();
 
@@ -125,7 +125,7 @@ class InfoPanel extends Panel
                 '#<h2>PHP License</h2>.*$#ms',
                 '#<h1>Configuration</h1>#',
                 "#\r?\n#",
-                "#</(h1|h2|h3|tr)>#",
+                '#</(h1|h2|h3|tr)>#',
                 '# +<#',
                 "#[ \t]+#",
                 '#&nbsp;#',
@@ -135,7 +135,7 @@ class InfoPanel extends Panel
                 '#<tr>(?:.*?)"src="(?:.*?)=(.*?)" alt="PHP Logo" /></a><h1>PHP Version (.*?)</h1>(?:\n+?)</td></tr>#',
                 '#<h1><a href="(?:.*?)\?=(.*?)">PHP Credits</a></h1>#',
                 '#<tr>(?:.*?)" src="(?:.*?)=(.*?)"(?:.*?)Zend Engine (.*?),(?:.*?)</tr>#',
-                "# +#",
+                '# +#',
                 '#<tr>#',
                 '#</tr>#'
             ],
@@ -178,7 +178,7 @@ class InfoPanel extends Panel
             foreach ($parts as $row) {
                 if (!isset($row[2])) {
                     continue;
-                } else if ((!isset($row[3]) || $row[2] == $row[3])) {
+                } else if (!isset($row[3]) || $row[2] == $row[3]) {
                     $value = $row[2];
                 } else {
                     $value = array_slice($row, 2);

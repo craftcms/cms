@@ -37,31 +37,36 @@ class DownloadAssetFile extends ElementAction
     {
         $type = Json::encode(static::class);
 
-        $js = <<<EOT
+        $js = <<<EOD
 (function()
 {
-	var trigger = new Craft.ElementActionTrigger({
-		type: {$type},
-		batch: false,
-		activate: function(\$selectedItems)
-		{
-			var form = $('<form method="post" target="_blank" action="">' +
-			'<input type="hidden" name="action" value="assets/download-asset" />' +
-			'<input type="hidden" name="assetId" value="' + \$selectedItems.data('id') + '" />' +
-			'<input type="hidden" name="{csrfName}" value="{csrfValue}" />' +
-			'<input type="submit" value="Submit" />' +
-			'</form>');
-			
-			form.appendTo('body');
-			form.submit();
-			form.remove();
-		}
-	});
+    var trigger = new Craft.ElementActionTrigger({
+        type: {$type},
+        batch: false,
+        activate: function(\$selectedItems)
+        {
+            var form = $('<form method="post" target="_blank" action="">' +
+            '<input type="hidden" name="action" value="assets/download-asset" />' +
+            '<input type="hidden" name="assetId" value="' + \$selectedItems.data('id') + '" />' +
+            '<input type="hidden" name="{csrfName}" value="{csrfValue}" />' +
+            '<input type="submit" value="Submit" />' +
+            '</form>');
+            
+            form.appendTo('body');
+            form.submit();
+            form.remove();
+        }
+    });
 })();
-EOT;
+EOD;
 
-        $js = str_replace("{csrfName}", Craft::$app->getConfig()->get('csrfTokenName'), $js);
-        $js = str_replace("{csrfValue}", Craft::$app->getRequest()->getCsrfToken(), $js);
+        $js = str_replace([
+            '{csrfName}',
+            '{csrfValue}'
+        ], [
+            Craft::$app->getConfig()->get('csrfTokenName'),
+            Craft::$app->getRequest()->getCsrfToken()
+        ], $js);
 
         Craft::$app->getView()->registerJs($js);
     }

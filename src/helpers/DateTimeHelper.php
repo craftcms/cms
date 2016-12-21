@@ -9,8 +9,8 @@ namespace craft\helpers;
 
 use Craft;
 use craft\dates\DateInterval;
-use craft\dates\DateTime;
 use craft\i18n\Locale;
+use DateTime;
 use yii\helpers\FormatConverter;
 
 /**
@@ -214,7 +214,7 @@ class DateTimeHelper
     public static function normalizeTimeZone($timeZone)
     {
         // Is it already a PHP time zone identifier?
-        if (in_array($timeZone, timezone_identifiers_list())) {
+        if (in_array($timeZone, timezone_identifiers_list(), true)) {
             return $timeZone;
         }
 
@@ -249,11 +249,7 @@ class DateTimeHelper
      */
     public static function isIso8601($value)
     {
-        if (is_string($value) && preg_match('/^\d\d\d\d-\d\d-\d\dT\d\d:\d\d:\d\d[\+\-]\d\d\:?\d\d$/', $value)) {
-            return true;
-        }
-
-        return false;
+        return is_string($value) && preg_match('/^\d\d\d\d-\d\d-\d\dT\d\d:\d\d:\d\d[\+\-]\d\d\:?\d\d$/', $value);
     }
 
     /**
@@ -307,7 +303,7 @@ class DateTimeHelper
             $language = Craft::$app->language;
         }
 
-        if (strncmp($language, 'en', 2) === 0) {
+        if (strpos($language, 'en') === 0) {
             return $str;
         }
 
@@ -330,17 +326,17 @@ class DateTimeHelper
         $secondsInMinute = 60;
 
         $weeks = floor($seconds / $secondsInWeek);
-        $seconds = $seconds % $secondsInWeek;
+        $seconds %= $secondsInWeek;
 
         $days = floor($seconds / $secondsInDay);
-        $seconds = $seconds % $secondsInDay;
+        $seconds %= $secondsInDay;
 
         $hours = floor($seconds / $secondsInHour);
-        $seconds = $seconds % $secondsInHour;
+        $seconds %= $secondsInHour;
 
         if ($showSeconds) {
             $minutes = floor($seconds / $secondsInMinute);
-            $seconds = $seconds % $secondsInMinute;
+            $seconds %= $secondsInMinute;
         } else {
             $minutes = round($seconds / $secondsInMinute);
             $seconds = 0;
@@ -468,7 +464,7 @@ class DateTimeHelper
     public static function isWithinLast($date, $timeInterval)
     {
         if (is_numeric($timeInterval)) {
-            $timeInterval = $timeInterval.' days';
+            $timeInterval .= ' days';
         }
 
         $date = self::toDateTime($date);
@@ -524,11 +520,7 @@ class DateTimeHelper
     {
         $interval = DateInterval::createFromDateString($intervalString);
 
-        if ($interval->s != 0 || $interval->i != 0 || $interval->h != 0 || $interval->d != 0 || $interval->m != 0 || $interval->y != 0) {
-            return true;
-        }
-
-        return false;
+        return $interval->s != 0 || $interval->i != 0 || $interval->h != 0 || $interval->d != 0 || $interval->m != 0 || $interval->y != 0;
     }
 
     // Private Methods
@@ -543,8 +535,8 @@ class DateTimeHelper
      */
     private static function _getDateTranslations($language)
     {
-        if (!isset(static::$_translationPairs[$language])) {
-            if (strncmp(Craft::$app->language, 'en', 2) === 0) {
+        if (!isset(self::$_translationPairs[$language])) {
+            if (strpos(Craft::$app->language, 'en') === 0) {
                 $sourceLocale = Craft::$app->getLocale();
             } else {
                 $sourceLocale = Craft::$app->getI18n()->getLocaleById('en-US');
@@ -555,7 +547,7 @@ class DateTimeHelper
             $amName = $targetLocale->getAMName();
             $pmName = $targetLocale->getPMName();
 
-            static::$_translationPairs[$language] = array_merge(
+            self::$_translationPairs[$language] = array_merge(
                 array_combine($sourceLocale->getMonthNames(Locale::LENGTH_FULL), $targetLocale->getMonthNames(Locale::LENGTH_FULL)),
                 array_combine($sourceLocale->getWeekDayNames(Locale::LENGTH_FULL), $targetLocale->getWeekDayNames(Locale::LENGTH_FULL)),
                 array_combine($sourceLocale->getMonthNames(Locale::LENGTH_MEDIUM), $targetLocale->getMonthNames(Locale::LENGTH_MEDIUM)),
@@ -569,6 +561,6 @@ class DateTimeHelper
             );
         }
 
-        return static::$_translationPairs[$language];
+        return self::$_translationPairs[$language];
     }
 }

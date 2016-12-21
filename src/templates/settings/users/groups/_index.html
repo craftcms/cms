@@ -40,10 +40,10 @@
 {% endblock %}
 
 
-{% registerjs %}
+{% js %}
 	new Craft.AdminTable({
 		tableSelector: '#groups',
 		noItemsSelector: '#nogroups',
 		deleteAction: 'user-settings/delete-group'
 	});
-{% endregisterjs %}
+{% endjs %}

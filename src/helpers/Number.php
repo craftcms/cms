@@ -65,7 +65,7 @@ class Number
             $ascii = ($num % 26) + 65;
             $alpha = chr($ascii).$alpha;
 
-            $num = intval($num / 26) - 1;
+            $num = (int)($num / 26) - 1;
         }
 
         return $alpha;

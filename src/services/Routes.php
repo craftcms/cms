@@ -61,7 +61,7 @@ class Routes extends Component
         $path = Craft::$app->getPath()->getConfigPath().DIRECTORY_SEPARATOR.'routes.php';
 
         if (file_exists($path)) {
-            $routes = require_once($path);
+            $routes = require $path;
 
             if (is_array($routes)) {
                 // Check for any site-specific routes
@@ -168,7 +168,7 @@ class Routes extends Component
                 $uriPattern .= $this->_escapeRegexChars($part);
             } else if (is_array($part)) {
                 // Is the name a valid handle?
-                if (preg_match('/^[a-zA-Z][a-zA-Z0-9_]*$/', $part[0])) {
+                if (preg_match('/^[a-zA-Z]\w*$/', $part[0])) {
                     $subpatternName = $part[0];
 
                     // Make sure it's unique
@@ -182,7 +182,7 @@ class Routes extends Component
                     }
 
                     // Add the var as a named subpattern
-                    $uriPattern .= '(?P<'.preg_quote($subpatternName).'>'.$part[1].')';
+                    $uriPattern .= '(?P<'.preg_quote($subpatternName, '/').'>'.$part[1].')';
                 } else {
                     // Just match it
                     $uriPattern .= '('.$part[1].')';

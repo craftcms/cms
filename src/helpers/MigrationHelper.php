@@ -193,6 +193,8 @@ class MigrationHelper
                     continue;
                 }
 
+                $index = 0;
+
                 foreach ($sourceTableSchema->foreignKeys as $index => $value) {
                     if ($value[0] === $rawOldName) {
                         $value[0] = $rawNewName;
@@ -247,6 +249,8 @@ class MigrationHelper
                 $refColumns = [];
                 $onUpdate = $droppedExtendedForeignKeys[$num]['updateType'];
                 $onDelete = $droppedExtendedForeignKeys[$num]['deleteType'];
+
+                $refTableName = '';
 
                 foreach ($fk as $count => $value) {
                     if ($count === 0) {
@@ -306,7 +310,7 @@ class MigrationHelper
         // Check on any indexes
         foreach ($allIndexes as $indexName => $indexColumns) {
             // Is there an index that references our old column name?
-            $key = array_search($oldName, $indexColumns);
+            $key = array_search($oldName, $indexColumns, true);
 
             // Found a match.
             if ($key !== false) {
@@ -325,6 +329,8 @@ class MigrationHelper
 
             // Load up extended FK information for the reference table.
             $refTable = Craft::$app->getDb()->getSchema()->getTableSchema($refTableName);
+
+            $index = 0;
 
             // Figure out the reference columns.
             foreach ($fkInfo as $number => $fk) {
@@ -362,6 +368,12 @@ class MigrationHelper
         // Restore FKs linking to the column.
         foreach ($allOtherTableFks as $sourceTableName => $fkInfo) {
 
+            $columns = [];
+            $refColumns = [];
+            $refTableName = '';
+            $onUpdate = '';
+            $onDelete = '';
+
             // Figure out the reference columns.
             foreach ($fkInfo as $num => $fk) {
                 $refColumns = [];
@@ -397,11 +409,11 @@ class MigrationHelper
             static::restoreForeignKey($sourceTableName, $columns, $refTableName, $refColumns, $onUpdate, $onDelete);
         }
 
-        // Restore indexes.
-        foreach ($columnIndexes as $indexData) {
-            list($columns, $unique) = $indexData;
+        $columns = [];
 
-            foreach ($columns as $key => $column) {
+        // Restore indexes.
+        foreach ($columnIndexes as list($indexColumns, $unique)) {
+            foreach ($indexColumns as $key => $column) {
                 if ($column === $oldName) {
                     $columns[$key] = $newName;
                 }
@@ -411,9 +423,7 @@ class MigrationHelper
         }
 
         // Restore FK's the column was linking to.
-        foreach ($columnFks as $fkData) {
-            list($fk, $key) = $fkData;
-
+        foreach ($columnFks as list($fk, $key)) {
             // Get the reference table.
             $refTable = $fk[0];
 
@@ -467,7 +477,7 @@ class MigrationHelper
 
         foreach ($allTables as $otherTable) {
             foreach ($otherTable->foreignKeys as $fk) {
-                if ($fk[0] === $tableName && in_array($column, $fk) !== false) {
+                if ($fk[0] === $tableName && in_array($column, $fk, true) !== false) {
                     $fks[$otherTable->name][] = $fk;
                 }
             }
@@ -543,14 +553,13 @@ class MigrationHelper
     {
         $rawTableName = Craft::$app->getDb()->getSchema()->getRawTableName($tableName);
         $table = Craft::$app->getDb()->getTableSchema($rawTableName);
+        $otherColumns = [];
 
         foreach ($table->getColumnNames() as $columnName) {
             $fks = static::findForeignKeysTo($rawTableName, $columnName);
 
             foreach ($fks as $otherTable => $row) {
                 foreach ($row as $columnInfo) {
-                    $otherColumns = [];
-
                     foreach ($columnInfo as $count => $value) {
                         if ($count !== 0) {
                             $otherColumns[] = $count;

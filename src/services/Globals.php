@@ -12,6 +12,7 @@ use craft\db\Query;
 use craft\elements\GlobalSet;
 use craft\errors\GlobalSetNotFoundException;
 use craft\events\GlobalSetEvent;
+use craft\helpers\ArrayHelper;
 use craft\records\GlobalSet as GlobalSetRecord;
 use yii\base\Component;
 
@@ -73,14 +74,14 @@ class Globals extends Component
      */
     public function getAllSetIds()
     {
-        if (!isset($this->_allGlobalSetIds)) {
-            $this->_allGlobalSetIds = (new Query())
-                ->select(['id'])
-                ->from(['{{%globalsets}}'])
-                ->column();
+        if ($this->_allGlobalSetIds !== null) {
+            return $this->_allGlobalSetIds;
         }
 
-        return $this->_allGlobalSetIds;
+        return $this->_allGlobalSetIds = (new Query())
+            ->select(['id'])
+            ->from(['{{%globalsets}}'])
+            ->column();
     }
 
     /**
@@ -90,14 +91,16 @@ class Globals extends Component
      */
     public function getEditableSetIds()
     {
-        if (!isset($this->_editableGlobalSetIds)) {
-            $this->_editableGlobalSetIds = [];
-            $allGlobalSetIds = $this->getAllSetIds();
+        if ($this->_editableGlobalSetIds !== null) {
+            return $this->_editableGlobalSetIds;
+        }
 
-            foreach ($allGlobalSetIds as $globalSetId) {
-                if (Craft::$app->getUser()->checkPermission('editGlobalSet:'.$globalSetId)) {
-                    $this->_editableGlobalSetIds[] = $globalSetId;
-                }
+        $this->_editableGlobalSetIds = [];
+        $allGlobalSetIds = $this->getAllSetIds();
+
+        foreach ($allGlobalSetIds as $globalSetId) {
+            if (Craft::$app->getUser()->checkPermission('editGlobalSet:'.$globalSetId)) {
+                $this->_editableGlobalSetIds[] = $globalSetId;
             }
         }
 
@@ -107,54 +110,34 @@ class Globals extends Component
     /**
      * Returns all global sets.
      *
-     * @param string|null $indexBy
-     *
-     * @return array
+     * @return GlobalSet[]
      */
-    public function getAllSets($indexBy = null)
+    public function getAllSets()
     {
-        if (!isset($this->_allGlobalSets)) {
-            $this->_allGlobalSets = GlobalSet::findAll();
-
-            // Index them by ID
-            foreach ($this->_allGlobalSets as $globalSet) {
-                $this->_globalSetsById[$globalSet->id] = $globalSet;
-            }
-        }
-
-        if (!$indexBy) {
+        if ($this->_allGlobalSets !== null) {
             return $this->_allGlobalSets;
         }
 
-        $globalSets = [];
+        $this->_allGlobalSets = GlobalSet::findAll();
+        $this->_globalSetsById = ArrayHelper::index($this->_allGlobalSets, 'id');
 
-        foreach ($this->_allGlobalSets as $globalSet) {
-            $globalSets[$globalSet->$indexBy] = $globalSet;
-        }
-
-        return $globalSets;
+        return $this->_allGlobalSets;
     }
 
     /**
      * Returns all global sets that are editable by the current user.
      *
-     * @param string|null $indexBy
-     *
-     * @return array
+     * @return GlobalSet[]
      */
-    public function getEditableSets($indexBy = null)
+    public function getEditableSets()
     {
         $globalSets = $this->getAllSets();
         $editableGlobalSetIds = $this->getEditableSetIds();
         $editableGlobalSets = [];
 
         foreach ($globalSets as $globalSet) {
-            if (in_array($globalSet->id, $editableGlobalSetIds)) {
-                if ($indexBy) {
-                    $editableGlobalSets[$globalSet->$indexBy] = $globalSet;
-                } else {
-                    $editableGlobalSets[] = $globalSet;
-                }
+            if (in_array($globalSet->id, $editableGlobalSetIds, false)) {
+                $editableGlobalSets[] = $globalSet;
             }
         }
 
@@ -196,21 +179,21 @@ class Globals extends Component
         }
 
         if ($siteId == Craft::$app->getSites()->currentSite->id) {
-            if (!isset($this->_allGlobalSets)) {
+            if ($this->_allGlobalSets === null) {
                 $this->getAllSets();
             }
 
-            if (isset($this->_globalSetsById[$globalSetId])) {
-                return $this->_globalSetsById[$globalSetId];
+            if (!isset($this->_globalSetsById[$globalSetId])) {
+                return null;
             }
-        } else {
-            /** @var GlobalSet|null $globalSet */
-            $globalSet = Craft::$app->getElements()->getElementById($globalSetId, GlobalSet::class, $siteId);
 
-            return $globalSet;
+            return $this->_globalSetsById[$globalSetId];
         }
 
-        return null;
+        /** @var GlobalSet|null $globalSet */
+        $globalSet = Craft::$app->getElements()->getElementById($globalSetId, GlobalSet::class, $siteId);
+
+        return $globalSet;
     }
 
     /**

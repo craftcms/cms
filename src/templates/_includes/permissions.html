@@ -5,8 +5,8 @@
     "Deselect All",
 ]) %}
 
-{% registerjsresource 'js/UserPermissions.js' %}
-{% registercssresource 'css/user-permissions.css' %}
+{% do view.registerJsResource("js/UserPermissions.js") %}
+{% do view.registerCssResource("css/user-permissions.css") %}
 
 {% macro permissionList(context, permissions, id, disabled) %}
 	{% from "_includes/forms" import checkbox %}

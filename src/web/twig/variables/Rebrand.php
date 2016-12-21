@@ -66,7 +66,7 @@ class Rebrand
      */
     public function isImageUploaded($type)
     {
-        return in_array($type, ['logo', 'icon']) && ($this->_getImagePath($type) !== false);
+        return in_array($type, ['logo', 'icon'], true) && ($this->_getImagePath($type) !== false);
     }
 
     /**
@@ -98,7 +98,7 @@ class Rebrand
      */
     public function getImageVariable($type)
     {
-        if (!in_array($type, ['logo', 'icon'])) {
+        if (!in_array($type, ['logo', 'icon'], true)) {
             return null;
         }
 

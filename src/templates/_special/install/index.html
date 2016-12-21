@@ -7,8 +7,8 @@
 ]) %}
 
 {% block body %}
-	{% registercssresource "css/install.css" %}
-	{% registerjsresource "js/install.js" %}
+	{% do view.registerCssResource("css/install.css") %}
+	{% do view.registerJsResource("js/install.js") %}
 
 	<div id="bg"></div>
 	<div class="beginbtncontainer">

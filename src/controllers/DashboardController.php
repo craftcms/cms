@@ -11,7 +11,6 @@ use Craft;
 use craft\base\Plugin;
 use craft\base\Widget;
 use craft\base\WidgetInterface;
-use craft\dates\DateTime;
 use craft\helpers\FileHelper;
 use craft\helpers\Json;
 use craft\helpers\StringHelper;
@@ -19,10 +18,9 @@ use craft\i18n\Locale;
 use craft\models\CraftSupport;
 use craft\web\Controller;
 use craft\web\UploadedFile;
-use GuzzleHttp\Client;
-use HelpSpot\HelpSpot;
-use HelpSpot\HelpSpotGuzzleClient;
+use DateTime;
 use yii\base\ErrorException;
+use yii\base\Exception;
 use yii\web\BadRequestHttpException;
 use yii\web\Response;
 use ZipArchive;
@@ -293,6 +291,9 @@ class DashboardController extends Controller
      * Creates a new support ticket for the CraftSupport widget.
      *
      * @return string
+     * @throws \yii\base\ErrorException
+     * @throws \yii\web\BadRequestHttpException
+     * @throws \yii\base\InvalidParamException
      */
     public function actionSendSupportRequest()
     {
@@ -359,7 +360,7 @@ class DashboardController extends Controller
             $zip = new ZipArchive();
 
             if ($zip->open($zipPath, ZipArchive::CREATE) !== true) {
-                throw new \Exception('Cannot create zip at '.$zipPath);
+                throw new Exception('Cannot create zip at '.$zipPath);
             }
 
             // License key
@@ -419,7 +420,7 @@ class DashboardController extends Controller
                     array_splice($backupFiles, 3);
 
                     foreach ($backupFiles as $backupFile) {
-                        if (pathinfo($backupFile, PATHINFO_EXTENSION) != 'sql') {
+                        if (pathinfo($backupFile, PATHINFO_EXTENSION) !== 'sql') {
                             continue;
                         }
                         $zip->addFile($backupFile, 'backups/'.pathinfo($backupFile, PATHINFO_BASENAME));
@@ -457,16 +458,6 @@ class DashboardController extends Controller
             $requestParams['tNote'] .= "\n\nError attaching zip: ".$e->getMessage();
         }
 
-        $guzzleClient = new Client([
-            'headers' => [
-                'User-Agent' => 'Craft/'.Craft::$app->version.' '.\GuzzleHttp\default_user_agent()
-            ],
-            'timeout' => 120,
-            'connect_timeout' => 120,
-            'allow_redirects' => false,
-            'base_uri' => 'https://support.pixelandtonic.com/api/index.php',
-        ]);
-
         $requestParams = array_merge($requestParams, ['method' => 'request.create', 'output' => 'xml']);
 
         // HelpSpot requires form encoded POST params and Guzzles requires this key to do that.
@@ -474,10 +465,10 @@ class DashboardController extends Controller
             'form_params' => $requestParams
         ];
 
-        $helpSpotGuzzleClient = new HelpSpotGuzzleClient($guzzleClient, ' ', ' ');
+        $guzzleClient = Craft::createGuzzleClient(['timeout' => 120, 'connect_timeout' => 120]);
 
         try {
-            $result = $helpSpotGuzzleClient->getClient()->post('', $requestParams);
+            $guzzleClient->post('https://support.pixelandtonic.com/api/index.php', $requestParams);
         } catch (\Exception $e) {
             return $this->renderTemplate('_components/widgets/CraftSupport/response', [
                 'widgetId' => $widgetId,
@@ -571,7 +562,7 @@ class DashboardController extends Controller
             return $this->_getDefaultWidgetIconSvg($widget);
         }
 
-        if (FileHelper::getMimeType($iconPath) != 'image/svg+xml') {
+        if (FileHelper::getMimeType($iconPath) !== 'image/svg+xml') {
             Craft::warning("Widget icon file is not an SVG: {$iconPath}");
 
             return $this->_getDefaultWidgetIconSvg($widget);

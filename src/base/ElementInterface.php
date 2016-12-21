@@ -137,7 +137,7 @@ interface ElementInterface extends ComponentInterface
      *
      * @param mixed $criteria The element ID or a set of element criteria parameters
      *
-     * @return $this Element instance matching the condition, or null if nothing matches.
+     * @return static Element instance matching the condition, or null if nothing matches.
      */
     public static function findOne($criteria = null);
 
@@ -180,7 +180,7 @@ interface ElementInterface extends ComponentInterface
      *
      * @param mixed $criteria The element ID, an array of IDs, or a set of element criteria parameters
      *
-     * @return $this[] an array of Element instances, or an empty array if nothing matches.
+     * @return static[] an array of Element instances, or an empty array if nothing matches.
      */
     public static function findAll($criteria = null);
 
@@ -231,7 +231,7 @@ interface ElementInterface extends ComponentInterface
      *
      * @return array The sources.
      */
-    public static function sources($context = null);
+    public static function sources($context);
 
     /**
      * Returns the available element actions for a given source (if one is provided).
@@ -239,11 +239,11 @@ interface ElementInterface extends ComponentInterface
      * The actions can either be represented by their class handle (e.g. 'SetStatus'), or by an
      * [[ElementActionInterface]] instance.
      *
-     * @param string|null $source The selected source’s key, if any.
+     * @param string $source The selected source’s key.
      *
      * @return array|null The available element actions.
      */
-    public static function actions($source = null);
+    public static function actions($source);
 
     /**
      * Defines which element attributes should be searchable.
@@ -341,11 +341,11 @@ interface ElementInterface extends ComponentInterface
      * This method should return an array where each element in the array maps to one of the keys of the array returned
      * by [[tableAttributes()]].
      *
-     * @param string|null $source The selected source’s key, if any.
+     * @param string $source The selected source’s key
      *
      * @return array The table attribute keys
      */
-    public static function defaultTableAttributes($source = null);
+    public static function defaultTableAttributes($source);
 
     /**
      * Returns an array that maps source-to-target element IDs based on the given sub-property handle.
@@ -445,11 +445,11 @@ interface ElementInterface extends ComponentInterface
     /**
      * Returns the URL to the element’s thumbnail, if there is one.
      *
-     * @param integer|null $size
+     * @param integer $size
      *
      * @return string|null
      */
-    public function getThumbUrl($size = null);
+    public function getThumbUrl($size);
 
     /**
      * Returns the element’s status.

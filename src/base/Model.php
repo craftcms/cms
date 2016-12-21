@@ -51,7 +51,7 @@ abstract class Model extends \yii\base\Model
      * @param string $name
      * @param array  $arguments
      *
-     * @return $this
+     * @return static
      * @throws UnknownMethodException when calling an unknown method
      */
     public function __call($name, $arguments)
@@ -60,10 +60,10 @@ abstract class Model extends \yii\base\Model
             return parent::__call($name, $arguments);
         } catch (UnknownMethodException $e) {
             // Is this one of our attributes?
-            if (in_array($name, $this->attributes())) {
+            if (in_array($name, $this->attributes(), true)) {
                 $copy = $this->copy();
 
-                if (count($arguments) == 1) {
+                if (count($arguments) === 1) {
                     $copy->$name = $arguments[0];
                 } else {
                     $copy->$name = $arguments;
@@ -120,7 +120,7 @@ abstract class Model extends \yii\base\Model
     /**
      * Returns a copy of this model.
      *
-     * @return $this
+     * @return static
      */
     public function copy()
     {

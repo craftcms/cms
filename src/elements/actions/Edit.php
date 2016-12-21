@@ -55,38 +55,38 @@ class Edit extends ElementAction
     {
         $type = Json::encode(static::class);
 
-        $js = <<<EOT
+        $js = <<<EOD
 (function()
 {
-	var trigger = new Craft.ElementActionTrigger({
-		type: {$type},
-		batch: false,
-		validateSelection: function(\$selectedItems)
-		{
-			return Garnish.hasAttr(\$selectedItems.find('.element'), 'data-editable');
-		},
-		activate: function(\$selectedItems)
-		{
-			var \$element = \$selectedItems.find('.element:first');
+    var trigger = new Craft.ElementActionTrigger({
+        type: {$type},
+        batch: false,
+        validateSelection: function(\$selectedItems)
+        {
+            return Garnish.hasAttr(\$selectedItems.find('.element'), 'data-editable');
+        },
+        activate: function(\$selectedItems)
+        {
+            var \$element = \$selectedItems.find('.element:first');
 
-			if (Craft.elementIndex.viewMode == 'table') {
-				new Craft.ElementEditor(\$element, {
-					params: {
-						includeTableAttributesForSource: Craft.elementIndex.sourceKey
-					},
-					onSaveElement: $.proxy(function(response) {
-						if (response.tableAttributes) {
-							Craft.elementIndex.view._updateTableAttributes(\$element, response.tableAttributes);
-						}
-					}, this)
-				});
-			} else {
-				new Craft.ElementEditor(\$element);
-			}
-		}
-	});
+            if (Craft.elementIndex.viewMode == 'table') {
+                new Craft.ElementEditor(\$element, {
+                    params: {
+                        includeTableAttributesForSource: Craft.elementIndex.sourceKey
+                    },
+                    onSaveElement: $.proxy(function(response) {
+                        if (response.tableAttributes) {
+                            Craft.elementIndex.view._updateTableAttributes(\$element, response.tableAttributes);
+                        }
+                    }, this)
+                });
+            } else {
+                new Craft.ElementEditor(\$element);
+            }
+        }
+    });
 })();
-EOT;
+EOD;
 
         Craft::$app->getView()->registerJs($js);
     }

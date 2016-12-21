@@ -23,7 +23,7 @@
 
 
 {% block content %}
-	{% registercssresource 'css/transforms.css' %}
+	{% do view.registerCssResource("css/transforms.css") %}
 		<input type="hidden" name="action" value="asset-transforms/save-transform">
 		{{ redirectInput('settings/assets/transforms') }}
 
@@ -151,7 +151,7 @@
 {% endblock %}
 
 
-{% registerjs %}
+{% js %}
 	{% if transform is not defined or not transform.handle %}new Craft.HandleGenerator('#name', '#handle');{% endif %}
 
 	$('#mode input').change(function()
@@ -165,4 +165,4 @@
 			$('#position-container').addClass('hidden');
 		}
 	})
-{% endregisterjs %}
+{% endjs %}

@@ -9,7 +9,7 @@ namespace craft\models;
 
 use Craft;
 use craft\base\Model;
-use craft\records\User as UserRecord;
+use craft\records\UserGroup as UserGroupRecord;
 use craft\validators\HandleValidator;
 use craft\validators\UniqueValidator;
 
@@ -53,8 +53,8 @@ class UserGroup extends Model
             [['id'], 'number', 'integerOnly' => true],
             [['name', 'handle'], 'required'],
             [['name', 'handle'], 'string', 'max' => 255],
-            [['handle'], HandleValidator::class, 'reservedWords' => 'id', 'dateCreated', 'dateUpdated', 'uid', 'title'],
-            [['name', 'handle'], UniqueValidator::class, 'targetClass' => UserRecord::class],
+            [['handle'], HandleValidator::class, 'reservedWords' => ['id', 'dateCreated', 'dateUpdated', 'uid', 'title']],
+            [['name', 'handle'], UniqueValidator::class, 'targetClass' => UserGroupRecord::class],
         ];
     }
 

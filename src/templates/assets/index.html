@@ -2,10 +2,10 @@
 {% set title = "Assets"|t('app') %}
 {% set elementType = 'craft\\elements\\Asset' %}
 
-{% registercssresource "css/image_editor.css" %}
+{%  do view.registerCssResource("css/image_editor.css") %}
 
-{% registerjsresource "lib/fabric/fabric.js" %}
-{% registerjsresource "js/AssetImageEditor.js" %}
-{% registerjsresource "js/SlideRuleInput.js" %}
-{% registerjsresource "lib/fileupload/jquery.ui.widget.js" %}
-{% registerjsresource "lib/fileupload/jquery.fileupload.js" %}
+{% do view.registerJsResource("lib/fabric/fabric.js") %}
+{% do view.registerJsResource("js/AssetImageEditor.js") %}
+{% do view.registerJsResource("js/SlideRuleInput.js") %}
+{% do view.registerJsResource("lib/fileupload/jquery.ui.widget.js") %}
+{% do view.registerJsResource("lib/fileupload/jquery.fileupload.js") %}

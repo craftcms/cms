@@ -92,14 +92,10 @@ class AssetQuery extends ElementQuery
      */
     public function __set($name, $value)
     {
-        switch ($name) {
-            case 'volume': {
-                $this->volume($value);
-                break;
-            }
-            default: {
-                parent::__set($name, $value);
-            }
+        if ($name === 'volume') {
+            $this->volume($value);
+        } else {
+            parent::__set($name, $value);
         }
     }
 
@@ -108,7 +104,7 @@ class AssetQuery extends ElementQuery
      *
      * @param string|string[]|Volume $value The property value
      *
-     * @return $this self reference
+     * @return static self reference
      */
     public function volume($value)
     {
@@ -131,7 +127,7 @@ class AssetQuery extends ElementQuery
      *
      * @param string|string[]|Volume $value The property value
      *
-     * @return $this self reference
+     * @return static self reference
      * @deprecated since Craft 3.0. Use [[volume()]] instead.
      */
     public function source($value)
@@ -146,7 +142,7 @@ class AssetQuery extends ElementQuery
      *
      * @param integer|integer[] $value The property value
      *
-     * @return $this self reference
+     * @return static self reference
      */
     public function volumeId($value)
     {
@@ -160,7 +156,7 @@ class AssetQuery extends ElementQuery
      *
      * @param integer|integer[] $value The property value
      *
-     * @return $this self reference
+     * @return static self reference
      * @deprecated since Craft 3.0. Use [[volumeId()]] instead.
      */
     public function sourceId($value)
@@ -175,7 +171,7 @@ class AssetQuery extends ElementQuery
      *
      * @param integer|integer[] $value The property value
      *
-     * @return $this self reference
+     * @return static self reference
      */
     public function folderId($value)
     {
@@ -189,7 +185,7 @@ class AssetQuery extends ElementQuery
      *
      * @param string|string[] $value The property value
      *
-     * @return $this self reference
+     * @return static self reference
      */
     public function filename($value)
     {
@@ -203,7 +199,7 @@ class AssetQuery extends ElementQuery
      *
      * @param string|string[] $value The property value
      *
-     * @return $this self reference
+     * @return static self reference
      */
     public function kind($value)
     {
@@ -217,7 +213,7 @@ class AssetQuery extends ElementQuery
      *
      * @param integer|string $value The property value
      *
-     * @return $this self reference
+     * @return static self reference
      */
     public function width($value)
     {
@@ -231,7 +227,7 @@ class AssetQuery extends ElementQuery
      *
      * @param integer|string $value The property value
      *
-     * @return $this self reference
+     * @return static self reference
      */
     public function height($value)
     {
@@ -245,7 +241,7 @@ class AssetQuery extends ElementQuery
      *
      * @param integer|string $value The property value
      *
-     * @return $this self reference
+     * @return static self reference
      */
     public function size($value)
     {
@@ -259,7 +255,7 @@ class AssetQuery extends ElementQuery
      *
      * @param mixed $value The property value
      *
-     * @return $this self reference
+     * @return static self reference
      */
     public function dateModified($value)
     {
@@ -273,7 +269,7 @@ class AssetQuery extends ElementQuery
      *
      * @param boolean $value The property value (defaults to true)
      *
-     * @return $this self reference
+     * @return static self reference
      */
     public function includeSubfolders($value = true)
     {

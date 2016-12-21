@@ -132,13 +132,13 @@ class ElementHelper
                 if (strlen($overage) > strlen($element->slug) - strlen($slugWordSeparator.$i)) {
                     // Chop off the overage amount from the slug
                     $testSlug = $element->slug;
-                    $testSlug = substr($testSlug, 0, strlen($testSlug) - $overage);
+                    $testSlug = substr($testSlug, 0, -$overage);
 
                     // Update the slug
                     $element->slug = $testSlug;
 
                     // Let's try this again.
-                    $i -= 1;
+                    $i--;
                     continue;
                 } else {
                     // We're screwed, blow things up.

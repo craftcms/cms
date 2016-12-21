@@ -50,7 +50,7 @@ class RebrandController extends Controller
         $this->requireAdmin();
         $type = Craft::$app->getRequest()->getRequiredBodyParam('type');
 
-        if (!in_array($type, $this->_allowedTypes)) {
+        if (!in_array($type, $this->_allowedTypes, true)) {
             return $this->asErrorJson(Craft::t('app', 'That is not an allowed image type.'));
         }
 
@@ -101,7 +101,7 @@ class RebrandController extends Controller
         $this->requireAdmin();
         $type = Craft::$app->getRequest()->getRequiredBodyParam('type');
 
-        if (!in_array($type, $this->_allowedTypes)) {
+        if (!in_array($type, $this->_allowedTypes, true)) {
             $this->asErrorJson(Craft::t('app', 'That is not an allowed image type.'));
         }
 

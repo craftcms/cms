@@ -55,22 +55,22 @@ class UrlRule extends \yii\web\UrlRule
 
         if (isset($config['pattern'])) {
             // Swap out any regex tokens in the pattern
-            if (static::$_regexTokens === null) {
+            if (self::$_regexTokens === null) {
                 $slugChars = ['.', '_', '-'];
                 $slugWordSeparator = Craft::$app->getConfig()->get('slugWordSeparator');
 
-                if ($slugWordSeparator != '/' && !in_array($slugWordSeparator, $slugChars)) {
+                if ($slugWordSeparator !== '/' && !in_array($slugWordSeparator, $slugChars, true)) {
                     $slugChars[] = $slugWordSeparator;
                 }
 
                 // Reference: http://www.regular-expressions.info/unicode.html
-                static::$_regexTokens = [
+                self::$_regexTokens = [
                     '{handle}' => '(?:[a-zA-Z][a-zA-Z0-9_]*)',
                     '{slug}' => '(?:[\p{L}\p{N}\p{M}'.preg_quote(implode($slugChars), '/').']+)',
                 ];
             }
 
-            $config['pattern'] = strtr($config['pattern'], static::$_regexTokens);
+            $config['pattern'] = strtr($config['pattern'], self::$_regexTokens);
         }
 
         parent::__construct($config);

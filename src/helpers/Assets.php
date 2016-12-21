@@ -11,6 +11,7 @@ use Craft;
 use craft\base\Volume;
 use craft\elements\Asset;
 use craft\enums\PeriodType;
+use craft\events\RegisterAssetFileKindsEvent;
 use craft\events\SetAssetFilenameEvent;
 use craft\models\VolumeFolder;
 use yii\base\Event;
@@ -34,6 +35,11 @@ class Assets
      */
     const EVENT_SET_FILENAME = 'setFilename';
 
+    /**
+     * @event RegisterAssetFileKindsEvent The event that is triggered when registering asset file kinds.
+     */
+    const EVENT_REGISTER_FILE_KINDS = 'registerFileKinds';
+
     // Properties
     // =========================================================================
 
@@ -55,7 +61,7 @@ class Assets
         $extension = strpos($extension, '.') !== false ? pathinfo($extension, PATHINFO_EXTENSION) : $extension;
         $filename = uniqid('assets', true).'.'.$extension;
         $path = Craft::$app->getPath()->getTempPath().DIRECTORY_SEPARATOR.$filename;
-        if (($handle = fopen($path, 'w')) === false) {
+        if (($handle = fopen($path, 'wb')) === false) {
             throw new Exception('Could not create temp file: '.$path);
         }
         fclose($handle);
@@ -94,7 +100,7 @@ class Assets
         $appendix = '';
 
         if (!empty($volume->expires) && DateTimeHelper::isValidIntervalString($volume->expires)) {
-            $appendix = '?mtime='.$file->dateModified->format("YmdHis");
+            $appendix = '?mtime='.$file->dateModified->format('YmdHis');
         }
 
         return $appendix;
@@ -156,7 +162,7 @@ class Assets
      *
      * @return array map of original folder id => new folder id
      */
-    public static function mirrorFolderStructure(VolumeFolder $sourceParentFolder, VolumeFolder $destinationFolder, $targetTreeMap = [])
+    public static function mirrorFolderStructure(VolumeFolder $sourceParentFolder, VolumeFolder $destinationFolder, array $targetTreeMap = [])
     {
         $assets = Craft::$app->getAssets();
         $sourceTree = $assets->getAllDescendantFolders($sourceParentFolder);
@@ -174,7 +180,7 @@ class Assets
                 $folder = new VolumeFolder();
                 $folder->name = $sourceFolder->name;
                 $folder->volumeId = $destinationFolder->volumeId;
-                $folder->path = ltrim(rtrim($destinationFolder->path, '/').('/').$relativePath, '/');
+                $folder->path = ltrim(rtrim($destinationFolder->path, '/').'/'.$relativePath, '/');
 
                 // Any and all parent folders should be already mirrored
                 $folder->parentId = (isset($folderIdChanges[$sourceFolder->parentId]) ? $folderIdChanges[$sourceFolder->parentId] : $destinationFolder->id);
@@ -248,17 +254,16 @@ class Assets
     /**
      * Sorts a folder tree by Volume sort order.
      *
-     * @param array &$tree array passed by reference of the sortable folders.
+     * @param VolumeFolder[] &$tree array passed by reference of the sortable folders.
      */
     public static function sortFolderTree(&$tree)
     {
         $sort = [];
 
         foreach ($tree as $topFolder) {
-            /**
-             * @var VolumeFolder $topFolder
-             */
-            $sort[] = $topFolder->getVolume()->sortOrder;
+            /** @var Volume $volume */
+            $volume = $topFolder->getVolume();
+            $sort[] = $volume->sortOrder;
         }
 
         array_multisort($sort, $tree);
@@ -307,7 +312,7 @@ class Assets
             $ext = strtolower($ext);
 
             foreach (static::getFileKinds() as $kind => $info) {
-                if (in_array($ext, $info['extensions'])) {
+                if (in_array($ext, $info['extensions'], true)) {
                     return $kind;
                 }
             }
@@ -326,7 +331,7 @@ class Assets
      */
     private static function _buildFileKinds()
     {
-        if (!isset(self::$_fileKinds)) {
+        if (self::$_fileKinds === null) {
             self::$_fileKinds = [
                 'access' => [
                     'label' => Craft::t('app', 'Access'),
@@ -540,6 +545,14 @@ class Assets
                     ]
                 ],
             ];
+
+            // Allow plugins to modify file kinds
+            $event = new RegisterAssetFileKindsEvent([
+                'fileKinds' => self::$_fileKinds,
+            ]);
+
+            Event::trigger(self::class, self::EVENT_REGISTER_FILE_KINDS, $event);
+            self::$_fileKinds = $event->fileKinds;
         }
     }
 

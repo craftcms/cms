@@ -97,9 +97,7 @@ abstract class BaseOptionsField extends Field implements PreviewableFieldInterfa
             }
 
             // Add +2 for the outer brackets and -1 for the last comma.
-            $length += 1;
-
-            return Db::getTextualColumnTypeByContentLength($length);
+            return Db::getTextualColumnTypeByContentLength($length + 1);
         }
 
         return Schema::TYPE_STRING;
@@ -159,6 +157,7 @@ abstract class BaseOptionsField extends Field implements PreviewableFieldInterfa
                     $label = $this->getOptionLabel($val);
                     $val = new OptionData($label, $val, true);
                 }
+                unset($val);
             } else {
                 $value = [];
             }
@@ -173,7 +172,7 @@ abstract class BaseOptionsField extends Field implements PreviewableFieldInterfa
         $options = [];
 
         foreach ($this->options as $option) {
-            $selected = in_array($option['value'], $selectedValues);
+            $selected = in_array($option['value'], $selectedValues, true);
             $options[] = new OptionData($option['label'], $option['value'], $selected);
         }
 

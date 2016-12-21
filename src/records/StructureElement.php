@@ -118,7 +118,7 @@ class StructureElement extends ActiveRecord
     public function transactions()
     {
         return [
-            static::SCENARIO_DEFAULT => static::OP_ALL,
+            self::SCENARIO_DEFAULT => self::OP_ALL,
         ];
     }
 }

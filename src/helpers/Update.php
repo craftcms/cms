@@ -175,7 +175,7 @@ class Update
      */
     public static function isManifestVersionInfoLine($line)
     {
-        return strncmp($line, '##', 2) === 0;
+        return strpos($line, '##') === 0;
     }
 
     /**
@@ -223,14 +223,14 @@ class Update
      */
     public static function getManifestData($manifestDataPath, $handle)
     {
-        if (static::$_manifestData !== null) {
-            return static::$_manifestData ?: null;
+        if (self::$_manifestData !== null) {
+            return self::$_manifestData ?: null;
         }
 
         $fullPath = FileHelper::normalizePath(rtrim($manifestDataPath, '/\\').DIRECTORY_SEPARATOR.$handle.'_manifest');
 
         if (!is_file($fullPath)) {
-            static::$_manifestData = false;
+            self::$_manifestData = false;
 
             return null;
         }
@@ -256,20 +256,23 @@ class Update
         }
 
         // Only use the manifest data starting from the local version
-        for ($counter = 0; $counter < count($manifestData); $counter++) {
-            if (StringHelper::contains($manifestData[$counter], '##'.$localVersion)) {
+        $counter = 0;
+        /** @noinspection ForeachSourceInspection - FP */
+        foreach ($manifestData as $counter => &$line) {
+            if (StringHelper::contains($line, '##'.$localVersion)) {
                 break;
             }
         }
+        unset($line);
         $manifestData = array_slice($manifestData, $counter);
 
         if (empty($manifestData)) {
-            static::$_manifestData = false;
+            self::$_manifestData = false;
 
             return null;
         }
 
-        static::$_manifestData = $manifestData;
+        self::$_manifestData = $manifestData;
 
         return $manifestData;
     }

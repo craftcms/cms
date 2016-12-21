@@ -56,15 +56,12 @@ class UserGroups extends Component
     /**
      * Returns all user groups.
      *
-     * @param string|null $indexBy
-     *
-     * @return array
+     * @return UserGroup[]
      */
-    public function getAllGroups($indexBy = null)
+    public function getAllGroups()
     {
         $groups = UserGroupRecord::find()
             ->orderBy(['name' => SORT_ASC])
-            ->indexBy($indexBy)
             ->all();
 
         foreach ($groups as $key => $value) {
@@ -127,12 +124,11 @@ class UserGroups extends Component
     /**
      * Gets user groups by a user ID.
      *
-     * @param integer     $userId
-     * @param string|null $indexBy
+     * @param integer $userId
      *
-     * @return array
+     * @return UserGroup[]
      */
-    public function getGroupsByUserId($userId, $indexBy = null)
+    public function getGroupsByUserId($userId)
     {
         $groups = (new Query())
             ->select([
@@ -143,7 +139,6 @@ class UserGroups extends Component
             ->from(['{{%usergroups}} g'])
             ->innerJoin('{{%usergroups_users}} gu', '[[gu.groupId]] = [[g.id]]')
             ->where(['gu.userId' => $userId])
-            ->indexBy($indexBy)
             ->all();
 
         foreach ($groups as $key => $value) {

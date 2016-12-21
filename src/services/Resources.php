@@ -146,7 +146,7 @@ class Resources extends Component
                 }
 
                 case 'rebrand': {
-                    if (!in_array($segs[1], ['logo', 'icon'])) {
+                    if (!in_array($segs[1], ['logo', 'icon'], true)) {
                         return false;
                     }
 
@@ -326,11 +326,10 @@ class Resources extends Component
 
         // Is this going to be a resource URL?
         $rootResourceUrl = Url::url(Craft::$app->getConfig()->getResourceTrigger()).'/';
-        $rootResourceUrlLength = strlen($rootResourceUrl);
 
-        if (strncmp($rootResourceUrl, $url, $rootResourceUrlLength) === 0) {
+        if (strpos($url, $rootResourceUrl) === 0) {
             // Isolate the relative resource path
-            $resourcePath = substr($url, $rootResourceUrlLength);
+            $resourcePath = substr($url, strlen($rootResourceUrl));
 
             // Give Url a chance to add the timestamp
             $url = Url::getResourceUrl($resourcePath);
@@ -367,7 +366,11 @@ class Resources extends Component
 
         // Create a new one
         $svgContents = file_get_contents($sourceIconPath);
-        $textSize = ($extLength <= 3 ? '26' : ($extLength == 4 ? '22' : '18'));
+        if ($extLength <= 3) {
+            $textSize = '26';
+        } else {
+            $textSize = $extLength === 4 ? '22' : '18';
+        }
         $textNode = '<text x="50" y="73" text-anchor="middle" font-family="sans-serif" fill="#8F98A3" '.
             'font-size="'.$textSize.'">'.
             StringHelper::toUpperCase($ext).

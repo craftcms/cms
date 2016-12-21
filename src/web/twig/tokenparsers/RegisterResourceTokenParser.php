@@ -51,9 +51,9 @@ class RegisterResourceTokenParser extends \Twig_TokenParser
     private $_allowOptions;
 
     /**
-     * @var string The new tag name that should be used if this one is deprecated
+     * @var string The new template code that should be used if this tag is deprecated
      */
-    private $_newTag;
+    private $_newCode;
 
     // Public Methods
     // =========================================================================
@@ -65,11 +65,11 @@ class RegisterResourceTokenParser extends \Twig_TokenParser
      * @param boolean $allowPosition        Whether the tag can specify the position of the resource
      * @param boolean $allowRuntimePosition Whether the tag can specify a runtime-based position (load/ready)
      * @param boolean $allowOptions         Whether the tag can specify additional options
-     * @param string  $newTag               The new tag name that should be used if this one is deprecated
+     * @param string  $newCode              The new template code that should be used if this tag is deprecated
      *
-     * @todo Remove the $newTag stuff in Craft 4
+     * @todo Remove the $newCode stuff in Craft 4
      */
-    public function __construct($tag, $method, $allowTagPair = false, $allowPosition = false, $allowRuntimePosition = false, $allowOptions = false, $newTag = null)
+    public function __construct($tag, $method, $allowTagPair = false, $allowPosition = false, $allowRuntimePosition = false, $allowOptions = false, $newCode = null)
     {
         $this->_tag = $tag;
         $this->_method = $method;
@@ -77,7 +77,7 @@ class RegisterResourceTokenParser extends \Twig_TokenParser
         $this->_allowPosition = $allowPosition;
         $this->_allowRuntimePosition = $allowRuntimePosition;
         $this->_allowOptions = $allowOptions;
-        $this->_newTag = $newTag;
+        $this->_newCode = $newCode;
     }
 
     /**
@@ -86,8 +86,8 @@ class RegisterResourceTokenParser extends \Twig_TokenParser
     public function parse(\Twig_Token $token)
     {
         // Is this the deprecated version?
-        if ($isDeprecated = ($this->_newTag !== null)) {
-            \Craft::$app->getDeprecator()->log($this->_tag, "{% $this->_tag %} is now deprecated. Use {% $this->_newTag %} instead.");
+        if ($isDeprecated = ($this->_newCode !== null)) {
+            \Craft::$app->getDeprecator()->log($this->_tag, "{% {$this->_tag} %} is now deprecated. Use {$this->_newCode} instead.");
         }
 
         $lineno = $token->getLine();
@@ -220,7 +220,7 @@ class RegisterResourceTokenParser extends \Twig_TokenParser
      */
     private function _testFirstParam(\Twig_TokenStream $stream)
     {
-        return ($this->_newTag !== null && $first = $stream->test(\Twig_Token::NAME_TYPE, 'first'));
+        return ($this->_newCode !== null && $first = $stream->test(\Twig_Token::NAME_TYPE, 'first'));
     }
 
     /**

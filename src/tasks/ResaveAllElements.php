@@ -8,6 +8,7 @@
 namespace craft\tasks;
 
 use Craft;
+use craft\base\Element;
 use craft\base\Task;
 
 /**
@@ -60,6 +61,7 @@ class ResaveAllElements extends Task
         $localizableOnly = $this->localizableOnly;
 
         foreach (Craft::$app->getElements()->getAllElementTypes() as $elementType) {
+            /** @var Element|string $elementType */
             if (!$localizableOnly || $elementType::isLocalized()) {
                 $this->_elementType[] = $elementType;
             }

@@ -40,7 +40,6 @@ class PaginateTokenParser extends Twig_TokenParser
             $nodes['paginateTarget'] = new Twig_Node_Expression_AssignName($paginateTarget->getAttribute('name'), $paginateTarget->getTemplateLine());
             $elementsTarget = $targets->getNode(1);
         } else {
-            /** @noinspection PhpParamsInspection */
             $nodes['paginateTarget'] = new Twig_Node_Expression_AssignName('paginate', $lineno);
             $elementsTarget = $targets->getNode(0);
         }
