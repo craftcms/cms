@@ -11,9 +11,9 @@
   "license": "proprietary",
   "support": {
     "email": "support@craftcms.com",
-    "issues": "https://github.com/craftcms/craft/issues?state=open",
+    "issues": "https://github.com/craftcms/cms/issues?state=open",
     "forum": "https://craftcms.stackexchange.com/",
-    "source": "https://github.com/craftcms/craft",
+    "source": "https://github.com/craftcms/cms",
     "docs": "https://craftcms.com/docs",
     "rss": "https://craftcms.com/changelog.rss"
   },
@@ -29,7 +29,6 @@
     "pixelandtonic/imagine": "0.6.3.2",
     "league/flysystem": "1.0.32",
     "league/flysystem-ziparchive": "1.0.2",
-    "php-http/guzzle6-adapter": "1.1.1",
     "mikehaertl/php-shellcommand": "1.2.2",
     "twig/twig": "1.28.2",
     "bower-asset/d3": "3.5.17",
