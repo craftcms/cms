@@ -720,8 +720,8 @@ class Updates extends Component
     }
 
     /**
-     * @param string $uid
-     * @param string $handle
+     * @param string|false $uid
+     * @param string       $handle
      *
      * @return void
      */
@@ -749,9 +749,9 @@ class Updates extends Component
     }
 
     /**
-     * @param string  $uid
-     * @param string  $handle
-     * @param boolean $dbBackupPath
+     * @param string|false  $uid
+     * @param string        $handle
+     * @param boolean       $dbBackupPath
      *
      * @return array
      */
