@@ -209,8 +209,8 @@ class Updater
     }
 
     /**
-     * @param string $uid
-     * @param string $handle
+     * @param string|false $uid
+     * @param string       $handle
      *
      * @return boolean
      * @throws UserException

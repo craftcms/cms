@@ -11,7 +11,6 @@ use Craft;
 use craft\base\Field;
 use craft\elements\Entry;
 use craft\elements\User;
-use craft\helpers\ArrayHelper;
 use craft\helpers\DateTimeHelper;
 use craft\helpers\Json;
 use craft\helpers\Url;
@@ -20,6 +19,7 @@ use craft\models\EntryVersion;
 use craft\models\Section;
 use craft\models\Site;
 use DateTime;
+use yii\base\Exception;
 use yii\web\ForbiddenHttpException;
 use yii\web\NotFoundHttpException;
 use yii\web\Response;
@@ -561,6 +561,7 @@ class EntriesController extends BaseEntriesController
      * @param integer $versionId
      *
      * @return Response
+     * @throws Exception
      * @throws NotFoundHttpException if the requested entry/revision cannot be found
      * @throws ServerErrorHttpException if the section is not configured properly
      */
@@ -607,6 +608,11 @@ class EntriesController extends BaseEntriesController
             'entries/view-shared-entry',
             $params
         ]);
+
+        if ($token === false) {
+            throw new Exception('There was a problem generating the token.');
+        }
+
         $url = Url::urlWithToken($entry->getUrl(), $token);
 
         return Craft::$app->getResponse()->redirect($url);

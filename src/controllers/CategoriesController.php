@@ -17,6 +17,7 @@ use craft\models\CategoryGroup;
 use craft\models\CategoryGroup_SiteSettings;
 use craft\models\Site;
 use craft\web\Controller;
+use yii\base\Exception;
 use yii\web\ForbiddenHttpException;
 use yii\web\NotFoundHttpException;
 use yii\web\Response;
@@ -515,6 +516,7 @@ class CategoriesController extends Controller
      * @param integer $siteId
      *
      * @return Response
+     * @throws Exception
      * @throws NotFoundHttpException if the requested category cannot be found
      * @throws ServerErrorHttpException if the category group is not configured properly
      */
@@ -542,6 +544,10 @@ class CategoriesController extends Controller
                 'siteId' => $category->siteId
             ]
         ]);
+
+        if ($token === false) {
+            throw new Exception('There was a problem generating the token.');
+        }
 
         $url = Url::urlWithToken($category->getUrl(), $token);
 
