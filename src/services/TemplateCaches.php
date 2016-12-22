@@ -123,6 +123,11 @@ class TemplateCaches extends Component
             return null;
         }
 
+        // Don't return anything if it's not a global request and the path > 255 characters.
+        if (!$global && strlen($this->_getPath()) > 255) {
+            return null;
+        }
+
         // Take the opportunity to delete any expired caches
         $this->deleteExpiredCachesIfOverdue();
 
@@ -266,6 +271,12 @@ class TemplateCaches extends Component
         // stripslashes($body) in case the URL has been JS-encoded or something.
         // Can't use getResourceUrl() here because that will append ?d= or ?x= to the URL.
         if (StringHelper::contains(stripslashes($body), Url::getSiteUrl(Craft::$app->getConfig()->getResourceTrigger().'/transforms'))) {
+            return;
+        }
+
+        if (!$global && (strlen($path = $this->_getPath()) > 255)) {
+            Craft::warning('Skipped adding '.$key.' to template cache table because the path is > 255 characters: '.$path, __METHOD__);
+
             return;
         }
 
