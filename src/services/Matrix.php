@@ -487,6 +487,10 @@ class Matrix extends Component
                 $oldContentTable = $this->getContentTableName($matrixField, true);
                 $newContentTable = $this->getContentTableName($matrixField);
 
+                if ($newContentTable === false) {
+                    throw new Exception('There was a problem getting the new content table name.');
+                }
+
                 // Do we need to create/rename the content table?
                 if (!Craft::$app->getDb()->tableExists($newContentTable)) {
                     if ($oldContentTable && Craft::$app->getDb()->tableExists($oldContentTable)) {
@@ -550,8 +554,8 @@ class Matrix extends Component
      *
      * @param MatrixField $matrixField The Matrix field.
      *
-     * @return boolean Whether the field was deleted successfully.
-     * @throws \Exception if reasons
+     * @return bool Whether the field was deleted successfully.
+     * @throws \Exception
      */
     public function deleteMatrixField(MatrixField $matrixField)
     {
@@ -559,6 +563,11 @@ class Matrix extends Component
         try {
             $originalContentTable = Craft::$app->getContent()->contentTable;
             $contentTable = $this->getContentTableName($matrixField);
+
+            if ($contentTable === false) {
+                throw new Exception('There was a problem getting the content table.');
+            }
+
             Craft::$app->getContent()->contentTable = $contentTable;
 
             // Delete the block types

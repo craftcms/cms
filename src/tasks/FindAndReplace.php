@@ -12,6 +12,7 @@ use craft\base\Field;
 use craft\base\FieldInterface;
 use craft\base\Task;
 use craft\fields\Matrix;
+use yii\base\Exception;
 
 /**
  * FindAndReplace represents a Find and Replace background task.
@@ -59,6 +60,7 @@ class FindAndReplace extends Task
 
     /**
      * @inheritdoc
+     * @throws Exception
      */
     public function getTotalSteps()
     {
@@ -75,6 +77,10 @@ class FindAndReplace extends Task
             }
 
             $this->_table = Craft::$app->getMatrix()->getContentTableName($matrixField);
+
+            if ($this->_table === false) {
+                throw new Exception('There was a problem getting the content table name.');
+            }
 
             $blockTypes = Craft::$app->getMatrix()->getBlockTypesByFieldId($this->matrixFieldId);
 
