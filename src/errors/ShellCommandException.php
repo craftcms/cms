@@ -38,11 +38,17 @@ class ShellCommandException extends Exception
      *
      * @param Command $command The failed Command object
      *
-     * @return static
+     * @return static|false
      */
     public static function createFromCommand(Command $command)
     {
-        return new static($command->getExecCommand(), $command->getExitCode(), $command->getStdErr());
+        $execCommand = $command->getExecCommand();
+
+        if ($execCommand) {
+            return new static($execCommand, $command->getExitCode(), $command->getStdErr());
+        }
+
+        return false;
     }
 
     /**
