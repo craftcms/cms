@@ -25,7 +25,7 @@ To install the Craft 3 Beta, follow these instructions.
 1. Install Composer ([instructions](https://getcomposer.org/doc/00-intro.md#installation-linux-unix-osx)) if you don’t have it already.
 2. Run this command in your terminal (substituting `path` with the path the project should be created at) to create a new Craft project based on this package:
 
-        php composer.phar create-project craftcms/project path
+        php composer.phar create-project craftcms/craft path
 
 3. Copy the `.env.example` file at the root of the project to a new `.env` file, and fill in your database connection settings within it.
 4. Create a new web server, setting its document root to the `public/` folder within the project.
