@@ -90,13 +90,15 @@ class ErrorHandler extends \yii\web\ErrorHandler
 
                 // $templateLine could be null or -1
                 if (is_int($templateLine) && $templateLine > 0) {
-                    $templateFile = $this->exception->getTemplateName();
-                    $resolvedTemplate = Craft::$app->getView()->resolveTemplate($templateFile);
-
-                    if ($resolvedTemplate !== false) {
-                        $file = $resolvedTemplate;
-                        $line = $templateLine;
-                        $this->_renderAllCallStackItems = false;
+                    $templateSource = $this->exception->getSourceContext();
+                    if ($templateSource !== null) {
+                        $templateFile = $templateSource->getName();
+                        $resolvedTemplate = Craft::$app->getView()->resolveTemplate($templateFile);
+                        if ($resolvedTemplate !== false) {
+                            $file = $resolvedTemplate;
+                            $line = $templateLine;
+                            $this->_renderAllCallStackItems = false;
+                        }
                     }
                 }
             } else if ($this->_renderAllCallStackItems === false) {
