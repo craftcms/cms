@@ -19,4 +19,18 @@ body.rtl .toolhud .main .alldone { right: 230px; }
 
 .confirmmodal .body { max-height: 200px; overflow: auto; }
 
-/*# sourceMappingURL=settings.css.map */
+.phpinfo-menu { max-width: 300px; padding: 24px; }
+
+.phpinfo-menu ul li { display: inline; }
+
+.phpinfo-menu ul li a { display: inline !important; margin: 0; padding: 0; color: #0d78f2; }
+
+.phpinfo-menu ul li a:hover { background: none !important; text-decoration: underline; color: #0d78f2 !important; }
+
+.phpinfo-menu ul li:after { content: ' | '; }
+
+.phpinfo-section:not(:first-child) { padding-top: 100px; margin-top: -40px; }
+
+table.fixed-layout { table-layout: fixed; }
+
+/*# sourceMappingURL=utilities.css.map */

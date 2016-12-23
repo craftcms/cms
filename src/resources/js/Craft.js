@@ -1,4 +1,4 @@
-/*! Craft 3.0.0 - 2016-12-13 */
+/*! Craft 3.0.0 - 2016-12-23 */
 (function($){
 
 // Set all the standard Craft.* stuff
@@ -2269,17 +2269,14 @@ Craft.BaseElementIndex = Garnish.Base.extend(
                 return false;
             }
 
-            if (this.$source && this.$source[0] && this.$source[0] == $source[0]) {
+            if (this.$source && this.$source[0] && this.$source[0] == $source[0] && $source.data('key') == this.sourceKey) {
                 return false;
             }
 
             this.$source = $source;
             this.sourceKey = $source.data('key');
             this.setInstanceState('selectedSource', this.sourceKey);
-
-            if ($source[0] != this.sourceSelect.$selectedItems[0]) {
-                this.sourceSelect.selectItem($source);
-            }
+            this.sourceSelect.selectItem($source);
 
             Craft.cp.updateSidebarMenuLabel();
 
@@ -5173,14 +5170,14 @@ Craft.AssetIndex = Craft.BaseElementIndex.extend(
                             draggees = [];
 
                         for (var i = 0; i < $selected.length; i++) {
-                            var $source = $selected.eq(i).parent();
+                            var $source = $selected.eq(i);
 
                             if (!this._getFolderIdFromSourceKey($source.data('key'))) {
                                 continue;
                             }
 
                             if ($source.hasClass('sel') && this._getSourceLevel($source) > 1) {
-                                draggees.push($source[0]);
+                                draggees.push($source.parent()[0]);
                             }
                         }
 
@@ -5683,12 +5680,7 @@ Craft.AssetIndex = Craft.BaseElementIndex.extend(
                 }
             }
 
-            this.sourceSelect.selectItem($targetSource);
-
-            this.$source = $targetSource;
-            this.sourceKey = $targetSource.data('key');
-            this.setInstanceState('selectedSource', this.sourceKey);
-
+            this.selectSource($targetSource);
             this.updateElements();
         },
 
