@@ -68,4 +68,8 @@ return [
             ]
         ]
     ],
+    'utilities' => 'utilities/index',
+    'utilities/system-report' => 'utilities/system-report',
+    'utilities/php-info' => 'utilities/php-info',
+    'utilities/deprecation-errors' => 'utilities/deprecation-errors',
 ];

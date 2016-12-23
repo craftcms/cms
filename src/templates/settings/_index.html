@@ -3,9 +3,6 @@
 
 
 {% block content %}
-	{% do view.registerCssResource("css/settings.css") %}
-	{% do view.registerJsResource("js/settings.js") %}
-
 	{% for category, items in craft.cp.settings(80) %}
 		<h2>{{ category }}</h2>
 
@@ -24,18 +21,8 @@
 			{% endfor %}
 		</ul>
 
-		<hr>
+		{% if not loop.last %}
+			<hr>
+		{% endif %}
 	{% endfor %}
-
-	<h2>{{ "Tools"|t('app') }}</h2>
-
-	<ul class="icons">
-		{% for tool in tools %}
-			{% set triggerId = 'tool-' ~ className(tool)|id %}
-			<li><a id="{{ triggerId }}" data-icon="{{ tool.iconValue() }}">{{ tool.displayName() }}</a></li>
-			{% js %}
-				new Craft.Tool('{{ triggerId|e("js") }}', '{{ className(tool)|e("js") }}', {{ tool.optionsHtml()|json_encode|raw }}, '{{ tool.buttonLabel()|e("js") }}');
-			{% endjs %}
-		{% endfor %}
-	</ul>
 {% endblock %}

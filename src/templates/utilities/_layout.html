@@ -1,0 +1,7 @@
+{% extends "_layouts/cp" %}
+
+{% set crumbs = [
+	{ label: "Utilities"|t('app'), url: url('utilities') }
+] %}
+
+{% do view.registerCssResource("css/utilities.css") %}

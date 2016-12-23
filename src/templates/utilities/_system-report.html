@@ -1,0 +1,95 @@
+{% extends "utilities/_layout" %}
+
+{% set title = "System Report"|t('app') %}
+
+{% block content %}
+
+
+	<h2>{{ "Application Info"|t('app') }}</h2>
+	<table class="data fullwidth fixed-layout">
+		<tbody>
+			<tr>
+				<th class="light">{{ "Craft Version"|t('app') }}</th>
+				<td>{{ craftVersion }}</td>
+			</tr>
+			<tr>
+				<th class="light">{{ "Craft Edition"|t('app') }}</th>
+				<td>{{ craftEdition }}</td>
+			</tr>
+			{% for packageName, packageVersion in packages %}
+				<tr>
+					<th class="light">{{ packageName ~ ' Version' }}</th>
+					<td>{{ packageVersion }}</td>
+				</tr>
+			{% endfor %}
+		</tbody>
+	</table>
+
+	<h2>{{ "Plugins"|t('app') }}</h2>
+	<table class="data fullwidth fixed-layout">
+		<thead>
+		<tr>
+			<th>{{ "Name" }}</th>
+			<th>{{ "Version" }}</th>
+			<th>{{ "Developer" }}</th>
+		</tr>
+		</thead>
+		<tbody>
+		{% for plugin in plugins %}
+			<tr>
+				<td>{{ plugin.name }}</td>
+				<td>{{ plugin.version }}</td>
+				<td>
+					{% if plugin.developerUrl %}
+						<a href="{{ plugin.developerUrl }}">{{ plugin.developer }}</a>
+					{% else %}
+						{{ plugin.developer }}
+					{% endif %}
+				</td>
+			</tr>
+		{% endfor %}
+		</tbody>
+	</table>
+
+	<h2>{{ "Requirements"|t('app') }}</h2>
+
+	<table class="data fullwidth">
+		<tbody>
+		{% for requirement in requirements %}
+			<tr>
+				<td>{{ requirement.name }}{% if requirement.memo %} <span class="info">{{ requirement.memo|raw }}</span>{% endif %}</td>
+				<td class="centeralign">
+					{% if requirement.error %}
+						<span class="error" title="{{ 'Failed'|t }}" data-icon="error"></span>
+					{% elseif requirement.warning %}
+						<span class="warning" title="{{ 'Passed with warning'|t }}" data-icon="alert"></span>
+					{% else %}
+						<span class="success" title="{{ 'Passed'|t }}" data-icon="check"></span>
+					{% endif %}
+				</td>
+			</tr>
+		{% endfor %}
+		</tbody>
+	</table>
+
+	{#
+	<table class="data fullwidth fixed-layout">
+		<thead>
+			<tr>
+				<th>{{ "Requirement" }}</th>
+				<th>{{ "Mandatory?" }}</th>
+				<th>{{ "Result" }}</th>
+			</tr>
+		</thead>
+		<tbody>
+		{% for requirement in requirements %}
+			<tr>
+				<td>{{ requirement[0] }}</td>
+				<td>{{ requirement[1] }}</td>
+				<td>{{ requirement[2] }}</td>
+			</tr>
+		{% endfor %}
+		</tbody>
+	</table>#}
+{% endblock %}
+
