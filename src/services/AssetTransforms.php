@@ -147,7 +147,7 @@ class AssetTransforms extends Component
             return $this->_transformsByHandle[$handle] = null;
         }
 
-        return $this->_transformsByHandle[$handle] = $transform = new AssetTransform($result);
+        return $this->_transformsByHandle[$handle] = new AssetTransform($result);
     }
 
     /**

@@ -182,7 +182,6 @@ class ChartHelper
 
         while ($cursorDate->getTimestamp() < $endTimestamp) {
             // Do we have a record for this date?
-            // $formattedCursorDate = $cursorDate->format($phpDateFormat, $craftTimezone);
             $formattedCursorDate = $cursorDate->format($phpDateFormat);
 
             if (isset($results[0]) && $results[0]['date'] == $formattedCursorDate) {

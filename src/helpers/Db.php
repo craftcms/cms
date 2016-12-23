@@ -203,7 +203,6 @@ class Db
                     default:
                         throw new Exception('Unknown textual column type: '.$columnType);
                 }
-                break;
             case Connection::DRIVER_PGSQL:
                 return null;
             default:
