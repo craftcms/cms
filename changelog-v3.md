@@ -6,8 +6,8 @@ Craft CMS 3.0 Working Changelog
 ### Added
 - Ported all recent changes from Craft 2, including chart-related things added in Craft 2.6.
 - Craft can now be installed via Composer: `composer require craftcms/craft`.
-- Craft now supports installing plugins via Composer, with the help [Craft CMS Composer Installer](https://github.com/craftcms/composer-installer).
-- Craft now checks for plugin info in a composer.json file, rather than plugin.json, for plugins that were manually installed in craft/plugins/. (See the [Craft CMS Composer Installer](https://github.com/craftcms/composer-installer) readme for details on how the info should be formatted.)
+- Craft now supports installing plugins via Composer, with the help [Craft CMS Composer Installer](https://github.com/craftcms/plugin-installer).
+- Craft now checks for plugin info in a composer.json file, rather than plugin.json, for plugins that were manually installed in craft/plugins/. (See the [Craft CMS Composer Installer](https://github.com/craftcms/plugin-installer) readme for details on how the info should be formatted.)
 - Craft now automatically loads the vendor/autoload.php file (if it exists) for plugins that were manually installed.
 - Added the bootstrap/ folder alongside the src/ folder, with new web.php and console.php bootstrap files.
 - Added PostgreSQL support, which can be enabled by setting the `driver` setting in craft/config/db.php to `'pgsql'`.
