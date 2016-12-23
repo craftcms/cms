@@ -269,9 +269,10 @@ Craft CMS 3.0 Working Changelog
 - Updated Yii 2 SwiftMailer to 2.0.6.
 - Updated Guzzle to 6.2.2.
 - Updated Imagine to the new `pixelandtonic/imagine` fork at 0.6.3.1.
-- Updated Twig to 1.28.2.
+- Updated Twig to 1.30.0.
 - Updated Garnish to 0.1.9.
 - Updated Velocity to 1.4.1.
+- Updated element-resize-detector.js to 1.1.10.
 - Craft no longer requires the mcrypt PHP extension.
 
 ### Deprecated
