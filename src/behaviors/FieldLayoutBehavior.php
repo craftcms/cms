@@ -72,6 +72,7 @@ class FieldLayoutBehavior extends Behavior
                 $this->_fieldLayout = Craft::$app->getFields()->getLayoutById($id);
             }
 
+            /** @noinspection NotOptimalIfConditionsInspection */
             if ($this->_fieldLayout === null) {
                 $this->_fieldLayout = new FieldLayout();
                 $this->_fieldLayout->type = $this->elementType;

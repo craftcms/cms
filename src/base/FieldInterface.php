@@ -254,7 +254,7 @@ interface FieldInterface extends SavableComponentInterface
     /**
      * Returns the field’s group.
      *
-     * @return FieldGroup
+     * @return FieldGroup|null
      */
     public function getGroup();
 

@@ -525,7 +525,7 @@ trait ApplicationTrait
     public function enableMaintenanceMode()
     {
         /** @var \craft\web\Application|\craft\console\Application $this */
-        return $this->_setMaintenanceMode(1);
+        return $this->_setMaintenanceMode(true);
     }
 
     /**
@@ -536,7 +536,7 @@ trait ApplicationTrait
     public function disableMaintenanceMode()
     {
         /** @var \craft\web\Application|\craft\console\Application $this */
-        return $this->_setMaintenanceMode(0);
+        return $this->_setMaintenanceMode(false);
     }
 
     /**

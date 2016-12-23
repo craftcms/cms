@@ -9,6 +9,7 @@ namespace craft\console\controllers;
 
 use Craft;
 use craft\base\Plugin;
+use craft\base\PluginInterface;
 use craft\db\MigrationManager;
 use craft\helpers\FileHelper;
 use yii\console\controllers\BaseMigrateController;
@@ -54,7 +55,7 @@ class MigrateController extends BaseMigrateController
     public $type;
 
     /**
-     * @var string|Plugin The handle of the plugin to use during migration operations, or the plugin itself
+     * @var string|Plugin|PluginInterface The handle of the plugin to use during migration operations, or the plugin itself
      */
     public $plugin;
 
@@ -149,7 +150,13 @@ class MigrateController extends BaseMigrateController
         $file = $this->migrationPath.DIRECTORY_SEPARATOR.$name.'.php';
 
         if ($this->confirm("Create new migration '$file'?")) {
-            $content = $this->renderFile(Craft::getAlias($this->templateFile), [
+            $templateFile = Craft::getAlias($this->templateFile);
+
+            if ($templateFile === false) {
+                throw new Exception('There was a problem getting the template file path');
+            }
+
+            $content = $this->renderFile($templateFile, [
                 'namespace' => $this->getMigrator()->migrationNamespace,
                 'className' => $name
             ]);

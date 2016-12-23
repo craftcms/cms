@@ -55,9 +55,9 @@ interface VolumeInterface extends SavableComponentInterface
     /**
      * Updates a file.
      *
-     * @param string $path   The path of the file, relative to the source’s root.
-     * @param string $stream The new contents of the file as a stream.
-     * @param array  $config Additional config options to pass to the adapter.
+     * @param string   $path   The path of the file, relative to the source’s root.
+     * @param resource $stream The new contents of the file as a stream.
+     * @param array    $config Additional config options to pass to the adapter.
      *
      * @return boolean Whether the operation was successful.
      */
