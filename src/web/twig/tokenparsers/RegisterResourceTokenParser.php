@@ -86,7 +86,7 @@ class RegisterResourceTokenParser extends \Twig_TokenParser
     public function parse(\Twig_Token $token)
     {
         // Is this the deprecated version?
-        if ($isDeprecated = ($this->_newCode !== null)) {
+        if ($this->_newCode !== null) {
             \Craft::$app->getDeprecator()->log($this->_tag, "{% {$this->_tag} %} is now deprecated. Use {$this->_newCode} instead.");
         }
 

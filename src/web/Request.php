@@ -885,8 +885,7 @@ class Request extends \yii\web\Request
                 return false;
             }
 
-            /** @noinspection PhpUnusedLocalVariableInspection */
-            list($nonce, $hashFromToken) = $splitToken;
+            list($nonce,) = $splitToken;
 
             // Check that this token is for the current user
             $passwordHash = $currentUser->password;

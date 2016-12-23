@@ -74,7 +74,7 @@ class CategoryGroups
     {
         Craft::$app->getDeprecator()->log('craft.categoryGroups.getEditableGroups()', 'craft.categoryGroups.getEditableGroups() has been deprecated. Use craft.app.categories.getEditableGroups() instead.');
 
-        $groups = Craft::$app->getCategories()->getEditableGroups($indexBy);
+        $groups = Craft::$app->getCategories()->getEditableGroups();
 
         return $indexBy ? ArrayHelper::index($groups, $indexBy) : $groups;
     }
