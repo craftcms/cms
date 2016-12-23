@@ -1881,30 +1881,6 @@ abstract class Element extends Component implements ElementInterface
     // =========================================================================
 
     /**
-     * Finds a source by its key, even if it's nested.
-     *
-     * @param array  $sources
-     * @param string $key
-     *
-     * @return array|null
-     */
-    private static function _findSource($key, $sources)
-    {
-        if (isset($sources[$key])) {
-            return $sources[$key];
-        }
-
-        // Look through any nested sources
-        foreach ($sources as $source) {
-            if (!empty($source['nested']) && ($nestedSource = static::_findSource($key, $source['nested']))) {
-                return $nestedSource;
-            }
-        }
-
-        return null;
-    }
-
-    /**
      * Returns an element right before/after this one, from a given set of criteria.
      *
      * @param mixed   $criteria

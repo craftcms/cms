@@ -93,19 +93,6 @@ class ElementsController extends BaseElementsController
      */
     public function actionGetEditorHtml()
     {
-        /*$elementId = Craft::$app->getRequest()->getRequiredBodyParam('elementId');
-        $siteId = Craft::$app->getRequest()->getBodyParam('siteId');
-        $elementType = Craft::$app->getElements()->getElementTypeById($elementId);
-        $element = Craft::$app->getElements()->getElementById($elementId, $elementType, $siteId);
-
-        if (!$element) {
-            throw new NotFoundHttpException('Element could not be found');
-        }
-
-        if (!$element->getIsEditable()) {
-            throw new ForbiddenHttpException('User is not permitted to edit this element');
-        }*/
-
         $element = $this->_getEditorElement();
         $includeSites = (bool)Craft::$app->getRequest()->getBodyParam('includeSites', false);
 

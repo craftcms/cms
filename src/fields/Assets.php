@@ -214,11 +214,10 @@ class Assets extends BaseRelationField
      * Validates the files to make sure they are one of the allowed file kinds.
      *
      * @param ElementInterface $element
-     * @param array|null       $params
      *
      * @return void
      */
-    public function validateFileType(ElementInterface $element, $params)
+    public function validateFileType(ElementInterface $element)
     {
         /** @var Element $element */
         $value = $element->getFieldValue($this->handle);

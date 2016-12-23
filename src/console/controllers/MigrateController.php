@@ -55,7 +55,7 @@ class MigrateController extends BaseMigrateController
     public $type;
 
     /**
-     * @var string|Plugin|PluginInterface The handle of the plugin to use during migration operations, or the plugin itself
+     * @var string|Plugin The handle of the plugin to use during migration operations, or the plugin itself
      */
     public $plugin;
 

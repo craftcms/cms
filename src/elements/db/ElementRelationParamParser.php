@@ -265,7 +265,6 @@ class ElementRelationParamParser
             $fields = ArrayHelper::toArray($relCriteria['field']);
 
             foreach ($fields as $field) {
-                $fieldModel = null;
 
                 if (is_numeric($field)) {
                     $fieldHandleParts = null;

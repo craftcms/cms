@@ -35,40 +35,21 @@ class EtTransport
     private $_endpoint;
 
     /**
-     * @var int
-     */
-    private $_timeout;
-
-    /**
      * @var EtModel
      */
     private $_model;
-
-    /**
-     * @var bool
-     */
-    private $_allowRedirects = true;
-
-    /**
-     * @var string
-     */
-    private $_userAgent;
 
     // Public Methods
     // =========================================================================
 
     /**
      * @param         $endpoint
-     * @param integer $timeout
-     * @param integer $connectTimeout
      */
-    public function __construct($endpoint, $timeout = 30, $connectTimeout = 30)
+    public function __construct($endpoint)
     {
         $endpoint .= Craft::$app->getConfig()->get('endpointSuffix');
 
         $this->_endpoint = $endpoint;
-        $this->_timeout = $timeout;
-        $this->_connectTimeout = $connectTimeout;
 
         // There can be a race condition after an update from older Craft versions where they lose session
         // and another call to elliott is made during cleanup.
@@ -94,37 +75,6 @@ class EtTransport
                 'proc' => function_exists('proc_open') ? 1 : 0,
             ],
         ]);
-
-        $this->_userAgent = 'Craft/'.Craft::$app->version;
-    }
-
-    /**
-     * The maximum number of seconds to allow for an entire transfer to take place before timing out.  Set 0 to wait
-     * indefinitely.
-     *
-     * @return integer
-     */
-    public function getTimeout()
-    {
-        return $this->_timeout;
-    }
-
-    /**
-     * The maximum number of seconds to wait while trying to connect. Set to 0 to wait indefinitely.
-     *
-     * @return integer
-     */
-    public function getConnectTimeout()
-    {
-        return $this->_connectTimeout;
-    }
-
-    /**
-     * @return EtModel
-     */
-    public function getModel()
-    {
-        return $this->_model;
     }
 
     /**
@@ -236,6 +186,7 @@ class EtTransport
                     // If we made it here something, somewhere went wrong.
                     Craft::warning('Error in calling '.$this->_endpoint.' Response: '.$response->getBody(), __METHOD__);
 
+                    /** @noinspection NotOptimalIfConditionsInspection */
                     if (Craft::$app->getCache()->get('etConnectFailure')) {
                         // There was an error, but at least we connected.
                         $cacheService->delete('etConnectFailure');
@@ -243,6 +194,7 @@ class EtTransport
                 } catch (RequestException $e) {
                     Craft::warning('Error in calling '.$this->_endpoint.' Reason: '.$e->getMessage(), __METHOD__);
 
+                    /** @noinspection NotOptimalIfConditionsInspection */
                     if (Craft::$app->getCache()->get('etConnectFailure')) {
                         // There was an error, but at least we connected.
                         $cacheService->delete('etConnectFailure');

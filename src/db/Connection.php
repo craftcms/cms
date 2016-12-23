@@ -154,7 +154,7 @@ class Connection extends \yii\db\Connection
         $backupCommand = Craft::$app->getConfig()->get('backupCommand');
 
         if ($backupCommand === null) {
-            $schema = $command = $this->getSchema();
+            $schema = $this->getSchema();
             $backupCommand = $schema->getDefaultBackupCommand();
         }
 
@@ -200,7 +200,7 @@ class Connection extends \yii\db\Connection
         $restoreCommand = Craft::$app->getConfig()->get('restoreCommand');
 
         if ($restoreCommand === null) {
-            $schema = $command = $this->getSchema();
+            $schema = $this->getSchema();
             $restoreCommand = $schema->getDefaultRestoreCommand();
         }
 
