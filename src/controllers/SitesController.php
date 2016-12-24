@@ -63,6 +63,8 @@ class SitesController extends Controller
      */
     public function actionEditSite($siteId = null, Site $site = null)
     {
+        $variables = [];
+
         // Breadcrumbs
         $variables['crumbs'] = [
             [

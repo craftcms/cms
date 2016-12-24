@@ -17,6 +17,8 @@ namespace craft\helpers;
 class Stringy extends \Stringy\Stringy
 {
     /**
+     * Call Stringy's `charsArray` for backwards compatibility.
+     *
      * @return array
      */
     public function getAsciiCharMap()

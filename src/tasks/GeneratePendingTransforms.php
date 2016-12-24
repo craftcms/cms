@@ -56,6 +56,7 @@ class GeneratePendingTransforms extends Task
 
             Craft::$app->getAssetTransforms()->ensureTransformUrlByIndexModel($index);
         } catch (\Exception $e) {
+            // Swallow it.
         }
 
         return true;

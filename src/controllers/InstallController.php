@@ -68,6 +68,8 @@ class InstallController extends Controller
         $server = Craft::$app->getRequest()->getServerName();
         $words = preg_split('/[\-_\.]+/', $server);
         array_pop($words);
+
+        $vars = [];
         $vars['defaultSiteName'] = implode(' ', array_map('ucfirst', $words));
         $vars['defaultSiteUrl'] = 'http://'.$server;
 
@@ -89,6 +91,7 @@ class InstallController extends Controller
         $accountSettings->email = $request->getBodyParam('email');
         $accountSettings->username = $request->getBodyParam('username', $accountSettings->email);
         $accountSettings->password = $request->getBodyParam('password');
+        $return = [];
 
         if ($accountSettings->validate()) {
             $return['validates'] = true;
@@ -115,6 +118,7 @@ class InstallController extends Controller
         $site->handle = 'default';
         $site->baseUrl = $request->getBodyParam('siteUrl');
         $site->language = $request->getBodyParam('siteLanguage');
+        $return = [];
 
         if ($site->validate()) {
             $return['validates'] = true;

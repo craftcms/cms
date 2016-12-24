@@ -51,6 +51,7 @@ class VolumesController extends Controller
      */
     public function actionVolumeIndex()
     {
+        $variables = [];
         $variables['volumes'] = Craft::$app->getVolumes()->getAllVolumes();
 
         return $this->renderTemplate('settings/assets/volumes/_index', $variables);

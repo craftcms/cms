@@ -483,6 +483,8 @@ class EntriesController extends BaseEntriesController
         }
 
         if ($request->getAcceptsJson()) {
+            $return = [];
+
             $return['success'] = true;
             $return['id'] = $entry->id;
             $return['title'] = $entry->title;

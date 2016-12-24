@@ -31,12 +31,12 @@ class Image
     /**
      * Calculates a missing target dimension for an image.
      *
-     * @param  $targetWidth
-     * @param  $targetHeight
-     * @param  $sourceWidth
-     * @param  $sourceHeight
+     * @param  integer $targetWidth
+     * @param  integer $targetHeight
+     * @param  integer $sourceWidth
+     * @param  integer $sourceHeight
      *
-     * @return array Array of the width and height.
+     * @return integer[] Array of the width and height.
      */
     public static function calculateMissingDimension($targetWidth, $targetHeight, $sourceWidth, $sourceHeight)
     {
@@ -75,7 +75,7 @@ class Image
     /**
      * Returns a list of web safe image formats.
      *
-     * @return array
+     * @return string[]
      */
     public static function webSafeFormats()
     {
@@ -190,11 +190,11 @@ class Image
      *
      * @param string $filePath The path to the image
      *
-     * @return array [$width, $height]
+     * @return integer[]
      */
     public static function imageSize($filePath)
     {
-        if (pathinfo($filePath, PATHINFO_EXTENSION) == 'svg') {
+        if (pathinfo($filePath, PATHINFO_EXTENSION) === 'svg') {
             $svg = file_get_contents($filePath);
 
             return static::parseSvgSize($svg);

@@ -80,6 +80,11 @@ class DeleteStaleTemplateCaches extends Task
 
         // Figure out how many rows we're dealing with
         $totalRows = $this->_getQuery()->count('[[id]]');
+
+        if ($totalRows === false) {
+            $totalRows = 0;
+        }
+
         $this->_batch = 0;
         $this->_noMoreRows = false;
         $this->_deletedCacheIds = [];

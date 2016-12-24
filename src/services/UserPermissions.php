@@ -60,6 +60,8 @@ class UserPermissions extends Component
      */
     public function getAllPermissions()
     {
+        $permissions = [];
+
         // General
         // ---------------------------------------------------------------------
 

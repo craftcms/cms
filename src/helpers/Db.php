@@ -213,7 +213,7 @@ class Db
     /**
      * Given a length of a piece of content, returns the underlying database column type to use for saving.
      *
-     * @param            $contentLength
+     * @param integer    $contentLength
      * @param Connection $db The database connection
      *
      * @return string
