@@ -692,7 +692,7 @@ class Updates extends Component
         try {
             $updater = new Updater();
 
-            if ($handle == 'craft') {
+            if ($handle === 'craft') {
                 Craft::info('Craft wants to update the database.', __METHOD__);
                 $updater->updateDatabase();
                 Craft::info('Craft is done updating the database.', __METHOD__);
@@ -749,9 +749,9 @@ class Updates extends Component
     }
 
     /**
-     * @param string|false  $uid
-     * @param string        $handle
-     * @param boolean       $dbBackupPath
+     * @param string|false   $uid
+     * @param string         $handle
+     * @param string|boolean $dbBackupPath
      *
      * @return array
      */

@@ -1040,7 +1040,7 @@ class User extends Element implements IdentityInterface
     /**
      * Returns the remaining cooldown time for this user, if they've entered their password incorrectly too many times.
      *
-     * @return DateInterval|null
+     * @return \DateInterval|null
      */
     public function getRemainingCooldownTime()
     {

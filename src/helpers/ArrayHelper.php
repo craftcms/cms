@@ -167,6 +167,6 @@ class ArrayHelper extends \yii\helpers\ArrayHelper
      */
     private static function _isNotAnEmptyString($val)
     {
-        return (mb_strlen($val) != 0);
+        return (mb_strlen($val) !== 0);
     }
 }
