@@ -486,7 +486,7 @@ abstract class BaseRelationField extends Field implements PreviewableFieldInterf
      *
      * @param ElementInterface|null $element
      *
-     * @return array
+     * @return array|string
      */
     protected function getInputSources($element)
     {

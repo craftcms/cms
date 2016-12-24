@@ -524,7 +524,7 @@ class Assets extends BaseRelationField
                 }
             }
         } else {
-            if ($this->sources == '*') {
+            if ($this->sources === '*') {
                 $sources = '*';
             }
         }

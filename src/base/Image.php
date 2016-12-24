@@ -9,6 +9,7 @@ namespace craft\base;
 
 use craft\errors\ImageException;
 use craft\helpers\Image as ImageHelper;
+use craft\image\Svg;
 use yii\base\Object;
 
 /**
@@ -47,7 +48,7 @@ abstract class Image extends Object
      *
      * @param string $path
      *
-     * @return static Self reference
+     * @return static|Svg Self reference
      * @throws ImageException if the file cannot be loaded
      */
     abstract public function loadImage($path);

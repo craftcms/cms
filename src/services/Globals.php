@@ -55,7 +55,7 @@ class Globals extends Component
     private $_editableGlobalSetIds;
 
     /**
-     * @var
+     * @var GlobalSet[]
      */
     private $_allGlobalSets;
 

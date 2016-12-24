@@ -85,6 +85,7 @@ class Path extends Component
      * Retursn the path to the craft/config/ folder.
      *
      * @return string The path to the craft/config/ folder.
+     * @throws Exception
      */
     public function getConfigPath()
     {
@@ -92,13 +93,20 @@ class Path extends Component
             return $this->_configPath;
         }
 
-        return $this->_configPath = FileHelper::normalizePath(Craft::getAlias('@config'));
+        $configPath = Craft::getAlias('@config');
+
+        if ($configPath === false) {
+            throw new Exception('There was a problem getting the config path.');
+        }
+
+        return $this->_configPath = FileHelper::normalizePath($configPath);
     }
 
     /**
      * Returns the path to the craft/plugins/ folder.
      *
      * @return string The path to the craft/plugins/ folder.
+     * @throws Exception
      */
     public function getPluginsPath()
     {
@@ -106,13 +114,20 @@ class Path extends Component
             return $this->_pluginsPath;
         }
 
-        return $this->_pluginsPath = FileHelper::normalizePath(Craft::getAlias('@plugins'));
+        $pluginsPath = Craft::getAlias('@plugins');
+
+        if ($pluginsPath === false) {
+            throw new Exception('There was a problem getting the plugins path.');
+        }
+
+        return $this->_pluginsPath = FileHelper::normalizePath($pluginsPath);
     }
 
     /**
      * Returns the path to the craft/storage/ folder.
      *
      * @return string The path to the craft/storage/ folder.
+     * @throws Exception
      */
     public function getStoragePath()
     {
@@ -120,7 +135,13 @@ class Path extends Component
             return $this->_storagePath;
         }
 
-        return $this->_storagePath = FileHelper::normalizePath(Craft::getAlias('@storage'));
+        $storagePath = Craft::getAlias('@storage');
+
+        if ($storagePath === false) {
+            throw new Exception('There was a problem getting the storage path.');
+        }
+
+        return $this->_storagePath = FileHelper::normalizePath($storagePath);
     }
 
     /**
@@ -140,6 +161,7 @@ class Path extends Component
      * Returns the path to the craft/app/vendor/ folder.
      *
      * @return string The path to the craft/app/vendor/ folder.
+     * @throws Exception
      */
     public function getVendorPath()
     {
@@ -147,7 +169,13 @@ class Path extends Component
             return $this->_vendorPath;
         }
 
-        return $this->_vendorPath = FileHelper::normalizePath(Craft::getAlias('@vendor'));
+        $vendorPath = Craft::getAlias('@vendor');
+
+        if ($vendorPath === false) {
+            throw new Exception('There was a problem getting the vendor path.');
+        }
+
+        return $this->_vendorPath = FileHelper::normalizePath($vendorPath);
     }
 
     /**
@@ -162,6 +190,7 @@ class Path extends Component
 
         // Add a .gitignore file in there if there isn't one
         $gitignorePath = $path.DIRECTORY_SEPARATOR.'.gitignore';
+
         if (!is_file($gitignorePath)) {
             FileHelper::writeToFile($gitignorePath, "*\n!.gitignore\n");
         }
@@ -336,6 +365,7 @@ class Path extends Component
      * Returns the path to the craft/translations/ folder.
      *
      * @return string The path to the craft/translations/ folder.
+     * @throws Exception
      */
     public function getSiteTranslationsPath()
     {
@@ -343,7 +373,13 @@ class Path extends Component
             return $this->_siteTranslationsPath;
         }
 
-        return $this->_siteTranslationsPath = Craft::getAlias('@translations');
+        $translationsPath = Craft::getAlias('@translations');
+
+        if ($translationsPath === false) {
+            throw new Exception('There was a problem getting the translations path.');
+        }
+
+        return $this->_siteTranslationsPath = $translationsPath;
     }
 
     /**
@@ -360,10 +396,17 @@ class Path extends Component
      * Returns the path to the craft/templates/ folder.
      *
      * @return string The path to the craft/templates/ folder.
+     * @throws Exception
      */
     public function getSiteTemplatesPath()
     {
-        return FileHelper::normalizePath(Craft::getAlias('@templates'));
+        $siteTemplatesPath = Craft::getAlias('@templates');
+
+        if ($siteTemplatesPath === false) {
+            throw new Exception('There was a problem getting the site templates path.');
+        }
+
+        return FileHelper::normalizePath($siteTemplatesPath);
     }
 
     /**

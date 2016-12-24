@@ -168,7 +168,7 @@ class Raster extends Image
         // For Imagick, convert CMYK to RGB, save and re-open.
         if (!Craft::$app->getImages()->getIsGd()
             && method_exists($this->_image->getImagick(), 'getImageColorspace')
-            && $this->_image->getImagick()->getImageColorspace() == \Imagick::COLORSPACE_CMYK
+            && $this->_image->getImagick()->getImageColorspace() === \Imagick::COLORSPACE_CMYK
             && method_exists($this->_image->getImagick(), 'transformImageColorspace')
         ) {
             $this->_image->getImagick()->transformImageColorspace(\Imagick::COLORSPACE_SRGB);
@@ -180,7 +180,7 @@ class Raster extends Image
         $this->_imageSourcePath = $path;
         $this->_extension = pathinfo($path, PATHINFO_EXTENSION);
 
-        if ($this->_extension == 'gif') {
+        if ($this->_extension === 'gif') {
             if (!$imageService->getIsGd() && $this->_image->layers()) {
                 $this->_isAnimatedGif = true;
             }
