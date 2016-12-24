@@ -957,7 +957,7 @@ class AssetTransforms extends Component
             $image->scaleToFit($maxCachedImageSize,
                 $maxCachedImageSize)->saveAs($destination);
         } else {
-            if ($source != $destination) {
+            if ($source !== $destination) {
                 copy($source, $destination);
             }
         }

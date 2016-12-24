@@ -91,6 +91,11 @@ class Svg extends Image
 
         $svg = file_get_contents($path);
 
+        if ($svg === false) {
+            Craft::error('Tried to read the SVG contents at '.$path.', but could not.');
+            throw new ImageException(Craft::t('app', 'Could not read SVG contents.'));
+        }
+
         // If the size is defined by viewbox only, add in width and height attributes
         if (!preg_match(self::SVG_WIDTH_RE, $svg) && preg_match(self::SVG_HEIGHT_RE, $svg)) {
             $svg = preg_replace(self::SVG_TAG_RE,

@@ -114,7 +114,7 @@ class Assets
      *                                            and clean the filename separately.
      * @param boolean $preventPluginModifications if set to true, will prevent plugins from modify
      *
-     * @return string
+     * @return mixed
      */
     public static function prepareAssetName($name, $isFilename = true, $preventPluginModifications = false)
     {
