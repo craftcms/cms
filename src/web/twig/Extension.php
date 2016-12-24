@@ -146,7 +146,7 @@ class Extension extends \Twig_Extension implements \Twig_Extension_GlobalsInterf
             new \Twig_SimpleFilter('currency', [$formatter, 'asCurrency']),
             new \Twig_SimpleFilter('date', [$this, 'dateFilter'], ['needs_environment' => true]),
             new \Twig_SimpleFilter('datetime', [$this, 'datetimeFilter'], ['needs_environment' => true]),
-            new \Twig_SimpleFilter('datetime', [$formatter, 'asDateTime']),
+            new \Twig_SimpleFilter('datetime', [$formatter, 'asDatetime']),
             new \Twig_SimpleFilter('filesize', [$formatter, 'asShortSize']),
             new \Twig_SimpleFilter('filter', 'array_filter'),
             new \Twig_SimpleFilter('group', [$this, 'groupFilter']),
