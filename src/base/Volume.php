@@ -174,7 +174,11 @@ abstract class Volume extends SavableComponent implements VolumeInterface
     }
 
     /**
-     * @inheritdoc
+     * Checks whether a folder exists at the given path.
+     *
+     * @param string $path The path to the folder to check.
+     *
+     * @return array|bool|null
      */
     public function folderExists($path)
     {

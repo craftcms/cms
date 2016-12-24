@@ -194,7 +194,7 @@ class UsersController extends Controller
     /**
      * Starts an elevated user session.
      *
-     * @return null
+     * return Response
      */
     public function actionStartElevatedSession()
     {
@@ -1110,7 +1110,7 @@ class UsersController extends Controller
         $this->requireLogin();
         $userId = Craft::$app->getRequest()->getRequiredBodyParam('userId');
 
-        if ($userId != Craft::$app->getUser()->getIdentity()->id) {
+        if ($userId !== Craft::$app->getUser()->getIdentity()->id) {
             $this->requirePermission('editUsers');
         }
 
@@ -1435,7 +1435,7 @@ class UsersController extends Controller
      * @param string|null $authError
      * @param User|null   $user
      *
-     * @return Response|null
+     * @return null|Response
      */
     private function _handleLoginFailure($authError = null, User $user = null)
     {
@@ -1638,7 +1638,7 @@ class UsersController extends Controller
     }
 
     /**
-     * @param $user
+     * @param User $user
      *
      * @return void
      */

@@ -687,10 +687,9 @@ EOD;
     }
 
     /**
-     * @param $handle
-     * @param $originalErrorMessage
-     *
-     * @param $dbBackupPath
+     * @param string $handle
+     * @param string $originalErrorMessage
+     * @param string $dbBackupPath
      *
      * @throws Exception
      */

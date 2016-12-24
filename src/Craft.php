@@ -273,10 +273,10 @@ EOD;
     /**
      * Writes a field attributes file.
      *
-     * @param $templatePath
-     * @param $search
-     * @param $replace
-     * @param $destinationPath
+     * @param string   $templatePath
+     * @param string[] $search
+     * @param string[] $replace
+     * @param string $destinationPath
      */
     private static function _writeFieldAttributesFile($templatePath, $search, $replace, $destinationPath)
     {
