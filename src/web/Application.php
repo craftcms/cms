@@ -13,7 +13,6 @@ use craft\helpers\App;
 use craft\helpers\FileHelper;
 use craft\helpers\Header;
 use craft\helpers\Json;
-use craft\helpers\StringHelper;
 use craft\helpers\Url;
 use yii\base\InvalidRouteException;
 use yii\web\ForbiddenHttpException;
