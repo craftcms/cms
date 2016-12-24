@@ -316,27 +316,6 @@ class Application extends \yii\web\Application
     /**
      * @inheritdoc
      *
-     * @param string $route
-     *
-     * @return array|boolean
-     * @throws \yii\base\InvalidConfigException
-     */
-    public function createController($route)
-    {
-        // Convert Yii 1-styled routes to Yii 2, and log them as deprecation errors
-        if (StringHelper::hasUpperCase($route)) {
-            $requestedRoute = $route;
-            $parts = preg_split('/(?=[\p{Lu}])+/u', $route);
-            $route = StringHelper::toLowerCase(implode('-', $parts));
-            $this->getDeprecator()->log('yii1-route', 'A Yii 1-styled route was requested: "'.$requestedRoute.'". It should be changed to: "'.$route.'".');
-        }
-
-        return parent::createController($route);
-    }
-
-    /**
-     * @inheritdoc
-     *
      * @return Response|null The result of the action, normalized into a Response object
      */
     public function runAction($route, $params = [])
