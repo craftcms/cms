@@ -279,7 +279,7 @@ class Assets extends BaseRelationField
      *
      * @param ElementInterface|null $element
      *
-     * @return mixed
+     * @return integer
      */
     public function resolveDynamicPathToFolderId($element)
     {
@@ -692,7 +692,7 @@ class Assets extends BaseRelationField
      * @param boolean               $createDynamicFolders whether missing folders should be created in the process
      *
      * @throws InvalidSubpathException if the folder subpath is not valid
-     * @return mixed|null
+     * @return integer
      */
     private function _determineUploadFolderId($element, $createDynamicFolders = true)
     {

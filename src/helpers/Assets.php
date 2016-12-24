@@ -109,12 +109,12 @@ class Assets
     /**
      * Clean an Asset's filename.
      *
-     * @param         $name
+     * @param string  $name
      * @param boolean $isFilename                 if set to true (default), will separate extension
      *                                            and clean the filename separately.
      * @param boolean $preventPluginModifications if set to true, will prevent plugins from modify
      *
-     * @return mixed
+     * @return string
      */
     public static function prepareAssetName($name, $isFilename = true, $preventPluginModifications = false)
     {

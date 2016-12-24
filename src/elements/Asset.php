@@ -938,14 +938,14 @@ class Asset extends Element
     /**
      * Return a dimension of the image.
      *
-     * @param $dimension 'height' or 'width'
-     * @param $transform
+     * @param string                           $dimension 'height' or 'width'
+     * @param AssetTransform|string|array|null $transform
      *
      * @return null|float|mixed
      */
     private function _getDimension($dimension, $transform)
     {
-        if ($this->kind != 'image') {
+        if ($this->kind !== 'image') {
             return null;
         }
 
@@ -957,9 +957,7 @@ class Asset extends Element
             return $this->$dimension;
         }
 
-        $transform = Craft::$app->getAssetTransforms()->normalizeTransform(
-            $transform
-        );
+        $transform = Craft::$app->getAssetTransforms()->normalizeTransform($transform);
 
         $dimensions = [
             'width' => $transform->width,
