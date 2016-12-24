@@ -35,7 +35,10 @@ use craft\web\twig\tokenparsers\RequirePermissionTokenParser;
 use craft\web\twig\tokenparsers\SwitchTokenParser;
 use craft\web\twig\variables\CraftVariable;
 use craft\web\View;
+use DateInterval;
 use DateTime;
+use DateTimeInterface;
+use DateTimeZone;
 use yii\base\InvalidConfigException;
 use yii\helpers\Markdown;
 
@@ -141,6 +144,7 @@ class Extension extends \Twig_Extension implements \Twig_Extension_GlobalsInterf
         $security = Craft::$app->getSecurity();
 
         return [
+            new \Twig_SimpleFilter('atom', [$this, 'atomFilter'], ['needs_environment' => true]),
             new \Twig_SimpleFilter('camel', [$this, 'camelFilter']),
             new \Twig_SimpleFilter('column', [ArrayHelper::class, 'getColumn']),
             new \Twig_SimpleFilter('currency', [$formatter, 'asCurrency']),
@@ -170,6 +174,7 @@ class Extension extends \Twig_Extension implements \Twig_Extension_GlobalsInterf
             new \Twig_SimpleFilter('pascal', [$this, 'pascalFilter']),
             new \Twig_SimpleFilter('percentage', [$formatter, 'asPercent']),
             new \Twig_SimpleFilter('replace', [$this, 'replaceFilter']),
+            new \Twig_SimpleFilter('rss', [$this, 'rssFilter'], ['needs_environment' => true]),
             new \Twig_SimpleFilter('snake', [$this, 'snakeFilter']),
             new \Twig_SimpleFilter('time', [$this, 'timeFilter'], ['needs_environment' => true]),
             new \Twig_SimpleFilter('timestamp', [$formatter, 'asTimestamp']),
@@ -418,6 +423,34 @@ class Extension extends \Twig_Extension implements \Twig_Extension_GlobalsInterf
         }
 
         return $value;
+    }
+
+    /**
+     * Converts a date to the Atom format.
+     *
+     * @param \Twig_Environment                              $env
+     * @param DateTime|DateTimeInterface|DateInterval|string $date     A date
+     * @param DateTimeZone|string|null|false                 $timezone The target timezone, null to use the default, false to leave unchanged
+     *
+     * @return string The formatted date
+     */
+    public function atomFilter(\Twig_Environment $env, $date, $timezone = null)
+    {
+        return \twig_date_format_filter($env, $date, \DateTime::ATOM, $timezone);
+    }
+
+    /**
+     * Converts a date to the RSS format.
+     *
+     * @param \Twig_Environment                              $env
+     * @param DateTime|DateTimeInterface|DateInterval|string $date     A date
+     * @param DateTimeZone|string|null|false                 $timezone The target timezone, null to use the default, false to leave unchanged
+     *
+     * @return string The formatted date
+     */
+    public function rssFilter(\Twig_Environment $env, $date, $timezone = null)
+    {
+        return \twig_date_format_filter($env, $date, \DateTime::RSS, $timezone);
     }
 
     /**
