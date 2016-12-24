@@ -313,6 +313,8 @@ class ElementsController extends BaseElementsController
             throw new ForbiddenHttpException('User not permitted to edit content in any of the sites supported by this element');
         }
 
+        $response = [];
+
         if ($includeSites) {
             if (count($siteIds) > 1) {
                 $response['siteIds'] = [];

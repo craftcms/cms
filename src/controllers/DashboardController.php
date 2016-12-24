@@ -79,6 +79,7 @@ class DashboardController extends Controller
         }
 
         $view->setNamespace($namespace);
+        $variables = [];
 
         // Assemble the list of existing widgets
         $variables['widgets'] = [];

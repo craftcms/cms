@@ -44,6 +44,8 @@ class AssetTransformsController extends Controller
      */
     public function actionTransformIndex()
     {
+        $variables = [];
+
         $variables['transforms'] = Craft::$app->getAssetTransforms()->getAllTransforms();
         $variables['modes'] = AssetTransform::modes();
 

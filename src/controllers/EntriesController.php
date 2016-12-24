@@ -371,6 +371,8 @@ class EntriesController extends BaseEntriesController
         $this->enforceEditEntryPermissions($entry);
         $this->_populateEntryModel($entry);
 
+        $variables = [];
+
         $variables['sectionId'] = $entry->sectionId;
         $variables['entry'] = $entry;
         $variables['showEntryTypes'] = true;

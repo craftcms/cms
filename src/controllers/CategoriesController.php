@@ -69,6 +69,8 @@ class CategoriesController extends Controller
     {
         $this->requireAdmin();
 
+        $variables = [];
+
         // Breadcrumbs
         $variables['crumbs'] = [
             [
@@ -445,10 +447,6 @@ class CategoriesController extends Controller
         }
 
         if (Craft::$app->getRequest()->getAcceptsJson()) {
-            $return['success'] = true;
-            $return['title'] = $category->title;
-            $return['cpEditUrl'] = $category->getCpEditUrl();
-
             return $this->asJson([
                 'success' => true,
                 'id' => $category->id,
