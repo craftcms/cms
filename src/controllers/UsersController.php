@@ -1783,18 +1783,7 @@ class UsersController extends Controller
     {
         $url = Craft::$app->getConfig()->getLocalized('invalidUserTokenPath');
 
-        // TODO: Remove this code in Craft 4
-        if ($url == '') {
-            // Check the deprecated config setting.
-            $url = Craft::$app->getConfig()->getLocalized('activateAccountFailurePath');
-
-            if ($url) {
-                Craft::$app->getDeprecator()->log('activateAccountFailurePath',
-                    'The ‘activateAccountFailurePath’ has been deprecated. Use ‘invalidUserTokenPath’ instead.');
-            }
-        }
-
-        if ($url != '') {
+        if ($url) {
             return $this->redirect(Url::getSiteUrl($url));
         }
 
@@ -1804,9 +1793,7 @@ class UsersController extends Controller
             $url = Url::getSiteUrl(Craft::$app->getConfig()->getLoginPath());
         }
 
-        throw new HttpException('200', Craft::t('app',
-            'Invalid verification code. Please [login or reset your password]({loginUrl}).',
-            ['loginUrl' => $url]));
+        throw new HttpException('200', Craft::t('app', 'Invalid verification code. Please [login or reset your password]({loginUrl}).', ['loginUrl' => $url]));
     }
 
     /**
