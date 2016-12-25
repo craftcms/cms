@@ -57,9 +57,9 @@ class MigrationHelper
     /**
      * Drops a foreign key if it exists.
      *
-     * @param string       $tableName
-     * @param string|array $columns
-     * @param Migration    $migration
+     * @param string          $tableName
+     * @param string|string[] $columns
+     * @param Migration       $migration
      *
      * @return void
      */
@@ -641,10 +641,10 @@ class MigrationHelper
     /**
      * Drops an index.
      *
-     * @param           $tableName
-     * @param           $columns
-     * @param bool      $unique
-     * @param Migration $migration
+     * @param string          $tableName
+     * @param string|string[] $columns
+     * @param bool            $unique
+     * @param Migration       $migration
      */
     public static function dropIndex($tableName, $columns, $unique = false, Migration $migration = null)
     {

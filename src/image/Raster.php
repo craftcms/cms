@@ -410,7 +410,7 @@ class Raster extends Image
     /**
      * Loads an image from an SVG string.
      *
-     * @param $svgContent
+     * @param string $svgContent
      *
      * @return static Self reference
      * @throws ImageException if the SVG string cannot be loaded.
@@ -528,11 +528,11 @@ class Raster extends Image
     // =========================================================================
 
     /**
-     * @param         $tempFileName
-     * @param         $originalSize
-     * @param         $extension
-     * @param         $minQuality
-     * @param         $maxQuality
+     * @param string  $tempFileName
+     * @param integer $originalSize
+     * @param string  $extension
+     * @param integer $minQuality
+     * @param integer $maxQuality
      * @param integer $step
      *
      * @return string the resulting file path
@@ -542,7 +542,7 @@ class Raster extends Image
         // Give ourselves some extra time.
         @set_time_limit(30);
 
-        if ($step == 0) {
+        if ($step === 0) {
             $tempFileName = pathinfo($tempFileName, PATHINFO_DIRNAME).DIRECTORY_SEPARATOR.pathinfo($tempFileName, PATHINFO_FILENAME).'-temp.'.$extension;
         }
 

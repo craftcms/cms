@@ -399,11 +399,11 @@ class Url
     /**
      * Returns a URL.
      *
-     * @param string       $path
-     * @param array|string $params
-     * @param              $protocol
-     * @param              $cpUrl
-     * @param              $mustShowScriptName
+     * @param string          $path
+     * @param string[]|string $params
+     * @param string|null     $protocol
+     * @param boolean         $cpUrl
+     * @param boolean         $mustShowScriptName
      *
      * @return string
      */

@@ -1050,7 +1050,7 @@ class StringHelper extends \yii\helpers\StringHelper
      * @param boolean $lower
      * @param boolean $removePunctuation Whether punctuation marks should be removed (default is true)
      *
-     * @return array The prepped words in the string
+     * @return string[] The prepped words in the string
      *
      * @see toKebabCase()
      * @see toCamelCase()
