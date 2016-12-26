@@ -86,22 +86,22 @@ class Request extends \yii\web\Request
     private $_checkedRequestType = false;
 
     /**
-     * @var
+     * @var string[]
      */
     private $_actionSegments;
 
     /**
-     * @var
+     * @var boolean
      */
     private $_isMobileBrowser;
 
     /**
-     * @var
+     * @var boolean
      */
     private $_isMobileOrTabletBrowser;
 
     /**
-     * @var
+     * @var string
      */
     private $_ipAddress;
 
