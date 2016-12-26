@@ -215,9 +215,6 @@ class UrlManager extends \yii\web\UrlManager
             return null;
         }
 
-        // Ensure plugins are loaded so they can attach event listeners
-        Craft::$app->getPlugins()->loadPlugins();
-
         // Load the config file rules
         if ($request->getIsCpRequest()) {
             $baseCpRoutesPath = Craft::$app->getBasePath().DIRECTORY_SEPARATOR.'config'.DIRECTORY_SEPARATOR.'cproutes';
