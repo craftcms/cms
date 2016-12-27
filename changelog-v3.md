@@ -384,6 +384,7 @@ Craft CMS 3.0 Working Changelog
 - Removed `craft\services\Users::changePassword()`.
 - Removed `craft\services\Users::deleteUser()`.
 - Removed `craft\variables\CraftVariable::getTimeZone()`.
+- Removed `craft\variables\Fields::createField()`.
 - Removed the `$attribute` argument from `craft\base\ApplicationTrait::getInfo()`.
 - Removed the `$except` argument from `craft\base\Element::getFieldValues()`.
 - Removed the `$indexBy` argument from `craft\elements\User::getGroups()`.

@@ -62,20 +62,6 @@ class Fields
     // -------------------------------------------------------------------------
 
     /**
-     * Creates a field with a given config.
-     *
-     * @param mixed $config The field’s class name, or its config, with a `type` value and optionally a `settings` value
-     *
-     * @return FieldInterface The field
-     */
-    public function createField($config)
-    {
-        Craft::$app->getDeprecator()->log('craft.fields.createField()', 'craft.fields.createField() has been deprecated. Use craft.app.fields.createField() instead.');
-
-        return Craft::$app->getFields()->createField($config);
-    }
-
-    /**
      * Returns a field by its ID.
      *
      * @param integer $fieldId The field’s ID
