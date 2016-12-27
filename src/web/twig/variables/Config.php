@@ -72,9 +72,9 @@ class Config
      */
     public function usePathInfo()
     {
-        Craft::$app->getDeprecator()->log('craft.config.usePathInfo()', 'craft.config.usePathInfo() has been deprecated. Use craft.app.config.usePathInfo() instead.');
+        Craft::$app->getDeprecator()->log('craft.config.usePathInfo()', 'craft.config.usePathInfo() has been deprecated. Use craft.app.config.usePathInfo instead.');
 
-        return Craft::$app->getConfig()->usePathInfo();
+        return Craft::$app->getConfig()->getUsePathInfo();
     }
 
     /**

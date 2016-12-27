@@ -462,7 +462,7 @@ class Url
         }
 
         // Put it all together
-        if (!$showScriptName || Craft::$app->getConfig()->usePathInfo()) {
+        if (!$showScriptName || Craft::$app->getConfig()->getUsePathInfo()) {
             if ($path) {
                 $url = rtrim($baseUrl, '/').'/'.trim($path, '/');
 

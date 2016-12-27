@@ -224,7 +224,7 @@ class Request extends \yii\web\Request
     {
         if ($this->_fullPath === null) {
             try {
-                if (Craft::$app->getConfig()->usePathInfo()) {
+                if (Craft::$app->getConfig()->getUsePathInfo()) {
                     $this->_fullPath = $this->getPathInfo(true);
 
                     if (!$this->_fullPath) {

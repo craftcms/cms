@@ -28,6 +28,8 @@ use yii\base\InvalidParamException;
  *
  * An instance of the Config service is globally accessible in Craft via [[Application::config `Craft::$app->getConfig()`]].
  *
+ * @property boolean $usePathInfo Whether generated URLs should be formatted using PATH_INFO
+ *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since  3.0
  */
@@ -365,9 +367,9 @@ class Config extends Component
      * Results of the PATH_INFO test request will be cached for the amount of time specified by the
      * [cacheDuration](http://craftcms.com/docs/config-settings#cacheDuration) config setting.
      *
-     * @return boolean Whether generaletd URLs should be formatted using PATH_INFO.
+     * @return boolean Whether generated URLs should be formatted using PATH_INFO
      */
-    public function usePathInfo()
+    public function getUsePathInfo()
     {
         if ($this->_usePathInfo !== null) {
             return $this->_usePathInfo;

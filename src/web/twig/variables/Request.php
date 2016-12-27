@@ -243,7 +243,7 @@ class Request
     {
         Craft::$app->getDeprecator()->log('craft.request.getUrlFormat()', 'craft.request.getUrlFormat() has been deprecated. Use craft.app.config.usePathInfo() instead.');
 
-        if (Craft::$app->getConfig()->usePathInfo()) {
+        if (Craft::$app->getConfig()->getUsePathInfo()) {
             return 'pathinfo';
         }
 
