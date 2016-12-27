@@ -91,13 +91,13 @@ class CraftVariable extends ServiceLocator
         ];
 
         switch (Craft::$app->getEdition()) {
-            /** @noinspection PhpMissingBreakStatementInspection */
             case Craft::Pro:
                 /** @noinspection PhpDeprecationInspection */
                 $config['components'] = array_merge($config['components'], [
                     // Deprecated
                     'userGroups' => UserGroups::class,
                 ]);
+                // no break
             case Craft::Client:
                 /** @noinspection PhpDeprecationInspection */
                 /** @noinspection SuspiciousAssignmentsInspection */

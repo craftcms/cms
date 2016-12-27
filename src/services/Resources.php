@@ -120,10 +120,12 @@ class Resources extends Component
                     // Make sure plugins are loaded in case the asset lives in a plugin-supplied volume type
                     Craft::$app->getPlugins()->loadPlugins();
                     try {
-                        return Craft::$app->getAssetTransforms()->getResizedAssetServerPath($fileModel, $size);
+                        $path = Craft::$app->getAssetTransforms()->getResizedAssetServerPath($fileModel, $size);
                     } catch (\Exception $e) {
-                        return $this->_getBrokenImageThumbPath();
+                        $path = $this->_getBrokenImageThumbPath();
                     }
+
+                    return $path;
                 case 'icons':
                     if (empty($segs[1]) || !preg_match('/^\w+/i', $segs[1])) {
                         return false;

@@ -146,17 +146,18 @@ class App
 
         // Multiply! Falling through here is intentional.
         switch (strtolower($matches[1])) {
-            /** @noinspection PhpMissingBreakStatementInspection */
             case 't':
                 $value *= 1024;
-            /** @noinspection PhpMissingBreakStatementInspection */
+                // no break
             case 'g':
                 $value *= 1024;
-            /** @noinspection PhpMissingBreakStatementInspection */
+                // no break
             case 'm':
                 $value *= 1024;
+                // no break
             case 'k':
                 $value *= 1024;
+                // no break
         }
 
         return $value;
