@@ -210,31 +210,29 @@ class ImagesService extends BaseApplicationComponent
 			return false;
 		}
 
-		$exif = $this->getExifData($filePath);
+        if (!($this->isImagick() && method_exists('Imagick', 'getImageOrientation'))) {
+            return false;
+        }
 
-		$degrees = false;
+        $image = new \Imagick($filePath);
+        $orientation = $image->getImageOrientation();
 
-		if (!empty($exif['ifd0.Orientation']))
-		{
-			switch ($exif['ifd0.Orientation'])
-			{
-				case ImageHelper::EXIF_IFD0_ROTATE_180:
-				{
-					$degrees = 180;
-					break;
-				}
-				case ImageHelper::EXIF_IFD0_ROTATE_90:
-				{
-					$degrees = 90;
-					break;
-				}
-				case ImageHelper::EXIF_IFD0_ROTATE_270:
-				{
-					$degrees = 270;
-					break;
-				}
-			}
-		}
+        $degrees = false;
+
+        switch ($orientation) {
+            case ImageHelper::EXIF_IFD0_ROTATE_180: {
+                $degrees = 180;
+                break;
+            }
+            case ImageHelper::EXIF_IFD0_ROTATE_90: {
+                $degrees = 90;
+                break;
+            }
+            case ImageHelper::EXIF_IFD0_ROTATE_270: {
+                $degrees = 270;
+                break;
+            }
+        }
 
 		if ($degrees === false)
 		{

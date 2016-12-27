@@ -319,7 +319,9 @@ class ElementsService extends BaseApplicationComponent
 
 			if ($indexBy)
 			{
-				$elements[$element->$indexBy] = $element;
+				// Cast to a string in the case of SingleOptionFieldData, so its
+				// __toString() method gets invoked.
+				$elements[(string)$element->$indexBy] = $element;
 			}
 			else
 			{
@@ -791,8 +793,8 @@ class ElementsService extends BaseApplicationComponent
 		// ---------------------------------------------------------------------
 
 		// Convert the old childOf and parentOf params to the relatedTo param
-		// childOf(element)  => relatedTo({ source: element })
-		// parentOf(element) => relatedTo({ target: element })
+		// childOf(element)  => relatedTo({ sourceElement: element })
+		// parentOf(element) => relatedTo({ targetElement: element })
 		if (!$criteria->relatedTo && ($criteria->childOf || $criteria->parentOf))
 		{
 			$relatedTo = array('and');
@@ -808,6 +810,7 @@ class ElementsService extends BaseApplicationComponent
 			}
 
 			$criteria->relatedTo = $relatedTo;
+            craft()->deprecator->log('element_old_relation_params', 'The ‘childOf’, ‘childField’, ‘parentOf’, and ‘parentField’ element params have been deprecated. Use ‘relatedTo’ instead.');
 		}
 
 		if ($criteria->relatedTo)
@@ -1132,11 +1135,16 @@ class ElementsService extends BaseApplicationComponent
 				}
 			}
 
-			if ($criteria->level || $criteria->depth)
+            if (!$criteria->level && $criteria->depth)
+            {
+                $criteria->level = $criteria->depth;
+                $criteria->depth = null;
+                craft()->deprecator->log('element_depth_param', 'The ‘depth’ element param has been deprecated. Use ‘level’ instead.');
+            }
+
+			if ($criteria->level)
 			{
-				// TODO: 'depth' is deprecated; use 'level' instead.
-				$level = ($criteria->level ? $criteria->level : $criteria->depth);
-				$query->andWhere(DbHelper::parseParam('structureelements.level', $level, $query->params));
+				$query->andWhere(DbHelper::parseParam('structureelements.level', $criteria->level, $query->params));
 			}
 		}
 
