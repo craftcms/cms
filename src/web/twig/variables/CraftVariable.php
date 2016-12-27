@@ -179,19 +179,6 @@ class CraftVariable extends ServiceLocator
     }
 
     /**
-     * Returns the system timezone.
-     *
-     * @return string
-     * @deprecated in 3.0
-     */
-    public function getTimeZone()
-    {
-        Craft::$app->getDeprecator()->log('craft.getTimeZone()', 'craft.getTimeZone() has been deprecated. Use craft.app.getTimeZone() instead.');
-
-        return Craft::$app->getTimeZone();
-    }
-
-    /**
      * Returns whether this site has multiple locales.
      *
      * @return boolean
