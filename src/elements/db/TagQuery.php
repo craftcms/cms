@@ -59,40 +59,11 @@ class TagQuery extends ElementQuery
      */
     public function __set($name, $value)
     {
-        switch ($name) {
-            case 'group': {
-                $this->group($value);
-                break;
-            }
-            case 'name': {
-                Craft::$app->getDeprecator()->log('tag_name_param', 'Tags’ ‘name’ param has been deprecated. Use ‘title’ instead.');
-                $this->title = $value;
-                break;
-            }
-            default: {
-                parent::__set($name, $value);
-            }
+        if ($name === 'group') {
+            $this->group($value);
+        } else {
+            parent::__set($name, $value);
         }
-    }
-
-    /**
-     * @inheritdoc
-     */
-    public function __call($name, $params)
-    {
-        if ($name === 'name') {
-            Craft::$app->getDeprecator()->log('tag_name_param', 'Tags’ ‘name’ param has been deprecated. Use ‘title’ instead.');
-
-            if (count($params) == 1) {
-                $this->title = $params[0];
-            } else {
-                $this->title = $params;
-            }
-
-            return $this;
-        }
-
-        return parent::__call($name, $params);
     }
 
     /**
@@ -153,14 +124,6 @@ class TagQuery extends ElementQuery
 
         if ($this->groupId) {
             $this->subQuery->andWhere(Db::parseParam('tags.groupId', $this->groupId));
-        }
-
-        if (is_string($this->orderBy)) {
-            $this->orderBy = preg_replace('/\bname\b/', 'title', $this->orderBy, -1, $count);
-
-            if ($count) {
-                Craft::$app->getDeprecator()->log('tag_orderby_name', 'Ordering tags by ‘name’ has been deprecated. Order by ‘title’ instead.');
-            }
         }
 
         return parent::beforePrepare();

@@ -295,6 +295,8 @@ Craft CMS 3.0 Working Changelog
 - Removed the `{% registerjsresource %}` Twig tag. Use `{% do view.registerJsResource("path/to/resource.js") %}` instead.
 - Removed the `childOf`, `childField`, `parentOf`, and `parentField` element query params. Use `relatedTo` instead.
 - Removed the `depth` element query param. Use `level` instead.
+- Removed the `name` tag query param. Use `title` instead.
+- Removed support for passing `"name"` into the `orderBy` tag query param. Pass `"title"` instead.
 - Removed the PEL library.
 - Removed the PclZip library.
 - Removed the SimplePie library.
