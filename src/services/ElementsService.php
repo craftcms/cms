@@ -810,6 +810,7 @@ class ElementsService extends BaseApplicationComponent
 			}
 
 			$criteria->relatedTo = $relatedTo;
+            craft()->deprecator->log('element_old_relation_params', 'The ‘childOf’, ‘childField’, ‘parentOf’, and ‘parentField’ element params have been deprecated. Use ‘relatedTo’ instead.');
 		}
 
 		if ($criteria->relatedTo)
