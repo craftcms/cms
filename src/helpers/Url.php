@@ -418,7 +418,7 @@ class Url
             $path = substr($path, 0, $qpos);
         }
 
-        $showScriptName = ($mustShowScriptName || !Craft::$app->getConfig()->omitScriptNameInUrls());
+        $showScriptName = ($mustShowScriptName || !Craft::$app->getConfig()->getOmitScriptNameInUrls());
         $request = Craft::$app->getRequest();
 
         if ($cpUrl) {

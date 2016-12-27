@@ -84,9 +84,9 @@ class Config
      */
     public function omitScriptNameInUrls()
     {
-        Craft::$app->getDeprecator()->log('craft.config.omitScriptNameInUrls()', 'craft.config.omitScriptNameInUrls() has been deprecated. Use craft.app.config.omitScriptNameInUrls() instead.');
+        Craft::$app->getDeprecator()->log('craft.config.omitScriptNameInUrls()', 'craft.config.omitScriptNameInUrls() has been deprecated. Use craft.app.config.omitScriptNameInUrls instead.');
 
-        return Craft::$app->getConfig()->omitScriptNameInUrls();
+        return Craft::$app->getConfig()->getOmitScriptNameInUrls();
     }
 
     /**

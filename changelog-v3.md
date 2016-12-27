@@ -243,6 +243,7 @@ Craft CMS 3.0 Working Changelog
 - Renamed `craft\helpers\Url::getUrlWithToken()` to `urlWithToken()`.
 - Renamed `craft\models\AssetTransform::getTransformModes()` to `modes()`.
 - Renamed `craft\services\Assets::renameAsset()` to `renameFile()`, and replaced its `$newFilename` argument with `$runValidation`.
+- Renamed `craft\services\Config::omitScriptNameInUrls()` to `getOmitScriptNameInUrls()`.
 - Renamed `craft\services\Config::usePathInfo()` to `getUsePathInfo()`.
 - Renamed `craft\services\Resources::getResourcePath()` to `resolveResourcePath()`.
 - Renamed `craft\volumes\AwsS3::getClient()` to `client()`.

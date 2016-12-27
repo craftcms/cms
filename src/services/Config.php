@@ -28,7 +28,8 @@ use yii\base\InvalidParamException;
  *
  * An instance of the Config service is globally accessible in Craft via [[Application::config `Craft::$app->getConfig()`]].
  *
- * @property boolean $usePathInfo Whether generated URLs should be formatted using PATH_INFO
+ * @property boolean $omitScriptNameInUrls Whether generated URLs should omit “index.php”
+ * @property boolean $usePathInfo          Whether generated URLs should be formatted using PATH_INFO
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since  3.0
@@ -297,7 +298,7 @@ class Config extends Component
      *
      * @return boolean Whether generated URLs should omit “index.php”.
      */
-    public function omitScriptNameInUrls()
+    public function getOmitScriptNameInUrls()
     {
         if ($this->_omitScriptNameInUrls !== null) {
             return $this->_omitScriptNameInUrls;

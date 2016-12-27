@@ -62,7 +62,7 @@ class UrlManager extends \yii\web\UrlManager
      */
     public function __construct($config = [])
     {
-        $config['showScriptName'] = !Craft::$app->getConfig()->omitScriptNameInUrls();
+        $config['showScriptName'] = !Craft::$app->getConfig()->getOmitScriptNameInUrls();
         $config['rules'] = $this->_getRules();
 
         parent::__construct($config);
