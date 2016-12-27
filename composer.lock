@@ -4,8 +4,8 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#composer-lock-the-lock-file",
         "This file is @generated automatically"
     ],
-    "hash": "02b578dbf62e7a68c763b0832f70dad2",
-    "content-hash": "4f970fb27b4df07dd9d1c8f63f0c12a0",
+    "hash": "147cba2bd6baf12bd0cc4f160abef664",
+    "content-hash": "4364a6541a4d071381ba0dd85c912fc0",
     "packages": [
         {
             "name": "guzzle/guzzle",
@@ -203,16 +203,16 @@
         },
         {
             "name": "phpmailer/phpmailer",
-            "version": "5.2.15",
+            "version": "v5.2.18",
             "source": {
                 "type": "git",
-                "url": "https://github.com/pixelandtonic/PHPMailer.git",
-                "reference": "6806100d6fb909784d987df0667390b3b8c57414"
+                "url": "https://github.com/PHPMailer/PHPMailer.git",
+                "reference": "ed4e7ce8ad877a8f578139c491c256ab1933c7c9"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/pixelandtonic/PHPMailer/zipball/6806100d6fb909784d987df0667390b3b8c57414",
-                "reference": "6806100d6fb909784d987df0667390b3b8c57414",
+                "url": "https://api.github.com/repos/PHPMailer/PHPMailer/zipball/ed4e7ce8ad877a8f578139c491c256ab1933c7c9",
+                "reference": "ed4e7ce8ad877a8f578139c491c256ab1933c7c9",
                 "shasum": ""
             },
             "require": {
@@ -223,8 +223,7 @@
                 "phpunit/phpunit": "4.7.*"
             },
             "suggest": {
-                "league/oauth2-client": "Needed for XOAUTH2 authentication",
-                "league/oauth2-google": "Needed for Gmail XOAUTH2"
+                "league/oauth2-google": "Needed for Google XOAUTH2 authentication"
             },
             "type": "library",
             "autoload": {
@@ -238,17 +237,18 @@
                     "extras/ntlm_sasl_client.php"
                 ]
             },
+            "notification-url": "https://packagist.org/downloads/",
             "license": [
                 "LGPL-2.1"
             ],
             "authors": [
                 {
-                    "name": "Marcus Bointon",
-                    "email": "phpmailer@synchromedia.co.uk"
-                },
-                {
                     "name": "Jim Jagielski",
                     "email": "jimjag@gmail.com"
+                },
+                {
+                    "name": "Marcus Bointon",
+                    "email": "phpmailer@synchromedia.co.uk"
                 },
                 {
                     "name": "Andy Prevost",
@@ -259,10 +259,7 @@
                 }
             ],
             "description": "PHPMailer is a full-featured email creation and transfer class for PHP",
-            "support": {
-                "source": "https://github.com/pixelandtonic/PHPMailer/tree/5.2.15"
-            },
-            "time": "2015-11-22 02:58:38"
+            "time": "2016-12-24 15:43:41"
         },
         {
             "name": "pixelandtonic/imagine",
@@ -379,7 +376,7 @@
         },
         {
             "name": "symfony/event-dispatcher",
-            "version": "v2.8.14",
+            "version": "v2.8.15",
             "source": {
                 "type": "git",
                 "url": "https://github.com/symfony/event-dispatcher.git",
@@ -1717,16 +1714,16 @@
         },
         {
             "name": "symfony/yaml",
-            "version": "v3.2.0",
+            "version": "v3.2.1",
             "source": {
                 "type": "git",
                 "url": "https://github.com/symfony/yaml.git",
-                "reference": "f2300ba8fbb002c028710b92e1906e7457410693"
+                "reference": "a7095af4b97a0955f85c8989106c249fa649011f"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/symfony/yaml/zipball/f2300ba8fbb002c028710b92e1906e7457410693",
-                "reference": "f2300ba8fbb002c028710b92e1906e7457410693",
+                "url": "https://api.github.com/repos/symfony/yaml/zipball/a7095af4b97a0955f85c8989106c249fa649011f",
+                "reference": "a7095af4b97a0955f85c8989106c249fa649011f",
                 "shasum": ""
             },
             "require": {
@@ -1768,7 +1765,7 @@
             ],
             "description": "Symfony Yaml Component",
             "homepage": "https://symfony.com",
-            "time": "2016-11-18 21:17:59"
+            "time": "2016-12-10 10:07:06"
         },
         {
             "name": "webmozart/assert",
