@@ -793,8 +793,8 @@ class ElementsService extends BaseApplicationComponent
 		// ---------------------------------------------------------------------
 
 		// Convert the old childOf and parentOf params to the relatedTo param
-		// childOf(element)  => relatedTo({ source: element })
-		// parentOf(element) => relatedTo({ target: element })
+		// childOf(element)  => relatedTo({ sourceElement: element })
+		// parentOf(element) => relatedTo({ targetElement: element })
 		if (!$criteria->relatedTo && ($criteria->childOf || $criteria->parentOf))
 		{
 			$relatedTo = array('and');
