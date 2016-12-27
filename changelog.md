@@ -5,7 +5,8 @@ Craft CMS Changelog
 
 ### Changed
 
-- Use Imagick if available to manipulate image EXIF rotation data.
+- Craft now uses ImageMagick to read and manipulate image EXIF data, when it’s available.
+- Updated PHPMailer to 5.2.18, which fixes a [remote code execution vulnerability](https://legalhackers.com/advisories/PHPMailer-Exploit-Remote-Code-Exec-CVE-2016-10033-Vuln.html).
 - Updated Garnish to 0.1.9.
 - Updated Velocity to 1.4.1.
 
