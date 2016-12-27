@@ -23,6 +23,6 @@ class Stringy extends \Stringy\Stringy
      */
     public function getAsciiCharMap()
     {
-        return parent::charsArray();
+        return $this->charsArray();
     }
 }
