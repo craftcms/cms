@@ -5,6 +5,7 @@ Craft CMS Changelog
 
 ### Changed
 
+- [TagModel::getName()](https://craftcms.com/classreference/models/TagModel#getName-detail) now logs a deprecation error. (It has been deprecated since Craft 2.3; use the `title` property instead.)
 - Craft now uses ImageMagick to read and manipulate image EXIF data, when it’s available.
 - Updated PHPMailer to 5.2.18, which fixes a [remote code execution vulnerability](https://legalhackers.com/advisories/PHPMailer-Exploit-Remote-Code-Exec-CVE-2016-10033-Vuln.html).
 - Updated Garnish to 0.1.9.

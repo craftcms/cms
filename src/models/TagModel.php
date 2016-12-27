@@ -106,7 +106,8 @@ class TagModel extends BaseElementModel
 	 */
 	public function getName()
 	{
-		// TODO: Add a deprecation log in 3.0
+        craft()->deprecator->log('TagModel::name', 'The Tag ‘name’ property has been deprecated. Use ‘title’ instead.');
+
 		return $this->getContent()->title;
 	}
 
