@@ -545,15 +545,14 @@ Craft.AssetImageEditor = Garnish.Modal.extend(
                     angle: this.viewportRotation + this.imageStraightenAngle
                 });
 
-                this.zoomRatio = this.getZoomToCoverRatio(this.getScaledImageDimensions());
+                var scaledImageDimensions = this.getScaledImageDimensions();
+                this.zoomRatio = this.getZoomToCoverRatio(scaledImageDimensions);
 
                 this._zoomImage();
 
                 if (this.cropperState) {
                     var angleDelta = this.image.angle - previousAngle;
-                    state = this.cropperState;
-
-                    // Using the cropper state, remember the cropper position on image
+                    var state = this.cropperState;
 
                     // X and Y are the cropper center positions if the image center is 0;0
                     var cropperCenterX = state.clipperData.deltaX;
@@ -565,24 +564,42 @@ Craft.AssetImageEditor = Garnish.Modal.extend(
                     var newCenterX = cropperCenterX * Math.cos(angleInRadians) - cropperCenterY * Math.sin(angleInRadians);
                     var newCenterY = cropperCenterX * Math.sin(angleInRadians) + cropperCenterY * Math.cos(angleInRadians);
 
-                    // TODO When rotating by 45 degrees, the cropper does not move correctly
-                    state.clipperData.deltaX = newCenterX;
-                    state.clipperData.deltaY = newCenterY;
-                    var zoomRatio = this.zoomRatio / state.zoom;
-                    this.storeCropperState(state);
+                    // Figure out how the crop-mode image zoom would have changed with the rotation
+                    var currentZoomToFit = this.getZoomToFitRatio(scaledImageDimensions);
+                    var zoomToFitRatioDifferential = currentZoomToFit / state.zoom;
 
-                    var currentEditorCenter = {left: this.editorWidth / 2, top: this.editorHeight / 2};
-
+                    // The areaFactor adjusts for image area changes such as browser window resize
+                    // and the appearance and disappearance of the image slider.
+                    this._setImageVerticeCoordinates();
                     var currentArea = this._getImageOccupiedArea();
                     var areaFactor = currentArea.width / state.imageArea.width;
 
+                    // The calculations were applied to a zoomed out image, so figure out the ratio
+                    // by which to adjust the coordinates to fit the current zoom.
+                    var zoomRatio = this.zoomRatio / state.zoom;
+
+                    // Figure out the final image offset to keep the viewport focused where we need it
                     var deltaX = newCenterX * zoomRatio * areaFactor;
                     var deltaY = newCenterY * zoomRatio * areaFactor;
-
                     this.image.set({
-                        left: currentEditorCenter.left - deltaX,
-                        top: currentEditorCenter.top - deltaY
+                        left: this.editorWidth / 2 - deltaX,
+                        top: this.editorHeight / 2 - deltaY
                     });
+
+                    // Finally, store the new cropper state to reflect the rotation change.
+
+                    // Since new angle changes the zoom, take that into account.
+                    state.clipperData.deltaX = newCenterX * zoomToFitRatioDifferential * areaFactor;
+                    state.clipperData.deltaY = newCenterY * zoomToFitRatioDifferential * areaFactor;
+
+                    // Recalculate how tall and wide the cropper would have to be to be accurate.
+                    state.clipperData.width = this.viewport.width / this.getCombinedZoomRatio(scaledImageDimensions) * areaFactor;
+                    state.clipperData.height = this.viewport.height / this.getCombinedZoomRatio(scaledImageDimensions) * areaFactor;
+
+                    // Store the image area that was used for calculations and the current zoom to fit.
+                    state.imageArea = currentArea;
+                    state.zoom = currentZoomToFit;
+                    this.storeCropperState(state);
                 }
 
                 this.renderImage();
@@ -1342,6 +1359,7 @@ Craft.AssetImageEditor = Garnish.Modal.extend(
             return [topLeft, topRight, bottomRight, bottomLeft];
         },
 
+        // zoom-to-fit only.
         _setImageVerticeCoordinates: function() {
 
 
