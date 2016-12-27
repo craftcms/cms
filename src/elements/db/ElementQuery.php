@@ -257,15 +257,6 @@ class ElementQuery extends Query implements ElementQueryInterface, Arrayable, Co
      */
     public $positionedAfter;
 
-    // Deprecated Properties
-    // -------------------------------------------------------------------------
-
-    /**
-     * @var integer Depth
-     * @deprecated in 3.0. Use [[relatedTo]] instead.
-     */
-    public $depth;
-
     // For internal use
     // -------------------------------------------------------------------------
 
@@ -1554,16 +1545,6 @@ class ElementQuery extends Query implements ElementQueryInterface, Arrayable, Co
                     ['>', 'structureelements.lft', $this->positionedAfter->rgt],
                     ['structureelements.root' => $this->positionedAfter->root],
                 ]);
-            }
-
-            // TODO: Remove this code in Craft 4
-            /** @noinspection PhpDeprecationInspection */
-            if (!$this->level && $this->depth) {
-                /** @noinspection PhpDeprecationInspection */
-                $this->level = $this->depth;
-                /** @noinspection PhpDeprecationInspection */
-                $this->depth = null;
-                Craft::$app->getDeprecator()->log('element_depth_param', 'The ‘depth’ element param has been deprecated. Use ‘level’ instead.');
             }
 
             if ($this->level) {
