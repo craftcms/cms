@@ -196,22 +196,4 @@ class Tag extends Element
 
         parent::afterSave($isNew);
     }
-
-    // Deprecated Methods
-    // -------------------------------------------------------------------------
-
-    /**
-     * Returns the tag's title.
-     *
-     * @deprecated Deprecated in 2.3. Use [[$title]] instead.
-     * @return string
-     *
-     * @todo       Remove this method in Craft 4.
-     */
-    public function getName()
-    {
-        Craft::$app->getDeprecator()->log('Tag::name', 'The Tag ‘name’ property has been deprecated. Use ‘title’ instead.');
-
-        return $this->title;
-    }
 }

@@ -347,6 +347,7 @@ Craft CMS 3.0 Working Changelog
 - Removed `craft\db\mysql\QueryBuilder::addColumnBefore()`.
 - Removed `craft\db\mysql\QueryBuilder::addColumnFirst()`.
 - Removed `craft\elements\db\ElementQuery::configure()`.
+- Removed `craft\elements\Tag::getName()`. Use the `title` property instead.
 - Removed `craft\helpers\Json::removeComments()`.
 - Removed `craft\helpers\Update::cleanManifestFolderLine()`.
 - Removed `craft\helpers\Update::isManifestLineAFolder()`.
