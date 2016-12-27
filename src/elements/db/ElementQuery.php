@@ -298,7 +298,7 @@ class ElementQuery extends Query implements ElementQueryInterface, Arrayable, Co
     public function __isset($name)
     {
         if ($name === 'order') {
-            Craft::$app->getDeprecator()->log('ElementQuery::order()', 'The “order” element parameter has been deprecated. Use “orderBy” instead.');
+            Craft::$app->getDeprecator()->log('ElementQuery::order()', 'The “order” element query param has been deprecated. Use “orderBy” instead.');
 
             return $this->orderBy !== null;
         }
@@ -313,7 +313,7 @@ class ElementQuery extends Query implements ElementQueryInterface, Arrayable, Co
     {
         switch ($name) {
             case 'locale': {
-                Craft::$app->getDeprecator()->log('ElementQuery::locale()', 'The “locale” element parameter has been deprecated. Use “site” or “siteId” instead.');
+                Craft::$app->getDeprecator()->log('ElementQuery::locale()', 'The “locale” element query param has been deprecated. Use “site” or “siteId” instead.');
 
                 if ($this->siteId) {
                     $site = Craft::$app->getSites()->getSiteById($this->siteId);
@@ -326,7 +326,7 @@ class ElementQuery extends Query implements ElementQueryInterface, Arrayable, Co
                 return null;
             }
             case 'order': {
-                Craft::$app->getDeprecator()->log('ElementQuery::order()', 'The “order” element parameter has been deprecated. Use “orderBy” instead.');
+                Craft::$app->getDeprecator()->log('ElementQuery::order()', 'The “order” element query param has been deprecated. Use “orderBy” instead.');
 
                 return $this->orderBy;
             }
@@ -346,15 +346,15 @@ class ElementQuery extends Query implements ElementQueryInterface, Arrayable, Co
                 $this->site($value);
                 break;
             case 'localeEnabled':
-                Craft::$app->getDeprecator()->log('ElementQuery::localeEnabled()', 'The “localeEnabled” element parameter has been deprecated. Use “enabledForSite” instead.');
+                Craft::$app->getDeprecator()->log('ElementQuery::localeEnabled()', 'The “localeEnabled” element query param has been deprecated. Use “enabledForSite” instead.');
                 $this->enabledForSite($value);
                 break;
             case 'locale':
-                Craft::$app->getDeprecator()->log('ElementQuery::locale()', 'The “locale” element parameter has been deprecated. Use “site” or “siteId” instead.');
+                Craft::$app->getDeprecator()->log('ElementQuery::locale()', 'The “locale” element query param has been deprecated. Use “site” or “siteId” instead.');
                 $this->site($value);
                 break;
             case 'order':
-                Craft::$app->getDeprecator()->log('ElementQuery::order()', 'The “order” element parameter has been deprecated. Use “orderBy” instead.');
+                Craft::$app->getDeprecator()->log('ElementQuery::order()', 'The “order” element query param has been deprecated. Use “orderBy” instead.');
                 $this->orderBy = $value;
                 break;
             default:
@@ -368,7 +368,7 @@ class ElementQuery extends Query implements ElementQueryInterface, Arrayable, Co
     public function __call($name, $params)
     {
         if ($name === 'order') {
-            Craft::$app->getDeprecator()->log('ElementQuery::order()', 'The “order” element parameter has been deprecated. Use “orderBy” instead.');
+            Craft::$app->getDeprecator()->log('ElementQuery::order()', 'The “order” element query param has been deprecated. Use “orderBy” instead.');
 
             if (count($params) == 1) {
                 $this->orderBy = $params[0];
@@ -608,7 +608,7 @@ class ElementQuery extends Query implements ElementQueryInterface, Arrayable, Co
      */
     public function locale($value)
     {
-        Craft::$app->getDeprecator()->log('ElementQuery::locale()', 'The “locale” element parameter has been deprecated. Use “site” or “siteId” instead.');
+        Craft::$app->getDeprecator()->log('ElementQuery::locale()', 'The “locale” element query param has been deprecated. Use “site” or “siteId” instead.');
         $this->site($value);
 
         return $this;
@@ -634,7 +634,7 @@ class ElementQuery extends Query implements ElementQueryInterface, Arrayable, Co
      */
     public function localeEnabled($value = true)
     {
-        Craft::$app->getDeprecator()->log('ElementQuery::localeEnabled()', 'The “localeEnabled” element parameter has been deprecated. Use “enabledForSite” instead.');
+        Craft::$app->getDeprecator()->log('ElementQuery::localeEnabled()', 'The “localeEnabled” element query param has been deprecated. Use “enabledForSite” instead.');
         $this->enabledForSite = $value;
 
         return $this;
@@ -1035,7 +1035,7 @@ class ElementQuery extends Query implements ElementQueryInterface, Arrayable, Co
         // TODO: Remove this in Craft 4
         // Make sure $db is not a list of attributes
         if ($this->_setAttributes($db)) {
-            Craft::$app->getDeprecator()->log('ElementQuery::ids($attributes)', 'Passing a list of parameters to the ids() element query function is now deprecated. Set the parameters before calling ids().');
+            Craft::$app->getDeprecator()->log('ElementQuery::ids($criteria)', 'Passing new criteria params to the ids() element query function is now deprecated. Set the parameters before calling ids().');
             $db = null;
         }
 
@@ -1111,7 +1111,7 @@ class ElementQuery extends Query implements ElementQueryInterface, Arrayable, Co
      */
     public function order($value)
     {
-        Craft::$app->getDeprecator()->log('ElementQuery::order()', 'The “order” element parameter has been deprecated. Use “orderBy” instead.');
+        Craft::$app->getDeprecator()->log('ElementQuery::order()', 'The “order” element query param has been deprecated. Use “orderBy” instead.');
 
         return $this->orderBy($value);
     }

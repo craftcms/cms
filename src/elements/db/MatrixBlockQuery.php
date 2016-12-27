@@ -90,7 +90,7 @@ class MatrixBlockQuery extends ElementQuery
                 break;
             }
             case 'ownerLocale': {
-                Craft::$app->getDeprecator()->log('MatrixBlockQuery::ownerLocale()', 'The “ownerLocale” element parameter has been deprecated. Use “ownerSite” or “ownerSiteId” instead.');
+                Craft::$app->getDeprecator()->log('MatrixBlockQuery::ownerLocale()', 'The “ownerLocale” Matrix block query param has been deprecated. Use “ownerSite” or “ownerSiteId” instead.');
                 $this->ownerSite($value);
                 break;
             }
@@ -183,7 +183,7 @@ class MatrixBlockQuery extends ElementQuery
      */
     public function ownerLocale($value)
     {
-        Craft::$app->getDeprecator()->log('ElementQuery::locale()', 'The “locale” element parameter has been deprecated. Use “site” or “siteId” instead.');
+        Craft::$app->getDeprecator()->log('ElementQuery::ownerLocale()', 'The “ownerLocale” Matrix block query param has been deprecated. Use “site” or “siteId” instead.');
         $this->ownerSite($value);
 
         return $this;
