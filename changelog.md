@@ -5,9 +5,11 @@ Craft CMS Changelog
 
 ### Changed
 
-- [TagModel::getName()](https://craftcms.com/classreference/models/TagModel#getName-detail) now logs a deprecation error. (It has been deprecated since Craft 2.3; use the `title` property instead.)
+- [TagModel::getName()](https://craftcms.com/classreference/models/TagModel#getName-detail) now logs a deprecation error. Use the `title` property instead.
 - The `childOf`, `childField`, `parentOf`, and `parentField` element criteria params now log deprecation errors. Use the `relatedTo` param instead.
 - The `depth` element criteria param now logs a deprecation error. Use the `level` param instead.
+- The `name` tag criteria param now logs a deprecation error. Use the `title` param instead.
+- The `order` tag criteria param now logs a deprecation error if `"name"` is passed into it. Order by `"title"` instead.
 - Craft now uses ImageMagick to read and manipulate image EXIF data, when it’s available.
 - Updated PHPMailer to 5.2.18, which fixes a [remote code execution vulnerability](https://legalhackers.com/advisories/PHPMailer-Exploit-Remote-Code-Exec-CVE-2016-10033-Vuln.html).
 - Updated Garnish to 0.1.9.
