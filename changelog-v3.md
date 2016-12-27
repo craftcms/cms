@@ -95,7 +95,7 @@ Craft CMS 3.0 Working Changelog
 - Added the `registerAlerts` event to `craft\helpers\Cp`.
 - Added the `registerFileKinds` event to `craft\helpers\Assets`.
 - Added the `registerCacheOptions` event to `craft\tools\ClearCaches`.
-- Added the `registerCpNavItems` event to `craft\variables\Cp`.
+- Added the `registerCpNavItems` event to `craft\web\twig\variables\Cp`.
 - Added the `registerCpUrlRules` and `registerSiteUrlRules` events to `craft\web\UrlManager`.
 - Added the `registerElementTypes` event to `craft\services\Elements`.
 - Added the `registerFieldTypes` event to `craft\services\Fields`.
@@ -246,11 +246,11 @@ Craft CMS 3.0 Working Changelog
 - Renamed `craft\services\Config::omitScriptNameInUrls()` to `getOmitScriptNameInUrls()`.
 - Renamed `craft\services\Config::usePathInfo()` to `getUsePathInfo()`.
 - Renamed `craft\services\Resources::getResourcePath()` to `resolveResourcePath()`.
-- Renamed `craft\variables\CraftVariable::getLocale()` back to `locale()`.
 - Renamed `craft\volumes\AwsS3::getClient()` to `client()`.
 - Renamed `craft\volumes\AwsS3::getStorageClasses()` to `storageClasses()`.
 - Renamed `craft\volumes\GoogleCloud::getClient()` to `client()`.
 - Renamed `craft\volumes\Rackspace::getClient()` to `client()`.
+- Renamed `craft\web\twig\variables\CraftVariable::getLocale()` back to `locale()`.
 - Moved `craft\volumes\VolumeInterface::getRootPath()` to `craft\volumes\LocalVolumeInterface::getRootPath()`.
 - `craft\base\Element::getEditorHtml()` is no longer static, and no longer has an `$element` argument.
 - `craft\base\Element::getElementRoute()` is no longer static, no longer has an `$element` argument, and has been renamed to `getRoute()`.
@@ -383,8 +383,8 @@ Craft CMS 3.0 Working Changelog
 - Removed `craft\services\Updates::flushUpdateInfoFromCache()`.
 - Removed `craft\services\Users::changePassword()`.
 - Removed `craft\services\Users::deleteUser()`.
-- Removed `craft\variables\CraftVariable::getTimeZone()`.
-- Removed `craft\variables\Fields::createField()`.
+- Removed `craft\web\twig\variables\CraftVariable::getTimeZone()`.
+- Removed `craft\web\twig\variables\Fields::createField()`.
 - Removed the `$attribute` argument from `craft\base\ApplicationTrait::getInfo()`.
 - Removed the `$except` argument from `craft\base\Element::getFieldValues()`.
 - Removed the `$indexBy` argument from `craft\elements\User::getGroups()`.
@@ -443,7 +443,7 @@ Craft CMS 3.0 Working Changelog
 - Removed the `modifyAssetFilename` plugin hook. Asset filenames should be overridden using the `setFilename` event on `craft\helpers\Assets` now.
 - Removed the `modifyAssetSortableAttributes`, `modifyCategorySortableAttributes`, `modifyEntrySortableAttributes`, and `modifyUserSortableAttributes` plugin hooks. Sortable attribute modifications should be made using the `registerSortableAttributes` event on `craft\base\Element` or one of its subclasses now.
 - Removed the `modifyAssetSources`, `modifyCategorySources`, `modifyEntrySources`, and `modifyUserSources` plugin hooks. Element source modifications should be made using the `registerSources` event on `craft\base\Element` or one of its subclasses now.
-- Removed the `modifyCpNav` plugin hook. Control Panel nav modifications should be made using the `registerCpNavItems` event on `craft\variables\Cp` now.
+- Removed the `modifyCpNav` plugin hook. Control Panel nav modifications should be made using the `registerCpNavItems` event on `craft\web\twig\variables\Cp` now.
 - Removed the `registerCachePaths` plugin hook. Custom options for the Clear Caches tool (which can be set to callbacks now in addition to file paths) should be registered using the `registerCacheOptions` event on `craft\tools\ClearCaches` now.
 - Removed the `registerCpRoutes` and `registerSiteRoutes` plugin hooks. Custom URL rules for the Control Panel and front-end site should be registered using the `registerCpUrlRules` and `registerSiteUrlRules` events on `craft\web\UrlManager` now.
 - Removed the `registerEmailMessages` plugin hook. Custom email messages should be registered using the `registerMessages` event on `craft\services\EmailMessages` now.
