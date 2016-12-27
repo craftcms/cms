@@ -246,6 +246,7 @@ Craft CMS 3.0 Working Changelog
 - Renamed `craft\services\Config::omitScriptNameInUrls()` to `getOmitScriptNameInUrls()`.
 - Renamed `craft\services\Config::usePathInfo()` to `getUsePathInfo()`.
 - Renamed `craft\services\Resources::getResourcePath()` to `resolveResourcePath()`.
+- Renamed `craft\variables\CraftVariable::getLocale()` back to `locale()`.
 - Renamed `craft\volumes\AwsS3::getClient()` to `client()`.
 - Renamed `craft\volumes\AwsS3::getStorageClasses()` to `storageClasses()`.
 - Renamed `craft\volumes\GoogleCloud::getClient()` to `client()`.

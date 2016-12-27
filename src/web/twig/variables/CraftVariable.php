@@ -171,9 +171,9 @@ class CraftVariable extends ServiceLocator
      * @return string
      * @deprecated in 3.0
      */
-    public function getLocale()
+    public function locale()
     {
-        Craft::$app->getDeprecator()->log('craft.getLocale()', 'craft.getLocale() has been deprecated. Use craft.app.language instead.');
+        Craft::$app->getDeprecator()->log('craft.locale()', 'craft.locale() has been deprecated. Use craft.app.language instead.');
 
         return Craft::$app->language;
     }
