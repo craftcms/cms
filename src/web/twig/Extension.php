@@ -19,7 +19,6 @@ use craft\helpers\Template;
 use craft\helpers\Url;
 use craft\i18n\Locale;
 use craft\web\twig\tokenparsers\CacheTokenParser;
-use craft\web\twig\tokenparsers\DeprecatedTagTokenParser;
 use craft\web\twig\tokenparsers\ExitTokenParser;
 use craft\web\twig\tokenparsers\HeaderTokenParser;
 use craft\web\twig\tokenparsers\HookTokenParser;
@@ -128,8 +127,6 @@ class Extension extends \Twig_Extension implements \Twig_Extension_GlobalsInterf
             new RegisterResourceTokenParser('includejs', 'registerJs', false, true, true, false, '{% js %}'),
             new RegisterResourceTokenParser('includejsfile', 'registerJsFile', true, true, false, true, '{% do view.registerJsFile("/url/to/file.js") %}'),
             new RegisterResourceTokenParser('includejsresource', 'registerJsResource', false, true, false, true, '{% do view.registerJsResource("path/to/resource.js") %}'),
-
-            new DeprecatedTagTokenParser('endpaginate'),
         ];
     }
 
