@@ -197,21 +197,16 @@ class EntriesController extends BaseEntriesController
 
         // Page title w/ revision label
         switch (get_class($entry)) {
-            case EntryDraft::class: {
+            case EntryDraft::class:
                 /** @var EntryDraft $entry */
                 $variables['revisionLabel'] = $entry->name;
                 break;
-            }
-
-            case EntryVersion::class: {
+            case EntryVersion::class:
                 /** @var EntryVersion $entry */
                 $variables['revisionLabel'] = Craft::t('app', 'Version {num}', ['num' => $entry->num]);
                 break;
-            }
-
-            default: {
+            default:
                 $variables['revisionLabel'] = Craft::t('app', 'Current');
-            }
         }
 
         if (!$entry->id) {
@@ -300,23 +295,20 @@ class EntriesController extends BaseEntriesController
                     $variables['shareUrl'] = $entry->getUrl();
                 } else {
                     switch ($className) {
-                        case EntryDraft::class: {
+                        case EntryDraft::class:
                             /** @var EntryDraft $entry */
                             $shareParams = ['draftId' => $entry->draftId];
                             break;
-                        }
-                        case EntryVersion::class: {
+                        case EntryVersion::class:
                             /** @var EntryVersion $entry */
                             $shareParams = ['versionId' => $entry->versionId];
                             break;
-                        }
-                        default: {
+                        default:
                             $shareParams = [
                                 'entryId' => $entry->id,
                                 'siteId' => $entry->siteId
                             ];
                             break;
-                        }
                     }
 
                     $variables['shareUrl'] = Url::getActionUrl('entries/share-entry', $shareParams);

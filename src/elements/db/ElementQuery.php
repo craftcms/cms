@@ -312,27 +312,23 @@ class ElementQuery extends Query implements ElementQueryInterface, Arrayable, Co
     public function __get($name)
     {
         switch ($name) {
-            case 'locale': {
+            case 'locale':
                 Craft::$app->getDeprecator()->log('ElementQuery::locale()', 'The “locale” element query param has been deprecated. Use “site” or “siteId” instead.');
-
                 if ($this->siteId) {
-                    $site = Craft::$app->getSites()->getSiteById($this->siteId);
-
-                    if ($site) {
+                    if ($site = Craft::$app->getSites()->getSiteById($this->siteId)) {
                         return $site->handle;
                     }
                 }
 
                 return null;
-            }
-            case 'order': {
+
+            case 'order':
                 Craft::$app->getDeprecator()->log('ElementQuery::order()', 'The “order” element query param has been deprecated. Use “orderBy” instead.');
 
                 return $this->orderBy;
-            }
-            default: {
+
+            default:
                 return parent::__get($name);
-            }
         }
     }
 

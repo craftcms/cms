@@ -85,18 +85,15 @@ class MatrixBlockQuery extends ElementQuery
             case 'ownerSite':
                 $this->ownerSite($value);
                 break;
-            case 'type': {
+            case 'type':
                 $this->type($value);
                 break;
-            }
-            case 'ownerLocale': {
+            case 'ownerLocale':
                 Craft::$app->getDeprecator()->log('MatrixBlockQuery::ownerLocale()', 'The “ownerLocale” Matrix block query param has been deprecated. Use “ownerSite” or “ownerSiteId” instead.');
                 $this->ownerSite($value);
                 break;
-            }
-            default: {
+            default:
                 parent::__set($name, $value);
-            }
         }
     }
 

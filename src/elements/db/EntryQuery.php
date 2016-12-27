@@ -99,29 +99,23 @@ class EntryQuery extends ElementQuery
     public function __set($name, $value)
     {
         switch ($name) {
-            case 'section': {
+            case 'section':
                 $this->section($value);
                 break;
-            }
-            case 'type': {
+            case 'type':
                 $this->type($value);
                 break;
-            }
-            case 'authorGroup': {
+            case 'authorGroup':
                 $this->authorGroup($value);
                 break;
-            }
-            case 'before': {
+            case 'before':
                 $this->before($value);
                 break;
-            }
-            case 'after': {
+            case 'after':
                 $this->after($value);
                 break;
-            }
-            default: {
+            default:
                 parent::__set($name, $value);
-            }
         }
     }
 

@@ -1322,27 +1322,17 @@ class AssetTransforms extends Component
         $this->setActiveTransformIndex($index);
 
         switch ($transform->mode) {
-            case 'fit': {
+            case 'fit':
                 $image->scaleToFit($transform->width, $transform->height);
                 break;
-            }
-
-            case 'stretch': {
+            case 'stretch':
                 $image->resize($transform->width, $transform->height);
                 break;
-            }
-
-            default: {
-                if (!preg_match('/(top|center|bottom)-(left|center|right)/',
-                    $transform->position)
-                ) {
+            default:
+                if (!preg_match('/(top|center|bottom)-(left|center|right)/', $transform->position)) {
                     $transform->position = 'center-center';
                 }
-
-                $image->scaleAndCrop($transform->width, $transform->height,
-                    true, $transform->position);
-                break;
-            }
+                $image->scaleAndCrop($transform->width, $transform->height, true, $transform->position);
         }
 
         $tempFilename = uniqid(pathinfo($index->filename, PATHINFO_FILENAME), true).'.'.pathinfo($index->filename, PATHINFO_FILENAME);

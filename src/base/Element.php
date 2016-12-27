@@ -356,17 +356,13 @@ abstract class Element extends Component implements ElementInterface
             }
         }
 
-        switch ($viewState['mode']) {
-            case 'table': {
-                // Get the table columns
-                $variables['attributes'] = Craft::$app->getElementIndexes()->getTableAttributes(static::class, $sourceKey);
+        if ($viewState['mode'] === 'table') {
+            // Get the table columns
+            $variables['attributes'] = Craft::$app->getElementIndexes()->getTableAttributes(static::class, $sourceKey);
 
-                // Give each attribute a chance to modify the criteria
-                foreach ($variables['attributes'] as $attribute) {
-                    static::prepElementQueryForTableAttribute($elementQuery, $attribute[0]);
-                }
-
-                break;
+            // Give each attribute a chance to modify the criteria
+            foreach ($variables['attributes'] as $attribute) {
+                static::prepElementQueryForTableAttribute($elementQuery, $attribute[0]);
             }
         }
 

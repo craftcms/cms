@@ -58,12 +58,10 @@ class SwitchTokenParser extends \Twig_TokenParser
             $next = $stream->next();
 
             switch ($next->getValue()) {
-                case 'case': {
+                case 'case':
                     $values = [];
-
                     while (true) {
                         $values[] = $expressionParser->parsePrimaryExpression();
-
                         // Multiple allowed values?
                         if ($stream->test(\Twig_Token::OPERATOR_TYPE, 'or')) {
                             $stream->next();
@@ -71,7 +69,6 @@ class SwitchTokenParser extends \Twig_TokenParser
                             break;
                         }
                     }
-
                     $stream->expect(\Twig_Token::BLOCK_END_TYPE);
                     $body = $this->parser->subparse([$this, 'decideIfFork']);
                     $cases[] = new Twig_Node([
@@ -79,19 +76,15 @@ class SwitchTokenParser extends \Twig_TokenParser
                         'body' => $body
                     ]);
                     break;
-                }
-                case 'default': {
+                case 'default':
                     $stream->expect(\Twig_Token::BLOCK_END_TYPE);
                     $default = $this->parser->subparse([$this, 'decideIfEnd']);
                     break;
-                }
-                case 'endswitch': {
+                case 'endswitch':
                     $end = true;
                     break;
-                }
-                default: {
+                default:
                     throw new \Twig_Error_Syntax(sprintf('Unexpected end of template. Twig was looking for the following tags "case", "default", or "endswitch" to close the "switch" block started at line %d)', $lineno), -1);
-                }
             }
         }
 

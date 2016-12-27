@@ -92,15 +92,15 @@ class CraftVariable extends ServiceLocator
 
         switch (Craft::$app->getEdition()) {
             /** @noinspection PhpMissingBreakStatementInspection */
-            case Craft::Pro: {
+            case Craft::Pro:
                 /** @noinspection PhpDeprecationInspection */
                 $config['components'] = array_merge($config['components'], [
                     // Deprecated
                     'userGroups' => UserGroups::class,
                 ]);
-            }
-            case Craft::Client: {
+            case Craft::Client:
                 /** @noinspection PhpDeprecationInspection */
+                /** @noinspection SuspiciousAssignmentsInspection */
                 $config['components'] = array_merge($config['components'], [
                     'rebrand' => Rebrand::class,
 
@@ -108,7 +108,6 @@ class CraftVariable extends ServiceLocator
                     'emailMessages' => EmailMessages::class,
                     'userPermissions' => UserPermissions::class,
                 ]);
-            }
         }
 
         // Add plugin components

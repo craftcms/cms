@@ -258,42 +258,35 @@ class Raster extends Image
             // Now crop.
             if ($newWidth - $targetWidth > 0) {
                 switch ($horizontalPosition) {
-                    case 'left': {
+                    case 'left':
                         $x1 = 0;
                         $x2 = $x1 + $targetWidth;
                         break;
-                    }
-                    case 'right': {
+                    case 'right':
                         $x2 = $newWidth;
                         $x1 = $newWidth - $targetWidth;
                         break;
-                    }
-                    default: {
+                    default:
                         $x1 = round(($newWidth - $targetWidth) / 2);
                         $x2 = $x1 + $targetWidth;
                         break;
-                    }
                 }
 
                 $y1 = 0;
                 $y2 = $y1 + $targetHeight;
             } elseif ($newHeight - $targetHeight > 0) {
                 switch ($verticalPosition) {
-                    case 'top': {
+                    case 'top':
                         $y1 = 0;
                         $y2 = $y1 + $targetHeight;
                         break;
-                    }
-                    case 'bottom': {
+                    case 'bottom':
                         $y2 = $newHeight;
                         $y1 = $newHeight - $targetHeight;
                         break;
-                    }
-                    default: {
+                    default:
                         $y1 = round(($newHeight - $targetHeight) / 2);
                         $y2 = $y1 + $targetHeight;
-                        break;
-                    }
                 }
 
                 $x1 = 0;
@@ -606,54 +599,42 @@ class Raster extends Image
 
         switch ($extension) {
             case 'jpeg':
-            case 'jpg': {
+            case 'jpg':
                 return ['jpeg_quality' => $quality, 'flatten' => true];
-            }
 
-            case 'gif': {
-                $options = ['animated' => $this->_isAnimatedGif];
+            case 'gif':
+                return ['animated' => $this->_isAnimatedGif];
 
-                return $options;
-            }
-
-            case 'png': {
+            case 'png':
                 // Valid PNG quality settings are 0-9, so normalize and flip, because we're talking about compression
                 // levels, not quality, like jpg and gif.
                 $normalizedQuality = round(($quality * 9) / 100);
                 $normalizedQuality = 9 - $normalizedQuality;
-
                 if ($normalizedQuality < 0) {
                     $normalizedQuality = 0;
                 }
-
                 if ($normalizedQuality > 9) {
                     $normalizedQuality = 9;
                 }
-
                 $options = [
                     'png_compression_level' => $normalizedQuality,
                     'flatten' => false
                 ];
                 $pngInfo = ImageHelper::pngImageInfo($this->_imageSourcePath);
-
                 // Even though a 2 channel PNG is valid (Grayscale with alpha channel), Imagick doesn't recognize it as
                 // a valid format: http://www.imagemagick.org/script/formats.php
                 // So 2 channel PNGs get converted to 4 channel.
-
                 if (is_array($pngInfo) && isset($pngInfo['channels']) && $pngInfo['channels'] !== 2) {
                     $format = 'png'.(8 * $pngInfo['channels']);
                 } else {
                     $format = 'png32';
                 }
-
                 $options['png_format'] = $format;
 
                 return $options;
-            }
 
-            default: {
+            default:
                 return [];
-            }
         }
     }
 }

@@ -66,24 +66,18 @@ class Date extends Field implements PreviewableFieldInterface
         // dateTime => showDate + showTime
         if (isset($config['dateTime'])) {
             switch ($config['dateTime']) {
-                case 'showBoth': {
+                case 'showBoth':
                     $config['showDate'] = true;
                     $config['showTime'] = true;
-
                     break;
-                }
-                case 'showDate': {
+                case 'showDate':
                     $config['showDate'] = true;
                     $config['showTime'] = false;
-
                     break;
-                }
-                case 'showTime': {
+                case 'showTime':
                     $config['showDate'] = false;
                     $config['showTime'] = true;
-
                     break;
-                }
             }
 
             unset($config['dateTime']);

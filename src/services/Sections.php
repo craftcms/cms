@@ -528,10 +528,9 @@ class Sections extends Component
             // -----------------------------------------------------------------
 
             switch ($section->type) {
-                case Section::TYPE_SINGLE: {
+                case Section::TYPE_SINGLE:
                     // Make sure that there is one and only one Entry Type and Entry for this section.
                     $singleEntryId = null;
-
                     if (!$isNewSection) {
                         // Re-save the entrytype name if the section name just changed
                         /** @noinspection PhpUndefinedVariableInspection */
@@ -540,7 +539,6 @@ class Sections extends Component
                             $entryType->name = $section->name;
                             $this->saveEntryType($entryType);
                         }
-
                         // Make sure there's only one entry in this section
                         $results = (new Query())
                             ->select([
@@ -554,20 +552,16 @@ class Sections extends Component
                             ->from(['{{%entries}} e'])
                             ->where(['e.sectionId' => $section->id])
                             ->all();
-
                         if ($results) {
                             $firstResult = array_shift($results);
                             $singleEntryId = $firstResult['id'];
-
                             // If there are any more, get rid of them
                             if ($results) {
                                 foreach ($results as $result) {
                                     Craft::$app->getElements()->deleteElementById($result['id'], Entry::class, $result['siteId']);
                                 }
                             }
-
                             // Make sure it's enabled and all that.
-
                             $db->createCommand()
                                 ->update(
                                     '{{%elements}}',
@@ -579,7 +573,6 @@ class Sections extends Component
                                         'id' => $singleEntryId
                                     ])
                                 ->execute();
-
                             $db->createCommand()
                                 ->update(
                                     '{{%entries}}',
@@ -594,7 +587,6 @@ class Sections extends Component
                                     ])
                                 ->execute();
                         }
-
                         // Make sure there's only one entry type for this section
                         /** @noinspection PhpUndefinedVariableInspection */
                         if ($entryTypeIds) {
@@ -603,7 +595,6 @@ class Sections extends Component
                             }
                         }
                     }
-
                     if (!$singleEntryId) {
                         // Create it
                         $firstSiteSettings = ArrayHelper::firstValue($allSiteSettings);
@@ -614,11 +605,8 @@ class Sections extends Component
                         $singleEntry->title = $section->name;
                         Craft::$app->getElements()->saveElement($singleEntry, false);
                     }
-
                     break;
-                }
-
-                case Section::TYPE_STRUCTURE: {
+                case Section::TYPE_STRUCTURE:
                     /** @noinspection PhpUndefinedVariableInspection */
                     if (!$isNewSection && $isNewStructure) {
                         // Add all of the entries to the structure
@@ -629,15 +617,12 @@ class Sections extends Component
                         $query->status(null);
                         $query->enabledForSite(false);
                         $query->orderBy('elements.id');
-
                         /** @var Entry $entry */
                         foreach ($query->each() as $entry) {
                             Craft::$app->getStructures()->appendToRoot($section->structureId, $entry, 'insert');
                         }
                     }
-
                     break;
-                }
             }
 
             // Finally, deal with the existing entries...

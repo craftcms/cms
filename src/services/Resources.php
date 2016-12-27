@@ -98,87 +98,63 @@ class Resources extends Component
         // Special resource routing
         if (isset($segs[0])) {
             switch ($segs[0]) {
-                case 'defaultuserphoto': {
+                case 'defaultuserphoto':
                     return Craft::$app->getPath()->getResourcesPath().DIRECTORY_SEPARATOR.'images'.DIRECTORY_SEPARATOR.'user.svg';
-                }
-
-                case 'tempuploads': {
+                case 'tempuploads':
                     array_shift($segs);
 
                     return Craft::$app->getPath()->getTempUploadsPath().DIRECTORY_SEPARATOR.implode(DIRECTORY_SEPARATOR, $segs);
-                }
-
-                case 'tempassets': {
+                case 'tempassets':
                     array_shift($segs);
 
                     return Craft::$app->getPath()->getAssetsTempVolumePath().DIRECTORY_SEPARATOR.implode(DIRECTORY_SEPARATOR, $segs);
-                }
-
-                case 'resized': {
+                case 'resized':
                     if (empty($segs[1]) || empty($segs[2]) || !is_numeric($segs[1]) || !is_numeric($segs[2])) {
                         return $this->_getBrokenImageThumbPath();
                     }
-
                     $fileModel = Craft::$app->getAssets()->getAssetById($segs[1]);
-
                     if (empty($fileModel)) {
                         return $this->_getBrokenImageThumbPath();
                     }
-
                     $size = $segs[2];
-
                     // Make sure plugins are loaded in case the asset lives in a plugin-supplied volume type
                     Craft::$app->getPlugins()->loadPlugins();
-
                     try {
                         return Craft::$app->getAssetTransforms()->getResizedAssetServerPath($fileModel, $size);
                     } catch (\Exception $e) {
                         return $this->_getBrokenImageThumbPath();
                     }
-                }
-
-                case 'icons': {
+                case 'icons':
                     if (empty($segs[1]) || !preg_match('/^\w+/i', $segs[1])) {
                         return false;
                     }
 
                     return $this->_getIconPath($segs[1]);
-                }
-
-                case 'rebrand': {
+                case 'rebrand':
                     if (!in_array($segs[1], ['logo', 'icon'], true)) {
                         return false;
                     }
 
                     return Craft::$app->getPath()->getRebrandPath().DIRECTORY_SEPARATOR.$segs[1].DIRECTORY_SEPARATOR.$segs[2];
-                }
-
-                case 'transforms': {
+                case 'transforms':
                     // Make sure plugins are loaded in case the asset lives in a plugin-supplied volume type
                     Craft::$app->getPlugins()->loadPlugins();
-
                     try {
                         if (!empty($segs[1])) {
                             $transformIndexModel = Craft::$app->getAssetTransforms()->getTransformIndexModelById((int)$segs[1]);
                         }
-
                         if (empty($transformIndexModel)) {
                             throw new NotFoundHttpException(Craft::t('app', 'Image transform not found'));
                         }
-
                         $url = Craft::$app->getAssetTransforms()->ensureTransformUrlByIndexModel($transformIndexModel);
                     } catch (Exception $exception) {
                         throw new ServerErrorHttpException($exception->getMessage());
                     }
-
                     Craft::$app->getResponse()->redirect($url);
                     Craft::$app->end();
                     break;
-                }
-
-                case '404': {
+                case '404':
                     throw new NotFoundHttpException(Craft::t('app', 'Resource not found'));
-                }
             }
         }
 

@@ -38,14 +38,13 @@ class m150617_213829_update_email_settings extends Migration
 
             // Protocol-specific stuff
             switch ($oldSettings['protocol']) {
-                case 'sendmail': {
+                case 'sendmail':
                     $settings['transportType'] = 'craft\mail\transportadapters\Sendmail';
                     $mailerConfig['transport'] = [
                         'class' => 'Swift_SendmailTransport'
                     ];
                     break;
-                }
-                case 'smtp': {
+                case 'smtp':
                     $settings['transportType'] = 'craft\mail\transportadapters\Smtp';
                     $settings['transportSettings'] = [
                         'host' => isset($oldSettings['host']) ? $oldSettings['host'] : null,
@@ -70,8 +69,7 @@ class m150617_213829_update_email_settings extends Migration
                         $mailerConfig['encryption'] = $settings['transportSettings']['encryptionMethod'];
                     }
                     break;
-                }
-                case 'gmail': {
+                case 'gmail':
                     $settings['transportType'] = 'craft\mail\transportadapters\Gmail';
                     $settings['transportSettings'] = [
                         'username' => isset($oldSettings['username']) ? $oldSettings['username'] : null,
@@ -88,13 +86,11 @@ class m150617_213829_update_email_settings extends Migration
                         'timeout' => $settings['transportSettings']['timeout'],
                     ];
                     break;
-                }
-                default: {
+                default:
                     $settings['transportType'] = 'craft\mail\transportadapters\Php';
                     $mailerConfig['transport'] = [
                         'class' => 'Swift_MailTransport'
                     ];
-                }
             }
 
             // Save the new settings

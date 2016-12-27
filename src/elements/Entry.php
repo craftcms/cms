@@ -209,23 +209,18 @@ class Entry extends Element
     {
         // Get the section(s) we need to check permissions on
         switch ($source) {
-            case '*': {
+            case '*':
                 $sections = Craft::$app->getSections()->getEditableSections();
                 break;
-            }
-            case 'singles': {
+            case 'singles':
                 $sections = Craft::$app->getSections()->getSectionsByType(Section::TYPE_SINGLE);
                 break;
-            }
-            default: {
+            default:
                 if (preg_match('/^section:(\d+)$/', $source, $matches)) {
-                    $section = Craft::$app->getSections()->getSectionById($matches[1]);
-
-                    if ($section) {
+                    if ($section = Craft::$app->getSections()->getSectionById($matches[1])) {
                         $sections = [$section];
                     }
                 }
-            }
         }
 
         // Now figure out what we can do with these

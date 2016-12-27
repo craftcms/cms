@@ -471,7 +471,7 @@ class UsersController extends Controller
             // Are we editing a specific user account?
             if ($userId !== null) {
                 switch ($userId) {
-                    case 'current': {
+                    case 'current':
                         if ($user) {
                             /** @var User $user */
                             // Make sure it's actually the current user
@@ -482,10 +482,8 @@ class UsersController extends Controller
                             // Get the current user
                             $user = Craft::$app->getUser()->getIdentity();
                         }
-
                         break;
-                    }
-                    case 'client': {
+                    case 'client':
                         $isClientAccount = true;
 
                         if ($user) {
@@ -504,10 +502,8 @@ class UsersController extends Controller
                                 $user->client = true;
                             }
                         }
-
                         break;
-                    }
-                    default: {
+                    default:
                         if ($user) {
                             // Make sure they have the right ID
                             /** @var User $user */
@@ -526,7 +522,6 @@ class UsersController extends Controller
                                 $isClientAccount = true;
                             }
                         }
-                    }
                 }
             } else {
                 if ($edition === Craft::Pro) {
@@ -564,14 +559,12 @@ class UsersController extends Controller
 
         if ($edition >= Craft::Client && !$isNewAccount) {
             switch ($user->getStatus()) {
-                case User::STATUS_PENDING: {
+                case User::STATUS_PENDING:
                     $statusLabel = Craft::t('app', 'Unverified');
-
                     $statusActions[] = [
                         'action' => 'users/send-activation-email',
                         'label' => Craft::t('app', 'Send activation email')
                     ];
-
                     if (Craft::$app->getUser()->getIsAdmin()) {
                         $statusActions[] = [
                             'id' => 'copy-passwordreset-url',
@@ -582,43 +575,33 @@ class UsersController extends Controller
                             'label' => Craft::t('app', 'Activate account')
                         ];
                     }
-
                     break;
-                }
-                case User::STATUS_LOCKED: {
+                case User::STATUS_LOCKED:
                     $statusLabel = Craft::t('app', 'Locked');
-
                     if (Craft::$app->getUser()->checkPermission('administrateUsers')) {
                         $statusActions[] = [
                             'action' => 'users/unlock-user',
                             'label' => Craft::t('app', 'Unlock')
                         ];
                     }
-
                     break;
-                }
-                case User::STATUS_SUSPENDED: {
+                case User::STATUS_SUSPENDED:
                     $statusLabel = Craft::t('app', 'Suspended');
-
                     if (Craft::$app->getUser()->checkPermission('administrateUsers')) {
                         $statusActions[] = [
                             'action' => 'users/unsuspend-user',
                             'label' => Craft::t('app', 'Unsuspend')
                         ];
                     }
-
                     break;
-                }
-                case User::STATUS_ACTIVE: {
+                case User::STATUS_ACTIVE:
                     $statusLabel = Craft::t('app', 'Active');
-
                     if (!$user->getIsCurrent()) {
                         $statusActions[] = [
                             'action' => 'users/send-password-reset-email',
                             'label' => Craft::t('app',
                                 'Send password reset email')
                         ];
-
                         if (Craft::$app->getUser()->getIsAdmin()) {
                             $statusActions[] = [
                                 'id' => 'copy-passwordreset-url',
@@ -627,9 +610,7 @@ class UsersController extends Controller
                             ];
                         }
                     }
-
                     break;
-                }
             }
 
             if (!$user->getIsCurrent()) {
@@ -1446,59 +1427,42 @@ class UsersController extends Controller
         ]));
 
         switch ($authError) {
-            case User::AUTH_PENDING_VERIFICATION: {
+            case User::AUTH_PENDING_VERIFICATION:
                 $message = Craft::t('app', 'Account has not been activated.');
                 break;
-            }
-            case User::AUTH_ACCOUNT_LOCKED: {
+            case User::AUTH_ACCOUNT_LOCKED:
                 $message = Craft::t('app', 'Account locked.');
                 break;
-            }
-            case User::AUTH_ACCOUNT_COOLDOWN: {
+            case User::AUTH_ACCOUNT_COOLDOWN:
                 $timeRemaining = $user->getRemainingCooldownTime();
-
                 if ($timeRemaining) {
-                    $message = Craft::t('app',
-                        'Account locked. Try again in {time}.',
-                        ['time' => $timeRemaining->humanDuration()]);
+                    $message = Craft::t('app', 'Account locked. Try again in {time}.', ['time' => $timeRemaining->humanDuration()]);
                 } else {
                     $message = Craft::t('app', 'Account locked.');
                 }
-
                 break;
-            }
-            case User::AUTH_PASSWORD_RESET_REQUIRED: {
-                $message = Craft::t('app',
-                    'You need to reset your password. Check your email for instructions.');
+            case User::AUTH_PASSWORD_RESET_REQUIRED:
+                $message = Craft::t('app', 'You need to reset your password. Check your email for instructions.');
                 Craft::$app->getUsers()->sendPasswordResetEmail($user);
                 break;
-            }
-            case User::AUTH_ACCOUNT_SUSPENDED: {
+            case User::AUTH_ACCOUNT_SUSPENDED:
                 $message = Craft::t('app', 'Account suspended.');
                 break;
-            }
-            case User::AUTH_NO_CP_ACCESS: {
-                $message = Craft::t('app',
-                    'You cannot access the CP with that account.');
+            case User::AUTH_NO_CP_ACCESS:
+                $message = Craft::t('app', 'You cannot access the CP with that account.');
                 break;
-            }
-            case User::AUTH_NO_CP_OFFLINE_ACCESS: {
-                $message = Craft::t('app',
-                    'You cannot access the CP while the system is offline with that account.');
+            case User::AUTH_NO_CP_OFFLINE_ACCESS:
+                $message = Craft::t('app', 'You cannot access the CP while the system is offline with that account.');
                 break;
-            }
-            case User::AUTH_NO_SITE_OFFLINE_ACCESS: {
-                $message = Craft::t('app',
-                    'You cannot access the site while the system is offline with that account.');
+            case User::AUTH_NO_SITE_OFFLINE_ACCESS:
+                $message = Craft::t('app', 'You cannot access the site while the system is offline with that account.');
                 break;
-            }
-            default: {
+            default:
                 if (Craft::$app->getConfig()->get('useEmailAsUsername')) {
                     $message = Craft::t('app', 'Invalid email or password.');
                 } else {
                     $message = Craft::t('app', 'Invalid username or password.');
                 }
-            }
         }
 
         if (Craft::$app->getRequest()->getAcceptsJson()) {
