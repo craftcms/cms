@@ -846,7 +846,7 @@ class Extension extends \Twig_Extension implements \Twig_Extension_GlobalsInterf
      */
     public function getTranslations()
     {
-        Craft::$app->getDeprecator()->log('getTranslations', 'getTranslations() has been deprecated. Use craft.app.view.getTranslations() instead.');
+        Craft::$app->getDeprecator()->log('getTranslations', 'getTranslations() has been deprecated. Use view.getTranslations() instead.');
 
         return Json::encode($this->view->getTranslations());
     }
