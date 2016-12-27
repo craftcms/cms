@@ -261,34 +261,10 @@ class ElementQuery extends Query implements ElementQueryInterface, Arrayable, Co
     // -------------------------------------------------------------------------
 
     /**
-     * @var string Child field
-     * @deprecated in 3.0. Use [[relatedTo]] instead.
-     */
-    public $childField;
-
-    /**
-     * @var array Child of
-     * @deprecated in 3.0. Use [[relatedTo]] instead.
-     */
-    public $childOf;
-
-    /**
      * @var integer Depth
      * @deprecated in 3.0. Use [[relatedTo]] instead.
      */
     public $depth;
-
-    /**
-     * @var string Parent field
-     * @deprecated in 3.0. Use [[relatedTo]] instead.
-     */
-    public $parentField;
-
-    /**
-     * @var array Parent of
-     * @deprecated in 3.0. Use [[relatedTo]] instead.
-     */
-    public $parentOf;
 
     // For internal use
     // -------------------------------------------------------------------------
@@ -1439,36 +1415,6 @@ class ElementQuery extends Query implements ElementQueryInterface, Arrayable, Co
      */
     private function _applyRelatedToParam()
     {
-        // Convert the old childOf and parentOf params to the relatedTo param
-        // childOf(element)  => relatedTo({ source: element })
-        // parentOf(element) => relatedTo({ target: element })
-
-        // TODO: Remove this code in Craft 4
-        /** @noinspection PhpDeprecationInspection */
-        if (!$this->relatedTo && ($this->childOf || $this->parentOf)) {
-            $this->relatedTo = ['and'];
-
-            /** @noinspection PhpDeprecationInspection */
-            if ($this->childOf) {
-                /** @noinspection PhpDeprecationInspection */
-                $this->relatedTo[] = [
-                    'sourceElement' => $this->childOf,
-                    'field' => $this->childField
-                ];
-            }
-
-            /** @noinspection PhpDeprecationInspection */
-            if ($this->parentOf) {
-                /** @noinspection PhpDeprecationInspection */
-                $this->relatedTo[] = [
-                    'targetElement' => $this->parentOf,
-                    'field' => $this->parentField
-                ];
-            }
-
-            Craft::$app->getDeprecator()->log('element_old_relation_params', 'The ‘childOf’, ‘childField’, ‘parentOf’, and ‘parentField’ element params have been deprecated. Use ‘relatedTo’ instead.');
-        }
-
         if (!$this->relatedTo) {
             return;
         }

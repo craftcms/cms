@@ -293,6 +293,7 @@ Craft CMS 3.0 Working Changelog
 - Removed the `{% registerhirescss %}` Twig tag. Use `{% css %}` instead, and type your own media selector.
 - Removed the `{% registerjsfile %}` Twig tag. Use `{% do view.registerJsFile("/url/to/file.js") %}` instead.
 - Removed the `{% registerjsresource %}` Twig tag. Use `{% do view.registerJsResource("path/to/resource.js") %}` instead.
+- Removed the `childOf`, `childField`, `parentOf`, and `parentField` element query params. Use `relatedTo` instead.
 - Removed the PEL library.
 - Removed the PclZip library.
 - Removed the SimplePie library.
