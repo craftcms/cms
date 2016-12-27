@@ -7,7 +7,6 @@
 
 namespace craft\elements\db;
 
-use Craft;
 use craft\db\Query;
 use craft\elements\Tag;
 use craft\helpers\Db;
