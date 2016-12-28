@@ -28,6 +28,7 @@ use craft\helpers\Image;
 use craft\helpers\StringHelper;
 use craft\helpers\Template;
 use craft\helpers\UrlHelper;
+use craft\models\AssetTransform;
 use craft\models\VolumeFolder;
 use craft\records\Asset as AssetRecord;
 use craft\validators\AssetFilenameValidator;
@@ -582,7 +583,7 @@ class Asset extends Element
     /**
      * Sets the transform.
      *
-     * @param string|array|null $transform The transform that should be applied, if any. Can either be the handle of a named transform, or an array that defines the transform settings.
+     * @param AssetTransform|string|array|null $transform The transform that should be applied, if any. Can either be the handle of a named transform, or an array that defines the transform settings.
      *
      * @return Asset
      */
