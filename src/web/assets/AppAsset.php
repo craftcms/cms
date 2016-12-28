@@ -101,7 +101,7 @@ class AppAsset extends AssetBundle
         $this->js = array_merge($this->js, [
             'lib/fileupload/jquery.ui.widget.js',
             'lib/fileupload/jquery.fileupload.js',
-            'js/'.($useCompressedJs ? 'compressed/' : '').'Craft.js',
+            'js/Craft'.($useCompressedJs ? '.min.js' : '.js'),
         ]);
 
         parent::init();
