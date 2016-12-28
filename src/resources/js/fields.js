@@ -1,6 +1,4 @@
 (function($) {
-
-
     var FieldsAdmin = Garnish.Base.extend(
         {
             $groups: null,
@@ -130,6 +128,4 @@
     Garnish.$doc.ready(function() {
         Craft.FieldsAdmin = new FieldsAdmin();
     });
-
-
 })(jQuery);

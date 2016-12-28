@@ -1,5 +1,4 @@
 (function($) {
-
     /**
      * Deprecator class
      */
@@ -78,5 +77,4 @@
         });
 
     new Deprecator();
-
 })(jQuery);

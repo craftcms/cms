@@ -1,6 +1,4 @@
 (function($) {
-
-
     /**
      * Dashboard class
      */
@@ -596,6 +594,4 @@
                 });
             }
         });
-
-
 })(jQuery);

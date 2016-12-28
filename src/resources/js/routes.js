@@ -1,6 +1,4 @@
 (function($) {
-
-
     var Routes = Garnish.Base.extend(
         {
             tokens: null,
@@ -459,6 +457,4 @@
 
 
     Craft.routes = new Routes();
-
-
 })(jQuery);

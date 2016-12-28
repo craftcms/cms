@@ -1,6 +1,4 @@
 (function($) {
-
-
     Craft.RecentEntriesWidget = Garnish.Base.extend(
         {
             params: null,
@@ -70,6 +68,4 @@
         }, {
             instances: []
         });
-
-
 })(jQuery);

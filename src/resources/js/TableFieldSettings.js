@@ -1,6 +1,4 @@
 (function($) {
-
-
     Craft.TableFieldSettings = Garnish.Base.extend(
         {
             columnsTableName: null,
@@ -121,6 +119,4 @@
             }
 
         });
-
-
 })(jQuery);

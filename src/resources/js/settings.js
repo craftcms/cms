@@ -1,6 +1,4 @@
 (function($) {
-
-
     Craft.Tool = Garnish.Base.extend(
         {
             $trigger: null,
@@ -213,6 +211,4 @@
         {
             maxConcurrentActions: 3
         });
-
-
 })(jQuery);

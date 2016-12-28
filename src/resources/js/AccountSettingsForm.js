@@ -1,6 +1,4 @@
 (function($) {
-
-
     Craft.AccountSettingsForm = Garnish.Base.extend(
         {
             userId: null,
@@ -67,6 +65,4 @@
                 deleteModalRedirect: null
             }
         });
-
-
 })(jQuery);

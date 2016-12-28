@@ -1,36 +1,38 @@
-Craft.FeedWidget = Garnish.Base.extend(
-    {
-        $widget: null,
+(function($) {
+    Craft.FeedWidget = Garnish.Base.extend(
+        {
+            $widget: null,
 
-        init: function(widgetId, url, limit) {
-            this.$widget = $('#widget' + widgetId);
-            this.$widget.addClass('loading');
+            init: function(widgetId, url, limit) {
+                this.$widget = $('#widget' + widgetId);
+                this.$widget.addClass('loading');
 
-            var data = {
-                url: url,
-                limit: limit
-            };
+                var data = {
+                    url: url,
+                    limit: limit
+                };
 
-            Craft.postActionRequest('dashboard/get-feed-items', data, $.proxy(function(response, textStatus) {
-                this.$widget.removeClass('loading');
+                Craft.postActionRequest('dashboard/get-feed-items', data, $.proxy(function(response, textStatus) {
+                    this.$widget.removeClass('loading');
 
-                if (textStatus == 'success') {
-                    var $tds = this.$widget.find('td');
+                    if (textStatus == 'success') {
+                        var $tds = this.$widget.find('td');
 
-                    for (var i = 0; i < response.items.length; i++) {
-                        var item = response.items[i],
-                            $td = $($tds[i]);
+                        for (var i = 0; i < response.items.length; i++) {
+                            var item = response.items[i],
+                                $td = $($tds[i]);
 
-                        var widgetHtml = '<a href="' + item.permalink + '" target="_blank">' + item.title + '</a> ';
+                            var widgetHtml = '<a href="' + item.permalink + '" target="_blank">' + item.title + '</a> ';
 
-                        if (item.date) {
-                            widgetHtml += '<span class="light nowrap">' + item.date + '</span>';
+                            if (item.date) {
+                                widgetHtml += '<span class="light nowrap">' + item.date + '</span>';
+                            }
+
+                            $td.html(widgetHtml);
                         }
-
-                        $td.html(widgetHtml);
                     }
-                }
 
-            }, this));
-        }
-    });
+                }, this));
+            }
+        });
+})(jQuery);

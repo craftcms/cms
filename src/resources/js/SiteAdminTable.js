@@ -1,6 +1,4 @@
 (function($) {
-
-
     Craft.SiteAdminTable = Craft.AdminTable.extend(
         {
             confirmDeleteModal: null,
@@ -131,6 +129,4 @@
                 this.addListener($form, 'submit', 'submitDeleteLocale');
             }
         });
-
-
 })(jQuery);

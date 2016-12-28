@@ -1,6 +1,4 @@
 (function($) {
-
-
     Craft.UpdatesPage = Garnish.Base.extend(
         {
             totalAvailableUpdates: 0,
@@ -298,6 +296,4 @@
         {
             maxInitialReleaseNotes: 5
         });
-
-
 })(jQuery);

@@ -1,6 +1,4 @@
 (function($) {
-
-
     /**
      * Matrix configurator class
      */
@@ -743,6 +741,4 @@
             }
 
         });
-
-
 })(jQuery);

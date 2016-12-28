@@ -1,5 +1,4 @@
 (function($) {
-
     Craft.UpdatesWidget = Garnish.Base.extend(
         {
             $widget: null,
@@ -77,6 +76,4 @@
                 Craft.cp.displayUpdateInfo(info);
             }
         });
-
-
 })(jQuery);

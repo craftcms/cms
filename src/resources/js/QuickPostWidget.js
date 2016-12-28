@@ -1,6 +1,4 @@
 (function($) {
-
-
     Craft.QuickPostWidget = Garnish.Base.extend(
         {
             params: null,
@@ -123,6 +121,4 @@
                 Craft.redirectTo(response.cpEditUrl);
             }
         });
-
-
 })(jQuery);

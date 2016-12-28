@@ -1,6 +1,4 @@
 (function($) {
-
-
     Craft.EntryTypeSwitcher = Garnish.Base.extend(
         {
             $typeSelect: null,
@@ -41,6 +39,4 @@
             }
 
         });
-
-
 })(jQuery);

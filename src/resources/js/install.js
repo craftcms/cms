@@ -1,5 +1,4 @@
 (function($) {
-
     Craft.Installer = Garnish.Base.extend(
         {
             $bg: null,
@@ -209,5 +208,4 @@
     Garnish.$win.on('load', function() {
         Craft.installer = new Craft.Installer();
     });
-
 })(jQuery);

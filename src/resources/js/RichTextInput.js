@@ -1,6 +1,4 @@
 (function($) {
-
-
     /**
      * Rich Text input class
      */
@@ -365,6 +363,4 @@
                 Craft.RichTextInput.currentInstance.onInitRedactor(this);
             }
         });
-
-
 })(jQuery);

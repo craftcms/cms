@@ -1,6 +1,4 @@
 (function($) {
-
-
     Craft.Updater = Garnish.Base.extend(
         {
             $graphic: null,
@@ -149,6 +147,4 @@
                 }
             }
         });
-
-
 })(jQuery);

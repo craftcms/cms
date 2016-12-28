@@ -1,6 +1,4 @@
 (function($) {
-
-
     /**
      * Matrix input class
      */
@@ -659,6 +657,4 @@
                 }, this));
             }
         });
-
-
 })(jQuery);

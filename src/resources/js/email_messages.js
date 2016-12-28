@@ -1,6 +1,4 @@
 (function($) {
-
-
     var EmailMessages = Garnish.Base.extend(
         {
             messages: null,
@@ -195,6 +193,4 @@
 
 
     new EmailMessages();
-
-
 })(jQuery);
