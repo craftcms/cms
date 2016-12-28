@@ -4,8 +4,8 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#composer-lock-the-lock-file",
         "This file is @generated automatically"
     ],
-    "hash": "9d49bcbdfe6ae4bfc0beb68900d30e52",
-    "content-hash": "f699b969f349d0ee9501e9ab46931ca3",
+    "hash": "fdc5682edbd4767634b11e3922d46b11",
+    "content-hash": "5163437ab9d3603c17d14a78a79094e9",
     "packages": [
         {
             "name": "guzzle/guzzle",
@@ -203,16 +203,16 @@
         },
         {
             "name": "phpmailer/phpmailer",
-            "version": "v5.2.18",
+            "version": "v5.2.21",
             "source": {
                 "type": "git",
                 "url": "https://github.com/PHPMailer/PHPMailer.git",
-                "reference": "ed4e7ce8ad877a8f578139c491c256ab1933c7c9"
+                "reference": "1d51856b76c06fc687fcd9180efa7a0bed0d761e"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/PHPMailer/PHPMailer/zipball/ed4e7ce8ad877a8f578139c491c256ab1933c7c9",
-                "reference": "ed4e7ce8ad877a8f578139c491c256ab1933c7c9",
+                "url": "https://api.github.com/repos/PHPMailer/PHPMailer/zipball/1d51856b76c06fc687fcd9180efa7a0bed0d761e",
+                "reference": "1d51856b76c06fc687fcd9180efa7a0bed0d761e",
                 "shasum": ""
             },
             "require": {
@@ -259,7 +259,7 @@
                 }
             ],
             "description": "PHPMailer is a full-featured email creation and transfer class for PHP",
-            "time": "2016-12-24 15:43:41"
+            "time": "2016-12-28 15:35:48"
         },
         {
             "name": "pixelandtonic/imagine",
