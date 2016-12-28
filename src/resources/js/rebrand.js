@@ -1,5 +1,6 @@
 (function($) {
     /** global: Craft */
+    /** global: Garnish */
     var settings = {
         uploadAction: 'rebrand/upload-site-image',
         deleteAction: 'rebrand/delete-site-image',

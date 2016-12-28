@@ -1,5 +1,6 @@
 (function($) {
     /** global: Craft */
+    /** global: Garnish */
     /**
      * Rich Text input class
      */

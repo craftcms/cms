@@ -1,5 +1,6 @@
 (function($) {
     /** global: Craft */
+    /** global: Garnish */
     var settings = {
         postParameters: {userId: $('.user-photo').attr('data-user')},
         containerSelector: '.user-photo',

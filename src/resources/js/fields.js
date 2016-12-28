@@ -1,5 +1,6 @@
 (function($) {
     /** global: Craft */
+    /** global: Garnish */
     var FieldsAdmin = Garnish.Base.extend(
         {
             $groups: null,

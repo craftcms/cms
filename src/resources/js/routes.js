@@ -1,5 +1,6 @@
 (function($) {
     /** global: Craft */
+    /** global: Garnish */
     var Routes = Garnish.Base.extend(
         {
             tokens: null,

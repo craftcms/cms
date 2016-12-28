@@ -1,5 +1,6 @@
 (function($) {
     /** global: Craft */
+    /** global: Garnish */
     Craft.UserPermissions = Garnish.Base.extend(
         {
             $wrapper: null,

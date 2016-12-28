@@ -1,5 +1,6 @@
 (function($) {
     /** global: Craft */
+    /** global: Garnish */
     Craft.TableFieldSettings = Garnish.Base.extend(
         {
             columnsTableName: null,

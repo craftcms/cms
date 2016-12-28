@@ -1,5 +1,6 @@
 (function($) {
     /** global: Craft */
+    /** global: Garnish */
     Craft.QuickPostWidget = Garnish.Base.extend(
         {
             params: null,
