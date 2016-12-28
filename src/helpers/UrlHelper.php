@@ -304,7 +304,7 @@ class UrlHelper
      *
      * @return array|string
      */
-    public static function getActionUrl($path = '', $params = null, $protocol = null)
+    public static function actionUrl($path = '', $params = null, $protocol = null)
     {
         $path = Craft::$app->getConfig()->get('actionTrigger').'/'.trim($path, '/');
 

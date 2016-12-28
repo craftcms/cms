@@ -367,7 +367,7 @@ class CategoriesController extends Controller
                 if ($category->getStatus() === Element::STATUS_ENABLED) {
                     $variables['shareUrl'] = $category->getUrl();
                 } else {
-                    $variables['shareUrl'] = UrlHelper::getActionUrl('categories/share-category',
+                    $variables['shareUrl'] = UrlHelper::actionUrl('categories/share-category',
                         [
                             'categoryId' => $category->id,
                             'siteId' => $category->siteId

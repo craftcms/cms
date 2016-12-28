@@ -116,7 +116,7 @@ class UrlManager extends \yii\web\UrlManager
         $route = trim($params[0], '/');
         unset($params[0]);
 
-        return UrlHelper::getActionUrl($route, $params, $scheme);
+        return UrlHelper::actionUrl($route, $params, $scheme);
     }
 
     /**

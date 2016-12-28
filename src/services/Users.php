@@ -401,7 +401,7 @@ class Users extends Component
         $userRecord->save();
 
         if ($user->can('accessCp')) {
-            $url = UrlHelper::getActionUrl('users/verifyemail',
+            $url = UrlHelper::actionUrl('users/verifyemail',
                 ['code' => $unhashedVerificationCode, 'id' => $user->uid],
                 Craft::$app->getRequest()->getIsSecureConnection() ? 'https' : 'http');
         } else {

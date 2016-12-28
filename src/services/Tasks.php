@@ -708,7 +708,7 @@ class Tasks extends Component
             in_array(Header::getMimeType(), ['text/html', 'application/xhtml+xml'], true)
         ) {
             // Just output JS that tells the browser to fire an Ajax request to kick off task running
-            $url = Json::encode(UrlHelper::getActionUrl('tasks/run-pending-tasks'));
+            $url = Json::encode(UrlHelper::actionUrl('tasks/run-pending-tasks'));
 
             // Ajax request code adapted from http://www.quirksmode.org/js/xmlhttp.html - thanks ppk!
             $js = <<<EOD

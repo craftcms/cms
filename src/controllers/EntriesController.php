@@ -311,7 +311,7 @@ class EntriesController extends BaseEntriesController
                             break;
                     }
 
-                    $variables['shareUrl'] = UrlHelper::getActionUrl('entries/share-entry', $shareParams);
+                    $variables['shareUrl'] = UrlHelper::actionUrl('entries/share-entry', $shareParams);
                 }
             }
         } else {
