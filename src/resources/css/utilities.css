@@ -33,4 +33,6 @@ body.rtl .toolhud .main .alldone { right: 230px; }
 
 table.fixed-layout { table-layout: fixed; }
 
+ul.icons li a span.badge { background: #da5a47; border-radius: 50px; border: 2px solid #fff; padding: 3px 8px; min-width: 8px; color: #fff; position: absolute; top: 14px; right: 14px; }
+
 /*# sourceMappingURL=utilities.css.map */
