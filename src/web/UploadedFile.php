@@ -32,7 +32,7 @@ class UploadedFile extends \yii\web\UploadedFile
     public static function getInstanceByName($name)
     {
         /** @noinspection PhpIncompatibleReturnTypeInspection */
-        return parent::getInstanceByName(static::_normalizeName($name));
+        return parent::getInstanceByName(self::_normalizeName($name));
     }
 
     /**
@@ -50,7 +50,7 @@ class UploadedFile extends \yii\web\UploadedFile
      */
     public static function getInstancesByName($name, $lookForSingleInstance = true)
     {
-        $name = static::_normalizeName($name);
+        $name = self::_normalizeName($name);
         $instances = parent::getInstancesByName($name);
 
         if (!$instances && $lookForSingleInstance) {

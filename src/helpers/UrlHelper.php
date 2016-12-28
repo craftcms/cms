@@ -84,7 +84,7 @@ class UrlHelper
      */
     public static function urlWithParams($url, $params)
     {
-        $params = static::_normalizeParams($params, $anchor);
+        $params = self::_normalizeParams($params, $anchor);
 
         if ($params) {
             if (StringHelper::contains($url, '?')) {
@@ -188,7 +188,7 @@ class UrlHelper
             $protocol = 'https';
         }
 
-        return static::_createUrl($path, $params, $protocol, $cpUrl, $mustShowScriptName);
+        return self::_createUrl($path, $params, $protocol, $cpUrl, $mustShowScriptName);
     }
 
     /**
@@ -205,7 +205,7 @@ class UrlHelper
         $path = trim($path, '/');
         $path = Craft::$app->getConfig()->get('cpTrigger').($path ? '/'.$path : '');
 
-        return static::_createUrl($path, $params, $protocol, true, false);
+        return self::_createUrl($path, $params, $protocol, true, false);
     }
 
     /**
@@ -238,7 +238,7 @@ class UrlHelper
         }
 
         $path = trim($path, '/');
-        $url = static::_createUrl($path, $params, $protocol, false, false);
+        $url = self::_createUrl($path, $params, $protocol, false, false);
 
         /** @noinspection UnSafeIsSetOverArrayInspection - FP */
         if (isset($currentSite)) {
@@ -410,7 +410,7 @@ class UrlHelper
     private static function _createUrl($path, $params, $protocol, $cpUrl, $mustShowScriptName)
     {
         // Normalize the params
-        $params = static::_normalizeParams($params, $anchor);
+        $params = self::_normalizeParams($params, $anchor);
 
         // Were there already any query string params in the path?
         if (($qpos = mb_strpos($path, '?')) !== false) {

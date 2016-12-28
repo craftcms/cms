@@ -307,8 +307,8 @@ class Db
         $condition = [$conditionOperator];
 
         foreach ($value as $val) {
-            static::_normalizeEmptyValue($val);
-            $operator = static::_parseParamOperator($val);
+            self::_normalizeEmptyValue($val);
+            $operator = self::_parseParamOperator($val);
 
             if (StringHelper::toLowerCase($val) == ':empty:') {
                 if ($operator == '=') {
@@ -383,7 +383,7 @@ class Db
 
         foreach ($value as $val) {
             // Is this an empty value?
-            static::_normalizeEmptyValue($val);
+            self::_normalizeEmptyValue($val);
 
             if ($val == ':empty:' || $val == 'not :empty:') {
                 $normalizedValues[] = $val;
@@ -393,7 +393,7 @@ class Db
             }
 
             if (is_string($val)) {
-                $operator = static::_parseParamOperator($val);
+                $operator = self::_parseParamOperator($val);
             } else {
                 $operator = '=';
             }

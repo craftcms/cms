@@ -205,7 +205,7 @@ class MigrationHelper
                     }
                 }
 
-                $refColumns = static::_getColumnsForFK($row);
+                $refColumns = self::_getColumnsForFK($row);
 
                 $sourceColumns = [];
                 foreach ($row as $key => $column) {
@@ -296,7 +296,7 @@ class MigrationHelper
         // Drop all the FKs because any one of them might be relying on an index we're about to drop
         foreach ($table->foreignKeys as $key => $fkInfo) {
 
-            $columns = static::_getColumnsForFK($fkInfo);
+            $columns = self::_getColumnsForFK($fkInfo);
 
             // Save something to restore later.
             $columnFks[] = [$fkInfo, $key];

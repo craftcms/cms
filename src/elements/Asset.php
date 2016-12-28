@@ -114,7 +114,7 @@ class Asset extends Element
         $additionalCriteria = $context == 'settings' ? ['parentId' => ':empty:'] : [];
         $tree = Craft::$app->getAssets()->getFolderTreeByVolumeIds($sourceIds, $additionalCriteria);
 
-        return static::_assembleSourceList($tree, $context != 'settings');
+        return self::_assembleSourceList($tree, $context != 'settings');
     }
 
     /**
@@ -253,7 +253,7 @@ class Asset extends Element
         $sources = [];
 
         foreach ($folders as $folder) {
-            $sources[] = static::_assembleSourceInfoForFolder($folder, $includeNestedFolders);
+            $sources[] = self::_assembleSourceInfoForFolder($folder, $includeNestedFolders);
         }
 
         return $sources;
@@ -280,7 +280,7 @@ class Asset extends Element
         ];
 
         if ($includeNestedFolders) {
-            $source['nested'] = static::_assembleSourceList(
+            $source['nested'] = self::_assembleSourceList(
                 $folder->getChildren(),
                 true
             );

@@ -66,7 +66,7 @@ class PositionSelect extends Field
         parent::init();
 
         if ($this->options === null) {
-            $this->options = array_keys(static::_getOptions());
+            $this->options = array_keys(self::_getOptions());
         } else {
             $this->options = array_values(array_filter($this->options));
         }
@@ -88,7 +88,7 @@ class PositionSelect extends Field
         return Craft::$app->getView()->renderTemplate('_components/fieldtypes/PositionSelect/settings',
             [
                 'field' => $this,
-                'allOptions' => array_keys(static::_getOptions()),
+                'allOptions' => array_keys(self::_getOptions()),
             ]);
     }
 

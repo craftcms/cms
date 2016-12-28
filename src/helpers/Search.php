@@ -67,7 +67,7 @@ class Search
 
         if ($processCharMap) {
             // Remove punctuation and diacritics
-            $str = strtr($str, static::_getCharMap());
+            $str = strtr($str, self::_getCharMap());
         }
 
         // Remove ignore-words?
@@ -145,7 +145,7 @@ class Search
             }
 
             // Replace punctuation with a space
-            foreach (static::_getPunctuation() as $value) {
+            foreach (self::_getPunctuation() as $value) {
                 $map[$value] = ' ';
             }
         }
