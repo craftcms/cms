@@ -1238,6 +1238,14 @@ class View extends \yii\web\View
             }
         }
 
+        if ($kind === 'js' && Craft::$app->getConfig()->get('useCompressedJs')) {
+            // See if a .min.js version of the file exists
+            $minPath = str_replace('.js', '.min.js', $path);
+            if (file_exists($sourcePath.DIRECTORY_SEPARATOR.$minPath)) {
+                $path = $minPath;
+            }
+        }
+
         $bundle = new AssetBundle([
             'sourcePath' => $sourcePath,
             "{$kind}" => [$path],
