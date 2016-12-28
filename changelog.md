@@ -2121,8 +2121,8 @@ Craft CMS Changelog
 ## 2.2.2593 - 2014-10-10
 
 ### Changed
-- Rich Text fields with the “Clean up HTML?” setting enabled will now remove &lt;a&gt; tags that don’t have any attributes or inner HTML.
-- Rich Text fields with the “Purify HTML?” setting enabled no longer remove `target="_blank"` attributes on &lt;a&gt; tags.
+- Rich Text fields with the “Clean up HTML?” setting enabled will now remove `<a>` tags that don’t have any attributes or inner HTML.
+- Rich Text fields with the “Purify HTML?” setting enabled no longer remove `target="_blank"` attributes on `<a>` tags.
 - The `IPlugin` interface no longer requires that plugins have a static `log()` method.
 - Improved the reliability of drag-n-drop-based interactions.
 
@@ -2442,7 +2442,7 @@ Craft CMS Changelog
 - Fixed a bug where .html and .htm templates were automatically getting injected with any HTML that was queued up for [getHeadHtml()](http://buildwithcraft.com/classreference/services/TemplatesService#getHeadHtml-detail) or [getFootHtml()](http://buildwithcraft.com/classreference/services/TemplatesService#getFootHtml-detail), even if the template had specified a content type other than “text/html” or “application/xhtml+xml” using the [{% header %}](http://buildwithcraft.com/docs/templating/header) tag.
 - Fixed a bug where users would get locked out of their accounts one failed login earlier than the “max” in “[maxInvalidLogins](http://buildwithcraft.com/docs/config-settings#maxInvalidLogins)” would imply.
 - Fixed a bug where existing user sessions would not be affected by changes to the [userSessionDuration](http://buildwithcraft.com/docs/config-settings#userSessionDuration) and [rememberedUserSessionDuration](http://buildwithcraft.com/docs/config-settings#rememberedUserSessionDuration) config settings.
-- Fixed several places in Craft’s code that were assuming there would only ever be One True [DbConnection](http://buildwithcraft.com/classreference/etc/db/DbConnection) instance (located at craft()-&gt;db).
+- Fixed several places in Craft’s code that were assuming there would only ever be One True [DbConnection](http://buildwithcraft.com/classreference/etc/db/DbConnection) instance (located at `craft()->db`).
 - Fixed a PHP error that could occur if an unknown extension was passed to [HeaderHelper::setContentTypeByExtension()](http://buildwithcraft.com/classreference/helpers/HeaderHelper#setContentTypeByExtension-detail).
 - Fixed a bug where field types’ `prepSettings()` method could be called with already-prepped settings passed in.
 - Fixed a bug where [ConfigService::exists()](http://buildwithcraft.com/classreference/services/ConfigService#exists-detail) was returning `false` if the config setting did exist, but was set to `null`.
@@ -2510,7 +2510,7 @@ Craft CMS Changelog
 - Fixed a bug where elements in the Control Panel could have multiple editing modals attached to them at the same time.
 - Fixed a bug where `{% cache %}` tags were caching templates that included transform-generation URLs.
 - Fixed a bug where `TemplatesService::namespaceInputs()` was not accounting for attributes that started with either `#` or `.`.
-- Fixed a bug where HTML entities were getting double-encoded in the page &lt;title&gt; on the Edit Entry page.
+- Fixed a bug where HTML entities were getting double-encoded in the page `<title>` on the Edit Entry page.
 
 ## 2.1.2564 - 2014-07-15
 
@@ -2715,7 +2715,7 @@ Craft CMS Changelog
 - Asset source permissions are no longer factored into Assets fields.
 - Assets’ filenames can now be renamed from the same modal that their title and content is edited in.
 - Asset folders now show settings icons on hover, which open the folder context menu when clicked on.
-- It is no longer necessary to include a `|raw` filter when outputting an image transform URL within &lt;style&gt; tags.
+- It is no longer necessary to include a `|raw` filter when outputting an image transform URL within `<style>` tags.
 - The `|date` filter now automatically translates month names, weekday names, and AM/PM for the current locale.
 - `UrlHelper::getUrl()` now applies the `$params` and `$protocol` arguments to full URLs, if they’re set.
 - `TemplatesService::findTemplate()` now returns `false` in the event that it can’t find the template, rather than throwing a `TemplateLoaderException`.
@@ -2997,7 +2997,7 @@ Craft CMS Changelog
 - Added “`toolbarFixedBox: true`” to the default `Simple.json` and `Standard.json` Redactor configs in `craft/config/redactor/`. (Note this will only affect new installs.)
 
 ### Removed
-- Removed any empty `action=""` attributes from `&lt;form&gt;`s, which it turns out is against HTML spec.
+- Removed any empty `action=""` attributes from `<form>`s, which it turns out is against HTML spec.
 
 ### Fixed
 - Fixed a bug where saving an element on a non-primary locale would override the element’s search keywords for the primary locale.
@@ -3155,10 +3155,10 @@ Craft CMS Changelog
 - Added `TemplateHelper::getRaw()` for converting a string to a `Twig_Markup` object (which can be output in a template without requiring the `|raw` filter).
 - Added `craft()->setSiteUrl()`.
 - Any pane in the CP can now have a sidebar, and you can even have a pane with tabbed sidebars + content.
-- Added “info” icon + HUD support to the CP, via `&lt;span class="info"&gt;…&lt;/span&gt;`.
+- Added “info” icon + HUD support to the CP, via `<span class="info">...</span>`.
 - Added a new `table.inputs` CSS class for displaying a row of UI elements.
 - Added an `_elements/structure.html` include.
-- Added &lt;h4&gt; and &lt;h5&gt; CSS styles.
+- Added `<h4>` and `<h5>` CSS styles.
 - Added `Craft.getElementInfo()` Javascript method.
 - Added `Craft.getLocalStorage()` and `setLocalStorage()`, for saving and retrieving Javascript objectFs to the browser’s local storage, in a way that is tied to that specific Craft install in the event that multiple Craft installs live on the same domain.
 - The CP orientation (`ltr` or `rtl`) is now available to CP Javascript via `Craft.orientation`.
@@ -3272,7 +3272,7 @@ Craft CMS Changelog
 - `BaseFieldType::modifyElementsQuery()` now gets called on every element query that involves the given field; not just when the `ElementCriteriaModel` has a value set on the field’s parameter.
 - Plugin settings now get output within a `{% namespace %}` tag pair, so the namespace is available to `getSettingsHtml()`.
 - Modals are now 2/3 the browser’s width and height by default, unless a “fitted” class has been added to their container.
-- `&lt;table class="data"&gt;`s no longer have 100% width by default. (Use the `fullwidth` class if that’s desired.)
+- `<table class="data">`s no longer have 100% width by default. (Use the `fullwidth` class if that’s desired.)
 - Checkbox inputs now have a `checkbox` class.
 - Collapsible tables are now only responsive on mobile devices (not including tablets).
 - It is now possible for a `.fieldtoggle` input to work in normal and reverse mode on separate elements. (Note that the `data-reverse-target` HTML attribute should now be set to the reverse-toggled selector, not just a “1” in conjunction with the `data-target` attribute, like before.)
@@ -3465,7 +3465,7 @@ Craft CMS Changelog
 
 ### Changed
 - Entries’ “Author” settings now only list users that have permission to create entries in current section.
-- Rich Text fields now remove &lt;font&gt; tags if the “Clean up HTML?” setting is enabled.
+- Rich Text fields now remove `<font>` tags if the “Clean up HTML?” setting is enabled.
 - Rich Text fields now remove inline styles from more tags if the “Clean up HTML?” setting is enabled.
 - More template-based errors are now showing the misbehaving template file’s source in Dev Mode error reports.
 - Lightswitch fields now save a “0” search keyword when saved in the “No” position.
@@ -3535,7 +3535,7 @@ Craft CMS Changelog
 - Fixed a bug that could result in having two field layout content tabs with the same name, if that name included `!`, `*`, `'`, `(`, or `)` characters.
 - Fixed a bug where the `getResourcePath()` plugin hook wasn’t actually working.
 - Fixed a bug where Lightswitch inputs were inconsistently posting values of `y` and `on`.
-- Fixed a bug where Rich Text fields weren’t stripping out inline styles from &lt;a&gt; tags.
+- Fixed a bug where Rich Text fields weren’t stripping out inline styles from `<a>` tags.
 - Fixed a bug where Craft wasn’t HTML-encoding titles on the entry index page.
 - Fixed a FOUC bug with Firefox on pages with an autofocussed input.
 
@@ -3681,7 +3681,7 @@ Craft CMS Changelog
 - Added `TemplatesService::setNamespace()` for setting a default namespace for `namespaceInputs()`, `namespaceInputName()`, and `namespaceInputId()`.
 - Added `TemplatesService::formatInputId()`.
 - Added `TemplatesService::startJsBuffer()` and `clearJsBuffer()`, making it possible to capture scripts included with `TemplatesService::includeJs()`.
-- Added `TemplatesService::getScriptTag()`, which wraps the passed-in JS in a &lt;script&gt; tag.
+- Added `TemplatesService::getScriptTag()`, which wraps the passed-in JS in a `<script>` tag.
 - Added `TemplatesService::hook()` for plugins to latch onto template hooks (defined by the new `hook` tag).
 - Added `BaseFieldType::onBeforeDelete()` and `onAfterDelete()`, which get called before and after a field is deleted.
 - Added `BaseFieldType::validate()` for adding custom validation checks when saving an element.
@@ -5242,16 +5242,16 @@ Craft CMS Changelog
 - Added the `loginPath`, `logoutPath`, `resetPasswordPath`, and `pageTrigger` config settings
 - Added the `loginUrl` and `logoutUrl` global template variables
 - Added the `requireLogin` and `requirePermission` template tags
-- Added Settings &gt; Users &gt; Settings where you can toggle whether to allow public user registration
+- Added Settings → Users → Settings where you can toggle whether to allow public user registration
 - Finished Amazon S3 support for Assets
-- Added Settings &gt; Assets &gt; Sizes for defining sizes that your uploaded images should be cropped to
-- Added Settings &gt; Assets &gt; Operations where you can manually trigger asset indexing and size updating
+- Added Settings → Assets → Sizes for defining sizes that your uploaded images should be cropped to
+- Added Settings → Assets → Operations where you can manually trigger asset indexing and size updating
 - Added the list view for assets
 
 ### Changed
 - HTTP error templates are no longer prefixed with “error” (e.g. “404.html” rather than “error404.html”)
 - All dates are now stored as `datetime` columns rather than Unix timestamps
-- `AccountService` and `craft()-&gt;account` have been renamed to `AccountsService` and `craft()-&gt;accounts`
+- `AccountService` and `craft()->account` have been renamed to `AccountsService` and `craft()->accounts`
 - Added a “Download” menu option for manually downloading updates even if an auto-update is available
 - Blocks now backs up the database before running any database migrations in an update
 - Blocks will now clear the `storage/runtime/cache/` and `storage/runtime/compiled_templates/` folders when updated
@@ -5404,7 +5404,7 @@ Craft CMS Changelog
 ### Changed
 - Templates no longer need to use the `|raw` filter when outputting Rich Text blocks
 - Handles now get auto-generated in camelCase
-- Admins accessing the CP while Blocks is in Dev Mode will see a black & yellow strip across the top of the CP
+- Admins accessing the CP while Blocks is in Dev Mode will see a black and yellow strip across the top of the CP
 - Added support for the HTML5 `autofocus` attribute to all the macros in the CP’s `_includes/forms.html` template
 - The bundled htaccess file now prevents /favicon.png and /apple-touch-icon.png requests from getting routed to Blocks
 - The bundled htaccess file no longer assumes that Blocks is going to be installed in the web root
@@ -5479,7 +5479,7 @@ Craft CMS Changelog
 - `{% includeCssFile %}`, `{% includeJsFile %}`, `{% includeCssResource %}`, and `{% includeJsResource %}` tags no longer require `.css` and `.js` extensions
 - Plugin hook methods must now begin with “hook”
 - Moved automatic table creation/deletion for plugins into `BasePlugin->createTables()` and `dropTables()`
-- Text fields in the CP are now sized using `box-sizing: border-box`, and are made to span the full width of their container using a `.fullwidth` class, rather than `&lt;div class="textwrapper"&gt;`
+- Text fields in the CP are now sized using `box-sizing: border-box`, and are made to span the full width of their container using a `.fullwidth` class, rather than `<div class="textwrapper">`
 
 ### Removed
 - Removed the `urlFormat` config setting in favor of the new `usePathInfo` setting
