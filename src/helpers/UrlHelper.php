@@ -297,10 +297,10 @@ class UrlHelper
     }
 
     /**
-     * @param string $path
-     * @param null   $params
-     * @param string $protocol The protocol to use (e.g. http, https). If empty, the protocol used for the current
-     *                         request will be used.
+     * @param string            $path
+     * @param array|string|null $params
+     * @param string|null       $protocol The protocol to use (e.g. http, https). If empty, the protocol used for the current
+     *                                    request will be used.
      *
      * @return array|string
      */
@@ -399,11 +399,11 @@ class UrlHelper
     /**
      * Returns a URL.
      *
-     * @param string          $path
-     * @param string[]|string $params
-     * @param string|null     $protocol
-     * @param boolean         $cpUrl
-     * @param boolean         $mustShowScriptName
+     * @param string            $path
+     * @param array|string|null $params
+     * @param string|null       $protocol
+     * @param boolean           $cpUrl
+     * @param boolean           $mustShowScriptName
      *
      * @return string
      */
