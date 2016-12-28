@@ -93,7 +93,7 @@ class Globals
     {
         Craft::$app->getDeprecator()->log('craft.globals.getSetById()', 'craft.globals.getSetById() has been deprecated. Use craft.app.globals.getSetById() instead.');
 
-        if ($siteHandle) {
+        if ($siteHandle !== null) {
             $site = Craft::$app->getSites()->getSiteByHandle($siteHandle);
 
             if (!$site) {
@@ -121,7 +121,7 @@ class Globals
     {
         Craft::$app->getDeprecator()->log('craft.globals.getSetByHandle()', 'craft.globals.getSetByHandle() has been deprecated. Use craft.app.globals.getSetByHandle() instead.');
 
-        if ($siteHandle) {
+        if ($siteHandle !== null) {
             $site = Craft::$app->getSites()->getSiteByHandle($siteHandle);
 
             if (!$site) {

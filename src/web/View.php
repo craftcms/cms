@@ -156,15 +156,15 @@ class View extends \yii\web\View
     /**
      * Returns the Twig Environment instance for a given template loader class.
      *
-     * @param string $loaderClass The name of the class that should be initialized as the Twig instance’s template
-     *                            loader. If no class is passed in, [[TemplateLoader]] will be used.
-     * @param array  $options     Options to instantiate Twig with
+     * @param string|null $loaderClass The name of the class that should be initialized as the Twig instance’s template
+     *                                 loader. If no class is passed in, [[TemplateLoader]] will be used.
+     * @param array       $options     Options to instantiate Twig with
      *
      * @return Environment The Twig Environment instance.
      */
     public function getTwig($loaderClass = null, array $options = [])
     {
-        if (!$loaderClass) {
+        if ($loaderClass === null) {
             $loaderClass = TemplateLoader::class;
         }
 
@@ -228,7 +228,7 @@ class View extends \yii\web\View
             } else {
                 $template = $this->resolveTemplate($this->_renderingTemplate);
 
-                if (!$template) {
+                if ($template === false) {
                     $template = $this->_templatesPath.DIRECTORY_SEPARATOR.$this->_renderingTemplate;
                 }
             }
@@ -1309,7 +1309,7 @@ class View extends \yii\web\View
 
         $thumbUrl = $element->getThumbUrl(self::$_elementThumbSizes[0]);
 
-        if ($thumbUrl) {
+        if ($thumbUrl !== null) {
             $srcsets = [];
 
             foreach (self::$_elementThumbSizes as $i => $size) {
@@ -1352,7 +1352,7 @@ class View extends \yii\web\View
             $htmlAttributes['class'] .= ' hasstatus';
         }
 
-        if ($thumbUrl) {
+        if ($thumbUrl !== null) {
             $htmlAttributes['class'] .= ' hasthumb';
         }
 

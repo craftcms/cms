@@ -154,7 +154,7 @@ class QuickPost extends Widget
 
         $entryTypes = ArrayHelper::index($section->getEntryTypes(), 'id');
 
-        if (!$entryTypes) {
+        if (empty($entryTypes)) {
             return '<p>'.Craft::t('app', 'No entry types exist for this section.').'</p>';
         }
 

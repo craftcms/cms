@@ -191,7 +191,7 @@ class Request extends \yii\web\Request
             }
 
             $this->_pageNum = (int)$this->getQueryParam($pageTrigger, '1');
-        } else if ($this->_segments) {
+        } else if (!empty($this->_segments)) {
             // Match against the entire path string as opposed to just the last segment so that we can support
             // "/page/2"-style pagination URLs
             $path = implode('/', $this->_segments);
@@ -432,7 +432,7 @@ class Request extends \yii\web\Request
         }
 
         if ($property === null) {
-            if ($this->getUserAgent()) {
+            if ($this->getUserAgent() !== null) {
                 $property = (
                     preg_match(
                         '/(android|bb\\d+|meego).+mobile|avantgo|bada\\/|blackberry|blazer|compal|elaine|fennec|hiptop|iemobile|ip(hone|od)|iris|kindle|lge |maemo|midp|mmp|mobile.+firefox|netfront|opera m(ob|in)i|palm( os)?|phone|p(ixi|re)\\/|plucker|pocket|psp|series(4|6)0|symbian|treo|up\\.(browser|link)|vodafone|wap|windows ce|xda|xiino'
@@ -1020,7 +1020,7 @@ class Request extends \yii\web\Request
     private function _getParam($name, $defaultValue, $params)
     {
         // Do they just want the whole array?
-        if (!$name) {
+        if ($name === null) {
             return $this->_utf8AllTheThings($params);
         }
 

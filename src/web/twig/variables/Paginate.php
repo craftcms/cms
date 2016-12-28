@@ -143,7 +143,7 @@ class Paginate
      */
     public function getPrevUrls($dist = null)
     {
-        if ($dist) {
+        if ($dist !== null) {
             $start = $this->currentPage - $dist;
         } else {
             $start = 1;
@@ -161,7 +161,7 @@ class Paginate
      */
     public function getNextUrls($dist = null)
     {
-        if ($dist) {
+        if ($dist !== null) {
             $end = $this->currentPage + $dist;
         } else {
             $end = $this->totalPages;

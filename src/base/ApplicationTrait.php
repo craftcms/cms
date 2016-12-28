@@ -1302,15 +1302,13 @@ trait ApplicationTrait
         /** @var WebApplication|ConsoleApplication $this */
         if ($this instanceof WebApplication) {
             // See if we have the CP translated in one of the user's browsers preferred language(s)
-            $language = $this->getTranslatedBrowserLanguage();
+            if ($language = $this->getTranslatedBrowserLanguage() !== false) {
+                return $language;
+            }
         }
 
         // Default to the source language.
-        if (empty($language)) {
-            $language = $this->sourceLanguage;
-        }
-
-        return $language;
+        return $this->sourceLanguage;
     }
 
     /**

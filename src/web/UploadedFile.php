@@ -53,7 +53,7 @@ class UploadedFile extends \yii\web\UploadedFile
         $name = self::_normalizeName($name);
         $instances = parent::getInstancesByName($name);
 
-        if (!$instances && $lookForSingleInstance) {
+        if (empty($instances) && $lookForSingleInstance) {
             $singleInstance = parent::getInstanceByName($name);
 
             if ($singleInstance) {

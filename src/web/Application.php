@@ -190,7 +190,7 @@ class Application extends \yii\web\Application
             // If they're accessing a plugin's section, make sure that they have permission to do so
             $firstSeg = $request->getSegment(1);
 
-            if ($firstSeg) {
+            if ($firstSeg !== null) {
                 $plugin = $plugin = $this->getPlugins()->getPlugin($firstSeg);
 
                 if ($plugin && !$user->checkPermission('accessPlugin-'.$plugin->getHandle())) {
@@ -295,13 +295,13 @@ class Application extends \yii\web\Application
     /**
      * Tries to find a match between the browser's preferred languages and the languages Craft has been translated into.
      *
-     * @return string
+     * @return string|false
      */
     public function getTranslatedBrowserLanguage()
     {
         $browserLanguages = $this->getRequest()->getAcceptableLanguages();
 
-        if ($browserLanguages) {
+        if (!empty($browserLanguages)) {
             $appLanguages = $this->getI18n()->getAppLocaleIds();
 
             foreach ($browserLanguages as $language) {

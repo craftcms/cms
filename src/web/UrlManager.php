@@ -81,7 +81,7 @@ class UrlManager extends \yii\web\UrlManager
 
         if (($route = $this->_getRequestRoute($request)) !== false) {
             // Merge in any additional route params
-            if ($this->_routeParams) {
+            if (!empty($this->_routeParams)) {
                 if (isset($route[1])) {
                     $route[1] = ArrayHelper::merge($route[1], $this->_routeParams);
                 } else {
