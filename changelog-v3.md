@@ -239,6 +239,7 @@ Craft CMS 3.0 Working Changelog
 - Renamed `craft\helpers\StringHelper::uppercaseFirst()` to `upperCaseFirst()`.
 - Renamed `craft\helpers\Template::getRaw()` to `raw()`.
 - Renamed `craft\helpers\UrlHelper::getCpUrl()` to `cpUrl()`.
+- Renamed `craft\helpers\UrlHelper::getResourceUrl()` to `resourceUrl()`.
 - Renamed `craft\helpers\UrlHelper::getSiteUrl()` to `siteUrl()`.
 - Renamed `craft\helpers\UrlHelper::getUrl()` to `url()`.
 - Renamed `craft\helpers\UrlHelper::getUrlWithParams()` to `urlWithParams()`.

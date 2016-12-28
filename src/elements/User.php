@@ -922,7 +922,7 @@ class User extends Element implements IdentityInterface
         $photo = $this->getPhoto();
 
         if ($photo) {
-            return UrlHelper::getResourceUrl(
+            return UrlHelper::resourceUrl(
                 'resized/'.$this->photoId.'/'.$size,
                 [
                     Craft::$app->getResources()->dateParam => $photo->dateModified->getTimestamp()
@@ -930,7 +930,7 @@ class User extends Element implements IdentityInterface
             );
         }
 
-        return UrlHelper::getResourceUrl('defaultuserphoto');
+        return UrlHelper::resourceUrl('defaultuserphoto');
     }
 
     /**

@@ -839,7 +839,7 @@ class Assets extends Component
                     Craft::warning($exception->getMessage());
                     $assetTransforms->deleteTransformIndex($index->id);
 
-                    return UrlHelper::getResourceUrl('404');
+                    return UrlHelper::resourceUrl('404');
                 }
             } else {
                 // Queue up a new Generate Pending Transforms task, if there isn't one already
@@ -849,7 +849,7 @@ class Assets extends Component
                 }
 
                 // Return the temporary transform URL
-                return UrlHelper::getResourceUrl('transforms/'.$index->id);
+                return UrlHelper::resourceUrl('transforms/'.$index->id);
             }
         }
     }

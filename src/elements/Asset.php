@@ -628,14 +628,14 @@ class Asset extends Element
     public function getThumbUrl($size)
     {
         if ($this->getHasThumb()) {
-            return UrlHelper::getResourceUrl(
+            return UrlHelper::resourceUrl(
                 'resized/'.$this->id.'/'.$size,
                 [
                     Craft::$app->getResources()->dateParam => $this->dateModified->getTimestamp()
                 ]
             );
         } else {
-            return UrlHelper::getResourceUrl('icons/'.$this->getExtension());
+            return UrlHelper::resourceUrl('icons/'.$this->getExtension());
         }
     }
 

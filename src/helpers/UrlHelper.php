@@ -259,7 +259,7 @@ class UrlHelper
      *
      * @return string
      */
-    public static function getResourceUrl($uri = '', $params = null, $protocol = null)
+    public static function resourceUrl($uri = '', $params = null, $protocol = null)
     {
         $uri = trim($uri, '/');
 

@@ -310,7 +310,7 @@ class Resources extends Component
             $resourcePath = substr($url, strlen($rootResourceUrl));
 
             // Give Url a chance to add the timestamp
-            $url = UrlHelper::getResourceUrl($resourcePath);
+            $url = UrlHelper::resourceUrl($resourcePath);
         }
 
         // Return the normalized CSS URL declaration

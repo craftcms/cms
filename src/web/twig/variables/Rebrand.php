@@ -177,6 +177,6 @@ class Rebrand
      */
     private function _getImageUrl($path, $type)
     {
-        return UrlHelper::getResourceUrl('rebrand/'.$type.'/'.pathinfo($path, PATHINFO_BASENAME));
+        return UrlHelper::resourceUrl('rebrand/'.$type.'/'.pathinfo($path, PATHINFO_BASENAME));
     }
 }

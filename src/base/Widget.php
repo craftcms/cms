@@ -85,7 +85,7 @@ abstract class Widget extends SavableComponent implements WidgetInterface
     public function getBodyHtml()
     {
         return '<div style="margin: 0 -30px -30px;">'.
-            '<img style="display: block; width: 100%;" src="'.UrlHelper::getResourceUrl('images/prg.jpg').'">'.
+            '<img style="display: block; width: 100%;" src="'.UrlHelper::resourceUrl('images/prg.jpg').'">'.
             '</div>';
     }
 
