@@ -1,4 +1,5 @@
 (function($) {
+    /** global: Craft */
     Craft.EntryDraftEditor = Garnish.Base.extend(
         {
             $revisionBtn: null,

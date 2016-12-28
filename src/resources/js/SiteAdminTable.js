@@ -1,4 +1,5 @@
 (function($) {
+    /** global: Craft */
     Craft.SiteAdminTable = Craft.AdminTable.extend(
         {
             confirmDeleteModal: null,

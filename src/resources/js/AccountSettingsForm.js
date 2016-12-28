@@ -1,4 +1,5 @@
 (function($) {
+    /** global: Craft */
     Craft.AccountSettingsForm = Garnish.Base.extend(
         {
             userId: null,

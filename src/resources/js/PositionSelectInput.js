@@ -1,4 +1,5 @@
 (function($) {
+    /** global: Craft */
     PositionSelectInput = Garnish.Base.extend({
 
         $container: null,

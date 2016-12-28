@@ -33,7 +33,7 @@ module.exports = function(grunt) {
 			globaljs: {
 				options: {
 					banner: '/*! <%= pkg.name %> <%= pkg.version %> - <%= grunt.template.today("yyyy-mm-dd") %> */\n' +
-						'(function($){\n\n',
+						'(function($){\n/** global: Craft */\n',
 					footer: '\n})(jQuery);\n',
 				},
 				src: [

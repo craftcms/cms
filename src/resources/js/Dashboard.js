@@ -1,4 +1,5 @@
 (function($) {
+    /** global: Craft */
     /**
      * Dashboard class
      */

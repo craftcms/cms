@@ -1,4 +1,5 @@
 (function($) {
+    /** global: Craft */
     Craft.Installer = Garnish.Base.extend(
         {
             $bg: null,

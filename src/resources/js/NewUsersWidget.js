@@ -1,4 +1,5 @@
 (function($) {
+    /** global: Craft */
     Craft.NewUsersWidget = Garnish.Base.extend(
         {
             settings: null,

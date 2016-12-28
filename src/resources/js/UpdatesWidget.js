@@ -1,4 +1,5 @@
 (function($) {
+    /** global: Craft */
     Craft.UpdatesWidget = Garnish.Base.extend(
         {
             $widget: null,

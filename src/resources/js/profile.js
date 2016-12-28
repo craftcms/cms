@@ -1,4 +1,5 @@
 (function($) {
+    /** global: Craft */
     var settings = {
         postParameters: {userId: $('.user-photo').attr('data-user')},
         containerSelector: '.user-photo',

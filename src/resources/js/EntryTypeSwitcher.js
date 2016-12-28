@@ -1,4 +1,5 @@
 (function($) {
+    /** global: Craft */
     Craft.EntryTypeSwitcher = Garnish.Base.extend(
         {
             $typeSelect: null,

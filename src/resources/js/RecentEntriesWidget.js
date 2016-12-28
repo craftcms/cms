@@ -1,4 +1,5 @@
 (function($) {
+    /** global: Craft */
     Craft.RecentEntriesWidget = Garnish.Base.extend(
         {
             params: null,

@@ -1,4 +1,5 @@
 (function($) {
+    /** global: Craft */
     Craft.FeedWidget = Garnish.Base.extend(
         {
             $widget: null,

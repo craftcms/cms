@@ -1,4 +1,5 @@
 (function($) {
+    /** global: Craft */
     /**
      * Rich Text input class
      */

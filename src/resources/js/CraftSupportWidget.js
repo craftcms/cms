@@ -1,4 +1,5 @@
 (function($) {
+    /** global: Craft */
     Craft.CraftSupportWidget = Garnish.Base.extend(
         {
             widgetId: 0,

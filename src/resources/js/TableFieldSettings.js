@@ -1,4 +1,5 @@
 (function($) {
+    /** global: Craft */
     Craft.TableFieldSettings = Garnish.Base.extend(
         {
             columnsTableName: null,

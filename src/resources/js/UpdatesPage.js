@@ -1,4 +1,5 @@
 (function($) {
+    /** global: Craft */
     Craft.UpdatesPage = Garnish.Base.extend(
         {
             totalAvailableUpdates: 0,

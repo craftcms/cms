@@ -1,6 +1,6 @@
 /*! Craft 3.0.0 - 2016-12-28 */
 (function($){
-
+/** global: Craft */
 // Set all the standard Craft.* stuff
 $.extend(Craft,
     {

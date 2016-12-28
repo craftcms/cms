@@ -1,4 +1,5 @@
 (function($) {
+    /** global: Craft */
     Craft.Updater = Garnish.Base.extend(
         {
             $graphic: null,

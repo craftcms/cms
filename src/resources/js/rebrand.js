@@ -1,4 +1,5 @@
 (function($) {
+    /** global: Craft */
     var settings = {
         uploadAction: 'rebrand/upload-site-image',
         deleteAction: 'rebrand/delete-site-image',

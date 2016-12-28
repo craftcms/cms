@@ -1,4 +1,5 @@
 (function($) {
+    /** global: Craft */
     var EmailMessages = Garnish.Base.extend(
         {
             messages: null,

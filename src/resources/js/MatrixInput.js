@@ -1,4 +1,5 @@
 (function($) {
+    /** global: Craft */
     /**
      * Matrix input class
      */

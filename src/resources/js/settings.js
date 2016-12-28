@@ -1,4 +1,5 @@
 (function($) {
+    /** global: Craft */
     Craft.Tool = Garnish.Base.extend(
         {
             $trigger: null,

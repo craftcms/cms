@@ -1,4 +1,5 @@
 (function($) {
+    /** global: Craft */
     var LoginForm = Garnish.Base.extend(
         {
             $form: null,
