@@ -217,7 +217,9 @@ class Application extends \yii\web\Application
      */
     public function returnAjaxException($data)
     {
-        $exceptionArr['error'] = $data['message'];
+        $exceptionArr = [
+            'error' => $data['message']
+        ];
 
         if ($this->getConfig()->get('devMode')) {
             $exceptionArr['trace'] = $data['trace'];

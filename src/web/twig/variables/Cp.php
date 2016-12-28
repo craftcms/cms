@@ -166,6 +166,8 @@ class Cp extends Component
      */
     public function settings()
     {
+        $settings = [];
+
         $label = Craft::t('app', 'System');
 
         $settings[$label]['general'] = [

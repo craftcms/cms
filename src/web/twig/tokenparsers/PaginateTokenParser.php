@@ -30,7 +30,9 @@ class PaginateTokenParser extends Twig_TokenParser
     {
         $lineno = $token->getLine();
 
-        $nodes['criteria'] = $this->parser->getExpressionParser()->parseExpression();
+        $nodes = [
+            'criteria' => $this->parser->getExpressionParser()->parseExpression()
+        ];
         $this->parser->getStream()->expect('as');
         $targets = $this->parser->getExpressionParser()->parseAssignmentExpression();
         $this->parser->getStream()->expect(Twig_Token::BLOCK_END_TYPE);
