@@ -188,7 +188,7 @@ class UrlHelper
             $protocol = 'https';
         }
 
-        return static::_getUrl($path, $params, $protocol, $cpUrl, $mustShowScriptName);
+        return static::_createUrl($path, $params, $protocol, $cpUrl, $mustShowScriptName);
     }
 
     /**
@@ -205,7 +205,7 @@ class UrlHelper
         $path = trim($path, '/');
         $path = Craft::$app->getConfig()->get('cpTrigger').($path ? '/'.$path : '');
 
-        return static::_getUrl($path, $params, $protocol, true, false);
+        return static::_createUrl($path, $params, $protocol, true, false);
     }
 
     /**
@@ -238,7 +238,7 @@ class UrlHelper
         }
 
         $path = trim($path, '/');
-        $url = static::_getUrl($path, $params, $protocol, false, false);
+        $url = static::_createUrl($path, $params, $protocol, false, false);
 
         /** @noinspection UnSafeIsSetOverArrayInspection - FP */
         if (isset($currentSite)) {
@@ -407,7 +407,7 @@ class UrlHelper
      *
      * @return string
      */
-    private static function _getUrl($path, $params, $protocol, $cpUrl, $mustShowScriptName)
+    private static function _createUrl($path, $params, $protocol, $cpUrl, $mustShowScriptName)
     {
         // Normalize the params
         $params = static::_normalizeParams($params, $anchor);
