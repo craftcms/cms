@@ -416,8 +416,8 @@ Craft CMS 3.0 Working Changelog
 - Removed the `$newName` and `$after` arguments from `craft\db\Migration::alterColumn()`.
 - Removed the `$newName` and `$after` arguments from `craft\db\mysql\QueryBuilder::alterColumn()`.
 - Removed the `$runValidation` argument from `craft\services\Content::saveContent()`.
-- Removed the &$params argument from `craft\helpers\Db::parseDateParam()`.
-- Removed the &$params argument from `craft\helpers\Db::parseParam()`.
+- Removed the `$params` argument from `craft\helpers\Db::parseDateParam()`.
+- Removed the `$params` argument from `craft\helpers\Db::parseParam()`.
 - Removed the `beforeDeleteAsset`, `afterDeleteAsset`, `beforeSaveAsset` and `afterSaveAsset` events from `craft\services\Assets`.
 - Removed the `beforeDeleteCategory`, `afterDeleteCategory`, `beforeSaveCategory` and `afterSaveCategory` events from `craft\services\Categories`.
 - Removed the `beforeDeleteEntry`, `afterDeleteEntry`, `beforeSaveEntry` and `afterSaveEntry` events from `craft\services\Entry`.
