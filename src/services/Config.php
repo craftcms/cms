@@ -829,7 +829,7 @@ class Config extends Component
     // =========================================================================
 
     /**
-     * @param $category
+     * @param string $category
      *
      * @throws InvalidParamException if $category is not supported
      */

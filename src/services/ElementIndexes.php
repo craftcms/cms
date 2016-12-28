@@ -79,19 +79,19 @@ class ElementIndexes extends Component
             // Only actually save a custom order if it's different from the default order
             $saveSourceOrder = false;
 
-            if (count($newSettings['sourceOrder']) != count($baseSources)) {
+            if (count($newSettings['sourceOrder']) !== count($baseSources)) {
                 $saveSourceOrder = true;
             } else {
                 foreach ($baseSources as $i => $source) {
                     // Any differences?
                     if (
                         (array_key_exists('heading', $source) && (
-                                $newSettings['sourceOrder'][$i][0] != 'heading' ||
-                                $newSettings['sourceOrder'][$i][1] != $source['heading']
+                                $newSettings['sourceOrder'][$i][0] !== 'heading' ||
+                                $newSettings['sourceOrder'][$i][1] !== $source['heading']
                             )) ||
                         (array_key_exists('key', $source) && (
-                                $newSettings['sourceOrder'][$i][0] != 'key' ||
-                                $newSettings['sourceOrder'][$i][1] != $source['key']
+                                $newSettings['sourceOrder'][$i][0] !== 'key' ||
+                                $newSettings['sourceOrder'][$i][1] !== $source['key']
                             ))
                     ) {
                         $saveSourceOrder = true;

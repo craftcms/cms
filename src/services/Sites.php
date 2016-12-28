@@ -184,7 +184,7 @@ class Sites extends Component
     /**
      * Returns all of the site IDs.
      *
-     * @return array All the sites’ IDs
+     * @return integer[] All the sites’ IDs
      */
     public function getAllSiteIds()
     {

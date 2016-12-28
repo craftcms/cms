@@ -82,7 +82,7 @@ class Et extends Component
     /**
      * Checks if any new updates are available.
      *
-     * @param $updateInfo
+     * @param Update $updateInfo
      *
      * @return EtModel|null
      */
@@ -480,7 +480,7 @@ class Et extends Component
     /**
      * Creates a new EtModel with provided JSON, and returns it if it's valid.
      *
-     * @param array $attributes
+     * @param string $attributes
      *
      * @return EtModel|null
      */

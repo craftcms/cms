@@ -13,6 +13,7 @@ use craft\base\Plugin;
 use craft\base\Volume;
 use craft\db\Query;
 use craft\events\RegisterUserPermissionsEvent;
+use craft\models\CategoryGroup;
 use craft\models\Section;
 use craft\records\UserPermission as UserPermissionRecord;
 use yii\base\Component;
@@ -481,7 +482,7 @@ class UserPermissions extends Component
     /**
      * Returns the category permissions.
      *
-     * @param $groups
+     * @param CategoryGroup[] $groups
      *
      * @return array
      */

@@ -317,6 +317,9 @@ class Application extends \yii\web\Application
     /**
      * @inheritdoc
      *
+     * @param string $route
+     * @param array  $params
+     *
      * @return Response|null The result of the action, normalized into a Response object
      */
     public function runAction($route, $params = [])

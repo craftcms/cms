@@ -535,7 +535,7 @@ class Request extends \yii\web\Request
      *
      * @param string $name The parameter name.
      *
-     * @return mixed The parameter value
+     * @return mixed|null The parameter value
      * @throws BadRequestHttpException if the param value doesn’t pass validation
      * @see getBodyParam()
      */
@@ -584,8 +584,8 @@ class Request extends \yii\web\Request
      * $bar = Craft::$app->getRequest()->getQueryParam('foo.bar'); // Returns $_GET['foo']['bar'], if it exists
      * ```
      *
-     * @param string $name         The GET parameter name.
-     * @param mixed  $defaultValue The default parameter value if the GET parameter does not exist.
+     * @param string     $name         The GET parameter name.
+     * @param mixed|null $defaultValue The default parameter value if the GET parameter does not exist.
      *
      * @return mixed The GET parameter value.
      * @see getBodyParam()
@@ -866,7 +866,7 @@ class Request extends \yii\web\Request
     /**
      * Gets whether the CSRF token is valid for the current user or not
      *
-     * @param $token
+     * @param string $token
      *
      * @return boolean
      */

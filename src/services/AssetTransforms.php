@@ -750,7 +750,7 @@ class AssetTransforms extends Component
     /**
      * Get URL for Transform by TransformIndexId.
      *
-     * @param $transformId
+     * @param integer $transformId
      *
      * @return string
      */
@@ -1021,13 +1021,13 @@ class AssetTransforms extends Component
      * @param Asset               $asset
      * @param AssetTransformIndex $index
      *
-     * @return mixed|string
+     * @return string
      */
     public function getTransformSubfolder(Asset $asset, AssetTransformIndex $index)
     {
         $path = $index->location;
 
-        if (!empty($index->filename) && $index->filename != $asset->filename) {
+        if (!empty($index->filename) && $index->filename !== $asset->filename) {
             $path .= DIRECTORY_SEPARATOR.$asset->id;
         }
 
@@ -1040,7 +1040,7 @@ class AssetTransforms extends Component
      * @param Asset               $asset
      * @param AssetTransformIndex $index
      *
-     * @return mixed
+     * @return string
      */
     public function getTransformFilename(Asset $asset, AssetTransformIndex $index)
     {

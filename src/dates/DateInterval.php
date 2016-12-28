@@ -102,12 +102,12 @@ class DateInterval extends \DateInterval
         $seconds = (int)$seconds;
 
         foreach ([
-                     'y' => self::SECONDS_YEAR,
-                     'm' => self::SECONDS_MONTH,
-                     'd' => self::SECONDS_DAY,
-                     'h' => self::SECONDS_HOUR,
-                     'i' => self::SECONDS_MINUTE
-                 ] as $property => $increment) {
+                        'y' => self::SECONDS_YEAR,
+                        'm' => self::SECONDS_MONTH,
+                        'd' => self::SECONDS_DAY,
+                        'h' => self::SECONDS_HOUR,
+                        'i' => self::SECONDS_MINUTE
+                    ] as $property => $increment) {
             $increment = (int)$increment;
 
             if ($seconds === $increment || $seconds > $increment) {

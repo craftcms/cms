@@ -355,10 +355,7 @@ class Search extends Component
     {
         // Skip these terms: exact filtering is just that, no weighted search applies since all elements will
         // already apply for these filters.
-        if (
-            $term->exact ||
-            !($keywords = $this->_normalizeTerm($term->term))
-        ) {
+        if ($term->exact || !($keywords = $this->_normalizeTerm($term->term))) {
             return 0;
         }
 

@@ -598,7 +598,7 @@ class Asset extends Element
      *
      * @param string|array|null $transform The transform that should be applied, if any. Can either be the handle of a named transform, or an array that defines the transform settings.
      *
-     * @return mixed
+     * @return false|string
      */
     public function getUrl($transform = null)
     {
@@ -728,7 +728,7 @@ class Asset extends Element
     /**
      * Set a source to use for transforms for this Assets File.
      *
-     * @param $uri
+     * @param string $uri
      */
     public function setTransformSource($uri)
     {

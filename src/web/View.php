@@ -646,7 +646,7 @@ class View extends \yii\web\View
      *
      * @param boolean $scriptTag Whether the Javascript code should be wrapped in a `<script>` tag. Defaults to `true`.
      *
-     * @return string|null|false The JS code that was included in the active JS buffer, or `false` if there isn’t one
+     * @return string|false The JS code that was included in the active JS buffer, or `false` if there isn’t one
      */
     public function clearJsBuffer($scriptTag = true)
     {
@@ -657,13 +657,7 @@ class View extends \yii\web\View
         // Combine the JS
         $js = '';
 
-        foreach ([
-                     self::POS_HEAD,
-                     self::POS_BEGIN,
-                     self::POS_END,
-                     self::POS_LOAD,
-                     self::POS_READY
-                 ] as $pos) {
+        foreach ([self::POS_HEAD, self::POS_BEGIN, self::POS_END, self::POS_LOAD, self::POS_READY] as $pos) {
             if (!empty($this->js[$pos])) {
                 $js .= implode("\n", $this->js[$pos])."\n";
             }

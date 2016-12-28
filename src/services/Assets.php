@@ -310,9 +310,9 @@ class Assets extends Component
      *
      * Replace an Asset's file by it's id, a local file and the filename to use.
      *
-     * @param Asset $asset
-     * @param       $pathOnServer
-     * @param       $filename
+     * @param Asset  $asset
+     * @param string $pathOnServer
+     * @param string $filename
      *
      *
      * @throws ActionCancelledException If something prevented the Asset replacement via Event.

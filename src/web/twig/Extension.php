@@ -133,7 +133,7 @@ class Extension extends \Twig_Extension implements \Twig_Extension_GlobalsInterf
     /**
      * Returns a list of filters to add to the existing list.
      *
-     * @return array An array of filters
+     * @return \Twig_SimpleFilter[] An array of filters
      */
     public function getFilters()
     {
@@ -313,7 +313,7 @@ class Extension extends \Twig_Extension implements \Twig_Extension_GlobalsInterf
      * This method will JSON encode a variable. We're overriding Twig's default implementation to set some stricter
      * encoding options on text/html/xml requests.
      *
-     * @param mixed    $value   The value to JSON encode.
+     * @param string   $value   The value to JSON encode.
      * @param null|int $options Either null or a bitmask consisting of JSON_HEX_QUOT, JSON_HEX_TAG, JSON_HEX_AMP,
      *                          JSON_HEX_APOS, JSON_NUMERIC_CHECK, JSON_PRETTY_PRINT, JSON_UNESCAPED_SLASHES,
      *                          JSON_FORCE_OBJECT
@@ -599,7 +599,7 @@ class Extension extends \Twig_Extension implements \Twig_Extension_GlobalsInterf
     /**
      * Returns a list of functions to add to the existing list.
      *
-     * @return array An array of functions
+     * @return \Twig_SimpleFunction[] An array of functions
      */
     public function getFunctions()
     {
