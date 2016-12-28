@@ -368,7 +368,7 @@ class UsersController extends Controller
                 // Can they access the CP?
                 if ($userToProcess->can('accessCp')) {
                     // Send them to the CP login page
-                    $url = UrlHelper::getCpUrl(Craft::$app->getConfig()->getCpLoginPath());
+                    $url = UrlHelper::cpUrl(Craft::$app->getConfig()->getCpLoginPath());
                 } else {
                     // Send them to the 'setPasswordSuccessPath'.
                     $setPasswordSuccessPath = Craft::$app->getConfig()->getLocalized('setPasswordSuccessPath');
@@ -1501,7 +1501,7 @@ class UsersController extends Controller
         // postCpLoginRedirect tells us
         if (Craft::$app->getRequest()->getIsCpRequest() && $currentUser->can('accessCp')) {
             $postCpLoginRedirect = Craft::$app->getConfig()->get('postCpLoginRedirect');
-            $defaultReturnUrl = UrlHelper::getCpUrl($postCpLoginRedirect);
+            $defaultReturnUrl = UrlHelper::cpUrl($postCpLoginRedirect);
         } else {
             // Otherwise send them wherever postLoginRedirect tells us
             $postLoginRedirect = Craft::$app->getConfig()->get('postLoginRedirect');
@@ -1752,7 +1752,7 @@ class UsersController extends Controller
         }
 
         if ($user && $user->can('accessCp')) {
-            $url = UrlHelper::getCpUrl(Craft::$app->getConfig()->getLoginPath());
+            $url = UrlHelper::cpUrl(Craft::$app->getConfig()->getLoginPath());
         } else {
             $url = UrlHelper::getSiteUrl(Craft::$app->getConfig()->getLoginPath());
         }
@@ -1806,7 +1806,7 @@ class UsersController extends Controller
         // Can they access the CP?
         if ($user->can('accessCp')) {
             $postCpLoginRedirect = Craft::$app->getConfig()->get('postCpLoginRedirect');
-            $url = UrlHelper::getCpUrl($postCpLoginRedirect);
+            $url = UrlHelper::cpUrl($postCpLoginRedirect);
 
             return $this->redirect($url);
         }

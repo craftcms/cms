@@ -200,7 +200,7 @@ class UrlHelper
      *
      * @return string
      */
-    public static function getCpUrl($path = '', $params = null, $protocol = null)
+    public static function cpUrl($path = '', $params = null, $protocol = null)
     {
         $path = trim($path, '/');
         $path = Craft::$app->getConfig()->get('cpTrigger').($path ? '/'.$path : '');

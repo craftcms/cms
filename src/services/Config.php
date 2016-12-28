@@ -561,12 +561,12 @@ class Config extends Component
 
             if ($full) {
                 if (Craft::$app->getRequest()->getIsSecureConnection()) {
-                    $url = UrlHelper::getCpUrl($url, [
+                    $url = UrlHelper::cpUrl($url, [
                         'code' => $code,
                         'id' => $uid
                     ], 'https');
                 } else {
-                    $url = UrlHelper::getCpUrl($url, [
+                    $url = UrlHelper::cpUrl($url, [
                         'code' => $code,
                         'id' => $uid
                     ]);

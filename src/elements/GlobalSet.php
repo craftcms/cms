@@ -153,7 +153,7 @@ class GlobalSet extends Element
      */
     public function getCpEditUrl()
     {
-        return UrlHelper::getCpUrl('globals/'.$this->handle);
+        return UrlHelper::cpUrl('globals/'.$this->handle);
     }
 
     // Events

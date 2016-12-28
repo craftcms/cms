@@ -442,7 +442,7 @@ class Users extends Component
         $protocol = UrlHelper::getProtocolForTokenizedUrl();
 
         if ($user->can('accessCp')) {
-            return UrlHelper::getCpUrl($path, $params, $protocol);
+            return UrlHelper::cpUrl($path, $params, $protocol);
         }
 
         // todo: should we factor in the user's preferred language (as we did in v2)?

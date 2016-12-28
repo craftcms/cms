@@ -137,7 +137,7 @@ class EntryType extends Model
      */
     public function getCpEditUrl()
     {
-        return UrlHelper::getCpUrl('settings/sections/'.$this->sectionId.'/entrytypes/'.$this->id);
+        return UrlHelper::cpUrl('settings/sections/'.$this->sectionId.'/entrytypes/'.$this->id);
     }
 
     /**
