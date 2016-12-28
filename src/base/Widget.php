@@ -8,7 +8,7 @@
 namespace craft\base;
 
 use Craft;
-use craft\helpers\Url;
+use craft\helpers\UrlHelper;
 
 /**
  * Widget is the base class for classes representing dashboard widgets in terms of objects.
@@ -85,7 +85,7 @@ abstract class Widget extends SavableComponent implements WidgetInterface
     public function getBodyHtml()
     {
         return '<div style="margin: 0 -30px -30px;">'.
-            '<img style="display: block; width: 100%;" src="'.Url::getResourceUrl('images/prg.jpg').'">'.
+            '<img style="display: block; width: 100%;" src="'.UrlHelper::getResourceUrl('images/prg.jpg').'">'.
             '</div>';
     }
 

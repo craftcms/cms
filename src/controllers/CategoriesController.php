@@ -12,7 +12,7 @@ use craft\base\Element;
 use craft\base\Field;
 use craft\elements\Category;
 use craft\helpers\Json;
-use craft\helpers\Url;
+use craft\helpers\UrlHelper;
 use craft\models\CategoryGroup;
 use craft\models\CategoryGroup_SiteSettings;
 use craft\models\Site;
@@ -75,11 +75,11 @@ class CategoriesController extends Controller
         $variables['crumbs'] = [
             [
                 'label' => Craft::t('app', 'Settings'),
-                'url' => Url::url('settings')
+                'url' => UrlHelper::url('settings')
             ],
             [
                 'label' => Craft::t('app', 'Categories'),
-                'url' => Url::url('settings/categories')
+                'url' => UrlHelper::url('settings/categories')
             ]
         ];
 
@@ -329,11 +329,11 @@ class CategoriesController extends Controller
         $variables['crumbs'] = [
             [
                 'label' => Craft::t('app', 'Categories'),
-                'url' => Url::url('categories')
+                'url' => UrlHelper::url('categories')
             ],
             [
                 'label' => Craft::t('site', $variables['group']->name),
-                'url' => Url::url('categories/'.$variables['group']->handle)
+                'url' => UrlHelper::url('categories/'.$variables['group']->handle)
             ]
         ];
 
@@ -367,7 +367,7 @@ class CategoriesController extends Controller
                 if ($category->getStatus() === Element::STATUS_ENABLED) {
                     $variables['shareUrl'] = $category->getUrl();
                 } else {
-                    $variables['shareUrl'] = Url::getActionUrl('categories/share-category',
+                    $variables['shareUrl'] = UrlHelper::getActionUrl('categories/share-category',
                         [
                             'categoryId' => $category->id,
                             'siteId' => $category->siteId
@@ -547,7 +547,7 @@ class CategoriesController extends Controller
             throw new Exception('There was a problem generating the token.');
         }
 
-        $url = Url::urlWithToken($category->getUrl(), $token);
+        $url = UrlHelper::urlWithToken($category->getUrl(), $token);
 
         return Craft::$app->getResponse()->redirect($url);
     }

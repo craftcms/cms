@@ -8,7 +8,7 @@
 namespace craft\web\twig\variables;
 
 use Craft;
-use craft\helpers\Url;
+use craft\helpers\UrlHelper;
 use yii\web\Cookie;
 
 /**
@@ -140,7 +140,7 @@ class Request
     {
         Craft::$app->getDeprecator()->log('craft.request.getUrl()', 'craft.request.getUrl() has been deprecated. Use url(craft.app.request.pathInfo) instead.');
 
-        return Url::url(Craft::$app->getRequest()->getPathInfo());
+        return UrlHelper::url(Craft::$app->getRequest()->getPathInfo());
     }
 
     /**

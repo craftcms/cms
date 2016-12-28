@@ -25,7 +25,7 @@ use craft\helpers\ArrayHelper;
 use craft\helpers\ElementHelper;
 use craft\helpers\Html;
 use craft\helpers\Template;
-use craft\helpers\Url;
+use craft\helpers\UrlHelper;
 use craft\i18n\Locale;
 use craft\models\FieldLayout;
 use craft\models\Site;
@@ -901,7 +901,7 @@ abstract class Element extends Component implements ElementInterface
         if ($this->uri !== null) {
             $path = ($this->uri === '__home__') ? '' : $this->uri;
 
-            return Url::getSiteUrl($path, null, null, $this->siteId);
+            return UrlHelper::getSiteUrl($path, null, null, $this->siteId);
         }
 
         return null;

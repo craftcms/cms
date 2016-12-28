@@ -9,7 +9,7 @@ namespace craft\web;
 
 use Craft;
 use craft\helpers\Header;
-use craft\helpers\Url;
+use craft\helpers\UrlHelper;
 use yii\base\InvalidParamException;
 use yii\web\BadRequestHttpException;
 use yii\web\ForbiddenHttpException;
@@ -332,7 +332,7 @@ abstract class Controller extends \yii\web\Controller
     public function redirect($url, $statusCode = 302)
     {
         if (is_string($url)) {
-            $url = Url::url($url);
+            $url = UrlHelper::url($url);
         }
 
         if ($url !== null) {

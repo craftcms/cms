@@ -19,7 +19,7 @@ use craft\helpers\Assets;
 use craft\helpers\FileHelper;
 use craft\helpers\Image;
 use craft\helpers\Json;
-use craft\helpers\Url;
+use craft\helpers\UrlHelper;
 use craft\services\Users;
 use craft\web\Controller;
 use craft\web\UploadedFile;
@@ -368,11 +368,11 @@ class UsersController extends Controller
                 // Can they access the CP?
                 if ($userToProcess->can('accessCp')) {
                     // Send them to the CP login page
-                    $url = Url::getCpUrl(Craft::$app->getConfig()->getCpLoginPath());
+                    $url = UrlHelper::getCpUrl(Craft::$app->getConfig()->getCpLoginPath());
                 } else {
                     // Send them to the 'setPasswordSuccessPath'.
                     $setPasswordSuccessPath = Craft::$app->getConfig()->getLocalized('setPasswordSuccessPath');
-                    $url = Url::getSiteUrl($setPasswordSuccessPath);
+                    $url = UrlHelper::getSiteUrl($setPasswordSuccessPath);
                 }
 
                 return $this->redirect($url);
@@ -415,7 +415,7 @@ class UsersController extends Controller
             }
 
             // Redirect to the site/CP root
-            $url = Url::url('');
+            $url = UrlHelper::url('');
 
             return $this->redirect($url);
         }
@@ -1501,11 +1501,11 @@ class UsersController extends Controller
         // postCpLoginRedirect tells us
         if (Craft::$app->getRequest()->getIsCpRequest() && $currentUser->can('accessCp')) {
             $postCpLoginRedirect = Craft::$app->getConfig()->get('postCpLoginRedirect');
-            $defaultReturnUrl = Url::getCpUrl($postCpLoginRedirect);
+            $defaultReturnUrl = UrlHelper::getCpUrl($postCpLoginRedirect);
         } else {
             // Otherwise send them wherever postLoginRedirect tells us
             $postLoginRedirect = Craft::$app->getConfig()->get('postLoginRedirect');
-            $defaultReturnUrl = Url::getSiteUrl($postLoginRedirect);
+            $defaultReturnUrl = UrlHelper::getSiteUrl($postLoginRedirect);
         }
 
         // Were they trying to access a URL beforehand?
@@ -1748,13 +1748,13 @@ class UsersController extends Controller
         $url = Craft::$app->getConfig()->getLocalized('invalidUserTokenPath');
 
         if ($url) {
-            return $this->redirect(Url::getSiteUrl($url));
+            return $this->redirect(UrlHelper::getSiteUrl($url));
         }
 
         if ($user && $user->can('accessCp')) {
-            $url = Url::getCpUrl(Craft::$app->getConfig()->getLoginPath());
+            $url = UrlHelper::getCpUrl(Craft::$app->getConfig()->getLoginPath());
         } else {
-            $url = Url::getSiteUrl(Craft::$app->getConfig()->getLoginPath());
+            $url = UrlHelper::getSiteUrl(Craft::$app->getConfig()->getLoginPath());
         }
 
         throw new HttpException('200', Craft::t('app', 'Invalid verification code. Please [login or reset your password]({loginUrl}).', ['loginUrl' => $url]));
@@ -1806,13 +1806,13 @@ class UsersController extends Controller
         // Can they access the CP?
         if ($user->can('accessCp')) {
             $postCpLoginRedirect = Craft::$app->getConfig()->get('postCpLoginRedirect');
-            $url = Url::getCpUrl($postCpLoginRedirect);
+            $url = UrlHelper::getCpUrl($postCpLoginRedirect);
 
             return $this->redirect($url);
         }
 
         $activateAccountSuccessPath = Craft::$app->getConfig()->getLocalized('activateAccountSuccessPath');
-        $url = Url::getSiteUrl($activateAccountSuccessPath);
+        $url = UrlHelper::getSiteUrl($activateAccountSuccessPath);
 
         return $this->redirectToPostedUrl($user, $url);
     }

@@ -13,7 +13,7 @@ use craft\elements\Entry;
 use craft\elements\User;
 use craft\helpers\DateTimeHelper;
 use craft\helpers\Json;
-use craft\helpers\Url;
+use craft\helpers\UrlHelper;
 use craft\models\EntryDraft;
 use craft\models\EntryVersion;
 use craft\models\Section;
@@ -223,19 +223,19 @@ class EntriesController extends BaseEntriesController
         $variables['crumbs'] = [
             [
                 'label' => Craft::t('app', 'Entries'),
-                'url' => Url::url('entries')
+                'url' => UrlHelper::url('entries')
             ]
         ];
 
         if ($section->type === Section::TYPE_SINGLE) {
             $variables['crumbs'][] = [
                 'label' => Craft::t('app', 'Singles'),
-                'url' => Url::url('entries/singles')
+                'url' => UrlHelper::url('entries/singles')
             ];
         } else {
             $variables['crumbs'][] = [
                 'label' => Craft::t('site', $section->name),
-                'url' => Url::url('entries/'.$section->handle)
+                'url' => UrlHelper::url('entries/'.$section->handle)
             ];
 
             if ($section->type === Section::TYPE_STRUCTURE) {
@@ -311,7 +311,7 @@ class EntriesController extends BaseEntriesController
                             break;
                     }
 
-                    $variables['shareUrl'] = Url::getActionUrl('entries/share-entry', $shareParams);
+                    $variables['shareUrl'] = UrlHelper::getActionUrl('entries/share-entry', $shareParams);
                 }
             }
         } else {
@@ -609,7 +609,7 @@ class EntriesController extends BaseEntriesController
             throw new Exception('There was a problem generating the token.');
         }
 
-        $url = Url::urlWithToken($entry->getUrl(), $token);
+        $url = UrlHelper::urlWithToken($entry->getUrl(), $token);
 
         return Craft::$app->getResponse()->redirect($url);
     }

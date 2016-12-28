@@ -14,7 +14,7 @@ use craft\events\ResolveResourcePathEvent;
 use craft\helpers\FileHelper;
 use craft\helpers\Path as PathHelper;
 use craft\helpers\StringHelper;
-use craft\helpers\Url;
+use craft\helpers\UrlHelper;
 use Exception;
 use yii\base\Component;
 use yii\web\ForbiddenHttpException;
@@ -300,17 +300,17 @@ class Resources extends Component
 
         $pathParts = array_merge($requestFolderParts, $cssUrlParts);
         $path = implode('/', $pathParts);
-        $url = Url::url($path);
+        $url = UrlHelper::url($path);
 
         // Is this going to be a resource URL?
-        $rootResourceUrl = Url::url(Craft::$app->getConfig()->getResourceTrigger()).'/';
+        $rootResourceUrl = UrlHelper::url(Craft::$app->getConfig()->getResourceTrigger()).'/';
 
         if (strpos($url, $rootResourceUrl) === 0) {
             // Isolate the relative resource path
             $resourcePath = substr($url, strlen($rootResourceUrl));
 
             // Give Url a chance to add the timestamp
-            $url = Url::getResourceUrl($resourcePath);
+            $url = UrlHelper::getResourceUrl($resourcePath);
         }
 
         // Return the normalized CSS URL declaration

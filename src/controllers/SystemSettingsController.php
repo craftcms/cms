@@ -12,7 +12,7 @@ use craft\elements\GlobalSet;
 use craft\errors\MissingComponentException;
 use craft\helpers\MailerHelper;
 use craft\helpers\Template;
-use craft\helpers\Url;
+use craft\helpers\UrlHelper;
 use craft\mail\transportadapters\BaseTransportAdapter;
 use craft\mail\transportadapters\Php;
 use craft\mail\transportadapters\TransportAdapterInterface;
@@ -355,11 +355,11 @@ class SystemSettingsController extends Controller
         $crumbs = [
             [
                 'label' => Craft::t('app', 'Settings'),
-                'url' => Url::url('settings')
+                'url' => UrlHelper::url('settings')
             ],
             [
                 'label' => Craft::t('app', 'Globals'),
-                'url' => Url::url('settings/globals')
+                'url' => UrlHelper::url('settings/globals')
             ]
         ];
 

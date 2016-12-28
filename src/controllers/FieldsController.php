@@ -12,7 +12,7 @@ use craft\base\Field;
 use craft\base\FieldInterface;
 use craft\fields\MissingField;
 use craft\fields\PlainText;
-use craft\helpers\Url;
+use craft\helpers\UrlHelper;
 use craft\models\FieldGroup;
 use craft\web\Controller;
 use yii\web\NotFoundHttpException;
@@ -197,15 +197,15 @@ class FieldsController extends Controller
         $crumbs = [
             [
                 'label' => Craft::t('app', 'Settings'),
-                'url' => Url::url('settings')
+                'url' => UrlHelper::url('settings')
             ],
             [
                 'label' => Craft::t('app', 'Fields'),
-                'url' => Url::url('settings/fields')
+                'url' => UrlHelper::url('settings/fields')
             ],
             [
                 'label' => Craft::t('site', $fieldGroup->name),
-                'url' => Url::url('settings/fields/'.$groupId)
+                'url' => UrlHelper::url('settings/fields/'.$groupId)
             ],
         ];
 

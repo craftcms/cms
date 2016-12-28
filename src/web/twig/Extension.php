@@ -16,7 +16,7 @@ use craft\helpers\Header;
 use craft\helpers\Json;
 use craft\helpers\StringHelper;
 use craft\helpers\Template;
-use craft\helpers\Url;
+use craft\helpers\UrlHelper;
 use craft\i18n\Locale;
 use craft\web\twig\tokenparsers\CacheTokenParser;
 use craft\web\twig\tokenparsers\ExitTokenParser;
@@ -738,8 +738,8 @@ class Extension extends \Twig_Extension implements \Twig_Extension_GlobalsInterf
         $globals['craft'] = $craftVariable;
         $globals['blx'] = $craftVariable;
 
-        $globals['loginUrl'] = Url::url(Craft::$app->getConfig()->getLoginPath());
-        $globals['logoutUrl'] = Url::url(Craft::$app->getConfig()->getLogoutPath());
+        $globals['loginUrl'] = UrlHelper::url(Craft::$app->getConfig()->getLoginPath());
+        $globals['logoutUrl'] = UrlHelper::url(Craft::$app->getConfig()->getLogoutPath());
         $globals['isInstalled'] = $isInstalled;
 
         if ($isInstalled && !$request->getIsConsoleRequest() && !Craft::$app->getIsUpdating()) {

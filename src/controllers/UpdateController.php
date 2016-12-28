@@ -15,7 +15,7 @@ use craft\errors\UpdateValidationException;
 use craft\helpers\App;
 use craft\helpers\Json;
 use craft\helpers\Update;
-use craft\helpers\Url;
+use craft\helpers\UrlHelper;
 use craft\web\Controller;
 use yii\base\Exception;
 use yii\web\Response;
@@ -548,7 +548,7 @@ EOD;
 
         // New major Craft CMS version?
         if ($handle == 'craft' && $oldVersion && App::majorVersion($oldVersion) < App::majorVersion(Craft::$app->version)) {
-            $returnUrl = Url::url('whats-new');
+            $returnUrl = UrlHelper::url('whats-new');
         } else {
             $returnUrl = Craft::$app->getConfig()->get('postCpLoginRedirect');
         }

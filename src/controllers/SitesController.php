@@ -9,7 +9,7 @@ namespace craft\controllers;
 
 use Craft;
 use craft\helpers\Json;
-use craft\helpers\Url;
+use craft\helpers\UrlHelper;
 use craft\models\Site;
 use craft\web\Controller;
 use yii\web\NotFoundHttpException;
@@ -69,11 +69,11 @@ class SitesController extends Controller
         $variables['crumbs'] = [
             [
                 'label' => Craft::t('app', 'Settings'),
-                'url' => Url::url('settings')
+                'url' => UrlHelper::url('settings')
             ],
             [
                 'label' => Craft::t('app', 'Sites'),
-                'url' => Url::url('settings/sites')
+                'url' => UrlHelper::url('settings/sites')
             ]
         ];
 

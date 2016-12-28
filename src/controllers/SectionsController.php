@@ -10,7 +10,7 @@ namespace craft\controllers;
 use Craft;
 use craft\elements\Entry;
 use craft\helpers\Json;
-use craft\helpers\Url;
+use craft\helpers\UrlHelper;
 use craft\models\EntryType;
 use craft\models\Section;
 use craft\models\Section_SiteSettings;
@@ -120,11 +120,11 @@ class SectionsController extends Controller
         $variables['crumbs'] = [
             [
                 'label' => Craft::t('app', 'Settings'),
-                'url' => Url::url('settings')
+                'url' => UrlHelper::url('settings')
             ],
             [
                 'label' => Craft::t('app', 'Sections'),
-                'url' => Url::url('settings/sections')
+                'url' => UrlHelper::url('settings/sections')
             ],
         ];
 
@@ -248,15 +248,15 @@ class SectionsController extends Controller
         $crumbs = [
             [
                 'label' => Craft::t('app', 'Settings'),
-                'url' => Url::url('settings')
+                'url' => UrlHelper::url('settings')
             ],
             [
                 'label' => Craft::t('app', 'Sections'),
-                'url' => Url::url('settings/sections')
+                'url' => UrlHelper::url('settings/sections')
             ],
             [
                 'label' => Craft::t('site', $section->name),
-                'url' => Url::url('settings/sections/'.$section->id)
+                'url' => UrlHelper::url('settings/sections/'.$section->id)
             ],
         ];
 
@@ -317,19 +317,19 @@ class SectionsController extends Controller
         $crumbs = [
             [
                 'label' => Craft::t('app', 'Settings'),
-                'url' => Url::url('settings')
+                'url' => UrlHelper::url('settings')
             ],
             [
                 'label' => Craft::t('app', 'Sections'),
-                'url' => Url::url('settings/sections')
+                'url' => UrlHelper::url('settings/sections')
             ],
             [
                 'label' => $section->name,
-                'url' => Url::url('settings/sections/'.$section->id)
+                'url' => UrlHelper::url('settings/sections/'.$section->id)
             ],
             [
                 'label' => Craft::t('app', 'Entry Types'),
-                'url' => Url::url('settings/sections/'.$sectionId.'/entrytypes')
+                'url' => UrlHelper::url('settings/sections/'.$sectionId.'/entrytypes')
             ],
         ];
 

@@ -16,7 +16,7 @@ use yii\base\Exception;
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since  3.0
  */
-class Url
+class UrlHelper
 {
     // Properties
     // =========================================================================

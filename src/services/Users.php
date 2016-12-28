@@ -28,7 +28,7 @@ use craft\helpers\Image;
 use craft\helpers\Json;
 use craft\helpers\StringHelper;
 use craft\helpers\Template;
-use craft\helpers\Url;
+use craft\helpers\UrlHelper;
 use craft\records\User as UserRecord;
 use DateTime;
 use yii\base\Component;
@@ -401,7 +401,7 @@ class Users extends Component
         $userRecord->save();
 
         if ($user->can('accessCp')) {
-            $url = Url::getActionUrl('users/verifyemail',
+            $url = UrlHelper::getActionUrl('users/verifyemail',
                 ['code' => $unhashedVerificationCode, 'id' => $user->uid],
                 Craft::$app->getRequest()->getIsSecureConnection() ? 'https' : 'http');
         } else {
@@ -411,11 +411,11 @@ class Users extends Component
                 'code' => $unhashedVerificationCode,
                 'id' => $user->uid
             ];
-            $protocol = Url::getProtocolForTokenizedUrl();
+            $protocol = UrlHelper::getProtocolForTokenizedUrl();
 
             // todo: should we factor in the user's preferred language (as we did in v2)?
             $siteId = Craft::$app->getSites()->getPrimarySite()->id;
-            $url = Url::getSiteUrl($path, $params, $protocol, $siteId);
+            $url = UrlHelper::getSiteUrl($path, $params, $protocol, $siteId);
         }
 
         return $url;
@@ -439,16 +439,16 @@ class Users extends Component
             'code' => $unhashedVerificationCode,
             'id' => $user->uid
         ];
-        $protocol = Url::getProtocolForTokenizedUrl();
+        $protocol = UrlHelper::getProtocolForTokenizedUrl();
 
         if ($user->can('accessCp')) {
-            return Url::getCpUrl($path, $params, $protocol);
+            return UrlHelper::getCpUrl($path, $params, $protocol);
         }
 
         // todo: should we factor in the user's preferred language (as we did in v2)?
         $siteId = Craft::$app->getSites()->getPrimarySite()->id;
 
-        return Url::getSiteUrl($path, $params, $protocol, $siteId);
+        return UrlHelper::getSiteUrl($path, $params, $protocol, $siteId);
     }
 
     /**

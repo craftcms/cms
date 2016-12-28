@@ -12,7 +12,7 @@ use craft\base\Plugin;
 use craft\events\RegisterCpNavItemsEvent;
 use craft\helpers\Cp as CpHelper;
 use craft\helpers\StringHelper;
-use craft\helpers\Url;
+use craft\helpers\UrlHelper;
 use yii\base\Component;
 
 /**
@@ -153,7 +153,7 @@ class Cp extends Component
                 $item['id'] = 'nav-'.preg_replace('/[^\w\-_]/', '', $item['url']);
             }
 
-            $item['url'] = Url::url($item['url']);
+            $item['url'] = UrlHelper::url($item['url']);
         }
 
         return $navItems;

@@ -178,6 +178,7 @@ Craft CMS 3.0 Working Changelog
 - Renamed `craft\events\DbBackupEvent` to `BackupEvent`.
 - Renamed `craft\events\EntryEvent` to `VersionEvent`.
 - Renamed `craft\events\Event` to `CancelableEvent`.
+- Renamed `craft\helpers\Url` to `UrlHelper`.
 - Renamed `craft\mail\transportadaptors\BaseTransportAdaptor` to `craft\mail\transportadapters\BaseTransportAdapter`.
 - Renamed `craft\mail\transportadaptors\Gmail` to `craft\mail\transportadapters\Gmail`.
 - Renamed `craft\mail\transportadaptors\Php` to `craft\mail\transportadapters\Php`.
@@ -237,10 +238,10 @@ Craft CMS 3.0 Working Changelog
 - Renamed `craft\helpers\StringHelper::getEncoding()` to `encoding()`.
 - Renamed `craft\helpers\StringHelper::uppercaseFirst()` to `upperCaseFirst()`.
 - Renamed `craft\helpers\Template::getRaw()` to `raw()`.
-- Renamed `craft\helpers\Url::getUrl()` to `url()`.
-- Renamed `craft\helpers\Url::getUrlWithParams()` to `urlWithParams()`.
-- Renamed `craft\helpers\Url::getUrlWithProtocol()` to `urlWithProtocol()`.
-- Renamed `craft\helpers\Url::getUrlWithToken()` to `urlWithToken()`.
+- Renamed `craft\helpers\UrlHelper::getUrl()` to `url()`.
+- Renamed `craft\helpers\UrlHelper::getUrlWithParams()` to `urlWithParams()`.
+- Renamed `craft\helpers\UrlHelper::getUrlWithProtocol()` to `urlWithProtocol()`.
+- Renamed `craft\helpers\UrlHelper::getUrlWithToken()` to `urlWithToken()`.
 - Renamed `craft\models\AssetTransform::getTransformModes()` to `modes()`.
 - Renamed `craft\services\Assets::renameAsset()` to `renameFile()`, and replaced its `$newFilename` argument with `$runValidation`.
 - Renamed `craft\services\Config::omitScriptNameInUrls()` to `getOmitScriptNameInUrls()`.

@@ -11,7 +11,7 @@ use Craft;
 use craft\base\ElementInterface;
 use craft\events\RegisterUrlRulesEvent;
 use craft\helpers\ArrayHelper;
-use craft\helpers\Url;
+use craft\helpers\UrlHelper;
 
 /**
  * @inheritdoc
@@ -116,7 +116,7 @@ class UrlManager extends \yii\web\UrlManager
         $route = trim($params[0], '/');
         unset($params[0]);
 
-        return Url::getActionUrl($route, $params, $scheme);
+        return UrlHelper::getActionUrl($route, $params, $scheme);
     }
 
     /**

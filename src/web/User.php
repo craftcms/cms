@@ -12,7 +12,7 @@ use craft\dates\DateInterval;
 use craft\elements\User as UserElement;
 use craft\helpers\DateTimeHelper;
 use craft\helpers\Db;
-use craft\helpers\Url;
+use craft\helpers\UrlHelper;
 use craft\validators\UserPasswordValidator;
 use yii\web\Cookie;
 use yii\web\IdentityInterface;
@@ -56,7 +56,7 @@ class User extends \yii\web\User
     {
         // Set the configurable properties
         $configService = Craft::$app->getConfig();
-        $config['loginUrl'] = Url::url($configService->getLoginPath());
+        $config['loginUrl'] = UrlHelper::url($configService->getLoginPath());
         $config['authTimeout'] = $configService->getUserSessionDuration(false);
 
         // Set the state-based property names

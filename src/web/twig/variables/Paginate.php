@@ -8,7 +8,7 @@
 namespace craft\web\twig\variables;
 
 use Craft;
-use craft\helpers\Url;
+use craft\helpers\UrlHelper;
 
 /**
  * Paginate variable class.
@@ -88,7 +88,7 @@ class Paginate
                 }
             }
 
-            return Url::url($path, $params);
+            return UrlHelper::url($path, $params);
         }
 
         return null;

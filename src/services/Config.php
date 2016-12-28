@@ -15,7 +15,7 @@ use craft\helpers\App;
 use craft\helpers\ArrayHelper;
 use craft\helpers\DateTimeHelper;
 use craft\helpers\StringHelper;
-use craft\helpers\Url;
+use craft\helpers\UrlHelper;
 use GuzzleHttp\Client;
 use GuzzleHttp\Exception\RequestException;
 use yii\base\Component;
@@ -561,12 +561,12 @@ class Config extends Component
 
             if ($full) {
                 if (Craft::$app->getRequest()->getIsSecureConnection()) {
-                    $url = Url::getCpUrl($url, [
+                    $url = UrlHelper::getCpUrl($url, [
                         'code' => $code,
                         'id' => $uid
                     ], 'https');
                 } else {
-                    $url = Url::getCpUrl($url, [
+                    $url = UrlHelper::getCpUrl($url, [
                         'code' => $code,
                         'id' => $uid
                     ]);
@@ -577,12 +577,12 @@ class Config extends Component
 
             if ($full) {
                 if (Craft::$app->getRequest()->getIsSecureConnection()) {
-                    $url = Url::url($url, [
+                    $url = UrlHelper::url($url, [
                         'code' => $code,
                         'id' => $uid
                     ], 'https');
                 } else {
-                    $url = Url::url($url, [
+                    $url = UrlHelper::url($url, [
                         'code' => $code,
                         'id' => $uid
                     ]);

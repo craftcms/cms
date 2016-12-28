@@ -19,7 +19,7 @@ use craft\elements\db\UserQuery;
 use craft\helpers\ArrayHelper;
 use craft\helpers\DateTimeHelper;
 use craft\helpers\Html;
-use craft\helpers\Url;
+use craft\helpers\UrlHelper;
 use craft\i18n\Locale;
 use craft\models\UserGroup;
 use craft\records\Session as SessionRecord;
@@ -922,7 +922,7 @@ class User extends Element implements IdentityInterface
         $photo = $this->getPhoto();
 
         if ($photo) {
-            return Url::getResourceUrl(
+            return UrlHelper::getResourceUrl(
                 'resized/'.$this->photoId.'/'.$size,
                 [
                     Craft::$app->getResources()->dateParam => $photo->dateModified->getTimestamp()
@@ -930,7 +930,7 @@ class User extends Element implements IdentityInterface
             );
         }
 
-        return Url::getResourceUrl('defaultuserphoto');
+        return UrlHelper::getResourceUrl('defaultuserphoto');
     }
 
     /**
@@ -1044,15 +1044,15 @@ class User extends Element implements IdentityInterface
     public function getCpEditUrl()
     {
         if ($this->getIsCurrent()) {
-            return Url::getCpUrl('myaccount');
+            return UrlHelper::getCpUrl('myaccount');
         }
 
         if (Craft::$app->getEdition() === Craft::Client && $this->client) {
-            return Url::getCpUrl('clientaccount');
+            return UrlHelper::getCpUrl('clientaccount');
         }
 
         if (Craft::$app->getEdition() === Craft::Pro) {
-            return Url::getCpUrl('users/'.$this->id);
+            return UrlHelper::getCpUrl('users/'.$this->id);
         }
 
         return false;

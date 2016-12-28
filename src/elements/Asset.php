@@ -27,7 +27,7 @@ use craft\helpers\Html;
 use craft\helpers\Image;
 use craft\helpers\StringHelper;
 use craft\helpers\Template;
-use craft\helpers\Url;
+use craft\helpers\UrlHelper;
 use craft\models\VolumeFolder;
 use craft\records\Asset as AssetRecord;
 use craft\validators\AssetFilenameValidator;
@@ -628,14 +628,14 @@ class Asset extends Element
     public function getThumbUrl($size)
     {
         if ($this->getHasThumb()) {
-            return Url::getResourceUrl(
+            return UrlHelper::getResourceUrl(
                 'resized/'.$this->id.'/'.$size,
                 [
                     Craft::$app->getResources()->dateParam => $this->dateModified->getTimestamp()
                 ]
             );
         } else {
-            return Url::getResourceUrl('icons/'.$this->getExtension());
+            return UrlHelper::getResourceUrl('icons/'.$this->getExtension());
         }
     }
 

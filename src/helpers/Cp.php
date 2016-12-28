@@ -72,7 +72,7 @@ class Cp
                 Craft::$app->getUpdates()->criticalCraftUpdateAvailable($updateModel->app->releases)
             ) {
                 $alerts[] = Craft::t('app', 'There’s a critical Craft CMS update available.').
-                    ' <a class="go nowrap" href="'.Url::url('updates').'">'.Craft::t('app', 'Go to Updates').'</a>';
+                    ' <a class="go nowrap" href="'.UrlHelper::url('updates').'">'.Craft::t('app', 'Go to Updates').'</a>';
             }
 
             // Domain mismatch?

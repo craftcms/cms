@@ -8,7 +8,7 @@
 namespace craft\web\twig\variables;
 
 use Craft;
-use craft\helpers\Url;
+use craft\helpers\UrlHelper;
 use yii\base\Exception;
 
 Craft::$app->requireEdition(Craft::Client);
@@ -177,6 +177,6 @@ class Rebrand
      */
     private function _getImageUrl($path, $type)
     {
-        return Url::getResourceUrl('rebrand/'.$type.'/'.pathinfo($path, PATHINFO_BASENAME));
+        return UrlHelper::getResourceUrl('rebrand/'.$type.'/'.pathinfo($path, PATHINFO_BASENAME));
     }
 }

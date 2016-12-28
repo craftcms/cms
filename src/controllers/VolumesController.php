@@ -12,7 +12,7 @@ use craft\base\Volume;
 use craft\base\VolumeInterface;
 use craft\elements\Asset;
 use craft\helpers\Json;
-use craft\helpers\Url;
+use craft\helpers\UrlHelper;
 use craft\volumes\Local;
 use craft\volumes\MissingVolume;
 use craft\web\Controller;
@@ -134,15 +134,15 @@ class VolumesController extends Controller
         $crumbs = [
             [
                 'label' => Craft::t('app', 'Settings'),
-                'url' => Url::url('settings')
+                'url' => UrlHelper::url('settings')
             ],
             [
                 'label' => Craft::t('app', 'Assets'),
-                'url' => Url::url('settings/assets')
+                'url' => UrlHelper::url('settings/assets')
             ],
             [
                 'label' => Craft::t('app', 'Volumes'),
-                'url' => Url::url('settings/assets')
+                'url' => UrlHelper::url('settings/assets')
             ],
         ];
 

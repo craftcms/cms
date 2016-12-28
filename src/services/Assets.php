@@ -32,7 +32,7 @@ use craft\helpers\FileHelper;
 use craft\helpers\Image;
 use craft\helpers\Json;
 use craft\helpers\StringHelper;
-use craft\helpers\Url;
+use craft\helpers\UrlHelper;
 use craft\models\AssetTransformIndex;
 use craft\models\FolderCriteria;
 use craft\models\VolumeFolder;
@@ -839,7 +839,7 @@ class Assets extends Component
                     Craft::warning($exception->getMessage());
                     $assetTransforms->deleteTransformIndex($index->id);
 
-                    return Url::getResourceUrl('404');
+                    return UrlHelper::getResourceUrl('404');
                 }
             } else {
                 // Queue up a new Generate Pending Transforms task, if there isn't one already
@@ -849,7 +849,7 @@ class Assets extends Component
                 }
 
                 // Return the temporary transform URL
-                return Url::getResourceUrl('transforms/'.$index->id);
+                return UrlHelper::getResourceUrl('transforms/'.$index->id);
             }
         }
     }

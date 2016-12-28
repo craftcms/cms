@@ -17,7 +17,7 @@ use craft\elements\actions\NewChild;
 use craft\elements\actions\SetStatus;
 use craft\elements\actions\View;
 use craft\elements\db\CategoryQuery;
-use craft\helpers\Url;
+use craft\helpers\UrlHelper;
 use craft\models\CategoryGroup;
 use craft\records\Category as CategoryRecord;
 use yii\base\Exception;
@@ -301,7 +301,7 @@ class Category extends Element
     {
         $group = $this->getGroup();
 
-        $url = Url::getCpUrl('categories/'.$group->handle.'/'.$this->id.($this->slug ? '-'.$this->slug : ''));
+        $url = UrlHelper::getCpUrl('categories/'.$group->handle.'/'.$this->id.($this->slug ? '-'.$this->slug : ''));
 
         if (Craft::$app->getIsMultiSite() && $this->siteId != Craft::$app->getSites()->currentSite->id) {
             $url .= '/'.$this->getSite()->handle;

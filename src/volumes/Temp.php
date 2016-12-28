@@ -2,7 +2,7 @@
 namespace craft\volumes;
 
 use Craft;
-use craft\helpers\Url;
+use craft\helpers\UrlHelper;
 
 /**
  * The temporary volume class. Handles the implementation of a temporary volume
@@ -45,7 +45,7 @@ class Temp extends Local
         }
 
         if ($this->url === null) {
-            $this->url = rtrim(Url::getResourceUrl(), '/').'/tempassets/';
+            $this->url = rtrim(UrlHelper::getResourceUrl(), '/').'/tempassets/';
         }
 
         if ($this->name === null) {

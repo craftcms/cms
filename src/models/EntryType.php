@@ -12,7 +12,7 @@ use craft\base\Model;
 use craft\behaviors\FieldLayoutBehavior;
 use craft\behaviors\FieldLayoutTrait;
 use craft\elements\Entry;
-use craft\helpers\Url;
+use craft\helpers\UrlHelper;
 use craft\records\EntryType as EntryTypeRecord;
 use craft\validators\HandleValidator;
 use craft\validators\UniqueValidator;
@@ -137,7 +137,7 @@ class EntryType extends Model
      */
     public function getCpEditUrl()
     {
-        return Url::getCpUrl('settings/sections/'.$this->sectionId.'/entrytypes/'.$this->id);
+        return UrlHelper::getCpUrl('settings/sections/'.$this->sectionId.'/entrytypes/'.$this->id);
     }
 
     /**

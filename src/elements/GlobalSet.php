@@ -12,7 +12,7 @@ use craft\base\Element;
 use craft\behaviors\FieldLayoutBehavior;
 use craft\behaviors\FieldLayoutTrait;
 use craft\elements\db\GlobalSetQuery;
-use craft\helpers\Url;
+use craft\helpers\UrlHelper;
 use craft\records\GlobalSet as GlobalSetRecord;
 use craft\validators\HandleValidator;
 use craft\validators\UniqueValidator;
@@ -153,7 +153,7 @@ class GlobalSet extends Element
      */
     public function getCpEditUrl()
     {
-        return Url::getCpUrl('globals/'.$this->handle);
+        return UrlHelper::getCpUrl('globals/'.$this->handle);
     }
 
     // Events
