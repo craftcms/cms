@@ -61,7 +61,7 @@ class EntryRevisions
      * @param integer $entryId
      * @param string  $siteHandle
      *
-     * @return array
+     * @return EntryDraft[]
      * @throws Exception if $siteHandle is invalid
      */
     public function getEditableDraftsByEntryId($entryId, $siteHandle = null)
