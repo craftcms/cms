@@ -76,6 +76,7 @@ module.exports = function(grunt) {
 			beforeconcat: [
 				'gruntfile.js',
 				'src/resources/js/*.js',
+				'!src/resources/js/*.min.js',
 				'!src/resources/js/Craft.js',
 				'src/resources-src/global-js/*.js'
 			],
