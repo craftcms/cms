@@ -415,7 +415,7 @@ class Users extends Component
 
             // todo: should we factor in the user's preferred language (as we did in v2)?
             $siteId = Craft::$app->getSites()->getPrimarySite()->id;
-            $url = UrlHelper::getSiteUrl($path, $params, $protocol, $siteId);
+            $url = UrlHelper::siteUrl($path, $params, $protocol, $siteId);
         }
 
         return $url;
@@ -448,7 +448,7 @@ class Users extends Component
         // todo: should we factor in the user's preferred language (as we did in v2)?
         $siteId = Craft::$app->getSites()->getPrimarySite()->id;
 
-        return UrlHelper::getSiteUrl($path, $params, $protocol, $siteId);
+        return UrlHelper::siteUrl($path, $params, $protocol, $siteId);
     }
 
     /**

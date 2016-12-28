@@ -219,7 +219,7 @@ class UrlHelper
      * @return string
      * @throws Exception if $siteId is invalid
      */
-    public static function getSiteUrl($path = '', $params = null, $protocol = null, $siteId = null)
+    public static function siteUrl($path = '', $params = null, $protocol = null, $siteId = null)
     {
         // Does this URL point to a different site?
         $sites = Craft::$app->getSites();

@@ -901,7 +901,7 @@ abstract class Element extends Component implements ElementInterface
         if ($this->uri !== null) {
             $path = ($this->uri === '__home__') ? '' : $this->uri;
 
-            return UrlHelper::getSiteUrl($path, null, null, $this->siteId);
+            return UrlHelper::siteUrl($path, null, null, $this->siteId);
         }
 
         return null;

@@ -372,7 +372,7 @@ class UsersController extends Controller
                 } else {
                     // Send them to the 'setPasswordSuccessPath'.
                     $setPasswordSuccessPath = Craft::$app->getConfig()->getLocalized('setPasswordSuccessPath');
-                    $url = UrlHelper::getSiteUrl($setPasswordSuccessPath);
+                    $url = UrlHelper::siteUrl($setPasswordSuccessPath);
                 }
 
                 return $this->redirect($url);
@@ -1505,7 +1505,7 @@ class UsersController extends Controller
         } else {
             // Otherwise send them wherever postLoginRedirect tells us
             $postLoginRedirect = Craft::$app->getConfig()->get('postLoginRedirect');
-            $defaultReturnUrl = UrlHelper::getSiteUrl($postLoginRedirect);
+            $defaultReturnUrl = UrlHelper::siteUrl($postLoginRedirect);
         }
 
         // Were they trying to access a URL beforehand?
@@ -1748,13 +1748,13 @@ class UsersController extends Controller
         $url = Craft::$app->getConfig()->getLocalized('invalidUserTokenPath');
 
         if ($url) {
-            return $this->redirect(UrlHelper::getSiteUrl($url));
+            return $this->redirect(UrlHelper::siteUrl($url));
         }
 
         if ($user && $user->can('accessCp')) {
             $url = UrlHelper::cpUrl(Craft::$app->getConfig()->getLoginPath());
         } else {
-            $url = UrlHelper::getSiteUrl(Craft::$app->getConfig()->getLoginPath());
+            $url = UrlHelper::siteUrl(Craft::$app->getConfig()->getLoginPath());
         }
 
         throw new HttpException('200', Craft::t('app', 'Invalid verification code. Please [login or reset your password]({loginUrl}).', ['loginUrl' => $url]));
@@ -1812,7 +1812,7 @@ class UsersController extends Controller
         }
 
         $activateAccountSuccessPath = Craft::$app->getConfig()->getLocalized('activateAccountSuccessPath');
-        $url = UrlHelper::getSiteUrl($activateAccountSuccessPath);
+        $url = UrlHelper::siteUrl($activateAccountSuccessPath);
 
         return $this->redirectToPostedUrl($user, $url);
     }
