@@ -7,6 +7,8 @@
 
 namespace craft\web\twig\nodes;
 
+use craft\helpers\UrlHelper;
+
 /**
  * Class RedirectNode
  *
@@ -25,7 +27,7 @@ class RedirectNode extends \Twig_Node
     {
         $compiler
             ->addDebugInfo($this)
-            ->write('\Craft::$app->getResponse()->redirect(\craft\helpers\Url::url(')
+            ->write('\Craft::$app->getResponse()->redirect('.UrlHelper::class.'::url(')
             ->subcompile($this->getNode('path'))
             ->raw('), ')
             ->subcompile($this->getNode('httpStatusCode'))

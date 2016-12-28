@@ -7,6 +7,8 @@
 
 namespace craft\web\twig\nodes;
 
+use Craft;
+
 /**
  * Class ExitNode
  *
@@ -31,7 +33,7 @@ class ExitNode extends \Twig_Node
                 ->subcompile($status)
                 ->raw(");\n");
         } else {
-            $compiler->write("\\Craft::\$app->end();\n");
+            $compiler->write(Craft::class."::\$app->end();\n");
         }
     }
 }

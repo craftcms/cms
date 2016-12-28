@@ -7,6 +7,8 @@
 
 namespace craft\web\twig\nodes;
 
+use Craft;
+
 /**
  * Class RequireLoginNode
  *
@@ -29,6 +31,6 @@ class RequireLoginNode extends \Twig_Node
     {
         $compiler
             ->addDebugInfo($this)
-            ->write("\\Craft::\$app->controller->requireLogin();\n");
+            ->write(Craft::class."::\$app->controller->requireLogin();\n");
     }
 }

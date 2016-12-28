@@ -604,8 +604,8 @@ class Extension extends \Twig_Extension implements \Twig_Extension_GlobalsInterf
     public function getFunctions()
     {
         return [
-            new \Twig_SimpleFunction('actionUrl', '\\craft\\helpers\\Url::getActionUrl'),
-            new \Twig_SimpleFunction('cpUrl', '\\craft\\helpers\\Url::getCpUrl'),
+            new \Twig_SimpleFunction('actionUrl', [UrlHelper::class, 'actionUrl']),
+            new \Twig_SimpleFunction('cpUrl', [UrlHelper::class, 'cpUrl']),
             new \Twig_SimpleFunction('ceil', 'ceil'),
             new \Twig_SimpleFunction('className', 'get_class'),
             new \Twig_SimpleFunction('csrfInput', [$this, 'csrfInputFunction']),
@@ -613,10 +613,10 @@ class Extension extends \Twig_Extension implements \Twig_Extension_GlobalsInterf
             new \Twig_SimpleFunction('redirectInput', [$this, 'redirectInputFunction']),
             new \Twig_SimpleFunction('renderObjectTemplate', [$this, 'renderObjectTemplate']),
             new \Twig_SimpleFunction('round', [$this, 'roundFunction']),
-            new \Twig_SimpleFunction('resourceUrl', '\\craft\\helpers\\Url::getResourceUrl'),
+            new \Twig_SimpleFunction('resourceUrl', [UrlHelper::class, 'resourceUrl']),
             new \Twig_SimpleFunction('shuffle', [$this, 'shuffleFunction']),
-            new \Twig_SimpleFunction('siteUrl', '\\craft\\helpers\\Url::getSiteUrl'),
-            new \Twig_SimpleFunction('url', '\\craft\\helpers\\Url::url'),
+            new \Twig_SimpleFunction('siteUrl', [UrlHelper::class, 'siteUrl']),
+            new \Twig_SimpleFunction('url', [UrlHelper::class, 'url']),
             // DOM event functions
             new \Twig_SimpleFunction('head', [$this->view, 'head']),
             new \Twig_SimpleFunction('beginBody', [$this->view, 'beginBody']),
