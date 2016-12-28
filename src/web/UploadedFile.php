@@ -51,10 +51,10 @@ class UploadedFile extends \yii\web\UploadedFile
     public static function getInstancesByName($name, $lookForSingleInstance = true)
     {
         $name = self::_normalizeName($name);
-        $instances = parent::getInstancesByName($name);
+        $instances = static::getInstancesByName($name);
 
         if (empty($instances) && $lookForSingleInstance) {
-            $singleInstance = parent::getInstanceByName($name);
+            $singleInstance = static::getInstanceByName($name);
 
             if ($singleInstance) {
                 $instances[] = $singleInstance;

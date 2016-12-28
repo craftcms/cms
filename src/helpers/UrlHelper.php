@@ -302,7 +302,7 @@ class UrlHelper
      * @param string|null       $protocol The protocol to use (e.g. http, https). If empty, the protocol used for the current
      *                                    request will be used.
      *
-     * @return array|string
+     * @return string
      */
     public static function actionUrl($path = '', $params = null, $protocol = null)
     {

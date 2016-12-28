@@ -108,7 +108,7 @@ class Request extends \yii\web\Request
     /**
      * @var string
      */
-    private $_csrfToken;
+    private $_craftCsrfToken;
 
     /**
      * @var boolean
@@ -776,10 +776,10 @@ class Request extends \yii\web\Request
      */
     public function getCsrfToken($regenerate = false)
     {
-        if ($this->_csrfToken === null || $regenerate) {
+        if ($this->_craftCsrfToken === null || $regenerate) {
             $token = $this->loadCsrfToken();
 
-            if ($regenerate || $token === null || ($this->_csrfToken = $token) == null || !$this->csrfTokenValidForCurrentUser($token)) {
+            if ($regenerate || $token === null || ($this->_craftCsrfToken = $token) === null || !$this->csrfTokenValidForCurrentUser($token)) {
                 $token = $this->generateCsrfToken();
             }
 
@@ -787,10 +787,10 @@ class Request extends \yii\web\Request
             $chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789_-.';
             $mask = substr(str_shuffle(str_repeat($chars, 5)), 0, self::CSRF_MASK_LENGTH);
             // The + sign may be decoded as blank space later, which will fail the validation
-            $this->_csrfToken = str_replace('+', '.', base64_encode($mask.$this->_xorTokens($token, $mask)));
+            $this->_craftCsrfToken = str_replace('+', '.', base64_encode($mask.$this->_xorTokens($token, $mask)));
         }
 
-        return $this->_csrfToken;
+        return $this->_craftCsrfToken;
     }
 
     /**
@@ -798,7 +798,7 @@ class Request extends \yii\web\Request
      */
     public function regenCsrfToken()
     {
-        $this->_csrfToken = $this->getCsrfToken(true);
+        $this->_craftCsrfToken = $this->getCsrfToken(true);
     }
 
     /**
