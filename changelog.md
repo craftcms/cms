@@ -1,6 +1,8 @@
 Craft CMS Changelog
 ===================
 
+## Unreleased
+
 ## 2.6.2956 - 2016-12-28
 
 ### Changed
