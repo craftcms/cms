@@ -128,6 +128,7 @@ class TagElementType extends BaseElementType
 
 		if ($criteria->name)
 		{
+			craft()->deprecator->log('TagElementType::modifyElementsQuery():name_param', 'The ‘name’ tag param has been deprecated. Use ‘title’ instead.');
 			$query->andWhere(DbHelper::parseParam('content.title', $criteria->name, $query->params));
 		}
 
@@ -159,7 +160,11 @@ class TagElementType extends BaseElementType
 		// Backwards compatibility with order=name (tags had names before 2.3)
 		if (is_string($criteria->order))
 		{
-			$criteria->order = preg_replace('/\bname\b/', 'title', $criteria->order);
+			$criteria->order = preg_replace('/\bname\b/', 'title', $criteria->order, -1, $count);
+
+			if ($count) {
+				craft()->deprecator->log('tag_orderby_name', 'Ordering tags by ‘name’ has been deprecated. Order by ‘title’ instead.');
+			}
 		}
 	}
 
