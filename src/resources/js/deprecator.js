@@ -21,7 +21,7 @@
             },
 
             clearAllLogs: function() {
-                Craft.postActionRequest('utils/delete-all-deprecation-errors');
+                Craft.postActionRequest('utilities/delete-all-deprecation-errors');
                 this.onClearAll();
             },
 
@@ -44,11 +44,11 @@
                     logId: $(ev.currentTarget).closest('tr').data('id')
                 };
 
-                Craft.postActionRequest('utils/get-deprecation-error-traces-modal', data, $.proxy(function(response, textStatus) {
+                Craft.postActionRequest('utilities/get-deprecation-error-traces-modal', data, $.proxy(function(response, textStatus) {
                     this.tracesModal.$container.removeClass('loading');
 
                     if (textStatus == 'success') {
-                        this.$tracesModalBody.html(response);
+                        this.$tracesModalBody.html(response.html);
                     }
                 }, this));
             },
@@ -60,7 +60,9 @@
                     logId: $tr.data('id')
                 };
 
-                Craft.postActionRequest('utils/delete-deprecation-error', data);
+                Craft.postActionRequest('utilities/delete-deprecation-error', data, function(response, textStatus) {
+                    console.log('response/textStatus', response, textStatus);
+                });
 
                 if ($tr.siblings().length) {
                     $tr.remove();

@@ -1,5 +1,7 @@
 {% extends "utilities/_layout" %}
 
+{% import "_includes/forms" as forms %}
+
 {% set title = "Deprecation Errors"|t('app') %}
 
 {% block content %}
@@ -23,8 +25,8 @@
 				<tr data-id="{{ log.id }}">
 					<td>{{ log.message|raw }}</td>
 					<td>{{ log.getOrigin()|replace('/', '/<wbr>')|raw }}</td>
+					<td class="centeralign">{{ log.lastOccurrence|date('short') }}</td>
 					{#<td class="centeralign">{{ log.lastOccurrence.localeDate() }}</td>#}
-					<td class="centeralign">{{ log.lastOccurrence.date }}</td>
 					<td class="thin nowrap centeralign viewtraces"><a role="button">{{ "View"|t }}</a></td>
 					<td class="thin"><a class="delete icon" title="{{ 'Delete'|t }}" role="button"></a></td>
 				</tr>

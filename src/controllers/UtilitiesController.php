@@ -87,9 +87,68 @@ class UtilitiesController extends Controller
      */
     public function actionDeprecationErrors()
     {
-        return $this->renderTemplate('utilities/_deprecation-errors', [
+        Craft::$app->getView()->registerCssResource('css/deprecator.css');
+        Craft::$app->getView()->registerJsResource('js/deprecator.js');
+
+        return $this->renderTemplate('utilities/deprecation-errors/index', [
             'logs' => Craft::$app->deprecator->getLogs()
         ]);
+    }
+
+    /**
+     * View stack trace for a deprecator log entry.
+     *
+     * @return null
+     */
+    public function actionGetDeprecationErrorTracesModal()
+    {
+        $this->requirePostRequest();
+        $this->requireAcceptsJson();
+
+        $logId = Craft::$app->request->getRequiredParam('logId');
+        $log = Craft::$app->deprecator->getLogById($logId);
+
+        $html = $this->renderTemplate('utilities/deprecation-errors/_tracesmodal',
+            array('log' => $log)
+        , true);
+
+        return $this->asJson([
+            'html' => $html
+        ]);
+    }
+
+    /**
+     * Deletes all deprecation errors.
+     *
+     * @return null
+     */
+    public function actionDeleteAllDeprecationErrors()
+    {
+        $this->requirePostRequest();
+        $this->requireAcceptsJson();
+
+        Craft::$app->deprecator->deleteAllLogs();
+        /*Craft::$app->end();*/
+
+        return $this->asJson(['success' => true]);
+    }
+
+    /**
+     * Deletes a deprecation error.
+     *
+     * @return null
+     */
+    public function actionDeleteDeprecationError()
+    {
+        $this->requirePostRequest();
+        $this->requireAcceptsJson();
+
+        $logId = Craft::$app->getRequest()->getRequiredBodyParam('logId');
+
+        Craft::$app->deprecator->deleteLogById($logId);
+        /*Craft::$app->end();*/
+
+        return $this->asJson(['success' => true]);
     }
 
     // Private Methods
