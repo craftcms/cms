@@ -1,10 +1,13 @@
 <?php
 
 use craft\models\DeprecationError;
+use craft\helpers\Url;
 
 /** @var $panel craft\debug\DeprecatedPanel */
 ?>
     <h1>Deprecation Errors</h1>
+
+    <p><a href="<?= Url::getCpUrl('utilities/deprecation-errors') ?>" target="_parent">See All Deprecation Errors</a></p>
 
 <?php
 
