@@ -14,18 +14,7 @@ array_walk($panel->data, function(&$log) {
 
 echo $this->render('logtable', [
     'panel' => $panel,
-    'caption' => 'This Request',
     'logs' => $panel->data
 ]);
 
 ?>
-
-    <h3>All Logged Deprecation Errors</h3>
-    <p><a href="<?= $panel->getUrl() ?>&clear=1">Clear All</a></p>
-
-<?php
-
-echo $this->render('logtable', [
-    'panel' => $panel,
-    'logs' => Craft::$app->getDeprecator()->getLogs(null)
-]);
