@@ -91,7 +91,7 @@ class Update
     /**
      * Rolls back any changes made to the DB during the update process.
      *
-     * @param $backupPath
+     * @param string $backupPath
      *
      * @return boolean
      */
@@ -183,7 +183,7 @@ class Update
      *
      * @param $manifestData
      *
-     * @return boolean|string
+     * @return false|string
      */
     public static function getLocalVersionFromManifest($manifestData)
     {
@@ -278,7 +278,7 @@ class Update
     }
 
     /**
-     * @param $uid
+     * @param string $uid
      *
      * @return string
      */

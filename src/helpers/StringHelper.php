@@ -401,11 +401,11 @@ class StringHelper extends \yii\helpers\StringHelper
      *
      * @param string $str The string to get the length of.
      *
-     * @return integer The number of characters in $str..
+     * @return integer The number of characters in $str.
      */
     public static function length($str)
     {
-        return (string)Stringy::create($str)->length();
+        return Stringy::create($str)->length();
     }
 
     /**

@@ -33,7 +33,7 @@ class EntryRevisions
      * @param integer $entryId
      * @param string  $siteHandle
      *
-     * @return array
+     * @return EntryDraft[]
      * @throws Exception if $siteHandle is invalid
      */
     public function getDraftsByEntryId($entryId, $siteHandle = null)
@@ -106,7 +106,7 @@ class EntryRevisions
      * @param integer $entryId
      * @param string  $siteHandle
      *
-     * @return array
+     * @return EntryVersion[]
      * @throws Exception if $siteHandle is invalid
      */
     public function getVersionsByEntryId($entryId, $siteHandle)

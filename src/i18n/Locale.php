@@ -533,10 +533,10 @@ class Locale extends Object
                 case self::LENGTH_SHORT:
                 case self::LENGTH_MEDIUM:
                     $formatter->setPattern($standAlone ? 'LLL' : 'MMM');
-                    break;   // Sep
+                    break; // Sep
                 default:
                     $formatter->setPattern($standAlone ? 'LLLL' : 'MMMM');
-                    break;  // September
+                    break; // September
             }
 
             return $formatter->format(new DateTime('1970-'.sprintf('%02d', $month).'-01'));
@@ -550,10 +550,10 @@ class Locale extends Object
                 case self::LENGTH_SHORT:
                 case self::LENGTH_MEDIUM:
                     return $this->data[$which]['medium'][$month - 1];
-                    break;      // Sep
+                    break; // Sep
                 default:
                     return $this->data[$which]['full'][$month - 1];
-                    break;        // September
+                    break; // September
             }
         }
     }

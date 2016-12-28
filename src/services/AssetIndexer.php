@@ -44,9 +44,9 @@ class AssetIndexer extends Component
     /**
      * Gets the index list for a volume.
      *
-     * @param $sessionId
-     * @param $volumeId
-     * @param $directory
+     * @param string  $sessionId
+     * @param integer $volumeId
+     * @param string  $directory
      *
      * @return array
      */
@@ -101,7 +101,7 @@ class AssetIndexer extends Component
                 );
 
                 if ($allowedByFilter) {
-                    if ($file['type'] == 'dir') {
+                    if ($file['type'] === 'dir') {
                         $bucketFolders[$file['path']] = true;
                     } else {
                         $indexEntry = [
@@ -271,8 +271,8 @@ class AssetIndexer extends Component
     }
 
     /**
-     * @param $entryId
-     * @param $recordId
+     * @param integer $entryId
+     * @param integer $recordId
      *
      * @return void
      */

@@ -188,7 +188,7 @@ class Updates extends Component
     /**
      * Returns whether a manual update is required.
      *
-     * @return mixed
+     * @return boolean
      */
     public function getIsManualUpdateRequired()
     {
@@ -361,12 +361,7 @@ class Updates extends Component
                     // Any missing required attributes?
                     $missingAttributes = [];
 
-                    foreach ([
-                                 'version',
-                                 'downloadUrl',
-                                 'date',
-                                 'notes'
-                             ] as $attribute) {
+                    foreach (['version', 'downloadUrl', 'date', 'notes'] as $attribute) {
                         if (empty($release[$attribute])) {
                             $missingAttributes[] = $attribute;
                         }
@@ -520,8 +515,8 @@ class Updates extends Component
     }
 
     /**
-     * @param $manual
-     * @param $handle
+     * @param boolean $manual
+     * @param string  $handle
      *
      * @return array
      */
@@ -545,7 +540,7 @@ class Updates extends Component
             if (!$manual) {
                 $updateModel = $this->getUpdates();
 
-                if ($handle == 'craft') {
+                if ($handle === 'craft') {
                     Craft::info('Updating from '.$updateModel->app->localVersion.' to '.$updateModel->app->latestVersion.'.');
                 } else {
                     $latestVersion = null;

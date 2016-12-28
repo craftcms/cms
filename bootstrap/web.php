@@ -15,14 +15,14 @@ if (!extension_loaded('mbstring') || (extension_loaded('mbstring') && ini_get('m
 // omitScriptNameInUrls and usePathInfo tests
 // -----------------------------------------------------------------------------
 
-if ((isset($_SERVER['PATH_INFO']) && $_SERVER['PATH_INFO'] == '/testScriptNameRedirect')
+if ((isset($_SERVER['PATH_INFO']) && $_SERVER['PATH_INFO'] === '/testScriptNameRedirect')
     || (isset($_SERVER['QUERY_STRING']) && strpos($_SERVER['QUERY_STRING'],
             'testScriptNameRedirect') !== false)
 ) {
     exit('success');
 }
 
-if (isset($_SERVER['PATH_INFO']) && $_SERVER['PATH_INFO'] == '/testPathInfo') {
+if (isset($_SERVER['PATH_INFO']) && $_SERVER['PATH_INFO'] === '/testPathInfo') {
     exit('success');
 }
 
@@ -44,10 +44,10 @@ mb_detect_order('auto');
 // Normalize how PHP's string methods (strtoupper, etc) behave.
 setlocale(
     LC_CTYPE,
-    'C.UTF-8',     // libc >= 2.13
-    'C.utf8',      // different spelling
+    'C.UTF-8', // libc >= 2.13
+    'C.utf8', // different spelling
     'en_US.UTF-8', // fallback to lowest common denominator
-    'en_US.utf8'   // different spelling for fallback
+    'en_US.utf8' // different spelling for fallback
 );
 
 // Set default timezone to UTC

@@ -728,7 +728,7 @@ class Asset extends Element
     /**
      * Set a source to use for transforms for this Assets File.
      *
-     * @param $uri
+     * @param string $uri
      */
     public function setTransformSource($uri)
     {

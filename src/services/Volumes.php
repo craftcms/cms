@@ -10,7 +10,6 @@ use craft\errors\MissingComponentException;
 use craft\errors\VolumeException;
 use craft\events\RegisterComponentTypesEvent;
 use craft\events\VolumeEvent;
-use craft\helpers\ArrayHelper;
 use craft\helpers\Component as ComponentHelper;
 use craft\records\Volume as AssetVolumeRecord;
 use craft\records\VolumeFolder;
