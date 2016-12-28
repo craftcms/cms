@@ -15,10 +15,6 @@
         },
         {
             "type": "vcs",
-            "url": "https://github.com/pixelandtonic/PHPMailer"
-        },
-        {
-            "type": "vcs",
             "url": "https://github.com/pixelandtonic/pel"
         },
         {
