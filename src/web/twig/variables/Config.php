@@ -96,7 +96,7 @@ class Config
      */
     public function getResourceTrigger()
     {
-        Craft::$app->getDeprecator()->log('craft.config.getResourceTrigger()', 'craft.config.getResourceTrigger() has been deprecated. Use craft.app.config.getResourceTrigger() instead.');
+        Craft::$app->getDeprecator()->log('craft.config.getResourceTrigger()', 'craft.config.getResourceTrigger() has been deprecated. Use craft.app.config.resourceTrigger instead.');
 
         return Craft::$app->getConfig()->getResourceTrigger();
     }

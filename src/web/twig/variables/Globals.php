@@ -33,7 +33,7 @@ class Globals
      */
     public function getAllSets($indexBy = null)
     {
-        Craft::$app->getDeprecator()->log('craft.globals.getAllSets()', 'craft.globals.getAllSets() has been deprecated. Use craft.app.globals.getAllSets() instead.');
+        Craft::$app->getDeprecator()->log('craft.globals.getAllSets()', 'craft.globals.getAllSets() has been deprecated. Use craft.app.globals.allSets instead.');
 
         $globalSets = Craft::$app->getGlobals()->getAllSets();
 
@@ -49,7 +49,7 @@ class Globals
      */
     public function getEditableSets($indexBy = null)
     {
-        Craft::$app->getDeprecator()->log('craft.globals.getEditableSets()', 'craft.globals.getEditableSets() has been deprecated. Use craft.app.globals.getEditableSets() instead.');
+        Craft::$app->getDeprecator()->log('craft.globals.getEditableSets()', 'craft.globals.getEditableSets() has been deprecated. Use craft.app.globals.editableSets instead.');
 
         $globalSets = Craft::$app->getGlobals()->getEditableSets();
 

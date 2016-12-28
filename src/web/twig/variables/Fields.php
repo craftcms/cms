@@ -37,7 +37,7 @@ class Fields
      */
     public function getAllGroups($indexBy = null)
     {
-        Craft::$app->getDeprecator()->log('craft.fields.getAllGroups()', 'craft.fields.getAllGroups() has been deprecated. Use craft.app.fields.getAllGroups() instead.');
+        Craft::$app->getDeprecator()->log('craft.fields.getAllGroups()', 'craft.fields.getAllGroups() has been deprecated. Use craft.app.fields.allGroups instead.');
 
         $groups = Craft::$app->getFields()->getAllGroups();
 
@@ -98,7 +98,7 @@ class Fields
      */
     public function getAllFields($indexBy = null)
     {
-        Craft::$app->getDeprecator()->log('craft.fields.getAllFields()', 'craft.fields.getAllFields() has been deprecated. Use craft.app.fields.getAllFields() instead.');
+        Craft::$app->getDeprecator()->log('craft.fields.getAllFields()', 'craft.fields.getAllFields() has been deprecated. Use craft.app.fields.allFields instead.');
 
         $fields = Craft::$app->getFields()->getAllFields();
 

@@ -34,7 +34,7 @@ class UserGroups
      */
     public function getAllGroups($indexBy = null)
     {
-        Craft::$app->getDeprecator()->log('craft.userGroups.getAllGroups()', 'craft.userGroups.getAllGroups() has been deprecated. Use craft.app.userGroups.getAllGroups() instead.');
+        Craft::$app->getDeprecator()->log('craft.userGroups.getAllGroups()', 'craft.userGroups.getAllGroups() has been deprecated. Use craft.app.userGroups.allGroups instead.');
 
         $userGroups = Craft::$app->getUserGroups()->getAllGroups();
 

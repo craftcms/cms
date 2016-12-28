@@ -31,7 +31,7 @@ class EmailMessages
      */
     public function getAllMessages()
     {
-        Craft::$app->getDeprecator()->log('craft.emailMessages.getAllMessages()', 'craft.emailMessages.getAllMessages() has been deprecated. Use craft.app.emailMessages.allMessages instead.');
+        Craft::$app->getDeprecator()->log('craft.emailMessages.getAllMessages()', 'craft.emailMessages.allMessages has been deprecated. Use craft.app.emailMessages.allMessages instead.');
 
         return Craft::$app->getEmailMessages()->getAllMessages();
     }
