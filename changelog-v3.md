@@ -281,7 +281,6 @@ Craft CMS 3.0 Working Changelog
 
 ### Deprecated
 - The `getTranslations()` global Twig function has been deprecated. Use `craft.app.view.getTranslations()` instead.
-- `craft.getTimeZone()` has been deprecated. Use `craft.app.getTimeZone()` instead.
 - `craft\web\View::registerHiResCss()` has been deprecated. Use `registerCss()` instead, and type your own media selector.
 
 ### Removed
