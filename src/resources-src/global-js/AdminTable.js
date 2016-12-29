@@ -61,7 +61,7 @@ Craft.AdminTable = Garnish.Base.extend(
 
         reorderItems: function() {
             if (!this.settings.sortable) {
-                return false;
+                return;
             }
 
             // Get the new field order

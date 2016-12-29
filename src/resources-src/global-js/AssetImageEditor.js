@@ -139,14 +139,6 @@ Craft.AssetImageEditor = Garnish.Modal.extend(
         },
 
         redrawEditor: function() {
-            var desiredHeight = 600,
-                desiredWidth = 600;
-
-            if (this.imageLoaded) {
-                desiredHeight = this.originalImageHeight;
-                desiredWidth = this.originalImageWidth;
-            }
-
             var availableHeight = Garnish.$win.height() - (4 * this.paddingSize) - this.$container.find('.footer').outerHeight(),
                 availableWidth = Garnish.$win.width() - (5 * this.paddingSize) - this.$container.find('.image-tools').outerWidth();
 

@@ -421,7 +421,7 @@ Craft.AssetIndex = Craft.BaseElementIndex.extend(
                     var responseArray = [];
                     var parameterArray = [];
 
-                    for (var i = 0; i < folderIds.length; i++) {
+                    for (i = 0; i < folderIds.length; i++) {
                         parameterArray.push({
                             folderId: folderIds[i],
                             parentId: targetFolderId
@@ -450,12 +450,6 @@ Craft.AssetIndex = Craft.BaseElementIndex.extend(
                     // This will hold the final list of files to move
                     var fileMoveList = [];
 
-                    // These folders have to be deleted at the end
-                    var folderDeleteList = [];
-
-                    // This one tracks the changed folder ids
-                    var changedFolderIds = {};
-
                     var newSourceKey = '';
 
                     var onMoveFinish = $.proxy(function(responseArray) {
@@ -465,7 +459,7 @@ Craft.AssetIndex = Craft.BaseElementIndex.extend(
                         for (var i = 0; i < responseArray.length; i++) {
                             var data = responseArray[i];
 
-                            // If succesful and have data, then update
+                            // If successful and have data, then update
                             if (data.success) {
                                 if (data.transferList) {
                                     fileMoveList = data.transferList;
@@ -812,10 +806,9 @@ Craft.AssetIndex = Craft.BaseElementIndex.extend(
         /**
          * React on upload submit.
          *
-         * @param {object} event
          * @private
          */
-        _onUploadStart: function(event) {
+        _onUploadStart: function() {
             this.setIndexBusy();
 
             // Initial values
@@ -984,13 +977,15 @@ Craft.AssetIndex = Craft.BaseElementIndex.extend(
          */
         _getFileDragHelper: function($element) {
             var currentView = this.getSelectedSourceState('mode');
+            var $outerContainer;
+            var $innerContainer;
 
             switch (currentView) {
                 case 'table': {
-                    var $outerContainer = $('<div class="elements datatablesorthelper"/>').appendTo(Garnish.$bod),
-                        $innerContainer = $('<div class="tableview"/>').appendTo($outerContainer),
-                        $table = $('<table class="data"/>').appendTo($innerContainer),
-                        $tbody = $('<tbody/>').appendTo($table);
+                    $outerContainer = $('<div class="elements datatablesorthelper"/>').appendTo(Garnish.$bod);
+                    $innerContainer = $('<div class="tableview"/>').appendTo($outerContainer);
+                    var $table = $('<table class="data"/>').appendTo($innerContainer);
+                    var $tbody = $('<tbody/>').appendTo($table);
 
                     $element.appendTo($tbody);
 
@@ -1019,8 +1014,8 @@ Craft.AssetIndex = Craft.BaseElementIndex.extend(
                     return $outerContainer;
                 }
                 case 'thumbs': {
-                    var $outerContainer = $('<div class="elements thumbviewhelper"/>').appendTo(Garnish.$bod),
-                        $innerContainer = $('<ul class="thumbsview"/>').appendTo($outerContainer);
+                    $outerContainer = $('<div class="elements thumbviewhelper"/>').appendTo(Garnish.$bod);
+                    $innerContainer = $('<ul class="thumbsview"/>').appendTo($outerContainer);
 
                     $element.appendTo($innerContainer);
 
@@ -1068,17 +1063,17 @@ Craft.AssetIndex = Craft.BaseElementIndex.extend(
             clearTimeout(this._expandDropTargetFolderTimeout);
 
             // If a source ID is passed in, exclude its parents
-            var excluded;
+            var $excludedSources;
 
             if (dropTargetFolderId) {
-                excluded = this._getSourceByFolderId(dropTargetFolderId).parents('li').children('a');
+                $excludedSources = this._getSourceByFolderId(dropTargetFolderId).parents('li').children('a');
             }
 
             for (var i = this._tempExpandedFolders.length - 1; i >= 0; i--) {
                 var $source = this._tempExpandedFolders[i];
 
                 // Check the parent list, if a source id is passed in
-                if (!dropTargetFolderId || excluded.filter('[data-key="' + $source.data('key') + '"]').length == 0) {
+                if (typeof $excludedSources === undefined || $excludedSources.filter('[data-key="' + $source.data('key') + '"]').length == 0) {
                     this._collapseFolder($source);
                     this._tempExpandedFolders.splice(i, 1);
                 }
