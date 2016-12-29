@@ -98,7 +98,7 @@ class ElementQuery extends Query implements ElementQueryInterface, Arrayable, Co
     public $contentTable = '{{%content}}';
 
     /**
-     * @var FieldInterface[] The fields that may be involved in this query.
+     * @var FieldInterface[]|null The fields that may be involved in this query.
      */
     public $customFields;
 
@@ -262,7 +262,7 @@ class ElementQuery extends Query implements ElementQueryInterface, Arrayable, Co
     // -------------------------------------------------------------------------
 
     /**
-     * @var Element[] The cached element query result
+     * @var ElementInterface[]|null The cached element query result
      * @see setCachedResult()
      */
     private $_result;

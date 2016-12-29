@@ -598,7 +598,7 @@ abstract class Element extends Component implements ElementInterface
     private $_prevElement;
 
     /**
-     * @var integer|boolean The structure ID that the element is associated with
+     * @var integer|false The structure ID that the element is associated with
      * @see getStructureId()
      * @see setStructureId()
      */
