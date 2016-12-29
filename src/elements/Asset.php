@@ -36,6 +36,7 @@ use craft\validators\DateTimeValidator;
 use yii\base\ErrorHandler;
 use yii\base\Exception;
 use yii\base\InvalidCallException;
+use yii\base\InvalidConfigException;
 use yii\base\UnknownPropertyException;
 
 /**
@@ -561,15 +562,29 @@ class Asset extends Element
     }
 
     /**
-     * @return VolumeFolder|null
+     * Returns the asset’s volume folder.
+     *
+     * @return VolumeFolder
+     * @throws InvalidConfigException if [[folderId]] is missing or invalid
      */
     public function getFolder()
     {
-        return Craft::$app->getAssets()->getFolderById($this->folderId);
+        if (!$this->folderId) {
+            throw new InvalidConfigException('Asset is missing its folder ID');
+        }
+
+        if (($folder = Craft::$app->getAssets()->getFolderById($this->folderId)) === null) {
+            throw new InvalidConfigException('Invalid folder ID: '.$this->folderId);
+        }
+
+        return $folder;
     }
 
     /**
-     * @return VolumeInterface|null
+     * Returns the asset’s volume.
+     *
+     * @return VolumeInterface
+     * @throws InvalidConfigException if [[volumeId]] is missing or invalid
      */
     public function getVolume()
     {
@@ -577,7 +592,15 @@ class Asset extends Element
             return $this->_volume;
         }
 
-        return $this->_volume = Craft::$app->getVolumes()->getVolumeById($this->volumeId);
+        if (!$this->volumeId) {
+            throw new InvalidConfigException('Asset is missing its volume ID');
+        }
+
+        if (($volume = Craft::$app->getVolumes()->getVolumeById($this->volumeId)) === null) {
+            throw new InvalidConfigException('Invalid volume ID: '.$this->volumeId);
+        }
+
+        return $this->_volume = $volume;
     }
 
     /**
