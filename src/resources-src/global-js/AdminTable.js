@@ -1,3 +1,5 @@
+/** global: Craft */
+/** global: Garnish */
 /**
  * Admin table class
  */

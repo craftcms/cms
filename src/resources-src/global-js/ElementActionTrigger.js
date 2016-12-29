@@ -1,3 +1,5 @@
+/** global: Craft */
+/** global: Garnish */
 /**
  * Element Action Trigger
  */

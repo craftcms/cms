@@ -1,3 +1,5 @@
+/** global: Craft */
+/** global: Garnish */
 /**
  * Delete User Modal
  */

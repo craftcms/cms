@@ -1,3 +1,5 @@
+/** global: Craft */
+/** global: Garnish */
 Craft.ui =
     {
         createTextInput: function(config) {

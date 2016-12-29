@@ -1,3 +1,5 @@
+/** global: Craft */
+/** global: Garnish */
 /**
  * Asset image editor class
  */

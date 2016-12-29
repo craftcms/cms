@@ -1,3 +1,5 @@
+/** global: Craft */
+/** global: Garnish */
 Craft.Grid = Garnish.Base.extend(
     {
         $container: null,

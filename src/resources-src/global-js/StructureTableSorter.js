@@ -1,3 +1,5 @@
+/** global: Craft */
+/** global: Garnish */
 Craft.StructureTableSorter = Garnish.DragSort.extend({
 
         // Properties

@@ -1,5 +1,6 @@
-/*! Craft 3.0.0 - 2016-12-28 */
+/*! Craft 3.0.0 - 2016-12-29 */
 (function($){
+
 /** global: Craft */
 /** global: Garnish */
 // Set all the standard Craft.* stuff
@@ -1484,6 +1485,8 @@ Garnish.$doc.ready(function() {
     Craft.initUiElements();
 });
 
+/** global: Craft */
+/** global: Garnish */
 /**
  * Element index class
  */
@@ -3064,6 +3067,8 @@ Craft.BaseElementIndex = Garnish.Base.extend(
     });
 
 
+/** global: Craft */
+/** global: Garnish */
 /**
  * Base Element Index View
  */
@@ -3427,6 +3432,8 @@ Craft.BaseElementIndexView = Garnish.Base.extend(
         },
     });
 
+/** global: Craft */
+/** global: Garnish */
 /**
  * Element Select input
  */
@@ -3862,6 +3869,8 @@ Craft.BaseElementSelectInput = Garnish.Base.extend(
         }
     });
 
+/** global: Craft */
+/** global: Garnish */
 /**
  * Element selector modal class
  */
@@ -4078,6 +4087,8 @@ Craft.BaseElementSelectorModal = Garnish.Modal.extend(
         }
     });
 
+/** global: Craft */
+/** global: Garnish */
 /**
  * Input Generator
  */
@@ -4171,6 +4182,8 @@ Craft.BaseInputGenerator = Garnish.Base.extend(
         }
     });
 
+/** global: Craft */
+/** global: Garnish */
 /**
  * Admin table class
  */
@@ -4394,6 +4407,8 @@ Craft.AdminTable = Garnish.Base.extend(
         }
     });
 
+/** global: Craft */
+/** global: Garnish */
 /**
  * Asset image editor class
  */
@@ -5004,6 +5019,8 @@ Craft.AssetImageEditor = Garnish.Modal.extend(
     }
 );
 
+/** global: Craft */
+/** global: Garnish */
 /**
  * Asset index class
  */
@@ -6315,6 +6332,8 @@ Craft.AssetIndex = Craft.BaseElementIndex.extend(
 // Register it!
 Craft.registerElementIndexClass('craft\\elements\\Asset', Craft.AssetIndex);
 
+/** global: Craft */
+/** global: Garnish */
 /**
  * Asset Select input
  */
@@ -6538,6 +6557,8 @@ Craft.AssetSelectInput = Craft.BaseElementSelectInput.extend(
         }
     });
 
+/** global: Craft */
+/** global: Garnish */
 /**
  * Asset selector modal class
  */
@@ -6720,6 +6741,8 @@ Craft.AssetSelectorModal = Craft.BaseElementSelectorModal.extend(
 // Register it!
 Craft.registerElementSelectorModalClass('craft\\elements\\Asset', Craft.AssetSelectorModal);
 
+/** global: Craft */
+/** global: Garnish */
 /**
  * AuthManager class
  */
@@ -7122,6 +7145,8 @@ Craft.AuthManager = Garnish.Base.extend(
         minSafeSessiotTime: 120
     });
 
+/** global: Craft */
+/** global: Garnish */
 /**
  * Category index class
  */
@@ -7320,6 +7345,8 @@ Craft.CategoryIndex = Craft.BaseElementIndex.extend(
 // Register it!
 Craft.registerElementIndexClass('craft\\elements\\Category', Craft.CategoryIndex);
 
+/** global: Craft */
+/** global: Garnish */
 /**
  * Category Select input
  */
@@ -7437,6 +7464,8 @@ Craft.CategorySelectInput = Craft.BaseElementSelectInput.extend(
         }
     });
 
+/** global: Craft */
+/** global: Garnish */
 /**
  * Craft Charts
  */
@@ -8261,6 +8290,8 @@ Craft.charts.utils = {
     }
 };
 
+/** global: Craft */
+/** global: Garnish */
 /**
  * CP class
  */
@@ -9587,6 +9618,8 @@ TaskProgressHUD.Task = Garnish.Base.extend(
         }
     });
 
+/** global: Craft */
+/** global: Garnish */
 /**
  * Customize Sources modal
  */
@@ -10043,6 +10076,8 @@ Craft.CustomizeSourcesModal.Heading = Craft.CustomizeSourcesModal.BaseSource.ext
         }
     });
 
+/** global: Craft */
+/** global: Garnish */
 /**
  * DataTableSorter
  */
@@ -10097,6 +10132,8 @@ Craft.DataTableSorter = Garnish.DragSort.extend(
         }
     });
 
+/** global: Craft */
+/** global: Garnish */
 /**
  * Delete User Modal
  */
@@ -10247,6 +10284,8 @@ Craft.DeleteUserModal = Garnish.Modal.extend(
         }
     });
 
+/** global: Craft */
+/** global: Garnish */
 /**
  * Editable table class
  */
@@ -10616,6 +10655,8 @@ Craft.EditableTable.Row = Garnish.Base.extend(
         numericKeyCodes: [9 /* (tab) */, 8 /* (delete) */, 37, 38, 39, 40 /* (arrows) */, 45, 91 /* (minus) */, 46, 190 /* period */, 48, 49, 50, 51, 52, 53, 54, 55, 56, 57 /* (0-9) */]
     });
 
+/** global: Craft */
+/** global: Garnish */
 /**
  * Element Action Trigger
  */
@@ -10719,6 +10760,8 @@ Craft.ElementActionTrigger = Garnish.Base.extend(
         }
     });
 
+/** global: Craft */
+/** global: Garnish */
 /**
  * Element editor
  */
@@ -11037,6 +11080,8 @@ Craft.ElementEditor = Garnish.Base.extend(
         }
     });
 
+/** global: Craft */
+/** global: Garnish */
 /**
  * Elevated Session Form
  */
@@ -11108,6 +11153,8 @@ Craft.ElevatedSessionForm = Garnish.Base.extend(
         }
     });
 
+/** global: Craft */
+/** global: Garnish */
 /**
  * Elevated Session Manager
  */
@@ -11264,6 +11311,8 @@ Craft.ElevatedSessionManager = Garnish.Base.extend(
 // Instantiate it
 Craft.elevatedSessionManager = new Craft.ElevatedSessionManager();
 
+/** global: Craft */
+/** global: Garnish */
 /**
  * Entry index class
  */
@@ -11475,6 +11524,8 @@ Craft.EntryIndex = Craft.BaseElementIndex.extend(
 // Register it!
 Craft.registerElementIndexClass('craft\\elements\\Entry', Craft.EntryIndex);
 
+/** global: Craft */
+/** global: Garnish */
 Craft.FieldLayoutDesigner = Garnish.Base.extend(
     {
         $container: null,
@@ -12106,6 +12157,8 @@ Craft.FieldLayoutDesigner.FieldDrag = Craft.FieldLayoutDesigner.BaseDrag.extend(
         }
     });
 
+/** global: Craft */
+/** global: Garnish */
 /**
  * FieldToggle
  */
@@ -12285,6 +12338,8 @@ Craft.FieldToggle = Garnish.Base.extend(
         }
     });
 
+/** global: Craft */
+/** global: Garnish */
 Craft.Grid = Garnish.Base.extend(
     {
         $container: null,
@@ -12874,6 +12929,8 @@ Craft.Grid.LayoutGenerator = Garnish.Base.extend(
 
     });
 
+/** global: Craft */
+/** global: Garnish */
 /**
  * Handle Generator
  */
@@ -12913,6 +12970,8 @@ Craft.HandleGenerator = Craft.BaseInputGenerator.extend(
         }
     });
 
+/** global: Craft */
+/** global: Garnish */
 /**
  * Image upload class for user photos, site icon and logo.
  */
@@ -13031,6 +13090,8 @@ Craft.ImageUpload = Garnish.Base.extend(
         }
     }
 );
+/** global: Craft */
+/** global: Garnish */
 /**
  * Info icon class
  */
@@ -13058,6 +13119,8 @@ Craft.InfoIcon = Garnish.Base.extend(
         }
     });
 
+/** global: Craft */
+/** global: Garnish */
 /**
  * Light Switch
  */
@@ -13264,6 +13327,8 @@ Craft.LightSwitch = Garnish.Base.extend(
         }
     });
 
+/** global: Craft */
+/** global: Garnish */
 /**
  * Live Preview
  */
@@ -13690,6 +13755,8 @@ Craft.LivePreview.init = function(settings) {
     Craft.livePreview = new Craft.LivePreview(settings);
 };
 
+/** global: Craft */
+/** global: Garnish */
 /**
  * Pane class
  */
@@ -13894,6 +13961,8 @@ Craft.Pane = Garnish.Base.extend(
         }
     });
 
+/** global: Craft */
+/** global: Garnish */
 /**
  * Password Input
  */
@@ -14034,6 +14103,8 @@ Craft.PasswordInput = Garnish.Base.extend(
         }
     });
 
+/** global: Craft */
+/** global: Garnish */
 /**
  * File Manager.
  */
@@ -14121,6 +14192,8 @@ Craft.ProgressBar = Garnish.Base.extend(
         }
     });
 
+/** global: Craft */
+/** global: Garnish */
 /**
  * File Manager.
  */
@@ -14304,6 +14377,8 @@ Craft.PromptHandler = Garnish.Base.extend({
     }
 });
 
+/** global: Craft */
+/** global: Garnish */
 /**
  * Slug Generator
  */
@@ -14337,6 +14412,8 @@ Craft.SlugGenerator = Craft.BaseInputGenerator.extend(
         }
     });
 
+/** global: Craft */
+/** global: Garnish */
 /**
  * Structure class
  */
@@ -14503,6 +14580,8 @@ Craft.Structure = Garnish.Base.extend(
         }
     });
 
+/** global: Craft */
+/** global: Garnish */
 /**
  * Structure drag class
  */
@@ -14877,6 +14956,8 @@ Craft.StructureDrag = Garnish.Drag.extend(
 
     });
 
+/** global: Craft */
+/** global: Garnish */
 Craft.StructureTableSorter = Garnish.DragSort.extend({
 
         // Properties
@@ -15472,6 +15553,8 @@ Craft.StructureTableSorter = Garnish.DragSort.extend({
         }
     });
 
+/** global: Craft */
+/** global: Garnish */
 /**
  * Table Element Index View
  */
@@ -15844,6 +15927,8 @@ Craft.TableElementIndexView = Craft.BaseElementIndexView.extend(
         }
     });
 
+/** global: Craft */
+/** global: Garnish */
 /**
  * Tag select input
  */
@@ -16088,6 +16173,8 @@ Craft.TagSelectInput = Craft.BaseElementSelectInput.extend(
         }
     });
 
+/** global: Craft */
+/** global: Garnish */
 /**
  * Thumb Element Index View
  */
@@ -16098,6 +16185,8 @@ Craft.ThumbsElementIndexView = Craft.BaseElementIndexView.extend(
         }
     });
 
+/** global: Craft */
+/** global: Garnish */
 Craft.ui =
     {
         createTextInput: function(config) {
@@ -16520,6 +16609,8 @@ Craft.ui =
         }
     };
 
+/** global: Craft */
+/** global: Garnish */
 /**
  * Craft Upgrade Modal
  */
@@ -17032,6 +17123,8 @@ Craft.UpgradeModal = Garnish.Modal.extend(
         clearCheckoutFormTimeoutDuration: 30000 // 1000 x 60 x 5
     });
 
+/** global: Craft */
+/** global: Garnish */
 /**
  * File Manager.
  */
@@ -17277,6 +17370,8 @@ Craft.Uploader = Garnish.Base.extend(
         }
     });
 
+/** global: Craft */
+/** global: Garnish */
 /**
  * Handle Generator
  */

@@ -1,3 +1,5 @@
+/** global: Craft */
+/** global: Garnish */
 Craft.FieldLayoutDesigner = Garnish.Base.extend(
     {
         $container: null,

@@ -1,3 +1,5 @@
+/** global: Craft */
+/** global: Garnish */
 // Set all the standard Craft.* stuff
 $.extend(Craft,
     {
