@@ -367,7 +367,7 @@ class Updates extends Component
                         }
                     }
 
-                    if ($missingAttributes) {
+                    if (!empty($missingAttributes)) {
                         $errors[] = 'Missing required attributes ('.implode(', ', $missingAttributes).')';
                     }
 
@@ -389,7 +389,7 @@ class Updates extends Component
                     }
 
                     // Validation complete. Were there any errors?
-                    if ($errors) {
+                    if (!empty($errors)) {
                         Craft::warning('A “'.$plugin->name."” release was skipped because it is invalid:\n - ".implode("\n - ", $errors));
                         continue;
                     }
@@ -467,7 +467,7 @@ class Updates extends Component
                     }
                 }
 
-                if ($releaseModels) {
+                if (!empty($releaseModels)) {
                     // Sort release models by timestamp
                     array_multisort($releaseTimestamps, SORT_DESC, $releaseModels);
                     $latestRelease = $releaseModels[0];

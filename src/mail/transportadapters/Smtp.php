@@ -41,7 +41,7 @@ class Smtp extends BaseTransportAdapter
     public $port;
 
     /**
-     * @var string Whether to use authentication
+     * @var boolean Whether to use authentication
      */
     public $useAuthentication;
 
@@ -96,7 +96,7 @@ class Smtp extends BaseTransportAdapter
                 'required',
                 'when' => function($model) {
                     /** @var self $model */
-                    return ($model->useAuthentication == true);
+                    return (bool)$model->useAuthentication;
                 }
             ],
             [['encryptionMethod'], 'in', 'range' => ['tls', 'ssl']],

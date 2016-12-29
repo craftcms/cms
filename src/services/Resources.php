@@ -87,7 +87,7 @@ class Resources extends Component
      *
      * @param string $uri
      *
-     * @return string
+     * @return string|false
      * @throws NotFoundHttpException if the requested image transform cannot be found
      * @throws ServerErrorHttpException if reasons
      */
@@ -209,8 +209,8 @@ class Resources extends Component
 
         $cachedPath = $this->getCachedResourcePath($uri);
 
-        if ($cachedPath) {
-            if ($cachedPath == ':(') {
+        if ($cachedPath !== null) {
+            if ($cachedPath === ':(') {
                 // 404
                 $path = false;
             } else {
@@ -293,7 +293,7 @@ class Resources extends Component
         $requestFolderParts = array_filter(explode('/', $requestFolder));
         $cssUrlParts = array_filter(explode('/', $match[3]));
 
-        while (isset($cssUrlParts[0]) && $cssUrlParts[0] == '..' && $requestFolderParts) {
+        while (isset($cssUrlParts[0]) && $cssUrlParts[0] === '..' && !empty($requestFolderParts)) {
             array_pop($requestFolderParts);
             array_shift($cssUrlParts);
         }

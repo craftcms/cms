@@ -383,7 +383,7 @@ class Sections extends Component
         // Get the site settings
         $allSiteSettings = $section->getSiteSettings();
 
-        if (!$allSiteSettings) {
+        if (empty($allSiteSettings)) {
             throw new Exception('Tried to save a section without any site settings');
         }
 
@@ -496,7 +496,7 @@ class Sections extends Component
                     ->where(['sectionId' => $section->id])
                     ->column();
 
-                if ($entryTypeIds) {
+                if (!empty($entryTypeIds)) {
                     $entryTypeId = array_shift($entryTypeIds);
                 }
             }
@@ -552,7 +552,7 @@ class Sections extends Component
                             ->from(['{{%entries}} e'])
                             ->where(['e.sectionId' => $section->id])
                             ->all();
-                        if ($results) {
+                        if (!empty($results)) {
                             $firstResult = array_shift($results);
                             $singleEntryId = $firstResult['id'];
                             // If there are any more, get rid of them
@@ -589,7 +589,7 @@ class Sections extends Component
                         }
                         // Make sure there's only one entry type for this section
                         /** @noinspection PhpUndefinedVariableInspection */
-                        if ($entryTypeIds) {
+                        if (!empty($entryTypeIds)) {
                             foreach ($entryTypeIds as $entryTypeId) {
                                 $this->deleteEntryTypeById($entryTypeId);
                             }
@@ -633,7 +633,7 @@ class Sections extends Component
                 /** @noinspection PhpUndefinedVariableInspection */
                 $siteIds = array_values(array_intersect(Craft::$app->getSites()->getAllSiteIds(), array_keys($allOldSiteSettingsRecords)));
 
-                if ($siteIds) {
+                if (!empty($siteIds)) {
                     Craft::$app->getTasks()->queueTask([
                         'type' => ResaveElements::class,
                         'description' => Craft::t('app', 'Resaving {section} entries', ['section' => $section->name]),
@@ -716,7 +716,7 @@ class Sections extends Component
                 ->where(['id' => $entryTypeIds])
                 ->column();
 
-            if ($fieldLayoutIds) {
+            if (!empty($fieldLayoutIds)) {
                 Craft::$app->getFields()->deleteLayoutById($fieldLayoutIds);
             }
 

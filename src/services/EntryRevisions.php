@@ -132,7 +132,7 @@ class EntryRevisions extends Component
      */
     public function getDraftsByEntryId($entryId, $siteId = null)
     {
-        if (!$siteId) {
+        if ($siteId === null) {
             $siteId = Craft::$app->getSites()->getPrimarySite()->id;
         }
 

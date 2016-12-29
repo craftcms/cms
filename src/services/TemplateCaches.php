@@ -284,7 +284,7 @@ class TemplateCaches extends Component
         $body = StringHelper::encodeMb4($body);
 
         // Figure out the expiration date
-        if ($duration) {
+        if ($duration !== null) {
             $expiration = new DateTime($duration);
         }
 
@@ -407,7 +407,7 @@ class TemplateCaches extends Component
             ->where(['type' => $elementType])
             ->column();
 
-        if ($cacheIds) {
+        if (!empty($cacheIds)) {
             Craft::$app->getDb()->createCommand()
                 ->delete(
                     self::$_templateCachesTable,
@@ -510,7 +510,7 @@ class TemplateCaches extends Component
             ->where(['elementId' => $elementId])
             ->column();
 
-        if (!$cacheIds) {
+        if (empty($cacheIds)) {
             return false;
         }
 

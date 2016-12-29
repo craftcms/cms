@@ -633,7 +633,7 @@ class Volumes extends Component
      */
     private function _getVolumeRecordById($volumeId = null)
     {
-        if ($volumeId) {
+        if ($volumeId !== null) {
             $volumeRecord = AssetVolumeRecord::findOne(['id' => $volumeId]);
 
             if (!$volumeRecord) {

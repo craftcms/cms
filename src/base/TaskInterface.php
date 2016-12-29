@@ -46,7 +46,7 @@ interface TaskInterface extends SavableComponentInterface
      *
      * @param integer $step The step to run
      *
-     * @return boolean Whether the step was successful
+     * @return boolean|string True if the step was successful, false or an error message if not
      */
     public function runStep($step);
 }

@@ -809,14 +809,14 @@ class Assets extends Component
     /**
      * Get URL for a file.
      *
-     * @param Asset  $asset
-     * @param string $transform
+     * @param Asset       $asset
+     * @param string|null $transform
      *
      * @return string
      */
     public function getUrlForAsset(Asset $asset, $transform = null)
     {
-        if (!$transform || !Image::isImageManipulatable(pathinfo($asset->filename, PATHINFO_EXTENSION))) {
+        if ($transform === null || !Image::isImageManipulatable(pathinfo($asset->filename, PATHINFO_EXTENSION))) {
             $volume = $asset->getVolume();
 
             return AssetsHelper::generateUrl($volume, $asset);

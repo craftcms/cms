@@ -493,7 +493,7 @@ class Matrix extends Component
 
                 // Do we need to create/rename the content table?
                 if (!Craft::$app->getDb()->tableExists($newContentTable)) {
-                    if ($oldContentTable && Craft::$app->getDb()->tableExists($oldContentTable)) {
+                    if ($oldContentTable !== false && Craft::$app->getDb()->tableExists($oldContentTable)) {
                         MigrationHelper::renameTable($oldContentTable, $newContentTable);
                     } else {
                         $this->_createContentTable($newContentTable);
@@ -705,7 +705,7 @@ class Matrix extends Component
         }
 
         // Tell the browser to collapse any new block IDs
-        if (!Craft::$app->getRequest()->getIsConsoleRequest() && $collapsedBlockIds) {
+        if (!Craft::$app->getRequest()->getIsConsoleRequest() && !empty($collapsedBlockIds)) {
             Craft::$app->getSession()->addJsResourceFlash('js/MatrixInput.js');
 
             foreach ($collapsedBlockIds as $blockId) {
@@ -875,12 +875,12 @@ class Matrix extends Component
 
             $blocksInOtherSite = $query->all();
 
-            if ($blocksInOtherSite) {
+            if (!empty($blocksInOtherSite)) {
                 $blocksInOtherSites[$siteId] = $blocksInOtherSite;
             }
         }
 
-        if (!$blocksInOtherSites) {
+        if (empty($blocksInOtherSites)) {
             return;
         }
 
@@ -916,7 +916,7 @@ class Matrix extends Component
                 ->where(['sourceId' => array_keys($newBlockIds)])
                 ->all();
 
-            if ($relations) {
+            if (!empty($relations)) {
                 // Now duplicate each one for the other sites' new blocks
                 $rows = [];
 

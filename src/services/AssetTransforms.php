@@ -283,7 +283,7 @@ class AssetTransforms extends Component
      */
     public function eagerLoadTransforms($assets, $transforms)
     {
-        if (!$assets || !$transforms) {
+        if (empty($assets) || empty($transforms)) {
             return;
         }
 
@@ -361,7 +361,7 @@ class AssetTransforms extends Component
         }
 
         // Delete any invalid indexes
-        if ($invalidIndexIds) {
+        if (!empty($invalidIndexIds)) {
             Craft::$app->getDb()->createCommand()
                 ->delete(
                     '{{%assettransformindex}}',

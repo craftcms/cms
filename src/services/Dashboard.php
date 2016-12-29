@@ -129,7 +129,7 @@ class Dashboard extends Component
         $widgets = $this->_getUserWidgets();
 
         // If there are no widgets, this is the first time they've hit the dashboard.
-        if (!$widgets) {
+        if (empty($widgets)) {
             // Add the defaults and try again
             $this->_addDefaultUserWidgets();
             $widgets = $this->_getUserWidgets();
@@ -404,7 +404,7 @@ class Dashboard extends Component
     {
         $userId = Craft::$app->getUser()->getIdentity()->id;
 
-        if ($widgetId) {
+        if ($widgetId !== null) {
             $widgetRecord = WidgetRecord::findOne([
                 'id' => $widgetId,
                 'userId' => $userId

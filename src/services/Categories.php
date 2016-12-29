@@ -444,9 +444,9 @@ class Categories extends Component
                     ->ids();
 
                 // Are there any sites left?
-                if ($allSiteSettings) {
+                if (!empty($allSiteSettings)) {
                     // Drop the old category URIs for any site settings that don't have URLs
-                    if ($sitesNowWithoutUrls) {
+                    if (!empty($sitesNowWithoutUrls)) {
                         $db->createCommand()
                             ->update(
                                 '{{%elements_i18n}}',
@@ -456,7 +456,7 @@ class Categories extends Component
                                     'siteId' => $sitesNowWithoutUrls,
                                 ])
                             ->execute();
-                    } else if ($sitesWithNewUriFormats) {
+                    } else if (!empty($sitesWithNewUriFormats)) {
                         foreach ($categoryIds as $categoryId) {
                             Craft::$app->getConfig()->maxPowerCaptain();
 
@@ -647,7 +647,7 @@ class Categories extends Component
     {
         $completeIds = [];
 
-        if ($ids) {
+        if (!empty($ids)) {
             // Make sure that for each selected category, all of its parents are also selected.
             $categoryQuery = Category::find();
             $categoryQuery->id($ids);

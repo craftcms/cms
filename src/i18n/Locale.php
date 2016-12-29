@@ -360,7 +360,7 @@ class Locale extends Object
     public function getDisplayName($inLocale = null)
     {
         // If no target locale is specified, default to this locale
-        if (!$inLocale) {
+        if ($inLocale === null) {
             $inLocale = $this->id;
         }
 
@@ -877,7 +877,7 @@ class Locale extends Object
         Craft::$app->getDeprecator()->log('Locale::getName()', 'Locale::getName() has been deprecated. Use getDisplayName() instead.');
 
         // In Craft 2, getName() with no $targetLocaleId would default to the active language
-        if (!$targetLocaleId) {
+        if ($targetLocaleId === null) {
             $targetLocaleId = Craft::$app->language;
         }
 

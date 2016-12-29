@@ -110,7 +110,7 @@ class DeleteStaleTemplateCaches extends Task
                     ->all();
 
                 // Still no more rows?
-                if (!$this->_batchRows) {
+                if (empty($this->_batchRows)) {
                     $this->_noMoreRows = true;
                 }
             }

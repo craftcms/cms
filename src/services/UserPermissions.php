@@ -269,7 +269,7 @@ class UserPermissions extends Component
 
         $permissions = $this->_filterOrphanedPermissions($permissions);
 
-        if ($permissions) {
+        if (!empty($permissions)) {
             $groupPermissionVals = [];
 
             foreach ($permissions as $permissionName) {
@@ -349,7 +349,7 @@ class UserPermissions extends Component
         $groupPermissions = $this->getGroupPermissionsByUserId($userId);
         $permissions = $this->_filterOrphanedPermissions($permissions, $groupPermissions);
 
-        if ($permissions) {
+        if (!empty($permissions)) {
             $userPermissionVals = [];
 
             foreach ($permissions as $permissionName) {
@@ -542,7 +542,7 @@ class UserPermissions extends Component
     {
         $filteredPermissions = [];
 
-        if ($postedPermissions) {
+        if (!empty($postedPermissions)) {
             foreach ($this->getAllPermissions() as $categoryPermissions) {
                 $this->_findSelectedPermissions($categoryPermissions, $postedPermissions, $groupPermissions, $filteredPermissions);
             }

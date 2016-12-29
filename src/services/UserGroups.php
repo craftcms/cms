@@ -237,7 +237,7 @@ class UserGroups extends Component
      */
     private function _getGroupRecordById($groupId = null)
     {
-        if ($groupId) {
+        if ($groupId !== null) {
             $groupRecord = UserGroupRecord::findOne($groupId);
 
             if (!$groupRecord) {

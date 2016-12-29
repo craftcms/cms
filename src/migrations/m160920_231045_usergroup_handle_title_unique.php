@@ -42,7 +42,7 @@ class m160920_231045_usergroup_handle_title_unique extends Migration
             ->having('count('.$this->db->quoteValue($type).') > '.$this->db->quoteValue('1'))
             ->all();
 
-        if ($duplicates) {
+        if (!empty($duplicates)) {
             echo ' found '.count($duplicates)."\n";
 
             foreach ($duplicates as $duplicate) {
@@ -54,41 +54,35 @@ class m160920_231045_usergroup_handle_title_unique extends Migration
                     ->orderBy(['dateCreated' => SORT_ASC])
                     ->all();
 
-                // Find anything?
-                if ($rows) {
+                // Find more than one?
+                if (count($rows) > 1) {
                     // Skip the first (the earliest created), since presumably it's the good one.
                     unset($rows[0]);
 
-                    if ($rows) {
-                        foreach ($rows as $row) {
-                            $newString = null;
+                    foreach ($rows as $row) {
+                        $newString = null;
 
-                            // Let's give this 100 tries.
-                            for ($counter = 1; $counter <= 100; $counter++) {
-                                if ($type == 'handle') {
-                                    $newString = $duplicate[$type].$counter;
-                                } else {
-                                    $newString = $duplicate[$type].' '.$counter;
-                                }
-
-                                $exists = (new Query())
-                                    ->from(['{{%usergroups}}'])
-                                    ->where([$type => $newString])
-                                    ->exists();
-
-                                // Found a free one.
-                                if (!$exists) {
-                                    break;
-                                }
+                        // Let's give this 100 tries.
+                        for ($counter = 1; $counter <= 100; $counter++) {
+                            if ($type === 'handle') {
+                                $newString = $duplicate[$type].$counter;
+                            } else {
+                                $newString = $duplicate[$type].' '.$counter;
                             }
 
-                            // Let's update with a unique one.
-                            $this->update(
-                                '{{%usergroups}}',
-                                [$type => $newString],
-                                ['id' => $row['id']]
-                            );
+                            $exists = (new Query())
+                                ->from(['{{%usergroups}}'])
+                                ->where([$type => $newString])
+                                ->exists();
+
+                            // Found a free one.
+                            if (!$exists) {
+                                break;
+                            }
                         }
+
+                        // Let's update with a unique one.
+                        $this->update('{{%usergroups}}', [$type => $newString], ['id' => $row['id']]);
                     }
                 }
             }

@@ -165,7 +165,7 @@ class ElementIndexes extends Component
             $pendingHeading = null;
 
             foreach ($settings['sourceOrder'] as list($type, $value)) {
-                if ($type == 'heading') {
+                if ($type === 'heading') {
                     // Queue it up. We'll only add it if a real source follows
                     $pendingHeading = $value;
                 } else if (isset($indexedBaseSources[$value])) {
@@ -183,7 +183,7 @@ class ElementIndexes extends Component
             }
 
             // Append any remaining sources to the end of the list
-            if ($indexedBaseSources) {
+            if (!empty($indexedBaseSources)) {
                 $sources[] = ['heading' => ''];
 
                 foreach ($indexedBaseSources as $source) {

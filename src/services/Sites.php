@@ -439,7 +439,7 @@ class Sites extends Component
                 ->where(['siteId' => $this->getPrimarySite()->id])
                 ->all();
 
-            if ($allSiteSettings) {
+            if (!empty($allSiteSettings)) {
                 $newSiteSettings = [];
 
                 foreach ($allSiteSettings as $siteSettings) {
@@ -589,9 +589,9 @@ class Sites extends Component
         }
 
         // Did we find any?
-        if ($soloSectionIds) {
+        if (!empty($soloSectionIds)) {
             // Should we enable those for a different site?
-            if ($transferContentTo) {
+            if ($transferContentTo !== null) {
                 Craft::$app->getDb()->createCommand()
                     ->update(
                         '{{%sections_i18n}}',
@@ -606,7 +606,7 @@ class Sites extends Component
                     ->where(['sectionId' => $soloSectionIds])
                     ->column();
 
-                if ($entryIds) {
+                if (!empty($entryIds)) {
                     // Delete their template caches
                     Craft::$app->getTemplateCaches()->deleteCachesByElementId($entryIds);
 
@@ -657,7 +657,7 @@ class Sites extends Component
                         ->where(['ownerId' => $entryIds])
                         ->column();
 
-                    if ($blockIds) {
+                    if (!empty($blockIds)) {
                         Craft::$app->getDb()->createCommand()
                             ->update(
                                 '{{%matrixblocks}}',
@@ -796,7 +796,7 @@ class Sites extends Component
 
                 // Check for results because during installation, then transaction
                 // hasn't been committed yet.
-                if ($results) {
+                if (!empty($results)) {
                     foreach ($results as $i => $result) {
                         $site = new Site($result);
                         $this->_sitesById[$site->id] = $site;
@@ -863,14 +863,14 @@ class Sites extends Component
             }
         }
 
-        if ($nonLocalizedElementTypes) {
+        if (!empty($nonLocalizedElementTypes)) {
             $elementIds = (new Query())
                 ->select(['id'])
                 ->from(['{{%elements}}'])
                 ->where(['type' => $nonLocalizedElementTypes])
                 ->column();
 
-            if ($elementIds) {
+            if (!empty($elementIds)) {
                 // To be sure we don't hit any unique constraint database errors, first make sure there are no rows for
                 // these elements that don't currently use the old primary site ID
                 $deleteCondition = [

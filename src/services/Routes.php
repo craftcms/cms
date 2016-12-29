@@ -105,17 +105,17 @@ class Routes extends Component
             ->orderBy(['sortOrder' => SORT_ASC])
             ->all();
 
-        if ($results) {
-            $routes = [];
-
-            foreach ($results as $result) {
-                $routes[$result['uriPattern']] = ['template' => $result['template']];
-            }
-
-            return $routes;
+        if (empty($result)) {
+            return [];
         }
 
-        return [];
+        $routes = [];
+
+        foreach ($results as $result) {
+            $routes[$result['uriPattern']] = ['template' => $result['template']];
+        }
+
+        return $routes;
     }
 
     /**

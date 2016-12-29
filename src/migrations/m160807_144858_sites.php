@@ -574,7 +574,7 @@ class m160807_144858_sites extends Migration
         // Get the individual words
         $localeParts = array_filter(preg_split('/[^a-zA-Z]+/', $locale));
 
-        if ($localeParts) {
+        if (!empty($localeParts)) {
             $language = $localeParts[0].(isset($localeParts[1]) ? '-'.strtoupper($localeParts[1]) : '');
             $allLanguages = Craft::$app->getI18n()->getAllLocaleIds();
 

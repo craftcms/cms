@@ -62,7 +62,7 @@ class Tokens extends Component
         $tokenRecord->token = Craft::$app->getSecurity()->generateRandomString(32);
         $tokenRecord->route = $route;
 
-        if ($usageLimit) {
+        if ($usageLimit !== null) {
             $tokenRecord->usageCount = 0;
             $tokenRecord->usageLimit = $usageLimit;
         }

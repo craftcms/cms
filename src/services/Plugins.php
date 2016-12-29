@@ -835,7 +835,7 @@ class Plugins extends Component
         }
 
         // Validate the license key
-        if ($licenseKey) {
+        if ($licenseKey !== null) {
             // Normalize to just uppercase numbers/letters
             $normalizedLicenseKey = mb_strtoupper($licenseKey);
             $normalizedLicenseKey = preg_replace('/[^A-Z0-9]/', '', $normalizedLicenseKey);

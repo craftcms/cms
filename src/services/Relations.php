@@ -71,7 +71,7 @@ class Relations extends Component
                 ->execute();
 
             // Add the new ones
-            if ($targetIds) {
+            if (!empty($targetIds)) {
                 $values = [];
 
                 if ($field->localizeRelations) {

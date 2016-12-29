@@ -1029,7 +1029,7 @@ class Fields extends Component
             }
         }
 
-        if ($allFieldIds) {
+        if (!empty($allFieldIds)) {
             $allFieldsById = [];
 
             $results = $this->_createFieldQuery()

@@ -940,7 +940,7 @@ class Users extends Component
                 ])
                 ->column();
 
-            if ($userIds) {
+            if (!empty($userIds)) {
                 foreach ($userIds as $userId) {
                     $user = $this->getUserById($userId);
                     Craft::$app->getElements()->deleteElement($user);
@@ -979,7 +979,7 @@ class Users extends Component
                 ->delete('{{%usergroups_users}}', ['userId' => $userId])
                 ->execute();
 
-            if ($groupIds) {
+            if (!empty($groupIds)) {
                 // Add the new ones
                 $values = [];
                 foreach ($groupIds as $groupId) {

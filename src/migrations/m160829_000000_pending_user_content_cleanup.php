@@ -28,7 +28,7 @@ class m160829_000000_pending_user_content_cleanup extends Migration
             ])
             ->column();
 
-        if ($ids) {
+        if (!empty($ids)) {
             Craft::info('Found '.count($ids).' orphaned element IDs in the elements table: '.implode(', ', $ids));
 
             // Delete 'em

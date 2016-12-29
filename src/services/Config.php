@@ -177,26 +177,24 @@ class Config extends Component
     {
         $value = $this->get($item, $category);
 
-        if (is_array($value)) {
-            if (!$siteHandle) {
-                $siteHandle = Craft::$app->getSites()->currentSite->handle;
-            }
+        if (!is_array($value)) {
+            return $value;
+        }
 
-            if (isset($value[$siteHandle])) {
-                return $value[$siteHandle];
-            }
-
-            if ($value) {
-                // Just return the first value
-                $keys = array_keys($value);
-
-                return $value[$keys[0]];
-            }
-
+        if (empty($value)) {
             return null;
         }
 
-        return $value;
+        if ($siteHandle === null) {
+            $siteHandle = Craft::$app->getSites()->currentSite->handle;
+        }
+
+        if (isset($value[$siteHandle])) {
+            return $value[$siteHandle];
+        }
+
+        // Just return the first value
+        return ArrayHelper::firstValue($value);
     }
 
     /**

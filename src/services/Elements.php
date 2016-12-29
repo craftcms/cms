@@ -184,7 +184,7 @@ class Elements extends Component
             $uri = '__home__';
         }
 
-        if (!$siteId) {
+        if ($siteId === null) {
             $siteId = Craft::$app->getSites()->currentSite->id;
         }
 
@@ -422,7 +422,7 @@ class Elements extends Component
 
             $supportedSites = ElementHelper::supportedSitesForElement($element);
 
-            if (!$supportedSites) {
+            if (empty($supportedSites)) {
                 throw new Exception('All elements must have at least one site associated with them.');
             }
 
@@ -730,7 +730,7 @@ class Elements extends Component
         if ($asTask) {
             $childIds = $query->ids();
 
-            if ($childIds) {
+            if (!empty($childIds)) {
                 Craft::$app->getTasks()->queueTask([
                     'type' => UpdateElementSlugsAndUris::class,
                     'elementId' => $childIds,
@@ -1095,7 +1095,7 @@ class Elements extends Component
                     return $token;
                 }, $str);
 
-            if ($refTagsByElementHandle) {
+            if (!empty($refTagsByElementHandle)) {
                 $search = [];
                 $replace = [];
 
@@ -1104,7 +1104,7 @@ class Elements extends Component
                 foreach ($refTagsByElementHandle as $elementTypeHandle => $refTags) {
                     $elementType = $this->getElementTypeByHandle($elementTypeHandle);
 
-                    if (!$elementType) {
+                    if ($elementType === null) {
                         // Just put the ref tags back the way they were
                         foreach ($refTags as $refTag) {
                             $search[] = $refTag['token'];
@@ -1127,7 +1127,7 @@ class Elements extends Component
                         foreach ($things as $thing) {
                             $refTagsByThing = $thing === 'id' ? $refTagsById : $refTagsByRef;
 
-                            if ($refTagsByThing) {
+                            if (!empty($refTagsByThing)) {
                                 /** @var Element|string $elementType */
                                 $elementQuery = $elementType::find();
                                 $elementQuery->status(null);
@@ -1242,7 +1242,7 @@ class Elements extends Component
     public function eagerLoadElements($elementType, $elements, $with)
     {
         // Bail if there aren't even any elements
-        if (!$elements) {
+        if (empty($elements)) {
             return;
         }
 
@@ -1322,7 +1322,7 @@ class Elements extends Component
                         /** @var Element[] $targetElements */
                         $targetElements = $query->all();
 
-                        if ($targetElements) {
+                        if (!empty($targetElements)) {
                             // Success! Store those elements on $elementsByPath FFR
                             $elementsByPath[$targetPath] = $targetElements;
 

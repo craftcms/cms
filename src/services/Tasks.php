@@ -382,7 +382,7 @@ class Tasks extends Component
             }
         }
 
-        if ($error && is_string($error)) {
+        if (is_string($error)) {
             $logMessage .= ': '.$error;
         } else {
             $logMessage .= '.';
@@ -490,7 +490,7 @@ class Tasks extends Component
                 'status' => Task::STATUS_PENDING
             ]);
 
-        if ($type) {
+        if ($type !== null) {
             $query->andWhere(['type' => $type]);
         }
 
@@ -510,11 +510,11 @@ class Tasks extends Component
         $query = $this->_createTaskQuery()
             ->where(['lft' => 1, 'status' => Task::STATUS_PENDING]);
 
-        if ($type) {
+        if ($type !== null) {
             $query->andWhere(['type' => $type]);
         }
 
-        if ($limit) {
+        if ($limit !== null) {
             $query->limit($limit);
         }
 
@@ -565,10 +565,10 @@ class Tasks extends Component
     public function getNextPendingTask($type = null)
     {
         // If a type was passed, we don't need to actually save it, as it's probably not an actual task-running request.
-        if ($type) {
+        if ($type !== null) {
             $pendingTasks = $this->getPendingTasks($type, 1);
 
-            if ($pendingTasks) {
+            if (!empty($pendingTasks)) {
                 return $pendingTasks[0];
             }
         } else {

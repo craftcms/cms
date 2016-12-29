@@ -368,7 +368,7 @@ class Formatter extends \yii\i18n\Formatter
             $tr['a'] = '\''.$this->$amPmName.'\'';
         }
 
-        if ($tr) {
+        if (!empty($tr)) {
             $format = strtr($format, $tr);
         }
 

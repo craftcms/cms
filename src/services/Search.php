@@ -164,11 +164,11 @@ class Search extends Component
         // Get where clause from tokens, bail out if no valid query is there
         $where = $this->_getWhereClause($siteId);
 
-        if (!$where) {
+        if ($where === false || empty($where)) {
             return [];
         }
 
-        if ($siteId) {
+        if ($siteId !== null) {
             $where .= sprintf(' AND %s = %s', Craft::$app->getDb()->quoteColumnName('siteId'), Craft::$app->getDb()->quoteValue($siteId));
         }
 
@@ -176,7 +176,7 @@ class Search extends Component
         $sql = sprintf('SELECT * FROM %s WHERE %s', Craft::$app->getDb()->quoteTableName('{{%searchindex}}'), $where);
 
         // Append elementIds to QSL
-        if ($elementIds) {
+        if (!empty($elementIds)) {
             $sql .= sprintf(' AND %s IN (%s)',
                 Craft::$app->getDb()->quoteColumnName('elementId'),
                 implode(',', $elementIds)
@@ -251,7 +251,7 @@ class Search extends Component
     {
         $attribute = StringHelper::toLowerCase($attribute);
 
-        if (!$siteId) {
+        if ($siteId === null) {
             $siteId = Craft::$app->getSites()->getPrimarySite()->id;
         }
 
@@ -275,7 +275,7 @@ class Search extends Component
 
         $maxDbColumnSize = Db::getTextualColumnStorageCapacity(ColumnType::Text);
 
-        if ($maxDbColumnSize) {
+        if ($maxDbColumnSize !== null) {
             // Give ourselves 10% wiggle room.
             $maxDbColumnSize = ceil($maxDbColumnSize * 0.9);
 
@@ -409,7 +409,7 @@ class Search extends Component
         $where = [];
 
         // Add the regular terms to the WHERE clause
-        if ($this->_terms) {
+        if (!empty($this->_terms)) {
             $condition = $this->_processTokens($this->_terms, true, $siteId);
 
             if ($condition === false) {
@@ -462,7 +462,7 @@ class Search extends Component
             if ($sql) {
                 $where[] = $sql;
             } // No SQL but keywords, save them for later
-            else if ($keywords) {
+            else if ($keywords !== null && $keywords !== '') {
                 if ($inclusive) {
                     if (Craft::$app->getDb()->getDriverName() === Connection::DRIVER_MYSQL) {
                         $keywords = '+'.$keywords;
@@ -474,7 +474,7 @@ class Search extends Component
         }
 
         // If we collected full-text words, combine them into one
-        if ($words) {
+        if (!empty($words)) {
             $where[] = $this->_sqlFullText($words, true, $andOr);
         }
 
@@ -570,7 +570,7 @@ class Search extends Component
                         }
 
                         // Only create an SQL clause if there's a subselect. Otherwise, return the keywords.
-                        if ($subSelect) {
+                        if ($subSelect !== null) {
                             // If there is a subselect, create the full text SQL bit
                             $sql = $this->_sqlFullText($keywords);
                         }
@@ -599,7 +599,7 @@ class Search extends Component
         }
 
         // If we have a where clause in the subselect, add the keyword bit to it.
-        if ($subSelect && $sql) {
+        if ($subSelect !== null && $sql !== null) {
             $sql = $this->_sqlSubSelect($subSelect.' AND '.$sql, $siteId);
 
             // We need to reset keywords even if the subselect ended up in no results.
@@ -716,13 +716,13 @@ class Search extends Component
             ->from(['{{%searchindex}}'])
             ->where($where);
 
-        if ($siteId) {
+        if ($siteId !== null) {
             $query->andWhere(['siteId' => $siteId]);
         }
 
         $elementIds = $query->column();
 
-        if ($elementIds) {
+        if (!empty($elementIds)) {
             return Craft::$app->getDb()->quoteColumnName('elementId').' IN ('.implode(', ', $elementIds).')';
         }
 
