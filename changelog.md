@@ -3,6 +3,10 @@ Craft CMS Changelog
 
 ## Unreleased
 
+### Changed
+- Updated jQuery to 2.2.4, which fixes a [potential XSS vulnerability](https://github.com/jquery/jquery/issues/2432).
+- Updated jQuery UI to 1.12.1.
+
 ## 2.6.2956 - 2016-12-28
 
 ### Changed
