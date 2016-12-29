@@ -42,11 +42,11 @@ class Template
             $limit = $total;
         }
 
-        $totalPages = ceil($total / $limit);
+        $totalPages = (int)ceil($total / $limit);
 
         $paginateVariable = new Paginate();
 
-        if ($totalPages == 0) {
+        if ($totalPages === 0) {
             return [$paginateVariable, []];
         }
 
@@ -69,7 +69,7 @@ class Template
 
         $paginateVariable->first = $offset + 1;
         $paginateVariable->last = $last;
-        $paginateVariable->total = $total;
+        $paginateVariable->total = (int)$total;
         $paginateVariable->currentPage = $currentPage;
         $paginateVariable->totalPages = $totalPages;
 

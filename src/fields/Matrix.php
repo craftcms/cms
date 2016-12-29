@@ -117,7 +117,7 @@ class Matrix extends Field implements EagerLoadingFieldInterface
                 $this->_blockTypes[] = $config;
             } else {
                 $blockType = new MatrixBlockType();
-                $blockType->id = $key;
+                $blockType->id = (int) $key;
                 $blockType->fieldId = $this->id;
                 $blockType->name = $config['name'];
                 $blockType->handle = $config['handle'];
@@ -221,6 +221,7 @@ class Matrix extends Field implements EagerLoadingFieldInterface
         foreach ($this->getBlockTypes() as $blockType) {
             /** @var Field[] $blockTypeFields */
             $blockTypeFields = $blockType->getFields();
+
             foreach ($blockTypeFields as $i => $field) {
                 if ($field instanceof MissingField) {
                     $blockTypeFields[$i] = $field->createFallback(PlainText::class);
@@ -230,6 +231,7 @@ class Matrix extends Field implements EagerLoadingFieldInterface
                     $blockType->hasFieldErrors = true;
                 }
             }
+
             $blockType->setFields($blockTypeFields);
         }
 

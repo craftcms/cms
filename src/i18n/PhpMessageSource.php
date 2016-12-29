@@ -8,6 +8,7 @@
 namespace craft\i18n;
 
 use Craft;
+use yii\base\Exception;
 
 /**
  * Class PhpMessageSource
@@ -53,18 +54,26 @@ class PhpMessageSource extends \yii\i18n\PhpMessageSource
      * @param string $language
      *
      * @return array|null
+     * @throws Exception
      */
     private function _loadOverrideMessages($category, $language)
     {
-        $basePath = $this->basePath;
-        $this->basePath = Craft::getAlias('@translations');
+        // Save the current base path to restore later.
+        $oldBasePath = $this->basePath;
+        $newBasePath = Craft::getAlias('@translations');
+
+        if ($newBasePath === false) {
+            throw new Exception('There was a problem getting the translations path.');
+        }
+
+        $this->basePath = $newBasePath;
 
         // Code adapted from yii\i18n\PhpMessageSource, minus the error logging
         $messageFile = $this->getMessageFilePath($category, $language);
         $messages = $this->loadMessagesFromFile($messageFile);
 
         $fallbackLanguage = substr($language, 0, 2);
-        if ($fallbackLanguage != $language) {
+        if ($fallbackLanguage !== $language) {
             $fallbackMessageFile = $this->getMessageFilePath($category, $fallbackLanguage);
             $fallbackMessages = $this->loadMessagesFromFile($fallbackMessageFile);
 
@@ -79,7 +88,7 @@ class PhpMessageSource extends \yii\i18n\PhpMessageSource
             }
         }
 
-        $this->basePath = $basePath;
+        $this->basePath = $oldBasePath;
 
         return (array)$messages;
     }

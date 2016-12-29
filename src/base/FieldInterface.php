@@ -247,7 +247,7 @@ interface FieldInterface extends SavableComponentInterface
     /**
      * Sets whether the field is fresh.
      *
-     * @param boolean $isFresh Whether the field is fresh.
+     * @param boolean|null $isFresh Whether the field is fresh.
      */
     public function setIsFresh($isFresh);
 
