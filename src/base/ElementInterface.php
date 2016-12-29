@@ -513,14 +513,14 @@ interface ElementInterface extends ComponentInterface
     /**
      * Returns the ID of the structure that the element is associated with, if any.
      *
-     * @return integer|null The ID of the structure, or null if there isn’t one
+     * @return integer|null|false The ID of the structure, or null if there isn’t one
      */
     public function getStructureId();
 
     /**
      * Sets the ID of the structure that the element is associated with.
      *
-     * @param integer|null $structureId The ID of the structure, or null to remove the previous association.
+     * @param integer|null|false $structureId The ID of the structure, or null to remove the previous association.
      */
     public function setStructureId($structureId);
 
