@@ -105,7 +105,7 @@ class Routes extends Component
             ->orderBy(['sortOrder' => SORT_ASC])
             ->all();
 
-        if (empty($result)) {
+        if (empty($results)) {
             return [];
         }
 

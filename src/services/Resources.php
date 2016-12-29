@@ -68,14 +68,14 @@ class Resources extends Component
     /**
      * Caches a file system path for a given resource.
      *
-     * @param string $uri
-     * @param string $path
+     * @param string       $uri
+     * @param string|false $path
      *
      * @return void
      */
     public function cacheResourcePath($uri, $path)
     {
-        if (!$path) {
+        if ($path === false) {
             $path = ':(';
         }
 
