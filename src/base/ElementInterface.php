@@ -196,7 +196,7 @@ interface ElementInterface extends ComponentInterface
      * You can customize the database query condition that should be applied for your custom statuses from
      * [[getElementQueryStatusCondition()]].
      *
-     * @return string[]|null
+     * @return array|null
      * @see hasStatuses()
      */
     public static function statuses();
@@ -580,7 +580,7 @@ interface ElementInterface extends ComponentInterface
     /**
      * Returns the total number of descendants that the element has.
      *
-     * @return boolean
+     * @return integer
      */
     public function getTotalDescendants();
 

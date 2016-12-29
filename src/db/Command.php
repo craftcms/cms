@@ -65,7 +65,7 @@ class Command extends \yii\db\Command
      */
     public function batchInsert($table, $columns, $rows, $includeAuditColumns = true)
     {
-        if (!$rows) {
+        if (empty($rows)) {
             return $this;
         }
 

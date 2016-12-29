@@ -475,7 +475,7 @@ class StringHelper extends \yii\helpers\StringHelper
     {
         $words = self::_prepStringForCasing($string);
 
-        if (!$words) {
+        if (empty($words)) {
             return '';
         }
 

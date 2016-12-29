@@ -106,7 +106,7 @@ class PositionSelect extends Field
         $id = Craft::$app->getView()->formatInputId($this->handle);
         Craft::$app->getView()->registerJs('new PositionSelectInput("'.Craft::$app->getView()->namespaceInputId($id).'");');
 
-        if (!$value && $this->options) {
+        if (!$value && !empty($this->options)) {
             $value = $this->options[0];
         }
 

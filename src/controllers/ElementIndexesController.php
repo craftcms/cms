@@ -150,7 +150,7 @@ class ElementIndexesController extends BaseElementsController
         $elementIds = $requestService->getRequiredBodyParam('elementIds');
 
         // Find that action from the list of available actions for the source
-        if ($this->_actions) {
+        if (!empty($this->_actions)) {
             /** @var ElementAction $availableAction */
             foreach ($this->_actions as $availableAction) {
                 if ($actionClass === get_class($availableAction)) {
@@ -322,7 +322,7 @@ class ElementIndexesController extends BaseElementsController
                 ->positionedBefore(null)
                 ->all();
 
-            if ($collapsedElements) {
+            if (!empty($collapsedElements)) {
                 $descendantIds = [];
 
                 $descendantQuery = clone $query;
@@ -345,7 +345,7 @@ class ElementIndexesController extends BaseElementsController
                     }
                 }
 
-                if ($descendantIds) {
+                if (!empty($descendantIds)) {
                     $query->andWhere(['not', ['element.id' => $descendantIds]]);
                 }
             }
@@ -435,23 +435,23 @@ class ElementIndexesController extends BaseElementsController
      */
     private function _getActionData()
     {
-        if ($this->_actions) {
-            $actionData = [];
-
-            /** @var ElementAction $action */
-            foreach ($this->_actions as $action) {
-                $actionData[] = [
-                    'type' => get_class($action),
-                    'destructive' => $action->isDestructive(),
-                    'name' => $action->getTriggerLabel(),
-                    'trigger' => $action->getTriggerHtml(),
-                    'confirm' => $action->getConfirmationMessage(),
-                ];
-            }
-
-            return $actionData;
+        if (empty($this->_actions)) {
+            return null;
         }
 
-        return null;
+        $actionData = [];
+
+        /** @var ElementAction $action */
+        foreach ($this->_actions as $action) {
+            $actionData[] = [
+                'type' => get_class($action),
+                'destructive' => $action->isDestructive(),
+                'name' => $action->getTriggerLabel(),
+                'trigger' => $action->getTriggerHtml(),
+                'confirm' => $action->getConfirmationMessage(),
+            ];
+        }
+
+        return $actionData;
     }
 }

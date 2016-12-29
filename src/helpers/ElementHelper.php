@@ -85,7 +85,7 @@ class ElementHelper
         $uriFormat = $element->getUriFormat();
 
         // No URL format, no URI.
-        if (!$uriFormat) {
+        if ($uriFormat === null) {
             $element->uri = null;
 
             return;
@@ -304,7 +304,7 @@ class ElementHelper
         $path = explode('/', $sourceKey);
         $sources = $elementType::sources($context);
 
-        while ($path) {
+        while (!empty($path)) {
             $key = array_shift($path);
             $source = null;
 
@@ -320,7 +320,7 @@ class ElementHelper
             }
 
             // Is that the end of the path?
-            if (!$path) {
+            if (empty($path)) {
                 return $source;
             }
 

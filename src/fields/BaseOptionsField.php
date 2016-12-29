@@ -108,7 +108,7 @@ abstract class BaseOptionsField extends Field implements PreviewableFieldInterfa
      */
     public function getSettingsHtml()
     {
-        if (!$this->options) {
+        if (empty($this->options)) {
             // Give it a default row
             $this->options = [['label' => '', 'value' => '']];
         }

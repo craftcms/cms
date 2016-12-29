@@ -223,7 +223,7 @@ class Assets extends BaseRelationField
         $value = $element->getFieldValue($this->handle);
 
         // Check if this field restricts files and if files are passed at all.
-        if ($this->restrictFiles && $this->allowedKinds && is_array($value) && !empty($value)) {
+        if ($this->restrictFiles && !empty($this->allowedKinds) && is_array($value) && !empty($value)) {
             $allowedExtensions = $this->_getAllowedExtensions();
 
             foreach ($value as $assetId) {
@@ -344,7 +344,7 @@ class Assets extends BaseRelationField
         // See if we have uploaded file(s).
         $contentPostLocation = $this->getRequestParamName($element);
 
-        if ($contentPostLocation) {
+        if ($contentPostLocation !== null) {
             $files = UploadedFile::getInstancesByName($contentPostLocation);
 
             foreach ($files as $file) {
@@ -356,7 +356,7 @@ class Assets extends BaseRelationField
             }
         }
 
-        if ($this->restrictFiles && $this->allowedKinds) {
+        if ($this->restrictFiles && !empty($this->allowedKinds)) {
             $allowedExtensions = $this->_getAllowedExtensions();
         } else {
             $allowedExtensions = false;
@@ -538,7 +538,7 @@ class Assets extends BaseRelationField
     protected function getInputSelectionCriteria()
     {
         return [
-            'kind' => ($this->restrictFiles && $this->allowedKinds) ? $this->allowedKinds : [],
+            'kind' => ($this->restrictFiles && !empty($this->allowedKinds)) ? $this->allowedKinds : [],
         ];
     }
 

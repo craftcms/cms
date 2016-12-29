@@ -113,7 +113,7 @@ class DashboardController extends Controller
                 'function(){'.$info['settingsJs'].'}'.
                 ");\n";
 
-            if ($widgetJs) {
+            if (!empty($widgetJs)) {
                 // Allow any widget JS to execute *after* we've created the Craft.Widget instance
                 $allWidgetJs .= $widgetJs."\n";
             }
@@ -333,7 +333,7 @@ class DashboardController extends Controller
         /** @var Plugin[] $plugins */
         $plugins = Craft::$app->getPlugins()->getAllPlugins();
 
-        if ($plugins) {
+        if (!empty($plugins)) {
             $pluginNames = [];
 
             foreach ($plugins as $plugin) {
@@ -511,7 +511,7 @@ class DashboardController extends Controller
         // Get the body HTML
         $widgetBodyHtml = $widget->getBodyHtml();
 
-        if (!$widgetBodyHtml) {
+        if ($widgetBodyHtml === false) {
             return false;
         }
 
@@ -553,7 +553,7 @@ class DashboardController extends Controller
     {
         $iconPath = $widget->getIconPath();
 
-        if (!$iconPath) {
+        if ($iconPath === null) {
             return $this->_getDefaultWidgetIconSvg($widget);
         }
 

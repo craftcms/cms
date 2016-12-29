@@ -168,7 +168,7 @@ class ElementsController extends BaseElementsController
         // Fill in the gaps
         $categoryIds = Craft::$app->getCategories()->fillGapsInCategoryIds($categoryIds);
 
-        if ($categoryIds) {
+        if (!empty($categoryIds)) {
             /** @var CategoryQuery $categoryQuery */
             $categoryQuery = Category::find()
                 ->id($categoryIds)
@@ -309,7 +309,7 @@ class ElementsController extends BaseElementsController
         /** @var Element $element */
         $siteIds = ElementHelper::editableSiteIdsForElement($element);
 
-        if (!$siteIds) {
+        if (empty($siteIds)) {
             throw new ForbiddenHttpException('User not permitted to edit content in any of the sites supported by this element');
         }
 

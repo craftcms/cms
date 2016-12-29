@@ -340,7 +340,7 @@ abstract class Element extends Component implements ElementInterface
         } else {
             $sortableAttributes = static::sortableAttributes();
 
-            if ($sortableAttributes) {
+            if (!empty($sortableAttributes)) {
                 $order = (!empty($viewState['order']) && isset($sortableAttributes[$viewState['order']])) ? $viewState['order'] : ArrayHelper::firstKey($sortableAttributes);
                 $sort = (!empty($viewState['sort']) && in_array($viewState['sort'], ['asc', 'desc'], true)) ? $viewState['sort'] : 'asc';
 
@@ -1793,7 +1793,7 @@ abstract class Element extends Component implements ElementInterface
             case 'link':
                 $url = $this->getUrl();
 
-                if ($url) {
+                if ($url !== null) {
                     return '<a href="'.$url.'" target="_blank" data-icon="world" title="'.Craft::t('app', 'Visit webpage').'"></a>';
                 }
 
@@ -1802,7 +1802,7 @@ abstract class Element extends Component implements ElementInterface
             case 'uri':
                 $url = $this->getUrl();
 
-                if ($url) {
+                if ($url !== null) {
                     $value = $this->uri;
 
                     if ($value === '__home__') {

@@ -107,7 +107,7 @@ class Image
             file_get_contents($file, 0, null, 0, 29)
         );
 
-        if (!$info) {
+        if (empty($info)) {
             return false;
         }
 

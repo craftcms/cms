@@ -73,8 +73,7 @@ class Feeds extends Component
 
         // See if we have this cached already.
         if (Craft::$app->getCache()->get($key) === false) {
-
-            if (!$cacheDuration) {
+            if ($cacheDuration === null) {
                 /** @noinspection CallableParameterUseCaseInTypeContextInspection */
                 $cacheDuration = Craft::$app->getConfig()->getCacheDuration();
             } else {
@@ -155,7 +154,7 @@ class Feeds extends Component
     {
         $authors = [];
 
-        if ($objects) {
+        if (!empty($objects)) {
             foreach ($objects as $object) {
                 $authors[] = [
                     'name' => isset($object['name']) ? $object['name'] : '',
@@ -179,7 +178,7 @@ class Feeds extends Component
     {
         $categories = [];
 
-        if ($objects) {
+        if (!empty($objects)) {
             foreach ($objects as $object) {
                 $categories[] = [
                     'term' => isset($object['term']) ? $object['term'] : '',

@@ -165,7 +165,7 @@ class UrlHelper
                 $path = static::urlWithParams($path, $params);
             }
 
-            if ($protocol) {
+            if ($protocol !== null) {
                 $path = static::urlWithProtocol($path, $protocol);
             }
 
@@ -184,7 +184,7 @@ class UrlHelper
         }
 
         // Send all resources over SSL if this request is loaded over SSL.
-        if (!$protocol && !$request->getIsConsoleRequest() && $request->getIsSecureConnection()) {
+        if ($protocol === null && !$request->getIsConsoleRequest() && $request->getIsSecureConnection()) {
             $protocol = 'https';
         }
 
@@ -359,7 +359,7 @@ class UrlHelper
         $scheme = parse_url(static::baseUrl(), PHP_URL_SCHEME);
 
         $request = Craft::$app->getRequest();
-        if (($scheme && strtolower($scheme) == 'https') || (!$request->getIsConsoleRequest() && $request->getIsSecureConnection())) {
+        if (($scheme !== false && strtolower($scheme) === 'https') || (!$request->getIsConsoleRequest() && $request->getIsSecureConnection())) {
             return 'https';
         }
 
@@ -429,7 +429,7 @@ class UrlHelper
                 // Make sure it ends in a slash
                 $baseUrl = StringHelper::ensureRight($baseUrl, '/');
 
-                if ($protocol) {
+                if ($protocol !== null) {
                     // Make sure we're using the right protocol
                     $baseUrl = static::urlWithProtocol($baseUrl, $protocol);
                 }
@@ -448,7 +448,7 @@ class UrlHelper
                     $baseUrl .= $request->getBaseUrl();
                 }
 
-                if ($protocol) {
+                if ($protocol !== null) {
                     $baseUrl = static::urlWithProtocol($baseUrl, $protocol);
                 }
             }

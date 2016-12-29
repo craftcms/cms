@@ -33,6 +33,7 @@ use yii\base\Arrayable;
 use yii\base\ArrayableTrait;
 use yii\base\Exception;
 use yii\base\NotSupportedException;
+use yii\db\Expression;
 
 /**
  * ElementQuery represents a SELECT SQL statement for elements in a way that is independent of DBMS.
@@ -854,7 +855,7 @@ class ElementQuery extends Query implements ElementQueryInterface, Arrayable, Co
             throw new QueryAbortedException();
         }
 
-        if (!$this->select) {
+        if (empty($this->select)) {
             $this->query->addSelect([
                 'elements.id',
                 'elements.uid',
@@ -886,7 +887,7 @@ class ElementQuery extends Query implements ElementQueryInterface, Arrayable, Co
             ->limit($this->limit)
             ->addParams($this->params);
 
-        if ($class::hasContent() && $this->contentTable) {
+        if ($class::hasContent() && $this->contentTable !== null) {
             $this->customFields = $this->customFields();
             $this->_joinContentTable($class);
         } else {
@@ -938,7 +939,7 @@ class ElementQuery extends Query implements ElementQueryInterface, Arrayable, Co
         $this->_applyOrderByParams($builder->db);
 
         // If the select clause has been explicitly defined, go with that.
-        if ($this->select) {
+        if (!empty($this->select)) {
             $this->query->select($this->select);
         }
 
@@ -1271,7 +1272,7 @@ class ElementQuery extends Query implements ElementQueryInterface, Arrayable, Co
      *
      * @param string $status The status
      *
-     * @return mixed|false The status condition, or false if $status is an unsupported status
+     * @return string|array|Expression|false The status condition, or false if $status is an unsupported status
      */
     protected function statusCondition($status)
     {
@@ -1386,7 +1387,7 @@ class ElementQuery extends Query implements ElementQueryInterface, Arrayable, Co
                 throw new QueryAbortedException('Unsupported status: '.$status);
             }
 
-            if ($statusCondition) {
+            if (!empty($statusCondition)) {
                 $condition[] = $statusCondition;
             }
         }
@@ -1608,7 +1609,7 @@ class ElementQuery extends Query implements ElementQueryInterface, Arrayable, Co
             $this->subQuery->offset = $subOffset;
 
             // No results?
-            if (!$searchResults) {
+            if (empty($searchResults)) {
                 throw new QueryAbortedException();
             }
 
@@ -1647,7 +1648,7 @@ class ElementQuery extends Query implements ElementQueryInterface, Arrayable, Co
             if ($this->fixedOrder) {
                 $ids = ArrayHelper::toArray($this->id);
 
-                if (!$ids) {
+                if (empty($ids)) {
                     throw new QueryAbortedException;
                 }
 
@@ -1794,11 +1795,11 @@ class ElementQuery extends Query implements ElementQueryInterface, Arrayable, Co
             $row['structureId'] = $this->structureId;
         }
 
-        if ($class::hasContent() && $this->contentTable) {
+        if ($class::hasContent() && $this->contentTable !== null) {
             // Separate the content values from the main element attributes
             $fieldValues = [];
 
-            if ($this->customFields) {
+            if (!empty($this->customFields)) {
                 foreach ($this->customFields as $field) {
                     /** @var Field $field */
                     if ($field->hasContentColumn()) {

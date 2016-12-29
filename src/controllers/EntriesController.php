@@ -73,7 +73,7 @@ class EntriesController extends BaseEntriesController
             'entry' => $entry
         ];
 
-        if ($siteHandle) {
+        if ($siteHandle !== null) {
             $variables['site'] = Craft::$app->getSites()->getSiteByHandle($siteHandle);
 
             if (!$variables['site']) {
@@ -163,7 +163,7 @@ class EntriesController extends BaseEntriesController
                 } else {
                     $parentIds = $entry->getAncestors(1)->status(null)->enabledForSite(false)->ids();
 
-                    if ($parentIds) {
+                    if (!empty($parentIds)) {
                         $parentId = $parentIds[0];
                     }
                 }
@@ -563,7 +563,7 @@ class EntriesController extends BaseEntriesController
      */
     public function actionShareEntry($entryId = null, $siteId = null, $draftId = null, $versionId = null)
     {
-        if ($entryId) {
+        if ($entryId !== null) {
             $entry = Craft::$app->getEntries()->getEntryById($entryId, $siteId);
 
             if (!$entry) {
@@ -571,7 +571,7 @@ class EntriesController extends BaseEntriesController
             }
 
             $params = ['entryId' => $entryId, 'siteId' => $entry->siteId];
-        } else if ($draftId) {
+        } else if ($draftId !== null) {
             $entry = Craft::$app->getEntryRevisions()->getDraftById($draftId);
 
             if (!$entry) {
@@ -579,7 +579,7 @@ class EntriesController extends BaseEntriesController
             }
 
             $params = ['draftId' => $draftId];
-        } else if ($versionId) {
+        } else if ($versionId !== null) {
             $entry = Craft::$app->getEntryRevisions()->getVersionById($versionId);
 
             if (!$entry) {
@@ -629,11 +629,11 @@ class EntriesController extends BaseEntriesController
     {
         $this->requireToken();
 
-        if ($entryId) {
+        if ($entryId !== null) {
             $entry = Craft::$app->getEntries()->getEntryById($entryId, $siteId);
-        } else if ($draftId) {
+        } else if ($draftId !== null) {
             $entry = Craft::$app->getEntryRevisions()->getDraftById($draftId);
-        } else if ($versionId) {
+        } else if ($versionId !== null) {
             $entry = Craft::$app->getEntryRevisions()->getVersionById($versionId);
         }
 

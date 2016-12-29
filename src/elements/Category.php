@@ -479,7 +479,7 @@ class Category extends Element
                 }
             }
 
-            if ($newRelationValues) {
+            if (!empty($newRelationValues)) {
                 Craft::$app->getDb()->createCommand()
                     ->batchInsert(
                         '{{%relations}}',

@@ -161,7 +161,7 @@ class Query extends \yii\db\Query
      */
     public function scalar($column = null, $db = null)
     {
-        if ($column) {
+        if ($column !== null) {
             $select = $this->select;
             $this->select = [$column];
         }
@@ -172,7 +172,7 @@ class Query extends \yii\db\Query
             $result = false;
         }
 
-        if ($column) {
+        if ($column !== null) {
             /** @noinspection PhpUndefinedVariableInspection */
             $this->select = $select;
         }
@@ -189,7 +189,7 @@ class Query extends \yii\db\Query
      */
     public function column($column = null, $db = null)
     {
-        if ($column) {
+        if ($column !== null) {
             $select = $this->select;
             $this->select = [$column];
         }
@@ -200,7 +200,7 @@ class Query extends \yii\db\Query
             $result = [];
         }
 
-        if ($column) {
+        if ($column !== null) {
             /** @noinspection PhpUndefinedVariableInspection */
             $this->select = $select;
         }

@@ -307,7 +307,7 @@ EOD;
 
         $md5 = Craft::$app->getSecurity()->validateData($data['md5']);
 
-        if (!$md5) {
+        if ($md5 === false) {
             throw new UpdateValidationException('Could not validate MD5.');
         }
 
@@ -358,7 +358,7 @@ EOD;
 
         $uid = Craft::$app->getSecurity()->validateData($data['uid']);
 
-        if (!$uid) {
+        if ($uid === false) {
             throw new UpdateValidationException('Could not validate UID.');
         }
 
@@ -404,7 +404,7 @@ EOD;
 
         $uid = Craft::$app->getSecurity()->validateData($data['uid']);
 
-        if (!$uid) {
+        if ($uid === false) {
             throw new UpdateValidationException('Could not validate UID.');
         }
 
@@ -528,7 +528,7 @@ EOD;
         } else {
             $uid = Craft::$app->getSecurity()->validateData($data['uid']);
 
-            if (!$uid) {
+            if ($uid === false) {
                 throw new UpdateValidationException('Could not validate UID.');
             }
         }
@@ -547,7 +547,7 @@ EOD;
         Craft::$app->getUpdates()->updateCleanUp($uid, $handle);
 
         // New major Craft CMS version?
-        if ($handle == 'craft' && $oldVersion && App::majorVersion($oldVersion) < App::majorVersion(Craft::$app->version)) {
+        if ($handle == 'craft' && $oldVersion !== false && App::majorVersion($oldVersion) < App::majorVersion(Craft::$app->version)) {
             $returnUrl = UrlHelper::url('whats-new');
         } else {
             $returnUrl = Craft::$app->getConfig()->get('postCpLoginRedirect');
@@ -579,7 +579,7 @@ EOD;
         } else {
             $uid = Craft::$app->getSecurity()->validateData($data['uid']);
 
-            if (!$uid) {
+            if ($uid === false) {
                 throw new UpdateValidationException('Could not validate UID.');
             }
         }

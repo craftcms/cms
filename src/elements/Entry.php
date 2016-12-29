@@ -151,7 +151,7 @@ class Entry extends Element
             ]
         ];
 
-        if ($singleSectionIds) {
+        if (!empty($singleSectionIds)) {
             $sources[] = [
                 'key' => 'singles',
                 'label' => Craft::t('app', 'Singles'),
@@ -722,7 +722,7 @@ class Entry extends Element
             $postDate = $this->postDate->getTimestamp();
             $expiryDate = ($this->expiryDate ? $this->expiryDate->getTimestamp() : null);
 
-            if ($postDate <= $currentTime && (!$expiryDate || $expiryDate > $currentTime)) {
+            if ($postDate <= $currentTime && ($expiryDate === null || $expiryDate > $currentTime)) {
                 return self::STATUS_LIVE;
             }
 

@@ -64,7 +64,7 @@ class Table extends Field
         $columns = $this->columns;
         $defaults = $this->defaults;
 
-        if (!$columns) {
+        if (empty($columns)) {
             $columns = [
                 'col1' => [
                     'heading' => '',
@@ -176,7 +176,7 @@ class Table extends Field
             $value = Json::decode($value);
         }
 
-        if (is_array($value) && $this->columns) {
+        if (is_array($value) && !empty($this->columns)) {
             // Make the values accessible from both the col IDs and the handles
             foreach ($value as &$row) {
                 foreach ($this->columns as $colId => $col) {
@@ -202,7 +202,7 @@ class Table extends Field
             $value = array_values($value);
 
             // Drop the column handle values
-            if ($this->columns) {
+            if (!empty($this->columns)) {
                 foreach ($value as &$row) {
                     foreach ($this->columns as $colId => $col) {
                         if ($col['handle']) {
@@ -240,7 +240,7 @@ class Table extends Field
     {
         $columns = $this->columns;
 
-        if ($columns) {
+        if (!empty($columns)) {
             // Translate the column headings
             foreach ($columns as &$column) {
                 if (!empty($column['heading'])) {

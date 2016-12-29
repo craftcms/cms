@@ -300,7 +300,7 @@ class AssetQuery extends ElementQuery
         $elements = parent::populate($rows);
 
         // Eager-load transforms?
-        if (!$this->asArray && $this->withTransforms) {
+        if (!$this->asArray && !empty($this->withTransforms)) {
             $transforms = ArrayHelper::toArray($this->withTransforms);
 
             Craft::$app->getAssetTransforms()->eagerLoadTransforms($elements, $transforms);

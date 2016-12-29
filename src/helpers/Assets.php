@@ -174,7 +174,7 @@ class Assets
             $relativePath = substr($sourceFolder->path, $sourcePrefixLength);
 
             // If we have a target tree map, try to see if we should just point to an existing folder.
-            if ($targetTreeMap && isset($targetTreeMap[$relativePath])) {
+            if (!empty($targetTreeMap) && isset($targetTreeMap[$relativePath])) {
                 $folderIdChanges[$sourceFolder->id] = $targetTreeMap[$relativePath];
             } else {
                 $folder = new VolumeFolder();
@@ -286,7 +286,7 @@ class Assets
      *
      * @param string $kind
      *
-     * @return array
+     * @return string
      */
     public static function getFileKindLabel($kind)
     {

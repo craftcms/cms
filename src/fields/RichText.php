@@ -164,7 +164,7 @@ class RichText extends Field
     public function normalizeValue($value, $element)
     {
         /** @var string|null $value */
-        if ($value) {
+        if ($value !== null) {
             // Prevent everyone from having to use the |raw filter when outputting RTE content
             return new RichTextData($value);
         }
@@ -389,7 +389,7 @@ class RichText extends Field
         $sectionSources = $this->_getSectionSources($element);
         $categorySources = $this->_getCategorySources($element);
 
-        if ($sectionSources) {
+        if (!empty($sectionSources)) {
             $linkOptions[] = [
                 'optionTitle' => Craft::t('app', 'Link to an entry'),
                 'elementType' => 'Entry',
@@ -397,7 +397,7 @@ class RichText extends Field
             ];
         }
 
-        if ($categorySources) {
+        if (!empty($categorySources)) {
             $linkOptions[] = [
                 'optionTitle' => Craft::t('app', 'Link to a category'),
                 'elementType' => 'Category',
@@ -483,7 +483,7 @@ class RichText extends Field
 
         $volumeIds = $this->availableVolumes;
 
-        if (!$volumeIds) {
+        if (empty($volumeIds)) {
             // TODO: change to getPublicVolumeIds() when it exists
             $volumeIds = Craft::$app->getVolumes()->getPublicVolumeIds();
         }
@@ -511,7 +511,7 @@ class RichText extends Field
         $transformList = [];
 
         foreach ($allTransforms as $transform) {
-            if ($this->availableTransforms && !in_array($transform->id, $this->availableTransforms, false)) {
+            if (!empty($this->availableTransforms) && !in_array($transform->id, $this->availableTransforms, false)) {
                 continue;
             }
             $transformList[] = (object)[

@@ -112,12 +112,12 @@ class GlobalsController extends Controller
         // Get the sites the user is allowed to edit
         $editableSiteIds = Craft::$app->getSites()->getEditableSiteIds();
 
-        if (!$editableSiteIds) {
+        if (empty($editableSiteIds)) {
             throw new ForbiddenHttpException('User not permitted to edit content in any sites');
         }
 
         // Editing a specific site?
-        if ($siteHandle) {
+        if ($siteHandle !== null) {
             $site = Craft::$app->getSites()->getSiteByHandle($siteHandle);
 
             if (!$site) {
@@ -151,7 +151,7 @@ class GlobalsController extends Controller
             }
         }
 
-        if (!$editableGlobalSets || !isset($editableGlobalSets[$globalSetHandle])) {
+        if (empty($editableGlobalSets) || !isset($editableGlobalSets[$globalSetHandle])) {
             throw new ForbiddenHttpException('User not permitted to edit global set');
         }
 

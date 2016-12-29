@@ -86,13 +86,13 @@ class ElementRelationParamParser
 
         $conditions = [];
 
-        if ($relatedTo[0] == 'and' || $relatedTo[0] == 'or') {
+        if ($relatedTo[0] === 'and' || $relatedTo[0] === 'or') {
             $glue = array_shift($relatedTo);
         } else {
             $glue = 'or';
         }
 
-        if ($glue == 'or') {
+        if ($glue === 'or') {
             // Group all of the unspecified elements, so we avoid adding massive JOINs to the query
             $unspecifiedElements = [];
 
@@ -103,7 +103,7 @@ class ElementRelationParamParser
                 }
             }
 
-            if ($unspecifiedElements) {
+            if (!empty($unspecifiedElements)) {
                 $relatedTo[] = ['element' => $unspecifiedElements];
             }
         }
@@ -113,15 +113,15 @@ class ElementRelationParamParser
 
             if ($condition) {
                 $conditions[] = $condition;
-            } else if ($glue == 'or') {
+            } else if ($glue === 'or') {
                 continue;
             } else {
                 return false;
             }
         }
 
-        if ($conditions) {
-            if (count($conditions) == 1) {
+        if (!empty($conditions)) {
+            if (count($conditions) === 1) {
                 return $conditions[0];
             }
 
@@ -141,7 +141,7 @@ class ElementRelationParamParser
     public function getIsRelationFieldQuery()
     {
         return (
-            $this->_joinSourcesCount == 1 &&
+            $this->_joinSourcesCount === 1 &&
             !$this->_joinTargetsCount &&
             !$this->_joinSourceMatrixBlocksCount &&
             !$this->_joinTargetMatrixBlocksCount
@@ -223,7 +223,7 @@ class ElementRelationParamParser
             }
         }
 
-        if (!$relElementIds) {
+        if (empty($relElementIds)) {
             return false;
         }
 
@@ -299,7 +299,7 @@ class ElementRelationParamParser
                             }
                         }
 
-                        if (!$blockTypeFieldIds) {
+                        if (empty($blockTypeFieldIds)) {
                             continue;
                         }
                     }
@@ -334,7 +334,7 @@ class ElementRelationParamParser
                             [$targetMatrixBlocksAlias.'.fieldId' => $fieldModel->id]
                         ];
 
-                        if ($blockTypeFieldIds) {
+                        if (!empty($blockTypeFieldIds)) {
                             $condition[] = Db::parseParam($sourcesAlias.'.fieldId', $blockTypeFieldIds);
                         }
                     } else {
@@ -364,7 +364,7 @@ class ElementRelationParamParser
                             [$sourceMatrixBlocksAlias.'.fieldId' => $fieldModel->id]
                         ];
 
-                        if ($blockTypeFieldIds) {
+                        if (!empty($blockTypeFieldIds)) {
                             $condition[] = Db::parseParam($matrixBlockTargetsAlias.'.fieldId', $blockTypeFieldIds);
                         }
                     }
@@ -378,7 +378,7 @@ class ElementRelationParamParser
 
         // If there were no fields, or there are some non-Matrix fields, add the normal relation condition. (Basically,
         // run this code if the rel criteria wasn't exclusively for Matrix.)
-        if ($relCriteria['field'] || $normalFieldIds) {
+        if ($relCriteria['field'] || !empty($normalFieldIds)) {
             if (isset($relCriteria['sourceElement'])) {
                 $this->_joinSourcesCount++;
                 $relTableAlias = 'sources'.$this->_joinSourcesCount;
@@ -408,7 +408,7 @@ class ElementRelationParamParser
             $query->leftJoin("{{%relations}} {$relTableAlias}", $relationsJoinConditions);
             $condition = Db::parseParam($relTableAlias.'.'.$relConditionColumn, $relElementIds);
 
-            if ($normalFieldIds) {
+            if (!empty($normalFieldIds)) {
                 $condition = [
                     'and',
                     $condition,
@@ -419,7 +419,7 @@ class ElementRelationParamParser
             $conditions[] = $condition;
         }
 
-        if ($conditions) {
+        if (!empty($conditions)) {
             if (count($conditions) == 1) {
                 return $conditions[0];
             }

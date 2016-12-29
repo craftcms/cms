@@ -194,7 +194,7 @@ class CategoryQuery extends ElementQuery
         foreach ($refs as $ref) {
             $parts = array_filter(explode('/', $ref));
 
-            if ($parts) {
+            if (!empty($parts)) {
                 if (count($parts) == 1) {
                     $condition[] = Db::parseParam('elements_i18n.slug', $parts[0]);
                 } else {

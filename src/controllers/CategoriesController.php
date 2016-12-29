@@ -219,7 +219,7 @@ class CategoriesController extends Controller
     {
         $groups = Craft::$app->getCategories()->getEditableGroups();
 
-        if (!$groups) {
+        if (empty($groups)) {
             throw new ForbiddenHttpException('User not permitted to edit categories');
         }
 
@@ -250,7 +250,7 @@ class CategoriesController extends Controller
 
         $this->_prepEditCategoryVariables($variables);
 
-        if ($siteHandle) {
+        if ($siteHandle !== null) {
             $variables['site'] = Craft::$app->getSites()->getSiteByHandle($siteHandle);
 
             if (!$variables['site']) {
@@ -305,7 +305,7 @@ class CategoriesController extends Controller
             if ($parentId === null && $category->id) {
                 $parentIds = $category->getAncestors(1)->status(null)->enabledForSite(false)->ids();
 
-                if ($parentIds) {
+                if (!empty($parentIds)) {
                     $parentId = $parentIds[0];
                 }
             }

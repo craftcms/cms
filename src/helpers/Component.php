@@ -59,7 +59,7 @@ class Component
             throw new InvalidConfigException("Component class '$class' does not implement ComponentInterface.");
         }
 
-        if ($instanceOf && !is_subclass_of($class, $instanceOf)) {
+        if ($instanceOf !== null && !is_subclass_of($class, $instanceOf)) {
             throw new InvalidConfigException("Component class '$class' is not an instance of '$instanceOf'.");
         }
 

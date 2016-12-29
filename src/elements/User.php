@@ -823,6 +823,10 @@ class User extends Element implements IdentityInterface
         $firstName = trim($this->firstName);
         $lastName = trim($this->lastName);
 
+        if (!$firstName && !$lastName) {
+            return null;
+        }
+
         return $firstName.($firstName && $lastName ? ' ' : '').$lastName;
     }
 
@@ -833,9 +837,7 @@ class User extends Element implements IdentityInterface
      */
     public function getName()
     {
-        $fullName = $this->getFullName();
-
-        if ($fullName) {
+        if (($fullName = $this->getFullName()) !== null) {
             return $fullName;
         }
 
@@ -1055,7 +1057,7 @@ class User extends Element implements IdentityInterface
             return UrlHelper::cpUrl('users/'.$this->id);
         }
 
-        return false;
+        return null;
     }
 
     /**

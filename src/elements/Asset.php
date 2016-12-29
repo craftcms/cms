@@ -595,16 +595,16 @@ class Asset extends Element
     }
 
     /**
-     * Returns the URL to the file.
+     * @inheritdoc
      *
      * @param string|array|null $transform The transform that should be applied, if any. Can either be the handle of a named transform, or an array that defines the transform settings.
      *
-     * @return false|string
+     * @return string|null
      */
     public function getUrl($transform = null)
     {
         if (!$this->getHasUrls()) {
-            return false;
+            return null;
         }
 
         if (is_array($transform)) {

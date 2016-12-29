@@ -684,7 +684,7 @@ class Matrix extends Field implements EagerLoadingFieldInterface
             }
             unset($block);
 
-            if ($ids) {
+            if (!empty($ids)) {
                 $oldBlocksQuery = MatrixBlock::find();
                 $oldBlocksQuery->fieldId($this->id);
                 $oldBlocksQuery->ownerId($ownerId);

@@ -112,7 +112,7 @@ class Tags extends BaseRelationField
     {
         $tagGroupId = $this->_getTagGroupId();
 
-        if ($tagGroupId) {
+        if ($tagGroupId !== false) {
             return Craft::$app->getTags()->getTagGroupById($tagGroupId);
         }
 
