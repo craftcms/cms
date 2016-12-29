@@ -9,6 +9,7 @@ namespace craft\helpers;
 
 use Craft;
 use craft\base\Volume;
+use craft\base\VolumeInterface;
 use craft\elements\Asset;
 use craft\enums\PeriodType;
 use craft\events\RegisterAssetFileKindsEvent;
@@ -72,12 +73,12 @@ class Assets
     /**
      * Generate a URL for a given Assets file in a Source Type.
      *
-     * @param Volume $volume
-     * @param Asset  $file
+     * @param VolumeInterface $volume
+     * @param Asset           $file
      *
      * @return string
      */
-    public static function generateUrl(Volume $volume, Asset $file)
+    public static function generateUrl(VolumeInterface $volume, Asset $file)
     {
         $baseUrl = $volume->getRootUrl();
         $folderPath = $file->getFolder()->path;
@@ -90,15 +91,16 @@ class Assets
     /**
      * Get appendix for an URL based on it's Source caching settings.
      *
-     * @param Volume $volume
-     * @param Asset  $file
+     * @param VolumeInterface $volume
+     * @param Asset           $file
      *
      * @return string
      */
-    public static function urlAppendix(Volume $volume, Asset $file)
+    public static function urlAppendix(VolumeInterface $volume, Asset $file)
     {
         $appendix = '';
 
+        /** @var Volume $volume */
         if (!empty($volume->expires) && DateTimeHelper::isValidIntervalString($volume->expires)) {
             $appendix = '?mtime='.$file->dateModified->format('YmdHis');
         }

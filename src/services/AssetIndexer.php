@@ -4,6 +4,7 @@ namespace craft\services;
 use Craft;
 use craft\base\LocalVolumeInterface;
 use craft\base\Volume;
+use craft\base\VolumeInterface;
 use craft\db\Query;
 use craft\elements\Asset;
 use craft\errors\VolumeObjectNotFoundException;
@@ -332,14 +333,14 @@ class AssetIndexer extends Component
     /**
      * Index a single file by Volume and path.
      *
-     * @param Volume  $volume
-     * @param         $path
-     * @param boolean $checkIfExists
+     * @param VolumeInterface $volume
+     * @param                 $path
+     * @param boolean         $checkIfExists
      *
      * @throws VolumeObjectNotFoundException If the file to be indexed cannot be found.
      * @return boolean|Asset
      */
-    public function indexFile(Volume $volume, $path, $checkIfExists = true)
+    public function indexFile(VolumeInterface $volume, $path, $checkIfExists = true)
     {
         if ($checkIfExists && !$volume->fileExists($path)) {
             throw new VolumeObjectNotFoundException(Craft::t(
@@ -358,13 +359,14 @@ class AssetIndexer extends Component
     /**
      * Indexes a file.
      *
-     * @param Volume $volume  The volume.
-     * @param string $uriPath The URI path fo the file to index.
+     * @param VolumeInterface $volume  The volume.
+     * @param string          $uriPath The URI path fo the file to index.
      *
      * @return Asset|bool
      */
-    private function _indexFile($volume, $uriPath)
+    private function _indexFile(VolumeInterface $volume, $uriPath)
     {
+        /** @var Volume $volume */
         $extension = pathinfo($uriPath, PATHINFO_EXTENSION);
 
         if (Craft::$app->getConfig()->isExtensionAllowed($extension)) {
