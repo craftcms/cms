@@ -112,7 +112,7 @@ class Local extends Volume implements LocalVolumeInterface
     public function renameDir($path, $newName)
     {
         $parentDir = dirname($path);
-        $newPath = ($parentDir && $parentDir != '.' ? $parentDir.'/' : '').$newName;
+        $newPath = ($parentDir && $parentDir !== '.' ? $parentDir.'/' : '').$newName;
 
         try {
             return $this->getFilesystem()->rename($path, $newPath);

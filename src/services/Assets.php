@@ -531,7 +531,7 @@ class Assets extends Component
 
         $descendantFolders = $this->getAllDescendantFolders($folder);
         $parentPath = dirname($folder->path);
-        $newFullPath = ($parentPath && $parentPath != '.' ? $parentPath.'/' : '').$newName;
+        $newFullPath = ($parentPath && $parentPath !== '.' ? $parentPath.'/' : '').$newName;
 
         foreach ($descendantFolders as $descendantFolder) {
             $descendantFolder->path = preg_replace('#^'.$folder->path.'#', $newFullPath.'/', $descendantFolder->path);

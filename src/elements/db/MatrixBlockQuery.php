@@ -136,7 +136,7 @@ class MatrixBlockQuery extends ElementQuery
     {
         $this->ownerSiteId = $value;
 
-        if ($value && strtolower($value) != ':empty:') {
+        if ($value && strtolower($value) !== ':empty:') {
             // A block will never exist in a site that is different than its ownerSiteId,
             // so let's set the siteId param here too.
             $this->siteId = $value;

@@ -30,7 +30,7 @@ class SingleSectionUriValidator extends Validator
      */
     public function validateAttribute($model, $attribute)
     {
-        if (!($model instanceof Section_SiteSettings) || $attribute != 'uriFormat') {
+        if (!($model instanceof Section_SiteSettings) || $attribute !== 'uriFormat') {
             throw new InvalidConfigException('Invalid use of SingleSectionUriValidator');
         }
 

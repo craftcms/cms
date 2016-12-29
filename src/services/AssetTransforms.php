@@ -527,8 +527,8 @@ class AssetTransforms extends Component
         if (preg_match('/_(?P<width>\d+|AUTO)x(?P<height>\d+|AUTO)_(?P<mode>[a-z]+)_(?P<position>[a-z\-]+)(_(?P<quality>\d+))?/i',
             $index->location, $matches)) {
             $transform = new AssetTransform();
-            $transform->width = ($matches['width'] != 'AUTO' ? $matches['width'] : null);
-            $transform->height = ($matches['height'] != 'AUTO' ? $matches['height'] : null);
+            $transform->width = ($matches['width'] !== 'AUTO' ? $matches['width'] : null);
+            $transform->height = ($matches['height'] !== 'AUTO' ? $matches['height'] : null);
             $transform->mode = $matches['mode'];
             $transform->position = $matches['position'];
             $transform->quality = isset($matches['quality']) ? $matches['quality'] : null;
@@ -1307,7 +1307,7 @@ class AssetTransforms extends Component
         $quality = $transform->quality ?: Craft::$app->getConfig()->get('defaultImageQuality');
 
         $images = Craft::$app->getImages();
-        if (StringHelper::toLowerCase($asset->getExtension()) === 'svg' && $index->detectedFormat != 'svg') {
+        if (StringHelper::toLowerCase($asset->getExtension()) === 'svg' && $index->detectedFormat !== 'svg') {
             $image = $images->loadImage($imageSource, true,
                 max($transform->width, $transform->height));
         } else {

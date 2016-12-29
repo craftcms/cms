@@ -402,7 +402,7 @@ class Updater
                 // Find the closest parent folder that exists and see if it's writable
                 $dir = dirname($file);
                 $basePathDir = dirname($basePath);
-                while ($dir != $basePathDir && !empty($dir) && $dir != '.') {
+                while ($dir != $basePathDir && !empty($dir) && $dir !== '.') {
                     if (is_dir($dir)) {
                         if (!FileHelper::isWritable($dir)) {
                             $writableErrors[] = $file;

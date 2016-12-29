@@ -84,7 +84,7 @@ class RenameFile extends ElementAction
                         {
                             choice = choice[0].choice;
 
-                            if (choice != 'cancel')
+                            if (choice !== 'cancel')
                             {
                                 data.action = choice;
                                 Craft.postActionRequest('assets/move-asset', data, handleRename);

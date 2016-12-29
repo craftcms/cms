@@ -304,7 +304,7 @@ class Entry extends Element
             }
 
             // Channel/Structure-only actions
-            if ($source != '*' && $source != 'singles') {
+            if ($source !== '*' && $source !== 'singles') {
                 $section = $sections[0];
 
                 // New child?
@@ -395,7 +395,7 @@ class Entry extends Element
             $attributes[] = 'section';
         }
 
-        if ($source != 'singles') {
+        if ($source !== 'singles') {
             $attributes[] = 'postDate';
             $attributes[] = 'expiryDate';
         }

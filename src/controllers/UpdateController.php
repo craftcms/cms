@@ -206,9 +206,9 @@ EOD;
                 ];
             }
 
-            if ($handle != 'craft') {
+            if ($handle !== 'craft') {
                 foreach ($updateInfo->plugins as $plugin) {
-                    if ($handle != 'all' && $handle != $plugin->class) {
+                    if ($handle !== 'all' && $handle != $plugin->class) {
                         continue;
                     }
 

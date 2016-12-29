@@ -331,7 +331,7 @@ class Structures extends Component
 
         /** @var Element $element */
         // Figure out what we're doing
-        if ($mode != 'insert') {
+        if ($mode !== 'insert') {
             // See if there's an existing structure element record
             $elementRecord = $this->_getElementRecord($structureId, $element);
 

@@ -52,7 +52,7 @@ class m150617_213829_update_email_settings extends Migration
                         'useAuthentication' => isset($oldSettings['smtpAuth']) ? $oldSettings['smtpAuth'] : false,
                         'username' => isset($oldSettings['username']) ? $oldSettings['username'] : null,
                         'password' => isset($oldSettings['password']) ? $oldSettings['password'] : null,
-                        'encryptionMethod' => isset($oldSettings['smtpSecureTransportType']) && $oldSettings['smtpSecureTransportType'] != 'none' ? $oldSettings['smtpSecureTransportType'] : null,
+                        'encryptionMethod' => isset($oldSettings['smtpSecureTransportType']) && $oldSettings['smtpSecureTransportType'] !== 'none' ? $oldSettings['smtpSecureTransportType'] : null,
                         'timeout' => isset($oldSettings['timeout']) ? $oldSettings['timeout'] : 10,
                     ];
                     $mailerConfig['transport'] = [

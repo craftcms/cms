@@ -507,7 +507,7 @@ class RequirementsChecker
             $results = $conn->query('SHOW ENGINES');
 
             foreach ($results as $result) {
-                if (strtolower($result['Engine']) === 'innodb' && strtolower($result['Support']) != 'no') {
+                if (strtolower($result['Engine']) === 'innodb' && strtolower($result['Support']) !== 'no') {
                     return true;
                 }
             }

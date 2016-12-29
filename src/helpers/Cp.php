@@ -66,7 +66,7 @@ class Cp
             }
 
             if (
-                $path != 'updates' &&
+                $path !== 'updates' &&
                 $user->can('performUpdates') &&
                 !empty($updateModel->app->releases) &&
                 Craft::$app->getUpdates()->criticalCraftUpdateAvailable($updateModel->app->releases)

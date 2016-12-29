@@ -48,7 +48,7 @@ class NavTokenParser extends \Twig_TokenParser
 
         $nextValue = $stream->next()->getValue();
 
-        if ($nextValue != 'endnav') {
+        if ($nextValue !== 'endnav') {
             $stream->expect(\Twig_Token::BLOCK_END_TYPE);
 
             if ($nextValue === 'ifchildren') {
