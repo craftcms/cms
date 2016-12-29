@@ -191,7 +191,7 @@ class Et extends Component
 
         $updateModel = Craft::$app->getUpdates()->getUpdates();
 
-        if ($handle == 'craft') {
+        if ($handle === 'craft') {
             $localVersion = $updateModel->app->localVersion;
             $targetVersion = $updateModel->app->latestVersion;
             $uriPrefix = 'craft';

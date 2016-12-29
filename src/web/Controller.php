@@ -87,7 +87,7 @@ abstract class Controller extends \yii\web\Controller
             $templateFile = Craft::$app->getView()->resolveTemplate($template);
             $extension = pathinfo($templateFile, PATHINFO_EXTENSION) ?: 'html';
 
-            if ($extension == 'twig') {
+            if ($extension === 'twig') {
                 $extension = 'html';
             }
 

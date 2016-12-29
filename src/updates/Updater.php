@@ -99,7 +99,7 @@ class Updater
             throw new UnpackPackageException(Craft::t('app', 'There was a problem unpacking the downloaded package.'));
         }
 
-        if ($handle == 'craft') {
+        if ($handle === 'craft') {
             Craft::info('Validating any new requirements from the patch file.');
             $errors = $this->_validateNewRequirements($unzipFolder);
 

@@ -292,7 +292,7 @@ class User extends Element implements IdentityInterface
      */
     public static function eagerLoadingMap($sourceElements, $handle)
     {
-        if ($handle == 'photo') {
+        if ($handle === 'photo') {
             // Get the source element IDs
             $sourceElementIds = [];
 
@@ -1154,7 +1154,7 @@ class User extends Element implements IdentityInterface
      */
     public function setEagerLoadedElements($handle, $elements)
     {
-        if ($handle == 'photo') {
+        if ($handle === 'photo') {
             $photo = isset($elements[0]) ? $elements[0] : null;
             $this->setPhoto($photo);
         } else {

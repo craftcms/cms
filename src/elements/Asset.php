@@ -106,13 +106,13 @@ class Asset extends Element
      */
     protected static function defineSources($context)
     {
-        if ($context == 'index') {
+        if ($context === 'index') {
             $sourceIds = Craft::$app->getVolumes()->getViewableVolumeIds();
         } else {
             $sourceIds = Craft::$app->getVolumes()->getAllVolumeIds();
         }
 
-        $additionalCriteria = $context == 'settings' ? ['parentId' => ':empty:'] : [];
+        $additionalCriteria = $context === 'settings' ? ['parentId' => ':empty:'] : [];
         $tree = Craft::$app->getAssets()->getFolderTreeByVolumeIds($sourceIds, $additionalCriteria);
 
         return self::_assembleSourceList($tree, $context != 'settings');
@@ -551,7 +551,7 @@ class Asset extends Element
      */
     public function getImg()
     {
-        if ($this->kind == 'image' && $this->getHasUrls()) {
+        if ($this->kind === 'image' && $this->getHasUrls()) {
             $img = '<img src="'.$this->getUrl().'" width="'.$this->getWidth().'" height="'.$this->getHeight().'" alt="'.Html::encode($this->title).'" />';
 
             return Template::raw($img);
@@ -973,7 +973,7 @@ class Asset extends Element
         }
 
         // Special case for 'fit' since that's the only one whose dimensions vary from the transform dimensions
-        if ($transform->mode == 'fit') {
+        if ($transform->mode === 'fit') {
             $factor = max($this->width / $dimensions['width'], $this->height / $dimensions['height']);
             $dimensions['width'] = (int)round($this->width / $factor);
             $dimensions['height'] = (int)round($this->height / $factor);

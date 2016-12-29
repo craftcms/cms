@@ -387,7 +387,7 @@ class Search extends Component
             }
 
             // If this is a title, 5X it
-            if ($row['attribute'] == 'title') {
+            if ($row['attribute'] === 'title') {
                 $mod *= 5;
             }
 
@@ -678,7 +678,7 @@ class Search extends Component
                 return sprintf("MATCH(%s) AGAINST('%s'%s)", Craft::$app->getDb()->quoteColumnName('keywords'), (is_array($val) ? implode(' ', $val) : $val), ($bool ? ' IN BOOLEAN MODE' : ''));
 
             case Connection::DRIVER_PGSQL:
-                if ($andOr == ' AND ') {
+                if ($andOr === ' AND ') {
                     $andOr = ' & ';
                 } else {
                     $andOr = ' | ';

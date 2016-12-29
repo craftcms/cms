@@ -237,7 +237,7 @@ class EtTransport
         }
 
         $contents = file_get_contents($keyFile);
-        if (empty($contents) || $contents == 'temp') {
+        if (empty($contents) || $contents === 'temp') {
             return null;
         }
 

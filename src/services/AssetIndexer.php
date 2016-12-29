@@ -188,7 +188,7 @@ class AssetIndexer extends Component
             $asset->size = $indexEntryModel->size;
             $timeModified = new DateTime($indexEntryModel->timestamp);
 
-            if ($asset->kind == 'image') {
+            if ($asset->kind === 'image') {
                 $targetPath = $asset->getImageTransformSourcePath();
 
                 if ($asset->dateModified != $timeModified || !is_file($targetPath)) {

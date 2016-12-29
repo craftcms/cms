@@ -298,7 +298,7 @@ class Db
 
         $firstVal = StringHelper::toLowerCase(ArrayHelper::firstValue($value));
 
-        if ($firstVal == 'and' || $firstVal == 'or') {
+        if ($firstVal === 'and' || $firstVal === 'or') {
             $conditionOperator = array_shift($value);
         } else {
             $conditionOperator = 'or';
@@ -310,8 +310,8 @@ class Db
             self::_normalizeEmptyValue($val);
             $operator = self::_parseParamOperator($val);
 
-            if (StringHelper::toLowerCase($val) == ':empty:') {
-                if ($operator == '=') {
+            if (StringHelper::toLowerCase($val) === ':empty:') {
+                if ($operator === '=') {
                     $condition[] = [
                         'or',
                         [$column => null],
@@ -332,7 +332,7 @@ class Db
                 $val = trim($val);
 
                 // This could be a LIKE condition
-                if ($operator == '=' || $operator == '!=') {
+                if ($operator === '=' || $operator === '!=') {
                     $val = preg_replace('/^\*|(?<!\\\)\*$/', '%', $val, -1, $count);
                     $like = (bool)$count;
                 } else {
@@ -344,7 +344,7 @@ class Db
 
                 if ($like) {
                     $condition[] = [
-                        $operator == '=' ? 'like' : 'not like',
+                        $operator === '=' ? 'like' : 'not like',
                         $column,
                         $val,
                         false
@@ -376,7 +376,7 @@ class Db
             return '';
         }
 
-        if ($value[0] == 'and' || $value[0] == 'or') {
+        if ($value[0] === 'and' || $value[0] === 'or') {
             $normalizedValues[] = $value[0];
             array_shift($value);
         }
@@ -385,7 +385,7 @@ class Db
             // Is this an empty value?
             self::_normalizeEmptyValue($val);
 
-            if ($val == ':empty:' || $val == 'not :empty:') {
+            if ($val === ':empty:' || $val === 'not :empty:') {
                 $normalizedValues[] = $val;
 
                 // Sneak out early
@@ -439,7 +439,7 @@ class Db
     {
         if ($value === null) {
             $value = ':empty:';
-        } else if (StringHelper::toLowerCase($value) == ':notempty:') {
+        } else if (StringHelper::toLowerCase($value) === ':notempty:') {
             $value = 'not :empty:';
         }
     }

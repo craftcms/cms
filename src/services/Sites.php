@@ -811,7 +811,7 @@ class Sites extends Component
                 }
             } catch (\yii\db\Exception $e) {
                 // If the error code is 42S02 (MySQL) or 42P01 (PostgreSQL), the sites table probably doesn't exist yet
-                if (isset($e->errorInfo[0]) && ($e->errorInfo[0] == '42S02' || $e->errorInfo[0] == '42P01')) {
+                if (isset($e->errorInfo[0]) && ($e->errorInfo[0] === '42S02' || $e->errorInfo[0] === '42P01')) {
                     return;
                 }
 

@@ -39,7 +39,7 @@ class Update
      */
     public static function getBasePath($handle)
     {
-        if ($handle == 'craft') {
+        if ($handle === 'craft') {
             return Craft::$app->getPath()->getAppPath();
         }
 
@@ -128,7 +128,7 @@ class Update
     {
         $destDirectory = static::getBasePath($handle);
 
-        if ($handle == 'craft') {
+        if ($handle === 'craft') {
             // Pull files from the app/ subdirectory in the temp folder
             $sourceTempFolder .= DIRECTORY_SEPARATOR.'app';
         }
@@ -244,7 +244,7 @@ class Update
         $updateModel = Craft::$app->getUpdates()->getUpdates();
         $localVersion = null;
 
-        if ($handle == 'craft') {
+        if ($handle === 'craft') {
             $localVersion = $updateModel->app->localVersion;
         } else {
             foreach ($updateModel->plugins as $plugin) {

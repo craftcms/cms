@@ -175,7 +175,7 @@ class Image
     {
         $extension = pathinfo($imagePath, PATHINFO_EXTENSION);
 
-        if ($extension == 'svg') {
+        if ($extension === 'svg') {
             // No cleanup in the classic sense.
             return;
         }

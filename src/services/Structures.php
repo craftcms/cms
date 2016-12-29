@@ -348,7 +348,7 @@ class Structures extends Component
             $mode = 'insert';
         }
 
-        if ($mode == 'update') {
+        if ($mode === 'update') {
             // Fire a 'beforeMoveElement' event
             $this->trigger(self::EVENT_BEFORE_MOVE_ELEMENT, new MoveElementEvent([
                 'structureId' => $structureId,
@@ -386,7 +386,7 @@ class Structures extends Component
             throw $e;
         }
 
-        if ($mode == 'update') {
+        if ($mode === 'update') {
             // Fire an 'afterMoveElement' event
             $this->trigger(self::EVENT_AFTER_MOVE_ELEMENT, new MoveElementEvent([
                 'structureId' => $structureId,

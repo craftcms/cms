@@ -69,7 +69,7 @@ class Edit extends ElementAction
         {
             var \$element = \$selectedItems.find('.element:first');
 
-            if (Craft.elementIndex.viewMode == 'table') {
+            if (Craft.elementIndex.viewMode === 'table') {
                 new Craft.ElementEditor(\$element, {
                     params: {
                         includeTableAttributesForSource: Craft.elementIndex.sourceKey

@@ -85,7 +85,7 @@ class SearchQuery
         for ($token = strtok($this->_query, ' '); $token !== false; $token = strtok(' ')) {
             $appendToPrevious = false;
 
-            if ($token == 'OR') {
+            if ($token === 'OR') {
                 // Grab the next one or bail
                 if (($token = strtok(' ')) === false) {
                     break;
@@ -142,12 +142,12 @@ class SearchQuery
             }
 
             // Include sub-word matches?
-            if ($token && StringHelper::first($token, 1) == '*') {
+            if ($token && StringHelper::first($token, 1) === '*') {
                 $term->subLeft = true;
                 $token = mb_substr($token, 1);
             }
 
-            if ($token && substr($token, -1) == '*') {
+            if ($token && substr($token, -1) === '*') {
                 $term->subRight = true;
                 $token = mb_substr($token, 0, -1);
             }

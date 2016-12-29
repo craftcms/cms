@@ -185,7 +185,7 @@ class Assets extends Component
         }
 
         if (!empty($asset->newFilePath)) {
-            if (AssetsHelper::getFileKindByExtension($asset->newFilePath) == 'image') {
+            if (AssetsHelper::getFileKindByExtension($asset->newFilePath) === 'image') {
                 Image::cleanImageByPath($asset->newFilePath);
             }
 
@@ -227,7 +227,7 @@ class Assets extends Component
             $asset->size = filesize($asset->newFilePath);
             $asset->kind = AssetsHelper::getFileKindByExtension($asset->filename);
 
-            if ($asset->kind == 'image' && !empty($asset->newFilePath)) {
+            if ($asset->kind === 'image' && !empty($asset->newFilePath)) {
 
                 list ($asset->width, $asset->height) = Image::imageSize($asset->newFilePath);
             }
@@ -383,7 +383,7 @@ class Assets extends Component
             fclose($stream);
         }
 
-        if ($asset->kind == 'image') {
+        if ($asset->kind === 'image') {
             list ($asset->width, $asset->height) = Image::imageSize($pathOnServer);
         } else {
             $asset->width = null;

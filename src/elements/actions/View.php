@@ -67,7 +67,7 @@ class View extends ElementAction
 
             return (
                 \$element.data('url') &&
-                (\$element.data('status') == 'enabled' || \$element.data('status') == 'live')
+                (\$element.data('status') === 'enabled' || \$element.data('status') === 'live')
             );
         },
         activate: function(\$selectedItems)

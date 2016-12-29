@@ -125,7 +125,8 @@ class App
         $value = ini_get($var);
 
         // Supposedly “On” values will always be normalized to '1' but who can trust PHP...
-        return ($value == '1' || strtolower($value) == 'on');
+        /** @noinspection TypeUnsafeComparisonInspection */
+        return ($value == 1 || strtolower($value) === 'on');
     }
 
     /**

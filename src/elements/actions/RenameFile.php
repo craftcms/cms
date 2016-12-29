@@ -75,7 +75,7 @@ class RenameFile extends ElementAction
                 Craft.elementIndex.setIndexAvailable();
                 Craft.elementIndex.promptHandler.resetPrompts();
 
-                if (textStatus == 'success')
+                if (textStatus === 'success')
                 {
                     if (response.prompt)
                     {

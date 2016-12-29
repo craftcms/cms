@@ -277,13 +277,13 @@ class Matrix extends Field implements EagerLoadingFieldInterface
     public function modifyElementsQuery(ElementQueryInterface $query, $value)
     {
         /** @var ElementQuery $query */
-        if ($value == 'not :empty:') {
+        if ($value === 'not :empty:') {
             $value = ':notempty:';
         }
 
-        if ($value == ':notempty:' || $value == ':empty:') {
+        if ($value === ':notempty:' || $value === ':empty:') {
             $alias = 'matrixblocks_'.$this->handle;
-            $operator = ($value == ':notempty:' ? '!=' : '=');
+            $operator = ($value === ':notempty:' ? '!=' : '=');
 
             $query->subQuery->andWhere(
                 "(select count([[{$alias}.id]]) from {{%matrixblocks}} {{{$alias}}} where [[{$alias}.ownerId]] = [[elements.id]] and [[{$alias}.fieldId]] = :fieldId) {$operator} 0",

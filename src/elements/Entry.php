@@ -117,7 +117,7 @@ class Entry extends Element
      */
     protected static function defineSources($context)
     {
-        if ($context == 'index') {
+        if ($context === 'index') {
             $sections = Craft::$app->getSections()->getEditableSections();
             $editable = true;
         } else {
@@ -282,7 +282,7 @@ class Entry extends Element
             }
 
             // View
-            $showViewAction = ($source == '*' || $source == 'singles');
+            $showViewAction = ($source === '*' || $source === 'singles');
 
             if (!$showViewAction) {
                 // They are viewing a specific section. See if it has URLs for the requested site
@@ -391,7 +391,7 @@ class Entry extends Element
     {
         $attributes = [];
 
-        if ($source == '*') {
+        if ($source === '*') {
             $attributes[] = 'section';
         }
 
@@ -411,7 +411,7 @@ class Entry extends Element
      */
     public static function eagerLoadingMap($sourceElements, $handle)
     {
-        if ($handle == 'author') {
+        if ($handle === 'author') {
             // Get the source element IDs
             $sourceElementIds = [];
 
@@ -440,7 +440,7 @@ class Entry extends Element
     protected static function prepElementQueryForTableAttribute(ElementQueryInterface $elementQuery, $attribute)
     {
         /** @var ElementQuery $elementQuery */
-        if ($attribute == 'author') {
+        if ($attribute === 'author') {
             $with = $elementQuery->with ?: [];
             $with[] = 'author';
             $elementQuery->with = $with;
@@ -772,7 +772,7 @@ class Entry extends Element
      */
     public function setEagerLoadedElements($handle, $elements)
     {
-        if ($handle == 'author') {
+        if ($handle === 'author') {
             $author = isset($elements[0]) ? $elements[0] : null;
             $this->setAuthor($author);
         } else {

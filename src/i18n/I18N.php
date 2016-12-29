@@ -169,7 +169,7 @@ class I18N extends \yii\i18n\I18N
             throw new Exception("Unable to open directory: $dir");
         }
         while (($subDir = readdir($handle)) !== false) {
-            if ($subDir === '.' || $subDir === '..' || $subDir == 'en-US') {
+            if ($subDir === '.' || $subDir === '..' || $subDir === 'en-US') {
                 continue;
             }
             $path = $dir.DIRECTORY_SEPARATOR.$subDir;

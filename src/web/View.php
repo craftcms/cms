@@ -1290,9 +1290,9 @@ class View extends \yii\web\View
         }
 
         // How big is the element going to be?
-        if (isset($context['size']) && ($context['size'] == 'small' || $context['size'] == 'large')) {
+        if (isset($context['size']) && ($context['size'] === 'small' || $context['size'] === 'large')) {
             $elementSize = $context['size'];
-        } else if (isset($context['viewMode']) && $context['viewMode'] == 'thumbs') {
+        } else if (isset($context['viewMode']) && $context['viewMode'] === 'thumbs') {
             $elementSize = 'large';
         } else {
             $elementSize = 'small';
@@ -1318,7 +1318,7 @@ class View extends \yii\web\View
 
             $imgHtml = '<div class="elementthumb">'.
                 '<img '.
-                'sizes="'.($elementSize == 'small' ? self::$_elementThumbSizes[0] : self::$_elementThumbSizes[2]).'px" '.
+                'sizes="'.($elementSize === 'small' ? self::$_elementThumbSizes[0] : self::$_elementThumbSizes[2]).'px" '.
                 'srcset="'.implode(', ', $srcsets).'" '.
                 'alt="">'.
                 '</div> ';
@@ -1338,7 +1338,7 @@ class View extends \yii\web\View
                 'data-level' => $element->level,
             ]);
 
-        if ($context['context'] == 'field') {
+        if ($context['context'] === 'field') {
             $htmlAttributes['class'] .= ' removable';
         }
 
@@ -1362,7 +1362,7 @@ class View extends \yii\web\View
 
         $html .= '>';
 
-        if ($context['context'] == 'field' && isset($context['name'])) {
+        if ($context['context'] === 'field' && isset($context['name'])) {
             $html .= '<input type="hidden" name="'.$context['name'].'[]" value="'.$element->id.'">';
             $html .= '<a class="delete icon" title="'.Craft::t('app', 'Remove').'"></a> ';
         }
@@ -1378,7 +1378,7 @@ class View extends \yii\web\View
 
         $label = HtmlHelper::encode($element);
 
-        if ($context['context'] == 'index' && ($cpEditUrl = $element->getCpEditUrl())) {
+        if ($context['context'] === 'index' && ($cpEditUrl = $element->getCpEditUrl())) {
             $cpEditUrl = HtmlHelper::encode($cpEditUrl);
             $html .= "<a href=\"{$cpEditUrl}\">{$label}</a>";
         } else {

@@ -124,7 +124,7 @@ EOD;
 
         $dataJs = Json::encode([
             'handle' => Craft::$app->getSecurity()->hashData($handle),
-            'manualUpdate' => (Craft::$app->getRequest()->getSegment(1) == 'manualupdate') ? 1 : 0
+            'manualUpdate' => (Craft::$app->getRequest()->getSegment(1) === 'manualupdate') ? 1 : 0
         ]);
         $js = <<<EOD
 //noinspection JSUnresolvedVariable
@@ -196,7 +196,7 @@ EOD;
         }
 
         try {
-            if ($handle == 'all' || $handle == 'craft') {
+            if ($handle === 'all' || $handle === 'craft') {
                 $return[] = [
                     'handle' => 'craft',
                     'name' => 'Craft',
@@ -540,14 +540,14 @@ EOD;
         // Grab the old version from the manifest data before we nuke it.
         $manifestData = Update::getManifestData(Update::getUnzipFolderFromUID($uid), $handle);
 
-        if ($manifestData && $handle == 'craft') {
+        if ($manifestData && $handle === 'craft') {
             $oldVersion = Update::getLocalVersionFromManifest($manifestData);
         }
 
         Craft::$app->getUpdates()->updateCleanUp($uid, $handle);
 
         // New major Craft CMS version?
-        if ($handle == 'craft' && $oldVersion !== false && App::majorVersion($oldVersion) < App::majorVersion(Craft::$app->version)) {
+        if ($handle === 'craft' && $oldVersion !== false && App::majorVersion($oldVersion) < App::majorVersion(Craft::$app->version)) {
             $returnUrl = UrlHelper::url('whats-new');
         } else {
             $returnUrl = Craft::$app->getConfig()->get('postCpLoginRedirect');

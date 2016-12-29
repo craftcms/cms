@@ -977,7 +977,7 @@ class AssetTransforms extends Component
             return $asset->getExtension();
         }
 
-        if ($asset->kind == 'image') {
+        if ($asset->kind === 'image') {
             // The only reasonable way to check for transparency is with Imagick. If Imagick is not present, then
             // we fallback to jpg
             $images = Craft::$app->getImages();
@@ -1307,7 +1307,7 @@ class AssetTransforms extends Component
         $quality = $transform->quality ?: Craft::$app->getConfig()->get('defaultImageQuality');
 
         $images = Craft::$app->getImages();
-        if (StringHelper::toLowerCase($asset->getExtension()) == 'svg' && $index->detectedFormat != 'svg') {
+        if (StringHelper::toLowerCase($asset->getExtension()) === 'svg' && $index->detectedFormat != 'svg') {
             $image = $images->loadImage($imageSource, true,
                 max($transform->width, $transform->height));
         } else {

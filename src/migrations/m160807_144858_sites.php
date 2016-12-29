@@ -306,7 +306,7 @@ class m160807_144858_sites extends Migration
 
             // Add a new *__siteId column + FK for each column in this FK that points to locales.locale
             foreach ($fkInfo->fk->refColumns as $i => $refColumn) {
-                if ($refColumn == 'locale') {
+                if ($refColumn === 'locale') {
                     $table = $fkInfo->table->name;
                     $oldColumn = $fkInfo->fk->columns[$i];
                     $newColumn = $oldColumn.'__siteId';
@@ -438,9 +438,9 @@ class m160807_144858_sites extends Migration
                 $settings = [];
             }
 
-            $localized = ($field['translationMethod'] == 'site');
+            $localized = ($field['translationMethod'] === 'site');
 
-            if ($field['type'] == 'craft\fields\Matrix') {
+            if ($field['type'] === 'craft\fields\Matrix') {
                 $settings['localizeBlocks'] = $localized;
             } else {
                 $settings['localizeRelations'] = $localized;

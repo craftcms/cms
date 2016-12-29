@@ -119,7 +119,7 @@ class Tags extends Component
             $this->_fetchedAllTagGroups = true;
         }
 
-        if ($indexBy == 'id') {
+        if ($indexBy === 'id') {
             return $this->_tagGroupsById;
         }
 

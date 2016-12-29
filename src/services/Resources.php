@@ -259,7 +259,7 @@ class Resources extends Component
         }
 
         // Is this a CSS file?
-        if ($mimeType == 'text/css') {
+        if ($mimeType === 'text/css') {
             // Normalize the URLs
             $contents = file_get_contents($path);
             $contents = preg_replace_callback('/(url\(([\'"]?))(.+?)(\2\))/', [&$this, '_normalizeCssUrl'], $contents);

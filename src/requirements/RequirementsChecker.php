@@ -240,7 +240,7 @@ class RequirementsChecker
             return false;
         }
 
-        return ((int)$value == 1 || strtolower($value) == 'on');
+        return ((int)$value == 1 || strtolower($value) === 'on');
     }
 
     /** @noinspection AccessModifierPresentedInspection */
@@ -259,7 +259,7 @@ class RequirementsChecker
             return true;
         }
 
-        return (strtolower($value) == 'off');
+        return (strtolower($value) === 'off');
     }
 
     /** @noinspection AccessModifierPresentedInspection */
@@ -507,7 +507,7 @@ class RequirementsChecker
             $results = $conn->query('SHOW ENGINES');
 
             foreach ($results as $result) {
-                if (strtolower($result['Engine']) == 'innodb' && strtolower($result['Support']) != 'no') {
+                if (strtolower($result['Engine']) === 'innodb' && strtolower($result['Support']) != 'no') {
                     return true;
                 }
             }

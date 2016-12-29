@@ -425,7 +425,7 @@ class Application extends \yii\web\Application
 
         if ($isCpRequest && $request->getIsActionRequest() && ($request->getSegment(1) !== 'login')) {
             $actionSegs = $request->getActionSegments();
-            if (isset($actionSegs[0]) && $actionSegs[0] == 'install') {
+            if (isset($actionSegs[0]) && $actionSegs[0] === 'install') {
                 return $this->_processActionRequest($request);
             }
         }
@@ -507,7 +507,7 @@ class Application extends \yii\web\Application
         // See if we're in the middle of an update.
         $update = false;
 
-        if ($request->getSegment(1) == 'updates' && $request->getSegment(2) == 'go') {
+        if ($request->getSegment(1) === 'updates' && $request->getSegment(2) === 'go') {
             $update = true;
         }
 
@@ -548,7 +548,7 @@ class Application extends \yii\web\Application
                 ])
         ) {
             // If this is a request to actually manually update Craft, do it
-            if ($request->getSegment(1) == 'manualupdate') {
+            if ($request->getSegment(1) === 'manualupdate') {
                 return $this->runAction('update/go', [
                     'handle' => Craft::$app->getRequest()->getSegment(2)
                 ]);
@@ -574,7 +574,7 @@ class Application extends \yii\web\Application
                 return $this->runAction('templates/manual-update-notification');
             }
         } // We'll also let action requests to UpdateController through as well.
-        else if ($request->getIsActionRequest() && (($actionSegs = $request->getActionSegments()) !== null) && isset($actionSegs[0]) && $actionSegs[0] == 'update') {
+        else if ($request->getIsActionRequest() && (($actionSegs = $request->getActionSegments()) !== null) && isset($actionSegs[0]) && $actionSegs[0] === 'update') {
             $controller = $actionSegs[0];
             $action = isset($actionSegs[1]) ? $actionSegs[1] : 'index';
 
@@ -647,7 +647,7 @@ class Application extends \yii\web\Application
                 return true;
             }
 
-            if ($request->getSegment(1) == 'manualupdate') {
+            if ($request->getSegment(1) === 'manualupdate') {
                 return true;
             }
 

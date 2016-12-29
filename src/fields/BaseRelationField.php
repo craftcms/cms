@@ -245,13 +245,13 @@ abstract class BaseRelationField extends Field implements PreviewableFieldInterf
     public function modifyElementsQuery(ElementQueryInterface $query, $value)
     {
         /** @var ElementQuery $query */
-        if ($value == 'not :empty:') {
+        if ($value === 'not :empty:') {
             $value = ':notempty:';
         }
 
-        if ($value == ':notempty:' || $value == ':empty:') {
+        if ($value === ':notempty:' || $value === ':empty:') {
             $alias = 'relations_'.$this->handle;
-            $operator = ($value == ':notempty:' ? '!=' : '=');
+            $operator = ($value === ':notempty:' ? '!=' : '=');
             $paramHandle = ':fieldId'.StringHelper::randomString(8);
 
             $query->subQuery->andWhere(

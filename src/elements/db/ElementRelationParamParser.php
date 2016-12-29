@@ -203,7 +203,7 @@ class ElementRelationParamParser
             if (isset($relCriteria[$elementParam])) {
                 $elements = ArrayHelper::toArray($relCriteria[$elementParam]);
 
-                if (isset($elements[0]) && ($elements[0] == 'and' || $elements[0] == 'or')) {
+                if (isset($elements[0]) && ($elements[0] === 'and' || $elements[0] === 'or')) {
                     $glue = array_shift($elements);
                 }
 
@@ -245,7 +245,7 @@ class ElementRelationParamParser
         }
 
         // Do we need to check for *all* of the element IDs?
-        if ($glue == 'and') {
+        if ($glue === 'and') {
             // Spread it across multiple relation sub-params
             $newRelatedToParam = ['and'];
 

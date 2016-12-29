@@ -91,7 +91,7 @@ class Category extends Element
     {
         $sources = [];
 
-        if ($context == 'index') {
+        if ($context === 'index') {
             $groups = Craft::$app->getCategories()->getEditableGroups();
         } else {
             $groups = Craft::$app->getCategories()->getAllGroups();

@@ -63,7 +63,7 @@ class Images extends Component
      */
     public function init()
     {
-        if (strtolower(Craft::$app->getConfig()->get('imageDriver')) == 'gd') {
+        if (strtolower(Craft::$app->getConfig()->get('imageDriver')) === 'gd') {
             $this->_driver = self::DRIVER_GD;
         } else if ($this->getIsImagickAtLeast(self::MINIMUM_IMAGICK_VERSION)) {
             $this->_driver = self::DRIVER_IMAGICK;
@@ -133,7 +133,7 @@ class Images extends Component
      */
     public function loadImage($path, $rasterize = false, $svgSize = 1000)
     {
-        if (StringHelper::toLowerCase(pathinfo($path, PATHINFO_EXTENSION)) == 'svg') {
+        if (StringHelper::toLowerCase(pathinfo($path, PATHINFO_EXTENSION)) === 'svg') {
             $image = new Svg();
             $image->loadImage($path);
 
@@ -166,7 +166,7 @@ class Images extends Component
      */
     public function checkMemoryForImage($filePath, $toTheMax = false)
     {
-        if (StringHelper::toLowerCase(pathinfo($filePath, PATHINFO_EXTENSION)) == 'svg') {
+        if (StringHelper::toLowerCase(pathinfo($filePath, PATHINFO_EXTENSION)) === 'svg') {
             return true;
         }
 
