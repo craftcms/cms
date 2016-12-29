@@ -495,14 +495,14 @@ class AssetTransforms extends Component
 
         if (!$index->fileExists) {
             // Mark the transform as in progress
-            $index->inProgress = 1;
+            $index->inProgress = true;
             $this->storeTransformIndexData($index);
 
             // Generate the transform
             if ($this->_generateTransform($index)) {
                 // Update the index
-                $index->inProgress = 0;
-                $index->fileExists = 1;
+                $index->inProgress = false;
+                $index->fileExists = true;
                 $this->storeTransformIndexData($index);
             } else {
                 throw new AssetTransformException(Craft::t('app',
@@ -531,11 +531,10 @@ class AssetTransforms extends Component
             $transform->height = ($matches['height'] !== 'AUTO' ? (int)$matches['height'] : null);
             $transform->mode = $matches['mode'];
             $transform->position = $matches['position'];
-            $transform->quality = isset($matches['quality']) ? $matches['quality'] : null;
+            $transform->quality = isset($matches['quality']) ? (int)$matches['quality'] : null;
         } else {
             // Load the dimensions for named transforms and merge with file-specific information.
-            $transform = $this->normalizeTransform(mb_substr($index->location,
-                1));
+            $transform = $this->normalizeTransform(mb_substr($index->location, 1));
         }
 
         $index->transform = $transform;
@@ -878,7 +877,7 @@ class AssetTransforms extends Component
                     } catch (ErrorException $e) {
                         Craft::warning("Unable to delete the file \"{$tempPath}\": ".$e->getMessage());
                     }
-                    throw new VolumeException(Craft::t('Tried to download the source file for image “{file}”, but it was 0 bytes long.',
+                    throw new VolumeException(Craft::t('app', 'Tried to download the source file for image “{file}”, but it was 0 bytes long.',
                         ['file' => $asset->filename]));
                 }
 

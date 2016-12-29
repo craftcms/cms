@@ -9,6 +9,7 @@ namespace craft\mutex;
 
 use Craft;
 use craft\helpers\FileHelper;
+use yii\base\Exception;
 
 /**
  * @inheritdoc
@@ -25,7 +26,13 @@ class FileMutex extends \yii\mutex\FileMutex
      */
     public function init()
     {
-        $this->mutexPath = Craft::getAlias($this->mutexPath);
+        $mutexPath = Craft::getAlias($this->mutexPath);
+
+        if ($mutexPath === false) {
+            throw new Exception('There was a problem getting the mutex path.');
+
+        }
+        $this->mutexPath = $mutexPath;
         if (!is_dir($this->mutexPath)) {
             FileHelper::createDirectory($this->mutexPath, $this->dirMode, true);
         }

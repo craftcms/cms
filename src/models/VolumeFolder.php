@@ -28,7 +28,7 @@ class VolumeFolder extends Model
     public $id;
 
     /**
-     * @var integer Parent ID
+     * @var integer|string Parent ID
      */
     public $parentId;
 

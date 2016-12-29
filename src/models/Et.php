@@ -60,7 +60,7 @@ class Et extends Model
     public $pluginLicenseKeyStatuses;
 
     /**
-     * @var array|string Data
+     * @var array|string|Model Data
      */
     public $data;
 

@@ -82,7 +82,7 @@ class AssetTransformIndex extends Model
     public $detectedFormat;
 
     /**
-     * @var array Transform
+     * @var AssetTransform|null Transform
      */
     public $transform;
 

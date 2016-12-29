@@ -239,11 +239,11 @@ class EmailMessages extends Component
         }
 
         $combinedKey = $key.'_'.$part;
-        $t = Craft::t($messageInfo['category'], $combinedKey, null, $language);
+        $t = Craft::t($messageInfo['category'], $combinedKey, [], $language);
 
         // If a translation couldn't be found, default to the message's source language
-        if ($t == $combinedKey) {
-            $t = Craft::t($messageInfo['category'], $combinedKey, null, $messageInfo['sourceLanguage']);
+        if ($t === $combinedKey) {
+            $t = Craft::t($messageInfo['category'], $combinedKey, [], $messageInfo['sourceLanguage']);
         }
 
         return $t;
