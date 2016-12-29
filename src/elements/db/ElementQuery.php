@@ -160,7 +160,7 @@ class ElementQuery extends Query implements ElementQueryInterface, Arrayable, Co
     public $enabledForSite = true;
 
     /**
-     * @var integer|array|Element The element relation criteria.
+     * @var integer|array|ElementInterface The element relation criteria.
      */
     public $relatedTo;
 
@@ -204,7 +204,7 @@ class ElementQuery extends Query implements ElementQueryInterface, Arrayable, Co
     // -------------------------------------------------------------------------
 
     /**
-     * @var integer The structure ID that should be used to join in the structureelements table.
+     * @var integer|false The structure ID that should be used to join in the structureelements table.
      */
     public $structureId;
 
@@ -214,7 +214,7 @@ class ElementQuery extends Query implements ElementQueryInterface, Arrayable, Co
     public $level;
 
     /**
-     * @var integer|Element The element (or its ID) that results must be an ancestor of.
+     * @var integer|ElementInterface The element (or its ID) that results must be an ancestor of.
      */
     public $ancestorOf;
 
@@ -224,7 +224,7 @@ class ElementQuery extends Query implements ElementQueryInterface, Arrayable, Co
     public $ancestorDist;
 
     /**
-     * @var integer|Element The element (or its ID) that results must be a descendant of.
+     * @var integer|ElementInterface The element (or its ID) that results must be a descendant of.
      */
     public $descendantOf;
 
@@ -234,27 +234,27 @@ class ElementQuery extends Query implements ElementQueryInterface, Arrayable, Co
     public $descendantDist;
 
     /**
-     * @var integer|Element The element (or its ID) that the results must be a sibling of.
+     * @var integer|ElementInterface The element (or its ID) that the results must be a sibling of.
      */
     public $siblingOf;
 
     /**
-     * @var integer|Element The element (or its ID) that the result must be the previous sibling of.
+     * @var integer|ElementInterface The element (or its ID) that the result must be the previous sibling of.
      */
     public $prevSiblingOf;
 
     /**
-     * @var integer|Element The element (or its ID) that the result must be the next sibling of.
+     * @var integer|ElementInterface The element (or its ID) that the result must be the next sibling of.
      */
     public $nextSiblingOf;
 
     /**
-     * @var integer|Element The element (or its ID) that the results must be positioned before.
+     * @var integer|ElementInterface The element (or its ID) that the results must be positioned before.
      */
     public $positionedBefore;
 
     /**
-     * @var integer|Element The element (or its ID) that the results must be positioned after.
+     * @var integer|ElementInterface The element (or its ID) that the results must be positioned after.
      */
     public $positionedAfter;
 
@@ -274,7 +274,7 @@ class ElementQuery extends Query implements ElementQueryInterface, Arrayable, Co
     private $_resultCriteria;
 
     /**
-     * @var array
+     * @var array|null
      */
     private $_searchScores;
 
@@ -315,10 +315,8 @@ class ElementQuery extends Query implements ElementQueryInterface, Arrayable, Co
         switch ($name) {
             case 'locale':
                 Craft::$app->getDeprecator()->log('ElementQuery::locale()', 'The “locale” element query param has been deprecated. Use “site” or “siteId” instead.');
-                if ($this->siteId) {
-                    if ($site = Craft::$app->getSites()->getSiteById($this->siteId)) {
-                        return $site->handle;
-                    }
+                if ($this->siteId && ($site = Craft::$app->getSites()->getSiteById($this->siteId))) {
+                    return $site->handle;
                 }
 
                 return null;
