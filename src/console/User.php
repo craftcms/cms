@@ -26,7 +26,7 @@ class User extends Component
     // =========================================================================
 
     /**
-     * @var UserElement|false
+     * @var UserElement|IdentityInterface|false
      */
     private $_identity = false;
 

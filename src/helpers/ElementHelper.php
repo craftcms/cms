@@ -292,9 +292,9 @@ class ElementHelper
     /**
      * Returns an element type's source definition based on a given source key/path and context.
      *
-     * @param string      $elementType The element type class
-     * @param string      $sourceKey   The source key/path
-     * @param string|null $context     The context
+     * @param ElementInterface $elementType The element type class
+     * @param string           $sourceKey   The source key/path
+     * @param string|null      $context     The context
      *
      * @return array|null The source definition, or null if it cannot be found
      */
@@ -309,7 +309,7 @@ class ElementHelper
             $source = null;
 
             foreach ($sources as $testSource) {
-                if (isset($testSource['key']) && $testSource['key'] == $key) {
+                if (isset($testSource['key']) && $testSource['key'] === $key) {
                     $source = $testSource;
                     break;
                 }

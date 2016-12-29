@@ -64,7 +64,7 @@ class ElementIndexesController extends BaseElementsController
     private $_elementQuery;
 
     /**
-     * @var ElementActionInterface[]
+     * @var ElementActionInterface[]|null
      */
     private $_actions;
 

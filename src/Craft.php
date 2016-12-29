@@ -35,9 +35,7 @@ class Craft extends Yii
     // =========================================================================
 
     /**
-     * @var \craft\web\Application The application instance.
-     *
-     * This may return a [[\craft\console\Application]] instance if this is a console request.
+     * @var \craft\web\Application|\craft\console\Application The application instance.
      */
     public static $app;
 
