@@ -95,8 +95,8 @@ class Mailer extends \yii\swiftmailer\Mailer
                 $subjectTemplate = $storedMessage->subject;
                 $textBodyTemplate = $storedMessage->body;
             } else {
-                $subjectTemplate = Craft::t('app', $message->key.'_subject', null, 'en_us');
-                $textBodyTemplate = Craft::t('app', $message->key.'_body', null, 'en_us');
+                $subjectTemplate = Craft::t('app', $message->key.'_subject', [], 'en_us');
+                $textBodyTemplate = Craft::t('app', $message->key.'_body', [], 'en_us');
             }
 
             $view = Craft::$app->getView();

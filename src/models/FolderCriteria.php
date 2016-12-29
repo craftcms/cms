@@ -26,7 +26,7 @@ class FolderCriteria extends Model
     public $id;
 
     /**
-     * @var integer Parent ID
+     * @var integer|string|boolean Parent ID
      */
     public $parentId = false;
 

@@ -75,7 +75,7 @@ class Template
 
         // Copy the criteria, set the offset, and get the elements
         $query = clone $query;
-        $query->offset = $offset;
+        $query->offset = (int)$offset;
         $elements = $query->all();
 
         return [$paginateVariable, $elements];

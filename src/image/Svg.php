@@ -224,8 +224,8 @@ class Svg extends Image
             $this->_svgContent = preg_replace(self::SVG_TAG_RE, "<svg width=\"{$targetWidth}px\" height=\"{$targetHeight}px\"", $this->_svgContent);
         }
 
-        $this->_width = $targetWidth;
-        $this->_height = $targetHeight;
+        $this->_width = (int)$targetWidth;
+        $this->_height = (int)$targetHeight;
 
         return $this;
     }
