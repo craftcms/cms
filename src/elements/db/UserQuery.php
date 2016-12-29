@@ -154,7 +154,7 @@ class UserQuery extends ElementQuery
      */
     public function can($value)
     {
-        $this->client = $value;
+        $this->can = $value;
 
         return $this;
     }
