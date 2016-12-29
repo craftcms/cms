@@ -556,7 +556,7 @@ class Sections extends Component
                             $firstResult = array_shift($results);
                             $singleEntryId = $firstResult['id'];
                             // If there are any more, get rid of them
-                            if ($results) {
+                            if (!empty($results)) {
                                 foreach ($results as $result) {
                                     Craft::$app->getElements()->deleteElementById($result['id'], Entry::class, $result['siteId']);
                                 }

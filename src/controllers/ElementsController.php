@@ -281,10 +281,7 @@ class ElementsController extends BaseElementsController
         // Populate it with any posted attributes
         $attributes = $request->getBodyParam('attributes', []);
         $attributes['siteId'] = $siteId;
-
-        if ($attributes) {
-            Craft::configure($element, $attributes);
-        }
+        Craft::configure($element, $attributes);
 
         // Make sure it's editable
         // (ElementHelper::isElementEditable() is overkill here since we've already verified the user can edit the element's site)
