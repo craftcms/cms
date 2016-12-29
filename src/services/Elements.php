@@ -392,9 +392,21 @@ class Elements extends Component
             // Save the element record
             $elementRecord->save(false);
 
+            $dateCreated = DateTimeHelper::toDateTime($elementRecord->dateCreated);
+
+            if ($dateCreated === false) {
+                throw new Exception('There was a problem calculating dateCreated.');
+            }
+
+            $dateUpdated = DateTimeHelper::toDateTime($elementRecord->dateUpdated);
+
+            if ($dateUpdated === false) {
+                throw new Exception('There was a problem calculating dateUpdated.');
+            }
+
             // Save the new dateCreated and dateUpdated dates on the model
-            $element->dateCreated = DateTimeHelper::toDateTime($elementRecord->dateCreated);
-            $element->dateUpdated = DateTimeHelper::toDateTime($elementRecord->dateUpdated);
+            $element->dateCreated = $dateCreated;
+            $element->dateUpdated = $dateUpdated;
 
             if ($isNewElement) {
                 // Save the element ID on the element model, in case {id} is in the URL format

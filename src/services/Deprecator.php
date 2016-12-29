@@ -120,7 +120,7 @@ class Deprecator extends Component
                         $values,
                         ['id' => $existingId])
                     ->execute();
-                $log->id = $existingId;
+                $log->id = (int)$existingId;
             }
 
             $this->_requestLogs[$key] = $log;
