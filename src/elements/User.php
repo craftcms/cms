@@ -827,7 +827,15 @@ class User extends Element implements IdentityInterface
             return null;
         }
 
-        return $firstName.($firstName && $lastName ? ' ' : '').$lastName;
+        $name = $firstName;
+
+        if ($firstName && $lastName) {
+            $name .= ' ';
+        }
+
+        $name .= $lastName;
+
+        return $name;
     }
 
     /**
