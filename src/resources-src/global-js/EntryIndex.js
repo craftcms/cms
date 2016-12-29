@@ -26,7 +26,7 @@ Craft.EntryIndex = Craft.BaseElementIndex.extend(
 
         getDefaultSourceKey: function() {
             // Did they request a specific section in the URL?
-            if (this.settings.context == 'index' && typeof defaultSectionHandle != typeof undefined) {
+            if (this.settings.context == 'index' && defaultSectionHandle !== undefined) {
                 if (defaultSectionHandle == 'singles') {
                     return 'singles';
                 }
@@ -131,7 +131,7 @@ Craft.EntryIndex = Craft.BaseElementIndex.extend(
             // Update the URL if we're on the Entries index
             // ---------------------------------------------------------------------
 
-            if (this.settings.context == 'index' && typeof history != typeof undefined) {
+            if (this.settings.context == 'index' && history !== undefined) {
                 var uri = 'entries';
 
                 if (handle) {

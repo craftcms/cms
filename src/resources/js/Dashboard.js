@@ -33,7 +33,7 @@
 
             getTypeInfo: function(type, property, defaultValue) {
                 if (property) {
-                    if (typeof this.widgetTypes[type][property] == typeof undefined) {
+                    if (this.widgetTypes[type][property] === undefined) {
                         return defaultValue;
                     }
                     else {

@@ -323,12 +323,12 @@ Craft.AssetImageEditor = Garnish.Modal.extend(
         performOperation: function(operation, reverse) {
             var modifier = reverse ? -1 : 1;
 
-            if (typeof operation.imageRotation != "undefined") {
+            if (operation.imageRotation !== undefined) {
                 this.rotation += modifier * operation.imageRotation;
                 this.frameRotation += modifier * operation.imageRotation;
             }
 
-            if (typeof operation.straightenOffset != "undefined") {
+            if (operation.straightenOffset !== undefined) {
                 var value = modifier * operation.straightenOffset;
                 this.rotation += value;
 

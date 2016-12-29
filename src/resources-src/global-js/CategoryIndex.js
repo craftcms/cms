@@ -26,7 +26,7 @@ Craft.CategoryIndex = Craft.BaseElementIndex.extend(
 
         getDefaultSourceKey: function() {
             // Did they request a specific category group in the URL?
-            if (this.settings.context == 'index' && typeof defaultGroupHandle != typeof undefined) {
+            if (this.settings.context == 'index' && defaultGroupHandle !== undefined) {
                 for (var i = 0; i < this.$sources.length; i++) {
                     var $source = $(this.$sources[i]);
 
@@ -119,7 +119,7 @@ Craft.CategoryIndex = Craft.BaseElementIndex.extend(
             // Update the URL if we're on the Categories index
             // ---------------------------------------------------------------------
 
-            if (this.settings.context == 'index' && typeof history != typeof undefined) {
+            if (this.settings.context == 'index' && history !== undefined) {
                 var uri = 'categories';
 
                 if (selectedSourceHandle) {

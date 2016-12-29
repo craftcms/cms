@@ -407,7 +407,7 @@ Craft.CP = Garnish.Base.extend(
 
                 if (this.updateResponsiveTables._containerWidth > 0) {
                     // Is this the first time we've checked this table?
-                    if (typeof this.updateResponsiveTables._$table.data('lastContainerWidth') === typeof undefined) {
+                    if (this.updateResponsiveTables._$table.data('lastContainerWidth') === undefined) {
                         this.updateResponsiveTables._check = true;
                     }
                     else {
@@ -773,7 +773,7 @@ Craft.CP = Garnish.Base.extend(
                         }
                     }
                 }, this));
-            }, this), (typeof delay != typeof undefined ? delay : Craft.CP.taskTrackerUpdateInterval));
+            }, this), (delay !== undefined ? delay : Craft.CP.taskTrackerUpdateInterval));
         },
 
         stopTrackingTaskProgress: function() {

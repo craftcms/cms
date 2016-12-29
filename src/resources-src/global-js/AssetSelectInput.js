@@ -42,12 +42,12 @@ Craft.AssetSelectInput = Craft.BaseElementSelectInput.extend(
             };
 
             // If CSRF protection isn't enabled, these won't be defined.
-            if (typeof Craft.csrfTokenName !== 'undefined' && typeof Craft.csrfTokenValue !== 'undefined') {
+            if (Craft.csrfTokenName !== undefined && Craft.csrfTokenValue !== undefined) {
                 // Add the CSRF token
                 options.formData[Craft.csrfTokenName] = Craft.csrfTokenValue;
             }
 
-            if (typeof this.settings.criteria.kind != "undefined") {
+            if (this.settings.criteria.kind !== undefined) {
                 options.allowedKinds = this.settings.criteria.kind;
             }
 
@@ -174,7 +174,7 @@ Craft.AssetSelectInput = Craft.BaseElementSelectInput.extend(
                 var startPos = 0,
                     endPos = filename.baseFileName.length;
 
-                if (typeof input.selectionStart != "undefined") {
+                if (input.selectionStart !== undefined) {
                     input.selectionStart = startPos;
                     input.selectionEnd = endPos;
                 } else if (document.selection && document.selection.createRange) {

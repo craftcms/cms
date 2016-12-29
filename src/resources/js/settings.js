@@ -91,7 +91,7 @@
             loadAction: function(data) {
                 this.loadingActions++;
 
-                if (typeof data.confirm != 'undefined' && data.confirm) {
+                if (data.confirm !== undefined && data.confirm) {
                     this.showConfirmDialog(data);
                 }
                 else {

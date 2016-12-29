@@ -33,7 +33,7 @@ Craft.Structure = Garnish.Base.extend(
                 $.extend(this.state, Craft.getLocalStorage(this.settings.storageKey, {}));
             }
 
-            if (typeof this.state.collapsedElementIds == 'undefined') {
+            if (this.state.collapsedElementIds === undefined) {
                 this.state.collapsedElementIds = [];
             }
 
@@ -143,7 +143,7 @@ Craft.Structure = Garnish.Base.extend(
             $li.css('visibility', 'hidden').velocity({marginBottom: -$li.height()}, 'fast', $.proxy(function() {
                 $li.remove();
 
-                if (typeof $parentUl != 'undefined') {
+                if ($parentUl !== undefined) {
                     this._removeUl($parentUl);
                 }
             }, this));

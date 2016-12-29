@@ -146,8 +146,8 @@ $.extend(Craft,
          */
         t: function(category, message, params) {
             if (
-                typeof Craft.translations[category] != typeof undefined &&
-                typeof Craft.translations[category][message] != typeof undefined
+                Craft.translations[category] !== undefined &&
+                Craft.translations[category][message] !== undefined
             ) {
                 message = Craft.translations[category][message];
             }
@@ -475,7 +475,7 @@ $.extend(Craft,
                 },
                 complete: function(jqXHR, textStatus) {
                     if (textStatus != 'success') {
-                        if (typeof Craft.cp != 'undefined') {
+                        if (Craft.cp !== undefined) {
                             Craft.cp.displayError();
                         }
                         else {
@@ -642,7 +642,7 @@ $.extend(Craft,
 
                 // If they're actual objects (not arrays), compare the keys
                 if (!(obj1 instanceof Array)) {
-                    if (typeof sortObjectKeys === typeof undefined || sortObjectKeys == true) {
+                    if (sortObjectKeys === undefined || sortObjectKeys == true) {
                         if (!Craft.compare(Craft.getObjectKeys(obj1).sort(), Craft.getObjectKeys(obj2).sort())) {
                             return false;
                         }
@@ -859,7 +859,7 @@ $.extend(Craft,
          * Converts a number of seconds into a human-facing time duration.
          */
         secondsToHumanTimeDuration: function(seconds, showSeconds) {
-            if (typeof showSeconds == 'undefined') {
+            if (showSeconds === undefined) {
                 showSeconds = true;
             }
 
@@ -1059,7 +1059,7 @@ $.extend(Craft,
          * @param {function} func
          */
         registerElementIndexClass: function(elementType, func) {
-            if (typeof this._elementIndexClasses[elementType] != 'undefined') {
+            if (this._elementIndexClasses[elementType] !== undefined) {
                 throw 'An element index class has already been registered for the element type “' + elementType + '”.';
             }
 
@@ -1074,7 +1074,7 @@ $.extend(Craft,
          * @param {function} func
          */
         registerElementSelectorModalClass: function(elementType, func) {
-            if (typeof this._elementSelectorModalClasses[elementType] != 'undefined') {
+            if (this._elementSelectorModalClasses[elementType] !== undefined) {
                 throw 'An element selector modal class has already been registered for the element type “' + elementType + '”.';
             }
 
@@ -1092,7 +1092,7 @@ $.extend(Craft,
         createElementIndex: function(elementType, $container, settings) {
             var func;
 
-            if (typeof this._elementIndexClasses[elementType] != 'undefined') {
+            if (this._elementIndexClasses[elementType] !== undefined) {
                 func = this._elementIndexClasses[elementType];
             }
             else {
@@ -1111,7 +1111,7 @@ $.extend(Craft,
         createElementSelectorModal: function(elementType, settings) {
             var func;
 
-            if (typeof this._elementSelectorModalClasses[elementType] != 'undefined') {
+            if (this._elementSelectorModalClasses[elementType] !== undefined) {
                 func = this._elementSelectorModalClasses[elementType];
             }
             else {
@@ -1130,7 +1130,7 @@ $.extend(Craft,
         getLocalStorage: function(key, defaultValue) {
             key = 'Craft-' + Craft.systemUid + '.' + key;
 
-            if (typeof localStorage != 'undefined' && typeof localStorage[key] != 'undefined') {
+            if (localStorage !== undefined && localStorage[key] !== undefined) {
                 return JSON.parse(localStorage[key]);
             }
             else {
@@ -1145,7 +1145,7 @@ $.extend(Craft,
          * @param value
          */
         setLocalStorage: function(key, value) {
-            if (typeof localStorage != 'undefined') {
+            if (localStorage !== undefined) {
                 key = 'Craft-' + Craft.systemUid + '.' + key;
 
                 // localStorage might be filled all the way up.

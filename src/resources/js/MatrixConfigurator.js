@@ -228,7 +228,7 @@
                     this.handleGenerator.stopListening();
                 }
 
-                if (typeof name == 'undefined') {
+                if (name === undefined) {
                     this.$deleteBtn.addClass('hidden');
                     this.$submitBtn.val(Craft.t('app', 'Create'));
                 }
@@ -588,7 +588,7 @@
                 this.selectedFieldType = type;
                 this.$typeSelect.val(type);
 
-                var firstTime = (typeof this.initializedFieldTypeSettings[type] == 'undefined'),
+                var firstTime = (this.initializedFieldTypeSettings[type] === undefined),
                     $body,
                     footHtml;
 

@@ -28,7 +28,7 @@ Craft.BaseElementSelectInput = Garnish.Base.extend(
                     args = ['id', 'name', 'elementType', 'sources', 'criteria', 'sourceElementId', 'limit', 'modalStorageKey', 'fieldId'];
 
                 for (var i = 0; i < args.length; i++) {
-                    if (typeof arguments[i] != typeof undefined) {
+                    if (arguments[i] !== undefined) {
                         normalizedSettings[args[i]] = arguments[i];
                     }
                     else {

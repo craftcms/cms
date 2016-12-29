@@ -95,7 +95,7 @@ Craft.CustomizeSourcesModal = Garnish.Modal.extend(
                 this.sources.push(source);
             }
 
-            if (!this.selectedSource && typeof this.sources[0] != typeof undefined) {
+            if (!this.selectedSource && this.sources[0] !== undefined) {
                 this.sources[0].select();
             }
         },
@@ -108,7 +108,7 @@ Craft.CustomizeSourcesModal = Garnish.Modal.extend(
                 source;
 
             // Is this a heading?
-            if (typeof sourceData.heading !== typeof undefined) {
+            if (sourceData.heading !== undefined) {
                 $item.addClass('heading');
                 $itemInput.attr('name', 'sourceOrder[][heading]');
                 source = new Craft.CustomizeSourcesModal.Heading(this, $item, $itemLabel, $itemInput, sourceData);

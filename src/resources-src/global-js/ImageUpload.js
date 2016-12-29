@@ -25,7 +25,7 @@ Craft.ImageUpload = Garnish.Base.extend(
             };
 
             // If CSRF protection isn't enabled, these won't be defined.
-            if (typeof Craft.csrfTokenName !== 'undefined' && typeof Craft.csrfTokenValue !== 'undefined') {
+            if (Craft.csrfTokenName !== undefined && Craft.csrfTokenValue !== undefined) {
                 // Add the CSRF token
                 options.formData[Craft.csrfTokenName] = Craft.csrfTokenValue;
             }

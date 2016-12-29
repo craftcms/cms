@@ -12,7 +12,7 @@ Craft.ElevatedSessionForm = Garnish.Base.extend(
             this.$form = $(form);
 
             // Only check specific inputs?
-            if (typeof inputs !== typeof undefined) {
+            if (inputs !== undefined) {
                 this.inputs = [];
                 var inputs = $.makeArray(inputs);
 

@@ -57,7 +57,7 @@ Craft.Uploader = Garnish.Base.extend(
          */
         setParams: function(paramObject) {
             // If CSRF protection isn't enabled, these won't be defined.
-            if (typeof Craft.csrfTokenName !== 'undefined' && typeof Craft.csrfTokenValue !== 'undefined') {
+            if (Craft.csrfTokenName !== undefined && Craft.csrfTokenValue !== undefined) {
                 // Add the CSRF token
                 paramObject[Craft.csrfTokenName] = Craft.csrfTokenValue;
             }
@@ -214,7 +214,7 @@ Craft.Uploader = Garnish.Base.extend(
             for (var i = 0; i < this.allowedKinds.length; i++) {
                 var allowedKind = this.allowedKinds[i];
 
-                if (typeof Craft.fileKinds[allowedKind] !== typeof undefined) {
+                if (Craft.fileKinds[allowedKind] !== undefined) {
                     for (var j = 0; j < Craft.fileKinds[allowedKind].extensions.length; j++) {
                         var ext = Craft.fileKinds[allowedKind].extensions[j];
                         this._extensionList.push(ext);

@@ -27,7 +27,7 @@ Craft.TagSelectInput = Craft.BaseElementSelectInput.extend(
                     args = ['id', 'name', 'tagGroupId', 'sourceElementId'];
 
                 for (var i = 0; i < args.length; i++) {
-                    if (typeof arguments[i] != typeof undefined) {
+                    if (arguments[i] !== undefined) {
                         normalizedSettings[args[i]] = arguments[i];
                     }
                     else {

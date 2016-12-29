@@ -137,7 +137,7 @@ Craft.ElevatedSessionManager = Garnish.Base.extend(
         },
 
         showPasswordError: function(error) {
-            if (error === null || typeof error == 'undefined') {
+            if (error === null || error === undefined) {
                 error = Craft.t('app', 'An unknown error occurred.');
             }
 

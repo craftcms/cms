@@ -387,7 +387,7 @@ Craft.Grid = Garnish.Base.extend(
 
         completeRefreshCols: function() {
             // Delete the internal variable object
-            if (typeof this.refreshCols._ != typeof undefined) {
+            if (this.refreshCols._ !== undefined) {
                 delete this.refreshCols._;
             }
 

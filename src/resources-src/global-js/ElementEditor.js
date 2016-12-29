@@ -22,7 +22,7 @@ Craft.ElementEditor = Garnish.Base.extend(
 
         init: function($element, settings) {
             // Param mapping
-            if (typeof settings == typeof undefined && $.isPlainObject($element)) {
+            if (settings === undefined && $.isPlainObject($element)) {
                 // (settings)
                 settings = $element;
                 $element = null;
@@ -235,7 +235,7 @@ Craft.ElementEditor = Garnish.Base.extend(
                         }
 
                         // Update Live Preview
-                        if (typeof Craft.livePreview != 'undefined') {
+                        if (Craft.livePreview !== undefined) {
                             Craft.livePreview.updateIframe(true);
                         }
 

@@ -56,7 +56,7 @@ Craft.AuthManager = Garnish.Base.extend(
 
                         this.submitLoginIfLoggedOut = false;
 
-                        if (typeof jqXHR.responseJSON.csrfTokenValue !== 'undefined' && typeof Craft.csrfTokenValue !== 'undefined') {
+                        if (jqXHR.responseJSON.csrfTokenValue !== undefined && Craft.csrfTokenValue !== undefined) {
                             Craft.csrfTokenValue = jqXHR.responseJSON.csrfTokenValue;
                         }
                     }
@@ -342,7 +342,7 @@ Craft.AuthManager = Garnish.Base.extend(
                 this.$passwordSpinner.removeClass('hidden');
                 this.clearLoginError();
 
-                if (typeof Craft.csrfTokenValue != 'undefined') {
+                if (Craft.csrfTokenValue !== undefined) {
                     // Check the auth status one last time before sending this off,
                     // in case the user has already logged back in from another window/tab
                     this.submitLoginIfLoggedOut = true;
@@ -385,7 +385,7 @@ Craft.AuthManager = Garnish.Base.extend(
         },
 
         showLoginError: function(error) {
-            if (error === null || typeof error == 'undefined') {
+            if (error === null || error === undefined) {
                 error = Craft.t('app', 'An unknown error occurred.');
             }
 

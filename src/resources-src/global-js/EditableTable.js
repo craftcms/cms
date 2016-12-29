@@ -105,7 +105,7 @@ Craft.EditableTable = Garnish.Base.extend(
                 }
 
                 var col = columns[colId],
-                    value = (typeof values[colId] != 'undefined' ? values[colId] : ''),
+                    value = (values[colId] !== undefined ? values[colId] : ''),
                     $cell;
 
                 if (col.type == 'heading') {
@@ -263,7 +263,7 @@ Craft.EditableTable.Row = Garnish.Base.extend(
 
                 var col = this.table.columns[colId];
 
-                if (col.autopopulate && typeof textareasByColId[col.autopopulate] != 'undefined' && !textareasByColId[colId].val()) {
+                if (col.autopopulate && textareasByColId[col.autopopulate] !== undefined && !textareasByColId[colId].val()) {
                     new Craft.HandleGenerator(textareasByColId[colId], textareasByColId[col.autopopulate]);
                 }
             }
@@ -286,7 +286,7 @@ Craft.EditableTable.Row = Garnish.Base.extend(
                 var val = $textarea.val();
 
                 // Does the browser support setSelectionRange()?
-                if (typeof $textarea[0].setSelectionRange != 'undefined') {
+                if ($textarea[0].setSelectionRange !== undefined) {
                     // Select the whole value
                     var length = val.length * 2;
                     $textarea[0].setSelectionRange(0, length);

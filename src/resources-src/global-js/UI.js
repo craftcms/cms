@@ -12,7 +12,7 @@ Craft.ui =
                 value: config.value,
                 maxlength: config.maxlength,
                 autofocus: this.getAutofocusValue(config.autofocus),
-                autocomplete: (typeof config.autocomplete === typeof undefined || !config.autocomplete ? 'off' : null),
+                autocomplete: (config.autocomplete === undefined || !config.autocomplete ? 'off' : null),
                 disabled: this.getDisabledValue(config.disabled),
                 readonly: config.readonly,
                 title: config.title,
@@ -117,14 +117,14 @@ Craft.ui =
                 var option = config.options[key];
 
                 // Starting a new <optgroup>?
-                if (typeof option.optgroup != typeof undefined) {
+                if (option.optgroup !== undefined) {
                     $optgroup = $('<optgroup/>', {
                         'label': option.label
                     }).appendTo($select);
                 } else {
-                    var optionLabel = (typeof option.label != typeof undefined ? option.label : option),
-                        optionValue = (typeof option.value != typeof undefined ? option.value : key),
-                        optionDisabled = (typeof option.disabled != typeof undefined ? option.disabled : false);
+                    var optionLabel = (option.label !== undefined ? option.label : option),
+                        optionValue = (option.value !== undefined ? option.value : key),
+                        optionDisabled = (option.disabled !== undefined ? option.disabled : false);
 
                     $('<option/>', {
                         'value': optionValue,
@@ -152,7 +152,7 @@ Craft.ui =
 
             var $input = $('<input/>', {
                 type: 'checkbox',
-                value: (typeof config.value !== typeof undefined ? config.value : '1'),
+                value: (config.value !== undefined ? config.value : '1'),
                 id: id,
                 'class': 'checkbox',
                 name: config.name,

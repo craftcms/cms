@@ -481,19 +481,19 @@ Craft.BaseElementIndex = Garnish.Base.extend(
         },
 
         getSourceState: function(source, key, defaultValue) {
-            if (typeof this.sourceStates[source] == 'undefined') {
+            if (this.sourceStates[source] === undefined) {
                 // Set it now so any modifications to it by whoever's calling this will be stored.
                 this.sourceStates[source] = {};
             }
 
-            if (typeof key == 'undefined') {
+            if (key === undefined) {
                 return this.sourceStates[source];
             }
-            else if (typeof this.sourceStates[source][key] != 'undefined') {
+            else if (this.sourceStates[source][key] !== undefined) {
                 return this.sourceStates[source][key];
             }
             else {
-                return (typeof defaultValue != 'undefined' ? defaultValue : null);
+                return (defaultValue !== undefined ? defaultValue : null);
             }
         },
 
@@ -774,7 +774,7 @@ Craft.BaseElementIndex = Garnish.Base.extend(
         },
 
         getSourceByKey: function(key) {
-            if (typeof this.sourcesByKey[key] === typeof undefined) {
+            if (this.sourcesByKey[key] === undefined) {
                 return null;
             }
 
@@ -841,9 +841,9 @@ Craft.BaseElementIndex = Garnish.Base.extend(
                     var viewMode = this.sourceViewModes[i];
 
                     var $viewModeBtn = $('<div data-view="' + viewMode.mode + '" role="button"' +
-                        ' class="btn' + (typeof viewMode.className != 'undefined' ? ' ' + viewMode.className : '') + '"' +
+                        ' class="btn' + (viewMode.className !== undefined ? ' ' + viewMode.className : '') + '"' +
                         ' title="' + viewMode.title + '"' +
-                        (typeof viewMode.icon != 'undefined' ? ' data-icon="' + viewMode.icon + '"' : '') +
+                        (viewMode.icon !== undefined ? ' data-icon="' + viewMode.icon + '"' : '') +
                         '/>'
                     ).appendTo(this.$viewModeBtnContainer);
 
@@ -962,14 +962,14 @@ Craft.BaseElementIndex = Garnish.Base.extend(
             }
 
             // Deselect the previous view mode
-            if (this.viewMode && typeof this.viewModeBtns[this.viewMode] != 'undefined') {
+            if (this.viewMode && this.viewModeBtns[this.viewMode] !== undefined) {
                 this.viewModeBtns[this.viewMode].removeClass('active');
             }
 
             this.viewMode = viewMode;
             this.setSelecetedSourceState('mode', this.viewMode);
 
-            if (typeof this.viewModeBtns[this.viewMode] != 'undefined') {
+            if (this.viewModeBtns[this.viewMode] !== undefined) {
                 this.viewModeBtns[this.viewMode].addClass('active');
             }
         },

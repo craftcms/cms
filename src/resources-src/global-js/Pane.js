@@ -53,7 +53,7 @@ Craft.Pane = Garnish.Base.extend(
                     }
                 }
 
-                if (document.location.hash && typeof this.tabs[document.location.hash] != 'undefined') {
+                if (document.location.hash && this.tabs[document.location.hash] !== undefined) {
                     this.tabs[document.location.hash].$tab.trigger('activate');
                 }
                 else if (!this.selectedTab) {

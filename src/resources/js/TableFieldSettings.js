@@ -77,7 +77,7 @@
                 for (var i = 0; i < this.defaultsTableInputPath.length; i++) {
                     var key = this.defaultsTableInputPath[i];
 
-                    if (typeof defaults[key] === typeof undefined) {
+                    if (defaults[key] === undefined) {
                         defaults = {};
                         break;
                     }
