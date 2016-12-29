@@ -443,27 +443,6 @@ class Categories extends Component
                     ->limit(null)
                     ->ids();
 
-                // Should we be deleting
-                /** @noinspection PhpUndefinedVariableInspection */
-                if ($categoryIds && $droppedSiteIds) {
-                    $db->createCommand()
-                        ->delete(
-                            '{{%elements_i18n}}',
-                            [
-                                'elementId' => $categoryIds,
-                                'siteId' => $droppedSiteIds
-                            ])
-                        ->execute();
-                    $db->createCommand()
-                        ->delete(
-                            '{{%content}}',
-                            [
-                                'elementId' => $categoryIds,
-                                'siteId' => $droppedSiteIds
-                            ])
-                        ->execute();
-                }
-
                 // Are there any sites left?
                 if ($allSiteSettings) {
                     // Drop the old category URIs for any site settings that don't have URLs

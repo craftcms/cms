@@ -476,6 +476,7 @@ Craft CMS 3.0 Working Changelog
 - Fixed a bug where the `fixedOrder` parameter wasn’t being respected for entry queries.
 - Fixed a bug where plugin-supplied custom fields weren’t working.
 - Fixed a PHP error that occurred when opening an element editor.
+- Fixed a PHP error that occurred when re-saving a category group.
 - Fixed authorization error that occurred when editing an entry in a section that’s not enabled for the current site.
 - Fixed a PHP error when using the `{% cache %}` tag.
 - Fixed an error that occurred when clicking on an email message to edit it.
