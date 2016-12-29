@@ -281,7 +281,7 @@ class AssetQuery extends ElementQuery
     /**
      * Sets the [[withTransforms]] property.
      *
-     * @param boolean $value The property value (defaults to true)
+     * @param mixed $value The transforms to include.
      *
      * @return self The query object itself
      */

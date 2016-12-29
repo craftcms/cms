@@ -15,6 +15,7 @@ use craft\errors\UploadFailedException;
 use craft\events\LoginFailureEvent;
 use craft\events\RegisterUserActionsEvent;
 use craft\events\UserTokenEvent;
+use craft\helpers\ArrayHelper;
 use craft\helpers\Assets;
 use craft\helpers\FileHelper;
 use craft\helpers\Image;
@@ -1826,6 +1827,8 @@ class UsersController extends Controller
     private function _handleSendPasswordResetError($errors, $loginName = null)
     {
         if (Craft::$app->getRequest()->getAcceptsJson()) {
+            /** @noinspection CallableParameterUseCaseInTypeContextInspection */
+            $errors = implode(', ', $errors);
             return $this->asErrorJson($errors);
         } else {
             // Send the data back to the template
