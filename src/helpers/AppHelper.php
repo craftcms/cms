@@ -247,13 +247,15 @@ class AppHelper
 		$matches = array();
 
 		// See if we can recognize that.
-		if (!preg_match('/[0-9]+(K|M|G|T)/i', $value, $matches))
+		if (!preg_match('/(\d+)(K|M|G|T)/i', $value, $matches))
 		{
 			return (int) $value;
 		}
 
+        $value = (int)$matches[1];
+
 		// Multiply! Falling through here is intentional.
-		switch (strtolower($matches[1]))
+		switch (strtolower($matches[2]))
 		{
 			case 't':
 				$value *= 1024;
