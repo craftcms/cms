@@ -333,7 +333,7 @@ class Matrix extends Component
 
                 // Update the block type model & record with our new field layout ID
                 $blockType->setFieldLayout($fieldLayout);
-                $blockType->fieldLayoutId = $fieldLayout->id;
+                $blockType->fieldLayoutId = (int)$fieldLayout->id;
                 $blockTypeRecord->fieldLayoutId = $fieldLayout->id;
 
                 // Update the block type with the field layout ID

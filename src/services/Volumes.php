@@ -637,7 +637,7 @@ class Volumes extends Component
             $volumeRecord = AssetVolumeRecord::findOne(['id' => $volumeId]);
 
             if (!$volumeRecord) {
-                throw new VolumeException(Craft::t('No volume exists with the ID “{id}”.',
+                throw new VolumeException(Craft::t('app', 'No volume exists with the ID “{id}”.',
                     ['id' => $volumeId]));
             }
         } else {
