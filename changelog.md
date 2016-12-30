@@ -4,11 +4,10 @@ Craft CMS Changelog
 ## Unreleased
 
 ### Changed
+- Added PHP 7.1 compatibility.
+- Updated HTMLPurifier to 4.8.
 - Updated jQuery to 2.2.4, which fixes a [potential XSS vulnerability](https://github.com/jquery/jquery/issues/2432).
 - Updated jQuery UI to 1.12.1.
-
-### Fixed
-- Fixed a PHP notice that occurred on PHP 7.1 when calling [AppHelper::getPhpConfigValueInBytes()](https://craftcms.com/classreference/helpers/AppHelper#getPhpConfigValueInBytes-detail).
 
 ## 2.6.2956 - 2016-12-28
 
