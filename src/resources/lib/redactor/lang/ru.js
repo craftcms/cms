@@ -43,8 +43,15 @@
     "indent": "Добавить отступ",
     "horizontalrule": "Линия",
     "upload-label": "Перетащите файл или ",
-    "accessibility-help-label": "Rich text editor",
-    "caption": "Caption"
+    "accessibility-help-label": "Редактор форматированного текста",
+    "caption": "Подпись",
+    "bulletslist": "Маркеры",
+    "numberslist": "Нумерация",
+    "image-position": "Position",
+    "none": "None",
+    "left": "Left",
+    "right": "Right",
+    "center": "Center"
 };
 
 })(jQuery);

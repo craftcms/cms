@@ -3,6 +3,9 @@ Craft CMS Changelog
 
 ## Unreleased
 
+### Changed
+- Updated to the latest Redactor translations.
+
 ## 2.6.2957 - 2016-12-30
 
 ### Changed

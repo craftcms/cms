@@ -44,7 +44,14 @@
     "horizontalrule": "Streep",
     "upload-label": "Drop bestand hier of ",
     "accessibility-help-label": "RTF editor",
-    "caption": "Caption"
+    "caption": "Caption",
+    "bulletslist": "Bullets",
+    "numberslist": "Numbers",
+    "image-position": "Position",
+    "none": "None",
+    "left": "Left",
+    "right": "Right",
+    "center": "Center"
 };
 
 })(jQuery);
