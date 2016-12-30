@@ -3,6 +3,8 @@ Craft CMS Changelog
 
 ## Unreleased
 
+## 2.6.2957 - 2016-12-30
+
 ### Changed
 - Updated HTMLPurifier to 4.8.
 - Updated jQuery to 2.2.4, which fixes a [potential XSS vulnerability](https://github.com/jquery/jquery/issues/2432).
