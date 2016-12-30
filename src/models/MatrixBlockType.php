@@ -42,7 +42,7 @@ class MatrixBlockType extends Model
     public $fieldId;
 
     /**
-     * @var string Field layout ID
+     * @var integer Field layout ID
      */
     public $fieldLayoutId;
 
