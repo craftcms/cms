@@ -638,7 +638,7 @@ class View extends \yii\web\View
     {
         // Save any currently queued JS into a new buffer, and reset the active JS queue
         $this->_jsBuffers[] = $this->js;
-        $this->js = null;
+        $this->js = [];
     }
 
     /**
@@ -697,10 +697,10 @@ class View extends \yii\web\View
         $html = $this->renderHeadHtml();
 
         if ($clear === true) {
-            $this->metaTags = null;
-            $this->linkTags = null;
-            $this->css = null;
-            $this->cssFiles = null;
+            $this->metaTags = [];
+            $this->linkTags = [];
+            $this->css = [];
+            $this->cssFiles = [];
             unset($this->jsFiles[self::POS_HEAD], $this->js[self::POS_HEAD]);
         }
 
