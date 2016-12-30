@@ -863,7 +863,7 @@ class Matrix extends Component
         }
 
         foreach (Craft::$app->getSites()->getAllSiteIds() as $siteId) {
-            if ($siteId == $owner->siteId) {
+            if ($siteId === $owner->siteId) {
                 continue;
             }
 
@@ -895,7 +895,7 @@ class Matrix extends Component
 
                     $blockInOtherSite->id = null;
                     $blockInOtherSite->contentId = null;
-                    $blockInOtherSite->ownerSiteId = $siteId;
+                    $blockInOtherSite->ownerSiteId = (int)$siteId;
                     Craft::$app->getElements()->saveElement($blockInOtherSite, false);
 
                     $newBlockIds[$originalBlockId][$siteId] = $blockInOtherSite->id;

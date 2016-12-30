@@ -336,9 +336,9 @@ class Updates extends Component
                 // Potentially long-running request, so close session to prevent session blocking on subsequent requests.
                 Craft::$app->getSession()->close();
 
-                $response = $client->get($plugin->releaseFeedUrl, null);
+                $response = $client->get($plugin->releaseFeedUrl, []);
 
-                if ($response->getStatusCode() != 200) {
+                if ($response->getStatusCode() !== 200) {
                     Craft::warning('Error in calling '.$plugin->releaseFeedUrl.'. Response: '.$response->getBody());
                     continue;
                 }
@@ -383,7 +383,8 @@ class Updates extends Component
                     if (!empty($release['date'])) {
                         // Invalid date?
                         $date = DateTimeHelper::toDateTime($release['date']);
-                        if (!$date) {
+
+                        if ($date === false) {
                             $errors[] = 'Invalid date ('.$release['date'].')';
                         }
                     }

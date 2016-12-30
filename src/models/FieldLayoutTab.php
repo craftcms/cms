@@ -40,7 +40,7 @@ class FieldLayoutTab extends Model
     public $name;
 
     /**
-     * @var string Sort order
+     * @var integer Sort order
      */
     public $sortOrder;
 
