@@ -87,6 +87,7 @@ Craft CMS 3.0 Working Changelog
 - Added `craft\services\Config::getUseWriteFileLock()`.
 - Added `craft\services\Config::isExtensionAllowed()`.
 - Added `craft\services\Elements::deleteElement()`.
+- Added `craft\services\Plugins::getPluginByPackageName()`.
 - Added `craft\web\UploadedFile::saveAsTempFile()`.
 - Added the `beforeDelete`, `afterDelete`, `beforeMoveInStructure`, and `afterMoveInStructure`,  events to `craft\base\Element`.
 - Added the `beforeElementSave`, `afterElementSave`, `beforeElementDelete`, and `afterElementDelete` events to `craft\base\Field`.

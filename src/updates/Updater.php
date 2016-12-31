@@ -8,6 +8,7 @@
 namespace craft\updates;
 
 use Craft;
+use craft\base\Plugin;
 use craft\base\PluginInterface;
 use craft\enums\PatchManifestFileAction;
 use craft\errors\DbUpdateException;
@@ -50,9 +51,19 @@ class Updater
      * @param string $handle
      *
      * @return array
+     * @throws Exception if $handle is not "craft" and not a valid plugin handle
      */
     public function getUpdateFileInfo($handle)
     {
+        if ($handle !== 'craft') {
+            // Get the plugin's package name for ET
+            if (($plugin = Craft::$app->getPlugins()->getPlugin($handle)) === null) {
+                throw new Exception('Invalid plugin handle: '.$handle);
+            }
+            /** @var Plugin $plugin */
+            $handle = $plugin->packageName;
+        }
+
         $md5 = Craft::$app->getEt()->getUpdateFileInfo($handle);
 
         return ['md5' => $md5];

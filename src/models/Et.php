@@ -115,7 +115,7 @@ class Et extends Model
     public $serverInfo;
 
     /**
-     * @var string The context of the request. Either 'craft' or a plugin handle.
+     * @var string The context of the request. Either 'craft' or a plugin's package name.
      */
     public $handle = 'craft';
 

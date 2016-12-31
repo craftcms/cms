@@ -143,9 +143,10 @@ class Plugins extends Component
             if (file_exists($path)) {
                 $plugins = require $path;
 
-                foreach ($plugins as $plugin) {
+                foreach ($plugins as $packageName => $plugin) {
                     $handle = strtolower($plugin['handle']);
                     unset($plugin['handle']);
+                    $plugin['packageName'] = $packageName;
                     $this->_composerPluginInfo[$handle] = $plugin;
                 }
             }
@@ -235,6 +236,27 @@ class Plugins extends Component
 
         if (isset($this->_plugins[$handle])) {
             return $this->_plugins[$handle];
+        }
+
+        return null;
+    }
+
+    /**
+     * Returns an enabled plugin by its package name.
+     *
+     * @param string $packageName The plugin’s package name
+     *
+     * @return PluginInterface|null The plugin, or null if it doesn’t exist
+     */
+    public function getPluginByPackageName($packageName)
+    {
+        $this->loadPlugins();
+
+        foreach ($this->_plugins as $plugin) {
+            /** @var Plugin $plugin */
+            if ($plugin->packageName === $packageName) {
+                return $plugin;
+            }
         }
 
         return null;
@@ -1037,8 +1059,15 @@ class Plugins extends Component
             return null;
         }
 
+        // Validate the package name
+        if (!isset($composer['name']) || strpos($composer['name'], '/') === false) {
+            Craft::warning("Invalid package name in composer.json for the plugin '$handle'".(isset($composer['name']) ? ': '.$composer['name'] : '').'.');
+
+            return null;
+        }
+
+        list($vendor, $name) = explode('/', $composer['name'], 2);
         $extra = isset($composer['extra']) ? $composer['extra'] : [];
-        $packageName = isset($composer['name']) ? $composer['name'] : $handle;
 
         // class (required) + basePath + possibly set aliases
         $class = isset($extra['class']) ? $extra['class'] : null;
@@ -1052,6 +1081,7 @@ class Plugins extends Component
         }
 
         $config = [
+            'packageName' => $composer['name'],
             'class' => $class,
         ];
 
@@ -1061,13 +1091,6 @@ class Plugins extends Component
 
         if ($aliases) {
             $config['aliases'] = $aliases;
-        }
-
-        if (strpos($packageName, '/') !== false) {
-            list($vendor, $name) = explode('/', $packageName);
-        } else {
-            $vendor = null;
-            $name = $packageName;
         }
 
         // name
@@ -1104,7 +1127,7 @@ class Plugins extends Component
             $config['developer'] = $extra['developer'];
         } else if ($authorName = $this->_getAuthorPropertyFromComposer($composer, 'name')) {
             $config['developer'] = $authorName;
-        } else if ($vendor !== null) {
+        } else {
             $config['developer'] = $vendor;
         }
 

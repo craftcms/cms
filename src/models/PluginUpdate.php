@@ -30,9 +30,9 @@ class PluginUpdate extends Model
     // =========================================================================
 
     /**
-     * @var string Class
+     * @var string Package name
      */
-    public $class;
+    public $packageName;
 
     /**
      * @var string Local version

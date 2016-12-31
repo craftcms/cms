@@ -196,6 +196,7 @@ EOD;
         }
 
         try {
+            // Updating Craft?
             if ($handle === 'all' || $handle === 'craft') {
                 $return[] = [
                     'handle' => 'craft',
@@ -206,19 +207,31 @@ EOD;
                 ];
             }
 
+            // Updating plugin(s)?
             if ($handle !== 'craft') {
-                foreach ($updateInfo->plugins as $plugin) {
-                    if ($handle !== 'all' && $handle != $plugin->class) {
+                if ($handle !== 'all') {
+                    // Get the plugin's package name
+                    if (($plugin = Craft::$app->getPlugins()->getPlugin($handle)) === null) {
+                        throw new Exception('Invalid plugin handle: '.$handle);
+                    }
+                    /** @var Plugin $plugin */
+                    $packageName = $plugin->packageName;
+                }
+
+                foreach ($updateInfo->plugins as $pluginUpdate) {
+                    // Make sure this is (one of) the plugins we’re updating
+                    /** @noinspection PhpUndefinedVariableInspection */
+                    if ($handle !== 'all' && $pluginUpdate->packageName !== $packageName) {
                         continue;
                     }
 
-                    if ($plugin->status == PluginUpdateStatus::UpdateAvailable && count($plugin->releases) > 0) {
+                    if ($pluginUpdate->status === PluginUpdateStatus::UpdateAvailable && count($pluginUpdate->releases) > 0) {
                         $return[] = [
-                            'handle' => $plugin->class,
-                            'name' => $plugin->displayName,
-                            'version' => $plugin->latestVersion,
-                            'critical' => $plugin->criticalUpdateAvailable,
-                            'releaseDate' => $plugin->latestDate->getTimestamp()
+                            'handle' => $handle,
+                            'name' => $pluginUpdate->displayName,
+                            'version' => $pluginUpdate->latestVersion,
+                            'critical' => $pluginUpdate->criticalUpdateAvailable,
+                            'releaseDate' => $pluginUpdate->latestDate->getTimestamp()
                         ];
                     }
                 }

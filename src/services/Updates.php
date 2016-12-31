@@ -278,7 +278,7 @@ class Updates extends Component
 
         foreach ($plugins as $plugin) {
             $pluginUpdateModel = new PluginUpdate();
-            $pluginUpdateModel->class = $plugin->getHandle();
+            $pluginUpdateModel->packageName = $plugin->packageName;
             $pluginUpdateModel->localVersion = $plugin->version;
 
             $pluginUpdateModels[get_class($plugin)] = $pluginUpdateModel;
@@ -302,16 +302,16 @@ class Updates extends Component
 
         foreach ($updateModel->plugins as $pluginUpdateModel) {
             // Only check plugins where the update status isn't already known from the ET response
-            if ($pluginUpdateModel->status != PluginUpdateStatus::Unknown) {
+            if ($pluginUpdateModel->status !== PluginUpdateStatus::Unknown) {
                 continue;
             }
 
             // Get the plugin and its feed URL
             /** @var Plugin $plugin */
-            $plugin = Craft::$app->getPlugins()->getPlugin($pluginUpdateModel->class);
+            $plugin = Craft::$app->getPlugins()->getPluginByPackageName($pluginUpdateModel->packageName);
 
-            // Skip if the plugin doesn't have a feed URL
-            if ($plugin->releaseFeedUrl === null) {
+            // Skip if the plugin isn't enabled, or doesn't have a feed URL
+            if ($plugin === null || $plugin->releaseFeedUrl === null) {
                 continue;
             }
 
@@ -544,21 +544,16 @@ class Updates extends Component
                 if ($handle === 'craft') {
                     Craft::info('Updating from '.$updateModel->app->localVersion.' to '.$updateModel->app->latestVersion.'.');
                 } else {
-                    $latestVersion = null;
-                    $localVersion = null;
-                    $handle = null;
-
+                    if (($plugin = Craft::$app->getPlugins()->getPlugin($handle)) === null) {
+                        throw new Exception('Invalid plugin handle: '.$handle);
+                    }
+                    /** @var Plugin $plugin */
                     foreach ($updateModel->plugins as $pluginUpdateModel) {
-                        if (strtolower($pluginUpdateModel->class) === $handle) {
-                            $latestVersion = $pluginUpdateModel->latestVersion;
-                            $localVersion = $pluginUpdateModel->localVersion;
-                            $handle = $pluginUpdateModel->class;
-
+                        if ($pluginUpdateModel->packageName === $plugin->packageName) {
+                            Craft::info("Updating plugin \"{$handle}\" from {$pluginUpdateModel->localVersion} to {$pluginUpdateModel->latestVersion}.");
                             break;
                         }
                     }
-
-                    Craft::info('Updating plugin "'.$handle.'" from '.$localVersion.' to '.$latestVersion.'.');
                 }
 
                 $result = $updater->getUpdateFileInfo($handle);

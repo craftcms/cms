@@ -19,6 +19,11 @@ trait PluginTrait
     // =========================================================================
 
     /**
+     * @var string The plugin’s package name
+     */
+    public $packageName;
+
+    /**
      * @var string The plugin’s display name
      */
     public $name;

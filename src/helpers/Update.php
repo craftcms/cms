@@ -8,6 +8,7 @@
 namespace craft\helpers;
 
 use Craft;
+use craft\base\Plugin;
 use craft\enums\PatchManifestFileAction;
 use yii\base\Exception;
 
@@ -247,9 +248,13 @@ class Update
         if ($handle === 'craft') {
             $localVersion = $updateModel->app->localVersion;
         } else {
-            foreach ($updateModel->plugins as $plugin) {
-                if (strtolower($plugin->class) == $handle) {
-                    $localVersion = $plugin->localVersion;
+            if (($plugin = Craft::$app->getPlugins()->getPlugin($handle)) === null) {
+                throw new Exception('Invalid plugin handle: '.$handle);
+            }
+            /** @var Plugin $plugin */
+            foreach ($updateModel->plugins as $pluginUpdate) {
+                if ($pluginUpdate->packageName === $plugin->packageName) {
+                    $localVersion = $pluginUpdate->localVersion;
                     break;
                 }
             }

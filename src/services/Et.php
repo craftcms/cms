@@ -23,6 +23,7 @@ use craft\models\UpgradeInfo;
 use craft\models\UpgradePurchase;
 use GuzzleHttp\Client;
 use yii\base\Component;
+use yii\base\Exception;
 
 /**
  * Class Et service.
@@ -116,7 +117,7 @@ class Et extends Component
             // For every plugin, populate their base information.
             $updateModel->plugins = [];
 
-            foreach ($etResponse->data['plugins'] as $pluginHandle => $pluginUpdateInfo) {
+            foreach ($etResponse->data['plugins'] as $packageName => $pluginUpdateInfo) {
                 /** @var array $pluginUpdateInfo */
                 $pluginUpdateModel = new PluginUpdate();
                 $pluginUpdateModel->setAttributes($pluginUpdateInfo, false);
@@ -132,7 +133,7 @@ class Et extends Component
                     $pluginUpdateModel->releases[$key] = $pluginReleaseModel;
                 }
 
-                $updateModel->plugins[$pluginHandle] = $pluginUpdateModel;
+                $updateModel->plugins[$packageName] = $pluginUpdateModel;
             }
 
             // Put it all back on Et.
@@ -145,7 +146,7 @@ class Et extends Component
     }
 
     /**
-     * @param string $handle
+     * @param string $handle "craft" or a plugin's package name
      *
      * @return string|null The update's md5
      */
@@ -156,11 +157,11 @@ class Et extends Component
         if ($handle !== 'craft') {
             $et->setHandle($handle);
             /** @var Plugin $plugin */
-            $plugin = Craft::$app->getPlugins()->getPlugin($handle);
+            $plugin = Craft::$app->getPlugins()->getPluginByPackageName($handle);
 
             if ($plugin) {
                 $pluginUpdateModel = new PluginUpdate();
-                $pluginUpdateModel->class = $plugin->getHandle();
+                $pluginUpdateModel->packageName = $plugin->packageName;
                 $pluginUpdateModel->localVersion = $plugin->version;
 
                 $et->setData($pluginUpdateModel);
@@ -182,6 +183,7 @@ class Et extends Component
      * @param string $handle
      *
      * @return string|false The name of the update file, or false if a problem occurred
+     * @throws Exception if $handle is not "craft" and not a valid plugin handle
      */
     public function downloadUpdate($downloadPath, $md5, $handle)
     {
@@ -196,15 +198,19 @@ class Et extends Component
             $targetVersion = $updateModel->app->latestVersion;
             $uriPrefix = 'craft';
         } else {
-            // Find the plugin whose class matches the handle
+            // Find the plugin whose package name matches the handle
+            if (($plugin = Craft::$app->getPlugins()->getPlugin($handle)) === null) {
+                throw new Exception('Invalid plugin handle: '.$handle);
+            }
+            /** @var Plugin $plugin */
             $localVersion = null;
             $targetVersion = null;
             $uriPrefix = 'plugins/'.$handle;
 
-            foreach ($updateModel->plugins as $plugin) {
-                if (strtolower($plugin->class) == $handle) {
-                    $localVersion = $plugin->localVersion;
-                    $targetVersion = $plugin->latestVersion;
+            foreach ($updateModel->plugins as $pluginUpdate) {
+                if ($pluginUpdate->packageName === $plugin->packageName) {
+                    $localVersion = $pluginUpdate->localVersion;
+                    $targetVersion = $pluginUpdate->latestVersion;
                     break;
                 }
             }
@@ -402,15 +408,15 @@ class Et extends Component
     /**
      * Registers a given plugin with the current Craft license.
      *
-     * @param string $pluginHandle The plugin handle that should be registered
+     * @param string $packageName The plugin package name that should be registered
      *
      * @return EtModel
      */
-    public function registerPlugin($pluginHandle)
+    public function registerPlugin($packageName)
     {
         $et = $this->_createEtTransport(self::ENDPOINT_REGISTER_PLUGIN);
         $et->setData([
-            'pluginHandle' => $pluginHandle
+            'packageName' => $packageName
         ]);
 
         return $et->phoneHome();
@@ -419,15 +425,15 @@ class Et extends Component
     /**
      * Transfers a given plugin to the current Craft license.
      *
-     * @param string $pluginHandle The plugin handle that should be transferred
+     * @param string $packageName The plugin package name that should be transferred
      *
      * @return EtModel
      */
-    public function transferPlugin($pluginHandle)
+    public function transferPlugin($packageName)
     {
         $et = $this->_createEtTransport(self::ENDPOINT_TRANSFER_PLUGIN);
         $et->setData([
-            'pluginHandle' => $pluginHandle
+            'packageName' => $packageName
         ]);
 
         return $et->phoneHome();
@@ -436,21 +442,25 @@ class Et extends Component
     /**
      * Unregisters a given plugin from the current Craft license.
      *
-     * @param string $pluginHandle The plugin handle that should be unregistered
+     * @param string $packageName The plugin packageName that should be unregistered
      *
      * @return EtModel
      */
-    public function unregisterPlugin($pluginHandle)
+    public function unregisterPlugin($packageName)
     {
         $et = $this->_createEtTransport(self::ENDPOINT_UNREGISTER_PLUGIN);
         $et->setData([
-            'pluginHandle' => $pluginHandle
+            'packageName' => $packageName
         ]);
         $etResponse = $et->phoneHome();
 
         if (!empty($etResponse->data['success'])) {
             // Remove our record of the license key
-            Craft::$app->getPlugins()->setPluginLicenseKey($pluginHandle, null);
+            $pluginsService = Craft::$app->getPlugins();
+            $plugin = $pluginsService->getPluginByPackageName($packageName);
+            if ($plugin) {
+                $pluginsService->setPluginLicenseKey($plugin->getHandle(), null);
+            }
         }
 
         return $etResponse;
