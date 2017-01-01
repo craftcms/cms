@@ -523,7 +523,7 @@ Craft CMS 3.0 Working Changelog
 - Added the `loginFailure` event to `craft\controllers\UsersController` (replacing the like-named event on `craft\elements\User`).
 
 ### Changed
-- Updated the Intl fallback data based on ICU 56.1. If you have any additional locale data files in `craft/locales/`, you should [update them](https://github.com/pixelandtonic/CraftLocaleData), too.
+- Updated the Intl fallback data based on ICU 56.1. If you have any additional locale data files in `craft/locales/`, you should [update them](https://github.com/craftcms/locales), too.
 - Ported recent changes from Craft 2.
 - The `beforeSaveAssetTransform` event on `craft\services\AssetTransforms` no longer supports an `$isValid` property.
 - The `beforeDeleteAssetTransform` event on `craft\services\AssetTransforms` no longer supports a `$isValid` property.
