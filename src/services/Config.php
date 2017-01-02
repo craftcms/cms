@@ -667,9 +667,9 @@ class Config extends Component
      */
     public function allowAutoUpdates()
     {
-        $updateInfo = Craft::$app->getUpdates()->getUpdates();
+        $update = Craft::$app->getUpdates()->getUpdates();
 
-        if (!$updateInfo) {
+        if (!$update) {
             return false;
         }
 
@@ -681,12 +681,12 @@ class Config extends Component
 
         if ($configVal === 'patch-only') {
             // Return true if the major and minor versions are still the same
-            return (App::majorMinorVersion($updateInfo->app->latestVersion) == App::majorMinorVersion(Craft::$app->version));
+            return (App::majorMinorVersion($update->app->latestVersion) == App::majorMinorVersion(Craft::$app->version));
         }
 
         if ($configVal === 'minor-only') {
             // Return true if the major version is still the same
-            return (App::majorVersion($updateInfo->app->latestVersion) == App::majorVersion(Craft::$app->version));
+            return (App::majorVersion($update->app->latestVersion) == App::majorVersion(Craft::$app->version));
         }
 
         return false;

@@ -11,11 +11,13 @@ use Craft;
 use craft\base\Plugin;
 use craft\enums\PluginUpdateStatus;
 use craft\errors\EtException;
+use craft\errors\InvalidPluginException;
 use craft\errors\UpdateValidationException;
 use craft\helpers\App;
 use craft\helpers\Json;
 use craft\helpers\Update;
 use craft\helpers\UrlHelper;
+use craft\models\PluginUpdate;
 use craft\web\Controller;
 use yii\base\Exception;
 use yii\web\Response;
@@ -189,9 +191,9 @@ EOD;
         $handle = Craft::$app->getRequest()->getRequiredBodyParam('handle');
 
         $return = [];
-        $updateInfo = Craft::$app->getUpdates()->getUpdates();
+        $update = Craft::$app->getUpdates()->getUpdates();
 
-        if (!$updateInfo) {
+        if (!$update) {
             return $this->asErrorJson(Craft::t('app', 'There was a problem getting the latest update information.'));
         }
 
@@ -201,30 +203,30 @@ EOD;
                 $return[] = [
                     'handle' => 'craft',
                     'name' => 'Craft',
-                    'version' => $updateInfo->app->latestVersion,
-                    'critical' => $updateInfo->app->criticalUpdateAvailable,
-                    'releaseDate' => $updateInfo->app->latestDate->getTimestamp()
+                    'version' => $update->app->latestVersion,
+                    'critical' => $update->app->criticalUpdateAvailable,
+                    'releaseDate' => $update->app->latestDate->getTimestamp()
                 ];
             }
 
             // Updating plugin(s)?
             if ($handle !== 'craft') {
-                if ($handle !== 'all') {
+                /** @var PluginUpdate[] $pluginUpdates */
+                if ($handle === 'all') {
+                    $pluginUpdates = $update->plugins;
+                } else {
                     // Get the plugin's package name
                     if (($plugin = Craft::$app->getPlugins()->getPlugin($handle)) === null) {
-                        throw new Exception('Invalid plugin handle: '.$handle);
+                        throw new InvalidPluginException($handle);
                     }
                     /** @var Plugin $plugin */
-                    $packageName = $plugin->packageName;
+                    if (!isset($update->plugins[$plugin->packageName])) {
+                        throw new Exception("No update info is known for the plugin \"{$handle}\".");
+                    }
+                    $pluginUpdates = [$update->plugins[$plugin->packageName]];
                 }
 
-                foreach ($updateInfo->plugins as $pluginUpdate) {
-                    // Make sure this is (one of) the plugins we’re updating
-                    /** @noinspection PhpUndefinedVariableInspection */
-                    if ($handle !== 'all' && $pluginUpdate->packageName !== $packageName) {
-                        continue;
-                    }
-
+                foreach ($pluginUpdates as $pluginUpdate) {
                     if ($pluginUpdate->status === PluginUpdateStatus::UpdateAvailable && count($pluginUpdate->releases) > 0) {
                         $return[] = [
                             'handle' => $handle,

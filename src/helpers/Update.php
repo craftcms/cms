@@ -10,6 +10,7 @@ namespace craft\helpers;
 use Craft;
 use craft\base\Plugin;
 use craft\enums\PatchManifestFileAction;
+use craft\errors\InvalidPluginException;
 use yii\base\Exception;
 
 /**
@@ -221,6 +222,7 @@ class Update
      *
      * @return array
      * @throws Exception if there was a problem reading the update manifest data
+     * @throws InvalidPluginException if $handle is not "craft" and not a valid plugin handle
      */
     public static function getManifestData($manifestDataPath, $handle)
     {
@@ -242,22 +244,20 @@ class Update
         }
 
         $manifestData = array_filter(array_map('trim', $manifestData));
-        $updateModel = Craft::$app->getUpdates()->getUpdates();
+        $update = Craft::$app->getUpdates()->getUpdates();
         $localVersion = null;
 
         if ($handle === 'craft') {
-            $localVersion = $updateModel->app->localVersion;
+            $localVersion = $update->app->localVersion;
         } else {
             if (($plugin = Craft::$app->getPlugins()->getPlugin($handle)) === null) {
-                throw new Exception('Invalid plugin handle: '.$handle);
+                throw new InvalidPluginException($handle);
             }
             /** @var Plugin $plugin */
-            foreach ($updateModel->plugins as $pluginUpdate) {
-                if ($pluginUpdate->packageName === $plugin->packageName) {
-                    $localVersion = $pluginUpdate->localVersion;
-                    break;
-                }
+            if (!isset($update->plugins[$plugin->packageName])) {
+                throw new Exception("No update info is known for the plugin \"{$handle}\".");
             }
+            $localVersion = $update->plugins[$plugin->packageName]->localVersion;
         }
 
         // Only use the manifest data starting from the local version

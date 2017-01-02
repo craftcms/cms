@@ -120,12 +120,9 @@ class MigrateController extends BaseMigrateController
             case MigrationManager::TYPE_PLUGIN:
                 // Make sure $this->plugin in set to a plugin
                 if (is_string($this->plugin)) {
-                    $plugin = Craft::$app->getPlugins()->getPlugin($this->plugin);
-
-                    if ($plugin === null) {
+                    if (($plugin = Craft::$app->getPlugins()->getPlugin($this->plugin)) === null) {
                         throw new Exception('Invalid plugin handle: '.$this->plugin);
                     }
-
                     $this->plugin = $plugin;
                 }
         }

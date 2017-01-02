@@ -12,6 +12,7 @@ use craft\base\Plugin;
 use craft\base\PluginInterface;
 use craft\enums\PluginUpdateStatus;
 use craft\enums\VersionUpdateStatus;
+use craft\errors\InvalidPluginException;
 use craft\events\UpdateEvent;
 use craft\helpers\DateTimeHelper;
 use craft\helpers\FileHelper;
@@ -137,25 +138,25 @@ class Updates extends Component
         $count = 0;
 
         if ($this->getIsUpdateInfoCached()) {
-            $updateModel = $this->getUpdates();
+            $update = $this->getUpdates();
 
             // Could be false!
-            if ($updateModel) {
-                if ($updateModel->app) {
-                    if ($updateModel->app->versionUpdateStatus == VersionUpdateStatus::UpdateAvailable) {
-                        /** @noinspection UnSafeIsSetOverArrayInspection - FP */
-                        if (isset($updateModel->app->releases) && count($updateModel->app->releases) > 0) {
-                            $count++;
-                        }
-                    }
+            if ($update) {
+                if (
+                    $update->app &&
+                    $update->app->versionUpdateStatus === VersionUpdateStatus::UpdateAvailable &&
+                    !empty($update->app->releases)
+                ) {
+                    $count++;
                 }
 
-                if (!empty($updateModel->plugins)) {
-                    foreach ($updateModel->plugins as $plugin) {
-                        if ($plugin->status == PluginUpdateStatus::UpdateAvailable) {
-                            if ($plugin->releases !== null && count($plugin->releases) > 0) {
-                                $count++;
-                            }
+                if (!empty($update->plugins)) {
+                    foreach ($update->plugins as $pluginUpdate) {
+                        if (
+                            $pluginUpdate->status === PluginUpdateStatus::UpdateAvailable &&
+                            !empty($pluginUpdate->releases)
+                        ) {
+                            $count++;
                         }
                     }
                 }
@@ -176,8 +177,8 @@ class Updates extends Component
             return true;
         }
 
-        foreach ($this->_updateModel->plugins as $pluginUpdateModel) {
-            if ($pluginUpdateModel->criticalUpdateAvailable) {
+        foreach ($this->_updateModel->plugins as $pluginUpdate) {
+            if ($pluginUpdate->criticalUpdateAvailable) {
                 return true;
             }
         }
@@ -274,17 +275,14 @@ class Updates extends Component
         /** @var Plugin[] $plugins */
         $plugins = Craft::$app->getPlugins()->getAllPlugins();
 
-        $pluginUpdateModels = [];
+        $updateModel->plugins = [];
 
         foreach ($plugins as $plugin) {
-            $pluginUpdateModel = new PluginUpdate();
-            $pluginUpdateModel->packageName = $plugin->packageName;
-            $pluginUpdateModel->localVersion = $plugin->version;
-
-            $pluginUpdateModels[get_class($plugin)] = $pluginUpdateModel;
+            $updateModel->plugins[$plugin->packageName] = new PluginUpdate([
+                'packageName' => $plugin->packageName,
+                'localVersion' => $plugin->version
+            ]);
         }
-
-        $updateModel->plugins = $pluginUpdateModels;
 
         return Craft::$app->getEt()->checkForUpdates($updateModel);
     }
@@ -292,23 +290,23 @@ class Updates extends Component
     /**
      * Check plugins’ release feeds and include any pending updates in the given Update
      *
-     * @param Update $updateModel
+     * @param Update $update
      *
      * @return void
      */
-    public function checkPluginReleaseFeeds(Update $updateModel)
+    public function checkPluginReleaseFeeds(Update $update)
     {
         $userAgent = 'Craft/'.Craft::$app->version;
 
-        foreach ($updateModel->plugins as $pluginUpdateModel) {
+        foreach ($update->plugins as $pluginUpdate) {
             // Only check plugins where the update status isn't already known from the ET response
-            if ($pluginUpdateModel->status !== PluginUpdateStatus::Unknown) {
+            if ($pluginUpdate->status !== PluginUpdateStatus::Unknown) {
                 continue;
             }
 
             // Get the plugin and its feed URL
             /** @var Plugin $plugin */
-            $plugin = Craft::$app->getPlugins()->getPluginByPackageName($pluginUpdateModel->packageName);
+            $plugin = Craft::$app->getPlugins()->getPluginByPackageName($pluginUpdate->packageName);
 
             // Skip if the plugin isn't enabled, or doesn't have a feed URL
             if ($plugin === null || $plugin->releaseFeedUrl === null) {
@@ -464,7 +462,7 @@ class Updates extends Component
                     $releaseTimestamps[] = $date->getTimestamp();
 
                     if ($critical) {
-                        $pluginUpdateModel->criticalUpdateAvailable = true;
+                        $pluginUpdate->criticalUpdateAvailable = true;
                     }
                 }
 
@@ -473,16 +471,16 @@ class Updates extends Component
                     array_multisort($releaseTimestamps, SORT_DESC, $releaseModels);
                     $latestRelease = $releaseModels[0];
 
-                    $pluginUpdateModel->displayName = $plugin->name;
-                    $pluginUpdateModel->localVersion = $plugin->version;
-                    $pluginUpdateModel->latestDate = $latestRelease->date;
-                    $pluginUpdateModel->latestVersion = $latestRelease->version;
-                    $pluginUpdateModel->manualDownloadEndpoint = $latestRelease->manualDownloadEndpoint;
-                    $pluginUpdateModel->manualUpdateRequired = true;
-                    $pluginUpdateModel->releases = $releaseModels;
-                    $pluginUpdateModel->status = PluginUpdateStatus::UpdateAvailable;
+                    $pluginUpdate->displayName = $plugin->name;
+                    $pluginUpdate->localVersion = $plugin->version;
+                    $pluginUpdate->latestDate = $latestRelease->date;
+                    $pluginUpdate->latestVersion = $latestRelease->version;
+                    $pluginUpdate->manualDownloadEndpoint = $latestRelease->manualDownloadEndpoint;
+                    $pluginUpdate->manualUpdateRequired = true;
+                    $pluginUpdate->releases = $releaseModels;
+                    $pluginUpdate->status = PluginUpdateStatus::UpdateAvailable;
                 } else {
-                    $pluginUpdateModel->status = PluginUpdateStatus::UpToDate;
+                    $pluginUpdate->status = PluginUpdateStatus::UpToDate;
                 }
             } catch (\Exception $e) {
                 Craft::error('There was a problem getting the update feed for “'.$plugin->name.'”, so it was skipped: '.$e->getMessage());
@@ -539,21 +537,20 @@ class Updates extends Component
 
             // No need to get the latest update info if this is a manual update.
             if (!$manual) {
-                $updateModel = $this->getUpdates();
+                $update = $this->getUpdates();
 
                 if ($handle === 'craft') {
-                    Craft::info('Updating from '.$updateModel->app->localVersion.' to '.$updateModel->app->latestVersion.'.');
+                    Craft::info('Updating from '.$update->app->localVersion.' to '.$update->app->latestVersion.'.');
                 } else {
                     if (($plugin = Craft::$app->getPlugins()->getPlugin($handle)) === null) {
-                        throw new Exception('Invalid plugin handle: '.$handle);
+                        throw new InvalidPluginException($handle);
                     }
                     /** @var Plugin $plugin */
-                    foreach ($updateModel->plugins as $pluginUpdateModel) {
-                        if ($pluginUpdateModel->packageName === $plugin->packageName) {
-                            Craft::info("Updating plugin \"{$handle}\" from {$pluginUpdateModel->localVersion} to {$pluginUpdateModel->latestVersion}.");
-                            break;
-                        }
+                    if (!isset($update->plugins[$plugin->packageName])) {
+                        throw new Exception("No update info is known for the plugin \"{$handle}\".");
                     }
+                    $pluginUpdate = $update->plugins[$plugin->packageName];
+                    Craft::info("Updating plugin \"{$handle}\" from {$pluginUpdate->localVersion} to {$pluginUpdate->latestVersion}.");
                 }
 
                 $result = $updater->getUpdateFileInfo($handle);

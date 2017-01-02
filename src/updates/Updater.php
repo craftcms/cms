@@ -15,6 +15,7 @@ use craft\errors\DbUpdateException;
 use craft\errors\DownloadPackageException;
 use craft\errors\FileException;
 use craft\errors\FilePermissionsException;
+use craft\errors\InvalidPluginException;
 use craft\errors\MinimumRequirementException;
 use craft\errors\MissingFileException;
 use craft\errors\UnpackPackageException;
@@ -51,14 +52,14 @@ class Updater
      * @param string $handle
      *
      * @return array
-     * @throws Exception if $handle is not "craft" and not a valid plugin handle
+     * @throws InvalidPluginException if $handle is not "craft" and not a valid plugin handle
      */
     public function getUpdateFileInfo($handle)
     {
         if ($handle !== 'craft') {
             // Get the plugin's package name for ET
             if (($plugin = Craft::$app->getPlugins()->getPlugin($handle)) === null) {
-                throw new Exception('Invalid plugin handle: '.$handle);
+                throw new InvalidPluginException($handle);
             }
             /** @var Plugin $plugin */
             $handle = $plugin->packageName;

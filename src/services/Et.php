@@ -9,8 +9,10 @@ namespace craft\services;
 
 use Craft;
 use craft\base\Plugin;
+use craft\errors\InvalidPluginException;
 use craft\et\EtTransport;
 use craft\helpers\App;
+use craft\helpers\ArrayHelper;
 use craft\helpers\FileHelper;
 use craft\helpers\Json;
 use craft\models\AppNewRelease;
@@ -95,49 +97,36 @@ class Et extends Component
 
         if ($etResponse) {
             // Populate the base Update model
-            $updateModel = new Update();
-            $updateModel->setAttributes($etResponse->data, false);
+            $updateData = array_merge($etResponse->data);
+            $appUpdateData = (array)ArrayHelper::remove($updateData, 'app');
+            $pluginsUpdateData = (array)ArrayHelper::remove($updateData, 'plugins');
+            $update = new Update($updateData);
 
-            // Populate any Craft specific attributes.
-            $appUpdateModel = new AppUpdate();
-            $appUpdateModel->setAttributes($etResponse->data['app'], false);
-            $updateModel->app = $appUpdateModel;
+            // Populate the AppUpdate model
+            $appReleasesData = (array)ArrayHelper::remove($appUpdateData, 'releases');
+            $update->app = new AppUpdate($appUpdateData);
 
-            // Populate any new Craft release information.
-            $appUpdateModel->releases = [];
-
-            foreach ($etResponse->data['app']['releases'] as $key => $appReleaseInfo) {
-                /** @var array $appReleaseInfo */
-                $appReleaseModel = new AppNewRelease();
-                $appReleaseModel->setAttributes($appReleaseInfo, false);
-
-                $appUpdateModel->releases[$key] = $appReleaseModel;
+            // Populate AppNewRelease models
+            $update->app->releases = [];
+            foreach ($appReleasesData as $appReleaseData) {
+                $update->app->releases[] = new AppNewRelease($appReleaseData);
             }
 
-            // For every plugin, populate their base information.
-            $updateModel->plugins = [];
+            // Populate PluginUpdate models
+            $update->plugins = [];
+            foreach ($pluginsUpdateData as $packageName => $pluginUpdateData) {
+                $pluginReleasesData = (array)ArrayHelper::remove($pluginUpdateData, 'releases');
+                $update->plugins[$packageName] = new PluginUpdate($pluginUpdateData);
 
-            foreach ($etResponse->data['plugins'] as $packageName => $pluginUpdateInfo) {
-                /** @var array $pluginUpdateInfo */
-                $pluginUpdateModel = new PluginUpdate();
-                $pluginUpdateModel->setAttributes($pluginUpdateInfo, false);
-
-                // Now populate a plugin’s release information.
-                $pluginUpdateModel->releases = [];
-
-                foreach ($pluginUpdateInfo['releases'] as $key => $pluginReleaseInfo) {
-                    /** @var array $pluginReleaseInfo */
-                    $pluginReleaseModel = new PluginNewRelease();
-                    $pluginReleaseModel->setAttributes($pluginReleaseInfo, false);
-
-                    $pluginUpdateModel->releases[$key] = $pluginReleaseModel;
+                // Populate PluginNewRelease models
+                $update->plugins[$packageName]->releases = [];
+                foreach ($pluginReleasesData as $pluginReleaseData) {
+                    $update->plugins[$packageName]->releases[] = new PluginNewRelease($pluginReleaseData);
                 }
-
-                $updateModel->plugins[$packageName] = $pluginUpdateModel;
             }
 
             // Put it all back on Et.
-            $etResponse->data = $updateModel;
+            $etResponse->data = $update;
 
             return $etResponse;
         }
@@ -160,11 +149,11 @@ class Et extends Component
             $plugin = Craft::$app->getPlugins()->getPluginByPackageName($handle);
 
             if ($plugin) {
-                $pluginUpdateModel = new PluginUpdate();
-                $pluginUpdateModel->packageName = $plugin->packageName;
-                $pluginUpdateModel->localVersion = $plugin->version;
+                $pluginUpdate = new PluginUpdate();
+                $pluginUpdate->packageName = $plugin->packageName;
+                $pluginUpdate->localVersion = $plugin->version;
 
-                $et->setData($pluginUpdateModel);
+                $et->setData($pluginUpdate);
             }
         }
 
@@ -183,7 +172,8 @@ class Et extends Component
      * @param string $handle
      *
      * @return string|false The name of the update file, or false if a problem occurred
-     * @throws Exception if $handle is not "craft" and not a valid plugin handle
+     * @throws InvalidPluginException if $handle is not "craft" and not a valid plugin handle
+     * @throws Exception if $handle is a plugin handle but no update info is known for it
      */
     public function downloadUpdate($downloadPath, $md5, $handle)
     {
@@ -191,35 +181,24 @@ class Et extends Component
             $downloadPath .= DIRECTORY_SEPARATOR.$md5.'.zip';
         }
 
-        $updateModel = Craft::$app->getUpdates()->getUpdates();
+        $update = Craft::$app->getUpdates()->getUpdates();
 
         if ($handle === 'craft') {
-            $localVersion = $updateModel->app->localVersion;
-            $targetVersion = $updateModel->app->latestVersion;
+            $localVersion = $update->app->localVersion;
+            $targetVersion = $update->app->latestVersion;
             $uriPrefix = 'craft';
         } else {
             // Find the plugin whose package name matches the handle
             if (($plugin = Craft::$app->getPlugins()->getPlugin($handle)) === null) {
-                throw new Exception('Invalid plugin handle: '.$handle);
+                throw new InvalidPluginException($handle);
             }
             /** @var Plugin $plugin */
-            $localVersion = null;
-            $targetVersion = null;
+            if (!isset($update->plugins[$plugin->packageName])) {
+                throw new Exception("No update info is known for the plugin \"{$handle}\".");
+            }
+            $localVersion = $update->plugins[$plugin->packageName]->localVersion;
+            $targetVersion = $update->plugins[$plugin->packageName]->latestVersion;
             $uriPrefix = 'plugins/'.$handle;
-
-            foreach ($updateModel->plugins as $pluginUpdate) {
-                if ($pluginUpdate->packageName === $plugin->packageName) {
-                    $localVersion = $pluginUpdate->localVersion;
-                    $targetVersion = $pluginUpdate->latestVersion;
-                    break;
-                }
-            }
-
-            if ($localVersion === null) {
-                Craft::warning('Couldn’t find the plugin "'.$handle.'" in the update model.');
-
-                return false;
-            }
         }
 
         $xy = App::majorMinorVersion($targetVersion);
