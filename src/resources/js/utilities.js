@@ -1,6 +1,5 @@
 (function($) {
 
-
     Craft.Tool = Garnish.Base.extend(
         {
             $trigger: null,
@@ -50,7 +49,7 @@
 
             onSubmit: function(ev) {
                 if (!this.progressBar) {
-                    this.progressBar = new Craft.ProgressBar(this.hud.$main);
+                    this.progressBar = new Craft.ProgressBar(this.$status);
                 }
                 else {
                     this.progressBar.resetProgressBar();
@@ -64,23 +63,24 @@
                 this.currentBatchQueue = [];
 
 
-                this.progressBar.$progressBar.css({
-                        top: Math.round(this.hud.$main.outerHeight() / 2) - 6
-                    })
-                    .removeClass('hidden');
+                this.progressBar.$progressBar.removeClass('hidden');
 
-                this.$form.velocity('stop').animateLeft(-200, 'fast');
+                this.progressBar.$progressBar.velocity('stop').velocity({
+                	opacity: 1,
+				},
+				{
+					complete: $.proxy(function()
+					{
+						var postData = Garnish.getPostData(this.$form),
+							params = Craft.expandPostArray(postData);
+						params.start = true;
 
-                this.progressBar.$progressBar.velocity('stop').animateLeft(30, 'fast', $.proxy(function() {
-                    var postData = Garnish.getPostData(this.$form),
-                        params = Craft.expandPostArray(postData);
-                    params.start = true;
+						this.loadAction({
+							params: params
+						});
 
-                    this.loadAction({
-                        params: params
-                    });
-
-                }, this));
+					}, this)
+				});
             },
 
             updateProgressBar: function() {
@@ -138,7 +138,7 @@
                     params: params
                 };
 
-                Craft.postActionRequest('tools/perform-action', data, $.proxy(this, 'onActionResponse'), {
+                Craft.postActionRequest('utilities/asset-index-perform-action', data, $.proxy(this, 'onActionResponse'), {
                     complete: $.noop
                 });
             },
@@ -194,16 +194,13 @@
 
             onComplete: function() {
                 if (!this.$allDone) {
-                    this.$allDone = $('<div class="alldone" data-icon="done" />').appendTo(this.hud.$main);
+                    this.$allDone = $('<div class="alldone" data-icon="done" />').appendTo(this.$status);
+					this.$allDone.css('opacity', 0);
                 }
 
-                this.$allDone.css({
-                    top: Math.round(this.hud.$main.outerHeight() / 2) - 30
-                });
+                this.progressBar.$progressBar.velocity({ opacity: 0 }, { duration: 'fast' });
 
-                this.progressBar.$progressBar.animateLeft(-170, 'fast');
-
-                this.$allDone.animateLeft(30, 'fast');
+                this.$allDone.velocity({ opacity: 1 }, { duration: 'fast' });
 
                 // Just in case the tool created a new task...
                 Craft.cp.runPendingTasks();

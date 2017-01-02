@@ -1,7 +1,66 @@
 {% extends "_layouts/cp" %}
 
-{% set crumbs = [
-	{ label: "Utilities"|t('app'), url: url('utilities') }
-] %}
+{% set title = "Utilities" %}
 
 {% do view.registerCssResource("css/utilities.css") %}
+
+{% set navItems = {
+	systemReport: {
+		label: "System Report",
+		url: url('utilities/system-report'),
+		icon: 'section',
+	},
+	phpInfo: {
+		label: "PHP Info",
+		url: url('utilities/php-info'),
+		icon: 'info',
+	},
+	deprecationErrors: {
+		label: "Deprecation Errors",
+		url: url('utilities/deprecation-errors'),
+		icon: 'alert',
+		badgeCount: craft.app.deprecator.totalLogs
+	},
+} %}
+
+{% set allVolumes = craft.app.volumes.getAllVolumes() %}
+
+{% if allVolumes|length > 0 %}
+	{% set navItems = navItems|merge({
+		assetIndex: {
+			label: "Update Asset Indexes",
+			url: url('utilities/asset-index'),
+			icon: 'assets'
+		}
+	}) %}
+{% endif %}
+
+{% set navItems = navItems|merge({
+	clearCaches: {
+		label: "Clear Caches",
+		url: url('utilities/clear-caches'),
+		icon: 'trash'
+	},
+	dbBackup: {
+		label: "Backup Database",
+		url: url('utilities/db-backup'),
+		icon: 'database'
+	},
+	findAndReplace: {
+		label: "Find and Replace",
+		url: url('utilities/find-and-replace'),
+		icon: 'wand'
+	},
+	searchIndex: {
+		label: "Rebuild Search Index",
+		url: url('utilities/search-index'),
+		icon: 'search'
+	},
+}) %}
+
+{% block sidebar %}
+	<nav>
+		{% set volumes = craft.app.volumes %}
+		{% include "_includes/nav" with { items: navItems, selectedItem: selectedNavItem } only %}
+	</nav>
+{% endblock %}

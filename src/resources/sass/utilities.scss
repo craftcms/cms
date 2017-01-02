@@ -22,4 +22,65 @@
 
 table.fixed-layout { table-layout: fixed; }
 
-ul.icons li a span.badge { background: $errorcolor; border-radius: 50px; border: 2px solid #fff; padding: 3px 8px; min-width: 8px; color: #fff; position: absolute; top: 14px; right: 14px; }
+ul.icons li a span.badge {
+	background: $errorcolor;
+	border-radius: 50px;
+	border: 2px solid #fff;
+	padding: 3px 8px;
+	min-width: 8px;
+	color: #fff;
+	position: absolute;
+	top: 14px;
+	right: 14px;
+}
+
+#sidebar ul li a {
+	display: flex;
+	@include padding-right(7px);
+}
+
+#sidebar ul li a .icon {
+	margin-right: 7px;
+}
+
+#sidebar li a span.label {
+	text-overflow: ellipsis;
+	white-space: nowrap;
+	overflow: hidden;
+	display: block;
+}
+
+#sidebar ul li a span.badge {
+	margin-left: 5px;
+}
+
+#sidebar ul li a span.badge span.count {
+	background: $errorcolor;
+	border-radius: 50px;
+	border: 0px solid #fff;
+	padding: 2px 7px;
+	min-width: 7px;
+	color: #fff;
+	position: relative;
+}
+
+
+#sidebar ul li a.sel span.badge span.count {
+	background: #fff;
+	color: $darkselcolor;
+}
+
+form.utility .utility-status {
+	display: inline-block; position: relative; width: 60px; height: 40px; margin-left: 10px;
+}
+
+form.utility .utility-status .alldone {
+	margin-top: 11px;
+	opacity: 0;
+}
+
+form.utility .utility-status .progressbar {
+	width: 100%;
+	left: 0;
+	opacity: 0;
+}

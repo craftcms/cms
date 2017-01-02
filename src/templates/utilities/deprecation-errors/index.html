@@ -4,6 +4,8 @@
 
 {% set title = "Deprecation Errors"|t('app') %}
 
+{% set selectedNavItem = 'deprecationErrors' %}
+
 {% block content %}
 	<p id="nologs"{% if logs %} class="hidden"{% endif %}>{{ "No deprecation errors to report!"|t }}</p>
 
