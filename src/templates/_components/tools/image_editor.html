@@ -2,8 +2,8 @@
     <ul>
         <li data-view="rotate"><i></i>{{ 'Rotate'|t('app') }}</li>
         <li data-view="crop"><i></i>{{ 'Crop'|t('app') }}</li>
-        <li data-view="effects"><i></i>{{ 'Effects'|t('app') }}</li>
-        <li data-view="filters"><i></i>{{ 'Filters'|t('app') }}</li>
+        {#<li data-view="effects"><i></i>{{ 'Effects'|t('app') }}</li>
+        <li data-view="filters"><i></i>{{ 'Filters'|t('app') }}</li>#}
     </ul>
 </div>
 <div class="views">
@@ -16,9 +16,11 @@
             <div class="flip-vertical btn icon">{{ 'Flip Vertical'|t('app') }}</div>
             <div class="flip-horizontal btn icon">{{ 'Flip Horizontal'|t('app') }}</div>
         </div>
+        <div class="focal-point btn icon">{{ 'Set Focal Point'|t('app') }}</div>
     </div>
     <div class="crop hidden" data-view="crop" data-crop="true">
-        <div class="crop-buttons buttons">
+        <div class="focal-point btn icon">{{ 'Set Focal Point'|t('app') }}</div>
+        {# <div class="crop-buttons buttons">
             <div class="unconstrained btn icon menubtn">{{ 'Unconstrained'|t('app') }}</div>
             <div class="menu">
                 <ul>
@@ -33,16 +35,19 @@
                     <li><a class="" data-attr="3:2">3:2</a></li>
                 </ul>
             </div>
-        </div>
+        </div> #}
     </div>
-    <div class="effects hidden" data-view="effects">
-        <div class="focal-point btn icon">{{ 'Set Focal Point'|t('app') }}</div>
+    {#    <div class="effects hidden" data-view="effects">
+
+        bright/contrast
     </div>
     <div class="filters hidden" data-view="filters">
         <ul>
             <li><img src="http://placehold.it/80x80"><span>{{ 'Original'|t('app') }}</span></li>
         </ul>
-    </div>
+
+    </div>    #}
+
 </div>
 <div class="image-container">
     <div class="image">
