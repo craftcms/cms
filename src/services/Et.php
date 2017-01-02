@@ -98,6 +98,7 @@ class Et extends Component
         if ($etResponse) {
             // Populate the base Update model
             $updateData = array_merge($etResponse->data);
+            ArrayHelper::rename($updateData, 'errors', 'responseErrors');
             $appUpdateData = (array)ArrayHelper::remove($updateData, 'app');
             $pluginsUpdateData = (array)ArrayHelper::remove($updateData, 'plugins');
             $update = new Update($updateData);
@@ -479,12 +480,7 @@ class Et extends Component
             $attributes = Json::decode($attributes);
 
             if (is_array($attributes)) {
-                // errors => responseErrors
-                if (array_key_exists('errors', $attributes)) {
-                    $attributes['responseErrors'] = $attributes['errors'];
-                    unset($attributes['errors']);
-                }
-
+                ArrayHelper::rename($attributes, 'errors', 'responseErrors');
                 $etModel = new EtModel($attributes);
 
                 // Make sure it's valid.

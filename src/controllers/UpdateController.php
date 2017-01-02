@@ -14,6 +14,7 @@ use craft\errors\EtException;
 use craft\errors\InvalidPluginException;
 use craft\errors\UpdateValidationException;
 use craft\helpers\App;
+use craft\helpers\ArrayHelper;
 use craft\helpers\Json;
 use craft\helpers\Update;
 use craft\helpers\UrlHelper;
@@ -162,13 +163,7 @@ EOD;
 
         if ($updates) {
             $response = $updates->toArray();
-
-            // responseErrors => errors
-            if (array_key_exists('responseErrors', $response)) {
-                $response['errors'] = $response['responseErrors'];
-                unset($response['responseErrors']);
-            }
-
+            ArrayHelper::rename($response, 'responseErrors', 'errors');
             $response['allowAutoUpdates'] = Craft::$app->getConfig()->allowAutoUpdates();
 
             return $this->asJson($response);
