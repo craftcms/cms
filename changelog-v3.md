@@ -76,6 +76,7 @@ Craft CMS 3.0 Working Changelog
 - Added `craft\helpers\App::craftDownloadUrl()`.
 - Added `craft\helpers\App::isComposerInstall()`.
 - Added `craft\helpers\App::majorMinorVersion()`.
+- Added `craft\helpers\ArrayHelper::rename()`.
 - Added `craft\helpers\Db::isTypeSupported()`.
 - Added `craft\helpers\Update::getBasePath()`.
 - Added `craft\helpers\Update::parseManifestLine()`.
