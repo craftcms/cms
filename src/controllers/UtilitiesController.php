@@ -8,22 +8,22 @@
 namespace craft\controllers;
 
 use Craft;
-use craft\web\Controller;
-use craft\helpers\App;
-use GuzzleHttp\Client;
-use Imagine\Gd\Imagine;
-use craft\events\RegisterCacheOptionsEvent;
-use yii\base\Event;
-use craft\helpers\FileHelper;
-use yii\base\ErrorException;
-use yii\base\Exception;
-use ZipArchive;
-use craft\tasks\FindAndReplace as FindAndReplaceTask;
-use yii\web\NotFoundHttpException;
 use craft\base\Element;
 use craft\base\ElementInterface;
 use craft\base\Field;
 use craft\db\Query;
+use craft\events\RegisterCacheOptionsEvent;
+use craft\helpers\App;
+use craft\helpers\FileHelper;
+use craft\tasks\FindAndReplace as FindAndReplaceTask;
+use craft\web\Controller;
+use GuzzleHttp\Client;
+use Imagine\Gd\Imagine;
+use yii\base\ErrorException;
+use yii\base\Event;
+use yii\base\Exception;
+use yii\web\NotFoundHttpException;
+use ZipArchive;
 
 class UtilitiesController extends Controller
 {
