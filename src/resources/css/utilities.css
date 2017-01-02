@@ -53,6 +53,6 @@ form.utility .utility-status { display: inline-block; position: relative; width:
 
 form.utility .utility-status .alldone { margin-top: 11px; opacity: 0; }
 
-form.utility .utility-status .progressbar { width: 100%; left: 0; opacity: 0; }
+form.utility .utility-status .progressbar { width: 100%; top: 14px; left: 0; opacity: 0; }
 
 /*# sourceMappingURL=utilities.css.map */
