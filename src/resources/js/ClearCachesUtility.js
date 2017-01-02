@@ -41,8 +41,24 @@
 						var postData = Garnish.getPostData(this.$form),
 							params = Craft.expandPostArray(postData);
 
-						this.postActionRequest({
+						var data = {
 							params: params
+						};
+
+						Craft.postActionRequest(params.action, data, $.proxy(function(response, textStatus)
+						{
+							if (response && response.error)
+							{
+								alert(response.error);
+							}
+
+							this.updateProgressBar();
+
+							setTimeout($.proxy(this, 'onComplete'), 300);
+
+						}, this),
+						{
+							complete: $.noop
 						});
 
 					}, this)
@@ -62,29 +78,6 @@
 		{
 			var width = 100;
 			this.progressBar.setProgressPercentage(width);
-		},
-
-		postActionRequest: function(params)
-		{
-			var data = {
-				params: params
-			};
-
-			Craft.postActionRequest(params.action, data, $.proxy(function(response, textStatus)
-			{
-				if (response && response.error)
-				{
-					alert(response.error);
-				}
-
-				this.updateProgressBar();
-
-				setTimeout($.proxy(this, 'onComplete'), 300);
-
-			}, this),
-			{
-				complete: $.noop
-			});
 		},
 
 		onComplete: function()
