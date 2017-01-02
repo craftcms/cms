@@ -135,30 +135,24 @@ class Updates extends Component
      */
     public function getTotalAvailableUpdates()
     {
+        if (!$this->getIsUpdateInfoCached()) {
+            return 0;
+        }
+
+        if (($update = $this->getUpdates()) === false) {
+            return 0;
+        }
+
         $count = 0;
 
-        if ($this->getIsUpdateInfoCached()) {
-            $update = $this->getUpdates();
+        if ($update->app !== null && $update->app->versionUpdateStatus === VersionUpdateStatus::UpdateAvailable) {
+            $count++;
+        }
 
-            // Could be false!
-            if ($update) {
-                if (
-                    $update->app &&
-                    $update->app->versionUpdateStatus === VersionUpdateStatus::UpdateAvailable &&
-                    !empty($update->app->releases)
-                ) {
+        if (!empty($update->plugins)) {
+            foreach ($update->plugins as $pluginUpdate) {
+                if ($pluginUpdate->status === PluginUpdateStatus::UpdateAvailable) {
                     $count++;
-                }
-
-                if (!empty($update->plugins)) {
-                    foreach ($update->plugins as $pluginUpdate) {
-                        if (
-                            $pluginUpdate->status === PluginUpdateStatus::UpdateAvailable &&
-                            !empty($pluginUpdate->releases)
-                        ) {
-                            $count++;
-                        }
-                    }
                 }
             }
         }
