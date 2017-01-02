@@ -471,7 +471,7 @@ class UtilitiesController extends Controller
             ]);
         }
 
-        return 'null';
+        return $this->asJson(['success' => true]);
     }
 
     public function actionSearchIndex()
