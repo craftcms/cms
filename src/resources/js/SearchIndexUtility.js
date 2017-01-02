@@ -6,7 +6,6 @@
 		$form: null,
 		$innerProgressBar: null,
 
-		toolClass: null,
 		optionsHtml: null,
 		buttonLabel: null,
 		hud: null,
@@ -18,18 +17,17 @@
 		init: function(formId)
 		{
 			this.$form = $('#' + formId);
-			this.$submitBtn = $('input.submit', this.$form);
+			this.$trigger = $('input.submit', this.$form);
 			this.$status = $('.utility-status', this.$form);
 
 			this.addListener(this.$form, 'submit', 'onSubmit');
 		},
 
-
 		onSubmit: function(ev)
 		{
 			ev.preventDefault();
 
-			if(!this.$submitBtn.hasClass('disabled'))
+			if(!this.$trigger.hasClass('disabled'))
 			{
 				if (!this.progressBar) {
 					this.progressBar = new Craft.ProgressBar(this.$status);
@@ -73,8 +71,8 @@
 					this.$allDone.css('opacity', 0);
 				}
 
-				this.$submitBtn.addClass('disabled');
-				this.$submitBtn.blur();
+				this.$trigger.addClass('disabled');
+				this.$trigger.blur();
 			}
 		},
 
@@ -88,63 +86,19 @@
 		{
 			this.loadingActions++;
 
-			if (typeof data.confirm != 'undefined' && data.confirm)
-			{
-				this.showConfirmDialog(data);
-			}
-			else
-			{
-				this.postActionRequest(data.params);
-			}
-		},
-
-		showConfirmDialog: function(data)
-		{
-			var $modal = $('<form class="modal fitted confirmmodal"/>').appendTo(Garnish.$bod),
-				$body = $('<div class="body"/>').appendTo($modal).html(data.confirm),
-				$footer = $('<footer class="footer"/>').appendTo($modal),
-				$buttons = $('<div class="buttons right"/>').appendTo($footer),
-				$cancelBtn = $('<div class="btn">' + Craft.t('app', 'Cancel') + '</div>').appendTo($buttons),
-				$okBtn = $('<input type="submit" class="btn submit" value="' + Craft.t('app', 'OK') + '"/>').appendTo($buttons);
-
-			Craft.initUiElements($body);
-
-			var modal = new Garnish.Modal($modal, {
-				onHide: $.proxy(this, 'onActionResponse')
-			});
-
-			this.addListener($cancelBtn, 'click', function()
-			{
-				modal.hide();
-			});
-
-			this.addListener($modal, 'submit', function(ev)
-			{
-				ev.preventDefault();
-
-				modal.settings.onHide = $.noop;
-				modal.hide();
-
-				var postData = Garnish.getPostData($body);
-				var params = Craft.expandPostArray(postData);
-
-				$.extend(params, data.params);
-
-				this.postActionRequest(params);
-			});
+			this.postActionRequest(data.params);
 		},
 
 		postActionRequest: function(params)
 		{
 			var data = {
-				tool: this.toolClass,
 				params: params
 			};
 
 			Craft.postActionRequest('utilities/search-index-perform-action', data, $.proxy(this, 'onActionResponse'),
-				{
-					complete: $.noop
-				});
+			{
+				complete: $.noop
+			});
 		},
 
 		onActionResponse: function(response, textStatus)
@@ -211,12 +165,9 @@
 			this.progressBar.$progressBar.velocity({ opacity: 0 }, { duration: 'fast', complete: $.proxy(function()
 			{
 				this.$allDone.velocity({ opacity: 1 }, { duration: 'fast' });
-				this.$submitBtn.removeClass('disabled');
-				this.$submitBtn.focus();
+				this.$trigger.removeClass('disabled');
+				this.$trigger.focus();
 			}, this) });
-
-			// Just in case the tool created a new task...
-			Craft.cp.runPendingTasks();
 		}
 	},
 	{

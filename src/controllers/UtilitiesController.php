@@ -20,6 +20,10 @@ use yii\base\Exception;
 use ZipArchive;
 use craft\tasks\FindAndReplace as FindAndReplaceTask;
 use yii\web\NotFoundHttpException;
+use craft\base\Element;
+use craft\base\ElementInterface;
+use craft\base\Field;
+use craft\db\Query;
 
 class UtilitiesController extends Controller
 {
@@ -478,8 +482,7 @@ class UtilitiesController extends Controller
     {
         Craft::$app->getView()->registerJsResource('js/SearchIndexUtility.js');
 
-        return $this->renderTemplate('utilities/search-index', [
-        ]);
+        return $this->renderTemplate('utilities/search-index');
     }
 
     public function actionSearchIndexPerformAction()
@@ -506,9 +509,9 @@ class UtilitiesController extends Controller
                 $batch[] = ['params' => $element];
             }
 
-            return [
+            return $this->asJson([
                 'batches' => [$batch]
-            ];
+            ]);
         }
         else
         {
@@ -559,7 +562,7 @@ class UtilitiesController extends Controller
             }
         }
 
-        return null;
+        return $this->asJson(['success' => true]);
     }
 
     // Private Methods
