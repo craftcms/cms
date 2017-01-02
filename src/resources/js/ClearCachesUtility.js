@@ -70,7 +70,7 @@
 				params: params
 			};
 
-			Craft.postActionRequest('utilities/clear-caches-perform-action', data, $.proxy(function(response, textStatus)
+			Craft.postActionRequest(params.action, data, $.proxy(function(response, textStatus)
 			{
 				if (response && response.error)
 				{
