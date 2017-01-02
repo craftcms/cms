@@ -4,12 +4,7 @@
 	{
 		$trigger: null,
 		$form: null,
-		$innerProgressBar: null,
 
-		toolClass: null,
-		optionsHtml: null,
-		buttonLabel: null,
-		hud: null,
 		totalActions: null,
 		completedActions: null,
 		loadingActions: null,
@@ -18,7 +13,7 @@
 		init: function(formId)
 		{
 			this.$form = $('#' + formId);
-			this.$submitBtn = $('input.submit', this.$form);
+			this.$trigger = $('input.submit', this.$form);
 			this.$status = $('.utility-status', this.$form);
 
 			this.addListener(this.$form, 'submit', 'onSubmit');
@@ -29,7 +24,7 @@
 		{
 			ev.preventDefault();
 
-			if(!this.$submitBtn.hasClass('disabled'))
+			if(!this.$trigger.hasClass('disabled'))
 			{
 				if (!this.progressBar) {
 					this.progressBar = new Craft.ProgressBar(this.$status);
@@ -45,10 +40,7 @@
 				this.loadingActions = 0;
 				this.currentBatchQueue = [];
 
-				this.progressBar.$progressBar.css({
-					top: Math.round(this.$status.outerHeight() / 2) - 6
-				})
-					.removeClass('hidden');
+				this.progressBar.$progressBar.removeClass('hidden');
 
 				this.progressBar.$progressBar.velocity('stop').velocity(
 				{
@@ -73,8 +65,8 @@
 					this.$allDone.css('opacity', 0);
 				}
 
-				this.$submitBtn.addClass('disabled');
-				this.$submitBtn.blur();
+				this.$trigger.addClass('disabled');
+				this.$trigger.blur();
 			}
 		},
 
@@ -137,7 +129,6 @@
 		postActionRequest: function(params)
 		{
 			var data = {
-				tool: this.toolClass,
 				params: params
 			};
 
@@ -211,12 +202,9 @@
 			this.progressBar.$progressBar.velocity({ opacity: 0 }, { duration: 'fast', complete: $.proxy(function()
 			{
 				this.$allDone.velocity({ opacity: 1 }, { duration: 'fast' });
-				this.$submitBtn.removeClass('disabled');
-				this.$submitBtn.focus();
+				this.$trigger.removeClass('disabled');
+				this.$trigger.focus();
 			}, this) });
-
-			// Just in case the tool created a new task...
-			Craft.cp.runPendingTasks();
 		}
 	},
 	{
