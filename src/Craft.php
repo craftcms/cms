@@ -455,7 +455,7 @@ class Craft extends \Yii
 		$file = str_replace('\\', '/', $file);
 
 		// Don't add any Composer vendor files to the class map.
-		if (strpos($file, CRAFT_APP_PATH.'/vendor/') === false)
+		if (strpos($file, realpath(CRAFT_VENDOR_PATH)) === false)
 		{
 			$class = __NAMESPACE__.'\\'.pathinfo($file, PATHINFO_FILENAME);
 			\Yii::$classMap[$class] = $file;
