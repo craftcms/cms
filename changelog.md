@@ -1,13 +1,15 @@
 Craft CMS Changelog
 ===================
 
-## Unreleased
+## 2.6.2958 - 2017-01-03
 
 ### Changed
 - Updated to the latest Redactor translations.
+- Re-added `focusable.js` and `scroll-parent.js` to Craft’s bundled jQuery UI.
 
 ### Fixed
 - Fixed a bug where no classes would get autoloaded if you had the string `vendor` in any path leading up to your Craft installation.
+- Fixed JavaScript errors that occurred in the Control Panel.
 
 ## 2.6.2957 - 2016-12-30
 
