@@ -6,6 +6,9 @@ Craft CMS Changelog
 ### Changed
 - Updated to the latest Redactor translations.
 
+### Fixed
+- Fixed a bug where no classes would get autoloaded if you had the string `vendor` in any path leading up to your Craft installation.
+
 ## 2.6.2957 - 2016-12-30
 
 ### Changed
