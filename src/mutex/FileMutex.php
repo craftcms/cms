@@ -30,7 +30,6 @@ class FileMutex extends \yii\mutex\FileMutex
 
         if ($mutexPath === false) {
             throw new Exception('There was a problem getting the mutex path.');
-
         }
         $this->mutexPath = $mutexPath;
         if (!is_dir($this->mutexPath)) {

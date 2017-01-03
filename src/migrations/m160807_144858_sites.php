@@ -259,7 +259,7 @@ class m160807_144858_sites extends Migration
         // Drop the locale columns
         // ---------------------------------------------------------------------
 
-        foreach (self::$siteColumns as list($table,,, $localeColumn)) {
+        foreach (self::$siteColumns as list($table, , , $localeColumn)) {
             $this->dropColumn($table, $localeColumn);
         }
 

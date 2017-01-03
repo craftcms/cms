@@ -114,7 +114,7 @@ class Images extends Component
             $imagick = new \Imagick();
             /** @noinspection PhpStaticAsDynamicMethodCallInspection */
             $v = $imagick::getVersion();
-            list($version,,,,,) = sscanf($v['versionString'], 'ImageMagick %s %04d-%02d-%02d %s %s');
+            list($version, , , , ,) = sscanf($v['versionString'], 'ImageMagick %s %04d-%02d-%02d %s %s');
 
             $this->_imagickVersion = $version;
         }

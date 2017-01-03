@@ -159,10 +159,10 @@ class ArrayHelper extends \yii\helpers\ArrayHelper
      * Renames an item in an array. If the new key already exists in the array and the old key doesn’t,
      * the array will be left unchanged.
      *
-     * @param array $array the array to extract value from
-     * @param string $oldKey old key name of the array element
-     * @param string $newKey new key name of the array element
-     * @param mixed $default the default value to be set if the specified old key does not exist
+     * @param array  $array   the array to extract value from
+     * @param string $oldKey  old key name of the array element
+     * @param string $newKey  new key name of the array element
+     * @param mixed  $default the default value to be set if the specified old key does not exist
      *
      * @return void
      */

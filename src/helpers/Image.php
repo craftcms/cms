@@ -48,7 +48,7 @@ class Image
             $targetWidth = ceil($targetHeight * $factor);
         }
 
-        return [(int) $targetWidth, (int) $targetHeight];
+        return [(int)$targetWidth, (int)$targetHeight];
     }
 
     /**

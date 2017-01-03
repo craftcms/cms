@@ -274,7 +274,7 @@ EOD;
      * @param string   $templatePath
      * @param string[] $search
      * @param string[] $replace
-     * @param string $destinationPath
+     * @param string   $destinationPath
      */
     private static function _writeFieldAttributesFile($templatePath, $search, $replace, $destinationPath)
     {
