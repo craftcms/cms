@@ -10,6 +10,7 @@ Craft CMS Changelog
 ### Fixed
 - Fixed a bug where no classes would get autoloaded if you had the string `vendor` in any path leading up to your Craft installation.
 - Fixed JavaScript errors that occurred in the Control Panel.
+- Fixed a bug where hourly charts were displaying dates in `mm/YY` format instead of `dd/mm`.
 
 ## 2.6.2957 - 2016-12-30
 
