@@ -215,7 +215,7 @@ Craft.charts.BaseChart = Garnish.Base.extend(
                 return locale.timeFormat(this.settings.formats.shortDateFormats.month);
 
             case 'hour':
-                return locale.timeFormat(this.settings.formats.shortDateFormats.month+" %H:00:00");
+                return locale.timeFormat(this.settings.formats.shortDateFormats.day+" %H:00:00");
 
             default:
                 return locale.timeFormat(this.settings.formats.shortDateFormats.day);
