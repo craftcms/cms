@@ -46,7 +46,14 @@
     "table": "表格",
     "video": "视频",
     "accessibility-help-label": "富文本编辑器",
-    "caption": "Caption"
+    "caption": "Caption",
+    "bulletslist": "Bullets",
+    "numberslist": "Numbers",
+    "image-position": "Position",
+    "none": "None",
+    "left": "Left",
+    "right": "Right",
+    "center": "Center"
 };
 
 })(jQuery);
