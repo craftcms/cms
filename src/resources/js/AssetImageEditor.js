@@ -540,7 +540,6 @@ Craft.AssetImageEditor = Garnish.Modal.extend(
                         var cleanAngle = parseInt((this.image.angle + 360) % 360, 10);
                         this.image.set({angle: cleanAngle});
                         this.animationInProgress = false;
-                        this._repositionEditorElements();
                     }.bind(this)
                 });
             }
@@ -559,16 +558,21 @@ Craft.AssetImageEditor = Garnish.Modal.extend(
                     axis = axis == 'y' ? 'x' : 'y';
                 }
 
-                var properties = {};
+                var editorCenter = {x: this.editorWidth/2, y: this.editorHeight/2};
+                this.straighteningInput.setValue(-this.imageStraightenAngle);
+                this.imageStraightenAngle = -this.imageStraightenAngle;
+                var properties = {
+                    angle: this.viewportRotation + this.imageStraightenAngle
+                };
 
                 if (axis == 'y') {
-                    var properties = {
-                        scaleY: this.image.scaleY * -1
-                    };
+                    var deltaY = this.image.top - editorCenter.y;
+                    properties.scaleY = this.image.scaleY * -1;
+                    properties.top = editorCenter.y - deltaY;
                 } else {
-                    var properties = {
-                        scaleX: this.image.scaleX * -1
-                    };
+                    var deltaX = this.image.left - editorCenter.x;
+                    properties.scaleX = this.image.scaleX * -1;
+                    properties.left = editorCenter.x - deltaX;
                 }
 
                 this.image.animate(properties, {
@@ -576,7 +580,6 @@ Craft.AssetImageEditor = Garnish.Modal.extend(
                     duration: this.settings.animationDuration,
                     onComplete: function() {
                         this.animationInProgress = false;
-                        this._repositionEditorElements();
                     }.bind(this)
                 });
             }
