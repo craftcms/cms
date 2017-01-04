@@ -4,6 +4,7 @@ Craft CMS Changelog
 ## Unreleased
 
 ## Changed
+- Increased the minimum width of HUD element editors to `380px`.
 - Increased the size of number fields to `10`.
 
 ## 2.6.2958 - 2017-01-03

@@ -1139,6 +1139,12 @@ body #redactor-modal-overlay {
 .hud .body ::-webkit-scrollbar-track { background-color: $lightBgColor; }
 
 /* element editor HUDs */
+
+@media (min-width: 440px)
+{
+	.hud .elementeditor { min-width: 380px; }
+}
+
 .hud .elementeditor { max-width: 600px; }
 .hud .elementeditor .hud-header { text-align: center; }
 .hud .elementeditor .main { padding: 0; }
