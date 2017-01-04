@@ -44,7 +44,14 @@
     "horizontalrule": "線",
     "upload-label": "ファイルをここにドロップまたは［選択する］をクリックする",
     "accessibility-help-label": "リッチテキストエディタ",
-    "caption": "Caption"
+    "caption": "Caption",
+    "bulletslist": "Bullets",
+    "numberslist": "Numbers",
+    "image-position": "Position",
+    "none": "None",
+    "left": "Left",
+    "right": "Right",
+    "center": "Center"
 };
 
 })(jQuery);
