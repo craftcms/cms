@@ -461,6 +461,7 @@ Craft CMS 3.0 Working Changelog
 - Removed the `registerCpRoutes` and `registerSiteRoutes` plugin hooks. Custom URL rules for the Control Panel and front-end site should be registered using the `registerCpUrlRules` and `registerSiteUrlRules` events on `craft\web\UrlManager` now.
 - Removed the `registerEmailMessages` plugin hook. Custom email messages should be registered using the `registerMessages` event on `craft\services\EmailMessages` now.
 - Removed the `registerUserPermissions` plugin hook. Custom user permissions should be registered using the `registerPermissions` event on `craft\services\UserPermissions` now.
+- Removed the `craft\requirements` folder.  It is now a composer dependency.
 
 ### Fixed
 - Fixed a bug where custom 503 templates weren’t rendering when Craft was in the middle of updating from an earlier version than 3.0.2933.
