@@ -7,9 +7,11 @@
 					<li>
 						<a{% if itemIsSelected %} class="sel"{% endif %} href="{{ item.url }}">
 
-							<span class="icon">
-								<span data-icon="{{ item.icon }}"></span>
-							</span>
+							{% if item.icon is defined %}
+								<span class="icon">
+									<span data-icon="{{ item.icon }}"></span>
+								</span>
+							{% endif %}
 
 							<span class="label">{{ item.label }}</span>
 
