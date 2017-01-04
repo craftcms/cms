@@ -1717,7 +1717,7 @@ Craft.AssetImageEditor = Garnish.Modal.extend(
          * @param b
          */
         _getAngleBetweenVectors: function(a, b) {
-            return Math.round(Math.acos(this._getScalarProduct(a, b) / (this._getVectorMagnitude(a) * this._getVectorMagnitude(b))) * 180 / Math.PI * 100) / 100;
+            return Math.round(Math.acos(Math.min(1, this._getScalarProduct(a, b) / (this._getVectorMagnitude(a) * this._getVectorMagnitude(b)))) * 180 / Math.PI * 100) / 100;
         },
 
         /**
