@@ -504,12 +504,12 @@ Craft.AssetImageEditor = Garnish.Modal.extend(
          */
         rotateImage: function(degrees) {
 
-            // TODO when rotating a cropped image, make sure to reposition image and morph viewport
+            // TODO when rotating the image four times in same direction, the fourth time is a backwards 270 spin
             // TODO Since more than one method is using this, maybe make it a "reguestAnimationSlot" or something.
             if (!this.animationInProgress) {
 
                 // We're not that kind of an establishment, sir.
-                if (degrees % 90 != 0) {
+                if (degrees != 90 && degrees != -90) {
                     return false;
                 }
 
@@ -520,7 +520,7 @@ Craft.AssetImageEditor = Garnish.Modal.extend(
                 this.viewportRotation = parseInt((this.viewportRotation + 360) % 360, 10);
 
                 var imageDimensions = this.getScaledImageDimensions();
-                var newAngle = this.image.getAngle() + degrees;
+                var newAngle = this.image.angle + degrees;
 
                 this.viewport.animate({
                     angle: this.viewportRotation
@@ -528,12 +528,41 @@ Craft.AssetImageEditor = Garnish.Modal.extend(
                     duration: this.settings.animationDuration
                 });
 
-                // Animate the rotation and dimension change
-                this.image.animate({
+                var imageProperties = {
                     angle: newAngle,
                     width: imageDimensions.width,
                     height: imageDimensions.height
-                }, {
+                };
+
+                // Make sure we reposition the image as well to focus on the same image area
+                if (this.cropperState) {
+                    var state = this.cropperState;
+                    var deltaX = state.clipperData.deltaX;
+                    var deltaY = state.clipperData.deltaY;
+                    var angleInRadians = degrees * (Math.PI / 180);
+
+                    // Calculate how the cropper would need to move in a circle to maintain
+                    // the focus on the same region if the image was rotated with zoom intact.
+                    newDeltaX = deltaX * Math.cos(angleInRadians) - deltaY * Math.sin(angleInRadians);
+                    newDeltaY = deltaX * Math.sin(angleInRadians) + deltaY * Math.cos(angleInRadians);
+
+                    imageProperties.left = this.editorWidth/2 - newDeltaX;
+                    imageProperties.top = this.editorHeight/2 - newDeltaY;
+
+                    // TODO
+                    // If applied to a straightened image, things might go awry
+                    // Crop,rotate,crop(do nothing), go to rotate - see bug
+                    state.clipperData.deltaX = newDeltaX;
+                    state.clipperData.deltaY = newDeltaY;
+                    var temp = state.clipperData.width;
+                    state.clipperData.width = state.clipperData.height;
+                    state.clipperData.height = temp;
+                    state.imageArea = this._getBoundingRectangle(this.getImageVerticeCoords());
+                    this.storeCropperState(state);
+                }
+
+                // Animate the rotation and dimension change
+                this.image.animate(imageProperties, {
                     onChange: this.canvas.renderAll.bind(this.canvas),
                     duration: this.settings.animationDuration,
                     onComplete: function() {
