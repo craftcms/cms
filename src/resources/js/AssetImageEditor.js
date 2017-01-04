@@ -587,6 +587,7 @@ Craft.AssetImageEditor = Garnish.Modal.extend(
                     axis = axis == 'y' ? 'x' : 'y';
                 }
 
+                // TODO also modify the stored cropper state
                 var editorCenter = {x: this.editorWidth/2, y: this.editorHeight/2};
                 this.straighteningInput.setValue(-this.imageStraightenAngle);
                 this.imageStraightenAngle = -this.imageStraightenAngle;
