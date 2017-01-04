@@ -208,7 +208,7 @@ Craft.AssetImageEditor = Garnish.Modal.extend(
          */
         _repositionEditorElements: function() {
 
-            // Remember what the dimensions were vefore the resize took place
+            // Remember what the dimensions were before the resize took place
             var previousEditorDimensions = {
                 width: this.editorWidth,
                 height: this.editorHeight
