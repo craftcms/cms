@@ -704,17 +704,16 @@ Craft.AssetImageEditor = Garnish.Modal.extend(
 
                     // Calculate how much further that edge needs to be.
                     // https://en.wikipedia.org/wiki/Distance_from_a_point_to_a_line#Line_defined_by_two_points
-                    var distanceFromVerticeToEdge = Math.abs((edge[1].y - edge[0].y) * vertex.x - (edge[1].x - edge[0].x) * vertex.y + edge[1].x * edge[0].y - edge[1].y * edge[0].x) / Math.sqrt(Math.pow(edge[1].y-edge[0].y, 2) + Math.pow(edge[1].x-edge[0].x, 2));
+                    var distanceFromVertexToEdge = Math.abs((edge[1].y - edge[0].y) * vertex.x - (edge[1].x - edge[0].x) * vertex.y + edge[1].x * edge[0].y - edge[1].y * edge[0].x) / Math.sqrt(Math.pow(edge[1].y-edge[0].y, 2) + Math.pow(edge[1].x-edge[0].x, 2));
                     var distanceFromCenterToEdge = Math.abs((edge[1].y - edge[0].y) * viewportCenter.x - (edge[1].x - edge[0].x) * viewportCenter.y + edge[1].x * edge[0].y - edge[1].y * edge[0].x) / Math.sqrt(Math.pow(edge[1].y-edge[0].y, 2) + Math.pow(edge[1].x-edge[0].x, 2));
 
-                    // Adjust (add 1% in the end to take care of any possible rounding errors that ruin the smoothness)
-                    adjustmentRatio = ((distanceFromVerticeToEdge + distanceFromCenterToEdge) / distanceFromCenterToEdge) * 1.01;
+                    // Adjust the zoom ratio
+                    adjustmentRatio = ((distanceFromVertexToEdge + distanceFromCenterToEdge) / distanceFromCenterToEdge);
                     currentZoomRatio = currentZoomRatio * adjustmentRatio;
                 }
 
                 // If we had to make adjustments, do the calculations again
             } while (!success && adjustmentRatio != 1);
-
             // Reposition the image correctly
             this.image.set({
                 left: this.editorWidth / 2 - deltaX,
@@ -1752,6 +1751,7 @@ Craft.AssetImageEditor = Garnish.Modal.extend(
                 // the edgeVector is between the other two meaning that this is the offending vertex.
                 // To avoid the rounding errors, we'll take the closest match
                 var diff = Math.abs(this._getAngleBetweenVectors(toCenter, toVertex) - (this._getAngleBetweenVectors(toCenter, edgeVector) + this._getAngleBetweenVectors(edgeVector, toVertex)));
+
                 if (diff < smallestDiff) {
                     smallestDiff = diff;
                     edgeCrossed = edge;
