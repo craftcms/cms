@@ -1133,7 +1133,7 @@ $.extend(Craft,
         getLocalStorage: function(key, defaultValue) {
             key = 'Craft-' + Craft.systemUid + '.' + key;
 
-            if (localStorage !== undefined && localStorage[key] !== undefined) {
+            if (typeof localStorage !== 'undefined' && localStorage[key] !== undefined) {
                 return JSON.parse(localStorage[key]);
             }
             else {
@@ -1148,7 +1148,7 @@ $.extend(Craft,
          * @param value
          */
         setLocalStorage: function(key, value) {
-            if (localStorage !== undefined) {
+            if (typeof localStorage !== 'undefined') {
                 key = 'Craft-' + Craft.systemUid + '.' + key;
 
                 // localStorage might be filled all the way up.
@@ -7160,7 +7160,7 @@ Craft.CategoryIndex = Craft.BaseElementIndex.extend(
 
         getDefaultSourceKey: function() {
             // Did they request a specific category group in the URL?
-            if (this.settings.context == 'index' && defaultGroupHandle !== undefined) {
+            if (this.settings.context == 'index' && typeof defaultGroupHandle !== 'undefined') {
                 for (var i = 0; i < this.$sources.length; i++) {
                     var $source = $(this.$sources[i]);
 
@@ -7253,7 +7253,7 @@ Craft.CategoryIndex = Craft.BaseElementIndex.extend(
             // Update the URL if we're on the Categories index
             // ---------------------------------------------------------------------
 
-            if (this.settings.context == 'index' && history !== undefined) {
+            if (this.settings.context == 'index' && typeof history !== 'undefined') {
                 var uri = 'categories';
 
                 if (selectedSourceHandle) {
@@ -11326,7 +11326,7 @@ Craft.EntryIndex = Craft.BaseElementIndex.extend(
 
         getDefaultSourceKey: function() {
             // Did they request a specific section in the URL?
-            if (this.settings.context == 'index' && defaultSectionHandle !== undefined) {
+            if (this.settings.context == 'index' && typeof defaultSectionHandle !== 'undefined') {
                 if (defaultSectionHandle == 'singles') {
                     return 'singles';
                 }
@@ -11431,7 +11431,7 @@ Craft.EntryIndex = Craft.BaseElementIndex.extend(
             // Update the URL if we're on the Entries index
             // ---------------------------------------------------------------------
 
-            if (this.settings.context == 'index' && history !== undefined) {
+            if (this.settings.context == 'index' && typeof history !== 'undefined') {
                 var uri = 'entries';
 
                 if (handle) {
@@ -14537,8 +14537,10 @@ Craft.Structure = Garnish.Base.extend(
                 this.structureDrag.removeItems($li);
             }
 
+            var $parentUl;
+
             if (!$li.siblings().length) {
-                var $parentUl = $li.parent();
+                $parentUl = $li.parent();
             }
 
             $li.css('visibility', 'hidden').velocity({marginBottom: -$li.height()}, 'fast', $.proxy(function() {

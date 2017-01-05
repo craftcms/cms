@@ -1130,7 +1130,7 @@ $.extend(Craft,
         getLocalStorage: function(key, defaultValue) {
             key = 'Craft-' + Craft.systemUid + '.' + key;
 
-            if (localStorage !== undefined && localStorage[key] !== undefined) {
+            if (typeof localStorage !== 'undefined' && localStorage[key] !== undefined) {
                 return JSON.parse(localStorage[key]);
             }
             else {
@@ -1145,7 +1145,7 @@ $.extend(Craft,
          * @param value
          */
         setLocalStorage: function(key, value) {
-            if (localStorage !== undefined) {
+            if (typeof localStorage !== 'undefined') {
                 key = 'Craft-' + Craft.systemUid + '.' + key;
 
                 // localStorage might be filled all the way up.

@@ -33,7 +33,7 @@
                         Craft.appendFootHtml(response.footHtml);
 
                         // Update the slug generator with the new title input
-                        if (slugGenerator !== undefined) {
+                        if (typeof slugGenerator !== 'undefined') {
                             slugGenerator.setNewSource('#title');
                         }
                     }

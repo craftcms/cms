@@ -136,8 +136,10 @@ Craft.Structure = Garnish.Base.extend(
                 this.structureDrag.removeItems($li);
             }
 
+            var $parentUl;
+
             if (!$li.siblings().length) {
-                var $parentUl = $li.parent();
+                $parentUl = $li.parent();
             }
 
             $li.css('visibility', 'hidden').velocity({marginBottom: -$li.height()}, 'fast', $.proxy(function() {

@@ -339,7 +339,7 @@
             },
 
             rememberCollapsedBlockId: function(id) {
-                if (Storage !== undefined) {
+                if (typeof Storage !== 'undefined') {
                     var collapsedBlocks = Craft.MatrixInput.getCollapsedBlockIds();
 
                     if ($.inArray('' + id, collapsedBlocks) == -1) {
@@ -350,7 +350,7 @@
             },
 
             forgetCollapsedBlockId: function(id) {
-                if (Storage !== undefined) {
+                if (typeof Storage !== 'undefined') {
                     var collapsedBlocks = Craft.MatrixInput.getCollapsedBlockIds(),
                         collapsedBlocksIndex = $.inArray('' + id, collapsedBlocks);
 
@@ -539,7 +539,7 @@
                 }, this), 200);
 
                 // Remember that?
-                if (!this.isNew && Storage !== undefined) {
+                if (!this.isNew && typeof Storage !== 'undefined') {
                     var collapsedBlocks = Craft.MatrixInput.getCollapsedBlockIds(),
                         collapsedBlocksIndex = $.inArray('' + this.id, collapsedBlocks);
 

@@ -12,7 +12,7 @@
 
         onAfterRefreshImage: function(response) {
             if (response.html !== undefined) {
-                if (changeSidebarPicture !== undefined && changeSidebarPicture) {
+                if (typeof changeSidebarPicture !== 'undefined' && changeSidebarPicture) {
                     $('#user-photo').find('> img').replaceWith($('#current-photo').find('> img').clone());
                 }
             }
