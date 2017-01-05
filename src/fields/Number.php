@@ -131,7 +131,7 @@ class Number extends Field implements PreviewableFieldInterface
         return Craft::$app->getView()->renderTemplate('_includes/forms/text', [
             'name' => $this->handle,
             'value' => $value,
-            'size' => 5
+            'size' => 10
         ]);
     }
 }
