@@ -115,7 +115,7 @@ Craft.ElevatedSessionManager = Garnish.Base.extend(
                 password: this.$passwordInput.val()
             };
 
-            Craft.postActionRequest('users/startElevatedSession', data, $.proxy(function(response, textStatus) {
+            Craft.postActionRequest('users/start-elevated-session', data, $.proxy(function(response, textStatus) {
                 this.$passwordSpinner.addClass('hidden');
 
                 if (textStatus == 'success') {
