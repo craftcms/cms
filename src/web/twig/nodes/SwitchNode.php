@@ -7,8 +7,6 @@
 
 namespace craft\web\twig\nodes;
 
-use Twig_Node;
-
 /**
  * Class SwitchNode
  *
@@ -17,7 +15,7 @@ use Twig_Node;
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since  3.0
  */
-class SwitchNode extends Twig_Node
+class SwitchNode extends \Twig_Node
 {
     // Public Methods
     // =========================================================================
@@ -55,7 +53,7 @@ class SwitchNode extends Twig_Node
             ->indent();
 
         foreach ($this->getNode('cases') as $case) {
-            /** @var Twig_Node $case */
+            /** @var \Twig_Node $case */
             // The 'body' node may have been removed by Twig if it was an empty text node in a sub-template,
             // outside of any blocks
             if (!$case->hasNode('body')) {

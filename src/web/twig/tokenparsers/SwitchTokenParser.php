@@ -8,7 +8,6 @@
 namespace craft\web\twig\tokenparsers;
 
 use craft\web\twig\nodes\SwitchNode;
-use Twig_Node;
 
 /**
  * Class SwitchTokenParser that parses {% switch %} tags.
@@ -71,8 +70,8 @@ class SwitchTokenParser extends \Twig_TokenParser
                     }
                     $stream->expect(\Twig_Token::BLOCK_END_TYPE);
                     $body = $this->parser->subparse([$this, 'decideIfFork']);
-                    $cases[] = new Twig_Node([
-                        'values' => new Twig_Node($values),
+                    $cases[] = new \Twig_Node([
+                        'values' => new \Twig_Node($values),
                         'body' => $body
                     ]);
                     break;
@@ -90,7 +89,7 @@ class SwitchTokenParser extends \Twig_TokenParser
 
         $stream->expect(\Twig_Token::BLOCK_END_TYPE);
 
-        return new SwitchNode($name, new Twig_Node($cases), $default, $lineno, $this->getTag());
+        return new SwitchNode($name, new \Twig_Node($cases), $default, $lineno, $this->getTag());
     }
 
     /**
