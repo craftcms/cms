@@ -8,6 +8,7 @@
 namespace craft\web\twig\nodes;
 
 use Craft;
+use yii\web\HttpException;
 
 /**
  * Class ExitNode
@@ -29,7 +30,7 @@ class ExitNode extends \Twig_Node
 
         if ($status = $this->getNode('status')) {
             $compiler
-                ->write('throw new \craft\errors\HttpException(')
+                ->write('throw new '.HttpException::class.'(')
                 ->subcompile($status)
                 ->raw(");\n");
         } else {
