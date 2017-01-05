@@ -12,6 +12,8 @@ use craft\base\Element;
 use craft\base\ElementInterface;
 use craft\base\Field;
 use craft\base\Volume;
+use craft\elements\Category;
+use craft\elements\Entry;
 use craft\events\RegisterRichTextLinkOptionsEvent;
 use craft\fields\data\RichTextData;
 use craft\helpers\Db;
@@ -391,7 +393,7 @@ class RichText extends Field
         if (!empty($sectionSources)) {
             $linkOptions[] = [
                 'optionTitle' => Craft::t('app', 'Link to an entry'),
-                'elementType' => 'Entry',
+                'elementType' => Entry::class,
                 'sources' => $sectionSources,
             ];
         }
@@ -399,7 +401,7 @@ class RichText extends Field
         if (!empty($categorySources)) {
             $linkOptions[] = [
                 'optionTitle' => Craft::t('app', 'Link to a category'),
-                'elementType' => 'Category',
+                'elementType' => Category::class,
                 'sources' => $categorySources,
             ];
         }

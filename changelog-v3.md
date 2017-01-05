@@ -499,6 +499,7 @@ Craft CMS 3.0 Working Changelog
 - Fixed a bug where the requirements checker wasn’t taking into account MySQL/PostgreSQL installs running on non-standard ports.
 - Fixed a bug where you’d get a fatal PHP error during an update if you didn’t meet one of Craft’s requirements.
 - Fixed a bug where you’d get a database error when saving a private Assets Volume.
+- Fixed a bug where linking to an entry or category from a Rich Text field wasn’t working.
 
 ## 3.0.0-alpha.2948 - 2016-09-29
 
