@@ -41,7 +41,7 @@ class Fields
 
         $groups = Craft::$app->getFields()->getAllGroups();
 
-        return $indexBy ? ArrayHelper::index($groups, $indexBy) : $indexBy;
+        return $indexBy ? ArrayHelper::index($groups, $indexBy) : $groups;
     }
 
     /**
