@@ -119,21 +119,7 @@ class Tags extends Component
             $this->_fetchedAllTagGroups = true;
         }
 
-        if ($indexBy === 'id') {
-            return $this->_tagGroupsById;
-        }
-
-        if (!$indexBy) {
-            return array_values($this->_tagGroupsById);
-        }
-
-        $tagGroups = [];
-
-        foreach ($this->_tagGroupsById as $group) {
-            $tagGroups[$group->$indexBy] = $group;
-        }
-
-        return $tagGroups;
+        return array_values($this->_tagGroupsById);
     }
 
     /**
