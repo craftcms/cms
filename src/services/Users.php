@@ -8,7 +8,6 @@
 namespace craft\services;
 
 use Craft;
-use craft\dates\DateInterval;
 use craft\db\Query;
 use craft\elements\Asset;
 use craft\elements\User;
@@ -232,7 +231,7 @@ class Users extends Component
 
         if ($userRecord) {
             $minCodeIssueDate = DateTimeHelper::currentUTCDateTime();
-            $duration = new DateInterval(Craft::$app->getConfig()->get('verificationCodeDuration'));
+            $duration = new \DateInterval(Craft::$app->getConfig()->get('verificationCodeDuration'));
             $minCodeIssueDate->sub($duration);
 
             $valid = $userRecord->verificationCodeIssuedDate > $minCodeIssueDate;
@@ -926,7 +925,7 @@ class Users extends Component
     public function purgeExpiredPendingUsers()
     {
         if (($duration = Craft::$app->getConfig()->get('purgePendingUsersDuration')) !== false) {
-            $interval = new DateInterval($duration);
+            $interval = new \DateInterval($duration);
             $expire = DateTimeHelper::currentUTCDateTime();
             $pastTime = $expire->sub($interval);
 
@@ -1113,7 +1112,7 @@ class Users extends Component
     private function _isUserInsideInvalidLoginWindow(UserRecord $userRecord)
     {
         if ($userRecord->invalidLoginWindowStart) {
-            $duration = new DateInterval(Craft::$app->getConfig()->get('invalidLoginWindowDuration'));
+            $duration = new \DateInterval(Craft::$app->getConfig()->get('invalidLoginWindowDuration'));
             $invalidLoginWindowStart = DateTimeHelper::toDateTime($userRecord->invalidLoginWindowStart);
             $end = $invalidLoginWindowStart->add($duration);
 

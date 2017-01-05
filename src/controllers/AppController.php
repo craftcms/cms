@@ -8,7 +8,6 @@
 namespace craft\controllers;
 
 use Craft;
-use craft\dates\DateInterval;
 use craft\enums\LicenseKeyStatus;
 use craft\helpers\App;
 use craft\helpers\Cp;
@@ -83,7 +82,7 @@ class AppController extends Controller
         $user = Craft::$app->getUser()->getIdentity();
 
         $currentTime = DateTimeHelper::currentUTCDateTime();
-        $tomorrow = $currentTime->add(new DateInterval('P1D'));
+        $tomorrow = $currentTime->add(new \DateInterval('P1D'));
 
         if (Craft::$app->getUsers()->shunMessageForUser($user->id, $message, $tomorrow)) {
             return $this->asJson([

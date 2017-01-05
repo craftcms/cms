@@ -34,7 +34,6 @@ use craft\web\twig\tokenparsers\RequirePermissionTokenParser;
 use craft\web\twig\tokenparsers\SwitchTokenParser;
 use craft\web\twig\variables\CraftVariable;
 use craft\web\View;
-use DateInterval;
 use DateTime;
 use DateTimeInterface;
 use DateTimeZone;
@@ -431,7 +430,7 @@ class Extension extends \Twig_Extension implements \Twig_Extension_GlobalsInterf
      * Converts a date to the Atom format.
      *
      * @param \Twig_Environment                              $env
-     * @param DateTime|DateTimeInterface|DateInterval|string $date     A date
+     * @param DateTime|DateTimeInterface|\DateInterval|string $date     A date
      * @param DateTimeZone|string|null|false                 $timezone The target timezone, null to use the default, false to leave unchanged
      *
      * @return string The formatted date
@@ -445,7 +444,7 @@ class Extension extends \Twig_Extension implements \Twig_Extension_GlobalsInterf
      * Converts a date to the RSS format.
      *
      * @param \Twig_Environment                              $env
-     * @param DateTime|DateTimeInterface|DateInterval|string $date     A date
+     * @param DateTime|DateTimeInterface|\DateInterval|string $date     A date
      * @param DateTimeZone|string|null|false                 $timezone The target timezone, null to use the default, false to leave unchanged
      *
      * @return string The formatted date

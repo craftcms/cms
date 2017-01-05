@@ -8,7 +8,6 @@
 namespace craft\web;
 
 use Craft;
-use craft\dates\DateInterval;
 use craft\elements\User as UserElement;
 use craft\helpers\DateTimeHelper;
 use craft\helpers\Db;
@@ -123,7 +122,13 @@ class User extends \yii\web\User
         if ($rememberUsernameDuration) {
             $cookie = new Cookie($this->usernameCookie);
             $cookie->value = $user->username;
-            $cookie->expire = time() + DateTimeHelper::timeFormatToSeconds($rememberUsernameDuration);
+            $seconds = DateTimeHelper::timeFormatToSeconds($rememberUsernameDuration);
+
+            if ($seconds === null) {
+                $seconds = 0;
+            }
+
+            $cookie->expire = time() + $seconds;
             Craft::$app->getResponse()->getCookies()->add($cookie);
         } else {
             Craft::$app->getResponse()->getCookies()->remove(new Cookie($this->usernameCookie));
@@ -538,7 +543,7 @@ class User extends \yii\web\User
      */
     private function _deleteStaleSessions()
     {
-        $interval = new DateInterval('P3M');
+        $interval = new \DateInterval('P3M');
         $expire = DateTimeHelper::currentUTCDateTime();
         $pastTime = $expire->sub($interval);
 

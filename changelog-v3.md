@@ -318,6 +318,7 @@ Craft CMS 3.0 Working Changelog
 - Removed `craft\cache\FileCache`.
 - Removed `craft\cache\adapters\GuzzleCacheAdapter`.
 - Removed `craft\dates\DateTime`.
+- Removed `craft\dates\DateInterval`.
 - Removed `craft\db\DbBackup`.
 - Removed `craft\enums\BaseEnum`.
 - Removed `craft\errors\DbBackupException`.

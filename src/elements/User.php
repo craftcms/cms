@@ -9,7 +9,6 @@ namespace craft\elements;
 
 use Craft;
 use craft\base\Element;
-use craft\dates\DateInterval;
 use craft\db\Query;
 use craft\elements\actions\DeleteUsers;
 use craft\elements\actions\Edit;
@@ -1021,7 +1020,7 @@ class User extends Element implements IdentityInterface
         // If that's the case, just let it return null as if they are past the cooldownDuration.
         if ($this->locked && $this->lockoutDate) {
             $cooldownEnd = clone $this->lockoutDate;
-            $cooldownEnd->add(new DateInterval(Craft::$app->getConfig()->get('cooldownDuration')));
+            $cooldownEnd->add(new \DateInterval(Craft::$app->getConfig()->get('cooldownDuration')));
 
             return $cooldownEnd;
         }
