@@ -8,9 +8,12 @@
 namespace craft\helpers;
 
 use Craft;
+use craft\base\Element;
+use craft\base\ElementInterface;
 use craft\elements\db\ElementQuery;
 use craft\elements\db\ElementQueryInterface;
 use craft\web\twig\variables\Paginate;
+use yii\base\Object;
 
 /**
  * Class Template
@@ -22,6 +25,48 @@ class Template
 {
     // Public Methods
     // =========================================================================
+
+    /**
+     * Returns the attribute value for a given array/object.
+     *
+     * @param \Twig_Environment $env
+     * @param \Twig_Source      $source
+     * @param mixed             $object            The object or array from where to get the item
+     * @param mixed             $item              The item to get from the array or object
+     * @param array             $arguments         An array of arguments to pass if the item is an object method
+     * @param string            $type              The type of attribute (@see Twig_Template constants)
+     * @param boolean           $isDefinedTest     Whether this is only a defined check
+     * @param boolean           $ignoreStrictCheck Whether to ignore the strict attribute check or not
+     *
+     * @return mixed The attribute value, or a Boolean when $isDefinedTest is true, or null when the attribute is not set and $ignoreStrictCheck is true
+     *
+     * @throws \Twig_Error_Runtime if the attribute does not exist and Twig is running in strict mode and $isDefinedTest is false
+     *
+     * @internal
+     */
+    public static function attribute(\Twig_Environment $env, \Twig_Source $source, $object, $item, array $arguments = [], $type = \Twig_Template::ANY_CALL, $isDefinedTest = false, $ignoreStrictCheck = false)
+    {
+        if ($object instanceof ElementInterface) {
+            self::_includeElementInTemplateCaches($object);
+        }
+
+        if (
+            $type !== \Twig_Template::METHOD_CALL &&
+            $object instanceof Object &&
+            $object->canGetProperty($item)
+        ) {
+            return $isDefinedTest ? true : $object->$item;
+        }
+
+        // Convert any Twig_Markup arguments back to strings (unless the class *extends* Twig_Markup)
+        foreach ($arguments as $key => $value) {
+            if (is_object($value) && get_class($value) === \Twig_Markup::class) {
+                $arguments[$key] = (string)$value;
+            }
+        }
+
+        return \twig_get_attribute($env, $source, $object, $item, $arguments, $type, $isDefinedTest, $ignoreStrictCheck);
+    }
 
     /**
      * Paginates an element query's results
@@ -91,5 +136,26 @@ class Template
     public static function raw($value)
     {
         return new \Twig_Markup($value, Craft::$app->charset);
+    }
+
+    // Private Methods
+    // =========================================================================
+
+    /**
+     * Includes an element in any active template caches.
+     *
+     * @param ElementInterface $element
+     *
+     * @return void
+     */
+    private static function _includeElementInTemplateCaches(ElementInterface $element)
+    {
+        /** @var Element $element */
+        $elementId = $element->id;
+
+        // Don't initialize the TemplateCaches service if we don't have to
+        if ($elementId && Craft::$app->has('templateCaches', true)) {
+            Craft::$app->getTemplateCaches()->includeElementInTemplateCaches($elementId);
+        }
     }
 }

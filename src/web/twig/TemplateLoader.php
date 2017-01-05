@@ -32,7 +32,9 @@ class TemplateLoader implements \Twig_LoaderInterface, \Twig_ExistsLoaderInterfa
     // =========================================================================
 
     /**
-     * @inheritdoc
+     * Constructor
+     *
+     * @param View $view
      */
     public function __construct(View $view)
     {
@@ -40,15 +42,29 @@ class TemplateLoader implements \Twig_LoaderInterface, \Twig_ExistsLoaderInterfa
     }
 
     /**
-     * Checks if a template exists.
-     *
-     * @param string $name
-     *
-     * @return boolean
+     * @inheritdoc
      */
     public function exists($name)
     {
         return $this->view->doesTemplateExist($name);
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function getSourceContext($name)
+    {
+        if ($name instanceof StringTemplate) {
+            return $name->template;
+        }
+
+        $template = $this->_resolveTemplate($name);
+
+        if (!is_readable($template)) {
+            throw new TemplateLoaderException($name, Craft::t('app', 'Tried to read the template at {path}, but could not. Check the permissions.', ['path' => $template]));
+        }
+
+        return new \Twig_Source(file_get_contents($template), $name, $template);
     }
 
     /**

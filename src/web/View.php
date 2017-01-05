@@ -17,9 +17,9 @@ use craft\helpers\Html as HtmlHelper;
 use craft\helpers\Path;
 use craft\helpers\StringHelper;
 use craft\web\assets\AppAsset;
+use craft\web\twig\Compiler;
 use craft\web\twig\Environment;
 use craft\web\twig\Extension;
-use craft\web\twig\Parser;
 use craft\web\twig\StringTemplate;
 use craft\web\twig\Template;
 use craft\web\twig\TemplateLoader;
@@ -191,12 +191,12 @@ class View extends \yii\web\View
 
             // Set our timezone
             /** @var \Twig_Extension_Core $core */
-            $core = $twig->getExtension('core');
+            $core = $twig->getExtension(\Twig_Extension_Core::class);
             $timezone = Craft::$app->getTimeZone();
             $core->setTimezone($timezone);
 
-            // Set our custom parser to support resource registration tags using the capture mode
-            $twig->setParser(new Parser($twig));
+            // Set our custom compiler
+            $twig->setCompiler(new Compiler($twig));
 
             $this->_twigs[$cacheKey] = $twig;
         }

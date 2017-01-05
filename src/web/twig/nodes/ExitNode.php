@@ -28,10 +28,10 @@ class ExitNode extends \Twig_Node
     {
         $compiler->addDebugInfo($this);
 
-        if ($status = $this->getNode('status')) {
+        if ($this->hasNode('status')) {
             $compiler
                 ->write('throw new '.HttpException::class.'(')
-                ->subcompile($status)
+                ->subcompile($this->getNode('status'))
                 ->raw(");\n");
         } else {
             $compiler->write(Craft::class."::\$app->end();\n");

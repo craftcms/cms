@@ -29,11 +29,8 @@ class NodeVisitor implements \Twig_NodeVisitorInterface
     /**
      * @inheritdoc
      */
-    public function enterNode(
-        /** @noinspection PhpDeprecationInspection */
-        \Twig_NodeInterface $node,
-        \Twig_Environment $env
-    ) {
+    public function enterNode(\Twig_Node $node, \Twig_Environment $env)
+    {
         // Is this the top-level template node?
         if ($node instanceof \Twig_Node_Module) {
             $node = $this->_findEventTags($node);
@@ -79,11 +76,7 @@ class NodeVisitor implements \Twig_NodeVisitorInterface
     /**
      * @inheritdoc
      */
-    public function leaveNode(
-        /** @noinspection PhpDeprecationInspection */
-        \Twig_NodeInterface $node,
-        \Twig_Environment $env
-    ) {
+    public function leaveNode(\Twig_Node $node, \Twig_Environment $env) {
         return $node;
     }
 
@@ -111,14 +104,11 @@ class NodeVisitor implements \Twig_NodeVisitorInterface
     /**
      * Traverses through a node and its children, looking for event tags.
      *
-     * @param \Twig_NodeInterface $node The current node to traverse
+     * @param \Twig_Node $node The current node to traverse
      *
-     * @return \Twig_NodeInterface
+     * @return \Twig_Node
      */
-    private function _findEventTags(
-        /** @noinspection PhpDeprecationInspection */
-        \Twig_NodeInterface $node
-    ) {
+    private function _findEventTags(\Twig_Node $node) {
         // Check to see if this is a template event tag
         if ($node instanceof \Twig_Node_Print || $node instanceof \Twig_Node_Do) {
             $expression = $node->getNode('expr');
@@ -148,11 +138,7 @@ class NodeVisitor implements \Twig_NodeVisitorInterface
         // Should we keep looking?
         if ($this->_foundAllEventTags() === false) {
             foreach ($node as $k => $n) {
-                // todo: we can remove this condition for Twig 2
-                /** @noinspection PhpDeprecationInspection */
-                if ($n instanceof \Twig_NodeInterface) {
-                    $node->setNode($k, $this->_findEventTags($n));
-                }
+                $node->setNode($k, $this->_findEventTags($n));
             }
         }
 

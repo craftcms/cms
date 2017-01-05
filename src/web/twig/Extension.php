@@ -317,16 +317,21 @@ class Extension extends \Twig_Extension implements \Twig_Extension_GlobalsInterf
      * @param null|int $options Either null or a bitmask consisting of JSON_HEX_QUOT, JSON_HEX_TAG, JSON_HEX_AMP,
      *                          JSON_HEX_APOS, JSON_NUMERIC_CHECK, JSON_PRETTY_PRINT, JSON_UNESCAPED_SLASHES,
      *                          JSON_FORCE_OBJECT
+     * @param int      $depth   The maximum depth
      *
      * @return mixed The JSON encoded value.
      */
-    public function jsonEncodeFilter($value, $options = null)
+    public function jsonEncodeFilter($value, int $options = null, int $depth = 512)
     {
-        if ($options === null && in_array(Header::getMimeType(), ['text/html', 'application/xhtml+xml'], true)) {
-            $options = JSON_HEX_TAG | JSON_HEX_AMP | JSON_HEX_QUOT;
+        if ($options === null) {
+            if (in_array(Header::getMimeType(), ['text/html', 'application/xhtml+xml'], true)) {
+                $options = JSON_HEX_TAG | JSON_HEX_AMP | JSON_HEX_QUOT;
+            } else {
+                $options = 0;
+            }
         }
 
-        return twig_jsonencode_filter($value, $options);
+        return json_encode($value, $options, $depth);
     }
 
     /**

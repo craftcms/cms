@@ -93,6 +93,7 @@ class RegisterResourceTokenParser extends \Twig_TokenParser
         $lineno = $token->getLine();
         $stream = $this->parser->getStream();
         $expressionParser = $this->parser->getExpressionParser();
+        $nodes = [];
 
         // Is this a tag pair?
         if (
@@ -107,7 +108,7 @@ class RegisterResourceTokenParser extends \Twig_TokenParser
             $capture = true;
         } else {
             $capture = false;
-            $value = $expressionParser->parseExpression();
+            $nodes['value'] = $expressionParser->parseExpression();
         }
 
         // Is there a position param?
@@ -128,9 +129,7 @@ class RegisterResourceTokenParser extends \Twig_TokenParser
         // Is there an options param?
         if ($this->_allowOptions && $stream->test(\Twig_Token::NAME_TYPE, 'with')) {
             $stream->next();
-            $options = $expressionParser->parseExpression();
-        } else {
-            $options = null;
+            $nodes['options'] = $expressionParser->parseExpression();
         }
 
         $first = $this->_getFirstValue($stream);
@@ -140,17 +139,11 @@ class RegisterResourceTokenParser extends \Twig_TokenParser
 
         if ($capture) {
             // Tag pair. Capture the value.
-            $value = $this->parser->subparse([$this, 'decideBlockEnd'], true);
+            $nodes['value'] = $this->parser->subparse([$this, 'decideBlockEnd'], true);
             $stream->expect(\Twig_Token::BLOCK_END_TYPE);
         }
 
         // Pass everything off to the RegisterResourceNode
-        /** @noinspection PhpUndefinedVariableInspection */
-        $nodes = [
-            'value' => $value,
-            'options' => $options
-        ];
-
         $attributes = [
             'method' => $this->_method,
             'allowOptions' => $this->_allowOptions,

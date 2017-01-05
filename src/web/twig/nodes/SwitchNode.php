@@ -23,26 +23,6 @@ class SwitchNode extends \Twig_Node
     /**
      * @inheritdoc
      */
-    public function __construct(
-        /** @noinspection PhpDeprecationInspection */
-        \Twig_NodeInterface $value,
-        /** @noinspection PhpDeprecationInspection */
-        \Twig_NodeInterface $cases,
-        /** @noinspection PhpDeprecationInspection */
-        \Twig_NodeInterface $default = null,
-        $lineno,
-        $tag = null
-    ) {
-        parent::__construct([
-            'value' => $value,
-            'cases' => $cases,
-            'default' => $default
-        ], [], $lineno, $tag);
-    }
-
-    /**
-     * @inheritdoc
-     */
     public function compile(\Twig_Compiler $compiler)
     {
         $compiler
@@ -76,7 +56,7 @@ class SwitchNode extends \Twig_Node
                 ->write("}\n");
         }
 
-        if ($this->hasNode('default') && $this->getNode('default') !== null) {
+        if ($this->hasNode('default')) {
             $compiler
                 ->write("default:\n")
                 ->write("{\n")

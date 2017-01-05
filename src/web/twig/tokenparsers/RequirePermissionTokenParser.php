@@ -26,11 +26,12 @@ class RequirePermissionTokenParser extends \Twig_TokenParser
     public function parse(\Twig_Token $token)
     {
         $lineno = $token->getLine();
-        $permissionName = $this->parser->getExpressionParser()->parseExpression();
+        $nodes = [
+            'permissionName' => $this->parser->getExpressionParser()->parseExpression(),
+        ];
         $this->parser->getStream()->expect(\Twig_Token::BLOCK_END_TYPE);
 
-        return new RequirePermissionNode(['permissionName' => $permissionName],
-            [], $lineno, $this->getTag());
+        return new RequirePermissionNode($nodes, [], $lineno, $this->getTag());
     }
 
     /**

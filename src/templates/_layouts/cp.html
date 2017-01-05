@@ -359,7 +359,7 @@
 			{%- spaceless %}
 				{% set canUpgradeEdition = craft.app.getCanUpgradeEdition() %}
 				{% set licensedEdition = craft.app.getLicensedEdition() %}
-				{% set isTrial = licensedEdition is not sameas(null) and licensedEdition is not sameas(CraftEdition) %}
+				{% set isTrial = licensedEdition is not same as(null) and licensedEdition is not same as(CraftEdition) %}
 
 				<div id="edition" {% if canUpgradeEdition %}class="hot" title="{{ 'Manage your Craft CMS edition'|t('app') }}"{% else %}class="edition"{% endif %}>
 					<div id="edition-logo">
