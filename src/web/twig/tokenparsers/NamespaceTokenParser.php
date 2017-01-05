@@ -35,13 +35,14 @@ class NamespaceTokenParser extends \Twig_TokenParser
     {
         $lineno = $token->getLine();
         $stream = $this->parser->getStream();
-        $namespace = $this->parser->getExpressionParser()->parseExpression();
+        $nodes = [
+            'namespace' => $this->parser->getExpressionParser()->parseExpression(),
+        ];
         $stream->expect(\Twig_Token::BLOCK_END_TYPE);
-        $body = $this->parser->subparse([$this, 'decideNamespaceEnd'], true);
+        $nodes['body'] = $this->parser->subparse([$this, 'decideNamespaceEnd'], true);
         $stream->expect(\Twig_Token::BLOCK_END_TYPE);
 
-        return new NamespaceNode(['namespace' => $namespace, 'body' => $body],
-            [], $lineno, $this->getTag());
+        return new NamespaceNode($nodes, [], $lineno, $this->getTag());
     }
 
 

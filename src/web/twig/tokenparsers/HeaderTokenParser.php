@@ -26,10 +26,12 @@ class HeaderTokenParser extends \Twig_TokenParser
     public function parse(\Twig_Token $token)
     {
         $lineno = $token->getLine();
-        $header = $this->parser->getExpressionParser()->parseExpression();
+        $nodes = [
+            'header' => $this->parser->getExpressionParser()->parseExpression(),
+        ];
         $this->parser->getStream()->expect(\Twig_Token::BLOCK_END_TYPE);
 
-        return new HeaderNode(['header' => $header], [], $lineno, $this->getTag());
+        return new HeaderNode($nodes, [], $lineno, $this->getTag());
     }
 
     /**

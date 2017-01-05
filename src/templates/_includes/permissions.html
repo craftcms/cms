@@ -42,12 +42,14 @@
 				}) }}
 
 				{% if hasNestedPermissions %}
-					{{ _self.permissionList(context, props.nested, permissionName~'-nested', not checked) }}
+					{{ permissionList(context, props.nested, permissionName~'-nested', not checked) }}
 				{% endif %}
 			</li>
 		{% endfor %}
 	</ul>
 {% endmacro %}
+
+{% from _self import permissionList %}
 
 
 {% for category, catPermissions in craft.app.userPermissions.getAllPermissions() %}
@@ -55,6 +57,6 @@
 		<h3>{{ category }}</h3>
 		<div class="select-all"></div>
 
-		{{ _self.permissionList(_context, catPermissions) }}
+		{{ permissionList(_context, catPermissions) }}
 	</div>
 {% endfor %}

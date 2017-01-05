@@ -66,7 +66,7 @@ class RichTextData extends \Twig_Markup
      */
     public function getParsedContent()
     {
-        return $this->content;
+        return (string)$this;
     }
 
     /**
@@ -81,10 +81,10 @@ class RichTextData extends \Twig_Markup
         }
 
         $this->_pages = [];
-        $pages = explode('<!--pagebreak-->', $this->content);
+        $pages = explode('<!--pagebreak-->', (string)$this);
 
         foreach ($pages as $page) {
-            $this->_pages[] = new \Twig_Markup($page, $this->charset);
+            $this->_pages[] = new \Twig_Markup($page, Craft::$app->charset);
         }
 
         return $this->_pages;

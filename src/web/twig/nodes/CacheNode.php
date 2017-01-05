@@ -36,12 +36,13 @@ class CacheNode extends \Twig_Node
     {
         $n = self::$_cacheCount++;
 
-        $conditions = $this->getNode('conditions');
-        $ignoreConditions = $this->getNode('ignoreConditions');
-        $key = $this->getNode('key');
+        $conditions = $this->hasNode('conditions') ? $this->getNode('conditions') : null;
+        $ignoreConditions = $this->hasNode('ignoreConditions') ? $this->getNode('ignoreConditions') : null;
+        $key = $this->hasNode('key') ? $this->getNode('key') : null;
+        $expiration = $this->hasNode('expiration') ? $this->getNode('expiration') : null;
+
         $durationNum = $this->getAttribute('durationNum');
         $durationUnit = $this->getAttribute('durationUnit');
-        $expiration = $this->getNode('expiration');
         $global = $this->getAttribute('global') ? 'true' : 'false';
 
         $compiler

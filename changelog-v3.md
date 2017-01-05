@@ -281,9 +281,9 @@ Craft CMS 3.0 Working Changelog
 - Updated Yii 2 Debug Extension to 2.0.7.
 - Updated Yii 2 Auth Client to 2.1.1.
 - Updated Yii 2 SwiftMailer to 2.0.6.
+- Updated Twig to 2.0.0.
 - Updated Guzzle to 6.2.2.
 - Updated Imagine to the new `pixelandtonic/imagine` fork at 0.6.3.1.
-- Updated Twig to 1.30.0.
 - Updated Garnish to 0.1.11.
 - Updated Velocity to 1.4.1.
 - Updated element-resize-detector.js to 1.1.10.
@@ -484,6 +484,7 @@ Craft CMS 3.0 Working Changelog
 - Fixed a bug where plugin-supplied custom fields weren’t working.
 - Fixed a PHP error that occurred when opening an element editor.
 - Fixed a PHP error that occurred when re-saving a category group.
+- Fixed a PHP error that occurred when using the `{% exit %}` tag with a specific status code.
 - Fixed authorization error that occurred when editing an entry in a section that’s not enabled for the current site.
 - Fixed a PHP error when using the `{% cache %}` tag.
 - Fixed an error that occurred when clicking on an email message to edit it.

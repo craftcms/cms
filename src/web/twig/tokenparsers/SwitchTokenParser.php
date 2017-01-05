@@ -8,7 +8,6 @@
 namespace craft\web\twig\tokenparsers;
 
 use craft\web\twig\nodes\SwitchNode;
-use Twig_Node;
 
 /**
  * Class SwitchTokenParser that parses {% switch %} tags.
@@ -39,7 +38,10 @@ class SwitchTokenParser extends \Twig_TokenParser
         $lineno = $token->getLine();
         $stream = $this->parser->getStream();
 
-        $name = $this->parser->getExpressionParser()->parseExpression();
+        $nodes = [
+            'value' => $this->parser->getExpressionParser()->parseExpression(),
+        ];
+
         $stream->expect(\Twig_Token::BLOCK_END_TYPE);
 
         // There can be some whitespace between the {% switch %} and first {% case %} tag.
@@ -71,14 +73,14 @@ class SwitchTokenParser extends \Twig_TokenParser
                     }
                     $stream->expect(\Twig_Token::BLOCK_END_TYPE);
                     $body = $this->parser->subparse([$this, 'decideIfFork']);
-                    $cases[] = new Twig_Node([
-                        'values' => new Twig_Node($values),
+                    $cases[] = new \Twig_Node([
+                        'values' => new \Twig_Node($values),
                         'body' => $body
                     ]);
                     break;
                 case 'default':
                     $stream->expect(\Twig_Token::BLOCK_END_TYPE);
-                    $default = $this->parser->subparse([$this, 'decideIfEnd']);
+                    $nodes['default'] = $this->parser->subparse([$this, 'decideIfEnd']);
                     break;
                 case 'endswitch':
                     $end = true;
@@ -88,9 +90,11 @@ class SwitchTokenParser extends \Twig_TokenParser
             }
         }
 
+        $nodes['cases'] = new \Twig_Node($cases);
+
         $stream->expect(\Twig_Token::BLOCK_END_TYPE);
 
-        return new SwitchNode($name, new Twig_Node($cases), $default, $lineno, $this->getTag());
+        return new SwitchNode($nodes, [], $lineno, $this->getTag());
     }
 
     /**
