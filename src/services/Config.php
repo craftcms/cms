@@ -274,7 +274,13 @@ class Config extends Component
             return $this->_cacheDuration = 0;
         }
 
-        return $this->_cacheDuration = DateTimeHelper::timeFormatToSeconds($duration);
+        $seconds = DateTimeHelper::timeFormatToSeconds($duration);
+
+        if ($seconds === null) {
+            $seconds = 0;
+        }
+
+        return $this->_cacheDuration = $seconds;
     }
 
     /**
@@ -488,7 +494,11 @@ class Config extends Component
         }
 
         if ($duration) {
-            return DateTimeHelper::timeFormatToSeconds($duration);
+            $seconds = DateTimeHelper::timeFormatToSeconds($duration);
+
+            if ($seconds !== null) {
+                return $seconds;
+            }
         }
 
         // Default to 5 minutes

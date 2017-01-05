@@ -8,7 +8,6 @@
 namespace craft\helpers;
 
 use Craft;
-use craft\dates\DateInterval;
 use craft\i18n\Locale;
 use DateTime;
 use yii\helpers\FormatConverter;
@@ -21,6 +20,48 @@ use yii\helpers\FormatConverter;
  */
 class DateTimeHelper
 {
+    // Constants
+    // =========================================================================
+
+    /**
+     * Number of seconds in a minute.
+     *
+     * @var integer
+     */
+    const SECONDS_MINUTE = 60;
+
+    /**
+     * Number of seconds in an hour.
+     *
+     * @var integer
+     */
+    const SECONDS_HOUR = 3600;
+
+    /**
+     * Number of seconds in a day.
+     *
+     * @var integer
+     */
+    const SECONDS_DAY = 86400;
+
+    /**
+     * The number of seconds in a month.
+     *
+     * Based on a 30.4368 day month, with the product rounded.
+     *
+     * @var integer
+     */
+    const SECONDS_MONTH = 2629740;
+
+    /**
+     * The number of seconds in a year.
+     *
+     * Based on a 365.2416 day year, with the product rounded.
+     *
+     * @var integer
+     */
+    const SECONDS_YEAR = 31556874;
+
     // Properties
     // =========================================================================
 
@@ -500,13 +541,39 @@ class DateTimeHelper
      *
      * @param $timeFormatString
      *
-     * @return integer
+     * @return integer|null
      */
     public static function timeFormatToSeconds($timeFormatString)
     {
-        $interval = new DateInterval($timeFormatString);
+        $interval = new \DateInterval($timeFormatString);
 
-        return (int)$interval->toSeconds();
+        if ($interval === null) {
+            return null;
+        }
+
+        $seconds = (int)$interval->s;
+
+        if ($interval->i) {
+            $seconds += ((int)$interval->i * self::SECONDS_MINUTE);
+        }
+
+        if ($interval->h) {
+            $seconds += ((int)$interval->h * self::SECONDS_HOUR);
+        }
+
+        if ($interval->d) {
+            $seconds += ((int)$interval->d * self::SECONDS_DAY);
+        }
+
+        if ($interval->m) {
+            $seconds += ((int)$interval->m * self::SECONDS_MONTH);
+        }
+
+        if ($interval->y) {
+            $seconds += ((int)$interval->y * self::SECONDS_YEAR);
+        }
+
+        return (int)$seconds;
     }
 
     /**
@@ -518,9 +585,58 @@ class DateTimeHelper
      */
     public static function isValidIntervalString($intervalString)
     {
-        $interval = DateInterval::createFromDateString($intervalString);
+        $interval = \DateInterval::createFromDateString($intervalString);
 
         return $interval->s != 0 || $interval->i != 0 || $interval->h != 0 || $interval->d != 0 || $interval->m != 0 || $interval->y != 0;
+    }
+
+    /**
+     * Returns the interval in a human-friendly string.
+     *
+     * @param \DateInterval $dateInterval
+     * @param boolean       $showSeconds
+     *
+     * @return string
+     */
+    public static function humanDurationFromInterval(\DateInterval $dateInterval, $showSeconds = true)
+    {
+        $timeComponents = [];
+
+        if ($dateInterval->y) {
+            $timeComponents[] = $dateInterval->y.' '.($dateInterval->y > 1 ? Craft::t('app', 'years') : Craft::t('app', 'year'));
+        }
+
+        if ($dateInterval->m) {
+            $timeComponents[] = $dateInterval->m.' '.($dateInterval->m > 1 ? Craft::t('app', 'months') : Craft::t('app', 'month'));
+        }
+
+        if ($dateInterval->d) {
+            $timeComponents[] = $dateInterval->d.' '.($dateInterval->d > 1 ? Craft::t('app', 'days') : Craft::t('app', 'day'));
+        }
+
+        if ($dateInterval->h) {
+            $timeComponents[] = $dateInterval->h.' '.($dateInterval->h > 1 ? Craft::t('app', 'hours') : Craft::t('app', 'hour'));
+        }
+
+        $minutes = $dateInterval->i;
+
+        if (!$showSeconds) {
+            if ($minutes && round($dateInterval->s / 60)) {
+                $minutes++;
+            } else if (!$dateInterval->y && !$dateInterval->m && !$dateInterval->d && !$dateInterval->h && !$minutes) {
+                return Craft::t('app', 'less than a minute');
+            }
+        }
+
+        if ($minutes) {
+            $timeComponents[] = $minutes.' '.($minutes > 1 ? Craft::t('app', 'minutes') : Craft::t('app', 'minute'));
+        }
+
+        if ($showSeconds && $dateInterval->s) {
+            $timeComponents[] = $dateInterval->s.' '.($dateInterval->s > 1 ? Craft::t('app', 'seconds') : Craft::t('app', 'second'));
+        }
+
+        return implode(', ', $timeComponents);
     }
 
     // Private Methods

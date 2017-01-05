@@ -79,6 +79,10 @@ class Feeds extends Component
             } else {
                 /** @noinspection CallableParameterUseCaseInTypeContextInspection */
                 $cacheDuration = DateTimeHelper::timeFormatToSeconds($cacheDuration);
+
+                if ($cacheDuration === null) {
+                    $cacheDuration = 0;
+                }
             }
 
             // Potentially long-running request, so close session to prevent session blocking on subsequent requests.

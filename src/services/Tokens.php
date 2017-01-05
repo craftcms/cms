@@ -8,7 +8,6 @@
 namespace craft\services;
 
 use Craft;
-use craft\dates\DateInterval;
 use craft\db\Query;
 use craft\helpers\DateTimeHelper;
 use craft\helpers\Db;
@@ -55,7 +54,7 @@ class Tokens extends Component
     {
         if (!$expiryDate) {
             $expiryDate = DateTimeHelper::currentUTCDateTime();
-            $expiryDate->add(new DateInterval(Craft::$app->getConfig()->get('defaultTokenDuration')));
+            $expiryDate->add(new \DateInterval(Craft::$app->getConfig()->get('defaultTokenDuration')));
         }
 
         $tokenRecord = new TokenRecord();

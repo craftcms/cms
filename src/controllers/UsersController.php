@@ -16,6 +16,7 @@ use craft\events\LoginFailureEvent;
 use craft\events\RegisterUserActionsEvent;
 use craft\events\UserTokenEvent;
 use craft\helpers\Assets;
+use craft\helpers\DateTimeHelper;
 use craft\helpers\FileHelper;
 use craft\helpers\Image;
 use craft\helpers\Json;
@@ -1436,7 +1437,7 @@ class UsersController extends Controller
             case User::AUTH_ACCOUNT_COOLDOWN:
                 $timeRemaining = $user->getRemainingCooldownTime();
                 if ($timeRemaining) {
-                    $message = Craft::t('app', 'Account locked. Try again in {time}.', ['time' => $timeRemaining->humanDuration()]);
+                    $message = Craft::t('app', 'Account locked. Try again in {time}.', ['time' => DateTimeHelper::humanDurationFromInterval($timeRemaining)]);
                 } else {
                     $message = Craft::t('app', 'Account locked.');
                 }
