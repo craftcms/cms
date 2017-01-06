@@ -134,7 +134,7 @@ class Mailer extends \yii\swiftmailer\Mailer
 
             // Don't let Twig use the HTML escaping strategy on the plain text portion body of the email.
             /** @var \Twig_Extension_Escaper $ext */
-            $ext = Craft::$app->getView()->getTwig()->getExtension('escaper');
+            $ext = Craft::$app->getView()->getTwig()->getExtension(\Twig_Extension_Escaper::class);
             $ext->setDefaultStrategy(false);
             $message->setTextBody(Craft::$app->getView()->renderString($textBodyTemplate, $variables));
             $ext->setDefaultStrategy('html');
