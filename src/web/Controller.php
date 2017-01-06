@@ -72,9 +72,8 @@ abstract class Controller extends \yii\web\Controller
     /**
      * Renders a template.
      *
-     * @param mixed $template      The name of the template to load in a format supported by
-     *                             [[\craft\web\View::resolveTemplate()]], or a [[\craft\web\twig\StringTemplate]] object.
-     * @param array $variables     The variables that should be available to the template.
+     * @param string $template  The name of the template to load
+     * @param array  $variables The variables that should be available to the template
      *
      * @return string The rendering result
      * @throws InvalidParamException if the view file does not exist.

@@ -342,6 +342,7 @@ Craft CMS 3.0 Working Changelog
 - Removed `craft\io\ZipInterface`.
 - Removed `craft\models\LogEntry`.
 - Removed `craft\models\Password`.
+- Removed `craft\web\twig\StringTemplate`.
 - Removed `craft\base\Component::getType()`. It was only really there for objects that implement `craft\base\MissingComponentInterface`, and now they have an `$expectedType` property.
 - Removed `craft\base\Element::getContentFromPost()`.
 - Removed `craft\base\Element::getSourceByKey()`.

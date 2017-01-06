@@ -54,10 +54,6 @@ class TemplateLoader implements \Twig_LoaderInterface, \Twig_ExistsLoaderInterfa
      */
     public function getSourceContext($name)
     {
-        if ($name instanceof StringTemplate) {
-            return $name->template;
-        }
-
         $template = $this->_resolveTemplate($name);
 
         if (!is_readable($template)) {
@@ -70,24 +66,20 @@ class TemplateLoader implements \Twig_LoaderInterface, \Twig_ExistsLoaderInterfa
     /**
      * Gets the cache key to use for the cache for a given template.
      *
-     * @param StringTemplate|string $name The name of the template to load, or a StringTemplate object.
+     * @param string $name The name of the template to load
      *
      * @return string The cache key (the path to the template)
      * @throws TemplateLoaderException if the template doesn’t exist
      */
     public function getCacheKey($name)
     {
-        if ($name instanceof StringTemplate) {
-            return $name->cacheKey;
-        }
-
         return $this->_resolveTemplate($name);
     }
 
     /**
      * Returns whether the cached template is still up-to-date with the latest template.
      *
-     * @param string  $name The template name, or a StringTemplate object.
+     * @param string  $name The template name
      * @param integer $time The last modification time of the cached template
      *
      * @return boolean

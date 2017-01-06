@@ -19,7 +19,6 @@ use craft\helpers\StringHelper;
 use craft\web\assets\AppAsset;
 use craft\web\twig\Environment;
 use craft\web\twig\Extension;
-use craft\web\twig\StringTemplate;
 use craft\web\twig\Template;
 use craft\web\twig\TemplateLoader;
 use yii\base\Exception;
@@ -224,8 +223,8 @@ class View extends \yii\web\View
     /**
      * Renders a Twig template.
      *
-     * @param mixed $template  The name of the template to load, or a StringTemplate object.
-     * @param array $variables The variables that should be available to the template.
+     * @param mixed $template  The name of the template to load
+     * @param array $variables The variables that should be available to the template
      *
      * @return string the rendering result
      * @throws \Twig_Error_Loader if the template doesn’t exist
@@ -248,8 +247,8 @@ class View extends \yii\web\View
     /**
      * Renders a Twig template that represents an entire web page.
      *
-     * @param mixed $template  The name of the template to load, or a StringTemplate object.
-     * @param array $variables The variables that should be available to the template.
+     * @param mixed $template  The name of the template to load
+     * @param array $variables The variables that should be available to the template
      *
      * @return string the rendering result
      */
@@ -300,13 +299,12 @@ class View extends \yii\web\View
      *
      * @return string The rendered template.
      */
-    public function renderString($template, array $variables = [])
+    public function renderString(string $template, array $variables = [])
     {
-        $stringTemplate = new StringTemplate(md5($template), $template);
-
         $lastRenderingTemplate = $this->_renderingTemplate;
         $this->_renderingTemplate = 'string:'.$template;
-        $result = $this->renderTemplate($stringTemplate, $variables);
+        $templateObj = $this->getTwig()->createTemplate($template);
+        $result = $templateObj->render($variables);
         $this->_renderingTemplate = $lastRenderingTemplate;
 
         return $result;
