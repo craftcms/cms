@@ -108,7 +108,7 @@ class Fields
     /**
      * Returns all the fields in a given group.
      *
-     * @param int     $groupId The field group’s ID
+     * @param int         $groupId The field group’s ID
      * @param string|null $indexBy The attribute to index the fields by
      *
      * @return FieldInterface[] The fields

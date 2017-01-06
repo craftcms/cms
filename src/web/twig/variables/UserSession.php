@@ -105,9 +105,9 @@ class UserSession
     /**
      * Returns a flash message by a given key.
      *
-     * @param string  $key
-     * @param mixed   $defaultValue
-     * @param bool $delete
+     * @param string $key
+     * @param mixed  $defaultValue
+     * @param bool   $delete
      *
      * @return mixed
      */

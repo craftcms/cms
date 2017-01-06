@@ -7,9 +7,7 @@
 
 namespace craft\web\twig\nodes;
 
-use Craft;
 use craft\helpers\Template;
-use yii\web\HttpException;
 
 /**
  * GetAttr is an alternative to Twig_Node_Expression_GetAttr, which sends attribute calls to [[Template::attribute()]] rather than twig_get_attribute().

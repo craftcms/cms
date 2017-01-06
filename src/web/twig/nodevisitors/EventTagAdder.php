@@ -123,7 +123,7 @@ class EventTagAdder extends BaseEventTagVisitor
      *
      * @param \Twig_Node_Text   $node
      * @param \Twig_Environment $env
-     * @param int           $pos
+     * @param int               $pos
      * @param string            $functionName
      *
      * @return \Twig_Node

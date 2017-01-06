@@ -83,7 +83,7 @@ class Globals
     /**
      * Returns a global set by its ID.
      *
-     * @param int     $globalSetId
+     * @param int         $globalSetId
      * @param string|null $siteHandle
      *
      * @return GlobalSet|null

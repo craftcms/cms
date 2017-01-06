@@ -8,7 +8,6 @@
 namespace craft\web\twig\nodes;
 
 use craft\web\View;
-use Twig_Node;
 use yii\base\NotSupportedException;
 
 /**
@@ -17,7 +16,7 @@ use yii\base\NotSupportedException;
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since  3.0
  *
- * @todo super hacky that this extends Twig_Node_Set, but that's the only way to get Twig_Parser::filterBodyNodes() to leave us alone
+ * @todo   super hacky that this extends Twig_Node_Set, but that's the only way to get Twig_Parser::filterBodyNodes() to leave us alone
  */
 class RegisterResourceNode extends \Twig_Node_Set
 {

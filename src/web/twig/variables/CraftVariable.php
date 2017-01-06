@@ -97,7 +97,7 @@ class CraftVariable extends ServiceLocator
                     // Deprecated
                     'userGroups' => UserGroups::class,
                 ]);
-                // no break
+            // no break
             case Craft::Client:
                 /** @noinspection PhpDeprecationInspection */
                 /** @noinspection SuspiciousAssignmentsInspection */

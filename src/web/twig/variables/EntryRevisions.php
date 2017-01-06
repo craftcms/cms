@@ -30,8 +30,8 @@ class EntryRevisions
     /**
      * Returns entry drafts by an entry ID.
      *
-     * @param int $entryId
-     * @param string  $siteHandle
+     * @param int    $entryId
+     * @param string $siteHandle
      *
      * @return EntryDraft[]
      * @throws Exception if $siteHandle is invalid
@@ -58,8 +58,8 @@ class EntryRevisions
     /**
      * Returns the drafts of a given entry that are editable by the current user.
      *
-     * @param int $entryId
-     * @param string  $siteHandle
+     * @param int    $entryId
+     * @param string $siteHandle
      *
      * @return EntryDraft[]
      * @throws Exception if $siteHandle is invalid
@@ -103,8 +103,8 @@ class EntryRevisions
     /**
      * Returns entry versions by an entry ID.
      *
-     * @param int $entryId
-     * @param string  $siteHandle
+     * @param int    $entryId
+     * @param string $siteHandle
      *
      * @return EntryVersion[]
      * @throws Exception if $siteHandle is invalid
