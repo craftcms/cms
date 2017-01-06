@@ -320,9 +320,9 @@
 		<main id="main" role="main"{% if not hasCustomLayout %} class="single-pane"{% endif %}>
 			<div class="padded">
 				{% if hasCustomLayout %}
-					{% block main %}{% endblock %}
+					{{ block('main') }}
 				{% else %}
-					{% set sidebar = sidebar is defined ? sidebar : block('sidebar')|trim %}
+					{% set sidebar = sidebar ?? block('sidebar') ?? null %}
 					{% set hasSidebar = (sidebar is not empty) %}
 
 					<div class="pane">
