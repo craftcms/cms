@@ -61,6 +61,6 @@
 {% block sidebar %}
 	<nav>
 		{% set volumes = craft.app.volumes %}
-		{% include "_includes/nav" with { items: navItems, selectedItem: selectedNavItem } only %}
+		{% include "utilities/_nav" with { items: navItems, selectedItem: selectedNavItem } only %}
 	</nav>
 {% endblock %}

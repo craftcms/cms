@@ -1,0 +1,26 @@
+<nav>
+	<ul>
+		{% for itemId, item in items %}
+			{% if item %}
+				{% set itemIsSelected = ((selectedItem is not defined and loop.first) or (selectedItem is defined and selectedItem == itemId)) -%}
+				{% spaceless %}
+					<li>
+						<a{% if itemIsSelected %} class="sel"{% endif %} href="{{ item.url }}">
+							{% if item.icon is defined %}
+								<span class="icon">
+									<span data-icon="{{ item.icon }}"></span>
+								</span>
+							{% endif %}
+
+							<span class="label">{{ item.label }}</span>
+
+							{% if item.badgeCount is defined %}
+								<span class="badge"><span class="count">{{ item.badgeCount }}</span></span>
+							{% endif %}
+						</a>
+					</li>
+				{% endspaceless %}
+			{% endif %}
+		{% endfor %}
+	</ul>
+</nav>
