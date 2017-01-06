@@ -595,7 +595,7 @@ Craft.AssetImageEditor = Garnish.Modal.extend(
                     axis = axis == 'y' ? 'x' : 'y';
                 }
 
-                // TODO also modify the stored cropper state
+                // TODO So many nested if's. Make it cleaner.
                 var editorCenter = {x: this.editorWidth/2, y: this.editorHeight/2};
                 this.straighteningInput.setValue(-this.imageStraightenAngle);
                 this.imageStraightenAngle = -this.imageStraightenAngle;
@@ -604,27 +604,51 @@ Craft.AssetImageEditor = Garnish.Modal.extend(
                 };
 
                 var deltaY, deltaX;
+                var state = this.cropperState;
 
                 if (axis == 'y') {
                     properties.scaleY = this.image.scaleY * -1;
+
+                    // That awkward moment when you flip by one axis and re-position by the other
                     if (this.hasOrientationChanged()) {
                         deltaX = this.image.left - editorCenter.x;
                         properties.left = editorCenter.x - deltaX;
+
+                        if (state) {
+                            state.clipperData.deltaX = -state.clipperData.deltaX;
+                        }
                     } else {
                         deltaY = this.image.top - editorCenter.y;
                         properties.top = editorCenter.y - deltaY;
+
+                        if (state) {
+                            state.clipperData.deltaY = -state.clipperData.deltaY;
+                        }
                     }
                 } else {
                     properties.scaleX = this.image.scaleX * -1;
+
+                    // That awkward moment when you flip by one axis and re-position by the other
                     if (this.hasOrientationChanged()) {
                         deltaY = this.image.top - editorCenter.y;
                         properties.top = editorCenter.y - deltaY;
+
+                        if (state) {
+                            state.clipperData.deltaY = -state.clipperData.deltaY;
+                        }
                     } else {
                         deltaX = this.image.left - editorCenter.x;
                         properties.left = editorCenter.x - deltaX;
+
+                        if (state) {
+                            state.clipperData.deltaX = -state.clipperData.deltaX;
+                        }
                     }
                 }
 
+                if (state) {
+                    this.storeCropperState(state);
+                }
                 this.image.animate(properties, {
                     onChange: this.canvas.renderAll.bind(this.canvas),
                     duration: this.settings.animationDuration,
