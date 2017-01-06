@@ -961,7 +961,7 @@ class User extends Element implements IdentityInterface
             $currentUser = Craft::$app->getUser()->getIdentity();
 
             if ($currentUser) {
-                return ($this->id == $currentUser->id);
+                return ($this->id === $currentUser->id);
             }
         }
 

@@ -1,7 +1,44 @@
 Craft CMS Changelog
 ===================
 
+<<<<<<< HEAD
 ## Unreleased 
+=======
+## Unreleased
+
+### Changed
+- Increased the minimum width of HUD element editors to `380px`.
+- Increased the size of number fields to `10`.
+
+### Fixed
+- Fixed a bug where users with the “Delete Users” permission would get the button to delete an admin even though the controller would block it.
+
+### Fixed
+- Fixed a deprecation error that was getting logged whenever a tag was saved within the Control Panel.
+
+## 2.6.2958 - 2017-01-03
+
+### Changed
+- Updated to the latest Redactor translations.
+- Re-added `focusable.js` and `scroll-parent.js` to Craft’s bundled jQuery UI.
+
+### Fixed
+- Fixed a bug where no classes would get autoloaded if you had the string `vendor` in any path leading up to your Craft installation.
+- Fixed JavaScript errors that occurred in the Control Panel.
+- Fixed a bug where hourly charts were displaying dates in `mm/YY` format instead of `dd/mm`.
+
+## 2.6.2957 - 2016-12-30
+
+### Changed
+- Updated HTMLPurifier to 4.8.
+- Updated jQuery to 2.2.4, which fixes a [potential XSS vulnerability](https://github.com/jquery/jquery/issues/2432).
+- Updated jQuery UI to 1.12.1.
+
+### Fixed
+- Fixed several PHP 7.1 compatibility issues.
+
+## 2.6.2956 - 2016-12-28
+>>>>>>> origin/develop-v2
 
 ### Changed
 

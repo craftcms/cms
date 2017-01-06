@@ -630,10 +630,16 @@ class UsersController extends Controller
                 }
 
                 if (Craft::$app->getUser()->checkPermission('deleteUsers')) {
-                    $destructiveActions[] = [
-                        'id' => 'delete-btn',
-                        'label' => Craft::t('app', 'Delete…')
-                    ];
+                    // Even if they have delete user permissions, we don't want a non-admin
+                    // to be able to delete an admin.
+                    $currentUser = Craft::$app->getUser()->getIdentity();
+
+                    if (($currentUser && $currentUser->admin) || !$user->admin) {
+                        $destructiveActions[] = [
+                            'id' => 'delete-btn',
+                            'label' => Craft::t('app', 'Delete…')
+                        ];
+                    }
                 }
             }
         }
