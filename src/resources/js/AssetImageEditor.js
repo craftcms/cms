@@ -26,6 +26,7 @@ Craft.AssetImageEditor = Garnish.Modal.extend(
         clipper: null,
         croppingRectangle: null,
         cropperHandles: null,
+        cropperGrid: null,
         croppingShade: null,
 
         // Image state attributes
@@ -1117,8 +1118,8 @@ Craft.AssetImageEditor = Garnish.Modal.extend(
          * @param clipperData
          */
         _showCropper: function(clipperData) {
-            this._drawCropper(clipperData);
-            this._redrawCropperBoundaries();
+            this._setupCropperLayer(clipperData);
+            this._redrawCropperElements();
             this.renderCropper();
 
             this.addListener(this.$croppingCanvas, 'mousemove', this._handleMouseMove.bind(this));
@@ -1138,6 +1139,7 @@ Craft.AssetImageEditor = Garnish.Modal.extend(
                 this.croppingCanvas.remove(this.clipper);
                 this.croppingCanvas.remove(this.croppingShade);
                 this.croppingCanvas.remove(this.cropperHandles);
+                this.croppingCanvas.remove(this.cropperGrid);
                 this.croppingCanvas.remove(this.croppingRectangle);
                 this.removeListener(this.$croppingCanvas, 'mousemove', this._handleMouseMove.bind(this));
                 this.removeListener(this.$croppingCanvas, 'mousedown', this._handleMouseDown.bind(this));
@@ -1157,7 +1159,7 @@ Craft.AssetImageEditor = Garnish.Modal.extend(
          *
          * @param clipperData
          */
-        _drawCropper: function(clipperData) {
+        _setupCropperLayer: function(clipperData) {
             // Set up the canvas for cropper
             this.croppingCanvas = new fabric.StaticCanvas('cropping-canvas', {
                 backgroundColor: 'rgba(0,0,0,0)',
@@ -1230,15 +1232,21 @@ Craft.AssetImageEditor = Garnish.Modal.extend(
         /**
          * Redraw the cropper boundaries
          */
-        _redrawCropperBoundaries: function() {
+        _redrawCropperElements: function() {
             if (this.cropperHandles) {
                 this.croppingCanvas.remove(this.cropperHandles);
+                this.croppingCanvas.remove(this.cropperGrid);
                 this.croppingCanvas.remove(this.croppingRectangle);
             }
             var lineOptions = {
-                strokeWidth: 2,
+                strokeWidth: 4,
                 stroke: 'rgb(255,255,255)',
                 fill: false
+            };
+
+            var gridOptions = {
+                strokeWidth: 2,
+                stroke: 'rgba(255,255,255,0.5)'
             };
 
             // Draw the handles
@@ -1269,7 +1277,22 @@ Craft.AssetImageEditor = Garnish.Modal.extend(
                 originY: 'center'
             });
 
+            this.cropperGrid = new fabric.Group(
+                [
+                    new fabric.Line([this.clipper.width*0.33, 0, this.clipper.width*0.33, this.clipper.height], gridOptions),
+                    new fabric.Line([this.clipper.width*0.66, 0, this.clipper.width*0.66, this.clipper.height], gridOptions),
+                    new fabric.Line([0, this.clipper.height*0.33, this.clipper.width, this.clipper.height*0.33], gridOptions),
+                    new fabric.Line([0, this.clipper.height*0.66, this.clipper.width, this.clipper.height*0.66], gridOptions)
+                ], {
+                    left: this.clipper.left,
+                    top: this.clipper.top,
+                    originX: 'center',
+                    originY: 'center'
+                }
+            );
+
             this.croppingCanvas.add(this.cropperHandles);
+            this.croppingCanvas.add(this.cropperGrid);
             this.croppingCanvas.add(this.croppingRectangle);
         },
 
@@ -1316,7 +1339,7 @@ Craft.AssetImageEditor = Garnish.Modal.extend(
                 top: this.editorHeight / 2
             });
 
-            this._redrawCropperBoundaries();
+            this._redrawCropperElements();
             this.renderCropper();
         },
 
@@ -1368,7 +1391,7 @@ Craft.AssetImageEditor = Garnish.Modal.extend(
 
                 this.previousMouseX = ev.pageX;
                 this.previousMouseY = ev.pageY;
-                this._redrawCropperBoundaries();
+                this._redrawCropperElements();
                 clipperDeltaX = this.clipper.left - this.image.left;
                 clipperDeltaY = this.clipper.top - this.image.top;
 
@@ -1513,7 +1536,7 @@ Craft.AssetImageEditor = Garnish.Modal.extend(
                 height: rectangle.height
             });
 
-            this._redrawCropperBoundaries();
+            this._redrawCropperElements();
         },
 
         /**
