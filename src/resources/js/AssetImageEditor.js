@@ -1191,7 +1191,7 @@ Craft.AssetImageEditor = Garnish.Modal.extend(
                 originY: 'center',
                 width: this.editorWidth,
                 height: this.editorHeight,
-                fill: 'rgba(0,0,0,0.4)'
+                fill: 'rgba(0,0,0,0.7)'
             });
 
             // Calculate the cropping rectangle size
