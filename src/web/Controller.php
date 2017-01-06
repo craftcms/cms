@@ -172,7 +172,7 @@ abstract class Controller extends \yii\web\Controller
     public function requireElevatedSession()
     {
         if (!Craft::$app->getUser()->getHasElevatedSession()) {
-            throw new ForbiddenHttpException(403, Craft::t('app', 'This action may only be performed with an elevated session.'));
+            throw new ForbiddenHttpException(Craft::t('app', 'This action may only be performed with an elevated session.'));
         }
     }
 
