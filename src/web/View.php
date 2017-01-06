@@ -352,7 +352,7 @@ class View extends \yii\web\View
         $lastRenderingTemplate = $this->_renderingTemplate;
         $this->_renderingTemplate = 'string:'.$template;
         /** @var Template $templateObj */
-        $templateObj = $this->_objectTemplates[$template];
+        $templateObj = $this->_objectTemplates[$cacheKey];
         $output = $templateObj->render([
             'object' => $object
         ]);
